@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Wed Oct 08 14:22:17 2003
-#$PATH:C:\Backups\IR\Images\
+#$DATE:Tue Oct 14 13:37:14 2003
+#$PATH:C:\Backups\JP1\Images\
 #$GIF:Navigator.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -50,7 +50,7 @@ circle Rew  37,331 49,336
 circle Play  67,331 79,336
 circle FF  98,330 110,335
 circle TV/VCR  98,364 106,369
-circle Pause  67,345 79,351
+circle Pause_{VCR}  67,345 79,351
 circle Rec  98,344 110,349
 circle Setup  98,62 110,68
 circle Pg+  36,385 44,390
@@ -63,5 +63,5 @@ circle Bypass  35,402 43,407
 circle Diamond  77,400 85,405
 circle P  98,400 106,405
 circle Stop  37,346 49,351
-poly Page+ 93,240 105,227 117,240 93,240
-poly Page- 19,227 46,227 32,241 19,227
+poly Page+ 93,240 105,227 117,240 93,240 93,240
+poly Page- 19,227 46,227 32,241 19,227 19,227
