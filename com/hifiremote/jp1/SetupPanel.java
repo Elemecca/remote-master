@@ -15,12 +15,9 @@ public class SetupPanel
   extends KMPanel
   implements ActionListener, ItemListener, PropertyChangeListener, DocumentListener, FocusListener, Runnable
 {
-  public SetupPanel( DeviceUpgrade deviceUpgrade,
-                     ProtocolManager protocolManager )
+  public SetupPanel( DeviceUpgrade deviceUpgrade )
   {
     super( deviceUpgrade );
-
-    this.protocolManager = protocolManager;
 
     protocolHolder = new JPanel( new BorderLayout());
     Border border = BorderFactory.createTitledBorder( "Protocol Parameters" );
@@ -117,7 +114,7 @@ public class SetupPanel
     setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
-    Vector protocols = protocolManager.getProtocolsForRemote( remote );
+    Vector protocols = ProtocolManager.getProtocolManager().getProtocolsForRemote( remote );
     if ( !protocols.contains( p ))
     {
       // ??? There should be a better way to handle this (the current protocol is
@@ -126,6 +123,8 @@ public class SetupPanel
       protocols = new Vector( protocols );
       protocols.add( p );
     }
+
+    p.setDeviceParms( deviceUpgrade.getParmValues());
     updateParameters();
     protocolList.setModel( new DefaultComboBoxModel( protocols ));
     protocolList.setSelectedItem( p );
@@ -177,6 +176,7 @@ public class SetupPanel
   {
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
+    deviceUpgrade.setParmValues( p.getDeviceParmValues());
     fixedData.setText( p.getFixedData().toString());
   }
 
@@ -296,7 +296,6 @@ public class SetupPanel
     controlToSelectAll.selectAll();
   }
 
-  private ProtocolManager protocolManager = null;
   private JFormattedTextField setupCode = null;
   private JRadioButton useEFC = null;
   private JRadioButton useOBC = null;

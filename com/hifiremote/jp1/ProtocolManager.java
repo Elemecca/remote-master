@@ -6,8 +6,12 @@ import javax.swing.*;
 
 public class ProtocolManager
 {
-  public ProtocolManager()
-  {}
+  protected ProtocolManager(){}
+  
+  public static ProtocolManager getProtocolManager()
+  {
+    return protocolManager;
+  }
 
   public void load( File f )
     throws Exception
@@ -128,19 +132,14 @@ public class ProtocolManager
 
   public Vector getProtocolsForRemote( Remote remote )
   {
-//    Vector rc = remote.getProtocols();
-//    if ( rc == null )
-//    {
-      Vector rc = new Vector();
-      for ( Enumeration e = names.elements(); e.hasMoreElements(); )
-      {
-        String name = ( String )e.nextElement();
-        Protocol p = findProtocolForRemote( remote, name );
-        if ( p != null )
-          rc.add( p );
-      }
-//      remote.setProtocols( rc );
-//    }
+    Vector rc = new Vector();
+    for ( Enumeration e = names.elements(); e.hasMoreElements(); )
+    {
+      String name = ( String )e.nextElement();
+      Protocol p = findProtocolForRemote( remote, name );
+      if ( p != null )
+        rc.add( p );
+    }
     return rc;
   }
 
@@ -252,6 +251,7 @@ public class ProtocolManager
     return null;
   }
 
+  private static ProtocolManager protocolManager = new ProtocolManager();
   private Vector names = new Vector();
   private Hashtable byName = new Hashtable();
   private Hashtable byPID = new Hashtable();

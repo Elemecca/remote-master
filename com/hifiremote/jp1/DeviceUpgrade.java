@@ -14,7 +14,7 @@ public class DeviceUpgrade
     initFunctions();
   }
 
-  public void reset( Remote[] remotes, ProtocolManager protocolManager )
+  public void reset()
   {
     description = null;
     setupCode = 0;
@@ -22,6 +22,7 @@ public class DeviceUpgrade
     // remove all currently assigned functions
     remote.clearButtonAssignments();
 
+    Remote[] remotes = RemoteManager.getRemoteManager().getRemotes();
     if ( remote == null )
       remote = remotes[ 0 ];
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
@@ -30,12 +31,13 @@ public class DeviceUpgrade
     for ( int i = 0; i < devParms.length; i++ )
       devParms[ i ].setValue( null );
 
-    Vector names = protocolManager.getNames();
+    ProtocolManager pm = ProtocolManager.getProtocolManager();
+    Vector names = pm.getNames();
     Protocol tentative = null;
     for ( Enumeration e = names.elements(); e.hasMoreElements(); )
     {
       String protocolName = ( String )e.nextElement();
-      Protocol p = protocolManager.findProtocolForRemote( remote, protocolName );
+      Protocol p = pm.findProtocolForRemote( remote, protocolName );
       if ( p != null )
       {
         protocol = p;
@@ -384,6 +386,7 @@ public class DeviceUpgrade
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     out.print( "DeviceIndex", Integer.toHexString( devType.getNumber()));
     out.print( "SetupCode", Integer.toString( setupCode ));
+    protocol.setDeviceParms( parmValues );
     protocol.store( out );
     if ( notes != null )
       out.print( "Notes", notes );
@@ -435,10 +438,27 @@ public class DeviceUpgrade
     out.close();
   }
 
-  public void load( BufferedReader reader, Remote[] remotes,
-                    ProtocolManager protocolManager )
+  public void load( File file )
     throws Exception
   {
+    if ( file.getName().toLowerCase().endsWith( ".rmdu" ))
+      this.file = file;
+    BufferedReader reader = new BufferedReader( new FileReader( file ));
+    load( reader );
+  }
+
+  public void load( BufferedReader reader )
+    throws Exception
+  {
+    reader.mark( 160 );
+    String line = reader.readLine();
+    reader.reset();
+    if ( line.startsWith( "Name:" ))
+    {
+      importUpgrade( reader );
+      return;
+    }
+
     Properties props = new Properties();
     Property property = new Property();
     PropertyReader pr = new PropertyReader( reader );
@@ -460,41 +480,9 @@ public class DeviceUpgrade
       return;
     }
     String sig = props.getProperty( "Remote.signature" );
-    int index = Arrays.binarySearch( remotes, str );
-    if ( index < 0 )
-    {
-      // build a list of similar remote names, and ask the user to pick a match.
-      Vector similarRemotes = new Vector();
-      for ( int i = 0; i < remotes.length; i++ )
-      {
-        if ( remotes[ i ].getName().indexOf( str ) != -1 )
-          similarRemotes.add( remotes[ i ]);
-      }
-
-      Object[] simRemotes = null;
-      if ( similarRemotes.size() > 0 )
-        simRemotes = similarRemotes.toArray();
-      else
-        simRemotes = remotes;
-
-      String message = "Could not find an exact match for the remote \"" + str + "\".  Choose one from the list below:";
-
-      Object rc = ( Remote )JOptionPane.showInputDialog( null,
-                                                         message,
-                                                         "Upgrade Load Error",
-                                                         JOptionPane.ERROR_MESSAGE,
-                                                         null,
-                                                         simRemotes,
-                                                         simRemotes[ 0 ]);
-      if ( rc == null )
-        return;
-      else
-        remote = ( Remote )rc;
-    }
-    else
-      remote = remotes[ index ];
+    remote = RemoteManager.getRemoteManager().findRemoteByName( str );
     remote.load();
-    index = -1;
+    int index = -1;
     str = props.getProperty( "DeviceIndex" );
     if ( str != null )
       index = Integer.parseInt( str, 16 );
@@ -505,14 +493,15 @@ public class DeviceUpgrade
     String name = props.getProperty( "Protocol.name", "" );
     String variantName = props.getProperty( "Protocol.variantName", "" );
 
+    ProtocolManager pm = ProtocolManager.getProtocolManager();
     if ( name.equals( "Manual Settings" ))
     {
       protocol = new ManualProtocol( name, pid, props );
-      protocolManager.add( protocol );
+      pm.add( protocol );
     }
     else
     {
-      protocol = protocolManager.findNearestProtocol( name, pid, variantName );
+      protocol = pm.findNearestProtocol( name, pid, variantName );
 
       if ( protocol == null )
       {
@@ -608,8 +597,7 @@ public class DeviceUpgrade
     return rc;
   }
 
-  public void importUpgrade( BufferedReader in, Remote[] remotes,
-                    ProtocolManager protocolManager )
+  public void importUpgrade( BufferedReader in )
     throws Exception
   {
     String line = in.readLine(); // line 1
@@ -637,72 +625,7 @@ public class DeviceUpgrade
     token = st.nextToken();
     String str = token.substring( 5 );
 
-    int index = Arrays.binarySearch( remotes, str );
-    if ( index < 0 )
-    {
-      // build a list of similar remote names, and ask the user to pick a match.
-      // First check if there is a slash in the name;
-      String[] subNames = new String[ 0 ];
-      int slash = str.indexOf( '/' );
-      if ( slash != -1 )
-      {
-        int count = 2;
-        while (( slash = str.indexOf( '/', slash + 1 )) != -1 )
-          count++;
-        subNames = new String[ count ];
-        StringTokenizer nameTokenizer = new StringTokenizer( str, " /" );
-        for ( int i = 0; i < count; i++ )
-        {
-          subNames[ i ] = nameTokenizer.nextToken();
-        }
-      }
-      else
-      {
-        subNames = new String[ 1 ];
-        StringTokenizer nameTokenizer = new StringTokenizer( str );
-        subNames[ 0 ] = nameTokenizer.nextToken();
-      }
-      Vector similarRemotes = new Vector();
-      for ( int i = 0; i < remotes.length; i++ )
-      {
-        for ( int j = 0; j < subNames.length; j++ )
-        {
-          if ( remotes[ i ].getName().indexOf( subNames[ j ]) != -1 )
-          {
-            similarRemotes.add( remotes[ i ]);
-            break;
-          }
-        }
-      }
-
-      Remote[] simRemotes = new Remote[ 0 ];
-      if ( similarRemotes.size() > 0 )
-        simRemotes = ( Remote[] )similarRemotes.toArray( simRemotes );
-      else
-        simRemotes = remotes;
-
-      if ( simRemotes.length == 1 )
-        remote = simRemotes[ 0 ];
-      else
-      {
-        String message = "Could not find an exact match for the remote \"" + str + "\".  Choose one from the list below:";
-
-        Object rc = ( Remote )JOptionPane.showInputDialog( null,
-                                                           message,
-                                                           "Upgrade Load Error",
-                                                           JOptionPane.ERROR_MESSAGE,
-                                                           null,
-                                                           simRemotes,
-                                                           simRemotes[ 0 ]);
-        if ( rc == null )
-          return;
-        else
-          remote = ( Remote )rc;
-      }
-    }
-    else
-      remote = remotes[ index ];
-
+    Remote remote = RemoteManager.getRemoteManager().findRemoteByName( str );
     Hex pid = null;
     while ( true )
     {
@@ -753,6 +676,7 @@ public class DeviceUpgrade
     String protocolName = st.nextToken();  // protocol name
     st.nextToken(); // skip delim
 
+    ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
     if ( protocolName.equals( "Manual Settings" ))
     {
       System.err.println( "protocolName=" + protocolName );
@@ -1092,6 +1016,16 @@ public class DeviceUpgrade
     }
   }
 
+  public Value[] getParmValues()
+  {
+    return parmValues;
+  }
+
+  public void setParmValues( Value[] parmValues )
+  {
+    this.parmValues = parmValues; 
+  }
+
   public static final String[] getDeviceTypeAliasNames()
   {
     return deviceTypeAliasNames;
@@ -1133,6 +1067,7 @@ public class DeviceUpgrade
   private Remote remote = null;
   private String devTypeAliasName = null;
   private Protocol protocol = null;
+  private Value[] parmValues = new Value[ 0 ];
   private String notes = null;
   private Vector functions = new Vector();
   private Vector extFunctions = new Vector();

@@ -182,7 +182,7 @@ public abstract class TablePanel
 
     add( new JScrollPane( table ), BorderLayout.CENTER );
 
-    JPanel buttonPanel = new JPanel();
+    buttonPanel = new JPanel();
     add( buttonPanel, BorderLayout.SOUTH );
 
     newButton = new JButton( "New" );
@@ -520,9 +520,10 @@ public abstract class TablePanel
     table.doLayout();
   }
 
-  private JTable table = null;
+  protected JTable table = null;
   protected KMTableModel model = null;
   private TableSorter sorter = null;
+  protected JPanel buttonPanel = null;
   private JButton newButton = null;
   private JButton deleteButton = null;
   private JButton upButton = null;
@@ -531,7 +532,7 @@ public abstract class TablePanel
   private JButton pasteButton = null;
   private int popupRow = 0;
   private int popupCol = 0;
-  private JPopupMenu popup = null;
+  protected JPopupMenu popup = null;
   private JMenuItem newItem = null;
   private JMenuItem deleteItem = null;
   private JMenuItem copyItem = null;

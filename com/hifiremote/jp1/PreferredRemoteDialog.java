@@ -10,11 +10,13 @@ public class PreferredRemoteDialog
   extends JDialog
   implements ActionListener, ListSelectionListener
 {
-  public PreferredRemoteDialog( JFrame owner, Remote[] remotes, Remote[] preferredRemotes )
+  public PreferredRemoteDialog( JFrame owner, Remote[] preferredRemotes )
   {
     super( owner, "Preferred Remotes", true );
     setLocationRelativeTo( owner );
-    
+
+    Remote[] remotes = RemoteManager.getRemoteManager().getRemotes();    
+
     unusedListModel = new DefaultListModel();
     int j = 0;
     int index = 0;

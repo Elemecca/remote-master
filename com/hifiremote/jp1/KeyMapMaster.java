@@ -15,12 +15,12 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.86";
+  private static final String version = "v 0.87";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
   private JMenuItem saveAsItem = null;
-  private JMenuItem importItem = null;
+//  private JMenuItem importItem = null;
   private JMenuItem importFromClipboardItem = null;
   private JMenuItem exitItem = null;
   private JMenu recentFileMenu = null;
@@ -36,7 +36,7 @@ public class KeyMapMaster
   private Remote[] remotes = new Remote[ 0 ];
   private Remote[] preferredRemotes = new Remote[ 0 ];
   private Vector preferredRemoteNames = new Vector( 0 );
-  private ProtocolManager protocolManager = new ProtocolManager();
+  private ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
   private Remote currentRemote = null;
   private String currentDeviceTypeName = null;
   private SetupPanel setupPanel = null;
@@ -154,7 +154,7 @@ public class KeyMapMaster
 
     protocolManager.load( new File( homeDirectory, "protocols.ini" ));
 
-    setupPanel = new SetupPanel( deviceUpgrade, protocolManager );
+    setupPanel = new SetupPanel( deviceUpgrade );
     currPanel = setupPanel;
     tabbedPane.addTab( "Setup", null, setupPanel, "Enter general information about the upgrade." );
 
@@ -182,20 +182,33 @@ public class KeyMapMaster
     tabbedPane.addTab( "Output", null, outputPanel,
                        "The output to copy-n-paste into IR." );
 
-    loadRemotes();
+    RemoteManager rm = RemoteManager.getRemoteManager();                       
+    rdfPath = rm.loadRemotes( rdfPath );
+    
+    Vector work = new Vector();
+    for ( Enumeration e = preferredRemoteNames.elements(); e.hasMoreElements(); )
+    {
+      String name = ( String )e.nextElement();
+      Remote temp = rm.findRemoteByName( name );
+      if ( temp != null )
+        work.add( temp );
+    }
+    preferredRemotes = ( Remote[] )work.toArray( preferredRemotes );
+
+    if ( preferredRemotes.length == 0 )
+    {
+      useAllRemotes.setSelected( true );
+      usePreferredRemotes.setEnabled( false );
+    }    
+
     setRemotes();
 
-    int index = 0;
-    if ( lastRemoteName != null )
-    {
-      index = Arrays.binarySearch( remotes, lastRemoteName );
-    }
-    if ( index < 0 )
-      index = 0;
-
-    Remote temp = remotes[ index ];
+    Remote temp = rm.findRemoteByName( lastRemoteName );
+    if ( temp == null )
+      temp = rm.getRemotes()[ 0 ];
     temp.load();
-    Protocol protocol = ( Protocol )protocolManager.getProtocolsForRemote( temp ).elementAt( 0 );
+    Protocol protocol = 
+      ( Protocol )protocolManager.getProtocolsForRemote( temp ).elementAt( 0 );
     deviceUpgrade.setProtocol( protocol );
     setRemote( temp );
     remoteList.setSelectedItem( temp );
@@ -248,11 +261,11 @@ public class KeyMapMaster
 
     menu.addSeparator();
     
-    importItem = new JMenuItem( "Import KM file..." );
-    importItem.setMnemonic( KeyEvent.VK_K );
-    importItem.addActionListener( this );
-    menu.add( importItem );
-
+//    importItem = new JMenuItem( "Import KM file..." );
+//    importItem.setMnemonic( KeyEvent.VK_K );
+//    importItem.addActionListener( this );
+//    menu.add( importItem );
+//
     importFromClipboardItem = new JMenuItem( "Import from Clipboard" );
     importFromClipboardItem.setMnemonic( KeyEvent.VK_C );
     importFromClipboardItem.addActionListener( this );
@@ -382,7 +395,7 @@ public class KeyMapMaster
 
   private void editPreferredRemotes()
   {
-    PreferredRemoteDialog d = new PreferredRemoteDialog( this, remotes, preferredRemotes );
+    PreferredRemoteDialog d = new PreferredRemoteDialog( this, preferredRemotes );
     d.show();
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
@@ -471,82 +484,6 @@ public class KeyMapMaster
     me.messageLabel.setText( " " );
   }
 
-  private void loadRemotes()
-    throws Exception
-  {
-    File[] files = new File[ 0 ];
-    File dir = rdfPath;
-    FilenameFilter filter = new FilenameFilter()
-    {
-      public boolean accept( File dir, String name )
-      {
-        return name.toLowerCase().endsWith( ".rdf" );
-      }
-    };
-
-    while ( files.length == 0 )
-    {
-      files = dir.listFiles( filter );
-      if ( files.length == 0 )
-      {
-        JOptionPane.showMessageDialog( this, "No RDF files were found!",
-                                       "Error", JOptionPane.ERROR_MESSAGE );
-        JFileChooser chooser = new JFileChooser( dir );
-        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-        chooser.setFileFilter( new KMDirectoryFilter());
-        chooser.setDialogTitle( "Choose the directory containing the RDFs" );
-        int returnVal = chooser.showOpenDialog( this );
-        if ( returnVal != JFileChooser.APPROVE_OPTION )
-          System.exit( -1 );
-        else
-          dir = chooser.getSelectedFile();
-      }
-    }
-    rdfPath = dir;
-
-    progressMonitor = new ProgressMonitor( this, "Loading remotes",
-                                           "", 0, files.length );
-    progressMonitor.setProgress( 0 );
-    progressMonitor.setMillisToDecideToPopup( 1000 );
-
-    Vector work = new Vector();
-    for ( int i = 0; i < files.length; i++ )
-    {
-      File rdf = files[ i ];
-      progressMonitor.setNote( "Loading " + rdf.getName());
-
-      Remote r = new Remote( rdf );
-      work.add( r );
-      for ( int j = 1; j < r.getNameCount(); j++ )
-        work.add( new Remote( r, j ));
-
-      progressMonitor.setProgress( i );
-    }
-    remotes = ( Remote[] )work.toArray( remotes );
-    progressMonitor.setNote( "Sorting remotes" );
-    Arrays.sort( remotes );
-    progressMonitor.setProgress( files.length );
-    progressMonitor.close();
-
-    work.clear();
-    for ( Enumeration e = preferredRemoteNames.elements(); e.hasMoreElements(); )
-    {
-      String name = ( String )e.nextElement();
-      int index = Arrays.binarySearch( remotes, name );
-      System.err.println( "Got index " + index + " searching for preferred remote with name \"" + name + "\"" );
-      if ( index >= 0 )
-        work.add( remotes[ index ]);
-    }
-    preferredRemotes = ( Remote[] )work.toArray( preferredRemotes );
-
-    if ( preferredRemotes.length == 0 )
-    {
-      useAllRemotes.setSelected( true );
-      usePreferredRemotes.setEnabled( false );
-    }
-
-  } // loadRemotes
-
   public void setRemotes()
   {
     if ( remoteList != null )
@@ -554,7 +491,7 @@ public class KeyMapMaster
       if ( usePreferredRemotes.isSelected())
         remoteList.setModel( new DefaultComboBoxModel( preferredRemotes ));
       else
-        remoteList.setModel( new DefaultComboBoxModel( remotes ));
+        remoteList.setModel( new DefaultComboBoxModel( RemoteManager.getRemoteManager().getRemotes()));
     }
   }
 
@@ -650,7 +587,7 @@ public class KeyMapMaster
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ))
           return;
-        deviceUpgrade.reset( remotes, protocolManager );
+        deviceUpgrade.reset();
         setTitle( "RemoteMapMaster " + version );
         description.setText( null );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());
@@ -672,74 +609,18 @@ public class KeyMapMaster
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ))
           return;
-        JFileChooser chooser = new JFileChooser( upgradePath );
-        chooser.setFileFilter( new KMFileFilter());
-        int returnVal = chooser.showOpenDialog( this );
-        if ( returnVal == JFileChooser.APPROVE_OPTION )
-        {
-          File file = chooser.getSelectedFile();
-          String name = file.getAbsolutePath();
-          if ( !name.endsWith( upgradeExtension ) && !name.endsWith( ".km" ))
-            file = new File( name + upgradeExtension );
-
-          int rc = JOptionPane.YES_OPTION;
-          if ( !file.exists())
-          {
-            JOptionPane.showMessageDialog( this,
-                                           file.getName() + " doesn't exist exists.",
-                                           "File doesn't exist.",
-                                           JOptionPane.ERROR_MESSAGE );
-          }
-          else if ( file.isDirectory())
-          {
-            JOptionPane.showMessageDialog( this,
-                                           file.getName() + " is a directory.",
-                                           "File doesn't exist.",
-                                           JOptionPane.ERROR_MESSAGE );
-          }
-          else
-          {
-            loadUpgrade( file );
-          }
-        }
+        File file = getUpgradeFile( upgradePath );
+        loadUpgrade( file );
       }
-      else if ( source == importItem )
-      {
-        if ( !promptToSaveUpgrade( ACTION_LOAD ))
-          return;
-        JFileChooser chooser = new JFileChooser( importPath );
-        chooser.setFileFilter( new TextFileFilter());
-        int returnVal = chooser.showOpenDialog( this );
-        if ( returnVal == JFileChooser.APPROVE_OPTION )
-        {
-          File file = chooser.getSelectedFile();
-          String name = file.getAbsolutePath();
-          if ( !name.endsWith( ".txt" ))
-            file = new File( name + ".txt" );
-
-          int rc = JOptionPane.YES_OPTION;
-          if ( !file.exists())
-          {
-            JOptionPane.showMessageDialog( this,
-                                           file.getName() + " doesn't exist exists.",
-                                           "File doesn't exist.",
-                                           JOptionPane.ERROR_MESSAGE );
-          }
-          else if ( file.isDirectory())
-          {
-            JOptionPane.showMessageDialog( this,
-                                           file.getName() + " is a directory.",
-                                           "File doesn't exist.",
-                                           JOptionPane.ERROR_MESSAGE );
-          }
-          else
-          {
-            importPath = file.getParentFile();
-            BufferedReader in = new BufferedReader( new FileReader( file ));
-            importUpgrade( in );
-          }
-        }
-      }
+//      else if ( source == importItem )
+//      {
+//        if ( !promptToSaveUpgrade( ACTION_LOAD ))
+//          return;
+//        File file = getUpgradeFile( importPath );
+//        BufferedReader in = new BufferedReader( new FileReader( file ));
+//        importUpgrade( in );
+//        importPath = file.getParentFile();
+//      }
       else if ( source == importFromClipboardItem )
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ))
@@ -755,13 +636,7 @@ public class KeyMapMaster
               String s =
                 ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
               BufferedReader in = new BufferedReader( new StringReader( s ));
-              in.mark( 160 );
-              String line = in.readLine();
-              in.reset();
-              if ( line.startsWith( "Name:" ))
-                importUpgrade( in );
-              else
-                loadUpgrade( in );
+              loadUpgrade( in );
             }
           }
           catch (Exception ex)
@@ -784,6 +659,54 @@ public class KeyMapMaster
       ex.printStackTrace( System.err );
     }
   } // actionPerformed
+
+  
+  public static File promptForUpgradeFile( File path )
+  {
+    return me.getUpgradeFile( path );
+  }
+  
+  public File getUpgradeFile( File path )
+  {
+    if ( path == null )
+      path = upgradePath;
+
+    File file = null;
+    JFileChooser chooser = new JFileChooser( upgradePath );
+    chooser.setFileFilter( new TextFileFilter());
+    chooser.addChoosableFileFilter( new KMFileFilter());
+    chooser.setAcceptAllFileFilterUsed( false );
+    int returnVal = chooser.showOpenDialog( this );
+    if ( returnVal == JFileChooser.APPROVE_OPTION )
+    {
+      file = chooser.getSelectedFile();
+
+      int rc = JOptionPane.YES_OPTION;
+      if ( !file.exists())
+      {
+        JOptionPane.showMessageDialog( this,
+                                       file.getName() + " doesn't exist.",
+                                       "File doesn't exist.",
+                                       JOptionPane.ERROR_MESSAGE );
+      }
+      else if ( file.isDirectory())
+      {
+        JOptionPane.showMessageDialog( this,
+                                       file.getName() + " is a directory.",
+                                       "File doesn't exist.",
+                                       JOptionPane.ERROR_MESSAGE );
+      }
+      else
+      {
+        String str = file.getName().toLowerCase();
+        if ( str.endsWith( ".rmdu" ))
+          upgradePath = file.getParentFile();
+        else
+          importPath = file.getParentFile();
+      }
+    }
+    return file;
+  }
 
   public void saveAs()
     throws IOException
@@ -850,36 +773,63 @@ public class KeyMapMaster
   public void loadUpgrade( File file )
     throws Exception
   {
-    upgradePath = file.getParentFile();
-    BufferedReader reader = new BufferedReader( new FileReader( file ));
-    loadUpgrade( reader );
-    deviceUpgrade.setFile( file );
-    setTitle( "RemoteMaster " + version + ": " + file.getName());
+    deviceUpgrade.reset();
+    deviceUpgrade.load( file );
+    refresh();
 
-    int i = recentFileMenu.getItemCount() - 1;
-    while ( i >= 0 )
+    boolean isRMDU = true;
+
+    if ( file.getName().toLowerCase().endsWith( ".txt" ))
+      isRMDU = false;
+
+    if ( isRMDU )
     {
-      JMenuItem item = recentFileMenu.getItem( i );
-      FileAction action = ( FileAction  )item.getAction();
-      File f = action.getFile();
-      if ( f.getAbsolutePath().equals( file.getAbsolutePath()))
-        recentFileMenu.remove( i );
-      --i;
+      setTitle( "RemoteMaster " + version + ": " + file.getName());
+
+      int i = recentFileMenu.getItemCount() - 1;
+      while ( i >= 0 )
+      {
+        JMenuItem item = recentFileMenu.getItem( i );
+        FileAction action = ( FileAction  )item.getAction();
+        File f = action.getFile();
+        if ( f.getAbsolutePath().equals( file.getAbsolutePath()))
+          recentFileMenu.remove( i );
+        --i;
+      }
+      i = recentFileMenu.getItemCount();
+      while ( i > 9 )
+        recentFileMenu.remove( --i );
+      recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
+
+      recentFileMenu.setEnabled( true );
+      upgradePath = file.getParentFile();
     }
-    i = recentFileMenu.getItemCount();
-    while ( i > 9 )
-      recentFileMenu.remove( --i );
-    recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
-    recentFileMenu.setEnabled( true );
+    else
+    {
+      setTitle( "RemoteMaster " + version );
+
+      importPath = file.getParentFile();
+    }
   }
 
   public void loadUpgrade( BufferedReader reader )
     throws Exception
   {
-    deviceUpgrade.reset( remotes, protocolManager );
-    deviceUpgrade.load( reader, remotes, protocolManager );
+    deviceUpgrade.reset();
+    deviceUpgrade.load( reader );
+    refresh();
+  }
+
+  private void refresh()
+  {
+    String title = "RemoteMaster " + version;
+    File file = deviceUpgrade.getFile();
+    if ( file != null )
+      title = title + ": " + file.getName();
+    
+    saveItem.setEnabled( file != null );
+    
     description.setText( deviceUpgrade.getDescription());
-    saveItem.setEnabled( true );
     remoteList.removeActionListener( this );
     deviceTypeList.removeActionListener( this );
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
@@ -902,8 +852,8 @@ public class KeyMapMaster
   public void importUpgrade( BufferedReader in )
     throws Exception
   {
-    deviceUpgrade.reset( remotes, protocolManager );
-    deviceUpgrade.importUpgrade( in, remotes, protocolManager );
+    deviceUpgrade.reset();
+    deviceUpgrade.importUpgrade( in );
     setTitle( "RemoteMaster " + version );
     description.setText( deviceUpgrade.getDescription());
     remoteList.removeActionListener( this );
