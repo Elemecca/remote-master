@@ -61,7 +61,7 @@ public class S3C80Processor
     int temp1 = val - 0x2C;
     int temp2 = val - 0x46;
     if ((( 0 <= temp1 ) && ( temp1 <= 0x0E ) && ( temp1 % 7 == 0 )) ||
-        (( 0 <= temp2 ) && ( temp2 <= 0x0E ) && ( temp2 % 3 == 0 )))
+        (( 0 <= temp2 ) && ( temp2 <= 0x2D ) && ( temp2 % 3 == 0 )))
     {
       val -= 0x13;
     }
