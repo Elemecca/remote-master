@@ -6,8 +6,11 @@ public class ReorderImporter
   public ReorderImporter( String[] textParms )
   {
     super( textParms );
-    reorderedIndexes = new int[ textParms.length ];
-    for ( int i = 0; i < textParms.length; i++ )
+    int len = 0;
+    while (( len < textParms.length ) && ( textParms[ len ] != null ))
+      len++;
+    reorderedIndexes = new int[ len ];
+    for ( int i = 0; i < len; i++ )
       reorderedIndexes[ i ] = Integer.parseInt( textParms[ i ]);
   }
 

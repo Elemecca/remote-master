@@ -145,9 +145,9 @@ public class DeviceCombinerPanel
               {
                 Vector functions = deviceUpgrade.getFunctions();
                 int firstRow =  functions.size();
-                for ( Enumeration enum = importedFunctions.elements(); enum.hasMoreElements(); )
+                for ( Enumeration en = importedFunctions.elements(); en.hasMoreElements(); )
                 {
-                  Function f = ( Function )enum.nextElement();
+                  Function f = ( Function )en.nextElement();
                   Function newF = new Function();
                   Hex hex = combiner.getDefaultCmd();
                   combiner.setValueAt( 0, hex, indexInt );
@@ -194,9 +194,9 @@ public class DeviceCombinerPanel
           DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
           Vector devices = combiner.getDevices();
           Vector functions = deviceUpgrade.getFunctions();
-          for ( Enumeration enum = functions.elements(); enum.hasMoreElements(); )
+          for ( Enumeration en = functions.elements(); en.hasMoreElements(); )
           {
-            Function f = ( Function )enum.nextElement();
+            Function f = ( Function )en.nextElement();
             Hex hex = f.getHex();
             if ( hex == null )
               continue;
@@ -264,9 +264,9 @@ public class DeviceCombinerPanel
     if ( flag )
     {
       Vector functions = deviceUpgrade.getFunctions();
-      for ( Enumeration enum = functions.elements(); enum.hasMoreElements(); )
+      for ( Enumeration en = functions.elements(); en.hasMoreElements(); )
       {
-        Function f = ( Function )enum.nextElement();
+        Function f = ( Function )en.nextElement();
         if ( f.getHex() == null )
           continue;
         int temp = (( Choice )combiner.getValueAt( 0, f.getHex())).getIndex();
@@ -292,9 +292,9 @@ public class DeviceCombinerPanel
       {
         DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
         Vector functions = deviceUpgrade.getFunctions();
-        for ( Enumeration enum = functions.elements(); enum.hasMoreElements(); )
+        for ( Enumeration en = functions.elements(); en.hasMoreElements(); )
         {
-          Function f = ( Function )enum.nextElement();
+          Function f = ( Function )en.nextElement();
           if ( f.getHex() == null )
             continue;
           int temp = (( Choice )combiner.getValueAt( 0, f.getHex())).getIndex();

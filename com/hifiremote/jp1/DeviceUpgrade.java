@@ -321,7 +321,7 @@ public class DeviceUpgrade
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade code 0 = " );
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    int[] id = protocol.getID().getData();
+    int[] id = protocol.getID( remote ).getData();
     int temp = devType.getNumber() * 0x1000 +
                ( id[ 0 ] & 1 ) * 0x0800 +
                setupCode - remote.getDeviceCodeOffset();

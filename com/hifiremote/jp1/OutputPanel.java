@@ -132,7 +132,7 @@ public class OutputPanel
       code = processor.translate( code, r );
       StringBuffer buff = new StringBuffer( 300 );
       buff.append( "Upgrade protocol 0 = " );
-      buff.append( p.getID().toString());
+      buff.append( p.getID( r ).toString());
       buff.append( " (" );
       buff.append( processor.getFullName());
       buff.append( ")\n " );

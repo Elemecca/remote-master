@@ -14,7 +14,11 @@ public class Protocol
     this.defaultCmd = new Hex( props.getProperty( "DefaultCmd", "00" ));
     this.cmdIndex = Integer.parseInt( props.getProperty( "CmdIndex", "0" ));
 
-    String temp = props.getProperty( "DevParms", "" );
+    String temp = props.getProperty( "AlternatePID" );
+    if ( temp != null )
+      alternatePID = new Hex( temp );
+
+    temp = props.getProperty( "DevParms", "" );
     if ( temp != null )
       devParms = DeviceParmFactory.createParameters( temp );
 
@@ -31,23 +35,24 @@ public class Protocol
     }
     else
     {
+      System.err.println( "Geenrating deviceImporter for protocol " + name );
       int mappedIndex = 0;
       boolean needRemap = false;
       String[] map = new String[ 4 ];
       int maxParm = Math.min( 4, devParms.length );
-      for ( int i = 0; i < devParms.length; i++ )
+      for ( int i = 0; i < maxParm; i++ )
       {
+        System.err.println( "DevParm is " + devParms[ i ].getName());
         if ( devParms[ i ].getClass() != FlagDeviceParm.class )
-        {
           map[ i ] = Integer.toString( mappedIndex );
+        else
           needRemap = true;
-        }
         mappedIndex++;
       }
       if ( needRemap )
       {
         devImporters = new Importer[ 1 ];
-        devImporters[ 0 ] = new Importer( map );
+        devImporters[ 0 ] = new ReorderImporter( map );
       }
     }
 
@@ -158,6 +163,16 @@ public class Protocol
         cmdParmInit[ i ].initialize( devParms, cmdParms );
       }
     }
+  }
+
+  public boolean needsCode( Remote remote )
+  {
+    String rVariant = remote.getSupportedVariantName( id );
+    
+    if ( variantName.equals( rVariant ))
+      return false;
+    else
+      return true;
   }
 
   public boolean hasCode( Remote remote )
@@ -353,6 +368,16 @@ public class Protocol
 
   public Hex getID(){ return id; }
 
+  public Hex getAlternatePID(){ return alternatePID; }
+
+  public Hex getID( Remote remote )
+  {
+    if (( alternatePID != null ) && needsCode( remote ))
+      return alternatePID;
+    else
+      return id;
+  }
+
   public String getVariantName(){ return variantName; }
 
   public String getDiagnosticName( )
@@ -426,9 +451,9 @@ public class Protocol
     }
 
     // now convert each defined function
-    for ( Enumeration enum = funcs.elements(); enum.hasMoreElements(); )
+    for ( Enumeration en = funcs.elements(); en.hasMoreElements(); )
     {
-      Function f = ( Function )enum.nextElement();
+      Function f = ( Function )en.nextElement();
       Hex hex = f.getHex();
       Hex newHex = newProtocol.getDefaultCmd();
       if ( hex != null )
@@ -456,9 +481,9 @@ public class Protocol
   public void updateFunctions( Vector funcs )
   {
     Value[] values = new Value[ cmdParms.length ];
-    for ( Enumeration enum = funcs.elements(); enum.hasMoreElements(); )
+    for ( Enumeration en = funcs.elements(); en.hasMoreElements(); )
     {
-      Function f = ( Function )enum.nextElement();
+      Function f = ( Function )en.nextElement();
       Hex hex = f.getHex();
       if ( hex != null )
       {
@@ -534,6 +559,7 @@ public class Protocol
 
   private String name = null;;
   protected Hex id = null;
+  private Hex alternatePID = null;
   private String variantName = null;
   protected Hex fixedData = null;
   protected Hex defaultCmd = null;

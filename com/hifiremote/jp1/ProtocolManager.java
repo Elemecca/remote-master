@@ -126,6 +126,18 @@ public class ProtocolManager
       byPID.put( id, v );
     }
     v.add( p );
+
+    id = p.getAlternatePID();
+    if ( id != null )
+    {
+      v = ( Vector )byAlternatePID.get( id );
+      if ( v == null )
+      {
+        v = new Vector();
+        byAlternatePID.put( id, v );
+      }
+      v.add( p );
+    }
   }
 
   public Vector getNames(){ return names; }
@@ -156,6 +168,11 @@ public class ProtocolManager
   public Vector findByPID( Hex id )
   {
     return ( Vector )byPID.get( id );
+  }
+
+  public Vector findByAlternatePID( Hex id )
+  {
+    return ( Vector )byAlternatePID.get( id );
   }
 
   public Protocol findProtocolForRemote( Remote remote, String name )
@@ -206,7 +223,11 @@ public class ProtocolManager
     Protocol tentative = null;
     Vector protocols = findByPID( id );
     if ( protocols == null )
+      protocols = findByAlternatePID( id );
+
+    if ( protocols == null )
       return null;
+
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol p = ( Protocol )e.nextElement();
@@ -270,6 +291,8 @@ public class ProtocolManager
     Protocol near = null;
     Vector protocols = findByPID( id );
     if ( protocols == null )
+      protocols = findByAlternatePID( id );
+    if ( protocols == null )
       return null;
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
@@ -297,4 +320,5 @@ public class ProtocolManager
   private Vector names = new Vector();
   private Hashtable byName = new Hashtable();
   private Hashtable byPID = new Hashtable();
+  private Hashtable byAlternatePID = new Hashtable();
 }

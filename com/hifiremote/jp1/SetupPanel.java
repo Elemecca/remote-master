@@ -132,7 +132,7 @@ public class SetupPanel
     updateParameters();
     protocolList.setModel( new DefaultComboBoxModel( protocols ));
     protocolList.setSelectedItem( p );
-    protocolID.setText( p.getID().toString());
+    protocolID.setText( p.getID( remote ).toString());
     notes.setText( deviceUpgrade.getNotes());
     fixedData.setText( p.getFixedData().toString());
     protocolNotes.setText( p.getNotes());
