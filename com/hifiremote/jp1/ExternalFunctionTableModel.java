@@ -88,10 +88,8 @@ public class ExternalFunctionTableModel
 
   public void setValueAt( Object value, int row, int col )
   {
-    System.err.println( "ExternalFunctionTableModel.setValueAt( " + value + ", " + row + ", " + col + " )" );
     Vector functions = upgrade.getExternalFunctions();
     Object o = functions.elementAt( row );
-    System.err.println( "function at row " + row + " is " + o );
     ExternalFunction function = ( ExternalFunction )functions.elementAt( row );
     switch ( col )
     {

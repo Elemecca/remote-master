@@ -10,8 +10,6 @@ public class SonyComboImporter
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int parmToSet )
   {
-    System.err.println( "SonyComboImporter.in(), parms=" + DeviceUpgrade.valueArrayToString( parms ) + ", hex=" + hexData );
-
     if ( parmToSet < 0 )
       return;
 
@@ -22,7 +20,6 @@ public class SonyComboImporter
     int subDevice = 0;
     if ( parms.length == 1 )
     {
-      System.err.println( "Only 1 value, must be device" );
       device = (( Integer )parms[ 0 ].getValue()).intValue();
       if ( device > 31 )
         protocol = Sony15;
@@ -37,21 +34,16 @@ public class SonyComboImporter
       {
         protocol = Sony20;
         subDevice = temp - 1;
-        System.err.println( "Forcing Sony20, subdevice=" + subDevice );
       }
       else if ( temp == 5 ) // force Sony12
       {
-        System.err.println( "Forcing Sony12" );
         protocol = Sony12;
       }
       else  // force Sony15
       {
-        System.err.println( "Forcing Sony15" );
         protocol = Sony15;
       }
     }
-
-    System.err.println( "Device=" + device );    
 
     if ( protocol == Sony12 )
     {

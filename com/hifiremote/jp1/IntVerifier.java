@@ -24,7 +24,6 @@ public class IntVerifier
 
   public boolean verify( JComponent input )
   {
-    System.err.println( "IntVerifier.verify(), allowNull=" + allowNull );
     JTextComponent tc = ( JTextComponent )input;
     String text = tc.getText();
     if (( text == null ) || ( text.length() == 0 ))
@@ -59,7 +58,6 @@ public class IntVerifier
     }
     else
       KeyMapMaster.clearMessage();
-    System.err.println( "IntVerifier.shouldYieldFocus() returning " + rc );
     return rc;
   }
 

@@ -24,9 +24,7 @@ public class DeviceCombiner
     for ( int i = 0; i < 16; i++ )
     {
       String prefix = "Combiner." + i;
-      System.err.println( "Looking for " + prefix + ".name" );
       String nameStr = props.getProperty( prefix + ".name" );
-      System.err.println( "Got " + nameStr );
       if ( nameStr == null )
         break;
       Hex pid = new Hex( props.getProperty( prefix + ".id" ));
@@ -56,7 +54,6 @@ public class DeviceCombiner
 
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
   {
-    System.err.println( "DeviceCombiner.getPanel()" );
     if ( panel == null )
       panel = new DeviceCombinerPanel( deviceUpgrade );
     else
@@ -70,7 +67,6 @@ public class DeviceCombiner
   public void store( PropertyWriter out )
     throws IOException
   {
-    System.err.println( "DeviceCombiner.store" );
     super.store( out );
     int i = 0;
     for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
@@ -137,13 +133,6 @@ public class DeviceCombiner
   public Hex getCode( Remote r )
   {
     int[] header = new int[ devices.size() + 1 ];
-//    Hex base = super.getCode( r );
-//    if ( base == null )
-//      return null;
-
-//    base = base.clone();
-
-//    byte[] hex = code.getData();
 
     Processor processor = r.getProcessor();
     String name = processor.getName();

@@ -240,7 +240,6 @@ public class ProtocolManager
       {
         if ( name.equals(( String )f.nextElement()))
         {
-          System.err.println( "Found protocol " + p );
           return p;
         }
       }

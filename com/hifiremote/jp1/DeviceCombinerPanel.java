@@ -56,7 +56,6 @@ public class DeviceCombinerPanel
           return device.getProtocol().getID();
         else if ( col == 3 )
         {
-          System.err.println( "values=" + DeviceUpgrade.valueArrayToString( device.getValues()));
           return device.getFixedData();
         }
         return null;
@@ -85,7 +84,6 @@ public class DeviceCombinerPanel
             Vector devices = combiner.getDevices();
             int newRow = devices.size();
             CombinerDevice device = d.getCombinerDevice();
-            System.err.println( "add: protocol=" + device.getProtocol() + ", parms=" + DeviceUpgrade.valueArrayToString( device.getValues()));
             devices.add( device );
             model.fireTableRowsInserted( newRow, newRow );
           }

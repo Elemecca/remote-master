@@ -97,7 +97,6 @@ public class OutputPanel
 
   private int adjust( int val )
   {
-    System.err.println( "adjust( " + Integer.toHexString( val ) + " )" );
     int temp1 = val - 0x2C;
     int temp2 = val - 0x46;
     if ((( 0 <= temp1 ) && ( temp1 <= 0x0E ) && ( temp1 % 7 == 0 )) ||
@@ -105,7 +104,6 @@ public class OutputPanel
     {
       val -= 0x13;
     }
-    System.err.println( "Returning " + Integer.toHexString( val ));
     return val;
   }
 

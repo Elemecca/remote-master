@@ -146,7 +146,6 @@ public class Protocol
 
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
   {
-    System.err.println( "Protocol.getPanel()" );
     return null;
   }
 
@@ -231,7 +230,6 @@ public class Protocol
     temp = ( temp << 3 ) | ( temp >> 5 );
     temp = ( temp ^ 0xAE ) - 156;
     EFC efc = new EFC( temp );
-    System.err.println( "Protocol.hex2efc( {" + hex.toString() + "}, " + index + " ) returns " + efc );
     return efc;
   }
 
@@ -521,7 +519,6 @@ public class Protocol
   public void store( PropertyWriter out )
     throws IOException
   {
-    System.err.println( "Protocol.store()" );
     out.print( "Protocol", id.toString());
     out.print( "Protocol.name", name );
     if ( variantName.length() > 0 )

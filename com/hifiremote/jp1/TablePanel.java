@@ -101,7 +101,6 @@ public abstract class TablePanel
         }
         catch ( Exception e )
         {
-          System.err.println( "TablePanel.importData() caught an exception!" );
           e.printStackTrace( System.err );
         }
 
@@ -265,7 +264,6 @@ public abstract class TablePanel
     if (( source == newButton ) ||
         ( source == newItem ))
     {
-      System.err.println( "TablePanel.actionPerformed(): newButton/newItem, row=" + row );
       Object o = createRowObject();
       if ( row == -1 )
       {
@@ -362,7 +360,6 @@ public abstract class TablePanel
         {
           if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
           {
-            System.err.println( "Paste" );
             String s =
               ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
             BufferedReader in = new BufferedReader( new StringReader( s ));
@@ -370,7 +367,6 @@ public abstract class TablePanel
             int addedRow = -1;
             for ( String line = in.readLine(); line != null; line = in.readLine())
             {
-              System.err.println( "line=\"" + line + "\"" );
               if ( row == sorter.getRowCount() )
               {
                 sorter.addRow( createRowObject());
@@ -392,7 +388,6 @@ public abstract class TablePanel
                 else
                   token = null;
 
-                System.err.println( "Token=\"" + token + "\"" );
                 Object value = null;
                 int modelCol = table.convertColumnIndexToModel( workCol );
                 if ( token == null )
@@ -426,7 +421,6 @@ public abstract class TablePanel
                 else
                   value = token;
 
-                System.err.println( "Setting value to " + value );
                 sorter.setValueAt( value, row, modelCol );
                 workCol++;
               }

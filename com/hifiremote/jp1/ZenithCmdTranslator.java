@@ -30,7 +30,6 @@ public class ZenithCmdTranslator
       bits = bitsInt.intValue();
     
     insert( hex, 1, bits, val );
-    System.err.println( "val=" + val + " and bits=" + bits + " and hex=" + hex );
   }
 
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )

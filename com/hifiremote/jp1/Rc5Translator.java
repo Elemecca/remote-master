@@ -10,20 +10,6 @@ public class Rc5Translator
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    System.err.println( "Rc5Translator.in(), onlyIndex=" + onlyIndex );
-    if ( onlyIndex != -1 )
-      System.err.println( "parms[ " + onlyIndex + " ]=" + parms[ onlyIndex ].getValue());
-    else
-    {
-      System.err.print( "parms={" );
-      for ( int i = 0; i < parms.length; i++ )
-      {
-        if ( i > 0 )
-          System.err.print( ',' );
-        System.err.print( parms[ i ].getValue());
-      }
-      System.err.println("}");
-    }
     int select = 0;
     int obc = 0;
     
@@ -44,12 +30,10 @@ public class Rc5Translator
       obc = (( Integer )parms[ 1 ].getValue()).intValue();
       insert( hexData, 0, 6, complement( obc, 6 ));
     }
-    System.err.println( "hex=" + hexData.toString());
   }
 
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
-    System.err.println( "Rc5Translator.out(), hex=" + hex.toString());
     // first do the device selector 
     int select = hex.getData()[0] & 3;
     if ( select == 3 )
@@ -72,14 +56,6 @@ public class Rc5Translator
       }
       select--;
     }
-    System.err.print( "parms={" );
-    for ( int i = 0; i < parms.length; i++ )
-    {
-      if ( i > 0 )
-        System.err.print( ',' );
-      System.err.print( parms[ i ].getValue());
-    }
-    System.err.println("}");
   }
 }
 

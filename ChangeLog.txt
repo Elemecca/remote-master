@@ -1,3 +1,8 @@
+Changes for v0.98
+- Fix Bug [ 940251 ] Incorrect output for KM input file, related
+  to importing an upgrade that uses the RC-5 protocol.
+- Fix bug in converting hex to efc, as reported by AndrewZ
+
 Changes for v0.97
 - Add SharpDVDTranslator to correctly calculate command byte 2
 - Changed Dishplayer(old) to Dishplayer Network and reversed
