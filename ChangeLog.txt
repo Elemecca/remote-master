@@ -1,3 +1,10 @@
+Changes for v0.73
+
+- Allow undeclared buttons in ButtonMaps
+- Updated maps and rdfs, 10-12-2003
+- Updated10-13-03Maps-and-RDFs.zip
+- Ignore case when matching button names
+
 Changes for v0.72
 
 - Add generic button names to URC-881x/801x/601x
