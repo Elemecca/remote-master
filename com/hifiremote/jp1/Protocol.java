@@ -31,6 +31,8 @@ public class Protocol
     {
       cmdTranslators = TranslatorFactory.createTranslators( temp );
     }
+    else
+      cmdTranslators = new Translate[ 0 ];
 
     temp = props.getProperty( "ImportTranslator" );
     if ( temp != null )
@@ -79,7 +81,14 @@ public class Protocol
     }
   }
   
-  public void reset(){}
+  public void reset()
+  {
+    int len = devParms.length;
+    Value[] vals = new Value[ len ];
+    for ( int i = 0; i < len; i++ )
+      vals[ i ] = new Value( null,  null );
+    setDeviceParms( vals );
+  }
   
   public void setProperties( Properties props ){}
 

@@ -132,11 +132,16 @@ public class ProtocolManager
 
   public Vector getProtocolsForRemote( Remote remote )
   {
+    return getProtocolsForRemote( remote, true );
+  }
+
+  public Vector getProtocolsForRemote( Remote remote, boolean allowUpgrades )
+  {
     Vector rc = new Vector();
     for ( Enumeration e = names.elements(); e.hasMoreElements(); )
     {
       String name = ( String )e.nextElement();
-      Protocol p = findProtocolForRemote( remote, name );
+      Protocol p = findProtocolForRemote( remote, name, allowUpgrades );
       if ( p != null )
         rc.add( p );
     }
@@ -154,6 +159,12 @@ public class ProtocolManager
   }
 
   public Protocol findProtocolForRemote( Remote remote, String name )
+  {
+    return findProtocolForRemote( remote, name, true );
+  }
+    
+
+  public Protocol findProtocolForRemote( Remote remote, String name, boolean allowUpgrades )
   {
     Protocol protocol = null;
     Protocol tentative = null;
@@ -174,7 +185,7 @@ public class ProtocolManager
 
       if ( tentative == null )
       {
-        if ( p.getCode( remote ) != null )
+        if ( allowUpgrades && ( p.getCode( remote ) != null ))
           tentative = p;
       }
     }

@@ -7,6 +7,8 @@ public class CombinerDevice
   public CombinerDevice( Protocol p, Value[] values )
   {
     protocol = p;
+    if ( values == null )
+      values = new Value[ 0 ];
     this.values = values;
   }
 
@@ -43,6 +45,7 @@ public class CombinerDevice
 
   public Hex getFixedData()
   {
+    protocol.reset();
     protocol.setDeviceParms( values );
     return protocol.getFixedData();
   }

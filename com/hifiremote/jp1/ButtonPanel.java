@@ -231,14 +231,14 @@ public class ButtonPanel
       else
         return false;
     }
-    else if ( mouseCol == 2 )
+    else if ( col == 2 )
     {
       if ( b.allowsShiftedKeyMove())
         return true;
       else
         return false;
     }
-    else if ( mouseCol == 3 )
+    else if ( col == 3 )
     {
       if ( b.allowsXShiftedKeyMove())
         return true;

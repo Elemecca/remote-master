@@ -75,6 +75,8 @@ public class DeviceCombiner
   {
     byte[] header = new byte[ devices.size() + 1 ];
     Hex base = super.getCode( r );
+    if ( base == null )
+      return null;
     int offset = base.length() + header.length;
     Hex[] ids = new Hex[ devices.size()];
     Hex[] data = new Hex[ ids.length ];

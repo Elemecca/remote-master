@@ -5,10 +5,12 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.table.*;
 
 public class DeviceCombinerPanel
   extends KMPanel
+  implements ListSelectionListener
 {
   public DeviceCombinerPanel( DeviceUpgrade devUpgrade )
   {
@@ -53,12 +55,16 @@ public class DeviceCombinerPanel
         else if ( col == 2 )
           return device.getProtocol().getID();
         else if ( col == 3 )
+        {
+          System.err.println( "values=" + DeviceUpgrade.valueArrayToString( device.getValues()));
           return device.getFixedData();
+        }
         return null;
       }
     };
-    JTable table = new JTable( model );
+    table = new JTable( model );
 //    add( table.getTableHeader(), BorderLayout.NORTH );
+    table.getSelectionModel().addListSelectionListener( this );
     add( new JScrollPane( table ), BorderLayout.CENTER );
 
     ActionListener al = new ActionListener()
@@ -66,7 +72,25 @@ public class DeviceCombinerPanel
       public void actionPerformed( ActionEvent e )
       {
         Object source = e.getSource();
-        if ( source == importButton )
+        if ( source == addButton )
+        {
+          CombinerDeviceDialog d = 
+            new CombinerDeviceDialog( KeyMapMaster.getKeyMapMaster(),
+                                      null, 
+                                      deviceUpgrade.getRemote());
+          d.show();
+          if ( d.getUserAction() == JOptionPane.OK_OPTION )
+          {
+            DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
+            Vector devices = combiner.getDevices();
+            int newRow = devices.size();
+            CombinerDevice device = d.getCombinerDevice();
+            System.err.println( "add: protocol=" + device.getProtocol() + ", parms=" + DeviceUpgrade.valueArrayToString( device.getValues()));
+            devices.add( device );
+            model.fireTableRowsInserted( newRow, newRow );
+          }
+        }
+        else if ( source == importButton )
         {
           File file = KeyMapMaster.promptForUpgradeFile( null );
           if ( file == null )
@@ -132,13 +156,63 @@ public class DeviceCombinerPanel
                                            JOptionPane.ERROR_MESSAGE );
           }
         }
+        else if ( source == editButton )
+        {
+          DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
+          Vector devices = combiner.getDevices();
+          int row = table.getSelectedRow();
+          CombinerDevice device = ( CombinerDevice )devices.elementAt( row );
+          CombinerDeviceDialog d = 
+            new CombinerDeviceDialog( KeyMapMaster.getKeyMapMaster(),
+                                      device, 
+                                      deviceUpgrade.getRemote());
+          d.show();
+          if ( d.getUserAction() == JOptionPane.OK_OPTION )
+          {
+            devices.setElementAt( d.getCombinerDevice(), row );
+            model.fireTableRowsUpdated( row, row );
+          }
+        }
+        else if ( source == removeButton )
+        {
+          int row = table.getSelectedRow();
+          DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
+          Vector devices = combiner.getDevices();
+          Vector functions = deviceUpgrade.getFunctions();
+          for ( Enumeration enum = functions.elements(); enum.hasMoreElements(); )
+          {
+            Function f = ( Function )enum.nextElement();
+            Hex hex = f.getHex();
+            if ( hex == null )
+              continue;
+            int i = (( Choice )combiner.getValueAt( 0, hex )).getIndex();
+            if ( i > row )
+            {
+              --i;
+              if ( i < 0 ) i = 0;
+              combiner.setValueAt( 0, hex, new Integer( i )); 
+            }
+          }
+          devices.removeElementAt( row );
+          model.fireTableRowsDeleted( row, row );
+        }
+        update();
       }
     };
 
     JPanel panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+
+    addButton = new JButton( "Add" );
+    addButton.addActionListener( al );
+    panel.add( addButton );
+
     importButton = new JButton( "Import" );
     importButton.addActionListener( al );
     panel.add( importButton );
+
+    editButton = new JButton( "Edit" );
+    editButton.addActionListener( al );
+    panel.add( editButton );
 
     removeButton = new JButton( "Remove" );
     removeButton.addActionListener( al );
@@ -163,11 +237,70 @@ public class DeviceCombinerPanel
     table.doLayout();
   }
 
+  public void update()
+  {
+    DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
+    boolean flag = combiner.getDevices().size() < 16;
+    addButton.setEnabled( flag );
+    importButton.setEnabled( flag );
+    int row = table.getSelectedRow();
+    flag = row != -1;
+    editButton.setEnabled( flag );
+    if ( flag )
+    {
+      Vector functions = deviceUpgrade.getFunctions();
+      for ( Enumeration enum = functions.elements(); enum.hasMoreElements(); )
+      {
+        Function f = ( Function )enum.nextElement();
+        if ( f.getHex() == null )
+          continue;
+        int temp = (( Choice )combiner.getValueAt( 0, f.getHex())).getIndex();
+        if ( temp == row )
+        {
+          flag = false;
+          break;
+        }
+      }
+    }
+    removeButton.setEnabled( flag );
+  }
+
+  // Interface ListSelectionListener
+  public void valueChanged( ListSelectionEvent e )
+  {
+    if ( !e.getValueIsAdjusting() )
+    {
+      int row = table.getSelectedRow();
+      boolean flag = ( row != -1 );
+      editButton.setEnabled( flag );
+      if ( flag )
+      {
+        DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
+        Vector functions = deviceUpgrade.getFunctions();
+        for ( Enumeration enum = functions.elements(); enum.hasMoreElements(); )
+        {
+          Function f = ( Function )enum.nextElement();
+          if ( f.getHex() == null )
+            continue;
+          int temp = (( Choice )combiner.getValueAt( 0, f.getHex())).getIndex();
+          if ( temp == row )
+          {
+            flag = false;
+            break;
+          }
+        }
+      }
+      removeButton.setEnabled( flag );
+    }
+  }
 
   private static String[] titles = { "#", "Protocol", "  PID  ", "Fixed Data" };
   private static Class[] classes = { Integer.class, String.class, Hex.class, Hex.class };
 
   private AbstractTableModel model = null;
+  private JTable table = null;
+  private JButton addButton = null;
   private JButton importButton = null;
+  private JButton editButton = null;
   private JButton removeButton = null;
 }
