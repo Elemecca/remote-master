@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.io.*;
+import java.awt.datatransfer.*;
 
 public class KeyMapMaster
  extends JFrame
@@ -20,6 +21,7 @@ public class KeyMapMaster
   private JMenuItem saveItem = null;
   private JMenuItem saveAsItem = null;
   private JMenuItem importItem = null;
+  private JMenuItem importFromClipboardItem = null;
   private JMenuItem exitItem = null;
   private JMenu recentFileMenu = null;
   private JMenuItem useAllRemotes = null;
@@ -245,10 +247,20 @@ public class KeyMapMaster
     menu.add( saveAsItem );
 
     menu.addSeparator();
-    importItem = new JMenuItem( "Import KM file..." );
-    importItem.setMnemonic( KeyEvent.VK_I );
+    
+    JMenu submenu = new JMenu( "Import KM Upgrade" );
+    submenu.setMnemonic( KeyEvent.VK_I );
+    menu.add( submenu );
+
+    importItem = new JMenuItem( "From file..." );
+    importItem.setMnemonic( KeyEvent.VK_F );
     importItem.addActionListener( this );
-    menu.add( importItem );
+    submenu.add( importItem );
+
+    importFromClipboardItem = new JMenuItem( "From clipboard..." );
+    importFromClipboardItem.setMnemonic( KeyEvent.VK_C );
+    importFromClipboardItem.addActionListener( this );
+    submenu.add( importFromClipboardItem );
 
     menu.addSeparator();
     recentFileMenu = new JMenu( "Recent" );
@@ -266,7 +278,7 @@ public class KeyMapMaster
     menu.setMnemonic( KeyEvent.VK_O );
     menuBar.add( menu );
 
-    JMenu submenu = new JMenu( "Look and Feel" );
+    submenu = new JMenu( "Look and Feel" );
     submenu.setMnemonic( KeyEvent.VK_L );
     menu.add( submenu );
 
@@ -725,7 +737,33 @@ public class KeyMapMaster
           }
           else
           {
-            importFile( file );
+            importPath = file.getParentFile();
+            BufferedReader in = new BufferedReader( new FileReader( file ));
+            importUpgrade( in );
+          }
+        }
+      }
+      else if ( source == importFromClipboardItem )
+      {
+        if ( !promptToSaveUpgrade( ACTION_LOAD ))
+          return;
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable clipData = clipboard.getContents( clipboard );
+        if ( clipData != null )
+        {
+          try
+          {
+            if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
+            {
+              String s =
+                ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
+              BufferedReader in = new BufferedReader( new StringReader( s ));
+              importUpgrade( in );
+            }
+          }
+          catch (Exception ex)
+          {
+            ex.printStackTrace( System.err );
           }
         }
       }
@@ -850,12 +888,11 @@ public class KeyMapMaster
     validateUpgrade();
   }
 
-  public void importFile( File file )
+  public void importUpgrade( BufferedReader in )
     throws Exception
   {
-    importPath = file.getParentFile();
     deviceUpgrade.reset( remotes, protocolManager );
-    deviceUpgrade.importFile( file, remotes, protocolManager );
+    deviceUpgrade.importUpgrade( in, remotes, protocolManager );
     setTitle( "RemoteMaster " + version );
     description.setText( deviceUpgrade.getDescription());
     remoteList.removeActionListener( this );

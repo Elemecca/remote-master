@@ -645,12 +645,10 @@ public class DeviceUpgrade
     return rc;
   }
 
-  public void importFile( File file, Remote[] remotes,
+  public void importUpgrade( BufferedReader in, Remote[] remotes,
                     ProtocolManager protocolManager )
     throws Exception
   {
-    BufferedReader in = new BufferedReader( new FileReader( file ));
-
     String line = in.readLine(); // line 1
     String token = line.substring( 0, 5 );
     if ( !token.equals( "Name:" ))
