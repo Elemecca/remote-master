@@ -20,6 +20,7 @@ public class KeyMapMaster
   private JMenuItem saveItem = null;
   private JMenuItem saveAsItem = null;
   private JMenuItem importItem = null;
+  private JMenuItem exitItem = null;
   private JMenu recentFileMenu = null;
   private JRadioButtonMenuItem[] promptButtons = null;
   private JLabel messageLabel = null;
@@ -120,6 +121,12 @@ public class KeyMapMaster
     menu.add( recentFileMenu );
     for ( Enumeration e = recentFiles.elements(); e.hasMoreElements(); )
       recentFileMenu.add( new FileAction(( File )e.nextElement()));
+
+    menu.addSeparator();
+    exitItem = new JMenuItem( "Exit" );
+    exitItem.addActionListener( this );
+    menu.add( exitItem );
+    
 
     menu = new JMenu( "Options" );
     menuBar.add( menu );
@@ -540,6 +547,10 @@ public class KeyMapMaster
             importFile( file );
           }
         }
+      }
+      else if ( source == exitItem )
+      {
+        dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ));       
       }
     }
     catch ( Exception ex )
