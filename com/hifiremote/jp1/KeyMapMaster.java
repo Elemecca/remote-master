@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.88";
+  private static final String version = "v 0.89";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -699,7 +699,14 @@ public class KeyMapMaster
     JFileChooser chooser = new JFileChooser( upgradePath );
     chooser.setFileFilter( new TextFileFilter());
     chooser.addChoosableFileFilter( new KMFileFilter());
-    chooser.setAcceptAllFileFilterUsed( false );
+    try 
+    {
+      chooser.setAcceptAllFileFilterUsed( false );
+    }
+    catch ( Exception e )
+    {
+      e.printStackTrace( System.err );
+    }
     int returnVal = chooser.showOpenDialog( this );
     if ( returnVal == JFileChooser.APPROVE_OPTION )
     {
@@ -932,7 +939,7 @@ public class KeyMapMaster
       rdfPath = new File( temp );
     else
       rdfPath = new File( homeDirectory, "rdf" );
-    while ( !rdfPath.exists())
+    while ( !rdfPath.exists() && !rdfPath.isDirectory())
       rdfPath = rdfPath.getParentFile();
 
     temp = props.getProperty( "UpgradePath" );
@@ -942,11 +949,13 @@ public class KeyMapMaster
       upgradePath = new File( temp );
     else
       upgradePath = new File( homeDirectory, upgradeDirectory );
-    while ( ! upgradePath.exists())
+    while ( !upgradePath.exists() && !upgradePath.isDirectory())
       upgradePath = upgradePath.getParentFile();
 
     temp = props.getProperty( "ImportPath", upgradePath.getAbsolutePath());
     importPath = new File( temp );
+    while( !importPath.exists() && !importPath.isDirectory())
+      importPath = importPath.getParentFile();
 
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
     temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
