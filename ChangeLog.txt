@@ -1,3 +1,10 @@
+Changes for v0.57
+
+- Include image map files in distribution ZIP file
+- Don't let vertical scroll bar (if present) obscure any part of remote image.
+- Add some of the missing digit maps.
+- 1st pass at only prompting to save upgrade if it has been changed.  INCOMPLETE.
+  
 Changes for v0.56
 
 - Moved image file and button shapes out of RDF into an image map file.  The RDF

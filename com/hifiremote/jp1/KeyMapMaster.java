@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.56";
+  private static final String version = "v 0.57";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -244,6 +244,8 @@ public class KeyMapMaster
       openFile( fileToOpen );
     }
     show();
+
+    deviceUpgrade.setChanged( false );
   }
 
   private File parseArgs( String[] args )
@@ -407,6 +409,7 @@ public class KeyMapMaster
         deviceTypeList.setSelectedItem( deviceUpgrade.getDeviceTypeAliasName());
         saveItem.setEnabled( false );
         currPanel.update();
+        deviceUpgrade.setChanged( false );
       }
       else if ( source == saveItem )
       {
@@ -535,6 +538,9 @@ public class KeyMapMaster
   public boolean promptToSaveUpgrade()
     throws IOException
   {
+    if ( !deviceUpgrade.hasChanged())
+      return true;
+
     int rc = JOptionPane.showConfirmDialog( this,
 //                                            "All changes made to the current upgrade will be lost if you proceed.\n\n" +
                                             "Do you want to save the current upgrade before proceeding?",
@@ -589,6 +595,7 @@ public class KeyMapMaster
     recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
 
     validateUpgrade();
+    deviceUpgrade.setChanged( false );
   }
 
   public void importFile( File file )
