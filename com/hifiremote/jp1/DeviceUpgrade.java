@@ -999,7 +999,6 @@ public class DeviceUpgrade
           protocol.importCommandParms( hex, token );
         }
 
-        System.err.println( "Setting hex to " + hex );
         f.setHex( hex );
       }
       else
@@ -1007,12 +1006,25 @@ public class DeviceUpgrade
         token = getNextField( st, delim ); // skip field 3
       }
       String actualName = getNextField( st, delim ); // get assigned button name (field 4)
+      System.err.println( "actualName='" + actualName + "'" );
 
       if (( actualName != null ) && actualName.length() == 0 )
         actualName = null;
       String buttonName = null;
-      if (( actualName != null ) && ( i < genericButtonNames.length ))
-        buttonName = genericButtonNames[ i ];
+      if ( actualName != null )
+      {
+        if ( i < genericButtonNames.length )
+          buttonName = genericButtonNames[ i ];
+        else
+        {
+          System.err.println( "No generic name available!" );
+          Button b = remote.getButton( actualName );
+          if ( b == null )
+            b = remote.getButton( actualName.replace( ' ', '_' ));
+          if ( b != null )
+            buttonName = b.getStandardName();
+        }
+      }
 
       Button b = null;
       if ( buttonName != null )
@@ -1051,7 +1063,8 @@ public class DeviceUpgrade
           System.err.println( "Creating new function " + name );
           func = new Function();
           func.setName( name );
-          usedFunctions.add( func );
+          if ( b != null )
+            usedFunctions.add( func );  
         }
         else
           System.err.println( "Found function " + name );
@@ -1060,7 +1073,7 @@ public class DeviceUpgrade
         {
           Vector temp = new Vector( 2 );
           temp.add( name );
-          temp.add( buttonName );
+          temp.add( actualName );
           unassigned.add( temp );
           System.err.println( "Couldn't find button " + buttonName + " to assign function " + name );
         }
@@ -1081,12 +1094,16 @@ public class DeviceUpgrade
       String pidStr = getNextField( st, delim ); // field 7
       String fixedDataStr = getNextField( st, delim ); // field 8
 
-      if (( combiner != null ) && ( pidStr != null ) && ( fixedDataStr != null ) &&
-          !pidStr.equals( "Protocol ID" ) &&
-          !fixedDataStr.equals( "Fixed Data" ))
+      if (( combiner != null ) && ( pidStr != null ) && // ( fixedDataStr != null ) &&
+          !pidStr.equals( "Protocol ID" )) // && !fixedDataStr.equals( "Fixed Data" )
       {
         Protocol p = protocolManager.findProtocolForRemote( remote, new Hex( pidStr ));
-        combiner.addProtocol( p, new Hex( fixedDataStr ));
+        if ( p == null )
+          p = new ManualProtocol( "Unknown",  new Hex( pidStr ), new Properties());
+        Hex fixedData = null;
+        if ( fixedDataStr != null )
+          fixedData = new Hex( fixedDataStr );
+        combiner.addProtocol( p, fixedData );
       }
 
       // skip to field 13
@@ -1158,14 +1175,16 @@ public class DeviceUpgrade
     }
     if ( !unassigned.isEmpty())
     {
+      System.err.println( "Removing undefined functions from usedFunctions" );
       for( ListIterator i = unassigned.listIterator(); i.hasNext(); )
       {
         Vector temp = ( Vector )i.next();
         String funcName = ( String )temp.elementAt( 0 );
+        System.err.println( "Checking '" + funcName + "'" );
         Function f = getFunction( funcName, usedFunctions );
-        if (( f == null ) || ( f.getHex() == null ))
+        if (( f != null ) || ( f.getHex() == null ))
         {
-          System.err.println( "Removing function " + f );
+          System.err.println( "Removing function " + f + ", which has name '" + funcName + "'" );
           i.remove();
         }
       }
@@ -1185,6 +1204,7 @@ public class DeviceUpgrade
       text.setLineWrap( true );
       text.setWrapStyleWord( true );
       text.setBackground( container.getBackground() );
+      text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
       container.add( text, BorderLayout.NORTH );
       Vector titles = new Vector();
       titles.add( "Function name" );
@@ -1306,15 +1326,15 @@ public class DeviceUpgrade
     "phantom7", "phantom8", "phantom9", "phantom10",
     "setup", "light", "theater",
     "macro1", "macro2", "macro3", "macro4",
-    "learn1", "learn2", "learn3", "learn4",
-    "button85", "button86", "button87", "button88", "button89", "button90",
-    "button91", "button92", "button93", "button94", "button95", "button96",
-    "button97", "button98", "button99", "button100", "button101", "button102",
-    "button103", "button104", "button105", "button106", "button107", "button108",
-    "button109", "button110", "button112", "button113", "button114", "button115",
-    "button116", "button117", "button118", "button119", "button120", "button121",
-    "button122", "button123", "button124", "button125", "button126", "button127",
-    "button128", "button129", "button130", "button131", "button132", "button133",
-    "button134", "button135", "button136"
+    "learn1", "learn2", "learn3", "learn4" // ,
+//    "button85", "button86", "button87", "button88", "button89", "button90",
+//    "button91", "button92", "button93", "button94", "button95", "button96",
+//    "button97", "button98", "button99", "button100", "button101", "button102",
+//    "button103", "button104", "button105", "button106", "button107", "button108",
+//    "button109", "button110", "button112", "button113", "button114", "button115",
+//    "button116", "button117", "button118", "button119", "button120", "button121",
+//    "button122", "button123", "button124", "button125", "button126", "button127",
+//    "button128", "button129", "button130", "button131", "button132", "button133",
+//    "button134", "button135", "button136"
   };
 }
