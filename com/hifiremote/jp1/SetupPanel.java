@@ -215,10 +215,11 @@ public class SetupPanel
   {
     Protocol p = getProtocol();
     deviceUpgrade.setProtocol( p );
+
     for ( int i = 0; i < parameters.length; i++ )
-    {
       parameters[ i ].commit();
-    }
+
+    p.updateFunctions( deviceUpgrade.getFunctions());
   }
 
   private void updateNotes()

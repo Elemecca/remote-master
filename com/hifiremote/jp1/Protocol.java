@@ -317,6 +317,29 @@ public class Protocol
     }
   }
 
+  public void updateFunctions( Vector funcs )
+  {
+    Value[] values = new Value[ cmdParms.length ];
+    for ( Enumeration enum = funcs.elements(); enum.hasMoreElements(); )
+    {
+      Function f = ( Function )enum.nextElement();
+      Hex hex = f.getHex();
+      if ( hex != null )
+      {
+        // extract the command parms from the hex
+        for ( int i = 0; i < cmdTranslators.length; i++ )
+          cmdTranslators[ i ].out( hex, values, devParms );
+
+        // recompute the hex
+        for ( int i = 0; i < cmdTranslators.length; i++ )
+          cmdTranslators[ i ].in( values, hex, devParms, -1 );
+
+        // store the hex back into the function
+        f.setHex( hex );
+      }
+    }
+  }
+
   public int different(Properties props)
   //
   // This is intended to become a fuzzy comparison to help select the best protocol

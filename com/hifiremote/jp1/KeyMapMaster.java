@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.38";
+  private static final String version = "v 0.39";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -381,8 +381,6 @@ public class KeyMapMaster
 
   public void setRemote( Remote remote )
   {
-    System.err.println( "KeyMapMaster.setRemote( " + remote.getName() + " )" );
-    System.err.println( "\tremoteList=" + remoteList + " and currentRemote=" + currentRemote );
     if (( remoteList != null ) && ( remote != currentRemote ))
     {
       currentRemote = remote;
@@ -435,10 +433,12 @@ public class KeyMapMaster
       }
       else if ( source == saveItem )
       {
+        currPanel.commit();
         deviceUpgrade.store();
       }
       else if ( source == saveAsItem )
       {
+        currPanel.commit();
         saveAs();
       }
       else if ( source == openItem )
@@ -528,12 +528,12 @@ public class KeyMapMaster
                                             "Do you want to save the current upgrade before proceeding?",
                                             "Save upgrade?",
                                             JOptionPane.YES_NO_CANCEL_OPTION );
-    System.err.println( "KeyMapMaster.promptToSaveUpgrade(), rc=" + rc );
     if (( rc == JOptionPane.CANCEL_OPTION ) || ( rc == JOptionPane.CLOSED_OPTION ))
       return false;
     if ( rc == JOptionPane.NO_OPTION )
       return true;
 
+    currPanel.commit();
     if ( deviceUpgrade.getFile() != null )
       deviceUpgrade.store();
     else
@@ -644,9 +644,7 @@ public class KeyMapMaster
     if ( temp != null )
       UIManager.setLookAndFeel( temp );
 
-    System.err.print( "Reading Remote.name:" );
     lastRemoteName = props.getProperty( "Remote.name" );
-    System.err.println( "for " + lastRemoteName );
     lastRemoteSignature = props.getProperty( "Remote.signature" );
 
     for (int i = 0; i < 10; i++ )
