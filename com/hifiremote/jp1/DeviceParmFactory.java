@@ -18,6 +18,7 @@ public class DeviceParmFactory
       // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
       DefaultValue defaultValue = new DirectDefaultValue( new Integer(0) );
       int bits = -1;
+      boolean bool = false;
       String name = st2.nextToken();
       int base = 10;
       String[] choices = null;
@@ -60,6 +61,8 @@ public class DeviceParmFactory
                                Integer.parseInt( st3.nextToken(), base ));
 
           }
+          else if ( str.equals( "bool" ))
+            bool = true;
           else if ( str.length() > 0 )
           {
             bits = Integer.parseInt( str );
@@ -69,6 +72,8 @@ public class DeviceParmFactory
       DeviceParameter parm = null;
       if ( choices != null )
         parm = new ChoiceDeviceParm( name, defaultValue, choices );
+      else if ( bool )
+        parm = new FlagDeviceParm( name, defaultValue );
       else if ( bits != -1 )
       {
         parm = new NumberDeviceParm( name, defaultValue, base, bits );

@@ -1,37 +1,18 @@
 package com.hifiremote.jp1;
 
-import java.awt.Insets;
-import javax.swing.border.Border;
-import javax.swing.BorderFactory;
-import javax.swing.JOptionPane;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import java.text.DecimalFormat;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Document;
-import java.text.DecimalFormat;
-import java.awt.BorderLayout;
+import java.awt.*;
+import javax.swing.border.*;
+import javax.swing.*;
+import java.text.*;
+import javax.swing.text.*;
 import java.awt.event.*;
-import java.awt.event.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.util.Enumeration;
-import java.util.Vector;
-import info.clearthought.layout.TableLayout;
-import info.clearthought.layout.TableLayoutConstraints;
+import javax.swing.event.*;
+import java.util.*;
+import info.clearthought.layout.*;
 
 public class SetupPanel
   extends KMPanel
-  implements ActionListener, DocumentListener, FocusListener
+  implements ActionListener, DocumentListener, FocusListener, ItemListener
 {
   public SetupPanel( DeviceUpgrade deviceUpgrade, Vector protocols )
   {
@@ -170,11 +151,14 @@ public class SetupPanel
             JComponent comp = parameters[ i ].getComponent();
             if ( comp.getClass() == JComboBox.class )
               (( JComboBox )comp ).removeActionListener( this );
-            else // assume JTextField
+            else if ( comp.getClass() == JTextField.class )
             {
               (( JTextField )comp ).removeActionListener( this );
               comp.removeFocusListener( this );
             }
+            else if ( comp.getClass() == JCheckBox.class )
+              (( JCheckBox )comp ).removeItemListener( this );              
+
             remove( comp );
             tl.deleteRow( 8 );
             tl.deleteRow( 8 );
@@ -192,11 +176,14 @@ public class SetupPanel
             JComponent comp = parameters[ i ].getComponent();
             if ( comp.getClass() == JComboBox.class )
               (( JComboBox )comp ).addActionListener( this );
-            else // assume JTextField
+            else if ( comp.getClass() == JTextField.class )
             {
               (( JTextField )comp ).addActionListener( this );
               comp.addFocusListener( this );
             }
+            else if ( comp.getClass() == JCheckBox.class )
+              (( JCheckBox )comp ).addItemListener( this );
+
             add( comp, "4, " + row );
             row++;
             tl.insertRow( row++, 5 );
@@ -285,6 +272,12 @@ public class SetupPanel
       updateSetupCode();
     else
       updateFixedData();
+  }
+
+  // ItemListener
+  public void itemStateChanged( ItemEvent e )
+  {
+    updateFixedData();
   }
 
 //  private JFormattedTextField setupCode = null;

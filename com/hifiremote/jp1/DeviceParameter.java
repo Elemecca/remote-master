@@ -15,7 +15,10 @@ public abstract class DeviceParameter
   public DeviceParameter( String name, DefaultValue defaultValue )
   {
     super( name, defaultValue );
-    label = new JLabel( name + ':', SwingConstants.RIGHT );
+    if ( name.length() > 0 )
+      label = new JLabel( name + ':', SwingConstants.RIGHT );
+    else
+      label = new JLabel();
   }
   public JLabel getLabel(){ return label; }
 
