@@ -54,7 +54,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.25";
+  private static final String version = "v 0.26";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -436,6 +436,7 @@ public class KeyMapMaster
       else if ( source == newItem )
       {
         deviceUpgrade.reset( remotes, protocols );
+        setTitle( "KeyMapMaster " + version );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());
         saveItem.setEnabled( false );
         currPanel.update();
@@ -446,7 +447,7 @@ public class KeyMapMaster
       }
       else if ( source == saveAsItem )
       {
-        JFileChooser chooser = new JFileChooser( System.getProperty( "user.dir" ));
+        JFileChooser chooser = new JFileChooser( kmPath );
         chooser.setFileFilter( new KMFileFilter());
         int returnVal = chooser.showSaveDialog( this );
         if ( returnVal == JFileChooser.APPROVE_OPTION )
@@ -467,6 +468,7 @@ public class KeyMapMaster
           {
             deviceUpgrade.store( file );
             saveItem.setEnabled( true );
+            setTitle( "KeyMapMaster " + version + ": " + file.getName());
           }
         }
       }
@@ -501,6 +503,7 @@ public class KeyMapMaster
             kmPath = file.getParentFile();
             deviceUpgrade.reset( remotes, protocols );
             deviceUpgrade.load( file, remotes, protocols );
+            setTitle( "KeyMapMaster " + version + ": " + file.getName());
             saveItem.setEnabled( true );
             remoteList.removeActionListener( this );
             deviceTypeList.removeActionListener( this );
