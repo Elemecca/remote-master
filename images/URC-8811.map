@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-8811
-#$DATE:Mon Sep 15 16:05:39 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Mon Oct 06 10:46:47 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:URC-8811.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -65,8 +65,8 @@ circle l2  48,372 56,377
 circle l3  70,372 78,377
 circle l4  91,372 99,377
 circle PAUSE  75,324 86,331
-rect STOP 48,333 70,347
 circle rec  44,325 55,332
 circle SET[SETUP]  92,403 101,408
 circle {LIGHT}  28,403 37,409
 circle sleep  92,387 100,393
+circle stop  59,340 70,347

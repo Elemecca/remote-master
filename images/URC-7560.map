@@ -4,23 +4,14 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7560
-#$DATE:Mon Sep 29 13:34:30 2003
-#$PATH:D:\Images\
+#$DATE:Mon Oct 06 14:58:46 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:URC-7560.jpg
 #$FORMAT:ncsa
 #$EOH
 default 7560
-circle MAGIC[setup]  46,23 56,29
-rect MENU 60,13 76,30
-poly POWER 81,13 101,17 101,28 81,31 81,13 81,13
-rect SLEEP 0,0 1,1
 circle HOME_THEATER  34,40 44,44
-circle TV  36,56 48,62
-circle VCR  67,53 82,59
-circle SAT  98,56 110,62
-circle CD  37,71 48,76
-circle AUD  67,70 79,76
-circle DVD  95,71 106,76
+circle SAT  105,40 117,46
 circle 1  36,91 47,98
 circle 2  66,91 77,98
 circle 3  96,91 107,98
@@ -33,17 +24,11 @@ circle 9  96,130 107,137
 circle 0  66,149 77,156
 circle +10{-/--}  36,149 47,156
 circle AV{Exit_20}  96,149 107,156
-rect EXIT 0,0 1,1
 circle CH+{bright+}  67,198 102,212
 circle CH-{bright-}  66,252 101,266
-rect BRIGHT+ 0,0 1,1
-rect BRIGHT- 0,0 1,1
 poly VOL+{color+} 80,214 105,206 109,224 105,243 80,235 84,224 80,214 80,214
 poly VOL-{color-} 26,206 50,213 46,224 50,235 26,243 22,224 26,206 26,206
-rect COLOR+ 0,0 1,1
-rect COLOR- 0,0 1,1
 circle MUTE{select}  66,224 78,232
-rect SELECT 0,0 1,1
 circle UP  66,172 78,176
 circle DOWN  66,278 78,282
 circle LEFT  13,224 17,235
@@ -64,3 +49,12 @@ circle E  101,345 108,351
 circle F  99,360 106,366
 circle G  96,376 103,382
 circle H  93,391 100,397
+poly magic[setup] 53,14 33,20 32,22 32,24 36,28 41,29 56,32 53,14 53,14
+poly power 82,14 81,32 94,29 99,27 101,25 103,23 103,20 101,19 95,16 90,15 82,14 82,14
+poly tv 47,48 51,61 24,66 23,66 22,65 22,64 22,62 23,59 24,58 26,56 32,52 36,51 39,50 42,49 45,48 48,47 47,48
+poly aud 54,64 81,64 76,79 59,79 54,64
+poly vcr 51,47 84,47 81,60 54,60 51,47
+poly cd 24,69 52,64 56,79 43,77 37,75 30,73 24,69
+poly dvd 84,64 110,68 103,74 95,77 87,78 79,79 84,64
+poly sat 84,60 88,48 100,51 109,56 112,61 113,65 113,66 112,66 84,61 83,61 84,60
+poly menu 57,14 79,14 76,32 61,32 57,14

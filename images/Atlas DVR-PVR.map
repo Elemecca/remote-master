@@ -1,0 +1,71 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:Atlas DVR-PVR
+#$DATE:Sun Oct 05 15:27:46 2003
+#$PATH:D:\Images\
+#$GIF:AtlasDVR-PVR.jpg
+#$FORMAT:ncsa
+#$EOH
+default Atlas
+circle dvd  53,56 59,66
+circle TV  86,56 92,66
+circle mute  42,232 51,237
+circle aux  39,66 45,76
+circle POWER  100,33 107,40
+circle pageup  115,117 121,123
+circle setup  39,32 45,38
+circle pagedown  115,137 121,143
+circle menu  69,81 81,88
+circle info  102,94 113,106
+circle guide  37,94 48,106
+circle select  70,127 80,137
+circle fav  70,193 80,198
+circle VOL+  41,185 48,192
+circle VOL-  46,210 53,217
+circle CH+  99,187 106,194
+circle CH-  93,209 100,216
+circle 1  41,328 51,334
+circle 2  70,328 80,334
+circle 3  99,328 109,334
+circle 4  40,349 51,355
+circle 5  70,349 80,355
+circle 6  99,349 110,355
+circle 7  40,370 50,376
+circle 8  69,370 79,376
+circle 9  99,370 110,376
+circle 0  70,391 80,397
+circle LAST  97,232 106,237
+circle PLAY  70,287 81,293
+circle ffwd  97,288 108,294
+circle rec  95,307 101,313
+circle cbl  100,66 106,76
+poly a 47,156 55,168 39,168 47,156 47,156
+rect b 64,167 76,179
+circle c  92,165 98,171
+circle rew  43,287 54,293
+circle macro1  42,251 51,256
+circle macro2  70,251 79,256
+circle macro3  97,251 106,256
+circle *  40,391 47,398
+circle #{enter}  100,391 107,398
+circle settings  25,129 31,146
+circle aud  70,48 76,58
+circle exit  107,154 113,160
+rect pause 63,302 76,313
+rect stop 38,302 49,313
+circle replay  42,268 52,273
+circle live  97,268 107,274
+circle pip_on/off  39,413 45,422
+circle pip_swap  57,413 63,422
+circle pip_move  82,413 88,422
+circle pip_ch+  101,413 107,422
+circle pip_ch-  100,440 106,449
+circle videosource  39,439 45,448
+poly list 59,265 70,262 80,265 80,272 70,274 59,271 59,265 59,265
+poly left 46,108 55,117 53,123 53,131 54,137 45,147 41,140 39,133 39,127 39,121 41,116 43,112 46,108 46,108
+poly right 85,117 95,108 99,116 101,124 101,128 101,133 100,137 98,141 97,143 94,146 85,137 86,133 87,129 87,125 86,123 84,118 85,117 85,117
+poly up 51,103 56,100 61,98 66,97 70,97 74,97 78,98 81,99 84,100 88,103 79,112 74,110 72,110 70,110 68,110 65,111 61,112 51,103 51,103
+poly down 60,142 64,144 68,145 72,145 76,144 79,142 88,152 85,154 79,157 76,157 73,158 69,158 64,158 61,157 56,155 51,152 60,142 60,142
