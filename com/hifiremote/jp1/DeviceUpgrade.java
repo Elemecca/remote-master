@@ -1108,9 +1108,14 @@ public class DeviceUpgrade
         {
           StringBuffer buff = new StringBuffer();
           boolean first = true;
+          String tempDelim = null;
           while (( line = in.readLine()) != null )
           {
-            st = new StringTokenizer( line, delim );
+            if ( line.charAt( 0 ) == '"' )
+              tempDelim = "\"";
+            else
+              tempDelim = delim;
+            st = new StringTokenizer( line, tempDelim );
             if ( st.hasMoreTokens())
             {
               token = st.nextToken();

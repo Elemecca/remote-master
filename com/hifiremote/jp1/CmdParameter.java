@@ -16,8 +16,19 @@ public abstract class CmdParameter
     super( name, defaultValue );
   }
 
-  public Object getValue( Object value ){ return value; }
-  public Object convertValue( Object value ){ return value; }
+  public Object getValue( Object value )
+  {
+    if (( defaultValue != null ) && defaultValue.value().equals( value ))
+      return null;
+    else
+      return value;
+  }
+  public Object convertValue( Object value )
+  { 
+    if (( defaultValue != null ) && ( value == null ))
+      return defaultValue.value();
+    return value; 
+  }
   public abstract TableCellEditor getEditor();
   public abstract TableCellRenderer getRenderer();
   public abstract Class getValueClass();

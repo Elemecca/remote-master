@@ -125,7 +125,14 @@ public class FunctionTableModel
       function.setNotes(( String )value );
     else
     {
-      checkFunctionAssigned( function, value );
+      CmdParameter[] cmdParms = protocol.getCommandParameters();
+      int parmIndex = col - colOffset;
+      Object defaultValue = cmdParms[ parmIndex ].getDefaultValue();
+      if ( defaultValue != null )
+        checkFunctionAssigned( function, value );
+      if ( value == null )
+        value = defaultValue;
+
       if ( value == null )
         function.setHex( null );
       else

@@ -24,8 +24,15 @@ public class CmdParmFactory
         if ( token.indexOf( '[' ) != -1 )
         {
           StringTokenizer st3 = new StringTokenizer( token, "[]" );
-          int index = Integer.parseInt( st3.nextToken());
-          defaultValue = new IndirectDefaultValue( index, devParms[ index ] );
+          String indexStr = st3.nextToken();
+          int dash = indexStr.indexOf( '-' );
+          if ( dash != -1 )
+            indexStr = indexStr.substring( 1 );
+          int index = Integer.parseInt( indexStr );
+
+          IndirectDefaultValue def = new IndirectDefaultValue( index, devParms[ index ] );
+          def.setIsComplement( dash != -1 );
+          defaultValue = def;
         }
 	      else
 	      {

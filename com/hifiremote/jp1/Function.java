@@ -137,10 +137,16 @@ public class Function
     return ( refCount > 0 );
   }
 
+  public boolean[] getUseDefault()
+  {
+    return useDefault;
+  }
+
   protected String name = null;
   protected String notes = null;
   protected Hex hex = null;
   private FunctionLabel label = null;
   private FunctionItem item = null;
   private int refCount = 0;
+  private boolean[] useDefault = null;
 }
