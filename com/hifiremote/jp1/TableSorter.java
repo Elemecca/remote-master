@@ -160,10 +160,13 @@ public class TableSorter extends TableMap {
       super.tableChanged( e );
     }
 
-    public void checkModel() {
-        if (indexes.length != model.getRowCount()) {
-            System.err.println("Sorter not informed of a change in model.");
-        }
+    public void checkModel()
+    {
+      if (indexes.length != model.getRowCount())
+      {
+        System.err.println("Sorter not informed of a change in model.");
+        reallocateIndexes();
+      }
     }
 
     public void sort(Object sender) {

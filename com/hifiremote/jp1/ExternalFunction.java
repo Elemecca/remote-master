@@ -10,7 +10,7 @@ public class ExternalFunction
   public boolean isEmpty()
   {
     return super.isEmpty() && ( deviceType == null ) && ( setupCode == 0 ) &&
-      ( type != EFCType );
+      ( type == EFCType );
   }
 
   public void store( Properties props, String prefix )
