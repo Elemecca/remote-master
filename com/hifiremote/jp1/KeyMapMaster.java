@@ -747,8 +747,14 @@ public class KeyMapMaster
     remoteList.removeActionListener( this );
     deviceTypeList.removeActionListener( this );
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
-    setRemote( deviceUpgrade.getRemote());
-    remoteList.setSelectedItem( deviceUpgrade.getRemote());
+    Remote r = deviceUpgrade.getRemote();
+    setRemote( r );
+    remoteList.setSelectedItem( r );
+    if ( remoteList.getSelectedItem() != r )
+    {
+      remoteList.addItem( r );
+      remoteList.setSelectedItem( r );
+    }
     setDeviceTypeName( savedTypeName );
     remoteList.addActionListener( this );
     deviceTypeList.addActionListener( this );
