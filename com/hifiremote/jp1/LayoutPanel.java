@@ -96,14 +96,12 @@ public class LayoutPanel
     // Don't know why, but tooltips don't work without this
     imagePanel.setToolTipText( "" );
 
-    JPanel fPanel = new JPanel();
-    FlowLayout fl = ( FlowLayout )fPanel.getLayout();
-    fl.setHgap( 0 );
-    fl.setVgap( 0 );
-    System.err.println( "Insets are " + fPanel.getInsets());
+    JPanel fPanel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 0 ));
     fPanel.add( imagePanel );
 
-    add( new JScrollPane( fPanel ), BorderLayout.WEST );
+    add( new JScrollPane( fPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER ), 
+         BorderLayout.WEST );
     JPanel infoPanel = new JPanel( new GridLayout( 2, 3 ));
 
     infoPanel.add( new JLabel( "Button:" ));
@@ -130,9 +128,11 @@ public class LayoutPanel
     add( panel, BorderLayout.CENTER );
 
     JPanel outerPanel = new JPanel( new BorderLayout());
-    functionPanel = new JPanel( new GridLayout( 0, 4 ));
+    functionPanel = new JPanel( new GridFlowLayout());
+//    functionPanel = new JPanel( new GridLayout( 0, 4 ));
     
-    outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.NORTH );
+    outerPanel.add( functionPanel, BorderLayout.CENTER );
+//    outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.NORTH );
     panel.add( outerPanel, BorderLayout.CENTER );
 
     DropTarget dropTarget = new LayoutDropTarget();
@@ -309,7 +309,7 @@ public class LayoutPanel
     if ( currentButton != null )
     {
       Function function = (( FunctionItem )source ).getFunction();
-      if (( e.getModifiers() & ActionEvent.SHIFT_MASK ) == 0 )
+      if (( e.getModifiers() & ActionEvent.CTRL_MASK ) == 0 )
         currentButton.setFunction( function );
       else
         currentButton.setShiftedFunction( function );
@@ -394,7 +394,7 @@ public class LayoutPanel
     }
 
   };
-
+  
   private Button currentButton = null;
   private JPanel imagePanel = null;
   private JTextField buttonName = null;
