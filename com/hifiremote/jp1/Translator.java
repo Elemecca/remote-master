@@ -152,11 +152,11 @@ public class Translator
   protected int lsbOffset = 0;
   protected int adjust = 0;
 
-  private final static int indexIndex = 0;
-  private final static int bitsIndex = 1;
-  private final static int bitOffsetIndex = 2;
-  private final static int lsbOffsetIndex = 3;
-  private final static int adjustOffset = 4;
+  protected final static int indexIndex = 0;
+  protected final static int bitsIndex = 1;
+  protected final static int bitOffsetIndex = 2;
+  protected final static int lsbOffsetIndex = 3;
+  protected final static int adjustOffset = 4;
 }
 
 
