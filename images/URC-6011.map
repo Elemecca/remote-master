@@ -4,60 +4,60 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-6011
-#$DATE:Sun Oct 19 10:03:44 2003
+#$DATE:Wed Nov 26 11:25:27 2003
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-6011.jpg
 #$FORMAT:ncsa
 #$EOH
-default 8811
-circle CBL  70,49 77,56
-circle SAT  46,53 53,60
-circle TV  39,33 46,40
-circle dvd  102,32 109,39
-circle vcr  70,30 77,37
-circle RCVR/AMP  96,53 103,60
-circle home_theater  70,71 89,77
-circle guide  31,91 40,100
-circle menu  20,73 28,81
-circle info  120,71 128,79
-circle exit  109,90 118,99
-circle POWER  32,369 41,375
-circle up  70,90 81,98
-circle down  71,136 82,144
-circle left  46,114 55,124
-circle right  94,113 103,123
-circle SELECT  70,112 81,123
-circle MUTE  28,183 36,191
-circle PREV  112,182 120,190
-circle VOL+  28,143 39,155
-circle VOL-  50,169 58,179
-circle CH+  112,142 123,154
-circle CH-  91,169 99,179
-circle 1  35,208 47,215
-circle 2  70,207 82,214
-circle 3  105,207 117,214
-circle 4  35,228 47,235
-circle 5  70,228 82,235
-circle 6  105,228 117,235
-circle 7  34,249 46,256
-circle 8  70,248 82,255
-circle 9  106,248 118,255
-circle 0  70,270 82,277
-circle fav  70,189 78,197
-circle PIP  58,349 67,355
-circle Swap  84,349 93,355
-circle Move  33,349 42,355
-circle ENTER  34,270 46,277
-circle rew  38,291 48,298
-circle f.rew  38,326 48,332
-circle PLAY  71,290 81,297
-circle fwd  103,291 113,297
-circle f.fwd  104,326 114,332
-circle TV/VID  106,269 118,276
-circle macro=m1  59,368 68,374
-circle PAUSE  88,308 98,315
-circle rec  54,308 64,315
-circle SET[SETUP]  110,368 119,374
-circle {LIGHT}  84,368 93,374
-circle sleep  110,349 119,355
-circle stop  71,326 81,332
+default 6011
+circle $09:CBL  70,49 77,56
+circle $29:SAT  46,53 53,60
+circle $01:TV  39,33 46,40
+circle $11:dvd  102,32 109,39
+circle $0A:vcr  70,30 77,37
+circle $37:RCVR/AMP  96,53 103,60
+circle $38:home_theater  70,71 89,77
+circle $14:guide  31,91 40,100
+circle $21:menu  20,73 28,81
+circle $18:info  120,71 128,79
+circle $24:exit  109,90 118,99
+circle $03:POWER  32,369 41,375
+circle $31:up  70,90 81,98
+circle $32:down  71,136 82,144
+circle $33:left  46,114 55,124
+circle $34:right  94,113 103,123
+circle $35:SELECT  70,112 81,123
+circle $08:MUTE  28,183 36,191
+circle $23:PREV  112,182 120,190
+circle $04:VOL+  28,143 39,155
+circle $05:VOL-  50,169 58,179
+circle $06:CH+  112,142 123,154
+circle $07:CH-  91,169 99,179
+circle $15:1  35,208 47,215
+circle $16:2  70,207 82,214
+circle $17:3  105,207 117,214
+circle $19:4  35,228 47,235
+circle $1A:5  70,228 82,235
+circle $1B:6  105,228 117,235
+circle $1C:7  34,249 46,256
+circle $1D:8  70,248 82,255
+circle $1E:9  106,248 118,255
+circle $1F:0  70,270 82,277
+circle $30:fav  70,189 78,197
+circle $3B:PIP  58,349 67,355
+circle $20:Swap  84,349 93,355
+circle $3C:Move  33,349 42,355
+circle $12:ENTER  34,270 46,277
+circle $0B:rew  38,291 48,298
+circle $2A:f.rew  38,326 48,332
+circle $0C:PLAY  71,290 81,297
+circle $0D:fwd  103,291 113,297
+circle $2B:f.fwd  104,326 114,332
+circle $13:TV/VID  106,269 118,276
+circle macro=m1  58,369 67,375
+circle $0F:PAUSE  88,308 98,315
+circle $10:rec  54,308 64,315
+circle $02:SET[SETUP]  110,368 119,374
+circle $39:{LIGHT}  84,368 93,374
+circle $22:sleep  110,349 119,355
+circle $0E:stop  71,326 81,332

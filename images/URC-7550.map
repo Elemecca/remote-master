@@ -4,53 +4,53 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7550
-#$DATE:Fri Oct 17 22:46:10 2003
+#$DATE:Fri Nov 28 13:21:27 2003
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-7550.jpg
 #$FORMAT:ncsa
 #$EOH
-default 7650
-circle set  110,50 120,55
-circle 1  50,118 63,126
-circle 2  84,120 97,128
-circle 3  117,121 130,129
-circle 4  49,139 62,147
-circle 5  84,140 97,148
-circle 6  117,141 130,149
-circle 7  49,160 62,168
-circle 8  84,161 97,169
-circle 9  118,162 131,170
-circle 10  48,182 61,190
-circle 0  84,183 97,191
-circle AV  117,183 130,191
-circle mute{OK}  83,259 97,268
-circle UP  84,201 99,207
-circle DOWN  83,319 98,325
-circle LEFT  24,259 29,274
-circle RIGHT  141,260 146,275
-circle CH+  83,226 97,235
-circle CH-  83,294 97,303
-circle VOL+  119,260 128,274
-circle VOL-  43,259 52,273
-poly REW 50,324 50,344 30,334 50,324 50,324
-poly PLAY 60,331 60,349 78,340 60,331 60,331
-rect PAUSE 88,333 104,348
-poly FF 114,324 114,344 134,334 114,324 114,324
-circle SP/LP_Enter  42,356 56,364
-rect STOP 62,358 79,375
-circle REC  96,366 104,374
-circle AUTO_recall  122,356 135,362
-poly magic[setup] 43,27 67,20 68,38 43,27 43,27
-poly power 103,23 127,36 99,41 103,23 103,23
-circle sel  56,46 66,51
-circle {light}  83,47 94,52
-circle tv  36,97 44,105
-circle vcr  61,97 69,105
-circle sat  83,98 91,106
-circle cd  107,99 115,107
-circle aud  129,102 137,110
-poly menu 76,39 73,22 94,23 89,40 76,39 76,39
-circle A  38,401 46,409
-circle B  44,430 52,438
-circle C  121,401 129,409
-circle D  115,430 123,438
+default 7550
+circle set  105,49 115,54
+circle 1  41,129 53,137
+circle 2  75,129 87,137
+circle 3  109,129 121,136
+circle 4  40,151 52,158
+circle 5  75,150 87,157
+circle 6  109,151 121,158
+circle 7  41,171 53,178
+circle 8  75,172 87,179
+circle 9  109,172 121,180
+circle +10{-/--}  40,194 52,201
+circle 0  74,194 86,201
+circle AV{Exit_20}  109,194 121,201
+circle mute{Select}  73,268 85,276
+circle UP  74,212 89,218
+circle DOWN  73,326 88,332
+circle LEFT  18,269 23,284
+circle RIGHT  131,269 136,284
+circle CH+{Bright+}  75,236 89,245
+circle CH-{Bright-}  74,303 88,312
+circle VOL+{Color+}  111,269 120,283
+circle VOL-{Color-}  37,269 46,283
+poly REW{TextOn} 42,329 42,349 22,339 42,329 42,329
+poly PLAY{TextOff} 52,337 52,355 70,346 52,337 52,337
+rect PAUSE{Hold} 79,339 93,353
+poly FFWD{Expand} 102,329 102,349 122,339 102,329 102,329
+circle SP/LP{Red}  34,361 45,367
+rect STOP{Green} 55,363 69,377
+circle REC{Yellow}  87,370 94,377
+circle AUTO{Blue}  112,361 123,367
+circle select  48,49 58,54
+circle {light}  76,49 87,54
+circle tv  28,106 36,114
+circle vcr  51,105 59,113
+circle sat  75,105 83,113
+circle cd  99,106 107,114
+circle aud  122,106 130,114
+circle A  35,402 43,408
+circle B  37,422 45,428
+circle C  112,402 120,408
+circle D  109,422 117,428
+poly magic[setup] 61,35 35,29 59,21 61,35
+poly menu 66,20 85,20 82,36 69,36 66,20
+poly power 92,21 115,27 90,36 92,21
