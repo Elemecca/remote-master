@@ -1,64 +1,20 @@
 package com.hifiremote.jp1;
 
 import info.clearthought.layout.TableLayout;
-import javax.swing.Box;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.ButtonGroup;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.SwingUtilities;
-import javax.swing.ProgressMonitor;
-import javax.swing.UIManager;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.Container;
-import java.awt.Toolkit;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.io.FilenameFilter;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.lang.ClassLoader;
+import javax.swing.*;
+import javax.swing.filechooser.*;
+import javax.swing.event.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.io.*;
 
 public class KeyMapMaster
  extends JFrame
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.30";
+  private static final String version = "v 0.31";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -718,7 +674,7 @@ public class KeyMapMaster
   }
 
   private class KMFileFilter
-    extends FileFilter
+    extends javax.swing.filechooser.FileFilter
   {
     //Accept all directories and all .km files.
     public boolean accept( File f )
@@ -739,7 +695,7 @@ public class KeyMapMaster
   }
 
   private class KMDirectoryFilter
-    extends FileFilter
+    extends javax.swing.filechooser.FileFilter
   {
     //Accept all directories and all .km files.
     public boolean accept( File f )
