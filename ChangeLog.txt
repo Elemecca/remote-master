@@ -1,3 +1,8 @@
+Changes for v0.45
+
+- Bugs in protocol variant support
+
+
 Changes for v0.44
 
 - Allow Dev data in hex commands
