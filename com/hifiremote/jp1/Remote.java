@@ -290,15 +290,15 @@ public class Remote
     return buttonShapes;
   }
 
-  public String getProcessor()
+  public Processor getProcessor()
   {
     return processor;
   }
 
-  public String getProcessorVersion()
-  {
-    return processorVersion;
-  }
+  // public String getProcessorVersion()
+  // {
+    // return processorVersion;
+  // }
 
   public int getRAMAddress()
   {
@@ -328,6 +328,8 @@ public class Remote
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
   {
+    String processorName = null;
+    String processorVersion = null;
     String line = null;
     while ( true )
     {
@@ -403,8 +405,8 @@ public class Remote
       }
       else if ( parm.equals( "Processor" ))
       {
-        processor = st.nextToken();
-        if ( processor.equals( "6805" ) && ( processorVersion == null ))
+        processorName = st.nextToken();
+        if ( processorName.equals( "6805" ) && ( processorVersion == null ))
           processorVersion = "C9";
       }
       else if ( parm.equals( "ProcessorVersion" ))
@@ -502,7 +504,12 @@ public class Remote
             devCombAddress[ i ] = -1;
         }
       }
+      else if ( parm.equals( "ProtocolVectorOffset" ))
+        protocolVectorOffset = rdr.parseNumber( st.nextToken());
+      else if ( parm.equals( "ProtocolDataOffset" ))
+        protocolDataOffset = rdr.parseNumber( st.nextToken());
     }
+    processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
   }
 
@@ -1372,6 +1379,8 @@ public class Remote
   public void setXShiftEnabled( boolean flag ){ xShiftEnabled = flag; }
   public String getShiftLabel(){ return shiftLabel; }
   public String getXShiftLabel(){ return xShiftLabel; }
+  public int getProtocolVectorOffset(){ return protocolVectorOffset; }
+  public int getProtocolDataOffset(){ return protocolDataOffset; }
 
   private File file = null;
   private String signature = null;
@@ -1391,8 +1400,8 @@ public class Remote
   private AddressRange timedMacroAddress = null;
   private boolean timedMacroWarning = false;
   private AddressRange learnedAddress = null;
-  private String processor = null;
-  private String processorVersion = null;
+  private Processor processor = null;
+  // private String processorVersion = null;
   private int RAMAddress;
   private int timeAddress = 0;
   private int RDFSync;
@@ -1431,5 +1440,7 @@ public class Remote
   public static final int EFC = 1;
   private int advCodeFormat = HEX;
   private int[] devCombAddress = null;
+  private int protocolVectorOffset = 0;
+  private int protocolDataOffset = 0;
   private static Hashtable restrictionTable = null;
  }

@@ -41,10 +41,18 @@ public class RDFReader
     int rc = 0;
     try
     {
+      boolean negate = false;
+      if ( text.charAt( 0 ) == '-' )
+      {
+        negate = true;
+        text = text.substring( 1 );
+      }
       if ( text.charAt( 0 ) == '$' )
         rc = Integer.parseInt( text.substring( 1 ), 16 );
       else
         rc = Integer.parseInt( text );
+      if ( negate )
+        rc = 0 - rc;
     }
     catch ( NumberFormatException e )
     {

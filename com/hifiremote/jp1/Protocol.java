@@ -118,11 +118,8 @@ public class Protocol
           break;
         text = text + ' ' + temp;
       }
-      String key = remote.getProcessor();
-      String version = remote.getProcessorVersion();
-      if ( version != null )
-        key = key + '-' + version;
-      code.put( key, new Hex( text ));
+      Processor p = remote.getProcessor();
+      code.put( p.getFullName(), new Hex( text ));
     }
   }
 
@@ -150,11 +147,8 @@ public class Protocol
 
   public Hex getCode( Remote remote )
   {
-    String key = remote.getProcessor();
-    String version = remote.getProcessorVersion();
-    if ( version != null )
-      key = key + '-' + version;
-    return ( Hex )code.get( key );
+    Processor p = remote.getProcessor();
+    return ( Hex )code.get( p.getFullName());
   }
 
   public void setDeviceParms( Value[] parms )
@@ -189,7 +183,7 @@ public class Protocol
     int temp = efc.getValue() + 156;
     temp = ( temp & 0xFF ) ^ 0xAE;
     temp = ( temp >> 3 ) | ( temp << 5 );
-    hex.getData()[ index ] = ( byte )temp;
+    hex.getData()[ index ] = temp;
     return hex;
   }
 

@@ -104,7 +104,7 @@ public class DeviceCombinerPanel
 
             Protocol importedProtocol = importedUpgrade.getProtocol();
             
-            if ( !remote.getProcessor().equals( "S3C80" ))
+            if ( !remote.getProcessor().getName().equals( "S3C80" ))
             {
               String v = remote.getSupportedVariantName( importedProtocol.getID());
               if (( v == null ) || !v.equals( importedProtocol.getVariantName()))

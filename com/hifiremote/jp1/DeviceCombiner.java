@@ -89,24 +89,25 @@ public class DeviceCombiner
   public boolean hasCode( Remote r )
   {
     boolean rc = true;
-    String processor = r.getProcessor();
-    String version = r.getProcessorVersion();
+    Processor p = r.getProcessor();
+    String name = p.getName();
+    String version = p.getVersion();
     int[] devCombAddresses = r.getDevCombAddresses();
     if ( devCombAddresses == null )
       return false;
 
     if ( getVariantName().equals( "S3C80" ))
     {
-      if ( !processor.equals( "S3C80" ))
+      if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ))
         return false;
     }
     else
     {
-      if ( processor.equals( "S3C80" ))
+      if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ))
         return false;
     }
 
-    if ( processor.equals( "S3C80" ))
+    if ( name.equals( "S3C80" ) || name.equals( "S3c80+" ))
     {
       if (( devCombAddresses[ 1 ] == -1 ) ||
           ( devCombAddresses[ 2 ] == -1 ) ||
@@ -114,7 +115,7 @@ public class DeviceCombiner
           ( devCombAddresses[ 5 ] == -1 ))
         rc = false;
     }
-    else if ( processor.equals( "6805" ))
+    else if ( name.equals( "6805" ))
     {
         if (( devCombAddresses[ 1 ] == -1 ) ||
             ( devCombAddresses[ 2 ] == -1 ) ||
@@ -123,7 +124,7 @@ public class DeviceCombiner
             ( devCombAddresses[ 6 ] == -1 ))
           rc = false;
     }
-    else if ( processor.equals( "740" ))
+    else if ( name.equals( "740" ))
     {
       if (( devCombAddresses[ 1 ] == -1 ) ||
           ( devCombAddresses[ 2 ] == -1 ) ||
@@ -144,15 +145,16 @@ public class DeviceCombiner
 
 //    byte[] hex = code.getData();
 
-    String processor = r.getProcessor();
-    String version = r.getProcessorVersion();
+    Processor processor = r.getProcessor();
+    String name = processor.getName();
+    String version = processor.getVersion();
     StringBuffer buff = new StringBuffer();
     Hex base = null;
     int[] devComb = r.getDevCombAddresses();
     if ( devComb == null )
       return null;
 
-    if ( processor.equals( "S3C80" ))
+    if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ))
     {
       if (( devComb[ 1 ] == -1 ) ||
           ( devComb[ 5 ] == -1 ) ||
@@ -185,7 +187,7 @@ public class DeviceCombiner
       hex[ 21 ] = ( length + 1 );
       hex[ 24 ] = length;
     }
-    else if ( processor.equals( "6805" ))
+    else if ( name.equals( "6805" ))
     {
       if (( devComb[ 1 ] == -1 ) ||
           ( devComb[ 2 ] == -1 ) ||
@@ -217,7 +219,7 @@ public class DeviceCombiner
       hex[ 54 ] = ( pointer >> 8 );
       hex[ 55 ] = ( pointer & 0xFF );
     }
-    else if ( processor.equals( "740" ))
+    else if ( name.equals( "740" ))
     {
       if (( devComb[ 1 ] == -1 ) ||
           ( devComb[ 2 ] == -1 ) ||
@@ -237,7 +239,7 @@ public class DeviceCombiner
     }
 
     int offset = header.length;
-    if ( processor.equals( "S3C80" ))
+    if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ))
       offset += base.length();
     Hex[] ids = new Hex[ devices.size()];
     Hex[] data = new Hex[ ids.length ];
@@ -255,7 +257,7 @@ public class DeviceCombiner
     }
     header[ i ] = offset;
 
-    if ( !processor.equals( "S3C80" ))
+    if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ))
       offset += base.length();
 
     int[] code = new int[ offset ];

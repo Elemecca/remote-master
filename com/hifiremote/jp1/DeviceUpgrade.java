@@ -547,7 +547,7 @@ public class DeviceUpgrade
     reader.reset();
     if ( line.startsWith( "Name:" ))
     {
-      importUpgrade( reader );
+      importUpgrade( reader, loadButtons );
       return;
     }
 

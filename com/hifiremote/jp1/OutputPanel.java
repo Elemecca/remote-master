@@ -127,58 +127,18 @@ public class OutputPanel
     }
     protocolLabel.setForeground( Color.RED );
     protocolLabel.setText( "Upgrade Protocol Code *** REQUIRED ***" );
-    String processor = r.getProcessor();
+    Processor processor = r.getProcessor();
     Hex code = p.getCode( r );
     if ( code != null )
     {
-      int[] data = ( int[] )code.getData().clone();
-      if ( processor.equals( "S3C80" ) && ( r.getRAMAddress() == 0x8000 ))
-      {
-        int offset = 3;
-        if (( data[ 3 ] & 0xFF ) == 0x8B )
-        {
-          offset = ( data[ 4 ] & 0xFF ) + 5;
-        }
-        for ( int i = offset; i < data.length; i++ )
-        {
-          int first = data[ i ] & 0xFF;
-          if ( first == 0xF6 )
-          {
-            int second = data[ ++i ] & 0xFF;
-            if ( second == 0xFF )
-            {
-              data[ i ] = ( byte )0x80;
-            }
-            else if ( second == 0x01 )
-            {
-              int third = data[ ++i ] & 0xFF;
-              data[ i ] = ( byte )adjust( third );
-            }
-          }
-          else if ( first == 0x8D )
-          {
-            int second = data[ ++i ] & 0xFF;
-            if ( second == 0x01 )
-            {
-              int third = data[ ++i ] & 0xFF;
-              data[ i ] = ( byte )adjust( third );
-            }
-          }
-        }
-      }
+      code = processor.translate( code, r );
       StringBuffer buff = new StringBuffer( 300 );
       buff.append( "Upgrade protocol 0 = " );
       buff.append( p.getID().toString());
       buff.append( " (" );
-      buff.append( processor );
-      String version = r.getProcessorVersion();
-      if ( version != null )
-      {
-        buff.append( '-' );
-        buff.append( version );
-      }
+      buff.append( processor.getFullName());
       buff.append( ")\n " );
-      buff.append( Hex.toString( data, 16 ));
+      buff.append( code.toString( 16 ));
       buff.append( "\nEnd" );
       protocolText.setText( buff.toString());
     }
