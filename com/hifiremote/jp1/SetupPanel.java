@@ -113,7 +113,9 @@ public class SetupPanel
 
     notesPanel = new JPanel( new BorderLayout());
     protocolNotes = new JTextArea();
+    protocolNotes.setBackground( label.getBackground());
     protocolNotes.setToolTipText( "Notes about the selected protocol." );
+    protocolNotes.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     notesPanel.setBorder( BorderFactory.createTitledBorder( "Protocol Notes" ));
     notesPanel.add( new JScrollPane( protocolNotes ), BorderLayout.CENTER );
     protocolNotes.setEditable( false );

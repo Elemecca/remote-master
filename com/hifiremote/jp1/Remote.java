@@ -409,6 +409,8 @@ public class Remote
 
   public DeviceType getDeviceTypeByAliasName( String aliasName )
   {
+    System.err.println( "Remote.gerDeviceTypeByAliasName( " + aliasName + " )" );
+    checkLoaded();
     return ( DeviceType )deviceTypeAliases.get( aliasName );
   }
 

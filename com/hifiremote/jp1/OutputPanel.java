@@ -36,6 +36,7 @@ public class OutputPanel
     upgradeText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     upgradeText.setEditable( false );
     upgradeText.setDragEnabled( true );
+    upgradeText.setBackground( label.getBackground());
     JScrollPane scroll = new JScrollPane( upgradeText );
     add( scroll );
 
@@ -88,6 +89,7 @@ public class OutputPanel
     protocolText.setDragEnabled( true );
     protocolText.addMouseListener( mh );
     protocolText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+    protocolText.setBackground( label.getBackground());
 
     scroll = new JScrollPane( protocolText );
     add( scroll );
