@@ -496,7 +496,7 @@ public class LayoutPanel
       if ( currentShape != null )
       {
         g2.setPaint( Color.white );
-        g2.setStroke( new BasicStroke( 4.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+        g2.setStroke( new BasicStroke( 6.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
         g2.draw( currentShape.getShape());
       }
 
@@ -536,6 +536,13 @@ public class LayoutPanel
 
         if ( map.isPresent( b ))
         {
+          if (( currentShape != null ) && ( s == currentShape.getShape()))
+          {
+            g2.setPaint( Color.white );
+            g2.setStroke( new BasicStroke( 6.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+            g2.draw( currentShape.getShape());
+            g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+          }
           g2.setPaint( Color.orange );
           g2.draw( s );
         }
@@ -582,7 +589,7 @@ public class LayoutPanel
       String text = name;
       if ( f != null )
         text = name + " = " + f.getName();
-      
+
       return text;
     }
 
