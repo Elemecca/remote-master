@@ -1,3 +1,8 @@
+Changes for v1.07
+- Update list of supported protocols in Readme.html\
+- Add support for processor-specific protocol code translators, that allows for encoding device parameters directly into the protocol code
+- Added RCA Combo (w/ Duraction) protocol
+
 Changes for v1.06
 - Added digit maps 171 and 172
 - Fix bug converting S3C80-F7 protocol code into S3C80-E5 protocol code,
