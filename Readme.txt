@@ -77,10 +77,12 @@ problem with one of these, please open a Bug in SourceForge against
 the controlremote project.
 
 Aiwa
-Aiwa
 Aiwa2
 Aiwa Combo
+Akai
+Anthem
 Apex 1100W
+Audiovox
 B&K
 Blaupunkt
 Boston Accoustics
@@ -88,10 +90,9 @@ Boston Official
 Denon
 Denon Combo (Official)
 Denon Combo
+Device Combiner
 Dishplayer
-Dishplayer (old)
-Dishplayer (old)
-Dishplayer (old)
+Dishplayer Network
 Echostar 2200
 Emerson
 F12
@@ -109,7 +110,6 @@ NEC2
 NEC Combo
 NEC1 Combo
 NEC1 2DEV Combo
-NEC1 2DEV Combo
 NECx1
 NECx2
 Nokia Quad
@@ -117,12 +117,12 @@ Pace
 Panasonic (old)
 Panasonic
 Panasonic VCR Combo
-Panasonic VCR Combo
 Panasonic Mixed Combo
 Panasonic Combo2
-Panasonic Combo2
+Panasonic Multi-Device (Hacked)
 Panasonic Combo (flawed)
 Panasonic2 (LCD)
+Pause Protocol
 Pioneer
 Pioneer DVD
 Pioneer DVD2
@@ -134,7 +134,6 @@ RC-5
 RC-5x
 RC-6
 RC6-M-20n
-RC6-M-20n
 RC6-M-24n
 RCA
 RCA (Old)
@@ -142,11 +141,9 @@ RCA Combo (Official)
 RECS80 (45)
 RECS80 (68)
 ReplayTV (Simple)
-ReplayTV (Simple)
-ReplayTV (Simple)
-ReplayTV (Advanced)
 ReplayTV (Advanced)
 ReplayTV (Official)
+Scientific Atlanta
 Sharp
 Sharp DVD
 Sony 12/15
@@ -155,16 +152,22 @@ Sony Combo (old)
 Sony Combo (new)
 Sony DSP
 Thomson
-Thomson
 TiVo (Advanced)
 TiVo (Official)
 TiVo (Official 2-byte)
 X10
 Zenith
 
+This is the list of protocols that are present in RM, but are NOT supported:
+
+NEC 2DEV Combo (*)
+Panasonic MIX Combo (*)
+Sony Egg (*)
+Teac-K (*)
+
+
 Here is a list of the protocols that are not yet supported:
 
-Device Combiner
 RC-5/5x Combo
 RCA Combo (w/Duration)
 
