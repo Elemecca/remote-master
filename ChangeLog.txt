@@ -4,6 +4,7 @@ Changes for v0.73
 - Updated maps and rdfs, 10-12-2003
 - Updated10-13-03Maps-and-RDFs.zip
 - Ignore case when matching button names
+- Allow map file to use keycodes to identify buttons, instead of name
 
 Changes for v0.72
 
