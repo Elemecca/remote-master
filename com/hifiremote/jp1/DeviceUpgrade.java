@@ -183,6 +183,21 @@ public class DeviceUpgrade
     byte[] digitMaps = remote.getDigitMaps();
     if (( digitMaps != null ) && ( protocol.getDefaultCmd().length() == 1 ))
     {
+      // First make sure that some digits have assigned functions
+      boolean haveDigitFunctions = false;
+      for ( int i = 0; i < 10; i++ )
+      {
+        Function f = buttons[ i ].getFunction();
+        if (( f != null ) && !f.isExternal())
+          f = null;
+        if ( f != null )
+        {
+          haveDigitFunctions = true;
+          break;
+        }
+      }
+      if ( !haveDigitFunctions )
+        return rc;
       for ( int i = 0; ( rc == -1 ) && ( i < digitMaps.length); i++ )
       {
         int mapNum = digitMaps[ i ];
@@ -237,16 +252,21 @@ public class DeviceUpgrade
       buff.append( df.format( setupCode ));
       buff.append( ")\n " );
       buff.append( Hex.toString( id[ 1 ]));
-      buff.append( ' ' );
 
-      int digitMapIndex = findDigitMapIndex();
-      if ( digitMapIndex == -1 )
-        buff.append( "00" );
-      else 
+      int digitMapIndex = -1;
+      
+      if ( !remote.getOmitDigitMapByte())
       {
-        byte[] array = new byte[ 1 ];
-        array[ 0 ] = ( byte )digitMapIndex;
-        buff.append( Hex.toString( array ));
+        buff.append( ' ' );
+        upgradeBug = ( rdr.parseNumber( st.nextToken()) != 0 );
+        if ( digitMapIndex == -1 )
+          buff.append( "00" );
+        else 
+        {
+          byte[] array = new byte[ 1 ];
+          array[ 0 ] = ( byte )digitMapIndex;
+          buff.append( Hex.toString( array ));
+        }
       }
 
       buff.append( ' ' );
