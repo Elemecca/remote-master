@@ -853,8 +853,14 @@ public class Remote
         if ( colon != -1 )
         {
           name = token.substring( colon + 1 );
+          char ch = name.charAt( 0 );
+          if (( ch == '\'' ) || ch == '"' )
+          {
+            int end = name.lastIndexOf( ch );
+            name = name.substring( 1, end );
+          }
           token = token.substring( 0, colon );
-          char ch = token.charAt( 0 );
+          ch = token.charAt( 0 );
           if (( ch == '\'' ) || ch == '"' )
           {
             int end = token.lastIndexOf( ch );
