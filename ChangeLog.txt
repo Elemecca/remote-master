@@ -1,4 +1,11 @@
-Changed for v0.90
+Changes for v0.91
+
+- Improved Device Combiner support:
+  - Correct device and protocol upgrade code
+  - Direct entry of protocols (not just by importing)
+  - Support for 740 and 6805 based remotes.
+
+Changes for v0.90
 
 - Add DigitMap entires up to 170
 - Update images and maps to v1.14
