@@ -172,6 +172,8 @@ public class Protocol
           int pos = text.indexOf( '(' );
           int pos2 = text.indexOf( ')', pos );
           processor = text.substring( pos + 1, pos2 );
+          if ( processor.equals( "S3C8+" ))
+            processor = "S3C80";
           break;
         }
       }
