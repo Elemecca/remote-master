@@ -1,7 +1,13 @@
+Changes for v0.46
+
+- Limit protocol choices on setup panel to protocols supported by remote.
+- Request  730285: Only show protocol upgrade code when actually required
+- Show warning when protocol and remote aren't compatible
+- Change version to v0.46
+
 Changes for v0.45
 
 - Bugs in protocol variant support
-
 
 Changes for v0.44
 
