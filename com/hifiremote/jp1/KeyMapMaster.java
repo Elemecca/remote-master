@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.09";
+  public static final String version = "v1.10";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -164,7 +164,7 @@ public class KeyMapMaster
     setupPanel = new SetupPanel( deviceUpgrade );
     setupPanel.setToolTipText( "Enter general information about the upgrade." );
     currPanel = setupPanel;
-    addPanel( setupPanel ); 
+    addPanel( setupPanel );
 
     functionPanel = new FunctionPanel( deviceUpgrade );
     functionPanel.setToolTipText( "Define function names and parameters." );
@@ -172,23 +172,23 @@ public class KeyMapMaster
 
     externalFunctionPanel = new ExternalFunctionPanel( deviceUpgrade );
     externalFunctionPanel.setToolTipText( "Define functions from other device codes." );
-    addPanel( externalFunctionPanel ); 
+    addPanel( externalFunctionPanel );
 
     buttonPanel = new ButtonPanel( deviceUpgrade );
     buttonPanel.setToolTipText( "Assign functions to buttons." );
-    addPanel( buttonPanel ); 
+    addPanel( buttonPanel );
 
     layoutPanel = new LayoutPanel( deviceUpgrade );
     layoutPanel.setToolTipText( "Button Layout information." );
-    addPanel( layoutPanel ); 
+    addPanel( layoutPanel );
 
     keyMapPanel = new KeyMapPanel( deviceUpgrade );
     keyMapPanel.setToolTipText( "Printable list of buttons and their assigned functions" );
-    addPanel( keyMapPanel ); 
+    addPanel( keyMapPanel );
 
     outputPanel = new OutputPanel( deviceUpgrade );
     outputPanel.setToolTipText( "The output to copy-n-paste into IR." );
-    addPanel( outputPanel ); 
+    addPanel( outputPanel );
 
     RemoteManager rm = RemoteManager.getRemoteManager();
     rdfPath = rm.loadRemotes( rdfPath );
@@ -516,12 +516,12 @@ public class KeyMapMaster
   private void editManualSettings()
   {
     System.err.println( "editManualSettings()");
-    ManualSettingsDialog d = 
+    ManualSettingsDialog d =
       new ManualSettingsDialog( this, protocolManager.getManualProtocol());
     d.show();
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
-      
+
     }
   }
 
@@ -753,7 +753,7 @@ public class KeyMapMaster
       }
       else if ( source == aboutItem )
       {
-        String text = "<html><b>RemoteMaster Device Upgrade Editor, " + version + "</b>" + 
+        String text = "<html><b>RemoteMaster Device Upgrade Editor, " + version + "</b>" +
                       "<p>Get the latest version at <a href=\"http://controlremote.sourceforge.net\">http://controlremote.sourceforge.net</a></p>" +
                       "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
                       "<p>RDFs loaded from <b>" + rdfPath + "</b></p>" +
@@ -807,7 +807,7 @@ public class KeyMapMaster
 
     File file = null;
     JFileChooser chooser = new JFileChooser( upgradePath );
-    try 
+    try
     {
       chooser.setAcceptAllFileFilterUsed( false );
     }
@@ -982,7 +982,7 @@ public class KeyMapMaster
     String title = "RemoteMaster";
     File file = deviceUpgrade.getFile();
     if ( file != null )
-    try 
+    try
     {
       title = file.getCanonicalPath() + " - RemoteMaster";
     }
@@ -992,7 +992,7 @@ public class KeyMapMaster
     }
 
     saveItem.setEnabled( file != null );
-    removeListeners();   
+    removeListeners();
     description.setText( deviceUpgrade.getDescription());
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
     Remote r = deviceUpgrade.getRemote();
@@ -1220,7 +1220,7 @@ public class KeyMapMaster
       }
       props.setProperty( "CustomNames", value.toString() );
     }
-    
+
     FileOutputStream out = new FileOutputStream( propertiesFile );
     props.store( out, null );
     out.flush();
@@ -1437,7 +1437,7 @@ public class KeyMapMaster
       else
       {
         String lowerName = f.getName().toLowerCase();
-        if ( lowerName.endsWith( ".txt" ) || lowerName.endsWith( ".km" ) || 
+        if ( lowerName.endsWith( ".txt" ) || lowerName.endsWith( ".km" ) ||
              lowerName.endsWith( upgradeExtension ))
           rc = true;
       }
