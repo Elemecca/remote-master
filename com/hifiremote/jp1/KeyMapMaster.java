@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import info.clearthought.layout.TableLayout;
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -14,6 +15,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
@@ -22,6 +24,8 @@ import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Color;
@@ -51,15 +55,16 @@ import java.lang.ClassLoader;
 
 public class KeyMapMaster
  extends JFrame
- implements ActionListener, ChangeListener
+ implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.26";
+  private static final String version = "v 0.26a";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
   private JMenuItem saveAsItem = null;
   private JLabel messageLabel = null;
+  private JTextField description = null;
   private JComboBox remoteList = null;
   private JComboBox deviceTypeList = null;
   private Remote[] remotes = null;
@@ -155,24 +160,43 @@ public class KeyMapMaster
     JTabbedPane tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
 
-    JPanel statusPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ));
-    JLabel label = new JLabel( "Remote:" );
-    statusPanel.add( label );
+    double b = 10;       // space around border/columns
+    double i = 5;        // space between rows
+    double f = TableLayout.FILL;
+    double p = TableLayout.PREFERRED;
+    double size[][] =
+    {
+      { b, p, b, f, b, p, b, p, b },                     // cols
+      { b, p, i, p, b }         // rows
+    };
+    TableLayout tl = new TableLayout( size );
+    JPanel panel = new JPanel( tl );
+
+    JLabel label = new JLabel( "Description:" );
+    panel.add( label, "1, 1" );
+    description = new JTextField( 50 );
+    label.setLabelFor( description );
+    description.getDocument().addDocumentListener( this );
+    panel.add( description, "3, 1, 7, 1" );
+
+    label = new JLabel( "Remote:" );
+    panel.add( label, "1, 3" );
     remoteList = new JComboBox();
+    label.setLabelFor( remoteList );
     remoteList.setMaximumRowCount( 16 );
     remoteList.setPrototypeDisplayValue( "A Really Long Remote Control Name with an Extender and more" );
     remoteList.setToolTipText( "Choose the remote for the upgrade being created." );
-    statusPanel.add( remoteList );
-    statusPanel.add( Box.createHorizontalStrut( 10 ));
+    panel.add( remoteList, "3, 3" );
 
     label = new JLabel( "Device Type:" );
-    statusPanel.add( label );
+    panel.add( label, "5, 3" );
     deviceTypeList = new JComboBox();
+    label.setLabelFor( deviceTypeList );
     deviceTypeList.setPrototypeDisplayValue( "A Device Type" );
     deviceTypeList.setToolTipText( "Choose the device type for the upgrade being created." );
-    statusPanel.add( deviceTypeList );
+    panel.add( deviceTypeList, "7, 3" );
 
-    mainPanel.add( statusPanel, BorderLayout.NORTH );
+    mainPanel.add( panel, BorderLayout.NORTH );
 
     messageLabel = new JLabel( " " );
     messageLabel.setForeground( Color.red );
@@ -437,6 +461,7 @@ public class KeyMapMaster
       {
         deviceUpgrade.reset( remotes, protocols );
         setTitle( "KeyMapMaster " + version );
+        description.setText( null );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());
         saveItem.setEnabled( false );
         currPanel.update();
@@ -504,6 +529,7 @@ public class KeyMapMaster
             deviceUpgrade.reset( remotes, protocols );
             deviceUpgrade.load( file, remotes, protocols );
             setTitle( "KeyMapMaster " + version + ": " + file.getName());
+            description.setText( deviceUpgrade.getDescription());
             saveItem.setEnabled( true );
             remoteList.removeActionListener( this );
             deviceTypeList.removeActionListener( this );
@@ -624,6 +650,22 @@ public class KeyMapMaster
     props.store( out, null );
     out.flush();
     out.close();
+  }
+
+  // DocumentListener methods
+  public void changedUpdate( DocumentEvent e )
+  {
+    deviceUpgrade.setDescription( description.getText());
+  }
+
+  public void insertUpdate( DocumentEvent e )
+  {
+    deviceUpgrade.setDescription( description.getText());
+  }
+
+  public void removeUpdate( DocumentEvent e )
+  {
+    deviceUpgrade.setDescription( description.getText());
   }
 
   public static void main( String[] args )

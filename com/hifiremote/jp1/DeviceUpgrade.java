@@ -23,6 +23,7 @@ public class DeviceUpgrade
 
   public void reset( Remote[] remotes, Vector protocols )
   {
+    description = null;
     setupCode = 0;
 
     // remove all currently assigned functions
@@ -52,6 +53,16 @@ public class DeviceUpgrade
   {
     for ( int i = 0; i < defaultFunctionNames.length; i++ )
       functions.add( new Function( defaultFunctionNames[ i ]));
+  }
+
+  public void setDescription( String text )
+  {
+    description = text;
+  }
+
+  public String getDescription()
+  {
+    return description;
   }
 
   public void setSetupCode( int setupCode )
@@ -278,6 +289,8 @@ public class DeviceUpgrade
   {
     this.file = file;
     Properties props = new Properties();
+    if ( description != null )
+      props.setProperty( "Description", description );
     props.setProperty( "Remote.name", remote.getName());
     props.setProperty( "Remote.signature", remote.getSignature());
     props.setProperty( "DeviceType", devType.getName());
@@ -352,7 +365,10 @@ public class DeviceUpgrade
     props.load( in );
     in.close();
 
-    String str = props.getProperty( "Remote.name" );
+    String str = props.getProperty( "Description" );
+    if ( str != null )  
+      description = str;
+    str = props.getProperty( "Remote.name" );
     String sig = props.getProperty( "Remote.signature" );
     System.err.println( "Searching for remote " + str );
     int index = Arrays.binarySearch( remotes, str );
@@ -432,7 +448,7 @@ public class DeviceUpgrade
     {
       Function f = new Function();
       f.load( props, "Function." + i );
-      if (( f.getName() == null ) && ( f.getHex() == null ) && ( f.getNotes() == null ))
+      if ( f.isEmpty())
       {
         break;
       }
@@ -447,13 +463,14 @@ public class DeviceUpgrade
     {
       ExternalFunction f = new ExternalFunction();
       f.load( props, "ExtFunction." + i, remote );
-      if (( f.getName() == null ) && ( f.getHex() == null ) && f.getNotes() == null )
+      if ( f.isEmpty())
       {
         break;
       }
       extFunctions.add( f );
       i++;
     }
+    System.err.println( "Assigning functions to buttons" );
     Button[] buttons = remote.getUpgradeButtons();
     for ( i = 0; i < buttons.length; i++ )
     {
@@ -480,6 +497,7 @@ public class DeviceUpgrade
     }
   }
 
+  private String description = null;
   private int setupCode = 0;
   private Remote remote = null;
   private DeviceType devType = null;
