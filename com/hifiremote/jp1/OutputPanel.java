@@ -141,7 +141,7 @@ public class OutputPanel
         for ( int i = 0; i < xlators.length; i++ )
           xlators[ i ].in( values, code, null, -1 );
       }
-      
+
       StringBuffer buff = new StringBuffer( 300 );
       buff.append( "Upgrade protocol 0 = " );
       buff.append( p.getID( r ).toString());
@@ -152,6 +152,9 @@ public class OutputPanel
       {
         buff.append( ' ' );
         buff.append( p.getName());
+        buff.append( " (RM " );
+        buff.append( KeyMapMaster.version );
+        buff.append( ')' );
       }
       buff.append( "\n " );
       buff.append( code.toString( 16 ));
