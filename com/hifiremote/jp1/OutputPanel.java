@@ -122,6 +122,7 @@ public class OutputPanel
     {
       protocolLabel.setForeground( Color.BLACK );
       protocolLabel.setText( "Upgrade Protocol Code" );
+      protocolText.setText( null );
       return;
     }
     protocolLabel.setForeground( Color.RED );
