@@ -1,5 +1,5 @@
 [General]
-Name=URC-7650 One for All 5
+Name=URC-7650/7550 One for All 5
 EepromSize=$800
 FavKey=$14, $01E, 15, 3
 AdvCodeAddr=$020..$0FF
@@ -8,7 +8,7 @@ LearnedAddr=$3FF..$7FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
-ImageMap=Generic.map
+ImageMap=URC-7550.map
 
 [Settings]
 VPT Device=$018.7.8.1.0 DeviceButtons
@@ -52,10 +52,10 @@ CD=$11, AUD=$21, DVD=$22,
 7=$1C, 8=$1D, 9=$1E,
 0=$1F, 10=$2F, AV=$18, EXIT=$98,
 CH+=$06, CH-=$07, BRIGHT+=$C6, BRIGHT-=$C7,
-VOL+=$04, VOL-=$05, COLOR+=$C4, COLOR-=$C5, MUTE=$08, Select=$88,
+VOL+=$04, VOL-=$05, COLOR+=$C4, COLOR-=$C5, MUTE{OK}=$08, Sel=$88,
 UP=$29, DOWN=$2A, LEFT=$2B, RIGHT=$2C,
-REW=$0B, PLAY=$0C, PAUSE=$0F, FFWD=$0D,
-SP/LP=$14, STOP=$0E, REC=$10, AUTO=$13,
+REW=$0B, PLAY=$0C, PAUSE=$0F, FF=$0D,
+SP/LP_Enter=$14, STOP=$0E, REC=$10, Auto_Recall=$13,
 A=$23, B=$24, C=$25, D=$26, E=$27, F=$28, G=$2D, H=$2E,
 {LIGHT}=$30,
 Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F,

@@ -6,7 +6,7 @@ FavKey=$0A, $01E, 15, 3
 UpgradeAddr=$100..$3FC
 Processor=6805
 RDFSync=3
-ImageMap=Generic.map
+ImageMap=URC-7070.map
 
 [Checksums]
 ^$000:$002..$3FC

@@ -76,6 +76,7 @@ dev5    = $029 $023 $02F
 7=28
 8=30
 9=32
+Setup=31
 rewind_last-ch=36
 play=33
 ffwd=35

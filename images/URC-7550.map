@@ -1,0 +1,56 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:URC-7550
+#$DATE:Wed Sep 10 15:18:31 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:URC-7550.jpg
+#$FORMAT:ncsa
+#$EOH
+default 7650
+circle set  118,53 128,58
+circle 1  53,128 66,136
+circle 2  91,130 104,138
+circle 3  126,131 139,139
+circle 4  53,151 66,159
+circle 5  90,152 103,160
+circle 6  126,154 139,162
+circle 7  53,174 66,182
+circle 8  90,174 103,182
+circle 9  127,176 140,184
+circle 10  52,197 65,205
+circle 0  90,198 103,206
+circle AV  127,199 140,207
+circle mute{OK}  90,281 104,290
+circle UP  90,218 105,224
+circle DOWN  89,345 104,351
+circle LEFT  26,281 32,296
+circle RIGHT  152,283 158,298
+circle CH+  91,243 105,252
+circle CH-  90,319 104,328
+circle VOL+  128,282 137,296
+circle VOL-  51,281 60,295
+poly REW 54,351 54,371 34,361 54,351 54,351
+poly PLAY 66,359 66,377 84,368 66,359 66,359
+rect PAUSE 97,361 113,376
+poly FF 123,352 123,372 143,362 123,352 123,352
+circle SP/LP_Enter  45,386 59,394
+rect STOP 68,387 85,404
+circle REC  104,395 112,403
+circle AUTO_recall  132,386 145,392
+poly magic[setup] 49,30 73,23 74,41 49,30 49,30
+poly power 107,24 131,37 103,42 107,24 107,24
+circle sel  60,49 70,54
+circle {light}  91,50 102,55
+circle tv  40,102 48,110
+circle vcr  64,103 72,111
+circle sat  90,103 98,111
+circle cd  116,105 124,113
+circle aud  139,107 147,115
+poly menu 83,40 80,23 101,24 96,41 83,40 83,40
+circle A  44,428 52,436
+circle B  50,454 58,462
+circle C  128,426 136,434
+circle D  122,453 130,461

@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Mastreo2
-#$DATE:Tue Sep 09 19:41:52 2003
-#$PATH:C:\km\images\
+#$DATE:Wed Sep 10 12:02:22 2003
+#$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Maestro2.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -13,7 +13,7 @@ default mastreo2
 circle mute  139,308 147,316
 circle POWER  138,100 150,113
 circle menu  37,331 47,339
-circle setup  38,99 51,105
+circle setup  38,97 51,103
 circle VOL+  139,224 150,242
 circle VOL-  139,267 150,285
 circle CH+  139,135 150,153
@@ -42,3 +42,5 @@ rect 7 25,251 49,270
 rect 8 60,251 84,268
 rect 9 95,252 117,268
 rect 0 60,275 84,293
+rect < 61,90 83,106
+rect > 93,90 115,106
