@@ -1,4 +1,10 @@
-Changed for v0.61
+Changes for v0.62
+
+- Add/update remote images, maps and rdfs
+- Add DigitMaps 149-153
+- Fix Bug 797783: "Move Down" with next to last item on "Function" no response
+
+Changes for v0.61
 
 - Add/update remote images, maps and rdfs
 - Add Thomson protocol
