@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.92";
+  private static final String version = "v 0.93";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -697,6 +697,19 @@ public class KeyMapMaster
     }
   } // actionPerformed
 
+  private void removeListeners()
+  {
+    description.getDocument().removeDocumentListener( this );
+    remoteList.removeActionListener( this );
+    deviceTypeList.removeActionListener( this );
+  }
+
+  private void addListeners()
+  {
+    description.getDocument().addDocumentListener( this );
+    remoteList.addActionListener( this );
+    deviceTypeList.addActionListener( this );
+  }
 
   public static File promptForUpgradeFile( File path )
   {
@@ -892,10 +905,8 @@ public class KeyMapMaster
       title = title + ": " + file.getName();
 
     saveItem.setEnabled( file != null );
-
+    removeListeners();   
     description.setText( deviceUpgrade.getDescription());
-    remoteList.removeActionListener( this );
-    deviceTypeList.removeActionListener( this );
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
     Remote r = deviceUpgrade.getRemote();
     setRemote( r );
@@ -906,8 +917,7 @@ public class KeyMapMaster
       remoteList.setSelectedItem( r );
     }
     setDeviceTypeName( savedTypeName );
-    remoteList.addActionListener( this );
-    deviceTypeList.addActionListener( this );
+    addListeners();
     currPanel.update();
 
     validateUpgrade();
@@ -919,9 +929,8 @@ public class KeyMapMaster
     deviceUpgrade.reset();
     deviceUpgrade.importUpgrade( in );
     setTitle( "RemoteMaster " + version );
+    removeListeners();
     description.setText( deviceUpgrade.getDescription());
-    remoteList.removeActionListener( this );
-    deviceTypeList.removeActionListener( this );
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
     Remote r = deviceUpgrade.getRemote();
     setRemote( r );
@@ -932,8 +941,7 @@ public class KeyMapMaster
       remoteList.setSelectedItem( r );
     }
     setDeviceTypeName( savedTypeName );
-    remoteList.addActionListener( this );
-    deviceTypeList.addActionListener( this );
+    addListeners();
     currPanel.update();
 
     validateUpgrade();
@@ -1180,23 +1188,26 @@ public class KeyMapMaster
     }
   }
 
-  // DocumentListener methods
-  public void changedUpdate( DocumentEvent e )
+  private void updateDescription()
   {
     deviceUpgrade.setDescription( description.getText());
     currPanel.update();
+  }
+
+  // DocumentListener methods
+  public void changedUpdate( DocumentEvent e )
+  {
+    updateDescription();
   }
 
   public void insertUpdate( DocumentEvent e )
   {
-    deviceUpgrade.setDescription( description.getText());
-    currPanel.update();
+    updateDescription();
   }
 
   public void removeUpdate( DocumentEvent e )
   {
-    deviceUpgrade.setDescription( description.getText());
-    currPanel.update();
+    updateDescription();
   }
 
   private class KMFileFilter

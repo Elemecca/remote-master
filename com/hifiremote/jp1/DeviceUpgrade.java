@@ -291,8 +291,6 @@ public class DeviceUpgrade
           Function f = buttons[ j ].getFunction();
           if (( f != null ) && !f.isExternal())
           {
-            System.err.println( "f is " + f.toString());
-            System.err.println( "hex is " + f.getHex());
             if (( f.getHex().getData()[ 0 ] & 0xFF ) == codes[ j ])
               rc = i + 1;
             else
