@@ -88,7 +88,7 @@ public class Protocol
       return null;
 
     StringBuffer buff = new StringBuffer( 400 );
-    buff.append( "Protocol code 0 = " );
+    buff.append( "Upgrade protocol 0 = " );
     buff.append( hex2String( id ));
     buff.append( " (" );
     buff.append( processor );
