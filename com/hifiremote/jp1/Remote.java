@@ -67,6 +67,8 @@ public class Remote
             line = parseButtonMaps( rdr );
           else if ( line.equals( "Protocols" ))
             line = parseProtocols( rdr );
+          else if ( line.equals( "NoBind" ))
+            line = parseNoBind( rdr );
           else
             line = rdr.readLine();
         }
@@ -91,6 +93,13 @@ public class Remote
       }
 
       // Create the upgradeButtons[]
+      int bindableButtons = 0;
+      for ( int i = 0; i < buttons.length; i++ )
+        if ( !buttons[ i ].isNoBind())
+          bindableButtons++;
+
+      upgradeButtons = new Button[ bindableButtons ];
+
       // and starts off with the buttons in longest button map
       ButtonMap longestMap = null;
       for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
@@ -101,26 +110,23 @@ public class Remote
           longestMap = thisMap;
       }
 
-      if ( longestMap == null )
-        upgradeButtons = buttons;
-      else
+      // first copy the buttons from the longest map
+      int index = 0;
+      if ( longestMap != null )
       {
-        upgradeButtons = new Button[ buttons.length ];
-        // first copy the buttons from the longest map
-        int index = 0;
         while ( index < longestMap.size())
         {
           upgradeButtons[ index ] = longestMap.get( index );
           index++;
         }
+      }
 
-        // now copy the rest of the buttons, skipping those in the map
-        for ( int i = 0; i < buttons.length; i++ )
-        {
-          Button b = buttons[ i ];
-          if ( !longestMap.isPresent( b ))
-            upgradeButtons[ index++ ] = b;
-        }
+      // now copy the rest of the buttons, skipping those in the map
+      for ( int i = 0; i < buttons.length; i++ )
+      {
+        Button b = buttons[ i ];
+        if ( !b.isNoBind() && !longestMap.isPresent( b ))
+          upgradeButtons[ index++ ] = b;
       }
 
       if ( mapFile != null )
@@ -905,15 +911,28 @@ public class Remote
           token = token.substring( 0, colon );
         }
         System.err.println( "generic=" + token + ", and name=" + name );
-
-        work.add( new Button( token, name, keycode++ ));
+        Button b = new Button( token, name, keycode++ );
+        work.add( b );
+        if ( b.isShifted())
+        {
+          int unshiftedCode = b.getKeyCode() & 0x7F;
+          for ( Enumeration e = work.elements(); e.hasMoreElements(); )
+          {
+            Button c = ( Button )e.nextElement();
+            if ( c.getKeyCode() == unshiftedCode )
+            {
+              c.setShiftedButton( b );
+              break;
+            }
+          }
+        }
       }
     }
     buttons = ( Button[] )work.toArray( buttons );
 
-    buttonsByEfc = new Button[ buttons.length ];
-    System.arraycopy( buttons, 0, buttonsByEfc, 0, buttons.length );
-    Arrays.sort( buttonsByEfc, efcComparator );
+    buttonsByKeyCode = new Button[ buttons.length ];
+    System.arraycopy( buttons, 0, buttonsByKeyCode, 0, buttons.length );
+    Arrays.sort( buttonsByKeyCode, keyCodeComparator );
 
     buttonsByName = new Button[ buttons.length ];
     System.arraycopy( buttons, 0, buttonsByName, 0, buttons.length );
@@ -922,6 +941,57 @@ public class Remote
     buttonsByStandardName = new Button[ buttons.length ];
     System.arraycopy( buttons, 0, buttonsByStandardName, 0, buttons.length );
     Arrays.sort( buttonsByStandardName, standardNameComparator );
+
+    return line;
+  }
+
+  private String parseNoBind( RDFReader rdr )
+    throws Exception
+  {
+    System.err.println( "Remote.parseButtons()" );
+    String line;
+    while ( true )
+    {
+      line = rdr.readLine();
+      if ( line == null )
+        break;
+      if (( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ))
+          break;
+      System.err.println( "line=" + line );
+      StringTokenizer st = new StringTokenizer( line, ", " );
+      while ( st.hasMoreTokens())
+      {
+        String token = st.nextToken().trim();
+        System.err.println( "Token=" + token );
+        int dollar = token.indexOf( ':' );
+        String name = null;
+        byte keyCode = -1;
+        if ( dollar == 0 )
+        {
+          token = token.substring( 1 );
+          keyCode = Byte.parseByte( token, 16 );
+        }
+        else
+        {
+          try
+          {
+            keyCode = Byte.parseByte( token );
+          }
+          catch ( NumberFormatException x )
+          {
+            name = token;
+          }
+        }
+        Button b = null;
+        if ( name != null )
+          b = findByName( new Button( null, name, ( byte )0 ));
+        else
+          b = findByKeyCode( new Button( null, null, keyCode ));
+
+        if ( b != null )
+          b.setNoBind( true );
+      }
+    }
 
     return line;
   }
@@ -954,13 +1024,13 @@ public class Remote
     return line;
   }
 
-  public Button findByEfc( Button b )
+  public Button findByKeyCode( Button b )
   {
     checkLoaded();
     Button rc = null;
-    int i = Arrays.binarySearch( buttonsByEfc, b, efcComparator );
+    int i = Arrays.binarySearch( buttonsByKeyCode, b, keyCodeComparator );
     if ( i >= 0 )
-      rc = buttonsByEfc[ i ];
+      rc = buttonsByKeyCode[ i ];
     return rc;
   }
 
@@ -1324,7 +1394,7 @@ public class Remote
     }
   };
 
-  private Comparator efcComparator = new Comparator()
+  private Comparator keyCodeComparator = new Comparator()
   {
     public int compare( Object o1, Object o2 )
     {
@@ -1379,7 +1449,7 @@ public class Remote
   private Hashtable deviceTypes = new Hashtable();
   private Hashtable deviceTypeAliases = new Hashtable();
   private Button[] buttons = new Button[ 0 ];
-  private Button[] buttonsByEfc = null;
+  private Button[] buttonsByKeyCode = null;
   private Button[] buttonsByName = null;
   private Button[] buttonsByStandardName = null;
   private Button[] upgradeButtons = null;

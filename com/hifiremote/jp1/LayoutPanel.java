@@ -78,6 +78,10 @@ public class LayoutPanel
         Point p = e.getPoint();
         Button savedButton = currentButton;
         currentButton = getButtonAtPoint( p );
+        if ((( e.getModifiersEx() & e.CTRL_DOWN_MASK ) != 0 ) &&
+             ( currentButton.getShiftedButton() != null ))
+            currentButton = currentButton.getShiftedButton();
+
         if ( currentButton != savedButton )
         {
           setButtonText( currentButton );
@@ -239,10 +243,18 @@ public class LayoutPanel
     if ( currentButton != null )
     {
       Function function = (( FunctionItem )source ).getFunction();
-      if (( e.getModifiers() & ActionEvent.CTRL_MASK ) == 0 )
+      if (( e.getModifiers() & e.CTRL_MASK ) == 0 )
         currentButton.setFunction( function );
       else
-        currentButton.setShiftedFunction( function );
+      {
+        if ( currentButton.getShiftedButton() != null )
+        {
+          currentButton = currentButton.getShiftedButton();
+          currentButton.setFunction( function );
+        }
+        else
+          currentButton.setShiftedFunction( function );
+      }
       setButtonText( currentButton );
     }
   }
@@ -257,7 +269,7 @@ public class LayoutPanel
       else
       {
         FunctionLabel label = ( FunctionLabel )e.getSource();
-        if (( e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK ) == 0 )
+        if (( e.getModifiersEx() & e.CTRL_DOWN_MASK ) == 0 )
           currentButton.setFunction( label.getFunction());
         else
           currentButton.setShiftedFunction( label.getFunction());
@@ -305,7 +317,13 @@ public class LayoutPanel
           Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor());
           if ( action == DnDConstants.ACTION_COPY )
           {
-            currentButton.setShiftedFunction( f );
+            if ( currentButton.getShiftedButton() != null )
+            {
+              currentButton = currentButton.getShiftedButton();
+              currentButton.setFunction( f );
+            }
+            else
+              currentButton.setShiftedFunction( f );
           }
           else if ( action == DnDConstants.ACTION_MOVE )
           {
@@ -394,7 +412,13 @@ public class LayoutPanel
     {
       Button b = getButtonAtPoint( e.getPoint());
       if ( b != null )
-        return b.getName();
+      {
+        if ((( e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK ) != 0 ) &&
+            ( b.getShiftedButton() != null ))
+          return b.getShiftedButton().getName();
+        else
+          return b.getName();
+      }
       else
         return null;
     }

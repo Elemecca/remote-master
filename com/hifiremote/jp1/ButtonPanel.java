@@ -6,6 +6,7 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
+import java.awt.dnd.*;
 
 public class ButtonPanel
   extends KMPanel
@@ -22,56 +23,22 @@ public class ButtonPanel
     table.setCellSelectionEnabled( true );
     table.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     table.setSurrendersFocusOnKeystroke( true );
-    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer()
-    {
-      public Component getTableCellRendererComponent( JTable table,
-                                                      Object value,
-                                                      boolean isSelected,
-                                                      boolean hasFocus,
-                                                      int row,
-                                                      int column )
-      {
-        Button b = ( Button )value;
-        if (( b.getFunction() == null ) && ( b.getShiftedFunction() == null ))
-          setForeground( Color.red );
-        else
-          setForeground( Color.black );
 
-        String temp = b.getName();
-        DeviceType devType = deviceUpgrade.getDeviceType();
-        ButtonMap map = devType.getButtonMap();
-        if (( map == null ) || !map.isPresent( b ))
-          temp = temp + '*';
-
-        return super.getTableCellRendererComponent( table, temp, isSelected,
-                                                    hasFocus, row, column );
-      }
-    };
-    renderer.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
-    table.setDefaultRenderer( Button.class, renderer );
-
-//    table.getTableHeader().setReorderingAllowed( false );
-    table.setDefaultRenderer( Function.class, new FunctionRenderer());
-//    (( DefaultTableCellRenderer )table.getDefaultRenderer( Function.class )).setToolTipText(
-//     "Drag or double-click a function to set the functions for a button, or use the popup menu of available functions." );
+    TableColumnModel colModel = table.getColumnModel();
+    table.setDefaultRenderer( Button.class, new FunctionRenderer( deviceUpgrade ));
 
     TransferHandler th = new TransferHandler()
     {
       public boolean canImport( JComponent comp, DataFlavor[] flavors )
       {
-        boolean rc = false;
-        if ( table.convertColumnIndexToModel( table.getSelectedColumn()) != 0 )
+        for ( int i = 0; i < flavors.length; i++ )
         {
-          for ( int i = 0; i < flavors.length; i++ )
+          if ( flavors[ i ] == LocalObjectTransferable.getFlavor())
           {
-            if ( flavors[ i ] == LocalObjectTransferable.getFlavor())
-            {
-              rc = true;
-              break;
-            }
+            return true;
           }
         }
-        return rc;
+        return false;
       }
 
       public boolean importData( JComponent c, Transferable t )
@@ -94,13 +61,43 @@ public class ButtonPanel
             e.printStackTrace( System.err );
           }
         }
-        else
-          rc = false;
 
         return rc;
       }
     };
     table.setTransferHandler( th );
+    try 
+    {
+      table.getDropTarget().addDropTargetListener( new DropTargetAdapter()
+      {
+        public void dragOver( DropTargetDragEvent dte )
+        {
+          int col = table.convertColumnIndexToModel( table.getSelectedColumn());
+          if ( col == 0 )
+            dte.rejectDrag();
+          else if ( col == 2 )
+          {
+            int row = table.getSelectedRow();
+            Button b = ( Button )model.getValueAt( row, col );
+            if ( b.allowsShift())
+              dte.acceptDrag( dte.getDropAction());
+            else
+              dte.rejectDrag();
+          }
+          else
+            dte.acceptDrag( dte.getDropAction());
+        }
+  
+        public void drop( DropTargetDropEvent dte )
+        {
+          ;
+        }
+      });
+    }
+    catch ( Exception x )
+    {
+      x.printStackTrace( System.err );
+    }
     table.addMouseListener( new PopupListener());
 
     add( new JScrollPane( table ), BorderLayout.CENTER );

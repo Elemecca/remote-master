@@ -14,7 +14,7 @@ public class ButtonTableModel
   private static final String[] columnNames =
   { "Button", "Function", "Shifted" };
   private static final Class[] columnClasses =
-  { Button.class, Function.class, Function.class };
+  { Button.class, Button.class, Button.class };
 
   public ButtonTableModel() { }
 
@@ -40,23 +40,24 @@ public class ButtonTableModel
   public Object getValueAt( int row, int col )
   {
     Button button = buttons[ row ];
-    Object rc = null;
-    switch ( col )
-    {
-      case buttonCol:
-        rc = button;
-        break;
-      case functionCol:
-        rc = button.getFunction();
-        break;
-      case shiftedCol:
-          rc = button.getShiftedFunction();
-        break;
-      default:
-        break;
-    }
-
-    return rc;
+    return button;
+//    Object rc = null;
+//    switch ( col )
+//    {
+//      case buttonCol:
+//        rc = button;
+//        break;
+//      case functionCol:
+//        rc = button.getFunction();
+//        break;
+//      case shiftedCol:
+//          rc = button.getShiftedFunction();
+//        break;
+//      default:
+//        break;
+//    }
+//
+//    return rc;
   }
 
   public void setValueAt( Object value, int row, int col )
