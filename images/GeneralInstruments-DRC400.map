@@ -3,18 +3,18 @@
 #$-:Map THIS! free image map editor by Todd C. Wilson
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
-#$TITLE:Motorola DRC400
-#$DATE:Mon Sep 29 11:42:44 2003
+#$TITLE:GeneralInstruments DRC400
+#$DATE:Mon Sep 29 11:37:45 2003
 #$PATH:D:\Images\
-#$GIF:Motorola-DRC400.jpg
+#$GIF:GeneralInstruments-DRC400.jpg
 #$FORMAT:ncsa
 #$EOH
-default 2104
-circle VCR/DVD  66,42 74,50
+default GI
+circle VCR  66,42 74,50
 circle Cable  99,42 107,50
 circle TV  132,50 140,58
 circle mute  134,79 145,90
-circle audio  32,50 40,58
+circle aux  32,50 40,58
 circle POWER  83,74 102,85
 circle page+  51,102 64,108
 circle lock  83,107 89,113

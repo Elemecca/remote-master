@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-9800
-#$DATE:Mon Sep 15 16:11:56 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Mon Sep 29 13:49:59 2003
+#$PATH:D:\Images\
 #$GIF:URC-9800.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -17,11 +17,11 @@ rect CBL/SAT 118,75 139,89
 rect AMP 65,94 84,109
 rect CD 90,94 107,109
 circle HOME_THEATER  86,121 116,127
-circle menu{Clear}  57,206 68,214
-circle center{Prog}  58,187 69,195
-circle Select  60,225 71,233
+circle menu{prog}  57,206 68,214
+circle center{rear}  58,187 69,195
+circle Select{Clear}  60,225 71,233
 circle shift  65,149 76,157
-circle Esc{Rear}  60,168 71,176
+circle Esc  60,168 71,176
 circle POWER  138,140 151,150
 circle up  111,155 126,161
 circle down  110,192 125,198
@@ -58,6 +58,6 @@ circle SETUP  120,427 131,435
 circle Macro  43,374 56,381
 circle Macro2  85,375 98,383
 circle {LIGHT}  121,400 132,408
-poly tuner 36,94 58,94 59,108 39,105 36,94
-poly aux1 116,94 139,94 132,107 114,109 116,94
-poly ff{slow+} 84,396 100,403 84,411 84,396
+poly tuner 36,94 58,94 59,108 39,105 36,94 36,94
+poly aux1 116,94 139,94 132,107 114,109 116,94 116,94
+poly ff{slow+} 84,396 100,403 84,411 84,396 84,396

@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7542
-#$DATE:Tue Sep 16 15:42:24 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Mon Sep 29 12:42:38 2003
+#$PATH:D:\Images\
 #$GIF:URC-7542.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -14,8 +14,6 @@ circle MAGIC[setup]  47,43 58,50
 rect MENU 65,36 81,52
 circle POWER  98,43 109,50
 circle TV  39,81 50,89
-rect VCR 55,70 70,90
-rect SAT 76,70 91,90
 circle AUX  107,80 118,88
 circle 1  41,109 54,118
 circle 2  74,109 87,118
@@ -42,3 +40,5 @@ circle TV/VCR{red}  40,335 53,342
 rect STOP{green} 56,342 73,358
 circle REC{yellow}  91,350 100,359
 circle SLOW{blue}  113,334 126,341
+poly vcr 54,69 71,68 71,91 56,91 54,69
+poly sat 76,68 94,69 91,90 76,91 76,68

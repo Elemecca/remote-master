@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-6131
-#$DATE:Mon Sep 15 15:00:45 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Mon Sep 29 12:36:17 2003
+#$PATH:D:\Images\
 #$GIF:URC-6131.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -28,33 +28,33 @@ circle Down  74,149 87,157
 circle SELECT  74,122 86,134
 circle MUTE  34,191 41,198
 circle VOL+  31,159 42,175
-circle VOL-  55,179 63,191
+circle VOL-  55,178 63,190
 circle CH+  116,158 127,174
-circle CH-  93,179 101,191
+circle CH-  92,177 100,189
 circle Prev  113,191 120,198
-circle Replay  32,214 40,222
-circle Thumbs_Down  53,207 61,215
+circle Replay  33,214 41,222
+circle Thumbs_Down  52,207 60,215
 circle PVR_Menu  73,204 82,213
 circle Thumbs_Up  95,207 103,215
 circle Advance  115,214 123,222
-circle Stop  56,231 67,238
-circle Play  91,231 102,238
+circle Stop  56,232 67,240
+circle Play  91,232 102,240
 circle Rewind  38,247 49,254
-circle Pause  74,248 85,255
+circle Pause  74,247 85,255
 circle Fast_forward  109,247 120,254
-circle Prev_track  55,262 66,269
+circle Prev_track  56,262 67,269
 circle Next_track  91,262 102,269
 circle Rec  33,277 41,285
 circle Audio{CC}  53,284 61,292
-circle Subtitle  73,286 81,294
-circle Angle{Sleep}  94,284 102,292
+circle Subtitle  74,286 82,294
+circle Angle{Sleep}  95,284 103,292
 circle Slow  114,277 122,285
-circle 1  42,312 54,320
+circle 1  42,311 54,319
 circle 2  74,315 86,323
 circle 3  106,311 118,319
-circle 4  43,333 55,341
+circle 4  42,333 54,341
 circle 5  74,337 86,345
-circle 6  106,333 118,341
+circle 6  106,332 118,340
 circle 7  43,354 55,362
 circle 8  73,358 86,366
 circle 9  105,354 117,362
