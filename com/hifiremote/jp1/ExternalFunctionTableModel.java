@@ -9,7 +9,7 @@ import javax.swing.DefaultComboBoxModel;
 import java.util.Vector;
 
 public class ExternalFunctionTableModel
-  extends AbstractTableModel
+  extends KMTableModel
 {
   private DeviceUpgrade upgrade = null;
   private DefaultCellEditor devTypeEditor = null;
@@ -202,6 +202,36 @@ public class ExternalFunctionTableModel
     if ( col == rowCol )
       rc = false;
     return rc;   
+  }
+
+  public void removeRow( int row )
+  {
+    upgrade.getExternalFunctions().removeElementAt( row );
+  }
+
+  public void insertRow( int row, Object object )
+  {
+    upgrade.getExternalFunctions().insertElementAt( object, row );
+  }
+  
+  public void addRow( Object object )
+  {
+    upgrade.getExternalFunctions().add( object );
+  }  
+
+  public Object getRow( int row )
+  {
+    return upgrade.getExternalFunctions().elementAt( row );
+  }
+
+  public void moveRow( int from, int to )
+  {
+    Vector functions = upgrade.getExternalFunctions();
+    Object o = functions.elementAt( from );
+    if ( from < to )
+      to--;
+
+    functions.insertElementAt( o, to );
   }
 
   private final static String[] names =

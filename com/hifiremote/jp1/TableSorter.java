@@ -43,12 +43,12 @@ public class TableSorter extends TableMap {
         indexes = new int[0]; // for consistency
     }
 
-    public TableSorter(TableModel model) {
-        setModel(model);
+    public TableSorter( KMTableModel model ) {
+        setModel( model );
     }
 
-    public void setModel(TableModel model) {
-        super.setModel(model); 
+    public void setModel( KMTableModel model ) {
+        super.setModel( model ); 
         reallocateIndexes(); 
     }
 
@@ -336,6 +336,12 @@ public class TableSorter extends TableMap {
         super.tableChanged(new TableModelEvent(this)); 
     }
 
+    public int convertRowIndexToModel( int aRow )
+    {
+      checkModel();
+      return indexes[ aRow ];
+    }
+
     // There is no-where else to put this. 
     // Add a mouse listener to the Table to trigger a table sort 
     // when a column heading is clicked in the JTable. 
@@ -359,4 +365,105 @@ public class TableSorter extends TableMap {
         JTableHeader th = tableView.getTableHeader(); 
         th.addMouseListener(listMouseListener); 
     }
+
+    public Object getRow( int row )
+    {
+      return model.getRow( indexes[ row ]);
+    }
+
+    public void addRow( Object object )
+    {
+      model.addRow( object );
+      int[] saved = indexes;
+      indexes = new int[ saved.length + 1 ];
+      int i;
+      for ( i = 0; i < saved.length; i++ )
+        indexes[ i ] = saved[ i ];
+      indexes[ i ] = i;
+    }
+
+    public void insertRow( int row, Object object )
+    {
+      System.err.println( "TableSorter.insertRow( " + row + ", ... )" );
+      model.insertRow( indexes[ row ], object );
+      int mappedRow = indexes[ row ];
+      int[] saved = indexes;
+      indexes = new int[ indexes.length + 1 ];
+      System.err.println( "MappedRow=" + mappedRow );
+      int temp;
+      for ( int i = 0; i < indexes.length; i++ )
+      {
+        System.err.println( "Computing new index for row " + i );
+        if ( i < row )
+        {
+          System.err.println( "Using saved[" + i + "]" );
+          temp = saved[ i ];
+        }
+        else if ( i == row )
+        {
+          temp = saved[ i ];
+        }
+        else // temp > row
+        {
+          System.err.println( "Using saved[" + ( i - 1 ) + "]" );
+          temp = saved[ i - 1 ];
+        }
+        
+        System.err.println( "Got " + temp );
+
+        if (( i != row ) && ( temp >= mappedRow ))
+        {
+          System.err.println( "Incrementing value" );
+          temp++;
+        }
+
+        System.err.println( "Setting indexes[" + i + "]=" + temp );
+        indexes[ i ] = temp;
+      }
+    }
+
+    public void removeRow( int row )
+    {
+      System.err.println( "TableSorter.removeRow(" + row + ")" );
+      model.removeRow( indexes[ row ]);
+      int modelRow = indexes[ row ];
+      System.err.println( "modelRow=" + modelRow );
+      int[] saved = indexes;
+      indexes = new int[ saved.length - 1 ];
+      int temp;
+      for ( int i = 0; i < indexes.length; i++ )
+      {
+        System.err.println( "Computing new index for row " + i );
+
+        if ( i < row )
+        {
+          System.err.println( "using saved[" + i + "]" );
+          temp = saved[ i ];
+        }
+        else
+        {
+          System.err.println( "using saved[" + ( i + 1 ) + "]" ); 
+          temp = saved[ i + 1 ];
+        }
+
+        System.err.println( "Got " + temp );
+
+        if ( temp > modelRow )
+        {
+          System.err.println( "Decrementing" );
+          temp--;
+        }
+
+        indexes[ i ] = temp;
+      }
+   }
+
+   public void moveRow( int from, int to )
+   {
+     Object o = getRow( from );
+     insertRow( to, o );
+     if ( from > to )
+       from++;
+     removeRow( from );
+   }
 }

@@ -16,17 +16,17 @@ import javax.swing.table.*;
 import javax.swing.event.TableModelListener; 
 import javax.swing.event.TableModelEvent; 
 
-public class TableMap extends AbstractTableModel 
+public class TableMap extends KMTableModel 
                       implements TableModelListener {
-    protected TableModel model; 
+    protected KMTableModel model; 
 
     public TableModel getModel() {
         return model;
     }
 
-    public void setModel(TableModel model) {
+    public void setModel( KMTableModel model ) {
         this.model = model; 
-        model.addTableModelListener(this); 
+        model.addTableModelListener( this ); 
     }
 
     // By default, implement TableModel by forwarding all messages 
@@ -65,5 +65,30 @@ public class TableMap extends AbstractTableModel
     // By default forward all events to all the listeners. 
     public void tableChanged(TableModelEvent e) {
         fireTableChanged(e);
+    }
+
+    public void addRow( Object object )
+    {
+      model.addRow( object );
+    }
+
+    public void insertRow( int row, Object object )
+    {
+      model.insertRow( row, object );
+    }
+
+    public void removeRow( int row )
+    {
+      model.removeRow( row );
+    }
+
+    public Object getRow( int row )
+    {
+      return model.getRow( row );
+    }
+
+    public void moveRow( int from, int to )
+    {
+      model.moveRow( from, to );
     }
 }

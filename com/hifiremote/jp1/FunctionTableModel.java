@@ -6,7 +6,7 @@ import javax.swing.table.TableCellRenderer;
 import java.util.Vector;
 
 public class FunctionTableModel
-  extends AbstractTableModel
+  extends KMTableModel
 {
   private Vector functions = null;
   private Protocol protocol = null;
@@ -100,13 +100,21 @@ public class FunctionTableModel
       KeyMapMaster.showMessage( msg );
       throw new IllegalArgumentException( msg );
     }
+    else
+      KeyMapMaster.clearMessage();
   }
 
   public void setValueAt( Object value, int row, int col )
   {
     Function function = ( Function )functions.elementAt( row );
     if ( col == nameCol )
-      function.setName(( String )value );
+    {
+      String text = ( String )value;
+      if ( text.length() == 0 )
+        text = null;
+      checkFunctionAssigned( function, text );
+      function.setName( text );
+    }
     else if ( col == efcCol )
     {
       checkFunctionAssigned( function, value );
@@ -148,7 +156,6 @@ public class FunctionTableModel
 
   public String getColumnName( int col )
   {
-    System.err.println( "FunctionTableModel.getColumnName( " + col + " )" );
     String rc = null;
     if ( col == rowCol )
       rc = " # ";
@@ -220,6 +227,35 @@ public class FunctionTableModel
     else
       rc = protocol.getColumnRenderer( col - colOffset );
     return rc;
+  }
+
+  public void removeRow( int row )
+  {
+    functions.removeElementAt( row );
+  }
+
+  public void insertRow( int row, Object object )
+  {
+    functions.insertElementAt( object, row );
+  }
+  
+  public void addRow( Object object )
+  {
+    functions.add( object );
+  }
+
+  public void moveRow( int from, int to )
+  {
+    Object o = functions.elementAt( from );
+    if ( from < to )
+      to--;
+
+    functions.insertElementAt( o, to );
+  }
+
+  public Object getRow( int row )
+  {
+    return functions.elementAt( row );
   }
 }
 

@@ -17,6 +17,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,7 +42,10 @@ public class FunctionPanel
     kit = Toolkit.getDefaultToolkit();
     clipboard = kit.getSystemClipboard();
 
-    table = new FunctionTable( devUpgrade.getFunctions());
+    model = new FunctionTableModel( devUpgrade.getFunctions() );
+    sorter = new TableSorter( model );
+    table = new JTable( sorter );
+    sorter.addMouseListenerToHeaderInTable( table );
     table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
     table.setCellSelectionEnabled( true );
@@ -84,15 +90,12 @@ public class FunctionPanel
           int dropRow = table.getSelectedRow();
           if ( dropRow != dragRow )
           {
-            AbstractTableModel model = ( AbstractTableModel )table.getModel();
-            Vector functions = deviceUpgrade.getFunctions();
-            Object f = functions.remove( dragRow );
-            functions.add( dropRow, f );
+            sorter.moveRow( dragRow, dropRow );
 
             if ( dropRow < dragRow )
-              model.fireTableRowsUpdated( dropRow, dragRow );
+              sorter.fireTableRowsUpdated( dropRow, dragRow );
             else
-              model.fireTableRowsUpdated( dragRow, dropRow );
+              sorter.fireTableRowsUpdated( dragRow, dropRow );
             rc = true;
           }
         }
@@ -150,7 +153,7 @@ public class FunctionPanel
           popupRow = table.rowAtPoint( e.getPoint());
           popupCol = table.columnAtPoint( e.getPoint());
 
-          Function func = ( Function )deviceUpgrade.getFunctions().elementAt( popupRow );
+          Function func = ( Function )sorter.getRow( popupRow );
           deleteItem.setEnabled( !func.assigned());
 
           Transferable clipData = clipboard.getContents( clipboard );
@@ -234,8 +237,39 @@ public class FunctionPanel
   {
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
-    table.setProtocol( p );
-    table.setFunctions( deviceUpgrade.getFunctions());
+
+    model.setProtocol( p );
+    JLabel l = new JLabel();
+    l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
+
+    TableColumnModel columnModel = table.getColumnModel();
+    TableColumn column;
+    int width;
+
+    int cols = model.getColumnCount();
+    int lastCol = cols - 1;
+    for ( int i = 0; i < lastCol; i++ )
+    {
+      column = columnModel.getColumn( i );
+      
+      if ( i != 1 )
+      {
+        l.setText( model.getColumnName( i ));
+        width =  l.getPreferredSize().width;
+        column.setMaxWidth( width );
+      }
+
+      TableCellEditor editor = model.getColumnEditor( i );
+      if ( editor != null )
+        column.setCellEditor( editor );
+
+      TableCellRenderer renderer = model.getColumnRenderer( i );
+      if ( renderer != null )
+        column.setCellRenderer( renderer );
+    }
+    doLayout();
+
+    model.setFunctions( deviceUpgrade.getFunctions());
   }
 
   // Interface ActionListener
@@ -266,23 +300,26 @@ public class FunctionPanel
     if (( source == newButton ) ||
         ( source == newItem ))
     {
+      System.err.println( "FunctionPanel.actionPerformed(): newButton/newItem, row=" + row );
       Function function = new Function();
       if ( row == -1 )
       {
-        functions.add( function );
-        row = functions.size();
+        sorter.addRow( function );
+        row = sorter.getRowCount();
       }
       else
-        functions.add( ++row, function );
+      {
+        sorter.insertRow( row, function );
+      }
 
-      model.fireTableRowsInserted( row, row );
+      sorter.fireTableRowsInserted( row, row );
       if ( select )
         table.setRowSelectionInterval( row, row );
     }
     else if (( source == deleteButton ) ||
              ( source == deleteItem ))
     {
-      Function func = ( Function )functions.elementAt( row );
+      Function func = ( Function )functions.elementAt( sorter.convertRowIndexToModel( row ));
       if ( func.assigned() )
       {
         String message = "Function is assigned to a button, it can not be deleted.";
@@ -290,9 +327,9 @@ public class FunctionPanel
         deleteButton.setEnabled( false );
         throw new IllegalArgumentException( message );
       }
-      functions.remove( row );
-      model.fireTableRowsDeleted( row, row );
-      if ( row == functions.size() )
+      sorter.removeRow( row );
+      sorter.fireTableRowsDeleted( row, row );
+      if ( row == sorter.getRowCount())
         --row;
       if ( select )
         table.setRowSelectionInterval( row, row );
@@ -303,23 +340,25 @@ public class FunctionPanel
       int start = 0;
       int end = 0;
       int sel = 0;
+      int from = row;
+      int to;
 
       if ( source == upButton )
       {
         start = row - 1;
         end = row;
+        to = start;
         sel = start;
       }
       else
       {
         start = row;
         end = row + 1;
+        to = end;
         sel = end;
       }
-      Object o = functions.elementAt( start );
-      functions.set( start, functions.elementAt( end ));
-      functions.set( end, o );
-      model.fireTableRowsUpdated( start, end );
+      sorter.moveRow( from, to );
+      sorter.fireTableRowsUpdated( start, end );
       if ( select )
         table.setRowSelectionInterval( sel, sel );
     }
@@ -407,14 +446,14 @@ public class FunctionPanel
                   }
                 }
 
-                model.setValueAt( value, row, modelCol );
+                sorter.setValueAt( value, row, modelCol );
                 workCol++;
               }
               row++;
             }
             if ( addedRow != -1 )
-              model.fireTableRowsInserted( addedRow, row - 1 );
-            model.fireTableRowsUpdated( popupRow, row - 1 );
+              sorter.fireTableRowsInserted( addedRow, row - 1 );
+            sorter.fireTableRowsUpdated( popupRow, row - 1 );
           }
           else
           {
@@ -442,9 +481,9 @@ public class FunctionPanel
       int row = table.getSelectedRow();
       if ( row != -1 )
       {
-        Function func = ( Function )functions.elementAt( row );
+        Function func = ( Function )sorter.getRow( row );
         upButton.setEnabled( row > 0 );
-        downButton.setEnabled( row < ( functions.size() - 1 ));
+        downButton.setEnabled( row < ( sorter.getRowCount() - 1 ));
         deleteButton.setEnabled( !func.assigned());
         Transferable clipData = clipboard.getContents( clipboard );
         copyButton.setEnabled( true );
@@ -470,7 +509,9 @@ public class FunctionPanel
     finishEditing();
   }
 
-  private FunctionTable table = null;
+  private JTable table = null;
+  private FunctionTableModel model = null;
+  private TableSorter sorter = null;
   private JButton newButton = null;
   private JButton deleteButton = null;
   private JButton upButton = null;
