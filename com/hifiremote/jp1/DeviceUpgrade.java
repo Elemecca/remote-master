@@ -293,6 +293,8 @@ public class DeviceUpgrade
       for ( int i = 0; i < digitMaps.length; i++ )
       {
         int mapNum = digitMaps[ i ];
+        if ( mapNum == 999 )
+          continue;
         int[] codes = DigitMaps.data[ mapNum ];
         int rc = -1;
         for ( int j = 0; ; j++ )
@@ -1006,7 +1008,8 @@ public class DeviceUpgrade
       if ( token != null )
       {
         Hex hex = protocol.getDefaultCmd();
-        if (( protocol.getClass() == ManualProtocol.class ) && token.indexOf( ' ' ) != -1 )
+        if (( protocol.getClass() == ManualProtocol.class ) &&
+            (( token.indexOf( ' ' ) != -1 ) || ( token.indexOf( 'h' ) != -1 )))
         {
           Hex newHex = new Hex( token );
           if ( newHex.length() > hex.length())

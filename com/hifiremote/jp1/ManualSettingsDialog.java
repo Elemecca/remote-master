@@ -58,7 +58,7 @@ public class ManualSettingsDialog
     pid.addPropertyChangeListener( "value", this );
     mainPanel.add( pid, "3, 1" );
 
-    AbstractTableModel model = new AbstractTableModel()
+    deviceModel = new AbstractTableModel()
     {
       public int getRowCount()
       {
@@ -121,7 +121,7 @@ public class ManualSettingsDialog
           return Boolean.valueOf( translator.getComp());
       }
     };
-    JTable table = new JTable( model );
+    JTable table = new JTable( deviceModel );
     JScrollPane scrollPane = new JScrollPane( table );
     Box box = Box.createVerticalBox();
     box.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ));
@@ -162,7 +162,7 @@ public class ManualSettingsDialog
       }
     }
 
-    model = new AbstractTableModel()
+    commandModel = new AbstractTableModel()
     {
       public int getRowCount()
       {
@@ -225,7 +225,7 @@ public class ManualSettingsDialog
           return Boolean.valueOf( translator.getComp());
       }
     };
-    table = new JTable( model );
+    table = new JTable( commandModel );
     scrollPane = new JScrollPane( table );
     box = Box.createVerticalBox();
     box.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ));
@@ -307,6 +307,14 @@ public class ManualSettingsDialog
         if ( temp == null )
           return;
         bits = Integer.parseInt( temp );
+        NumberDeviceParm parm = new NumberDeviceParm( name,
+                                                      new DirectDefaultValue( new Integer( 0 )),
+                                                      10,
+                                                      bits );
+        deviceParms.add( parm );
+        int index = deviceTranslators.size();
+        Translator xlator = new Translator( false, false, index, bits, index * 8 );
+        deviceTranslators.add( xlator );
       }
       else if ( type.equals( types[ 1 ]))
       {
@@ -321,6 +329,9 @@ public class ManualSettingsDialog
       }
       else
         bits = 1;
+
+      int newRow = deviceParms.size() - 1;
+      deviceModel.fireTableRowsInserted( newRow, newRow );
 
 
     }
@@ -362,6 +373,9 @@ public class ManualSettingsDialog
   private Vector deviceTranslators = new Vector();
   private Vector cmdParms = new Vector();
   private Vector cmdTranslators = new Vector();
+
+  private AbstractTableModel deviceModel = null;
+  private AbstractTableModel commandModel = null;
 
   private JFormattedTextField pid = null;
 

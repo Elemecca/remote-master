@@ -57,7 +57,7 @@ public class Hex
     int[] rc = null;
     int length = 0;
     int space = text.indexOf( ' ' );
-    if ( space == -1 )
+    if (( space == -1 ) && ( text.length() > 3 ))
     {
       length = text.length() / 2;
       rc = new int[ length ];
