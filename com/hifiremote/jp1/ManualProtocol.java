@@ -51,7 +51,7 @@ public class ManualProtocol
     switch ( cmdType )
     {
       case ONE_BYTE:
-        defaultCmd = new Hex();
+        defaultCmd = new Hex( new byte[ 1 ]);
         cmdIndex = 0;
         break;
       case BEFORE_CMD:
