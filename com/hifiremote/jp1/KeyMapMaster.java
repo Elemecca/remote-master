@@ -253,7 +253,7 @@ public class KeyMapMaster
     importItem.addActionListener( this );
     menu.add( importItem );
 
-    importFromClipboardItem = new JMenuItem( "Import From Clipboard" );
+    importFromClipboardItem = new JMenuItem( "Import from Clipboard" );
     importFromClipboardItem.setMnemonic( KeyEvent.VK_C );
     importFromClipboardItem.addActionListener( this );
     menu.add( importFromClipboardItem );
