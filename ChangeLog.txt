@@ -1,3 +1,7 @@
+Changes for v0.77
+
+- Change default value for AdvCodeUpgrade to HEX
+
 Changes for v0.76
 
 - RM Maps-and-Images 1.08.zip
