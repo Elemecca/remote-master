@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 1.04";
+  public static final String version = "v1.05";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -29,6 +29,7 @@ public class KeyMapMaster
   private JMenuItem useDefaultNames = null;
   private JMenuItem useCustomNames = null;
   private JMenuItem manualItem = null;
+  private JMenuItem aboutItem = null;
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
   private JRadioButtonMenuItem[] promptButtons = null;
   private JLabel messageLabel = null;
@@ -426,12 +427,23 @@ public class KeyMapMaster
     item.addActionListener( al );
     submenu.add( item );
 
-//    menu = new JMenu( "Tools" );
-//    menuBar.add( menu );
+    menu = new JMenu( "Tools" );
+    menu.setMnemonic( KeyEvent.VK_T );
+    menuBar.add( menu );
 
-//    manualItem = new JMenuItem( "Manual settings..." );
-//    manualItem.addActionListener( this );
-//    menu.add( manualItem );
+    manualItem = new JMenuItem( "Manual settings..." );
+    manualItem.setMnemonic( KeyEvent.VK_M );
+    manualItem.addActionListener( this );
+    menu.add( manualItem );
+
+    menu = new JMenu( "Help" );
+    menu.setMnemonic( KeyEvent.VK_H );
+    menuBar.add( menu );
+
+    aboutItem = new JMenuItem( "About..." );
+    aboutItem.setMnemonic( KeyEvent.VK_A );
+    aboutItem.addActionListener( this );
+    menu.add( aboutItem );
   }
 
   public void addPanel( KMPanel panel )
@@ -501,11 +513,14 @@ public class KeyMapMaster
   private void editManualSettings()
   {
     System.err.println( "editManualSettings()");
-    ManualSettingsDialog d = new ManualSettingsDialog( this, null );
+    ManualSettingsDialog d = 
+      new ManualSettingsDialog( this, 
+                               // ( ManualProtocol )protocolManager.findByName( "Manual Settings" ).firstElement());
+                                deviceUpgrade.getProtocol());
     d.show();
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
-      // ?
+      
     }
   }
 
@@ -679,7 +694,7 @@ public class KeyMapMaster
             tabbedPane.validate();
         }
         oldProtocol.reset();
-        setTitle( "RemoteMapMaster " + version );
+        setTitle( "RemoteMapMaster" );
         description.setText( null );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());
         deviceTypeList.setSelectedItem( deviceUpgrade.getDeviceTypeAliasName());
@@ -734,6 +749,19 @@ public class KeyMapMaster
       else if ( source == manualItem )
       {
         editManualSettings();
+      }
+      else if ( source == aboutItem )
+      {
+        String text = "RemoteMaster Device Upgrade Editor, " + version + "\n" +
+                      "Get the latest version at http://controlremote.sourceforge.net\n\n" +
+                      "Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "\n\n" +
+                      "RDFs loaded from \"" + rdfPath + "\"\n\n" +
+                      "Written primarily by Greg Bush\n\n" +
+                      "Other contributors include:\n" +
+                      "John S Fine, Nils Ekberg, Jon Armstrong, Robert Crowe,\n" +
+                      "Mark Pauker, Mark Pierson, Mike England, and more\n\n";
+
+        JOptionPane.showMessageDialog( this, text, "About RemoteMaster", JOptionPane.INFORMATION_MESSAGE );
       }
     }
     catch ( Exception ex )
@@ -835,7 +863,7 @@ public class KeyMapMaster
       {
         deviceUpgrade.store( file );
         saveItem.setEnabled( true );
-        setTitle( "RemoteMaster " + version + ": " + file.getName());
+        setTitle( file.getCanonicalPath() + " - RemoteMaster" );
       }
     }
   }
@@ -895,7 +923,7 @@ public class KeyMapMaster
 
     if ( isRMDU )
     {
-      setTitle( "RemoteMaster " + version + ": " + file.getName());
+      setTitle( file.getCanonicalPath() + " - RemoteMaster" );
 
       int i = recentFileMenu.getItemCount() - 1;
       while ( i >= 0 )
@@ -915,7 +943,7 @@ public class KeyMapMaster
       recentFileMenu.setEnabled( true );
     }
     else
-      setTitle( "RemoteMaster " + version );
+      setTitle( "RemoteMaster" );
     upgradePath = file.getParentFile();
   }
 
@@ -968,7 +996,7 @@ public class KeyMapMaster
   {
     deviceUpgrade.reset();
     deviceUpgrade.importUpgrade( in );
-    setTitle( "RemoteMaster " + version );
+    setTitle( "RemoteMaster" );
     removeListeners();
     description.setText( deviceUpgrade.getDescription());
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
