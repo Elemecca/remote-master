@@ -9,10 +9,12 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.event.*;
 import java.util.*;
+import java.awt.datatransfer.*;
 import info.clearthought.layout.*;
 
 public class LayoutPanel
   extends KMPanel
+  implements ActionListener
 {
   public LayoutPanel( DeviceUpgrade devUpgrade )
   {
@@ -32,20 +34,6 @@ public class LayoutPanel
 
         g2.setPaint( Color.blue );
 
-        DeviceType devType = deviceUpgrade.getDeviceType();
-        ButtonMap map = devType.getButtonMap();
-        // Button[] buttons = r.getButtons();
-        // for ( int i = 0; i < buttons.length; i++ )
-        // {
-          // Button b = buttons[ i ];
-          // if ( !map.isPresent( b ))
-          // {
-            // Shape shape = b.getShape();
-            // if ( shape != null )
-              // g2.fill( shape );
-          // }
-        // }
-
         if ( currentButton != null )
         {
           g2.setPaint( Color.white );
@@ -53,6 +41,10 @@ public class LayoutPanel
         }
         g2.setPaint( Color.yellow );
         g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+
+        DeviceType devType = deviceUpgrade.getDeviceType();
+        ButtonMap map = devType.getButtonMap();
+
         for ( int i = 0; i < map.size(); i++ )
         {
           Button b = map.get( i );
@@ -94,56 +86,138 @@ public class LayoutPanel
 
     add( infoPanel, BorderLayout.NORTH );
 
-    imagePanel.addMouseListener( new MouseAdapter()
+    JPanel panel = new JPanel( new BorderLayout());
+    JLabel label = new JLabel( "Available Functions:" );
+    label.setBorder( BorderFactory.createEmptyBorder( 2, 2, 3, 2 ));
+    panel.add( label, BorderLayout.NORTH );
+    temp.add( panel, BorderLayout.CENTER );
+
+    JPanel outerPanel = new JPanel( new BorderLayout());
+    functionPanel = new JPanel( new GridLayout( 0, 5 ));
+    outerPanel.add( functionPanel, BorderLayout.NORTH );
+    panel.add( new JScrollPane( outerPanel ), BorderLayout.CENTER );
+
+    MouseInputAdapter mia = new MouseInputAdapter()
     {
       public void mousePressed( MouseEvent e )
       {
         Point p = e.getPoint();
         Button savedButton = currentButton;
-        currentButton = null;
-        Button[] buttons = deviceUpgrade.getRemote().getButtons();
-        for ( int i = 0; i < buttons.length; i++ )
-        {
-          Button b = buttons[ i ];
-          Shape s = b.getShape();
-          if (( s != null ) && s.contains( p ))
-          {
-            currentButton = b;
-            break;
-          }
-        }
+        currentButton = getButtonAtPoint( p );
         if ( currentButton != savedButton )
         {
-          if ( currentButton == null )
-          {
-            buttonName.setText( "" );
-            function.setText( "" );
-            shifted.setText( "" );
-          }
-          else
-          {
-            buttonName.setText( currentButton.getName());
-            Function f = currentButton.getFunction();
-            if ( f != null )
-              function.setText( f.getName());
-            else
-              function.setText( "" );
-            f = currentButton.getShiftedFunction();
-            if ( f != null )
-              shifted.setText( f.getName());
-            else
-              shifted.setText( "" );
-          }
+          setButtonText( currentButton );
           doRepaint();
         }
-
+        showPopup( e );
       }
 
       public void mouseReleased( MouseEvent e )
       {
-        ;
+        showPopup( e );
       }
-    });
+
+      private void showPopup( MouseEvent e )
+      {
+        if ( e.isPopupTrigger() )
+        {
+          Button b = getButtonAtPoint( e.getPoint());
+          if ( b != null )
+          {
+            currentButton = b;
+            doRepaint();
+            popup.show( imagePanel, e.getX(), e.getY());
+          }
+        }
+      }
+
+      public void mouseDragged( MouseEvent e )
+      {
+        buttonUnderMouse = getButtonAtPoint( e.getPoint());
+        System.err.println( "mouseDragged: buttonUnderMouse is " + buttonUnderMouse );
+      }
+    };
+    imagePanel.addMouseListener( mia );
+    imagePanel.addMouseMotionListener( mia );
+
+    TransferHandler th = new TransferHandler()
+    {
+      public boolean canImport( JComponent comp, DataFlavor[] flavors )
+      {
+        return ( buttonUnderMouse != null );
+      }
+
+      public boolean importData( JComponent c, Transferable t )
+      {
+        boolean rc = false;
+        if ( buttonUnderMouse != null )
+        {
+          try
+          {
+            Function f = ( Function )t.getTransferData( LocalObjectTransferable.getFlavor());
+            buttonUnderMouse.setFunction( f );
+          }
+          catch ( Exception e )
+          {
+            rc = false;
+            System.err.println( "ButtonPanel.importData() caught an exception!" );
+            e.printStackTrace( System.err );
+          }
+        }
+        else
+          rc = false;
+
+        return rc;
+      }
+    };
+  }
+
+  private void addFunction( Function f )
+  {
+    if (( f == null ) ||
+        (( f.getHex() != null ) && ( f.getName() != null ) && (f.getName().length() > 0 )))
+    {
+      FunctionLabel l;
+      if ( f == null )
+        l = new FunctionLabel( null );
+      else
+        l = f.getLabel();
+      l.addMouseListener( doubleClickListener );
+      functionPanel.add( l );
+
+      FunctionItem item;
+      if ( f == null )
+        item = new FunctionItem( null );
+      else
+        item = f.getItem();
+      item.addActionListener( this );
+      popup.add( item );
+    }
+  }
+
+  private void setFunctions()
+  {
+    popup = new JPopupMenu();
+    popup.setLayout( new GridLayout( 0, 3 ));
+    FunctionItem item = null;
+
+    functionPanel.removeAll();
+    FunctionLabel label = null;
+    Function function = null;
+
+    Vector funcs = deviceUpgrade.getFunctions();
+    for ( int i = 0; i < funcs.size(); i++ )
+    {
+      function = ( Function )funcs.elementAt( i );
+      addFunction( function );
+    }
+    funcs = deviceUpgrade.getExternalFunctions();
+    for ( int i = 0; i < funcs.size(); i++ )
+    {
+      function = ( Function )funcs.elementAt( i );
+      addFunction( function );
+    }
+    addFunction( null );
   }
 
   public void update()
@@ -170,13 +244,11 @@ public class LayoutPanel
       }
     }
     if ( !found )
-    {
       currentButton = null;
-      buttonName.setText( "" );
-      function.setText( "" );
-      shifted.setText( "" );
-    }
 
+    setButtonText( currentButton );
+
+    setFunctions();
     validate();
     doRepaint();
   }
@@ -186,9 +258,88 @@ public class LayoutPanel
     imagePanel.repaint( 0L, 0, 0, imagePanel.getWidth(), imagePanel.getHeight());
   }
 
+  private void setButtonText( Button b )
+  {
+    if ( b != null )
+    {
+      buttonName.setText( b.getName());
+      Function f = b.getFunction();
+      if ( f != null )
+        function.setText( f.getName());
+      else
+        function.setText( "" );
+      f = b.getShiftedFunction();
+      if ( f != null )
+        shifted.setText( f.getName());
+      else
+        shifted.setText( "" );
+    }
+    else
+    {
+      buttonName.setText( "" );
+      function.setText( "" );
+      shifted.setText( "" );
+    }
+  }
+
+  public Button getButtonAtPoint( Point p )
+  {
+    Button rc = null;
+    Button[] buttons = deviceUpgrade.getRemote().getButtons();
+    for ( int i = 0; i < buttons.length; i++ )
+    {
+      Button b = buttons[ i ];
+      Shape s = b.getShape();
+      if (( s != null ) && s.contains( p ))
+      {
+        rc = b;
+        break;
+      }
+    }
+    return rc;
+  }
+
+// From interface ActionListener
+  public void actionPerformed( ActionEvent e )
+  {
+    Object source = e.getSource();
+    if ( currentButton != null )
+    {
+      Function function = (( FunctionItem )source ).getFunction();
+      if (( e.getModifiers() & ActionEvent.SHIFT_MASK ) == 0 )
+        currentButton.setFunction( function );
+      else
+        currentButton.setShiftedFunction( function );
+      setButtonText( currentButton );
+    }
+  }
+
+  class DoubleClickListener
+    extends MouseAdapter
+  {
+    public void mouseClicked( MouseEvent e )
+    {
+      if (( currentButton == null ) || ( e.getClickCount() < 2 ))
+        e.consume();
+      else
+      {
+        FunctionLabel label = ( FunctionLabel )e.getSource();
+        if (( e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK ) == 0 )
+          currentButton.setFunction( label.getFunction());
+        else
+          currentButton.setShiftedFunction( label.getFunction());
+        setButtonText( currentButton );
+      }
+    }
+  }
+
   private Button currentButton = null;
+  private Button buttonUnderMouse = null;
   private JPanel imagePanel = null;
   private JTextField buttonName = null;
   private JTextField function = null;
   private JTextField shifted = null;
+  private JPopupMenu popup = null;
+  private JPanel functionPanel = null;
+  private DoubleClickListener doubleClickListener = new DoubleClickListener();
 }

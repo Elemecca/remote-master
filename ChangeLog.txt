@@ -1,7 +1,12 @@
 Changes for v0.51
 
 - Win98 doesn't repaint Layout Panel when device type changed
-- Highlight a button on the Layout Panel by clicking on it.
+- Select a button on the Layout Panel by clicking on it.
+- Added text fields showing name of selected button and assigned functions.
+- Added popup menu for assigning functions to buttons.  Hold 
+  shift key to assign shifted function.
+- Added function grid.  Double-click a function to assign it
+  to the selected button.  Hold shift key to assign shifted function.
 - Can't open .km files using File:Open
 
 Changes for v0.50
