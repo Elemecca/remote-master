@@ -48,6 +48,8 @@ public class DeviceCombinerPanel
         CombinerDevice device = ( CombinerDevice )deviceCombiner.getDevices().elementAt( row );
         if ( device == null )
           return null;
+        if ( device.getProtocol() == null )
+          return null;
         if ( col == 0 )
           return new Integer( row + 1 );
         else if ( col == 1 )
