@@ -1,22 +1,37 @@
 package com.hifiremote.jp1;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.table.*;
 
 public class ChoiceCmdParm
   extends CmdParameter
 {
-  public ChoiceCmdParm( String name, DefaultValue defaultValue, String[] textChoices )
+  public ChoiceCmdParm( String name, DefaultValue defaultValue, Vector textChoices )
   {
     super( name, defaultValue );
-    choices = new Choice[ textChoices.length ];
-    for ( int i = 0; i < choices.length; i++ )
+    System.err.println( "ChoiceCmdParm.ChoiceCmdParm()" );
+    int numChoices = 0;
+    for ( Enumeration e = textChoices.elements(); e.hasMoreElements(); )
     {
-      choices[ i ] = new Choice( i, textChoices[ i ] );
+      String str = ( String )e.nextElement();
+      System.err.println( "Got text choice " + str );
+      if ( str != null )
+        numChoices++;
+    }
+    System.err.println( "numChoices=" + numChoices );
+    choices = new Choice[ numChoices ];
+    int index = 0;
+    int i = 0;
+    for ( Enumeration e = textChoices.elements(); e.hasMoreElements(); )
+    {
+      String str = ( String )e.nextElement();
+      if ( str != null )
+      {
+        System.err.println( "choices[" + i + "] is " + str );
+        choices[ i++ ] = new Choice( index, str );
+      }
+      index++;
     }
 
     editor = new ChoiceEditor( choices );
@@ -46,7 +61,13 @@ public class ChoiceCmdParm
 
   public Object getValue( Object val )
   {
-    return choices[ (( Integer )val ).intValue()];
+    int i = (( Integer )val ).intValue();
+    for ( int j = 0; j < choices.length; j++ )
+    {
+      if ( choices[ j ].getIndex() == i )
+        return ( choices[ j ]);
+    }
+    return null;
   }
 
   public Object convertValue( Object value )

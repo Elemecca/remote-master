@@ -1,7 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.Dimension;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class CmdParmFactory
 {
@@ -13,7 +13,7 @@ public class CmdParmFactory
     DefaultValue defaultValue = null;
     int bits = -1;
     String name = st.nextToken();
-    String[] choices = null;
+    Vector choices = null;
 //    Dimension d = null;
     while ( st.hasMoreTokens())
     {
@@ -37,12 +37,16 @@ public class CmdParmFactory
         String str = st.nextToken();
         if ( str.indexOf( '|' ) != -1 )
         {
-          StringTokenizer st2 = new StringTokenizer( str, "|" );
-          int numChoices = st2.countTokens();
-          choices = new String[ numChoices ];
-          for ( int j = 0; j < numChoices; j++ )
+          StringTokenizer st2 = new StringTokenizer( str, "|", true );
+          choices = new Vector();
+          while ( st2.hasMoreTokens())
           {
-            choices[ j ] = st2.nextToken();
+            String val = st2.nextToken();
+            if ( val.equals( "|" ))
+              val = null;
+            else if ( st2.hasMoreTokens())
+              st2.nextToken();
+            choices.add( val );
           }
         }
 //        else if ( str.indexOf( '-' ) != -1 )

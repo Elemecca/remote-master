@@ -26,24 +26,19 @@ public class Protocol
     }
 
     this.fixedData = new Hex( props.getProperty( "FixedData", "" ));
-    
-    temp = props.getProperty( "FixedData.S3C80" );
-    if ( temp != null )
-      fixedDataMap.put( "S3C80", new Hex( temp ));
-
-    temp = props.getProperty( "FixedData.740" );
-    if ( temp != null )
-      fixedDataMap.put( "740", new Hex( temp ));
-
-    temp = props.getProperty( "FixedData.6805" );
-    if ( temp != null )
-      fixedDataMap.put( "6805", new Hex( temp ));
 
     temp = props.getProperty( "CmdTranslator" );
     if ( temp != null )
     {
       System.err.println( "Protocol.Protocol("+ name +") got CmdTranslator property." );
       cmdTranslators = TranslatorFactory.createTranslators( temp );
+    }
+
+    temp = props.getProperty( "ImportTranslator" );
+    if ( temp != null )
+    {
+      System.err.println( "Protocol.Protocol("+ name +") got ImportTranslator property." );
+      importTranslators = TranslatorFactory.createTranslators( temp );
     }
 
     notes = props.getProperty( "Notes" );
@@ -275,6 +270,17 @@ public class Protocol
       cmdTranslators[ i ].in( vals, hex, devParms, col );
   }
 
+  public void importValueAt( int col, Hex hex, Object value )
+  {
+    Value[] vals = new Value[ 2 ];
+    vals[ col ] = new Value( value, null );
+    Translate[] translators = importTranslators;
+    if ( translators == null )
+      translators = cmdTranslators;
+    for ( int i = 0; i < translators.length; i++ )
+      translators[ i ].in( vals, hex, devParms, col );
+  }
+
   public boolean isEditable( int col ){ return true; }
 
   public String toString(){ return name; }
@@ -293,15 +299,12 @@ public class Protocol
     return result + ")";
   }
 
-  public Hex getFixedData( Remote remote )
+  public Hex getFixedData()
   {
     System.err.println( "Protocol.getFixedData()" );
-    Hex data = ( Hex )fixedDataMap.get( remote.getProcessor());
-    if ( data == null )
-      data = fixedData;
     Hex temp = null;
     try {
-      temp = ( Hex )data.clone();
+      temp = ( Hex )fixedData.clone();
     } catch ( CloneNotSupportedException e ){}
     Value[] parms = getDeviceParmValues();
     if ( deviceTranslators != null )
@@ -462,7 +465,7 @@ public class Protocol
     return result;
   }
 
-  public void store( PrintWriter out, Remote remote )
+  public void store( PrintWriter out )
     throws IOException
   {
     System.err.println( "Protocol.store()" );
@@ -474,7 +477,7 @@ public class Protocol
     if (( parms != null ) && ( parms.length != 0 ))
       DeviceUpgrade.print( out, "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ));
     if ( fixedData != null )
-      DeviceUpgrade.print( out, "FixedData", getFixedData( remote ).toString());
+      DeviceUpgrade.print( out, "FixedData", getFixedData().toString());
   }
 
   public final static int tooDifferent = 0x7FFFFFFF;
@@ -483,13 +486,13 @@ public class Protocol
   protected Hex id = null;
   private String variantName = null;
   protected Hex fixedData = null;
-  protected HashMap fixedDataMap = new HashMap( 4 );
   protected Hex defaultCmd = null;
   protected int cmdIndex;
   protected DeviceParameter[] devParms = null;
   protected Translate[] deviceTranslators = null;
   protected CmdParameter[] cmdParms = null;
   protected Translate[] cmdTranslators = null;
+  protected Translate[] importTranslators = null;
   protected HashMap code = new HashMap( 4 );
   private Initializer[] cmdParmInit = null;
   protected String notes = null;

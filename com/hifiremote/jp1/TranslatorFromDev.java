@@ -25,15 +25,13 @@ public class TranslatorFromDev
       w = i.intValue() >> lsbOffset;
 
     if ( comp )
-    {
       w = 0xFFFFFFFF - w;
-    }
-    if ( lsb )
-    {
-      w = reverse(w, bits );
-    }
 
-    insert( hexData, bitOffset, bits, w );  }
+    if ( lsb )
+      w = reverse(w, bits );
+
+    insert( hexData, bitOffset, bits, w );
+  }
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {

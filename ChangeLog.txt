@@ -6,6 +6,7 @@ Changes for v0.84
 - Added support for Zenith protocol
 - Added error message when KM file is imported that uses an 
   unsupported protocol.
+- RM Maps-and-Images 1.13.zip
 
 Changes for v0.83
 

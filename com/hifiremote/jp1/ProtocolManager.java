@@ -219,6 +219,8 @@ public class ProtocolManager
   public Protocol findProtocol( String name, Hex id, String variantName )
   {
     Vector protocols = findByPID( id );
+    if ( protocols == null )
+      return null;
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol p = ( Protocol )e.nextElement();
@@ -235,6 +237,8 @@ public class ProtocolManager
   {
     Protocol near = null;
     Vector protocols = findByPID( id );
+    if ( protocols == null )
+      return null;
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol p = ( Protocol )e.nextElement();

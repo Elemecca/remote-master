@@ -131,7 +131,7 @@ public class SetupPanel
     protocolList.setSelectedItem( p );
     protocolID.setText( p.getID().toString());
     notes.setText( deviceUpgrade.getNotes());
-    fixedData.setText( p.getFixedData( remote ).toString());
+    fixedData.setText( p.getFixedData().toString());
     protocolNotes.setText( p.getNotes());
     protocolNotes.setCaretPosition( 0 );
     updateInProgress = false;
@@ -177,7 +177,7 @@ public class SetupPanel
   {
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
-    fixedData.setText( p.getFixedData( deviceUpgrade.getRemote()).toString());
+    fixedData.setText( p.getFixedData().toString());
   }
 
   // ActionListener Methods
@@ -198,7 +198,7 @@ public class SetupPanel
 //        vp.setViewPosition( new Point( 0, 0 ));
         deviceUpgrade.setProtocol( newProtocol );
         updateParameters();
-        fixedData.setText( newProtocol.getFixedData( deviceUpgrade.getRemote()).toString());
+        fixedData.setText( newProtocol.getFixedData().toString());
         revalidate();
         protocolNotes.setText( newProtocol.getNotes());
         protocolNotes.setCaretPosition( 0 );
