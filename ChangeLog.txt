@@ -1,4 +1,4 @@
-Chnagex for v0.69
+Changes for v0.69
 
 - Match KM changes for TiVo protocols
 - Handle user modifucation of directory structure more gracefully
