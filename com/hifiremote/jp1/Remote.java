@@ -782,7 +782,7 @@ public class Remote
 
   public Button getButton( String name )
   {
-    return ( Button )buttonsByName.get( name );
+    return ( Button )buttonsByName.get( name.toLowerCase());
   }
 
   public void addButton( Button b )
@@ -829,8 +829,8 @@ public class Remote
       b.setStandardName( name );
     }
     buttons.add( b );
-    buttonsByName.put( b.getName(), b );
-    buttonsByStandardName.put( b.getStandardName(), b );
+    buttonsByName.put( b.getName().toLowerCase(), b );
+    buttonsByStandardName.put( b.getStandardName().toLowerCase(), b );
     buttonsByKeyCode.put( new Integer( keycode ), b );
   }
 
@@ -875,7 +875,7 @@ public class Remote
   public Button findByStandardName( Button b )
   {
     checkLoaded();
-    return ( Button )buttonsByStandardName.get( b.getStandardName());
+    return ( Button )buttonsByStandardName.get( b.getStandardName().toLowerCase());
   }
 
 
