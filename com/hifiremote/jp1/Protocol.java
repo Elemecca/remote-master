@@ -21,7 +21,6 @@ public class Protocol
     temp = props.getProperty( "DeviceTranslator" );
     if ( temp != null )
     {
-      System.err.println( "Protocol.Protocol("+ name +") got DeviceTranslator property." );
       deviceTranslators = TranslatorFactory.createTranslators( temp );
     }
 
@@ -30,14 +29,12 @@ public class Protocol
     temp = props.getProperty( "CmdTranslator" );
     if ( temp != null )
     {
-      System.err.println( "Protocol.Protocol("+ name +") got CmdTranslator property." );
       cmdTranslators = TranslatorFactory.createTranslators( temp );
     }
 
     temp = props.getProperty( "ImportTranslator" );
     if ( temp != null )
     {
-      System.err.println( "Protocol.Protocol("+ name +") got ImportTranslator property." );
       importTranslators = TranslatorFactory.createTranslators( temp );
     }
 
@@ -59,7 +56,6 @@ public class Protocol
     temp = props.getProperty( "CmdParms", "" );
     StringTokenizer st = new StringTokenizer( temp, "," );
     int count = st.countTokens();
-    System.err.println( "Detected " + count + " cmdParms" );
     cmdParms = new CmdParameter[ count ];
     for ( int i = 0; i < count; i++ )
     {
@@ -71,7 +67,6 @@ public class Protocol
     temp = props.getProperty( "CmdParmInit" );
     if ( temp != null )
     {
-      System.err.println( "Protocol.Protocol("+ name +") got CmdParmInit property." );
       cmdParmInit = InitializerFactory.create( temp );
     }
 
@@ -264,7 +259,6 @@ public class Protocol
   public void setValueAt( int col, Hex hex, Object value )
   {
     Value[] vals = new Value[ cmdParms.length ];
-    System.err.println( "Value is of class " + value.getClass() );
     vals[ col ] = new Value( cmdParms[ col ].convertValue( value ), null );
     for ( int i = 0; i < cmdTranslators.length; i++ )
       cmdTranslators[ i ].in( vals, hex, devParms, col );
@@ -301,7 +295,6 @@ public class Protocol
 
   public Hex getFixedData()
   {
-    System.err.println( "Protocol.getFixedData()" );
     Hex temp = null;
     try {
       temp = ( Hex )fixedData.clone();
@@ -309,7 +302,6 @@ public class Protocol
     Value[] parms = getDeviceParmValues();
     if ( deviceTranslators != null )
     {
-      System.err.println( "\tHave deviceTranslators!" );
       for ( int i = 0; i < deviceTranslators.length; i++ )
         deviceTranslators[ i ].in( parms, temp, devParms, -1 );
     }
@@ -319,7 +311,6 @@ public class Protocol
   // convert the functions defined in this protocol to the new Protocol
   public void convertFunctions( Vector funcs, Protocol newProtocol )
   {
-    System.err.println( getDiagnosticName() + " Protocol.convertFunctions(" + newProtocol.getDiagnosticName() + ")" );
     CmdParameter[] newParms = newProtocol.cmdParms;
 
     // count the number of matching parameters
@@ -327,18 +318,15 @@ public class Protocol
     for ( int i = 0; i < cmdParms.length; i++ )
     {
       String name = cmdParms[ i ].getName();
-      System.err.println( "Checking " + name + " for a match." );
       for ( int j = 0; j < newParms.length; j++ )
       {
         if ( name.equals( newParms[ j ].getName()))
         {
-          System.err.println( "Found a match!" );
           matchingParms++;
           break;
         }
       }
     }
-    System.err.println( "There are " + matchingParms + " matches." );
     // create a map of command parameter indexs from this protocol to the new one
     int[] oldIndex = new int[ matchingParms ];
     int[] newIndex = new int[ matchingParms ];
@@ -350,7 +338,6 @@ public class Protocol
       {
         if ( name.equals( newParms[ j ].getName()))
         {
-          System.err.println( "parm " + i + " matches new parm " + j );
           oldIndex[ match ] = i;
           newIndex[ match ] = j;
           match++;
@@ -365,7 +352,6 @@ public class Protocol
     // initialize the contents of newValues with the defaultValues for the new protocol
     for ( int i = 0; i < newValues.length; i++ )
     {
-      System.err.println( "Initializing newParm " + i + " to " + newParms[ i ].getDefaultValue() );
       newValues[ i ] = new Value( newParms[ i ].getDefaultValue(), null );
     }
 
@@ -373,11 +359,8 @@ public class Protocol
     for ( Enumeration enum = funcs.elements(); enum.hasMoreElements(); )
     {
       Function f = ( Function )enum.nextElement();
-      System.err.println( "Converting function " + f.getName());
       Hex hex = f.getHex();
-      System.err.println( "Starting hex is " + hex );
       Hex newHex = newProtocol.getDefaultCmd();
-      System.err.println( "Initial new hex is " + newHex );
       if ( hex != null )
       {
         // extract the command parms from the hex
@@ -387,7 +370,6 @@ public class Protocol
         // copy the matching parameters to the new Values;
         for ( int i = 0; i < oldIndex.length; i++ )
         {
-          System.err.println( "Setting newValue " + newIndex[ i ] + " to " + currValues[ oldIndex[ i ]].getValue());
           newValues[ newIndex[ i]] = currValues[ oldIndex[ i ]];
         }
 
@@ -396,7 +378,6 @@ public class Protocol
           newProtocol.cmdTranslators[ i ].in( newValues, newHex, newProtocol.devParms, -1 );
 
         // store the hex back into the function
-        System.err.println( "Storing new hex " + newHex );
         f.setHex( newHex );
       }
     }

@@ -34,7 +34,6 @@ public class Translator
           case adjustOffset:
           {
             adjust = val;
-            System.err.println( "Translator.Translator() adjust=" + adjust );
             break;
           }
           default:

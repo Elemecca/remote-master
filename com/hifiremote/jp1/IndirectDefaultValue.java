@@ -11,7 +11,6 @@ public class IndirectDefaultValue
 
   public void setIsComplement( boolean flag )
   {
-    System.err.println( "IndirectDefaultValue.setIsComplement( " + flag + " )" );
     complement = true;
   }
 
@@ -26,7 +25,6 @@ public class IndirectDefaultValue
     if ( complement )
       rc = new Integer( 255 - rc.intValue());
       
-    System.err.println( "IndirectDefaultValue.value() returns " + rc );
     return rc;
   }
 

@@ -649,7 +649,6 @@ public class DeviceUpgrade
                     ProtocolManager protocolManager )
     throws Exception
   {
-    System.err.println( "DeviceUpgrade.importFile()" );
     BufferedReader in = new BufferedReader( new FileReader( file ));
 
     String line = in.readLine(); // line 1
@@ -682,12 +681,9 @@ public class DeviceUpgrade
       // build a list of similar remote names, and ask the user to pick a match.
       // First check if there is a slash in the name;
       String[] subNames = new String[ 0 ];
-      System.err.println( "Searching for slashes in " + str );
       int slash = str.indexOf( '/' );
-      System.err.println( "slash=" + slash );
       if ( slash != -1 )
       {
-        System.err.println( "Got a multi-model remote to import: " + str );
         int count = 2;
         while (( slash = str.indexOf( '/', slash + 1 )) != -1 )
           count++;
@@ -696,7 +692,6 @@ public class DeviceUpgrade
         for ( int i = 0; i < count; i++ )
         {
           subNames[ i ] = nameTokenizer.nextToken();
-          System.err.println( "Added subName " + subNames[ i ]);
         }
       }
       else
@@ -746,26 +741,26 @@ public class DeviceUpgrade
     else
       remote = remotes[ index ];
 
-    in.readLine(); // skip line 5
-    line = in.readLine(); // line 6
     Hex pid = null;
-    int equals = line.indexOf( '=' );
-    if (( equals != -1 ) && line.substring( 0, equals + 1 ).equalsIgnoreCase( "Upgrade Code 0 =" ))
+    while ( true )
     {
-      byte[] id = new byte[ 2 ];
-      int temp = Integer.parseInt( line.substring( 17, 19 ), 16 );
-      if (( temp & 8 ) != 0 )
-        id[ 0 ] = 1;
-
-      line = in.readLine(); // line 7
-      temp = Integer.parseInt( line.substring( 0, 2 ), 16 );
-      id[ 1 ] = ( byte )temp;
-      pid = new Hex( id );
-      System.err.println( "Imported protocol id is " + pid );
+      line = in.readLine();
+      int equals = line.indexOf( '=' );
+      if (( equals != -1 ) && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code " ))
+      {
+        byte[] id = new byte[ 2 ];
+        int temp = Integer.parseInt( line.substring( equals + 2, equals + 4 ), 16 );
+        if (( temp & 8 ) != 0 )
+          id[ 0 ] = 1;
+  
+        line = in.readLine(); 
+        temp = Integer.parseInt( line.substring( 0, 2 ), 16 );
+        id[ 1 ] = ( byte )temp;
+        pid = new Hex( id );
+        break;
+      }
     }
-    else
-      in.readLine(); // line 7
-
+      
     remote.load();
     token = st.nextToken();
     str = token.substring( 5 );
@@ -887,9 +882,6 @@ public class DeviceUpgrade
       }
     }
 
-    for ( int i = 8; i < 35; i++ )
-      in.readLine();
-
     // compute cmdIndex
     boolean useOBC = false;
     boolean useEFC = false;
@@ -905,6 +897,26 @@ public class DeviceUpgrade
     for ( obcIndex = 0; obcIndex < cmdParms.length; obcIndex++ )
     {
       if ( cmdParms[ obcIndex ].getName().equals( "OBC" ))
+        break;
+    }
+
+    String match1 = "fFunctions,";
+    String match2 = "Functions,";
+    if ( useOBC )
+    {
+      match1 = match1 + "fOBC,";
+      match2 = match2 + "OBC,";
+    }
+    else
+    {
+      match1 = match1 + "fEFC,";
+      match2 = match2 + "EFC,";
+    }
+
+    while ( true )
+    {
+      line = in.readLine();
+      if ( line.startsWith( match1 ) || line.startsWith( match2 ))
         break;
     }
 
@@ -954,6 +966,7 @@ public class DeviceUpgrade
       String buttonName = null;
       if ( actualName != null )
         buttonName = genericButtonNames[ i ];
+
       Button b = null;
       if ( buttonName != null )
         b = remote.findByStandardName( new Button( buttonName, null, ( byte )0 ));

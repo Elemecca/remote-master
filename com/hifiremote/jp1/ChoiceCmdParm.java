@@ -10,16 +10,13 @@ public class ChoiceCmdParm
   public ChoiceCmdParm( String name, DefaultValue defaultValue, Vector textChoices )
   {
     super( name, defaultValue );
-    System.err.println( "ChoiceCmdParm.ChoiceCmdParm()" );
     int numChoices = 0;
     for ( Enumeration e = textChoices.elements(); e.hasMoreElements(); )
     {
       String str = ( String )e.nextElement();
-      System.err.println( "Got text choice " + str );
       if ( str != null )
         numChoices++;
     }
-    System.err.println( "numChoices=" + numChoices );
     choices = new Choice[ numChoices ];
     int index = 0;
     int i = 0;
@@ -28,7 +25,6 @@ public class ChoiceCmdParm
       String str = ( String )e.nextElement();
       if ( str != null )
       {
-        System.err.println( "choices[" + i + "] is " + str );
         choices[ i++ ] = new Choice( index, str );
       }
       index++;

@@ -510,7 +510,6 @@ public class LayoutPanel
         Button b = getButtonForShape( buttonShape );
         if ( b == null )
           continue;
-        System.err.println( "Checking shape for button " + b.getName());
 
         Shape s = buttonShape.getShape();
 

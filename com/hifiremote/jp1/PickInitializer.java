@@ -5,7 +5,6 @@ public class PickInitializer
 {
   public PickInitializer( String[] parms )
   {
-    String diag="PickInitializer(";
     index = Integer.parseInt( parms[ 0 ]);
     sources = new int[ parms.length-1 ];
     for (int i=0; i<parms.length-1; i++)
@@ -16,21 +15,17 @@ public class PickInitializer
       {
         sources[i] = noDefault;
         str = str.substring(1).trim();
-        diag += "n";
       }
       if ( str.length() == 0 )
       {
         sources[i] = noChange;
-        diag += "*";
       }
       else
       {
         int v=Integer.parseInt( str );
         sources[i] += v;
-        diag += v;
       }
     }
-    System.err.println( diag +")");
   }
 
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )

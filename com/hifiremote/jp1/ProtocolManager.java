@@ -156,9 +156,6 @@ public class ProtocolManager
 
   public Protocol findProtocolForRemote( Remote remote, String name )
   {
-    System.err.println( "ProtocolManager.findProtocolForRemote()" +
-                        " remote=" + remote.getName() + ", name=" + name );
-
     Protocol protocol = null;
     Protocol tentative = null;
 
@@ -185,16 +182,11 @@ public class ProtocolManager
     if ( protocol == null )
       protocol = tentative;
 
-    System.err.println( "Returned " + protocol );
-
     return protocol;
   }
 
   public Protocol findProtocolByOldName( Remote remote, String name )
   {
-    System.err.println( "ProtocolManager.findProtocolByOldName()" +
-                        " remote=" + remote.getName() + ", name=" + name );
-
     Vector protocols = getProtocolsForRemote( remote );
     if ( protocols == null )
       return null;
@@ -212,7 +204,6 @@ public class ProtocolManager
       }
     }
 
-    System.err.println( "No match found!" );
     return null;
   }
 

@@ -27,7 +27,6 @@ public class Remote
     int underscore = name.indexOf( '_' );
     if ( underscore != -1 )
     {
-      System.err.println( "Got a multi-name remote!" );
       int count = 2;
       int start = name.indexOf( '_', underscore + 1 );
       while ( start != -1 )
@@ -51,7 +50,6 @@ public class Remote
         for ( int i = 0; i < count; i++ )
         {
           names[ i ] = front + name.substring( start, start + length ) + back;
-          System.err.println( "names[ " + i + " ]=\"" + names[ i ] + "\"");
           start += length + 1;
         }
       }
@@ -825,7 +823,6 @@ public class Remote
     while ( true )
     {
       line = rdr.readLine();
-      System.err.println( "Parsing line \"" + line + "\"" );
       if ( line == null )
         break;
       if (( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ))
@@ -834,7 +831,6 @@ public class Remote
       while ( st.hasMoreTokens())
       {
         String token = st.nextToken().trim();
-        System.err.println( "Parsing button \"" + token + "\"" );
         int equal = token.indexOf( '=' );
         if ( equal != -1 )
         {

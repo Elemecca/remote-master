@@ -72,11 +72,9 @@ public class NumberDeviceParm
   public Object getValue()
   {
     String text = tf.getText();
-    System.err.println( "NumberDeviceParm.getValue(): name=" + getName() + ", text=" + text + " and base=" + base );
     if (( text == null ) || ( text.length() == 0 ))
       return null;
     Integer rc = Integer.valueOf( text, base );
-    System.err.println( "Returning " + rc );
     return rc;
   }
 

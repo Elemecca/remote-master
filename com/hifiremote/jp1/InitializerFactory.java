@@ -9,7 +9,6 @@ public class InitializerFactory
   {
     StringTokenizer st = new StringTokenizer( text );
     int count = st.countTokens();
-    System.err.println( "InitializerFactory.createIntializer("+ count +")" );
     Initializer[] initializers = new Initializer[ count ];
     for ( int i = 0; i < count; i++ )
     {
@@ -20,7 +19,6 @@ public class InitializerFactory
         temp = st2.nextToken();
       else
         temp = new String();
-      System.err.println( "\t"+ name +"("+ temp +")");
       String[] parms = temp.split(",");
       try
       {
