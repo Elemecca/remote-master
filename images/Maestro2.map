@@ -4,41 +4,41 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Mastreo2
-#$DATE:Thu Sep 04 14:30:50 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Tue Sep 09 19:41:52 2003
+#$PATH:C:\km\images\
 #$GIF:Maestro2.jpg
 #$FORMAT:ncsa
 #$EOH
 default mastreo2
-circle mute  125,269 133,277
-circle POWER  123,90 133,100
-circle menu  34,290 44,298
-circle setup  37,87 47,93
-circle VOL+  123,195 132,208
-circle VOL-  123,237 132,250
-circle CH+  123,120 132,134
-circle CH-  123,159 132,173
-circle PAUSE  66,112 74,123
-circle STOP  65,164 74,175
-circle record  103,270 111,279
-circle ffwd  93,138 105,146
-circle rewind_last-ch  38,137 50,145
-circle timer  80,269 88,278
-circle disp  64,290 74,298
-circle sel  95,290 105,298
-circle enter  125,290 135,298
-circle F-diagnostics  35,249 43,257
-circle del  95,249 103,257
-circle parental-lock  34,270 42,278
-circle prev  57,269 65,277
-rect play 57,128 75,147
-rect 1 25,178 45,193
-rect 2 55,178 75,193
-rect 3 85,178 105,193
-rect 4 25,199 45,214
-rect 5 55,199 75,214
-rect 6 85,199 105,214
-rect 7 25,219 45,234
-rect 8 55,219 75,234
-rect 9 85,219 105,234
-rect 0 55,241 75,256
+circle mute  139,308 147,316
+circle POWER  138,100 150,113
+circle menu  37,331 47,339
+circle setup  38,99 51,105
+circle VOL+  139,224 150,242
+circle VOL-  139,267 150,285
+circle CH+  139,135 150,153
+circle CH-  139,178 150,196
+circle PAUSE  71,127 79,140
+circle STOP  71,186 80,200
+circle record  114,308 122,317
+circle ffwd  105,156 122,164
+circle rewind_last-ch  38,156 53,164
+circle timer  88,308 96,317
+circle disp  71,330 81,338
+circle sel  106,330 116,338
+circle enter  141,331 151,339
+circle F-diagnostics  36,284 44,292
+circle del  105,284 114,293
+circle parental-lock  36,308 44,316
+circle prev  63,308 71,316
+rect play 60,145 82,167
+rect 1 26,204 49,222
+rect 2 60,205 83,222
+rect 3 94,205 117,221
+rect 4 25,228 49,246
+rect 5 59,227 83,245
+rect 6 93,228 117,246
+rect 7 25,251 49,270
+rect 8 60,251 84,268
+rect 9 95,252 117,268
+rect 0 60,275 84,293

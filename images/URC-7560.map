@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7560
-#$DATE:Wed Aug 27 13:22:51 2003
+#$DATE:Tue Sep 09 16:50:12 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-7560.jpg
 #$FORMAT:ncsa
@@ -34,7 +34,7 @@ circle 0  66,149 77,156
 circle 10  36,149 47,156
 circle AV  96,149 107,156
 rect EXIT 0,0 1,1
-circle CH+  66,196 100,210
+circle CH+  67,198 102,212
 circle CH-  66,252 101,266
 rect BRIGHT+ 0,0 1,1
 rect BRIGHT- 0,0 1,1

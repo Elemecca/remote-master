@@ -1,4 +1,4 @@
-Changed for v0.63
+Changes for v0.63
 
 - Add/update remote images, maps and rdfs
 - Allow RDFs without [ButtonMaps] or [Protocols] sections

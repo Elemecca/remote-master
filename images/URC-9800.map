@@ -4,60 +4,60 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-9800
-#$DATE:Wed Aug 27 13:45:01 2003
+#$DATE:Tue Sep 09 14:33:01 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-9800.jpg
 #$FORMAT:ncsa
 #$EOH
 default 9800
-rect TV 31,89 51,103
-rect VCR 59,89 79,103
-rect DVD 85,89 105,103
-rect CBL/SAT 112,89 132,103
-rect AMP 59,111 79,126
-rect CD 83,110 103,126
-circle HOME_THEATER  81,139 111,146
-circle menu{Clear}  52,225 63,233
-circle center{Prog}  53,204 64,212
-circle Select  57,243 68,251
-circle shift  60,165 71,173
-circle Esc{Rear}  53,183 64,191
-circle POWER  133,156 146,166
-circle up  105,171 122,177
-circle down  107,213 124,219
-circle left  81,192 87,209
-circle right  131,192 137,209
-circle Surround  105,192 115,202
-circle MUTE{sleep}  70,269 81,277
-circle VOL+  124,238 135,246
-circle VOL-  104,250 115,258
-circle CH+  133,265 144,273
-circle CH-  114,277 125,285
-circle 1  41,293 51,303
-circle 2  65,293 75,303
-circle 3  90,293 100,303
-circle 4  42,317 52,327
-circle 5  65,317 75,327
-circle 6  90,317 100,327
-circle 7  41,340 51,350
-circle 8  65,340 75,350
-circle 9  90,340 100,350
-circle 0  65,365 75,375
-circle Prevch{Disp}  120,313 131,321
-circle PIP{freeze}  120,337 131,345
-circle Swap  120,361 131,369
-circle Move  120,386 131,394
-circle ENTER  41,366 52,373
-poly REW{slow-} 51,407 51,421 36,415 51,407 51,407
-poly FF{slow+} 84,406 84,420 99,414 84,406 84,406
-poly play{slow} 61,407 61,421 76,415 61,407 61,407
-circle TV/SAT  90,366 101,373
-rect PAUSE{X2} 83,430 100,445
-rect STOP{Eject} 60,430 77,445
-circle rec  45,437 54,446
-circle SETUP  118,435 129,443
-circle Macro  46,389 57,396
-circle Macro2  85,389 96,396
-circle {LIGHT}  118,411 129,419
-poly tuner 31,109 55,110 56,126 36,124 31,109
-poly aux1 109,110 132,110 126,123 108,125 109,110
+rect TV 36,73 56,87
+rect VCR 64,73 84,87
+rect DVD 90,73 110,87
+rect CBL/SAT 118,75 139,89
+rect AMP 65,94 84,109
+rect CD 90,94 108,110
+circle HOME_THEATER  85,121 115,128
+circle menu{Clear}  57,206 68,214
+circle center{Prog}  58,187 69,195
+circle Select  60,225 71,233
+circle shift  65,149 76,157
+circle Esc{Rear}  60,168 71,176
+circle POWER  138,140 151,150
+circle up  111,155 126,161
+circle down  110,192 125,198
+circle left  85,173 91,189
+circle right  137,174 143,190
+circle Surround  110,173 121,181
+circle MUTE{sleep}  72,250 83,258
+circle VOL+  129,220 138,229
+circle VOL-  106,232 115,241
+circle CH+  139,247 148,256
+circle CH-  116,259 125,268
+circle 1  42,276 52,286
+circle 2  67,276 77,286
+circle 3  93,276 103,286
+circle 4  41,301 51,311
+circle 5  66,299 76,309
+circle 6  92,300 102,310
+circle 7  39,323 49,333
+circle 8  65,324 75,334
+circle 9  91,324 101,334
+circle 0  65,350 75,360
+circle Prevch{Disp}  125,296 136,304
+circle PIP{freeze}  124,322 135,330
+circle Swap  123,348 134,356
+circle Move  123,373 134,381
+circle ENTER  38,351 49,358
+poly REW{slow-} 48,395 48,411 33,403 48,395 48,395
+poly FF{slow+} 85,396 85,411 100,404 85,396 85,396
+poly play{slow} 59,395 59,409 74,403 59,395 59,395
+circle TV/SAT  91,352 102,359
+rect PAUSE{X2} 83,421 100,438
+rect STOP{Eject} 57,421 74,437
+circle rec  40,429 49,438
+circle SETUP  120,427 131,435
+circle Macro  43,374 56,381
+circle Macro2  85,375 98,383
+circle {LIGHT}  121,400 132,408
+poly tuner 35,93 59,93 58,108 40,107 35,92 35,93
+poly aux1 115,94 138,94 132,107 114,109 115,94 115,94

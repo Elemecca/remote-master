@@ -8,7 +8,7 @@ LearnedAddr=$200..$3FF
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
-ImageMap=Generic.map
+ImageMap=15-2103.map
 
 [Settings]
 Sleep Status=$014.0.1.0.0 (Use Native;Simulate)
@@ -52,7 +52,7 @@ MUSIC=$25, MOVIE=$26, SPORT=$27, NEWS=$28,
 VOL+=$04, VOL-=$05,
 LAST=$13, MUTE=$08,
 CH+=$06, CH-=$07,
-SLEEP=$30, SCAN[FAV]=$14, TV/VCR[A/B]=$18,
+SLEEP=$30, SCAN{FAV}=$14, TV/VCR=$18,
 1=$15, 2=$16, 3=$17,
 4=$19, 5=$1A, 6=$1B,
 7=$1C, 8=$1D, 9=$1E,

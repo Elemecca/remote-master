@@ -1,0 +1,54 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:15-1925
+#$DATE:Mon Sep 08 11:15:16 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:15-1925.jpg
+#$FORMAT:ncsa
+#$EOH
+default 1925
+circle mute  123,301 131,309
+circle POWER  128,96 138,106
+circle display  95,301 103,309
+circle prog  37,301 45,309
+circle tv/vcr  67,301 75,309
+rect 1 30,168 49,185
+rect 2 60,168 79,185
+rect 3 89,169 108,186
+rect 4 29,194 48,211
+rect 5 59,195 78,212
+rect 6 89,195 108,212
+rect 7 29,221 48,238
+rect 8 58,222 77,239
+rect 9 88,222 107,239
+rect 0 59,248 78,265
+circle {light}  86,90 92,96
+poly play 72,395 59,382 80,366 99,381 85,395 72,395 72,395
+poly rew 64,412 51,423 31,405 52,388 64,398 64,412 64,412
+poly ff 93,397 105,386 125,403 106,421 93,412 93,397 93,397
+poly stop 87,416 98,427 78,443 58,427 70,416 87,416 87,416
+rect last 87,249 106,266
+rect enter 29,248 48,265
+rect cbl/sat 89,116 111,126
+rect tv 118,117 140,127
+rect aux1 30,136 52,146
+rect aux2 59,137 81,147
+rect a/b 88,138 110,148
+rect plug&power 118,139 139,149
+rect cd 30,114 52,125
+rect vcr 60,115 82,125
+rect setup 32,87 60,99
+poly ch+ 140,178 112,178 126,157 140,178 140,178
+poly ch- 125,208 141,187 112,187 125,208 125,208
+poly vol+ 125,231 139,253 110,253 125,231 125,231
+poly vol- 122,283 138,262 110,262 122,283 122,283
+rect scan[fav] 111,215 138,224
+rect audio-seq 31,320 60,330
+rect record 65,320 94,330
+rect video-seq 102,320 131,330
+rect surround 29,339 58,349
+rect pause 66,338 95,348
+rect shift 101,339 130,349

@@ -5,6 +5,7 @@ AdvCodeAddr=$022..$0FF
 UpgradeAddr=$100..$3FC
 Processor=6805
 RDFSync=3
+ImageMap=15-1925.map
 
 [Checksums]
 ^$000:$002..$3FC
@@ -38,8 +39,8 @@ P&P     = $014 $00C $01C
 
 [Buttons]
 TV, SETUP, POWER, VOL+, VOL-, CH+, CH-, MUTE, CBL/SAT, VCR,
-REW, PLAY, FFWD, STOP, PAUSE, REC, CD, SCAN[FAV]=20
-1, 2, 3, TV/VIDEO, 4, 5, 6, 7, 8, 9,
-0, {LIGHT}, AUX1, AUX2, P&P=36, PROGRAM=39, DISPLAY
+REW, PLAY, FF, STOP, PAUSE, RECORD, CD, SCAN[FAV]=20
+1, 2, 3, TV/VCR, 4, 5, 6, 7, 8, 9,
+0, {LIGHT}, AUX1, AUX2, Plug&Power=36, PROG=39, DISPLAY
 SCAN=45,
 Phantom1=60, Phantom2, Phantom3, Phantom4

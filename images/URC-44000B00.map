@@ -1,0 +1,67 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:15-1994
+#$DATE:Wed Sep 03 14:18:42 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:Navigator.jpg
+#$FORMAT:ncsa
+#$EOH
+default 1994
+circle VCR  48,53 60,59
+circle TV  84,72 96,78
+circle AUX  48,71 60,77
+circle CABLe  84,54 96,60
+circle Macro1  45,360 58,366
+circle MENU  129,326 138,335
+circle GUIDE  33,325 42,334
+circle EXIT  82,231 96,237
+circle Macro2  83,360 96,366
+circle POWER  117,55 130,62
+circle UP  82,272 93,281
+circle LEFT  42,299 53,310
+circle RIGHT  118,298 129,309
+circle DOWN  81,324 92,333
+circle SELECT  82,298 101,311
+circle MUTE  48,184 65,191
+circle VOL+  45,213 57,225
+circle VOL-  44,249 56,261
+circle CH+  121,214 133,226
+circle CH-  121,250 133,262
+circle 1  51,95 62,106
+circle 2  84,95 95,106
+circle 3  117,95 128,106
+circle 4  51,125 62,136
+circle 5  83,125 94,136
+circle 6  116,127 127,138
+circle 7  50,154 61,165
+circle 8  83,155 94,166
+circle 9  117,155 128,166
+circle 0  83,185 94,196
+circle LAST  83,213 97,220
+circle fav  68,435 77,441
+circle pause_{VCR}  67,477 76,483
+circle Macro3  119,359 132,365
+circle info  83,249 97,255
+circle ENTER/music  117,185 134,192
+circle REW  43,394 56,400
+circle PLAY  79,394 92,400
+circle FFwd  116,392 129,398
+circle TV/VCR  117,433 126,438
+circle PAUSE  79,410 92,417
+circle REC  116,410 129,416
+circle SETUP  117,74 129,80
+circle Blank_1  42,457 51,463
+circle help  42,435 51,441
+circle ppv  91,434 100,440
+circle Blank_2  67,456 76,461
+circle day-  92,455 101,461
+circle day+  117,455 126,460
+circle bypass  41,478 50,483
+circle diamond  92,477 101,482
+circle P  116,476 125,481
+circle stop  43,412 56,418
+poly PageUp 111,284 138,284 125,270 111,284 111,284
+poly PageDown 23,269 53,269 37,284 24,270 24,269 23,269 23,269

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:RCU-810
-#$DATE:Thu Aug 28 12:28:28 2003
+#$DATE:Tue Sep 09 15:47:58 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:rcu-810.jpg
 #$FORMAT:ncsa
@@ -30,10 +30,10 @@ circle vol-  44,196 50,208
 circle vol+  99,197 105,209
 circle mute  72,196 85,203
 circle select  72,275 83,281
-circle right  100,276 107,289
-circle left  45,276 52,289
-circle Up  72,257 85,264
-circle down  72,293 85,300
+circle right  99,275 105,287
+circle left  46,275 52,286
+circle Up  72,258 83,264
+circle down  72,292 83,298
 circle 1  41,320 50,327
 circle 2  72,320 81,327
 circle 3  103,320 112,327
@@ -47,13 +47,8 @@ circle 0  73,383 82,389
 circle Pip  38,169 48,176
 circle Swap  107,169 117,176
 circle input  40,227 49,234
-circle Rew  47,417 54,428
-circle Play  73,406 84,413
-circle Fwd  99,416 106,427
 circle TV/VCR  105,382 116,389
 circle enter  42,383 53,390
-circle Pause  89,437 100,444
-circle Stop  60,437 71,444
 circle Rec  73,422 84,429
 circle Code_Search  72,234 85,240
 circle {Lamp}  113,147 120,154
@@ -64,3 +59,8 @@ circle l3  112,127 122,134
 circle m1  51,151 59,158
 circle m2  72,160 80,167
 circle m3  92,151 100,158
+poly rew 48,406 39,415 38,429 54,425 58,415 48,406
+poly play 81,411 65,411 58,403 74,400 89,403 81,411
+poly fwd 88,414 98,406 107,414 107,427 91,424 91,419 88,414
+poly stop 69,445 54,443 45,435 59,431 63,434 70,435 69,445
+poly pause 88,430 84,433 78,435 78,445 92,443 102,434 88,430

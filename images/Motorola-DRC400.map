@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Motorola DRC400
-#$DATE:Wed Sep 03 12:26:54 2003
+#$DATE:Tue Sep 09 15:19:00 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Motorola-DRC400.jpg
 #$FORMAT:ncsa
@@ -47,12 +47,12 @@ circle 0  83,402 93,412
 circle LAST  83,221 92,230
 circle C  122,281 136,287
 circle PLAY  122,433 131,442
-circle PAUSE  84,434 95,441
 circle STOP  45,434 54,443
 circle record  83,458 91,466
 circle help  32,79 39,86
 circle B  83,281 97,287
 rect tv/vcr{bypass} 34,396 57,409
 rect enter{music} 110,396 133,409
-poly rew 53,450 34,458 54,468 54,449 53,450
-poly f.fwd 112,449 133,458 112,467 112,449
+poly rew 53,450 34,458 54,468 54,449 53,450 53,450
+poly f.fwd 112,449 133,458 112,467 112,449 112,449
+rect pause 72,427 95,440

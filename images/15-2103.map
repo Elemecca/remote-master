@@ -1,0 +1,60 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:15-2103
+#$DATE:Sat Sep 06 10:42:11 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:15-2103.jpg
+#$FORMAT:ncsa
+#$EOH
+default 2104
+circle VCR  35,71 47,78
+circle AUX  75,36 87,43
+circle TV  116,70 128,77
+circle CBL/SAT  104,50 117,57
+circle DVD  48,50 61,57
+circle POWER  76,71 95,78
+circle music  39,161 47,166
+circle movie  63,166 71,171
+circle sport  89,166 97,171
+circle news  112,161 120,166
+circle SLEEP  46,243 57,250
+circle menu  39,93 50,99
+circle exit  110,139 121,145
+circle info  41,140 52,146
+circle guide  113,93 124,99
+circle up  75,94 89,101
+circle down  76,141 90,148
+circle left  40,117 51,124
+circle right  112,117 123,124
+circle SELECT  76,117 93,124
+circle MUTE  77,216 86,221
+circle VOL+  44,192 55,203
+circle VOL-  48,218 58,228
+circle CH+  108,192 119,203
+circle CH-  104,218 114,228
+circle 1  46,265 57,272
+circle 2  76,265 87,272
+circle 3  107,264 118,271
+circle 4  47,288 58,295
+circle 5  77,287 88,294
+circle 6  107,287 118,294
+circle 7  46,310 57,317
+circle 8  76,310 87,317
+circle 9  106,310 117,317
+circle 0  77,333 88,340
+circle LAST  76,192 85,197
+circle tv/vcr  106,242 117,249
+circle rew  45,359 56,366
+circle PLAY  76,359 87,366
+circle ff  107,359 118,366
+circle enter  107,333 118,340
+circle +100  46,333 57,340
+circle PAUSE  75,383 86,390
+circle STOP  106,383 117,390
+circle rec  44,383 55,390
+circle P[SETUP]  26,36 32,42
+circle {LIGHT}  124,36 131,43
+circle scan{Fav}  75,242 84,247

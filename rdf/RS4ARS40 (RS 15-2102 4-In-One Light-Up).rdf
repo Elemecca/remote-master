@@ -7,7 +7,7 @@ UpgradeAddr=$100..$3FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
-ImageMap=Generic.map
+ImageMap=15-2102.map
 
 [Settings]
 Sleep Status=$012.0.1.0.0 (Use Native;Simulate)
@@ -54,8 +54,8 @@ MENU=$21,
 GUIDE=$22, 
 INFO=$23, 
 EXIT=$24, 
-P{SETUP}=$02, 
-SCAN=$14, 
+P[SETUP]=$02, 
+SCAN{FAV}=$14, 
 {LIGHT}=$35, 
 Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 

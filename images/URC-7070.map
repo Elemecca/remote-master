@@ -1,0 +1,47 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:urc-7070
+#$DATE:Tue Sep 09 16:46:49 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:urc-7070.jpg
+#$FORMAT:ncsa
+#$EOH
+default 7070
+circle tv  73,55 86,61
+circle power  108,54 123,60
+circle 1  40,95 51,106
+circle 2  74,96 85,107
+circle 3  105,95 116,106
+circle 4  42,125 53,136
+circle 5  74,123 85,134
+circle 6  106,125 117,136
+circle 7  41,155 52,166
+circle 8  74,155 85,166
+circle 9  105,154 116,165
+circle 0  74,185 85,196
+circle MUTE  73,214 88,219
+circle enter  42,184 57,191
+circle VOL+  35,213 47,225
+circle VOL-  35,249 46,260
+circle rec  24,325 33,334
+circle ch+  112,214 124,226
+circle tv/vcr  122,325 131,334
+circle ch-  112,250 123,261
+circle menu  73,231 88,236
+circle shift  73,249 88,254
+circle cbl  36,56 49,62
+circle sat  35,74 48,80
+circle vcr  74,73 87,79
+circle magic[setup]  108,73 122,79
+circle play  73,274 84,281
+circle ff  111,300 122,307
+circle pause  74,299 91,311
+circle rew  36,300 47,307
+circle stop  73,324 84,331
+circle cd  111,362 124,367
+circle rcvr  73,361 86,366
+circle amp  36,362 49,367
+circle pc  105,184 119,191

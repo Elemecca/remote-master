@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Millenium4
-#$DATE:Wed Sep 03 11:37:00 2003
+#$DATE:Tue Sep 09 15:15:59 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Millenium4.jpg
 #$FORMAT:ncsa
@@ -22,9 +22,9 @@ circle DOWN  82,288 107,295
 circle OK  81,265 95,273
 circle MUTE  44,141 55,147
 circle VOL+  45,169 55,180
-circle VOL-  44,200 55,211
+circle VOL-  45,200 55,211
 circle CH+  116,171 126,182
-circle CH-  117,201 127,212
+circle CH-  118,201 128,212
 circle 1  40,72 51,83
 circle 2  79,72 90,83
 circle 3  119,74 130,85
@@ -41,14 +41,13 @@ circle F2  83,353 95,360
 circle F3  118,350 130,357
 circle FAV  82,197 92,203
 circle REW  47,389 58,396
-circle PLAY  82,389 93,396
+circle PLAY  82,388 93,395
 circle FF  116,388 127,395
 circle TV/VCR  122,433 131,440
 circle PAUSE  117,410 129,417
 rect STOP 71,405 92,417
-circle REC  46,410 58,417
+circle REC  46,411 58,418
 circle help  41,434 50,442
-poly info 32,286 32,304 55,304 32,287 32,288 32,286 32,286
 poly guide 33,244 33,228 56,228 33,244 33,244
 poly exit 108,229 129,229 129,246 108,229 108,229
 poly menu 107,303 130,287 130,304 107,303 107,303
@@ -58,8 +57,9 @@ circle bypass  41,459 50,466
 circle A  68,459 77,466
 circle B  96,459 105,466
 circle C  122,458 131,465
-poly page+ 34,327 53,312 72,327 33,326 34,327 34,327
 poly page- 91,314 127,314 109,329 92,315 91,315 91,314 91,314
 poly setup 32,25 42,17 51,24 42,32 32,25 32,25
 poly enter 106,137 125,138 125,150 105,149 106,137 106,137
 poly lock 67,215 96,215 96,228 66,228 67,215 67,215
+poly info 32,305 32,287 61,305 32,305 32,305
+poly page+ 55,311 73,327 35,327 55,311 55,311
