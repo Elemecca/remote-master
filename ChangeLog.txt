@@ -1,3 +1,11 @@
+Changes for v0.89
+
+- Fix NECx2 device translator declarations
+- Fix importing of hex device parameter values
+- Fix problem with indirect default values always being complemented.
+- Fix exceptions when user cancels file open dialog
+- Work around bug in AquaLookAndFeel preventing File->Open from working on Macs
+
 Changes for v0.88
 
 - Remove quotes from button names
