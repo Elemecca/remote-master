@@ -23,15 +23,15 @@ public class LayoutPanel
       public void paint( Graphics g )
       {
         Graphics2D g2 = ( Graphics2D ) g;
-        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, 
+        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
                              RenderingHints.VALUE_ANTIALIAS_ON );
         Remote r = deviceUpgrade.getRemote();
         ImageIcon icon = r.getImageIcon();
         if ( icon != null )
           g2.drawImage( icon.getImage(), null, null );
-       
+
         g2.setPaint( Color.blue );
-    
+
         DeviceType devType = deviceUpgrade.getDeviceType();
         ButtonMap map = devType.getButtonMap();
         // Button[] buttons = r.getButtons();
@@ -45,7 +45,7 @@ public class LayoutPanel
               // g2.fill( shape );
           // }
         // }
-    
+
         if ( currentButton != null )
         {
           g2.setPaint( Color.white );
@@ -87,7 +87,7 @@ public class LayoutPanel
         if ( currentButton != savedButton )
           doRepaint();
       }
-  
+
       public void mouseReleased( MouseEvent e )
       {
         ;
@@ -122,6 +122,7 @@ public class LayoutPanel
       currentButton = null;
 
     validate();
+    doRepaint();
   }
 
   private void doRepaint()
