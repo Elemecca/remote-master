@@ -63,7 +63,7 @@ public class KeyMapMaster
   public KeyMapMaster()
     throws Exception
   {
-    super( "KeyMap Master v 0.19" );
+    super( "KeyMap Master v 0.20" );
     me = this;
 
     addWindowListener( new WindowAdapter()
