@@ -525,7 +525,7 @@ public class KeyMapMaster
   {
     int rc = JOptionPane.showConfirmDialog( this,
 //                                            "All changes made to the current upgrade will be lost if you proceed.\n\n" + 
-                                            "Do you want to save the currect upgrade before proceeding?",
+                                            "Do you want to save the current upgrade before proceeding?",
                                             "Save upgrade?",
                                             JOptionPane.YES_NO_CANCEL_OPTION );
     System.err.println( "KeyMapMaster.promptToSaveUpgrade(), rc=" + rc );
