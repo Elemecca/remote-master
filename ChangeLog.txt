@@ -1,3 +1,7 @@
+Changes for v1.21
+- Improvements to phantom button support on Layout panel
+- Fix bug with entering OBCs on Functions panel for some protocols
+
 Changes for v1.20
 - Fix saving of imported KM upgrades that use Manual Settings with byte2
 - Improve translation of new S3C80 protocol code to old S3C80.
