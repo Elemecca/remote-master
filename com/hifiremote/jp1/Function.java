@@ -20,9 +20,14 @@ public class Function
 
   public boolean isExternal(){ return false; }
 
+  public boolean isEmpty()
+  {
+    return ( name == null ) && ( hex == null ) && ( notes == null );
+  }
+
   public void store( Properties props, String prefix )
   {
-    if (( name == null ) && ( hex == null ) && ( notes == null ))
+    if ( isEmpty())
       props.setProperty( prefix + ".name", "" );
 
     if ( name != null )

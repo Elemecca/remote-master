@@ -7,6 +7,12 @@ public class ExternalFunction
 {
   public boolean isExternal(){ return true; }
 
+  public boolean isEmpty()
+  {
+    return super.isEmpty() && ( deviceType == null ) && ( setupCode == 0 ) &&
+      ( type != EFCType );
+  }
+
   public void store( Properties props, String prefix )
   {
     super.store( props, prefix );
@@ -24,7 +30,7 @@ public class ExternalFunction
       setType( new Integer( str ));
     str = props.getProperty( prefix + ".deviceType" );
     if ( str != null )
-      setDeviceType( remote.getDeviceType( str ));
+      setDeviceType( remote.getDeviceType( str, -1 ));
     str = props.getProperty( prefix + ".setupCode" );
     if ( str != null )
       setSetupCode( Integer.parseInt( str ));

@@ -366,7 +366,11 @@ public class DeviceUpgrade
           similarRemotes.add( remotes[ i ]);
       }
 
-      Object[] simRemotes = similarRemotes.toArray(); 
+      Object[] simRemotes = null;
+      if ( similarRemotes.size() > 0 )
+        simRemotes = similarRemotes.toArray();
+      else
+        simRemotes = remotes;
       
       String message = "Could not find an exact match for the remote \"" + str + "\".  Choose one from the list below:";
       
@@ -428,7 +432,7 @@ public class DeviceUpgrade
     {
       Function f = new Function();
       f.load( props, "Function." + i );
-      if ( f.getName() == null )
+      if (( f.getName() == null ) && ( f.getHex() == null ) && ( f.getNotes() == null ))
       {
         break;
       }
@@ -443,7 +447,7 @@ public class DeviceUpgrade
     {
       ExternalFunction f = new ExternalFunction();
       f.load( props, "ExtFunction." + i, remote );
-      if ( f.getName() == null )
+      if (( f.getName() == null ) && ( f.getHex() == null ) && f.getNotes() == null )
       {
         break;
       }
