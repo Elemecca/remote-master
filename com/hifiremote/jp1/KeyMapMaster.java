@@ -686,12 +686,73 @@ public class KeyMapMaster
     Vector protocols = protocolManager.getProtocolsForRemote( r );
     if ( !protocols.contains( p ))
     {
+      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName() +
+                          "is not compatible with remote " + r.getName());
+
+      // Find a matching protocol for this remote
+      Protocol match = null;
+      String name = p.getName();
+      for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+      {
+        Protocol p2 = ( Protocol )e.nextElement();
+        if ( p2.getName().equals( name ))
+        {
+          match = p2;
+          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName());
+          break;
+        }
+      }
+
+      if ( match != null )
+      {
+        System.err.println( "\tChecking for matching dev. parms" );
+        DeviceParameter[] parms = p.getDeviceParameters();
+        DeviceParameter[] parms2 = match.getDeviceParameters();
+
+        int[] map = new int[ parms.length ];
+        boolean parmsMatch = true;
+        for ( int i = 0; i < parms.length; i++ )
+        {
+          name = parms[ i ].getName();
+          System.err.print( "\tchecking " + name );
+          boolean nameMatch = false;
+          for ( int j = 0; j < parms2.length; j++ )
+          {
+            if ( name.equals( parms2[ j ].getName()))
+            {
+              map[ i ] = j;
+              nameMatch = true;
+              System.err.print( " has a match!" );
+              break;
+            }
+          }
+          System.err.println();
+          parmsMatch = nameMatch;
+          if ( !parmsMatch )
+            break;
+        }
+        if ( parmsMatch )
+        {
+          // copy parameters from p to p2!
+          System.err.println( "\tCopying dev. parms" );
+          for ( int i = 0; i < map.length; i++ )
+          {
+            System.err.println( "\tfrom index " + i + " to index " + map[ i ]);
+            parms2[ map[ i ]].setValue( parms[ i ].getValue());
+          }
+          System.err.println();
+          System.err.println( "Setting new protocol" );
+          deviceUpgrade.setProtocol( match );
+          return;
+        }
+      }
       JOptionPane.showMessageDialog( this,
                                      "The selected protocol " + p.getDiagnosticName() +
                                      "\nis not compatible with the selected remote.\n" +
                                      "This upgrade will NOT function correctly.\n" +
                                      "Please choose a different protocol.",
                                      "Error", JOptionPane.ERROR_MESSAGE );
+
     }
   }
 

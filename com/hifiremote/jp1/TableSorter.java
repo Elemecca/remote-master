@@ -1,16 +1,16 @@
 /**
- * A sorter for TableModels. The sorter has a model (conforming to TableModel) 
- * and itself implements TableModel. TableSorter does not store or copy 
- * the data in the TableModel, instead it maintains an array of 
- * integers which it keeps the same size as the number of rows in its 
- * model. When the model changes it notifies the sorter that something 
- * has changed eg. "rowsAdded" so that its internal array of integers 
- * can be reallocated. As requests are made of the sorter (like 
- * getValueAt(row, col) it redirects them to its model via the mapping 
- * array. That way the TableSorter appears to hold another copy of the table 
- * with the rows in a different order. The sorting algorthm used is stable 
- * which means that it does not move around rows when its comparison 
- * function returns 0 to denote that they are equivalent. 
+ * A sorter for TableModels. The sorter has a model (conforming to TableModel)
+ * and itself implements TableModel. TableSorter does not store or copy
+ * the data in the TableModel, instead it maintains an array of
+ * integers which it keeps the same size as the number of rows in its
+ * model. When the model changes it notifies the sorter that something
+ * has changed eg. "rowsAdded" so that its internal array of integers
+ * can be reallocated. As requests are made of the sorter (like
+ * getValueAt(row, col) it redirects them to its model via the mapping
+ * array. That way the TableSorter appears to hold another copy of the table
+ * with the rows in a different order. The sorting algorthm used is stable
+ * which means that it does not move around rows when its comparison
+ * function returns 0 to denote that they are equivalent.
  *
  * @version 1.5 12/17/97
  * @author Philip Milne
@@ -22,7 +22,7 @@ import java.util.*;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 
-// Imports for picking up mouse events from the JTable. 
+// Imports for picking up mouse events from the JTable.
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -48,8 +48,8 @@ public class TableSorter extends TableMap {
     }
 
     public void setModel( KMTableModel model ) {
-        super.setModel( model ); 
-        reallocateIndexes(); 
+        super.setModel( model );
+        reallocateIndexes();
     }
 
     public int compareRowsByColumn(int row1, int row2, int column) {
@@ -59,15 +59,15 @@ public class TableSorter extends TableMap {
         // Check for nulls.
 
         Object o1 = data.getValueAt(row1, column);
-        Object o2 = data.getValueAt(row2, column); 
+        Object o2 = data.getValueAt(row2, column);
 
         // If both values are null, return 0.
         if (o1 == null && o2 == null) {
-            return 0; 
-        } else if (o1 == null) { // Define null less than everything. 
-            return -1; 
-        } else if (o2 == null) { 
-            return 1; 
+            return 0;
+        } else if (o1 == null) { // Define null less than everything.
+            return -1;
+        } else if (o2 == null) {
+            return 1;
         }
 
         /*
@@ -78,7 +78,7 @@ public class TableSorter extends TableMap {
          * Number might want to do this to save space and avoid
          * unnecessary heap allocation.
          */
-         
+
         if ( o1 instanceof Comparable )
         {
           Comparable c1 = ( Comparable )o1;
@@ -129,7 +129,7 @@ public class TableSorter extends TableMap {
       return i;
     }
 
-    public void tableChanged(TableModelEvent e) 
+    public void tableChanged(TableModelEvent e)
     {
       //System.out.println("Sorter: tableChanged");
       int firstRow = e.getFirstRow();
@@ -153,7 +153,7 @@ public class TableSorter extends TableMap {
       if (( firstIndex == -1 ) || ( lastIndex == -1 ))
         reallocateIndexes();
 
-      TableModelEvent newEvent = new TableModelEvent(( TableModel )e.getSource(), 
+      TableModelEvent newEvent = new TableModelEvent(( TableModel )e.getSource(),
                                                       firstIndex, lastIndex,
                                                       e.getColumn(),
                                                       e.getType());
@@ -229,7 +229,7 @@ public class TableSorter extends TableMap {
             return;
         }
 
-        // A normal merge. 
+        // A normal merge.
 
         for (int i = low; i < high; i++) {
             if (q >= high || (p < middle && compare(from[p], from[q]) <= 0)) {
@@ -269,7 +269,7 @@ public class TableSorter extends TableMap {
         sortingColumns.removeAllElements();
         sortingColumns.addElement(new Integer(column));
         sort(this);
-        super.tableChanged(new TableModelEvent(this)); 
+        super.tableChanged(new TableModelEvent(this));
     }
 
     public int convertRowIndexToModel( int aRow )
@@ -278,28 +278,28 @@ public class TableSorter extends TableMap {
       return indexes[ aRow ];
     }
 
-    // There is no-where else to put this. 
-    // Add a mouse listener to the Table to trigger a table sort 
-    // when a column heading is clicked in the JTable. 
-    public void addMouseListenerToHeaderInTable(JTable table) { 
-        final TableSorter sorter = this; 
-        final JTable tableView = table; 
-        tableView.setColumnSelectionAllowed(false); 
+    // There is no-where else to put this.
+    // Add a mouse listener to the Table to trigger a table sort
+    // when a column heading is clicked in the JTable.
+    public void addMouseListenerToHeaderInTable(JTable table) {
+        final TableSorter sorter = this;
+        final JTable tableView = table;
+        tableView.setColumnSelectionAllowed(false);
         MouseAdapter listMouseListener = new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 TableColumnModel columnModel = tableView.getColumnModel();
-                int viewColumn = columnModel.getColumnIndexAtX(e.getX()); 
-                int column = tableView.convertColumnIndexToModel(viewColumn); 
+                int viewColumn = columnModel.getColumnIndexAtX(e.getX());
+                int column = tableView.convertColumnIndexToModel(viewColumn);
                 if (e.getClickCount() == 1 && column != -1) {
-                    //System.out.println("Sorting ..."); 
-                    int shiftPressed = e.getModifiers()&InputEvent.SHIFT_MASK; 
-                    boolean ascending = (shiftPressed == 0); 
-                    sorter.sortByColumn(column, ascending); 
+                    //System.out.println("Sorting ...");
+                    int shiftPressed = e.getModifiers()&InputEvent.SHIFT_MASK;
+                    boolean ascending = (shiftPressed == 0);
+                    sorter.sortByColumn(column, ascending);
                 }
             }
         };
-        JTableHeader th = tableView.getTableHeader(); 
-        th.addMouseListener(listMouseListener); 
+        JTableHeader th = tableView.getTableHeader();
+        th.addMouseListener(listMouseListener);
     }
 
     public Object getRow( int row )
@@ -320,19 +320,15 @@ public class TableSorter extends TableMap {
 
     public void insertRow( int row, Object object )
     {
-      System.err.println( "TableSorter.insertRow( " + row + ", ... )" );
       model.insertRow( indexes[ row ], object );
       int mappedRow = indexes[ row ];
       int[] saved = indexes;
       indexes = new int[ indexes.length + 1 ];
-      System.err.println( "MappedRow=" + mappedRow );
       int temp;
       for ( int i = 0; i < indexes.length; i++ )
       {
-        System.err.println( "Computing new index for row " + i );
         if ( i < row )
         {
-          System.err.println( "Using saved[" + i + "]" );
           temp = saved[ i ];
         }
         else if ( i == row )
@@ -341,52 +337,38 @@ public class TableSorter extends TableMap {
         }
         else // temp > row
         {
-          System.err.println( "Using saved[" + ( i - 1 ) + "]" );
           temp = saved[ i - 1 ];
         }
-        
-        System.err.println( "Got " + temp );
 
         if (( i != row ) && ( temp >= mappedRow ))
         {
-          System.err.println( "Incrementing value" );
           temp++;
         }
 
-        System.err.println( "Setting indexes[" + i + "]=" + temp );
         indexes[ i ] = temp;
       }
     }
 
     public void removeRow( int row )
     {
-      System.err.println( "TableSorter.removeRow(" + row + ")" );
       model.removeRow( indexes[ row ]);
       int modelRow = indexes[ row ];
-      System.err.println( "modelRow=" + modelRow );
       int[] saved = indexes;
       indexes = new int[ saved.length - 1 ];
       int temp;
       for ( int i = 0; i < indexes.length; i++ )
       {
-        System.err.println( "Computing new index for row " + i );
-
         if ( i < row )
         {
-          System.err.println( "using saved[" + i + "]" );
           temp = saved[ i ];
         }
         else
         {
-          System.err.println( "using saved[" + ( i + 1 ) + "]" ); 
           temp = saved[ i + 1 ];
         }
 
-        System.err.println( "Got " + temp );
-
         if ( temp > modelRow )
         {
-          System.err.println( "Decrementing" );
           temp--;
         }
 
@@ -397,6 +379,8 @@ public class TableSorter extends TableMap {
    public void moveRow( int from, int to )
    {
      Object o = getRow( from );
+     if ( from < to )
+       to++;
      insertRow( to, o );
      if ( from > to )
        from++;
