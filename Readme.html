@@ -25,6 +25,7 @@
         </li>
         <li><a href="#basic">Basic Info</a></li>
         <li><a href="#setup">Setup</a></li>
+	<li><a href="#devcomb">Device Combiner</a></li>
         <li><a href="#functions">Functions</a></li>
         <li><a href="#extfunctions">External&nbsp;Functions</a></li>
         <li><a href="#buttons">Buttons</a></li>
@@ -181,12 +182,10 @@ There are two "special" protocols included in KM:
 "Manual Settings" is used when KM doesn't directly support the
 protocol you're working with.
 
-"Device Combiner" allows you to combine multiple devices (up to
-16) into one Device Upgrade.
-
 For details on using either of these protocols, see the "keymap-
 master-protocols.txt" file.
 -->
+<p>The <b>Device Combiner</b> protocol is a special protocol that is included in RM.  It allows you to combine up to 16 devices into one Device Upgrade.  For details on using <b>Device Combiner</b>, please read the <a href="#devcomb">Device Combiner section</a> of this document.
 </td>
 </tr>
 <tr>
@@ -202,7 +201,33 @@ master-protocols.txt" file.
 <td>Provides a brief description and help notes for certain selected protocols.</td>
 </tr>
 </table>
-<p>At this point, you're ready to proceed to the Functions panel.</p>
+<h2><a name="devcomb"></a>The Device Combiner Panel</h2>
+<p>This panel is only available when the Device Combiner protocol has been selected on the Setup Panel.</p>
+<p>The Device Combiner allows you to combine up to 16 different 
+protocols into one Device Upgrade.</p>
+<p>Any protocols specified in the Device Combiner <b>MUST</b> use 1-byte function commands.
+<p><b>NOTE:</b> When using an upgraded protocol, the user <b>MUST</b> ensure that the protocol code is installed on the remote (using IR), as RemoteMaster has no way to verify this.</p>
+<p>There is also an optional Duration Control setting that can be used for each function.</p>
+<h3>Setting up the Device Combiner:</h3>
+<p>There are 2 ways to add devices:
+<ol>
+<li>Importing from an existing RM or KM device upgrade:<br>
+On the "Device Combiner" panel, press the Import button and open 
+the device upgrade file you want to import.  Once RM has verified that 
+the protocol used by the imported upgrade file is compatible, you will be 
+asked to choose the functions to import from the upgrade.
+<li>Manually adding a protocol:<br>
+On the "Device Combiner" panel, press the Add button to display the 
+"Combiner Device" dialog.  Select the protocol to use, and enter the
+desired values for the protocol parameters, then press the OK button
+</ol>
+<p>Then, go to the Functions sheet and enter the EFC's (EFC-style 
+Button Codes MUST be used) for all of the various functions. In 
+the "Cominer Device" column, select the entry corresponding to the 
+protocol and parameters entered above.</p>
+<p>To enable Duration Control for the 
+function, select the duration multiple to be used in the "Duration" column 
+(default = 0 = none).</p>
 <h2><a name="functions"></a>The Functions Panel</h2>
 <p>Use this panel to define all the functions available for the device you are going to control.  This is where you can enter the EFCs, OBCs, and other parameters specific to each command.  Note that some of the command parameters are protocol specific, so not all of the columns available in each protocol will be documented here, only the ones that are used by all protocols.</p>
 <p>The command parameter columns are often interdependent, so that entering a value in one column will often cause changes in other columns.
@@ -608,9 +633,8 @@ problem with one of these, please
 <li>HK Combo
 <li>Jerrold
 <li>JVC
-</ul></td>
-<td><ul>
 <li>JVC-48
+</ul></td><td><ul>
 <li>Kaseikyo
 <li>Mitsubishi
 <li>NEC1
@@ -637,10 +661,11 @@ problem with one of these, please
 <li>Pioneer 2CMD
 <li>Pioneer 3DEV
 <li>Proton
-</ul></td>
-<td><ul>
+<li>RECS80 (68)
 <li>RC-5
+</ul></td><td><ul>
 <li>RC-5x
+<li>RC-5/5x Combo
 <li>RC-6
 <li>RC6-M-20n
 <li>RC6-M-24n
@@ -649,6 +674,7 @@ problem with one of these, please
 <li>RCA Combo (Official)
 <li>RECS80 (45)
 <li>RECS80 (68)
+<li>RECS80 (90)
 <li>ReplayTV (Simple)
 <li>ReplayTV (Advanced)
 <li>ReplayTV (Official)
@@ -680,7 +706,6 @@ problem with one of these, please
 <p>Here is the list of protocols that are not <b>yet</b> supported:</p>
 <ul>
 <li>Pause Protocol
-<li>RC-5/5x Combo
 <li>RCA Combo (w/Duration)
 </ul>
 
