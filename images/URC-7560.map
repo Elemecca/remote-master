@@ -1,57 +1,64 @@
-Image=URC-7560.jpg
-
-[ButtonShapes]
-MAGIC[setup]=ellipse:35,15,20,13
-MENU=rect:59,13,16,17
-POWER=poly:81,13,101,17,101,28,81,31
-SLEEP=rect:0,0,0,0
-HOME_THEATER=ellipse:23,35,21,9
-TV=ellipse:24,50,25,13
-VCR=ellipse:52,47,30,13
-SAT=ellipse:86,50,25,13
-CD=ellipse:26,66,23,10
-AUD=ellipse:55,64,25,12
-DVD=ellipse:84,66,23,10
-1=ellipse:25,84,23,15
-2=ellipse:55,84,22,15
-3=ellipse:85,84,23,14
-4=ellipse:25,103,23,15
-5=ellipse:55,103,22,15
-6=ellipse:85,103,23,14
-7=ellipse:25,122,23,15
-8=ellipse:55,122,22,15
-9=ellipse:85,123,23,14
-0=ellipse:55,142,23,15
-10=ellipse:25,142,22,15
-AV=ellipse:85,142,23,14
-EXIT=rect:0,0,0,0
-CH+=ellipse:32,182,69,29
-CH-=ellipse:31,238,70,29
-BRIGHT+=rect:0,0,0,0
-BRIGHT-=rect:0,0,0,0
-VOL+=poly:80,214,105,206,109,224,105,243,80,235,84,224
-VOL-=poly:26,206,50,213,46,224,50,235,26,243,22,224
-COLOR+=rect:0,0,0,0
-COLOR-=rect:0,0,0,0
-MUTE=ellipse:54,217,24,16
-SELECT=rect:0,0,0,0
-UP=ellipse:54,168,24,9
-DOWN=ellipse:54,273,24,9
-LEFT=ellipse:8,213,9,23
-RIGHT=ellipse:115,213,9,23
-REW=poly:19,294,30,286,39,286,39,301,30,301
-PLAY=poly:46,290,63,300,46,308
-PAUSE=rect:70,291,15,16
-FFWD=poly:92,286,103,286,112,294,103,301,92,301
-SP/LP=ellipse:20,307,20,13
-STOP=rect:48,312,15,16
-REC=ellipse:71,314,14,14
-AUTO=ellipse:90,307,20,13
-A=ellipse:23,337,14,12 
-B=ellipse:26,353,14,12 
-C=ellipse:28,369,14,12 
-D=ellipse:31,384,14,12 
-E=ellipse:94,339,14,12 
-F=ellipse:92,354,14,12 
-G=ellipse:89,370,14,12 
-H=ellipse:86,385,14,12 
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$DATE:Tue Aug 26 21:35:34 2003
+#$PATH:C:\km\images\
+#$GIF:URC-7560.jpg
+#$FORMAT:ncsa
+#$EOH
+circle MAGIC[setup] 45,21 55,27
+rect MENU 59,13 75,30
+poly POWER 81,13 101,17 101,28 81,31 81,13
+rect SLEEP 0,0 0,0
+circle HOME_THEATER 33,39 43,43
+circle TV 36,56 48,62
+circle VCR 67,53 82,59
+circle SAT 98,56 110,62
+circle CD 37,71 48,76
+circle AUD 67,70 79,76
+circle DVD 95,71 106,76
+circle 1 36,91 47,98
+circle 2 66,91 77,98
+circle 3 96,91 107,98
+circle 4 36,110 47,117
+circle 5 66,110 77,117
+circle 6 96,110 107,117
+circle 7 36,129 47,136
+circle 8 66,129 77,136
+circle 9 96,130 107,137
+circle 0 66,149 77,156
+circle 10 36,149 47,156
+circle AV 96,149 107,156
+rect EXIT 0,0 0,0
+circle CH+ 66,196 100,210
+circle CH- 66,252 101,266
+rect BRIGHT+ 0,0 0,0
+rect BRIGHT- 0,0 0,0
+poly VOL+ 80,214 105,206 109,224 105,243 80,235 84,224 80,214
+poly VOL- 26,206 50,213 46,224 50,235 26,243 22,224 26,206
+rect COLOR+ 0,0 0,0
+rect COLOR- 0,0 0,0
+circle MUTE 66,225 78,233
+rect SELECT 0,0 0,0
+circle UP 66,172 78,176
+circle DOWN 66,277 78,281
+circle LEFT 12,224 16,235
+circle RIGHT 119,224 123,235
+poly REW 19,294 30,286 39,286 39,301 30,301 19,294
+poly PLAY 46,290 63,300 46,308 46,290
+rect PAUSE 70,291 85,307
+poly FFWD 92,286 103,286 112,294 103,301 92,301 92,286
+circle SP/LP 30,313 40,319
+rect STOP 48,312 63,328
+circle REC 78,321 85,328
+circle AUTO 100,313 110,319
+circle A 30,343 37,349
+circle B 33,359 40,365
+circle C 35,375 42,381
+circle D 38,390 45,396
+circle E 101,345 108,351
+circle F 99,360 106,366
+circle G 96,376 103,382
+circle H 93,391 100,397

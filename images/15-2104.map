@@ -1,59 +1,66 @@
-Image=15-2104.jpg
-
-[ButtonShapes]
-VCR=ellipse:16,75,24,14
-CBL/SAT=ellipse:96,54,24,14
-TV=ellipse:98,75,24,14
-CD=ellipse:76,36,26,14
-AUX1=ellipse:37,36,26,14
-DVD=ellipse:18,54,26,14
-POWER=ellipse:50,56,38,15
-THEATER=ellipse:53,80,34,15
-AUDIO=ellipse:91,140,35,14
-music=ellipse:26,194,16,11
-movie=ellipse:50,198,16,11
-sport=ellipse:75,198,16,11
-news=ellipse:100,194,16,11
-1s=ellipse:21,103,16,11
-2s=ellipse:49,107,16,11
-3s=ellipse:75,107,16,11
-4s=ellipse:102,103,16,11
-SLEEP=ellipse:27,272,22,15
-freeze=ellipse:80,255,15,11
-menu=ellipse:22,126,23,14
-exit=ellipse:90,171,23,14
-info=ellipse:26,171,23,14
-guide=ellipse:94,126,23,14
-up=ellipse:56,128,28,15
-down=ellipse:56,171,28,15
-left=ellipse:23,149,22,15
-right=ellipse:93,149,22,15
-SELECT=ellipse:53,149,34,15
-MUTE=ellipse:61,247,18,11
-VOL+=ellipse:27,218,24,24
-VOL-=ellipse:33,243,20,21
-CH+=ellipse:89,218,24,24
-CH-=ellipse:87,243,20,21
-1=ellipse:27,294,23,14
-2=ellipse:59,294,23,14
-3=ellipse:91,294,23,14
-4=ellipse:27,316,23,14
-5=ellipse:59,316,23,14
-6=ellipse:91,316,23,14
-7=ellipse:27,339,23,14
-8=ellipse:59,339,23,14
-9=ellipse:91,339,23,14
-0=ellipse:59,361,23,14
-LAST=ellipse:61,219,18,11
-tv/vcr{A/B}=ellipse:92,272,22,15
-rew=ellipse:27,385,23,14
-PLAY=ellipse:59,385,23,14
-ff=ellipse:91,385,23,14
-enter=ellipse:91,361,23,14
-+100=ellipse:27,361,23,14
-PAUSE=ellipse:59,408,23,14
-STOP=ellipse:91,408,23,14
-rec=ellipse:27,408,23,14
-P[SETUP]=ellipse:15,29,13,13
-{LIGHT}=ellipse:110,27,15,15
-scan{Fav}=ellipse:61,274,18,11
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$DATE:Tue Aug 26 21:35:34 2003
+#$PATH:C:\km\images\
+#$GIF:15-2104.jpg
+#$FORMAT:ncsa
+#$EOH
+circle VCR 28,82 40,89
+circle CBL/SAT 108,61 120,68
+circle TV 110,82 122,89
+circle CD 89,43 102,50
+circle AUX1 50,43 63,50
+circle DVD 31,61 44,68
+circle POWER 69,63 88,70
+circle THEATER 70,87 87,94
+circle AUDIO 108,147 125,154
+circle music 34,199 42,204
+circle movie 58,203 66,208
+circle sport 83,203 91,208
+circle news 108,199 116,204
+circle 1s 29,108 37,113
+circle 2s 57,112 65,117
+circle 3s 83,112 91,117
+circle 4s 110,108 118,113
+circle SLEEP 38,279 49,286
+circle freeze 87,260 94,265
+circle menu 33,133 44,140
+circle exit 101,178 112,185
+circle info 37,178 48,185
+circle guide 105,133 116,140
+circle up 70,135 84,142
+circle down 70,178 84,185
+circle left 34,156 45,163
+circle right 104,156 115,163
+circle SELECT 70,156 87,163
+circle MUTE 70,252 79,257
+circle VOL+ 39,230 51,242
+circle VOL- 43,253 53,263
+circle CH+ 101,230 113,242
+circle CH- 97,253 107,263
+circle 1 38,301 49,308
+circle 2 70,301 81,308
+circle 3 102,301 113,308
+circle 4 38,323 49,330
+circle 5 70,323 81,330
+circle 6 102,323 113,330
+circle 7 38,346 49,353
+circle 8 70,346 81,353
+circle 9 102,346 113,353
+circle 0 70,368 81,375
+circle LAST 70,224 79,229
+circle tv/vcr{A/B} 103,279 114,286
+circle rew 38,392 49,399
+circle PLAY 70,392 81,399
+circle ff 102,392 113,399
+circle enter 102,368 113,375
+circle +100 38,368 49,375
+circle PAUSE 70,415 81,422
+circle STOP 102,415 113,422
+circle rec 38,415 49,422
+circle P[SETUP] 21,35 27,41
+circle {LIGHT} 117,34 124,41
+circle scan{Fav} 70,279 79,284

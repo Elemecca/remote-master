@@ -1,55 +1,62 @@
-Image=15-1995.jpg
-
-[ButtonShapes]
-CD=ellipse:19,101,24,14
-CBL=ellipse:45,101,24,14
-VCR=ellipse:72,101,24,14
-TV=ellipse:100,101,24,14
-TUNER=ellipse:19,120,26,14
-AMP=ellipse:58,120,26,14
-SAT=ellipse:95,120,26,14
-HOME_THEATER=ellipse:21,138,35,14
-Plug&Power=ellipse:85,138,35,14
-VIDEO=ellipse:88,386,26,15
-menu{Program}=ellipse:22,158,22,14
-center{rear}=ellipse:22,211,22,14
-shift=ellipse:97,158,22,14
-scan{Fav}=ellipse:97,212,22,14
-POWER=ellipse:95,80,29,16
-up=ellipse:53,167,34,13
-down=ellipse:53,204,34,13
-left=ellipse:36,176,13,34
-right=ellipse:94,176,13,34
-SURROUND=ellipse:56,184,28,15
-MUTE=ellipse:49,224,16,10
-VOL+=ellipse:26,232,17,22
-VOL-=ellipse:26,255,17,22
-CH+=ellipse:98,232,17,22
-CH-=ellipse:98,255,17,22
-1=ellipse:29,285,20,20
-2=ellipse:60,285,20,20
-3=ellipse:92,285,20,20
-4=ellipse:29,311,20,20
-5=ellipse:60,311,20,20
-6=ellipse:92,311,20,20
-7=ellipse:29,337,20,20
-8=ellipse:60,337,20,20
-9=ellipse:92,337,20,20
-0=ellipse:59,364,20,20
-LAST=ellipse:75,224,15,10
-escape=ellipse:74,243,15,11
-PIP=ellipse:50,243,15,11
-Swap=ellipse:50,262,15,11
-Move=ellipse:74,262,16,11
-ENTER=ellipse:88,367,26,15
-rew=ellipse:28,407,23,14
-PLAY=ellipse:58,407,23,14
-ffwd=ellipse:89,407,23,14
-AUDIO=ellipse:28,386,23,14
-TV/VIDEO{A/B}=ellipse:27,367,23,14
-PAUSE=ellipse:90,429,25,16
-STOP=rect:58,429,23,15
-rec=ellipse:29,428,18,17
-P[SETUP]=ellipse:20,81,13,13
-{LIGHT}=ellipse:39,80,15,15
-select=ellipse:63,149,16,11
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$DATE:Tue Aug 26 21:35:34 2003
+#$PATH:C:\km\images\
+#$GIF:15-1995.jpg
+#$FORMAT:ncsa
+#$EOH
+circle CD 31,108 43,115
+circle CBL 57,108 69,115
+circle VCR 84,108 96,115
+circle TV 112,108 124,115
+circle TUNER 32,127 45,134
+circle AMP 71,127 84,134
+circle SAT 108,127 121,134
+circle HOME_THEATER 38,145 55,152
+circle Plug&Power 102,145 119,152
+circle VIDEO 101,393 114,400
+circle menu{Program} 33,165 44,172
+circle center{rear} 33,218 44,225
+circle shift 108,165 119,172
+circle scan{Fav} 108,219 119,226
+circle POWER 109,88 123,96
+circle up 70,173 87,179
+circle down 70,210 87,216
+circle left 42,193 48,210
+circle right 100,193 106,210
+circle SURROUND 70,191 84,198
+circle MUTE 57,229 65,234
+circle VOL+ 34,243 42,254
+circle VOL- 34,266 42,277
+circle CH+ 106,243 114,254
+circle CH- 106,266 114,277
+circle 1 39,295 49,305
+circle 2 70,295 80,305
+circle 3 102,295 112,305
+circle 4 39,321 49,331
+circle 5 70,321 80,331
+circle 6 102,321 112,331
+circle 7 39,347 49,357
+circle 8 70,347 80,357
+circle 9 102,347 112,357
+circle 0 69,374 79,384
+circle LAST 82,229 89,234
+circle escape 81,248 88,253
+circle PIP 57,248 64,253
+circle Swap 57,267 64,272
+circle Move 82,267 90,272
+circle ENTER 101,374 114,381
+circle rew 39,414 50,421
+circle PLAY 69,414 80,421
+circle ffwd 100,414 111,421
+circle AUDIO 39,393 50,400
+circle TV/VIDEO{A/B} 38,374 49,381
+circle PAUSE 102,437 114,445
+rect STOP 58,429 81,444
+circle rec 38,436 47,444
+circle P[SETUP] 26,87 32,93
+circle {LIGHT} 46,87 53,94
+circle select 71,154 79,159

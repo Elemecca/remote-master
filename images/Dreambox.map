@@ -1,43 +1,49 @@
-Image=Dreambox.jpg
-
-[ButtonShapes]
-SHIFT=ellipse:45,13,30,15
-POWER=ellipse:82,15,30,15
-TV=ellipse:36,42,37,19
-DREAM=ellipse:85,44,37,19
-1=ellipse:26,70,32,16
-2=ellipse:66,70,32,16
-3=ellipse:104,72,32,16
-4=ellipse:26,91,32,16
-5=ellipse:66,92,32,16
-6=ellipse:104,93,32,16
-7=ellipse:27,111,32,16
-8=ellipse:66,112,32,16
-9=ellipse:105,113,32,16
-BACK=ellipse:27,133,32,16
-0=ellipse:66,134,32,16
-FORWARD=ellipse:105,134,32,16
-MUTE=ellipse:68,166,30,16
-LAME=ellipse:68,188,30,16
-VOL+=ellipse:23,167,26,26
-VOL-=ellipse:35,195,26,26
-BOUQUET+=ellipse:116,169,26,26
-BOUQUET-=ellipse:105,198,26,26
-INFO=ellipse:19,225,22,22
-DREAM_MENU=ellipse:123,227,22,22
-AUDIO=ellipse:23,291,22,22
-VIDEO=ellipse:119,293,22,22
-UP=ellipse:52,228,61,23
-DOWN=ellipse:51,285,61,23
-LEFT=poly:61,256,61,281,40,286,34,268,40,250
-RIGHT=poly:104,256,104,281,125,287,130,270,125,252
-OK=rect:68,258,29,20
-RED=ellipse:26,328,22,22
-GREEN=ellipse:56,330,22,22
-YELLOW=ellipse:85,330,22,22
-BLUE=ellipse:114,329,22,22
-TV_STOP=ellipse:30,363,22,22
-RADIO=ellipse:56,365,22,22
-TEXT=ellipse:84,365,22,22
-HELP=ellipse:110,364,22,22
-
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$DATE:Tue Aug 26 21:35:34 2003
+#$PATH:C:\km\images\
+#$GIF:Dreambox.jpg
+#$FORMAT:ncsa
+#$EOH
+circle SHIFT 60,20 75,27
+circle POWER 97,22 112,29
+circle TV 54,51 72,60
+circle DREAM 103,53 121,62
+circle 1 42,78 58,86
+circle 2 82,78 98,86
+circle 3 120,80 136,88
+circle 4 42,99 58,107
+circle 5 82,100 98,108
+circle 6 120,101 136,109
+circle 7 43,119 59,127
+circle 8 82,120 98,128
+circle 9 121,121 137,129
+circle BACK 43,141 59,149
+circle 0 82,142 98,150
+circle FORWARD 121,142 137,150
+circle MUTE 83,174 98,182
+circle LAME 83,196 98,204
+circle VOL+ 36,180 49,193
+circle VOL- 48,208 61,221
+circle BOUQUET+ 129,182 142,195
+circle BOUQUET- 118,211 131,224
+circle INFO 30,236 41,247
+circle DREAM_MENU 134,238 145,249
+circle AUDIO 34,302 45,313
+circle VIDEO 130,304 141,315
+circle UP 82,239 112,250
+circle DOWN 81,296 111,307
+poly LEFT 61,256 61,281 40,286 34,268 40,250 61,256
+poly RIGHT 104,256 104,281 125,287 130,270 125,252 104,256
+rect OK 68,258 97,278
+circle RED 37,339 48,350
+circle GREEN 67,341 78,352
+circle YELLOW 96,341 107,352
+circle BLUE 125,340 136,351
+circle TV_STOP 41,374 52,385
+circle RADIO 67,376 78,387
+circle TEXT 95,376 106,387
+circle HELP 121,375 132,386

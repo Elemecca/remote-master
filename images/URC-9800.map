@@ -1,54 +1,61 @@
-Image=URC-9800.jpg
-
-[ButtonShapes]
-TV=rect:31,88,20,14
-VCR=rect:58,88,20,14
-DVD=rect:85,88,20,14
-CBL/SAT=rect:112,88,20,14
-TUNER=rect:32,110,20,14
-AMP=rect:59,110,20,14
-CD=rect:83,110,20,14
-AUX1=rect:109,111,20,14
-HOME_THEATER=ellipse:51,132,60,15
-menu{Clear}=ellipse:41,217,22,16
-center{Prog}=ellipse:42,196,22,16
-Select=ellipse:46,235,22,16
-shift=ellipse:48,156,22,16
-Esc{Rear}=ellipse:42,175,22,16
-POWER=ellipse:118,145,26,20
-up=ellipse:88,165,34,13
-down=ellipse:88,206,34,13
-left=ellipse:75,175,13,34
-right=ellipse:125,175,13,34
-Surround=ellipse:95,182,20,20
-MUTE{sleep}=ellipse:59,261,22,16
-VOL+=ellipse:112,229,22,17
-VOL-=ellipse:92,241,22,17
-CH+=ellipse:121,255,22,17
-CH-=ellipse:102,267,22,17
-1=ellipse:31,283,20,20
-2=ellipse:55,283,20,20
-3=ellipse:80,283,20,20
-4=ellipse:31,307,20,20
-5=ellipse:55,307,20,20
-6=ellipse:80,307,20,20
-7=ellipse:31,330,20,20
-8=ellipse:55,330,20,20
-9=ellipse:80,330,20,20
-0=ellipse:55,355,20,20
-Prevch{Disp}=ellipse:109,305,22,16
-PIP{freeze}=ellipse:109,329,22,16
-Swap=ellipse:109,353,22,16
-Move=ellipse:109,378,22,16
-ENTER=ellipse:29,359,22,15
-REW{slow-}=poly:52,406,52,420,37,414
-FF{slow+}=poly:84,406,84,420,99,414
-play{slow}=poly:61,406,61,420,76,414
-TV/SAT=ellipse:78,359,22,15
-PAUSE{X2}=rect:82,429,18,15
-STOP{Eject}=rect:60,429,18,15
-rec=ellipse:36,428,18,17
-SETUP=ellipse:107,427,22,16
-Macro=ellipse:34,381,23,15
-Macro2=ellipse:74,381,23,15
-{LIGHT}=ellipse:107,403,22,16
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$DATE:Tue Aug 26 21:35:34 2003
+#$PATH:C:\km\images\
+#$GIF:URC-9800.jpg
+#$FORMAT:ncsa
+#$EOH
+rect TV 31,88 51,102
+rect VCR 58,88 78,102
+rect DVD 85,88 105,102
+rect CBL/SAT 112,88 132,102
+rect TUNER 32,110 52,124
+rect AMP 59,110 79,124
+rect CD 83,110 103,124
+rect AUX1 109,111 129,125
+circle HOME_THEATER 81,139 111,146
+circle menu{Clear} 52,225 63,233
+circle center{Prog} 53,204 64,212
+circle Select 57,243 68,251
+circle shift 59,164 70,172
+circle Esc{Rear} 53,183 64,191
+circle POWER 131,155 144,165
+circle up 105,171 122,177
+circle down 105,212 122,218
+circle left 81,192 87,209
+circle right 131,192 137,209
+circle Surround 105,192 115,202
+circle MUTE{sleep} 70,269 81,277
+circle VOL+ 123,237 134,245
+circle VOL- 103,249 114,257
+circle CH+ 132,263 143,271
+circle CH- 113,275 124,283
+circle 1 41,293 51,303
+circle 2 65,293 75,303
+circle 3 90,293 100,303
+circle 4 41,317 51,327
+circle 5 65,317 75,327
+circle 6 90,317 100,327
+circle 7 41,340 51,350
+circle 8 65,340 75,350
+circle 9 90,340 100,350
+circle 0 65,365 75,375
+circle Prevch{Disp} 120,313 131,321
+circle PIP{freeze} 120,337 131,345
+circle Swap 120,361 131,369
+circle Move 120,386 131,394
+circle ENTER 40,366 51,373
+poly REW{slow-} 52,406 52,420 37,414 52,406
+poly FF{slow+} 84,406 84,420 99,414 84,406
+poly play{slow} 61,406 61,420 76,414 61,406
+circle TV/SAT 89,366 100,373
+rect PAUSE{X2} 82,429 100,444
+rect STOP{Eject} 60,429 78,444
+circle rec 45,436 54,444
+circle SETUP 118,435 129,443
+circle Macro 45,388 56,395
+circle Macro2 85,388 96,395
+circle {LIGHT} 118,411 129,419

@@ -1,58 +1,65 @@
-Image=URC-6131.jpg
-
-[ButtonShapes]
-TV=ellipse:37,35,16,16
-PVR=ellipse:77,32,16,16
-DVD=ellipse:115,39,16,16
-CBL/SAT=ellipse:48,55,16,16
-AUD=ellipse:76,54,16,16
-VCR=ellipse:104,58,16,16
-Power=ellipse:60,75,46,13
-Menu=ellipse:25,74,16,16
-Guide=ellipse:34,96,16,16
-Exit=ellipse:114,98,16,16
-Info=ellipse:123,77,16,16
-Up=ellipse:71,93,25,18
-Left=ellipse:47,117,17,24
-Right=ellipse:101,118,17,22
-Down=ellipse:68,148,27,17
-SELECT=ellipse:70,117,24,24
-MUTE=ellipse:33,192,14,14
-VOL+=ellipse:25,148,22,32
-VOL-=ellipse:52,175,18,24
-CH+=ellipse:113,153,22,32
-CH-=ellipse:90,176,18,24
-Prev=ellipse:112,193,16,16
-Replay=ellipse:29,214,16,16
-Thumbs_Down=ellipse:50,209,16,16
-PVR_Menu=ellipse:72,206,16,16
-Thumbs_Up=ellipse:93,209,16,16
-Advance=ellipse:114,217,16,16
-Stop=ellipse:52,233,20,16
-Play=ellipse:88,234,20,16
-Rewind=ellipse:32,249,20,16
-Pause=ellipse:69,250,20,16
-Fast_forward=ellipse:105,250,20,16
-Prev_track=ellipse:50,266,20,16
-Next_track=ellipse:87,266,20,16
-Rec=ellipse:28,280,16,16
-Audio{CC}=ellipse:49,288,16,16
-Subtitle=ellipse:70,291,16,16
-Angle{Sleep}=ellipse:92,289,16,16
-Slow=ellipse:111,282,16,16
-1=ellipse:36,317,20,16
-2=ellipse:68,322,20,16
-3=ellipse:100,317,20,16
-4=ellipse:35,339,20,16
-5=ellipse:67,343,20,16
-6=ellipse:99,339,20,16
-7=ellipse:36,360,20,16
-8=ellipse:67,364,20,16
-9=ellipse:99,361,20,16
-ENTER=ellipse:35,382,20,16
-0=ellipse:67,387,20,16
-TV/Vid=ellipse:97,383,20,16
-PIP=ellipse:33,404,16,16
-Swap=ellipse:56,408,16,16
-Move=ellipse:79,408,16,16
-SET[SETUP]=ellipse:100,404,16,16
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$DATE:Tue Aug 26 21:35:34 2003
+#$PATH:C:\km\images\
+#$GIF:URC-6131.jpg
+#$FORMAT:ncsa
+#$EOH
+circle TV 45,43 53,51
+circle PVR 85,40 93,48
+circle DVD 123,47 131,55
+circle CBL/SAT 56,63 64,71
+circle AUD 84,62 92,70
+circle VCR 112,66 120,74
+circle Power 83,81 106,87
+circle Menu 33,82 41,90
+circle Guide 42,104 50,112
+circle Exit 122,106 130,114
+circle Info 131,85 139,93
+circle Up 83,102 95,111
+circle Left 55,129 63,141
+circle Right 109,129 117,140
+circle Down 81,156 94,164
+circle SELECT 82,129 94,141
+circle MUTE 40,199 47,206
+circle VOL+ 36,164 47,180
+circle VOL- 61,187 70,199
+circle CH+ 124,169 135,185
+circle CH- 99,188 108,200
+circle Prev 120,201 128,209
+circle Replay 37,222 45,230
+circle Thumbs_Down 58,217 66,225
+circle PVR_Menu 80,214 88,222
+circle Thumbs_Up 101,217 109,225
+circle Advance 122,225 130,233
+circle Stop 62,241 72,249
+circle Play 98,242 108,250
+circle Rewind 42,257 52,265
+circle Pause 79,258 89,266
+circle Fast_forward 115,258 125,266
+circle Prev_track 60,274 70,282
+circle Next_track 97,274 107,282
+circle Rec 36,288 44,296
+circle Audio{CC} 57,296 65,304
+circle Subtitle 78,299 86,307
+circle Angle{Sleep} 100,297 108,305
+circle Slow 119,290 127,298
+circle 1 46,325 56,333
+circle 2 78,330 88,338
+circle 3 110,325 120,333
+circle 4 45,347 55,355
+circle 5 77,351 87,359
+circle 6 109,347 119,355
+circle 7 46,368 56,376
+circle 8 77,372 87,380
+circle 9 109,369 119,377
+circle ENTER 45,390 55,398
+circle 0 77,395 87,403
+circle TV/Vid 107,391 117,399
+circle PIP 41,412 49,420
+circle Swap 64,416 72,424
+circle Move 87,416 95,424
+circle SET[SETUP] 108,412 116,420

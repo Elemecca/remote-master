@@ -1,57 +1,64 @@
-Image=rcu-810.jpg
-
-[ButtonShapes]
-VCR1=ellipse:42,85,20,14
-VCR2=ellipse:74,85,20,14
-CBL=ellipse:15,92,20,14
-SAT=ellipse:13,73,20,14
-TV=ellipse:103,73,20,14
-AUX=ellipse:74,104,20,14
-DVD=ellipse:102,92,20,14
-AUD=ellipse:42,104,20,14
-SLEEP=ellipse:20,133,15,15
-Guide=ellipse:26,236,14,14
-Menu=ellipse:26,286,14,14
-Info=ellipse:97,236,14,14
-Clear=ellipse:97,286,14,14
-on/off=ellipse:54,65,29,16
-CH+=ellipse:51,166,36,12
-CH-=ellipse:51,200,36,12
-vol-=ellipse:34,176,13,25
-vol+=ellipse:90,176,13,25
-mute=ellipse:56,182,26,15
-select=ellipse:58,262,22,12
-right=ellipse:89,255,15,26
-left=ellipse:34,255,15,26
-Up=ellipse:56,243,26,15
-down=ellipse:56,278,26,15
-1=ellipse:29,304,18,15
-2=ellipse:60,304,18,15
-3=ellipse:91,304,18,15
-4=ellipse:29,325,18,15
-5=ellipse:60,325,18,15
-6=ellipse:91,325,18,15
-7=ellipse:29,345,18,15
-8=ellipse:60,345,18,15
-9=ellipse:91,345,18,15
-0=ellipse:60,365,18,15
-Pip=ellipse:24,154,20,14
-Swap=ellipse:94,154,20,14
-input=ellipse:27,214,18,14
-Rew=ellipse:36,396,14,23
-Play=ellipse:58,387,23,14
-Fwd=ellipse:89,396,14,23
-TV/VCR=ellipse:89,366,23,14
-enter=ellipse:28,366,23,14
-Pause=ellipse:74,420,23,14
-Stop=ellipse:42,420,23,14
-Rec=ellipse:58,404,23,14
-Code_Search=ellipse:56,220,26,14
-{Lamp}=ellipse:103,133,15,15
-Go_Back=ellipse:93,214,18,14
-l1=ellipse:17,113,20,14
-l2=ellipse:58,122,20,14
-l3=ellipse:100,113,20,14
-m1=ellipse:39,136,16,14
-m2=ellipse:61,146,16,14
-m3=ellipse:82,136,16,14
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$DATE:Tue Aug 26 21:35:34 2003
+#$PATH:C:\km\images\
+#$GIF:rcu-810.jpg
+#$FORMAT:ncsa
+#$EOH
+circle VCR1 52,92 62,99
+circle VCR2 84,92 94,99
+circle CBL 25,99 35,106
+circle SAT 23,80 33,87
+circle TV 113,80 123,87
+circle AUX 84,111 94,118
+circle DVD 112,99 122,106
+circle AUD 52,111 62,118
+circle SLEEP 27,140 34,147
+circle Guide 33,243 40,250
+circle Menu 33,293 40,300
+circle Info 104,243 111,250
+circle Clear 104,293 111,300
+circle on/off 68,73 82,81
+circle CH+ 69,172 87,178
+circle CH- 69,206 87,212
+circle vol- 40,188 46,200
+circle vol+ 96,188 102,200
+circle mute 69,189 82,196
+circle select 69,268 80,274
+circle right 96,268 103,281
+circle left 41,268 48,281
+circle Up 69,250 82,257
+circle down 69,285 82,292
+circle 1 38,311 47,318
+circle 2 69,311 78,318
+circle 3 100,311 109,318
+circle 4 38,332 47,339
+circle 5 69,332 78,339
+circle 6 100,332 109,339
+circle 7 38,352 47,359
+circle 8 69,352 78,359
+circle 9 100,352 109,359
+circle 0 69,372 78,379
+circle Pip 34,161 44,168
+circle Swap 104,161 114,168
+circle input 36,221 45,228
+circle Rew 43,407 50,418
+circle Play 69,394 80,401
+circle Fwd 96,407 103,418
+circle TV/VCR 100,373 111,380
+circle enter 39,373 50,380
+circle Pause 85,427 96,434
+circle Stop 53,427 64,434
+circle Rec 69,411 80,418
+circle Code_Search 69,227 82,234
+circle {Lamp} 110,140 117,147
+circle Go_Back 102,221 111,228
+circle l1 27,120 37,127
+circle l2 68,129 78,136
+circle l3 110,120 120,127
+circle m1 47,143 55,150
+circle m2 69,153 77,160
+circle m3 90,143 98,150

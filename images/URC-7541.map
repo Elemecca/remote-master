@@ -1,49 +1,56 @@
-Image=URC-7544.jpg
-
-[ButtonShapes]
-MAGIC[setup]=ellipse:36,19,26,19
-MENU=rect:67,18,18,20
-POWER=ellipse:89,19,26,19
-TV=ellipse:25,55,22,16
-VCR=rect:53,53,19,19
-SAT=rect:77,53,19,19
-AUX=ellipse:102,55,22,16
-1=ellipse:26,87,28,16
-2=ellipse:62,87,28,16
-3=ellipse:97,87,28,16
-4=ellipse:26,108,28,16
-5=ellipse:62,108,28,16
-6=ellipse:97,108,28,16
-7=ellipse:26,130,28,16
-8=ellipse:62,130,28,16
-9=ellipse:97,130,28,16
-10=ellipse:26,151,28,16
-0=ellipse:62,151,28,16
-AV=ellipse:97,151,28,16
-OK=ellipse:64,205,23,27
-UP=ellipse:61,186,30,14
-DOWN=ellipse:61,238,30,14
-LEFT=ellipse:45,204,14,30
-RIGHT=ellipse:92,204,14,30
-EXIT=rect:14,213,23,12
-MUTE=rect:114,213,23,12
-CH+=ellipse:24,180,18,28
-CH-=ellipse:24,230,18,28
-VOL+=ellipse:108,180,18,28
-VOL-=ellipse:109,230,18,28
-REW=poly:44,270,44,290,24,280
-PLAY=poly:55,279,55,297,73,288
-PAUSE=rect:81,280,16,15
-FFWD=poly:106,270,106,290,126,280
-SP/LP=ellipse:21,298,29,16
-STOP=rect:57,304,17,17
-REC=ellipse:81,303,17,18
-AUTO=ellipse:103,298,26,16
-A=ellipse:32,336,18,14
-B=ellipse:55,336,18,14
-C=ellipse:78,336,18,14
-D=ellipse:101,336,18,14
-E=ellipse:32,358,18,14
-F=ellipse:55,358,18,14
-G=ellipse:78,358,18,14
-H=ellipse:101,358,18,14
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$DATE:Tue Aug 26 21:35:34 2003
+#$PATH:C:\km\images\
+#$GIF:URC-7544.jpg
+#$FORMAT:ncsa
+#$EOH
+circle MAGIC[setup] 49,28 62,37
+rect MENU 67,18 85,38
+circle POWER 102,28 115,37
+circle TV 36,63 47,71
+rect VCR 53,53 72,72
+rect SAT 77,53 96,72
+circle AUX 113,63 124,71
+circle 1 40,95 54,103
+circle 2 76,95 90,103
+circle 3 111,95 125,103
+circle 4 40,116 54,124
+circle 5 76,116 90,124
+circle 6 111,116 125,124
+circle 7 40,138 54,146
+circle 8 76,138 90,146
+circle 9 111,138 125,146
+circle 10 40,159 54,167
+circle 0 76,159 90,167
+circle AV 111,159 125,167
+circle OK 75,218 86,231
+circle UP 76,193 91,200
+circle DOWN 76,245 91,252
+circle LEFT 52,219 59,234
+circle RIGHT 99,219 106,234
+rect EXIT 14,213 37,225
+rect MUTE 114,213 137,225
+circle CH+ 33,194 42,208
+circle CH- 33,244 42,258
+circle VOL+ 117,194 126,208
+circle VOL- 118,244 127,258
+poly REW 44,270 44,290 24,280 44,270
+poly PLAY 55,279 55,297 73,288 55,279
+rect PAUSE 81,280 97,295
+poly FFWD 106,270 106,290 126,280 106,270
+circle SP/LP 35,306 49,314
+rect STOP 57,304 74,321
+circle REC 89,312 97,321
+circle AUTO 116,306 129,314
+circle A 41,343 50,350
+circle B 64,343 73,350
+circle C 87,343 96,350
+circle D 110,343 119,350
+circle E 41,365 50,372
+circle F 64,365 73,372
+circle G 87,365 96,372
+circle H 110,365 119,372
