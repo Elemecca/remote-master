@@ -1182,7 +1182,7 @@ public class DeviceUpgrade
         String funcName = ( String )temp.elementAt( 0 );
         System.err.println( "Checking '" + funcName + "'" );
         Function f = getFunction( funcName, usedFunctions );
-        if (( f != null ) || ( f.getHex() == null ))
+        if (( f != null ) && ( f.getHex() == null ))
         {
           System.err.println( "Removing function " + f + ", which has name '" + funcName + "'" );
           i.remove();
@@ -1194,6 +1194,8 @@ public class DeviceUpgrade
       String message = "Some of the functions defined in the imported device upgrade " +
                        "were assigned to buttons that could not be matched by name. " +
                        "The functions and the corresponding button names are listed below." +
+                       "\n\nPlease post this information in the \"JP1 - Software\" section of the " +
+                       "JP1 Forums at www.hifi-remote.com" +
                        "\n\nUse the Button or Layout panel to assign those functions properly.";
 
       JFrame frame = new JFrame( "Import Failure" );
@@ -1210,6 +1212,10 @@ public class DeviceUpgrade
       titles.add( "Function name" );
       titles.add( "Button name" );
       JTable table = new JTable( unassigned, titles );
+      Dimension d = table.getPreferredScrollableViewportSize();
+      d.height = d.height / 4;
+      table.setPreferredScrollableViewportSize( d );
+
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       frame.pack();
       frame.show();
