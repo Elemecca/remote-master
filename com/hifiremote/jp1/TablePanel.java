@@ -234,8 +234,8 @@ public abstract class TablePanel
   }
 
   protected abstract Object createRowObject();
-  protected abstract boolean canDelete( Object o );
-  protected abstract void doNotDelete( Object o );
+  protected boolean canDelete( Object o ){ return true; }
+  protected void doNotDelete( Object o ){}
 
   // Interface ActionListener
   public void actionPerformed( ActionEvent e )

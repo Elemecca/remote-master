@@ -268,6 +268,11 @@ public class DeviceUpgrade
     return extFunctions;
   }
 
+  public Vector getKeyMoves()
+  {
+    return keymoves;
+  }
+   
   public void setFile( File file )
   {
     this.file = file;
@@ -1205,6 +1210,7 @@ public class DeviceUpgrade
   private String notes = null;
   private Vector functions = new Vector();
   private Vector extFunctions = new Vector();
+  private Vector keymoves = new Vector();
   private File file = null;
 
   private static final String[] deviceTypeAliasNames =
