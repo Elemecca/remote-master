@@ -498,12 +498,11 @@ public abstract class TablePanel
     int width;
 
     int cols = model.getColumnCount();
-    int lastCol = cols - 1;
-    for ( int i = 0; i < lastCol; i++ )
+    for ( int i = 0; i < cols; i++ )
     {
       column = columnModel.getColumn( i );
       
-      if ( i != 1 )
+      if ( model.isColumnWidthFixed( i ))
       {
         l.setText( model.getColumnName( i ));
         width =  l.getPreferredSize().width;

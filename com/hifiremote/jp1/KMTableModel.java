@@ -61,6 +61,14 @@ public abstract class KMTableModel
     data.insertElementAt( o, to );
   }
 
+  public boolean isColumnWidthFixed( int col )
+  {
+    int lastCol = getColumnCount() - 1;
+    if (( col == 1 ) || ( col == lastCol ))
+      return false;
+    return true;
+  }
+
   public abstract TableCellEditor getColumnEditor( int col );
   public abstract TableCellRenderer getColumnRenderer( int col );
 

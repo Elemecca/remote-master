@@ -216,6 +216,13 @@ public class ExternalFunctionTableModel
     return rc;   
   }
 
+  public boolean isColumnWidthFixed( int col )
+  {
+    if (( col == nameCol ) || ( col == hexCol ) || ( col == notesCol ))
+      return false;
+    return true;
+  }
+
   private final static String[] names =
     { " # ", "Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "Notes" };
   private final static Class[] classes =
