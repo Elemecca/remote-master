@@ -49,7 +49,7 @@ DVD	= $014 $015
 SPA	= $016 $017
 
 [Buttons]
-"setup":Setup=$02
+Setup=$02
 TV=$01,VCR=$0a,DVD=$21,CBL/SAT=$11,RCVR=$22,CD=$09,SPA=$32
 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F,
 Power=$03

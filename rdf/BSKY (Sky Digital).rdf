@@ -5,6 +5,7 @@ AdvCodeAddr=$012..$0FF
 UpgradeAddr=$100..$3FC
 Processor=6805
 RDFSync=3
+ImageMap=Skydigital.map
 
 [Settings]
 VPT Device=$00F.7.8.1.0 DeviceButtons
@@ -19,8 +20,8 @@ TV	= 1
 OEM	= 2
 
 [DeviceTypeAliases]
-SAT = Cable,SAT,Video Acc
-TV    = TV
+SAT        = Cable,SAT,Video Acc, VCR,DVD,Tape,Laserdisc,DAT,CD,Home Auto,Phono,Tuner,Misc Audio, Amp
+TV         = TV
 
 [DeviceButtons]
 SKY	= $009 $006 $00c
@@ -28,24 +29,24 @@ TV	= $00a $007 $00d
 OEM	= $00b $008 $00e
 
 [Buttons]
-On_Off=1
-vol_up=28
-vol_down=4
+"power":On_Off=1
+"vol up":vol+=28
+"vol down":vol-=4
 mute=25
-channel_up=30
-channel_down=6
-cursor_up=29
-cursor_down=10
-cursor_right=37
-cursor_left=8
+"channel up":ch+=30
+"channel down":ch-=6
+"up arrow":up=29
+"down arrow":down=10
+"right arrow":right=37
+"left arrow":left=8
 i_button=26
 text=5
 backup=11
 help=7
-red_button=14
-green_button=33
-yellow_button=12
-blue_button=35
+red=14
+green=33
+yellow=12
+blue=35
 1=18
 2=34
 3=16
@@ -66,7 +67,15 @@ box_office=
 services=
 interactive=
 
-
 [ButtonMaps]
-0 = (39, 18, 34, 16, 38, 32, 15, 19, 24, 20), (28, 04, 25), (30, 06),
-    01
+0 = (39, 18, 34, 16, 38, 32, 15, 19, 24, 20), (28, 04, 25), (30, 06), (29, 10, 37, 8), 01, 05, 07, 11, 14, 33, 12, 35, 26
+1 = (39, 18, 34, 16, 38, 32, 15, 19, 24, 20), (28, 04, 25), (30, 06)
+
+[Protocols]
+0000, 0002, 0006, 0007, 000A, 000C, 000D, 0011, 0013, 0014,
+0015, 0016, 0018, 001A, 001B, 001C, 001D, 0021, 0022, 0029,
+002A, 002D, 0032, 0034, 0035, 0039, 003D, 003F, 0043, 0045,
+0053, 0056, 005A, 005B, 005C, 005D, 005E, 005F, 0060, 0061,
+0065, 0067, 006E, 0071, 0072, 0078, 0083, 0087, 008D, 0095,
+00A4, 00A5, 00AF, 00C4, 00C5, 00C9, 00CA, 00CE, 00D0, 00DB,
+00E2, 00E3, 00E8, 00F5

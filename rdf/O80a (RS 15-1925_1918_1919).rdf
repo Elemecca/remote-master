@@ -6,7 +6,7 @@ FavKey=$14, $0DD, 10, 3, 1
 UpgradeAddr=$100..$3FC
 Processor=6805
 RDFSync=3
-ImageMap=15-1925.map
+ImageMap=15-1925.map,15-1918.map,15-1919.map
 
 [Checksums]
 ^$000:$002..$3FC
@@ -53,7 +53,7 @@ SpareDevice = $015 $00D $01D
 [Buttons]
 CD{Stereo}=$11, VCR=$0A, CBL{SAT}=$09, TV=$01,
 AUX1=$21, AUX2=$22, SpareDevice=$23, P&P=$24,
-"setup":SETUP=$02,
+SETUP=$02,
 POWER=$03,
 "vol up":VOL+=$04, "vol down":VOL-=$05, "mute":MUTE=$08,
 "channel up":CH+=$06, "channel down":CH-=$07,

@@ -69,16 +69,14 @@ AMP   = $02B $023 $033
 TUNER = $02C $024 $034
 P&P   = $02D $025 $035
 
-
-
 [Buttons]
 CBL=8, TV=16, VCR=32, CD=55, SAT=40, AMP=48, TUNER=56, Plug&Power=24, "theater":HOME_THEATER=53,
 0=19, 1=28, 2=20, 3=12, 4=29, 5=21, 6=13, 7=30, 8=22, 9=14,
 "channel up":CH+=4, "channel down":CH-=5, "vol up":VOL+=6, "vol down":VOL-=3, "mute":Mute{Sleep}=2, Power=7, Enter=33, "tv/vcr":TV/Video{A/B}=34,
-"prev ch":LAST=35, PLAY=18, PAUSE=9, "rewind":REW=26, "fast fwd":FFWD=10, "Stop":STOP=17, "record":REC=25,
+"prev ch":LAST=35, PLAY=18, PAUSE=9, "rewind":REW=26, "fast fwd":FFWD=10, STOP=17, "record":REC=25,
 "menu":Menu{Program}=36, "up arrow":Up=46, "down arrow":Down=45, "left arrow":Left=44, "right arrow":Right=43, "select":Select{Clear}=37, SURROUND=42, CENTER{Rear}=41, "fav/scan":Scan{Fav}=11,
 "pip on/off":PIP{Freeze}=50, "pip swap":SWAP=38, "pip move":MOVE=51, ESCAPE=54, "setup":P[SETUP]=31, SHIFT=15, AUDIO=47, VIDEO=39,
-"light":{Light}=49, "display":Display=$A3, REAR=$A9, PROGRAM=$A4, SLEEP=$82, Freeze=$B2,
+"light":{Light}=49, Display=$A3, REAR=$A9, PROGRAM=$A4, SLEEP=$82, Freeze=$B2,
 CLEAR=$A5,
 Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 

@@ -65,7 +65,7 @@ AUX   = $018 $019
 TV, Code_Search, "power":On/Off, "vol up":VOL+, "vol down":VOL-, "channel up":CH+, "channel down":CH-, MUTE, VCR2, VCR1,
 "rewind":Rew, Play, "fast fwd":Fwd, Stop, Pause, "record":Rec, SAT, CBL, Clear, "menu":Menu{Prog},
 "1":1{CD}, "2":2{Tape}, "3":3{Tuner}, "enter":Enter{Function}, "4":4{TV}, "5":5{VideoA}, "6":6{VideoB}, 7, 8, 9,
-0, "tv/vcr":TV/VCR, DVD, AUD, AUX, "light":{Lamp}, "learn1":L1, "learn2":L2, "learn3":L3, Select,
+0, TV/VCR, DVD, AUD, AUX, "light":{Lamp}, "learn1":L1, "learn2":L2, "learn3":L3, Select,
 "up arrow":Up{Level+}, "down arrow":Down{Level-}, "right arrow":Right, "left arrow":Left, "macro1":M1, "macro2":M2, "macro3":M3, Sleep, "pip swap":Swap{Front}, "pip on/off":PIP{Center},
 Input{Rear}, Go_Back{Test}, Guide, "display":Info, Device,
 Phantom1=60, Phantom2, Phantom3, Phantom4

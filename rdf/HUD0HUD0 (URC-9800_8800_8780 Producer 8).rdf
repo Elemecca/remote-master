@@ -8,7 +8,7 @@ TimedMacroAddr=$702..$7FD
 Processor=740
 RAMAddr=$132
 RDFSync=3
-ImageMap=URC-9800.map
+ImageMap=URC-9800.map,URC-9800.map,URC-8780.map
 
 [Settings]
 VPT Device=$037.6.7.2.0 DeviceButtons

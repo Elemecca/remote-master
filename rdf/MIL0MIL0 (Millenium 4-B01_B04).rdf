@@ -40,10 +40,10 @@ Audio = $010 $011
 <AUX> = $012 $013
 
 [Buttons]
-TV, "setup":SETUP, POWER, "vol up":VOL+, "vol down":VOL-, "channel up":CH+, "channel down":CH-, "mute":MUTE, CBL, VCR,
-"rewind":REW, PLAY, "fast fwd":FF, "Stop":STOP, PAUSE, "record":REC, AUDIO, "enter":ENTER{Music}, "prev ch":LAST, "select":OK,
-1, 2, 3, "tv/vcr":TV/VCR, 4, 5, 6, 7, 8, 9,
-0, "display":INFO, "fav/scan":FAV, <AUX>, EXIT=35, LOCK, PAGE+, PAGE-, "menu":MENU, HELP,
+TV, SETUP, POWER, "vol up":VOL+, "vol down":VOL-, "channel up":CH+, "channel down":CH-, MUTE, CBL, VCR,
+"rewind":REW, PLAY, "fast fwd":FF, STOP, PAUSE, "record":REC, AUDIO, "enter":ENTER{Music}, "prev ch":LAST, "select":OK,
+1, 2, 3, TV/VCR, 4, 5, 6, 7, 8, 9,
+0, "display":INFO, "fav/scan":FAV, <AUX>, EXIT=35, LOCK, PAGE+, PAGE-, MENU, HELP,
 F1, F2, F3, GUIDE, BYPASS, DAY+, DAY-, A, "up arrow":UP, "down arrow":DOWN,
 "left arrow":LEFT, "right arrow":RIGHT, B, C
 Phantom1=60, Phantom2, Phantom3, Phantom4

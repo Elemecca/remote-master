@@ -1,3 +1,9 @@
+Changes for v0.76
+
+- RM Maps-and-Images 1.08.zip
+- RM Maps-and-Images 1.08.zip
+- Added support for new Key Move format used by URC_6131 and Atlas DVR
+
 Changes for v0.75
 
 - Updated 10-17-03 Maps and Images from Nils

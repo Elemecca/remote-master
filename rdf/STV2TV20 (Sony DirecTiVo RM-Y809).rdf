@@ -22,7 +22,6 @@ VPT Device=$010.7.8.1.0 DeviceButtons
 
 [FixedData]
 
-
 [DeviceTypes]
 TV      = 0
 RCVR    = 0
