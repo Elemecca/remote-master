@@ -230,10 +230,8 @@ public class KeyMapMaster
     else
       pack();
 
-    if ( fileToOpen != null )
-    {
-      loadUpgrade( fileToOpen );
-    }
+    loadUpgrade( fileToOpen );
+
     show();
   }
 
@@ -697,8 +695,6 @@ public class KeyMapMaster
 
     File file = null;
     JFileChooser chooser = new JFileChooser( upgradePath );
-    chooser.setFileFilter( new TextFileFilter());
-    chooser.addChoosableFileFilter( new KMFileFilter());
     try 
     {
       chooser.setAcceptAllFileFilterUsed( false );
@@ -707,6 +703,8 @@ public class KeyMapMaster
     {
       e.printStackTrace( System.err );
     }
+    chooser.setFileFilter( new TextFileFilter());
+    chooser.addChoosableFileFilter( new KMFileFilter());
     int returnVal = chooser.showOpenDialog( this );
     if ( returnVal == JFileChooser.APPROVE_OPTION )
     {
@@ -804,6 +802,9 @@ public class KeyMapMaster
   public void loadUpgrade( File file )
     throws Exception
   {
+    if ( file == null )
+      return;
+
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
     refresh();
