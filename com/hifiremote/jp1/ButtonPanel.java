@@ -73,19 +73,33 @@ public class ButtonPanel
         public void dragOver( DropTargetDragEvent dte )
         {
           int col = table.convertColumnIndexToModel( table.getSelectedColumn());
+          DeviceType devType = deviceUpgrade.getDeviceType();
+          ButtonMap map = devType.getButtonMap();
+          int row = table.getSelectedRow();
+          Button b = ( Button )model.getValueAt( row, col );
           if ( col == 0 )
             dte.rejectDrag();
+          else if ( col == 1 )
+          {
+            if ( b.allowsKeyMove() || map.isPresent( b ))
+              dte.acceptDrag( dte.getDropAction());
+            else
+              dte.rejectDrag();
+          }
           else if ( col == 2 )
           {
-            int row = table.getSelectedRow();
-            Button b = ( Button )model.getValueAt( row, col );
             if ( b.allowsShiftedKeyMove())
               dte.acceptDrag( dte.getDropAction());
             else
               dte.rejectDrag();
           }
-          else
-            dte.acceptDrag( dte.getDropAction());
+          else if ( col == 3 )
+          {
+            if ( b.allowsXShiftedKeyMove())
+              dte.acceptDrag( dte.getDropAction());
+            else
+              dte.rejectDrag();
+          }
         }
   
         public void drop( DropTargetDropEvent dte )

@@ -21,6 +21,8 @@ public class FunctionRenderer
     Button b = ( Button )value;
     String temp = null;
     JTextField tf = new JTextField();
+    DeviceType devType = deviceUpgrade.getDeviceType();
+    ButtonMap map = devType.getButtonMap();
     if ( col == 0 )
     {
       if (( b.getFunction() == null ) && 
@@ -31,8 +33,6 @@ public class FunctionRenderer
         setForeground( Color.black );
 
       temp = b.getName();
-      DeviceType devType = deviceUpgrade.getDeviceType();
-      ButtonMap map = devType.getButtonMap();
       if (( map == null ) || !map.isPresent( b ))
         temp = temp + '*';
     }
@@ -41,7 +41,11 @@ public class FunctionRenderer
       Function f = null;
     
       if ( col == 1 )
+      {
         f = b.getFunction();
+        if ( !b.allowsKeyMove() && !map.isPresent( b ))
+          tf.setEditable( false );
+      }
       else if ( col == 2 )
       {
         f = b.getShiftedFunction();
