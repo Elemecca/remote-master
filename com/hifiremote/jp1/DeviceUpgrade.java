@@ -681,11 +681,16 @@ public class DeviceUpgrade
 
     if ( protocol == null )
     {
-      JOptionPane.showMessageDialog( null,
-                                     "No protocol found with name=\"" + str +
-                                     "\" for remote \"" + remote.getName(),
-                                     "Import Failure", JOptionPane.ERROR_MESSAGE );
-      return;
+      protocol = protocolManager.findProtocolByOldName( remote, str );
+      
+      if ( protocol == null )
+      {
+        JOptionPane.showMessageDialog( null,
+                                       "No protocol found with name=\"" + str +
+                                       "\" for remote \"" + remote.getName(),
+                                       "Import Failure", JOptionPane.ERROR_MESSAGE );
+        return;
+      }
     }
 
     DeviceParameter[] devParms = protocol.getDeviceParameters();
