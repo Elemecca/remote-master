@@ -258,7 +258,7 @@ public class DeviceUpgrade
       if ( !remote.getOmitDigitMapByte())
       {
         buff.append( ' ' );
-        upgradeBug = ( rdr.parseNumber( st.nextToken()) != 0 );
+        digitMapIndex = findDigitMapIndex();
         if ( digitMapIndex == -1 )
           buff.append( "00" );
         else 
