@@ -1,3 +1,11 @@
+Changes for v0.67
+
+- Add/update remote image, maps, and rdfs
+- Request 814866: Print (added Key Map panel, with print function)
+- Skip over bool device parms when import a KM device upgrade
+- Add support for "All" restriction, and "-" restriction operator.
+- Move RemoteMaster.ico to the images directory
+
 Changes for v0.66
 
 - Add/update remote images, maps, and rdfs
