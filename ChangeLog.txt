@@ -1,4 +1,8 @@
-Change for v0.96
+Changes for v0.96a 
+- Fix RDF parsing error 
+- RM Images and Maps v1.16
+
+Changes for v0.96
 - Fix DeviceCombiner support. 
 
 Changes for v0.95
