@@ -18,6 +18,7 @@ public class DeviceUpgrade
 {
   public DeviceUpgrade()
   {
+    devTypeAliasName = deviceTypeAliasNames[ 0 ];
     initFunctions();
   }
 
