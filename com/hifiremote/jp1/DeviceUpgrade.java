@@ -684,7 +684,7 @@ public class DeviceUpgrade
       JOptionPane.showMessageDialog( null,
                                      "No protocol found with name=\"" + str +
                                      "\" for remote \"" + remote.getName(),
-                                     "File Load Error", JOptionPane.ERROR_MESSAGE );
+                                     "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
     }
 
@@ -733,6 +733,7 @@ public class DeviceUpgrade
 
     functions.clear();
 
+    Vector unassigned = new Vector();
     Vector usedFunctions = new Vector();
     for ( int i = 0; i < 128; i++ )
     {
@@ -781,13 +782,21 @@ public class DeviceUpgrade
       {
         token = getNextField( st, delim ); // skip field 3
       }
-      token = getNextField( st, delim ); // get assigned button name (field 4)
-      System.err.println( "Button name=" + token );
-      Button b = remote.findByStandardName( new Button( token, null, ( byte )0 ));
-      System.err.println( "Found button " + b );
+      String buttonName = getNextField( st, delim ); // get assigned button name (field 4)
+      if (( buttonName != null ) && buttonName.length() == 0 )
+        buttonName = null;
+      System.err.println( "Button name=" + buttonName );
+      Button b = null;
+      if ( buttonName != null )
+        b = remote.findByStandardName( new Button( buttonName, null, ( byte )0 ));
       
       token = getNextField( st, delim );  // get normal function (field 5)
-      if (( b != null ) && ( token != null ))
+      if (( buttonName != null ) && ( token != null ) &&
+           Character.isDigit( token.charAt( 0 )) && 
+           Character.isDigit( token.charAt( 1 )) &&
+           ( token.charAt( 2 ) == ' ' ) &&
+           ( token.charAt( 3 ) == '-' ) &&
+           ( token.charAt( 4 ) == ' ' ))
       {
         String name = token.substring( 5 );
         System.err.println( "Normal function is " + name ); 
@@ -806,7 +815,16 @@ public class DeviceUpgrade
           func.setName( name );
           usedFunctions.add( func );
         }
-        b.setFunction( func );
+
+        if ( b == null )
+        {
+          Vector temp = new Vector( 2 );
+          temp.add( name );
+          temp.add( buttonName );
+          unassigned.add( temp );
+        }
+        else
+          b.setFunction( func );
       }
       
       token = getNextField( st, delim );  // get notes (field 6)
@@ -816,9 +834,6 @@ public class DeviceUpgrade
       if ( !f.isEmpty())
         functions.add( f );
       
-      if ( b == null )
-        continue;
-
       // skip to field 13
       for ( int j = 7; j <= 13; j++ )
         token = getNextField( st, delim ); 
@@ -837,7 +852,15 @@ public class DeviceUpgrade
           func.setName( name );
           usedFunctions.add( func );
         }
-        b.setShiftedFunction( func );
+        if ( b == null )
+        {
+          Vector temp = new Vector( 2 );
+          temp.add( name );
+          temp.add( "shift-" + buttonName );
+          unassigned.add( temp );
+        }
+        else
+          b.setShiftedFunction( func );
       }
     }
     
@@ -872,6 +895,30 @@ public class DeviceUpgrade
           notes = buff.toString().trim();
         }
       }
+    }
+    if ( !unassigned.isEmpty())
+    {
+      String message = "Some of the functions defined in the imported device upgrade " +
+                       "were assigned to buttons that could not be matched by name. " + 
+                       "The functions and the corresponding button names are listed below." + 
+                       "\n\nUse the Button or Layout panel to assign those functions properly.";
+
+      JFrame frame = new JFrame( "Import Failure" );
+      Container container = frame.getContentPane();
+
+      JTextArea text = new JTextArea( message );
+      text.setEditable( false );
+      text.setLineWrap( true );
+      text.setWrapStyleWord( true );
+      text.setBackground( container.getBackground() );
+      container.add( text, BorderLayout.NORTH );
+      Vector titles = new Vector();
+      titles.add( "Function name" );
+      titles.add( "Button name" );
+      JTable table = new JTable( unassigned, titles );
+      container.add( new JScrollPane( table ), BorderLayout.CENTER );
+      frame.pack();
+      frame.show();
     }
   }
 

@@ -162,6 +162,8 @@ public class ProtocolManager
     Protocol tentative = null;
 
     Vector protocols = findByName( name );
+    if ( protocols == null )
+      return null;
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol p = ( Protocol )e.nextElement();
