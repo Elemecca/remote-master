@@ -11,7 +11,7 @@ public class IndirectDefaultValue
 
   public void setIsComplement( boolean flag )
   {
-    complement = true;
+    complement = flag;
   }
 
   public boolean getIsComplement()
