@@ -257,7 +257,6 @@ public class SetupPanel
   //      updateSetupCode();
       else
         updateFixedData();
-      deviceUpgrade.setChanged( true );
     }
   }
 

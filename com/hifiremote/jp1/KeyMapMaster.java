@@ -14,13 +14,14 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.65";
+  private static final String version = "v 0.66";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
   private JMenuItem saveAsItem = null;
   private JMenuItem importItem = null;
   private JMenu recentFileMenu = null;
+  private JRadioButtonMenuItem[] promptButtons = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
   private JComboBox remoteList = null;
@@ -41,12 +42,19 @@ public class KeyMapMaster
   private File propertiesFile = null;
   private File rdfPath = null;
   private File upgradePath = null;
+  private File importPath = null;
   private String lastRemoteName = null;
   private String lastRemoteSignature = null;
   private Rectangle bounds = null;
   private Vector recentFiles = new Vector();
   private static String upgradeExtension = ".rmdu";
   private static String upgradeDirectory = "Upgrades";
+  private int promptFlag = 0;
+  private final static String[] promptStrings = { "Always", "On Exit", "Never" };
+  private final static int PROMPT_NEVER = 2;
+  private final static int PROMPT_ALWAYS = 0;
+  private final static int ACTION_EXIT = 1;
+  private final static int ACTION_LOAD = 2;
 
   public KeyMapMaster( String[] args )
     throws Exception
@@ -69,7 +77,7 @@ public class KeyMapMaster
       {
         try
         {
-          if ( !promptToSaveUpgrade())
+          if ( !promptToSaveUpgrade( ACTION_EXIT ))
             return;
           savePreferences();
         }
@@ -113,12 +121,30 @@ public class KeyMapMaster
     for ( Enumeration e = recentFiles.elements(); e.hasMoreElements(); )
       recentFileMenu.add( new FileAction(( File )e.nextElement()));
 
-    menu = new JMenu( "Look and Feel" );
+    menu = new JMenu( "Options" );
     menuBar.add( menu );
+
+    JMenu submenu = new JMenu( "Look and Feel" );
+    menu.add( submenu );
 
     ButtonGroup group = new ButtonGroup();
     String lookAndFeelName = UIManager.getLookAndFeel().getClass().getName();
     UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
+
+    ActionListener al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        try 
+        {
+          UIManager.setLookAndFeel((( JRadioButtonMenuItem )e.getSource()).getActionCommand());
+          SwingUtilities.updateComponentTreeUI( me );
+        }
+        catch ( Exception x )
+        {}
+      }
+    };
+
     for ( int i = 0; i < info.length; i++ )
     {
       JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName());
@@ -126,10 +152,38 @@ public class KeyMapMaster
       if ( info[ i ].getClassName().equals( lookAndFeelName ))
         item.setSelected( true );
       group.add( item );
-      menu.add( item );
-      item.addActionListener( this );
+      submenu.add( item );
+      item.addActionListener( al );
     }
 
+    group = new ButtonGroup();
+    submenu = new JMenu( "Prompt to Save" );
+    menu.add( submenu );
+
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        Object source = e.getSource();
+        for ( int i = 0; i < promptButtons.length; i++ )
+          if ( promptButtons[ i ] == source )
+          {
+            promptFlag = i;
+            break;
+          }
+      }
+    };
+    promptButtons = new JRadioButtonMenuItem[ promptStrings.length ];
+    for ( int i = 0; i < promptStrings.length; i++ )
+    {
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem( promptStrings[ i ] );
+      promptButtons[ i ] = item;
+      item.addActionListener( al );
+      group.add( item );
+      submenu.add( item );
+    }
+    promptButtons[ promptFlag ].setSelected( true );
+      
     Container mainPanel = getContentPane();
     JTabbedPane tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
@@ -243,8 +297,6 @@ public class KeyMapMaster
       openFile( fileToOpen );
     }
     show();
-
-    deviceUpgrade.setChanged( false );
   }
 
   private File parseArgs( String[] args )
@@ -399,7 +451,7 @@ public class KeyMapMaster
       }
       else if ( source == newItem )
       {
-        if ( !promptToSaveUpgrade())
+        if ( !promptToSaveUpgrade( ACTION_LOAD ))
           return;
         deviceUpgrade.reset( remotes, protocolManager );
         setTitle( "RemoteMapMaster " + version );
@@ -408,7 +460,6 @@ public class KeyMapMaster
         deviceTypeList.setSelectedItem( deviceUpgrade.getDeviceTypeAliasName());
         saveItem.setEnabled( false );
         currPanel.update();
-        deviceUpgrade.setChanged( false );
       }
       else if ( source == saveItem )
       {
@@ -422,7 +473,7 @@ public class KeyMapMaster
       }
       else if ( source == openItem )
       {
-        if ( !promptToSaveUpgrade())
+        if ( !promptToSaveUpgrade( ACTION_LOAD ))
           return;
         JFileChooser chooser = new JFileChooser( upgradePath );
         chooser.setFileFilter( new KMFileFilter());
@@ -457,9 +508,9 @@ public class KeyMapMaster
       }
       else if ( source == importItem )
       {
-        if ( !promptToSaveUpgrade())
+        if ( !promptToSaveUpgrade( ACTION_LOAD ))
           return;
-        JFileChooser chooser = new JFileChooser( upgradePath );
+        JFileChooser chooser = new JFileChooser( importPath );
         chooser.setFileFilter( new TextFileFilter());
         int returnVal = chooser.showOpenDialog( this );
         if ( returnVal == JFileChooser.APPROVE_OPTION )
@@ -489,11 +540,6 @@ public class KeyMapMaster
             importFile( file );
           }
         }
-      }
-      else if ( source.getClass() == JRadioButtonMenuItem.class )
-      {
-        UIManager.setLookAndFeel((( JRadioButtonMenuItem )source ).getActionCommand());
-        SwingUtilities.updateComponentTreeUI( this );
       }
     }
     catch ( Exception ex )
@@ -534,11 +580,16 @@ public class KeyMapMaster
     }
   }
 
-  public boolean promptToSaveUpgrade()
+  public boolean promptToSaveUpgrade( int action )
     throws IOException
   {
-    if ( !deviceUpgrade.hasChanged())
+    if ( promptFlag == PROMPT_NEVER )
       return true;
+    else if ( promptFlag != PROMPT_ALWAYS )
+    {
+      if ( action != ACTION_EXIT )
+        return true;
+    }  
 
     int rc = JOptionPane.showConfirmDialog( this,
 //                                            "All changes made to the current upgrade will be lost if you proceed.\n\n" +
@@ -594,12 +645,12 @@ public class KeyMapMaster
     recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
 
     validateUpgrade();
-    deviceUpgrade.setChanged( false );
   }
 
   public void importFile( File file )
     throws Exception
   {
+    importPath = file.getParentFile();
     deviceUpgrade.reset( remotes, protocolManager );
     deviceUpgrade.importFile( file, remotes, protocolManager );
     setTitle( "RemoteMaster " + version );
@@ -638,29 +689,6 @@ public class KeyMapMaster
   {
     Properties props = new Properties();
 
-//  File userDir = new File( System.getProperty( "user.dir" ));
-//  System.err.println( "userDir is " + userDir.getAbsolutePath());
-//  if ( propertiesFile == null )
-//  {
-//    File temp = File.createTempFile( "kmj", null, userDir );
-//    System.err.println( "Created temp file " + temp.getName());
-//    File dir = null;
-//    if ( temp.canWrite())
-//    {
-//      System.err.println( "Can write" );
-//      temp.delete();
-//      dir = userDir;
-//    }
-//    else
-//    {
-//      System.err.println( "Can't write" );
-//      dir = new File( System.getProperty( "user.home" ));
-//    }
-//
-//    propertiesFile = new File( dir, "RemoteMaster.properties" );
-//    System.err.println( "propertiesFIle is " + propertiesFile.getAbsolutePath());
-//  }
-//
     if ( propertiesFile.canRead())
     {
       FileInputStream in = new FileInputStream( propertiesFile );
@@ -690,6 +718,9 @@ public class KeyMapMaster
         upgradePath = upgradePath.getParentFile();
     }
 
+    temp = props.getProperty( "ImportPath", upgradePath.getAbsolutePath());
+    importPath = new File( temp );
+    
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
     temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
     try
@@ -705,6 +736,13 @@ public class KeyMapMaster
     lastRemoteName = props.getProperty( "Remote.name" );
     lastRemoteSignature = props.getProperty( "Remote.signature" );
 
+    temp = props.getProperty( "PromptToSave", promptStrings[ 0 ] );
+    for ( int i = 0; i < promptStrings.length; i++ )
+      if ( promptStrings[ i ].equals( temp ))
+        promptFlag = i;
+    if ( promptFlag > promptStrings.length )
+      promptFlag = 0;
+    
     for (int i = 0; i < 10; i++ )
     {
       temp = props.getProperty( "RecentFiles." + i );
@@ -731,10 +769,12 @@ public class KeyMapMaster
     Properties props = new Properties();
     props.setProperty( "RDFPath", rdfPath.getAbsolutePath());
     props.setProperty( "UpgradePath", upgradePath.getAbsolutePath());
+    props.setProperty( "ImportPath", importPath.getAbsolutePath());
     props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
     Remote remote = deviceUpgrade.getRemote();
     props.setProperty( "Remote.name", remote.getName());
     props.setProperty( "Remote.signature", remote.getSignature());
+    props.setProperty( "PromptToSave", promptStrings[ promptFlag ]);
 
     for ( int i = 0; i < recentFileMenu.getItemCount(); i++ )
     {
@@ -908,7 +948,7 @@ public class KeyMapMaster
     {
       try
       {
-        if ( promptToSaveUpgrade())
+        if ( promptToSaveUpgrade( ACTION_LOAD ))
           openFile( file );
       }
       catch ( Exception ex )
