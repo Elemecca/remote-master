@@ -1,3 +1,9 @@
+Changes for v0.72
+
+- Add generic button names to URC-881x/801x/601x
+- Updated 10-9-03 Maps and Images.zip from Nils
+- Importing saved KM upgrade determines generic button names positionally
+
 Changes for v0.71
 
 - Handle extra spaces at end of lines in protocols.ini better.

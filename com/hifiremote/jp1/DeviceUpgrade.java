@@ -748,7 +748,6 @@ public class DeviceUpgrade
     for ( int i = 0; i < 128; i++ )
     {
       line = in.readLine();
-      System.err.println( "Parsing line \"" + line + "\"" );
       st = new StringTokenizer( line, delim, true );
       token = getNextField( st, delim ); // get the name (field 1)
       if (( token != null ) && ( token.length() == 5 ) &&
@@ -790,17 +789,12 @@ public class DeviceUpgrade
         token = getNextField( st, delim ); // skip field 3
       }
       String actualName = getNextField( st, delim ); // get assigned button name (field 4)
-      System.err.println( "Read button name " + actualName );
        
       if (( actualName != null ) && actualName.length() == 0 )
         actualName = null;
       String buttonName = null;
       if ( actualName != null )
-      {
-        System.err.print( "Using genericName[ " + i + " ] = " );
         buttonName = genericButtonNames[ i ];
-        System.err.println( buttonName );
-      }
       Button b = null;
       if ( buttonName != null )
         b = remote.findByStandardName( new Button( buttonName, null, ( byte )0 ));
