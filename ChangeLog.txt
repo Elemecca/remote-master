@@ -1,3 +1,10 @@
+Changes for v0.60
+
+- Add support for named shifted buttons
+- Add support for [NoBind] section in rdfs
+- Add/update remote images, maps, and rdfs
+- Output panel: clear out Upgrade Protocol Code if not required.
+
 Changes for v0.59
 
 - Add/update remote images and maps

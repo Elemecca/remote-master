@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.59";
+  private static final String version = "v 0.60";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -101,7 +101,7 @@ public class KeyMapMaster
     saveAsItem = new JMenuItem( "Save as..." );
     saveAsItem.addActionListener( this );
     menu.add( saveAsItem );
-    
+
     menu.addSeparator();
     importItem = new JMenuItem( "Import KM file..." );
     importItem.addActionListener( this );
