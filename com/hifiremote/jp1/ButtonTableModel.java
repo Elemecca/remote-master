@@ -81,13 +81,15 @@ public class ButtonTableModel
     if ( relatedButton != null )
     {
       for ( int i = 0; i < buttons.length; i++ )
+      {
         if ( buttons[ i ] == relatedButton )
         {
           otherRow = i;
           break;
         }
+      }
     }
-    if ( row < otherRow )
+    if ( row <= otherRow )
       fireTableRowsUpdated( row, otherRow );
     else
       fireTableRowsUpdated( otherRow, row );

@@ -20,15 +20,7 @@ public class DeviceUpgrade
     setupCode = 0;
 
     // remove all currently assigned functions
-    Button[] buttons = remote.getButtons();
-    for ( int i = 0; i < buttons.length; i++ )
-    {
-      Button b = buttons[ i ];
-      if ( b.getFunction() != null )
-        b.setFunction( null );
-      if ( b.getShiftedFunction() != null )
-        b.setShiftedFunction( null );
-    }
+    remote.clearButtonAssignments();
 
     if ( remote == null )
       remote = remotes[ 0 ];
@@ -789,7 +781,7 @@ public class DeviceUpgrade
         token = getNextField( st, delim ); // skip field 3
       }
       String actualName = getNextField( st, delim ); // get assigned button name (field 4)
-       
+
       if (( actualName != null ) && actualName.length() == 0 )
         actualName = null;
       String buttonName = null;
@@ -1157,19 +1149,19 @@ public class DeviceUpgrade
   private final static String[] genericButtonNames =
   {
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    "vol up", "vol down", "mute", 
+    "vol up", "vol down", "mute",
     "channel up", "channel down",
-    "power", "enter", "tv/vcr", "prev ch", "menu", "guide", 
-    "up arrow", "down arrow", "left arrow", "right arrow", "select", 
-    "sleep", "pip on/off", "display", "pip swap", "pip move", 
-    "play", "pause", "rewind", "fast fwd", "stop", "record", 
+    "power", "enter", "tv/vcr", "prev ch", "menu", "guide",
+    "up arrow", "down arrow", "left arrow", "right arrow", "select",
+    "sleep", "pip on/off", "display", "pip swap", "pip move",
+    "play", "pause", "rewind", "fast fwd", "stop", "record",
     "exit", "surround", "input", "+100", "fav/scan",
     "device button", "next track", "prev track", "shift-left", "shift-right",
     "pip freeze", "slow", "eject", "slow+", "slow-", "x2", "center", "rear",
     "phantom1", "phantom2", "phantom3", "phantom4", "phantom5", "phantom6",
-    "phantom7", "phantom8", "phantom9", "phantom10", 
-    "setup", "light", "theater", 
-    "macro1", "macro2", "macro3", "macro4", 
+    "phantom7", "phantom8", "phantom9", "phantom10",
+    "setup", "light", "theater",
+    "macro1", "macro2", "macro3", "macro4",
     "learn1", "learn2", "learn3", "learn4",
     "button85", "button86", "button87", "button88", "button89", "button90",
     "button91", "button92", "button93", "button94", "button95", "button96",

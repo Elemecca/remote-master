@@ -87,7 +87,7 @@ public class Remote
         buttonMaps[ 0 ] = new ButtonMap( 0, new int[ 0 ][ 0 ]);
       }
       for ( int i = 0; i < buttonMaps.length; i++ )
-        buttonMaps[ i ].setButtons( buttons );
+        buttonMaps[ i ].setButtons( this );
 
       for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
       {
@@ -111,10 +111,9 @@ public class Remote
       }
 
       int bindableButtons = 0;
-      for ( int i = 0; i < buttons.length; i++ )
+      for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
       {
-        Button b = buttons[ i ];
-        System.err.print( b.getName() + " buttonMaps=" + b.getButtonMaps());
+        Button b = ( Button )e.nextElement();
         if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() ||
              b.allowsXShiftedKeyMove() || ( b.getButtonMaps() != 0 ))
           bindableButtons++;
@@ -131,9 +130,9 @@ public class Remote
       }
 
       // now copy the rest of the buttons, skipping those in the map
-      for ( int i = 0; i < buttons.length; i++ )
+      for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
       {
-        Button b = buttons[ i ];
+        Button b = ( Button )e.nextElement();
         if (( b.allowsKeyMove() ||
               b.allowsShiftedKeyMove() ||
               b.allowsXShiftedKeyMove() ||
@@ -158,254 +157,6 @@ public class Remote
     }
   }
 
-  public void print( PrintWriter out )
-  {
-    checkLoaded();
-    out.println( "[General]" );
-    out.println( "Name=" + name );
-    out.println( "EepromSize=$" + Integer.toHexString( eepromSize ));
-
-    if ( deviceCodeOffset != 0 )
-      out.println( "DevCodeOffset=$" + Integer.toHexString( deviceCodeOffset ));
-
-    if ( favKey != null )
-    {
-      out.println( "FavKey=" + favKey );
-    }
-
-    if ( oemDevice != null )
-    {
-      out.println( "OEMDevice=" + oemDevice );
-    }
-
-    if ( oemControl != 0 )
-    {
-      out.println( "OEMControl=$" + Integer.toHexString( oemControl ));
-    }
-
-    if ( upgradeBug )
-      out.println( "UpgradeBug=1" );
-
-    if ( advancedCodeAddress != null )
-    {
-      out.println( "AdvCodeAddr=" + advancedCodeAddress );
-    }
-
-    if ( upgradeAddress != null )
-    {
-      out.println( "UpgradeAddr=" + upgradeAddress );
-    }
-
-    if ( deviceUpgradeAddress != null )
-    {
-      out.println( "DevUpgradeAddr=" + deviceUpgradeAddress );
-    }
-
-    if ( timedMacroAddress != null )
-    {
-      out.println( "TimedMacroAddr=" + timedMacroAddress );
-    }
-
-    if ( learnedAddress != null )
-    {
-      out.println( "LearnedAddr=" + learnedAddress );
-    }
-
-    if ( timeAddress != 0 )
-    {
-      out.println( "TimeAddr=$" + Integer.toHexString( timeAddress ));
-    }
-
-    if ( !macroSupport )
-      out.println( "MacroSupport=0" );
-
-    if ( timedMacroWarning )
-      out.println( "TimedMacroWarning=1" );
-
-    out.println( "Processor=" + processor );
-
-    if ( RAMAddress != 0 )
-      out.println( "RAMAddr=$" + Integer.toHexString( RAMAddress ));
-
-    if ( RDFSync != 0 )
-      out.println( "RDFSync=" + RDFSync );
-
-    if ( punchThruBase != 0 )
-      out.println( "PunchThruBase=$" + Integer.toHexString( punchThruBase ));
-
-    if ( scanBase != 0 )
-      out.println( "ScanBase=$" + Integer.toHexString( scanBase ));
-
-    if ( sleepStatusBit != null )
-      out.println( "SleepStatusBit=" + sleepStatusBit );
-
-    if ( vptStatusBit != null )
-      out.println( "VPTStatusBit=" + vptStatusBit );
-
-    int size = checkSums.length;
-    if ( size > 0 )
-    {
-      out.println();
-      out.println( "[CheckSums]" );
-      for ( int i = 0; i < size; i++ )
-      {
-        out.println( checkSums[ i ]);
-      }
-    }
-
-    size = settings.length;
-    if ( size > 0 )
-    {
-      out.println();
-      out.println( "[Settings]" );
-      for ( int i = 0; i < size; i++ )
-      {
-        out.println( settings[ i ]);
-      }
-    }
-
-    size = fixedData.length;
-    if ( size > 0 )
-    {
-      out.println();
-      out.println( "[FixedData]" );
-      for ( int i = 0; i < size; i++ )
-      {
-        out.println( fixedData[ i ]);
-      }
-    }
-
-    size = deviceButtons.length;
-    if ( size > 0 )
-    {
-      out.println();
-      out.println( "[DeviceButtons]" );
-      for ( int i = 0; i < size; i++ )
-      {
-        out.println( deviceButtons[ i ]);
-      }
-    }
-
-    size = digitMaps.length;
-    if ( size > 0 )
-    {
-      out.println();
-      out.println( "[DigitMaps]" );
-      for ( int i = 0; i < size; i++ )
-      {
-        if ( i > 0 )
-        {
-          if (( i % 16 ) == 0 )
-            out.println();
-          else
-            out.print( ' ' );
-        }
-        out.print( digitMaps[ i ] );
-      }
-      out.println();
-    }
-
-    size = deviceTypes.size();
-    if ( size > 0 )
-    {
-      out.println();
-      out.println( "[DeviceTypes]" );
-      int type = 0;
-      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
-      {
-        DeviceType devType = ( DeviceType )e.nextElement();
-        out.print( devType.getName());
-        if ( devType.getMap() != -1 )
-        {
-          out.print( " = " + devType.getMap());
-          if ( devType.getType() != type )
-          {
-            type = devType.getType();
-            out.print( ", $" + Integer.toHexString( type ));
-          }
-        }
-        type += 0x0101;
-        out.println();
-      }
-    }
-
-    boolean hasMultiMacros = false;
-    size = buttons.length;
-    if ( size > 0 )
-    {
-      int last = size - 1;
-      out.println();
-      out.println( "[Buttons]" );
-      int code = 1;
-      for ( int i = 0; i < size; i++ )
-      {
-        Button button = buttons[ i ];
-
-        int newCode = button.getKeyCode();
-        if (( i > 0 ) && ( code != newCode ))
-            out.println();
-
-        out.print( button.getName() );
-        if ( code != newCode )
-        {
-          code = newCode;
-          out.print( "=$" + Integer.toHexString( code ));
-        }
-        if ( i < last )
-          out.print( ", " );
-        ++code;
-
-        if ( button.getMultiMacroAddress() != 0 )
-          hasMultiMacros = true;
-      }
-      out.println();
-
-      if ( hasMultiMacros )
-      {
-        out.println();
-        out.println( "[MultiMacros]" );
-        for ( int i = 0; i < buttons.length; i++ )
-        {
-          Button button = buttons[ i ];
-          int addr = button.getMultiMacroAddress();
-          if ( addr != 0 )
-            out.println( button.getName() + "=$" + Integer.toHexString( addr ));
-        }
-      }
-    }
-
-    size = buttonMaps.length;
-    if ( size > 0 )
-    {
-      out.println();
-      out.println( "[ButtonMaps]" );
-      for ( int i = 0; i < size; i++ )
-      {
-        ButtonMap map = buttonMaps[ i ];
-        out.print( map.getNumber());
-        out.print( " = " );
-        int[][] outer = map.getKeyCodeList();
-        for ( int j = 0; j < outer.length; j++ )
-        {
-          if ( j > 0 )
-            out.print( ", " );
-          int[] inner = outer[ j ];
-          if ( inner.length > 1 )
-            out.print( '(' );
-          for ( int k = 0; k < inner.length; k++ )
-          {
-            if ( k > 0 )
-              out.print( ", " );
-            int val = inner[ k ];
-              out.print( "$" + Integer.toHexString( val ).substring( 6 ));
-          }
-          if ( inner.length > 1 )
-            out.print( ')' );
-        }
-        out.println();
-      }
-    }
-  }
   public String toString(){ return name; }
   public String getSignature(){ return signature; }
   public String getName(){ return name; }
@@ -451,7 +202,7 @@ public class Remote
     return null;
   }
 
-  public Button[] getButtons()
+  public Vector getButtons()
   {
     checkLoaded();
     return buttons;
@@ -611,7 +362,6 @@ public class Remote
       {
         File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
         mapFile = new File( imageDir, st.nextToken());
-        System.err.println( "Image map is " + mapFile.getAbsolutePath());
       }
       else if ( parm.equals( "DefaultRestrictions" ))
         defaultRestrictions = parseRestrictions( st.nextToken());
@@ -971,7 +721,6 @@ public class Remote
   private String parseButtons( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
     String line;
     int keycode = 1;
     int restrictions = defaultRestrictions;
@@ -1018,56 +767,71 @@ public class Remote
         }
         Button b = new Button( token, name, keycode );
         b.setRestrictions( restrictions );
-        int maskedCode = keycode & 0xC0;
-        if ( maskedCode == shiftMask )
-        {
-          b.setIsShifted( true );
-          int unshiftedCode = ( b.getKeyCode() & ~shiftMask );
-          for ( Enumeration e = work.elements(); e.hasMoreElements(); )
-          {
-            Button c = ( Button )e.nextElement();
-            if ( c.getKeyCode() == unshiftedCode )
-            {
-              c.setShiftedButton( b );
-              b.setBaseButton( c );
-              break;
-            }
-          }
-        }
-        else if ( maskedCode == xShiftMask )
-        {
-          b.setIsXShifted( true );
-          int unshiftedCode = ( b.getKeyCode() & ~xShiftMask );
-          for ( Enumeration e = work.elements(); e.hasMoreElements(); )
-          {
-            Button c = ( Button )e.nextElement();
-            if ( c.getKeyCode() == unshiftedCode )
-            {
-              c.setXShiftedButton( b );
-              b.setBaseButton( c );
-              break;
-            }
-          }
-        }
         keycode++;
-        work.add( b );
+        addButton( b );
       }
     }
-    buttons = ( Button[] )work.toArray( buttons );
-
-    buttonsByKeyCode = new Button[ buttons.length ];
-    System.arraycopy( buttons, 0, buttonsByKeyCode, 0, buttons.length );
-    Arrays.sort( buttonsByKeyCode, keyCodeComparator );
-
-    buttonsByName = new Button[ buttons.length ];
-    System.arraycopy( buttons, 0, buttonsByName, 0, buttons.length );
-    Arrays.sort( buttonsByName, nameComparator );
-
-    buttonsByStandardName = new Button[ buttons.length ];
-    System.arraycopy( buttons, 0, buttonsByStandardName, 0, buttons.length );
-    Arrays.sort( buttonsByStandardName, standardNameComparator );
 
     return line;
+  }
+
+  public Button getButton( int keyCode )
+  {
+    return ( Button )buttonsByKeyCode.get( new Integer( keyCode ));
+  }
+
+  public Button getButton( String name )
+  {
+    return ( Button )buttonsByName.get( name );
+  }
+
+  public void addButton( Button b )
+  {
+    int keycode = b.getKeyCode();
+    int maskedCode = keycode & 0xC0;
+    int unshiftedCode = keycode & 0x3f;
+    if ( maskedCode == shiftMask )
+    {
+      b.setIsShifted( true );
+      Button c = getButton( unshiftedCode );
+      if ( c != null )
+      {
+        c.setShiftedButton( b );
+        b.setBaseButton( c );
+        if ( b.getName() == null )
+        {
+          String name = shiftLabel + '-' + c.getName();
+          b.setName( name );
+          b.setStandardName( name );
+        }
+      }
+    }
+    else if ( maskedCode == xShiftMask )
+    {
+      b.setIsXShifted( true );
+      Button c = getButton( unshiftedCode );
+      if ( c != null )
+      {
+        c.setXShiftedButton( b );
+        b.setBaseButton( c );
+        if ( b.getName() == null )
+        {
+          String name = xShiftLabel + '-' + c.getName();
+          b.setName( name );
+          b.setStandardName( name );
+        }
+      }
+    }
+    else if ( b.getName() == null )
+    {
+      String name = "unknown" + Integer.toHexString( keycode );
+      b.setName( name );
+      b.setStandardName( name );
+    }
+    buttons.add( b );
+    buttonsByName.put( b.getName(), b );
+    buttonsByStandardName.put( b.getStandardName(), b );
+    buttonsByKeyCode.put( new Integer( keycode ), b );
   }
 
   private String parseMultiMacros( RDFReader rdr )
@@ -1085,48 +849,33 @@ public class Remote
       String name = st.nextToken();
 
       // Find the matching button
-      for ( int i = 0; i < buttons.length; i++ )
-      {
-        Button button = buttons[ i ];
-        if ( button.getName().equals( name ))
-        {
-          button.setMultiMacroAddress( rdr.parseNumber( st.nextToken()));
-          break;
-        }
-      }
+      Button button = ( Button )buttonsByName.get( name );
+      if ( button != null )
+        button.setMultiMacroAddress( rdr.parseNumber( st.nextToken()));
     }
     return line;
   }
 
-  public Button findByKeyCode( Button b )
-  {
-    checkLoaded();
-    Button rc = null;
-    int i = Arrays.binarySearch( buttonsByKeyCode, b, keyCodeComparator );
-    if ( i >= 0 )
-      rc = buttonsByKeyCode[ i ];
-    return rc;
-  }
-
-  public Button findByName( Button b )
-  {
-    checkLoaded();
-    Button rc = null;
-    int i = Arrays.binarySearch( buttonsByName, b, nameComparator );
-    if ( i >= 0 )
-      rc = buttonsByName[ i ];
-    return rc;
-  }
-
+//public Button findByKeyCode( Button b )
+//{
+//  checkLoaded();
+//  Button rc = null;
+//  int i = Arrays.binarySearch( buttonsByKeyCode, b, keyCodeComparator );
+//  if ( i >= 0 )
+//    rc = buttonsByKeyCode[ i ];
+//  return rc;
+//}
+//
+//public Button findByName( Button b )
+//{
+//  checkLoaded();
+//  return ( Button )buttonsByName.get( b.getName());
+//}
 
   public Button findByStandardName( Button b )
   {
     checkLoaded();
-    Button rc = null;
-    int i = Arrays.binarySearch( buttonsByStandardName, b, standardNameComparator );
-    if ( i >= 0 )
-      rc = buttonsByStandardName[ i ];
-    return rc;
+    return ( Button )buttonsByStandardName.get( b.getStandardName());
   }
 
 
@@ -1283,10 +1032,13 @@ public class Remote
             displayName = buttonName.substring( 0, pos );
             buttonName = buttonName.substring( pos + 1 );
           }
-          Button button = findByName( new Button( null, buttonName, ( byte )0 ));
+          Button button = getButton( buttonName );
           Shape shape = null;
           if ( button == null )
+          {
+            System.err.println( "Warning: Shape defined for unknown button " + buttonName );
             continue;
+          }
           if ( type.equals( "rect" ))
           {
             double x = Double.parseDouble( st.nextToken());
@@ -1377,7 +1129,7 @@ public class Remote
         {
           name = st.nextToken();
 
-          Button button = findByName( new Button( null, name, ( byte )0 ));
+          Button button = getButton( name );
           if ( button == null )
             continue;
           Shape shape = null;
@@ -1434,9 +1186,9 @@ public class Remote
   public void clearButtonAssignments()
   {
     checkLoaded();
-    for ( int i = 0; i < buttons.length; i++ )
+    for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
     {
-      buttons[ i ].setFunction( null ).setShiftedFunction( null );
+      (( Button )e.nextElement()).setFunction( null ).setShiftedFunction( null ).setXShiftedFunction( null );
     }
   }
 
@@ -1543,10 +1295,10 @@ public class Remote
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
   private Hashtable deviceTypes = new Hashtable();
   private Hashtable deviceTypeAliases = new Hashtable();
-  private Button[] buttons = new Button[ 0 ];
-  private Button[] buttonsByKeyCode = null;
-  private Button[] buttonsByName = null;
-  private Button[] buttonsByStandardName = null;
+  private Vector buttons = new Vector();
+  private Hashtable buttonsByKeyCode = new Hashtable();
+  private Hashtable buttonsByName = new Hashtable();
+  private Hashtable buttonsByStandardName = new Hashtable();
   private Button[] upgradeButtons = null;
   private ButtonShape[] buttonShapes = new ButtonShape[ 0 ];
   private int[] digitMaps = new int[ 0 ];

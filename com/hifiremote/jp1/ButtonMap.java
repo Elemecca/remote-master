@@ -1,6 +1,6 @@
 package com.hifiremote.jp1;
 
-import java.util.Vector;
+import java.util.*;
 
 public class ButtonMap
 {
@@ -12,7 +12,7 @@ public class ButtonMap
 
   public int getNumber(){ return number; }
   public int[][] getKeyCodeList(){ return keyCodeList; }
-  public ButtonMap setButtons( Button[] remoteButtons )
+  public ButtonMap setButtons( Remote remote )
   {
     size = 0;
 
@@ -27,20 +27,17 @@ public class ButtonMap
       for ( int j = 0; j < keyCodes.length; j++ )
       {
         int keyCode = keyCodes[ j ];
-        for ( int bi = 0; bi < remoteButtons.length ; bi++ )
+        Button button = remote.getButton( keyCode );
+        if ( button == null )
         {
-          Button button = remoteButtons[ bi ];
-          if ( button.getKeyCode() == keyCode )
-          {
-            inner[ j ] = button;
-            button.addButtonMap( number );
-            break;
-          }
+          System.err.println( "ERROR: ButtonMap " + number + " includes unknown keycode $" +
+                              Integer.toHexString( keyCode & 0xFF ) +
+                              ", Creating button!" );
+          button = new Button( null, null, keyCode );
+          remote.addButton( button );
         }
-        if ( inner[ j ] == null )
-          System.err.println( "ERROR: ButtonMap " + number + " includes the keycode $" + 
-                              Integer.toHexString( keyCode & 0xFF ) + 
-                              ", but there is no matching button." );
+        button.addButtonMap( number );
+        inner[ j ] = button;
       }
     }
     return this;

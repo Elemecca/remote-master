@@ -16,6 +16,7 @@ public class Button
 
   public String toString(){ return name; }
   public String getName(){ return name; }
+  public void setName( String name ){ this.name = name; }
   public String getShiftedName()
   {
     if ( isShifted )
@@ -35,6 +36,7 @@ public class Button
       return null;
   }
   public String getStandardName(){ return standardName; }
+  public void setStandardName( String name ){ standardName = name; }
   public int getKeyCode(){ return keyCode; }
   public int getMultiMacroAddress(){ return multiMacroAddress; }
   public void setMultiMacroAddress( int addr ){ multiMacroAddress = addr; }
@@ -43,7 +45,7 @@ public class Button
   {
     baseButton = button;
   }
- 
+
   public Button getBaseButton()
   {
     return baseButton;
@@ -73,7 +75,7 @@ public class Button
     return (!isShifted && !isXShifted );
   }
   public void setIsShifted( boolean flag )
-  { 
+  {
     isShifted = flag;
     if ( isShifted )
       restrictions |= ( SHIFT | XSHIFT );
@@ -84,7 +86,7 @@ public class Button
   }
 
   public void setIsXShifted( boolean flag )
-  { 
+  {
     isXShifted = flag;
     if ( isXShifted )
       restrictions |= ( SHIFT | XSHIFT );
@@ -94,7 +96,7 @@ public class Button
   public int getRestrictions(){ return restrictions; }
   public void setRestrictions( int restrictions )
   {
-    this.restrictions = restrictions; 
+    this.restrictions = restrictions;
   }
   public void addRestrictions( int restrictions )
   {
@@ -234,7 +236,7 @@ public class Button
         rc[ 0 ] = ( byte )keyCode;
         if ( mask != 0 )
           rc[ 0 ] = ( byte )( rc[ 0 ] | mask );
-        
+
         rc[ 1 ] = ( byte )( 0xF2 + hex.length() );
         System.arraycopy( deviceCode, 0, rc, 2, 2 );
         System.arraycopy( hex.getData(), 0, rc, 4, hex.length() );
@@ -256,7 +258,7 @@ public class Button
   private Button xShiftedButton = null;
   private boolean isShifted = false;
   private boolean isXShifted = false;
-  private int restrictions = 0;  
+  private int restrictions = 0;
   private int buttonMaps = 0;
 
   public static int MOVE_BIND = 0x01;
