@@ -20,7 +20,7 @@ public class OutputPanel
     Box box = Box.createHorizontalBox();
     box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ));
     add( box );
-    
+
     JLabel label = new JLabel( "Device Upgrade Code" );
     label.setAlignmentY( 1f );
     box.add( label );
@@ -31,7 +31,7 @@ public class OutputPanel
     copyDeviceUpgrade.setAlignmentY( 1f );
     copyDeviceUpgrade.addActionListener( this );
     box.add( copyDeviceUpgrade );
-    
+
     upgradeText = new JTextArea( 10, 40 );
     upgradeText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     upgradeText.setEditable( false );
@@ -82,7 +82,7 @@ public class OutputPanel
     copyProtocolUpgrade.setAlignmentY( 1f );
     copyProtocolUpgrade.addActionListener( this );
     box.add( copyProtocolUpgrade );
-    
+
     protocolText = new JTextArea( 10, 40 );
     protocolText.setEditable( false );
     protocolText.setDragEnabled( true );
@@ -93,12 +93,80 @@ public class OutputPanel
     add( scroll );
   }
 
+  private int adjust( int val )
+  {
+    System.err.println( "adjust( " + Integer.toHexString( val ) + " )" );
+    int temp1 = val - 0x2C;
+    int temp2 = val - 0x46;
+    if ((( 0 <= temp1 ) && ( temp1 <= 0x0E ) && ( temp1 % 7 == 0 )) ||
+        (( 0 <= temp2 ) && ( temp2 <= 0x0E ) && ( temp2 % 3 == 0 )))
+    {
+      val -= 0x13;
+    }
+    System.err.println( "Returning " + Integer.toHexString( val ));
+    return val;
+  }
+
   public void update()
   {
     upgradeText.setText( deviceUpgrade.getUpgradeText());
     Protocol p = deviceUpgrade.getProtocol();
     Remote r = deviceUpgrade.getRemote();
-    protocolText.setText( p.getCodeText( r.getProcessor()));
+    String processor = r.getProcessor();
+    Hex code = p.getCode( processor );
+    if ( code != null )
+    {
+      System.err.println( "Checking if translation needed for proceccor " + processor + " and RAMAddr " + Integer.toHexString( r.getRAMAddress() ));
+      byte[] data = ( byte[] )code.getData().clone();
+      if ( processor.equals( "S3C80" ) && ( r.getRAMAddress() == 0x8000 ))
+      {
+        int offset = 3;
+        if (( data[ 3 ] & 0xFF ) == 0x8B )
+        {
+          offset = ( data[ 4 ] & 0xFF ) + 5;
+          System.err.println( "Code doesn't start at 3, it starts at " + offset );
+        }
+        for ( int i = offset; i < data.length; i++ )
+        {
+          int first = data[ i ] & 0xFF;
+          System.err.println( "Checking byte at " + i + ": " + Integer.toHexString( first ));
+          if ( first == 0xF6 )
+          {
+            int second = data[ ++i ] & 0xFF;
+            System.err.println( "Got F6, next byte is " + Integer.toHexString( second ));
+            if ( second == 0xFF )
+            {
+              System.err.println( "Got 0xFF, changing to 0x80" );
+              data[ i ] = ( byte )0x80;
+            }
+            else if ( second == 0x01 )
+            {
+              int third = data[ ++i ] & 0xFF;
+              System.out.println( "Got 0x01, next byte is " + Integer.toHexString( third ));
+              data[ i ] = ( byte )adjust( third );
+            }
+          }
+          else if ( first == 0x8D )
+          {
+            int second = data[ ++i ] & 0xFF;
+            if ( second == 0x01 )
+            {
+              int third = data[ ++i ] & 0xFF;
+              data[ i ] = ( byte )adjust( third );
+            }
+          }
+        }
+      }
+      StringBuffer buff = new StringBuffer( 300 );
+      buff.append( "Upgrade protocol 0 = " );
+      buff.append( p.getID().toString());
+      buff.append( " (" );
+      buff.append( processor );
+      buff.append( ")\n " );
+      buff.append( Hex.toString( data, 16 ));
+      buff.append( "\nEnd" );
+      protocolText.setText( buff.toString());
+    }
   }
 
   public void actionPerformed( ActionEvent e )

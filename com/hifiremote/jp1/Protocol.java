@@ -76,27 +76,9 @@ public class Protocol
     }
   }
 
-  public byte[] getCode( String processor )
+  public Hex getCode( String processor )
   {
-    return ( byte[] )code.get( processor );
-  }
-
-  public String getCodeText( String processor )
-  {
-    Hex hex = ( Hex )code.get( processor );
-    if ( hex == null )
-      return null;
-
-    StringBuffer buff = new StringBuffer( 400 );
-    buff.append( "Upgrade protocol 0 = " );
-    buff.append( id.toString());
-    buff.append( " (" );
-    buff.append( processor );
-    buff.append( ")\n " );
-    buff.append( hex.toString( 16 ));
-    buff.append( "\nEnd" );
-
-    return buff.toString();
+    return ( Hex )code.get( processor );
   }
 
   public void setDeviceParms( Value[] parms )
@@ -150,7 +132,7 @@ public class Protocol
   public Hex getDefaultCmd()
   {
     Hex rc = null;
-    try 
+    try
     {
       rc = ( Hex )defaultCmd.clone();
     }

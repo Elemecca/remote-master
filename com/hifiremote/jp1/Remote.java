@@ -442,9 +442,23 @@ public class Remote
     return processor;
   }
 
-  public byte[] getDigitMaps(){ return digitMaps; }
+  public int getRAMAddress()
+  {
+    checkLoaded();
+    return RAMAddress;
+  }
 
-  public boolean getOmitDigitMapByte(){ return omitDigitMapByte; }
+  public byte[] getDigitMaps()
+  {
+    checkLoaded();
+    return digitMaps;
+  }
+
+  public boolean getOmitDigitMapByte()
+  {
+    checkLoaded();
+    return omitDigitMapByte;
+  }
 
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
