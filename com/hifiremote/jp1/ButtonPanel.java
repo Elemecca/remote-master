@@ -182,37 +182,6 @@ public class ButtonPanel
     addFunction( null );
   }
 
-  private void autoAssignFunctions()
-  {
-    autoAssignFunctions( deviceUpgrade.getFunctions());
-    autoAssignFunctions( deviceUpgrade.getExternalFunctions());
-    model.setButtons( buttons );
-  }
-
-  private void autoAssignFunctions( Vector funcs )
-  {
-    for ( Enumeration e = funcs.elements(); e.hasMoreElements(); )
-    {
-      Function func = ( Function )e.nextElement();
-      if ( func.getHex() != null )
-      {
-        for ( int i = 0; i < buttons.length; i++ )
-        {
-          Button b = buttons[ i ];
-          if ( b.getFunction() == null )
-          {
-            if ( b.getName().equalsIgnoreCase( func.getName()) ||
-                 b.getStandardName().equalsIgnoreCase( func.getName()))
-            {
-              b.setFunction( func );
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-
   // From interface ActionListener
   public void actionPerformed( ActionEvent e )
   {
@@ -224,7 +193,8 @@ public class ButtonPanel
     }
     else if ( source == autoAssign )
     {
-      autoAssignFunctions();
+      deviceUpgrade.autoAssignFunctions();
+      model.setButtons( buttons );
     }
   }
 

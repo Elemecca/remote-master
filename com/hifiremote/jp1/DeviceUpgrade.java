@@ -808,7 +808,7 @@ public class DeviceUpgrade
           name = name.substring( 4 );
         
         Function func = null;
-        if ( f.getName().equals( name ))
+        if (( f.getName() != null ) && f.getName().equals( name ))
           func = f;
         else
           func = getFunction( name, functions );
@@ -825,10 +825,8 @@ public class DeviceUpgrade
       if ( token != null )
         f.setNotes( token );
       
-      if ( f.isEmpty())
-        break;
-
-      functions.add( f );
+      if ( !f.isEmpty())
+        functions.add( f );
       
       if ( b == null )
         continue;
@@ -903,6 +901,37 @@ public class DeviceUpgrade
   public boolean hasChanged()
   {
     return changed;
+  }
+
+  public void autoAssignFunctions()
+  {
+    autoAssignFunctions( functions );
+    autoAssignFunctions( extFunctions );
+  }
+
+  private void autoAssignFunctions( Vector funcs )
+  {
+    Button[] buttons = remote.getUpgradeButtons();
+    for ( Enumeration e = funcs.elements(); e.hasMoreElements(); )
+    {
+      Function func = ( Function )e.nextElement();
+      if ( func.getHex() != null )
+      {
+        for ( int i = 0; i < buttons.length; i++ )
+        {
+          Button b = buttons[ i ];
+          if ( b.getFunction() == null )
+          {
+            if ( b.getName().equalsIgnoreCase( func.getName()) ||
+                 b.getStandardName().equalsIgnoreCase( func.getName()))
+            {
+              b.setFunction( func );
+              break;
+            }
+          }
+        }
+      }
+    }
   }
 
   private String description = null;

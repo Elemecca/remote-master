@@ -35,6 +35,10 @@ public class LayoutPanel
                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
     add( scrollPane, BorderLayout.WEST );
+
+    JPanel rightPanel = new JPanel( new BorderLayout());
+    add( rightPanel, BorderLayout.CENTER );
+
     JPanel infoPanel = new JPanel( new GridLayout( 2, 3 ));
 
     infoPanel.add( new JLabel( "Button:" ));
@@ -52,13 +56,13 @@ public class LayoutPanel
     shifted.setEditable( false );
     infoPanel.add( shifted );
 
-    add( infoPanel, BorderLayout.NORTH );
+    rightPanel.add( infoPanel, BorderLayout.NORTH );
 
     JPanel panel = new JPanel( new BorderLayout());
     JLabel label = new JLabel( "Available Functions:" );
     label.setBorder( BorderFactory.createEmptyBorder( 2, 2, 3, 2 ));
     panel.add( label, BorderLayout.NORTH );
-    add( panel, BorderLayout.CENTER );
+    rightPanel.add( panel, BorderLayout.CENTER );
 
     JPanel outerPanel = new JPanel( new BorderLayout());
     functionPanel = new JPanel( new GridFlowLayout());
@@ -67,6 +71,18 @@ public class LayoutPanel
     outerPanel.add( functionPanel, BorderLayout.CENTER );
 //    outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.NORTH );
     panel.add( outerPanel, BorderLayout.CENTER );
+
+    panel = new JPanel();
+    autoAssign = new JButton( "Auto assign" );
+    autoAssign.setToolTipText( "Assign functions to buttons of the same name that don't have a functon." );
+    autoAssign.addActionListener( this );
+    panel.add( autoAssign );
+
+    Box box = Box.createVerticalBox();
+    box.add( new JSeparator());
+    box.add( panel );
+
+    rightPanel.add( box, BorderLayout.SOUTH );
 
     DropTarget dropTarget = new LayoutDropTarget();
     dropTarget.setComponent( imagePanel );
@@ -244,7 +260,12 @@ public class LayoutPanel
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( currentShape != null )
+    if ( source == autoAssign )
+    {
+      deviceUpgrade.autoAssignFunctions();
+      doRepaint();
+    }
+    else if ( currentShape != null )
     {
       Button button = currentShape.getButton();
       Function function = (( FunctionItem )source ).getFunction();
@@ -280,6 +301,7 @@ public class LayoutPanel
         else
           button.setShiftedFunction( label.getFunction());
         setButtonText( currentShape );
+        doRepaint();
       }
     }
   }
@@ -479,6 +501,7 @@ public class LayoutPanel
   private JTextField buttonName = null;
   private JTextField function = null;
   private JTextField shifted = null;
+  private JButton autoAssign = null;
   private JPopupMenu popup = null;
   private JPanel functionPanel = null;
   private JScrollPane scrollPane = null;
