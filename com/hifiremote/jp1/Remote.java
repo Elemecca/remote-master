@@ -254,6 +254,11 @@ public class Remote
     return null;
   }
 
+  public DeviceButton[] getDeviceButtons()
+  {
+    return deviceButtons;
+  }
+
   public Vector getButtons()
   {
     return buttons;
@@ -746,7 +751,6 @@ public class Remote
   {
     String line;
     int type = 0;
-    int count = 0;
     while ( true )
     {
       line = rdr.readLine();
@@ -762,7 +766,7 @@ public class Remote
         if ( st.hasMoreTokens())
           type = rdr.parseNumber( st.nextToken());
       }
-      deviceTypes.put( name, new DeviceType( name, count++, map, type ));
+      deviceTypes.put( name, new DeviceType( name, map, type ));
       type += 0x0101;
     }
     return line;
