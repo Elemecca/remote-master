@@ -126,6 +126,19 @@ public class ProtocolManager
 
   public Vector getNames(){ return names; }
 
+  public Vector getProtocolsForRemote( Remote remote )
+  {
+    Vector rc = new Vector();
+    for ( Enumeration e = names.elements(); e.hasMoreElements(); )
+    {
+      String name = ( String )e.nextElement();
+      Protocol p = findProtocolForRemote( remote, name );
+      if ( p != null )
+        rc.add( p );
+    }
+    return rc;
+  }
+
   public Vector findByName( String name )
   {
     return ( Vector )byName.get( name );

@@ -67,7 +67,7 @@ public class SetupPanel
     label = new JLabel( "Protocol:", SwingConstants.RIGHT );
     add( label, "2, 3" );
 
-    protocolList = new JComboBox( protocolManager.getNames());
+    protocolList = new JComboBox();
     protocolList.addActionListener( this );
     label.setLabelFor( protocolList );
     protocolList.setToolTipText( "Select the protocol to be used for this device upgrade from the drop-down list." );
@@ -106,8 +106,11 @@ public class SetupPanel
     updateInProgress = true;
 //    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
     setupCode.setText( nf.format( deviceUpgrade.getSetupCode()));
+    Remote remote = deviceUpgrade.getRemote();
+    Vector protocols = protocolManager.getProtocolsForRemote( remote );
+    protocolList.setModel( new DefaultComboBoxModel( protocols ));
     Protocol p = deviceUpgrade.getProtocol();
-    protocolList.setSelectedItem( p.getName());
+    protocolList.setSelectedItem( p );
     notes.setText( deviceUpgrade.getNotes());
     fixedData.setText( p.getFixedData().toString());
     updateInProgress = false;
@@ -127,9 +130,8 @@ public class SetupPanel
 
     if ( source == protocolList )
     {
-      String name = ( String )protocolList.getSelectedItem();
+      Protocol protocol = ( Protocol )protocolList.getSelectedItem();
       Remote remote = deviceUpgrade.getRemote();
-      Protocol protocol = protocolManager.findProtocolForRemote( remote, name );
       if ( protocol != null && ( currProtocol != protocol ))
       {
         if ( currProtocol != null && !updateInProgress )
@@ -183,8 +185,8 @@ public class SetupPanel
 
   public Protocol getProtocol()
   {
-    String name = ( String )protocolList.getSelectedItem();
-    return protocolManager.findProtocolForRemote( deviceUpgrade.getRemote(), name );
+    Protocol protocol = ( Protocol )protocolList.getSelectedItem();
+    return protocol;
   }
 
   public void commit()
