@@ -49,7 +49,7 @@ public class SetupPanel
     double b = 10;       // space around border
     double i = 5;        // space between rows
     double v = 20;       // space between groupings
-    double c = 30;       // space between columns
+    double c = 10;       // space between columns
     double f = TableLayout.FILL;
     double p = TableLayout.PREFERRED;
     double size[][] =

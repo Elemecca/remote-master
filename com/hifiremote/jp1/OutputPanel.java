@@ -1,19 +1,9 @@
 package com.hifiremote.jp1;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.awt.datatransfer.*;
 
 public class OutputPanel
   extends KMPanel implements ActionListener
@@ -23,15 +13,31 @@ public class OutputPanel
     super( deviceUpgrade );
     BoxLayout bl = new BoxLayout( this, BoxLayout.Y_AXIS );
     setLayout( bl );
+    setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
 
     clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
+    Box box = Box.createHorizontalBox();
+    box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ));
+    add( box );
+    
+    JLabel label = new JLabel( "Device Upgrade Code" );
+    label.setAlignmentY( 1f );
+    box.add( label );
+
+    box.add( box.createHorizontalGlue());
+
+    copyDeviceUpgrade = new JButton( "Copy" );
+    copyDeviceUpgrade.setAlignmentY( 1f );
+    copyDeviceUpgrade.addActionListener( this );
+    box.add( copyDeviceUpgrade );
+    
     upgradeText = new JTextArea( 10, 40 );
-    upgradeText.setBorder( BorderFactory.createTitledBorder( "Device Upgrade Code" ));
+    upgradeText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     upgradeText.setEditable( false );
     upgradeText.setDragEnabled( true );
-
-    add( new JScrollPane( upgradeText ));
+    JScrollPane scroll = new JScrollPane( upgradeText );
+    add( scroll );
 
     popup = new JPopupMenu();
     copyItem = new JMenuItem( "Copy" );
@@ -63,12 +69,28 @@ public class OutputPanel
 
     add( Box.createVerticalStrut( 20 ));
 
+    box = Box.createHorizontalBox();
+    add( box );
+    box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ));
+
+    label = new JLabel( "Upgrade Protocol Code" );
+    label.setAlignmentY( 1f );
+    box.add( label );
+    box.add( box.createHorizontalGlue());
+
+    copyProtocolUpgrade = new JButton( "Copy" );
+    copyProtocolUpgrade.setAlignmentY( 1f );
+    copyProtocolUpgrade.addActionListener( this );
+    box.add( copyProtocolUpgrade );
+    
     protocolText = new JTextArea( 10, 40 );
-    protocolText.setBorder( BorderFactory.createTitledBorder( "Upgrade Protocol Code" ));
     protocolText.setEditable( false );
     protocolText.setDragEnabled( true );
-    add( new JScrollPane( protocolText ) );
     protocolText.addMouseListener( mh );
+    protocolText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+
+    scroll = new JScrollPane( protocolText );
+    add( scroll );
   }
 
   public void update()
@@ -81,7 +103,16 @@ public class OutputPanel
 
   public void actionPerformed( ActionEvent e )
   {
-    StringSelection data = new StringSelection( popover.getText());
+    JTextArea area = null;
+    Object source = e.getSource();
+    if ( source == copyDeviceUpgrade )
+      area = upgradeText;
+    else if ( source == copyProtocolUpgrade )
+      area = protocolText;
+    else // assume copyItem
+      area = popover;
+
+    StringSelection data = new StringSelection( area.getText());
     clipboard.setContents( data, data );
   }
 
@@ -90,6 +121,8 @@ public class OutputPanel
   private JTextArea popover = null;
   private JPopupMenu popup = null;
   private JMenuItem copyItem = null;
+  private JButton copyDeviceUpgrade = null;
+  private JButton copyProtocolUpgrade = null;
   private Clipboard clipboard = null;
 
 }
