@@ -41,9 +41,9 @@
 <h1><a name="general"></a>General Notes</h1>
 <p>Remote Master (aka RM) was originally designed and developed primarily by Greg Bush, with significant contributions from John S Fine, Nils Ekberg, and others.</p>
 <p>RM is a Java application.  That means that in order to run RM, you must have either the Java Developer Kit or
-the Java Runtime Environemt installed, version 1.4.1 or later.  Either of these can be downloaded from the <a href="http://java.sun.com/j2se/downloads/index.html">J2SE Downloads</a> page.</p> 
+the Java Runtime Environemt installed, version 1.4.1 or later.  Either of these can be downloaded from the <a href="http://java.sun.com/j2se/downloads/index.html">J2SE Downloads</a> page.</p>
 <p>The Remote Master user interface makes extensive use of context menus. On most platforms, context menus are accessed by clicking the right mouse button in an area when you want to do something.  RemoteMaster also often provides multiple ways to accomplish the same task.</p>
-<p>Take, for example, the Layout panel, which shows an image of the remote being used on the left, and a list of the available functions on the right.  There are 3 different ways to assign a function to a button: 
+<p>Take, for example, the Layout panel, which shows an image of the remote being used on the left, and a list of the available functions on the right.  There are 3 different ways to assign a function to a button:
 <ol>
 <li>Drag and drop the desired function onto the desired button.
 <li>Right-click on a button and select the desired function from the context menu
@@ -86,7 +86,7 @@ the Java Runtime Environemt installed, version 1.4.1 or later.  Either of these 
 </tr>
 <tr>
 <th>Save&nbsp;as...</th>
-<td>Save the device upgrade to a different file name.  The default file name will be the name of the file loaded, or the name used for "Save as...", or the contents of the <b>Desription</b> field.
+<td>Save the device upgrade to a different file name.  The default file name will be the name of the file loaded, or the name used for "Save as...", or the contents of the <b>Description</b> field.
 </tr>
 <tr>
 <th>Import&nbsp;KM&nbsp;file...</th>
@@ -127,7 +127,7 @@ the Java Runtime Environemt installed, version 1.4.1 or later.  Either of these 
 </tr>
 <tr>
 <th><u>N</u>ever</th>
-<td>You will never tbe prompted to save a Device Upgrade, you will remember to do it yourself.</td>
+<td>You will never be prompted to save a Device Upgrade; you will remember to do it yourself.</td>
 </tr>
 </table>
 </td>
@@ -153,7 +153,7 @@ remote will NOT work on another. Selecting the proper remote here is important.<
 <tr>
 <th>Device&nbsp;Type</th>
 <td>Use the drop-down list to select the desired type of device. Note that an upgrade can utilize ANY device regardless of
-what device button it will be assigned to on the remote. Also, different device types use different key maps. If you'd like to see what buttons are available in a given device mode for the selected remote, view the Layout panel, which shows a picture of the remote with the buttons that are in the key map outlined in white.</td>
+what device button it will be assigned to on the remote. Also, different device types use different key maps. If you'd like to see what buttons are available in a given device mode for the selected remote, view the Layout panel, which shows a picture of the remote with the buttons that are in the key map outlined in orange.</td>
 </tr>
 </table>
 <h2><a name="setup"></a>The Setup Panel</h2>
@@ -211,7 +211,7 @@ master-protocols.txt" file.
 <td>This is the function number, which is the order the functions have been defined.  You cannot edit this value, however, you can drag the number up or down to change the functions's position in the list.</td>
 </tr>
 <tr>
-<th>Functions</th>
+<th>Name</th>
 <td>This column contains some pre-defined function names. These can be used as is, or you can rename them to something more appropriate.</td>
 </tr>
 <tr>
@@ -228,7 +228,7 @@ master-protocols.txt" file.
 </tr>
 <tr>
 <th>Description</th>
-<td>Here, you can enter a brief description of the corresponding function for more clarity (and to help others who may use the file</td>
+<td>Here, you can enter a brief description of the corresponding function for more clarity (and to help others who may use the file)</td>
 </tr>
 </table>
 <p>In addition to entering data in the various cells of the table, you can manipulate the table using the buttons at the bottom, or by using the context menu.</p>
@@ -243,11 +243,11 @@ by using the context menu.  Just right click where you want to add the new funct
 <td>Delete the currently selected function(s).  Functions that have been assigned to buttons cannot be deleted.  You can select multile functions. This can also be accomplished using the context menu.  Simply right-click on the function you want to delete and select <b>Delete</b>.  If the function you right-clicked on is one of many selected functions, all the functions will be deleted.</td>
 </tr>
 <tr>
-<th>Move up</th>
+<th>Move&nbsp;up</th>
 <td>Move the selected function one position up the list.  This can also be accomplished by dragging the function number.  Only one function can be moved at a time.</td>
 </tr>
 <tr>
-<th>Move down</th>
+<th>Move&nbsp;down</th>
 <td>Move the selected function one position down the list.  This can also be accomplished by dragging the function number.  Only one function can be moved at a time.</td>
 </tr>
 <tr>
@@ -260,124 +260,99 @@ by using the context menu.  Just right click where you want to add the new funct
 </tr>
 </table>
 
-<h2><a name="extfunctions"></a>External Functions</h2>
-<pre>
-NOTE: This feature requires IR v3.12 or later. Key Moves will not
-be bound properly with earlier versions.
-
-You may define functions that are actually commands from another
+<h2><a name="extfunctions"></a>The External Functions Panel</h2>
+<p><b>NOTE:</b> This feature requires IR v3.12 or later. Key Moves will not
+be bound properly with earlier versions.</p>
+<p>You may define functions that are actually commands from another
 Setup Code. For example, if you're creating an upgrade for
 TV/1000 and need a function or two from VCR/2000, you can specify
-the function parameters on the [Functions] sheet. To do so, the
-following syntax MUST be used when entering the function:
-
-1) In the Function column, enter a function label that uses this
-format:
-
-=<devtype>/<4-digit_setupcode> <description>
-
-"=" is REQUIRED for KM to recognize this as an "external
-function".
-
-<devtype> (REQUIRED) is the name of the device type EXACTLY as it
-appears on the [Functions] sheet in the "Available Device  Types"
-section (this list contains the same entries as the   Device Type
-drop-down on the [Setup] sheet).
-
-"/" is REQUIRED.
-
-<4-digit_setupcode> (REQUIRED) is the 4-digit decimal Setup Code
-(MUST be 4 digits).
-
-<description> (OPTIONAL) is a name or description of the function
-(used only to differentiate the name in the Function list).
-Everything AFTER the 4-digit Setup Code is part of the
-<description> field.
-
-For example, to use a function (i.e. "TV/VCR") from VCR/2000, you
-might enter:
-
-  =VCR/2000 TV/VCR
-
-Again, the <description> is optional, but recommended for clarity
-(especially if you want to create more than 1 external function
-from the same Setup Code), i.e.:
-
-  =VCR/2000 TV/VCR
-  =VCR/2000 Input Select
-
-2) In the EFC/OBC column (B), use KM's direct hex code entry
-feature to enter the functions hex command.
-
-NOTE: A single-byte hex command MUST be prefixed or suffixed with
-"h" (i.e. "h34" or "34h"). Multiple-byte hex commands MUST be
-entered with a space between each byte ("00 34", "FF 00", or "AA
-BB CC DD" are all valid entries).
-
-Valid "external functions" entered on the Functions sheet might
-look like this:
-
-Functions                EFC
------------------------ -----
-=vcr/2000 tv/vcr         hFF
-=vcr/2000 input select   h00
-
-3) On the [Buttons] and/or [Key Moves] sheets, assign the
-function in the normal fashion; KM will create the appropriate
-Key Move code automatically. IR (v3.12 or later) will bind the
-Key Moves to the appropriate device when the code is pasted.
-
-
-Using the [Buttons] worksheet:
-==============================
-The last step (in theory anyway) to building a Device Upgrade is
+the function parameters on the External Functions panel.<p>
+<p>Other than the differnce in the data required to define an external function,
+the External Function panel is used in exactly the same way as the Functions panel.
+Refer to the <a href="#functions">Functions Panel</a> for more information.</p>
+<table>
+  <tr>
+    <th>Name</th>
+    <td>Enter a name for the function you are defining</td>
+  </tr>
+  <tr>
+    <th>Device&nbsp;Type</th>
+    <td>Choose the device type of the setup code you want to use.</td>
+  </tr>
+  <tr>
+    <th>Setup&nbsp;Code</th>
+    <td>Enter the 4-digit decimal Setup Code for the setup code you want to use</td>
+  </tr>
+  <tr>
+    <th>Type</th>
+    <td>Choose the type of data you are going to use to enter the command for the function.
+    <table>
+      <tr><th>EFC</th><td>You will be entering the EFC for the command</td></tr>
+      <tr><th>Hex</th><td>You will be entering the raw hex command</td></tr>
+    </table>
+    </td>
+  </tr>
+  <tr>
+    <th>EFC/Hex</th>
+    <td>Enter the command data.  The format is determined by the Type value.
+    <table>
+      <tr><th>EFC</th><td>Enter a decimal value in the range 0 - 255.</td></tr>
+      <tr><th>Hex</th><td>Enter a sequence of hex numbers, separated by spaces.  Each hex number should be no more that 2 digits.</td></tr>
+    </table>
+    </td>
+  </tr>
+  <tr>
+    <th>Notes</th>
+    <td>Enter a description of the function, if desired.</td>
+  </tr>
+</table>
+<h2><a name="buttons"></a>The Buttons Panel</h2>
+<p>The last step (in theory anyway) to building a Device Upgrade is
 to assign the defined Functions to specific Buttons. You do this
-on the [Buttons] worksheet. The Button column contains several
-"generic" and many "remote-specific" button names. Only those
-buttons that are not grayed-out are available for mapping.
-
-NOTE: You CANNOT assign and use functions in an upgrade on any
-buttons other than those defined by the default "key map"
-designated by the remote (this is a limitation of the remotes
-themselves and not a "flaw" in KM), or those buttons that are
-able to be "key moved". This includes device buttons, "special"
-buttons, etc. If it's not on the list or is grayed-out, YOU
-CANNOT USE THAT BUTTON!
-
-You can also define Key Moves bound to the current Device Upgrade
-for buttons that are not part of the default key map right along
-with the defined key map buttons. IR v3.10 or later will
-automatically assign these Key Moves to the same device button
-that the Device Upgrade gets assigned to.
-
-If a button name is preceded with "@" (i.e. "@ setup"), or any
-time a Shifted Function is assigned to ANY button, KM will
-automatically create Key Move code. Only physically available or
-defined buttons are available with this feature. If you want to
-assign Key Moves to other buttons, or bind them to devices other
-than the current one, they must be done on the [Key Moves] sheet.
-
-For each button you want to assign a function to, go to the
-Normal Function column and use the in-cell drop-down list to
-select one. Remember, button names prefixed with "@" will be
-setup as Key Moves, while the others will be part of the Device
-Upgrade.
-
-Selecting a function in the Shifted Function column will create a
-Key Move on the shifted version of the corresponding button. All
-Shifted Functions are ALWAYS setup as Key Moves.
-
-The column titled Functions is a list of all the defined
-functions from the [Functions] worksheet. As you assign functions
-to buttons, the corresponding entries in this list will become
-shaded to indicate that the function has been assigned. Entries
-in light colored cells have not yet been used.
-
-NOTE: In order to use the Key Move feature of the [Buttons]
-sheet, you MUST be using IR v3.10 or later. Earlier versions of
-IR DO NOT support the combined Device Upgrade/Key Move code and
-will generate an error if you attempt to paste in combined code.
-
+on the Buttons panel.</p>
+<p>The Buttons panel is split in two parts.  On the left is a table listing
+the buttons available on the remote.  This table consists of 3 columns:
+<table>
+<tr>
+<th>Button</th>
+<td>The name of the button.  If the name is displayed in red, it means that no
+functions have been assigned to it.  If the name has an asterisk (*) at the end,
+it means that the button is <b>NOT</b> in the keymap for the current device type, and
+any function assigned to the button will generate a keymove.</td>
+</tr>
+<tr>
+<th>Function</th>
+<td>The name of the function assigned to the normal state of the button.
+If the cell for a particular button is grey, assignment in not allowed.</td>
+</tr>
+<tr>
+<th>Shift</th>
+<td>The name of the function assgined to the shifted state of the button.
+If the cell for a particular button is grey, assignment in not allowed.  Functions
+assigned to shifted buttons are almost always turned into keymoves, since very few
+keymaps have shifted buttons in them.</td>
+</tr>
+<tr>
+<th>XShift</th>
+<td>The name of the function assgined to the XShifted state of the button.
+If the cell for a particular button is grey, assignment in not allowed.
+This column  is only shown for this remotes that support it, and it may have a different name, depending
+on the remote.</td>
+</tr>
+</table></p>
+<p>On the right is the list of functions (normal or external) that are available.  Functions
+with red names have not been assigned to any button.</p>
+<p>There are 4 different ways to assign functions to buttons.  Use whichever you like better:
+<ol>
+<li>Use the <b>Auto assign</b> button to automatically match functions to buttons
+by name.  Buttons that already have functions assigned will not get reassigned.</li>
+<li>Use the context menu (right-click) in a cell where you want to assign a function,
+then click the desired function in the context menu.</li>
+<li>Drag-n-drop a function onto the desired cell.</li>
+<li>Highlight the cell where you want to assing a function by clicking on it, then
+double-click the function you want to assign to it.</li>
+</ol>
+<!--
 At the top of the [Buttons] sheet (cell G2) is an unlabeled check
 box. This is the "DISABLE Combined Key Move Code" setting. When
 checked (it mirrors the check box on the [Setup] sheet), any
@@ -385,10 +360,6 @@ buttons that are NOT part of the default "key map" (Normal
 Functions assigned to any button preceded by "@" i.e. "@setup",
 and ALL Shifted Functions) and would normally create Key Moves,
 will not.
-
-When all of your button assignments are complete, you can further
-define your upgrade by creating additional Key Moves on the [Key
-Moves] sheet.
 
 *** Special note for remotes using a P8/740 processor:
 ------------------------------------------------------
@@ -405,7 +376,6 @@ see this message, you will need to delete at least as many button
 assignments as indicated in the message ("??"). To do this,
 select a cell in the Normal Function column and press the Delete
 key.
-
 
 Using the [Key Moves] worksheet:
 ================================
@@ -506,16 +476,117 @@ by Key Moves created on the [Buttons] sheet.
 Once all your Key Moves have been entered, the Key Move Code
 block on the [Setup] sheet will contain the required code for
 pasting into IR's [Key Moves] tab using the [Import] button.
+-->
 
+<h2><a name="layout"></a>The Layout Panel</h2>
+<p>The Layout panel works very much like the Buttons panel, except that
+instead of presenting the buttons in a table, the Layout panel presents
+them visually, using an image of the selected remote.  Rather than indicate
+the buttons that are <b>NOT</b> in the keymap for the current device type using
+an asterisk, the
+Layout panel shows you than buttons that <b>ARE</b> in the keymap by outlining
+them in orange.  Since there aren't multiple physical buttons to represent the
+shift states of the buttons, you choose the shift state by selecting one of the
+<b>Mode</b> radio buttons.</p>
+<p>The Layout panel shows information about the buttons in various ways:
+<ul>
+<li>Buttons will display their names in a fly-over window when you hold the mouse
+pointer over them.</li>
+<li>Buttons with functions assigned will be drawn in yellow.</li>
+<li>Buttons in the keymap for the current device type will be outlined in orange.</li>
+<li>The selected button will be outlined in white.  The <b>Button:</b> field will show
+the name of the selected button, and the <b>Function:</b> field will show the name of the
+assigned function.</li>
+</ul>
+<p>There are 4 different ways to assign functions to buttons.  Use whichever you like:
+<ol>
+<li>Use the <b>Auto assign</b> button to automatically match functions to buttons
+by name.  Buttons that already have functions assigned will not get reassigned.</li>
+<li>Use the context menu (right-click) in a cell where you want to assign a function,
+then click the desired function in the context menu.</li>
+<li>Drag-n-drop a function onto the desired cell.</li>
+<li>Highlight the cell where you want to assing a function by clicking on it, then
+double-click the function you want to assign to it.</li>
+</ol>
 
+<h2><a name="keymap"></a>The Key Map Panel</h2>
+<p>The Key Map panel is designed to be printed as a hard copy
+reference for the current device upgrade. It lists all the
+buttons that have functions assigned in the Normal, Shifted, and XShifted
+(if supported by the remote) states.</p>
+<h2><a name="output"></a>The Output Panel</h2>
+<p>This panel contains the upgrade code to be pasted into IR.
+<table>
+<tr>
+<th>Device&nbsp;Upgrade&nbsp;Code</th>
+<td>This text area doesn't allow any
+data entry, and for good reason. It's where the calculated
+Device Upgrade Code is displayed. Once you've entered all the
+necessary information on the Setup, Functions, and Buttons
+panels, this will
+be the code that you copy and paste into IR's Devices tab.</p>
+<p>The Key Move feature of RM can combine Key Move code as part of
+the Device Upgrade Code. This occurs when buttons that are not
+part of the selected device's "key map" are assigned functions on
+the <a href="#buttons">Buttons</a> or <a href="#layout">Layout</a> panels.</p>
+<p>To copy the Device Upgrade Code to the Windows clipboard for
+pasting into the IR Devices tab, press the <b>Copy</b> button or use
+the context menu (right-click and select <b>Copy</b>).</p></td>
+</tr>
+<!--
+DISABLE Combined Key Move Code check box:
+-----------------------------------------
+You can temporarily exclude Key Moves (created on the [Buttons]
+sheet) from the combined Device Upgrade/Key Move code by using
+the "DISABLE Combined Key Move Code" check box directly below the
+Device Upgrade Code block. This will allow only the Device
+Upgrade Code to be displayed and selected for copying. This has
+no effect on the Key Move Code block (for Key Moves created on
+the [Key Moves] sheet).
+
+There are also check boxes for this setting on the [Buttons]
+(cell G2), and [Key Moves] (cell I1) sheets so that you can
+quickly ENABLE or DISABLE and see how it affects the current
+mapping.
+-->
+<tr>
+<th>Upgrade&nbsp;Protocol&nbsp;Code</th>
+<td>Again, no data entry is allowed here. As RM works its
+magic, if it determines that the selected remote also requires a
+protocol upgrade, it will display the necessary code here. In
+that case, you will see a highlighted prompt that says
+<br>
+<font color="red">Upgrade Protocol Code *** REQUIRED ***</font>
+<br>
+This is a reminder to copy and paste this code into IR's
+Protocols tab. If you create a Device Upgrade that requires
+Protocol Code as well, and don't add it into IR, your upgrade
+most likely won't work.
+<p>
+To copy the Protocol Code to the Windows clipboard for pasting
+into the IR Protocols tab, press the <b>Copy</b> button or use the
+the context menu (right-click and select <b>Copy</b>).</p></td>
+</tr>
+</table>
+
+<!--
+Key Move Code block:
+--------------------
+To the right of the Protocol Code block is the Key Move Code
+block. This will contain the hex code for any key moves defined
+on the [Key Moves] sheet (see the [Key Moves] worksheet section
+below). This code gets pasted into the [Key Moves] tab in IR,
+using the [Import] button.
+
+To copy the Key Move Code to the Windows clipboard for pasting
+into the IR [Key Moves] tab, press the [Copy] button or use the
+keyboard shortcut of "Alt-K".
+-->
+<pre>
 Other KM Worksheets:
 ====================
 There are a few additional KM worksheets:
 
-
-The [Layout] sheet shows the buttons available in each of the
-device modes for the selected remote. This is useful for seeing
-at a glance what buttons are available for mapping.
 
 The [Protocols] sheet is a listing of all the "named" protocols
 that KM currently supports with a few details about each of them.
@@ -540,70 +611,6 @@ NOTE: All KM worksheets are formatted for quick and easy
 printing. Each will print on either 1 or 2 pages if you wish to
 have a hard copy reference of your settings.
 
-<h2><a name="output"></a>The Output Panel</h2>
-Device Upgrade Code block:
---------------------------
-The large block centered on the [Setup] sheet doesn't allow any
-data entry, and for good reason. That's where the calculated
-Device Upgrade Code is displayed. Once you've entered all the
-necessary information on the [Setup], [Functions], and [Buttons]
-sheets ([Functions] and [Buttons] are described below), this will
-be the code that you copy and paste into IR's [Devices] tab.
-
-The Key Move feature of KM can combine Key Move code as part of
-the Device Upgrade Code. This occurs when buttons that are not
-part of the selected device's "key map" are assigned functions on
-the [Buttons] sheet (see "Using the [Buttons] worksheet" below).
-
-To copy the Device Upgrade Code to the Windows clipboard for
-pasting into the IR [Devices] tab, press the [Copy] button or use
-the keyboard shortcut of "Alt-D".
-
-DISABLE Combined Key Move Code check box:
------------------------------------------
-You can temporarily exclude Key Moves (created on the [Buttons]
-sheet) from the combined Device Upgrade/Key Move code by using
-the "DISABLE Combined Key Move Code" check box directly below the
-Device Upgrade Code block. This will allow only the Device
-Upgrade Code to be displayed and selected for copying. This has
-no effect on the Key Move Code block (for Key Moves created on
-the [Key Moves] sheet).
-
-There are also check boxes for this setting on the [Buttons]
-(cell G2), and [Key Moves] (cell I1) sheets so that you can
-quickly ENABLE or DISABLE and see how it affects the current
-mapping.
-
-Protocol Code block:
---------------------
-Just below the Device Upgrade Code block is the Protocol Code
-block. Again, no data entry is allowed here. As KM works its
-magic, if it determines that the selected remote also requires a
-protocol upgrade, it will display the necessary code here. In
-that case, you will see a highlighted prompt that says
-
-"*** The Protocol Code below is REQUIRED for this Upgrade ***"
-
-This is a reminder to copy and paste this code into IR's
-[Protocols] tab. If you create a Device Upgrade that requires
-Protocol Code as well, and don't add it into IR, your upgrade
-most likely won't work.
-
-To copy the Protocol Code to the Windows clipboard for pasting
-into the IR [Protocols] tab, press the [Copy] button or use the
-keyboard shortcut of "Alt-P".
-
-Key Move Code block:
---------------------
-To the right of the Protocol Code block is the Key Move Code
-block. This will contain the hex code for any key moves defined
-on the [Key Moves] sheet (see the [Key Moves] worksheet section
-below). This code gets pasted into the [Key Moves] tab in IR,
-using the [Import] button.
-
-To copy the Key Move Code to the Windows clipboard for pasting
-into the IR [Key Moves] tab, press the [Copy] button or use the
-keyboard shortcut of "Alt-K".
 </pre>
 </div>
 </body>

@@ -1,0 +1,2 @@
+setup.jar
+setup.reg
