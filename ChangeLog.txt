@@ -1,3 +1,10 @@
+Changes for v0.79
+
+- Manual Settings, stage 1: import, save, load.  Can't define or change
+  definition yet.
+- Default file name for "Save As..." built from upgrade description
+- Added support for Pioneer 2CMD protocol.
+
 Changes for v0.78
 
 - RM Maps-and-Images 1.10.zip

@@ -4,7 +4,7 @@ System Requirements
 You need either the Java SDK (for coding/testing/using) or
 JRE (for only testing/using) version 1.4.1 or later.
 If you don't have either, get one from the Java Download page
-at http://java.sun.com/j2se/downloads.html 
+at http://java.sun.com/j2se/downloads.html
 
 
 Installing RemoteMaster
@@ -18,9 +18,9 @@ To install, follow these steps:
 RDF Files
 ---------
 
-RemoteMaster does not ship with any RDF files, but they are 
-required. They are available as a seperate download from the 
-Tools folder in the Files section of the JP1 group at Yahoo! Groups. 
+RemoteMaster does not ship with any RDF files, but they are
+required. They are available as a seperate download from the
+Tools folder in the Files section of the JP1 group at Yahoo! Groups.
 ( http://groups.yahoo.com/group/jp1/files/2.%20Tools/ )
 These can be installed in any directory. If RemoteMaster can't
 find them the first time you run it, it will prompt you for their
@@ -44,12 +44,12 @@ open that Remote Master Device Upgrade file in RemoteMaster.
 Running RemoteMaster
 --------------------
 
-There are a number of different ways to run RemoteMaster: 
+There are a number of different ways to run RemoteMaster:
 
-- Double-click in an existing .rmdu or .km file 
-- Double-click RemoteMaster.jar. 
-- Double-click rmaster.bat 
-- From the command line, type 
+- Double-click in an existing .rmdu or .km file
+- Double-click RemoteMaster.jar.
+- Double-click rmaster.bat
+- From the command line, type
 
   rmaster
 
@@ -66,7 +66,7 @@ Importing KM Files
 RemoteMaster now has the ability to import many existing KM upgrade files.
 In the upgrade process, all function definition will be imported.
 Some button assignments may be lost during the import process.
-You can reassign the functions to the desired buttons on the Button panel 
+You can reassign the functions to the desired buttons on the Button panel
 or the Layout panel.
 
 Protocols
@@ -118,6 +118,7 @@ Panasonic Combo (flawed)
 Panasonic2 (LCD)
 Pioneer
 Pioneer DVD
+Pioneer 2CMD
 Proton
 RC-5
 RC-5x
@@ -147,7 +148,6 @@ Echostar 2200
 NEC1 2DEV Combo
 Pioneer DVD2
 Pioneer MIX
-Pioneer 2CMD
 Pioneer 3DEV
 RC-5/5x Combo
 RCA Combo (w/Duration)
