@@ -1,1 +1,1 @@
-java com.hifiremote.jp1.KeyMapMaster
+java -cp .;classes com.hifiremote.jp1.KeyMapMaster
