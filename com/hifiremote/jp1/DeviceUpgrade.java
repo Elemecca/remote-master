@@ -1202,16 +1202,33 @@ public class DeviceUpgrade
       if (( combiner != null ) && ( pidStr != null ) && // ( fixedDataStr != null ) &&
           !pidStr.equals( "Protocol ID" )) // && !fixedDataStr.equals( "Fixed Data" )
       {
-        Protocol p = protocolManager.findProtocolForRemote( remote, new Hex( pidStr ));
-        if ( p == null )
-        {
-          Hex newPid = new Hex( pidStr );
-          p = new ManualProtocol( newPid, new Properties());
-        }
-        Hex fixedData = null;
+        Hex fixedData = new Hex();
         if ( fixedDataStr != null )
           fixedData = new Hex( fixedDataStr );
-        combiner.addProtocol( p, fixedData );
+
+        Hex newPid = new Hex( pidStr );
+        Vector protocols = protocolManager.findByPID( newPid );
+        boolean foundMatch = false;
+        for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+        {
+          Protocol p = ( Protocol )e.nextElement();
+          if ( !remote.supportsVariant( newPid, p.getVariantName()))
+            continue;
+          CombinerDevice dev = new CombinerDevice( p, fixedData );
+          Hex calculatedFixedData = dev.getFixedData();
+          if ( !calculatedFixedData.equals( fixedData ))
+            continue;
+          combiner.add( dev );
+          foundMatch = true;
+          break;
+        }
+
+        if ( !foundMatch )
+        {
+          ManualProtocol p = new ManualProtocol( newPid, new Properties());
+          p.setRawHex( fixedData );
+          combiner.add( new CombinerDevice( p, null, null ));
+        }
       }
 
       // skip to field 13

@@ -46,6 +46,19 @@ public class CombinerDevice
     values = protocol.getDeviceParmValues();
   }
 
+  public CombinerDevice( Protocol p, Hex fixedData )
+  {
+    protocol = p;
+    values = p.getDeviceParmValues();
+    if ( p.deviceTranslators != null )
+    {
+      for ( int i = 0; i < p.deviceTranslators.length; i++ )
+      {
+        p.deviceTranslators[ i ].out( fixedData, values, p.devParms );
+      }
+    }
+  }
+
   public void setProtocol( Protocol p )
   {
     protocol = p; 

@@ -186,7 +186,7 @@ public class Hex
       return false;
 
     for ( int i = 0; i < data.length; i++ )
-      if ( data[ i ] != aHex.data[ i ])
+      if (( data[ i ] & 0xFF ) != ( aHex.data[ i ] & 0xFF ))
         return false;
 
     return true;
@@ -231,8 +231,8 @@ public class Hex
 
     for ( int i = 0; i < compareLen; i++ )
     {
-      int v1 = data[ i ];
-      int v2 = otherData[ i ];
+      int v1 = data[ i ] & 0xFF;
+      int v2 = otherData[ i ] & 0xFF;
       if ( v1 < v2 )
       {
         rc = -1;

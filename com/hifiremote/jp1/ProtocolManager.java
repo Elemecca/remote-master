@@ -105,6 +105,13 @@ public class ProtocolManager
                                      "Error", JOptionPane.ERROR_MESSAGE );
       System.exit( -1 );
     }
+
+    // Sort the names array
+    Object[] temp = names.toArray();
+    Arrays.sort( temp );
+    names = new Vector( temp.length );
+    for ( int i = 0; i < temp.length; i++ )
+      names.add( temp[ i ]);
   }
 
   public void add( Protocol p )

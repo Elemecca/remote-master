@@ -84,7 +84,7 @@ public class TranslatorEditorPanel
     adjustment = new JSpinner( new SpinnerNumberModel( 0, -8, 8, 1 ));
     adjustment.setMaximumSize( adjustment.getPreferredSize());
     adjustment.setToolTipText( "This value is added to the parameter before translation occurs." );
-    (( JSpinner.NumberEditor )adjustment.getEditor()).getTextField().setToolTipText( adjustment.getToolTipText());
+//    (( JSpinner.NumberEditor )adjustment.getEditor()).getTextField().setToolTipText( adjustment.getToolTipText());
     box.add( box.createHorizontalStrut( 5 ));
     box.add( adjustment );
     adjustment.addChangeListener( this );
