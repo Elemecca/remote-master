@@ -320,7 +320,7 @@ public class Remote
       if (( line == null ) || ( line.length() == 0 ))
         break;
 
-      StringTokenizer st = new StringTokenizer( line, "=," );
+      StringTokenizer st = new StringTokenizer( line, "=" );
 
       String parm = st.nextToken();
       if ( parm.equals( "Name" ))
@@ -343,7 +343,7 @@ public class Remote
       }
       else if ( parm.equals( "OEMDevice" ))
       {
-        int deviceNumber = rdr.parseNumber( st.nextToken());
+        int deviceNumber = rdr.parseNumber( st.nextToken(","));
         int deviceAddress = rdr.parseNumber( st.nextToken());
         oemDevice = new OEMDevice( deviceNumber, deviceAddress );
       }
@@ -425,12 +425,16 @@ public class Remote
         omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
       else if ( parm.equals( "ImageMap" ))
       {
-        int mapCount = st.countTokens();
-        mapFiles = new File[ mapCount ];
+        Vector v = new Vector();
         File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
 
+        while ( st.hasMoreTokens())
+          v.add( new File( imageDir, st.nextToken( "=," )));
+
+        int mapCount = v.size();
+        mapFiles = new File[ mapCount ];
         for ( int i = 0; i < mapCount; i++ )
-          mapFiles[ i ] = new File( imageDir, st.nextToken());
+          mapFiles[ i ] = ( File )v.elementAt( i );
         if ( nameIndex >= mapCount )
           mapIndex = mapCount - 1;
         else
@@ -440,14 +444,14 @@ public class Remote
         defaultRestrictions = parseRestrictions( st.nextToken());
       else if ( parm.equals( "Shift" ))
       {
-        shiftMask = rdr.parseNumber( st.nextToken());
+        shiftMask = rdr.parseNumber( st.nextToken( "," ));
         if ( st.hasMoreTokens())
           shiftLabel = st.nextToken().trim();
       }
       else if ( parm.equals( "XShift" ))
       {
         xShiftEnabled = true;
-        xShiftMask = rdr.parseNumber( st.nextToken());
+        xShiftMask = rdr.parseNumber( st.nextToken( "," ));
         if ( st.hasMoreTokens())
           xShiftLabel = st.nextToken().trim();
       }
@@ -459,8 +463,36 @@ public class Remote
         else if ( value.equals( "EFC" ))
           advCodeFormat = EFC;
       }
+      else if ( parm.equals( "DevComb" ))
+      {
+        devCombAddress = new int[ 7 ];
+        String combParms = st.nextToken();
+        StringTokenizer st2 = new StringTokenizer( combParms, ",", true );
+        for ( int i = 0; i < 7; i++ )
+        {
+          if ( st2.hasMoreTokens())
+          {
+            String tok = st2.nextToken();
+            if ( tok.equals( "," ))
+              devCombAddress[ i ] = -1;
+            else
+            {
+              devCombAddress[ i ] = rdr.parseNumber( tok );
+              if ( st2.hasMoreTokens())
+                st2.nextToken(); // skip delimeter
+            }
+          }
+          else
+            devCombAddress[ i ] = -1;
+        }
+      }
     }
     return line;
+  }
+
+  public int[] getDevCombAddresses()
+  {
+    return devCombAddress;
   }
 
   private int parseRestrictions( String str )
@@ -1382,5 +1414,6 @@ public class Remote
   public static final int HEX = 0;
   public static final int EFC = 1;
   private int advCodeFormat = HEX;
+  private int[] devCombAddress = null;
   private static Hashtable restrictionTable = null;
  }

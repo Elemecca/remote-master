@@ -1117,7 +1117,7 @@ public class KeyMapMaster
     Remote r = deviceUpgrade.getRemote();
     Protocol p = deviceUpgrade.getProtocol();
     Vector protocols = protocolManager.getProtocolsForRemote( r );
-    if ( !protocols.contains( p ) && ( p.getCode( r ) == null ))
+    if ( !protocols.contains( p ) && !p.hasCode( r ))
     {
       System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName() +
                           "is not compatible with remote " + r.getName());

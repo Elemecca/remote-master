@@ -85,7 +85,7 @@ public class DeviceUpgrade
     Protocol p = protocol;
     Vector protocols = 
       ProtocolManager.getProtocolManager().getProtocolsForRemote( newRemote );
-    if ( !protocols.contains( p ) && ( p.getCode( newRemote ) == null ))
+    if ( !protocols.contains( p ) && !p.hasCode( newRemote ))
     {
       System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName() +
                           "is not compatible with remote " + newRemote.getName());

@@ -185,7 +185,7 @@ public class ProtocolManager
 
       if ( tentative == null )
       {
-        if ( allowUpgrades && ( p.getCode( remote ) != null ))
+        if ( allowUpgrades && p.hasCode( remote ))
           tentative = p;
       }
     }
@@ -218,7 +218,7 @@ public class ProtocolManager
       }
       if ( tentative == null )
       {
-        if ( allowUpgrades && ( p.getCode( remote ) != null ))
+        if ( allowUpgrades && p.hasCode( remote ))
           tentative = p;
       }
     }

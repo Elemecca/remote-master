@@ -143,6 +143,11 @@ public class Protocol
     }
   }
 
+  public boolean hasCode( Remote remote )
+  {
+    return ( getCode( remote ) != null );
+  }
+
   public Hex getCode( Remote remote )
   {
     String key = remote.getProcessor();
