@@ -1,0 +1,68 @@
+[General]
+Name=INTUITIVE (URC-31XXXB01)
+EepromSize=$400
+AdvCodeAddr=$018..$0FB
+UpgradeAddr=$100..$3FB
+Processor=6805
+RDFSync=3
+ImageMap=Intuitive.map
+
+[Settings]
+VPT Device=$010.7.8.1.0 DeviceButtons
+Cable Setup Lock=$011.0.1.1.0 (OFF;ON)
+
+[Checksums]
+^$000:$002..$3FC
+
+[DeviceTypes]
+CABLE   = 0
+TV      = 1
+VCR     = 2
+
+[DeviceButtons]
+CABLE =   $00A $007 $00D
+TV    =   $00B $008 $00E
+VCR   =   $00C $009 $00F
+
+[DeviceTypeAliases]
+CABLE = Cable,SAT,Video Acc
+TV    = TV
+VCR   = VCR,DVD,Tape,Laserdisc
+
+#signature (part2) = "INT1"
+[FixedData]
+$0FC= $49 $4E $54 $31
+
+[Buttons]
+SETUP=$02,
+TV=$01,CABLE=$09,VCR=$0A,
+VOL+=$04,VOL-=$05,MUTE=$08,
+CH+=$06,CH-=$07,
+REW=$0B,PLAY=$0C,FF=$0D,STOP=$0E,PAUSE=$0F,REC=$10,
+UP=$31,DOWN=$32,LEFT=$33,RIGHT=$34,SELECT=$14,
+1=$15,2=$16,3=$17,4=$19,5=$1A,6=$1B,7=$1C,8=$1D,9=$1E,0=$1F,
+TV/VCR=$18,CANCEL[blank1]=$20,
+LAST=$11,FAV=$12,MENU=$13,P=$03,
+GUIDE=$21,DAY+=$22,DAY-=$23,ENTER{MUSIC}=$24,
+INFO=$25,HELP=$26,PageUp=$27,PageDown=$28,
+BYPASS=$29,PPV=$2A,EXIT=$2B,PAUSE_CABLE=$2C,
+THEME[blank2]=$2D,RECORD=$2E,DIAMOND=$2F,MACRO=$30,
+Phantom1=$35, Phantom2=$36, Phantom3=$37, Phantom4=$38, DiscreteON=$39, DiscreteOFF=$3A
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $09, $2d, $20, $11, $12, $13, $14, $21, $22, $23, $31, $32, $33, $34, $24, $25, $26, $29, $27, $28, $2a, $2b, $2c, $2e, $2f, $03
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $01
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $0a, $0c, $0b, $0d, $0e, $0f, $10, $18
+
+[MultiMacros]
+MACRO=$015
+
+[DigitMaps]
+72 48 53 54 94 47 113 03 81 90 11 82 23
+
+[Protocols]
+0000, 00002, 0006, 001A, 001C, 0022, 0034, 005A, 0065, 00A4, 00AF, 00CA,
+00C9, 00E8
