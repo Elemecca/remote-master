@@ -4,61 +4,64 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Generic
-#$DATE:Fri Aug 29 14:34:53 2003
+#$DATE:Sat Aug 30 13:08:06 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Generic.JPG
 #$FORMAT:ncsa
 #$EOH
 default Generic
-circle TV  42,48 52,54
-circle CBL  67,48 77,54
-circle CBL/SAT  67,48 77,54
-circle CAB/SAT  67,48 77,54
-circle CABLE  67,48 77,54
-circle VCR  91,49 101,56
-circle VCR/DVD  91,49 101,56
-circle SAT  115,49 125,55
-circle SAT/CBL  115,49 125,55
-circle PVR  115,49 125,55
-circle aud  42,72 53,78
-circle audio  42,72 53,78
-circle AMP  42,72 53,78
-circle DVD  91,72 101,78
-circle CD  67,72 77,78
-circle tivo  67,72 78,78
-circle RCVR  92,72 102,78
-circle DSS  92,72 102,78
-circle AUX  116,72 126,78
-circle AUX1  116,72 126,78
-circle home_theater  78,96 102,104
-circle my_system  78,96 102,104
-circle ht  78,96 102,104
-circle guide  39,129 52,137
-circle prog{guide}  39,129 52,137
-circle replay_guide  39,129 52,137
-circle info  49,212 63,220
-circle display  49,212 63,220
-circle menu  109,212 122,220
-circle exit  118,129 131,137
+circle TV  42,47 52,54
+circle CBL  67,47 77,54
+circle CBL/SAT  67,47 77,54
+circle CAB/SAT  67,47 77,54
+circle CABLE  67,47 77,54
+circle VCR  91,47 101,54
+circle VCR/DVD  91,47 101,54
+circle SAT  114,47 124,54
+circle SAT/CBL  114,47 124,54
+circle PVR  114,47 124,54
+circle audio  42,71 53,78
+circle aud  42,71 53,78
+circle AMP  42,71 53,78
+circle DVD  91,71 101,78
+circle CD  67,71 77,78
+circle tivo  67,71 77,78
+circle RCVR  92,71 102,78
+circle DSS  92,71 102,78
+circle AUX  114,71 124,78
+circle AUX1  114,71 124,78
+circle home_theater  78,96 102,103
+circle my_system  78,96 103,103
+circle ht  78,96 102,103
+circle guide  39,129 51,136
+circle prog{guide}  39,129 51,136
+circle replay_guide  39,129 51,136
+circle info  49,212 61,219
+circle display  49,212 61,219
+circle menu  109,212 121,219
+circle Tivomenu  109,212 121,219
+circle exit  118,129 130,136
 circle vol+  45,152 55,165
 circle ch+  112,152 122,165
 circle vol-  46,186 56,199
-circle ch-  110,185 120,199
+circle ch-  110,186 120,199
 circle mute  79,148 88,157
 circle scan  80,173 89,182
 circle scan{fav}  80,173 89,182
 circle fav  80,173 89,182
 circle fav_+100  80,173 89,182
 circle prev  80,198 89,207
-circle prev_ch  80,198 88,207
+circle prev_ch  80,198 89,207
 circle last  80,198 89,207
+circle last_rand  80,198 89,207
+circle back  80,198 89,207
 circle right  103,248 111,256
 circle down  78,273 86,281
 circle up  79,223 87,231
 circle left  54,248 62,256
 circle select  78,247 89,258
 circle surround  78,247 89,258
-circle sur[surround]  78,247 89,259
+circle sur[surround]  78,247 89,258
 circle ok_surround  78,247 89,258
 circle 0  79,383 87,391
 circle 1  54,319 62,327
@@ -70,41 +73,45 @@ circle 5  79,341 87,349
 circle 8  79,362 87,370
 circle 4  54,341 62,349
 circle 6  104,341 112,349
-circle enter  49,387 62,395
-circle enter_disc  49,387 62,395
-circle tv/vcr  111,387 124,395
-circle vcr/ld  111,387 124,395
-circle a/b_tv/vcr  111,387 124,395
-circle tv/vid  111,387 124,395
-circle tv/video  111,387 124,395
-circle tv/video{A/b}  111,387 124,395
-circle tv/sat  111,387 124,395
-circle power  79,116 107,124
-circle on/off  79,116 107,124
-poly pl 73,440 73,427 86,433 73,440 73,440
+circle enter  50,387 61,395
+circle enter_skip  50,387 61,395
+circle enter_jump  50,387 61,395
+circle ok  50,387 61,395
+circle enter_disc  50,387 61,395
+circle tv/vcr  111,387 123,395
+circle vcr/ld  111,387 123,395
+circle a/b_tv/vcr  111,387 123,395
+circle tv/vid  111,387 123,395
+circle tv/video  111,387 123,395
+circle tv/video{a/b}  111,387 123,395
+circle tv/sat  111,387 123,395
+circle tv/dvd  111,387 123,395
+circle power  77,116 103,124
+circle on/off  77,116 103,124
 poly play 73,440 73,427 86,433 73,440 73,440
+poly pl 73,440 73,427 86,433 73,440 73,440
 poly play_swap 73,440 73,427 86,433 73,440 73,440
 poly play_move 73,440 73,427 86,433 73,440 73,440
-poly rew 44,434 57,427 57,441 44,434 44,434
-poly rewind 44,434 57,427 57,441 44,434 44,434
-poly rew_swap 44,434 57,427 57,441 44,434 44,434
-poly rewind_last-ch 44,434 57,427 57,441 44,434 44,434
+poly rewind 44,433 57,427 57,440 44,433 44,433
+poly rew 44,433 57,427 57,440 44,434 44,433 44,433
+poly rew_swap 44,433 57,427 57,440 44,433 44,433
+poly rewind_last-ch 44,433 57,427 57,440 44,433 44,433
 poly fwd 100,440 100,427 113,433 100,440 100,440
 poly ff 100,440 100,427 113,433 100,440 100,440
 poly ffwd 100,440 100,427 113,433 100,440 100,440
 poly ffwd_pip 100,440 100,427 113,433 100,440 100,440
 poly fast_fwd 100,440 100,427 113,433 100,440 100,440
 poly fastfwd 100,440 100,427 113,433 100,440 100,440
-poly next-track 100,475 100,462 113,468 100,475 100,475
-poly quick_skip 100,475 100,462 113,468 100,475 100,475
-poly f.fwd 100,475 100,462 113,468 100,475 100,475
-poly skipfwd_move 100,475 100,462 113,468 100,475 100,475
+poly next-track 100,474 100,460 113,467 100,474 100,474
+poly quick_skip 100,474 100,460 113,467 100,474 100,474
+poly f.fwd 100,474 100,460 113,467 100,474 100,474
+poly skipfwd_move 100,474 100,460 113,467 100,474 100,474
 poly prev-track 43,467 56,460 56,474 43,467 43,467
 poly f.rew 43,467 56,460 56,474 43,467 43,467
 poly skipback_freeze 43,467 56,460 56,474 43,467 43,467
 poly instant_replay 43,467 56,460 56,474 43,467 43,467
-circle rec  57,450 64,457
 circle record  57,450 64,457
+circle rec  57,450 64,457
 rect stop 72,443 86,457
 rect pau 94,443 108,457
 rect pause 94,443 108,457
@@ -114,11 +121,14 @@ circle sleep  109,284 122,292
 circle +100  49,285 62,293
 circle +10  49,285 62,293
 circle +10_+100  49,285 62,293
-circle pip  51,298 57,305
-circle freeze  107,299 113,305
-circle screen  107,299 113,305
-circle swap  69,299 75,305
-circle move  88,299 94,305
+circle pip  51,298 57,304
+circle PIP_Instant-Replay  51,298 57,304
+circle freeze  107,298 113,304
+circle screen  107,298 113,304
+circle swap  69,298 75,304
+circle SWAP_Slow  69,298 75,304
+circle move  88,298 94,304
+circle MOVE_Advance  88,298 94,304
 circle setup  78,498 83,503
 circle set  78,498 83,503
 circle magic  78,498 83,503
@@ -135,13 +145,18 @@ circle m4  39,271 45,277
 circle macro4  39,271 45,277
 circle l1  118,226 124,232
 circle red  118,226 124,232
+circle a  118,226 124,232
 circle f1  118,226 124,232
 circle l2  120,241 126,247
 circle f2  120,241 126,247
 circle green  120,241 126,247
+circle b  120,241 126,247
 circle l3  118,256 124,262
 circle f3  118,256 124,262
+circle blue  118,256 124,262
+circle c  118,256 124,262
 circle l4  115,270 121,275
-circle ThumbsUp  56,407 62,413
-circle Replay  80,407 86,413
-circle ThumbsDown  104,407 110,413
+circle yellow  115,270 121,275
+circle ThumbsUp  55,407 60,412
+circle Replay  79,407 84,412
+circle ThumbsDown  103,407 108,412

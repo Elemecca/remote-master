@@ -21,7 +21,7 @@ circle 1L  54,91 60,97
 circle 2L  81,93 87,99
 circle 3L  112,93 118,99
 circle 4L  139,91 145,97
-circle SLEEP  51,109 57,115
+circle SLEEP  51,108 57,114
 circle MENU  64,123 70,129
 circle PROG/GUIDE  51,138 57,144
 circle EXIT  64,152 70,158

@@ -27,7 +27,7 @@ circle up  102,161 117,168
 circle down  102,196 117,202
 circle left  81,178 87,193
 circle right  123,178 129,193
-circle menu  102,179 111,187
+circle menu  102,178 111,186
 circle MUTE  71,248 84,256
 circle VOL+  119,220 130,228
 circle VOL-  102,230 113,238
@@ -43,11 +43,11 @@ circle 7  45,312 55,322
 circle 8  67,312 77,322
 circle 9  89,312 99,322
 circle 0  67,333 77,343
-circle Scan  118,287 129,295
-circle PIP{Freeze}  118,308 129,316
+circle Scan  117,287 128,295
+circle PIP{Freeze}  117,308 128,316
 circle NORM{Swap}  115,352 126,360
 circle PP{Move}  116,330 127,338
-circle 10  45,336 56,342
+circle 10  44,335 55,341
 poly REW 56,370 55,384 41,377 56,370 56,370
 poly FF 83,370 84,384 98,377 83,370 83,370
 poly pl 62,369 63,384 77,376 62,369 62,369

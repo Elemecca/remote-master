@@ -19,8 +19,8 @@ circle AUX  99,44 108,52
 circle DVD  75,37 84,45
 circle RCVR/AMP  74,82 83,90
 circle home_theater  61,59 74,68
-circle guide  27,125 36,134
-circle menu  16,101 23,108
+circle guide  26,125 35,134
+circle menu  15,101 22,108
 circle info  107,101 114,108
 circle exit  95,126 104,135
 circle POWER  60,109 77,114
@@ -47,7 +47,7 @@ circle 9  92,271 102,278
 circle 0  60,290 70,297
 circle fav  60,212 68,220
 circle PIP  27,387 35,393
-circle Swap  70,387 78,394
+circle Swap  70,387 78,393
 circle Move  48,387 56,393
 circle ENTER  28,290 39,297
 circle rew  27,308 38,315
@@ -69,4 +69,4 @@ rect STOP 48,333 70,347
 circle rec  44,324 52,332
 circle SET[SETUP]  92,403 101,408
 circle {LIGHT}  28,403 37,409
-circle sleep  92,388 100,394
+circle sleep  92,387 100,393

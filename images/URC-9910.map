@@ -20,12 +20,12 @@ circle CBL  58,115 66,123
 circle RCVR/AMP  80,115 88,123
 circle CD  100,108 108,116
 circle guide  33,147 42,156
-circle menu  23,127 30,134
+circle menu  22,127 29,134
 circle info  115,126 122,133
 circle exit  104,147 113,156
 circle POWER  70,133 89,138
 circle up  70,151 79,158
-circle down  69,183 78,190
+circle down  70,183 79,190
 circle left  54,169 61,178
 circle right  85,169 92,178
 circle SELECT  69,168 76,175
@@ -45,7 +45,7 @@ circle 7  37,282 47,289
 circle 8  69,282 79,289
 circle 9  102,282 112,289
 circle 0  69,301 79,308
-circle fav  70,220 78,228
+circle fav  69,219 77,227
 circle PIP  37,402 45,407
 circle Swap  82,402 90,407
 circle Move  59,402 67,407

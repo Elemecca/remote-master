@@ -24,8 +24,8 @@ circle shift  53,180 64,188
 circle ESC  54,201 65,209
 circle POWER  156,166 169,176
 circle up  130,185 146,191
-circle down  129,226 145,232
-circle left  105,205 111,222
+circle down  129,225 145,231
+circle left  104,205 110,222
 circle right  155,205 161,222
 circle SUR[Surround]  130,205 140,215
 circle MUTE{sleep}  92,288 105,296
@@ -42,7 +42,7 @@ circle 6  112,338 122,348
 circle 7  61,363 71,373
 circle 8  87,363 97,373
 circle 9  113,363 123,373
-circle 0  87,387 97,397
+circle 0  87,388 97,398
 circle Prev_ch{Disp}  147,334 158,342
 circle PIP{freeze_pip}  146,360 157,368
 circle Swap  145,385 156,393

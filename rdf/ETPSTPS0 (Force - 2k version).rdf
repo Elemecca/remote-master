@@ -1,28 +1,29 @@
 [General]
-Name=Dreambox Remote
-EepromSize=$400
+Name=Force Remote
+EepromSize=$800
 AdvCodeAddr=$01D..$0FF
-UpgradeAddr=$100..$3FC
+UpgradeAddr=$100..$3FE
+LearnedAddr=$3FF..$7FD
 DevCodeOffset=30
 Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
-ImageMap=Dreambox.map
+ImageMap=Generic.map
 
 [Settings]
 VPT Device=$012.7.8.1.0 DeviceButtons
 VPT Status=$01C.3.1.0.0 (Off;On)
 CH+/CH- simulation=$01C.1.1.0.0 (Off;On)
-Dream Locked=$013.0.1.0.1 (Off;On)
+Force Locked=$013.0.1.0.1 (Off;On)
 TV Locked=$013.1.1.0.1 (Off;On)
 AUX Locked=$013.2.1.0.1 (Off;On)
 xDev Locked=$013.3.1.0.1 (Off;On)
 
 [Checksums]
-^$000:$002..$3FC
+^$000:$002..$7FD
 
 [FixedData]
-$014 = $13
+$014 = $14
 
 [DeviceTypes]
 SAT       = 0
@@ -30,31 +31,23 @@ TV        = 1
 VCR/LD/DVD= 2
 xDev      = 3
 
-[DeviceTypeAliases]
-SAT        = Cable,SAT,Video Acc
-TV         = TV
-VCR/LD/DVD = VCR,DVD,Tape,Laserdisc,DAT,CD,Home Auto,Phono,Tuner,Misc Audio,Amp
-
 [DeviceButtons]
-Dream = $00A $00B
+Force = $00A $00B
 TV    = $00C $00D
 AUX   = $00E $00F
 xDev  = $010 $011
 
 [Buttons]
-SHIFT=$02, POWER=$03, 
-TV=$01, DREAM=$09, AUX=$0A,
+SHIFT=$02, POWER=$03, TV=$01, FORCE=$09, AUX=$0A,
 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F, 
-BACK=$11, FORWARD=$18, 
-VOL+=$04, VOL-=$05, TV_STOP=$08,
-MUTE=$0E, LAME=$20, 
-BOUQUET+=$06, BOUQUET-=$07, 
-INFO=$13, MENU=$14, AUDIO=$25, VIDEO=$26,
-UP=$21, DOWN=$22, LEFT=$23, RIGHT=$24, OK=$12, 
-RED=$0B, GREEN=$0C, YELLOW=$0F, BLUE=$0D, 
-RADIO=$28, TEXT=$27, HELP=$10,
-SHIFT_VOL+=$84, SHIFT_VOL-=$85, SHIFT_BOUQUET+=$86, SHIFT_BOUQUET-=$87, SHIFT_LAME=$A0,
-Ph1=$F0, Ph2=$54, Ph3=$55, Ph4=$56, Ph5=$57, Ph6=$58, Ph7=$59, Ph8=$5A
+RADIO=$11, LANG=$18, VOL+=$04, VOL-=$05, MESSAGES=$0E,
+MUTE=$08, MENU=$20, CH+=$06, CH-=$07, 
+INFO=$13, EPG=$14, EXIT=$25, LAST=$26,
+ARROW_UP=$21, ARROW_DOWN=$22, ARROW_LEFT=$23, ARROW_RIGHT=$24,
+OK=$12, RED=$0B, GREEN=$0C, YELLOW=$0F, BLUE=$0D, 
+PVR=$28, TEXT=$27, REC=$10,
+SHIFT_VOL+=$84, SHIFT_VOL-=$85, SHIFT_CH+=$86, SHIFT_CH-=$87, SHIFT_MENU=$A0,
+Phantom1=$F0, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 
 [ButtonMaps]
 0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
@@ -72,3 +65,4 @@ Ph1=$F0, Ph2=$54, Ph3=$55, Ph4=$56, Ph5=$57, Ph6=$58, Ph7=$59, Ph8=$5A
 [DigitMaps]
 46 94 92 29 64 38 07 21 71 37 33 74 85 26 79 52 
 75 53 22 32 73 13 39 17 31 86 34 09 
+
