@@ -1,3 +1,8 @@
+Changes for v0.53
+
+- Layout panel now supports assigning functions to buttons using drag'n'drop
+  Use Ctrl to assign shifted function (Still strying to get Shift key working)
+
 Changes for v0.52
 
 - Layout panel now uses a vertical image of the remote, on the left side.
