@@ -1,1 +1,1 @@
-zip KeyMapMaster.zip KeyMapMaster.jar protocols.ini kmj.bat *.txt km\*.km rdf\*.rdf
+zip KeyMapMaster.%1.zip KeyMapMaster.jar protocols.ini kmj.bat *.txt km\*.km rdf\*.rdf
