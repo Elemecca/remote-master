@@ -33,32 +33,69 @@ public class LayoutPanel
         if ( icon != null )
           g2.drawImage( icon.getImage(), null, null );
 
-        g2.setPaint( Color.blue );
-
         if ( currentButton != null )
         {
-          g2.setPaint( Color.GREEN );
+          g2.setPaint( Color.white );
           g2.setStroke( new BasicStroke( 4.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
           g2.draw( currentButton.getShape());
         }
 
-        g2.setPaint( Color.yellow );
         g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
 
         DeviceType devType = deviceUpgrade.getDeviceType();
         ButtonMap map = devType.getButtonMap();
 
+        Button[] buttons = r.getButtons();
+        for ( int i = 0; i < buttons.length; i++ )
+        {
+          Button b = buttons[ i ];
+          Shape s = b.getShape();
+          if ( s != null )
+          {
+            Function f = b.getFunction();
+            Function sf = b.getShiftedFunction();
+            if (( f != null ) && ( sf == null ))
+            {
+              g2.setPaint( Color.blue );
+              g2.fill( s );
+            }
+            else if (( f == null ) && ( sf != null ))
+            {
+              g2.setPaint( Color.yellow );
+              g2.fill( s );
+            }
+            else if (( f != null ) && ( sf != null ))
+            {
+              g2.setPaint( Color.green );
+              g2.fill( s );                                                    
+            }
+          }
+          else
+            System.err.println( "No shape for button " + b );
+        }
+
+        g2.setPaint( Color.orange );
         for ( int i = 0; i < map.size(); i++ )
         {
           Button b = map.get( i );
           Shape s = b.getShape();
           if ( s != null )
             g2.draw( s );
-          else
-            System.err.println( "No shape for button " + b );
         }
       }
+
+      public String getToolTipText( MouseEvent e )
+      {
+        Button b = getButtonAtPoint( e.getPoint());
+        if ( b != null )
+          return b.getName();
+        else
+          return null;
+      }
     };
+    // Don't know why, but tooltips don't work without this
+    imagePanel.setToolTipText( "" );
+
     JPanel fPanel = new JPanel();
     FlowLayout fl = ( FlowLayout )fPanel.getLayout();
     fl.setHgap( 0 );

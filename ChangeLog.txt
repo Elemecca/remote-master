@@ -1,3 +1,14 @@
+Changes for v0.54
+
+- Added images for 15-2117/2116 and 15-2104
+- Remote image has tooltips over buttons, displaying the name of the button.
+- Button highlighting has changed, as follows:
+  White outline: button is selected
+  Orange outline: button is in key map for current device
+  Blue fill-in: button has a function assigned
+  Yellow fill-in: button has a shifted function assigned
+  Green fill-in: button has both a function and a shifted function assigned
+
 Changes for v0.53
 
 - Layout panel now supports assigning functions to buttons using drag'n'drop

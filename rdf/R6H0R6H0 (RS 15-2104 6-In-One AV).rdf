@@ -8,6 +8,7 @@ LearnedAddr=$400..$7FF
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+Image=15-2104.jpg
 
 [Settings]
 Sleep Status=$016.0.1.0.0 (Use Native;Simulate)
@@ -103,3 +104,61 @@ NEWS=$01D
 00B6, 00BB, 00C4, 00C9, 00CA, 00CD, 00CE, 00D0, 00D7, 00DB, 
 00DE, 00E2, 00E8, 00E9, 00F2, 00F5, 00F8, 00FC, 010F, 0111, 
 0114, 0184
+
+[ButtonShapes]
+VCR=ellipse:19,86,24,14
+CBL/SAT=ellipse:111,62,24,14
+TV=ellipse:115,85,24,14
+CD=ellipse:90,41,26,14
+AUX1=ellipse:44,42,26,14
+DVD=ellipse:22,63,26,14
+POWER=ellipse:61,66,38,15
+AUDIO=ellipse:91,140,35,14
+music=ellipse:30,222,16,10
+movie=ellipse:57,226,16,10
+sport=ellipse:86,226,16,10
+news=ellipse:114,222,16,10
+1s=ellipse:27,119,16,10
+2s=ellipse:57,123,16,10
+3s=ellipse:86,123,16,10
+4s=ellipse:116,119,16,10
+SLEEP=ellipse:32,312,22,15
+freeze=ellipse:80,255,15,11
+menu=ellipse:28,144,23,14
+exit=ellipse:105,197,23,14
+info=ellipse:32,198,23,14
+guide=ellipse:109,144,23,14
+THEATER=ellipse:63,94,34,15
+up=ellipse:64,146,31,15
+down=ellipse:64,196,31,15
+left=ellipse:26,170,30,15
+right=ellipse:107,170,30,15
+SELECT=ellipse:63,171,34,15
+MUTE=ellipse:72,283,18,11
+VOL+=ellipse:33,250,25,25
+VOL-=ellipse:40,280,20,23
+CH+=ellipse:104,250,25,25
+CH-=ellipse:102,280,20,23
+1=ellipse:33,337,23,14
+2=ellipse:70,337,23,14
+3=ellipse:106,337,23,14
+4=ellipse:33,361,23,14
+5=ellipse:70,361,23,14
+6=ellipse:106,361,23,14
+7=ellipse:33,388,23,14
+8=ellipse:70,388,23,14
+9=ellipse:106,388,23,14
+0=ellipse:69,413,23,14
+LAST=ellipse:72,250,18,11
+tv/vcr=ellipse:106,312,22,15
+rew=ellipse:33,440,23,14
+PLAY=ellipse:70,440,23,14
+ff=ellipse:106,440,23,14
+enter=ellipse:106,413,23,14
++100=ellipse:33,413,23,14
+PAUSE=ellipse:70,467,23,14
+STOP=ellipse:106,467,23,14
+rec=ellipse:33,467,23,14
+P{SETUP}=ellipse:19,33,13,13
+{LIGHT}=ellipse:126,31,15,15
+scan=ellipse:72,314,18,11

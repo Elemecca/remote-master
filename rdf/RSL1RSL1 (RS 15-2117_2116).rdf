@@ -8,6 +8,7 @@ LearnedAddr=$400..$7FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+Image=15-21162117.jpg
 
 [Settings]
 HT transport=$02b.7.8.1.0 DeviceButtons
@@ -174,3 +175,57 @@ phantom5=$3B
 009E, 00A4, 00AF, 00B6, 00C4, 00C9, 00CA, 00CD:2, 00DE, 00E2, 
 00E8, 00F2, 00F5, 00F8, 0102, 010F, 0111, 0114, 0117, 011A, 
 011B, 0125, 016D, 0184
+
+[ButtonShapes]
+VCR=ellipse:18,99,24,14
+CBL=ellipse:47,99,24,14
+SAT=ellipse:75,99,24,14
+TV=ellipse:105,99,24,14
+CD=ellipse:21,120,26,14
+AUX=ellipse:62,120,26,14
+DVD=ellipse:102,120,26,14
+MY_SYSTEM=ellipse:21,140,35,14
+AUDIO=ellipse:91,140,35,14
+SLEEP=ellipse:98,410,26,15
+freeze=ellipse:80,255,15,11
+guide=ellipse:22,161,23,14
+menu=ellipse:105,222,23,14
+info=ellipse:22,222,23,14
+exit=ellipse:105,161,23,14
+POWER=ellipse:105,75,29,16
+up=ellipse:59,170,34,15
+down=ellipse:59,210,34,15
+left=ellipse:34,180,15,34
+right=ellipse:99,180,15,34
+SELECT=ellipse:62,191,28,15
+MUTE=ellipse:55,235,16,10
+VOL+=ellipse:29,242,17,25
+VOL-=ellipse:29,269,17,25
+CH+=ellipse:105,242,17,25
+CH-=ellipse:105,269,17,25
+1=ellipse:32,301,20,20
+2=ellipse:66,301,20,20
+3=ellipse:100,301,20,20
+4=ellipse:32,329,20,20
+5=ellipse:66,329,20,20
+6=ellipse:100,329,20,20
+7=ellipse:32,357,20,20
+8=ellipse:66,357,20,20
+9=ellipse:100,357,20,20
+0=ellipse:66,385,20,20
+LAST=ellipse:81,235,15,10
+PIP=ellipse:56,255,15,11
+Swap=ellipse:56,277,15,11
+Move=ellipse:80,277,16,11
+ENTER=ellipse:98,389,26,15
+rewind=ellipse:31,434,23,14
+PLAY=ellipse:65,434,23,14
+fast_fwd=ellipse:100,434,23,14
+TV/VIDEO=ellipse:32,410,23,14
++100=ellipse:32,389,23,14
+PAUSE=ellipse:99,457,25,16
+STOP=rect:65,457,23,15
+record=ellipse:33,457,18,17
+SET=ellipse:22,77,13,13
+{LIGHT}=ellipse:41,77,15,15
+fav/scan=ellipse:67,155,16,11
