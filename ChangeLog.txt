@@ -1,3 +1,9 @@
+Changes for v0.71
+
+- Handle extra spaces at end of lines in protocols.ini better.
+- Preferred remote dialog, Enable/disable move buttons when remotes are selected/deselected
+- Request 820614: Allow EFC/Hex column to expand on External Functions panel
+
 Changes for v0.70
 
 - Add RC-5x protocol
