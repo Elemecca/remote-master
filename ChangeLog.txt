@@ -1,3 +1,14 @@
+Changes for v0.44
+
+- Allow Dev data in hex commands
+- Fixed error in Dishplayer
+- Variants of Dishplayer(old)
+- Emerson
+- Changed Panasonic Combo2 to use the new variant of 00CD
+- Bug 748222: Changing remote causes an error message
+- Request 730257: Support protocol variants
+- Update list of supported protocols in Readme.txt
+
 Changes for v0.43
 
 - Fixed Panasonic2 and the notes for Sony12/15
