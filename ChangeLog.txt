@@ -1,3 +1,8 @@
+Changes for v0.51
+
+- Win98 doesn't repaint Layout Panel when device type changed
+- Highlight a button on the Layout Panel by clicking on it.
+
 Changes for v0.50
 
 - Added Layout Panel, which shows which buttons are included in the key map
