@@ -38,7 +38,7 @@ public class NECParmTranslator
         hex[ 2 ] = complement( hex[ 1 ]);
     }
     else
-      hex[ 2 ] = reverse( complement( subDevice.byteValue()));
+      hex[ 2 ] = reverse( complement( subDevice.intValue()));
   }
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
@@ -54,8 +54,9 @@ public class NECParmTranslator
     else
       deviceNumber = new Integer( temp );
 
-    if (( hex[ 2 ] != hex[ 1 ]) && ( hex[ 2 ] != complement(hex[ 1 ])))
-      subDevice = new Integer( reverse( complement(hex[ 2 ])));
+    temp = complement( hex[ 2 ] );
+    if (( hex[ 2 ] != hex[ 1 ]) && ( hex[ 1 ] != temp ))
+      subDevice = new Integer( reverse( temp ));
 
     if (( hex[ 0 ] != initialDefaultParm ) &&
         ( hex[ 0 ] != ( initialDefaultParm + 0x20 )))
