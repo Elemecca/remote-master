@@ -1,3 +1,10 @@
+Changes for v0.88
+
+- Remove quotes from button names
+- Fix problem starting without a properties file
+- Enforce button restrictions
+- Lay ground work for Device Combiner support
+
 Changes for v0.87
 
 - Enable importing external functions from existing RM and KM upgrade files.
