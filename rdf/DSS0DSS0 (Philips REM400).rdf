@@ -8,6 +8,7 @@ DevCodeOffset=29
 Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
+ImageMap=Generic.map
 
 [Settings]
 VPT Device=$016.7.8.1.0 DeviceButtons
@@ -87,10 +88,10 @@ L2=45,
 L3=46,
 phantom2=47,
 phantom3=48,
-ARROW_UP=49,
-ARROW_DOWN=50,
-ARROW_LEFT=51,
-ARROW_RIGHT=52,
+UP=49,
+DOWN=50,
+LEFT=51,
+RIGHT=52,
 phantom4=53
 
 [ButtonMaps]

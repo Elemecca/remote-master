@@ -3,64 +3,64 @@
 #$-:Map THIS! free image map editor by Todd C. Wilson
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
-#$DATE:Tue Aug 26 21:35:34 2003
-#$PATH:C:\km\images\
+#$TITLE:15-2104
+#$DATE:Wed Aug 27 13:19:26 2003
+#$PATH:C:\Backups\Home\IR\Images\
 #$GIF:15-2104.jpg
 #$FORMAT:ncsa
 #$EOH
-circle VCR 28,82 40,89
-circle CBL/SAT 108,61 120,68
-circle TV 110,82 122,89
-circle CD 89,43 102,50
-circle AUX1 50,43 63,50
-circle DVD 31,61 44,68
-circle POWER 69,63 88,70
-circle THEATER 70,87 87,94
-circle AUDIO 108,147 125,154
-circle music 34,199 42,204
-circle movie 58,203 66,208
-circle sport 83,203 91,208
-circle news 108,199 116,204
-circle 1s 29,108 37,113
-circle 2s 57,112 65,117
-circle 3s 83,112 91,117
-circle 4s 110,108 118,113
-circle SLEEP 38,279 49,286
-circle freeze 87,260 94,265
-circle menu 33,133 44,140
-circle exit 101,178 112,185
-circle info 37,178 48,185
-circle guide 105,133 116,140
-circle up 70,135 84,142
-circle down 70,178 84,185
-circle left 34,156 45,163
-circle right 104,156 115,163
-circle SELECT 70,156 87,163
-circle MUTE 70,252 79,257
-circle VOL+ 39,230 51,242
-circle VOL- 43,253 53,263
-circle CH+ 101,230 113,242
-circle CH- 97,253 107,263
-circle 1 38,301 49,308
-circle 2 70,301 81,308
-circle 3 102,301 113,308
-circle 4 38,323 49,330
-circle 5 70,323 81,330
-circle 6 102,323 113,330
-circle 7 38,346 49,353
-circle 8 70,346 81,353
-circle 9 102,346 113,353
-circle 0 70,368 81,375
-circle LAST 70,224 79,229
-circle tv/vcr{A/B} 103,279 114,286
-circle rew 38,392 49,399
-circle PLAY 70,392 81,399
-circle ff 102,392 113,399
-circle enter 102,368 113,375
-circle +100 38,368 49,375
-circle PAUSE 70,415 81,422
-circle STOP 102,415 113,422
-circle rec 38,415 49,422
-circle P[SETUP] 21,35 27,41
-circle {LIGHT} 117,34 124,41
-circle scan{Fav} 70,279 79,284
+default 2104
+circle VCR  28,82 40,89
+circle CBL/SAT  108,61 120,68
+circle TV  112,82 124,89
+circle CD  89,43 102,50
+circle AUX1  51,43 64,50
+circle DVD  31,62 44,69
+circle POWER  69,63 88,70
+circle THEATER  70,90 87,98
+circle music  34,199 42,204
+circle movie  58,203 66,208
+circle sport  83,203 91,208
+circle news  108,199 116,204
+circle 1s  30,109 38,114
+circle 2s  57,112 65,117
+circle 3s  83,112 91,117
+circle 4s  110,108 118,113
+circle SLEEP  38,279 49,286
+circle menu  35,133 46,140
+circle exit  103,178 114,185
+circle info  38,178 49,185
+circle guide  105,133 116,140
+circle up  70,135 84,142
+circle down  70,178 84,185
+circle left  35,157 46,164
+circle right  105,156 116,163
+circle SELECT  70,156 87,163
+circle MUTE  70,252 79,257
+circle VOL+  40,230 51,241
+circle VOL-  44,253 54,263
+circle CH+  102,230 113,241
+circle CH-  98,253 108,263
+circle 1  39,301 50,308
+circle 2  70,301 81,308
+circle 3  103,301 114,308
+circle 4  39,323 50,330
+circle 5  70,323 81,330
+circle 6  103,323 114,330
+circle 7  39,346 50,353
+circle 8  70,346 81,353
+circle 9  103,346 114,353
+circle 0  70,368 81,375
+circle LAST  70,224 79,229
+circle tv/vcr{A/B}  103,279 114,286
+circle rew  40,392 51,399
+circle PLAY  70,392 81,399
+circle ff  104,392 115,399
+circle enter  103,368 114,375
+circle +100  39,368 50,375
+circle PAUSE  72,416 83,423
+circle STOP  104,415 115,422
+circle rec  40,416 51,423
+circle P[SETUP]  23,36 29,42
+circle {LIGHT}  117,34 124,41
+circle scan{Fav}  70,279 79,284

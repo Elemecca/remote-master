@@ -3,58 +3,60 @@
 #$-:Map THIS! free image map editor by Todd C. Wilson
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
-#$DATE:Tue Aug 26 21:35:34 2003
-#$PATH:C:\km\images\
+#$TITLE:15-1995
+#$DATE:Wed Aug 27 13:18:35 2003
+#$PATH:C:\Backups\Home\IR\Images\
 #$GIF:15-1935.jpg
 #$FORMAT:ncsa
 #$EOH
-rect AMP 25,79 41,91
-rect TUN[tuner] 48,79 64,91
-rect TV 72,79 88,91
-rect CBL 93,79 109,91
-rect CD 25,94 41,106
-rect VCR 48,94 64,106
-rect SAT 72,94 88,106
-rect Plug&Power 93,94 109,106
-rect HOME_THEATER 33,108 103,120
-rect aud 30,321 46,333
-rect vid 63,321 79,333
-circle menu 31,196 38,203
-circle center 31,175 38,182
-circle Select 31,218 38,225
-circle shift 31,133 38,140
-circle POWER 100,121 113,131
-circle up 87,144 99,150
-circle down 87,178 99,184
-circle left 68,159 74,171
-circle right 107,159 113,171
-rect sur[Surround] 79,155 95,167
-circle MUTE 63,207 74,216
-circle VOL+ 99,197 107,204
-circle VOL- 88,205 96,212
-circle CH+ 109,214 117,221
-circle CH- 97,222 105,229
-rect 1 28,233 43,248
-rect 2 48,233 63,248
-rect 3 68,233 83,248
-rect 4 28,253 43,268
+default 1995
+rect TUN[tuner] 48,81 64,91
+rect TV 72,81 88,91
+rect VCR 48,95 64,105
+rect SAT 72,95 88,105
+circle menu  32,195 39,202
+circle center  32,175 39,182
+circle Select  32,217 39,224
+circle shift  32,132 39,139
+circle POWER  102,120 111,132
+circle up  87,144 99,150
+circle down  87,177 99,183
+circle left  68,161 74,173
+circle right  107,161 113,173
+rect sur[Surround] 80,156 95,168
+circle MUTE  64,207 76,216
+circle VOL+  102,198 110,205
+circle VOL-  88,206 96,213
+circle CH+  111,215 119,222
+circle CH-  97,223 105,230
+rect 2 48,232 63,247
+rect 4 27,253 42,268
 rect 5 48,253 63,268
 rect 6 68,253 83,268
-rect 7 28,273 43,288
 rect 8 48,273 63,288
-rect 9 68,273 83,288
-rect 0 48,295 63,310
-circle last 101,256 107,262
-circle PIP 101,276 107,282
-circle Swap 101,298 107,304
-circle Move 101,319 107,325
+rect 0 48,294 63,309
+circle last  101,256 107,262
+circle PIP  101,276 107,282
+circle Swap  101,298 107,304
+circle Move  101,319 107,325
 rect ENTER 26,300 43,312
-poly REW{slow-} 46,344 46,358 32,351 46,344
-poly FF{slow+} 75,344 75,358 89,351 75,344
-poly pl{slow} 54,344 54,358 68,351 54,344
+poly REW{slow-} 47,345 47,359 33,352 47,345 47,345
+poly FF{slow+} 74,345 74,359 88,352 74,345 74,345
+poly pl{slow} 55,344 55,358 69,351 55,344 55,344
 rect TV/SAT 69,300 86,312
-rect PAU 71,365 87,380
-rect STOP 52,365 68,380
-circle rec 40,372 47,379
-circle SETUP 101,361 107,367
-circle {LIGHT} 101,340 107,346
+rect PAU 72,365 87,380
+rect STOP 53,365 67,380
+circle rec  40,373 47,380
+circle SETUP  101,361 107,367
+circle {LIGHT}  101,340 107,346
+poly home_theater 32,111 99,111 90,122 40,122 32,111 32,111
+poly amp 41,90 25,90 25,83 29,80 42,80 42,90 41,90 41,90
+poly cbl 94,90 94,80 106,80 110,84 110,90 94,90 94,90
+poly cd 41,94 25,94 25,101 28,104 41,104 41,94 41,94
+poly Plug&Power 94,95 110,95 110,102 107,105 94,105 94,95 94,95
+poly 1 42,247 27,247 27,235 30,232 42,232 42,247 42,247
+poly 3 67,247 82,247 82,235 79,232 67,232 67,247 67,247
+poly 7 42,273 27,273 27,285 30,288 42,288 42,273 42,273
+poly 9 69,273 84,273 84,285 81,288 69,288 69,273 69,273
+poly aud 48,334 29,334 29,325 33,322 49,322 49,334 48,334 48,334
+poly vid 63,335 82,335 82,326 79,323 63,323 63,335 63,335

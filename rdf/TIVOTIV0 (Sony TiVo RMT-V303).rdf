@@ -10,6 +10,7 @@ Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
 OmitDigitMapByte=1
+ImageMap=Generic.map
 
 [Settings]
 TV_Power Device=$011.1.2.1.0 (NONE;TV;RCVR;TV and RCVR)
@@ -39,8 +40,8 @@ TiVo    = $00E $00F
 
 [Buttons]
 TV_Power=$01,
-TiVo_Power=$02,
-Guide_LiveTV=$03,
+Power=$02,
+Guide=$03,
 Vol+=$04,
 Vol-=$05,
 Ch+=$06,
@@ -70,10 +71,10 @@ ThumbsDown=$14,
 0=$1F,
 Advance=$18,
 Replay=$20,
-Up_Arrow=$21,
-Down_Arrow=$22,
-Left_Arrow=$23,
-Right_Arrow=$24,
+Up=$21,
+Down=$22,
+Left=$23,
+Right=$24,
 Select=$25
 
 [ButtonMaps]

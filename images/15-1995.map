@@ -3,60 +3,62 @@
 #$-:Map THIS! free image map editor by Todd C. Wilson
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
-#$DATE:Tue Aug 26 21:35:34 2003
-#$PATH:C:\km\images\
+#$TITLE:15-1995
+#$DATE:Wed Aug 27 13:19:12 2003
+#$PATH:C:\Backups\Home\IR\Images\
 #$GIF:15-1995.jpg
 #$FORMAT:ncsa
 #$EOH
-circle CD 31,108 43,115
-circle CBL 57,108 69,115
-circle VCR 84,108 96,115
-circle TV 112,108 124,115
-circle TUNER 32,127 45,134
-circle AMP 71,127 84,134
-circle SAT 108,127 121,134
-circle HOME_THEATER 38,145 55,152
-circle Plug&Power 102,145 119,152
-circle VIDEO 101,393 114,400
-circle menu{Program} 33,165 44,172
-circle center{rear} 33,218 44,225
-circle shift 108,165 119,172
-circle scan{Fav} 108,219 119,226
-circle POWER 109,88 123,96
-circle up 70,173 87,179
-circle down 70,210 87,216
-circle left 42,193 48,210
-circle right 100,193 106,210
-circle SURROUND 70,191 84,198
-circle MUTE 57,229 65,234
-circle VOL+ 34,243 42,254
-circle VOL- 34,266 42,277
-circle CH+ 106,243 114,254
-circle CH- 106,266 114,277
-circle 1 39,295 49,305
-circle 2 70,295 80,305
-circle 3 102,295 112,305
-circle 4 39,321 49,331
-circle 5 70,321 80,331
-circle 6 102,321 112,331
-circle 7 39,347 49,357
-circle 8 70,347 80,357
-circle 9 102,347 112,357
-circle 0 69,374 79,384
-circle LAST 82,229 89,234
-circle escape 81,248 88,253
-circle PIP 57,248 64,253
-circle Swap 57,267 64,272
-circle Move 82,267 90,272
-circle ENTER 101,374 114,381
-circle rew 39,414 50,421
-circle PLAY 69,414 80,421
-circle ffwd 100,414 111,421
-circle AUDIO 39,393 50,400
-circle TV/VIDEO{A/B} 38,374 49,381
-circle PAUSE 102,437 114,445
+default 1995
+circle CD  31,108 43,115
+circle CBL  57,108 69,115
+circle VCR  84,108 96,115
+circle TV  112,108 124,115
+circle TUNER  32,127 45,134
+circle AMP  71,127 84,134
+circle SAT  108,127 121,134
+circle HOME_THEATER  38,145 55,152
+circle Plug&Power  102,145 119,152
+circle VIDEO  101,393 114,400
+circle menu{Program}  33,165 44,172
+circle center{rear}  33,218 44,225
+circle shift  108,165 119,172
+circle scan{Fav}  108,219 119,226
+circle POWER  109,88 123,96
+circle up  70,173 87,179
+circle down  70,210 87,216
+circle left  42,193 48,210
+circle right  100,193 106,210
+circle SURROUND  70,191 84,198
+circle MUTE  57,229 65,234
+circle VOL+  34,243 42,254
+circle VOL-  34,266 42,277
+circle CH+  106,243 114,254
+circle CH-  106,266 114,277
+circle 1  39,295 49,305
+circle 2  70,295 80,305
+circle 3  102,295 112,305
+circle 4  39,321 49,331
+circle 5  70,321 80,331
+circle 6  102,321 112,331
+circle 7  39,347 49,357
+circle 8  70,347 80,357
+circle 9  102,347 112,357
+circle 0  69,374 79,384
+circle LAST  82,229 89,234
+circle escape  81,248 88,253
+circle PIP  57,248 64,253
+circle Swap  57,267 64,272
+circle Move  82,267 90,272
+circle ENTER  101,374 114,381
+circle rew  39,414 50,421
+circle PLAY  69,414 80,421
+circle ffwd  100,414 111,421
+circle AUDIO  39,393 50,400
+circle TV/VIDEO{A/B}  38,374 49,381
+circle PAUSE  102,437 114,445
 rect STOP 58,429 81,444
-circle rec 38,436 47,444
-circle P[SETUP] 26,87 32,93
-circle {LIGHT} 46,87 53,94
-circle select 71,154 79,159
+circle rec  38,436 47,444
+circle P[SETUP]  26,87 32,93
+circle {LIGHT}  46,87 53,94
+circle select  71,154 79,159

@@ -3,40 +3,42 @@
 #$-:Map THIS! free image map editor by Todd C. Wilson
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
-#$DATE:Tue Aug 26 21:35:34 2003
-#$PATH:C:\km\images\
+#$TITLE:URC-7542
+#$DATE:Wed Aug 27 13:20:50 2003
+#$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-7542.jpg
 #$FORMAT:ncsa
 #$EOH
-circle MAGIC[setup] 47,43 58,50
+default 7542
+circle MAGIC[setup]  47,43 58,50
 rect MENU 65,36 81,52
-circle POWER 98,43 109,50
-circle TV 39,81 50,89
+circle POWER  98,43 109,50
+circle TV  39,81 50,89
 rect VCR 55,70 70,90
 rect SAT 76,70 91,90
-circle AUX 107,80 118,88
-circle 1 41,109 54,118
-circle 2 74,109 87,118
-circle 3 106,108 119,117
-circle 4 41,132 54,141
-circle 5 74,132 87,141
-circle 6 107,131 120,140
-circle 7 41,155 54,164
-circle 8 74,155 87,164
-circle 9 107,155 120,164
-circle 10 42,179 55,188
-circle 0 74,178 87,187
-circle 20 107,178 120,187
-poly VOL+ 118,222 123,241 118,259 93,251 97,241 93,230 118,222
-poly VOL- 33,223 29,242 33,261 59,253 55,242 59,231 33,223
-circle CH+ 75,210 107,223
-circle CH- 75,271 107,284
-circle MUTE 75,241 87,249
-poly REW 48,293 48,309 29,301 48,293
-poly PLAY 55,309 55,328 73,319 55,309
-poly FFWD 82,308 82,326 101,318 82,308
-rect PAUSE 107,293 122,308
-circle TV/VCR 40,335 53,342
+circle AUX  107,80 118,88
+circle 1  41,109 54,118
+circle 2  74,109 87,118
+circle 3  106,108 119,117
+circle 4  41,132 54,141
+circle 5  74,132 87,141
+circle 6  107,131 120,140
+circle 7  41,155 54,164
+circle 8  74,155 87,164
+circle 9  107,155 120,164
+circle 10  42,179 55,188
+circle 0  74,178 87,187
+circle 20  107,178 120,187
+poly VOL+ 118,222 123,241 118,259 93,251 97,241 93,230 118,222 118,222
+poly VOL- 33,223 29,242 33,261 59,253 55,242 59,231 33,223 33,223
+circle CH+  75,210 107,223
+circle CH-  75,271 107,284
+circle MUTE  75,241 87,249
+poly REW 48,293 48,309 30,301 48,293 48,293
+poly PLAY 55,309 55,328 73,319 55,309 55,309
+poly FFWD 82,308 82,326 102,318 82,308 82,308
+rect PAUSE 107,294 122,308
+circle TV/VCR  40,335 53,342
 rect STOP 56,342 73,358
-circle REC 91,350 100,359
-circle SLOW 113,334 126,341
+circle REC  91,350 100,359
+circle SLOW  113,334 126,341

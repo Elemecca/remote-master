@@ -6,6 +6,7 @@ UpgradeAddr=$100..$1FC
 Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
+ImageMap=Generic.map
 
 [Settings]
 VPT Device=$014.7.8.1.0 DeviceButtons
@@ -37,8 +38,8 @@ TV, SETUP, POWER, VOL+, VOL-, CH+, CH-, MUTE, CBL, VCR,
 REW, PLAY, FFWD, STOP, PAUSE, REC, AUDIO, ENTER, LAST, OK,
 1, 2, 3, TV/VCR, 4, 5, 6, 7, 8, 9,
 0, INFO, FAV, EXIT=35, LOCK, PAGE+, PAGE-, MENU, HELP,
-F1, F2, F3, GUIDE, BYPASS, DAY+, DAY-, A, ARROW_UP, ARROW_DOWN,
-ARROW_LEFT, ARROW_RIGHT, B, C
+F1, F2, F3, GUIDE, BYPASS, DAY+, DAY-, A, UP, DOWN,
+LEFT, RIGHT, B, C
 Phantom1=60, Phantom2, Phantom3, Phantom4
 
 [ButtonMaps]

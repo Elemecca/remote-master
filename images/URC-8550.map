@@ -1,0 +1,63 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:URC-8550
+#$DATE:Wed Aug 27 16:43:52 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:URC-8550.jpg
+#$FORMAT:ncsa
+#$EOH
+default 8550
+rect TV 32,85 52,99
+rect VCR 58,85 78,99
+rect SAT 81,85 101,99
+rect AUX1 106,85 126,99
+rect TUN 60,104 77,120
+rect CD 82,104 99,120
+circle HOME_THEATER  80,131 110,138
+circle enter  40,219 51,227
+circle Lite  40,199 51,207
+circle Shift  39,238 50,246
+circle Magic[Setup]  39,159 50,167
+circle ESC  39,179 50,187
+circle POWER{Sleep}  125,146 137,155
+circle up  102,161 117,168
+circle down  102,196 117,202
+circle left  81,178 87,193
+circle right  123,178 129,193
+circle menu  102,179 111,187
+circle MUTE  71,248 84,256
+circle VOL+  119,220 130,228
+circle VOL-  102,230 113,238
+circle CH+  127,243 138,251
+circle CH-  109,253 120,261
+circle 1  45,270 55,280
+circle 2  67,270 77,281
+circle 3  89,269 99,279
+circle 4  45,291 55,301
+circle 5  67,291 77,302
+circle 6  89,291 99,301
+circle 7  45,312 55,322
+circle 8  67,312 77,322
+circle 9  89,312 99,322
+circle 0  67,333 77,343
+circle Scan  118,287 129,295
+circle PIP{Freeze}  118,308 129,316
+circle NORM{Swap}  115,352 126,360
+circle PP{Move}  116,330 127,338
+circle 10  45,336 56,342
+poly REW 56,370 55,384 41,377 56,370 56,370
+poly FF 83,370 84,384 98,377 83,370 83,370
+poly pl 62,369 63,384 77,376 62,369 62,369
+circle TV/VCR  49,399 60,405
+rect PAU 108,370 123,384
+rect STOP 62,391 78,405
+circle rec  91,398 99,406
+circle Audio  50,356 61,362
+circle Video  85,355 96,361
+circle slow  115,398 126,404
+poly AMP 33,103 55,103 55,120 37,117 33,103 33,103
+poly aux2 104,103 127,103 122,117 104,120 104,103 104,103
+circle 20  89,335 100,341

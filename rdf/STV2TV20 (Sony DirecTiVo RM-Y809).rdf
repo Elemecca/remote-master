@@ -9,6 +9,7 @@ LearnedAddr=$110..$3FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+ImageMap=Generic.map
 
 [Settings]
 TV_Power Device=$011.1.2.1.0 (NONE;TV;RCVR;TV and RCVR)
@@ -69,10 +70,10 @@ ThumbsDown=$14,
 0=$1F,
 Advance=$18,
 Replay=$20,
-Up_Arrow=$21,
-Down_Arrow=$22,
-Left_Arrow=$23,
-Right_Arrow=$24,
+Up=$21,
+Down=$22,
+Left=$23,
+Right=$24,
 Select=$25,
 TV/Video=$26,
 LiveTV=$27,

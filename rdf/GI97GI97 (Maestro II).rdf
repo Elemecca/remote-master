@@ -6,6 +6,7 @@ UpgradeAddr=$104..$303
 Processor=740
 RAMAddr=$132
 RDFSync=3
+ImageMap=Generic.map
 
 [Settings]
 VPT Device=$031.6.7.2.0 DeviceButtons
@@ -76,9 +77,9 @@ dev5    = $029 $023 $02F
 8=30
 9=32
 rewind_last-ch=36
-play_a/b=33
-ffwd_fav=35
-pause_prog=40
+play=33
+ffwd=35
+pause=40
 stop_code=38
 power=3
 ch+_cursor+=5

@@ -1,0 +1,137 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:Generic
+#$DATE:Thu Aug 28 15:07:35 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:Generic.JPG
+#$FORMAT:ncsa
+#$EOH
+default Generic
+circle TV  42,48 52,54
+circle CBL  67,48 77,54
+circle CBL/SAT  67,48 77,54
+circle CAB/SAT  67,48 77,54
+circle VCR  92,48 102,55
+circle SAT  116,48 126,54
+circle TUNER  42,72 53,78
+circle audio  42,72 53,78
+circle aud  42,72 53,78
+circle RCVR  42,72 53,78
+circle RCVR/AMP  42,72 53,78
+circle AMP  42,72 53,78
+circle DVD  67,72 77,78
+circle Replay  67,72 77,78
+circle CD  92,72 102,78
+circle AUX  116,72 126,78
+circle AUX1  116,72 126,78
+circle home_theater  78,97 102,105
+circle my_system  78,97 102,105
+circle ht  78,97 102,105
+circle guide  39,129 52,137
+circle prog{guide}  39,129 52,137
+circle replay_guide  39,129 52,137
+circle info  48,211 62,219
+circle display  48,211 62,219
+circle menu  108,211 122,219
+circle exit  118,129 131,137
+circle vol+  45,152 54,165
+circle ch+  112,152 121,165
+circle vol-  46,186 55,198
+circle ch-  110,186 120,198
+circle mute  79,148 88,157
+circle scan  79,174 88,183
+circle scan{fav}  79,174 88,183
+circle fav  79,174 88,183
+circle fav_+100  79,174 88,183
+circle prev  80,198 89,207
+circle prev_ch  79,198 88,207
+circle last  80,198 89,207
+circle right  103,247 111,256
+circle down  78,272 86,281
+circle up  79,223 87,231
+circle left  54,248 62,256
+circle select  79,247 90,258
+circle surround  79,247 90,258
+circle sur[surround]  79,247 90,258
+circle ok_surround  79,247 90,258
+circle 0  79,383 87,391
+circle 1  54,319 62,327
+circle 9  105,362 113,370
+circle 7  54,362 62,370
+circle 3  104,319 112,327
+circle 2  79,319 87,327
+circle 5  79,341 87,349
+circle 8  79,362 87,370
+circle 4  54,341 62,349
+circle 6  104,341 112,349
+circle enter  48,387 61,395
+circle enter_disc  49,388 62,396
+circle tv/vcr  111,387 124,395
+circle vcr/dvd  111,387 124,395
+circle vcr/ld  111,387 124,395
+circle a/b_tv/vcr  111,387 124,395
+circle tv/vid  111,387 124,395
+circle tv/video  111,387 124,395
+circle tv/video{A/b}  111,387 124,395
+circle tv/sat  111,387 124,395
+circle power  77,115 105,123
+circle on/off  77,115 105,123
+poly pl 75,440 75,427 88,433 75,440 75,440
+poly play 75,440 75,427 88,433 75,440 75,440
+poly play_move 75,440 75,427 88,433 75,440 75,440
+poly rew 44,434 57,427 57,441 44,434 44,434
+poly rewind 44,434 57,427 57,441 44,434 44,434
+poly rew_swap 44,434 57,427 57,441 44,434 44,434
+poly fwd 99,440 99,427 112,433 99,440 99,440
+poly ffwd 99,440 99,427 112,433 99,440 99,440
+poly ffwd_pip 99,440 99,427 112,433 99,440 99,440
+poly fast_fwd 99,440 99,427 112,433 99,440 99,440
+poly next-track 100,475 100,462 113,468 100,475 100,475
+poly quick_skip 100,475 100,462 113,468 100,475 100,475
+poly f.fwd 100,475 100,462 113,468 100,475 100,475
+poly skipfwd_move 100,475 100,462 113,468 100,475 100,475
+poly prev-track 43,467 56,460 56,474 43,467 43,467
+poly f.rew 43,467 56,460 56,474 43,467 43,467
+poly skipback_freeze 43,467 56,460 56,474 43,467 43,467
+circle rec  57,450 64,457
+circle record  57,450 64,457
+rect stop 72,443 86,457
+rect pau 94,443 108,457
+rect pause 94,443 108,457
+rect pause_wide 94,443 108,457
+circle slow  79,467 86,474
+circle sleep  109,284 122,292
+circle +100  49,284 62,292
+circle +10  49,284 62,293
+circle +10_+100  49,284 62,293
+circle pip  51,298 57,305
+circle freeze  107,299 113,305
+circle screen  107,299 113,305
+circle swap  69,299 75,305
+circle move  88,299 94,305
+circle setup  78,498 83,503
+circle set  79,498 84,503
+circle magic  78,498 83,503
+circle magic[setup]  78,498 83,503
+circle P  79,498 84,503
+circle P[setup]  79,498 84,503
+circle m1  38,228 44,234
+circle macro1  38,228 44,234
+circle m2  36,242 42,248
+circle macro2  36,242 42,248
+circle m3  37,257 43,263
+circle macro3  37,257 43,263
+circle m4  39,271 45,277
+circle macro4  39,271 45,277
+circle l1  118,226 124,232
+circle red  118,226 124,232
+circle f1  118,226 124,232
+circle l2  120,241 126,247
+circle f2  120,241 126,247
+circle green  120,241 126,247
+circle l3  118,256 124,262
+circle f3  118,256 124,262
+circle l4  115,270 121,275

@@ -1,0 +1,138 @@
+[General]
+Name=One For All URC-9960 Kameleon (2K eeprom)
+EepromSize=$800
+FavKey=$28, $021, 15, 5
+AdvCodeAddr=$024..$0FF
+UpgradeAddr=$100..$3FE
+LearnedAddr=$400..$7FD
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+ImageMap=generic.map
+
+[Settings]
+VPT Status=$01a.2.1.0.0 (Off;On)
+VPT Device=$01b.7.8.1.0 DeviceButtons
+CBL VPT=$01c.0.1.1.0 (Off;On)
+TV VPT=$01c.1.1.1.0 (Off;On)
+VCR VPT=$01c.2.1.1.0 (Off;On)
+DVD VPT=$01c.3.1.0.0 (Off;On)
+CD VPT=$01c.4.1.1.0 (Off;On)
+PVR VPT=$01c.5.1.0.0 (Off;On)
+AUDIO VPT=$01c.5.1.0.0 (Off;On)
+AUX VPT=$01c.5.1.0.0 (Off;On)
+HT transport=$01d.7.8.1.0 DeviceButtons
+HT volume=$01e.7.8.1.0 DeviceButtons
+HT channel=$01f.7.8.1.0 DeviceButtons
+HT menu=$020.7.8.1.0 DeviceButtons
+
+[Checksums]
+^$000:$002..$7FD
+
+[FixedData]
+$022 = $04
+
+[DeviceTypes]
+SAT/CBL	= 3
+TV	= 0
+VCR	= 1
+DVD	= 2
+CD	= 4
+PVR	= 1
+AUDIO	= 5
+
+[DeviceTypeAliases]
+SAT/CBL	= Cable,SAT,Video Acc
+TV	= TV
+VCR	= VCR,Tape,DAT
+DVD	= DVD,Laserdisc
+CD	= CD,Home Auto,Phono
+AUDIO	= Tuner,Misc Audio,Amp
+PVR	= PVR
+
+[DeviceButtons]
+CBL	= $00A $00B
+TV	= $00C $00D
+VCR	= $00E $00F
+DVD	= $010 $011
+CD	= $012 $013
+PVR	= $014 $015
+AUDIO	= $016 $017
+AUX	= $018 $019
+
+[Buttons]
+TV=$01, VCR=$0a, DVD=$21, CBL=$11, AUDIO=$22, CD=$09, PVR=$26, AUX=$23, HT=$12
+0=$1F, 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E
+VOL+=$04, VOL-=$05, MUTE=$08
+CH+=$06, CH-=$07
+setup=$02
+power=3
+last_rand=36
+replay_format=58
+guide=37
+info=49
+menu=20
+exit=50
+up=41
+down=42
+left=44
+right=43
+OK_surround=39
+input=51
+enter_skip=57
+rewind=11
+play_swap=12
+ffwd=13
+record=16
+stop=14
+pause=15
+liveTV=52
+skipback_freeze=55
+skipfwd_move=56
+fav=40
+PVR-VOD_preset=32
+page+_audio=53
+page-_subtitle=54
+tuner_01=85
+tuner_02=86
+tuner_03=87
+tuner_04=89
+tuner_05=90
+tuner_06=91
+tuner_07=92
+tuner_08=93
+tuner_09=94
+tuner_00=95
+front_up=105
+rear_down=106
+center_left=108
+test_right=107
+Macro1=45
+Macro2=46
+Macro3=47
+Macro4=48
+scroll=24
+unknown=$13
+Phantom1=103
+Phantom2=59
+Phantom3=60
+Phantom4=61
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $33, $14, $29, $2a, $2c, $2b, $24, $31, $27, $32, $34, $0b, $37, $0c, $38, $0d, $3a, $39, $25
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $0c, $0e, $0b, $0d, $0f, $10, $14, $29, $2a, $2c, $2b, $39, $27, $32, $25, $31, $24, $33, $37, $38, $34, $3a
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $0c, $0f, $0b, $0d, $0e, $10, $14, $29, $2a, $2c, $2b, $27, $39, $37, $38, $25, $32, $31, $24, $33, $36, $35, $3a
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $14, $29, $2a, $2c, $2b, $32, $31, $25, $24, $27, $35, $36, $33, $39, $0c, $0f, $0b, $0d, $0e, $10, $37, $34, $38, $3a
+4 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $0c, $0e, $0b, $0d, $10, $0f, $24, $32, $31, $14, $29, $2a, $2c, $2b, $33, $25, $27, $39, $38, $37
+5 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $0c, $0f, $0b, $0d, $0e, $10, $33, $25, $27, $24, $67, $29, $2a, $2c, $2b, $69, $6a, $6c, $6b, $32, $31, $14, $39, $38, $37, $36, $5f, $55, $56, $57, $59, $5a, $5b, $5c, $5d, $5e
+
+[DigitMaps]
+072 048 053 094 092 003 090 044 046 086 021 011 087 058 010 146
+083 034 147 126 023 081 016 001 127 032 075 033 030 029 003 080
+064 013 091 145 125 131 141

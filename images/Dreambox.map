@@ -3,47 +3,49 @@
 #$-:Map THIS! free image map editor by Todd C. Wilson
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
-#$DATE:Tue Aug 26 21:35:34 2003
-#$PATH:C:\km\images\
+#$TITLE:Dreambox
+#$DATE:Wed Aug 27 13:20:22 2003
+#$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Dreambox.jpg
 #$FORMAT:ncsa
 #$EOH
-circle SHIFT 60,20 75,27
-circle POWER 97,22 112,29
-circle TV 54,51 72,60
-circle DREAM 103,53 121,62
-circle 1 42,78 58,86
-circle 2 82,78 98,86
-circle 3 120,80 136,88
-circle 4 42,99 58,107
-circle 5 82,100 98,108
-circle 6 120,101 136,109
-circle 7 43,119 59,127
-circle 8 82,120 98,128
-circle 9 121,121 137,129
-circle BACK 43,141 59,149
-circle 0 82,142 98,150
-circle FORWARD 121,142 137,150
-circle MUTE 83,174 98,182
-circle LAME 83,196 98,204
-circle VOL+ 36,180 49,193
-circle VOL- 48,208 61,221
-circle BOUQUET+ 129,182 142,195
-circle BOUQUET- 118,211 131,224
-circle INFO 30,236 41,247
-circle DREAM_MENU 134,238 145,249
-circle AUDIO 34,302 45,313
-circle VIDEO 130,304 141,315
-circle UP 82,239 112,250
-circle DOWN 81,296 111,307
-poly LEFT 61,256 61,281 40,286 34,268 40,250 61,256
-poly RIGHT 104,256 104,281 125,287 130,270 125,252 104,256
+default Dreambox
+circle SHIFT  60,20 75,27
+circle POWER  97,22 112,29
+circle TV  54,51 72,60
+circle DREAM  103,53 121,62
+circle 1  42,78 58,86
+circle 2  82,78 98,86
+circle 3  120,80 136,88
+circle 4  42,99 58,107
+circle 5  82,100 98,108
+circle 6  120,101 136,109
+circle 7  43,119 59,127
+circle 8  82,120 98,128
+circle 9  121,121 137,129
+circle BACK  43,141 59,149
+circle 0  82,142 98,150
+circle FORWARD  121,142 137,150
+circle MUTE  83,174 98,182
+circle LAME  83,196 98,204
+circle VOL+  36,180 49,193
+circle VOL-  48,208 61,221
+circle BOUQUET+  129,182 142,195
+circle BOUQUET-  118,211 131,224
+circle INFO  31,237 42,248
+circle DREAM_MENU  134,238 145,249
+circle AUDIO  34,303 45,314
+circle VIDEO  130,304 141,315
+circle UP  82,239 112,250
+circle DOWN  81,296 111,307
+poly LEFT 61,256 61,281 40,286 34,268 40,250 61,256 61,256
+poly RIGHT 104,256 104,281 125,287 130,270 125,252 104,256 104,256
 rect OK 68,258 97,278
-circle RED 37,339 48,350
-circle GREEN 67,341 78,352
-circle YELLOW 96,341 107,352
-circle BLUE 125,340 136,351
-circle TV_STOP 41,374 52,385
-circle RADIO 67,376 78,387
-circle TEXT 95,376 106,387
-circle HELP 121,375 132,386
+circle RED  37,339 48,350
+circle GREEN  67,341 78,352
+circle YELLOW  96,341 107,352
+circle BLUE  125,340 136,351
+circle TV_STOP  41,374 52,385
+circle RADIO  67,376 78,387
+circle TEXT  95,376 106,387
+circle HELP  121,375 132,386

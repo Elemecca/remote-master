@@ -3,61 +3,61 @@
 #$-:Map THIS! free image map editor by Todd C. Wilson
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
-#$DATE:Tue Aug 26 21:35:34 2003
-#$PATH:C:\km\images\
+#$TITLE:URC-8080
+#$DATE:Wed Aug 27 17:20:23 2003
+#$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-8080.jpg
 #$FORMAT:ncsa
 #$EOH
-rect AMP 35,88 55,102
-rect TUNER 62,88 82,102
-rect TV 87,88 107,102
-rect CBL 114,88 134,102
-rect CBL/SAT 114,88 134,102
-rect CD 37,110 57,124
-rect VCR 63,110 83,124
-rect SAT 87,110 107,124
-rect DVD 87,110 107,124
-rect AUX1 111,110 131,124
-circle HOME_THEATER 83,139 113,146
-circle menu{program} 39,227 50,235
-circle center{rear} 38,205 49,213
-circle Select{Clear} 39,247 50,255
-circle shift 39,166 50,174
-circle Clear 38,185 49,193
-circle POWER 134,153 147,163
-circle up 109,170 125,176
-circle down 109,208 125,214
-circle left 83,189 89,206
-circle right 134,189 140,206
-circle SUR[Surround] 109,189 119,199
-circle MUTE{sleep} 75,265 86,273
-circle VOL+ 126,234 137,242
-circle VOL- 106,246 117,254
-circle CH+ 136,260 147,268
-circle CH- 116,272 127,280
-circle 1 46,290 56,300
-circle 2 69,290 79,300
-circle 3 94,290 104,300
-circle 4 46,313 56,323
-circle 5 69,313 79,323
-circle 6 94,313 104,323
-circle 7 46,335 56,345
-circle 8 69,335 79,345
-circle 9 94,335 104,345
-circle 0 69,359 79,369
-circle Prev_ch{Disp} 123,308 134,316
-circle PIP{freeze_pip} 123,331 134,339
-circle Swap 123,356 134,364
-circle Move 123,381 134,389
-circle ENTER 45,360 56,367
-poly REW{slow-} 56,399 56,413 41,406 56,399
-poly FF{slow+} 87,399 87,413 102,406 87,399
-poly play{slow} 66,399 66,413 81,406 66,399
-circle TV/SAT 93,360 104,367
-rect PAUSE{x2} 86,423 104,438
-rect STOP{eject} 63,423 81,438
-circle rec 49,430 58,438
-circle SETUP 120,428 131,436
-circle Macro1 49,384 60,391
-circle Macro2 87,384 98,391
-circle {LIGHT} 120,405 131,413
+default 8080
+rect AMP 49,95 74,112
+rect TUNER 80,95 100,112
+rect TV 107,95 127,112
+rect CBL 134,95 159,112
+rect VCR 81,118 101,136
+rect SAT 107,118 126,136
+circle HOME_THEATER  102,150 132,157
+circle menu{program}  53,246 64,254
+circle center{rear}  54,224 65,232
+circle Select{Clear}  55,267 66,275
+circle shift  53,180 64,188
+circle ESC  54,201 65,209
+circle POWER  156,166 169,176
+circle up  130,185 146,191
+circle down  129,226 145,232
+circle left  105,205 111,222
+circle right  155,205 161,222
+circle SUR[Surround]  130,205 140,215
+circle MUTE{sleep}  92,288 105,296
+circle VOL+  149,253 160,261
+circle VOL-  128,267 139,275
+circle CH+  157,282 168,290
+circle CH-  138,295 149,303
+circle 1  61,313 71,323
+circle 2  87,314 97,324
+circle 3  113,313 123,323
+circle 4  61,338 71,348
+circle 5  87,337 97,347
+circle 6  112,338 122,348
+circle 7  61,363 71,373
+circle 8  87,363 97,373
+circle 9  113,363 123,373
+circle 0  87,387 97,397
+circle Prev_ch{Disp}  147,334 158,342
+circle PIP{freeze_pip}  146,360 157,368
+circle Swap  145,385 156,393
+circle Move  145,411 156,419
+circle ENTER  60,390 71,397
+poly REW{slow-} 72,433 72,447 57,440 72,433 72,433
+poly FF{slow+} 106,433 106,447 121,440 106,433 106,433
+poly play{slow} 81,434 81,448 96,441 81,434 81,434
+circle TV/SAT  113,390 124,397
+rect PAUSE{x2} 105,458 123,473
+rect STOP{eject} 80,458 98,473
+circle rec  65,465 74,473
+circle SETUP  143,464 154,472
+circle Macro1  66,415 77,422
+circle Macro2  108,414 119,421
+circle {LIGHT}  144,437 155,445
+poly cd 50,117 73,118 73,133 54,131 50,117 50,117
+poly aux1 133,117 156,117 153,131 132,133 133,117 133,117

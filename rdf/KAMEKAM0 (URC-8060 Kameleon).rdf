@@ -7,6 +7,7 @@ LearnedAddr=$800..$FFD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+ImageMap=Generic.map
 
 [Settings]
 Sleep Status=$016.0.1.0.0 (Use Native;Simulate)
@@ -92,10 +93,10 @@ guide=$25
 exit=$26
 ok=$27
 sp/lp=40
-up_arrow=$29
-down_arrow=$2a
-right_arrow=$2b
-left_arrow=$2c
+up=$29
+down=$2a
+right=$2b
+left=$2c
 M1=$2d
 M2=$2e
 M3=$2f

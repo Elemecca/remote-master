@@ -5,6 +5,7 @@ UpgradeAddr=$010..$3FC
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+ImageMap=Generic.map
 
 [Settings]
 
@@ -48,14 +49,14 @@ CH-=$07,
 Mute=$08,
 Jump=$18,
 Enter=$14,
-Channel_Guide=$09,
+Guide=$09,
 Replay_Guide=$0A,
 Menu=$20,
 Zones=$28,
-Up_Arrow=$21,
-Down_Arrow=$22,
-Left_Arrow=$23,
-Right_Arrow=$24,
+Up=$21,
+Down=$22,
+Left=$23,
+Right=$24,
 Select=$25,
 Record=$10,
 Exit=$01,
