@@ -854,7 +854,11 @@ public class KeyMapMaster
     chooser.setFileFilter( new KMFileFilter());
     File f = deviceUpgrade.getFile();
     if ( f == null )
-      f = new File( upgradePath, deviceUpgrade.getDescription() + upgradeExtension );
+    {
+      String fname = deviceUpgrade.getDescription() + upgradeExtension;
+      fname = fname.replace( '/', '-' );
+      f = new File( upgradePath, fname );
+    }
     chooser.setSelectedFile( f );
     int returnVal = chooser.showSaveDialog( this );
     if ( returnVal == JFileChooser.APPROVE_OPTION )

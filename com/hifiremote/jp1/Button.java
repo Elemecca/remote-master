@@ -241,6 +241,21 @@ public class Button
           data[ 1 ] = efc.getValue();
           hex = new Hex( data );
         }
+        else
+        {
+          int[] data = hex.getData();
+          int[] newData = new int[ 2 ];
+
+          newData[ 0 ] = (( data[ 0 ] & 0x1F ) << 3 ) |
+                         (( data[ 0 ] & 0xE0 ) >> 5 );
+          newData[ 0 ] ^= 0xAE;
+          newData[ 0 ] += 156;
+          newData[ 0 ] &= 0xFF;
+
+          newData[ 1 ] = data[ 1 ] ^ 0xC5;
+
+          hex = new Hex( newData );
+        }
       }
 
       if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) )

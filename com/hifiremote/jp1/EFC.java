@@ -38,5 +38,5 @@ public class EFC
       return 1;
   }
 
-  private int value = 0;
+  protected int value = 0;
 }

@@ -107,15 +107,18 @@ Kaseikyo
 Mitsubishi
 NEC1
 NEC2
+NEC 2DEV Combo
 NEC Combo
 NEC1 Combo
 NEC1 2DEV Combo
 NECx1
 NECx2
 Nokia Quad
+NRC17
 Pace
 Panasonic (old)
 Panasonic
+Panasonic MIX Combo
 Panasonic VCR Combo
 Panasonic Mixed Combo
 Panasonic Combo2
@@ -138,6 +141,7 @@ RC6-M-24n
 RCA
 RCA (Old)
 RCA Combo (Official)
+RCA Combo (w/Duration)
 RECS80 (45)
 RECS80 (68)
 ReplayTV (Simple)
@@ -151,6 +155,8 @@ Sony20
 Sony Combo (old)
 Sony Combo (new)
 Sony DSP
+Sony Egg
+Teac-K
 Thomson
 TiVo (Advanced)
 TiVo (Official)
@@ -158,18 +164,8 @@ TiVo (Official 2-byte)
 X10
 Zenith
 
-This is the list of protocols that are present in RM, but are NOT supported:
-
-NEC 2DEV Combo (*)
-Panasonic MIX Combo (*)
-Sony Egg (*)
-Teac-K (*)
-
-
 Here is a list of the protocols that are not yet supported:
 
-RC-5/5x Combo
-RCA Combo (w/Duration)
 
 Command Line Parameters
 -----------------------
