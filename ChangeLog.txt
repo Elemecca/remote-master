@@ -1,3 +1,12 @@
+Changes for v0.56
+
+- Moved image file and button shapes out of RDF into an image map file.  The RDF
+  now has an ImageMap= value in the [General] section that specified the name to the 
+  image map file.
+- No horizontal scroll bar on the remote image on the Layout Panel.
+- Pop-up menu for assigning functions to buttons on Layout Panel.  Hold down Ctrl to
+  assign shifted function.
+
 Changes for v0.55
 
 - First pass at support for importing saved KM upgrades.  Function to button
