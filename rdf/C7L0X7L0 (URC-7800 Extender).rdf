@@ -43,21 +43,21 @@ CD =      $016 $017
 [Buttons]
 SETUP=2, SLEEP=$18,
 TV=1, CBL/SAT=9, VCR=$0A, RCVR=$11, AUX=$14, CD=$21, DVD/LD=$22,
-VOL+=4, VOL-, MUTE=8, CH+=6, CH-, LAST=$13,
-REW=$0B, PLAY, FFWD, STOP, PAUSE, REC,
-POWER=3, TV/VCR=$20, DISPLAY=$29,
+VOL+=4, VOL-, Mute=8, CH+=6, CH-, PrevCh=$13,
+REW=$0B, PLAY, FF, STOP, PAUSE, REC,
+Power=3, TV/VCR=$20, Display=$29,
 PIP_ON/OFF=$2B, PIP_SWAP, PIP_MOVE,
-PROG/GUIDE=$2E, MENU=$23, SURROUND=$25, ENTER=$12, EXIT=$2A,
-ARROW_UP=$31, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, SELECT=$28,
+PROG/GUIDE=$2E, Menu=$23, Surround=$25, Enter=$12, Exit=$2A,
+Up=$31, Down, Left, Right, Sel[Select]=$28,
 MACRO=$26, MACRO2, 1L=$2F, 2L, 3L=$35, 4L,
 1=$15, 2, 3, 4=$19, 5, 6, 7, 8, 9, 0,
 Phantom1=$3C, Phantom2, Phantom3, Phantom4,
 DiscreteOn=$3A, DiscreteOff,
+{LIGHT}=$24,
 M_CBL=$F8, M_TV, M_DVD, M_VCR, M_RCV, M_AUX, M_CD,
 V_CBL=$E0, V_TV, V_DVD, V_VCR, V_RCV, V_AUX, V_CD,
 T_CBL=$E8, T_TV, T_DVD, T_VCR, T_RCV, T_AUX, T_CD,
-P_CBL=$F0, P_TV, P_DVD, P_VCR, P_RCV, P_AUX, P_CD,
-{LIGHT}=$24
+P_CBL=$F0, P_TV, P_DVD, P_VCR, P_RCV, P_AUX, P_CD
 
 [ButtonMaps]
 0 = (31, 21, 22, 23, 25, 26, 27, 28, 29, 30), (4, 5, 8), (6, 7), 11, 12, 13, 15,

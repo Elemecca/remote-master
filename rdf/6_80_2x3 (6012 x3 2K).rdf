@@ -1,39 +1,38 @@
 [General]
-Name=Extender3 8K$1815 URC-6011,6012,8011,8811
-EepromSize=$2000
-FavKey=$30, $1826, 15, 5
-AdvCodeAddr=$801..$1814
-UpgradeAddr=$100..$7FF
+Name=Extender3 2K URC-6011,6012,8011,8811
+EepromSize=$800
+FavKey=$30, $1B, 15, 5
+AdvCodeAddr=$401..$798
+UpgradeAddr=$100..$3FF
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
 ImageMap=URC-8811.map
 
 [Settings]
-T Device=$1828.7.8.1.0 DeviceButtons
-V Device=$1829.7.8.1.0 DeviceButtons
-C Device=$182A.7.8.1.0 DeviceButtons
-M Device=$182B.7.8.1.0 DeviceButtons
-P Device=$182C.7.8.1.0 DeviceButtons
-O Device=$182D.7.8.1.0 DeviceButtons
-Shift Button Keycode=$1FE3.7.8.2.0
-Alt Shift Button Keycode=$1FE8.7.8.2.0
-Alt Shift=$1FED.6.1.0.1 (Xshift;Ordinary)
-Backlight timer=$1FB6.7.8.0.0
+T Device=$1D.7.8.1.0 DeviceButtons
+V Device=$1E.7.8.1.0 DeviceButtons
+C Device=$1F.7.8.1.0 DeviceButtons
+M Device=$20.7.8.1.0 DeviceButtons
+P Device=$21.7.8.1.0 DeviceButtons
+O Device=$22.7.8.1.0 DeviceButtons
+Shift Button Keycode=$7E4.7.8.2.0
+Alt Shift Button Keycode=$7E9.7.8.2.0
+Alt Shift=$7EE.6.1.0.1 (Xshift;Ordinary)
+Backlight timer=$7B7.7.8.0.0
 
 [Checksums]
-^$000:$002..$FFD
+^$000:$002..$7FD
 
 [FixedData]
-$023 = $15
-$800 = $00
-$182E = $15
+$023 = $14
+$400 = $00
 
 [DeviceTypes]
-TV      = 0
-VCR/DVD = 1
-Audio   = 2
-CBL/SAT = 3
+TV	= 0
+VCR/DVD	= 1
+Audio	= 2
+CBL/SAT	= 3
 
 [DeviceTypeAliases]
 TV      = TV
@@ -42,14 +41,14 @@ Audio   = CD,Tuner,Home Auto,Misc Audio,Phono,Amp
 CBL/SAT = Cable,SAT,Video Acc
 
 [DeviceButtons]
-TV      = $1815 $1816
-VCR     = $1817 $1818
-DVD     = $1819 $181A
-AUX     = $181B $181C
-SAT     = $181D $181E
-CD      = $181F $1820
-CBL     = $1821 $1822
-RCVR    = $1823 $1824
+TV	= $00A $00B
+VCR	= $00C $00D
+DVD	= $00E $00F
+AUX	= $010 $011
+SAT	= $012 $013
+CD	= $014 $015
+CBL	= $016 $017
+RCVR	= $018 $019
 
 [Buttons]
 TV=$01, VCR=$0A, DVD=$11, AUX=$3A, SAT=$29, CBL=$09, RCVR/AMP=$37, CD=$36, Home_Theater=$38,
@@ -131,7 +130,6 @@ xs-{light}=$F9,
 xs-fav=$F0,
 xs-setup=$C2
 
-
 [ButtonMaps]
 0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
     $03, $32, $24, $14, $33, $21, $34, $35, $31, $18, $12, $23, $13, $22, $3B, $3C, $20
@@ -143,13 +141,6 @@ xs-setup=$C2
     $03, $32, $24, $14, $33, $21, $34, $35, $31, $18, $12, $23, $13, $2B, $2A, $22
 
 [DigitMaps]
-72 53 90 86 81 94 46 92 58 123 11 16 23 01 29 21
-32 33 34 75 30 124 03 80 91 64 13 17 125
+72 53 90 86 81 94 46 92 58 123 11 16 23 01 29 21 
+32 33 34 75 30 124 03 80 91 64 13 17 125 
 
-[Protocols]
-0000, 0002:2, 000C, 000D, 0011, 0013, 0014, 001A, 001C, 001D, 
-001E, 001F, 0021, 0022, 0027, 0029, 002A, 0034, 0037, 0039, 
-003F, 0045, 0058, 005A, 005B, 005C, 005D, 005E:2, 005F, 0061, 
-0065, 006A, 0073, 007E, 0092, 009C, 009E, 00A4, 00AF, 00B6, 
-00C4, 00C5, 00C9, 00CA, 00CD, 00D0, 00DB, 00DE, 00E2, 00E8, 
-010F, 0111, 0114, 0184

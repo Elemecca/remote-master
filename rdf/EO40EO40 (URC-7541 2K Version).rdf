@@ -10,6 +10,7 @@ UpgradeAddr=$100..$7FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+ImageMap=URC-7541.map
 
 [Settings]
 VPT Device=$014.7.8.1.0 DeviceButtons
@@ -55,7 +56,7 @@ Aux    = $010 $011
 xDev   = $012 $013
 
 [Buttons]
-MAGIC=$02, MENU=$20, POWER=$03, SLEEP=$C3,
+MAGIC[Setup]=$02, Menu=$20, Power=$03, SLEEP=$C3,
 EXIT=$12,
 TV=$01, VCR=$0A, SAT=$09, AUX=$11,
 1=$15, 2=$16, 3=$17,
@@ -65,7 +66,7 @@ TV=$01, VCR=$0A, SAT=$09, AUX=$11,
 CH+=$06, CH-=$07,
 VOL+=$04, VOL-=$05, MUTE=$08,
 Shift_VOL+=$C4, Shift_VOL-=$C5, Shift_CH+=$C6, Shift_CH-=$C7,
-ARROW_UP=$29, ARROW_DOWN=$2A, ARROW_LEFT=$2B, ARROW_RIGHT=$2C, OK=$22,
+UP=$29, DOWN=$2A, LEFT=$2B, RIGHT=$2C, OK=$22,
 REW=$0B, PLAY=$0C, PAUSE=$0F, FFWD=$0D,
 SP/LP=$14, STOP=$0E, REC=$10, AUTO=$13,
 A=$23, B=$24, C=$25, D=$26, E=$27, F=$28, G=$2D, H=$2E,

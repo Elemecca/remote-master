@@ -10,6 +10,8 @@ public class Button
     this.name = name;
     keyCode = code;
     multiMacroAddress = 0;
+    if (( code & 0x80 ) != 0 )
+      isShifted = true;
   }
 
   public String toString(){ return name; }
@@ -18,6 +20,23 @@ public class Button
   public byte getKeyCode(){ return keyCode; }
   public int getMultiMacroAddress(){ return multiMacroAddress; }
   public void setMultiMacroAddress( int addr ){ multiMacroAddress = addr; }
+
+  public Button getShiftedButton()
+  {
+    return shiftedButton;
+  }
+
+  public void setShiftedButton( Button shiftedButton )
+  {
+    this.shiftedButton = shiftedButton;
+  }
+
+  public boolean allowsShift()
+  {
+    if ( isShifted )
+      return false;
+    return ( shiftedButton == null );
+  }
 
   public Button setFunction( Function newFunc )
   {
@@ -112,4 +131,6 @@ public class Button
   private Function shiftedFunction;
   private boolean[] inMap = null;
   private Shape shape = null;
+  private Button shiftedButton = null;
+  private boolean isShifted = false;
 }
