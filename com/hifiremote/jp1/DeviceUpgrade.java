@@ -83,68 +83,59 @@ public class DeviceUpgrade
   public void setRemote( Remote newRemote )
   {
     Protocol p = protocol;
-    Vector protocols =
-      ProtocolManager.getProtocolManager().getProtocolsForRemote( newRemote );
-    if ( !protocols.contains( p ) && !p.hasCode( newRemote ))
+    ProtocolManager pm = ProtocolManager.getProtocolManager();
+    Vector protocols = pm.getProtocolsForRemote( newRemote, false );
+    if ( !protocols.contains( p ))
     {
       System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName() +
-                          "is not compatible with remote " + newRemote.getName());
+                          " is not built into remote " + newRemote.getName());
+      Protocol newp = pm.findProtocolForRemote( newRemote, p.getName() );
 
-      // Find a matching protocol for this remote
-      Protocol match = null;
-      String name = p.getName();
-      for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+      if ( newp != null )
       {
-        Protocol p2 = ( Protocol )e.nextElement();
-        if ( p2.getName().equals( name ))
+        System.err.println( "protocol " + newp.getDiagnosticName() + " will be used." );
+        if ( newp != p )
         {
-          match = p2;
-          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName());
-          break;
-        }
-      }
-
-      if ( match != null )
-      {
-        System.err.println( "\tChecking for matching dev. parms" );
-        DeviceParameter[] parms = p.getDeviceParameters();
-        DeviceParameter[] parms2 = match.getDeviceParameters();
-
-        int[] map = new int[ parms.length ];
-        boolean parmsMatch = true;
-        for ( int i = 0; i < parms.length; i++ )
-        {
-          name = parms[ i ].getName();
-          System.err.print( "\tchecking " + name );
-          boolean nameMatch = false;
-          for ( int j = 0; j < parms2.length; j++ )
+          System.err.println( "\tChecking for matching dev. parms" );
+          DeviceParameter[] parms = p.getDeviceParameters();
+          DeviceParameter[] parms2 = newp.getDeviceParameters();
+  
+          int[] map = new int[ parms.length ];
+          boolean parmsMatch = true;
+          for ( int i = 0; i < parms.length; i++ )
           {
-            if ( name.equals( parms2[ j ].getName()))
+            String name = parms[ i ].getName();
+            System.err.print( "\tchecking " + name );
+            boolean nameMatch = false;
+            for ( int j = 0; j < parms2.length; j++ )
             {
-              map[ i ] = j;
-              nameMatch = true;
-              System.err.print( " has a match!" );
-              break;
+              if ( name.equals( parms2[ j ].getName()))
+              {
+                map[ i ] = j;
+                nameMatch = true;
+                System.err.print( " has a match!" );
+                break;
+              }
             }
+            System.err.println();
+            parmsMatch = nameMatch;
+            if ( !parmsMatch )
+              break;
           }
-          System.err.println();
-          parmsMatch = nameMatch;
-          if ( !parmsMatch )
-            break;
-        }
-        if ( parmsMatch )
-        {
-          // copy parameters from p to p2!
-          System.err.println( "\tCopying dev. parms" );
-          for ( int i = 0; i < map.length; i++ )
+          if ( parmsMatch )
           {
-            System.err.println( "\tfrom index " + i + " to index " + map[ i ]);
-            parms2[ map[ i ]].setValue( parms[ i ].getValue());
+            // copy parameters from p to p2!
+            System.err.println( "\tCopying dev. parms" );
+            for ( int i = 0; i < map.length; i++ )
+            {
+              System.err.println( "\tfrom index " + i + " to index " + map[ i ]);
+              parms2[ map[ i ]].setValue( parms[ i ].getValue());
+            }
+            System.err.println();
+            System.err.println( "Setting new protocol" );
+            p.convertFunctions( functions, newp );
+            protocol = newp;
           }
-          System.err.println();
-          System.err.println( "Setting new protocol" );
-          p.convertFunctions( functions, match );
-          protocol = match;
         }
       }
       else
