@@ -46,13 +46,9 @@ public class DeviceUpgrade
     for ( Enumeration e = names.elements(); e.hasMoreElements(); )
     {
       String protocolName = ( String )e.nextElement();
-      Vector protocols = protocolManager.findByName( protocolName );
       Protocol p = protocolManager.findProtocolForRemote( remote, protocolName );
-      if ( p.getVariantName().equals( remote.getSupportedVariantName( p.getID())))
-      {
-        protocol = p;
+      if ( p != null )
         break;
-      }
     }
 
     notes = null;

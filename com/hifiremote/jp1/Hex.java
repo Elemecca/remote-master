@@ -34,7 +34,7 @@ public class Hex
   {
     this.data = data;
   }
-  
+
   public void set( String text )
   {
     data = parseHex( text );
@@ -42,11 +42,28 @@ public class Hex
 
   public static byte[] parseHex( String text )
   {
-    StringTokenizer st = new StringTokenizer( text, " " );
-    int length = st.countTokens();
-    byte[] rc = new byte[ length ];
-    for ( int i = 0; i < length; i++ )
-      rc[ i ] = ( byte )Integer.parseInt( st.nextToken(), 16 );
+    byte[] rc = null;
+    int length = 0;
+    int space = text.indexOf( ' ' );
+    if ( space == -1 )
+    {
+      length = text.length() / 2;
+      rc = new byte[ length ];
+      for ( int i = 0; i < length; i++ )
+      {
+        int offset = i * 2;
+        String temp = text.substring( offset, offset + 2 );
+        rc[ i ] = ( byte )Integer.parseInt( temp, 16 );
+      }
+    }
+    else
+    {
+      StringTokenizer st = new StringTokenizer( text, " " );
+      length = st.countTokens();
+      rc = new byte[ length ];
+      for ( int i = 0; i < length; i++ )
+        rc[ i ] = ( byte )Integer.parseInt( st.nextToken(), 16 );
+    }
 
     return rc;
   }
@@ -138,7 +155,7 @@ public class Hex
       compareLen = otherData.length;
       rc = 1;
     }
-    
+
     for ( int i = 0; i < compareLen; i++ )
     {
       int v1 = Translate.byte2int( data[ i ]);
