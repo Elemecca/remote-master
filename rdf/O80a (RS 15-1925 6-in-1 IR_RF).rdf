@@ -1,0 +1,45 @@
+[General]
+Name=RadioShack 15-1925 6-in-1 IR/RF
+EepromSize=$400
+AdvCodeAddr=$022..$0FF
+UpgradeAddr=$100..$3FC
+Processor=6805
+RDFSync=3
+
+[Checksums]
+^$000:$002..$3FC
+
+[FixedData]
+$00D = $00
+$015 = $30
+
+[DeviceTypes]
+Cable
+TV
+VCR/DVD
+CD
+Audio
+
+[DeviceTypeAliases]
+Cable   = Cable,SAT,Video Acc
+TV      = TV
+VCR/DVD = VCR,DVD,Tape,Laserdisc,DAT
+CD      = CD,Home Auto,Phono
+Audio   = Tuner,Misc Audio,Amp
+
+[DeviceButtons]
+CBL/SAT = $00E $006 $016
+TV      = $00F $007 $017
+VCR     = $010 $008 $018
+CD      = $011 $009 $019
+AUX1    = $012 $00A $01A
+AUX2    = $013 $00B $01B
+P&P     = $014 $00C $01C
+
+[Buttons]
+TV, SETUP, POWER, VOL+, VOL-, CH+, CH-, MUTE, CBL/SAT, VCR,
+REW, PLAY, FFWD, STOP, PAUSE, REC, CD, SCAN[FAV]=20
+1, 2, 3, TV/VIDEO, 4, 5, 6, 7, 8, 9,
+0, {LIGHT}, AUX1, AUX2, P&P=36, PROGRAM=39, DISPLAY
+SCAN=45,
+Phantom1=60, Phantom2, Phantom3, Phantom4

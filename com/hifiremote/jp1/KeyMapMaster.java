@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.32";
+  private static final String version = "v 0.33";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -26,7 +26,7 @@ public class KeyMapMaster
   private Remote[] remotes = null;
   private Vector protocols = new Vector();
   private Remote currentRemote = null;
-  private DeviceType currentDeviceType = null;
+  private String currentDeviceTypeName = null;
   private SetupPanel setupPanel = null;
   private FunctionPanel functionPanel = null;
   private ExternalFunctionPanel externalFunctionPanel = null;
@@ -148,7 +148,9 @@ public class KeyMapMaster
 
     label = new JLabel( "Device Type:" );
     panel.add( label, "5, 3" );
-    deviceTypeList = new JComboBox();
+    String[] aliasNames = deviceUpgrade.getDeviceTypeAliasNames();
+    deviceTypeList = new JComboBox( aliasNames );
+    deviceTypeList.setMaximumRowCount( aliasNames.length );
     label.setLabelFor( deviceTypeList );
     deviceTypeList.setPrototypeDisplayValue( "A Device Type" );
     deviceTypeList.setToolTipText( "Choose the device type for the upgrade being created." );
@@ -379,27 +381,16 @@ public class KeyMapMaster
     {
       currentRemote = remote;
       deviceUpgrade.setRemote( remote );
-      setDeviceTypes( remote.getDeviceTypes());
     }
   }
 
-  public void setDeviceTypes( DeviceType[] deviceTypes )
+  public void setDeviceTypeName( String aliasName )
   {
-    if ( deviceTypeList != null )
+    if (( deviceTypeList != null ) && ( aliasName != currentDeviceTypeName ))
     {
-      deviceTypeList.setModel( new DefaultComboBoxModel( deviceTypes ));
-      deviceTypeList.setMaximumRowCount( deviceTypes.length );
-      setDeviceType( deviceTypes[ 0 ]);
-    }
-  }
-
-  public void setDeviceType( DeviceType type )
-  {
-    if (( deviceTypeList != null ) && ( type != currentDeviceType ))
-    {
-      currentDeviceType = type;
-      deviceUpgrade.setDeviceType( type );
-      deviceTypeList.setSelectedItem( type );
+      currentDeviceTypeName = aliasName;
+      deviceUpgrade.setDeviceTypeAliasName( aliasName );
+      deviceTypeList.setSelectedItem( aliasName );
     }
   }
 
@@ -416,13 +407,12 @@ public class KeyMapMaster
         setRemote( remote );
         // add code to try to match the current device type to a
         // type in the new type list.
-        setDeviceTypes( remote.getDeviceTypes());
         currPanel.update();
       }
       else if ( source == deviceTypeList )
       {
-        DeviceType type = ( DeviceType )deviceTypeList.getSelectedItem();
-        setDeviceType( type );
+        String typeName = ( String )deviceTypeList.getSelectedItem();
+        setDeviceTypeName( typeName );
         currPanel.update();
       }
       else if ( source == newItem )
@@ -431,6 +421,7 @@ public class KeyMapMaster
         setTitle( "KeyMapMaster " + version );
         description.setText( null );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());
+        deviceTypeList.setSelectedItem( deviceUpgrade.getDeviceTypeAliasName());
         saveItem.setEnabled( false );
         currPanel.update();
       }
@@ -502,10 +493,10 @@ public class KeyMapMaster
             saveItem.setEnabled( true );
             remoteList.removeActionListener( this );
             deviceTypeList.removeActionListener( this );
-            DeviceType savedType = deviceUpgrade.getDeviceType();
+            String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
             setRemote( deviceUpgrade.getRemote());
             remoteList.setSelectedItem( deviceUpgrade.getRemote());
-            setDeviceType( savedType );
+            setDeviceTypeName( savedTypeName );
             remoteList.addActionListener( this );
             deviceTypeList.addActionListener( this );
             currPanel.update();

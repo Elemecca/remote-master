@@ -1,0 +1,54 @@
+[General]
+Name=DRC400 Cable Remote
+EepromSize=$200
+AdvCodeAddr=$016..$0FF
+UpgradeAddr=$100..$1FC
+Processor=S3C80
+RAMAddr=$8000
+RDFSync=3
+
+[Settings]
+VPT Device=$014.7.8.1.0 DeviceButtons
+VPT Status=$015.3.1.0.0 (Off;On)
+
+[Checksums]
+^$000:$002..$1FC
+
+[DeviceTypes]
+Cable = 0
+TV    = 1
+VCR   = 2
+Audio = 3
+
+[DeviceTypeAliases]
+Cable = Cable,SAT,Video Acc
+TV    = TV
+VCR   = VCR,DVD,Tape,Laserdisc
+Audio = CD,Tuner,DAT,Home Auto,Misc Audio,Phono,Amp
+
+[DeviceButtons]
+Cable = $00A $00B
+TV    = $00C $00D
+VCR   = $00E $00F
+Audio = $010 $011
+
+[Buttons]
+TV, SETUP, POWER, VOL+, VOL-, CH+, CH-, MUTE, CBL, VCR,
+REW, PLAY, FFWD, STOP, PAUSE, REC, AUDIO, ENTER, LAST, OK,
+1, 2, 3, TV/VCR, 4, 5, 6, 7, 8, 9,
+0, INFO, FAV, EXIT=35, LOCK, PAGE+, PAGE-, MENU, HELP,
+F1, F2, F3, GUIDE, BYPASS, DAY+, DAY-, A, ARROW_UP, ARROW_DOWN,
+ARROW_LEFT, ARROW_RIGHT, B, C
+Phantom1=60, Phantom2, Phantom3, Phantom4
+
+[ButtonMaps]
+0 = (31, 21, 22, 23, 25, 26, 27, 28, 29, 30), (4, 5, 8), (6, 7), 3, 18, 19, 12,
+    15, 11, 13, 14, 16, 33, 44, 39, 49, 50, 51, 52, 20, 32, 35, 37, 38, 46, 47,
+    36, 40, 45, 53, 54, 48
+1 = (31, 21, 22, 23, 25, 26, 27, 28, 29, 30), (4, 5, 8), (6, 7), 3, 18, 19, 24
+2 = (31, 21, 22, 23, 25, 26, 27, 28, 29, 30), (4, 5, 8), (6, 7), 3, 18, 19, 24,
+    12, 15, 11, 13, 14, 16
+3 = (31, 21, 22, 23, 25, 26, 27, 28, 29, 30), (4, 5, 8), (6, 7), 3, 18, 19, 12,
+    15, 11, 13, 14, 16
+
+[DigitMaps]

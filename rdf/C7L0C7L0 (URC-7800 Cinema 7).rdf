@@ -23,12 +23,20 @@ VCR   = 3
 Audio = 4
 CD    = 5
 
+[DeviceTypeAliases]
+Cable = Cable,SAT,Video Acc
+TV    = TV
+DVD   = DVD,Laserdisc
+VCR   = VCR,Tape,DAT,Home Auto,Phono
+Audio = Tuner,Misc Audio,Amp
+CD    = CD
+
 [DeviceButtons]
 CBL/SAT = $00A $00B
 TV =      $00C $00D
-DVD/LD =  $00E $00F
+DVD =     $00E $00F
 VCR =     $010 $011
-RCVR =    $012 $013
+RCV =     $012 $013
 AUX =     $014 $015
 CD =      $016 $017
 
@@ -36,13 +44,12 @@ CD =      $016 $017
 SETUP=2, SLEEP=$18,
 TV=1, CBL/SAT=9, VCR=$0A, RCVR=$11, AUX=$14, CD=$21, DVD/LD=$22,
 VOL+=4, VOL-, MUTE=8, CH+=6, CH-, LAST=$13,
-rewind:REW=$0B, PLAY, fast fwd:FFWD, STOP, PAUSE, record:REC,
+REW=$0B, PLAY, FFWD, STOP, PAUSE, REC,
 POWER=3, TV/VCR=$20, DISPLAY=$29,
 PIP_ON/OFF=$2B, PIP_SWAP, PIP_MOVE,
-program guide:PROG/GUIDE=$2E, MENU=$23, SURROUND=$25, ENTER=$12, EXIT=$2A,
-up arrow:ARROW_UP=$31, down arrow:ARROW_DOWN, left arrow:ARROW_LEFT,
-right arrow:ARROW_RIGHT,
-SELECT=$28, MACRO1=$26, MACRO2, 1L=$2F, 2L, 3L=$35, 4L,
+PROG/GUIDE=$2E, MENU=$23, SURROUND=$25, ENTER=$12, EXIT=$2A,
+ARROW_UP=$31, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, SELECT=$28,
+MACRO1=$26, MACRO2, 1L=$2F, 2L, 3L=$35, 4L,
 1=$15, 2, 3, 4=$19, 5, 6, 7, 8, 9, 0,
 Phantom1=$3C, Phantom2, Phantom3, Phantom4,
 DiscreteOn=$3A, DiscreteOff,

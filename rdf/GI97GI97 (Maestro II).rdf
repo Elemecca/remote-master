@@ -1,0 +1,116 @@
+[General]
+Name=Maestro II (Traditional)
+EepromSize=$400
+AdvCodeAddr=$040..$0FF
+UpgradeAddr=$104..$303
+Processor=740
+RAMAddr=$132
+RDFSync=3
+
+[Settings]
+VPT Device=$031.6.7.2.0 DeviceButtons
+VPT Status=$031.7.1.0.1 (Off;On)
+
+[Checksums]
++$000:$002..$033
++$034:$036..$0FF
++$100:$102..$303
++$304:$306..$3FD
+
+[FixedData]
+$00a = $33  $00  $ff  $00  $03  $03  $fd  $03  $fd  03
+       $fd  $03  $fd  $03  $fd  $03  $fd  $03  $fd  03
+
+[DeviceTypes]
+MUSIC_CH = 0
+CBL      = 0
+TV       = 1
+VCR      = 2
+TUNER    = 3
+LDP      = 4
+SAT      = 0, $0106
+VID_ACC  = 0, $0107
+AMP      = 3, $0408
+MSC_AUD  = 3, $0409
+PHONO    = 3, $040A
+CD       = 3, $040B
+HOM_CTL  = 3, $040C
+DVD      = 4, $050D
+TAPE     = 2, $030E
+DAT      = 3, $040F
+
+[DeviceTypeAliases]
+CBL     = Cable
+TV      = TV
+VCR     = VCR
+TUNER   = Tuner
+LDP     = Laserdisc
+SAT     = SAT
+VID_ACC = Video Acc
+AMP     = Amp
+MSC_AUD = Misc Audio
+PHONO   = Phono
+CD      = CD
+HOM_CTL = Home Auto
+DVD     = DVD
+TAPE    = Tape
+DAT     = DAT
+
+[DeviceButtons]
+dev0    = $024 $01E $02A
+dev1    = $025 $01F $02B
+dev2    = $026 $020 $02C
+dev3    = $027 $021 $02D
+dev4    = $028 $022 $02E
+dev5    = $029 $023 $02F
+
+[Buttons]
+0=17
+1=19
+2=21
+3=23
+4=24
+5=25
+6=26
+7=28
+8=30
+9=32
+rewind_last-ch=36
+play_a/b=33
+ffwd_fav=35
+pause_prog=40
+stop_code=38
+power=3
+ch+_cursor+=5
+ch-_cursor-=6
+vol+_page+=12
+vol-_page-=14
+prev=46
+record=41
+mute=16
+menu=51
+display=52
+select=54
+enter=56
+F-diagnostics=42
+parental-lock=$aa
+del=49
+timer=$b1
+
+[ButtonMaps]
+0 = (17, 19, 21, 23, 24, 25, 26, 28, 30, 32), (12, 14, 16), (5, 6),
+    3, 56, 46, 40, 36, 33, 35, 38, 42, $aa, 49, $b1, 41, 51, 52, 54
+1 = (17, 19, 21, 23, 24, 25, 26, 28, 30, 32), (12, 14, 16), (5, 6),
+    3, 56, 46, 51, 52, 54
+2 = (17, 19, 21, 23, 24, 25, 26, 28, 30, 32), (12, 14, 16), (5, 6),
+    3, 56, 46, 51, 36, 35, 33, 38, 41, 40, 52, 54
+3 = (17, 19, 21, 23, 24, 25, 26, 28, 30, 32), (12, 14, 16), (5, 6),
+    3, 46, 54, 36, 35, 33, 38, 40, 41
+4 = (17, 19, 21, 23, 24, 25, 26, 28, 30, 32), (12, 14, 16), (5, 6),
+    3, 46, 51, 52, 36, 35, 33, 38, 40, 41, 54
+
+[DigitMaps]
+106 92 93 26 72 48 53 107 54 96 38 97 94 47 86 108
+109 98 110 111 112 83 113 81 90 46 114 21 59 11 115 64
+57 69 75 49 58 32 91 29 27 50 116 33 117 118 63 24
+42 100 120 82 84 101 34 61 85 30 13 18 39 17 31 103

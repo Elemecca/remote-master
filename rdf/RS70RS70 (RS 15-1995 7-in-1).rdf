@@ -1,0 +1,97 @@
+[General]
+Name=RadioShack 15-1995 7-in-1
+EepromSize=$800
+AdvCodeAddr=$03D..$0DF
+FavKey=11, $0E1, 10, 3, 1
+UpgradeAddr=$104..$4FF
+DevUpgradeAddr=$502..$6FF
+TimedMacroAddr=$702..$7FD
+TimedMacroWarning=1
+Processor=740
+RAMAddr=$132
+RDFSync=3
+
+[Settings]
+VPT Device=$037.6.7.2.0 DeviceButtons
+VPT Status=$037.7.1.0.1 (Off;On)
+
+[Checksums]
++$000:$002..$03A
++$03B:$03D..$0FF
++$100:$102..$4FF
++$500:$502..$6FF
++$700:$702..$7FD
+
+[FixedData]
+$00A = $3A $00 $FF $00 $FF $04 $FF $06 $FD $07
+       $FD $07 $FD $07 $FD $07 $FD $07 $FD $07
+
+[DeviceTypes]
+CABLE      = 0
+SAT        = 0
+TV         = 0
+VCR        = 1
+CD         = 2
+AMP        = 3
+TUNER      = 3, $0605
+HOME_AUTO  = 2, $0707
+VID_ACC    = 0, $0008
+LDP/DVD    = 1, $0309
+TAPE       = 1, $030A
+DAT        = 1, $030B
+DVD        = 1, $030C
+PHONO      = 2, $040D
+MISC_AUDIO = 3, $050E
+
+[DeviceTypeAliases]
+CABLE      = Cable
+SAT        = SAT
+TV         = TV
+VCR        = VCR
+CD         = CD
+AMP        = Tuner,Amp
+HOME_AUTO  = Home Auto
+VID_ACC    = Video Acc
+LDP/DVD    = DVD,Laserdisc
+TAPE       = Tape
+DAT        = DAT
+PHONO      = Phono
+MISC_AUDIO = Misc Audio
+
+[DeviceButtons]
+CBL   = $026 $01E $02E
+SAT   = $027 $01F $02F
+TV    = $028 $020 $030
+VCR   = $029 $021 $031
+CD    = $02A $022 $032
+AMP   = $02B $023 $033
+TUNER = $02C $024 $034
+P&P   = $02D $025 $035
+
+[Buttons]
+CBL=8, TV=16, VCR=32, CD=55, SAT=40, AMP=48, TUNER=56, P&P=24, HOME_THEATER=53,
+0=19, 1=28, 2=20, 3=12, 4=29, 5=21, 6=13, 7=30, 8=22, 9=14,
+CH+=4, CH-=5, VOL+=6, VOL-=3, MUTE=2, POWER=7, ENTER=33, TV/SAT=34,
+LAST=35, PLAY=18, PAUSE=9, REWIND=26, FFWD=10, STOP=17, RECORD=25,
+MENU=36, UP=46, DOWN=45, LEFT=44, RIGHT=43, SELECT=37, SURROUND=42, CENTER=41, SCAN[FAV]=11,
+PIP=50, SWAP=38, MOVE=51, ESCAPE=54, SETUP=31, SHIFT=15, AUDIO=47, VIDEO=39,
+{Light}=49, DISPLAY=$A3, REAR=$A9, PROGRAM=$A4, SLEEP=$82, FREEZE=$B2,
+CLEAR=$A5,
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
+
+[ButtonMaps]
+0 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
+    $07, $21, $23, $a3, $22, $24, $a4, $25, $a5, $2e, $2d, $2c, $2b, $29, $a9, $32, $33, $82, $b2, $26, $2a, $ae, $ad
+1 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
+    $07, $21, $12, $11, $1a, $0a, $19, $09, $a3, $22, $24, $25, $a5, $29, $a9, $92, $91, $9a, $8a, $89, $2a, $2e, $2d, $2c, $2b, $23, $a4, $32, $b2, $33, $26
+2 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
+    $07, $21, $23, $a3, $22, $24, $25, $a5, $12, $11, $1a, $0a, $19, $09, $91, $2e, $2d, $2c, $2b, $2a
+3 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
+    $07, $a3, $22, $25, $a9, $2e, $2d, $29, $ae, $ad, $2c, $2b, $ac, $ab, $2a, $82, $23, $24, $12, $11, $1a, $0a, $19, $09, $91
+
+
+[DigitMaps]
+72 48 53 54 96 38 97 94 86 98 47 83 113 03 81 90
+05 99 93 21 59 32 11 64 75 92 49 58 46 29 27 50
+63 33 88 01 76 42 24 100 82 101 34 61 85 30 13 18
+17 31 91 103

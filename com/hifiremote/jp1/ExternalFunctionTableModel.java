@@ -12,7 +12,6 @@ public class ExternalFunctionTableModel
   extends KMTableModel
 {
   private DeviceUpgrade upgrade = null;
-  private DefaultCellEditor devTypeEditor = null;
   private final static int rowCol = 0;
   private final static int nameCol = rowCol + 1;
   private final static int devTypeCol = nameCol + 1;
@@ -29,8 +28,6 @@ public class ExternalFunctionTableModel
 
   public void update()
   {
-    JComboBox cb = ( JComboBox )devTypeEditor.getComponent();
-    cb.setModel( new DefaultComboBoxModel( upgrade.getRemote().getDeviceTypes()));
     fireTableDataChanged();
   }
 
@@ -56,7 +53,7 @@ public class ExternalFunctionTableModel
         rc = function.getName();
         break;
       case devTypeCol:
-        rc = function.getDeviceType();
+        rc = function.getDeviceTypeAliasName();
         break;
       case setupCodeCol:
         rc = new Integer( function.getSetupCode());
@@ -102,20 +99,7 @@ public class ExternalFunctionTableModel
         function.setName(( String )value );
         break;
       case devTypeCol:
-        if ( value.getClass() == String.class )
-        {
-          String str = ( String )value;
-          DeviceType[] types = upgrade.getRemote().getDeviceTypes();
-          for ( int i = 0; i < types.length; i++ )
-          {
-            if ( str.equals( types[ i ].getName()))
-            {
-              value = types[ i ];
-              break;
-            }
-          }
-        }
-        function.setDeviceType(( DeviceType )value );
+        function.setDeviceTypeAliasName(( String )value );
         break;
       case setupCodeCol:
         if ( value.getClass() == String.class )
@@ -164,9 +148,7 @@ public class ExternalFunctionTableModel
       case nameCol:
         break;
       case devTypeCol:
-        if ( devTypeEditor == null )
-          devTypeEditor = new DefaultCellEditor( new JComboBox());
-        rc = devTypeEditor;
+        rc = new DefaultCellEditor( new JComboBox( upgrade.getDeviceTypeAliasNames()));
         break;
       case setupCodeCol:
         rc = new ByteEditor( 0, 2047 );
@@ -237,7 +219,7 @@ public class ExternalFunctionTableModel
   private final static String[] names =
     { " # ", "Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "Notes" };
   private final static Class[] classes =
-    { Integer.class, String.class, DeviceType.class, Integer.class, Choice.class, ExternalFunction.class, String.class };
+    { Integer.class, String.class, String.class, Integer.class, Choice.class, ExternalFunction.class, String.class };
 
   private final static Choice[] choices =
   {

@@ -64,7 +64,7 @@ public class Button
       if ( f.isExternal())
       {
         ExternalFunction ef = ( ExternalFunction )f;
-        devType = ef.getDeviceType();
+        devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName());
         int temp = devType.getNumber() * 0x1000 +
                    ef.getSetupCode() - remote.getDeviceCodeOffset();
 

@@ -9,7 +9,6 @@ LearnedAddr=$110..$3FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
-OmitDigitMapByte=1
 
 [Settings]
 TV_Power Device=$011.1.2.1.0 (NONE;TV;RCVR;TV and RCVR)
@@ -27,6 +26,10 @@ VPT Device=$010.7.8.1.0 DeviceButtons
 TV      = 0
 RCVR    = 0
 SAT     = 1
+
+[DeviceTypeAliases]
+TV  = TV
+SAT = Cable,VCR,CD,Tuner,DVD,SAT,Tape,Laserdisc,DAT,Home Auto,Misc Audio,Phono,Video Acc,Amp
 
 [DeviceButtons]
 TV      = $00A $00B

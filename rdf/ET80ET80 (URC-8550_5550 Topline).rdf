@@ -1,0 +1,128 @@
+[General]
+Name=URC-8550/5550 Topline 5/8
+EepromSize=$800
+AdvCodeAddr=$03E..$0FF
+UpgradeAddr=$104..$4FF
+DevUpgradeAddr=$502..$6FF
+TimedMacroAddr=$702..$7FD
+Processor=740
+UpgradeBug=1
+RAMAddr=$132
+RDFSync=3
+
+[Settings]
+VPT Device=$037.6.7.0.0 DeviceButtons
+VPT Status=$037.7.1.0.1 (Off;On)
+Simulate Ch+/-=$039.3.1.0.0 (Off;On)
+Sleep Status=$039.2.1.0.0 (Use Native;Simulate)
+Language=$039.1.2.1.0 (English;German;French)
+SAT Lock=$038.0.1.0.1 (Off;On)
+TV Lock=$038.1.1.0.1 (Off;On)
+VCR Lock=$038.2.1.0.1 (Off;On)
+CD Lock=$038.3.1.0.1 (Off;On)
+@AMP Lock=$038.4.1.0.1 (Off;On)
+@TUNER Lock=$038.5.1.0.1 (Off;On)
+AUX1 Lock=$038.6.1.0.1 (Off;On)
+@AUX2 Lock=$038.7.1.0.1 (Off;On)
+
+[Checksums]
++$000:$002..$03B
++$03C:$03E..$0FF
++$100:$102..$4FF
++$500:$502..$6FF
++$700:$702..$7FD
+
+[FixedData]
+$00A = $3B $00 $FF $00 $FF $04 $FF $06 $FD $07
+       $FD $07 $FD $07 $FD $07 $FD $07 $FD $07
+
+[DeviceButtons]
+SAT    = $026 $01E $02E
+TV     = $027 $01F $02F
+VCR    = $028 $020 $030
+CD     = $029 $021 $031
+@AMP   = $02A $022 $032
+@TUNER = $02B $023 $033
+AUX1   = $02C $024 $034
+@AUX2  = $02D $025 $035
+
+# AUX1 = MISC_AUDIO,TUNER,AMP,HOME_CT
+# AUX2 = TAPE,DAT,LDP,DVD
+
+[DeviceTypes]
+SAT        = 0
+TV         = 0
+VCR        = 2
+CD         = 3
+AMP        = 4
+TUNER      = 4
+MISC_AUDIO = 4
+TAPE       = 6, $070D
+VID_ACC    = 0, $0008
+CABLE      = 1, $000C
+PHONO      = 3, $030B
+HOME_CT    = 6, $060A
+LASER      = 5, $0707
+DVD        = 3, $0709
+DAT        = 6, $070E
+
+[DeviceTypeAliases]
+SAT        = SAT
+TV         = TV
+VCR        = VCR
+CD         = CD
+AMP        = Amp
+TUNER      = Tuner
+MISC_AUDIO = Misc Audio
+TAPE       = Laserdisc
+VID_ACC    = Video Acc
+CABLE      = DVD
+PHONO      = Home Auto
+HOME_CT    = Phono
+LASER      = Cable
+DVD        = Tape
+DAT        = DAT
+
+[Buttons]
+TV=$10, VCR=$20, SAT=$28, AUX1=$18, @AMP=$30, @TUNER=$38, CD=$37, @AUX2=$08,
+POWER=$07, SLEEP=$87, VOL+=$06, VOL-=$03, MUTE=$02, CH+=$04, CH-=$05,
+0=$13, 1=$1C, 2=$14, 3=$0C, 4=$1D, 5=$15, 6=$0D, 7=$1E, 8=$16, 9=$0E, 10=$25, 20=$26,
+ENTER=$21, MENU=$2A, UP=$2E, DOWN=$2D, LEFT=$2C, RIGHT=$2B,
+PLAY=$12, PAUSE=$09, REWIND=$1A, FFWD=$0A, STOP=$11, RECORD=$19,
+TV/VCR=$29, SLOW=$34, A[AUDIO]=$2F, B[VIDEO]=$27,
+@PIP=$32, @PP=$23, @NORM=$1B, @FREEZE=$B2, @MOVE=$A3, @SWAP=$9B,
+COLOR+=$86, COLOR-=$83, BRIGHTNESS+=$84, BRIGHTNESS-=$85,
+CENTRE+=$AE, CENTRE-=$AD, DELAY+=$AB, DELAY-=$AC,
+@HOME-THEATER=$35, MAGIC=$1F, LIGHT=$31, SHIFT=$0F, SCAN=$33,
+Phantom-11=$0B, Phantom-23=$17, Phantom-34=$22, Phantom-36=$24,
+ESC=$36, LightOn=$40, LightOff=$41, LightToggle=$42,
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, Phantom5=$43,
+Phantom6=$44, PushDev=$45, PopDev=$46, DiscreteON=$3E, DiscreteOFF=$3F,
+Virtual_SAT=$47, Virtual_TV=$4E, Virtual_VCR=$55,
+Virtual_CD=$5C, Virtual_@AMP=$63, Virtual_@TUNER=$6A,
+Virtual_AUX1=$71, Virtual_@AUX2=$78
+
+[ButtonMaps]
+0 = ($13, $1C, $14, $0C, $1D, $15, $0D, $1E, $16, $0E), ($06, $03, $02), ($04, $05),
+    $07, $21, $25, $26, $2A, $2E, $2D, $2C, $2B, $23, $1B, $12, $1A, $0A, $09, $29,
+    $11, $19, $34, $87, $32, $86, $83, $84, $85, $A3, $B2, $9B
+1 = ($13, $1C, $14, $0C, $1D, $15, $0D, $1E, $16, $0E), ($06, $03, $02), ($04, $05),
+    $07, $21, $25, $26, $2A, $2E, $2D, $2C, $2B, $23, $1B, $19, $34, $87
+2 = ($13, $1C, $14, $0C, $1D, $15, $0D, $1E, $16, $0E), ($06, $03, $02), ($04, $05),
+    $07, $21, $25, $26, $2A, $2E, $2D, $2C, $2B, $23, $34, $12, $1A, $0A, $09, $29,
+    $11, $19, $32, $A3, $B2, $9B
+3 = ($13, $1C, $14, $0C, $1D, $15, $0D, $1E, $16, $0E), ($06, $03, $02), ($04, $05),
+    $07, $23, $25, $26, $12, $1A, $0A, $09, $11, $34, $2A, $1B, $2E, $2D, $2C, $2B,
+    $32, $87
+4 = ($13, $1C, $14, $0C, $1D, $15, $0D, $1E, $16, $0E), ($06, $03, $02), ($04, $05),
+    $07, $21, $25, $26, $2A, $2E, $2D, $2C, $2B, $AE, $AD, $AC, $AB, $23, $1B, $32,
+    $34, $87, $29, $12, $1A, $0A, $09, $11, $19
+5 = ($13, $1C, $14, $0C, $1D, $15, $0D, $1E, $16, $0E), ($06, $03, $02), ($04, $05),
+    $07, $21, $25, $26, $12, $1A, $0A, $09, $29, $11, $2A, $1B, $23, $32
+6 = ($13, $1C, $14, $0C, $1D, $15, $0D, $1E, $16, $0E), ($06, $03, $02), ($04, $05),
+    $07, $25, $26, $12, $1A, $0A, $09, $11, $19, $2A, $29, $1B, $87, $21
+
+[DigitMaps]
+53 94 03 26 45 74 92 38 37 46 86 21 57 64 29 27
+32 69 15 55 08 95 30 85 43 34 60 19 07 89 104 71
+33 79 105 75 22 13 39 17 31

@@ -1,0 +1,92 @@
+#Added ch+/- simulation, sleep simulation, device locking, xDev, shift_vol+, shift_vol-,
+#shift_ch+, shift_ch- buttons. Removed non existent buttons SELECT=$88 and EXIT=$98.
+# - starpox007
+
+[General]
+Name=URC-7541 One For All 4 Digital - 2K Version
+EepromSize=$800
+AdvCodeAddr=$01B..$0FF
+UpgradeAddr=$100..$7FD
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+
+[Settings]
+VPT Device=$014.7.8.1.0 DeviceButtons
+VPT Status=$01A.3.1.0.0 (Off;On)
+SAT Sleep simulation=$016.0.1.0.1 (Off;On)
+TV Sleep simulation=$016.1.1.0.1 (Off;On)
+AUX Sleep simulation=$016.3.1.0.1 (Off;On)
+xDev Sleep simulation=$016.4.1.0.1 (Off;On)
+SAT Setup=$15.0.1.1.0 (locked;unlocked)
+TV Setup=$15.1.1.1.0 (locked;unlocked)
+VCR Setup=$15.2.1.1.0 (locked;unlocked)
+AUX Setup=$15.3.1.1.0 (locked;unlocked)
+xDev Setup=$15.4.1.1.0 (locked;unlocked)
+SAT CH+/CH- simulation=$017.0.1.0.1 (Off;On)
+TV CH+/CH- simulation=$017.1.1.0.1 (Off;On)
+VCR CH+/CH- simulation=$017.2.1.0.1 (Off;On)
+xDev CH+/CH- simulation=$017.4.1.0.1 (Off;On)
+
+[Checksums]
+^$000:$002..$7FD
+
+[FixedData]
+$018 = $14
+
+[DeviceTypes]
+Cable  = 0
+TV     = 1
+VCR    = 2
+Audio  = 3
+xDev   = 1
+
+[DeviceTypeAliases]
+Cable = Cable,SAT,Video Acc
+TV    = TV
+VCR   = VCR,DVD,Tape,Laserdisc
+Audio = CD,Tuner,DAT,Home Auto,Misc Audio,Phono,Amp
+
+[DeviceButtons]
+Sat    = $00A $00B
+TV     = $00C $00D
+VCR    = $00E $00F
+Aux    = $010 $011
+xDev   = $012 $013
+
+[Buttons]
+MAGIC=$02, MENU=$20, POWER=$03, SLEEP=$C3,
+EXIT=$12,
+TV=$01, VCR=$0A, SAT=$09, AUX=$11,
+1=$15, 2=$16, 3=$17,
+4=$19, 5=$1A, 6=$1B,
+7=$1C, 8=$1D, 9=$1E,
+0=$1F, 10=$2F, AV=$18,
+CH+=$06, CH-=$07,
+VOL+=$04, VOL-=$05, MUTE=$08,
+Shift_VOL+=$C4, Shift_VOL-=$C5, Shift_CH+=$C6, Shift_CH-=$C7,
+ARROW_UP=$29, ARROW_DOWN=$2A, ARROW_LEFT=$2B, ARROW_RIGHT=$2C, OK=$22,
+REW=$0B, PLAY=$0C, PAUSE=$0F, FFWD=$0D,
+SP/LP=$14, STOP=$0E, REC=$10, AUTO=$13,
+A=$23, B=$24, C=$25, D=$26, E=$27, F=$28, G=$2D, H=$2E,
+Phantom1=$F0, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $C3, $2F, $18, $20, $12, $29, $2A, $2B, $2C, $22, $0C, $0E, $0B, $0D, $10,
+    $0F, $14, $13, $23, $24, $25, $26, $27, $28, $2D, $2E
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $C3, $2F, $18, $20, $12, $29, $2A, $2B, $2C, $22, $0C, $0E, $0B, $0D, $10,
+    $0F, $14, $13, $C6, $C7, $C4, $C5, $23, $24, $25, $26, $27, $28, $2D, $2E
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $2F, $18, $20, $12, $29, $2A, $2B, $2C, $22, $0C, $0E, $0B, $0D, $10, $0F,
+    $14, $13
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $2F, $18, $20, $12, $29, $2A, $2B, $2C, $F0, $0C, $0E, $0B, $0D, $10, $0F,
+    $F0, $F0, $C3
+
+[DigitMaps]
+53 94 25 92 26 45 74 03 38 37 62 21 87 46 32 34
+01 15 14 55 08 95 86 30 70 85 43 60 19 40 68 64
+41 29 12 75 07 89 104 71 33 59 79 52 22 57 91 73
+02 13 39 17 31 09

@@ -22,12 +22,20 @@ VCR   = 3
 Audio = 4
 CD    = 5
 
+[DeviceTypeAliases]
+Cable = Cable,SAT,Video Acc
+TV    = TV
+DVD   = DVD,Laserdisc
+VCR   = VCR,Tape,DAT,Home Auto,Phono
+Audio = Tuner,Misc Audio,Amp
+CD    = CD
+
 [DeviceButtons]
 CBL/SAT = $00A $00B
 TV =      $00C $00D
-DVD/LD =  $00E $00F
+DVD =     $00E $00F
 VCR =     $010 $011
-RCVR =    $012 $013
+RCV =     $012 $013
 AUX =     $014 $015
 CD =      $016 $017
 

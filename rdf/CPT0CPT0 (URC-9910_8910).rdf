@@ -1,0 +1,161 @@
+[General]
+Name=URC-8910 / URC-9910 One-For-All
+EepromSize=$800
+FavKey=$2C, $030, 15, 5
+AdvCodeAddr=$03a..$0FF
+UpgradeAddr=$100..$3FF
+LearnedAddr=$400..$7FD
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+
+[Settings]
+HT transport=$02b.7.8.1.0 DeviceButtons
+HT volume=$02c.7.8.1.0 DeviceButtons
+HT channel=$02d.7.8.1.0 DeviceButtons
+HT menu=$02e.7.8.1.0 DeviceButtons
+HT PIP=$02f.7.8.1.0 DeviceButtons
+VPT Status=$028.2.1.0.0 (Off;On)
+VPT Device=$029.7.8.1.0 DeviceButtons
+TV   VPT=$02A.0.1.1.0 (Off;On)
+VCR  VPT=$02A.1.1.1.0 (Off;On)
+CBL  VPT=$02A.2.1.1.0 (Off;On)
+SAT  VPT=$02A.3.1.0.0 (Off;On)
+CD   VPT=$02A.4.1.1.0 (Off;On)
+DVD  VPT=$02A.5.1.0.0 (Off;On)
+RCVR VPT=$02A.6.1.0.0 (Off;On)
+AUX  VPT=$02A.7.1.0.0 (Off;On)
+
+[Checksums]
+^$000:$002..$7FD
+
+[FixedData]
+$032 = $14
+
+[DeviceTypes]
+TV      = 0
+VCR     = 1
+DVD     = 1
+LDP     = 1
+TAPE    = 1
+DAT     = 1
+CBL     = 2
+SAT     = 2
+VIDACC  = 2
+CD      = 3
+RCVR    = 3
+AMP     = 3
+MISC    = 3
+HOME    = 3
+PHONO   = 3
+
+[DeviceTypeAliases]
+TV     = TV
+VCR    = VCR
+DVD    = DVD
+LDP    = Laserdisc
+TAPE   = Tape
+DAT    = DAT
+CBL    = Cable
+SAT    = SAT
+VIDACC = Video Acc
+CD     = CD
+RCVR   = Tuner
+AMP    = Amp
+MISC   = Misc Audio
+HOME   = Home Auto
+PHONO  = Phono
+
+[DeviceButtons]
+TV      = $00A $00B
+VCR     = $00C $00D
+CBL     = $00E $00F
+SAT     = $010 $011
+CD      = $012 $013
+DVD     = $014 $015
+RCVR    = $016 $017
+AUX     = $018 $019
+db-08   = $01A $01B
+db-09   = $01C $01D
+db-10   = $01E $01F
+db-11   = $020 $021
+db-12   = $022 $023
+db-13   = $024 $025
+db-14   = $026 $027
+
+[Buttons]
+TV=$01
+VCR=$09
+CD=$0a
+SAT=$11
+CBL=$12
+DVD=$21
+RCVR=$22
+AUX=$23
+0=$1F
+1=$15
+2=$16
+3=$17
+4=$19
+5=$1A
+6=$1B
+7=$1C
+8=$1D
+9=$1E
+menu=$14
+guide=$36
+power=$03
+info=$13
+up=$31
+left=$33
+down=$32
+right=$34
+select=$35
+VOL+=$04
+mute=$08
+VOL-=$05
+fav=$2C
+ch-=$07
+ch+=$06
+prev=$38
+enter=$18
+tv/vid=$20
+rew=$0B
+play=$0C
+fwd=$0D
+rec=$10
+pause=$0F
+f.rew=$29
+stop=$0E
+f.fwd=$2A
+sleep=$30
+M1=$2D
+M2=$2E
+M3=$2F
+L1=$25
+L2=$26
+L3=$27
+L4=$28
+pip=$3A
+move=$3B
+swap=$3C
+com/skip=$2B
+HT=$24
+exit=$37
+set=$02
+{light}=$39
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $14, $20, $38, $31, $32, $33, $34, $35, $30, $13, $37, $3a, $3c, $3b, $36, $18
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $0c, $0f, $0b, $0d, $0e, $10, $14, $31, $32, $33, $34, $37, $35, $20, $13, $38, $36, $18, $3a, $3c, $3b, $2a, $29
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $38, $13, $31, $32, $33, $34, $35, $14, $36, $37, $2a, $29, $20, $0c, $0f, $0b, $0d, $0e, $10, $18, $30, $3a, $3b, $3c
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $36, $31, $32, $33, $34, $35, $18, $20, $38, $0c, $0f, $0b, $0d, $0e, $10, $2a, $29
+
+[DigitMaps]
+72 53 94 92 03 90 44 46 86 21 11 87 58 29 50 10
+83 01 126 23 81 16 127 34 32 75 33 30 03 80 64 91
+125 128 129

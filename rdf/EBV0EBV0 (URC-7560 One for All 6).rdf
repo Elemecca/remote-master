@@ -1,0 +1,95 @@
+[General]
+Name=URC-7560 One for All 6
+EepromSize=$800
+FavKey=$14, $01E, 15, 3
+AdvCodeAddr=$020..$0FF
+UpgradeAddr=$100..$3FE
+LearnedAddr=$3FF..$7FD
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+
+[Settings]
+TV/SAT/VCR/DVD VPT Device=$018.3.4.1.0 DeviceButtons
+TV/SAT/VCR/DVD VPT Status=$01F.3.1.0.0 (Off;On)
+CD/AUD VPT Device=$019.3.4.3.0 DeviceButtons
+CD/AUD VPT Status=$01F.4.1.0.0 (Off;On)
+SAT Locked=$01A.0.1.0.1 (Off;On)
+TV Locked=$01A.1.1.0.1 (Off;On)
+VCR Locked=$01A.2.1.0.1 (Off;On)
+CD Locked=$01A.3.1.0.1 (Off;On)
+AUD Locked=$01A.4.1.0.1 (Off;On)
+DVD Locked=$01A.5.1.0.1 (Off;On)
+SAT Sleep simulation=$01B.0.1.0.1 (Off;On)
+TV Sleep simulation=$01B.1.1.0.1 (Off;On)
+VCR Sleep simulation=$01B.2.1.0.1 (Off;On)
+CD Sleep simulation=$01B.3.1.0.1 (Off;On)
+AUD Sleep simulation=$01B.4.1.0.1 (Off;On)
+DVD Sleep simulation=$01B.5.1.0.1 (Off;On)
+SAT CH+/CH- simulation=$01C.0.1.0.1 (Off;On)
+TV CH+/CH- simulation=$01C.1.1.0.1 (Off;On)
+VCR CH+/CH- simulation=$01C.2.1.0.1 (Off;On)
+CD CH+/CH- simulation=$01C.3.1.0.1 (Off;On)
+AUD CH+/CH- simulation=$01C.4.1.0.1 (Off;On)
+DVD CH+/CH- simulation=$01C.5.1.0.1 (Off;On)
+
+[Checksums]
+^$000:$002..$7FD
+
+[FixedData]
+$01D = $14
+
+[DeviceTypes]
+Sat/Cable = 0
+TV        = 0
+VCR/DVD   = 1
+CD/Audio  = 1
+DevType4  = 1
+DevType5  = 1
+
+[DeviceTypeAliases]
+Sat/Cable = Cable,SAT,Video Acc
+TV        = TV
+VCR/DVD   = VCR,DVD,Tape,Laserdisc
+CD/Audio  = CD,Tuner,DAT,Home Auto,Misc Audio,Phono,Amp
+
+[DeviceButtons]
+SAT = $00A $00B
+TV  = $00C $00D
+VCR = $00E $00F
+CD  = $010 $011
+AUD = $012 $013
+DVD = $014 $015
+
+[Buttons]
+MAGIC=$02, MENU=$20, POWER=$03, SLEEP=$C3,
+HOME_THEATER=$12,
+TV=$01, VCR=$0A, SAT=$09,
+CD=$11, AUD=$21, DVD=$22,
+1=$15, 2=$16, 3=$17,
+4=$19, 5=$1A, 6=$1B,
+7=$1C, 8=$1D, 9=$1E,
+0=$1F, 10=$2F, AV=$18, EXIT=$98,
+CH+=$06, CH-=$07, BRIGHT+=$C6, BRIGHT-=$C7,
+VOL+=$04, VOL-=$05, COLOR+=$C4, COLOR-=$C5, MUTE=$08, SELECT=$88,
+ARROW_UP=$29, ARROW_DOWN=$2A, ARROW_LEFT=$2B, ARROW_RIGHT=$2C,
+REW=$0B, PLAY=$0C, PAUSE=$0F, FFWD=$0D,
+SP/LP=$14, STOP=$0E, REC=$10, AUTO=$13,
+A=$23, B=$24, C=$25, D=$26, E=$27, F=$28, G=$2D, H=$2E,
+{LIGHT}=$30,
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $C3, $2F, $18, $20, $98, $29, $2A, $2B, $2C, $88, $0C, $0E, $0B, $0D, $10,
+    $0F, $14, $13, $C6, $C7, $C4, $C5, $23, $24, $25, $26, $27, $28, $2D, $2E, $30
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $2F, $18, $20, $98, $29, $2A, $2B, $2C, $88, $0C, $0E, $0B, $0D, $10, $0F,
+    $14, $13, $C3
+
+[DigitMaps]
+72 53 94 25 03 92 26 45 74 38 90 37 62 77 86 21
+32 57 55 64 29 27 50 49 84 69 46 56 78 34 43 65
+01 67 04 59 95 15 14 08 28 35 30 70 85 20 66 40
+60 51 19 68 41 12 75 06 07 89 71 33 79 52 22 91
+73 02 13 39 17 31 09 36 88

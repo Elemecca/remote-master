@@ -38,7 +38,7 @@ public class DeviceUpgrade
     }
 
     remote = remotes[ 0 ];
-    devType = remote.getDeviceTypes()[ 0 ];
+    devTypeAliasName = deviceTypeAliasNames[ 0 ];
     protocol = ( Protocol )protocols.elementAt( 0 );
     notes = null;
     file = null;
@@ -112,14 +112,19 @@ public class DeviceUpgrade
     return remote;
   }
 
-  public void setDeviceType( DeviceType newType )
+  public void setDeviceTypeAliasName( String name )
   {
-    devType = newType;
+    devTypeAliasName = name;
+  }
+
+  public String getDeviceTypeAliasName()
+  {
+    return devTypeAliasName;
   }
 
   public DeviceType getDeviceType()
   {
-    return devType;
+    return remote.getDeviceTypeByAliasName( devTypeAliasName );
   }
 
   public void setProtocol( Protocol protocol )
@@ -215,8 +220,9 @@ public class DeviceUpgrade
   {
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade code 0 = " );
-    if ( devType != null )
+    if ( devTypeAliasName != null )
     {
+      DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
       byte[] id = protocol.getID().getData();
       int temp = devType.getNumber() * 0x1000 +
                  ( id[ 0 ] & 1 ) * 0x08 +
@@ -228,7 +234,7 @@ public class DeviceUpgrade
 
       buff.append( Hex.toString( deviceCode ));
       buff.append( " (" );
-      buff.append( devType.getName());
+      buff.append( devTypeAliasName );
       buff.append( '/' );
       DecimalFormat df = new DecimalFormat( "0000" );
       buff.append( df.format( setupCode ));
@@ -345,16 +351,9 @@ public class DeviceUpgrade
       props.setProperty( "Description", description );
     props.setProperty( "Remote.name", remote.getName());
     props.setProperty( "Remote.signature", remote.getSignature());
-    props.setProperty( "DeviceType", devType.getName());
-    DeviceType[] types = remote.getDeviceTypes();
-    for ( int i = 0; i < types.length; i++ )
-    { 
-      if ( devType == types[ i ] )
-      {
-        props.setProperty( "DeviceIndex", Integer.toHexString( i ));
-        break;
-      }
-    }
+    props.setProperty( "DeviceType", devTypeAliasName );
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    props.setProperty( "DeviceIndex", Integer.toHexString( devType.getNumber()));
     props.setProperty( "SetupCode", Integer.toString( setupCode ));
     props.setProperty( "Protocol", protocol.getID().toString());
     props.setProperty( "Protocol.name", protocol.getName());
@@ -460,10 +459,11 @@ public class DeviceUpgrade
     str = props.getProperty( "DeviceIndex" );
     if ( str != null )
       index = Integer.parseInt( str, 16 );
-    str = props.getProperty( "DeviceType" );
-    System.err.println( "Searching for device type " + str );
-    devType = remote.getDeviceType( str, index );
-    System.err.println( "Device type is " + devType );
+    devTypeAliasName = props.getProperty( "DeviceType" );
+    System.err.println( "Searching for device type " + devTypeAliasName );
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    if ( devType == null )
+      System.err.println( "Unable to find device type with alias name " + devTypeAliasName );
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ));
 
     System.err.println( "Searching for protocol with id " + props.getProperty( "Protocol" ));
@@ -549,15 +549,26 @@ public class DeviceUpgrade
     }
   }
 
+  public static final String[] getDeviceTypeAliasNames()
+  {
+    return deviceTypeAliasNames;
+  }
+
   private String description = null;
   private int setupCode = 0;
   private Remote remote = null;
-  private DeviceType devType = null;
+  private String devTypeAliasName = null;
   private Protocol protocol = null;
   private String notes = null;
   private Vector functions = new Vector();
   private Vector extFunctions = new Vector();
   private File file = null;
+
+  private static final String[] deviceTypeAliasNames =
+  {
+    "Cable", "TV", "VCR", "CD", "Tuner", "DVD", "SAT", "Tape", "Laserdisc",
+    "DAT", "Home Auto", "Misc Audio", "Phono", "Video Acc", "Amp"
+  };
 
   private static final String[] defaultFunctionNames =
   {

@@ -1,14 +1,8 @@
 package com.hifiremote.jp1;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import javax.swing.JOptionPane;
+import java.util.*;
+import java.io.*;
+import javax.swing.*;
 
 public class Remote
   implements Comparable
@@ -26,8 +20,8 @@ public class Remote
   {
     if ( !loaded )
     {
-      load();
       loaded = true;
+      load();
     }
   }
 
@@ -62,6 +56,8 @@ public class Remote
             line = parseDigitMaps( rdr );
           else if ( line.equals( "DeviceTypes" ))
             line = parseDeviceTypes( rdr );
+          else if ( line.equals( "DeviceTypeAliases" ))
+            line = parseDeviceTypeAliases( rdr );
           else if ( line.equals( "Buttons" ))
             line = parseButtons( rdr );
           else if ( line.equals( "MultiMacros" ))
@@ -83,9 +79,9 @@ public class Remote
       for ( int i = 0; i < buttonMaps.length; i++ )
         buttonMaps[ i ].setButtons( buttons );
 
-      for ( int i = 0; i < deviceTypes.length; i++ )
+      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
       {
-        DeviceType type = deviceTypes[ i ];
+        DeviceType type = ( DeviceType )e.nextElement();
         int map = type.getMap();
         if ( map == -1 )
           System.err.println( file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
@@ -95,11 +91,12 @@ public class Remote
 
       // Create the upgradeButtons[]
       // and starts off with the buttons in longest button map
-      ButtonMap longestMap = deviceTypes[ 0 ].getButtonMap();
-      for ( int i = 1; i < deviceTypes.length; i++ )
+      ButtonMap longestMap = null;
+      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
       {
-        ButtonMap thisMap = deviceTypes[ i ].getButtonMap();
-        if ( longestMap.size() < thisMap.size() )
+        DeviceType type = ( DeviceType )e.nextElement();
+        ButtonMap thisMap = type.getButtonMap();
+        if (( longestMap == null ) || ( longestMap.size() < thisMap.size() ))
           longestMap = thisMap;
       }
 
@@ -278,15 +275,15 @@ public class Remote
       out.println();
     }
 
-    size = deviceTypes.length;
+    size = deviceTypes.size();
     if ( size > 0 )
     {
       out.println();
       out.println( "[DeviceTypes]" );
       int type = 0;
-      for ( int i = 0; i < size; i++ )
+      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
       {
-        DeviceType devType = deviceTypes[ i ];
+        DeviceType devType = ( DeviceType )e.nextElement();
         out.print( devType.getName());
         if ( devType.getMap() != -1 )
         {
@@ -397,31 +394,33 @@ public class Remote
     return deviceCodeOffset;
   }
 
-  public DeviceType[] getDeviceTypes()
+  public Hashtable getDeviceTypes()
   {
     checkLoaded();
     return deviceTypes;
   }
 
-  public DeviceType getDeviceType( String typeName, int index )
+  public DeviceType getDeviceType( String typeName )
   {
     checkLoaded();
-    System.err.println( "Remote.getDeviceType( " + typeName + ", " + index + " )" );
-    DeviceType devType = null;
-    if (( index != -1 ) && ( index < deviceTypes.length ))
-      devType = deviceTypes[ index ];
-    else
-      for ( int i = 0; i < deviceTypes.length; i++ )
-      {
-        System.err.println( "Checking " + deviceTypes[ i ]);
-        if ( deviceTypes[ i ].getName().equals( typeName ))
-        {
-          devType = deviceTypes[ i ];
-          System.err.println( "Its a match" );
-          break;
-        }
-      }
+    DeviceType devType =( DeviceType )deviceTypes.get( typeName );
     return devType;
+  }
+
+  public DeviceType getDeviceTypeByAliasName( String aliasName )
+  {
+    return ( DeviceType )deviceTypeAliases.get( aliasName );
+  }
+
+  public DeviceType getDeviceTypeByIndex( int index )
+  {
+    for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+    {
+      DeviceType type = ( DeviceType )e.nextElement();
+      if ( type.getNumber() == index )
+        return type;
+    }
+    return null;
   }
 
   public Button[] getButtons()
@@ -793,7 +792,6 @@ public class Remote
   private String parseDeviceTypes( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
     String line;
     int type = 0;
     int count = 0;
@@ -812,10 +810,39 @@ public class Remote
         if ( st.hasMoreTokens())
           type = rdr.parseNumber( st.nextToken());
       }
-      work.add( new DeviceType( name, count++, map, type ));
+      deviceTypes.put( name, new DeviceType( name, count++, map, type ));
       type += 0x0101;
     }
-    deviceTypes = ( DeviceType[] )work.toArray( deviceTypes );
+    return line;
+  }
+
+  private String parseDeviceTypeAliases( RDFReader rdr )
+    throws Exception
+  {
+    System.err.println( "Remote.parseDeviceTypeAliases()" );
+    Vector work = new Vector();
+    String line;
+    while ( true )
+    {
+      line = rdr.readLine();
+      if (( line == null ) || ( line.length() == 0 ))
+        break;
+
+      System.err.println( "Read line=\"" + line + "\"" );
+      StringTokenizer st = new StringTokenizer( line, "= \t" );
+      String typeName = st.nextToken();
+      System.err.println( "TypeName=" + typeName );
+      DeviceType type = getDeviceType( typeName );
+      st.nextToken( "=" );
+      String rest = st.nextToken().trim();
+      st = new StringTokenizer( rest, "," );
+      while ( st.hasMoreTokens())
+      {
+        String aliasName = st.nextToken().trim();
+        System.err.println( "aliasName=" + aliasName );
+        deviceTypeAliases.put( aliasName, type );
+      }
+    }
     return line;
   }
 
@@ -1118,7 +1145,8 @@ public class Remote
   private Setting[] settings = new Setting[ 0 ];
   private FixedData[] fixedData = new FixedData[ 0 ];
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
-  private DeviceType[] deviceTypes = new DeviceType[ 0 ];
+  private Hashtable deviceTypes = new Hashtable();
+  private Hashtable deviceTypeAliases = new Hashtable();
   private Button[] buttons = new Button[ 0 ];
   private Button[] buttonsByEfc = null;
   private Button[] buttonsByName = null;

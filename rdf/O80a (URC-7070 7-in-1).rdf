@@ -1,0 +1,42 @@
+[General]
+Name=URC-7070 Pro Producer 7
+EepromSize=$400
+AdvCodeAddr=$021..$0DA
+FavKey=$0A, $01E, 15, 3
+UpgradeAddr=$100..$3FC
+Processor=6805
+RDFSync=3
+
+[Checksums]
+^$000:$002..$3FC
+
+[DeviceTypes]
+Cable/SAT
+TV
+VCR/DVD
+CD/Audio
+Misc
+
+[DeviceTypeAliases]
+Cable/SAT = Cable,SAT,Video Acc
+TV        = TV
+VCR/DVD   = VCR,DVD,Tape,Laserdisc,DAT
+CD/Audio  = CD,Home Auto,Phono
+Misc      = Tuner,Misc Audio,Amp
+
+[DeviceButtons]
+CBL   = $00E $006 $016
+TV    = $00F $007 $017
+VCR   = $010 $008 $018
+CD    = $011 $009 $019
+SAT   = $013 $00B $01B
+AMP   = $014 $00C $01C
+RCVR  = $015 $00D $01D
+<AUX> = $012 $00A $01A
+
+[Buttons]
+CBL=9, TV=1, VCR/LD=10, CD=17, SAT=34,
+RCVR, AMP, <AUX>, POWER=3, MAGIC=2, VOL+=4, VOL-, MUTE=8,
+CH+=6, CH-, ENTER=18, PC, MENU=39, SHIFT=32, PLAY=12, PAUSE=15, STOP=14,
+FF=13, REW=11, REC=16, TV/VCR=24, 1=21, 2, 3, 4=25, 5, 6,
+7, 8, 9, 0, Phantom1=20, Phantom2=33, Phantom3=37, Phantom4

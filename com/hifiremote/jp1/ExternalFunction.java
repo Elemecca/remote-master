@@ -9,7 +9,7 @@ public class ExternalFunction
 
   public boolean isEmpty()
   {
-    return super.isEmpty() && ( deviceType == null ) && ( setupCode == 0 ) &&
+    return super.isEmpty() && ( deviceTypeAliasName == null ) && ( setupCode == 0 ) &&
       ( type == EFCType );
   }
 
@@ -17,8 +17,8 @@ public class ExternalFunction
   {
     super.store( props, prefix );
     props.setProperty( prefix + ".type", Integer.toString( type ));
-    if ( deviceType != null )
-      props.setProperty( prefix + ".deviceType", deviceType.getName());
+    if ( deviceTypeAliasName != null )
+      props.setProperty( prefix + ".deviceType", deviceTypeAliasName );
     props.setProperty( prefix + ".setupCode", Integer.toString( setupCode ));
   }
 
@@ -30,14 +30,14 @@ public class ExternalFunction
       setType( new Integer( str ));
     str = props.getProperty( prefix + ".deviceType" );
     if ( str != null )
-      setDeviceType( remote.getDeviceType( str, -1 ));
+      setDeviceTypeAliasName( str );
     str = props.getProperty( prefix + ".setupCode" );
     if ( str != null )
       setSetupCode( Integer.parseInt( str ));
   }
 
-  public DeviceType getDeviceType(){ return deviceType; }
-  public void setDeviceType( DeviceType newType ){ deviceType = newType; }
+  public String getDeviceTypeAliasName(){ return deviceTypeAliasName; }
+  public void setDeviceTypeAliasName( String name ){ deviceTypeAliasName = name; }
 
   public final static int EFCType = 0;
   public final static int HexType = 1;
@@ -108,7 +108,7 @@ public class ExternalFunction
       hex = null;
   }
 
-  private DeviceType deviceType;
+  private String deviceTypeAliasName;
   private int setupCode;
   private int type;
 }

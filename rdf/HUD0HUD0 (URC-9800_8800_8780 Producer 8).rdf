@@ -1,0 +1,104 @@
+[General]
+Name=URC-8780/8800/9800 Producer 8
+EepromSize=$800
+AdvCodeAddr=$03D..$0FF
+UpgradeAddr=$104..$4FF
+DevUpgradeAddr=$502..$6FF
+TimedMacroAddr=$702..$7FD
+Processor=740
+RAMAddr=$132
+RDFSync=3
+
+[Settings]
+VPT Device=$037.6.7.2.0 DeviceButtons
+VPT Status=$037.7.1.0.1 (Off;On)
+
+[Checksums]
++$000:$002..$03A
++$03B:$03D..$0FF
++$100:$102..$4FF
++$500:$502..$6FF
++$700:$702..$7FD
+
+[FixedData]
+$00A = $3A $00 $FF $00 $FF $04 $FF $06 $FD $07
+       $FD $07 $FD $07 $FD $07 $FD $07 $FD $07
+
+[DeviceTypes]
+CBL        = 0
+DVD        = 1
+TV         = 0
+VCR        = 1
+CD         = 2
+AMP        = 3
+TUNER      = 3, $0605
+TAPE       = 1, $0707
+VID_ACC    = 0, $0008
+SAT        = 0, $0009
+LDP        = 1, $010A
+HOME_CT    = 2, $040B
+PHONO      = 2, $040C
+MISC_AUDIO = 3, $050D
+DAT        = 1, $070E
+
+[DeviceTypeAliases]
+CBL        = Cable
+DVD        = DVD
+TV         = TV
+VCR        = VCR
+CD         = CD
+AMP        = Tuner,Amp
+TAPE       = Tape
+VID_ACC    = Video Acc
+SAT        = SAT
+LDP        = Laserdisc
+HOME_CT    = Home Auto
+PHONO      = Phono
+MISC_AUDIO = Misc Audio
+DAT        = DAT
+
+[DeviceButtons]
+CBL/SAT = $026 $01E $02E
+DVD     = $027 $01F $02F
+TV      = $028 $020 $030
+VCR     = $029 $021 $031
+CD      = $02A $022 $032
+AMP     = $02B $023 $033
+TUNER   = $02C $024 $034
+AUX1    = $02D $025 $035
+
+[Buttons]
+CBL/SAT=8, TV=16, VCR=32, CD=55, DVD=40,AMP=48, TUNER=56, AUX1=24, HOME_THEATER=53,
+0=19, 1=28, 2=20, 3=12, 4=29, 5=21, 6=13, 7=30, 8=22, 9=14,
+CH+=4, CH-=5, VOL+=6, VOL-=3, MUTE=2, POWER=7, ENTER=33, TV/SAT=34,
+PREV=35, PLAY=18, PAUSE=9, REWIND=26, FFWD=10, STOP=17, RECORD=25,
+MENU=36, UP=46, DOWN=45, LEFT=44, RIGHT=43, SELECT=37, SURROUND=42, CENTER=41,
+PIP=50, SWAP=38, MOVE=51, SETUP=31, SHIFT=15, MACRO1=47, MACRO2=39,
+{light}=49, DISPLAY=$A3, REAR=$A9, PROGRAM=$A4, SLEEP=$82, FREEZE=$B2,
+MENU_UP=$AE, MENU_DOWN=$AD, SLOW=$92, SLOW+=$8A, SLOW-=$9A, EJECT=$91,
+X2=$89, CLEAR=$A5,
+Phantom1=$B6, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
+ESC=$36, LightOn=$40, LightOff=$41, LightToggle=$42,
+Phantom5=$43, Phantom6=$44, PushDev=$45, PopDev=$46,
+Virtual_CBL=$47, Virtual_SAT=$4E, Virtual_TV=$55, Virtual_VCR=$5C,
+Virtual_CD=$63, Virtual_AMP=$6A, Virtual_TUNER=$71, Virtual_P&P=$78,
+Virtual_Cancel=$7F
+
+[ButtonMaps]
+0 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
+    $07, $21, $23, $A3, $22, $24, $A9, $25, $A4, $2E, $2D, $2C, $2B,
+    $29, $B6, $32, $33, $82, $B2, $26, $2A, $AE, $AD, $12, $09, $1A, $0A, $11, $19
+1 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
+    $07, $21, $12, $11, $1A, $0A, $19, $09, $A3, $22, $24, $25, $A4,
+    $29, $B6, $92, $91, $9A, $8A, $89, $2A, $2E, $2D, $2C, $2B, $23, $A9, $32, $B2, $33, $26
+2 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
+    $07, $21, $23, $A3, $22, $24, $25, $A4, $12, $11, $1A, $0A, $19,
+    $09, $91, $2E, $2D, $2C, $2B, $2A
+3 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
+    $07, $A3, $22, $25, $B6, $2E, $2D, $29, $AE, $AD, $2C, $2B, $AC,
+    $AB, $2A, $82, $23, $24, $12, $11, $1A, $0A, $19, $09, $91
+
+[DigitMaps]
+72 48 53 54 94 86 47 03 81 90 05 93 21 59 11 64
+75 92 49 46 32 91 29 50 83 01 63 76 42 24 100 82
+23 34 61 33 85 30 13 18 80 17 00 88

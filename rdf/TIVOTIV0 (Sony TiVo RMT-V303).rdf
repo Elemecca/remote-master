@@ -28,6 +28,10 @@ TV      = 0
 RCVR    = 0
 VCR     = 1
 
+[DeviceTypeAliases]
+TV = TV
+VCR = Cable,VCR,CD,Tuner,DVD,SAT,Tape,Laserdisc,DAT,Home Auto,Misc Audio,Phono,Video Acc,Amp
+
 [DeviceButtons]
 TV      = $00A $00B
 RCVR    = $00C $00D
