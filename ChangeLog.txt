@@ -1,3 +1,12 @@
+Changes for v1.20
+- Fix saving of imported KM upgrades that use Manual Settings with byte2
+- Improve translation of new S3C80 protocol code to old S3C80.
+- Add phantom buttons to Layout panel
+- Add assigned buttons to hover help text for functions on Buttons and Layout panels
+
+Changes for v1.19
+- Fix importing of KM upgrades that use Manual Settings and have a value in byte2
+
 Changes for v1.18
 - Improve importing of KM upgrades that use Device Combiner
 - Fix importing of KM upgrades that use Panasonic MIX Combo

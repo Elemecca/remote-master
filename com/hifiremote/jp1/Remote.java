@@ -298,6 +298,11 @@ public class Remote
     return buttonShapes;
   }
 
+  public Vector getPhantomShapes()
+  {
+    return phantomShapes;
+  }
+
   public Processor getProcessor()
   {
     return processor;
@@ -1264,6 +1269,7 @@ public class Remote
             shape = path;
           }
           ButtonShape buttonShape = new ButtonShape( shape, button );
+          button.setHasShape( true );
           if ( displayName != null )
             buttonShape.setName( displayName );
           work.add( buttonShape );
@@ -1349,12 +1355,49 @@ public class Remote
             shape = path;
           }
           work.add( new ButtonShape( shape, button ));
+          button.setHasShape( true );
         }
       }
     }
     in.close();
+    
+    double radius = 8;
+    double gap = 6;
+    
+    double diameter = 2 * radius;
+    double x = gap;
+    double y = imageIcon.getIconHeight() + gap;
+    for ( int i = 0; i < upgradeButtons.length; i++ )
+    {
+      Button b = upgradeButtons[ i ];
+      if ( !b.getHasShape() && !b.getIsShifted() && !b.getIsXShifted())
+      {
+        if (( x + diameter + gap ) > imageIcon.getIconWidth())
+        {
+          x = gap;
+          y += ( gap + diameter );
+        }
+        System.err.println( "Adding ellipse for button " + b + " at " + x + "," + y );
+        Shape shape = new Ellipse2D.Double( x, y, diameter, diameter );
+        x += ( diameter + gap );
+        ButtonShape buttonShape = new ButtonShape( shape, b );
+        work.add( buttonShape );
+        phantomShapes.add( buttonShape );
+        b.setHasShape( true );
+      }
+    }
     buttonShapes = ( ButtonShape[] )work.toArray( buttonShapes );
+    height = imageIcon.getIconHeight();
+    if ( !phantomShapes.isEmpty())
+      height = ( int )( y + diameter + gap );
+    else
+      height = imageIcon.getIconHeight();
+    System.err.println( "Remote height set to " + height );
+    work.clear();
   }
+
+  public int getHeight(){ return height; }
+  private int height;
 
   public boolean supportsVariant( Hex pid, String name )
   {
@@ -1446,6 +1489,7 @@ public class Remote
   private Hashtable buttonsByName = new Hashtable();
   private Hashtable buttonsByStandardName = new Hashtable();
   private Button[] upgradeButtons = null;
+  private Vector phantomShapes = new Vector();
   private ButtonShape[] buttonShapes = new ButtonShape[ 0 ];
   private int[] digitMaps = new int[ 0 ];
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];

@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
@@ -23,20 +24,11 @@ public class FunctionLabel
         showUnassigned();
     }
     setHorizontalAlignment( SwingConstants.CENTER );
-    setBorder(
+    Border border = 
       BorderFactory.createCompoundBorder(
         BorderFactory.createBevelBorder( BevelBorder.RAISED ),
-        BorderFactory.createEmptyBorder( 2, 5, 3, 5 )));
-    if ( function == null )
-      setToolTipText( "Drag or double-click this function to clear the function performed by a button." );
-    else
-    {
-//      if ( function.getNotes() != null )
-        setToolTipText( function.getNotes());
-//      else
-//        setToolTipText( "" );
-//      setToolTipText( "Drag or double-click this function to set the function performed by a button." );
-    }
+        BorderFactory.createEmptyBorder( 2, 5, 3, 5 ));
+    setBorder( border );
 
     if ( th == null )
     {
@@ -71,9 +63,47 @@ public class FunctionLabel
     addMouseMotionListener( ml );
 
     this.function = function;
+    updateToolTipText();
   }
 
   public Function getFunction(){ return function; }
+
+  public void updateToolTipText()
+  {
+    StringBuffer buff = new StringBuffer( 400 );
+    buff.append( "<html>" );
+    if ( function == null )
+      buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;clear the function performed by a button." );
+    else
+    {
+      if ( function.getNotes() != null )
+        buff.append( "&nbsp;" + function.getNotes());
+      else
+        buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;set the function performed by a button." );
+      Enumeration e = function.getUsers();
+      if ( e.hasMoreElements())
+      {
+        buff.append( "<br><hr>&nbsp;" + function.getName() + " is assigned to: " );
+        boolean first = true;
+        while ( e.hasMoreElements())
+        {
+          if ( first )
+            first = false;
+          else
+            buff.append( ", " );
+          Button b = ( Button )e.nextElement();
+          if ( b.getFunction() == function )
+            buff.append( b.getName());
+          else if ( b.getShiftedFunction() == function )
+            buff.append( b.getShiftedName());
+          else if ( b.getXShiftedFunction() == function )
+            buff.append( b.getXShiftedName());
+        }
+      }
+    }
+    buff.append( "</html>" );
+    setToolTipText( buff.toString());
+  }
 
   public void showAssigned()
   {
@@ -94,7 +124,6 @@ public class FunctionLabel
   }
 
   private Function function = null;
-  private static Insets insets = null;
   private static MouseMotionAdapter ml = null;
   private static TransferHandler th = null;
 }

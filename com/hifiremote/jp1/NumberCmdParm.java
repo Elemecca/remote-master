@@ -71,10 +71,13 @@ public class NumberCmdParm
   {
     StringBuffer buff = new StringBuffer();
     buff.append( name );
-    if ( bits != 8 )
+    if (( bits != 8 ) || ( base != 10 ))
     {
       buff.append( ':' );
-      buff.append( bits );
+      if ( base != 10 )
+        buff.append( '$' );
+      if ( bits != 8 )
+        buff.append( bits );
     }
     if ( defaultValue != null )
     {

@@ -2,6 +2,8 @@ package com.hifiremote.jp1;
 
 import java.util.Properties;
 import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Vector;
 
 public class Function
 {
@@ -81,7 +83,7 @@ public class Function
     if ( item != null )
       item.setToolTipText( notes );
     if ( label != null )
-      label.setToolTipText( notes );
+      label.updateToolTipText();
     return this;
   }
 
@@ -104,6 +106,7 @@ public class Function
     if ( label == null )
     {
       label = new FunctionLabel( this );
+      label.updateToolTipText();
       if ( assigned())
         label.showAssigned();
     }
@@ -117,29 +120,35 @@ public class Function
     return item;
   }
 
-  public void addReference()
+  public void addReference( Button b )
   {
-    ++refCount;
+    users.add( b );
     if ( label != null )
+    {
       label.showAssigned();
+      label.updateToolTipText();
+    }
   }
 
-  public void removeReference()
+  public void removeReference( Button b )
   {
-    if ( refCount > 0 )
-      --refCount;
-    if (( refCount == 0 ) && ( label != null ))
-      label.showUnassigned();
+    users.remove( b );
+    if ( label != null )
+    {
+      if ( users.isEmpty())
+        label.showUnassigned();
+      label.updateToolTipText();
+    }
   }
 
   public boolean assigned()
   {
-    return ( refCount > 0 );
+    return ( !users.isEmpty() );
   }
 
-  public boolean[] getUseDefault()
+  public Enumeration getUsers()
   {
-    return useDefault;
+    return users.elements();
   }
 
   protected String name = null;
@@ -147,6 +156,5 @@ public class Function
   protected Hex hex = null;
   private FunctionLabel label = null;
   private FunctionItem item = null;
-  private int refCount = 0;
-  private boolean[] useDefault = null;
+  private Vector users = new Vector();
 }

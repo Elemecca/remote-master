@@ -126,12 +126,12 @@ public class Button
   {
     if ( function != null )
     {
-      function.removeReference();
+      function.removeReference( this );
     }
     function = newFunc;
     if ( newFunc != null )
     {
-      newFunc.addReference();
+      newFunc.addReference( this );
     }
     return this;
   }
@@ -144,10 +144,10 @@ public class Button
     else
     {
       if ( shiftedFunction != null )
-        shiftedFunction.removeReference();
+        shiftedFunction.removeReference( this );
       shiftedFunction = newFunc;
       if ( newFunc != null )
-        newFunc.addReference();
+        newFunc.addReference( this );
     }
     return this;
   }
@@ -167,10 +167,10 @@ public class Button
     else
     {
       if ( xShiftedFunction != null )
-        xShiftedFunction.removeReference();
+        xShiftedFunction.removeReference( this );
       xShiftedFunction = newFunc;
       if ( newFunc != null )
-        newFunc.addReference();
+        newFunc.addReference( this );
     }
     return this;
   }
@@ -279,6 +279,18 @@ public class Button
     return rc;
   }
 
+  public void setHasShape( boolean flag )
+  {
+    if ( shiftedButton != null )
+      shiftedButton.hasShape = flag;
+    if ( xShiftedButton != null )
+      xShiftedButton.hasShape = flag;
+      
+    hasShape = flag;
+  }
+
+  public boolean getHasShape(){ return hasShape; }
+
   private String name;
   private String standardName;
   private int keyCode;
@@ -295,6 +307,7 @@ public class Button
   private boolean isXShifted = false;
   private int restrictions = 0;
   private int buttonMaps = 0;
+  private boolean hasShape = false;
 
   public static int MOVE_BIND = 0x01;
   public static int SHIFT_MOVE_BIND = 0x02;

@@ -60,12 +60,7 @@ public class FunctionRenderer
       }
 
       if ( f != null )
-      {
         temp = f.getName();
-        setToolTipText( f.getNotes());
-      }
-      else
-        setToolTipText( null );
     }
     setBackground( tf.getBackground());
     JComponent c = ( JComponent )super.getTableCellRendererComponent( table, temp,

@@ -55,7 +55,9 @@ public class LayoutPanel
 
     JPanel infoPanel = new JPanel( new GridLayout( 2, 2 ));
 
-    infoPanel.add( new JLabel( "Button:" ));
+    JLabel label = new JLabel( "Button:" );
+    label.setToolTipText( "button label" );
+    infoPanel.add( label );
     buttonName = new JTextField();
     buttonName.setEditable( false );
     infoPanel.add( buttonName );
@@ -72,7 +74,8 @@ public class LayoutPanel
     rightPanel.add( box, BorderLayout.NORTH );
 
     JPanel panel = new JPanel( new BorderLayout());
-    JLabel label = new JLabel( "Available Functions:" );
+    label = new JLabel( "Available Functions:" );
+    label.setToolTipText( "available functions label" );
     label.setBorder( BorderFactory.createEmptyBorder( 2, 2, 3, 2 ));
     panel.add( label, BorderLayout.NORTH );
     rightPanel.add( panel, BorderLayout.CENTER );
@@ -194,13 +197,10 @@ public class LayoutPanel
   {
     Remote r = deviceUpgrade.getRemote();
     ImageIcon icon = r.getImageIcon();
-    if ( icon != null )
-    {
-      Dimension size = new Dimension( icon.getIconWidth(),
-                                      icon.getIconHeight());
-      imagePanel.setPreferredSize( size );
-      imagePanel.revalidate();
-    }
+    Dimension d = new Dimension( icon.getIconWidth(), r.getHeight());
+    imagePanel.setPreferredSize( d );
+    imagePanel.setMinimumSize( d );
+    imagePanel.setMaximumSize( d );
     ButtonShape[] buttonShapes = deviceUpgrade.getRemote().getButtonShapes();
     boolean found = false;
     for ( int i = 0; i < buttonShapes.length; i++ )
@@ -228,8 +228,8 @@ public class LayoutPanel
       if ( xShiftMode.isSelected())
         normalMode.setSelected( true );
     }
-
-    doRepaint();
+    invalidate();
+//    doRepaint();
   }
 
   private void doRepaint()
@@ -392,9 +392,7 @@ public class LayoutPanel
   {
     public void mouseClicked( MouseEvent e )
     {
-      if (( currentShape == null ) || ( e.getClickCount() < 2 ))
-        e.consume();
-      else
+      if (( currentShape != null ) && ( e.getClickCount() >= 2 ))
       {
         Button button = getButtonForShape( currentShape );
         if ( button == null )
@@ -410,8 +408,8 @@ public class LayoutPanel
           button.setXShiftedFunction( f );
 
         setButtonText( currentShape, button );
-        doRepaint();
       }
+      doRepaint();
     }
   }
 
@@ -475,15 +473,33 @@ public class LayoutPanel
     extends JPanel
     implements Scrollable
   {
+    public ImagePanel()
+    {
+      super();
+//      setHorizontalAlignment( SwingConstants.LEFT );
+//      setVerticalAlignment( SwingConstants.TOP );      
+    }
+
     public void paint( Graphics g )
     {
+      super.paint( g );
       Graphics2D g2 = ( Graphics2D ) g;
       g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
                            RenderingHints.VALUE_ANTIALIAS_ON );
+      System.err.println( "panel width is " + getWidth() + " and height is " + getHeight());                     
       Remote r = deviceUpgrade.getRemote();
       ImageIcon icon = r.getImageIcon();
       if ( icon != null )
         g2.drawImage( icon.getImage(), null, null );
+
+      Vector phantomShapes = r.getPhantomShapes();
+      
+      g2.setPaint( Color.darkGray );
+      for ( Enumeration e = phantomShapes.elements(); e.hasMoreElements(); )
+      {
+        ButtonShape shape = ( ButtonShape )e.nextElement();
+        g2.fill( shape.getShape());
+      }
 
       if ( currentShape != null )
       {
@@ -584,7 +600,8 @@ public class LayoutPanel
       if ( icon != null )
       {
         int w = icon.getIconWidth();
-        int h = icon.getIconHeight();
+        int h = deviceUpgrade.getRemote().getHeight();
+        System.err.println( "remote.getHeight() returned " + h );
         if ( scrollPane.getViewport().getExtentSize().height < h )
           w += scrollPane.getVerticalScrollBar().getWidth();
 
@@ -622,7 +639,7 @@ public class LayoutPanel
   }
 
   private ButtonShape currentShape = null;
-  private JPanel imagePanel = null;
+  private ImagePanel imagePanel = null;
   private JRadioButton normalMode = null;
   private JRadioButton shiftMode = null;
   private JRadioButton xShiftMode = null;

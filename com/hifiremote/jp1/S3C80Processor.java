@@ -29,7 +29,7 @@ public class S3C80Processor
       for ( int i = offset; i < data.length; i++ )
       {
         int first = data[ i ] & 0xFF;
-        if ( first == 0xF6 )
+        if (( first == 0xF6 ) || ( first == 0x8D ))
         {
           int second = data[ ++i ] & 0xFF;
           if ( second == 0xFF )
@@ -37,15 +37,6 @@ public class S3C80Processor
             data[ i ] = ( byte )0x80;
           }
           else if ( second == 0x01 )
-          {
-            int third = data[ ++i ] & 0xFF;
-            data[ i ] = ( byte )adjust( third );
-          }
-        }
-        else if ( first == 0x8D )
-        {
-          int second = data[ ++i ] & 0xFF;
-          if ( second == 0x01 )
           {
             int third = data[ ++i ] & 0xFF;
             data[ i ] = ( byte )adjust( third );

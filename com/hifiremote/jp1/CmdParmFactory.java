@@ -12,6 +12,7 @@ public class CmdParmFactory
     StringTokenizer st = new StringTokenizer( string, ":=", true );
     DefaultValue defaultValue = null;
     int bits = -1;
+    int base = 10;
     String name = st.nextToken();
     Vector choices = null;
 //    Dimension d = null;
@@ -55,6 +56,11 @@ public class CmdParmFactory
       else if ( sep.equals( ":" ))
       {
         String str = st.nextToken();
+        if ( str.charAt( 0 ) == '$' )
+        {
+          base = 16;
+          str = str.substring( 1 );
+        }
         if ( str.indexOf( '|' ) != -1 )
         {
           StringTokenizer st2 = new StringTokenizer( str, "|", true );
@@ -75,7 +81,7 @@ public class CmdParmFactory
 //          d = new Dimension( Integer.parseInt( st3.nextToken()),
 //                             Integer.parseInt( st3.nextToken()));
 //        }
-        else
+        else if ( str.length() > 0 )
         {
           bits = Integer.parseInt( str );
         }
@@ -84,11 +90,13 @@ public class CmdParmFactory
     if ( choices != null )
       rc = new ChoiceCmdParm( name, defaultValue, choices );
     else if ( bits != -1 )
-      rc = new NumberCmdParm( name, defaultValue, bits );
+      rc = new NumberCmdParm( name, defaultValue, bits, bits );
 //    else if ( d != null )
 //      rc = new NumberCmdParm( name, defaultValue, d.width, d.height );
     else
-      rc = new NumberCmdParm( name, defaultValue );
+    {
+      rc = new NumberCmdParm( name, defaultValue, 8, base );
+    }
 
     return rc;
   }

@@ -20,8 +20,10 @@ public class ButtonPanel
     table = new JTable();
     model = new ButtonTableModel( devUpgrade );
     table.setModel( model );
+    table.setRowSelectionAllowed( false );
+    table.setColumnSelectionAllowed( false );
     table.setCellSelectionEnabled( true );
-    table.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+    table.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
     table.setSurrendersFocusOnKeystroke( true );
 
     TableColumnModel colModel = table.getColumnModel();
@@ -263,11 +265,9 @@ public class ButtonPanel
   {
     public void mouseClicked( MouseEvent e )
     {
-      if ( e.getClickCount() < 2 )
-        e.consume();
-      else
+      FunctionLabel label = ( FunctionLabel )e.getSource();
+      if ( e.getClickCount() == 2 )
       {
-        FunctionLabel label = ( FunctionLabel )e.getSource();
         int col = table.getSelectedColumn();
         int row = table.getSelectedRow();
         if ( canAssign( row, col ))

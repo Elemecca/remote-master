@@ -128,12 +128,12 @@ public class Translator
     if ( comp )
       buff.append( "comp," );
     buff.append( index );
-    if ( bits != 8 )
+    if (( bits != 8 ) || ( bitOffset != 0 ) || ( lsbOffset != 0 ))
     {
       buff.append( ',' );
       buff.append( bits );
     }
-    if ( bitOffset != 0 )
+    if (( bitOffset != 0 ) || ( lsbOffset != 0 ))
     {
       buff.append( ',' );
       buff.append( bitOffset );
