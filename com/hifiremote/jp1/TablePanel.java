@@ -362,6 +362,7 @@ public abstract class TablePanel
         {
           if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
           {
+            System.err.println( "Paste" );
             String s =
               ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
             BufferedReader in = new BufferedReader( new StringReader( s ));
@@ -369,6 +370,7 @@ public abstract class TablePanel
             int addedRow = -1;
             for ( String line = in.readLine(); line != null; line = in.readLine())
             {
+              System.err.println( "line=\"" + line + "\"" );
               if ( row == sorter.getRowCount() )
               {
                 sorter.addRow( createRowObject());
@@ -378,32 +380,53 @@ public abstract class TablePanel
 
               StringTokenizer st = new StringTokenizer( line, "\t", true );
               int workCol = col;
-              while ( st.hasMoreTokens() )
+              boolean done = false;
+              String token = null;
+              String prevToken = null;
+              while ( !done )
               {
                 if ( workCol == colCount )
                   break;
-                String token = st.nextToken();
+                if ( st.hasMoreTokens())
+                  token = st.nextToken();
+                else
+                  token = null;
+
+                System.err.println( "Token=\"" + token + "\"" );
                 Object value = null;
                 int modelCol = table.convertColumnIndexToModel( workCol );
-                if ( !token.equals( "\t" ))
+                if ( token == null )
                 {
-                  if ( st.hasMoreTokens())
-                    st.nextToken();
-
-                  Class aClass = sorter.getColumnClass( modelCol );
-                  if ( aClass == String.class )
+                  done = true;
+                  if ( prevToken != null )
+                    break;
+                }
+                else if ( token.equals( "\t" ))
+                {
+                  if ( prevToken == null )
+                    token = null;
+                  else
                   {
-                    if (( token.length() == 5 ) &&
-                        token.startsWith( "num " ) &&
-                        Character.isDigit( token.charAt( 4 )))
-                      value = token.substring( 4 );
-                    else
-                      value = token;
+                    prevToken = null;
+                    continue;
                   }
+                }
+                prevToken = token;
+
+                Class aClass = sorter.getColumnClass( modelCol );
+                if ( aClass == String.class )
+                {
+                  if (( token.length() == 5 ) &&
+                      token.startsWith( "num " ) &&
+                      Character.isDigit( token.charAt( 4 )))
+                    value = token.substring( 4 );
                   else
                     value = token;
                 }
+                else
+                  value = token;
 
+                System.err.println( "Setting value to " + value );
                 sorter.setValueAt( value, row, modelCol );
                 workCol++;
               }
