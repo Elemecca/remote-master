@@ -76,7 +76,7 @@ public class Translator
       if ( i == null )
         System.err.println("Translator.in() index="+ index +" missing parameter value");
       else
-        w = ( i.intValue() >> lsbOffset ) + adjust;
+        w = ( i.intValue() + adjust ) >> lsbOffset;
     }
 
     if ( comp )

@@ -22,7 +22,7 @@ public class TranslatorFromDev
     if ( i == null )
       System.err.println("TranslatorFromDev.in() index="+ index +" missing parameter value");
     else
-      w = i.intValue() >> lsbOffset;
+      w = ( i.intValue() + adjust ) >> lsbOffset;
 
     if ( comp )
       w = 0xFFFFFFFF - w;
