@@ -1,0 +1,70 @@
+[General]
+Name=RadioShack 15-1994 Extender w/o Learned
+EepromSize=$800
+AdvCodeAddr=$400..$708
+UpgradeAddr=$100..$3FF
+Processor=S3C80
+RAMAddr=$8000
+RDFSync=3
+
+[Settings]
+VPT Device=$018.7.8.1.0 DeviceButtons
+VPT Status=$019.3.0.0.0 (Always On)
+
+[Checksums]
+^$000:$002..$7FD
+
+[DeviceTypes]
+Cable   = 0
+TV      = 1
+VCR/DVD = 2
+CD      = 3
+Audio   = 3
+
+[DeviceButtons]
+CBL/SAT = $00A $00B
+TV =      $00C $00D
+VCR =     $00E $00F
+CD =      $010 $011
+AUX1 =    $012 $013
+AUX2 =    $014 $015
+P&P =     $016 $017
+
+[Buttons]
+P{SETUP}=$02, {LIGHT}=$20, POWER=$03, SLEEP=$2C,
+AUX1=$25, AUX2=$26, VCR=$0A, TV=$01,
+P&P=$27, CD=$11, CBL/SAT=$09,
+1s=$21, 2s=$22, 3s=$23, 4s=$24,
+MENU=$29, SURR=$30, GUIDE[PROGRAM]=$28,
+ARROW_UP=$31, ARROW_DOWN=$32, ARROW_LEFT=$33, ARROW_RIGHT=$34, SELECT=$35,
+CENTER[EXIT]=$2B, SCAN[FAV]=$14,
+MUTE=$08, LAST=$13, PIP=$2D, DISPLAY=$2A, SWAP=$2F, MOVE=$2E,
+VOL+=$04, VOL-=$05, CH+=$06, CH-=$07,
+1=$15, 2=$16, 3=$17,
+4=$19, 5=$1A, 6=$1B,
+7=$1C, 8=$1D, 9=$1E,
+0=$1F, TV/VIDEO[A/B]=$18, ENTER=$12,
+REW=$0B, PLAY=$0C, FFWD=$0D,
+REC=$10, STOP=$0E, PAUSE=$0F,
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F,
+V_SAT=$77, V_TV=$78, V_VCR=$79, V_CD=$7A, V_AUX1=$7B, V_AUX2=$7C, V_P&P=$7D,
+PushDev=$7E, PopDev=$7F
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $0C, $0F, $0B, $0D, $0E, $10, $29, $28, $31, $32, $33, $34,
+    $35, $2C, $2D, $2A, $2F, $2E, $2B
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $29, $28, $31, $32, $33, $34, $35, $2C, $2D, $2A, $2F, $2E,
+    $2B
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $29, $28, $31, $32, $33, $34, $35, $2C, $2D, $2A, $2F, $2E,
+    $0C, $0F, $0B, $0D, $0E, $10, $2B
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $29, $28, $31, $32, $33, $34, $35, $2C, $30, $2A, $0C, $0F,
+    $0B, $0D, $0E, $10, $2B
+
+[DigitMaps]
+72 48 53 54 94 86 47 03 81 90 05 93 21 11 75 92
+59 58 46 64 32 50 63 83 29 33 88 01 76 82 23 34
+30 26 13 18 80 17 91 00
