@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.64";
+  private static final String version = "v 0.65";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -197,13 +197,13 @@ public class KeyMapMaster
     tabbedPane.addTab( "Buttons", null, buttonPanel,
                        "Assign functions to buttons." );
 
-    outputPanel = new OutputPanel( deviceUpgrade );
-    tabbedPane.addTab( "Output", null, outputPanel,
-                       "The output to copy-n-paste into IR." );
-
     layoutPanel = new LayoutPanel( deviceUpgrade );
     tabbedPane.addTab( "Layout", null, layoutPanel ,
                        "Button Layout information." );
+
+    outputPanel = new OutputPanel( deviceUpgrade );
+    tabbedPane.addTab( "Output", null, outputPanel,
+                       "The output to copy-n-paste into IR." );
 
     loadRemotes();
     setRemotes( remotes );
