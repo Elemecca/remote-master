@@ -523,6 +523,8 @@ public class DeviceUpgrade
       func.store( out, "ExtFunction." + i );
     }
     Button[] buttons = remote.getUpgradeButtons();
+    String regex = "\\|";
+    String replace = "\\\\u007c";
     for ( i = 0; i < buttons.length; i++ )
     {
       Button b = buttons[ i ];
@@ -532,21 +534,21 @@ public class DeviceUpgrade
       if ( f == null )
         fstr = "null";
       else
-        fstr = f.getName();
+        fstr = f.getName().replaceAll( regex, replace );
 
       Function sf = b.getShiftedFunction();
       String sstr;
       if ( sf == null )
         sstr = "null";
       else
-        sstr = sf.getName();
+        sstr = sf.getName().replaceAll( regex, replace );
 
       Function xf = b.getXShiftedFunction();
       String xstr;
       if ( xf == null )
         xstr = null;
       else
-        xstr = xf.getName();
+        xstr = xf.getName().replaceAll( regex, replace );
       if (( f != null ) || ( sf != null ) || ( xf != null ))
       {
         out.print( "Button." + Integer.toHexString( b.getKeyCode()),
@@ -689,6 +691,8 @@ public class DeviceUpgrade
     if ( loadButtons )
     {
       Button[] buttons = remote.getUpgradeButtons();
+      String regex = "\\\\u007c";
+      String replace = "|";
       for ( i = 0; i < buttons.length; i++ )
       {
         Button b = buttons[ i ];
@@ -702,13 +706,13 @@ public class DeviceUpgrade
         Function func = null;
         if ( !str.equals( "null" ))
         {
-          func = getFunction( str );
+          func = getFunction( str.replaceAll( regex, replace ));
           b.setFunction( func );
         }
         str = st.nextToken();
         if ( !str.equals( "null" ))
         {
-          func = getFunction( str );
+          func = getFunction( str.replaceAll( regex, replace ));
           b.setShiftedFunction( func );
         }
         if ( st.hasMoreTokens())
@@ -716,7 +720,7 @@ public class DeviceUpgrade
           str = st.nextToken();
           if ( !str.equals( "null" ))
           {
-            func = getFunction( str );
+            func = getFunction( str.replaceAll( regex, replace ));
             b.setXShiftedFunction( func );
           }
         }
@@ -1064,7 +1068,7 @@ public class DeviceUpgrade
           func = new Function();
           func.setName( name );
           if ( b != null )
-            usedFunctions.add( func );  
+            usedFunctions.add( func );
         }
         else
           System.err.println( "Found function " + name );
