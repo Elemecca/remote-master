@@ -291,6 +291,7 @@ public class KeyMapMaster
     {
       public boolean accept( File dir, String name )
       {
+        return name.toLowerCase().endsWith( ".rdf" );
       }
     };
 
