@@ -15,7 +15,7 @@ public class ChoiceDeviceParm
     // JSF28may03 Questionable design decision: ChoiceDeviceParm doesn't dynamically correct default in ToolTip (compare vs. NumberDeviceParm)
     // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
     String helpText = "Select a value from the list.  The default value is "
-     + choices[ ((Integer)getDefaultValue()).intValue() + 1 ] + '.';
+     + choices[ ((Integer)getDefaultValue().value()).intValue() + 1 ] + '.';
     comboBox.setToolTipText( helpText );
   }
 
@@ -71,7 +71,7 @@ public class ChoiceDeviceParm
       buff.append( '=' );
       buff.append( defaultValue );
     }
-    return buff.toString();     
+    return buff.toString();
   }
 
   public String getDescription(){ return "Choice"; }

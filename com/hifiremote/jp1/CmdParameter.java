@@ -18,18 +18,19 @@ public abstract class CmdParameter
 
   public Object getValue( Object value )
   {
-    if (( defaultValue != null ) && 
-        ( defaultValue.getClass() == IndirectDefaultValue.class ) && 
+    if (( defaultValue != null ) &&
+        ( defaultValue.getClass() == IndirectDefaultValue.class ) &&
+        ( defaultValue.value() != null ) &&
         defaultValue.value().equals( value ))
       return null;
     else
       return value;
   }
   public Object convertValue( Object value )
-  { 
+  {
     if (( defaultValue != null ) && ( value == null ))
       return defaultValue.value();
-    return value; 
+    return value;
   }
   public abstract TableCellEditor getEditor();
   public abstract TableCellRenderer getRenderer();

@@ -5,7 +5,7 @@ import java.util.*;
 
 public class CmdParmFactory
 {
-  public static CmdParameter createParameter( String string, DeviceParameter[] devParms )
+  public static CmdParameter createParameter( String string, DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
     CmdParameter rc = null;
 
@@ -21,9 +21,9 @@ public class CmdParmFactory
       if ( sep.equals( "=" ))
       {
         String token = st.nextToken();
-        if ( token.indexOf( '[' ) != -1 )
+        if ( token.indexOf( '{' ) != -1 )
         {
-          StringTokenizer st3 = new StringTokenizer( token, "[]" );
+          StringTokenizer st3 = new StringTokenizer( token, "{}" );
           String indexStr = st3.nextToken();
           int dash = indexStr.indexOf( '-' );
           if ( dash != -1 )
@@ -34,10 +34,23 @@ public class CmdParmFactory
           def.setIsComplement( dash != -1 );
           defaultValue = def;
         }
-	      else
-	      {
-	        defaultValue = new DirectDefaultValue( new Integer( token ) );
-	      }
+        else if ( token.indexOf( '[' ) != -1 )
+        {
+          StringTokenizer st3 = new StringTokenizer( token, "[]" );
+          String indexStr = st3.nextToken();
+          int dash = indexStr.indexOf( '-' );
+          if ( dash != -1 )
+            indexStr = indexStr.substring( 1 );
+          int index = Integer.parseInt( indexStr );
+
+          IndirectDefaultValue def = new IndirectDefaultValue( index, cmdParms[ index ] );
+          def.setIsComplement( dash != -1 );
+          defaultValue = def;
+        }
+        else
+        {
+          defaultValue = new DirectDefaultValue( new Integer( token ) );
+        }
       }
       else if ( sep.equals( ":" ))
       {

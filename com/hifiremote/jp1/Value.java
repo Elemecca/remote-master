@@ -7,14 +7,14 @@ public class Value
     this( userValue, null );
   }
 
-  public Value( Object userValue, Object defaultValue )
+  public Value( Object userValue, DefaultValue defaultValue )
   {
     this.userValue = userValue;
     this.defaultValue = defaultValue;
   }
 
   public Object getUserValue(){ return userValue; }
-  public Object getDefaultValue(){ return defaultValue; }
+  public DefaultValue getDefaultValue(){ return defaultValue; }
   public boolean hasUserValue()
   {
     return userValue != null;
@@ -24,8 +24,10 @@ public class Value
   {
     Object rc = userValue;
     if ( rc == null )
-      rc = defaultValue;
-
+    {
+      if ( defaultValue != null )
+        rc = defaultValue.value();
+    }
     return rc;
   }
 
@@ -34,6 +36,11 @@ public class Value
     userValue = value;
   }
 
+  public void setDefaultValue( DefaultValue defaultValue )
+  {
+    this.defaultValue = defaultValue;
+  }
+
   private Object userValue;
-  private Object defaultValue;
+  private DefaultValue defaultValue;
 }

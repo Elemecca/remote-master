@@ -13,7 +13,7 @@ public class ZenithTranslator
   {
     if (( parms[ 0 ] == null ) || ( parms[ 0 ].getValue() == null ))
       return;
-    
+
     Value val = parms[ 0 ];
     int i = (( Integer )val.getValue()).intValue();
     if ( val.hasUserValue())
@@ -27,7 +27,7 @@ public class ZenithTranslator
   {
     Integer val = null;
     int temp = extract( hex, 4, 4 );
-    if ( temp != (( Integer )devParms[ 0 ].getDefaultValue()).intValue())
+    if ( temp != (( Integer )devParms[ 0 ].getDefaultValue().value()).intValue())
     {
       temp--;
       val = new Integer( temp );

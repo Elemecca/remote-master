@@ -19,15 +19,16 @@ public abstract class Parameter
 
   public abstract String getDescription();
 
-  public Object getDefaultValue()
+  public DefaultValue getDefaultValue()
   {
-    return (defaultValue ==null) ? null : defaultValue.value();
+    return defaultValue;
   }
   public void setDefault( DefaultValue value ){ defaultValue = value; }
   public void setDefault( int value )
   {
     setDefault( new DirectDefaultValue( new Integer( value ) ) );
   }
+
   public abstract Object getValue();
 
   public Object getValueOrDefault()
@@ -35,7 +36,10 @@ public abstract class Parameter
     Object rc = getValue();
     if ( rc != null )
       return rc;
-    return getDefaultValue();
+    if ( defaultValue != null )
+      return defaultValue.value();
+    else
+      return null;
   }
   public abstract void setValue( Object value );
 

@@ -121,7 +121,7 @@ public class ExternalFunctionTableModel
         break;
       case hexCol:
         if ( value.getClass() == String.class )
-        { 
+        {
           String str = ( String )value;
           if ( function.getType() == ExternalFunction.EFCType )
             function.setEFC( new EFC( str ));
@@ -149,7 +149,7 @@ public class ExternalFunctionTableModel
         rc = new DefaultCellEditor( new JComboBox( upgrade.getDeviceTypeAliasNames()));
         break;
       case setupCodeCol:
-        rc = new ByteEditor( 0, 2047 );
+        rc = new ByteEditor( 0, 2047, null );
         break;
       case typeCol:
         rc = new ChoiceEditor( choices, false );
@@ -211,7 +211,7 @@ public class ExternalFunctionTableModel
     boolean rc = true;
     if ( col == rowCol )
       rc = false;
-    return rc;   
+    return rc;
   }
 
   public boolean isColumnWidthFixed( int col )

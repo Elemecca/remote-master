@@ -127,11 +127,13 @@ public class FunctionTableModel
     {
       CmdParameter[] cmdParms = protocol.getCommandParameters();
       int parmIndex = col - colOffset;
-      Object defaultValue = cmdParms[ parmIndex ].getDefaultValue();
+      DefaultValue defaultValue = cmdParms[ parmIndex ].getDefaultValue();
+      System.err.println( "FunctionTableModel.setValueAt(): defaultValue is " + defaultValue );
       if ( defaultValue != null )
         checkFunctionAssigned( function, value );
-      if ( value == null )
-        value = defaultValue;
+      if ( value == null && defaultValue != null)
+        value = defaultValue.value();
+      System.err.println( "FunctionTableModel.setValueAt(): value is " + value );
 
       if ( value == null )
         function.setHex( null );
@@ -232,7 +234,7 @@ public class FunctionTableModel
     if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == efcCol ) || ( col == hexCol ))
       return super.isColumnWidthFixed( col );
     else
-      return protocol.isColumnWidthFixed( col - colOffset ); 
+      return protocol.isColumnWidthFixed( col - colOffset );
   }
 }
 

@@ -7,6 +7,7 @@ public class DirectDefaultValue
   {
     this.value = value;
   }
+
   public Object value()
   {
     return value;

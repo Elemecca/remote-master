@@ -127,7 +127,7 @@ public class Protocol
     for ( int i = 0; i < count; i++ )
     {
       String str = st.nextToken();
-      cmdParms[ i ] = CmdParmFactory.createParameter( str, devParms );
+      cmdParms[ i ] = CmdParmFactory.createParameter( str, devParms, cmdParms );
       if (cmdParms[i] == null)
         System.err.println( "Protocol.Protocol("+ name +") failed createParameter("+ str +")");
     }
@@ -236,7 +236,7 @@ public class Protocol
     if ( devImporters != null )
     {
       for ( int i = 0; i < devImporters.length; i++ )
-        parms = devImporters[ i ].convertParms( parms ); 
+        parms = devImporters[ i ].convertParms( parms );
     }
     setDeviceParms( parms );
   }
@@ -314,7 +314,13 @@ public class Protocol
     Value[] vals = new Value[ cmdParms.length ];
 
     for ( int i = 0; i < cmdParms.length; i++ )
-      vals[ i ] = new Value( cmdParms[ i ].getDefaultValue());
+    {
+      DefaultValue def = cmdParms[ i ].getDefaultValue();
+      Object val = null;
+      if ( def != null )
+       val = def.value();
+      vals[ i ] = new Value( val );
+    }
 
     for ( int i = 0; i < cmdTranslators.length; i++ )
       cmdTranslators[ i ].in( vals, rc, devParms, -1 );
@@ -368,23 +374,31 @@ public class Protocol
     return cmdParms[ col ].getName();
   }
 
-  public Object getValueAt( int col, Hex hex )
+  public Value[] getValues( Hex hex )
   {
     Value[] vals = new Value[ cmdParms.length ];
     for ( int i = 0; i < cmdTranslators.length; i++ )
       cmdTranslators[ i ].out( hex, vals, devParms );
+    for ( int i = 0; i < cmdParms.length; i++ )
+      vals[ i ].setDefaultValue( cmdParms[ i ].getDefaultValue());
+    return vals;
+  }
+
+  public Object getValueAt( int col, Hex hex )
+  {
+    Value[] vals = getValues( hex );
     Value v = vals[ col ];
     if ( v == null )
     {
       System.err.println( "Protocol.getValueAt("+ col +") failed" );
-      return new Integer(0);
+      return new Integer( 0 );
     }
     return cmdParms[ col ].getValue( v.getValue());
   }
 
   public void setValueAt( int col, Hex hex, Object value )
   {
-    Value[] vals = new Value[ cmdParms.length ];
+    Value[] vals = getValues( hex );
     vals[ col ] = new Value( cmdParms[ col ].convertValue( value ), null );
     for ( int i = 0; i < cmdTranslators.length; i++ )
       cmdTranslators[ i ].in( vals, hex, devParms, col );
@@ -435,14 +449,14 @@ public class Protocol
     String builtin = "none";
     if ( p != null )
       builtin = p.getVariantName();
-  
+
     for ( Enumeration e = altPIDOverrideList.elements(); e.hasMoreElements(); )
     {
       String temp = ( String )e.nextElement();
       if ( temp.equalsIgnoreCase( builtin ))
         return id;
     }
-    return alternatePID;  
+    return alternatePID;
   }
 
   public String getVariantName(){ return variantName; }

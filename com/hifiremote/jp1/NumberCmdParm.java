@@ -15,7 +15,7 @@ public class NumberCmdParm
   {
     super( name, defaultValue );
     this.bits = bits;
-    editor = new ByteEditor(  0, (( 1 << bits ) - 1 ));
+    editor = new ByteEditor(  0, (( 1 << bits ) - 1 ), this );
     renderer = new ByteRenderer();
   }
 
@@ -37,17 +37,21 @@ public class NumberCmdParm
   }
 
   public void setValue( Object value )
-  {}
+  {
+    this.value = value;
+  }
+
 
   public Object getValue()
   {
-    return null;
+    return value;
   }
 
   public Object convertValue( Object value )
   {
     Object rc = null;
     Class c = value.getClass();
+    System.err.println( "NumberCmdParm.convertValue(): class is " + c );
     if ( c == Integer.class )
       rc = value;
     else // assume String
@@ -75,4 +79,5 @@ public class NumberCmdParm
   private ByteEditor editor;
   private ByteRenderer renderer;
   private int bits = 8;
+  private Object value = null;
 }
