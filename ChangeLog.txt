@@ -1,3 +1,11 @@
+Changes for v1.00
+- Allow functions without names when loading a saved device upgrade
+- Corrected protocols.ini entry for Zenith protocol (courtesy of Jon Armstrong)
+- Added Acer Keyboard protocol (courtesy of Jon Armstrong)
+- Corrected protocols.ini entry for Acer Keyboard protocol (courtesy of Jon Armstrong)
+- Allow scrolling of available functions in LayoutPanel
+- Fix use of "adjust" parameter to Translator and TranslatorFromDev
+
 Changes for v0.99
 - Add support for alternate PIDs, requires updated RDFs
 - Fix importing of some KM upgrades that use Manual Settings
