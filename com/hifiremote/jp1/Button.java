@@ -18,14 +18,18 @@ public class Button
   public String getName(){ return name; }
   public String getShiftedName()
   {
-    if ( shiftedButton != null )
+    if ( isShifted )
+      return name;
+    else if ( shiftedButton != null )
       return shiftedButton.getName();
     else
       return null;
   }
   public String getXShiftedName()
   {
-    if ( xShiftedButton != null )
+    if ( isXShifted )
+      return name;
+    else if ( xShiftedButton != null )
       return xShiftedButton.getName();
     else
       return null;
@@ -64,9 +68,12 @@ public class Button
     return xShiftedButton;
   }
 
+  public boolean getIsNormal()
+  {
+    return (!isShifted && !isXShifted );
+  }
   public void setIsShifted( boolean flag )
   { 
-    System.err.println( "Button " + name + " setIsShifted()" );
     isShifted = flag;
     if ( isShifted )
       restrictions |= ( SHIFT | XSHIFT );
@@ -78,7 +85,6 @@ public class Button
 
   public void setIsXShifted( boolean flag )
   { 
-    System.err.println( "Button " + name + " setIsXShifted()" );
     isXShifted = flag;
     if ( isXShifted )
       restrictions |= ( SHIFT | XSHIFT );
@@ -88,13 +94,11 @@ public class Button
   public int getRestrictions(){ return restrictions; }
   public void setRestrictions( int restrictions )
   {
-    System.err.println( "Button " + name + " restrictions set to " + Integer.toHexString( restrictions ));
     this.restrictions = restrictions; 
   }
   public void addRestrictions( int restrictions )
   {
     this.restrictions  |= restrictions;
-    System.err.print( "Button " + name + " restrictions added to create " + Integer.toHexString( this.restrictions ));
   }
 
   public boolean allowsKeyMove()
@@ -142,7 +146,8 @@ public class Button
   {
     if ( shiftedButton != null )
       return shiftedButton.getFunction();
-    return shiftedFunction;
+    else
+      return shiftedFunction;
   }
 
   public Button setXShiftedFunction( Function newFunc )
@@ -273,7 +278,7 @@ public class Button
   public static int TMACRO_DATA = 0x1000;
   public static int SHIFT_TMACRO_DATA = 0x2000;
   public static int XSHIFT_TMACRO_DATA = 0x4000;
-  public static int ALL_TMACRO = TMACRO_DATA | SHIFT_TMACRO_DATA | XSHIFT_TMACRO_DATA;
+  public static int ALL_TMACRO_DATA = TMACRO_DATA | SHIFT_TMACRO_DATA | XSHIFT_TMACRO_DATA;
   public static int FAV_DATA = 0x8000;
   public static int SHIFT_FAV_DATA = 0x10000;
   public static int XSHIFT_FAV_DATA = 0x20000;
@@ -281,12 +286,11 @@ public class Button
   public static int BIND = MOVE_BIND | MACRO_BIND | LEARN_BIND;
   public static int SHIFT_BIND = SHIFT_MOVE_BIND | SHIFT_MACRO_BIND | SHIFT_LEARN_BIND;
   public static int XSHIFT_BIND = XSHIFT_MOVE_BIND | XSHIFT_MACRO_BIND | XSHIFT_LEARN_BIND;
+  public static int ALL_BIND = ALL_MOVE_BIND | ALL_MACRO_BIND | ALL_LEARN_BIND;
   public static int DATA = MACRO_DATA | TMACRO_DATA | FAV_DATA;
   public static int SHIFT_DATA = SHIFT_MACRO_DATA | SHIFT_TMACRO_DATA | SHIFT_FAV_DATA;
   public static int XSHIFT_DATA = XSHIFT_MACRO_DATA | XSHIFT_TMACRO_DATA | XSHIFT_FAV_DATA;
-  public static int ALL_BIND = MOVE_BIND | MACRO_BIND | LEARN_BIND;
-  public static int ALL_DATA = MACRO_DATA | TMACRO_DATA | FAV_DATA;
+  public static int ALL_DATA = ALL_MACRO_DATA | ALL_TMACRO_DATA | ALL_FAV_DATA;
   public static int SHIFT = SHIFT_BIND | SHIFT_DATA;
   public static int XSHIFT = XSHIFT_BIND | XSHIFT_DATA;
-  
 }

@@ -25,7 +25,6 @@ public class ButtonTableModel
 
   public void setButtons()
   {
-    System.err.println( "ButtonTableModel.setButtons()" );
     Remote remote = deviceUpgrade.getRemote();
     this.buttons = remote.getUpgradeButtons();
     columnNames[ shiftedCol ] = remote.getShiftLabel();
@@ -43,7 +42,6 @@ public class ButtonTableModel
 
   public int getColumnCount()
   {
-    System.err.println( "ButtonTable.getColumnCount()" );
     Remote remote = deviceUpgrade.getRemote();
     if (( remote != null ) && remote.getXShiftEnabled())
       return 4;
@@ -88,7 +86,6 @@ public class ButtonTableModel
           otherRow = i;
           break;
         }
-      
     }
     if ( row < otherRow )
       fireTableRowsUpdated( row, otherRow );

@@ -269,13 +269,10 @@ public class KeyMapMaster
     loadRemotes();
     setRemotes( remotes );
 
-    System.err.println( "Setting default remote" );
     int index = 0;
     if ( lastRemoteName != null )
     {
-      System.err.print( "Searcing for " + lastRemoteName );
       index = Arrays.binarySearch( remotes, lastRemoteName );
-      System.err.println( " index is " + index );
     }
     if ( index < 0 )
       index = 0;

@@ -57,9 +57,6 @@ public class SetupPanel
     setupCode = new JFormattedTextField( nf );
     setupCode.addPropertyChangeListener( this );
     setupCode.addFocusListener( this );
-//    setupCode.setInputVerifier( new IntVerifier( 0, 2047 ));
-//    setupCode.addActionListener( this );
-//    setupCode.getDocument().addDocumentListener( this );
     label.setLabelFor( setupCode );
     setupCode.setToolTipText( "Enter the desired setup code (between 0 and 2047) for the device upgrade." );
 
@@ -118,7 +115,6 @@ public class SetupPanel
   {
     updateInProgress = true;
     setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
-//    setupCode.setText( nf.format( deviceUpgrade.getSetupCode()));
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
     Vector protocols = protocolManager.getProtocolsForRemote( remote );
@@ -210,8 +206,6 @@ public class SetupPanel
         SwingUtilities.updateComponentTreeUI( this );
       }
     }
-//    else if ( source == setupCode )
-//      updateSetupCode();
     else // must be a protocol parameter
       updateFixedData();
   } // actionPerformed
@@ -224,13 +218,6 @@ public class SetupPanel
 
   public void commit()
   {
-//    Protocol p = getSelectedProtocol();
-// if ( p != null )
-//      deviceUpgrade.setProtocol( p );
-
-//    for ( int i = 0; i < parameters.length; i++ )
-//      parameters[ i ].commit();
-
     deviceUpgrade.getProtocol().updateFunctions( deviceUpgrade.getFunctions());
   }
 
@@ -242,7 +229,6 @@ public class SetupPanel
   private void updateSetupCode()
   {
     int val = (( Integer )setupCode.getValue()).intValue();
-//    setupCode.setText( nf.format( val ));
     deviceUpgrade.setSetupCode( val );
   }
 
@@ -253,8 +239,6 @@ public class SetupPanel
       Document doc = e.getDocument();
       if ( doc == notes.getDocument() )
         updateNotes();
-  //    else if ( doc == setupCode.getDocument())
-  //      updateSetupCode();
       else
         updateFixedData();
     }
@@ -285,11 +269,6 @@ public class SetupPanel
 
   public void focusLost( FocusEvent e )
   {
-//    JTextComponent tc = ( JTextComponent )e.getSource();
-//    if ( tc == setupCode )
-//      updateSetupCode();
-//    else
-//      updateFixedData();
   }
 
   // ItemListener

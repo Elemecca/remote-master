@@ -25,12 +25,6 @@ public class LayoutPanel
     // Don't know why, but tooltips don't work without this
     imagePanel.setToolTipText( "" );
 
-//    JPanel fPanel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 0 ));
-//    fPanel.add( imagePanel );
-
-//    add( new JScrollPane( fPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-//                          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER ),
-//         BorderLayout.WEST );
     scrollPane = new JScrollPane( imagePanel,
                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
@@ -39,24 +33,43 @@ public class LayoutPanel
     JPanel rightPanel = new JPanel( new BorderLayout());
     add( rightPanel, BorderLayout.CENTER );
 
-    JPanel infoPanel = new JPanel( new GridLayout( 2, 3 ));
+    JPanel modePanel = new JPanel( new FlowLayout( FlowLayout.LEFT ));
+    modePanel.setBorder( BorderFactory.createTitledBorder( "Mode" ));
+
+    ButtonGroup group = new ButtonGroup();
+
+    normalMode = new JRadioButton( "Normal", true );
+    normalMode.addActionListener( this );
+    group.add( normalMode );
+    modePanel.add( normalMode );
+    
+    shiftMode = new JRadioButton( "Shift" );
+    shiftMode.addActionListener( this );
+    group.add( shiftMode );
+    modePanel.add( shiftMode );
+    
+    xShiftMode = new JRadioButton( "XShift" );
+    xShiftMode.addActionListener( this );
+    group.add( xShiftMode );
+    modePanel.add( xShiftMode );
+
+    JPanel infoPanel = new JPanel( new GridLayout( 2, 2 ));
 
     infoPanel.add( new JLabel( "Button:" ));
-    infoPanel.add( new JLabel( "Function:" ));
-    infoPanel.add( new JLabel( "Shifted:" ));
     buttonName = new JTextField();
     buttonName.setEditable( false );
     infoPanel.add( buttonName );
 
+    infoPanel.add( new JLabel( "Function:" ));
     function = new JTextField();
     function.setEditable( false );
     infoPanel.add( function );
 
-    shifted = new JTextField();
-    shifted.setEditable( false );
-    infoPanel.add( shifted );
+    Box box = Box.createVerticalBox();
+    box.add( modePanel );
+    box.add( infoPanel );
 
-    rightPanel.add( infoPanel, BorderLayout.NORTH );
+    rightPanel.add( box, BorderLayout.NORTH );
 
     JPanel panel = new JPanel( new BorderLayout());
     JLabel label = new JLabel( "Available Functions:" );
@@ -66,19 +79,17 @@ public class LayoutPanel
 
     JPanel outerPanel = new JPanel( new BorderLayout());
     functionPanel = new JPanel( new GridFlowLayout());
-//    functionPanel = new JPanel( new GridLayout( 0, 4 ));
 
     outerPanel.add( functionPanel, BorderLayout.CENTER );
-//    outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.NORTH );
     panel.add( outerPanel, BorderLayout.CENTER );
 
     panel = new JPanel();
     autoAssign = new JButton( "Auto assign" );
-    autoAssign.setToolTipText( "Assign functions to buttons of the same name that don't have a functon." );
+    autoAssign.setToolTipText( "Automatically assign functions to buttons, by matching names." );
     autoAssign.addActionListener( this );
     panel.add( autoAssign );
 
-    Box box = Box.createVerticalBox();
+    box = Box.createVerticalBox();
     box.add( new JSeparator());
     box.add( panel );
 
@@ -94,16 +105,16 @@ public class LayoutPanel
         Point p = e.getPoint();
         ButtonShape savedShape = currentShape;
         currentShape = getShapeAtPoint( p );
+        Button b = getButtonForShape( currentShape );
+        if ( b == null )
+          currentShape = null;
+
         if ( currentShape == null )
           return;
-        Button button = currentShape.getButton();
-        if ((( e.getModifiersEx() & e.CTRL_DOWN_MASK ) != 0 ) &&
-             ( button.getShiftedButton() != null ))
-            button = button.getShiftedButton();
 
         if ( currentShape != savedShape )
         {
-          setButtonText( currentShape );
+          setButtonText( currentShape, getButtonForShape( currentShape ));
           doRepaint();
         }
         showPopup( e );
@@ -202,11 +213,20 @@ public class LayoutPanel
     }
     if ( !found )
       currentShape = null;
-      
 
-    setButtonText( currentShape );
+    setButtonText( currentShape, getButtonForShape( currentShape ));
 
     setFunctions();
+
+    if ( r.getXShiftEnabled())
+      xShiftMode.setEnabled( true );
+    else
+    {
+      xShiftMode.setEnabled( false );
+      if ( xShiftMode.isSelected())
+        normalMode.setSelected( true );
+    }
+
     doRepaint();
   }
 
@@ -215,37 +235,53 @@ public class LayoutPanel
     imagePanel.repaint( 0L, 0, 0, imagePanel.getWidth(), imagePanel.getHeight());
   }
 
-  private void setButtonText( ButtonShape buttonShape )
+  private void setButtonText( ButtonShape buttonShape, Button b )
   {
-    if ( buttonShape != null )
+    if (( buttonShape != null ) && ( b != null ))
     {
-      Button b = buttonShape.getButton();
+      Remote r = deviceUpgrade.getRemote();
       String name = buttonShape.getName();
       if ( name == null )
-        name = b.getName();
+      {
+        if ( normalMode.isSelected())
+          name = b.getName();
+        else if ( shiftMode.isSelected())
+        {
+          name = b.getShiftedName();
+          if ( name == null )
+            name = r.getShiftLabel() + '-' + b.getName(); 
+        }
+        else if ( xShiftMode.isSelected())
+        {
+          name = b.getXShiftedName();
+          if ( name == null )
+            name = r.getXShiftLabel() + '-' + b.getName();
+        }
+      }
       buttonName.setText( name );
-      Function f = b.getFunction();
+      Function f = null;
+      if ( normalMode.isSelected())
+        f = b.getFunction();
+      else if ( shiftMode.isSelected())
+        f = b.getShiftedFunction();
+      else if ( xShiftMode.isSelected())
+        f = b.getXShiftedFunction();
       if ( f != null )
         function.setText( f.getName());
       else
         function.setText( "" );
-      f = b.getShiftedFunction();
-      if ( f != null )
-        shifted.setText( f.getName());
-      else
-        shifted.setText( "" );
     }
     else
     {
       buttonName.setText( "" );
       function.setText( "" );
-      shifted.setText( "" );
     }
   }
 
   public ButtonShape getShapeAtPoint( Point p )
   {
     ButtonShape[] buttonShapes = deviceUpgrade.getRemote().getButtonShapes();
+    ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
     for ( int i = 0; i < buttonShapes.length; i++ )
     {
       ButtonShape buttonShape = buttonShapes[ i ];
@@ -256,7 +292,64 @@ public class LayoutPanel
     return null;
   }
 
-// From interface ActionListener
+  public Button getButtonForShape( ButtonShape buttonShape )
+  {
+    if ( buttonShape == null )
+      return null;
+
+    Button b = buttonShape.getButton();
+    ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
+    if ( normalMode.isSelected())
+    {
+      if ( !b.getIsNormal())
+        return null;
+      else if ( b.allowsKeyMove() || map.isPresent( b )) 
+        return b;
+    }
+    else if ( shiftMode.isSelected())
+    {
+      if ( b.getIsNormal())
+      {
+        if ( !b.allowsShiftedKeyMove())
+          return null;
+        if (( b.getShiftedButton() != null ))
+          b = b.getShiftedButton();
+        else
+          return b;
+      }
+      if ( b.getIsShifted())
+      {
+        if ( b.allowsKeyMove() || map.isPresent( b ))
+          return b.getBaseButton();
+        else
+          return null;
+      }
+      else
+        return null;
+    }
+    else if ( xShiftMode.isSelected())
+    {
+      if ( b.getIsNormal())
+      {
+        if ( !b.allowsXShiftedKeyMove())
+          return null;
+        if ( b.getXShiftedButton() != null )
+          b = b.getXShiftedButton();
+        else 
+          return b;
+      }
+      if ( b.getIsXShifted())
+      {
+        if ( b.allowsKeyMove() || map.isPresent( b ))
+          return b.getBaseButton();
+      }
+      else if ( b.allowsXShiftedKeyMove())
+        return b;
+    }
+    return null;
+  }
+
+  // From interface ActionListener
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -265,23 +358,15 @@ public class LayoutPanel
       deviceUpgrade.autoAssignFunctions();
       doRepaint();
     }
-    else if ( currentShape != null )
+    else if (( source == normalMode ) || 
+             ( source == shiftMode ) ||
+             ( source == xShiftMode ))
     {
-      Button button = currentShape.getButton();
-      Function function = (( FunctionItem )source ).getFunction();
-      if (( e.getModifiers() & e.CTRL_MASK ) == 0 )
-        button.setFunction( function );
-      else
-      {
-        if ( button.getShiftedButton() != null )
-        {
-          button = button.getShiftedButton();
-          button.setFunction( function );
-        }
-        else
-          button.setShiftedFunction( function );
-      }
-      setButtonText( currentShape );
+      Button b = getButtonForShape( currentShape );
+      if ( b == null )
+        currentShape = null;
+      setButtonText( currentShape, b );
+      doRepaint();
     }
   }
 
@@ -294,13 +379,20 @@ public class LayoutPanel
         e.consume();
       else
       {
-        Button button = currentShape.getButton();
-        FunctionLabel label = ( FunctionLabel )e.getSource();
-        if (( e.getModifiersEx() & e.CTRL_DOWN_MASK ) == 0 )
-          button.setFunction( label.getFunction());
-        else
-          button.setShiftedFunction( label.getFunction());
-        setButtonText( currentShape );
+        Button button = getButtonForShape( currentShape );
+        if ( button == null )
+          return;
+
+        ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
+        Function f = ( Function )(( FunctionLabel )e.getSource()).getFunction();
+        if ( normalMode.isSelected())
+            button.setFunction( f );
+        else if ( shiftMode.isSelected())
+          button.setShiftedFunction( f );
+        else if ( xShiftMode.isSelected())
+          button.setXShiftedFunction( f );
+          
+        setButtonText( currentShape, button );
         doRepaint();
       }
     }
@@ -318,15 +410,14 @@ public class LayoutPanel
     {
       Point p = dtde.getLocation();
       currentShape = getShapeAtPoint( p );
-      int action = dtde.getDropAction();
-      if (( currentShape != null ) &&
-          (( action == DnDConstants.ACTION_COPY ) ||
-            ( action == DnDConstants.ACTION_MOVE )))
-      {
-        dtde.acceptDrag( action );
-      }
+      Button button = getButtonForShape( currentShape );
+      if ( button != null )
+        dtde.acceptDrag( dtde.getDropAction());
       else
+      {
+        currentShape = null;
         dtde.rejectDrag();
+      }
       doRepaint();
     }
 
@@ -334,9 +425,9 @@ public class LayoutPanel
     {
       Point p = dtde.getLocation();
       currentShape = getShapeAtPoint( p );
-      if ( currentShape != null )
+      Button button = getButtonForShape( currentShape );
+      if ( button != null )
       {
-        Button button = currentShape.getButton();
         int action = dtde.getDropAction();
         dtde.acceptDrop( action );
         Transferable tf = dtde.getTransferable();
@@ -344,21 +435,13 @@ public class LayoutPanel
         try
         {
           Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor());
-          if ( action == DnDConstants.ACTION_COPY )
-          {
-            if ( button.getShiftedButton() != null )
-            {
-              button = button.getShiftedButton();
-              button.setFunction( f );
-            }
-            else
-              button.setShiftedFunction( f );
-          }
-          else if ( action == DnDConstants.ACTION_MOVE )
-          {
+          if ( normalMode.isSelected())
             button.setFunction( f );
-          }
-          setButtonText( currentShape );
+          else if ( shiftMode.isSelected())
+            button.setShiftedFunction( f );
+          else if ( xShiftMode.isSelected())
+            button.setXShiftedFunction( f );
+          setButtonText( currentShape, button );
         }
         catch ( Exception e )
         {
@@ -369,7 +452,6 @@ public class LayoutPanel
         dtde.rejectDrop();
       doRepaint();
     }
-
   }
 
   private class ImagePanel
@@ -402,33 +484,35 @@ public class LayoutPanel
       for ( int i = 0; i < buttonShapes.length; i++ )
       {
         ButtonShape buttonShape = buttonShapes[ i ];
-        Button b = buttonShape.getButton();
+        Button b = getButtonForShape( buttonShape );
+        if ( b == null )
+          continue;
+
         Shape s = buttonShape.getShape();
-        if ( s != null )
+
+        Function f = null;
+        if ( normalMode.isSelected())
+          f = b.getFunction();
+        else if ( shiftMode.isSelected())
+          f = b.getShiftedFunction();
+        else if ( xShiftMode.isSelected())
+          f = b.getXShiftedFunction();
+        
+        if ( f != null )
         {
-          Function f = b.getFunction();
-          Function sf = b.getShiftedFunction();
-          if (( f != null ) && ( sf == null ))
-          {
-            g2.setPaint( Color.blue );
-            g2.fill( s );
-          }
-          else if (( f == null ) && ( sf != null ))
-          {
-            g2.setPaint( Color.yellow );
-            g2.fill( s );
-          }
-          else if (( f != null ) && ( sf != null ))
-          {
-            g2.setPaint( Color.green );
-            g2.fill( s );
-          }
-          
-          if ( map.isPresent( b ))
-          {
-            g2.setPaint( Color.orange );
-            g2.draw( s );
-          }
+          g2.setPaint( Color.yellow );
+          g2.fill( s );
+        }
+        
+        if ( shiftMode.isSelected())
+          b = b.getShiftedButton();
+        else if ( xShiftMode.isSelected())
+          b = b.getXShiftedButton();
+        
+        if ( map.isPresent( b ))
+        {
+          g2.setPaint( Color.orange );
+          g2.draw( s );
         }
       }
     }
@@ -436,20 +520,34 @@ public class LayoutPanel
     public String getToolTipText( MouseEvent e )
     {
       ButtonShape buttonShape = getShapeAtPoint( e.getPoint());
-      if ( buttonShape != null )
-      {
-        Button b = buttonShape.getButton();
-        String name = buttonShape.getName();
-        if ( name != null )
-          return name;
-        if ((( e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK ) != 0 ) &&
-            ( b.getShiftedButton() != null ))
-          return b.getShiftedButton().getName();
-        else
-          return b.getName();
-      }
-      else
+      if ( buttonShape == null )
         return null;
+
+      Button b = getButtonForShape( buttonShape );
+      if ( b == null )
+        return null;
+     
+      String name = buttonShape.getName();
+      if ( name != null )
+        return name;
+
+      Remote r = deviceUpgrade.getRemote();
+      if ( normalMode.isSelected())
+        name = b.getName();
+      else if ( shiftMode.isSelected())
+      {
+        name = b.getShiftedName();
+        if ( name == null )
+          name = r.getShiftLabel() + '-' + b.getName();
+      }
+      else if ( xShiftMode.isSelected())
+      {
+        name = b.getXShiftedName();
+        if ( name == null )
+          name = r.getXShiftLabel() + '-' + b.getName();
+      }
+
+      return name;
     }
 
     public Dimension getPreferredScrollableViewportSize()
@@ -498,9 +596,11 @@ public class LayoutPanel
 
   private ButtonShape currentShape = null;
   private JPanel imagePanel = null;
+  private JRadioButton normalMode = null;
+  private JRadioButton shiftMode = null;
+  private JRadioButton xShiftMode = null;
   private JTextField buttonName = null;
   private JTextField function = null;
-  private JTextField shifted = null;
   private JButton autoAssign = null;
   private JPopupMenu popup = null;
   private JPanel functionPanel = null;

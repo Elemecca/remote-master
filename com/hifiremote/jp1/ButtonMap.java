@@ -48,6 +48,8 @@ public class ButtonMap
 
   public boolean isPresent( Button b )
   {
+    if ( b == null )
+      return false;
     return b.inButtonMap( number );
   }
 

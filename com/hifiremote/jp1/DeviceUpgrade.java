@@ -743,17 +743,13 @@ public class DeviceUpgrade
       if (( token != null ) && ( token.length() == 5 ) &&
           token.startsWith( "num " ) && Character.isDigit( token.charAt( 4 )))
         token = token.substring( 4 ); 
-      System.err.println( "Function name=" + token );
 
       Function f = getFunction( token, usedFunctions );
       if ( f == null )
       {
-        System.err.println( "Creating new function with name " + token );
         f = new Function();
         f.setName( token );
       }
-      else
-        System.err.println( "Updating function with name " + token );
 
       token = getNextField( st, delim );  // get the function code (field 2)
       if ( token != null )
@@ -785,7 +781,6 @@ public class DeviceUpgrade
       String buttonName = getNextField( st, delim ); // get assigned button name (field 4)
       if (( buttonName != null ) && buttonName.length() == 0 )
         buttonName = null;
-      System.err.println( "Button name=" + buttonName );
       Button b = null;
       if ( buttonName != null )
         b = remote.findByStandardName( new Button( buttonName, null, ( byte )0 ));
@@ -799,7 +794,6 @@ public class DeviceUpgrade
            ( token.charAt( 4 ) == ' ' ))
       {
         String name = token.substring( 5 );
-        System.err.println( "Normal function is " + name ); 
         if (( name.length() == 5 ) && name.startsWith( "num " ) && 
               Character.isDigit( name.charAt( 4 )))
           name = name.substring( 4 );
@@ -841,7 +835,6 @@ public class DeviceUpgrade
       if ( token != null )
       {
         String name = token.substring( 5 );
-        System.err.println( "Shifted function is " + name );
         if (( name.length() == 5 ) && name.startsWith( "num " ) && 
               Character.isDigit( token.charAt( 4 )))
           name = name.substring( 4 ); 
