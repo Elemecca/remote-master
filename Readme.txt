@@ -143,6 +143,7 @@ Sony20
 Sony Combo (old)
 Sony Combo (new)
 Sony DSP
+Thomson
 TiVo Hacked
 TiVo Official
 X10

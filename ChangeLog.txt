@@ -1,3 +1,9 @@
+Changed for v0.61
+
+- Add/update remote images, maps and rdfs
+- Add Thomson protocol
+- Migrated command parameters when protocol changes are a result of changing remote.
+
 Changes for v0.60
 
 - Add support for named shifted buttons
