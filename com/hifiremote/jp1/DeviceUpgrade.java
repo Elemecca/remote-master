@@ -357,7 +357,14 @@ public class DeviceUpgrade
       String token = st.nextToken();
       Integer val = null;
       if ( !token.equals( "null" ))
-        val = new Integer( token );
+      {
+        if ( token.equals( "true" ))
+          val = new Integer( 1 );
+        else if ( token.equals( "false" ))
+          val = new Integer( 0 );
+        else
+          val = new Integer( token );
+      }
       parms[ i ] = new Value( val, null );
     }
     return parms;
