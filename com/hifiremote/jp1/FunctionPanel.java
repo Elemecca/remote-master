@@ -5,7 +5,7 @@ import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import javax.swing.JButton;
+import javax.swing.*;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -17,16 +17,15 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
+import java.awt.event.*;
 import java.awt.event.MouseEvent;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import info.clearthought.layout.TableLayout;
 
 public class FunctionPanel
   extends KMPanel
@@ -35,31 +34,21 @@ public class FunctionPanel
   public FunctionPanel( DeviceUpgrade devUpgrade )
   {
     super( devUpgrade );
-
-    double s = 20;       // space between rows and cols
-    double f = TableLayout.FILL;
-    double p = TableLayout.PREFERRED;
-    double size[][] =
-    {
-      { f, s, p, s },                     // cols
-      { s, p, s, p, s, p, s, p, s, p, f } // rows
-    };
-
-    TableLayout layout = new TableLayout( size );
-    setLayout( layout );
+    setLayout( new BorderLayout());
 
     kit = Toolkit.getDefaultToolkit();
     clipboard = kit.getSystemClipboard();
 
     table = new FunctionTable( devUpgrade.getFunctions());
-//    table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
-    table.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+    table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
-//    table.setCellSelectionEnabled( true );
+    table.setCellSelectionEnabled( true );
     table.setRowSelectionAllowed( true );
     table.setSurrendersFocusOnKeystroke( true );
-    table.setDragEnabled( true );
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
+    table.getTableHeader().setToolTipText( "Click to sort is ascending order, or shift-click to sort in descending order." );
+    (( DefaultCellEditor )table.getDefaultEditor( String.class )).setClickCountToStart( 1 );
+
     TransferHandler th = new TransferHandler()
     {
       protected Transferable createTransferable( JComponent c )
@@ -120,14 +109,24 @@ public class FunctionPanel
 
     popup = new JPopupMenu();
     newItem = new JMenuItem( "New" );
+    newItem.setToolTipText( "Create a new function" );
     newItem.addActionListener( this );
     popup.add( newItem );
 
     deleteItem = new JMenuItem( "Delete" );
+    deleteItem.setToolTipText( "Delete the selected function(s)" );
     deleteItem.addActionListener( this );
     popup.add( deleteItem );
 
+    popup.add( new JSeparator());
+
+    copyItem = new JMenuItem( "Copy" );
+    copyItem.setToolTipText( "Copy the selection to the clipboard." );
+    copyItem.addActionListener( this );
+    popup.add( copyItem );
+
     pasteItem = new JMenuItem( "Paste" );
+    pasteItem.setToolTipText( "Paste from the clipboard into the selection." );
     pasteItem.addActionListener( this );
     popup.add( pasteItem );
 
@@ -166,36 +165,57 @@ public class FunctionPanel
     };
     table.addMouseListener( mh );
 
-    add( new JScrollPane( table ), "0, 0, 0, 10" );
+    MouseMotionAdapter mmh = new MouseMotionAdapter()
+    {
+      public void mouseDragged( MouseEvent e )
+      {
+        int tableCol = table.columnAtPoint( e.getPoint());
+        int modelCol = table.convertColumnIndexToModel( tableCol );
+        if ( modelCol == 0 )
+          table.getTransferHandler().exportAsDrag( table, e, TransferHandler.MOVE );        
+      }
+    };
+    table.addMouseMotionListener( mmh );
+
+    add( new JScrollPane( table ), BorderLayout.CENTER );
+
+    JPanel buttonPanel = new JPanel();
+    add( buttonPanel, BorderLayout.SOUTH );
 
     newButton = new JButton( "New" );
     newButton.addActionListener( this );
     newButton.setToolTipText( "Add a new function." );
-    add( newButton, "2, 1" );
+    buttonPanel.add( newButton );
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
     deleteButton.setToolTipText( "Delete a function." );
     deleteButton.setEnabled( false );
-    add( deleteButton, "2, 3" );
+    buttonPanel.add( deleteButton );
 
     upButton = new JButton( "Move up" );
     upButton.addActionListener( this );
     upButton.setToolTipText( "Move the selected function up in the list." );
     upButton.setEnabled( false );
-    add( upButton, "2, 5" );
+    buttonPanel.add( upButton );
 
     downButton = new JButton( "Move down" );
     downButton.addActionListener( this );
     downButton.setToolTipText( "Move the selected function down in the list." );
     downButton.setEnabled( false );
-    add( downButton, "2, 7" );
+    buttonPanel.add( downButton );
+
+    copyButton = new JButton( "Copy" );
+    copyButton.addActionListener( this );
+    copyButton.setToolTipText( "Copy" );
+    copyButton.setEnabled( false );
+    buttonPanel.add( copyButton );
 
     pasteButton = new JButton( "Paste" );
     pasteButton.addActionListener( this );
     pasteButton.setToolTipText( "Paste" );
     pasteButton.setEnabled( false );
-    add( pasteButton, "2, 9" );
+    buttonPanel.add( pasteButton );
   }
 
   private void finishEditing()
@@ -232,6 +252,7 @@ public class FunctionPanel
     if ( source.getClass() == JButton.class )
     {
       row = table.getSelectedRow();
+      col = table.getSelectedColumn();
       select = true;
     }
     else
@@ -301,6 +322,33 @@ public class FunctionPanel
       model.fireTableRowsUpdated( start, end );
       if ( select )
         table.setRowSelectionInterval( sel, sel );
+    }
+    else if (( source == copyItem ) || ( source == copyButton ))
+    {
+      int[] selectedRows = table.getSelectedRows();
+      int[] selectedCols = table.getSelectedColumns();
+      StringBuffer buff = new StringBuffer( 200 );
+      for ( int rowNum = 0; rowNum < selectedRows.length; rowNum ++ )
+      {
+        if ( rowNum != 0 )
+          buff.append( "\n" );
+        for ( int colNum = 0; colNum < selectedCols.length; colNum++ )
+        {
+          if ( colNum != 0 )
+            buff.append( "\t" );
+          Object value = 
+            model.getValueAt( selectedRows[ rowNum ],
+                              table.convertColumnIndexToModel( selectedCols[ colNum ]));
+          if ( value != null )
+          {
+            if ( value.getClass() == byte[].class )
+              value = Protocol.hex2String(( byte[] )value );
+            buff.append( value.toString() );
+          }
+        }
+      }
+      StringSelection data = new StringSelection( buff.toString());
+      clipboard.setContents( data, data );
     }
     else if (( source == pasteItem ) || ( source == pasteButton ))
     {
@@ -392,14 +440,14 @@ public class FunctionPanel
     {
       Vector functions = deviceUpgrade.getFunctions();
       int row = table.getSelectedRow();
-      boolean flag = ( row != -1 );
-      if ( flag )
+      if ( row != -1 )
       {
         Function func = ( Function )functions.elementAt( row );
         upButton.setEnabled( row > 0 );
         downButton.setEnabled( row < ( functions.size() - 1 ));
         deleteButton.setEnabled( !func.assigned());
         Transferable clipData = clipboard.getContents( clipboard );
+        copyButton.setEnabled( true );
         if (( clipData != null ) &&
             clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
           pasteButton.setEnabled( true );
@@ -410,6 +458,7 @@ public class FunctionPanel
       {
         deleteButton.setEnabled( false );
         pasteButton.setEnabled( false );
+        copyButton.setEnabled( false );
         upButton.setEnabled( false );
         downButton.setEnabled( false );
       }
@@ -426,12 +475,14 @@ public class FunctionPanel
   private JButton deleteButton = null;
   private JButton upButton = null;
   private JButton downButton = null;
+  private JButton copyButton = null;
   private JButton pasteButton = null;
   private int popupRow = 0;
   private int popupCol = 0;
   private JPopupMenu popup = null;
   private JMenuItem newItem = null;
   private JMenuItem deleteItem = null;
+  private JMenuItem copyItem = null;
   private JMenuItem pasteItem = null;
   private Clipboard clipboard = null;
   private Toolkit kit = null;

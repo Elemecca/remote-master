@@ -13,12 +13,13 @@ public class ExternalFunctionTableModel
 {
   private DeviceUpgrade upgrade = null;
   private DefaultCellEditor devTypeEditor = null;
-  private final static int nameCol = 0;
-  private final static int devTypeCol = 1;
-  private final static int setupCodeCol = 2;
-  private final static int typeCol = 3;
-  private final static int hexCol = 4;
-  private final static int notesCol = 5;
+  private final static int rowCol = 0;
+  private final static int nameCol = rowCol + 1;
+  private final static int devTypeCol = nameCol + 1;
+  private final static int setupCodeCol = devTypeCol + 1;
+  private final static int typeCol = setupCodeCol + 1;
+  private final static int hexCol = typeCol + 1;
+  private final static int notesCol = hexCol + 1;
 
   public ExternalFunctionTableModel( DeviceUpgrade upgrade )
   {
@@ -41,7 +42,7 @@ public class ExternalFunctionTableModel
 
   public int getColumnCount()
   {
-    return 6;
+    return 7;
   }
 
   public Object getValueAt( int row, int col )
@@ -54,6 +55,9 @@ public class ExternalFunctionTableModel
 
     switch ( col )
     {
+      case rowCol:
+        rc = new Integer( row + 1 );
+        break;
       case nameCol:
         rc = function.getName();
         break;
@@ -157,6 +161,9 @@ public class ExternalFunctionTableModel
     TableCellRenderer rc = null;
     switch ( col )
     {
+      case rowCol:
+        rc = new RowNumberRenderer();
+        break;
       case nameCol:
         break;
       case devTypeCol:
@@ -191,13 +198,16 @@ public class ExternalFunctionTableModel
 
   public boolean isCellEditable( int row, int col )
   {
-    return true;
+    boolean rc = true;
+    if ( col == rowCol )
+      rc = false;
+    return rc;   
   }
 
   private final static String[] names =
-    { "Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "Notes" };
+    { " # ", "Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "Notes" };
   private final static Class[] classes =
-    { String.class, DeviceType.class, Integer.class, Integer.class, ExternalFunction.class, String.class };
+    { Integer.class, String.class, DeviceType.class, Integer.class, Integer.class, ExternalFunction.class, String.class };
 
   private final static Choice[] choices =
   {

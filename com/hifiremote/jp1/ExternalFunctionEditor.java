@@ -11,6 +11,7 @@ public class ExternalFunctionEditor
   public ExternalFunctionEditor()
   {
     super( new JTextField());
+    setClickCountToStart( 1 );
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
     this.min = 0;
     this.max = 255;

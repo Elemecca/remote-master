@@ -10,6 +10,7 @@ public class HexEditor
   public HexEditor( byte[] defaultHex )
   {
     super( new JTextField());
+    setClickCountToStart( 1 );
     this.defaultHex = defaultHex;
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }

@@ -13,14 +13,16 @@ public class FunctionTable
   extends JTable
 {
   private FunctionTableModel model;
+  private TableSorter sorter;
 
   public FunctionTable( Vector functions )
   {
     try
     {
       model = new FunctionTableModel( functions );
-      setModel( model );
-//      getTableHeader().setReorderingAllowed( false );
+      sorter = new TableSorter( model );
+      sorter.addMouseListenerToHeaderInTable( this );
+      setModel( sorter );
     }
     catch ( Exception e )
     {
@@ -32,7 +34,11 @@ public class FunctionTable
   public void setFunctions( Vector functions )
   {
     if ( model == null )
+    {
       model = new FunctionTableModel( functions );
+      sorter = new TableSorter( model );
+      setModel( sorter );
+    }
     else
       model.setFunctions( functions );
   }
@@ -49,12 +55,16 @@ public class FunctionTable
 
     int cols = model.getColumnCount();
     int lastCol = cols - 1;
-    for ( int i = 1; i < lastCol; i++ )
+    for ( int i = 0; i < lastCol; i++ )
     {
       column = columnModel.getColumn( i );
-      l.setText( model.getColumnName( i ));
-      width =  l.getPreferredSize().width;
-      column.setMaxWidth( width );
+      
+      if ( i != 1 )
+      {
+        l.setText( model.getColumnName( i ));
+        width =  l.getPreferredSize().width;
+        column.setMaxWidth( width );
+      }
 
       TableCellEditor editor = model.getColumnEditor( i );
       if ( editor != null )

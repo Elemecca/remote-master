@@ -5,7 +5,8 @@ import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import javax.swing.BorderFactory;
+import javax.swing.*;
+import javax.swing.JToolBar;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JComponent;
@@ -22,16 +23,17 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableColumn;
+import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import info.clearthought.layout.TableLayout;
 
 public class ExternalFunctionPanel
   extends KMPanel
@@ -41,39 +43,35 @@ public class ExternalFunctionPanel
   {
     super( devUpgrade );
 
-    double s = 20;       // space between rows and cols
-    double f = TableLayout.FILL;
-    double p = TableLayout.PREFERRED;
-    double size[][] =
-    {
-      { f, s, p, s },                     // cols
-      { s, p, s, p, s, p, s, p, s, p, f } // rows
-    };
-
-    TableLayout layout = new TableLayout( size );
-    setLayout( layout );
+    setLayout( new BorderLayout() );
 
     kit = Toolkit.getDefaultToolkit();
     clipboard = kit.getSystemClipboard();
 
     model = new ExternalFunctionTableModel( devUpgrade );
-    table = new JTable( model );
-    table.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+    TableSorter sorter = new TableSorter( model );
+    table = new JTable( sorter );
+    sorter.addMouseListenerToHeaderInTable( table );
+    table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
-    table.setRowSelectionAllowed( true );
+    table.setCellSelectionEnabled( true );
     table.setSurrendersFocusOnKeystroke( true );
-    table.setDragEnabled( true );
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
+    table.getTableHeader().setToolTipText( "Click to sort is ascending order, or shift-click to sort in descending order." );
+    (( DefaultCellEditor )table.getDefaultEditor( String.class )).setClickCountToStart( 1 );
     TableColumnModel colModel = table.getColumnModel();
     JLabel l = new JLabel();
     l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
 
-    for ( int i = 1; i < model.getColumnCount() - 1; i++ )
+    for ( int i = 0; i < model.getColumnCount() - 1; i++ )
     {
       TableColumn col = colModel.getColumn( i );
       
-      l.setText( model.getColumnName( i ));
-      col.setMaxWidth( l.getPreferredSize().width );
+      if ( i != 1 )
+      {
+        l.setText( model.getColumnName( i ));
+        col.setMaxWidth( l.getPreferredSize().width );
+      }
 
       TableCellEditor editor = model.getEditor( i );
       if ( editor != null )
@@ -190,36 +188,62 @@ public class ExternalFunctionPanel
     };
     table.addMouseListener( mh );
 
-    add( new JScrollPane( table ), "0, 0, 0, 10" );
+    MouseMotionAdapter mmh = new MouseMotionAdapter()
+    {
+      public void mouseDragged( MouseEvent e )
+      {
+        int tableCol = table.columnAtPoint( e.getPoint());
+        int modelCol = table.convertColumnIndexToModel( tableCol );
+        if ( modelCol == 0 )
+          table.getTransferHandler().exportAsDrag( table, e, TransferHandler.MOVE );        
+      }
+    };
+    table.addMouseMotionListener( mmh );
 
-    newButton = new JButton( "New" );
+    add( new JScrollPane( table ), BorderLayout.CENTER );
+
+//    JToolBar toolbar = new JToolBar( SwingConstants.HORIZONTAL );
+//    toolbar.setFloatable( false );
+    JPanel toolbar = new JPanel();
+    add( toolbar, BorderLayout.SOUTH );
+
+    newButton = new JButton( "New" ); // loadImageIcon( "images/new.gif" ));
     newButton.addActionListener( this );
     newButton.setToolTipText( "Add a new function." );
-    add( newButton, "2, 1" );
+    toolbar.add( newButton );
 
-    deleteButton = new JButton( "Delete" );
+    deleteButton = new JButton( "Delete" ); // loadImageIcon( "images/delete.gif" ));
     deleteButton.addActionListener( this );
     deleteButton.setToolTipText( "Delete a function." );
     deleteButton.setEnabled( false );
-    add( deleteButton, "2, 3" );
+    toolbar.add( deleteButton );
 
-    upButton = new JButton( "Move up" );
+    upButton = new JButton( "Move up" ); // loadImageIcon( "images/up.gif" ));
     upButton.addActionListener( this );
     upButton.setToolTipText( "Move the selected function up in the list." );
     upButton.setEnabled( false );
-    add( upButton, "2, 5" );
+    toolbar.add( upButton );
 
-    downButton = new JButton( "Move down" );
+    downButton = new JButton( "Move down" ); // loadImageIcon( "images/down.gif" ));
     downButton.addActionListener( this );
     downButton.setToolTipText( "Move the selected function down in the list." );
     downButton.setEnabled( false );
-    add( downButton, "2, 7" );
+    toolbar.add( downButton );
 
-    pasteButton = new JButton( "Paste" );
+    pasteButton = new JButton( "Paste" ); // loadImageIcon( "images/paste.gif" ));
     pasteButton.addActionListener( this );
     pasteButton.setToolTipText( "Paste" );
     pasteButton.setEnabled( false );
-    add( pasteButton, "2, 9" );
+    toolbar.add( pasteButton );
+  }
+
+  private javax.swing.ImageIcon loadImageIcon( String path )
+  {
+    javax.swing.ImageIcon rc = null;
+    java.net.URL imgURL = getClass().getResource( path );
+    if ( imgURL != null )
+      rc = new javax.swing.ImageIcon( imgURL );
+    return rc;
   }
 
   private void finishEditing()
@@ -245,7 +269,7 @@ public class ExternalFunctionPanel
     finishEditing();
     KeyMapMaster.clearMessage();
     Vector functions = deviceUpgrade.getExternalFunctions();
-    AbstractTableModel model = ( AbstractTableModel )table.getModel();
+//    AbstractTableModel model = ( AbstractTableModel )table.getModel();
     int row = 0;
     int col = 0;
     boolean select = false;
@@ -253,6 +277,7 @@ public class ExternalFunctionPanel
     if ( source.getClass() == JButton.class )
     {
       row = table.getSelectedRow();
+      col = table.getSelectedColumn();
       select = ( row != -1 );
     }
     else

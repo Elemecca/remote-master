@@ -10,11 +10,12 @@ public class FunctionTableModel
 {
   private Vector functions = null;
   private Protocol protocol = null;
-  private final static int nameCol = 0;
-  private final static int efcCol = 1;
-  private final static int colOffset = 2;
-  private int hexCol = 2;
-  private int notesCol = 3;
+  private final static int rowCol = 0;
+  private final static int nameCol = rowCol + 1;
+  private final static int efcCol = nameCol + 1;
+  private final static int colOffset = efcCol + 1;
+  private int hexCol = colOffset;
+  private int notesCol = hexCol + 1;
 
   public FunctionTableModel( Vector functions )
   {
@@ -51,7 +52,7 @@ public class FunctionTableModel
 
   public int getColumnCount()
   {
-    int rc = 4;
+    int rc = 5;
     if ( protocol != null )
       rc += protocol.getColumnCount() ;
     return rc;
@@ -63,7 +64,9 @@ public class FunctionTableModel
     byte[] hex = function.getHex();
 
     Object rc = "";
-    if ( col == nameCol )
+    if ( col == rowCol )
+      rc = new Integer( row + 1 );
+    else if ( col == nameCol )
       rc = function.getName();
     else if ( col == efcCol )
     {
@@ -145,8 +148,11 @@ public class FunctionTableModel
 
   public String getColumnName( int col )
   {
+    System.err.println( "FunctionTableModel.getColumnName( " + col + " )" );
     String rc = null;
-    if ( col == nameCol )
+    if ( col == rowCol )
+      rc = " # ";
+    else if ( col == nameCol )
       rc = "Name";
     else if ( col == efcCol )
       rc = "EFC";
@@ -164,7 +170,7 @@ public class FunctionTableModel
     Class rc = null;
     if (( col == nameCol ) || ( col == notesCol ))
       rc = String.class;
-    else if ( col == efcCol )
+    else if (( col == rowCol ) || ( col == efcCol ))
       rc = Integer.class;
     else if ( col == hexCol )
       rc = byte[].class;
@@ -189,7 +195,7 @@ public class FunctionTableModel
   public TableCellEditor getColumnEditor( int col )
   {
     TableCellEditor rc = null;
-    if (( col == nameCol ) || ( col == notesCol ))
+    if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ))
       rc = null;
     else if ( col == efcCol )
       rc = new ByteEditor();
@@ -203,7 +209,9 @@ public class FunctionTableModel
   public TableCellRenderer getColumnRenderer( int col )
   {
     TableCellRenderer rc = null;
-    if (( col == nameCol ) || ( col == notesCol ))
+    if ( col == rowCol )
+      rc = new RowNumberRenderer();
+    else if (( col == nameCol ) || ( col == notesCol ))
       rc = null;
     else if ( col == efcCol )
       rc = new EFCRenderer();
