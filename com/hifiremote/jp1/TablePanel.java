@@ -1,33 +1,15 @@
 package com.hifiremote.jp1;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.TransferHandler;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.*;
-import java.awt.event.MouseEvent;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.*;
 
 public abstract class TablePanel
   extends KMPanel
@@ -52,7 +34,8 @@ public abstract class TablePanel
     table.setSurrendersFocusOnKeystroke( true );
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     table.getTableHeader().setToolTipText( "Click to sort is ascending order, or shift-click to sort in descending order." );
-//    (( DefaultCellEditor )table.getDefaultEditor( String.class )).setClickCountToStart( 1 );
+    DefaultCellEditor e = ( DefaultCellEditor )table.getDefaultEditor( String.class );
+    new TextPopupMenu(( JTextComponent )e.getComponent());
 
     TransferHandler th = new TransferHandler()
     {

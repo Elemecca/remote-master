@@ -132,6 +132,8 @@ public class KeyMapMaster
     description.getDocument().addDocumentListener( this );
     panel.add( description, "3, 1, 7, 1" );
 
+    new TextPopupMenu( description );
+
     label = new JLabel( "Remote:" );
     panel.add( label, "1, 3" );
     remoteList = new JComboBox();
@@ -490,8 +492,7 @@ public class KeyMapMaster
       if (( customNames == null ) || customNames.length == 0 )
       {
         useCustomNames.setEnabled( false );
-        if  ( !useCustomNames.isSelected())
-          useCustomNames.setSelected( true );
+        useDefaultNames.setSelected( true );
       }
       else
         useCustomNames.setEnabled( true );

@@ -5,6 +5,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.datatransfer.*;
+import java.util.*;
 
 public class TextPopupMenu
   extends JPopupMenu
@@ -16,44 +17,6 @@ public class TextPopupMenu
     c = comp;
 
     c.setDragEnabled( true );
-
-    Action[] actions = c.getActions();
-    JMenuItem item = null;
-    for ( int i = 0; i < actions.length; i++ )
-    {
-      String name = ( String )actions[ i ].getValue( javax.swing.Action.NAME );
-      String text = null;
-      boolean separator = false;
-      if ( name.equals( "cut-to-clipboard" ))
-        text = "Cut";
-      else if ( name.equals( "copy-to-clipboard" ))
-        text = "Copy";
-      else if ( name.equals( "paste-from-clipboard" ))
-        text = "Paste";
-      else if ( name.equals( "select-all" ))
-      {
-        text = "Select All";
-        separator = true;
-      }
-
-      if ( text != null )
-      {
-        if ( separator )
-          addSeparator();
-        item = new JMenuItem( actions[ i ]);
-        item.setText( text );
-        add( item );
-
-        if ( name.equals( "cut-to-clipboard" ))
-          cutItem = item;
-        else if ( name.equals( "copy-to-clipboard" ))
-          copyItem = item;
-        else if ( name.equals( "paste-from-clipboard" ))
-          pasteItem = item;
-        else if ( name.equals( "select-all" ))
-          selectItem = item;
-      }
-    }
 
     MouseAdapter ml = new MouseAdapter()
     {
@@ -72,6 +35,8 @@ public class TextPopupMenu
         if ( e.isPopupTrigger()) 
         {
           c.requestFocusInWindow();
+          if ( cutItem == null )
+            initMenuItems();
           boolean flag = ( c.getSelectedText() != null );
           cutItem.setEnabled( flag );
           copyItem.setEnabled( flag );
@@ -89,6 +54,35 @@ public class TextPopupMenu
       }
     };
     c.addMouseListener( ml );
+  }
+
+  private void initMenuItems()
+  {
+    Action[] actions = c.getActions();
+    Hashtable h = new Hashtable();
+    for ( int i = 0; i < actions.length; i++ )
+    {
+      String name = ( String )actions[ i ].getValue( javax.swing.Action.NAME );
+      if ( name.equals( "cut-to-clipboard" ) || name.equals( "copy-to-clipboard" ) ||
+           name.equals( "paste-from-clipboard" ) || name.equals( "select-all" ))
+      {
+        h.put( name, actions[ i ]);
+      }
+    }
+
+    cutItem = addItem(( Action )h.get( "cut-to-clipboard" ), "Cut" );
+    copyItem = addItem(( Action )h.get( "copy-to-clipboard" ), "Copy" );
+    pasteItem = addItem(( Action )h.get( "paste-from-clipboard" ), "Paste" );
+    addSeparator();
+    selectItem = addItem(( Action )h.get( "select-all" ), "Select All" );    
+  }
+
+  private JMenuItem addItem( Action a, String text )
+  {
+    JMenuItem item = new JMenuItem( a );
+    item.setText( text );
+    add( item );
+    return item;
   }
   
   private JTextComponent c = null;

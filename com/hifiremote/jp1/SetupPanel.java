@@ -95,6 +95,7 @@ public class SetupPanel
         BorderFactory.createTitledBorder( "Upgrade Notes" ),
         scrollPane.getBorder()));
     notes.getDocument().addDocumentListener( this );
+    new TextPopupMenu( notes );
     add( scrollPane, "7, 1, 7, 9" );
 
     protocolNotes = new JTextArea();
