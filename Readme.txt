@@ -1,5 +1,5 @@
-RemoteMaster ships with a large number of RDF files, 
-which are slightly modified versions of many of the 
+RemoteMaster ships with a large number of RDF files,
+which are slightly modified versions of many of the
 RDFs that ship with IR.  Standard RDFs shipped with
 IR or downloaded from the jp1 Yahoo! group will NOT
 work with RemoteMaster.
@@ -98,6 +98,10 @@ RECS80 (68)
 ReplayTV (Official)
 Sharp
 Sharp DVD
+Sony 12/15
+Sony20
+Sony Combo (old)
+Sony Combo (new)
 Sony DSP
 TiVo Hacked
 TiVo Official
@@ -121,8 +125,4 @@ RC-5/5x Combo
 RCA Combo (w/Duration)
 ReplayTV (Simple)
 ReplayTV (Advanced)
-Sony 12/15
-Sony20
-Sony Combo (old) 
-Sony Combo (new) 
 Zenith
