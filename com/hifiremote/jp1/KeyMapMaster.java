@@ -58,7 +58,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.26a";
+  private static final String version = "v 0.27";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -500,6 +500,7 @@ public class KeyMapMaster
       else if ( source == openItem )
       {
         JFileChooser chooser = new JFileChooser( kmPath );
+        chooser.setFileFilter( new KMFileFilter());
         int returnVal = chooser.showOpenDialog( this );
         if ( returnVal == JFileChooser.APPROVE_OPTION )
         {
