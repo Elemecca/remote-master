@@ -10,62 +10,62 @@
 #$FORMAT:ncsa
 #$EOH
 default Atlas
-circle dvd  49,50 55,59
-circle TV  79,50 85,59
-circle mute  39,214 48,219
-circle aux  36,60 42,68
-circle POWER  92,31 99,38
-circle pageup  106,108 112,114
-circle setup  36,29 41,34
-circle pagedown  107,126 113,132
-circle menu  65,75 77,82
-circle info  93,87 103,97
-circle guide  35,87 45,97
-circle select  64,117 73,126
-circle fav  65,178 75,183
-circle VOL+  37,170 44,177
-circle VOL-  42,193 49,200
-circle CH+  91,172 98,179
-circle CH-  86,192 93,199
-circle 1  37,301 47,307
-circle 2  64,302 74,308
-circle 3  92,301 102,307
-circle 4  37,321 48,327
-circle 5  64,321 74,327
-circle 6  91,321 102,327
-circle 7  37,340 47,346
-circle 8  64,340 74,346
-circle 9  92,341 103,347
-circle 0  64,360 74,366
-circle LAST  89,213 98,218
-circle PLAY  64,264 75,269
-circle ffwd  91,265 102,270
-circle rec  88,283 94,289
-circle cbl  93,59 99,68
-poly a 43,144 51,156 35,156 43,144 43,144
-rect b 58,153 70,165
-circle c  85,152 91,158
-circle rew  39,264 50,269
-circle macro1  39,231 48,236
-circle macro2  64,230 73,235
-circle macro3  90,230 99,235
-circle *  37,359 44,366
-circle #{enter}  91,359 98,366
-circle settings  23,119 29,135
-circle aud  64,42 70,51
-circle exit  99,142 105,148
-rect pause 58,277 71,288
-rect stop 35,277 46,288
-circle replay  39,247 49,252
-circle live  90,247 100,252
-circle pip_on/off  36,381 42,390
-circle pip_swap  53,381 59,390
-circle pip_move  76,381 82,390
-circle pip_ch+  92,381 98,390
-circle pip_ch-  93,405 99,414
-circle videosource  36,405 42,414
-poly list 54,243 65,240 75,243 75,250 65,252 54,249 54,243 54,243
-poly left 43,98 52,107 50,113 50,121 51,127 42,137 38,130 36,123 36,117 36,111 38,106 40,102 43,98 43,98
-poly right 77,107 87,98 91,106 93,114 93,118 93,123 92,127 90,131 89,133 86,136 77,127 78,123 79,119 79,115 78,113 76,108 77,107 77,107
-poly up 45,94 50,91 55,89 60,88 64,88 68,88 72,89 75,90 78,91 82,94 73,103 68,101 66,101 64,101 62,101 59,102 55,103 45,94 45,94
-poly down 54,129 58,131 62,132 66,132 70,131 73,129 82,139 79,141 73,144 70,144 67,145 63,145 58,145 55,144 50,142 45,139 54,129 54,129
+circle $09:DVD  49,50 55,59
+circle $03:TV  79,50 85,59
+circle $0C:Mute  39,214 48,219
+circle $0B:AUX  36,60 42,68
+circle $02:POWER  92,31 99,38
+circle $15:PageUp  106,108 112,114
+circle $01:Setup  36,29 41,34
+circle $16:PageDown  107,126 113,132
+circle $17:Menu  65,75 77,82
+circle $0F:Info  93,87 103,97
+circle $10:Guide  35,87 45,97
+circle $0D:Select  64,117 73,126
+circle $2C:Fav  65,178 75,183
+circle $23:VOL+  37,170 44,177
+circle $24:VOL-  42,193 49,200
+circle $29:CH+  91,172 98,179
+circle $2A:CH-  86,192 93,199
+circle $11:1  37,301 47,307
+circle $12:2  64,302 74,308
+circle $13:3  92,301 102,307
+circle $14:4  37,321 48,327
+circle $19:5  64,321 74,327
+circle $1A:6  91,321 102,327
+circle $1B:7  37,340 47,346
+circle $1C:8  64,340 74,346
+circle $21:9  92,341 103,347
+circle $22:0  64,360 74,366
+circle $2B:Last  89,213 98,218
+circle $32:Play  64,264 75,269
+circle $33:FFwd  91,265 102,270
+circle $3A:Rec  88,283 94,289
+circle $04:CBL  93,59 99,68
+poly $1D:A 43,144 51,156 35,156 43,144 43,144
+rect $1E:B 58,153 70,165
+circle $1F:C  85,152 91,158
+circle $31:Rew  39,264 50,269
+circle $20:Macro1  39,231 48,236
+circle $25:Macro2  64,230 73,235
+circle $26:Macro3  90,230 99,235
+circle $27:[*]  37,359 44,366
+circle $28:[#]/Enter  91,359 98,366
+circle $18:Settings  23,119 29,135
+circle $0A:AUD  64,42 70,51
+circle $0E:Exit  99,142 105,148
+rect $34:Pause 58,277 71,288
+rect $39:Stop 35,277 46,288
+circle $2D:Replay  39,247 49,252
+circle $2F:Live  90,247 100,252
+circle $35:PIP_On/Off  36,381 42,390
+circle $36:PIP_Swap  53,381 59,390
+circle $3B:PIP_Move  76,381 82,390
+circle $37:PIP_Ch+  92,381 98,390
+circle $38:PIP_Ch-  93,405 99,414
+circle $30:VideoSource  36,405 42,414
+poly $2E:List 54,243 65,240 75,243 75,250 65,252 54,249 54,243 54,243
+poly $07:Left 43,98 52,107 50,113 50,121 51,127 42,137 38,130 36,123 36,117 36,111 38,106 40,102 43,98 43,98
+poly $08:Right 77,107 87,98 91,106 93,114 93,118 93,123 92,127 90,131 89,133 86,136 77,127 78,123 79,119 79,115 78,113 76,108 77,107 77,107
+poly $05:Up 45,94 50,91 55,89 60,88 64,88 68,88 72,89 75,90 78,91 82,94 73,103 68,101 66,101 64,101 62,101 59,102 55,103 45,94 45,94
+poly $06:Down 54,129 58,131 62,132 66,132 70,131 73,129 82,139 79,141 73,144 70,144 67,145 63,145 58,145 55,144 50,142 45,139 54,129 54,129

@@ -4,31 +4,31 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:urc-9960
-#$DATE:Mon Feb 09 17:19:01 2004
+#$DATE:Mon Mar 22 10:06:07 2004
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-9960.jpg
 #$FORMAT:ncsa
 #$EOH
 default urc-9960
-circle CBL  40,75 51,86
+circle CBL  41,75 51,85
 circle PVR  91,88 102,94
-circle DVD  81,42 89,50
-circle CD  42,54 50,62
+circle DVD  80,42 87,49
+circle CD  41,53 49,61
 circle AUX  54,89 63,94
-circle guide  42,179 52,185
-circle info  95,179 105,185
-circle menu  43,240 53,246
-circle exit  95,239 106,245
+circle guide  42,178 52,184
+circle info  95,178 105,184
+circle menu  43,239 53,245
+circle exit  94,238 104,244
 circle vol+  39,127 45,133
 circle ch+  97,127 103,133
 circle vol-  40,145 46,151
 circle ch-  97,145 103,151
 circle fav  102,110 112,117
-circle right{test}  90,209 98,217
-circle down{rear}  68,229 76,237
-circle up{Front}  68,188 76,196
-circle left{center}  47,209 55,217
-circle ok{surround}  68,209 78,219
+circle $2B:right{test}  90,209 97,216
+circle $2A:down{rear}  68,230 75,237
+circle $29:up{Front}  68,188 75,195
+circle $2C:left{center}  47,209 54,216
+circle $27:ok{surround}  68,209 78,219
 circle 0  69,320 78,325
 circle 1  47,267 56,272
 circle 9  92,303 101,308
@@ -40,30 +40,30 @@ circle 8  69,302 78,307
 circle 4  47,285 56,290
 circle 6  91,285 100,290
 circle input  43,325 54,331
-circle enter{Skip}  97,324 108,330
+circle $39:enter{Skip}  97,324 108,330
 circle power  68,100 88,106
-circle record  45,379 51,385
+circle record  45,379 50,384
 rect stop 58,375 79,382
 rect pause 86,373 99,383
-circle LiveTV{pip-main}  68,402 80,409
+circle $34:LiveTV{pip-main}  68,402 80,409
 circle setup  67,415 85,419
 circle macro4  101,340 106,345
 circle Macro1  37,340 42,345
 circle macro2  55,340 60,345
 circle macro3  83,341 88,346
-circle audio  95,58 104,67
 circle ht  69,69 84,84
-circle format{replay}  68,151 82,159
+circle $3A:format{replay}  68,151 82,159
 circle scroll  67,117 81,122
-circle pvr-VOD{preset}  68,132 82,140
-circle page+{audio}  68,168 80,176
-circle page-{subtitle}  69,251 81,259
+circle $20:pvr-VOD{preset}  68,132 82,140
+circle $35:page+{audio}  68,167 80,173
+circle $36:page-{subtitle}  68,250 79,258
 rect tv 51,37 64,49
 rect vcr 88,70 105,82
-rect rewind{pip-on/off} 38,354 50,366
-rect fwd{pip-size} 86,354 98,366
-rect skipback{pip-freeze} 40,388 54,400
-rect skipfwd{pip-move} 80,388 95,400
-circle play{pip-swap}  68,363 83,372
-rect last{rand} 87,153 103,165
-rect mute 32,153 48,165
+rect $0B:rewind{pip-on/off} 38,355 50,365
+rect $0D:fwd{pip-size} 86,355 98,365
+rect $37:skipback{pip-freeze} 40,389 54,400
+rect $38:skipfwd{pip-move} 81,389 96,400
+circle $0C:play{pip-swap}  68,363 83,372
+rect $24:last{rand} 88,152 103,164
+rect mute 33,152 48,164
+rect audio 87,49 103,68
