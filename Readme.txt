@@ -122,3 +122,8 @@ Pioneer MIX
 Pioneer 2CMD
 Pioneer 3DEV
 RC-5x
+RC-5/5x Combo
+RCA Combo (w/Duration)
+ReplayTV (Simple)
+ReplayTV (Advanced)
+Zenith
