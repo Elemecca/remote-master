@@ -85,25 +85,13 @@ public class Preferences
       preferredRemoteNames.add( temp );
     }
 
-
     temp = props.getProperty( "ShowRemotes", "All" );
     if ( temp.equals( "All" ))
       useAllRemotes.setSelected( true );
     else
       usePreferredRemotes.setSelected( true );
 
-    RemoteManager rm = RemoteManager.getRemoteManager();
-    Vector work = new Vector();
-    for ( Enumeration e = preferredRemoteNames.elements(); e.hasMoreElements(); )
-    {
-      String name = ( String )e.nextElement();
-      Remote r = rm.findRemoteByName( name );
-      if ( r != null )
-        work.add( r );
-    }
-    preferredRemotes = ( Remote[] )work.toArray( preferredRemotes );
-
-    if ( preferredRemotes.length == 0 )
+    if ( preferredRemoteNames.size() == 0 )
     {
       useAllRemotes.setSelected( true );
       usePreferredRemotes.setEnabled( false );
@@ -286,7 +274,24 @@ public class Preferences
   }
 
   public Remote[] getPreferredRemotes()
+    throws Exception
   {
+    if ( preferredRemotes.length == 0 )
+    {
+      RemoteManager rm = RemoteManager.getRemoteManager();
+      Vector work = new Vector();
+      for ( Enumeration e = preferredRemoteNames.elements(); e.hasMoreElements(); )
+      {
+        String name = ( String )e.nextElement();
+        Remote r = rm.findRemoteByName( name );
+        if ( r != null )
+          work.add( r );
+      }
+      preferredRemotes = ( Remote[] )work.toArray( preferredRemotes );
+      preferredRemoteNames.removeAllElements();
+      preferredRemoteNames = null;
+    }
+
     return preferredRemotes;
   }
 

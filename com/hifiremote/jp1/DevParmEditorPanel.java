@@ -22,7 +22,11 @@ public class DevParmEditorPanel
     name.getDocument().addDocumentListener( this );
     bits = new JSpinner( new SpinnerNumberModel( 8, 0, 16, 1 ));
     bits.addChangeListener( this );
-    bits.setMaximumSize( bits.getPreferredSize());
+    Dimension size = bits.getPreferredSize();
+    size.width = size.width / 4;
+    bits.setMinimumSize( size );
+    bits.setMaximumSize( size );
+    bits.setPreferredSize( size );
 
     String[] labels = { "Name", "Bits" };
     JComponent[] fields = { name, bits };

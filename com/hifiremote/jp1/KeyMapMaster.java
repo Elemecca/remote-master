@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.16";
+  public static final String version = "v1.17";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -88,7 +88,7 @@ public class KeyMapMaster
     });
 
     createMenus();
-
+    
     preferences.load( recentFileMenu );
 
     deviceUpgrade = new DeviceUpgrade();
@@ -387,7 +387,14 @@ public class KeyMapMaster
     if ( remoteList != null )
     {
       if ( preferences.getUsePreferredRemotes())
-        remoteList.setModel( new DefaultComboBoxModel( preferences.getPreferredRemotes()));
+        try
+        {
+          remoteList.setModel( new DefaultComboBoxModel( preferences.getPreferredRemotes()));
+        }
+        catch ( Exception e )
+        {
+          e.printStackTrace( System.err );
+        }
       else
         remoteList.setModel( new DefaultComboBoxModel( RemoteManager.getRemoteManager().getRemotes()));
     }

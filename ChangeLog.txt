@@ -1,3 +1,13 @@
+Changes for v1.17
+- Fixed startup problems when using preferred remotes
+- Add MCE protocol.
+
+Changes for v1.16
+- First set of changes for Protocol Editor (see Advanced->Protocol Editor or pedit.bat)
+- Change RDF file name parsing for Nils
+- More changes for importing ManualSettngs
+- Added protocol RC6-6-32
+
 Changes for v1.15
 - Corrected Akai entry in protocols.ini (thanks johnsfine!)
 - Enabled pid-0083 for TV-0159 (thanks johnsfine!)

@@ -3,12 +3,13 @@ package com.hifiremote.jp1;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
 public class TranslatorEditorPanel
   extends ProtocolEditorPanel
-  implements ActionListener, TableColumnModelListener, AdjustmentListener 
+  implements ActionListener, TableColumnModelListener, AdjustmentListener, ChangeListener 
 {
   public TranslatorEditorPanel()
   {
@@ -16,7 +17,8 @@ public class TranslatorEditorPanel
     setLayout( new BoxLayout( this, BoxLayout.PAGE_AXIS ));
     Box box = Box.createVerticalBox();
     add( box );
-    box.setBorder( BorderFactory.createTitledBorder( "Bit order" ));
+    Border border = BorderFactory.createTitledBorder( "Bit order" ); 
+    box.setBorder( border );
     box.setAlignmentX( Component.LEFT_ALIGNMENT );
     msb = new JRadioButton( "MSB (Most Significant Bit first)" );
     msb.addActionListener( this );
@@ -30,11 +32,14 @@ public class TranslatorEditorPanel
     group.add( lsb );
     add( Box.createVerticalStrut( 5 ));
     comp = new JCheckBox( "Complement" );
+    comp.setToolTipText( "Select this if the parameter should be complemented during translation" );
+    Insets insets = border.getBorderInsets( box );
+    comp.setBorder( BorderFactory.createEmptyBorder( 0, insets.left, 0, 0 ));
     comp.setAlignmentX( Component.LEFT_ALIGNMENT );
     comp.addActionListener( this );
     add( comp );
     add( Box.createVerticalStrut( 10 ));
-    JLabel label = new JLabel( "Device parameter bits to be translated:" );
+    JLabel label = new JLabel( "Parameter bits to be translated:" );
     label.setAlignmentX( Component.LEFT_ALIGNMENT );
     add( label );
     parmTable = new JTable( new ParmDefaultTableModel( 8 ));
@@ -48,7 +53,7 @@ public class TranslatorEditorPanel
 
     add( box.createVerticalStrut( 10 ));
 
-    add( new JLabel( "Select which bits in the fixed data will store the translated bits." ));
+    add( new JLabel( "Fixed data bits to receive the translated parameter bits." ));
     dataBar = new MyScrollBar( JScrollBar.HORIZONTAL, 0, 8, 0, 24 );
     dataBar.addAdjustmentListener( this );
     dataBar.setAlignmentX( Component.LEFT_ALIGNMENT );
@@ -71,6 +76,21 @@ public class TranslatorEditorPanel
     dataBox.setAlignmentX( Component.LEFT_ALIGNMENT );
     add( dataBox );
     adjustSizes();
+
+    add( box.createVerticalStrut( 5 ));
+    box = box.createHorizontalBox();
+    box.setAlignmentX( Component.LEFT_ALIGNMENT );
+    box.add( new JLabel( "Adjustment" ));
+    adjustment = new JSpinner( new SpinnerNumberModel( 0, -8, 8, 1 ));
+    adjustment.setMaximumSize( adjustment.getPreferredSize());
+    adjustment.setToolTipText( "This value is added to the parameter before translation occurs." );
+    (( JSpinner.NumberEditor )adjustment.getEditor()).getTextField().setToolTipText( adjustment.getToolTipText());
+    box.add( box.createHorizontalStrut( 5 ));
+    box.add( adjustment );
+    adjustment.addChangeListener( this );
+    add( box );
+    add( box.createVerticalGlue());
+    
   }
 
   private void adjustSizes()
@@ -106,12 +126,12 @@ public class TranslatorEditorPanel
     dataTable.setMinimumSize( d );
     d.width += h;
     d.width += h;
-    dataBox.setPreferredSize( d );
     dataBox.setMaximumSize( d );
     dataBox.setMinimumSize( d );
-    dataBar.setPreferredSize( d );
-    dataBar.setMaximumSize( d );
-    dataBar.setMinimumSize( d );
+    Dimension s = dataBar.getPreferredSize();
+    s.width = d.width;
+    dataBar.setMaximumSize( s );
+    dataBar.setMinimumSize( s );
   }
 
   public void update( ProtocolEditorNode aNode )
@@ -132,13 +152,13 @@ public class TranslatorEditorPanel
     (( DataDefaultTableModel )dataTable.getModel()).setCols( fixedBits );
     int lastCol =  parmBits - node.getLSBOffset() - 1;
     int firstCol = lastCol - node.getBits() + 1;
-    System.err.println( "Attempting to select cols " + firstCol + "-" + lastCol );
     parmTable.addColumnSelectionInterval( firstCol, lastCol );
     parmTable.getColumnModel().addColumnModelListener( this );
     dataBar.removeAdjustmentListener( this );
     dataBar.setValues( node.getMSBOffset(), node.getBits(), 0, fixedBits );
     dataBar.addAdjustmentListener( this );
     adjustSizes();
+    adjustment.setValue( new Integer( node.getAdjust()));
     validate();
   }
 
@@ -167,7 +187,6 @@ public class TranslatorEditorPanel
   {
     if ( e.getValueIsAdjusting())
       return;
-    System.err.println( "valueChanged!" );
     int[] selection = parmTable.getSelectedColumns();
     int bits = selection.length;
     int firstCol = 100; 
@@ -180,10 +199,14 @@ public class TranslatorEditorPanel
       if ( col > lastCol )
         lastCol = col;
     }
-    System.err.println( "lastCol=" + lastCol + " and firstCol=" + firstCol + " and bits=" + bits );
     node.setBits( bits );
     node.setLSBOffset( parmTable.getColumnCount() - lastCol - 1 );
 //    dataBar.removeAdjustmentListener( this );
+    DevParmEditorNode devParm = ( DevParmEditorNode )node.getParent();
+    FixedDataEditorNode fixedData = ( FixedDataEditorNode )devParm.getParent();
+    int fixedBits = fixedData.getFixedData().length() * 8;
+    if (( dataBar.getValue() + bits ) > fixedBits )
+      dataBar.setValue( fixedBits - bits );
     dataBar.setVisibleAmount( bits );
     dataBar.setBlockIncrement( bits );
 //    dataBar.addAdjustmentListener( this );
@@ -194,13 +217,22 @@ public class TranslatorEditorPanel
   public void adjustmentValueChanged( AdjustmentEvent e )
   {
     int value = e.getValue();
-    System.err.println( "Value is " + value + ", selecting cols " + value + "-" + ( value + node.getBits() - 1 ));
     node.setMSBOffset( value );
     dataTable.clearSelection();
-    System.err.println( "dataTable columns:" + dataTable.getColumnCount() );
     dataTable.addColumnSelectionInterval( value, value + node.getBits() - 1 );
   }
-  
+
+  // ChangeListener
+  public void stateChanged( ChangeEvent e )
+  {
+    Object source = e.getSource();
+    if ( source ==  adjustment )
+    {
+      if ( node != null )
+        node.setAdjust((( Integer )adjustment.getValue()).intValue());
+    }
+  }
+ 
   private class ParmDefaultTableModel
     extends AbstractTableModel
   {
@@ -242,55 +274,68 @@ public class TranslatorEditorPanel
     {
       super( orientation, value, extent, min, max );
     }
-
-    public void setPreferredSize( Dimension size )
-    {
-      preferredSize = size;
-    }
-      
-    public Dimension getPreferredSize()
-    {
-      if ( preferredSize == null )
-        return super.getPreferredSize();
-      return preferredSize;
-    }
-
-    public void setMaximumSize( Dimension size )
-    {
-      maximumSize = size;
-    }
-      
+    
     public Dimension getMaximumSize()
     {
-      if ( maximumSize == null )
-        return super.getMaximumSize();
-      return maximumSize;
-    }
-
-    public void seMinimumSize( Dimension size )
-    {
-      minimumSize = size;
+      if ( max != null )
+        return max;
+      return super.getMaximumSize();
     }
 
     public Dimension getMinimumSize()
     {
-      if ( minimumSize == null )
-        return super.getMinimumSize();
-      return minimumSize;
+      if ( min != null )
+        return min;
+      return super.getMinimumSize();
     }
 
-    private Dimension preferredSize = null;
-    private Dimension minimumSize = null;
-    private Dimension maximumSize = null;
+    public void setMaximumSize( Dimension size )
+    {
+      max = size;
+    }
+
+    public void setMinimumSize( Dimension size )
+    {
+      min = size;
+    }
+
+    public void setSize( int width, int height )
+    {
+      if ( height < min.height )
+        height = min.height;
+      if ( width < min.width )
+        width = min.width;
+      if ( height > max.height )
+        height = max.height;
+      if ( width > max.width )
+        width = max.width;
+      super.setSize( width, height );
+    }
+
+    public void setBounds( int x, int y, int width, int height )
+    {
+      if ( height < min.height )
+        height = min.height;
+      if ( width < min.width )
+        width = min.width;
+      if ( height > max.height )
+        height = max.height;
+      if ( width > max.width )
+        width = max.width;
+      super.setBounds( x, y, width, height );
+    }
+    
+    private Dimension max = null;
+    private Dimension min = null;
   }
 
   private TranslatorEditorNode node = null;
   private JRadioButton msb = null;
   private JRadioButton lsb = null;
   private JCheckBox comp = null;
-  private JSpinner bits = null;
   private JTable parmTable = null;
   private Box dataBox = null;
   private JTable dataTable = null;
   private MyScrollBar dataBar = null;
+  private JSpinner adjustment = null;
 }
