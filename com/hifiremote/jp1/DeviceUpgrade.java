@@ -691,6 +691,10 @@ public class DeviceUpgrade
     DeviceParameter[] devParms = protocol.getDeviceParameters();
     for ( int i = 0; i < devParms.length; i++ )
     {
+      // Skip over Flag parms because KM didn't have these.
+      if ( devParms[ i ].getClass() == FlagDeviceParm.class )
+        continue;
+
       token = st.nextToken();
       Object val = null;
       if ( token.equals( delim ))
