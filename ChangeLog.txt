@@ -1,3 +1,8 @@
+Changes for v0.95
+- Fix bug parsing [DeviceTypes] section of RDF files.
+- Fix bug when button used in a ButtonMap isn't declared
+- Fix Setup panel layout for Manual Settings
+
 Changes for v0.94
 - Allow importing of KM upgrade files that use Device Combiner
 - Improvements to importing of KM upgrade files that use Manual Settings
