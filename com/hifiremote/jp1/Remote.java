@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
 import java.io.*;
@@ -452,6 +453,12 @@ public class Remote
   {
     checkLoaded();
     return upgradeButtons;
+  }
+
+  public ButtonShape[] getButtonShapes()
+  {
+    checkLoaded();
+    return buttonShapes;
   }
 
   public String getProcessor()
@@ -1186,6 +1193,7 @@ public class Remote
   {
     BufferedReader in = new BufferedReader( new FileReader( mapFile ));
     String line = in.readLine();
+    Vector work = new Vector();
 
     if ( line.startsWith( "#$" ))
     {
@@ -1201,9 +1209,18 @@ public class Remote
         {
           StringTokenizer st = new StringTokenizer( line, " ," );
           String type = st.nextToken();
-          String name = st.nextToken();
-          Button button = findByName( new Button( null, name, ( byte )0 ));
-          System.err.println( "Looked for button w/ name " + name + " and got " + button );
+          String displayName = null;
+          String buttonName = st.nextToken();
+          int pos = buttonName.indexOf( '=' );
+          if ( pos != -1 )
+          {
+            displayName = buttonName.substring( 0, pos );
+            System.err.println( "Shape displayName is " + displayName );
+            buttonName = buttonName.substring( pos + 1 );
+          }
+          Button button = findByName( new Button( null, buttonName, ( byte )0 ));
+          System.err.println( "Looked for button w/ name " + buttonName + " and got " + button );
+          Shape shape = null;
           if ( button == null )
             continue;
           if ( type.equals( "rect" ))
@@ -1214,7 +1231,7 @@ public class Remote
             double y2 = Double.parseDouble( st.nextToken());
             double w = x2 - x;
             double h = y2 - y;
-            button.setShape( new Rectangle2D.Double( x, y, w, h ));
+            shape = new Rectangle2D.Double( x, y, w, h );
           }
           else if ( type.equals( "circle" ))
           {
@@ -1228,7 +1245,7 @@ public class Remote
             double h = y2 - y;
             y -= h;
             h += h;
-            button.setShape( new Ellipse2D.Double( x, y, w, h ));
+            shape = new Ellipse2D.Double( x, y, w, h );
           }
           else if ( type.equals( "poly" ))
           {
@@ -1247,8 +1264,12 @@ public class Remote
               path.lineTo( x, y );
             }
             path.closePath();
-            button.setShape( path );
+            shape = path;
           }
+          ButtonShape buttonShape = new ButtonShape( shape, button );
+          if ( displayName != null )
+            buttonShape.setName( displayName );
+          work.add( buttonShape );
         }
       }
     }
@@ -1296,6 +1317,7 @@ public class Remote
           System.err.println( "Looked for button w/ name " + name + " and got " + button );
           if ( button == null )
             continue;
+          Shape shape = null;
           String type = st.nextToken();
           if ( type.equals( "ellipse" ))
           {
@@ -1303,7 +1325,7 @@ public class Remote
             double y = Double.parseDouble( st.nextToken());
             double width = Double.parseDouble( st.nextToken());
             double height = Double.parseDouble( st.nextToken());
-            button.setShape( new Ellipse2D.Double( x, y, width, height ));
+            shape = new Ellipse2D.Double( x, y, width, height );
           }
           else if ( type.equals( "rect" ))
           {
@@ -1311,7 +1333,7 @@ public class Remote
             double y = Double.parseDouble( st.nextToken());
             double width = Double.parseDouble( st.nextToken());
             double height = Double.parseDouble( st.nextToken());
-            button.setShape( new Rectangle2D.Double( x, y, width, height ));
+            shape = new Rectangle2D.Double( x, y, width, height );
           }
           else if ( type.equals( "poly" ))
           {
@@ -1329,12 +1351,14 @@ public class Remote
               path.lineTo( x, y );
             }
             path.closePath();
-            button.setShape( path );
+            shape = path;
           }
+          work.add( new ButtonShape( shape, button ));
         }
       }
     }
     in.close();
+    buttonShapes = ( ButtonShape[] )work.toArray( buttonShapes );    
   }
 
   public String getSupportedVariantName( Hex pid )
@@ -1455,6 +1479,7 @@ public class Remote
   private Button[] buttonsByName = null;
   private Button[] buttonsByStandardName = null;
   private Button[] upgradeButtons = null;
+  private ButtonShape[] buttonShapes = new ButtonShape[ 0 ];
   private int[] digitMaps = new int[ 0 ];
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
   private boolean omitDigitMapByte = false;

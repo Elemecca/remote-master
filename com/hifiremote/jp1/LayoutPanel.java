@@ -76,15 +76,18 @@ public class LayoutPanel
       public void mousePressed( MouseEvent e )
       {
         Point p = e.getPoint();
-        Button savedButton = currentButton;
-        currentButton = getButtonAtPoint( p );
+        ButtonShape savedShape = currentShape;
+        currentShape = getShapeAtPoint( p );
+        if ( currentShape == null )
+          return;
+        Button button = currentShape.getButton();
         if ((( e.getModifiersEx() & e.CTRL_DOWN_MASK ) != 0 ) &&
-             ( currentButton.getShiftedButton() != null ))
-            currentButton = currentButton.getShiftedButton();
+             ( button.getShiftedButton() != null ))
+            button = button.getShiftedButton();
 
-        if ( currentButton != savedButton )
+        if ( currentShape != savedShape )
         {
-          setButtonText( currentButton );
+          setButtonText( currentShape );
           doRepaint();
         }
         showPopup( e );
@@ -99,10 +102,10 @@ public class LayoutPanel
       {
         if ( e.isPopupTrigger() )
         {
-          Button b = getButtonAtPoint( e.getPoint());
-          if ( b != null )
+          ButtonShape buttonShape = getShapeAtPoint( e.getPoint());
+          if ( buttonShape != null )
           {
-            currentButton = b;
+            currentShape = buttonShape;
             doRepaint();
             popup.show( imagePanel, e.getX(), e.getY());
           }
@@ -171,20 +174,21 @@ public class LayoutPanel
       imagePanel.setPreferredSize( size );
       imagePanel.revalidate();
     }
-    Button[] buttons = deviceUpgrade.getRemote().getButtons();
+    ButtonShape[] buttonShapes = deviceUpgrade.getRemote().getButtonShapes();
     boolean found = false;
-    for ( int i = 0; i < buttons.length; i++ )
+    for ( int i = 0; i < buttonShapes.length; i++ )
     {
-      if ( currentButton == buttons[ i ])
+      if ( currentShape == buttonShapes[ i ])
       {
         found = true;
         break;
       }
     }
     if ( !found )
-      currentButton = null;
+      currentShape = null;
+      
 
-    setButtonText( currentButton );
+    setButtonText( currentShape );
 
     setFunctions();
     doRepaint();
@@ -195,11 +199,15 @@ public class LayoutPanel
     imagePanel.repaint( 0L, 0, 0, imagePanel.getWidth(), imagePanel.getHeight());
   }
 
-  private void setButtonText( Button b )
+  private void setButtonText( ButtonShape buttonShape )
   {
-    if ( b != null )
+    if ( buttonShape != null )
     {
-      buttonName.setText( b.getName());
+      Button b = buttonShape.getButton();
+      String name = buttonShape.getName();
+      if ( name == null )
+        name = b.getName();
+      buttonName.setText( name );
       Function f = b.getFunction();
       if ( f != null )
         function.setText( f.getName());
@@ -219,43 +227,40 @@ public class LayoutPanel
     }
   }
 
-  public Button getButtonAtPoint( Point p )
+  public ButtonShape getShapeAtPoint( Point p )
   {
-    Button rc = null;
-    Button[] buttons = deviceUpgrade.getRemote().getButtons();
-    for ( int i = 0; i < buttons.length; i++ )
+    ButtonShape[] buttonShapes = deviceUpgrade.getRemote().getButtonShapes();
+    for ( int i = 0; i < buttonShapes.length; i++ )
     {
-      Button b = buttons[ i ];
-      Shape s = b.getShape();
+      ButtonShape buttonShape = buttonShapes[ i ];
+      Shape s = buttonShape.getShape();
       if (( s != null ) && s.contains( p ))
-      {
-        rc = b;
-        break;
-      }
+        return buttonShape;
     }
-    return rc;
+    return null;
   }
 
 // From interface ActionListener
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( currentButton != null )
+    if ( currentShape != null )
     {
+      Button button = currentShape.getButton();
       Function function = (( FunctionItem )source ).getFunction();
       if (( e.getModifiers() & e.CTRL_MASK ) == 0 )
-        currentButton.setFunction( function );
+        button.setFunction( function );
       else
       {
-        if ( currentButton.getShiftedButton() != null )
+        if ( button.getShiftedButton() != null )
         {
-          currentButton = currentButton.getShiftedButton();
-          currentButton.setFunction( function );
+          button = button.getShiftedButton();
+          button.setFunction( function );
         }
         else
-          currentButton.setShiftedFunction( function );
+          button.setShiftedFunction( function );
       }
-      setButtonText( currentButton );
+      setButtonText( currentShape );
     }
   }
 
@@ -264,16 +269,17 @@ public class LayoutPanel
   {
     public void mouseClicked( MouseEvent e )
     {
-      if (( currentButton == null ) || ( e.getClickCount() < 2 ))
+      if (( currentShape == null ) || ( e.getClickCount() < 2 ))
         e.consume();
       else
       {
+        Button button = currentShape.getButton();
         FunctionLabel label = ( FunctionLabel )e.getSource();
         if (( e.getModifiersEx() & e.CTRL_DOWN_MASK ) == 0 )
-          currentButton.setFunction( label.getFunction());
+          button.setFunction( label.getFunction());
         else
-          currentButton.setShiftedFunction( label.getFunction());
-        setButtonText( currentButton );
+          button.setShiftedFunction( label.getFunction());
+        setButtonText( currentShape );
       }
     }
   }
@@ -289,9 +295,9 @@ public class LayoutPanel
     public void dragOver( DropTargetDragEvent dtde )
     {
       Point p = dtde.getLocation();
-      currentButton = getButtonAtPoint( p );
+      currentShape = getShapeAtPoint( p );
       int action = dtde.getDropAction();
-      if (( currentButton != null ) &&
+      if (( currentShape != null ) &&
           (( action == DnDConstants.ACTION_COPY ) ||
             ( action == DnDConstants.ACTION_MOVE )))
       {
@@ -305,9 +311,10 @@ public class LayoutPanel
     public void drop( DropTargetDropEvent dtde )
     {
       Point p = dtde.getLocation();
-      currentButton = getButtonAtPoint( p );
-      if ( currentButton != null )
+      currentShape = getShapeAtPoint( p );
+      if ( currentShape != null )
       {
+        Button button = currentShape.getButton();
         int action = dtde.getDropAction();
         dtde.acceptDrop( action );
         Transferable tf = dtde.getTransferable();
@@ -317,19 +324,19 @@ public class LayoutPanel
           Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor());
           if ( action == DnDConstants.ACTION_COPY )
           {
-            if ( currentButton.getShiftedButton() != null )
+            if ( button.getShiftedButton() != null )
             {
-              currentButton = currentButton.getShiftedButton();
-              currentButton.setFunction( f );
+              button = button.getShiftedButton();
+              button.setFunction( f );
             }
             else
-              currentButton.setShiftedFunction( f );
+              button.setShiftedFunction( f );
           }
           else if ( action == DnDConstants.ACTION_MOVE )
           {
-            currentButton.setFunction( f );
+            button.setFunction( f );
           }
-          setButtonText( currentButton );
+          setButtonText( currentShape );
         }
         catch ( Exception e )
         {
@@ -357,11 +364,11 @@ public class LayoutPanel
       if ( icon != null )
         g2.drawImage( icon.getImage(), null, null );
 
-      if ( currentButton != null )
+      if ( currentShape != null )
       {
         g2.setPaint( Color.white );
         g2.setStroke( new BasicStroke( 4.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
-        g2.draw( currentButton.getShape());
+        g2.draw( currentShape.getShape());
       }
 
       g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
@@ -369,11 +376,12 @@ public class LayoutPanel
       DeviceType devType = deviceUpgrade.getDeviceType();
       ButtonMap map = devType.getButtonMap();
 
-      Button[] buttons = r.getButtons();
-      for ( int i = 0; i < buttons.length; i++ )
+      ButtonShape[] buttonShapes = r.getButtonShapes();
+      for ( int i = 0; i < buttonShapes.length; i++ )
       {
-        Button b = buttons[ i ];
-        Shape s = b.getShape();
+        ButtonShape buttonShape = buttonShapes[ i ];
+        Button b = buttonShape.getButton();
+        Shape s = buttonShape.getShape();
         if ( s != null )
         {
           Function f = b.getFunction();
@@ -393,26 +401,25 @@ public class LayoutPanel
             g2.setPaint( Color.green );
             g2.fill( s );
           }
+          
+          if ( map.isPresent( b ))
+          {
+            g2.setPaint( Color.orange );
+            g2.draw( s );
+          }
         }
-        else
-          System.err.println( "No shape for button " + b );
-      }
-
-      g2.setPaint( Color.orange );
-      for ( int i = 0; i < map.size(); i++ )
-      {
-        Button b = map.get( i );
-        Shape s = b.getShape();
-        if ( s != null )
-          g2.draw( s );
       }
     }
 
     public String getToolTipText( MouseEvent e )
     {
-      Button b = getButtonAtPoint( e.getPoint());
-      if ( b != null )
+      ButtonShape buttonShape = getShapeAtPoint( e.getPoint());
+      if ( buttonShape != null )
       {
+        Button b = buttonShape.getButton();
+        String name = buttonShape.getName();
+        if ( name != null )
+          return name;
         if ((( e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK ) != 0 ) &&
             ( b.getShiftedButton() != null ))
           return b.getShiftedButton().getName();
@@ -467,7 +474,7 @@ public class LayoutPanel
     }
   }
 
-  private Button currentButton = null;
+  private ButtonShape currentShape = null;
   private JPanel imagePanel = null;
   private JTextField buttonName = null;
   private JTextField function = null;

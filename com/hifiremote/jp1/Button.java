@@ -128,16 +128,6 @@ public class Button
     return rc;
   }
 
-  public Shape getShape()
-  {
-    return shape;
-  }
-
-  public void setShape( Shape shape )
-  {
-    this.shape = shape;
-  }
-
   private String name;
   private String standardName;
   private byte keyCode;
@@ -145,7 +135,6 @@ public class Button
   private Function function;
   private Function shiftedFunction;
   private boolean[] inMap = null;
-  private Shape shape = null;
   private Button shiftedButton = null;
   private boolean isShifted = false;
   private boolean noBind = false;
