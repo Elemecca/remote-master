@@ -90,7 +90,7 @@ public class CmdParmFactory
     if ( choices != null )
       rc = new ChoiceCmdParm( name, defaultValue, choices );
     else if ( bits != -1 )
-      rc = new NumberCmdParm( name, defaultValue, bits, bits );
+      rc = new NumberCmdParm( name, defaultValue, bits, base );
 //    else if ( d != null )
 //      rc = new NumberCmdParm( name, defaultValue, d.width, d.height );
     else
