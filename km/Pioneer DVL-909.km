@@ -1,4 +1,4 @@
-#Sat Mar 29 16:54:17 EST 2003
+#Thu Apr 24 11:57:20 EDT 2003
 Function.33.name=sub setup DVD menu
 Function.24.hex=d9
 Button.19=4|null
@@ -34,6 +34,7 @@ Function.50.name=mode
 Function.60.hex=1b
 Function.60.name=jog reverse
 Function.16.hex=02
+FixedData=3a 66 0a
 Function.54.name=chapter/time
 Function.64.name=jog forward
 Function.20.name=title menu
@@ -63,6 +64,7 @@ Function.19.hex=62
 Function.9.name=9
 Function.52.hex=52
 Function.18.name=return
+Protocol.name=Pioneer DVD
 Function.41.hex=8b
 Function.59.hex=5b
 Function.30.hex=a6
@@ -163,6 +165,7 @@ Function.17.hex=c0
 Button.1a=5|null
 Function.50.hex=f2
 Remote.signature=RSL6RSL0
+DeviceIndex=2
 Button.29=menu|null
 Button.28=title menu|null
 Function.57.hex=db

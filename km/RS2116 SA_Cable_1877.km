@@ -1,4 +1,4 @@
-#Tue Apr 15 13:11:36 EDT 2003
+#Thu Apr 24 11:57:30 EDT 2003
 Button.1f=0|null
 Function.20.name=program guide
 Function.22.hex=d3
@@ -72,6 +72,7 @@ Function.9.name=9
 Function.12.name=mute
 Notes=RS2116 SA Cable \n\nPanasonic (Old)\n\n27\n\n90 90 90 in KMX\n
 Function.46.name=fav/scan
+DeviceIndex=6
 Function.35.hex=ef
 Button.f=pause|null
 Button.e=stop|null

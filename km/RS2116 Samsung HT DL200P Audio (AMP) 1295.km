@@ -1,4 +1,4 @@
-#Tue Apr 15 13:14:07 EDT 2003
+#Thu Apr 24 11:57:49 EDT 2003
 Function.20.name=program guide
 Function.22.hex=57
 Function.31.name=play
@@ -58,6 +58,7 @@ Function.9.name=9
 Function.12.name=mute
 Notes=RS2116 Samsung HT DL200p\n\nNEC2\n67\n83\n31 in KMX and 49 in KMJ\n\n31 3d 35 in KMX\n
 Function.46.name=shift-right
+DeviceIndex=b
 Function.57.name=Prologic
 Function.35.hex=2f
 Button.f=pause|null

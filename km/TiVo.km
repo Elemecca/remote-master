@@ -1,4 +1,4 @@
-#Mon Mar 31 17:12:07 EST 2003
+#Thu Apr 24 11:54:25 EDT 2003
 Button.1f=0|null
 Function.20.name=right arrow
 Function.22.hex=20
@@ -68,6 +68,7 @@ Function.30.hex=8d
 Function.9.name=9
 Function.12.name=standby
 Notes=TiVo support up to 9 different unit codes.\n\nThis code works with Philips and Hughes TiVos and DirecTiVos, \nbut it does NOT work with Sony TiVo. There is a separate file\nfor the Sonys.\n
+DeviceIndex=0
 Function.35.hex=89
 Button.f=pause|null
 Button.e=instant replay|null
@@ -82,12 +83,14 @@ Function.35.name=List
 Function.13.hex=2c
 Protocol=00 41
 Function.19.name=left arrow
+FixedData=5e f3 ff
 Function.29.hex=0c
 Function.8.hex=ac
 DeviceType=Cable
 Function.18.hex=83
 Remote.name=URC-7800 Cinema 7
 Function.13.name=enter
+Protocol.name=TiVo Hacked
 Function.4.name=4
 Function.34.hex=8f
 Function.25.name=rewind

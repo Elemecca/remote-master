@@ -1,4 +1,4 @@
-#Tue Apr 15 13:07:04 EDT 2003
+#Thu Apr 24 11:57:38 EDT 2003
 Function.33.name=rewind
 Function.24.hex=1f
 Button.19=4|null
@@ -133,6 +133,7 @@ Function.17.hex=7f
 Button.1b=6|null
 Button.1a=5|null
 Remote.signature=RSL1RSL1
+DeviceIndex=0
 Button.28=still|null
 Button.27=tc/component|null
 Button.26=picture mode|null

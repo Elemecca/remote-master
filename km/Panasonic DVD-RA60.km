@@ -1,4 +1,4 @@
-#Sat Mar 29 22:57:22 EST 2003
+#Thu Apr 24 11:57:03 EDT 2003
 Button.1f=0|null
 Function.20.name=Top Menu
 Function.22.hex=d6
@@ -62,6 +62,7 @@ Function.30.hex=4e
 Function.9.name=9
 Function.12.name=Power Toggle
 Notes=
+DeviceIndex=2
 Function.35.hex=78
 Button.f=Pause|null
 Button.e=Stop|null
@@ -76,12 +77,14 @@ Function.35.name=Audio Only
 Function.13.hex=ad
 Protocol=00 c9
 Function.19.name=Search Forward
+FixedData=f2 bf fb f2 ff
 Function.29.hex=7e
 Function.8.hex=17
 DeviceType=DVD
 Function.18.hex=df
 Remote.name=RS 15-2117_2116
 Function.13.name=Skip Forward
+Protocol.name=Panasonic
 Function.4.name=4
 Function.34.hex=58
 Function.25.name=Right

@@ -1,4 +1,4 @@
-#Tue Mar 25 11:45:51 EST 2003
+#Thu Apr 24 11:55:54 EDT 2003
 Button.1f=0 / FM Preset 10|null
 Function.20.name=Tuner/Select Down
 Function.22.hex=61 bf
@@ -63,6 +63,7 @@ Function.30.hex=61 af
 Function.9.name=Volume Down
 Function.12.name=Input Toggle
 Notes=
+DeviceIndex=4
 Button.f=AUX|null
 Button.e=CD|null
 Button.d=Video 3|null
@@ -75,12 +76,14 @@ Function.3.hex=e1 7f
 Function.13.hex=e1 c7
 Protocol=00 9e
 Function.19.name=Tuner/Select Up
+FixedData=ff
 Function.29.hex=61 6f
 Function.8.hex=e1 77
 DeviceType=Audio
 Function.18.hex=61 5d
 Remote.name=RS 15-1994 6-in-1 Smart
 Function.13.name=BBE Increase
+Protocol.name=Aiwa Combo
 Function.4.name=AUX
 Function.25.name=5 / FM Preset 5
 Function.23.hex=61 3f

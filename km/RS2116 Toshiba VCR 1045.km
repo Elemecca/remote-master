@@ -1,4 +1,4 @@
-#Mon Apr 14 21:56:17 EDT 2003
+#Thu Apr 24 11:58:05 EDT 2003
 Button.1f=0|null
 Function.20.name=program guide
 Function.22.hex=7e
@@ -73,6 +73,7 @@ Function.9.name=9
 Function.12.name=mute
 Notes=RS2116 Toshiba VCR\n\nNEC1\n\n68\n\n00 dd dd in KMX
 Function.46.name=shift-right
+DeviceIndex=1
 Function.35.hex=d7
 Button.f=pause|null
 Button.e=stop|null
@@ -88,6 +89,7 @@ Function.35.name=stop
 Function.13.hex=27
 Protocol=00 5a
 Function.19.name=menu
+FixedData=00 dd dd
 Function.8.hex=ef
 DeviceType=VCR
 Function.18.hex=45
@@ -95,6 +97,7 @@ Remote.name=RS 15-2117_2116
 Function.13.name=channel up
 Function.47.name=pip freeze
 Function.40.name=+100
+Protocol.name=NEC1
 Function.4.name=4
 Function.34.hex=37
 Function.25.name=select

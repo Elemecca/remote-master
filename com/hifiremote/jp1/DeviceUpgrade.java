@@ -279,6 +279,15 @@ public class DeviceUpgrade
     props.setProperty( "Remote.name", remote.getName());
     props.setProperty( "Remote.signature", remote.getSignature());
     props.setProperty( "DeviceType", devType.getName());
+    DeviceType[] types = remote.getDeviceTypes();
+    for ( int i = 0; i < types.length; i++ )
+    { 
+      if ( devType == types[ i ] )
+      {
+        props.setProperty( "DeviceIndex", Integer.toHexString( i ));
+        break;
+      }
+    }
     props.setProperty( "SetupCode", Integer.toString( setupCode ));
     props.setProperty( "Protocol", protocol.getID().toString());
     props.setProperty( "Protocol.name", protocol.getName());
@@ -353,9 +362,13 @@ public class DeviceUpgrade
       return;
     }
     remote = remotes[ index ];
+    index = -1;
+    str = props.getProperty( "DeviceIndex" );
+    if ( str != null )
+      index = Integer.parseInt( str, 16 );
     str = props.getProperty( "DeviceType" );
     System.err.println( "Searching for device type " + str );
-    devType = remote.getDeviceType( str );
+    devType = remote.getDeviceType( str, index );
     System.err.println( "Device type is " + devType );
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ));
 

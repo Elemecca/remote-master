@@ -403,22 +403,24 @@ public class Remote
     return deviceTypes;
   }
 
-  public DeviceType getDeviceType( String typeName )
+  public DeviceType getDeviceType( String typeName, int index )
   {
     checkLoaded();
-    System.err.println( "Remote.getDeviceType( " + typeName + " )" );
+    System.err.println( "Remote.getDeviceType( " + typeName + ", " + index + " )" );
     DeviceType devType = null;
-    for ( int i = 0; i < deviceTypes.length; i++ )
-    {
-
-      System.err.println( "Checking " + deviceTypes[ i ]);
-      if ( deviceTypes[ i ].getName().equals( typeName ))
+    if (( index != -1 ) && ( index < deviceTypes.length ))
+      devType = deviceTypes[ index ];
+    else
+      for ( int i = 0; i < deviceTypes.length; i++ )
       {
-        devType = deviceTypes[ i ];
-        System.err.println( "Its a match" );
-        break;
+        System.err.println( "Checking " + deviceTypes[ i ]);
+        if ( deviceTypes[ i ].getName().equals( typeName ))
+        {
+          devType = deviceTypes[ i ];
+          System.err.println( "Its a match" );
+          break;
+        }
       }
-    }
     return devType;
   }
 
