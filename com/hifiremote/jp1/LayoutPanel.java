@@ -553,26 +553,37 @@ public class LayoutPanel
         return null;
 
       String name = buttonShape.getName();
-      if ( name != null )
-        return name;
-
-      Remote r = deviceUpgrade.getRemote();
+      if ( name == null )
+      {
+        Remote r = deviceUpgrade.getRemote();
+        if ( normalMode.isSelected())
+          name = b.getName();
+        else if ( shiftMode.isSelected())
+        {
+          name = b.getShiftedName();
+          if ( name == null )
+            name = r.getShiftLabel() + '-' + b.getName();
+        }
+        else if ( xShiftMode.isSelected())
+        {
+          name = b.getXShiftedName();
+          if ( name == null )
+            name = r.getXShiftLabel() + '-' + b.getName();
+        }
+      }
+      Function f = null;
       if ( normalMode.isSelected())
-        name = b.getName();
+        f = b.getFunction();
       else if ( shiftMode.isSelected())
-      {
-        name = b.getShiftedName();
-        if ( name == null )
-          name = r.getShiftLabel() + '-' + b.getName();
-      }
+        f = b.getShiftedFunction();
       else if ( xShiftMode.isSelected())
-      {
-        name = b.getXShiftedName();
-        if ( name == null )
-          name = r.getXShiftLabel() + '-' + b.getName();
-      }
+        f = b.getXShiftedFunction();
 
-      return name;
+      String text = name;
+      if ( f != null )
+        text = name + " = " + f.getName();
+      
+      return text;
     }
 
     public Dimension getPreferredScrollableViewportSize()
