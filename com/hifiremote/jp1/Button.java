@@ -11,8 +11,11 @@ public class Button
     keyCode = code;
     remote = r;
     multiMacroAddress = 0;
-    if (( code & 0x80 ) != 0 )
-      isShifted = true;
+    int maskedCode = code & 0xC0;
+    if ( maskedCode == r.getShiftMask())
+      setIsShifted( true );
+    if ( maskedCode == r.getXShiftMask())
+      setIsXShifted( true );
   }
 
   public String toString(){ return name; }
@@ -46,6 +49,10 @@ public class Button
   {
     System.err.println( "Button '" + name + "' setting baseButton to '" + button + "'" );
     baseButton = button;
+    if ( isShifted && !allowsKeyMove())
+      baseButton.addRestrictions( SHIFT_MOVE_BIND );
+    if ( isXShifted && ! allowsKeyMove())
+      baseButton.addRestrictions( XSHIFT_MOVE_BIND );
   }
 
   public Button getBaseButton()
@@ -312,7 +319,7 @@ public class Button
   public static int MOVE_BIND = 0x01;
   public static int SHIFT_MOVE_BIND = 0x02;
   public static int XSHIFT_MOVE_BIND = 0x04;
-  public static int ALL_MOVE_BIND = MOVE_BIND | SHIFT_MOVE_BIND + XSHIFT_MOVE_BIND;
+  public static int ALL_MOVE_BIND = MOVE_BIND | SHIFT_MOVE_BIND | XSHIFT_MOVE_BIND;
   public static int MACRO_BIND = 0x08;
   public static int SHIFT_MACRO_BIND = 0x10;
   public static int XSHIFT_MACRO_BIND = 0x20;

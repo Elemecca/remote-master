@@ -175,8 +175,7 @@ public class Remote
         Arrays.sort( deviceTypeAliasNames );
       }
 
-      // Create the upgradeButtons[]
-      // and starts off with the buttons in longest button map
+      // find the longest button map
       ButtonMap longestMap = null;
       for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
       {
@@ -186,36 +185,30 @@ public class Remote
           longestMap = thisMap;
       }
 
-      int bindableButtons = 0;
-      for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
-      {
-        Button b = ( Button )e.nextElement();
-        if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() ||
-             b.allowsXShiftedKeyMove() || ( b.getButtonMaps() != 0 ))
-          bindableButtons++;
-      }
+      // Now figure out which buttons are bindable
+      Vector bindableButtons = new Vector();
 
-      upgradeButtons = new Button[ bindableButtons ];
-
-      // first copy the buttons from the longest map
+      // first copy the bindable buttons from the longest map
       int index = 0;
       while ( index < longestMap.size())
       {
-        upgradeButtons[ index ] = longestMap.get( index );
-        index++;
+        Button b = longestMap.get( index++ );
+        if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() ||
+             b.allowsXShiftedKeyMove())
+          bindableButtons.add( b );
       }
 
-      // now copy the rest of the buttons, skipping those in the map
+      // now copy the rest of the bindable buttons, skipping those already added
       for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
       {
         Button b = ( Button )e.nextElement();
         if (( b.allowsKeyMove() ||
               b.allowsShiftedKeyMove() ||
-              b.allowsXShiftedKeyMove() ||
-              ( b.getButtonMaps() != 0 ))
-            && !longestMap.isPresent( b ))
-          upgradeButtons[ index++ ] = b;
+              b.allowsXShiftedKeyMove())
+            && !bindableButtons.contains( b ))
+          bindableButtons.add( b );
       }
+      upgradeButtons = ( Button[] )bindableButtons.toArray( upgradeButtons );
 
       if ( mapFiles[ mapIndex ] != null )
         readMapFile();
@@ -962,11 +955,9 @@ public class Remote
   public void addButton( Button b )
   {
     int keycode = b.getKeyCode();
-    int maskedCode = keycode & 0xC0;
     int unshiftedCode = keycode & 0x3f;
-    if ( maskedCode == shiftMask )
+    if ( b.getIsShifted())
     {
-      b.setIsShifted( true );
       Button c = getButton( unshiftedCode );
       if ( c != null )
       {
@@ -980,9 +971,8 @@ public class Remote
         }
       }
     }
-    else if ( maskedCode == xShiftMask )
+    else if ( b.getIsXShifted())
     {
-      b.setIsXShifted( true );
       Button c = getButton( unshiftedCode );
       if ( c != null )
       {
@@ -1488,7 +1478,7 @@ public class Remote
   private Hashtable buttonsByKeyCode = new Hashtable();
   private Hashtable buttonsByName = new Hashtable();
   private Hashtable buttonsByStandardName = new Hashtable();
-  private Button[] upgradeButtons = null;
+  private Button[] upgradeButtons = new Button[ 0 ];
   private Vector phantomShapes = new Vector();
   private ButtonShape[] buttonShapes = new ButtonShape[ 0 ];
   private int[] digitMaps = new int[ 0 ];

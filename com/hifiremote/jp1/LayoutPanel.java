@@ -201,6 +201,7 @@ public class LayoutPanel
     imagePanel.setPreferredSize( d );
     imagePanel.setMinimumSize( d );
     imagePanel.setMaximumSize( d );
+    imagePanel.revalidate();
     ButtonShape[] buttonShapes = deviceUpgrade.getRemote().getButtonShapes();
     boolean found = false;
     for ( int i = 0; i < buttonShapes.length; i++ )
@@ -228,8 +229,7 @@ public class LayoutPanel
       if ( xShiftMode.isSelected())
         normalMode.setSelected( true );
     }
-    invalidate();
-//    doRepaint();
+    doRepaint();
   }
 
   private void doRepaint()

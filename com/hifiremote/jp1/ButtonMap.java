@@ -85,7 +85,9 @@ public class ButtonMap
       Button[] inner = buttons[ i ];
       for ( int j = 0; j < inner.length; j++ )
       {
-        Function func = inner[ j ].getFunction();
+        Function func = null;
+        if ( inner[ j ] != null )
+          func = inner[ j ].getFunction();
         if ( digitMapUsed && ( i == 0 ))
           func = null;
         if (( func != null ) &&
