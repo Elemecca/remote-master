@@ -93,7 +93,6 @@ RC-6
 RCA
 RCA (Old)
 RCA Combo (Official)
-RCA Combo (w/Duration)
 RECS80 (45)
 RECS80 (68)
 ReplayTV (Official)
@@ -119,10 +118,11 @@ Pioneer 3DEV
 RC-5
 RC-5x
 RC-5/5x Combo
-RC-6a
+RCA Combo (w/Duration)
 ReplayTV (Simple)
 ReplayTV (Advanced)
 Sony 12/15
 Sony20
-Sony Combo
+Sony Combo (old) 
+Sony Combo (new) 
 Zenith
