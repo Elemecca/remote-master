@@ -1,0 +1,68 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:Ayre
+#$DATE:Fri Jan 23 16:59:19 2004
+#$PATH:C:\Backups\JP1\Images\
+#$GIF:Anthem.jpg
+#$FORMAT:ncsa
+#$EOH
+default Anthem
+circle Main  36,45 42,51
+circle dvd  60,44 66,50
+circle VCR  81,45 87,51
+circle TV  101,45 107,51
+circle CD  35,60 41,66
+circle z2  58,60 64,66
+circle z3  81,60 87,66
+circle sleep{timers}  56,322 62,328
+circle fm/am  80,322 86,328
+circle record2{avm_path}  101,322 107,328
+circle cd-input  35,340 41,346
+circle Sleep{timers}  70,160 78,165
+circle setup{sub_lfe}  104,259 110,265
+circle Guide{FRT}  36,195 42,201
+circle back{ctr}  104,196 110,202
+circle Input{THX}  70,175 78,180
+circle Power  99,28 106,35
+circle Up{tune+}  69,208 89,215
+circle Left{seek-}  37,226 44,241
+circle Right{seek+}  100,227 107,242
+circle Down{tune-}  69,245 90,252
+circle Select{status}  69,228 83,235
+circle Mute  40,124 50,131
+circle Vol+  40,147 48,155
+circle Vol-  39,172 47,180
+circle Ch+  100,149 108,157
+circle Ch-  100,174 108,182
+circle 1{Preset_1}  41,75 51,82
+circle 2{Preset_2}  71,75 81,82
+circle 3{Preset_3}  99,76 109,83
+circle 4{Preset_4}  41,91 51,98
+circle 5{Preset_5}  70,91 80,98
+circle 6{Preset_6}  99,93 109,100
+circle 7{On_Screen}  41,107 51,114
+circle 8{Display}  70,107 80,114
+circle 9{Tone_Bypass}  100,108 110,115
+circle 0{Dolby_Dynamics}  70,123 80,130
+circle Last{avm_off}  70,145 78,150
+circle Angle  35,322 41,328
+circle Rew  35,278 46,284
+circle Play  69,278 80,284
+circle fwd  102,279 113,285
+circle Pause{balance}  101,300 112,306
+circle Record1{bass}  35,299 46,305
+circle learn  41,28 46,33
+circle Info{surr_r}  34,256 40,262
+circle SAT  100,60 106,66
+circle aux-input  56,341 62,347
+circle tape-input  80,340 86,346
+circle Random  101,343 107,349
+circle dvd-input  34,360 40,366
+circle tv-input  56,361 62,367
+circle sat-input  80,362 86,368
+circle vcr-input  101,362 107,368
+circle Enter{mode}  100,125 110,132
+circle Stop{treble}  69,299 80,305
