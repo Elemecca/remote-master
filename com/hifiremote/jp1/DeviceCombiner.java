@@ -94,6 +94,18 @@ public class DeviceCombiner
     int[] devCombAddresses = r.getDevCombAddresses();
     if ( devCombAddresses == null )
       return false;
+
+    if ( getVariantName().equals( "S3C80" ))
+    {
+      if ( !processor.equals( "S3C80" ))
+        return false;
+    }
+    else
+    {
+      if ( processor.equals( "S3C80" ))
+        return false;
+    }
+      
     if ( processor.equals( "S3C80" ))
     {
       if (( devCombAddresses[ 1 ] == -1 ) || 
