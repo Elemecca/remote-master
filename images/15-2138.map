@@ -1,0 +1,69 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:15-2138
+#$DATE:Fri Mar 12 09:48:20 2004
+#$PATH:C:\Backups\JP1\Images\
+#$GIF:15-2138.jpg
+#$FORMAT:ncsa
+#$EOH
+default 15-2138
+circle CBL  36,37 46,47
+circle aux  38,76 48,82
+circle DVD  92,55 99,62
+circle CD  33,54 41,62
+circle sat  61,34 69,42
+circle guide  88,117 96,123
+circle info  88,167 97,173
+circle menu  39,117 47,123
+circle exit  39,167 47,173
+circle vol+  38,207 44,213
+circle ch+  91,206 97,212
+circle vol-  38,229 44,235
+circle ch-  91,229 97,235
+circle fav/scan  94,184 103,191
+circle right  88,143 95,150
+circle down  64,168 71,175
+circle up  64,117 71,124
+circle left  40,143 47,150
+circle ok  64,142 74,152
+circle 0  65,333 74,338
+circle 1  43,267 52,272
+circle 9  88,308 97,313
+circle 7  43,308 52,313
+circle 3  87,265 96,270
+circle 2  65,270 74,275
+circle 5  65,291 74,296
+circle 8  65,311 74,316
+circle 4  43,288 52,293
+circle 6  86,287 95,292
+circle last  35,184 44,191
+circle enter  87,329 98,335
+circle power  96,102 106,108
+circle record  42,387 47,392
+rect stop 84,380 95,391
+rect pause 59,382 72,392
+circle sleep  43,348 52,355
+circle p(setup)  30,102 40,108
+circle macro4  95,421 100,426
+circle Macro1  35,422 40,427
+circle macro2  55,423 60,428
+circle macro3  76,423 81,428
+circle aud  89,78 98,87
+circle My_system  63,57 73,67
+circle com-skip  90,250 102,258
+rect tv 82,28 95,40
+rect vcr 55,67 72,79
+rect tv/vcr{a/b} 56,342 74,358
+rect +100 85,398 100,410
+rect mute 56,226 72,233
+poly play 60,363 60,376 72,369 60,363 60,363
+poly rew 49,375 41,375 35,368 42,363 49,363 49,375 49,375
+poly fwd 80,362 88,362 95,369 87,375 80,374 80,362 80,362
+rect Replay 31,399 46,411
+rect advance 49,400 65,412
+rect livetv 68,400 82,411
+circle com-mute  38,251 49,258
+rect screen 54,200 74,212
