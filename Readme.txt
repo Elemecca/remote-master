@@ -56,6 +56,7 @@ problem with one of these, please open a Bug in SourceForge against
 the controlremote project.
 
 Aiwa
+Aiwa2
 Aiwa Combo
 Apex 1100W
 B&K
@@ -89,6 +90,7 @@ Panasonic2 (LCD)
 Pioneer
 Pioneer DVD
 Proton
+RC-5
 RC-6
 RCA
 RCA (Old)
@@ -119,10 +121,4 @@ Pioneer DVD2
 Pioneer MIX
 Pioneer 2CMD
 Pioneer 3DEV
-RC-5
 RC-5x
-RC-5/5x Combo
-RCA Combo (w/Duration)
-ReplayTV (Simple)
-ReplayTV (Advanced)
-Zenith
