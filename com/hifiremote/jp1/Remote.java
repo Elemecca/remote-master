@@ -18,6 +18,8 @@ public class Remote
     name = st.nextToken(); // the stuff between the parens
   }
 
+  public File getFile(){ return file; }
+
   private void checkLoaded()
   {
     if ( !loaded )

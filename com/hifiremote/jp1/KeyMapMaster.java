@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.69";
+  private static final String version = "v 0.70";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -22,12 +22,15 @@ public class KeyMapMaster
   private JMenuItem importItem = null;
   private JMenuItem exitItem = null;
   private JMenu recentFileMenu = null;
+  private JMenuItem useAllRemotes = null;
+  private JMenuItem usePreferredRemotes = null;
   private JRadioButtonMenuItem[] promptButtons = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
   private JComboBox remoteList = null;
   private JComboBox deviceTypeList = null;
   private Remote[] remotes = null;
+  private Remote[] preferredRemotes = new Remote[ 0 ];
   private ProtocolManager protocolManager = new ProtocolManager();
   private Remote currentRemote = null;
   private String currentDeviceTypeName = null;
@@ -48,7 +51,6 @@ public class KeyMapMaster
   private String lastRemoteName = null;
   private String lastRemoteSignature = null;
   private Rectangle bounds = null;
-  private Vector recentFiles = new Vector();
   private static String upgradeExtension = ".rmdu";
   private static String upgradeDirectory = "Upgrades";
   private int promptFlag = 0;
@@ -63,8 +65,6 @@ public class KeyMapMaster
   {
     super( "RemoteMaster " + version );
     File fileToOpen = parseArgs( args );
-
-    loadPreferences();
 
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
@@ -94,104 +94,10 @@ public class KeyMapMaster
 
     deviceUpgrade = new DeviceUpgrade();
 
-    JMenuBar menuBar = new JMenuBar();
-    setJMenuBar( menuBar );
-    JMenu menu = new JMenu( "File" );
-    menuBar.add( menu );
-    newItem = new JMenuItem( "New" );
-    newItem.addActionListener( this );
-    menu.add( newItem );
-    openItem = new JMenuItem( "Open..." );
-    openItem.addActionListener( this );
-    menu.add( openItem );
-    saveItem = new JMenuItem( "Save" );
-    saveItem.setEnabled( false );
-    saveItem.addActionListener( this );
-    menu.add( saveItem );
-    saveAsItem = new JMenuItem( "Save as..." );
-    saveAsItem.addActionListener( this );
-    menu.add( saveAsItem );
-
-    menu.addSeparator();
-    importItem = new JMenuItem( "Import KM file..." );
-    importItem.addActionListener( this );
-    menu.add( importItem );
-
-    menu.addSeparator();
-    recentFileMenu = new JMenu( "Recent" );
-    menu.add( recentFileMenu );
-    for ( Enumeration e = recentFiles.elements(); e.hasMoreElements(); )
-      recentFileMenu.add( new FileAction(( File )e.nextElement()));
-
-    menu.addSeparator();
-    exitItem = new JMenuItem( "Exit" );
-    exitItem.addActionListener( this );
-    menu.add( exitItem );
-    
-
-    menu = new JMenu( "Options" );
-    menuBar.add( menu );
-
-    JMenu submenu = new JMenu( "Look and Feel" );
-    menu.add( submenu );
-
-    ButtonGroup group = new ButtonGroup();
-    String lookAndFeelName = UIManager.getLookAndFeel().getClass().getName();
-    UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
-
-    ActionListener al = new ActionListener()
-    {
-      public void actionPerformed( ActionEvent e )
-      {
-        try 
-        {
-          UIManager.setLookAndFeel((( JRadioButtonMenuItem )e.getSource()).getActionCommand());
-          SwingUtilities.updateComponentTreeUI( me );
-        }
-        catch ( Exception x )
-        {}
-      }
-    };
-
-    for ( int i = 0; i < info.length; i++ )
-    {
-      JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName());
-      item.setActionCommand( info[ i ].getClassName());
-      if ( info[ i ].getClassName().equals( lookAndFeelName ))
-        item.setSelected( true );
-      group.add( item );
-      submenu.add( item );
-      item.addActionListener( al );
-    }
-
-    group = new ButtonGroup();
-    submenu = new JMenu( "Prompt to Save" );
-    menu.add( submenu );
-
-    al = new ActionListener()
-    {
-      public void actionPerformed( ActionEvent e )
-      {
-        Object source = e.getSource();
-        for ( int i = 0; i < promptButtons.length; i++ )
-          if ( promptButtons[ i ] == source )
-          {
-            promptFlag = i;
-            break;
-          }
-      }
-    };
-    promptButtons = new JRadioButtonMenuItem[ promptStrings.length ];
-    for ( int i = 0; i < promptStrings.length; i++ )
-    {
-      JRadioButtonMenuItem item = new JRadioButtonMenuItem( promptStrings[ i ] );
-      promptButtons[ i ] = item;
-      item.addActionListener( al );
-      group.add( item );
-      submenu.add( item );
-    }
-    promptButtons[ promptFlag ].setSelected( true );
+    createMenus();
       
+    loadPreferences();
+
     Container mainPanel = getContentPane();
     JTabbedPane tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
@@ -271,8 +177,8 @@ public class KeyMapMaster
     tabbedPane.addTab( "Output", null, outputPanel,
                        "The output to copy-n-paste into IR." );
     
-   loadRemotes();
-    setRemotes( remotes );
+    loadRemotes();
+    setRemotes();
 
     int index = 0;
     if ( lastRemoteName != null )
@@ -286,7 +192,7 @@ public class KeyMapMaster
     Protocol protocol = ( Protocol )protocolManager.getProtocolsForRemote( temp ).elementAt( 0 );
     deviceUpgrade.setProtocol( protocol );
     setRemote( temp );
-    remoteList.setSelectedIndex( index );
+    remoteList.setSelectedItem( temp );
 
     remoteList.addActionListener( this );
     deviceTypeList.addActionListener( this );
@@ -306,6 +212,149 @@ public class KeyMapMaster
       openFile( fileToOpen );
     }
     show();
+  }
+
+  private void createMenus()
+  {
+    JMenuBar menuBar = new JMenuBar();
+    setJMenuBar( menuBar );
+    JMenu menu = new JMenu( "File" );
+    menuBar.add( menu );
+    newItem = new JMenuItem( "New" );
+    newItem.addActionListener( this );
+    menu.add( newItem );
+    openItem = new JMenuItem( "Open..." );
+    openItem.addActionListener( this );
+    menu.add( openItem );
+    saveItem = new JMenuItem( "Save" );
+    saveItem.setEnabled( false );
+    saveItem.addActionListener( this );
+    menu.add( saveItem );
+    saveAsItem = new JMenuItem( "Save as..." );
+    saveAsItem.addActionListener( this );
+    menu.add( saveAsItem );
+
+    menu.addSeparator();
+    importItem = new JMenuItem( "Import KM file..." );
+    importItem.addActionListener( this );
+    menu.add( importItem );
+
+    menu.addSeparator();
+    recentFileMenu = new JMenu( "Recent" );
+    recentFileMenu.setEnabled( false );
+    menu.add( recentFileMenu );
+    menu.addSeparator();
+
+    exitItem = new JMenuItem( "Exit" );
+    exitItem.addActionListener( this );
+    menu.add( exitItem );
+    
+    menu = new JMenu( "Options" );
+    menuBar.add( menu );
+
+    JMenu submenu = new JMenu( "Look and Feel" );
+    menu.add( submenu );
+
+    ButtonGroup group = new ButtonGroup();
+    String lookAndFeelName = UIManager.getLookAndFeel().getClass().getName();
+    UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
+
+    ActionListener al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        try 
+        {
+          UIManager.setLookAndFeel((( JRadioButtonMenuItem )e.getSource()).getActionCommand());
+          SwingUtilities.updateComponentTreeUI( me );
+        }
+        catch ( Exception x )
+        {}
+      }
+    };
+
+    for ( int i = 0; i < info.length; i++ )
+    {
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName());
+      item.setActionCommand( info[ i ].getClassName());
+      if ( info[ i ].getClassName().equals( lookAndFeelName ))
+        item.setSelected( true );
+      group.add( item );
+      submenu.add( item );
+      item.addActionListener( al );
+    }
+
+    group = new ButtonGroup();
+    submenu = new JMenu( "Prompt to Save" );
+    menu.add( submenu );
+
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        Object source = e.getSource();
+        for ( int i = 0; i < promptButtons.length; i++ )
+          if ( promptButtons[ i ] == source )
+          {
+            promptFlag = i;
+            break;
+          }
+      }
+    };
+
+    promptButtons = new JRadioButtonMenuItem[ promptStrings.length ];
+    for ( int i = 0; i < promptStrings.length; i++ )
+    {
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem( promptStrings[ i ] );
+      promptButtons[ i ] = item;
+      item.addActionListener( al );
+      group.add( item );
+      submenu.add( item );
+    }
+    promptButtons[ promptFlag ].setSelected( true );
+
+    submenu = new JMenu( "Remotes" );
+    menu.add( submenu );
+
+    group = new ButtonGroup();
+    useAllRemotes = new JRadioButtonMenuItem( "All" );
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        Object source = e.getSource();
+        if (( source == useAllRemotes ) || ( source == usePreferredRemotes ))
+          setRemotes();
+        else
+          editPreferredRemotes();
+      }
+    };
+    useAllRemotes.setSelected( true );
+    useAllRemotes.addActionListener( al );
+    group.add( useAllRemotes );
+    submenu.add( useAllRemotes );
+
+    usePreferredRemotes = new JRadioButtonMenuItem( "Preferred" );
+    usePreferredRemotes.addActionListener( al );
+    group.add( usePreferredRemotes );
+    submenu.add( usePreferredRemotes );
+
+    submenu.addSeparator();
+    JMenuItem item = new JMenuItem( "Edit preferred..." );
+    item.addActionListener( al );
+    submenu.add( item );
+  }
+
+  private void editPreferredRemotes()
+  {
+    PreferredRemoteDialog d = new PreferredRemoteDialog( this, remotes, preferredRemotes );
+    d.show();
+    if ( d.getUserAction() == JOptionPane.OK_OPTION )
+    {
+      preferredRemotes = d.getPreferredRemotes();
+      if ( usePreferredRemotes.isSelected())
+        remoteList.setModel( new DefaultComboBoxModel( preferredRemotes ));
+    }
   }
 
   private File parseArgs( String[] args )
@@ -399,11 +448,27 @@ public class KeyMapMaster
     progressMonitor.setMillisToDecideToPopup( 1000 );
 
     remotes = new Remote[ files.length ];
+
     for ( int i = 0; i < files.length; i++ )
     {
       File rdf = files[ i ];
       progressMonitor.setNote( "Loading " + rdf.getName());
-      remotes[ i ] = new Remote( rdf );
+      
+      Remote r = null;
+      for ( int j = 0; j < preferredRemotes.length; j++ )
+      {
+        Remote r2 = preferredRemotes[ j ];
+        if ( rdf.equals( r2.getFile()))
+        {
+          r = r2;
+          break;
+        }
+      }
+            
+      if ( r == null )
+        r = new Remote( rdf );
+      
+      remotes[ i ] = r;
       progressMonitor.setProgress( i );
     }
 
@@ -413,10 +478,15 @@ public class KeyMapMaster
     progressMonitor.close();
   } // loadRemotes
 
-  public void setRemotes( Remote[] remotes )
+  public void setRemotes()
   {
     if ( remoteList != null )
-      remoteList.setModel( new DefaultComboBoxModel( remotes ));
+    {
+      if ( usePreferredRemotes.isSelected())
+        remoteList.setModel( new DefaultComboBoxModel( preferredRemotes ));
+      else
+        remoteList.setModel( new DefaultComboBoxModel( remotes ));
+    }
   }
 
   public void setRemote( Remote remote )
@@ -634,28 +704,34 @@ public class KeyMapMaster
     remoteList.removeActionListener( this );
     deviceTypeList.removeActionListener( this );
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
-    setRemote( deviceUpgrade.getRemote());
-    remoteList.setSelectedItem( deviceUpgrade.getRemote());
+    Remote r = deviceUpgrade.getRemote();
+    setRemote( r );
+    remoteList.setSelectedItem( r );
+    if ( remoteList.getSelectedItem() != r )
+    {
+      remoteList.addItem( r );
+      remoteList.setSelectedItem( r );
+    }
     setDeviceTypeName( savedTypeName );
     remoteList.addActionListener( this );
     deviceTypeList.addActionListener( this );
     currPanel.update();
 
-    int itemCount = recentFileMenu.getItemCount();
-    for ( int i = 0; i < itemCount; i++ )
+    int i = recentFileMenu.getItemCount() - 1;
+    while ( i >= 0 )
     {
       JMenuItem item = recentFileMenu.getItem( i );
       FileAction action = ( FileAction  )item.getAction();
       File f = action.getFile();
-      if ( f.equals( file ))
-      {
+      if ( f.getAbsolutePath().equals( file.getAbsolutePath()))
         recentFileMenu.remove( i );
-        itemCount--;
-      }
+      --i;
     }
-    while ( itemCount > 9 )
-      recentFileMenu.remove( --itemCount );
+    i = recentFileMenu.getItemCount();
+    while ( i > 9 )
+      recentFileMenu.remove( --i );
     recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
+    recentFileMenu.setEnabled( true );
 
     validateUpgrade();
   }
@@ -751,14 +827,34 @@ public class KeyMapMaster
         promptFlag = i;
     if ( promptFlag > promptStrings.length )
       promptFlag = 0;
+
+    Vector v = new Vector();
+    for ( int i = 0; true; i++ )
+    {
+      temp = props.getProperty( "PreferredRemotes." + i );
+      if ( temp == null )
+        break;
+      File f = new File( temp );
+      if ( f.exists() && f.isFile())
+        v.add( new Remote( f )); 
+    }
+    preferredRemotes = ( Remote[])v.toArray( preferredRemotes );
+
+    temp = props.getProperty( "ShowRemotes", "All" );
+    if ( temp.equals( "All" ))
+      useAllRemotes.setSelected( true );
+    else
+      usePreferredRemotes.setSelected( true );
     
-    for (int i = 0; i < 10; i++ )
+    for ( int i = 0; i < 10; i++ )
     {
       temp = props.getProperty( "RecentFiles." + i );
       if ( temp == null )
         break;
-      recentFiles.add( new File( temp ));
+      recentFileMenu.add( new FileAction( new File( temp )));
     }
+    if ( recentFileMenu.getItemCount() > 0 )
+      recentFileMenu.setEnabled( true );
 
     temp = props.getProperty( "Bounds" );
     if ( temp != null )
@@ -784,6 +880,10 @@ public class KeyMapMaster
     props.setProperty( "Remote.name", remote.getName());
     props.setProperty( "Remote.signature", remote.getSignature());
     props.setProperty( "PromptToSave", promptStrings[ promptFlag ]);
+    if ( useAllRemotes.isSelected())
+      props.setProperty( "ShowRemotes", "All" );
+    else
+      props.setProperty( "ShowRemotes", "Preferred" );
 
     for ( int i = 0; i < recentFileMenu.getItemCount(); i++ )
     {
@@ -791,6 +891,13 @@ public class KeyMapMaster
       FileAction action = ( FileAction )item.getAction();
       File f = action.getFile();
       props.setProperty( "RecentFiles." + i, f.getAbsolutePath());
+    }
+
+    for ( int i = 0; i < preferredRemotes.length; i++ )
+    {
+      Remote r = preferredRemotes[ i ];
+      File f = r.getFile();
+      props.setProperty( "PreferredRemotes." + i, f.getAbsolutePath());
     }
 
     int state = getExtendedState();
