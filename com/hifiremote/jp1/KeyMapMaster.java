@@ -40,6 +40,8 @@ public class KeyMapMaster
   private File kmPath = null;
   private String lastRemoteName = null;
   private String lastRemoteSignature = null;
+  private Rectangle bounds = null;
+  private Vector recentFiles = new Vector();
 
   public KeyMapMaster()
     throws Exception
@@ -51,6 +53,10 @@ public class KeyMapMaster
     throws Exception
   {
     super( "RemoteMaster " + version );
+
+    this.propertiesFile = propertiesFile;
+    loadPreferences();
+
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
     JDialog.setDefaultLookAndFeelDecorated( true );
@@ -77,8 +83,6 @@ public class KeyMapMaster
       }
     });
 
-    this.propertiesFile = propertiesFile;
-
     deviceUpgrade = new DeviceUpgrade();
 
     JMenuBar menuBar = new JMenuBar();
@@ -102,6 +106,8 @@ public class KeyMapMaster
     menu.addSeparator();
     recentFileMenu = new JMenu( "Recent" );
     menu.add( recentFileMenu );
+    for ( Enumeration e = recentFiles.elements(); e.hasMoreElements(); )
+      recentFileMenu.add( new FileAction(( File )e.nextElement()));
 
     menu = new JMenu( "Look and Feel" );
     menuBar.add( menu );
@@ -191,9 +197,6 @@ public class KeyMapMaster
     tabbedPane.addTab( "Output", null, outputPanel,
                        "The output to copy-n-paste into IR." );
 
-    loadPreferences();
-
-
     loadRemotes();
     setRemotes( remotes );
 
@@ -222,6 +225,13 @@ public class KeyMapMaster
     currPanel.update();
 
     clearMessage();
+
+    if ( bounds != null )
+      setBounds( bounds );
+    else
+      pack();
+
+    show();
   }
 
   public static void showMessage( String msg )
@@ -501,6 +511,7 @@ public class KeyMapMaster
     currPanel.commit();
     currPanel = ( KMPanel )(( JTabbedPane )e.getSource()).getSelectedComponent();
     currPanel.update();
+    SwingUtilities.updateComponentTreeUI( currPanel );
     validateUpgrade();
   }
 
@@ -561,7 +572,10 @@ public class KeyMapMaster
 
     temp = props.getProperty( "LookAndFeel" );
     if ( temp != null )
+    {
       UIManager.setLookAndFeel( temp );
+      SwingUtilities.updateComponentTreeUI( this );
+    }
 
     lastRemoteName = props.getProperty( "Remote.name" );
     lastRemoteSignature = props.getProperty( "Remote.signature" );
@@ -571,24 +585,19 @@ public class KeyMapMaster
       temp = props.getProperty( "RecentFiles." + i );
       if ( temp == null )
         break;
-      recentFileMenu.add( new FileAction( new File( temp )));
+      recentFiles.add( new File( temp ));
     }
 
     temp = props.getProperty( "Bounds" );
     if ( temp != null )
     {
-      Rectangle r = new Rectangle();
+      bounds = new Rectangle();
       StringTokenizer st = new StringTokenizer( temp, "," );
-      r.x = Integer.parseInt( st.nextToken());
-      r.y = Integer.parseInt( st.nextToken());
-      r.width = Integer.parseInt( st.nextToken());
-      r.height = Integer.parseInt( st.nextToken());
-      setBounds( r );
+      bounds.x = Integer.parseInt( st.nextToken());
+      bounds.y = Integer.parseInt( st.nextToken());
+      bounds.width = Integer.parseInt( st.nextToken());
+      bounds.height = Integer.parseInt( st.nextToken());
     }
-    else
-      pack();
-
-    show();
   }
 
   private void savePreferences()

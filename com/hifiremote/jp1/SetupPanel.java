@@ -176,6 +176,7 @@ public class SetupPanel
         revalidate();
         protocolNotes.setText( protocol.getNotes());
         protocolNotes.revalidate();
+        SwingUtilities.updateComponentTreeUI( this );
       }
     }
     else if ( source == setupCode )
