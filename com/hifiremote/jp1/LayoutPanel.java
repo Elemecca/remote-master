@@ -282,14 +282,21 @@ public class LayoutPanel
   {
     ButtonShape[] buttonShapes = deviceUpgrade.getRemote().getButtonShapes();
     ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
+    ButtonShape closestMatch = null;
     for ( int i = 0; i < buttonShapes.length; i++ )
     {
       ButtonShape buttonShape = buttonShapes[ i ];
       Shape s = buttonShape.getShape();
       if (( s != null ) && s.contains( p ))
-        return buttonShape;
+      {
+        if ( closestMatch == null )
+          closestMatch = buttonShape;
+        Button b = getButtonForShape( buttonShape );
+        if ( map.isPresent( b ))
+          return buttonShape;
+      }
     }
-    return null;
+    return closestMatch;
   }
 
   public Button getButtonForShape( ButtonShape buttonShape )
@@ -503,6 +510,7 @@ public class LayoutPanel
         Button b = getButtonForShape( buttonShape );
         if ( b == null )
           continue;
+        System.err.println( "Checking shape for button " + b.getName());
 
         Shape s = buttonShape.getShape();
 
