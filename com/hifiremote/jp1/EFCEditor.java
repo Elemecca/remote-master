@@ -21,7 +21,10 @@ public class EFCEditor
     JTextField tf =
       ( JTextField )super.getTableCellEditorComponent( table, value,
                                                        isSelected, row, col );
-    tf.setText((( EFC )value ).toString());
+    if ( value == null )
+      tf.setText( "" );
+    else                                                       
+      tf.setText((( EFC )value ).toString());
     tf.selectAll();
 
     return tf;

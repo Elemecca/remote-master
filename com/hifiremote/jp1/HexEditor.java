@@ -22,7 +22,10 @@ public class HexEditor
     JTextField tf =
       ( JTextField )super.getTableCellEditorComponent( table, value,
                                                        isSelected, row, col );
-    tf.setText((( Hex )value ).toString());
+    if ( value == null )
+      tf.setText( "" );
+    else                                                       
+      tf.setText((( Hex )value ).toString());
     tf.selectAll();
 
     return tf;

@@ -117,7 +117,7 @@ public class FunctionTableModel
     else if ( col == hexCol )
     {
       checkFunctionAssigned( function, value );
-      if ( value.getClass() == String.class )
+      if (( value != null ) && ( value.getClass() == String.class ))
         value = new Hex(( String )value );
       function.setHex(( Hex )value );
     }
