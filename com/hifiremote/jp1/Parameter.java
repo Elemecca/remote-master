@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.io.*;
+
 public abstract class Parameter
 {
   public Parameter( String name )
@@ -34,6 +36,6 @@ public abstract class Parameter
   }
   public abstract void setValue( Object value );
 
-  private String name;
-  private DefaultValue defaultValue;
+  protected String name;
+  protected DefaultValue defaultValue;
 }

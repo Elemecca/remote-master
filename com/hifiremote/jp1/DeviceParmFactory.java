@@ -32,7 +32,8 @@ public class DeviceParmFactory
           if ( token.indexOf( '[' ) != -1 )
           {
             StringTokenizer st3 = new StringTokenizer( token, "[]" );
-            defaultValue = new IndirectDefaultValue( rc[ Integer.parseInt( st3.nextToken())] );
+            int index = Integer.parseInt( st3.nextToken());
+            defaultValue = new IndirectDefaultValue( index, rc[ index ] );
           }
           else
             defaultValue = new DirectDefaultValue( Integer.valueOf( token, base ) );

@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.io.*;
 import java.util.*;
 import javax.swing.table.*;
 
@@ -68,6 +69,30 @@ public class Protocol
       StringTokenizer st2 = new StringTokenizer( temp, "," );
       while ( st2.hasMoreTokens())
         oldNames.add( st2.nextToken().trim());
+    }
+  }
+
+  public void importUpgradeCode( String processor, String notes )
+  {
+    StringTokenizer st = new StringTokenizer( notes, "\n" );
+    String text = null;
+    while ( st.hasMoreTokens())
+    {
+      text = st.nextToken();
+      if ( text.startsWith( "Upgrade protocol 0 =" ))
+        break;
+    }
+    if ( st.hasMoreTokens())
+    {
+      text = st.nextToken(); // 1st line of code
+      while ( st.hasMoreTokens())
+      {
+        String temp = st.nextToken();
+        if ( temp.equals( "End" ))
+          break;
+        text = text + ' ' + temp;
+      }
+      code.put( processor, new Hex( text ));
     }
   }
 
@@ -404,20 +429,34 @@ public class Protocol
     return result;
   }
 
+  public void store( PrintWriter out )
+    throws IOException
+  {
+    System.err.println( "Protocol.store()" );
+    DeviceUpgrade.print( out, "Protocol", id.toString());
+    DeviceUpgrade.print( out, "Protocol.name", name );
+    if ( variantName.length() > 0 )
+      DeviceUpgrade.print( out, "Protocol.variantName", variantName );
+    Value[] parms = getDeviceParmValues();
+    if (( parms != null ) && ( parms.length != 0 ))
+      DeviceUpgrade.print( out, "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ));
+    DeviceUpgrade.print( out, "FixedData", getFixedData().toString());
+  }
+
   public final static int tooDifferent = 0x7FFFFFFF;
 
   private String name = null;;
   protected Hex id = null;
   private String variantName = null;
-  private Hex fixedData = null;
+  protected Hex fixedData = null;
   protected Hex defaultCmd = null;
   protected int cmdIndex;
-  private DeviceParameter[] devParms = null;
-  private Translate[] deviceTranslators = null;
-  private CmdParameter[] cmdParms = null;
-  private Translate[] cmdTranslators = null;
-  private HashMap code = new HashMap( 4 );
+  protected DeviceParameter[] devParms = null;
+  protected Translate[] deviceTranslators = null;
+  protected CmdParameter[] cmdParms = null;
+  protected Translate[] cmdTranslators = null;
+  protected HashMap code = new HashMap( 4 );
   private Initializer[] cmdParmInit = null;
-  private String notes = null;
+  protected String notes = null;
   private Vector oldNames = new Vector();
 }

@@ -3,9 +3,10 @@ package com.hifiremote.jp1;
 public class IndirectDefaultValue
  extends DefaultValue
 {
-  public IndirectDefaultValue( Parameter ref )
+  public IndirectDefaultValue( int index, Parameter ref )
   {
-     this.ref = ref;
+    this.index = index;
+    this.ref = ref;
   }
   public Object value()
   {
@@ -13,4 +14,7 @@ public class IndirectDefaultValue
   }
 
   private Parameter ref;
+  private int index = 0;
+
+  public String toString(){ return "[" + index + "]"; }
 }

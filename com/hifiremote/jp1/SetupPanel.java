@@ -194,8 +194,8 @@ public class SetupPanel
         if ( newProtocol != null && oldProtocol != null && !updateInProgress )
           oldProtocol.convertFunctions( deviceUpgrade.getFunctions(), newProtocol );
         protocolID.setText( newProtocol.getID().toString());
-        JViewport vp = ( JViewport )protocolNotes.getParent();
-        vp.setViewPosition( new Point( 0, 0 ));
+//        JViewport vp = ( JViewport )protocolNotes.getParent();
+//        vp.setViewPosition( new Point( 0, 0 ));
         deviceUpgrade.setProtocol( newProtocol );
         updateParameters();
         fixedData.setText( newProtocol.getFixedData().toString());
@@ -203,7 +203,7 @@ public class SetupPanel
         protocolNotes.setText( newProtocol.getNotes());
         protocolNotes.setCaretPosition( 0 );
         protocolNotes.revalidate();
-        SwingUtilities.updateComponentTreeUI( this );
+//        SwingUtilities.updateComponentTreeUI( this );
       }
     }
     else // must be a protocol parameter

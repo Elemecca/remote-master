@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.78";
+  private static final String version = "v 0.79";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -717,8 +717,9 @@ public class KeyMapMaster
     JFileChooser chooser = new JFileChooser( upgradePath );
     chooser.setFileFilter( new KMFileFilter());
     File f = deviceUpgrade.getFile();
-    if ( f != null )
-      chooser.setSelectedFile( f );
+    if ( f == null )
+      f = new File( upgradePath, deviceUpgrade.getDescription() + upgradeExtension );
+    chooser.setSelectedFile( f );
     int returnVal = chooser.showSaveDialog( this );
     if ( returnVal == JFileChooser.APPROVE_OPTION )
     {

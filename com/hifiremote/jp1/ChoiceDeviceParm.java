@@ -10,6 +10,7 @@ public class ChoiceDeviceParm
   public ChoiceDeviceParm( String name, DefaultValue defaultValue, String[] choices )
   {
     super( name, defaultValue );
+    this.choices = choices;
     comboBox = new JComboBox( choices );
     // JSF28may03 Questionable design decision: ChoiceDeviceParm doesn't dynamically correct default in ToolTip (compare vs. NumberDeviceParm)
     // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
@@ -54,5 +55,25 @@ public class ChoiceDeviceParm
       comboBox.setSelectedIndex( index );
   }
 
+  public String toString()
+  {
+    StringBuffer buff = new StringBuffer();
+    buff.append( name );
+    buff.append( ':' );
+    for ( int i = 1; i < choices.length; i ++ )
+    {
+      if ( i > 0 )
+        buff.append( '|' );
+      buff.append( choices[ i ]);
+    }
+    if ( defaultValue != null )
+    {
+      buff.append( '=' );
+      buff.append( defaultValue );
+    }
+    return buff.toString();     
+  }
+
   private JComboBox comboBox = null;
+  private String[] choices = null;
 }

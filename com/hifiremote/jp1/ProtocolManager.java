@@ -100,7 +100,7 @@ public class ProtocolManager
     }
   }
 
-  private void add( Protocol p )
+  public void add( Protocol p )
   {
     // Add the protocol to the byName hashtable
     String name = p.getName();
@@ -122,17 +122,16 @@ public class ProtocolManager
       byPID.put( id, v );
     }
     v.add( p );
-
   }
 
   public Vector getNames(){ return names; }
 
   public Vector getProtocolsForRemote( Remote remote )
   {
-    Vector rc = remote.getProtocols();
-    if ( rc == null )
-    {
-      rc = new Vector();
+//    Vector rc = remote.getProtocols();
+//    if ( rc == null )
+//    {
+      Vector rc = new Vector();
       for ( Enumeration e = names.elements(); e.hasMoreElements(); )
       {
         String name = ( String )e.nextElement();
@@ -140,8 +139,8 @@ public class ProtocolManager
         if ( p != null )
           rc.add( p );
       }
-      remote.setProtocols( rc );
-    }
+//      remote.setProtocols( rc );
+//    }
     return rc;
   }
 
@@ -196,7 +195,7 @@ public class ProtocolManager
     System.err.println( "ProtocolManager.findProtocolByOldName()" +
                         " remote=" + remote.getName() + ", name=" + name );
 
-    Vector protocols = remote.getProtocols();
+    Vector protocols = getProtocolsForRemote( remote );
     if ( protocols == null )
       return null;
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )

@@ -106,6 +106,34 @@ public class Translator
     parms[ index ] = insert( parms[ index ], lsbOffset, bits, w );
   }
 
+  public String toString()
+  {
+    StringBuffer buff = new StringBuffer();
+    buff.append( "Translator(" );
+    if ( lsb )
+      buff.append( "lsb," );
+    if ( comp )
+      buff.append( "comp," );
+    buff.append( index );
+    if ( bits != 8 )
+    {
+      buff.append( ',' );
+      buff.append( bits );
+    }
+    if ( bitOffset != 0 )
+    {
+      buff.append( ',' );
+      buff.append( bitOffset );
+    }
+    if ( lsbOffset != 0 )
+    {
+      buff.append( ',' );
+      buff.append( lsbOffset );
+    }
+    buff.append( ')' );
+    return buff.toString();
+  }
+
   public boolean getLSB(){ return lsb; }
   public boolean getComp(){ return comp; }
   public int getIndex(){ return index; }

@@ -78,6 +78,25 @@ public class ChoiceCmdParm
 
   public Choice[] getChoices(){ return choices; }
 
+  public String toString()
+  {
+    StringBuffer buff = new StringBuffer();
+    buff.append( name );
+    buff.append( ':' );
+    for ( int i = 0; i < choices.length; i ++ )
+    {
+      if ( i > 0 )
+        buff.append( '|' );
+      buff.append( choices[ i ].getText());
+    }
+    if ( defaultValue != null )
+    {
+      buff.append( '=' );
+      buff.append( defaultValue ); 
+    }
+    return buff.toString();     
+  }
+
   private DefaultCellEditor editor = null;
   private DefaultTableCellRenderer renderer = null;
   private Choice[] choices = null;

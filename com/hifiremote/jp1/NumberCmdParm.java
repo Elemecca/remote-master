@@ -13,13 +13,9 @@ public class NumberCmdParm
 
   public NumberCmdParm( String name, DefaultValue defaultValue, int bits )
   {
-    this( name, defaultValue, 0, (( 1 << bits ) - 1 ));
-  }
-
-  public NumberCmdParm( String name, DefaultValue defaultValue, int min, int max )
-  {
     super( name, defaultValue );
-    editor = new ByteEditor( min, max );
+    this.bits = bits;
+    editor = new ByteEditor(  0, (( 1 << bits ) - 1 ));
     renderer = new ByteRenderer();
   }
 
@@ -57,6 +53,24 @@ public class NumberCmdParm
     return rc;
   }
 
+  public String toString()
+  {
+    StringBuffer buff = new StringBuffer();
+    buff.append( name );
+    if ( bits != 8 )
+    {
+      buff.append( ':' );
+      buff.append( bits );
+    }
+    if ( defaultValue != null )
+    {
+      buff.append( '=' );
+      buff.append( defaultValue );
+    }
+    return buff.toString();
+  }
+
   private ByteEditor editor;
   private ByteRenderer renderer;
+  private int bits = 8;
 }

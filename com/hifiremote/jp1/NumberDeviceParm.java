@@ -33,15 +33,10 @@ public class NumberDeviceParm
 
   public NumberDeviceParm( String name, DefaultValue defaultValue, int base, int bits )
   {
-    this( name, defaultValue, base, 0, (( 1 << bits ) - 1 ));
-  }
-
-  public NumberDeviceParm( String name, DefaultValue defaultValue, int base, int min, int max  )
-  {
-    
     super( name, defaultValue );
-    this.min = min;
-    this.max = max;
+    this.bits = bits;
+    this.min = 0;
+    this.max = (( 1 << bits ) - 1 );
     this.base = base;
     verifier = new IntVerifier( min, max, true );
     verifier.setBase(base);
@@ -100,7 +95,26 @@ public class NumberDeviceParm
     }
   }
 
+  public String toString()
+  {
+    StringBuffer buff = new StringBuffer();
+    buff.append( name );
+    if (( base == 6 ) || ( bits != 8 ))
+      buff.append( ':' );
+    if ( base == 16 )
+      buff.append( '$' );
+    if ( bits != 8 )
+      buff.append( bits );
+    if ( defaultValue != null )
+    {
+      buff.append( '=' );
+      buff.append( defaultValue );
+    }
+    return buff.toString();
+  }
+
   private JTextField tf = null;
+  private int bits = 8;
   private int min;
   private int max;
   private int base = 10;

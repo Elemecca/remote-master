@@ -13,4 +13,6 @@ public class DirectDefaultValue
   }
 
   private Object value;
+
+  public String toString(){ return value.toString(); }
 }

@@ -20,16 +20,17 @@ public class CmdParmFactory
       String sep = st.nextToken();
       if ( sep.equals( "=" ))
       {
-          String token = st.nextToken();
-          if ( token.indexOf( '[' ) != -1 )
-          {
-            StringTokenizer st3 = new StringTokenizer( token, "[]" );
-            defaultValue = new IndirectDefaultValue( devParms[ Integer.parseInt( st3.nextToken()) ] );
-          }
-	  else
-	  {
-	    defaultValue = new DirectDefaultValue( new Integer( token ) );
-	  }
+        String token = st.nextToken();
+        if ( token.indexOf( '[' ) != -1 )
+        {
+          StringTokenizer st3 = new StringTokenizer( token, "[]" );
+          int index = Integer.parseInt( st3.nextToken());
+          defaultValue = new IndirectDefaultValue( index, devParms[ index ] );
+        }
+	      else
+	      {
+	        defaultValue = new DirectDefaultValue( new Integer( token ) );
+	      }
       }
       else if ( sep.equals( ":" ))
       {

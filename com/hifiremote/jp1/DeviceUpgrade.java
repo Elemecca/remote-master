@@ -359,41 +359,91 @@ public class DeviceUpgrade
     return parms;
   }
 
+  public static void print( PrintWriter out, String name, String value )
+  {
+    out.print( name );
+    out.print( '=' );
+    
+    if ( value != null )
+    {
+      boolean escapeSpace = true;
+      for ( int i = 0; i < value.length(); i++ )
+      {
+        char ch = value.charAt( i );
+        if ( ch == ' ' )
+        {
+          if ( escapeSpace )
+            out.print( "\\ " );
+          else
+            out.print( ch );
+        }
+        else
+        {
+          escapeSpace = false;
+          switch ( ch )
+          {
+            case '\\':
+              out.print( "\\\\" );
+              break;
+            case '\t':
+              out.print( "\\t" );
+              break;
+            case '\n':
+              out.print( "\\n" );
+              break;
+            case '\r':
+              out.print( "\\r" );
+              break;
+            case '#':
+              out.print( "\\#" );
+              break;
+            case '!':
+              out.print( "\\!" );
+              break;
+            case '=':
+              out.print( "\\=" );
+              break;
+            case ':':
+              out.print( "\\:" );
+              break;
+            default:
+              out.print( ch );
+              break;
+          }
+        }
+      }
+    }
+    out.println();
+  }
+
   public void store( File file )
     throws IOException
   {
     this.file = file;
-    Properties props = new Properties();
-    if ( description != null )
-      props.setProperty( "Description", description );
-    props.setProperty( "Remote.name", remote.getName());
-    props.setProperty( "Remote.signature", remote.getSignature());
-    props.setProperty( "DeviceType", devTypeAliasName );
-    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    props.setProperty( "DeviceIndex", Integer.toHexString( devType.getNumber()));
-    props.setProperty( "SetupCode", Integer.toString( setupCode ));
-    props.setProperty( "Protocol", protocol.getID().toString());
-    props.setProperty( "Protocol.name", protocol.getName());
-    if ( protocol.getVariantName().length() > 0 )
-      props.setProperty( "Protocol.variantName", protocol.getVariantName());
-    Value[] parms = protocol.getDeviceParmValues();
-    if (( parms != null ) && ( parms.length != 0 ))
-      props.setProperty( "ProtocolParms", valueArrayToString( parms ));
-    props.setProperty( "FixedData", protocol.getFixedData().toString());
+    PrintWriter out = new PrintWriter( new FileWriter( file ));
 
+    if ( description != null )
+      print( out, "Description", description );
+    print( out, "Remote.name", remote.getName());
+    print( out, "Remote.signature", remote.getSignature());
+    print( out, "DeviceType", devTypeAliasName );
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    print( out, "DeviceIndex", Integer.toHexString( devType.getNumber()));
+    print( out, "SetupCode", Integer.toString( setupCode ));
+    protocol.store( out );
     if ( notes != null )
-      props.setProperty( "Notes", notes );
+      print( out, "Notes", notes );
     int i = 0;
     for ( Enumeration e = functions.elements(); e.hasMoreElements(); i++ )
     {
       Function func = ( Function )e.nextElement();
-      func.store( props, "Function." + i );
+      func.store( out, "Function." + i );
     }
     i = 0;
     for ( Enumeration e = extFunctions.elements(); e.hasMoreElements(); i++ )
     {
       ExternalFunction func = ( ExternalFunction )e.nextElement();
-      func.store( props, "ExtFunction." + i );
+      func.store( out, "ExtFunction." + i );
     }
     Button[] buttons = remote.getUpgradeButtons();
     for ( i = 0; i < buttons.length; i++ )
@@ -413,15 +463,21 @@ public class DeviceUpgrade
         sstr = "null";
       else
         sstr = sf.getName();
-      if (( f != null ) || ( sf != null ))
+
+      Function xf = b.getXShiftedFunction();
+      String xstr;
+      if ( xf == null )
+        xstr = null;
+      else
+        xstr = xf.getName();
+      if (( f != null ) || ( sf != null ) || ( xf != null ))
       {
-        props.setProperty( "Button." + Integer.toHexString( b.getKeyCode()),
-                           fstr + '|' + sstr );
+        print( out, "Button." + Integer.toHexString( b.getKeyCode()),
+                           fstr + '|' + sstr + '|' + xstr );
       }
 
     }
-    FileOutputStream out = new FileOutputStream( file );
-    props.store( out, null );
+    out.flush();
     out.close();
   }
 
@@ -485,41 +541,25 @@ public class DeviceUpgrade
     String name = props.getProperty( "Protocol.name", "" );
     String variantName = props.getProperty( "Protocol.variantName", "" );
 
-    String showV = (variantName.equals("")) ? "" : (": " + variantName);
-
-    protocol = protocolManager.findNearestProtocol( name, pid, variantName );
-
-    if ( protocol == null )
+    if ( name.equals( "Manual Settings" ))
     {
-      JOptionPane.showMessageDialog( null,
-                                     "No protocol found with name=\"" + name +
-                                     "\", ID=" + pid.toString() +
-                                     ", and variantName=\"" + variantName + "\"",
-                                     "File Load Error", JOptionPane.ERROR_MESSAGE );
-      return;
+      protocol = new ManualProtocol( name, pid, props );
+      protocolManager.add( protocol );
     }
+    else
+    {
+      protocol = protocolManager.findNearestProtocol( name, pid, variantName );
 
-//  int leastDifferent = Protocol.tooDifferent;
-//
-//  for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
-//  {
-//    Protocol tentative = ( Protocol )e.nextElement();
-//    int difference = tentative.different( props );
-//    if (difference < leastDifferent)
-//    {
-//      protocol = tentative;
-//      leastDifferent = difference;
-//      if ( difference == 0 )
-//        break;
-//    }
-//  }
-//  if ( leastDifferent == Protocol.tooDifferent )
-//  {
-//    JOptionPane.showMessageDialog( null,
-//                                   "No matching protocol for ID " + props.getProperty( "Protocol" ) + " was found!",
-//                                   "File Load Error", JOptionPane.ERROR_MESSAGE );
-//    return;
-//  }
+      if ( protocol == null )
+      {
+        JOptionPane.showMessageDialog( null,
+                                       "No protocol found with name=\"" + name +
+                                       "\", ID=" + pid.toString() +
+                                       ", and variantName=\"" + variantName + "\"",
+                                       "File Load Error", JOptionPane.ERROR_MESSAGE );
+        return;
+      }
+    }
 
     str = props.getProperty( "ProtocolParms" );
     if (( str != null ) && ( str.length() != 0 ))
@@ -577,6 +617,15 @@ public class DeviceUpgrade
       {
         func = getFunction( str );
         b.setShiftedFunction( func );
+      }
+      if ( st.hasMoreTokens())
+      {
+        str = st.nextToken();
+        if ( !str.equals( "null" ))
+        {
+          func = getFunction( str );
+          b.setXShiftedFunction( func );
+        }
       }
     }
   }
@@ -670,46 +719,97 @@ public class DeviceUpgrade
     st = new StringTokenizer( protocolLine, delim, true );
     st.nextToken(); // skip header
     st.nextToken(); // skip delim
-    str = st.nextToken();  // protocol name
+    String protocolName = st.nextToken();  // protocol name
     st.nextToken(); // skip delim
-    protocol = protocolManager.findProtocolForRemote( remote, str );
 
-    if ( protocol == null )
+    if ( protocolName.equals( "Manual Settings" ))
     {
-      protocol = protocolManager.findProtocolByOldName( remote, str );
+      System.err.println( "protocolName=" + protocolName );
+      StringTokenizer manual = new StringTokenizer( manualLine, delim );
+      manual.nextToken(); // skip header
+      Hex pid = new Hex( manual.nextToken()); // pid
+      System.err.println( "pid=" + pid );
+      int byte2 = Integer.parseInt( manual.nextToken().substring( 0, 1 ));
+      System.err.println( "byte2=" +  byte2 );
+      String signalStyle = manual.nextToken();
+      System.err.println( "SignalStyle=" + signalStyle );
+      String bitsStr = manual.nextToken();
+      int devBits = Integer.parseInt( bitsStr.substring( 0, 1 ), 16);
+      int cmdBits = Integer.parseInt( bitsStr.substring( 1 ), 16 );
+      System.err.println( "devBits=" + devBits + " and cmdBits=" + cmdBits );
+
+      Vector values = new Vector();
+
+      str = st.nextToken(); // Device 1
+      if ( !str.equals( delim ))
+      {
+        st.nextToken(); // skip delim
+        values.add( new Integer( str ));
+      }
+
+      str = st.nextToken(); // Device 2
+      if ( !str.equals( delim ))
+      {
+        st.nextToken(); // skip delim
+        values.add( new Integer( str ));
+      }
+
+      str = st.nextToken(); // Device 3
+      if ( !str.equals( delim ))
+      {
+        st.nextToken(); // skip delim
+        values.add( new Integer( str ));
+      }
+
+      str = st.nextToken(); // Raw Fixed Data
+      if ( str.equals( delim ))
+        str = "";
+      byte[] rawHex = Hex.parseHex( str );
+
+      protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
+      protocolManager.add( protocol );
+    }
+    else
+    {
+      protocol = protocolManager.findProtocolForRemote( remote, protocolName );
 
       if ( protocol == null )
       {
-        JOptionPane.showMessageDialog( null,
-                                       "No protocol found with name=\"" + str +
-                                       "\" for remote \"" + remote.getName(),
-                                       "Import Failure", JOptionPane.ERROR_MESSAGE );
-        return;
+        protocol = protocolManager.findProtocolByOldName( remote, protocolName );
+  
+        if ( protocol == null )
+        {
+          JOptionPane.showMessageDialog( null,
+                                         "No protocol found with name=\"" + protocolName +
+                                         "\" for remote \"" + remote.getName(),
+                                         "Import Failure", JOptionPane.ERROR_MESSAGE );
+          return;
+        }
       }
-    }
-
-    DeviceParameter[] devParms = protocol.getDeviceParameters();
-    for ( int i = 0; i < devParms.length; i++ )
-    {
-      // Skip over Flag parms because KM didn't have these.
-      if ( devParms[ i ].getClass() == FlagDeviceParm.class )
-        continue;
-
-      token = st.nextToken();
-      Object val = null;
-      if ( token.equals( delim ))
-        val = null;
-      else
+  
+      DeviceParameter[] devParms = protocol.getDeviceParameters();
+      for ( int i = 0; i < devParms.length; i++ )
       {
-        st.nextToken(); // skip delim
-        if ( token.equals( "true" ))
-          val = new Integer( 1 );
-        else if ( token.equals( "false" ))
-          val = new Integer( 0 );
+        // Skip over Flag parms because KM didn't have these.
+        if ( devParms[ i ].getClass() == FlagDeviceParm.class )
+          continue;
+  
+        token = st.nextToken();
+        Object val = null;
+        if ( token.equals( delim ))
+          val = null;
         else
-          val = new Integer( token );
+        {
+          st.nextToken(); // skip delim
+          if ( token.equals( "true" ))
+            val = new Integer( 1 );
+          else if ( token.equals( "false" ))
+            val = new Integer( 0 );
+          else
+            val = new Integer( token );
+        }
+        devParms[ i ].setValue( val );
       }
-      devParms[ i ].setValue( val );
     }
 
     for ( int i = 5; i < 35; i++ )
@@ -894,6 +994,9 @@ public class DeviceUpgrade
               buff.append( "\n" );
           }
           notes = buff.toString().trim();
+          if ( protocol.getClass() == ManualProtocol.class )
+            protocol.importUpgradeCode( remote.getProcessor(), notes );
+          
         }
       }
     }

@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.util.Properties;
+import java.io.PrintWriter;
 
 public class Function
 {
@@ -36,6 +37,19 @@ public class Function
       props.setProperty( prefix + ".hex", hex.toString());
     if ( notes != null )
       props.setProperty( prefix + ".notes", notes );
+  }
+
+  public void store( PrintWriter out, String prefix )
+  {
+    if ( isEmpty())
+      DeviceUpgrade.print( out, prefix + ".name", "" );
+
+    if ( name != null )
+      DeviceUpgrade.print( out, prefix + ".name", name );
+    if ( hex != null )
+      DeviceUpgrade.print( out, prefix + ".hex", hex.toString());
+    if ( notes != null )
+      DeviceUpgrade.print( out, prefix + ".notes", notes );
   }
 
   public void load( Properties props, String prefix )
