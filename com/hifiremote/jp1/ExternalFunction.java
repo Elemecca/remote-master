@@ -14,13 +14,13 @@ public class ExternalFunction
       ( type == EFCType );
   }
 
-  public void store( PrintWriter out, String prefix )
+  public void store( PropertyWriter out, String prefix )
   {
     super.store( out, prefix );
-    DeviceUpgrade.print( out, prefix + ".type", Integer.toString( type ));
+    out.print( prefix + ".type", Integer.toString( type ));
     if ( deviceTypeAliasName != null )
-      DeviceUpgrade.print( out, prefix + ".deviceType", deviceTypeAliasName );
-    DeviceUpgrade.print( out, prefix + ".setupCode", Integer.toString( setupCode ));
+      out.print( prefix + ".deviceType", deviceTypeAliasName );
+    out.print( prefix + ".setupCode", Integer.toString( setupCode ));
   }
 
   public void load( Properties props, String prefix, Remote remote )

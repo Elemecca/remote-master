@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.85";
+  private static final String version = "v 0.86";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -215,7 +215,7 @@ public class KeyMapMaster
 
     if ( fileToOpen != null )
     {
-      openFile( fileToOpen );
+      loadUpgrade( fileToOpen );
     }
     show();
   }
@@ -248,21 +248,18 @@ public class KeyMapMaster
 
     menu.addSeparator();
     
-    JMenu submenu = new JMenu( "Import KM Upgrade" );
-    submenu.setMnemonic( KeyEvent.VK_I );
-    menu.add( submenu );
-
-    importItem = new JMenuItem( "From file..." );
-    importItem.setMnemonic( KeyEvent.VK_F );
+    importItem = new JMenuItem( "Import KM file..." );
+    importItem.setMnemonic( KeyEvent.VK_K );
     importItem.addActionListener( this );
-    submenu.add( importItem );
+    menu.add( importItem );
 
-    importFromClipboardItem = new JMenuItem( "From clipboard..." );
+    importFromClipboardItem = new JMenuItem( "Import From Clipboard" );
     importFromClipboardItem.setMnemonic( KeyEvent.VK_C );
     importFromClipboardItem.addActionListener( this );
-    submenu.add( importFromClipboardItem );
+    menu.add( importFromClipboardItem );
 
     menu.addSeparator();
+
     recentFileMenu = new JMenu( "Recent" );
     recentFileMenu.setMnemonic( KeyEvent.VK_R );
     recentFileMenu.setEnabled( false );
@@ -278,7 +275,7 @@ public class KeyMapMaster
     menu.setMnemonic( KeyEvent.VK_O );
     menuBar.add( menu );
 
-    submenu = new JMenu( "Look and Feel" );
+    JMenu submenu = new JMenu( "Look and Feel" );
     submenu.setMnemonic( KeyEvent.VK_L );
     menu.add( submenu );
 
@@ -702,7 +699,7 @@ public class KeyMapMaster
           }
           else
           {
-            openFile( file );
+            loadUpgrade( file );
           }
         }
       }
@@ -758,7 +755,13 @@ public class KeyMapMaster
               String s =
                 ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
               BufferedReader in = new BufferedReader( new StringReader( s ));
-              importUpgrade( in );
+              in.mark( 160 );
+              String line = in.readLine();
+              in.reset();
+              if ( line.startsWith( "Name:" ))
+                importUpgrade( in );
+              else
+                loadUpgrade( in );
             }
           }
           catch (Exception ex)
@@ -844,13 +847,37 @@ public class KeyMapMaster
     return true;
   }
 
-  public void openFile( File file )
+  public void loadUpgrade( File file )
     throws Exception
   {
     upgradePath = file.getParentFile();
-    deviceUpgrade.reset( remotes, protocolManager );
-    deviceUpgrade.load( file, remotes, protocolManager );
+    BufferedReader reader = new BufferedReader( new FileReader( file ));
+    loadUpgrade( reader );
+    deviceUpgrade.setFile( file );
     setTitle( "RemoteMaster " + version + ": " + file.getName());
+
+    int i = recentFileMenu.getItemCount() - 1;
+    while ( i >= 0 )
+    {
+      JMenuItem item = recentFileMenu.getItem( i );
+      FileAction action = ( FileAction  )item.getAction();
+      File f = action.getFile();
+      if ( f.getAbsolutePath().equals( file.getAbsolutePath()))
+        recentFileMenu.remove( i );
+      --i;
+    }
+    i = recentFileMenu.getItemCount();
+    while ( i > 9 )
+      recentFileMenu.remove( --i );
+    recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
+    recentFileMenu.setEnabled( true );
+  }
+
+  public void loadUpgrade( BufferedReader reader )
+    throws Exception
+  {
+    deviceUpgrade.reset( remotes, protocolManager );
+    deviceUpgrade.load( reader, remotes, protocolManager );
     description.setText( deviceUpgrade.getDescription());
     saveItem.setEnabled( true );
     remoteList.removeActionListener( this );
@@ -868,22 +895,6 @@ public class KeyMapMaster
     remoteList.addActionListener( this );
     deviceTypeList.addActionListener( this );
     currPanel.update();
-
-    int i = recentFileMenu.getItemCount() - 1;
-    while ( i >= 0 )
-    {
-      JMenuItem item = recentFileMenu.getItem( i );
-      FileAction action = ( FileAction  )item.getAction();
-      File f = action.getFile();
-      if ( f.getAbsolutePath().equals( file.getAbsolutePath()))
-        recentFileMenu.remove( i );
-      --i;
-    }
-    i = recentFileMenu.getItemCount();
-    while ( i > 9 )
-      recentFileMenu.remove( --i );
-    recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
-    recentFileMenu.setEnabled( true );
 
     validateUpgrade();
   }
@@ -1231,7 +1242,7 @@ public class KeyMapMaster
       try
       {
         if ( promptToSaveUpgrade( ACTION_LOAD ))
-          openFile( file );
+          loadUpgrade( file );
       }
       catch ( Exception ex )
       {

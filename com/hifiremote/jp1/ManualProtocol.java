@@ -77,66 +77,65 @@ public class ManualProtocol
     }
   }
 
-  public void store( PrintWriter out )
+  public void store( PropertyWriter out )
     throws IOException
   {
     System.err.println( "ManualProtocol.store" );
     super.store( out );
     if ( devParms.length > 0 )
     {
-      out.print( "DevParms=" );
+      StringBuffer buff = new StringBuffer();
       for ( int i = 0; i < devParms.length; i++ )
       {
         if ( i > 0 )
-          out.print( ',' );
+          buff.append( ',' );
         DeviceParameter devParm = devParms[ i ];
-        out.print( devParm );   
+        buff.append( devParm.toString() );   
       }
-      out.println();
+      out.print( "DevParms", buff.toString());
     }
     if ( deviceTranslators.length > 0 )
     {
-      out.print( "DeviceTranslator=" );
+      StringBuffer buff = new StringBuffer();
       for ( int i = 0; i < deviceTranslators.length; i++ )
       {
         if ( i > 0 )
-          out.print( ' ' );
-        out.print( deviceTranslators[ i ]);
+          buff.append( ' ' );
+        buff.append( deviceTranslators[ i ].toString());
       }
-      out.println();
+      out.print( "DeviceTranslator", buff.toString());
     }
     if ( cmdParms.length > 0 )
     {
-      out.print( "CmdParms=" );
+      StringBuffer buff = new StringBuffer();
       for ( int i = 0; i < cmdParms.length; i++ )
       {
         if ( i > 0 )
-          out.print( ',' );
-        out.print( cmdParms[ i ]);
+          buff.append( ',' );
+        buff.append( cmdParms[ i ]);
       }
-      out.println();
+      out.print( "CmdParms", buff.toString());
     }
     if ( cmdTranslators.length > 0 )
     {
-      out.print( "CmdTranslator=" );
+      StringBuffer buff = new StringBuffer();
       for ( int i = 0; i < cmdTranslators.length; i++ )
       {
         if ( i > 0 )
-          out.print( ' ' );
-        out.print( cmdTranslators[ i ]);
+          buff.append( ' ' );
+        buff.append( cmdTranslators[ i ]);
       }
-      out.println();
+      out.print( "CmdTranslator", buff.toString());
     }
-    out.println( "DefaultCmd=" + defaultCmd );
-    out.println( "CmdIndex=" + cmdIndex );
-    out.println( "FixedData=" + fixedData );
+    out.print( "DefaultCmd", defaultCmd.toString());
+    out.print( "CmdIndex", Integer.toString( cmdIndex ));
+    out.print( "FixedData", fixedData.toString());
     for ( Iterator i = code.keySet().iterator(); i.hasNext(); )
     {
       Object key = i.next();
-      out.print( "Code." + key + '=' );
-      out.println( code.get( key ));
+      out.print( "Code." + key, code.get( key ).toString());
     }
     if ( notes != null )
-      DeviceUpgrade.print( out, "Protocol.notes", notes );
+      out.print( "Protocol.notes", notes );
   }
 }

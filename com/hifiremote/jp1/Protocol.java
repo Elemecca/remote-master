@@ -446,19 +446,19 @@ public class Protocol
     return result;
   }
 
-  public void store( PrintWriter out )
+  public void store( PropertyWriter out )
     throws IOException
   {
     System.err.println( "Protocol.store()" );
-    DeviceUpgrade.print( out, "Protocol", id.toString());
-    DeviceUpgrade.print( out, "Protocol.name", name );
+    out.print( "Protocol", id.toString());
+    out.print( "Protocol.name", name );
     if ( variantName.length() > 0 )
-      DeviceUpgrade.print( out, "Protocol.variantName", variantName );
+      out.print( "Protocol.variantName", variantName );
     Value[] parms = getDeviceParmValues();
     if (( parms != null ) && ( parms.length != 0 ))
-      DeviceUpgrade.print( out, "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ));
+      out.print( "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ));
     if ( fixedData != null )
-      DeviceUpgrade.print( out, "FixedData", getFixedData().toString());
+      out.print( "FixedData", getFixedData().toString());
   }
 
   public final static int tooDifferent = 0x7FFFFFFF;

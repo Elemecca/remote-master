@@ -192,6 +192,11 @@ public class DeviceUpgrade
     return extFunctions;
   }
 
+  public void setFile( File file )
+  {
+    this.file = file;
+  }
+
   public File getFile(){ return file; }
 
   private int findDigitMapIndex()
@@ -209,10 +214,14 @@ public class DeviceUpgrade
         {
           Function f = buttons[ j ].getFunction();
           if (( f != null ) && !f.isExternal())
+          {
+            System.err.println( "f is " + f.toString());
+            System.err.println( "hex is " + f.getHex());
             if (( f.getHex().getData()[ 0 ] & 0xFF ) == codes[ j ])
               rc = i + 1;
             else
               break;
+          }
           if ( j == 9 )
           {
             return rc;
@@ -360,80 +369,24 @@ public class DeviceUpgrade
     return parms;
   }
 
-  public static void print( PrintWriter out, String name, String value )
-  {
-    out.print( name );
-    out.print( '=' );
-    
-    if ( value != null )
-    {
-      boolean escapeSpace = true;
-      for ( int i = 0; i < value.length(); i++ )
-      {
-        char ch = value.charAt( i );
-        if ( ch == ' ' )
-        {
-          if ( escapeSpace )
-            out.print( "\\ " );
-          else
-            out.print( ch );
-        }
-        else
-        {
-          escapeSpace = false;
-          switch ( ch )
-          {
-            case '\\':
-              out.print( "\\\\" );
-              break;
-            case '\t':
-              out.print( "\\t" );
-              break;
-            case '\n':
-              out.print( "\\n" );
-              break;
-            case '\r':
-              out.print( "\\r" );
-              break;
-            case '#':
-              out.print( "\\#" );
-              break;
-            case '!':
-              out.print( "\\!" );
-              break;
-            case '=':
-              out.print( "\\=" );
-              break;
-            case ':':
-              out.print( "\\:" );
-              break;
-            default:
-              out.print( ch );
-              break;
-          }
-        }
-      }
-    }
-    out.println();
-  }
-
   public void store( File file )
     throws IOException
   {
     this.file = file;
-    PrintWriter out = new PrintWriter( new FileWriter( file ));
+    PropertyWriter out = 
+      new PropertyWriter( new PrintWriter( new FileWriter( file )));
 
     if ( description != null )
-      print( out, "Description", description );
-    print( out, "Remote.name", remote.getName());
-    print( out, "Remote.signature", remote.getSignature());
-    print( out, "DeviceType", devTypeAliasName );
+      out.print( "Description", description );
+    out.print( "Remote.name", remote.getName());
+    out.print( "Remote.signature", remote.getSignature());
+    out.print( "DeviceType", devTypeAliasName );
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    print( out, "DeviceIndex", Integer.toHexString( devType.getNumber()));
-    print( out, "SetupCode", Integer.toString( setupCode ));
+    out.print( "DeviceIndex", Integer.toHexString( devType.getNumber()));
+    out.print( "SetupCode", Integer.toString( setupCode ));
     protocol.store( out );
     if ( notes != null )
-      print( out, "Notes", notes );
+      out.print( "Notes", notes );
     int i = 0;
     for ( Enumeration e = functions.elements(); e.hasMoreElements(); i++ )
     {
@@ -473,7 +426,7 @@ public class DeviceUpgrade
         xstr = xf.getName();
       if (( f != null ) || ( sf != null ) || ( xf != null ))
       {
-        print( out, "Button." + Integer.toHexString( b.getKeyCode()),
+        out.print( "Button." + Integer.toHexString( b.getKeyCode()),
                            fstr + '|' + sstr + '|' + xstr );
       }
 
@@ -482,20 +435,30 @@ public class DeviceUpgrade
     out.close();
   }
 
-  public void load( File file, Remote[] remotes,
+  public void load( BufferedReader reader, Remote[] remotes,
                     ProtocolManager protocolManager )
     throws Exception
   {
-    this.file = file;
     Properties props = new Properties();
-    FileInputStream in = new FileInputStream( file );
-    props.load( in );
-    in.close();
+    Property property = new Property();
+    PropertyReader pr = new PropertyReader( reader );
+    while (( property = pr.nextProperty( property )) != null )
+    {
+      props.put( property.name, property.value );
+    }
+    reader.close();
 
     String str = props.getProperty( "Description" );
     if ( str != null )
       description = str;
     str = props.getProperty( "Remote.name" );
+    if ( str == null )
+    {
+      JOptionPane.showMessageDialog( null,
+                                     "The upgrade you are trying to import is not valid!  It does not contain a value for Remote.name",
+                                     "Import Failure", JOptionPane.ERROR_MESSAGE );
+      return;
+    }
     String sig = props.getProperty( "Remote.signature" );
     int index = Arrays.binarySearch( remotes, str );
     if ( index < 0 )
@@ -653,8 +616,9 @@ public class DeviceUpgrade
     String token = line.substring( 0, 5 );
     if ( !token.equals( "Name:" ))
     {
-      System.err.println( "The file \"" + file + "\" is not a valid KM upgrade file!" );
-      // Bad file!
+      JOptionPane.showMessageDialog( null,
+                                     "The upgrade you are trying to import is not valid!",
+                                     "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
     }
     String delim = line.substring( 5, 6 );
@@ -962,7 +926,7 @@ public class DeviceUpgrade
       if (( actualName != null ) && actualName.length() == 0 )
         actualName = null;
       String buttonName = null;
-      if ( actualName != null )
+      if (( actualName != null ) && ( i < genericButtonNames.length ))
         buttonName = genericButtonNames[ i ];
 
       Button b = null;
@@ -1043,7 +1007,6 @@ public class DeviceUpgrade
 
     while (( line = in.readLine()) != null )
     {
-      line = in.readLine();
       st = new StringTokenizer( line, delim );
       token = getNextField( st, delim );
       if ( token != null )
@@ -1072,7 +1035,20 @@ public class DeviceUpgrade
           notes = buff.toString().trim();
           if ( protocol.getClass() == ManualProtocol.class )
             protocol.importUpgradeCode( remote, notes );
-          
+        }
+      }
+    }
+    if ( !unassigned.isEmpty())
+    {
+      for( ListIterator i = unassigned.listIterator(); i.hasNext(); )
+      {
+        Vector temp = ( Vector )i.next();
+        String funcName = ( String )temp.elementAt( 0 );
+        Function f = getFunction( funcName, usedFunctions );
+        if (( f == null ) || ( f.getHex() == null ))
+        {
+          System.err.println( "Removing function " + f );
+          i.remove();
         }
       }
     }
@@ -1099,6 +1075,20 @@ public class DeviceUpgrade
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       frame.pack();
       frame.show();
+    }
+    Button[] buttons = remote.getUpgradeButtons();
+    for ( int i = 0; i < buttons.length; i++ )
+    {
+      Button b = buttons[ i ];
+      Function f = b.getFunction();
+      if (( f != null ) && ( f.getHex() == null ))
+        b.setFunction( null );
+      f = b.getShiftedFunction();
+      if (( f != null ) && ( f.getHex() == null ))
+        b.setShiftedFunction( null );
+      f = b.getXShiftedFunction();
+      if (( f != null ) && ( f.getHex() == null ))
+        b.setXShiftedFunction( null );
     }
   }
 

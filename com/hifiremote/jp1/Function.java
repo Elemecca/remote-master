@@ -39,17 +39,17 @@ public class Function
       props.setProperty( prefix + ".notes", notes );
   }
 
-  public void store( PrintWriter out, String prefix )
+  public void store( PropertyWriter out, String prefix )
   {
     if ( isEmpty())
-      DeviceUpgrade.print( out, prefix + ".name", "" );
+      out.print( prefix + ".name", "" );
 
     if ( name != null )
-      DeviceUpgrade.print( out, prefix + ".name", name );
+      out.print( prefix + ".name", name );
     if ( hex != null )
-      DeviceUpgrade.print( out, prefix + ".hex", hex.toString());
+      out.print( prefix + ".hex", hex.toString());
     if ( notes != null )
-      DeviceUpgrade.print( out, prefix + ".notes", notes );
+      out.print( prefix + ".notes", notes );
   }
 
   public void load( Properties props, String prefix )
