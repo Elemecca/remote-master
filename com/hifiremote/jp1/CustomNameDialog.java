@@ -10,7 +10,7 @@ public class CustomNameDialog
   extends JDialog
   implements ActionListener
 {
-  public CustomNameDialog( JFrame owner, String[] customNames )
+  public CustomNameDialog( JFrame owner, String[] customNames, DeviceUpgrade upgrade )
   {
     super( owner, "Custom Function Names", true );
     setLocationRelativeTo( owner );
@@ -29,20 +29,36 @@ public class CustomNameDialog
       }
     }
 
+    this.upgrade = upgrade;
+
     Container contentPane = getContentPane();
 
     JLabel instructions = new JLabel( "Enter the desired default functions names, one on each line." );
+    instructions.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     contentPane.add( instructions, BorderLayout.NORTH );
 
-    contentPane.add( new JScrollPane( textArea ), BorderLayout.CENTER );
+    JScrollPane scroll = new JScrollPane( textArea );
+    scroll.setBorder( 
+      BorderFactory.createCompoundBorder( 
+        BorderFactory.createEmptyBorder( 0, 5, 0, 5 ),
+        scroll.getBorder()));
+    contentPane.add( scroll, BorderLayout.CENTER );
 
-    JPanel buttonPanel = new JPanel();
-    FlowLayout fl = ( FlowLayout )buttonPanel.getLayout();
-    fl.setAlignment( FlowLayout.RIGHT );
+    Box buttonPanel = Box.createHorizontalBox();
+    buttonPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+
+    getButtonNames = new JButton( "Get Button Names" );
+    getButtonNames.setToolTipText( "Add the names of the buttons on the current remote." );
+    getButtonNames.addActionListener( this );
+    buttonPanel.add( getButtonNames );
+
+    buttonPanel.add( Box.createHorizontalGlue());
 
     ok = new JButton( "OK" );
     ok.addActionListener( this );
     buttonPanel.add( ok );
+
+    buttonPanel.add( Box.createHorizontalStrut( 5 ));
 
     cancel = new JButton( "Cancel" );
     cancel.addActionListener( this );
@@ -72,6 +88,17 @@ public class CustomNameDialog
       setVisible( false );
       dispose();
     }
+    else if ( source == getButtonNames )
+    {
+       Button[] buttons = upgrade.getRemote().getUpgradeButtons();
+       
+       for ( int i = 0; i < buttons.length; i++ )
+       {
+         if ( i > 0 )
+           textArea.append( "\n" );
+         textArea.append( buttons[ i ].getName());
+       }
+    }
   }
 
   public String[] getCustomNames()
@@ -92,8 +119,10 @@ public class CustomNameDialog
   {
     return userAction;
   }
-
+ 
+  private DeviceUpgrade upgrade = null;
   private JTextArea textArea = null;
+  private JButton getButtonNames = null;
   private JButton ok = null;
   private JButton cancel = null;
   private JPopupMenu popup = null;
