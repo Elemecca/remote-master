@@ -1,1 +1,1 @@
-zip KMJSource.zip com\hifiremote\jp1\*.java *.bat
+zip RemoteMasterSource.zip com\hifiremote\jp1\*.java *.bat

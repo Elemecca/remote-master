@@ -2,8 +2,8 @@
 
 We have (rather arbitrarily) assigned the name "Sub Device" to the portion of
 Aiwa device information that CAN'T be varied between functions in this combo
-protocol.  The decoder and the other Aiwa protocol (in JavaKM) both use this
-same terminology (the non Combo Aiwa protocol in Excel KM doesn't).  Normally
+protocol.  The decoder and the other Aiwa protocol (in RemoteMaster) both use this
+same terminology (the non Combo Aiwa protocol in KM doesn't).  Normally
 this part of the device information is zero, so you normally put a 0 in the
 Sub Device field on the Setup sheet (or leave it blank, which defaults to 0).
 

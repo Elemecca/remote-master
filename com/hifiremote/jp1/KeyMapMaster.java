@@ -50,7 +50,7 @@ public class KeyMapMaster
   public KeyMapMaster( File propertiesFile )
     throws Exception
   {
-    super( "KeyMap Master " + version );
+    super( "RemoteMaster " + version );
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
     JDialog.setDefaultLookAndFeelDecorated( true );
@@ -426,7 +426,7 @@ public class KeyMapMaster
         if ( !promptToSaveUpgrade())
           return;
         deviceUpgrade.reset( remotes, protocols );
-        setTitle( "KeyMapMaster " + version );
+        setTitle( "RemoteMapMaster " + version );
         description.setText( null );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());
         deviceTypeList.setSelectedItem( deviceUpgrade.getDeviceTypeAliasName());
@@ -515,7 +515,7 @@ public class KeyMapMaster
       {
         deviceUpgrade.store( file );
         saveItem.setEnabled( true );
-        setTitle( "KeyMapMaster " + version + ": " + file.getName());
+        setTitle( "RemoteMaster " + version + ": " + file.getName());
       }
     }
   }
@@ -544,7 +544,7 @@ public class KeyMapMaster
     kmPath = file.getParentFile();
     deviceUpgrade.reset( remotes, protocols );
     deviceUpgrade.load( file, remotes, protocols );
-    setTitle( "KeyMapMaster " + version + ": " + file.getName());
+    setTitle( "RemoteMaster " + version + ": " + file.getName());
     description.setText( deviceUpgrade.getDescription());
     saveItem.setEnabled( true );
     remoteList.removeActionListener( this );
@@ -606,7 +606,7 @@ public class KeyMapMaster
         dir = new File( System.getProperty( "user.home" )); 
       }
 
-      propertiesFile = new File( dir, "KeyMapMaster.properties" );
+      propertiesFile = new File( dir, "RemoteMaster.properties" );
       System.err.println( "propertiesFIle is " + propertiesFile.getAbsolutePath());
     }
 
@@ -710,34 +710,6 @@ public class KeyMapMaster
     deviceUpgrade.setDescription( description.getText());
   }
 
-  public static void main( String[] args )
-  {
-    try
-    {
-      UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
-      for ( int i = 0; i < info.length; i++ )
-      {
-        if ( info[ i ].getName().equals( "Windows" ))
-        {
-          UIManager.setLookAndFeel( info[ i ].getClassName());
-          break;
-        }
-      }
-      System.setErr( new PrintStream( new FileOutputStream( "km.err" )));
-      KeyMapMaster km = null;
-      if ( args.length > 0 )
-        km = new KeyMapMaster( new File( args[ 0 ]));
-      else
-        km = new KeyMapMaster();
-    }
-    catch ( Exception e )
-    {
-      System.err.println( "Caught exception in KeyMapMaster.main()!" );
-      e.printStackTrace( System.err );
-    }
-    System.err.flush();
-  }
-
   private class KMFileFilter
     extends javax.swing.filechooser.FileFilter
   {
@@ -755,7 +727,7 @@ public class KeyMapMaster
     //The description of this filter
     public String getDescription()
     {
-      return "KeyMapMaster files (*.km)";
+      return "RemoteMaster KeyMap files (*.km)";
     }
   }
 

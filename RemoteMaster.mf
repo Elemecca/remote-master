@@ -1,0 +1,1 @@
+Main-Class: com.hifiremote.jp1.RemoteMaster
