@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.66";
+  private static final String version = "v 0.67";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -35,8 +35,9 @@ public class KeyMapMaster
   private FunctionPanel functionPanel = null;
   private ExternalFunctionPanel externalFunctionPanel = null;
   private ButtonPanel buttonPanel = null;
-  private OutputPanel outputPanel = null;
   private LayoutPanel layoutPanel = null;
+  private OutputPanel outputPanel = null;
+  private KeyMapPanel keyMapPanel = null;
   private ProgressMonitor progressMonitor = null;
   private DeviceUpgrade deviceUpgrade = null;
   private static File homeDirectory = null;
@@ -265,6 +266,10 @@ public class KeyMapMaster
     outputPanel = new OutputPanel( deviceUpgrade );
     tabbedPane.addTab( "Output", null, outputPanel,
                        "The output to copy-n-paste into IR." );
+
+    keyMapPanel = new KeyMapPanel( deviceUpgrade );
+    tabbedPane.addTab( "Key Map", null, keyMapPanel,
+                       "Printable list of buttons and their assigned functions" );                       
 
     loadRemotes();
     setRemotes( remotes );
@@ -886,16 +891,19 @@ public class KeyMapMaster
   public void changedUpdate( DocumentEvent e )
   {
     deviceUpgrade.setDescription( description.getText());
+    currPanel.update();
   }
 
   public void insertUpdate( DocumentEvent e )
   {
     deviceUpgrade.setDescription( description.getText());
+    currPanel.update();
   }
 
   public void removeUpdate( DocumentEvent e )
   {
     deviceUpgrade.setDescription( description.getText());
+    currPanel.update();
   }
 
   private class KMFileFilter
