@@ -14,7 +14,7 @@ public class ButtonPanel
 {
   public ButtonPanel( DeviceUpgrade devUpgrade )
   {
-    super( devUpgrade );
+    super( "Buttons", devUpgrade );
     setLayout( new BorderLayout());
 
     table = new JTable();
@@ -26,6 +26,7 @@ public class ButtonPanel
 
     TableColumnModel colModel = table.getColumnModel();
     table.setDefaultRenderer( Button.class, new FunctionRenderer( deviceUpgrade ));
+    table.getTableHeader().setReorderingAllowed( false );
 
     TransferHandler th = new TransferHandler()
     {
@@ -66,42 +67,20 @@ public class ButtonPanel
       }
     };
     table.setTransferHandler( th );
-    try 
+    try
     {
       table.getDropTarget().addDropTargetListener( new DropTargetAdapter()
       {
         public void dragOver( DropTargetDragEvent dte )
         {
           int col = table.convertColumnIndexToModel( table.getSelectedColumn());
-          DeviceType devType = deviceUpgrade.getDeviceType();
-          ButtonMap map = devType.getButtonMap();
           int row = table.getSelectedRow();
-          Button b = ( Button )model.getValueAt( row, col );
-          if ( col == 0 )
+          if ( canAssign( row, col ))
+            dte.acceptDrag( dte.getDropAction());
+          else
             dte.rejectDrag();
-          else if ( col == 1 )
-          {
-            if ( b.allowsKeyMove() || map.isPresent( b ))
-              dte.acceptDrag( dte.getDropAction());
-            else
-              dte.rejectDrag();
-          }
-          else if ( col == 2 )
-          {
-            if ( b.allowsShiftedKeyMove())
-              dte.acceptDrag( dte.getDropAction());
-            else
-              dte.rejectDrag();
-          }
-          else if ( col == 3 )
-          {
-            if ( b.allowsXShiftedKeyMove())
-              dte.acceptDrag( dte.getDropAction());
-            else
-              dte.rejectDrag();
-          }
         }
-  
+
         public void drop( DropTargetDropEvent dte )
         {
           ;
@@ -230,13 +209,43 @@ public class ButtonPanel
       if ( e.isPopupTrigger() )
       {
         mouseCol = table.columnAtPoint( e.getPoint());
-        if ( table.convertColumnIndexToModel( mouseCol ) != 0 )
-        {
-          mouseRow = table.rowAtPoint( e.getPoint());
+        mouseRow = table.rowAtPoint( e.getPoint());
+        if ( canAssign( mouseRow, mouseCol ))
           popup.show( e.getComponent(), e.getX(), e.getY());
-        }
       }
     }
+  }
+
+  private boolean canAssign( int row, int col )
+  {
+    if ( col == 0 )
+      return false;
+
+    DeviceType devType = deviceUpgrade.getDeviceType();
+    ButtonMap map = devType.getButtonMap();
+    Button b = ( Button )model.getValueAt( row, col );
+    if ( col == 1 )
+    {
+      if ( b.allowsKeyMove() || map.isPresent( b ))
+        return true;
+      else
+        return false;
+    }
+    else if ( mouseCol == 2 )
+    {
+      if ( b.allowsShiftedKeyMove())
+        return true;
+      else
+        return false;
+    }
+    else if ( mouseCol == 3 )
+    {
+      if ( b.allowsXShiftedKeyMove())
+        return true;
+      else
+        return false;
+    }
+    return false;
   }
 
   private void setFunctionAt( Function function, int row, int col )
@@ -261,7 +270,8 @@ public class ButtonPanel
         FunctionLabel label = ( FunctionLabel )e.getSource();
         int col = table.getSelectedColumn();
         int row = table.getSelectedRow();
-        setFunctionAt( label.getFunction(), row, col );
+        if ( canAssign( row, col ))
+          setFunctionAt( label.getFunction(), row, col );
       }
     }
   }

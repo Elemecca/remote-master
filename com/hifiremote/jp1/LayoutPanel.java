@@ -19,7 +19,7 @@ public class LayoutPanel
 {
   public LayoutPanel( DeviceUpgrade devUpgrade )
   {
-    super( devUpgrade );
+    super( "Layout", devUpgrade );
     setLayout( new BorderLayout());
     imagePanel = new ImagePanel();
     // Don't know why, but tooltips don't work without this
@@ -42,12 +42,12 @@ public class LayoutPanel
     normalMode.addActionListener( this );
     group.add( normalMode );
     modePanel.add( normalMode );
-    
+
     shiftMode = new JRadioButton( "Shift" );
     shiftMode.addActionListener( this );
     group.add( shiftMode );
     modePanel.add( shiftMode );
-    
+
     xShiftMode = new JRadioButton( "XShift" );
     xShiftMode.addActionListener( this );
     group.add( xShiftMode );
@@ -249,7 +249,7 @@ public class LayoutPanel
         {
           name = b.getShiftedName();
           if ( name == null )
-            name = r.getShiftLabel() + '-' + b.getName(); 
+            name = r.getShiftLabel() + '-' + b.getName();
         }
         else if ( xShiftMode.isSelected())
         {
@@ -310,7 +310,7 @@ public class LayoutPanel
     {
       if ( !b.getIsNormal())
         return null;
-      else if ( b.allowsKeyMove() || map.isPresent( b )) 
+      else if ( b.allowsKeyMove() || map.isPresent( b ))
         return b;
     }
     else if ( shiftMode.isSelected())
@@ -342,7 +342,7 @@ public class LayoutPanel
           return null;
         if ( b.getXShiftedButton() != null )
           b = b.getXShiftedButton();
-        else 
+        else
           return b;
       }
       if ( b.getIsXShifted())
@@ -365,7 +365,7 @@ public class LayoutPanel
       deviceUpgrade.autoAssignFunctions();
       doRepaint();
     }
-    else if (( source == normalMode ) || 
+    else if (( source == normalMode ) ||
              ( source == shiftMode ) ||
              ( source == xShiftMode ))
     {
@@ -414,7 +414,7 @@ public class LayoutPanel
           button.setShiftedFunction( f );
         else if ( xShiftMode.isSelected())
           button.setXShiftedFunction( f );
-          
+
         setButtonText( currentShape, button );
         doRepaint();
       }
@@ -520,18 +520,18 @@ public class LayoutPanel
           f = b.getShiftedFunction();
         else if ( xShiftMode.isSelected())
           f = b.getXShiftedFunction();
-        
+
         if ( f != null )
         {
           g2.setPaint( Color.yellow );
           g2.fill( s );
         }
-        
+
         if ( shiftMode.isSelected())
           b = b.getShiftedButton();
         else if ( xShiftMode.isSelected())
           b = b.getXShiftedButton();
-        
+
         if ( map.isPresent( b ))
         {
           g2.setPaint( Color.orange );
@@ -549,7 +549,7 @@ public class LayoutPanel
       Button b = getButtonForShape( buttonShape );
       if ( b == null )
         return null;
-     
+
       String name = buttonShape.getName();
       if ( name != null )
         return name;
