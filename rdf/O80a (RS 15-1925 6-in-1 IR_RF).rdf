@@ -39,7 +39,7 @@ P&P     = $014 $00C $01C
 
 [Buttons]
 TV, SETUP, POWER, VOL+, VOL-, CH+, CH-, MUTE, CBL/SAT, VCR,
-REW, PLAY, FF, STOP, PAUSE, RECORD, CD, SCAN[FAV]=20
+REW{Left}, PLAY{Front}, FF{Right}, STOP{Rear}, PAUSE, RECORD, CD/Stereo, SCAN{FAV}=20
 1, 2, 3, TV/VCR, 4, 5, 6, 7, 8, 9,
 0, {LIGHT}, AUX1, AUX2, Plug&Power=36, PROG=39, DISPLAY
 SCAN=45,

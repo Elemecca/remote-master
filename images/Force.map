@@ -4,13 +4,13 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Force
-#$DATE:Sun Sep 14 11:31:28 2003
+#$DATE:Tue Sep 16 16:36:30 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Force.jpg
 #$FORMAT:ncsa
 #$EOH
 default Dreambox
-circle SHIFT  58,25 71,32
+circle SHIFT{Setup}  58,25 71,32
 circle POWER  91,25 106,32
 circle TV  46,58 54,66
 circle AUX  74,59 82,67
@@ -25,11 +25,11 @@ circle 7  40,122 55,130
 circle 8  76,120 91,128
 circle 9  112,120 127,128
 circle 0  76,141 91,149
-circle menu  77,190 90,198
+circle menu{zoom}  77,190 90,198
 circle VOL+  33,176 44,187
 circle VOL-  44,202 55,213
-circle UP  79,229 109,240
-circle DOWN  80,281 110,293
+circle UP  78,229 108,240
+circle DOWN  79,281 108,293
 poly LEFT 61,244 61,269 40,274 34,256 40,238 61,244 61,244
 poly RIGHT 97,243 97,268 118,274 123,257 118,239 97,243 97,243
 rect OK 65,246 94,266
@@ -43,8 +43,8 @@ circle TEXT  93,353 103,363
 circle REC  116,351 126,361
 circle CH+  119,176 130,187
 circle CH-  109,201 120,212
-circle LANG  113,140 128,149
-circle RADIO  40,141 55,150
+circle LANG{-/--}  113,140 128,149
+circle RADIO{AV}  40,141 55,150
 circle mute  76,169 89,177
 circle INFO  30,228 40,238
 circle epg  126,227 136,237

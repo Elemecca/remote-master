@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7544
-#$DATE:Mon Sep 15 15:04:31 2003
+#$DATE:Tue Sep 16 15:30:14 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-7544.jpg
 #$FORMAT:ncsa
@@ -26,9 +26,9 @@ circle 6  111,116 125,124
 circle 7  40,138 54,146
 circle 8  76,138 90,146
 circle 9  111,138 125,146
-circle 10  40,159 54,167
+circle 10{-/--}  40,159 54,167
 circle 0  76,159 90,167
-circle AV  111,159 125,167
+circle AV{20}  111,159 125,167
 circle OK  75,218 86,231
 circle UP  76,193 91,200
 circle DOWN  76,245 91,252
@@ -40,14 +40,14 @@ circle CH+  32,195 41,207
 circle CH-  32,242 41,255
 circle VOL+  119,193 128,206
 circle VOL-  119,242 128,255
-poly REW 44,270 44,290 24,280 44,270 44,270
-poly PLAY 55,279 55,297 73,288 55,279 55,279
-rect PAUSE 81,280 97,295
-poly FFWD 106,270 106,290 126,280 106,270 106,270
-circle SP/LP  35,306 49,314
-rect STOP 57,304 74,321
-circle REC  89,312 97,320
-circle AUTO  116,306 129,314
+poly REW{Texton} 44,270 44,290 24,280 44,270 44,270
+poly PLAY{TextOff} 54,279 54,297 72,288 54,279 54,279
+rect PAUSE{hold} 81,280 97,295
+poly FFWD{expand} 106,270 106,290 126,280 106,270 106,270
+circle SP/LP{Red}  35,306 49,314
+rect STOP{green} 57,304 74,321
+circle REC{yellow}  89,312 97,320
+circle AUTO{blue}  116,306 129,314
 circle A  41,343 50,350
 circle B  64,343 73,350
 circle C  87,343 96,350

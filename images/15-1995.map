@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1995
-#$DATE:Mon Sep 15 13:07:31 2003
+#$DATE:Tue Sep 16 10:15:19 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:15-1995.jpg
 #$FORMAT:ncsa
@@ -30,7 +30,7 @@ circle down  74,196 91,202
 circle left  42,178 48,195
 circle right  103,178 109,195
 circle SURROUND  74,178 88,185
-circle MUTE  59,215 67,220
+circle MUTE{sleep}  59,215 67,220
 circle VOL+  36,229 44,239
 circle VOL-  35,253 43,263
 circle CH+  111,230 119,240
@@ -47,7 +47,7 @@ circle 9  106,339 115,348
 circle 0  73,368 82,377
 circle LAST  87,216 95,221
 circle escape  85,235 93,240
-circle PIP  61,235 69,240
+circle PIP{freeze}  61,235 69,240
 circle Swap  61,254 69,259
 circle Move  85,254 93,259
 circle ENTER  106,367 119,374
@@ -61,4 +61,4 @@ rect STOP 61,429 82,443
 circle rec  37,436 45,444
 circle P[SETUP]  29,77 35,83
 circle {LIGHT}  49,76 55,82
-circle select  74,141 82,146
+circle select{clear}  74,141 82,146

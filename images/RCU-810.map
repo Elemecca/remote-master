@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:RCU-810
-#$DATE:Tue Sep 09 15:47:58 2003
+#$DATE:Tue Sep 16 16:07:22 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:rcu-810.jpg
 #$FORMAT:ncsa
@@ -20,7 +20,7 @@ circle DVD  114,106 124,113
 circle AUD  55,118 67,127
 circle SLEEP  30,148 37,155
 circle Guide  37,250 44,257
-circle Menu  37,301 44,308
+circle Menu{Prog}  37,300 44,307
 circle Info  107,250 114,257
 circle Clear  107,300 114,307
 circle on/off  71,80 85,87
@@ -32,35 +32,35 @@ circle mute  72,196 85,203
 circle select  72,275 83,281
 circle right  99,275 105,287
 circle left  46,275 52,286
-circle Up  72,258 83,264
-circle down  72,292 83,298
-circle 1  41,320 50,327
-circle 2  72,320 81,327
-circle 3  103,320 112,327
-circle 4  41,341 50,347
-circle 5  72,341 81,347
-circle 6  103,341 112,347
+circle Up{level+}  72,258 83,264
+circle down{level-}  72,292 83,298
+circle 1{cd}  41,319 50,326
+circle 2{tape}  72,319 81,326
+circle 3{tuner}  103,319 112,326
+circle 4{tv}  41,340 50,346
+circle 5{videoa}  72,340 81,346
+circle 6{videob}  103,340 112,346
 circle 7  42,362 51,368
 circle 8  72,362 81,368
 circle 9  104,361 113,367
 circle 0  73,383 82,389
-circle Pip  38,169 48,176
-circle Swap  107,169 117,176
-circle input  40,227 49,234
+circle Pip{center}  38,169 48,176
+circle Swap{front}  107,169 117,176
+circle input{rear}  40,227 49,234
 circle TV/VCR  105,382 116,389
-circle enter  42,383 53,390
+circle enter{function}  42,383 53,390
 circle Rec  73,422 84,429
 circle Code_Search  72,234 85,240
 circle {Lamp}  113,147 120,154
-circle Go_Back  104,227 113,234
+circle Go_Back{test}  104,227 113,234
 circle l1  30,127 40,134
 circle l2  72,136 82,143
 circle l3  112,127 122,134
 circle m1  51,151 59,158
 circle m2  72,160 80,167
 circle m3  92,151 100,158
-poly rew 48,406 39,415 38,429 54,425 58,415 48,406
-poly play 81,411 65,411 58,403 74,400 89,403 81,411
-poly fwd 88,414 98,406 107,414 107,427 91,424 91,419 88,414
-poly stop 69,445 54,443 45,435 59,431 63,434 70,435 69,445
-poly pause 88,430 84,433 78,435 78,445 92,443 102,434 88,430
+poly rew 48,406 39,415 38,429 54,425 58,415 48,406 48,406
+poly play 81,411 65,411 58,403 74,400 89,403 81,411 81,411
+poly fwd 88,414 98,406 107,414 107,427 91,424 91,419 88,414 88,414
+poly stop 69,445 54,443 45,435 59,431 63,434 70,435 69,445 69,445
+poly pause 88,430 84,433 78,435 78,445 92,443 102,434 88,430 88,430

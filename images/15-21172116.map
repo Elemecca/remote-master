@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-21162117
-#$DATE:Sun Sep 14 10:42:00 2003
+#$DATE:Tue Sep 16 10:05:58 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:15-21162117.jpg
 #$FORMAT:ncsa
@@ -57,7 +57,7 @@ circle FFwd  101,414 112,421
 circle TV/Video{A/B}  39,393 51,399
 circle +100  39,374 51,381
 circle Pause  103,437 115,444
-rect Stop 59,430 81,444
+rect Stop_Eject 59,429 81,443
 circle Rec  38,436 46,444
 circle P[Setup]  27,87 33,93
 circle {LIGHT}  47,87 54,93

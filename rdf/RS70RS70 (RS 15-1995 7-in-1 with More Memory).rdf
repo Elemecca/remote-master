@@ -69,13 +69,15 @@ AMP   = $02B $023 $033
 TUNER = $02C $024 $034
 P&P   = $02D $025 $035
 
+
+
 [Buttons]
 CBL=8, TV=16, VCR=32, CD=55, SAT=40, AMP=48, TUNER=56, Plug&Power=24, HOME_THEATER=53,
 0=19, 1=28, 2=20, 3=12, 4=29, 5=21, 6=13, 7=30, 8=22, 9=14,
-CH+=4, CH-=5, VOL+=6, VOL-=3, Mute=2, Power=7, Enter=33, TV/Video{A/B}=34,
+CH+=4, CH-=5, VOL+=6, VOL-=3, Mute{Sleep}=2, Power=7, Enter=33, TV/Video{A/B}=34,
 LAST=35, PLAY=18, PAUSE=9, REW=26, FFWD=10, STOP=17, REC=25,
-Menu{Program}=36, Up=46, Down=45, Left=44, Right=43, Select=37, SURROUND=42, CENTER{Rear}=41, Scan{Fav}=11,
-PIP=50, SWAP=38, MOVE=51, ESCAPE=54, P[SETUP]=31, SHIFT=15, AUDIO=47, VIDEO=39,
+Menu{Program}=36, Up=46, Down=45, Left=44, Right=43, Select{Clear}=37, SURROUND=42, CENTER{Rear}=41, Scan{Fav}=11,
+PIP{Freeze}=50, SWAP=38, MOVE=51, ESCAPE=54, P[SETUP]=31, SHIFT=15, AUDIO=47, VIDEO=39,
 {Light}=49, Display=$A3, REAR=$A9, PROGRAM=$A4, SLEEP=$82, Freeze=$B2,
 CLEAR=$A5,
 Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F

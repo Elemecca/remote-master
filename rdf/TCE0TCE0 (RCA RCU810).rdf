@@ -63,11 +63,11 @@ AUX   = $018 $019
 
 [Buttons]
 TV, Code_Search, On/Off, VOL+, VOL-, CH+, CH-, MUTE, VCR2, VCR1,
-Rew, Play, Fwd, Stop, Pause, Rec, SAT, CBL, Clear, Menu,
-1, 2, 3, Enter, 4, 5, 6, 7, 8, 9,
+Rew, Play, Fwd, Stop, Pause, Rec, SAT, CBL, Clear, Menu{Prog},
+1{CD}, 2{Tape}, 3{Tuner}, Enter{Function}, 4{TV}, 5{VideoA}, 6{VideoB}, 7, 8, 9,
 0, TV/VCR, DVD, AUD, AUX, {Lamp}, L1, L2, L3, Select,
-Up, Down, Right, Left, M1, M2, M3, Sleep, Swap, PIP,
-Input, Go_Back, Guide, Info, Device,
+Up{Level+}, Down{Level-}, Right, Left, M1, M2, M3, Sleep, Swap{Front}, PIP{Center},
+Input{Rear}, Go_Back{Test}, Guide, Info, Device,
 Phantom1=60, Phantom2, Phantom3, Phantom4
 
 [ButtonMaps]

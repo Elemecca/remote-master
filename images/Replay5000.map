@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:replay5000
-#$DATE:Sun Sep 14 11:54:50 2003
+#$DATE:Tue Sep 16 16:55:42 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Replay5000.jpg
 #$FORMAT:ncsa
@@ -19,7 +19,7 @@ circle UP  89,184 107,191
 circle LEFT  47,209 54,227
 circle RIGHT  131,209 138,227
 circle DOWN  89,236 107,243
-circle SELECT  88,211 106,221
+circle SELECT  89,209 108,220
 circle MUTE  86,411 100,420
 circle VOL+  47,385 57,396
 circle VOL-  48,423 57,434

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7542
-#$DATE:Wed Aug 27 13:20:50 2003
+#$DATE:Tue Sep 16 15:42:24 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-7542.jpg
 #$FORMAT:ncsa
@@ -26,19 +26,19 @@ circle 6  107,131 120,140
 circle 7  41,155 54,164
 circle 8  74,155 87,164
 circle 9  107,155 120,164
-circle 10  42,179 55,188
+circle 10{-/--}  42,179 55,188
 circle 0  74,178 87,187
-circle 20  107,178 120,187
+circle 20{AV}  107,178 120,187
 poly VOL+ 118,222 123,241 118,259 93,251 97,241 93,230 118,222 118,222
 poly VOL- 33,223 29,242 33,261 59,253 55,242 59,231 33,223 33,223
 circle CH+  75,210 107,223
 circle CH-  75,271 107,284
 circle MUTE  75,241 87,249
-poly REW 48,293 48,309 30,301 48,293 48,293
-poly PLAY 55,309 55,328 73,319 55,309 55,309
-poly FFWD 82,308 82,326 102,318 82,308 82,308
-rect PAUSE 107,293 122,307
-circle TV/VCR  40,335 53,342
-rect STOP 56,342 73,358
-circle REC  91,350 100,359
-circle SLOW  113,334 126,341
+poly REW{texton} 47,293 47,309 29,301 47,293 47,293
+poly PLAY{textoff} 54,309 54,328 72,319 54,309 54,309
+poly FFWD{expand} 81,308 81,326 101,318 81,308 81,308
+rect PAUSE{hold} 107,293 122,307
+circle TV/VCR{red}  40,335 53,342
+rect STOP{green} 56,342 73,358
+circle REC{yellow}  91,350 100,359
+circle SLOW{blue}  113,334 126,341

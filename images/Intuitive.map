@@ -1,0 +1,64 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:Intuiive
+#$DATE:Thu Sep 18 16:54:49 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:Intuitive.jpg
+#$FORMAT:ncsa
+#$EOH
+default Intuitive
+circle cable  68,43 81,49
+circle TV  33,43 46,49
+circle vcr  103,43 116,49
+circle UP  67,261 81,266
+circle LEFT  34,281 43,288
+circle RIGHT  101,282 110,289
+circle DOWN  67,301 81,306
+circle MUTE  33,155 41,163
+circle VOL+  33,188 41,197
+circle VOL-  33,222 41,231
+circle CH+  103,189 111,198
+circle CH-  103,223 111,232
+circle 1  34,71 46,83
+circle 2  68,70 80,82
+circle 3  103,70 115,82
+circle 4  33,99 45,111
+circle 5  68,98 80,110
+circle 6  104,98 116,110
+circle 7  32,126 44,138
+circle 8  68,126 80,138
+circle 9  103,127 115,139
+circle 0  68,155 80,167
+circle ENTER{music}  103,155 111,163
+circle setup  97,361 105,369
+circle fav  68,205 77,211
+circle info  68,227 77,233
+circle last  68,184 77,190
+rect record 20,331 37,343
+rect cancel[blank1] 46,331 63,343
+rect theme[blank2] 72,331 89,343
+rect exit 98,331 115,343
+rect help 21,380 38,390
+rect diamond 46,380 63,390
+rect ppv 72,380 89,390
+rect macro 21,404 43,414
+circle pause_cable  57,408 63,414
+circle p  77,408 83,414
+poly day- 22,360 43,354 43,367 22,360 22,360
+poly day+ 57,354 76,361 57,367 57,354 57,354
+rect pageup 20,250 38,261
+rect pagedown 97,250 115,261
+rect select 50,276 86,287
+rect guide 21,307 41,317
+rect menu 94,307 114,317
+rect bypass 97,380 114,390
+rect tv/vcr 91,404 113,414
+rect rew 24,434 46,444
+rect play 56,434 78,444
+rect ff 89,434 111,444
+rect rec 24,455 46,463
+rect stop 56,455 78,463
+rect pause 89,455 111,463

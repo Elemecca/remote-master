@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:urc-7070
-#$DATE:Tue Sep 09 16:46:49 2003
+#$DATE:Thu Sep 18 09:57:10 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:urc-7070.jpg
 #$FORMAT:ncsa
@@ -13,16 +13,16 @@ default 7070
 circle tv  73,55 86,61
 circle power  108,54 123,60
 circle 1  40,95 51,106
-circle 2  74,96 85,107
+circle 2  74,94 85,105
 circle 3  105,95 116,106
 circle 4  42,125 53,136
 circle 5  74,123 85,134
 circle 6  106,125 117,136
 circle 7  41,155 52,166
-circle 8  74,155 85,166
-circle 9  105,154 116,165
-circle 0  74,185 85,196
-circle MUTE  73,214 88,219
+circle 8  73,154 84,165
+circle 9  105,152 116,163
+circle 0  74,183 85,194
+circle MUTE  73,212 88,217
 circle enter  42,184 57,191
 circle VOL+  35,213 47,225
 circle VOL-  35,249 46,260
@@ -36,10 +36,10 @@ circle cbl  36,56 49,62
 circle sat  35,74 48,80
 circle vcr  74,73 87,79
 circle magic[setup]  108,73 122,79
-circle play  73,274 84,281
-circle ff  111,300 122,307
+circle play  72,275 83,282
+circle ff  111,298 122,305
 circle pause  74,299 91,311
-circle rew  36,300 47,307
+circle rew  37,299 48,306
 circle stop  73,324 84,331
 circle cd  111,362 124,367
 circle rcvr  73,361 86,366

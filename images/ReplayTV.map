@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:replayTV
-#$DATE:Mon Sep 15 14:36:20 2003
+#$DATE:Tue Sep 16 16:57:38 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:ReplayTV.jpg
 #$FORMAT:ncsa
@@ -15,15 +15,15 @@ circle TV  44,64 50,70
 circle catv  79,65 85,71
 circle return_to_live  36,231 43,238
 circle POWER  116,36 124,44
-circle UP  79,241 99,246
+circle UP  79,241 101,246
 circle LEFT  41,262 46,277
 circle RIGHT  117,262 122,277
-circle DOWN  80,285 100,290
+circle DOWN  80,285 102,290
 circle SELECT  79,261 93,268
 circle MUTE  123,232 130,239
-circle VOL+  116,175 124,185
+circle VOL+  116,175 124,184
 circle VOL-  115,207 123,216
-circle CH+  44,174 52,183
+circle CH+  44,173 52,182
 circle CH-  43,207 51,216
 circle 1  44,84 52,92
 circle 2  80,85 88,93

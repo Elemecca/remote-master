@@ -4,28 +4,28 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:urc-4080
-#$DATE:Mon Sep 15 14:50:43 2003
+#$DATE:Tue Sep 16 12:32:21 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:urc-4080.jpg
 #$FORMAT:ncsa
 #$EOH
 default urc-4080
-circle mute  79,109 90,117
+circle mute{select}  79,109 90,117
 circle POWER  119,30 127,38
-circle VOL+  113,112 119,124
-circle VOL-  44,109 50,121
-circle CH+  78,131 101,137
-circle CH-  78,91 101,97
-circle 1  46,181 57,192
-circle 2  77,182 88,193
-circle 3  108,182 119,193
-circle 4  45,205 56,216
-circle 5  77,206 88,217
-circle 6  109,207 120,218
-circle 7  44,229 55,240
-circle 8  77,230 88,241
-circle 9  109,231 120,242
-circle 0  76,256 88,267
+circle VOL+{right}  113,112 119,124
+circle VOL-{left}  44,109 50,121
+circle CH-{down}  78,131 101,137
+circle CH+{up}  78,91 101,97
+circle 1  46,181 58,193
+circle 2  77,181 89,193
+circle 3  108,182 120,194
+circle 4  44,205 56,217
+circle 5  77,206 89,218
+circle 6  109,207 121,219
+circle 7  44,229 56,241
+circle 8  76,231 88,243
+circle 9  109,232 121,244
+circle 0  77,257 89,269
 circle rec  118,369 129,376
 circle fwd-scan  80,297 105,304
 circle v-config  119,282 134,289
@@ -40,8 +40,8 @@ circle f1  38,64 46,70
 circle f2  65,56 74,62
 circle f3  94,58 103,63
 circle f4  120,68 128,74
-rect enter 35,248 55,263
-rect prev-ch 99,249 119,264
+rect enter 35,249 55,263
+rect prev-ch 99,250 119,264
 circle pause  42,370 53,377
 circle rewind  42,327 49,344
 circle ffwd  118,326 125,343

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7560
-#$DATE:Tue Sep 09 16:50:12 2003
+#$DATE:Tue Sep 16 10:58:38 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-7560.jpg
 #$FORMAT:ncsa
@@ -31,31 +31,31 @@ circle 7  36,129 47,136
 circle 8  66,129 77,136
 circle 9  96,130 107,137
 circle 0  66,149 77,156
-circle 10  36,149 47,156
-circle AV  96,149 107,156
+circle 10{-/--}  36,149 47,156
+circle AV{Exit_20}  96,149 107,156
 rect EXIT 0,0 1,1
-circle CH+  67,198 102,212
-circle CH-  66,252 101,266
+circle CH+{bright+}  67,198 102,212
+circle CH-{bright-}  66,252 101,266
 rect BRIGHT+ 0,0 1,1
 rect BRIGHT- 0,0 1,1
-poly VOL+ 80,214 105,206 109,224 105,243 80,235 84,224 80,214 80,214
-poly VOL- 26,206 50,213 46,224 50,235 26,243 22,224 26,206 26,206
+poly VOL+{color+} 80,214 105,206 109,224 105,243 80,235 84,224 80,214 80,214
+poly VOL-{color-} 26,206 50,213 46,224 50,235 26,243 22,224 26,206 26,206
 rect COLOR+ 0,0 1,1
 rect COLOR- 0,0 1,1
-circle MUTE  66,225 78,233
+circle MUTE{select}  66,224 78,232
 rect SELECT 0,0 1,1
 circle UP  66,172 78,176
 circle DOWN  66,278 78,282
 circle LEFT  13,224 17,235
 circle RIGHT  119,224 123,235
-poly REW 19,294 30,286 39,286 39,301 30,301 19,294 19,294
-poly PLAY 46,290 63,300 46,308 46,290 46,290
-rect PAUSE 70,291 85,307
-poly FFWD 92,286 103,286 112,294 103,301 92,301 92,286 92,286
-circle SP/LP  31,314 41,320
-rect STOP 48,315 63,329
-circle REC  78,321 85,328
-circle AUTO  100,313 110,319
+poly REW{TextOn} 19,294 30,286 39,286 39,301 30,301 19,294 19,294
+poly PLAY{textoff} 46,291 63,301 46,309 46,291 46,291
+rect PAUSE{Hold} 70,291 85,307
+poly FFWD{expand} 91,286 102,286 111,294 102,301 91,301 91,286 91,286
+circle SP/LP{Red}  31,314 41,320
+rect STOP{Green} 48,315 63,329
+circle REC{yellow}  78,321 85,328
+circle AUTO{Blue}  101,313 111,319
 circle A  30,343 37,349
 circle B  33,359 40,365
 circle C  35,375 42,381

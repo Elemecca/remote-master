@@ -55,28 +55,33 @@ AUD = $012 $013
 DVD = $014 $015
 
 [Buttons]
-MAGIC[Setup]=$02, Menu=$20, Power=$03:XShift, SLEEP=$C3,
-HOME_THEATER=$12,
+setup:MAGIC[Setup]=$02, Menu=$20, Power=$03:XShift, SLEEP=$C3,
+"home theater":HOME_THEATER=$12,
 TV=$01, VCR=$0A, SAT=$09,
 CD=$11, AUD=$21, DVD=$22,
 1=$15, 2=$16, 3=$17,
 4=$19, 5=$1A, 6=$1B,
 7=$1C, 8=$1D, 9=$1E,
-0=$1F, 10=$2F, AV=$18:Shift, EXIT=$98,
-CH+=$06:XShift, CH-, BRIGHT+=$C6, BRIGHT-=$C7,
-VOL+=$04:XShift, VOL-, COLOR+=$C4, COLOR-=$C5, MUTE=$08:Shift, Select=$88,
-UP=$29, DOWN=$2A, LEFT=$2B, RIGHT=$2C,
-REW=$0B, PLAY=$0C, PAUSE=$0F, FFWD=$0D,
-SP/LP=$14, STOP=$0E, REC=$10, AUTO=$13,
+0=$1F, "+10":+10{-/--}=$2F, "av":AV{Exit_20}=$18:Shift, EXIT=$98,
+"channel up":CH+{Bright+}=$06:XShift, "channel down":CH-{Bright-},
+"bright+ ($_ch+)":BRIGHT+=$C6, "bright- ($ch-)":BRIGHT-=$C7,
+"vol up":VOL+{Color+}=$04:XShift, "vol down":VOL-{Color-},
+"color+ ($_vol+)":COLOR+=$C4, "color- ($_vol-)":COLOR-=$C5,
+MUTE{Select}=$08:Shift, Select=$88,
+"up arrow":UP=$29, "down arrow":DOWN=$2A,
+"left arrow":LEFT=$2B, "right arrow":RIGHT=$2C,
+"rewind":REW{TextOn}=$0B, "play":PLAY{TextOff}=$0C, "pause":PAUSE{Hold}=$0F,
+"fast fwd":FFWD{Expand}=$0D, "sp/lp":SP/LP{Red}=$14, "stop":STOP{Green}=$0E,
+"record":REC{Yellow}=$10, "auto":AUTO{Blue}=$13,
 A=$23, B=$24, C=$25, D=$26, E=$27, F=$28, G=$2D, H=$2E,
-{LIGHT}=$30,
-Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F,
-Hold_0=$64, Hold_1=$65, Hold_2=$66, Hold_3=$67, Hold_4=$68
-Hold_5=$69, Hold_6=$6A, Hold_7=$6B, Hold_8=$6C, Hold_9=$6D
-Hold_10=$6E, Hold_11=$6F, Hold_12=$70, Hold_13=$71, Hold_14=$72
-Hold_15=$73, Hold_16=$74, Hold_17=$75, Hold_18=$76, Hold_19=$77
-VPT_SAT=$78, VPT_TV=$79, VPT_VCR=$7A, VPT_CD=$7B, VPT_AUD=$7C, VPT_DVD=$7D,
-PushDev=$7E, PopDev=$7F
+"light":{LIGHT}=$30,
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
+Hold_0=$64:AllBind, Hold_1, Hold_2, Hold_3, Hold_4
+Hold_5, Hold_6, Hold_7, Hold_8, Hold_9
+Hold_10, Hold_11, Hold_12, Hold_13, Hold_14
+Hold_15, Hold_16, Hold_17, Hold_18, Hold_19
+VPT_SAT, VPT_TV, VPT_VCR, VPT_CD, VPT_AUD, VPT_DVD,
+PushDev, PopDev
 
 [NoBind]
 Hold_0, Hold_1, Hold_2, Hold_3, Hold_4,
