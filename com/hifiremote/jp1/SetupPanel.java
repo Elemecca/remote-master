@@ -138,7 +138,7 @@ public class SetupPanel
         if ( currProtocol != null && !updateInProgress )
           currProtocol.convertFunctions( deviceUpgrade.getFunctions(), protocol );
         currProtocol = protocol;
-        protocolID.setText( protocol.getID().toString() + ':' + protocol.getVariantName());
+        protocolID.setText( protocol.getID().toString());
         JViewport vp = ( JViewport )protocolNotes.getParent();
         vp.setViewPosition( new Point( 0, 0 ));
         deviceUpgrade.setProtocol( protocol );

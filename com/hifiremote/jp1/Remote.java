@@ -1106,6 +1106,16 @@ public class Remote
     }
   }
 
+  public void setProtocols( Vector protocols )
+  {
+    this.protocols = protocols;
+  }
+
+  public Vector getProtocols()
+  {
+    return protocols;
+  }
+
   // Interface Comparable
   public int compareTo( Object o )
   {
@@ -1201,4 +1211,5 @@ public class Remote
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
   private boolean omitDigitMapByte = false;
   private Hashtable protocolVariantNames = new Hashtable();
+  private Vector protocols = null;
 }

@@ -128,13 +128,18 @@ public class ProtocolManager
 
   public Vector getProtocolsForRemote( Remote remote )
   {
-    Vector rc = new Vector();
-    for ( Enumeration e = names.elements(); e.hasMoreElements(); )
+    Vector rc = remote.getProtocols();
+    if ( rc == null )
     {
-      String name = ( String )e.nextElement();
-      Protocol p = findProtocolForRemote( remote, name );
-      if ( p != null )
-        rc.add( p );
+      rc = new Vector();
+      for ( Enumeration e = names.elements(); e.hasMoreElements(); )
+      {
+        String name = ( String )e.nextElement();
+        Protocol p = findProtocolForRemote( remote, name );
+        if ( p != null )
+          rc.add( p );
+      }
+      remote.setProtocols( rc );
     }
     return rc;
   }
