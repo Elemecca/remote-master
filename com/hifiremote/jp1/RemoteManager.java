@@ -39,7 +39,7 @@ public class RemoteManager
           dir = chooser.getSelectedFile();
       }
     }
-    
+
     Vector work = new Vector();
     for ( int i = 0; i < files.length; i++ )
     {
@@ -52,7 +52,7 @@ public class RemoteManager
     }
     remotes = ( Remote[] )work.toArray( remotes );
     Arrays.sort( remotes );
-    
+
     return dir;
   }
 
@@ -114,7 +114,7 @@ public class RemoteManager
       else
         simRemotes = remotes;
 
-      String message = "Could not find an exact match for the remote \"" + name + "\".  Choose one from the list below:";
+      String message = "The upgrade file you are loading is for the remote \"" + name + "\".\nThere is no remote with that exact name.  Please choose the best match from the list below:";
 
       Object rc = ( Remote )JOptionPane.showInputDialog( null,
                                                          message,
