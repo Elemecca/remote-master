@@ -1,9 +1,9 @@
 package com.hifiremote.jp1;
 
-import java.text.ParseException;
-import javax.swing.JComponent;
-import javax.swing.JTextField;
-import java.awt.event.MouseEvent;
+import java.text.*;
+import javax.swing.*;
+import java.util.*;
+import java.awt.event.*;
 
 public class NumberDeviceParm
   extends DeviceParameter
@@ -55,6 +55,18 @@ public class NumberDeviceParm
   public JComponent getComponent()
   {
     return tf;
+  }
+
+  public void addListener( EventListener l )
+  {
+    tf.addActionListener(( ActionListener )l );
+    tf.addFocusListener(( FocusListener ) l );
+  }
+
+  public void removeListener( EventListener l )
+  {
+    tf.removeActionListener(( ActionListener )l );
+    tf.removeFocusListener(( FocusListener ) l );
   }
 
   public Object getValue()

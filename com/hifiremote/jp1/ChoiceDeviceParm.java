@@ -1,7 +1,8 @@
 package com.hifiremote.jp1;
 
-import javax.swing.JComponent;
-import javax.swing.JComboBox;
+import javax.swing.*;
+import java.util.*;
+import java.awt.event.*;
 
 public class ChoiceDeviceParm
   extends DeviceParameter
@@ -18,6 +19,17 @@ public class ChoiceDeviceParm
   }
 
   public JComponent getComponent(){ return comboBox; }
+
+  public void addListener( EventListener l )
+  {
+    comboBox.addActionListener(( ActionListener )l );
+  }
+
+  public void removeListener( EventListener l )
+  {
+    comboBox.removeActionListener(( ActionListener )l );
+  }
+
   public Object getValue()
   {
     Object rc = null;

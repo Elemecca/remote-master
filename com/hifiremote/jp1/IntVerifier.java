@@ -50,7 +50,6 @@ public class IntVerifier
 
   public boolean shouldYieldFocus( JComponent c )
   {
-    System.err.println( "IntVerifier.shouldYieldFocus()" );
     boolean rc = verify( c );
     if ( !rc )
     {
@@ -60,6 +59,7 @@ public class IntVerifier
     }
     else
       KeyMapMaster.clearMessage();
+    System.err.println( "IntVerifier.shouldYieldFocus() returning " + rc );
     return rc;
   }
 

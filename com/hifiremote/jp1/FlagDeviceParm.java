@@ -1,6 +1,9 @@
 package com.hifiremote.jp1;
 
 import javax.swing.*;
+import javax.swing.event.*;
+import java.awt.event.*;
+import java.util.*;
 
 public class FlagDeviceParm
   extends DeviceParameter
@@ -34,6 +37,16 @@ public class FlagDeviceParm
   }
 
   public JComponent getComponent(){ return checkBox; }
+
+  public void addListener( EventListener l )
+  {
+    checkBox.addItemListener(( ItemListener )l );
+  }
+
+  public void removeListener( EventListener l )
+  {
+    checkBox.removeItemListener(( ItemListener )l );
+  }
 
   private JCheckBox checkBox = null;
 }

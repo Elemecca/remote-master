@@ -1,8 +1,7 @@
 package com.hifiremote.jp1;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
+import java.util.*;
 
 public abstract class DeviceParameter
   extends Parameter
@@ -24,6 +23,8 @@ public abstract class DeviceParameter
 
   public void commit(){}
   public abstract JComponent getComponent();
+  public abstract void addListener( EventListener l );
+  public abstract void removeListener( EventListener l );
 
   private JLabel label;
 }

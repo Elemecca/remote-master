@@ -141,29 +141,20 @@ public class SetupPanel
           currProtocol.convertFunctions( deviceUpgrade.getFunctions(), protocol );
         currProtocol = protocol;
         protocolID.setText( protocol.getID().toString());
-        protocolNotes.setText( protocol.getNotes());
+        JViewport vp = ( JViewport )protocolNotes.getParent();
+        vp.setViewPosition( new Point( 0, 0 ));
         deviceUpgrade.setProtocol( protocol );
         if ( parameters != null )
         {
           for ( int i = 0; i < parameters.length; i++ )
           {
-            remove( parameters[ i ].getLabel());
-            JComponent comp = parameters[ i ].getComponent();
-            if ( comp.getClass() == JComboBox.class )
-              (( JComboBox )comp ).removeActionListener( this );
-            else if ( comp.getClass() == JTextField.class )
-            {
-              (( JTextField )comp ).removeActionListener( this );
-              comp.removeFocusListener( this );
-            }
-            else if ( comp.getClass() == JCheckBox.class )
-              (( JCheckBox )comp ).removeItemListener( this );              
+            parameters[ i ].removeListener( this );
 
-            remove( comp );
+            remove( parameters[ i ].getLabel());
+            remove( parameters[ i ].getComponent());
             tl.deleteRow( 8 );
             tl.deleteRow( 8 );
           }
-          // doLayout();
         }
         parameters = protocol.getDeviceParameters();
         if ( parameters != null )
@@ -171,30 +162,22 @@ public class SetupPanel
           int row = 8;
           for ( int i = 0; i < parameters.length; i++ )
           {
+            parameters[ i ].addListener( this );
+            
             tl.insertRow( row, TableLayout.PREFERRED );
             add( parameters[ i ].getLabel(), "2, " + row );
-            JComponent comp = parameters[ i ].getComponent();
-            if ( comp.getClass() == JComboBox.class )
-              (( JComboBox )comp ).addActionListener( this );
-            else if ( comp.getClass() == JTextField.class )
-            {
-              (( JTextField )comp ).addActionListener( this );
-              comp.addFocusListener( this );
-            }
-            else if ( comp.getClass() == JCheckBox.class )
-              (( JCheckBox )comp ).addItemListener( this );
-
-            add( comp, "4, " + row );
+            add( parameters[ i ].getComponent() , "4, " + row );
             row++;
             tl.insertRow( row++, 5 );
           }
           TableLayoutConstraints tlc = tl.getConstraints( protocolHolder );
           remove( protocolHolder );
           add( protocolHolder, tlc );
-          // doLayout();
         }
         fixedData.setText( protocol.getFixedData().toString());
-        invalidate();
+        revalidate();
+        protocolNotes.setText( protocol.getNotes());
+        protocolNotes.revalidate();
       }
     }
     else if ( source == setupCode )
@@ -243,6 +226,7 @@ public class SetupPanel
 
   }
 
+  // DocumentListener
   public void changedUpdate( DocumentEvent e )
   {
     docChanged( e );
