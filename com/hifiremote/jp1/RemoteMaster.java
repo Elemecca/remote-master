@@ -9,15 +9,6 @@ public class RemoteMaster
   {
     try
     {
-      UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
-      for ( int i = 0; i < info.length; i++ )
-      {
-        if ( info[ i ].getName().equals( "Windows" ))
-        {
-          UIManager.setLookAndFeel( info[ i ].getClassName());
-          break;
-        }
-      }
       System.setErr( new PrintStream( new FileOutputStream( "rmaster.err" )));
       KeyMapMaster km = null;
       if ( args.length > 0 )

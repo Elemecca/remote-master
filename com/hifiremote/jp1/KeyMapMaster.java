@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.46";
+  private static final String version = "v 0.47";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -570,11 +570,16 @@ public class KeyMapMaster
         kmPath = kmPath.getParentFile();
     }
 
-    temp = props.getProperty( "LookAndFeel" );
-    if ( temp != null )
+    String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
+    temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
+    try 
     {
       UIManager.setLookAndFeel( temp );
       SwingUtilities.updateComponentTreeUI( this );
+    }
+    catch ( Exception e )
+    {
+      System.err.println( "Exception thrown when setting look and feel to " + temp );
     }
 
     lastRemoteName = props.getProperty( "Remote.name" );
