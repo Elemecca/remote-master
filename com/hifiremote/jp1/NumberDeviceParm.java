@@ -46,7 +46,10 @@ public class NumberDeviceParm
 
   public void setValue( Object value )
   {
-    tf.setText( value.toString());
+    if ( value == null )
+      tf.setText( "" );
+    else
+      tf.setText( value.toString());
   }
 
   private JTextField tf = null;
