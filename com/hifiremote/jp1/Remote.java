@@ -1115,81 +1115,151 @@ public class Remote
   {
     BufferedReader in = new BufferedReader( new FileReader( mapFile ));
     String line = in.readLine();
-    StringTokenizer st = new StringTokenizer( line, "=" );
-    if ( !st.hasMoreTokens())
-    {
-      System.err.println( "File " + mapFile + " is not a valid map file!" );
-      return;
-    }
 
-    String name = st.nextToken();
-    if ( !name.equals( "Image" ) || !st.hasMoreTokens())
+    if ( line.startsWith( "#$" ))
     {
-      System.err.println( "File " + mapFile + " is not a valid map file!" );
-      return;
-    }
-    String value = st.nextToken();
-    File imageFile = new File( mapFile.getParentFile(), value );
-    imageIcon = new ImageIcon( imageFile.getAbsolutePath());
-    
-    while (( line = in.readLine()) != null )
-    {
-      if ( line.length() == 0 )
-        continue;
-      else if ( line.equals( "[ButtonShapes]" ))
-        break;
-      else
-        System.err.println( "File " + mapFile + " is not a valid map file!" );   
-    }
-    
-    while (( line = in.readLine()) != null )
-    {
-      if ( line.length() == 0 )
-        continue;
-
-      st = new StringTokenizer( line, "=:," );
-      while ( st.hasMoreTokens())
+      // This MAP file is a NCSA map file, probably created by Map This!
+      while (( line = in.readLine()) != null )
       {
-        name = st.nextToken();
-        
-        Button button = findByName( new Button( null, name, ( byte )0 ));
-        System.err.println( "Looked for button w/ name " + name + " and got " + button );
-        if ( button == null )
-          continue;
-        String type = st.nextToken();
-        if ( type.equals( "ellipse" ))
+        if ( line.startsWith( "#$GIF:" ))
         {
-          double x = Double.parseDouble( st.nextToken());
-          double y = Double.parseDouble( st.nextToken());
-          double width = Double.parseDouble( st.nextToken());
-          double height = Double.parseDouble( st.nextToken());
-          button.setShape( new Ellipse2D.Double( x, y, width, height ));
+          File imageFile = new File( mapFile.getParentFile(), line.substring( 6 ));
+          imageIcon = new ImageIcon( imageFile.getAbsolutePath());
         }
-        else if ( type.equals( "rect" ))
+        else if ( !line.startsWith( "#$" ))
         {
-          double x = Double.parseDouble( st.nextToken());
-          double y = Double.parseDouble( st.nextToken());
-          double width = Double.parseDouble( st.nextToken());
-          double height = Double.parseDouble( st.nextToken());
-          button.setShape( new Rectangle2D.Double( x, y, width, height ));
-        }
-        else if ( type.equals( "poly" ))
-        {
-          GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD,
-                                              st.countTokens()/2 );
-          float x = Float.parseFloat( st.nextToken());
-          float y = Float.parseFloat( st.nextToken());
-          path.moveTo( x, y );
-
-          while ( st.hasMoreTokens())
+          StringTokenizer st = new StringTokenizer( line, " ," );
+          String type = st.nextToken();
+          String name = st.nextToken();
+          Button button = findByName( new Button( null, name, ( byte )0 ));
+          System.err.println( "Looked for button w/ name " + name + " and got " + button );
+          if ( button == null )
+            continue;
+          if ( type.equals( "rect" ))
           {
-            x = Float.parseFloat( st.nextToken());
-            y = Float.parseFloat( st.nextToken());
-            System.err.println( "Adding point at " + x + ", " + y );
-            path.lineTo( x, y );
+            double x = Double.parseDouble( st.nextToken());
+            double y = Double.parseDouble( st.nextToken());
+            double x2 = Double.parseDouble( st.nextToken());
+            double y2 = Double.parseDouble( st.nextToken());
+            double w = x2 - x;
+            double h = y2 - y;
+            button.setShape( new Rectangle2D.Double( x, y, w, h ));
           }
-          path.closePath();
-          button.setShape( path );
+          else if ( type.equals( "circle" ))
+          {
+            double x = Double.parseDouble( st.nextToken());
+            double y = Double.parseDouble( st.nextToken());
+            double x2 = Double.parseDouble( st.nextToken());
+            double y2 = Double.parseDouble( st.nextToken());
+            double w = x2 - x;
+            x -= w;
+            w += w;
+            double h = y2 - y;
+            y -= h;
+            h += h;
+            button.setShape( new Ellipse2D.Double( x, y, w, h ));
+          }
+          else if ( type.equals( "poly" ))
+          {
+            GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD,
+                                                st.countTokens()/2 );
+            float x1 = Float.parseFloat( st.nextToken());
+            float y1 = Float.parseFloat( st.nextToken());
+            path.moveTo( x1, y1 );
+  
+            while ( st.hasMoreTokens())
+            {
+              float x = Float.parseFloat( st.nextToken());
+              float y = Float.parseFloat( st.nextToken());
+              if (( x == x1 ) && ( y == y1 ))
+                break;
+              path.lineTo( x, y );
+            }
+            path.closePath();
+            button.setShape( path );
+          }
+        }
+      }
+    }
+    else
+    {
+      // This map file probably uses the proprietary RM format
+      StringTokenizer st = new StringTokenizer( line, "=" );
+      if ( !st.hasMoreTokens())
+      {
+        System.err.println( "File " + mapFile + " is not a valid map file!" );
+        return;
+      }
+  
+      String name = st.nextToken();
+      if ( !name.equals( "Image" ) || !st.hasMoreTokens())
+      {
+        System.err.println( "File " + mapFile + " is not a valid map file!" );
+        return;
+      }
+      String value = st.nextToken();
+      File imageFile = new File( mapFile.getParentFile(), value );
+      imageIcon = new ImageIcon( imageFile.getAbsolutePath());
+      
+      while (( line = in.readLine()) != null )
+      {
+        if ( line.length() == 0 )
+          continue;
+        else if ( line.equals( "[ButtonShapes]" ))
+          break;
+        else
+          System.err.println( "File " + mapFile + " is not a valid map file!" );   
+      }
+      
+      while (( line = in.readLine()) != null )
+      {
+        if ( line.length() == 0 )
+          continue;
+  
+        st = new StringTokenizer( line, "=:," );
+        while ( st.hasMoreTokens())
+        {
+          name = st.nextToken();
+          
+          Button button = findByName( new Button( null, name, ( byte )0 ));
+          System.err.println( "Looked for button w/ name " + name + " and got " + button );
+          if ( button == null )
+            continue;
+          String type = st.nextToken();
+          if ( type.equals( "ellipse" ))
+          {
+            double x = Double.parseDouble( st.nextToken());
+            double y = Double.parseDouble( st.nextToken());
+            double width = Double.parseDouble( st.nextToken());
+            double height = Double.parseDouble( st.nextToken());
+            button.setShape( new Ellipse2D.Double( x, y, width, height ));
+          }
+          else if ( type.equals( "rect" ))
+          {
+            double x = Double.parseDouble( st.nextToken());
+            double y = Double.parseDouble( st.nextToken());
+            double width = Double.parseDouble( st.nextToken());
+            double height = Double.parseDouble( st.nextToken());
+            button.setShape( new Rectangle2D.Double( x, y, width, height ));
+          }
+          else if ( type.equals( "poly" ))
+          {
+            GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD,
+                                                st.countTokens()/2 );
+            float x = Float.parseFloat( st.nextToken());
+            float y = Float.parseFloat( st.nextToken());
+            path.moveTo( x, y );
+  
+            while ( st.hasMoreTokens())
+            {
+              x = Float.parseFloat( st.nextToken());
+              y = Float.parseFloat( st.nextToken());
+              System.err.println( "Adding point at " + x + ", " + y );
+              path.lineTo( x, y );
+            }
+            path.closePath();
+            button.setShape( path );
+          }
         }
       }
     }
