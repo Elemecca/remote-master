@@ -1,3 +1,12 @@
+Changes for v0.83
+
+- Add missing FixedData=00 to JVC protocol
+- Added 6805-C9 and 6805-RC16/18 code for NEC1 and NEC2 protocols
+- Added support for NEC1 2DEV Combo protocol
+- Added support for NECx1 and NECx2 protocols
+- Added support for Pioneer DVD2 protocol
+- Added support for Pioneer 3DEV protocol
+
 Changes for v0.82
 
 - If there is no function assigned to the normal or shifted button, 
