@@ -248,7 +248,7 @@ public class ProtocolManager
         near = p;
       }
     }
-    if (near != null)
+    if ( near != null )
       return near;
     protocols = findByName( name );
     if ( protocols != null )

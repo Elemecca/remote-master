@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.68";
+  private static final String version = "v 0.69";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -713,11 +713,9 @@ public class KeyMapMaster
     if ( temp != null )
       rdfPath = new File( temp );
     else
-    {
       rdfPath = new File( homeDirectory, "rdf" );
-      while ( !rdfPath.exists())
-        rdfPath = rdfPath.getParentFile();
-    }
+    while ( !rdfPath.exists())
+      rdfPath = rdfPath.getParentFile();
 
     temp = props.getProperty( "UpgradePath" );
     if ( temp == null )
@@ -725,11 +723,9 @@ public class KeyMapMaster
     if ( temp != null )
       upgradePath = new File( temp );
     else
-    {
       upgradePath = new File( homeDirectory, upgradeDirectory );
-      while ( ! upgradePath.exists())
-        upgradePath = upgradePath.getParentFile();
-    }
+    while ( ! upgradePath.exists())
+      upgradePath = upgradePath.getParentFile();
 
     temp = props.getProperty( "ImportPath", upgradePath.getAbsolutePath());
     importPath = new File( temp );
