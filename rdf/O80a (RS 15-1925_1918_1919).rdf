@@ -53,18 +53,19 @@ SpareDevice = $015 $00D $01D
 [Buttons]
 CD{Stereo}=$11, VCR=$0A, CBL{SAT}=$09, TV=$01,
 AUX1=$21, AUX2=$22, SpareDevice=$23, P&P=$24,
-SETUP=$02,
+"setup":SETUP=$02, 
 POWER=$03,
-VOL+=$04, VOL-=$05, MUTE=$08,
-CH+=$06, CH-=$07,
+"vol up":VOL+=$04, "vol down":VOL-=$05, "mute":MUTE=$08,
+"channel up":CH+=$06, "channel down":CH-=$07,
 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F,
-ENTER=$12, LAST=$13, SCAN=$14,
-PLAY{Front}=$0C, PAUSE{Surround}=$0F, STOP{Rear}=$0E, FF{Right}=$0D, REW{Left}=$0B, RECORD=$10, TV/VCR{A/B}=$18,
-PROG=$27, SLEEP{1925}=$2D, DISPLAY=$28, SHIFT=$20,
+ENTER=$12, "prev ch":LAST=$13, "fav/scan":SCAN=$14,
+PLAY{Front}=$0C, PAUSE{Surround}=$0F, "Stop":STOP{Rear}=$0E, "fast fwd":FF{Right}=$0D, "rewind":REW{Left}=$0B, "record":RECORD=$10, "tv/vcr":TV/VCR{A/B}=$18,
+PROG=$27, SLEEP{1925}=$2D, "display":DISPLAY=$28, SHIFT=$20,
 Audio-Seq=$25, Video-Seq=$26,
 Phantom1=$2E, Phantom2=$2F,
-{light}=$2C,
-{dontuse1}=$29, {dontuse2}=$2A, {dontuse3}=$2B
+"light":{light}=$2C, 
+{dontuse1}=$29, {dontuse2}=$2A, {dontuse3}=$2B,
+Unknown1=$8b,Unknown2=$8c,Unknown3=$8d,Unknown4=$8e,Unknown5=$8f
 
 [ButtonMaps]
 0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
@@ -73,10 +74,10 @@ Phantom1=$2E, Phantom2=$2F,
      $03, $12, $13, $0C, $0B, $0D, $0F, $0E, $10, $28, $27, $18, $2D, $8B, $8D, $8C, $8E, $8F
 
 [DigitMaps]
-38 94 54 86 109 98 97 110 72 57 84 21 61 11 75 33
-32 27 107 53 113 112 47 17 64 31 151 105 154 90 92 34
-46 29 93 114 59 115 13 153 18 103 101 150 42 155 58 156
-157 77 106 118 158 159 48 56 50 83
+38 94 54 86 109 98 97 110 72 57 84 21 61 11 75 33 
+32 27 107 53 113 112 47 17 64 31 151 105 154 90 92 34 
+46 29 93 114 59 115 13 153 18 103 101 150 42 155 58 156 
+157 77 106 118 158 159 48 56 50 83 
 
 [Protocols]
 0000, 0004, 0006, 0007, 0008, 0009, 000A, 000C, 000D, 000E,

@@ -27,26 +27,26 @@ VCR   =   $00C $009 $00F
 [DeviceTypeAliases]
 CABLE = Cable,SAT,Video Acc
 TV    = TV
-VCR   = VCR,DVD,Tape,Laserdisc
+VCR   = VCR,DVD,Tape,Laserdisc,DAT,CD,Home Auto,Phono,Tuner,Misc Audio,Amp
 
 # signature (part2) = "INT1"
 [FixedData]
 $0FC= $49 $4E $54 $31
 
 [Buttons]
-SETUP=$02,
+"setup":SETUP=$02,
 TV=$01,CABLE=$09,VCR=$0A,
-VOL+=$04,VOL-=$05,MUTE=$08,
-CH+=$06,CH-=$07,
-REW=$0B,PLAY=$0C,FF=$0D,STOP=$0E,PAUSE=$0F,REC=$10,
-UP=$31,DOWN=$32,LEFT=$33,RIGHT=$34,SELECT=$14,
+"vol up":VOL+=$04,"vol down":VOL-=$05,"mute":MUTE=$08,
+"channel up":CH+=$06,"channel down":CH-=$07,
+"rewind":REW=$0B,PLAY=$0C,"fast fwd":FF=$0D,"Stop":STOP=$0E,PAUSE=$0F,"record":REC=$10,
+"up arrow":UP=$31,"down arrow":DOWN=$32,"left arrow":LEFT=$33,"right arrow":RIGHT=$34,"select":SELECT=$14,
 1=$15,2=$16,3=$17,4=$19,5=$1A,6=$1B,7=$1C,8=$1D,9=$1E,0=$1F,
-TV/VCR=$18,CANCEL[blank1]=$20,
-LAST=$11,FAV=$12,MENU=$13,P=$03,
-GUIDE=$21,DAY+=$22,DAY-=$23,ENTER/MUSIC=$24,
-INFO=$25,HELP=$26,PAGE_UP=$27,PAGE_DOWN=$28,
+"tv/vcr":TV/VCR=$18,CANCEL[blank1]=$20,
+"prev ch":LAST=$11,"fav/scan":FAV=$12,"menu":MENU=$13,P=$03,
+GUIDE=$21,DAY+=$22,DAY-=$23,"enter":ENTER{MUSIC}=$24,
+"display":INFO=$25,HELP=$26,PAGE_UP=$27,PAGE_DOWN=$28,
 BYPASS=$29,PPV=$2A,EXIT=$2B,PAUSE_CABLE=$2C,
-THEME[blank2]=$2D,RECORD=$2E,DIAMOND=$2F,MACRO=$30,
+THEME[blank2]=$2D,RECORD=$2E,DIAMOND=$2F,"macro1":MACRO=$30,
 Phantom1=$35, Phantom2=$36, Phantom3=$37, Phantom4=$38, DiscreteON=$39, DiscreteOFF=$3A
 
 [ButtonMaps]

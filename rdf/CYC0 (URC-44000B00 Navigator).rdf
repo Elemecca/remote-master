@@ -1,7 +1,7 @@
 [General]
 Name=URC-44000B00 Navigator
 EepromSize=$400
-AdvCodeAddr=$01A..$0FF
+AdvCodeAddr=$01A..$0FB
 UpgradeAddr=$100..$3FE
 Processor=6805
 RDFSync=3
@@ -13,6 +13,10 @@ VPT Status=$012.7.1.1.0 (On;Off)
 
 [Checksums]
 ^$000:$002..$3FE
+
+# second signature "CYC0"
+[FixedData]
+$0FC= $43 $59 $43 $30
 
 [DeviceTypes]
 Cable   = 0
@@ -35,23 +39,23 @@ Aux =     $00D $009 $011
 [Buttons]
 Power=$03,
 Cable=$09, TV=$01, VCR=$0A, Aux=$11,
-Setup=$02,
+"setup":Setup=$02,
 1=$15, 2=$16, 3=$17,
 4=$19, 5=$1A, 6=$1B,
 7=$1C, 8=$1D, 9=$1E,
 0=$1F,
-Enter/Music=$2F,
-Vol+=$04, Vol-=$05, Mute=$08,
-Ch+=$06, Ch-=$07,
-Last=$12, Exit=$29, Info=$21,
-Rec=$10, Play=$0C, Pause_{VCR}=$0F, Stop=$0E, Rew=$0B, FFwd=$0D,
-Up=$31, Down=$32, Left=$33, Right=$34, Select=$13,
-PageUp=$2B, PageDown=$2C, Guide=$22, Menu=$20,
-Macro1=$35, Macro2=$36, Macro3=$37,
-Help=$2D, Fav=$25, PPV=$23, TV/VCR=$38,
+"enter":Enter{Music}=$2F,
+"vol up":Vol+=$04, "vol down":Vol-=$05, "mute":Mute=$08,
+"channel up":Ch+=$06, "channel down":Ch-=$07,
+"prev ch":Last=$12, Exit=$29, "display":Info=$21,
+"record":Rec=$10, Play=$0C, Pause_{VCR}=$0F, "Stop":Stop=$0E, "rewind":Rew=$0B, "fast fwd":FFwd=$0D,
+"up arrow":Up=$31, "down arrow":Down=$32, "left arrow":Left=$33, "right arrow":Right=$34, "select":Select=$13,
+PageUp=$2B, PageDown=$2C, Guide=$22, "menu":Menu=$20,
+"macro1":Macro1=$35, "macro2":Macro2=$36, "macro3":Macro3=$37,
+Help=$2D, "fav/scan":Fav=$25, PPV=$23, "tv/vcr":TV/VCR=$38,
 Blank_1=$2E, Blank_2=$2A, Day-=$28, Day+=$27,
 Bypass=$18, Pause=$14, Diamond=$30, P=$24,
-{missing}=$26
+DiscreteOn=$26
 
 [MultiMacros]
 Macro1=$017
@@ -59,20 +63,20 @@ Macro2=$018
 Macro3=$019
 
 [ButtonMaps]
-0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E),
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), 
     ($04, $05, $08), ($06, $07),
     $03, $2F, $12, $0C, $0E, $0F, $0D, $0B, $10, $31, $32, $33, $34, $13, $20,
     $21, $22, $26, $2A, $2D, $2E, $18, $25, $2B, $2C, $23, $29, $27, $28, $14,
     $24, $30
-1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E),
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), 
     ($04, $05, $08), ($06, $07),
     $03, $2F, $12, $21
-2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E),
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), 
     ($04, $05, $08), ($06, $07),
     $03, $2F, $12, $21, $38, $0C, $0B, $0D, $10, $0F, $0E
-3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E),
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), 
     ($04, $05, $08), ($06, $07),
-    $03, $2F, $12, $21, $0C, $0B, $0D, $10, $0F, $0E, $2
+    $03, $2F, $12, $21, $0C, $0B, $0D, $10, $0F, $0E, $25
 
 [DigitMaps]
 072 048 053 054 097 094 086 109 047 113 003 081 090 046 021 092

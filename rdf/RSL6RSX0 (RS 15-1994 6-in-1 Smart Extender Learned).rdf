@@ -41,22 +41,22 @@ AUX2 =    $014 $015
 P&P =     $016 $017
 
 [Buttons]
-P[SETUP]=$02, {LIGHT}=$20, Power=$03, Sleep=$2C,
+"setup":P[SETUP]=$02, "light":{LIGHT}=$20, Power=$03, Sleep=$2C,
 AUX1=$25, AUX2=$26, VCR=$0A, TV=$01,
 Plug&Power=$27, CD=$11, CBL/SAT=$09,
 1s=$21, 2s=$22, 3s=$23, 4s=$24,
-Menu=$29, Surround=$30, Guide{Program}=$28,
-Up=$31, Down=$32, Left=$33,
-Right=$34, Select=$35,
-Center{EXIT}=$2B, Scan{Fav}=$14,
-Mute=$08, Last=$13, PIP=$2D, Display=$2A, Swap=$2F, Move=$2E,
-VOL+=$04, VOL-=$05, CH+=$06, CH-=$07,
+"menu":Menu=$29, Surround=$30, Guide{Program}=$28,
+"up arrow":Up=$31, "down arrow":Down=$32, "left arrow":Left=$33,
+"right arrow":Right=$34, "select":Select=$35,
+Center{EXIT}=$2B, "fav/scan":Scan{Fav}=$14,
+"mute":Mute=$08, "prev ch":Last=$13, "pip on/off":PIP=$2D, "display":Display=$2A, "pip swap":Swap=$2F, "pip move":Move=$2E,
+"vol up":VOL+=$04, "vol down":VOL-=$05, "channel up":CH+=$06, "channel down":CH-=$07,
 1=$15, 2=$16, 3=$17,
 4=$19, 5=$1A, 6=$1B,
 7=$1C, 8=$1D, 9=$1E,
-0=$1F, TV/VIDEO{A/B}=$18, ENTER=$12,
-REW=$0B, PLAY=$0C, FFWD=$0D,
-REC=$10, STOP=$0E, PAUSE=$0F,
+0=$1F, "tv/vcr":TV/VIDEO{A/B}=$18, ENTER=$12,
+"rewind":REW=$0B, PLAY=$0C, "fast fwd":FFWD=$0D,
+"record":REC=$10, "Stop":STOP=$0E, PAUSE=$0F,
 Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 V_SAT=$77, V_TV=$78, V_VCR=$79, V_CD=$7A, V_AUX1=$7B, V_AUX2=$7C, V_P&P=$7D,
 PushDev=$7E, PopDev=$7F
