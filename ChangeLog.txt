@@ -1,3 +1,7 @@
+Changed for v0.85
+
+- Fix for importing old KM device upgrades
+
 Changes for v0.84
 
 - Added support for Pioneer MIX protocol
