@@ -20,7 +20,7 @@ public class DeviceUpgrade
     setupCode = 0;
 
     // remove all currently assigned functions
-    Button[] buttons = remote.getUpgradeButtons();
+    Button[] buttons = remote.getButtons();
     for ( int i = 0; i < buttons.length; i++ )
     {
       Button b = buttons[ i ];
@@ -33,6 +33,10 @@ public class DeviceUpgrade
     remote = remotes[ 0 ];
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
 
+    DeviceParameter[] devParms = protocol.getDeviceParameters();
+    for ( int i = 0; i < devParms.length; i++ )
+      devParms[ i ].setValue( null );
+
     Vector names = protocolManager.getNames();
     Protocol tentative = null;
     for ( Enumeration e = names.elements(); e.hasMoreElements(); )
@@ -40,7 +44,10 @@ public class DeviceUpgrade
       String protocolName = ( String )e.nextElement();
       Protocol p = protocolManager.findProtocolForRemote( remote, protocolName );
       if ( p != null )
+      {
+        protocol = p;
         break;
+      }
     }
 
     notes = null;

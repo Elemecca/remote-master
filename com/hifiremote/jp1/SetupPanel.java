@@ -9,10 +9,11 @@ import java.awt.event.*;
 import javax.swing.event.*;
 import java.util.*;
 import info.clearthought.layout.*;
+import java.beans.*;
 
 public class SetupPanel
   extends KMPanel
-  implements ActionListener, DocumentListener, FocusListener, ItemListener
+  implements ActionListener, ItemListener, PropertyChangeListener, DocumentListener, FocusListener, Runnable
 {
   public SetupPanel( DeviceUpgrade deviceUpgrade,
                      ProtocolManager protocolManager )
@@ -47,24 +48,22 @@ public class SetupPanel
     JLabel label = new JLabel( "Setup Code:", SwingConstants.RIGHT );
     add( label, "2, 1" );
 
-    setupCode = new JTextField();
+    NumberFormatter nf = new NumberFormatter( new DecimalFormat( "0000" ));
+    nf.setValueClass( Integer.class );
+    nf.setMinimum( new Integer( 0 ));
+    nf.setMaximum( new Integer( 2047));
+    nf.setCommitsOnValidEdit( true );
+
+    setupCode = new JFormattedTextField( nf );
+    setupCode.addPropertyChangeListener( this );
     setupCode.addFocusListener( this );
-    setupCode.setInputVerifier( new IntVerifier( 0, 2047 ));
-    setupCode.addActionListener( this );
+//    setupCode.setInputVerifier( new IntVerifier( 0, 2047 ));
+//    setupCode.addActionListener( this );
+//    setupCode.getDocument().addDocumentListener( this );
     label.setLabelFor( setupCode );
     setupCode.setToolTipText( "Enter the desired setup code (between 0 and 2047) for the device upgrade." );
 
     add( setupCode, "4, 1" );
-
-    JPanel notesPanel = new JPanel( new BorderLayout());
-    notes = new JTextArea();
-    notes.setToolTipText( "Enter any notes about this device upgrade." );
-    notes.setLineWrap( true );
-    notes.setWrapStyleWord( true );
-    notesPanel.setBorder( BorderFactory.createTitledBorder( "Upgrade Notes" ));
-    notesPanel.add( new JScrollPane( notes ), BorderLayout.CENTER );
-    notes.getDocument().addDocumentListener( this );
-    add( notesPanel, "7, 1, 7, 9" );
 
     label = new JLabel( "Protocol:", SwingConstants.RIGHT );
     add( label, "2, 3" );
@@ -92,6 +91,16 @@ public class SetupPanel
     fixedData.setEditable( false );
     add( fixedData, "4, 8" );
 
+    JPanel notesPanel = new JPanel( new BorderLayout());
+    notes = new JTextArea();
+    notes.setToolTipText( "Enter any notes about this device upgrade." );
+    notes.setLineWrap( true );
+    notes.setWrapStyleWord( true );
+    notesPanel.setBorder( BorderFactory.createTitledBorder( "Upgrade Notes" ));
+    notesPanel.add( new JScrollPane( notes ), BorderLayout.CENTER );
+    notes.getDocument().addDocumentListener( this );
+    add( notesPanel, "7, 1, 7, 9" );
+
     notesPanel = new JPanel( new BorderLayout());
     protocolNotes = new JTextArea();
     protocolNotes.setBackground( label.getBackground());
@@ -108,8 +117,8 @@ public class SetupPanel
   public void update()
   {
     updateInProgress = true;
-//    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
-    setupCode.setText( nf.format( deviceUpgrade.getSetupCode()));
+    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
+//    setupCode.setText( nf.format( deviceUpgrade.getSetupCode()));
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
     Vector protocols = protocolManager.getProtocolsForRemote( remote );
@@ -201,8 +210,8 @@ public class SetupPanel
         SwingUtilities.updateComponentTreeUI( this );
       }
     }
-    else if ( source == setupCode )
-      updateSetupCode();
+//    else if ( source == setupCode )
+//      updateSetupCode();
     else // must be a protocol parameter
       updateFixedData();
   } // actionPerformed
@@ -232,21 +241,24 @@ public class SetupPanel
 
   private void updateSetupCode()
   {
-    int val = Integer.parseInt( setupCode.getText());
-    setupCode.setText( nf.format( val ));
+    int val = (( Integer )setupCode.getValue()).intValue();
+//    setupCode.setText( nf.format( val ));
     deviceUpgrade.setSetupCode( val );
   }
 
   private void docChanged( DocumentEvent e )
   {
-    Document doc = e.getDocument();
-    if ( doc == notes.getDocument() )
-      updateNotes();
-    else if ( doc == setupCode.getDocument())
-      updateSetupCode();
-    else
-      updateFixedData();
-
+    if ( !updateInProgress )
+    {
+      Document doc = e.getDocument();
+      if ( doc == notes.getDocument() )
+        updateNotes();
+  //    else if ( doc == setupCode.getDocument())
+  //      updateSetupCode();
+      else
+        updateFixedData();
+      deviceUpgrade.setChanged( true );
+    }
   }
 
   // DocumentListener
@@ -268,27 +280,46 @@ public class SetupPanel
   // FocusListener
   public void focusGained( FocusEvent e )
   {
-    JTextComponent tc = ( JTextComponent )e.getSource();
-    tc.selectAll();
+    controlToSelectAll = ( JTextComponent )e.getSource();
+    SwingUtilities.invokeLater( this );
   }
 
   public void focusLost( FocusEvent e )
   {
-    JTextComponent tc = ( JTextComponent )e.getSource();
-    if ( tc == setupCode )
-      updateSetupCode();
-    else
-      updateFixedData();
+//    JTextComponent tc = ( JTextComponent )e.getSource();
+//    if ( tc == setupCode )
+//      updateSetupCode();
+//    else
+//      updateFixedData();
   }
 
   // ItemListener
   public void itemStateChanged( ItemEvent e )
   {
-    updateFixedData();
+    if ( !updateInProgress )
+      updateFixedData();
+  }
+
+  // PropertyChangeListener methods
+  public void propertyChange( PropertyChangeEvent e )
+  {
+    if ( !updateInProgress )
+    {
+      if (( e.getSource() == setupCode ) && e.getPropertyName().equals( "value" ))
+      {
+        updateSetupCode();
+      }
+    }
+  }
+
+  // Runnable
+  public void run()
+  {
+    controlToSelectAll.selectAll();
   }
 
   private ProtocolManager protocolManager = null;
-  private JTextField setupCode = null;
+  private JFormattedTextField setupCode = null;
   private JRadioButton useEFC = null;
   private JRadioButton useOBC = null;
   private JComboBox protocolList = null;
@@ -301,5 +332,6 @@ public class SetupPanel
   private TableLayout tl;
   private boolean updateInProgress = false;
   private static DecimalFormat nf = new DecimalFormat( "0000" );
+  private JTextComponent controlToSelectAll = null;
 }
 

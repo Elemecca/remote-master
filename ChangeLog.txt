@@ -1,3 +1,9 @@
+Changes for v0.58
+
+- Add/update remote images and maps for 15-1994, 15-1995, 15-2104, 15-2116/2117, 
+  URC-6131, URC-7800, URC-8080, URC-8811, URC-9800, URC-9910
+- Only prompt to save upgrades that have actually been changed, still INCOMPLETE.
+
 Changes for v0.57
 
 - Include image map files in distribution ZIP file

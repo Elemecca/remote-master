@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.text.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import java.util.*;
 import java.awt.event.*;
 
@@ -60,13 +61,15 @@ public class NumberDeviceParm
   public void addListener( EventListener l )
   {
     tf.addActionListener(( ActionListener )l );
-    tf.addFocusListener(( FocusListener ) l );
+    tf.addFocusListener(( FocusListener)l );
+    tf.getDocument().addDocumentListener(( DocumentListener )l );
   }
 
   public void removeListener( EventListener l )
   {
     tf.removeActionListener(( ActionListener )l );
-    tf.removeFocusListener(( FocusListener ) l );
+    tf.removeFocusListener(( FocusListener )l );
+    tf.getDocument().removeDocumentListener(( DocumentListener )l );
   }
 
   public Object getValue()
