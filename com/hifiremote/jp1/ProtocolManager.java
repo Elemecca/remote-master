@@ -9,7 +9,7 @@ public class ProtocolManager
   protected ProtocolManager()
   {
   }
-  
+
   public static ProtocolManager getProtocolManager()
   {
     return protocolManager;
@@ -109,6 +109,12 @@ public class ProtocolManager
 
   public void add( Protocol p )
   {
+    if ( p.getClass() == ManualProtocol.class )
+    {
+      manualProtocol = ( ManualProtocol )p;
+      return;
+    }
+
     // Add the protocol to the byName hashtable
     String name = p.getName();
     Vector v = ( Vector )byName.get( name );

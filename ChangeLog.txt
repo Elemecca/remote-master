@@ -1,3 +1,8 @@
+Changes for v1.14
+- Improve prompt for unkown remote when loading/importing an ugrade
+- More fixes for importing KM device upgrades that use Manual Settings
+- Handle 999 entries in DigitMaps graciously.
+
 Changes for v1.13
 - Fix problems importing, loading, and saving upgrades that use Manual Settings.
 
