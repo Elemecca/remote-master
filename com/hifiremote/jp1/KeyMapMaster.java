@@ -36,6 +36,9 @@ import java.io.FilenameFilter;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.lang.ClassLoader;
 
@@ -44,6 +47,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener
 {
   private static KeyMapMaster me = null;
+  private static final String version = "v 0.22";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -62,11 +66,20 @@ public class KeyMapMaster
   private OutputPanel outputPanel = null;
   private ProgressMonitor progressMonitor = null;
   private DeviceUpgrade deviceUpgrade = null;
+  private File propertiesFile = null;
+  private File rdfPath = null;
+  private File kmPath = null;
 
   public KeyMapMaster()
     throws Exception
   {
-    super( "KeyMap Master v 0.21" );
+    this( new File( System.getProperty( "user.home" ), "KeyMapMaster.properties" ));
+  }
+
+  public KeyMapMaster( File propertiesFile )
+    throws Exception
+  {
+    super( "KeyMap Master" + version );
     setDefaultLookAndFeelDecorated( true );
     me = this;
 
@@ -76,16 +89,20 @@ public class KeyMapMaster
       {
         try
         {
-          ;
+          savePreferences();
         }
         catch ( Exception e )
         {
           System.err.println( "KeyMapMaster.windowClosing() caught an exception!" );
           e.printStackTrace( System.out );
         }
-        System.exit(0);
+        System.exit( 0 );
       }
     });
+
+    this.propertiesFile = propertiesFile;
+
+    loadPreferences();
 
     deviceUpgrade = new DeviceUpgrade();
 
@@ -189,8 +206,8 @@ public class KeyMapMaster
   private void loadRemotes()
     throws Exception
   {
-    String userDir = System.getProperty( "user.dir" );
-    File file = new File( userDir );
+    File[] files = new File[ 0 ];
+    File dir = rdfPath;
     FilenameFilter filter = new FilenameFilter()
     {
       public boolean accept( File dir, String name )
@@ -199,13 +216,25 @@ public class KeyMapMaster
       }
     };
 
-    File[] files = file.listFiles( filter );
-    if ( files.length == 0 )
+    while ( files.length == 0 )
     {
-      JOptionPane.showMessageDialog( this, "No remote definitions files were found!",
-                                     "Error", JOptionPane.ERROR_MESSAGE );
-      System.exit( -1 );
+      files = dir.listFiles( filter );
+      if ( files.length == 0 )
+      {
+        JOptionPane.showMessageDialog( this, "No RDF files were found!",
+                                       "Error", JOptionPane.ERROR_MESSAGE );
+        JFileChooser chooser = new JFileChooser( dir );
+        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+        chooser.setFileFilter( new KMDirectoryFilter());
+        chooser.setDialogTitle( "Choose the directory containing the RDFs" );
+        int returnVal = chooser.showOpenDialog( this );
+        if ( returnVal != JFileChooser.APPROVE_OPTION )
+          System.exit( -1 );
+        else
+          dir = chooser.getSelectedFile();
+      }
     }
+    rdfPath = dir;
 
     progressMonitor = new ProgressMonitor( this, "Loading remotes",
                                            "", 0, files.length );
@@ -230,7 +259,21 @@ public class KeyMapMaster
   private void loadProtocols()
     throws Exception
   {
-    BufferedReader rdr = new BufferedReader( new FileReader( "protocols.ini" ));
+    File f = new File( "protocols.ini" );
+    while ( !f.canRead() )
+    {
+      JOptionPane.showMessageDialog( this, "Couldn't read " + f.getName() + "!",
+                                     "Error", JOptionPane.ERROR_MESSAGE );
+      JFileChooser chooser = new JFileChooser( System.getProperty( "user.dir" ));
+      chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+      chooser.setDialogTitle( "Pick the file containing the protocol definitions" );
+      int returnVal = chooser.showOpenDialog( this );
+      if ( returnVal != JFileChooser.APPROVE_OPTION )
+        System.exit( -1 );
+      else
+        f = chooser.getSelectedFile();
+    }
+    BufferedReader rdr = new BufferedReader( new FileReader( f ));
     Properties props = null;
     String name = null;
     byte[] id = new byte[ 2 ];
@@ -403,15 +446,15 @@ public class KeyMapMaster
       }
       else if ( source == openItem )
       {
-        JFileChooser chooser = new JFileChooser( System.getProperty( "user.dir" ));
-        chooser.setFileFilter( new KMFileFilter());
+        JFileChooser chooser = new JFileChooser( kmPath );
         int returnVal = chooser.showOpenDialog( this );
         if ( returnVal == JFileChooser.APPROVE_OPTION )
         {
-          String name = chooser.getSelectedFile().getAbsolutePath();
+          File file = chooser.getSelectedFile();
+          String name = file.getAbsolutePath();
           if ( !name.endsWith( ".km" ))
-            name = name + ".km";
-          File file = new File( name );
+            file = new File( name + ".km" );
+
           int rc = JOptionPane.YES_OPTION;
           if ( !file.exists())
           {
@@ -429,6 +472,7 @@ public class KeyMapMaster
           }
           else
           {
+            kmPath = file.getParentFile();
             deviceUpgrade.load( file, remotes, protocols );
             saveItem.setEnabled( true );
             remoteList.removeActionListener( this );
@@ -459,6 +503,49 @@ public class KeyMapMaster
     currPanel.update();
   }
 
+  private void loadPreferences()
+    throws Exception
+  {
+    Properties props = new Properties();
+    if ( propertiesFile.canRead())
+    {
+      FileInputStream in = new FileInputStream( propertiesFile );
+      props.load( in );
+      in.close();
+    }
+
+    String userDir = System.getProperty( "userDir.dir" );
+    String temp = props.getProperty( "RDFPath" );
+    if ( temp != null )
+      rdfPath = new File( temp );
+    else
+      rdfPath = new File( userDir, "rdf" );
+
+    temp = props.getProperty( "KMPath" );
+    if ( temp != null )
+      kmPath = new File( temp );
+    else
+      kmPath = new File( userDir, "km" );
+
+    temp = props.getProperty( "LookAndFeel" );
+    if ( temp != null )
+      UIManager.setLookAndFeel( temp );
+  }
+
+  private void savePreferences()
+    throws Exception
+  {
+    Properties props = new Properties();
+    props.setProperty( "RDFPath", rdfPath.getAbsolutePath());
+    props.setProperty( "KMPath", kmPath.getAbsolutePath());
+    props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
+
+    FileOutputStream out = new FileOutputStream( propertiesFile );
+    props.store( out, null );
+    out.flush();
+    out.close();
+  }
+
   public static void main( String[] args )
   {
     try
@@ -473,7 +560,11 @@ public class KeyMapMaster
         }
       }
       System.setErr( new PrintStream( new FileOutputStream( "km.err" )));
-      KeyMapMaster km = new KeyMapMaster();
+      KeyMapMaster km = null;
+      if ( args.length > 0 )
+        km = new KeyMapMaster( new File( args[ 0 ]));
+      else
+        km = new KeyMapMaster();
     }
     catch ( Exception e )
     {
@@ -501,6 +592,25 @@ public class KeyMapMaster
     public String getDescription()
     {
       return "KeyMapMaster files";
+    }
+  }
+
+  private class KMDirectoryFilter
+    extends FileFilter
+  {
+    //Accept all directories and all .km files.
+    public boolean accept( File f )
+    {
+      boolean rc = false;
+      if ( f.isDirectory())
+        rc = true;
+      return rc;
+    }
+
+    //The description of this filter
+    public String getDescription()
+    {
+      return "Directories";
     }
   }
 }
