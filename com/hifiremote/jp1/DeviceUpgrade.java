@@ -651,7 +651,7 @@ public class DeviceUpgrade
     System.err.println( "DeviceUpgrade.importFile()" );
     BufferedReader in = new BufferedReader( new FileReader( file ));
 
-    String line = in.readLine();
+    String line = in.readLine(); // line 1
     String token = line.substring( 0, 5 );
     if ( !token.equals( "Name:" ))
     {
@@ -664,10 +664,10 @@ public class DeviceUpgrade
     st.nextToken();
     description = st.nextToken();
 
-    String protocolLine = in.readLine();
-    String manualLine = in.readLine();
+    String protocolLine = in.readLine(); // line 3
+    String manualLine = in.readLine(); // line 4
 
-    line = in.readLine();
+    line = in.readLine(); // line 5
     st = new StringTokenizer( line, delim );
     st.nextToken();
     token = st.nextToken();
@@ -709,6 +709,25 @@ public class DeviceUpgrade
     else
       remote = remotes[ index ];
 
+    in.readLine(); // skip line 5
+    line = in.readLine(); // line 6
+    Hex pid = null;
+    if (  line.startsWith( "Upgrade Code 0 =" ))
+    {
+      byte[] id = new byte[ 2 ];
+      int temp = Integer.parseInt( line.substring( 17, 19 ), 16 );
+      if (( temp & 8 ) != 0 )
+        id[ 0 ] = 1;
+
+      line = in.readLine(); // line 7
+      temp = Integer.parseInt( line.substring( 0, 2 ), 16 );
+      id[ 1 ] = ( byte )temp;
+      pid = new Hex( id );
+      System.err.println( "Imported protocol id is " + pid );
+    }
+    else
+      in.readLine(); // line 7
+
     remote.load();
     token = st.nextToken();
     str = token.substring( 5 );
@@ -744,7 +763,7 @@ public class DeviceUpgrade
       System.err.println( "protocolName=" + protocolName );
       StringTokenizer manual = new StringTokenizer( manualLine, delim );
       manual.nextToken(); // skip header
-      Hex pid = new Hex( manual.nextToken()); // pid
+      pid = new Hex( manual.nextToken()); // pid
       System.err.println( "pid=" + pid );
       int byte2 = Integer.parseInt( manual.nextToken().substring( 0, 1 ));
       System.err.println( "byte2=" +  byte2 );
@@ -788,7 +807,8 @@ public class DeviceUpgrade
     }
     else
     {
-      protocol = protocolManager.findProtocolForRemote( remote, protocolName );
+//    protocol = protocolManager.findProtocolForRemote( remote, protocolName );
+      protocol = protocolManager.findNearestProtocol( protocolName, pid, null );
 
       if ( protocol == null )
       {
@@ -829,7 +849,7 @@ public class DeviceUpgrade
       }
     }
 
-    for ( int i = 5; i < 35; i++ )
+    for ( int i = 8; i < 35; i++ )
       in.readLine();
 
     // compute cmdIndex

@@ -238,7 +238,7 @@ public class ProtocolManager
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol p = ( Protocol )e.nextElement();
-      if ( p.getVariantName().equals( variantName ) )
+      if (( variantName != null ) &&  p.getVariantName().equals( variantName ) )
       {
         if ( p.getName().equals( name ) )
           return p;
