@@ -1,45 +1,42 @@
-The command line parameters to RemoteMaster have been changed
-to make it easier to use file associations.  This will allow
-users to simply double-click on a .rmdu file to launch RemoteMaster
-and edit the device upgrade.
-
-The new parameters are:
-
--h (home directory) - the directory containing protocols.ini,
-                      RemoteMaster.properties, the rdf and
-                      Upgrades directories.  It typically also
-                      includes RemoteMaster.jar.  If not specified, it
-                      defaults to the working directory.
-
--p (properties file) - the properties files to be used.  Defaults to
-                       RemoteMaster.properties in the home directory.
-
-(device upgrade file) - the device upgrade file to load.
-
 System Requirements
 -------------------
 
 You need either the Java SDK (for coding/testing/using) or
 JRE (for only testing/using) version 1.4.1 or later.
-If you don't have either, get one from the Java Download page.
+If you don't have either, get one from the Java Download page
+at http://java.sun.com/j2se/downloads.html 
 
 
-Installating RemoteMaster
--------------------------
+Installing RemoteMaster
+-----------------------
 
 To install, follow these steps:
 1. Create an empty directory (e.g. c:\rmaster),
 2. Unzip to the directory you created above, making sure to
    replace all files, and preserving directory structure.
 
+RDF Files
+---------
+
+RemoteMaster does not ship with any RDF files, but they are 
+required. They are available as a seperate download from the 
+Tools folder in the Files section of the JP1 group at Yahoo! Groups. 
+( http://groups.yahoo.com/group/jp1/files/2.%20Tools/ )
+These can be installed in any directory. If RemoteMaster can't
+find them the first time you run it, it will prompt you for their
+location. It will remember that location for future use.
+
 File Associations
 -----------------
 
 In order to simplify the process of setting up File Associations in
 Windows, the Setup.jar file is now included with RemoteMaster.
-Setting up the file associations is a two step process.
+Set up the file associations as follows:
+
 1. Double-click on Setup.jar
 2. Double-click on Setup.reg
+3. Click Yes.
+4. Click OK.
 
 Now you should be able to simply double-click any .rmdu or .km file to
 open that Remote Master Device Upgrade file in RemoteMaster.
@@ -47,15 +44,17 @@ open that Remote Master Device Upgrade file in RemoteMaster.
 Running RemoteMaster
 --------------------
 
-To run, just double-click RemoteMaster.jar.
+There are a number of different ways to run RemoteMaster: 
 
-From the command line, type
+- Double-click in an existing .rmdu or .km file 
+- Double-click RemoteMaster.jar. 
+- Double-click rmaster.bat 
+- From the command line, type 
 
-java -jar RemoteMaster.jar
+  rmaster
 
-Or, you can simply type
-
-rmaster
+Unexpected Results
+------------------
 
 If you see some unexpected results, close RemoteMaster and look in
 rmaster.err for some diagnostic messages about the error. These
@@ -69,15 +68,6 @@ In the upgrade process, all function definition will be imported.
 Some button assignments may be lost during the import process.
 You can reassign the functions to the desired buttons on the Button panel 
 or the Layout panel.
-
-RDF Files
----------
-
-RemoteMaster comes bundled with a number of RDF files.  These RDF files
-NOT the same as the RDFs that come bundled with IR, or are distributed with 
-some extenders.  Most likely these other RDFs are not compatible with RemoteMaster,
-but they can be made compatible with some minor editing.  For help with that, please
-make a post in the jp1-km Yahoo Group.
 
 Protocols
 ---------
