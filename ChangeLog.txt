@@ -1,3 +1,8 @@
+Chnages for v0.64
+
+- Close .map file when done parsing
+- Add/update remote images, maps, and rdfs
+
 Changes for v0.63
 
 - Add/update remote images, maps and rdfs
@@ -31,7 +36,7 @@ Changes for v0.59
 
 Changes for v0.58
 
-- Add/update remote images and maps for 15-1994, 15-1995, 15-2104, 15-2116/2117, 
+- Add/update remote images and maps for 15-1994, 15-1995, 15-2104, 15-2116/2117,
   URC-6131, URC-7800, URC-8080, URC-8811, URC-9800, URC-9910
 - Only prompt to save upgrades that have actually been changed, still INCOMPLETE.
 
@@ -41,11 +46,11 @@ Changes for v0.57
 - Don't let vertical scroll bar (if present) obscure any part of remote image.
 - Add some of the missing digit maps.
 - 1st pass at only prompting to save upgrade if it has been changed.  INCOMPLETE.
-  
+
 Changes for v0.56
 
 - Moved image file and button shapes out of RDF into an image map file.  The RDF
-  now has an ImageMap= value in the [General] section that specified the name to the 
+  now has an ImageMap= value in the [General] section that specified the name to the
   image map file.
 - No horizontal scroll bar on the remote image on the Layout Panel.
 - Pop-up menu for assigning functions to buttons on Layout Panel.  Hold down Ctrl to
