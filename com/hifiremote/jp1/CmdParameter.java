@@ -18,7 +18,9 @@ public abstract class CmdParameter
 
   public Object getValue( Object value )
   {
-    if (( defaultValue != null ) && defaultValue.value().equals( value ))
+    if (( defaultValue != null ) && 
+        ( defaultValue.getClass() == IndirectDefaultValue.class ) && 
+        defaultValue.value().equals( value ))
       return null;
     else
       return value;
