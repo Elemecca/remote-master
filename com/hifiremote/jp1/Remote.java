@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.awt.geom.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
@@ -66,6 +67,8 @@ public class Remote
             line = parseButtonMaps( rdr );
           else if ( line.equals( "Protocols" ))
             line = parseProtocols( rdr );
+          else if ( line.equals( "ButtonShapes" ))
+            line = parseButtonShapes( rdr );
           else
             line = rdr.readLine();
         }
@@ -467,6 +470,12 @@ public class Remote
     return omitDigitMapByte;
   }
 
+  public ImageIcon getImageIcon()
+  {
+    checkLoaded();
+    return imageIcon;
+  }
+
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
   {
@@ -575,6 +584,13 @@ public class Remote
       }
       else if ( parm.equals( "OmitDigitMapByte" ))
         omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
+      else if ( parm.equals( "Image" ))
+      {
+        File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
+        File iconFile = new File( imageDir, st.nextToken());
+        System.err.println( "Loading image from " + iconFile.getAbsolutePath());
+        imageIcon = new ImageIcon( iconFile.getAbsolutePath());
+      }
     }
     return line;
   }
@@ -853,6 +869,7 @@ public class Remote
   private String parseButtons( RDFReader rdr )
     throws Exception
   {
+    System.err.println( "Remote.parseButtons()" );
     Vector work = new Vector();
     String line;
     byte keycode = 1;
@@ -861,31 +878,35 @@ public class Remote
       line = rdr.readLine();
       if ( line == null )
         break;
-      if ( line.length() != 0 )
-      {
-        if (line.charAt( 0 ) == '[')
+      if (( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ))
           break;
-        StringTokenizer st = new StringTokenizer( line, "," );
-        while ( st.hasMoreTokens())
+      System.err.println( "line=" + line );
+      StringTokenizer st = new StringTokenizer( line, "," );
+      while ( st.hasMoreTokens())
+      {
+        String token = st.nextToken().trim();
+        System.err.println( "Token=" + token );
+        int equal = token.indexOf( '=' );
+        System.err.println( "equal=" + equal );
+        if ( equal != -1 )
         {
-          String token = st.nextToken().trim();
-          int equal = token.indexOf( '=' );
-          if ( equal != -1 )
-          {
-            keycode = ( byte )rdr.parseNumber( token.substring( equal + 1 ));
-            token = token.substring( 0, equal );
-          }
-
-          int colon = token.indexOf( ':' );
-          String name = token;
-          if ( colon != -1 )
-          {
-            name = token.substring( colon + 1 );
-            token = token.substring( 0, colon );
-          }
-
-          work.add( new Button( token, name, keycode++ ));
+          keycode = ( byte )rdr.parseNumber( token.substring( equal + 1 ));
+          System.err.println( "keycode="  + keycode );
+          token = token.substring( 0, equal );
         }
+
+        int colon = token.indexOf( ':' );
+        System.err.println( "colon=" + colon );
+        String name = token;
+        System.err.println( "name=" + name );
+        if ( colon != -1 )
+        {
+          name = token.substring( colon + 1 );
+          token = token.substring( 0, colon );
+        }
+        System.err.println( "generic=" + token + ", and name=" + name );
+
+        work.add( new Button( token, name, keycode++ ));
       }
     }
     buttons = ( Button[] )work.toArray( buttons );
@@ -900,7 +921,7 @@ public class Remote
 
     buttonsByStandardName = new Button[ buttons.length ];
     System.arraycopy( buttons, 0, buttonsByStandardName, 0, buttons.length );
-    Arrays.sort( buttonsByName, standardNameComparator );
+    Arrays.sort( buttonsByStandardName, standardNameComparator );
 
     return line;
   }
@@ -1089,6 +1110,66 @@ public class Remote
     return line;
   }
 
+  private String parseButtonShapes( RDFReader rdr )
+    throws Exception
+  {
+    String line;
+    while ( true )
+    {
+      line = rdr.readLine();
+      if (( line == null ) || ( line.length() == 0 ))
+        break;
+
+      StringTokenizer st = new StringTokenizer( line, " \t" );
+      while ( st.hasMoreTokens())
+      {
+        String token = st.nextToken();
+        StringTokenizer st2 = new StringTokenizer( token, "=:," );
+        String name = st2.nextToken();
+        Button button = findByName( new Button( null, name, ( byte )0 ));
+        System.err.println( "Looked for button w/ name " + name + " and got " + button );
+        if ( button == null )
+          continue;
+        String type = st2.nextToken();
+        if ( type.equals( "ellipse" ))
+        {
+          double x = Double.parseDouble( st2.nextToken());
+          double y = Double.parseDouble( st2.nextToken());
+          double width = Double.parseDouble( st2.nextToken());
+          double height = Double.parseDouble( st2.nextToken());
+          button.setShape( new Ellipse2D.Double( x, y, width, height ));
+        }
+        else if ( type.equals( "rect" ))
+        {
+          double x = Double.parseDouble( st2.nextToken());
+          double y = Double.parseDouble( st2.nextToken());
+          double width = Double.parseDouble( st2.nextToken());
+          double height = Double.parseDouble( st2.nextToken());
+          button.setShape( new Rectangle2D.Double( x, y, width, height ));
+        }
+        else if ( type.equals( "poly" ))
+        {
+          GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD,
+                                              st2.countTokens()/2 );
+          float x = Float.parseFloat( st2.nextToken());
+          float y = Float.parseFloat( st2.nextToken());
+          path.moveTo( x, y );
+
+          while ( st2.hasMoreTokens())
+          {
+            x = Float.parseFloat( st2.nextToken());
+            y = Float.parseFloat( st2.nextToken());
+            System.err.println( "Adding point at " + x + ", " + y );
+            path.lineTo( x, y );
+          }
+          path.closePath();
+          button.setShape( path );
+        }
+      }
+    }
+    return line;
+  }
+
   public String getSupportedVariantName( Hex pid )
   {
     checkLoaded();
@@ -1212,4 +1293,5 @@ public class Remote
   private boolean omitDigitMapByte = false;
   private Hashtable protocolVariantNames = new Hashtable();
   private Vector protocols = null;
-}
+  private ImageIcon imageIcon = null;
+ }

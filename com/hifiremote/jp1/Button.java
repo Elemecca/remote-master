@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.awt.Shape;
+
 public class Button
 {
   public Button( String standardName, String name, byte code )
@@ -38,7 +40,6 @@ public class Button
     return this;
   }
   public Function getShiftedFunction(){ return shiftedFunction; }
-
 
   public byte[] getKeyMoves( byte[] deviceCode, DeviceType devType, Remote remote )
   {
@@ -93,6 +94,16 @@ public class Button
     return rc;
   }
 
+  public Shape getShape()
+  {
+    return shape;
+  }
+
+  public void setShape( Shape shape )
+  {
+    this.shape = shape;
+  }
+
   private String name;
   private String standardName;
   private byte keyCode;
@@ -100,4 +111,5 @@ public class Button
   private Function function;
   private Function shiftedFunction;
   private boolean[] inMap = null;
+  private Shape shape = null;
 }

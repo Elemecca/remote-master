@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.49";
+  private static final String version = "v 0.50";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -33,9 +33,10 @@ public class KeyMapMaster
   private ExternalFunctionPanel externalFunctionPanel = null;
   private ButtonPanel buttonPanel = null;
   private OutputPanel outputPanel = null;
+  private LayoutPanel layoutPanel = null;
   private ProgressMonitor progressMonitor = null;
   private DeviceUpgrade deviceUpgrade = null;
-  private File homeDirectory = null;
+  private static File homeDirectory = null;
   private File propertiesFile = null;
   private File rdfPath = null;
   private File upgradePath = null;
@@ -193,6 +194,10 @@ public class KeyMapMaster
     outputPanel = new OutputPanel( deviceUpgrade );
     tabbedPane.addTab( "Output", null, outputPanel,
                        "The output to copy-n-paste into IR." );
+
+    layoutPanel = new LayoutPanel( deviceUpgrade );
+    tabbedPane.addTab( "Layout", null, layoutPanel ,
+                       "Button Layout information." );
 
     loadRemotes();
     setRemotes( remotes );
@@ -554,6 +559,11 @@ public class KeyMapMaster
     currPanel.update();
     SwingUtilities.updateComponentTreeUI( currPanel );
     validateUpgrade();
+  }
+
+  public static File getHomeDirectory()
+  {
+    return homeDirectory;
   }
 
   private void loadPreferences()

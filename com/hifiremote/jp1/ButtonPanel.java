@@ -38,7 +38,8 @@ public class ButtonPanel
           setForeground( Color.black );
 
         String temp = b.getName();
-        ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
+        DeviceType devType = deviceUpgrade.getDeviceType();
+        ButtonMap map = devType.getButtonMap();
         if (( map == null ) || !map.isPresent( b ))
           temp = temp + '*';
 

@@ -6,6 +6,7 @@ UpgradeAddr=$100..$7FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+Image=URC-6131.jpg
 
 [Settings]
 VPT Status=$01a.2.1.0.0 (Off;On)
@@ -26,27 +27,27 @@ dev8 VPT=$01c.7.1.0.0 (Off;On)
 $01D = $03
 
 [DeviceTypes]
-CBL/SAT	= 0
-TV	= 1
-VCR/DVD	= 2
-AUD	= 2
+CBL/SAT = 0
+TV      = 1
+VCR/DVD = 2
+AUD     = 2
 
 [DeviceTypeAliases]
-CBL/SAT	= Cable, SAT, Video Acc
-TV	= TV
-VCR/DVD	= VCR, DVD, Tape, Laserdisc, DAT
-AUD	= CD, Home Auto, Phono, Tuner, Misc Audio, Amp
+CBL/SAT = Cable, SAT, Video Acc
+TV      = TV
+VCR/DVD = VCR, DVD, Tape, Laserdisc, DAT
+AUD     = CD, Home Auto, Phono, Tuner, Misc Audio, Amp
 
 
 [DeviceButtons]
-CBL/SAT	= $00A $00B
-TV	= $00C $00D
-PVR	= $00E $00F
-VCR	= $010 $011
-DVD	= $012 $013
-AUD	= $014 $015
-dev7	= $016 $017
-dev8	= $018 $019
+CBL/SAT = $00A $00B
+TV      = $00C $00D
+PVR     = $00E $00F
+VCR     = $010 $011
+DVD     = $012 $013
+AUD     = $014 $015
+dev7    = $016 $017
+dev8    = $018 $019
 
 
 [Buttons]
@@ -123,9 +124,66 @@ Phantom1=$3D, Phantom2=$3E, Phantom3=$3F, Phantom4=$40
 013 091 142 125 130 131 069 129
 
 [Protocols]
-0000, 0002:5, 0006, 0007, 000A, 000C, 000D, 0013, 0014, 0015, 
-0018, 001A, 001C, 001F, 0022, 0027, 0029, 002D, 002F, 0034, 
-003A, 0045, 0046, 0058, 005A, 005C, 005D, 005E:2, 0060, 0065, 
-006A, 0073, 007E, 0092, 0093, 009C, 009E, 00A4, 00AF, 00B6, 
-00C4, 00C9, 00CA, 00CD:2, 00DE, 00E2, 00E3, 00E8, 00F8, 010F, 
+0000, 0002:5, 0006, 0007, 000A, 000C, 000D, 0013, 0014, 0015,
+0018, 001A, 001C, 001F, 0022, 0027, 0029, 002D, 002F, 0034,
+003A, 0045, 0046, 0058, 005A, 005C, 005D, 005E:2, 0060, 0065,
+006A, 0073, 007E, 0092, 0093, 009C, 009E, 00A4, 00AF, 00B6,
+00C4, 00C9, 00CA, 00CD:2, 00DE, 00E2, 00E3, 00E8, 00F8, 010F,
 0111, 0114, 0117, 011A, 011B, 0162, 0174, 0184
+
+[ButtonShapes]
+TV=ellipse:39,36,16,16
+PVR=ellipse:76,32,16,16
+DVD=ellipse:116,40,16,16
+CBL/SAT=ellipse:46,55,16,16
+AUD=ellipse:78,55,16,16
+VCR=ellipse:103,58,16,16
+Power=ellipse:61,77,46,13
+Menu=ellipse:27,76,16,16
+Guide=ellipse:34,96,16,16
+Exit=ellipse:116,100,16,16
+Info=ellipse:126,79,16,16
+Up_Arrow=ellipse:72,95,25,18
+Left_Arrow=ellipse:47,119,17,24
+Right_Arrow=ellipse:103,122,17,22
+Down_Arrow=ellipse:70,151,27,17
+SELECT=ellipse:72,119,24,24
+MUTE=ellipse:34,195,14,14
+VOL+=ellipse:27,152,22,32
+VOL-=ellipse:54,179,18,24
+CH+=ellipse:115,157,22,32
+CH-=ellipse:92,180,18,24
+Prev=ellipse:114,196,16,16
+Replay=ellipse:31,220,16,16
+Thumbs_Down=ellipse:50,211,16,16
+PVR_Menu=ellipse:73,209,16,16
+Thumbs_Up=ellipse:95,213,16,16
+Advance=ellipse:116,221,16,16
+Stop=ellipse:53,237,20,16
+Play=ellipse:90,239,20,16
+Rewind=ellipse:35,253,20,16
+Pause=ellipse:71,255,20,16
+Fast_forward=ellipse:107,256,20,16
+Prev_track=ellipse:52,270,20,16
+Next_track=ellipse:89,272,20,16
+Record=ellipse:30,285,16,16
+Audio_CC=ellipse:50,293,16,16
+Subtitle=ellipse:71,297,16,16
+Angle_Sleep=ellipse:93,294,16,16
+Slow=ellipse:114,287,16,16
+1=ellipse:36,322,20,16
+2=ellipse:70,327,20,16
+3=ellipse:102,323,20,16
+4=ellipse:36,346,20,16
+5=ellipse:68,350,20,16
+6=ellipse:102,346,20,16
+7=ellipse:36,368,20,16
+8=ellipse:69,372,20,16
+9=ellipse:101,368,20,16
+ENTER=ellipse:36,389,20,16
+0=ellipse:68,394,20,16
+TV/Vid=ellipse:99,389,20,16
+PIP=ellipse:33,411,16,16
+Swap=ellipse:58,416,16,16
+Move=ellipse:80,416,16,16
+SETUP=ellipse:03,411,16,16
