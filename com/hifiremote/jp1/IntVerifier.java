@@ -17,6 +17,11 @@ public class IntVerifier
     this.allowNull = allowNull;
   }
 
+  public void setBase( int base )
+  {
+    this.base = base;
+  }
+
   public boolean verify( JComponent input )
   {
     System.err.println( "IntVerifier.verify(), allowNull=" + allowNull );
@@ -31,7 +36,7 @@ public class IntVerifier
     }
     try
     {
-      int value = Integer.parseInt( text );
+      int value = Integer.parseInt( text, base );
       if (( value < min ) || ( value > max ))
         return false;
       else
@@ -48,7 +53,11 @@ public class IntVerifier
     System.err.println( "IntVerifier.shouldYieldFocus()" );
     boolean rc = verify( c );
     if ( !rc )
-      KeyMapMaster.showMessage( "The value must be between " + min + " and " + max );
+    {
+      String minStr = Integer.toString( min, base );
+      String maxStr = Integer.toString( max, base );
+      KeyMapMaster.showMessage( "The value must be between " + minStr + " and " + maxStr );
+    }
     else
       KeyMapMaster.clearMessage();
     return rc;
@@ -56,5 +65,6 @@ public class IntVerifier
 
   private int min = 0;
   private int max = 0;
+  private int base = 10;
   private boolean allowNull = false;
 }

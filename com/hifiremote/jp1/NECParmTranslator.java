@@ -6,7 +6,7 @@ public class NECParmTranslator
   public NECParmTranslator( String[] textParms )
   {
     super( textParms );
-    initialDefaultParm = Integer.parseInt( textParms[ 0 ]);
+    initialDefaultParm = Integer.parseInt( textParms[ 0 ], 16 );
   }
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
