@@ -58,7 +58,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.27";
+  private static final String version = "v 0.28";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -714,7 +714,7 @@ public class KeyMapMaster
     //The description of this filter
     public String getDescription()
     {
-      return "KeyMapMaster files";
+      return "KeyMapMaster files (*.km)";
     }
   }
 
