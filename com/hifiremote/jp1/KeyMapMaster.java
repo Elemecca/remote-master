@@ -263,15 +263,15 @@ public class KeyMapMaster
     tabbedPane.addTab( "Layout", null, layoutPanel ,
                        "Button Layout information." );
 
-    outputPanel = new OutputPanel( deviceUpgrade );
-    tabbedPane.addTab( "Output", null, outputPanel,
-                       "The output to copy-n-paste into IR." );
-
     keyMapPanel = new KeyMapPanel( deviceUpgrade );
     tabbedPane.addTab( "Key Map", null, keyMapPanel,
                        "Printable list of buttons and their assigned functions" );                       
 
-    loadRemotes();
+    outputPanel = new OutputPanel( deviceUpgrade );
+    tabbedPane.addTab( "Output", null, outputPanel,
+                       "The output to copy-n-paste into IR." );
+    
+   loadRemotes();
     setRemotes( remotes );
 
     int index = 0;
