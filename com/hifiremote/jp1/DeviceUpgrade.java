@@ -515,13 +515,25 @@ public class DeviceUpgrade
   public void load( File file )
     throws Exception
   {
+    load( file, true );
+  }
+
+  public void load( File file, boolean loadButtons )
+    throws Exception
+  {
     if ( file.getName().toLowerCase().endsWith( ".rmdu" ))
       this.file = file;
     BufferedReader reader = new BufferedReader( new FileReader( file ));
-    load( reader );
+    load( reader, loadButtons );
   }
 
   public void load( BufferedReader reader )
+    throws Exception
+  {
+    load( reader, true );
+  }
+
+  public void load( BufferedReader reader, boolean loadButtons )
     throws Exception
   {
     reader.mark( 160 );
@@ -628,36 +640,39 @@ public class DeviceUpgrade
       i++;
     }
 
-    Button[] buttons = remote.getUpgradeButtons();
-    for ( i = 0; i < buttons.length; i++ )
+    if ( loadButtons )
     {
-      Button b = buttons[ i ];
-      str = props.getProperty( "Button." + Integer.toHexString( b.getKeyCode()));
-      if ( str == null )
+      Button[] buttons = remote.getUpgradeButtons();
+      for ( i = 0; i < buttons.length; i++ )
       {
-        continue;
-      }
-      StringTokenizer st = new StringTokenizer( str, "|" );
-      str = st.nextToken();
-      Function func = null;
-      if ( !str.equals( "null" ))
-      {
-        func = getFunction( str );
-        b.setFunction( func );
-      }
-      str = st.nextToken();
-      if ( !str.equals( "null" ))
-      {
-        func = getFunction( str );
-        b.setShiftedFunction( func );
-      }
-      if ( st.hasMoreTokens())
-      {
+        Button b = buttons[ i ];
+        str = props.getProperty( "Button." + Integer.toHexString( b.getKeyCode()));
+        if ( str == null )
+        {
+          continue;
+        }
+        StringTokenizer st = new StringTokenizer( str, "|" );
+        str = st.nextToken();
+        Function func = null;
+        if ( !str.equals( "null" ))
+        {
+          func = getFunction( str );
+          b.setFunction( func );
+        }
         str = st.nextToken();
         if ( !str.equals( "null" ))
         {
           func = getFunction( str );
-          b.setXShiftedFunction( func );
+          b.setShiftedFunction( func );
+        }
+        if ( st.hasMoreTokens())
+        {
+          str = st.nextToken();
+          if ( !str.equals( "null" ))
+          {
+            func = getFunction( str );
+            b.setXShiftedFunction( func );
+          }
         }
       }
     }
@@ -678,6 +693,13 @@ public class DeviceUpgrade
   }
 
   public void importUpgrade( BufferedReader in )
+    throws Exception
+  {
+    importUpgrade( in, true );
+  }
+
+
+  public void importUpgrade( BufferedReader in, boolean loadButtons )
     throws Exception
   {
     String line = in.readLine(); // line 1
@@ -970,7 +992,7 @@ public class DeviceUpgrade
           temp.add( buttonName );
           unassigned.add( temp );
         }
-        else
+        else if ( loadButtons )
           b.setFunction( func );
       }
 
@@ -1005,7 +1027,7 @@ public class DeviceUpgrade
           temp.add( "shift-" + buttonName );
           unassigned.add( temp );
         }
-        else
+        else if ( loadButtons )
           b.setShiftedFunction( func );
       }
     }

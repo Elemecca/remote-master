@@ -78,7 +78,9 @@ public class Protocol
         oldNames.add( st2.nextToken().trim());
     }
   }
-
+  
+  public void reset(){}
+  
   public void setProperties( Properties props ){}
 
   public void importUpgradeCode( Remote remote, String notes )

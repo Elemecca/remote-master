@@ -14,6 +14,11 @@ public class DeviceCombiner
       new DeviceCombinerInitializer( devices, ( ChoiceCmdParm )cmdParms[ 0 ]);
   }
 
+  public void reset()
+  {
+    devices.clear();
+  }
+
   public void setProperties( Properties props )
   {
     for ( int i = 0; i < 16; i++ )
@@ -64,6 +69,45 @@ public class DeviceCombiner
       Value[] values = device.getValues();
       out.print( prefix + ".parms", DeviceUpgrade.valueArrayToString( values )); 
     }
+  }
+
+  public Hex getCode( Remote r )
+  {
+    byte[] header = new byte[ devices.size() + 1 ];
+    Hex base = super.getCode( r );
+    int offset = base.length() + header.length;
+    Hex[] ids = new Hex[ devices.size()];
+    Hex[] data = new Hex[ ids.length ];
+    int i = 0;
+    for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
+    {
+      header[ i ] = ( byte )offset;
+      CombinerDevice device = ( CombinerDevice )e.nextElement();
+      ids[ i ] = device.getProtocol().getID();
+      offset += 2;
+      Hex hex = device.getFixedData();
+      data[ i ] = hex;
+      offset += hex.length();
+      i++;
+    }
+    header[ i ] = ( byte )offset;
+
+    byte[] code = new byte[ offset ];
+    System.arraycopy( base.getData(), 0, code, 0, base.length() );
+    offset = base.length();
+    System.arraycopy( header, 0, code, offset, header.length );
+    offset += header.length;
+    for ( i = 0; i < data.length; i++ )
+    {
+      byte[] src = ids[ i ].getData();
+      System.arraycopy( src, 0, code, offset, src.length );
+      offset += src.length;
+      src = data[ i ].getData();
+      System.arraycopy( src, 0, code, offset, src.length );
+      offset += src.length;
+    }
+        
+    return new Hex( code );
   }
 
   private DeviceCombinerPanel panel = null;

@@ -41,6 +41,12 @@ public class CombinerDevice
 
   public Value[] getValues(){ return values; }
 
+  public Hex getFixedData()
+  {
+    protocol.setDeviceParms( values );
+    return protocol.getFixedData();
+  }
+
   public String toString()
   {
     StringBuffer buff = new StringBuffer();

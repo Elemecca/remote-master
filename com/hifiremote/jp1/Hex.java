@@ -7,7 +7,7 @@ public class Hex
 {
   public Hex()
   {
-    data = new byte[ 1 ];
+    data = new byte[ 0 ];
   }
 
   public Hex( String text )

@@ -621,6 +621,7 @@ public class KeyMapMaster
           if ( newPanel != null )
             addPanel( newPanel, 1 );
         }
+        oldProtocol.reset();
         setTitle( "RemoteMapMaster " + version );
         description.setText( null );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());

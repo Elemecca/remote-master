@@ -196,6 +196,7 @@ public class SetupPanel
           KeyMapMaster.getKeyMapMaster().removePanel( panel );
         if ( newProtocol != null && oldProtocol != null && !updateInProgress )
           oldProtocol.convertFunctions( deviceUpgrade.getFunctions(), newProtocol );
+        oldProtocol.reset();
         protocolID.setText( newProtocol.getID().toString());
         deviceUpgrade.setProtocol( newProtocol );
         panel = newProtocol.getPanel( deviceUpgrade );

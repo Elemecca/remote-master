@@ -53,11 +53,7 @@ public class DeviceCombinerPanel
         else if ( col == 2 )
           return device.getProtocol().getID();
         else if ( col == 3 )
-        {
-          Protocol p = device.getProtocol();
-          p.setDeviceParms( device.getValues());
-          return p.getFixedData();
-        } 
+          return device.getFixedData();
         return null;
       }
     };
@@ -78,7 +74,7 @@ public class DeviceCombinerPanel
           DeviceUpgrade importedUpgrade = new DeviceUpgrade();
           try
           {
-            importedUpgrade.load( file );
+            importedUpgrade.load( file, false );
             importedUpgrade.setRemote( deviceUpgrade.getRemote());
 
             Protocol importedProtocol = importedUpgrade.getProtocol();
