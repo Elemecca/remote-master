@@ -10,6 +10,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
 import javax.swing.event.ListSelectionEvent;
@@ -58,6 +59,7 @@ public class FunctionPanel
     table.setRowSelectionAllowed( true );
     table.setSurrendersFocusOnKeystroke( true );
     table.setDragEnabled( true );
+    table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     TransferHandler th = new TransferHandler()
     {
       protected Transferable createTransferable( JComponent c )

@@ -159,6 +159,7 @@ public class ExternalFunctionTableModel
       case devTypeCol:
         break;
       case setupCodeCol:
+        rc = new ByteRenderer();
         break;
       case typeCol:
         rc = new ChoiceRenderer( choices );

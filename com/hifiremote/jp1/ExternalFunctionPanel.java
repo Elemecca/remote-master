@@ -5,7 +5,9 @@ import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -56,18 +58,22 @@ public class ExternalFunctionPanel
 
     model = new ExternalFunctionTableModel( devUpgrade );
     table = new JTable( model );
-//    table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
-//    table.setCellSelectionEnabled( true );
     table.setRowSelectionAllowed( true );
     table.setSurrendersFocusOnKeystroke( true );
     table.setDragEnabled( true );
+    table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     TableColumnModel colModel = table.getColumnModel();
+    JLabel l = new JLabel();
+    l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
 
-    for ( int i = 0; i < model.getColumnCount(); i++ )
+    for ( int i = 1; i < model.getColumnCount() - 1; i++ )
     {
       TableColumn col = colModel.getColumn( i );
+      
+      l.setText( model.getColumnName( i ));
+      col.setMaxWidth( l.getPreferredSize().width );
 
       TableCellEditor editor = model.getEditor( i );
       if ( editor != null )

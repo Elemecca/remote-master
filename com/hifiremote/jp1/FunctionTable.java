@@ -1,7 +1,8 @@
 package com.hifiremote.jp1;
 
 import java.util.Vector;
-import javax.swing.JButton;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -19,8 +20,6 @@ public class FunctionTable
     {
       model = new FunctionTableModel( functions );
       setModel( model );
-      getColumnModel().getColumn( 0 ).setMaxWidth( 100 );
-      getColumnModel().getColumn( 0 ).setPreferredWidth( 100 );
       getTableHeader().setReorderingAllowed( false );
     }
     catch ( Exception e )
@@ -41,7 +40,8 @@ public class FunctionTable
   public void setProtocol( Protocol protocol )
   {
     model.setProtocol( protocol );
-    JButton b = new JButton();
+    JLabel l = new JLabel();
+    l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
 
     TableColumnModel columnModel = getColumnModel();
     TableColumn column;
@@ -49,15 +49,11 @@ public class FunctionTable
 
     int cols = model.getColumnCount();
     int lastCol = cols - 1;
-    for ( int i = 0; i < lastCol; i++ )
+    for ( int i = 1; i < lastCol; i++ )
     {
       column = columnModel.getColumn( i );
-      if ( i == 0 )
-        b.setText( "program guide" );
-      else
-        b.setText( model.getColumnName( i ));
-      width =  b.getPreferredSize().width;
-      column.setMinWidth( width );
+      l.setText( model.getColumnName( i ));
+      width =  l.getPreferredSize().width;
       column.setMaxWidth( width );
 
       TableCellEditor editor = model.getColumnEditor( i );
