@@ -23,7 +23,9 @@ public class FunctionRenderer
     JTextField tf = new JTextField();
     if ( col == 0 )
     {
-      if (( b.getFunction() == null ) && ( b.getShiftedFunction() == null ))
+      if (( b.getFunction() == null ) && 
+          ( b.getShiftedFunction() == null ) && 
+          ( b.getXShiftedFunction() == null ))
         setForeground( Color.red );
       else
         setForeground( Color.black );
@@ -40,14 +42,17 @@ public class FunctionRenderer
     
       if ( col == 1 )
         f = b.getFunction();
-
       else if ( col == 2 )
       {
         f = b.getShiftedFunction();
-        if ( !b.allowsShift())
-        {
+        if ( !b.allowsShiftedKeyMove())
           tf.setEditable( false );
-        }
+      }
+      else if ( col == 3 )
+      {
+        f = b.getXShiftedFunction();
+        if ( !b.allowsXShiftedKeyMove())
+          tf.setEditable( false );
       }
 
       if ( f != null )
@@ -63,10 +68,6 @@ public class FunctionRenderer
                                                                       isSelected,
                                                                       hasFocus,
                                                                       row, col );
-//    if ( f != null )
-//      c.setToolTipText( f.getNotes());
-//    else
-//      c.setToolTipText( "" );
 
     return c;
   }

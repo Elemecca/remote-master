@@ -6,6 +6,9 @@ UpgradeAddr=$100..$60F
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+DefaultRestrictions=XShift
+Shift=$C0
+XShift=$80, Menu
 ImageMap=URC-7560.map
 
 [Settings]
@@ -52,16 +55,16 @@ AUD = $012 $013
 DVD = $014 $015
 
 [Buttons]
-MAGIC[Setup]=$02, Menu=$20, Power=$03, SLEEP=$C3,
+MAGIC[Setup]=$02, Menu=$20, Power=$03:XShift, SLEEP=$C3,
 HOME_THEATER=$12,
 TV=$01, VCR=$0A, SAT=$09,
 CD=$11, AUD=$21, DVD=$22,
 1=$15, 2=$16, 3=$17,
 4=$19, 5=$1A, 6=$1B,
 7=$1C, 8=$1D, 9=$1E,
-0=$1F, 10=$2F, AV=$18, EXIT=$98,
-CH+=$06, CH-=$07, BRIGHT+=$C6, BRIGHT-=$C7,
-VOL+=$04, VOL-=$05, COLOR+=$C4, COLOR-=$C5, MUTE=$08, Select=$88,
+0=$1F, 10=$2F, AV=$18:Shift, EXIT=$98,
+CH+=$06:XShift, CH-, BRIGHT+=$C6, BRIGHT-=$C7,
+VOL+=$04:XShift, VOL-, COLOR+=$C4, COLOR-=$C5, MUTE=$08:Shift, Select=$88,
 UP=$29, DOWN=$2A, LEFT=$2B, RIGHT=$2C,
 REW=$0B, PLAY=$0C, PAUSE=$0F, FFWD=$0D,
 SP/LP=$14, STOP=$0E, REC=$10, AUTO=$13,

@@ -4,14 +4,14 @@ import java.util.Vector;
 
 public class ButtonMap
 {
-  public ButtonMap( int num, byte[][] keyCodes )
+  public ButtonMap( int num, int[][] keyCodes )
   {
     number = num;
     keyCodeList = keyCodes;
   }
 
   public int getNumber(){ return number; }
-  public byte[][] getKeyCodeList(){ return keyCodeList; }
+  public int[][] getKeyCodeList(){ return keyCodeList; }
   public ButtonMap setButtons( Button[] remoteButtons )
   {
     size = 0;
@@ -20,7 +20,7 @@ public class ButtonMap
 
     for ( int i = 0; i < keyCodeList.length; i++ )
     {
-      byte[] keyCodes = keyCodeList[ i ];
+      int[] keyCodes = keyCodeList[ i ];
       Button[] inner = new Button[ keyCodes.length ];
       buttons[ i ] = inner;
       size += keyCodes.length;
@@ -33,6 +33,7 @@ public class ButtonMap
           if ( button.getKeyCode() == keyCode )
           {
             inner[ j ] = button;
+            button.addButtonMap( number );
             break;
           }
         }
@@ -47,18 +48,7 @@ public class ButtonMap
 
   public boolean isPresent( Button b )
   {
-    for ( int i = 0; i < buttons.length; i++ )
-    {
-      Button[] inner = buttons[ i ];
-      for ( int j = 0; j < inner.length; j++ )
-      {
-        if ( inner[ j ] == b )
-        {
-          return true;
-        }
-      }
-    }
-    return false;
+    return b.inButtonMap( number );
   }
 
   public Button get( int index )
@@ -176,6 +166,6 @@ public class ButtonMap
 
   private int number;
   private int size = 0;
-  private byte[][] keyCodeList;
+  private int[][] keyCodeList;
   private Button[][] buttons;
 }

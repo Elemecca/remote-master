@@ -18,7 +18,7 @@ public class ButtonPanel
     setLayout( new BorderLayout());
 
     table = new JTable();
-    model = new ButtonTableModel();
+    model = new ButtonTableModel( devUpgrade );
     table.setModel( model );
     table.setCellSelectionEnabled( true );
     table.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
@@ -79,7 +79,7 @@ public class ButtonPanel
           {
             int row = table.getSelectedRow();
             Button b = ( Button )model.getValueAt( row, col );
-            if ( b.allowsShift())
+            if ( b.allowsShiftedKeyMove())
               dte.acceptDrag( dte.getDropAction());
             else
               dte.rejectDrag();
@@ -131,7 +131,7 @@ public class ButtonPanel
   private void setButtons( Button[] buttons )
   {
     this.buttons = buttons;
-    model.setButtons( buttons );
+    model.setButtons();
   }
 
   private void addFunction( Function f )
@@ -194,7 +194,7 @@ public class ButtonPanel
     else if ( source == autoAssign )
     {
       deviceUpgrade.autoAssignFunctions();
-      model.setButtons( buttons );
+      model.setButtons();
     }
   }
 

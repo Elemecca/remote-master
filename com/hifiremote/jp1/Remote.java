@@ -68,8 +68,8 @@ public class Remote
             line = parseButtonMaps( rdr );
           else if ( line.equals( "Protocols" ))
             line = parseProtocols( rdr );
-          else if ( line.equals( "NoBind" ))
-            line = parseNoBind( rdr );
+//          else if ( line.equals( "NoBind" ))
+//            line = parseNoBind( rdr );
           else
             line = rdr.readLine();
         }
@@ -82,7 +82,7 @@ public class Remote
       {
         System.err.println( "ERROR: " + file.getName() + " does not specify any ButtonMaps!" );
         buttonMaps = new ButtonMap[ 1 ];
-        buttonMaps[ 0 ] = new ButtonMap( 0, new byte[ 0 ][ 0 ]);
+        buttonMaps[ 0 ] = new ButtonMap( 0, new int[ 0 ][ 0 ]);
       }
       for ( int i = 0; i < buttonMaps.length; i++ )
         buttonMaps[ i ].setButtons( buttons );
@@ -98,13 +98,6 @@ public class Remote
       }
 
       // Create the upgradeButtons[]
-      int bindableButtons = 0;
-      for ( int i = 0; i < buttons.length; i++ )
-        if ( !buttons[ i ].isNoBind())
-          bindableButtons++;
-
-      upgradeButtons = new Button[ bindableButtons ];
-
       // and starts off with the buttons in longest button map
       ButtonMap longestMap = null;
       for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
@@ -115,20 +108,57 @@ public class Remote
           longestMap = thisMap;
       }
 
+      System.err.println( "Counting bindable buttons" );
+      int bindableButtons = 0;
+      for ( int i = 0; i < buttons.length; i++ )
+      {
+        Button b = buttons[ i ];
+        System.err.print( b.getName() + " buttonMaps=" + b.getButtonMaps());
+        if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() ||
+             b.allowsXShiftedKeyMove() || ( b.getButtonMaps() != 0 ))
+        {
+          System.err.println( ": yes" );
+          bindableButtons++;
+        }
+        else
+          System.err.println( ": no" );
+      }
+      System.err.println( "Got " + bindableButtons + " bindable buttons" );
+
+      upgradeButtons = new Button[ bindableButtons ];
+
       // first copy the buttons from the longest map
+      System.err.println( "Copying buttons from longest map" );
       int index = 0;
       while ( index < longestMap.size())
       {
         upgradeButtons[ index ] = longestMap.get( index );
+        System.err.println( upgradeButtons[ index ].getName() +
+                            " buttonMaps=" + upgradeButtons[ index ].getButtonMaps());
         index++;
       }
 
       // now copy the rest of the buttons, skipping those in the map
+      System.err.println( "Copying the rest, skipping the ones in the map" );
       for ( int i = 0; i < buttons.length; i++ )
       {
         Button b = buttons[ i ];
-        if ( !b.isNoBind() && !longestMap.isPresent( b ))
+        System.err.print( b.getName() +
+                          " base=" + b.allowsKeyMove() +
+                          " shift=" + b.allowsShiftedKeyMove() +
+                          " xshift=" + b.allowsXShiftedKeyMove() +
+                          " buttonMaps=" + b.getButtonMaps());
+        if (( b.allowsKeyMove() ||
+              b.allowsShiftedKeyMove() ||
+              b.allowsXShiftedKeyMove() ||
+              ( b.getButtonMaps() != 0 ))
+            && !longestMap.isPresent( b ))
+        {
           upgradeButtons[ index++ ] = b;
+          System.err.println( ": yes" );
+        }
+        else
+          System.err.println( ": no" );
       }
 
       if ( mapFile != null )
@@ -330,7 +360,7 @@ public class Remote
       {
         Button button = buttons[ i ];
 
-        byte newCode = button.getKeyCode();
+        int newCode = button.getKeyCode();
         if (( i > 0 ) && ( code != newCode ))
             out.println();
 
@@ -373,23 +403,20 @@ public class Remote
         ButtonMap map = buttonMaps[ i ];
         out.print( map.getNumber());
         out.print( " = " );
-        byte[][] outer = map.getKeyCodeList();
+        int[][] outer = map.getKeyCodeList();
         for ( int j = 0; j < outer.length; j++ )
         {
           if ( j > 0 )
             out.print( ", " );
-          byte[] inner = outer[ j ];
+          int[] inner = outer[ j ];
           if ( inner.length > 1 )
             out.print( '(' );
           for ( int k = 0; k < inner.length; k++ )
           {
             if ( k > 0 )
               out.print( ", " );
-            byte val = inner[ k ];
-            if ( val < 0 )
+            int val = inner[ k ];
               out.print( "$" + Integer.toHexString( val ).substring( 6 ));
-            else
-              out.print( inner[ k ]);
           }
           if ( inner.length > 1 )
             out.print( ')' );
@@ -605,8 +632,76 @@ public class Remote
         mapFile = new File( imageDir, st.nextToken());
         System.err.println( "Image map is " + mapFile.getAbsolutePath());
       }
+      else if ( parm.equals( "DefaultRestrictions" ))
+        defaultRestrictions = parseRestrictions( st.nextToken());
+      else if ( parm.equals( "Shift" ))
+      {
+        shiftMask = rdr.parseNumber( st.nextToken());
+        System.err.println( "shiftMask=" + Integer.toHexString( shiftMask ));
+        if ( st.hasMoreTokens())
+          shiftLabel = st.nextToken().trim();
+      }
+      else if ( parm.equals( "XShift" ))
+      {
+        xShiftEnabled = true;
+        xShiftMask = rdr.parseNumber( st.nextToken());
+        System.err.println( "xShiftMask=" + Integer.toHexString( xShiftMask ));
+        if ( st.hasMoreTokens())
+          xShiftLabel = st.nextToken().trim();
+      }
     }
     return line;
+  }
+
+  private int parseRestrictions( String str )
+  {
+    int rc = 0;
+    if ( restrictionTable == null )
+    {
+      restrictionTable = new Hashtable( 46 );
+      restrictionTable.put( "MoveBind", new Integer( Button.MOVE_BIND ));
+      restrictionTable.put( "ShiftMoveBind", new Integer( Button.SHIFT_MOVE_BIND ));
+      restrictionTable.put( "XShiftMoveBind", new Integer( Button.XSHIFT_MOVE_BIND ));
+      restrictionTable.put( "AllMoveBind", new Integer( Button.ALL_MOVE_BIND ));
+      restrictionTable.put( "MacroBind", new Integer( Button.MACRO_BIND ));
+      restrictionTable.put( "ShiftMacroBind", new Integer( Button.SHIFT_MACRO_BIND ));
+      restrictionTable.put( "XShiftMacroBind", new Integer( Button.XSHIFT_MACRO_BIND ));
+      restrictionTable.put( "AllMacroBind", new Integer( Button.ALL_MACRO_BIND ));
+      restrictionTable.put( "LearnBind", new Integer( Button.LEARN_BIND ));
+      restrictionTable.put( "ShiftLearnBind", new Integer( Button.SHIFT_LEARN_BIND ));
+      restrictionTable.put( "XShiftLearnBind", new Integer( Button.XSHIFT_LEARN_BIND ));
+      restrictionTable.put( "AllLearnBind", new Integer( Button.ALL_LEARN_BIND ));
+      restrictionTable.put( "MacroData", new Integer( Button.MACRO_DATA ));
+      restrictionTable.put( "ShiftMacroData", new Integer( Button.SHIFT_MACRO_DATA ));
+      restrictionTable.put( "XShiftMacroData", new Integer( Button.XSHIFT_MACRO_DATA ));
+      restrictionTable.put( "AllMacroData", new Integer( Button.ALL_MACRO_DATA ));
+      restrictionTable.put( "TMacroData", new Integer( Button.TMACRO_DATA ));
+      restrictionTable.put( "ShiftTMacroData", new Integer( Button.SHIFT_TMACRO_DATA ));
+      restrictionTable.put( "XShiftMacroData", new Integer( Button.XSHIFT_TMACRO_DATA ));
+      restrictionTable.put( "AllTMacro", new Integer( Button.ALL_TMACRO ));
+      restrictionTable.put( "FavData", new Integer( Button.FAV_DATA ));
+      restrictionTable.put( "ShiftFavData", new Integer( Button.SHIFT_FAV_DATA ));
+      restrictionTable.put( "XShiftFavData", new Integer( Button.XSHIFT_FAV_DATA ));
+      restrictionTable.put( "AllFavData", new Integer( Button.ALL_FAV_DATA ));
+      restrictionTable.put( "Bind", new Integer( Button.BIND ));
+      restrictionTable.put( "ShiftBind", new Integer( Button.SHIFT_BIND ));
+      restrictionTable.put( "XShiftBind", new Integer( Button.XSHIFT_BIND ));
+      restrictionTable.put( "Data", new Integer( Button.DATA ));
+      restrictionTable.put( "ShiftData", new Integer( Button.SHIFT_DATA ));
+      restrictionTable.put( "XShiftData", new Integer( Button.XSHIFT_DATA ));
+      restrictionTable.put( "AllBind", new Integer( Button.ALL_BIND ));
+      restrictionTable.put( "AllData", new Integer( Button.ALL_DATA ));
+      restrictionTable.put( "Shift", new Integer( Button.SHIFT ));
+      restrictionTable.put( "XShift", new Integer( Button.XSHIFT ));
+    }
+    StringTokenizer st = new StringTokenizer( str, "+" );
+    while ( st.hasMoreTokens())
+    {
+      Integer value = ( Integer )restrictionTable.get( st.nextToken());
+      if ( value != null )
+        rc |= value.intValue();
+    }
+    return rc;
   }
 
   private String parseCheckSums( RDFReader rdr )
@@ -886,7 +981,8 @@ public class Remote
     System.err.println( "Remote.parseButtons()" );
     Vector work = new Vector();
     String line;
-    byte keycode = 1;
+    int keycode = 1;
+    int restrictions = defaultRestrictions;
     while ( true )
     {
       line = rdr.readLine();
@@ -904,9 +1000,19 @@ public class Remote
         System.err.println( "equal=" + equal );
         if ( equal != -1 )
         {
-          keycode = ( byte )rdr.parseNumber( token.substring( equal + 1 ));
-          System.err.println( "keycode="  + keycode );
+          String keycodeStr = token.substring( equal + 1 );
           token = token.substring( 0, equal );
+          int pos = keycodeStr.indexOf( ':' );
+          if ( pos != -1 )
+          {
+            String restrictStr = keycodeStr.substring( pos + 1 );
+            restrictions = parseRestrictions( restrictStr );
+            keycodeStr = keycodeStr.substring( 0, pos );
+          }
+          else
+            restrictions = defaultRestrictions;
+          keycode = rdr.parseNumber( keycodeStr );
+          System.err.println( "keycode="  + keycode );
         }
 
         int colon = token.indexOf( ':' );
@@ -919,21 +1025,48 @@ public class Remote
           token = token.substring( 0, colon );
         }
         System.err.println( "generic=" + token + ", and name=" + name );
-        Button b = new Button( token, name, keycode++ );
-        work.add( b );
-        if ( b.isShifted())
+        Button b = new Button( token, name, keycode );
+        b.setRestrictions( restrictions );
+        int maskedCode = keycode & 0xC0;
+        System.err.println( "maskedCode=" + Integer.toHexString( maskedCode ) +
+                            " shiftMask=" + Integer.toHexString( shiftMask ) +
+                            " xShiftMask=" + Integer.toHexString( xShiftMask ));
+        if ( maskedCode == shiftMask )
         {
-          int unshiftedCode = b.getKeyCode() & 0x7F;
+          b.setIsShifted( true );
+          int unshiftedCode = ( b.getKeyCode() & ~xShiftMask );
+          System.err.println( "Looking for unshifted button w/ keycode " + unshiftedCode );
           for ( Enumeration e = work.elements(); e.hasMoreElements(); )
           {
             Button c = ( Button )e.nextElement();
             if ( c.getKeyCode() == unshiftedCode )
             {
+              System.err.println( "Found " + c.getName());
               c.setShiftedButton( b );
+              b.setBaseButton( b );
               break;
             }
           }
         }
+        else if ( maskedCode == xShiftMask )
+        {
+          b.setIsXShifted( true );
+          int unshiftedCode = ( b.getKeyCode() & ~xShiftMask );
+          System.err.println( "Looking for unXshifted button w/ keycode " + unshiftedCode );
+          for ( Enumeration e = work.elements(); e.hasMoreElements(); )
+          {
+            Button c = ( Button )e.nextElement();
+            if ( c.getKeyCode() == unshiftedCode )
+            {
+              c.setXShiftedButton( b );
+              b.setBaseButton( c );
+              System.err.println( "Found " + c.getName());
+              break;
+            }
+          }
+        }
+        keycode++;
+        work.add( b );
       }
     }
     buttons = ( Button[] )work.toArray( buttons );
@@ -949,57 +1082,6 @@ public class Remote
     buttonsByStandardName = new Button[ buttons.length ];
     System.arraycopy( buttons, 0, buttonsByStandardName, 0, buttons.length );
     Arrays.sort( buttonsByStandardName, standardNameComparator );
-
-    return line;
-  }
-
-  private String parseNoBind( RDFReader rdr )
-    throws Exception
-  {
-    System.err.println( "Remote.parseButtons()" );
-    String line;
-    while ( true )
-    {
-      line = rdr.readLine();
-      if ( line == null )
-        break;
-      if (( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ))
-          break;
-      System.err.println( "line=" + line );
-      StringTokenizer st = new StringTokenizer( line, ", " );
-      while ( st.hasMoreTokens())
-      {
-        String token = st.nextToken().trim();
-        System.err.println( "Token=" + token );
-        int dollar = token.indexOf( ':' );
-        String name = null;
-        byte keyCode = -1;
-        if ( dollar == 0 )
-        {
-          token = token.substring( 1 );
-          keyCode = Byte.parseByte( token, 16 );
-        }
-        else
-        {
-          try
-          {
-            keyCode = Byte.parseByte( token );
-          }
-          catch ( NumberFormatException x )
-          {
-            name = token;
-          }
-        }
-        Button b = null;
-        if ( name != null )
-          b = findByName( new Button( null, name, ( byte )0 ));
-        else
-          b = findByKeyCode( new Button( null, null, keyCode ));
-
-        if ( b != null )
-          b.setNoBind( true );
-      }
-    }
 
     return line;
   }
@@ -1086,17 +1168,17 @@ public class Remote
       {
         if ( name != -1 )
         {
-          byte[][] outerb = new byte[ outer.size()][];
+          int[][] outerb = new int[ outer.size()][];
           int o = 0;
           for ( Enumeration oe = outer.elements(); oe.hasMoreElements(); o++ )
           {
             inner = ( Vector )oe.nextElement();
-            byte[] innerb = new byte[ inner.size()];
+            int[] innerb = new int[ inner.size()];
             outerb[ o ] = innerb;
             int i = 0;
             for ( Enumeration ie = inner.elements(); ie.hasMoreElements(); i++ )
             {
-              innerb[ i ] = ( byte )(( Byte )ie.nextElement()).byteValue();
+              innerb[ i ] = (( Integer )ie.nextElement()).intValue();
             }
             inner.clear();
           }
@@ -1130,21 +1212,21 @@ public class Remote
           token = token.substring( 0, closeParen );
         }
 
-        inner.add( new Byte(( byte )rdr.parseNumber( token )));
+        inner.add( new Integer(rdr.parseNumber( token )));
       }
     }
     {
-      byte[][] outerb = new byte[ outer.size()][];
+      int[][] outerb = new int[ outer.size()][];
       int o = 0;
       for ( Enumeration oe = outer.elements(); oe.hasMoreElements(); o++ )
       {
         inner = ( Vector )oe.nextElement();
-        byte[] innerb = new byte[ inner.size()];
+        int[] innerb = new int[ inner.size()];
         outerb[ o ] = innerb;
         int i = 0;
         for ( Enumeration ie = inner.elements(); ie.hasMoreElements(); i++ )
         {
-          innerb[ i ] = ( byte )(( Byte )ie.nextElement()).byteValue();
+          innerb[ i ] = (( Integer )ie.nextElement()).intValue();
         }
         inner.clear();
       }
@@ -1254,7 +1336,7 @@ public class Remote
             float x1 = Float.parseFloat( st.nextToken());
             float y1 = Float.parseFloat( st.nextToken());
             path.moveTo( x1, y1 );
-  
+
             while ( st.hasMoreTokens())
             {
               float x = Float.parseFloat( st.nextToken());
@@ -1282,7 +1364,7 @@ public class Remote
         System.err.println( "File " + mapFile + " is not a valid map file!" );
         return;
       }
-  
+
       String name = st.nextToken();
       if ( !name.equals( "Image" ) || !st.hasMoreTokens())
       {
@@ -1292,7 +1374,7 @@ public class Remote
       String value = st.nextToken();
       File imageFile = new File( mapFile.getParentFile(), value );
       imageIcon = new ImageIcon( imageFile.getAbsolutePath());
-      
+
       while (( line = in.readLine()) != null )
       {
         if ( line.length() == 0 )
@@ -1300,19 +1382,19 @@ public class Remote
         else if ( line.equals( "[ButtonShapes]" ))
           break;
         else
-          System.err.println( "File " + mapFile + " is not a valid map file!" );   
+          System.err.println( "File " + mapFile + " is not a valid map file!" );
       }
-      
+
       while (( line = in.readLine()) != null )
       {
         if ( line.length() == 0 )
           continue;
-  
+
         st = new StringTokenizer( line, "=:," );
         while ( st.hasMoreTokens())
         {
           name = st.nextToken();
-          
+
           Button button = findByName( new Button( null, name, ( byte )0 ));
           System.err.println( "Looked for button w/ name " + name + " and got " + button );
           if ( button == null )
@@ -1342,7 +1424,7 @@ public class Remote
             float x = Float.parseFloat( st.nextToken());
             float y = Float.parseFloat( st.nextToken());
             path.moveTo( x, y );
-  
+
             while ( st.hasMoreTokens())
             {
               x = Float.parseFloat( st.nextToken());
@@ -1358,7 +1440,7 @@ public class Remote
       }
     }
     in.close();
-    buttonShapes = ( ButtonShape[] )work.toArray( buttonShapes );    
+    buttonShapes = ( ButtonShape[] )work.toArray( buttonShapes );
   }
 
   public String getSupportedVariantName( Hex pid )
@@ -1443,6 +1525,13 @@ public class Remote
     }
   };
 
+  public int getShiftMask(){ return shiftMask; }
+  public int getXShiftMask(){ return xShiftMask; }
+  public boolean getXShiftEnabled(){ return xShiftEnabled; }
+  public void setXShiftEnabled( boolean flag ){ xShiftEnabled = flag; }
+  public String getShiftLabel(){ return shiftLabel; }
+  public String getXShiftLabel(){ return xShiftLabel; }
+
   private File file = null;
   private String signature = null;
   private String name = null;
@@ -1487,4 +1576,11 @@ public class Remote
   private Vector protocols = null;
   private ImageIcon imageIcon = null;
   private File mapFile = null;
+  private int shiftMask = 0x80;
+  private int xShiftMask = 0xC0;
+  private boolean xShiftEnabled = false;
+  private String shiftLabel = "Shift";
+  private String xShiftLabel = "XShift";
+  private int defaultRestrictions = 0;
+  private static Hashtable restrictionTable = null;
  }
