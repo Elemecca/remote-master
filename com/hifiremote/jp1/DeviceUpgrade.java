@@ -887,17 +887,17 @@ public class DeviceUpgrade
         break;
     }
 
-    String match1 = "fFunctions,";
-    String match2 = "Functions,";
+    String match1 = "fFunctions" + delim;
+    String match2 = "Functions" + delim;
     if ( useOBC )
     {
-      match1 = match1 + "fOBC,";
-      match2 = match2 + "OBC,";
+      match1 = match1 + "fOBC" + delim;
+      match2 = match2 + "OBC" + delim;
     }
     else
     {
-      match1 = match1 + "fEFC,";
-      match2 = match2 + "EFC,";
+      match1 = match1 + "fEFC" + delim;
+      match2 = match2 + "EFC" + delim;
     }
 
     while ( true )
