@@ -17,6 +17,10 @@ public class OutputPanel
 
     clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
+    includeNotes = new JCheckBox( "Include embedded notes in upgrades.", true );
+    includeNotes.addActionListener( this );
+    add( includeNotes );
+
     Box box = Box.createHorizontalBox();
     box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ));
     add( box );
@@ -109,7 +113,8 @@ public class OutputPanel
 
   public void update()
   {
-    upgradeText.setText( deviceUpgrade.getUpgradeText());
+    boolean flag = includeNotes.isSelected();
+    upgradeText.setText( deviceUpgrade.getUpgradeText( flag ));
     Protocol p = deviceUpgrade.getProtocol();
     String pVariant = p.getVariantName();
 
@@ -135,7 +140,13 @@ public class OutputPanel
       buff.append( p.getID( r ).toString());
       buff.append( " (" );
       buff.append( processor.getFullName());
-      buff.append( ")\n " );
+      buff.append( ")" );
+      if ( flag )
+      {
+        buff.append( ' ' );
+        buff.append( p.getName());
+      }
+      buff.append( "\n " );
       buff.append( code.toString( 16 ));
       buff.append( "\nEnd" );
       protocolText.setText( buff.toString());
@@ -146,6 +157,11 @@ public class OutputPanel
   {
     JTextArea area = null;
     Object source = e.getSource();
+    if ( source == includeNotes )
+    {
+      update();
+      return;
+    }
     if ( source == copyDeviceUpgrade )
       area = upgradeText;
     else if ( source == copyProtocolUpgrade )
@@ -166,5 +182,5 @@ public class OutputPanel
   private JButton copyDeviceUpgrade = null;
   private JButton copyProtocolUpgrade = null;
   private Clipboard clipboard = null;
-
+  private JCheckBox includeNotes = null;
 }

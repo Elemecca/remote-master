@@ -316,7 +316,7 @@ public class DeviceUpgrade
     return -1;
   }
 
-  public String getUpgradeText()
+  public String getUpgradeText( boolean includeNotes )
   {
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade code 0 = " );
@@ -336,7 +336,13 @@ public class DeviceUpgrade
     buff.append( '/' );
     DecimalFormat df = new DecimalFormat( "0000" );
     buff.append( df.format( setupCode ));
-    buff.append( ")\n " );
+    buff.append( ")" );
+    if ( includeNotes && ( description != null ) && ( description.length() != 0 ))
+    {
+      buff.append( ' ' );
+      buff.append( description );
+    }
+    buff.append( "\n " );
     buff.append( Hex.asString( id[ 1 ]));
 
     int digitMapIndex = -1;
@@ -394,23 +400,53 @@ public class DeviceUpgrade
     {
       deviceCode[ 0 ] = ( deviceCode[ 0 ] & 0xF7 );
       buff.append( "\nKeyMoves" );
+      boolean first = true;
       for ( ; i < buttons.length; i++ )
       {
         Button button = buttons[ i ];
-        int[] keyMoves = button.getKeyMoves( deviceCode, devType, remote );
-        if (( keyMoves != null ) && keyMoves.length > 0 )
-        {
-          buff.append( "\n " );
-          buff.append( Hex.toString( keyMoves ));
-        }
+
+        Function f = button.getFunction();
+        first = appendKeyMove( buff, button.getKeyMove( f, 0, deviceCode, devType, remote ),
+                               f, includeNotes, first ); 
+        f = button.getShiftedFunction();
+        first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote ),
+                               f, includeNotes, first ); 
+        f = button.getXShiftedFunction();
+        first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote ),
+                               f, includeNotes, first ); 
       }
     }
 
-    buff.append( "\nEND" );
+    buff.append( "\nEnd" );
 
     return buff.toString();
   }
 
+  private boolean appendKeyMove( StringBuffer buff, int[] keyMove,Function f, boolean includeNotes, boolean first )
+  {
+    if (( keyMove == null ) || ( keyMove.length == 0 ))
+      return first;
+
+    if ( includeNotes && !first )
+      buff.append( '\u00a6' );
+    buff.append( "\n " );
+
+    buff.append( Hex.toString( keyMove ));
+
+    if ( includeNotes )
+    {
+      buff.append( '\u00ab' );
+      buff.append( f.getName());
+      String notes = f.getNotes();
+      if (( notes != null ) && ( notes.length() != 0 ))
+      {
+        buff.append( ": " );
+        buff.append( notes );      
+      }
+      buff.append( '\u00bb' );
+    }
+    return false;
+  }
   public void store()
     throws IOException
   {
