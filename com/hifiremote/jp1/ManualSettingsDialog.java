@@ -13,22 +13,34 @@ public class ManualSettingsDialog
   extends JDialog
   implements ActionListener
 {
-  public ManualSettingsDialog( JFrame owner, Protocol p )
+  public ManualSettingsDialog( JFrame owner, Protocol protocol )
   {
     super( owner, "Manual Settings", true );
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
+    
+    {
+      System.err.println( "Copying device parameters" );
+      DeviceParameter[] parms = protocol.getDeviceParameters();
+      if ( parms != null )
+      {
+        Translate[] xlators = protocol.getDeviceTranslators();
+        for ( int i = 0; i < parms.length; i++ )
+        {
+          deviceParms.add( parms[ i ]);
+          deviceTranslators.add( xlators[ i ]);
+        }
+      }
+    }
 
-    this.protocol = p;
-
-    double i = 5;        // space between rows and around border
+    double b = 5;        // space between rows and around border
     double c = 10;       // space between columns
     double f = TableLayout.FILL;
     double pr = TableLayout.PREFERRED;
     double size[][] =
     {
-      { i, pr, c, pr, i },              // cols
-      { i, pr, i, f, i, pr, i, f }         // rows
+      { b, pr, c, pr, b },              // cols
+      { b, pr, b, f, b, pr, b, f }         // rows
     };
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
@@ -45,7 +57,7 @@ public class ManualSettingsDialog
     {
       public int getRowCount()
       {
-        return protocol.getDeviceParameters().length;
+        return deviceParms.size(); 
       }
 
       public int getColumnCount()
@@ -85,8 +97,8 @@ public class ManualSettingsDialog
 
       public Object getValueAt( int row, int col )
       {
-        DeviceParameter parm = protocol.getDeviceParameters()[ row ];
-        Translator translator = ( Translator )protocol.getDeviceTranslators()[ row ];
+        DeviceParameter parm = ( DeviceParameter )deviceParms.get( row );
+        Translator translator = ( Translator )deviceTranslators.get( row );
         if ( col == 0 )
           return parm.getName();
         else if ( col == 1 )
@@ -122,13 +134,28 @@ public class ManualSettingsDialog
     label = new JLabel( "Raw Fixed Data:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 5" );
     rawHexData = new JTextField();
+    rawHexData.setText( protocol.getFixedData().toString());
     mainPanel.add( rawHexData, "3, 5" );
+
+    {
+      System.err.println( "Copying comand parameters" );
+      CmdParameter[] parms = protocol.getCommandParameters();
+      if ( parms != null )
+      {
+        Translate[] xlators = protocol.getCmdTranslators();
+        for ( int i = 0; i < parms.length; i++ )
+        {
+          cmdParms.add( parms[ i ]);
+          cmdTranslators.add( xlators[ i ]);
+        }
+      }
+    }
 
     model = new AbstractTableModel()
     {
       public int getRowCount()
       {
-        return protocol.getCommandParameters().length;
+        return cmdParms.size();
       }
 
       public int getColumnCount()
@@ -168,8 +195,8 @@ public class ManualSettingsDialog
 
       public Object getValueAt( int row, int col )
       {
-        CmdParameter parm = protocol.getCommandParameters()[ row ];
-        Translator translator = ( Translator )protocol.getCmdTranslators()[ row ];
+        CmdParameter parm = ( CmdParameter )cmdParms.get( row );
+        Translator translator = ( Translator )cmdTranslators.get( row );
         if ( col == 0 )
           return parm.getName();
         else if ( col == 1 )
@@ -243,7 +270,10 @@ public class ManualSettingsDialog
     return userAction;
   }
 
-  private Protocol protocol = null;
+  private Vector deviceParms = new Vector();
+  private Vector deviceTranslators = new Vector();
+  private Vector cmdParms = new Vector(); 
+  private Vector cmdTranslators = new Vector();
 
   private JTextField pid = null;
 
@@ -252,12 +282,6 @@ public class ManualSettingsDialog
   private JTextField rawHexData = null; 
 
   // CommandParameter stuff
-  private JRadioButton cmdParmLSB = null;
-  private JRadioButton cmdParmMSB = null;
-  private JCheckBox cmdParmComp = null;
-  private JSpinner cmdParmBits = null;
-  private JComboBox cmdSecondByte = null;
-
   private JTextArea protocolCode = null;
 
   private JButton ok = null;

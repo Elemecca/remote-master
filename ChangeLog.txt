@@ -1,3 +1,9 @@
+Changes for v1.06
+- Added digit maps 171 and 172
+- Fix bug converting S3C80-F7 protocol code into S3C80-E5 protocol code,
+- Added DirecTV protocol
+- Added Sharp Combo (Official) protocol
+
 Changes for v1.05
 - Add support for defining Manual Settings, Phase 1 (not ready for use).
 - Add About dialog

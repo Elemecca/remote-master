@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.05";
+  public static final String version = "v1.06";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -518,8 +518,7 @@ public class KeyMapMaster
     System.err.println( "editManualSettings()");
     ManualSettingsDialog d = 
       new ManualSettingsDialog( this, 
-                               // ( ManualProtocol )protocolManager.findByName( "Manual Settings" ).firstElement());
-                                deviceUpgrade.getProtocol());
+                               ( ManualProtocol )protocolManager.findByName( "Manual Settings" ).firstElement());
     d.show();
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
