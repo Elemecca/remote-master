@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -35,6 +36,8 @@ import java.io.FilenameFilter;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
+import java.net.URL;
+import java.lang.ClassLoader;
 
 public class KeyMapMaster
  extends JFrame
@@ -63,7 +66,8 @@ public class KeyMapMaster
   public KeyMapMaster()
     throws Exception
   {
-    super( "KeyMap Master v 0.20" );
+    super( "KeyMap Master v 0.21" );
+    setDefaultLookAndFeelDecorated( true );
     me = this;
 
     addWindowListener( new WindowAdapter()
