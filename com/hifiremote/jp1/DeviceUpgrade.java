@@ -50,6 +50,8 @@ public class DeviceUpgrade
     initFunctions();
 
     extFunctions.clear();
+
+    changed = false;
   }
 
   private void initFunctions()
@@ -61,6 +63,7 @@ public class DeviceUpgrade
   public void setDescription( String text )
   {
     description = text;
+    changed = true;
   }
 
   public String getDescription()
@@ -71,6 +74,7 @@ public class DeviceUpgrade
   public void setSetupCode( int setupCode )
   {
     this.setupCode = setupCode;
+    changed = true;
   }
 
   public int getSetupCode()
@@ -106,6 +110,7 @@ public class DeviceUpgrade
           }
         }
       }
+      changed = true;
     }
     remote = newRemote;
   }
@@ -122,11 +127,13 @@ public class DeviceUpgrade
       if ( remote.getDeviceTypeByAliasName( name ) != null )
       {
         devTypeAliasName = name;
+        changed = true;
         return;
       }
       System.err.println( "Unable to find device type with alias name " + name );
     }
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
+    changed = true;
   }
 
   public String getDeviceTypeAliasName()
@@ -142,6 +149,7 @@ public class DeviceUpgrade
   public void setProtocol( Protocol protocol )
   {
     this.protocol = protocol;
+    changed = true;
   }
 
   public Protocol getProtocol()
@@ -152,6 +160,7 @@ public class DeviceUpgrade
   public void setNotes( String notes )
   {
     this.notes = notes;
+    changed = true;
   }
 
   public String getNotes()
@@ -323,6 +332,7 @@ public class DeviceUpgrade
     throws IOException
   {
     store( file );
+    changed = false;
   }
 
   public static String valueArrayToString( Value[] parms )
@@ -423,6 +433,7 @@ public class DeviceUpgrade
     FileOutputStream out = new FileOutputStream( file );
     props.store( out, null );
     out.close();
+    changed = false;
   }
 
   public void load( File file, Remote[] remotes,
@@ -578,6 +589,7 @@ public class DeviceUpgrade
         b.setShiftedFunction( func );
       }
     }
+    changed = false;
   }
 
   private String getNextField( StringTokenizer st, String delim )
@@ -807,11 +819,22 @@ public class DeviceUpgrade
         }
       }
     }
+    changed = true;
   }
 
   public static final String[] getDeviceTypeAliasNames()
   {
     return deviceTypeAliasNames;
+  }
+
+  public void setChanged( boolean flag )
+  {
+    changed = flag;
+  }
+
+  public boolean hasChanged()
+  {
+    return changed;
   }
 
   private String description = null;
@@ -823,6 +846,7 @@ public class DeviceUpgrade
   private Vector functions = new Vector();
   private Vector extFunctions = new Vector();
   private File file = null;
+  private boolean changed = false;
 
   private static final String[] deviceTypeAliasNames =
   {
