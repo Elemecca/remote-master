@@ -25,6 +25,10 @@ CABLE =   $009 $006 $00c
 TV =      $00a $007 $00d
 VCR =     $00b $008 $00e
 
+[DeviceTypeAliases]
+Cable = Cable,SAT,Video Acc
+TV    = TV
+VCR   = VCR,DVD,Tape,Laserdisc
 
 [Buttons]
 TV=$01,SETUP=$02,POWER=$03,VOL+=$04, 

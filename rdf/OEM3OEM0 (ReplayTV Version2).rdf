@@ -39,7 +39,7 @@ VCR/DVD = VCR,DVD,Tape,Laserdisc
 Audio   = CD,Tuner,DAT,Home Auto,Misc Audio,Phono,Amp
 
 [DeviceButtons]
-SAT/CBL = $00A $00B
+CBL/SAT = $00A $00B
 TV      = $00C $00D
 VCR/DVD = $00E $00F
 REPLAY  = $010 $011

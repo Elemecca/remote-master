@@ -34,7 +34,7 @@ VCR     = $00c $008 $010
 CD      = $00d $009 $011
 
 [Buttons]
-TV, Setup, Power, Vol+, Vol-, Ch+, Ch-, Mute, Cable, VCR,
+TV, Setup, Power, Vol+, Vol-, Ch+, Ch-, Mute, Cbl/Sat, VCR,
 Rewind, Play, FFwd, Stop, Pause2, Rec, Audio, Last, Select, Pause,
 1, 2, 3, Bypass/, 4, 5, 6, 7, 8, 9,
 0, Menu, Info, Guide, PPV/, P/, Fav, Key38, Day+/, Day-/,
