@@ -96,6 +96,37 @@ public class Hex
     return buff.toString();
   }
 
+  public String toRawString()
+  {
+    if ( data == null )
+      return null;
+
+    StringBuffer rc = new StringBuffer( 3 * data.length );
+    for ( int i = 0; i < data.length; i++ )
+    {
+      int val = data[ i ];
+      int masked = val & 0x00FF;
+      
+      if ( i > 0 )
+      {
+        char sep = ' ';
+        int flag = val & 0xFF00;
+        if ( flag == NO_MATCH )
+          sep = ',';
+        else if ( flag == ADD_OFFSET )
+          sep = '_';
+        
+        rc.append( sep );
+      }
+
+      String str = Integer.toHexString( masked );
+      if ( masked < 16 )
+        rc.append( '0' );
+      rc.append( str );
+    }
+    return rc.toString();
+  }
+
   public static String toString( int[] data )
   {
     return toString( data, -1 );

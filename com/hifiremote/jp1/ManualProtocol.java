@@ -133,7 +133,7 @@ public class ManualProtocol
     for ( Iterator i = code.keySet().iterator(); i.hasNext(); )
     {
       Object key = i.next();
-      out.print( "Code." + key, code.get( key ).toString());
+      out.print( "Code." + key, (( Hex )code.get( key )).toRawString());
     }
     if ( notes != null )
       out.print( "Protocol.notes", notes );
