@@ -1,7 +1,21 @@
+Changes for v0.81
+
+- Added both the built-in and short versions of RC6-M-20n
+- Added Replay(simple) and RC6-M24n
+- Fix bugs with honoring restrictions on un-shifted keys
+- Add support for Processor Versions, particularly 6805-C9 and 6805-RC16/18
+- Add 6805-C9, 6805-RC16/18, and 740 upgrade code for GI 4DTV Hacked
+- Give user a smaller list of remotes to choose from when importing
+  and the remote name isn't an exact match
+- Layout Panel: give preference to buttons in ButtonMap when figuring out
+  which button user is interacting with.
+
 Changes for v0.80
 
-- Change handling of DeviceTypeAliases.  No longer required in RDF, but needed for ease of importing KM upgrades and for
-  switching between remotes.  DeviceTypeAlias names are no longer fixed, but consistent values should be used.
+- Change handling of DeviceTypeAliases.  No longer required in RDF, but 
+  needed for ease of importing KM upgrades and for switching between 
+  remotes.  DeviceTypeAlias names are no longer fixed, but consistent 
+  values should be used.
 - Corrected bug in importing KM saved files that use 2-byte commands.
 
 Changes for v0.79

@@ -4,19 +4,19 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Wed Oct 08 18:48:23 2003
-#$PATH:C:\Backups\IR\Images\
+#$DATE:Tue Dec 09 10:36:16 2003
+#$PATH:C:\Backups\JP1\Images\
 #$GIF:Outlaw-Audio.jpg
 #$FORMAT:ncsa
 #$EOH
 default 1994
-circle device3  33,45 39,51
+circle AUX  33,45 39,51
 circle cbl/sat  55,45 61,51
 circle VCR/DVD  77,45 83,51
-circle TV  100,45 106,51
-circle device4  33,60 39,66
-circle device5  55,60 61,66
-circle device6  78,60 84,66
+circle TV  101,45 107,51
+circle CD  33,60 39,66
+circle TNR  55,60 61,66
+circle AMP  78,60 84,66
 circle vid2  59,322 65,328
 circle vid3  82,322 88,328
 circle dvd  103,322 109,328
@@ -56,7 +56,7 @@ circle PAUSE{memory}  103,299 114,305
 circle REC{delay}  37,300 48,306
 circle SETUP  36,24 41,29
 circle info{mode}  35,259 41,265
-circle device7  100,61 106,67
+circle SAT  100,61 106,67
 circle aux  59,342 65,348
 circle tape  83,342 89,348
 circle 6_ch  104,341 110,347

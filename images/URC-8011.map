@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-8011
-#$DATE:Sun Oct 19 10:12:32 2003
+#$DATE:Mon Dec 01 13:01:06 2003
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-8011.jpg
 #$FORMAT:ncsa
@@ -54,7 +54,7 @@ circle $0C:PLAY  70,290 80,297
 circle $0D:fwd  101,290 111,297
 circle $2B:f.fwd  102,324 112,331
 circle $13:TV/VID  104,268 116,275
-circle macro=m1  56,368 65,374
+circle $2C:macro=m1  56,368 65,374
 circle $0F:PAUSE  85,307 95,314
 circle $10:rec  53,307 63,314
 circle $02:SET[SETUP]  108,368 117,374

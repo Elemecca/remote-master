@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:urc-9960
-#$DATE:Sat Nov 08 11:06:40 2003
+#$DATE:Tue Dec 23 11:48:23 2003
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-9960.JPG
 #$FORMAT:ncsa
@@ -32,7 +32,7 @@ circle up{Front}  69,187 77,195
 circle front_up  69,187 77,195
 circle left{center}  49,208 57,216
 circle center_left  49,208 57,216
-circle ok_surround  69,208 79,218
+circle ok{surround}  69,208 79,218
 circle 0  70,319 79,324
 circle 1  48,266 57,271
 circle 9  91,301 100,306
@@ -57,7 +57,7 @@ circle macro2  56,340 61,345
 circle macro3  83,340 88,345
 circle audio  95,57 104,66
 circle ht  70,69 85,84
-circle format_replay  69,150 83,158
+circle format{replay}  69,150 83,158
 circle scroll  69,116 83,121
 circle pvr-VOD{preset}  69,131 83,139
 circle page+{audio}  69,167 81,175
@@ -69,5 +69,5 @@ rect fwd{pip-size} 86,354 101,366
 rect skipback{pip-freeze} 42,388 57,400
 rect skipfwd{pip-move} 81,388 96,400
 circle play{pip-swap}  70,362 85,371
-rect last_rand 88,153 104,165
+rect last{rand} 88,153 104,165
 rect mute 34,153 50,165
