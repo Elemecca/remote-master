@@ -415,7 +415,7 @@ public class Remote
         String value = st.nextToken();
         if ( value.equals( "HEX" ))
           advCodeFormat = HEX;
-        else if ( value.equals( "EFC " ))
+        else if ( value.equals( "EFC" ))
           advCodeFormat = EFC;
       }
     }
@@ -1310,6 +1310,6 @@ public class Remote
   private int defaultRestrictions = 0;
   public static final int HEX = 0;
   public static final int EFC = 1;
-  private int advCodeFormat = EFC;
+  private int advCodeFormat = HEX;
   private static Hashtable restrictionTable = null;
  }
