@@ -281,9 +281,11 @@ public class DeviceUpgrade
     props.setProperty( "DeviceType", devType.getName());
     props.setProperty( "SetupCode", Integer.toString( setupCode ));
     props.setProperty( "Protocol", protocol.hex2String( protocol.getID()));
+    props.setProperty( "Protocol.name", protocol.getName());
     Value[] parms = protocol.getDeviceParmValues();
     if (( parms != null ) && ( parms.length != 0 ))
       props.setProperty( "ProtocolParms", valueArrayToString( parms ));
+    props.setProperty( "FixedData", protocol.hex2String( protocol.getFixedData()));
 
     if ( notes != null )
       props.setProperty( "Notes", notes );
@@ -356,24 +358,25 @@ public class DeviceUpgrade
     devType = remote.getDeviceType( str );
     System.err.println( "Device type is " + devType );
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ));
-    byte[] bytes = Protocol.string2hex( props.getProperty( "Protocol" ));
 
-    System.err.println( "Searching for protocol with id " + Protocol.hex2String( bytes ));
-    boolean found = false;
+    System.err.println( "Searching for protocol with id " + props.getProperty( "Protocol" ));
+    int leastDifferent = Protocol.tooDifferent;
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
-      protocol = ( Protocol )e.nextElement();
-      byte[] pid = protocol.getID();
-      if (( bytes[ 0 ] == pid[ 0 ] ) && ( bytes[ 1 ] == pid[ 1 ] ))
-      {
-        found = true;
-        break;
-      }
+      Protocol tentative = ( Protocol )e.nextElement();
+	  int difference = tentative.different(props);
+	  if (difference < leastDifferent)
+	  {
+	    protocol = tentative;
+		leastDifferent = difference;
+		if (difference == 0)
+		  break;
+	  }
     }
-    if ( !found )
+    if ( leastDifferent == Protocol.tooDifferent )
     {
       JOptionPane.showMessageDialog( null,
-                                     "No protocol with ID " + Protocol.hex2String( bytes ) + " was found!",
+                                     "No matching protocol for ID " + props.getProperty( "Protocol" ) + " was found!",
                                      "File Load Error", JOptionPane.ERROR_MESSAGE );
       return;
     }
