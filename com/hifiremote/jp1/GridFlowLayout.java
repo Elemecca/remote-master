@@ -10,25 +10,50 @@ public class GridFlowLayout implements LayoutManager
 
     public Dimension preferredLayoutSize( Container target )
     {
-      Dimension dim = new Dimension( 0, 0 );
-      int nmembers = target.getComponentCount();
-
-      for ( int i = 0 ; i < nmembers ; i++ )
-      {
-        Component m = target.getComponent( i );
-        if ( m.isVisible())
-        {
-          Dimension d = m.getPreferredSize();
-          dim.height = Math.max( dim.height, d.height );
-          dim.width = Math.max( dim.width, d.width );
-        }
-      }
       Insets insets = target.getInsets();
-      dim.width = insets.left + insets.right + nmembers * dim.width;
-      dim.height += insets.top + insets.bottom;
-      return dim;
-    }
+      int width = target.getWidth() - (insets.left + insets.right);
+      int nmembers = target.getComponentCount();
+      int compWidth = 1;
+      int rowHeight = 0;
+      
+      boolean ltr = target.getComponentOrientation().isLeftToRight();
 
+      for ( int i = 0; i < nmembers; i++ )
+      {
+         Component m = target.getComponent( i );
+         compWidth = Math.max( compWidth, m.getPreferredSize().width );
+         if ( rowHeight == 0 );
+           rowHeight = m.getPreferredSize().height;
+      }
+
+      int cols = width / compWidth;
+      if ( cols == 0 ) cols = 1;
+      int rows = ( nmembers + cols - 1 ) / cols;
+
+      Dimension d = new Dimension( target.getWidth(),
+                                   ( rows * rowHeight ) + insets.top + insets.bottom );
+      return d;
+    }
+//    {
+//      Dimension dim = new Dimension( 0, 0 );
+//      int nmembers = target.getComponentCount();
+//
+//      for ( int i = 0 ; i < nmembers ; i++ )
+//      {
+//        Component m = target.getComponent( i );
+//        if ( m.isVisible())
+//        {
+//          Dimension d = m.getPreferredSize();
+//          dim.height = Math.max( dim.height, d.height );
+//          dim.width = Math.max( dim.width, d.width );
+//        }
+//      }
+//      Insets insets = target.getInsets();
+//      dim.width = insets.left + insets.right + dim.width;
+//      dim.height = insets.top + insets.bottom + nmembers * dim.height;
+//      return dim;
+//    }
+//
     public Dimension minimumLayoutSize( Container target ) 
     {
       Dimension dim = new Dimension(0, 0);
@@ -40,8 +65,8 @@ public class GridFlowLayout implements LayoutManager
         if ( m.isVisible())
         {
           Dimension d = m.getMinimumSize();
-          dim.height = Math.max(dim.height, d.height);
-          dim.width += d.width;
+          dim.height +=  d.height;
+          dim.width = Math.max( dim.width, d.width );
         }
       }
       Insets insets = target.getInsets();

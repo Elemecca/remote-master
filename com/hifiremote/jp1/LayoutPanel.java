@@ -78,9 +78,9 @@ public class LayoutPanel
     rightPanel.add( panel, BorderLayout.CENTER );
 
     JPanel outerPanel = new JPanel( new BorderLayout());
-    functionPanel = new JPanel( new GridFlowLayout());
+    functionPanel = new GridFlowPanel();
 
-    outerPanel.add( functionPanel, BorderLayout.CENTER );
+    outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.CENTER );
     panel.add( outerPanel, BorderLayout.CENTER );
 
     panel = new JPanel();
