@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Tue Oct 14 13:36:13 2003
+#$DATE:Fri Oct 17 22:10:13 2003
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-44000B00 Navigator.jpg
 #$FORMAT:ncsa
@@ -50,7 +50,7 @@ circle REW  36,331 46,336
 circle PLAY  67,330 77,335
 circle FFwd  97,330 107,335
 circle TV/VCR  99,364 107,369
-circle Pause_{VCR}  67,345 77,350
+circle PAUSE{VCR}  67,345 77,350
 circle REC  97,345 107,350
 circle SETUP  98,62 110,68
 circle Blank_1  35,383 43,388

@@ -4,64 +4,65 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Tue Oct 14 13:37:14 2003
+#$DATE:Fri Oct 17 22:08:52 2003
+#$PATH:C:\Backups\JP1\Images\
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:Navigator.jpg
 #$FORMAT:ncsa
 #$EOH
 default 1994
-circle VCR  41,45 53,51
+circle VCR  40,44 52,50
 circle TV  71,61 83,67
 circle Audio  40,60 52,66
 circle Cable  71,45 83,51
-circle F1  38,303 50,309
-circle Menu  108,273 116,281
-circle Guide  29,274 37,282
-circle Exit  69,195 81,200
-circle F2  69,303 81,309
-circle Power  99,46 111,52
-circle Up  69,229 79,235
-circle Left  38,251 49,259
-circle Right  99,251 110,259
-circle Down  69,274 79,280
+circle F1  37,302 47,307
+circle Menu  108,274 116,282
+circle Guide  28,274 36,282
+circle Exit  69,194 81,199
+circle F2  69,303 79,308
+circle Power  98,47 110,53
+circle Up  69,229 79,234
+circle Left  38,251 48,257
+circle Right  99,252 109,258
+circle Down  69,274 79,279
 circle Select  69,250 85,261
-circle Mute  41,154 54,160
-circle Vol+  37,179 48,190
-circle Vol-  37,209 48,220
-circle Ch+  102,180 113,191
-circle Ch-  102,210 113,221
+circle Mute  40,154 53,159
+circle Vol+  37,179 47,189
+circle Vol-  37,210 47,220
+circle Ch+  101,180 111,190
+circle Ch-  101,210 111,220
 circle 1  43,79 54,90
-circle 2  71,79 82,90
-circle 3  99,80 110,91
+circle 2  71,80 82,91
+circle 3  99,81 110,92
 circle 4  43,105 54,116
-circle 5  71,104 82,116
+circle 5  71,105 82,117
 circle 6  98,106 109,117
 circle 7  41,130 52,141
-circle 8  70,129 81,140
+circle 8  70,130 81,141
 circle 9  98,131 109,142
 circle 0  70,155 81,166
-circle Last  70,180 82,185
-circle Fav  57,366 65,372
+circle Last  70,179 82,184
+circle Fav  57,366 65,371
 circle Pause2  56,401 64,406
-circle F3  99,302 111,308
-circle Info  69,210 81,215
-circle Enter{Music}  98,155 111,161
-circle Rew  37,331 49,336
-circle Play  67,331 79,336
-circle FF  98,330 110,335
-circle TV/VCR  98,364 106,369
-circle Pause_{VCR}  67,345 79,351
-circle Rec  98,344 110,349
+circle F3  100,303 110,308
+circle Info  69,209 81,214
+circle Enter{Music}  99,155 112,160
+circle Rew  36,331 46,336
+circle Play  67,331 77,336
+circle FF  97,330 107,335
+circle TV/VCR  99,364 107,369
+circle Pause{VCR}  67,345 77,350
+circle Rec  97,344 107,349
 circle Setup  98,62 110,68
 circle Pg+  36,385 44,390
-circle Help  35,367 43,372
+circle Help  35,366 43,371
 circle PPV  78,365 86,370
 circle Pg-  57,384 65,389
-circle Day-  77,383 85,388
+circle Day-  78,383 86,388
 circle Day+  98,382 106,387
-circle Bypass  35,402 43,407
-circle Diamond  77,400 85,405
-circle P  98,400 106,405
-circle Stop  37,346 49,351
-poly Page+ 93,240 105,227 117,240 93,240 93,240
-poly Page- 19,227 46,227 32,241 19,227 19,227
+circle Bypass  36,402 44,407
+circle Diamond  78,400 86,405
+circle P  98,399 106,404
+circle Stop  36,346 46,351
+poly Page+ 93,239 105,226 117,239 93,239 93,239
+poly Page- 19,226 46,226 32,240 19,226 19,226

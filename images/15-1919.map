@@ -1,0 +1,53 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:15-1919
+#$DATE:Fri Oct 17 21:48:26 2003
+#$PATH:C:\Backups\JP1\Images\
+#$GIF:15-1919.jpg
+#$FORMAT:ncsa
+#$EOH
+default 1919
+circle MUTE  116,283 124,291
+circle POWER  116,81 126,91
+circle DISPLAY  87,284 95,292
+circle PROG  30,284 38,292
+circle TV/VCR{A/B}  58,284 66,292
+rect 1 20,153 38,170
+rect 2 49,153 67,170
+rect 3 79,153 97,170
+rect 4 21,179 39,196
+rect 5 49,179 67,196
+rect 6 79,179 97,196
+rect 7 21,205 39,222
+rect 8 49,205 67,222
+rect 9 79,205 97,222
+rect 0 49,231 67,248
+poly PLAY{Front} 65,378 52,365 73,349 92,364 78,378 65,378 65,378
+poly REW{Left} 57,395 44,406 24,388 45,371 57,381 57,395 57,395
+poly FF{Right} 88,381 100,370 120,387 101,405 88,396 88,381 88,381
+poly STOP{Rear} 82,399 93,410 73,426 53,410 65,399 82,399 82,399
+rect LAST 79,231 97,248
+rect ENTER 20,231 38,248
+rect CBL{SAT} 77,101 97,111
+rect TV 106,101 126,111
+rect AUX1 19,122 39,132
+rect AUX2 48,122 68,132
+rect SpareDevice 78,122 98,132
+rect P&P 106,122 126,132
+rect CD{Stereo} 19,101 39,111
+rect VCR 48,101 68,111
+rect SETUP 19,75 47,85
+poly CH+ 129,161 101,161 115,140 129,161 129,161
+poly CH- 114,190 130,169 101,169 114,190 114,190
+poly VOL+ 115,212 129,234 100,234 115,212 115,212
+rect SCAN 103,198 128,207
+rect Audio-Seq 23,303 51,313
+rect RECORD 59,303 87,313
+rect Video-Seq 95,303 123,313
+rect PAUSE{Surround} 23,322 51,332
+rect PAUSE{Surround} 59,322 87,332
+rect SHIFT 95,322 123,332
+poly VOL- 100,243 130,243 115,266 100,243 100,243
