@@ -67,8 +67,6 @@ public class Remote
             line = parseButtonMaps( rdr );
           else if ( line.equals( "Protocols" ))
             line = parseProtocols( rdr );
-          else if ( line.equals( "ButtonShapes" ))
-            line = parseButtonShapes( rdr );
           else
             line = rdr.readLine();
         }
@@ -124,6 +122,9 @@ public class Remote
             upgradeButtons[ index++ ] = b;
         }
       }
+
+      if ( mapFile != null )
+        readMapFile();
     }
     catch ( Exception e )
     {
@@ -584,12 +585,11 @@ public class Remote
       }
       else if ( parm.equals( "OmitDigitMapByte" ))
         omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
-      else if ( parm.equals( "Image" ))
+      else if ( parm.equals( "ImageMap" ))
       {
         File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
-        File iconFile = new File( imageDir, st.nextToken());
-        System.err.println( "Loading image from " + iconFile.getAbsolutePath());
-        imageIcon = new ImageIcon( iconFile.getAbsolutePath());
+        mapFile = new File( imageDir, st.nextToken());
+        System.err.println( "Image map is " + mapFile.getAbsolutePath());
       }
     }
     return line;
@@ -1110,55 +1110,81 @@ public class Remote
     return line;
   }
 
-  private String parseButtonShapes( RDFReader rdr )
+  private void readMapFile()
     throws Exception
   {
-    String line;
-    while ( true )
+    BufferedReader in = new BufferedReader( new FileReader( mapFile ));
+    String line = in.readLine();
+    StringTokenizer st = new StringTokenizer( line, "=" );
+    if ( !st.hasMoreTokens())
     {
-      line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
-        break;
+      System.err.println( "File " + mapFile + " is not a valid map file!" );
+      return;
+    }
 
-      StringTokenizer st = new StringTokenizer( line, " \t" );
+    String name = st.nextToken();
+    if ( !name.equals( "Image" ) || !st.hasMoreTokens())
+    {
+      System.err.println( "File " + mapFile + " is not a valid map file!" );
+      return;
+    }
+    String value = st.nextToken();
+    File imageFile = new File( mapFile.getParentFile(), value );
+    imageIcon = new ImageIcon( imageFile.getAbsolutePath());
+    
+    while (( line = in.readLine()) != null )
+    {
+      if ( line.length() == 0 )
+        continue;
+      else if ( line.equals( "[ButtonShapes]" ))
+        break;
+      else
+        System.err.println( "File " + mapFile + " is not a valid map file!" );   
+    }
+    
+    while (( line = in.readLine()) != null )
+    {
+      if ( line.length() == 0 )
+        continue;
+
+      st = new StringTokenizer( line, "=:," );
       while ( st.hasMoreTokens())
       {
-        String token = st.nextToken();
-        StringTokenizer st2 = new StringTokenizer( token, "=:," );
-        String name = st2.nextToken();
+        name = st.nextToken();
+        
         Button button = findByName( new Button( null, name, ( byte )0 ));
         System.err.println( "Looked for button w/ name " + name + " and got " + button );
         if ( button == null )
           continue;
-        String type = st2.nextToken();
+        String type = st.nextToken();
         if ( type.equals( "ellipse" ))
         {
-          double x = Double.parseDouble( st2.nextToken());
-          double y = Double.parseDouble( st2.nextToken());
-          double width = Double.parseDouble( st2.nextToken());
-          double height = Double.parseDouble( st2.nextToken());
+          double x = Double.parseDouble( st.nextToken());
+          double y = Double.parseDouble( st.nextToken());
+          double width = Double.parseDouble( st.nextToken());
+          double height = Double.parseDouble( st.nextToken());
           button.setShape( new Ellipse2D.Double( x, y, width, height ));
         }
         else if ( type.equals( "rect" ))
         {
-          double x = Double.parseDouble( st2.nextToken());
-          double y = Double.parseDouble( st2.nextToken());
-          double width = Double.parseDouble( st2.nextToken());
-          double height = Double.parseDouble( st2.nextToken());
+          double x = Double.parseDouble( st.nextToken());
+          double y = Double.parseDouble( st.nextToken());
+          double width = Double.parseDouble( st.nextToken());
+          double height = Double.parseDouble( st.nextToken());
           button.setShape( new Rectangle2D.Double( x, y, width, height ));
         }
         else if ( type.equals( "poly" ))
         {
           GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD,
-                                              st2.countTokens()/2 );
-          float x = Float.parseFloat( st2.nextToken());
-          float y = Float.parseFloat( st2.nextToken());
+                                              st.countTokens()/2 );
+          float x = Float.parseFloat( st.nextToken());
+          float y = Float.parseFloat( st.nextToken());
           path.moveTo( x, y );
 
-          while ( st2.hasMoreTokens())
+          while ( st.hasMoreTokens())
           {
-            x = Float.parseFloat( st2.nextToken());
-            y = Float.parseFloat( st2.nextToken());
+            x = Float.parseFloat( st.nextToken());
+            y = Float.parseFloat( st.nextToken());
             System.err.println( "Adding point at " + x + ", " + y );
             path.lineTo( x, y );
           }
@@ -1167,7 +1193,6 @@ public class Remote
         }
       }
     }
-    return line;
   }
 
   public String getSupportedVariantName( Hex pid )
@@ -1294,4 +1319,5 @@ public class Remote
   private Hashtable protocolVariantNames = new Hashtable();
   private Vector protocols = null;
   private ImageIcon imageIcon = null;
+  private File mapFile = null;
  }
