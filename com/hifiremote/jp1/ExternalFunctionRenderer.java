@@ -18,13 +18,7 @@ public class ExternalFunctionRenderer
     if ( value != null )
     {
       ExternalFunction f = ( ExternalFunction )value;
-      byte[] b = f.getHex();
-      if ( b == null )
-        rc = "";
-      else if ( f.getType() == ExternalFunction.EFCType )
-        rc = df.format( f.getEFC().intValue());
-      else
-        rc = Protocol.hex2String( b );
+      rc = f.toString();
     }
 
     super.setValue( rc );

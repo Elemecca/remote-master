@@ -60,7 +60,7 @@ public class Button
     if (( f != null ) && ( f.getHex() != null ))
     {
       int len = 0;
-      byte[] hex = f.getHex();
+      Hex hex = f.getHex();
       if ( f.isExternal())
       {
         ExternalFunction ef = ( ExternalFunction )f;
@@ -74,7 +74,7 @@ public class Button
       }
 
       if  ( f.isExternal() || shifted || !devType.isMapped( this ) )
-        len = ( 4 + hex.length );
+        len = ( 4 + hex.length());
 
       rc = new byte[ len ];
 
@@ -85,9 +85,9 @@ public class Button
         if ( shifted )
           rc[ 0 ] = ( byte )( rc[ 0 ] | 0x80 );
         
-        rc[ 1 ] = ( byte )( 0xF2 + hex.length );
+        rc[ 1 ] = ( byte )( 0xF2 + hex.length() );
         System.arraycopy( deviceCode, 0, rc, 2, 2 );
-        System.arraycopy( hex, 0, rc, 4, hex.length );
+        System.arraycopy( hex.getData(), 0, rc, 4, hex.length() );
       }
     }
     return rc;

@@ -38,12 +38,23 @@ public class NumberCmdParm
     return Integer.class;
   }
 
-  public void setValue( Integer value )
+  public void setValue( Object value )
   {}
 
-  public Integer getValue()
+  public Object getValue()
   {
     return null;
+  }
+
+  public Object convertValue( Object value )
+  {
+    Object rc = null;
+    Class c = value.getClass();
+    if ( c == Integer.class )
+      rc = value;
+    else // assume String
+      rc = new Integer(( String )value );
+    return rc;
   }
 
   private ByteEditor editor;

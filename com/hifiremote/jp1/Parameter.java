@@ -7,26 +7,26 @@ public abstract class Parameter
     this( name, null );
   }
 
-  public Parameter( String name, Integer defaultValue )
+  public Parameter( String name, Object defaultValue )
   {
     this.name = name;
     this.defaultValue = defaultValue;
   }
 
   public String getName(){ return name; }
-  public Integer getDefaultValue(){ return defaultValue; }
-  public void setDefault( Integer value ){ defaultValue = value; }
-  public abstract Integer getValue();
+  public Object getDefaultValue(){ return defaultValue; }
+  public void setDefault( Object value ){ defaultValue = value; }
+  public abstract Object getValue();
 
-  public Integer getValueOrDefault()
+  public Object getValueOrDefault()
   {
-    Integer rc = getValue();
-    if (rc != null)
+    Object rc = getValue();
+    if ( rc != null )
       return rc;
     return getDefaultValue();
   }
-  public abstract void setValue( Integer value );
+  public abstract void setValue( Object value );
 
   private String name;
-  private Integer defaultValue;
+  private Object defaultValue;
 }

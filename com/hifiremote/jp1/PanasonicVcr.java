@@ -9,8 +9,8 @@ public class PanasonicVcr
 
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
-    int dev = devParms[0].getValueOrDefault().intValue();
-    int sub = devParms[1].getValueOrDefault().intValue();
+    int dev = (( Integer )devParms[0].getValueOrDefault()).intValue();
+    int sub = (( Integer )devParms[1].getValueOrDefault()).intValue();
     ChoiceCmdParm devCmdParm = ( ChoiceCmdParm )cmdParms[ 0 ];
     ChoiceCmdParm subCmdParm = ( ChoiceCmdParm )cmdParms[ 1 ];
     Choice[] devChoices = devCmdParm.getChoices();

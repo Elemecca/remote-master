@@ -37,12 +37,12 @@ public class NumberDeviceParm
     return tf;
   }
 
-  public Integer getValue()
+  public Object getValue()
   {
     return ( Integer )tf.getValue();
   }
 
-  public void setValue( Integer value )
+  public void setValue( Object value )
   {
     tf.setValue( value );
   }

@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.File;
+import java.text.DecimalFormat;
 import javax.swing.JOptionPane;
 
 public class DeviceUpgrade
@@ -143,7 +144,6 @@ public class DeviceUpgrade
 
   public Function getFunction( String name, Vector funcs )
   {
-    System.err.println( "Searching for function " + name );
     Function rc = null;
     for ( Enumeration e = funcs.elements(); e.hasMoreElements(); )
     {
@@ -151,7 +151,6 @@ public class DeviceUpgrade
       if ( func.getName().equals( name ))
       {
         rc = func;
-        System.err.println( "Found!" );
         break;
       }
     }
@@ -169,7 +168,7 @@ public class DeviceUpgrade
     buff.append( "Upgrade code 0 = " );
     if ( devType != null )
     {
-      byte[] id = protocol.getID();
+      byte[] id = protocol.getID().getData();
       int temp = devType.getNumber() * 0x1000 +
                  ( id[ 0 ] & 1 ) * 0x08 +
                  setupCode - remote.getDeviceCodeOffset();
@@ -178,27 +177,28 @@ public class DeviceUpgrade
       deviceCode[ 0 ] = ( byte )(temp >> 8 );
       deviceCode[ 1 ] = ( byte )temp;
 
-      buff.append( protocol.hex2String( deviceCode ));
+      buff.append( Hex.toString( deviceCode ));
       buff.append( " (" );
       buff.append( devType.getName());
       buff.append( '/' );
-      buff.append( setupCode );
+      DecimalFormat df = new DecimalFormat( "0000" );
+      buff.append( df.format( setupCode ));
       buff.append( ")\n " );
-      buff.append( protocol.byte2String( id[ 1 ]));
+      buff.append( Hex.toString( id[ 1 ]));
       buff.append( " 00" );  // Digit Map??
 
       buff.append( ' ' );
       ButtonMap map = devType.getButtonMap();
-      buff.append( Protocol.hex2String( map.toBitMap()));
+      buff.append( Hex.toString( map.toBitMap()));
 
       buff.append( ' ' );
-      buff.append( protocol.hex2String( protocol.getFixedData()));
+      buff.append( protocol.getFixedData().toString());
 
       byte[] data = map.toCommandList();
       if (( data != null ) && ( data.length != 0 ))
       {
         buff.append( "\n " );
-        buff.append( Protocol.hex2String( data, 16 ));
+        buff.append( Hex.toString( data, 16 ));
       }
 
       Button[] buttons = remote.getUpgradeButtons();
@@ -227,7 +227,7 @@ public class DeviceUpgrade
           if (( keyMoves != null ) && keyMoves.length > 0 )
           {
             buff.append( "\n " );
-            buff.append( Protocol.hex2String( keyMoves ));
+            buff.append( Hex.toString( keyMoves ));
           }
         }
       }
@@ -280,12 +280,12 @@ public class DeviceUpgrade
     props.setProperty( "Remote.signature", remote.getSignature());
     props.setProperty( "DeviceType", devType.getName());
     props.setProperty( "SetupCode", Integer.toString( setupCode ));
-    props.setProperty( "Protocol", protocol.hex2String( protocol.getID()));
+    props.setProperty( "Protocol", protocol.getID().toString());
     props.setProperty( "Protocol.name", protocol.getName());
     Value[] parms = protocol.getDeviceParmValues();
     if (( parms != null ) && ( parms.length != 0 ))
       props.setProperty( "ProtocolParms", valueArrayToString( parms ));
-    props.setProperty( "FixedData", protocol.hex2String( protocol.getFixedData()));
+    props.setProperty( "FixedData", protocol.getFixedData().toString());
 
     if ( notes != null )
       props.setProperty( "Notes", notes );
@@ -395,10 +395,8 @@ public class DeviceUpgrade
       f.load( props, "Function." + i );
       if ( f.getName() == null )
       {
-        System.err.println( "name is null" );
         break;
       }
-      System.err.println( "Adding to vector" );
       functions.add( f );
       i++;
     }
@@ -412,23 +410,18 @@ public class DeviceUpgrade
       f.load( props, "ExtFunction." + i, remote );
       if ( f.getName() == null )
       {
-        System.err.println( "name is null" );
         break;
       }
-      System.err.println( "Adding to vector" );
       extFunctions.add( f );
       i++;
     }
-    System.err.println( "Loading remote assignments." );
     Button[] buttons = remote.getUpgradeButtons();
     for ( i = 0; i < buttons.length; i++ )
     {
       Button b = buttons[ i ];
-      System.err.println( "Looking for functions assigned to " + b.getName());
       str = props.getProperty( "Button." + Integer.toHexString( b.getKeyCode()));
       if ( str == null )
       {
-        System.err.println( "No button found" );
         continue;
       }
       StringTokenizer st = new StringTokenizer( str, "|" );
@@ -437,14 +430,12 @@ public class DeviceUpgrade
       if ( !str.equals( "null" ))
       {
         func = getFunction( str );
-        System.err.println( "Assigning function " + func + " to button " + b.getName()); 
         b.setFunction( func );
       }
       str = st.nextToken();
       if ( !str.equals( "null" ))
       {
         func = getFunction( str );
-        System.err.println( "Assigning function " + func + " to shifted button " + b.getName()); 
         b.setShiftedFunction( func );
       }
     }

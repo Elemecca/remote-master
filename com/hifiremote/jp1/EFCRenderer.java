@@ -10,18 +10,14 @@ public class EFCRenderer
   public EFCRenderer()
   {
     setHorizontalAlignment( SwingConstants.CENTER );
-    if ( df == null )
-      df = new DecimalFormat( "000" );
   }
 
   protected void setValue( Object value )
   {
     if ( value != null )
-      super.setValue( df.format((( Integer )value ).intValue() & 0xFF ));
+      super.setValue((( EFC )value ).toString());
     else
       super.setValue( value );
   }
-
-  private static DecimalFormat df = null;
 }
 

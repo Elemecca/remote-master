@@ -2,33 +2,33 @@ package com.hifiremote.jp1;
 
 public class Value
 {
-  public Value( Integer userValue, Integer defaultValue )
+  public Value( Object userValue, Object defaultValue )
   {
     this.userValue = userValue;
     this.defaultValue = defaultValue;
   }
 
-  public Integer getUserValue(){ return userValue; }
-  public Integer getDefaultValue(){ return defaultValue; }
+  public Object getUserValue(){ return userValue; }
+  public Object getDefaultValue(){ return defaultValue; }
   public boolean hasUserValue()
   {
     return userValue != null;
   }
 
-  public Integer getValue()
+  public Object getValue()
   {
-    Integer rc = userValue;
+    Object rc = userValue;
     if ( rc == null )
       rc = defaultValue;
 
     return rc;
   }
 
-  public void setValue( Integer value )
+  public void setValue( Object value )
   {
     userValue = value;
   }
 
-  private Integer userValue;
-  private Integer defaultValue;
+  private Object userValue;
+  private Object defaultValue;
 }

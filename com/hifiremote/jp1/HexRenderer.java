@@ -15,7 +15,7 @@ public class HexRenderer
   protected void setValue( Object value )
   {
     if ( value != null )
-      super.setValue( Protocol.hex2String(( byte [] )value ));
+      super.setValue( (( Hex )value ).toString());
     else
       super.setValue( value );
   }

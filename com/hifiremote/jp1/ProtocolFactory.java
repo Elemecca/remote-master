@@ -5,7 +5,7 @@ import java.util.Properties;
 
 public class ProtocolFactory
 {
-  public static Protocol createProtocol( String name, byte[] id,
+  public static Protocol createProtocol( String name, Hex id,
                                          String type, Properties props )
   {
     Protocol rc = null;
@@ -29,6 +29,6 @@ public class ProtocolFactory
   }
 
   private static Class[] classes =
-    { String.class, byte[].class, Properties.class };
+    { String.class, Hex.class, Properties.class };
 }
 

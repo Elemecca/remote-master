@@ -9,11 +9,12 @@ public class NECParmTranslator
     initialDefaultParm = Integer.parseInt( textParms[ 0 ]);
   }
 
-  public void in( Value[] parms, byte[] hex, DeviceParameter[] devParms, int onlyIndex )
+  public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    Integer deviceNumber = parms[ 0 ].getUserValue();
-    Integer subDevice = parms[ 1 ].getUserValue();
-    Integer parm = parms[ 2 ].getUserValue();
+    byte[] hex = hexData.getData();
+    Integer deviceNumber = ( Integer )parms[ 0 ].getUserValue();
+    Integer subDevice = ( Integer )parms[ 1 ].getUserValue();
+    Integer parm = ( Integer )parms[ 2 ].getUserValue();
 
     if ( parm != null )
       hex[ 0 ] = parm.byteValue();
@@ -41,7 +42,7 @@ public class NECParmTranslator
 
   }
 
-  public void out( byte[] hex, Value[] parms, DeviceParameter[] devParms )
+  public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {}
 
   private int initialDefaultParm;

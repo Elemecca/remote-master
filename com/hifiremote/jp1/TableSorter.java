@@ -78,120 +78,18 @@ public class TableSorter extends TableMap {
          * Number might want to do this to save space and avoid
          * unnecessary heap allocation.
          */
-
-        if (type.getSuperclass() == java.lang.Number.class) {
-            Number n1 = (Number)data.getValueAt(row1, column);
-            double d1 = n1.doubleValue();
-            Number n2 = (Number)data.getValueAt(row2, column);
-            double d2 = n2.doubleValue();
-
-            if (d1 < d2) {
-                return -1;
-            } else if (d1 > d2) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else if (type == java.util.Date.class) {
-            Date d1 = (Date)data.getValueAt(row1, column);
-            long n1 = d1.getTime();
-            Date d2 = (Date)data.getValueAt(row2, column);
-            long n2 = d2.getTime();
-
-            if (n1 < n2) {
-                return -1;
-            } else if (n1 > n2) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else if (type == String.class) {
-            String s1 = (String)data.getValueAt(row1, column);
-            String s2    = (String)data.getValueAt(row2, column);
-            int result = s1.compareTo(s2);
-
-            if (result < 0) {
-                return -1;
-            } else if (result > 0) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else if (type == Boolean.class) {
-            Boolean bool1 = (Boolean)data.getValueAt(row1, column);
-            boolean b1 = bool1.booleanValue();
-            Boolean bool2 = (Boolean)data.getValueAt(row2, column);
-            boolean b2 = bool2.booleanValue();
-
-            if (b1 == b2) {
-                return 0;
-            } else if (b1) { // Define false < true
-                return 1;
-            } else {
-                return -1;
-            }
-        } else if ( type == byte[].class ) {
-            String s1 = Protocol.hex2String(( byte[] )data.getValueAt( row1, column ));
-            String s2 = Protocol.hex2String(( byte[] )data.getValueAt( row2, column ));
-            int result = s1.compareTo( s2 );
-
-            if (result < 0) {
-                return -1;
-            } else if (result > 0) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else if ( type == ExternalFunction.class ) {
-            ExternalFunction f1 = ( ExternalFunction )data.getValueAt( row1, column );
-            ExternalFunction f2 = ( ExternalFunction )data.getValueAt( row2, column );
-
-            Object v1 = f1.getValue();
-            Object v2 = f2.getValue();
-
-            // If both values are null, return 0.
-            if ( v1 == null && v2 == null) {
-              return 0; 
-            } else if ( v1 == null ) { // Define null less than everything. 
-              return -1; 
-            } else if ( v2 == null ) { 
-              return 1; 
-            }
-
-            String s1 = null;
-            if ( v1.getClass() == Integer.class )
-              s1 = df.format((( Integer )v1 ).intValue() & 0xFF );
-            else
-              s1 = "0" + Protocol.hex2String(( byte[] )v1);
-
-            String s2 = null;
-            if ( v2.getClass() == Integer.class )
-              s2 = df.format((( Integer )v2 ).intValue() & 0xFF );
-            else
-              s2 = "0" + Protocol.hex2String(( byte[] )v2);
-
-            int result = s1.compareTo( s2 );
-            if (result < 0) {
-                return -1;
-            } else if (result > 0) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else {
-            Object v1 = data.getValueAt(row1, column);
-            String s1 = v1.toString();
-            Object v2 = data.getValueAt(row2, column);
-            String s2 = v2.toString();
-            int result = s1.compareTo(s2);
-
-            if (result < 0) {
-                return -1;
-            } else if (result > 0) {
-                return 1;
-            } else {
-        	return 0;
-            }
+         
+        if ( o1 instanceof Comparable )
+        {
+          Comparable c1 = ( Comparable )o1;
+          Comparable c2 = ( Comparable )o2;
+          return c1.compareTo( c2 );
+        }
+        else
+        {
+          String s1 = o1.toString();
+          String s2 = o2.toString();
+          return s1.compareTo(s2);
         }
     }
 
@@ -220,11 +118,46 @@ public class TableSorter extends TableMap {
         }
     }
 
-    public void tableChanged(TableModelEvent e) {
-        //System.out.println("Sorter: tableChanged"); 
+    private int convertModelRowToIndex( int row )
+    {
+      int i = 0;
+      for ( ; i < indexes.length; i++ )
+      {
+        if ( indexes[ i ] == row )
+          break;
+      }
+      return i;
+    }
+
+    public void tableChanged(TableModelEvent e) 
+    {
+      //System.out.println("Sorter: tableChanged");
+      int firstRow = e.getFirstRow();
+      int firstIndex = 0;
+      if ( firstRow != -1 )
+        firstIndex = convertModelRowToIndex( firstRow );
+      else
+        firstIndex = -1;
+      int lastRow = e.getLastRow();
+      int lastIndex = 0;
+      if ( lastRow != -1 )
+      {
+        if ( lastRow == firstRow )
+          lastIndex = firstIndex;
+        else
+          lastIndex = convertModelRowToIndex( lastRow );
+      }
+      else
+        lastIndex = -1;
+
+      if (( firstIndex == -1 ) || ( lastIndex == -1 ))
         reallocateIndexes();
 
-        super.tableChanged(e);
+      TableModelEvent newEvent = new TableModelEvent(( TableModel )e.getSource(), 
+                                                      firstIndex, lastIndex,
+                                                      e.getColumn(),
+                                                      e.getType());
+      super.tableChanged( e );
     }
 
     public void checkModel() {

@@ -77,9 +77,10 @@ public class SetupPanel
     JPanel notesPanel = new JPanel( new BorderLayout());
     notes = new JTextArea();
     notes.setToolTipText( "Enter any notes about this device upgrade." );
-    notes.setBorder( BorderFactory.createTitledBorder( "Notes" ));
+    notesPanel.setBorder( BorderFactory.createTitledBorder( "Notes" ));
+    notesPanel.add( new JScrollPane( notes ), BorderLayout.CENTER );
     notes.getDocument().addDocumentListener( this );
-    add( new JScrollPane( notes ), "7, 1, 7, 10" );
+    add( notesPanel, "7, 1, 7, 10" );
 
     label = new JLabel( "Protocol:", SwingConstants.RIGHT );
     add( label, "2, 3" );
@@ -122,7 +123,7 @@ public class SetupPanel
     Protocol p = deviceUpgrade.getProtocol();
     protocolList.setSelectedItem( p );
     notes.setText( deviceUpgrade.getNotes());
-    fixedData.setText( p.hex2String( p.getFixedData()));
+    fixedData.setText( p.getFixedData().toString());
     updateInProgress = false;
   }
 
@@ -130,7 +131,7 @@ public class SetupPanel
   {
     Protocol p = getProtocol();
     p.initializeParms();
-    fixedData.setText( p.hex2String( p.getFixedData()));
+    fixedData.setText( p.getFixedData().toString());
   }
 
   // ActionListener Methods
@@ -146,7 +147,7 @@ public class SetupPanel
         if ( currProtocol != null && !updateInProgress )
           currProtocol.convertFunctions( deviceUpgrade.getFunctions(), protocol );
         currProtocol = protocol;
-        protocolID.setText( protocol.hex2String( protocol.getID()));
+        protocolID.setText( protocol.getID().toString());
         deviceUpgrade.setProtocol( protocol );
         if ( parameters != null )
         {
@@ -186,7 +187,7 @@ public class SetupPanel
           add( protocolHolder, tlc );
           doLayout();
         }
-        fixedData.setText( protocol.hex2String( protocol.getFixedData()));
+        fixedData.setText( protocol.getFixedData().toString());
       }
     }
     else // must be a protocol parameter

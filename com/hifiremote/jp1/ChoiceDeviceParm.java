@@ -17,21 +17,28 @@ public class ChoiceDeviceParm
   }
 
   public JComponent getComponent(){ return comboBox; }
-  public Integer getValue()
+  public Object getValue()
   {
-    Integer rc = null;
+    Object rc = null;
     int index = comboBox.getSelectedIndex();
     if ( index != 0 )
       rc = new Integer( index - 1 );
     return rc;
   }
-  public void setValue( Integer val )
+
+  public void setValue( Object val )
   {
     int index = 0;
     if ( val != null )
-      index = val.intValue() + 1;
-
-    comboBox.setSelectedIndex( index );
+    {
+      Class c = val.getClass();
+      if ( c == Integer.class )
+       comboBox.setSelectedIndex((( Integer )val ).intValue() + 1 );
+      else if ( c == String.class )
+        comboBox.setSelectedItem( val );
+    }
+    else
+      comboBox.setSelectedIndex( index );
   }
 
   private JComboBox comboBox = null;

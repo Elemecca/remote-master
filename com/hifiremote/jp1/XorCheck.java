@@ -42,20 +42,21 @@ public class XorCheck
     
   }
 
-  public void in( Value[] parms, byte[] hex, DeviceParameter[] devParms, int onlyIndex )
+  public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
+    byte[] hex = hexData.getData();
     // System.err.println("XorCheck(" + bits +","+ destOffset +","+ seed +","+ count +","+ sourceOffset +","+ step +").in(" + hex.length +")");
     int v = seed;
 	int s = sourceOffset;
 	for (int i=0; i<count; i++)
 	{
-		v ^= extract( hex, s, bits );
+		v ^= extract( hexData, s, bits );
 		s += step;		
 	}
-	insert( hex, destOffset, bits, v );
+	insert( hexData, destOffset, bits, v );
   }
 
-  public void out( byte[] hex, Value[] parms, DeviceParameter[] devParms )
+  public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
   }
 

@@ -36,6 +36,15 @@ public class ExternalFunction
   public final static int EFCType = 0;
   public final static int HexType = 1;
 
+  public String toString()
+  {
+    String rc = "";
+    Object o = getValue();
+    if ( o != null )
+      rc = o.toString(); 
+    return rc;
+  }
+
   public void setType( int type )
   {
     this.type = type;
@@ -57,9 +66,9 @@ public class ExternalFunction
       setHex( null );
     else
       if ( type == EFCType )
-        setEFC(( Integer )value );
+        setEFC(( EFC )value );
       else
-        setHex(( byte[] )value );
+        setHex(( Hex )value );
   }
 
   public Object getValue()
@@ -74,27 +83,24 @@ public class ExternalFunction
   public void setSetupCode( int code ){ setupCode = code; }
   public int getSetupCode(){ return setupCode; }
 
-  public Integer getEFC()
+  public EFC getEFC()
   {
-    Integer rc = null;
-    byte[] hex = hexData;
-    if ( hexData != null )
-    {
-      rc = new Integer( Protocol.hex2efc( hexData, 0 ) & 0xFF );
-    }
+    EFC rc = null;
+    if ( hex != null )
+      rc = Protocol.hex2efc( hex, 0 );
     return rc;
   }
 
-  public void setEFC( Integer val )
+  public void setEFC( EFC efc )
   {
-    if ( val != null )
+    if ( efc != null )
     {
-      if ( hexData == null )
-        hexData = new byte[ 1 ];
-      Protocol.efc2hex( val.byteValue(), hexData, 0 );
+      if ( hex == null )
+        hex = new Hex();
+      Protocol.efc2hex( efc, hex, 0 );
     }
     else
-      hexData = null;
+      hex = null;
   }
 
   private DeviceType deviceType;

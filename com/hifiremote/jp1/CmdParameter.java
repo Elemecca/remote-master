@@ -11,11 +11,13 @@ public abstract class CmdParameter
     super( name );
   }
 
-  public CmdParameter( String name, Integer defaultValue )
+  public CmdParameter( String name, Object defaultValue )
   {
     super( name, defaultValue );
   }
 
+  public Object getValue( Object value ){ return value; }
+  public Object convertValue( Object value ){ return value; }
   public abstract TableCellEditor getEditor();
   public abstract TableCellRenderer getRenderer();
   public abstract Class getValueClass();

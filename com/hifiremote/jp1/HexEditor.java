@@ -7,7 +7,7 @@ import javax.swing.table.*;
 public class HexEditor
   extends DefaultCellEditor
 {
-  public HexEditor( byte[] defaultHex )
+  public HexEditor( Hex defaultHex )
   {
     super( new JTextField());
     setClickCountToStart( 1 );
@@ -22,7 +22,7 @@ public class HexEditor
     JTextField tf =
       ( JTextField )super.getTableCellEditorComponent( table, value,
                                                        isSelected, row, col );
-    tf.setText( Protocol.hex2String(( byte[] )value ));
+    tf.setText((( Hex )value ).toString());
     tf.selectAll();
 
     return tf;
@@ -36,10 +36,10 @@ public class HexEditor
     String str = tf.getText().trim();
     if (( str != null ) && ( str.length() != 0 ))
     {
-      byte[] temp = Protocol.string2hex( str );
-      if ( temp.length != defaultHex.length )
+      Hex temp = new Hex( str );
+      if ( temp.length() != defaultHex.length() )
       {
-        String msg = "The hex command must contain exactly " + defaultHex.length + " bytes.";
+        String msg = "The hex command must contain exactly " + defaultHex.length() + " bytes.";
         KeyMapMaster.showMessage( msg );
         throw new NumberFormatException( msg );
       }
@@ -53,6 +53,6 @@ public class HexEditor
     return rc;
   }
 
-  byte[] defaultHex = null;
+  Hex defaultHex = null;
 }
 

@@ -39,8 +39,9 @@ public class Translator
     }
   }
 
-  public void in( Value[] parms, byte[] hex, DeviceParameter[] devParms, int onlyIndex )
+  public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
+    byte[] hex = hexData.getData();
     if (onlyIndex >= 0 && onlyIndex != index)
       return;
     if ( index >= parms.length )
@@ -56,7 +57,7 @@ public class Translator
     }
     else
     {
-      Integer i = v.getValue();
+      Integer i = ( Integer )v.getValue();
       if ( i == null )
         System.err.println("Translator.in() index="+ index +" missing parameter value");
       else
@@ -72,17 +73,18 @@ public class Translator
       w = reverse(w, bits );
     }
 
-    insert( hex, bitOffset, bits, w );
+    insert( hexData, bitOffset, bits, w );
   }
 
-  public void out( byte[] hex, Value[] parms, DeviceParameter[] devParms )
+  public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
+    byte[] hex = hexData.getData();
     if ( index >= parms.length )
     {
       System.err.println("Translator.out() index="+ index +" exceeds "+ parms.length +" item buffer");
       return;
     }
-    int w = extract( hex, bitOffset, bits);
+    int w = extract( hexData, bitOffset, bits);
     if ( comp )
     {
       w = (2<<(bits-1)) - 1 - w;
@@ -93,7 +95,7 @@ public class Translator
     }
     int old = 0;
     if ( parms[ index ] != null )
-       old = parms[ index ].getValue().intValue() & ((1<<lsbOffset)-1);
+       old = (( Integer )parms[ index ].getValue()).intValue() & ((1<<lsbOffset)-1);
     parms[ index ] = new Value( new Integer( old + (w<<lsbOffset) ), null );
   }
 

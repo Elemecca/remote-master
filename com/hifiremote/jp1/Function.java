@@ -6,10 +6,10 @@ public class Function
 {
   public Function(){}
 
-  public Function( String name, byte[] data, String notes )
+  public Function( String name, Hex hex, String notes )
   {
     this.name = name;
-    this.hexData = data;
+    this.hex = hex;
     this.notes = notes;
   }
 
@@ -24,25 +24,21 @@ public class Function
   {
     if ( name != null )
       props.setProperty( prefix + ".name", name );
-    if ( hexData != null )
-      props.setProperty( prefix + ".hex", Protocol.hex2String( hexData ));
+    if ( hex != null )
+      props.setProperty( prefix + ".hex", hex.toString());
     if ( notes != null )
       props.setProperty( prefix + ".notes", notes );
   }
 
   public void load( Properties props, String prefix )
   {
-    System.err.println( "Function.load()" );
     String str = props.getProperty( prefix + ".name" );
-    System.err.println( prefix + ".name=" + str );
     if ( str != null )
       setName( str );
     str = props.getProperty( prefix + ".hex" );
-    System.err.println( prefix + ".hex=" + str );
     if ( str != null )
-      setHex( Protocol.string2hex( str ));
+      setHex( new Hex( str ));
     str = props.getProperty( prefix + ".notes" );
-    System.err.println( prefix + ".notes=" + str );
     if ( str != null )
       setNotes( str );
   }
@@ -61,9 +57,9 @@ public class Function
     return this;
   }
 
-  public Function setHex( byte[] values )
+  public Function setHex( Hex hex )
   {
-    hexData = values;
+    this.hex = hex;
     return this;
   }
 
@@ -73,7 +69,7 @@ public class Function
   }
   public String getName(){ return name; }
   public String getNotes(){ return notes; }
-  public byte[] getHex(){ return hexData; }
+  public Hex getHex(){ return hex; }
 
   public FunctionLabel getLabel()
   {
@@ -108,7 +104,7 @@ public class Function
 
   protected String name = null;
   protected String notes = null;
-  protected byte[] hexData = null;
+  protected Hex hex = null;
   private FunctionLabel label = null;
   private int refCount = 0;
 }

@@ -130,7 +130,7 @@ public class ButtonMap
             ( func.getClass() != ExternalFunction.class ) &&
             ( func.getHex() != null ))
         {
-          funcLen = func.getHex().length;
+          funcLen = func.getHex().length();
           flags[ i ] = true;
           count += ( inner.length * funcLen );
           break;
@@ -154,7 +154,7 @@ public class ButtonMap
               ( func.getHex() == null ))
             hex = zeros;
           else
-            hex = func.getHex();
+            hex = func.getHex().getData();
           System.arraycopy( hex, 0, rc, index, funcLen );
           index += funcLen;
         }

@@ -17,16 +17,13 @@ public class ChoiceRenderer
     String val = null;
     if ( value != null )
     {
-      int temp = (( Integer ) value ).intValue();
-      for ( int i = 0; i < choices.length; i++ )
-      {
-        if ( choices[ i ].getIndex() == temp )
-        {
-          val = choices[ i ].getText();
-          break;
-        }
-      }
+      Class c = value.getClass();
+      if ( c == Integer.class )
+        val = choices[ (( Integer )value ).intValue()].toString();
+      else if ( c == Choice.class )
+        val = (( Choice )value ).toString();
     }
+
     return super.getTableCellRendererComponent( table, val, isSelected, hasFocus, row, col );
   }
 

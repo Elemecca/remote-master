@@ -102,13 +102,12 @@ public class Remote
         if ( longestMap.size() < thisMap.size() )
           longestMap = thisMap;
       }
-      System.err.println( "Creating upgradeButtons of length " + ( buttons.length ));
+
       upgradeButtons = new Button[ buttons.length ];
       // first copy the buttons from the longest map
       int index = 0;
       while ( index < longestMap.size())
       {
-        System.err.println( "Copying button " + longestMap.get( index ) + " from the longest map" );
         upgradeButtons[ index ] = longestMap.get( index );
         index++;
       }

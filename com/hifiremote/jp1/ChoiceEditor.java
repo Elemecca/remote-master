@@ -61,27 +61,15 @@ public class ChoiceEditor
     if ( temp.getIndex() == -1 )
       return null;
     else
-      return new Integer( temp.getIndex());
+      return temp;
   }
 
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int col )
   {
-    int index = 0;
     if ( value != null )
-    {
-      for ( int i = 0; i < comboBox.getItemCount(); i++ )
-      {
-        Object item = comboBox.getItemAt( i );
-        Choice choice = ( Choice )item;
-        Integer temp = ( Integer )value;
-        if ( choice.getIndex() == temp.intValue())
-        {
-          index = i;
-          break;
-        }
-      }
-    }
-    comboBox.setSelectedIndex( index );
+      comboBox.setSelectedItem( value );
+    else
+      comboBox.setSelectedIndex( 0 );
     return comboBox;
   }
 

@@ -14,7 +14,7 @@ public class ParmInitializer
     int i = 0;
     for ( ; i < devParms.length; i++ )
     {
-      Integer temp = devParms[ i ].getValue();
+      Integer temp = ( Integer )devParms[ i ].getValue();
       Choice choice = choices[ i ];
       if ( temp == null )
       {

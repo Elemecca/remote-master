@@ -26,17 +26,9 @@ public class ExternalFunctionEditor
                                                        isSelected, row, col );
 
     f = ( ExternalFunction )value;
-    if ( f.getHex() == null )
-      tf.setText( "" );
-    else
-    {
-      if ( f.getType() == ExternalFunction.EFCType )
-        tf.setText( f.getEFC().toString());
-      else
-        tf.setText( Protocol.hex2String( f.getHex()));
-    }
-
+    tf.setText( f.toString());
     tf.selectAll();
+
     return tf;
   }
 
@@ -60,14 +52,11 @@ public class ExternalFunctionEditor
         else
         {
           KeyMapMaster.clearMessage();
-          f.setEFC( new Integer( temp ));
+          f.setEFC( new EFC( temp ));
         }
       }
       else
-      {
-        byte[] b = Protocol.string2hex( str );
-        f.setHex( b );
-      }
+        f.setHex( new Hex( str ));
     }
     else
       f.setHex( null );

@@ -10,12 +10,12 @@ import javax.swing.table.TableCellRenderer;
 
 public class Protocol
 {
-  public Protocol( String name, byte[] id, Properties props )
+  public Protocol( String name, Hex id, Properties props )
   {
     this.name = name;
     this.id = id;
-    this.fixedData = string2hex( props.getProperty( "FixedData", "" ));
-    this.defaultCmd = string2hex( props.getProperty( "DefaultCmd", "00" ));
+    this.fixedData = new Hex( props.getProperty( "FixedData", "" ));
+    this.defaultCmd = new Hex( props.getProperty( "DefaultCmd", "00" ));
     this.cmdIndex = Integer.parseInt( props.getProperty( "CmdIndex", "0" ));
 
     String temp = props.getProperty( "DevParms", "" );
@@ -38,13 +38,13 @@ public class Protocol
 
     temp = props.getProperty( "Code.S3C80" );
     if ( temp != null )
-      code.put( "S3C80", string2hex( temp ));
+      code.put( "S3C80", new Hex( temp ));
     temp = props.getProperty( "Code.740" );
     if ( temp != null )
-      code.put( "740", string2hex( temp ));
+      code.put( "740", new Hex( temp ));
     temp = props.getProperty( "Code.6805" );
     if ( temp != null )
-      code.put( "6805", string2hex( temp ));
+      code.put( "6805", new Hex( temp ));
     temp = props.getProperty( "CmdParms", "" );
     StringTokenizer st = new StringTokenizer( temp, "," );
     int count = st.countTokens();
@@ -83,17 +83,17 @@ public class Protocol
 
   public String getCodeText( String processor )
   {
-    byte[] bytes = ( byte[] )code.get( processor );
-    if ( bytes == null )
+    Hex hex = ( Hex )code.get( processor );
+    if ( hex == null )
       return null;
 
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade protocol 0 = " );
-    buff.append( hex2String( id ));
+    buff.append( id.toString());
     buff.append( " (" );
     buff.append( processor );
     buff.append( ")\n " );
-    buff.append( hex2String( bytes, 16 ));
+    buff.append( hex.toString( 16 ));
     buff.append( "\nEnd" );
 
     return buff.toString();
@@ -118,96 +118,45 @@ public class Protocol
     return rc;
   }
 
-  public static byte[] efc2hex( byte efc, byte[] hex, int index )
+  public static Hex efc2hex( EFC efc, Hex hex, int index )
   {
-    int temp = Translate.byte2int( efc ) + 156;
+    int temp = efc.getValue() + 156;
     temp = ( temp & 0xFF ) ^ 0xAE;
     temp = ( temp >> 3 ) | ( temp << 5 );
-    hex[ index ] = ( byte )temp;
+    hex.getData()[ index ] = ( byte )temp;
     return hex;
   }
 
-  public byte[] efc2hex( byte efc, byte[] hex )
+  public Hex efc2hex( EFC efc, Hex hex )
   {
     if ( hex == null )
       hex = getDefaultCmd();
     return efc2hex( efc, hex, cmdIndex );
   }
 
-  public static byte hex2efc( byte[] hex, int index )
+  public static EFC hex2efc( Hex hex, int index )
   {
-    int temp = Translate.byte2int( hex[ index ]);
+    int temp = Translate.byte2int( hex.getData()[ index ]);
     temp = ( temp << 3 ) | ( temp >> 5 );
     temp = ( temp ^ 0xAE ) - 156;
-    return ( byte )temp;
+    return new EFC( temp );
   }
 
-  public byte hex2efc( byte[] hex )
+  public EFC hex2efc( Hex hex )
   {
     return hex2efc( hex, cmdIndex );
   }
 
-  public static String byte2String( byte data )
+  public Hex getDefaultCmd()
   {
-    StringBuffer buff = new StringBuffer( 2 );
-    String str = Integer.toHexString( Translate.byte2int( data ));
-    int len = str.length();
-    if ( len > 2 )
-      str = str.substring( len - 2);
-    else if ( len < 2 )
-      buff.append( '0' );
-
-    buff.append( str );
-    return buff.toString();
-  }
-
-  public static String hex2String( byte[] data )
-  {
-    return hex2String( data, -1 );
-  }
-
-  public static String hex2String( byte[] data, int breakAt )
-  {
-    if ( data == null )
-      return null;
-
-    StringBuffer rc = new StringBuffer( 4 * data.length );
-    int breakCount = breakAt;
-    for ( int i = 0; i < data.length; i++ )
+    Hex rc = null;
+    try 
     {
-      if ( breakCount == 0 )
-      {
-        rc.append( '\n' );
-        breakCount = breakAt;
-      }
-      --breakCount;
-
-      if ( i > 0 )
-        rc.append( ' ' );
-
-      String str = Integer.toHexString( Translate.byte2int( data[ i ]));
-      int len = str.length();
-      if ( len < 2  )
-        rc.append( '0' );
-      rc.append( str );
+      rc = ( Hex )defaultCmd.clone();
     }
-    return rc.toString();
-  }
-
-  public static byte[] string2hex( String str )
-  {
-    StringTokenizer st = new StringTokenizer( str, " " );
-    int length = st.countTokens();
-    byte[] rc = new byte[ length ];
-    for ( int i = 0; i < length; i++ )
-      rc[ i ] = ( byte )Integer.parseInt( st.nextToken(), 16 );
-
-    return rc;
-  }
-
-  public byte[] getDefaultCmd()
-  {
-    byte[] rc = ( byte[] )defaultCmd.clone();
+    catch ( CloneNotSupportedException e )
+    {
+    }
     Value[] vals = new Value[ cmdParms.length ];
 
     for ( int i = 0; i < cmdParms.length; i++ )
@@ -255,10 +204,10 @@ public class Protocol
     return cmdParms[ col ].getName();
   }
 
-  public Integer getValueAt( int col, byte[] hex )
+  public Object getValueAt( int col, Hex hex )
   {
     Value[] vals = new Value[ cmdParms.length ];
-    for (int i=0; i<cmdTranslators.length; i++)
+    for ( int i = 0; i < cmdTranslators.length; i++ )
       cmdTranslators[ i ].out( hex, vals, devParms );
     Value v = vals[ col ];
     if ( v == null )
@@ -266,14 +215,14 @@ public class Protocol
       System.err.println( "Protocol.getValueAt("+ col +") failed" );
       return new Integer(0);
     }
-    return v.getValue();
+    return cmdParms[ col ].getValue( v.getValue());
   }
 
-  public void setValueAt( int col, byte[] hex, Object value )
+  public void setValueAt( int col, Hex hex, Object value )
   {
     Value[] vals = new Value[ cmdParms.length ];
     System.err.println( "Value is of class " + value.getClass() );
-    vals[ col ] = new Value(( Integer )value, null );
+    vals[ col ] = new Value( cmdParms[ col ].convertValue( value ), null );
     for ( int i = 0; i < cmdTranslators.length; i++ )
       cmdTranslators[ i ].in( vals, hex, devParms, col );
   }
@@ -282,11 +231,14 @@ public class Protocol
 
   public String toString(){ return name; }
   public String getName(){ return name; }
-  public byte[] getID(){ return id; }
-  public byte[] getFixedData()
+  public Hex getID(){ return id; }
+  public Hex getFixedData()
   {
     System.err.println( "Protocol.getFixedData()" );
-    byte[] temp = ( byte[] )fixedData.clone();
+    Hex temp = null;
+    try {
+      temp = ( Hex )fixedData.clone();
+    } catch ( CloneNotSupportedException e ){}
     Value[] parms = getDeviceParmValues();
     if ( deviceTranslators != null )
     {
@@ -355,10 +307,10 @@ public class Protocol
     {
       Function f = ( Function )enum.nextElement();
       System.err.println( "Converting function " + f.getName());
-      byte[] hex = f.getHex();
-      System.err.println( "Staring hex is " + hex2String( hex ));
-      byte[] newHex = newProtocol.getDefaultCmd();
-      System.err.println( "Initial new hex is " + hex2String( newHex ));
+      Hex hex = f.getHex();
+      System.err.println( "Starting hex is " + hex );
+      Hex newHex = newProtocol.getDefaultCmd();
+      System.err.println( "Initial new hex is " + newHex );
       if ( hex != null )
       {
         // extract the command parms from the hex
@@ -377,7 +329,7 @@ public class Protocol
           newProtocol.cmdTranslators[ i ].in( newValues, newHex, devParms, -1 );
 
         // store the hex back into the function
-        System.err.println( "Storing new hex " + hex2String( newHex ));
+        System.err.println( "Storing new hex " + newHex );
         f.setHex( newHex );
       }
     }
@@ -396,12 +348,12 @@ public class Protocol
   // For now it absolutely requires a match of id.  I expect that won't always be
   // an absolute.
   {
-    byte[] pid = string2hex( props.getProperty( "Protocol" ));
-    if ( pid[0] != id[0] || pid[1] != id[1] )
-    return tooDifferent;
+    Hex pid = new Hex( props.getProperty( "Protocol" ));
+    if ( !pid.equals( id ))
+      return tooDifferent;
     int result = 0;
     String str = props.getProperty( "Protocol.name" );
-    if (str!= null && ! str.equals(name))
+    if ( str != null && ! str.equals( name ))
     {
       // I think we should use a fuzzy string compare here, but for now...
       result += 1000;
@@ -409,8 +361,8 @@ public class Protocol
     str = props.getProperty( "FixedData" );
     if (str != null)
     {
-      byte[] data = string2hex( str );
-      if ( data.length != fixedData.length )
+      Hex hex = new Hex( str );
+      if ( hex.length() != fixedData.length() )
       {
         result += 2000;
       }
@@ -426,9 +378,9 @@ public class Protocol
   public final static int tooDifferent = 0x7FFFFFFF;
 
   private String name;
-  private byte[] id = new byte[ 2 ];
-  private byte[] fixedData = null;
-  protected byte[] defaultCmd = null;
+  private Hex id = null;
+  private Hex fixedData = null;
+  protected Hex defaultCmd = null;
   protected int cmdIndex;
   private DeviceParameter[] devParms = null;
   private Translate[] deviceTranslators = null;

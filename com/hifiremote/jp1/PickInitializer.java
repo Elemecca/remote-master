@@ -42,7 +42,7 @@ public class PickInitializer
       if ( s != noChange )
       {
         int j = s & indexPart;
-        Integer parm = null;
+        Object parm = null;
         if ( j < devParms.length )
         {
           parm = devParms[ j ].getValue();

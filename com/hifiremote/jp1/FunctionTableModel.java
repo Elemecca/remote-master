@@ -19,17 +19,11 @@ public class FunctionTableModel
 
   public FunctionTableModel( Vector functions )
   {
-    this.functions = functions;
+    super( functions );
   }
 
   public void functionsUpdated()
   {
-    fireTableDataChanged();
-  }
-
-  public void setFunctions( Vector functions )
-  {
-    this.functions = functions;
     fireTableDataChanged();
   }
 
@@ -39,15 +33,6 @@ public class FunctionTableModel
     hexCol = protocol.getColumnCount() + colOffset;
     notesCol = hexCol + 1;
     fireTableStructureChanged();
-  }
-
-  public int getRowCount()
-  {
-    int rc = 0;
-    if ( functions != null )
-      rc = functions.size();
-
-    return rc;
   }
 
   public int getColumnCount()
@@ -60,8 +45,8 @@ public class FunctionTableModel
 
   public Object getValueAt( int row, int col )
   {
-    Function function = ( Function )functions.elementAt( row );
-    byte[] hex = function.getHex();
+    Function function = ( Function )data.elementAt( row );
+    Hex hex = function.getHex();
 
     Object rc = "";
     if ( col == rowCol )
@@ -71,7 +56,7 @@ public class FunctionTableModel
     else if ( col == efcCol )
     {
       if ( hex != null )
-        rc = new Integer( protocol.hex2efc( hex ) & 0xFF );
+        rc = protocol.hex2efc( hex );
       else
         rc = hex;
     }
@@ -106,7 +91,7 @@ public class FunctionTableModel
 
   public void setValueAt( Object value, int row, int col )
   {
-    Function function = ( Function )functions.elementAt( row );
+    Function function = ( Function )data.elementAt( row );
     if ( col == nameCol )
     {
       String text = ( String )value;
@@ -122,16 +107,19 @@ public class FunctionTableModel
         function.setHex( null );
       else
       {
-        byte[] hex = function.getHex();
-        hex = protocol.efc2hex((( Integer )value ).byteValue(), hex );
+        Hex hex = function.getHex();
+        if ( value.getClass() == String.class )
+          value = new EFC(( String )value );
+        hex = protocol.efc2hex(( EFC )value, hex );
         function.setHex( hex );
       }
     }
     else if ( col == hexCol )
     {
       checkFunctionAssigned( function, value );
-
-      function.setHex(( byte[] )value );
+      if ( value.getClass() == String.class )
+        value = new Hex(( String )value );
+      function.setHex(( Hex )value );
     }
     else if ( col == notesCol )
       function.setNotes(( String )value );
@@ -142,7 +130,7 @@ public class FunctionTableModel
         function.setHex( null );
       else
       {
-        byte[] hex = function.getHex();
+        Hex hex = function.getHex();
         if ( hex == null )
         {
           hex = protocol.getDefaultCmd();
@@ -177,8 +165,10 @@ public class FunctionTableModel
     Class rc = null;
     if (( col == nameCol ) || ( col == notesCol ))
       rc = String.class;
-    else if (( col == rowCol ) || ( col == efcCol ))
+    else if ( col == rowCol )
       rc = Integer.class;
+    else if ( col == efcCol )
+      rc = EFC.class;
     else if ( col == hexCol )
       rc = byte[].class;
     else
@@ -190,8 +180,9 @@ public class FunctionTableModel
   public boolean isCellEditable( int row, int col )
   {
     boolean rc = false;
-    if (( col == nameCol ) || ( col == efcCol ) || ( col == hexCol ) ||
-        ( col == notesCol ))
+    if ( col == rowCol )
+      rc = false;
+    else if (( col <= hexCol ) || ( col == notesCol ))
       rc = true;
     else
       rc = protocol.isEditable( col - colOffset );
@@ -205,7 +196,7 @@ public class FunctionTableModel
     if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ))
       rc = null;
     else if ( col == efcCol )
-      rc = new ByteEditor();
+      rc = new EFCEditor();
     else if ( col == hexCol )
       rc = new HexEditor( protocol.getDefaultCmd());
     else
@@ -227,35 +218,6 @@ public class FunctionTableModel
     else
       rc = protocol.getColumnRenderer( col - colOffset );
     return rc;
-  }
-
-  public void removeRow( int row )
-  {
-    functions.removeElementAt( row );
-  }
-
-  public void insertRow( int row, Object object )
-  {
-    functions.insertElementAt( object, row );
-  }
-  
-  public void addRow( Object object )
-  {
-    functions.add( object );
-  }
-
-  public void moveRow( int from, int to )
-  {
-    Object o = functions.elementAt( from );
-    if ( from < to )
-      to--;
-
-    functions.insertElementAt( o, to );
-  }
-
-  public Object getRow( int row )
-  {
-    return functions.elementAt( row );
   }
 }
 

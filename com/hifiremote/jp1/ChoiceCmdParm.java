@@ -36,15 +36,43 @@ public class ChoiceCmdParm
 
   public Class getValueClass()
   {
-    return Integer.class;
+    return Choice.class;
   }
 
-  public Integer getValue()
+  public Object getValue()
   {
     return null;
   }
 
-  public void setValue( Integer value )
+  public Object getValue( Object val )
+  {
+    return choices[ (( Integer )val ).intValue()];
+  }
+
+  public Object convertValue( Object value )
+  {
+    Object rc = null;
+    Class c = value.getClass();
+    if ( c == Choice.class )
+      rc = new Integer((( Choice )value ).getIndex());
+    else if ( c == Integer.class )
+      rc = value;
+    else // assume String
+    { 
+      String str = ( String )value;
+      for ( int i = 0; i < choices.length; i++ )
+      {
+        if ( str.equals( choices[ i ].getText()))
+        {
+          rc = new Integer( i );
+          break;
+        }
+      }
+    }
+    return rc;
+  }
+
+  public void setValue( Object value )
   {
   }
 

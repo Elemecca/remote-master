@@ -304,7 +304,7 @@ public class KeyMapMaster
     BufferedReader rdr = new BufferedReader( new FileReader( f ));
     Properties props = null;
     String name = null;
-    byte[] id = new byte[ 2 ];
+    Hex id = null;
     String type = null;
 
     while ( true )
@@ -330,7 +330,7 @@ public class KeyMapMaster
         }
         name = line.substring( 1, line.length() - 1 ).trim();
         props = new Properties();
-        id = new byte[ 2 ];
+        id = null;
         type = "Protocol";
       }
       else
@@ -346,9 +346,7 @@ public class KeyMapMaster
 
         if ( parmName.equals( "PID" ))
         {
-          st = new StringTokenizer( parmValue, " " );
-          id[ 0 ] = ( byte )Integer.parseInt( st.nextToken(), 16 );
-          id[ 1 ] = ( byte )Integer.parseInt( st.nextToken(), 16 );
+          id = new Hex( parmValue );
         }
         else if ( parmName.equals( "Type" ))
         {

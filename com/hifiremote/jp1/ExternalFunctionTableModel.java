@@ -23,6 +23,7 @@ public class ExternalFunctionTableModel
 
   public ExternalFunctionTableModel( DeviceUpgrade upgrade )
   {
+    super( upgrade.getExternalFunctions());
     this.upgrade = upgrade;
   }
 
@@ -31,13 +32,6 @@ public class ExternalFunctionTableModel
     JComboBox cb = ( JComboBox )devTypeEditor.getComponent();
     cb.setModel( new DefaultComboBoxModel( upgrade.getRemote().getDeviceTypes()));
     fireTableDataChanged();
-  }
-
-  public int getRowCount()
-  {
-    int rc = upgrade.getExternalFunctions().size();
-
-    return rc;
   }
 
   public int getColumnCount()
@@ -49,7 +43,7 @@ public class ExternalFunctionTableModel
   {
     Vector functions = upgrade.getExternalFunctions();
     ExternalFunction function = ( ExternalFunction )functions.elementAt( row );
-    byte[] hex = function.getHex();
+    Hex hex = function.getHex();
 
     Object rc = null;
 
@@ -68,7 +62,7 @@ public class ExternalFunctionTableModel
         rc = new Integer( function.getSetupCode());
         break;
       case typeCol:
-        rc = new Integer( function.getType());
+        rc = choices[ function.getType() ];
         break;
       case hexCol:
         rc = function;
@@ -108,15 +102,50 @@ public class ExternalFunctionTableModel
         function.setName(( String )value );
         break;
       case devTypeCol:
+        if ( value.getClass() == String.class )
+        {
+          String str = ( String )value;
+          DeviceType[] types = upgrade.getRemote().getDeviceTypes();
+          for ( int i = 0; i < types.length; i++ )
+          {
+            if ( str.equals( types[ i ].getName()))
+            {
+              value = types[ i ];
+              break;
+            }
+          }
+        }
         function.setDeviceType(( DeviceType )value );
         break;
       case setupCodeCol:
+        if ( value.getClass() == String.class )
+          value = new Integer(( String )value );
         function.setSetupCode((( Integer )value ).intValue());
         break;
       case typeCol:
-        function.setType(( Integer )value );
+        if ( value.getClass() == String.class )
+        {
+          String str = ( String )value;
+          for ( int i = 0; i < choices.length; i++ )
+          {
+            if ( str.equals( choices[ i ].getText()))
+            {
+              value = choices[ i ];
+              break;
+            }
+          }
+        }
+        function.setType((( Choice )value ).getIndex());
         break;
       case hexCol:
+        if ( value.getClass() == String.class )
+        { 
+          String str = ( String )value;
+          if ( function.getType() == ExternalFunction.EFCType )
+            function.setEFC( new EFC( str ));
+          else
+            function.setHex( new Hex( str ));
+        }
         break;
       case notesCol:
         function.setNotes(( String )value );
@@ -127,7 +156,7 @@ public class ExternalFunctionTableModel
     fireTableRowsUpdated( row, row );
   }
 
-  public TableCellEditor getEditor( int col )
+  public TableCellEditor getColumnEditor( int col )
   {
     TableCellEditor rc = null;
     switch ( col )
@@ -135,7 +164,8 @@ public class ExternalFunctionTableModel
       case nameCol:
         break;
       case devTypeCol:
-        devTypeEditor = new DefaultCellEditor( new JComboBox());
+        if ( devTypeEditor == null )
+          devTypeEditor = new DefaultCellEditor( new JComboBox());
         rc = devTypeEditor;
         break;
       case setupCodeCol:
@@ -156,7 +186,7 @@ public class ExternalFunctionTableModel
     return rc;
   }
 
-  public TableCellRenderer getRenderer( int col )
+  public TableCellRenderer getColumnRenderer( int col )
   {
     TableCellRenderer rc = null;
     switch ( col )
@@ -204,40 +234,10 @@ public class ExternalFunctionTableModel
     return rc;   
   }
 
-  public void removeRow( int row )
-  {
-    upgrade.getExternalFunctions().removeElementAt( row );
-  }
-
-  public void insertRow( int row, Object object )
-  {
-    upgrade.getExternalFunctions().insertElementAt( object, row );
-  }
-  
-  public void addRow( Object object )
-  {
-    upgrade.getExternalFunctions().add( object );
-  }  
-
-  public Object getRow( int row )
-  {
-    return upgrade.getExternalFunctions().elementAt( row );
-  }
-
-  public void moveRow( int from, int to )
-  {
-    Vector functions = upgrade.getExternalFunctions();
-    Object o = functions.elementAt( from );
-    if ( from < to )
-      to--;
-
-    functions.insertElementAt( o, to );
-  }
-
   private final static String[] names =
     { " # ", "Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "Notes" };
   private final static Class[] classes =
-    { Integer.class, String.class, DeviceType.class, Integer.class, Integer.class, ExternalFunction.class, String.class };
+    { Integer.class, String.class, DeviceType.class, Integer.class, Choice.class, ExternalFunction.class, String.class };
 
   private final static Choice[] choices =
   {

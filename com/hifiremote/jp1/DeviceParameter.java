@@ -24,9 +24,9 @@ public abstract class DeviceParameter
     this.ref = ref;
   }
 
-  public Integer getDefaultValue()
+  public Object getDefaultValue()
   {
-    Integer rc = null;
+    Object rc = null;
     if ( ref == null )
       rc = super.getDefaultValue();
     else

@@ -91,4 +91,14 @@ public class TableMap extends KMTableModel
     {
       model.moveRow( from, to );
     }
+
+    public TableCellRenderer getColumnRenderer( int col )
+    {
+      return model.getColumnRenderer( col );
+    }
+    
+    public TableCellEditor getColumnEditor( int col )
+    {
+      return model.getColumnEditor( col );
+    }
 }
