@@ -80,7 +80,7 @@ public class ExternalFunction
     byte[] hex = hexData;
     if ( hexData != null )
     {
-      rc = new Integer( Protocol.hex2efc( hexData, 0 ));
+      rc = new Integer( Protocol.hex2efc( hexData, 0 ) & 0xFF );
     }
     return rc;
   }

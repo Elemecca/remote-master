@@ -68,7 +68,7 @@ public class FunctionTableModel
     else if ( col == efcCol )
     {
       if ( hex != null )
-        rc = new Integer( protocol.hex2efc( hex ));
+        rc = new Integer( protocol.hex2efc( hex ) & 0xFF );
       else
         rc = hex;
     }
@@ -151,7 +151,7 @@ public class FunctionTableModel
     else if ( col == efcCol )
       rc = "EFC";
     else if ( col == hexCol )
-      rc = "Hex";
+      rc = " Hex ";
     else if ( col == notesCol )
       rc = "Notes";
     else

@@ -15,7 +15,8 @@ public class ByteRenderer
   protected void setValue( Object value )
   {
     if ( value != null )
-      super.setValue( Integer.toString( Translate.byte2int((( Integer )value ).byteValue())));
+//      super.setValue( Integer.toString( Translate.byte2int((( Integer )value ).byteValue())));
+      super.setValue((( Integer )value ).toString());
     else
       super.setValue( value );
   }

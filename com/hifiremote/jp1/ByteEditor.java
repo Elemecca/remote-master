@@ -37,8 +37,8 @@ public class ByteEditor
     if ( value == null )
       tf.setText( "" );
     else
-//      tf.setText( df.format( Integer.toString( Translate.byte2int((( Integer )value ).byteValue()))));
-      tf.setText( Integer.toString( Translate.byte2int((( Integer )value ).byteValue())));
+//    tf.setText( Integer.toString( Translate.byte2int((( Integer )value ).byteValue())));
+      tf.setText( (( Integer )value ).toString());
 
     tf.selectAll();
     return tf;
