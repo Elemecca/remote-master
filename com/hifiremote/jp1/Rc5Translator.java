@@ -49,6 +49,8 @@ public class Rc5Translator
             continue;
 
           // extract the device number
+          if (( devParms[ index ] == null ) || devParms[ index ].getValue() == null )
+            continue;
           int tempDevice = (( Integer )devParms[ index ].getValue()).intValue();
           // extract the flag
           int tempFlag = (( Integer )devParms[ index + 1 ].getValue()).intValue();
@@ -65,8 +67,12 @@ public class Rc5Translator
     }
     else
     {
+      if (( parms[ 0 ] == null ) || ( parms[ 0 ].getValue() == null ))
+        return;
       select = (( Integer )parms[ 0 ].getValue()).intValue();
       insert( hexData, 6, 2, select );
+      if (( parms[ 1 ] == null ) || ( parms[ 1 ].getValue() == null ))
+        return;
       obc = (( Integer )parms[ 1 ].getValue()).intValue();
       insert( hexData, 0, 6, complement( obc, 6 ));
     }
