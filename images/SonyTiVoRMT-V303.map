@@ -1,0 +1,49 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:SonyTiVoRMT-V303
+#$DATE:Fri Sep 05 12:10:32 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:SonyTiVoRMT-V303.jpg
+#$FORMAT:ncsa
+#$EOH
+default SonyTiVoRMT-V303
+circle muting  49,34 63,41
+circle POWER  120,30 131,41
+circle TV_power  85,34 99,41
+circle 1  50,63 60,73
+circle 2  85,63 95,73
+circle 3  121,63 131,73
+circle 4  49,88 59,98
+circle 5  85,88 95,98
+circle 6  121,88 131,98
+circle 7  49,113 59,123
+circle 8  85,113 95,123
+circle 9  121,113 131,123
+circle clear  48,138 62,145
+circle 0  84,138 94,148
+circle enter{jump}  120,138 134,146
+circle fwd  118,325 133,337
+circle list  35,186 49,200
+circle VOL-  59,426 72,440
+circle guide{liveTV}  132,187 146,201
+circle VOL+  60,396 73,410
+circle rec_on/off  83,361 94,372
+circle thumbsUP  132,265 146,279
+circle back  48,325 63,337
+circle pause  83,325 94,336
+circle UP  85,202 109,211
+circle DOWN  84,251 108,260
+circle REPLAY  47,362 55,370
+circle ch+{Page+}  105,395 117,407
+circle ch-{Page-}  105,428 117,440
+circle advance  119,362 127,370
+circle play  61,290 72,301
+circle slow  107,291 118,302
+circle thumbsDown  34,265 48,279
+circle select  84,226 106,237
+circle left  48,226 56,249
+circle right  119,227 127,250
+poly tivomenu 70,159 100,159 95,184 74,184 70,159

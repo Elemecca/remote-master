@@ -1,0 +1,57 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:urc-4080
+#$DATE:Fri Sep 05 14:29:30 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:urc-4080.jpg
+#$FORMAT:ncsa
+#$EOH
+default urc-4080
+circle mute  79,109 90,117
+circle POWER  119,30 127,38
+circle VOL+  113,112 119,124
+circle VOL-  43,110 49,122
+circle CH+  78,131 101,137
+circle CH-  78,91 101,97
+circle 1  46,181 57,192
+circle 2  77,182 88,193
+circle 3  108,182 119,193
+circle 4  45,205 56,216
+circle 5  77,206 88,217
+circle 6  109,207 120,218
+circle 7  44,229 55,240
+circle 8  77,230 88,241
+circle 9  109,231 120,242
+circle 0  76,256 88,267
+circle rec  118,369 129,376
+circle fwd-scan  80,297 105,304
+circle v-config  119,282 134,289
+circle rew-scan  80,356 105,362
+circle set[Setup]  37,27 43,33
+circle m-power  90,22 102,26
+circle tv  38,45 45,52
+circle dvd  64,39 71,46
+circle vcr  94,40 101,47
+circle cbl/sat  120,50 127,57
+circle f1  38,64 46,70
+circle f2  65,56 74,62
+circle f3  94,58 103,63
+circle f4  120,68 128,74
+rect enter 35,249 55,264
+rect prev-ch 99,250 119,265
+circle pause  42,370 53,377
+circle rewind  42,327 49,344
+circle ffwd  118,326 125,343
+circle exit  35,85 44,94
+circle menu  79,73 90,78
+circle tv-video  121,89 130,98
+circle move  122,135 131,144
+circle display  125,155 137,161
+circle swap  79,147 91,151
+circle pip  35,133 44,142
+circle sleep  32,152 44,158
+circle play  79,317 95,322
+circle stop  79,337 95,342

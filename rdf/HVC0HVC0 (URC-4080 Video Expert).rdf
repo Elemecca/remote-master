@@ -6,6 +6,7 @@ UpgradeAddr=$100..$7FD
 Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
+ImageMap=urc-4080.map
 
 [Settings]
 VPT Device=$012.7.8.1.0 DeviceButtons
@@ -15,16 +16,16 @@ VPT Status=$018.3.1.0.0 (Off;On)
 ^$000:$002..$7FD
 
 [DeviceTypes]
-Cable   = 0
+CBL/SAT = 0
 TV      = 0
 VCR     = 1
 DVD     = 2
 
 [DeviceTypeAliases]
-Cable = Cable,SAT,Video Acc
-TV    = TV
-VCR   = VCR,DVD,Tape,Laserdisc
-DVD   = CD,Tuner,DAT,Home Auto,Misc Audio,Phono,Amp
+CBL/SAT	= Cable,SAT,Video Acc
+TV    	= TV
+VCR   	= VCR,DVD,Tape,Laserdisc
+DVD   	= CD,Tuner,DAT,Home Auto,Misc Audio,Phono,Amp
 
 [DeviceButtons]
 CBL/SAT = $00A $00B
@@ -38,7 +39,7 @@ TV=$01,DVD=$11,VCR=$0A,CBL/SAT=$09,
 vol+=$04,vol-=$05,mute=$08,
 ch+=$06,ch-=$07,
 power=$03,
-play=$0C,pause=$0F,stop=$0E,rewind=$0B,ffwd=$0D,record=$10,
+play=$0C,pause=$0F,stop=$0E,rewind=$0B,ffwd=$0D,rec=$10,
 rew-scan=$2D,fwd-scan=$2C,
 exit=$25,
 enter=$12,
@@ -51,7 +52,7 @@ display=$2B,
 v-config=$20,
 m-power=$14,
 F1=$21,F2=$22,F3=$23,F4=$24,
-SETUP=$02,
+SET[SETUP]=$02,
 Phantom1=60, Phantom2, Phantom3, Phantom4
 
 [MultiMacros]
@@ -62,11 +63,11 @@ F4=$016
 
 [ButtonMaps]
 0 = (31, 21, 22, 23, 25, 26, 27, 28, 29, 30), (4, 5, 8), (6, 7),
-    $03, $12, $18, $13, $26, $25, $2A, $2B, $27, $28, $29, $86, $87, $85, $84, $88
+    $03, $12, $18, $13, $26, $25, $2A, $2B, $27, $28, $29
 1 = (31, 21, 22, 23, 25, 26, 27, 28, 29, 30), (4, 5, 8), (6, 7),
-    $03, $12, $18, $13, $26, $25, $2A, $2B, $27, $28, $29, $86, $87, $85, $84, $88, $0C, $0F, $0B, $0D, $0E, $10, $2C, $2D
+    $03, $12, $18, $13, $26, $25, $2A, $2B, $27, $28, $29, $0C, $0F, $0B, $0D, $0E, $10, $2C, $2D
 2 = (31, 21, 22, 23, 25, 26, 27, 28, 29, 30), (4, 5, 8), (6, 7),
-    $03, $12, $18, $13, $26, $25, $2A, $2B, $86, $87, $85, $84, $88, $0C, $0F, $0B, $0D, $0E, $10, $2C, $2D
+    $03, $12, $18, $13, $26, $25, $2A, $2B, $0C, $0F, $0B, $0D, $0E, $10, $2C, $2D
 
 [DigitMaps]
 72 48 53 54 94 86 03 81 90 44 46 29 16 11 23 92
@@ -79,4 +80,3 @@ F4=$016
 0060, 0061, 0065, 007E, 0092, 00A4, 00AF, 00C4, 00C5, 00C9, 
 00CA, 00D0, 00D7, 00D9, 00DE, 00E2, 00E8, 00F5, 00F8, 010F, 
 0111
-

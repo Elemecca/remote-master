@@ -1,0 +1,68 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:15-1994
+#$DATE:Fri Sep 05 11:18:13 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:Outlaw-Audio.jpg
+#$FORMAT:ncsa
+#$EOH
+default 1994
+circle device3  36,50 42,56
+circle cbl/sat  60,49 66,55
+circle VCR/DVD  86,49 92,55
+circle TV  111,50 117,56
+circle device4  37,66 43,72
+circle device5  60,66 66,72
+circle device6  86,65 92,71
+circle vid2  65,354 71,360
+circle vid3  91,354 97,360
+circle dvd  114,353 120,359
+circle cd  42,376 48,382
+circle SLEEP  76,176 84,181
+circle MENU{mono}  115,283 121,289
+circle GUIDE{test}  39,217 45,223
+circle exit{spkr}  113,217 119,223
+circle input{digital}  76,193 84,198
+circle POWER  105,31 112,38
+circle UP  76,231 100,238
+circle LEFT  41,251 48,267
+circle RIGHT  111,251 118,268
+circle DOWN  76,271 100,278
+circle SELECT  77,251 91,258
+circle MUTE  42,136 52,143
+circle VOL+  42,164 51,175
+circle VOL-  42,191 51,202
+circle CH+  108,165 117,176
+circle CH-  109,192 118,203
+circle 1  42,82 52,89
+circle 2  75,81 85,88
+circle 3  107,81 117,88
+circle 4  42,100 52,107
+circle 5  75,100 85,107
+circle 6  107,100 117,107
+circle 7  42,118 52,125
+circle 8  75,118 85,125
+circle 9  107,119 117,126
+circle 0  75,136 85,143
+circle LAST{x_Over}  76,160 84,165
+circle vid1  42,354 48,360
+circle REW{preset_down}  41,306 52,312
+circle PLAY{p.scan}  77,305 88,311
+circle FWD{preset_up}  113,305 124,311
+circle PAUSE{memory}  113,328 124,334
+circle REC{delay}  41,329 52,335
+circle SETUP  39,27 44,32
+circle info{mode}  39,283 45,289
+circle device7  110,65 116,71
+circle aux  65,375 71,381
+circle tape  91,375 97,381
+circle 6_ch  115,375 121,381
+circle surr_6.1  42,397 48,403
+circle ctr_trim  65,397 71,403
+circle sur_trim  91,397 97,403
+circle sub_trim  113,397 119,403
+circle enter  107,137 117,144
+circle stop{am/fm}  78,328 89,334
