@@ -56,12 +56,10 @@ public class LayoutPanel
         }
       }
     };
-    JPanel temp = new JPanel( new BorderLayout());
     JPanel fPanel = new JPanel();
     fPanel.add( imagePanel );
 
-    temp.add( fPanel, BorderLayout.NORTH );
-    add( temp, BorderLayout.CENTER );
+    add( new JScrollPane( fPanel ), BorderLayout.WEST );
     JPanel infoPanel = new JPanel( new GridLayout( 2, 3 ));
 
     infoPanel.add( new JLabel( "Button:" ));
@@ -79,23 +77,19 @@ public class LayoutPanel
     shifted.setEditable( false );
     infoPanel.add( shifted );
 
-    Box box = Box.createVerticalBox();
-    box.add( infoPanel );
-    box.add( Box.createVerticalGlue());
-    box.add( Box.createVerticalGlue());
-
     add( infoPanel, BorderLayout.NORTH );
 
     JPanel panel = new JPanel( new BorderLayout());
     JLabel label = new JLabel( "Available Functions:" );
     label.setBorder( BorderFactory.createEmptyBorder( 2, 2, 3, 2 ));
     panel.add( label, BorderLayout.NORTH );
-    temp.add( panel, BorderLayout.CENTER );
+    add( panel, BorderLayout.CENTER );
 
     JPanel outerPanel = new JPanel( new BorderLayout());
-    functionPanel = new JPanel( new GridLayout( 0, 5 ));
-    outerPanel.add( functionPanel, BorderLayout.NORTH );
-    panel.add( new JScrollPane( outerPanel ), BorderLayout.CENTER );
+    functionPanel = new JPanel( new GridLayout( 0, 4 ));
+    
+    outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.NORTH );
+    panel.add( outerPanel, BorderLayout.CENTER );
 
     MouseInputAdapter mia = new MouseInputAdapter()
     {

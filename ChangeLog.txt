@@ -1,9 +1,13 @@
+Changes for v0.52
+
+- Layout panel now uses a vertical image of the remote, on the left side.
+
 Changes for v0.51
 
 - Win98 doesn't repaint Layout Panel when device type changed
 - Select a button on the Layout Panel by clicking on it.
 - Added text fields showing name of selected button and assigned functions.
-- Added popup menu for assigning functions to buttons.  Hold 
+- Added popup menu for assigning functions to buttons.  Hold
   shift key to assign shifted function.
 - Added function grid.  Double-click a function to assign it
   to the selected button.  Hold shift key to assign shifted function.

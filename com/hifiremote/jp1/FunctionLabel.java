@@ -32,10 +32,10 @@ public class FunctionLabel
       setToolTipText( "Drag or double-click this function to clear the function performed by a button." );
     else
     {
-      if ( function.getNotes() != null )
+//      if ( function.getNotes() != null )
         setToolTipText( function.getNotes());
-      else
-        setToolTipText( "" );
+//      else
+//        setToolTipText( "" );
 //      setToolTipText( "Drag or double-click this function to set the function performed by a button." );
     }
 

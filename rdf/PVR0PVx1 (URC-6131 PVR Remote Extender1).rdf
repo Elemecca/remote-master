@@ -1,0 +1,241 @@
+[General]
+Name=URC-6131 PVR Remote extender1
+EepromSize=$800
+AdvCodeAddr=$400..$781
+UpgradeAddr=$100..$3FF
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+Image=URC-6131.jpg
+
+[Settings]
+T Device=$7FD.7.8.1.0 DeviceButtons
+V Device=$7FE.7.8.1.0 DeviceButtons
+O Device=$7FF.7.8.1.0 DeviceButtons
+Shift Button Keycode=$07C0.7.8.2.0
+Alt Shift Button Keycode=$07C5.7.8.2.0
+Alt Shift=$07CA.6.1.0.1 (Xshift;Ordinary)
+
+[Checksums]
+^$000:$002..$3FC
+
+[FixedData]
+$01D = $03
+
+[DeviceTypes]
+CBL/SAT = 0
+TV      = 1
+VCR/DVD = 2
+AUD     = 2
+
+[DeviceTypeAliases]
+CBL/SAT = Cable, SAT, Video Acc
+TV      = TV
+VCR/DVD = VCR, DVD, Tape, Laserdisc, DAT
+AUD     = CD, Home Auto, Phono, Tuner, Misc Audio, Amp
+
+[DeviceButtons]
+CBL/SAT = $00A $00B
+TV      = $00C $00D
+PVR     = $00E $00F
+VCR     = $010 $011
+DVD     = $012 $013
+AUD     = $014 $015
+dev7    = $016 $017
+dev8    = $018 $019
+
+[Buttons]
+CBL/SAT=$09,
+TV=$01,
+PVR=$0A,
+VCR=$39,
+DVD=$11,
+AUD=$22,
+dev7=$28,
+dev8=$38,
+Menu=$21,
+Power=$03,
+Info=$18,
+Guide=$14,
+Up_Arrow=$31,
+Exit=$24,
+Left_Arrow=$33,
+Select=$35,
+Right_Arrow=$34,
+Down_Arrow=$32,
+Vol+=$04,
+Vol-=$05,
+CH+=$06,
+CH-=$07,
+Mute=$08,
+Prev=$23,
+Replay=$27,
+Thumbs_Down=$2D,
+PVR_Menu=$36,
+Thumbs_Up=$2C,
+Advance=$29,
+Stop=$0E,
+Play=$0C,
+Rewind=$0B,
+Pause=$0F,
+Fast_Forward=$0D,
+Prev_Track=$2A,
+Next_Track=$2B,
+Record=$10,
+Audio_CC=$37,
+Subtitle=$25,
+Angle_Sleep=$26,
+Slow=$2E,
+1=$15,
+2=$16,
+3=$17,
+4=$19,
+5=$1A,
+6=$1B,
+7=$1C,
+8=$1D,
+9=$1E,
+0=$1F,
+Enter=$12,
+TV/VID=$13,
+PIP=$2F,
+Swap=$20,
+Move=$30,
+SETUP=$02,
+Phantom1=$3D, Phantom2=$3E, Phantom3=$3F, Phantom4=$40
+X_SAT=$5F,T_SAT,V_SAT,O_SAT,
+X_TV=$63,T_TV,V_TV,O_TV,
+X_PVR=$67,T_PVR,V_PVR,O_PVR,
+X_VCR=$6B,T_VCR,V_VCR,O_VCR,
+X_DVD=$6F,T_DVD,V_DVD,O_DVD,
+X_AUD=$73,T_AUD,V_AUD,O_AUD,
+X_DEV7=$77,T_DEV7,V_DEV7,O_DEV7,
+X_DEV8=$7B,T_DEV8,V_DEV8,O_DEV8,
+X_Cancel=$7F,
+xs-CBL/SAT=$C9,
+xs-TV=$C1,
+xs-PVR=$CA,
+xs-VCR=$F9,
+xs-DVD=$D1,
+xs-AUD=$E2,
+xs-dev7=$E8,
+xs-dev8=$F8,
+xs-Menu=$E1,
+xs-Power=$C3,
+xs-Info=$D8,
+xs-Guide=$D4,
+xs-Up_Arrow=$F1,
+xs-Exit=$E4,
+xs-Left_Arrow=$F3,
+xs-Select=$F5,
+xs-Right_Arrow=$F4,
+xs-Down_Arrow=$F2,
+xs-Vol+=$C4,
+xs-Vol-=$C5,
+xs-CH+=$C6,
+xs-CH-=$C7,
+xs-Mute=$C8,
+xs-Prev=$E3,
+xs-Replay=$E7,
+xs-Thumbs_Down=$ED,
+xs-PVR_Menu=$F6,
+xs-Thumbs_Up=$EC,
+xs-Advance=$E9,
+xs-Stop=$CE,
+xs-Play=$CC,
+xs-Rewind=$CB,
+xs-Pause=$CF,
+xs-Fast_Forward=$CD,
+xs-Prev_Track=$EA,
+xs-Next_Track=$EB,
+xs-Record=$D0,
+xs-Audio_CC=$F7,
+xs-Subtitle=$E5,
+xs-Angle_Sleep=$E6,
+xs-Slow=$EE,
+xs-1=$D5,
+xs-2=$D6,
+xs-3=$D7,
+xs-4=$D9,
+xs-5=$DA,
+xs-6=$DB,
+xs-7=$DC,
+xs-8=$DD,
+xs-9=$DE,
+xs-0=$DF,
+xs-Enter=$D2,
+xs-TV/VID=$D3,
+xs-PIP=$EF,
+xs-Swap=$E0,
+xs-Move=$F0,
+xs-SETUP=$C2
+
+[ButtonMaps]
+0 = ($1f, $15, $16, $17, $19, $1a, $1b, $1c, $1d, $1e), ($04, $05, $08), ($06, $07),
+     $03, $21, $18, $35, $23, $13, $24, $31, $32, $33, $34, $14, $12, $2b, $2a, $2e, $36, $29, $27, $2c, $2d, $0c, $0f, $0b, $0d, $0e, $10
+1 = ($1f, $15, $16, $17, $19, $1a, $1b, $1c, $1d, $1e), ($04, $05, $08), ($06, $07),
+     $03, $23, $13, $18, $21, $26, $31, $32, $33, $34, $35, $24, $2f, $20, $30, $12, $14, $37
+2 = ($1f, $15, $16, $17, $19, $1a, $1b, $1c, $1d, $1e), ($04, $05, $08), ($06, $07),
+     $03, $0c, $0f, $0b, $0d, $0e, $10, $13, $18, $21, $24, $31, $32, $33, $34, $14, $35, $23, $25, $12, $2b, $2a, $2e, $37, $26, $36, $29, $27, $2c, $2d
+
+[DigitMaps]
+072 048 053 094 092 003 090 044 046 086 021 011 087 058 029 010
+085 126 023 081 016 001 127 083 034 032 075 033 030 003 080 064
+013 091 145 125 130 131 069 129
+
+[ButtonShapes]
+TV=ellipse:39,36,16,16
+PVR=ellipse:76,32,16,16
+DVD=ellipse:116,40,16,16
+CBL/SAT=ellipse:46,55,16,16
+AUD=ellipse:78,55,16,16
+VCR=ellipse:103,58,16,16
+Power=ellipse:61,77,46,13
+Menu=ellipse:27,76,16,16
+Guide=ellipse:34,96,16,16
+Exit=ellipse:116,100,16,16
+Info=ellipse:126,79,16,16
+Up_Arrow=ellipse:72,95,25,18
+Left_Arrow=ellipse:47,119,17,24
+Right_Arrow=ellipse:103,122,17,22
+Down_Arrow=ellipse:70,151,27,17
+SELECT=ellipse:72,119,24,24
+MUTE=ellipse:34,195,14,14
+VOL+=ellipse:27,152,22,32
+VOL-=ellipse:54,179,18,24
+CH+=ellipse:115,157,22,32
+CH-=ellipse:92,180,18,24
+Prev=ellipse:114,196,16,16
+Replay=ellipse:31,220,16,16
+Thumbs_Down=ellipse:50,211,16,16
+PVR_Menu=ellipse:73,209,16,16
+Thumbs_Up=ellipse:95,213,16,16
+Advance=ellipse:116,221,16,16
+Stop=ellipse:53,237,20,16
+Play=ellipse:90,239,20,16
+Rewind=ellipse:35,253,20,16
+Pause=ellipse:71,255,20,16
+Fast_forward=ellipse:107,256,20,16
+Prev_track=ellipse:52,270,20,16
+Next_track=ellipse:89,272,20,16
+Record=ellipse:30,285,16,16
+Audio_CC=ellipse:50,293,16,16
+Subtitle=ellipse:71,297,16,16
+Angle_Sleep=ellipse:93,294,16,16
+Slow=ellipse:114,287,16,16
+1=ellipse:36,322,20,16
+2=ellipse:70,327,20,16
+3=ellipse:102,323,20,16
+4=ellipse:36,346,20,16
+5=ellipse:68,350,20,16
+6=ellipse:102,346,20,16
+7=ellipse:36,368,20,16
+8=ellipse:69,372,20,16
+9=ellipse:101,368,20,16
+ENTER=ellipse:36,389,20,16
+0=ellipse:68,394,20,16
+TV/Vid=ellipse:99,389,20,16
+PIP=ellipse:33,411,16,16
+Swap=ellipse:58,416,16,16
+Move=ellipse:80,416,16,16
+SETUP=ellipse:03,411,16,16
