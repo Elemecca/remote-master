@@ -22,7 +22,8 @@ public class Function
 
   public void store( Properties props, String prefix )
   {
-    props.setProperty( prefix + ".name", name );
+    if ( name != null )
+      props.setProperty( prefix + ".name", name );
     if ( hexData != null )
       props.setProperty( prefix + ".hex", Protocol.hex2String( hexData ));
     if ( notes != null )
