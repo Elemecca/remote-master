@@ -8,6 +8,7 @@ DevCodeOffset=17
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+ImageMap=rcu-810.map
 
 [Settings]
 VPT Device=$028.7.8.1.0 DeviceButtons
@@ -62,10 +63,10 @@ AUX   = $018 $019
 
 [Buttons]
 TV, Code_Search, On/Off, VOL+, VOL-, CH+, CH-, MUTE, VCR2, VCR1,
-Rewind, Play, Fast_Fwd, Stop, Pause, Record, SAT, CBL, Clear, Menu,
+Rew, Play, Fwd, Stop, Pause, Rec, SAT, CBL, Clear, Menu,
 1, 2, 3, Enter, 4, 5, 6, 7, 8, 9,
-0, TV/VCR, DVD, AUD, AUX, Lamp, L1, L2, L3, Select,
-Up_Arrow, Down_Arrow, Right_Arrow, Left_Arrow, M1, M2, M3, Sleep, Swap, PIP,
+0, TV/VCR, DVD, AUD, AUX, {Lamp}, L1, L2, L3, Select,
+Up, Down, Right, Left, M1, M2, M3, Sleep, Swap, PIP,
 Input, Go_Back, Guide, Info, Device,
 Phantom1=60, Phantom2, Phantom3, Phantom4
 
