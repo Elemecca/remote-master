@@ -153,14 +153,23 @@ public class ButtonPanel
     model.setButtons( buttons );
   }
 
-  private void addFunction( Function f, FunctionLabel l )
+  private void addFunction( Function f )
   {
-    l.addMouseListener( doubleClickListener );
-    functionPanel.add( l );
+    if (( f == null ) ||
+        (( f.getHex() != null ) && ( f.getName() != null ) && (f.getName().length() > 0 )))
+    {
+      FunctionLabel l;
+      if ( f == null )
+        l = new FunctionLabel( null );
+      else
+        l = f.getLabel();
+      l.addMouseListener( doubleClickListener );
+      functionPanel.add( l );
 
-    FunctionItem item = new FunctionItem( f );
-    item.addActionListener( this );
-    popup.add( item );
+      FunctionItem item = new FunctionItem( f );
+      item.addActionListener( this );
+      popup.add( item );
+    }
   }
 
   private void setFunctions()
@@ -177,15 +186,15 @@ public class ButtonPanel
     for ( int i = 0; i < funcs.size(); i++ )
     {
       function = ( Function )funcs.elementAt( i );
-      addFunction( function, function.getLabel());
+      addFunction( function );
     }
     funcs = deviceUpgrade.getExternalFunctions();
     for ( int i = 0; i < funcs.size(); i++ )
     {
       function = ( Function )funcs.elementAt( i );
-      addFunction( function, function.getLabel());
+      addFunction( function );
     }
-    addFunction( null, new FunctionLabel( null ));
+    addFunction( null );
   }
 
   private void autoAssignFunctions()
