@@ -1,3 +1,10 @@
+Changes for v0.47
+
+- Changed digitMaps data type from byte to int in order to simplify 
+  handling more than 127 maps and permit handling more than 255.
+- Request 761166: Non MS windows look and feel
+- Bug 759017: Load exception when protocol prop has boolean
+
 Changes for v0.46
 
 - Limit protocol choices on setup panel to protocols supported by remote.
