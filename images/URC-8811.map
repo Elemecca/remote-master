@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-8811
-#$DATE:Wed Oct 08 15:04:20 2003
-#$PATH:C:\Backups\IR\Images\
+#$DATE:Sun Oct 19 10:21:40 2003
+#$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-8811.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -19,43 +19,43 @@ circle AUX  94,41 103,48
 circle DVD  72,35 81,42
 circle RCVR/AMP  71,79 80,86
 circle home_theater  59,57 72,66
-circle guide  26,121 35,130
+circle guide  25,121 34,130
 circle menu  15,97 22,104
-circle info  104,98 111,105
-circle exit  92,121 101,130
+circle info  103,98 110,105
+circle exit  91,121 100,130
 circle POWER  58,105 74,110
-circle up  58,127 68,133
-circle down  58,171 68,177
-circle left  34,149 41,158
+circle up  57,127 67,133
+circle down  57,171 67,177
+circle left  33,149 40,158
 circle right  83,149 90,158
 circle SELECT  58,149 67,158
-circle MUTE  22,207 29,213
+circle MUTE  22,207 28,213
 circle PREV  94,208 100,214
-circle VOL+  23,183 31,195
-circle VOL-  40,200 48,210
-circle CH+  94,184 102,196
-circle CH-  76,201 84,211
-circle 1  27,227 37,234
-circle 2  58,227 68,234
-circle 3  89,228 99,235
-circle 4  27,244 37,251
-circle 5  58,244 68,251
-circle 6  89,245 99,252
-circle 7  27,262 37,269
-circle 8  58,262 68,269
-circle 9  89,262 99,269
-circle 0  58,280 68,287
+circle VOL+  23,183 30,194
+circle VOL-  39,200 45,209
+circle CH+  94,184 101,195
+circle CH-  77,200 83,209
+circle 1  26,227 36,233
+circle 2  57,227 67,233
+circle 3  88,228 98,234
+circle 4  26,244 36,250
+circle 5  57,244 67,250
+circle 6  88,245 98,251
+circle 7  26,262 36,268
+circle 8  57,262 67,268
+circle 9  88,262 98,268
+circle 0  57,280 67,286
 circle fav  58,205 64,211
 circle PIP  26,374 34,379
 circle Swap  68,374 76,379
 circle Move  47,374 55,379
-circle ENTER  26,280 36,287
+circle ENTER  26,279 36,286
 circle rew  27,297 37,304
 circle f.rew  27,328 37,335
 circle PLAY  57,297 67,304
 circle fwd  89,297 99,304
 circle f.fwd  89,328 99,335
-circle TV/VID  89,280 100,287
+circle TV/VID  88,280 98,286
 circle m1  27,344 35,349
 circle m2  47,344 55,349
 circle m3  67,344 75,349

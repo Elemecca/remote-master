@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-6131
-#$DATE:Wed Oct 08 20:22:18 2003
-#$PATH:C:\Backups\IR\Images\
+#$DATE:Sun Oct 19 11:40:10 2003
+#$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-6131.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -26,17 +26,17 @@ circle Left  45,118 53,129
 circle Right  96,118 104,129
 circle Down  71,144 83,151
 circle SELECT  71,119 83,131
-circle MUTE  32,184 39,191
-circle VOL+  29,154 39,170
-circle VOL-  52,172 60,184
-circle CH+  112,154 122,170
-circle CH-  90,172 98,184
-circle Prev  108,185 115,192
+circle MUTE  33,183 40,190
+circle VOL+  30,153 40,167
+circle VOL-  52,170 60,182
+circle CH+  112,153 122,167
+circle CH-  90,170 98,182
+circle Prev  108,183 115,190
 circle Replay  32,207 40,215
 circle Thumbs_Down  51,200 59,208
 circle PVR_Menu  71,197 80,206
 circle Thumbs_Up  91,200 99,208
-circle Advance  110,208 118,216
+circle Advance  110,206 118,214
 circle Stop  54,223 64,230
 circle Play  87,223 97,230
 circle Rewind  37,238 47,245
@@ -64,4 +64,4 @@ circle TV/Vid  100,362 112,370
 circle PIP  37,384 45,392
 circle Swap  59,387 67,395
 circle Move  81,387 89,395
-circle SET[SETUP]  102,383 110,391
+circle SET[SETUP]  104,384 112,392

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Intuiive
-#$DATE:Sat Oct 11 22:21:43 2003
+#$DATE:Sun Oct 19 12:36:32 2003
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:Intuitive.jpg
 #$FORMAT:ncsa
@@ -32,12 +32,12 @@ circle 7  27,110 38,121
 circle 8  59,111 70,122
 circle 9  90,111 101,122
 circle 0  59,135 70,146
-circle ENTER/MUSIC  89,135 97,143
+circle ENTER{MUSIC}  89,135 97,143
 circle SETUP  84,314 91,321
 circle FAV  59,179 68,185
 circle INFO  59,198 68,204
 circle LAST  59,159 68,165
-rect RECORD 17,288 32,298
+rect {RECORD} 17,288 32,298
 rect CANCEL[blank1] 40,288 55,298
 rect THEME[blank2] 62,288 77,298
 rect EXIT 85,288 100,298
