@@ -85,17 +85,18 @@ public class SetupPanel
     fixedData.setEditable( false );
     add( fixedData, "4, 8" );
 
-    JPanel notesPanel = new JPanel( new BorderLayout());
-    notes = new JTextArea();
+    notes = new JTextArea( 5, 50 );
     notes.setToolTipText( "Enter any notes about this device upgrade." );
     notes.setLineWrap( true );
     notes.setWrapStyleWord( true );
-    notesPanel.setBorder( BorderFactory.createTitledBorder( "Upgrade Notes" ));
-    notesPanel.add( new JScrollPane( notes ), BorderLayout.CENTER );
+    JScrollPane scrollPane = new JScrollPane( notes );
+    scrollPane.setBorder( 
+      BorderFactory.createCompoundBorder( 
+        BorderFactory.createTitledBorder( "Upgrade Notes" ),
+        scrollPane.getBorder()));
     notes.getDocument().addDocumentListener( this );
-    add( notesPanel, "7, 1, 7, 9" );
+    add( scrollPane, "7, 1, 7, 9" );
 
-    notesPanel = new JPanel( new BorderLayout());
     protocolNotes = new JTextArea();
     protocolNotes.setBackground( label.getBackground());
     protocolNotes.setToolTipText( "Notes about the selected protocol." );
@@ -103,9 +104,12 @@ public class SetupPanel
     protocolNotes.setEditable( false );
     protocolNotes.setLineWrap( true );
     protocolNotes.setWrapStyleWord( true );
-    notesPanel.setBorder( BorderFactory.createTitledBorder( "Protocol Notes" ));
-    notesPanel.add( new JScrollPane( protocolNotes ), BorderLayout.CENTER );
-    add( notesPanel, "1, 10, 7, 10" );
+    scrollPane = new JScrollPane( protocolNotes );
+    scrollPane.setBorder( 
+      BorderFactory.createCompoundBorder( 
+        BorderFactory.createTitledBorder( "Protocol Notes" ),
+        scrollPane.getBorder()));
+    add( scrollPane, "1, 10, 7, 10" );
   } // SetupPanel
 
   public void update()
@@ -297,7 +301,7 @@ public class SetupPanel
   // Runnable
   public void run()
   {
-    controlToSelectAll.selectAll();
+    controlToSelectAll.selectAll(); 
   }
 
   private JFormattedTextField setupCode = null;
