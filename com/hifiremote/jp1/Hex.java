@@ -10,6 +10,11 @@ public class Hex
     data = new byte[ 0 ];
   }
 
+  public Hex( int length )
+  {
+    data = new byte[ length ];
+  }
+
   public Hex( String text )
   {
     data = parseHex( text );
@@ -58,7 +63,7 @@ public class Hex
     }
     else
     {
-      StringTokenizer st = new StringTokenizer( text, " " );
+      StringTokenizer st = new StringTokenizer( text, " $" );
       length = st.countTokens();
       rc = new byte[ length ];
       for ( int i = 0; i < length; i++ )
