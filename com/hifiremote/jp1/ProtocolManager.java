@@ -6,7 +6,10 @@ import javax.swing.*;
 
 public class ProtocolManager
 {
-  protected ProtocolManager(){}
+  protected ProtocolManager()
+  {
+//    add( new ManualProtocol( "Manual Settings", new Hex( "00 00" ), new Properties()));
+  }
   
   public static ProtocolManager getProtocolManager()
   {
@@ -106,6 +109,9 @@ public class ProtocolManager
 
   public void add( Protocol p )
   {
+    boolean isManual = false;
+    if ( p.getClass() == ManualProtocol.class )
+      isManual = true;
     // Add the protocol to the byName hashtable
     String name = p.getName();
     Vector v = ( Vector )byName.get( name );
@@ -179,7 +185,6 @@ public class ProtocolManager
   {
     return findProtocolForRemote( remote, name, true );
   }
-    
 
   public Protocol findProtocolForRemote( Remote remote, String name, boolean allowUpgrades )
   {

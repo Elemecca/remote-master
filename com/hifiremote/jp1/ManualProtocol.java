@@ -138,4 +138,9 @@ public class ManualProtocol
     if ( notes != null )
       out.print( "Protocol.notes", notes );
   }
+
+  public void setDefaultCmd( Hex cmd )
+  {
+    defaultCmd = cmd;
+  }
 }
