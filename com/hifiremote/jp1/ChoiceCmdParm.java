@@ -34,6 +34,8 @@ public class ChoiceCmdParm
     renderer = new ChoiceRenderer( choices );
     renderer.setHorizontalAlignment( SwingConstants.CENTER );
   }
+  
+  public String getDescription(){ return "Choice"; }
 
   public TableCellEditor getEditor()
   {

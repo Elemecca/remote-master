@@ -6,84 +6,203 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
+import javax.swing.table.*;
 import info.clearthought.layout.*;
 
 public class ManualSettingsDialog
   extends JDialog
   implements ActionListener
 {
-  public ManualSettingsDialog( JFrame owner, ManualProtocol protocol )
+  public ManualSettingsDialog( JFrame owner, Protocol p )
   {
     super( owner, "Manual Settings", true );
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
 
-    Border border = BorderFactory.createTitledBorder( "Protocol Parameters" );
-    JPanel devPanel = new JPanel();
-    devPanel.setBorder( border );
+    this.protocol = p;
 
-    Insets insets = border.getBorderInsets( devPanel );
-    double bt = insets.top;
-    double bl = insets.left + 10;
-    double br = insets.right;
-    double bb = insets.bottom;
-    double b = 10;       // space around border
-    double i = 5;        // space between rows
-    double v = 20;       // space between groupings
+    double i = 5;        // space between rows and around border
     double c = 10;       // space between columns
     double f = TableLayout.FILL;
-    double p = TableLayout.PREFERRED;
+    double pr = TableLayout.PREFERRED;
     double size[][] =
     {
-      { i, bl, p, b, p, p, br, i },                     // cols
-      { i, p, i, bt, p, i, p, i, p, i, p, i, p, bb }         // rows
+      { i, pr, c, pr, i },              // cols
+      { i, pr, i, f, i, pr, i, f }         // rows
     };
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
     contentPane.add( mainPanel, BorderLayout.CENTER );
     
     JLabel label = new JLabel( "Protocol ID:", SwingConstants.RIGHT );
-    mainPanel.add( label, "2, 1" );
+    mainPanel.add( label, "1, 1" );
 
     pid = new JTextField();
-    mainPanel.add( pid, "4, 1, 5, 1" );
+    pid.setText( protocol.getID().toString());
+    mainPanel.add( pid, "3, 1" );
 
-    label = new JLabel( "Number of parameters:", SwingConstants.RIGHT );
-    mainPanel.add( label, "2, 4" );
+    AbstractTableModel model = new AbstractTableModel()
+    {
+      public int getRowCount()
+      {
+        return protocol.getDeviceParameters().length;
+      }
 
-    devParmCount = new JSpinner( new SpinnerNumberModel( 0, 0, 3, 1 ));
-    mainPanel.add( devParmCount, "4, 4" );
+      public int getColumnCount()
+      {
+        return 5;
+      }
 
-    label = new JLabel( "Bit order:", SwingConstants.RIGHT );
-    mainPanel.add( label, "2, 6" );
-    ButtonGroup group = new ButtonGroup();
-    devParmLSB = new JRadioButton( "LSB" );
-    group.add( devParmLSB );
-    devParmMSB = new JRadioButton( "MSB" );
-    group.add( devParmMSB );
-    mainPanel.add( devParmLSB, "4, 6" );
-    mainPanel.add( devParmMSB, "5, 6" );
+      public String getColumnName( int col )
+      {
+        if ( col == 0 )
+          return "Name";
+        else if ( col == 1 )
+          return "Type";
+        else if ( col == 2 )
+          return "Bits";
+        else if ( col == 3 )
+          return "Style";
+        else if ( col == 4 )
+          return "Comp";
+        return null;
+      }
+      
+      public Class getColumnClass( int col )
+      {
+        if ( col == 0 )
+          return String.class;
+        else if ( col == 1 )
+          return String.class;
+        else if ( col == 2 )
+          return Integer.class;
+        else if ( col == 3 )
+          return String.class;
+        else if ( col == 4 )
+          return Boolean.class;
+        return null;
+      }
 
-    label = new JLabel( "Style:", SwingConstants.RIGHT );  
-    mainPanel.add( label, "2, 8" );
-    devParmComp = new JCheckBox( "Comp" );
-    mainPanel.add( devParmComp, "4, 8, 5, 8" );
-    
-    label = new JLabel( "Number of Bits:", SwingConstants.RIGHT );
-    mainPanel.add( label, "2, 10" );
-    devParmBits = new JSpinner( new SpinnerNumberModel( 8, 1, 8, 1 ));
-    mainPanel.add( devParmBits, "4, 10" );
+      public Object getValueAt( int row, int col )
+      {
+        DeviceParameter parm = protocol.getDeviceParameters()[ row ];
+        Translator translator = ( Translator )protocol.getDeviceTranslators()[ row ];
+        if ( col == 0 )
+          return parm.getName();
+        else if ( col == 1 )
+          return parm.getDescription();
+        else if ( col == 2 )
+          return new Integer( translator.getBits());
+        else if ( col == 3 )
+        {
+          if ( translator.getLSB())
+            return "LSB";
+          else
+            return "MSB";
+        }
+        else
+          return Boolean.valueOf( translator.getComp());
+      }
+    };
+    JTable table = new JTable( model );
+    JScrollPane scrollPane = new JScrollPane( table );
+    Box box = Box.createVerticalBox();
+    box.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ));
+    box.add( scrollPane );
+    mainPanel.add( box, "1, 3, 3, 3" );
+    JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+    buttonPanel.add( new JButton( "Add" ));
+    buttonPanel.add( new JButton( "Edit" ));
+    buttonPanel.add( new JButton( "Delete" ));
+    box.add( buttonPanel );
+    Dimension d = table.getPreferredScrollableViewportSize();
+    d.height = 100;
+    table.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Raw Fixed Data:", SwingConstants.RIGHT );
-    mainPanel.add( label, "2, 12" );
+    mainPanel.add( label, "1, 5" );
     rawHexData = new JTextField();
-    mainPanel.add( rawHexData, "4, 12, 5, 12" );
+    mainPanel.add( rawHexData, "3, 5" );
 
-    mainPanel.add( devPanel, "1, 3, 6, 13" );
-        
-    JPanel buttonPanel = new JPanel();
-    FlowLayout fl = ( FlowLayout )buttonPanel.getLayout();
-    fl.setAlignment( FlowLayout.RIGHT );
+    model = new AbstractTableModel()
+    {
+      public int getRowCount()
+      {
+        return protocol.getCommandParameters().length;
+      }
+
+      public int getColumnCount()
+      {
+        return 5;
+      }
+
+      public String getColumnName( int col )
+      {
+        if ( col == 0 )
+          return "Name";
+        else if ( col == 1 )
+          return "Type";
+        else if ( col == 2 )
+          return "Bits";
+        else if ( col == 3 )
+          return "Style";
+        else if ( col == 4 )
+          return "Comp";
+        return null;
+      }
+      
+      public Class getColumnClass( int col )
+      {
+        if ( col == 0 )
+          return String.class;
+        else if ( col == 1 )
+          return String.class;
+        else if ( col == 2 )
+          return Integer.class;
+        else if ( col == 3 )
+          return String.class;
+        else if ( col == 4 )
+          return Boolean.class;
+        return null;
+      }
+
+      public Object getValueAt( int row, int col )
+      {
+        CmdParameter parm = protocol.getCommandParameters()[ row ];
+        Translator translator = ( Translator )protocol.getCmdTranslators()[ row ];
+        if ( col == 0 )
+          return parm.getName();
+        else if ( col == 1 )
+          return parm.getDescription();
+        else if ( col == 2 )
+          return new Integer( translator.getBits());
+        else if ( col == 3 )
+        {
+          if ( translator.getLSB())
+            return "LSB";
+          else
+            return "MSB";
+        }
+        else
+          return Boolean.valueOf( translator.getComp());
+      }
+    };
+    table = new JTable( model );
+    scrollPane = new JScrollPane( table );
+    box = Box.createVerticalBox();
+    box.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ));
+    box.add( scrollPane );
+    mainPanel.add( box, "1, 7, 3, 7" );
+    buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+    buttonPanel.add( new JButton( "Add" ));
+    buttonPanel.add( new JButton( "Edit" ));
+    buttonPanel.add( new JButton( "Delete" ));
+    box.add( buttonPanel );
+    d = table.getPreferredScrollableViewportSize();
+    d.height = 100;
+    table.setPreferredScrollableViewportSize( d );
+
+    buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
 
     ok = new JButton( "OK" );
     ok.addActionListener( this );
@@ -124,15 +243,13 @@ public class ManualSettingsDialog
     return userAction;
   }
 
+  private Protocol protocol = null;
+
   private JTextField pid = null;
 
   // Device parameter stuff.
-  private JSpinner devParmCount = null;
-  private JRadioButton devParmLSB = null;
-  private JRadioButton devParmMSB = null;
-  private JCheckBox devParmComp = null;
+  private JTable table = null;
   private JTextField rawHexData = null; 
-  private JSpinner devParmBits = null;
 
   // CommandParameter stuff
   private JRadioButton cmdParmLSB = null;

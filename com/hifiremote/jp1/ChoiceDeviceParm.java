@@ -74,6 +74,8 @@ public class ChoiceDeviceParm
     return buff.toString();     
   }
 
+  public String getDescription(){ return "Choice"; }
+
   private JComboBox comboBox = null;
   private String[] choices = null;
 }

@@ -9,7 +9,6 @@ public class ProcessorManager
     processors = new Hashtable();
     add( new S3C80Processor());
     Processor p = new Processor( "6805", "C9" );
-    add( new Processor( "6805", "C9" ));
     int[] opcodes = { 0xCC, 0xCD };
     int[] addresses = 
     {
@@ -71,6 +70,18 @@ public class ProcessorManager
     if ( version != null )
       lookup = name + '-' + version;
     return ( Processor )processorManager.processors.get( lookup );
+  }
+
+  public static Processor getProcessor( String text )
+  {
+    String name = "";
+    if ( text.startsWith( "S3C8" ))
+      name = "S3C80";
+    else if ( text.startsWith( "M6805" ))
+      name = text.substring( 1 );
+    else if ( text.equals( "P8/740" ))
+      name = "740";
+    return ( Processor )processorManager.processors.get( name );
   }
 
   private void add( Processor p )

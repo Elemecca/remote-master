@@ -129,28 +129,37 @@ public class Protocol
 
   public void setProperties( Properties props ){}
 
-  public void importUpgradeCode( Remote remote, String notes )
+  public void importUpgradeCode( String notes )
   {
     StringTokenizer st = new StringTokenizer( notes, "\n" );
     String text = null;
-    while ( st.hasMoreTokens())
+    String processor = null;
+    while( st.hasMoreTokens())
     {
-      text = st.nextToken().toUpperCase();
-      if ( text.startsWith( "UPGRADE PROTOCOL 0 =" ))
-        break;
-    }
-    if ( st.hasMoreTokens())
-    {
-      text = st.nextToken(); // 1st line of code
       while ( st.hasMoreTokens())
       {
-        String temp = st.nextToken();
-        if ( temp.equals( "End" ))
+        text = st.nextToken().toUpperCase();
+        if ( text.startsWith( "UPGRADE PROTOCOL 0 =" ))
+        {
+          int pos = text.indexOf( '(' );
+          int pos2 = text.indexOf( ')', pos );
+          processor = text.substring( pos + 1, pos2 );
           break;
-        text = text + ' ' + temp;
+        }
       }
-      Processor p = remote.getProcessor();
-      code.put( p.getFullName(), new Hex( text ));
+      if ( st.hasMoreTokens())
+      {
+        text = st.nextToken(); // 1st line of code
+        while ( st.hasMoreTokens())
+        {
+          String temp = st.nextToken();
+          if ( temp.equals( "End" ))
+            break;
+          text = text + ' ' + temp;
+        }
+        Processor p = ProcessorManager.getProcessor( processor );
+        code.put( p.getFullName(), new Hex( text ));
+      }
     }
   }
 
@@ -575,6 +584,16 @@ public class Protocol
       out.print( "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ));
     if ( fixedData != null )
       out.print( "FixedData", getFixedData().toString());
+  }
+
+  public Translate[] getDeviceTranslators()
+  {
+    return deviceTranslators;
+  }
+
+  public Translate[] getCmdTranslators()
+  {
+    return cmdTranslators;
   }
 
   public final static int tooDifferent = 0x7FFFFFFF;

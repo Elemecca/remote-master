@@ -19,6 +19,8 @@ public class NumberCmdParm
     renderer = new ByteRenderer();
   }
 
+  public String getDescription(){ return "Number"; }
+
   public TableCellEditor getEditor()
   {
     return editor;

@@ -46,5 +46,9 @@ public class FlagDeviceParm
     checkBox.removeItemListener(( ItemListener )l );
   }
 
+  public String getDescription(){ return "Flag"; }
+
+  public String getName(){ return checkBox.getText();}
+
   private JCheckBox checkBox = null;
 }

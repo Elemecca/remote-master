@@ -332,10 +332,19 @@ public class DeviceUpgrade
     DecimalFormat df = new DecimalFormat( "0000" );
     buff.append( df.format( setupCode ));
     buff.append( ")" );
-    if ( includeNotes && ( description != null ) && ( description.length() != 0 ))
+    if ( includeNotes )
     {
-      buff.append( ' ' );
-      buff.append( description );
+      String descr = "";
+      if ( description != null )
+        descr = description.trim();
+      if ( descr.length() != 0 )
+      {
+        buff.append( ' ' );
+        buff.append( descr );
+      }
+      buff.append( " (RM " );
+      buff.append( KeyMapMaster.version );
+      buff.append( ')' );
     }
     buff.append( "\n " );
     buff.append( Hex.asString( id[ 1 ]));
@@ -971,7 +980,14 @@ public class DeviceUpgrade
       if ( token != null )
       {
         Hex hex = protocol.getDefaultCmd();
-        if ( useOBC )
+        if (( protocol.getClass() == ManualProtocol.class ) && token.indexOf( ' ' ) != -1 )
+        {
+          Hex newHex = new Hex( token );
+          if ( newHex.length() > hex.length())
+            (( ManualProtocol )protocol ).setDefaultCmd( newHex );
+          hex = newHex;
+        }
+        else if ( useOBC )
           protocol.setValueAt( obcIndex, hex, new Integer( token ));
         else if ( useEFC )
           protocol.efc2hex( new EFC( token ), hex );
@@ -1128,14 +1144,14 @@ public class DeviceUpgrade
                 first = false;
               else
                 buff.append( "\n" );
-              buff.append( token );
+              buff.append( token.trim());
             }
             else
               buff.append( "\n" );
           }
           notes = buff.toString().trim();
           if ( protocol.getClass() == ManualProtocol.class )
-            protocol.importUpgradeCode( remote, notes );
+            protocol.importUpgradeCode( notes );
         }
       }
     }

@@ -159,7 +159,7 @@ public class FunctionTableModel
     else if ( col == efcCol )
       rc = "EFC";
     else if ( col == hexCol )
-      rc = " Hex ";
+      rc = "    Hex    ";
     else if ( col == notesCol )
       rc = "Notes";
     else

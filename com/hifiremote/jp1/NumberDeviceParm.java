@@ -112,6 +112,8 @@ public class NumberDeviceParm
     return buff.toString();
   }
 
+  public String getDescription(){ return "Number"; }
+
   private JTextField tf = null;
   private int bits = 8;
   private int min;

@@ -16,6 +16,9 @@ public abstract class Parameter
   }
 
   public String getName(){ return name; }
+
+  public abstract String getDescription();
+
   public Object getDefaultValue()
   {
     return (defaultValue ==null) ? null : defaultValue.value();
