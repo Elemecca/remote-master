@@ -507,6 +507,7 @@ public abstract class TablePanel
         l.setText( model.getColumnName( i ));
         width =  l.getPreferredSize().width;
         column.setMaxWidth( width );
+        column.setPreferredWidth( width );
       }
 
       TableCellEditor editor = model.getColumnEditor( i );

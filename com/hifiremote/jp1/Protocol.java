@@ -79,6 +79,8 @@ public class Protocol
     }
   }
 
+  public void setProperties( Properties props ){}
+
   public void importUpgradeCode( Remote remote, String notes )
   {
     StringTokenizer st = new StringTokenizer( notes, "\n" );
@@ -134,8 +136,16 @@ public class Protocol
 
   public void setDeviceParms( Value[] parms )
   {
+    if ( parms.length != devParms.length )
+    {
+      System.err.println( "Protocol.setDeviceParms(), protocol=" + getDiagnosticName() +  
+                          ", parms.length=" + 
+                          parms.length + " and devParms.length=" + devParms.length );
+    }
+
     for ( int i = 0; i < parms.length; i++ )
     {
+      
       devParms[ i ].setValue( parms[ i ].getUserValue());
     }
   }
@@ -480,7 +490,7 @@ public class Protocol
   protected Translate[] cmdTranslators = null;
   protected Translate[] importTranslators = null;
   protected HashMap code = new HashMap( 4 );
-  private Initializer[] cmdParmInit = null;
+  protected Initializer[] cmdParmInit = null;
   protected String notes = null;
   private Vector oldNames = new Vector();
 }

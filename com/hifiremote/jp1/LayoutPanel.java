@@ -218,6 +218,8 @@ public class LayoutPanel
 
     setFunctions();
 
+    shiftMode.setText( r.getShiftLabel());
+    xShiftMode.setText( r.getXShiftLabel());
     if ( r.getXShiftEnabled())
       xShiftMode.setEnabled( true );
     else

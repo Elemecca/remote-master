@@ -194,22 +194,19 @@ public class SetupPanel
         KMPanel panel = oldProtocol.getPanel( deviceUpgrade );
         if ( panel != null )
           KeyMapMaster.getKeyMapMaster().removePanel( panel );
-        panel = newProtocol.getPanel( deviceUpgrade );
-        if ( panel != null )
-          KeyMapMaster.getKeyMapMaster().addPanel( panel, 1 );
         if ( newProtocol != null && oldProtocol != null && !updateInProgress )
           oldProtocol.convertFunctions( deviceUpgrade.getFunctions(), newProtocol );
         protocolID.setText( newProtocol.getID().toString());
-//        JViewport vp = ( JViewport )protocolNotes.getParent();
-//        vp.setViewPosition( new Point( 0, 0 ));
         deviceUpgrade.setProtocol( newProtocol );
+        panel = newProtocol.getPanel( deviceUpgrade );
+        if ( panel != null )
+          KeyMapMaster.getKeyMapMaster().addPanel( panel, 1 );
         updateParameters();
         fixedData.setText( newProtocol.getFixedData().toString());
         revalidate();
         protocolNotes.setText( newProtocol.getNotes());
         protocolNotes.setCaretPosition( 0 );
         protocolNotes.revalidate();
-//        SwingUtilities.updateComponentTreeUI( this );
       }
     }
     else // must be a protocol parameter

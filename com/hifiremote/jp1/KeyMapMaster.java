@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.89";
+  private static final String version = "v 0.90";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -609,7 +609,18 @@ public class KeyMapMaster
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ))
           return;
+        Protocol oldProtocol = deviceUpgrade.getProtocol();
         deviceUpgrade.reset();
+        Protocol newProtocol = deviceUpgrade.getProtocol();
+        if ( newProtocol != oldProtocol )
+        {
+          KMPanel oldPanel = oldProtocol.getPanel( deviceUpgrade );
+          if ( oldPanel != null )
+            removePanel( oldPanel );
+          KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
+          if ( newPanel != null )
+            addPanel( newPanel, 1 );
+        }
         setTitle( "RemoteMapMaster " + version );
         description.setText( null );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());
@@ -805,14 +816,22 @@ public class KeyMapMaster
     if ( file == null )
       return;
 
+    Protocol oldProtocol = deviceUpgrade.getProtocol();
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
+    Protocol newProtocol = deviceUpgrade.getProtocol();
+    if ( newProtocol != oldProtocol )
+    {
+      KMPanel oldPanel = oldProtocol.getPanel( deviceUpgrade );
+      if ( oldPanel != null )
+        removePanel( oldPanel );
+      KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
+      if ( newPanel != null )
+        addPanel( newPanel, 1 );
+    }
     refresh();
 
-    boolean isRMDU = true;
-
-    if ( file.getName().toLowerCase().endsWith( ".txt" ))
-      isRMDU = false;
+    boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
 
     if ( isRMDU )
     {
