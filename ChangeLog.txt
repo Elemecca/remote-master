@@ -1,6 +1,7 @@
 Changes for v0.74
 
 - Remove RDFs from the distribution
+- Updated10-14-03Maps-Images-etc.zip from Nils
 - Add support for multiple image maps in a single RDF.
 
 Changes for v0.73

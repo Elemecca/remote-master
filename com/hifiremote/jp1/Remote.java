@@ -36,21 +36,27 @@ public class Remote
         start = name.indexOf( '_', start + 1 );
       }
       
-//      name = name.replace( '_', '/' );
       int dash = name.lastIndexOf( '-', underscore );
-      int length = underscore - dash;
-      String front = name.substring( 0, dash + 1 );
-      int end = dash + count * length;
-      String back = name.substring( end );
-      --length;
-      start = dash + 1;
-      names = new String[ count ];
-      for ( int i = 0; i < count; i++ )
+      int space = name.lastIndexOf( ' ', underscore );
+      int pos = Math.max( dash, space );
+      int length = underscore - pos;
+      if ( length > 3 )
       {
-        names[ i ] = front + name.substring( start, start + length ) + back;
-        System.err.println( "names[ " + i + " ]=\"" + names[ i ] + "\"");
-        start += length + 1;
+        String front = name.substring( 0, pos + 1 );
+        int end = pos + count * length;
+        String back = name.substring( end );
+        --length;
+        start = pos + 1;
+        names = new String[ count ];
+        for ( int i = 0; i < count; i++ )
+        {
+          names[ i ] = front + name.substring( start, start + length ) + back;
+          System.err.println( "names[ " + i + " ]=\"" + names[ i ] + "\"");
+          start += length + 1;
+        }
       }
+      else
+        names[ 0 ] = name.replace( '_', '/' );
     }
     else
       names[ 0 ] = name;
