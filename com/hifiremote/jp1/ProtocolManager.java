@@ -189,6 +189,32 @@ public class ProtocolManager
     return protocol;
   }
 
+  public Protocol findProtocolByOldName( Remote remote, String name )
+  {
+    System.err.println( "ProtocolManager.findProtocolByOldName()" +
+                        " remote=" + remote.getName() + ", name=" + name );
+
+    Vector protocols = remote.getProtocols();
+    if ( protocols == null )
+      return null;
+    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    {
+      Protocol p = ( Protocol )e.nextElement();
+      Vector oldNames = p.getOldNames();
+      for ( Enumeration f = oldNames.elements(); f.hasMoreElements(); )
+      {
+        if ( name.equals(( String )f.nextElement()))
+        {
+          System.err.println( "Found protocol " + p );
+          return p;
+        }
+      }
+    }
+
+    System.err.println( "No match found!" );
+    return null;
+  }
+
   public Protocol findProtocol( String name, Hex id, String variantName )
   {
     Vector protocols = findByPID( id );

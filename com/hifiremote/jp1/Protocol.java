@@ -1,12 +1,7 @@
 package com.hifiremote.jp1;
 
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.HashMap;
-import java.util.Vector;
-import java.util.Enumeration;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
+import java.util.*;
+import javax.swing.table.*;
 
 public class Protocol
 {
@@ -65,6 +60,14 @@ public class Protocol
     {
       System.err.println( "Protocol.Protocol("+ name +") got CmdParmInit property." );
       cmdParmInit = InitializerFactory.create( temp );
+    }
+
+    temp = props.getProperty( "OldNames" );
+    if ( temp != null )
+    {
+      StringTokenizer st2 = new StringTokenizer( temp, "," );
+      while ( st2.hasMoreTokens())
+        oldNames.add( st2.nextToken().trim());
     }
   }
 
@@ -166,6 +169,11 @@ public class Protocol
   public String getNotes()
   {
     return notes;
+  }
+
+  public Vector getOldNames()
+  {
+    return oldNames;
   }
 
   // These methods allow adding columns to the Functions Panel
@@ -411,4 +419,5 @@ public class Protocol
   private HashMap code = new HashMap( 4 );
   private Initializer[] cmdParmInit = null;
   private String notes = null;
+  private Vector oldNames = new Vector();
 }

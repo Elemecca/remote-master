@@ -683,7 +683,7 @@ public class Remote
         isAdd = false;
       else
       {
-        Integer value = ( Integer )restrictionTable.get( st.nextToken());
+        Integer value = ( Integer )restrictionTable.get( token );
         if ( value == null )
           continue;
         if ( isAdd )
