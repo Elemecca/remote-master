@@ -1,3 +1,7 @@
+Changes for v1.18
+- Improve importing of KM upgrades that use Device Combiner
+- Fix importing of KM upgrades that use Panasonic MIX Combo
+
 Changes for v1.17
 - Fixed startup problems when using preferred remotes
 - Add MCE protocol.
