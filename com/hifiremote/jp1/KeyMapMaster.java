@@ -820,6 +820,7 @@ public class KeyMapMaster
           }
           System.err.println();
           System.err.println( "Setting new protocol" );
+          p.convertFunctions( deviceUpgrade.getFunctions(), match );
           deviceUpgrade.setProtocol( match );
           return;
         }
