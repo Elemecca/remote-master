@@ -4,44 +4,46 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:urc-7070
-#$DATE:Sun Oct 12 11:39:48 2003
+#$DATE:Fri Oct 24 12:56:21 2003
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:urc-7070.jpg
 #$FORMAT:ncsa
 #$EOH
 default 7070
-circle TV  61,47 72,52
-circle POWER  90,47 102,52
-circle 1  34,80 45,91
-circle 2  62,80 73,91
-circle 3  89,80 100,91
-circle 4  35,104 46,115
-circle 5  62,104 73,115
-circle 6  89,106 100,117
-circle 7  35,131 46,142
-circle 8  61,130 72,141
-circle 9  88,130 99,141
-circle 0  62,155 73,166
-circle MUTE  62,180 75,185
-circle ENTER  35,156 47,162
-circle VOL+  30,181 40,191
-circle VOL-  30,210 40,220
-circle REC  20,275 28,283
-circle CH+  94,180 104,190
-circle TV/VCR  103,276 111,284
-circle CH-  94,211 104,221
-circle MENU  62,195 75,200
-circle SHIFT  62,210 75,215
-circle CBL  29,47 40,52
-circle SAT  30,62 41,67
-circle VCR/LD  61,62 72,67
-circle MAGIC[Setup]  90,62 101,67
-circle PLAY  62,232 71,238
-circle FF  92,253 103,259
-circle PAUSE  62,253 78,264
-circle REW  32,253 43,259
-circle STOP  62,274 71,280
-circle CD  93,306 105,311
-circle RCVR  61,306 73,311
-circle AMP  30,306 42,311
-circle PC  89,155 101,161
+circle TV  65,46 76,51
+circle POWER  94,46 106,51
+circle 1  37,81 48,92
+circle 2  65,81 76,92
+circle 3  92,82 103,93
+circle 4  39,107 50,118
+circle 5  64,106 75,117
+circle 6  91,107 102,118
+circle 7  38,131 49,142
+circle 8  65,131 76,142
+circle 9  91,132 102,143
+circle 0  64,157 75,168
+circle MUTE  64,182 77,187
+circle ENTER  91,158 103,164
+circle VOL+  33,183 43,193
+circle VOL-  33,213 43,223
+circle REC  24,278 32,286
+circle CH+  95,182 105,192
+circle TV/VCR  105,278 113,286
+circle CH-  97,213 107,223
+circle MENU  65,197 78,202
+circle SHIFT  64,213 77,218
+circle CBL  34,46 45,51
+circle SAT  34,61 45,66
+circle VCR/LD  65,61 76,66
+circle MAGIC[Setup]  93,62 104,67
+circle PLAY  64,234 73,240
+circle FF  94,256 105,262
+circle PAUSE  64,255 80,266
+circle REW  34,255 45,261
+circle STOP  64,277 73,283
+circle CD  95,307 107,312
+circle RCVR  64,307 76,312
+circle AMP  33,307 45,312
+circle PC  38,157 50,163
+circle learn  33,340 46,344
+circle shift  32,357 45,361

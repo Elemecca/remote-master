@@ -1,0 +1,59 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:15-1934
+#$DATE:Fri Oct 24 17:41:20 2003
+#$PATH:C:\Backups\JP1\Images\
+#$GIF:15-1934.jpg
+#$FORMAT:ncsa
+#$EOH
+default 1934
+rect vcr 56,87 81,97
+rect sat 48,105 64,115
+rect aux=amp 71,105 87,115
+circle center  29,198 36,205
+circle select  29,174 36,181
+circle tv/vcr=tv/sat  29,221 36,228
+circle Menu  29,151 36,158
+circle POWER  100,133 109,142
+circle up  92,153 104,159
+circle down  92,186 104,192
+circle left  73,169 79,181
+circle right  111,169 117,181
+rect sur[Surround] 84,164 99,176
+circle shift  53,216 62,225
+rect 2 48,238 63,253
+rect 4 25,261 40,276
+rect 5 48,261 63,276
+rect 6 70,261 85,276
+rect 8 48,284 63,299
+rect 0 48,307 63,322
+circle mute  103,262 110,269
+circle sleep  103,286 110,293
+circle B  102,310 109,317
+circle rec  75,362 82,369
+rect ENTER 24,308 41,320
+poly REW{slow-} 37,330 37,344 23,337 37,330 37,330
+poly FF{slow+} 71,330 71,344 85,337 71,330 71,330
+poly pl{slow} 49,330 49,344 63,337 49,330 49,330
+rect TV/SAT 69,308 86,320
+rect PAU 93,331 108,345
+rect STOP 48,355 62,370
+circle escape  32,362 41,368
+circle SETUP  98,362 107,368
+circle {LIGHT}  53,191 62,200
+poly home_theater 29,122 88,122 79,133 40,133 29,122 31,122 29,122 29,122
+poly cbl 88,97 88,86 106,86 111,91 111,97 95,97 88,97 88,97
+poly cd 38,105 22,105 22,112 25,115 38,115 38,105 38,105
+poly Plug&Power 95,105 111,105 111,112 108,115 95,115 95,105 95,105
+poly 1 40,253 25,253 25,241 28,238 40,238 40,253 40,253
+poly 3 70,253 85,253 85,241 82,238 70,238 70,253 70,253
+poly 7 39,284 24,284 24,296 27,299 39,299 39,284 39,284
+poly 9 69,284 84,284 84,296 81,299 69,299 69,284 69,284
+poly tv 22,98 22,94 30,87 47,87 47,98 22,98 22,98
+poly vol+ 100,220 115,212 110,234 100,220 100,220
+poly vol- 99,221 83,231 108,234 99,221 99,221
+poly ch- 96,213 80,222 88,200 96,213 96,213
+poly ch+ 96,212 89,199 111,203 96,212 96,212
