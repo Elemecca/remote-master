@@ -178,27 +178,11 @@ public class DeviceUpgrade
   private int findDigitMapIndex()
   {
     System.err.println( "DeviceUpgrade.findDigitIndex()" );
-    int rc = -1;
     Button[] buttons = remote.getUpgradeButtons();
     byte[] digitMaps = remote.getDigitMaps();
     if (( digitMaps != null ) && ( protocol.getDefaultCmd().length() == 1 ))
     {
-      // First make sure that some digits have assigned functions
-      boolean haveDigitFunctions = false;
-      for ( int i = 0; i < 10; i++ )
-      {
-        Function f = buttons[ i ].getFunction();
-        if (( f != null ) && !f.isExternal())
-          f = null;
-        if ( f != null )
-        {
-          haveDigitFunctions = true;
-          break;
-        }
-      }
-      if ( !haveDigitFunctions )
-        return rc;
-      for ( int i = 0; ( rc == -1 ) && ( i < digitMaps.length); i++ )
+      for ( int i = 0; i < digitMaps.length; i++ )
       {
         int mapNum = digitMaps[ i ];
         System.err.println( "Checking digitMap at index " + i + ", which is " + mapNum );
@@ -207,26 +191,24 @@ public class DeviceUpgrade
         for ( int k = 0; k < codes.length; k++ )
           System.err.print( " " + Integer.toHexString( codes[ k ]));
         System.err.println();
-        for ( int j = 0; rc == -1; j++ )
+        int rc = -1;
+        for ( int j = 0; ; j++ )
         {
-          
           Function f = buttons[ j ].getFunction();
-          if (( f != null ) && f.isExternal())
-            f = null;
-          if (( f != null ) && 
-              (( f.getHex().getData()[ 0 ] & 0xFF ) != DIGIT_MAP[ mapNum ][ j ])) 
-            break;  
+          if (( f != null ) && !f.isExternal())
+            if (( f.getHex().getData()[ 0 ] & 0xFF ) == DIGIT_MAP[ mapNum ][ j ])
+              rc = i + 1;
+            else
+              break;  
           if ( j == 9 )
           {
-            System.err.println( "It is a match!" );
-            rc = i + 1;
+            System.err.println( "Matches " + rc);
+            return rc;
           }
         }
-        if ( rc != -1 )
-          break;
       }
     }
-    return rc;
+    return -1;
   }
 
   public String getUpgradeText()
