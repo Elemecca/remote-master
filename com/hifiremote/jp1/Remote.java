@@ -78,7 +78,11 @@ public class Remote
       rdr.close();
 
       if ( buttonMaps.length == 0 )
+      {
         System.err.println( "ERROR: " + file.getName() + " does not specify any ButtonMaps!" );
+        buttonMaps = new ButtonMap[ 1 ];
+        buttonMaps[ 0 ] = new ButtonMap( 0, new byte[ 0 ][ 0 ]);
+      }
       for ( int i = 0; i < buttonMaps.length; i++ )
         buttonMaps[ i ].setButtons( buttons );
 
@@ -112,13 +116,10 @@ public class Remote
 
       // first copy the buttons from the longest map
       int index = 0;
-      if ( longestMap != null )
+      while ( index < longestMap.size())
       {
-        while ( index < longestMap.size())
-        {
-          upgradeButtons[ index ] = longestMap.get( index );
-          index++;
-        }
+        upgradeButtons[ index ] = longestMap.get( index );
+        index++;
       }
 
       // now copy the rest of the buttons, skipping those in the map
@@ -833,7 +834,7 @@ public class Remote
 
       StringTokenizer st = new StringTokenizer( line, "=, \t" );
       String name = st.nextToken();
-      int map = -1;
+      int map = 0;
       if ( st.hasMoreTokens())
       {
         map = rdr.parseNumber( st.nextToken());

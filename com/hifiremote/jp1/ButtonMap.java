@@ -84,6 +84,8 @@ public class ButtonMap
   public byte[] toBitMap( boolean digitMapUsed )
   {
     int len = ( buttons.length + 6 )/ 7;
+    if ( len == 0 )
+      return new byte[ 0 ];
     byte[] rc = new byte[ len ];
     int index = 0;
     int temp = 0x80;

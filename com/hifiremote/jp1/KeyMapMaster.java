@@ -220,8 +220,7 @@ public class KeyMapMaster
       index = 0;
 
     Remote temp = remotes[ index ];
-    String firstName = ( String )protocolManager.getNames().firstElement();
-    Protocol protocol = protocolManager.findProtocolForRemote( temp, firstName );
+    Protocol protocol = ( Protocol )protocolManager.getProtocolsForRemote( temp ).elementAt( 0 );
     deviceUpgrade.setProtocol( protocol );
     setRemote( temp );
     remoteList.setSelectedIndex( index );
