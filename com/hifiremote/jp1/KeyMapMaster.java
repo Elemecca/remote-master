@@ -54,7 +54,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.24";
+  private static final String version = "v 0.25";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
