@@ -17,7 +17,7 @@ public class OutputPanel
 
     clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-    includeNotes = new JCheckBox( "Include embedded notes in upgrades.", true );
+    includeNotes = new JCheckBox( "Include embedded notes in upgrades (requires IR v 5.01 or later)", true );
     includeNotes.addActionListener( this );
     add( includeNotes );
 

@@ -1,3 +1,11 @@
+Changes for v0.99
+- Add support for alternate PIDs, requires updated RDFs
+- Fix importing of some KM upgrades that use Manual Settings
+- Add support for embedding notes in the device and protocol 
+  upgrade code, requires IR v5.01 or later
+- Added Streamzap protocol (thanks Jon Armstrong)
+- Fixed RC-5x protocol (thanks Jon Armstrong)
+
 Changes for v0.98
 - Fix Bug [ 940251 ] Incorrect output for KM input file, related
   to importing an upgrade that uses the RC-5 protocol.
