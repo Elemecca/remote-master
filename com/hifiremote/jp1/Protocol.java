@@ -24,10 +24,31 @@ public class Protocol
       deviceTranslators = TranslatorFactory.createTranslators( temp );
     }
 
-    temp = props.getProperty( "ImportDevTranslator" );
+    temp = props.getProperty( "DeviceImporter" );
     if ( temp != null )
     {
-      importDevTranslators = TranslatorFactory.createTranslators( temp );
+      devImporters = ImporterFactory.createImporters( temp );
+    }
+    else
+    {
+      int mappedIndex = 0;
+      boolean needRemap = false;
+      String[] map = new String[ 4 ];
+      int maxParm = Math.min( 4, devParms.length );
+      for ( int i = 0; i < devParms.length; i++ )
+      {
+        if ( devParms[ i ].getClass() != FlagDeviceParm.class )
+        {
+          map[ i ] = Integer.toString( mappedIndex );
+          needRemap = true;
+        }
+        mappedIndex++;
+      }
+      if ( needRemap )
+      {
+        devImporters = new Importer[ 1 ];
+        devImporters[ 0 ] = new Importer( map );
+      }
     }
 
     this.fixedData = new Hex( props.getProperty( "FixedData", "" ));
@@ -151,6 +172,16 @@ public class Protocol
     return ( Hex )code.get( p.getFullName());
   }
 
+  public void importDeviceParms( Value[] parms )
+  {
+    if ( devImporters != null )
+    {
+      for ( int i = 0; i < devImporters.length; i++ )
+        parms = devImporters[ i ].convertParms( parms ); 
+    }
+    setDeviceParms( parms );
+  }
+
   public void setDeviceParms( Value[] parms )
   {
     if ( parms.length != devParms.length )
@@ -162,8 +193,8 @@ public class Protocol
 
     for ( int i = 0; i < parms.length; i++ )
     {
-
-      devParms[ i ].setValue( parms[ i ].getUserValue());
+      if (( i < devParms.length ) && ( parms[ i ] != null ) && ( parms[ i ].getUserValue() != null ))
+        devParms[ i ].setValue( parms[ i ].getUserValue());
     }
   }
 
@@ -196,10 +227,12 @@ public class Protocol
 
   public static EFC hex2efc( Hex hex, int index )
   {
-    int temp = hex.getData()[ index ];
+    int temp = hex.getData()[ index ] & 0xFF;
     temp = ( temp << 3 ) | ( temp >> 5 );
     temp = ( temp ^ 0xAE ) - 156;
-    return new EFC( temp );
+    EFC efc = new EFC( temp );
+    System.err.println( "Protocol.hex2efc( {" + hex.toString() + "}, " + index + " ) returns " + efc );
+    return efc;
   }
 
   public EFC hex2efc( Hex hex )
@@ -220,7 +253,7 @@ public class Protocol
     Value[] vals = new Value[ cmdParms.length ];
 
     for ( int i = 0; i < cmdParms.length; i++ )
-      vals[ i ] = new Value( cmdParms[ i ].getDefaultValue(), null );
+      vals[ i ] = new Value( cmdParms[ i ].getDefaultValue());
 
     for ( int i = 0; i < cmdTranslators.length; i++ )
       cmdTranslators[ i ].in( vals, rc, devParms, -1 );
@@ -514,7 +547,7 @@ public class Protocol
   protected CmdParameter[] cmdParms = null;
   protected Translate[] cmdTranslators = null;
   protected Translate[] importCmdTranslators = null;
-  protected Translate[] importDevTranslators = null;
+  protected Importer[] devImporters = null;
   protected HashMap code = new HashMap( 4 );
   protected Initializer[] cmdParmInit = null;
   protected String notes = null;

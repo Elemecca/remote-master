@@ -845,20 +845,15 @@ public class DeviceUpgrade
       }
       protocol = p;
 
-      DeviceParameter[] devParms = protocol.getDeviceParameters();
-      for ( int i = 0; i < devParms.length; i++ )
+      Value[] importParms = new Value[ 4 ];
+      for ( int i = 0; i < importParms.length; i++ )
       {
-        // Skip over Flag parms because KM didn't have these.
-        if ( devParms[ i ].getClass() == FlagDeviceParm.class )
-          continue;
-
-        token = st.nextToken();
+        token = getNextField( st, delim );
         Object val = null;
-        if ( token.equals( delim ))
+        if ( token == null )
           val = null;
         else
         {
-          st.nextToken(); // skip delim
           if ( token.equals( "true" ))
             val = new Integer( 1 );
           else if ( token.equals( "false" ))
@@ -867,8 +862,9 @@ public class DeviceUpgrade
             val = token;
 //            val = new Integer( token );
         }
-        devParms[ i ].setValue( val );
+        importParms[ i ] = new Value( val );
       }
+      protocol.importDeviceParms( importParms );
     }
 
     // compute cmdIndex

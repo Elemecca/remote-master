@@ -77,7 +77,7 @@ public class ProtocolManager
         if ( !st.hasMoreTokens() )
           continue;
         else
-          parmValue = st.nextToken( "" ).trim();
+          parmValue = st.nextToken( "" ); // .trim();
 
         if ( parmName.equals( "PID" ))
         {
