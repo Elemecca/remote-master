@@ -123,6 +123,22 @@ public class DeviceUpgrade
                 break;
               }
             }
+            if ( !nameMatch )
+            {
+              Object v = parms[ i ].getValue();
+              Object d = parms[ i ].getDefaultValue();
+              if ( d != null )
+               d = (( DefaultValue )d ).value();
+              System.err.print( " no match!" );
+
+              if (( v == null ) ||
+                  ( v.equals( d )))
+              {
+                nameMatch = true;
+                map[ i ] = -1;
+                System.err.print( " But there's no value anyway!  " );
+              }
+            }
             System.err.println();
             parmsMatch = nameMatch;
             if ( !parmsMatch )
@@ -134,6 +150,8 @@ public class DeviceUpgrade
             System.err.println( "\tCopying dev. parms" );
             for ( int i = 0; i < map.length; i++ )
             {
+              if ( map[ i ] == -1 )
+                continue;
               System.err.println( "\tfrom index " + i + " to index " + map[ i ]);
               parms2[ map[ i ]].setValue( parms[ i ].getValue());
             }
@@ -157,6 +175,7 @@ public class DeviceUpgrade
     {
       Button[] buttons = remote.getUpgradeButtons();
       Button[] newButtons = newRemote.getUpgradeButtons();
+      Vector unassigned = new Vector();
       for ( int i = 0; i < buttons.length; i++ )
       {
         Button b = buttons[ i ];
@@ -182,7 +201,62 @@ public class DeviceUpgrade
             if ( xf != null )
               newB.setXShiftedFunction( xf );
           }
+          else // keep track of lost assignments
+          {
+            Vector temp = null;
+            if ( f != null )
+            {
+              temp = new Vector();
+              temp.add( f.getName());
+              temp.add( b.getName());
+              unassigned.add( temp );
+            }
+            if ( sf != null )
+            {
+              temp = new Vector();
+              temp.add( sf.getName());
+              temp.add( b.getShiftedName());
+              unassigned.add( temp );
+            }
+            if ( xf != null )
+            {
+              temp = new Vector();
+              temp.add( xf.getName());
+              temp.add( b.getXShiftedName());
+              unassigned.add( temp );
+            }
+          }
         }
+      }
+      if ( !unassigned.isEmpty())
+      {
+        String message = "Some of the functions defined in the device upgrade " +
+                         "were assigned to buttons that do not match buttons on the newly selected remote. " +
+                         "The functions and the corresponding button names from the original remote are listed below." +
+                         "\n\nUse the Button or Layout panel to assign those functions properly.";
+
+        JFrame frame = new JFrame( "Lost Function Assignments" );
+        Container container = frame.getContentPane();
+
+        JTextArea text = new JTextArea( message );
+        text.setEditable( false );
+        text.setLineWrap( true );
+        text.setWrapStyleWord( true );
+        text.setBackground( container.getBackground() );
+        text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+        container.add( text, BorderLayout.NORTH );
+        Vector titles = new Vector();
+        titles.add( "Function name" );
+        titles.add( "Button name" );
+        JTable table = new JTable( unassigned, titles );
+        Dimension d = table.getPreferredScrollableViewportSize();
+        d.height = d.height / 4;
+        table.setPreferredScrollableViewportSize( d );
+
+        container.add( new JScrollPane( table ), BorderLayout.CENTER );
+        frame.pack();
+        frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
+        frame.show();
       }
     }
     remote = newRemote;
@@ -642,7 +716,9 @@ public class DeviceUpgrade
     String variantName = props.getProperty( "Protocol.variantName", "" );
 
     ProtocolManager pm = ProtocolManager.getProtocolManager();
-    if ( name.equals( "Manual Settings" ) || name.equals( "Manual" ))
+    if ( name.equals( "Manual Settings" ) ||
+         name.equals( "Manual" ) ||
+         name.equals( "PID " + pid.toString()))
     {
       protocol = new ManualProtocol( pid, props );
       pm.add( protocol );
@@ -894,6 +970,7 @@ public class DeviceUpgrade
       int[] rawHex = Hex.parseHex( str );
 
       protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
+      protocolName = protocol.getName();
       setParmValues( protocol.getDeviceParmValues());
       protocolManager.add( protocol );
     }
@@ -1058,7 +1135,7 @@ public class DeviceUpgrade
       if ( buttonName != null )
       {
         System.err.println( "Searching for button w/ name " + buttonName );
-        b = remote.findByStandardName( new Button( buttonName, null, ( byte )0 ));
+        b = remote.findByStandardName( new Button( buttonName, null, ( byte )0, remote ));
         System.err.println( "Found button " + b );
       }
       else
@@ -1211,9 +1288,9 @@ public class DeviceUpgrade
       {
         Vector temp = ( Vector )i.next();
         String funcName = ( String )temp.elementAt( 0 );
-        System.err.println( "Checking '" + funcName + "'" );
+        System.err.print( "Checking '" + funcName + "'" );
         Function f = getFunction( funcName, usedFunctions );
-        if (( f != null ) && ( f.getHex() == null ))
+        if (( f == null ) || ( f.getHex() == null ) || ( f.getHex().length() == 0 ))
         {
           System.err.println( "Removing function " + f + ", which has name '" + funcName + "'" );
           i.remove();
@@ -1249,6 +1326,7 @@ public class DeviceUpgrade
 
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       frame.pack();
+      frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
       frame.show();
     }
     Button[] buttons = remote.getUpgradeButtons();

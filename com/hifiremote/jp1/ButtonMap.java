@@ -34,7 +34,7 @@ public class ButtonMap
                               Integer.toHexString( keyCode & 0xFF ) +
                               ", Creating button!" );
           String name = "button" + Integer.toHexString( keyCode & 0xFF ).toUpperCase();
-          button = new Button( name, name, keyCode );
+          button = new Button( name, name, keyCode, remote );
           remote.addButton( button );
         }
         button.addButtonMap( number );

@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.beans.*;
@@ -14,13 +15,15 @@ import info.clearthought.layout.*;
 
 public class ManualSettingsDialog
   extends JDialog
-  implements ActionListener, PropertyChangeListener
+  implements ActionListener, PropertyChangeListener, DocumentListener
 {
-  public ManualSettingsDialog( JFrame owner, Protocol protocol )
+  public ManualSettingsDialog( JFrame owner, ManualProtocol protocol )
   {
     super( owner, "Manual Settings", true );
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
+
+    this.protocol = protocol;
 
     {
       System.err.println( "Copying device parameters" );
@@ -43,90 +46,35 @@ public class ManualSettingsDialog
     double size[][] =
     {
       { b, pr, c, pr, b },              // cols
-      { b, pr, b, f, b, pr, b, f }         // rows
+      { b, pr, b, pr, b, f, b, pr, b, f }         // rows
     };
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
     contentPane.add( mainPanel, BorderLayout.CENTER );
 
-    JLabel label = new JLabel( "Protocol ID:", SwingConstants.RIGHT );
+    JLabel label = new JLabel( "Name:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 1" );
+    name = new JTextField();
+    name.getDocument().addDocumentListener( this );
+    mainPanel.add( name, "3, 1" );
+
+    label = new JLabel( "Protocol ID:", SwingConstants.RIGHT );
+    mainPanel.add( label, "1, 3" );
 
     pid = new JFormattedTextField( new HexFormat( 2, 2 ));
-    Hex id = protocol.getID();
-    pid.setValue( id );
     pid.addPropertyChangeListener( "value", this );
-    mainPanel.add( pid, "3, 1" );
+    mainPanel.add( pid, "3, 3" );
 
-    deviceModel = new AbstractTableModel()
-    {
-      public int getRowCount()
-      {
-        return deviceParms.size();
-      }
+    deviceModel = new ParameterTableModel( deviceParms, deviceTranslators );
 
-      public int getColumnCount()
-      {
-        return 5;
-      }
-
-      public String getColumnName( int col )
-      {
-        if ( col == 0 )
-          return "Name";
-        else if ( col == 1 )
-          return "Type";
-        else if ( col == 2 )
-          return "Bits";
-        else if ( col == 3 )
-          return "Style";
-        else if ( col == 4 )
-          return "Comp";
-        return null;
-      }
-
-      public Class getColumnClass( int col )
-      {
-        if ( col == 0 )
-          return String.class;
-        else if ( col == 1 )
-          return String.class;
-        else if ( col == 2 )
-          return Integer.class;
-        else if ( col == 3 )
-          return String.class;
-        else if ( col == 4 )
-          return Boolean.class;
-        return null;
-      }
-
-      public Object getValueAt( int row, int col )
-      {
-        DeviceParameter parm = ( DeviceParameter )deviceParms.get( row );
-        Translator translator = ( Translator )deviceTranslators.get( row );
-        if ( col == 0 )
-          return parm.getName();
-        else if ( col == 1 )
-          return parm.getDescription();
-        else if ( col == 2 )
-          return new Integer( translator.getBits());
-        else if ( col == 3 )
-        {
-          if ( translator.getLSB())
-            return "LSB";
-          else
-            return "MSB";
-        }
-        else
-          return Boolean.valueOf( translator.getComp());
-      }
-    };
-    JTable table = new JTable( deviceModel );
-    JScrollPane scrollPane = new JScrollPane( table );
+    deviceTable = new JTable( deviceModel );
+    SpinnerCellEditor editor = new SpinnerCellEditor( 0, 8, 1 );
+    deviceTable.setDefaultEditor( Integer.class, editor );
+    JScrollPane scrollPane = new JScrollPane( deviceTable );
     Box box = Box.createVerticalBox();
     box.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ));
     box.add( scrollPane );
-    mainPanel.add( box, "1, 3, 3, 3" );
+    mainPanel.add( box, "1, 5, 3, 5" );
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     addDevice = new JButton( "Add" );
     addDevice.addActionListener( this );
@@ -138,15 +86,14 @@ public class ManualSettingsDialog
     deleteDevice.addActionListener( this );
     buttonPanel.add( deleteDevice );
     box.add( buttonPanel );
-    Dimension d = table.getPreferredScrollableViewportSize();
-    d.height = 100;
-    table.setPreferredScrollableViewportSize( d );
+    Dimension d = deviceTable.getPreferredScrollableViewportSize();
+    d.height = deviceTable.getRowHeight() * 5;
+    deviceTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Raw Fixed Data:", SwingConstants.RIGHT );
-    mainPanel.add( label, "1, 5" );
+    mainPanel.add( label, "1, 7" );
     rawHexData = new JTextField();
-    rawHexData.setText( protocol.getFixedData( new Value[ 0 ]).toString());
-    mainPanel.add( rawHexData, "3, 5" );
+    mainPanel.add( rawHexData, "3, 7" );
 
     {
       System.err.println( "Copying comand parameters" );
@@ -162,88 +109,35 @@ public class ManualSettingsDialog
       }
     }
 
-    commandModel = new AbstractTableModel()
-    {
-      public int getRowCount()
-      {
-        return cmdParms.size();
-      }
+    commandModel = new ParameterTableModel( cmdParms, cmdTranslators );
 
-      public int getColumnCount()
-      {
-        return 5;
-      }
-
-      public String getColumnName( int col )
-      {
-        if ( col == 0 )
-          return "Name";
-        else if ( col == 1 )
-          return "Type";
-        else if ( col == 2 )
-          return "Bits";
-        else if ( col == 3 )
-          return "Style";
-        else if ( col == 4 )
-          return "Comp";
-        return null;
-      }
-
-      public Class getColumnClass( int col )
-      {
-        if ( col == 0 )
-          return String.class;
-        else if ( col == 1 )
-          return String.class;
-        else if ( col == 2 )
-          return Integer.class;
-        else if ( col == 3 )
-          return String.class;
-        else if ( col == 4 )
-          return Boolean.class;
-        return null;
-      }
-
-      public Object getValueAt( int row, int col )
-      {
-        CmdParameter parm = ( CmdParameter )cmdParms.get( row );
-        Translator translator = ( Translator )cmdTranslators.get( row );
-        if ( col == 0 )
-          return parm.getName();
-        else if ( col == 1 )
-          return parm.getDescription();
-        else if ( col == 2 )
-          return new Integer( translator.getBits());
-        else if ( col == 3 )
-        {
-          if ( translator.getLSB())
-            return "LSB";
-          else
-            return "MSB";
-        }
-        else
-          return Boolean.valueOf( translator.getComp());
-      }
-    };
-    table = new JTable( commandModel );
-    scrollPane = new JScrollPane( table );
+    commandTable = new JTable( commandModel );
+    commandTable.setDefaultEditor( Integer.class, editor );
+    scrollPane = new JScrollPane( commandTable );
     box = Box.createVerticalBox();
     box.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ));
     box.add( scrollPane );
-    mainPanel.add( box, "1, 7, 3, 7" );
+    mainPanel.add( box, "1, 9, 3, 9" );
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     buttonPanel.add( new JButton( "Add" ));
     buttonPanel.add( new JButton( "Edit" ));
     buttonPanel.add( new JButton( "Delete" ));
     box.add( buttonPanel );
-    d = table.getPreferredScrollableViewportSize();
-    d.height = 100;
-    table.setPreferredScrollableViewportSize( d );
+    d = commandTable.getPreferredScrollableViewportSize();
+    d.height = commandTable.getRowHeight() * 5;
+    commandTable.setPreferredScrollableViewportSize( d );
 
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
 
+    view = new JButton( "View Ini" );
+    view.setToolTipText( "View the protocols.ini entry for this protocol." );
+    view.addActionListener( this );
+    view.setEnabled( false );
+    buttonPanel.add( view );
+
+    buttonPanel.add( Box.createHorizontalGlue());
+
     ok = new JButton( "OK" );
-    ok.setEnabled( false );
     ok.addActionListener( this );
     buttonPanel.add( ok );
 
@@ -252,6 +146,10 @@ public class ManualSettingsDialog
     buttonPanel.add( cancel );
 
     contentPane.add( buttonPanel, BorderLayout.SOUTH );
+
+    Hex id = protocol.getID();
+    pid.setValue( id );
+    rawHexData.setText( protocol.getFixedData( new Value[ 0 ]).toString());
 
     pack();
     Rectangle rect = getBounds();
@@ -280,66 +178,106 @@ public class ManualSettingsDialog
     if ( source == addDevice )
     {
       String name =
-        ( String )JOptionPane.showInputDialog( this, "Please provide a name for the device parameter." );
+        ( String )JOptionPane.showInputDialog( this,
+                                               "Please enter a name for the device parameter.",
+                                               "Parameter Name",
+                                               JOptionPane.QUESTION_MESSAGE );
       if ( name == null )
         return;
-      Object[] types = { "Numeric entry", "Drop-down list", "Check-box" };
       String type = ( String )JOptionPane.showInputDialog( this,
                                                         "How will the parameter \"" + name + "\" be presented to the user?",
                                                         "Device Parameter Type",
                                                         JOptionPane.QUESTION_MESSAGE,
                                                         null,
-                                                        types,
-                                                        types[ 0 ]);
+                                                        typeChoices,
+                                                        typeChoices[ 0 ]);
       if ( type == null )
         return;
       int bits = 0;
-      if ( type.equals( types[ 0 ]))
+      if ( type.equals( typeChoices[ 0 ]))
       {
-        Object[] choices = { "8", "7", "6", "5", "4", "3", "2", "1" };
-        String temp = ( String )JOptionPane.showInputDialog( this,
-                                                             "How many bits are required to store the \ndevice parameter \"" + name + "\"?",
-                                                             "Numeric Device Parameter Bit Length",
-                                                             JOptionPane.QUESTION_MESSAGE,
-                                                             null,
-                                                             choices,
-                                                             choices[ 0 ]);
-        if ( temp == null )
-          return;
-        bits = Integer.parseInt( temp );
+        bits = 8;
         NumberDeviceParm parm = new NumberDeviceParm( name,
                                                       new DirectDefaultValue( new Integer( 0 )),
                                                       10,
                                                       bits );
         deviceParms.add( parm );
-        int index = deviceTranslators.size();
-        Translator xlator = new Translator( false, false, index, bits, index * 8 );
-        deviceTranslators.add( xlator );
+
       }
-      else if ( type.equals( types[ 1 ]))
+      else if ( type.equals( typeChoices[ 1 ]))
       {
+        bits = 8;
         JTextArea textArea = new JTextArea( 8, 20 );
         new TextPopupMenu( textArea );
         Box box = Box.createVerticalBox();
-        box.add( new JLabel( "Provide the choices for the paramter \"" + name + ",\" one on each line." ));
+        box.add( new JLabel( "Enter the choices for paramter \"" + name + ",\" one on each line." ));
         box.add( new JScrollPane( textArea ));
         int temp = JOptionPane.showConfirmDialog( this, box, "Drop-down list choices", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
         if ( temp == JOptionPane.CANCEL_OPTION )
           return;
+        StringTokenizer st = new StringTokenizer( textArea.getText(), "\n" );
+        String[] choices = new String[ st.countTokens()];
+        int i = 0;
+        while ( st.hasMoreTokens())
+        {
+          choices[ i++ ] = st.nextToken().trim();
+        }
+        ChoiceDeviceParm parm = new ChoiceDeviceParm( name,
+                                                    new DirectDefaultValue( new Integer( 0 )),
+                                                    choices );
+        deviceParms.add( parm );
       }
-      else
+      else // Check box
+      {
         bits = 1;
+        FlagDeviceParm parm = new FlagDeviceParm( name,
+                                                  new DirectDefaultValue( new Integer( 0 )));
+        deviceParms.add( parm );
 
+      }
+
+      int index = deviceTranslators.size();
+      Translator xlator = new Translator( false, false, index, bits, index * 8 );
+      deviceTranslators.add( xlator );
       int newRow = deviceParms.size() - 1;
       deviceModel.fireTableRowsInserted( newRow, newRow );
-
-
     }
-    else if ( source == cancel )
+    else if ( source == deleteDevice )
     {
-      userAction = JOptionPane.CANCEL_OPTION;
-      setVisible( false );
-      dispose();
+      int row = deviceTable.getSelectedRow();
+      if (( row < 0 ) || ( row >= deviceParms.size()))
+        return;
+      deviceParms.remove( row );
+      deviceTranslators.remove( row );
+      deviceModel.fireTableRowsDeleted( row, row );
+    }
+    else if ( source == deleteCommand )
+    {
+      int row = commandTable.getSelectedRow();
+      if (( row < 0 ) || ( row >= deviceParms.size()))
+        return;
+      deviceParms.remove( row );
+      deviceTranslators.remove( row );
+      deviceModel.fireTableRowsDeleted( row, row );
+    }
+    else if ( source == view )
+    {
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter( sw );
+      try
+      {
+        pw.println( "[" + protocol.getName() + "]" );
+        pw.println( "PID=" + protocol.getID() );
+        protocol.store( new PropertyWriter( pw ));
+      }
+      catch ( Exception ex )
+      {
+        ex.printStackTrace( System.err );
+      }
+      JTextArea ta = new JTextArea( sw.toString());
+      new TextPopupMenu( ta );
+      ta.setEditable( false );
+      JOptionPane.showMessageDialog( this, ta, "Protocol.ini entry text", JOptionPane.PLAIN_MESSAGE );
     }
     else if ( source == ok )
     {
@@ -347,11 +285,26 @@ public class ManualSettingsDialog
       setVisible( false );
       dispose();
     }
+    else if ( source == cancel )
+    {
+      userAction = JOptionPane.CANCEL_OPTION;
+      setVisible( false );
+      dispose();
+    }
   }
 
-  public int getUserAction()
+  public ManualProtocol getProtocol()
   {
-    return userAction;
+    if ( userAction != JOptionPane.OK_OPTION )
+      return null;
+
+    protocol.setDeviceParms( deviceParms );
+    protocol.setDeviceTranslators( deviceTranslators );
+    protocol.setCommandParms( cmdParms );
+    protocol.setCommandTranslators( cmdTranslators );
+    protocol.setRawHex( new Hex( rawHexData.getText()));
+
+    return protocol;
   }
 
   // PropertyChangeListener methods
@@ -360,30 +313,52 @@ public class ManualSettingsDialog
     Object source = e.getSource();
     if ( source == pid )
     {
-      String text = pid.getText().trim();
-      System.err.println( "propertyChange:pid is " + text );
-      if (( text == null  ) || text.equals( "" ))
-        ok.setEnabled( false );
-      else
-        ok.setEnabled( true );
+      Hex id = ( Hex )pid.getValue();
+      System.err.println( "propertyChange:pid is " + id );
+      boolean flag = ( id != null );
+      ok.setEnabled( flag );
+      view.setEnabled( flag );
+      protocol.setID( id );
     }
   }
+
+  // DocumentListener methods
+  public void documentChanged( DocumentEvent e )
+  {
+    String text = name.getText();
+    protocol.setName( text );
+  }
+  public void changedUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
+  }
+  public void insertUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
+  }
+  public void removeUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
+  }
+
+  private ManualProtocol protocol = null;
 
   private Vector deviceParms = new Vector();
   private Vector deviceTranslators = new Vector();
   private Vector cmdParms = new Vector();
   private Vector cmdTranslators = new Vector();
 
-  private AbstractTableModel deviceModel = null;
-  private AbstractTableModel commandModel = null;
+  private ParameterTableModel deviceModel = null;
+  private JTable deviceTable = null;
+  private ParameterTableModel commandModel = null;
+  private JTable commandTable = null;
+
+  private JTextField name = null;
 
   private JFormattedTextField pid = null;
 
-  // Device parameter stuff.
-  private JTable table = null;
   private JTextField rawHexData = null;
 
-  // CommandParameter stuff
   private JTextArea protocolCode = null;
 
   private JButton addDevice = null;
@@ -394,7 +369,17 @@ public class ManualSettingsDialog
   private JButton editCommand = null;
   private JButton deleteCommand = null;
 
+  private JButton view = null;
   private JButton ok = null;
   private JButton cancel = null;
   private int userAction = JOptionPane.CANCEL_OPTION;
+  private final static Object[] typeChoices = { "Numeric entry", "Drop-down list", "Check-box" };
+  private final static Object[] bitChoices = { "8", "7", "6", "5", "4", "3", "2", "1" };
+  private final static Object[] orderChoices =
+  {
+    "MSB (Most Significant Bit First)",
+    "LSB (Least Significant Bit First)"
+  };
+
+
 }

@@ -4,11 +4,12 @@ import java.awt.Shape;
 
 public class Button
 {
-  public Button( String standardName, String name, int code )
+  public Button( String standardName, String name, int code, Remote r )
   {
     this.standardName = standardName.toLowerCase();
     this.name = name;
     keyCode = code;
+    remote = r;
     multiMacroAddress = 0;
     if (( code & 0x80 ) != 0 )
       isShifted = true;
@@ -24,7 +25,7 @@ public class Button
     else if ( shiftedButton != null )
       return shiftedButton.getName();
     else
-      return null;
+      return remote.getShiftLabel() + '-' + name;
   }
   public String getXShiftedName()
   {
@@ -33,7 +34,7 @@ public class Button
     else if ( xShiftedButton != null )
       return xShiftedButton.getName();
     else
-      return null;
+      return remote.getXShiftLabel() + '-' + name;
   }
   public String getStandardName(){ return standardName; }
   public void setStandardName( String name ){ standardName = name.toLowerCase(); }
@@ -281,6 +282,7 @@ public class Button
   private String name;
   private String standardName;
   private int keyCode;
+  private Remote remote;
   private int multiMacroAddress;
   private Function function;
   private Function shiftedFunction;

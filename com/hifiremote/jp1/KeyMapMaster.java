@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.15";
+  public static final String version = "v1.16";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -26,6 +26,7 @@ public class KeyMapMaster
   private JMenu recentFileMenu = null;
   private JMenuItem exitItem = null;
   private JMenuItem manualItem = null;
+  private JMenuItem editorItem = null;
   private JMenuItem aboutItem = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
@@ -111,6 +112,7 @@ public class KeyMapMaster
     JLabel label = new JLabel( "Description:" );
     panel.add( label, "1, 1" );
     description = new JTextField( 50 );
+    description.setToolTipText( "Enter a short description for the upgrade being created." );
     label.setLabelFor( description );
     description.getDocument().addDocumentListener( this );
     panel.add( description, "3, 1, 7, 1" );
@@ -282,10 +284,15 @@ public class KeyMapMaster
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
 
-    manualItem = new JMenuItem( "Manual settings..." );
+    manualItem = new JMenuItem( "Manual Settings..." );
     manualItem.setMnemonic( KeyEvent.VK_M );
     manualItem.addActionListener( this );
     menu.add( manualItem );
+
+    editorItem = new JMenuItem( "Protocol Editor..." );
+    editorItem.setMnemonic( KeyEvent.VK_P );
+    editorItem.addActionListener( this );
+    menu.add( editorItem );
 
     menu = new JMenu( "Help" );
     menu.setMnemonic( KeyEvent.VK_H );
@@ -318,14 +325,9 @@ public class KeyMapMaster
 
   private void editManualSettings()
   {
-    System.err.println( "editManualSettings()");
     ManualSettingsDialog d =
       new ManualSettingsDialog( this, protocolManager.getManualProtocol());
     d.show();
-    if ( d.getUserAction() == JOptionPane.OK_OPTION )
-    {
-
-    }
   }
 
   private File parseArgs( String[] args )
@@ -470,8 +472,8 @@ public class KeyMapMaster
       {
         Remote remote = ( Remote )remoteList.getSelectedItem();
         setRemote( remote );
-        validateUpgrade();
         currPanel.update();
+        validateUpgrade();
       }
       else if ( source == deviceTypeList )
       {
@@ -553,6 +555,11 @@ public class KeyMapMaster
       else if ( source == manualItem )
       {
         editManualSettings();
+      }
+      else if ( source == editorItem )
+      {
+        ProtocolEditor d = new ProtocolEditor( this );
+        d.show();
       }
       else if ( source == aboutItem )
       {

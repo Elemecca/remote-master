@@ -173,7 +173,13 @@ public class ProtocolManager
 
   public Vector findByName( String name )
   {
-    return ( Vector )byName.get( name );
+    Vector v = ( Vector )byName.get( name );
+    if (( v == null ) && name.equals( manualProtocol.getName()))
+    {
+      v = new Vector();
+      v.add( manualProtocol );
+    }
+    return v;
   }
 
   public Vector findByPID( Hex id )

@@ -248,17 +248,9 @@ public class LayoutPanel
         if ( normalMode.isSelected())
           name = b.getName();
         else if ( shiftMode.isSelected())
-        {
           name = b.getShiftedName();
-          if ( name == null )
-            name = r.getShiftLabel() + '-' + b.getName();
-        }
         else if ( xShiftMode.isSelected())
-        {
           name = b.getXShiftedName();
-          if ( name == null )
-            name = r.getXShiftLabel() + '-' + b.getName();
-        }
       }
       buttonName.setText( name );
       Function f = null;
@@ -566,17 +558,9 @@ public class LayoutPanel
         if ( normalMode.isSelected())
           name = b.getName();
         else if ( shiftMode.isSelected())
-        {
           name = b.getShiftedName();
-          if ( name == null )
-            name = r.getShiftLabel() + '-' + b.getName();
-        }
         else if ( xShiftMode.isSelected())
-        {
           name = b.getXShiftedName();
-          if ( name == null )
-            name = r.getXShiftLabel() + '-' + b.getName();
-        }
       }
       Function f = null;
       if ( normalMode.isSelected())

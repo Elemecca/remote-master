@@ -12,7 +12,7 @@ public class ManualProtocol
 
   public ManualProtocol( Hex id, Properties props )
   {
-    super( "Manual Settings", id, props );
+    super( null, id, props );
     if ( props != null )
     {
       notes = props.getProperty( "Protocol.notes" );
@@ -89,17 +89,56 @@ public class ManualProtocol
 
   public String getName()
   {
-    if ( id != null )
+    if ( name != null )
+      return name;
+    else if ( id != null )
       return "PID " + id.toString();
     else
-      return super.getName();
+      return "Manual Settings";
   }
 
-  public void store( PropertyWriter out, Value[] vals )
-    throws IOException
+  public void setDeviceParms( Vector v )
   {
-    System.err.println( "ManualProtocol.store" );
-    super.store( out, vals );
+    devParms = new DeviceParameter[ v.size()];
+    int i = 0;
+    for ( Enumeration e = v.elements(); e.hasMoreElements(); )
+    {
+      devParms[ i++ ] = ( DeviceParameter )e.nextElement();
+    }
+  }
+
+  public void setDeviceTranslators( Vector v )
+  {
+    deviceTranslators = new Translator[ v.size()];
+    int i = 0;
+    for ( Enumeration e = v.elements(); e.hasMoreElements(); )
+    {
+      deviceTranslators[ i++ ] = ( Translator )e.nextElement();
+    }
+  }
+
+  public void setCommandParms( Vector v )
+  {
+    cmdParms = new CmdParameter[ v.size()];
+    int i = 0;
+    for ( Enumeration e = v.elements(); e.hasMoreElements(); )
+    {
+      cmdParms[ i++ ] = ( CmdParameter )e.nextElement();
+    }
+  }
+
+  public void setCommandTranslators( Vector v )
+  {
+    cmdTranslators = new Translator[ v.size()];
+    int i = 0;
+    for ( Enumeration e = v.elements(); e.hasMoreElements(); )
+    {
+      cmdTranslators[ i++ ] = ( Translator )e.nextElement();
+    }
+  }
+
+  public void store( PropertyWriter out )
+  {
     if ( devParms.length > 0 )
     {
       StringBuffer buff = new StringBuffer();
@@ -157,6 +196,14 @@ public class ManualProtocol
       out.print( "Protocol.notes", notes );
   }
 
+  public void store( PropertyWriter out, Value[] vals )
+    throws IOException
+  {
+    System.err.println( "ManualProtocol.store" );
+    super.store( out, vals );
+    store( out );
+  }
+
   public void setDefaultCmd( Hex cmd )
   {
     defaultCmd = cmd;
@@ -165,6 +212,11 @@ public class ManualProtocol
   public void setRawHex( Hex rawHex )
   {
     fixedData = rawHex;
+  }
+
+  public void setName( String name )
+  {
+    this.name = name;
   }
 
   public void setID( Hex newID )

@@ -72,11 +72,19 @@ public class Translator
     }
     else
     {
-      Integer i = ( Integer )v.getValue();
-      if ( i == null )
+      Object o = v.getValue();
+      Integer i = null;
+      if ( o == null )
+      {
         System.err.println("Translator.in() index="+ index +" missing parameter value");
-      else
-        w = ( i.intValue() + adjust ) >> lsbOffset;
+        return;
+      }
+      else if ( o.getClass() == Integer.class )
+        i = ( Integer )v.getValue();
+      else if ( o.getClass() == String.class )
+        i = new Integer(( String )o );
+
+      w = ( i.intValue() + adjust ) >> lsbOffset;
     }
 
     if ( comp )
@@ -140,9 +148,12 @@ public class Translator
   }
 
   public boolean getLSB(){ return lsb; }
+  public void setLSB( boolean lsb ){ this.lsb = lsb; }
   public boolean getComp(){ return comp; }
+  public void setComp( boolean comp ){ this.comp = comp; }
   public int getIndex(){ return index; }
   public int getBits(){ return bits; }
+  public void setBits( int bits ){ this.bits = bits; }
   public int getBitOffset(){ return bitOffset; }
   protected boolean lsb = false;
   protected boolean comp = false;

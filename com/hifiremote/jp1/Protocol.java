@@ -630,7 +630,7 @@ public class Protocol
     throws IOException
   {
     out.print( "Protocol", id.toString());
-    out.print( "Protocol.name", name );
+    out.print( "Protocol.name", getName());
     if ( variantName.length() > 0 )
       out.print( "Protocol.variantName", variantName );
 //    Value[] parms = getDeviceParmValues();
@@ -657,7 +657,7 @@ public class Protocol
 
   public final static int tooDifferent = 0x7FFFFFFF;
 
-  private String name = null;;
+  protected String name = null;;
   protected Hex id = null;
   private Hex alternatePID = null;
   private String variantName = null;
