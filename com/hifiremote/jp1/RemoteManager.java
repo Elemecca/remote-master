@@ -66,6 +66,9 @@ public class RemoteManager
   public Remote findRemoteByName( String name )
     throws Exception
   {
+    System.err.println( "Seraching for remote with name " + name );
+    if ( name == null )
+      return null;
     Remote remote = null;
     int index = Arrays.binarySearch( remotes, name );
     if ( index < 0 )

@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.87";
+  private static final String version = "v 0.88";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -203,7 +203,9 @@ public class KeyMapMaster
 
     setRemotes();
 
-    Remote temp = rm.findRemoteByName( lastRemoteName );
+    Remote temp = null;
+    if ( lastRemoteName != null )
+      temp = rm.findRemoteByName( lastRemoteName );
     if ( temp == null )
       temp = rm.getRemotes()[ 0 ];
     temp.load();
