@@ -209,7 +209,7 @@ master-protocols.txt" file.
 </table>
 <h2><a name="devcomb"></a>The Device Combiner Panel</h2>
 <p>This panel is only available when the Device Combiner protocol has been selected on the Setup Panel.</p>
-<p>The Device Combiner allows you to combine up to 16 different 
+<p>The Device Combiner allows you to combine up to 16 different
 protocols into one Device Upgrade.</p>
 <p>Any protocols specified in the Device Combiner <b>MUST</b> use 1-byte function commands.
 <p><b>NOTE:</b> When using an upgraded protocol, the user <b>MUST</b> ensure that the protocol code is installed on the remote (using IR), as RemoteMaster has no way to verify this.</p>
@@ -218,21 +218,21 @@ protocols into one Device Upgrade.</p>
 <p>There are 2 ways to add devices:
 <ol>
 <li>Importing from an existing RM or KM device upgrade:<br>
-On the "Device Combiner" panel, press the Import button and open 
-the device upgrade file you want to import.  Once RM has verified that 
-the protocol used by the imported upgrade file is compatible, you will be 
+On the "Device Combiner" panel, press the Import button and open
+the device upgrade file you want to import.  Once RM has verified that
+the protocol used by the imported upgrade file is compatible, you will be
 asked to choose the functions to import from the upgrade.
 <li>Manually adding a protocol:<br>
-On the "Device Combiner" panel, press the Add button to display the 
+On the "Device Combiner" panel, press the Add button to display the
 "Combiner Device" dialog.  Select the protocol to use, and enter the
 desired values for the protocol parameters, then press the OK button
 </ol>
-<p>Then, go to the Functions sheet and enter the EFC's (EFC-style 
-Button Codes MUST be used) for all of the various functions. In 
-the "Cominer Device" column, select the entry corresponding to the 
+<p>Then, go to the Functions sheet and enter the EFC's (EFC-style
+Button Codes MUST be used) for all of the various functions. In
+the "Cominer Device" column, select the entry corresponding to the
 protocol and parameters entered above.</p>
-<p>To enable Duration Control for the 
-function, select the duration multiple to be used in the "Duration" column 
+<p>To enable Duration Control for the
+function, select the duration multiple to be used in the "Duration" column
 (default = 0 = none).</p>
 <h2><a name="functions"></a>The Functions Panel</h2>
 <p>Use this panel to define all the functions available for the device you are going to control.  This is where you can enter the EFCs, OBCs, and other parameters specific to each command.  Note that some of the command parameters are protocol specific, so not all of the columns available in each protocol will be documented here, only the ones that are used by all protocols.</p>
@@ -629,7 +629,8 @@ problem with one of these, please
 <li>Denon Combo
 <li>Device Combiner
 <li>Dishplayer
-<li>Dishplayer Network
+<li>Dish Network
+<li>Dish Network Combo
 <li>Echostar 2200
 <li>Emerson
 <li>F12
@@ -640,9 +641,11 @@ problem with one of these, please
 <li>Jerrold
 <li>JVC
 <li>JVC-48
-</ul></td><td><ul>
 <li>Kaseikyo
+</ul></td>
+<td><ul>
 <li>Mitsubishi
+<li>NEC 2DEV Combo
 <li>NEC1
 <li>NEC2
 <li>NEC Combo
@@ -654,6 +657,7 @@ problem with one of these, please
 <li>Pace
 <li>Panasonic (old)
 <li>Panasonic
+<li>Panasonic MIX Combo
 <li>Panasonic VCR Combo
 <li>Panasonic Mixed Combo
 <li>Panasonic Combo2
@@ -667,17 +671,18 @@ problem with one of these, please
 <li>Pioneer 2CMD
 <li>Pioneer 3DEV
 <li>Proton
-<li>RECS80 (68)
 <li>RC-5
-</ul></td><td><ul>
 <li>RC-5x
 <li>RC-5/5x Combo
+</ul></td>
+<td><ul>
 <li>RC-6
 <li>RC6-M-20n
 <li>RC6-M-24n
 <li>RCA
 <li>RCA (Old)
 <li>RCA Combo (Official)
+<li>RCA Combo (w/Duration)
 <li>RECS80 (45)
 <li>RECS80 (68)
 <li>RECS80 (90)
@@ -686,33 +691,29 @@ problem with one of these, please
 <li>ReplayTV (Official)
 <li>Scientific Atlanta
 <li>Sharp
+<li>Sharp Combo (Official)
 <li>Sharp DVD
 <li>Sony 12/15
 <li>Sony20
-<li>Sony Combo (old)
-<li>Sony Combo (new)
+<li>Sony Combo (12/20)
+<li>Sony Combo (12/15/20)
 <li>Sony DSP
+<li>Sony Egg
+<li>Streamzap
+<li>Teac-K
 <li>Thomson
 <li>TiVo (Advanced)
 <li>TiVo (Official)
 <li>TiVo (Official 2-byte)
 <li>X10
 <li>Zenith
-</ul>
-</td>
+</ul></td>
 </tr>
 </table>
-<p>This is the list of protocols that are present in RM, but are <B>NOT</b> supported:<p>
-<ul>
-<li>NEC 2DEV Combo (*)
-<li>Panasonic MIX Combo (*)
-<li>Sony Egg (*)
-<li>Teac-K (*)
-</ul>
 <p>Here is the list of protocols that are not <b>yet</b> supported:</p>
 <ul>
+<li>Fujitsu
 <li>Pause Protocol
-<li>RCA Combo (w/Duration)
 </ul>
 
 <!--
