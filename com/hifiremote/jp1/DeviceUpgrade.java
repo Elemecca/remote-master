@@ -181,6 +181,8 @@ public class DeviceUpgrade
     return extFunctions;
   }
 
+  public File getFile(){ return file; }
+
   private int findDigitMapIndex()
   {
     System.err.println( "DeviceUpgrade.findDigitIndex()" );

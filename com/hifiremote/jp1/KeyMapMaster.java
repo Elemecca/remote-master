@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.34";
+  private static final String version = "v 0.35";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -50,7 +50,8 @@ public class KeyMapMaster
   public KeyMapMaster( File propertiesFile )
     throws Exception
   {
-    super( "KeyMap Master" + version );
+    super( "KeyMap Master " + version );
+    setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
     JDialog.setDefaultLookAndFeelDecorated( true );
     JFrame.setDefaultLookAndFeelDecorated( true );
@@ -63,6 +64,8 @@ public class KeyMapMaster
       {
         try
         {
+          if ( !promptToSaveUpgrade())
+            return;
           savePreferences();
         }
         catch ( Exception e )
@@ -420,6 +423,8 @@ public class KeyMapMaster
       }
       else if ( source == newItem )
       {
+        if ( !promptToSaveUpgrade())
+          return;
         deviceUpgrade.reset( remotes, protocols );
         setTitle( "KeyMapMaster " + version );
         description.setText( null );
@@ -434,33 +439,12 @@ public class KeyMapMaster
       }
       else if ( source == saveAsItem )
       {
-        JFileChooser chooser = new JFileChooser( kmPath );
-        chooser.setFileFilter( new KMFileFilter());
-        int returnVal = chooser.showSaveDialog( this );
-        if ( returnVal == JFileChooser.APPROVE_OPTION )
-        {
-          String name = chooser.getSelectedFile().getAbsolutePath();
-          if ( !name.toLowerCase().endsWith( ".km" ))
-            name = name + ".km";
-          File file = new File( name );
-          int rc = JOptionPane.YES_OPTION;
-          if ( file.exists())
-          {
-            rc = JOptionPane.showConfirmDialog( this,
-                                                file.getName() + " already exists.  Do you want to repalce it?",
-                                                "Replace existing file?",
-                                                JOptionPane.YES_NO_OPTION );
-          }
-          if ( rc == JOptionPane.YES_OPTION )
-          {
-            deviceUpgrade.store( file );
-            saveItem.setEnabled( true );
-            setTitle( "KeyMapMaster " + version + ": " + file.getName());
-          }
-        }
+        saveAs();
       }
       else if ( source == openItem )
       {
+        if ( !promptToSaveUpgrade())
+          return;
         JFileChooser chooser = new JFileChooser( kmPath );
         chooser.setFileFilter( new KMFileFilter());
         int returnVal = chooser.showOpenDialog( this );
@@ -502,6 +486,58 @@ public class KeyMapMaster
     {
       ex.printStackTrace( System.err );
     }
+  }
+
+  public void saveAs()
+    throws IOException
+  {
+    JFileChooser chooser = new JFileChooser( kmPath );
+    chooser.setFileFilter( new KMFileFilter());
+    File f = deviceUpgrade.getFile();
+    if ( f != null )
+      chooser.setSelectedFile( f );
+    int returnVal = chooser.showSaveDialog( this );
+    if ( returnVal == JFileChooser.APPROVE_OPTION )
+    {
+      String name = chooser.getSelectedFile().getAbsolutePath();
+      if ( !name.toLowerCase().endsWith( ".km" ))
+        name = name + ".km";
+      File file = new File( name );
+      int rc = JOptionPane.YES_OPTION;
+      if ( file.exists())
+      {
+        rc = JOptionPane.showConfirmDialog( this,
+                                            file.getName() + " already exists.  Do you want to repalce it?",
+                                            "Replace existing file?",
+                                            JOptionPane.YES_NO_OPTION );
+      }
+      if ( rc == JOptionPane.YES_OPTION )
+      {
+        deviceUpgrade.store( file );
+        saveItem.setEnabled( true );
+        setTitle( "KeyMapMaster " + version + ": " + file.getName());
+      }
+    }
+  }
+
+  public boolean promptToSaveUpgrade()
+    throws IOException
+  {
+    int rc = JOptionPane.showConfirmDialog( this,
+                                            "All changes made to the current upgrade will be lost if you proceed.\n" + 
+                                            "If you would like to save the currect upgrade before proceeding, click Yes.\n" + 
+                                            "If you would like to proceed wihtout saving, click No.\n" + 
+                                            "If you do not want to proceed, click Cancel.",
+                                            "Save upgrade?",
+                                            JOptionPane.YES_NO_CANCEL_OPTION );
+    System.err.println( "KeyMapMaster.promptToSaveUpgrade(), rc=" + rc );
+    if (( rc == JOptionPane.CANCEL_OPTION ) || ( rc == JOptionPane.CLOSED_OPTION ))
+      return false;
+    if ( rc == JOptionPane.NO_OPTION )
+      return true;
+
+    saveAs();
+    return true;                                            
   }
 
   public void openFile( File file )
@@ -758,7 +794,8 @@ public class KeyMapMaster
     {
       try
       {
-        openFile( file );
+        if ( promptToSaveUpgrade())
+          openFile( file );
       }
       catch ( Exception ex )
       {
