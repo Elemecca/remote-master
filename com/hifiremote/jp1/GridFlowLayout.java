@@ -16,8 +16,6 @@ public class GridFlowLayout implements LayoutManager
       int compWidth = 1;
       int rowHeight = 0;
       
-      boolean ltr = target.getComponentOrientation().isLeftToRight();
-
       for ( int i = 0; i < nmembers; i++ )
       {
          Component m = target.getComponent( i );
@@ -34,26 +32,7 @@ public class GridFlowLayout implements LayoutManager
                                    ( rows * rowHeight ) + insets.top + insets.bottom );
       return d;
     }
-//    {
-//      Dimension dim = new Dimension( 0, 0 );
-//      int nmembers = target.getComponentCount();
-//
-//      for ( int i = 0 ; i < nmembers ; i++ )
-//      {
-//        Component m = target.getComponent( i );
-//        if ( m.isVisible())
-//        {
-//          Dimension d = m.getPreferredSize();
-//          dim.height = Math.max( dim.height, d.height );
-//          dim.width = Math.max( dim.width, d.width );
-//        }
-//      }
-//      Insets insets = target.getInsets();
-//      dim.width = insets.left + insets.right + dim.width;
-//      dim.height = insets.top + insets.bottom + nmembers * dim.height;
-//      return dim;
-//    }
-//
+
     public Dimension minimumLayoutSize( Container target ) 
     {
       Dimension dim = new Dimension(0, 0);

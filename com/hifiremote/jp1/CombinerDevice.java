@@ -4,12 +4,29 @@ import java.util.*;
 
 public class CombinerDevice
 {
-  public CombinerDevice( Protocol p, Value[] values )
+  public CombinerDevice( Protocol p, Value[] values, String notes )
   {
     protocol = p;
     if ( values == null )
       values = new Value[ 0 ];
     this.values = values;
+    this.notes = notes;
+  }
+
+  public CombinerDevice( Protocol p, Value[] values )
+  {
+    this( p, values, null );
+  }
+
+  public CombinerDevice( CombinerDevice dev )
+  {
+    protocol = dev.protocol;
+    if ( protocol.getClass() == ManualProtocol.class )
+      protocol = new ManualProtocol(( ManualProtocol )protocol );
+    values = new Value[ dev.values.length ];
+    for ( int i = 0; i < values.length; i++ )
+      values[ i ] = dev.values[ i ];
+    notes = dev.notes;
   }
 
   public CombinerDevice( String text, Remote remote )
@@ -45,13 +62,23 @@ public class CombinerDevice
 
   public Hex getFixedData()
   {
-    protocol.reset();
-    protocol.setDeviceParms( values );
-    return protocol.getFixedData();
+//    protocol.reset();
+//    protocol.setDeviceParms( values );
+    return protocol.getFixedData( values );
+  }
+
+  public String getNotes(){ return notes; }
+
+  public void setNotes( String text )
+  {
+    notes = text;
   }
 
   public String toString()
   {
+    if (( notes != null ) && ( notes.length() > 0 ))
+      return notes;
+
     StringBuffer buff = new StringBuffer();
     buff.append( protocol.getName());
     if (( values != null ) && ( values.length != 0 ))
@@ -64,4 +91,5 @@ public class CombinerDevice
 
   private Protocol protocol = null;
   private Value[] values = null;
+  private String notes = null;
 }

@@ -21,20 +21,39 @@ public class DeviceCombiner
 
   public void setProperties( Properties props )
   {
+    System.err.println( "DeviceCombiner.setProperties()" );
     for ( int i = 0; i < 16; i++ )
     {
       String prefix = "Combiner." + i;
       String nameStr = props.getProperty( prefix + ".name" );
       if ( nameStr == null )
         break;
+      System.err.println( "Name is '" + nameStr + "'" );
       Hex pid = new Hex( props.getProperty( prefix + ".id" ));
+      System.err.println( "pid is " + pid.toString());
       String variantName = props.getProperty( prefix + ".variant" );
-      Protocol p =
-        ProtocolManager.getProtocolManager().findNearestProtocol( nameStr, pid, variantName );
-
+      System.err.println( "variantName is " + variantName );
+      Protocol p = null;
       String parmStr = props.getProperty( prefix + ".parms" );
-      Value[] values = DeviceUpgrade.stringToValueArray( parmStr );
-      devices.add( new CombinerDevice( p, values ));
+      Value[] values = null;
+      String compStr = "PID " + pid.toString();
+      System.err.println( "compStr is '" + compStr + "'" );
+      String notes = props.getProperty( prefix + ".notes" );
+      if ( nameStr.equals( compStr ))
+      {
+        System.err.println( "Creating new ManualProtocol!" );
+        ManualProtocol m = new ManualProtocol( pid, new Properties());
+        if (( parmStr != null ) && ( parmStr.length() > 0 ))
+          m.setRawHex( new Hex( parmStr ));    
+        p = m;
+        values = new Value[ 0 ];
+      }
+      else
+      {
+        p = ProtocolManager.getProtocolManager().findNearestProtocol( nameStr, pid, variantName );
+        values = DeviceUpgrade.stringToValueArray( parmStr );
+      }
+      devices.add( new CombinerDevice( p, values, notes ));
     }
   }
 
@@ -64,10 +83,10 @@ public class DeviceCombiner
 
   public Vector getDevices(){ return devices; }
 
-  public void store( PropertyWriter out )
+  public void store( PropertyWriter out, Value[] vals )
     throws IOException
   {
-    super.store( out );
+    super.store( out, vals );
     int i = 0;
     for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
     {
@@ -78,7 +97,17 @@ public class DeviceCombiner
       out.print( prefix + ".id", p.getID().toString());
       out.print( prefix + ".variant", p.getVariantName());
       Value[] values = device.getValues();
-      out.print( prefix + ".parms", DeviceUpgrade.valueArrayToString( values ));
+      if ( p.getClass() == ManualProtocol.class )
+      {
+        Hex h = p.getFixedData( values );
+        if ( h != null )
+          out.print( prefix + ".parms", h.toString());
+      }
+      else
+      {
+        out.print( prefix + ".parms", DeviceUpgrade.valueArrayToString( values ));
+      }
+      out.print( prefix + ".notes", device.getNotes());
     }
   }
 
@@ -283,6 +312,14 @@ public class DeviceCombiner
     buff.append( ' ' );
     buff.append( Integer.toHexString( val >> 8 ));
     return buff.toString();
+  }
+
+  public boolean isColumnWidthFixed( int col )
+  {
+    if ( col == 0 )
+      return false;
+    else
+      return true;
   }
 
   private DeviceCombinerPanel panel = null;

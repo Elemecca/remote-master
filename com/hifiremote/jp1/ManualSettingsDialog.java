@@ -50,7 +50,9 @@ public class ManualSettingsDialog
     mainPanel.add( label, "1, 1" );
 
     pid = new JTextField();
-    pid.setText( protocol.getID().toString());
+    Hex id = protocol.getID();
+    if ( id != null )
+      pid.setText( id.toString());
     mainPanel.add( pid, "3, 1" );
 
     AbstractTableModel model = new AbstractTableModel()
@@ -123,9 +125,15 @@ public class ManualSettingsDialog
     box.add( scrollPane );
     mainPanel.add( box, "1, 3, 3, 3" );
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-    buttonPanel.add( new JButton( "Add" ));
-    buttonPanel.add( new JButton( "Edit" ));
-    buttonPanel.add( new JButton( "Delete" ));
+    addDevice = new JButton( "Add" );
+    addDevice.addActionListener( this );
+    buttonPanel.add( addDevice );
+    editDevice = new JButton( "Edit" );
+    editDevice.addActionListener( this );
+    buttonPanel.add( editDevice );
+    deleteDevice = new JButton( "Delete" );
+    deleteDevice.addActionListener( this );
+    buttonPanel.add( deleteDevice );
     box.add( buttonPanel );
     Dimension d = table.getPreferredScrollableViewportSize();
     d.height = 100;
@@ -134,7 +142,7 @@ public class ManualSettingsDialog
     label = new JLabel( "Raw Fixed Data:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 5" );
     rawHexData = new JTextField();
-    rawHexData.setText( protocol.getFixedData().toString());
+    rawHexData.setText( protocol.getFixedData( new Value[ 0 ]).toString());
     mainPanel.add( rawHexData, "3, 5" );
 
     {
@@ -251,7 +259,54 @@ public class ManualSettingsDialog
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( source == cancel )
+    if ( source == addDevice )
+    {
+      String name = 
+        ( String )JOptionPane.showInputDialog( this, "Please provide a name for the device parameter." );
+      if ( name == null )
+        return;
+      Object[] types = { "Numeric entry", "Drop-down list", "Check-box" };
+      String type = ( String )JOptionPane.showInputDialog( this, 
+                                                        "How will the parameter \"" + name + "\" be presented to the user?",
+                                                        "Device Parameter Type", 
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,
+                                                        types,
+                                                        types[ 0 ]);
+      if ( type == null )
+        return;
+      int bits = 0;
+      if ( type.equals( types[ 0 ]))
+      {
+        Object[] choices = { "8", "7", "6", "5", "4", "3", "2", "1" };
+        String temp = ( String )JOptionPane.showInputDialog( this, 
+                                                             "How many bits are required to store the \ndevice parameter \"" + name + "\"?",
+                                                             "Numeric Device Parameter Bit Length",
+                                                             JOptionPane.QUESTION_MESSAGE,
+                                                             null,
+                                                             choices,
+                                                             choices[ 0 ]);
+        if ( temp == null )
+          return;
+        bits = Integer.parseInt( temp );
+      }
+      else if ( type.equals( types[ 1 ]))
+      {
+        JTextArea textArea = new JTextArea( 8, 20 );
+        new TextPopupMenu( textArea );
+        Box box = Box.createVerticalBox();
+        box.add( new JLabel( "Provide the choices for the paramter \"" + name + ",\" one on each line." ));
+        box.add( new JScrollPane( textArea ));
+        int temp = JOptionPane.showConfirmDialog( this, box, "Drop-down list choices", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+        if ( temp == JOptionPane.CANCEL_OPTION )
+          return;
+      }
+      else
+        bits = 1;
+                                                        
+                                                                  
+    }
+    else if ( source == cancel )
     {
       userAction = JOptionPane.CANCEL_OPTION;
       setVisible( false );
@@ -283,6 +338,14 @@ public class ManualSettingsDialog
 
   // CommandParameter stuff
   private JTextArea protocolCode = null;
+
+  private JButton addDevice = null;
+  private JButton editDevice = null;
+  private JButton deleteDevice = null;
+
+  private JButton addCommand = null;
+  private JButton editCommand = null;
+  private JButton deleteCommand = null;
 
   private JButton ok = null;
   private JButton cancel = null;

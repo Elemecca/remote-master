@@ -38,7 +38,7 @@ public class TextPopupMenu
           if ( cutItem == null )
             initMenuItems();
           boolean flag = ( c.getSelectedText() != null );
-          cutItem.setEnabled( flag );
+          cutItem.setEnabled( flag && c.isEditable());
           copyItem.setEnabled( flag );
 
           Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();

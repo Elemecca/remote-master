@@ -10,6 +10,9 @@ public class Protocol
   {
     this.name = name;
     this.id = id;
+
+    if ( props == null )
+      props = new Properties();
     this.variantName = props.getProperty( "VariantName", "" );
     this.defaultCmd = new Hex( props.getProperty( "DefaultCmd", "00" ));
     this.cmdIndex = Integer.parseInt( props.getProperty( "CmdIndex", "0" ));
@@ -249,8 +252,11 @@ public class Protocol
 
     for ( int i = 0; i < parms.length; i++ )
     {
-      if (( i < devParms.length ) && ( parms[ i ] != null ) && ( parms[ i ].getUserValue() != null ))
+      if (( i < devParms.length ) && ( parms[ i ] != null )) // && ( parms[ i ].getUserValue() != null ))
+      {
+        System.err.println( "Setting devPamrs[ " + i + " ](" + devParms[ i ].getName() + ") to " + parms[ i ].getUserValue());
         devParms[ i ].setValue( parms[ i ].getUserValue());
+      }
     }
   }
 
@@ -406,7 +412,7 @@ public class Protocol
 
   public boolean isEditable( int col ){ return true; }
 
-  public String toString(){ return name; }
+  public String toString(){ return getName(); }
 
   public String getName(){ return name; }
 
@@ -449,13 +455,13 @@ public class Protocol
     return result + ")";
   }
 
-  public Hex getFixedData()
+  public Hex getFixedData( Value[] parms )
   {
     Hex temp = null;
     try {
       temp = ( Hex )fixedData.clone();
     } catch ( CloneNotSupportedException e ){}
-    Value[] parms = getDeviceParmValues();
+//    Value[] parms = getDeviceParmValues();
     if ( deviceTranslators != null )
     {
       for ( int i = 0; i < deviceTranslators.length; i++ )
@@ -602,18 +608,18 @@ public class Protocol
     return result;
   }
 
-  public void store( PropertyWriter out )
+  public void store( PropertyWriter out, Value[] parms )
     throws IOException
   {
     out.print( "Protocol", id.toString());
     out.print( "Protocol.name", name );
     if ( variantName.length() > 0 )
       out.print( "Protocol.variantName", variantName );
-    Value[] parms = getDeviceParmValues();
+//    Value[] parms = getDeviceParmValues();
     if (( parms != null ) && ( parms.length != 0 ))
       out.print( "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ));
     if ( fixedData != null )
-      out.print( "FixedData", getFixedData().toString());
+      out.print( "FixedData", getFixedData( parms ).toString());
   }
 
   public Translate[] getDeviceTranslators()
@@ -624,6 +630,11 @@ public class Protocol
   public Translate[] getCmdTranslators()
   {
     return cmdTranslators;
+  }
+
+  public boolean isColumnWidthFixed( int col )
+  {
+    return true;
   }
 
   public final static int tooDifferent = 0x7FFFFFFF;

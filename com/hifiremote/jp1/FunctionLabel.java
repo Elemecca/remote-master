@@ -1,9 +1,8 @@
 package com.hifiremote.jp1;
 
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
-import java.awt.Color;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
@@ -84,6 +83,14 @@ public class FunctionLabel
   public void showUnassigned()
   {
     setForeground( Color.red );
+  }
+
+  public Dimension getPreferredSize()
+  {
+    Dimension d = super.getPreferredSize();
+    if ( d.width > 180 )
+      d.width = 180;
+    return d;
   }
 
   private Function function = null;

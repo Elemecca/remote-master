@@ -10,10 +10,20 @@ public class ManualProtocol
   public final static int BEFORE_CMD = 1;
   public final static int AFTER_CMD = 2;
 
-  public ManualProtocol( String name, Hex id, Properties props )
+  public ManualProtocol( Hex id, Properties props )
   {
-    super( name, id, props );
-    notes = props.getProperty( "Protocol.notes" );
+    super( "Manual", id, props );
+    if ( props != null )
+    {
+      notes = props.getProperty( "Protocol.notes" );
+    }
+  }
+
+  public ManualProtocol( ManualProtocol p )
+  {
+    super( p.getName(), p.id, null );
+    if ( p.fixedData != null )
+      fixedData = new Hex( p.fixedData );
   }
 
   public ManualProtocol( String name, Hex id, int cmdType, String signalStyle,
@@ -77,11 +87,19 @@ public class ManualProtocol
     }
   }
 
-  public void store( PropertyWriter out )
+  public String getName()
+  {
+    if ( id != null )
+      return "PID " + id.toString();
+    else
+      return super.getName();
+  }
+
+  public void store( PropertyWriter out, Value[] vals )
     throws IOException
   {
     System.err.println( "ManualProtocol.store" );
-    super.store( out );
+    super.store( out, vals );
     if ( devParms.length > 0 )
     {
       StringBuffer buff = new StringBuffer();
@@ -147,5 +165,10 @@ public class ManualProtocol
   public void setRawHex( Hex rawHex )
   {
     fixedData = rawHex;
+  }
+
+  public void setID( Hex newID )
+  {
+    id = newID;
   }
 }

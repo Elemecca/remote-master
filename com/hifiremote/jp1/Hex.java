@@ -25,6 +25,13 @@ public class Hex
     this.data = data;
   }
 
+  public Hex( Hex h )
+  {
+    data = new int[ h.data.length ];
+    for ( int i = 0; i < h.data.length; i++ )
+      data[ i ] = h.data[ i ];
+  }
+
   public int length()
   {
     return data.length;

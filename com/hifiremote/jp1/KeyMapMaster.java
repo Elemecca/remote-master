@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.08";
+  public static final String version = "v1.09";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -517,8 +517,7 @@ public class KeyMapMaster
   {
     System.err.println( "editManualSettings()");
     ManualSettingsDialog d = 
-      new ManualSettingsDialog( this, 
-                               ( ManualProtocol )protocolManager.findByName( "Manual Settings" ).firstElement());
+      new ManualSettingsDialog( this, protocolManager.getManualProtocol());
     d.show();
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
@@ -754,16 +753,26 @@ public class KeyMapMaster
       }
       else if ( source == aboutItem )
       {
-        String text = "RemoteMaster Device Upgrade Editor, " + version + "\n" +
-                      "Get the latest version at http://controlremote.sourceforge.net\n\n" +
-                      "Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "\n\n" +
-                      "RDFs loaded from \"" + rdfPath + "\"\n\n" +
-                      "Written primarily by Greg Bush\n\n" +
-                      "Other contributors include:\n" +
-                      "John S Fine, Nils Ekberg, Jon Armstrong, Robert Crowe,\n" +
-                      "Mark Pauker, Mark Pierson, Mike England, and more\n\n";
+        String text = "<html><b>RemoteMaster Device Upgrade Editor, " + version + "</b>" + 
+                      "<p>Get the latest version at <a href=\"http://controlremote.sourceforge.net\">http://controlremote.sourceforge.net</a></p>" +
+                      "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
+                      "<p>RDFs loaded from <b>" + rdfPath + "</b></p>" +
+                      "<p>Written primarily by <i>Greg Bush</i></p>" +
+                      "<p>Other contributors include:<blockquote>" +
+                      "John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, " +
+                      "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></html>";
 
-        JOptionPane.showMessageDialog( this, text, "About RemoteMaster", JOptionPane.INFORMATION_MESSAGE );
+        JEditorPane pane = new JEditorPane( "text/html", text );
+        pane.setEditable( false );
+        pane.setBackground( getBackground());
+        new TextPopupMenu( pane );
+        JScrollPane scroll = new JScrollPane( pane );
+        Dimension d = scroll.getPreferredSize();
+        d.height = d.height / 2;
+        d.width = ( d.width * 2 ) / 3;
+        scroll.setPreferredSize( d );
+
+        JOptionPane.showMessageDialog( this, scroll, "About RemoteMaster", JOptionPane.INFORMATION_MESSAGE );
       }
     }
     catch ( Exception ex )

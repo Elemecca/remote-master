@@ -8,7 +8,6 @@ public class ProtocolManager
 {
   protected ProtocolManager()
   {
-//    add( new ManualProtocol( "Manual Settings", new Hex( "00 00" ), new Properties()));
   }
   
   public static ProtocolManager getProtocolManager()
@@ -98,6 +97,7 @@ public class ProtocolManager
     }
     rdr.close();
     add( ProtocolFactory.createProtocol( name, id, type, props ));
+    manualProtocol = new ManualProtocol( null, null );
 
     if ( byName.size() == 0 )
     {
@@ -109,9 +109,6 @@ public class ProtocolManager
 
   public void add( Protocol p )
   {
-    boolean isManual = false;
-    if ( p.getClass() == ManualProtocol.class )
-      isManual = true;
     // Add the protocol to the byName hashtable
     String name = p.getName();
     Vector v = ( Vector )byName.get( name );
@@ -163,6 +160,8 @@ public class ProtocolManager
       if ( p != null )
         rc.add( p );
     }
+    if ( allowUpgrades && manualProtocol.hasCode( remote ))
+      rc.add( manualProtocol );
     return rc;
   }
 
@@ -319,7 +318,13 @@ public class ProtocolManager
     return null;
   }
 
+  public ManualProtocol getManualProtocol()
+  {
+    return manualProtocol;
+  }
+
   private static ProtocolManager protocolManager = new ProtocolManager();
+  private static ManualProtocol manualProtocol = null;
   private Vector names = new Vector();
   private Hashtable byName = new Hashtable();
   private Hashtable byPID = new Hashtable();

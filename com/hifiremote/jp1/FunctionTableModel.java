@@ -226,5 +226,13 @@ public class FunctionTableModel
       rc = protocol.getColumnRenderer( col - colOffset );
     return rc;
   }
+
+  public boolean isColumnWidthFixed( int col )
+  {
+    if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == efcCol ) || ( col == hexCol ))
+      return super.isColumnWidthFixed( col );
+    else
+      return protocol.isColumnWidthFixed( col - colOffset ); 
+  }
 }
 

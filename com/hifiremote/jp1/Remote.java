@@ -912,6 +912,7 @@ public class Remote
         if ( colon != -1 )
         {
           name = token.substring( colon + 1 );
+          System.err.println( "name is '" + name + "'" );
           char ch = name.charAt( 0 );
           if (( ch == '\'' ) || ch == '"' )
           {

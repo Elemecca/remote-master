@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.text.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
@@ -32,6 +33,8 @@ public class DeviceCombinerPanel
 
       public boolean isCellEditable( int row, int col )
       {
+        if ( col == 4 )
+          return true;
         return false;
       }
 
@@ -60,12 +63,37 @@ public class DeviceCombinerPanel
         {
           return device.getFixedData();
         }
+        else if ( col == 4 )
+          return device.getNotes();
         return null;
+      }
+
+      public void setValueAt( Object value, int row, int col )
+      {
+        if ( col == 4 )
+        {
+          DeviceCombiner deviceCombiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
+          CombinerDevice device = ( CombinerDevice )deviceCombiner.getDevices().elementAt( row );
+          device.setNotes(( String )value );
+        }
       }
     };
     table = new JTable( model );
 //    add( table.getTableHeader(), BorderLayout.NORTH );
     table.getSelectionModel().addListSelectionListener( this );
+    DefaultCellEditor e = ( DefaultCellEditor )table.getDefaultEditor( String.class );
+    new TextPopupMenu(( JTextComponent )e.getComponent());
+    table.addMouseListener( new MouseAdapter()
+    {
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( e.getClickCount() < 2 )
+          e.consume();
+        else
+          editDevice();
+      }
+    });
+
     add( new JScrollPane( table ), BorderLayout.CENTER );
 
     ActionListener al = new ActionListener()
@@ -174,20 +202,7 @@ public class DeviceCombinerPanel
         }
         else if ( source == editButton )
         {
-          DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-          Vector devices = combiner.getDevices();
-          int row = table.getSelectedRow();
-          CombinerDevice device = ( CombinerDevice )devices.elementAt( row );
-          CombinerDeviceDialog d = 
-            new CombinerDeviceDialog( KeyMapMaster.getKeyMapMaster(),
-                                      device, 
-                                      deviceUpgrade.getRemote());
-          d.show();
-          if ( d.getUserAction() == JOptionPane.OK_OPTION )
-          {
-            devices.setElementAt( d.getCombinerDevice(), row );
-            model.fireTableRowsUpdated( row, row );
-          }
+          editDevice();
         }
         else if ( source == removeButton )
         {
@@ -236,6 +251,24 @@ public class DeviceCombinerPanel
     
     add( panel, BorderLayout.SOUTH );
     initColumns( table );
+  }
+
+  private void editDevice()
+  {
+    DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
+    Vector devices = combiner.getDevices();
+    int row = table.getSelectedRow();
+    CombinerDevice device = ( CombinerDevice )devices.elementAt( row );
+    CombinerDeviceDialog d = 
+      new CombinerDeviceDialog( KeyMapMaster.getKeyMapMaster(),
+                                device, 
+                                deviceUpgrade.getRemote());
+    d.show();
+    if ( d.getUserAction() == JOptionPane.OK_OPTION )
+    {
+      devices.setElementAt( d.getCombinerDevice(), row );
+      model.fireTableRowsUpdated( row, row );
+    }
   }
 
   protected void initColumns( JTable table )
@@ -310,8 +343,8 @@ public class DeviceCombinerPanel
     }
   }
 
-  private static String[] titles = { "#", "Protocol", "  PID  ", "Fixed Data" };
-  private static Class[] classes = { Integer.class, String.class, Hex.class, Hex.class };
+  private static String[] titles = { "#",           "Protocol",   "  PID  ", "Fixed Data", "Notes" };
+  private static Class[] classes = { Integer.class, String.class, Hex.class,  Hex.class,   String.class };
 
   private AbstractTableModel model = null;
   private JTable table = null;

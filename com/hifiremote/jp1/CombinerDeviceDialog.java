@@ -36,7 +36,7 @@ public class CombinerDeviceDialog
     double p = TableLayout.PREFERRED;
     double size[][] =
     {// 0  1   2  3  4  5   6  7   8  9  10 11
-      { b, bl, p, b, p, br, f, b },             // cols
+      { b, bl, p, b, p, br, b, f, b },             // cols
       { b, p,  i, p, v, bt, p, bb, i, f, b }    // rows
     };
     tl = new TableLayout( size );
@@ -50,16 +50,20 @@ public class CombinerDeviceDialog
     Vector allProtocols = 
       ProtocolManager.getProtocolManager().getProtocolsForRemote( r, allowUpgrades );
     Vector protocols = new Vector();
+    if ( allowUpgrades )
+      protocols.add( new ManualProtocol( null, null ));
     for ( Enumeration e = allProtocols.elements(); e.hasMoreElements(); )
     {
       Protocol protocol = ( Protocol )e.nextElement();
       if ( protocol.getDefaultCmd().length() == 1 )
+      {
         protocols.add( protocol );
+      }
     }
     if ( dev == null )
-      device = new CombinerDevice(( Protocol )protocols.elementAt( 0 ), new Value[ 0 ]);
+      device = new CombinerDevice(( Protocol )protocols.elementAt( 1 ), new Value[ 0 ]);
     else
-      device = new CombinerDevice( dev.getProtocol(), dev.getValues());
+      device = new CombinerDevice( dev );
 
     device.getProtocol().reset();
 
@@ -68,6 +72,15 @@ public class CombinerDeviceDialog
     label.setLabelFor( protocolList );
     protocolList.setToolTipText( "Select the protocol to be used for this device upgrade from the drop-down list." );
     mainPanel.add( protocolList, "4, 1" );
+
+    deviceNotes = new JTextField();
+    new TextPopupMenu( deviceNotes );
+    deviceNotes.getDocument().addDocumentListener( this );
+    JPanel temp = new JPanel( new BorderLayout());
+    temp.add( deviceNotes, BorderLayout.CENTER );
+    temp.setBorder( BorderFactory.createTitledBorder( "Notes" ));
+
+    mainPanel.add( temp, "7, 1, 7, 3" );
 
     label = new JLabel( "Protocol ID:", SwingConstants.RIGHT );
     mainPanel.add( label, "2, 3" );
@@ -82,8 +95,12 @@ public class CombinerDeviceDialog
     mainPanel.add( label, "2, 6" );
 
     fixedData = new JTextField( " " );
-    // fixedData.setEditable( false );
+    fixedData.setEditable( false );
     mainPanel.add( fixedData, "4, 6" );
+
+    boolean flag = ( device.getProtocol().getClass() == ManualProtocol.class );
+    fixedData.setEditable( flag );
+    protocolID.setEditable( flag );
 
     mainPanel.add( protocolHolder, "1, 5, 5, 7" );
 
@@ -100,7 +117,7 @@ public class CombinerDeviceDialog
       BorderFactory.createCompoundBorder( 
         BorderFactory.createTitledBorder( "Protocol Notes" ),
         scrollPane.getBorder()));
-    mainPanel.add( scrollPane, "1, 9, 6, 9" );
+    mainPanel.add( scrollPane, "1, 9, 7, 9" );
 
     JPanel panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     contentPane.add( panel, BorderLayout.SOUTH ); 
@@ -132,11 +149,24 @@ public class CombinerDeviceDialog
     {
       protocolList.addItem( p );
       protocolList.setSelectedItem( p );
+
     }
-    protocolID.setText( p.getID().toString());
-    fixedData.removeActionListener( this );
-    fixedData.setText( p.getFixedData().toString());
-    fixedData.addActionListener( this );
+    fixedData.getDocument().removeDocumentListener( this );
+    protocolID.getDocument().removeDocumentListener( this );
+    deviceNotes.getDocument().removeDocumentListener( this );
+
+    fixedData.setText( device.getFixedData().toString());
+    Hex id = p.getID();
+    if ( id != null )
+      protocolID.setText( id.toString());
+    else
+      protocolID.setText( null );
+    deviceNotes.setText( device.getNotes());
+
+    fixedData.getDocument().addDocumentListener( this );
+    protocolID.getDocument().addDocumentListener( this );
+    deviceNotes.getDocument().addDocumentListener( this );
+    
     protocolNotes.setText( p.getNotes());
     protocolNotes.setCaretPosition( 0 );
   }
@@ -191,15 +221,10 @@ public class CombinerDeviceDialog
   public void updateFixedData()
   {
     Protocol p = device.getProtocol();
-    if ( p.getClass() == ManualProtocol.class )
-    {
-      (( ManualProtocol )p ).setRawHex( new Hex( fixedData.getText()));
-    }
-    else 
-      device.setValues( p.getDeviceParmValues());
-    fixedData.removeActionListener( this );
-    fixedData.setText( p.getFixedData().toString());
-    fixedData.addActionListener( this );
+    device.setValues( p.getDeviceParmValues());
+    fixedData.getDocument().removeDocumentListener( this );
+    fixedData.setText( device.getFixedData().toString());
+    fixedData.getDocument().addDocumentListener( this );
   }
 
   // ActionListener Methods
@@ -214,13 +239,21 @@ public class CombinerDeviceDialog
       if ( newProtocol != oldProtocol )
       {
         oldProtocol.reset();
-        protocolID.setText( newProtocol.getID().toString());
+        protocolID.getDocument().removeDocumentListener( this );
+        Hex id = newProtocol.getID();
+        if ( id != null )
+          protocolID.setText( id.toString());
+        else
+          protocolID.setText( null );
+        protocolID.getDocument().addDocumentListener( this );
         device.setProtocol( newProtocol );
         updateParameters();
-        fixedData.removeActionListener( this );
-        fixedData.setText( newProtocol.getFixedData().toString());
-        fixedData.addActionListener( this );
-        fixedData.setEditable( newProtocol.getClass() == ManualProtocol.class );
+        fixedData.getDocument().removeDocumentListener( this );
+        fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues()).toString());
+        fixedData.getDocument().addDocumentListener( this );
+        boolean flag = ( newProtocol.getClass() == ManualProtocol.class );
+        fixedData.setEditable( flag );
+        protocolID.setEditable( flag );
         validate();
         protocolNotes.setText( newProtocol.getNotes());
         protocolNotes.setCaretPosition( 0 );
@@ -250,17 +283,30 @@ public class CombinerDeviceDialog
   // DocumentListener
   public void changedUpdate( DocumentEvent e )
   {
-    updateFixedData();
+    docUpdated( e );
   }
 
   public void insertUpdate( DocumentEvent e )
   {
-    updateFixedData();
+    docUpdated( e );
   }
 
   public void removeUpdate( DocumentEvent e )
   {
-    updateFixedData();
+    docUpdated( e );
+  }
+
+  private void docUpdated( DocumentEvent e )
+  {
+    Document doc = e.getDocument();
+    if ( doc == protocolID.getDocument())
+      (( ManualProtocol )device.getProtocol()).setID( new Hex( protocolID.getText()));
+    else if ( doc == fixedData.getDocument())
+      (( ManualProtocol )device.getProtocol()).setRawHex( new Hex( fixedData.getText()));
+    else if ( doc == deviceNotes.getDocument())
+      device.setNotes( deviceNotes.getText());
+    else
+      updateFixedData();
   }
 
   // FocusListener
@@ -300,6 +346,7 @@ public class CombinerDeviceDialog
   private JPanel mainPanel = null;
   private JPanel protocolHolder = null;
   private JComboBox protocolList = null;
+  private JTextField deviceNotes = null;
   private JTextField protocolID = null;
   private JTextField fixedData = null;
   private JTextArea protocolNotes = null;

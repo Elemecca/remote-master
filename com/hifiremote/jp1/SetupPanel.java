@@ -129,13 +129,14 @@ public class SetupPanel
       protocols.add( p );
     }
 
-    p.setDeviceParms( deviceUpgrade.getParmValues());
+    Value[] vals = deviceUpgrade.getParmValues();
+    p.setDeviceParms( vals );
     updateParameters();
     protocolList.setModel( new DefaultComboBoxModel( protocols ));
     protocolList.setSelectedItem( p );
     protocolID.setText( p.getID( remote ).toString());
     notes.setText( deviceUpgrade.getNotes());
-    fixedData.setText( p.getFixedData().toString());
+    fixedData.setText( p.getFixedData( vals ).toString());
     protocolNotes.setText( p.getNotes());
     protocolNotes.setCaretPosition( 0 );
     updateInProgress = false;
@@ -182,7 +183,7 @@ public class SetupPanel
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
     deviceUpgrade.setParmValues( p.getDeviceParmValues());
-    fixedData.setText( p.getFixedData().toString());
+    fixedData.setText( p.getFixedData( deviceUpgrade.getParmValues()).toString());
   }
 
   // ActionListener Methods
@@ -208,7 +209,7 @@ public class SetupPanel
         if ( panel != null )
           KeyMapMaster.getKeyMapMaster().addPanel( panel, 1 );
         updateParameters();
-        fixedData.setText( newProtocol.getFixedData().toString());
+        fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues()).toString());
         revalidate();
         protocolNotes.setText( newProtocol.getNotes());
         protocolNotes.setCaretPosition( 0 );

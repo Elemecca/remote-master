@@ -371,7 +371,7 @@ public class DeviceUpgrade
     }
 
     buff.append( ' ' );
-    buff.append( protocol.getFixedData().toString());
+    buff.append( protocol.getFixedData( parmValues ).toString());
 
     if ( map != null )
     {
@@ -506,8 +506,8 @@ public class DeviceUpgrade
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     out.print( "DeviceIndex", Integer.toHexString( devType.getNumber()));
     out.print( "SetupCode", Integer.toString( setupCode ));
-    protocol.setDeviceParms( parmValues );
-    protocol.store( out );
+//    protocol.setDeviceParms( parmValues );
+    protocol.store( out, parmValues );
     if ( notes != null )
       out.print( "Notes", notes );
     int i = 0;
@@ -628,7 +628,7 @@ public class DeviceUpgrade
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     if ( name.equals( "Manual Settings" ))
     {
-      protocol = new ManualProtocol( name, pid, props );
+      protocol = new ManualProtocol( pid, props );
       pm.add( protocol );
     }
     else
@@ -1099,7 +1099,10 @@ public class DeviceUpgrade
       {
         Protocol p = protocolManager.findProtocolForRemote( remote, new Hex( pidStr ));
         if ( p == null )
-          p = new ManualProtocol( "Unknown",  new Hex( pidStr ), new Properties());
+        {
+          Hex newPid = new Hex( pidStr );
+          p = new ManualProtocol( newPid, new Properties());
+        }
         Hex fixedData = null;
         if ( fixedDataStr != null )
           fixedData = new Hex( fixedDataStr );
@@ -1107,7 +1110,7 @@ public class DeviceUpgrade
       }
 
       // skip to field 13
-      for ( int j = 8; j <= 13; j++ )
+      for ( int j = 8; j < 13; j++ )
         token = getNextField( st, delim );
 
       if ( token != null )
