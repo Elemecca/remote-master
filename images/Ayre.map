@@ -4,21 +4,21 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Ayre
-#$DATE:Wed Oct 08 18:48:23 2003
-#$PATH:C:\Backups\IR\Images\
+#$DATE:Fri Jan 23 16:23:34 2004
+#$PATH:C:\Backups\JP1\Images\
 #$GIF:Ayre.jpg
 #$FORMAT:ncsa
 #$EOH
-default Arye
+default Ayre
 circle CBL  33,45 39,51
 circle AUX  55,45 61,51
 circle VCR  77,45 83,51
-circle TV  100,45 106,51
+circle TV  101,45 107,51
 circle CD  33,60 39,66
 circle TNR  55,60 61,66
 circle AMP  78,60 84,66
 circle Setup  59,322 65,328
-circle Rpt_A-B  82,322 88,328
+circle Repeat  82,322 88,328
 circle Repeat  103,322 109,328
 circle Subtitle  38,342 44,348
 circle Sleep  68,161 76,166
@@ -26,7 +26,7 @@ circle Menu  104,259 110,265
 circle Guide  35,197 41,203
 circle Exit  103,198 109,204
 circle Input  69,177 77,182
-circle Pwr  95,28 102,35
+circle Power  95,28 102,35
 circle Up  69,211 89,218
 circle Left  38,229 45,245
 circle Right  100,229 107,245
@@ -49,11 +49,11 @@ circle 9  97,109 107,116
 circle 0  68,124 78,131
 circle Last  68,146 76,151
 circle Angle  38,323 44,329
-circle Rew  37,279 48,285
+circle Rewind  37,278 48,284
 circle Play  70,279 81,285
-circle Fwd  102,279 113,285
+circle Fastfwd  102,278 113,284
 circle Pause  103,299 114,305
-circle Rec  37,300 48,306
+circle Record  37,299 48,305
 circle Setup  36,24 41,29
 circle Info  35,259 41,265
 circle SAT  100,61 106,67
@@ -61,8 +61,8 @@ circle Program  59,342 65,348
 circle Search  83,342 89,348
 circle Random  104,341 110,347
 circle Audio  38,362 44,368
-circle Step-  59,362 65,368
-circle Step+  82,362 88,368
+circle Step_Back  59,362 65,368
+circle Step_Fwd  82,362 88,368
 circle Light  103,362 109,368
 circle Enter  98,126 108,133
 circle Stop  71,299 82,305
