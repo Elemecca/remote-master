@@ -70,16 +70,16 @@ public class Hex
     }
     else
     {
-      StringTokenizer st = new StringTokenizer( text, " _.$" );
+      StringTokenizer st = new StringTokenizer( text, " _.$h" );
       length = st.countTokens();
       rc = new int[ length ];
-      st = new StringTokenizer( text, " _.$", true );
+      st = new StringTokenizer( text, " _.$h", true );
       int i = 0;
       int value = 0;
       while ( st.hasMoreTokens())
       {
         String token = st.nextToken();
-        if ( token.equals( " " ) || token.equals( "$" ))
+        if ( token.equals( " " ) || token.equals( "$" ) || token.equals( "h" ))
           value = 0;
         else if ( token.equals( "_" ))
           value = ADD_OFFSET;
@@ -113,7 +113,7 @@ public class Hex
     {
       int val = data[ i ];
       int masked = val & 0x00FF;
-      
+
       if ( i > 0 )
       {
         char sep = ' ';
@@ -122,7 +122,7 @@ public class Hex
           sep = ',';
         else if ( flag == ADD_OFFSET )
           sep = '_';
-        
+
         rc.append( sep );
       }
 
@@ -199,7 +199,7 @@ public class Hex
       return 0;
 
     int multiplier = ( int )Math.pow( 31, data.length - 1);
-    
+
     for ( int i = 0; i < data.length; i++ )
     {
       rc += ( data[ i ] & 0xFF ) * multiplier;
@@ -262,7 +262,7 @@ public class Hex
   {
     return indexOf( needle, 0 );
   }
-  
+
   public int indexOf( int[] needle, int start )
   {
     int index = start;
