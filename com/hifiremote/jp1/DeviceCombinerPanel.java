@@ -104,8 +104,7 @@ public class DeviceCombinerPanel
             
             if ( !remote.getProcessor().getName().equals( "S3C80" ))
             {
-              String v = remote.getSupportedVariantName( importedProtocol.getID());
-              if (( v == null ) || !v.equals( importedProtocol.getVariantName()))
+              if ( remote.supportsVariant( importedProtocol.getID(), importedProtocol.getVariantName()))
               {
                 JOptionPane.showMessageDialog( null,
                                                "Device Combiner can only combine protocol that are built into the remote. " +

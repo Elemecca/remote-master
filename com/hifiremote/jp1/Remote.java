@@ -1140,7 +1140,13 @@ public class Remote
             token = token.substring( 0, colon );
           }
           Hex pid = new Hex( token );
-          protocolVariantNames.put( pid, variantName );
+          Vector v = ( Vector )protocolVariantNames.get( pid );
+          if ( v == null )
+          {
+            v = new Vector();
+            protocolVariantNames.put( pid, v );
+          }
+          v.add( variantName );
         }
       }
     }
@@ -1342,10 +1348,21 @@ public class Remote
     buttonShapes = ( ButtonShape[] )work.toArray( buttonShapes );
   }
 
-  public String getSupportedVariantName( Hex pid )
+  public boolean supportsVariant( Hex pid, String name )
   {
-    String rc = ( String )protocolVariantNames.get( pid );
-    return rc;
+    Vector v = ( Vector )protocolVariantNames.get( pid );
+    if (( v == null ) || v.isEmpty())
+      return false;
+
+    if ( v.contains( name ))
+        return true;
+
+    return false;
+  }
+
+  public Vector getSupportedVariantNames( Hex pid )
+  {
+    return ( Vector )protocolVariantNames.get( pid );
   }
 
 

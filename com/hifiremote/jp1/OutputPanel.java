@@ -119,9 +119,8 @@ public class OutputPanel
     String pVariant = p.getVariantName();
 
     Remote r = deviceUpgrade.getRemote();
-    String rVariant = r.getSupportedVariantName( p.getID());
 
-    if ( pVariant.equals( rVariant ))
+    if ( r.supportsVariant( p.getID(), pVariant ))
     {
       protocolLabel.setForeground( Color.BLACK );
       protocolLabel.setText( "Upgrade Protocol Code" );

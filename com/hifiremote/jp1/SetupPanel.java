@@ -201,7 +201,7 @@ public class SetupPanel
         if ( newProtocol != null && oldProtocol != null && !updateInProgress )
           oldProtocol.convertFunctions( deviceUpgrade.getFunctions(), newProtocol );
         oldProtocol.reset();
-        protocolID.setText( newProtocol.getID().toString());
+        protocolID.setText( newProtocol.getID( deviceUpgrade.getRemote()).toString());
         deviceUpgrade.setProtocol( newProtocol );
         panel = newProtocol.getPanel( deviceUpgrade );
         if ( panel != null )

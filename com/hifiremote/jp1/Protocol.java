@@ -16,7 +16,12 @@ public class Protocol
 
     String temp = props.getProperty( "AlternatePID" );
     if ( temp != null )
-      alternatePID = new Hex( temp );
+    {
+      StringTokenizer st = new StringTokenizer( temp.trim(), "," );
+      alternatePID = new Hex( st.nextToken());
+      while ( st.hasMoreTokens())
+        altPIDOverrideList.add( st.nextToken());
+    }
 
     temp = props.getProperty( "DevParms", "" );
     if ( temp != null )
@@ -130,8 +135,8 @@ public class Protocol
     String text = null;
     while ( st.hasMoreTokens())
     {
-      text = st.nextToken();
-      if ( text.startsWith( "Upgrade protocol 0 =" ))
+      text = st.nextToken().toUpperCase();
+      if ( text.startsWith( "UPGRADE PROTOCOL 0 =" ))
         break;
     }
     if ( st.hasMoreTokens())
@@ -167,9 +172,7 @@ public class Protocol
 
   public boolean needsCode( Remote remote )
   {
-    String rVariant = remote.getSupportedVariantName( id );
-    
-    if ( variantName.equals( rVariant ))
+    if ( remote.supportsVariant( id, variantName ))
       return false;
     else
       return true;
@@ -372,10 +375,27 @@ public class Protocol
 
   public Hex getID( Remote remote )
   {
-    if (( alternatePID != null ) && needsCode( remote ))
-      return alternatePID;
-    else
+    if ( alternatePID == null )
       return id;
+
+    if ( !needsCode( remote ))
+      return id;
+
+    if ( altPIDOverrideList.isEmpty())
+      return alternatePID;
+
+    Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, id, false );
+    String builtin = "none";
+    if ( p != null )
+      builtin = p.getVariantName();
+  
+    for ( Enumeration e = altPIDOverrideList.elements(); e.hasMoreElements(); )
+    {
+      String temp = ( String )e.nextElement();
+      if ( temp.equalsIgnoreCase( builtin ))
+        return id;
+    }
+    return alternatePID;  
   }
 
   public String getVariantName(){ return variantName; }
@@ -575,4 +595,5 @@ public class Protocol
   protected Initializer[] cmdParmInit = null;
   protected String notes = null;
   private Vector oldNames = new Vector();
+  private Vector altPIDOverrideList = new Vector();
 }

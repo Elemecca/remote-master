@@ -192,9 +192,8 @@ public class ProtocolManager
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol p = ( Protocol )e.nextElement();
-      String supportedVariant = remote.getSupportedVariantName( p.getID());
 
-      if ( p.getVariantName().equals( supportedVariant ))
+      if ( remote.supportsVariant( p.getID(), p.getVariantName()))
       {
         protocol = p;
         break;
@@ -231,8 +230,7 @@ public class ProtocolManager
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol p = ( Protocol )e.nextElement();
-      String supportedVariant = remote.getSupportedVariantName( id );
-      if ( p.getVariantName().equals( supportedVariant ))
+      if ( remote.supportsVariant( id , p.getVariantName()))
       {
         protocol = p;
         break;

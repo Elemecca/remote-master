@@ -828,7 +828,13 @@ public class DeviceUpgrade
       String pidStr = getNextField( manual, delim );
       System.err.println( "pid=" + pidStr );
       if ( pidStr != null )
-        pid = new Hex( pidStr );
+      {
+        int pidInt = Integer.parseInt( pidStr, 16 );
+        int[] data = new int[ 2 ];
+        data[ 0 ] = ( pidInt & 0xFF00 ) >> 8;
+        data[ 1 ] = pidInt & 0xFF;
+        pid = new Hex( data );
+      }
       int byte2 = Integer.parseInt( getNextField( manual, delim ).substring( 0, 1 ));
       System.err.println( "byte2=" +  byte2 );
       String signalStyle = getNextField( manual, delim );
