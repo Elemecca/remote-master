@@ -224,6 +224,17 @@ public class Button
         deviceCode[ 0 ] = ( byte )( temp >> 8 );
         deviceCode[ 1 ] = ( byte )temp;
       }
+      else if ( remote.getAdvCodeFormat() == Remote.EFC )
+      {
+        if ( hex.length() == 1 )
+        {
+          byte[] data = new byte[ 2 ];
+          data[ 0 ] = 0;
+          EFC efc = Protocol.hex2efc( hex, 0 );
+          data[ 1 ] = ( byte )efc.getValue();
+          hex = new Hex( data );
+        }
+      }
 
       if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) )
         len = ( 4 + hex.length());

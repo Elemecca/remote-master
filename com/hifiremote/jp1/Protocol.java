@@ -407,7 +407,7 @@ public class Protocol
   public final static int tooDifferent = 0x7FFFFFFF;
 
   private String name = null;;
-  private Hex id = null;
+  protected Hex id = null;
   private String variantName = null;
   private Hex fixedData = null;
   protected Hex defaultCmd = null;

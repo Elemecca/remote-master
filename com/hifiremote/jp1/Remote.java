@@ -300,6 +300,12 @@ public class Remote
     return imageIcon;
   }
 
+  public int getAdvCodeFormat()
+  {
+    checkLoaded();
+    return advCodeFormat;
+  }
+
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
   {
@@ -435,6 +441,14 @@ public class Remote
         xShiftMask = rdr.parseNumber( st.nextToken());
         if ( st.hasMoreTokens())
           xShiftLabel = st.nextToken().trim();
+      }
+      else if ( parm.equals( "AdvCodeFormat" ))
+      {
+        String value = st.nextToken();
+        if ( value.equals( "HEX" ))
+          advCodeFormat = HEX;
+        else if ( value.equals( "EFC " ))
+          advCodeFormat = EFC;
       }
     }
     return line;
@@ -785,6 +799,7 @@ public class Remote
     while ( true )
     {
       line = rdr.readLine();
+      System.err.println( "Parsing line \"" + line + "\"" );
       if ( line == null )
         break;
       if (( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ))
@@ -793,6 +808,7 @@ public class Remote
       while ( st.hasMoreTokens())
       {
         String token = st.nextToken().trim();
+        System.err.println( "Parsing button \"" + token + "\"" );
         int equal = token.indexOf( '=' );
         if ( equal != -1 )
         {
@@ -1327,5 +1343,8 @@ public class Remote
   private String shiftLabel = "Shift";
   private String xShiftLabel = "XShift";
   private int defaultRestrictions = 0;
+  public static final int HEX = 0;
+  public static final int EFC = 1;
+  private int advCodeFormat = EFC;
   private static Hashtable restrictionTable = null;
  }

@@ -39,6 +39,16 @@ public class Translator
     }
   }
 
+  public Translator( boolean lsb, boolean comp, int index, int bits, int bitOffset )
+  {
+    super( null );
+    this.lsb = lsb;
+    this.comp = comp;
+    this.index = index;
+    this.bits = bits;
+    this.bitOffset = bitOffset;
+  }
+
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     byte[] hex = hexData.getData();

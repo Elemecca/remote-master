@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.75";
+  private static final String version = "v 0.76";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -24,6 +24,8 @@ public class KeyMapMaster
   private JMenu recentFileMenu = null;
   private JMenuItem useAllRemotes = null;
   private JMenuItem usePreferredRemotes = null;
+  private JMenuItem manualItem = null;
+  private JRadioButtonMenuItem[] lookAndFeelItems = null;
   private JRadioButtonMenuItem[] promptButtons = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
@@ -56,6 +58,7 @@ public class KeyMapMaster
   private static String upgradeDirectory = "Upgrades";
   private int promptFlag = 0;
   private final static String[] promptStrings = { "Always", "On Exit", "Never" };
+  private final static int[] promptMnemonics = { KeyEvent.VK_A, KeyEvent.VK_X, KeyEvent.VK_N };
   private final static int PROMPT_NEVER = 2;
   private final static int PROMPT_ALWAYS = 0;
   private final static int ACTION_EXIT = 1;
@@ -220,44 +223,54 @@ public class KeyMapMaster
     JMenuBar menuBar = new JMenuBar();
     setJMenuBar( menuBar );
     JMenu menu = new JMenu( "File" );
+    menu.setMnemonic( KeyEvent.VK_F );
     menuBar.add( menu );
     newItem = new JMenuItem( "New" );
+    newItem.setMnemonic( KeyEvent.VK_N );
     newItem.addActionListener( this );
     menu.add( newItem );
     openItem = new JMenuItem( "Open..." );
+    openItem.setMnemonic( KeyEvent.VK_O );
     openItem.addActionListener( this );
     menu.add( openItem );
     saveItem = new JMenuItem( "Save" );
+    saveItem.setMnemonic( KeyEvent.VK_S );
     saveItem.setEnabled( false );
     saveItem.addActionListener( this );
     menu.add( saveItem );
     saveAsItem = new JMenuItem( "Save as..." );
+    saveAsItem.setMnemonic( KeyEvent.VK_A );
+    saveAsItem.setDisplayedMnemonicIndex( 5 );
     saveAsItem.addActionListener( this );
     menu.add( saveAsItem );
 
     menu.addSeparator();
     importItem = new JMenuItem( "Import KM file..." );
+    importItem.setMnemonic( KeyEvent.VK_I );
     importItem.addActionListener( this );
     menu.add( importItem );
 
     menu.addSeparator();
     recentFileMenu = new JMenu( "Recent" );
+    recentFileMenu.setMnemonic( KeyEvent.VK_R );
     recentFileMenu.setEnabled( false );
     menu.add( recentFileMenu );
     menu.addSeparator();
 
     exitItem = new JMenuItem( "Exit" );
+    exitItem.setMnemonic( KeyEvent.VK_X );
     exitItem.addActionListener( this );
     menu.add( exitItem );
 
     menu = new JMenu( "Options" );
+    menu.setMnemonic( KeyEvent.VK_O );
     menuBar.add( menu );
 
     JMenu submenu = new JMenu( "Look and Feel" );
+    submenu.setMnemonic( KeyEvent.VK_L );
     menu.add( submenu );
 
     ButtonGroup group = new ButtonGroup();
-    String lookAndFeelName = UIManager.getLookAndFeel().getClass().getName();
     UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
 
     ActionListener al = new ActionListener()
@@ -274,12 +287,13 @@ public class KeyMapMaster
       }
     };
 
+    lookAndFeelItems = new JRadioButtonMenuItem[ info.length ];
     for ( int i = 0; i < info.length; i++ )
     {
       JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName());
+      lookAndFeelItems[ i ] = item;
+      item.setMnemonic( item.getText().charAt( 0 ));
       item.setActionCommand( info[ i ].getClassName());
-      if ( info[ i ].getClassName().equals( lookAndFeelName ))
-        item.setSelected( true );
       group.add( item );
       submenu.add( item );
       item.addActionListener( al );
@@ -307,6 +321,7 @@ public class KeyMapMaster
     for ( int i = 0; i < promptStrings.length; i++ )
     {
       JRadioButtonMenuItem item = new JRadioButtonMenuItem( promptStrings[ i ] );
+      item.setMnemonic( promptMnemonics[ i ]);
       promptButtons[ i ] = item;
       item.addActionListener( al );
       group.add( item );
@@ -319,6 +334,7 @@ public class KeyMapMaster
 
     group = new ButtonGroup();
     useAllRemotes = new JRadioButtonMenuItem( "All" );
+    useAllRemotes.setMnemonic( KeyEvent.VK_A );
     al = new ActionListener()
     {
       public void actionPerformed( ActionEvent e )
@@ -336,14 +352,23 @@ public class KeyMapMaster
     submenu.add( useAllRemotes );
 
     usePreferredRemotes = new JRadioButtonMenuItem( "Preferred" );
+    usePreferredRemotes.setMnemonic( KeyEvent.VK_P );
     usePreferredRemotes.addActionListener( al );
     group.add( usePreferredRemotes );
     submenu.add( usePreferredRemotes );
 
     submenu.addSeparator();
     JMenuItem item = new JMenuItem( "Edit preferred..." );
+    item.setMnemonic( KeyEvent.VK_E );
     item.addActionListener( al );
     submenu.add( item );
+
+//    menu = new JMenu( "Tools" );
+//    menuBar.add( menu );
+//
+//    manualItem = new JMenuItem( "Manual settings..." );
+//    manualItem.addActionListener( this );
+//    menu.add( manualItem );
   }
 
   private void editPreferredRemotes()
@@ -371,6 +396,17 @@ public class KeyMapMaster
 
       if ( usePreferredRemotes.isSelected())
         remoteList.setModel( new DefaultComboBoxModel( preferredRemotes ));
+    }
+  }
+
+  private void editManualSettings()
+  {
+    System.err.println( "editManualSettings()");
+    ManualSettingsDialog d = new ManualSettingsDialog( this, null );
+    d.show();
+    if ( d.getUserAction() == JOptionPane.OK_OPTION )
+    {
+      // ?
     }
   }
 
@@ -648,6 +684,10 @@ public class KeyMapMaster
       {
         dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ));
       }
+      else if ( source == manualItem )
+      {
+        editManualSettings();
+      }
     }
     catch ( Exception ex )
     {
@@ -842,6 +882,14 @@ public class KeyMapMaster
     {
       UIManager.setLookAndFeel( temp );
       SwingUtilities.updateComponentTreeUI( this );
+      for ( int i = 0; i < lookAndFeelItems.length; i ++ )
+      {
+        if ( lookAndFeelItems[ i ].getActionCommand().equals( temp ))
+        {
+          lookAndFeelItems[ i ].setSelected( true );
+          break;
+        }
+      }
     }
     catch ( Exception e )
     {
@@ -857,6 +905,8 @@ public class KeyMapMaster
         promptFlag = i;
     if ( promptFlag > promptStrings.length )
       promptFlag = 0;
+
+    promptButtons[ promptFlag ].setSelected( true );
 
     for ( int i = 0; true; i++ )
     {
