@@ -5,6 +5,7 @@ Changes for v1.00
 - Corrected protocols.ini entry for Acer Keyboard protocol (courtesy of Jon Armstrong)
 - Allow scrolling of available functions in LayoutPanel
 - Fix use of "adjust" parameter to Translator and TranslatorFromDev
+- Use RM_Maps-and-Images_1.17.zip
 
 Changes for v0.99
 - Add support for alternate PIDs, requires updated RDFs
