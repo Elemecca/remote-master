@@ -1,3 +1,14 @@
+Changes for v0.82
+
+- If there is no function assigned to the normal or shifted button, 
+  the x-shifted button won't be included in the upgrade code.
+- Fix a problem where external functions lose their device type and 
+  device code. (courtesy of bgalbrecht)
+- RM Images and Maps 1.11 (courtesy of Nils)
+- Changes for Panasonic VCR and Mixed Combos (courtesy of johnsfine)
+- Special translator for Device and SubDevice in the new pid 001F 
+  (courtesy of johnsfine)
+
 Changes for v0.81
 
 - Added both the built-in and short versions of RC6-M-20n
@@ -12,9 +23,9 @@ Changes for v0.81
 
 Changes for v0.80
 
-- Change handling of DeviceTypeAliases.  No longer required in RDF, but 
-  needed for ease of importing KM upgrades and for switching between 
-  remotes.  DeviceTypeAlias names are no longer fixed, but consistent 
+- Change handling of DeviceTypeAliases.  No longer required in RDF, but
+  needed for ease of importing KM upgrades and for switching between
+  remotes.  DeviceTypeAlias names are no longer fixed, but consistent
   values should be used.
 - Corrected bug in importing KM saved files that use 2-byte commands.
 
