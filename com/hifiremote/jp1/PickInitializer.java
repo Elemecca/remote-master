@@ -5,24 +5,24 @@ public class PickInitializer
 {
   public PickInitializer( String[] parms )
   {
-    index = Integer.parseInt( parms[ 0 ]);
+    index = Integer.parseInt( parms[ 0 ]);      // index within cmdParms
     sources = new int[ parms.length-1 ];
-    for (int i=0; i<parms.length-1; i++)
+    for (int i=0; i<parms.length-1; i++)        // i selects within the choices in cmdParms[index]
     {
       String str = parms[i+1].trim().toUpperCase();
       sources[i] = 0;
-      if ( str.length() != 0 && str.charAt(0) == 'N' )
+      if ( str.length() != 0 && str.charAt(0) == 'N' )  // N means hide if the corresponding devParms item is blank
       {
         sources[i] = noDefault;
         str = str.substring(1).trim();
       }
       if ( str.length() == 0 )
       {
-        sources[i] = noChange;
+        sources[i] = noChange;  // Blank means don't change the original cmdParms choice
       }
       else
       {
-        int v=Integer.parseInt( str );
+        int v=Integer.parseInt( str );  // v is the devParm index for replacing the i'th choice
         sources[i] += v;
       }
     }
@@ -36,9 +36,9 @@ public class PickInitializer
       int s = sources[ i ];
       if ( s != noChange )
       {
-        int j = s & indexPart;
+        int j = s & indexPart;   // devParm index from which to get the new choice value
         Object parm = null;
-        if ( j < devParms.length )
+        if ( j < devParms.length )  // If that index is valid
         {
           parm = devParms[ j ].getValue();
           if (parm == null && (s & noDefault) == 0)

@@ -5,33 +5,41 @@ public class ParmInitializer
 {
   public ParmInitializer( String[] parms )
   {
-    index = Integer.parseInt( parms[ 0 ]);
+    if ( parms.length != 4 )
+    {
+      KeyMapMaster.showMessage( "ParmInitializer requires exactly four values" );
+      return;
+    }
+    cmdNdx = Integer.parseInt( parms[ 0 ]);
+    devNdx = Integer.parseInt( parms[ 1 ]);
+    bitPos = Integer.parseInt( parms[ 2 ]);
+    bitCnt = Integer.parseInt( parms[ 3 ]);
   }
 
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
-    Choice[] choices = (( ChoiceCmdParm )cmdParms[ index ]).getChoices();
+    int step = 1 << bitPos;
+    int count = 1 << bitCnt;
+    int mask = -step*(count-1) - 1;
+    int deflt = (( Integer )devParms[ devNdx ].getValueOrDefault()).intValue();
+    ChoiceCmdParm devCmdParm = ( ChoiceCmdParm )cmdParms[ cmdNdx ];
+    Choice[] choices = devCmdParm.getChoices();
     int i = 0;
-    for ( ; i < devParms.length; i++ )
+    for ( ; i < choices.length && i < count; i++ )
     {
-      Integer temp = ( Integer )devParms[ i ].getValue();
+      int value = (deflt & mask) + (i * step);
       Choice choice = choices[ i ];
-      if ( temp == null )
+      choice.setText( Integer.toString(value) );
+      if ( value == deflt )
       {
-        choice.setText( "n/a" );
-        choice.setHidden( true );
-      }
-      else
-      {
-        choice.setText( temp.toString());
-        choice.setHidden( false );
+        devCmdParm.setDefault( i );
       }
     }
-    for ( ; i < choices.length; i++ )
-      choices[ i ].setHidden( true );
-
-    (( ChoiceEditor )(( ChoiceCmdParm )cmdParms[ index ]).getEditor()).initialize();
+    (( ChoiceEditor )devCmdParm.getEditor()).initialize();
   }
 
-  private int index;
+  private int cmdNdx=0;
+  private int devNdx=0;
+  private int bitPos=0;
+  private int bitCnt=1;
 }
