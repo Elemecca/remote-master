@@ -326,8 +326,7 @@ public class KeyMapMaster
       {
         Remote remote = ( Remote )remoteList.getSelectedItem();
         setRemote( remote );
-        // add code to try to match the current device type to a
-        // type in the new type list.
+        validateUpgrade();
         currPanel.update();
       }
       else if ( source == deviceTypeList )
@@ -492,6 +491,8 @@ public class KeyMapMaster
     while ( itemCount > 9 )
       recentFileMenu.remove( --itemCount );
     recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
+
+    validateUpgrade();
   }
   // ChangeListener methods
   private KMPanel currPanel = null;
@@ -500,6 +501,7 @@ public class KeyMapMaster
     currPanel.commit();
     currPanel = ( KMPanel )(( JTabbedPane )e.getSource()).getSelectedComponent();
     currPanel.update();
+    validateUpgrade();
   }
 
   private void loadPreferences()
@@ -620,6 +622,20 @@ public class KeyMapMaster
     out.close();
   }
 
+  public void validateUpgrade()
+  {
+    Remote r = deviceUpgrade.getRemote();
+    Protocol p = deviceUpgrade.getProtocol();
+    Vector protocols = protocolManager.getProtocolsForRemote( r );
+    if ( !protocols.contains( p ))
+    {
+      JOptionPane.showMessageDialog( this, 
+                                     "The select protocol is not compatible with the selected remote.\n" + 
+                                     "This upgrade will NOT function correctly.  Please choose a different protocol.",
+                                     "Error", JOptionPane.ERROR_MESSAGE );
+    }
+  }
+
   // DocumentListener methods
   public void changedUpdate( DocumentEvent e )
   {
@@ -703,5 +719,6 @@ public class KeyMapMaster
     {
       return file;
     }
+
   }
 }

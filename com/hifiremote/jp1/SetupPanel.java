@@ -192,13 +192,14 @@ public class SetupPanel
 
   public void commit()
   {
-    Protocol p = getProtocol();
-    deviceUpgrade.setProtocol( p );
+//    Protocol p = getProtocol();
+// if ( p != null )
+//      deviceUpgrade.setProtocol( p );
 
-    for ( int i = 0; i < parameters.length; i++ )
-      parameters[ i ].commit();
+//    for ( int i = 0; i < parameters.length; i++ )
+//      parameters[ i ].commit();
 
-    p.updateFunctions( deviceUpgrade.getFunctions());
+    deviceUpgrade.getProtocol().updateFunctions( deviceUpgrade.getFunctions());
   }
 
   private void updateNotes()
