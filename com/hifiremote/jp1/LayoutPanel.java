@@ -368,6 +368,22 @@ public class LayoutPanel
       setButtonText( currentShape, b );
       doRepaint();
     }
+    else
+    {
+      Button b = getButtonForShape( currentShape );
+      if ( b != null )
+      {
+        Function f = (( FunctionItem )source ).getFunction();
+        if ( normalMode.isSelected())
+          b.setFunction( f );
+        else if ( shiftMode.isSelected())
+          b.setShiftedFunction( f );
+        else if ( xShiftMode.isSelected())
+          b.setXShiftedFunction( f );
+        setButtonText( currentShape, b );
+        doRepaint();
+      }
+    }
   }
 
   class DoubleClickListener
