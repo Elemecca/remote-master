@@ -14,9 +14,12 @@ public class SetupPanel
   extends KMPanel
   implements ActionListener, DocumentListener, FocusListener, ItemListener
 {
-  public SetupPanel( DeviceUpgrade deviceUpgrade, Vector protocols )
+  public SetupPanel( DeviceUpgrade deviceUpgrade,
+                     ProtocolManager protocolManager )
   {
     super( deviceUpgrade );
+
+    this.protocolManager = protocolManager;
 
     protocolHolder = new JPanel( new BorderLayout());
     Border border = BorderFactory.createTitledBorder( "Protocol Parameters" );
@@ -44,16 +47,11 @@ public class SetupPanel
     JLabel label = new JLabel( "Setup Code:", SwingConstants.RIGHT );
     add( label, "2, 1" );
 
-//    IntFormatter nf = new IntFormatter( 0, 2047, 4 );
-//    nf.setAllowsInvalid( false );
-//    nf.setOverwriteMode( true );
-//    setupCode = new JFormattedTextField( nf );
     setupCode = new JTextField();
     setupCode.addFocusListener( this );
     setupCode.setInputVerifier( new IntVerifier( 0, 2047 ));
     setupCode.addActionListener( this );
     label.setLabelFor( setupCode );
-//    setupCode.setFocusLostBehavior( JFormattedTextField.COMMIT_OR_REVERT );
     setupCode.setToolTipText( "Enter the desired setup code (between 0 and 2047) for the device upgrade." );
 
     add( setupCode, "4, 1" );
@@ -69,7 +67,7 @@ public class SetupPanel
     label = new JLabel( "Protocol:", SwingConstants.RIGHT );
     add( label, "2, 3" );
 
-    protocolList = new JComboBox( protocols );
+    protocolList = new JComboBox( protocolManager.getNames());
     protocolList.addActionListener( this );
     label.setLabelFor( protocolList );
     protocolList.setToolTipText( "Select the protocol to be used for this device upgrade from the drop-down list." );
@@ -103,18 +101,13 @@ public class SetupPanel
     add( notesPanel, "1, 10, 7, 10" );
   }
 
-  public void protocolsLoaded( Vector protocols )
-  {
-    protocolList.setModel( new DefaultComboBoxModel( protocols ));
-  }
-
   public void update()
   {
     updateInProgress = true;
 //    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
     setupCode.setText( nf.format( deviceUpgrade.getSetupCode()));
     Protocol p = deviceUpgrade.getProtocol();
-    protocolList.setSelectedItem( p );
+    protocolList.setSelectedItem( p.getName());
     notes.setText( deviceUpgrade.getNotes());
     fixedData.setText( p.getFixedData().toString());
     updateInProgress = false;
@@ -134,7 +127,9 @@ public class SetupPanel
 
     if ( source == protocolList )
     {
-      Protocol protocol = ( Protocol )protocolList.getSelectedItem();
+      String name = ( String )protocolList.getSelectedItem();
+      Remote remote = deviceUpgrade.getRemote();
+      Protocol protocol = protocolManager.findProtocolForRemote( remote, name );
       if ( protocol != null && ( currProtocol != protocol ))
       {
         if ( currProtocol != null && !updateInProgress )
@@ -163,7 +158,7 @@ public class SetupPanel
           for ( int i = 0; i < parameters.length; i++ )
           {
             parameters[ i ].addListener( this );
-            
+
             tl.insertRow( row, TableLayout.PREFERRED );
             add( parameters[ i ].getLabel(), "2, " + row );
             add( parameters[ i ].getComponent() , "4, " + row );
@@ -188,7 +183,8 @@ public class SetupPanel
 
   public Protocol getProtocol()
   {
-    return ( Protocol )protocolList.getSelectedItem();
+    String name = ( String )protocolList.getSelectedItem();
+    return protocolManager.findProtocolForRemote( deviceUpgrade.getRemote(), name );
   }
 
   public void commit()
@@ -248,7 +244,7 @@ public class SetupPanel
     JTextComponent tc = ( JTextComponent )e.getSource();
     tc.selectAll();
   }
-  
+
   public void focusLost( FocusEvent e )
   {
     JTextComponent tc = ( JTextComponent )e.getSource();
@@ -264,7 +260,7 @@ public class SetupPanel
     updateFixedData();
   }
 
-//  private JFormattedTextField setupCode = null;
+  private ProtocolManager protocolManager = null;
   private JTextField setupCode = null;
   private JRadioButton useEFC = null;
   private JRadioButton useOBC = null;

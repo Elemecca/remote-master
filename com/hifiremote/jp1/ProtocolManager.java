@@ -9,7 +9,7 @@ public class ProtocolManager
   public ProtocolManager()
   {}
 
-  private void loadProtocols()
+  public void load()
     throws Exception
   {
     File f = new File( "protocols.ini" );
@@ -108,7 +108,7 @@ public class ProtocolManager
     {
       v = new Vector();
       byName.put( name, v );
-      inOrder.add( v );
+      names.add( name );
     }
     v.add( p );
 
@@ -121,8 +121,10 @@ public class ProtocolManager
       byPID.put( id, v );
     }
     v.add( p );
-    
+
   }
+
+  public Vector getNames(){ return names; }
 
   public Vector findByName( String name )
   {
@@ -131,10 +133,59 @@ public class ProtocolManager
 
   public Vector findByPID( Hex id )
   {
-    return ( Vector )byPID.get( id );   
+    return ( Vector )byPID.get( id );
   }
-  
-  private Vector inOrder = new Vector();
+
+  public Protocol findProtocolForRemote( Remote remote, String name )
+  {
+    System.err.println( "ProtocolManager.findProtocolForRemote()" +
+                        " remote=" + remote.getName() + ", name=" + name );
+
+    Protocol protocol = null;
+    Protocol tentative = null;
+
+    Vector protocols = findByName( name );
+    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    {
+      Protocol p = ( Protocol )e.nextElement();
+      String supportedVariant = remote.getSupportedVariantName( p.getID());
+
+      if ( p.getVariantName().equals( supportedVariant ))
+      {
+        protocol = p;
+        break;
+      }
+
+      if ( tentative == null )
+      {
+        if ( p.getCode( remote.getProcessor()) != null )
+          tentative = p;
+      }
+    }
+    if ( protocol == null )
+      protocol = tentative;
+
+    System.err.println( "Returned " + protocol );
+
+    return protocol;
+  }
+
+  public Protocol findProtocol( String name, Hex id, String variantName )
+  {
+    Vector protocols = findByName( name );
+    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    {
+      Protocol p = ( Protocol )e.nextElement();
+      if ( p.getName().equals( name ) &&
+           p.getVariantName().equals( variantName ))
+      {
+        return p;
+      }
+    }
+    return null;
+  }
+
+  private Vector names = new Vector();
   private Hashtable byName = new Hashtable();
   private Hashtable byPID = new Hashtable();
 }

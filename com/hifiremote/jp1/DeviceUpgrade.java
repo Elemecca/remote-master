@@ -22,7 +22,7 @@ public class DeviceUpgrade
     initFunctions();
   }
 
-  public void reset( Remote[] remotes, Vector protocols )
+  public void reset( Remote[] remotes, ProtocolManager protocolManager )
   {
     description = null;
     setupCode = 0;
@@ -40,7 +40,21 @@ public class DeviceUpgrade
 
     remote = remotes[ 0 ];
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
-    protocol = ( Protocol )protocols.elementAt( 0 );
+
+    Vector names = protocolManager.getNames();
+    Protocol tentative = null;
+    for ( Enumeration e = names.elements(); e.hasMoreElements(); )
+    {
+      String protocolName = ( String )e.nextElement();
+      Vector protocols = protocolManager.findByName( protocolName );
+      Protocol p = protocolManager.findProtocolForRemote( remote, protocolName );
+      if ( p.getVariantName().equals( remote.getSupportedVariantName( p.getID())))
+      {
+        protocol = p;
+        break;
+      }
+    }
+
     notes = null;
     file = null;
 
@@ -207,7 +221,7 @@ public class DeviceUpgrade
             if (( f.getHex().getData()[ 0 ] & 0xFF ) == DIGIT_MAP[ mapNum ][ j ])
               rc = i + 1;
             else
-              break;  
+              break;
           if ( j == 9 )
           {
             System.err.println( "Matches " + rc);
@@ -247,14 +261,14 @@ public class DeviceUpgrade
       buff.append( Hex.toString( id[ 1 ]));
 
       int digitMapIndex = -1;
-      
+
       if ( !remote.getOmitDigitMapByte())
       {
         buff.append( ' ' );
         digitMapIndex = findDigitMapIndex();
         if ( digitMapIndex == -1 )
           buff.append( "00" );
-        else 
+        else
         {
           byte[] array = new byte[ 1 ];
           array[ 0 ] = ( byte )digitMapIndex;
@@ -368,6 +382,8 @@ public class DeviceUpgrade
     props.setProperty( "SetupCode", Integer.toString( setupCode ));
     props.setProperty( "Protocol", protocol.getID().toString());
     props.setProperty( "Protocol.name", protocol.getName());
+    if ( protocol.getVariantName().length() > 0 )
+      props.setProperty( "Protocol.variantName", protocol.getVariantName());
     Value[] parms = protocol.getDeviceParmValues();
     if (( parms != null ) && ( parms.length != 0 ))
       props.setProperty( "ProtocolParms", valueArrayToString( parms ));
@@ -417,7 +433,8 @@ public class DeviceUpgrade
     out.close();
   }
 
-  public void load( File file, Remote[] remotes, Vector protocols )
+  public void load( File file, Remote[] remotes,
+                    ProtocolManager protocolManager )
     throws Exception
   {
     System.err.println( "DeviceUpgrade.load()" );
@@ -428,7 +445,7 @@ public class DeviceUpgrade
     in.close();
 
     String str = props.getProperty( "Description" );
-    if ( str != null )  
+    if ( str != null )
       description = str;
     str = props.getProperty( "Remote.name" );
     String sig = props.getProperty( "Remote.signature" );
@@ -449,14 +466,14 @@ public class DeviceUpgrade
         simRemotes = similarRemotes.toArray();
       else
         simRemotes = remotes;
-      
+
       String message = "Could not find an exact match for the remote \"" + str + "\".  Choose one from the list below:";
-      
-      Object rc = ( Remote )JOptionPane.showInputDialog( null, 
+
+      Object rc = ( Remote )JOptionPane.showInputDialog( null,
                                                          message,
                                                          "Upgrade Load Error",
                                                          JOptionPane.ERROR_MESSAGE,
-                                                         null, 
+                                                         null,
                                                          simRemotes,
                                                          simRemotes[ 0 ]);
       if ( rc == null )
@@ -477,27 +494,44 @@ public class DeviceUpgrade
       System.err.println( "Unable to find device type with alias name " + devTypeAliasName );
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ));
 
+    Hex pid = new Hex( props.getProperty( "Protocol" ));
+    String name = props.getProperty( "Protocol.name" );
+    String variantName = props.getProperty( "Protocol.variantName", "" );
     System.err.println( "Searching for protocol with id " + props.getProperty( "Protocol" ));
-    int leastDifferent = Protocol.tooDifferent;
-    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
-    {
-      Protocol tentative = ( Protocol )e.nextElement();
-      int difference = tentative.different( props );
-      if (difference < leastDifferent)
-      {
-        protocol = tentative;
-        leastDifferent = difference;
-        if ( difference == 0 )
-          break;
-      }
-    }
-    if ( leastDifferent == Protocol.tooDifferent )
+
+    protocol = protocolManager.findProtocol( name, pid, variantName );
+    if ( protocol == null )
     {
       JOptionPane.showMessageDialog( null,
-                                     "No matching protocol for ID " + props.getProperty( "Protocol" ) + " was found!",
+                                     "No protocol found with name=\"" + name +
+                                     "\", ID=" + pid.toString() +
+                                     ", and variantName=\"" + variantName + "\"",
                                      "File Load Error", JOptionPane.ERROR_MESSAGE );
       return;
     }
+
+//  int leastDifferent = Protocol.tooDifferent;
+//
+//  for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+//  {
+//    Protocol tentative = ( Protocol )e.nextElement();
+//    int difference = tentative.different( props );
+//    if (difference < leastDifferent)
+//    {
+//      protocol = tentative;
+//      leastDifferent = difference;
+//      if ( difference == 0 )
+//        break;
+//    }
+//  }
+//  if ( leastDifferent == Protocol.tooDifferent )
+//  {
+//    JOptionPane.showMessageDialog( null,
+//                                   "No matching protocol for ID " + props.getProperty( "Protocol" ) + " was found!",
+//                                   "File Load Error", JOptionPane.ERROR_MESSAGE );
+//    return;
+//  }
+
     str = props.getProperty( "ProtocolParms" );
     if (( str != null ) && ( str.length() != 0 ))
       protocol.setDeviceParms( stringToValueArray( str ));

@@ -64,10 +64,10 @@ public class Remote
             line = parseMultiMacros( rdr );
           else if ( line.equals( "ButtonMaps" ))
             line = parseButtonMaps( rdr );
+          else if ( line.equals( "Protocols" ))
+            line = parseProtocols( rdr );
           else
-          {
             line = rdr.readLine();
-          }
         }
         else
           line = rdr.readLine();
@@ -112,7 +112,7 @@ public class Remote
           upgradeButtons[ index ] = longestMap.get( index );
           index++;
         }
-        
+
         // now copy the rest of the buttons, skipping those in the map
         for ( int i = 0; i < buttons.length; i++ )
         {
@@ -1056,6 +1056,45 @@ public class Remote
     return line;
   }
 
+  private String parseProtocols( RDFReader rdr )
+    throws Exception
+  {
+    String line;
+    while ( true )
+    {
+      line = rdr.readLine();
+      if ( line == null )
+        break;
+      if ( line.length() != 0 )
+      {
+        if (line.charAt( 0 ) == '[')
+          break;
+        StringTokenizer st = new StringTokenizer( line, "," );
+        while ( st.hasMoreTokens())
+        {
+          String token = st.nextToken().trim();
+          String variantName = "";
+          int colon = token.indexOf( ':' );
+          String name = token;
+          if ( colon != -1 )
+          {
+            variantName = token.substring( colon + 1 );
+            token = token.substring( 0, colon );
+          }
+          Hex pid = new Hex( token );
+          protocolVariantNames.put( pid, variantName );
+        }
+      }
+    }
+    return line;
+  }
+
+  public String getSupportedVariantName( Hex pid )
+  {
+    return ( String )protocolVariantNames.get( pid );
+  }
+
+
   public void clearButtonAssignments()
   {
     checkLoaded();
@@ -1159,4 +1198,5 @@ public class Remote
   private byte[] digitMaps = new byte[ 0 ];
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
   private boolean omitDigitMapByte = false;
+  private Hashtable protocolVariantNames = new Hashtable();
 }

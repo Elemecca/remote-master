@@ -14,6 +14,7 @@ public class Protocol
   {
     this.name = name;
     this.id = id;
+    this.variantName = props.getProperty( "VariantName", "" );
     this.fixedData = new Hex( props.getProperty( "FixedData", "" ));
     this.defaultCmd = new Hex( props.getProperty( "DefaultCmd", "00" ));
     this.cmdIndex = Integer.parseInt( props.getProperty( "CmdIndex", "0" ));
@@ -221,6 +222,7 @@ public class Protocol
   public String toString(){ return name; }
   public String getName(){ return name; }
   public Hex getID(){ return id; }
+  public String getVariantName(){ return variantName; }
   public Hex getFixedData()
   {
     System.err.println( "Protocol.getFixedData()" );
@@ -389,8 +391,9 @@ public class Protocol
 
   public final static int tooDifferent = 0x7FFFFFFF;
 
-  private String name;
+  private String name = null;;
   private Hex id = null;
+  private String variantName = null;
   private Hex fixedData = null;
   protected Hex defaultCmd = null;
   protected int cmdIndex;

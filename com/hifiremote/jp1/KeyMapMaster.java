@@ -25,7 +25,7 @@ public class KeyMapMaster
   private JComboBox remoteList = null;
   private JComboBox deviceTypeList = null;
   private Remote[] remotes = null;
-  private Vector protocols = new Vector();
+  private ProtocolManager protocolManager = new ProtocolManager();
   private Remote currentRemote = null;
   private String currentDeviceTypeName = null;
   private SetupPanel setupPanel = null;
@@ -105,12 +105,12 @@ public class KeyMapMaster
 
     menu = new JMenu( "Look and Feel" );
     menuBar.add( menu );
-    
+
     ButtonGroup group = new ButtonGroup();
     String lookAndFeelName = UIManager.getLookAndFeel().getClass().getName();
     UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
     for ( int i = 0; i < info.length; i++ )
-    { 
+    {
       JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName());
       item.setActionCommand( info[ i ].getClassName());
       if ( info[ i ].getClassName().equals( lookAndFeelName ))
@@ -119,7 +119,7 @@ public class KeyMapMaster
       menu.add( item );
       item.addActionListener( this );
     }
-    
+
     Container mainPanel = getContentPane();
     JTabbedPane tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
@@ -169,7 +169,9 @@ public class KeyMapMaster
 
     mainPanel.add( messageLabel, BorderLayout.SOUTH );
 
-    setupPanel = new SetupPanel( deviceUpgrade, protocols );
+    protocolManager.load();
+
+    setupPanel = new SetupPanel( deviceUpgrade, protocolManager );
     currPanel = setupPanel;
     tabbedPane.addTab( "Setup", null, setupPanel, "Enter general information about the upgrade." );
 
@@ -191,9 +193,6 @@ public class KeyMapMaster
 
     loadPreferences();
 
-    loadProtocols();
-    deviceUpgrade.setProtocol(( Protocol )protocols.firstElement());
-    setupPanel.protocolsLoaded( protocols );
 
     loadRemotes();
     setRemotes( remotes );
@@ -208,7 +207,12 @@ public class KeyMapMaster
     }
     if ( index < 0 )
       index = 0;
-    setRemote( remotes[ index ]);
+
+    Remote temp = remotes[ index ];
+    String firstName = ( String )protocolManager.getNames().firstElement();
+    Protocol protocol = protocolManager.findProtocolForRemote( temp, firstName );
+    deviceUpgrade.setProtocol( protocol );
+    setRemote( temp );
     remoteList.setSelectedIndex( index );
 
     remoteList.addActionListener( this );
@@ -286,98 +290,6 @@ public class KeyMapMaster
     progressMonitor.close();
   }
 
-  private void loadProtocols()
-    throws Exception
-  {
-    File f = new File( "protocols.ini" );
-    while ( !f.canRead() )
-    {
-      JOptionPane.showMessageDialog( this, "Couldn't read " + f.getName() + "!",
-                                     "Error", JOptionPane.ERROR_MESSAGE );
-      JFileChooser chooser = new JFileChooser( System.getProperty( "user.dir" ));
-      chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
-      chooser.setDialogTitle( "Pick the file containing the protocol definitions" );
-      int returnVal = chooser.showOpenDialog( this );
-      if ( returnVal != JFileChooser.APPROVE_OPTION )
-        System.exit( -1 );
-      else
-        f = chooser.getSelectedFile();
-    }
-    BufferedReader rdr = new BufferedReader( new FileReader( f ));
-    Properties props = null;
-    String name = null;
-    Hex id = null;
-    String type = null;
-
-    while ( true )
-    {
-      String line = rdr.readLine();
-      if ( line == null )
-        break;
-
-      if (( line.length() == 0 ) || ( line.charAt( 0 ) == '#' ))
-        continue;
-
-      line = line.replaceAll( "\\\\n", "\n" );
-      while ( line.endsWith( "\\" ))
-      {
-        String temp = rdr.readLine().trim();
-        temp = temp.replaceAll( "\\\\n", "\n" );
-        line = line.substring(0, line.length() - 1 ) + temp;
-      }
-
-      if ( line.charAt( 0 ) == '[' ) // begin new protocol
-      {
-        if ( name != null  )
-        {
-          Protocol protocol =
-            ProtocolFactory.createProtocol( name, id, type, props );
-          if ( protocol != null )
-            protocols.add( protocol );
-        }
-        name = line.substring( 1, line.length() - 1 ).trim();
-        props = new Properties();
-        id = null;
-        type = "Protocol";
-      }
-      else
-      {
-        StringTokenizer st = new StringTokenizer( line, "=", true );
-        String parmName = st.nextToken().trim();
-        String parmValue = null;
-        st.nextToken(); // skip the =
-        if ( !st.hasMoreTokens() )
-          continue;
-        else
-          parmValue = st.nextToken( "" ).trim();
-
-        if ( parmName.equals( "PID" ))
-        {
-          id = new Hex( parmValue );
-        }
-        else if ( parmName.equals( "Type" ))
-        {
-          type = parmValue;
-        }
-        else
-        {
-          props.setProperty( parmName, parmValue );
-        }
-      }
-    }
-    rdr.close();
-    protocols.add( ProtocolFactory.createProtocol( name, id, type, props ));
-
-    if ( protocols.size() == 0 )
-    {
-      JOptionPane.showMessageDialog( this, "No protocols were loaded!",
-                                     "Error", JOptionPane.ERROR_MESSAGE );
-      System.exit( -1 );
-    }
-
-    clearMessage();
-  }
-
   public void setRemotes( Remote[] remotes )
   {
     if ( remoteList != null )
@@ -428,7 +340,7 @@ public class KeyMapMaster
       {
         if ( !promptToSaveUpgrade())
           return;
-        deviceUpgrade.reset( remotes, protocols );
+        deviceUpgrade.reset( remotes, protocolManager );
         setTitle( "RemoteMapMaster " + version );
         description.setText( null );
         remoteList.setSelectedItem( deviceUpgrade.getRemote());
@@ -529,7 +441,7 @@ public class KeyMapMaster
     throws IOException
   {
     int rc = JOptionPane.showConfirmDialog( this,
-//                                            "All changes made to the current upgrade will be lost if you proceed.\n\n" + 
+//                                            "All changes made to the current upgrade will be lost if you proceed.\n\n" +
                                             "Do you want to save the current upgrade before proceeding?",
                                             "Save upgrade?",
                                             JOptionPane.YES_NO_CANCEL_OPTION );
@@ -543,15 +455,15 @@ public class KeyMapMaster
       deviceUpgrade.store();
     else
       saveAs();
-    return true;                                            
+    return true;
   }
 
   public void openFile( File file )
     throws Exception
   {
     kmPath = file.getParentFile();
-    deviceUpgrade.reset( remotes, protocols );
-    deviceUpgrade.load( file, remotes, protocols );
+    deviceUpgrade.reset( remotes, protocolManager );
+    deviceUpgrade.load( file, remotes, protocolManager );
     setTitle( "RemoteMaster " + version + ": " + file.getName());
     description.setText( deviceUpgrade.getDescription());
     saveItem.setEnabled( true );
@@ -578,7 +490,7 @@ public class KeyMapMaster
       }
     }
     while ( itemCount > 9 )
-      recentFileMenu.remove( --itemCount ); 
+      recentFileMenu.remove( --itemCount );
     recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
   }
   // ChangeListener methods
@@ -594,7 +506,7 @@ public class KeyMapMaster
     throws Exception
   {
     Properties props = new Properties();
-    
+
     File userDir = new File( System.getProperty( "user.dir" ));
     System.err.println( "userDir is " + userDir.getAbsolutePath());
     if ( propertiesFile == null )
@@ -611,7 +523,7 @@ public class KeyMapMaster
       else
       {
         System.err.println( "Can't write" );
-        dir = new File( System.getProperty( "user.home" )); 
+        dir = new File( System.getProperty( "user.home" ));
       }
 
       propertiesFile = new File( dir, "RemoteMaster.properties" );
@@ -659,7 +571,7 @@ public class KeyMapMaster
         break;
       recentFileMenu.add( new FileAction( new File( temp )));
     }
-    
+
     temp = props.getProperty( "Bounds" );
     if ( temp != null )
     {
@@ -687,7 +599,7 @@ public class KeyMapMaster
     Remote remote = deviceUpgrade.getRemote();
     props.setProperty( "Remote.name", remote.getName());
     props.setProperty( "Remote.signature", remote.getSignature());
-    
+
     for ( int i = 0; i < recentFileMenu.getItemCount(); i++ )
     {
       JMenuItem item = recentFileMenu.getItem( i );
@@ -701,7 +613,7 @@ public class KeyMapMaster
       setExtendedState( Frame.NORMAL );
     Rectangle bounds = getBounds();
     props.setProperty( "Bounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
-   
+
     FileOutputStream out = new FileOutputStream( propertiesFile );
     props.store( out, null );
     out.flush();
@@ -773,7 +685,7 @@ public class KeyMapMaster
       super( file.getAbsolutePath());
       this.file = file;
     }
-    
+
     public void actionPerformed( ActionEvent e )
     {
       try
@@ -786,7 +698,7 @@ public class KeyMapMaster
         ex.printStackTrace( System.err );
       }
     }
-    
+
     public File getFile()
     {
       return file;
