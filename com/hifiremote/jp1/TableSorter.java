@@ -381,7 +381,10 @@ public class TableSorter extends TableMap {
      Object o = getRow( from );
      if ( from < to )
        to++;
-     insertRow( to, o );
+     if ( to >= indexes.length )
+       addRow( o );
+     else
+       insertRow( to, o );
      if ( from > to )
        from++;
      removeRow( from );
