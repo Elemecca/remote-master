@@ -1,18 +1,34 @@
-RemoteMaster ships with a large number of RDF files,
-which are slightly modified versions of many of the
-RDFs that ship with IR.  Standard RDFs shipped with
-IR or downloaded from the jp1 Yahoo! group will NOT
-work with RemoteMaster.
+The extension used to recognize a RemoteMaster Device Upgrade
+has changed to ".rmdu".
 
-RemoteMaster now uses aliases for device types, much like
-KM does.  It is possible that some previously created .km
-files will not load correctly.  If it seems that this has
-happened to one of your .km files, edit it with a text
-editor and change the DeviceType= to use one of the
-following values:
+Also, the name of the directory containing the RemoteMaster
+Device Upgrade files has changed to "Upgrades"
 
-Cable, TV, VCR, CD, Tuner, DVD, SAT, Tape, Laserdisc,
-DAT, Home Auto, Misc Audio, Phono, Video Acc, Amp
+To migrate your existing device upgrades (.km files) please
+rename the extension and move them to the new directory.
+Also edit the RemoteMaster.properties file using a text
+editor (such as Notepad) and change the end of the KMPath
+value from km to Upgrades.
+
+Finally, delete the old "km" directory
+
+The command line parameters to RemoteMaster have been changed
+to make it easier to use file associations.  This will allow
+users to simply double-click on a .rmdu file to launch RemoteMaster
+and edit the device upgrade.
+
+The new parameters are:
+
+-h <home directory> - the directory containing protocols.ini,
+                      RemoteMaster.properties, the rdf and
+                      Upgrades directories.  It typically also
+                      includes RemoteMaster.jar.  If not specified, it
+                      defaults to the working directory.
+
+-p <properties file> - the properties files to be used.  Defaults to
+                       RemoteMaster.properties in the home directory.
+
+<device upgrade file> - the device upgrade file to load.
 
 System Requirements
 -------------------
@@ -29,6 +45,20 @@ To install, follow these steps:
 1. Create an empty directory (e.g. c:\rmaster),
 2. Unzip to the directory you created above, making sure to
    replace all files, and preserving directory structure.
+
+File Associations
+-----------------
+
+**** NOTE : this has only been tested in Windows XP ****
+
+In order to simplify the process of setting up File Associations in
+Windows, the Setup.jar file is now included with RemoteMaster.
+Setting up the file associations is a two step process.
+1. Double-click on Setup.jar
+2. Double-click on Setup.reg
+
+Now you should be able to simply double-click any .rmdu or .km file to
+open that Remote Master Device Upgrade file in RemoteMaster.
 
 Running RemoteMaster
 --------------------
@@ -83,8 +113,8 @@ JVC-48
 Mitsubishi
 NEC1
 NEC2
+NEC Combo
 NEC1 Combo
-NEC2 Combo
 Nokia Quad
 Pace
 Panasonic (old)

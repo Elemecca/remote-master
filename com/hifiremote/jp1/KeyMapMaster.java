@@ -38,11 +38,13 @@ public class KeyMapMaster
   private File homeDirectory = null;
   private File propertiesFile = null;
   private File rdfPath = null;
-  private File kmPath = null;
+  private File upgradePath = null;
   private String lastRemoteName = null;
   private String lastRemoteSignature = null;
   private Rectangle bounds = null;
   private Vector recentFiles = new Vector();
+  private static String upgradeExtension = ".rmdu";
+  private static String upgradeDirectory = "Upgrades";
 
   public KeyMapMaster( String[] args )
     throws Exception
@@ -235,31 +237,34 @@ public class KeyMapMaster
 
   private File parseArgs( String[] args )
   {
-    System.err.println( "KeyMapMaster.parseArgs()" );
     homeDirectory = new File( System.getProperty( "user.dir" ));
     File fileToOpen = null;
     for ( int i = 0; i < args.length; i++ )
     {
       String arg = args[ i ];
-      System.err.println( "Arg=" + arg );
       if ( arg.charAt( 0 ) == '-' )
       {
         char flag = arg.charAt( 1 );
         String parm = args[ ++i ];
-        System.err.println( "Parm=" + parm );
         if ( flag == 'h' )
         {
-          System.err.println( "Setting home directory" );
           homeDirectory = new File( parm );
         }
         else if ( flag == 'p' )
         {
-          System.err.println( "Setting propertiesFile" );
           propertiesFile = new File( parm );
         }
       }
       else
         fileToOpen = new File( arg );
+    }
+    try
+    {
+      System.setErr( new PrintStream( new FileOutputStream( new File ( homeDirectory, "rmaster.err" ))));
+    }
+    catch ( Exception e )
+    {
+      e.printStackTrace( System.err );
     }
     if ( propertiesFile == null )
     {
@@ -406,15 +411,15 @@ public class KeyMapMaster
       {
         if ( !promptToSaveUpgrade())
           return;
-        JFileChooser chooser = new JFileChooser( kmPath );
+        JFileChooser chooser = new JFileChooser( upgradePath );
         chooser.setFileFilter( new KMFileFilter());
         int returnVal = chooser.showOpenDialog( this );
         if ( returnVal == JFileChooser.APPROVE_OPTION )
         {
           File file = chooser.getSelectedFile();
           String name = file.getAbsolutePath();
-          if ( !name.endsWith( ".rmd" ))
-            file = new File( name + ".rmd" );
+          if ( !name.endsWith( upgradeExtension ))
+            file = new File( name + upgradeExtension );
 
           int rc = JOptionPane.YES_OPTION;
           if ( !file.exists())
@@ -452,7 +457,7 @@ public class KeyMapMaster
   public void saveAs()
     throws IOException
   {
-    JFileChooser chooser = new JFileChooser( kmPath );
+    JFileChooser chooser = new JFileChooser( upgradePath );
     chooser.setFileFilter( new KMFileFilter());
     File f = deviceUpgrade.getFile();
     if ( f != null )
@@ -461,8 +466,8 @@ public class KeyMapMaster
     if ( returnVal == JFileChooser.APPROVE_OPTION )
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( ".rmd" ))
-        name = name + ".rmd";
+      if ( !name.toLowerCase().endsWith( upgradeExtension ))
+        name = name + upgradeExtension;
       File file = new File( name );
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists())
@@ -505,7 +510,7 @@ public class KeyMapMaster
   public void openFile( File file )
     throws Exception
   {
-    kmPath = file.getParentFile();
+    upgradePath = file.getParentFile();
     deviceUpgrade.reset( remotes, protocolManager );
     deviceUpgrade.load( file, remotes, protocolManager );
     setTitle( "RemoteMaster " + version + ": " + file.getName());
@@ -596,14 +601,16 @@ public class KeyMapMaster
         rdfPath = rdfPath.getParentFile();
     }
 
-    temp = props.getProperty( "KMPath" );
+    temp = props.getProperty( "UpgradePath" );
+    if ( temp == null )
+      temp = props.getProperty( "KMPath" );
     if ( temp != null )
-      kmPath = new File( temp );
+      upgradePath = new File( temp );
     else
     {
-      kmPath = new File( homeDirectory, "km" );
-      while ( ! kmPath.exists())
-        kmPath = kmPath.getParentFile();
+      upgradePath = new File( homeDirectory, upgradeDirectory );
+      while ( ! upgradePath.exists())
+        upgradePath = upgradePath.getParentFile();
     }
 
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
@@ -646,7 +653,7 @@ public class KeyMapMaster
   {
     Properties props = new Properties();
     props.setProperty( "RDFPath", rdfPath.getAbsolutePath());
-    props.setProperty( "KMPath", kmPath.getAbsolutePath());
+    props.setProperty( "UpgradePath", upgradePath.getAbsolutePath());
     props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
     Remote remote = deviceUpgrade.getRemote();
     props.setProperty( "Remote.name", remote.getName());
@@ -707,7 +714,7 @@ public class KeyMapMaster
   private class KMFileFilter
     extends javax.swing.filechooser.FileFilter
   {
-    //Accept all directories and all .km/.rmd files.
+    //Accept all directories and all .km/.rmdu files.
     public boolean accept( File f )
     {
       boolean rc = false;
@@ -716,7 +723,7 @@ public class KeyMapMaster
       else
       {
         String lowerName = f.getName().toLowerCase();
-        if ( lowerName.endsWith( ".km" ) || lowerName.endsWith( ".rmd" ))
+        if ( lowerName.endsWith( ".km" ) || lowerName.endsWith( upgradeExtension ))
           rc = true;
       }
       return rc;
@@ -725,7 +732,7 @@ public class KeyMapMaster
     //The description of this filter
     public String getDescription()
     {
-      return "RemoteMaster device upgrade files (*.rmd)";
+      return "RemoteMaster device upgrade files";
     }
   }
 
