@@ -1,3 +1,12 @@
+Changes for v0.84
+
+- Added support for Pioneer MIX protocol
+- Added support for ReplayTV (Simple) protocol
+- Added support for ReplayTV (Advanced) protocol
+- Added support for Zenith protocol
+- Added error message when KM file is imported that uses an 
+  unsupported protocol.
+
 Changes for v0.83
 
 - Add missing FixedData=00 to JVC protocol

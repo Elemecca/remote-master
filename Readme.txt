@@ -109,6 +109,7 @@ NEC2
 NEC Combo
 NEC1 Combo
 NEC1 2DEV Combo
+NEC1 2DEV Combo
 NECx1
 NECx2
 Nokia Quad
@@ -125,6 +126,7 @@ Panasonic2 (LCD)
 Pioneer
 Pioneer DVD
 Pioneer DVD2
+Pioneer MIX
 Pioneer 2CMD
 Pioneer 3DEV
 Proton
@@ -140,6 +142,10 @@ RCA Combo (Official)
 RECS80 (45)
 RECS80 (68)
 ReplayTV (Simple)
+ReplayTV (Simple)
+ReplayTV (Simple)
+ReplayTV (Advanced)
+ReplayTV (Advanced)
 ReplayTV (Official)
 Sharp
 Sharp DVD
@@ -154,16 +160,13 @@ TiVo (Advanced)
 TiVo (Official)
 TiVo (Official 2-byte)
 X10
+Zenith
 
 Here is a list of the protocols that are not yet supported:
 
 Device Combiner
-Pioneer MIX
 RC-5/5x Combo
 RCA Combo (w/Duration)
-ReplayTV (Simple)
-ReplayTV (Advanced)
-Zenith
 
 Command Line Parameters
 -----------------------
