@@ -1,3 +1,14 @@
+Changes for v1.01
+- More updates to the Dish Network protocols.  Thanks Jon Armstrong
+- Layout Panel: add assigned function to tool-tip text for buttons on remote
+- Fix paste problems.  A side-effect is that one must now double-click to start editing a field
+- Make sure to switch to builtin protocol if possible when changing remotes
+- Fix protocol entry Dish Network:5
+- Add RC-5/5x Combo (the "ugly" version), thanks Jon Armstrong
+- Added RECS80 (90) protocol, thanks Jon Armstrong
+- Add infomation on using Device Combiner to Readme.html
+- Add Dish Network Combo protocol, thanks Jon Armstrong
+
 Changes for v1.00
 - Allow functions without names when loading a saved device upgrade
 - Corrected protocols.ini entry for Zenith protocol (courtesy of Jon Armstrong)
