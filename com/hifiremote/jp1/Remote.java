@@ -20,44 +20,52 @@ public class Remote
   public Remote( File rdf )
   {
     file = rdf;
-    StringTokenizer st = new StringTokenizer( rdf.getName());
+    String rdfName = rdf.getName();
+    StringTokenizer st = new StringTokenizer( rdfName );
     signature = st.nextToken(); // upto the 1st space
-    st.nextToken( "()" ); // skip the space
-    String name = st.nextToken(); // the stuff between the parens
-    int underscore = name.indexOf( '_' );
-    if ( underscore != -1 )
+    int openParen = rdfName.indexOf( '(' );
+    int closeParen = rdfName.lastIndexOf( ')' );
+    String name = rdfName.substring( openParen + 1, closeParen );
+    st = new StringTokenizer( name, " -", true );
+    String prefix = "";
+    String postfix = "";
+    String[] middles = null;
+    boolean foundUnderscore = false;
+    while ( st.hasMoreTokens())
     {
-      int count = 2;
-      int start = name.indexOf( '_', underscore + 1 );
-      while ( start != -1 )
+      String token = st.nextToken();
+      if (( token.length() > 3 ) && ( token.indexOf( '_' ) != -1 ))
       {
-        count++;
-        start = name.indexOf( '_', start + 1 );
-      }
-
-      int dash = name.lastIndexOf( '-', underscore );
-      int space = name.lastIndexOf( ' ', underscore );
-      int pos = Math.max( dash, space );
-      int length = underscore - pos;
-      if ( length > 3 )
-      {
-        String front = name.substring( 0, pos + 1 );
-        int end = pos + count * length;
-        String back = name.substring( end );
-        --length;
-        start = pos + 1;
-        names = new String[ count ];
-        for ( int i = 0; i < count; i++ )
-        {
-          names[ i ] = front + name.substring( start, start + length ) + back;
-          start += length + 1;
-        }
+        foundUnderscore = true;
+        StringTokenizer st2 = new StringTokenizer( token, "_" );
+        middles = new String[ st2.countTokens() ];
+        for ( int i = 0; i < middles.length; i++ )
+          middles[ i ] = st2.nextToken();
       }
       else
-        names[ 0 ] = name.replace( '_', '/' );
+      {
+        token = token.replace( '_', '/' );
+        if ( foundUnderscore )
+          postfix = postfix + token;
+        else
+          prefix = prefix + token;
+      }
+    }
+    if ( middles == null )
+    {
+      names[ 0 ] = prefix;
     }
     else
-      names[ 0 ] = name;
+    {
+      names = new String[ middles.length ];
+      for ( int i = 0; i < middles.length; i++ )
+      {
+         if ( middles[ i ].length() != middles[ 0 ].length() )
+           names[ i ] = middles[ i ] + postfix;
+         else
+           names[ i ] = prefix + middles[ i ] + postfix;
+      }
+    }
   }
 
   public File getFile(){ return file; }
@@ -926,7 +934,7 @@ public class Remote
             token = token.substring( 1, end );
           }
         }
-        Button b = new Button( token, name, keycode );
+        Button b = new Button( token, name, keycode, this );
         b.setRestrictions( restrictions );
         keycode++;
         addButton( b );
