@@ -1,3 +1,9 @@
+Changes for v0.49
+
+- Device parms lost when changing remotes requires a different, but compatible
+  (same name, same parm names) protocol variant.
+- Bug 782601: "Move Down" not working same as "Move Up" on "Functions"
+
 Changes for v0.48
 
 - Changed name of default directory containing device upgrage files
@@ -8,14 +14,14 @@ Changes for v0.48
 - Changed command line arguments to RemoteMaster to better support
   file associations
 - Added setup code to facilitate creating file associations in Windows.
-- Improve behavior in certain cases in which .km files, .rdf files and 
-  the .ini file are inconsistent with each other (such as using .km 
+- Improve behavior in certain cases in which .km files, .rdf files and
+  the .ini file are inconsistent with each other (such as using .km
   files saved by earlier versions).
 - Bug 746423: Vertical scroll in notes box
 
 Changes for v0.47
 
-- Changed digitMaps data type from byte to int in order to simplify 
+- Changed digitMaps data type from byte to int in order to simplify
   handling more than 127 maps and permit handling more than 255.
 - Request 761166: Non MS windows look and feel
 - Bug 759017: Load exception when protocol prop has boolean
