@@ -22,7 +22,7 @@ public class Setup
     {
       String workDir = System.getProperty( "user.dir" );
       String jarFile = workDir + "\\RemoteMaster.jar";
-      String icoFile = workDir + "\\RemoteMaster.ico";
+      String icoFile = workDir + "\\images\\RemoteMaster.ico";
       String javaDir = System.getProperty( "java.home" );
       String javaw = javaDir + "\\bin\\javaw.exe";
 
