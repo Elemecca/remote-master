@@ -1,0 +1,63 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:Balboa-Dolphin
+#$DATE:Thu Sep 04 17:45:34 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:Balboa-Dolphin.jpg
+#$FORMAT:ncsa
+#$EOH
+default Balboa
+circle VCR  83,81 89,87
+circle cbl/sat  83,97 92,106
+circle TV  57,84 63,90
+circle mute  80,239 93,246
+circle rcvr  58,102 66,110
+circle POWER  63,71 71,77
+circle cd  108,102 116,110
+circle setup  101,72 110,77
+circle menu  108,185 115,192
+circle exit  108,136 115,143
+circle info  54,184 61,191
+circle guide  55,135 62,142
+circle up  81,137 87,143
+circle down  81,181 87,187
+circle left  57,158 63,164
+circle right  105,159 111,165
+circle select  81,160 90,166
+circle ffwd  100,433 111,439
+circle VOL+  52,212 61,222
+circle VOL-  54,236 63,246
+circle CH+  109,213 118,223
+circle CH-  106,237 115,247
+circle 1  51,331 61,341
+circle 2  78,333 88,343
+circle 3  105,331 115,341
+circle 4  50,356 60,366
+circle 5  78,358 88,368
+circle 6  106,357 116,367
+circle 7  48,380 58,390
+circle 8  78,382 88,392
+circle 9  106,384 116,394
+circle 0  76,407 86,417
+circle LAST  79,221 92,227
+circle RECORD  76,457 84,465
+circle PLAY  76,434 85,443
+circle PAUSE  53,457 61,465
+circle STOP  98,457 106,465
+circle DVD  109,85 115,91
+circle rewind  53,432 64,438
+rect tv/vid 40,399 63,412
+rect enter 90,400 113,413
+poly rew 53,448 34,448 54,448 53,448 53,448
+poly f.fwd 112,448 133,448 112,448 112,448
+circle pump1  50,281 62,286
+circle pump2  79,285 91,290
+circle pump3  107,282 119,287
+circle opt1  77,305 89,310
+circle opt2  107,302 119,307
+circle fiber  50,301 62,306
+circle light  100,263 112,268
+circle blower  59,263 71,268

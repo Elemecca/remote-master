@@ -1,0 +1,52 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:replay5000
+#$DATE:Thu Sep 04 12:18:40 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:Replay5000.jpg
+#$FORMAT:ncsa
+#$EOH
+default replay5000
+circle ReplayTV[Power]  114,30 137,38
+circle TV[Power]  66,31 89,39
+circle MENU  34,172 46,184
+circle EXIT  143,247 155,259
+circle record  33,247 45,259
+circle UP  89,184 107,191
+circle LEFT  47,209 54,227
+circle RIGHT  131,209 138,227
+circle DOWN  89,236 107,243
+circle SELECT  88,211 106,221
+circle MUTE  86,411 100,420
+circle VOL+  48,386 57,397
+circle VOL-  48,423 57,434
+circle CH+  126,386 135,397
+circle CH-  125,424 134,435
+circle 1  51,55 61,65
+circle 2  90,56 100,66
+circle 3  130,56 140,66
+circle 4  52,82 62,92
+circle 5  91,83 101,93
+circle 6  129,81 139,91
+circle 7  51,108 61,118
+circle 8  91,109 101,119
+circle 9  129,108 139,118
+circle 0  90,136 100,146
+circle ENTER  130,135 144,143
+circle REWind  44,315 58,325
+circle PLAY  88,264 96,272
+circle FWD  130,315 144,326
+circle PAUSE  88,290 105,299
+circle display  48,349 62,358
+circle instant_replay  39,280 54,289
+circle comm_adv  87,362 101,371
+circle jump  50,134 63,142
+circle zones  144,173 156,185
+circle replay_guide  69,160 81,172
+circle channel_guide  110,159 122,171
+circle Quick_Skip  137,280 151,289
+circle LiveTV  126,350 140,360
+circle stop  87,331 96,339

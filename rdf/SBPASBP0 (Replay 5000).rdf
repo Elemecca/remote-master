@@ -5,7 +5,7 @@ UpgradeAddr=$010..$3FC
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
-ImageMap=Generic.map
+ImageMap=Replay5000.map
 
 [Settings]
 
@@ -29,8 +29,8 @@ TV      = $00A $00B
 Replay  = $00C $00D
 
 [Buttons]
-TV=$03,
-Replay=$02,
+TV[Power]=$03,
+ReplayTV[Power]=$02,
 Power=$A8,
 0=$1F,
 1=$15,
@@ -49,7 +49,7 @@ CH-=$07,
 Mute=$08,
 Jump=$18,
 Enter=$14,
-Guide=$09,
+Channel_Guide=$09,
 Replay_Guide=$0A,
 Menu=$20,
 Zones=$28,
@@ -66,7 +66,7 @@ Quick_Skip=$26,
 Pause=$0F,
 Rewind=$0B,
 Stop=$0E,
-Fast_Fwd=$0D,
+Fwd=$0D,
 Display=$12,
 Comm_Adv=$27,
 LiveTV=$11

@@ -1,0 +1,79 @@
+[General]
+Name=RadioShack 15-2102 4-in-One Light Up
+EepromSize=$400
+FavKey=$14, $019, 15, 4
+AdvCodeAddr=$01b..$0FF
+UpgradeAddr=$100..$3FD
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+ImageMap=Generic.map
+
+[Settings]
+Sleep Status=$012.0.1.0.0 (Use Native;Simulate)
+VPT Status=$012.2.1.0.0 (Off;On)
+VPT Device=$013.7.8.1.0 DeviceButtons
+CBL/SAT VPT=$014.0.1.1.0 (Off;On)
+TV VPT=$014.1.1.1.0 (Off;On)
+VCR VPT=$014.2.1.1.0 (Off;On)
+DVD VPT=$014.3.1.0.0 (Off;On)
+
+[Checksums]
+^$000:$002..$3FD
+
+[DeviceTypes]
+Cable    = 0
+TV       = 1
+VCR/DVD  = 2
+
+[DeviceTypeAliases]
+Cable    = Cable,SAT,Video Acc
+TV       = TV
+VCR/DVD  = VCR,DVD,Tape,Laserdisc,DAT
+
+[DeviceButtons]
+CBL/SAT = $00A $00B
+TV =      $00C $00D
+VCR =     $00E $00F
+DVD =      $010 $011
+
+[Buttons]
+TV=$01, VCR=$0A, CBL/SAT=$09, DVD=$11, 
+MUSIC=$25, MOVIE=$26, SPORT=$27, NEWS=$28, 
+1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F, 
+POWER=$03, 
+VOL+=$04, VOL-=$05, MUTE=$08, 
+CH+=$06, CH-=$07, 
+UP=$29, DOWN=$2a, LEFT=$2b, RIGHT=$2c, SELECT=$2E, 
+REW=$0B, PLAY=$0C, FF=$0D, REC=$10, PAUSE=$0F, STOP=$0E, 
+ENTER=$12, 
+LAST=$13, 
++100=$20, 
+TV/VCR=$18, 
+MENU=$21, 
+GUIDE=$22, 
+INFO=$23, 
+EXIT=$24, 
+P{SETUP}=$02, 
+SCAN=$14, 
+{LIGHT}=$35, 
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
+
+[MultiMacros]
+MUSIC=$015
+MOVIE=$016
+SPORT=$017
+NEWS=$018
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $21, $22, $29, $2a, $2b, $2c, $20, $23, $0C, $0F, $0B, $0D, $0E, $10, $24
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $21, $22, $29, $2a, $2b, $2c, $23, $0D, $0B, $24, $20
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $21, $22, $29, $2a, $2b, $2c,  $23, $24, $20
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $21, $22, $29, $2a, $2b, $2c, $23, $0C, $0F, $0B, $0D, $0E, $10, $24, $20
+
+[DigitMaps]
+

@@ -6,7 +6,7 @@ UpgradeAddr=$104..$303
 Processor=740
 RAMAddr=$132
 RDFSync=3
-ImageMap=Generic.map
+ImageMap=Maestro2.map
 
 [Settings]
 VPT Device=$031.6.7.2.0 DeviceButtons
@@ -91,7 +91,7 @@ record=41
 mute=16
 menu=51
 display=52
-select=54
+sel=54
 enter=56
 F-diagnostics=42
 parental-lock=$aa

@@ -1,0 +1,65 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:Millenium4
+#$DATE:Wed Sep 03 11:37:00 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:Millenium4.jpg
+#$FORMAT:ncsa
+#$EOH
+default 1994
+circle audio  34,47 44,53
+circle VCR  64,47 74,53
+circle TV  94,48 104,54
+circle CBL  122,50 132,56
+circle POWER  112,28 122,38
+circle UP  81,243 106,250
+circle LEFT  43,265 53,282
+circle RIGHT  120,266 130,284
+circle DOWN  82,288 107,295
+circle OK  81,265 95,273
+circle MUTE  44,141 55,147
+circle VOL+  45,169 55,180
+circle VOL-  44,200 55,211
+circle CH+  116,171 126,182
+circle CH-  117,201 127,212
+circle 1  40,72 51,83
+circle 2  79,72 90,83
+circle 3  119,74 130,85
+circle 4  42,95 53,106
+circle 5  79,95 90,106
+circle 6  116,97 127,108
+circle 7  45,118 56,129
+circle 8  80,118 91,129
+circle 9  113,121 124,132
+circle 0  79,142 90,153
+circle LAST  81,172 91,178
+circle F1  47,351 59,358
+circle F2  83,353 95,360
+circle F3  118,350 130,357
+circle FAV  82,197 92,203
+circle REW  47,389 58,396
+circle PLAY  82,389 93,396
+circle FF  116,388 127,395
+circle TV/VCR  122,433 131,440
+circle PAUSE  117,410 129,417
+rect STOP 71,405 92,417
+circle REC  46,410 58,417
+circle help  41,434 50,442
+poly info 32,286 32,304 55,304 32,287 32,288 32,286 32,286
+poly guide 33,244 33,228 56,228 33,244 33,244
+poly exit 108,229 129,229 129,246 108,229 108,229
+poly menu 107,303 130,287 130,304 107,303 107,303
+circle day-  68,434 77,442
+circle day+  96,433 104,440
+circle bypass  41,459 50,466
+circle A  68,459 77,466
+circle B  96,459 105,466
+circle C  122,458 131,465
+poly page+ 34,327 53,312 72,327 33,326 34,327 34,327
+poly page- 91,314 127,314 109,329 92,315 91,315 91,314 91,314
+poly setup 32,25 42,17 51,24 42,32 32,25 32,25
+poly enter 106,137 125,138 125,150 105,149 106,137 106,137
+poly lock 67,215 96,215 96,228 66,228 67,215 67,215

@@ -1,0 +1,57 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:replayTV
+#$DATE:Thu Sep 04 13:06:16 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:ReplayTV.jpg
+#$FORMAT:ncsa
+#$EOH
+default replayTV
+circle Code_Set  80,45 86,51
+circle TV  45,64 51,70
+circle catv  79,65 85,71
+circle return_to_live  36,231 43,238
+circle POWER  116,36 124,44
+circle UP  79,239 97,244
+circle LEFT  41,262 47,279
+circle RIGHT  117,262 123,279
+circle DOWN  80,285 98,290
+circle SELECT  79,261 93,268
+circle MUTE  123,232 130,239
+circle VOL+  116,175 124,185
+circle VOL-  115,207 123,216
+circle CH+  44,174 52,183
+circle CH-  43,207 51,216
+circle 1  44,84 52,92
+circle 2  80,85 88,93
+circle 3  113,87 121,95
+circle 4  44,105 52,113
+circle 5  79,106 87,114
+circle 6  114,108 122,116
+circle 7  44,126 52,134
+circle 8  79,126 87,134
+circle 9  115,128 123,136
+circle 0  80,148 88,156
+circle ENTER  115,150 127,156
+circle REW  43,316 54,322
+circle PLAY  80,311 92,317
+circle FWD  116,316 127,322
+circle PAUSE  116,338 128,344
+circle display  66,368 74,376
+circle replaytv  41,33 48,40
+circle quick_skip  122,294 130,302
+circle replay_zones  80,203 89,209
+circle vcr/dvd  114,67 120,73
+circle channel_guide  44,148 56,155
+circle jump  41,368 49,376
+circle input  40,390 48,398
+circle menu  92,367 100,375
+circle exit  117,366 125,374
+circle tv/vcr  118,385 126,393
+circle instant_replay  35,294 43,302
+circle rec  43,338 55,344
+circle replay_guide  80,178 89,184
+circle stop  80,343 92,349

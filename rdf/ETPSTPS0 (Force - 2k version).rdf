@@ -8,7 +8,7 @@ DevCodeOffset=30
 Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
-ImageMap=Generic.map
+ImageMap=Force.map
 
 [Settings]
 VPT Device=$012.7.8.1.0 DeviceButtons
@@ -31,6 +31,11 @@ TV        = 1
 VCR/LD/DVD= 2
 xDev      = 3
 
+[DeviceTypeAliases]
+SAT        = Cable,SAT,Video Acc
+TV         = TV
+VCR/LD/DVD = VCR,DVD,Tape,Laserdisc,DAT,CD,Home Auto,Phono,Tuner,Misc Audio,Amp
+
 [DeviceButtons]
 Force = $00A $00B
 TV    = $00C $00D
@@ -43,7 +48,7 @@ SHIFT=$02, POWER=$03, TV=$01, FORCE=$09, AUX=$0A,
 RADIO=$11, LANG=$18, VOL+=$04, VOL-=$05, MESSAGES=$0E,
 MUTE=$08, MENU=$20, CH+=$06, CH-=$07, 
 INFO=$13, EPG=$14, EXIT=$25, LAST=$26,
-ARROW_UP=$21, ARROW_DOWN=$22, ARROW_LEFT=$23, ARROW_RIGHT=$24,
+UP=$21, DOWN=$22, LEFT=$23, RIGHT=$24,
 OK=$12, RED=$0B, GREEN=$0C, YELLOW=$0F, BLUE=$0D, 
 PVR=$28, TEXT=$27, REC=$10,
 SHIFT_VOL+=$84, SHIFT_VOL-=$85, SHIFT_CH+=$86, SHIFT_CH-=$87, SHIFT_MENU=$A0,

@@ -27,6 +27,7 @@ circle DVD  91,71 101,78
 circle CD  67,71 77,78
 circle tivo  67,71 77,78
 circle RCVR  92,71 102,78
+circle force 92,71 102,78
 circle DSS  92,71 102,78
 circle AUX  114,71 124,78
 circle AUX1  114,71 124,78
@@ -63,6 +64,7 @@ circle select  78,247 89,258
 circle surround  78,247 89,258
 circle sur[surround]  78,247 89,258
 circle ok_surround  78,247 89,258
+circle ok 78,247 89,258
 circle 0  79,383 87,391
 circle 1  54,319 62,327
 circle 9  105,362 113,370
@@ -76,7 +78,6 @@ circle 6  104,341 112,349
 circle enter  50,387 61,395
 circle enter_skip  50,387 61,395
 circle enter_jump  50,387 61,395
-circle ok  50,387 61,395
 circle enter_disc  50,387 61,395
 circle tv/vcr  111,387 123,395
 circle vcr/ld  111,387 123,395

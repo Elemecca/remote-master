@@ -1,0 +1,71 @@
+[General]
+Name=Dreambox Remote V2
+EepromSize=$800
+AdvCodeAddr=$014..$0FF
+UpgradeAddr=$100..$7FD
+DevCodeOffset=30
+Processor=S3C80
+RAMAddr=$8000
+RDFSync=3
+ImageMap=Dreambox.map
+
+[Settings]
+VPT Device=$010.7.8.1.0 DeviceButtons
+VPT Status=$013.3.1.0.0 (Off;On)
+Dream Locked=$011.0.1.0.1 (Off;On)
+TV Locked=$011.1.1.0.1 (Off;On)
+AUX Locked=$011.2.1.0.1 (Off;On)
+
+[Checksums]
+^$000:$002..$7FD
+
+[FixedData]
+$012 = $14
+
+[DeviceTypes]
+SAT       = 0
+TV        = 1
+VCR/LD/DVD= 2
+
+[DeviceTypeAliases]
+SAT        = Cable,SAT,Video Acc
+TV         = TV
+VCR/LD/DVD = VCR,DVD,Tape,Laserdisc,DAT,CD,Home Auto,Phono,Tuner,Misc Audio,Amp
+
+[DeviceButtons]
+Dream = $00A $00B
+TV    = $00C $00D
+AUX   = $00E $00F
+
+[Buttons]
+SHIFT=$02, POWER=$03, TV=$01, DREAM=$09, AUX=$0A,
+1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F, 
+BACK=$11, FORWARD=$18, VOL+=$04, VOL-=$05, TV_STOP=$0E,
+MUTE=$08, LAME=$20, BOUQUET+=$06, BOUQUET-=$07, 
+INFO=$13, DREAM_MENU=$14, AUDIO=$25, VIDEO=$26,
+UP=$21, DOWN=$22, LEFT=$23, RIGHT=$24, 
+OK=$12, RED=$0B, GREEN=$0C, YELLOW=$0F, BLUE=$0D, 
+RADIO=$28, TEXT=$27, HELP=$10,
+SHIFT_1=$95, SHIFT_2=$96, SHIFT_3=$97, SHIFT_4=$99, SHIFT_5=$9A, SHIFT_6=$9B, SHIFT_7=$9C, SHIFT_8=$9D, SHIFT_9=$9E, SHIFT_0=$9F,
+SHIFT_BACK=$91, SHIFT_FORWARD=$98, SHIFT_VOL+=$84, SHIFT_VOL-=$85, SHIFT_TV_STOP=$8E,
+SHIFT_MUTE=$88, SHIFT_LAME=$A0, SHIFT_BOUQUET+=$86, SHIFT_BOUQUET-=$87, 
+SHIFT_INFO=$93, SHIFT_DREAM_MENU=$94, SHIFT_AUDIO=$A5, SHIFT_VIDEO=$A6,
+SHIFT_ARROW_UP=$A1, SHIFT_ARROW_DOWN=$A2, SHIFT_ARROW_LEFT=$A3, SHIFT_ARROW_RIGHT=$A4, 
+SHIFT_OK=$92, SHIFT_RED=$8B, SHIFT_GREEN=$8C, SHIFT_YELLOW=$8F, SHIFT_BLUE=$8D,
+SHIFT_RADIO=$A8, SHIFT_VIDEO=$A6, SHIFT_TEXT=$A7, SHIFT_HELP=$90, 
+Ph1=$F0, Ph2=$54, Ph3=$55, Ph4=$56, Ph5=$57, Ph6=$58, Ph7=$59, Ph8=$5A
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $18, $11, $20, $13, $14, $28, $21, $22, $23, $24, $12, $25, $0B, $0C, $0F, 
+    $0D, $0E, $26, $27, $10, $9F, $95, $96, $97, $99, $9A, $9B, $9C, $9D, $9E, $84, 
+    $85, $88, $86, $87, $98, $91, $A0, $93, $94, $A8,  $A1, $A2, $A3, $A4, $92, $A5,
+    $8B, $8C, $8F, $8D, $8E, $A6, $A7, $90
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $18, $11, $13, $09, $28, $21, $22, $23, $24, $12, $25, $0B, $0C, $0F, $0D,
+    $0E, $10, $26, $27, $84, $85, $86, $87, $20, $A0
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $18, $11, $13, $09, $28, $21, $22, $23, $24, $12, $25, $0C, $0F, $0B, $0D,
+    $0E, $10
+    
+[DigitMaps]

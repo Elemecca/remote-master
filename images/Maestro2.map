@@ -1,0 +1,44 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:Mastreo2
+#$DATE:Thu Sep 04 14:30:50 2003
+#$PATH:C:\Backups\Home\IR\Images\
+#$GIF:Maestro2.jpg
+#$FORMAT:ncsa
+#$EOH
+default mastreo2
+circle mute  125,269 133,277
+circle POWER  123,90 133,100
+circle menu  34,290 44,298
+circle setup  37,87 47,93
+circle VOL+  123,195 132,208
+circle VOL-  123,237 132,250
+circle CH+  123,120 132,134
+circle CH-  123,159 132,173
+circle PAUSE  66,112 74,123
+circle STOP  65,164 74,175
+circle record  103,270 111,279
+circle ffwd  93,138 105,146
+circle rewind_last-ch  38,137 50,145
+circle timer  80,269 88,278
+circle disp  64,290 74,298
+circle sel  95,290 105,298
+circle enter  125,290 135,298
+circle F-diagnostics  35,249 43,257
+circle del  95,249 103,257
+circle parental-lock  34,270 42,278
+circle prev  57,269 65,277
+rect play 57,128 75,147
+rect 1 25,178 45,193
+rect 2 55,178 75,193
+rect 3 85,178 105,193
+rect 4 25,199 45,214
+rect 5 55,199 75,214
+rect 6 85,199 105,214
+rect 7 25,219 45,234
+rect 8 55,219 75,234
+rect 9 85,219 105,234
+rect 0 55,241 75,256
