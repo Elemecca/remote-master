@@ -127,6 +127,8 @@ public class SetupPanel
     protocolID.setText( p.getID().toString());
     notes.setText( deviceUpgrade.getNotes());
     fixedData.setText( p.getFixedData().toString());
+    protocolNotes.setText( p.getNotes());
+    protocolNotes.setCaretPosition( 0 );
     updateInProgress = false;
   }
 
