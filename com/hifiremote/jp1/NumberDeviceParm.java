@@ -38,9 +38,11 @@ public class NumberDeviceParm
 
   public NumberDeviceParm( String name, DefaultValue defaultValue, int base, int min, int max  )
   {
+    
     super( name, defaultValue );
     this.min = min;
     this.max = max;
+    this.base = base;
     verifier = new IntVerifier( min, max, true );
     verifier.setBase(base);
     // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
@@ -75,9 +77,12 @@ public class NumberDeviceParm
   public Object getValue()
   {
     String text = tf.getText();
+    System.err.println( "NumberDeviceParm.getValue(): name=" + getName() + ", text=" + text + " and base=" + base );
     if (( text == null ) || ( text.length() == 0 ))
       return null;
-    return Integer.valueOf( tf.getText(), base );
+    Integer rc = Integer.valueOf( text, base );
+    System.err.println( "Returning " + rc );
+    return rc;
   }
 
   public void setValue( Object value )
