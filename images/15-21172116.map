@@ -4,61 +4,61 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-21162117
-#$DATE:Wed Aug 27 13:19:39 2003
+#$DATE:Sun Sep 14 10:42:00 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:15-21162117.jpg
 #$FORMAT:ncsa
 #$EOH
 default 21162117
-circle VCR  32,108 44,115
-circle CBL  58,108 70,115
-circle SAT  85,108 97,115
-circle TV  112,108 124,115
-circle CD  34,127 47,134
-circle AUX  71,127 84,134
-circle DVD  109,127 122,134
-circle MY_SYSTEM  40,144 57,151
-circle AUDIO  103,145 120,152
+circle VCR  31,108 42,114
+circle CBL  57,108 68,114
+circle SAT  84,108 95,114
+circle TV  112,109 123,115
+circle CD  33,126 46,132
+circle AUX  71,127 84,133
+circle DVD  109,127 122,133
+circle MY_SYSTEM  41,145 58,151
+circle AUDIO  103,146 120,152
 circle SLEEP  101,393 114,399
-circle Guide  33,165 42,170
+circle Guide  34,165 42,170
 circle Menu  108,219 117,225
 circle Info  33,218 42,224
-circle Exit  109,166 118,171
+circle Exit  109,166 117,171
 circle Power  110,88 124,95
-circle Up  70,173 87,179
-circle Down  70,210 87,216
-circle Left  42,193 48,210
-circle Right  100,193 106,210
+circle Up  70,173 86,179
+circle Down  71,211 87,217
+circle Left  42,192 48,207
+circle Right  101,192 107,207
 circle Select  71,192 84,199
 circle Mute  57,230 65,235
-circle VOL+  35,243 43,253
-circle VOL-  35,265 43,276
-circle Ch+  106,242 114,254
-circle Ch-  106,266 114,277
-circle 1  39,295 49,305
-circle 2  70,295 80,305
-circle 3  102,295 112,305
-circle 4  39,321 49,331
-circle 5  70,321 80,331
-circle 6  102,322 112,332
-circle 7  39,348 49,358
-circle 8  70,347 80,357
-circle 9  102,348 112,358
-circle 0  70,374 80,384
+circle VOL+  35,242 43,250
+circle VOL-  34,267 42,275
+circle Ch+  107,243 115,252
+circle Ch-  106,268 114,276
+circle 1  39,294 48,303
+circle 2  70,294 79,303
+circle 3  102,295 111,304
+circle 4  39,321 48,330
+circle 5  70,321 79,330
+circle 6  102,321 111,330
+circle 7  39,347 48,356
+circle 8  70,347 79,356
+circle 9  102,347 111,356
+circle 0  70,374 79,383
 circle Last  84,230 91,235
 circle Freeze  81,248 88,253
 circle Pip  59,248 66,253
 circle Swap  59,267 66,272
 circle Move  82,267 90,272
-circle Enter  103,374 115,381
+circle Enter  102,374 114,381
 circle Rew  40,414 51,421
 circle Play  69,414 80,421
-circle FFwd  101,415 112,422
-circle TV/Video{A/B}  40,393 52,400
+circle FFwd  101,414 112,421
+circle TV/Video{A/B}  39,393 51,399
 circle +100  39,374 51,381
-circle Pause  103,437 115,445
+circle Pause  103,437 115,444
 rect Stop 59,430 81,444
-circle Rec  39,437 48,445
+circle Rec  38,436 46,444
 circle P[Setup]  27,87 33,93
 circle {LIGHT}  47,87 54,93
 circle Scan{Fav}  71,155 79,160

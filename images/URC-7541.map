@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7544
-#$DATE:Wed Aug 27 13:21:37 2003
+#$DATE:Mon Sep 15 15:04:31 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-7544.jpg
 #$FORMAT:ncsa
@@ -36,17 +36,17 @@ circle LEFT  52,219 59,234
 circle RIGHT  99,219 106,234
 rect EXIT 14,213 37,225
 rect MUTE 114,213 137,225
-circle CH+  33,194 42,208
-circle CH-  33,244 42,258
-circle VOL+  118,193 127,207
-circle VOL-  119,243 128,257
+circle CH+  32,195 41,207
+circle CH-  32,242 41,255
+circle VOL+  119,193 128,206
+circle VOL-  119,242 128,255
 poly REW 44,270 44,290 24,280 44,270 44,270
 poly PLAY 55,279 55,297 73,288 55,279 55,279
 rect PAUSE 81,280 97,295
 poly FFWD 106,270 106,290 126,280 106,270 106,270
 circle SP/LP  35,306 49,314
 rect STOP 57,304 74,321
-circle REC  90,313 98,322
+circle REC  89,312 97,320
 circle AUTO  116,306 129,314
 circle A  41,343 50,350
 circle B  64,343 73,350

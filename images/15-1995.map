@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1995
-#$DATE:Tue Sep 09 13:08:27 2003
+#$DATE:Mon Sep 15 13:07:31 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:15-1995.jpg
 #$FORMAT:ncsa
@@ -20,15 +20,15 @@ circle SAT  112,116 125,123
 circle HOME_THEATER  41,131 58,138
 circle Plug&Power  106,132 123,139
 circle VIDEO  105,389 118,396
-circle menu{Program}  34,150 44,157
+circle menu{Program}  34,151 44,157
 circle center{rear}  34,204 44,209
 circle shift  112,152 122,158
-circle scan{Fav}  112,205 122,211
+circle scan{Fav}  113,206 123,211
 circle POWER  113,81 127,89
 circle up  74,160 91,166
 circle down  74,196 91,202
-circle left  46,178 52,195
-circle right  101,178 107,195
+circle left  42,178 48,195
+circle right  103,178 109,195
 circle SURROUND  74,178 88,185
 circle MUTE  59,215 67,220
 circle VOL+  36,229 44,239
@@ -39,7 +39,7 @@ circle 1  39,283 48,292
 circle 2  73,283 82,292
 circle 3  106,284 115,293
 circle 4  39,311 48,320
-circle 5  73,311 82,321
+circle 5  73,311 82,320
 circle 6  106,311 115,320
 circle 7  39,339 48,348
 circle 8  73,339 82,348
@@ -50,7 +50,7 @@ circle escape  85,235 93,240
 circle PIP  61,235 69,240
 circle Swap  61,254 69,259
 circle Move  85,254 93,259
-circle ENTER  106,368 119,375
+circle ENTER  106,367 119,374
 circle rew  38,411 49,418
 circle PLAY  72,411 82,418
 circle ffwd  106,411 117,418

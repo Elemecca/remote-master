@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Motorola DRC400
-#$DATE:Tue Sep 09 15:19:00 2003
+#$DATE:Mon Sep 15 12:28:58 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Motorola-DRC400.jpg
 #$FORMAT:ncsa
@@ -16,10 +16,10 @@ circle TV  132,50 140,58
 circle mute  134,79 145,90
 circle audio  32,50 40,58
 circle POWER  83,74 102,85
-circle page+  51,103 64,110
+circle page+  51,102 64,108
 circle lock  83,107 89,113
-circle page-  115,103 128,110
-circle A  44,282 58,288
+circle page-  115,102 128,108
+circle A  44,282 58,287
 circle menu  131,194 138,201
 circle exit  34,125 41,132
 circle info  131,125 138,132
@@ -30,29 +30,29 @@ circle left  46,159 56,179
 circle right  119,159 129,179
 circle ok  82,159 100,171
 circle favorite  83,249 90,256
-circle VOL+  48,225 59,236
-circle VOL-  48,249 58,259
-circle CH+  119,224 130,235
+circle VOL+  47,223 58,234
+circle VOL-  47,250 57,260
+circle CH+  119,223 130,234
 circle CH-  119,250 129,260
 circle 1  45,307 55,317
-circle 2  83,307 93,317
+circle 2  84,307 94,317
 circle 3  122,307 132,317
-circle 4  45,339 55,349
+circle 4  46,339 56,349
 circle 5  83,339 93,349
-circle 6  121,339 131,349
+circle 6  122,339 132,349
 circle 7  45,370 55,380
-circle 8  83,370 93,380
+circle 8  84,370 94,380
 circle 9  121,370 131,380
 circle 0  83,402 93,412
 circle LAST  83,221 92,230
-circle C  122,281 136,287
+circle C  122,282 136,287
 circle PLAY  122,433 131,442
 circle STOP  45,434 54,443
-circle record  83,458 91,466
+circle record  84,458 92,466
 circle help  32,79 39,86
-circle B  83,281 97,287
-rect tv/vcr{bypass} 34,396 57,409
-rect enter{music} 110,396 133,409
+circle B  83,282 97,287
+rect tv/vcr{bypass} 34,397 56,408
+rect enter{music} 110,396 133,407
 poly rew 53,450 34,458 54,468 54,449 53,450 53,450
 poly f.fwd 112,449 133,458 112,467 112,449 112,449
 rect pause 72,427 95,440

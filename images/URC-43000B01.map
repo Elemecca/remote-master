@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Fri Sep 12 10:31:39 2003
-#$PATH:C:\km\images\
+#$DATE:Fri Sep 12 14:48:08 2003
+#$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-43000B01 Navigator.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -16,18 +16,18 @@ circle AUX  36,59 48,64
 circle CABLE  68,42 80,47
 circle Macro1  33,312 46,317
 circle EXIT  68,197 82,202
-circle Macro2  67,313 80,318
+circle Macro2  67,312 80,317
 circle POWER  98,43 111,48
 circle UP  67,235 77,241
-circle LEFT  35,258 45,264
+circle LEFT  34,257 44,263
 circle RIGHT  100,258 110,264
 circle DOWN  67,279 77,285
-circle SELECT  67,257 86,269
-circle MUTE  39,157 53,163
-circle VOL+  34,182 46,194
-circle VOL-  33,214 45,226
+circle SELECT  67,257 85,269
+circle MUTE  39,156 53,162
+circle VOL+  33,182 45,194
+circle VOL-  33,213 45,225
 circle CH+  101,182 113,194
-circle CH-  101,214 113,226
+circle CH-  101,213 113,225
 circle 1  39,78 50,89
 circle 2  68,79 79,90
 circle 3  95,79 106,90
@@ -39,27 +39,27 @@ circle 8  67,130 78,141
 circle 9  97,130 108,141
 circle 0  68,156 79,167
 circle LAST  67,182 81,187
-circle fav  56,389 64,394
-circle pause  56,429 64,434
-circle Macro3  100,313 113,318
+circle fav  56,388 64,393
+circle pause  56,428 64,433
+circle Macro3  100,312 113,317
 circle info  67,213 81,218
 circle ENTER/Music  96,156 110,162
-circle Rew=Rew_&_Day-  33,349 46,354
-circle Play=Play_&_Menu  67,349 80,354
-circle FFwd=FFwd_&_Day+  100,349 113,354
-circle TV/VCR  100,389 108,394
-circle Pause_{VCR}  67,366 80,371
-circle Record  100,366 113,371
+circle Rew=Rew_&_Day-  33,348 45,353
+circle Play=Play_&_Menu  67,348 79,353
+circle FFwd=FFwd_&_Day+  100,348 112,353
+circle TV/VCR  100,388 108,393
+circle Pause_{VCR}  67,365 79,370
+circle Record  100,365 112,370
 circle SETUP  98,59 110,64
-circle help  34,389 42,394
-circle ppv  79,389 87,394
-circle PG+  34,409 42,414
-circle PG-  56,409 64,414
-circle switch  34,429 42,434
-circle diamond  78,429 86,434
-circle P  101,429 109,434
-circle Stop=Stop_&_Guide  34,367 47,372
-circle Guide=Stop_&_Guide  24,281 33,290
+circle help  34,388 42,393
+circle ppv  79,388 87,393
+circle PG+  33,408 41,413
+circle PG-  56,408 64,413
+circle switch  34,428 42,433
+circle diamond  78,428 86,433
+circle P  100,428 108,433
+circle Stop=Stop_&_Guide  33,365 45,370
+circle Guide=Stop_&_Guide  23,281 32,290
 circle Menu=Play_&_Menu  110,282 119,291
-circle Day-=Rew_&_Day-  78,409 86,414
-circle Day+=FFwd_&_Day+  100,409 108,414
+circle Day-=Rew_&_Day-  78,408 86,413
+circle Day+=FFwd_&_Day+  100,408 108,413

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:SonyTiVoRMT-V809
-#$DATE:Tue Sep 09 16:07:39 2003
+#$DATE:Mon Sep 15 14:45:58 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:SonyTiVoRMT-V809.jpg
 #$FORMAT:ncsa
@@ -27,9 +27,9 @@ circle 0  77,128 87,138
 circle enter{jump}  110,129 118,137
 circle fwd  108,343 123,355
 circle list  77,175 87,186
-circle VOL-  55,434 68,448
+circle VOL-  55,433 67,446
 circle guide  127,223 141,237
-circle VOL+  55,405 68,419
+circle VOL+  55,405 68,418
 circle rec{on/off}  77,377 88,388
 circle thumbsUP  127,294 141,308
 circle back  45,343 60,355

@@ -4,43 +4,43 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Mastreo2
-#$DATE:Wed Sep 10 12:02:22 2003
+#$DATE:Mon Sep 15 10:31:43 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Maestro2.jpg
 #$FORMAT:ncsa
 #$EOH
 default mastreo2
-circle mute  139,308 147,316
-circle POWER  138,100 150,113
-circle menu  37,331 47,339
+circle mute  141,308 149,316
+circle POWER  138,99 150,111
+circle menu  37,331 48,339
 circle setup  38,97 51,103
 circle VOL+  139,224 150,242
 circle VOL-  139,267 150,285
 circle CH+  139,135 150,153
 circle CH-  139,178 150,196
-circle PAUSE  71,127 79,140
-circle STOP  71,186 80,200
-circle record  114,308 122,317
-circle ffwd  105,156 122,164
-circle rewind_last-ch  38,156 53,164
+circle PAUSE  71,126 79,139
+circle STOP  72,185 81,199
+circle record  114,307 122,315
+circle ffwd  104,155 121,163
+circle rewind_last-ch  41,155 56,163
 circle timer  88,308 96,317
-circle disp  71,330 81,338
-circle sel  106,330 116,338
-circle enter  141,331 151,339
-circle F-diagnostics  36,284 44,292
-circle del  105,284 114,293
+circle disp  71,331 82,339
+circle sel  106,331 117,339
+circle enter  140,331 151,339
+circle F-diagnostics  37,283 45,291
+circle del  106,283 115,292
 circle parental-lock  36,308 44,316
 circle prev  63,308 71,316
-rect play 60,145 82,167
-rect 1 26,204 49,222
-rect 2 60,205 83,222
-rect 3 94,205 117,221
-rect 4 25,228 49,246
-rect 5 59,227 83,245
-rect 6 93,228 117,246
-rect 7 25,251 49,270
-rect 8 60,251 84,268
-rect 9 95,252 117,268
-rect 0 60,275 84,293
+rect play 61,145 82,166
+rect 1 26,203 49,220
+rect 2 60,203 83,220
+rect 3 94,203 117,220
+rect 4 25,225 49,242
+rect 5 59,225 83,242
+rect 6 93,225 117,242
+rect 7 25,249 49,266
+rect 8 60,249 84,266
+rect 9 93,249 117,266
+rect 0 60,273 84,290
 rect < 61,90 83,106
 rect > 93,90 115,106

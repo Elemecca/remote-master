@@ -4,15 +4,15 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-8550
-#$DATE:Wed Aug 27 16:43:52 2003
+#$DATE:Mon Sep 15 16:03:06 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-8550.jpg
 #$FORMAT:ncsa
 #$EOH
 default 8550
-rect TV 32,85 52,99
-rect VCR 58,85 78,99
-rect SAT 81,85 101,99
+rect TV 33,85 53,99
+rect VCR 59,85 77,99
+rect SAT 83,85 100,99
 rect AUX1 106,85 126,99
 rect TUN 60,104 77,120
 rect CD 82,104 99,120
@@ -29,10 +29,10 @@ circle left  81,178 87,193
 circle right  123,178 129,193
 circle menu  102,178 111,186
 circle MUTE  71,248 84,256
-circle VOL+  119,220 130,228
-circle VOL-  102,230 113,238
-circle CH+  127,243 138,251
-circle CH-  109,253 120,261
+circle VOL+  119,219 129,226
+circle VOL-  101,232 111,239
+circle CH+  127,242 137,249
+circle CH-  110,255 120,262
 circle 1  45,270 55,280
 circle 2  67,270 77,281
 circle 3  89,269 99,279
@@ -48,16 +48,16 @@ circle PIP{Freeze}  117,308 128,316
 circle NORM{Swap}  115,352 126,360
 circle PP{Move}  116,330 127,338
 circle 10  44,335 55,341
-poly REW 56,370 55,384 41,377 56,370 56,370
-poly FF 83,370 84,384 98,377 83,370 83,370
-poly pl 62,369 63,384 77,376 62,369 62,369
-circle TV/VCR  49,399 60,405
+poly pl 63,370 63,385 76,378 63,370 63,370
+circle TV/VCR  49,399 59,404
 rect PAU 108,370 123,384
 rect STOP 62,391 78,405
 circle rec  91,398 99,406
 circle Audio  50,356 61,362
 circle Video  85,355 96,361
-circle slow  115,398 126,404
-poly AMP 33,103 55,103 55,120 37,117 33,103 33,103
-poly aux2 104,103 127,103 122,117 104,120 104,103 104,103
+circle slow  115,398 126,403
+poly AMP 32,103 54,103 56,117 38,117 32,103 32,103
+poly aux2 104,103 127,103 121,116 105,117 104,103 104,103
 circle 20  89,335 100,341
+poly rew 53,371 57,374 57,383 54,385 42,378 53,371
+poly ff 83,372 86,370 98,378 87,385 83,383 83,372

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-9800
-#$DATE:Tue Sep 09 14:33:01 2003
+#$DATE:Mon Sep 15 16:11:56 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-9800.jpg
 #$FORMAT:ncsa
@@ -12,11 +12,11 @@
 default 9800
 rect TV 36,73 56,87
 rect VCR 64,73 84,87
-rect DVD 90,73 110,87
+rect DVD 90,74 110,88
 rect CBL/SAT 118,75 139,89
 rect AMP 65,94 84,109
-rect CD 90,94 108,110
-circle HOME_THEATER  85,121 115,128
+rect CD 90,94 107,109
+circle HOME_THEATER  86,121 116,127
 circle menu{Clear}  57,206 68,214
 circle center{Prog}  58,187 69,195
 circle Select  60,225 71,233
@@ -25,7 +25,7 @@ circle Esc{Rear}  60,168 71,176
 circle POWER  138,140 151,150
 circle up  111,155 126,161
 circle down  110,192 125,198
-circle left  85,173 91,189
+circle left  84,173 90,189
 circle right  137,174 143,190
 circle Surround  110,173 121,181
 circle MUTE{sleep}  72,250 83,258
@@ -49,15 +49,15 @@ circle Swap  123,348 134,356
 circle Move  123,373 134,381
 circle ENTER  38,351 49,358
 poly REW{slow-} 48,395 48,411 33,403 48,395 48,395
-poly FF{slow+} 85,396 85,411 100,404 85,396 85,396
-poly play{slow} 59,395 59,409 74,403 59,395 59,395
+poly play{slow} 59,395 59,412 73,404 59,395 59,395
 circle TV/SAT  91,352 102,359
-rect PAUSE{X2} 83,421 100,438
+rect PAUSE{X2} 83,421 100,437
 rect STOP{Eject} 57,421 74,437
 circle rec  40,429 49,438
 circle SETUP  120,427 131,435
 circle Macro  43,374 56,381
 circle Macro2  85,375 98,383
 circle {LIGHT}  121,400 132,408
-poly tuner 35,93 59,93 58,108 40,107 35,92 35,93
-poly aux1 115,94 138,94 132,107 114,109 115,94 115,94
+poly tuner 36,94 58,94 59,108 39,105 36,94
+poly aux1 116,94 139,94 132,107 114,109 116,94
+poly ff{slow+} 84,396 100,403 84,411 84,396

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:SonyTiVoRMT-V303
-#$DATE:Fri Sep 05 12:10:32 2003
+#$DATE:Mon Sep 15 14:43:50 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:SonyTiVoRMT-V303.jpg
 #$FORMAT:ncsa
@@ -27,9 +27,9 @@ circle 0  84,138 94,148
 circle enter{jump}  120,138 134,146
 circle fwd  118,325 133,337
 circle list  35,186 49,200
-circle VOL-  59,426 72,440
+circle VOL-  60,426 73,440
 circle guide{liveTV}  132,187 146,201
-circle VOL+  60,396 73,410
+circle VOL+  59,396 72,409
 circle rec_on/off  83,361 94,372
 circle thumbsUP  132,265 146,279
 circle back  48,325 63,337
@@ -46,4 +46,4 @@ circle thumbsDown  34,265 48,279
 circle select  84,226 106,237
 circle left  48,226 56,249
 circle right  119,227 127,250
-poly tivomenu 70,159 100,159 95,184 74,184 70,159
+poly tivomenu 70,159 100,159 95,184 74,184 70,159 70,159

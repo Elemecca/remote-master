@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-8811
-#$DATE:Wed Aug 27 13:40:14 2003
+#$DATE:Mon Sep 15 16:05:39 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-8811.jpg
 #$FORMAT:ncsa
@@ -28,7 +28,7 @@ circle up  60,132 70,139
 circle down  59,178 69,185
 circle left  34,155 41,165
 circle right  86,155 93,165
-circle SELECT  60,155 71,166
+circle SELECT  59,154 70,165
 circle MUTE  24,215 32,223
 circle PREV  98,216 106,224
 circle VOL+  24,190 32,202
@@ -66,7 +66,7 @@ circle l3  70,372 78,377
 circle l4  91,372 99,377
 circle PAUSE  75,324 86,331
 rect STOP 48,333 70,347
-circle rec  44,324 52,332
+circle rec  44,325 55,332
 circle SET[SETUP]  92,403 101,408
 circle {LIGHT}  28,403 37,409
 circle sleep  92,387 100,393

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Force
-#$DATE:Wed Sep 03 14:56:26 2003
+#$DATE:Sun Sep 14 11:31:28 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:Force.jpg
 #$FORMAT:ncsa
@@ -26,8 +26,8 @@ circle 8  76,120 91,128
 circle 9  112,120 127,128
 circle 0  76,141 91,149
 circle menu  77,190 90,198
-circle VOL+  35,177 48,190
-circle VOL-  46,203 59,216
+circle VOL+  33,176 44,187
+circle VOL-  44,202 55,213
 circle UP  79,229 109,240
 circle DOWN  80,281 110,293
 poly LEFT 61,244 61,269 40,274 34,256 40,238 61,244 61,244
@@ -41,8 +41,8 @@ circle messages  43,353 53,363
 circle PVR  68,353 78,363
 circle TEXT  93,353 103,363
 circle REC  116,351 126,361
-circle CH+  120,176 133,189
-circle CH-  110,202 123,215
+circle CH+  119,176 130,187
+circle CH-  109,201 120,212
 circle LANG  113,140 128,149
 circle RADIO  40,141 55,150
 circle mute  76,169 89,177

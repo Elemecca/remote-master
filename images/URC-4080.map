@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:urc-4080
-#$DATE:Fri Sep 05 14:29:30 2003
+#$DATE:Mon Sep 15 14:50:43 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:urc-4080.jpg
 #$FORMAT:ncsa
@@ -13,7 +13,7 @@ default urc-4080
 circle mute  79,109 90,117
 circle POWER  119,30 127,38
 circle VOL+  113,112 119,124
-circle VOL-  43,110 49,122
+circle VOL-  44,109 50,121
 circle CH+  78,131 101,137
 circle CH-  78,91 101,97
 circle 1  46,181 57,192
@@ -40,8 +40,8 @@ circle f1  38,64 46,70
 circle f2  65,56 74,62
 circle f3  94,58 103,63
 circle f4  120,68 128,74
-rect enter 35,249 55,264
-rect prev-ch 99,250 119,265
+rect enter 35,248 55,263
+rect prev-ch 99,249 119,264
 circle pause  42,370 53,377
 circle rewind  42,327 49,344
 circle ffwd  118,326 125,343

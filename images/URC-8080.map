@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-8080
-#$DATE:Wed Aug 27 17:20:23 2003
+#$DATE:Mon Sep 15 15:54:16 2003
 #$PATH:C:\Backups\Home\IR\Images\
 #$GIF:URC-8080.jpg
 #$FORMAT:ncsa
@@ -14,14 +14,11 @@ rect AMP 49,95 74,112
 rect TUNER 80,95 100,112
 rect TV 107,95 127,112
 rect CBL 134,95 159,112
-rect VCR 81,118 101,136
-rect SAT 107,118 126,136
-circle HOME_THEATER  102,150 132,157
-circle menu{program}  53,246 64,254
-circle center{rear}  54,224 65,232
-circle Select{Clear}  55,267 66,275
-circle shift  53,180 64,188
-circle ESC  54,201 65,209
+circle menu{program}  52,246 62,254
+circle center{rear}  53,224 63,232
+circle Select{Clear}  54,268 64,276
+circle shift  52,180 62,188
+circle ESC  53,201 63,209
 circle POWER  156,166 169,176
 circle up  130,185 146,191
 circle down  129,225 145,231
@@ -31,8 +28,8 @@ circle SUR[Surround]  130,205 140,215
 circle MUTE{sleep}  92,288 105,296
 circle VOL+  149,253 160,261
 circle VOL-  128,267 139,275
-circle CH+  157,282 168,290
-circle CH-  138,295 149,303
+circle CH+  158,281 169,289
+circle CH-  137,296 148,304
 circle 1  61,313 71,323
 circle 2  87,314 97,324
 circle 3  113,313 123,323
@@ -48,16 +45,19 @@ circle PIP{freeze_pip}  146,360 157,368
 circle Swap  145,385 156,393
 circle Move  145,411 156,419
 circle ENTER  60,390 71,397
-poly REW{slow-} 72,433 72,447 57,440 72,433 72,433
-poly FF{slow+} 106,433 106,447 121,440 106,433 106,433
-poly play{slow} 81,434 81,448 96,441 81,434 81,434
 circle TV/SAT  113,390 124,397
-rect PAUSE{x2} 105,458 123,473
-rect STOP{eject} 80,458 98,473
+rect PAUSE{x2} 105,457 123,474
+rect STOP{eject} 80,457 98,474
 circle rec  65,465 74,473
 circle SETUP  143,464 154,472
-circle Macro1  66,415 77,422
-circle Macro2  108,414 119,421
+circle Macro1  66,414 79,421
+circle Macro2  107,414 119,421
 circle {LIGHT}  144,437 155,445
-poly cd 50,117 73,118 73,133 54,131 50,117 50,117
-poly aux1 133,117 156,117 153,131 132,133 133,117 133,117
+poly vcr 81,118 101,118 100,135 82,134 81,119 81,118
+poly sat 107,118 127,118 125,135 107,136 107,118
+poly cd 50,118 75,118 75,133 56,132 50,118
+poly aux1 133,118 157,118 153,130 132,134 133,118
+poly rew{slow-} 54,441 70,432 74,435 74,447 69,450 54,441
+poly play{slow} 81,432 97,441 81,449 81,432
+poly ff{slow+} 105,435 108,431 122,440 109,450 105,447 105,435
+circle home_theater  102,149 132,156
