@@ -10,7 +10,7 @@ public class EFCEditor
   public EFCEditor()
   {
     super( new JTextField());
-    setClickCountToStart( 1 );
+//    setClickCountToStart( 1 );
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
 
@@ -23,7 +23,7 @@ public class EFCEditor
                                                        isSelected, row, col );
     if ( value == null )
       tf.setText( "" );
-    else                                                       
+    else
       tf.setText((( EFC )value ).toString());
     tf.selectAll();
 

@@ -49,11 +49,11 @@ public abstract class TablePanel
     table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
     table.setCellSelectionEnabled( true );
-    table.setRowSelectionAllowed( true );
+//    table.setRowSelectionAllowed( true );
     table.setSurrendersFocusOnKeystroke( true );
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     table.getTableHeader().setToolTipText( "Click to sort is ascending order, or shift-click to sort in descending order." );
-    (( DefaultCellEditor )table.getDefaultEditor( String.class )).setClickCountToStart( 1 );
+//    (( DefaultCellEditor )table.getDefaultEditor( String.class )).setClickCountToStart( 1 );
 
     TransferHandler th = new TransferHandler()
     {
@@ -144,7 +144,7 @@ public abstract class TablePanel
         showPopup( e );
       }
 
-      private void showPopup( MouseEvent e )
+      private boolean showPopup( MouseEvent e )
       {
         if ( e.isPopupTrigger() )
         {
@@ -152,17 +152,26 @@ public abstract class TablePanel
           popupRow = table.rowAtPoint( e.getPoint());
           popupCol = table.columnAtPoint( e.getPoint());
 
+          if ( popupCol == 0 )
+            return false;
+
           Function func = ( Function )sorter.getRow( popupRow );
           deleteItem.setEnabled( !func.assigned());
 
           Transferable clipData = clipboard.getContents( clipboard );
           if (( clipData != null ) &&
-              clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
+              clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) &&
+              ( popupCol != 0 ))
             pasteItem.setEnabled( true );
           else
             pasteItem.setEnabled( false );
+
+          copyItem.setEnabled( table.getSelectedRowCount() > 0 );
           popup.show( table, e.getX(), e.getY());
+          return true;
         }
+        else
+          return false;
       }
     };
     table.addMouseListener( mh );
@@ -411,7 +420,8 @@ public abstract class TablePanel
                 Class aClass = sorter.getColumnClass( modelCol );
                 if ( aClass == String.class )
                 {
-                  if (( token.length() == 5 ) &&
+                  if (( token != null ) &&
+                      ( token.length() == 5 ) &&
                       token.startsWith( "num " ) &&
                       Character.isDigit( token.charAt( 4 )))
                     value = token.substring( 4 );
@@ -461,7 +471,8 @@ public abstract class TablePanel
         Transferable clipData = clipboard.getContents( clipboard );
         copyButton.setEnabled( true );
         if (( clipData != null ) &&
-            clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
+            clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) &&
+            ( table.convertColumnIndexToModel( table.getSelectedColumn() ) != 0 ))
           pasteButton.setEnabled( true );
         else
           pasteButton.setEnabled( false );

@@ -10,7 +10,7 @@ public class HexEditor
   public HexEditor( Hex defaultHex )
   {
     super( new JTextField());
-    setClickCountToStart( 1 );
+//    setClickCountToStart( 1 );
     this.defaultHex = defaultHex;
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
@@ -24,7 +24,7 @@ public class HexEditor
                                                        isSelected, row, col );
     if ( value == null )
       tf.setText( "" );
-    else                                                       
+    else
       tf.setText((( Hex )value ).toString());
     tf.selectAll();
 

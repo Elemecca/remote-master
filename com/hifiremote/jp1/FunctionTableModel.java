@@ -95,7 +95,7 @@ public class FunctionTableModel
     if ( col == nameCol )
     {
       String text = ( String )value;
-      if ( text.length() == 0 )
+      if (( text != null ) && ( text.length() == 0 ))
         text = null;
       checkFunctionAssigned( function, text );
       function.setName( text );
