@@ -6,7 +6,7 @@ public class Button
 {
   public Button( String standardName, String name, int code )
   {
-    this.standardName = standardName;
+    this.standardName = standardName.toLowerCase();
     this.name = name;
     keyCode = code;
     multiMacroAddress = 0;
@@ -36,7 +36,7 @@ public class Button
       return null;
   }
   public String getStandardName(){ return standardName; }
-  public void setStandardName( String name ){ standardName = name; }
+  public void setStandardName( String name ){ standardName = name.toLowerCase(); }
   public int getKeyCode(){ return keyCode; }
   public int getMultiMacroAddress(){ return multiMacroAddress; }
   public void setMultiMacroAddress( int addr ){ multiMacroAddress = addr; }
@@ -120,11 +120,19 @@ public class Button
 
   public Button setFunction( Function newFunc )
   {
+    System.err.print( "Button " + name );
     if ( function != null )
+    {
+      System.err.print( " removing reference to " + function );
       function.removeReference();
+    }
     function = newFunc;
     if ( newFunc != null )
+    {
+      System.err.print( " adding reference to " + function );
       newFunc.addReference();
+    }
+    System.err.println();
     return this;
   }
   public Function getFunction(){ return function; }

@@ -254,7 +254,7 @@ public class DeviceUpgrade
     for ( Enumeration e = funcs.elements(); e.hasMoreElements(); )
     {
       Function func = ( Function )e.nextElement();
-      if ( func.getName().equals( name ))
+      if ( func.getName().equalsIgnoreCase( name ))
       {
         rc = func;
         break;
@@ -725,7 +725,7 @@ public class DeviceUpgrade
     token = st.nextToken();
     String str = token.substring( 5 );
 
-    Remote remote = RemoteManager.getRemoteManager().findRemoteByName( str );
+    remote = RemoteManager.getRemoteManager().findRemoteByName( str );
     Hex pid = null;
     while ( true )
     {
@@ -771,53 +771,45 @@ public class DeviceUpgrade
 
     String buttonStyle = st.nextToken();
     st = new StringTokenizer( protocolLine, delim, true );
-    st.nextToken(); // skip header
-    st.nextToken(); // skip delim
-    String protocolName = st.nextToken();  // protocol name
-    st.nextToken(); // skip delim
+    getNextField( st, delim ); // skip header
+    String protocolName = getNextField( st, delim );  // protocol name
 
     ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
     if ( protocolName.equals( "Manual Settings" ))
     {
       System.err.println( "protocolName=" + protocolName );
-      StringTokenizer manual = new StringTokenizer( manualLine, delim );
-      manual.nextToken(); // skip header
-      pid = new Hex( manual.nextToken()); // pid
-      System.err.println( "pid=" + pid );
-      int byte2 = Integer.parseInt( manual.nextToken().substring( 0, 1 ));
+      System.err.println( "manualLine=" + manualLine );
+      StringTokenizer manual = new StringTokenizer( manualLine, delim, true );
+      System.err.println( "skipping " + getNextField( manual, delim )); // skip header 
+      String pidStr = getNextField( manual, delim );
+      System.err.println( "pid=" + pidStr );
+      if ( pidStr != null )
+        pid = new Hex( pidStr ); 
+      int byte2 = Integer.parseInt( getNextField( manual, delim ).substring( 0, 1 ));
       System.err.println( "byte2=" +  byte2 );
-      String signalStyle = manual.nextToken();
+      String signalStyle = getNextField( manual, delim );
       System.err.println( "SignalStyle=" + signalStyle );
-      String bitsStr = manual.nextToken();
+      String bitsStr = getNextField( manual, delim );
       int devBits = Integer.parseInt( bitsStr.substring( 0, 1 ), 16);
       int cmdBits = Integer.parseInt( bitsStr.substring( 1 ), 16 );
       System.err.println( "devBits=" + devBits + " and cmdBits=" + cmdBits );
 
       Vector values = new Vector();
 
-      str = st.nextToken(); // Device 1
-      if ( !str.equals( delim ))
-      {
-        st.nextToken(); // skip delim
+      str = getNextField( st, delim ); // Device 1
+      if ( str != null )
         values.add( new Integer( str ));
-      }
 
-      str = st.nextToken(); // Device 2
-      if ( !str.equals( delim ))
-      {
-        st.nextToken(); // skip delim
+      str = getNextField( st, delim ); // Device 2
+      if ( str != null )
         values.add( new Integer( str ));
-      }
 
-      str = st.nextToken(); // Device 3
-      if ( !str.equals( delim ))
-      {
-        st.nextToken(); // skip delim
+      str = getNextField( st, delim ); // Device 3
+      if ( str != null )
         values.add( new Integer( str ));
-      }
 
-      str = st.nextToken(); // Raw Fixed Data
-      if ( str.equals( delim ))
+      str = getNextField( st, delim ); // Raw Fixed Data
+      if ( str == null )
         str = "";
       byte[] rawHex = Hex.parseHex( str );
 
@@ -873,9 +865,7 @@ public class DeviceUpgrade
     boolean useOBC = false;
     boolean useEFC = false;
     if ( buttonStyle.equals( "OBC" ))
-    {
       useOBC = true;
-    }
     else if ( buttonStyle.equals( "EFC" ))
       useEFC = true;
 
@@ -909,6 +899,9 @@ public class DeviceUpgrade
 
     functions.clear();
 
+    DeviceCombiner combiner = null;
+    if ( protocol.getClass() == DeviceCombiner.class )
+      combiner = ( DeviceCombiner )protocol;
     Vector unassigned = new Vector();
     Vector usedFunctions = new Vector();
     for ( int i = 0; i < 128; i++ )
@@ -920,12 +913,16 @@ public class DeviceUpgrade
           token.startsWith( "num " ) && Character.isDigit( token.charAt( 4 )))
         token = token.substring( 4 );
 
+      System.err.println( "Looking for function " + token );
       Function f = getFunction( token, usedFunctions );
       if ( f == null )
       {
+        System.err.println( "Had to create a new one!" );
         f = new Function();
         f.setName( token );
       }
+      else 
+        System.err.println( "Found it!" );
 
       token = getNextField( st, delim );  // get the function code (field 2)
       if ( token != null )
@@ -938,8 +935,14 @@ public class DeviceUpgrade
 
         token = getNextField( st, delim ); // get byte2 (field 3)
         if ( token != null )
-          protocol.setValueAt( obcIndex - 1, hex, new Integer( token ));
+        {
+          StringTokenizer st2 = new StringTokenizer( token );
+          int index = 0;
+          while ( st2.hasMoreTokens())
+            protocol.setValueAt( index++, hex, new Integer( st2.nextToken()));
+        }
 
+        System.err.println( "Setting hex to " + hex );
         f.setHex( hex );
       }
       else
@@ -956,7 +959,13 @@ public class DeviceUpgrade
 
       Button b = null;
       if ( buttonName != null )
+      {
+        System.err.println( "Searching for button w/ name " + buttonName );
         b = remote.findByStandardName( new Button( buttonName, null, ( byte )0 ));
+        System.err.println( "Found button " + b );
+      }
+      else
+        System.err.println( "No buttonName for actualName=" + actualName + " and i=" + i );
 
       token = getNextField( st, delim );  // get normal function (field 5)
       if (( buttonName != null ) && ( token != null ) &&
@@ -972,16 +981,23 @@ public class DeviceUpgrade
           name = name.substring( 4 );
 
         Function func = null;
-        if (( f.getName() != null ) && f.getName().equals( name ))
+        if (( f.getName() != null ) && f.getName().equalsIgnoreCase( name ))
           func = f;
         else
+        {
           func = getFunction( name, functions );
+          if ( func == null )
+            func = getFunction( name, usedFunctions );
+        }
         if ( func == null )
         {
+          System.err.println( "Creating new function " + name );
           func = new Function();
           func.setName( name );
           usedFunctions.add( func );
         }
+        else
+          System.err.println( "Found function " + name );
 
         if ( b == null )
         {
@@ -989,9 +1005,13 @@ public class DeviceUpgrade
           temp.add( name );
           temp.add( buttonName );
           unassigned.add( temp );
+          System.err.println( "Couldn't find button " + buttonName + " to assign function " + name );
         }
         else if ( loadButtons )
+        {
+          System.err.println( "Setting function " + name + " on button " + b );
           b.setFunction( func );
+        }
       }
 
       token = getNextField( st, delim );  // get notes (field 6)
@@ -1001,8 +1021,19 @@ public class DeviceUpgrade
       if ( !f.isEmpty())
         functions.add( f );
 
+      String pidStr = getNextField( st, delim ); // field 7
+      String fixedDataStr = getNextField( st, delim ); // field 8
+
+      if (( combiner != null ) && ( pidStr != null ) && ( fixedDataStr != null ) && 
+          !pidStr.equals( "Protocol ID" ) && 
+          !fixedDataStr.equals( "Fixed Data" ))
+      {
+        Protocol p = protocolManager.findProtocolForRemote( remote, new Hex( pidStr ));
+        combiner.addProtocol( p, new Hex( fixedDataStr ));
+      }
+      
       // skip to field 13
-      for ( int j = 7; j <= 13; j++ )
+      for ( int j = 8; j <= 13; j++ )
         token = getNextField( st, delim );
 
       if ( token != null )
@@ -1102,6 +1133,7 @@ public class DeviceUpgrade
       frame.show();
     }
     Button[] buttons = remote.getUpgradeButtons();
+    System.err.println( "Removing assigned functions with no hex!" );
     for ( int i = 0; i < buttons.length; i++ )
     {
       Button b = buttons[ i ];
@@ -1115,6 +1147,7 @@ public class DeviceUpgrade
       if (( f != null ) && ( f.getHex() == null ))
         b.setXShiftedFunction( null );
     }
+    System.err.println( "Done!" );
   }
 
   public Value[] getParmValues()

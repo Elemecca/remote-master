@@ -40,6 +40,20 @@ public class DeviceCombiner
     }
   }
 
+  public void addProtocol( Protocol p, Hex fixedData )
+  {
+    Value[] values = p.getDeviceParmValues();
+    if ( p.deviceTranslators != null )
+    {
+      for ( int i = 0; i < p.deviceTranslators.length; i++ )
+      {
+        p.deviceTranslators[ i ].out( fixedData, values, p.devParms );
+      }
+    }
+    CombinerDevice device = new CombinerDevice( p, values );
+    devices.add( device );
+  }
+
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
   {
     System.err.println( "DeviceCombiner.getPanel()" );

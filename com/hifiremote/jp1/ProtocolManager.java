@@ -195,6 +195,38 @@ public class ProtocolManager
     return protocol;
   }
 
+  public Protocol findProtocolForRemote( Remote remote, Hex id )
+  {
+    return findProtocolForRemote( remote, id, true );
+  }
+
+  public Protocol findProtocolForRemote( Remote remote, Hex id, boolean allowUpgrades )
+  {
+    Protocol protocol = null;
+    Protocol tentative = null;
+    Vector protocols = findByPID( id );
+    if ( protocols == null )
+      return null;
+    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    {
+      Protocol p = ( Protocol )e.nextElement();
+      String supportedVariant = remote.getSupportedVariantName( id );
+      if ( p.getVariantName().equals( supportedVariant ))
+      {
+        protocol = p;
+        break;
+      }
+      if ( tentative == null )
+      {
+        if ( allowUpgrades && ( p.getCode( remote ) != null ))
+          tentative = p;
+      }
+    }
+    if ( protocol == null )
+      protocol = tentative;
+    return protocol;
+  }
+
   public Protocol findProtocolByOldName( Remote remote, String name )
   {
     Vector protocols = getProtocolsForRemote( remote );

@@ -26,8 +26,23 @@ public class Sony1215Translator
       hex[ 2 ] |= ( byte )0x40;
   }
 
-  public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
-  {}
+  public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
+  {
+    byte[] hex = hexData.getData();
+    int device1 = (( Integer )parms[ 0 ].getValue()).intValue();
+    int device2 = (( Integer )parms[ 2 ].getValue()).intValue();
+    int force1 = 0;
+    int force2 = 0;
+    
+    if ((( hex[ 2 ] & 0x80 ) != 0 ) && device1 < 32 )
+      force1 = 1;
+    
+    if ((( hex[ 2 ] & 0x40 ) != 0 ) && device2 < 32 )
+      force2 = 1;
+
+    parms[ 1 ] = new Value( new Integer( force1 ), null );
+    parms[ 3 ] = new Value( new Integer( force2 ), null );
+  }
 
   
 }

@@ -39,11 +39,32 @@ public class NECParmTranslator
     }
     else
       hex[ 2 ] = ( byte )reverse(( byte )~subDevice.byteValue());
-
   }
 
-  public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
-  {}
+  public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
+  {
+    Integer deviceNumber = null;
+    Integer subDevice = null;
+    Integer parm = null;
+
+    byte[] hex = hexData.getData();
+    int temp = reverse(( byte )~hex[ 1 ]) & 0xFF ;
+    if ( temp == 0 )
+      deviceNumber = null;
+    else
+      deviceNumber = new Integer( temp );
+
+    if (( hex[ 2 ] != hex[ 1 ]) && ( hex[ 2 ] != ( byte )~hex[ 1 ]))
+      subDevice = new Integer( reverse(( byte )~hex[ 2 ]));
+
+    if (( hex[ 0 ] != ( byte )initialDefaultParm ) &&
+        ( hex[ 0 ] != ( byte )(initialDefaultParm + 0x20 )))
+        parm = new Integer( hex[ 0 ] & 0xFF );
+
+    parms[ 0 ] = new Value( deviceNumber, null );
+    parms[ 1 ] = new Value( subDevice, null );
+    parms[ 2 ] = new Value( parm, null );
+  }
 
   private int initialDefaultParm;
 }

@@ -25,5 +25,13 @@ public class ZenithTranslator
   // convert hex to parms
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
+    Integer val = null;
+    int temp = extract( hex, 4, 4 );
+    if ( temp != (( Integer )devParms[ 0 ].getDefaultValue()).intValue())
+    {
+      temp--;
+      val = new Integer( temp );
+    }
+    parms[ 0 ] = new Value( val, null );
   }
 }
