@@ -308,7 +308,7 @@ public class Protocol
 
         // generate the appropriate hex for the new protocol
         for ( int i = 0; i < newProtocol.cmdTranslators.length; i++ )
-          newProtocol.cmdTranslators[ i ].in( newValues, newHex, devParms, -1 );
+          newProtocol.cmdTranslators[ i ].in( newValues, newHex, newProtocol.devParms, -1 );
 
         // store the hex back into the function
         System.err.println( "Storing new hex " + newHex );
