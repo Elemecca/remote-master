@@ -32,13 +32,11 @@ public class Rc5FlagTranslator
     int flag0 = hex[ 0 ] & 0x40;
     int flag1 = hex[ 1 ] & 0x40;
     int flag2 = hex[ 2 ] & 0x40;
-    Value val = new Value( new Integer( 1 ), null );
-    if ( flag0 != 0 )
-      parms[ 1 ] = val;
-    if ( flag1 != 0 )
-      parms[ 3 ] = val;
-    if ( flag2 != 0 )
-      parms[ 4 ] = val;
+    Value one = new Value( new Integer( 1 ));
+    Value zero = new Value( new Integer( 0 ));
+    parms[ 1 ] = ( flag0 == 0 ) ? zero : one;
+    parms[ 3 ] = ( flag1 == 0 ) ? zero : one;
+    parms[ 5 ] = ( flag2 == 0 ) ? zero : one;
   }
 
 
