@@ -27,6 +27,7 @@ import javax.swing.event.TableModelEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.InputEvent;
+import java.text.DecimalFormat;
 import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
@@ -36,6 +37,7 @@ public class TableSorter extends TableMap {
     Vector          sortingColumns = new Vector();
     boolean         ascending = true;
     int compares;
+    DecimalFormat df = new DecimalFormat( "000" );
 
     public TableSorter() {
         indexes = new int[0]; // for consistency
@@ -156,26 +158,17 @@ public class TableSorter extends TableMap {
               return 1; 
             }
 
-            byte[] b1 = null;
+            String s1 = null;
             if ( v1.getClass() == Integer.class )
-            {
-              b1 = new byte[ 1 ];
-              b1[ 0 ] = (( Integer )v1 ).byteValue();
-            }
+              s1 = df.format((( Integer )v1 ).intValue() & 0xFF );
             else
-              b1 = ( byte[] )v1;
+              s1 = "0" + Protocol.hex2String(( byte[] )v1);
 
-            byte[] b2 = null;
+            String s2 = null;
             if ( v2.getClass() == Integer.class )
-            {
-              b2 = new byte[ 1 ];
-              b2[ 0 ] = (( Integer )v2 ).byteValue();
-            }
+              s2 = df.format((( Integer )v2 ).intValue() & 0xFF );
             else
-              b2 = ( byte[] )v2;
-
-            String s1 = Protocol.hex2String( b1 );
-            String s2 = Protocol.hex2String( b2 );
+              s2 = "0" + Protocol.hex2String(( byte[] )v2);
 
             int result = s1.compareTo( s2 );
             if (result < 0) {
