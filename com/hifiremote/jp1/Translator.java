@@ -93,10 +93,7 @@ public class Translator
     {
       w = reverse(w, bits );
     }
-    int old = 0;
-    if ( parms[ index ] != null )
-       old = (( Integer )parms[ index ].getValue()).intValue() & ((1<<lsbOffset)-1);
-    parms[ index ] = new Value( new Integer( old + (w<<lsbOffset) ), null );
+    parms[ index ] = insert( parms[ index ], lsbOffset, bits, w );
   }
 
   public boolean getLSB(){ return lsb; }

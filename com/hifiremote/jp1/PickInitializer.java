@@ -54,7 +54,6 @@ public class PickInitializer
         Choice choice = choices[ i ];
         if ( parm == null )
         {
-          System.err.println( "Hiding " + devParms[j].getName() );
           choice.setText( "n/a" );
           choice.setHidden( true );
         }

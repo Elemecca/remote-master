@@ -51,6 +51,16 @@ public abstract class Translate
 	}
   }
 
+  // insert a field of up to 32 bits into a single Value object
+  public static Value insert( Value data, int lsbOffset, int bits, int v)
+  {
+    int mask = ( ( 1 << bits ) - 1 ) << lsbOffset;
+    int old = 0;
+    if (data != null)
+      old = ( (Integer)data.getValue() ).intValue() & (-1 - mask);
+    return new Value ( new Integer ( old + ( (v<<lsbOffset) & mask ) ), null );
+  }
+
   // extract a field of up to 32 bits crossing up to 9 bytes
   public static int extract( Hex hexData, int msbOffset, int bits )
   {
