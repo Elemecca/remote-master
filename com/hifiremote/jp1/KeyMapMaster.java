@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.37";
+  private static final String version = "v 0.38";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -534,7 +534,10 @@ public class KeyMapMaster
     if ( rc == JOptionPane.NO_OPTION )
       return true;
 
-    saveAs();
+    if ( deviceUpgrade.getFile() != null )
+      deviceUpgrade.store();
+    else
+      saveAs();
     return true;                                            
   }
 
