@@ -473,6 +473,7 @@ public class DeviceUpgrade
     }
     else
       remote = remotes[ index ];
+    remote.load();
     index = -1;
     str = props.getProperty( "DeviceIndex" );
     if ( str != null )
@@ -659,6 +660,7 @@ public class DeviceUpgrade
     else
       remote = remotes[ index ];
 
+    remote.load();
     token = st.nextToken();
     str = token.substring( 5 );
 

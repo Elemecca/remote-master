@@ -193,6 +193,7 @@ public class KeyMapMaster
       index = 0;
 
     Remote temp = remotes[ index ];
+    temp.load();
     Protocol protocol = ( Protocol )protocolManager.getProtocolsForRemote( temp ).elementAt( 0 );
     deviceUpgrade.setProtocol( protocol );
     setRemote( temp );
@@ -553,8 +554,23 @@ public class KeyMapMaster
   {
     if (( remoteList != null ) && ( remote != currentRemote ))
     {
-      currentRemote = remote;
-      deviceUpgrade.setRemote( remote );
+      try
+      {
+        remote.load();
+        currentRemote = remote;
+        deviceUpgrade.setRemote( remote );
+      }
+      catch ( Exception e )
+      {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter( sw );
+        e.printStackTrace( pw );
+        pw.flush();
+        pw.close();
+        JOptionPane.showMessageDialog( null, sw.toString(), "Remote Load Error",
+                                       JOptionPane.ERROR_MESSAGE );
+        System.err.println( sw.toString());
+      }
     }
   }
 

@@ -64,146 +64,128 @@ public class Remote
 
   public File getFile(){ return file; }
 
-  private void checkLoaded()
+  public void load()
+    throws Exception
   {
-    if ( !loaded )
+    if ( loaded )
+      return;
+    RDFReader rdr = new RDFReader( file );
+    String line = rdr.readLine();
+    while ( line != null )
     {
-      loaded = true;
-      load();
-    }
-  }
-
-  private void load()
-  {
-    try
-    {
-      RDFReader rdr = new RDFReader( file );
-      String line = rdr.readLine();
-      while ( line != null )
+      if ( line.length() == 0 )
       {
-        if ( line.length() == 0 )
-        {
-          line = rdr.readLine();
-        }
-        else if ( line.charAt( 0 ) == '[' )
-        {
-          StringTokenizer st = new StringTokenizer( line, "[]" );
-          line = st.nextToken();
+        line = rdr.readLine();
+      }
+      else if ( line.charAt( 0 ) == '[' )
+      {
+        StringTokenizer st = new StringTokenizer( line, "[]" );
+        line = st.nextToken();
 
-          if ( line.equals( "General" ))
-            line = parseGeneralSection( rdr );
-          else if ( line.equals( "Checksums" ))
-            line = parseCheckSums( rdr );
-          else if ( line.equals( "Settings" ))
-            line = parseSettings( rdr );
-          else if ( line.equals( "FixedData" ))
-            line = parseFixedData( rdr );
-          else if ( line.equals( "DeviceButtons" ))
-            line = parseDeviceButtons( rdr );
-          else if ( line.equals( "DigitMaps" ))
-            line = parseDigitMaps( rdr );
-          else if ( line.equals( "DeviceTypes" ))
-            line = parseDeviceTypes( rdr );
-          else if ( line.equals( "DeviceTypeAliases" ))
-            line = parseDeviceTypeAliases( rdr );
-          else if ( line.equals( "Buttons" ))
-            line = parseButtons( rdr );
-          else if ( line.equals( "MultiMacros" ))
-            line = parseMultiMacros( rdr );
-          else if ( line.equals( "ButtonMaps" ))
-            line = parseButtonMaps( rdr );
-          else if ( line.equals( "Protocols" ))
-            line = parseProtocols( rdr );
+        if ( line.equals( "General" ))
+          line = parseGeneralSection( rdr );
+        else if ( line.equals( "Checksums" ))
+          line = parseCheckSums( rdr );
+        else if ( line.equals( "Settings" ))
+          line = parseSettings( rdr );
+        else if ( line.equals( "FixedData" ))
+          line = parseFixedData( rdr );
+        else if ( line.equals( "DeviceButtons" ))
+          line = parseDeviceButtons( rdr );
+        else if ( line.equals( "DigitMaps" ))
+          line = parseDigitMaps( rdr );
+        else if ( line.equals( "DeviceTypes" ))
+          line = parseDeviceTypes( rdr );
+        else if ( line.equals( "DeviceTypeAliases" ))
+          line = parseDeviceTypeAliases( rdr );
+        else if ( line.equals( "Buttons" ))
+          line = parseButtons( rdr );
+        else if ( line.equals( "MultiMacros" ))
+          line = parseMultiMacros( rdr );
+        else if ( line.equals( "ButtonMaps" ))
+          line = parseButtonMaps( rdr );
+        else if ( line.equals( "Protocols" ))
+          line = parseProtocols( rdr );
 //          else if ( line.equals( "NoBind" ))
 //            line = parseNoBind( rdr );
-          else
-            line = rdr.readLine();
-        }
         else
           line = rdr.readLine();
       }
-      rdr.close();
-
-      if ( buttonMaps.length == 0 )
-      {
-        System.err.println( "ERROR: " + file.getName() + " does not specify any ButtonMaps!" );
-        buttonMaps = new ButtonMap[ 1 ];
-        buttonMaps[ 0 ] = new ButtonMap( 0, new int[ 0 ][ 0 ]);
-      }
-      for ( int i = 0; i < buttonMaps.length; i++ )
-        buttonMaps[ i ].setButtons( this );
-
-      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
-      {
-        DeviceType type = ( DeviceType )e.nextElement();
-        int map = type.getMap();
-        if ( map == -1 )
-          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
-        if ( map >= buttonMaps.length )
-        {
-          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " uses an undefined map index." );
-          map = buttonMaps.length - 1;
-        }
-        if (( map != -1 ) && ( buttonMaps.length > 0 ))
-          type.setButtonMap( buttonMaps[ map ] );
-      }
-
-      // Create the upgradeButtons[]
-      // and starts off with the buttons in longest button map
-      ButtonMap longestMap = null;
-      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
-      {
-        DeviceType type = ( DeviceType )e.nextElement();
-        ButtonMap thisMap = type.getButtonMap();
-        if (( longestMap == null ) || ( longestMap.size() < thisMap.size() ))
-          longestMap = thisMap;
-      }
-
-      int bindableButtons = 0;
-      for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
-      {
-        Button b = ( Button )e.nextElement();
-        if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() ||
-             b.allowsXShiftedKeyMove() || ( b.getButtonMaps() != 0 ))
-          bindableButtons++;
-      }
-
-      upgradeButtons = new Button[ bindableButtons ];
-
-      // first copy the buttons from the longest map
-      int index = 0;
-      while ( index < longestMap.size())
-      {
-        upgradeButtons[ index ] = longestMap.get( index );
-        index++;
-      }
-
-      // now copy the rest of the buttons, skipping those in the map
-      for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
-      {
-        Button b = ( Button )e.nextElement();
-        if (( b.allowsKeyMove() ||
-              b.allowsShiftedKeyMove() ||
-              b.allowsXShiftedKeyMove() ||
-              ( b.getButtonMaps() != 0 ))
-            && !longestMap.isPresent( b ))
-          upgradeButtons[ index++ ] = b;
-      }
-
-      if ( mapFiles[ mapIndex ] != null )
-        readMapFile();
+      else
+        line = rdr.readLine();
     }
-    catch ( Exception e )
+    rdr.close();
+
+    if ( buttonMaps.length == 0 )
     {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter( sw );
-      e.printStackTrace( pw );
-      pw.flush();
-      pw.close();
-      JOptionPane.showMessageDialog( null, sw.toString(), "Remote Load Error",
-                                     JOptionPane.ERROR_MESSAGE );
-      System.err.println( sw.toString());
+      System.err.println( "ERROR: " + file.getName() + " does not specify any ButtonMaps!" );
+      buttonMaps = new ButtonMap[ 1 ];
+      buttonMaps[ 0 ] = new ButtonMap( 0, new int[ 0 ][ 0 ]);
     }
+    for ( int i = 0; i < buttonMaps.length; i++ )
+      buttonMaps[ i ].setButtons( this );
+
+    for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+    {
+      DeviceType type = ( DeviceType )e.nextElement();
+      int map = type.getMap();
+      if ( map == -1 )
+        System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
+      if ( map >= buttonMaps.length )
+      {
+        System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " uses an undefined map index." );
+        map = buttonMaps.length - 1;
+      }
+      if (( map != -1 ) && ( buttonMaps.length > 0 ))
+        type.setButtonMap( buttonMaps[ map ] );
+    }
+
+    // Create the upgradeButtons[]
+    // and starts off with the buttons in longest button map
+    ButtonMap longestMap = null;
+    for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+    {
+      DeviceType type = ( DeviceType )e.nextElement();
+      ButtonMap thisMap = type.getButtonMap();
+      if (( longestMap == null ) || ( longestMap.size() < thisMap.size() ))
+        longestMap = thisMap;
+    }
+
+    int bindableButtons = 0;
+    for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
+    {
+      Button b = ( Button )e.nextElement();
+      if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() ||
+           b.allowsXShiftedKeyMove() || ( b.getButtonMaps() != 0 ))
+        bindableButtons++;
+    }
+
+    upgradeButtons = new Button[ bindableButtons ];
+
+    // first copy the buttons from the longest map
+    int index = 0;
+    while ( index < longestMap.size())
+    {
+      upgradeButtons[ index ] = longestMap.get( index );
+      index++;
+    }
+
+    // now copy the rest of the buttons, skipping those in the map
+    for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
+    {
+      Button b = ( Button )e.nextElement();
+      if (( b.allowsKeyMove() ||
+            b.allowsShiftedKeyMove() ||
+            b.allowsXShiftedKeyMove() ||
+            ( b.getButtonMaps() != 0 ))
+          && !longestMap.isPresent( b ))
+        upgradeButtons[ index++ ] = b;
+    }
+
+    if ( mapFiles[ mapIndex ] != null )
+      readMapFile();
+
+    loaded = true;
   }
 
   public String toString(){ return names[ nameIndex ]; }
@@ -212,32 +194,27 @@ public class Remote
   public int getNameCount(){ return names.length; }
   public int getEepromSize()
   {
-    checkLoaded();
     return eepromSize;
   }
 
   public int getDeviceCodeOffset()
   {
-    checkLoaded();
     return deviceCodeOffset;
   }
 
   public Hashtable getDeviceTypes()
   {
-    checkLoaded();
     return deviceTypes;
   }
 
   public DeviceType getDeviceType( String typeName )
   {
-    checkLoaded();
     DeviceType devType =( DeviceType )deviceTypes.get( typeName );
     return devType;
   }
 
   public DeviceType getDeviceTypeByAliasName( String aliasName )
   {
-    checkLoaded();
     return ( DeviceType )deviceTypeAliases.get( aliasName );
   }
 
@@ -254,55 +231,46 @@ public class Remote
 
   public Vector getButtons()
   {
-    checkLoaded();
     return buttons;
   }
 
   public Button[] getUpgradeButtons()
   {
-    checkLoaded();
     return upgradeButtons;
   }
 
   public ButtonShape[] getButtonShapes()
   {
-    checkLoaded();
     return buttonShapes;
   }
 
   public String getProcessor()
   {
-    checkLoaded();
     return processor;
   }
 
   public int getRAMAddress()
   {
-    checkLoaded();
     return RAMAddress;
   }
 
   public int[] getDigitMaps()
   {
-    checkLoaded();
     return digitMaps;
   }
 
   public boolean getOmitDigitMapByte()
   {
-    checkLoaded();
     return omitDigitMapByte;
   }
 
   public ImageIcon getImageIcon()
   {
-    checkLoaded();
     return imageIcon;
   }
 
   public int getAdvCodeFormat()
   {
-    checkLoaded();
     return advCodeFormat;
   }
 
@@ -932,7 +900,6 @@ public class Remote
 
   public Button findByStandardName( Button b )
   {
-    checkLoaded();
     return ( Button )buttonsByStandardName.get( b.getStandardName().toLowerCase());
   }
 
@@ -1253,7 +1220,6 @@ public class Remote
 
   public String getSupportedVariantName( Hex pid )
   {
-    checkLoaded();
     String rc = ( String )protocolVariantNames.get( pid );
     return rc;
   }
@@ -1261,7 +1227,6 @@ public class Remote
 
   public void clearButtonAssignments()
   {
-    checkLoaded();
     for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
     {
       (( Button )e.nextElement()).setFunction( null ).setShiftedFunction( null ).setXShiftedFunction( null );
