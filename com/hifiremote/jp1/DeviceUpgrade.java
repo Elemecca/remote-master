@@ -911,6 +911,7 @@ public class DeviceUpgrade
         importParms[ i ] = new Value( val );
       }
       protocol.importDeviceParms( importParms );
+      parmValues = protocol.getDeviceParmValues();
     }
 
     // compute cmdIndex

@@ -92,6 +92,31 @@ public class Protocol
     if ( temp != null )
       code.put( "6805-RC16/18", new Hex( temp ));
 
+    temp = props.getProperty( "CodeTranslator.S3C80" );
+    if ( temp != null )
+    {
+      Translate[] xlators = TranslatorFactory.createTranslators( temp );
+      codeTranslator.put( "S3C80", xlators );
+    }
+    temp = props.getProperty( "CodeTranslator.740" );
+    if ( temp != null )
+    {
+      Translate[] xlators = TranslatorFactory.createTranslators( temp );
+      codeTranslator.put( "740", xlators );
+    }
+    temp = props.getProperty( "CodeTranslator.6805-C9" );
+    if ( temp != null )
+    {
+      Translate[] xlators = TranslatorFactory.createTranslators( temp );
+      codeTranslator.put( "6805-C9", xlators );
+    }
+    temp = props.getProperty( "CodeTranslator.6805-RC16/18" );
+    if ( temp != null )
+    {
+      Translate[] xlators = TranslatorFactory.createTranslators( temp );
+      codeTranslator.put( "6805-Rc16/18", xlators );
+    }
+
     temp = props.getProperty( "CmdParms", "" );
     StringTokenizer st = new StringTokenizer( temp, "," );
     int count = st.countTokens();
@@ -196,6 +221,11 @@ public class Protocol
   {
     Processor p = remote.getProcessor();
     return ( Hex )code.get( p.getFullName());
+  }
+
+  public Translate[] getCodeTranslators( Remote remote )
+  {
+    return ( Translate[] )codeTranslator.get( remote.getProcessor().getFullName());
   }
 
   public void importDeviceParms( Value[] parms )
@@ -613,6 +643,7 @@ public class Protocol
   protected Translate[] importCmdTranslators = null;
   protected Importer[] devImporters = null;
   protected HashMap code = new HashMap( 4 );
+  protected HashMap codeTranslator = new HashMap( 4 );
   protected Initializer[] cmdParmInit = null;
   protected String notes = null;
   private Vector oldNames = new Vector();

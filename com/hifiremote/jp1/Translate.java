@@ -42,23 +42,23 @@ public abstract class Translate
   {
     int[] hex = hexData.getData();
     int lastOffset = msbOffset + bits - 1;
-          int by = lastOffset / 8;                // byte position of lowest bit
+    int by = lastOffset / 8;                // byte position of lowest bit
     if ( by >= hex.length)
     {
-          System.err.println("insert(offset=" + msbOffset + ", bits=" + bits +") exceeds " + hex.length + " byte buffer");
-          return;
+      System.err.println("insert(offset=" + msbOffset + ", bits=" + bits +") exceeds " + hex.length + " byte buffer");
+      return;
     }
-        int bi = 7 - (lastOffset % 8);          // lsb position of lowest bit
-        int mask = (2<<(bits-1))-1;             // Works for bits = 1 to 32
+    int bi = 7 - (lastOffset % 8);          // lsb position of lowest bit
+    int mask = (2<<(bits-1))-1;             // Works for bits = 1 to 32
     while ( mask != 0 )
-        {
-          int mask2 = mask << bi;
-          hex[by] = (byte)( ( hex[by] &~ mask2 ) | ( ( v << bi ) & mask2 ) );
-          mask = mask >>> (8-bi);
-          v = v >> (8-bi);
-          bi = 0;
-          --by;
-        }
+    {
+      int mask2 = mask << bi;
+      hex[by] = (byte)( ( hex[by] &~ mask2 ) | ( ( v << bi ) & mask2 ) );
+      mask = mask >>> (8-bi);
+      v = v >> (8-bi);
+      bi = 0;
+      --by;
+    }
   }
 
   // insert a field of up to 32 bits into a single Value object

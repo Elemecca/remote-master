@@ -134,6 +134,14 @@ public class OutputPanel
     if ( code != null )
     {
       code = processor.translate( code, r );
+      Translate[] xlators = p.getCodeTranslators( r );
+      if ( xlators != null )
+      {
+        Value[] values = deviceUpgrade.getParmValues();
+        for ( int i = 0; i < xlators.length; i++ )
+          xlators[ i ].in( values, code, null, -1 );
+      }
+      
       StringBuffer buff = new StringBuffer( 300 );
       buff.append( "Upgrade protocol 0 = " );
       buff.append( p.getID( r ).toString());
