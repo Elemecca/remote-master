@@ -2,7 +2,7 @@ package com.hifiremote.jp1;
 
 import java.text.ParseException;
 import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
+import javax.swing.JTextField;
 
 public class NumberDeviceParm
   extends DeviceParameter
@@ -22,14 +22,13 @@ public class NumberDeviceParm
     super( name, defaultValue );
     this.min = min;
     this.max = max;
-    IntOrNullFormatter formatter = new IntOrNullFormatter( min, max );
-    formatter.setAllowsInvalid( false );
-    tf = new JFormattedTextField( formatter );
+    IntVerifier verifier = new IntVerifier( min, max, true );
+    tf = new JTextField();
     String helpText = "Enter a number in the range " + min + ".." + max + ".";
     if ( defaultValue != null )
       helpText += "  The default is " + defaultValue + ".";
     tf.setToolTipText( helpText );
-    tf.setFocusLostBehavior( JFormattedTextField.COMMIT_OR_REVERT );
+    tf.setInputVerifier( verifier );
   }
 
   public JComponent getComponent()
@@ -39,27 +38,18 @@ public class NumberDeviceParm
 
   public Object getValue()
   {
-    return ( Integer )tf.getValue();
+    String text = tf.getText();
+    if (( text == null ) || ( text.length() == 0 ))
+      return null;
+    return new Integer( tf.getText());
   }
 
   public void setValue( Object value )
   {
-    tf.setValue( value );
+    tf.setText( value.toString());
   }
 
-  public void commit()
-  {
-    try
-    {
-      if ( tf.isEditValid())
-        tf.commitEdit();
-    }
-    catch ( ParseException e )
-    {
-    }
-  }
-
-  private JFormattedTextField tf = null;
+  private JTextField tf = null;
   private int min;
   private int max;
 }

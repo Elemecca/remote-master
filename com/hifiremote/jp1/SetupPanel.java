@@ -15,11 +15,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.text.NumberFormatter;
+import java.text.DecimalFormat;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Document;
 import java.text.DecimalFormat;
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.awt.event.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.util.Enumeration;
@@ -29,7 +31,7 @@ import info.clearthought.layout.TableLayoutConstraints;
 
 public class SetupPanel
   extends KMPanel
-  implements ActionListener, DocumentListener
+  implements ActionListener, DocumentListener, FocusListener
 {
   public SetupPanel( DeviceUpgrade deviceUpgrade, Vector protocols )
   {
@@ -61,15 +63,16 @@ public class SetupPanel
     JLabel label = new JLabel( "Setup Code:", SwingConstants.RIGHT );
     add( label, "2, 1" );
 
-    NumberFormatter nf = new NumberFormatter( new DecimalFormat( "0000" ));
-    nf.setMinimum( new Integer( 0 ));
-    nf.setMaximum( new Integer( 2047 ));
-    nf.setValueClass( Integer.class );
-    nf.setAllowsInvalid( false );
-    nf.setOverwriteMode( true );
-    setupCode = new JFormattedTextField( nf );
+//    IntFormatter nf = new IntFormatter( 0, 2047, 4 );
+//    nf.setAllowsInvalid( false );
+//    nf.setOverwriteMode( true );
+//    setupCode = new JFormattedTextField( nf );
+    setupCode = new JTextField();
+    setupCode.addFocusListener( this );
+    setupCode.setInputVerifier( new IntVerifier( 0, 2047 ));
+    setupCode.addActionListener( this );
     label.setLabelFor( setupCode );
-    setupCode.setFocusLostBehavior( JFormattedTextField.COMMIT_OR_REVERT );
+//    setupCode.setFocusLostBehavior( JFormattedTextField.COMMIT_OR_REVERT );
     setupCode.setToolTipText( "Enter the desired setup code (between 0 and 2047) for the device upgrade." );
 
     add( setupCode, "4, 1" );
@@ -119,7 +122,8 @@ public class SetupPanel
   public void update()
   {
     updateInProgress = true;
-    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
+//    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
+    setupCode.setText( nf.format( deviceUpgrade.getSetupCode()));
     Protocol p = deviceUpgrade.getProtocol();
     protocolList.setSelectedItem( p );
     notes.setText( deviceUpgrade.getNotes());
@@ -158,7 +162,10 @@ public class SetupPanel
             if ( comp.getClass() == JComboBox.class )
               (( JComboBox )comp ).removeActionListener( this );
             else // assume JTextField
-              (( JTextField )comp ).getDocument().removeDocumentListener( this );
+            {
+              (( JTextField )comp ).removeActionListener( this );
+              comp.removeFocusListener( this );
+            }
             remove( comp );
             tl.deleteRow( 8 );
             tl.deleteRow( 8 );
@@ -177,7 +184,10 @@ public class SetupPanel
             if ( comp.getClass() == JComboBox.class )
               (( JComboBox )comp ).addActionListener( this );
             else // assume JTextField
-              (( JTextField )comp ).getDocument().addDocumentListener( this );
+            {
+              (( JTextField )comp ).addActionListener( this );
+              comp.addFocusListener( this );
+            }
             add( comp, "4, " + row );
             row++;
             tl.insertRow( row++, 5 );
@@ -190,6 +200,8 @@ public class SetupPanel
         fixedData.setText( protocol.getFixedData().toString());
       }
     }
+    else if ( source == setupCode )
+      updateSetupCode();
     else // must be a protocol parameter
       updateFixedData();
   }
@@ -201,8 +213,6 @@ public class SetupPanel
 
   public void commit()
   {
-    deviceUpgrade.setSetupCode( Integer.parseInt( setupCode.getText()));
-    deviceUpgrade.setNotes( notes.getText());
     Protocol p = getProtocol();
     deviceUpgrade.setProtocol( p );
     for ( int i = 0; i < parameters.length; i++ )
@@ -216,10 +226,20 @@ public class SetupPanel
     deviceUpgrade.setNotes( notes.getText());
   }
 
+  private void updateSetupCode()
+  {
+    int val = Integer.parseInt( setupCode.getText());
+    setupCode.setText( nf.format( val ));
+    deviceUpgrade.setSetupCode( val );
+  }
+
   private void docChanged( DocumentEvent e )
   {
-    if ( e.getDocument() == notes.getDocument() )
+    Document doc = e.getDocument();
+    if ( doc == notes.getDocument() )
       updateNotes();
+    else if ( doc == setupCode.getDocument())
+      updateSetupCode();
     else
       updateFixedData();
 
@@ -240,7 +260,24 @@ public class SetupPanel
     docChanged( e );
   }
 
-  private JFormattedTextField setupCode = null;
+  // FocusListener
+  public void focusGained( FocusEvent e )
+  {
+    JTextComponent tc = ( JTextComponent )e.getSource();
+    tc.selectAll();
+  }
+  
+  public void focusLost( FocusEvent e )
+  {
+    JTextComponent tc = ( JTextComponent )e.getSource();
+    if ( tc == setupCode )
+      updateSetupCode();
+    else
+      updateFixedData();
+  }
+
+//  private JFormattedTextField setupCode = null;
+  private JTextField setupCode = null;
   private JRadioButton useEFC = null;
   private JRadioButton useOBC = null;
   private JComboBox protocolList = null;
@@ -252,5 +289,6 @@ public class SetupPanel
   private Protocol currProtocol = null;
   private TableLayout tl;
   private boolean updateInProgress = false;
+  private static DecimalFormat nf = new DecimalFormat( "0000" );
 }
 
