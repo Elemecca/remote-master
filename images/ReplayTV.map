@@ -4,54 +4,54 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:replayTV
-#$DATE:Tue Sep 16 16:57:38 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Tue Oct 07 19:38:38 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:ReplayTV.jpg
 #$FORMAT:ncsa
 #$EOH
 default replayTV
-circle Code_Set  80,45 86,51
-circle TV  44,64 50,70
-circle catv  79,65 85,71
-circle return_to_live  36,231 43,238
-circle POWER  116,36 124,44
-circle UP  79,241 101,246
-circle LEFT  41,262 46,277
-circle RIGHT  117,262 122,277
-circle DOWN  80,285 102,290
-circle SELECT  79,261 93,268
-circle MUTE  123,232 130,239
-circle VOL+  116,175 124,184
-circle VOL-  115,207 123,216
-circle CH+  44,173 52,182
-circle CH-  43,207 51,216
-circle 1  44,84 52,92
-circle 2  80,85 88,93
-circle 3  113,87 121,95
-circle 4  44,105 52,113
-circle 5  79,106 87,114
-circle 6  114,108 122,116
-circle 7  44,126 52,134
-circle 8  79,126 87,134
-circle 9  115,128 123,136
-circle 0  79,148 87,156
-circle ENTER  115,150 127,156
-circle REW  43,317 54,323
-circle PLAY  79,311 91,317
-circle FWD  116,316 127,322
-circle PAUSE  116,338 128,344
-circle display  66,368 74,376
-circle replaytv  41,33 48,40
-circle quick_skip  122,294 130,302
-circle replay_zones  80,203 89,209
-circle vcr/dvd  114,67 120,73
-circle channel_guide  44,149 56,155
-circle jump  41,368 49,376
-circle input  40,390 48,398
-circle menu  92,367 100,375
-circle exit  117,366 125,374
-circle tv/vcr  117,389 125,397
-circle instant_replay  35,294 43,302
-circle rec  43,339 55,345
-circle replay_guide  80,178 89,184
-circle stop  80,343 92,349
+circle Code_Set  71,41 77,47
+circle TV  39,58 45,64
+circle catv  71,58 77,64
+circle return_to_live  32,206 39,213
+circle POWER  104,33 112,41
+circle UP  71,215 93,220
+circle LEFT  39,234 44,249
+circle RIGHT  103,235 108,250
+circle DOWN  71,254 93,259
+circle SELECT  70,234 84,241
+circle MUTE  109,207 116,214
+circle VOL+  103,157 111,166
+circle VOL-  103,185 111,194
+circle CH+  39,156 47,165
+circle CH-  38,185 46,194
+circle 1  40,75 48,83
+circle 2  71,76 79,84
+circle 3  102,78 110,86
+circle 4  39,94 47,102
+circle 5  71,95 79,103
+circle 6  102,97 110,105
+circle 7  39,113 47,121
+circle 8  71,114 79,122
+circle 9  103,115 111,123
+circle 0  71,133 79,141
+circle ENTER  103,134 115,140
+circle REW  38,284 47,289
+circle PLAY  71,279 80,284
+circle FWD  103,283 112,288
+circle PAUSE  103,302 112,307
+circle display  60,329 66,335
+circle replaytv  38,30 45,37
+circle quick_skip  110,263 118,271
+circle replay_zones  71,181 80,187
+circle vcr/dvd  102,61 108,67
+circle channel_guide  39,133 51,139
+circle jump  37,329 43,335
+circle input  36,349 42,355
+circle menu  82,328 89,334
+circle exit  104,328 110,334
+circle tv/vcr  104,348 110,354
+circle instant_replay  31,262 39,270
+circle rec  39,303 48,308
+circle replay_guide  71,159 80,165
+circle stop  71,307 80,312

@@ -4,51 +4,50 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:SonyTiVoRMT-V809
-#$DATE:Tue Sep 16 10:20:55 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Tue Oct 07 20:08:54 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:SonyTiVoRMT-V809.jpg
 #$FORMAT:ncsa
 #$EOH
 default SonyTiVoRMT-V809
-circle muting  44,31 58,38
-circle SAT_POWER  110,27 121,38
-circle TV_power  77,31 91,38
-circle 1  44,57 54,67
-circle 2  77,57 87,67
-circle 3  110,57 120,67
-circle 4  44,81 54,91
-circle 5  77,81 87,91
-circle 6  111,81 121,91
-circle 7  44,104 54,114
-circle 8  78,104 88,114
-circle 9  110,104 120,114
-circle clear  44,152 57,158
-circle 0  77,128 87,138
-circle enter{jump}  110,129 118,137
-circle fwd  108,343 123,355
-circle list  77,175 87,186
-circle VOL-  55,433 67,446
-circle guide  127,223 141,237
-circle VOL+  55,405 68,418
-circle rec_on/off  77,377 88,388
-circle thumbsUP  127,294 141,308
-circle back  45,343 60,355
-circle pause  77,342 88,353
-circle UP  77,237 101,246
-circle DOWN  78,283 102,292
-circle REPLAY  37,377 46,386
-circle ch+{Page+}  99,403 111,415
-circle ch-{Page-}  99,435 111,447
-circle advance  116,377 125,386
-circle play  55,312 67,324
-circle slow  98,312 110,324
-circle thumbsDown  27,294 41,308
-circle select  77,259 99,270
-circle left  44,260 52,283
-circle right  111,259 119,282
-circle livetv  27,223 41,237
-circle menu  43,177 54,188
-circle display  110,178 120,188
-circle tv/video  111,152 124,158
-circle next  110,152 123,158
-circle TiVo  44,128 52,136
+circle muting  38,26 49,33
+circle SAT_POWER  93,23 101,31
+circle TV_power  65,26 76,33
+circle 1  38,49 46,57
+circle 2  66,49 74,57
+circle 3  93,49 101,57
+circle 4  38,69 46,77
+circle 5  65,70 73,78
+circle 6  94,69 102,77
+circle 7  37,89 45,97
+circle 8  66,89 74,97
+circle 9  94,89 102,97
+circle clear  37,129 50,135
+circle 0  66,110 74,118
+circle enter{jump}  94,110 101,117
+circle fwd  90,292 105,302
+circle list  65,150 73,158
+circle VOL-  47,370 57,380
+circle guide  108,190 119,201
+circle VOL+  46,343 56,353
+circle rec_on/off  65,320 73,328
+circle thumbsUP  108,251 119,262
+circle back  40,292 55,302
+circle pause  65,291 74,300
+circle UP  65,200 85,207
+circle DOWN  65,239 83,246
+circle REPLAY  32,321 39,328
+circle ch+{Page+}  84,343 93,352
+circle ch-{Page-}  83,371 92,380
+circle advance  99,321 106,328
+circle play  47,266 56,275
+circle slow  84,266 93,275
+circle thumbsDown  23,251 34,262
+circle select  65,220 82,229
+circle left  38,220 44,239
+circle right  93,220 99,238
+circle livetv  23,190 34,201
+circle menu  37,150 46,159
+circle display  94,150 103,159
+circle tv/video  94,130 107,136
+circle TiVo  37,109 44,116

@@ -4,46 +4,46 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:SonyTiVoRMT-V303
-#$DATE:Mon Sep 15 14:43:50 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Wed Oct 08 08:36:47 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:SonyTiVoRMT-V303.jpg
 #$FORMAT:ncsa
 #$EOH
 default SonyTiVoRMT-V303
-circle muting  49,34 63,41
-circle POWER  120,30 131,41
-circle TV_power  85,34 99,41
-circle 1  50,63 60,73
-circle 2  85,63 95,73
-circle 3  121,63 131,73
-circle 4  49,88 59,98
-circle 5  85,88 95,98
-circle 6  121,88 131,98
-circle 7  49,113 59,123
-circle 8  85,113 95,123
-circle 9  121,113 131,123
-circle clear  48,138 62,145
-circle 0  84,138 94,148
-circle enter{jump}  120,138 134,146
-circle fwd  118,325 133,337
-circle list  35,186 49,200
-circle VOL-  60,426 73,440
-circle guide{liveTV}  132,187 146,201
-circle VOL+  59,396 72,409
-circle rec_on/off  83,361 94,372
-circle thumbsUP  132,265 146,279
-circle back  48,325 63,337
-circle pause  83,325 94,336
-circle UP  85,202 109,211
-circle DOWN  84,251 108,260
-circle REPLAY  47,362 55,370
-circle ch+{Page+}  105,395 117,407
-circle ch-{Page-}  105,428 117,440
-circle advance  119,362 127,370
-circle play  61,290 72,301
-circle slow  107,291 118,302
-circle thumbsDown  34,265 48,279
-circle select  84,226 106,237
-circle left  48,226 56,249
-circle right  119,227 127,250
-poly tivomenu 70,159 100,159 95,184 74,184 70,159 70,159
+circle muting  43,30 55,37
+circle POWER  106,27 115,36
+circle TV_power  74,30 86,37
+circle 1  43,55 51,63
+circle 2  75,55 83,63
+circle 3  106,55 114,63
+circle 4  43,77 51,85
+circle 5  75,78 83,86
+circle 6  106,78 114,86
+circle 7  43,100 51,108
+circle 8  74,100 82,108
+circle 9  106,100 114,108
+circle clear  43,122 56,129
+circle 0  74,122 82,130
+circle enter{jump}  106,122 119,129
+circle fwd  102,286 117,296
+circle list  31,164 43,176
+circle VOL-  52,377 62,387
+circle guide{liveTV}  117,165 129,177
+circle VOL+  52,348 62,358
+circle rec_on/off  73,317 83,327
+circle thumbsUP  116,235 128,247
+circle back  43,286 58,296
+circle pause  73,286 83,296
+circle UP  74,178 94,185
+circle DOWN  74,222 94,229
+circle REPLAY  41,319 48,326
+circle ch+{Page+}  93,348 103,358
+circle ch-{Page-}  92,377 102,387
+circle advance  104,320 111,327
+circle play  53,256 63,266
+circle slow  93,256 103,266
+circle thumbsDown  31,234 43,246
+circle select  73,200 93,211
+circle left  44,200 51,220
+circle right  105,200 112,220
+poly tivomenu 61,140 87,140 83,163 65,163 61,140

@@ -4,62 +4,62 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Millenium4
-#$DATE:Tue Sep 16 14:08:57 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Wed Oct 08 17:18:42 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:Millenium4.jpg
 #$FORMAT:ncsa
 #$EOH
 default 1994
-circle audio  34,47 44,53
-circle VCR  64,47 74,53
-circle TV  94,48 104,54
-circle CBL  122,50 132,56
-circle POWER  112,28 122,38
-circle UP  81,243 106,250
-circle LEFT  43,265 53,282
-circle RIGHT  120,266 130,284
-circle DOWN  82,288 107,295
-circle OK  81,265 95,273
-circle MUTE  44,141 55,147
-circle VOL+  45,169 55,180
-circle VOL-  45,200 55,211
-circle CH+  116,171 126,182
-circle CH-  118,201 128,212
-circle 1  40,72 51,83
-circle 2  79,72 90,83
-circle 3  119,74 130,85
-circle 4  42,95 53,106
-circle 5  79,95 90,106
-circle 6  116,97 127,108
-circle 7  45,118 56,129
-circle 8  80,118 91,129
-circle 9  113,121 124,132
-circle 0  79,142 90,153
-circle LAST  81,172 91,178
-circle F1  47,351 59,358
-circle F2  83,353 95,360
-circle F3  118,350 130,357
-circle FAV  82,197 92,203
-circle REW  47,389 58,396
-circle PLAY  82,388 93,395
-circle FF  116,388 127,395
-circle TV/VCR  122,433 131,440
-circle PAUSE  117,410 129,417
-rect STOP 71,405 92,417
-circle REC  46,411 58,418
-circle help  41,434 50,442
-poly guide 33,244 33,228 56,228 33,244 33,244
-poly exit 108,229 129,229 129,246 108,229 108,229
-poly menu 107,303 130,287 130,304 107,303 107,303
-circle day-  68,434 77,442
-circle day+  96,433 104,440
-circle bypass  41,459 50,466
-circle A  68,459 77,466
-circle B  96,459 105,466
-circle C  122,458 131,465
-poly page- 91,314 127,314 109,329 92,315 91,315 91,314 91,314
-poly setup 32,25 42,17 51,24 42,32 32,25 32,25
-poly enter{music} 105,137 124,138 124,150 104,149 105,137 105,137
-poly lock 67,215 96,215 96,228 66,228 67,215 67,215
-poly info 32,305 32,287 61,305 32,305 32,305
-poly page+ 55,311 73,327 35,327 55,311 55,311
+circle audio  30,41 36,47
+circle VCR  54,40 60,46
+circle TV  79,42 85,48
+circle CBL  105,44 111,50
+circle POWER  95,24 103,32
+circle UP  69,209 90,216
+circle LEFT  37,226 47,242
+circle RIGHT  100,227 109,242
+circle DOWN  69,246 91,253
+circle OK  69,228 83,236
+circle MUTE  38,121 49,127
+circle VOL+  38,144 47,153
+circle VOL-  38,171 47,180
+circle CH+  99,147 108,156
+circle CH-  100,172 109,181
+circle 1  34,62 43,71
+circle 2  68,62 77,71
+circle 3  102,63 111,72
+circle 4  37,82 46,91
+circle 5  68,81 77,91
+circle 6  99,84 108,93
+circle 7  39,101 48,110
+circle 8  68,101 77,110
+circle 9  97,103 106,112
+circle 0  68,122 77,131
+circle LAST  69,147 79,153
+circle F1  40,300 50,306
+circle F2  70,302 80,308
+circle F3  100,299 110,305
+circle FAV  69,169 79,175
+circle REW  40,332 51,339
+circle PLAY  70,331 81,338
+circle FF  99,332 110,339
+circle TV/VCR  104,370 112,378
+circle PAUSE  100,350 111,357
+rect STOP 61,346 80,357
+circle REC  40,351 52,358
+circle help  35,371 43,379
+poly guide 27,210 27,194 50,194 27,210 27,210
+poly exit 90,195 110,195 110,212 90,195 90,195
+circle day-  58,371 66,379
+circle day+  81,371 89,378
+circle bypass  36,392 44,400
+circle A  58,392 66,400
+circle B  82,392 90,400
+circle C  104,392 112,400
+poly page- 76,266 112,266 94,281 77,267 76,267 76,266 76,266
+poly setup 26,22 36,14 45,21 36,29 26,22 26,22
+poly enter{music} 88,117 107,118 107,130 88,129 88,117 88,117
+poly lock 57,185 82,185 82,195 57,195 57,185 57,185
+poly page+ 46,264 64,280 26,280 46,264 46,264
+poly menu 91,260 113,245 113,261 91,260
+poly info 27,246 50,259 27,260 27,246

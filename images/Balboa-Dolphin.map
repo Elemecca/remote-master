@@ -4,60 +4,60 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Balboa-Dolphin
-#$DATE:Mon Oct 06 12:51:59 2003
+#$DATE:Wed Oct 08 16:11:53 2003
 #$PATH:C:\Backups\IR\Images\
 #$GIF:Balboa-Dolphin.jpg
 #$FORMAT:ncsa
 #$EOH
 default Balboa
-circle VCR  80,81 88,86
-circle cbl/sat  81,97 91,103
-circle TV  55,84 63,89
-circle mute  80,238 93,245
-circle rcvr  56,101 66,107
-circle POWER  60,71 68,77
-circle cd  106,102 116,108
-circle setup  99,71 108,76
-circle menu  107,185 114,192
-circle exit  106,136 113,143
-circle info  53,185 60,192
-circle guide  53,136 60,143
-circle up  79,136 85,142
-circle down  79,180 85,186
-circle left  55,158 61,164
-circle right  104,158 110,164
-circle select  80,160 89,169
-circle ffwd  104,432 115,438
-circle VOL+  52,211 61,220
-circle VOL-  54,235 63,244
-circle CH+  108,211 117,220
-circle CH-  106,236 115,245
-circle 1  53,330 63,340
-circle 2  80,332 90,342
-circle 3  107,330 117,340
-circle 4  52,355 62,365
-circle 5  80,357 90,367
-circle 6  107,355 117,365
-circle 7  52,381 62,391
-circle 8  80,382 90,392
-circle 9  107,380 117,390
-circle 0  79,407 89,417
-circle LAST  80,220 93,227
-circle RECORD  80,457 88,465
-circle PLAY  80,433 89,442
-circle PAUSE  57,457 65,465
-circle STOP  102,456 110,464
-circle DVD  106,84 114,89
-circle rewind  57,432 68,438
-rect tv/vid 42,399 65,412
-rect enter 93,399 116,412
+circle VCR  71,72 79,77
+circle cbl/sat  71,87 81,93
+circle TV  49,74 57,79
+circle mute  71,212 83,219
+circle rcvr  49,91 59,97
+circle POWER  54,63 62,69
+circle cd  94,90 104,96
+circle setup  88,63 97,68
+circle menu  95,164 102,171
+circle exit  95,121 102,128
+circle info  47,165 54,172
+circle guide  48,121 55,128
+circle up  70,121 76,127
+circle down  71,160 77,166
+circle left  50,140 56,146
+circle right  92,140 98,146
+circle select  71,142 80,151
+circle ffwd  91,385 100,391
+circle VOL+  46,189 55,198
+circle VOL-  47,210 56,219
+circle CH+  96,188 105,197
+circle CH-  94,210 103,219
+circle 1  47,295 57,305
+circle 2  71,297 81,307
+circle 3  96,295 106,305
+circle 4  47,317 57,327
+circle 5  71,319 81,329
+circle 6  95,317 105,327
+circle 7  47,340 57,350
+circle 8  71,341 81,351
+circle 9  96,339 106,349
+circle 0  71,363 81,373
+circle LAST  71,196 83,203
+circle RECORD  71,407 78,414
+circle PLAY  71,386 80,395
+circle PAUSE  51,407 58,414
+circle STOP  91,406 98,413
+circle DVD  94,74 102,79
+circle rewind  50,385 59,391
+rect tv/vid 39,355 57,368
+rect enter 84,355 102,368
 poly rew 53,448 34,448 54,448 53,448 53,448
 poly f.fwd 112,448 133,448 112,448 112,448
-circle pump1  50,281 62,286
-circle pump2  79,285 91,290
-circle pump3  107,282 119,287
-circle opt1  77,305 89,310
-circle opt2  107,302 119,307
-circle fiber  50,301 62,306
-circle light  101,262 113,267
-circle blower  58,262 70,267
+circle pump1  45,250 57,255
+circle pump2  70,253 82,258
+circle pump3  96,250 108,255
+circle opt1  70,270 82,275
+circle opt2  96,268 108,273
+circle fiber  44,268 56,273
+circle light  88,233 100,238
+circle blower  52,233 64,238

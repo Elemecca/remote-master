@@ -4,63 +4,63 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:RCU-810
-#$DATE:Tue Sep 16 16:07:22 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Wed Oct 08 19:05:20 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:rcu-810.jpg
 #$FORMAT:ncsa
 #$EOH
 default 810
-circle VCR1  55,100 65,107
-circle VCR2  86,100 96,107
-circle CBL  27,106 37,113
-circle SAT  26,87 36,93
-circle TV  115,86 125,92
-circle AUX  87,118 97,125
-circle DVD  114,106 124,113
-circle AUD  55,118 67,127
-circle SLEEP  30,148 37,155
-circle Guide  37,250 44,257
-circle Menu{Prog}  37,300 44,307
-circle Info  107,250 114,257
-circle Clear  107,300 114,307
-circle on/off  71,80 85,87
-circle CH+  71,179 89,185
-circle CH-  72,213 90,219
-circle vol-  44,196 50,208
-circle vol+  99,197 105,209
-circle mute  72,196 85,203
-circle select  72,275 83,281
-circle right  99,275 105,287
-circle left  46,275 52,286
-circle Up{level+}  72,258 83,264
-circle down{level-}  72,292 83,298
-circle 1{cd}  41,319 50,326
-circle 2{tape}  72,319 81,326
-circle 3{tuner}  103,319 112,326
-circle 4{tv}  41,340 50,346
-circle 5{videoa}  72,340 81,346
-circle 6{videob}  103,340 112,346
-circle 7  42,362 51,368
-circle 8  72,362 81,368
-circle 9  104,361 113,367
-circle 0  73,383 82,389
-circle Pip{center}  38,169 48,176
-circle Swap{front}  107,169 117,176
-circle input{rear}  40,227 49,234
-circle TV/VCR  105,382 116,389
-circle enter{function}  42,383 53,390
-circle Rec  73,422 84,429
-circle Code_Search  72,234 85,240
-circle {Lamp}  113,147 120,154
-circle Go_Back{test}  104,227 113,234
-circle l1  30,127 40,134
-circle l2  72,136 82,143
-circle l3  112,127 122,134
-circle m1  51,151 59,158
-circle m2  72,160 80,167
-circle m3  92,151 100,158
-poly rew 48,406 39,415 38,429 54,425 58,415 48,406 48,406
-poly play 81,411 65,411 58,403 74,400 89,403 81,411 81,411
-poly fwd 88,414 98,406 107,414 107,427 91,424 91,419 88,414 88,414
-poly stop 69,445 54,443 45,435 59,431 63,434 70,435 69,445 69,445
-poly pause 88,430 84,433 78,435 78,445 92,443 102,434 88,430 88,430
+circle VCR1  52,94 62,100
+circle VCR2  80,93 90,100
+circle CBL  27,99 37,106
+circle SAT  25,82 35,88
+circle TV  108,80 118,86
+circle AUX  81,111 91,117
+circle DVD  106,99 116,106
+circle AUD  52,111 64,120
+circle SLEEP  28,138 35,145
+circle Guide  34,234 41,241
+circle Menu{Prog}  34,281 41,288
+circle Info  100,234 107,241
+circle Clear  100,281 107,288
+circle on/off  66,74 80,81
+circle CH+  67,167 85,173
+circle CH-  66,199 85,205
+circle vol-  41,183 47,195
+circle vol+  93,183 99,195
+circle mute  67,183 79,190
+circle select  68,258 79,264
+circle right  92,257 98,268
+circle left  43,257 49,267
+circle Up{level+}  67,240 78,246
+circle down{level-}  67,274 78,280
+circle 1{cd}  39,300 48,306
+circle 2{tape}  67,299 76,305
+circle 3{tuner}  96,300 105,306
+circle 4{tv}  39,320 48,326
+circle 5{videoa}  67,319 76,325
+circle 6{videob}  97,319 106,325
+circle 7  39,339 48,345
+circle 8  68,339 77,345
+circle 9  97,339 106,345
+circle 0  68,358 77,364
+circle Pip{center}  36,158 46,165
+circle Swap{front}  99,157 109,164
+circle input{rear}  37,212 46,219
+circle TV/VCR  97,358 107,365
+circle enter{function}  39,358 49,365
+circle Rec  68,396 77,402
+circle Code_Search  68,218 81,224
+circle {Lamp}  105,138 112,145
+circle Go_Back{test}  98,212 107,219
+circle l1  28,119 38,126
+circle l2  68,128 78,135
+circle l3  105,118 115,125
+circle m1  48,142 55,149
+circle m2  68,150 75,157
+circle m3  86,142 93,149
+poly rew 45,378 36,387 35,401 51,397 55,387 45,378 45,378
+poly play 77,384 61,384 54,376 70,373 85,376 77,384 77,384
+poly fwd 82,387 92,379 101,387 101,400 85,397 85,392 82,387 82,387
+poly stop 64,416 49,414 40,406 54,402 58,405 65,406 64,416 64,416
+poly pause 82,401 78,404 72,406 72,416 86,414 96,405 82,401 82,401

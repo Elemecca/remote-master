@@ -4,62 +4,62 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Tue Sep 16 12:00:18 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Wed Oct 08 19:33:08 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:URC-43000B01 Navigator.jpg
 #$FORMAT:ncsa
 #$EOH
 default 1994
-circle VCR  35,42 47,47
-circle TV  68,58 80,63
-circle AUX  36,59 48,64
-circle CABLE  68,42 80,47
-circle Macro1  33,312 46,317
-circle EXIT  68,197 82,202
-circle Macro2  67,312 80,317
-circle POWER  98,43 111,48
-circle UP  67,235 77,241
-circle LEFT  34,257 44,263
-circle RIGHT  100,258 110,264
-circle DOWN  67,279 77,285
-circle SELECT  67,257 85,269
-circle MUTE  39,156 53,162
-circle VOL+  33,182 45,194
-circle VOL-  33,213 45,225
-circle CH+  101,182 113,194
-circle CH-  101,213 113,225
-circle 1  39,78 50,89
-circle 2  68,79 79,90
-circle 3  95,79 106,90
-circle 4  39,104 50,115
-circle 5  67,104 78,115
-circle 6  96,105 107,116
-circle 7  38,130 49,141
-circle 8  67,130 78,141
-circle 9  97,130 108,141
-circle 0  68,156 79,167
-circle LAST  67,182 81,187
-circle fav  56,388 64,393
-circle pause  56,428 64,433
-circle Macro3  100,312 113,317
-circle info  67,213 81,218
-circle ENTER{Music}  96,156 110,162
-circle Rew=Rew_&_Day-  33,348 45,353
-circle Play=Play_&_Menu  67,348 79,353
-circle FFwd=FFwd_&_Day+  100,348 112,353
-circle TV/VCR  100,388 108,393
-circle Pause_{VCR}  67,365 79,370
-circle Record  100,365 112,370
-circle SETUP  98,59 110,64
-circle help  34,388 42,393
-circle ppv  79,388 87,393
-circle PG+  33,408 41,413
-circle PG-  56,408 64,413
-circle switch  34,428 42,433
-circle diamond  78,428 86,433
-circle P  100,428 108,433
-circle Stop=Stop_&_Guide  33,365 45,370
-circle Guide=Stop_&_Guide  23,281 32,290
-circle Menu=Play_&_Menu  110,282 119,291
-circle Day-=Rew_&_Day-  78,408 86,413
-circle Day+=FFwd_&_Day+  100,408 108,413
+circle VCR  28,34 38,38
+circle TV  53,46 63,50
+circle AUX  27,47 37,51
+circle CABLE  53,34 63,38
+circle Macro1  26,245 35,250
+circle EXIT  52,154 64,158
+circle Macro2  51,244 60,249
+circle POWER  76,34 86,38
+circle UP  52,185 62,191
+circle LEFT  26,202 36,207
+circle RIGHT  77,203 87,208
+circle DOWN  52,219 62,225
+circle SELECT  52,202 64,210
+circle MUTE  31,123 42,127
+circle VOL+  26,143 35,152
+circle VOL-  26,168 35,177
+circle CH+  79,143 88,152
+circle CH-  78,168 87,177
+circle 1  30,61 39,70
+circle 2  52,61 61,70
+circle 3  74,62 83,71
+circle 4  31,82 40,91
+circle 5  52,81 61,90
+circle 6  75,82 84,91
+circle 7  30,102 39,111
+circle 8  53,102 62,111
+circle 9  74,101 83,110
+circle 0  52,122 61,131
+circle LAST  52,142 64,146
+circle fav  44,305 50,309
+circle pause  43,336 49,340
+circle Macro3  78,245 87,250
+circle info  52,167 64,171
+circle ENTER{Music}  74,123 85,127
+circle Rew=Rew_&_Day-  26,273 35,278
+circle Play=Play_&_Menu  52,273 61,278
+circle FFwd=FFwd_&_Day+  78,273 87,278
+circle TV/VCR  78,305 84,309
+circle Pause_{VCR}  52,286 62,291
+circle Record  78,287 87,292
+circle SETUP  78,47 88,51
+circle help  26,306 32,310
+circle ppv  61,305 67,309
+circle PG+  26,321 32,325
+circle PG-  44,321 50,325
+circle switch  26,336 32,340
+circle diamond  61,336 67,340
+circle P  78,336 84,340
+circle Stop=Stop_&_Guide  26,287 35,292
+circle Guide=Stop_&_Guide  18,221 25,228
+circle Menu=Play_&_Menu  85,221 92,228
+circle Day-=Rew_&_Day-  61,320 67,324
+circle Day+=FFwd_&_Day+  78,320 84,324

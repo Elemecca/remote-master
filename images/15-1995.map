@@ -4,61 +4,61 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1995
-#$DATE:Fri Oct 03 12:30:02 2003
-#$PATH:D:\Images\
+#$DATE:Tue Oct 07 16:37:01 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:15-1995.jpg
 #$FORMAT:ncsa
 #$EOH
 default 1995
-circle CD  33,97 44,103
-circle CBL  60,96 71,102
-circle VCR  88,98 99,104
-circle TV  114,99 125,105
-circle TUNER  35,113 48,120
-circle AMP  74,114 87,121
-circle SAT  112,116 125,123
-circle HOME_THEATER  41,131 58,138
-circle Plug&Power  106,132 123,139
-circle VIDEO  105,389 118,396
-circle menu{Program}  34,151 44,157
-circle center{rear}  34,204 44,209
-circle shift  112,152 122,158
-circle scan{Fav}  113,206 123,211
-circle POWER  113,81 127,89
-circle SURROUND  74,178 88,185
-circle MUTE{sleep}  59,215 67,220
-circle VOL+  36,229 44,239
-circle VOL-  35,253 43,263
-circle CH+  111,230 119,240
-circle CH-  111,253 119,264
-circle 1  39,283 48,292
-circle 2  73,283 82,292
-circle 3  106,284 115,293
-circle 4  39,311 48,320
-circle 5  73,311 82,320
-circle 6  106,311 115,320
-circle 7  39,339 48,348
-circle 8  73,339 82,348
-circle 9  106,339 115,348
-circle 0  73,368 82,377
-circle LAST  87,216 95,221
-circle escape  85,235 93,240
-circle PIP{freeze}  61,235 69,240
-circle Swap  61,254 69,259
-circle Move  85,254 93,259
-circle ENTER  106,367 119,374
-circle rew  38,411 49,418
-circle PLAY  72,411 82,418
-circle ffwd  106,411 117,418
-circle AUDIO  39,388 52,395
-circle TV/VIDEO{A/B}  39,367 52,374
-circle PAUSE  107,435 119,443
-rect STOP 61,429 82,443
-circle rec  37,436 45,444
-circle P[SETUP]  29,77 35,83
-circle {LIGHT}  49,76 55,82
-circle select{clear}  74,141 82,146
-poly up 56,157 66,155 81,155 90,157 83,164 64,164 56,157 56,157
-poly down 63,192 82,192 89,198 80,201 72,201 64,201 55,198 62,192 63,192 63,192
-poly left 45,162 52,168 49,171 47,175 47,177 47,180 48,183 52,188 44,194 37,187 35,183 34,179 34,175 35,172 36,170 44,161 45,162 45,162
-poly right 93,169 100,163 106,167 108,170 110,174 111,178 111,182 109,187 107,189 100,196 93,189 98,184 99,181 99,177 97,174 96,172 93,169 93,169
+circle CD  28,89 39,95
+circle CBL  54,88 65,94
+circle VCR  80,89 91,95
+circle TV  105,90 116,96
+circle TUNER  30,105 42,112
+circle AMP  66,105 78,112
+circle SAT  102,107 114,114
+circle HOME_THEATER  36,121 53,127
+circle Plug&Power  96,123 113,129
+circle VIDEO  95,358 108,365
+circle menu{Program}  30,139 39,145
+circle center{rear}  29,188 38,193
+circle shift  102,141 111,147
+circle scan{Fav}  102,190 111,195
+circle POWER  102,74 115,82
+circle SURROUND  66,164 78,171
+circle MUTE{sleep}  52,199 60,204
+circle VOL+  31,210 39,218
+circle VOL-  31,235 39,243
+circle CH+  100,210 108,218
+circle CH-  100,237 108,245
+circle 1  34,261 43,270
+circle 2  66,261 75,270
+circle 3  96,261 105,270
+circle 4  34,287 43,296
+circle 5  66,287 75,296
+circle 6  96,287 105,296
+circle 7  34,312 43,321
+circle 8  66,312 75,321
+circle 9  96,313 105,322
+circle 0  65,339 74,348
+circle LAST  79,199 87,204
+circle escape  77,217 85,222
+circle PIP{freeze}  54,216 62,221
+circle Swap  54,235 62,240
+circle Move  77,234 85,239
+circle ENTER  95,338 108,345
+circle PLAY  65,378 75,385
+circle AUDIO  33,358 46,365
+circle TV/VIDEO{A/B}  34,338 47,345
+circle PAUSE  97,401 109,409
+rect STOP 54,395 75,409
+circle rec  32,402 40,410
+circle P[SETUP]  24,71 30,77
+circle {LIGHT}  43,71 49,77
+circle select{clear}  66,129 74,134
+poly down 57,177 76,177 83,183 74,186 66,186 58,186 49,183 56,177 57,177 57,177
+poly left 40,148 47,154 44,157 42,161 42,163 42,166 43,169 47,174 39,180 32,173 30,169 29,165 29,161 30,158 31,156 39,147 40,148 40,148
+poly right 84,154 91,148 97,152 99,155 101,159 102,163 102,167 100,172 98,174 91,181 84,174 89,169 90,166 90,162 88,159 87,157 84,154 84,154
+poly up 49,145 54,143 59,142 64,142 69,142 76,143 79,144 81,145 75,153 72,152 69,152 66,151 62,152 59,152 56,153 49,145 49,145
+poly ffwd 86,372 103,372 106,375 106,379 105,382 103,383 100,384 86,384 86,372 86,372
+poly rew 42,373 27,373 25,374 23,376 22,380 23,382 24,384 26,385 42,385 42,373 42,373

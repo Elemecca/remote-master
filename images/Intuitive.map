@@ -4,61 +4,61 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Intuiive
-#$DATE:Thu Sep 18 16:54:49 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Wed Oct 08 10:24:18 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:Intuitive.jpg
 #$FORMAT:ncsa
 #$EOH
 default Intuitive
-circle cable  68,43 81,49
-circle TV  33,43 46,49
-circle vcr  103,43 116,49
-circle UP  67,261 81,266
-circle LEFT  34,281 43,288
-circle RIGHT  101,282 110,289
-circle DOWN  67,301 81,306
-circle MUTE  33,155 41,163
-circle VOL+  33,188 41,197
-circle VOL-  33,222 41,231
-circle CH+  103,189 111,198
-circle CH-  103,223 111,232
-circle 1  34,71 46,83
-circle 2  68,70 80,82
-circle 3  103,70 115,82
-circle 4  33,99 45,111
-circle 5  68,98 80,110
-circle 6  104,98 116,110
-circle 7  32,126 44,138
-circle 8  68,126 80,138
-circle 9  103,127 115,139
-circle 0  68,155 80,167
-circle ENTER{music}  103,155 111,163
-circle setup  97,361 105,369
-circle fav  68,205 77,211
-circle info  68,227 77,233
-circle last  68,184 77,190
-rect record 20,331 37,343
-rect cancel[blank1] 46,331 63,343
-rect theme[blank2] 72,331 89,343
-rect exit 98,331 115,343
-rect help 21,380 38,390
-rect diamond 46,380 63,390
-rect ppv 72,380 89,390
-rect macro 21,404 43,414
-circle pause_cable  57,408 63,414
-circle p  77,408 83,414
-poly day- 22,360 43,354 43,367 22,360 22,360
-poly day+ 57,354 76,361 57,367 57,354 57,354
-rect pageup 20,250 38,261
-rect pagedown 97,250 115,261
-rect select 50,276 86,287
-rect guide 21,307 41,317
-rect menu 94,307 114,317
-rect bypass 97,380 114,390
-rect tv/vcr 91,404 113,414
-rect rew 24,434 46,444
-rect play 56,434 78,444
-rect ff 89,434 111,444
-rect rec 24,455 46,463
-rect stop 56,455 78,463
-rect pause 89,455 111,463
+circle cable  60,37 73,43
+circle TV  30,37 43,43
+circle vcr  89,37 102,43
+circle UP  59,229 71,234
+circle LEFT  30,246 39,252
+circle RIGHT  88,246 97,252
+circle DOWN  59,263 71,268
+circle MUTE  28,135 36,143
+circle VOL+  28,165 36,174
+circle VOL-  28,193 36,202
+circle CH+  89,164 97,173
+circle CH-  89,194 97,203
+circle 1  29,61 40,72
+circle 2  59,61 70,72
+circle 3  89,61 100,72
+circle 4  29,86 40,97
+circle 5  58,85 69,96
+circle 6  90,85 101,96
+circle 7  27,110 38,121
+circle 8  59,111 70,122
+circle 9  90,111 101,122
+circle 0  59,135 70,146
+circle ENTER{music}  89,135 97,143
+circle setup  84,314 91,321
+circle fav  59,179 68,185
+circle info  59,198 68,204
+circle last  59,159 68,165
+rect record 17,288 32,298
+rect cancel[blank1] 40,288 55,298
+rect theme[blank2] 62,288 77,298
+rect exit 85,288 100,298
+rect help 18,331 33,341
+rect diamond 40,331 55,341
+rect ppv 62,331 77,341
+rect macro 19,352 37,361
+circle pause_cable  50,357 56,363
+circle p  68,357 74,363
+poly day- 15,314 36,308 36,321 15,314 15,314
+poly day+ 49,308 68,315 49,321 49,308 49,308
+rect pageup 17,217 34,228
+rect pagedown 84,217 101,228
+rect select 44,241 74,250
+rect guide 17,268 35,277
+rect menu 82,268 100,277
+rect bypass 84,331 99,341
+rect tv/vcr 80,352 98,361
+rect rew 22,379 41,387
+rect play 49,379 68,387
+rect ff 77,379 96,387
+rect rec 21,396 40,404
+rect stop 49,396 68,404
+rect pause 77,396 96,404

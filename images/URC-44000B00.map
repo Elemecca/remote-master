@@ -4,64 +4,64 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Wed Sep 10 11:25:27 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Wed Oct 08 20:05:28 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:URC-44000B00 Navigator.jpg
 #$FORMAT:ncsa
 #$EOH
 default 1994
-circle VCR  48,53 60,59
-circle TV  84,72 96,78
-circle AUX  48,71 60,77
-circle CABLe  84,54 96,60
-circle Macro1  45,360 58,366
-circle MENU  129,326 138,335
-circle GUIDE  33,325 42,334
-circle EXIT  82,231 96,237
-circle Macro2  83,359 96,365
-circle POWER  117,55 130,62
-circle UP  82,272 93,281
-circle LEFT  42,299 53,310
-circle RIGHT  118,298 129,309
-circle DOWN  81,324 92,333
-circle SELECT  82,298 101,311
-circle MUTE  48,184 65,191
-circle VOL+  45,213 57,225
-circle VOL-  44,249 56,261
-circle CH+  121,214 133,226
-circle CH-  121,250 133,262
-circle 1  51,95 62,106
-circle 2  84,95 95,106
-circle 3  117,95 128,106
-circle 4  51,125 62,136
-circle 5  83,125 94,136
-circle 6  116,127 127,138
-circle 7  50,154 61,165
-circle 8  83,155 94,166
-circle 9  117,155 128,166
-circle 0  83,185 94,196
-circle LAST  83,213 97,220
-circle fav  68,435 77,440
-circle pause_{VCR}  67,477 76,482
-circle Macro3  119,358 132,364
-circle info  83,249 97,255
-circle ENTER/music  117,185 134,192
-circle REW  43,394 56,400
-circle PLAY  79,394 92,400
-circle FFwd  116,392 129,398
-circle TV/VCR  117,433 126,438
-circle PAUSE  80,411 93,417
-circle REC  116,410 129,416
-circle SETUP  117,74 129,80
-circle Blank_1  42,457 51,462
-circle help  42,435 51,440
-circle ppv  92,434 101,440
-circle Blank_2  67,456 76,462
-circle day-  92,455 101,460
-circle day+  117,455 126,460
-circle bypass  41,478 50,483
-circle diamond  92,477 101,482
-circle P  116,476 125,481
-circle stop  43,412 56,418
-poly PageUp 111,284 138,284 125,270 111,284 111,284
-poly PageDown 23,269 53,269 37,284 24,270 24,269 23,269 23,269
+circle VCR  41,45 53,51
+circle TV  71,61 83,67
+circle AUX  40,60 52,66
+circle CABLe  70,46 82,52
+circle Macro1  37,302 48,307
+circle MENU  108,274 116,282
+circle GUIDE  28,273 36,281
+circle EXIT  70,195 83,200
+circle Macro2  68,302 79,307
+circle POWER  98,47 109,54
+circle UP  69,228 80,235
+circle LEFT  39,251 50,258
+circle RIGHT  99,251 110,258
+circle DOWN  69,272 80,279
+circle SELECT  69,250 84,261
+circle MUTE  41,155 54,161
+circle VOL+  37,179 47,189
+circle VOL-  37,209 47,219
+circle CH+  101,179 111,189
+circle CH-  102,210 112,220
+circle 1  43,79 54,90
+circle 2  71,80 82,91
+circle 3  98,81 109,92
+circle 4  43,104 54,115
+circle 5  70,105 81,116
+circle 6  98,106 109,117
+circle 7  41,129 52,140
+circle 8  70,130 81,141
+circle 9  99,131 110,142
+circle 0  70,156 81,167
+circle LAST  70,179 83,184
+circle fav  57,365 65,370
+circle pause_{VCR}  57,401 65,406
+circle Macro3  100,301 111,306
+circle info  69,210 82,215
+circle ENTER/music  98,156 111,162
+circle REW  36,331 46,336
+circle PLAY  67,330 77,335
+circle FFwd  97,330 107,335
+circle TV/VCR  99,364 107,369
+circle PAUSE  67,345 77,350
+circle REC  97,345 107,350
+circle SETUP  98,62 110,68
+circle Blank_1  35,383 43,388
+circle help  35,365 43,370
+circle ppv  78,364 86,369
+circle Blank_2  57,383 65,388
+circle day-  78,382 86,387
+circle day+  98,381 106,386
+circle bypass  35,402 43,407
+circle diamond  78,401 86,406
+circle P  98,400 106,405
+circle stop  36,347 46,352
+poly pageup 104,225 119,240 93,240 104,225 104,225
+poly pagedown 19,226 46,226 31,242 19,226 19,226

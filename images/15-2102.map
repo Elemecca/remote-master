@@ -4,55 +4,55 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-2102
-#$DATE:Sun Sep 14 11:44:45 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Tue Oct 07 18:37:09 2003
+#$PATH:C:\Backups\IR\Images\
 #$GIF:15-2102.jpg
 #$FORMAT:ncsa
 #$EOH
 default 2102
-circle VCR  28,76 40,83
-circle TV  124,76 136,83
-circle CBL/SAT  107,53 120,60
-circle DVD  45,53 58,60
-circle POWER  76,77 92,84
-circle music  34,178 42,184
-circle movie  62,183 70,189
-circle sport  90,183 98,189
-circle news  118,178 126,184
-circle menu  35,102 48,109
-circle exit  113,153 124,159
-circle info  39,154 50,160
-circle guide  116,101 128,108
-circle up  76,104 90,111
-circle down  76,154 90,161
-circle left  35,129 47,136
-circle right  117,127 129,134
-circle SELECT  76,128 93,137
-circle MUTE  76,239 86,244
-circle VOL+  40,212 51,223
-circle VOL-  43,240 52,250
-circle CH+  112,212 123,223
-circle CH-  109,240 118,250
-circle 1  41,296 52,303
-circle 2  76,295 87,302
-circle 3  111,295 122,302
-circle 4  42,320 53,327
-circle 5  76,321 87,328
-circle 6  111,321 122,328
-circle 7  42,347 53,354
-circle 8  76,347 87,354
-circle 9  111,347 122,354
-circle 0  76,372 87,379
-circle LAST  76,213 85,218
-circle tv/vcr{a/b}  94,270 104,276
-circle rew  42,401 53,408
-circle PLAY  76,401 87,408
-circle ff  111,401 122,408
-circle enter  110,373 121,380
-circle +100  42,372 53,379
-circle PAUSE  76,429 87,436
-circle STOP  111,428 122,435
-circle rec  42,429 53,436
-circle P[SETUP]  23,38 29,44
-circle {LIGHT}  130,39 137,46
-circle scan{Fav}  60,270 69,275
+circle VCR  24,66 35,72
+circle TV  107,66 118,72
+circle CBL/SAT  93,46 104,52
+circle DVD  39,46 50,52
+circle POWER  66,67 79,73
+circle music  29,154 36,161
+circle movie  53,158 60,165
+circle sport  78,158 85,165
+circle news  102,154 109,161
+circle menu  31,87 42,94
+circle exit  98,132 108,138
+circle info  34,132 44,138
+circle guide  101,87 112,93
+circle up  65,90 77,97
+circle down  65,132 77,139
+circle left  31,111 42,117
+circle right  100,111 111,117
+circle SELECT  66,111 81,119
+circle MUTE  66,208 75,213
+circle VOL+  34,184 45,195
+circle VOL-  37,207 45,216
+circle CH+  97,184 108,195
+circle CH-  94,207 102,216
+circle 1  36,255 46,261
+circle 2  66,254 76,260
+circle 3  96,254 106,260
+circle 4  36,277 46,283
+circle 5  66,276 76,282
+circle 6  96,276 106,282
+circle 7  36,299 46,305
+circle 8  66,299 76,305
+circle 9  96,299 106,305
+circle 0  66,322 76,328
+circle LAST  66,184 75,189
+circle tv/vcr{a/b}  81,234 90,239
+circle rew  36,346 46,352
+circle PLAY  66,346 76,352
+circle ff  96,346 106,352
+circle enter  96,322 106,328
+circle +100  36,322 46,328
+circle PAUSE  66,370 76,376
+circle STOP  96,369 106,375
+circle rec  36,370 46,376
+circle P[SETUP]  20,33 26,39
+circle {LIGHT}  113,34 120,41
+circle scan{Fav}  52,234 61,239

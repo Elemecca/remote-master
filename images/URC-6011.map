@@ -1,0 +1,63 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:URC-6011
+#$DATE:Thu Oct 09 15:04:24 2003
+#$PATH:C:\Backups\IR\Images\
+#$GIF:URC-6011.jpg
+#$FORMAT:ncsa
+#$EOH
+default 8811
+circle CBL  70,49 77,56
+circle SAT  46,53 53,60
+circle TV  39,33 46,40
+circle dvd  102,32 109,39
+circle vcr  70,30 77,37
+circle RCVR/AMP  96,53 103,60
+circle home_theater  70,71 89,77
+circle guide  31,91 40,100
+circle menu  20,73 28,81
+circle info  120,71 128,79
+circle exit  109,90 118,99
+circle POWER  32,370 40,375
+circle up  70,90 80,96
+circle down  71,136 81,142
+circle left  47,113 54,123
+circle right  94,113 101,123
+circle SELECT  70,112 81,123
+circle MUTE  28,183 36,191
+circle PREV  112,182 120,190
+circle VOL+  28,143 36,155
+circle VOL-  50,169 58,179
+circle CH+  112,142 120,154
+circle CH-  91,169 99,179
+circle 1  35,208 45,215
+circle 2  71,208 81,215
+circle 3  106,208 116,215
+circle 4  35,228 45,235
+circle 5  71,228 81,235
+circle 6  106,228 116,235
+circle 7  35,249 45,256
+circle 8  71,249 81,256
+circle 9  106,249 116,256
+circle 0  71,269 81,276
+circle fav  70,189 78,197
+circle PIP  58,350 66,355
+circle Swap  84,350 92,355
+circle Move  32,350 40,355
+circle ENTER  35,270 45,277
+circle rew  39,291 49,298
+circle f.rew  39,326 49,333
+circle PLAY  70,291 80,298
+circle fwd  104,291 114,298
+circle f.fwd  104,326 114,333
+circle TV/VID  106,269 117,276
+circle macro  58,370 66,375
+circle PAUSE  87,309 97,316
+circle rec  54,309 64,316
+circle SET[SETUP]  110,370 119,375
+circle {LIGHT}  84,370 93,375
+circle sleep  110,350 118,355
+circle stop  71,326 81,333
