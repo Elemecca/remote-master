@@ -1,0 +1,34 @@
+Changes for v0.43
+
+- Fixed Panasonic2 and the notes for Sony12/15
+- [Protocols] lists (for most models) without variant data (yet)
+- Aiwa variants
+- Added RC-5
+- Bug 746428: Fixed data doesn't refresh
+- Update list of supported protocols in Readme.txt
+- Change version to v0.43
+
+Changes for v0.42
+
+- First cut at Protocols list (15-1994 RDF)
+- Update list of supported protocols in Readme.txt
+- Change version to v0.42
+- Enable Sony protocols
+
+Changes for v0.41
+
+- Big change to Default value processing, which so far just corrects
+  minor ToolTip problem in parameters with reference type defaults
+- Fixed default for Panasonic Combo2
+- John merged in Chris's changes to combo protocols
+- Changed version to v0.41
+- Change background of read-only text areas to match the background of labels.
+- Bug 745769: Wrong device upgrade setup code number on output panel
+- Updated list of supported/non-supported protocols in Readme.txt
+
+Changes for v0.40
+
+- Change version to v0.40
+- Add support for reading protocol notes from protocols.ini
+- Comment out unsupported protocols
+- Copy text from Protocols_ReadMe.txt to protocol notes
