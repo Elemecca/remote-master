@@ -270,7 +270,7 @@ public class DeviceUpgrade
     }
 
     buff.append( ' ' );
-    buff.append( protocol.getFixedData().toString());
+    buff.append( protocol.getFixedData( remote ).toString());
 
     if ( map != null )
     {
@@ -431,7 +431,7 @@ public class DeviceUpgrade
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     print( out, "DeviceIndex", Integer.toHexString( devType.getNumber()));
     print( out, "SetupCode", Integer.toString( setupCode ));
-    protocol.store( out );
+    protocol.store( out, remote );
     if ( notes != null )
       print( out, "Notes", notes );
     int i = 0;

@@ -77,11 +77,11 @@ public class ManualProtocol
     }
   }
 
-  public void store( PrintWriter out )
+  public void store( PrintWriter out, Remote remote )
     throws IOException
   {
     System.err.println( "ManualProtocol.store" );
-    super.store( out );
+    super.store( out, remote );
     if ( devParms.length > 0 )
     {
       out.print( "DevParms=" );

@@ -31,6 +31,12 @@ public class Translator
           case lsbOffsetIndex:
             lsbOffset = val;
             break;
+          case adjustOffset:
+          {
+            adjust = val;
+            System.err.println( "Translator.Translator() adjust=" + adjust );
+            break;
+          }
           default:
             break;
         }
@@ -71,7 +77,7 @@ public class Translator
       if ( i == null )
         System.err.println("Translator.in() index="+ index +" missing parameter value");
       else
-        w = i.intValue() >> lsbOffset;
+        w = ( i.intValue() >> lsbOffset ) + adjust;
     }
 
     if ( comp )
@@ -103,7 +109,7 @@ public class Translator
     {
       w = reverse(w, bits );
     }
-    parms[ index ] = insert( parms[ index ], lsbOffset, bits, w );
+    parms[ index ] = insert( parms[ index ], lsbOffset, bits, w - adjust );
   }
 
   public String toString()
@@ -145,11 +151,13 @@ public class Translator
   protected int bits = 8;
   protected int bitOffset = 0;
   protected int lsbOffset = 0;
+  protected int adjust = 0;
 
   private final static int indexIndex = 0;
   private final static int bitsIndex = 1;
   private final static int bitOffsetIndex = 2;
   private final static int lsbOffsetIndex = 3;
+  private final static int adjustOffset = 4;
 }
 
 

@@ -22,6 +22,16 @@ public abstract class Translate
     return rc >>> ( 32 - bits );
   }
 
+  public static byte complement( byte b )
+  {
+    return ( byte )complement( b, 8 );
+  }
+  
+  public static int complement( int v, int bits )
+  {
+    return ( 2 << ( bits - 1 )) - 1 - v;
+  }
+
   public static int byte2int( byte b )
   {
     return b & 0xFF;

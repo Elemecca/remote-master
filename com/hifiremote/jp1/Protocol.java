@@ -11,7 +11,6 @@ public class Protocol
     this.name = name;
     this.id = id;
     this.variantName = props.getProperty( "VariantName", "" );
-    this.fixedData = new Hex( props.getProperty( "FixedData", "" ));
     this.defaultCmd = new Hex( props.getProperty( "DefaultCmd", "00" ));
     this.cmdIndex = Integer.parseInt( props.getProperty( "CmdIndex", "0" ));
 
@@ -25,6 +24,20 @@ public class Protocol
       System.err.println( "Protocol.Protocol("+ name +") got DeviceTranslator property." );
       deviceTranslators = TranslatorFactory.createTranslators( temp );
     }
+
+    this.fixedData = new Hex( props.getProperty( "FixedData", "" ));
+    
+    temp = props.getProperty( "FixedData.S3C80" );
+    if ( temp != null )
+      fixedDataMap.put( "S3C80", new Hex( temp ));
+
+    temp = props.getProperty( "FixedData.740" );
+    if ( temp != null )
+      fixedDataMap.put( "740", new Hex( temp ));
+
+    temp = props.getProperty( "FixedData.6805" );
+    if ( temp != null )
+      fixedDataMap.put( "6805", new Hex( temp ));
 
     temp = props.getProperty( "CmdTranslator" );
     if ( temp != null )
@@ -265,9 +278,13 @@ public class Protocol
   public boolean isEditable( int col ){ return true; }
 
   public String toString(){ return name; }
+
   public String getName(){ return name; }
+
   public Hex getID(){ return id; }
+
   public String getVariantName(){ return variantName; }
+
   public String getDiagnosticName( )
   {
     String result = "\"" + name + "\" (" + id;
@@ -275,12 +292,16 @@ public class Protocol
       result += " : " + variantName;
     return result + ")";
   }
-  public Hex getFixedData()
+
+  public Hex getFixedData( Remote remote )
   {
     System.err.println( "Protocol.getFixedData()" );
+    Hex data = ( Hex )fixedDataMap.get( remote.getProcessor());
+    if ( data == null )
+      data = fixedData;
     Hex temp = null;
     try {
-      temp = ( Hex )fixedData.clone();
+      temp = ( Hex )data.clone();
     } catch ( CloneNotSupportedException e ){}
     Value[] parms = getDeviceParmValues();
     if ( deviceTranslators != null )
@@ -441,7 +462,7 @@ public class Protocol
     return result;
   }
 
-  public void store( PrintWriter out )
+  public void store( PrintWriter out, Remote remote )
     throws IOException
   {
     System.err.println( "Protocol.store()" );
@@ -452,7 +473,8 @@ public class Protocol
     Value[] parms = getDeviceParmValues();
     if (( parms != null ) && ( parms.length != 0 ))
       DeviceUpgrade.print( out, "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ));
-    DeviceUpgrade.print( out, "FixedData", getFixedData().toString());
+    if ( fixedData != null )
+      DeviceUpgrade.print( out, "FixedData", getFixedData( remote ).toString());
   }
 
   public final static int tooDifferent = 0x7FFFFFFF;
@@ -461,6 +483,7 @@ public class Protocol
   protected Hex id = null;
   private String variantName = null;
   protected Hex fixedData = null;
+  protected HashMap fixedDataMap = new HashMap( 4 );
   protected Hex defaultCmd = null;
   protected int cmdIndex;
   protected DeviceParameter[] devParms = null;
