@@ -4,13 +4,13 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:Intuiive
-#$DATE:Sun Oct 19 12:36:32 2003
+#$DATE:Thu Mar 11 14:00:38 2004
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:Intuitive.jpg
 #$FORMAT:ncsa
 #$EOH
 default Intuitive
-circle CABLE  60,37 73,43
+circle $09:CABLE  60,37 73,43
 circle TV  30,37 43,43
 circle VCR  89,37 102,43
 circle UP  59,229 71,234
@@ -37,20 +37,20 @@ circle SETUP  84,314 91,321
 circle FAV  59,179 68,185
 circle INFO  59,198 68,204
 circle LAST  59,159 68,165
-rect {RECORD} 17,288 32,298
-rect CANCEL[blank1] 40,288 55,298
-rect THEME[blank2] 62,288 77,298
+rect $10:{RECORD} 17,288 32,298
+rect $20:CANCEL[blank1] 40,287 55,297
+rect $2D:THEME[blank2] 62,287 77,297
 rect EXIT 85,288 100,298
 rect HELP 18,331 33,341
 rect DIAMOND 40,331 55,341
 rect PPV 62,331 77,341
 rect MACRO 19,352 37,361
-circle PAUSE_CABLE  50,357 56,363
+circle $2C:PAUSE_CABLE  50,357 56,363
 circle P  68,357 74,363
 poly DAY- 15,314 36,308 36,321 15,314 15,314
 poly DAY+ 49,308 68,315 49,321 49,308 49,308
-rect PAGE_UP 17,217 34,228
-rect PAGE_DOWN 84,217 101,228
+rect $28:PAGE_UP 17,217 34,228
+rect $27:PAGE_DOWN 84,217 101,228
 rect SELECT 44,241 74,250
 rect GUIDE 17,268 35,277
 rect MENU 82,268 100,277
@@ -59,6 +59,6 @@ rect TV/VCR 80,352 98,361
 rect REW 22,379 41,387
 rect PLAY 49,379 68,387
 rect FF 77,379 96,387
-rect REC 21,396 40,404
+rect $10:REC 21,396 40,404
 rect STOP 49,396 68,404
-rect PAUSE 77,396 96,404
+rect $0F:PAUSE 77,396 96,404

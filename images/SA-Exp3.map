@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:SA-Exp3
-#$DATE:Wed Jan 21 13:23:48 2004
+#$DATE:Thu Mar 11 13:41:23 2004
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:SA-Exp3.jpg
 #$FORMAT:ncsa
@@ -13,9 +13,9 @@ default SA3
 circle cbl  102,61 108,70
 circle mute  30,156 38,164
 circle tv  74,72 86,79
-circle pageup  127,111 133,117
+circle $32:pageup  127,111 133,117
 circle last  41,316 47,322
-circle pagedown  128,135 134,141
+circle $2D:pagedown  128,135 134,141
 circle info  111,87 126,97
 circle guide  36,86 48,96
 circle select  74,124 85,135
@@ -48,7 +48,7 @@ circle exit  118,156 126,164
 rect pause 37,357 49,369
 rect stop 67,356 84,372
 circle bypass  46,390 52,396
-circle vcr_vod  102,389 108,395
+circle $01:vcr_vod  102,389 108,395
 poly left 46,104 55,113 53,119 53,127 54,133 45,143 41,136 39,129 39,123 39,117 41,112 43,108 46,104 46,104
 poly right 92,113 102,104 106,112 108,120 108,124 108,129 107,133 105,137 104,139 101,142 92,133 93,129 94,125 94,121 93,119 91,114 92,113 92,113
 poly up 55,94 60,91 65,89 70,88 74,88 78,88 82,89 85,90 88,91 92,94 83,103 78,101 76,101 74,101 72,101 69,102 65,103 55,94 55,94

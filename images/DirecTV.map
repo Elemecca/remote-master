@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:DirecTV
-#$DATE:Tue Nov 04 12:05:08 2003
+#$DATE:Thu Mar 11 13:22:16 2004
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:DirecTV.jpg
 #$FORMAT:ncsa
@@ -22,7 +22,7 @@ circle up  85,149 100,155
 circle down  86,190 102,196
 circle left  62,169 68,184
 circle right  109,169 115,184
-circle OK{select}  86,168 95,177
+circle $13:OK{select}  86,168 95,177
 circle VOL+  111,73 119,81
 circle VOL-  109,101 117,109
 circle 1  42,253 53,260
@@ -37,21 +37,21 @@ circle 9  108,291 119,298
 circle 0  72,312 83,319
 circle p  73,117 79,124
 circle PLAY  72,334 83,340
-circle PAUSE  86,355 97,361
+circle $0F:PAUSE  86,355 97,361
 circle setup  37,377 46,386
-circle F.Rewind  32,355 43,361
+circle $2C:F.Rewind  32,354 43,360
 rect PrevCH{back} 24,306 43,319
 rect Alt_Audio{Enter} 100,306 119,319
 circle favorite  73,218 84,223
-circle REW  34,333 45,339
-circle FF  110,333 121,339
-circle rec  108,376 118,382
-circle input{ant}  36,71 44,79
+circle $0B:REW  34,332 45,338
+circle $0D:FF  110,333 121,339
+circle $10:rec  108,375 118,381
+circle $11:input{ant}  36,71 44,79
 circle movies  51,234 61,240
 circle sports  92,234 102,240
-circle F.forward  112,355 123,361
+circle $2B:F.forward  112,354 123,360
 rect PPV 62,77 83,94
-poly clear 33,196 27,217 46,208 33,196
+poly clear 33,196 27,217 46,208 33,196 33,196
 circle stop  59,355 70,361
-poly CH+{Page+} 30,164 39,146 55,146 45,164 30,164
-poly CH-{Page-} 32,175 46,175 54,192 40,193 32,175
+poly $06:CH+{Page+} 30,164 39,146 55,146 45,164 30,164 30,164
+poly $07:CH-{Page-} 31,174 45,174 53,191 39,192 31,174 31,174

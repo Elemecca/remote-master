@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Sun Oct 19 12:47:51 2003
+#$DATE:Thu Mar 11 09:31:07 2004
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-43000B01 Navigator.jpg
 #$FORMAT:ncsa
@@ -12,7 +12,7 @@
 default 1994
 circle VCR  28,34 38,38
 circle TV  53,46 63,50
-circle Aux  27,47 37,51
+circle oem  27,47 37,51
 circle Cable  53,34 63,38
 circle Macro1  26,245 35,250
 circle Exit  52,154 64,158
@@ -40,26 +40,26 @@ circle 9  74,101 83,110
 circle 0  52,122 61,131
 circle Last  52,142 64,146
 circle Fav  44,305 50,309
-circle Pause2  43,336 49,340
+circle Pause (Cable)  43,336 49,340
 circle Macro3  78,245 87,250
 circle Info  52,167 64,171
-circle Enter{Music}  74,123 85,127
-circle Rew=Rew_&_Day-  26,273 35,278
-circle Play=Play_&_Menu  52,273 61,278
-circle FFwd=FFwd_&_Day+  78,273 87,278
+circle Enter/Music  74,123 85,127
+circle Rew=Rew & Day-  26,273 35,278
+circle Play=Play & Menu  52,273 61,278
+circle FFwd=FFwd & Day+  78,273 87,278
 circle TV/VCR  78,305 84,309
-circle Pause{VCR}  52,286 62,291
-circle Record  78,287 87,292
+circle Pause (VCR)  52,286 62,291
+circle Rec  78,287 87,292
 circle Setup  78,47 88,51
 circle Help  26,306 32,310
 circle PPV  61,305 67,309
-circle PageUp  26,321 32,325
-circle PageDown  44,321 50,325
+circle Page Up  26,321 32,325
+circle Page Down  44,321 50,325
 circle Switch  26,336 32,340
 circle Diamond  61,336 67,340
 circle P  78,336 84,340
-circle Stop=Stop_&_Guide  26,287 35,292
-circle Guide=Stop_&_Guide  18,221 25,228
-circle Menu=Play_&_Menu  85,221 92,228
-circle Day-=Rew_&_Day-  61,320 67,324
-circle Day+=FFwd_&_Day+  78,320 84,324
+circle Stop=Stop & Guide  26,287 35,292
+circle Guide=Stop & Guide  18,221 25,228
+circle Menu=Play & Menu  85,221 92,228
+circle Day-=Rew & Day-  61,320 67,324
+circle "FFwd & Day+"  78,320 84,324

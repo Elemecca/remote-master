@@ -4,9 +4,9 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:SonyTiVoRMT-V303
-#$DATE:Tue Jan 27 12:05:08 2004
+#$DATE:Thu Mar 11 13:26:12 2004
 #$PATH:C:\Backups\JP1\Images\
-#$GIF:Skydigital.jpg
+#$GIF:SkyDigital.jpg
 #$FORMAT:ncsa
 #$EOH
 default Skydigital
@@ -20,7 +20,7 @@ circle 6  107,325 117,335
 circle 7  46,353 56,363
 circle 8  77,356 87,366
 circle 9  107,352 117,362
-circle tv_guide  32,117 47,126
+circle $21:tv_guide  32,117 47,126
 circle 0  76,383 86,393
 circle interactive  116,116 131,125
 circle mute  57,134 65,142
@@ -31,7 +31,7 @@ circle help  113,230 121,238
 circle backup  74,233 90,241
 circle up  74,153 89,160
 circle DOWN  75,209 90,216
-circle box_office  53,96 68,105
+circle $22:box_office  53,96 68,105
 circle yellow  93,268 102,277
 circle blue  120,262 129,271
 circle text  38,231 46,239
@@ -39,7 +39,7 @@ circle select  75,181 88,194
 circle left  47,181 54,196
 circle right  102,181 109,196
 circle tv  39,70 48,79
-circle on_off  107,69 116,78
+circle power  107,68 116,77
 circle sky  73,67 88,77
 circle vol+  27,160 35,168
 circle vol-  27,204 35,212

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Sun Oct 19 12:51:40 2003
+#$DATE:Thu Mar 11 13:34:35 2004
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-44000B00 Navigator.jpg
 #$FORMAT:ncsa
@@ -63,5 +63,5 @@ circle bypass  35,402 43,407
 circle diamond  78,401 86,406
 circle P  98,400 106,405
 circle stop  36,347 46,352
-poly pageup 104,225 119,240 93,240 104,225 104,225
-poly pagedown 19,226 46,226 31,242 19,226 19,226
+poly $2B:pageup 104,225 119,240 93,240 104,225 104,225
+poly $2C:pagedown 19,226 46,226 31,242 19,226 19,226

@@ -4,7 +4,7 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1994
-#$DATE:Fri Oct 17 22:08:52 2003
+#$DATE:Thu Mar 11 13:37:12 2004
 #$PATH:C:\Backups\JP1\Images\
 #$GIF:Navigator.jpg
 #$FORMAT:ncsa
@@ -63,5 +63,5 @@ circle Bypass  36,402 44,407
 circle Diamond  78,400 86,405
 circle P  98,399 106,404
 circle Stop  36,346 46,351
-poly Page+ 93,239 105,226 117,239 93,239 93,239
-poly Page- 19,226 46,226 32,240 19,226 19,226
+poly $2A:Page+ 93,239 105,226 117,239 93,239 93,239
+poly $2E:Page- 18,226 45,226 31,240 18,226 18,226

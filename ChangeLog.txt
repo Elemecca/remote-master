@@ -1,3 +1,6 @@
+Change for v0.96
+- Fix DeviceCombiner support. 
+
 Changes for v0.95
 - Fix bug parsing [DeviceTypes] section of RDF files.
 - Fix bug when button used in a ButtonMap isn't declared
