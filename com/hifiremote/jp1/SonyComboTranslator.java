@@ -11,15 +11,13 @@ public class SonyComboTranslator
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int parmToSet )
   {
     System.err.println( "SonyComboTranslator.in(), parmToSet=" + parmToSet );
-    if ( parmToSet < 0 )
+    if (( parmToSet < 0 ) || ( parmToSet == 3 ))
       return;
     int parm = (( Integer )parms[ parmToSet ].getValue()).intValue();
 
     switch ( parmToSet )
     {
-      case 0: // OBC
-        break;
-      case 1: // Protocol
+      case 0: // Protocol
         {
           int protocol = parm;
           int force15 = 0;
@@ -42,7 +40,7 @@ public class SonyComboTranslator
           }
         }
         break;
-      case 2: // Device
+      case 1: // Device
         {
           int device = parm;
           if ( parm > 31 )
@@ -54,7 +52,7 @@ public class SonyComboTranslator
             insert( hexData, 8, 5, reverse( device, 5 ));  // store as 5 bits
         }
         break;
-      case 3: // SubDevice
+      case 2: // SubDevice
         {
           int subDevice = parm;
           boolean isSony15 = ( extract( hexData, 7, 1 ) == 1 );
@@ -81,29 +79,29 @@ public class SonyComboTranslator
     {
       int device = reverse( extract( hex, 8, 8 ), 8 );
       System.err.println( "Sony15 and device=" + device );
-      parms[ 1 ] = new Value( new Integer( 1 ), null );
-      parms[ 2 ] = new Value( new Integer( device ), null );
-      parms[ 3 ] = new Value( new Integer( 0 ), null );
+      parms[ 0 ] = new Value( new Integer( 1 ), null );
+      parms[ 1 ]  = new Value( new Integer( device ), null );
+      parms[ 2 ] = new Value( new Integer( 0 ), null );
     }
     else
     {
       boolean isSony20 = ( extract( hex, 15, 1 ) == 1 );
       if ( isSony20 )
       {
-        parms[ 1 ] = new Value( new Integer( 2 ), null );
+        parms[ 0 ] = new Value( new Integer( 2 ), null );
         int index = extract( hex, 13, 2 ) + 1;
         System.err.println( "Sony20 and index=" + index );
-        parms[ 3 ] = new Value( new Integer( index ), null );
+        parms[ 2 ] = new Value( new Integer( index ), null );
       }
       else
       {
         System.err.print( "Sony12" );
-        parms[ 1 ] = new Value( new Integer( 0 ), null );
-        parms[ 3 ] = parms[ 1 ];
+        parms[ 0 ] = new Value( new Integer( 0 ), null );
+        parms[ 2 ] = parms[ 0 ];
       }
       int device = reverse( extract( hex, 8, 5 ), 5 );
       System.err.println( " and device=" + device );
-      parms[ 2 ] = new Value( new Integer( device ), null );
+      parms[ 1 ] = new Value( new Integer( device ), null );
     }
   }
 }

@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.95";
+  private static final String version = "v 0.96";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -840,6 +840,8 @@ public class KeyMapMaster
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
     Protocol newProtocol = deviceUpgrade.getProtocol();
+    if ( newProtocol == null )
+      return;
     KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
     if ( newPanel != null )
       addPanel( newPanel, 1 );

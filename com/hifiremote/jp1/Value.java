@@ -2,6 +2,11 @@ package com.hifiremote.jp1;
 
 public class Value
 {
+  public Value( Object userValue )
+  {
+    this( userValue, null );
+  }
+
   public Value( Object userValue, Object defaultValue )
   {
     this.userValue = userValue;
