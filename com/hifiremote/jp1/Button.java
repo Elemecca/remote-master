@@ -43,6 +43,7 @@ public class Button
 
   public void setBaseButton( Button button )
   {
+    System.err.println( "Button '" + name + "' setting baseButton to '" + button + "'" );
     baseButton = button;
   }
 
@@ -58,11 +59,13 @@ public class Button
 
   public void setShiftedButton( Button button )
   {
+    System.err.println( "Button '" + name + "' setting shiftedButton to '" + button + "'" );
     shiftedButton = button;
   }
 
   public void setXShiftedButton( Button button )
   {
+    System.err.println( "Button '" + name + "' setting xShiftedButton to '" + button + "'" );
     xShiftedButton = button;
   }
   public Button getXShiftedButton()
@@ -120,19 +123,15 @@ public class Button
 
   public Button setFunction( Function newFunc )
   {
-    System.err.print( "Button " + name );
     if ( function != null )
     {
-      System.err.print( " removing reference to " + function );
       function.removeReference();
     }
     function = newFunc;
     if ( newFunc != null )
     {
-      System.err.print( " adding reference to " + function );
       newFunc.addReference();
     }
-    System.err.println();
     return this;
   }
   public Function getFunction(){ return function; }

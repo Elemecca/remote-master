@@ -3,7 +3,10 @@ package com.hifiremote.jp1;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.text.*;
+import java.beans.*;
 import javax.swing.*;
+import javax.swing.text.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
@@ -11,14 +14,14 @@ import info.clearthought.layout.*;
 
 public class ManualSettingsDialog
   extends JDialog
-  implements ActionListener
+  implements ActionListener, PropertyChangeListener
 {
   public ManualSettingsDialog( JFrame owner, Protocol protocol )
   {
     super( owner, "Manual Settings", true );
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
-    
+
     {
       System.err.println( "Copying device parameters" );
       DeviceParameter[] parms = protocol.getDeviceParameters();
@@ -45,21 +48,21 @@ public class ManualSettingsDialog
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
     contentPane.add( mainPanel, BorderLayout.CENTER );
-    
+
     JLabel label = new JLabel( "Protocol ID:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 1" );
 
-    pid = new JTextField();
+    pid = new JFormattedTextField( new HexFormat( 2, 2 ));
     Hex id = protocol.getID();
-    if ( id != null )
-      pid.setText( id.toString());
+    pid.setValue( id );
+    pid.addPropertyChangeListener( "value", this );
     mainPanel.add( pid, "3, 1" );
 
     AbstractTableModel model = new AbstractTableModel()
     {
       public int getRowCount()
       {
-        return deviceParms.size(); 
+        return deviceParms.size();
       }
 
       public int getColumnCount()
@@ -81,7 +84,7 @@ public class ManualSettingsDialog
           return "Comp";
         return null;
       }
-      
+
       public Class getColumnClass( int col )
       {
         if ( col == 0 )
@@ -185,7 +188,7 @@ public class ManualSettingsDialog
           return "Comp";
         return null;
       }
-      
+
       public Class getColumnClass( int col )
       {
         if ( col == 0 )
@@ -240,6 +243,7 @@ public class ManualSettingsDialog
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
 
     ok = new JButton( "OK" );
+    ok.setEnabled( false );
     ok.addActionListener( this );
     buttonPanel.add( ok );
 
@@ -256,19 +260,33 @@ public class ManualSettingsDialog
     setLocation( x, y );
   }
 
+  private MaskFormatter createMaskFormatter( String mask )
+  {
+    MaskFormatter f = null;
+    try
+    {
+      f = new MaskFormatter( "HH HH" );
+    }
+    catch (ParseException e)
+    {
+      e.printStackTrace( System.err );
+    }
+    return f;
+  }
+
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
     if ( source == addDevice )
     {
-      String name = 
+      String name =
         ( String )JOptionPane.showInputDialog( this, "Please provide a name for the device parameter." );
       if ( name == null )
         return;
       Object[] types = { "Numeric entry", "Drop-down list", "Check-box" };
-      String type = ( String )JOptionPane.showInputDialog( this, 
+      String type = ( String )JOptionPane.showInputDialog( this,
                                                         "How will the parameter \"" + name + "\" be presented to the user?",
-                                                        "Device Parameter Type", 
+                                                        "Device Parameter Type",
                                                         JOptionPane.QUESTION_MESSAGE,
                                                         null,
                                                         types,
@@ -279,7 +297,7 @@ public class ManualSettingsDialog
       if ( type.equals( types[ 0 ]))
       {
         Object[] choices = { "8", "7", "6", "5", "4", "3", "2", "1" };
-        String temp = ( String )JOptionPane.showInputDialog( this, 
+        String temp = ( String )JOptionPane.showInputDialog( this,
                                                              "How many bits are required to store the \ndevice parameter \"" + name + "\"?",
                                                              "Numeric Device Parameter Bit Length",
                                                              JOptionPane.QUESTION_MESSAGE,
@@ -303,8 +321,8 @@ public class ManualSettingsDialog
       }
       else
         bits = 1;
-                                                        
-                                                                  
+
+
     }
     else if ( source == cancel )
     {
@@ -325,16 +343,31 @@ public class ManualSettingsDialog
     return userAction;
   }
 
+  // PropertyChangeListener methods
+  public void propertyChange( PropertyChangeEvent e )
+  {
+    Object source = e.getSource();
+    if ( source == pid )
+    {
+      String text = pid.getText().trim();
+      System.err.println( "propertyChange:pid is " + text );
+      if (( text == null  ) || text.equals( "" ))
+        ok.setEnabled( false );
+      else
+        ok.setEnabled( true );
+    }
+  }
+
   private Vector deviceParms = new Vector();
   private Vector deviceTranslators = new Vector();
-  private Vector cmdParms = new Vector(); 
+  private Vector cmdParms = new Vector();
   private Vector cmdTranslators = new Vector();
 
-  private JTextField pid = null;
+  private JFormattedTextField pid = null;
 
   // Device parameter stuff.
   private JTable table = null;
-  private JTextField rawHexData = null; 
+  private JTextField rawHexData = null;
 
   // CommandParameter stuff
   private JTextArea protocolCode = null;

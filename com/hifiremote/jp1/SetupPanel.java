@@ -52,7 +52,7 @@ public class SetupPanel
     nf.setCommitsOnValidEdit( true );
 
     setupCode = new JFormattedTextField( nf );
-    setupCode.addPropertyChangeListener( this );
+    setupCode.addPropertyChangeListener( "value", this );
     setupCode.addFocusListener( this );
     label.setLabelFor( setupCode );
     setupCode.setToolTipText( "Enter the desired setup code (between 0 and 2047) for the device upgrade." );
@@ -90,8 +90,8 @@ public class SetupPanel
     notes.setLineWrap( true );
     notes.setWrapStyleWord( true );
     JScrollPane scrollPane = new JScrollPane( notes );
-    scrollPane.setBorder( 
-      BorderFactory.createCompoundBorder( 
+    scrollPane.setBorder(
+      BorderFactory.createCompoundBorder(
         BorderFactory.createTitledBorder( "Upgrade Notes" ),
         scrollPane.getBorder()));
     notes.getDocument().addDocumentListener( this );
@@ -106,8 +106,8 @@ public class SetupPanel
     protocolNotes.setLineWrap( true );
     protocolNotes.setWrapStyleWord( true );
     scrollPane = new JScrollPane( protocolNotes );
-    scrollPane.setBorder( 
-      BorderFactory.createCompoundBorder( 
+    scrollPane.setBorder(
+      BorderFactory.createCompoundBorder(
         BorderFactory.createTitledBorder( "Protocol Notes" ),
         scrollPane.getBorder()));
     add( scrollPane, "1, 10, 7, 10" );
@@ -293,17 +293,14 @@ public class SetupPanel
   {
     if ( !updateInProgress )
     {
-      if (( e.getSource() == setupCode ) && e.getPropertyName().equals( "value" ))
-      {
-        updateSetupCode();
-      }
+      updateSetupCode();
     }
   }
 
   // Runnable
   public void run()
   {
-    controlToSelectAll.selectAll(); 
+    controlToSelectAll.selectAll();
   }
 
   private JFormattedTextField setupCode = null;

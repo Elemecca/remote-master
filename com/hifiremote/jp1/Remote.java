@@ -34,7 +34,7 @@ public class Remote
         count++;
         start = name.indexOf( '_', start + 1 );
       }
-      
+
       int dash = name.lastIndexOf( '-', underscore );
       int space = name.lastIndexOf( ' ', underscore );
       int pos = Math.max( dash, space );
@@ -65,7 +65,7 @@ public class Remote
   public void load()
     throws Exception
   {
-    try 
+    try
     {
       if ( loaded )
         return;
@@ -81,7 +81,7 @@ public class Remote
         {
           StringTokenizer st = new StringTokenizer( line, "[]" );
           line = st.nextToken();
-  
+
           if ( line.equals( "General" ))
             line = parseGeneralSection( rdr );
           else if ( line.equals( "Checksums" ))
@@ -115,7 +115,7 @@ public class Remote
           line = rdr.readLine();
       }
       rdr.close();
-  
+
       if ( buttonMaps.length == 0 )
       {
         System.err.println( "ERROR: " + file.getName() + " does not specify any ButtonMaps!" );
@@ -124,7 +124,7 @@ public class Remote
       }
       for ( int i = 0; i < buttonMaps.length; i++ )
         buttonMaps[ i ].setButtons( this );
-  
+
       for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
       {
         DeviceType type = ( DeviceType )e.nextElement();
@@ -139,7 +139,7 @@ public class Remote
         if (( map != -1 ) && ( buttonMaps.length > 0 ))
           type.setButtonMap( buttonMaps[ map ] );
       }
-  
+
       if ( deviceTypeAliasNames == null )
       {
         Vector v = new Vector();
@@ -148,7 +148,7 @@ public class Remote
         for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
         {
           DeviceType type = ( DeviceType )e.nextElement();
-    
+
           String typeName = type.getName();
           if ( typeName.startsWith( "VCR" ))
             vcrType = type;
@@ -166,7 +166,7 @@ public class Remote
         deviceTypeAliasNames = ( String[] )v.toArray( deviceTypeAliasNames );
         Arrays.sort( deviceTypeAliasNames );
       }
-  
+
       // Create the upgradeButtons[]
       // and starts off with the buttons in longest button map
       ButtonMap longestMap = null;
@@ -177,7 +177,7 @@ public class Remote
         if (( longestMap == null ) || ( longestMap.size() < thisMap.size() ))
           longestMap = thisMap;
       }
-  
+
       int bindableButtons = 0;
       for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
       {
@@ -186,9 +186,9 @@ public class Remote
              b.allowsXShiftedKeyMove() || ( b.getButtonMaps() != 0 ))
           bindableButtons++;
       }
-  
+
       upgradeButtons = new Button[ bindableButtons ];
-  
+
       // first copy the buttons from the longest map
       int index = 0;
       while ( index < longestMap.size())
@@ -196,7 +196,7 @@ public class Remote
         upgradeButtons[ index ] = longestMap.get( index );
         index++;
       }
-  
+
       // now copy the rest of the buttons, skipping those in the map
       for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
       {
@@ -208,10 +208,10 @@ public class Remote
             && !longestMap.isPresent( b ))
           upgradeButtons[ index++ ] = b;
       }
-  
+
       if ( mapFiles[ mapIndex ] != null )
         readMapFile();
-  
+
       loaded = true;
     }
     catch ( Exception e )
@@ -912,7 +912,6 @@ public class Remote
         if ( colon != -1 )
         {
           name = token.substring( colon + 1 );
-          System.err.println( "name is '" + name + "'" );
           char ch = name.charAt( 0 );
           if (( ch == '\'' ) || ch == '"' )
           {

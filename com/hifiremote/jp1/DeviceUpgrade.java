@@ -27,9 +27,6 @@ public class DeviceUpgrade
       remote = remotes[ 0 ];
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
 
-    DeviceParameter[] devParms = protocol.getDeviceParameters();
-    for ( int i = 0; i < devParms.length; i++ )
-      devParms[ i ].setValue( null );
 
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     Vector names = pm.getNames();
@@ -44,6 +41,12 @@ public class DeviceUpgrade
         break;
       }
     }
+
+    DeviceParameter[] devParms = protocol.getDeviceParameters();
+    for ( int i = 0; i < devParms.length; i++ )
+      devParms[ i ].setValue( null );
+
+    setProtocol( protocol );
 
     notes = null;
     file = null;
@@ -217,6 +220,7 @@ public class DeviceUpgrade
   public void setProtocol( Protocol protocol )
   {
     this.protocol = protocol;
+    parmValues = protocol.getDeviceParmValues();
   }
 
   public Protocol getProtocol()
@@ -392,7 +396,11 @@ public class DeviceUpgrade
       Button b = buttons[ i ];
       Function f = b.getFunction();
       Function sf = b.getShiftedFunction();
+      if ( b.getShiftedButton() != null )
+        sf = null;
       Function xf = b.getXShiftedFunction();
+      if ( b.getXShiftedButton() != null )
+        xf = null;
       if ((( f != null ) && (( map == null ) || !map.isPresent( b ) || f.isExternal())) ||
           (( sf != null ) && ( sf.getHex() != null )) || (( xf != null) && ( xf.getHex() != null )))
       {
@@ -413,9 +421,13 @@ public class DeviceUpgrade
         first = appendKeyMove( buff, button.getKeyMove( f, 0, deviceCode, devType, remote ),
                                f, includeNotes, first );
         f = button.getShiftedFunction();
+        if ( button.getShiftedButton() != null )
+          f = null;
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote ),
                                f, includeNotes, first );
         f = button.getXShiftedFunction();
+        if ( button.getXShiftedButton() != null )
+          f = null;
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote ),
                                f, includeNotes, first );
       }
