@@ -226,9 +226,11 @@ public class DeviceUpgrade
     if ( devTypeAliasName != null )
     {
       DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+      System.err.println( "devType=" + devType );
       byte[] id = protocol.getID().getData();
+      System.err.println( "id=" + id );
       int temp = devType.getNumber() * 0x1000 +
-                 ( id[ 0 ] & 1 ) * 0x08 +
+                 ( id[ 0 ] & 1 ) * 0x0800 +
                  setupCode - remote.getDeviceCodeOffset();
 
       byte[] deviceCode = new byte[2];
