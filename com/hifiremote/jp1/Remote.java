@@ -9,14 +9,51 @@ import javax.swing.*;
 public class Remote
   implements Comparable
 {
+  public Remote( Remote aRemote, int index )
+  {
+    this.file = aRemote.file;
+    this.signature = aRemote.signature;
+    this.names = aRemote.names;
+    nameIndex = index;
+  }
+
   public Remote( File rdf )
   {
     file = rdf;
     StringTokenizer st = new StringTokenizer( rdf.getName());
     signature = st.nextToken(); // upto the 1st space
     st.nextToken( "()" ); // skip the space
-    name = st.nextToken(); // the stuff between the parens
-    name = name.replace( '_', '/' );
+    String name = st.nextToken(); // the stuff between the parens
+    int underscore = name.indexOf( '_' );
+    if ( underscore != -1 )
+    {
+      System.err.println( "Got a multi-name remote!" );
+      int count = 2;
+      int start = name.indexOf( '_', underscore + 1 );
+      while ( start != -1 )
+      {
+        count++;
+        start = name.indexOf( '_', start + 1 );
+      }
+      
+//      name = name.replace( '_', '/' );
+      int dash = name.lastIndexOf( '-', underscore );
+      int length = underscore - dash;
+      String front = name.substring( 0, dash + 1 );
+      int end = dash + count * length;
+      String back = name.substring( end );
+      --length;
+      start = dash + 1;
+      names = new String[ count ];
+      for ( int i = 0; i < count; i++ )
+      {
+        names[ i ] = front + name.substring( start, start + length ) + back;
+        System.err.println( "names[ " + i + " ]=\"" + names[ i ] + "\"");
+        start += length + 1;
+      }
+    }
+    else
+      names[ 0 ] = name;
   }
 
   public File getFile(){ return file; }
@@ -147,7 +184,7 @@ public class Remote
           upgradeButtons[ index++ ] = b;
       }
 
-      if ( mapFile != null )
+      if ( mapFiles[ mapIndex ] != null )
         readMapFile();
     }
     catch ( Exception e )
@@ -163,9 +200,10 @@ public class Remote
     }
   }
 
-  public String toString(){ return name; }
+  public String toString(){ return names[ nameIndex ]; }
   public String getSignature(){ return signature; }
-  public String getName(){ return name; }
+  public String getName(){ return names[ nameIndex ]; }
+  public int getNameCount(){ return names.length; }
   public int getEepromSize()
   {
     checkLoaded();
@@ -366,8 +404,16 @@ public class Remote
         omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
       else if ( parm.equals( "ImageMap" ))
       {
+        int mapCount = st.countTokens();
+        mapFiles = new File[ mapCount ];
         File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
-        mapFile = new File( imageDir, st.nextToken());
+
+        for ( int i = 0; i < mapCount; i++ )
+          mapFiles[ i ] = new File( imageDir, st.nextToken());
+        if ( nameIndex >= mapCount )
+          mapIndex = mapCount - 1;
+        else
+          mapIndex = nameIndex;
       }
       else if ( parm.equals( "DefaultRestrictions" ))
         defaultRestrictions = parseRestrictions( st.nextToken());
@@ -862,22 +908,6 @@ public class Remote
     return line;
   }
 
-//public Button findByKeyCode( Button b )
-//{
-//  checkLoaded();
-//  Button rc = null;
-//  int i = Arrays.binarySearch( buttonsByKeyCode, b, keyCodeComparator );
-//  if ( i >= 0 )
-//    rc = buttonsByKeyCode[ i ];
-//  return rc;
-//}
-//
-//public Button findByName( Button b )
-//{
-//  checkLoaded();
-//  return ( Button )buttonsByName.get( b.getName());
-//}
-
   public Button findByStandardName( Button b )
   {
     checkLoaded();
@@ -1012,6 +1042,7 @@ public class Remote
   private void readMapFile()
     throws Exception
   {
+    File mapFile = mapFiles[ mapIndex ];
     BufferedReader in = new BufferedReader( new FileReader( mapFile ));
     String line = in.readLine();
     Vector work = new Vector();
@@ -1228,57 +1259,8 @@ public class Remote
   // Interface Comparable
   public int compareTo( Object o )
   {
-    return name.compareTo( o.toString());
+    return names[ nameIndex ].compareTo( o.toString());
   }
-
-  private Comparator nameComparator = new Comparator()
-  {
-    public int compare( Object o1, Object o2 )
-    {
-      return (( Button )o1 ).getName().compareToIgnoreCase((( Button )o2 ).getName());
-    }
-
-    public boolean equals( Object o )
-    {
-      return ( this == o );
-    }
-  };
-
-  private Comparator standardNameComparator = new Comparator()
-  {
-    public int compare( Object o1, Object o2 )
-    {
-      return (( Button )o1 ).getStandardName().compareToIgnoreCase((( Button )o2 ).getStandardName());
-    }
-
-    public boolean equals( Object o )
-    {
-      return ( this == o );
-    }
-  };
-
-  private Comparator keyCodeComparator = new Comparator()
-  {
-    public int compare( Object o1, Object o2 )
-    {
-      int key1 = (( Button )o1 ).getKeyCode();
-      int key2 = (( Button )o2 ).getKeyCode();
-
-      int rc = 0;
-      if ( key1 < key2 )
-        rc = -1;
-      else if ( key1 == key2 )
-        rc = 0;
-      else
-        rc = 1;
-      return rc;
-    }
-
-    public boolean equals( Object o )
-    {
-      return ( this == o );
-    }
-  };
 
   public int getShiftMask(){ return shiftMask; }
   public int getXShiftMask(){ return xShiftMask; }
@@ -1289,7 +1271,8 @@ public class Remote
 
   private File file = null;
   private String signature = null;
-  private String name = null;
+  private String[] names = new String[ 1 ];
+  private int nameIndex = 0;
   private boolean loaded = false;
   private int eepromSize;
   private int deviceCodeOffset;
@@ -1330,7 +1313,8 @@ public class Remote
   private Hashtable protocolVariantNames = new Hashtable();
   private Vector protocols = null;
   private ImageIcon imageIcon = null;
-  private File mapFile = null;
+  private File[] mapFiles = new File[ 0 ];
+  private int mapIndex = 0;
   private int shiftMask = 0x80;
   private int xShiftMask = 0xC0;
   private boolean xShiftEnabled = false;

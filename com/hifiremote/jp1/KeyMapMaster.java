@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.73";
+  private static final String version = "v 0.74";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -29,8 +29,9 @@ public class KeyMapMaster
   private JTextField description = null;
   private JComboBox remoteList = null;
   private JComboBox deviceTypeList = null;
-  private Remote[] remotes = null;
+  private Remote[] remotes = new Remote[ 0 ];
   private Remote[] preferredRemotes = new Remote[ 0 ];
+  private Vector preferredRemoteNames = new Vector( 0 );
   private ProtocolManager protocolManager = new ProtocolManager();
   private Remote currentRemote = null;
   private String currentDeviceTypeName = null;
@@ -352,6 +353,22 @@ public class KeyMapMaster
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
       preferredRemotes = d.getPreferredRemotes();
+      if ( preferredRemotes.length == 0 )
+      {
+        usePreferredRemotes.setEnabled( false );
+        if  ( !useAllRemotes.isSelected())
+        {
+          useAllRemotes.setSelected( true );
+          Remote r = ( Remote )remoteList.getSelectedItem();
+          remoteList.removeActionListener( this );
+          remoteList.setModel( new DefaultComboBoxModel( remotes ));
+          remoteList.setSelectedItem( r );
+          remoteList.addActionListener( this );
+        }
+      }
+      else
+        usePreferredRemotes.setEnabled( true );
+
       if ( usePreferredRemotes.isSelected())
         remoteList.setModel( new DefaultComboBoxModel( preferredRemotes ));
     }
@@ -447,35 +464,42 @@ public class KeyMapMaster
     progressMonitor.setProgress( 0 );
     progressMonitor.setMillisToDecideToPopup( 1000 );
 
-    remotes = new Remote[ files.length ];
-
+    Vector work = new Vector();
     for ( int i = 0; i < files.length; i++ )
     {
       File rdf = files[ i ];
       progressMonitor.setNote( "Loading " + rdf.getName());
       
-      Remote r = null;
-      for ( int j = 0; j < preferredRemotes.length; j++ )
-      {
-        Remote r2 = preferredRemotes[ j ];
-        if ( rdf.equals( r2.getFile()))
-        {
-          r = r2;
-          break;
-        }
-      }
-            
-      if ( r == null )
-        r = new Remote( rdf );
+      Remote r = new Remote( rdf );
+      work.add( r );
+      for ( int j = 1; j < r.getNameCount(); j++ )
+        work.add( new Remote( r, j ));
       
-      remotes[ i ] = r;
       progressMonitor.setProgress( i );
     }
-
+    remotes = ( Remote[] )work.toArray( remotes );
     progressMonitor.setNote( "Sorting remotes" );
     Arrays.sort( remotes );
     progressMonitor.setProgress( files.length );
     progressMonitor.close();
+
+    work.clear();
+    for ( Enumeration e = preferredRemoteNames.elements(); e.hasMoreElements(); )
+    {
+      String name = ( String )e.nextElement();
+      int index = Arrays.binarySearch( remotes, name );
+      System.err.println( "Got index " + index + " searching for preferred remote with name \"" + name + "\"" ); 
+      if ( index >= 0 )
+        work.add( remotes[ index ]);
+    }
+    preferredRemotes = ( Remote[] )work.toArray( preferredRemotes );
+
+    if ( preferredRemotes.length == 0 )
+    {
+      useAllRemotes.setSelected( true );
+      usePreferredRemotes.setEnabled( false );
+    }
+
   } // loadRemotes
 
   public void setRemotes()
@@ -834,17 +858,14 @@ public class KeyMapMaster
     if ( promptFlag > promptStrings.length )
       promptFlag = 0;
 
-    Vector v = new Vector();
     for ( int i = 0; true; i++ )
     {
       temp = props.getProperty( "PreferredRemotes." + i );
       if ( temp == null )
         break;
-      File f = new File( temp );
-      if ( f.exists() && f.isFile())
-        v.add( new Remote( f )); 
+      System.err.println( "Preferred remote name " + temp );
+      preferredRemoteNames.add( temp ); 
     }
-    preferredRemotes = ( Remote[])v.toArray( preferredRemotes );
 
     temp = props.getProperty( "ShowRemotes", "All" );
     if ( temp.equals( "All" ))
@@ -902,8 +923,7 @@ public class KeyMapMaster
     for ( int i = 0; i < preferredRemotes.length; i++ )
     {
       Remote r = preferredRemotes[ i ];
-      File f = r.getFile();
-      props.setProperty( "PreferredRemotes." + i, f.getAbsolutePath());
+      props.setProperty( "PreferredRemotes." + i, r.getName());
     }
 
     int state = getExtendedState();
