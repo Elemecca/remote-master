@@ -37,6 +37,8 @@ public class ProtocolManager
       if ( line == null )
         break;
 
+      line = line.trim();
+
       if (( line.length() == 0 ) || ( line.charAt( 0 ) == '#' ))
         continue;
 
