@@ -49,7 +49,7 @@ public class ExternalFunctionPanel
     clipboard = kit.getSystemClipboard();
 
     model = new ExternalFunctionTableModel( devUpgrade );
-    TableSorter sorter = new TableSorter( model );
+    sorter = new TableSorter( model );
     table = new JTable( sorter );
     sorter.addMouseListenerToHeaderInTable( table );
     table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
@@ -117,15 +117,12 @@ public class ExternalFunctionPanel
           int dropRow = table.getSelectedRow();
           if ( dropRow != dragRow )
           {
-            AbstractTableModel model = ( AbstractTableModel )table.getModel();
-            Vector functions = deviceUpgrade.getExternalFunctions();
-            Object f = functions.remove( dragRow );
-            functions.add( dropRow, f );
+            sorter.moveRow( dropRow, dragRow );
 
             if ( dropRow < dragRow )
-              model.fireTableRowsUpdated( dropRow, dragRow );
+              sorter.fireTableRowsUpdated( dropRow, dragRow );
             else
-              model.fireTableRowsUpdated( dragRow, dropRow );
+              sorter.fireTableRowsUpdated( dragRow, dropRow );
             rc = true;
           }
         }
@@ -173,7 +170,7 @@ public class ExternalFunctionPanel
           popupRow = table.rowAtPoint( e.getPoint());
           popupCol = table.columnAtPoint( e.getPoint());
 
-          Function func = ( Function )deviceUpgrade.getExternalFunctions().elementAt( popupRow );
+          Function func = ( Function )sorter.getRow( popupRow );
           deleteItem.setEnabled( !func.assigned());
 
           Transferable clipData = clipboard.getContents( clipboard );
@@ -294,13 +291,13 @@ public class ExternalFunctionPanel
       ExternalFunction function = new ExternalFunction();
       if ( row == -1 )
       {
-        functions.add( function );
+        sorter.addRow( function );
         row = functions.size();
       }
       else
-        functions.add( ++row, function );
+        sorter.insertRow( row, function );
 
-      model.fireTableRowsInserted( row, row );
+      sorter.fireTableRowsInserted( row, row );
       if ( select )
         table.setRowSelectionInterval( row, row );
     }
@@ -315,8 +312,8 @@ public class ExternalFunctionPanel
         deleteButton.setEnabled( false );
         throw new IllegalArgumentException( message );
       }
-      functions.remove( row );
-      model.fireTableRowsDeleted( row, row );
+      sorter.removeRow( row );
+      sorter.fireTableRowsDeleted( row, row );
       if ( row == functions.size() )
         --row;
       if ( select && ( row >= 0 ))
@@ -328,23 +325,25 @@ public class ExternalFunctionPanel
       int start = 0;
       int end = 0;
       int sel = 0;
+      int from = row;
+      int to = 0;
 
       if ( source == upButton )
       {
         start = row - 1;
         end = row;
+        to = start;
         sel = start;
       }
       else
       {
         start = row;
         end = row + 1;
+        to = end;
         sel = end;
       }
-      Object o = functions.elementAt( start );
-      functions.set( start, functions.elementAt( end ));
-      functions.set( end, o );
-      model.fireTableRowsUpdated( start, end );
+      sorter.moveRow( from, to );
+      sorter.fireTableRowsUpdated( start, end );
       if ( select )
         table.setRowSelectionInterval( sel, sel );
     }
@@ -360,7 +359,7 @@ public class ExternalFunctionPanel
             String s =
               ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
             BufferedReader in = new BufferedReader( new StringReader( s ));
-            int colCount = model.getColumnCount();
+            int colCount = sorter.getColumnCount();
             int addedRow = -1;
             for ( String line = in.readLine(); line != null; line = in.readLine())
             {
@@ -385,7 +384,7 @@ public class ExternalFunctionPanel
                   if ( st.hasMoreTokens())
                     st.nextToken();
 
-                  Class aClass = model.getColumnClass( modelCol );
+                  Class aClass = sorter.getColumnClass( modelCol );
                   if ( aClass == String.class )
                   {
                     if (( token.length() == 5 ) &&
@@ -405,14 +404,14 @@ public class ExternalFunctionPanel
                   }
                 }
 
-                model.setValueAt( value, row, modelCol );
+                sorter.setValueAt( value, row, modelCol );
                 workCol++;
               }
               row++;
             }
             if ( addedRow != -1 )
-              model.fireTableRowsInserted( addedRow, row - 1 );
-            model.fireTableRowsUpdated( popupRow, row - 1 );
+              sorter.fireTableRowsInserted( addedRow, row - 1 );
+            sorter.fireTableRowsUpdated( popupRow, row - 1 );
           }
           else
           {
@@ -441,9 +440,9 @@ public class ExternalFunctionPanel
       boolean flag = ( row != -1 );
       if ( flag )
       {
-        Function func = ( Function )functions.elementAt( row );
+        Function func = ( Function )sorter.getRow( row );
         upButton.setEnabled( row > 0 );
-        downButton.setEnabled( row < ( functions.size() - 1 ));
+        downButton.setEnabled( row < ( sorter.getRowCount() - 1 ));
         deleteButton.setEnabled( !func.assigned());
         Transferable clipData = clipboard.getContents( clipboard );
         if (( clipData != null ) &&
@@ -467,6 +466,7 @@ public class ExternalFunctionPanel
     finishEditing();
   }
 
+  private TableSorter sorter = null;
   private ExternalFunctionTableModel model = null;
   private JTable table = null;
   private JButton newButton = null;
