@@ -343,7 +343,7 @@ public class Remote
       }
       else if ( parm.equals( "OEMDevice" ))
       {
-        int deviceNumber = rdr.parseNumber( st.nextToken(","));
+        int deviceNumber = rdr.parseNumber( st.nextToken(",="));
         int deviceAddress = rdr.parseNumber( st.nextToken());
         oemDevice = new OEMDevice( deviceNumber, deviceAddress );
       }
@@ -444,14 +444,14 @@ public class Remote
         defaultRestrictions = parseRestrictions( st.nextToken());
       else if ( parm.equals( "Shift" ))
       {
-        shiftMask = rdr.parseNumber( st.nextToken( "," ));
+        shiftMask = rdr.parseNumber( st.nextToken( "=," ));
         if ( st.hasMoreTokens())
           shiftLabel = st.nextToken().trim();
       }
       else if ( parm.equals( "XShift" ))
       {
         xShiftEnabled = true;
-        xShiftMask = rdr.parseNumber( st.nextToken( "," ));
+        xShiftMask = rdr.parseNumber( st.nextToken( "=," ));
         if ( st.hasMoreTokens())
           xShiftLabel = st.nextToken().trim();
       }
