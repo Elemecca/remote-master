@@ -17,7 +17,7 @@ public class LayoutPanel
   public LayoutPanel( DeviceUpgrade devUpgrade )
   {
     super( devUpgrade );
-
+    setLayout( new BorderLayout());
     imagePanel = new JPanel()
     {
       public void paint( Graphics g )
@@ -64,7 +64,35 @@ public class LayoutPanel
         }
       }
     };
-    add( imagePanel );
+    JPanel temp = new JPanel( new BorderLayout());
+    JPanel fPanel = new JPanel();
+    fPanel.add( imagePanel );
+
+    temp.add( fPanel, BorderLayout.NORTH );
+    add( temp, BorderLayout.CENTER );
+    JPanel infoPanel = new JPanel( new GridLayout( 2, 3 ));
+
+    infoPanel.add( new JLabel( "Button:" ));
+    infoPanel.add( new JLabel( "Function:" ));
+    infoPanel.add( new JLabel( "Shifted:" ));
+    buttonName = new JTextField();
+    buttonName.setEditable( false );
+    infoPanel.add( buttonName );
+
+    function = new JTextField();
+    function.setEditable( false );
+    infoPanel.add( function );
+
+    shifted = new JTextField();
+    shifted.setEditable( false );
+    infoPanel.add( shifted );
+
+    Box box = Box.createVerticalBox();
+    box.add( infoPanel );
+    box.add( Box.createVerticalGlue());
+    box.add( Box.createVerticalGlue());
+
+    add( infoPanel, BorderLayout.NORTH );
 
     imagePanel.addMouseListener( new MouseAdapter()
     {
@@ -85,7 +113,30 @@ public class LayoutPanel
           }
         }
         if ( currentButton != savedButton )
+        {
+          if ( currentButton == null )
+          {
+            buttonName.setText( "" );
+            function.setText( "" );
+            shifted.setText( "" );
+          }
+          else
+          {
+            buttonName.setText( currentButton.getName());
+            Function f = currentButton.getFunction();
+            if ( f != null )
+              function.setText( f.getName());
+            else
+              function.setText( "" );
+            f = currentButton.getShiftedFunction();
+            if ( f != null )
+              shifted.setText( f.getName());
+            else
+              shifted.setText( "" );
+          }
           doRepaint();
+        }
+
       }
 
       public void mouseReleased( MouseEvent e )
@@ -132,4 +183,7 @@ public class LayoutPanel
 
   private Button currentButton = null;
   private JPanel imagePanel = null;
+  private JTextField buttonName = null;
+  private JTextField function = null;
+  private JTextField shifted = null;
 }
