@@ -6,6 +6,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -13,15 +14,21 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.ButtonGroup;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.ProgressMonitor;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.Container;
 import java.awt.Toolkit;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -73,7 +80,7 @@ public class KeyMapMaster
   public KeyMapMaster()
     throws Exception
   {
-    this( new File( System.getProperty( "user.home" ), "KeyMapMaster.properties" ));
+    this( null );
   }
 
   public KeyMapMaster( File propertiesFile )
@@ -81,6 +88,9 @@ public class KeyMapMaster
   {
     super( "KeyMap Master" + version );
     setDefaultLookAndFeelDecorated( true );
+    JDialog.setDefaultLookAndFeelDecorated( true );
+    JFrame.setDefaultLookAndFeelDecorated( true );
+    Toolkit.getDefaultToolkit().setDynamicLayout( true );
     me = this;
 
     addWindowListener( new WindowAdapter()
@@ -124,11 +134,28 @@ public class KeyMapMaster
     saveAsItem.addActionListener( this );
     menu.add( saveAsItem );
 
+    menu = new JMenu( "Look and Feel" );
+    menuBar.add( menu );
+    
+    ButtonGroup group = new ButtonGroup();
+    String lookAndFeelName = UIManager.getLookAndFeel().getClass().getName();
+    UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
+    for ( int i = 0; i < info.length; i++ )
+    { 
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName());
+      item.setActionCommand( info[ i ].getClassName());
+      if ( info[ i ].getClassName().equals( lookAndFeelName ))
+        item.setSelected( true );
+      group.add( item );
+      menu.add( item );
+      item.addActionListener( this );
+    }
+    
     Container mainPanel = getContentPane();
     JTabbedPane tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
 
-    JPanel statusPanel = new JPanel();
+    JPanel statusPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ));
     JLabel label = new JLabel( "Remote:" );
     statusPanel.add( label );
     remoteList = new JComboBox();
@@ -152,8 +179,6 @@ public class KeyMapMaster
 
     mainPanel.add( messageLabel, BorderLayout.SOUTH );
 
-    loadProtocols();
-
     setupPanel = new SetupPanel( deviceUpgrade, protocols );
     currPanel = setupPanel;
     tabbedPane.addTab( "Setup", null, setupPanel, "Enter general information about the upgrade." );
@@ -174,8 +199,11 @@ public class KeyMapMaster
     tabbedPane.addTab( "Output", null, outputPanel,
                        "The output to copy-n-paste into IR." );
 
-    pack();
-    show();
+    loadPreferences();
+
+    loadProtocols();
+    deviceUpgrade.setProtocol(( Protocol )protocols.firstElement());
+    setupPanel.protocolsLoaded( protocols );
 
     loadRemotes();
     setRemotes( remotes );
@@ -487,6 +515,11 @@ public class KeyMapMaster
           }
         }
       }
+      else if ( source.getClass() == JRadioButtonMenuItem.class )
+      {
+        UIManager.setLookAndFeel((( JRadioButtonMenuItem )source ).getActionCommand());
+        SwingUtilities.updateComponentTreeUI( this );
+      }
     }
     catch ( Exception ex )
     {
@@ -507,6 +540,30 @@ public class KeyMapMaster
     throws Exception
   {
     Properties props = new Properties();
+    
+    File userDir = new File( System.getProperty( "user.dir" ));
+    System.err.println( "userDir is " + userDir.getAbsolutePath());
+    if ( propertiesFile == null )
+    {
+      File temp = File.createTempFile( "kmj", null, userDir );
+      System.err.println( "Created temp file " + temp.getName());
+      File dir = null;
+      if ( temp.canWrite())
+      {
+        System.err.println( "Can write" );
+        temp.delete();
+        dir = userDir;
+      }
+      else
+      {
+        System.err.println( "Can't write" );
+        dir = new File( System.getProperty( "user.home" )); 
+      }
+
+      propertiesFile = new File( dir, "KeyMapMaster.properties" );
+      System.err.println( "propertiesFIle is " + propertiesFile.getAbsolutePath());
+    }
+
     if ( propertiesFile.canRead())
     {
       FileInputStream in = new FileInputStream( propertiesFile );
@@ -514,7 +571,6 @@ public class KeyMapMaster
       in.close();
     }
 
-    String userDir = System.getProperty( "userDir.dir" );
     String temp = props.getProperty( "RDFPath" );
     if ( temp != null )
       rdfPath = new File( temp );
@@ -530,6 +586,22 @@ public class KeyMapMaster
     temp = props.getProperty( "LookAndFeel" );
     if ( temp != null )
       UIManager.setLookAndFeel( temp );
+    
+    temp = props.getProperty( "Bounds" );
+    if ( temp != null )
+    {
+      Rectangle r = new Rectangle();
+      StringTokenizer st = new StringTokenizer( temp, "," );
+      r.x = Integer.parseInt( st.nextToken());
+      r.y = Integer.parseInt( st.nextToken());
+      r.width = Integer.parseInt( st.nextToken());
+      r.height = Integer.parseInt( st.nextToken());
+      setBounds( r );
+    }
+    else
+      pack();
+
+    show();
   }
 
   private void savePreferences()
@@ -539,6 +611,12 @@ public class KeyMapMaster
     props.setProperty( "RDFPath", rdfPath.getAbsolutePath());
     props.setProperty( "KMPath", kmPath.getAbsolutePath());
     props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
+    int state = getExtendedState();
+    if ( state != Frame.NORMAL )
+      setExtendedState( Frame.NORMAL );
+    Rectangle bounds = getBounds();
+    props.setProperty( "Bounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
+   
 
     FileOutputStream out = new FileOutputStream( propertiesFile );
     props.store( out, null );

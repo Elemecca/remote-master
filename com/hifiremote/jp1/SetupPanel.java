@@ -5,6 +5,7 @@ import javax.swing.border.Border;
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -106,7 +107,12 @@ public class SetupPanel
     fixedData.setEditable( false );
     add( fixedData, "4, 8" );
 
-    protocolList.setSelectedIndex( 0 );
+//    protocolList.setSelectedIndex( 0 );
+  }
+
+  public void protocolsLoaded( Vector protocols )
+  {
+    protocolList.setModel( new DefaultComboBoxModel( protocols ));
   }
 
   public void update()
