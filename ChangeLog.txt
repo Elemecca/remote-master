@@ -1,3 +1,13 @@
+Changes for v1.02
+- Add "Clean Up" button to Function panels - delete all unused functions (no hex).
+- Fix RC-5 and Dishplayer entries in protocols.ini
+- Enhance Rc5Translator to change the selected device (if possible) when the user enters and out-of-range OBC
+- Add some error checking to Rc5Translator
+- Add AlternatePID entries for Sony Combo protocols
+- Make sub-device default to complement of device for NEC Combo protocols
+- Add support for default values for cmd parms, including the - to indicate complementing
+- Fix bug importing upgrades notes from KM file.
+
 Changes for v1.01
 - More updates to the Dish Network protocols.  Thanks Jon Armstrong
 - Layout Panel: add assigned function to tool-tip text for buttons on remote
