@@ -1,5 +1,12 @@
+Changes for v0.93
+- Fix EFC entry on External Function panel
+- Allow $ when entering hex strings
+- Do not center EFC/Hex column on External Function panel
+- Fix intermittent Exceptions loading device upgrade files.
+
 Changes for v0.92
 - Fix protocol "Sony Combo (new)"
+- Minor fixes for Device Combiner
 
 Changes for v0.91
 
