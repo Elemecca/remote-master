@@ -259,7 +259,8 @@ public class DeviceUpgrade
     for ( Enumeration e = funcs.elements(); e.hasMoreElements(); )
     {
       Function func = ( Function )e.nextElement();
-      if ( func.getName().equalsIgnoreCase( name ))
+      String funcName = func.getName();
+      if (( funcName != null ) && funcName.equalsIgnoreCase( name ))
       {
         rc = func;
         break;
