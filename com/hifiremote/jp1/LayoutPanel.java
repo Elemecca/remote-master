@@ -10,6 +10,7 @@ import java.awt.geom.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.awt.datatransfer.*;
+import java.awt.dnd.*;
 import info.clearthought.layout.*;
 
 public class LayoutPanel
@@ -36,9 +37,11 @@ public class LayoutPanel
 
         if ( currentButton != null )
         {
-          g2.setPaint( Color.white );
-          g2.fill( currentButton.getShape());
+          g2.setPaint( Color.GREEN );
+          g2.setStroke( new BasicStroke( 4.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+          g2.draw( currentButton.getShape());
         }
+
         g2.setPaint( Color.yellow );
         g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
 
@@ -57,6 +60,10 @@ public class LayoutPanel
       }
     };
     JPanel fPanel = new JPanel();
+    FlowLayout fl = ( FlowLayout )fPanel.getLayout();
+    fl.setHgap( 0 );
+    fl.setVgap( 0 );
+    System.err.println( "Insets are " + fPanel.getInsets());
     fPanel.add( imagePanel );
 
     add( new JScrollPane( fPanel ), BorderLayout.WEST );
@@ -91,7 +98,10 @@ public class LayoutPanel
     outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.NORTH );
     panel.add( outerPanel, BorderLayout.CENTER );
 
-    MouseInputAdapter mia = new MouseInputAdapter()
+    DropTarget dropTarget = new LayoutDropTarget();
+    dropTarget.setComponent( imagePanel );
+
+    MouseListener ml = new MouseAdapter()
     {
       public void mousePressed( MouseEvent e )
       {
@@ -124,46 +134,8 @@ public class LayoutPanel
           }
         }
       }
-
-      public void mouseDragged( MouseEvent e )
-      {
-        buttonUnderMouse = getButtonAtPoint( e.getPoint());
-        System.err.println( "mouseDragged: buttonUnderMouse is " + buttonUnderMouse );
-      }
     };
-    imagePanel.addMouseListener( mia );
-    imagePanel.addMouseMotionListener( mia );
-
-    TransferHandler th = new TransferHandler()
-    {
-      public boolean canImport( JComponent comp, DataFlavor[] flavors )
-      {
-        return ( buttonUnderMouse != null );
-      }
-
-      public boolean importData( JComponent c, Transferable t )
-      {
-        boolean rc = false;
-        if ( buttonUnderMouse != null )
-        {
-          try
-          {
-            Function f = ( Function )t.getTransferData( LocalObjectTransferable.getFlavor());
-            buttonUnderMouse.setFunction( f );
-          }
-          catch ( Exception e )
-          {
-            rc = false;
-            System.err.println( "ButtonPanel.importData() caught an exception!" );
-            e.printStackTrace( System.err );
-          }
-        }
-        else
-          rc = false;
-
-        return rc;
-      }
-    };
+    imagePanel.addMouseListener( ml );
   }
 
   private void addFunction( Function f )
@@ -327,8 +299,66 @@ public class LayoutPanel
     }
   }
 
+  class LayoutDropTarget
+    extends DropTarget
+  {
+    public LayoutDropTarget()
+    {
+      setDefaultActions( DnDConstants.ACTION_COPY );
+    }
+
+    public void dragOver( DropTargetDragEvent dtde )
+    {
+      Point p = dtde.getLocation();
+      currentButton = getButtonAtPoint( p );
+      int action = dtde.getDropAction();
+      if (( currentButton != null ) && 
+          (( action == DnDConstants.ACTION_COPY ) || 
+            ( action == DnDConstants.ACTION_MOVE )))
+      {
+        dtde.acceptDrag( action );
+      }
+      else
+        dtde.rejectDrag();
+      doRepaint();
+    }
+
+    public void drop( DropTargetDropEvent dtde )
+    {
+      Point p = dtde.getLocation();
+      currentButton = getButtonAtPoint( p );
+      if ( currentButton != null )
+      {
+        int action = dtde.getDropAction();          
+        dtde.acceptDrop( action );
+        Transferable tf = dtde.getTransferable();
+        DataFlavor[] flavors = tf.getTransferDataFlavors();
+        try
+        {
+          Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor());
+          if ( action == DnDConstants.ACTION_COPY )
+          {
+            currentButton.setShiftedFunction( f );
+          }
+          else if ( action == DnDConstants.ACTION_MOVE )
+          {
+            currentButton.setFunction( f );
+          }
+          setButtonText( currentButton );
+        }
+        catch ( Exception e )
+        {
+          e.printStackTrace( System.err );
+        }
+      }
+      else
+        dtde.rejectDrop();
+      doRepaint();
+    }
+
+  };
+
   private Button currentButton = null;
-  private Button buttonUnderMouse = null;
   private JPanel imagePanel = null;
   private JTextField buttonName = null;
   private JTextField function = null;

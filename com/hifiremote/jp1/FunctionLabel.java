@@ -50,7 +50,7 @@ public class FunctionLabel
 
         public int getSourceActions( JComponent c )
         {
-          return TransferHandler.COPY;
+          return TransferHandler.COPY_OR_MOVE;
         }
       };
     }
