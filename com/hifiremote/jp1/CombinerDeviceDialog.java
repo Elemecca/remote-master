@@ -46,7 +46,7 @@ public class CombinerDeviceDialog
     JLabel label = new JLabel( "Protocol:", SwingConstants.RIGHT );
     mainPanel.add( label, "2, 1" );
 
-    boolean allowUpgrades =  r.getProcessor().equals( "S3C80" );
+    boolean allowUpgrades =  r.getProcessor().getFullName().equals( "S3C80" );
     Vector allProtocols = 
       ProtocolManager.getProtocolManager().getProtocolsForRemote( r, allowUpgrades );
     Vector protocols = new Vector();
@@ -82,7 +82,7 @@ public class CombinerDeviceDialog
     mainPanel.add( label, "2, 6" );
 
     fixedData = new JTextField( " " );
-    fixedData.setEditable( false );
+    // fixedData.setEditable( false );
     mainPanel.add( fixedData, "4, 6" );
 
     mainPanel.add( protocolHolder, "1, 5, 5, 7" );
@@ -128,8 +128,15 @@ public class CombinerDeviceDialog
     p.setDeviceParms( device.getValues());
     updateParameters();
     protocolList.setSelectedItem( p );
+    if ( protocolList.getSelectedItem() != p )
+    {
+      protocolList.addItem( p );
+      protocolList.setSelectedItem( p );
+    }
     protocolID.setText( p.getID().toString());
+    fixedData.removeActionListener( this );
     fixedData.setText( p.getFixedData().toString());
+    fixedData.addActionListener( this );
     protocolNotes.setText( p.getNotes());
     protocolNotes.setCaretPosition( 0 );
   }
@@ -184,8 +191,15 @@ public class CombinerDeviceDialog
   public void updateFixedData()
   {
     Protocol p = device.getProtocol();
-    device.setValues( p.getDeviceParmValues());
+    if ( p.getClass() == ManualProtocol.class )
+    {
+      (( ManualProtocol )p ).setRawHex( new Hex( fixedData.getText()));
+    }
+    else 
+      device.setValues( p.getDeviceParmValues());
+    fixedData.removeActionListener( this );
     fixedData.setText( p.getFixedData().toString());
+    fixedData.addActionListener( this );
   }
 
   // ActionListener Methods
@@ -203,7 +217,10 @@ public class CombinerDeviceDialog
         protocolID.setText( newProtocol.getID().toString());
         device.setProtocol( newProtocol );
         updateParameters();
+        fixedData.removeActionListener( this );
         fixedData.setText( newProtocol.getFixedData().toString());
+        fixedData.addActionListener( this );
+        fixedData.setEditable( newProtocol.getClass() == ManualProtocol.class );
         validate();
         protocolNotes.setText( newProtocol.getNotes());
         protocolNotes.setCaretPosition( 0 );

@@ -143,4 +143,9 @@ public class ManualProtocol
   {
     defaultCmd = cmd;
   }
+
+  public void setRawHex( Hex rawHex )
+  {
+    fixedData = rawHex;
+  }
 }
