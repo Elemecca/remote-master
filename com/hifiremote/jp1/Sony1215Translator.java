@@ -13,9 +13,9 @@ public class Sony1215Translator
     byte[] hex = hexData.getData();
 
     int device1 = (( Integer )parms[ 0 ].getValue()).intValue();
-    boolean force1 = (( Boolean )parms[ 1 ].getValue()).booleanValue();
+    boolean force1 = (( Integer )parms[ 1 ].getValue()).intValue() != 0;
     int device2 = (( Integer )parms[ 2 ].getValue()).intValue();
-    boolean force2 = (( Boolean )parms[ 3 ].getValue()).booleanValue();
+    boolean force2 = (( Integer )parms[ 3 ].getValue()).intValue() != 0;
 
     if (( device1 > 31 ) || force1 )
       hex[ 2 ] = ( byte )0x80;

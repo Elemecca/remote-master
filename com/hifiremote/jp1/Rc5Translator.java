@@ -14,7 +14,7 @@ public class Rc5Translator
     if (oldSelect==3)
       oldSelect = 0;
     int device = ((Integer)devParms[oldSelect*2].getValueOrDefault()).intValue();
-    boolean flag = ((Boolean)devParms[oldSelect*2+1].getValue()).booleanValue();
+    int flag = ((Integer)devParms[oldSelect*2+1].getValue()).intValue();
     if (parms[0]!=null && parms[0].getValue()!=null)
     {
       int select = ((Integer)parms[0].getValue()).intValue();
@@ -22,21 +22,21 @@ public class Rc5Translator
     }
     if (parms[1]!=null && parms[1].getValue()!=null)
     {
-      flag = ((Integer)parms[1].getValue()).intValue() > 63;
+      flag = ((Integer)parms[1].getValue()).intValue() >> 6;
     }
 
     int select;
     int devN=0;
-    boolean flagN = true;
+    int flagN = 1;
     int newSelect = 3;
     for (select=0; select<3; select++)
     {
-      flagN = ! flagN;
+      flagN = 1 - flagN;
       Integer devI = (Integer)devParms[select*2].getValue();
       if ( devI != null )
       {
         devN = devI.intValue();
-        flagN = ((Boolean)devParms[select*2+1].getValue()).booleanValue();
+        flagN = ((Integer)devParms[select*2+1].getValue()).intValue();
       }
       if ( device == devN )
       {
@@ -54,18 +54,18 @@ public class Rc5Translator
     int select = trueSelect;
     if (trueSelect != 3)
     {
-      boolean flag = true;
+      int flag = 1;
       for (select=0; ; select++)
       {
-        flag = ! flag;
+        flag = 1 - flag;
         Integer devI = (Integer)devParms[select*2].getValue();
         if ( devI != null )
-          flag = ((Boolean)devParms[select*2+1].getValue()).booleanValue();
+          flag = ((Integer)devParms[select*2+1].getValue()).intValue();
         if ( select>=trueSelect )
           break;
       }
       int device = ((Integer)devParms[select*2].getValueOrDefault()).intValue();
-      parms[1] = insert( parms[1], 6, 1, flag ? 1 : 0 );
+      parms[1] = insert( parms[1], 6, 1, flag );
       for (select=0; select<3; select++)
       {
         Integer deviceN = (Integer)devParms[select*2].getValue();

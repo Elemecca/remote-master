@@ -12,17 +12,17 @@ public class Rc5FlagTranslator
   {
     byte[] hex = hexData.getData();
 
-    boolean flag0 = (( Boolean )parms[ 1 ].getValue()).booleanValue();
-    boolean flag1 = (parms[ 2 ].getUserValue() == null)
-                  ? ( ! flag0 )
-		  : (( Boolean )parms[ 3 ].getValue()).booleanValue();
-    boolean flag2 = (parms[ 4 ].getUserValue() == null)
-                  ? ( ! flag1 )
-		  : (( Boolean )parms[ 5 ].getValue()).booleanValue();
+    int flag0 = (( Integer )parms[ 1 ].getValue()).intValue();
+    int flag1 = (parms[ 2 ].getUserValue() == null)
+                  ? ( 1 - flag0 )
+		  : (( Integer )parms[ 3 ].getValue()).intValue();
+    int flag2 = (parms[ 4 ].getUserValue() == null)
+                  ? ( 1 - flag1 )
+		  : (( Integer )parms[ 5 ].getValue()).intValue();
 
-    hex[0] = (byte) ( (hex[0] & 0xBF) | (flag0 ? 0x40 : 0) );
-    hex[1] = (byte) ( (hex[1] & 0xBF) | (flag1 ? 0x40 : 0) );
-    hex[2] = (byte) ( (hex[2] & 0xBF) | (flag2 ? 0x40 : 0) );
+    hex[0] = (byte) ( (hex[0] & 0xBF) | (flag0 * 0x40) );
+    hex[1] = (byte) ( (hex[1] & 0xBF) | (flag1 * 0x40) );
+    hex[2] = (byte) ( (hex[2] & 0xBF) | (flag2 * 0x40) );
   }
 
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )

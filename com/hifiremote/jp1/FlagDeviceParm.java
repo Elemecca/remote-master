@@ -18,9 +18,9 @@ public class FlagDeviceParm
   public Object getValue()
   {
     if ( checkBox.isSelected())
-      return Boolean.TRUE;
+      return new Integer(1);
     else
-      return Boolean.FALSE;
+      return new Integer(0);
   }
 
   public void setValue( Object value )
@@ -30,8 +30,6 @@ public class FlagDeviceParm
     {
       if ( value.getClass() == Integer.class )
         flag = ((( Integer )value ).intValue() != 0 );
-      else if ( value.getClass() == Boolean.class )
-        flag = (( Boolean )value ).booleanValue();
     }
     checkBox.setSelected( flag );
   }
