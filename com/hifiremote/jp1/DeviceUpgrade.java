@@ -430,7 +430,7 @@ public class DeviceUpgrade
     for ( int i = 0; i < parms.length; i++ )
     {
       String token = st.nextToken();
-      Integer val = null;
+      Object val = null;
       if ( !token.equals( "null" ))
       {
         if ( token.equals( "true" ))

@@ -1,3 +1,10 @@
+Changed for v0.90
+
+- Add DigitMap entires up to 170
+- Update images and maps to v1.14
+- Add most support for Device Combiner.  Importing a KM file that uses 
+  Device Combiner is not yet supported
+
 Changes for v0.89
 
 - Fix NECx2 device translator declarations
