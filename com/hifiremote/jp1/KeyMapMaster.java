@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.74";
+  private static final String version = "v 0.75";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -96,7 +96,7 @@ public class KeyMapMaster
     deviceUpgrade = new DeviceUpgrade();
 
     createMenus();
-      
+
     loadPreferences();
 
     Container mainPanel = getContentPane();
@@ -172,12 +172,12 @@ public class KeyMapMaster
 
     keyMapPanel = new KeyMapPanel( deviceUpgrade );
     tabbedPane.addTab( "Key Map", null, keyMapPanel,
-                       "Printable list of buttons and their assigned functions" );                       
+                       "Printable list of buttons and their assigned functions" );
 
     outputPanel = new OutputPanel( deviceUpgrade );
     tabbedPane.addTab( "Output", null, outputPanel,
                        "The output to copy-n-paste into IR." );
-    
+
     loadRemotes();
     setRemotes();
 
@@ -249,7 +249,7 @@ public class KeyMapMaster
     exitItem = new JMenuItem( "Exit" );
     exitItem.addActionListener( this );
     menu.add( exitItem );
-    
+
     menu = new JMenu( "Options" );
     menuBar.add( menu );
 
@@ -264,7 +264,7 @@ public class KeyMapMaster
     {
       public void actionPerformed( ActionEvent e )
       {
-        try 
+        try
         {
           UIManager.setLookAndFeel((( JRadioButtonMenuItem )e.getSource()).getActionCommand());
           SwingUtilities.updateComponentTreeUI( me );
@@ -469,12 +469,12 @@ public class KeyMapMaster
     {
       File rdf = files[ i ];
       progressMonitor.setNote( "Loading " + rdf.getName());
-      
+
       Remote r = new Remote( rdf );
       work.add( r );
       for ( int j = 1; j < r.getNameCount(); j++ )
         work.add( new Remote( r, j ));
-      
+
       progressMonitor.setProgress( i );
     }
     remotes = ( Remote[] )work.toArray( remotes );
@@ -488,7 +488,7 @@ public class KeyMapMaster
     {
       String name = ( String )e.nextElement();
       int index = Arrays.binarySearch( remotes, name );
-      System.err.println( "Got index " + index + " searching for preferred remote with name \"" + name + "\"" ); 
+      System.err.println( "Got index " + index + " searching for preferred remote with name \"" + name + "\"" );
       if ( index >= 0 )
         work.add( remotes[ index ]);
     }
@@ -646,7 +646,7 @@ public class KeyMapMaster
       }
       else if ( source == exitItem )
       {
-        dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ));       
+        dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ));
       }
     }
     catch ( Exception ex )
@@ -696,7 +696,7 @@ public class KeyMapMaster
     {
       if ( action != ACTION_EXIT )
         return true;
-    }  
+    }
 
     int rc = JOptionPane.showConfirmDialog( this,
 //                                            "All changes made to the current upgrade will be lost if you proceed.\n\n" +
@@ -835,7 +835,7 @@ public class KeyMapMaster
 
     temp = props.getProperty( "ImportPath", upgradePath.getAbsolutePath());
     importPath = new File( temp );
-    
+
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
     temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
     try
@@ -864,7 +864,7 @@ public class KeyMapMaster
       if ( temp == null )
         break;
       System.err.println( "Preferred remote name " + temp );
-      preferredRemoteNames.add( temp ); 
+      preferredRemoteNames.add( temp );
     }
 
     temp = props.getProperty( "ShowRemotes", "All" );
@@ -872,7 +872,7 @@ public class KeyMapMaster
       useAllRemotes.setSelected( true );
     else
       usePreferredRemotes.setSelected( true );
-    
+
     for ( int i = 0; i < 10; i++ )
     {
       temp = props.getProperty( "RecentFiles." + i );
