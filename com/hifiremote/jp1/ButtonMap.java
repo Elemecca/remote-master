@@ -33,7 +33,8 @@ public class ButtonMap
           System.err.println( "ERROR: ButtonMap " + number + " includes unknown keycode $" +
                               Integer.toHexString( keyCode & 0xFF ) +
                               ", Creating button!" );
-          button = new Button( null, null, keyCode );
+          String name = "button" + Integer.toHexString( keyCode & 0xFF ).toUpperCase();
+          button = new Button( name, name, keyCode );
           remote.addButton( button );
         }
         button.addButtonMap( number );
