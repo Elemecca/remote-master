@@ -1053,8 +1053,16 @@ public class Remote
           if ( type.equals( "default" ))
             continue;
           String displayName = null;
+          String keyCodeText = null;
           String buttonName = st.nextToken();
-          int pos = buttonName.indexOf( '=' );
+          // check if keycode is used
+          int pos = buttonName.indexOf( ':' );
+          if ( pos != -1 )
+          {
+            keyCodeText = buttonName.substring( 0, pos );
+            buttonName = buttonName.substring( pos + 1 );
+          }
+          pos = buttonName.indexOf( '=' );
           if ( pos != -1 )
           {
             displayName = buttonName.substring( 0, pos );
@@ -1062,11 +1070,8 @@ public class Remote
           }
           Button button = null;
           // check if keycode is used
-          pos = buttonName.indexOf( ':' );
-          if ( pos != -1 )
+          if ( keyCodeText != null )
           {
-            String keyCodeText = buttonName.substring( 0, pos );
-            buttonName = buttonName.substring( pos + 1 );
             int keyCode;
             if ( keyCodeText.charAt( 0 ) == '$' )
               keyCode = Integer.parseInt( keyCodeText.substring( 1 ), 16 );
