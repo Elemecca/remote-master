@@ -406,6 +406,8 @@ public class Protocol
 
   public void importCommandParms( Hex hex, String text )
   {
+    System.err.println( "Protocol.importCommandParms( " + text + " ), cmdParms.length=" + cmdParms.length );
+
     if ( cmdParms.length == 1 )
       return;
     Translate[] translators = importCmdTranslators;
