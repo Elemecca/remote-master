@@ -442,6 +442,8 @@ public class Remote
     return processor;
   }
 
+  public byte[] getDigitMaps(){ return digitMaps; }
+
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
   {
