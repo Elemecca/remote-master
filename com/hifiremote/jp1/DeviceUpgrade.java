@@ -125,7 +125,16 @@ public class DeviceUpgrade
 
   public void setDeviceTypeAliasName( String name )
   {
-    devTypeAliasName = name;
+    if ( name != null )
+    {
+      if ( remote.getDeviceTypeByAliasName( name ) != null )
+      {
+        devTypeAliasName = name;
+        return;
+      }
+      System.err.println( "Unable to find device type with alias name " + name );
+    }
+    devTypeAliasName = deviceTypeAliasNames[ 0 ];
   }
 
   public String getDeviceTypeAliasName()
@@ -233,99 +242,95 @@ public class DeviceUpgrade
   {
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade code 0 = " );
-    if ( devTypeAliasName != null )
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    System.err.println( "devType=" + devType );
+    byte[] id = protocol.getID().getData();
+    int temp = devType.getNumber() * 0x1000 +
+               ( id[ 0 ] & 1 ) * 0x0800 +
+               setupCode - remote.getDeviceCodeOffset();
+
+    byte[] deviceCode = new byte[2];
+    deviceCode[ 0 ] = ( byte )(temp >> 8 );
+    deviceCode[ 1 ] = ( byte )temp;
+
+    buff.append( Hex.toString( deviceCode ));
+    buff.append( " (" );
+    buff.append( devTypeAliasName );
+    buff.append( '/' );
+    DecimalFormat df = new DecimalFormat( "0000" );
+    buff.append( df.format( setupCode ));
+    buff.append( ")\n " );
+    buff.append( Hex.toString( id[ 1 ]));
+
+    int digitMapIndex = -1;
+
+    if ( !remote.getOmitDigitMapByte())
     {
-      DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-      System.err.println( "devType=" + devType );
-      byte[] id = protocol.getID().getData();
-      System.err.println( "id=" + id );
-      int temp = devType.getNumber() * 0x1000 +
-                 ( id[ 0 ] & 1 ) * 0x0800 +
-                 setupCode - remote.getDeviceCodeOffset();
-
-      byte[] deviceCode = new byte[2];
-      deviceCode[ 0 ] = ( byte )(temp >> 8 );
-      deviceCode[ 1 ] = ( byte )temp;
-
-      buff.append( Hex.toString( deviceCode ));
-      buff.append( " (" );
-      buff.append( devTypeAliasName );
-      buff.append( '/' );
-      DecimalFormat df = new DecimalFormat( "0000" );
-      buff.append( df.format( setupCode ));
-      buff.append( ")\n " );
-      buff.append( Hex.toString( id[ 1 ]));
-
-      int digitMapIndex = -1;
-
-      if ( !remote.getOmitDigitMapByte())
-      {
-        buff.append( ' ' );
-        digitMapIndex = findDigitMapIndex();
-        if ( digitMapIndex == -1 )
-          buff.append( "00" );
-        else
-        {
-          byte[] array = new byte[ 1 ];
-          array[ 0 ] = ( byte )digitMapIndex;
-          buff.append( Hex.toString( array ));
-        }
-      }
-
-      ButtonMap map = devType.getButtonMap();
-      if ( map != null )
-      {
-        buff.append( ' ' );
-        buff.append( Hex.toString( map.toBitMap( digitMapIndex != -1 )));
-      }
-
       buff.append( ' ' );
-      buff.append( protocol.getFixedData().toString());
-
-      if ( map != null )
+      digitMapIndex = findDigitMapIndex();
+      if ( digitMapIndex == -1 )
+        buff.append( "00" );
+      else
       {
-        byte[] data = map.toCommandList( digitMapIndex != -1 );
-        if (( data != null ) && ( data.length != 0 ))
+        byte[] array = new byte[ 1 ];
+        array[ 0 ] = ( byte )digitMapIndex;
+        buff.append( Hex.toString( array ));
+      }
+    }
+
+    ButtonMap map = devType.getButtonMap();
+    if ( map != null )
+    {
+      buff.append( ' ' );
+      buff.append( Hex.toString( map.toBitMap( digitMapIndex != -1 )));
+    }
+
+    buff.append( ' ' );
+    buff.append( protocol.getFixedData().toString());
+
+    if ( map != null )
+    {
+      byte[] data = map.toCommandList( digitMapIndex != -1 );
+      if (( data != null ) && ( data.length != 0 ))
+      {
+        buff.append( "\n " );
+        buff.append( Hex.toString( data, 16 ));
+      }
+    }
+
+    Button[] buttons = remote.getUpgradeButtons();
+    boolean hasKeyMoves = false;
+    int startingButton = 0;
+    int i;
+    for ( i = 0; i < buttons.length; i++ )
+    {
+      Button b = buttons[ i ];
+      Function f = b.getFunction();
+      Function sf = b.getShiftedFunction();
+      if ((( f != null ) && (( map == null ) || !map.isPresent( b ) || f.isExternal())) ||
+          (( sf != null ) && ( sf.getHex() != null )))
+      {
+        hasKeyMoves = true;
+        break;
+      }
+    }
+    if ( hasKeyMoves )
+    {
+      deviceCode[ 0 ] = ( byte )( deviceCode[ 0 ] & 0xF7 );
+      buff.append( "\nKeyMoves" );
+      for ( ; i < buttons.length; i++ )
+      {
+        Button button = buttons[ i ];
+        byte[] keyMoves = button.getKeyMoves( deviceCode, devType, remote );
+        if (( keyMoves != null ) && keyMoves.length > 0 )
         {
           buff.append( "\n " );
-          buff.append( Hex.toString( data, 16 ));
+          buff.append( Hex.toString( keyMoves ));
         }
       }
-
-      Button[] buttons = remote.getUpgradeButtons();
-      boolean hasKeyMoves = false;
-      int startingButton = 0;
-      int i;
-      for ( i = 0; i < buttons.length; i++ )
-      {
-        Button b = buttons[ i ];
-        Function f = b.getFunction();
-        Function sf = b.getShiftedFunction();
-        if ((( f != null ) && (( map == null ) || !map.isPresent( b ) || f.isExternal())) ||
-            (( sf != null ) && ( sf.getHex() != null )))
-        {
-          hasKeyMoves = true;
-          break;
-        }
-      }
-      if ( hasKeyMoves )
-      {
-        deviceCode[ 0 ] = ( byte )( deviceCode[ 0 ] & 0xF7 );
-        buff.append( "\nKeyMoves" );
-        for ( ; i < buttons.length; i++ )
-        {
-          Button button = buttons[ i ];
-          byte[] keyMoves = button.getKeyMoves( deviceCode, devType, remote );
-          if (( keyMoves != null ) && keyMoves.length > 0 )
-          {
-            buff.append( "\n " );
-            buff.append( Hex.toString( keyMoves ));
-          }
-        }
-      }
-
-      buff.append( "\nEND" );
     }
+
+    buff.append( "\nEND" );
 
     return buff.toString();
   }
@@ -490,19 +495,21 @@ public class DeviceUpgrade
     str = props.getProperty( "DeviceIndex" );
     if ( str != null )
       index = Integer.parseInt( str, 16 );
-    devTypeAliasName = props.getProperty( "DeviceType" );
-    System.err.println( "Searching for device type " + devTypeAliasName );
-    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    if ( devType == null )
-      System.err.println( "Unable to find device type with alias name " + devTypeAliasName );
+    setDeviceTypeAliasName( props.getProperty( "DeviceType" ) );
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ));
 
-    Hex pid = new Hex( props.getProperty( "Protocol" ));
-    String name = props.getProperty( "Protocol.name" );
+    Hex pid = new Hex( props.getProperty( "Protocol", "0200" ));
+    String name = props.getProperty( "Protocol.name", "" );
     String variantName = props.getProperty( "Protocol.variantName", "" );
-    System.err.println( "Searching for protocol with id " + props.getProperty( "Protocol" ));
 
-    protocol = protocolManager.findProtocol( name, pid, variantName );
+    String showV = (variantName.equals("")) ? "" : (": " + variantName);
+    System.err.println( "Searching for protocol \"" + name + "\" with id " + pid + showV);
+
+    protocol = protocolManager.findNearestProtocol( name, pid, variantName );
+
+    if ( protocol != null )
+      System.err.println( "Selected protocol " + protocol.getDiagnosticName() );
+
     if ( protocol == null )
     {
       JOptionPane.showMessageDialog( null,

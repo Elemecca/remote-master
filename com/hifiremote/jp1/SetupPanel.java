@@ -103,27 +103,72 @@ public class SetupPanel
     notesPanel.setBorder( BorderFactory.createTitledBorder( "Protocol Notes" ));
     notesPanel.add( new JScrollPane( protocolNotes ), BorderLayout.CENTER );
     add( notesPanel, "1, 10, 7, 10" );
-  }
+  } // SetupPanel
 
   public void update()
   {
     updateInProgress = true;
 //    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
     setupCode.setText( nf.format( deviceUpgrade.getSetupCode()));
+    Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
     Vector protocols = protocolManager.getProtocolsForRemote( remote );
+    if ( !protocols.contains( p ))
+    {
+      // ??? There should be a better way to handle this (the current protocol is
+      // incompatible with the current remote), but this way is at least better than
+      // the old way of displaying the first compatible protocol.
+      protocols = new Vector( protocols );
+      protocols.add( p );
+    }
+    updateParameters();
     protocolList.setModel( new DefaultComboBoxModel( protocols ));
-    Protocol p = deviceUpgrade.getProtocol();
     protocolList.setSelectedItem( p );
-    protocolID.setText( p.getID().toString() + ':' + p.getVariantName());
+    protocolID.setText( p.getID().toString());
     notes.setText( deviceUpgrade.getNotes());
     fixedData.setText( p.getFixedData().toString());
     updateInProgress = false;
   }
 
+  public void updateParameters()
+  {
+    DeviceParameter[] newParameters = deviceUpgrade.getProtocol().getDeviceParameters();
+    if ( parameters != newParameters )
+    {
+      if ( parameters != null )
+      {
+        for ( int i = 0; i < parameters.length; i++ )
+        {
+          parameters[ i ].removeListener( this );
+          remove( parameters[ i ].getLabel());
+          remove( parameters[ i ].getComponent());
+          tl.deleteRow( 8 );
+          tl.deleteRow( 8 );
+        }
+      }
+      parameters = newParameters;
+      if ( parameters != null )
+      {
+        int row = 8;
+        for ( int i = 0; i < parameters.length; i++ )
+        {
+          parameters[ i ].addListener( this );
+          tl.insertRow( row, TableLayout.PREFERRED );
+          add( parameters[ i ].getLabel(), "2, " + row );
+          add( parameters[ i ].getComponent() , "4, " + row );
+          row++;
+          tl.insertRow( row++, 5 );
+        }
+        TableLayoutConstraints tlc = tl.getConstraints( protocolHolder );
+        remove( protocolHolder );
+        add( protocolHolder, tlc );
+      }
+    }
+  }
+
   public void updateFixedData()
   {
-    Protocol p = getProtocol();
+    Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
     fixedData.setText( p.getFixedData().toString());
   }
@@ -135,50 +180,20 @@ public class SetupPanel
 
     if ( source == protocolList )
     {
-      Protocol protocol = ( Protocol )protocolList.getSelectedItem();
-      Remote remote = deviceUpgrade.getRemote();
-      if ( protocol != null && ( currProtocol != protocol ))
+      Protocol newProtocol = getSelectedProtocol();
+      Protocol oldProtocol = deviceUpgrade.getProtocol();
+      if ( newProtocol != oldProtocol )
       {
-        if ( currProtocol != null && !updateInProgress )
-          currProtocol.convertFunctions( deviceUpgrade.getFunctions(), protocol );
-        currProtocol = protocol;
-        protocolID.setText( protocol.getID().toString());
+        if ( newProtocol != null && oldProtocol != null && !updateInProgress )
+          oldProtocol.convertFunctions( deviceUpgrade.getFunctions(), newProtocol );
+        protocolID.setText( newProtocol.getID().toString());
         JViewport vp = ( JViewport )protocolNotes.getParent();
         vp.setViewPosition( new Point( 0, 0 ));
-        deviceUpgrade.setProtocol( protocol );
-        if ( parameters != null )
-        {
-          for ( int i = 0; i < parameters.length; i++ )
-          {
-            parameters[ i ].removeListener( this );
-
-            remove( parameters[ i ].getLabel());
-            remove( parameters[ i ].getComponent());
-            tl.deleteRow( 8 );
-            tl.deleteRow( 8 );
-          }
-        }
-        parameters = protocol.getDeviceParameters();
-        if ( parameters != null )
-        {
-          int row = 8;
-          for ( int i = 0; i < parameters.length; i++ )
-          {
-            parameters[ i ].addListener( this );
-
-            tl.insertRow( row, TableLayout.PREFERRED );
-            add( parameters[ i ].getLabel(), "2, " + row );
-            add( parameters[ i ].getComponent() , "4, " + row );
-            row++;
-            tl.insertRow( row++, 5 );
-          }
-          TableLayoutConstraints tlc = tl.getConstraints( protocolHolder );
-          remove( protocolHolder );
-          add( protocolHolder, tlc );
-        }
-        fixedData.setText( protocol.getFixedData().toString());
+        deviceUpgrade.setProtocol( newProtocol );
+        updateParameters();
+        fixedData.setText( newProtocol.getFixedData().toString());
         revalidate();
-        protocolNotes.setText( protocol.getNotes());
+        protocolNotes.setText( newProtocol.getNotes());
         protocolNotes.setCaretPosition( 0 );
         protocolNotes.revalidate();
         SwingUtilities.updateComponentTreeUI( this );
@@ -188,9 +203,9 @@ public class SetupPanel
       updateSetupCode();
     else // must be a protocol parameter
       updateFixedData();
-  }
+  } // actionPerformed
 
-  public Protocol getProtocol()
+  public Protocol getSelectedProtocol()
   {
     Protocol protocol = ( Protocol )protocolList.getSelectedItem();
     return protocol;
@@ -198,7 +213,7 @@ public class SetupPanel
 
   public void commit()
   {
-//    Protocol p = getProtocol();
+//    Protocol p = getSelectedProtocol();
 // if ( p != null )
 //      deviceUpgrade.setProtocol( p );
 
@@ -281,7 +296,6 @@ public class SetupPanel
   private JTextField fixedData = null;
   private JTextArea protocolNotes = null;
   private DeviceParameter[] parameters = null;
-  private Protocol currProtocol = null;
   private TableLayout tl;
   private boolean updateInProgress = false;
   private static DecimalFormat nf = new DecimalFormat( "0000" );

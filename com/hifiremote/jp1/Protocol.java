@@ -223,6 +223,13 @@ public class Protocol
   public String getName(){ return name; }
   public Hex getID(){ return id; }
   public String getVariantName(){ return variantName; }
+  public String getDiagnosticName( )
+  {
+    String result = "\"" + name + "\" (" + id;
+    if ( variantName.length() > 0 )
+      result += " : " + variantName;
+    return result + ")";
+  }
   public Hex getFixedData()
   {
     System.err.println( "Protocol.getFixedData()" );
@@ -243,7 +250,7 @@ public class Protocol
   // convert the functions defined in this protocol to the new Protocol
   public void convertFunctions( Vector funcs, Protocol newProtocol )
   {
-    System.err.println( "Protocol.convertFunctions()" );
+    System.err.println( getDiagnosticName() + " Protocol.convertFunctions(" + newProtocol.getDiagnosticName() + ")" );
     CmdParameter[] newParms = newProtocol.cmdParms;
 
     // count the number of matching parameters

@@ -190,7 +190,7 @@ public class ProtocolManager
 
   public Protocol findProtocol( String name, Hex id, String variantName )
   {
-    Vector protocols = findByName( name );
+    Vector protocols = findByPID( id );
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol p = ( Protocol )e.nextElement();
@@ -200,6 +200,32 @@ public class ProtocolManager
         return p;
       }
     }
+    return null;
+  }
+
+  public Protocol findNearestProtocol( String name, Hex id, String variantName )
+  {
+    Protocol near = null;
+    Vector protocols = findByPID( id );
+    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    {
+      Protocol p = ( Protocol )e.nextElement();
+      if ( p.getVariantName().equals( variantName ) )
+      {
+        if ( p.getName().equals( name ) )
+          return p;
+        near = p;
+      }
+      if ( p.getName().equals( name ) && near == null )
+      {
+        near = p;
+      }
+    }
+    if (near != null)
+      return near;
+    protocols = findByName( name );
+    if ( protocols != null )
+      return ( Protocol )protocols.get(0);
     return null;
   }
 

@@ -298,7 +298,7 @@ public class KeyMapMaster
     Arrays.sort( remotes );
     progressMonitor.setProgress( files.length );
     progressMonitor.close();
-  }
+  } // loadRemotes
 
   public void setRemotes( Remote[] remotes )
   {
@@ -412,7 +412,7 @@ public class KeyMapMaster
     {
       ex.printStackTrace( System.err );
     }
-  }
+  } // actionPerformed
 
   public void saveAs()
     throws IOException
@@ -504,6 +504,7 @@ public class KeyMapMaster
 
     validateUpgrade();
   }
+
   // ChangeListener methods
   private KMPanel currPanel = null;
   public void stateChanged( ChangeEvent e )
@@ -644,8 +645,10 @@ public class KeyMapMaster
     if ( !protocols.contains( p ))
     {
       JOptionPane.showMessageDialog( this, 
-                                     "The select protocol is not compatible with the selected remote.\n" + 
-                                     "This upgrade will NOT function correctly.  Please choose a different protocol.",
+                                     "The selected protocol " + p.getDiagnosticName() +
+                                     "\nis not compatible with the selected remote.\n" + 
+                                     "This upgrade will NOT function correctly.\n" +
+                                     "Please choose a different protocol.",
                                      "Error", JOptionPane.ERROR_MESSAGE );
     }
   }
