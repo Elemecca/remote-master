@@ -14,11 +14,12 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.33";
+  private static final String version = "v 0.34";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
   private JMenuItem saveAsItem = null;
+  private JMenu recentFileMenu = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
   private JComboBox remoteList = null;
@@ -75,8 +76,6 @@ public class KeyMapMaster
 
     this.propertiesFile = propertiesFile;
 
-//    loadPreferences();
-
     deviceUpgrade = new DeviceUpgrade();
 
     JMenuBar menuBar = new JMenuBar();
@@ -96,6 +95,10 @@ public class KeyMapMaster
     saveAsItem = new JMenuItem( "Save as..." );
     saveAsItem.addActionListener( this );
     menu.add( saveAsItem );
+
+    menu.addSeparator();
+    recentFileMenu = new JMenu( "Recent" );
+    menu.add( recentFileMenu );
 
     menu = new JMenu( "Look and Feel" );
     menuBar.add( menu );
@@ -485,21 +488,7 @@ public class KeyMapMaster
           }
           else
           {
-            kmPath = file.getParentFile();
-            deviceUpgrade.reset( remotes, protocols );
-            deviceUpgrade.load( file, remotes, protocols );
-            setTitle( "KeyMapMaster " + version + ": " + file.getName());
-            description.setText( deviceUpgrade.getDescription());
-            saveItem.setEnabled( true );
-            remoteList.removeActionListener( this );
-            deviceTypeList.removeActionListener( this );
-            String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
-            setRemote( deviceUpgrade.getRemote());
-            remoteList.setSelectedItem( deviceUpgrade.getRemote());
-            setDeviceTypeName( savedTypeName );
-            remoteList.addActionListener( this );
-            deviceTypeList.addActionListener( this );
-            currPanel.update();
+            openFile( file );
           }
         }
       }
@@ -515,6 +504,41 @@ public class KeyMapMaster
     }
   }
 
+  public void openFile( File file )
+    throws Exception
+  {
+    kmPath = file.getParentFile();
+    deviceUpgrade.reset( remotes, protocols );
+    deviceUpgrade.load( file, remotes, protocols );
+    setTitle( "KeyMapMaster " + version + ": " + file.getName());
+    description.setText( deviceUpgrade.getDescription());
+    saveItem.setEnabled( true );
+    remoteList.removeActionListener( this );
+    deviceTypeList.removeActionListener( this );
+    String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
+    setRemote( deviceUpgrade.getRemote());
+    remoteList.setSelectedItem( deviceUpgrade.getRemote());
+    setDeviceTypeName( savedTypeName );
+    remoteList.addActionListener( this );
+    deviceTypeList.addActionListener( this );
+    currPanel.update();
+
+    int itemCount = recentFileMenu.getItemCount();
+    for ( int i = 0; i < itemCount; i++ )
+    {
+      JMenuItem item = recentFileMenu.getItem( i );
+      FileAction action = ( FileAction  )item.getAction();
+      File f = action.getFile();
+      if ( f.equals( file ))
+      {
+        recentFileMenu.remove( i );
+        itemCount--;
+      }
+    }
+    while ( itemCount > 9 )
+      recentFileMenu.remove( --itemCount ); 
+    recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
+  }
   // ChangeListener methods
   private KMPanel currPanel = null;
   public void stateChanged( ChangeEvent e )
@@ -579,6 +603,14 @@ public class KeyMapMaster
     lastRemoteName = props.getProperty( "Remote.name" );
     System.err.println( "for " + lastRemoteName );
     lastRemoteSignature = props.getProperty( "Remote.signature" );
+
+    for (int i = 0; i < 10; i++ )
+    {
+      temp = props.getProperty( "RecentFiles." + i );
+      if ( temp == null )
+        break;
+      recentFileMenu.add( new FileAction( new File( temp )));
+    }
     
     temp = props.getProperty( "Bounds" );
     if ( temp != null )
@@ -608,6 +640,14 @@ public class KeyMapMaster
     props.setProperty( "Remote.name", remote.getName());
     props.setProperty( "Remote.signature", remote.getSignature());
     
+    for ( int i = 0; i < recentFileMenu.getItemCount(); i++ )
+    {
+      JMenuItem item = recentFileMenu.getItem( i );
+      FileAction action = ( FileAction )item.getAction();
+      File f = action.getFile();
+      props.setProperty( "RecentFiles." + i, f.getAbsolutePath());
+    }
+
     int state = getExtendedState();
     if ( state != Frame.NORMAL )
       setExtendedState( Frame.NORMAL );
@@ -701,6 +741,34 @@ public class KeyMapMaster
     public String getDescription()
     {
       return "Directories";
+    }
+  }
+
+  private class FileAction
+    extends AbstractAction
+  {
+    private File file = null;
+    public FileAction( File file )
+    {
+      super( file.getAbsolutePath());
+      this.file = file;
+    }
+    
+    public void actionPerformed( ActionEvent e )
+    {
+      try
+      {
+        openFile( file );
+      }
+      catch ( Exception ex )
+      {
+        ex.printStackTrace( System.err );
+      }
+    }
+    
+    public File getFile()
+    {
+      return file;
     }
   }
 }
