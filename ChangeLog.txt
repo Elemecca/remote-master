@@ -1,3 +1,12 @@
+Changes for v1.05
+- Add support for defining Manual Settings, Phase 1 (not ready for use).
+- Add About dialog
+- Improve importing of KM upgrades that use Manual Settings
+- Make Device column wider for RC-5 protocol
+- Add mnemonics for menu items
+- Corrected entry for NEC 2DEV Combo protocol, courtesy Jon Armstrong
+- Fix bug saving upgrades with Manual Settings and no device parameters
+
 Changes for v1.04
 - Correction to Jerrold entry in protocols.ini
 - Updates to RC-5 protocols, courtesy of Jon Armstrong

@@ -73,7 +73,7 @@ public class KeyMapMaster
   public KeyMapMaster( String[] args )
     throws Exception
   {
-    super( "RemoteMaster " + version );
+    super( "RemoteMaster" );
     me = this;
 
     File fileToOpen = parseArgs( args );
@@ -970,10 +970,17 @@ public class KeyMapMaster
 
   private void refresh()
   {
-    String title = "RemoteMaster " + version;
+    String title = "RemoteMaster";
     File file = deviceUpgrade.getFile();
     if ( file != null )
-      title = title + ": " + file.getName();
+    try 
+    {
+      title = file.getCanonicalPath() + " - RemoteMaster";
+    }
+    catch ( Exception e )
+    {
+      e.printStackTrace( System.err );
+    }
 
     saveItem.setEnabled( file != null );
     removeListeners();   
