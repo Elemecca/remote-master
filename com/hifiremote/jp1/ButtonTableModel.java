@@ -14,7 +14,7 @@ public class ButtonTableModel
   private static final String[] columnNames =
   { "Button", "Function", "Shifted" };
   private static final Class[] columnClasses =
-  { Button.class, Function.class, Function.class };
+  { Button.class, String.class, Function.class };
 
   public ButtonTableModel() { }
 
@@ -47,10 +47,12 @@ public class ButtonTableModel
         rc = button;
         break;
       case functionCol:
-        rc = button.getFunction();
+        if ( button.getFunction() != null )
+          rc = button.getFunction().getName();
         break;
       case shiftedCol:
-        rc = button.getShiftedFunction();
+        if ( button.getShiftedFunction() != null )
+          rc = button.getShiftedFunction().getName();
         break;
       default:
         break;

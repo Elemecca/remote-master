@@ -15,7 +15,7 @@ public class FunctionItem
     if ( function == null )
       setText( "- none -" );
     else
-      setText( function.toString());
+      setText( function.getName());
   }
 
   public Function getFunction(){ return function; }
