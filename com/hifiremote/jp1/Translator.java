@@ -101,12 +101,12 @@ public class Translator
   public int getIndex(){ return index; }
   public int getBits(){ return bits; }
   public int getBitOffset(){ return bitOffset; }
-  private boolean lsb = false;
-  private boolean comp = false;
-  private int index = 0;
-  private int bits = 8;
-  private int bitOffset = 0;
-  private int lsbOffset = 0;
+  protected boolean lsb = false;
+  protected boolean comp = false;
+  protected int index = 0;
+  protected int bits = 8;
+  protected int bitOffset = 0;
+  protected int lsbOffset = 0;
 
   private final static int indexIndex = 0;
   private final static int bitsIndex = 1;
