@@ -56,12 +56,18 @@ public class Function
     this.name = name;
     if ( label != null )
       label.setText( name );
+    if ( item != null )
+      item.setText( name );
     return this;
   }
 
   public Function setNotes( String notes )
   {
     this.notes = notes;
+    if ( item != null )
+      item.setToolTipText( notes );
+    if ( label != null )
+      label.setToolTipText( notes );
     return this;
   }
 
@@ -90,6 +96,13 @@ public class Function
     return label;
   }
 
+  public FunctionItem getItem()
+  {
+    if ( item == null )
+      item = new FunctionItem( this );
+    return item;
+  }
+
   public void addReference()
   {
     ++refCount;
@@ -114,5 +127,6 @@ public class Function
   protected String notes = null;
   protected Hex hex = null;
   private FunctionLabel label = null;
+  private FunctionItem item = null;
   private int refCount = 0;
 }

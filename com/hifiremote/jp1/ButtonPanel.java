@@ -68,8 +68,9 @@ public class ButtonPanel
     table.setDefaultRenderer( Button.class, renderer );
 
 //    table.getTableHeader().setReorderingAllowed( false );
-    (( DefaultTableCellRenderer )table.getDefaultRenderer( Function.class )).setToolTipText(
-     "Drag or double-click a function to set the functions for a button, or use the popup menu of available functions." );
+    table.setDefaultRenderer( Function.class, new FunctionRenderer());
+//    (( DefaultTableCellRenderer )table.getDefaultRenderer( Function.class )).setToolTipText(
+//     "Drag or double-click a function to set the functions for a button, or use the popup menu of available functions." );
 
     TransferHandler th = new TransferHandler()
     {
@@ -166,7 +167,11 @@ public class ButtonPanel
       l.addMouseListener( doubleClickListener );
       functionPanel.add( l );
 
-      FunctionItem item = new FunctionItem( f );
+      FunctionItem item;
+      if ( f == null )
+        item = new FunctionItem( null );
+      else
+        item = f.getItem();
       item.addActionListener( this );
       popup.add( item );
     }

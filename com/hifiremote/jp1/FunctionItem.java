@@ -15,7 +15,10 @@ public class FunctionItem
     if ( function == null )
       setText( "- none -" );
     else
+    {
       setText( function.getName());
+      setToolTipText( function.getNotes());
+    }
   }
 
   public Function getFunction(){ return function; }
