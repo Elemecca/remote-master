@@ -8,7 +8,7 @@ import javax.swing.event.*;
 
 public class PreferredRemoteDialog
   extends JDialog
-  implements ActionListener
+  implements ActionListener, ListSelectionListener
 {
   public PreferredRemoteDialog( JFrame owner, Remote[] remotes, Remote[] preferredRemotes )
   {
@@ -39,7 +39,9 @@ public class PreferredRemoteDialog
 
     unusedList = new JList( unusedListModel );
     unusedList.setVisibleRowCount( 20 );
+    unusedList.addListSelectionListener( this );
     preferredList = new JList( preferredListModel );
+    preferredList.addListSelectionListener( this );
 
     Container contentPane = getContentPane();
 
@@ -59,12 +61,14 @@ public class PreferredRemoteDialog
     
     box = Box.createVerticalBox();
     add = new JButton( " -->> " );
+    add.setEnabled( false );
     add.addActionListener( this );
     box.add( add );
 
     box.add( Box.createVerticalStrut( 10 ));
 
     remove = new JButton( " <<-- " );
+    remove.setEnabled( false );
     remove.addActionListener( this );
     box.add( remove );
 
@@ -166,6 +170,15 @@ public class PreferredRemoteDialog
       }
       --fromIndex;
     }
+  }
+
+  public void valueChanged( ListSelectionEvent e )
+  {
+    Object source = e.getSource();
+    if ( source == unusedList )
+      add.setEnabled( !unusedList.isSelectionEmpty());
+    else
+      remove.setEnabled( !preferredList.isSelectionEmpty());
   }
 
   private DefaultListModel unusedListModel = null;
