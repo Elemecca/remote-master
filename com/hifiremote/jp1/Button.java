@@ -293,4 +293,5 @@ public class Button
   public static int ALL_DATA = ALL_MACRO_DATA | ALL_TMACRO_DATA | ALL_FAV_DATA;
   public static int SHIFT = SHIFT_BIND | SHIFT_DATA;
   public static int XSHIFT = XSHIFT_BIND | XSHIFT_DATA;
+  public static int ALL = ALL_DATA | ALL_BIND;
 }

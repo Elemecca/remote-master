@@ -670,13 +670,27 @@ public class Remote
       restrictionTable.put( "AllData", new Integer( Button.ALL_DATA ));
       restrictionTable.put( "Shift", new Integer( Button.SHIFT ));
       restrictionTable.put( "XShift", new Integer( Button.XSHIFT ));
+      restrictionTable.put( "All", new Integer( Button.ALL ));
     }
-    StringTokenizer st = new StringTokenizer( str, "+" );
+    StringTokenizer st = new StringTokenizer( str, "+-", true );
+    boolean isAdd = true;
     while ( st.hasMoreTokens())
     {
-      Integer value = ( Integer )restrictionTable.get( st.nextToken());
-      if ( value != null )
-        rc |= value.intValue();
+      String token = st.nextToken();
+      if ( token.equals( "+" ))
+        isAdd = true;
+      else if ( token.equals( "-" ))
+        isAdd = false;
+      else
+      {
+        Integer value = ( Integer )restrictionTable.get( st.nextToken());
+        if ( value == null )
+          continue;
+        if ( isAdd )
+          rc |= value.intValue();
+        else
+          rc &= ~value.intValue();
+      }
     }
     return rc;
   }
