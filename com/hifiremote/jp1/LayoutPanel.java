@@ -130,7 +130,7 @@ public class LayoutPanel
         if ( e.isPopupTrigger() )
         {
           ButtonShape buttonShape = getShapeAtPoint( e.getPoint());
-          if ( buttonShape != null )
+          if (( buttonShape != null ) && ( getButtonForShape( buttonShape ) != null ))
           {
             currentShape = buttonShape;
             doRepaint();
