@@ -81,6 +81,8 @@ public class KeyMapMaster
   private File propertiesFile = null;
   private File rdfPath = null;
   private File kmPath = null;
+  private String lastRemoteName = null;
+  private String lastRemoteSignature = null;
 
   public KeyMapMaster()
     throws Exception
@@ -117,7 +119,7 @@ public class KeyMapMaster
 
     this.propertiesFile = propertiesFile;
 
-    loadPreferences();
+//    loadPreferences();
 
     deviceUpgrade = new DeviceUpgrade();
 
@@ -231,7 +233,13 @@ public class KeyMapMaster
 
     loadRemotes();
     setRemotes( remotes );
-    setRemote( remotes[ 0 ]);
+
+    int index = 0;
+    if ( lastRemoteName != null )
+      index = Arrays.binarySearch( remotes, lastRemoteName );
+    if ( index < 0 )
+      index = 0;
+    setRemote( remotes[ index ]);
 
     remoteList.addActionListener( this );
     deviceTypeList.addActionListener( this );
@@ -615,6 +623,9 @@ public class KeyMapMaster
     temp = props.getProperty( "LookAndFeel" );
     if ( temp != null )
       UIManager.setLookAndFeel( temp );
+
+    lastRemoteName = props.getProperty( "Remote.name" );
+    lastRemoteSignature = props.getProperty( "Remote.signature" );
     
     temp = props.getProperty( "Bounds" );
     if ( temp != null )
@@ -640,13 +651,16 @@ public class KeyMapMaster
     props.setProperty( "RDFPath", rdfPath.getAbsolutePath());
     props.setProperty( "KMPath", kmPath.getAbsolutePath());
     props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
+    Remote remote = deviceUpgrade.getRemote();
+    props.setProperty( "Remote.name", remote.getName());
+    props.setProperty( "Remote.signature", remote.getSignature());
+    
     int state = getExtendedState();
     if ( state != Frame.NORMAL )
       setExtendedState( Frame.NORMAL );
     Rectangle bounds = getBounds();
     props.setProperty( "Bounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
    
-
     FileOutputStream out = new FileOutputStream( propertiesFile );
     props.store( out, null );
     out.flush();
