@@ -1,15 +1,23 @@
 [General]
-Name=URC-7070 Pro Producer 7
+Name=Radio Shack 15-1925 / 15-1918 / 15-1919 6-in-1
 EepromSize=$400
 AdvCodeAddr=$021..$0DB
 FavKey=$14, $0DD, 10, 3, 1
 UpgradeAddr=$100..$3FC
 Processor=6805
 RDFSync=3
-ImageMap=URC-7070.map
+ImageMap=15-1925.map
 
 [Checksums]
 ^$000:$002..$3FC
+
+# "TV/VCR_A-B" refers to both buttons on the 1918 & 1919,
+# and the TV/VCR button on the 1925.
+# "SLEEP{1925}" refers to the sleep button on the 1925 only,
+# and can be treated as an ordinary phantom button on the 1918 & 1919.
+# "{light}" refers to the backlight button on the 1925 & 1918,
+# and cannot be used for anything useful on the 1919.
+# "PAUSE/Surround" refers to both buttons on all 3 models.
 
 # 2nd signature at FC-FF "O80C"
 [FixedData]
@@ -17,17 +25,17 @@ $0FC = $4F $38 $30 $43
 $01E = $00 $FF $FF
 
 [DeviceTypes]
-Cable/SAT = 0,$0000
-TV        = 0,$0101
-Cable/SAT = 0,$0000
-VCR/DVD   = 1,$0202
-CD/Audio  = 1,$0303
-CD/Audio  = 1,$0303
-CD/Audio  = 1,$0303
-VCR/DVD   = 1,$0202
+Cable    = 0,$0000
+TV       = 0,$0101
+VCR/DVD  = 1,$0202
+CD/Audio = 1,$0303
+VCR/DVD  = 1,$0202
+Cable    = 0,$0000
+CD/Audio = 1,$0303
+CD/Audio = 1,$0303
 
 [DeviceTypeAliases]
-Cable/SAT = Cable,SAT,Video Acc
+Cable     = Cable,SAT,Video Acc
 TV        = TV
 VCR/DVD   = VCR,DVD,Tape,Laserdisc,DAT
 CD/Audio  = CD,Home Auto,Phono,Tuner,Misc Audio,Amp
@@ -35,27 +43,28 @@ CD/Audio  = CD,Home Auto,Phono,Tuner,Misc Audio,Amp
 [DeviceButtons]
 CBL         = $00E $006 $016
 TV          = $00F $007 $017
-SAT         = $013 $00B $01B
-VCR/LD      = $010 $008 $018
-AMP         = $014 $00C $01C
-RCVR        = $015 $00D $01D
+VCR         = $010 $008 $018
 CD          = $011 $009 $019
-SpareDevice = $012 $00A $01A
+AUX1        = $012 $00A $01A
+AUX2        = $013 $00B $01B
+P&P         = $014 $00C $01C
+SpareDevice = $015 $00D $01D
 
 [Buttons]
-CBL=$09, TV=$01, SAT=$22, VCR/LD=$0A,
-AMP=$24, RCVR=$23, CD=$11, SpareDevice=$21,
-MAGIC[Setup]=$02,
+CD{Stereo}=$11, VCR=$0A, CBL{SAT}=$09, TV=$01,
+AUX1=$21, AUX2=$22, SpareDevice=$23, P&P=$24,
+SETUP=$02,
 POWER=$03,
 VOL+=$04, VOL-=$05, MUTE=$08,
 CH+=$06, CH-=$07,
 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F,
-ENTER=$12, PC=$13,
-MENU=$27, SHIFT=$20,
-PLAY=$0C, PAUSE=$0F, STOP=$0E, FF=$0D, REW=$0B, REC=$10, TV/VCR=$18,
-DiscreteOn=$2D, DiscreteOff=$28, Phantom1=$2E, Phantom2=$2F, Phantom3=$25, Phantom4=$26,
+ENTER=$12, LAST=$13, SCAN=$14,
+PLAY{Front}=$0C, PAUSE{Surround}=$0F, STOP{Rear}=$0E, FF{Right}=$0D, REW{Left}=$0B, RECORD=$10, TV/VCR{A/B}=$18,
+PROG=$27, SLEEP{1925}=$2D, DISPLAY=$28, SHIFT=$20,
+Audio-Seq=$25, Video-Seq=$26,
+Phantom1=$2E, Phantom2=$2F,
 {light}=$2C,
-{dontuse1}=$29, {dontuse2}=$2A, {dontuse3}=$2B, {dontuse4}=$14
+{dontuse1}=$29, {dontuse2}=$2A, {dontuse3}=$2B
 
 [ButtonMaps]
 0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),

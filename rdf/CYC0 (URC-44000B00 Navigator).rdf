@@ -51,7 +51,7 @@ Macro1=$35, Macro2=$36, Macro3=$37,
 Help=$2D, Fav=$25, PPV=$23, TV/VCR=$38,
 Blank_1=$2E, Blank_2=$2A, Day-=$28, Day+=$27,
 Bypass=$18, Pause=$14, Diamond=$30, P=$24,
-{missing}=$26, Key40=$40, Key97=$97
+{missing}=$26
 
 [MultiMacros]
 Macro1=$017

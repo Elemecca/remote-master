@@ -4,17 +4,17 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1925
-#$DATE:Wed Oct 08 19:12:12 2003
-#$PATH:C:\Backups\IR\Images\
+#$DATE:Sun Oct 12 12:00:36 2003
+#$PATH:C:\Backups\JP1\Images\
 #$GIF:15-1925.jpg
 #$FORMAT:ncsa
 #$EOH
 default 1925
-circle mute  120,288 128,296
+circle MUTE  120,288 128,296
 circle POWER  121,92 131,102
-circle display  93,289 101,297
-circle prog  37,290 45,298
-circle tv/vcr  65,289 73,297
+circle DISPLAY  93,289 101,297
+circle PROG  37,290 45,298
+circle TV/VCR{A/B}  65,288 73,296
 rect 1 28,161 47,178
 rect 2 56,161 75,178
 rect 3 84,161 103,178
@@ -26,29 +26,29 @@ rect 8 56,212 75,229
 rect 9 83,212 102,229
 rect 0 56,237 75,254
 circle {light}  80,86 86,92
-poly play{front} 71,379 58,366 79,350 98,365 84,379 71,379 71,379
-poly rew{left} 65,397 52,408 32,390 53,373 65,383 65,397 65,397
-poly ff{right} 92,381 104,370 124,387 105,405 92,396 92,381 92,381
-poly stop{rear} 87,399 98,410 78,426 58,410 70,399 87,399 87,399
-rect last 84,237 103,254
-rect enter 28,237 47,254
-rect cbl/sat 84,111 104,121
-rect tv 112,111 132,121
-rect aux1 27,131 47,141
-rect aux2 56,131 76,141
-rect a/b 84,131 104,141
-rect plug&power 111,131 131,141
-rect cd/stereo 27,110 47,121
-rect vcr 56,111 76,121
-rect setup 29,84 57,96
-poly ch+ 134,169 106,169 120,148 134,169 134,169
-poly ch- 119,198 135,177 106,177 119,198 119,198
-poly vol+ 121,220 135,242 106,242 121,220 121,220
-rect scan{fav} 108,205 133,214
-rect audio-seq 31,308 57,318
-rect record 66,308 92,318
-rect video-seq 101,307 127,317
-rect surround 31,325 57,335
-rect pause 66,325 92,335
-rect shift 100,324 126,334
-poly vol- 105,250 135,250 120,273 105,250
+poly PLAY{Front} 71,379 58,366 79,350 98,365 84,379 71,379 71,379
+poly REW{Left} 65,397 52,408 32,390 53,373 65,383 65,397 65,397
+poly FF{Right} 92,381 104,370 124,387 105,405 92,396 92,381 92,381
+poly STOP{Rear} 87,399 98,410 78,426 58,410 70,399 87,399 87,399
+rect LAST 84,237 103,254
+rect ENTER 28,237 47,254
+rect CBL{SAT} 84,111 104,121
+rect TV 112,111 132,121
+rect AUX1 27,131 47,141
+rect AUX2 56,131 76,141
+rect SpareDevice 84,131 104,141
+rect P&P 111,131 131,141
+rect CD{Stereo} 27,110 47,121
+rect VCR 56,111 76,121
+rect SETUP 29,84 57,96
+poly CH+ 134,169 106,169 120,148 134,169 134,169
+poly CH- 119,198 135,177 106,177 119,198 119,198
+poly VOL+ 121,220 135,242 106,242 121,220 121,220
+rect SCAN 108,205 133,214
+rect Audio-Seq 31,308 57,318
+rect RECORD 66,308 92,318
+rect Video-Seq 101,307 127,317
+rect PAUSE{Surround} 31,326 57,336
+rect PAUSE{Surround} 66,326 92,336
+rect SHIFT 100,325 126,335
+poly VOL- 105,250 135,250 120,273 105,250 105,250

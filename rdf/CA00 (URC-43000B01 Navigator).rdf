@@ -41,13 +41,12 @@ Vol+=$34, Vol-=$08, Mute=$14,
 Ch+=$18, Ch-=$20,
 Record=$19, Stop_&_Guide=$1B, Play_&_Menu=$1C, Rew_&_Day-=$21, FFwd_&_Day+=$24, Pause_{VCR}=$15,
 Macro1=$11, Macro2=$12, Macro3=$13,
-TV/VCR=$1A, Enter{Music}=$17,
+TV/VCR=$1A, Enter/Music=$17,
 PageUp=$36, PageDown=$37, Left=$29, Up=$2A, Down=$2B, Right=$2C, Select=$1E,
-Last=$1F, Info=$23, Help=$2D, Fav=$2E, Exit=$38
+Last=$1F, Info=$23, Help=$2D, Fav=$2E, Exit=$38,
 Switch=$25, Pause=$26, PPV=$30, Diamond=$35, P=$2F,
-Phantom1=$1D, Phantom2=$22, Phantom3=$27, Phantom4=$28,
-DiscreteON=$0B, DiscreteOFF=$0C,
-Key40=$40, Key97=$97
+DiscreteON=$27, DiscreteOFF=$40,
+Phantom1=$0B, Phantom2=$0C, Phantom3=$1D, Phantom4=$22, Phantom5=$28
 
 [MultiMacros]
 Macro1=$019
