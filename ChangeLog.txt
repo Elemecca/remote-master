@@ -1,3 +1,10 @@
+Chnagex for v0.69
+
+- Match KM changes for TiVo protocols
+- Handle user modifucation of directory structure more gracefully
+- All Maps Images and RDF's 10-3-03
+- Request 817148: Default current remote for new option
+
 Changes for v0.68
 
 - Fix bug in parsing composite restrictions
