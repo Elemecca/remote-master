@@ -48,6 +48,7 @@ public class PreferredRemoteDialog
     Container contentPane = getContentPane();
 
     JLabel instructions = new JLabel( "Move remotes from the \"Available Remotes\" list to the \"Preferred Remotes\" list." );
+    instructions.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     contentPane.add( instructions, BorderLayout.NORTH );
 
     Box outerBox = Box.createHorizontalBox();
@@ -85,6 +86,7 @@ public class PreferredRemoteDialog
     outerBox.add( Box.createHorizontalStrut( 10 ));
 
     JPanel buttonPanel = new JPanel();
+    buttonPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     FlowLayout fl = ( FlowLayout )buttonPanel.getLayout();
     fl.setAlignment( FlowLayout.RIGHT );
 
