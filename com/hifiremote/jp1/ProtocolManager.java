@@ -178,7 +178,7 @@ public class ProtocolManager
 
       if ( tentative == null )
       {
-        if ( p.getCode( remote.getProcessor()) != null )
+        if ( p.getCode( remote ) != null )
           tentative = p;
       }
     }

@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.80";
+  private static final String version = "v 0.81";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -1043,7 +1043,7 @@ public class KeyMapMaster
     Remote r = deviceUpgrade.getRemote();
     Protocol p = deviceUpgrade.getProtocol();
     Vector protocols = protocolManager.getProtocolsForRemote( r );
-    if ( !protocols.contains( p ) && ( p.getCode( r.getProcessor()) == null ))
+    if ( !protocols.contains( p ) && ( p.getCode( r ) == null ))
     {
       System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName() +
                           "is not compatible with remote " + r.getName());

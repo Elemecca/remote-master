@@ -128,7 +128,7 @@ public class OutputPanel
     protocolLabel.setForeground( Color.RED );
     protocolLabel.setText( "Upgrade Protocol Code *** REQUIRED ***" );
     String processor = r.getProcessor();
-    Hex code = p.getCode( processor );
+    Hex code = p.getCode( r );
     if ( code != null )
     {
       byte[] data = ( byte[] )code.getData().clone();
@@ -171,6 +171,12 @@ public class OutputPanel
       buff.append( p.getID().toString());
       buff.append( " (" );
       buff.append( processor );
+      String version = r.getProcessorVersion();
+      if ( version != null )
+      {
+        buff.append( '-' );
+        buff.append( version );
+      }
       buff.append( ")\n " );
       buff.append( Hex.toString( data, 16 ));
       buff.append( "\nEnd" );

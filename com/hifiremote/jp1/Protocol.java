@@ -41,9 +41,13 @@ public class Protocol
     temp = props.getProperty( "Code.740" );
     if ( temp != null )
       code.put( "740", new Hex( temp ));
-    temp = props.getProperty( "Code.6805" );
+    temp = props.getProperty( "Code.6805-C9" );
     if ( temp != null )
-      code.put( "6805", new Hex( temp ));
+      code.put( "6805-C9", new Hex( temp ));
+    temp = props.getProperty( "Code.6805-RC16/18" );
+    if ( temp != null )
+      code.put( "6805-RC16/18", new Hex( temp ));
+
     temp = props.getProperty( "CmdParms", "" );
     StringTokenizer st = new StringTokenizer( temp, "," );
     int count = st.countTokens();
@@ -72,7 +76,7 @@ public class Protocol
     }
   }
 
-  public void importUpgradeCode( String processor, String notes )
+  public void importUpgradeCode( Remote remote, String notes )
   {
     StringTokenizer st = new StringTokenizer( notes, "\n" );
     String text = null;
@@ -92,7 +96,11 @@ public class Protocol
           break;
         text = text + ' ' + temp;
       }
-      code.put( processor, new Hex( text ));
+      String key = remote.getProcessor();
+      String version = remote.getProcessorVersion();
+      if ( version != null )
+        key = key + '-' + version;
+      code.put( key, new Hex( text ));
     }
   }
 
@@ -107,9 +115,13 @@ public class Protocol
     }
   }
 
-  public Hex getCode( String processor )
+  public Hex getCode( Remote remote )
   {
-    return ( Hex )code.get( processor );
+    String key = remote.getProcessor();
+    String version = remote.getProcessorVersion();
+    if ( version != null )
+      key = key + '-' + version;
+    return ( Hex )code.get( key );
   }
 
   public void setDeviceParms( Value[] parms )

@@ -276,6 +276,11 @@ public class Remote
     return processor;
   }
 
+  public String getProcessorVersion()
+  {
+    return processorVersion;
+  }
+
   public int getRAMAddress()
   {
     return RAMAddress;
@@ -378,7 +383,13 @@ public class Remote
         learnedAddress = new AddressRange( start, end );
       }
       else if ( parm.equals( "Processor" ))
+      {
         processor = st.nextToken();
+        if ( processor.equals( "6805" ) && ( processorVersion == null ))
+          processorVersion = "C9";
+      }
+      else if ( parm.equals( "ProcessorVersion" ))
+        processorVersion = st.nextToken();
       else if ( parm.equals( "RAMAddr" ))
         RAMAddress = rdr.parseNumber( st.nextToken());
       else if ( parm.equals( "TimeAddr" ))
@@ -1327,6 +1338,7 @@ public class Remote
   private boolean timedMacroWarning = false;
   private AddressRange learnedAddress = null;
   private String processor = null;
+  private String processorVersion = null;
   private int RAMAddress;
   private int timeAddress = 0;
   private int RDFSync;
