@@ -12,7 +12,7 @@ public class ManualProtocol
 
   public ManualProtocol( Hex id, Properties props )
   {
-    super( "Manual", id, props );
+    super( "Manual Settings", id, props );
     if ( props != null )
     {
       notes = props.getProperty( "Protocol.notes" );

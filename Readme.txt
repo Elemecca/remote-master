@@ -33,10 +33,9 @@ In order to simplify the process of setting up File Associations in
 Windows, the Setup.jar file is now included with RemoteMaster.
 Set up the file associations as follows:
 
-1. Double-click on Setup.jar
-2. Double-click on Setup.reg
-3. Click Yes.
-4. Click OK.
+1. Double-click on Setup.bat
+2. Click Yes.
+3. Click OK.
 
 Now you should be able to simply double-click any .rmdu or .km file to
 open that Remote Master Device Upgrade file in RemoteMaster.

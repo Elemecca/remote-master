@@ -640,7 +640,7 @@ public class DeviceUpgrade
     String variantName = props.getProperty( "Protocol.variantName", "" );
 
     ProtocolManager pm = ProtocolManager.getProtocolManager();
-    if ( name.equals( "Manual Settings" ))
+    if ( name.equals( "Manual Settings" ) || name.equals( "Manual" ))
     {
       protocol = new ManualProtocol( pid, props );
       pm.add( protocol );
@@ -849,11 +849,19 @@ public class DeviceUpgrade
       System.err.println( "pid=" + pidStr );
       if ( pidStr != null )
       {
-        int pidInt = Integer.parseInt( pidStr, 16 );
-        int[] data = new int[ 2 ];
-        data[ 0 ] = ( pidInt & 0xFF00 ) >> 8;
-        data[ 1 ] = pidInt & 0xFF;
-        pid = new Hex( data );
+        int space = pidStr.indexOf( ' ' );
+        if ( space != -1 )
+        {
+          pid = new Hex( pidStr );
+        }
+        else
+        {
+          int pidInt = Integer.parseInt( pidStr, 16 );
+          int[] data = new int[ 2 ];
+          data[ 0 ] = ( pidInt & 0xFF00 ) >> 8;
+          data[ 1 ] = pidInt & 0xFF;
+          pid = new Hex( data );
+        }
       }
       int byte2 = Integer.parseInt( getNextField( manual, delim ).substring( 0, 1 ));
       System.err.println( "byte2=" +  byte2 );
@@ -884,6 +892,7 @@ public class DeviceUpgrade
       int[] rawHex = Hex.parseHex( str );
 
       protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
+      setParmValues( protocol.getDeviceParmValues());
       protocolManager.add( protocol );
     }
     else
