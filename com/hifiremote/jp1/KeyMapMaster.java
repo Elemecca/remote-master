@@ -333,6 +333,7 @@ public class KeyMapMaster
 
     group = new ButtonGroup();
     submenu = new JMenu( "Prompt to Save" );
+    submenu.setMnemonic( KeyEvent.VK_P );
     menu.add( submenu );
 
     al = new ActionListener()
@@ -362,6 +363,7 @@ public class KeyMapMaster
     promptButtons[ promptFlag ].setSelected( true );
 
     submenu = new JMenu( "Remotes" );
+    submenu.setMnemonic( KeyEvent.VK_R );
     menu.add( submenu );
 
     group = new ButtonGroup();
@@ -396,6 +398,7 @@ public class KeyMapMaster
     submenu.add( item );
 
     submenu = new JMenu( "Function names" );
+    submenu.setMnemonic( KeyEvent.VK_F );
     menu.add( submenu );
 
     group = new ButtonGroup();
@@ -427,8 +430,8 @@ public class KeyMapMaster
     item.addActionListener( al );
     submenu.add( item );
 
-    menu = new JMenu( "Tools" );
-    menu.setMnemonic( KeyEvent.VK_T );
+    menu = new JMenu( "Advanced" );
+    menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
 
     manualItem = new JMenuItem( "Manual settings..." );
