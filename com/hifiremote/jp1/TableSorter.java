@@ -128,6 +128,63 @@ public class TableSorter extends TableMap {
             } else {
                 return -1;
             }
+        } else if ( type == byte[].class ) {
+            String s1 = Protocol.hex2String(( byte[] )data.getValueAt( row1, column ));
+            String s2 = Protocol.hex2String(( byte[] )data.getValueAt( row2, column ));
+            int result = s1.compareTo( s2 );
+
+            if (result < 0) {
+                return -1;
+            } else if (result > 0) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else if ( type == ExternalFunction.class ) {
+            ExternalFunction f1 = ( ExternalFunction )data.getValueAt( row1, column );
+            ExternalFunction f2 = ( ExternalFunction )data.getValueAt( row2, column );
+
+            Object v1 = f1.getValue();
+            Object v2 = f2.getValue();
+
+            // If both values are null, return 0.
+            if ( v1 == null && v2 == null) {
+              return 0; 
+            } else if ( v1 == null ) { // Define null less than everything. 
+              return -1; 
+            } else if ( v2 == null ) { 
+              return 1; 
+            }
+
+            byte[] b1 = null;
+            if ( v1.getClass() == Integer.class )
+            {
+              b1 = new byte[ 1 ];
+              b1[ 0 ] = (( Integer )v1 ).byteValue();
+            }
+            else
+              b1 = ( byte[] )v1;
+
+            byte[] b2 = null;
+            if ( v2.getClass() == Integer.class )
+            {
+              b2 = new byte[ 1 ];
+              b2[ 0 ] = (( Integer )v2 ).byteValue();
+            }
+            else
+              b2 = ( byte[] )v2;
+
+            String s1 = Protocol.hex2String( b1 );
+            String s2 = Protocol.hex2String( b2 );
+
+            int result = s1.compareTo( s2 );
+            if (result < 0) {
+                return -1;
+            } else if (result > 0) {
+                return 1;
+            } else {
+                return 0;
+            }
         } else {
             Object v1 = data.getValueAt(row1, column);
             String s1 = v1.toString();
