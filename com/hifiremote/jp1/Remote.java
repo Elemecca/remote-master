@@ -75,7 +75,7 @@ public class Remote
       rdr.close();
 
       if ( buttonMaps.length == 0 )
-        System.err.println( file.getName() + " does not specify any ButtonMaps!" );
+        System.err.println( "ERROR: " + file.getName() + " does not specify any ButtonMaps!" );
       for ( int i = 0; i < buttonMaps.length; i++ )
         buttonMaps[ i ].setButtons( buttons );
 
@@ -84,7 +84,7 @@ public class Remote
         DeviceType type = ( DeviceType )e.nextElement();
         int map = type.getMap();
         if ( map == -1 )
-          System.err.println( file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
+          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
         if (( map != -1 ) && ( buttonMaps.length > 0 ))
           type.setButtonMap( buttonMaps[ map ] );
       }
@@ -100,20 +100,26 @@ public class Remote
           longestMap = thisMap;
       }
 
-      upgradeButtons = new Button[ buttons.length ];
-      // first copy the buttons from the longest map
-      int index = 0;
-      while ( index < longestMap.size())
+      if ( longestMap == null )
+        upgradeButtons = buttons;
+      else
       {
-        upgradeButtons[ index ] = longestMap.get( index );
-        index++;
-      }
-      // now copy the rest of the buttons, skipping those in the map
-      for ( int i = 0; i < buttons.length; i++ )
-      {
-        Button b = buttons[ i ];
-        if ( !longestMap.isPresent( b ))
-          upgradeButtons[ index++ ] = b;
+        upgradeButtons = new Button[ buttons.length ];
+        // first copy the buttons from the longest map
+        int index = 0;
+        while ( index < longestMap.size())
+        {
+          upgradeButtons[ index ] = longestMap.get( index );
+          index++;
+        }
+        
+        // now copy the rest of the buttons, skipping those in the map
+        for ( int i = 0; i < buttons.length; i++ )
+        {
+          Button b = buttons[ i ];
+          if ( !longestMap.isPresent( b ))
+            upgradeButtons[ index++ ] = b;
+        }
       }
     }
     catch ( Exception e )
@@ -125,6 +131,7 @@ public class Remote
       pw.close();
       JOptionPane.showMessageDialog( null, sw.toString(), "Remote Load Error",
                                      JOptionPane.ERROR_MESSAGE );
+      System.err.println( sw.toString());
     }
   }
 
@@ -409,7 +416,6 @@ public class Remote
 
   public DeviceType getDeviceTypeByAliasName( String aliasName )
   {
-    System.err.println( "Remote.gerDeviceTypeByAliasName( " + aliasName + " )" );
     checkLoaded();
     return ( DeviceType )deviceTypeAliases.get( aliasName );
   }
@@ -821,7 +827,6 @@ public class Remote
   private String parseDeviceTypeAliases( RDFReader rdr )
     throws Exception
   {
-    System.err.println( "Remote.parseDeviceTypeAliases()" );
     Vector work = new Vector();
     String line;
     while ( true )
@@ -830,10 +835,8 @@ public class Remote
       if (( line == null ) || ( line.length() == 0 ))
         break;
 
-      System.err.println( "Read line=\"" + line + "\"" );
       StringTokenizer st = new StringTokenizer( line, "= \t" );
       String typeName = st.nextToken();
-      System.err.println( "TypeName=" + typeName );
       DeviceType type = getDeviceType( typeName );
       st.nextToken( "=" );
       String rest = st.nextToken().trim();
@@ -841,7 +844,6 @@ public class Remote
       while ( st.hasMoreTokens())
       {
         String aliasName = st.nextToken().trim();
-        System.err.println( "aliasName=" + aliasName );
         deviceTypeAliases.put( aliasName, type );
       }
     }

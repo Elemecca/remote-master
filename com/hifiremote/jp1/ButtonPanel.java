@@ -38,7 +38,8 @@ public class ButtonPanel
           setForeground( Color.black );
 
         String temp = b.getName();
-        if ( !deviceUpgrade.getDeviceType().getButtonMap().isPresent( b ))
+        ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
+        if (( map == null ) || !map.isPresent( b ))
           temp = temp + '*';
 
         return super.getTableCellRendererComponent( table, temp, isSelected,

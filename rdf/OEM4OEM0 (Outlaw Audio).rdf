@@ -108,7 +108,8 @@ RIGHT,
 surr_6.1,
 ctr_trim,
 sur_trim,
-sub_trim
+sub_trim,
+?1, ?2, ?3, ?4
 
 
 [ButtonMaps]

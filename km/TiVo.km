@@ -1,4 +1,4 @@
-#Sat May 03 18:23:09 EDT 2003
+#Wed Jun 04 15:53:27 EDT 2003
 Button.1f=0|null
 Function.20.name=down arrow
 Function.22.hex=57
@@ -23,8 +23,8 @@ Button.25=List|null
 Function.27.name=play
 Button.23=TiVo|menu
 Function.41.notes=Currently unused
-Button.20=jump / quick skip|null
-Function.38.name=jump / quick skip
+Button.20=advance|null
+Function.38.name=advance
 Function.0.name=0
 Function.32.hex=fb
 Function.21.name=left arrow

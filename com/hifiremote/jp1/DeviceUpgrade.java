@@ -262,18 +262,24 @@ public class DeviceUpgrade
         }
       }
 
-      buff.append( ' ' );
       ButtonMap map = devType.getButtonMap();
-      buff.append( Hex.toString( map.toBitMap( digitMapIndex != -1 )));
+      if ( map != null )
+      {
+        buff.append( ' ' );
+        buff.append( Hex.toString( map.toBitMap( digitMapIndex != -1 )));
+      }
 
       buff.append( ' ' );
       buff.append( protocol.getFixedData().toString());
 
-      byte[] data = map.toCommandList( digitMapIndex != -1 );
-      if (( data != null ) && ( data.length != 0 ))
+      if ( map != null )
       {
-        buff.append( "\n " );
-        buff.append( Hex.toString( data, 16 ));
+        byte[] data = map.toCommandList( digitMapIndex != -1 );
+        if (( data != null ) && ( data.length != 0 ))
+        {
+          buff.append( "\n " );
+          buff.append( Hex.toString( data, 16 ));
+        }
       }
 
       Button[] buttons = remote.getUpgradeButtons();
@@ -285,7 +291,7 @@ public class DeviceUpgrade
         Button b = buttons[ i ];
         Function f = b.getFunction();
         Function sf = b.getShiftedFunction();
-        if ((( f != null ) && ( !map.isPresent( b ) || f.isExternal())) ||
+        if ((( f != null ) && (( map == null ) || !map.isPresent( b ) || f.isExternal())) ||
             (( sf != null ) && ( sf.getHex() != null )))
         {
           hasKeyMoves = true;

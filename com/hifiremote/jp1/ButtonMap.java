@@ -36,6 +36,10 @@ public class ButtonMap
             break;
           }
         }
+        if ( inner[ j ] == null )
+          System.err.println( "ERROR: ButtonMap " + number + " includes the keycode $" + 
+                              Integer.toHexString( keyCode & 0xFF ) + 
+                              ", but there is no matching button." );
       }
     }
     return this;
@@ -84,8 +88,7 @@ public class ButtonMap
     int index = 0;
     int temp = 0x80;
     int limit = 0;
-    int i = 0;
-    for ( ; i < buttons.length; i++ )
+    for ( int i = 0 ; i < buttons.length; i++ )
     {
       Button[] inner = buttons[ i ];
       for ( int j = 0; j < inner.length; j++ )
