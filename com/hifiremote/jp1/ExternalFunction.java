@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.io.PrintWriter;
 import java.util.Properties;
 
 public class ExternalFunction
@@ -13,13 +14,13 @@ public class ExternalFunction
       ( type == EFCType );
   }
 
-  public void store( Properties props, String prefix )
+  public void store( PrintWriter out, String prefix )
   {
-    super.store( props, prefix );
-    props.setProperty( prefix + ".type", Integer.toString( type ));
+    super.store( out, prefix );
+    DeviceUpgrade.print( out, prefix + ".type", Integer.toString( type ));
     if ( deviceTypeAliasName != null )
-      props.setProperty( prefix + ".deviceType", deviceTypeAliasName );
-    props.setProperty( prefix + ".setupCode", Integer.toString( setupCode ));
+      DeviceUpgrade.print( out, prefix + ".deviceType", deviceTypeAliasName );
+    DeviceUpgrade.print( out, prefix + ".setupCode", Integer.toString( setupCode ));
   }
 
   public void load( Properties props, String prefix, Remote remote )
