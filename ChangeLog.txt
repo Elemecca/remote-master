@@ -1,3 +1,9 @@
+Changed for v0.63
+
+- Add/update remote images, maps and rdfs
+- Allow RDFs without [ButtonMaps] or [Protocols] sections
+- Import button assignments from KM upgrade files, needs standardized button names.
+
 Changes for v0.62
 
 - Add/update remote images, maps and rdfs
