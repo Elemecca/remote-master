@@ -39,14 +39,14 @@ VCR = $00E $00F
 AUX = $010 $011
 
 [Buttons]
-MAGIC[Setup]=$14, Menu=$13, EXIT=$53, Power=$03, SLEEP=$83, 
+"setup":MAGIC[Setup]=$14, Menu=$13, EXIT=$53, Power=$03, SLEEP=$83, 
 TV=$02, VCR=$11, SAT=$12, AUX=$09, 
 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F, 10{-/--}=$18, 20{AV}=$20, 
-VOL+=$04, VOL-=$05, CH+=$06, CH-=$07, MUTE=$08,
-RIGHT=$44, LEFT=$45, UP=$46, DOWN=$47, SELECT=$48,
+"vol up":VOL+=$04, "vol down":VOL-=$05, "channel up":CH+=$06, "channel down":CH-=$07, MUTE=$08,
+"right arrow":RIGHT=$44, "left arrow":LEFT=$45, "up arrow":UP=$46, "down arrow":DOWN=$47, SELECT=$48,
 COLOR+=$84, COLOR-=$85, BRIGHT+=$86, BRIGHT-=$87, 
-REW{TextOn}=$0B, PLAY{TextOff}=$0C, FFWD{Expand}=$0D, PAUSE{Hold}=$0F, 
-TV/VCR{Red}=$01, STOP{Green}=$0E, REC{Yellow}=$10, SLOW{Blue}=$0A,
+"rewind":REW{TextOn}=$0B, "play":PLAY{TextOff}=$0C, "fast fwd":FFWD{Expand}=$0D, "pause":PAUSE{Hold}=$0F, 
+"tv/vcr":TV/VCR{Red}=$01, "stop":STOP{Green}=$0E, "record":REC{Yellow}=$10, SLOW{Blue}=$0A,
 
 [ButtonMaps]
 0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),

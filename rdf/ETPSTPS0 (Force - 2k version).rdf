@@ -43,14 +43,14 @@ AUX   = $00E $00F
 xDev  = $010 $011
 
 [Buttons]
-SHIFT{Setup}=$02, POWER=$03, TV=$01, FORCE=$09, AUX=$0A,
+"setup":SHIFT{Setup}=$02, POWER=$03, TV=$01, FORCE=$09, AUX=$0A,
 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F, 
-RADIO{AV}=$11, LANG{-/--}=$18, VOL+=$04, VOL-=$05, MESSAGES=$0E,
-MUTE=$08, MENU{Zoom}=$20, CH+=$06, CH-=$07, 
-INFO=$13, EPG=$14, EXIT=$25, LAST=$26,
-UP=$21, DOWN=$22, LEFT=$23, RIGHT=$24,
-OK=$12, RED=$0B, GREEN=$0C, YELLOW=$0F, BLUE=$0D, 
-PVR=$28, TEXT=$27, REC=$10,
+RADIO{AV}=$11, LANG{-/--}=$18, "vol up":VOL+=$04, "vol down":VOL-=$05, MESSAGES=$0E,
+MUTE=$08, "menu":MENU{Zoom}=$20, "channel up":CH+=$06, "channel down":CH-=$07, 
+"display":INFO=$13, EPG=$14, EXIT=$25, "prev ch":LAST=$26,
+"up arrow":UP=$21, "down arrow":DOWN=$22, "left arrow":LEFT=$23, "right arrow":RIGHT=$24,
+"select":OK=$12, "rewind":RED=$0B, "play":GREEN=$0C, "pause":YELLOW=$0F, "fast fwd":BLUE=$0D, 
+PVR=$28, TEXT=$27, "record":REC=$10,
 SHIFT_VOL+=$84, SHIFT_VOL-=$85, SHIFT_CH+=$86, SHIFT_CH-=$87, SHIFT_MENU=$A0,
 Phantom1=$F0, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 

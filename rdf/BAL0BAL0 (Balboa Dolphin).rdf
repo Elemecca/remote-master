@@ -49,24 +49,23 @@ DVD	= $014 $015
 SPA	= $016 $017
 
 [Buttons]
-SETUP=$02
+"setup":Setup=$02
 TV=$01,VCR=$0a,DVD=$21,CBL/SAT=$11,RCVR=$22,CD=$09,SPA=$32
 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F,
-power=$03
-VOL+=$04, VOL-=$05, MUTE=$08,CH+=$06, CH-=$07
-up=$29,down=$2a,left=$2b,right=$2c,select=$2d
-play=$0c,pause=$0f,rewind=$0b,ffwd=$0d,stop=$0e,record=$10
+Power=$03
+"vol up":VOL+=$04, "vol down":VOL-=$05, Mute=$08,"channel up":CH+=$06, "channel down":CH-=$07
+"up arrow":Up=$29,"down arrow":Down=$2a,"left arrow":Left=$2b,"right arrow":Right=$2c,Select=$2d
+Play=$0c,Pause=$0f,Rewind=$0b,"fast fwd":FFwd=$0d,Stop=$0e,Record=$10
 exit=$14
 menu=$23
-info=$13
-last=$12
+"display":info=$13
+"prev ch":last=$12
 enter=$18
-tv/vid=$20
+"tv/vcr":tv/vid=$20
 guide=$24
 pump1=$27,pump2=$28,pump3=$2e
 opt1=$30,opt2=$31
-blower=$25,fiber=$2f,light=$26
-
+blower=$25,fiber=$2f,"light":light=$26
 
 
 [ButtonMaps]

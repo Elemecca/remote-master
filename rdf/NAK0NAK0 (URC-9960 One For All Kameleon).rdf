@@ -61,35 +61,35 @@ AUDIO   = $016 $017
 AUX     = $018 $019
 
 [Buttons]
-TV=$01, VCR=$0a, DVD=$21, CBL=$11, AUDIO=$22, CD=$09, PVR=$26, AUX=$23, HT=$12
+TV=$01, VCR=$0a, DVD=$21, CBL=$11, AUDIO=$22, CD=$09, PVR=$26, AUX=$23, "theater":HT=$12
 0=$1F, 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E
-VOL+=$04, VOL-=$05, MUTE=$08
-CH+=$06, CH-=$07
+"vol up":VOL+=$04, "vol down":VOL-=$05, MUTE=$08
+"channel up":CH+=$06, "channel down":CH-=$07
 Setup=$02
 Power=3
-Last_Rand=36
+"prev ch":Last_Rand=36
 Format_Replay=58
 Guide=37
-Info=49
+"display":Info=49
 Menu=20
 Exit=50
-Up{Front}=41
-Down{Rear}=42
-Left{Center}=44
-Right{Test}=43
-OK_surround=39
+"up arrow":Up{Front}=41
+"down arrow":Down{Rear}=42
+"left arrow":Left{Center}=44
+"right arrow":Right{Test}=43
+"select":OK_surround=39
 Input=51
-Enter{Skip}=57
-Rewind{pip-on/off}=11
-Play{pip-swap}=12
-Fwd{pip-size}=13
+"enter":Enter{Skip}=57
+"rewind":Rewind{pip-on/off}=11
+"play":Play{pip-swap}=12
+"fast fwd":Fwd{pip-size}=13
 Record=16
 Stop=14
 Pause=15
 LiveTV{pip-main}=52
-Skipback{pip-freeze}=55
-Skipfwd{pip-move}=56
-FAV=40
+"prev track":Skipback{pip-freeze}=55
+"next track":Skipfwd{pip-move}=56
+"fav/scan":FAV=40
 PVR-VOD{Preset}=32
 Page+{Audio}=53
 Page-{Subtitle}=54
@@ -107,10 +107,10 @@ front_up=105
 Rear_Down=106
 Center_Left=108
 Test_Right=107
-Macro1=45
-Macro2=46
-Macro3=47
-Macro4=48
+"macro1":Macro1=45
+"macro2":Macro2=46
+"macro3":Macro3=47
+"macro4":Macro4=48
 Scroll=24
 unknown=$13
 Phantom1=103

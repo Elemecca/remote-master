@@ -31,22 +31,22 @@ TV    = TV
 VCR   = VCR,DVD,Tape,Laserdisc
 
 [Buttons]
-TV=$01,SETUP=$02,POWER=$03,VOL+=$04, 
-VOL-=$05,CH+=$06,CH-=$07,MUTE=$08, 
-CABLE=$09, VCR=$0A, REW=$0B, PLAY=$0C, 
-FFWD=$0D,STOP=$0E, PAUSE=$0F,
-REC=$10,AUX=$11,LAST=$12,SELECT=$13, 
+TV=$01,SETUP=$02,POWER=$03,"vol up":VOL+=$04,
+"vol down":VOL-=$05,"channel up":CH+=$06,"channel down":CH-=$07,MUTE=$08,
+CBL=$09, VCR=$0A, "rewind":REW=$0B, PLAY=$0C,
+"fast fwd":FFWD=$0D,STOP=$0E, PAUSE=$0F,
+"record":REC=$10,AUX=$11,"prev ch":LAST=$12,SELECT=$13,
 PAUSE_2=$14,1=$15, 2=$16, 3=$17,
 BYPASS=$18,4=$19, 5=$1A, 6=$1B,
-7=$1C, 8=$1D, 9=$1E,0=$1F, 
-MENU=$20,INFO=$21, GUIDE=$22, LITTLE_PPV=$23, 
-P=$24,FAV=$25, {missing}=$26, DAY+=$27,  
-DAY-=$28,EXIT=$29, BLANK_2=$2A,PAGE_UP=$2B, 
-PAGE_DOWN=$2C,HELP=$2D, BLANK_1=$2E, MUSIC[ENTER]=$2F, 
-DIAMOND=$30, UP=$31, 
-DOWN=$32, LEFT=$33, RIGHT=$34,
+7=$1C, 8=$1D, 9=$1E,0=$1F,
+MENU=$20,"display":INFO=$21, GUIDE=$22, LITTLE_PPV=$23,
+P=$24,"fav/scan":FAV=$25, {missing}=$26, DAY+=$27,
+DAY-=$28,EXIT=$29, BLANK_2=$2A,PAGE_UP=$2B,
+PAGE_DOWN=$2C,HELP=$2D, BLANK_1=$2E, "enter":MUSIC[ENTER]=$2F,
+DIAMOND=$30, "up arrow":UP=$31,
+"down arrow":DOWN=$32, "left arrow":LEFT=$33, "right arrow":RIGHT=$34,
 HBO=$35, PPV=$36, CINEMAX=$37,
-TV/VCR=$38
+"tv/vcr":TV/VCR=$38
 
 [ButtonMaps]
 0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), 

@@ -1,0 +1,56 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:URC-5550
+#$DATE:Wed Nov 05 11:46:51 2003
+#$PATH:C:\Backups\JP1\Images\
+#$GIF:URC-5550.jpg
+#$FORMAT:ncsa
+#$EOH
+default 5550
+rect TV 32,78 54,91
+rect VCR 61,78 95,91
+rect SAT 102,78 124,91
+circle enter  55,197 66,205
+circle Lite  34,186 45,194
+circle Shift  34,217 45,225
+circle Magic[Setup]  79,123 113,130
+circle ESC  55,165 66,173
+circle POWER{Sleep}  35,153 46,161
+circle up  103,154 117,159
+circle down  104,186 118,191
+circle left  82,170 87,184
+circle right  125,171 130,185
+circle menu  104,169 114,175
+circle MUTE  67,235 78,243
+circle VOL+  119,205 128,212
+circle VOL-  103,215 112,222
+circle CH+  125,230 134,237
+circle CH-  109,240 118,247
+circle 1  40,265 51,276
+circle 2  67,265 78,276
+circle 3  94,265 105,277
+circle 4  40,291 51,302
+circle 5  66,292 77,303
+circle 6  95,291 106,302
+circle 7  38,317 49,328
+circle 8  67,318 78,329
+circle 9  94,318 105,330
+circle 0  67,345 78,356
+circle Scan  120,266 131,274
+circle Audio  121,296 132,304
+circle Video  120,325 131,333
+circle 10  39,347 50,353
+poly pl 59,362 59,377 72,370 59,362 59,362
+circle TV/VCR  41,395 51,401
+rect PAU 109,362 124,378
+rect STOP 58,389 74,403
+circle rec  90,396 98,404
+circle slow  113,395 123,400
+circle 20  94,347 105,353
+poly rew 42,363 46,366 46,375 43,377 31,370 42,363 42,363
+poly ff 81,364 84,362 96,370 85,377 81,375 81,364 81,364
+poly cd 31,99 74,99 74,113 35,109 31,99 31,99
+poly aux1 79,99 79,113 117,111 122,99 79,99 79,99

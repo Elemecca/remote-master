@@ -42,16 +42,16 @@ AUX   = $00E $00F
 xDev  = $010 $011
 
 [Buttons]
-SHIFT{Setup}=$02, POWER=$03, 
+"setup":SHIFT{Setup}=$02, POWER=$03, 
 TV=$01, DREAM=$09, AUX=$0A,
 1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F, 
 BACK{AV}=$11, FORWARD{-/--}=$18, 
-VOL+=$04, VOL-=$05, TV_STOP=$08,
+"vol up":VOL+=$04, "vol down":VOL-=$05, "stop":TV_STOP=$08,
 MUTE=$0E, LAME{Zoom}=$20, 
 BOUQUET+=$06, BOUQUET-=$07, 
-INFO=$13, DREAM_MENU=$14, AUDIO=$25, VIDEO=$26,
-UP=$21, DOWN=$22, LEFT=$23, RIGHT=$24, OK=$12, 
-RED=$0B, GREEN=$0C, YELLOW=$0F, BLUE=$0D, 
+"display":INFO=$13, "menu":DREAM_MENU=$14, AUDIO=$25, VIDEO=$26,
+"up arrow":UP=$21, "down arrow":DOWN=$22, "left arrow":LEFT=$23, "right arrow":RIGHT=$24, "select":OK=$12, 
+"rewind":RED=$0B, "play":GREEN=$0C, "pause":YELLOW=$0F, "fast fwd":BLUE=$0D, 
 RADIO=$28, TEXT=$27, HELP=$10,
 SHIFT_VOL+=$84, SHIFT_VOL-=$85, SHIFT_BOUQUET+=$86, SHIFT_BOUQUET-=$87, SHIFT_LAME=$A0,
 Ph1=$F0, Ph2=$54, Ph3=$55, Ph4=$56, Ph5=$57, Ph6=$58, Ph7=$59, Ph8=$5A

@@ -1,0 +1,67 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:KenwoodVR507
+#$DATE:Thu Oct 23 11:46:29 2003
+#$PATH:C:\Backups\JP1\Images\
+#$GIF:Kenwood R720.jpg
+#$FORMAT:ncsa
+#$EOH
+default KenwoodVR507
+circle @dss  27,64 33,70
+circle @vcr  77,45 83,51
+circle @TV  99,45 105,51
+circle mute  34,137 45,143
+circle @cbl  52,45 58,51
+circle POWER  94,22 102,30
+circle rew  36,297 45,302
+circle @cd  52,63 58,69
+circle rec  36,317 45,322
+circle up  67,226 87,232
+circle down  67,264 87,270
+circle left  34,246 40,261
+circle right  98,245 104,260
+circle select  65,245 80,253
+circle VOL+  35,162 43,171
+circle VOL-  36,191 44,200
+circle CH+  96,162 104,171
+circle CH-  97,189 105,198
+circle 1  34,82 45,88
+circle 2  65,82 76,88
+circle 3  95,81 106,87
+circle 4  34,101 45,107
+circle 5  65,100 76,106
+circle 6  95,100 106,106
+circle 7  34,118 45,124
+circle 8  65,118 76,124
+circle 9  96,118 107,124
+circle 0  66,137 77,143
+circle setup  31,23 37,29
+circle @dvd  27,45 33,51
+circle setup{guide}  32,215 39,222
+circle dim{menu}  101,276 108,283
+circle phono  36,339 42,345
+circle +10{enter}  96,136 107,142
+circle rec_m{info_osd}  33,277 40,284
+circle @receiver  99,63 105,69
+circle exit_return  100,214 107,221
+circle play{band}  68,296 77,301
+circle ff  99,296 108,301
+circle stop{auto}  69,317 78,322
+circle pause{a/b+100}  99,317 108,322
+circle tuner  57,339 63,345
+circle mid/tape  80,338 86,344
+circle cd/dvd  100,338 106,344
+circle video1  37,358 43,364
+circle video2  57,358 63,364
+circle video3  80,357 86,363
+circle dvd  99,357 105,363
+circle disc_sel  36,377 42,383
+circle disc_skip  58,377 64,383
+circle bass_boost  80,376 86,382
+circle lstn_m{last}  66,159 77,165
+circle sound{sleep}  66,176 77,182
+circle cine_eq{input}  66,193 77,199
+circle av_aux  99,376 105,382

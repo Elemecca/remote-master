@@ -46,18 +46,18 @@ P&P =     $016 $017
 AUX1=$25, AUX2=$26, VCR=$0A, TV=$01,
 Plug&Power=$27, CD=$11, CBL/SAT=$09,
 1s=$21, 2s=$22, 3s=$23, 4s=$24,
-"menu":Menu=$29, Surround=$30, Guide{Program}=$28,
+Menu=$29, Surround=$30, "guide":Guide{Program}=$28,
 "up arrow":Up=$31, "down arrow":Down=$32, "left arrow":Left=$33,
-"right arrow":Right=$34, "select":Select=$35,
+"right arrow":Right=$34, Select=$35,
 Center{EXIT}=$2B, "fav/scan":Scan{Fav}=$14,
-"mute":Mute=$08, "prev ch":Last=$13, "pip on/off":PIP=$2D, "display":Display=$2A, "pip swap":Swap=$2F, "pip move":Move=$2E,
+Mute=$08, "prev ch":Last=$13, "pip on/off":PIP=$2D, Display=$2A, "pip swap":Swap=$2F, "pip move":Move=$2E,
 "vol up":VOL+=$04, "vol down":VOL-=$05, "channel up":CH+=$06, "channel down":CH-=$07,
 1=$15, 2=$16, 3=$17,
 4=$19, 5=$1A, 6=$1B,
 7=$1C, 8=$1D, 9=$1E,
 0=$1F, "tv/vcr":TV/VIDEO{A/B}=$18, ENTER=$12,
 "rewind":REW=$0B, PLAY=$0C, "fast fwd":FFWD=$0D,
-"record":REC=$10, "Stop":STOP=$0E, PAUSE=$0F,
+"record":REC=$10, STOP=$0E, PAUSE=$0F,
 Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 
 [ButtonMaps]

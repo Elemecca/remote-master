@@ -48,7 +48,7 @@ REPLAY  = $010 $011
 TV, CODE_SET, POWER, "vol up":VOL+, "vol down":VOL-, "channel up":CH+, "channel down":CH-, "mute":MUTE, CATV, VCR/DVD,
 "rewind":REW, PLAY, "fast fwd":FWD, "Stop":STOP, PAUSE, "record":REC, ReplayTV, ENTER, JUMP, "select":SELECT,
 1, 2, 3, TV/VCR, 4, 5, 6, 7, 8, 9,
-0, "display":DISPLAY, REPLAY_ZONES, EXIT, CHANNEL_GUIDE, INSTANT_REPLAY, RETURN_TO_LIVE, INPUT, "menu":MENU, QUICK_SKIP,
+0, "display":DISPLAY, REPLAY_ZONES, EXIT, "guide":CHANNEL_GUIDE, INSTANT_REPLAY, RETURN_TO_LIVE, INPUT, "menu":MENU, QUICK_SKIP,
 REPLAY_GUIDE=44, "up arrow":UP=49, "down arrow":DOWN,
 "left arrow":LEFT, "right arrow":RIGHT,
 Phantom1=60, Phantom2, Phantom3, Phantom4

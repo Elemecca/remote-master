@@ -4,57 +4,56 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:URC-7560
-#$DATE:Mon Oct 06 14:58:46 2003
-#$PATH:C:\Backups\IR\Images\
+#$DATE:Wed Oct 29 11:09:24 2003
+#$PATH:C:\Backups\JP1\Images\
 #$GIF:URC-7560.jpg
 #$FORMAT:ncsa
 #$EOH
 default 7560
 circle HOME_THEATER  34,40 44,44
-circle SAT  105,40 117,46
-circle 1  36,91 47,98
-circle 2  66,91 77,98
-circle 3  96,91 107,98
-circle 4  36,110 47,117
-circle 5  66,110 77,117
-circle 6  96,110 107,117
-circle 7  36,129 47,136
-circle 8  66,129 77,136
-circle 9  96,130 107,137
-circle 0  66,149 77,156
-circle +10{-/--}  36,149 47,156
-circle AV{Exit_20}  96,149 107,156
-circle CH+{bright+}  67,198 102,212
-circle CH-{bright-}  66,252 101,266
+circle 1  37,92 48,99
+circle 2  67,92 78,99
+circle 3  96,93 107,100
+circle 4  37,112 48,119
+circle 5  67,112 78,119
+circle 6  97,112 108,119
+circle 7  37,131 48,138
+circle 8  67,131 78,138
+circle 9  97,131 108,138
+circle 0  67,150 78,157
+circle +10{-/--}  37,150 48,157
+circle AV{Exit_20}  97,150 108,157
+circle CH+{bright+}  67,198 100,212
+circle CH-{bright-}  66,252 99,266
 poly VOL+{color+} 80,214 105,206 109,224 105,243 80,235 84,224 80,214 80,214
-poly VOL-{color-} 26,206 50,213 46,224 50,235 26,243 22,224 26,206 26,206
+poly VOL-{color-} 26,205 50,212 46,223 50,234 26,242 22,223 26,205 26,205
 circle MUTE{select}  66,224 78,232
 circle UP  66,172 78,176
 circle DOWN  66,278 78,282
-circle LEFT  13,224 17,235
-circle RIGHT  119,224 123,235
-poly REW{TextOn} 19,294 30,286 39,286 39,301 30,301 19,294 19,294
-poly PLAY{textoff} 46,291 63,301 46,309 46,291 46,291
-rect PAUSE{Hold} 70,291 85,307
-poly FFWD{expand} 91,286 102,286 111,294 102,301 91,301 91,286 91,286
-circle SP/LP{Red}  31,314 41,320
-rect STOP{Green} 48,315 63,329
-circle REC{yellow}  78,321 85,328
+circle LEFT  14,225 18,236
+circle RIGHT  119,225 123,236
+rect PAUSE{Hold} 73,293 85,305
+circle SP/LP{Red}  32,313 42,319
+rect STOP{Green} 50,314 63,327
+circle REC{yellow}  79,321 85,327
 circle AUTO{Blue}  101,313 111,319
-circle A  30,343 37,349
-circle B  33,359 40,365
+circle A  29,343 36,349
+circle B  32,359 39,365
 circle C  35,375 42,381
 circle D  38,390 45,396
-circle E  101,345 108,351
-circle F  99,360 106,366
+circle E  104,344 111,350
+circle F  100,360 107,366
 circle G  96,376 103,382
 circle H  93,391 100,397
-poly magic[setup] 53,14 33,20 32,22 32,24 36,28 41,29 56,32 53,14 53,14
-poly power 82,14 81,32 94,29 99,27 101,25 103,23 103,20 101,19 95,16 90,15 82,14 82,14
-poly tv 47,48 51,61 24,66 23,66 22,65 22,64 22,62 23,59 24,58 26,56 32,52 36,51 39,50 42,49 45,48 48,47 47,48
-poly aud 54,64 81,64 76,79 59,79 54,64
-poly vcr 51,47 84,47 81,60 54,60 51,47
-poly cd 24,69 52,64 56,79 43,77 37,75 30,73 24,69
-poly dvd 84,64 110,68 103,74 95,77 87,78 79,79 84,64
-poly sat 84,60 88,48 100,51 109,56 112,61 113,65 113,66 112,66 84,61 83,61 84,60
-poly menu 57,14 79,14 76,32 61,32 57,14
+poly sat 109,64 85,60 89,48 99,52 102,54 106,56 109,61 109,64
+poly tv 24,65 48,60 44,48 32,53 26,57 24,61 24,65
+poly dvd 106,68 84,63 80,78 93,75 106,68
+poly cd 28,70 50,65 53,78 38,75 28,70
+poly vcr 49,47 83,47 78,59 55,59 49,47
+poly aud 56,65 77,65 73,78 59,78 56,65
+poly menu 58,17 76,17 73,31 60,31 58,17
+poly magic[setup] 52,18 37,21 35,24 37,28 54,31 52,18
+poly power 83,18 97,21 101,24 97,28 89,30 80,30 83,18
+poly FFWD{expand} 94,300 94,286 100,286 110,293 99,300 94,300
+poly REW{TextOn} 39,286 39,300 32,300 23,293 33,286 39,286
+poly PLAY{textoff} 49,292 62,298 49,305 49,292

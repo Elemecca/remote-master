@@ -69,13 +69,13 @@ TUNER   = $02C $024 $034
 AUX1    = $02D $025 $035
 
 [Buttons]
-CBL/SAT=8, TV=16, VCR=32, CD=55, DVD=40,AMP=48, TUNER=56, AUX1=24, HOME_THEATER=53,
+CBL/SAT=8, TV=16, VCR=32, CD=55, DVD=40,AMP=48, TUNER=56, AUX1=24, "theater":HOME_THEATER=53,
 0=19, 1=28, 2=20, 3=12, 4=29, 5=21, 6=13, 7=30, 8=22, 9=14,
-CH+=4, CH-=5, VOL+=6, VOL-=3, Mute{Sleep}=2, Power=7, Enter=33, TV/SAT=34,
-PREVCH{Disp}=35, PLAY{Slow}=18, PAUSE{X2}=9, REW{Slow-}=26, FF{Slow+}=10, STOP{Eject}=17, REC=25,
-Menu{Prog}=36, Up=46, Down=45, Left=44, Right=43, Select{Clear}=37, Surround=42, Center{Rear}=41,
-PIP{Freeze}=50, Swap=38, Move=51, Setup=31, Shift=15, MACRO=47, MACRO2=39,
-{Light}=49, Display=$A3, Rear=$A9, Program=$A4, Sleep=$82, Freeze=$B2,
+"channel up":CH+=4, "channel down":CH-=5, "vol up":VOL+=6, "vol down":VOL-=3, "mute":Mute{Sleep}=2, Power=7, Enter=33, "tv/vcr":TV/SAT=34,
+"prev ch":PREVCH{Disp}=35, "play":PLAY{Slow}=18, "pause":PAUSE{X2}=9, "rewind":REW{Slow-}=26, "fast fwd":FF{Slow+}=10, "stop":STOP{Eject}=17, "record":REC=25,
+"menu":Menu{Prog}=36, "up arrow":Up=46, "down arrow":Down=45, "left arrow":Left=44, "right arrow":Right=43, "select":Select{Clear}=37, Surround=42, Center{Rear}=41,
+"pip on/off":PIP{Freeze}=50, "pip swap":Swap=38, "pip move":Move=51, Setup=31, Shift=15, "macro1":MACRO=47, "macro2":MACRO2=39,
+"light":{Light}=49, Display=$A3, Rear=$A9, "guide":Program=$A4, Sleep=$82, Freeze=$B2,
 MENU_UP=$AE, MENU_DOWN=$AD, SLOW=$92, SLOW+=$8A, SLOW-=$9A, EJECT=$91,
 X2=$89, CLEAR=$A5,
 Phantom1=$B6, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F,

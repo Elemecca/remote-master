@@ -46,20 +46,20 @@ AUD = $010 $011
 AUX = $012 $013
 
 [Buttons]
-Setup=$01, Power=$02,
+"setup":Setup=$01, Power=$02,
 TV=$03, CBL=$04, DVD=$09, AUD=$0A, AUX=$0B,
-Vol+=$23, Vol-=$24, Mute=$0C,
-Ch+=$29, Ch-=$2A,
+"vol up":Vol+=$23, "vol down":Vol-=$24, "mute":Mute=$0C,
+"channel up":Ch+=$29, "channel down":Ch-=$2A,
 1=$11, 2=$12, 3=$13, 4=$14, 5=$19, 6=$1A, 7=$1B, 8=$1C, 9=$21, 0=$22,
-*=$27, #{Enter}=$28, Last=$2B, Fav=$2C,
-Up=$05, Down=$06, Left=$07, Right=$08, Select=$0D,
-Settings=$18, Guide=$10, Menu=$17, Info=$0F, Exit=$0E, PageUp=$15, PageDown=$16,
+*=$27, #{Enter}=$28, "prev ch":Last=$2B, "fav/scan":Fav=$2C,
+"up arrow":Up=$05, "down arrow":Down=$06, "left arrow":Left=$07, "right arrow":Right=$08, "select":Select=$0D,
+Settings=$18, Guide=$10, "menu":Menu=$17, "display":Info=$0F, Exit=$0E, PageUp=$15, PageDown=$16,
 A=$1D, B=$1E, C=$1F,
-Macro1=$20, Macro2=$25, Macro3=$26,
+"macro1":Macro1=$20, "macro2":Macro2=$25, "macro3":Macro3=$26,
 Replay=$2D, List=$2E, Live=$2F,
-Rew=$31, Play=$32, FFWD=$33, Stop=$39, Pause=$34, Rec=$3A,
-VideoSource=$30,
-PIP_On/Off=$35, PIP_Swap=$36, PIP_Ch+=$37, PIP_Ch-=$38, PIP_Move=$3B
+"rewind":Rew=$31, Play=$32, "fast fwd":FFWD=$33, Stop=$39, Pause=$34, "record":Rec=$3A,
+"tv/vcr":VideoSource=$30,
+"pip on/off":PIP_On/Off=$35, "pip swap":PIP_Swap=$36, PIP_Ch+=$37, PIP_Ch-=$38, "pip move":PIP_Move=$3B
 
 [MultiMacros]
 Macro1=$019

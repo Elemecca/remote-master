@@ -41,7 +41,7 @@ Audio = $010 $011
 
 [Buttons]
 TV, "setup":SETUP, POWER, "vol up":VOL+, "vol down":VOL-, "channel up":CH+, "channel down":CH-, "mute":MUTE, CBL, VCR,
-"rewind":REW, PLAY, "fast fwd":FF, "Stop":STOP, PAUSE, "record":REC, AUDIO, ENTER{Music}, "prev ch":LAST, "select":OK,
+"rewind":REW, PLAY, "fast fwd":FF, "Stop":STOP, PAUSE, "record":REC, AUDIO, "enter":ENTER{Music}, "prev ch":LAST, "select":OK,
 1, 2, 3, "tv/vcr":TV/VCR, 4, 5, 6, 7, 8, 9,
 0, "display":INFO, "fav/scan":FAV, <AUX>, EXIT=35, LOCK, PAGE+, PAGE-, "menu":MENU, HELP,
 F1, F2, F3, GUIDE, BYPASS, DAY+, DAY-, A, "up arrow":UP, "down arrow":DOWN,

@@ -56,19 +56,19 @@ Aux    = $010 $011
 xDev   = $012 $013
 
 [Buttons]
-MAGIC[Setup]=$02, Menu=$20, Power=$03, SLEEP=$C3,
+"setup":MAGIC[Setup]=$02, Menu=$20, Power=$03, SLEEP=$C3,
 EXIT=$12,
 TV=$01, VCR=$0A, SAT=$09, AUX=$11,
 1=$15, 2=$16, 3=$17,
 4=$19, 5=$1A, 6=$1B,
 7=$1C, 8=$1D, 9=$1E,
 0=$1F, 10{-/--}=$2F, AV{20}=$18,
-CH+=$06, CH-=$07,
-VOL+=$04, VOL-=$05, MUTE=$08,
+"channel up":CH+=$06, "channel down":CH-=$07,
+"vol up":VOL+=$04, "vol down":VOL-=$05, MUTE=$08,
 Shift_VOL+=$C4, Shift_VOL-=$C5, Shift_CH+=$C6, Shift_CH-=$C7,
-UP=$29, DOWN=$2A, LEFT=$2B, RIGHT=$2C, OK=$22,
-REW{TextOn}=$0B, PLAY{TextOff}=$0C, PAUSE{Hold}=$0F, FFWD{Expand}=$0D,
-SP/LP{Red}=$14, STOP{Green}=$0E, REC{Yellow}=$10, AUTO{Blue}=$13,
+"up arrow":UP=$29, "down arrow":DOWN=$2A, "left arrow":LEFT=$2B, "right arrow":RIGHT=$2C, "select":OK=$22,
+"rewind":REW{TextOn}=$0B, "play":PLAY{TextOff}=$0C, "pause":PAUSE{Hold}=$0F, "fast fwd":FFWD{Expand}=$0D,
+SP/LP{Red}=$14, "stop":STOP{Green}=$0E, "record":REC{Yellow}=$10, AUTO{Blue}=$13,
 A=$23, B=$24, C=$25, D=$26, E=$27, F=$28, G=$2D, H=$2E,
 Phantom1=$F0, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 

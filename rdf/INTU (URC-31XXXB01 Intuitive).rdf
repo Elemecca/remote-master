@@ -46,7 +46,7 @@ TV=$01,CABLE=$09,VCR=$0A,
 GUIDE=$21,DAY+=$22,DAY-=$23,"enter":ENTER{MUSIC}=$24,
 "display":INFO=$25,HELP=$26,PAGE_UP=$27,PAGE_DOWN=$28,
 BYPASS=$29,PPV=$2A,EXIT=$2B,PAUSE_CABLE=$2C,
-THEME[blank2]=$2D,RECORD=$2E,DIAMOND=$2F,"macro1":MACRO=$30,
+THEME[blank2]=$2D,{RECORD}=$2E,DIAMOND=$2F,"macro1":MACRO=$30,
 Phantom1=$35, Phantom2=$36, Phantom3=$37, Phantom4=$38, DiscreteON=$39, DiscreteOFF=$3A
 
 [ButtonMaps]

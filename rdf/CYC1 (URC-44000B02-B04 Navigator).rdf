@@ -48,14 +48,14 @@ Setup=$02,
 "vol up":Vol+=$04, "vol down":Vol-=$05, "mute":Mute=$08,
 "channel up":Ch+=$06, "channel down":Ch-=$07,
 "prev ch":Last=$12, Exit=$29, "display":Info=$21,
-"record":Rec=$10, Play=$0C, Pause2=$0F, "Stop":Stop=$0E, "rewind":Rew=$0B, "fast fwd":FF=$0D,
-"up arrow":Up=$31, "down arrow":Down=$32, "left arrow":Left=$33, "right arrow":Right=$34, "select":Select=$13,
+"record":Rec=$10, Play=$0C, "pause":Pause_{VCR}=$0F, Stop=$0E, "rewind":Rew=$0B, "fast fwd":FF=$0D,
+"up arrow":Up=$31, "down arrow":Down=$32, "left arrow":Left=$33, "right arrow":Right=$34, Select=$13,
 Pg+=$2A, Pg-=$2E,
-Page+=$2B, Page-=$2C, Guide=$22, "menu":Menu=$20,
+Page+=$2B, Page-=$2C, Guide=$22, Menu=$20,
 F1=$35, F2=$36, F3=$37,
 Help=$2D, "fav/scan":Fav=$25, PPV=$23, "tv/vcr":TV/VCR=$38,
 Day-=$28, Day+=$27,
-Bypass=$18, Pause=$14, Diamond=$30, P=$24
+Bypass=$18, Pause2=$14, Diamond=$30, P=$24
 
 [MultiMacros]
 F1=$017

@@ -3,56 +3,56 @@
 #$-:Map THIS! free image map editor by Todd C. Wilson
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
-#$TITLE:URC-7544
-#$DATE:Mon Oct 06 14:42:49 2003
-#$PATH:C:\Backups\IR\Images\
-#$GIF:URC-7544.jpg
+#$TITLE:URC-7541
+#$DATE:Tue Oct 28 19:55:16 2003
+#$PATH:C:\Backups\JP1\Images\
+#$GIF:URC-7541.jpg
 #$FORMAT:ncsa
 #$EOH
-default 7544
-rect MENU 67,18 85,38
-circle 1  40,95 54,103
-circle 2  76,95 90,103
-circle 3  111,95 125,103
-circle 4  40,116 54,124
-circle 5  76,116 90,124
-circle 6  111,116 125,124
-circle 7  40,138 54,146
-circle 8  76,138 90,146
-circle 9  111,138 125,146
-circle 10{-/--}  40,159 54,167
-circle 0  76,159 90,167
-circle AV{20}  111,159 125,167
-circle OK  75,218 86,231
-circle UP  76,193 91,200
-circle DOWN  76,245 91,252
-circle LEFT  52,219 59,234
-circle RIGHT  99,219 106,234
-rect EXIT 14,213 37,225
-rect MUTE 114,213 137,225
-circle CH+  32,195 41,207
-circle CH-  32,242 41,255
-circle VOL+  119,193 128,206
-circle VOL-  119,242 128,255
-poly PLAY{TextOff} 54,279 54,297 72,288 54,279 54,279
-rect PAUSE{hold} 81,280 97,295
-circle SP/LP{Red}  35,306 49,314
-rect STOP{green} 57,304 74,321
-circle REC{yellow}  89,312 97,320
-circle AUTO{blue}  116,306 129,314
-circle A  41,343 50,350
-circle B  64,343 73,350
-circle C  87,343 96,350
-circle D  110,343 119,350
-circle E  41,365 50,372
-circle F  64,365 73,372
-circle G  87,365 96,372
-circle H  110,365 119,372
-poly vcr 51,53 74,51 74,75 54,75 51,53 51,53
-poly sat 79,51 101,52 96,75 78,75 79,51 79,51
-poly magic[setup] 60,19 40,25 39,27 39,29 43,33 48,34 63,37 60,19
-poly power 92,19 88,39 104,36 109,33 112,31 114,28 112,26 107,22 99,20 92,19
-poly tv 51,73 45,54 33,58 27,62 26,63 27,65 29,68 35,71 42,73 51,73
-poly aux 106,53 116,56 123,58 125,60 126,63 125,66 118,70 112,72 101,74 106,53
-poly rew{texton} 46,272 36,272 24,280 37,290 45,289 46,272
-poly ffwd{expand} 106,271 115,271 127,280 115,290 106,290 106,272 106,271
+default 7541
+circle 1  41,98 53,106
+circle 2  77,98 90,106
+circle 3  112,99 124,107
+circle 4  41,120 53,128
+circle 5  77,120 89,128
+circle 6  113,121 125,129
+circle 7  41,143 53,151
+circle 8  77,143 89,151
+circle 9  114,143 126,151
+circle 10{-/--}  41,165 53,173
+circle 0  77,165 89,173
+circle AV{20}  113,165 125,173
+circle OK  76,226 87,239
+circle UP  77,199 89,204
+circle DOWN  77,253 89,258
+circle LEFT  54,226 60,240
+circle RIGHT  99,226 105,240
+rect EXIT 15,220 38,232
+rect MUTE 115,220 138,232
+circle CH+  33,202 42,214
+circle CH-  32,250 41,263
+circle VOL+  122,201 131,214
+circle VOL-  118,251 127,264
+poly PLAY{TextOff} 57,287 57,305 75,296 57,287 57,287
+rect PAUSE{hold} 82,288 98,303
+circle SP/LP{Red}  36,313 50,321
+rect STOP{green} 58,312 75,329
+circle REC{yellow}  89,320 97,328
+circle AUTO{blue}  117,313 130,321
+circle A  40,350 49,357
+circle B  63,350 72,357
+circle C  87,350 96,357
+circle D  111,350 120,357
+circle E  39,372 48,379
+circle F  64,372 73,379
+circle G  87,372 96,379
+circle H  110,372 119,379
+poly rew{texton} 45,279 35,279 23,287 36,298 45,297 45,279 45,279
+poly ffwd{expand} 107,278 116,278 128,287 116,297 107,297 107,279 107,278 107,278
+poly menu 67,18 87,18 83,38 71,38 67,18 67,18
+poly magic[setup] 36,29 61,19 63,38 36,29
+poly power 94,18 119,30 91,38 94,18
+poly tv 46,55 26,65 25,67 29,70 50,77 46,55
+poly aux 108,55 128,63 129,65 128,68 126,70 101,78 108,55
+poly vcr 53,55 74,54 74,79 55,77 53,55
+poly sat 80,54 103,54 97,78 80,79 80,54

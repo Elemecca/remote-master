@@ -41,13 +41,13 @@ AUX =     $014 $015
 CD =      $016 $017
 
 [Buttons]
-"setup":SETUP=2, SLEEP=$18,
+SETUP=2, SLEEP=$18,
 TV=1, CBL/SAT=9, VCR=$0A, RCVR=$11, AUX=$14, CD=$21, DVD/LD=$22,
-"vol up":VOL+=4, "vol down":VOL-, "mute":Mute=8, "channel up":CH+=6, "channel down":CH-, "prev ch":PrevCh=$13,
-"rewind":REW=$0B, PLAY, "fast fwd":FF, "Stop":STOP, PAUSE, "record":REC,
-Power=3, "tv/vcr":TV/VCR=$20, "display":Display=$29,
+"vol up":VOL+=4, "vol down":VOL-, Mute=8, "channel up":CH+=6, "channel down":CH-, "prev ch":PrevCh=$13,
+"rewind":REW=$0B, PLAY, "fast fwd":FF, STOP, PAUSE, "record":REC,
+Power=3, "tv/vcr":TV/VCR=$20, Display=$29,
 "pip on/off":PIP_ON/OFF=$2B, "pip swap":PIP_SWAP, "pip move":PIP_MOVE,
-PROG/GUIDE=$2E, "menu":Menu=$23, Surround=$25, Enter=$12, Exit=$2A,
+"guide":PROG/GUIDE=$2E, Menu=$23, Surround=$25, Enter=$12, Exit=$2A,
 "up arrow":Up=$31, "down arrow":Down, "left arrow":Left, "right arrow":Right, "select":Sel[Select]=$28,
 "macro1":MACRO=$26, "macro2":MACRO2, "learn1":1L=$2F, "learn2":2L, "learn3":3L=$35, "learn4":4L,
 1=$15, 2, 3, 4=$19, 5, 6, 7, 8, 9, 0,

@@ -1,0 +1,64 @@
+#$MTIMFH
+#$-:Image Map file created by Map THIS!
+#$-:Map THIS! free image map editor by Todd C. Wilson
+#$-:Please do not edit lines starting with "#$"
+#$VERSION:1.30
+#$TITLE:URC-6800
+#$DATE:Thu Oct 30 10:16:20 2003
+#$PATH:C:\Backups\JP1\Images\
+#$GIF:URC-6800.jpg
+#$FORMAT:ncsa
+#$EOH
+default 6800
+rect VCR 62,34 86,43
+rect RCVR 63,50 85,62
+circle 1L  29,71 35,77
+circle 2L  58,75 64,81
+circle 3L  90,76 96,82
+circle 4L  119,75 125,81
+circle SLEEP  27,93 33,99
+circle MENU  45,107 51,113
+circle PROG/GUIDE  27,121 33,127
+circle EXIT  45,135 51,141
+circle SURROUND  26,149 32,155
+circle MACRO  45,163 51,169
+circle MACRO2  26,177 32,183
+circle POWER  77,157 84,164
+circle UP  97,96 110,101
+circle LEFT  78,115 83,128
+circle RIGHT  118,116 123,129
+circle DOWN  98,135 111,140
+rect Sel[SELECT] 91,109 103,122
+poly MUTE 74,185 53,204 74,201 74,185 74,185
+circle 1  35,222 43,230
+circle 2  58,222 66,230
+circle 3  83,222 91,230
+circle 4  35,244 43,252
+circle 5  59,244 67,252
+circle 6  84,245 92,253
+circle 7  33,266 41,274
+circle 8  58,267 66,275
+circle 9  83,267 91,275
+circle 0  58,289 66,297
+circle DISPLAY  33,290 39,296
+circle ENTER  83,290 89,296
+poly REW 37,307 37,321 22,314 37,307 37,307
+poly FF 78,307 78,321 93,314 78,307 78,307
+circle PLAY  58,314 66,322
+circle TV/VCR  114,314 123,320
+circle PAUSE  33,338 42,345
+rect STOP 52,331 65,344
+circle REC  84,338 91,345
+poly SETUP 112,330 117,335 123,338 119,342 119,348 112,345 105,348 106,342 101,337 108,335 112,330 112,330
+poly vol+ 82,192 103,184 102,168 82,192 82,192
+poly ch+ 111,183 111,166 132,175 111,183 111,183
+poly vol- 103,191 103,206 82,199 103,192 103,191 103,191
+poly ch- 110,190 130,184 110,205 110,190 110,190
+poly prevch 106,226 126,209 127,224 108,225 106,226 106,226
+poly pip_swap 106,270 125,253 125,268 106,270 106,270
+poly pip_on/off 107,247 126,230 126,245 107,247 107,247
+poly pip_move 104,292 123,276 123,290 104,292 104,292
+poly tv 25,32 51,28 51,41 24,41 25,32 25,32
+poly cbl/sat 97,30 122,34 122,44 97,44 97,30 97,30
+poly dvd/ld 25,47 51,47 51,60 25,55 25,47
+poly cd 97,50 123,50 123,59 97,62 97,50

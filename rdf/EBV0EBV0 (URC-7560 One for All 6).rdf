@@ -63,21 +63,21 @@ AUD = $012 $013
 DVD = $014 $015
 
 [Buttons]
-MAGIC[Setup]=$02, Menu=$20, Power=$03, SLEEP=$C3,
-HOME_THEATER=$12,
+"setup":MAGIC[Setup]=$02, Menu=$20, Power=$03, SLEEP=$C3,
+"theater":HOME_THEATER=$12,
 TV=$01, VCR=$0A, SAT=$09,
 CD=$11, AUD=$21, DVD=$22,
 1=$15, 2=$16, 3=$17,
 4=$19, 5=$1A, 6=$1B,
 7=$1C, 8=$1D, 9=$1E,
 0=$1F, +10{-/--}=$2F, AV{Exit_20}=$18, EXIT=$98,
-CH+{Bright+}=$06, CH-{Bright-}=$07, BRIGHT+=$C6, BRIGHT-=$C7,
-VOL+{Color+}=$04, VOL-{Color-}=$05, COLOR+=$C4, COLOR-=$C5, MUTE{Select}=$08, Select=$88,
-UP=$29, DOWN=$2A, LEFT=$2B, RIGHT=$2C,
-REW{TextOn}=$0B, PLAY{TextOff}=$0C, PAUSE{Hold}=$0F, FFWD{Expand}=$0D,
-SP/LP{Red}=$14, STOP{Green}=$0E, REC{Yellow}=$10, AUTO{Blue}=$13,
+"channel up":CH+{Bright+}=$06, "channel down":CH-{Bright-}=$07, BRIGHT+=$C6, BRIGHT-=$C7,
+"vol up":VOL+{Color+}=$04, "vol down":VOL-{Color-}=$05, COLOR+=$C4, COLOR-=$C5, "mute":MUTE{Select}=$08, Select=$88,
+"up arrow":UP=$29, "down arrow":DOWN=$2A, "left arrow":LEFT=$2B, "right arrow":RIGHT=$2C,
+"rewind":REW{TextOn}=$0B, "play":PLAY{TextOff}=$0C, "pause":PAUSE{Hold}=$0F, "fast fwd":FFWD{Expand}=$0D,
+SP/LP{Red}=$14, "stop":STOP{Green}=$0E, "record":REC{Yellow}=$10, AUTO{Blue}=$13,
 A=$23, B=$24, C=$25, D=$26, E=$27, F=$28, G=$2D, H=$2E,
-{LIGHT}=$30,
+"light":{LIGHT}=$30,
 Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 
 [ButtonMaps]
