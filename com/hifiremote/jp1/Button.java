@@ -31,11 +31,26 @@ public class Button
     this.shiftedButton = shiftedButton;
   }
 
+  public boolean isShifted()
+  {
+    return isShifted;
+  }
+
   public boolean allowsShift()
   {
     if ( isShifted )
       return false;
     return ( shiftedButton == null );
+  }
+
+  public boolean isNoBind()
+  {
+    return noBind;
+  }
+
+  public void setNoBind( boolean flag )
+  {
+    noBind = flag;
   }
 
   public Button setFunction( Function newFunc )
@@ -133,4 +148,5 @@ public class Button
   private Shape shape = null;
   private Button shiftedButton = null;
   private boolean isShifted = false;
+  private boolean noBind = false;
 }
