@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.47";
+  private static final String version = "v 0.48";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -35,6 +35,7 @@ public class KeyMapMaster
   private OutputPanel outputPanel = null;
   private ProgressMonitor progressMonitor = null;
   private DeviceUpgrade deviceUpgrade = null;
+  private File homeDirectory = null;
   private File propertiesFile = null;
   private File rdfPath = null;
   private File kmPath = null;
@@ -43,18 +44,12 @@ public class KeyMapMaster
   private Rectangle bounds = null;
   private Vector recentFiles = new Vector();
 
-  public KeyMapMaster()
-    throws Exception
-  {
-    this( null );
-  }
-
-  public KeyMapMaster( File propertiesFile )
+  public KeyMapMaster( String[] args )
     throws Exception
   {
     super( "RemoteMaster " + version );
+    File fileToOpen = parseArgs( args );
 
-    this.propertiesFile = propertiesFile;
     loadPreferences();
 
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
@@ -175,7 +170,7 @@ public class KeyMapMaster
 
     mainPanel.add( messageLabel, BorderLayout.SOUTH );
 
-    protocolManager.load();
+    protocolManager.load( new File( homeDirectory, "protocols.ini" ));
 
     setupPanel = new SetupPanel( deviceUpgrade, protocolManager );
     currPanel = setupPanel;
@@ -231,7 +226,47 @@ public class KeyMapMaster
     else
       pack();
 
+    if ( fileToOpen != null )
+    {
+      openFile( fileToOpen );
+    }
     show();
+  }
+
+  private File parseArgs( String[] args )
+  {
+    System.err.println( "KeyMapMaster.parseArgs()" );
+    homeDirectory = new File( System.getProperty( "user.dir" ));
+    File fileToOpen = null;
+    for ( int i = 0; i < args.length; i++ )
+    {
+      String arg = args[ i ];
+      System.err.println( "Arg=" + arg );
+      if ( arg.charAt( 0 ) == '-' )
+      {
+        char flag = arg.charAt( 1 );
+        String parm = args[ ++i ];
+        System.err.println( "Parm=" + parm );
+        if ( flag == 'h' )
+        {
+          System.err.println( "Setting home directory" );
+          homeDirectory = new File( parm );
+        }
+        else if ( flag == 'p' )
+        {
+          System.err.println( "Setting propertiesFile" );
+          propertiesFile = new File( parm );
+        }
+      }
+      else
+        fileToOpen = new File( arg );
+    }
+    if ( propertiesFile == null )
+    {
+      propertiesFile = new File( homeDirectory, "RemoteMaster.properties" );
+    }
+
+    return fileToOpen;
   }
 
   public static void showMessage( String msg )
@@ -256,7 +291,6 @@ public class KeyMapMaster
     {
       public boolean accept( File dir, String name )
       {
-        return name.toLowerCase().endsWith( ".rdf" );
       }
     };
 
@@ -378,8 +412,8 @@ public class KeyMapMaster
         {
           File file = chooser.getSelectedFile();
           String name = file.getAbsolutePath();
-          if ( !name.endsWith( ".km" ))
-            file = new File( name + ".km" );
+          if ( !name.endsWith( ".rmd" ))
+            file = new File( name + ".rmd" );
 
           int rc = JOptionPane.YES_OPTION;
           if ( !file.exists())
@@ -426,8 +460,8 @@ public class KeyMapMaster
     if ( returnVal == JFileChooser.APPROVE_OPTION )
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( ".km" ))
-        name = name + ".km";
+      if ( !name.toLowerCase().endsWith( ".rmd" ))
+        name = name + ".rmd";
       File file = new File( name );
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists())
@@ -521,29 +555,29 @@ public class KeyMapMaster
   {
     Properties props = new Properties();
 
-    File userDir = new File( System.getProperty( "user.dir" ));
-    System.err.println( "userDir is " + userDir.getAbsolutePath());
-    if ( propertiesFile == null )
-    {
-      File temp = File.createTempFile( "kmj", null, userDir );
-      System.err.println( "Created temp file " + temp.getName());
-      File dir = null;
-      if ( temp.canWrite())
-      {
-        System.err.println( "Can write" );
-        temp.delete();
-        dir = userDir;
-      }
-      else
-      {
-        System.err.println( "Can't write" );
-        dir = new File( System.getProperty( "user.home" ));
-      }
-
-      propertiesFile = new File( dir, "RemoteMaster.properties" );
-      System.err.println( "propertiesFIle is " + propertiesFile.getAbsolutePath());
-    }
-
+//  File userDir = new File( System.getProperty( "user.dir" ));
+//  System.err.println( "userDir is " + userDir.getAbsolutePath());
+//  if ( propertiesFile == null )
+//  {
+//    File temp = File.createTempFile( "kmj", null, userDir );
+//    System.err.println( "Created temp file " + temp.getName());
+//    File dir = null;
+//    if ( temp.canWrite())
+//    {
+//      System.err.println( "Can write" );
+//      temp.delete();
+//      dir = userDir;
+//    }
+//    else
+//    {
+//      System.err.println( "Can't write" );
+//      dir = new File( System.getProperty( "user.home" ));
+//    }
+//
+//    propertiesFile = new File( dir, "RemoteMaster.properties" );
+//    System.err.println( "propertiesFIle is " + propertiesFile.getAbsolutePath());
+//  }
+//
     if ( propertiesFile.canRead())
     {
       FileInputStream in = new FileInputStream( propertiesFile );
@@ -556,7 +590,7 @@ public class KeyMapMaster
       rdfPath = new File( temp );
     else
     {
-      rdfPath = new File( userDir, "rdf" );
+      rdfPath = new File( homeDirectory, "rdf" );
       while ( !rdfPath.exists())
         rdfPath = rdfPath.getParentFile();
     }
@@ -566,14 +600,14 @@ public class KeyMapMaster
       kmPath = new File( temp );
     else
     {
-      kmPath = new File( userDir, "km" );
+      kmPath = new File( homeDirectory, "km" );
       while ( ! kmPath.exists())
         kmPath = kmPath.getParentFile();
     }
 
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
     temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
-    try 
+    try
     {
       UIManager.setLookAndFeel( temp );
       SwingUtilities.updateComponentTreeUI( this );
@@ -644,9 +678,9 @@ public class KeyMapMaster
     Vector protocols = protocolManager.getProtocolsForRemote( r );
     if ( !protocols.contains( p ))
     {
-      JOptionPane.showMessageDialog( this, 
+      JOptionPane.showMessageDialog( this,
                                      "The selected protocol " + p.getDiagnosticName() +
-                                     "\nis not compatible with the selected remote.\n" + 
+                                     "\nis not compatible with the selected remote.\n" +
                                      "This upgrade will NOT function correctly.\n" +
                                      "Please choose a different protocol.",
                                      "Error", JOptionPane.ERROR_MESSAGE );
@@ -672,28 +706,32 @@ public class KeyMapMaster
   private class KMFileFilter
     extends javax.swing.filechooser.FileFilter
   {
-    //Accept all directories and all .km files.
+    //Accept all directories and all .km/.rmd files.
     public boolean accept( File f )
     {
       boolean rc = false;
       if ( f.isDirectory())
         rc = true;
-      else if ( f.getName().toLowerCase().endsWith( ".km" ))
-        rc = true;
+      else
+      {
+        String lowerName = f.getName().toLowerCase();
+        if ( lowerName.endsWith( ".km" ) || lowerName.endsWith( ".rmd" ))
+          rc = true;
+      }
       return rc;
     }
 
     //The description of this filter
     public String getDescription()
     {
-      return "RemoteMaster KeyMap files (*.km)";
+      return "RemoteMaster device upgrade files (*.rmd)";
     }
   }
 
   private class KMDirectoryFilter
     extends javax.swing.filechooser.FileFilter
   {
-    //Accept all directories and all .km files.
+    //Accept all directories
     public boolean accept( File f )
     {
       boolean rc = false;

@@ -10,11 +10,7 @@ public class RemoteMaster
     try
     {
       System.setErr( new PrintStream( new FileOutputStream( "rmaster.err" )));
-      KeyMapMaster km = null;
-      if ( args.length > 0 )
-        km = new KeyMapMaster( new File( args[ 0 ]));
-      else
-        km = new KeyMapMaster();
+      KeyMapMaster km = new KeyMapMaster( args );
     }
     catch ( Exception e )
     {

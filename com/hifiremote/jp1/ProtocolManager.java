@@ -9,15 +9,14 @@ public class ProtocolManager
   public ProtocolManager()
   {}
 
-  public void load()
+  public void load( File f )
     throws Exception
   {
-    File f = new File( "protocols.ini" );
     while ( !f.canRead() )
     {
       JOptionPane.showMessageDialog( null, "Couldn't read " + f.getName() + "!",
                                      "Error", JOptionPane.ERROR_MESSAGE );
-      JFileChooser chooser = new JFileChooser( System.getProperty( "user.dir" ));
+      JFileChooser chooser = new JFileChooser( f.getParentFile() );
       chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
       chooser.setDialogTitle( "Pick the file containing the protocol definitions" );
       int returnVal = chooser.showOpenDialog( null );
