@@ -1,7 +1,7 @@
 Changes for v0.65
 
 - Add/update remote images, maps, and rdfs
-- Feature Request 730478: Move External Functions tab
+- Feature Request 805107: Move Layout panel
 - Allow multiple shapes in the map file for the same RDF button
 - Allow an optional display name for a shape in the map file
 
