@@ -9,7 +9,7 @@ public class ExternalFunctionRenderer
 {
   public ExternalFunctionRenderer()
   {
-    setHorizontalAlignment( SwingConstants.CENTER );
+    setHorizontalAlignment( SwingConstants.LEFT );
   }
 
   protected void setValue( Object value )
@@ -23,7 +23,5 @@ public class ExternalFunctionRenderer
 
     super.setValue( rc );
   }
-
-  private static final DecimalFormat df = new DecimalFormat( "000" );
 }
 

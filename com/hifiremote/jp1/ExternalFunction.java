@@ -102,7 +102,7 @@ public class ExternalFunction
     if ( efc != null )
     {
       if ( hex == null )
-        hex = new Hex();
+        hex = new Hex( 1 );
       Protocol.efc2hex( efc, hex, 0 );
     }
     else
