@@ -1,0 +1,123 @@
+[General]
+Name=URC-6131 PVR Remote
+EepromSize=$800
+AdvCodeAddr=$01E..$0FF
+UpgradeAddr=$100..$7FD
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+
+[Settings]
+VPT Status=$01a.2.1.0.0 (Off;On)
+VPT Device=$01b.7.8.1.0 DeviceButtons
+CBL/SAT VPT=$01c.0.1.1.0 (Off;On)
+TV   VPT=$01c.1.1.1.0 (Off;On)
+PVR  VPT=$01c.2.1.1.0 (Off;On)
+VCR  VPT=$01c.3.1.0.0 (Off;On)
+DVD  VPT=$01c.4.1.1.0 (Off;On)
+AUD  VPT=$01c.5.1.0.0 (Off;On)
+dev7 VPT=$01c.6.1.0.0 (Off;On)
+dev8 VPT=$01c.7.1.0.0 (Off;On)
+
+[Checksums]
+^$000:$002..$3FC
+
+[FixedData]
+$01D = $03
+
+[DeviceTypes]
+CBL/SAT	= 0
+TV	= 1
+VCR/DVD	= 2
+AUD	= 2
+
+[DeviceTypeAliases]
+CBL/SAT	= Cable, SAT, Video Acc
+TV	= TV
+VCR/DVD	= VCR, DVD, Tape, Laserdisc, DAT
+AUD	= CD, Home Auto, Phono, Tuner, Misc Audio, Amp
+
+
+[DeviceButtons]
+CBL/SAT	= $00A $00B
+TV	= $00C $00D
+PVR	= $00E $00F
+VCR	= $010 $011
+DVD	= $012 $013
+AUD	= $014 $015
+dev7	= $016 $017
+dev8	= $018 $019
+
+
+[Buttons]
+CBL/SAT=$09,
+TV=$01,
+PVR=$0A,
+VCR=$39,
+DVD=$11,
+AUD=$22,
+dev7=$28,
+dev8=$38,
+Menu=$21,
+Power=$03,
+Info=$18,
+Guide=$14,
+Up_Arrow=$31,
+Exit=$24,
+Left_Arrow=$33,
+Select=$35,
+Right_Arrow=$34,
+Down_Arrow=$32,
+Vol+=$04,
+Vol-=$05,
+CH+=$06,
+CH-=$07,
+Mute=$08,
+Prev=$23,
+Replay=$27,
+Thumbs_Down=$2D,
+PVR_Menu=$36,
+Thumbs_Up=$2C,
+Advance=$29,
+Stop=$0E,
+Play=$0C,
+Rewind=$0B,
+Pause=$0F,
+Fast_Forward=$0D,
+Prev_Track=$2A,
+Next_Track=$2B,
+Record=$10,
+Audio_CC=$37,
+Subtitle=$25,
+Angle_Sleep=$26,
+Slow=$2E,
+1=$15,
+2=$16,
+3=$17,
+4=$19,
+5=$1A,
+6=$1B,
+7=$1C,
+8=$1D,
+9=$1E,
+0=$1F,
+Enter=$12,
+TV/VID=$13,
+PIP=$2F,
+Swap=$20,
+Move=$30,
+SETUP=$02,
+Phantom1=$3D, Phantom2=$3E, Phantom3=$3F, Phantom4=$40
+
+[ButtonMaps]
+0 = ($1f, $15, $16, $17, $19, $1a, $1b, $1c, $1d, $1e), ($04, $05, $08), ($06, $07),
+     $03, $21, $18, $35, $23, $13, $24, $31, $32, $33, $34, $14, $12, $2b, $2a, $2e, $36, $29, $27, $2c, $2d, $0c, $0f, $0b, $0d, $0e, $10
+1 = ($1f, $15, $16, $17, $19, $1a, $1b, $1c, $1d, $1e), ($04, $05, $08), ($06, $07),
+     $03, $23, $13, $18, $21, $26, $31, $32, $33, $34, $35, $24, $2f, $20, $30, $12, $14, $37
+2 = ($1f, $15, $16, $17, $19, $1a, $1b, $1c, $1d, $1e), ($04, $05, $08), ($06, $07),
+     $03, $0c, $0f, $0b, $0d, $0e, $10, $13, $18, $21, $24, $31, $32, $33, $34, $14, $35, $23, $25, $12, $2b, $2a, $2e, $37, $26, $36, $29, $27, $2c, $2d
+
+[DigitMaps]
+072 048 053 094 092 003 090 044 046 086 021 011 087 058 029 010
+085 126 023 081 016 001 127 083 034 032 075 033 030 003 080 064
+013 091 142 125 130 131 069 129
