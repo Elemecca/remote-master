@@ -234,12 +234,18 @@ public class KeyMapMaster
     loadRemotes();
     setRemotes( remotes );
 
+    System.err.println( "Setting default remote" );
     int index = 0;
     if ( lastRemoteName != null )
+    {
+      System.err.print( "Searcing for " + lastRemoteName );
       index = Arrays.binarySearch( remotes, lastRemoteName );
+      System.err.println( " index is " + index );
+    }
     if ( index < 0 )
       index = 0;
     setRemote( remotes[ index ]);
+    remoteList.setSelectedIndex( index );
 
     remoteList.addActionListener( this );
     deviceTypeList.addActionListener( this );
@@ -406,15 +412,13 @@ public class KeyMapMaster
   public void setRemotes( Remote[] remotes )
   {
     if ( remoteList != null )
-    {
       remoteList.setModel( new DefaultComboBoxModel( remotes ));
-      setRemote( remotes[ 0 ]);
-      remoteList.setSelectedIndex( 0 );
-    }
   }
 
   public void setRemote( Remote remote )
   {
+    System.err.println( "KeyMapMaster.setRemote( " + remote.getName() + " )" );
+    System.err.println( "\tremoteList=" + remoteList + " and currentRemote=" + currentRemote );
     if (( remoteList != null ) && ( remote != currentRemote ))
     {
       currentRemote = remote;
@@ -624,7 +628,9 @@ public class KeyMapMaster
     if ( temp != null )
       UIManager.setLookAndFeel( temp );
 
+    System.err.print( "Reading Remote.name:" );
     lastRemoteName = props.getProperty( "Remote.name" );
+    System.err.println( "for " + lastRemoteName );
     lastRemoteSignature = props.getProperty( "Remote.signature" );
     
     temp = props.getProperty( "Bounds" );
