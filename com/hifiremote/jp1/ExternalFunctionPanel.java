@@ -341,7 +341,7 @@ public class ExternalFunctionPanel
             {
               if ( row == functions.size() )
               {
-                functions.add( new Function());
+                functions.add( new ExternalFunction());
                 if ( addedRow == -1 )
                   addedRow = row;
               }
@@ -352,6 +352,7 @@ public class ExternalFunctionPanel
               {
                 if ( workCol == colCount )
                   break;
+                int modelCol = table.convertColumnIndexToModel( workCol );
                 String token = st.nextToken();
                 Object value = null;
                 if ( !token.equals( "\t" ))
@@ -359,7 +360,7 @@ public class ExternalFunctionPanel
                   if ( st.hasMoreTokens())
                     st.nextToken();
 
-                  Class aClass = model.getColumnClass( workCol );
+                  Class aClass = model.getColumnClass( modelCol );
                   if ( aClass == String.class )
                   {
                     if (( token.length() == 5 ) &&
@@ -379,7 +380,8 @@ public class ExternalFunctionPanel
                   }
                 }
 
-                model.setValueAt( value, row, workCol++ );
+                model.setValueAt( value, row, modelCol );
+                workCol++;
               }
               row++;
             }

@@ -20,7 +20,7 @@ public class FunctionTable
     {
       model = new FunctionTableModel( functions );
       setModel( model );
-      getTableHeader().setReorderingAllowed( false );
+//      getTableHeader().setReorderingAllowed( false );
     }
     catch ( Exception e )
     {

@@ -67,7 +67,7 @@ public class ButtonPanel
     renderer.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     table.setDefaultRenderer( Button.class, renderer );
 
-    table.getTableHeader().setReorderingAllowed( false );
+//    table.getTableHeader().setReorderingAllowed( false );
     (( DefaultTableCellRenderer )table.getDefaultRenderer( Function.class )).setToolTipText(
      "Drag or double-click a function to set the functions for a button, or use the popup menu of available functions." );
 
@@ -76,12 +76,15 @@ public class ButtonPanel
       public boolean canImport( JComponent comp, DataFlavor[] flavors )
       {
         boolean rc = false;
-        for ( int i = 0; i < flavors.length; i++ )
+        if ( table.convertColumnIndexToModel( table.getSelectedColumn()) != 0 )
         {
-          if ( flavors[ i ] == LocalObjectTransferable.getFlavor())
+          for ( int i = 0; i < flavors.length; i++ )
           {
-            rc = true;
-            break;
+            if ( flavors[ i ] == LocalObjectTransferable.getFlavor())
+            {
+              rc = true;
+              break;
+            }
           }
         }
         return rc;
@@ -93,13 +96,12 @@ public class ButtonPanel
         JTable table = ( JTable )c;
         int row = table.getSelectedRow();
         int col = table.getSelectedColumn();
-        if ( col != 0 )
+        if ( table.convertColumnIndexToModel( col ) != 0 )
         {
           try
           {
             Function f = ( Function )t.getTransferData( LocalObjectTransferable.getFlavor());
-            model.setValueAt( f, row, col );
-            model.fireTableCellUpdated( row, col );
+            setFunctionAt( f, row, col );
           }
           catch ( Exception e )
           {
@@ -250,7 +252,7 @@ public class ButtonPanel
       if ( e.isPopupTrigger() )
       {
         mouseCol = table.columnAtPoint( e.getPoint());
-        if ( mouseCol != 0 )
+        if ( table.convertColumnIndexToModel( mouseCol ) != 0 )
         {
           mouseRow = table.rowAtPoint( e.getPoint());
           popup.show( e.getComponent(), e.getX(), e.getY());
@@ -261,10 +263,11 @@ public class ButtonPanel
 
   private void setFunctionAt( Function function, int row, int col )
   {
-    if (( col > 0 ) && ( row != -1 ))
+    int modelCol = table.convertColumnIndexToModel( col );
+    if (( modelCol > 0 ) && ( row != -1 ))
     {
-      model.setValueAt( function, row, col );
-      model.fireTableCellUpdated( row, col );
+      model.setValueAt( function, row, modelCol );
+      model.fireTableCellUpdated( row, modelCol );
     }
   }
 

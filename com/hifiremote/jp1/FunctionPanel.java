@@ -333,12 +333,13 @@ public class FunctionPanel
                   break;
                 String token = st.nextToken();
                 Object value = null;
+                int modelCol = table.convertColumnIndexToModel( workCol );
                 if ( !token.equals( "\t" ))
                 {
                   if ( st.hasMoreTokens())
                     st.nextToken();
 
-                  Class aClass = model.getColumnClass( workCol );
+                  Class aClass = model.getColumnClass( modelCol );
                   if ( aClass == String.class )
                   {
                     if (( token.length() == 5 ) &&
@@ -358,7 +359,8 @@ public class FunctionPanel
                   }
                 }
 
-                model.setValueAt( value, row, workCol++ );
+                model.setValueAt( value, row, modelCol );
+                workCol++;
               }
               row++;
             }
