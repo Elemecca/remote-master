@@ -1541,7 +1541,7 @@ public class Remote
   private ImageIcon imageIcon = null;
   private File mapFile = null;
   private int shiftMask = 0x80;
-  private int xShiftMask = 0;
+  private int xShiftMask = 0xC0;
   private boolean xShiftEnabled = false;
   private String shiftLabel = "Shift";
   private String xShiftLabel = "XShift";

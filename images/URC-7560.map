@@ -31,7 +31,7 @@ circle 7  36,129 47,136
 circle 8  66,129 77,136
 circle 9  96,130 107,137
 circle 0  66,149 77,156
-circle 10{-/--}  36,149 47,156
+circle +10{-/--}  36,149 47,156
 circle AV{Exit_20}  96,149 107,156
 rect EXIT 0,0 1,1
 circle CH+{bright+}  67,198 102,212

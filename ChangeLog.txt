@@ -1,3 +1,11 @@
+Changes for v0.66
+
+- Add/update remote images, maps, and rdfs
+- Request 805120: Add Auto Assign button and feature to Layout panel
+- Add Exit to File menu
+- Improve error reporting when importing KM device upgrade
+- Add support for restrictions and xShift
+
 Changes for v0.65
 
 - Add/update remote images, maps, and rdfs
