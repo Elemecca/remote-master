@@ -291,8 +291,9 @@ public class DeviceUpgrade
       Button b = buttons[ i ];
       Function f = b.getFunction();
       Function sf = b.getShiftedFunction();
+      Function xf = b.getXShiftedFunction();
       if ((( f != null ) && (( map == null ) || !map.isPresent( b ) || f.isExternal())) ||
-          (( sf != null ) && ( sf.getHex() != null )))
+          (( sf != null ) && ( sf.getHex() != null )) || (( xf != null) && ( xf.getHex() != null )))
       {
         hasKeyMoves = true;
         break;
