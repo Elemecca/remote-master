@@ -22,7 +22,7 @@ public class DeviceParmFactory
       String name = st2.nextToken();
       int base = 10;
       String[] choices = null;
-      Dimension d = null;
+//      Dimension d = null;
       while ( st2.hasMoreTokens())
       {
         String sep = st2.nextToken();
@@ -55,13 +55,12 @@ public class DeviceParmFactory
             for ( int j = 0; j < numChoices; j++ )
               choices[ j + 1 ] = st3.nextToken();
           }
-          else if ( str.indexOf( '-' ) != -1 )
-          {
-            StringTokenizer st3 = new StringTokenizer( str, "-" );
-            d = new Dimension( Integer.parseInt( st3.nextToken(), base ),
-                               Integer.parseInt( st3.nextToken(), base ));
-
-          }
+//          else if ( str.indexOf( '-' ) != -1 )
+//          {
+//            StringTokenizer st3 = new StringTokenizer( str, "-" );
+//            d = new Dimension( Integer.parseInt( st3.nextToken(), base ),
+//                               Integer.parseInt( st3.nextToken(), base ));
+//          }
           else if ( str.equals( "bool" ))
             bool = true;
           else if ( str.length() > 0 )
@@ -76,11 +75,9 @@ public class DeviceParmFactory
       else if ( bool )
         parm = new FlagDeviceParm( name, defaultValue );
       else if ( bits != -1 )
-      {
         parm = new NumberDeviceParm( name, defaultValue, base, bits );
-      }
-      else if ( d != null )
-        parm = new NumberDeviceParm( name, defaultValue, base, d.width, d.height );
+//      else if ( d != null )
+//        parm = new NumberDeviceParm( name, defaultValue, base, d.width, d.height );
       else
         parm = new NumberDeviceParm( name, defaultValue, base );
 
