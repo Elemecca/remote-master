@@ -1,3 +1,9 @@
+Changes for v0.70
+
+- Add RC-5x protocol
+- Updated 10-6-03 Maps Images from Nils (and Chris): "skinny" images
+- Add choice of showing only preferred remotes.
+
 Changes for v0.69
 
 - Match KM changes for TiVo protocols

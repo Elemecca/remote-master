@@ -130,6 +130,7 @@ Pioneer
 Pioneer DVD
 Proton
 RC-5
+RC-5x
 RC-6
 RCA
 RCA (Old)
@@ -158,7 +159,6 @@ Pioneer DVD2
 Pioneer MIX
 Pioneer 2CMD
 Pioneer 3DEV
-RC-5x
 RC-5/5x Combo
 RCA Combo (w/Duration)
 ReplayTV (Simple)
