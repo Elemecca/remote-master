@@ -1,0 +1,91 @@
+[General]
+Name=Toshiba CT-90047 128b
+EepromSize=$080
+Processor=S3C80
+DevCodeOffset=19
+RAMAddr=$8000
+RDFSync=3
+ImageMap=Generic.map
+
+[Settings]
+VPT Status=$01a.3.1.0.0 (Off;On)
+VPT Device=$018.7.8.1.0 DeviceButtons
+
+[Checksums]
+^$000:$002..$07c
+
+[FixedData]
+$019 = $10
+
+[DeviceTypes]
+TV	= 0
+CBL/SAT	= 1
+VCR/DVD	= 2
+Audio/LD = 3
+OEM	= 4
+
+[DeviceTypeAliases]
+TV  = TV
+CBL/SAT = Cable,SAT,Video Acc
+VCR/DVD = VCR,DVD
+Audio/LD   = CD,Tuner,Home Auto,Misc Audio,Phono,Amp
+
+[DeviceButtons]
+TV	= $00A $00B
+CBL/SAT	= $00C $00D
+VCR	= $00E $00F
+DVD	= $010 $011
+Audio1	= $012 $013
+Audio2	= $014 $015
+OEM	= $016 $017
+
+[Buttons]
+0=$1F,
+1=$15,
+2=$16,
+3=$17,
+4=$19,
+5=$1A,
+6=$1B,
+7=$1C,
+8=$1D,
+9=$1E,
+VOL+=$04,
+mute=$08,
+VOL-=$05,
+ch-=$07,
+ch+=$06,
+power=$03,
+REW=$0B, PLAY, FFWD, STOP, PAUSE, REC,
+enter=$20,
++100=$18,
+ch_return=$39,
+recall=$32,
+tv/vcr=$24,
+action=$17,
+guide=$02,
+menu=$35,
+favorite=$33,
+info=$19,
+exit=$37,
+alpha_sort=$34,
+input=$38,
+disc=$44,
+slow-forward=$40,
+slow-reverse=$41,
+skip-forward=$42,
+skip-backwards=$43,
+up-arrow=$49,
+down-arrow=$50,
+left-arrow=$51,
+right-arrow=$52,
+sleep=$09,
+pic-size=$10,
+pip-ch+=$47,
+pip-ch-=$48,
+pip=$46,
+swap=$54,
+multi=$45,
+locate=$55,
+still=$53,
+source=$56

@@ -1,0 +1,72 @@
+[General]
+Name=Sky Digital
+EepromSize=$800
+AdvCodeAddr=$012..$0FF
+UpgradeAddr=$100..$3FC
+Processor=6805
+RDFSync=3
+
+[Settings]
+VPT Device=$00F.7.8.1.0 DeviceButtons
+VPT Status=$010.3.1.0.0 (Off;On)
+
+[Checksums]
+^$000:$002..$3FC
+
+[DeviceTypes]
+SAT	= 0
+TV	= 1
+OEM	= 2
+
+[DeviceTypeAliases]
+SAT = Cable,SAT,Video Acc
+TV    = TV
+
+[DeviceButtons]
+SKY	= $009 $006 $00c
+TV	= $00a $007 $00d
+OEM	= $00b $008 $00e
+
+[Buttons]
+On_Off=1
+vol_up=28
+vol_down=4
+mute=25
+channel_up=30
+channel_down=6
+cursor_up=29
+cursor_down=10
+cursor_right=37
+cursor_left=8
+i_button=26
+text=5
+backup=11
+help=7
+red_button=14
+green_button=33
+yellow_button=12
+blue_button=35
+1=18
+2=34
+3=16
+4=38
+5=32
+6=15
+7=19
+8=24
+9=20
+0=39
+TV=2
+SKY=3
+select=9
+
+[Buttons2]
+tv_guide=
+box_office=
+services=
+interactive=
+
+
+[ButtonMaps]
+0 = (39, 18, 34, 16, 38, 32, 15, 19, 24, 20), (28, 04, 25), (30, 06),
+    01

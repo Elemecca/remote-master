@@ -1,0 +1,108 @@
+[General]
+Name=Toshiba CT-90047 2k
+EepromSize=$800
+UpgradeAddr=$100..$3FF
+Processor=S3C80
+DevCodeOffset=19
+RAMAddr=$8000
+RDFSync=3
+
+[Settings]
+VPT Status=$01a.3.1.0.0 (Off;On)
+VPT Device=$018.7.8.1.0 DeviceButtons
+
+[Checksums]
+^$000:$002..$7FD
+
+[FixedData]
+$019 = $14
+
+[DeviceTypes]
+TV	= 0
+CBL/SAT	= 1
+VCR/DVD	= 2
+Audio/LD = 3
+OEM	= 4
+
+[DeviceTypeAliases]
+TV  = TV
+CBL/SAT = Cable,SAT,Video Acc
+VCR/DVD = VCR,DVD
+Audio/LD   = CD,Tuner,Home Auto,Misc Audio,Phono,Amp
+
+[DeviceButtons]
+TV	= $00A $00B
+CBL/SAT	= $00C $00D
+VCR	= $00E $00F
+DVD	= $010 $011
+Audio1	= $012 $013
+Audio2	= $014 $015
+OEM	= $016 $017
+
+[Buttons]
+0=$1F
+1=$15
+2=$16
+3=$17
+4=$19
+5=$1A
+6=$1B
+7=$1C
+8=$1D
+9=$1E
+VOL+=$04
+mute=$08
+VOL-=$05
+ch-=$07
+ch+=$06
+power=$03
+REW=$0B, PLAY, FFWD, STOP, PAUSE, REC,
+enter=20
++100=18
+ch_return=39
+recall=32
+tv/vcr=24
+action=17
+guide=2
+menu=35
+favorite=33
+info=19
+exit=37
+alpha_sort=34
+input=38
+disc=44
+slow-forward=40
+slow-reverse=41
+skip-forward=42
+skip-backwards=43
+up-arrow=49
+down-arrow=50
+left-arrow=51
+right-arrow=52
+sleep=9
+pic-size=10
+pip-ch+=47
+pip-ch-=48
+pip=46
+swap=54
+multi=45
+locate=55
+still=53
+source=56
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $12, $27, $20, $26, $23, $21, $13, $25, $31, $32, $33, $34, $2E, $37, $09, $35, $36, $2D, $38, $2F, $30, $0A
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $14, $12, $27, $20, $18, $11, $02, $13, $21, $22, $23, $25, $31, $32, $33, $34
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $14, $12, $27, $0C, $0F, $0B, $0D, $0E, $10, $20, $18, $11, $02, $23, $21, $13, $25, $22, $26, $2C, $28, $29, $2A, $2B, $31, $32, $33, $34
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $03, $12, $26, $02, $25, $0C, $0F, $0B, $0D, $0E, $10, $2C, $2A, $2B, $20, $23, $22, $28, $29, $31, $32, $33, $34
+4 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+     $09, $03, $15, $16, $17, $19, $1A, $1B, $0A, $1C, $1D, $1E, $11, $12, $1F, $14, $02, $13, $21, $22, $31, $32, $23, $33, $34, $04, $05, $25, $06, $07, $26, $08, $20, $27, $29, $28, $2A, $2B, $0B, $0F, $0C, $0D, $18, $2C, $0E, $10, $2F, $2E, $2D, $35, $30, $36, $37, $38
+
+[DigitMaps]
+072 048 053 054 094 086 047 113 003 081 044 005 093 021 011 087
+064 075 092 059 046 032 029 050 010 001 063 016 148 023 013 018
+080 039 033 017 031 091 034

@@ -4,8 +4,8 @@
 #$-:Please do not edit lines starting with "#$"
 #$VERSION:1.30
 #$TITLE:15-1995
-#$DATE:Tue Sep 16 10:15:19 2003
-#$PATH:C:\Backups\Home\IR\Images\
+#$DATE:Fri Oct 03 12:30:02 2003
+#$PATH:D:\Images\
 #$GIF:15-1995.jpg
 #$FORMAT:ncsa
 #$EOH
@@ -25,10 +25,6 @@ circle center{rear}  34,204 44,209
 circle shift  112,152 122,158
 circle scan{Fav}  113,206 123,211
 circle POWER  113,81 127,89
-circle up  74,160 91,166
-circle down  74,196 91,202
-circle left  42,178 48,195
-circle right  103,178 109,195
 circle SURROUND  74,178 88,185
 circle MUTE{sleep}  59,215 67,220
 circle VOL+  36,229 44,239
@@ -62,3 +58,7 @@ circle rec  37,436 45,444
 circle P[SETUP]  29,77 35,83
 circle {LIGHT}  49,76 55,82
 circle select{clear}  74,141 82,146
+poly up 56,157 66,155 81,155 90,157 83,164 64,164 56,157 56,157
+poly down 63,192 82,192 89,198 80,201 72,201 64,201 55,198 62,192 63,192 63,192
+poly left 45,162 52,168 49,171 47,175 47,177 47,180 48,183 52,188 44,194 37,187 35,183 34,179 34,175 35,172 36,170 44,161 45,162 45,162
+poly right 93,169 100,163 106,167 108,170 110,174 111,178 111,182 109,187 107,189 100,196 93,189 98,184 99,181 99,177 97,174 96,172 93,169 93,169
