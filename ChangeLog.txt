@@ -1,3 +1,11 @@
+Change for v1.11
+- Add support for imported KM upgrades that use the Pioneer 4DEV protocol.
+
+Changes for v1.10
+- Add support for Pioneer 4DEV protocol
+- Added Lumagen protocol
+- Include RM version in Upgrade Protocol code when including embedded notes.
+
 Changes for v1.08
 - Renamed "Panasonic Combo2" protocol to "Panasonic Combo" protocol
 - Import KM upgrade: Make sure user is informed of function assignments that aren't correctly imported
@@ -70,7 +78,7 @@ Changes for v1.00
 Changes for v0.99
 - Add support for alternate PIDs, requires updated RDFs
 - Fix importing of some KM upgrades that use Manual Settings
-- Add support for embedding notes in the device and protocol 
+- Add support for embedding notes in the device and protocol
   upgrade code, requires IR v5.01 or later
 - Added Streamzap protocol (thanks Jon Armstrong)
 - Fixed RC-5x protocol (thanks Jon Armstrong)
@@ -187,12 +195,12 @@ RC-5/5x Combo
 RCA Combo (w/Duration)
 
 
-Changes for v0.96a 
-- Fix RDF parsing error 
+Changes for v0.96a
+- Fix RDF parsing error
 - RM Images and Maps v1.16
 
 Changes for v0.96
-- Fix DeviceCombiner support. 
+- Fix DeviceCombiner support.
 
 Changes for v0.95
 - Fix bug parsing [DeviceTypes] section of RDF files.
@@ -224,7 +232,7 @@ Changes for v0.90
 
 - Add DigitMap entires up to 170
 - Update images and maps to v1.14
-- Add most support for Device Combiner.  Importing a KM file that uses 
+- Add most support for Device Combiner.  Importing a KM file that uses
   Device Combiner is not yet supported
 
 Changes for v0.89
@@ -246,7 +254,7 @@ Changes for v0.87
 
 - Enable importing external functions from existing RM and KM upgrade files.
 - Use a single interface for loading RM or KM upgrade files.  Both are now
-  access from File->Open.  To Open a KM file, change the "Files of type:" 
+  access from File->Open.  To Open a KM file, change the "Files of type:"
   field.
 
 Changes for v0.86
@@ -254,7 +262,7 @@ Changes for v0.86
 - Enable importing KM upgrades from the clipboard,
   similar to KM's Import feature.
 - Enable importing RM upgrades from the clipboard
-- Added Readme.html the guide to "Using Remote Master", 
+- Added Readme.html the guide to "Using Remote Master",
   with associated style sheets.  Still needs a lot of work.
 
 Changes for v0.85
@@ -267,7 +275,7 @@ Changes for v0.84
 - Added support for ReplayTV (Simple) protocol
 - Added support for ReplayTV (Advanced) protocol
 - Added support for Zenith protocol
-- Added error message when KM file is imported that uses an 
+- Added error message when KM file is imported that uses an
   unsupported protocol.
 - RM Maps-and-Images 1.13.zip
 
@@ -282,13 +290,13 @@ Changes for v0.83
 
 Changes for v0.82
 
-- If there is no function assigned to the normal or shifted button, 
+- If there is no function assigned to the normal or shifted button,
   the x-shifted button won't be included in the upgrade code.
-- Fix a problem where external functions lose their device type and 
+- Fix a problem where external functions lose their device type and
   device code. (courtesy of bgalbrecht)
 - RM Images and Maps 1.11 (courtesy of Nils)
 - Changes for Panasonic VCR and Mixed Combos (courtesy of johnsfine)
-- Special translator for Device and SubDevice in the new pid 001F 
+- Special translator for Device and SubDevice in the new pid 001F
   (courtesy of johnsfine)
 
 Changes for v0.81
