@@ -24,6 +24,12 @@ public class Protocol
       deviceTranslators = TranslatorFactory.createTranslators( temp );
     }
 
+    temp = props.getProperty( "ImportDevTranslator" );
+    if ( temp != null )
+    {
+      importDevTranslators = TranslatorFactory.createTranslators( temp );
+    }
+
     this.fixedData = new Hex( props.getProperty( "FixedData", "" ));
 
     temp = props.getProperty( "CmdTranslator" );
@@ -34,10 +40,10 @@ public class Protocol
     else
       cmdTranslators = new Translate[ 0 ];
 
-    temp = props.getProperty( "ImportTranslator" );
+    temp = props.getProperty( "ImportCmdTranslator" );
     if ( temp != null )
     {
-      importTranslators = TranslatorFactory.createTranslators( temp );
+      importCmdTranslators = TranslatorFactory.createTranslators( temp );
     }
 
     notes = props.getProperty( "Notes" );
@@ -291,15 +297,22 @@ public class Protocol
       cmdTranslators[ i ].in( vals, hex, devParms, col );
   }
 
-  public void importValueAt( int col, Hex hex, Object value )
+  public void importCommandParms( Hex hex, String text )
   {
-    Value[] vals = new Value[ 2 ];
-    vals[ col ] = new Value( value, null );
-    Translate[] translators = importTranslators;
+    StringTokenizer st = new StringTokenizer( text );
+    Value[] values = new Value[ st.countTokens() ];
+    Translate[] translators = importCmdTranslators;
     if ( translators == null )
       translators = cmdTranslators;
-    for ( int i = 0; i < translators.length; i++ )
-      translators[ i ].in( vals, hex, devParms, col );
+    int index = 0;
+    while ( st.hasMoreTokens())
+      values[ index++ ] = new Value( new Integer( st.nextToken()));
+
+    for ( index = 0; index < values.length; index++ )
+    {
+      for ( int i = 0; i < translators.length; i++ )
+        translators[ i ].in( values, hex, devParms, index );
+    }
   }
 
   public boolean isEditable( int col ){ return true; }
@@ -498,9 +511,11 @@ public class Protocol
   protected int cmdIndex;
   protected DeviceParameter[] devParms = null;
   protected Translate[] deviceTranslators = null;
+  protected Translate[] devImportTranslators = null;
   protected CmdParameter[] cmdParms = null;
   protected Translate[] cmdTranslators = null;
-  protected Translate[] importTranslators = null;
+  protected Translate[] importCmdTranslators = null;
+  protected Translate[] importDevTranslators = null;
   protected HashMap code = new HashMap( 4 );
   protected Initializer[] cmdParmInit = null;
   protected String notes = null;

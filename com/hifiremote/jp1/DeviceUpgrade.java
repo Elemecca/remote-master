@@ -563,7 +563,7 @@ public class DeviceUpgrade
     str = props.getProperty( "Remote.name" );
     if ( str == null )
     {
-      JOptionPane.showMessageDialog( null,
+      JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
                                      "The upgrade you are trying to import is not valid!  It does not contain a value for Remote.name",
                                      "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
@@ -594,7 +594,7 @@ public class DeviceUpgrade
 
       if ( protocol == null )
       {
-        JOptionPane.showMessageDialog( null,
+        JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
                                        "No protocol found with name=\"" + name +
                                        "\", ID=" + pid.toString() +
                                        ", and variantName=\"" + variantName + "\"",
@@ -709,7 +709,7 @@ public class DeviceUpgrade
     String token = line.substring( 0, 5 );
     if ( !token.equals( "Name:" ))
     {
-      JOptionPane.showMessageDialog( null,
+      JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
                                      "The upgrade you are trying to import is not valid!",
                                      "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
@@ -762,7 +762,7 @@ public class DeviceUpgrade
       str + ".  Please select one of the supported device types below to use instead.\n";
       while ( rc == null )
       {
-        rc = ( String )JOptionPane.showInputDialog( null,
+        rc = ( String )JOptionPane.showInputDialog( KeyMapMaster.getKeyMapMaster(),
                                                     msg,
                                                     "Unsupported Device Type",
                                                     JOptionPane.ERROR_MESSAGE,
@@ -824,21 +824,23 @@ public class DeviceUpgrade
     else
     {
 //    protocol = protocolManager.findProtocolForRemote( remote, protocolName );
-      protocol = protocolManager.findNearestProtocol( protocolName, pid, null );
+      Protocol p = protocolManager.findNearestProtocol( protocolName, pid, null );
 
-      if ( protocol == null )
+      if ( p == null )
       {
-        protocol = protocolManager.findProtocolByOldName( remote, protocolName );
+        p = protocolManager.findProtocolByOldName( remote, protocolName );
   
-        if ( protocol == null )
+        if ( p == null )
         {
-          JOptionPane.showMessageDialog( null,
+          JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
                                          "No protocol found with name=\"" + protocolName +
-                                         "\" for remote \"" + remote.getName(),
+                                         "\" for remote \"" + remote.getName() + "\".",
                                          "Import Failure", JOptionPane.ERROR_MESSAGE );
+          reset();
           return;
         }
       }
+      protocol = p;
   
       DeviceParameter[] devParms = protocol.getDeviceParameters();
       for ( int i = 0; i < devParms.length; i++ )
@@ -941,10 +943,7 @@ public class DeviceUpgrade
         token = getNextField( st, delim ); // get byte2 (field 3)
         if ( token != null )
         {
-          StringTokenizer st2 = new StringTokenizer( token );
-          int index = 0;
-          while ( st2.hasMoreTokens())
-            protocol.setValueAt( index++, hex, new Integer( st2.nextToken()));
+          protocol.importCommandParms( hex, token );
         }
 
         System.err.println( "Setting hex to " + hex );
