@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.File;
 import java.text.DecimalFormat;
 import javax.swing.JOptionPane;
+import javax.swing.JList;
+import java.awt.Component;
 
 public class DeviceUpgrade
 {
@@ -356,12 +358,32 @@ public class DeviceUpgrade
     int index = Arrays.binarySearch( remotes, str );
     if ( index < 0 )
     {
-      JOptionPane.showMessageDialog( null,
-                                     "No remote definition with name " + str + " was found!",
-                                     "File Load Error", JOptionPane.ERROR_MESSAGE );
-      return;
+      // build a list of similar remote names, and ask the user to pick a match.
+      Vector similarRemotes = new Vector();
+      for ( int i = 0; i < remotes.length; i++ )
+      {
+        if ( remotes[ i ].getName().indexOf( str ) != -1 )
+          similarRemotes.add( remotes[ i ]);
+      }
+
+      Object[] simRemotes = similarRemotes.toArray(); 
+      
+      String message = "Could not find an exact match for the remote \"" + str + "\".  Choose one from the list below:";
+      
+      Object rc = ( Remote )JOptionPane.showInputDialog( null, 
+                                                         message,
+                                                         "Upgrade Load Error",
+                                                         JOptionPane.ERROR_MESSAGE,
+                                                         null, 
+                                                         simRemotes,
+                                                         simRemotes[ 0 ]);
+      if ( rc == null )
+        return;
+      else
+        remote = ( Remote )rc;
     }
-    remote = remotes[ index ];
+    else
+      remote = remotes[ index ];
     index = -1;
     str = props.getProperty( "DeviceIndex" );
     if ( str != null )
