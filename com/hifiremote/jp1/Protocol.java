@@ -347,11 +347,11 @@ public class Protocol
 
   public void importCommandParms( Hex hex, String text )
   {
-    StringTokenizer st = new StringTokenizer( text );
-    Value[] values = new Value[ st.countTokens() ];
     Translate[] translators = importCmdTranslators;
     if ( translators == null )
-      translators = cmdTranslators;
+      return;
+    StringTokenizer st = new StringTokenizer( text );
+    Value[] values = new Value[ st.countTokens() ];
     int index = 0;
     while ( st.hasMoreTokens())
       values[ index++ ] = new Value( new Integer( st.nextToken()));
