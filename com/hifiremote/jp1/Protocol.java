@@ -36,6 +36,8 @@ public class Protocol
       cmdTranslators = TranslatorFactory.createTranslators( temp );
     }
 
+    notes = props.getProperty( "Notes" );
+
     temp = props.getProperty( "Code.S3C80" );
     if ( temp != null )
       code.put( "S3C80", new Hex( temp ));
@@ -158,6 +160,11 @@ public class Protocol
   public CmdParameter[] getCommandParameters()
   {
     return cmdParms;
+  }
+
+  public String getNotes()
+  {
+    return notes;
   }
 
   // These methods allow adding columns to the Functions Panel
@@ -393,4 +400,5 @@ public class Protocol
   private Translate[] cmdTranslators = null;
   private HashMap code = new HashMap( 4 );
   private Initializer[] cmdParmInit = null;
+  private String notes = null;
 }

@@ -80,10 +80,10 @@ public class SetupPanel
     JPanel notesPanel = new JPanel( new BorderLayout());
     notes = new JTextArea();
     notes.setToolTipText( "Enter any notes about this device upgrade." );
-    notesPanel.setBorder( BorderFactory.createTitledBorder( "Notes" ));
+    notesPanel.setBorder( BorderFactory.createTitledBorder( "Upgrade Notes" ));
     notesPanel.add( new JScrollPane( notes ), BorderLayout.CENTER );
     notes.getDocument().addDocumentListener( this );
-    add( notesPanel, "7, 1, 7, 10" );
+    add( notesPanel, "7, 1, 7, 9" );
 
     label = new JLabel( "Protocol:", SwingConstants.RIGHT );
     add( label, "2, 3" );
@@ -111,7 +111,13 @@ public class SetupPanel
     fixedData.setEditable( false );
     add( fixedData, "4, 8" );
 
-//    protocolList.setSelectedIndex( 0 );
+    notesPanel = new JPanel( new BorderLayout());
+    protocolNotes = new JTextArea();
+    protocolNotes.setToolTipText( "Notes about the selected protocol." );
+    notesPanel.setBorder( BorderFactory.createTitledBorder( "Protocol Notes" ));
+    notesPanel.add( new JScrollPane( protocolNotes ), BorderLayout.CENTER );
+    protocolNotes.setEditable( false );
+    add( notesPanel, "1, 10, 7, 10" );
   }
 
   public void protocolsLoaded( Vector protocols )
@@ -152,6 +158,7 @@ public class SetupPanel
           currProtocol.convertFunctions( deviceUpgrade.getFunctions(), protocol );
         currProtocol = protocol;
         protocolID.setText( protocol.getID().toString());
+        protocolNotes.setText( protocol.getNotes());
         deviceUpgrade.setProtocol( protocol );
         if ( parameters != null )
         {
@@ -170,7 +177,7 @@ public class SetupPanel
             tl.deleteRow( 8 );
             tl.deleteRow( 8 );
           }
-          doLayout();
+          // doLayout();
         }
         parameters = protocol.getDeviceParameters();
         if ( parameters != null )
@@ -195,9 +202,10 @@ public class SetupPanel
           TableLayoutConstraints tlc = tl.getConstraints( protocolHolder );
           remove( protocolHolder );
           add( protocolHolder, tlc );
-          doLayout();
+          // doLayout();
         }
         fixedData.setText( protocol.getFixedData().toString());
+        invalidate();
       }
     }
     else if ( source == setupCode )
@@ -286,6 +294,7 @@ public class SetupPanel
   private JTextArea notes = null;
   private JPanel protocolHolder = null;
   private JTextField fixedData = null;
+  private JTextArea protocolNotes = null;
   private DeviceParameter[] parameters = null;
   private Protocol currProtocol = null;
   private TableLayout tl;
