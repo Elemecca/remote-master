@@ -423,7 +423,7 @@ public class KeyMapMaster
         {
           File file = chooser.getSelectedFile();
           String name = file.getAbsolutePath();
-          if ( !name.endsWith( upgradeExtension ))
+          if ( !name.endsWith( upgradeExtension ) && !name.endsWith( ".km" ))
             file = new File( name + upgradeExtension );
 
           int rc = JOptionPane.YES_OPTION;
