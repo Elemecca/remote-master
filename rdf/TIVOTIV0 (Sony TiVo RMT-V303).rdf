@@ -1,0 +1,82 @@
+#Sony TiVo remote (RMT-V303) without the extender.
+#This would be only useful to see the learned signals.
+
+[General]
+Name=Sony TiVo RMT-V303
+EepromSize=$400
+UpgradeAddr=$100..$10F
+LearnedAddr=$110..$3FD
+Processor=S3C80
+RAMAddr=$8000
+RDFSync=3
+OmitDigitMapByte=1
+
+[Settings]
+TV_Power Device=$011.1.2.1.0 (NONE;TV;RCVR;TV and RCVR)
+TiVo Unit Address=$012.7.8.1.0
+VPT Status=$013.3.1.0.0 (Off;On)
+VPT Device=$010.7.8.1.0 DeviceButtons
+
+[Checksums]
+^$000:$002..$3FC
+
+[FixedData]
+
+
+[DeviceTypes]
+TV      = 0
+RCVR    = 0
+VCR     = 1
+
+[DeviceButtons]
+TV      = $00A $00B
+RCVR    = $00C $00D
+TiVo    = $00E $00F
+
+[Buttons]
+TV_Power=$01,
+TiVo_Power=$02,
+Guide_LiveTV=$03,
+Vol+=$04,
+Vol-=$05,
+Ch+=$06,
+Ch-=$07,
+List=$08,
+TiVoMenu=$09,
+Mute=$0A,
+Rewind=$0B,
+Play=$0C,
+FastFwd=$0D,
+Slow=$0E,
+Pause=$0F,
+Record=$10,
+Clear=$11,
+Enter_Jump=$12,
+ThumbsUp=$13,
+ThumbsDown=$14,
+1=$15,
+2=$16,
+3=$17,
+4=$19,
+5=$1A,
+6=$1B,
+7=$1C,
+8=$1D,
+9=$1E,
+0=$1F,
+Advance=$18,
+Replay=$20,
+Up_Arrow=$21,
+Down_Arrow=$22,
+Left_Arrow=$23,
+Right_Arrow=$24,
+Select=$25
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $0A),
+    ($06, $07), $01
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $0A),
+    ($06, $07), $02, $09, $03, $13, $14, $21, $22, $23, $24, $25, $10, $0C,
+    $0F, $0D, $0B, $0E, $20, $18, $12, $11, $08
+
+[DigitMaps]

@@ -1,0 +1,92 @@
+#RDF for SONY DirecTiVo remote (RM-Y809) without the extender.
+#This would be only useful to see the learned signals.
+
+[General]
+Name=Sony DirecTiVo RM-Y809 (URC-9020B00)
+EepromSize=$400
+UpgradeAddr=$100..$10F
+LearnedAddr=$110..$3FD
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+OmitDigitMapByte=1
+
+[Settings]
+TV_Power Device=$011.1.2.1.0 (NONE;TV;RCVR;TV and RCVR)
+TiVo Unit Address=$012.7.8.1.0
+VPT Status=$013.3.1.0.0 (Off;On)
+VPT Device=$010.7.8.1.0 DeviceButtons
+
+[Checksums]
+^$000:$002..$3FC
+
+[FixedData]
+
+
+[DeviceTypes]
+TV      = 0
+RCVR    = 0
+SAT     = 1
+
+[DeviceButtons]
+TV      = $00A $00B
+RCVR    = $00C $00D
+TiVo    = $00E $00F
+
+[Buttons]
+TV_Power=$01,
+SAT_Power=$02,
+Guide=$03,
+Vol+=$04,
+Vol-=$05,
+Ch+=$06,
+Ch-=$07,
+List=$08,
+TiVo=$09,
+Mute=$0A,
+Rewind=$0B,
+Play=$0C,
+FastFwd=$0D,
+Slow=$0E,
+Pause=$0F,
+Record=$10,
+Clear=$11,
+Enter_Jump=$12,
+ThumbsUp=$13,
+ThumbsDown=$14,
+1=$15,
+2=$16,
+3=$17,
+4=$19,
+5=$1A,
+6=$1B,
+7=$1C,
+8=$1D,
+9=$1E,
+0=$1F,
+Advance=$18,
+Replay=$20,
+Up_Arrow=$21,
+Down_Arrow=$22,
+Left_Arrow=$23,
+Right_Arrow=$24,
+Select=$25,
+TV/Video=$26,
+LiveTV=$27,
+Display=$28,
+Menu=$2A,
+Delimiter=$2B,
+Phantom0=$29,
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $0A),
+    ($06, $07), $01, $12, $26, $2A, $27, $21, $22, $23, $24, $25, $28, $2B
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $0A),
+    ($06, $07), $21, $22, $23, $24, $25, $12, $28, $27, $2A, $2B, $02,
+     $09, $13, $14, $10, $0C, $0F, $0D, $0B, $0E, $03, $20, $18, $11,
+     $08, $29
+
+[DigitMaps]
+032 086 142 094 027 033 143 101 021 090 092 109 034 029 038 012
+144 053 083 085 061 011
