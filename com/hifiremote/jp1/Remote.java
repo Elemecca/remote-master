@@ -96,6 +96,11 @@ public class Remote
         int map = type.getMap();
         if ( map == -1 )
           System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
+        if ( map >= buttonMaps.length )
+        {
+          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " uses an undefined map index." );
+          map = buttonMaps.length - 1;
+        }
         if (( map != -1 ) && ( buttonMaps.length > 0 ))
           type.setButtonMap( buttonMaps[ map ] );
       }
@@ -1025,6 +1030,8 @@ public class Remote
         {
           StringTokenizer st = new StringTokenizer( line, " ," );
           String type = st.nextToken();
+          if ( type.equals( "default" ))
+            continue;
           String displayName = null;
           String buttonName = st.nextToken();
           int pos = buttonName.indexOf( '=' );
@@ -1033,7 +1040,22 @@ public class Remote
             displayName = buttonName.substring( 0, pos );
             buttonName = buttonName.substring( pos + 1 );
           }
-          Button button = getButton( buttonName );
+          Button button = null;
+          // check if keycode is used
+          pos = buttonName.indexOf( ':' );
+          if ( pos != -1 )
+          {
+            String keyCodeText = buttonName.substring( 0, pos );
+            buttonName = buttonName.substring( pos + 1 );
+            int keyCode;
+            if ( keyCodeText.charAt( 0 ) == '$' )
+              keyCode = Integer.parseInt( keyCodeText.substring( 1 ), 16 );
+            else
+              keyCode = Integer.parseInt( keyCodeText );
+            button = getButton( keyCode );
+          }
+          else
+            button = getButton( buttonName );
           Shape shape = null;
           if ( button == null )
           {
