@@ -1,1 +1,1 @@
-javac -deprecation -d classes -classpath .;classes com\hifiremote\jp1\*.java
+javac -deprecation -d classes -classpath .;classes com/hifiremote/jp1/*.java
