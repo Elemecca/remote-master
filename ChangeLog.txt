@@ -1,3 +1,6 @@
+Changes for v1.12
+- Correct support for the Pioneer 3DEV protocol
+
 Change for v1.11
 - Add support for imported KM upgrades that use the Pioneer 4DEV protocol.
 

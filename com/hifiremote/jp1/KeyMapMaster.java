@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.11";
+  public static final String version = "v1.12";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -764,7 +764,7 @@ public class KeyMapMaster
 
         JEditorPane pane = new JEditorPane( "text/html", text );
         pane.setEditable( false );
-        pane.setBackground( getBackground());
+        pane.setBackground( getContentPane().getBackground());
         new TextPopupMenu( pane );
         JScrollPane scroll = new JScrollPane( pane );
         Dimension d = scroll.getPreferredSize();
