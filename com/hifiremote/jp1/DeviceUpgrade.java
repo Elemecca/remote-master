@@ -617,12 +617,14 @@ public class DeviceUpgrade
                     ProtocolManager protocolManager )
     throws Exception
   {
+    System.err.println( "DeviceUpgrade.importFile()" );
     BufferedReader in = new BufferedReader( new FileReader( file ));
 
     String line = in.readLine();
     String token = line.substring( 0, 5 );
     if ( !token.equals( "Name:" ))
     {
+      System.err.println( "The file \"" + file + "\" is not a valid KM upgrade file!" );
       // Bad file!
       return;
     }
@@ -742,16 +744,28 @@ public class DeviceUpgrade
       useEFC = true;
 
     functions.clear();
+
+    Vector usedFunctions = new Vector();
     for ( int i = 0; i < 128; i++ )
     {
       line = in.readLine();
       st = new StringTokenizer( line, delim, true );
       token = getNextField( st, delim ); // get the name (field 1)
-      Function f = new Function();
       if (( token != null ) && ( token.length() == 5 ) &&
           token.startsWith( "num " ) && Character.isDigit( token.charAt( 4 )))
         token = token.substring( 4 ); 
-      f.setName( token );
+      System.err.println( "Function name=" + token );
+
+      Function f = getFunction( token, usedFunctions );
+      if ( f == null )
+      {
+        System.err.println( "Creating new function with name " + token );
+        f = new Function();
+        f.setName( token );
+      }
+      else
+        System.err.println( "Updating function with name " + token );
+
       token = getNextField( st, delim );  // get the function code (field 2)
       if ( token != null )
       {
@@ -777,21 +791,68 @@ public class DeviceUpgrade
       }
       else
       {
-        token = getNextField( st, delim );
+        token = getNextField( st, delim ); // skip field 3
       }
-      token = getNextField( st, delim ); // get field 4
-
-      token = getNextField( st, delim );  // get field 5
-
+      token = getNextField( st, delim ); // get assigned button name (field 4)
+      System.err.println( "Button name=" + token );
+      Button b = remote.findByStandardName( new Button( token, null, ( byte )0 ));
+      System.err.println( "Found button " + b );
+      
+      token = getNextField( st, delim );  // get normal function (field 5)
+      if (( b != null ) && ( token != null ))
+      {
+        String name = token.substring( 5 );
+        System.err.println( "Normal function is " + name ); 
+        if (( name.length() == 5 ) && name.startsWith( "num " ) && 
+              Character.isDigit( name.charAt( 4 )))
+          name = name.substring( 4 );
+        
+        Function func = null;
+        if ( f.getName().equals( name ))
+          func = f;
+        else
+          func = getFunction( name, functions );
+        if ( func == null )
+        {
+          func = new Function();
+          func.setName( name );
+          usedFunctions.add( func );
+        }
+        b.setFunction( func );
+      }
+      
       token = getNextField( st, delim );  // get notes (field 6)
       if ( token != null )
         f.setNotes( token );
       
       if ( f.isEmpty())
-      {
         break;
-      }
+
       functions.add( f );
+      
+      if ( b == null )
+        continue;
+
+      // skip to field 13
+      for ( int j = 7; j <= 13; j++ )
+        token = getNextField( st, delim ); 
+      
+      if ( token != null )
+      {
+        String name = token.substring( 5 );
+        System.err.println( "Shifted function is " + name );
+        if (( name.length() == 5 ) && name.startsWith( "num " ) && 
+              Character.isDigit( token.charAt( 4 )))
+          name = name.substring( 4 ); 
+        Function func = getFunction( name, functions );
+        if ( func == null )
+        {
+          func = new Function();
+          func.setName( name );
+          usedFunctions.add( func );
+        }
+        b.setShiftedFunction( func );
+      }
     }
     
     while (( line = in.readLine()) != null )
