@@ -56,6 +56,7 @@ problem with one of these, please open a Bug in SourceForge against
 the controlremote project.
 
 Aiwa
+Aiwa
 Aiwa2
 Aiwa Combo
 Apex 1100W
@@ -67,6 +68,10 @@ Denon
 Denon Combo (Official)
 Denon Combo
 Dishplayer
+Dishplayer (old)
+Dishplayer (old)
+Dishplayer (old)
+Emerson
 F12
 GI 4DTV Hacked
 GI 4DTV Official
@@ -86,6 +91,8 @@ Panasonic (old)
 Panasonic
 Panasonic VCR Combo
 Panasonic Combo2
+Panasonic Combo2
+Panasonic Combo (flawed)
 Panasonic2 (LCD)
 Pioneer
 Pioneer DVD
@@ -112,11 +119,8 @@ X10
 Here is a list of the protocols that are not yet supported:
 
 Device Combiner
-Dishplayer (old)
 Echostar 2200
-Emerson
 NEC1 2DEV Combo
-Panasonic Combo
 Pioneer DVD2
 Pioneer MIX
 Pioneer 2CMD
