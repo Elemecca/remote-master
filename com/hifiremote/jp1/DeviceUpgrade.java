@@ -713,6 +713,23 @@ public class DeviceUpgrade
     token = st.nextToken();
     str = token.substring( 5 );
 
+    if ( remote.getDeviceTypeByAliasName( str ) == null )
+    {
+      String rc = null;
+      String msg = "Remote \"" + remote.getName() + "\" does not support the device type " +
+      str + ".  Please select one of the supported device types below to use instead.\n";
+      while ( rc == null )
+      {
+        rc = ( String )JOptionPane.showInputDialog( null,
+                                                    msg,
+                                                    "Unsupported Device Type",
+                                                    JOptionPane.ERROR_MESSAGE,
+                                                    null,
+                                                    remote.getDeviceTypeAliasNames(),
+                                                    null );
+      }
+      str = rc;
+    }
     setDeviceTypeAliasName( str );
 
     String buttonStyle = st.nextToken();
@@ -816,24 +833,22 @@ public class DeviceUpgrade
       in.readLine();
 
     // compute cmdIndex
-    int cmdIndex = -1;
     boolean useOBC = false;
     boolean useEFC = false;
     if ( buttonStyle.equals( "OBC" ))
     {
       useOBC = true;
-      CmdParameter[] cmdParms = protocol.getCommandParameters();
-      for ( int j = 0; j < cmdParms.length; j++ )
-      {
-        if ( cmdParms[ j ].getName().equals( "OBC" ))
-        {
-          cmdIndex = j;
-          break;
-        }
-      }
     }
     else if ( buttonStyle.equals( "EFC" ))
       useEFC = true;
+
+    int obcIndex = -1;
+    CmdParameter[] cmdParms = protocol.getCommandParameters();
+    for ( obcIndex = 0; obcIndex < cmdParms.length; obcIndex++ )
+    {
+      if ( cmdParms[ obcIndex ].getName().equals( "OBC" ))
+        break;
+    }
 
     functions.clear();
 
@@ -858,25 +873,17 @@ public class DeviceUpgrade
       token = getNextField( st, delim );  // get the function code (field 2)
       if ( token != null )
       {
+        Hex hex = protocol.getDefaultCmd();
         if ( useOBC )
-        {
-          Hex hex = protocol.getDefaultCmd();
-          f.setHex( hex );
-          protocol.setValueAt( cmdIndex, hex, new Integer( token ));
-          token = getNextField( st, delim ); // get byte2 (field 3)
-          if ( token != null )
-          {
-            if ( cmdIndex > 0 )
-              protocol.setValueAt( cmdIndex - 1, hex, new Integer( token ));
-          }
-        }
+          protocol.setValueAt( obcIndex, hex, new Integer( token ));
         else if ( useEFC )
-        {
-          EFC efc = new EFC( token );
-          Hex hex = protocol.efc2hex( efc, null );
-          f.setHex( hex );
-          token = getNextField( st, delim ); // get byte2 (field 3 )
-        }
+          protocol.efc2hex( new EFC( token ), hex );
+
+        token = getNextField( st, delim ); // get byte2 (field 3)
+        if ( token != null )
+          protocol.setValueAt( obcIndex - 1, hex, new Integer( token ));
+
+        f.setHex( hex );
       }
       else
       {
@@ -1075,7 +1082,7 @@ public class DeviceUpgrade
   private static final String[] deviceTypeAliasNames =
   {
     "Cable", "TV", "VCR", "CD", "Tuner", "DVD", "SAT", "Tape", "Laserdisc",
-    "DAT", "Home Auto", "Misc Audio", "Phono", "Video Acc", "Amp"
+    "DAT", "Home Auto", "Misc Audio", "Phono", "Video Acc", "Amp", "PVR", "OEM Mode"
   };
 
   private static final String[] defaultFunctionNames =
