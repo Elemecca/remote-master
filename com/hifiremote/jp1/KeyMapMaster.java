@@ -501,6 +501,7 @@ public class KeyMapMaster
           else
           {
             kmPath = file.getParentFile();
+            deviceUpgrade.reset( remotes, protocols );
             deviceUpgrade.load( file, remotes, protocols );
             saveItem.setEnabled( true );
             remoteList.removeActionListener( this );
