@@ -94,7 +94,7 @@ public class ManualProtocol
       }
       out.print( "DevParms", buff.toString());
     }
-    if ( deviceTranslators.length > 0 )
+    if (( deviceTranslators != null ) && ( deviceTranslators.length > 0 ))
     {
       StringBuffer buff = new StringBuffer();
       for ( int i = 0; i < deviceTranslators.length; i++ )
