@@ -14,11 +14,12 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.54";
+  private static final String version = "v 0.55";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
   private JMenuItem saveAsItem = null;
+  private JMenuItem importItem = null;
   private JMenu recentFileMenu = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
@@ -100,6 +101,11 @@ public class KeyMapMaster
     saveAsItem = new JMenuItem( "Save as..." );
     saveAsItem.addActionListener( this );
     menu.add( saveAsItem );
+    
+    menu.addSeparator();
+    importItem = new JMenuItem( "Import KM file..." );
+    importItem.addActionListener( this );
+    menu.add( importItem );
 
     menu.addSeparator();
     recentFileMenu = new JMenu( "Recent" );
@@ -447,6 +453,41 @@ public class KeyMapMaster
           }
         }
       }
+      else if ( source == importItem )
+      {
+        if ( !promptToSaveUpgrade())
+          return;
+        JFileChooser chooser = new JFileChooser( upgradePath );
+        chooser.setFileFilter( new TextFileFilter());
+        int returnVal = chooser.showOpenDialog( this );
+        if ( returnVal == JFileChooser.APPROVE_OPTION )
+        {
+          File file = chooser.getSelectedFile();
+          String name = file.getAbsolutePath();
+          if ( !name.endsWith( ".txt" ))
+            file = new File( name + ".txt" );
+
+          int rc = JOptionPane.YES_OPTION;
+          if ( !file.exists())
+          {
+            JOptionPane.showMessageDialog( this,
+                                           file.getName() + " doesn't exist exists.",
+                                           "File doesn't exist.",
+                                           JOptionPane.ERROR_MESSAGE );
+          }
+          else if ( file.isDirectory())
+          {
+            JOptionPane.showMessageDialog( this,
+                                           file.getName() + " is a directory.",
+                                           "File doesn't exist.",
+                                           JOptionPane.ERROR_MESSAGE );
+          }
+          else
+          {
+            importFile( file );
+          }
+        }
+      }
       else if ( source.getClass() == JRadioButtonMenuItem.class )
       {
         UIManager.setLookAndFeel((( JRadioButtonMenuItem )source ).getActionCommand());
@@ -546,6 +587,26 @@ public class KeyMapMaster
     while ( itemCount > 9 )
       recentFileMenu.remove( --itemCount );
     recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
+
+    validateUpgrade();
+  }
+
+  public void importFile( File file )
+    throws Exception
+  {
+    deviceUpgrade.reset( remotes, protocolManager );
+    deviceUpgrade.importFile( file, remotes, protocolManager );
+    setTitle( "RemoteMaster " + version );
+    description.setText( deviceUpgrade.getDescription());
+    remoteList.removeActionListener( this );
+    deviceTypeList.removeActionListener( this );
+    String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
+    setRemote( deviceUpgrade.getRemote());
+    remoteList.setSelectedItem( deviceUpgrade.getRemote());
+    setDeviceTypeName( savedTypeName );
+    remoteList.addActionListener( this );
+    deviceTypeList.addActionListener( this );
+    currPanel.update();
 
     validateUpgrade();
   }
@@ -853,6 +914,30 @@ public class KeyMapMaster
     {
       return file;
     }
+  }
 
+  private class TextFileFilter
+    extends javax.swing.filechooser.FileFilter
+  {
+    //Accept all directories and all .km/.rmdu files.
+    public boolean accept( File f )
+    {
+      boolean rc = false;
+      if ( f.isDirectory())
+        rc = true;
+      else
+      {
+        String lowerName = f.getName().toLowerCase();
+        if ( lowerName.endsWith( ".txt" ))
+          rc = true;
+      }
+      return rc;
+    }
+
+    //The description of this filter
+    public String getDescription()
+    {
+      return "KeyMapMaster device upgrade files";
+    }
   }
 }

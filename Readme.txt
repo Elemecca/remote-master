@@ -19,16 +19,16 @@ and edit the device upgrade.
 
 The new parameters are:
 
--h <home directory> - the directory containing protocols.ini,
+-h (home directory) - the directory containing protocols.ini,
                       RemoteMaster.properties, the rdf and
                       Upgrades directories.  It typically also
                       includes RemoteMaster.jar.  If not specified, it
                       defaults to the working directory.
 
--p <properties file> - the properties files to be used.  Defaults to
+-p (properties file) - the properties files to be used.  Defaults to
                        RemoteMaster.properties in the home directory.
 
-<device upgrade file> - the device upgrade file to load.
+(device upgrade file) - the device upgrade file to load.
 
 System Requirements
 -------------------
@@ -110,6 +110,7 @@ HK Combo
 Jerrold
 JVC
 JVC-48
+Kaseikyo
 Mitsubishi
 NEC1
 NEC2

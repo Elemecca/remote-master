@@ -1,18 +1,10 @@
 package com.hifiremote.jp1;
 
-import java.util.Arrays;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.File;
-import java.text.DecimalFormat;
-import javax.swing.JOptionPane;
-import javax.swing.JList;
-import java.awt.Component;
+import java.util.*;
+import java.io.*;
+import java.text.*;
+import javax.swing.*;
+import java.awt.*;
 
 public class DeviceUpgrade
 {
@@ -204,7 +196,6 @@ public class DeviceUpgrade
 
   private int findDigitMapIndex()
   {
-    System.err.println( "DeviceUpgrade.findDigitIndex()" );
     Button[] buttons = remote.getUpgradeButtons();
     int[] digitMaps = remote.getDigitMaps();
     if (( digitMaps != null ) && ( protocol.getDefaultCmd().length() == 1 ))
@@ -212,12 +203,7 @@ public class DeviceUpgrade
       for ( int i = 0; i < digitMaps.length; i++ )
       {
         int mapNum = digitMaps[ i ];
-        System.err.println( "Checking digitMap at index " + i + ", which is " + mapNum );
-        System.err.print( "It contains codes " );
         int[] codes = DIGIT_MAP[ mapNum ];
-        for ( int k = 0; k < codes.length; k++ )
-          System.err.print( " " + Integer.toHexString( codes[ k ]));
-        System.err.println();
         int rc = -1;
         for ( int j = 0; ; j++ )
         {
@@ -229,7 +215,6 @@ public class DeviceUpgrade
               break;
           if ( j == 9 )
           {
-            System.err.println( "Matches " + rc);
             return rc;
           }
         }
@@ -243,7 +228,6 @@ public class DeviceUpgrade
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade code 0 = " );
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    System.err.println( "devType=" + devType );
     byte[] id = protocol.getID().getData();
     int temp = devType.getNumber() * 0x1000 +
                ( id[ 0 ] & 1 ) * 0x0800 +
@@ -445,7 +429,6 @@ public class DeviceUpgrade
                     ProtocolManager protocolManager )
     throws Exception
   {
-    System.err.println( "DeviceUpgrade.load()" );
     this.file = file;
     Properties props = new Properties();
     FileInputStream in = new FileInputStream( file );
@@ -457,7 +440,6 @@ public class DeviceUpgrade
       description = str;
     str = props.getProperty( "Remote.name" );
     String sig = props.getProperty( "Remote.signature" );
-    System.err.println( "Searching for remote " + str );
     int index = Arrays.binarySearch( remotes, str );
     if ( index < 0 )
     {
@@ -503,12 +485,8 @@ public class DeviceUpgrade
     String variantName = props.getProperty( "Protocol.variantName", "" );
 
     String showV = (variantName.equals("")) ? "" : (": " + variantName);
-    System.err.println( "Searching for protocol \"" + name + "\" with id " + pid + showV);
 
     protocol = protocolManager.findNearestProtocol( name, pid, variantName );
-
-    if ( protocol != null )
-      System.err.println( "Selected protocol " + protocol.getDiagnosticName() );
 
     if ( protocol == null )
     {
@@ -548,7 +526,6 @@ public class DeviceUpgrade
 
     notes = props.getProperty( "Notes" );
 
-    System.err.println( "Loading functions" );
     functions.clear();
     int i = 0;
     while ( true )
@@ -563,7 +540,6 @@ public class DeviceUpgrade
       i++;
     }
 
-    System.err.println( "Loading external functions" );
     extFunctions.clear();
     i = 0;
     while ( true )
@@ -577,7 +553,7 @@ public class DeviceUpgrade
       extFunctions.add( f );
       i++;
     }
-    System.err.println( "Assigning functions to buttons" );
+
     Button[] buttons = remote.getUpgradeButtons();
     for ( i = 0; i < buttons.length; i++ )
     {
@@ -600,6 +576,235 @@ public class DeviceUpgrade
       {
         func = getFunction( str );
         b.setShiftedFunction( func );
+      }
+    }
+  }
+
+  private String getNextField( StringTokenizer st, String delim )
+  {
+    String rc = null;
+    if ( st.hasMoreTokens())
+    {
+      rc = st.nextToken();
+      if ( rc.equals( delim ))
+        rc = null;
+      else if ( st.hasMoreTokens())
+        st.nextToken(); // skip delim
+    }
+    return rc;
+  }
+
+  public void importFile( File file, Remote[] remotes,
+                    ProtocolManager protocolManager )
+    throws Exception
+  {
+    BufferedReader in = new BufferedReader( new FileReader( file ));
+
+    String line = in.readLine();
+    String token = line.substring( 0, 5 );
+    if ( !token.equals( "Name:" ))
+    {
+      // Bad file!
+      return;
+    }
+    String delim = line.substring( 5, 6 );
+    StringTokenizer st = new StringTokenizer( line, delim );
+    st.nextToken();
+    description = st.nextToken();
+    
+    String protocolLine = in.readLine();
+    String manualLine = in.readLine();
+    
+    line = in.readLine();
+    st = new StringTokenizer( line, delim );
+    st.nextToken();
+    token = st.nextToken();
+    setupCode = Integer.parseInt( token );
+    token = st.nextToken();
+    String str = token.substring( 5 );
+    
+    int index = Arrays.binarySearch( remotes, str );
+    if ( index < 0 )
+    {
+      // build a list of similar remote names, and ask the user to pick a match.
+      Vector similarRemotes = new Vector();
+      for ( int i = 0; i < remotes.length; i++ )
+      {
+        if ( remotes[ i ].getName().indexOf( str ) != -1 )
+          similarRemotes.add( remotes[ i ]);
+      }
+
+      Object[] simRemotes = null;
+      if ( similarRemotes.size() > 0 )
+        simRemotes = similarRemotes.toArray();
+      else
+        simRemotes = remotes;
+
+      String message = "Could not find an exact match for the remote \"" + str + "\".  Choose one from the list below:";
+
+      Object rc = ( Remote )JOptionPane.showInputDialog( null,
+                                                         message,
+                                                         "Upgrade Load Error",
+                                                         JOptionPane.ERROR_MESSAGE,
+                                                         null,
+                                                         simRemotes,
+                                                         simRemotes[ 0 ]);
+      if ( rc == null )
+        return;
+      else
+        remote = ( Remote )rc;
+    }
+    else
+      remote = remotes[ index ];
+    
+    token = st.nextToken();
+    str = token.substring( 5 );
+    
+    setDeviceTypeAliasName( str );
+
+    String buttonStyle = st.nextToken();
+    st = new StringTokenizer( protocolLine, delim, true );
+    st.nextToken(); // skip header
+    st.nextToken(); // skip delim
+    str = st.nextToken();  // protocol name
+    st.nextToken(); // skip delim
+    protocol = protocolManager.findProtocolForRemote( remote, str );
+
+    if ( protocol == null )
+    {
+      JOptionPane.showMessageDialog( null,
+                                     "No protocol found with name=\"" + str +
+                                     "\" for remote \"" + remote.getName(),
+                                     "File Load Error", JOptionPane.ERROR_MESSAGE );
+      return;
+    }
+
+    DeviceParameter[] devParms = protocol.getDeviceParameters();
+    for ( int i = 0; i < devParms.length; i++ )
+    {
+      token = st.nextToken();
+      Object val = null;
+      if ( token.equals( delim ))
+        val = null;
+      else
+      {
+        st.nextToken(); // skip delim
+        if ( token.equals( "true" ))
+          val = new Integer( 1 );
+        else if ( token.equals( "false" ))
+          val = new Integer( 0 );
+        else
+          val = new Integer( token );
+      }
+      devParms[ i ].setValue( val );
+    }
+
+    for ( int i = 5; i < 35; i++ )
+      in.readLine();
+
+    // compute cmdIndex
+    int cmdIndex = -1;
+    boolean useOBC = false;
+    boolean useEFC = false;
+    if ( buttonStyle.equals( "OBC" ))
+    {
+      useOBC = true;
+      CmdParameter[] cmdParms = protocol.getCommandParameters();
+      for ( int j = 0; j < cmdParms.length; j++ )
+      {
+        if ( cmdParms[ j ].getName().equals( "OBC" ))
+        {
+          cmdIndex = j;
+          break;
+        }
+      }
+    }
+    else if ( buttonStyle.equals( "EFC" ))
+      useEFC = true;
+
+    functions.clear();
+    for ( int i = 0; i < 128; i++ )
+    {
+      line = in.readLine();
+      st = new StringTokenizer( line, delim, true );
+      token = getNextField( st, delim ); // get the name (field 1)
+      Function f = new Function();
+      if (( token != null ) && ( token.length() == 5 ) &&
+          token.startsWith( "num " ) && Character.isDigit( token.charAt( 4 )))
+        token = token.substring( 4 ); 
+      f.setName( token );
+      token = getNextField( st, delim );  // get the function code (field 2)
+      if ( token != null )
+      {
+        if ( useOBC )
+        {
+          Hex hex = protocol.getDefaultCmd();
+          f.setHex( hex );
+          protocol.setValueAt( cmdIndex, hex, new Integer( token ));
+          token = getNextField( st, delim ); // get byte2 (field 3)
+          if ( token != null )
+          {
+            if ( cmdIndex > 0 )
+              protocol.setValueAt( cmdIndex - 1, hex, new Integer( token ));
+          }
+        }
+        else if ( useEFC )
+        {
+          EFC efc = new EFC( token );
+          Hex hex = protocol.efc2hex( efc, null );
+          f.setHex( hex );
+          token = getNextField( st, delim ); // get byte2 (field 3 )
+        }
+      }
+      else
+      {
+        token = getNextField( st, delim );
+      }
+      token = getNextField( st, delim ); // get field 4
+
+      token = getNextField( st, delim );  // get field 5
+
+      token = getNextField( st, delim );  // get notes (field 6)
+      if ( token != null )
+        f.setNotes( token );
+      
+      if ( f.isEmpty())
+      {
+        break;
+      }
+      functions.add( f );
+    }
+    
+    while (( line = in.readLine()) != null )
+    {
+      line = in.readLine();
+      st = new StringTokenizer( line, delim );
+      token = getNextField( st, delim );
+      if ( token != null )
+      {
+        if ( token.equals( "Line Notes:" ) || token.equals( "Notes:" ))
+        {
+          StringBuffer buff = new StringBuffer();
+          boolean first = true;
+          while (( line = in.readLine()) != null )
+          {
+            st = new StringTokenizer( line, delim );
+            if ( st.hasMoreTokens())
+            {
+              token = st.nextToken();
+              if ( token.startsWith( "EOF Marker" ))
+                break;
+              if ( first )
+                first = false;
+              else
+                buff.append( "\n" );
+              buff.append( token );
+            }
+            else
+              buff.append( "\n" );
+          }
+          notes = buff.toString().trim();
+        }
       }
     }
   }

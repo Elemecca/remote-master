@@ -1,3 +1,10 @@
+Changes for v0.55
+
+- First pass at support for importing saved KM upgrades.  Function to button
+  assignments are NOT imported.
+- Added Kaseikyo protocol
+- Fixed bug 789717: Protocol Notes doesn't refresh
+
 Changes for v0.54
 
 - Added images for 15-2117/2116 and 15-2104
@@ -37,12 +44,12 @@ Changes for v0.50
   specifies the name of the file containing a picture of the remote.  It can be
   a GIF or JPG file.  Next is the [ButtonShapes] section, which contains a space
   separated list of button shape descriptors as follows:
-  <button name>=<shape description> where
-    <button name> is the name of a button defined in the [Buttons] section
-    <shape desctiption> is one of:
-      ellipse:<x>,<y>,<width>,<height>
-      rect:<x>,<y>,<width>,<height>
-      poly:<x>,<y>[,<x>,<y>]*
+  (button name)=(shape description) where
+    (button name) is the name of a button defined in the [Buttons] section
+    (shape desctiption) is one of:
+      ellipse:(x),(y),(width),(height)
+      rect:(x),(y),(width),(height)
+      poly:(x),(y)[,(x),(y)]*
   Currently only the RDFs for the 15-1994, URC-6131, and URC-7800 have these
   these entries.
 
