@@ -1,0 +1,91 @@
+[General]
+Name=15-2104 extender 1
+EepromSize=$800
+FavKey=$14, $1E, 15, 4
+AdvCodeAddr=$401..$795
+UpgradeAddr=$100..$3FF
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+ImageMap=15-2104.map
+
+[Settings]
+Shift Button Keycode=$07EC.7.8.2.0
+Backlight timer=$079E.7.8.0.0
+
+[Checksums]
+^$000:$002..$7FD
+
+[FixedData]
+$01F = $14
+
+[DeviceTypes]
+Cable    = 1
+TV       = 2
+VCR/DVD  = 3
+CD/Audio = 0
+
+[DeviceTypeAliases]
+Cable    = Cable,SAT,Video Acc
+TV       = TV
+VCR/DVD  = VCR,DVD,Tape,Laserdisc,DAT
+CD/Audio = CD,Tuner,Home Auto,Misc Audio,Phono,Amp
+
+[DeviceButtons]
+CBL	= $00A $00B
+TV	= $00C $00D
+VCR	= $00E $00F
+CD	= $010 $011
+DVD	= $012 $013
+AUX	= $014 $015
+AUX2	= $016 $017
+AUX3	= $018 $019
+
+[Buttons]
+1=$15, 2=$16, 3=$17, 4=$19, 5=$1A, 6=$1B, 7=$1C, 8=$1D, 9=$1E, 0=$1F, 
+POWER=$03, 
+VOL+=$04, VOL-=$05, MUTE=$08, 
+CH+=$06, CH-=$07, 
+UP=$31, DOWN=$32, LEFT=$33, RIGHT=$34, SELECT=$2E, 
+REW=$0B, PLAY=$0C, FF=$0D, REC=$10, PAUSE=$0F, STOP=$0E, 
+ENTER=$12, 
+LAST=$13, 
++100=$20, 
+TV/VCR=$18, 
+MENU=$2F, 
+SLEEP=$30, 
+GUIDE=$22, 
+INFO=$23, 
+EXIT=$24, 
+TV=$01, CBL/SAT=$09, DVD=$11, CD=$29, VCR=$0A, AUX1=$21, 
+MUSIC=$25, MOVIE=$26, SPORT=$27, NEWS=$28, 
+1S=$2A, 2S=$2B, 3S=$2C, 4S=$2D, 
+P{SETUP}=$02, 
+SCAN=$14, 
+{LIGHT}=$35, 
+THEATER=$36, 
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F,
+X_CBL=$4F,T_CBL,V_CBL,C_CBL,M_CBL,O_CBL,
+X_TV=$55,T_TV,V_TV,C_TV,M_TV,O_TV,
+X_VCR=$5B,T_VCR,V_VCR,C_VCR,M_VCR,O_VCR,
+X_CD=$61,T_CD,V_CD,C_CD,M_CD,O_CD,
+X_DVD=$67,T_DVD,V_DVD,C_DVD,M_DVD,O_DVD,
+X_AUX=$6D,T_AUX,V_AUX,C_AUX,M_AUX,O_AUX,
+X_AUX2=$73,T_AUX2,V_AUX2,C_AUX2,M_AUX2,O_AUX2,
+X_AUX3=$79,T_AUX3,V_AUX3,C_AUX3,M_AUX3,O_AUX3,
+X_Cancel=$7F
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $2F, $22, $31, $32, $33, $34, $2E, $30, $20, $23, $0C, $0F, $0B, $0D, $0E, $10, $24
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $2F, $22, $31, $32, $33, $34, $2E, $30, $23, $0D, $0B, $24, $20
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $2F, $22, $31, $32, $33, $34, $2E, $30, $23, $24, $20
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $12, $18, $13, $2F, $22, $31, $32, $33, $34, $2E, $30, $23, $0C, $0F, $0B, $0D, $0E, $10, $24, $20
+
+[DigitMaps]
+72 48 53 54 94 86 47 03 81 90 44 93 21 59 11 87 
+64 75 92 58 46 32 91 29 50 10 83 01 42 23 16 34 
+61 33 30 13 80 17

@@ -8,6 +8,7 @@ LearnedAddr=$400..$7FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+ImageMap=URC-9910.map
 
 [Settings]
 HT transport=$02b.7.8.1.0 DeviceButtons

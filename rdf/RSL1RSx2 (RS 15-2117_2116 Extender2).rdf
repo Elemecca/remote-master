@@ -1,0 +1,228 @@
+[General]
+Name=RadioShack 15-2116 / 15-2117 Extender 2
+EepromSize=$800
+FavKey=$2C, $031, 15, 5
+AdvCodeAddr=$401..$751
+UpgradeAddr=$100..$3FE
+Processor=S3C80
+RAMAddr=$FF00
+RDFSync=3
+TimeAddr=$0028
+ImageMap=15-21172116.map
+
+[Settings]
+Transport Device=$02b.7.8.1.0 DeviceButtons
+Volume Device=$02c.7.8.1.0 DeviceButtons
+Channel Device=$02d.7.8.1.0 DeviceButtons
+Menu Device=$02e.7.8.1.0 DeviceButtons
+PIP Device=$02f.7.8.1.0 DeviceButtons
+Other Device=$030.7.8.1.0 DeviceButtons
+Backlight timer=$075A.7.8.76.0
+Shift Button Keycode=$07D2.7.8.2.0
+Alt Shift Button Keycode=$07D7.7.8.2.0
+Alt Shift=$07DC.6.1.0.1 (Xshift;Ordinary)
+
+[Checksums]
+^$000:$002..$7FD
+
+[FixedData]
+$032 = $14
+
+[DeviceTypes]
+TV 	= 0
+VCR 	= 1
+DVD 	= 2
+LDP 	= 2
+TAPE 	= 1
+DAT 	= 1
+CBL 	= 3
+SAT 	= 4
+VIDEO 	= 3
+CD 	= 6
+RCVR 	= 5
+AMP 	= 5
+MISC 	= 5
+HOME 	= 5
+PHONO 	= 6
+
+[DeviceTypeAliases]
+TV = TV
+VCR = VCR
+DVD = DVD
+LDP = Laserdisc
+TAPE = Tape
+DAT = DAT
+CBL = Cable
+SAT = SAT
+VIDEO = Video Acc
+CD = CD
+RCVR = Tuner
+AMP = Amp
+MISC = Misc Audio
+HOME = Home Auto
+PHONO = Phono
+
+
+[DeviceButtons]
+TV 	= $00A $00B
+VCR 	= $00C $00D
+CBL 	= $00E $00F
+SAT 	= $010 $011
+CD 	= $012 $013
+DVD 	= $014 $015
+AUX 	= $016 $017
+AUDIO 	= $018 $019
+db-08 	= $01A $01B
+db-09 	= $01C $01D
+db-10 	= $01E $01F
+LDKP 	= $020 $021
+Pause	= $022 $023
+DSM 	= $024 $025
+TT 	= $026 $027
+
+[Buttons]
+TV=$01
+VCR=$09
+CD=$0A
+SAT=$11
+CBL=$12
+DVD=$21
+AUX=$22
+AUDIO=$23
+MY_SYSTEM=$24
+Power=$03
+Set=$02
+{Light}=$29
+0=$1F
+1=$15
+2=$16
+3=$17
+4=$19
+5=$1A
+6=$1B
+7=$1C
+8=$1D
+9=$1E
+Guide=$36
+fav/scan=$2C
+Exit=$37
+Info=$13
+Menu=$14
+up=$31
+down=$32
+left=$33
+right=$34
+Select=$35
+Ch+=$06
+Ch-=$07
+Vol+=$04
+Vol-=$05
+Mute=$08
+Pip=$25
+Swap=$27
+Last=$38
+Freeze=$28
+Move=$26
++100=$2F
+TV/Video=$20
+Enter=$18
+Sleep=$30
+Rewind=$0B
+Play=$0C
+Fast_Fwd=$0D
+Stop=$0E
+Pause=$0F
+Record=$10
+DiscreteOn=$2A
+DiscreteOff=$2B
+Phantom1=$2D
+Phantom2=$2E
+Phantom3=$39
+Phantom4=$3A
+Phantom5=$3B
+DEV_TV=$68,DEV_VCR,DEV_CBL,DEV_SAT,DEV_CD,DEV_DVD,DEV_AUX,DEV_AUD,
+DEV_DB08[MySys]=$70
+DEV_DB09=$71,DEV_DB10,DEV_DB11,DEV_DB12,DEV_DB13,DEV_DB14
+Dev_Cancel=$78
+SET_TRANS_KEYS=$79,SET_VOL_KEYS,SET_CHAN_KEYS,SET_MENU_KEYS,SET_PIP_KEYS,SET_OTHER_KEYS
+SET_LCD=$7F
+xs_TV=$C1
+xs_VCR=$C9
+xs_CD=$CA
+xs_SAT=$D1
+xs_CBL=$D2
+xs_DVD=$E1
+xs_AUX=$E2
+xs_AUDIO=$E3
+xs_MySys=$E4
+xs_Power=$C3
+xs_P{Setup}=$C2
+xs_{Light}=$E9
+xs_0=$DF
+xs_1=$D5
+xs_2=$D6
+xs_3=$D7
+xs_4=$D9
+xs_5=$DA
+xs_6=$DB
+xs_7=$DC
+xs_8=$DD
+xs_9=$DE
+xs_Guide=$F6
+xs_Scan[Fav]=$EC
+xs_Exit=$F7
+xs_Info=$D3
+xs_Menu=$D4
+xs_Arrow_up=$F1
+xs_Arrow_down=$F2
+xs_Arrow_left=$F3
+xs_Arrow_right=$F4
+xs_Select=$F5
+xs_Ch+=$C6
+xs_Ch-=$C7
+xs_Vol+=$C4
+xs_Vol-=$C5
+xs_Mute=$C8
+xs_Pip=$E5
+xs_Swap=$E7
+xs_Last=$F8
+xs_Freeze=$E8
+xs_Move=$E6
+xs_+100=$EF
+xs_TV/Video[A/B]=$E0
+xs_Enter=$D8
+xs_Sleep=$F0
+xs_Rew=$CB
+xs_Play=$CC
+xs_FFwd=$CD
+xs_Stop=$CE
+xs_Pause=$CF
+xs_Rec=$D0
+xs_DiscreteOn=$EA
+xs_DiscreteOff=$EB
+xs_Phantom1=$ED
+xs_Phantom2=$EE
+xs_Phantom3=$F9
+xs_Phantom4=$FA
+xs_Phantom5=$FB
+
+[ButtonMaps]
+0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $20, $14, $38, $13, $31, $32, $33, $34, $30, $35, $2f, $37, $36, $25, $28, $27, $26, $18
+1 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $0c, $0e, $0b, $0d, $10, $0f, $14, $31, $32, $33, $34, $37, $36, $20, $35, $38, $18, $25, $28, $26, $27
+2 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $0c, $0e, $0b, $0d, $0f, $14, $31, $32, $33, $34, $35, $36, $13, $37, $18, $20
+3 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $13, $38, $35, $20, $14, $31, $32, $33, $34, $36, $37, $0c, $0e, $0b, $0d, $10, $0f, $30, $18, $25, $26, $27, $28
+4 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $38, $35, $37, $14, $31, $32, $33, $34, $13, $36, $20, $0c, $0e, $0b, $0d, $0f, $10, $18, $25, $26, $27, $28
+5 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $38, $0c, $0e, $0b, $0d, $10, $0f, $20, $35, $31, $32, $33, $34, $36, $37, $18, $14
+6 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
+    $03, $18, $38, $35, $37, $36, $0c, $0e, $0b, $0d, $10, $0f, $31, $32, $33, $34, $13
+
+[DigitMaps]
+72 48 53  94 92 03 90 44 46  86 21 11 87 75 59 58 
+64 83 34 126 23 81 16 01 127 32 33 30 29 03 80 17 
+91 129

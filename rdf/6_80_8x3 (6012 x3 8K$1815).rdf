@@ -7,6 +7,7 @@ UpgradeAddr=$100..$7FF
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
+ImageMap=URC-8811.map
 
 [Settings]
 T Device=$1828.7.8.1.0 DeviceButtons
