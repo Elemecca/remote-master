@@ -120,18 +120,35 @@ public class Hex
     return toString( data, breakAt );
   }
 
-  public boolean equals( Hex aHex )
+  public boolean equals( Object obj )
   {
-    boolean rc = true;
+    Hex aHex = ( Hex )obj;
+    if ( this ==  aHex )
+      return true;
+
     if ( data.length != aHex.data.length )
-      rc = false;
-    else
-      for ( int i = 0; i < data.length; i++ )
-        if ( data[ i ] != aHex.data[ i ])
-        {
-          rc = false;
-          break;
-        }
+      return false;
+
+    for ( int i = 0; i < data.length; i++ )
+      if ( data[ i ] != aHex.data[ i ])
+        return false;
+
+    return true;
+  }
+
+  public int hashCode()
+  {
+    int rc = 0;
+    if ( data.length == 0 )
+      return 0;
+
+    int multiplier = ( int )Math.pow( 31, data.length - 1);
+    
+    for ( int i = 0; i < data.length; i++ )
+    {
+      rc += ( data[ i ] & 0xFF ) * multiplier;
+      multiplier /= 31;
+    }
     return rc;
   }
 

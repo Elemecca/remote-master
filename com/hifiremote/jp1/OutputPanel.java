@@ -74,9 +74,9 @@ public class OutputPanel
     add( box );
     box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ));
 
-    label = new JLabel( "Upgrade Protocol Code" );
-    label.setAlignmentY( 1f );
-    box.add( label );
+    protocolLabel = new JLabel( "Upgrade Protocol Code" );
+    protocolLabel.setAlignmentY( 1f );
+    box.add( protocolLabel );
     box.add( box.createHorizontalGlue());
 
     copyProtocolUpgrade = new JButton( "Copy" );
@@ -113,12 +113,23 @@ public class OutputPanel
   {
     upgradeText.setText( deviceUpgrade.getUpgradeText());
     Protocol p = deviceUpgrade.getProtocol();
+    String pVariant = p.getVariantName();
+
     Remote r = deviceUpgrade.getRemote();
+    String rVariant = r.getSupportedVariantName( p.getID());
+    
+    if ( pVariant.equals( rVariant ))
+    {
+      protocolLabel.setForeground( Color.BLACK );
+      protocolLabel.setText( "Upgrade Protocol Code" );
+      return;
+    }
+    protocolLabel.setForeground( Color.RED );
+    protocolLabel.setText( "Upgrade Protocol Code *** REQUIRED ***" );
     String processor = r.getProcessor();
     Hex code = p.getCode( processor );
     if ( code != null )
     {
-      System.err.println( "Checking if translation needed for proceccor " + processor + " and RAMAddr " + Integer.toHexString( r.getRAMAddress() ));
       byte[] data = ( byte[] )code.getData().clone();
       if ( processor.equals( "S3C80" ) && ( r.getRAMAddress() == 0x8000 ))
       {
@@ -126,25 +137,20 @@ public class OutputPanel
         if (( data[ 3 ] & 0xFF ) == 0x8B )
         {
           offset = ( data[ 4 ] & 0xFF ) + 5;
-          System.err.println( "Code doesn't start at 3, it starts at " + offset );
         }
         for ( int i = offset; i < data.length; i++ )
         {
           int first = data[ i ] & 0xFF;
-          System.err.println( "Checking byte at " + i + ": " + Integer.toHexString( first ));
           if ( first == 0xF6 )
           {
             int second = data[ ++i ] & 0xFF;
-            System.err.println( "Got F6, next byte is " + Integer.toHexString( second ));
             if ( second == 0xFF )
             {
-              System.err.println( "Got 0xFF, changing to 0x80" );
               data[ i ] = ( byte )0x80;
             }
             else if ( second == 0x01 )
             {
               int third = data[ ++i ] & 0xFF;
-              System.out.println( "Got 0x01, next byte is " + Integer.toHexString( third ));
               data[ i ] = ( byte )adjust( third );
             }
           }
@@ -186,6 +192,7 @@ public class OutputPanel
     clipboard.setContents( data, data );
   }
 
+  private JLabel protocolLabel = null;
   private JTextArea upgradeText = null;
   private JTextArea protocolText = null;
   private JTextArea popover = null;

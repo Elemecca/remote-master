@@ -1091,7 +1091,9 @@ public class Remote
 
   public String getSupportedVariantName( Hex pid )
   {
-    return ( String )protocolVariantNames.get( pid );
+    checkLoaded();
+    String rc = ( String )protocolVariantNames.get( pid );
+    return rc;
   }
 
 

@@ -111,6 +111,7 @@ public class SetupPanel
     protocolList.setModel( new DefaultComboBoxModel( protocols ));
     Protocol p = deviceUpgrade.getProtocol();
     protocolList.setSelectedItem( p );
+    protocolID.setText( p.getID().toString() + ':' + p.getVariantName());
     notes.setText( deviceUpgrade.getNotes());
     fixedData.setText( p.getFixedData().toString());
     updateInProgress = false;
@@ -137,7 +138,7 @@ public class SetupPanel
         if ( currProtocol != null && !updateInProgress )
           currProtocol.convertFunctions( deviceUpgrade.getFunctions(), protocol );
         currProtocol = protocol;
-        protocolID.setText( protocol.getID().toString());
+        protocolID.setText( protocol.getID().toString() + ':' + protocol.getVariantName());
         JViewport vp = ( JViewport )protocolNotes.getParent();
         vp.setViewPosition( new Point( 0, 0 ));
         deviceUpgrade.setProtocol( protocol );
