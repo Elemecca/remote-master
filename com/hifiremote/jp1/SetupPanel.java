@@ -17,7 +17,7 @@ public class SetupPanel
 {
   public SetupPanel( DeviceUpgrade deviceUpgrade )
   {
-    super( deviceUpgrade );
+    super( "Setup", deviceUpgrade );
 
     protocolHolder = new JPanel( new BorderLayout());
     Border border = BorderFactory.createTitledBorder( "Protocol Parameters" );
@@ -191,6 +191,12 @@ public class SetupPanel
       Protocol oldProtocol = deviceUpgrade.getProtocol();
       if ( newProtocol != oldProtocol )
       {
+        KMPanel panel = oldProtocol.getPanel( deviceUpgrade );
+        if ( panel != null )
+          KeyMapMaster.getKeyMapMaster().removePanel( panel );
+        panel = newProtocol.getPanel( deviceUpgrade );
+        if ( panel != null )
+          KeyMapMaster.getKeyMapMaster().addPanel( panel, 1 );
         if ( newProtocol != null && oldProtocol != null && !updateInProgress )
           oldProtocol.convertFunctions( deviceUpgrade.getFunctions(), newProtocol );
         protocolID.setText( newProtocol.getID().toString());

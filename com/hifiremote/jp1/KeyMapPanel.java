@@ -13,11 +13,11 @@ public class KeyMapPanel
 {
   public KeyMapPanel( DeviceUpgrade devUpgrade )
   {
-    super( devUpgrade );
+    super( "Key Map", devUpgrade );
     setLayout( new BorderLayout());
 
     String fontName = "Tahoma";
-    
+
     titleLabel = new JLabel();
     titleLabel.setFont( new Font( fontName, Font.BOLD, 14 ));
     titleLabel.setBackground( Color.WHITE );
@@ -27,9 +27,9 @@ public class KeyMapPanel
     subtitleLabel.setFont( new Font( fontName, Font.BOLD, 10 ));
     subtitleLabel.setBackground( Color.WHITE );
     subtitleLabel.setAlignmentX( 0.5f );
-                                
+
     box = Box.createVerticalBox();
-    box.setBorder( 
+    box.setBorder(
       BorderFactory.createCompoundBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ),
                                           BorderFactory.createLineBorder( Color.BLACK )));
     box.add( titleLabel );
@@ -37,7 +37,7 @@ public class KeyMapPanel
 
     add( new JScrollPane( box ), BorderLayout.CENTER );
 
-    TableModel dataModel = new AbstractTableModel() 
+    TableModel dataModel = new AbstractTableModel()
     {
       public int getColumnCount()
       {
@@ -49,7 +49,7 @@ public class KeyMapPanel
       }
       public int getRowCount() { return list.size();}
       public Object getValueAt(int row, int col)
-      { 
+      {
         Button b = ( Button )list.elementAt( row );
         switch ( col )
         {
@@ -76,15 +76,15 @@ public class KeyMapPanel
         return "  " + s;
       }
 
-      public String getColumnName( int column ) 
+      public String getColumnName( int column )
       {
         return headers[column];
       }
-      public Class getColumnClass( int col ) 
+      public Class getColumnClass( int col )
       {
         return String.class;
       }
-      public boolean isCellEditable(int row, int col){ return false; } 
+      public boolean isCellEditable(int row, int col){ return false; }
     };
 
     table = new JTable( dataModel );
@@ -144,8 +144,8 @@ public class KeyMapPanel
     if (( text == null ) || text.length() == 0 )
       text = " ";
     titleLabel.setText( text );
-    text = deviceUpgrade.getRemote().getName() + " (" + 
-           deviceUpgrade.getDeviceTypeAliasName() + '/' + 
+    text = deviceUpgrade.getRemote().getName() + " (" +
+           deviceUpgrade.getDeviceTypeAliasName() + '/' +
            df.format( deviceUpgrade.getSetupCode()) + " - " +
            deviceUpgrade.getProtocol().getName() + ')';
     subtitleLabel.setText( text );
@@ -170,8 +170,8 @@ public class KeyMapPanel
 //      column.setMaxWidth( width );
 //    }
 //    table.doLayout();
-  }                  
-    
+  }
+
   public void actionPerformed( ActionEvent e )
   {
     PrinterJob pj = PrinterJob.getPrinterJob();
@@ -185,7 +185,7 @@ public class KeyMapPanel
     {
       printException.printStackTrace( System.err );
     }
-  }  
+  }
 
   public int print(Graphics g, PageFormat pageFormat, int pageIndex)
    throws PrinterException
@@ -195,19 +195,19 @@ public class KeyMapPanel
                          RenderingHints.VALUE_ANTIALIAS_ON );
 
     g2.setColor( Color.black );
-  
+
     if ( pageIndex >= 1 )
     {
       return NO_SUCH_PAGE;
     }
-  
+
     g2.translate( pageFormat.getImageableX(), pageFormat.getImageableY());
     Dimension d = box.getSize();
     d.width = ( int )pageFormat.getImageableWidth();
     box.setSize( d );
     box.validate();
     box.paint( g2 );
-  
+
 //    tableView.paint( g2 );
 //    g2.translate( 0f, pageIndex*pageHeightForTable);
 //    g2.translate( 0f, - headerHeightOnPage );
@@ -215,7 +215,7 @@ public class KeyMapPanel
 //                           (int)Math.ceil(headerHeightOnPage));
 //    tableHeader.paint( g2 );//paint header at top
 //    tableHeader.setFont( savedHeaderFont );
-//  
+//
 //    tableView.setFont( savedTableFont );
       return Printable.PAGE_EXISTS;
   }
@@ -229,6 +229,6 @@ public class KeyMapPanel
   private JButton print = null;
   private Vector list = new Vector();
   private static String[] headers =
-  { 
+  {
     "Button", "Normal Function", "Shifted Function", "XShifted Function" };
   }

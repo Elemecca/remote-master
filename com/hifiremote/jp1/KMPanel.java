@@ -5,9 +5,15 @@ import javax.swing.JPanel;
 public class KMPanel
   extends JPanel
 {
-  public KMPanel( DeviceUpgrade devUpgrade )
+  public KMPanel( String name, DeviceUpgrade devUpgrade )
   {
+    setName( name );
     this.deviceUpgrade = devUpgrade;
+  }
+
+  public void setDeviceUpgrade( DeviceUpgrade devUpgrade )
+  {
+    deviceUpgrade = devUpgrade;
   }
 
   protected DeviceUpgrade deviceUpgrade = null;

@@ -10,7 +10,7 @@ public class OutputPanel
 {
   public OutputPanel( DeviceUpgrade deviceUpgrade )
   {
-    super( deviceUpgrade );
+    super( "Output", deviceUpgrade );
     BoxLayout bl = new BoxLayout( this, BoxLayout.Y_AXIS );
     setLayout( bl );
     setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
@@ -117,7 +117,7 @@ public class OutputPanel
 
     Remote r = deviceUpgrade.getRemote();
     String rVariant = r.getSupportedVariantName( p.getID());
-    
+
     if ( pVariant.equals( rVariant ))
     {
       protocolLabel.setForeground( Color.BLACK );

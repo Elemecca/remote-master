@@ -107,6 +107,11 @@ public class Protocol
     }
   }
 
+  public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
+  {
+    return null;
+  }
+
   public void initializeParms()
   {
     if ( cmdParmInit != null )

@@ -5,7 +5,8 @@ public class FunctionPanel
 {
   public FunctionPanel( DeviceUpgrade devUpgrade )
   {
-    super( devUpgrade, new FunctionTableModel( devUpgrade.getFunctions()));
+    super( "Functions", devUpgrade,
+           new FunctionTableModel( devUpgrade.getFunctions()));
   }
 
   public void update()

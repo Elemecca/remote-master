@@ -11,7 +11,8 @@ public class ExternalFunctionPanel
 {
   public ExternalFunctionPanel( DeviceUpgrade devUpgrade )
   {
-    super( devUpgrade, new ExternalFunctionTableModel( devUpgrade ));
+    super( "External Functions", devUpgrade,
+           new ExternalFunctionTableModel( devUpgrade ));
 
     ActionListener al = new ActionListener()
     {
@@ -54,7 +55,7 @@ public class ExternalFunctionPanel
         catch ( Exception ex )
         {
           JOptionPane.showMessageDialog( null,
-                                         "An error occurred loading the device upgrade from " + 
+                                         "An error occurred loading the device upgrade from " +
                                          file.getName() + ".  Please see rmaster.err for more details.",
                                          "Device Upgrade Load Error",
                                          JOptionPane.ERROR_MESSAGE );

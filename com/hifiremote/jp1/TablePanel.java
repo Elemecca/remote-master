@@ -34,9 +34,9 @@ public abstract class TablePanel
   extends KMPanel
   implements ActionListener, ListSelectionListener
 {
-  public TablePanel( DeviceUpgrade devUpgrade, KMTableModel model )
+  public TablePanel( String name, DeviceUpgrade devUpgrade, KMTableModel model )
   {
-    super( devUpgrade );
+    super( name, devUpgrade );
     setLayout( new BorderLayout());
 
     kit = Toolkit.getDefaultToolkit();
@@ -175,7 +175,7 @@ public abstract class TablePanel
         int tableCol = table.columnAtPoint( e.getPoint());
         int modelCol = table.convertColumnIndexToModel( tableCol );
         if ( modelCol == 0 )
-          table.getTransferHandler().exportAsDrag( table, e, TransferHandler.MOVE );        
+          table.getTransferHandler().exportAsDrag( table, e, TransferHandler.MOVE );
       }
     };
     table.addMouseMotionListener( mmh );
@@ -341,7 +341,7 @@ public abstract class TablePanel
         {
           if ( colNum != 0 )
             buff.append( "\t" );
-          Object value = 
+          Object value =
             sorter.getValueAt( selectedRows[ rowNum ],
                                table.convertColumnIndexToModel( selectedCols[ colNum ]));
           if ( value != null )
@@ -501,7 +501,7 @@ public abstract class TablePanel
     for ( int i = 0; i < cols; i++ )
     {
       column = columnModel.getColumn( i );
-      
+
       if ( model.isColumnWidthFixed( i ))
       {
         l.setText( model.getColumnName( i ));

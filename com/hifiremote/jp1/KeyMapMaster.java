@@ -39,6 +39,7 @@ public class KeyMapMaster
   private ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
   private Remote currentRemote = null;
   private String currentDeviceTypeName = null;
+  private JTabbedPane tabbedPane = null;
   private SetupPanel setupPanel = null;
   private FunctionPanel functionPanel = null;
   private ExternalFunctionPanel externalFunctionPanel = null;
@@ -105,7 +106,7 @@ public class KeyMapMaster
     loadPreferences();
 
     Container mainPanel = getContentPane();
-    JTabbedPane tabbedPane = new JTabbedPane();
+    tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
 
     double b = 10;       // space around border/columns
@@ -155,36 +156,37 @@ public class KeyMapMaster
     protocolManager.load( new File( homeDirectory, "protocols.ini" ));
 
     setupPanel = new SetupPanel( deviceUpgrade );
+    setupPanel.setToolTipText( "Enter general information about the upgrade." );
     currPanel = setupPanel;
-    tabbedPane.addTab( "Setup", null, setupPanel, "Enter general information about the upgrade." );
+    addPanel( setupPanel ); 
 
     functionPanel = new FunctionPanel( deviceUpgrade );
-    tabbedPane.addTab( "Functions", null, functionPanel,
-                       "Define function names and parameters." );
+    functionPanel.setToolTipText( "Define function names and parameters." );
+    addPanel( functionPanel );
 
     externalFunctionPanel = new ExternalFunctionPanel( deviceUpgrade );
-    tabbedPane.addTab( "External Functions", null, externalFunctionPanel,
-                       "Define functions from other device codes." );
+    externalFunctionPanel.setToolTipText( "Define functions from other device codes." );
+    addPanel( externalFunctionPanel ); 
 
     buttonPanel = new ButtonPanel( deviceUpgrade );
-    tabbedPane.addTab( "Buttons", null, buttonPanel,
-                       "Assign functions to buttons." );
+    buttonPanel.setToolTipText( "Assign functions to buttons." );
+    addPanel( buttonPanel ); 
 
     layoutPanel = new LayoutPanel( deviceUpgrade );
-    tabbedPane.addTab( "Layout", null, layoutPanel ,
-                       "Button Layout information." );
+    layoutPanel.setToolTipText( "Button Layout information." );
+    addPanel( layoutPanel ); 
 
     keyMapPanel = new KeyMapPanel( deviceUpgrade );
-    tabbedPane.addTab( "Key Map", null, keyMapPanel,
-                       "Printable list of buttons and their assigned functions" );
+    keyMapPanel.setToolTipText( "Printable list of buttons and their assigned functions" );
+    addPanel( keyMapPanel ); 
 
     outputPanel = new OutputPanel( deviceUpgrade );
-    tabbedPane.addTab( "Output", null, outputPanel,
-                       "The output to copy-n-paste into IR." );
+    outputPanel.setToolTipText( "The output to copy-n-paste into IR." );
+    addPanel( outputPanel ); 
 
-    RemoteManager rm = RemoteManager.getRemoteManager();                       
+    RemoteManager rm = RemoteManager.getRemoteManager();
     rdfPath = rm.loadRemotes( rdfPath );
-    
+
     Vector work = new Vector();
     for ( Enumeration e = preferredRemoteNames.elements(); e.hasMoreElements(); )
     {
@@ -199,7 +201,7 @@ public class KeyMapMaster
     {
       useAllRemotes.setSelected( true );
       usePreferredRemotes.setEnabled( false );
-    }    
+    }
 
     setRemotes();
 
@@ -209,7 +211,7 @@ public class KeyMapMaster
     if ( temp == null )
       temp = rm.getRemotes()[ 0 ];
     temp.load();
-    Protocol protocol = 
+    Protocol protocol =
       ( Protocol )protocolManager.getProtocolsForRemote( temp ).elementAt( 0 );
     deviceUpgrade.setProtocol( protocol );
     setRemote( temp );
@@ -234,6 +236,8 @@ public class KeyMapMaster
     }
     show();
   }
+
+  public static KeyMapMaster getKeyMapMaster(){ return me;}
 
   private void createMenus()
   {
@@ -262,7 +266,7 @@ public class KeyMapMaster
     menu.add( saveAsItem );
 
     menu.addSeparator();
-    
+
 //    importItem = new JMenuItem( "Import KM file..." );
 //    importItem.setMnemonic( KeyEvent.VK_K );
 //    importItem.addActionListener( this );
@@ -395,6 +399,24 @@ public class KeyMapMaster
 //    menu.add( manualItem );
   }
 
+  public void addPanel( KMPanel panel )
+  {
+    tabbedPane.addTab( panel.getName(), null, panel, panel.getToolTipText());
+  }
+
+  public void addPanel( KMPanel panel, int index )
+  {
+    System.err.println( "Adding panel " + panel.getName() + " at index " + index );
+    tabbedPane.insertTab( panel.getName(), null, panel, panel.getToolTipText(), index );
+    tabbedPane.validate();
+  }
+
+  public void removePanel( KMPanel panel )
+  {
+    tabbedPane.remove( panel );
+    tabbedPane.validate();
+  }
+
   private void editPreferredRemotes()
   {
     PreferredRemoteDialog d = new PreferredRemoteDialog( this, preferredRemotes );
@@ -509,7 +531,7 @@ public class KeyMapMaster
         deviceTypeList.removeActionListener( this );
         deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ));
         deviceTypeList.setMaximumRowCount( aliasNames.length );
-        
+
         int index = 0;
         for ( index = 0; index < aliasNames.length; index++ )
         {
@@ -535,7 +557,7 @@ public class KeyMapMaster
         }
 
         deviceTypeList.setSelectedIndex( index );
-        
+
         currentRemote = remote;
         deviceUpgrade.setRemote( remote );
         deviceUpgrade.setDeviceTypeAliasName( aliasNames[ index ]);
@@ -662,12 +684,12 @@ public class KeyMapMaster
     }
   } // actionPerformed
 
-  
+
   public static File promptForUpgradeFile( File path )
   {
     return me.getUpgradeFile( path );
   }
-  
+
   public File getUpgradeFile( File path )
   {
     if ( path == null )
@@ -828,9 +850,9 @@ public class KeyMapMaster
     File file = deviceUpgrade.getFile();
     if ( file != null )
       title = title + ": " + file.getName();
-    
+
     saveItem.setEnabled( file != null );
-    
+
     description.setText( deviceUpgrade.getDescription());
     remoteList.removeActionListener( this );
     deviceTypeList.removeActionListener( this );
