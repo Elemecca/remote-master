@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.91";
+  private static final String version = "v 0.92";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -404,14 +404,15 @@ public class KeyMapMaster
 
   public void addPanel( KMPanel panel, int index )
   {
-    System.err.println( "Adding panel " + panel.getName() + " at index " + index );
+    System.err.println( "KeyMapMaster.addPanel()" + panel );
     tabbedPane.insertTab( panel.getName(), null, panel, panel.getToolTipText(), index );
-    tabbedPane.validate();
   }
 
   public void removePanel( KMPanel panel )
   {
-    tabbedPane.remove( panel );
+    System.err.println( "KeyMapMaster.removePanel()" + panel );
+    tabbedPane.removeTabAt( 1 );
+//    tabbedPane.remove( panel );
     tabbedPane.validate();
   }
 
@@ -620,6 +621,8 @@ public class KeyMapMaster
           KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
           if ( newPanel != null )
             addPanel( newPanel, 1 );
+          if (( oldPanel != null ) || ( newPanel != null ))
+            tabbedPane.validate();
         }
         oldProtocol.reset();
         setTitle( "RemoteMapMaster " + version );
@@ -818,18 +821,17 @@ public class KeyMapMaster
       return;
 
     Protocol oldProtocol = deviceUpgrade.getProtocol();
+    KMPanel oldPanel = oldProtocol.getPanel( deviceUpgrade );
+    if ( oldPanel != null )
+      removePanel( oldPanel );
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
     Protocol newProtocol = deviceUpgrade.getProtocol();
-    if ( newProtocol != oldProtocol )
-    {
-      KMPanel oldPanel = oldProtocol.getPanel( deviceUpgrade );
-      if ( oldPanel != null )
-        removePanel( oldPanel );
-      KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
-      if ( newPanel != null )
-        addPanel( newPanel, 1 );
-    }
+    KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
+    if ( newPanel != null )
+      addPanel( newPanel, 1 );
+    if (( oldPanel != null ) || ( newPanel != null ))
+      tabbedPane.validate();
     refresh();
 
     boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
@@ -867,8 +869,18 @@ public class KeyMapMaster
   public void loadUpgrade( BufferedReader reader )
     throws Exception
   {
+    Protocol oldProtocol = deviceUpgrade.getProtocol();
+    KMPanel oldPanel = oldProtocol.getPanel( deviceUpgrade );
+    if ( oldPanel != null )
+      removePanel( oldPanel );
     deviceUpgrade.reset();
     deviceUpgrade.load( reader );
+    Protocol newProtocol = deviceUpgrade.getProtocol();
+    KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
+    if ( newPanel != null )
+      addPanel( newPanel, 1 );
+    if (( oldPanel != null ) || ( newPanel != null ))
+      tabbedPane.validate();
     refresh();
   }
 

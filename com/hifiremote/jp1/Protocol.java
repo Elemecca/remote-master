@@ -122,6 +122,7 @@ public class Protocol
 
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
   {
+    System.err.println( "Protocol.getPanel()" );
     return null;
   }
 

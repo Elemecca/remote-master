@@ -1,3 +1,6 @@
+Changes for v0.92
+- Fix protocol "Sony Combo (new)"
+
 Changes for v0.91
 
 - Improved Device Combiner support:

@@ -42,6 +42,7 @@ public class DeviceCombiner
 
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
   {
+    System.err.println( "DeviceCombiner.getPanel()" );
     if ( panel == null )
       panel = new DeviceCombinerPanel( deviceUpgrade );
     else

@@ -99,9 +99,26 @@ public class DeviceCombinerPanel
           try
           {
             importedUpgrade.load( file, false );
-            importedUpgrade.setRemote( deviceUpgrade.getRemote());
+            Remote remote = deviceUpgrade.getRemote();
+            importedUpgrade.setRemote( remote );
 
             Protocol importedProtocol = importedUpgrade.getProtocol();
+            
+            if ( !remote.getProcessor().equals( "S3C80" ))
+            {
+              String v = remote.getSupportedVariantName( importedProtocol.getID());
+              if (( v == null ) || !v.equals( importedProtocol.getVariantName()))
+              {
+                JOptionPane.showMessageDialog( null,
+                                               "Device Combiner can only combine protocol that are built into the remote. " +
+                                               "The device upgrade you tried to import uses the '" +
+                                               importedProtocol.getName() + "' protocol, which is not built into the " +
+                                               remote.getName() + " remote.",
+                                               "Incompatible Upgrade",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+              }
+            }
             if ( importedProtocol.getDefaultCmd().length() > 1 )
             {
               JOptionPane.showMessageDialog( null,
