@@ -1,3 +1,8 @@
+Changes for v0.74
+
+- Remove RDFs from the distribution
+- Add support for multiple image maps in a single RDF.
+
 Changes for v0.73
 
 - Allow undeclared buttons in ButtonMaps
