@@ -444,6 +444,8 @@ public class Remote
 
   public byte[] getDigitMaps(){ return digitMaps; }
 
+  public boolean getOmitDigitMapByte(){ return omitDigitMapByte; }
+
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
   {
@@ -550,6 +552,8 @@ public class Remote
           onVal = rdr.parseNumber( st.nextToken());
         vptStatusBit = new StatusBit( addr, bit, onVal );
       }
+      else if ( parm.equals( "OmitDigitMapByte" ))
+        omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
     }
     return line;
   }
@@ -1108,4 +1112,5 @@ public class Remote
   private Button[] upgradeButtons = null;
   private byte[] digitMaps = new byte[ 0 ];
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
+  private boolean omitDigitMapByte = false;
 }
