@@ -13,10 +13,18 @@ public class NumberCmdParm
 
   public NumberCmdParm( String name, DefaultValue defaultValue, int bits )
   {
+    this( name, defaultValue, bits, 10 );
+  }
+
+  public NumberCmdParm( String name, DefaultValue defaultValue, int bits, int base )
+  {
     super( name, defaultValue );
     this.bits = bits;
+    this.base = base;
     editor = new ByteEditor(  0, (( 1 << bits ) - 1 ), this );
+    editor.setBase( base );
     renderer = new ByteRenderer();
+    renderer.setBase( base );
   }
 
   public String getDescription(){ return "Number"; }
@@ -55,7 +63,7 @@ public class NumberCmdParm
     if ( c == Integer.class )
       rc = value;
     else // assume String
-      rc = new Integer(( String )value );
+      rc = Integer.valueOf(( String )value, base );
     return rc;
   }
 
@@ -76,8 +84,18 @@ public class NumberCmdParm
     return buff.toString();
   }
 
+  public void setBase( int base )
+  {
+    this.base = base;
+    editor.setBase( base );
+    renderer.setBase( base );
+  }
+  
+  public int getBase(){ return base; }
+
   private ByteEditor editor;
   private ByteRenderer renderer;
   private int bits = 8;
+  private int base = 10;
   private Object value = null;
 }

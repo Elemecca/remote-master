@@ -82,8 +82,10 @@ public class ManualProtocol
     cmdTranslators[ 0 ] = new Translator( lsb, comp, 0, cmdBits, cmdIndex * 8 );
     if ( defaultCmd.length() > 1 )
     {
-      cmdParms[ 1 ] = new NumberCmdParm( "Byte 2", defaultValue, 8 );
+      cmdParms[ 1 ] = new NumberCmdParm( "Byte 2", defaultValue, 8, 16 );
       cmdTranslators[ 1 ] = new Translator( false, false, 1, 8, byte2Index * 8 );
+      importCmdTranslators = new Translator[ 1 ];
+      importCmdTranslators[ 0 ] = new Translator( false, false, 0, 8, byte2Index * 8 );
     }
   }
 
@@ -134,6 +136,37 @@ public class ManualProtocol
     for ( Enumeration e = v.elements(); e.hasMoreElements(); )
     {
       cmdTranslators[ i++ ] = ( Translator )e.nextElement();
+    }
+  }
+
+  public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )
+  {
+    if (( text.indexOf( ' ' ) != -1 ) || ( text.indexOf( 'h' ) != -1 ))
+    {
+      Hex newHex = new Hex( text );
+      if ( newHex.length() > hex.length())
+        setDefaultCmd( newHex );
+      hex = newHex;
+    }
+    else
+      super.importCommand( hex, text, useOBC, obcIndex, useEFC );
+  }
+
+  // for importing byte2 values from a KM upgrade.
+  public void importCommandParms( Hex hex, String text )
+  {
+    if ( cmdParms.length == 1 )
+      return;
+    StringTokenizer st = new StringTokenizer( text );
+    Value[] values = new Value[ st.countTokens() ];
+    int index = 0;
+    while ( st.hasMoreTokens())
+      values[ index++ ] = new Value( Integer.valueOf( st.nextToken(), 16 ));
+
+    for ( index = 0; index < values.length; index++ )
+    {
+      for ( int i = 0; i < importCmdTranslators.length; i++ )
+        importCmdTranslators[ i ].in( values, hex, devParms, index );
     }
   }
 

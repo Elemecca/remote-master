@@ -406,6 +406,14 @@ public class Protocol
       cmdTranslators[ i ].in( vals, hex, devParms, col );
   }
 
+  public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )
+  {
+    if ( useOBC )
+      setValueAt( obcIndex, hex, new Integer( text ));
+    else if ( useEFC )
+      efc2hex( new EFC( text ), hex );
+  }
+
   public void importCommandParms( Hex hex, String text )
   {
     System.err.println( "Protocol.importCommandParms( " + text + " ), cmdParms.length=" + cmdParms.length );

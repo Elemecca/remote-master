@@ -1085,24 +1085,11 @@ public class DeviceUpgrade
       if ( token != null )
       {
         Hex hex = protocol.getDefaultCmd();
-        if (( protocol.getClass() == ManualProtocol.class ) &&
-            (( token.indexOf( ' ' ) != -1 ) || ( token.indexOf( 'h' ) != -1 )))
-        {
-          Hex newHex = new Hex( token );
-          if ( newHex.length() > hex.length())
-            (( ManualProtocol )protocol ).setDefaultCmd( newHex );
-          hex = newHex;
-        }
-        else if ( useOBC )
-          protocol.setValueAt( obcIndex, hex, new Integer( token ));
-        else if ( useEFC )
-          protocol.efc2hex( new EFC( token ), hex );
+        protocol.importCommand( hex, token, useOBC, obcIndex, useEFC );
 
         token = getNextField( st, delim ); // get byte2 (field 3)
         if ( token != null )
-        {
           protocol.importCommandParms( hex, token );
-        }
 
         f.setHex( hex );
       }

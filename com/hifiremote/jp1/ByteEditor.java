@@ -39,8 +39,7 @@ public class ByteEditor
     if ( value == null )
       tf.setText( "" );
     else
-//    tf.setText( Integer.toString( Translate.byte2int((( Integer )value ).byteValue())));
-      tf.setText( (( Integer )value ).toString());
+      tf.setText( Integer.toString((( Integer )value ).intValue(), base ));
 
     tf.selectAll();
     return tf;
@@ -54,7 +53,7 @@ public class ByteEditor
     String str = tf.getText().trim();
     if (( str != null ) && ( str.length() != 0 ))
     {
-      int temp = Integer.parseInt( str );
+      int temp = Integer.parseInt( str, base );
       if (( temp < min ) || ( temp > max ))
       {
         String msg = "Value entered must be between " + min + " and " + max + '.';
@@ -73,7 +72,15 @@ public class ByteEditor
     return rc;
   }
 
+  public void setBase( int base )
+  {
+    this.base = base;
+  }
+
+  public int getBase(){ return base; }
+
   private int min;
   private int max;
   private Parameter parm = null;
+  private int base = 10;
 }

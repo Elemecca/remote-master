@@ -9,16 +9,29 @@ public class ByteRenderer
 {
   public ByteRenderer()
   {
+    this( 10 );
+  }
+
+  public ByteRenderer( int base )
+  {
     setHorizontalAlignment( SwingConstants.CENTER );
   }
 
   protected void setValue( Object value )
   {
     if ( value != null )
-//      super.setValue( Integer.toString( Translate.byte2int((( Integer )value ).byteValue())));
-      super.setValue((( Integer )value ).toString());
+      super.setValue( Integer.toString((( Integer )value ).intValue(), base ));
     else
       super.setValue( value );
   }
+
+  public void setBase( int base )
+  {
+    this.base = base;
+  }
+
+  public int getBase(){ return base; }
+
+  int base = 10;
 }
 

@@ -169,6 +169,9 @@ public class CombinerDeviceDialog
     
     protocolNotes.setText( p.getNotes());
     protocolNotes.setCaretPosition( 0 );
+
+//    boolean allowUpgrades =  r.getProcessor().getFullName().equals( "S3C80" );
+
   }
 
   public void updateParameters()
