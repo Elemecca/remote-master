@@ -455,7 +455,7 @@ public class Remote
     return RAMAddress;
   }
 
-  public byte[] getDigitMaps()
+  public int[] getDigitMaps()
   {
     checkLoaded();
     return digitMaps;
@@ -784,15 +784,15 @@ public class Remote
       StringTokenizer st = new StringTokenizer( line, ",; \t" );
       while ( st.hasMoreTokens())
       {
-        work.add( new Byte(( byte )rdr.parseNumber( st.nextToken())));
+        work.add( new Integer(rdr.parseNumber( st.nextToken())));
       }
     }
 
-    digitMaps = new byte[ work.size()];
+    digitMaps = new int[ work.size()];
     int i = 0;
     for ( Enumeration e = work.elements(); e.hasMoreElements(); ++i )
     {
-      digitMaps[ i ] = (( Byte )e.nextElement()).byteValue();
+      digitMaps[ i ] = (( Integer )e.nextElement()).intValue();
     }
     return line;
   }
@@ -1207,7 +1207,7 @@ public class Remote
   private Button[] buttonsByName = null;
   private Button[] buttonsByStandardName = null;
   private Button[] upgradeButtons = null;
-  private byte[] digitMaps = new byte[ 0 ];
+  private int[] digitMaps = new int[ 0 ];
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
   private boolean omitDigitMapByte = false;
   private Hashtable protocolVariantNames = new Hashtable();

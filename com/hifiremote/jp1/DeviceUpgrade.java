@@ -197,7 +197,7 @@ public class DeviceUpgrade
   {
     System.err.println( "DeviceUpgrade.findDigitIndex()" );
     Button[] buttons = remote.getUpgradeButtons();
-    byte[] digitMaps = remote.getDigitMaps();
+    int[] digitMaps = remote.getDigitMaps();
     if (( digitMaps != null ) && ( protocol.getDefaultCmd().length() == 1 ))
     {
       for ( int i = 0; i < digitMaps.length; i++ )
