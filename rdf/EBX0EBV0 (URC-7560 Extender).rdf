@@ -83,14 +83,6 @@ Hold_15, Hold_16, Hold_17, Hold_18, Hold_19
 VPT_SAT, VPT_TV, VPT_VCR, VPT_CD, VPT_AUD, VPT_DVD,
 PushDev, PopDev
 
-[NoBind]
-Hold_0, Hold_1, Hold_2, Hold_3, Hold_4,
-Hold_5, Hold_6, Hold_7, Hold_8, Hold_9,
-Hold_10, Hold_11, Hold_12, Hold_13, Hold_14,
-Hold_15, Hold_16, Hold_17, Hold_18, Hold_19,
-VPT_SAT, VPT_TV, VPT_VCR, VPT_CD, VPT_AUD, VPT_DVD,
-PushDev, PopDev
-
 [ButtonMaps]
 0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
     $03, $C3, $2F, $18, $20, $98, $29, $2A, $2B, $2C, $88, $0C, $0E, $0B, $0D, $10,
