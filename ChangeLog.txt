@@ -1,3 +1,9 @@
+Changes for v1.03
+- Add context menu to text controls
+- Enable customization of default function names
+- Improve handling of default values for cmd parms
+- Fix importing KM upgrades with bogus byte2 data.
+
 Changes for v1.02
 - Add "Clean Up" button to Function panels - delete all unused functions (no hex).
 - Fix RC-5 and Dishplayer entries in protocols.ini
