@@ -10,7 +10,7 @@ public class CustomNameDialog
   extends JDialog
   implements ActionListener
 {
-  public CustomNameDialog( JFrame owner, String[] customNames, DeviceUpgrade upgrade )
+  public CustomNameDialog( JFrame owner, String[] customNames )
   {
     super( owner, "Custom Function Names", true );
     setLocationRelativeTo( owner );
@@ -24,12 +24,10 @@ public class CustomNameDialog
       {
         if ( i != 0 )
           textArea.append( "\n" );
-               
+
         textArea.append( customNames[ i ]);
       }
     }
-
-    this.upgrade = upgrade;
 
     Container contentPane = getContentPane();
 
@@ -38,8 +36,8 @@ public class CustomNameDialog
     contentPane.add( instructions, BorderLayout.NORTH );
 
     JScrollPane scroll = new JScrollPane( textArea );
-    scroll.setBorder( 
-      BorderFactory.createCompoundBorder( 
+    scroll.setBorder(
+      BorderFactory.createCompoundBorder(
         BorderFactory.createEmptyBorder( 0, 5, 0, 5 ),
         scroll.getBorder()));
     contentPane.add( scroll, BorderLayout.CENTER );
@@ -90,8 +88,8 @@ public class CustomNameDialog
     }
     else if ( source == getButtonNames )
     {
-       Button[] buttons = upgrade.getRemote().getUpgradeButtons();
-       
+       Button[] buttons = KeyMapMaster.getRemote().getUpgradeButtons();
+
        for ( int i = 0; i < buttons.length; i++ )
        {
          if ( i > 0 )
@@ -119,7 +117,7 @@ public class CustomNameDialog
   {
     return userAction;
   }
- 
+
   private DeviceUpgrade upgrade = null;
   private JTextArea textArea = null;
   private JButton getButtonNames = null;
