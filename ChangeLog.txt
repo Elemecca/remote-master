@@ -1,3 +1,18 @@
+Changes for v0.48
+
+- Changed name of default directory containing device upgrage files
+  to "Upgrades"
+- Changed default extension for new device upgrade files to ".rmdu"
+- Changed file open filter to accept both .km and .rmdu as valid
+  extensions for device upgrades
+- Changed command line arguments to RemoteMaster to better support
+  file associations
+- Added setup code to facilitate creating file associations in Windows.
+- Improve behavior in certain cases in which .km files, .rdf files and 
+  the .ini file are inconsistent with each other (such as using .km 
+  files saved by earlier versions).
+- Bug 746423: Vertical scroll in notes box
+
 Changes for v0.47
 
 - Changed digitMaps data type from byte to int in order to simplify 
