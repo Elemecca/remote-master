@@ -6,7 +6,7 @@ UpgradeAddr=$100..$7FD
 Processor=S3C80
 RAMAddr=$FF00
 RDFSync=3
-Image=URC-6131.jpg
+ImageMap=URC-6131.map
 
 [Settings]
 VPT Status=$01a.2.1.0.0 (Off;On)
@@ -130,60 +130,3 @@ Phantom1=$3D, Phantom2=$3E, Phantom3=$3F, Phantom4=$40
 006A, 0073, 007E, 0092, 0093, 009C, 009E, 00A4, 00AF, 00B6,
 00C4, 00C9, 00CA, 00CD:2, 00DE, 00E2, 00E3, 00E8, 00F8, 010F,
 0111, 0114, 0117, 011A, 011B, 0162, 0174, 0184
-
-[ButtonShapes]
-TV=ellipse:448,39,16,16
-PVR=ellipse:452,76,16,16
-DVD=ellipse:444,116,16,16
-CBL/SAT=ellipse:429,46,16,16
-AUD=ellipse:429,78,16,16
-VCR=ellipse:426,103,16,16
-Power=ellipse:410,61,13,46
-Menu=ellipse:408,27,16,16
-Guide=ellipse:388,34,16,16
-Exit=ellipse:384,116,16,16
-Info=ellipse:405,126,16,16
-Up_Arrow=ellipse:387,72,18,25
-Left_Arrow=ellipse:357,47,24,17
-Right_Arrow=ellipse:356,103,22,17
-Down_Arrow=ellipse:332,70,17,27
-SELECT=ellipse:357,72,24,24
-MUTE=ellipse:291,34,14,14
-VOL+=ellipse:316,27,32,22
-VOL-=ellipse:297,54,24,18
-CH+=ellipse:311,115,32,22
-CH-=ellipse:296,92,24,18
-Prev=ellipse:288,114,16,16
-Replay=ellipse:264,31,16,16
-Thumbs_Down=ellipse:273,50,16,16
-PVR_Menu=ellipse:275,73,16,16
-Thumbs_Up=ellipse:271,95,16,16
-Advance=ellipse:263,116,16,16
-Stop=ellipse:247,53,16,20
-Play=ellipse:245,90,16,20
-Rewind=ellipse:231,35,16,20
-Pause=ellipse:229,71,16,20
-Fast_forward=ellipse:228,107,16,20
-Prev_track=ellipse:214,52,16,20
-Next_track=ellipse:212,89,16,20
-Record=ellipse:199,30,16,16
-Audio_CC=ellipse:191,50,16,16
-Subtitle=ellipse:187,71,16,16
-Angle_Sleep=ellipse:190,93,16,16
-Slow=ellipse:197,114,16,16
-1=ellipse:162,36,16,20
-2=ellipse:157,70,16,20
-3=ellipse:161,102,16,20
-4=ellipse:138,36,16,20
-5=ellipse:134,68,16,20
-6=ellipse:138,102,16,20
-7=ellipse:116,36,16,20
-8=ellipse:112,69,16,20
-9=ellipse:116,101,16,20
-ENTER=ellipse:95,36,16,20
-0=ellipse:90,68,16,20
-TV/Vid=ellipse:95,99,16,20
-PIP=ellipse:73,33,16,16
-Swap=ellipse:68,58,16,16
-Move=ellipse:68,80,16,16
-SETUP=ellipse:73,3,16,16

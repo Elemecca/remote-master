@@ -8,7 +8,7 @@ LearnedAddr=$3FF..$71A
 Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
-Image=15-1994.jpg
+ImageMap=15-1994.map
 
 [Settings]
 VPT Device=$018.7.8.1.0 DeviceButtons
@@ -88,58 +88,3 @@ PushDev=$7E, PopDev=$7F
 005A, 005B, 005C, 005D, 005E, 005F, 0060, 0061, 0065, 006A,
 0078, 007E, 008D, 00A4, 00AF, 00BB, 00C4, 00C9, 00CA, 00CE,
 00D0, 00D7, 00DE, 00E2, 00E8, 00E9, 00F5, 00F8
-
-[ButtonShapes]
-TV=ellipse:494,127,11,20
-VCR=ellipse:494,96,12,19
-CBL/SAT=ellipse:471,95,11,21
-AUX1=ellipse:494,31,12,21
-AUX2=ellipse:495,64,11,20
-CD=ellipse:472,63,11,21
-P&P=ellipse:471,31,12,21
-1s=ellipse:440,39,15,15
-2s=ellipse:440,68,14,14
-3s=ellipse:439,97,15,14
-4s=ellipse:439,125,15,15
-SLEEP=ellipse:471,127,11,20
-MENU=ellipse:414,37,11,18
-GUIDE[PROGRAM]=ellipse:414,124,10,17
-CENTER[EXIT]=ellipse:349,37,11,17
-SURROUND=ellipse:423,81,11,17
-POWER=ellipse:518,118,16,29
-ARROW_UP=ellipse:402,71,11,36
-ARROW_LEFT=ellipse:368,45,38,21
-ARROW_RIGHT=ellipse:368,112,37,20
-ARROW_DOWN=ellipse:360,71,11,37
-SELECT=ellipse:379,75,15,28
-MUTE=ellipse:334,65,10,16
-VOL+=ellipse:306,40,28,17
-VOL-=ellipse:283,39,26,18
-CH+=ellipse:308,121,26,18
-CH-=ellipse:283,121,25,18
-1=ellipse:248,42,22,21
-2=ellipse:248,77,22,22
-3=ellipse:248,114,22,21
-4=ellipse:216,42,21,21
-5=ellipse:216,77,21,22
-6=ellipse:216,114,21,21
-7=ellipse:184,42,21,21
-8=ellipse:184,77,21,22
-9=ellipse:184,114,21,21
-0=ellipse:151,77,22,22
-LAST=ellipse:334,97,10,15
-PIP=ellipse:311,68,11,15
-Swap=ellipse:288,68,11,15
-Move=ellipse:288,94,11,16
-DISPLAY=ellipse:311,94,11,16
-ENTER=ellipse:155,111,15,26
-REW=ellipse:125,40,14,23
-PLAY=ellipse:124,76,14,23
-FFWD=ellipse:124,113,14,23
-TV/VIDEO[A/B]=ellipse:155,38,15,25
-PAUSE=ellipse:95,113,16,25
-STOP=rect:96,76,15,23
-REC=ellipse:95,41,17,18
-P{SETUP}=ellipse:519,32,13,13
-{LIGHT}=ellipse:519,55,15,15
-SCAN[FAV]=ellipse:348,124,11,16
