@@ -170,7 +170,12 @@ public class LayoutPanel
       }
     }
     if ( !found )
+    {
       currentButton = null;
+      buttonName.setText( "" );
+      function.setText( "" );
+      shifted.setText( "" );
+    }
 
     validate();
     doRepaint();

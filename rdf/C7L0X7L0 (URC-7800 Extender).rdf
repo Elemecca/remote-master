@@ -6,7 +6,7 @@ UpgradeAddr=$100..$3FF
 Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
-Image=URC-7800-turned.jpg
+Image=URC-7800.jpg
 
 [Settings]
 VPT Device=$018.7.8.1.0 DeviceButtons

@@ -7,7 +7,7 @@ LearnedAddr=$3FF..$7FD
 Processor=S3C80
 RAMAddr=$8000
 RDFSync=3
-Image=URC-7800-turned.jpg
+Image=URC-7800.jpg
 ImageMap=urc-7800.map
 
 [Settings]
