@@ -364,14 +364,14 @@ public class DeviceUpgrade
     for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       Protocol tentative = ( Protocol )e.nextElement();
-	  int difference = tentative.different(props);
-	  if (difference < leastDifferent)
-	  {
-	    protocol = tentative;
-		leastDifferent = difference;
-		if (difference == 0)
-		  break;
-	  }
+      int difference = tentative.different( props );
+      if (difference < leastDifferent)
+      {
+        protocol = tentative;
+        leastDifferent = difference;
+        if ( difference == 0 )
+          break;
+      }
     }
     if ( leastDifferent == Protocol.tooDifferent )
     {

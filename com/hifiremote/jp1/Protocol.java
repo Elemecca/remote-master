@@ -397,30 +397,30 @@ public class Protocol
   // an absolute.
   {
     byte[] pid = string2hex( props.getProperty( "Protocol" ));
-	if ( pid[0] != id[0] || pid[1] != id[1] )
-	  return tooDifferent;
-	int result = 0;
-	String str = props.getProperty( "Protocol.name" );
-	if (str!= null && ! str.equals(name))
-	{
-	  // I think we should use a fuzzy string compare here, but for now...
-	  result += 1000;
-	}
-	str = props.getProperty( "FixedData" );
-	if (str != null)
-	{
-	  byte[] data = string2hex( str );
-	  if ( data.length != fixedData.length )
-	  {
-	    result += 2000;
-	  }
-	  else
-	  {
-	    // Ought to compare lengths and valid ranges of parms
-	    // Ought to test translate Parms to see how closely they match
-	  }
-	}
-	return result;
+    if ( pid[0] != id[0] || pid[1] != id[1] )
+    return tooDifferent;
+    int result = 0;
+    String str = props.getProperty( "Protocol.name" );
+    if (str!= null && ! str.equals(name))
+    {
+      // I think we should use a fuzzy string compare here, but for now...
+      result += 1000;
+    }
+    str = props.getProperty( "FixedData" );
+    if (str != null)
+    {
+      byte[] data = string2hex( str );
+      if ( data.length != fixedData.length )
+      {
+        result += 2000;
+      }
+      else
+      {
+        // Ought to compare lengths and valid ranges of parms
+        // Ought to test translate Parms to see how closely they match
+      }
+    }
+    return result;
   }
 
   public final static int tooDifferent = 0x7FFFFFFF;
@@ -428,7 +428,6 @@ public class Protocol
   private String name;
   private byte[] id = new byte[ 2 ];
   private byte[] fixedData = null;
-  // private int[] parms = null;
   protected byte[] defaultCmd = null;
   protected int cmdIndex;
   private DeviceParameter[] devParms = null;
