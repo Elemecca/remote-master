@@ -1,4 +1,4 @@
-#Wed Jun 04 15:53:27 EDT 2003
+#Wed Jul 02 10:29:12 EDT 2003
 Button.1f=0|null
 Function.20.name=down arrow
 Function.22.hex=57
@@ -75,7 +75,7 @@ Function.19.hex=d7
 Function.30.hex=db
 Function.9.name=9
 Function.12.name=channel down
-Notes=TiVo support up to 9 different unit codes.\n\nThis code works with Philips and Hughes TiVos and DirecTiVos, \nbut it does NOT work with Sony TiVo. There is a separate file\nfor the Sonys.\n
+Notes=TiVo support up to 9 different unit codes.\n\nThis code works with Philips and Hughes TiVos and DirecTiVos, but it does NOT work with Sony TiVo. There is a separate file for the Sonys.\n
 DeviceIndex=0
 Function.35.hex=9b
 Button.f=pause|null

@@ -59,6 +59,8 @@ public class SetupPanel
     JPanel notesPanel = new JPanel( new BorderLayout());
     notes = new JTextArea();
     notes.setToolTipText( "Enter any notes about this device upgrade." );
+    notes.setLineWrap( true );
+    notes.setWrapStyleWord( true );
     notesPanel.setBorder( BorderFactory.createTitledBorder( "Upgrade Notes" ));
     notesPanel.add( new JScrollPane( notes ), BorderLayout.CENTER );
     notes.getDocument().addDocumentListener( this );
@@ -95,9 +97,11 @@ public class SetupPanel
     protocolNotes.setBackground( label.getBackground());
     protocolNotes.setToolTipText( "Notes about the selected protocol." );
     protocolNotes.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+    protocolNotes.setEditable( false );
+    protocolNotes.setLineWrap( true );
+    protocolNotes.setWrapStyleWord( true );
     notesPanel.setBorder( BorderFactory.createTitledBorder( "Protocol Notes" ));
     notesPanel.add( new JScrollPane( protocolNotes ), BorderLayout.CENTER );
-    protocolNotes.setEditable( false );
     add( notesPanel, "1, 10, 7, 10" );
   }
 
@@ -175,6 +179,7 @@ public class SetupPanel
         fixedData.setText( protocol.getFixedData().toString());
         revalidate();
         protocolNotes.setText( protocol.getNotes());
+        protocolNotes.setCaretPosition( 0 );
         protocolNotes.revalidate();
         SwingUtilities.updateComponentTreeUI( this );
       }
