@@ -621,13 +621,21 @@ public class KeyMapMaster
     if ( temp != null )
       rdfPath = new File( temp );
     else
+    {
       rdfPath = new File( userDir, "rdf" );
+      while ( !rdfPath.exists())
+        rdfPath = rdfPath.getParentFile();
+    }
 
     temp = props.getProperty( "KMPath" );
     if ( temp != null )
       kmPath = new File( temp );
     else
+    {
       kmPath = new File( userDir, "km" );
+      while ( ! kmPath.exists())
+        kmPath = kmPath.getParentFile();
+    }
 
     temp = props.getProperty( "LookAndFeel" );
     if ( temp != null )
