@@ -21,87 +21,20 @@ public class LayoutPanel
   {
     super( devUpgrade );
     setLayout( new BorderLayout());
-    imagePanel = new JPanel()
-    {
-      public void paint( Graphics g )
-      {
-        Graphics2D g2 = ( Graphics2D ) g;
-        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
-                             RenderingHints.VALUE_ANTIALIAS_ON );
-        Remote r = deviceUpgrade.getRemote();
-        ImageIcon icon = r.getImageIcon();
-        if ( icon != null )
-          g2.drawImage( icon.getImage(), null, null );
-
-        if ( currentButton != null )
-        {
-          g2.setPaint( Color.white );
-          g2.setStroke( new BasicStroke( 4.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
-          g2.draw( currentButton.getShape());
-        }
-
-        g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
-
-        DeviceType devType = deviceUpgrade.getDeviceType();
-        ButtonMap map = devType.getButtonMap();
-
-        Button[] buttons = r.getButtons();
-        for ( int i = 0; i < buttons.length; i++ )
-        {
-          Button b = buttons[ i ];
-          Shape s = b.getShape();
-          if ( s != null )
-          {
-            Function f = b.getFunction();
-            Function sf = b.getShiftedFunction();
-            if (( f != null ) && ( sf == null ))
-            {
-              g2.setPaint( Color.blue );
-              g2.fill( s );
-            }
-            else if (( f == null ) && ( sf != null ))
-            {
-              g2.setPaint( Color.yellow );
-              g2.fill( s );
-            }
-            else if (( f != null ) && ( sf != null ))
-            {
-              g2.setPaint( Color.green );
-              g2.fill( s );                                                    
-            }
-          }
-          else
-            System.err.println( "No shape for button " + b );
-        }
-
-        g2.setPaint( Color.orange );
-        for ( int i = 0; i < map.size(); i++ )
-        {
-          Button b = map.get( i );
-          Shape s = b.getShape();
-          if ( s != null )
-            g2.draw( s );
-        }
-      }
-
-      public String getToolTipText( MouseEvent e )
-      {
-        Button b = getButtonAtPoint( e.getPoint());
-        if ( b != null )
-          return b.getName();
-        else
-          return null;
-      }
-    };
+    imagePanel = new ImagePanel();
     // Don't know why, but tooltips don't work without this
     imagePanel.setToolTipText( "" );
 
-    JPanel fPanel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 0 ));
-    fPanel.add( imagePanel );
+//    JPanel fPanel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 0 ));
+//    fPanel.add( imagePanel );
 
-    add( new JScrollPane( fPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-                          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER ), 
-         BorderLayout.WEST );
+//    add( new JScrollPane( fPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+//                          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER ),
+//         BorderLayout.WEST );
+    scrollPane = new JScrollPane( imagePanel,
+                                  JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                                  JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+    add( scrollPane, BorderLayout.WEST );
     JPanel infoPanel = new JPanel( new GridLayout( 2, 3 ));
 
     infoPanel.add( new JLabel( "Button:" ));
@@ -130,7 +63,7 @@ public class LayoutPanel
     JPanel outerPanel = new JPanel( new BorderLayout());
     functionPanel = new JPanel( new GridFlowLayout());
 //    functionPanel = new JPanel( new GridLayout( 0, 4 ));
-    
+
     outerPanel.add( functionPanel, BorderLayout.CENTER );
 //    outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.NORTH );
     panel.add( outerPanel, BorderLayout.CENTER );
@@ -225,16 +158,14 @@ public class LayoutPanel
 
   public void update()
   {
-    ImageIcon icon = deviceUpgrade.getRemote().getImageIcon();
+    Remote r = deviceUpgrade.getRemote();
+    ImageIcon icon = r.getImageIcon();
     if ( icon != null )
     {
-      int w = icon.getIconWidth();
-      int h = icon.getIconHeight();
-      Dimension size = new Dimension( w, h );
+      Dimension size = new Dimension( icon.getIconWidth(),
+                                      icon.getIconHeight());
       imagePanel.setPreferredSize( size );
-      imagePanel.setMaximumSize( size );
-      imagePanel.setMinimumSize( size );
-      imagePanel.setSize( w, h );
+      imagePanel.revalidate();
     }
     Button[] buttons = deviceUpgrade.getRemote().getButtons();
     boolean found = false;
@@ -252,7 +183,6 @@ public class LayoutPanel
     setButtonText( currentButton );
 
     setFunctions();
-    validate();
     doRepaint();
   }
 
@@ -349,8 +279,8 @@ public class LayoutPanel
       Point p = dtde.getLocation();
       currentButton = getButtonAtPoint( p );
       int action = dtde.getDropAction();
-      if (( currentButton != null ) && 
-          (( action == DnDConstants.ACTION_COPY ) || 
+      if (( currentButton != null ) &&
+          (( action == DnDConstants.ACTION_COPY ) ||
             ( action == DnDConstants.ACTION_MOVE )))
       {
         dtde.acceptDrag( action );
@@ -366,7 +296,7 @@ public class LayoutPanel
       currentButton = getButtonAtPoint( p );
       if ( currentButton != null )
       {
-        int action = dtde.getDropAction();          
+        int action = dtde.getDropAction();
         dtde.acceptDrop( action );
         Transferable tf = dtde.getTransferable();
         DataFlavor[] flavors = tf.getTransferDataFlavors();
@@ -393,8 +323,126 @@ public class LayoutPanel
       doRepaint();
     }
 
-  };
-  
+  }
+
+  private class ImagePanel
+    extends JPanel
+    implements Scrollable
+  {
+    public void paint( Graphics g )
+    {
+      Graphics2D g2 = ( Graphics2D ) g;
+      g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
+                           RenderingHints.VALUE_ANTIALIAS_ON );
+      Remote r = deviceUpgrade.getRemote();
+      ImageIcon icon = r.getImageIcon();
+      if ( icon != null )
+        g2.drawImage( icon.getImage(), null, null );
+
+      if ( currentButton != null )
+      {
+        g2.setPaint( Color.white );
+        g2.setStroke( new BasicStroke( 4.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+        g2.draw( currentButton.getShape());
+      }
+
+      g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+
+      DeviceType devType = deviceUpgrade.getDeviceType();
+      ButtonMap map = devType.getButtonMap();
+
+      Button[] buttons = r.getButtons();
+      for ( int i = 0; i < buttons.length; i++ )
+      {
+        Button b = buttons[ i ];
+        Shape s = b.getShape();
+        if ( s != null )
+        {
+          Function f = b.getFunction();
+          Function sf = b.getShiftedFunction();
+          if (( f != null ) && ( sf == null ))
+          {
+            g2.setPaint( Color.blue );
+            g2.fill( s );
+          }
+          else if (( f == null ) && ( sf != null ))
+          {
+            g2.setPaint( Color.yellow );
+            g2.fill( s );
+          }
+          else if (( f != null ) && ( sf != null ))
+          {
+            g2.setPaint( Color.green );
+            g2.fill( s );
+          }
+        }
+        else
+          System.err.println( "No shape for button " + b );
+      }
+
+      g2.setPaint( Color.orange );
+      for ( int i = 0; i < map.size(); i++ )
+      {
+        Button b = map.get( i );
+        Shape s = b.getShape();
+        if ( s != null )
+          g2.draw( s );
+      }
+    }
+
+    public String getToolTipText( MouseEvent e )
+    {
+      Button b = getButtonAtPoint( e.getPoint());
+      if ( b != null )
+        return b.getName();
+      else
+        return null;
+    }
+
+    public Dimension getPreferredScrollableViewportSize()
+    {
+      ImageIcon icon = deviceUpgrade.getRemote().getImageIcon();
+      Dimension rc = null;
+      if ( icon != null )
+      {
+        int w = icon.getIconWidth();
+        int h = icon.getIconHeight();
+        if ( scrollPane.getViewport().getExtentSize().height < h )
+          w += scrollPane.getVerticalScrollBar().getWidth();
+
+        rc = new Dimension( w, h );
+      }
+      else
+        rc = new Dimension( 0, 0 );
+
+      return rc;
+    }
+
+    public int getScrollableUnitIncrement( Rectangle visibleRect,
+                                           int orientation,
+                                           int direction )
+    {
+      return 1;
+    }
+
+    public int getScrollableBlockIncrement( Rectangle visibleRect,
+                                            int orientation,
+                                            int direction )
+    {
+      return visibleRect.height;
+    }
+
+    public boolean getScrollableTracksViewportWidth()
+    {
+      return true;
+    }
+
+    public boolean getScrollableTracksViewportHeight()
+    {
+      return false;
+    }
+  }
+
   private Button currentButton = null;
   private JPanel imagePanel = null;
   private JTextField buttonName = null;
@@ -402,5 +450,6 @@ public class LayoutPanel
   private JTextField shifted = null;
   private JPopupMenu popup = null;
   private JPanel functionPanel = null;
+  private JScrollPane scrollPane = null;
   private DoubleClickListener doubleClickListener = new DoubleClickListener();
 }
