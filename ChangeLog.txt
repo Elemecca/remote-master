@@ -1,5 +1,10 @@
+Changes for v1.08
+- Renamed "Panasonic Combo2" protocol to "Panasonic Combo" protocol
+- Import KM upgrade: Make sure user is informed of function assignments that aren't correctly imported
+- More work for ManualSettings, still not ready.
+
 Changes for v1.07
-- Update list of supported protocols in Readme.html\
+- Update list of supported protocols in Readme.html
 - Add support for processor-specific protocol code translators, that allows for encoding device parameters directly into the protocol code
 - Added RCA Combo (w/ Duraction) protocol
 
