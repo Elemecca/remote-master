@@ -679,32 +679,68 @@ public class DeviceUpgrade
     if ( index < 0 )
     {
       // build a list of similar remote names, and ask the user to pick a match.
+      // First check if there is a slash in the name;
+      String[] subNames = new String[ 0 ];
+      System.err.println( "Searching for slashes in " + str );
+      int slash = str.indexOf( '/' );
+      System.err.println( "slash=" + slash );
+      if ( slash != -1 )
+      {
+        System.err.println( "Got a multi-model remote to import: " + str );
+        int count = 2;
+        while (( slash = str.indexOf( '/', slash + 1 )) != -1 )
+          count++;
+        subNames = new String[ count ];
+        StringTokenizer nameTokenizer = new StringTokenizer( str, " /" );
+        for ( int i = 0; i < count; i++ )
+        {
+          subNames[ i ] = nameTokenizer.nextToken();
+          System.err.println( "Added subName " + subNames[ i ]);
+        }
+      }
+      else
+      {
+        subNames = new String[ 1 ];
+        StringTokenizer nameTokenizer = new StringTokenizer( str );
+        subNames[ 0 ] = nameTokenizer.nextToken();
+      }
       Vector similarRemotes = new Vector();
       for ( int i = 0; i < remotes.length; i++ )
       {
-        if ( remotes[ i ].getName().indexOf( str ) != -1 )
-          similarRemotes.add( remotes[ i ]);
+        for ( int j = 0; j < subNames.length; j++ )
+        {
+          if ( remotes[ i ].getName().indexOf( subNames[ j ]) != -1 )
+          {
+            similarRemotes.add( remotes[ i ]);
+            break;
+          }
+        }
       }
 
-      Object[] simRemotes = null;
+      Remote[] simRemotes = new Remote[ 0 ];
       if ( similarRemotes.size() > 0 )
-        simRemotes = similarRemotes.toArray();
+        simRemotes = ( Remote[] )similarRemotes.toArray( simRemotes );
       else
         simRemotes = remotes;
 
-      String message = "Could not find an exact match for the remote \"" + str + "\".  Choose one from the list below:";
-
-      Object rc = ( Remote )JOptionPane.showInputDialog( null,
-                                                         message,
-                                                         "Upgrade Load Error",
-                                                         JOptionPane.ERROR_MESSAGE,
-                                                         null,
-                                                         simRemotes,
-                                                         simRemotes[ 0 ]);
-      if ( rc == null )
-        return;
+      if ( simRemotes.length == 1 )
+        remote = simRemotes[ 0 ];
       else
-        remote = ( Remote )rc;
+      {
+        String message = "Could not find an exact match for the remote \"" + str + "\".  Choose one from the list below:";
+
+        Object rc = ( Remote )JOptionPane.showInputDialog( null,
+                                                           message,
+                                                           "Upgrade Load Error",
+                                                           JOptionPane.ERROR_MESSAGE,
+                                                           null,
+                                                           simRemotes,
+                                                           simRemotes[ 0 ]);
+        if ( rc == null )
+          return;
+        else
+          remote = ( Remote )rc;
+      }
     }
     else
       remote = remotes[ index ];
@@ -712,7 +748,8 @@ public class DeviceUpgrade
     in.readLine(); // skip line 5
     line = in.readLine(); // line 6
     Hex pid = null;
-    if (  line.startsWith( "Upgrade Code 0 =" ))
+    int equals = line.indexOf( '=' );
+    if (( equals != -1 ) && line.substring( 0, equals + 1 ).equalsIgnoreCase( "Upgrade Code 0 =" ))
     {
       byte[] id = new byte[ 2 ];
       int temp = Integer.parseInt( line.substring( 17, 19 ), 16 );
@@ -1022,7 +1059,7 @@ public class DeviceUpgrade
           }
           notes = buff.toString().trim();
           if ( protocol.getClass() == ManualProtocol.class )
-            protocol.importUpgradeCode( remote.getProcessor(), notes );
+            protocol.importUpgradeCode( remote, notes );
           
         }
       }
