@@ -7,15 +7,22 @@ public abstract class Parameter
     this( name, null );
   }
 
-  public Parameter( String name, Object defaultValue )
+  public Parameter( String name, DefaultValue defaultValue )
   {
     this.name = name;
     this.defaultValue = defaultValue;
   }
 
   public String getName(){ return name; }
-  public Object getDefaultValue(){ return defaultValue; }
-  public void setDefault( Object value ){ defaultValue = value; }
+  public Object getDefaultValue()
+  {
+    return (defaultValue ==null) ? null : defaultValue.value();
+  }
+  public void setDefault( DefaultValue value ){ defaultValue = value; }
+  public void setDefault( int value )
+  {
+    setDefault( new DirectDefaultValue( new Integer( value ) ) );
+  }
   public abstract Object getValue();
 
   public Object getValueOrDefault()
@@ -28,5 +35,5 @@ public abstract class Parameter
   public abstract void setValue( Object value );
 
   private String name;
-  private Object defaultValue;
+  private DefaultValue defaultValue;
 }

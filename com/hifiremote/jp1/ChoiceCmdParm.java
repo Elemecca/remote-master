@@ -10,7 +10,7 @@ import javax.swing.table.TableCellRenderer;
 public class ChoiceCmdParm
   extends CmdParameter
 {
-  public ChoiceCmdParm( String name, Integer defaultValue, String[] textChoices )
+  public ChoiceCmdParm( String name, DefaultValue defaultValue, String[] textChoices )
   {
     super( name, defaultValue );
     choices = new Choice[ textChoices.length ];

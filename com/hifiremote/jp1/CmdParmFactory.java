@@ -10,7 +10,7 @@ public class CmdParmFactory
     CmdParameter rc = null;
 
     StringTokenizer st = new StringTokenizer( string, ":=", true );
-    Integer defaultValue = null;
+    DefaultValue defaultValue = null;
     int bits = -1;
     String name = st.nextToken();
     String[] choices = null;
@@ -20,7 +20,7 @@ public class CmdParmFactory
       String sep = st.nextToken();
       if ( sep.equals( "=" ))
       {
-        defaultValue = new Integer( st.nextToken());
+        defaultValue = new DirectDefaultValue( new Integer( st.nextToken() ) );
       }
       else if ( sep.equals( ":" ))
       {

@@ -12,33 +12,15 @@ public abstract class DeviceParameter
     this( name, null );
   }
 
-  public DeviceParameter( String name, Integer defaultValue )
+  public DeviceParameter( String name, DefaultValue defaultValue )
   {
     super( name, defaultValue );
     label = new JLabel( name + ':', SwingConstants.RIGHT );
   }
   public JLabel getLabel(){ return label; }
 
-  public void setDefaultReference( DeviceParameter ref )
-  {
-    this.ref = ref;
-  }
-
-  public Object getDefaultValue()
-  {
-    Object rc = null;
-    if ( ref == null )
-      rc = super.getDefaultValue();
-    else
-    {
-      rc = ref.getValueOrDefault();
-    }
-    return rc;
-  }
-
   public void commit(){}
   public abstract JComponent getComponent();
 
   private JLabel label;
-  private DeviceParameter ref = null;
 }

@@ -6,17 +6,17 @@ import javax.swing.table.*;
 public class NumberCmdParm
   extends CmdParameter
 {
-  public NumberCmdParm( String name, Integer defaultValue )
+  public NumberCmdParm( String name, DefaultValue defaultValue )
   {
     this( name, defaultValue, 8 );
   }
 
-  public NumberCmdParm( String name, Integer defaultValue, int bits )
+  public NumberCmdParm( String name, DefaultValue defaultValue, int bits )
   {
     this( name, defaultValue, 0, (( 1 << bits ) - 1 ));
   }
 
-  public NumberCmdParm( String name, Integer defaultValue, int min, int max )
+  public NumberCmdParm( String name, DefaultValue defaultValue, int min, int max )
   {
     super( name, defaultValue );
     editor = new ByteEditor( min, max );

@@ -11,7 +11,7 @@ public abstract class CmdParameter
     super( name );
   }
 
-  public CmdParameter( String name, Object defaultValue )
+  public CmdParameter( String name, DefaultValue defaultValue )
   {
     super( name, defaultValue );
   }

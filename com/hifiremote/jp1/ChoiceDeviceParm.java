@@ -6,13 +6,13 @@ import javax.swing.JComboBox;
 public class ChoiceDeviceParm
   extends DeviceParameter
 {
-  public ChoiceDeviceParm( String name, Integer defaultValue, String[] choices )
+  public ChoiceDeviceParm( String name, DefaultValue defaultValue, String[] choices )
   {
     super( name, defaultValue );
     comboBox = new JComboBox( choices );
-    String helpText = "Select a value from the list.";
-    if ( defaultValue != null )
-      helpText += "  The default value is " + choices[ defaultValue.intValue() + 1 ] + '.';
+    // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
+    String helpText = "Select a value from the list.  The default value is "
+     + choices[ ((Integer)getDefaultValue()).intValue() + 1 ] + '.';
     comboBox.setToolTipText( helpText );
   }
 

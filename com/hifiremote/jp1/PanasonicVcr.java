@@ -19,8 +19,8 @@ public class PanasonicVcr
     devChoices[1].setText( Integer.toString(dev &~ 16) );
     subChoices[0].setText( Integer.toString(sub &~ 1) );
     subChoices[1].setText( Integer.toString(sub | 1) );
-    devCmdParm.setDefault( new Integer( (dev&16)==0 ? 1 : 0 ) );
-    subCmdParm.setDefault( new Integer( (sub&1)==0 ? 0 : 1 ) );
+    devCmdParm.setDefault( (dev&16)==0 ? 1 : 0 );
+    subCmdParm.setDefault( (sub&1)==0 ? 0 : 1  );
     (( ChoiceEditor )devCmdParm.getEditor()).initialize();
     (( ChoiceEditor )subCmdParm.getEditor()).initialize();
     if ( ( dev & sub & ~17 ) != 0 )

@@ -3,50 +3,53 @@ package com.hifiremote.jp1;
 import java.text.ParseException;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+import java.awt.event.MouseEvent;
 
 public class NumberDeviceParm
   extends DeviceParameter
 {
-  public NumberDeviceParm( String name, Integer defaultValue )
+  public class JTextFieldDefault
+    extends JTextField
   {
-    this( name, defaultValue, 8 );
+    JTextFieldDefault( String str, DefaultValue defaultValue, int base )
+    {
+      this.defaultValue = defaultValue;
+      this.base = base;
+      setToolTipText( str );
+    }
+    public String getToolTipText(MouseEvent event)
+    {
+      return super.getToolTipText() + Integer.toString((( Integer )defaultValue.value()).intValue(), base ) + '.';
+    }
+    DefaultValue defaultValue;
+    int base;
   }
 
-  public NumberDeviceParm( String name, Integer defaultValue, int bits )
+  public NumberDeviceParm( String name, DefaultValue defaultValue, int base )
   {
-    this( name, defaultValue, 0, (( 1 << bits ) - 1 ));
+    this( name, defaultValue, base, 8 );
   }
 
-  public NumberDeviceParm( String name, Integer defaultValue, int min, int max )
+  public NumberDeviceParm( String name, DefaultValue defaultValue, int base, int bits )
+  {
+    this( name, defaultValue, base, 0, (( 1 << bits ) - 1 ));
+  }
+
+  public NumberDeviceParm( String name, DefaultValue defaultValue, int base, int min, int max  )
   {
     super( name, defaultValue );
     this.min = min;
     this.max = max;
     verifier = new IntVerifier( min, max, true );
-    tf = new JTextField();
-    String helpText = "Enter a number in the range " + min + ".." + max + ".";
-    if ( defaultValue != null )
-      helpText += "  The default is " + defaultValue + ".";
-    tf.setToolTipText( helpText );
-    tf.setInputVerifier( verifier );
-  }
-
-  public NumberDeviceParm setBase( int base )
-  {
-    this.base = base;
-    verifier.setBase( base );
+    verifier.setBase(base);
+    // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
     String numType = "";
     if ( base == 16 )
-      numType = " hex ";
-    String helpText = "Enter a " + numType +  
-                      "number in the range " + 
-                      Integer.toString( min, base ) + 
-                      ".." +
-                      Integer.toString( max, base ) + '.';
-    if ( getDefaultValue() != null );
-      helpText += "  The defaultValue is " + Integer.toString((( Integer )getDefaultValue()).intValue(), base ) + '.';
-    tf.setToolTipText( helpText );
-    return this;
+      numType = "hex ";
+    String helpText = "Enter a " + numType
+      + "number in the range " + min + ".." + max + ".  The default is ";
+    tf = new JTextFieldDefault( helpText, defaultValue, base);
+    tf.setInputVerifier( verifier );
   }
 
   public JComponent getComponent()

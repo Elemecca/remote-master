@@ -7,23 +7,21 @@ public class DeviceParmFactory
 {
   public static DeviceParameter[] createParameters( String text )
   {
-    DeviceParameter[] rc = null;
-
     StringTokenizer st = new StringTokenizer( text, "," );
-
     int count = st.countTokens();
-    rc = new DeviceParameter[ count ];
+    DeviceParameter[] rc = new DeviceParameter[ count ];
+
     for ( int i = 0; i < count ; i++ )
     {
       String string = st.nextToken();
       StringTokenizer st2 = new StringTokenizer( string, ":=", true );
-      Integer defaultValue = new Integer( 0 );
+      // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
+      DefaultValue defaultValue = new DirectDefaultValue( new Integer(0) );
       int bits = -1;
       String name = st2.nextToken();
       int base = 10;
       String[] choices = null;
       Dimension d = null;
-      DeviceParameter ref = null;
       while ( st2.hasMoreTokens())
       {
         String sep = st2.nextToken();
@@ -33,10 +31,10 @@ public class DeviceParmFactory
           if ( token.indexOf( '[' ) != -1 )
           {
             StringTokenizer st3 = new StringTokenizer( token, "[]" );
-            ref = rc[ Integer.parseInt( st3.nextToken())];
+            defaultValue = new IndirectDefaultValue( rc[ Integer.parseInt( st3.nextToken())] );
           }
           else
-            defaultValue = Integer.valueOf( token, base );
+            defaultValue = new DirectDefaultValue( Integer.valueOf( token, base ) );
         }
         else if ( sep.equals( ":" ))
         {
@@ -73,15 +71,12 @@ public class DeviceParmFactory
         parm = new ChoiceDeviceParm( name, defaultValue, choices );
       else if ( bits != -1 )
       {
-        parm = new NumberDeviceParm( name, defaultValue, bits ).setBase( base );
+        parm = new NumberDeviceParm( name, defaultValue, base, bits );
       }
       else if ( d != null )
-        parm = new NumberDeviceParm( name, defaultValue, d.width, d.height ).setBase( base );
+        parm = new NumberDeviceParm( name, defaultValue, base, d.width, d.height );
       else
-        parm = new NumberDeviceParm( name, defaultValue ).setBase( base );
-
-      if ( ref != null )
-        parm.setDefaultReference( ref );
+        parm = new NumberDeviceParm( name, defaultValue, base );
 
       rc[ i ] = parm;
     }
