@@ -1334,6 +1334,7 @@ public class Remote
         }
       }
     }
+    in.close();
   }
 
   public String getSupportedVariantName( Hex pid )
