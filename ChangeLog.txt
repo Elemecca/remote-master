@@ -1,3 +1,11 @@
+Changes for v1.04
+- Correction to Jerrold entry in protocols.ini
+- Updates to RC-5 protocols, courtesy of Jon Armstrong
+- Fix importing of KM upgrades that use byte2
+- Add button to import button names into custom function name dialog
+- Minor layout improvements to the preferred remote dialog
+- Remember the direcrtory used to open KM upgrade files as well as RM upgrade files
+
 Changes for v1.03
 - Add context menu to text controls
 - Enable customization of default function names
