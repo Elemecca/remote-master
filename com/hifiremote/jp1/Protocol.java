@@ -55,7 +55,7 @@ public class Protocol
     for ( int i = 0; i < count; i++ )
     {
       String str = st.nextToken();
-      cmdParms[ i ] = CmdParmFactory.createParameter( str );
+      cmdParms[ i ] = CmdParmFactory.createParameter( str, devParms );
       if (cmdParms[i] == null)
         System.err.println( "Protocol.Protocol("+ name +") failed createParameter("+ str +")");
     }

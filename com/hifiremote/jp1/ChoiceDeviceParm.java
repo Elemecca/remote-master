@@ -10,6 +10,7 @@ public class ChoiceDeviceParm
   {
     super( name, defaultValue );
     comboBox = new JComboBox( choices );
+    // JSF28may03 Questionable design decision: ChoiceDeviceParm doesn't dynamically correct default in ToolTip (compare vs. NumberDeviceParm)
     // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
     String helpText = "Select a value from the list.  The default value is "
      + choices[ ((Integer)getDefaultValue()).intValue() + 1 ] + '.';

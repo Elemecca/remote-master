@@ -5,7 +5,7 @@ import java.util.StringTokenizer;
 
 public class CmdParmFactory
 {
-  public static CmdParameter createParameter( String string )
+  public static CmdParameter createParameter( String string, DeviceParameter[] devParms )
   {
     CmdParameter rc = null;
 
@@ -20,7 +20,16 @@ public class CmdParmFactory
       String sep = st.nextToken();
       if ( sep.equals( "=" ))
       {
-        defaultValue = new DirectDefaultValue( new Integer( st.nextToken() ) );
+          String token = st.nextToken();
+          if ( token.indexOf( '[' ) != -1 )
+          {
+            StringTokenizer st3 = new StringTokenizer( token, "[]" );
+            defaultValue = new IndirectDefaultValue( devParms[ Integer.parseInt( st3.nextToken()) ] );
+          }
+	  else
+	  {
+	    defaultValue = new DirectDefaultValue( new Integer( token ) );
+	  }
       }
       else if ( sep.equals( ":" ))
       {
