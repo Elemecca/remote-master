@@ -23,6 +23,11 @@ public abstract class KMTableModel
   {
     this.data = data;
   }
+
+  public Vector getData()
+  {
+    return data;
+  }
   
   public int getRowCount()
   {

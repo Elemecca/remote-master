@@ -29,7 +29,7 @@ public class FunctionImportDialog
         data.add( new SelectHolder( f ));
     }
 
-    AbstractTableModel model = new AbstractTableModel()
+    model = new AbstractTableModel()
     {
       public String getColumnName(int col) 
       {
@@ -69,7 +69,7 @@ public class FunctionImportDialog
       }
     };
 
-    table = new JTable( model );
+    JTable table = new JTable( model );
     table.setRowSelectionAllowed( false );
     table.setColumnSelectionAllowed( false );
     table.setShowGrid( false );
@@ -80,13 +80,32 @@ public class FunctionImportDialog
     column.setMaxWidth( box.getPreferredSize().width );
   
     contentPane.add( new JScrollPane( table ), BorderLayout.CENTER );
-    JPanel buttonPanel = new JPanel();
-    FlowLayout fl = ( FlowLayout )buttonPanel.getLayout();
-    fl.setAlignment( FlowLayout.RIGHT );
+    Box buttonPanel = Box.createHorizontalBox();
+    buttonPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+
+    selectAll = new JButton( "Select All" );
+    selectAll.addActionListener( this );
+    buttonPanel.add( selectAll );
+
+    buttonPanel.add( Box.createHorizontalStrut( 5 ));
+
+    selectNone = new JButton( "Select None" );
+    selectNone.addActionListener( this );
+    buttonPanel.add( selectNone );
+
+    buttonPanel.add( Box.createHorizontalStrut( 5 ));
+
+    selectToggle = new JButton( "Toggle" );
+    selectToggle.addActionListener( this );
+    buttonPanel.add( selectToggle );
+
+    buttonPanel.add( Box.createHorizontalGlue());
 
     ok = new JButton( "OK" );
     ok.addActionListener( this );
     buttonPanel.add( ok );
+
+    buttonPanel.add( Box.createHorizontalStrut( 5 ));
 
     cancel = new JButton( "Cancel" );
     cancel.addActionListener( this );
@@ -104,7 +123,27 @@ public class FunctionImportDialog
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( source == cancel )
+    
+    if (( source == selectAll ) || ( source == selectNone ))
+    {
+      boolean flag = ( source == selectAll );
+      for ( Enumeration enum = data.elements(); enum.hasMoreElements(); )
+      {
+        SelectHolder h = ( SelectHolder )enum.nextElement();
+        h.setSelected( flag );
+      }
+      model.fireTableDataChanged();
+    }
+    else if ( source == selectToggle )
+    {
+      for ( Enumeration enum = data.elements(); enum.hasMoreElements(); )
+      {
+        SelectHolder h = ( SelectHolder )enum.nextElement();
+        h.setSelected( !h.isSelected());
+      }
+      model.fireTableDataChanged();
+    }
+    else if ( source == cancel )
     {
       userAction = JOptionPane.CANCEL_OPTION;
       setVisible( false );
@@ -196,7 +235,10 @@ public class FunctionImportDialog
   }
 
   private Vector data = new Vector();
-  private JTable table = null;
+  private AbstractTableModel model = null;
+  private JButton selectAll = null;
+  private JButton selectNone = null;
+  private JButton selectToggle = null;
   private JButton ok = null;
   private JButton cancel = null;
   private int userAction = JOptionPane.CANCEL_OPTION;

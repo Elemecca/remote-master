@@ -15,6 +15,7 @@ public class FunctionPanel
     p.initializeParms();
     (( FunctionTableModel )model ).setProtocol( p );
     initColumns();
+    super.update();
   }
 
   protected Object createRowObject()

@@ -3,8 +3,7 @@ package com.hifiremote.jp1;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -204,13 +203,19 @@ public abstract class TablePanel
     deleteButton.setEnabled( false );
     buttonPanel.add( deleteButton );
 
-    upButton = new JButton( "Move up" );
+    cleanButton = new JButton( "Clean up" );
+    cleanButton.addActionListener( this );
+    cleanButton.setToolTipText( "Delete all undefined functions (no hex)" );
+    cleanButton.setEnabled( false );
+    buttonPanel.add( cleanButton ); 
+
+    upButton = new JButton( "Up" );
     upButton.addActionListener( this );
     upButton.setToolTipText( "Move the selected function up in the list." );
     upButton.setEnabled( false );
     buttonPanel.add( upButton );
 
-    downButton = new JButton( "Move down" );
+    downButton = new JButton( "Down" );
     downButton.addActionListener( this );
     downButton.setToolTipText( "Move the selected function down in the list." );
     downButton.setEnabled( false );
@@ -227,6 +232,11 @@ public abstract class TablePanel
     pasteButton.setToolTipText( "Paste" );
     pasteButton.setEnabled( false );
     buttonPanel.add( pasteButton );
+  }
+
+  public void update()
+  {
+    cleanButton.setEnabled( table.getRowCount() > 0 );
   }
 
   private void finishEditing()
@@ -250,7 +260,7 @@ public abstract class TablePanel
   {
     finishEditing();
     KeyMapMaster.clearMessage();
-    Vector functions = deviceUpgrade.getFunctions();
+    Vector functions = model.getData();
     int row = 0;
     int col = 0;
     boolean select = false;
@@ -306,6 +316,16 @@ public abstract class TablePanel
         if ( select )
           table.setRowSelectionInterval( row, row );
       }
+    }
+    else if ( source == cleanButton )
+    {
+      for ( ListIterator i = functions.listIterator(); i.hasNext();)
+      {
+        Function f = ( Function )i.next();
+        if (( f.getHex() == null ) || ( f.getHex().length() == 0 ))
+          i.remove();
+      }
+      model.fireTableDataChanged();
     }
     else if (( source == upButton ) ||
              ( source == downButton ))
@@ -455,6 +475,7 @@ public abstract class TablePanel
         }
       }
     }
+    cleanButton.setEnabled( table.getRowCount() > 0 );
   }
 
   // Interface ListSelectionListener
@@ -462,6 +483,7 @@ public abstract class TablePanel
   {
     if ( !e.getValueIsAdjusting() )
     {
+      cleanButton.setEnabled( table.getRowCount() > 0 );
       int row = table.getSelectedRow();
       if ( row != -1 )
       {
@@ -532,6 +554,7 @@ public abstract class TablePanel
   protected JPanel buttonPanel = null;
   private JButton newButton = null;
   private JButton deleteButton = null;
+  private JButton cleanButton = null;
   private JButton upButton = null;
   private JButton downButton = null;
   private JButton copyButton = null;
