@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 1.03";
+  private static final String version = "v 1.04";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -56,7 +56,6 @@ public class KeyMapMaster
   private File propertiesFile = null;
   private File rdfPath = null;
   private File upgradePath = null;
-  private File importPath = null;
   private String lastRemoteName = null;
   private String lastRemoteSignature = null;
   private Rectangle bounds = null;
@@ -484,7 +483,7 @@ public class KeyMapMaster
 
   private void editCustomNames()
   {
-    CustomNameDialog d = new CustomNameDialog( this, customNames );
+    CustomNameDialog d = new CustomNameDialog( this, customNames, deviceUpgrade );
     d.show();
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
@@ -704,15 +703,6 @@ public class KeyMapMaster
         File file = getUpgradeFile( upgradePath );
         loadUpgrade( file );
       }
-//      else if ( source == importItem )
-//      {
-//        if ( !promptToSaveUpgrade( ACTION_LOAD ))
-//          return;
-//        File file = getUpgradeFile( importPath );
-//        BufferedReader in = new BufferedReader( new FileReader( file ));
-//        importUpgrade( in );
-//        importPath = file.getParentFile();
-//      }
       else if ( source == importFromClipboardItem )
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ))
@@ -811,10 +801,7 @@ public class KeyMapMaster
       else
       {
         String str = file.getName().toLowerCase();
-        if ( str.endsWith( ".rmdu" ))
-          upgradePath = file.getParentFile();
-        else
-          importPath = file.getParentFile();
+        upgradePath = file.getParentFile();
       }
     }
     return file;
@@ -926,14 +913,10 @@ public class KeyMapMaster
       recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
 
       recentFileMenu.setEnabled( true );
-      upgradePath = file.getParentFile();
     }
     else
-    {
       setTitle( "RemoteMaster " + version );
-
-      importPath = file.getParentFile();
-    }
+    upgradePath = file.getParentFile();
   }
 
   public void loadUpgrade( BufferedReader reader )
@@ -1058,11 +1041,6 @@ public class KeyMapMaster
     while ( !upgradePath.exists() && !upgradePath.isDirectory())
       upgradePath = upgradePath.getParentFile();
 
-    temp = props.getProperty( "ImportPath", upgradePath.getAbsolutePath());
-    importPath = new File( temp );
-    while( !importPath.exists() && !importPath.isDirectory())
-      importPath = importPath.getParentFile();
-
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
     temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
     try
@@ -1151,7 +1129,6 @@ public class KeyMapMaster
     Properties props = new Properties();
     props.setProperty( "RDFPath", rdfPath.getAbsolutePath());
     props.setProperty( "UpgradePath", upgradePath.getAbsolutePath());
-    props.setProperty( "ImportPath", importPath.getAbsolutePath());
     props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
     Remote remote = deviceUpgrade.getRemote();
     props.setProperty( "Remote.name", remote.getName());
