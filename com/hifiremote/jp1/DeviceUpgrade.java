@@ -30,7 +30,8 @@ public class DeviceUpgrade
         b.setShiftedFunction( null );
     }
 
-    remote = remotes[ 0 ];
+    if ( remote == null )
+      remote = remotes[ 0 ];
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
 
     DeviceParameter[] devParms = protocol.getDeviceParameters();
