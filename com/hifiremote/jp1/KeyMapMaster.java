@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.39";
+  private static final String version = "v 0.40";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -318,8 +318,13 @@ public class KeyMapMaster
       if (( line.length() == 0 ) || ( line.charAt( 0 ) == '#' ))
         continue;
 
+      line = line.replaceAll( "\\\\n", "\n" );
       while ( line.endsWith( "\\" ))
-        line = line.substring(0, line.length() - 1 ) + rdr.readLine().trim();
+      {
+        String temp = rdr.readLine().trim();
+        temp = temp.replaceAll( "\\\\n", "\n" );
+        line = line.substring(0, line.length() - 1 ) + temp;
+      }
 
       if ( line.charAt( 0 ) == '[' ) // begin new protocol
       {
