@@ -92,6 +92,7 @@ Dishplayer
 Dishplayer (old)
 Dishplayer (old)
 Dishplayer (old)
+Echostar 2200
 Emerson
 F12
 GI 4DTV Hacked
@@ -107,27 +108,38 @@ NEC1
 NEC2
 NEC Combo
 NEC1 Combo
+NEC1 2DEV Combo
+NECx1
+NECx2
 Nokia Quad
 Pace
 Panasonic (old)
 Panasonic
 Panasonic VCR Combo
+Panasonic VCR Combo
+Panasonic Mixed Combo
 Panasonic Combo2
 Panasonic Combo2
 Panasonic Combo (flawed)
 Panasonic2 (LCD)
 Pioneer
 Pioneer DVD
+Pioneer DVD2
 Pioneer 2CMD
+Pioneer 3DEV
 Proton
 RC-5
 RC-5x
 RC-6
+RC6-M-20n
+RC6-M-20n
+RC6-M-24n
 RCA
 RCA (Old)
 RCA Combo (Official)
 RECS80 (45)
 RECS80 (68)
+ReplayTV (Simple)
 ReplayTV (Official)
 Sharp
 Sharp DVD
@@ -137,18 +149,16 @@ Sony Combo (old)
 Sony Combo (new)
 Sony DSP
 Thomson
-TiVo Hacked
-TiVo Official
+Thomson
+TiVo (Advanced)
+TiVo (Official)
+TiVo (Official 2-byte)
 X10
 
 Here is a list of the protocols that are not yet supported:
 
 Device Combiner
-Echostar 2200
-NEC1 2DEV Combo
-Pioneer DVD2
 Pioneer MIX
-Pioneer 3DEV
 RC-5/5x Combo
 RCA Combo (w/Duration)
 ReplayTV (Simple)
