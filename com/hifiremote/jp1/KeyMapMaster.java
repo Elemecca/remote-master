@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.79";
+  private static final String version = "v 0.80";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -136,9 +136,8 @@ public class KeyMapMaster
 
     label = new JLabel( "Device Type:" );
     panel.add( label, "5, 3" );
-    String[] aliasNames = deviceUpgrade.getDeviceTypeAliasNames();
-    deviceTypeList = new JComboBox( aliasNames );
-    deviceTypeList.setMaximumRowCount( aliasNames.length );
+//    String[] aliasNames = deviceUpgrade.getDeviceTypeAliasNames();
+    deviceTypeList = new JComboBox();
     label.setLabelFor( deviceTypeList );
     deviceTypeList.setPrototypeDisplayValue( "A Device Type" );
     deviceTypeList.setToolTipText( "Choose the device type for the upgrade being created." );
@@ -557,8 +556,42 @@ public class KeyMapMaster
       try
       {
         remote.load();
+        String[] aliasNames = remote.getDeviceTypeAliasNames();
+        String alias = deviceUpgrade.getDeviceTypeAliasName();
+        deviceTypeList.removeActionListener( this );
+        deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ));
+        deviceTypeList.setMaximumRowCount( aliasNames.length );
+        
+        int index = 0;
+        for ( index = 0; index < aliasNames.length; index++ )
+        {
+          if ( aliasNames[ index ].equals( alias ))
+            break;
+        }
+        while (( index == aliasNames.length ))
+        {
+          String msg = "Remote \"" + remote.getName() + "\" does not support the device type " +
+          alias + ".  Please select one of the supported device types below to use instead.\n";
+          String rc = ( String )JOptionPane.showInputDialog( null,
+                                                             msg,
+                                                             "Unsupported Device Type",
+                                                             JOptionPane.ERROR_MESSAGE,
+                                                             null,
+                                                             aliasNames,
+                                                             null );
+          for ( index = 0; index < aliasNames.length; index++ )
+          {
+            if ( aliasNames[ index ].equals( rc ))
+              break;
+          }
+        }
+
+        deviceTypeList.setSelectedIndex( index );
+        
         currentRemote = remote;
         deviceUpgrade.setRemote( remote );
+        deviceUpgrade.setDeviceTypeAliasName( aliasNames[ index ]);
+        deviceTypeList.addActionListener( this );
       }
       catch ( Exception e )
       {

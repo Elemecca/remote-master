@@ -140,6 +140,33 @@ public class Remote
         type.setButtonMap( buttonMaps[ map ] );
     }
 
+    if ( deviceTypeAliasNames == null )
+    {
+      Vector v = new Vector();
+      DeviceType vcrType = null;
+      boolean hasPVRalias = false;
+      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+      {
+        DeviceType type = ( DeviceType )e.nextElement();
+  
+        String typeName = type.getName();
+        if ( typeName.startsWith( "VCR" ))
+          vcrType = type;
+        if ( typeName.equals( "PVR" ))
+          hasPVRalias = true;
+        deviceTypeAliases.put( typeName, type );
+        v.add( typeName );
+      }
+      if ( !hasPVRalias )
+      {
+        v.add( "PVR" );
+        deviceTypeAliases.put( "PVR", vcrType );
+      }
+      deviceTypeAliasNames = new String[ 0 ];
+      deviceTypeAliasNames = ( String[] )v.toArray( deviceTypeAliasNames );
+      Arrays.sort( deviceTypeAliasNames );
+    }
+
     // Create the upgradeButtons[]
     // and starts off with the buttons in longest button map
     ButtonMap longestMap = null;
@@ -735,8 +762,10 @@ public class Remote
   private String parseDeviceTypeAliases( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
     String line;
+    Vector v = new Vector();
+    DeviceType vcrType = null;
+    boolean hasPVRalias = false;
     while ( true )
     {
       line = rdr.readLine();
@@ -752,10 +781,28 @@ public class Remote
       while ( st.hasMoreTokens())
       {
         String aliasName = st.nextToken().trim();
+        if ( aliasName.equals( "VCR" ))
+          vcrType = type;
+        if ( aliasName.equals( "PVR" ))
+          hasPVRalias = true;
         deviceTypeAliases.put( aliasName, type );
+        v.add( aliasName );
       }
     }
+    if ( !hasPVRalias && ( vcrType != null ))
+    {
+      v.add( "PVR" );
+      deviceTypeAliases.put( "PVR", vcrType );
+    }
+    deviceTypeAliasNames = new String[ 0 ];
+    deviceTypeAliasNames = ( String[] )v.toArray( deviceTypeAliasNames );
+    Arrays.sort( deviceTypeAliasNames );
     return line;
+  }
+
+  public String[] getDeviceTypeAliasNames()
+  {
+    return deviceTypeAliasNames;
   }
 
   private String parseButtons( RDFReader rdr )
@@ -1293,6 +1340,7 @@ public class Remote
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
   private Hashtable deviceTypes = new Hashtable();
   private Hashtable deviceTypeAliases = new Hashtable();
+  private String[] deviceTypeAliasNames = null;
   private Vector buttons = new Vector();
   private Hashtable buttonsByKeyCode = new Hashtable();
   private Hashtable buttonsByName = new Hashtable();
