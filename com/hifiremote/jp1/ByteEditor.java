@@ -70,7 +70,6 @@ public class ByteEditor
     return rc;
   }
 
-  private static DecimalFormat df = new DecimalFormat( "###" );
   private int min;
   private int max;
 }
