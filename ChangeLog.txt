@@ -1,3 +1,9 @@
+Changes for v0.68
+
+- Fix bug in parsing composite restrictions
+- Add support for OldName attribute for protocols
+
+
 Changes for v0.67
 
 - Add/update remote image, maps, and rdfs
