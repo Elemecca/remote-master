@@ -7,12 +7,12 @@ public class Hex
 {
   public Hex()
   {
-    data = new byte[ 0 ];
+    data = new int[ 0 ];
   }
 
   public Hex( int length )
   {
-    data = new byte[ length ];
+    data = new int[ length ];
   }
 
   public Hex( String text )
@@ -20,7 +20,7 @@ public class Hex
     data = parseHex( text );
   }
 
-  public Hex( byte[] data )
+  public Hex( int[] data )
   {
     this.data = data;
   }
@@ -30,12 +30,12 @@ public class Hex
     return data.length;
   }
 
-  public byte[] getData()
+  public int[] getData()
   {
     return data;
   }
 
-  public void set( byte[] data )
+  public void set( int[] data )
   {
     this.data = data;
   }
@@ -45,35 +45,48 @@ public class Hex
     data = parseHex( text );
   }
 
-  public static byte[] parseHex( String text )
+  public static int[] parseHex( String text )
   {
-    byte[] rc = null;
+    int[] rc = null;
     int length = 0;
     int space = text.indexOf( ' ' );
     if ( space == -1 )
     {
       length = text.length() / 2;
-      rc = new byte[ length ];
+      rc = new int[ length ];
       for ( int i = 0; i < length; i++ )
       {
         int offset = i * 2;
         String temp = text.substring( offset, offset + 2 );
-        rc[ i ] = ( byte )Integer.parseInt( temp, 16 );
+        rc[ i ] = Integer.parseInt( temp, 16 );
       }
     }
     else
     {
-      StringTokenizer st = new StringTokenizer( text, " $" );
+      StringTokenizer st = new StringTokenizer( text, " _.$" );
       length = st.countTokens();
-      rc = new byte[ length ];
-      for ( int i = 0; i < length; i++ )
-        rc[ i ] = ( byte )Integer.parseInt( st.nextToken(), 16 );
+      rc = new int[ length ];
+      st = new StringTokenizer( text, " _.$", true );
+      int i = 0;
+      int value = 0;
+      while ( st.hasMoreTokens())
+      {
+        String token = st.nextToken();
+        if ( token.equals( " " ) || token.equals( "$" ))
+          value = 0;
+        else if ( token.equals( "_" ))
+          value = ADD_OFFSET;
+        else if ( token.equals( "." ))
+          value = NO_MATCH;
+        else
+          rc[ i++ ] = value + Integer.parseInt( token, 16 );
+      }
     }
 
     return rc;
   }
 
-  public static String toString( byte value )
+  public static String asString( int value )
   {
     StringBuffer buff = new StringBuffer( 2 );
     String str = Integer.toHexString( value & 0xFF );
@@ -83,12 +96,12 @@ public class Hex
     return buff.toString();
   }
 
-  public static String toString( byte[] data )
+  public static String toString( int[] data )
   {
     return toString( data, -1 );
   }
 
-  public static String toString( byte[] data, int breakAt )
+  public static String toString( int[] data, int breakAt )
   {
     if ( data == null )
       return null;
@@ -161,7 +174,7 @@ public class Hex
   {
     int rc;
     int compareLen;
-    byte[] otherData = (( Hex )o ).data;
+    int[] otherData = (( Hex )o ).data;
     if ( data.length < otherData.length )
     {
       compareLen = data.length;
@@ -180,8 +193,8 @@ public class Hex
 
     for ( int i = 0; i < compareLen; i++ )
     {
-      int v1 = Translate.byte2int( data[ i ]);
-      int v2 = Translate.byte2int( otherData[ i ]);
+      int v1 = data[ i ];
+      int v2 = otherData[ i ];
       if ( v1 < v2 )
       {
         rc = -1;
@@ -197,13 +210,53 @@ public class Hex
     return rc;
   }
 
+  public int indexOf( Hex needle )
+  {
+    return indexOf( needle.data );
+  }
+
+  public int indexOf( Hex needle, int start )
+  {
+    return indexOf( needle.data, start );
+  }
+
+  public int indexOf( int[] needle )
+  {
+    return indexOf( needle, 0 );
+  }
+  
+  public int indexOf( int[] needle, int start )
+  {
+    int index = start;
+    int last = data.length - needle.length;
+    while ( index < last )
+    {
+      boolean match = true;
+      for ( int i = 0; i < needle.length; i++ )
+      {
+        if ( needle[ i ] != data[ index + i ] )
+        {
+          match = false;
+          break;
+        }
+      }
+      if ( match )
+        return index;
+      index++;
+    }
+    return -1;
+  }
+
   protected Object clone()
     throws CloneNotSupportedException
   {
     Hex rc = ( Hex )super.clone();
-    rc.data = ( byte[] )data.clone();
+    rc.data = ( int[] )data.clone();
     return rc;
   }
 
-  private byte[] data = null;
+  private int[] data = null;
+
+  public static int NO_MATCH = 0x100;
+  public static int ADD_OFFSET = 0x200;
 }

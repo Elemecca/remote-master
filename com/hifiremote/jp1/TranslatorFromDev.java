@@ -10,7 +10,7 @@ public class TranslatorFromDev
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    byte[] hex = hexData.getData();
+    int[] hex = hexData.getData();
     if ( index >= devParms.length )
     {
       System.err.println("TranslatorFromDev.in() index="+ index +" exceeds "+ devParms.length +" item buffer");

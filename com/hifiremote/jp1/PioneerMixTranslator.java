@@ -36,10 +36,10 @@ public class PioneerMixTranslator
             break;
           case 2:  // Device
             if ( val == 0 ) // dev1
-              flag = 0;  
+              flag = 0;
             else //dev2
               flag |= 1;
-            break;          
+            break;
           case 3:  // OBC
             doInsert = false;
             break;
@@ -74,7 +74,7 @@ public class PioneerMixTranslator
         parms[ 2 ] = new Value( one, null );   // Device = dev 2
         break;
     }
-  }  
+  }
 
   private int styleIndex = 0;
   private int cmdIndex = 1;

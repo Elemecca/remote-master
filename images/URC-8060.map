@@ -18,9 +18,13 @@ circle vol+  111,193 119,201
 circle ch+  29,193 37,201
 circle vol-  110,219 118,227
 circle ch-  29,220 37,228
+circle rear-  69,308 78,317
 circle down{rear-}  69,308 78,317
+circle rear+  70,254 79,263
 circle up{Rear+}  70,254 79,263
+circle Center-  43,282 52,291
 circle left{Center-}  43,282 52,291
+circle center+  97,280 106,289
 circle right{center+}  97,280 106,289
 circle ok  69,281 82,294
 circle 0  69,162 77,170

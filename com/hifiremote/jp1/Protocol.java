@@ -86,7 +86,7 @@ public class Protocol
         oldNames.add( st2.nextToken().trim());
     }
   }
-  
+
   public void reset()
   {
     int len = devParms.length;
@@ -95,7 +95,7 @@ public class Protocol
       vals[ i ] = new Value( null,  null );
     setDeviceParms( vals );
   }
-  
+
   public void setProperties( Properties props ){}
 
   public void importUpgradeCode( Remote remote, String notes )
@@ -161,14 +161,14 @@ public class Protocol
   {
     if ( parms.length != devParms.length )
     {
-      System.err.println( "Protocol.setDeviceParms(), protocol=" + getDiagnosticName() +  
-                          ", parms.length=" + 
+      System.err.println( "Protocol.setDeviceParms(), protocol=" + getDiagnosticName() +
+                          ", parms.length=" +
                           parms.length + " and devParms.length=" + devParms.length );
     }
 
     for ( int i = 0; i < parms.length; i++ )
     {
-      
+
       devParms[ i ].setValue( parms[ i ].getUserValue());
     }
   }
@@ -202,7 +202,7 @@ public class Protocol
 
   public static EFC hex2efc( Hex hex, int index )
   {
-    int temp = Translate.byte2int( hex.getData()[ index ]);
+    int temp = hex.getData()[ index ];
     temp = ( temp << 3 ) | ( temp >> 5 );
     temp = ( temp ^ 0xAE ) - 156;
     return new EFC( temp );

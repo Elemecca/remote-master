@@ -16,8 +16,8 @@ public class ManualProtocol
     notes = props.getProperty( "Protocol.notes" );
   }
 
-  public ManualProtocol( String name, Hex id, int cmdType, String signalStyle, 
-                         int devBits, Vector parms, byte[] rawHex, int cmdBits )
+  public ManualProtocol( String name, Hex id, int cmdType, String signalStyle,
+                         int devBits, Vector parms, int[] rawHex, int cmdBits )
   {
     super( name, id, new Properties());
 
@@ -32,16 +32,16 @@ public class ManualProtocol
 
     devParms = new DeviceParameter[ parms.size() ];
     deviceTranslators = new Translator[ parms.size() ];
-    
+
     for ( int i = 0; i < parms.size(); i++ )
     {
       devParms[ i ] = new NumberDeviceParm( "Device " + ( i + 1 ), defaultValue, 10, devBits );
       devParms[ i ].setValue( parms.elementAt( i ));
-      deviceTranslators[ i ] = new Translator( lsb, comp, i, devBits, i * 8 ); 
+      deviceTranslators[ i ] = new Translator( lsb, comp, i, devBits, i * 8 );
     }
 
     int offset = parms.size();
-    byte[] fixedBytes = new byte[ offset + rawHex.length ];
+    int[] fixedBytes = new int[ offset + rawHex.length ];
     for ( int i = 0 ; i < rawHex.length; i++ )
       fixedBytes[ i + offset ] = rawHex[ i ];
 
@@ -51,16 +51,16 @@ public class ManualProtocol
     switch ( cmdType )
     {
       case ONE_BYTE:
-        defaultCmd = new Hex( new byte[ 1 ]);
+        defaultCmd = new Hex( new int[ 1 ]);
         cmdIndex = 0;
         break;
       case BEFORE_CMD:
-        defaultCmd = new Hex( new byte[ 2 ]);
+        defaultCmd = new Hex( new int[ 2 ]);
         cmdIndex = 1;
         byte2Index = 0;
         break;
       case AFTER_CMD:
-        defaultCmd = new Hex( new byte[ 2 ]);
+        defaultCmd = new Hex( new int[ 2 ]);
         cmdIndex = 0;
         byte2Index = 1;
         break;
@@ -73,7 +73,7 @@ public class ManualProtocol
     if ( defaultCmd.length() > 1 )
     {
       cmdParms[ 1 ] = new NumberCmdParm( "Byte 2", defaultValue, 8 );
-      cmdTranslators[ 1 ] = new Translator( false, false, 1, 8, byte2Index * 8 );  
+      cmdTranslators[ 1 ] = new Translator( false, false, 1, 8, byte2Index * 8 );
     }
   }
 
@@ -90,7 +90,7 @@ public class ManualProtocol
         if ( i > 0 )
           buff.append( ',' );
         DeviceParameter devParm = devParms[ i ];
-        buff.append( devParm.toString() );   
+        buff.append( devParm.toString() );
       }
       out.print( "DevParms", buff.toString());
     }

@@ -198,13 +198,13 @@ public class Button
     return buttonMaps;
   }
 
-  public byte[] getKeyMoves( byte[] deviceCode, DeviceType devType, Remote remote )
+  public int[] getKeyMoves( int[] deviceCode, DeviceType devType, Remote remote )
   {
-    byte[] move1 = getKeyMove( function, 0, deviceCode, devType, remote );
-    byte[] move2 = getKeyMove( shiftedFunction, remote.getShiftMask(), deviceCode, devType, remote );
-    byte[] move3 = getKeyMove( xShiftedFunction, remote.getXShiftMask(), deviceCode, devType, remote );
+    int[] move1 = getKeyMove( function, 0, deviceCode, devType, remote );
+    int[] move2 = getKeyMove( shiftedFunction, remote.getShiftMask(), deviceCode, devType, remote );
+    int[] move3 = getKeyMove( xShiftedFunction, remote.getXShiftMask(), deviceCode, devType, remote );
 
-    byte[] rc = new byte[ move1.length + move2.length + move3.length ];
+    int[] rc = new int[ move1.length + move2.length + move3.length ];
 
     System.arraycopy( move1, 0, rc, 0, move1.length );
     System.arraycopy( move2, 0, rc, move1.length, move2.length );
@@ -213,10 +213,10 @@ public class Button
     return rc;
   }
 
-  public byte[] getKeyMove( Function f, int mask,
-                            byte[] deviceCode, DeviceType devType, Remote remote )
+  public int[] getKeyMove( Function f, int mask,
+                            int[] deviceCode, DeviceType devType, Remote remote )
   {
-    byte[] rc = new byte[ 0 ];
+    int[] rc = new int[ 0 ];
     if (( f != null ) && ( f.getHex() != null ))
     {
       int len = 0;
@@ -228,18 +228,18 @@ public class Button
         int temp = devType.getNumber() * 0x1000 +
                    ef.getSetupCode() - remote.getDeviceCodeOffset();
 
-        deviceCode = new byte[ 2 ];
-        deviceCode[ 0 ] = ( byte )( temp >> 8 );
-        deviceCode[ 1 ] = ( byte )temp;
+        deviceCode = new int[ 2 ];
+        deviceCode[ 0 ] = ( temp >> 8 );
+        deviceCode[ 1 ] = temp;
       }
       else if ( remote.getAdvCodeFormat() == Remote.EFC )
       {
         if ( hex.length() == 1 )
         {
-          byte[] data = new byte[ 2 ];
+          int[] data = new int[ 2 ];
           data[ 0 ] = 0;
           EFC efc = Protocol.hex2efc( hex, 0 );
-          data[ 1 ] = ( byte )efc.getValue();
+          data[ 1 ] = efc.getValue();
           hex = new Hex( data );
         }
       }
@@ -247,16 +247,16 @@ public class Button
       if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) )
         len = ( 4 + hex.length());
 
-      rc = new byte[ len ];
+      rc = new int[ len ];
 
       if ( len != 0 )
       {
 
-        rc[ 0 ] = ( byte )keyCode;
+        rc[ 0 ] = keyCode;
         if ( mask != 0 )
-          rc[ 0 ] = ( byte )( rc[ 0 ] | mask );
+          rc[ 0 ] = ( rc[ 0 ] | mask );
 
-        rc[ 1 ] = ( byte )( 0xF2 + hex.length() );
+        rc[ 1 ] = ( 0xF2 + hex.length() );
         System.arraycopy( deviceCode, 0, rc, 2, 2 );
         System.arraycopy( hex.getData(), 0, rc, 4, hex.length() );
       }

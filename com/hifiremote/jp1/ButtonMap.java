@@ -71,12 +71,12 @@ public class ButtonMap
 
   public int size(){ return size; }
 
-  public byte[] toBitMap( boolean digitMapUsed )
+  public int[] toBitMap( boolean digitMapUsed )
   {
     int len = ( buttons.length + 6 )/ 7;
     if ( len == 0 )
-      return new byte[ 0 ];
-    byte[] rc = new byte[ len ];
+      return new int[ 0 ];
+    int[] rc = new int[ len ];
     int index = 0;
     int temp = 0x80;
     int limit = 0;
@@ -92,7 +92,7 @@ public class ButtonMap
              !func.isExternal() &&
             ( func.getHex() != null ))
         {
-          rc[index] |= temp;
+          rc[ index ] |= temp;
           limit = index;
           break;
         }
@@ -105,13 +105,13 @@ public class ButtonMap
         ++index;
       }
     }
-    rc[limit++] |= 1;
-    byte[] result = new byte[limit];
+    rc[ limit++ ] |= 1;
+    int[] result = new int[ limit ];
     System.arraycopy(rc,0,result,0,limit);
     return result;
   }
 
-  public byte[] toCommandList( boolean digitMapUsed )
+  public int[] toCommandList( boolean digitMapUsed )
   {
     int count = 0;
     int funcLen = 0;
@@ -136,8 +136,8 @@ public class ButtonMap
         }
       }
     }
-    byte[] rc = new byte[ count ];
-    byte[] zeros = new byte[ funcLen ];
+    int[] rc = new int[ count ];
+    int[] zeros = new int[ funcLen ];
     int index = 0;
     for ( int i = 0; i < buttons.length; i++ )
     {
@@ -146,7 +146,7 @@ public class ButtonMap
       {
         for ( int j = 0; j < inner.length; j++ )
         {
-          byte[] hex = null;
+          int[] hex = null;
           Function func = inner[ j ].getFunction();
           if ( digitMapUsed && ( i == 0 ))
             func = null;

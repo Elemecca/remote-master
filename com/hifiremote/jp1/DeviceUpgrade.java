@@ -83,7 +83,7 @@ public class DeviceUpgrade
   public void setRemote( Remote newRemote )
   {
     Protocol p = protocol;
-    Vector protocols = 
+    Vector protocols =
       ProtocolManager.getProtocolManager().getProtocolsForRemote( newRemote );
     if ( !protocols.contains( p ) && !p.hasCode( newRemote ))
     {
@@ -165,12 +165,15 @@ public class DeviceUpgrade
         Button b = buttons[ i ];
         Function f = b.getFunction();
         Function sf = b.getShiftedFunction();
-        if (( f != null ) || ( sf != null ))
+        Function xf = b.getXShiftedFunction();
+        if (( f != null ) || ( sf != null ) || ( xf != null ))
         {
           if ( f != null )
             b.setFunction( null );
           if ( sf != null )
             b.setShiftedFunction( null );
+          if ( xf != null )
+            b.setXShiftedFunction( null );
 
           Button newB = newRemote.findByStandardName( b );
           if ( newB != null )
@@ -179,6 +182,8 @@ public class DeviceUpgrade
               newB.setFunction( f );
             if ( sf != null )
               newB.setShiftedFunction( sf );
+            if ( xf != null )
+              newB.setXShiftedFunction( xf );
           }
         }
       }
@@ -272,7 +277,7 @@ public class DeviceUpgrade
   {
     return keymoves;
   }
-   
+
   public void setFile( File file )
   {
     this.file = file;
@@ -316,14 +321,14 @@ public class DeviceUpgrade
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade code 0 = " );
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    byte[] id = protocol.getID().getData();
+    int[] id = protocol.getID().getData();
     int temp = devType.getNumber() * 0x1000 +
                ( id[ 0 ] & 1 ) * 0x0800 +
                setupCode - remote.getDeviceCodeOffset();
 
-    byte[] deviceCode = new byte[2];
-    deviceCode[ 0 ] = ( byte )(temp >> 8 );
-    deviceCode[ 1 ] = ( byte )temp;
+    int[] deviceCode = new int[2];
+    deviceCode[ 0 ] = (temp >> 8 );
+    deviceCode[ 1 ] = temp;
 
     buff.append( Hex.toString( deviceCode ));
     buff.append( " (" );
@@ -332,7 +337,7 @@ public class DeviceUpgrade
     DecimalFormat df = new DecimalFormat( "0000" );
     buff.append( df.format( setupCode ));
     buff.append( ")\n " );
-    buff.append( Hex.toString( id[ 1 ]));
+    buff.append( Hex.asString( id[ 1 ]));
 
     int digitMapIndex = -1;
 
@@ -344,9 +349,7 @@ public class DeviceUpgrade
         buff.append( "00" );
       else
       {
-        byte[] array = new byte[ 1 ];
-        array[ 0 ] = ( byte )digitMapIndex;
-        buff.append( Hex.toString( array ));
+        buff.append( Hex.asString( digitMapIndex ));
       }
     }
 
@@ -362,7 +365,7 @@ public class DeviceUpgrade
 
     if ( map != null )
     {
-      byte[] data = map.toCommandList( digitMapIndex != -1 );
+      int[] data = map.toCommandList( digitMapIndex != -1 );
       if (( data != null ) && ( data.length != 0 ))
       {
         buff.append( "\n " );
@@ -389,12 +392,12 @@ public class DeviceUpgrade
     }
     if ( hasKeyMoves )
     {
-      deviceCode[ 0 ] = ( byte )( deviceCode[ 0 ] & 0xF7 );
+      deviceCode[ 0 ] = ( deviceCode[ 0 ] & 0xF7 );
       buff.append( "\nKeyMoves" );
       for ( ; i < buttons.length; i++ )
       {
         Button button = buttons[ i ];
-        byte[] keyMoves = button.getKeyMoves( deviceCode, devType, remote );
+        int[] keyMoves = button.getKeyMoves( deviceCode, devType, remote );
         if (( keyMoves != null ) && keyMoves.length > 0 )
         {
           buff.append( "\n " );
@@ -452,7 +455,7 @@ public class DeviceUpgrade
     throws IOException
   {
     this.file = file;
-    PropertyWriter out = 
+    PropertyWriter out =
       new PropertyWriter( new PrintWriter( new FileWriter( file )));
 
     if ( description != null )
@@ -738,19 +741,19 @@ public class DeviceUpgrade
       int equals = line.indexOf( '=' );
       if (( equals != -1 ) && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code " ))
       {
-        byte[] id = new byte[ 2 ];
+        int[] id = new int[ 2 ];
         int temp = Integer.parseInt( line.substring( equals + 2, equals + 4 ), 16 );
         if (( temp & 8 ) != 0 )
           id[ 0 ] = 1;
-  
-        line = in.readLine(); 
+
+        line = in.readLine();
         temp = Integer.parseInt( line.substring( 0, 2 ), 16 );
-        id[ 1 ] = ( byte )temp;
+        id[ 1 ] = temp;
         pid = new Hex( id );
         break;
       }
     }
-      
+
     remote.load();
     token = st.nextToken();
     str = token.substring( 5 );
@@ -785,11 +788,11 @@ public class DeviceUpgrade
       System.err.println( "protocolName=" + protocolName );
       System.err.println( "manualLine=" + manualLine );
       StringTokenizer manual = new StringTokenizer( manualLine, delim, true );
-      System.err.println( "skipping " + getNextField( manual, delim )); // skip header 
+      System.err.println( "skipping " + getNextField( manual, delim )); // skip header
       String pidStr = getNextField( manual, delim );
       System.err.println( "pid=" + pidStr );
       if ( pidStr != null )
-        pid = new Hex( pidStr ); 
+        pid = new Hex( pidStr );
       int byte2 = Integer.parseInt( getNextField( manual, delim ).substring( 0, 1 ));
       System.err.println( "byte2=" +  byte2 );
       String signalStyle = getNextField( manual, delim );
@@ -816,7 +819,7 @@ public class DeviceUpgrade
       str = getNextField( st, delim ); // Raw Fixed Data
       if ( str == null )
         str = "";
-      byte[] rawHex = Hex.parseHex( str );
+      int[] rawHex = Hex.parseHex( str );
 
       protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
       protocolManager.add( protocol );
@@ -829,7 +832,7 @@ public class DeviceUpgrade
       if ( p == null )
       {
         p = protocolManager.findProtocolByOldName( remote, protocolName );
-  
+
         if ( p == null )
         {
           JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
@@ -841,14 +844,14 @@ public class DeviceUpgrade
         }
       }
       protocol = p;
-  
+
       DeviceParameter[] devParms = protocol.getDeviceParameters();
       for ( int i = 0; i < devParms.length; i++ )
       {
         // Skip over Flag parms because KM didn't have these.
         if ( devParms[ i ].getClass() == FlagDeviceParm.class )
           continue;
-  
+
         token = st.nextToken();
         Object val = null;
         if ( token.equals( delim ))
@@ -928,7 +931,7 @@ public class DeviceUpgrade
         f = new Function();
         f.setName( token );
       }
-      else 
+      else
         System.err.println( "Found it!" );
 
       token = getNextField( st, delim );  // get the function code (field 2)
@@ -1028,14 +1031,14 @@ public class DeviceUpgrade
       String pidStr = getNextField( st, delim ); // field 7
       String fixedDataStr = getNextField( st, delim ); // field 8
 
-      if (( combiner != null ) && ( pidStr != null ) && ( fixedDataStr != null ) && 
-          !pidStr.equals( "Protocol ID" ) && 
+      if (( combiner != null ) && ( pidStr != null ) && ( fixedDataStr != null ) &&
+          !pidStr.equals( "Protocol ID" ) &&
           !fixedDataStr.equals( "Fixed Data" ))
       {
         Protocol p = protocolManager.findProtocolForRemote( remote, new Hex( pidStr ));
         combiner.addProtocol( p, new Hex( fixedDataStr ));
       }
-      
+
       // skip to field 13
       for ( int j = 8; j <= 13; j++ )
         token = getNextField( st, delim );
@@ -1161,7 +1164,7 @@ public class DeviceUpgrade
 
   public void setParmValues( Value[] parmValues )
   {
-    this.parmValues = parmValues; 
+    this.parmValues = parmValues;
   }
 
   public static final String[] getDeviceTypeAliasNames()

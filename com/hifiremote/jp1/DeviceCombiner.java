@@ -10,7 +10,7 @@ public class DeviceCombiner
   {
     super( name, id, props );
     cmdParmInit = new Initializer[ 1 ];
-    cmdParmInit[ 0 ] = 
+    cmdParmInit[ 0 ] =
       new DeviceCombinerInitializer( devices, ( ChoiceCmdParm )cmdParms[ 0 ]);
   }
 
@@ -31,9 +31,9 @@ public class DeviceCombiner
         break;
       Hex pid = new Hex( props.getProperty( prefix + ".id" ));
       String variantName = props.getProperty( prefix + ".variant" );
-      Protocol p = 
+      Protocol p =
         ProtocolManager.getProtocolManager().findNearestProtocol( nameStr, pid, variantName );
-      
+
       String parmStr = props.getProperty( prefix + ".parms" );
       Value[] values = DeviceUpgrade.stringToValueArray( parmStr );
       devices.add( new CombinerDevice( p, values ));
@@ -66,7 +66,7 @@ public class DeviceCombiner
   }
 
   public Vector getDevices(){ return devices; }
-  
+
   public void store( PropertyWriter out )
     throws IOException
   {
@@ -82,7 +82,7 @@ public class DeviceCombiner
       out.print( prefix + ".id", p.getID().toString());
       out.print( prefix + ".variant", p.getVariantName());
       Value[] values = device.getValues();
-      out.print( prefix + ".parms", DeviceUpgrade.valueArrayToString( values )); 
+      out.print( prefix + ".parms", DeviceUpgrade.valueArrayToString( values ));
     }
   }
 
@@ -105,12 +105,12 @@ public class DeviceCombiner
       if ( processor.equals( "S3C80" ))
         return false;
     }
-      
+
     if ( processor.equals( "S3C80" ))
     {
-      if (( devCombAddresses[ 1 ] == -1 ) || 
-          ( devCombAddresses[ 2 ] == -1 ) || 
-          ( devCombAddresses[ 4 ] == -1 ) || 
+      if (( devCombAddresses[ 1 ] == -1 ) ||
+          ( devCombAddresses[ 2 ] == -1 ) ||
+          ( devCombAddresses[ 4 ] == -1 ) ||
           ( devCombAddresses[ 5 ] == -1 ))
         rc = false;
     }
@@ -135,7 +135,7 @@ public class DeviceCombiner
 
   public Hex getCode( Remote r )
   {
-    byte[] header = new byte[ devices.size() + 1 ];
+    int[] header = new int[ devices.size() + 1 ];
 //    Hex base = super.getCode( r );
 //    if ( base == null )
 //      return null;
@@ -154,8 +154,8 @@ public class DeviceCombiner
 
     if ( processor.equals( "S3C80" ))
     {
-      if (( devComb[ 1 ] == -1 ) || 
-          ( devComb[ 5 ] == -1 ) || 
+      if (( devComb[ 1 ] == -1 ) ||
+          ( devComb[ 5 ] == -1 ) ||
           ( devComb[ 2 ] == -1 ))
         return null;
 
@@ -180,10 +180,10 @@ public class DeviceCombiner
       buff.append( intToString( devComb[ 2 ])); //comb2
 
       base = new Hex( buff.toString());
-      byte[] hex = base.getData();
+      int[] hex = base.getData();
       int length = hex.length;
-      hex[ 21 ] = ( byte )( length + 1 );
-      hex[ 24 ] = ( byte )length;
+      hex[ 21 ] = ( length + 1 );
+      hex[ 24 ] = length;
     }
     else if ( processor.equals( "6805" ))
     {
@@ -204,18 +204,18 @@ public class DeviceCombiner
       buff.append( intToString( devComb[ 2 ]));
 
       base = new Hex( buff.toString());
-      byte[] hex = base.getData();
+      int[] hex = base.getData();
       int pointer = devComb[ 6 ] + hex.length;
-      hex[ 6 ] = ( byte )( pointer >> 8 );
-      hex[ 7 ] = ( byte )( pointer & 0xFF );
+      hex[ 6 ] = ( pointer >> 8 );
+      hex[ 7 ] = ( pointer & 0xFF );
       hex[ 11 ] = hex[ 6 ];
       hex[ 12 ] = hex[ 7 ];
       pointer++;
-      hex[ 16 ] = ( byte )( pointer >> 8 );
-      hex[ 17 ] = ( byte )( pointer & 0xFF );
+      hex[ 16 ] = ( pointer >> 8 );
+      hex[ 17 ] = ( pointer & 0xFF );
       pointer++;
-      hex[ 54 ] = ( byte )( pointer >> 8 );
-      hex[ 55 ] = ( byte )( pointer & 0xFF );
+      hex[ 54 ] = ( pointer >> 8 );
+      hex[ 55 ] = ( pointer & 0xFF );
     }
     else if ( processor.equals( "740" ))
     {
@@ -224,7 +224,7 @@ public class DeviceCombiner
           ( devComb[ 3 ] == -1 ))
         return null;
 
-      buff.append( "00 00 02 A4 5D BE 7B 01 BD 7B 01 85 E7 BD 7C 01 85 E6 20 " ); 
+      buff.append( "00 00 02 A4 5D BE 7B 01 BD 7B 01 85 E7 BD 7C 01 85 E6 20 " );
       buff.append( intToStringReverse( devComb[ 1 ] ));
       buff.append( " B0 31 A0 02 B1 " );
       buff.append( Integer.toHexString( devComb[ 3 ] & 0xFF ));
@@ -235,7 +235,7 @@ public class DeviceCombiner
       buff.append( " 60" );
       base = new Hex( buff.toString());
     }
-       
+
     int offset = header.length;
     if ( processor.equals( "S3C80" ))
       offset += base.length();
@@ -244,7 +244,7 @@ public class DeviceCombiner
     int i = 0;
     for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
     {
-      header[ i ] = ( byte )offset;
+      header[ i ] = offset;
       CombinerDevice device = ( CombinerDevice )e.nextElement();
       ids[ i ] = device.getProtocol().getID();
       offset += 2;
@@ -253,26 +253,26 @@ public class DeviceCombiner
       offset += hex.length();
       i++;
     }
-    header[ i ] = ( byte )offset;
+    header[ i ] = offset;
 
     if ( !processor.equals( "S3C80" ))
       offset += base.length();
 
-    byte[] code = new byte[ offset ];
+    int[] code = new int[ offset ];
     System.arraycopy( base.getData(), 0, code, 0, base.length() );
     offset = base.length();
     System.arraycopy( header, 0, code, offset, header.length );
     offset += header.length;
     for ( i = 0; i < data.length; i++ )
     {
-      byte[] src = ids[ i ].getData();
+      int[] src = ids[ i ].getData();
       System.arraycopy( src, 0, code, offset, src.length );
       offset += src.length;
       src = data[ i ].getData();
       System.arraycopy( src, 0, code, offset, src.length );
       offset += src.length;
     }
-        
+
     return new Hex( code );
   }
 

@@ -15,8 +15,9 @@ public class RemoteMaster
     {
       System.err.println( "Caught exception in RemoteMaster.main()!" );
       e.printStackTrace( System.err );
+      System.err.flush();
+      System.exit( 0 );
     }
     System.err.flush();
   }
-
 }

@@ -56,7 +56,7 @@ public class Translator
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    byte[] hex = hexData.getData();
+    int[] hex = hexData.getData();
     if (onlyIndex >= 0 && onlyIndex != index)
       return;
     if ( index >= parms.length )
@@ -93,7 +93,7 @@ public class Translator
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
-    byte[] hex = hexData.getData();
+    int[] hex = hexData.getData();
     if ( index >= parms.length )
     {
       System.err.println("Translator.out() index="+ index +" exceeds "+ parms.length +" item buffer");

@@ -131,7 +131,7 @@ public class OutputPanel
     Hex code = p.getCode( r );
     if ( code != null )
     {
-      byte[] data = ( byte[] )code.getData().clone();
+      int[] data = ( int[] )code.getData().clone();
       if ( processor.equals( "S3C80" ) && ( r.getRAMAddress() == 0x8000 ))
       {
         int offset = 3;
