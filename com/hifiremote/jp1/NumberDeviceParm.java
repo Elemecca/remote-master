@@ -85,10 +85,11 @@ public class NumberDeviceParm
     else
     {
       String temp = null;
-      if ( base == 10 )
-        temp = value.toString();
-      else
+      Class aClass = value.getClass();
+      if (( aClass == Integer.class ) && base != 10 )
         temp = Integer.toHexString((( Integer )value ).intValue());
+      else 
+        temp = value.toString();
       tf.setText( temp );
     }
   }

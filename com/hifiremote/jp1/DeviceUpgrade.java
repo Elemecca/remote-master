@@ -762,7 +762,8 @@ public class DeviceUpgrade
           else if ( token.equals( "false" ))
             val = new Integer( 0 );
           else
-            val = new Integer( token );
+            val = token;
+//            val = new Integer( token );
         }
         devParms[ i ].setValue( val );
       }
