@@ -26,6 +26,8 @@ public class KeyMapMaster
   private JMenu recentFileMenu = null;
   private JMenuItem useAllRemotes = null;
   private JMenuItem usePreferredRemotes = null;
+  private JMenuItem useDefaultNames = null;
+  private JMenuItem useCustomNames = null;
   private JMenuItem manualItem = null;
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
   private JRadioButtonMenuItem[] promptButtons = null;
@@ -36,6 +38,7 @@ public class KeyMapMaster
   private Remote[] remotes = new Remote[ 0 ];
   private Remote[] preferredRemotes = new Remote[ 0 ];
   private Vector preferredRemoteNames = new Vector( 0 );
+  private static String[] customNames = null;
   private ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
   private Remote currentRemote = null;
   private String currentDeviceTypeName = null;
@@ -71,6 +74,8 @@ public class KeyMapMaster
     throws Exception
   {
     super( "RemoteMaster " + version );
+    me = this;
+
     File fileToOpen = parseArgs( args );
 
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
@@ -78,7 +83,6 @@ public class KeyMapMaster
     JDialog.setDefaultLookAndFeelDecorated( true );
     JFrame.setDefaultLookAndFeelDecorated( true );
     Toolkit.getDefaultToolkit().setDynamicLayout( true );
-    me = this;
 
     addWindowListener( new WindowAdapter()
     {
@@ -99,11 +103,11 @@ public class KeyMapMaster
       }
     });
 
-    deviceUpgrade = new DeviceUpgrade();
-
     createMenus();
 
     loadPreferences();
+
+    deviceUpgrade = new DeviceUpgrade();
 
     Container mainPanel = getContentPane();
     tabbedPane = new JTabbedPane();
@@ -389,6 +393,38 @@ public class KeyMapMaster
     item.addActionListener( al );
     submenu.add( item );
 
+    submenu = new JMenu( "Function names" );
+    menu.add( submenu );
+
+    group = new ButtonGroup();
+    useDefaultNames = new JRadioButtonMenuItem( "Default" );
+    useDefaultNames.setMnemonic( KeyEvent.VK_D );
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        Object source = e.getSource();
+        if (( source != useDefaultNames ) && ( source != useCustomNames ))
+          editCustomNames();
+      }
+    };
+    useDefaultNames.setSelected( true );
+    useDefaultNames.addActionListener( al );
+    group.add( useDefaultNames );
+    submenu.add( useDefaultNames );
+
+    useCustomNames = new JRadioButtonMenuItem( "Custom" );
+    useCustomNames.setMnemonic( KeyEvent.VK_C );
+    useCustomNames.addActionListener( al );
+    group.add( useCustomNames );
+    submenu.add( useCustomNames );
+
+    submenu.addSeparator();
+    item = new JMenuItem( "Edit custom names..." );
+    item.setMnemonic( KeyEvent.VK_E );
+    item.addActionListener( al );
+    submenu.add( item );
+
 //    menu = new JMenu( "Tools" );
 //    menuBar.add( menu );
 
@@ -441,6 +477,24 @@ public class KeyMapMaster
 
       if ( usePreferredRemotes.isSelected())
         remoteList.setModel( new DefaultComboBoxModel( preferredRemotes ));
+    }
+  }
+
+  private void editCustomNames()
+  {
+    CustomNameDialog d = new CustomNameDialog( this, customNames );
+    d.show();
+    if ( d.getUserAction() == JOptionPane.OK_OPTION )
+    {
+      customNames = d.getCustomNames();
+      if (( customNames == null ) || customNames.length == 0 )
+      {
+        useCustomNames.setEnabled( false );
+        if  ( !useCustomNames.isSelected())
+          useCustomNames.setSelected( true );
+      }
+      else
+        useCustomNames.setEnabled( true );
     }
   }
 
@@ -965,6 +1019,14 @@ public class KeyMapMaster
     return homeDirectory;
   }
 
+  public static String[] getCustomNames()
+  {
+    if ( me.useCustomNames.isSelected())
+      return customNames;
+    else
+      return null;
+  }
+
   private void loadPreferences()
     throws Exception
   {
@@ -1067,6 +1129,19 @@ public class KeyMapMaster
       bounds.width = Integer.parseInt( st.nextToken());
       bounds.height = Integer.parseInt( st.nextToken());
     }
+
+    temp = props.getProperty( "CustomNames" );
+    if ( temp != null )
+    {
+      StringTokenizer st = new StringTokenizer( temp, "|" );
+      int count = st.countTokens();
+      customNames = new String[ count ];
+      for ( int i = 0; i < count; i++ )
+        customNames[ i ] = st.nextToken();
+    }
+
+    temp = props.getProperty( "UseCustomNames" );
+    useCustomNames.setSelected( temp != null );
   }
 
   private void savePreferences()
@@ -1106,6 +1181,21 @@ public class KeyMapMaster
     Rectangle bounds = getBounds();
     props.setProperty( "Bounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
 
+    if ( useCustomNames.isSelected())
+      props.setProperty( "UseCustomNames", "yes" );
+
+    if ( customNames != null )
+    {
+      StringBuffer value = new StringBuffer();
+      for ( int i = 0; i < customNames.length; i++ )
+      {
+        if ( i != 0 )
+          value.append( '|' );
+        value.append( customNames[ i ]);
+      }
+      props.setProperty( "CustomNames", value.toString() );
+    }
+    
     FileOutputStream out = new FileOutputStream( propertiesFile );
     props.store( out, null );
     out.flush();

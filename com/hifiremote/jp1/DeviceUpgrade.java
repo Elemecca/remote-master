@@ -56,8 +56,11 @@ public class DeviceUpgrade
 
   private void initFunctions()
   {
-    for ( int i = 0; i < defaultFunctionNames.length; i++ )
-      functions.add( new Function( defaultFunctionNames[ i ]));
+    String[] names = KeyMapMaster.getCustomNames();
+    if ( names == null )
+      names = defaultFunctionNames;
+    for ( int i = 0; i < names.length; i++ )
+      functions.add( new Function( names[ i ]));
   }
 
   public void setDescription( String text )
@@ -99,7 +102,7 @@ public class DeviceUpgrade
           System.err.println( "\tChecking for matching dev. parms" );
           DeviceParameter[] parms = p.getDeviceParameters();
           DeviceParameter[] parms2 = newp.getDeviceParameters();
-  
+
           int[] map = new int[ parms.length ];
           boolean parmsMatch = true;
           for ( int i = 0; i < parms.length; i++ )
@@ -399,13 +402,13 @@ public class DeviceUpgrade
 
         Function f = button.getFunction();
         first = appendKeyMove( buff, button.getKeyMove( f, 0, deviceCode, devType, remote ),
-                               f, includeNotes, first ); 
+                               f, includeNotes, first );
         f = button.getShiftedFunction();
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote ),
-                               f, includeNotes, first ); 
+                               f, includeNotes, first );
         f = button.getXShiftedFunction();
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote ),
-                               f, includeNotes, first ); 
+                               f, includeNotes, first );
       }
     }
 
@@ -433,7 +436,7 @@ public class DeviceUpgrade
       if (( notes != null ) && ( notes.length() != 0 ))
       {
         buff.append( ": " );
-        buff.append( notes );      
+        buff.append( notes );
       }
       buff.append( '\u00bb' );
     }
