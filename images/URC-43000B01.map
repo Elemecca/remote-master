@@ -43,7 +43,7 @@ circle Fav  44,305 50,309
 circle Pause  43,336 49,340
 circle Macro3  78,245 87,250
 circle Info  52,167 64,171
-circle Enter/Music  74,123 85,127
+circle Enter{Music}  74,123 85,127
 circle Rew=Rew_&_Day-  26,273 35,278
 circle Play=Play_&_Menu  52,273 61,278
 circle FFwd=FFwd_&_Day+  78,273 87,278

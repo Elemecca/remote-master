@@ -16,6 +16,7 @@ public class Remote
     signature = st.nextToken(); // upto the 1st space
     st.nextToken( "()" ); // skip the space
     name = st.nextToken(); // the stuff between the parens
+    name = name.replace( '_', '/' );
   }
 
   public File getFile(){ return file; }

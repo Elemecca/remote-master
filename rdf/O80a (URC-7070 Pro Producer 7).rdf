@@ -54,9 +54,8 @@ POWER=$03,
 "menu":MENU=$27, SHIFT=$20,
 "play":PLAY=$0C, PAUSE=$0F, "Stop":STOP=$0E, "fast fwd":FF=$0D, "rewind":REW=$0B, "record":REC=$10, "tv/vcr":TV/VCR=$18,
 DiscreteOn=$2D, DiscreteOff=$28, Phantom1=$2E, Phantom2=$2F, Phantom3=$25, Phantom4=$26,
-"light":{light}=$2C, 
-{dontuse1}=$29, {dontuse2}=$2A, {dontuse3}=$2B, {dontuse4}=$14,
-Unknown1=$8b,Unknown2=$8c,Unknown3=$8d,Unknown4=$8e,Unknown5=$8f
+"light":{light}=$2C,
+{dontuse1}=$29, {dontuse2}=$2A, {dontuse3}=$2B, {dontuse4}=$14
 
 [ButtonMaps]
 0 = ($1F, $15, $16, $17, $19, $1A, $1B, $1C, $1D, $1E), ($04, $05, $08), ($06, $07),
@@ -65,10 +64,10 @@ Unknown1=$8b,Unknown2=$8c,Unknown3=$8d,Unknown4=$8e,Unknown5=$8f
      $03, $12, $13, $0C, $0B, $0D, $0F, $0E, $10, $28, $27, $18, $2D, $8B, $8D, $8C, $8E, $8F
 
 [DigitMaps]
-38 94 54 86 109 98 97 110 72 57 84 21 61 11 75 33 
-32 27 107 53 113 112 47 17 64 31 151 105 154 90 92 34 
-46 29 93 114 59 115 13 153 18 103 101 150 42 155 58 156 
-157 77 106 118 158 159 48 56 50 83 
+38 94 54 86 109 98 97 110 72 57 84 21 61 11 75 33
+32 27 107 53 113 112 47 17 64 31 151 105 154 90 92 34
+46 29 93 114 59 115 13 153 18 103 101 150 42 155 58 156
+157 77 106 118 158 159 48 56 50 83
 
 [Protocols]
 0000, 0004, 0006, 0007, 0008, 0009, 000A, 000C, 000D, 000E,

@@ -45,20 +45,20 @@ AUDIO   = 5
 SAT/CBL = Cable,SAT,Video Acc
 TV      = TV
 VCR     = VCR,Tape,DAT
-DVD	= DVD,Laserdisc
-CD	= CD,Home Auto,Phono
-AUDIO	= Tuner,Misc Audio,Amp
-PVR	= PVR
+DVD     = DVD,Laserdisc
+CD      = CD,Home Auto,Phono
+AUDIO   = Tuner,Misc Audio,Amp
+PVR     = PVR
 
 [DeviceButtons]
-CBL	= $00A $00B
-TV	= $00C $00D
-VCR	= $00E $00F
-DVD	= $010 $011
-CD	= $012 $013
-PVR	= $014 $015
-AUDIO	= $016 $017
-AUX	= $018 $019
+CBL     = $00A $00B
+TV      = $00C $00D
+VCR     = $00E $00F
+DVD     = $010 $011
+CD      = $012 $013
+PVR     = $014 $015
+AUDIO   = $016 $017
+AUX     = $018 $019
 
 [Buttons]
 TV=$01, VCR=$0a, DVD=$21, CBL=$11, AUDIO=$22, CD=$09, PVR=$26, AUX=$23, HT=$12
@@ -105,7 +105,7 @@ tuner_09=94
 tuner_00=95
 front_up=105
 Rear_Down=106
-Center_Deft=108
+Center_Left=108
 Test_Right=107
 Macro1=45
 Macro2=46

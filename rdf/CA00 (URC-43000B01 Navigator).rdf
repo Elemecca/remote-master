@@ -46,8 +46,7 @@ PageUp=$36, PageDown=$37, "left arrow":Left=$29, "up arrow":Up=$2A, "down arrow"
 "prev ch":Last=$1F, "display":Info=$23, Help=$2D, "fav/scan":Fav=$2E, Exit=$38,
 Switch=$25, Pause=$26, PPV=$30, Diamond=$35, P=$2F,
 DiscreteON=$27, DiscreteOFF=$40,
-Phantom1=$0B, Phantom2=$0C, Phantom3=$1D, Phantom4=$22, Phantom5=$28,
-Unknown1=$97
+Phantom1=$0B, Phantom2=$0C, Phantom3=$1D, Phantom4=$22, Phantom5=$28
 
 [MultiMacros]
 Macro1=$019

@@ -77,8 +77,7 @@ MENU=36, UP=46, DOWN=45, LEFT=44, RIGHT=43, SELECT=37, SUR[SURROUND]=42, CENTER=
 PIP=50, SWAP=38, MOVE=51, SETUP=31, SHIFT=15, AUD=47, VID=39,
 {Light}=49, DISPLAY=$A3, REAR=$A9, PROGRAM=$A4, SLEEP=$82, FREEZE=$B2,
 CLEAR=$A5,
-Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F,
-?1=$91, ?2=$92, ?3=$9a, ?4=$89, ?5=$8a, ?6=$ab, ?7=$ac, ?8=$ad, $9=$ae
+Phantom1=$3A, Phantom2=$3B, Phantom3=$3C, Phantom4=$3D, DiscreteON=$3E, DiscreteOFF=$3F
 
 [ButtonMaps]
 0 = (19, 28, 20, 12, 29, 21, 13, 30, 22, 14), (6, 3, 2), (4, 5),
