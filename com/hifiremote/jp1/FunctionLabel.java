@@ -17,7 +17,7 @@ public class FunctionLabel
       setText( "- none -" );
     else
     {
-      setText( function.toString());
+      setText( function.getName());
       if ( function.assigned() )
         showAssigned();
       else

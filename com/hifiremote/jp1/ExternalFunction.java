@@ -85,7 +85,6 @@ public class ExternalFunction
       return getHex();
   }
 
-
   public void setSetupCode( int code ){ setupCode = code; }
   public int getSetupCode(){ return setupCode; }
 
