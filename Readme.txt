@@ -1,17 +1,3 @@
-The extension used to recognize a RemoteMaster Device Upgrade
-has changed to ".rmdu".
-
-Also, the name of the directory containing the RemoteMaster
-Device Upgrade files has changed to "Upgrades"
-
-To migrate your existing device upgrades (.km files) please
-rename the extension and move them to the new directory.
-Also edit the RemoteMaster.properties file using a text
-editor (such as Notepad) and change the end of the KMPath
-value from km to Upgrades.
-
-Finally, delete the old "km" directory
-
 The command line parameters to RemoteMaster have been changed
 to make it easier to use file associations.  This will allow
 users to simply double-click on a .rmdu file to launch RemoteMaster
@@ -49,8 +35,6 @@ To install, follow these steps:
 File Associations
 -----------------
 
-**** NOTE : this has only been tested in Windows XP ****
-
 In order to simplify the process of setting up File Associations in
 Windows, the Setup.jar file is now included with RemoteMaster.
 Setting up the file associations is a two step process.
@@ -77,6 +61,23 @@ If you see some unexpected results, close RemoteMaster and look in
 rmaster.err for some diagnostic messages about the error. These
 should help me find the bug. By unexpected result, I mean the GUI
 crashing or going haywire or becoming unresponsive.
+
+Importing KM Files
+------------------
+RemoteMaster now has the ability to import many existing KM upgrade files.
+In the upgrade process, all function definition will be imported.
+Some button assignments may be lost during the import process.
+You can reassign the functions to the desired buttons on the Button panel 
+or the Layout panel.
+
+RDF Files
+---------
+
+RemoteMaster comes bundled with a number of RDF files.  These RDF files
+NOT the same as the RDFs that come bundled with IR, or are distributed with 
+some extenders.  Most likely these other RDFs are not compatible with RemoteMaster,
+but they can be made compatible with some minor editing.  For help with that, please
+make a post in the jp1-km Yahoo Group.
 
 Protocols
 ---------
@@ -163,3 +164,22 @@ RCA Combo (w/Duration)
 ReplayTV (Simple)
 ReplayTV (Advanced)
 Zenith
+
+Command Line Parameters
+-----------------------
+
+Most users will never need to know the command-line parameters, but they are
+documented here for completeness
+
+The parameters are:
+
+-h (home directory) - the directory containing protocols.ini,
+                      RemoteMaster.properties, the rdf, images, and
+                      Upgrades directories.  It typically also
+                      includes RemoteMaster.jar.  If not specified, it
+                      defaults to the working directory.
+
+-p (properties file) - the properties files to be used.  Defaults to
+                       RemoteMaster.properties in the home directory.
+
+(device upgrade file) - the optional device upgrade file to load.

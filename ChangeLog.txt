@@ -1,4 +1,11 @@
-Chnages for v0.64
+Changes for v0.65
+
+- Add/update remote images, maps, and rdfs
+- Feature Request 730478: Move External Functions tab
+- Allow multiple shapes in the map file for the same RDF button
+- Allow an optional display name for a shape in the map file
+
+Changes for v0.64
 
 - Close .map file when done parsing
 - Add/update remote images, maps, and rdfs
