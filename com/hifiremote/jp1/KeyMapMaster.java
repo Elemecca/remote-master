@@ -806,7 +806,8 @@ public class KeyMapMaster
     {
       e.printStackTrace( System.err );
     }
-    chooser.setFileFilter( new TextFileFilter());
+    chooser.setFileFilter( new AnyFileFilter());
+    chooser.addChoosableFileFilter( new TextFileFilter());
     chooser.addChoosableFileFilter( new KMFileFilter());
     int returnVal = chooser.showOpenDialog( this );
     if ( returnVal == JFileChooser.APPROVE_OPTION )
@@ -1412,6 +1413,32 @@ public class KeyMapMaster
     public String getDescription()
     {
       return "KeyMapMaster device upgrade files";
+    }
+  }
+
+  private class AnyFileFilter
+    extends javax.swing.filechooser.FileFilter
+  {
+    //Accept all directories and all .km/.rmdu files.
+    public boolean accept( File f )
+    {
+      boolean rc = false;
+      if ( f.isDirectory())
+        rc = true;
+      else
+      {
+        String lowerName = f.getName().toLowerCase();
+        if ( lowerName.endsWith( ".txt" ) || lowerName.endsWith( ".km" ) || 
+             lowerName.endsWith( upgradeExtension ))
+          rc = true;
+      }
+      return rc;
+    }
+
+    //The description of this filter
+    public String getDescription()
+    {
+      return "All device upgrade files";
     }
   }
 }
