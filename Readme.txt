@@ -4,12 +4,11 @@ that ship with IR.  Standard RDFs shipped with IR or
 downloaded from the jp1 Yahoo! group will NOT work
 with KM.
 
-In this release KMJ is now using aliases for device types,
-much like KMX does.  It is possible that some previously
-created .km files will not load correctly.  If it seems that
-this has happened to one of your .km files, edit it with a
-text editor and change the DeviceType= to use one of
-the following values:
+KMJ now uses aliases for device types, much like KMX does.  
+It is possible that some previously created .km files will 
+not load correctly.  If it seems that this has happened to 
+one of your .km files, edit it with a text editor and 
+change the DeviceType= to use one of the following values:
 
 Cable, TV, VCR, CD, Tuner, DVD, SAT, Tape, Laserdisc,
 DAT, Home Auto, Misc Audio, Phono, Video Acc, Amp

@@ -14,7 +14,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  private static final String version = "v 0.35";
+  private static final String version = "v 0.36";
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -524,10 +524,8 @@ public class KeyMapMaster
     throws IOException
   {
     int rc = JOptionPane.showConfirmDialog( this,
-                                            "All changes made to the current upgrade will be lost if you proceed.\n" + 
-                                            "If you would like to save the currect upgrade before proceeding, click Yes.\n" + 
-                                            "If you would like to proceed wihtout saving, click No.\n" + 
-                                            "If you do not want to proceed, click Cancel.",
+//                                            "All changes made to the current upgrade will be lost if you proceed.\n\n" + 
+                                            "Do you want to save the currect upgrade before proceeding?",
                                             "Save upgrade?",
                                             JOptionPane.YES_NO_CANCEL_OPTION );
     System.err.println( "KeyMapMaster.promptToSaveUpgrade(), rc=" + rc );
