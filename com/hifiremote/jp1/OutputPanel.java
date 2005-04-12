@@ -120,7 +120,7 @@ public class OutputPanel
 
     Remote r = deviceUpgrade.getRemote();
 
-    if ( r.supportsVariant( p.getID(), pVariant ))
+    if (( p.getClass() != ManualProtocol.class ) && r.supportsVariant( p.getID(), pVariant ))
     {
       protocolLabel.setForeground( Color.BLACK );
       protocolLabel.setText( "Upgrade Protocol Code" );
