@@ -43,7 +43,7 @@ public class TranslatorEditorNode
   public int getBits()
   {
     if ( bits == -1 )
-      return (( DevParmEditorNode )getParent()).getBits();
+      return (( HexParmEditorNode )getParent()).getBits();
     return bits;
   }
 

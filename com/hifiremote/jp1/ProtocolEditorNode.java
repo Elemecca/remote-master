@@ -10,9 +10,18 @@ public abstract class ProtocolEditorNode
   public ProtocolEditorNode( String name, boolean askAllowsChildren )
   {
     super( name, askAllowsChildren );
-    if ( nullHex == null )
-      nullHex = new Hex();
     propertyChangeSupport = new PropertyChangeSupport( this );
+  }
+
+  public void setName( String newName )
+  {
+    propertyChangeSupport.firePropertyChange( "Name", super.getUserObject(), newName );
+    super.setUserObject( newName );
+  }
+
+  public String getName()
+  {
+    return ( String )getUserObject();
   }
 
   public ProtocolEditorNode createChild()
@@ -26,19 +35,9 @@ public abstract class ProtocolEditorNode
   public abstract ProtocolEditorPanel getEditingPanel();
   public abstract void print( PrintWriter pw );
 
-  public void addPropertyChangeListener( PropertyChangeListener listener )
-  {
-    propertyChangeSupport.addPropertyChangeListener( listener );
-  }
-
   public void addPropertyChangeListener( String propertyName, PropertyChangeListener listener )
   {
     propertyChangeSupport.addPropertyChangeListener( propertyName, listener );
-  }
-
-  public void removePropertyChangeListener( PropertyChangeListener listener )
-  {
-    propertyChangeSupport.removePropertyChangeListener( listener );
   }
 
   public void removePropertyChangeListener( String propertyName, PropertyChangeListener listener )
@@ -51,7 +50,6 @@ public abstract class ProtocolEditorNode
     propertyChangeSupport.firePropertyChange( propertyName, oldValue, newValue );
   }        
 
-  protected static Hex nullHex = null;
   private PropertyChangeSupport propertyChangeSupport = null;
 }
 

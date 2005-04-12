@@ -14,9 +14,10 @@ public class TranslatorEditorPanel
   public TranslatorEditorPanel()
   {
     super( "Translator" );
-    setLayout( new BoxLayout( this, BoxLayout.PAGE_AXIS ));
+    Box outerBox = Box.createVerticalBox();
+    add( outerBox, BorderLayout.CENTER );
     Box box = Box.createVerticalBox();
-    add( box );
+    outerBox.add( box );
     Border border = BorderFactory.createTitledBorder( "Bit order" ); 
     box.setBorder( border );
     box.setAlignmentX( Component.LEFT_ALIGNMENT );
@@ -30,18 +31,20 @@ public class TranslatorEditorPanel
     ButtonGroup group = new ButtonGroup();
     group.add( msb );
     group.add( lsb );
-    add( Box.createVerticalStrut( 5 ));
+    outerBox.add( Box.createVerticalStrut( 5 ));
+    Box innerBox = box.createVerticalBox();
+    outerBox.add( innerBox );
+    Insets insets = border.getBorderInsets( box );
+    innerBox.setBorder( BorderFactory.createEmptyBorder( 0, insets.left, 0, 0 )); 
     comp = new JCheckBox( "Complement" );
     comp.setToolTipText( "Select this if the parameter should be complemented during translation" );
-    Insets insets = border.getBorderInsets( box );
-    comp.setBorder( BorderFactory.createEmptyBorder( 0, insets.left, 0, 0 ));
     comp.setAlignmentX( Component.LEFT_ALIGNMENT );
     comp.addActionListener( this );
-    add( comp );
-    add( Box.createVerticalStrut( 10 ));
+    innerBox.add( comp );
+    innerBox.add( Box.createVerticalStrut( 10 ));
     JLabel label = new JLabel( "Parameter bits to be translated:" );
     label.setAlignmentX( Component.LEFT_ALIGNMENT );
-    add( label );
+    innerBox.add( label );
     parmTable = new JTable( new ParmDefaultTableModel( 8 ));
     (( DefaultTableCellRenderer )parmTable.getDefaultRenderer( Integer.class )).setHorizontalAlignment( SwingConstants.CENTER );
     parmTable.setCellSelectionEnabled( false );
@@ -49,17 +52,17 @@ public class TranslatorEditorPanel
     parmTable.setColumnSelectionAllowed( true );
     parmTable.setAlignmentX( Component.LEFT_ALIGNMENT );
     parmTable.getColumnModel().addColumnModelListener( this );
-    add( parmTable );
+    innerBox.add( parmTable );
 
-    add( box.createVerticalStrut( 10 ));
+    innerBox.add( box.createVerticalStrut( 10 ));
 
-    add( new JLabel( "Fixed data bits to receive the translated parameter bits." ));
+    innerBox.add( new JLabel( "Bits to receive the translated parameter bits:" ));
     dataBar = new MyScrollBar( JScrollBar.HORIZONTAL, 0, 8, 0, 24 );
     dataBar.addAdjustmentListener( this );
     dataBar.setAlignmentX( Component.LEFT_ALIGNMENT );
     dataBar.setAlignmentY( Component.TOP_ALIGNMENT );
     int h = dataBar.getMinimumSize().height;
-    add( dataBar );
+    innerBox.add( dataBar );
     dataBox = box.createHorizontalBox();
     dataBox.add( box.createHorizontalStrut( h ));
             
@@ -74,13 +77,13 @@ public class TranslatorEditorPanel
     dataBox.add( dataTable );
     dataBox.add( box.createHorizontalStrut( h ));
     dataBox.setAlignmentX( Component.LEFT_ALIGNMENT );
-    add( dataBox );
+    innerBox.add( dataBox );
     adjustSizes();
 
-    add( box.createVerticalStrut( 5 ));
+    innerBox.add( box.createVerticalStrut( 5 ));
     box = box.createHorizontalBox();
     box.setAlignmentX( Component.LEFT_ALIGNMENT );
-    box.add( new JLabel( "Adjustment" ));
+    box.add( new JLabel( "Adjustment:" ));
     adjustment = new JSpinner( new SpinnerNumberModel( 0, -8, 8, 1 ));
     adjustment.setMaximumSize( adjustment.getPreferredSize());
     adjustment.setToolTipText( "This value is added to the parameter before translation occurs." );
@@ -88,9 +91,9 @@ public class TranslatorEditorPanel
     box.add( box.createHorizontalStrut( 5 ));
     box.add( adjustment );
     adjustment.addChangeListener( this );
-    add( box );
-    add( box.createVerticalGlue());
-    
+    innerBox.add( box );
+
+    setText( "Translators are used to store the value a user enters for a parameter in the appropriate bits of the protocol data." );    
   }
 
   private void adjustSizes()
@@ -142,20 +145,20 @@ public class TranslatorEditorPanel
     else
       lsb.setSelected( true );
     comp.setSelected( node.getComp());
-    DevParmEditorNode devParm = ( DevParmEditorNode )node.getParent();
-    int parmBits = devParm.getBits();
+    HexParmEditorNode parm = ( HexParmEditorNode )node.getParent();
+    int parmBits = parm.getBits();
     parmTable.getColumnModel().removeColumnModelListener( this );
     parmTable.clearSelection();
     (( ParmDefaultTableModel )parmTable.getModel()).setCols( parmBits );
-    FixedDataEditorNode fixedData = ( FixedDataEditorNode )devParm.getParent();
-    int fixedBits = fixedData.getFixedData().length() * 8;
-    (( DataDefaultTableModel )dataTable.getModel()).setCols( fixedBits );
+    HexEditorNode hex = ( HexEditorNode )parm.getParent();
+    int hexBits = hex.getHex().length() * 8;
+    (( DataDefaultTableModel )dataTable.getModel()).setCols( hexBits );
     int lastCol =  parmBits - node.getLSBOffset() - 1;
     int firstCol = lastCol - node.getBits() + 1;
     parmTable.addColumnSelectionInterval( firstCol, lastCol );
     parmTable.getColumnModel().addColumnModelListener( this );
     dataBar.removeAdjustmentListener( this );
-    dataBar.setValues( node.getMSBOffset(), node.getBits(), 0, fixedBits );
+    dataBar.setValues( node.getMSBOffset(), node.getBits(), 0, hexBits );
     dataBar.addAdjustmentListener( this );
     adjustSizes();
     adjustment.setValue( new Integer( node.getAdjust()));
@@ -202,11 +205,11 @@ public class TranslatorEditorPanel
     node.setBits( bits );
     node.setLSBOffset( parmTable.getColumnCount() - lastCol - 1 );
 //    dataBar.removeAdjustmentListener( this );
-    DevParmEditorNode devParm = ( DevParmEditorNode )node.getParent();
-    FixedDataEditorNode fixedData = ( FixedDataEditorNode )devParm.getParent();
-    int fixedBits = fixedData.getFixedData().length() * 8;
-    if (( dataBar.getValue() + bits ) > fixedBits )
-      dataBar.setValue( fixedBits - bits );
+    HexParmEditorNode parm = ( HexParmEditorNode )node.getParent();
+    HexEditorNode hex = ( HexEditorNode )parm.getParent();
+    int hexBits = hex.getHex().length() * 8;
+    if (( dataBar.getValue() + bits ) > hexBits )
+      dataBar.setValue( hexBits - bits );
     dataBar.setVisibleAmount( bits );
     dataBar.setBlockIncrement( bits );
 //    dataBar.addAdjustmentListener( this );

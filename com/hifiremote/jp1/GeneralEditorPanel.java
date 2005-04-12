@@ -14,11 +14,10 @@ public class GeneralEditorPanel
   public GeneralEditorPanel()
   {
     super( "General Settings" );
-    setLayout( new BorderLayout());
 
     SpringLayout layout = new SpringLayout();
     JPanel panel = new JPanel( layout );
-    add( panel, BorderLayout.NORTH );
+    add( panel, BorderLayout.CENTER );
     name = new JTextField( 20 );
     oldNames = new JTextField();
     MaskFormatter f = null;
@@ -53,6 +52,10 @@ public class GeneralEditorPanel
       if ( required[ i ] )
         l.setForeground( Color.RED );
       JTextField textField = fields[ i ];
+      int height = textField.getPreferredSize().height;
+      Dimension d = textField.getMaximumSize();
+      d.height = height;
+      textField.setMaximumSize( d );
       textField.getDocument().addDocumentListener( this );
       l.setLabelFor( textField );
       textField.setToolTipText( toolTipText[ i ]);
@@ -65,6 +68,7 @@ public class GeneralEditorPanel
                                      5, 5,      // initX, initY
                                      5, 5 );    // xPad, yPad
 
+    setText( "Enter the requested information about the protocol.  Fields with names in red are required." );                                     
   }
 
   public void commit(){;}

@@ -7,6 +7,11 @@ import javax.swing.table.*;
 public class HexEditor
   extends DefaultCellEditor
 {
+  public HexEditor()
+  {
+    this( null );
+  }
+
   public HexEditor( Hex defaultHex )
   {
     super( new JTextField());
@@ -40,7 +45,9 @@ public class HexEditor
     if (( str != null ) && ( str.length() != 0 ))
     {
       Hex temp = new Hex( str );
-      if ( temp.length() != defaultHex.length() )
+      if ( defaultHex == null )
+        rc = temp;
+      else if ( temp.length() != defaultHex.length() )
       {
         String msg = "The hex command must contain exactly " + defaultHex.length() + " bytes.";
         KeyMapMaster.showMessage( msg );

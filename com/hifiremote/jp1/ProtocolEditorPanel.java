@@ -1,6 +1,8 @@
 package com.hifiremote.jp1;
 
+import java.awt.BorderLayout;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.BorderFactory;
 import javax.swing.border.TitledBorder;
 
@@ -9,9 +11,22 @@ public abstract class ProtocolEditorPanel
 {
   public ProtocolEditorPanel( String title )
   {
-    super();
+    super( new BorderLayout());
     border = BorderFactory.createTitledBorder( title );
     setBorder( border );
+    textArea = new JTextArea();
+    textArea.setFont( border.getTitleFont());
+    textArea.setEditable( false );
+    textArea.setLineWrap( true );
+    textArea.setWrapStyleWord( true );
+    textArea.setBackground( getBackground());
+    textArea.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+    add( textArea, BorderLayout.NORTH );
+  }
+  
+  public void setText( String text )
+  {
+    textArea.setText( text );
   }
 
   public String getTitle(){ return border.getTitle(); }
@@ -20,5 +35,6 @@ public abstract class ProtocolEditorPanel
   public void commit(){};
 
   protected TitledBorder border = null;
+  protected JTextArea textArea = null;
 }
 

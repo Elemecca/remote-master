@@ -36,16 +36,30 @@ public class ProtocolEditor
 
     root = new DefaultMutableTreeNode( "Root", true );
     root.add( new GeneralEditorNode());
+
     FixedDataEditorNode fixedDataNode = new FixedDataEditorNode();
     root.add( fixedDataNode );
-    fixedDataNode.addPropertyChangeListener( "fixedData", this );
+    fixedDataNode.addPropertyChangeListener( "Hex", this );
+
+    CmdEditorNode cmdDataNode = new CmdEditorNode();
+    root.add( cmdDataNode );
+    cmdDataNode.addPropertyChangeListener( "Hex", this );
+    CmdParmEditorNode obcNode = new CmdParmEditorNode();
+    obcNode.setName( "OBC" );
+    cmdDataNode.add( obcNode );
+    obcNode.addPropertyChangeListener( "Name", this );
+
+    root.add( new CodeEditorNode());    
 
     treeModel = new DefaultTreeModel( root, true );
     tree = new JTree( treeModel );
     tree.setRootVisible( false );
     tree.setShowsRootHandles( true );
     tree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
+    tree.expandRow( 1 );
+    tree.collapseRow( 1 );
     tree.addTreeSelectionListener( this );
+    tree.expandPath( new TreePath( obcNode.getPath()));
 
     JScrollPane scrollPane = new JScrollPane( tree );
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ),
@@ -62,10 +76,16 @@ public class ProtocolEditor
     }
 
     ProtocolEditorNode node = new DevParmEditorNode();
+    node.addPropertyChangeListener( "Name", this );
     ProtocolEditorPanel panel = node.getEditingPanel();
     cardPanel.add( panel, panel.getTitle());
     node = ( ProtocolEditorNode )node.getFirstChild();
     panel = node.getEditingPanel();
+    cardPanel.add( panel, panel.getTitle());
+
+    node = new CmdParmEditorNode();
+    panel = node.getEditingPanel();
+    System.err.println( "CmdParmEditorPanel.getTitle() returned " + panel.getTitle());
     cardPanel.add( panel, panel.getTitle());
 
     contentPane.add( cardPanel, BorderLayout.CENTER );
@@ -110,6 +130,7 @@ public class ProtocolEditor
     {
       int children = selectedNode.getChildCount();
       ProtocolEditorNode newNode = selectedNode.createChild();
+      newNode.addPropertyChangeListener( "Name", this );
       treeModel.insertNodeInto( newNode, selectedNode, children );
       ProtocolEditorPanel newPanel = newNode.getEditingPanel();
       cardPanel.add( newPanel, newPanel.getTitle());
@@ -149,6 +170,7 @@ public class ProtocolEditor
         nodeToSelect = ( DefaultMutableTreeNode )selectedNode.getParent();
 
       treeModel.removeNodeFromParent( selectedNode );
+      selectedNode.removePropertyChangeListener( "Name", this );
       tree.getSelectionModel().setSelectionPath( new TreePath( nodeToSelect.getPath()));
     }
     else if ( source == okButton )
@@ -161,10 +183,20 @@ public class ProtocolEditor
   // PropertyChangeListener methods
   public void propertyChange( PropertyChangeEvent e )
   {
-    Object source = e.getSource();
-    if ( source == selectedNode )
+    System.err.println( "ProtocolEditor.propertyChange" );
+    System.err.println( "\tpropertyName=" + e.getPropertyName());
+    ProtocolEditorNode node = ( ProtocolEditorNode )e.getSource();
+    if ( e.getPropertyName().equals( "Hex" ))
     {
       enableButtons();
+    }
+    else if ( e.getPropertyName().equals( "Name" ))
+    {
+      System.err.println( "\toldValue=" + e.getOldValue() + " and newValue=" + e.getNewValue());
+      treeModel.nodeChanged( node );
+      TreePath path = new TreePath( node.getPath());
+      tree.collapsePath( path );
+      tree.expandPath( path );
     }
   }
 
