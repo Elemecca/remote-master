@@ -41,8 +41,11 @@ public class Preferences
       upgradePath = new File( temp );
     else
       upgradePath = new File( home, upgradeDirectory );
-    while ( !upgradePath.exists() && !upgradePath.isDirectory())
+    while (( upgradePath != null ) && !upgradePath.exists() && !upgradePath.isDirectory())
       upgradePath = upgradePath.getParentFile();
+
+    if (  upgradePath == null )
+      upgradePath = new File( home, upgradeDirectory );
 
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
     temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
