@@ -85,7 +85,6 @@ public class ProtocolEditor
 
     node = new CmdParmEditorNode();
     panel = node.getEditingPanel();
-    System.err.println( "CmdParmEditorPanel.getTitle() returned " + panel.getTitle());
     cardPanel.add( panel, panel.getTitle());
 
     contentPane.add( cardPanel, BorderLayout.CENTER );
@@ -183,8 +182,6 @@ public class ProtocolEditor
   // PropertyChangeListener methods
   public void propertyChange( PropertyChangeEvent e )
   {
-    System.err.println( "ProtocolEditor.propertyChange" );
-    System.err.println( "\tpropertyName=" + e.getPropertyName());
     ProtocolEditorNode node = ( ProtocolEditorNode )e.getSource();
     if ( e.getPropertyName().equals( "Hex" ))
     {
@@ -192,7 +189,6 @@ public class ProtocolEditor
     }
     else if ( e.getPropertyName().equals( "Name" ))
     {
-      System.err.println( "\toldValue=" + e.getOldValue() + " and newValue=" + e.getNewValue());
       treeModel.nodeChanged( node );
       TreePath path = new TreePath( node.getPath());
       tree.collapsePath( path );

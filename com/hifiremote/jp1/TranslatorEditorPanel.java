@@ -80,7 +80,7 @@ public class TranslatorEditorPanel
     innerBox.add( dataBox );
     adjustSizes();
 
-    innerBox.add( box.createVerticalStrut( 5 ));
+    innerBox.add( box.createVerticalStrut( 10 ));
     box = box.createHorizontalBox();
     box.setAlignmentX( Component.LEFT_ALIGNMENT );
     box.add( new JLabel( "Adjustment:" ));
@@ -91,6 +91,7 @@ public class TranslatorEditorPanel
     box.add( box.createHorizontalStrut( 5 ));
     box.add( adjustment );
     adjustment.addChangeListener( this );
+    box.setMaximumSize( box.getPreferredSize());
     innerBox.add( box );
 
     setText( "Translators are used to store the value a user enters for a parameter in the appropriate bits of the protocol data." );    
