@@ -21,6 +21,8 @@ public abstract class HexParmEditorNode
   public void print( PrintWriter pw )
   {
     pw.print( getName() + ':' );
+    if ( format == HEXADECIMAL )
+      pw.print( '$' );
     if ( type == NUMBER )
       pw.print( bits );
     else if ( type == CHOICE )
@@ -37,6 +39,9 @@ public abstract class HexParmEditorNode
     if ( defaultValue != -1 )
       pw.print( "=" + defaultValue );
   }
+
+  public void setDefaultValue( int value ){ defaultValue = value; }
+  public int getDefaultValue(){ return defaultValue; }
 
   public boolean canDelete(){ return true; }
 
@@ -67,10 +72,19 @@ public abstract class HexParmEditorNode
   public void setType( int newType ){ type = newType; }
   public int getType(){ return type; }
 
+  private int format = DECIMAL;
+  public void setFormat( int newFormat ){ format = newFormat; }
+  public int getFormat(){ return format; }
+
   private Vector choices = new Vector();
+  public Vector getChoices(){ return choices; }
+  public void setChoices( Vector newChoices ){ choices = newChoices; }
   private int defaultValue = -1;
 
   public final static int NUMBER = 0;
   public final static int CHOICE = 1;
   public final static int FLAG = 2;
+
+  public final static int DECIMAL = 0;
+  public final static int HEXADECIMAL = 1;
 }

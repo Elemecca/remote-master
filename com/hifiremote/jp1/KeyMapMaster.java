@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.21";
+  public static final String version = "v1.22";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -740,7 +740,7 @@ public class KeyMapMaster
   public void loadUpgrade( File file )
     throws Exception
   {
-    if ( file == null )
+    if (( file == null ) || !file.exists())
       return;
 
     Protocol oldProtocol = deviceUpgrade.getProtocol();
