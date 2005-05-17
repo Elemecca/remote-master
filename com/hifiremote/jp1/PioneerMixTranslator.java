@@ -15,6 +15,8 @@ public class PioneerMixTranslator
     boolean doInsert = true;
     for ( int i = 0; i < parms.length; i++ )
     {
+      if (( onlyIndex != -1 ) && ( onlyIndex != i ))
+        continue;
       if (( parms[ i ] != null ) && ( parms[ i ].getValue() != null ))
       {
         int val = (( Integer )parms[ i ].getValue()).intValue();
@@ -75,7 +77,4 @@ public class PioneerMixTranslator
         break;
     }
   }
-
-  private int styleIndex = 0;
-  private int cmdIndex = 1;
 }
