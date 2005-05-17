@@ -22,6 +22,14 @@ public class ProtocolEditor
 {
   public static void main( String[] args )
   {
+    try
+    {
+      System.setErr( new PrintStream( new FileOutputStream( new File ( "pedit.err" ))));
+    }
+    catch ( Exception e )
+    {
+      e.printStackTrace( System.err );
+    }
     JFrame frame = new JFrame( "Test" );
     ProtocolEditor e = new ProtocolEditor( frame );
     e.show();

@@ -2,13 +2,14 @@ package com.hifiremote.jp1;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
 public class HexParmEditorPanel
   extends ProtocolEditorPanel
-  implements ChangeListener, ActionListener, FocusListener
+  implements ChangeListener, ActionListener, FocusListener, PropertyChangeListener, Runnable
 {
   public HexParmEditorPanel( String title )
   {
@@ -105,7 +106,20 @@ public class HexParmEditorPanel
     boxPanel.add( hex );
     group.add( hex );
     limitHeight( boxPanel );
+
+    boxPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ));
+    panelBox.add( boxPanel );
                                    
+    label = new JLabel( "Default value:", SwingConstants.RIGHT );
+    boxPanel.add( label );
+    label.setPreferredSize( labelSize );
+    decimalFormatter = new IntegerFormatter( 8 );
+    hexFormatter = new HexIntegerFormatter( 8 );    
+    defaultValue = new JFormattedTextField();
+    defaultValue.setPreferredSize( name.getPreferredSize());
+    boxPanel.add( defaultValue );
+    limitHeight( boxPanel );
+
     setText( "Enter the requested information about the parameter.\n\nEach parameter can have one or more translators associated with it." );
 
     addListeners();
@@ -137,6 +151,28 @@ public class HexParmEditorPanel
     int type = node.getType();
     buttons[ type ].setSelected( true );
     (( CardLayout )card.getLayout()).show( card, Integer.toString( type ));
+    if ( numberButton.isSelected())
+    {
+      int numBits = node.getBits();
+      bits.setValue( new Integer( numBits ));
+      decimalFormatter.setBits( numBits );
+      hexFormatter.setBits( numBits );
+      if ( node.getFormat() == HexParmEditorNode.DECIMAL )
+      {
+        decimal.setSelected( true );
+        defaultValue.setFormatterFactory( new DefaultFormatterFactory( decimalFormatter ));
+      }
+      else
+      {
+        hex.setSelected( true );
+        defaultValue.setFormatterFactory( new DefaultFormatterFactory( hexFormatter ));
+      }
+      int val = node.getDefaultValue();
+      if ( val == -1 )
+        defaultValue.setValue( null );
+      else
+        defaultValue.setValue( new Integer( val ));
+    }
 
     addListeners();
     
@@ -150,6 +186,9 @@ public class HexParmEditorPanel
     for ( int i = 0; i < buttons.length; i++ )
       buttons[ i ].removeActionListener( this );
     bits.removeChangeListener( this );
+    decimal.removeActionListener( this );
+    hex.removeActionListener( this );
+    defaultValue.removePropertyChangeListener( "value", this );
   }
 
   private void addListeners()
@@ -159,6 +198,9 @@ public class HexParmEditorPanel
     for ( int i = 0; i < buttons.length; i++ )
       buttons[ i ].addActionListener( this );
     bits.addChangeListener( this );
+    decimal.addActionListener( this );
+    hex.addActionListener( this );
+    defaultValue.addPropertyChangeListener( "value", this );
   }
 
   // ChangeListener methods
@@ -167,8 +209,24 @@ public class HexParmEditorPanel
     Object source = e.getSource();
     if ( source == bits )
     {
-      if ( node != null )
-        node.setBits((( Integer )bits.getValue()).intValue());
+      int numBits = (( Integer )bits.getValue()).intValue();
+      System.err.println( "numBits=" + numBits );
+      node.setBits( numBits );
+      hexFormatter.setBits( numBits );
+      decimalFormatter.setBits( numBits );
+
+      int mask = ( 2 << ( numBits - 1 ))- 1;
+      System.err.println( "Mask is " + mask );
+      int val = node.getDefaultValue();
+      if ( val > mask )
+      {
+        val &= mask;
+        if ( decimal.isSelected())
+          defaultValue.setValue( new Integer( val ));
+        else
+          defaultValue.setValue( new HexInteger( val ));
+      }
+      
     }
   }
 
@@ -190,6 +248,28 @@ public class HexParmEditorPanel
     String command = e.getActionCommand();
     if ( source == name )
       actionOrFocus( e );
+    else if ( source == decimal  )
+    {
+      removeListeners();
+      Object value = defaultValue.getValue();
+      System.err.println( "got value " + value );
+      defaultValue.setValue( null );
+      defaultValue.setFormatterFactory( new DefaultFormatterFactory( decimalFormatter ));
+      defaultValue.setValue( value );
+      addListeners();
+      node.setFormat( HexParmEditorNode.DECIMAL );
+    }
+    else if ( source == hex )
+    {
+      removeListeners();
+      Object value = defaultValue.getValue();
+      System.err.println( "got value " + value );
+      defaultValue.setValue( null );
+      defaultValue.setFormatterFactory( new DefaultFormatterFactory( hexFormatter ));
+      defaultValue.setValue( value );
+      addListeners();
+      node.setFormat( HexParmEditorNode.HEXADECIMAL );
+    }
     else if ( command != null )
     {
       int i = Integer.parseInt( command );
@@ -200,11 +280,42 @@ public class HexParmEditorPanel
 
   // FocusLlistener methods
   public void focusGained( FocusEvent e )
-  {}
+  {
+    Object source = e.getSource();
+    if ( source.getClass() == JFormattedTextField.class )
+    {
+      controlToSelectAll = ( JFormattedTextField )source;
+      SwingUtilities.invokeLater( this );
+    }
+  }
 
   public void focusLost( FocusEvent e )
   {
     actionOrFocus( e );
+  }
+
+  //
+  public void propertyChange( PropertyChangeEvent e )
+  {
+    Object source = e.getSource();
+    String propertyName = e.getPropertyName();
+    if ( !propertyName.equals( "value" ))
+      return;
+    System.err.println( "propertyChange( " + e.getPropertyName() + " )" );
+    if ( source == defaultValue )
+    {
+      Number val = ( Number )e.getNewValue();
+      System.err.println( "value=" + val );
+      if ( val == null ) 
+        node.setDefaultValue( -1 );
+      else
+        node.setDefaultValue( val.intValue());
+    }
+  }
+
+  public void run()
+  {
+    controlToSelectAll.selectAll();
   }
 
   private HexParmEditorNode node = null;
@@ -218,5 +329,9 @@ public class HexParmEditorPanel
   private JSpinner bits = null;
   private JRadioButton decimal = null;
   private JRadioButton hex = null;
-
+  private JPanel ftfPanel = null;
+  private JFormattedTextField defaultValue = null;
+  private HexIntegerFormatter hexFormatter = null;
+  private IntegerFormatter decimalFormatter = null;
+  private JFormattedTextField controlToSelectAll = null;
 }

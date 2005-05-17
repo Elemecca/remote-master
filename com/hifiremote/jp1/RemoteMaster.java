@@ -5,7 +5,7 @@ import javax.swing.*;
 
 public class RemoteMaster
 {
-  public static void main( String[] args )
+  private static void createAndShowGUI( String[] args )
   {
     try
     {
@@ -20,4 +20,19 @@ public class RemoteMaster
     }
     System.err.flush();
   }
+
+  public static void main(String[] args)
+  {
+    //Schedule a job for the event-dispatching thread:
+    //creating and showing this application's GUI.
+    parms = args;
+    javax.swing.SwingUtilities.invokeLater( new Runnable() 
+    {
+      public void run() 
+      {
+        createAndShowGUI( parms );
+      }
+    });
+  }
+  private static String[] parms = null;
 }
