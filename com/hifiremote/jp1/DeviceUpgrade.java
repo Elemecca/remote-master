@@ -826,8 +826,37 @@ public class DeviceUpgrade
       rc = st.nextToken();
       if ( rc.equals( delim ))
         rc = null;
-      else if ( st.hasMoreTokens())
-        st.nextToken(); // skip delim
+      else
+      {
+        if ( rc.startsWith( "\"" ))
+        {
+          if ( rc.endsWith( "\"" ))
+          {
+            rc = rc.substring( 1, rc.length() - 1 ).replaceAll( "\"\"", "\"" );
+          }
+          else
+          {
+            StringBuffer buff = new StringBuffer( 200 );
+            buff.append( rc.substring( 1 ));
+            while ( true )
+            {
+              String token = st.nextToken(); // skip delim
+              buff.append( delim );
+              token = st.nextToken();
+              if ( token.endsWith( "\"" ))
+              {
+                buff.append( token.substring( 0, token.length() - 1 ));
+                break;
+              }
+              else
+                buff.append( token );
+            }
+            rc = buff.toString().replaceAll( "\"\"", "\"" );
+          }
+        }
+        if ( st.hasMoreTokens())
+          st.nextToken(); // skip delim
+      }
     }
     return rc;
   }
@@ -852,9 +881,9 @@ public class DeviceUpgrade
       return;
     }
     String delim = line.substring( 5, 6 );
-    StringTokenizer st = new StringTokenizer( line, delim );
-    st.nextToken();
-    description = st.nextToken();
+    StringTokenizer st = new StringTokenizer( line, delim, true );
+    getNextField( st, delim );
+    description = getNextField( st, delim );
 
     String protocolLine = in.readLine(); // line 3
     String manualLine = in.readLine(); // line 4
@@ -872,6 +901,8 @@ public class DeviceUpgrade
     while ( true )
     {
       line = in.readLine();
+      if (( line != null ) && ( line.length() > 0 ) && ( line.charAt( 0 ) == '\"' ))
+        line = line.substring( 1 );
       int equals = line.indexOf( '=' );
       if (( equals != -1 ) && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code " ))
       {
