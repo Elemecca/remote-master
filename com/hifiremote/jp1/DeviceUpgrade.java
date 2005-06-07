@@ -1012,7 +1012,7 @@ public class DeviceUpgrade
 
       if ( p == null )
       {
-        p = protocolManager.findProtocolByOldName( remote, protocolName );
+        p = protocolManager.findProtocolByOldName( remote, protocolName, pid );
 
         if ( p == null )
         {

@@ -269,8 +269,9 @@ public class ProtocolManager
     return protocol;
   }
 
-  public Protocol findProtocolByOldName( Remote remote, String name )
+  public Protocol findProtocolByOldName( Remote remote, String name, Hex pid )
   {
+    Protocol matchByName = null;
     Vector protocols = getProtocolsForRemote( remote );
     if ( protocols == null )
       return null;
@@ -282,12 +283,15 @@ public class ProtocolManager
       {
         if ( name.equals(( String )f.nextElement()))
         {
-          return p;
+          if ( matchByName == null )
+            matchByName = p;
+          if ( p.getID().equals( pid ))
+            return p;
         }
       }
     }
 
-    return null;
+    return matchByName;
   }
 
   public Protocol findProtocol( String name, Hex id, String variantName )
