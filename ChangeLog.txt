@@ -1,3 +1,9 @@
+Changes for v1.23
+- Fix Panasonic MIX Combo hex generation
+- Add Panasonic2 (LCD-Official)
+- Fix importing of KM upgrades with extra commas
+- Match PID as well as name when importing KM upgrades.
+
 Changes for v1.22
 - More progress on Protocol Editor
 - RM Images and Maps v1.21 from Nils
