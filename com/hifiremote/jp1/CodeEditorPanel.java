@@ -102,7 +102,10 @@ public class CodeEditorPanel
     {
       if ( col == 1 )
       {
-        node.addCode( procNames[ row ], ( Hex )value );
+        if ( value != null )
+          node.addCode( procNames[ row ], ( Hex )value );
+        else
+          node.removeCode( procNames[ row ] );
         tableModel.fireTableRowsUpdated( row, row );
       }
     }

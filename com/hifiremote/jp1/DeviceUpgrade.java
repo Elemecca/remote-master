@@ -1106,7 +1106,10 @@ public class DeviceUpgrade
       if ( f == null )
       {
         System.err.println( "Had to create a new one!" );
-        f = new Function();
+        if (( token != null ) && ( token.charAt( 0 ) == '=' ) && ( token.indexOf( '/' ) != -1 ))
+          f = new ExternalFunction();
+        else
+          f = new Function();
         f.setName( token );
       }
       else
@@ -1115,13 +1118,42 @@ public class DeviceUpgrade
       token = getNextField( st, delim );  // get the function code (field 2)
       if ( token != null )
       {
-        Hex hex = protocol.getDefaultCmd();
-        protocol.importCommand( hex, token, useOBC, obcIndex, useEFC );
-
-        token = getNextField( st, delim ); // get byte2 (field 3)
-        if ( token != null )
-          protocol.importCommandParms( hex, token );
-
+        Hex hex = null;
+        if ( f.isExternal())
+        {
+          ExternalFunction ef = ( ExternalFunction )f;
+          String name = ef.getName();
+          int slash = name.indexOf( '/' );
+          String devName = name.substring( 1, slash );
+          ef.setDeviceTypeAliasName( devName );
+          int space = name.indexOf( ' ', slash + 1 );
+          String codeString = null;
+          if ( space == -1 )
+            codeString = name.substring( slash + 1 );
+          else
+            codeString = name.substring( slash + 1, space );
+          ef.setSetupCode( Integer.parseInt( codeString ));
+          if ( token.startsWith( "h") || token.endsWith( "h") || (token.indexOf( ' ' ) != -1 ))
+          {
+            hex = new Hex( token );
+            ef.setType( ExternalFunction.HexType );
+          }
+          else
+          {
+            hex = new Hex( 1 );
+            protocol.efc2hex( new EFC( token ), hex, 0 );
+            ef.setType( ExternalFunction.EFCType );
+          }
+        }
+        else
+        {
+          hex = protocol.getDefaultCmd();
+          protocol.importCommand( hex, token, useOBC, obcIndex, useEFC );
+          
+          token = getNextField( st, delim ); // get byte2 (field 3)
+          if ( token != null )
+            protocol.importCommandParms( hex, token );
+        }
         f.setHex( hex );
       }
       else
@@ -1184,7 +1216,10 @@ public class DeviceUpgrade
         if ( func == null )
         {
           System.err.println( "Creating new function " + name );
-          func = new Function();
+          if (( name.charAt( 0 ) == '=' ) && ( name.indexOf( '/' ) != -1 ))
+            func = new ExternalFunction();
+          else
+            func = new Function();
           func.setName( name );
           if ( b != null )
             usedFunctions.add( func );
@@ -1212,7 +1247,12 @@ public class DeviceUpgrade
         f.setNotes( token );
 
       if ( !f.isEmpty())
-        functions.add( f );
+      {
+        if ( f.isExternal())
+          extFunctions.add( f );
+        else
+          functions.add( f );
+      }
 
       String pidStr = getNextField( st, delim ); // field 7
       String fixedDataStr = getNextField( st, delim ); // field 8
@@ -1261,8 +1301,13 @@ public class DeviceUpgrade
           name = name.substring( 4 );
         Function func = getFunction( name, functions );
         if ( func == null )
+          func = getFunction( name, extFunctions );
+        if ( func == null )
         {
-          func = new Function();
+          if (( name.charAt( 0 ) == '=' ) && ( name.indexOf( '/' ) != -1 ))
+            func = new ExternalFunction();
+          else
+            func = new Function();
           func.setName( name );
           usedFunctions.add( func );
         }

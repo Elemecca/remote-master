@@ -28,6 +28,13 @@ public class FunctionImportDialog
           ( f.getHex() != null ) && ( f.getHex().length() > 0 ))
         data.add( new SelectHolder( f ));
     }
+    for ( Enumeration e = upgrade.getExternalFunctions().elements(); e.hasMoreElements(); )
+    {
+      Function f = ( Function )e.nextElement();
+      if (( f.getName() != null ) && ( f.getName().length() > 0 ) &&
+          ( f.getHex() != null ) && ( f.getHex().length() > 0 ))
+        data.add( new SelectHolder( f ));
+    }
 
     model = new AbstractTableModel()
     {
@@ -41,7 +48,7 @@ public class FunctionImportDialog
         if ( col == 0 )
           return Boolean.class;
         else
-          return Object.class;
+          return String.class;
       }
       public int getRowCount() { return data.size(); }
       public int getColumnCount() { return 2; }
@@ -56,7 +63,7 @@ public class FunctionImportDialog
             return Boolean.FALSE;
         }
         else
-          return h.getData();
+          return h.getData().getName();
       }
     
       public boolean isCellEditable(int row, int col)
@@ -223,15 +230,15 @@ public class FunctionImportDialog
 
   public class SelectHolder
   {
-    public SelectHolder( Object obj )
+    public SelectHolder( Function f )
     {
-      this.data = obj;
+      this.data = f;
     }
     public boolean isSelected(){ return selected; }
     public void setSelected( boolean flag ){ selected = flag; }
-    public Object getData(){ return data; }
+    public Function getData(){ return data; }
     private boolean selected = false;
-    private Object data = null;
+    private Function data = null;
   }
 
   private Vector data = new Vector();

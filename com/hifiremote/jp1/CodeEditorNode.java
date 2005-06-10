@@ -24,7 +24,8 @@ public class CodeEditorNode
     {
       String key = ( String )i.next();
       Hex hex = getCode( key );
-      pw.println( "Code." + key + '=' + hex );
+      if (( hex != null ) && ( hex.length() != 0 ))
+        pw.println( "Code." + key + '=' + hex );
     }
   }
 

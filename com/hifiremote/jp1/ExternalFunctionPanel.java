@@ -49,17 +49,23 @@ public class ExternalFunctionPanel
             for ( Enumeration e = importedFunctions.elements(); e.hasMoreElements(); )
             {
               Function f = ( Function )e.nextElement();
-              ExternalFunction ef = new ExternalFunction();
-              ef.setName( f.getName());
-              Hex hex = f.getHex(); 
-              ef.setHex( hex );
-              if ( hex.length() == 1 )
-                ef.setType( ExternalFunction.EFCType );
+              ExternalFunction ef = null;
+              if ( f.isExternal())
+                ef = ( ExternalFunction )f;
               else
-                ef.setType( ExternalFunction.HexType );
-              ef.setSetupCode( importedUpgrade.getSetupCode());
-              ef.setDeviceTypeAliasName( importedUpgrade.getDeviceTypeAliasName());
-              ef.setNotes( f.getNotes());
+              {
+                ef = new ExternalFunction();
+                ef.setName( f.getName());
+                Hex hex = f.getHex(); 
+                ef.setHex( hex );
+                if ( hex.length() == 1 )
+                  ef.setType( ExternalFunction.EFCType );
+                else
+                  ef.setType( ExternalFunction.HexType );
+                ef.setSetupCode( importedUpgrade.getSetupCode());
+                ef.setDeviceTypeAliasName( importedUpgrade.getDeviceTypeAliasName());
+                ef.setNotes( f.getNotes());
+              }
               externalFunctions.add( ef );
             }
             (( AbstractTableModel )table.getModel()).fireTableRowsInserted( firstRow, externalFunctions.size() - 1 );
