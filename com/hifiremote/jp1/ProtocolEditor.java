@@ -166,7 +166,8 @@ public class ProtocolEditor
       JTextArea ta = new JTextArea( sw.toString());
       new TextPopupMenu( ta );
       ta.setEditable( false );
-      JOptionPane.showMessageDialog( this, ta, "Protocol.ini entry text", JOptionPane.PLAIN_MESSAGE );
+      ta.setColumns( 80 );
+      JOptionPane.showMessageDialog( this, new JScrollPane( ta ), "Protocol.ini entry text", JOptionPane.PLAIN_MESSAGE );
     }
     else if ( source == deleteButton )
     {
