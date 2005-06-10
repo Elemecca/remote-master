@@ -1,3 +1,6 @@
+Changes for v1.24
+- Add support for importing External Functions
+
 Changes for v1.23
 - Fix Panasonic MIX Combo hex generation
 - Add Panasonic2 (LCD-Official)
