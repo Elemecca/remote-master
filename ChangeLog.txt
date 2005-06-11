@@ -1,3 +1,6 @@
+Changes for v1.24a
+- Fixes for importing External Functions
+
 Changes for v1.24
 - Add support for importing External Functions
 
