@@ -1133,7 +1133,7 @@ public class DeviceUpgrade
           else
             codeString = name.substring( slash + 1, space );
           ef.setSetupCode( Integer.parseInt( codeString ));
-          if ( token.startsWith( "h") || token.endsWith( "h") || (token.indexOf( ' ' ) != -1 ))
+          if (( token.indexOf( 'h' ) != -1 ) || ( token.indexOf( '$') != -1 ) || (token.indexOf( ' ' ) != -1 ))
           {
             hex = new Hex( token );
             ef.setType( ExternalFunction.HexType );
@@ -1144,6 +1144,7 @@ public class DeviceUpgrade
             protocol.efc2hex( new EFC( token ), hex, 0 );
             ef.setType( ExternalFunction.EFCType );
           }
+          getNextField( st, delim ); // skip byte2 (field 3)
         }
         else
         {
