@@ -1125,7 +1125,29 @@ public class DeviceUpgrade
           String name = ef.getName();
           int slash = name.indexOf( '/' );
           String devName = name.substring( 1, slash );
-          ef.setDeviceTypeAliasName( devName );
+          String match = null;
+          String[] names = remote.getDeviceTypeAliasNames();
+          for ( int j = 0; j < names.length; j++ )
+          { 
+            if ( devName.equalsIgnoreCase( names[ j ]))
+              match = names[ j ];
+          }
+          if ( match == null )
+          {
+            String msg = "The Keymap Master device upgrade you are importing includes an\nexternal function that uses the unknown device type " +
+            devName + ".\n\nPlease select one of the supported device types below to use instead.";
+            while ( match == null )
+            {
+              match = ( String )JOptionPane.showInputDialog( KeyMapMaster.getKeyMapMaster(),
+                                                             msg,
+                                                             "Unsupported Device Type",
+                                                             JOptionPane.ERROR_MESSAGE,
+                                                             null,
+                                                             names,
+                                                             null );
+            }
+          }
+          ef.setDeviceTypeAliasName( match );
           int space = name.indexOf( ' ', slash + 1 );
           String codeString = null;
           if ( space == -1 )
@@ -1211,6 +1233,8 @@ public class DeviceUpgrade
         else
         {
           func = getFunction( name, functions );
+          if ( func == null )
+            func = getFunction( name, extFunctions );
           if ( func == null )
             func = getFunction( name, usedFunctions );
         }
