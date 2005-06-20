@@ -1170,8 +1170,15 @@ public class DeviceUpgrade
         }
         else
         {
-          hex = protocol.getDefaultCmd();
-          protocol.importCommand( hex, token, useOBC, obcIndex, useEFC );
+          if (( token.indexOf( 'h' ) != -1 ) || ( token.indexOf( '$') != -1 ) || (token.indexOf( ' ' ) != -1 ))
+          {
+            hex = new Hex( token );
+          }
+          else
+          {
+            hex = protocol.getDefaultCmd();
+            protocol.importCommand( hex, token, useOBC, obcIndex, useEFC );
+          }
           
           token = getNextField( st, delim ); // get byte2 (field 3)
           if ( token != null )

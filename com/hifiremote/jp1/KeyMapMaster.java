@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.25";
+  public static final String version = "v1.26";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -688,7 +688,7 @@ public class KeyMapMaster
       if ( file.exists())
       {
         rc = JOptionPane.showConfirmDialog( this,
-                                            file.getName() + " already exists.  Do you want to repalce it?",
+                                            file.getName() + " already exists.  Do you want to replace it?",
                                             "Replace existing file?",
                                             JOptionPane.YES_NO_OPTION );
       }

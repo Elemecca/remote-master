@@ -43,7 +43,7 @@ public class Protocol
     }
     else
     {
-      System.err.println( "Geenrating deviceImporter for protocol " + name );
+      System.err.println( "Generating deviceImporter for protocol " + name );
       int mappedIndex = 0;
       boolean needRemap = false;
       String[] map = new String[ 4 ];
