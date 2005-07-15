@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.26";
+  public static final String version = "v1.27";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -27,6 +27,7 @@ public class KeyMapMaster
   private JMenuItem exitItem = null;
   private JMenuItem manualItem = null;
   private JMenuItem editorItem = null;
+  private JMenuItem rawItem = null;
   private JMenuItem aboutItem = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
@@ -293,6 +294,11 @@ public class KeyMapMaster
     editorItem.setMnemonic( KeyEvent.VK_P );
     editorItem.addActionListener( this );
     menu.add( editorItem );
+
+    rawItem = new JMenuItem( "Import Raw Upgrade..." );
+    rawItem.setMnemonic( KeyEvent.VK_I );
+    rawItem.addActionListener( this );
+    menu.add( rawItem );
 
     menu = new JMenu( "Help" );
     menu.setMnemonic( KeyEvent.VK_H );
@@ -568,6 +574,12 @@ public class KeyMapMaster
         ProtocolEditor d = new ProtocolEditor( this );
         d.show();
       }
+      else if ( source == rawItem )
+      {
+        ImportRawUpgradeDialog d = new ImportRawUpgradeDialog( this, deviceUpgrade );
+        d.show();
+        currPanel.update();
+      }
       else if ( source == aboutItem )
       {
         String text = "<html><b>RemoteMaster Device Upgrade Editor, " + version + "</b>" +
@@ -584,8 +596,8 @@ public class KeyMapMaster
         pane.setBackground( getContentPane().getBackground());
         new TextPopupMenu( pane );
         JScrollPane scroll = new JScrollPane( pane );
-        Dimension d = scroll.getPreferredSize();
-        d.height = d.height / 2;
+        Dimension d = pane.getPreferredSize();
+        d.height = ( d.height * 5 ) / 4;
         d.width = ( d.width * 2 ) / 3;
         scroll.setPreferredSize( d );
 

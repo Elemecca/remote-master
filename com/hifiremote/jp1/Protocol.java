@@ -243,6 +243,14 @@ public class Protocol
     setDeviceParms( parms );
   }
 
+  public Value[] importFixedData( Hex hex )
+  {
+    Value[] vals = getDeviceParmValues();
+    for ( int i = 0; i < deviceTranslators.length; i++ )
+      deviceTranslators[ i ].out( hex, vals, devParms );
+    return vals;
+  }
+
   public void setDeviceParms( Value[] parms )
   {
     if ( parms.length != devParms.length )
@@ -256,7 +264,7 @@ public class Protocol
     {
       if (( i < devParms.length ) && ( parms[ i ] != null )) // && ( parms[ i ].getUserValue() != null ))
       {
-        System.err.println( "Setting devPamrs[ " + i + " ](" + devParms[ i ].getName() + ") to " + parms[ i ].getUserValue());
+        System.err.println( "Setting devParms[ " + i + " ](" + devParms[ i ].getName() + ") to " + parms[ i ].getUserValue());
         devParms[ i ].setValue( parms[ i ].getUserValue());
       }
     }

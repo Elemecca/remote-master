@@ -70,16 +70,16 @@ public class Hex
     }
     else
     {
-      StringTokenizer st = new StringTokenizer( text, " _.$h" );
+      StringTokenizer st = new StringTokenizer( text, " _.$h\n\r" );
       length = st.countTokens();
       rc = new int[ length ];
-      st = new StringTokenizer( text, " _.$h", true );
+      st = new StringTokenizer( text, " _.$h\n\r", true );
       int i = 0;
       int value = 0;
       while ( st.hasMoreTokens())
       {
         String token = st.nextToken();
-        if ( token.equals( " " ) || token.equals( "$" ) || token.equals( "h" ))
+        if ( token.equals( " " ) || token.equals( "$" ) || token.equals( "h" ) || token.equals( "\n") || token.equals( "\r" ))
           value = 0;
         else if ( token.equals( "_" ))
           value = ADD_OFFSET;

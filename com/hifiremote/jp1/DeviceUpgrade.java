@@ -391,6 +391,81 @@ public class DeviceUpgrade
     return -1;
   }
 
+  public void importRawUpgrade( Hex hexCode, Remote newRemote, String newDeviceTypeAliasName, Hex pid, Hex pCode )
+  {
+    reset();
+    int index = 1;
+    int[] code = hexCode.getData();
+    remote = newRemote;
+    functions.clear();
+    devTypeAliasName = newDeviceTypeAliasName;
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, pid );
+    if ( p != null )
+      pCode = p.getCode( remote );
+    ManualProtocol mp = null;
+
+    int digitMapIndex = -1;
+    if ( !remote.getOmitDigitMapByte())
+      digitMapIndex = code[ index++ ] - 1;
+    if ( digitMapIndex != -1 )
+    {
+      int[] digitMap = DigitMaps.data[ remote.getDigitMaps()[ digitMapIndex ]];
+      for ( int i = 0; i < digitMap.length; i++ )
+      {
+        Function f = new Function();
+        String name = Integer.toString( i );
+        f.setName( name );
+        int[] cmd = new int[ 1 ];
+        cmd[ 0 ] = digitMap[ i ];
+        Hex hex = new Hex( cmd );
+        f.setHex( hex );
+        Button b = remote.getButton( name );
+        b.setFunction( f );
+        functions.add( f );
+      }
+    }
+    ButtonMap map = devType.getButtonMap();
+    Vector buttons = null;
+    if ( map != null )
+      buttons = map.parseBitMap( code, index, digitMapIndex != -1 );
+    else
+      buttons = new Vector();
+
+    while (( code[ index++ ] & 1 ) == 0 ); // skip over the bitMap
+
+    int value = pCode.getData()[ 2 ];
+    int fixedDataLength = value >> 4;
+    int cmdLength = value & 0x0F;
+    int[] fixedData = new int[ fixedDataLength ];
+    for ( int i = 0; i < fixedDataLength; i++ )
+      fixedData[ i ] = code[ index++ ];
+    if ( p == null )
+    {
+      int cmdType = ManualProtocol.ONE_BYTE;
+      if ( cmdLength != 1 )
+        cmdType = ManualProtocol.AFTER_CMD;
+      mp = new ManualProtocol( "PID " + pid, pid, cmdType, "MSB", 8, new Vector(), fixedData, 8 );
+      mp.setCode( pCode, remote.getProcessor() );
+      p = mp;
+    }
+    else
+      parmValues = p.importFixedData( new Hex( fixedData ));
+    protocol = p;
+    for ( Enumeration e = buttons.elements(); e.hasMoreElements();)
+    {
+      int[] cmd = new int[ cmdLength ];
+      for ( int i = 0; i < cmdLength; i++ )
+        cmd[ i ] = code[ index++ ];
+      Button b = ( Button )e.nextElement();
+      Function f = new Function();
+      f.setName( b.getName());
+      f.setHex( new Hex( cmd ));
+      functions.add( f );
+      b.setFunction( f );
+    }
+  }
+
   public String getUpgradeText( boolean includeNotes )
   {
     StringBuffer buff = new StringBuffer( 400 );

@@ -247,6 +247,11 @@ public class ManualProtocol
     fixedData = rawHex;
   }
 
+  public void setCode( Hex pCode, Processor p )
+  {
+    code.put( p.getFullName(), pCode );
+  }
+
   public void setName( String name )
   {
     this.name = name;

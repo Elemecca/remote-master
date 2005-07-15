@@ -17,6 +17,7 @@ public class Preferences
   public void load( JMenu recentFileMenu )
     throws Exception
   {
+    System.err.println( "Preferences.load(), file='" + file + "'" );
     Properties props = new Properties();
 
     if ( file.canRead())
@@ -27,12 +28,22 @@ public class Preferences
     }
 
     String temp = props.getProperty( "RDFPath" );
+    System.err.println( "Got RDFPath as '" + temp + "' from file" ); 
     if ( temp != null )
       rdfPath = new File( temp );
     else
+    {
       rdfPath = new File( home, "rdf" );
+      System.err.println( "Using default: '" + rdfPath + "'" );
+    }
+    System.err.println( "Searching for existing directory." );
+    System.err.println( "Checking '" + rdfPath + "'" );
     while ( !rdfPath.exists() && !rdfPath.isDirectory())
+    {
       rdfPath = rdfPath.getParentFile();
+      System.err.println( "Checking '" + rdfPath + "'" );
+    }
+    System.err.println( "Using '" + rdfPath + "'" );
 
     temp = props.getProperty( "UpgradePath" );
     if ( temp == null )

@@ -60,7 +60,7 @@ public class Remote
       names = new String[ middles.length ];
       for ( int i = 0; i < middles.length; i++ )
       {
-         if ( middles[ i ].length() != middles[ 0 ].length() )
+         if ( middles[ i ].length() < middles[ 0 ].length() )
            names[ i ] = middles[ i ] + postfix;
          else
            names[ i ] = prefix + middles[ i ] + postfix;

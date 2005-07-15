@@ -71,6 +71,30 @@ public class ButtonMap
 
   public int size(){ return size; }
 
+  public Vector parseBitMap( int[] bitMap, int offset, boolean digitMapUsed )
+  {
+    Vector rc = new Vector();
+    int count = 0;
+    int mask = 0x80;
+    for ( int i = 0; i < buttons.length; i++ )
+    {
+      boolean useIt = (( bitMap[ offset ] & mask ) != 0 ); 
+      if ( useIt )
+      {
+        Button[] inner = buttons[ i ];
+        for ( int j = 0; j < inner.length; j++ )
+          rc.add( inner[ j ]);
+      }
+      mask >>= 1;
+      if ( mask == 1 )
+      {
+        mask = 0x80;
+        offset++;
+      }
+    }
+    return rc;
+  }
+
   public int[] toBitMap( boolean digitMapUsed )
   {
     int len = ( buttons.length + 6 )/ 7;
