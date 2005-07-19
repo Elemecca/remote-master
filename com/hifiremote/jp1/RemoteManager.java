@@ -95,38 +95,51 @@ public class RemoteManager
         StringTokenizer nameTokenizer = new StringTokenizer( name );
         subNames[ 0 ] = nameTokenizer.nextToken();
       }
+      int mostMatches = 0;
       Vector similarRemotes = new Vector();
       for ( int i = 0; i < remotes.length; i++ )
       {
+        int numMatches = 0;
+        Remote r = remotes[ i ];
         for ( int j = 0; j < subNames.length; j++ )
         {
-          if ( remotes[ i ].getName().indexOf( subNames[ j ]) != -1 )
+          if ( r.getName().indexOf( subNames[ j ]) != -1 )
           {
-            similarRemotes.add( remotes[ i ]);
-            break;
+            System.err.println( "Remote '" + r.getName() + "' matches subName '" + subNames[ j ] + "'" );
+            numMatches++;
           }
         }
+        if ( numMatches > mostMatches )
+        {
+          mostMatches = numMatches;
+          similarRemotes.clear();
+        }
+        if ( numMatches == mostMatches )
+          similarRemotes.add( r );          
       }
 
       Object[] simRemotes = null;
       if ( similarRemotes.size() > 0 )
-        simRemotes = similarRemotes.toArray();
+//        simRemotes = similarRemotes.toArray();
+        remote = ( Remote ) similarRemotes.firstElement();
       else
+      {
         simRemotes = remotes;
 
-      String message = "The upgrade file you are loading is for the remote \"" + name + "\".\nThere is no remote with that exact name.  Please choose the best match from the list below:";
+        String message = "The upgrade file you are loading is for the remote \"" + name + "\".\nThere is no remote with that exact name.  Please choose the best match from the list below:";
 
-      Object rc = ( Remote )JOptionPane.showInputDialog( null,
-                                                         message,
-                                                         "Unknown Remote",
-                                                         JOptionPane.ERROR_MESSAGE,
-                                                         null,
-                                                         simRemotes,
-                                                         simRemotes[ 0 ]);
-      if ( rc == null )
-        return remote;
-      else
-        remote = ( Remote )rc;
+        Object rc = ( Remote )JOptionPane.showInputDialog( null,
+                                                           message,
+                                                           "Unknown Remote",
+                                                           JOptionPane.ERROR_MESSAGE,
+                                                           null,
+                                                           simRemotes,
+                                                           simRemotes[ 0 ]);
+        if ( rc == null )
+          return remote;
+        else
+          remote = ( Remote )rc;
+      }
     }
     else
       remote = remotes[ index ];

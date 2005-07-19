@@ -972,6 +972,11 @@ public class DeviceUpgrade
     String str = token.substring( 5 );
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( str );
+    if ( remote == null )
+    {
+      reset();
+      return;
+    }
     Hex pid = null;
     while ( true )
     {
