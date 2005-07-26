@@ -11,6 +11,7 @@ public class RemoteManager
   public File loadRemotes( File loadPath )
     throws Exception
   {
+    this.loadPath = loadPath;
     File[] files = new File[ 0 ];
     File dir = loadPath;
     FilenameFilter filter = new FilenameFilter()
@@ -73,6 +74,9 @@ public class RemoteManager
     int index = Arrays.binarySearch( remotes, name );
     if ( index < 0 )
     {
+      remote = findRemoteByOldName( name );
+      if ( remote != null )
+        return remote;
       // build a list of similar remote names, and ask the user to pick a match.
       // First check if there is a slash in the name;
       String[] subNames = new String[ 0 ];
@@ -119,13 +123,13 @@ public class RemoteManager
       }
 
       Object[] simRemotes = null;
-      if ( similarRemotes.size() > 0 )
-//        simRemotes = similarRemotes.toArray();
-        remote = ( Remote ) similarRemotes.firstElement();
-      else
-      {
+      if ( similarRemotes.size() == 0 )
         simRemotes = remotes;
-
+      else if ( similarRemotes.size() == 1 )
+        remote = ( Remote )similarRemotes.firstElement();
+      
+      if ( remote == null )
+      {
         String message = "The upgrade file you are loading is for the remote \"" + name + "\".\nThere is no remote with that exact name.  Please choose the best match from the list below:";
 
         Object rc = ( Remote )JOptionPane.showInputDialog( null,
@@ -147,9 +151,57 @@ public class RemoteManager
     return remote;
   }
 
+  public void loadOldRemoteNames()
+  {
+    try
+    {
+      File file = new File( loadPath, "OldRemoteNames.ini" );
+      if ( file.exists())
+      {
+        oldRemoteNames = new Hashtable();
+        BufferedReader rdr = new BufferedReader( new FileReader( file ));
+        String line = null;
+        while (( line = rdr.readLine() ) != null )
+        {
+          if ( line.length() == 0 )
+            continue;
+          char ch = line.charAt( 0 );
+          if (( ch == '#' ) || ( ch == '!' ))
+            continue;
+          int equals = line.indexOf( '=' );
+          if ( equals == -1 )
+            continue;
+          String oldName = line.substring( 0, equals );
+          String newName = line.substring( equals + 1 );
+          oldRemoteNames.put( oldName, newName );
+        }
+      }
+    }
+    catch ( Exception ex )
+    {
+      ex.printStackTrace( System.err );
+    }
+  }
+
+  public Remote findRemoteByOldName( String oldName )
+  {
+    if ( oldRemoteNames == null )
+      loadOldRemoteNames();
+    String newName = ( String )oldRemoteNames.get( oldName );
+    if ( newName == null )
+      return null;
+    int index = Arrays.binarySearch( remotes, newName );
+    if ( index < 0 )
+      return null;
+    return remotes[ index ];
+  }
+
   public Remote[] findRemoteBySignature( String signature ){ return null; }
 
   private static RemoteManager remoteManager = new RemoteManager();
 
   private Remote[] remotes = new Remote[ 0 ];
+  private File loadPath = null;
+  private Hashtable oldRemoteNames = null;
+
 }
