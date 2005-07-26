@@ -54,7 +54,8 @@ public class ManualSettingsDialog
 
     JLabel label = new JLabel( "Name:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 1" );
-    name = new JTextField();
+    name = new JTextField( protocol.getName());
+    name.setEnabled( false );
     name.getDocument().addDocumentListener( this );
     mainPanel.add( name, "3, 1" );
 
@@ -241,6 +242,9 @@ public class ManualSettingsDialog
       deviceTranslators.add( xlator );
       int newRow = deviceParms.size() - 1;
       deviceModel.fireTableRowsInserted( newRow, newRow );
+    }
+    else if ( source == editDevice )
+    {
     }
     else if ( source == deleteDevice )
     {
