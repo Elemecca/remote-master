@@ -84,6 +84,11 @@ public class ProcessorManager
     return ( Processor )processorManager.processors.get( name );
   }
 
+  public static Enumeration getProcessorNames()
+  {
+    return processorManager.processors.keys();
+  }
+
   private void add( Processor p )
   {
     processors.put( p.getFullName(), p ); 

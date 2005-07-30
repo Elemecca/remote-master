@@ -17,6 +17,7 @@ public class DeviceCombiner
   public void reset()
   {
     devices.clear();
+    super.reset();
   }
 
   public void setProperties( Properties props )

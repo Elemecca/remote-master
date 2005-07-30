@@ -205,11 +205,11 @@ public class Button
     return buttonMaps;
   }
 
-  public int[] getKeyMoves( int[] deviceCode, DeviceType devType, Remote remote )
+  public int[] getKeyMoves( int[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
   {
-    int[] move1 = getKeyMove( function, 0, deviceCode, devType, remote );
-    int[] move2 = getKeyMove( shiftedFunction, remote.getShiftMask(), deviceCode, devType, remote );
-    int[] move3 = getKeyMove( xShiftedFunction, remote.getXShiftMask(), deviceCode, devType, remote );
+    int[] move1 = getKeyMove( function, 0, deviceCode, devType, remote, keyMovesOnly );
+    int[] move2 = getKeyMove( shiftedFunction, remote.getShiftMask(), deviceCode, devType, remote, keyMovesOnly );
+    int[] move3 = getKeyMove( xShiftedFunction, remote.getXShiftMask(), deviceCode, devType, remote, keyMovesOnly );
 
     int[] rc = new int[ move1.length + move2.length + move3.length ];
 
@@ -221,7 +221,7 @@ public class Button
   }
 
   public int[] getKeyMove( Function f, int mask,
-                            int[] deviceCode, DeviceType devType, Remote remote )
+                            int[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
   {
     int[] rc = new int[ 0 ];
     if (( f != null ) && ( f.getHex() != null ))
@@ -266,7 +266,7 @@ public class Button
         }
       }
 
-      if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) )
+      if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
         len = ( 4 + hex.length());
 
       rc = new int[ len ];

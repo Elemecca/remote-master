@@ -127,6 +127,11 @@ public class RemoteManager
         simRemotes = remotes;
       else if ( similarRemotes.size() == 1 )
         remote = ( Remote )similarRemotes.firstElement();
+      else
+      {
+        simRemotes = new Object[ similarRemotes.size() ];
+        simRemotes = similarRemotes.toArray( simRemotes );
+      }
       
       if ( remote == null )
       {
@@ -187,6 +192,8 @@ public class RemoteManager
   {
     if ( oldRemoteNames == null )
       loadOldRemoteNames();
+    if ( oldRemoteNames == null )
+      return null;
     String newName = ( String )oldRemoteNames.get( oldName );
     if ( newName == null )
       return null;

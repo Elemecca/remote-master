@@ -95,7 +95,7 @@ public class ButtonMap
     return rc;
   }
 
-  public int[] toBitMap( boolean digitMapUsed )
+  public int[] toBitMap( boolean digitMapUsed, boolean keyMovesOnly )
   {
     int len = ( buttons.length + 6 )/ 7;
     if ( len == 0 )
@@ -113,6 +113,8 @@ public class ButtonMap
         if ( inner[ j ] != null )
           func = inner[ j ].getFunction();
         if ( digitMapUsed && ( i == 0 ))
+          func = null;
+        if ( keyMovesOnly )
           func = null;
         if (( func != null ) &&
              !func.isExternal() &&
@@ -137,7 +139,7 @@ public class ButtonMap
     return result;
   }
 
-  public int[] toCommandList( boolean digitMapUsed )
+  public int[] toCommandList( boolean digitMapUsed, boolean keyMovesOnly )
   {
     int count = 0;
     int funcLen = 0;
@@ -150,6 +152,8 @@ public class ButtonMap
       {
         Function func = inner[ j ].getFunction();
         if ( digitMapUsed && ( i == 0 ))
+          func = null;
+        if ( keyMovesOnly )
           func = null;
         if (( func != null ) &&
             ( func.getClass() != ExternalFunction.class ) &&
@@ -175,6 +179,8 @@ public class ButtonMap
           int[] hex = null;
           Function func = inner[ j ].getFunction();
           if ( digitMapUsed && ( i == 0 ))
+            func = null;
+          if (  keyMovesOnly )
             func = null;
           if (( func == null ) ||
               ( func.getClass() == ExternalFunction.class ) ||

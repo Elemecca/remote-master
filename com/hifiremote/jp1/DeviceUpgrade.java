@@ -28,6 +28,8 @@ public class DeviceUpgrade
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
 
 
+    if ( protocol != null )
+      protocol.reset();
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     Vector names = pm.getNames();
     Protocol tentative = null;
@@ -522,7 +524,7 @@ public class DeviceUpgrade
     if ( map != null )
     {
       buff.append( ' ' );
-      buff.append( Hex.toString( map.toBitMap( digitMapIndex != -1 )));
+      buff.append( Hex.toString( map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly())));
     }
 
     buff.append( ' ' );
@@ -530,7 +532,7 @@ public class DeviceUpgrade
 
     if ( map != null )
     {
-      int[] data = map.toCommandList( digitMapIndex != -1 );
+      int[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly());
       if (( data != null ) && ( data.length != 0 ))
       {
         buff.append( "\n " );
@@ -552,7 +554,7 @@ public class DeviceUpgrade
       Function xf = b.getXShiftedFunction();
       if ( b.getXShiftedButton() != null )
         xf = null;
-      if ((( f != null ) && (( map == null ) || !map.isPresent( b ) || f.isExternal())) ||
+      if ((( f != null ) && (( map == null ) || protocol.getKeyMovesOnly() || !map.isPresent( b ) || f.isExternal())) ||
           (( sf != null ) && ( sf.getHex() != null )) || (( xf != null) && ( xf.getHex() != null )))
       {
         hasKeyMoves = true;
@@ -569,17 +571,17 @@ public class DeviceUpgrade
         Button button = buttons[ i ];
 
         Function f = button.getFunction();
-        first = appendKeyMove( buff, button.getKeyMove( f, 0, deviceCode, devType, remote ),
+        first = appendKeyMove( buff, button.getKeyMove( f, 0, deviceCode, devType, remote, protocol.getKeyMovesOnly()),
                                f, includeNotes, first );
         f = button.getShiftedFunction();
         if ( button.getShiftedButton() != null )
           f = null;
-        first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote ),
+        first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote, protocol.getKeyMovesOnly()),
                                f, includeNotes, first );
         f = button.getXShiftedFunction();
         if ( button.getXShiftedButton() != null )
           f = null;
-        first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote ),
+        first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote, protocol.getKeyMovesOnly()),
                                f, includeNotes, first );
       }
     }
@@ -747,6 +749,7 @@ public class DeviceUpgrade
   public void load( BufferedReader reader, boolean loadButtons )
     throws Exception
   {
+    reset();
     reader.mark( 160 );
     String line = reader.readLine();
     reader.reset();

@@ -1,3 +1,8 @@
+Changes for v1.30
+- Add support for unknown protocols, where only the PID and code are known.
+- Fix the bug documented at http://www.hifi-remote.com/forums/viewtopic.php?t=4929
+- Add support for protocols that only support keymoves, such as the Pause Protocol.
+
 Changes for v1.29
 - Improve matching remotes when loading of KM (and old RM) upgrades, requires RDFs v1.24 or later.
 - RM images and maps v1.24

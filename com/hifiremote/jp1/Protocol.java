@@ -14,10 +14,12 @@ public class Protocol
     if ( props == null )
       props = new Properties();
     this.variantName = props.getProperty( "VariantName", "" );
-    this.defaultCmd = new Hex( props.getProperty( "DefaultCmd", "00" ));
+    String temp = props.getProperty( "DefaultCmd", "00" );
+    if ( temp != null )
+      this.defaultCmd = new Hex( temp );
     this.cmdIndex = Integer.parseInt( props.getProperty( "CmdIndex", "0" ));
 
-    String temp = props.getProperty( "AlternatePID" );
+    temp = props.getProperty( "AlternatePID" );
     if ( temp != null )
     {
       StringTokenizer st = new StringTokenizer( temp.trim(), "," );
@@ -82,9 +84,6 @@ public class Protocol
 
     notes = props.getProperty( "Notes" );
 
-    temp = props.getProperty( "Code.S3C80" );
-    if ( temp != null )
-      code.put( "S3C80", new Hex( temp ));
     temp = props.getProperty( "Code.740" );
     if ( temp != null )
       code.put( "740", new Hex( temp ));
@@ -95,29 +94,19 @@ public class Protocol
     if ( temp != null )
       code.put( "6805-RC16/18", new Hex( temp ));
 
-    temp = props.getProperty( "CodeTranslator.S3C80" );
-    if ( temp != null )
-    {
-      Translate[] xlators = TranslatorFactory.createTranslators( temp );
-      codeTranslator.put( "S3C80", xlators );
-    }
-    temp = props.getProperty( "CodeTranslator.740" );
-    if ( temp != null )
-    {
-      Translate[] xlators = TranslatorFactory.createTranslators( temp );
-      codeTranslator.put( "740", xlators );
-    }
-    temp = props.getProperty( "CodeTranslator.6805-C9" );
-    if ( temp != null )
-    {
-      Translate[] xlators = TranslatorFactory.createTranslators( temp );
-      codeTranslator.put( "6805-C9", xlators );
-    }
-    temp = props.getProperty( "CodeTranslator.6805-RC16/18" );
-    if ( temp != null )
-    {
-      Translate[] xlators = TranslatorFactory.createTranslators( temp );
-      codeTranslator.put( "6805-Rc16/18", xlators );
+    for ( Enumeration e = ProcessorManager.getProcessorNames(); e.hasMoreElements(); )
+    {  
+      String pName = ( String ) e.nextElement();
+
+      temp = props.getProperty( "Code." + pName );
+      if ( temp != null )
+        code.put( pName, new Hex( temp ));
+      temp = props.getProperty( "CodeTranslator." + pName );
+      if ( temp != null )
+      {
+        Translate[] xlators = TranslatorFactory.createTranslators( temp );
+        codeTranslator.put( pName, xlators );
+      }
     }
 
     temp = props.getProperty( "CmdParms", "" );
@@ -143,6 +132,39 @@ public class Protocol
       StringTokenizer st2 = new StringTokenizer( temp, "," );
       while ( st2.hasMoreTokens())
         oldNames.add( st2.nextToken().trim());
+    }
+
+    temp = props.getProperty( "KeyMovesOnly" );
+    keyMovesOnly = ( temp != null );
+    
+    // Figure out protocols that only have protocol code
+    if (( cmdParms.length == 0 ) && ( code.size() > 0 ))
+    {
+      Iterator it = code.values().iterator();
+      Hex pCode = ( Hex )it.next();
+      int value = pCode.getData()[ 2 ];
+      int fixedDataLength = value >> 4;
+      int cmdLength = value & 0x0F;
+
+      int[] cmd = new int[ cmdLength ];
+      defaultCmd = new Hex( cmd );
+      cmdTranslators = new Translate[ cmdLength ];
+      cmdParms = new CmdParameter[ cmdLength ];
+      for ( int i = 0; i < cmdLength; i++ )
+      {
+        cmdParms[ i ] = new NumberCmdParm( cmdNames[ i ], null );
+        cmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );                  
+      }
+      
+      cmd = new int[ fixedDataLength ];
+      fixedData = new Hex( cmd );
+      devParms = new DeviceParameter[ fixedDataLength ];
+      deviceTranslators = new Translator[ fixedDataLength ];
+      for ( int i = 0; i < fixedDataLength; i++ )
+      {
+        devParms[ i ] = new NumberDeviceParm( "Device " + i, null, 10 );
+        deviceTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );                  
+      }
     }
   }
 
@@ -671,6 +693,11 @@ public class Protocol
     return true;
   }
 
+  public boolean getKeyMovesOnly()
+  {
+    return keyMovesOnly;
+  }
+
   public final static int tooDifferent = 0x7FFFFFFF;
 
   protected String name = null;;
@@ -693,4 +720,6 @@ public class Protocol
   protected String notes = null;
   private Vector oldNames = new Vector();
   private Vector altPIDOverrideList = new Vector();
+  private boolean keyMovesOnly = false;
+  private static String[] cmdNames = { "OBC", "Byte 2" };
 }

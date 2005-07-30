@@ -49,10 +49,12 @@ public class ProtocolManager
         continue;
 
       line = line.replaceAll( "\\\\n", "\n" );
+      line = line.replaceAll( "\\\\t", "\t" );
       while ( line.endsWith( "\\" ))
       {
         String temp = rdr.readLine().trim();
         temp = temp.replaceAll( "\\\\n", "\n" );
+        temp = temp.replaceAll( "\\\\t", "\t" );
         line = line.substring(0, line.length() - 1 ) + temp;
       }
 
