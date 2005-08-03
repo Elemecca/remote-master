@@ -331,6 +331,11 @@ public class Remote
     return advCodeFormat;
   }
 
+  public int getEFCDigits()
+  {
+    return efcDigits;
+  }
+
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
   {
@@ -486,6 +491,11 @@ public class Remote
           advCodeFormat = HEX;
         else if ( value.equals( "EFC" ))
           advCodeFormat = EFC;
+      }
+      else if ( parm.equals( "EFCDigits" ))
+      {
+        String value = st.nextToken();
+        efcDigits = rdr.parseNumber( value );
       }
       else if ( parm.equals( "DevComb" ))
       {
@@ -1498,6 +1508,7 @@ public class Remote
   public static final int HEX = 0;
   public static final int EFC = 1;
   private int advCodeFormat = HEX;
+  private int efcDigits = 3;
   private int[] devCombAddress = null;
   private int protocolVectorOffset = 0;
   private int protocolDataOffset = 0;

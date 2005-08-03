@@ -83,6 +83,8 @@ public class Translator
         i = ( Integer )v.getValue();
       else if ( o.getClass() == String.class )
         i = new Integer(( String )o );
+      else if ( o instanceof DirectDefaultValue )
+        i = ( Integer )(( DefaultValue )o ).value();
 
       w = ( i.intValue() + adjust ) >> lsbOffset;
     }

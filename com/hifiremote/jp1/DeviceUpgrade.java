@@ -734,10 +734,10 @@ public class DeviceUpgrade
   public void load( File file, boolean loadButtons )
     throws Exception
   {
-    if ( file.getName().toLowerCase().endsWith( ".rmdu" ))
-      this.file = file;
     BufferedReader reader = new BufferedReader( new FileReader( file ));
     load( reader, loadButtons );
+    if ( file.getName().toLowerCase().endsWith( ".rmdu" ))
+      this.file = file;
   }
 
   public void load( BufferedReader reader )
@@ -1246,7 +1246,7 @@ public class DeviceUpgrade
           else
           {
             hex = new Hex( 1 );
-            protocol.efc2hex( new EFC( token ), hex, 0 );
+            EFC.toHex( Integer.parseInt( token ), hex, 0 );
             ef.setType( ExternalFunction.EFCType );
           }
           getNextField( st, delim ); // skip byte2 (field 3)

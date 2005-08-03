@@ -1,3 +1,9 @@
+Changes for v1.31
+- Fix protocols.ini entry for Pause Protocol
+- Allow column resizing on the Function and External Function panels.
+- Add support for EFC5 display and editing for those remotes that use it.
+- Added Denon-K and fixed protocol notes that had become wrong when Panasonic Combo2 was renamed. (thanks johnsfine)
+
 Changes for v1.30
 - Add support for unknown protocols, where only the PID and code are known.
 - Fix the bug documented at http://www.hifi-remote.com/forums/viewtopic.php?t=4929

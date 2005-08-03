@@ -180,8 +180,8 @@ public class DeviceCombinerPanel
                   Function newF = new Function();
                   Hex hex = combiner.getDefaultCmd();
                   combiner.setValueAt( 0, hex, indexInt );
-                  EFC efc = importedProtocol.hex2efc( f.getHex());
-                  combiner.efc2hex( efc, hex );
+                  int efc = EFC.parseHex( f.getHex(), importedProtocol.getCmdIndex());
+                  EFC.toHex( efc, hex, combiner.getCmdIndex());
                   newF.setHex( hex );
                   newF.setName( f.getName());
                   newF.setNotes( f.getNotes());

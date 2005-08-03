@@ -15,7 +15,7 @@ public class EFCRenderer
   protected void setValue( Object value )
   {
     if ( value != null )
-      super.setValue((( EFC )value ).toString());
+      super.setValue( value.toString());
     else
       super.setValue( value );
   }

@@ -245,22 +245,16 @@ public class Button
         {
           int[] data = new int[ 2 ];
           data[ 0 ] = 0;
-          EFC efc = Protocol.hex2efc( hex, 0 );
-          data[ 1 ] = efc.getValue();
+          data[ 1 ] = EFC.parseHex( hex, 0 );
           hex = new Hex( data );
         }
         else
         {
-          int[] data = hex.getData();
           int[] newData = new int[ 2 ];
+          int value = EFC5.parseHex( hex );
 
-          newData[ 0 ] = (( data[ 0 ] & 0x1F ) << 3 ) |
-                         (( data[ 0 ] & 0xE0 ) >> 5 );
-          newData[ 0 ] ^= 0xAE;
-          newData[ 0 ] += 156;
-          newData[ 0 ] &= 0xFF;
-
-          newData[ 1 ] = data[ 1 ] ^ 0xC5;
+          newData[ 0 ] = value >> 8;
+          newData[ 1 ] = value & 0xFF;
 
           hex = new Hex( newData );
         }

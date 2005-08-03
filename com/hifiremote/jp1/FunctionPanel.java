@@ -6,14 +6,14 @@ public class FunctionPanel
   public FunctionPanel( DeviceUpgrade devUpgrade )
   {
     super( "Functions", devUpgrade,
-           new FunctionTableModel( devUpgrade.getFunctions()));
+           new FunctionTableModel( devUpgrade.getFunctions(), devUpgrade.getRemote()));
   }
 
   public void update()
   {
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
-    (( FunctionTableModel )model ).setProtocol( p );
+    (( FunctionTableModel )model ).setProtocol( p, deviceUpgrade.getRemote());
     initColumns();
     super.update();
   }

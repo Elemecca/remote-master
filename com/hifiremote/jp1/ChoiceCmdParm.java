@@ -57,7 +57,7 @@ public class ChoiceCmdParm
     return null;
   }
 
-  public Object getValue( Object val )
+  public Object getValue( Integer val )
   {
     int i = (( Integer )val ).intValue();
     for ( int j = 0; j < choices.length; j++ )

@@ -7,9 +7,10 @@ import javax.swing.table.*;
 public class EFCEditor
   extends DefaultCellEditor
 {
-  public EFCEditor()
+  public EFCEditor( int digits )
   {
     super( new JTextField());
+    this.digits = digits;
 //    setClickCountToStart( 1 );
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
@@ -24,7 +25,7 @@ public class EFCEditor
     if ( value == null )
       tf.setText( "" );
     else
-      tf.setText((( EFC )value ).toString());
+      tf.setText( value.toString());
     tf.selectAll();
 
     return tf;
@@ -37,9 +38,21 @@ public class EFCEditor
     JTextField tf = ( JTextField )getComponent();
     String str = tf.getText().trim();
     if (( str != null ) && ( str.length() != 0 ))
-      rc = new EFC( str );
+    {
+      if ( digits == 3 )
+        rc = new EFC( str );
+      else
+        rc = new EFC5( str );
+    }
 
     return rc;
   }
+
+  public void setDigits( int digits )
+  {
+    this.digits = digits;
+  }
+
+  private int digits = 3;
 }
 

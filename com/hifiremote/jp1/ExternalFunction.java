@@ -93,7 +93,7 @@ public class ExternalFunction
   {
     EFC rc = null;
     if ( hex != null )
-      rc = Protocol.hex2efc( hex, 0 );
+      rc = new EFC( hex, 0 );
     return rc;
   }
 
@@ -103,7 +103,7 @@ public class ExternalFunction
     {
       if ( hex == null )
         hex = new Hex( 1 );
-      Protocol.efc2hex( efc, hex, 0 );
+      efc.toHex( hex, 0 );
     }
     else
       hex = null;

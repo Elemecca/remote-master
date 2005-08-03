@@ -152,7 +152,7 @@ public class Protocol
       cmdParms = new CmdParameter[ cmdLength ];
       for ( int i = 0; i < cmdLength; i++ )
       {
-        cmdParms[ i ] = new NumberCmdParm( cmdNames[ i ], null );
+        cmdParms[ i ] = new NumberCmdParm( "Byte " + i, null );
         cmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );                  
       }
       
@@ -303,36 +303,36 @@ public class Protocol
     return rc;
   }
 
-  public static Hex efc2hex( EFC efc, Hex hex, int index )
-  {
-    int temp = efc.getValue() + 156;
-    temp = ( temp & 0xFF ) ^ 0xAE;
-    temp = ( temp >> 3 ) | ( temp << 5 );
-    hex.getData()[ index ] = temp;
-    return hex;
-  }
-
-  public Hex efc2hex( EFC efc, Hex hex )
-  {
-    if ( hex == null )
-      hex = getDefaultCmd();
-    return efc2hex( efc, hex, cmdIndex );
-  }
-
-  public static EFC hex2efc( Hex hex, int index )
-  {
-    int temp = hex.getData()[ index ] & 0xFF;
-    temp = ( temp << 3 ) | ( temp >> 5 );
-    temp = ( temp ^ 0xAE ) - 156;
-    EFC efc = new EFC( temp );
-    return efc;
-  }
-
-  public EFC hex2efc( Hex hex )
-  {
-    return hex2efc( hex, cmdIndex );
-  }
-
+//  public static Hex efc2hex( EFC efc, Hex hex, int index )
+//  {
+//    int temp = efc.getValue() + 156;
+//    temp = ( temp & 0xFF ) ^ 0xAE;
+//    temp = ( temp >> 3 ) | ( temp << 5 );
+//    hex.getData()[ index ] = temp;
+//    return hex;
+//  }
+//
+//  public Hex efc2hex( EFC efc, Hex hex )
+//  {
+//    if ( hex == null )
+//      hex = getDefaultCmd();
+//    return efc2hex( efc, hex, cmdIndex );
+//  }
+//
+//  public static EFC hex2efc( Hex hex, int index )
+//  {
+//    int temp = hex.getData()[ index ] & 0xFF;
+//    temp = ( temp << 3 ) | ( temp >> 5 );
+//    temp = ( temp ^ 0xAE ) - 156;
+//    EFC efc = new EFC( temp );
+//    return efc;
+//  }
+//
+//  public EFC hex2efc( Hex hex )
+//  {
+//    return hex2efc( hex, cmdIndex );
+//  }
+//
   public Hex getDefaultCmd()
   {
     Hex rc = null;
@@ -358,6 +358,11 @@ public class Protocol
       cmdTranslators[ i ].in( vals, rc, devParms, -1 );
 
     return rc;
+  }
+
+  public int getCmdIndex()
+  {
+    return cmdIndex; 
   }
 
   public DeviceParameter[] getDeviceParameters()
@@ -441,7 +446,7 @@ public class Protocol
     if ( useOBC )
       setValueAt( obcIndex, hex, new Integer( text ));
     else if ( useEFC )
-      efc2hex( new EFC( text ), hex );
+      EFC.toHex( Integer.parseInt( text), hex, cmdIndex );
   }
 
   public void importCommandParms( Hex hex, String text )
@@ -721,5 +726,4 @@ public class Protocol
   private Vector oldNames = new Vector();
   private Vector altPIDOverrideList = new Vector();
   private boolean keyMovesOnly = false;
-  private static String[] cmdNames = { "OBC", "Byte 2" };
 }

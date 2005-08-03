@@ -1,7 +1,6 @@
 package com.hifiremote.jp1;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -511,12 +510,13 @@ public abstract class TablePanel
     for ( int i = 0; i < cols; i++ )
     {
       column = columnModel.getColumn( i );
+      l.setText( model.getColumnName( i ));
+      width =  l.getPreferredSize().width;
+      column.setMinWidth( width );
 
       if ( model.isColumnWidthFixed( i ))
       {
-        l.setText( model.getColumnName( i ));
-        width =  l.getPreferredSize().width;
-        column.setMaxWidth( width );
+        column.setMaxWidth( 4 * width );
         column.setPreferredWidth( width );
       }
 

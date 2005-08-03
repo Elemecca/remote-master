@@ -10,34 +10,50 @@ public class FunctionTableModel
 {
   private Vector functions = null;
   private Protocol protocol = null;
+  private Remote remote = null;
   private final static int rowCol = 0;
   private final static int nameCol = rowCol + 1;
   private final static int efcCol = nameCol + 1;
-  private final static int colOffset = efcCol + 1;
+  private int efc5col = -1;
+  private int colOffset = efcCol + 1;
   private int hexCol = colOffset;
   private int notesCol = hexCol + 1;
 
-  public FunctionTableModel( Vector functions )
+  public FunctionTableModel( Vector functions, Remote remote )
   {
     super( functions );
+    this.remote = remote;
   }
 
   public void functionsUpdated()
   {
-    fireTableDataChanged();
+    fireTableStructureChanged();
   }
 
-  public void setProtocol( Protocol protocol )
+  public void setProtocol( Protocol protocol, Remote remote )
   {
     this.protocol = protocol;
+    this.remote = remote;
+    colOffset = efcCol + 1;
+    if (( remote != null ) && ( remote.getEFCDigits() == 5 ))
+    {
+      efc5col = colOffset;
+      colOffset += 1;
+    }
+    else
+      efc5col = -1;
+    
     hexCol = protocol.getColumnCount() + colOffset;
     notesCol = hexCol + 1;
+      
     fireTableStructureChanged();
   }
 
   public int getColumnCount()
   {
     int rc = 5;
+    if (( remote != null ) && ( remote.getEFCDigits() == 5 ))
+      rc += 1;
     if ( protocol != null )
       rc += protocol.getColumnCount() ;
     return rc;
@@ -55,10 +71,15 @@ public class FunctionTableModel
       rc = function.getName();
     else if ( col == efcCol )
     {
-      if ( hex != null )
-        rc = protocol.hex2efc( hex );
-      else
-        rc = hex;
+      if ( hex == null )
+        return null;
+      rc = new EFC( hex, protocol.getCmdIndex());
+    }
+    else if ( col == efc5col )
+    {
+      if ( hex == null )
+        return null;
+      rc = new EFC5( hex );
     }
     else if ( col == notesCol )
       rc = function.getNotes();
@@ -108,9 +129,29 @@ public class FunctionTableModel
       else
       {
         Hex hex = function.getHex();
+        if ( hex == null )
+          hex = protocol.getDefaultCmd();
         if ( value.getClass() == String.class )
-          value = new EFC(( String )value );
-        hex = protocol.efc2hex(( EFC )value, hex );
+          EFC.toHex( Integer.parseInt(( String )value ), hex, protocol.getCmdIndex());
+        else
+          (( EFC )value ).toHex( hex, protocol.getCmdIndex());
+        function.setHex( hex );
+      }
+    }
+    else if ( col == efc5col )
+    {
+      checkFunctionAssigned( function, value );
+      if ( value == null )
+        function.setHex( null );
+      else
+      {
+        Hex hex = function.getHex();
+        if ( hex == null )
+          hex = protocol.getDefaultCmd();
+        if ( value.getClass() == String.class )
+          EFC5.toHex( Integer.parseInt(( String )value ), hex );
+        else
+          (( EFC5 )value ).toHex( hex );
         function.setHex( hex );
       }
     }
@@ -160,6 +201,8 @@ public class FunctionTableModel
       rc = "Name";
     else if ( col == efcCol )
       rc = "EFC";
+    else if ( col == efc5col )
+      rc = " EFC5 ";
     else if ( col == hexCol )
       rc = "    Hex    ";
     else if ( col == notesCol )
@@ -178,6 +221,8 @@ public class FunctionTableModel
       rc = Integer.class;
     else if ( col == efcCol )
       rc = EFC.class;
+    else if ( col == efc5col )
+      rc = EFC5.class;
     else if ( col == hexCol )
       rc = byte[].class;
     else
@@ -205,7 +250,9 @@ public class FunctionTableModel
     if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ))
       rc = null;
     else if ( col == efcCol )
-      rc = new EFCEditor();
+      rc = new EFCEditor( 3 );
+    else if ( col == efc5col )
+        rc = new EFCEditor( 5 );
     else if ( col == hexCol )
       rc = new HexEditor( protocol.getDefaultCmd());
     else
@@ -222,6 +269,8 @@ public class FunctionTableModel
       rc = null;
     else if ( col == efcCol )
       rc = new EFCRenderer();
+    else if ( col == efc5col )
+      rc = new EFCRenderer();
     else if ( col == hexCol )
       rc = new HexRenderer();
     else
@@ -231,7 +280,7 @@ public class FunctionTableModel
 
   public boolean isColumnWidthFixed( int col )
   {
-    if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == efcCol ) || ( col == hexCol ))
+    if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == efcCol ) || ( col == efc5col ) || ( col == hexCol ))
       return super.isColumnWidthFixed( col );
     else
       return protocol.isColumnWidthFixed( col - colOffset );
