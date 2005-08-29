@@ -49,14 +49,7 @@ public class CombinerDevice
   public CombinerDevice( Protocol p, Hex fixedData )
   {
     protocol = p;
-    values = p.getDeviceParmValues();
-    if ( p.deviceTranslators != null )
-    {
-      for ( int i = 0; i < p.deviceTranslators.length; i++ )
-      {
-        p.deviceTranslators[ i ].out( fixedData, values, p.devParms );
-      }
-    }
+    values = p.importFixedData( fixedData );
   }
 
   public void setProtocol( Protocol p )

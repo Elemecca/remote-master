@@ -293,9 +293,62 @@ public class DeviceUpgrade
     return remote.getDeviceTypeByAliasName( devTypeAliasName );
   }
 
-  public void setProtocol( Protocol protocol )
+  public void setProtocol( Protocol newProtocol )
   {
-    this.protocol = protocol;
+    // Convert device parameters to the new protocol
+    if ( protocol != null )
+    {
+      if ( protocol == newProtocol )
+        return;
+
+      newProtocol.reset();
+
+      if ( newProtocol.getFixedDataLength() == protocol.getFixedDataLength())
+        newProtocol.importFixedData( protocol.getFixedData( parmValues ));
+
+      DeviceParameter[] parms = protocol.getDeviceParameters();
+      DeviceParameter[] parms2 = newProtocol.getDeviceParameters();
+  
+      int[] map = new int[ parms.length ];
+      for ( int i = 0; i < map.length; i++ )
+        map[ i ] = -1;
+      boolean parmsMatch = true;
+      for ( int i = 0; i < parms.length; i++ )
+      {
+        String name = parms[ i ].getName();
+        boolean nameMatch = false;
+        for ( int j = 0; j < parms2.length; j++ )
+        {
+          if ( name.equals( parms2[ j ].getName()))
+          {
+            map[ i ] = j;
+            nameMatch = true;
+            break;
+          }
+        }
+        if ( nameMatch )
+          parmsMatch = true;
+      }
+  
+      if ( parmsMatch )
+      {
+        // copy parameters from p to p2!
+        System.err.println( "\tCopying dev. parms" );
+        for ( int i = 0; i < map.length; i++ )
+        {
+          int mappedIndex = map[ i ];
+          if ( mappedIndex != -1 )
+          {
+            System.err.println( "\tfrom index " + i + " to index " + map[ i ]);
+            parms2[ mappedIndex ].setValue( parms[ i ].getValue());
+          }
+        }
+      }
+  
+      // convert the functions to the new protocol 
+      protocol.convertFunctions( functions, newProtocol );
+    }
+    protocol = newProtocol;
     parmValues = protocol.getDeviceParmValues();
   }
 
@@ -402,10 +455,6 @@ public class DeviceUpgrade
     functions.clear();
     devTypeAliasName = newDeviceTypeAliasName;
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, pid );
-    if ( p != null )
-      pCode = p.getCode( remote );
-    ManualProtocol mp = null;
 
     int digitMapIndex = -1;
     if ( !remote.getOmitDigitMapByte())
@@ -436,14 +485,47 @@ public class DeviceUpgrade
 
     while (( code[ index++ ] & 1 ) == 0 ); // skip over the bitMap
 
-    int value = pCode.getData()[ 2 ];
-    int fixedDataLength = value >> 4;
-    int cmdLength = value & 0x0F;
-    int[] fixedData = new int[ fixedDataLength ];
-    for ( int i = 0; i < fixedDataLength; i++ )
-      fixedData[ i ] = code[ index++ ];
-    if ( p == null )
+    int fixedDataOffset = index;
+    int fixedDataLength = 0;
+    int cmdLength = 0;
+    int[] fixedData = null;
+    Value[] vals = parmValues;
+    Vector protocols = ProtocolManager.getProtocolManager().findByPID( pid );
+    Protocol p = null;
+    boolean foundMatch = false;
+    for ( Enumeration e = protocols.elements(); e.hasMoreElements() && !foundMatch; )
     {
+      p = ( Protocol )e.nextElement();
+      System.err.println( "Checking protocol " + p.getDiagnosticName() );
+      if ( !remote.supportsVariant( pid, p.getVariantName()) && !p.hasCode( remote ))
+        continue;
+      fixedDataLength = p.getFixedDataLength();
+      fixedData = new int[ fixedDataLength ];
+      System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );   
+      Hex fixedDataHex = new Hex( fixedData );
+      vals = p.importFixedData( fixedDataHex );
+      Hex calculatedFixedData = p.getFixedData( vals );
+      if ( calculatedFixedData.equals( fixedDataHex ))
+      {
+        System.err.println( "It's a match!" );
+        foundMatch = true;
+      }
+    }
+    
+    ManualProtocol mp = null;
+
+    if ( foundMatch )
+    {
+      cmdLength = p.getDefaultCmd().length();
+      parmValues = vals;
+    }
+    else 
+    {
+      int value = pCode.getData()[ 2 ];
+      fixedDataLength = value >> 4;
+      cmdLength = value & 0x0F;
+      fixedData = new int[ fixedDataLength ];
+      System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       int cmdType = ManualProtocol.ONE_BYTE;
       if ( cmdLength != 1 )
         cmdType = ManualProtocol.AFTER_CMD;
@@ -451,21 +533,89 @@ public class DeviceUpgrade
       mp.setCode( pCode, remote.getProcessor() );
       p = mp;
     }
-    else
-      parmValues = p.importFixedData( new Hex( fixedData ));
+    index += fixedDataLength;
+
     protocol = p;
-    for ( Enumeration e = buttons.elements(); e.hasMoreElements();)
+    for ( Enumeration e = buttons.elements(); e.hasMoreElements() & index < code.length;)
     {
+      Button b = ( Button )e.nextElement();
       int[] cmd = new int[ cmdLength ];
       for ( int i = 0; i < cmdLength; i++ )
         cmd[ i ] = code[ index++ ];
-      Button b = ( Button )e.nextElement();
       Function f = new Function();
       f.setName( b.getName());
       f.setHex( new Hex( cmd ));
       functions.add( f );
       b.setFunction( f );
     }
+  }
+
+  public int[] getBinaryUpgrade()
+  {
+    Vector v = new Vector();
+    int[] header = new int[ 5 ];
+    v.add( header );
+    
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    int[] id = protocol.getID( remote ).getData();
+    int temp = devType.getNumber() * 0x1000 +
+               ( id[ 0 ] & 1 ) * 0x0800 +
+               setupCode - remote.getDeviceCodeOffset();
+
+    header[ 2 ] = (temp >> 8 );
+    header[ 3 ] = temp;
+    header[ 4 ] = id[ 1 ];
+
+    int digitMapIndex = -1;
+
+    if ( !remote.getOmitDigitMapByte())
+    {
+      int[] digitMap = new int[ 1 ];
+      digitMapIndex = findDigitMapIndex();
+      if ( digitMapIndex != -1 )
+        digitMap[ 0 ] = digitMapIndex;
+      v.add( digitMap );
+    }
+
+    ButtonMap map = devType.getButtonMap();
+    if ( map != null )
+      v.add( map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly()));
+
+    v.add( protocol.getFixedData( parmValues ).getData());
+
+    if ( map != null )
+      v.add( map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly()));
+
+    int length = 0;
+    for ( Enumeration e = v.elements(); e.hasMoreElements();)
+      length += (( int[] )e.nextElement()).length;
+    
+    if (( protocol.getClass() == ManualProtocol.class ) || !remote.supportsVariant( protocol.getID(), protocol.getVariantName()));
+    {
+      Hex code = protocol.getCode( remote );
+      code = remote.getProcessor().translate( code, remote );
+      Translate[] xlators = protocol.getCodeTranslators( remote );
+      if ( xlators != null )
+      {
+        Value[] values = parmValues;
+        for ( int i = 0; i < xlators.length; i++ )
+          xlators[ i ].in( values, code, null, -1 );
+      }
+      v.add( code.getData());
+      header[ 1 ] = length;
+      length += code.length();
+    }
+    
+    header[ 0 ] = length - 1;
+    int[] data = new int[ length ];
+    int offset = 0;
+    for ( Enumeration e = v.elements(); e.hasMoreElements();)
+    {
+      int[] source = ( int[] )e.nextElement();
+      System.arraycopy( source, 0, data, offset, source.length );
+      offset += source.length;
+    }
+    return data;
   }
 
   public String getUpgradeText( boolean includeNotes )
@@ -1380,27 +1530,17 @@ public class DeviceUpgrade
           fixedData = new Hex( fixedDataStr );
 
         Hex newPid = new Hex( pidStr );
-        Vector protocols = protocolManager.findByPID( newPid );
-        boolean foundMatch = false;
-        for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+        Protocol p = protocolManager.findProtocolForRemote( remote, newPid, fixedData );
+        if ( p != null )
         {
-          Protocol p = ( Protocol )e.nextElement();
-          if ( !remote.supportsVariant( newPid, p.getVariantName()))
-            continue;
           CombinerDevice dev = new CombinerDevice( p, fixedData );
-          Hex calculatedFixedData = dev.getFixedData();
-          if ( !calculatedFixedData.equals( fixedData ))
-            continue;
           combiner.add( dev );
-          foundMatch = true;
-          break;
         }
-
-        if ( !foundMatch )
-        {
-          ManualProtocol p = new ManualProtocol( newPid, new Properties());
-          p.setRawHex( fixedData );
-          combiner.add( new CombinerDevice( p, null, null ));
+        else
+       {
+          ManualProtocol mp = new ManualProtocol( newPid, new Properties());
+          mp.setRawHex( fixedData );
+          combiner.add( new CombinerDevice( mp, null, null ));
         }
       }
 

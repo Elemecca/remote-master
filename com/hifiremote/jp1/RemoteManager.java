@@ -31,7 +31,6 @@ public class RemoteManager
                                        "Error", JOptionPane.ERROR_MESSAGE );
         JFileChooser chooser = new JFileChooser( dir );
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-//        chooser.setFileFilter( new KMDirectoryFilter());
         chooser.setDialogTitle( "Choose the directory containing the RDFs" );
         int returnVal = chooser.showOpenDialog( null );
         if ( returnVal != JFileChooser.APPROVE_OPTION )
@@ -65,7 +64,6 @@ public class RemoteManager
   }
 
   public Remote findRemoteByName( String name )
-    throws Exception
   {
     System.err.println( "Searching for remote with name " + name );
     if ( name == null )
@@ -203,7 +201,17 @@ public class RemoteManager
     return remotes[ index ];
   }
 
-  public Remote[] findRemoteBySignature( String signature ){ return null; }
+  public Vector findRemoteBySignature( String signature )
+  {
+    Vector v = new Vector();
+    for ( int i = 0; i < remotes.length; i++ )
+    {
+      Remote r = remotes[ i ];
+      if ( r.getSignature().equals( signature ))
+        v.add( r );
+    }
+    return v;
+  }
 
   private static RemoteManager remoteManager = new RemoteManager();
 

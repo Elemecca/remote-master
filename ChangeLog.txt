@@ -1,3 +1,13 @@
+Changes for v1.34
+- Fixes for binary upgrade files (for Slingbox).
+
+Changes for v1.33
+- More fixed for switching protocols.
+
+Changes for v1.32
+- Fix problems switching protocols.
+- Add support for binary upgrade files (for Slingbox)
+
 Changes for v1.31
 - Fix protocols.ini entry for Pause Protocol
 - Allow column resizing on the Function and External Function panels.

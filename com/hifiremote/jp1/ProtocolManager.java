@@ -236,6 +236,22 @@ public class ProtocolManager
     return protocol;
   }
 
+  public Protocol findProtocolForRemote( Remote remote, Hex id, Hex fixedData )
+  {
+    Vector protocols = protocolManager.findByPID( id );
+    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    {
+      Protocol p = ( Protocol )e.nextElement();
+      if ( !remote.supportsVariant( id, p.getVariantName()))
+        continue;
+      Value[] vals = p.importFixedData( fixedData );
+      Hex calculatedFixedData = p.getFixedData( vals );
+      if ( calculatedFixedData.equals( fixedData ))
+        return p;
+    }
+    return null;
+  }
+
   public Protocol findProtocolForRemote( Remote remote, Hex id )
   {
     return findProtocolForRemote( remote, id, true );

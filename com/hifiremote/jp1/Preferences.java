@@ -58,6 +58,17 @@ public class Preferences
     if (  upgradePath == null )
       upgradePath = new File( home, upgradeDirectory );
 
+    temp = props.getProperty( "BinaryUpgradePath" );
+    if ( temp != null )
+      binaryUpgradePath = new File( temp );
+    else
+      binaryUpgradePath = new File( home, upgradeDirectory );
+    while (( binaryUpgradePath != null ) && !binaryUpgradePath.exists() && !binaryUpgradePath.isDirectory())
+      binaryUpgradePath = binaryUpgradePath.getParentFile();
+
+    if (  binaryUpgradePath == null )
+      binaryUpgradePath = new File( home, upgradeDirectory );
+
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
     temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
     try
@@ -279,7 +290,6 @@ public class Preferences
     item.setMnemonic( KeyEvent.VK_E );
     item.addActionListener( al );
     submenu.add( item );
-
   }
 
   public boolean getUsePreferredRemotes()
@@ -288,7 +298,7 @@ public class Preferences
   }
 
   public Remote[] getPreferredRemotes()
-    throws Exception
+//    throws Exception
   {
     if ( preferredRemotes.length == 0 )
     {
@@ -315,6 +325,7 @@ public class Preferences
     Properties props = new Properties();
     props.setProperty( "RDFPath", rdfPath.getAbsolutePath());
     props.setProperty( "UpgradePath", upgradePath.getAbsolutePath());
+    props.setProperty( "BinaryUpgradePath", binaryUpgradePath.getAbsolutePath());
     props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
     Remote remote = KeyMapMaster.getRemote();
     props.setProperty( "Remote.name", remote.getName());
@@ -385,6 +396,16 @@ public class Preferences
   public void setUpgradePath( File path )
   {
     upgradePath = path;
+  }
+
+  public File getBinaryUpgradePath()
+  {
+    return binaryUpgradePath;
+  }
+
+  public void setBinaryUpgradePath( File path )
+  {
+    binaryUpgradePath = path;
   }
 
   public Rectangle getBounds()
@@ -458,6 +479,7 @@ public class Preferences
   private File file;
   private File rdfPath;
   private File upgradePath = null;
+  private File binaryUpgradePath = null;
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
   private JRadioButtonMenuItem[] promptButtons = null;
   private String lastRemoteName = null;

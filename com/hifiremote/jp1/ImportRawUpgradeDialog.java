@@ -41,7 +41,7 @@ public class ImportRawUpgradeDialog
     JLabel label = new JLabel( "Remote:" );
     mainPanel.add( label, "1, 1" );
 
-    Remote[] remotes = RemoteManager.getRemoteManager().getRemotes();
+    Remote[] remotes = KeyMapMaster.getKeyMapMaster().getRemotes();
     remoteList = new JComboBox( remotes );
     label.setLabelFor( remoteList );
     remoteList.setSelectedItem( deviceUpgrade.getRemote());
@@ -95,7 +95,7 @@ public class ImportRawUpgradeDialog
     cancel.addActionListener( this );
     buttonPanel.add( cancel );
 
-    mainPanel.add( buttonPanel, "3, 13" );
+    mainPanel.add( buttonPanel, "1, 13, 3, 13" );
 
     pack();
     Rectangle rect = getBounds();

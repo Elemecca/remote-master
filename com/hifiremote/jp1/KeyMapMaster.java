@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.31";
+  public static final String version = "v1.34";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -28,6 +28,8 @@ public class KeyMapMaster
   private JMenuItem manualItem = null;
   private JMenuItem editorItem = null;
   private JMenuItem rawItem = null;
+  private JMenuItem binaryItem = null;
+  private JMenuItem writeBinaryItem = null;
   private JMenuItem aboutItem = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
@@ -296,9 +298,20 @@ public class KeyMapMaster
     menu.add( editorItem );
 
     rawItem = new JMenuItem( "Import Raw Upgrade..." );
-    rawItem.setMnemonic( KeyEvent.VK_I );
+    rawItem.setMnemonic( KeyEvent.VK_R );
     rawItem.addActionListener( this );
     menu.add( rawItem );
+
+    binaryItem = new JMenuItem( "Import Binary Upgrade..." );
+    binaryItem.setMnemonic( KeyEvent.VK_B );
+    binaryItem.addActionListener( this );
+    menu.add( binaryItem );
+
+    writeBinaryItem = new JMenuItem( "Export Binary Upgrade..." );
+    writeBinaryItem.setEnabled( false );
+    writeBinaryItem.setMnemonic( KeyEvent.VK_X );
+    writeBinaryItem.addActionListener( this );
+    menu.add( writeBinaryItem );
 
     menu = new JMenu( "Help" );
     menu.setMnemonic( KeyEvent.VK_H );
@@ -392,17 +405,14 @@ public class KeyMapMaster
   {
     if ( remoteList != null )
     {
-      if ( preferences.getUsePreferredRemotes())
-        try
-        {
-          remoteList.setModel( new DefaultComboBoxModel( preferences.getPreferredRemotes()));
-        }
-        catch ( Exception e )
-        {
-          e.printStackTrace( System.err );
-        }
-      else
-        remoteList.setModel( new DefaultComboBoxModel( RemoteManager.getRemoteManager().getRemotes()));
+      try
+      {
+        remoteList.setModel( new DefaultComboBoxModel( getRemotes()));
+      }
+      catch ( Exception e )
+      {
+        e.printStackTrace( System.err );
+      }
     }
   }
 
@@ -412,7 +422,6 @@ public class KeyMapMaster
     {
       try
       {
-        remote.load();
         String[] aliasNames = remote.getDeviceTypeAliasNames();
         String alias = deviceUpgrade.getDeviceTypeAliasName();
         deviceTypeList.removeActionListener( this );
@@ -449,6 +458,7 @@ public class KeyMapMaster
         deviceUpgrade.setRemote( remote );
         deviceUpgrade.setDeviceTypeAliasName( aliasNames[ index ]);
         deviceTypeList.addActionListener( this );
+        writeBinaryItem.setEnabled( remote.getSupportsBinaryUpgrades());
       }
       catch ( Exception e )
       {
@@ -579,6 +589,72 @@ public class KeyMapMaster
         ImportRawUpgradeDialog d = new ImportRawUpgradeDialog( this, deviceUpgrade );
         d.show();
         currPanel.update();
+      }
+      else if ( source == binaryItem )
+      {
+        File file = null;
+        JFileChooser chooser = new JFileChooser( preferences.getBinaryUpgradePath());
+        try
+        {
+          chooser.setAcceptAllFileFilterUsed( false );
+        }
+        catch ( Exception ex )
+        {
+          ex.printStackTrace( System.err );
+        }
+        chooser.setFileFilter( new BinaryFileFilter());
+        int returnVal = chooser.showOpenDialog( this );
+        if ( returnVal == JFileChooser.APPROVE_OPTION )
+        {
+          file = chooser.getSelectedFile();
+    
+          int rc = JOptionPane.YES_OPTION;
+          if ( !file.exists())
+          {
+            JOptionPane.showMessageDialog( this,
+                                           file.getName() + " doesn't exist.",
+                                           "File doesn't exist.",
+                                           JOptionPane.ERROR_MESSAGE );
+          }
+          else if ( file.isDirectory())
+          {
+            JOptionPane.showMessageDialog( this,
+                                           file.getName() + " is a directory.",
+                                           "File doesn't exist.",
+                                           JOptionPane.ERROR_MESSAGE );
+          }
+          else
+          {
+            preferences.setBinaryUpgradePath( file.getParentFile());
+            BinaryUpgradeReader reader = new BinaryUpgradeReader( file );
+            Remote r = reader.getRemote();
+            DeviceType devType = r.getDeviceTypeByIndex( reader.getDeviceIndex());
+            String aliasName = null;
+            String[] aliasNames = r.getDeviceTypeAliasNames();
+            boolean nameMatch = false;
+            for ( int i = 0; i < aliasNames.length && !nameMatch ; i++ )
+            {
+              String tryit = aliasNames[ i ];
+              if ( devType == r.getDeviceTypeByAliasName( tryit ))
+              {
+                nameMatch = devType.getName().equalsIgnoreCase( tryit ); 
+                if (( aliasName == null ) || nameMatch )
+                  aliasName = tryit;
+              }
+            }
+            deviceUpgrade.importRawUpgrade( reader.getCode(), 
+                                            r,
+                                            aliasName,
+                                            reader.getPid(),
+                                            reader.getProtocolCode());
+            deviceUpgrade.setSetupCode( reader.getSetupCode());
+            refresh();
+          }
+        }
+      }
+      else if ( source == writeBinaryItem )
+      {
+        BinaryUpgradeWriter.write( deviceUpgrade );
       }
       else if ( source == aboutItem )
       {
@@ -841,6 +917,7 @@ public class KeyMapMaster
     }
 
     saveItem.setEnabled( file != null );
+    writeBinaryItem.setEnabled( deviceUpgrade.getRemote().getSupportsBinaryUpgrades());
     removeListeners();
     description.setText( deviceUpgrade.getDescription());
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
@@ -922,58 +999,15 @@ public class KeyMapMaster
           break;
         }
       }
-
       if ( match != null )
-      {
-        System.err.println( "\tChecking for matching dev. parms" );
-        DeviceParameter[] parms = p.getDeviceParameters();
-        DeviceParameter[] parms2 = match.getDeviceParameters();
-
-        int[] map = new int[ parms.length ];
-        boolean parmsMatch = true;
-        for ( int i = 0; i < parms.length; i++ )
-        {
-          name = parms[ i ].getName();
-          System.err.print( "\tchecking " + name );
-          boolean nameMatch = false;
-          for ( int j = 0; j < parms2.length; j++ )
-          {
-            if ( name.equals( parms2[ j ].getName()))
-            {
-              map[ i ] = j;
-              nameMatch = true;
-              System.err.print( " has a match!" );
-              break;
-            }
-          }
-          System.err.println();
-          parmsMatch = nameMatch;
-          if ( !parmsMatch )
-            break;
-        }
-        if ( parmsMatch )
-        {
-          // copy parameters from p to p2!
-          System.err.println( "\tCopying dev. parms" );
-          for ( int i = 0; i < map.length; i++ )
-          {
-            System.err.println( "\tfrom index " + i + " to index " + map[ i ]);
-            parms2[ map[ i ]].setValue( parms[ i ].getValue());
-          }
-          System.err.println();
-          System.err.println( "Setting new protocol" );
-          p.convertFunctions( deviceUpgrade.getFunctions(), match );
-          deviceUpgrade.setProtocol( match );
-          return;
-        }
-      }
-      JOptionPane.showMessageDialog( this,
-                                     "The selected protocol " + p.getDiagnosticName() +
-                                     "\nis not compatible with the selected remote.\n" +
-                                     "This upgrade will NOT function correctly.\n" +
-                                     "Please choose a different protocol.",
-                                     "Error", JOptionPane.ERROR_MESSAGE );
-
+        deviceUpgrade.setProtocol( match );
+      else
+        JOptionPane.showMessageDialog( this,
+                                       "The selected protocol " + p.getDiagnosticName() +
+                                       "\nis not compatible with the selected remote.\n" +
+                                       "This upgrade will NOT function correctly.\n" +
+                                       "Please choose a different protocol.",
+                                       "Error", JOptionPane.ERROR_MESSAGE );
     }
   }
 
@@ -986,6 +1020,19 @@ public class KeyMapMaster
   public static Remote getRemote()
   {
     return me.deviceUpgrade.getRemote();
+  }
+
+  public Remote[] getRemotes()
+  {
+    if ( preferences.getUsePreferredRemotes())
+      return preferences.getPreferredRemotes();
+    else
+      return RemoteManager.getRemoteManager().getRemotes();
+  }
+
+  public Preferences getPreferences()
+  {
+    return preferences;
   }
 
   // DocumentListener methods
@@ -1047,7 +1094,6 @@ public class KeyMapMaster
       return "Directories";
     }
   }
-
 
   private class TextFileFilter
     extends javax.swing.filechooser.FileFilter

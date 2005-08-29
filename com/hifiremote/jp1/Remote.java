@@ -13,6 +13,7 @@ public class Remote
   {
     this.file = aRemote.file;
     this.signature = aRemote.signature;
+    supportsBinaryUpgrades = aRemote.supportsBinaryUpgrades;
     this.names = aRemote.names;
     nameIndex = index;
   }
@@ -23,6 +24,7 @@ public class Remote
     String rdfName = rdf.getName();
     StringTokenizer st = new StringTokenizer( rdfName );
     signature = st.nextToken(); // upto the 1st space
+    supportsBinaryUpgrades = signature.startsWith( "BIN" );
     int openParen = rdfName.indexOf( '(' );
     int closeParen = rdfName.lastIndexOf( ')' );
     String name = rdfName.substring( openParen + 1, closeParen );
@@ -71,12 +73,13 @@ public class Remote
   public File getFile(){ return file; }
 
   public void load()
-    throws Exception
+//    throws Exception
   {
     try
     {
       if ( loaded )
         return;
+      loaded = true;
       RDFReader rdr = new RDFReader( file );
       String line = rdr.readLine();
       while ( line != null )
@@ -104,6 +107,8 @@ public class Remote
             line = parseDigitMaps( rdr );
           else if ( line.equals( "DeviceTypes" ))
             line = parseDeviceTypes( rdr );
+          else if ( line.equals( "DeviceAbbreviations" ))
+            line = parseDeviceAbbreviations( rdr );
           else if ( line.equals( "DeviceTypeAliases" ))
             line = parseDeviceTypeAliases( rdr );
           else if ( line.equals( "Buttons" ))
@@ -226,7 +231,6 @@ public class Remote
                                      sw.toString(), "Remote Load Error",
                                      JOptionPane.ERROR_MESSAGE );
       System.err.println( sw.toString());
-      throw e;
     }
   }
 
@@ -273,31 +277,37 @@ public class Remote
 
   public DeviceButton[] getDeviceButtons()
   {
+    load();
     return deviceButtons;
   }
 
   public Vector getButtons()
   {
+    load();
     return buttons;
   }
 
   public Button[] getUpgradeButtons()
   {
+    load();
     return upgradeButtons;
   }
 
   public ButtonShape[] getButtonShapes()
   {
+    load();
     return buttonShapes;
   }
 
   public Vector getPhantomShapes()
   {
+    load();
     return phantomShapes;
   }
 
   public Processor getProcessor()
   {
+    load();
     return processor;
   }
 
@@ -308,31 +318,37 @@ public class Remote
 
   public int getRAMAddress()
   {
+    load();
     return RAMAddress;
   }
 
   public int[] getDigitMaps()
   {
+    load();
     return digitMaps;
   }
 
   public boolean getOmitDigitMapByte()
   {
+    load();
     return omitDigitMapByte;
   }
 
   public ImageIcon getImageIcon()
   {
+    load();
     return imageIcon;
   }
 
   public int getAdvCodeFormat()
   {
+    load();
     return advCodeFormat;
   }
 
   public int getEFCDigits()
   {
+    load();
     return efcDigits;
   }
 
@@ -524,6 +540,23 @@ public class Remote
         protocolVectorOffset = rdr.parseNumber( st.nextToken());
       else if ( parm.equals( "ProtocolDataOffset" ))
         protocolDataOffset = rdr.parseNumber( st.nextToken());
+      else if ( parm.equals( "EncDec" ))
+      {
+        String className = st.nextToken();
+        try
+        {
+          if ( className.indexOf( '.' ) == -1 )
+            className = "com.hifiremote.jp1." + className;
+    
+          Class cl = Class.forName( className );
+          encdec = ( EncrypterDecrypter )cl.newInstance();
+        }
+        catch ( Exception e )
+        {
+          System.err.println( "Error creating an instance of " + className );
+          e.printStackTrace( System.err );
+        }
+      }
     }
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
@@ -531,6 +564,7 @@ public class Remote
 
   public int[] getDevCombAddresses()
   {
+    load();
     return devCombAddress;
   }
 
@@ -789,6 +823,35 @@ public class Remote
     return line;
   }
 
+  private String parseDeviceAbbreviations( RDFReader rdr )
+    throws Exception
+  {
+    String line;
+    while ( true )
+    {
+      line = rdr.readLine();
+      if ( line == null )
+        break;
+      if (( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ))
+          break;
+      StringTokenizer st = new StringTokenizer( line, "," );
+      while ( st.hasMoreTokens())
+      {
+        String token = st.nextToken().trim();
+        int equal = token.indexOf( '=' );
+        if ( equal == -1 )
+          continue;
+
+        String devName = token.substring( 0, equal );
+        String abbreviation = token.substring( equal + 1 );
+        DeviceType devType = getDeviceType( devName );
+        if ( devType != null )
+          devType.setAbbreviation( abbreviation );
+      }
+    }
+    return line;
+  }
+
   private String parseDigitMaps( RDFReader rdr )
     throws Exception
   {
@@ -886,6 +949,7 @@ public class Remote
 
   public String[] getDeviceTypeAliasNames()
   {
+    load();
     return deviceTypeAliasNames;
   }
 
@@ -954,11 +1018,13 @@ public class Remote
 
   public Button getButton( int keyCode )
   {
+    load();
     return ( Button )buttonsByKeyCode.get( new Integer( keyCode ));
   }
 
   public Button getButton( String name )
   {
+    load();
     return ( Button )buttonsByName.get( name.toLowerCase());
   }
 
@@ -1032,6 +1098,7 @@ public class Remote
 
   public Button findByStandardName( Button b )
   {
+    load();
     return ( Button )buttonsByStandardName.get( b.getStandardName().toLowerCase());
   }
 
@@ -1396,11 +1463,12 @@ public class Remote
     work.clear();
   }
 
-  public int getHeight(){ return height; }
+  public int getHeight(){ load(); return height; }
   private int height;
 
   public boolean supportsVariant( Hex pid, String name )
   {
+    load();
     Vector v = ( Vector )protocolVariantNames.get( pid );
     if (( v == null ) || v.isEmpty())
       return false;
@@ -1413,12 +1481,13 @@ public class Remote
 
   public Vector getSupportedVariantNames( Hex pid )
   {
+    load();
     return ( Vector )protocolVariantNames.get( pid );
   }
 
-
   public void clearButtonAssignments()
   {
+    load();
     for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
     {
       (( Button )e.nextElement()).setFunction( null ).setShiftedFunction( null ).setXShiftedFunction( null );
@@ -1427,12 +1496,20 @@ public class Remote
 
   public void setProtocols( Vector protocols )
   {
+    load();
     this.protocols = protocols;
   }
 
   public Vector getProtocols()
   {
+    load();
     return protocols;
+  }
+
+  public EncrypterDecrypter getEncrypterDecrypter()
+  {
+    load();
+    return encdec;
   }
 
   // Interface Comparable
@@ -1449,6 +1526,7 @@ public class Remote
   public String getXShiftLabel(){ return xShiftLabel; }
   public int getProtocolVectorOffset(){ return protocolVectorOffset; }
   public int getProtocolDataOffset(){ return protocolDataOffset; }
+  public boolean getSupportsBinaryUpgrades(){ return supportsBinaryUpgrades; }
 
   private File file = null;
   private String signature = null;
@@ -1512,5 +1590,7 @@ public class Remote
   private int[] devCombAddress = null;
   private int protocolVectorOffset = 0;
   private int protocolDataOffset = 0;
+  private EncrypterDecrypter encdec = null;
+  private boolean supportsBinaryUpgrades = false;
   private static Hashtable restrictionTable = null;
  }

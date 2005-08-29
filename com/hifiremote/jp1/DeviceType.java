@@ -29,7 +29,20 @@ public class DeviceType
     return buttonMap.isPresent( b );
   }
 
+  public void setAbbreviation( String text )
+  {
+    abbreviation = text;
+  }
+
+  public String getAbbreviation()
+  {
+    if ( abbreviation != null )
+      return abbreviation;
+    return name;
+  }
+
   private String name;
+  public String abbreviation;
   private int map;
   private int type;
   private ButtonMap buttonMap = null;

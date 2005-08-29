@@ -160,9 +160,10 @@ public class Protocol
       fixedData = new Hex( cmd );
       devParms = new DeviceParameter[ fixedDataLength ];
       deviceTranslators = new Translator[ fixedDataLength ];
+      DirectDefaultValue defaultZero = new DirectDefaultValue( new Integer( 0 ));
       for ( int i = 0; i < fixedDataLength; i++ )
       {
-        devParms[ i ] = new NumberDeviceParm( "Device " + i, null, 10 );
+        devParms[ i ] = new NumberDeviceParm( "Device " + i, defaultZero, 10 );
         deviceTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );                  
       }
     }
@@ -173,7 +174,7 @@ public class Protocol
     int len = devParms.length;
     Value[] vals = new Value[ len ];
     for ( int i = 0; i < len; i++ )
-      vals[ i ] = new Value( null,  null );
+      vals[ i ] = new Value( null,  devParms[ i ].getDefaultValue());
     setDeviceParms( vals );
   }
 
@@ -531,6 +532,8 @@ public class Protocol
     return temp;
   }
 
+  public int getFixedDataLength(){ return fixedData.length(); }
+
   // convert the functions defined in this protocol to the new Protocol
   public void convertFunctions( Vector funcs, Protocol newProtocol )
   {
@@ -569,14 +572,12 @@ public class Protocol
       }
     }
 
-    // create Value arrays for holding the command parameters
+    // create Value arrays for holding the command parameter values
     Value[] currValues = new Value[ cmdParms.length ];
-    Value[] newValues = new Value[ newParms.length ];
-    // initialize the contents of newValues with the defaultValues for the new protocol
+    Value[] newValues = new Value[ newProtocol.cmdParms.length ];
+    // setup the correct default values.
     for ( int i = 0; i < newValues.length; i++ )
-    {
-      newValues[ i ] = new Value( newParms[ i ].getDefaultValue(), null );
-    }
+      newValues[ i ] = new Value( null, newProtocol.cmdParms[ i ].getDefaultValue());
 
     // now convert each defined function
     for ( Enumeration en = funcs.elements(); en.hasMoreElements(); )
@@ -593,7 +594,7 @@ public class Protocol
         // copy the matching parameters to the new Values;
         for ( int i = 0; i < oldIndex.length; i++ )
         {
-          newValues[ newIndex[ i]] = currValues[ oldIndex[ i ]];
+          newValues[ newIndex[ i ]] = currValues[ oldIndex[ i ]];
         }
 
         // generate the appropriate hex for the new protocol
@@ -713,7 +714,7 @@ public class Protocol
   protected Hex defaultCmd = null;
   protected int cmdIndex;
   protected DeviceParameter[] devParms = null;
-  protected Translate[] deviceTranslators = null;
+  protected Translate[] deviceTranslators = new Translate[ 0 ];
   protected Translate[] devImportTranslators = null;
   protected CmdParameter[] cmdParms = null;
   protected Translate[] cmdTranslators = null;
