@@ -1,3 +1,6 @@
+Changes for v1.34a
+- More fixes for binary upgrade files (for Slingbox).
+
 Changes for v1.34
 - Fixes for binary upgrade files (for Slingbox).
 

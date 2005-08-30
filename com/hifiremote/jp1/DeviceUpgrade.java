@@ -589,8 +589,8 @@ public class DeviceUpgrade
     int length = 0;
     for ( Enumeration e = v.elements(); e.hasMoreElements();)
       length += (( int[] )e.nextElement()).length;
-    
-    if (( protocol.getClass() == ManualProtocol.class ) || !remote.supportsVariant( protocol.getID(), protocol.getVariantName()));
+
+    if (( protocol.getClass() == ManualProtocol.class ) || !remote.supportsVariant( protocol.getID(), protocol.getVariantName()))
     {
       Hex code = protocol.getCode( remote );
       code = remote.getProcessor().translate( code, remote );

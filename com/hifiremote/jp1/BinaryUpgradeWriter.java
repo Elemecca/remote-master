@@ -57,7 +57,7 @@ public class BinaryUpgradeWriter
         }
         if ( rc == JOptionPane.YES_OPTION )
         {    
-          prefs.setUpgradePath( file.getParentFile());
+          prefs.setBinaryUpgradePath( file.getParentFile());
           int[] data = deviceUpgrade.getBinaryUpgrade();
           DataOutputStream out = new DataOutputStream( new FileOutputStream( file ));
           EncrypterDecrypter encdec = deviceUpgrade.getRemote().getEncrypterDecrypter();
