@@ -133,12 +133,12 @@ public class Button
   {
     if ( function != null )
     {
-      function.removeReference( this );
+      function.removeReference( this, NORMAL_STATE );
     }
     function = newFunc;
     if ( newFunc != null )
     {
-      newFunc.addReference( this );
+      newFunc.addReference( this, NORMAL_STATE );
     }
     return this;
   }
@@ -151,10 +151,10 @@ public class Button
     else
     {
       if ( shiftedFunction != null )
-        shiftedFunction.removeReference( this );
+        shiftedFunction.removeReference( this, SHIFTED_STATE );
       shiftedFunction = newFunc;
       if ( newFunc != null )
-        newFunc.addReference( this );
+        newFunc.addReference( this, SHIFTED_STATE );
     }
     return this;
   }
@@ -174,10 +174,10 @@ public class Button
     else
     {
       if ( xShiftedFunction != null )
-        xShiftedFunction.removeReference( this );
+        xShiftedFunction.removeReference( this, XSHIFTED_STATE );
       xShiftedFunction = newFunc;
       if ( newFunc != null )
-        newFunc.addReference( this );
+        newFunc.addReference( this, XSHIFTED_STATE );
     }
     return this;
   }
@@ -309,6 +309,10 @@ public class Button
   private int restrictions = 0;
   private int buttonMaps = 0;
   private boolean hasShape = false;
+
+  public static int NORMAL_STATE = 0;
+  public static int SHIFTED_STATE = 1;
+  public static int XSHIFTED_STATE = 2;
 
   public static int MOVE_BIND = 0x01;
   public static int SHIFT_MOVE_BIND = 0x02;

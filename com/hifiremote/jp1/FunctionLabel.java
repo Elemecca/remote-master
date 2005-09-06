@@ -91,12 +91,14 @@ public class FunctionLabel
             first = false;
           else
             buff.append( ", " );
-          Button b = ( Button )e.nextElement();
-          if ( b.getFunction() == function )
+          Function.User user = ( Function.User )e.nextElement();
+          Button b = user.button;
+          int state = user.state;
+          if ( state == Button.NORMAL_STATE )
             buff.append( b.getName());
-          else if ( b.getShiftedFunction() == function )
+          else if ( state == Button.SHIFTED_STATE )
             buff.append( b.getShiftedName());
-          else if ( b.getXShiftedFunction() == function )
+          else if ( state == Button.XSHIFTED_STATE )
             buff.append( b.getXShiftedName());
         }
       }

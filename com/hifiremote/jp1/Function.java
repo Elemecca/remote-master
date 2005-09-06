@@ -120,9 +120,9 @@ public class Function
     return item;
   }
 
-  public void addReference( Button b )
+  public void addReference( Button b, int state )
   {
-    users.add( b );
+    users.add( new User( b, state ));
     if ( label != null )
     {
       label.showAssigned();
@@ -130,9 +130,9 @@ public class Function
     }
   }
 
-  public void removeReference( Button b )
+  public void removeReference( Button b, int state )
   {
-    users.remove( b );
+    users.remove( new User( b, state ));
     if ( label != null )
     {
       if ( users.isEmpty())
@@ -149,6 +149,30 @@ public class Function
   public Enumeration getUsers()
   {
     return users.elements();
+  }
+
+  public class User
+  
+  {
+    public User( Button b, int state )
+    {
+      button = b;
+      this.state = state;
+    }
+
+    public boolean equals( Object o )
+    {
+      User u = ( User )o;
+      boolean rc = true;
+      if ( button != u.button )
+        return false;
+      if ( state != u.state )
+        return false;
+      return true;
+    }
+    
+    public Button button;
+    public int state; 
   }
 
   protected String name = null;
