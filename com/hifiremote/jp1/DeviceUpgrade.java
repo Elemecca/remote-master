@@ -602,7 +602,7 @@ public class DeviceUpgrade
           xlators[ i ].in( values, code, null, -1 );
       }
       v.add( code.getData());
-      header[ 1 ] = length;
+      header[ 1 ] = length - 1;
       length += code.length();
     }
     
