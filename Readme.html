@@ -142,7 +142,7 @@ the current cell in the Functions panel.
 </tr>
 <tr>
 <th>Remotes</th>
-<td><p>Allows you to choose the set of remotes that RemoteMaster will display. Your choices are <b>All</b>, meaning all remotes for which RemoteMaster can find Remote Definition Files (RDFs), or <b>Preferred</b>, meaning only those remotes that are in your preferred list.</p>
+<td>Allows you to choose the set of remotes that RemoteMaster will display. Your choices are <b>All</b>, meaning all remotes for which RemoteMaster can find Remote Definition Files (RDFs), or <b>Preferred</b>, meaning only those remotes that are in your preferred list.
 <p>You can manage the list of preferred remotes using <b>Edit Preferred</b>.</p>
 </tr>
 <tr>
@@ -162,8 +162,17 @@ the current cell in the Functions panel.
 <td>Allows you create a protocol definition for future inclusion in protocols.ini.  <b>This is not yet complete</b></td>
 </tr>
 <tr>
-<th><u>I</u>mport&nbsp;Raw&nbsp;Upgrade...</th>
+<th>Import&nbsp;<u>R</u>aw&nbsp;Upgrade...</th>
 <td>Imports a raw hex device upgrade.  This is useful when a remote is sent back to UEI to have a device upgrade added.</td>
+</tr>
+<tr>
+<th>Import&nbsp;<u>B</u>inary&nbsp;Upgrade...</th>
+<td>Imports a binary device upgrade.  This is for use with consumer electronic devices that use UEI chips, such as the Slingbox&#153;.</td>
+</tr>
+<tr>
+<th>E<u>x</u>port&nbsp;Binary&nbsp;Upgrade...</th>
+<td>Exports a binary device upgrade.  This is for use with consumer electronic devices that use UEI chips, such as the Slingbox&#153;.</td>
+</tr>
 </table>
 <h2><a name="basic"></a>Basic Information</h2>
 <p>Some of basic information about the current Device Upgrade is always visible:<p>
@@ -271,7 +280,7 @@ function, select the duration multiple to be used in the "Duration" column
 </tr>
 <tr>
 <th>OBC</th>
-<td>Enter the OBC usually a 3-digit number from 000-255) for he corresponding function.</td>
+<td>Enter the OBC usually a 3-digit number from 000-255) for the corresponding function.</td>
 </tr>
 <tr>
 <th>Hex</th>
@@ -360,50 +369,39 @@ item on the context menu.</p>
   </tr>
 </table>
 <h2><a name="buttons"></a>The Buttons Panel</h2>
-<p>The last step (in theory anyway) to building a Device Upgrade is
-to assign the defined Functions to specific Buttons. You do this
+<p>The last step (in theory anyway) to building a Device Upgrade is to assign the defined Functions to specific Buttons. You do this
 on the Buttons panel.</p>
-<p>The Buttons panel is split in two parts.  On the left is a table listing
-the buttons available on the remote.  This table consists of 3 columns:
+<p>The Buttons panel is split in two parts.  On the left is a table listing the buttons available on the remote.  This table consists of 3 columns:
 <table>
 <tr>
 <th>Button</th>
-<td>The name of the button.  If the name is displayed in red, it means that no
-functions have been assigned to it.  If the name has an asterisk (*) at the end,
-it means that the button is <b>NOT</b> in the keymap for the current device type, and
-any function assigned to the button will generate a keymove.</td>
+<td>The name of the button.  If the name is displayed in red, it means that no functions have been assigned to it.  If the name has an asterisk (*) at the end,
+it means that the button is <b>NOT</b> in the keymap for the current device type, and any function assigned to the button will generate a keymove.</td>
 </tr>
 <tr>
 <th>Function</th>
-<td>The name of the function assigned to the normal state of the button.
-If the cell for a particular button is grey, assignment in not allowed.</td>
+<td>The name of the function assigned to the normal state of the button. If the cell for a particular button is grey, assignment in not allowed.</td>
 </tr>
 <tr>
 <th>Shift</th>
-<td>The name of the function assgined to the shifted state of the button.
-If the cell for a particular button is grey, assignment in not allowed.  Functions
-assigned to shifted buttons are almost always turned into keymoves, since very few
-keymaps have shifted buttons in them.</td>
+<td>The name of the function assgined to the shifted state of the button. If the cell for a particular button is grey, assignment in not allowed.  Functions
+assigned to shifted buttons are almost always turned into keymoves, since very few keymaps have shifted buttons in them.</td>
 </tr>
 <tr>
 <th>XShift</th>
-<td>The name of the function assgined to the XShifted state of the button.
-If the cell for a particular button is grey, assignment in not allowed.
-This column  is only shown for this remotes that support it, and it may have a different name, depending
-on the remote.</td>
+<td>The name of the function assgined to the XShifted state of the button. If the cell for a particular button is grey, assignment in not allowed.
+This column  is only shown for this remotes that support it, and it may have a different name, depending on the remote.</td>
 </tr>
 </table></p>
-<p>On the right is the list of functions (normal or external) that are available.  Functions
-with red names have not been assigned to any button.</p>
-<p>There are 4 different ways to assign functions to buttons.  Use whichever you like better:
+<p>On the right is the list of functions (normal or external) that are available.  Functions with red names have not been assigned to any button.</p>
+<p>There are a number of different ways to assign functions to buttons.  Use whichever you like better:
 <ol>
-<li>Use the <b>Auto assign</b> button to automatically match functions to buttons
-by name.  Buttons that already have functions assigned will not get reassigned.</li>
-<li>Use the context menu (right-click) in a cell where you want to assign a function,
-then click the desired function in the context menu.</li>
+<li>Use the <b>Auto assign</b> button to automatically match functions to buttons by name.  Buttons that already have functions assigned will not get reassigned.</li>
+<li>Use the context menu (right-click) in a cell where you want to assign a function, then click the desired function in the context menu.</li>
 <li>Drag-n-drop a function onto the desired cell.</li>
 <li>Highlight the cell where you want to assing a function by clicking on it, then
 double-click the function you want to assign to it.</li>
+<li>Use the [b]Delete[/b] key or the [b]Remove[/b] button to remove the an assigned function from a button.</li>
 </ol>
 <div class="noshow">
 At the top of the [Buttons] sheet (cell G2) is an unlabeled check
@@ -550,7 +548,7 @@ shift states of the buttons, you choose the shift state by selecting one of the
 the name of the selected button, and the <b>Function:</b> field will show the name of the
 assigned function.</li>
 </ul>
-<p>There are 4 different ways to assign functions to buttons.  Use whichever you like:
+<p>There are a number of different ways to assign functions to buttons.  Use whichever you like:
 <ol>
 <li>Use the <b>Auto assign</b> button to automatically match functions to buttons
 by name.  Buttons that already have functions assigned will not get reassigned.</li>
@@ -559,6 +557,7 @@ then click the desired function in the context menu.</li>
 <li>Drag-n-drop a function onto the desired cell.</li>
 <li>Highlight the cell where you want to assing a function by clicking on it, then
 double-click the function you want to assign to it.</li>
+<li>Use the [b]Delete[/b] key or the [b]Remove[/b] button to remove the an assigned function from a button.</li>
 </ol>
 
 <h2><a name="keymap"></a>The Key Map Panel</h2>
@@ -682,6 +681,7 @@ problem with one of these, please
 <li>Panasonic Multi-Device (Hacked)
 <li>Panasonic Combo (flawed)
 <li>Panasonic2 (LCD)
+<li>Pause Protocol (Special)
 <li>Pioneer
 <li>Pioneer DVD
 <li>Pioneer DVD2
@@ -692,9 +692,9 @@ problem with one of these, please
 <li>Proton
 <li>RC-5
 <li>RC-5x
-<li>RC-5/5x Combo
 </ul></td>
 <td><ul>
+<li>RC-5/5x Combo
 <li>RC-6
 <li>RC6-M-20n
 <li>RC6-M-24n
@@ -731,7 +731,6 @@ problem with one of these, please
 <p>Here is the list of protocols that are not <b>yet</b> supported:</p>
 <ul>
 <li>Fujitsu
-<li>Pause Protocol
 </ul>
 
 <!--

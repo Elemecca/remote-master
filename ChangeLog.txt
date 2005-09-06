@@ -1,3 +1,9 @@
+Changes for v1.35
+- Fix protocol offset in generated binary upgrade files.
+- Add support for delete key to remove assigned functions on Buttons and Layout panels
+- Get rid of the "- none -" function and add a "Remove" button to the Buttons and Layout panels.
+- Fix tool tip text for function labels, showing to what buttons a function has been assigned.
+
 Changes for v1.34a
 - More fixes for binary upgrade files (for Slingbox).
 
