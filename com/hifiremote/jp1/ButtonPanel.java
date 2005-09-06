@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -25,10 +26,36 @@ public class ButtonPanel
     table.setCellSelectionEnabled( true );
     table.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
     table.setSurrendersFocusOnKeystroke( true );
+    table.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_DELETE, 0), "delete");
+    deleteAction = new AbstractAction( "Remove" ) 
+    {
+      public void actionPerformed(ActionEvent e) 
+      {
+        int[] cols = table.getSelectedColumns();
+        int[] rows = table.getSelectedRows();
+        for ( int c = 0; c < cols.length; c++ )
+          for ( int r = 0; r < rows.length; r++ )
+            setFunctionAt( null, rows[ r ], cols[ c ] );
+      }
+    };
+    table.getActionMap().put("delete", deleteAction );
 
-    TableColumnModel colModel = table.getColumnModel();
     table.setDefaultRenderer( Button.class, new FunctionRenderer( deviceUpgrade ));
     table.getTableHeader().setReorderingAllowed( false );
+
+    ListSelectionListener lsl = new ListSelectionListener() 
+    {
+      public void valueChanged( ListSelectionEvent e ) 
+      {
+        //Ignore extra messages.
+        if ( e.getValueIsAdjusting())
+          return;
+
+        selectionChanged();
+      }
+    };
+    table.getSelectionModel().addListSelectionListener( lsl );
+    table.getColumnModel().getSelectionModel().addListSelectionListener( lsl );
 
     TransferHandler th = new TransferHandler()
     {
@@ -50,7 +77,7 @@ public class ButtonPanel
         JTable table = ( JTable )c;
         int row = table.getSelectedRow();
         int col = table.getSelectedColumn();
-        if ( table.convertColumnIndexToModel( col ) != 0 )
+        if ( col != 0 )
         {
           try
           {
@@ -75,7 +102,7 @@ public class ButtonPanel
       {
         public void dragOver( DropTargetDragEvent dte )
         {
-          int col = table.convertColumnIndexToModel( table.getSelectedColumn());
+          int col = table.getSelectedColumn();
           int row = table.getSelectedRow();
           if ( canAssign( row, col ))
             dte.acceptDrag( dte.getDropAction());
@@ -114,7 +141,40 @@ public class ButtonPanel
     autoAssign.addActionListener( this );
     panel.add( autoAssign );
 
+    JButton button = new JButton( deleteAction );
+    button.setToolTipText( "Remove the assigned function from the button." );
+    panel.add( button );
+
     add( panel, BorderLayout.SOUTH );
+  }
+
+  private void selectionChanged()
+  {
+    boolean enableDelete = false;
+    int[] rows = table.getSelectedRows();
+    int[] cols = table.getSelectedColumns();
+    for ( int r = 0; ( r < rows.length ) && !enableDelete ; r++ )
+    {
+      int row = rows[ r ];
+      Button b = ( Button )model.getValueAt( row, 1 );
+      for ( int c = 0; ( c < cols.length ) && !enableDelete ; c++ )
+      {
+        int col = cols[ c ];
+        if ( col > 0 )
+        {
+          Function f = null;
+          if ( col == 1 )
+            f = b.getFunction();
+          else if ( col == 2 )
+            f = b.getShiftedFunction();
+          else if ( col == 3 )
+            f = b.getXShiftedFunction();
+          if ( f != null )
+            enableDelete = true;
+        }
+      }
+    }
+    deleteAction.setEnabled( enableDelete );
   }
 
   public void update()
@@ -174,7 +234,7 @@ public class ButtonPanel
       function = ( Function )funcs.elementAt( i );
       addFunction( function );
     }
-    addFunction( null );
+    // addFunction( null ); // The "none" function
   }
 
   // From interface ActionListener
@@ -252,11 +312,37 @@ public class ButtonPanel
 
   private void setFunctionAt( Function function, int row, int col )
   {
-    int modelCol = table.convertColumnIndexToModel( col );
-    if (( modelCol > 0 ) && ( row != -1 ))
+    int[] rows = null;
+    int[] cols = null;
+    if ( table.isCellSelected( row, col ))
     {
-      model.setValueAt( function, row, modelCol );
-      model.fireTableCellUpdated( row, modelCol );
+      rows = table.getSelectedRows();
+      cols = table.getSelectedColumns();
+    }
+    else
+    {
+      rows = new int[ 1 ];
+      rows[ 0 ] = row;
+      cols = new int[ 1 ];
+      cols[ 0 ] = col;
+    }
+
+    int firstRow = row;
+    for ( int r = 0; r < rows.length; r++ )
+    {
+      row = rows[ r ];
+      if ( r == 0 )
+        firstRow = row;
+      for ( int c = 0; c < cols.length; c++ )
+      {
+        col = cols[ c ];
+          
+        if (( col > 0 ) && ( row != -1 ))
+        {
+          model.setValueAt( function, row, col );
+        }
+      }
+      model.fireTableRowsUpdated( firstRow, row );
     }
   }
 
@@ -284,6 +370,7 @@ public class ButtonPanel
   private int mouseCol = 0;
   private DoubleClickListener doubleClickListener = new DoubleClickListener();
   private JButton autoAssign = null;
+  private AbstractAction deleteAction = null;
   private Button[] buttons = null;
 }
 

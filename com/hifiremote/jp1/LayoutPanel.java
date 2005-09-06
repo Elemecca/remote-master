@@ -24,6 +24,18 @@ public class LayoutPanel
     imagePanel = new ImagePanel();
     // Don't know why, but tooltips don't work without this
     imagePanel.setToolTipText( "" );
+    imagePanel.setFocusable( true );
+    imagePanel.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_DELETE, 0), "delete");
+    deleteAction = new AbstractAction( "Remove" ) 
+    {
+      public void actionPerformed( ActionEvent e ) 
+      {
+        setFunction( currentShape, null );
+        doRepaint();
+      }
+    };
+ 
+    imagePanel.getActionMap().put( "delete", deleteAction ); 
 
     scrollPane = new JScrollPane( imagePanel,
                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -92,6 +104,10 @@ public class LayoutPanel
     autoAssign.addActionListener( this );
     panel.add( autoAssign );
 
+    JButton button = new JButton( deleteAction );
+    button.setToolTipText( "Remove the assigned function from the button." );
+    panel.add( button );
+
     box = Box.createVerticalBox();
     box.add( new JSeparator());
     box.add( panel );
@@ -105,6 +121,7 @@ public class LayoutPanel
     {
       public void mousePressed( MouseEvent e )
       {
+        imagePanel.requestFocusInWindow();
         Point p = e.getPoint();
         ButtonShape savedShape = currentShape;
         currentShape = getShapeAtPoint( p );
@@ -190,7 +207,7 @@ public class LayoutPanel
       function = ( Function )funcs.elementAt( i );
       addFunction( function );
     }
-    addFunction( null );
+    // addFunction( null ); // the "none" function
   }
 
   public void update()
@@ -264,11 +281,13 @@ public class LayoutPanel
         function.setText( f.getName());
       else
         function.setText( "" );
+      deleteAction.setEnabled( f != null );
     }
     else
     {
       buttonName.setText( "" );
       function.setText( "" );
+      deleteAction.setEnabled( false );
     }
   }
 
@@ -350,6 +369,21 @@ public class LayoutPanel
     return null;
   }
 
+  private void setFunction( ButtonShape shape, Function f )
+  {
+    Button b = getButtonForShape( shape );
+    if ( b != null )
+    {
+      if ( normalMode.isSelected())
+        b.setFunction( f );
+      else if ( shiftMode.isSelected())
+        b.setShiftedFunction( f );
+      else if ( xShiftMode.isSelected())
+        b.setXShiftedFunction( f );
+      setButtonText( currentShape, b );
+    }
+  }
+
   // From interface ActionListener
   public void actionPerformed( ActionEvent e )
   {
@@ -371,19 +405,8 @@ public class LayoutPanel
     }
     else
     {
-      Button b = getButtonForShape( currentShape );
-      if ( b != null )
-      {
-        Function f = (( FunctionItem )source ).getFunction();
-        if ( normalMode.isSelected())
-          b.setFunction( f );
-        else if ( shiftMode.isSelected())
-          b.setShiftedFunction( f );
-        else if ( xShiftMode.isSelected())
-          b.setXShiftedFunction( f );
-        setButtonText( currentShape, b );
-        doRepaint();
-      }
+      setFunction( currentShape, (( FunctionItem )source ).getFunction()); 
+      doRepaint();
     }
   }
 
@@ -398,16 +421,8 @@ public class LayoutPanel
         if ( button == null )
           return;
 
-        ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
         Function f = ( Function )(( FunctionLabel )e.getSource()).getFunction();
-        if ( normalMode.isSelected())
-            button.setFunction( f );
-        else if ( shiftMode.isSelected())
-          button.setShiftedFunction( f );
-        else if ( xShiftMode.isSelected())
-          button.setXShiftedFunction( f );
-
-        setButtonText( currentShape, button );
+        setFunction( currentShape, f );
       }
       doRepaint();
     }
@@ -450,13 +465,7 @@ public class LayoutPanel
         try
         {
           Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor());
-          if ( normalMode.isSelected())
-            button.setFunction( f );
-          else if ( shiftMode.isSelected())
-            button.setShiftedFunction( f );
-          else if ( xShiftMode.isSelected())
-            button.setXShiftedFunction( f );
-          setButtonText( currentShape, button );
+          setFunction( currentShape, f );
         }
         catch ( Exception e )
         {
@@ -646,6 +655,7 @@ public class LayoutPanel
   private JTextField buttonName = null;
   private JTextField function = null;
   private JButton autoAssign = null;
+  private AbstractAction deleteAction = null;
   private JPopupMenu popup = null;
   private JPanel functionPanel = null;
   private JScrollPane scrollPane = null;
