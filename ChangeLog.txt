@@ -1,3 +1,6 @@
+Changes for v1.36
+- Add ability to adjust font size.
+
 Changes for v1.35
 - Fix protocol offset in generated binary upgrade files.
 - Add support for delete key to remove assigned functions on Buttons and Layout panels
