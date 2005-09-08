@@ -531,6 +531,16 @@ public abstract class TablePanel
     table.doLayout();
   }
 
+  public void setFont( Font aFont )
+  {
+    super.setFont( aFont );
+    if (( aFont == null ) || ( table == null ))
+      return;
+    FontMetrics m = Toolkit.getDefaultToolkit().getFontMetrics( aFont );
+    table.setRowHeight( m.getHeight() + 2 );
+    initColumns();
+  }
+
   protected JTable table = null;
   protected KMTableModel model = null;
   private TableSorter sorter = null;

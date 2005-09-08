@@ -362,6 +362,15 @@ public class ButtonPanel
     }
   }
 
+  public void setFont( Font aFont )
+  {
+    super.setFont( aFont );
+    if (( aFont == null ) || ( table == null ))
+      return;
+    FontMetrics m = Toolkit.getDefaultToolkit().getFontMetrics( aFont );
+    table.setRowHeight( m.getHeight() + 2 );
+  }
+
   private JTable table = null;
   private ButtonTableModel model = null;
   private JPanel functionPanel = null;

@@ -5,6 +5,7 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.plaf.FontUIResource;
 
 public class Preferences
 {
@@ -92,6 +93,13 @@ public class Preferences
     lastRemoteName = props.getProperty( "Remote.name" );
     lastRemoteSignature = props.getProperty( "Remote.signature" );
 
+    temp = props.getProperty( "FontSizeAdjustment" );
+    if ( temp != null )
+    {
+      fontSizeAdjustment = Float.parseFloat( temp );
+      adjustFontSize( fontSizeAdjustment );
+    }
+
     temp = props.getProperty( "PromptToSave", promptStrings[ 0 ] );
     for ( int i = 0; i < promptStrings.length; i++ )
       if ( promptStrings[ i ].equals( temp ))
@@ -158,6 +166,32 @@ public class Preferences
     useCustomNames.setSelected( temp != null );
   }
 
+  private void adjustFontSize( float adjustment )
+  {
+    UIDefaults defaults = UIManager.getDefaults(); // Build of Map of attributes for each component
+    for( Enumeration enum = defaults.keys(); enum.hasMoreElements(); )
+    {
+      Object o = enum.nextElement();
+      if ( o.getClass() != String.class )
+        continue;
+      String key = ( String )o; 
+      if ( key.endsWith(".font") && !key.startsWith("class") && !key.startsWith("javax"))
+      {
+        FontUIResource font = ( FontUIResource )UIManager.get( key );
+        FontUIResource newFont = new FontUIResource( font.deriveFont( font.getSize2D() + adjustment ));
+        if ( key.indexOf( "Table") != -1 )
+        {  
+          System.err.println( "key=" + key );
+          System.err.println( "got font " + font );
+          System.err.println( "set font " + newFont );
+        }
+        UIManager.put( key, newFont );
+      }
+    }
+    SwingUtilities.updateComponentTreeUI( KeyMapMaster.getKeyMapMaster());
+    KeyMapMaster.getKeyMapMaster().pack();
+  }
+
   public void createMenuItems( JMenu menu )
   {
     JMenu submenu = new JMenu( "Look and Feel" );
@@ -192,6 +226,33 @@ public class Preferences
       submenu.add( item );
       item.addActionListener( al );
     }
+
+    submenu = new JMenu( "Font size" );
+    submenu.setMnemonic( KeyEvent.VK_F );
+    menu.add( submenu );
+
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        JMenuItem button = ( JMenuItem )e.getSource();
+        float adjustment = Float.parseFloat( button.getActionCommand());
+        adjustFontSize( adjustment );
+        fontSizeAdjustment += adjustment;
+      }
+    };
+
+    JMenuItem menuItem = new JMenuItem( "Increase" );
+    menuItem.setMnemonic( KeyEvent.VK_I );
+    submenu.add( menuItem );
+    menuItem.addActionListener( al );
+    menuItem.setActionCommand( "1f" );
+
+    menuItem = new JMenuItem( "Decrease" );
+    menuItem.setMnemonic( KeyEvent.VK_I );
+    submenu.add( menuItem );
+    menuItem.addActionListener( al );
+    menuItem.setActionCommand( "-1f" );
 
     group = new ButtonGroup();
     submenu = new JMenu( "Prompt to Save" );
@@ -327,6 +388,8 @@ public class Preferences
     props.setProperty( "UpgradePath", upgradePath.getAbsolutePath());
     props.setProperty( "BinaryUpgradePath", binaryUpgradePath.getAbsolutePath());
     props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
+    if ( fontSizeAdjustment != 0f )
+      props.setProperty( "FontSizeAdjustment", Float.toString( fontSizeAdjustment ));
     Remote remote = KeyMapMaster.getRemote();
     props.setProperty( "Remote.name", remote.getName());
     props.setProperty( "Remote.signature", remote.getSignature());
@@ -482,6 +545,7 @@ public class Preferences
   private File binaryUpgradePath = null;
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
   private JRadioButtonMenuItem[] promptButtons = null;
+  private float fontSizeAdjustment = 0f;
   private String lastRemoteName = null;
   private String lastRemoteSignature = null;
   private Vector preferredRemoteNames = new Vector( 0 );
