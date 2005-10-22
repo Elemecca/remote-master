@@ -97,11 +97,11 @@ public class Rc5Translator
         int flag = (( Integer )devParms[ index + 1 ].getValue()).intValue();
         if ( flag != 0 )
           obc |= 64;
-        parms[ 1 ] = new Value( new Integer( obc ));
         break;
       }
       select--;
     }
+    parms[ 1 ] = new Value( new Integer( obc ));
   }
 }
 

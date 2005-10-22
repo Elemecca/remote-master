@@ -15,9 +15,10 @@ public class ChoiceEditor
   public ChoiceEditor( Choice[] choices, boolean allowNull )
   {
     super( new JComboBox());
-    setClickCountToStart( 2 );
+    setClickCountToStart( 1 );
     this.choices = choices;
-    this.allowNull = allowNull;
+    if ( allowNull )
+      adjust = 1;
 
     comboBox = ( JComboBox )getComponent();
 
@@ -35,12 +36,11 @@ public class ChoiceEditor
       }
     }
 
-    if ( allowNull )
-      visibleCount++;
+    visibleCount += adjust;
 
     Choice[] temp = new Choice[ visibleCount ];
     int tempIndex = 0;
-    if ( allowNull )
+    if ( adjust != 0 )
     {
       temp[ 0 ] = new Choice( -1, "" );
       tempIndex = 1;
@@ -66,8 +66,25 @@ public class ChoiceEditor
 
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int col )
   {
+    System.err.println( "ChoiceEditor.getTableCellEditorComponent(), value=" + value + ", row=" + row );
     if ( value != null )
-      comboBox.setSelectedItem( value );
+    {
+      Class c = value.getClass();
+      if ( c == String.class )
+      {
+        for ( int i = 0; i < choices.length; i++ )
+        {
+          Choice choice = choices[ i ];
+          if ( choice.getText().equals( value ))
+            comboBox.setSelectedItem( choice );
+        }
+      }
+      else if ( c == Choice.class )
+        comboBox.setSelectedItem(( Choice )value );
+      else if ( c == Integer.class )
+
+        comboBox.setSelectedIndex((( Integer )value ).intValue() + adjust );
+    }
     else
       comboBox.setSelectedIndex( 0 );
     return comboBox;
@@ -75,5 +92,5 @@ public class ChoiceEditor
 
   private JComboBox comboBox = null;
   private Choice[] choices = null;
-  private boolean allowNull;
+  private int adjust;
 }

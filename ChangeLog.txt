@@ -1,3 +1,16 @@
+Changes for v1.38
+- Enhancements for Lutron
+- Fixes for binary upgrade files.
+
+Changes for v1.37a
+- Correct Lutron S3C80 protocol code.
+
+Changes for v1.37
+- Add support for MaxUpgradeLength, MaxProtocolLength, and MaxUpgradeLength
+- Correctly handle declaration of shifted button before declaration of base button.
+- Add Dreambox protocol
+- Add Lutron protocol
+
 Changes for v1.36
 - Add ability to adjust font size.
 

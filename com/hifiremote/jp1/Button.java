@@ -121,11 +121,15 @@ public class Button
 
   public boolean allowsShiftedKeyMove()
   {
+    if ( isShifted || isXShifted )
+      return false;
     return (( restrictions & SHIFT_MOVE_BIND ) == 0 );
   }
 
   public boolean allowsXShiftedKeyMove()
   {
+    if ( isShifted || isXShifted )
+      return false;
     return (( restrictions & XSHIFT_MOVE_BIND ) == 0 );
   }
 

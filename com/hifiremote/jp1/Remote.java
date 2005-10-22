@@ -557,6 +557,12 @@ public class Remote
           e.printStackTrace( System.err );
         }
       }
+      else if ( parm.equals( "MaxUpgradeLength" ))
+        maxUpgradeLength = new Integer( rdr.parseNumber( st.nextToken()));
+      else if ( parm.equals( "MaxProtocolLength" ))
+        maxProtocolLength = new Integer( rdr.parseNumber( st.nextToken()));
+      else if ( parm.equals( "MaxCombinedUpgradeLength" ))
+        maxCombinedUpgradeLength = new Integer( rdr.parseNumber( st.nextToken()));
     }
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
@@ -1062,7 +1068,29 @@ public class Remote
         }
       }
     }
-    else if ( b.getName() == null )
+    else
+    {
+      // Look for a shifted button for which this is the base.
+      int shiftedCode = keycode + shiftMask;
+      Button c = getButton( shiftedCode );
+      if ( c != null )
+      {
+        c.setBaseButton( b );
+        b.setShiftedButton( c );
+      }
+      if ( xShiftEnabled )
+      {
+        // Look for an xshifted button for which this is the base.
+        shiftedCode = keycode + xShiftMask;
+        c = getButton( shiftedCode );
+        if ( c != null )
+        {
+          c.setBaseButton( b );
+          b.setXShiftedButton( c );
+        }
+      }
+    }
+    if ( b.getName() == null )
     {
       String name = "unknown" + Integer.toHexString( keycode );
       b.setName( name );
@@ -1512,6 +1540,10 @@ public class Remote
     return encdec;
   }
 
+  public Integer getMaxUpgradeLength(){ return maxUpgradeLength; }
+  public Integer getMaxProtocolLength(){ return maxProtocolLength; }
+  public Integer getMaxCombinedUpgradeLength(){ return maxCombinedUpgradeLength; }
+
   // Interface Comparable
   public int compareTo( Object o )
   {
@@ -1592,5 +1624,9 @@ public class Remote
   private int protocolDataOffset = 0;
   private EncrypterDecrypter encdec = null;
   private boolean supportsBinaryUpgrades = false;
+  private Integer maxProtocolLength = null;
+  private Integer maxUpgradeLength = null;
+  private Integer maxCombinedUpgradeLength = null;
+
   private static Hashtable restrictionTable = null;
  }

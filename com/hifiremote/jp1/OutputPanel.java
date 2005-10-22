@@ -160,6 +160,8 @@ public class OutputPanel
       buff.append( code.toString( 16 ));
       buff.append( "\nEnd" );
       protocolText.setText( buff.toString());
+
+      deviceUpgrade.checkSize();
     }
   }
 

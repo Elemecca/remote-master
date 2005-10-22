@@ -251,6 +251,7 @@ public class ButtonPanel
       deviceUpgrade.autoAssignFunctions();
       model.setButtons();
     }
+    deviceUpgrade.checkSize();
   }
 
   class PopupListener
@@ -357,7 +358,10 @@ public class ButtonPanel
         int col = table.getSelectedColumn();
         int row = table.getSelectedRow();
         if ( canAssign( row, col ))
+        {
           setFunctionAt( label.getFunction(), row, col );
+          deviceUpgrade.checkSize();
+        }
       }
     }
   }

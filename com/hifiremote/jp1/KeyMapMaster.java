@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.36";
+  public static final String version = "v1.38";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -459,6 +459,7 @@ public class KeyMapMaster
         deviceUpgrade.setDeviceTypeAliasName( aliasNames[ index ]);
         deviceTypeList.addActionListener( this );
         writeBinaryItem.setEnabled( remote.getSupportsBinaryUpgrades());
+        deviceUpgrade.checkSize();
       }
       catch ( Exception e )
       {

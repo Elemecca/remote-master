@@ -211,6 +211,8 @@ public class SetupPanel
         protocolNotes.setText( newProtocol.getNotes());
         protocolNotes.setCaretPosition( 0 );
         protocolNotes.revalidate();
+
+        deviceUpgrade.checkSize();
       }
     }
     else // must be a protocol parameter

@@ -553,7 +553,7 @@ public class DeviceUpgrade
   public int[] getBinaryUpgrade()
   {
     Vector v = new Vector();
-    int[] header = new int[ 5 ];
+    int[] header = new int[ 4 ];
     v.add( header );
     
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
@@ -564,27 +564,8 @@ public class DeviceUpgrade
 
     header[ 2 ] = (temp >> 8 );
     header[ 3 ] = temp;
-    header[ 4 ] = id[ 1 ];
 
-    int digitMapIndex = -1;
-
-    if ( !remote.getOmitDigitMapByte())
-    {
-      int[] digitMap = new int[ 1 ];
-      digitMapIndex = findDigitMapIndex();
-      if ( digitMapIndex != -1 )
-        digitMap[ 0 ] = digitMapIndex;
-      v.add( digitMap );
-    }
-
-    ButtonMap map = devType.getButtonMap();
-    if ( map != null )
-      v.add( map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly()));
-
-    v.add( protocol.getFixedData( parmValues ).getData());
-
-    if ( map != null )
-      v.add( map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly()));
+    v.add( getUpgradeHex().getData());
 
     int length = 0;
     for ( Enumeration e = v.elements(); e.hasMoreElements();)
@@ -617,7 +598,6 @@ public class DeviceUpgrade
     }
     return data;
   }
-
   public String getUpgradeText( boolean includeNotes )
   {
     StringBuffer buff = new StringBuffer( 400 );
@@ -654,42 +634,9 @@ public class DeviceUpgrade
       buff.append( ')' );
     }
     buff.append( "\n " );
-    buff.append( Hex.asString( id[ 1 ]));
 
-    int digitMapIndex = -1;
-
-    if ( !remote.getOmitDigitMapByte())
-    {
-      buff.append( ' ' );
-      digitMapIndex = findDigitMapIndex();
-      if ( digitMapIndex == -1 )
-        buff.append( "00" );
-      else
-      {
-        buff.append( Hex.asString( digitMapIndex ));
-      }
-    }
-
+    buff.append( Hex.toString( getUpgradeHex().getData(), 16 ));
     ButtonMap map = devType.getButtonMap();
-    if ( map != null )
-    {
-      buff.append( ' ' );
-      buff.append( Hex.toString( map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly())));
-    }
-
-    buff.append( ' ' );
-    buff.append( protocol.getFixedData( parmValues ).toString());
-
-    if ( map != null )
-    {
-      int[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly());
-      if (( data != null ) && ( data.length != 0 ))
-      {
-        buff.append( "\n " );
-        buff.append( Hex.toString( data, 16 ));
-      }
-    }
-
     Button[] buttons = remote.getUpgradeButtons();
     boolean hasKeyMoves = false;
     int startingButton = 0;
@@ -739,6 +686,96 @@ public class DeviceUpgrade
     buff.append( "\nEnd" );
 
     return buff.toString();
+  }
+
+  public int getUpgradeLength()
+  { 
+    int rc = 0;
+
+    // add the 2nd byte of the PID
+    rc++;
+
+    // add the digitMapIndex
+    int digitMapIndex = -1;
+
+    if ( !remote.getOmitDigitMapByte())
+    {
+      rc++;
+    }
+
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    ButtonMap map = devType.getButtonMap();
+    if ( map != null )
+    {
+      rc += map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly()).length;
+    }
+
+    rc += protocol.getFixedData( parmValues ).length();
+
+    if ( map != null )
+    {
+      int[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly());
+      if ( data != null )
+        rc += data.length;
+    }
+    return rc;
+  }
+
+  public Hex getUpgradeHex()
+  {
+    Vector work = new Vector();
+
+    // add the 2nd byte of the PID
+    int[] data = new int[ 1 ];
+    data[ 0 ] = protocol.getID( remote ).getData()[ 1 ];
+    work.add( data );    
+
+    int digitMapIndex = -1;
+
+    if ( !remote.getOmitDigitMapByte())
+    {
+      data = new int[ 1 ];
+      digitMapIndex = findDigitMapIndex();
+      if ( digitMapIndex == -1 )
+        data[ 0 ] = 0;
+      else
+        data[ 0 ] = digitMapIndex;
+
+      work.add( data );
+    }
+
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    ButtonMap map = devType.getButtonMap();
+    if ( map != null )
+    {
+      work.add( map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly()));
+    }
+
+    work.add( protocol.getFixedData( parmValues ).getData());
+
+    if ( map != null )
+    {
+      data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly());
+      if (( data != null ) && ( data.length != 0 ))
+        work.add( data );
+    }
+
+    int length = 0;
+    for ( Enumeration e = work.elements(); e.hasMoreElements(); )
+    {
+      data = ( int[] )e.nextElement();
+      length += data.length;
+    }
+
+    int offset = 0;
+    int[] rc = new int[ length ];
+    for ( Enumeration e = work.elements(); e.hasMoreElements();)
+    {
+      int[] source = ( int[] )e.nextElement();
+      System.arraycopy( source, 0, rc, offset, source.length );
+      offset += source.length;
+    }
+    return new Hex( rc );
   }
 
   private boolean appendKeyMove( StringBuffer buff, int[] keyMove,Function f, boolean includeNotes, boolean first )
@@ -1726,6 +1763,53 @@ public class DeviceUpgrade
         }
       }
     }
+  }
+
+  public boolean checkSize()
+  {
+    Integer protocolLimit = remote.getMaxProtocolLength();
+    Integer upgradeLimit = remote.getMaxUpgradeLength();
+    Integer combinedLimit = remote.getMaxCombinedUpgradeLength();
+
+    if (( protocolLimit == null ) && ( upgradeLimit == null ) && ( combinedLimit == null ))
+      return true;
+
+    KeyMapMaster km = KeyMapMaster.getKeyMapMaster();
+
+    int protocolLength = 0;
+    if ( protocol.needsCode( remote ))
+      protocolLength = protocol.getCode( remote ).length();
+
+    if (( protocolLimit != null ) && ( protocolLength > protocolLimit.intValue()))
+    {
+      JOptionPane.showMessageDialog( km, 
+                                     "The protocol upgrade exceeds the maximum allowed by the remote.",
+                                     "Protocol Upgrade Limit Exceeded",
+                                     JOptionPane.ERROR_MESSAGE );      
+      return false;
+    }
+
+    int upgradeLength = getUpgradeLength();
+    if (( upgradeLimit != null ) && ( upgradeLength > upgradeLimit.intValue()))
+    {
+      JOptionPane.showMessageDialog( km, 
+                                     "The device upgrade exceeds the maximum allowed by the remote.",
+                                     "Device Upgrade Limit Exceeded",
+                                     JOptionPane.ERROR_MESSAGE );      
+      return false;
+    }
+
+    int combinedLength = upgradeLength + protocolLength;
+    if (( combinedLimit != null ) && ( combinedLength > combinedLimit.intValue()))
+    {
+      JOptionPane.showMessageDialog( km, 
+                                     "The combined upgrade exceeds the maximum allowed by the remote.",
+                                     "Combined Upgrade Limit Exceeded",
+                                     JOptionPane.ERROR_MESSAGE );      
+      return false;
+    }
+
+    return true;      
   }
 
   private String description = null;

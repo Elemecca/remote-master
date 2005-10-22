@@ -7,8 +7,10 @@ public class PLEncrypterDecrypter
   {
     val &= 0xFF;
 
-    if ( val == 0x7D )  // Special case for which the formula doesn't work.
+    if ( val == 0x7D )  // Special cases for which the formula doesn't work.
       return 0x4E;
+    if ( val == 0x7F )
+      return 0xCE;
 
     int val1 = ( val >> 2 | val << 6 ) + 111;
     val1 &= 0x00FF;
@@ -20,8 +22,10 @@ public class PLEncrypterDecrypter
 
   public int decrypt( int val )
   {
-    if ( val == 0x4E )  // Special case for which the formula doesn't work.
+    if ( val == 0x4E )  // Special cases for which the formula doesn't work.
       return 0x7D;
+    if ( val == 0xCE )
+      return 0x7F;
 
     int val1 = ( val + 145 ) & 0x00FF;
     int mask = ( val1 << 1 ) & ( val1 << 2 ) & 0x80; 

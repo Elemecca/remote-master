@@ -75,12 +75,12 @@ public class EFC5
     int[] data = hex.getData();
     if ( data.length == 2 )
     {
-      int byte1 = data[ 0 ];
+      int byte1 = data[ 0 ] & 0x00FF;
       byte1 ^= 0x00D5;
       byte1 = ( byte1 >> 5 ) | ( byte1 << 3 );
       byte1 = ( byte1 - 100 ) & 0x00FF;
 
-      int byte2 = data[ 1 ] ^ 0x00C5;
+      int byte2 = ( data[ 1 ] & 0x00FF ) ^ 0x00C5;
 
       return ( byte1 << 8 ) + byte2;
     }

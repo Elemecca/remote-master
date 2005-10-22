@@ -21,7 +21,7 @@ public class ChoiceRenderer
       if ( c == Integer.class )
         val = choices[ (( Integer )value ).intValue()].toString();
       else if ( c == Choice.class )
-        val = (( Choice )value ).toString();
+        val = (( Choice )value ).getText();
     }
 
     return super.getTableCellRendererComponent( table, val, isSelected, hasFocus, row, col );

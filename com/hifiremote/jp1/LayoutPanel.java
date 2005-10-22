@@ -381,6 +381,7 @@ public class LayoutPanel
       else if ( xShiftMode.isSelected())
         b.setXShiftedFunction( f );
       setButtonText( currentShape, b );
+      deviceUpgrade.checkSize();
     }
   }
 
