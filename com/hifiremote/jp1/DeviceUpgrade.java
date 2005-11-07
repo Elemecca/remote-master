@@ -57,6 +57,7 @@ public class DeviceUpgrade
     initFunctions();
 
     extFunctions.clear();
+    customCode = null;
   }
 
   private void initFunctions()
@@ -101,7 +102,6 @@ public class DeviceUpgrade
 
       if ( newp != null )
       {
-        System.err.println( "protocol " + newp.getDiagnosticName() + " will be used." );
         if ( newp != p )
         {
           System.err.println( "\tChecking for matching dev. parms" );
@@ -158,9 +158,10 @@ public class DeviceUpgrade
               parms2[ map[ i ]].setValue( parms[ i ].getValue());
             }
             System.err.println();
-            System.err.println( "Setting new protocol" );
+            System.err.println( "Protocol " + newp.getDiagnosticName() + " will be used." );
             p.convertFunctions( functions, newp );
             protocol = newp;
+            customCode = null;
           }
         }
       }
@@ -175,6 +176,8 @@ public class DeviceUpgrade
     }
     if (( remote != null ) && ( remote != newRemote ))
     {
+      if ( remote.getProcessor() != newRemote.getProcessor() )
+        customCode = null;
       Button[] buttons = remote.getUpgradeButtons();
       Button[] newButtons = newRemote.getUpgradeButtons();
       Vector unassigned = new Vector();
@@ -349,6 +352,7 @@ public class DeviceUpgrade
       protocol.convertFunctions( functions, newProtocol );
     }
     protocol = newProtocol;
+    customCode = null;
     parmValues = protocol.getDeviceParmValues();
   }
 
@@ -452,6 +456,7 @@ public class DeviceUpgrade
     int index = 1;
     int[] code = hexCode.getData();
     remote = newRemote;
+    customCode = null;
     functions.clear();
     devTypeAliasName = newDeviceTypeAliasName;
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
@@ -489,41 +494,70 @@ public class DeviceUpgrade
     int fixedDataLength = 0;
     int cmdLength = 0;
     int[] fixedData = null;
+    Hex fixedDataHex = null;
+    if ( pCode != null )
+    {
+      int value = pCode.getData()[ 2 ] & 0x00FF;
+      fixedDataLength = value >> 4;
+      cmdLength = value & 0x000F;
+      fixedData = new int[ fixedDataLength ];
+      System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
+      fixedDataHex = new Hex( fixedData );
+    }
     Value[] vals = parmValues;
     Vector protocols = ProtocolManager.getProtocolManager().findByPID( pid );
+    Protocol tentative = null;
+    Value[] tentativeVals = null;
     Protocol p = null;
     boolean foundMatch = false;
-    for ( Enumeration e = protocols.elements(); e.hasMoreElements() && !foundMatch; )
+    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
     {
       p = ( Protocol )e.nextElement();
       System.err.println( "Checking protocol " + p.getDiagnosticName() );
       if ( !remote.supportsVariant( pid, p.getVariantName()) && !p.hasCode( remote ))
         continue;
-      fixedDataLength = p.getFixedDataLength();
-      fixedData = new int[ fixedDataLength ];
-      System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );   
-      Hex fixedDataHex = new Hex( fixedData );
+      int tempLength = fixedDataLength;
+      if ( pCode == null )
+      {
+        tempLength = p.getFixedDataLength();
+        fixedData = new int[ tempLength ];
+        System.arraycopy( code, fixedDataOffset, fixedData, 0, tempLength );
+        fixedDataHex = new Hex( fixedData );
+      }
+      if ( tempLength != p.getFixedDataLength())
+      {
+        System.err.println( "FixedDataLength doesn't match!" );
+        continue;
+      }
+      System.err.println( "Imported fixedData is " + fixedDataHex );
       vals = p.importFixedData( fixedDataHex );
       Hex calculatedFixedData = p.getFixedData( vals );
+      System.err.println( "Calculated fixedData is " + calculatedFixedData );
       if ( calculatedFixedData.equals( fixedDataHex ))
       {
         System.err.println( "It's a match!" );
-        foundMatch = true;
+        if (( tentative == null ) || ( tempLength > tentative.getFixedDataLength()))
+        {
+          System.err.println( "And it's longer!" );
+          tentative = p;
+          tentativeVals = vals;
+        }
       }
     }
     
     ManualProtocol mp = null;
 
-    if ( foundMatch )
+    if ( tentative != null )
     {
+      System.err.println( "Using " + p.getDiagnosticName());
+      p = tentative;
       cmdLength = p.getDefaultCmd().length();
-      parmValues = vals;
+      parmValues = tentativeVals;
+      if (( pCode != null ) && !pCode.equals( p.getCode( remote )))
+        customCode = pCode;
     }
     else 
     {
-      int value = pCode.getData()[ 2 ];
-      fixedDataLength = value >> 4;
-      cmdLength = value & 0x0F;
       fixedData = new int[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       int cmdType = ManualProtocol.ONE_BYTE;
@@ -571,17 +605,9 @@ public class DeviceUpgrade
     for ( Enumeration e = v.elements(); e.hasMoreElements();)
       length += (( int[] )e.nextElement()).length;
 
-    if (( protocol.getClass() == ManualProtocol.class ) || !remote.supportsVariant( protocol.getID(), protocol.getVariantName()))
+    if (( protocol.getClass() == ManualProtocol.class ) || protocol.needsCode( remote ))
     {
-      Hex code = protocol.getCode( remote );
-      code = remote.getProcessor().translate( code, remote );
-      Translate[] xlators = protocol.getCodeTranslators( remote );
-      if ( xlators != null )
-      {
-        Value[] values = parmValues;
-        for ( int i = 0; i < xlators.length; i++ )
-          xlators[ i ].in( values, code, null, -1 );
-      }
+      Hex code = getCode();
       v.add( code.getData());
       header[ 1 ] = length - 1;
       length += code.length();
@@ -862,6 +888,8 @@ public class DeviceUpgrade
     protocol.store( out, parmValues );
     if ( notes != null )
       out.print( "Notes", notes );
+    if ( customCode != null )
+      out.print( "CustomCode", customCode.toString());
     int i = 0;
     for ( Enumeration e = functions.elements(); e.hasMoreElements(); i++ )
     {
@@ -968,6 +996,7 @@ public class DeviceUpgrade
     }
     String sig = props.getProperty( "Remote.signature" );
     remote = RemoteManager.getRemoteManager().findRemoteByName( str );
+    customCode = null;
     remote.load();
     int index = -1;
     str = props.getProperty( "DeviceIndex" );
@@ -1014,6 +1043,10 @@ public class DeviceUpgrade
     protocol.setProperties( props );
 
     notes = props.getProperty( "Notes" );
+
+    str = props.getProperty( "CustomCode" );
+    if ( str != null )
+      customCode = new Hex( str );
 
     functions.clear();
     int i = 0;
@@ -1162,6 +1195,7 @@ public class DeviceUpgrade
     String str = token.substring( 5 );
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( str );
+    customCode = null;
     if ( remote == null )
     {
       reset();
@@ -1777,8 +1811,9 @@ public class DeviceUpgrade
     KeyMapMaster km = KeyMapMaster.getKeyMapMaster();
 
     int protocolLength = 0;
-    if ( protocol.needsCode( remote ))
-      protocolLength = protocol.getCode( remote ).length();
+    Hex protocolCode = getCode();
+    if ( protocolCode != null )
+      protocolLength = protocolCode.length();
 
     if (( protocolLimit != null ) && ( protocolLength > protocolLimit.intValue()))
     {
@@ -1812,6 +1847,28 @@ public class DeviceUpgrade
     return true;      
   }
 
+  public Hex getCode()
+  {
+    Hex code = customCode;
+    if ( code == null )
+    {
+      if ( protocol.needsCode( remote ))
+        code = protocol.getCode( remote );
+      if ( code != null )
+      {
+        code = remote.getProcessor().translate( code, remote );
+        Translate[] xlators = protocol.getCodeTranslators( remote );
+        if ( xlators != null )
+        {
+          Value[] values = getParmValues();
+          for ( int i = 0; i < xlators.length; i++ )
+            xlators[ i ].in( values, code, null, -1 );
+        }
+      }
+    }
+    return code;
+  }
+
   private String description = null;
   private int setupCode = 0;
   private Remote remote = null;
@@ -1823,6 +1880,7 @@ public class DeviceUpgrade
   private Vector extFunctions = new Vector();
   private Vector keymoves = new Vector();
   private File file = null;
+  private Hex customCode = null;
 
   private static final String[] deviceTypeAliasNames =
   {

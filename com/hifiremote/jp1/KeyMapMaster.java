@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.38";
+  public static final String version = "v1.39";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -37,8 +37,6 @@ public class KeyMapMaster
   private JComboBox deviceTypeList = null;
   private Remote[] remotes = new Remote[ 0 ];
   private ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
-  private Remote currentRemote = null;
-  private String currentDeviceTypeName = null;
   private JTabbedPane tabbedPane = null;
   private SetupPanel setupPanel = null;
   private FunctionPanel functionPanel = null;
@@ -418,7 +416,7 @@ public class KeyMapMaster
 
   public void setRemote( Remote remote )
   {
-    if (( remoteList != null ) && ( remote != currentRemote ))
+    if (( remoteList != null ) && ( remote != deviceUpgrade.getRemote()))
     {
       try
       {
@@ -454,7 +452,6 @@ public class KeyMapMaster
 
         deviceTypeList.setSelectedIndex( index );
 
-        currentRemote = remote;
         deviceUpgrade.setRemote( remote );
         deviceUpgrade.setDeviceTypeAliasName( aliasNames[ index ]);
         deviceTypeList.addActionListener( this );
@@ -477,9 +474,8 @@ public class KeyMapMaster
 
   public void setDeviceTypeName( String aliasName )
   {
-    if (( deviceTypeList != null ) && ( aliasName != currentDeviceTypeName ))
+    if (( deviceTypeList != null ) && ( !aliasName.equals( deviceUpgrade.getDeviceTypeAliasName())))
     {
-      currentDeviceTypeName = aliasName;
       deviceUpgrade.setDeviceTypeAliasName( aliasName );
       deviceTypeList.setSelectedItem( aliasName );
     }
@@ -923,14 +919,14 @@ public class KeyMapMaster
     description.setText( deviceUpgrade.getDescription());
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
     Remote r = deviceUpgrade.getRemote();
-    setRemote( r );
+//    setRemote( r );
     remoteList.setSelectedItem( r );
     if ( remoteList.getSelectedItem() != r )
     {
       remoteList.addItem( r );
       remoteList.setSelectedItem( r );
     }
-    setDeviceTypeName( savedTypeName );
+    deviceTypeList.setSelectedItem( savedTypeName );
     addListeners();
     currPanel.update();
 
