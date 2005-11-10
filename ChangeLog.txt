@@ -1,3 +1,10 @@
+Changes for v1.39
+- Some more progress on Protocol Editor
+- Add Fujitsu variants
+- Add JVC Combo protocol
+- Fixes to protocols.ini for "Dish Network:5" and "Dish Network Combo"
+- Fixes for importing binary upgrades
+
 Changes for v1.38
 - Enhancements for Lutron
 - Fixes for binary upgrade files.
