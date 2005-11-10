@@ -40,7 +40,7 @@ public abstract class TablePanel
     {
       protected Transferable createTransferable( JComponent c )
       {
-        return new StringSelection( Integer.toString( table.getSelectedRow()));
+        return new LocalObjectTransferable( new Integer( table.getSelectedRow()));
       }
 
       public int getSourceActions( JComponent c )
@@ -53,7 +53,7 @@ public abstract class TablePanel
         boolean rc = false;
         for ( int i = 0; i < flavors.length; i++ )
         {
-          if ( flavors[ i ] == DataFlavor.stringFlavor )
+          if (( flavors[ i ] == DataFlavor.stringFlavor ) || ( flavors[ i ] == LocalObjectTransferable.getFlavor()))
           {
             rc = true;
             break;
@@ -65,27 +65,153 @@ public abstract class TablePanel
       public boolean importData( JComponent c, Transferable t )
       {
         boolean rc = false;
-        try
+        System.err.println( "importData: flavors are" );
+        DataFlavor[] flavors = t.getTransferDataFlavors();
+        for ( int i = 0; i < flavors.length; i++ )
+          System.err.println( "\t" + flavors[ i ].toString());
+        if ( t.isDataFlavorSupported( DataFlavor.stringFlavor ))
         {
-          int dragRow = Integer.parseInt(( String )t.getTransferData( DataFlavor.stringFlavor ));
-          int dropRow = table.getSelectedRow();
-          if ( dropRow != dragRow )
+          try
           {
-            sorter.moveRow( dragRow, dropRow );
+            String s = ( String )( t.getTransferData( DataFlavor.stringFlavor ));
+            BufferedReader in = new BufferedReader( new StringReader( s ));
+            int colCount = table.getModel().getColumnCount();
+            int addedRow = -1;
+            int row = table.getSelectedRow();
+            int col = table.getSelectedColumn();
+            for ( String line = in.readLine(); line != null; line = in.readLine())
+            {
+              if ( row == sorter.getRowCount() )
+              {
+                sorter.addRow( createRowObject());
+                if ( addedRow == -1 )
+                  addedRow = row;
+              }
 
-            if ( dropRow < dragRow )
-              sorter.fireTableRowsUpdated( dropRow, dragRow );
-            else
-              sorter.fireTableRowsUpdated( dragRow, dropRow );
-            rc = true;
+              StringTokenizer st = new StringTokenizer( line, "\t", true );
+              int workCol = col;
+              boolean done = false;
+              String token = null;
+              String prevToken = null;
+              while ( !done )
+              {
+                if ( workCol == colCount )
+                  break;
+                if ( st.hasMoreTokens())
+                  token = st.nextToken();
+                else
+                  token = null;
+
+                Object value = null;
+                int modelCol = table.convertColumnIndexToModel( workCol );
+                if ( token == null )
+                {
+                  done = true;
+                  if ( prevToken != null )
+                    break;
+                }
+                else if ( token.equals( "\t" ))
+                {
+                  if ( prevToken == null )
+                    token = null;
+                  else
+                  {
+                    prevToken = null;
+                    continue;
+                  }
+                }
+                prevToken = token;
+
+                Class aClass = sorter.getColumnClass( modelCol );
+                if ( aClass == String.class )
+                {
+                  if (( token != null ) &&
+                      ( token.length() == 5 ) &&
+                      token.startsWith( "num " ) &&
+                      Character.isDigit( token.charAt( 4 )))
+                    value = token.substring( 4 );
+                  else
+                    value = token;
+                }
+                else
+                  value = token;
+
+                sorter.setValueAt( value, row, modelCol );
+                workCol++;
+              }
+              row++;
+            }
+            if ( addedRow != -1 )
+              sorter.fireTableRowsInserted( addedRow, row - 1 );
+            sorter.fireTableRowsUpdated( popupRow, row - 1 );
+          }
+          catch (Exception ex)
+          {
+            String message = ex.getMessage();
+            if ( message == null )
+              message = ex.toString();
+            KeyMapMaster.showMessage( message );
+            ex.printStackTrace( System.err );
           }
         }
-        catch ( Exception e )
+        else if ( t.isDataFlavorSupported( LocalObjectTransferable.getFlavor()))
         {
-          e.printStackTrace( System.err );
+          try
+          {
+            int dragRow = (( Integer )t.getTransferData( LocalObjectTransferable.getFlavor())).intValue();
+            int dropRow = table.getSelectedRow();
+            if ( dropRow != dragRow )
+            {
+              sorter.moveRow( dragRow, dropRow );
+  
+              if ( dropRow < dragRow )
+                sorter.fireTableRowsUpdated( dropRow, dragRow );
+              else
+                sorter.fireTableRowsUpdated( dragRow, dropRow );
+              rc = true;
+            }
+          }
+          catch ( Exception e )
+          {
+            e.printStackTrace( System.err );
+          }
         }
-
         return rc;
+      }
+
+      public void exportToClipboard( JComponent comp, Clipboard clip, int action )
+      {
+        JTable table = ( JTable )comp;
+        int[] selectedRows = table.getSelectedRows();
+        int[] selectedCols = table.getSelectedColumns();
+        StringBuffer buff = new StringBuffer( 200 );
+        for ( int rowNum = 0; rowNum < selectedRows.length; rowNum ++ )
+        {
+          if ( rowNum != 0 )
+            buff.append( "\n" );
+          for ( int colNum = 0; colNum < selectedCols.length; colNum++ )
+          {
+            if ( colNum != 0 )
+              buff.append( "\t" );
+            int selRow = selectedRows[ rowNum ];
+//            int convertedRow = sorter.convertRowIndexToModel( selRow );
+            int selCol = selectedCols[ colNum ];
+            int convertedCol = table.convertColumnIndexToModel( selCol );
+            Object value = table.getValueAt( selRow, selCol );
+            if ( value != null )
+            {
+              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn( selCol ).getCellRenderer();
+              if ( cellRenderer != null )
+              {
+                cellRenderer.getTableCellRendererComponent( table, value, false, false, selRow, convertedCol );
+                value = cellRenderer.getText();
+              }
+              buff.append( value.toString() );
+            }
+          }
+        }
+        StringSelection data = new StringSelection( buff.toString());
+        clipboard.setContents( data, data );
       }
     };
     table.setTransferHandler( th );
@@ -242,7 +368,6 @@ public abstract class TablePanel
   {
     finishEditing();
     KeyMapMaster.clearMessage();
-    Vector functions = model.getData();
     int row = 0;
     int col = 0;
     boolean select = false;
@@ -283,7 +408,6 @@ public abstract class TablePanel
     else if (( source == deleteButton ) ||
              ( source == deleteItem ))
     {
-      Function func = ( Function )functions.elementAt( sorter.convertRowIndexToModel( row ));
       if ( !canDelete( sorter.getRow( row )))
       {
         deleteButton.setEnabled( false );
@@ -301,6 +425,7 @@ public abstract class TablePanel
     }
     else if ( source == cleanButton )
     {
+      Vector functions = model.getData();
       for ( ListIterator i = functions.listIterator(); i.hasNext();)
       {
         Function f = ( Function )i.next();
@@ -339,123 +464,15 @@ public abstract class TablePanel
     }
     else if (( source == copyItem ) || ( source == copyButton ))
     {
-      int[] selectedRows = table.getSelectedRows();
-      int[] selectedCols = table.getSelectedColumns();
-      StringBuffer buff = new StringBuffer( 200 );
-      for ( int rowNum = 0; rowNum < selectedRows.length; rowNum ++ )
-      {
-        if ( rowNum != 0 )
-          buff.append( "\n" );
-        for ( int colNum = 0; colNum < selectedCols.length; colNum++ )
-        {
-          if ( colNum != 0 )
-            buff.append( "\t" );
-          Object value =
-            sorter.getValueAt( selectedRows[ rowNum ],
-                               table.convertColumnIndexToModel( selectedCols[ colNum ]));
-          if ( value != null )
-          {
-            buff.append( value.toString() );
-          }
-        }
-      }
-      StringSelection data = new StringSelection( buff.toString());
-      clipboard.setContents( data, data );
+      table.getTransferHandler().exportToClipboard( table, clipboard, TransferHandler.COPY );
     }
     else if (( source == pasteItem ) || ( source == pasteButton ))
     {
       Transferable clipData = clipboard.getContents( clipboard );
       if ( clipData != null )
-      {
-        try
-        {
-          if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
-          {
-            String s =
-              ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
-            BufferedReader in = new BufferedReader( new StringReader( s ));
-            int colCount = model.getColumnCount();
-            int addedRow = -1;
-            for ( String line = in.readLine(); line != null; line = in.readLine())
-            {
-              if ( row == sorter.getRowCount() )
-              {
-                sorter.addRow( createRowObject());
-                if ( addedRow == -1 )
-                  addedRow = row;
-              }
-
-              StringTokenizer st = new StringTokenizer( line, "\t", true );
-              int workCol = col;
-              boolean done = false;
-              String token = null;
-              String prevToken = null;
-              while ( !done )
-              {
-                if ( workCol == colCount )
-                  break;
-                if ( st.hasMoreTokens())
-                  token = st.nextToken();
-                else
-                  token = null;
-
-                Object value = null;
-                int modelCol = table.convertColumnIndexToModel( workCol );
-                if ( token == null )
-                {
-                  done = true;
-                  if ( prevToken != null )
-                    break;
-                }
-                else if ( token.equals( "\t" ))
-                {
-                  if ( prevToken == null )
-                    token = null;
-                  else
-                  {
-                    prevToken = null;
-                    continue;
-                  }
-                }
-                prevToken = token;
-
-                Class aClass = sorter.getColumnClass( modelCol );
-                if ( aClass == String.class )
-                {
-                  if (( token != null ) &&
-                      ( token.length() == 5 ) &&
-                      token.startsWith( "num " ) &&
-                      Character.isDigit( token.charAt( 4 )))
-                    value = token.substring( 4 );
-                  else
-                    value = token;
-                }
-                else
-                  value = token;
-
-                sorter.setValueAt( value, row, modelCol );
-                workCol++;
-              }
-              row++;
-            }
-            if ( addedRow != -1 )
-              sorter.fireTableRowsInserted( addedRow, row - 1 );
-            sorter.fireTableRowsUpdated( popupRow, row - 1 );
-          }
-          else
-          {
-            kit.beep();
-          }
-        }
-        catch (Exception ex)
-        {
-          String message = ex.getMessage();
-          if ( message == null )
-            message = ex.toString();
-          KeyMapMaster.showMessage( message );
-          ex.printStackTrace( System.err );
-        }
-      }
+        table.getTransferHandler().importData( table, clipboard.getContents( clipboard ));
+      else
+        kit.beep();
     }
     cleanButton.setEnabled( table.getRowCount() > 0 );
   }
