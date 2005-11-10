@@ -43,21 +43,15 @@ public class ProtocolEditor
     Container contentPane = getContentPane();
 
     root = new DefaultMutableTreeNode( "Root", true );
-    root.add( new GeneralEditorNode());
-
-    FixedDataEditorNode fixedDataNode = new FixedDataEditorNode();
+    generalNode = new GeneralEditorNode();
+    generalNode.addPropertyChangeListener( "Code", this );
+    root.add( generalNode );
+    
+    fixedDataNode = new FixedDataEditorNode( 0 );
     root.add( fixedDataNode );
-    fixedDataNode.addPropertyChangeListener( "Hex", this );
 
-    CmdEditorNode cmdDataNode = new CmdEditorNode();
+    cmdDataNode = new CmdEditorNode( 0 );
     root.add( cmdDataNode );
-    cmdDataNode.addPropertyChangeListener( "Hex", this );
-    CmdParmEditorNode obcNode = new CmdParmEditorNode();
-    obcNode.setName( "OBC" );
-    cmdDataNode.add( obcNode );
-    obcNode.addPropertyChangeListener( "Name", this );
-
-    root.add( new CodeEditorNode());    
 
     treeModel = new DefaultTreeModel( root, true );
     tree = new JTree( treeModel );
@@ -67,7 +61,6 @@ public class ProtocolEditor
     tree.expandRow( 1 );
     tree.collapseRow( 1 );
     tree.addTreeSelectionListener( this );
-    tree.expandPath( new TreePath( obcNode.getPath()));
 
     JScrollPane scrollPane = new JScrollPane( tree );
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ),
@@ -192,16 +185,27 @@ public class ProtocolEditor
   public void propertyChange( PropertyChangeEvent e )
   {
     ProtocolEditorNode node = ( ProtocolEditorNode )e.getSource();
-    if ( e.getPropertyName().equals( "Hex" ))
+    String propertyName = e.getPropertyName();
+    System.err.println( "PropertyChange for " + propertyName );
+    if ( propertyName.equals( "Hex" ))
     {
       enableButtons();
     }
-    else if ( e.getPropertyName().equals( "Name" ))
+    else if ( propertyName.equals( "Name" ))
     {
       treeModel.nodeChanged( node );
       TreePath path = new TreePath( node.getPath());
       tree.collapsePath( path );
       tree.expandPath( path );
+    }
+    else if ( propertyName.equals( "Code" ))
+    {
+      Hex newValue = ( Hex )e.getNewValue();
+      int sizes = newValue.getData()[ 2 ] & 0x00FF;
+      int fixedLength = sizes >> 4;
+      fixedDataNode.setLength( fixedLength );
+      int cmdLength = sizes & 0x000F;
+      cmdDataNode.setLength( cmdLength );
     }
   }
 
@@ -252,6 +256,9 @@ public class ProtocolEditor
   private ProtocolEditorNode selectedNode;
   private DefaultMutableTreeNode root;
   private String nodeInfo;
+  private GeneralEditorNode generalNode = null;
+  private FixedDataEditorNode fixedDataNode = null;
+  private CmdEditorNode cmdDataNode = null;
   private JButton viewButton;
   private JButton addButton;
   private JButton deleteButton;

@@ -7,9 +7,10 @@ import java.util.Enumeration;
 public class CmdEditorNode
   extends HexEditorNode
 {
-  public CmdEditorNode()
+  public CmdEditorNode( int length )
   {
-    super( "Command Parameters", new Hex( 1 ), "DefaultCmd=", "CmdParms=", "CmdTranslator=" );
+    super( "Command Parameters", null, "DefaultCmd=", "CmdParms=", "CmdTranslator=" );
+    this.length = length;
   }
 
   public ProtocolEditorNode createChild()
@@ -20,9 +21,17 @@ public class CmdEditorNode
   public ProtocolEditorPanel getEditingPanel()
   {
     if ( cmdEditorPanel == null )
-      cmdEditorPanel = new CmdEditorPanel();
+      cmdEditorPanel = new CmdEditorPanel( length );
     return cmdEditorPanel;
   }
 
+  public void setLength( int length )
+  {
+    this.length = length;
+    if ( cmdEditorPanel != null )
+      cmdEditorPanel.setLength( length );
+  }
+
   private static CmdEditorPanel cmdEditorPanel = null;
+  private int length = 0;
 }

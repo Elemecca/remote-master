@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.io.PrintWriter;
+import java.util.*;
 
 public class GeneralEditorNode
   extends ProtocolEditorNode
@@ -48,6 +49,31 @@ public class GeneralEditorNode
     altId = newId; 
   } 
 
+  private HashMap codes = new HashMap( 4 );
+
+  public Set getKeys(){ return codes.keySet(); }
+  public void addCode( String processor, Hex code )
+  {
+    Hex oldCode = getCode( processor );
+    codes.put( processor, code );
+    firePropertyChange( "Code", oldCode, code );
+  }
+
+  public Hex getCode( String processor )
+  {
+    return ( Hex )codes.get( processor );
+  }
+  
+  public void removeCode( String processor )
+  {
+    if (( codes.size() == 1 ) && codes.containsKey( processor ))
+    {
+      Hex oldValue = getCode( processor );
+      codes.remove( processor );
+      firePropertyChange( "Code", oldValue, null );
+    }
+  }
+  
   public void print( PrintWriter pw )
   {
     pw.println( "[" + name + "]" );
@@ -56,6 +82,14 @@ public class GeneralEditorNode
     pw.println( "PID=" + id.toString());
     if (( altId != null ) && ( altId.length() > 0 ))
       pw.println( "AlternatePID=" + altId.toString());
+
+    for ( Iterator i = getKeys().iterator(); i.hasNext(); )
+    {
+      String key = ( String )i.next();
+      Hex hex = getCode( key );
+      if (( hex != null ) && ( hex.length() != 0 ))
+        pw.println( "Code." + key + '=' + hex );
+    }
   }
   
   private static GeneralEditorPanel editorPanel = null;

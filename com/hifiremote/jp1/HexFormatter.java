@@ -4,68 +4,27 @@ import javax.swing.*;
 import javax.swing.text.*;
 
 public class HexFormatter
-  extends JFormattedTextField.AbstractFormatter
+  extends RegexFormatter
 {
-  HexFormatter()
+  HexFormatter( int length )
   {
     super();
-    filter = new HexFilter();
+    setValueClass( Hex.class );
+    setAllowsInvalid( false );
+    setOverwriteMode( true );
+    setCommitsOnValidEdit( true );
+    setLength( length );
   }
 
-  protected DocumentFilter getDocumentFilter()
+  public void setLength( int length )
   {
-    return filter;
-  }
-
-  public Object stringToValue( String s )
-  {
-    return new Hex( s );
-  }
-
-  public String valueToString( Object o )
-  {
-    if ( o == null )
-      return null;
-    return (( Hex )o).toString();
-  }
-
-  private boolean isValid( String string )
-  {
-    for ( int i = 0; i < string.length(); i++ )
+    StringBuffer buff = new StringBuffer();
+    if ( length > 0 )
     {
-      char ch = string.charAt( i );
-      if ( !Character.isSpaceChar( ch ) && ( Character.digit( ch, 16 ) == -1 ))
-      {
-        invalidEdit();
-        return false;
-      }
+      buff.append( "\\p{XDigit}{2}" );
+      if ( length > 1 )
+        buff.append( "( +\\p{XDigit}{2}){" + ( length - 1 ) + "}" );
     }
-    return true;
+    setPattern( buff.toString());
   }
-
-  public class HexFilter
-    extends DocumentFilter
-  {
-    public void insertString( DocumentFilter.FilterBypass fb,
-                              int offset,
-                              String string,
-                              AttributeSet attr )
-      throws BadLocationException
-    {
-      if ( isValid( string ))
-        super.insertString( fb, offset, string, attr );
-    }
-
-    public void replace( DocumentFilter.FilterBypass fb,
-                         int offset, int length,
-                         String string,
-                         AttributeSet attr )
-      throws BadLocationException
-    {
-      if ( isValid( string ))
-        super.replace( fb, offset, length, string, attr );
-    }
-  }
-
-  private HexFilter filter;
 }

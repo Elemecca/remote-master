@@ -11,9 +11,9 @@ import javax.swing.text.*;
 public class FixedDataEditorPanel
   extends HexEditorPanel
 {
-  public FixedDataEditorPanel()
+  public FixedDataEditorPanel( int hexLength )
   {
-    super( "Device Parameters", "Fixed data", "Enter the fixed data for this protocol, in hex.",
-           "If the protocol uses any fixed data bytes, enter them below.\n\nOnce that has been done, add device parameters to allow the user to specify the contents of the Fixed Data." );
+    super( "Device Parameters", "Fixed data", "Enter the default fixed data for this protocol, in hex.",
+           "Enter the default fixed data below.", hexLength );
   }
 }

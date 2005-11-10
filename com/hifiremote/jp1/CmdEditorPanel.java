@@ -11,9 +11,9 @@ import javax.swing.text.*;
 public class CmdEditorPanel
   extends HexEditorPanel
 {
-  public CmdEditorPanel()
+  public CmdEditorPanel( int length )
   {
     super( "Command Parameters", "Command", "Enter the default command for this protocol, in hex.",
-           "Add command parameters to allow the user to specify the contents of the command." );
+           "Add command parameters to allow the user to specify the contents of the command.", length );
   }
 }
