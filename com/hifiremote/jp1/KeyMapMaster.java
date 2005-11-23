@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.39";
+  public static final String version = "v1.40";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -964,7 +964,7 @@ public class KeyMapMaster
     currPanel.commit();
     currPanel = ( KMPanel )(( JTabbedPane )e.getSource()).getSelectedComponent();
     currPanel.update();
-    SwingUtilities.updateComponentTreeUI( currPanel );
+    // SwingUtilities.updateComponentTreeUI( currPanel );
     validateUpgrade();
   }
 
