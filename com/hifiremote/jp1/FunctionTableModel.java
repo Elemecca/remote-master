@@ -32,6 +32,8 @@ public class FunctionTableModel
 
   public void setProtocol( Protocol protocol, Remote remote )
   {
+    if (( this.protocol == protocol ) && ( this.remote == remote ))
+      return;
     this.protocol = protocol;
     this.remote = remote;
     colOffset = efcCol + 1;

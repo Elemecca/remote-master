@@ -14,7 +14,11 @@ public class FunctionPanel
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
     (( FunctionTableModel )model ).setProtocol( p, deviceUpgrade.getRemote());
-    initColumns();
+    if ( p != savedProtocol )
+    {
+      initColumns();
+      savedProtocol = p;
+    }
     super.update();
   }
 
@@ -35,4 +39,6 @@ public class FunctionPanel
     KeyMapMaster.showMessage( message );
     throw new IllegalArgumentException( message );
   }
+
+  private Protocol savedProtocol = null;
 }
