@@ -2,6 +2,11 @@ package com.hifiremote.jp1;
 
 public class Value
 {
+  public Value( int userInt )
+  {
+    this( new Integer( userInt ));
+  }
+
   public Value( Object userValue )
   {
     this( userValue, null );

@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.40";
+  public static final String version = "v1.41";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -89,7 +89,7 @@ public class KeyMapMaster
     });
 
     createMenus();
-    
+
     preferences.load( recentFileMenu );
 
     deviceUpgrade = new DeviceUpgrade();
@@ -382,6 +382,10 @@ public class KeyMapMaster
     {
       propertiesFile = new File( homeDirectory, "RemoteMaster.properties" );
     }
+    System.err.println( "RemoteMaster version is " + version );
+    System.err.println( "Java version is " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ));
+    System.err.println( "Home directory is " + homeDirectory );
+    System.err.println( "Properties files is " + propertiesFile );
 
     return fileToOpen;
   }
@@ -590,7 +594,7 @@ public class KeyMapMaster
       else if ( source == binaryItem )
       {
         File file = null;
-        JFileChooser chooser = new JFileChooser( preferences.getBinaryUpgradePath());
+        RMFileChooser chooser = new RMFileChooser( preferences.getBinaryUpgradePath());
         try
         {
           chooser.setAcceptAllFileFilterUsed( false );
@@ -599,12 +603,12 @@ public class KeyMapMaster
         {
           ex.printStackTrace( System.err );
         }
-        chooser.setFileFilter( new BinaryFileFilter());
+        chooser.setFileFilter( new EndingFileFilter( "Binary upgrade files", binaryEndings ));
         int returnVal = chooser.showOpenDialog( this );
-        if ( returnVal == JFileChooser.APPROVE_OPTION )
+        if ( returnVal == RMFileChooser.APPROVE_OPTION )
         {
           file = chooser.getSelectedFile();
-    
+
           int rc = JOptionPane.YES_OPTION;
           if ( !file.exists())
           {
@@ -634,12 +638,12 @@ public class KeyMapMaster
               String tryit = aliasNames[ i ];
               if ( devType == r.getDeviceTypeByAliasName( tryit ))
               {
-                nameMatch = devType.getName().equalsIgnoreCase( tryit ); 
+                nameMatch = devType.getName().equalsIgnoreCase( tryit );
                 if (( aliasName == null ) || nameMatch )
                   aliasName = tryit;
               }
             }
-            deviceUpgrade.importRawUpgrade( reader.getCode(), 
+            deviceUpgrade.importRawUpgrade( reader.getCode(),
                                             r,
                                             aliasName,
                                             reader.getPid(),
@@ -708,7 +712,7 @@ public class KeyMapMaster
       path = preferences.getUpgradePath();
 
     File file = null;
-    JFileChooser chooser = new JFileChooser( path );
+    RMFileChooser chooser = new RMFileChooser( path );
     try
     {
       chooser.setAcceptAllFileFilterUsed( false );
@@ -717,11 +721,12 @@ public class KeyMapMaster
     {
       e.printStackTrace( System.err );
     }
-    chooser.setFileFilter( new AnyFileFilter());
-    chooser.addChoosableFileFilter( new TextFileFilter());
-    chooser.addChoosableFileFilter( new KMFileFilter());
+    chooser.setFileFilter( new EndingFileFilter( "All device upgrade files", anyEndings ));
+    chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files", kmEndings ));
+    chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files", rmEndings ));
+
     int returnVal = chooser.showOpenDialog( this );
-    if ( returnVal == JFileChooser.APPROVE_OPTION )
+    if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       file = chooser.getSelectedFile();
 
@@ -752,8 +757,8 @@ public class KeyMapMaster
   public void saveAs()
     throws IOException
   {
-    JFileChooser chooser = new JFileChooser( preferences.getUpgradePath());
-    chooser.setFileFilter( new KMFileFilter());
+    RMFileChooser chooser = new RMFileChooser( preferences.getUpgradePath());
+    chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", rmEndings ));
     File f = deviceUpgrade.getFile();
     if ( f == null )
     {
@@ -763,7 +768,7 @@ public class KeyMapMaster
     }
     chooser.setSelectedFile( f );
     int returnVal = chooser.showSaveDialog( this );
-    if ( returnVal == JFileChooser.APPROVE_OPTION )
+    if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( upgradeExtension ))
@@ -1048,98 +1053,8 @@ public class KeyMapMaster
     updateDescription();
   }
 
-  private class KMFileFilter
-    extends javax.swing.filechooser.FileFilter
-  {
-    //Accept all directories and all .km/.rmdu files.
-    public boolean accept( File f )
-    {
-      boolean rc = false;
-      if ( f.isDirectory())
-        rc = true;
-      else
-      {
-        String lowerName = f.getName().toLowerCase();
-        if ( lowerName.endsWith( ".km" ) || lowerName.endsWith( upgradeExtension ))
-          rc = true;
-      }
-      return rc;
-    }
-
-    //The description of this filter
-    public String getDescription()
-    {
-      return "RemoteMaster device upgrade files";
-    }
-  }
-
-  private class KMDirectoryFilter
-    extends javax.swing.filechooser.FileFilter
-  {
-    //Accept all directories
-    public boolean accept( File f )
-    {
-      boolean rc = false;
-      if ( f.isDirectory())
-        rc = true;
-      return rc;
-    }
-
-    //The description of this filter
-    public String getDescription()
-    {
-      return "Directories";
-    }
-  }
-
-  private class TextFileFilter
-    extends javax.swing.filechooser.FileFilter
-  {
-    //Accept all directories and all .km/.rmdu files.
-    public boolean accept( File f )
-    {
-      boolean rc = false;
-      if ( f.isDirectory())
-        rc = true;
-      else
-      {
-        String lowerName = f.getName().toLowerCase();
-        if ( lowerName.endsWith( ".txt" ))
-          rc = true;
-      }
-      return rc;
-    }
-
-    //The description of this filter
-    public String getDescription()
-    {
-      return "KeyMapMaster device upgrade files";
-    }
-  }
-
-  private class AnyFileFilter
-    extends javax.swing.filechooser.FileFilter
-  {
-    //Accept all directories and all .km/.rmdu files.
-    public boolean accept( File f )
-    {
-      boolean rc = false;
-      if ( f.isDirectory())
-        rc = true;
-      else
-      {
-        String lowerName = f.getName().toLowerCase();
-        if ( lowerName.endsWith( ".txt" ) || lowerName.endsWith( ".km" ) ||
-             lowerName.endsWith( upgradeExtension ))
-          rc = true;
-      }
-      return rc;
-    }
-
-    //The description of this filter
-    public String getDescription()
-    {
-      return "All device upgrade files";
-    }
-  }
+  private final static String[] anyEndings = { ".txt", ".km", upgradeExtension };
+  private final static String[] kmEndings = { ".txt" };
+  private final static String[] rmEndings = { ".km", upgradeExtension };
+  private final static String[] binaryEndings = { ".bin", "_obj" };
 }

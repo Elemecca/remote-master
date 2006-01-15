@@ -418,7 +418,11 @@ public class Protocol
     for ( int i = 0; i < cmdTranslators.length; i++ )
       cmdTranslators[ i ].out( hex, vals, devParms );
     for ( int i = 0; i < cmdParms.length; i++ )
+    {
+      System.err.println( "Setting default for index " + i );
+      System.err.println( "vals[" +  i + " ] is " + vals[ i ] );
       vals[ i ].setDefaultValue( cmdParms[ i ].getDefaultValue());
+    }
     return vals;
   }
 
@@ -444,10 +448,10 @@ public class Protocol
 
   public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )
   {
-    if ( useOBC )
-      setValueAt( obcIndex, hex, new Integer( text ));
-    else if ( useEFC )
+    if ( useEFC )
       EFC.toHex( Integer.parseInt( text), hex, cmdIndex );
+    else // if ( useOBC ) 
+      setValueAt( obcIndex, hex, new Integer( text ));
   }
 
   public void importCommandParms( Hex hex, String text )

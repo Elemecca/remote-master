@@ -22,11 +22,11 @@ public class ProtocolManager
     {
       JOptionPane.showMessageDialog( null, "Couldn't read " + f.getName() + "!",
                                      "Error", JOptionPane.ERROR_MESSAGE );
-      JFileChooser chooser = new JFileChooser( f.getParentFile() );
-      chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+      RMFileChooser chooser = new RMFileChooser( f.getParentFile() );
+      chooser.setFileSelectionMode( RMFileChooser.FILES_ONLY );
       chooser.setDialogTitle( "Pick the file containing the protocol definitions" );
       int returnVal = chooser.showOpenDialog( null );
-      if ( returnVal != JFileChooser.APPROVE_OPTION )
+      if ( returnVal != RMFileChooser.APPROVE_OPTION )
         System.exit( -1 );
       else
         f = chooser.getSelectedFile();

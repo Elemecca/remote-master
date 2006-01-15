@@ -29,11 +29,11 @@ public class RemoteManager
       {
         JOptionPane.showMessageDialog( null, "No RDF files were found!",
                                        "Error", JOptionPane.ERROR_MESSAGE );
-        JFileChooser chooser = new JFileChooser( dir );
-        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+        RMFileChooser chooser = new RMFileChooser( dir );
+        chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle( "Choose the directory containing the RDFs" );
         int returnVal = chooser.showOpenDialog( null );
-        if ( returnVal != JFileChooser.APPROVE_OPTION )
+        if ( returnVal != RMFileChooser.APPROVE_OPTION )
           System.exit( -1 );
         else
           dir = chooser.getSelectedFile();
@@ -117,7 +117,7 @@ public class RemoteManager
           similarRemotes.clear();
         }
         if ( numMatches == mostMatches )
-          similarRemotes.add( r );          
+          similarRemotes.add( r );
       }
 
       Object[] simRemotes = null;
@@ -130,7 +130,7 @@ public class RemoteManager
         simRemotes = new Object[ similarRemotes.size() ];
         simRemotes = similarRemotes.toArray( simRemotes );
       }
-      
+
       if ( remote == null )
       {
         String message = "The upgrade file you are loading is for the remote \"" + name + "\".\nThere is no remote with that exact name.  Please choose the best match from the list below:";

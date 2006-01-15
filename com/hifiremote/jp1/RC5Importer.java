@@ -10,7 +10,7 @@ public class RC5Importer
 
   public Value[] convertParms( Value[] parms )
   {
-    Value[] outParms = new Value[ 6 ];
+    Value[] outParms = new Value[ 2 * parms.length ];
     for ( int i = 0; i < parms.length; i++ )
     {
       Value val = parms[ i ];

@@ -26,9 +26,9 @@ public class RemoteMaster
     //Schedule a job for the event-dispatching thread:
     //creating and showing this application's GUI.
     parms = args;
-    javax.swing.SwingUtilities.invokeLater( new Runnable() 
+    javax.swing.SwingUtilities.invokeLater( new Runnable()
     {
-      public void run() 
+      public void run()
       {
         createAndShowGUI( parms );
       }

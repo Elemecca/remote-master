@@ -1,6 +1,13 @@
+Changes for v1.41
+- Fix File->Open hang if there is a shortcut to the Desktop on the Desktop
+- Fix RC-5/5X Combo Protocol support
+- Fix protocols.ini syntax error in Dish Network Combo protocol definition
+- Add support for RelayTV 2000/3000 OBJ binary files
+- Default to OBC button style when importing KM upgrades
+
 Changes for v1.40
 - Only change column widths when protocol changes
-- Fix default value for Fijitsu Sub-Device
+- Fix default value for Fujitsu Sub-Device
 
 Changes for v1.39
 - Some more progress on Protocol Editor

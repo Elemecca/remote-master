@@ -584,59 +584,26 @@ public class DeviceUpgrade
     }
   }
 
-  public int[] getBinaryUpgrade()
+  public int[] getHexSetupCode()
   {
-    Vector v = new Vector();
-    int[] header = new int[ 4 ];
-    v.add( header );
-    
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     int[] id = protocol.getID( remote ).getData();
     int temp = devType.getNumber() * 0x1000 +
                ( id[ 0 ] & 1 ) * 0x0800 +
                setupCode - remote.getDeviceCodeOffset();
 
-    header[ 2 ] = (temp >> 8 );
-    header[ 3 ] = temp;
-
-    v.add( getUpgradeHex().getData());
-
-    int length = 0;
-    for ( Enumeration e = v.elements(); e.hasMoreElements();)
-      length += (( int[] )e.nextElement()).length;
-
-    if (( protocol.getClass() == ManualProtocol.class ) || protocol.needsCode( remote ))
-    {
-      Hex code = getCode();
-      v.add( code.getData());
-      header[ 1 ] = length - 1;
-      length += code.length();
-    }
-    
-    header[ 0 ] = length - 1;
-    int[] data = new int[ length ];
-    int offset = 0;
-    for ( Enumeration e = v.elements(); e.hasMoreElements();)
-    {
-      int[] source = ( int[] )e.nextElement();
-      System.arraycopy( source, 0, data, offset, source.length );
-      offset += source.length;
-    }
-    return data;
+    int[] rc = new int[2];
+    rc[ 0 ] = (temp >> 8 );
+    rc[ 1 ] = temp;
+    return rc;
   }
+
   public String getUpgradeText( boolean includeNotes )
   {
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade code 0 = " );
-    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    int[] id = protocol.getID( remote ).getData();
-    int temp = devType.getNumber() * 0x1000 +
-               ( id[ 0 ] & 1 ) * 0x0800 +
-               setupCode - remote.getDeviceCodeOffset();
 
-    int[] deviceCode = new int[2];
-    deviceCode[ 0 ] = (temp >> 8 );
-    deviceCode[ 1 ] = temp;
+    int[] deviceCode = getHexSetupCode();
 
     buff.append( Hex.toString( deviceCode ));
     buff.append( " (" );
@@ -662,6 +629,7 @@ public class DeviceUpgrade
     buff.append( "\n " );
 
     buff.append( Hex.toString( getUpgradeHex().getData(), 16 ));
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     ButtonMap map = devType.getButtonMap();
     Button[] buttons = remote.getUpgradeButtons();
     boolean hasKeyMoves = false;
@@ -1354,7 +1322,7 @@ public class DeviceUpgrade
     }
 
     // compute cmdIndex
-    boolean useOBC = false;
+    boolean useOBC = false; // assume OBC???
     boolean useEFC = false;
     if ( buttonStyle.equals( "OBC" ))
       useOBC = true;
@@ -1376,7 +1344,7 @@ public class DeviceUpgrade
       match1 = match1 + "fOBC" + delim;
       match2 = match2 + "OBC" + delim;
     }
-    else
+    else if ( useEFC )
     {
       match1 = match1 + "fEFC" + delim;
       match2 = match2 + "EFC" + delim;

@@ -12,17 +12,20 @@ public class BinaryUpgradeReader
     String name = file.getName();
     int underscore = name.lastIndexOf( '_' );
     int dot = name.lastIndexOf( '.' );
+    if ( dot == -1 )
+      dot = name.length();
+    String tag = null;
     if (( underscore != -1 ) && ( dot != -1 ) && ( underscore < dot ))
     {
-      String tag = name.substring( underscore + 1, dot );
+      tag = name.substring( underscore + 1, dot );
       Vector remotes = RemoteManager.getRemoteManager().findRemoteBySignature( "BIN" + tag.toUpperCase() );
       if ( remotes.size() == 0 )
-      { 
+      {
         JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
-                                       "The binary file \"" + name + "\" isn't a supported binary upgrade file.", 
+                                       "The binary file \"" + name + "\" isn't a supported binary upgrade file.",
                                        "Invalid binary file",
                                        JOptionPane.ERROR_MESSAGE );
-        return;                                       
+        return;
       }
       else if ( remotes.size() == 1 )
         remote = ( Remote ) remotes.firstElement();
@@ -38,12 +41,17 @@ public class BinaryUpgradeReader
                                                         values,
                                                         values[ 0 ]);
         if ( remote == null )
-          return;                                                        
+          return;
       }
     }
     EncrypterDecrypter encdec = remote.getEncrypterDecrypter();
     dis = new DataInputStream( new FileInputStream( file ));
-    int upgradeLength = readUnsignedByte( encdec );
+    int upgradeLength = 0;
+    if ( tag.equals( "OBJ" ))
+      upgradeLength = ( int )file.length();
+    else
+      upgradeLength = readUnsignedByte( encdec );
+
     int protocolOffset = readUnsignedByte( encdec );
     int temp1 = readUnsignedByte( encdec );
     int temp2 = readUnsignedByte( encdec );
@@ -78,7 +86,7 @@ public class BinaryUpgradeReader
       pCode = new Hex( protocolCode );
     }
   }
-  
+
   private int readUnsignedByte( EncrypterDecrypter encdec )
     throws IOException
   {
