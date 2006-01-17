@@ -1,3 +1,10 @@
+Changes for v1.43
+- Final fix for binary upgrades for Manual Protocols where no protocol upgrade is required.
+- Manual Protocol-like enhancements to support for protocols where only the PID and code are available
+
+Changes for v1.42
+- Fix for exporting binary upgrades for Manual Protocols where no protocol upgrade is required.
+
 Changes for v1.41
 - Fix File->Open hang if there is a shortcut to the Desktop on the Desktop
 - Fix RC-5/5X Combo Protocol support

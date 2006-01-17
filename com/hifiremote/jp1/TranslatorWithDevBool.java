@@ -21,22 +21,22 @@ public class TranslatorWithDevBool
         int val = Integer.parseInt( text );
         switch ( parmIndex )
         {
-          case indexIndex:
+          case IndexIndex:
             devIndex = val;
             break;
-          case indexIndex + 1:
+          case IndexIndex + 1:
             index = val;
             break;
-          case bitsIndex + 1:
+          case BitsIndex + 1:
             bits = val;
             break;
-          case bitOffsetIndex + 1:
+          case BitOffsetIndex + 1:
             bitOffset = val;
             break;
-          case lsbOffsetIndex + 1:
+          case LsbOffsetIndex + 1:
             lsbOffset = val;
             break;
-          case adjustOffset + 1:
+          case AdjustOffset + 1:
           {
             adjust = val;
             break;

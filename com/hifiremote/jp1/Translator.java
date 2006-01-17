@@ -19,19 +19,19 @@ public class Translator
         int val = Integer.parseInt( text );
         switch ( parmIndex )
         {
-          case indexIndex:
+          case IndexIndex:
             index = val;
             break;
-          case bitsIndex:
+          case BitsIndex:
             bits = val;
             break;
-          case bitOffsetIndex:
+          case BitOffsetIndex:
             bitOffset = val;
             break;
-          case lsbOffsetIndex:
+          case LsbOffsetIndex:
             lsbOffset = val;
             break;
-          case adjustOffset:
+          case AdjustOffset:
           {
             adjust = val;
             break;
@@ -54,9 +54,21 @@ public class Translator
     this.bitOffset = bitOffset;
   }
 
+  private void adjustStyleAndBits( DeviceParameter[] devParms )
+  {
+    if ( styleIndex != -1 )
+    {
+      int style = (( Integer )devParms[ styleIndex ].getValueOrDefault()).intValue();
+      lsb = (( style & 2 ) == 2 );
+      comp = (( style & 1 ) == 1 );
+    }
+    if ( bitsIndex != - 1 )
+      bits = (( Integer )devParms[ bitsIndex ].getValueOrDefault()).intValue();
+  }
+
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    int[] hex = hexData.getData();
+    adjustStyleAndBits( devParms );
     if (onlyIndex >= 0 && onlyIndex != index)
       return;
     if ( index >= parms.length )
@@ -89,11 +101,11 @@ public class Translator
       w = ( i.intValue() + adjust ) >> lsbOffset;
     }
 
-    if ( comp )
+    if ( getComp())
     {
       w = 0xFFFFFFFF - w;
     }
-    if ( lsb )
+    if ( getLSB() )
     {
       w = reverse(w, bits );
     }
@@ -103,18 +115,18 @@ public class Translator
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
-    int[] hex = hexData.getData();
+    adjustStyleAndBits( devParms );
     if ( index >= parms.length )
     {
       System.err.println("Translator.out() index="+ index +" exceeds "+ parms.length +" item buffer");
       return;
     }
     int w = extract( hexData, bitOffset, bits);
-    if ( comp )
+    if ( getComp())
     {
       w = (2<<(bits-1)) - 1 - w;
     }
-    if ( lsb )
+    if ( getLSB())
     {
       w = reverse(w, bits );
     }
@@ -125,9 +137,9 @@ public class Translator
   {
     StringBuffer buff = new StringBuffer();
     buff.append( "Translator(" );
-    if ( lsb )
+    if ( getLSB())
       buff.append( "lsb," );
-    if ( comp )
+    if ( getComp())
       buff.append( "comp," );
     buff.append( index );
     if (( bits != 8 ) || ( bitOffset != 0 ) || ( lsbOffset != 0 ))
@@ -153,23 +165,27 @@ public class Translator
   public void setLSB( boolean lsb ){ this.lsb = lsb; }
   public boolean getComp(){ return comp; }
   public void setComp( boolean comp ){ this.comp = comp; }
+  public void setStyleIndex( int index ){ styleIndex = index; }
   public int getIndex(){ return index; }
   public int getBits(){ return bits; }
   public void setBits( int bits ){ this.bits = bits; }
+  public void setBitsIndex( int index ){ bitsIndex = index; }
   public int getBitOffset(){ return bitOffset; }
   protected boolean lsb = false;
   protected boolean comp = false;
+  protected int styleIndex = -1;
   protected int index = 0;
   protected int bits = 8;
+  protected int bitsIndex = -1;
   protected int bitOffset = 0;
   protected int lsbOffset = 0;
   protected int adjust = 0;
 
-  protected final static int indexIndex = 0;
-  protected final static int bitsIndex = 1;
-  protected final static int bitOffsetIndex = 2;
-  protected final static int lsbOffsetIndex = 3;
-  protected final static int adjustOffset = 4;
+  protected final static int IndexIndex = 0;
+  protected final static int BitsIndex = 1;
+  protected final static int BitOffsetIndex = 2;
+  protected final static int LsbOffsetIndex = 3;
+  protected final static int AdjustOffset = 4;
 }
 
 

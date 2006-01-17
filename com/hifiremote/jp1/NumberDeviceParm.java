@@ -26,6 +26,11 @@ public class NumberDeviceParm
     int base;
   }
 
+  public NumberDeviceParm( String name, DefaultValue defaultValue )
+  {
+    this( name, defaultValue, 10 );
+  }
+
   public NumberDeviceParm( String name, DefaultValue defaultValue, int base )
   {
     this( name, defaultValue, base, 8 );

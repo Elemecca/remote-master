@@ -140,31 +140,63 @@ public class Protocol
     // Figure out protocols that only have protocol code
     if (( cmdParms.length == 0 ) && ( code.size() > 0 ))
     {
+      // First figure out how many fixed bytes and cmd bytes there are
       Iterator it = code.values().iterator();
       Hex pCode = ( Hex )it.next();
       int value = pCode.getData()[ 2 ];
       int fixedDataLength = value >> 4;
       int cmdLength = value & 0x0F;
 
-      int[] cmd = new int[ cmdLength ];
-      defaultCmd = new Hex( cmd );
+      // Generate the Device Parameters and Translators
+      int[] hex = new int[ fixedDataLength ];
+      fixedData = new Hex( hex );
+      int numDevParms = fixedDataLength;  // Signal style and bits/cmd
+      int styleIndex = numDevParms++;
+      int devBitsIndex = -1;
+      if ( fixedDataLength > 0 )
+        devBitsIndex = numDevParms++; // bits/dev
+      int cmdBitsIndex = numDevParms++;
+      int cmdByteIndex = -1;
+      if ( cmdLength > 1 )
+        cmdByteIndex = numDevParms++;
+      devParms = new DeviceParameter[ numDevParms ];
+      deviceTranslators = new Translator[ fixedDataLength ];
+      DirectDefaultValue defaultZero = new DirectDefaultValue( new Integer( 0 ));
+      String[] choices = { "MSB", "MSB-COMP", "LSB", "LSB-COMP" };
+      devParms[ styleIndex ] = new ChoiceDeviceParm( "Signal Style", defaultZero, choices );
+      DirectDefaultValue defaultEight = new DirectDefaultValue( new Integer( 8 ));
+      if ( devBitsIndex != -1 )
+        devParms[ devBitsIndex ] = new NumberDeviceParm( "Bits / Device", defaultEight, 10, 4 );
+      devParms[ cmdBitsIndex ] = new NumberDeviceParm( "Bits / Command", defaultEight, 10, 4 );
+      if ( cmdByteIndex != -1 )
+      {
+        String[] indexChoices = { "0", "1" };
+        devParms[ cmdByteIndex ] = new ChoiceDeviceParm( "Cmd byte index", defaultZero, indexChoices );
+        cmdParmInit = new Initializer[ 1 ];
+        cmdParmInit[ 0 ] = new CmdIndexInitializer( cmdByteIndex, this );
+      }
+
+      for ( int i = 0; i < fixedDataLength; i++ )
+      {
+        devParms[ i ] = new NumberDeviceParm( "Device " + i, defaultZero, 10 );
+        Translator translator = new Translator( false, false, i, 8, i * 8 );
+        deviceTranslators[ i ] = translator;
+        translator.setStyleIndex( styleIndex );
+        if ( devBitsIndex != -1 )
+          translator.setBitsIndex( devBitsIndex );
+      }
+
+      hex = new int[ cmdLength ];
+      defaultCmd = new Hex( hex );
       cmdTranslators = new Translate[ cmdLength ];
       cmdParms = new CmdParameter[ cmdLength ];
       for ( int i = 0; i < cmdLength; i++ )
       {
         cmdParms[ i ] = new NumberCmdParm( "Byte " + i, null );
-        cmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );                  
-      }
-      
-      cmd = new int[ fixedDataLength ];
-      fixedData = new Hex( cmd );
-      devParms = new DeviceParameter[ fixedDataLength ];
-      deviceTranslators = new Translator[ fixedDataLength ];
-      DirectDefaultValue defaultZero = new DirectDefaultValue( new Integer( 0 ));
-      for ( int i = 0; i < fixedDataLength; i++ )
-      {
-        devParms[ i ] = new NumberDeviceParm( "Device " + i, defaultZero, 10 );
-        deviceTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );                  
+        Translator translator = new Translator( false, false, i, 8, i * 8 );
+        cmdTranslators[ i ] = translator;
+        translator.setStyleIndex( styleIndex );                  
+        translator.setBitsIndex( cmdBitsIndex );                  
       }
     }
   }
@@ -364,6 +396,11 @@ public class Protocol
   public int getCmdIndex()
   {
     return cmdIndex; 
+  }
+
+  public void setCmdIndex(  int index )
+  {
+    cmdIndex = index;
   }
 
   public DeviceParameter[] getDeviceParameters()

@@ -77,9 +77,9 @@ public class BinaryUpgradeWriter
 
           int protocolOffset = length;
 
-          if (( protocol.getClass() == ManualProtocol.class ) || protocol.needsCode( remote ))
+          Hex code = deviceUpgrade.getCode();
+          if ( code != null )
           {
-            Hex code = deviceUpgrade.getCode();
             v.add( code.getData());
             length += code.length();
           }
@@ -99,8 +99,8 @@ public class BinaryUpgradeWriter
             header = new int[ 2 ];
             header[ 0 ] = length + 1;
             if ( protocolOffset != 0 )
-              --protocolOffset;
-            header[ 1 ] = protocolOffset + 2;
+              protocolOffset++;
+            header[ 1 ] = protocolOffset;
           }
           v.add( 0, header );
 
@@ -123,7 +123,7 @@ public class BinaryUpgradeWriter
     }
     catch ( Exception e )
     {
-      e.printStackTrace( System.out );
+      e.printStackTrace( System.err );
     }
   }
 }

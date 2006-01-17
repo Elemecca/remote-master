@@ -120,19 +120,18 @@ public class OutputPanel
 
     Remote r = deviceUpgrade.getRemote();
 
-    if (( p.getClass() != ManualProtocol.class ) && r.supportsVariant( p.getID(), pVariant ))
+    Hex code = deviceUpgrade.getCode();
+    if ( code == null )
     {
       protocolLabel.setForeground( Color.BLACK );
       protocolLabel.setText( "Upgrade Protocol Code" );
       protocolText.setText( null );
-      return;
     }
-    protocolLabel.setForeground( Color.RED );
-    protocolLabel.setText( "Upgrade Protocol Code *** REQUIRED ***" );
-    Processor processor = r.getProcessor();
-    Hex code = deviceUpgrade.getCode();
-    if ( code != null )
+    else
     {
+      protocolLabel.setForeground( Color.RED );
+      protocolLabel.setText( "Upgrade Protocol Code *** REQUIRED ***" );
+      Processor processor = r.getProcessor();
       StringBuffer buff = new StringBuffer( 300 );
       buff.append( "Upgrade protocol 0 = " );
       buff.append( p.getID( r ).toString());
