@@ -193,6 +193,7 @@ public class DeviceCombinerPanel
           }
           catch ( Exception ex )
           {
+            ex.printStackTrace( System.err );
             JOptionPane.showMessageDialog( null,
                                            "An error occurred loading the device upgrade from " +
                                            file.getName() + ".  Please see rmaster.err for more details.",

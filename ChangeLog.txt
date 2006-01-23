@@ -1,3 +1,15 @@
+Changes for v1.47
+- Fix bug in loading Device Combiner upgrades.
+
+Changes for v1.46
+- Fix bug importing some KM upgrade files
+
+Changes for v1.45
+- Device Combiner fix for import functions from device upgrade files.
+
+Changes for v1.44
+- Fix for importing raw and binary upgrade files.
+
 Changes for v1.43
 - Final fix for binary upgrades for Manual Protocols where no protocol upgrade is required.
 - Manual Protocol-like enhancements to support for protocols where only the PID and code are available

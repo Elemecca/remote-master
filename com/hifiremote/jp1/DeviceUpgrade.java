@@ -20,13 +20,13 @@ public class DeviceUpgrade
     setupCode = 0;
 
     // remove all currently assigned functions
-    remote.clearButtonAssignments();
+    if ( remote != null )
+      remote.clearButtonAssignments();
 
     Remote[] remotes = RemoteManager.getRemoteManager().getRemotes();
     if ( remote == null )
       remote = remotes[ 0 ];
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
-
 
     if ( protocol != null )
       protocol.reset();
@@ -551,6 +551,7 @@ public class DeviceUpgrade
     {
       System.err.println( "Using " + p.getDiagnosticName());
       p = tentative;
+      fixedDataLength = p.getFixedDataLength();
       cmdLength = p.getDefaultCmd().length();
       parmValues = tentativeVals;
       if (( pCode != null ) && !pCode.equals( p.getCode( remote )))
@@ -1124,6 +1125,8 @@ public class DeviceUpgrade
           st.nextToken(); // skip delim
       }
     }
+    if ( rc != null )
+      rc = rc.trim();
     return rc;
   }
 
@@ -1587,7 +1590,7 @@ public class DeviceUpgrade
       for ( int j = 8; j < 13; j++ )
         token = getNextField( st, delim );
 
-      if ( token != null )
+      if (( token != null ) && !token.equals( "" )) 
       {
         String name = token.substring( 5 );
         if (( name.length() == 5 ) && name.startsWith( "num " ) &&

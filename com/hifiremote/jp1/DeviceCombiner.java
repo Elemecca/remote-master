@@ -53,6 +53,8 @@ public class DeviceCombiner
       {
         p = ProtocolManager.getProtocolManager().findNearestProtocol( nameStr, pid, variantName );
         values = DeviceUpgrade.stringToValueArray( parmStr );
+        p.setDeviceParms( values );
+        values = p.getDeviceParmValues();
       }
       devices.add( new CombinerDevice( p, values, notes ));
     }
