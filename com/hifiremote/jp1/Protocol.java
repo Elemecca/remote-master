@@ -238,7 +238,7 @@ public class Protocol
         while ( st.hasMoreTokens())
         {
           String temp = st.nextToken();
-          if ( temp.equals( "End" ))
+          if ( temp.equalsIgnoreCase( "End" ))
             break;
           text = text + ' ' + temp;
         }

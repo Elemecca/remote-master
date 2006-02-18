@@ -193,7 +193,10 @@ public class ProtocolManager
 
   public Vector findByPID( Hex id )
   {
-    return ( Vector )byPID.get( id );
+    Vector rc = ( Vector )byPID.get( id );
+    if ( rc == null )
+     rc = new Vector( 0 );
+    return rc;
   }
 
   public Vector findByAlternatePID( Hex id )
