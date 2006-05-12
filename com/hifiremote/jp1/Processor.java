@@ -58,23 +58,23 @@ public class Processor
     return hex;
   }
 
-  private int getInt( int[] data, int offset )
+  private short getInt( short[] data, int offset )
   {
-    return (( data[ offset ] & 0xFF ) << 8 ) + ( data[ offset + 1 ] & 0xFF );
+    return ( short )((( data[ offset ] & 0xFF ) << 8 ) + ( data[ offset + 1 ] & 0xFF ));
   }
 
-  private void putInt( int[] data, int offset, int val )
+  private void putInt( short[] data, int offset, int val )
   {
-    data[ offset ] = val >> 8;
-    data[ offset + 1 ] = ( val & 0xFF );
+    data[ offset ] = ( short )( val >> 8 );
+    data[ offset + 1 ] = ( short )( val & 0xFF );
   }
 
   private void doVectorEdit( Hex hex, int vectorOffset )
   {
-    int[] data = hex.getData();
+    short[] data = hex.getData();
     for ( int i = 0; i < data.length; i++ )
     {
-      int opCode = data[ i ];
+      short opCode = data[ i ];
       for ( int j = 0; j < opCodes.length; j++ )
       {
         if ( opCode == opCodes [ j ])
@@ -98,7 +98,7 @@ public class Processor
 
   private void doDataEdit( Hex hex, int dataOffset )
   {
-    int[] data = hex.getData();
+    short[] data = hex.getData();
 
     for ( int i = 0; i < data.length - 1; i++ )
     {
@@ -121,7 +121,7 @@ public class Processor
       {
         temp &= 0xFF;
         temp += dataOffset;
-        data[ i ] = ( temp & 0xFF );
+        data[ i ] = ( short )( temp & 0xFF );
       }
     }
   }

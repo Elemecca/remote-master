@@ -12,12 +12,12 @@ public class XorCheckSum extends CheckSum
     return "^" + super.toString();
   }
 
-  protected byte calculateCheckSum( byte[] data, int start, int end )
+  protected short calculateCheckSum( short[] data, int start, int end )
   {
-    byte sum = 0;
+    short sum = 0;
     for ( int i = start; i <= end; i++ )
     {
-      sum = ( byte )( sum ^ data[ i ]);
+      sum ^= data[ i ];
     }
     return sum;
   }

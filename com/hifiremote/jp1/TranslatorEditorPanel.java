@@ -45,7 +45,7 @@ public class TranslatorEditorPanel
     JLabel label = new JLabel( "Parameter bits to be translated:" );
     label.setAlignmentX( Component.LEFT_ALIGNMENT );
     innerBox.add( label );
-    parmTable = new JTable( new ParmDefaultTableModel( 8 ));
+    parmTable = new JTableX( new ParmDefaultTableModel( 8 ));
     (( DefaultTableCellRenderer )parmTable.getDefaultRenderer( Integer.class )).setHorizontalAlignment( SwingConstants.CENTER );
     parmTable.setCellSelectionEnabled( false );
     parmTable.setRowSelectionAllowed( false );
@@ -66,7 +66,7 @@ public class TranslatorEditorPanel
     dataBox = box.createHorizontalBox();
     dataBox.add( box.createHorizontalStrut( h ));
             
-    dataTable = new JTable( new DataDefaultTableModel( 24 ));
+    dataTable = new JTableX( new DataDefaultTableModel( 24 ));
     (( DefaultTableCellRenderer )dataTable.getDefaultRenderer( Integer.class )).setHorizontalAlignment( SwingConstants.CENTER );
     dataTable.setCellSelectionEnabled( false );
     dataTable.setRowSelectionAllowed( false );
@@ -337,9 +337,9 @@ public class TranslatorEditorPanel
   private JRadioButton msb = null;
   private JRadioButton lsb = null;
   private JCheckBox comp = null;
-  private JTable parmTable = null;
+  private JTableX parmTable = null;
   private Box dataBox = null;
-  private JTable dataTable = null;
+  private JTableX dataTable = null;
   private MyScrollBar dataBar = null;
   private JSpinner adjustment = null;
 }

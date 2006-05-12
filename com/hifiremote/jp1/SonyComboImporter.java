@@ -13,7 +13,7 @@ public class SonyComboImporter
     if ( parmToSet < 0 )
       return;
 
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
 
     int device = 0;
     int protocol = 0;

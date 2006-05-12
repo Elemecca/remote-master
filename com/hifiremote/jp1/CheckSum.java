@@ -11,15 +11,15 @@ public abstract class CheckSum
     addressRange = addrRange;
   }
 
-  protected abstract byte calculateCheckSum( byte[] data, int start, int end );
+  protected abstract short calculateCheckSum( short[] data, int start, int end );
 
-  public void setCheckSum( byte[] data )
+  public void setCheckSum( short[] data )
   {
-    byte sum = calculateCheckSum( data,
-                                  addressRange.getStart(),
-                                  addressRange.getEnd() );
+    short sum = calculateCheckSum( data,
+                                   addressRange.getStart(),
+                                   addressRange.getEnd());
     data[ checkSumAddress ] = sum;
-    data[ checkSumAddress + 1 ] = (byte)~sum;
+    data[ checkSumAddress + 1 ] = ( short )( ~sum & 0xFF );
   }
   public String toString()
   {

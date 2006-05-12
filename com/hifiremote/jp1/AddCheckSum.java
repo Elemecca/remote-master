@@ -12,13 +12,13 @@ public class AddCheckSum extends CheckSum
     return "+" + super.toString();
   }
 
-  public byte calculateCheckSum( byte[] data, int start, int end )
+  public short calculateCheckSum( short[] data, int start, int end )
   {
-    byte sum = 0;
+    short sum = 0;
     for ( int i = start; i <= end; i++ )
     {
       sum += data[ i ];
     }
-    return sum;
+    return ( short )( sum & 0xFF );
   }
 }

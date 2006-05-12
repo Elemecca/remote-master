@@ -76,7 +76,7 @@ public class FunctionImportDialog
       }
     };
 
-    JTable table = new JTable( model );
+    JTableX table = new JTableX( model );
     table.setRowSelectionAllowed( false );
     table.setColumnSelectionAllowed( false );
     table.setShowGrid( false );

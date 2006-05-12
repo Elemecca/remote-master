@@ -40,7 +40,7 @@ public abstract class Translate
   // insert a field of up to 32 bits crossing up to 9 bytes
   public static void insert( Hex hexData, int msbOffset, int bits, int v)
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     int lastOffset = msbOffset + bits - 1;
     int by = lastOffset / 8;                // byte position of lowest bit
     if ( by >= hex.length)
@@ -74,7 +74,7 @@ public abstract class Translate
   // extract a field of up to 32 bits crossing up to 9 bytes
   public static int extract( Hex hexData, int msbOffset, int bits )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     if (msbOffset+bits > 8 * hex.length)
     {
           System.err.println("extract(offset=" + msbOffset + ", bits=" + bits +") exceeds " + hex.length + " int buffer");

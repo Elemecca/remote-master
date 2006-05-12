@@ -71,11 +71,11 @@ public class BinaryUpgradeWriter
           v.add( deviceUpgrade.getHexSetupCode());
           v.add( deviceUpgrade.getUpgradeHex().getData());
 
-          int length = 0;
+          short length = 0;
           for ( Enumeration e = v.elements(); e.hasMoreElements();)
-            length += (( int[] )e.nextElement()).length;
+            length += (( short[] )e.nextElement()).length;
 
-          int protocolOffset = length;
+          short protocolOffset = length;
 
           Hex code = deviceUpgrade.getCode();
           if ( code != null )
@@ -86,18 +86,18 @@ public class BinaryUpgradeWriter
           else
             protocolOffset = 0;
 
-          int[] header = null;
+          short[] header = null;
           if ( tag.equals( "OBJ" ))
           {
-            header = new int[ 1 ];
+            header = new short[ 1 ];
             if ( protocolOffset != 0 )
               protocolOffset++;
             header[ 0 ] = protocolOffset;
           }
           else
           {
-            header = new int[ 2 ];
-            header[ 0 ] = length + 1;
+            header = new short[ 2 ];
+            header[ 0 ] = ( short )( length + 1 );
             if ( protocolOffset != 0 )
               protocolOffset++;
             header[ 1 ] = protocolOffset;
@@ -108,10 +108,10 @@ public class BinaryUpgradeWriter
           EncrypterDecrypter encdec = deviceUpgrade.getRemote().getEncrypterDecrypter();
           for ( Enumeration e = v.elements(); e.hasMoreElements();)
           {
-            int[] data = ( int[] )e.nextElement();
+            short[] data = ( short[] )e.nextElement();
             for ( int i = 0; i < data.length; i++ )
             {
-              int val = data[ i ];
+              short val = data[ i ];
               if ( encdec != null )
                 val = encdec.encrypt( val );
               out.writeByte( val );

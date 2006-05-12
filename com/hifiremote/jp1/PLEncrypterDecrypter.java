@@ -3,7 +3,7 @@ package com.hifiremote.jp1;
 public class PLEncrypterDecrypter
   extends EncrypterDecrypter
 {
-  public int encrypt( int val )
+  public short encrypt( short val )
   {
     val &= 0xFF;
 
@@ -17,10 +17,10 @@ public class PLEncrypterDecrypter
 
     int val2 = ( val & 0x80 ) & ( val << 7 );
     int rc = ( val1 ^ val2 );
-    return rc;
+    return ( short )rc;
   }
 
-  public int decrypt( int val )
+  public short decrypt( short val )
   {
     if ( val == 0x4E )  // Special cases for which the formula doesn't work.
       return 0x7D;
@@ -30,6 +30,6 @@ public class PLEncrypterDecrypter
     int val1 = ( val + 145 ) & 0x00FF;
     int mask = ( val1 << 1 ) & ( val1 << 2 ) & 0x80; 
     int val2 = val1 ^ mask;
-    return ( val2 << 2 | val2 >> 6 ) & 0xFF;
+    return ( short )(( val2 << 2 | val2 >> 6 ) & 0xFF );
   }
 }

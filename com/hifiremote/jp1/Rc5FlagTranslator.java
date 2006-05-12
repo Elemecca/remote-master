@@ -10,7 +10,7 @@ public class Rc5FlagTranslator
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     int numFlags = hex.length;
     int flag = 0;
     for ( int i = 0; i < numFlags; i++ )
@@ -21,14 +21,14 @@ public class Rc5FlagTranslator
       if (( i != 0 ) && ( val == null ))
         thisFlag = 1 - flag;
       
-      hex[ i ] = ( hex[ i ] & 0xBF) | ( thisFlag * 0x40 );
+      hex[ i ] = ( short )(( hex[ i ] & 0xBF) | ( thisFlag * 0x40 ));
       flag = thisFlag;
     }
   }
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
 
     Value one = new Value( new Integer( 1 ));
     Value zero = new Value( new Integer( 0 ));

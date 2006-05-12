@@ -20,16 +20,16 @@ public class Pioneer4DevImporter
     return obc;
   }
 
-  private void setHex( int obc1, int obc2, int device, int[] hex )
+  private void setHex( int obc1, int obc2, int device, short[] hex )
   {
     obc1 = setDeviceBit( obc1, device & 2 );
-    hex[ 0 ] = reverse( obc1 );
+    hex[ 0 ] = ( short )reverse( obc1 );
 
     obc2 = setDeviceBit( obc2, device & 1 );
-    hex[ 1 ] = reverse( obc2 );
+    hex[ 1 ] = ( short )reverse( obc2 );
   }
 
-  private int getDevice( int[] hex )
+  private int getDevice( short[] hex )
   {
     int device = 0;
     if (( hex[ 0 ] & 0x04 ) > 0 )
@@ -48,7 +48,7 @@ public class Pioneer4DevImporter
     return device;
   }
 
-  private int getObc( int[] hex, int index )
+  private int getObc( short[] hex, int index )
   {
     return ( reverse( hex[ index ] ) & 0xDF );
   }
@@ -65,7 +65,7 @@ public class Pioneer4DevImporter
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     if ( onlyIndex == 0 ) // device
     {
       int device = getDevice( parms );

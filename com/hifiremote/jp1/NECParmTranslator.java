@@ -11,34 +11,34 @@ public class NECParmTranslator
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     Integer deviceNumber = ( Integer )parms[ 0 ].getUserValue();
     Integer subDevice = ( Integer )parms[ 1 ].getUserValue();
     Integer parm = ( Integer )parms[ 2 ].getUserValue();
 
     if ( parm != null )
-      hex[ 0 ] = parm.intValue();
+      hex[ 0 ] = parm.shortValue();
     else
     {
       if ( subDevice == null )
-        hex[ 0 ] = initialDefaultParm;
+        hex[ 0 ] = ( short )initialDefaultParm;
       else
-        hex[ 0 ] = initialDefaultParm + 0x20;
+        hex[ 0 ] = ( short )( initialDefaultParm + 0x20 );
     }
 
     if ( deviceNumber == null )
       deviceNumber = new Integer( 0 );
-    hex[ 1 ] = reverse( complement( deviceNumber.intValue()));
+    hex[ 1 ] = ( short )reverse( complement( deviceNumber.intValue()));
 
     if ( subDevice == null )
     {
       if (( hex[ 0 ] & 0x20 ) == 0 )
         hex[ 2 ] = hex[ 1 ];
       else
-        hex[ 2 ] = complement( hex[ 1 ]);
+        hex[ 2 ] = ( short )complement( hex[ 1 ]);
     }
     else
-      hex[ 2 ] = reverse( complement( subDevice.intValue()));
+      hex[ 2 ] = ( short )reverse( complement( subDevice.intValue()));
   }
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
@@ -47,7 +47,7 @@ public class NECParmTranslator
     Integer subDevice = null;
     Integer parm = null;
 
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     int temp = reverse( complement( hex[ 1 ])) & 0xFF ;
     if ( temp == 0 )
       deviceNumber = null;

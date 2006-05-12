@@ -67,30 +67,30 @@ public class BinaryUpgradeReader
       protocolUpradeLength = upgradeLength - protocolOffset;
     }
 
-    int[] upgradeCode = new int[ deviceUpgradeLength ];
+    short[] upgradeCode = new short[ deviceUpgradeLength ];
     for ( int i = 0; i < deviceUpgradeLength; i++ )
       upgradeCode[ i ] = readUnsignedByte( encdec );
     code = new Hex( upgradeCode );
 
-    int[] temp = new int[ 2 ];
-    temp[ 0 ] = pidGreaterThanFF ? 1: 0;
+    short[] temp = new short[ 2 ];
+    temp[ 0 ] = ( short )( pidGreaterThanFF ? 1: 0 );
     temp[ 1 ] = upgradeCode[ 0 ];
     pid = new Hex( temp );
 
-    int[] protocolCode = null;
+    short[] protocolCode = null;
     if ( protocolOffset != 0 )
     {
-      protocolCode = new int[ protocolUpradeLength ];
+      protocolCode = new short[ protocolUpradeLength ];
       for ( int i = 0; i < protocolUpradeLength ; i++ )
         protocolCode[ i ] = readUnsignedByte( encdec );
       pCode = new Hex( protocolCode );
     }
   }
 
-  private int readUnsignedByte( EncrypterDecrypter encdec )
+  private short readUnsignedByte( EncrypterDecrypter encdec )
     throws IOException
   {
-    int val = dis.readUnsignedByte();
+    short val = ( short )dis.readUnsignedByte();
     if ( encdec != null )
       val = encdec.decrypt( val );
     return val;

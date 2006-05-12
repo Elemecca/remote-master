@@ -70,8 +70,8 @@ public class HexEditorPanel
     Hex newHex = new Hex( length );
     if ( current != null )
     {
-      int[] currentData = current.getData();
-      int[] newData = newHex.getData();
+      short[] currentData = current.getData();
+      short[] newData = newHex.getData();
       int len = Math.min( currentData.length, newData.length );
       for ( int i = 0; i < len; i++ )
         newData[ i ] = currentData[ i ];

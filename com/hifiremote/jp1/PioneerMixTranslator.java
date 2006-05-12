@@ -41,7 +41,8 @@ public class PioneerMixTranslator
               flag |= 1;
             break;
           case 3:  // OBC
-            doInsert = false;
+            if ( onlyIndex == 3 )
+              doInsert = false;
             break;
         }
       }

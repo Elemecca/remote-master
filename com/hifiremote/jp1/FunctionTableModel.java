@@ -134,7 +134,7 @@ public class FunctionTableModel
         if ( hex == null )
           hex = protocol.getDefaultCmd();
         if ( value.getClass() == String.class )
-          EFC.toHex( Integer.parseInt(( String )value ), hex, protocol.getCmdIndex());
+          EFC.toHex( Short.parseShort(( String )value ), hex, protocol.getCmdIndex());
         else
           (( EFC )value ).toHex( hex, protocol.getCmdIndex());
         function.setHex( hex );
@@ -151,7 +151,7 @@ public class FunctionTableModel
         if ( hex == null )
           hex = protocol.getDefaultCmd();
         if ( value.getClass() == String.class )
-          EFC5.toHex( Integer.parseInt(( String )value ), hex );
+          EFC5.toHex( Short.parseShort(( String )value ), hex );
         else
           (( EFC5 )value ).toHex( hex );
         function.setHex( hex );
@@ -198,17 +198,37 @@ public class FunctionTableModel
   {
     String rc = null;
     if ( col == rowCol )
-      rc = " # ";
+      rc = "#";
     else if ( col == nameCol )
       rc = "Name";
     else if ( col == efcCol )
       rc = "EFC";
     else if ( col == efc5col )
-      rc = " EFC5 ";
+      rc = "EFC5";
     else if ( col == hexCol )
-      rc = "    Hex    ";
+      rc = "Hex";
     else if ( col == notesCol )
       rc = "Notes";
+    else
+      rc = protocol.getColumnName( col - colOffset );
+    return rc;
+  }
+
+  public String getColumnPrototypeName( int col )
+  {
+    String rc = null;
+    if ( col == rowCol )
+      rc = " # ";
+    else if ( col == nameCol )
+      rc = "Function Name";
+    else if ( col == efcCol )
+      rc = "EFC";
+    else if ( col == efc5col )
+      rc = "00000";
+    else if ( col == hexCol )
+      rc = "CC CC";
+    else if ( col == notesCol )
+      rc = "A reasonable length comment";
     else
       rc = protocol.getColumnName( col - colOffset );
     return rc;

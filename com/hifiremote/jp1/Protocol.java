@@ -148,7 +148,7 @@ public class Protocol
       int cmdLength = value & 0x0F;
 
       // Generate the Device Parameters and Translators
-      int[] hex = new int[ fixedDataLength ];
+      short[] hex = new short[ fixedDataLength ];
       fixedData = new Hex( hex );
       int numDevParms = fixedDataLength;  // Signal style and bits/cmd
       int styleIndex = numDevParms++;
@@ -186,7 +186,7 @@ public class Protocol
           translator.setBitsIndex( devBitsIndex );
       }
 
-      hex = new int[ cmdLength ];
+      hex = new short[ cmdLength ];
       defaultCmd = new Hex( hex );
       cmdTranslators = new Translate[ cmdLength ];
       cmdParms = new CmdParameter[ cmdLength ];
@@ -486,9 +486,9 @@ public class Protocol
   public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )
   {
     if ( useEFC )
-      EFC.toHex( Integer.parseInt( text), hex, cmdIndex );
+      EFC.toHex( Short.parseShort( text ), hex, cmdIndex );
     else // if ( useOBC ) 
-      setValueAt( obcIndex, hex, new Integer( text ));
+      setValueAt( obcIndex, hex, new Short( text ));
   }
 
   public void importCommandParms( Hex hex, String text )
@@ -580,24 +580,14 @@ public class Protocol
   {
     CmdParameter[] newParms = newProtocol.cmdParms;
 
+    int max = cmdParms.length;
+    if ( newProtocol.cmdParms.length < max )
+      max = newProtocol.cmdParms.length;
     // count the number of matching parameters
     int matchingParms = 0;
-    for ( int i = 0; i < cmdParms.length; i++ )
-    {
-      String name = cmdParms[ i ].getName();
-      for ( int j = 0; j < newParms.length; j++ )
-      {
-        if ( name.equals( newParms[ j ].getName()))
-        {
-          matchingParms++;
-          break;
-        }
-      }
-    }
     // create a map of command parameter indexs from this protocol to the new one
-    int[] oldIndex = new int[ matchingParms ];
-    int[] newIndex = new int[ matchingParms ];
-    int match = 0;
+    int[] oldIndex = new int[ max ];
+    int[] newIndex = new int[ max ];
     for ( int i = 0; i < cmdParms.length; i++ )
     {
       String name = cmdParms[ i ].getName();
@@ -605,9 +595,9 @@ public class Protocol
       {
         if ( name.equals( newParms[ j ].getName()))
         {
-          oldIndex[ match ] = i;
-          newIndex[ match ] = j;
-          match++;
+          oldIndex[ matchingParms ] = i;
+          newIndex[ matchingParms ] = j;
+          matchingParms++;
           break;
         }
       }
@@ -633,7 +623,7 @@ public class Protocol
           cmdTranslators[ i ].out( hex, currValues, devParms );
 
         // copy the matching parameters to the new Values;
-        for ( int i = 0; i < oldIndex.length; i++ )
+        for ( int i = 0; i < matchingParms; i++ )
         {
           newValues[ newIndex[ i ]] = currValues[ oldIndex[ i ]];
         }

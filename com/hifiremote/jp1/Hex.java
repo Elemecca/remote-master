@@ -7,12 +7,12 @@ public class Hex
 {
   public Hex()
   {
-    data = new int[ 0 ];
+    data = new short[ 0 ];
   }
 
   public Hex( int length )
   {
-    data = new int[ length ];
+    data = new short[ length ];
   }
 
   public Hex( String text )
@@ -20,16 +20,21 @@ public class Hex
     data = parseHex( text );
   }
 
-  public Hex( int[] data )
+  public Hex( short[] data )
   {
     this.data = data;
   }
 
+  public Hex( short[] newData, int offset, int length )
+  {
+    data = new short[ length ];
+    System.arraycopy( newData, offset, data, 0, length );
+  }
+
   public Hex( Hex h )
   {
-    data = new int[ h.data.length ];
-    for ( int i = 0; i < h.data.length; i++ )
-      data[ i ] = h.data[ i ];
+    data = new short[ h.data.length ];
+    System.arraycopy( h.data, 0, data, 0, data.length );
   }
 
   public int length()
@@ -37,12 +42,12 @@ public class Hex
     return data.length;
   }
 
-  public int[] getData()
+  public short[] getData()
   {
     return data;
   }
 
-  public void set( int[] data )
+  public void set( short[] data )
   {
     this.data = data;
   }
@@ -52,30 +57,71 @@ public class Hex
     data = parseHex( text );
   }
 
-  public static int[] parseHex( String text )
+  public int get( int offset )
   {
-    int[] rc = null;
+    return get( data, offset );
+  }
+
+  public static int get( short[] data, int offset )
+  {
+    return ( data[ offset ] << 8 ) | data[ offset  + 1  ];
+  }
+
+  public void put( int value, int offset )
+  {
+    put( value, data, offset );
+  }
+
+  public static void put( int value, short[] data, int offset )
+  {
+    data[ offset ] = ( short )(( value >> 8 ) & 0xFF );
+    data[ offset + 1 ] = ( short )( value & 0xFF );
+  }
+
+  public void put( Hex src, int index )
+  {
+    put( src.data, index );
+  }
+
+  public void put( short[] src, int index )
+  {
+    put( src, data, index );
+  }
+
+  public static void put( Hex src, short[] dest, int index )
+  {
+    put( src.data, dest, index );
+  }
+
+  public static void put( short[] src, short[] dest, int index )
+  {
+    System.arraycopy( src, 0, dest, index, src.length );
+  }
+
+  public static short[] parseHex( String text )
+  {
+    short[] rc = null;
     int length = 0;
     int space = text.indexOf( ' ' );
     if (( space == -1 ) && ( text.length() > 3 ))
     {
       length = text.length() / 2;
-      rc = new int[ length ];
+      rc = new short[ length ];
       for ( int i = 0; i < length; i++ )
       {
         int offset = i * 2;
         String temp = text.substring( offset, offset + 2 );
-        rc[ i ] = Integer.parseInt( temp, 16 );
+        rc[ i ] = Short.parseShort( temp, 16 );
       }
     }
     else
     {
       StringTokenizer st = new StringTokenizer( text, " _.$h\n\r" );
       length = st.countTokens();
-      rc = new int[ length ];
+      rc = new short[ length ];
       st = new StringTokenizer( text, " _.$h\n\r", true );
       int i = 0;
-      int value = 0;
+      short value = 0;
       while ( st.hasMoreTokens())
       {
         String token = st.nextToken();
@@ -86,7 +132,7 @@ public class Hex
         else if ( token.equals( "." ))
           value = NO_MATCH;
         else
-          rc[ i++ ] = value + Integer.parseInt( token, 16 );
+          rc[ i++ ] = ( short )( value | Short.parseShort( token, 16 ));
       }
     }
 
@@ -100,7 +146,7 @@ public class Hex
     if ( str.length() < 2 )
       buff.append( '0' );
     buff.append( str );
-    return buff.toString();
+    return buff.toString().toUpperCase();
   }
 
   public String toRawString()
@@ -131,15 +177,15 @@ public class Hex
         rc.append( '0' );
       rc.append( str );
     }
-    return rc.toString();
+    return rc.toString().toUpperCase();
   }
 
-  public static String toString( int[] data )
+  public static String toString( short[] data )
   {
     return toString( data, -1 );
   }
 
-  public static String toString( int[] data, int breakAt )
+  public static String toString( short[] data, int breakAt )
   {
     if ( data == null )
       return null;
@@ -163,7 +209,7 @@ public class Hex
         rc.append( '0' );
       rc.append( str );
     }
-    return rc.toString();
+    return rc.toString().toUpperCase();
   }
 
   public String toString()
@@ -212,7 +258,7 @@ public class Hex
   {
     int rc;
     int compareLen;
-    int[] otherData = (( Hex )o ).data;
+    short[] otherData = (( Hex )o ).data;
     if ( data.length < otherData.length )
     {
       compareLen = data.length;
@@ -258,12 +304,12 @@ public class Hex
     return indexOf( needle.data, start );
   }
 
-  public int indexOf( int[] needle )
+  public int indexOf( short[] needle )
   {
     return indexOf( needle, 0 );
   }
 
-  public int indexOf( int[] needle, int start )
+  public int indexOf( short[] needle, int start )
   {
     int index = start;
     int last = data.length - needle.length;
@@ -285,16 +331,33 @@ public class Hex
     return -1;
   }
 
+  public Hex subHex( int index )
+  {
+    return subHex( index, data.length - index );
+  }
+
+  public Hex subHex( int index, int len )
+  {
+    return subHex( data, index, len );
+  }
+
+  public static Hex subHex( short[] src, int index, int len )
+  {
+    short[] dest = new short[ len ];
+    System.arraycopy( src, index, dest, 0, len );
+    return new Hex( dest );
+  }
+
   protected Object clone()
     throws CloneNotSupportedException
   {
     Hex rc = ( Hex )super.clone();
-    rc.data = ( int[] )data.clone();
+    rc.data = ( short[] )data.clone();
     return rc;
   }
 
-  private int[] data = null;
+  private short[] data = null;
 
-  public static int NO_MATCH = 0x100;
-  public static int ADD_OFFSET = 0x200;
+  public static short NO_MATCH = 0x100;
+  public static short ADD_OFFSET = 0x200;
 }

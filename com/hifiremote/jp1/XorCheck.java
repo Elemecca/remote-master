@@ -44,7 +44,7 @@ public class XorCheck
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     // System.err.println("XorCheck(" + bits +","+ destOffset +","+ seed +","+ count +","+ sourceOffset +","+ step +").in(" + hex.length +")");
     int v = seed;
     int s = sourceOffset;

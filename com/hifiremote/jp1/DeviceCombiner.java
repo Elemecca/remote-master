@@ -169,7 +169,7 @@ public class DeviceCombiner
 
   public Hex getCode( Remote r )
   {
-    int[] header = new int[ devices.size() + 1 ];
+    short[] header = new short[ devices.size() + 1 ];
 
     Processor processor = r.getProcessor();
     String name = processor.getName();
@@ -208,9 +208,9 @@ public class DeviceCombiner
       buff.append( intToString( devComb[ 2 ])); //comb2
 
       base = new Hex( buff.toString());
-      int[] hex = base.getData();
-      int length = hex.length;
-      hex[ 21 ] = ( length + 1 );
+      short[] hex = base.getData();
+      short length = ( short )hex.length;
+      hex[ 21 ] = ( short )( length + 1 );
       hex[ 24 ] = length;
     }
     else if ( name.equals( "6805" ))
@@ -232,18 +232,18 @@ public class DeviceCombiner
       buff.append( intToString( devComb[ 2 ]));
 
       base = new Hex( buff.toString());
-      int[] hex = base.getData();
+      short[] hex = base.getData();
       int pointer = devComb[ 6 ] + hex.length;
-      hex[ 6 ] = ( pointer >> 8 );
-      hex[ 7 ] = ( pointer & 0xFF );
+      hex[ 6 ] = ( short )( pointer >> 8 );
+      hex[ 7 ] = ( short )( pointer & 0xFF );
       hex[ 11 ] = hex[ 6 ];
       hex[ 12 ] = hex[ 7 ];
       pointer++;
-      hex[ 16 ] = ( pointer >> 8 );
-      hex[ 17 ] = ( pointer & 0xFF );
+      hex[ 16 ] = ( short )( pointer >> 8 );
+      hex[ 17 ] = ( short )( pointer & 0xFF );
       pointer++;
-      hex[ 54 ] = ( pointer >> 8 );
-      hex[ 55 ] = ( pointer & 0xFF );
+      hex[ 54 ] = ( short )( pointer >> 8 );
+      hex[ 55 ] = ( short )( pointer & 0xFF );
     }
     else if ( name.equals( "740" ))
     {
@@ -272,7 +272,7 @@ public class DeviceCombiner
     int i = 0;
     for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
     {
-      header[ i ] = offset;
+      header[ i ] = ( short )offset;
       CombinerDevice device = ( CombinerDevice )e.nextElement();
       ids[ i ] = device.getProtocol().getID();
       offset += 2;
@@ -281,19 +281,19 @@ public class DeviceCombiner
       offset += hex.length();
       i++;
     }
-    header[ i ] = offset;
+    header[ i ] = ( short )offset;
 
     if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ))
       offset += base.length();
 
-    int[] code = new int[ offset ];
+    short[] code = new short[ offset ];
     System.arraycopy( base.getData(), 0, code, 0, base.length() );
     offset = base.length();
     System.arraycopy( header, 0, code, offset, header.length );
     offset += header.length;
     for ( i = 0; i < data.length; i++ )
     {
-      int[] src = ids[ i ].getData();
+      short[] src = ids[ i ].getData();
       System.arraycopy( src, 0, code, offset, src.length );
       offset += src.length;
       src = data[ i ].getData();

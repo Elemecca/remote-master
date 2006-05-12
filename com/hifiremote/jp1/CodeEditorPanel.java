@@ -22,7 +22,7 @@ public class CodeEditorPanel
     add( panel, BorderLayout.CENTER );
 
     tableModel = new TableModel();
-    table = new JTable( tableModel );
+    table = new JTableX( tableModel );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )table.getDefaultRenderer( String.class );
     r.setHorizontalAlignment( SwingConstants.CENTER );
     table.setDefaultEditor( Hex.class, new HexEditor());
@@ -189,7 +189,7 @@ public class CodeEditorPanel
   private CodeEditorNode node = null;
   private JButton importButton = null;
   private TableModel tableModel = null;
-  private JTable table = null;
+  private JTableX table = null;
   private static String[] colNames = { "Processor", "Protocol Code" };
   private static Class[] classes = { String.class, Hex.class };
   private static String[] procNames = { "S3C80", "740", "6805-C9", "6805-RC16/18" };

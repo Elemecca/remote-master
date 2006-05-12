@@ -4,14 +4,14 @@ import java.util.*;
 
 public class ButtonMap
 {
-  public ButtonMap( int num, int[][] keyCodes )
+  public ButtonMap( int num, short[][] keyCodes )
   {
     number = num;
     keyCodeList = keyCodes;
   }
 
   public int getNumber(){ return number; }
-  public int[][] getKeyCodeList(){ return keyCodeList; }
+  public short[][] getKeyCodeList(){ return keyCodeList; }
   public ButtonMap setButtons( Remote remote )
   {
     size = 0;
@@ -20,13 +20,13 @@ public class ButtonMap
 
     for ( int i = 0; i < keyCodeList.length; i++ )
     {
-      int[] keyCodes = keyCodeList[ i ];
+      short[] keyCodes = keyCodeList[ i ];
       Button[] inner = new Button[ keyCodes.length ];
       buttons[ i ] = inner;
       size += keyCodes.length;
       for ( int j = 0; j < keyCodes.length; j++ )
       {
-        int keyCode = keyCodes[ j ];
+        short keyCode = keyCodes[ j ];
         Button button = remote.getButton( keyCode );
         if ( button == null )
         {
@@ -71,13 +71,16 @@ public class ButtonMap
 
   public int size(){ return size; }
 
-  public Vector parseBitMap( int[] bitMap, int offset, boolean digitMapUsed )
+  public Vector parseBitMap( short[] bitMap, int offset, boolean digitMapUsed )
   {
     Vector rc = new Vector();
     int count = 0;
     int mask = 0x80;
     for ( int i = 0; i < buttons.length; i++ )
     {
+      if ( bitMap[ offset ] == 1 )
+        return rc;
+      
       boolean useIt = (( bitMap[ offset ] & mask ) != 0 ); 
       if ( useIt )
       {
@@ -95,14 +98,14 @@ public class ButtonMap
     return rc;
   }
 
-  public int[] toBitMap( boolean digitMapUsed, boolean keyMovesOnly )
+  public short[] toBitMap( boolean digitMapUsed, boolean keyMovesOnly )
   {
     int len = ( buttons.length + 6 )/ 7;
     if ( len == 0 )
-      return new int[ 0 ];
-    int[] rc = new int[ len ];
+      return new short[ 0 ];
+    short[] rc = new short[ len ];
     int index = 0;
-    int temp = 0x80;
+    short temp = 0x80;
     int limit = 0;
     for ( int i = 0 ; i < buttons.length; i++ )
     {
@@ -134,12 +137,12 @@ public class ButtonMap
       }
     }
     rc[ limit++ ] |= 1;
-    int[] result = new int[ limit ];
+    short[] result = new short[ limit ];
     System.arraycopy(rc,0,result,0,limit);
     return result;
   }
 
-  public int[] toCommandList( boolean digitMapUsed, boolean keyMovesOnly )
+  public short[] toCommandList( boolean digitMapUsed, boolean keyMovesOnly )
   {
     int count = 0;
     int funcLen = 0;
@@ -166,8 +169,8 @@ public class ButtonMap
         }
       }
     }
-    int[] rc = new int[ count ];
-    int[] zeros = new int[ funcLen ];
+    short[] rc = new short[ count ];
+    short[] zeros = new short[ funcLen ];
     int index = 0;
     for ( int i = 0; i < buttons.length; i++ )
     {
@@ -176,7 +179,7 @@ public class ButtonMap
       {
         for ( int j = 0; j < inner.length; j++ )
         {
-          int[] hex = null;
+          short[] hex = null;
           Function func = inner[ j ].getFunction();
           if ( digitMapUsed && ( i == 0 ))
             func = null;
@@ -198,6 +201,6 @@ public class ButtonMap
 
   private int number;
   private int size = 0;
-  private int[][] keyCodeList;
+  private short[][] keyCodeList;
   private Button[][] buttons;
 }

@@ -153,8 +153,8 @@ public class ImportRawUpgradeDialog
       protocolLabel.setEnabled( false );
       return;
     }
-    int[] temp = new int[ 2 ];
-    temp[ 0 ] = protocolGreaterThanFF.isSelected() ? 1: 0;
+    short[] temp = new short[ 2 ];
+    temp[ 0 ] = ( short )( protocolGreaterThanFF.isSelected() ? 1 : 0 );
     temp[ 1 ] = uCode.getData()[ 0 ];
     pid = new Hex( temp );
     

@@ -4,7 +4,7 @@ import java.awt.Shape;
 
 public class Button
 {
-  public Button( String standardName, String name, int code, Remote r )
+  public Button( String standardName, String name, short code, Remote r )
   {
     this.standardName = standardName.toLowerCase();
     this.name = name;
@@ -14,7 +14,7 @@ public class Button
     int maskedCode = code & 0xC0;
     if ( maskedCode == r.getShiftMask())
       setIsShifted( true );
-    if ( maskedCode == r.getXShiftMask())
+    else if ( maskedCode == r.getXShiftMask())
       setIsXShifted( true );
   }
 
@@ -30,6 +30,7 @@ public class Button
     else
       return remote.getShiftLabel() + '-' + name;
   }
+
   public String getXShiftedName()
   {
     if ( isXShifted )
@@ -41,13 +42,12 @@ public class Button
   }
   public String getStandardName(){ return standardName; }
   public void setStandardName( String name ){ standardName = name.toLowerCase(); }
-  public int getKeyCode(){ return keyCode; }
+  public short getKeyCode(){ return keyCode; }
   public int getMultiMacroAddress(){ return multiMacroAddress; }
   public void setMultiMacroAddress( int addr ){ multiMacroAddress = addr; }
 
   public void setBaseButton( Button button )
   {
-    System.err.println( "Button '" + name + "' setting baseButton to '" + button + "'" );
     baseButton = button;
     if ( isShifted && !allowsKeyMove())
       baseButton.addRestrictions( SHIFT_MOVE_BIND );
@@ -67,13 +67,11 @@ public class Button
 
   public void setShiftedButton( Button button )
   {
-    System.err.println( "Button '" + name + "' setting shiftedButton to '" + button + "'" );
     shiftedButton = button;
   }
 
   public void setXShiftedButton( Button button )
   {
-    System.err.println( "Button '" + name + "' setting xShiftedButton to '" + button + "'" );
     xShiftedButton = button;
   }
   public Button getXShiftedButton()
@@ -209,13 +207,13 @@ public class Button
     return buttonMaps;
   }
 
-  public int[] getKeyMoves( int[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
+  public short[] getKeyMoves( short[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
   {
-    int[] move1 = getKeyMove( function, 0, deviceCode, devType, remote, keyMovesOnly );
-    int[] move2 = getKeyMove( shiftedFunction, remote.getShiftMask(), deviceCode, devType, remote, keyMovesOnly );
-    int[] move3 = getKeyMove( xShiftedFunction, remote.getXShiftMask(), deviceCode, devType, remote, keyMovesOnly );
+    short[] move1 = getKeyMove( function, 0, deviceCode, devType, remote, keyMovesOnly );
+    short[] move2 = getKeyMove( shiftedFunction, remote.getShiftMask(), deviceCode, devType, remote, keyMovesOnly );
+    short[] move3 = getKeyMove( xShiftedFunction, remote.getXShiftMask(), deviceCode, devType, remote, keyMovesOnly );
 
-    int[] rc = new int[ move1.length + move2.length + move3.length ];
+    short[] rc = new short[ move1.length + move2.length + move3.length ];
 
     System.arraycopy( move1, 0, rc, 0, move1.length );
     System.arraycopy( move2, 0, rc, move1.length, move2.length );
@@ -224,10 +222,10 @@ public class Button
     return rc;
   }
 
-  public int[] getKeyMove( Function f, int mask,
-                            int[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
+  public short[] getKeyMove( Function f, int mask,
+                             short[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
   {
-    int[] rc = new int[ 0 ];
+    short[] rc = new short[ 0 ];
     if (( f != null ) && ( f.getHex() != null ))
     {
       int len = 0;
@@ -236,29 +234,29 @@ public class Button
       {
         ExternalFunction ef = ( ExternalFunction )f;
         devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName());
-        int temp = devType.getNumber() * 0x1000 +
-                   ef.getSetupCode() - remote.getDeviceCodeOffset();
+        short temp = ( short )( devType.getNumber() * 0x1000 +
+                   ef.getSetupCode() - remote.getDeviceCodeOffset());
 
-        deviceCode = new int[ 2 ];
-        deviceCode[ 0 ] = ( temp >> 8 );
+        deviceCode = new short[ 2 ];
+        deviceCode[ 0 ] = ( short )( temp >> 8 );
         deviceCode[ 1 ] = temp;
       }
       else if ( remote.getAdvCodeFormat() == Remote.EFC )
       {
-        if ( hex.length() == 1 )
+        if (( hex.length() == 1 ) && ( remote.getEFCDigits() == 3 ))
         {
-          int[] data = new int[ 2 ];
+          short[] data = new short[ 2 ];
           data[ 0 ] = 0;
           data[ 1 ] = EFC.parseHex( hex, 0 );
           hex = new Hex( data );
         }
         else
         {
-          int[] newData = new int[ 2 ];
-          int value = EFC5.parseHex( hex );
+          short[] newData = new short[ 2 ];
+          short value = EFC5.parseHex( hex );
 
-          newData[ 0 ] = value >> 8;
-          newData[ 1 ] = value & 0xFF;
+          newData[ 0 ] = ( short )( value >> 8 );
+          newData[ 1 ] = ( short )( value & 0xFF );
 
           hex = new Hex( newData );
         }
@@ -267,18 +265,24 @@ public class Button
       if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
         len = ( 4 + hex.length());
 
-      rc = new int[ len ];
-
       if ( len != 0 )
       {
+        if ( remote.getAdvCodeBindFormat() == Remote.LONG )
+          ++len;
 
-        rc[ 0 ] = keyCode;
-        if ( mask != 0 )
-          rc[ 0 ] = ( rc[ 0 ] | mask );
+        rc = new short[ len ];
+      
+        int index = 0;
+        rc[ index ] = ( short )( keyCode | mask );
 
-        rc[ 1 ] = ( 0xF2 + hex.length() );
-        System.arraycopy( deviceCode, 0, rc, 2, 2 );
-        System.arraycopy( hex.getData(), 0, rc, 4, hex.length() );
+        rc[ ++index ] = 0xF0;
+        if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
+          rc[ index ] += ( short )( 2 + hex.length());
+        else
+          rc[ ++index ] = ( short )( 2 + hex.length());
+
+        System.arraycopy( deviceCode, 0, rc, ++index, 2 );
+        System.arraycopy( hex.getData(), 0, rc, index + 2, hex.length());
       }
     }
     return rc;
@@ -290,7 +294,7 @@ public class Button
       shiftedButton.hasShape = flag;
     if ( xShiftedButton != null )
       xShiftedButton.hasShape = flag;
-      
+
     hasShape = flag;
   }
 
@@ -298,7 +302,7 @@ public class Button
 
   private String name;
   private String standardName;
-  private int keyCode;
+  private short keyCode;
   private Remote remote;
   private int multiMacroAddress;
   private Function function;

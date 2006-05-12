@@ -20,7 +20,7 @@ public class S3C80Processor
       {
         ex.printStackTrace( System.err );
       }
-      int[] data = hex.getData();
+      short[] data = hex.getData();
       int offset = 3;
       if (( data[ 3 ] & 0xFF ) == 0x8B )
       {

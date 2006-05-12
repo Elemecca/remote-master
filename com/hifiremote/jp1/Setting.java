@@ -8,11 +8,18 @@ public class Setting
   public int getNumberOfBits(){ return numberOfBits; }
   public int getInitialValue(){ return initialValue; }
   boolean isInverted(){ return inverted; }
-  public String[] getOptionList(){ return optionList; }
-  public String getSectionName(){ return sectionName; }
+  public Object[] getOptions( Remote r )
+  { 
+    if ( optionList != null )
+      return optionList;
+    else if ( sectionName != null )
+      return r.getSection( sectionName );
+    
+    return null;
+  }
 
   public Setting( String name, int byteAddr, int bitNum, int numBits,
-                  int initVal, boolean invert, String[] options,
+                  int initVal, boolean invert, Object[] options,
                   String section )
   {
     title = name;
@@ -52,12 +59,38 @@ public class Setting
     return temp.toString();
   }
 
+  public int getValue( short[] data )
+  {
+    int mask = ( 1 << numberOfBits ) - 1;
+    int temp = data[ byteAddress ];
+    if ( inverted )
+      temp = ~temp;
+    temp &= mask;
+    int shift = bitNumber - numberOfBits + 1;
+    temp >>= shift;
+    return temp;
+  }
+
+  public void setValue( short[] data, int val )
+  {
+    int mask = ( 1 << numberOfBits ) - 1;
+    if ( inverted )
+      val = ~val;
+    val &= mask;
+     
+    mask = ~mask & 0xFF;
+    int temp = data[ byteAddress ] & mask;
+    int shift = bitNumber - numberOfBits + 1;
+    temp |= ( val << shift );
+    data[ byteAddress ] = ( short )temp;
+  }
+
   private String title;
   private int byteAddress;
   private int bitNumber;
   private int numberOfBits;
   private int initialValue;
   private boolean inverted;
-  private String[] optionList = null;
+  private Object[] optionList = null;
   private String sectionName = null;
 }

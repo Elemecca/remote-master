@@ -13,11 +13,13 @@ public class FunctionPanel
   {
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
-    (( FunctionTableModel )model ).setProtocol( p, deviceUpgrade.getRemote());
-    if ( p != savedProtocol )
+    Remote r = deviceUpgrade.getRemote();
+    (( FunctionTableModel )model ).setProtocol( p, r );
+    if (( p != savedProtocol ) || ( r != savedRemote ))
     {
       initColumns();
       savedProtocol = p;
+      savedRemote = r;
     }
     super.update();
   }
@@ -41,4 +43,5 @@ public class FunctionPanel
   }
 
   private Protocol savedProtocol = null;
+  private Remote savedRemote = null;
 }

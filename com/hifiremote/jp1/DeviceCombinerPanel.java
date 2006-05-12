@@ -78,7 +78,7 @@ public class DeviceCombinerPanel
         }
       }
     };
-    table = new JTable( model );
+    table = new JTableX( model );
 //    add( table.getTableHeader(), BorderLayout.NORTH );
     table.getSelectionModel().addListSelectionListener( this );
     DefaultCellEditor e = ( DefaultCellEditor )table.getDefaultEditor( String.class );
@@ -180,7 +180,7 @@ public class DeviceCombinerPanel
                   Function newF = new Function();
                   Hex hex = combiner.getDefaultCmd();
                   combiner.setValueAt( 0, hex, indexInt );
-                  int efc = EFC.parseHex( f.getHex(), importedProtocol.getCmdIndex());
+                  short efc = EFC.parseHex( f.getHex(), importedProtocol.getCmdIndex());
                   EFC.toHex( efc, hex, combiner.getCmdIndex());
                   newF.setHex( hex );
                   newF.setName( f.getName());
@@ -348,7 +348,7 @@ public class DeviceCombinerPanel
   private static Class[] classes = { Integer.class, String.class, Hex.class,  Hex.class,   String.class };
 
   private AbstractTableModel model = null;
-  private JTable table = null;
+  private JTableX table = null;
   private JButton addButton = null;
   private JButton importButton = null;
   private JButton editButton = null;

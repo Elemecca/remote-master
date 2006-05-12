@@ -42,7 +42,7 @@ public class ExternalFunctionEditor
     {
       if ( f.getType() == ExternalFunction.EFCType )
       {
-        int temp = Integer.parseInt( str );
+        short temp = Short.parseShort( str );
         if (( temp < min ) || ( temp > max ))
         {
           String msg = "Value entered must be between " + min + " and " + max + '.';

@@ -24,12 +24,11 @@ public abstract class TablePanel
 
     this.model = model;
     sorter = new TableSorter( model );
-    table = new JTable( sorter );
+    table = new JTableX( sorter );
     sorter.addMouseListenerToHeaderInTable( table );
     table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
     table.setCellSelectionEnabled( true );
-//    table.setRowSelectionAllowed( true );
     table.setSurrendersFocusOnKeystroke( true );
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     table.getTableHeader().setToolTipText( "Click to sort is ascending order, or shift-click to sort in descending order." );
@@ -526,16 +525,21 @@ public abstract class TablePanel
     int cols = model.getColumnCount();
     for ( int i = 0; i < cols; i++ )
     {
+      boolean isFixed = model.isColumnWidthFixed( i );
+      table.setColumnWidth( i, 
+                            model.getColumnPrototypeName( i ),
+                            model.isColumnWidthFixed( i ),
+                            4 );
       column = columnModel.getColumn( i );
-      l.setText( model.getColumnName( i ));
-      width =  l.getPreferredSize().width;
-      column.setMinWidth( width );
+      // l.setText( model.getColumnName( i ));
+      // width =  l.getPreferredSize().width;
+      // column.setMinWidth( width );
 
-      if ( model.isColumnWidthFixed( i ))
-      {
-        column.setMaxWidth( 4 * width );
-        column.setPreferredWidth( width );
-      }
+      // if ( model.isColumnWidthFixed( i ))
+      // {
+        // column.setMaxWidth( 4 * width );
+        // column.setPreferredWidth( width );
+      // }
 
       TableCellEditor editor = model.getColumnEditor( i );
       if ( editor != null )
@@ -553,12 +557,11 @@ public abstract class TablePanel
     super.setFont( aFont );
     if (( aFont == null ) || ( table == null ))
       return;
-    FontMetrics m = Toolkit.getDefaultToolkit().getFontMetrics( aFont );
-    table.setRowHeight( m.getHeight() + 2 );
+    table.setRowHeight( aFont.getSize() + 2 );
     initColumns();
   }
 
-  protected JTable table = null;
+  protected JTableX table = null;
   protected KMTableModel model = null;
   private TableSorter sorter = null;
   protected JPanel buttonPanel = null;

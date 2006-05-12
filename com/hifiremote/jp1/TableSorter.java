@@ -43,11 +43,11 @@ public class TableSorter extends TableMap {
         indexes = new int[0]; // for consistency
     }
 
-    public TableSorter( KMTableModel model ) {
+    public TableSorter( JP1TableModel model ) {
         setModel( model );
     }
 
-    public void setModel( KMTableModel model ) {
+    public void setModel( JP1TableModel model ) {
         super.setModel( model );
         reallocateIndexes();
     }

@@ -111,6 +111,8 @@ public class Remote
             line = parseDeviceAbbreviations( rdr );
           else if ( line.equals( "DeviceTypeAliases" ))
             line = parseDeviceTypeAliases( rdr );
+          else if ( line.equals( "DeviceTypeImageMaps" ))
+            line = parseDeviceTypeImageMaps( rdr );
           else if ( line.equals( "Buttons" ))
             line = parseButtons( rdr );
           else if ( line.equals( "MultiMacros" ))
@@ -133,7 +135,7 @@ public class Remote
       {
         System.err.println( "ERROR: " + file.getName() + " does not specify any ButtonMaps!" );
         buttonMaps = new ButtonMap[ 1 ];
-        buttonMaps[ 0 ] = new ButtonMap( 0, new int[ 0 ][ 0 ]);
+        buttonMaps[ 0 ] = new ButtonMap( 0, new short[ 0 ][ 0 ]);
       }
       for ( int i = 0; i < buttonMaps.length; i++ )
         buttonMaps[ i ].setButtons( this );
@@ -215,8 +217,22 @@ public class Remote
       }
       upgradeButtons = ( Button[] )bindableButtons.toArray( upgradeButtons );
 
-      if ( mapFiles[ mapIndex ] != null )
-        readMapFile();
+      if (( imageMaps.length > 0 ) && ( imageMaps[ mapIndex ] != null ))
+        imageMaps[ mapIndex ].parse( this );
+
+      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+      {
+        DeviceType type = ( DeviceType )e.nextElement();
+        ImageMap[][] maps = type.getImageMaps();
+        if ( maps.length > 0 )
+        {
+          ImageMap[] a = maps[ mapIndex ];
+          for ( int i = 0; i < a.length; ++i )
+            a[ i ].parse( this );
+        }
+      }  
+
+      setPhantomShapes();
 
       loaded = true;
     }
@@ -234,23 +250,80 @@ public class Remote
     }
   }
 
+  private void setPhantomShapes()
+  {
+    double radius = 8;
+    double gap = 6;
+
+    double diameter = 2 * radius;
+    double x = gap;
+    Vector maps = new Vector();
+    if ( imageMaps.length > 0 )
+      maps.add( imageMaps[ mapIndex ]);
+    for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+    {
+      DeviceType type = ( DeviceType )e.nextElement();
+      if ( type.getImageMaps().length == 0 )
+        continue;
+      ImageMap[] devMaps = type.getImageMaps()[ mapIndex ];
+      for ( int i = 0; i < devMaps.length; ++i )
+        maps.add( devMaps[ i ]);
+    }
+
+    for ( Enumeration e = maps.elements(); e.hasMoreElements(); )
+    {
+      ImageMap map = ( ImageMap )e.nextElement();
+      int h = map.getImage().getIconHeight();
+      int w = map.getImage().getIconWidth();
+      if ( h > height )
+        height = h;
+      if ( w > width )
+        width = w;
+    }
+    double y = height + gap;
+
+    for ( int i = 0; i < upgradeButtons.length; i++ )
+    {
+      Button b = upgradeButtons[ i ];
+      if ( !b.getHasShape() && !b.getIsShifted() && !b.getIsXShifted())
+      {
+        if (( x + diameter + gap ) > width )
+        {
+          x = gap;
+          y += ( gap + diameter );
+        }
+        Shape shape = new Ellipse2D.Double( x, y, diameter, diameter );
+        x += ( diameter + gap );
+        ButtonShape buttonShape = new ButtonShape( shape, b );
+        phantomShapes.add( buttonShape );
+        b.setHasShape( true );
+      }
+    }
+    height = ( int )( y + gap + diameter );
+    for ( Enumeration e = maps.elements(); e.hasMoreElements(); )
+    {
+      ImageMap map = ( ImageMap )e.nextElement();
+      map.getShapes().addAll( phantomShapes );
+    }
+  }
+
   public String toString(){ return names[ nameIndex ]; }
   public String getSignature(){ return signature; }
   public String getName(){ return names[ nameIndex ]; }
   public int getNameCount(){ return names.length; }
-  public int getEepromSize()
+  public int getBaseAddress(){ return baseAddress; }
+  public int getEepromSize(){ return eepromSize; }
+  public int getDeviceCodeOffset(){ return deviceCodeOffset; }
+  public DeviceType[] getDeviceTypes()
   {
-    return eepromSize;
-  }
-
-  public int getDeviceCodeOffset()
-  {
-    return deviceCodeOffset;
-  }
-
-  public Hashtable getDeviceTypes()
-  {
-    return deviceTypes;
+    DeviceType[] types = new DeviceType[ deviceTypes.size() ];
+    int i = 0;
+    for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+    {
+      DeviceType type = ( DeviceType )e.nextElement();
+      types[ type.getNumber() ] = type;
+    }
+    return types;
   }
 
   public DeviceType getDeviceType( String typeName )
@@ -293,12 +366,6 @@ public class Remote
     return upgradeButtons;
   }
 
-  public ButtonShape[] getButtonShapes()
-  {
-    load();
-    return buttonShapes;
-  }
-
   public Vector getPhantomShapes()
   {
     load();
@@ -322,7 +389,7 @@ public class Remote
     return RAMAddress;
   }
 
-  public int[] getDigitMaps()
+  public short[] getDigitMaps()
   {
     load();
     return digitMaps;
@@ -334,16 +401,30 @@ public class Remote
     return omitDigitMapByte;
   }
 
-  public ImageIcon getImageIcon()
+  public ImageMap[] getImageMaps( DeviceType type )
   {
     load();
-    return imageIcon;
+    ImageMap[][] maps = type.getImageMaps();
+    if (( maps != null ) && ( maps.length != 0 ))
+      return maps[ mapIndex ];
+    else
+    {
+      ImageMap[] rc = new ImageMap[ 1 ];
+      rc[ 0 ] = imageMaps[ mapIndex ];
+      return rc;
+    }
   }
 
   public int getAdvCodeFormat()
   {
     load();
     return advCodeFormat;
+  }
+
+  public int getAdvCodeBindFormat()
+  {
+    load();
+    return advCodeBindFormat;
   }
 
   public int getEFCDigits()
@@ -371,6 +452,8 @@ public class Remote
       if ( parm.equals( "Name" ))
 //        name = st.nextToken();
         ;
+      else if ( parm.equals( "BaseAddr" ))
+        baseAddress = rdr.parseNumber( st.nextToken());
       else if ( parm.equals( "EepromSize" ))
         eepromSize = rdr.parseNumber( st.nextToken());
       else if ( parm.equals( "DevCodeOffset" ))
@@ -470,16 +553,14 @@ public class Remote
         omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
       else if ( parm.equals( "ImageMap" ))
       {
-        Vector v = new Vector();
         File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
+        String mapList = st.nextToken();
+        StringTokenizer mapTokenizer = new StringTokenizer( mapList, "," );
+        int mapCount = mapTokenizer.countTokens();
+        imageMaps = new ImageMap[ mapCount ];
+        for ( int m = 0; m < mapCount; ++m )
+          imageMaps[ m ] = new ImageMap( new File( imageDir, mapTokenizer.nextToken()));
 
-        while ( st.hasMoreTokens())
-          v.add( new File( imageDir, st.nextToken( "=," )));
-
-        int mapCount = v.size();
-        mapFiles = new File[ mapCount ];
-        for ( int i = 0; i < mapCount; i++ )
-          mapFiles[ i ] = ( File )v.elementAt( i );
         if ( nameIndex >= mapCount )
           mapIndex = mapCount - 1;
         else
@@ -507,6 +588,14 @@ public class Remote
           advCodeFormat = HEX;
         else if ( value.equals( "EFC" ))
           advCodeFormat = EFC;
+      }
+      else if ( parm.equals( "AdvCodeBindFormat" ))
+      {
+        String value = st.nextToken();
+        if ( value.equals( "NORMAL" ))
+          advCodeBindFormat = NORMAL;
+        else if ( value.equals( "LONG" ))
+          advCodeBindFormat = LONG;
       }
       else if ( parm.equals( "EFCDigits" ))
       {
@@ -547,7 +636,7 @@ public class Remote
         {
           if ( className.indexOf( '.' ) == -1 )
             className = "com.hifiremote.jp1." + className;
-    
+
           Class cl = Class.forName( className );
           encdec = ( EncrypterDecrypter )cl.newInstance();
         }
@@ -667,6 +756,8 @@ public class Remote
     checkSums = ( CheckSum[] )work.toArray( checkSums );
     return line;
   }
+  
+  public CheckSum[] getCheckSums(){ return checkSums; }
 
   private String parseSettings( RDFReader rdr )
     throws Exception
@@ -694,9 +785,7 @@ public class Remote
 
       if ( st.hasMoreTokens())
       {
-        String token = st.nextToken( ",;)" );
-//        while ( token.charAt( 0 ) == ' ' )
-//          token = token.substring( 1 );
+        String token = st.nextToken( ",;)" ).trim();
         if ( token.charAt( 0 ) == '(' )
         {
           options = new Vector();
@@ -707,7 +796,7 @@ public class Remote
           }
         }
         else
-          sectionName = token;
+          sectionName = token.trim();
       }
       String[] optionsList = null;
       if ( options != null )
@@ -726,6 +815,18 @@ public class Remote
     }
     settings = ( Setting[] )work.toArray( settings );
     return line;
+  }
+
+  public Setting[] getSettings(){ return settings; }
+
+  public Object[] getSection( String name )
+  {
+    if ( name.equals( "DeviceButtons" ))
+      return getDeviceButtons();
+    else if ( name.equals( "DeviceTypes" ))
+      return getDeviceTypes();
+
+    return null;
   }
 
   private String parseFixedData( RDFReader rdr )
@@ -873,15 +974,15 @@ public class Remote
       StringTokenizer st = new StringTokenizer( line, ",; \t" );
       while ( st.hasMoreTokens())
       {
-        work.add( new Integer(rdr.parseNumber( st.nextToken())));
+        work.add( new Integer( rdr.parseNumber( st.nextToken())));
       }
     }
 
-    digitMaps = new int[ work.size()];
+    digitMaps = new short[ work.size()];
     int i = 0;
     for ( Enumeration e = work.elements(); e.hasMoreElements(); ++i )
     {
-      digitMaps[ i ] = (( Integer )e.nextElement()).intValue();
+      digitMaps[ i ] = (( Integer )e.nextElement()).shortValue();
     }
     return line;
   }
@@ -959,11 +1060,77 @@ public class Remote
     return deviceTypeAliasNames;
   }
 
+  private String parseDeviceTypeImageMaps( RDFReader rdr )
+    throws Exception
+  {
+    Vector work = new Vector();
+    String line;
+    DeviceType type = null;
+    Vector outer = new Vector();
+    Vector inner = null;
+    boolean nested = false;
+    File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
+
+    while ( true )
+    {
+      line = rdr.readLine();
+      if (( line == null ) || ( line.length() == 0 ))
+        break;
+
+      StringTokenizer st = new StringTokenizer( line, "=, " );
+      type = getDeviceType( st.nextToken());
+
+      while ( st.hasMoreTokens())
+      {
+        String token = st.nextToken();
+        if ( token.charAt( 0 ) == '(' ) // it's a list
+        {
+          nested = true;
+          token = token.substring( 1 );
+          inner = new Vector();
+          outer.add( inner );
+        }
+
+        if ( !nested )
+        {
+          inner = new Vector();
+          outer.add( inner );
+        }
+
+        int closeParen = token.indexOf( ')' );
+        if ( closeParen != -1 )
+        {
+          nested = false;
+          token = token.substring( 0, closeParen );
+        }
+
+        inner.add( new ImageMap( new File( imageDir, token )));
+      }
+      ImageMap[][] outerb = new ImageMap[ outer.size()][];
+      int o = 0;
+      for ( Enumeration oe = outer.elements(); oe.hasMoreElements(); o++ )
+      {
+        inner = ( Vector )oe.nextElement();
+        ImageMap[] innerb = new ImageMap[ inner.size()];
+        outerb[ o ] = innerb;
+        int i = 0;
+        for ( Enumeration ie = inner.elements(); ie.hasMoreElements(); i++ )
+        {
+          innerb[ i ] = ( ImageMap )ie.nextElement();
+        }
+        inner.clear();
+      }
+      outer.clear();
+      type.setImageMaps( outerb );
+    }
+    return line;
+  }
+
   private String parseButtons( RDFReader rdr )
     throws Exception
   {
     String line;
-    int keycode = 1;
+    short keycode = 1;
     int restrictions = defaultRestrictions;
     while ( true )
     {
@@ -990,7 +1157,7 @@ public class Remote
           }
           else
             restrictions = defaultRestrictions;
-          keycode = rdr.parseNumber( keycodeStr );
+          keycode = ( short )rdr.parseNumber( keycodeStr );
         }
 
         int colon = token.indexOf( ':' );
@@ -1026,6 +1193,35 @@ public class Remote
   {
     load();
     return ( Button )buttonsByKeyCode.get( new Integer( keyCode ));
+  }
+
+  public String getButtonName( int keyCode )
+  {
+    Button b = getButton( keyCode );
+
+    if ( b == null )
+    {
+      int mask = keyCode & 0xC0;
+      int baseCode = keyCode & 0x3F;
+      if ( baseCode != 0 )
+      {
+        b = getButton( baseCode );
+        if (( baseCode | shiftMask ) == keyCode )
+          return b.getShiftedName();
+        if (( baseCode | xShiftMask ) == keyCode )
+          return b.getXShiftedName();
+      }
+      baseCode = keyCode & ~ shiftMask;
+      b = getButton( baseCode );
+      if ( b != null )
+        return b.getShiftedName();
+      baseCode = keyCode & ~ xShiftMask;
+      b = getButton( baseCode );
+      if ( b != null )
+        return b.getXShiftedName();
+    }
+    
+    return b.getName();
   }
 
   public Button getButton( String name )
@@ -1153,17 +1349,17 @@ public class Remote
       {
         if ( name != -1 )
         {
-          int[][] outerb = new int[ outer.size()][];
+          short[][] outerb = new short[ outer.size()][];
           int o = 0;
           for ( Enumeration oe = outer.elements(); oe.hasMoreElements(); o++ )
           {
             inner = ( Vector )oe.nextElement();
-            int[] innerb = new int[ inner.size()];
+            short[] innerb = new short[ inner.size()];
             outerb[ o ] = innerb;
             int i = 0;
             for ( Enumeration ie = inner.elements(); ie.hasMoreElements(); i++ )
             {
-              innerb[ i ] = (( Integer )ie.nextElement()).intValue();
+              innerb[ i ] = (( Integer )ie.nextElement()).shortValue();
             }
             inner.clear();
           }
@@ -1197,21 +1393,21 @@ public class Remote
           token = token.substring( 0, closeParen );
         }
 
-        inner.add( new Integer(rdr.parseNumber( token )));
+        inner.add( new Integer( rdr.parseNumber( token )));
       }
     }
     {
-      int[][] outerb = new int[ outer.size()][];
+      short[][] outerb = new short[ outer.size()][];
       int o = 0;
       for ( Enumeration oe = outer.elements(); oe.hasMoreElements(); o++ )
       {
         inner = ( Vector )oe.nextElement();
-        int[] innerb = new int[ inner.size()];
+        short[] innerb = new short[ inner.size()];
         outerb[ o ] = innerb;
         int i = 0;
         for ( Enumeration ie = inner.elements(); ie.hasMoreElements(); i++ )
         {
-          innerb[ i ] = (( Integer )ie.nextElement()).intValue();
+          innerb[ i ] = (( Integer )ie.nextElement()).shortValue();
         }
         inner.clear();
       }
@@ -1261,238 +1457,11 @@ public class Remote
     return line;
   }
 
-  private void readMapFile()
-    throws Exception
-  {
-    File mapFile = mapFiles[ mapIndex ];
-    BufferedReader in = new BufferedReader( new FileReader( mapFile ));
-    String line = in.readLine();
-    Vector work = new Vector();
-
-    if ( line.startsWith( "#$" ))
-    {
-      // This MAP file is a NCSA map file, probably created by Map This!
-      while (( line = in.readLine()) != null )
-      {
-        if ( line.startsWith( "#$GIF:" ))
-        {
-          File imageFile = new File( mapFile.getParentFile(), line.substring( 6 ));
-          imageIcon = new ImageIcon( imageFile.getAbsolutePath());
-        }
-        else if ( !line.startsWith( "#$" ))
-        {
-          StringTokenizer st = new StringTokenizer( line, " ," );
-          String type = st.nextToken();
-          if ( type.equals( "default" ))
-            continue;
-          String displayName = null;
-          String keyCodeText = null;
-          String buttonName = st.nextToken();
-          // check if keycode is used
-          int pos = buttonName.indexOf( ':' );
-          if ( pos != -1 )
-          {
-            keyCodeText = buttonName.substring( 0, pos );
-            buttonName = buttonName.substring( pos + 1 );
-          }
-          pos = buttonName.indexOf( '=' );
-          if ( pos != -1 )
-          {
-            displayName = buttonName.substring( 0, pos );
-            buttonName = buttonName.substring( pos + 1 );
-          }
-          Button button = null;
-          // check if keycode is used
-          if ( keyCodeText != null )
-          {
-            int keyCode;
-            if ( keyCodeText.charAt( 0 ) == '$' )
-              keyCode = Integer.parseInt( keyCodeText.substring( 1 ), 16 );
-            else
-              keyCode = Integer.parseInt( keyCodeText );
-            button = getButton( keyCode );
-          }
-          else
-            button = getButton( buttonName );
-          Shape shape = null;
-          if ( button == null )
-          {
-            System.err.println( "Warning: Shape defined for unknown button " + buttonName );
-            continue;
-          }
-          if ( type.equals( "rect" ))
-          {
-            double x = Double.parseDouble( st.nextToken());
-            double y = Double.parseDouble( st.nextToken());
-            double x2 = Double.parseDouble( st.nextToken());
-            double y2 = Double.parseDouble( st.nextToken());
-            double w = x2 - x;
-            double h = y2 - y;
-            shape = new Rectangle2D.Double( x, y, w, h );
-          }
-          else if ( type.equals( "circle" ))
-          {
-            double x = Double.parseDouble( st.nextToken());
-            double y = Double.parseDouble( st.nextToken());
-            double x2 = Double.parseDouble( st.nextToken());
-            double y2 = Double.parseDouble( st.nextToken());
-            double w = x2 - x;
-            x -= w;
-            w += w;
-            double h = y2 - y;
-            y -= h;
-            h += h;
-            shape = new Ellipse2D.Double( x, y, w, h );
-          }
-          else if ( type.equals( "poly" ))
-          {
-            GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD,
-                                                st.countTokens()/2 );
-            float x1 = Float.parseFloat( st.nextToken());
-            float y1 = Float.parseFloat( st.nextToken());
-            path.moveTo( x1, y1 );
-
-            while ( st.hasMoreTokens())
-            {
-              float x = Float.parseFloat( st.nextToken());
-              float y = Float.parseFloat( st.nextToken());
-              if (( x == x1 ) && ( y == y1 ))
-                break;
-              path.lineTo( x, y );
-            }
-            path.closePath();
-            shape = path;
-          }
-          ButtonShape buttonShape = new ButtonShape( shape, button );
-          button.setHasShape( true );
-          if ( displayName != null )
-            buttonShape.setName( displayName );
-          work.add( buttonShape );
-        }
-      }
-    }
-    else
-    {
-      // This map file probably uses the proprietary RM format
-      StringTokenizer st = new StringTokenizer( line, "=" );
-      if ( !st.hasMoreTokens())
-      {
-        System.err.println( "File " + mapFile + " is not a valid map file!" );
-        return;
-      }
-
-      String name = st.nextToken();
-      if ( !name.equals( "Image" ) || !st.hasMoreTokens())
-      {
-        System.err.println( "File " + mapFile + " is not a valid map file!" );
-        return;
-      }
-      String value = st.nextToken();
-      File imageFile = new File( mapFile.getParentFile(), value );
-      imageIcon = new ImageIcon( imageFile.getAbsolutePath());
-
-      while (( line = in.readLine()) != null )
-      {
-        if ( line.length() == 0 )
-          continue;
-        else if ( line.equals( "[ButtonShapes]" ))
-          break;
-        else
-          System.err.println( "File " + mapFile + " is not a valid map file!" );
-      }
-
-      while (( line = in.readLine()) != null )
-      {
-        if ( line.length() == 0 )
-          continue;
-
-        st = new StringTokenizer( line, "=:," );
-        while ( st.hasMoreTokens())
-        {
-          name = st.nextToken();
-
-          Button button = getButton( name );
-          if ( button == null )
-            continue;
-          Shape shape = null;
-          String type = st.nextToken();
-          if ( type.equals( "ellipse" ))
-          {
-            double x = Double.parseDouble( st.nextToken());
-            double y = Double.parseDouble( st.nextToken());
-            double width = Double.parseDouble( st.nextToken());
-            double height = Double.parseDouble( st.nextToken());
-            shape = new Ellipse2D.Double( x, y, width, height );
-          }
-          else if ( type.equals( "rect" ))
-          {
-            double x = Double.parseDouble( st.nextToken());
-            double y = Double.parseDouble( st.nextToken());
-            double width = Double.parseDouble( st.nextToken());
-            double height = Double.parseDouble( st.nextToken());
-            shape = new Rectangle2D.Double( x, y, width, height );
-          }
-          else if ( type.equals( "poly" ))
-          {
-            GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD,
-                                                st.countTokens()/2 );
-            float x = Float.parseFloat( st.nextToken());
-            float y = Float.parseFloat( st.nextToken());
-            path.moveTo( x, y );
-
-            while ( st.hasMoreTokens())
-            {
-              x = Float.parseFloat( st.nextToken());
-              y = Float.parseFloat( st.nextToken());
-              path.lineTo( x, y );
-            }
-            path.closePath();
-            shape = path;
-          }
-          work.add( new ButtonShape( shape, button ));
-          button.setHasShape( true );
-        }
-      }
-    }
-    in.close();
-    
-    double radius = 8;
-    double gap = 6;
-    
-    double diameter = 2 * radius;
-    double x = gap;
-    double y = imageIcon.getIconHeight() + gap;
-    for ( int i = 0; i < upgradeButtons.length; i++ )
-    {
-      Button b = upgradeButtons[ i ];
-      if ( !b.getHasShape() && !b.getIsShifted() && !b.getIsXShifted())
-      {
-        if (( x + diameter + gap ) > imageIcon.getIconWidth())
-        {
-          x = gap;
-          y += ( gap + diameter );
-        }
-        System.err.println( "Adding ellipse for button " + b + " at " + x + "," + y );
-        Shape shape = new Ellipse2D.Double( x, y, diameter, diameter );
-        x += ( diameter + gap );
-        ButtonShape buttonShape = new ButtonShape( shape, b );
-        work.add( buttonShape );
-        phantomShapes.add( buttonShape );
-        b.setHasShape( true );
-      }
-    }
-    buttonShapes = ( ButtonShape[] )work.toArray( buttonShapes );
-    height = imageIcon.getIconHeight();
-    if ( !phantomShapes.isEmpty())
-      height = ( int )( y + diameter + gap );
-    else
-      height = imageIcon.getIconHeight();
-    System.err.println( "Remote height set to " + height );
-    work.clear();
-  }
-
   public int getHeight(){ load(); return height; }
   private int height;
+
+  public int getWidth(){ load(); return width; }
+  private int width;
 
   public boolean supportsVariant( Hex pid, String name )
   {
@@ -1565,6 +1534,7 @@ public class Remote
   private String[] names = new String[ 1 ];
   private int nameIndex = 0;
   private boolean loaded = false;
+  private int baseAddress = 0;
   private int eepromSize;
   private int deviceCodeOffset;
   private FavKey favKey = null;
@@ -1572,12 +1542,15 @@ public class Remote
   private int oemControl = 0;
   private boolean upgradeBug = false;
   private AddressRange advancedCodeAddress = null;
+  public AddressRange getAdvanceCodeAddress(){ return advancedCodeAddress; }
   private boolean macroSupport = true;
   private AddressRange upgradeAddress = null;
+  public AddressRange getUpgradeAddress(){ return upgradeAddress; }
   private AddressRange deviceUpgradeAddress = null;
   private AddressRange timedMacroAddress = null;
   private boolean timedMacroWarning = false;
   private AddressRange learnedAddress = null;
+  public AddressRange getLearnedAddress(){ return learnedAddress; }
   private Processor processor = null;
   // private String processorVersion = null;
   private int RAMAddress;
@@ -1600,14 +1573,12 @@ public class Remote
   private Hashtable buttonsByStandardName = new Hashtable();
   private Button[] upgradeButtons = new Button[ 0 ];
   private Vector phantomShapes = new Vector();
-  private ButtonShape[] buttonShapes = new ButtonShape[ 0 ];
-  private int[] digitMaps = new int[ 0 ];
+  private short[] digitMaps = new short[ 0 ];
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
   private boolean omitDigitMapByte = false;
   private Hashtable protocolVariantNames = new Hashtable();
   private Vector protocols = null;
-  private ImageIcon imageIcon = null;
-  private File[] mapFiles = new File[ 0 ];
+  private ImageMap[] imageMaps = new ImageMap[ 0 ];
   private int mapIndex = 0;
   private int shiftMask = 0x80;
   private int xShiftMask = 0xC0;
@@ -1617,7 +1588,10 @@ public class Remote
   private int defaultRestrictions = 0;
   public static final int HEX = 0;
   public static final int EFC = 1;
+  public static final int NORMAL = 0;
+  public static final int LONG = 1;
   private int advCodeFormat = HEX;
+  private int advCodeBindFormat = NORMAL;
   private int efcDigits = 3;
   private int[] devCombAddress = null;
   private int protocolVectorOffset = 0;

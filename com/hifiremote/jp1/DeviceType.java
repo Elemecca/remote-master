@@ -41,9 +41,17 @@ public class DeviceType
     return name;
   }
 
+  public ImageMap[][] getImageMaps(){ return imageMaps; }
+
+  public void setImageMaps( ImageMap[][] maps )
+  {
+    imageMaps = maps;
+  }
+
   private String name;
   public String abbreviation;
   private int map;
   private int type;
   private ButtonMap buttonMap = null;
+  private ImageMap[][] imageMaps = new ImageMap[ 0 ][];
 }

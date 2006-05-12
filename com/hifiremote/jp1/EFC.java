@@ -5,12 +5,12 @@ public class EFC
 {
   public EFC( String text )
   {
-    value = Integer.parseInt( text ) & 0xFF;
+    value = Short.parseShort( text ) & 0xFF;
   }
 
-  public EFC( int value )
+  public EFC( short value )
   {
-    this.value = value & 0xFF;
+    this.value = ( value & 0xFF );
   }
 
   public EFC( Hex hex, int index )
@@ -33,17 +33,17 @@ public class EFC
     value = parseHex( hex, index );
   }
 
-  public static int parseHex( Hex hex )
+  public static short parseHex( Hex hex )
   {
     return parseHex( hex, 0 );
   }
 
-  public static int parseHex( Hex hex, int index )
+  public static short parseHex( Hex hex, int index )
   {
-    int rc = hex.getData()[ index ] & 0xFF;
-    rc = ( rc << 3 ) | ( rc >> 5 );
-    rc = ( rc ^ 0xAE ) - 156;
-    return rc & 0xFF;
+    short rc = ( short )( hex.getData()[ index ] & 0xFF );
+    rc = ( short )(( rc << 3 ) | ( rc >> 5 ));
+    rc = ( short )(( rc ^ 0xAE ) - 156 );
+    return ( short )( rc & 0xFF );
   }
 
   public int getValue(){ return value; }
@@ -65,16 +65,15 @@ public class EFC
 
   public static void toHex( int val, Hex hex, int index )
   {
-    int temp = val + 156;
-    temp = ( temp & 0xFF ) ^ 0xAE;
-    temp = ( temp >> 3 ) | ( temp << 5 );
+    short temp = ( short )( val + 156 );
+    temp = ( short )(( temp & 0xFF ) ^ 0xAE );
+    temp = ( short )(( temp >> 3 ) | ( temp << 5 ));
     hex.getData()[ index ] = temp;
   }
 
   public String toString()
   {
     StringBuffer buff = new StringBuffer( 3 );
-    String temp = Integer.toString( value );
     if ( value < 100 )
       buff.append( '0' );
     if ( value < 10 )

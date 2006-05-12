@@ -44,11 +44,13 @@ public class DeviceUpgrade
       }
     }
 
-    DeviceParameter[] devParms = protocol.getDeviceParameters();
-    for ( int i = 0; i < devParms.length; i++ )
-      devParms[ i ].setValue( null );
-
-    setProtocol( protocol );
+    if ( protocol != null )
+    {
+      DeviceParameter[] devParms = protocol.getDeviceParameters();
+      for ( int i = 0; i < devParms.length; i++ )
+        devParms[ i ].setValue( null );
+      setProtocol( protocol );
+    }
 
     notes = null;
     file = null;
@@ -253,7 +255,7 @@ public class DeviceUpgrade
         Vector titles = new Vector();
         titles.add( "Function name" );
         titles.add( "Button name" );
-        JTable table = new JTable( unassigned, titles );
+        JTableX table = new JTableX( unassigned, titles );
         Dimension d = table.getPreferredScrollableViewportSize();
         d.height = d.height / 4;
         table.setPreferredScrollableViewportSize( d );
@@ -417,26 +419,26 @@ public class DeviceUpgrade
 
   public File getFile(){ return file; }
 
-  private int findDigitMapIndex()
+  private short findDigitMapIndex()
   {
     Button[] buttons = remote.getUpgradeButtons();
-    int[] digitMaps = remote.getDigitMaps();
+    short[] digitMaps = remote.getDigitMaps();
     if (( digitMaps != null ) && ( protocol.getDefaultCmd().length() == 1 ))
     {
-      for ( int i = 0; i < digitMaps.length; i++ )
+      for ( short i = 0; i < digitMaps.length; i++ )
       {
         int mapNum = digitMaps[ i ];
         if ( mapNum == 999 )
           continue;
-        int[] codes = DigitMaps.data[ mapNum ];
-        int rc = -1;
+        short[] codes = DigitMaps.data[ mapNum ];
+        short rc = -1;
         for ( int j = 0; ; j++ )
         {
           Function f = buttons[ j ].getFunction();
           if (( f != null ) && !f.isExternal())
           {
             if (( f.getHex().getData()[ 0 ] & 0xFF ) == codes[ j ])
-              rc = i + 1;
+              rc = ( short )( i + 1 );
             else
               break;
           }
@@ -454,7 +456,7 @@ public class DeviceUpgrade
   {
     reset();
     int index = 1;
-    int[] code = hexCode.getData();
+    short[] code = hexCode.getData();
     remote = newRemote;
     customCode = null;
     functions.clear();
@@ -466,13 +468,13 @@ public class DeviceUpgrade
       digitMapIndex = code[ index++ ] - 1;
     if ( digitMapIndex != -1 )
     {
-      int[] digitMap = DigitMaps.data[ remote.getDigitMaps()[ digitMapIndex ]];
+      short[] digitMap = DigitMaps.data[ remote.getDigitMaps()[ digitMapIndex ]];
       for ( int i = 0; i < digitMap.length; i++ )
       {
         Function f = new Function();
         String name = Integer.toString( i );
         f.setName( name );
-        int[] cmd = new int[ 1 ];
+        short[] cmd = new short[ 1 ];
         cmd[ 0 ] = digitMap[ i ];
         Hex hex = new Hex( cmd );
         f.setHex( hex );
@@ -493,14 +495,14 @@ public class DeviceUpgrade
     int fixedDataOffset = index;
     int fixedDataLength = 0;
     int cmdLength = 0;
-    int[] fixedData = null;
+    short[] fixedData = null;
     Hex fixedDataHex = null;
     if ( pCode != null )
     {
       int value = pCode.getData()[ 2 ] & 0x00FF;
       fixedDataLength = value >> 4;
       cmdLength = value & 0x000F;
-      fixedData = new int[ fixedDataLength ];
+      fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       fixedDataHex = new Hex( fixedData );
     }
@@ -520,7 +522,7 @@ public class DeviceUpgrade
       if ( pCode == null )
       {
         tempLength = p.getFixedDataLength();
-        fixedData = new int[ tempLength ];
+        fixedData = new short[ tempLength ];
         System.arraycopy( code, fixedDataOffset, fixedData, 0, tempLength );
         fixedDataHex = new Hex( fixedData );
       }
@@ -559,7 +561,7 @@ public class DeviceUpgrade
     }
     else 
     {
-      fixedData = new int[ fixedDataLength ];
+      fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       int cmdType = ManualProtocol.ONE_BYTE;
       if ( cmdLength != 1 )
@@ -574,7 +576,7 @@ public class DeviceUpgrade
     for ( Enumeration e = buttons.elements(); e.hasMoreElements() & index < code.length;)
     {
       Button b = ( Button )e.nextElement();
-      int[] cmd = new int[ cmdLength ];
+      short[] cmd = new short[ cmdLength ];
       for ( int i = 0; i < cmdLength; i++ )
         cmd[ i ] = code[ index++ ];
       Function f = new Function();
@@ -585,16 +587,16 @@ public class DeviceUpgrade
     }
   }
 
-  public int[] getHexSetupCode()
+  public short[] getHexSetupCode()
   {
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    int[] id = protocol.getID( remote ).getData();
-    int temp = devType.getNumber() * 0x1000 +
+    short[] id = protocol.getID( remote ).getData();
+    short temp = ( short )( devType.getNumber() * 0x1000 +
                ( id[ 0 ] & 1 ) * 0x0800 +
-               setupCode - remote.getDeviceCodeOffset();
+               setupCode - remote.getDeviceCodeOffset());
 
-    int[] rc = new int[2];
-    rc[ 0 ] = (temp >> 8 );
+    short[] rc = new short[2];
+    rc[ 0 ] = ( short )( temp >> 8 );
     rc[ 1 ] = temp;
     return rc;
   }
@@ -604,7 +606,7 @@ public class DeviceUpgrade
     StringBuffer buff = new StringBuffer( 400 );
     buff.append( "Upgrade code 0 = " );
 
-    int[] deviceCode = getHexSetupCode();
+    short[] deviceCode = getHexSetupCode();
 
     buff.append( Hex.toString( deviceCode ));
     buff.append( " (" );
@@ -655,7 +657,7 @@ public class DeviceUpgrade
     }
     if ( hasKeyMoves )
     {
-      deviceCode[ 0 ] = ( deviceCode[ 0 ] & 0xF7 );
+      deviceCode[ 0 ] = ( short )( deviceCode[ 0 ] & 0xF7 );
       buff.append( "\nKeyMoves" );
       boolean first = true;
       for ( ; i < buttons.length; i++ )
@@ -709,7 +711,7 @@ public class DeviceUpgrade
 
     if ( map != null )
     {
-      int[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly());
+      short[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly());
       if ( data != null )
         rc += data.length;
     }
@@ -721,15 +723,15 @@ public class DeviceUpgrade
     Vector work = new Vector();
 
     // add the 2nd byte of the PID
-    int[] data = new int[ 1 ];
+    short[] data = new short[ 1 ];
     data[ 0 ] = protocol.getID( remote ).getData()[ 1 ];
     work.add( data );    
 
-    int digitMapIndex = -1;
+    short digitMapIndex = -1;
 
     if ( !remote.getOmitDigitMapByte())
     {
-      data = new int[ 1 ];
+      data = new short[ 1 ];
       digitMapIndex = findDigitMapIndex();
       if ( digitMapIndex == -1 )
         data[ 0 ] = 0;
@@ -758,22 +760,22 @@ public class DeviceUpgrade
     int length = 0;
     for ( Enumeration e = work.elements(); e.hasMoreElements(); )
     {
-      data = ( int[] )e.nextElement();
+      data = ( short[] )e.nextElement();
       length += data.length;
     }
 
     int offset = 0;
-    int[] rc = new int[ length ];
+    short[] rc = new short[ length ];
     for ( Enumeration e = work.elements(); e.hasMoreElements();)
     {
-      int[] source = ( int[] )e.nextElement();
+      short[] source = ( short[] )e.nextElement();
       System.arraycopy( source, 0, rc, offset, source.length );
       offset += source.length;
     }
     return new Hex( rc );
   }
 
-  private boolean appendKeyMove( StringBuffer buff, int[] keyMove,Function f, boolean includeNotes, boolean first )
+  private boolean appendKeyMove( StringBuffer buff, short[] keyMove,Function f, boolean includeNotes, boolean first )
   {
     if (( keyMove == null ) || ( keyMove.length == 0 ))
       return first;
@@ -798,6 +800,7 @@ public class DeviceUpgrade
     }
     return false;
   }
+  
   public void store()
     throws IOException
   {
@@ -842,8 +845,15 @@ public class DeviceUpgrade
     throws IOException
   {
     this.file = file;
-    PropertyWriter out =
-      new PropertyWriter( new PrintWriter( new FileWriter( file )));
+    PrintWriter pw = new PrintWriter( new FileWriter( file ));
+    store( pw );
+    pw.close();
+  }
+  
+  public void store( PrintWriter pw )
+    throws IOException
+  {
+    PropertyWriter out = new PropertyWriter( pw );
 
     if ( description != null )
       out.print( "Description", description );
@@ -906,7 +916,6 @@ public class DeviceUpgrade
 
     }
     out.flush();
-    out.close();
   }
 
   public void load( File file )
@@ -1181,13 +1190,13 @@ public class DeviceUpgrade
       int equals = line.indexOf( '=' );
       if (( equals != -1 ) && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code " ))
       {
-        int[] id = new int[ 2 ];
-        int temp = Integer.parseInt( line.substring( equals + 2, equals + 4 ), 16 );
+        short[] id = new short[ 2 ];
+        short temp = Short.parseShort( line.substring( equals + 2, equals + 4 ), 16 );
         if (( temp & 8 ) != 0 )
           id[ 0 ] = 1;
 
         line = in.readLine();
-        temp = Integer.parseInt( line.substring( 0, 2 ), 16 );
+        temp = Short.parseShort( line.substring( 0, 2 ), 16 );
         id[ 1 ] = temp;
         pid = new Hex( id );
         break;
@@ -1240,10 +1249,10 @@ public class DeviceUpgrade
         }
         else
         {
-          int pidInt = Integer.parseInt( pidStr, 16 );
-          int[] data = new int[ 2 ];
-          data[ 0 ] = ( pidInt & 0xFF00 ) >> 8;
-          data[ 1 ] = pidInt & 0xFF;
+          short pidInt = Short.parseShort( pidStr, 16 );
+          short[] data = new short[ 2 ];
+          data[ 0 ] = ( short )(( pidInt & 0xFF00 ) >> 8 );
+          data[ 1 ] = ( short )( pidInt & 0xFF );
           pid = new Hex( data );
         }
       }
@@ -1273,7 +1282,7 @@ public class DeviceUpgrade
       str = getNextField( st, delim ); // Raw Fixed Data
       if ( str == null )
         str = "";
-      int[] rawHex = Hex.parseHex( str );
+      short[] rawHex = Hex.parseHex( str );
 
       protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
       protocolName = protocol.getName();
@@ -1438,7 +1447,7 @@ public class DeviceUpgrade
           else
           {
             hex = new Hex( 1 );
-            EFC.toHex( Integer.parseInt( token ), hex, 0 );
+            EFC.toHex( Short.parseShort( token ), hex, 0 );
             ef.setType( ExternalFunction.EFCType );
           }
           getNextField( st, delim ); // skip byte2 (field 3)
@@ -1696,7 +1705,7 @@ public class DeviceUpgrade
       Vector titles = new Vector();
       titles.add( "Function name" );
       titles.add( "Button name" );
-      JTable table = new JTable( unassigned, titles );
+      JTableX table = new JTableX( unassigned, titles );
       Dimension d = table.getPreferredScrollableViewportSize();
       d.height = d.height / 4;
       table.setPreferredScrollableViewportSize( d );

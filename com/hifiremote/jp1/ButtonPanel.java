@@ -18,7 +18,7 @@ public class ButtonPanel
     super( "Buttons", devUpgrade );
     setLayout( new BorderLayout());
 
-    table = new JTable();
+    table = new JTableX();
     model = new ButtonTableModel( devUpgrade );
     table.setModel( model );
     table.setRowSelectionAllowed( false );
@@ -371,11 +371,10 @@ public class ButtonPanel
     super.setFont( aFont );
     if (( aFont == null ) || ( table == null ))
       return;
-    FontMetrics m = Toolkit.getDefaultToolkit().getFontMetrics( aFont );
-    table.setRowHeight( m.getHeight() + 2 );
+    table.setRowHeight( aFont.getSize() + 2 );
   }
 
-  private JTable table = null;
+  private JTableX table = null;
   private ButtonTableModel model = null;
   private JPanel functionPanel = null;
   private JPopupMenu popup = null;

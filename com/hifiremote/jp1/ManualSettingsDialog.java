@@ -68,7 +68,7 @@ public class ManualSettingsDialog
 
     deviceModel = new ParameterTableModel( deviceParms, deviceTranslators );
 
-    deviceTable = new JTable( deviceModel );
+    deviceTable = new JTableX( deviceModel );
     SpinnerCellEditor editor = new SpinnerCellEditor( 0, 8, 1 );
     deviceTable.setDefaultEditor( Integer.class, editor );
     JScrollPane scrollPane = new JScrollPane( deviceTable );
@@ -112,7 +112,7 @@ public class ManualSettingsDialog
 
     commandModel = new ParameterTableModel( cmdParms, cmdTranslators );
 
-    commandTable = new JTable( commandModel );
+    commandTable = new JTableX( commandModel );
     commandTable.setDefaultEditor( Integer.class, editor );
     scrollPane = new JScrollPane( commandTable );
     box = Box.createVerticalBox();
@@ -353,9 +353,9 @@ public class ManualSettingsDialog
   private Vector cmdTranslators = new Vector();
 
   private ParameterTableModel deviceModel = null;
-  private JTable deviceTable = null;
+  private JTableX deviceTable = null;
   private ParameterTableModel commandModel = null;
-  private JTable commandTable = null;
+  private JTableX commandTable = null;
 
   private JTextField name = null;
 

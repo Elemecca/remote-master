@@ -11,17 +11,28 @@ public class RowNumberRenderer
 {
   public RowNumberRenderer()
   {
+    this( false );
+  }
+
+  public RowNumberRenderer( boolean useHex )
+  {
     JButton b = new JButton();
     setBackground( b.getBackground());
-    BorderFactory.createBevelBorder( BevelBorder.RAISED );
+    setBorder( BorderFactory.createRaisedBevelBorder());
     setHorizontalAlignment( SwingConstants.CENTER );
     setToolTipText( "Drag a row up or down to change the order." );
+
+    this.useHex = useHex;
   }
 
   public Component getTableCellRendererComponent( JTable table, Object value, 
                                                   boolean isSelected, boolean hasFocus,
                                                   int row, int col )
   {
+    if ( useHex )
+      value = RemoteConfiguration.toHex((( Integer )value ).intValue());
     return super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
-  } 
+  }
+
+  private boolean useHex = false;
 }

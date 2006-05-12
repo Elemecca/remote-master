@@ -1,3 +1,24 @@
+Changes for v1.52b
+- Fix for exporing binary upgrades
+
+Changes for v1.52a
+- Added more executors for Streamzap protocol
+
+Changes for v1.52
+- Add DigitMaps through 332
+- Add support for device type specific maps and images
+- Improvements to column width handling
+- Change Streamzap pid to 0123 and use new executor that supports all OBCs for a device number
+
+Changes for v1.51
+- Add DigitMaps through 303
+
+Changes for v1.50
+- Add support for AdvCodeBindFormat RDF parameter
+
+Changes for v1.49
+- Fix bug in PioneerMixTranslator causing loss of command parameter values when changing remotes.
+
 Changes for v1.48
 - Fix for importing raw or binary upgrades that use an unknown/manual protocol.
 

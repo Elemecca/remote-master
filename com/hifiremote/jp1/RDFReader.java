@@ -52,7 +52,7 @@ public class RDFReader
       else
         rc = Integer.parseInt( text );
       if ( negate )
-        rc = 0 - rc;
+        rc = ( short )( 0 - rc );
     }
     catch ( NumberFormatException e )
     {

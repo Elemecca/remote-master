@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.48";
+  public static final String version = "v1.52b";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -62,10 +62,7 @@ public class KeyMapMaster
     File fileToOpen = parseArgs( args );
 
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
-    setDefaultLookAndFeelDecorated( true );
-    JDialog.setDefaultLookAndFeelDecorated( true );
-    JFrame.setDefaultLookAndFeelDecorated( true );
-    Toolkit.getDefaultToolkit().setDynamicLayout( true );
+//    setDefaultLookAndFeelDecorated( true );
 
     preferences = new Preferences( homeDirectory, propertiesFile );
 
@@ -202,11 +199,10 @@ public class KeyMapMaster
 
     clearMessage();
 
+    pack();
     Rectangle bounds = preferences.getBounds();
     if ( bounds != null )
       setBounds( bounds );
-    else
-      pack();
 
     loadUpgrade( fileToOpen );
 
@@ -794,6 +790,8 @@ public class KeyMapMaster
 
   public static String[] getCustomNames()
   {
+    if ( me == null )
+      return null;
     return me.preferences.getCustomNames();
   }
 

@@ -16,15 +16,15 @@ import javax.swing.table.*;
 import javax.swing.event.TableModelListener; 
 import javax.swing.event.TableModelEvent; 
 
-public class TableMap extends KMTableModel 
+public class TableMap extends JP1TableModel 
                       implements TableModelListener {
-    protected KMTableModel model; 
+    protected JP1TableModel model; 
 
     public TableModel getModel() {
         return model;
     }
 
-    public void setModel( KMTableModel model ) {
+    public void setModel( JP1TableModel model ) {
         this.model = model; 
         model.addTableModelListener( this ); 
     }
@@ -48,8 +48,14 @@ public class TableMap extends KMTableModel
         return (model == null) ? 0 : model.getColumnCount(); 
     }
         
-    public String getColumnName(int aColumn) {
+    public String getColumnName(int aColumn) 
+    {
         return model.getColumnName(aColumn); 
+    }
+    
+    public String getColumnPrototypeName( int col )
+    {
+      return model.getColumnPrototypeName( col );
     }
 
     public Class getColumnClass(int aColumn) {
@@ -59,6 +65,22 @@ public class TableMap extends KMTableModel
     public boolean isCellEditable(int row, int column) { 
          return model.isCellEditable(row, column); 
     }
+    
+    public boolean isColumnWidthFixed( int col )
+    {
+      return model.isColumnWidthFixed( col );
+    }
+
+    public TableCellRenderer getColumnRenderer( int col )
+    {
+      return model.getColumnRenderer( col );
+    }
+    
+    public TableCellEditor getColumnEditor( int col )
+    {
+      return model.getColumnEditor( col );
+    }
+
 //
 // Implementation of the TableModelListener interface, 
 //
@@ -90,15 +112,5 @@ public class TableMap extends KMTableModel
     public void moveRow( int from, int to )
     {
       model.moveRow( from, to );
-    }
-
-    public TableCellRenderer getColumnRenderer( int col )
-    {
-      return model.getColumnRenderer( col );
-    }
-    
-    public TableCellEditor getColumnEditor( int col )
-    {
-      return model.getColumnEditor( col );
     }
 }

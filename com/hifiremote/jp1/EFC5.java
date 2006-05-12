@@ -5,19 +5,19 @@ public class EFC5
 {
   public EFC5( String text )
   {
-    super( 0 );
-    value = Integer.parseInt( text );
+    super(( short )0 );
+    value = Integer.parseInt( text ) & 0xFFFF;
   }
 
   public EFC5( int value )
   {
-    super( value );
+    super(( short )value );
     this.value = value;
   }
 
   public EFC5( Hex hex )
   {
-    super( 0 );
+    super(( short )0 );
     fromHex( hex );
   }
 
@@ -26,7 +26,7 @@ public class EFC5
   public String toString()
   {
     StringBuffer buff = new StringBuffer( 5 );
-    String temp = Integer.toString( value & 0x0FFFF);
+    String temp = Short.toString(( short )( value & 0x0FFFF ));
     int len = 5 - temp.length();
     for ( int i = 0; i < len; i++ )
       buff.append( '0' );
@@ -48,16 +48,16 @@ public class EFC5
 
   public static void toHex( int val, Hex hex )
   {
-    int[] data = hex.getData();
+    short[] data = hex.getData();
     if ( hex.length() == 2 )
     {
-      int byte1 = val >> 8 & 0x00FF;
+      short byte1 = ( short )( val >> 8 & 0x00FF );
       byte1 += 100;
-      byte1 = ( byte1 << 5 ) | ( byte1 >> 3 );
+      byte1 = ( short )(( byte1 << 5 ) | ( byte1 >> 3 ));
       byte1 ^= 0x00D5;
-      data[ 0 ] = byte1 & 0x00FF;
+      data[ 0 ] = ( short )( byte1 & 0x00FF );
 
-      data[ 1 ] = ( val & 0x00FF ) ^ 0x00C5;
+      data[ 1 ] = ( short )(( val & 0x00FF ) ^ 0x00C5 );
     }
     else
     {
@@ -70,19 +70,19 @@ public class EFC5
     value = parseHex( hex );
   }
   
-  public static int parseHex( Hex hex )
+  public static short parseHex( Hex hex )
   {
-    int[] data = hex.getData();
+    short[] data = hex.getData();
     if ( data.length == 2 )
     {
-      int byte1 = data[ 0 ] & 0x00FF;
+      short byte1 = ( short )( data[ 0 ] & 0x00FF );
       byte1 ^= 0x00D5;
-      byte1 = ( byte1 >> 5 ) | ( byte1 << 3 );
-      byte1 = ( byte1 - 100 ) & 0x00FF;
+      byte1 = ( short )(( byte1 >> 5 ) | ( byte1 << 3 ));
+      byte1 = ( short )(( byte1 - 100 ) & 0x00FF );
 
-      int byte2 = ( data[ 1 ] & 0x00FF ) ^ 0x00C5;
+      short byte2 = ( short )(( data[ 1 ] & 0x00FF ) ^ 0x00C5 );
 
-      return ( byte1 << 8 ) + byte2;
+      return ( short )(( byte1 << 8 ) + byte2 );
     }
     else
     {

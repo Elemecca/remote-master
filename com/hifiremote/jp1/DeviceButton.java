@@ -18,14 +18,7 @@ public class DeviceButton
 
   public String toString()
   {
-    StringBuffer temp = new StringBuffer( 30 );
-    temp.append( name )
-        .append( " = $" ).append( Integer.toHexString( highAddress ))
-        .append( " $" ).append( Integer.toHexString( lowAddress ));
-    if ( typeAddress != 0 )
-      temp.append( " $" ).append( Integer.toHexString( typeAddress ));
-
-    return temp.toString();
+    return name;
   }
 
   private String name;

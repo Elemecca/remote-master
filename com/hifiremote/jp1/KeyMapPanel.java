@@ -54,45 +54,42 @@ public class KeyMapPanel
         switch ( col )
         {
           case 0:
-            return "  " + b.getName();
+            return b.getName();
           case 1:
-            return getFuncName( b.getFunction());
+            return getName( b.getFunction());
           case 2:
-            return getFuncName( b.getShiftedFunction());
+            return getName( b.getShiftedFunction());
           case 3:
-            return getFuncName( b.getXShiftedFunction());
+            return getName( b.getXShiftedFunction());
           default:
             return null;
         }
       }
 
-      private String getFuncName( Function f )
+      private String getName( Function f )
       {
-        if ( f == null )
-          return null;
-        String s = f.getName();
-        if ( s == null )
-          return null;
-        return "  " + s;
+        if ( f != null )
+          return f.getName();
+        return null;
       }
 
       public String getColumnName( int column )
       {
         return headers[column];
       }
+
       public Class getColumnClass( int col )
       {
         return String.class;
       }
+
       public boolean isCellEditable(int row, int col){ return false; }
     };
 
-    table = new JTable( dataModel );
+    table = new JTableX( dataModel );
     table.setAlignmentX( 0.5f );
     table.setFont( new Font( fontName, Font.PLAIN, 10 ));
     table.setRowHeight( 12 );
-
-    DefaultTableCellRenderer renderer = ( DefaultTableCellRenderer )table.getDefaultRenderer( String.class );
 
     header = table.getTableHeader();
     header.setReorderingAllowed( false );
@@ -208,23 +205,14 @@ public class KeyMapPanel
     box.validate();
     box.paint( g2 );
 
-//    tableView.paint( g2 );
-//    g2.translate( 0f, pageIndex*pageHeightForTable);
-//    g2.translate( 0f, - headerHeightOnPage );
-//    g2.setClip(0, 0,(int) Math.ceil(tableWidthOnPage),
-//                           (int)Math.ceil(headerHeightOnPage));
-//    tableHeader.paint( g2 );//paint header at top
-//    tableHeader.setFont( savedHeaderFont );
-//
-//    tableView.setFont( savedTableFont );
-      return Printable.PAGE_EXISTS;
+    return Printable.PAGE_EXISTS;
   }
 
   private static DecimalFormat df = new DecimalFormat( "0000" );
   private Box box = null;
   private JLabel titleLabel = null;
   private JLabel subtitleLabel = null;
-  private JTable table = null;
+  private JTableX table = null;
   private JTableHeader header = null;
   private JButton print = null;
   private Vector list = new Vector();

@@ -201,6 +201,11 @@ public class ExternalFunctionTableModel
     return names[ col ];
   }
 
+  public String getColumnPrototypeName( int col )
+  {
+    return prototypeNames[ col ];
+  }
+
   public Class getColumnClass( int col )
   {
     return classes[ col ];
@@ -222,7 +227,9 @@ public class ExternalFunctionTableModel
   }
 
   private final static String[] names =
-    { " # ", "Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "Notes" };
+    { "#", "Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "Notes" };
+  private final static String[] prototypeNames =
+    { " # ", "Function Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "A reasonanble comment" };
   private final static Class[] classes =
     { Integer.class, String.class, String.class, Integer.class, Choice.class, ExternalFunction.class, String.class };
 

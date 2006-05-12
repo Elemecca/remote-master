@@ -1,1 +1,1 @@
-@java -jar RemoteMaster.jar
+@java -jar RemoteMaster.jar %1

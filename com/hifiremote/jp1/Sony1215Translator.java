@@ -10,7 +10,7 @@ public class Sony1215Translator
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
 
     int device1 = (( Integer )parms[ 0 ].getValue()).intValue();
     boolean force1 = (( Integer )parms[ 1 ].getValue()).intValue() != 0;
@@ -28,7 +28,7 @@ public class Sony1215Translator
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     int device1 = (( Integer )parms[ 0 ].getValue()).intValue();
     int device2 = (( Integer )parms[ 2 ].getValue()).intValue();
     int force1 = 0;

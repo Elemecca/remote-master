@@ -37,16 +37,16 @@ public class Pioneer4DevXlator
     return obc;
   }
 
-  private void setHex( int obc1, int obc2, int device, int[] hex )
+  private void setHex( int obc1, int obc2, int device, short[] hex )
   {
     obc1 = setDeviceBit( obc1, device & 2 );
-    hex[ 0 ] = reverse( obc1 );
+    hex[ 0 ] = ( short )reverse( obc1 );
 
     obc2 = setDeviceBit( obc2, device & 1 );
-    hex[ 1 ] = reverse( obc2 );
+    hex[ 1 ] = ( short )reverse( obc2 );
   }
 
-  private int getDevice( int[] hex )
+  private int getDevice( short[] hex )
   {
     int device = 0;
     if (( hex[ 0 ] & 0x04 ) > 0 )
@@ -65,12 +65,12 @@ public class Pioneer4DevXlator
     return device;
   }
 
-  private int getObc( int[] hex, int index )
+  private short getObc( short[] hex, int index )
   {
-    return ( reverse( hex[ index ] ) & 0xDF );
+    return ( short )( reverse( hex[ index ] ) & 0xDF );
   }
 
-  private int getObc( Value[] parms, int index, int value )
+  private short getObc( Value[] parms, int index, int value )
   {
     int i;
     if ( index == 0 )
@@ -83,12 +83,12 @@ public class Pioneer4DevXlator
       System.err.println( "parms[i].getValue() is a " + parms[ i ].getValue().getClass());
       value = (( Integer )parms[ i ].getValue()).intValue();
     }
-    return value;
+    return ( short )value;
   }
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     if ( onlyIndex == devIndex )
     {
       int device = getDevice( parms );
@@ -125,7 +125,7 @@ public class Pioneer4DevXlator
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
-    int[] hex = hexData.getData();
+    short[] hex = hexData.getData();
     int obc1 = getObc( hex, 0 );
     int obc2 = getObc( hex, 1 );
     parms[ devIndex ] = new Value( new Integer( getDevice( hex )));

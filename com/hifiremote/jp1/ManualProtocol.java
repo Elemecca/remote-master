@@ -27,7 +27,7 @@ public class ManualProtocol
   }
 
   public ManualProtocol( String name, Hex id, int cmdType, String signalStyle,
-                         int devBits, Vector parms, int[] rawHex, int cmdBits )
+                         int devBits, Vector parms, short[] rawHex, int cmdBits )
   {
     super( name, id, new Properties());
 
@@ -51,7 +51,7 @@ public class ManualProtocol
     }
 
     int offset = parms.size();
-    int[] fixedBytes = new int[ offset + rawHex.length ];
+    short[] fixedBytes = new short[ offset + rawHex.length ];
     for ( int i = 0 ; i < rawHex.length; i++ )
       fixedBytes[ i + offset ] = rawHex[ i ];
 
@@ -61,16 +61,16 @@ public class ManualProtocol
     switch ( cmdType )
     {
       case ONE_BYTE:
-        defaultCmd = new Hex( new int[ 1 ]);
+        defaultCmd = new Hex( new short[ 1 ]);
         cmdIndex = 0;
         break;
       case BEFORE_CMD:
-        defaultCmd = new Hex( new int[ 2 ]);
+        defaultCmd = new Hex( new short[ 2 ]);
         cmdIndex = 1;
         byte2Index = 0;
         break;
       case AFTER_CMD:
-        defaultCmd = new Hex( new int[ 2 ]);
+        defaultCmd = new Hex( new short[ 2 ]);
         cmdIndex = 0;
         byte2Index = 1;
         break;

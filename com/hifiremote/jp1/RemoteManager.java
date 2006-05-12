@@ -11,7 +11,14 @@ public class RemoteManager
   public File loadRemotes( File loadPath )
     throws Exception
   {
-    this.loadPath = loadPath;
+    if ( this.loadPath != null )
+      return this.loadPath;
+
+    while ( !loadPath.exists() && !loadPath.isDirectory())
+    {
+      loadPath = loadPath.getParentFile();
+    }
+
     File[] files = new File[ 0 ];
     File dir = loadPath;
     FilenameFilter filter = new FilenameFilter()
@@ -38,6 +45,7 @@ public class RemoteManager
         else
           dir = chooser.getSelectedFile();
       }
+      loadPath = dir;
     }
 
     Vector work = new Vector();
@@ -53,7 +61,8 @@ public class RemoteManager
     remotes = ( Remote[] )work.toArray( remotes );
     Arrays.sort( remotes );
 
-    return dir;
+    this.loadPath = loadPath;
+    return loadPath;
   }
 
   public Remote[] getRemotes(){ return remotes; }

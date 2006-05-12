@@ -76,7 +76,7 @@ public class GeneralEditorPanel
     contentPane.add( panel, BorderLayout.CENTER );
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Protocol code" ));
     tableModel = new TableModel();
-    JTable table = new JTable( tableModel );
+    JTableX table = new JTableX( tableModel );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )table.getDefaultRenderer( String.class );
     r.setHorizontalAlignment( SwingConstants.CENTER );
     table.setDefaultEditor( Hex.class, new HexEditor());
@@ -281,7 +281,7 @@ public class GeneralEditorPanel
   private JFormattedTextField id = null;
   private JFormattedTextField altId = null;
   private TableModel tableModel = null;
-  private JTable table = null;
+  private JTableX table = null;
   private JButton importButton = null;
   private static String[] colNames = { "Processor", "Protocol Code" };
   private static Class[] classes = { String.class, Hex.class };

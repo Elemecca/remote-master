@@ -37,10 +37,28 @@ public class LayoutPanel
  
     imagePanel.getActionMap().put( "delete", deleteAction ); 
 
+    JPanel leftPanel = new JPanel( new BorderLayout());
+    scrollPanel = Box.createHorizontalBox();
+    leftPanel.add( scrollPanel, BorderLayout.SOUTH );
+    scrollLeft = new JButton( "<" );
+    scrollLeft.setEnabled( false );
+    scrollLeft.addActionListener( this );
+    scrollPanel.add( scrollLeft );
+
+    scrollPanel.add( Box.createHorizontalGlue());
+    scrollPanel.add( new JLabel( "Scroll" ));
+    scrollPanel.add( Box.createHorizontalGlue());
+
+    scrollRight = new JButton( ">" );
+    scrollRight.setEnabled( false );
+    scrollRight.addActionListener( this );
+    scrollPanel.add( scrollRight );
+    
     scrollPane = new JScrollPane( imagePanel,
                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
-    add( scrollPane, BorderLayout.WEST );
+    leftPanel.add( scrollPane, BorderLayout.WEST );
+    add( leftPanel, BorderLayout.WEST );
 
     JPanel rightPanel = new JPanel( new BorderLayout());
     add( rightPanel, BorderLayout.CENTER );
@@ -210,20 +228,41 @@ public class LayoutPanel
     // addFunction( null ); // the "none" function
   }
 
+  private void enableScrollButtons()
+  {
+    if ( maps.length > 1 )
+    {
+      scrollPanel.setVisible( true );
+      scrollLeft.setEnabled( screenIndex > 0 );
+      scrollRight.setEnabled( screenIndex < maps.length - 1 );
+    }
+    else
+    {
+      scrollPanel.setVisible( false );
+      scrollLeft.setEnabled( false );
+      scrollRight.setEnabled( false );
+    }
+  }
+
   public void update()
   {
     Remote r = deviceUpgrade.getRemote();
-    ImageIcon icon = r.getImageIcon();
-    Dimension d = new Dimension( icon.getIconWidth(), r.getHeight());
+    maps = r.getImageMaps( deviceUpgrade.getDeviceType());
+    if ( screenIndex >= maps.length )
+      screenIndex = maps.length - 1;
+    enableScrollButtons();
+    map = maps[ screenIndex ];
+    Dimension d = new Dimension( r.getWidth(), r.getHeight());
     imagePanel.setPreferredSize( d );
     imagePanel.setMinimumSize( d );
     imagePanel.setMaximumSize( d );
     imagePanel.revalidate();
-    ButtonShape[] buttonShapes = deviceUpgrade.getRemote().getButtonShapes();
+    Vector buttonShapes = map.getShapes();
     boolean found = false;
-    for ( int i = 0; i < buttonShapes.length; i++ )
+    for ( Enumeration e = buttonShapes.elements(); e.hasMoreElements(); )
     {
-      if ( currentShape == buttonShapes[ i ])
+      ButtonShape shape = ( ButtonShape )e.nextElement();
+      if ( currentShape == shape )
       {
         found = true;
         break;
@@ -258,7 +297,6 @@ public class LayoutPanel
   {
     if (( buttonShape != null ) && ( b != null ))
     {
-      Remote r = deviceUpgrade.getRemote();
       String name = buttonShape.getName();
       if ( name == null )
       {
@@ -293,19 +331,19 @@ public class LayoutPanel
 
   public ButtonShape getShapeAtPoint( Point p )
   {
-    ButtonShape[] buttonShapes = deviceUpgrade.getRemote().getButtonShapes();
-    ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
+    Vector buttonShapes = map.getShapes();
+    ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
     ButtonShape closestMatch = null;
-    for ( int i = 0; i < buttonShapes.length; i++ )
+    for ( Enumeration e = buttonShapes.elements(); e.hasMoreElements(); )
     {
-      ButtonShape buttonShape = buttonShapes[ i ];
+      ButtonShape buttonShape = ( ButtonShape )e.nextElement();
       Shape s = buttonShape.getShape();
       if (( s != null ) && s.contains( p ))
       {
         if ( closestMatch == null )
           closestMatch = buttonShape;
         Button b = getButtonForShape( buttonShape );
-        if ( map.isPresent( b ))
+        if ( buttonMap.isPresent( b ))
           return buttonShape;
       }
     }
@@ -318,12 +356,12 @@ public class LayoutPanel
       return null;
 
     Button b = buttonShape.getButton();
-    ButtonMap map = deviceUpgrade.getDeviceType().getButtonMap();
+    ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
     if ( normalMode.isSelected())
     {
       if ( !b.getIsNormal())
         return null;
-      else if ( b.allowsKeyMove() || map.isPresent( b ))
+      else if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
         return b;
     }
     else if ( shiftMode.isSelected())
@@ -339,7 +377,7 @@ public class LayoutPanel
       }
       if ( b.getIsShifted())
       {
-        if ( b.allowsKeyMove() || map.isPresent( b ))
+        if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
           return b.getBaseButton();
         else
           return null;
@@ -360,7 +398,7 @@ public class LayoutPanel
       }
       if ( b.getIsXShifted())
       {
-        if ( b.allowsKeyMove() || map.isPresent( b ))
+        if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
           return b.getBaseButton();
       }
       else if ( b.allowsXShiftedKeyMove())
@@ -389,7 +427,20 @@ public class LayoutPanel
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( source == autoAssign )
+    if ( source == scrollLeft )
+    {
+      map = maps[ --screenIndex ];
+      
+      enableScrollButtons();
+      doRepaint();
+    }
+    else if ( source == scrollRight )
+    {
+      map = maps[ ++screenIndex ];
+      enableScrollButtons();
+      doRepaint();
+    }
+    else if ( source == autoAssign )
     {
       deviceUpgrade.autoAssignFunctions();
       doRepaint();
@@ -496,9 +547,8 @@ public class LayoutPanel
       Graphics2D g2 = ( Graphics2D ) g;
       g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
                            RenderingHints.VALUE_ANTIALIAS_ON );
-      System.err.println( "panel width is " + getWidth() + " and height is " + getHeight());                     
       Remote r = deviceUpgrade.getRemote();
-      ImageIcon icon = r.getImageIcon();
+      ImageIcon icon = map.getImage();
       if ( icon != null )
         g2.drawImage( icon.getImage(), null, null );
 
@@ -521,12 +571,12 @@ public class LayoutPanel
       g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
 
       DeviceType devType = deviceUpgrade.getDeviceType();
-      ButtonMap map = devType.getButtonMap();
+      ButtonMap buttonMap = devType.getButtonMap();
 
-      ButtonShape[] buttonShapes = r.getButtonShapes();
-      for ( int i = 0; i < buttonShapes.length; i++ )
+      Vector buttonShapes = map.getShapes();
+      for ( Enumeration e = buttonShapes.elements(); e.hasMoreElements(); )
       {
-        ButtonShape buttonShape = buttonShapes[ i ];
+        ButtonShape buttonShape = ( ButtonShape )e.nextElement();
         Button b = getButtonForShape( buttonShape );
         if ( b == null )
           continue;
@@ -552,7 +602,7 @@ public class LayoutPanel
         else if ( xShiftMode.isSelected())
           b = b.getXShiftedButton();
 
-        if ( map.isPresent( b ))
+        if ( buttonMap.isPresent( b ))
         {
           if (( currentShape != null ) && ( s == currentShape.getShape()))
           {
@@ -605,13 +655,12 @@ public class LayoutPanel
 
     public Dimension getPreferredScrollableViewportSize()
     {
-      ImageIcon icon = deviceUpgrade.getRemote().getImageIcon();
       Dimension rc = null;
-      if ( icon != null )
+
+      if ( map != null )
       {
-        int w = icon.getIconWidth();
+        int w = deviceUpgrade.getRemote().getWidth();
         int h = deviceUpgrade.getRemote().getHeight();
-        System.err.println( "remote.getHeight() returned " + h );
         if ( scrollPane.getViewport().getExtentSize().height < h )
           w += scrollPane.getVerticalScrollBar().getWidth();
 
@@ -648,7 +697,13 @@ public class LayoutPanel
     }
   }
 
+  private ImageMap[] maps = null;
+  private ImageMap map = null;
+  private int screenIndex = 0;
   private ButtonShape currentShape = null;
+  private Box scrollPanel = null;
+  private JButton scrollLeft = null;
+  private JButton scrollRight = null;
   private ImagePanel imagePanel = null;
   private JRadioButton normalMode = null;
   private JRadioButton shiftMode = null;
