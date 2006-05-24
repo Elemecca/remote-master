@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import com.hifiremote.jp1.io.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -263,24 +265,24 @@ public class RemoteMaster
     exitItem.addActionListener( this );
     menu.add( exitItem );
 
-//    menu = new JMenu( "Remote" );
-//    menu.setMnemonic( KeyEvent.VK_R );
-//    menuBar.add( menu );
-//
-//    downloadItem = new JMenuItem( "Download from Remote" );
-//    downloadItem.setMnemonic( KeyEvent.VK_D );
-//    downloadItem.addActionListener( this );
-//    menu.add( downloadItem );
-//
-//    uploadItem = new JMenuItem( "Upload to Remote" );
-//    uploadItem.setMnemonic( KeyEvent.VK_U );
-//    uploadItem.addActionListener( this );
-//    menu.add( uploadItem );
-//
-//    uploadWavItem = new JMenuItem( "Upload using WAV" );
-//    uploadWavItem.setMnemonic( KeyEvent.VK_W );
-//    uploadWavItem.addActionListener( this );
-//    menu.add( uploadWavItem );
+    menu = new JMenu( "Remote" );
+    menu.setMnemonic( KeyEvent.VK_R );
+    menuBar.add( menu );
+
+    downloadItem = new JMenuItem( "Download from Remote" );
+    downloadItem.setMnemonic( KeyEvent.VK_D );
+    downloadItem.addActionListener( this );
+    menu.add( downloadItem );
+
+    uploadItem = new JMenuItem( "Upload to Remote" );
+    uploadItem.setMnemonic( KeyEvent.VK_U );
+    uploadItem.addActionListener( this );
+    menu.add( uploadItem );
+
+    uploadWavItem = new JMenuItem( "Upload using WAV" );
+    uploadWavItem.setMnemonic( KeyEvent.VK_W );
+    uploadWavItem.addActionListener( this );
+    menu.add( uploadWavItem );
 
     menu = new JMenu( "Help" );
     menu.setMnemonic( KeyEvent.VK_H );
@@ -462,6 +464,78 @@ public class RemoteMaster
         scroll.setPreferredSize( d );
 
         JOptionPane.showMessageDialog( this, scroll, "About Java IR", JOptionPane.INFORMATION_MESSAGE );
+      }
+      else if ( source == downloadItem )
+      {
+        JP12Serial serial = new JP12Serial();
+        String port = serial.openRemote( null );
+        if ( port == null )
+        {
+          JOptionPane.showMessageDialog( this, "No response from remote!\n" );
+          return;
+        }
+        String sig = serial.getRemoteSignature();
+        Remote[] remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
+        Remote remote = null;
+        if ( remotes.length == 0 )
+        {
+          JOptionPane.showMessageDialog( this, "No RDF matches signature " + sig );
+          return;
+        }
+        else if ( remotes.length == 1 )
+          remote = remotes[ 0 ];
+        else // ( remotes.length > 1 )
+        {  
+            String message = "Please pick the best match to your remote from the following list:";
+            Object rc = ( Remote )JOptionPane.showInputDialog( null,
+                                                               message,
+                                                               "Ambiguous Remote",
+                                                               JOptionPane.ERROR_MESSAGE,
+                                                               null,
+                                                               remotes,
+                                                               remotes[ 0 ]);
+            if ( rc == null )
+              return;
+            else
+              remote = ( Remote )rc;
+        }
+        remote.load();
+        remoteConfig = new RemoteConfiguration( remote );
+        serial.readRemote( remote.getBaseAddress(), remoteConfig.getData());
+        remoteConfig.parseData();
+        generalPanel.set( remoteConfig );
+
+        keyMovePanel.set( remoteConfig );
+        macroPanel.set( remoteConfig );
+        AddressRange range = remoteConfig.getRemote().getAdvanceCodeAddress();
+        int available = range.getEnd() - range.getStart(); 
+        advProgressBar.setMinimum( 0 );
+        advProgressBar.setMaximum( available );
+        int used = remoteConfig.getAdvancedCodeBytesUsed();
+        advProgressBar.setValue( used );
+        advProgressBar.setString( Integer.toString( available - used ) + " free" );
+    
+        devicePanel.set( remoteConfig );
+        protocolPanel.set( remoteConfig );
+        range = remoteConfig.getRemote().getUpgradeAddress();
+        available = range.getEnd() - range.getStart(); 
+        upgradeProgressBar.setMinimum( 0 );
+        upgradeProgressBar.setMaximum( available );
+        used = remoteConfig.getUpgradeCodeBytesUsed();
+        upgradeProgressBar.setValue( used );
+        upgradeProgressBar.setString( Integer.toString( available - used ) + " free" );
+    
+        learnedPanel.set( remoteConfig );
+        range = remoteConfig.getRemote().getLearnedAddress();
+        available = range.getEnd() - range.getStart(); 
+        learnedProgressBar.setMinimum( 0 );
+        learnedProgressBar.setMaximum( available );
+        used = remoteConfig.getLearnedSignalBytesUsed();
+        learnedProgressBar.setValue( used );
+        learnedProgressBar.setString( Integer.toString( available - used ) + " free" );
+    
+        rawDataPanel.set( remoteConfig );
+
       }
       else
       {

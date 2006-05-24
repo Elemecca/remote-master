@@ -1288,6 +1288,14 @@ public class DeviceUpgrade
       protocolName = protocol.getName();
       setParmValues( protocol.getDeviceParmValues());
       protocolManager.add( protocol );
+      Vector v = protocolManager.findByPID( pid );
+      if ( v.size() != 0 )
+      {
+        Protocol p = ( Protocol )v.elementAt( 0 );
+        Hex code = p.getCode( remote );
+        if ( code != null )
+          (( ManualProtocol )protocol ).setCode( code, remote.getProcessor());
+      }
     }
     else
     {

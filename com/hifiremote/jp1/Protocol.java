@@ -84,16 +84,6 @@ public class Protocol
 
     notes = props.getProperty( "Notes" );
 
-    temp = props.getProperty( "Code.740" );
-    if ( temp != null )
-      code.put( "740", new Hex( temp ));
-    temp = props.getProperty( "Code.6805-C9" );
-    if ( temp != null )
-      code.put( "6805-C9", new Hex( temp ));
-    temp = props.getProperty( "Code.6805-RC16/18" );
-    if ( temp != null )
-      code.put( "6805-RC16/18", new Hex( temp ));
-
     for ( Enumeration e = ProcessorManager.getProcessorNames(); e.hasMoreElements(); )
     {  
       String pName = ( String ) e.nextElement();

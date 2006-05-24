@@ -1,3 +1,8 @@
+Changes for v1.53
+- Add "Check for updates" to the Help menu
+- Add support for more binary file formats
+- Fixes for importing KM upgrades that use Manual Settings
+
 Changes for v1.52b
 - Fix for exporing binary upgrades
 

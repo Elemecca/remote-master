@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.52b";
+  public static final String version = "v1.53";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -30,6 +30,7 @@ public class KeyMapMaster
   private JMenuItem rawItem = null;
   private JMenuItem binaryItem = null;
   private JMenuItem writeBinaryItem = null;
+  private JMenuItem updateItem = null;
   private JMenuItem aboutItem = null;
   private JLabel messageLabel = null;
   private JTextField description = null;
@@ -311,6 +312,10 @@ public class KeyMapMaster
     menu.setMnemonic( KeyEvent.VK_H );
     menuBar.add( menu );
 
+    updateItem = new JMenuItem( "Check for updates", KeyEvent.VK_C );
+    updateItem.addActionListener( this );
+    menu.add( updateItem );
+    
     aboutItem = new JMenuItem( "About..." );
     aboutItem.setMnemonic( KeyEvent.VK_A );
     aboutItem.addActionListener( this );
@@ -652,6 +657,26 @@ public class KeyMapMaster
       else if ( source == writeBinaryItem )
       {
         BinaryUpgradeWriter.write( deviceUpgrade );
+      }
+      else if ( source == updateItem )
+      {
+        java.net.URL url = new java.net.URL( "http://controlremote.sourceforge.net/version.dat" );
+        BufferedReader in = new BufferedReader( new InputStreamReader( url.openStream()));
+        String latestVersion = in.readLine();
+        in.close();
+        String text = null;
+        if ( version.equals( latestVersion ))
+          text = "You are using the latest version (" + version + ") of RemoteMaster.";
+        else
+          text = "<html>Version " + latestVersion + " of RemoteMaster is available, but you are still using version " + version +
+                 "<p>The new version is available for download from<br><a href=\"http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion + ".zip?download\">" +
+                 "http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion + ".zip?download</a></html>";
+        
+        JEditorPane pane = new JEditorPane( "text/html", text );
+        pane.setEditable( false );
+        pane.setBackground( getContentPane().getBackground());
+        new TextPopupMenu( pane );
+        JOptionPane.showMessageDialog( this, pane, "RemoteMaster Version Check", JOptionPane.INFORMATION_MESSAGE );
       }
       else if ( source == aboutItem )
       {

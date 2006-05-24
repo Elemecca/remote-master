@@ -83,12 +83,12 @@ public class JTableX extends JTable
 
   private boolean isTruncated( int row, int col )
   {
-		Object o = getValueAt( row, col );
-		if( o == null )
-			return false;
+                Object o = getValueAt( row, col );
+                if( o == null )
+                        return false;
     Rectangle rect = getCellRect( row, col, true );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
-    r.getTableCellRendererComponent( this, o, false, false, row, col ); 
+    r.getTableCellRendererComponent( this, o, false, false, row, col );
     Dimension d = r.getPreferredSize();
     if ( d.width < rect.width - 4 )
       return false;
@@ -110,19 +110,19 @@ public class JTableX extends JTable
     return null;
   }
 
-	public Point getToolTipLocation( MouseEvent event )
-	{
-		int row = rowAtPoint( event.getPoint() );
-		int col = columnAtPoint( event.getPoint() );
+        public Point getToolTipLocation( MouseEvent event )
+        {
+                int row = rowAtPoint( event.getPoint() );
+                int col = columnAtPoint( event.getPoint() );
     col = convertColumnIndexToModel( col );
     if ( isTruncated( row, col ))
     {
-		  Point rc = getCellRect( row, col, true ).getLocation();
+                  Point rc = getCellRect( row, col, true ).getLocation();
       rc.translate( -1, -1 );
       return rc;
     }
-		return null;
-	}
+                return null;
+        }
 
   public Component prepareRenderer( TableCellRenderer r, int row, int col )
   {
@@ -137,11 +137,11 @@ public class JTableX extends JTable
   private static Border pad = BorderFactory.createEmptyBorder( 0, 3, 0, 3 );
 
   public void setColumnWidth( int col, String text, boolean setMax )
-  {  
+  {
     setColumnWidth( col, text, setMax, 0 );
   }
 
-  public void setColumnWidth( int col, String text, boolean setMax, int limit )  
+  public void setColumnWidth( int col, String text, boolean setMax, int limit )
   {
     JLabel l = ( JLabel )
       tableHeader.getDefaultRenderer().getTableCellRendererComponent( this, text, false, false, 0, col );

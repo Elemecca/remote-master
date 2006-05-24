@@ -210,8 +210,9 @@ public class RemoteManager
     return remotes[ index ];
   }
 
-  public Vector findRemoteBySignature( String signature )
+  public Remote[] findRemoteBySignature( String signature )
   {
+    Remote[] rc = new Remote[ 0 ];
     Vector v = new Vector();
     for ( int i = 0; i < remotes.length; i++ )
     {
@@ -219,7 +220,8 @@ public class RemoteManager
       if ( r.getSignature().equals( signature ))
         v.add( r );
     }
-    return v;
+    rc = ( Remote[])v.toArray( rc );
+    return rc;
   }
 
   private static RemoteManager remoteManager = new RemoteManager();

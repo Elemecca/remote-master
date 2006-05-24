@@ -45,7 +45,7 @@ public class DeviceCombiner
         System.err.println( "Creating new ManualProtocol!" );
         ManualProtocol m = new ManualProtocol( pid, new Properties());
         if (( parmStr != null ) && ( parmStr.length() > 0 ))
-          m.setRawHex( new Hex( parmStr ));    
+          m.setRawHex( new Hex( parmStr ));
         p = m;
         values = new Value[ 0 ];
       }
@@ -164,6 +164,12 @@ public class DeviceCombiner
           ( devCombAddresses[ 3 ] == -1 ))
         rc = false;
     }
+    else if ( name.equals( "HCS08" ))
+    {
+      if (( devCombAddresses[ 1 ] == -1 ) ||
+          ( devCombAddresses[ 2 ] == -1 ))
+        rc = false;
+    }
     return rc;
   }
 
@@ -263,10 +269,39 @@ public class DeviceCombiner
       buff.append( " 60" );
       base = new Hex( buff.toString());
     }
+    else if ( name.equals( "HCS08" ))
+    {
+      if (( devComb[ 1 ] == -1 ) ||
+          ( devComb[ 2 ] == -1 ))
+        return null;
+        
+      buff.append( "20 10 00 00 02 00 B7 7A 55 BB AF 00 81 3C 7F 7E 5F 81 " );
+      buff.append( "4E 61 54 45 00 10 B6 60 52 48 27 02 B7 B2 8B 86 AB " );
+      buff.append( "00 " ); // placeholder x1, index = 35
+      buff.append( "BD 75 9E AE 8B 9F BD 75 35 52 86 BD 75 7E 56 7E 57 BD " );
+      buff.append( "7C 75 52 23 FA 45 00 54 BD 7E " );
+      if ( devComb[ 4 ] != -1 )
+        buff.append( intToString( devComb[ 4 ]));
+
+      buff.append( "CD " );
+
+      buff.append( intToString( devComb[ 2 ]));
+      buff.append( "24 CA A7 02 CC " );
+      buff.append( intToString( devComb[ 1 ]));
+
+      base = new Hex( buff.toString());
+      short[] hex = base.getData();
+      short length = ( short )hex.length;
+      hex[ 35 ] = length;
+    }
 
     int offset = header.length;
-    if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ))
+    if ( name.equals( "S3C80" ) ||
+         name.equals( "S3C80+" ) || 
+         name.equals( "HCS08" ))
+    {
       offset += base.length();
+    }
     Hex[] ids = new Hex[ devices.size()];
     Hex[] data = new Hex[ ids.length ];
     int i = 0;

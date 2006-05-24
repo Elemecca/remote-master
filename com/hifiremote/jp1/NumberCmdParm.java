@@ -60,7 +60,7 @@ public class NumberCmdParm
     Object rc = null;
     Class c = value.getClass();
     System.err.println( "NumberCmdParm.convertValue(): class is " + c );
-    if ( c == Integer.class )
+    if (( c == Integer.class ) || ( c == Short.class ))
       rc = value;
     else // assume String
       rc = Integer.valueOf(( String )value, base );

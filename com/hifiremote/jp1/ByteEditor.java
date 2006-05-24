@@ -21,7 +21,7 @@ public class ByteEditor
   public ByteEditor( int min, int max, Parameter parm )
   {
     super( new JTextField());
-//    setClickCountToStart( 1 );
+    setClickCountToStart( 1 );
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
     this.min = min;
     this.max = max;

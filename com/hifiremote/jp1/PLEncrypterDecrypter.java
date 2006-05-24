@@ -3,6 +3,9 @@ package com.hifiremote.jp1;
 public class PLEncrypterDecrypter
   extends EncrypterDecrypter
 {
+  public PLEncrypterDecrypter( String textParms )
+  {}
+  
   public short encrypt( short val )
   {
     val &= 0xFF;

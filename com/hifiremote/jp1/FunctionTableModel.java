@@ -44,10 +44,10 @@ public class FunctionTableModel
     }
     else
       efc5col = -1;
-    
+
     hexCol = protocol.getColumnCount() + colOffset;
     notesCol = hexCol + 1;
-      
+
     fireTableStructureChanged();
   }
 
@@ -218,11 +218,11 @@ public class FunctionTableModel
   {
     String rc = null;
     if ( col == rowCol )
-      rc = " # ";
+      rc = "199";
     else if ( col == nameCol )
       rc = "Function Name";
     else if ( col == efcCol )
-      rc = "EFC";
+      rc = "CCC";
     else if ( col == efc5col )
       rc = "00000";
     else if ( col == hexCol )

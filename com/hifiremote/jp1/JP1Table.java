@@ -18,7 +18,7 @@ public class JP1Table
     super( model );
     setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     //  getSelectionModel().addListSelectionListener( this );
-    //  setCellSelectionEnabled( true );
+    setCellSelectionEnabled( true );
     setSurrendersFocusOnKeystroke( true );
     setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     tableHeader.setReorderingAllowed( false );

@@ -8,6 +8,7 @@ public class ProcessorManager
   {
     processors = new Hashtable();
     add( new S3C80Processor());
+    
     Processor p = new Processor( "6805", "C9" );
     int[] opcodes = { 0xCC, 0xCD };
     int[] addresses = 
@@ -33,6 +34,7 @@ public class ProcessorManager
     };
     p.setVectorEditData( opcodes, addresses );
     add( p );
+    
     p = new Processor( "6805", "RC16/18" );
     int[] moreAddresses = 
     {
@@ -62,7 +64,9 @@ public class ProcessorManager
     p.setVectorEditData( opcodes, moreAddresses );
     add( p );
     add( new Processor( "740" ));
+    add( new Processor( "HCS08" ));
   }
+  
 
   public static Processor getProcessor( String name, String version )
   {

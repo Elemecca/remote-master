@@ -85,18 +85,18 @@ public class Translator
     else
     {
       Object o = v.getValue();
-      Integer i = null;
+      Number i = null;
       if ( o == null )
       {
         System.err.println("Translator.in() index="+ index +" missing parameter value");
         return;
       }
-      else if ( o.getClass() == Integer.class )
-        i = ( Integer )v.getValue();
+      else if (( o.getClass() == Integer.class ) || ( o.getClass() == Short.class ))
+        i = ( Number )v.getValue();
       else if ( o.getClass() == String.class )
         i = new Integer(( String )o );
       else if ( o instanceof DirectDefaultValue )
-        i = ( Integer )(( DefaultValue )o ).value();
+        i = ( Number )(( DefaultValue )o ).value();
 
       w = ( i.intValue() + adjust ) >> lsbOffset;
     }

@@ -18,8 +18,8 @@ public class BinaryUpgradeReader
     if (( underscore != -1 ) && ( dot != -1 ) && ( underscore < dot ))
     {
       tag = name.substring( underscore + 1, dot );
-      Vector remotes = RemoteManager.getRemoteManager().findRemoteBySignature( "BIN" + tag.toUpperCase() );
-      if ( remotes.size() == 0 )
+      Remote[] remotes = RemoteManager.getRemoteManager().findRemoteBySignature( "BIN" + tag.toUpperCase() );
+      if ( remotes.length == 0 )
       {
         JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
                                        "The binary file \"" + name + "\" isn't a supported binary upgrade file.",
@@ -27,19 +27,17 @@ public class BinaryUpgradeReader
                                        JOptionPane.ERROR_MESSAGE );
         return;
       }
-      else if ( remotes.size() == 1 )
-        remote = ( Remote ) remotes.firstElement();
+      else if ( remotes.length == 1 )
+        remote = remotes[ 0 ];
       else
       {
-        Remote[] values = new Remote[ 0 ];
-        values = ( Remote[] )remotes.toArray(( Object[]) values );
         remote = ( Remote )JOptionPane.showInputDialog( KeyMapMaster.getKeyMapMaster(),
                                                         "The selected binary upgrade can be used for multiple remotes.  Please select the desired remote.",
                                                         "Select a remote",
                                                         JOptionPane.QUESTION_MESSAGE,
                                                         null,
-                                                        values,
-                                                        values[ 0 ]);
+                                                        remotes,
+                                                        remotes[ 0 ]);
         if ( remote == null )
           return;
       }

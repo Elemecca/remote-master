@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
@@ -631,14 +632,20 @@ public class Remote
         protocolDataOffset = rdr.parseNumber( st.nextToken());
       else if ( parm.equals( "EncDec" ))
       {
-        String className = st.nextToken();
+        String className = st.nextToken("=()");
+        String textParm = null;
+        if ( st.hasMoreTokens())
+          textParm = st.nextToken();
         try
         {
           if ( className.indexOf( '.' ) == -1 )
             className = "com.hifiremote.jp1." + className;
 
           Class cl = Class.forName( className );
-          encdec = ( EncrypterDecrypter )cl.newInstance();
+          Class[] parmClasses = { String.class };
+          Constructor ct = cl.getConstructor( parmClasses );
+          Object[] ctParms = { textParm };
+          encdec = ( EncrypterDecrypter )ct.newInstance( ctParms );
         }
         catch ( Exception e )
         {
@@ -652,6 +659,8 @@ public class Remote
         maxProtocolLength = new Integer( rdr.parseNumber( st.nextToken()));
       else if ( parm.equals( "MaxCombinedUpgradeLength" ))
         maxCombinedUpgradeLength = new Integer( rdr.parseNumber( st.nextToken()));
+      else if ( parm.equals( "SectionTerminator" ))
+        sectionTerminator = ( short )rdr.parseNumber( st.nextToken());
     }
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
@@ -1601,6 +1610,8 @@ public class Remote
   private Integer maxProtocolLength = null;
   private Integer maxUpgradeLength = null;
   private Integer maxCombinedUpgradeLength = null;
+  private short sectionTerminator = 0;
+  public short getSectionTerminator(){ return sectionTerminator; }
 
   private static Hashtable restrictionTable = null;
  }

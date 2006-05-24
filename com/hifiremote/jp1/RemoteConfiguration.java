@@ -23,14 +23,14 @@ public class RemoteConfiguration
 
     String signature = new String( sig );
     RemoteManager rm = RemoteManager.getRemoteManager();
-    Vector remotes = rm.findRemoteBySignature( signature );
-    if ( remotes.size() == 0 )
+    Remote[] remotes = rm.findRemoteBySignature( signature );
+    if ( remotes.length == 0 )
     {
       for ( int i = 0; i < sig.length; ++i )
         sig[ i ] = ( char )first[ i ];
       remotes = rm.findRemoteBySignature( signature );
     }
-    remote = ( Remote )remotes.elementAt( 0 );
+    remote = ( Remote )remotes[ 0 ];
     remote.load();
 
     if ( remote.getBaseAddress() != baseAddr )
@@ -108,6 +108,14 @@ public class RemoteConfiguration
     this.remote = remote;
     data = new short[ remote.getEepromSize()];
   }
+  
+  public void parseData()
+  {
+    Vector v = new Vector();
+    decodeAdvancedCodes( v );    
+    decodeUpgrades( v, v );
+    decodeLearnedSignals( v );
+  }
 
   private void decodeAdvancedCodes( Vector notes )
   {
@@ -119,7 +127,7 @@ public class RemoteConfiguration
     while ( offset <= endOffset )
     {
       short keyCode = data[ offset++ ];
-      if ( keyCode == 0 )
+      if ( keyCode == remote.getSectionTerminator())
         break;
 
       int boundDeviceIndex = 0;

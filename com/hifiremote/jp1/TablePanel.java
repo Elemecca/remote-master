@@ -162,7 +162,7 @@ public abstract class TablePanel
             if ( dropRow != dragRow )
             {
               sorter.moveRow( dragRow, dropRow );
-  
+
               if ( dropRow < dragRow )
                 sorter.fireTableRowsUpdated( dropRow, dragRow );
               else
@@ -314,7 +314,7 @@ public abstract class TablePanel
     cleanButton.addActionListener( this );
     cleanButton.setToolTipText( "Delete all undefined functions (no hex)" );
     cleanButton.setEnabled( false );
-    buttonPanel.add( cleanButton ); 
+    buttonPanel.add( cleanButton );
 
     upButton = new JButton( "Up" );
     upButton.addActionListener( this );
@@ -526,20 +526,11 @@ public abstract class TablePanel
     for ( int i = 0; i < cols; i++ )
     {
       boolean isFixed = model.isColumnWidthFixed( i );
-      table.setColumnWidth( i, 
+      table.setColumnWidth( i,
                             model.getColumnPrototypeName( i ),
                             model.isColumnWidthFixed( i ),
                             4 );
       column = columnModel.getColumn( i );
-      // l.setText( model.getColumnName( i ));
-      // width =  l.getPreferredSize().width;
-      // column.setMinWidth( width );
-
-      // if ( model.isColumnWidthFixed( i ))
-      // {
-        // column.setMaxWidth( 4 * width );
-        // column.setPreferredWidth( width );
-      // }
 
       TableCellEditor editor = model.getColumnEditor( i );
       if ( editor != null )
