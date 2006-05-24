@@ -27,6 +27,8 @@ public class ButtonPanel
     table.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
     table.setSurrendersFocusOnKeystroke( true );
     table.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_DELETE, 0), "delete");
+    table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
+
     deleteAction = new AbstractAction( "Remove" ) 
     {
       public void actionPerformed(ActionEvent e) 

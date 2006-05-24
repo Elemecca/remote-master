@@ -335,7 +335,10 @@ public class Remote
 
   public DeviceType getDeviceTypeByAliasName( String aliasName )
   {
-    return ( DeviceType )deviceTypeAliases.get( aliasName );
+    DeviceType type = ( DeviceType )deviceTypeAliases.get( aliasName );
+    if ( type != null )
+      return type;
+    return getDeviceType( aliasName );
   }
 
   public DeviceType getDeviceTypeByIndex( int index )

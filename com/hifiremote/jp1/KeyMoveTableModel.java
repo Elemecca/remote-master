@@ -32,7 +32,7 @@ public class KeyMoveTableModel
 
   private static final String[] colPrototypeNames = 
   {
-    "00", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", "Raw Data", "xshift-CBL/SAT", "A reasonable length long note"
+    "00", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", " Raw Data", "xshift-CBL/SAT", "A reasonable length long note"
   };
 
   public String getColumnPrototypeName( int col )

@@ -1,3 +1,7 @@
+Changes for v1.54
+- Fix issue with .rmdu files that have external functions
+- Fix for importing raw/binary upgrades that use a digit map
+
 Changes for v1.53
 - Add "Check for updates" to the Help menu
 - Add support for more binary file formats

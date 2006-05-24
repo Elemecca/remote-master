@@ -234,8 +234,9 @@ public class Button
       {
         ExternalFunction ef = ( ExternalFunction )f;
         devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName());
-        short temp = ( short )( devType.getNumber() * 0x1000 +
-                   ef.getSetupCode() - remote.getDeviceCodeOffset());
+        short temp = ( short )( devType.getNumber() * 0x1000 );
+        temp += ( short )ef.getSetupCode();
+        temp -= ( short )remote.getDeviceCodeOffset();
 
         deviceCode = new short[ 2 ];
         deviceCode[ 0 ] = ( short )( temp >> 8 );

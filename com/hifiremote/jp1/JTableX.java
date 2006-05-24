@@ -150,7 +150,7 @@ public class JTableX extends JTable
     column.setMinWidth( width / 2 );
     column.setPreferredWidth( width );
     if ( setMax )
-      column.setMaxWidth( width );
+      column.setMaxWidth(( width * 3 ) / 2 );
     else if ( limit != 0 )
       column.setMaxWidth( width * limit );
   }

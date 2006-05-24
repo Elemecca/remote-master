@@ -462,6 +462,7 @@ public class DeviceUpgrade
     functions.clear();
     devTypeAliasName = newDeviceTypeAliasName;
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    ButtonMap map = devType.getButtonMap();
 
     int digitMapIndex = -1;
     if ( !remote.getOmitDigitMapByte())
@@ -478,12 +479,11 @@ public class DeviceUpgrade
         cmd[ 0 ] = digitMap[ i ];
         Hex hex = new Hex( cmd );
         f.setHex( hex );
-        Button b = remote.getButton( name );
+        Button b = map.get( i );
         b.setFunction( f );
         functions.add( f );
       }
     }
-    ButtonMap map = devType.getButtonMap();
     Vector buttons = null;
     if ( map != null )
       buttons = map.parseBitMap( code, index, digitMapIndex != -1 );
