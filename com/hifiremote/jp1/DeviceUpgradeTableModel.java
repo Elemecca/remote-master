@@ -18,7 +18,7 @@ public class DeviceUpgradeTableModel
 
   private static final String[] colNames = 
   {
-    "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "PID", "Upgrade Code", "Notes"
+    "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>" // , "PID", "Upgrade Code", "Notes"
   };
   public String getColumnName( int col )
   {
@@ -27,7 +27,7 @@ public class DeviceUpgradeTableModel
   
   private static final String[] colPrototypeNames = 
   {
-    "00", "CBL/SAT__", "Setup", "1CC", "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", "A reasonable length note"
+    "00", "CBL/SAT__", "Setup" //, "1CC", "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", "A reasonable length note"
   };
   public String getColumnPrototypeName( int col ){ return colPrototypeNames[ col ]; }
   
@@ -41,7 +41,7 @@ public class DeviceUpgradeTableModel
 
   private static final Class[] colClasses =
   {
-    Integer.class, DeviceType.class, SetupCode.class, String.class, Hex.class, String.class
+    Integer.class, DeviceType.class, SetupCode.class //, String.class, Hex.class, String.class
   };
   public Class getColumnClass( int col )
   {
@@ -50,8 +50,10 @@ public class DeviceUpgradeTableModel
 
   public boolean isCellEditable( int row, int col )
   {
+    /*
      if ( col == 5 )
       return true;
+     */
 
     return false;
   }
@@ -67,12 +69,12 @@ public class DeviceUpgradeTableModel
         return device.getDeviceType();
       case 2:
         return new SetupCode( device.getSetupCode());
-      case 3:
+/*      case 3:
         return device.getProtocol().getID().toString();
       case 4:
         return device.getUpgradeHex();
       case 5:
-        return device.getNotes();
+        return device.getNotes(); */
     }
     return null;
   }

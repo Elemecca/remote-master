@@ -13,6 +13,11 @@ public class FunctionRenderer
     setToolTipText( "Drag or double-click a function to set the functions for a button, or use the popup menu of available functions." );
 
   }
+  
+  public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
+  {
+    this.deviceUpgrade = deviceUpgrade;
+  }
 
   public Component  getTableCellRendererComponent( JTable table, Object value,
                                                    boolean isSelected, boolean hasFocus,
@@ -21,13 +26,15 @@ public class FunctionRenderer
     Button b = ( Button )value;
     String temp = null;
     JTextField tf = new JTextField();
+    if ( deviceUpgrade == null )
+      return null;
     DeviceType devType = deviceUpgrade.getDeviceType();
     ButtonMap map = devType.getButtonMap();
     if ( col == 0 )
     {
-      if (( b.getFunction() == null ) && 
-          ( b.getShiftedFunction() == null ) && 
-          ( b.getXShiftedFunction() == null ))
+      if (( deviceUpgrade.getFunction( b, Button.NORMAL_STATE ) == null ) && 
+          ( deviceUpgrade.getFunction( b, Button.SHIFTED_STATE ) == null ) && 
+          ( deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE ) == null ))
         setForeground( Color.red );
       else
         setForeground( Color.black );
@@ -42,19 +49,19 @@ public class FunctionRenderer
     
       if ( col == 1 )
       {
-        f = b.getFunction();
+        f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
         if ( !b.allowsKeyMove() && !map.isPresent( b ))
           tf.setEditable( false );
       }
       else if ( col == 2 )
       {
-        f = b.getShiftedFunction();
+        f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
         if ( !b.allowsShiftedKeyMove())
           tf.setEditable( false );
       }
       else if ( col == 3 )
       {
-        f = b.getXShiftedFunction();
+        f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
         if ( !b.allowsXShiftedKeyMove())
           tf.setEditable( false );
       }
@@ -70,5 +77,6 @@ public class FunctionRenderer
 
     return c;
   }
+  
   private DeviceUpgrade deviceUpgrade = null;
 }

@@ -1,3 +1,10 @@
+Changes for v1.56
+- Fix for map files created with "Keep NCSA circles true"
+- Add HCS08 protocol code entries
+
+Changes for v1.55
+- Allow custom protocol when importing raw upgrades that use a known PID.
+
 Changes for v1.54
 - Fix issue with .rmdu files that have external functions
 - Fix for importing raw/binary upgrades that use a digit map
@@ -8,7 +15,7 @@ Changes for v1.53
 - Fixes for importing KM upgrades that use Manual Settings
 
 Changes for v1.52b
-- Fix for exporing binary upgrades
+- Fix for exporting binary upgrades
 
 Changes for v1.52a
 - Added more executors for Streamzap protocol

@@ -19,10 +19,20 @@ public class FunctionTableModel
   private int hexCol = colOffset;
   private int notesCol = hexCol + 1;
 
-  public FunctionTableModel( Vector functions, Remote remote )
+  public FunctionTableModel( DeviceUpgrade deviceUpgrade )
   {
-    super( functions );
-    this.remote = remote;
+    super();
+    if ( deviceUpgrade != null )
+      setDeviceUpgrade( deviceUpgrade );
+  }
+  
+  public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
+  {
+    if ( deviceUpgrade == null )
+      return;
+    setData( deviceUpgrade.getFunctions());
+    setProtocol( deviceUpgrade.getProtocol(), deviceUpgrade.getRemote());
+    functionsUpdated();
   }
 
   public void functionsUpdated()
@@ -105,11 +115,11 @@ public class FunctionTableModel
     {
       String msg = "Function " + f.getName() + " is assigned to a button, and must not be cleared!";
 
-      KeyMapMaster.showMessage( msg );
+      // KeyMapMaster.showMessage( msg );
       throw new IllegalArgumentException( msg );
     }
-    else
-      KeyMapMaster.clearMessage();
+//    else
+//      KeyMapMaster.clearMessage();
   }
 
   public void setValueAt( Object value, int row, int col )

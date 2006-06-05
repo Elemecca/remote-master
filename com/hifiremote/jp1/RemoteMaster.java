@@ -209,24 +209,20 @@ public class RemoteMaster
     menu.setMnemonic( KeyEvent.VK_F );
     menuBar.add( menu );
 
-//    newItem = new JMenuItem( "New" );
-//    newItem.setMnemonic( KeyEvent.VK_N );
+//    newItem = new JMenuItem( "New", KeyEvent.VK_N );
 //    newItem.addActionListener( this );
 //    menu.add( newItem );
 
-    openItem = new JMenuItem( "Open..." );
-    openItem.setMnemonic( KeyEvent.VK_O );
+    openItem = new JMenuItem( "Open...", KeyEvent.VK_O );
     openItem.addActionListener( this );
     menu.add( openItem );
 
-    saveItem = new JMenuItem( "Save" );
-    saveItem.setMnemonic( KeyEvent.VK_S );
+    saveItem = new JMenuItem( "Save", KeyEvent.VK_S );
     saveItem.setEnabled( false );
     saveItem.addActionListener( this );
     menu.add( saveItem );
 
-    saveAsItem = new JMenuItem( "Save as..." );
-    saveAsItem.setMnemonic( KeyEvent.VK_A );
+    saveAsItem = new JMenuItem( "Save as...",  KeyEvent.VK_A );
     saveAsItem.setDisplayedMnemonicIndex( 5 );
     saveAsItem.setEnabled( false );
     saveAsItem.addActionListener( this );
@@ -269,18 +265,17 @@ public class RemoteMaster
     menu.setMnemonic( KeyEvent.VK_R );
     menuBar.add( menu );
 
-    downloadItem = new JMenuItem( "Download from Remote" );
-    downloadItem.setMnemonic( KeyEvent.VK_D );
+    downloadItem = new JMenuItem( "Download from Remote", KeyEvent.VK_D );
     downloadItem.addActionListener( this );
     menu.add( downloadItem );
 
-    uploadItem = new JMenuItem( "Upload to Remote" );
-    uploadItem.setMnemonic( KeyEvent.VK_U );
+    uploadItem = new JMenuItem( "Upload to Remote", KeyEvent.VK_U );
+    uploadItem.setEnabled( false );
     uploadItem.addActionListener( this );
     menu.add( uploadItem );
 
-    uploadWavItem = new JMenuItem( "Upload using WAV" );
-    uploadWavItem.setMnemonic( KeyEvent.VK_W );
+    uploadWavItem = new JMenuItem( "Upload using WAV", KeyEvent.VK_W );
+    uploadWavItem.setEnabled( false );
     uploadWavItem.addActionListener( this );
     menu.add( uploadWavItem );
 
@@ -288,8 +283,7 @@ public class RemoteMaster
     menu.setMnemonic( KeyEvent.VK_H );
     menuBar.add( menu );
 
-    aboutItem = new JMenuItem( "About..." );
-    aboutItem.setMnemonic( KeyEvent.VK_A );
+    aboutItem = new JMenuItem( "About...", KeyEvent.VK_A );
     aboutItem.addActionListener( this );
     menu.add( aboutItem );
   }
@@ -300,8 +294,9 @@ public class RemoteMaster
       return chooser;
 
     RMFileChooser chooser = new RMFileChooser( dir );
-    EndingFileFilter irFilter = new EndingFileFilter( "IR files (*.ir)", irEndings );
+    EndingFileFilter irFilter = new EndingFileFilter( "RM IR files (*.rmir)", rmEndings );
     chooser.addChoosableFileFilter( irFilter );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "IR files (*.ir)", irEndings ));
     chooser.addChoosableFileFilter( new EndingFileFilter( "Text files (*.txt)", txtEndings ));
     chooser.setFileFilter( irFilter );
 
@@ -381,16 +376,25 @@ public class RemoteMaster
 
     learnedPanel.set( remoteConfig );
     range = remoteConfig.getRemote().getLearnedAddress();
-    available = range.getEnd() - range.getStart(); 
-    learnedProgressBar.setMinimum( 0 );
-    learnedProgressBar.setMaximum( available );
-    used = remoteConfig.getLearnedSignalBytesUsed();
-    learnedProgressBar.setValue( used );
-    learnedProgressBar.setString( Integer.toString( available - used ) + " free" );
+    if ( range != null )
+    {
+      available = range.getEnd() - range.getStart(); 
+      learnedProgressBar.setMinimum( 0 );
+      learnedProgressBar.setMaximum( available );
+      used = remoteConfig.getLearnedSignalBytesUsed();
+      learnedProgressBar.setValue( used );
+      learnedProgressBar.setString( Integer.toString( available - used ) + " free" );
+    }
+    else
+    {
+      learnedProgressBar.setValue( 0 );
+      learnedProgressBar.setString( "N/A" );
+    }
 
     rawDataPanel.set( remoteConfig );
 
     setTitleFile( file );
+    this.file = file;
     return file;
   }
 
@@ -403,8 +407,8 @@ public class RemoteMaster
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( ".ir" ))
-        name = name + ".ir";
+      if ( !name.toLowerCase().endsWith( ".rmir" ))
+        name = name + ".rmir";
       File newFile = new File( name );
       int rc = JOptionPane.YES_OPTION;
       if ( newFile.exists())
@@ -625,6 +629,7 @@ public class RemoteMaster
   }
   private static String[] parms = null;
 
+  private final static String[] rmEndings = { ".rmir" };
   private final static String[] irEndings = { ".ir" };
   private final static String[] txtEndings = { ".txt" };
 }

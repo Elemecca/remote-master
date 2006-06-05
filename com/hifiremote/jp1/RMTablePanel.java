@@ -17,6 +17,11 @@ public abstract class RMTablePanel
 {
   public RMTablePanel( JP1TableModel model )
   {
+    this( model, BorderLayout.CENTER );
+  }
+  
+  public RMTablePanel( JP1TableModel model, String location )
+  {
     this.model = model;
     sorter = new TableSorter( model );
     table = new JP1Table( sorter );
@@ -250,21 +255,24 @@ public abstract class RMTablePanel
     };
     table.addMouseMotionListener( mmh );
 
-    add( new JScrollPane( table ), BorderLayout.CENTER );
+    JScrollPane scrollPane = new JScrollPane( table );
+    Dimension d = table.getPreferredScrollableViewportSize();
+    d.width = table.getPreferredSize().width;
+    table.setPreferredScrollableViewportSize( d );
+    add( scrollPane, location );
+    // add( new JScrollPane( table ), location );
 
     buttonPanel = new JPanel();
     add( buttonPanel, BorderLayout.SOUTH );
 
     newButton = new JButton( "New" );
-    newButton.setEnabled( false );
     newButton.addActionListener( this );
     newButton.setToolTipText( "Add a new item." );
     buttonPanel.add( newButton );
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
-    deleteButton.setToolTipText( "Delete the deleted item." );
-    deleteButton.setEnabled( false );
+    deleteButton.setToolTipText( "Delete the selected item." );
     buttonPanel.add( deleteButton );
 
     upButton = new JButton( "Up" );
@@ -293,6 +301,10 @@ public abstract class RMTablePanel
   }
 
   protected abstract Object createRowObject();
+  protected Object getRowObject( int row )
+  {
+    return sorter.getRow( row );
+  }
   protected boolean canDelete( Object o ){ return true; }
   protected void doNotDelete( Object o ){}
 
@@ -347,12 +359,16 @@ public abstract class RMTablePanel
       }
       else
       {
+        int rowToSelect = row;
+        if ( rowToSelect == ( sorter.getRowCount() - 1 ))
+          --rowToSelect;
+        else 
+          ++rowToSelect;
+        if ( select && ( rowToSelect > -1 ))
+          table.setRowSelectionInterval( rowToSelect, rowToSelect );
+        
         sorter.removeRow( row );
         sorter.fireTableRowsDeleted( row, row );
-        if ( row == sorter.getRowCount())
-          --row;
-        if ( select && ( row >= 0 ))
-          table.setRowSelectionInterval( row, row );
       }
     }
     else if (( source == upButton ) ||

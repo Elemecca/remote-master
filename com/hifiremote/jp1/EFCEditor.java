@@ -11,7 +11,7 @@ public class EFCEditor
   {
     super( new JTextField());
     this.digits = digits;
-    setClickCountToStart( 1 );
+//    setClickCountToStart( 1 );
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
 

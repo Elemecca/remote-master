@@ -5,12 +5,19 @@ public class FunctionPanel
 {
   public FunctionPanel( DeviceUpgrade devUpgrade )
   {
-    super( "Functions", devUpgrade,
-           new FunctionTableModel( devUpgrade.getFunctions(), devUpgrade.getRemote()));
+    super( "Functions", devUpgrade, new FunctionTableModel( devUpgrade ));
+  }
+  
+  public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
+  {
+    (( FunctionTableModel )model ).setDeviceUpgrade( deviceUpgrade );
+    super.setDeviceUpgrade( deviceUpgrade );
   }
 
   public void update()
   {
+    if ( deviceUpgrade == null )
+      return;
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
     Remote r = deviceUpgrade.getRemote();

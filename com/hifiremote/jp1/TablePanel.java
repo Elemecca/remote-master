@@ -149,7 +149,7 @@ public abstract class TablePanel
             String message = ex.getMessage();
             if ( message == null )
               message = ex.toString();
-            KeyMapMaster.showMessage( message );
+            // KeyMapMaster.showMessage( message );
             ex.printStackTrace( System.err );
           }
         }
@@ -340,6 +340,12 @@ public abstract class TablePanel
     pasteButton.setEnabled( false );
     buttonPanel.add( pasteButton );
   }
+  
+  public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
+  {
+    super.setDeviceUpgrade( deviceUpgrade );
+    this.initColumns();
+  }
 
   public void update()
   {
@@ -366,7 +372,7 @@ public abstract class TablePanel
   public void actionPerformed( ActionEvent e )
   {
     finishEditing();
-    KeyMapMaster.clearMessage();
+    // KeyMapMaster.clearMessage();
     int row = 0;
     int col = 0;
     boolean select = false;

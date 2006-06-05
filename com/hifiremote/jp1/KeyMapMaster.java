@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.54";
+  public static final String version = "v1.56";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -393,6 +393,8 @@ public class KeyMapMaster
 
   public static void showMessage( String msg )
   {
+    if ( me == null )
+      return;
     if ( msg.length() == 0 )
       msg = " ";
     me.messageLabel.setText( msg );
@@ -401,6 +403,8 @@ public class KeyMapMaster
 
   public static void clearMessage()
   {
+    if ( me == null )
+      return;
     me.messageLabel.setText( " " );
   }
 

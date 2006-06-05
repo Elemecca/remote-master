@@ -15,7 +15,7 @@ public class ChoiceEditor
   public ChoiceEditor( Choice[] choices, boolean allowNull )
   {
     super( new JComboBox());
-    setClickCountToStart( 1 );
+//    setClickCountToStart( 1 );
     this.choices = choices;
     if ( allowNull )
       adjust = 1;

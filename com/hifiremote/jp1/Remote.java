@@ -1494,6 +1494,7 @@ public class Remote
     return ( Vector )protocolVariantNames.get( pid );
   }
 
+  /*
   public void clearButtonAssignments()
   {
     load();
@@ -1502,6 +1503,7 @@ public class Remote
       (( Button )e.nextElement()).setFunction( null ).setShiftedFunction( null ).setXShiftedFunction( null );
     }
   }
+  */
 
   public void setProtocols( Vector protocols )
   {

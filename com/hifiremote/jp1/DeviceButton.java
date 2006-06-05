@@ -20,6 +20,38 @@ public class DeviceButton
   {
     return name;
   }
+  
+  public int getDeviceTypeIndex( short[] data )
+  {
+    return data[ highAddress ] >> 4;
+  }
+  
+  public void setDeviceTypeIndex( short index, short[] data )
+  {
+      data[ highAddress ] &= 0x0F;
+      index <<= 4;
+      data[ highAddress ] |= index;
+  }
+  
+  public short getSetupCode( short[] data )
+  {
+     short setupCode = data[ highAddress ];
+     setupCode &= 0x07;
+     setupCode <<= 8;
+     setupCode |= data[ lowAddress ];
+     return setupCode;
+  }
+  
+  public void setSetupCode( short setupCode, short[] data )
+  {
+    short temp = setupCode;
+    temp >>= 8;
+    data[ highAddress ] &= 0xF8;
+    data[ highAddress ] |= temp;
+
+    setupCode &= 0xFF;
+    data[ lowAddress ] = setupCode;
+  }
 
   private String name;
   private int highAddress = 0;

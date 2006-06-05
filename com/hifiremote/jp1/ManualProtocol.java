@@ -252,6 +252,11 @@ public class ManualProtocol
     code.put( p.getFullName(), pCode );
   }
 
+  public boolean needsCode( Remote r )
+  {
+    return true;
+  }
+  
   public void setName( String name )
   {
     this.name = name;

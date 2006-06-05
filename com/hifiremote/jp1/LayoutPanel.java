@@ -310,11 +310,11 @@ public class LayoutPanel
       buttonName.setText( name );
       Function f = null;
       if ( normalMode.isSelected())
-        f = b.getFunction();
+        f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
       else if ( shiftMode.isSelected())
-        f = b.getShiftedFunction();
+        f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
       else if ( xShiftMode.isSelected())
-        f = b.getXShiftedFunction();
+        f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
       if ( f != null )
         function.setText( f.getName());
       else
@@ -413,11 +413,11 @@ public class LayoutPanel
     if ( b != null )
     {
       if ( normalMode.isSelected())
-        b.setFunction( f );
+        deviceUpgrade.setFunction( b, f, Button.NORMAL_STATE );
       else if ( shiftMode.isSelected())
-        b.setShiftedFunction( f );
+        deviceUpgrade.setFunction( b, f, Button.SHIFTED_STATE );
       else if ( xShiftMode.isSelected())
-        b.setXShiftedFunction( f );
+        deviceUpgrade.setFunction( b, f, Button.XSHIFTED_STATE );
       setButtonText( currentShape, b );
       deviceUpgrade.checkSize();
     }
@@ -585,11 +585,11 @@ public class LayoutPanel
 
         Function f = null;
         if ( normalMode.isSelected())
-          f = b.getFunction();
+          f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
         else if ( shiftMode.isSelected())
-          f = b.getShiftedFunction();
+          f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
         else if ( xShiftMode.isSelected())
-          f = b.getXShiftedFunction();
+          f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
 
         if ( f != null )
         {
@@ -640,11 +640,11 @@ public class LayoutPanel
       }
       Function f = null;
       if ( normalMode.isSelected())
-        f = b.getFunction();
+        f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
       else if ( shiftMode.isSelected())
-        f = b.getShiftedFunction();
+        f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
       else if ( xShiftMode.isSelected())
-        f = b.getXShiftedFunction();
+        f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
 
       String text = name;
       if ( f != null )

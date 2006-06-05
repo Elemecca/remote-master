@@ -28,6 +28,7 @@ public class ButtonPanel
     table.setSurrendersFocusOnKeystroke( true );
     table.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_DELETE, 0), "delete");
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
+    table.setDefaultEditor( Function.class, popupEditor );
 
     deleteAction = new AbstractAction( "Remove" ) 
     {
@@ -40,9 +41,11 @@ public class ButtonPanel
             setFunctionAt( null, rows[ r ], cols[ c ] );
       }
     };
-    table.getActionMap().put("delete", deleteAction );
+    deleteAction.setEnabled( false );
+    table.getActionMap().put( "delete", deleteAction );
 
-    table.setDefaultRenderer( Button.class, new FunctionRenderer( deviceUpgrade ));
+    renderer = new FunctionRenderer( deviceUpgrade );
+    table.setDefaultRenderer( Button.class, renderer );
     table.getTableHeader().setReorderingAllowed( false );
 
     ListSelectionListener lsl = new ListSelectionListener() 
@@ -122,7 +125,9 @@ public class ButtonPanel
     {
       x.printStackTrace( System.err );
     }
+    /*
     table.addMouseListener( new PopupListener());
+    */
 
     add( new JScrollPane( table ), BorderLayout.CENTER );
 
@@ -158,7 +163,7 @@ public class ButtonPanel
     for ( int r = 0; ( r < rows.length ) && !enableDelete ; r++ )
     {
       int row = rows[ r ];
-      Button b = ( Button )model.getValueAt( row, 1 );
+      Button b = ( Button )model.getValueAt( row, 0 );
       for ( int c = 0; ( c < cols.length ) && !enableDelete ; c++ )
       {
         int col = cols[ c ];
@@ -166,11 +171,11 @@ public class ButtonPanel
         {
           Function f = null;
           if ( col == 1 )
-            f = b.getFunction();
+            f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
           else if ( col == 2 )
-            f = b.getShiftedFunction();
+            f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
           else if ( col == 3 )
-            f = b.getXShiftedFunction();
+            f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
           if ( f != null )
             enableDelete = true;
         }
@@ -181,8 +186,14 @@ public class ButtonPanel
 
   public void update()
   {
-    setButtons( deviceUpgrade.getRemote().getUpgradeButtons());
-    setFunctions();
+    model.setDeviceUpgrade( deviceUpgrade );
+    renderer.setDeviceUpgrade( deviceUpgrade );
+    
+    if ( deviceUpgrade != null )
+    {
+      setButtons( deviceUpgrade.getRemote().getUpgradeButtons());
+      setFunctions();
+    }
   }
 
   private void setButtons( Button[] buttons )
@@ -204,6 +215,7 @@ public class ButtonPanel
       l.addMouseListener( doubleClickListener );
       functionPanel.add( l );
 
+      /*
       FunctionItem item;
       if ( f == null )
         item = new FunctionItem( null );
@@ -211,14 +223,19 @@ public class ButtonPanel
         item = f.getItem();
       item.addActionListener( this );
       popup.add( item );
+      */
+      popupEditor.addObject( f );
     }
   }
 
   private void setFunctions()
   {
+    /*
     popup = new JPopupMenu();
     popup.setLayout( new GridLayout( 0, 3 ));
     FunctionItem item = null;
+    */
+    popupEditor.removeAll();
 
     functionPanel.removeAll();
     FunctionLabel label = null;
@@ -236,19 +253,19 @@ public class ButtonPanel
       function = ( Function )funcs.elementAt( i );
       addFunction( function );
     }
-    // addFunction( null ); // The "none" function
+    functionPanel.doLayout();
   }
 
   // From interface ActionListener
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( source.getClass() == FunctionItem.class )
+/*    if ( source.getClass() == FunctionItem.class )
     {
       Function function = (( FunctionItem )source ).getFunction();
       setFunctionAt( function, mouseRow, mouseCol );
     }
-    else if ( source == autoAssign )
+    else */ if ( source == autoAssign )
     {
       deviceUpgrade.autoAssignFunctions();
       model.setButtons();
@@ -256,6 +273,7 @@ public class ButtonPanel
     deviceUpgrade.checkSize();
   }
 
+  /*
   class PopupListener
     extends MouseAdapter
   {
@@ -280,6 +298,7 @@ public class ButtonPanel
       }
     }
   }
+  */
 
   private boolean canAssign( int row, int col )
   {
@@ -288,7 +307,9 @@ public class ButtonPanel
 
     DeviceType devType = deviceUpgrade.getDeviceType();
     ButtonMap map = devType.getButtonMap();
-    Button b = ( Button )model.getValueAt( row, col );
+    Button b = ( Button )model.getValueAt( row, 0 );
+    if ( b == null )
+      return false;
     if ( col == 1 )
     {
       if ( b.allowsKeyMove() || map.isPresent( b ))
@@ -347,6 +368,7 @@ public class ButtonPanel
       }
       model.fireTableRowsUpdated( firstRow, row );
     }
+    selectionChanged();
   }
 
   class DoubleClickListener
@@ -386,5 +408,7 @@ public class ButtonPanel
   private JButton autoAssign = null;
   private AbstractAction deleteAction = null;
   private Button[] buttons = null;
+  private PopupEditor popupEditor = new PopupEditor();
+  private FunctionRenderer renderer = null;
 }
 

@@ -70,15 +70,12 @@ public class DeviceButtonTableModel
         return db.getName();
       case 2:
       {
-        int type = data[ db.getHighAddress()] >> 4;
+        int type = db.getDeviceTypeIndex( data );
         return remoteConfig.getRemote().getDeviceTypeByIndex( type );
       }
       case 3:
       {
-        int setupCode = data[ db.getHighAddress()] & 0x0F;
-        setupCode <<= 8;
-        setupCode |= data[ db.getLowAddress()];
-        return new SetupCode( setupCode );
+        return new SetupCode( db.getSetupCode( data ));
       }
       default:
         return null;
@@ -93,22 +90,13 @@ public class DeviceButtonTableModel
     int lowOffset = db.getLowAddress();
     if ( col == 2 )
     {
-      data[ highOffset ] &= 0x0F;
-      short type = ( short )(( DeviceType )value ).getNumber();
-      type <<= 4;
-      data[ highOffset ] |= type;
+      db.setDeviceTypeIndex( ( short )(( DeviceType )value ).getNumber(), data ); 
     }
     else if ( col == 3 )
     {
-      int code = (( SetupCode )value ).getValue();
-      short temp = ( short )( code >> 8 );
-      data[ highOffset ] &= 0xF0;
-      data[ highOffset ] |= temp;
- 
-      temp = ( short )( code & 0xFF );
-      data[ lowOffset ] = temp;
+      db.setSetupCode(( short )(( SetupCode )value ).getValue(), data );
     }
-    propertyChangeSupport.firePropertyChange( "size", null, null );
+    propertyChangeSupport.firePropertyChange( "value", null, null );
   }
   
   public TableCellRenderer getColumnRenderer( int col )

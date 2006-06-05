@@ -63,6 +63,10 @@ public class RemoteConfiguration
     Vector learnedNotes = new Vector();
     while (( line = in.readLine()) != null )
     {
+      if ( line.length() == 0 )
+        continue;
+      if ( line.equals( "[Device Upgrade]" ))
+        break;
       int pos = line.indexOf( '=' );
       String temp = line.substring( 0, pos );
       int base = 10;
@@ -96,13 +100,57 @@ public class RemoteConfiguration
         v.add( "" );
       v.add( text );
     }
-    in.close();
     
+    Property property = null;
+    PropertyReader pr = new PropertyReader( in );
+    if ( "[Device Upgrade]".equals( line ))
+      property = new Property( line, "" );
+    
+    Properties props = new Properties();
+    while ( true )
+    {
+      if (( property == null ) || property.name.equals( "[Device Upgrade]" ))
+      {
+        if ( !props.isEmpty())
+        {
+          DeviceUpgrade upgrade = new DeviceUpgrade();
+          upgrade.load( props, true );
+          devices.add( upgrade );
+          props.clear();
+        }
+        if ( property == null )
+          break;
+      }
+      else
+        props.setProperty( property.name, property.value );
+      property = pr.nextProperty( property );
+    }
+    in.close();
+
     decodeAdvancedCodes( advNotes );    
-    decodeUpgrades( deviceNotes, protocolNotes );
+    if ( devices.isEmpty())
+      decodeUpgrades( deviceNotes, protocolNotes );
     decodeLearnedSignals( learnedNotes );
   }
+  
+  private DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
+  {
+    return findDeviceUpgrade( deviceButton.getDeviceTypeIndex( data ), 
+                              deviceButton.getSetupCode( data ));
+  }
 
+  private DeviceUpgrade findDeviceUpgrade( int deviceTypeIndex, int setupCode )
+  {
+    for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
+    {
+      DeviceUpgrade deviceUpgrade = ( DeviceUpgrade )e.nextElement();
+      if (( deviceTypeIndex == deviceUpgrade.getDeviceType().getNumber()) &&
+          ( setupCode == deviceUpgrade.getSetupCode()))
+        return deviceUpgrade;
+    }
+    return null;
+  }
+  
   public RemoteConfiguration( Remote remote )
   {
     this.remote = remote;
@@ -162,21 +210,30 @@ public class RemoteConfiguration
       }
       else 
       {
-        AdvancedCode item = null;
-        DeviceButton boundDeviceButton = remote.getDeviceButtons()[ boundDeviceIndex ];
+        KeyMove keyMove = null;
         Hex hex = Hex.subHex( data, offset, length );
         if ( remote.getAdvCodeFormat() == remote.HEX )
-          item = new KeyMove( keyCode, boundDeviceIndex, hex, text );
+          keyMove = new KeyMove( keyCode, boundDeviceIndex, hex, text );
         else if ( remote.getEFCDigits() == 3 )
         {
           if ( length == 1 )
-            item = new KeyMoveKey( keyCode, boundDeviceIndex, hex, text );
+            keyMove = new KeyMoveKey( keyCode, boundDeviceIndex, hex, text );
           else
-            item = new KeyMoveEFC( keyCode, boundDeviceIndex, hex, text );
+            keyMove = new KeyMoveEFC( keyCode, boundDeviceIndex, hex, text );
         }
         else // EFCDigits == 5
-          item = new KeyMoveEFC5( keyCode, boundDeviceIndex, hex, text );
-        keymoves.add( item );
+          keyMove = new KeyMoveEFC5( keyCode, boundDeviceIndex, hex, text );
+        
+        // check if the keymove comes from a device upgrade
+        DeviceButton boundDeviceButton = remote.getDeviceButtons()[ boundDeviceIndex ];
+        DeviceUpgrade boundUpgrade = findDeviceUpgrade( boundDeviceButton );
+        DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode());
+        if (( boundUpgrade != null ) && ( boundUpgrade == moveUpgrade ))
+        {    
+          // Add the keymove to the device upgrade instead of the keymove collection
+        }
+        else
+          keymoves.add( keyMove );
       }
       offset += length;
     }
@@ -187,7 +244,7 @@ public class RemoteConfiguration
     AddressRange advCodeRange = remote.getAdvanceCodeAddress();
     int offset = advCodeRange.getStart();
     int endOffset = advCodeRange.getEnd();
-    while (( offset <= endOffset ) && ( data[ offset ] != 0 ))
+    while (( offset <= endOffset ) && ( data[ offset ] != remote.getSectionTerminator()))
     {
       offset++; // skip the keyCode
 
@@ -297,7 +354,7 @@ public class RemoteConfiguration
       }
       else
         nextCode = Hex.get( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress();
-      Hex code = Hex.subHex( data, offset, nextCode - codeOffset );
+      Hex code = Hex.subHex( data, codeOffset, nextCode - codeOffset );
       String text = null;
       if ( notesEnum.hasMoreElements())
         text = ( String )notesEnum.nextElement();
@@ -312,10 +369,10 @@ public class RemoteConfiguration
     notesEnum = deviceNotes.elements();
     offset = Hex.get( data, addr.getStart()) - remote.getBaseAddress(); // get offset of device table
     count = Hex.get( data, offset ); // get number of entries in upgrade table
-    offset += 2;  // skip to first entry
     for ( int i = 0; i < count; ++i )
     {
-      int setupCode = Hex.get( data, offset ) & 0x3FF;
+      offset += 2;
+      int setupCode = Hex.get( data, offset ) & 0x7FF;
       DeviceType devType = remote.getDeviceTypes()[ data[ offset ] >> 4 ];
       int codeOffset = offset + 2 * count; // compute offset to offset of upgrade code
       codeOffset = Hex.get( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
@@ -355,20 +412,18 @@ public class RemoteConfiguration
       pidHex[ 0 ] = ( short )(( pid > 0xFF ) ? 1 : 0 );
       pidHex[ 1 ] = ( short )( pid & 0xFF );
       
-      DeviceUpgrade upgrade = new DeviceUpgrade();
-      upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
-      upgrade.setSetupCode( setupCode );
-
       String text = null;
       if ( notesEnum.hasMoreElements())
         text = ( String )notesEnum.nextElement();
       if ( "".equals( text ))
         text = null;
-      upgrade.setNotes( text );
+
+      DeviceUpgrade upgrade = new DeviceUpgrade();
+      upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
+      upgrade.setSetupCode( setupCode );
+      upgrade.setDescription( text );
       
       devices.add( upgrade );
-      
-      offset += 2;
     }
   }
 
@@ -472,7 +527,7 @@ public class RemoteConfiguration
 
     Enumeration notesEnum = notes.elements();
     int offset = addr.getStart();
-    while (( offset < addr.getEnd()) && ( data[ offset ] != 0 ))
+    while (( offset < addr.getEnd()) && ( data[ offset ] != remote.getSectionTerminator()))
     {
       short keyCode = data[ offset++ ];
       int device = data[ offset++ ] >> 4;
@@ -495,7 +550,7 @@ public class RemoteConfiguration
       return 0;
 
     int offset = addr.getStart();
-    while (( offset < addr.getEnd()) && ( data[ offset ] != 0 ))
+    while (( offset < addr.getEnd()) && ( data[ offset ] != remote.getSectionTerminator()))
     {
       offset += 2; // skip keycode and device button
       int length = data[ offset++ ];
@@ -572,17 +627,17 @@ public class RemoteConfiguration
       printNote( 0x1000 + j, item.getNotes(), out );
     }
     
-    for ( j = 0; j < devices.size(); ++j )
-    {
-      DeviceUpgrade upgrade = ( DeviceUpgrade )devices.elementAt( j );
-      printNote( 0x3000 + j, upgrade.getNotes(), out );
-    }
+//    for ( j = 0; j < devices.size(); ++j )
+//    {
+//      DeviceUpgrade upgrade = ( DeviceUpgrade )devices.elementAt( j );
+//      printNote( 0x3000 + j, upgrade.getNotes(), out );
+//    }
 
-    for ( j = 0; j < protocols.size(); ++j )
-    {
-      ProtocolUpgrade protocol = ( ProtocolUpgrade )protocols.elementAt( j );
-      printNote( 0x4000 + j, protocol.getNotes(), out );
-    }
+//    for ( j = 0; j < protocols.size(); ++j )
+//    {
+//      ProtocolUpgrade protocol = ( ProtocolUpgrade )protocols.elementAt( j );
+//      printNote( 0x4000 + j, protocol.getNotes(), out );
+//    }
 
     for ( j = 0; j < learned.size(); ++j )
     {
@@ -590,11 +645,12 @@ public class RemoteConfiguration
       printNote( 0x5000 + j, signal.getNotes(), out );
     }
     
+    out.println();
     for ( j = 0; j < devices.size(); ++j )
     {
       DeviceUpgrade device = ( DeviceUpgrade )devices.elementAt( j );
       out.println();
-      out.print( "[Device Upgrade]" );
+      out.println( "[Device Upgrade]" );
       device.store( out );
     }
     

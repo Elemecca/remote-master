@@ -40,9 +40,31 @@ public class Button
     else
       return remote.getXShiftLabel() + '-' + name;
   }
+  
+  public String getName( int state )
+  {
+    if ( state == SHIFTED_STATE )
+      return getShiftedName();
+    else if ( state == XSHIFTED_STATE )
+      return getXShiftedName();
+    else
+      return getName();
+  }
+  
   public String getStandardName(){ return standardName; }
   public void setStandardName( String name ){ standardName = name.toLowerCase(); }
   public short getKeyCode(){ return keyCode; }
+  public short getShiftedKeyCode(){ return ( short )( keyCode | remote.getShiftMask()); }
+  public short getXShiftedKeyCode(){ return ( short )( keyCode | remote.getXShiftMask()); }
+  public short getKeyCode( int state )
+  {
+    if ( state == SHIFTED_STATE )
+      return getShiftedKeyCode();
+    else if ( state == XSHIFTED_STATE )
+      return getXShiftedKeyCode();
+    return getKeyCode();
+  }
+  
   public int getMultiMacroAddress(){ return multiMacroAddress; }
   public void setMultiMacroAddress( int addr ){ multiMacroAddress = addr; }
 
@@ -101,6 +123,16 @@ public class Button
       restrictions |= ( SHIFT | XSHIFT );
   }
   public boolean getIsXShifted(){ return isXShifted; }
+  
+  public int getState()
+  {
+    if ( getIsShifted())
+      return SHIFTED_STATE;
+    else if( getIsXShifted())
+      return XSHIFTED_STATE;
+    else
+      return NORMAL_STATE;
+  }
 
   public int getRestrictions(){ return restrictions; }
   public void setRestrictions( int restrictions )
@@ -130,7 +162,18 @@ public class Button
       return false;
     return (( restrictions & XSHIFT_MOVE_BIND ) == 0 );
   }
+  
+  public boolean allowsKeyMove( int state )
+  {
+    if ( state == SHIFTED_STATE )
+      return allowsShiftedKeyMove();
+    else if ( state == XSHIFTED_STATE )
+      return allowsXShiftedKeyMove();
+    else
+      return allowsKeyMove();
+  }
 
+  /*
   public Button setFunction( Function newFunc )
   {
     if ( function != null )
@@ -190,6 +233,7 @@ public class Button
       return xShiftedButton.getFunction();
     return xShiftedFunction;
   }
+  */
 
   public void addButtonMap( int mapIndex )
   {
@@ -207,6 +251,7 @@ public class Button
     return buttonMaps;
   }
 
+  /*
   public short[] getKeyMoves( short[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
   {
     short[] move1 = getKeyMove( function, 0, deviceCode, devType, remote, keyMovesOnly );
@@ -221,6 +266,7 @@ public class Button
 
     return rc;
   }
+  */
 
   public short[] getKeyMove( Function f, int mask,
                              short[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
@@ -306,9 +352,11 @@ public class Button
   private short keyCode;
   private Remote remote;
   private int multiMacroAddress;
+  /*
   private Function function;
   private Function shiftedFunction;
   private Function xShiftedFunction;
+  */
   private boolean[] inMap = null;
   private Button baseButton = null;
   private Button shiftedButton = null;

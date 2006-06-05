@@ -16,7 +16,7 @@ public abstract class KMTableModel
   public KMTableModel( Vector data )
   {
     super();
-    this.data = data;
+    setData( data );
   }
 
   public boolean isColumnWidthFixed( int col )

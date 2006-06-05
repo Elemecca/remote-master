@@ -78,8 +78,6 @@ public class ImportRawUpgradeDialog
     protocolCode.getDocument().addDocumentListener( this );
     new TextPopupMenu( protocolCode );
     protocolLabel.setLabelFor( protocolCode );
-    protocolLabel.setEnabled( false );
-    protocolCode.setEnabled( false );
     mainPanel.add( new JScrollPane( protocolCode ), "1, 11, 3, 11" );
 
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
@@ -161,9 +159,7 @@ public class ImportRawUpgradeDialog
     Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote(( Remote )remoteList.getSelectedItem() , pid );
     if ( p != null )
     {
-      protocolCode.setEnabled( false );
       protocolLabel.setText( "Protocol Code:" );
-      protocolLabel.setEnabled( false );
       ok.setEnabled( true );
       return;
     }

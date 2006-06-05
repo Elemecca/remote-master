@@ -41,6 +41,8 @@ public class KeyMapPanel
     {
       public int getColumnCount()
       {
+        if ( deviceUpgrade == null )
+          return 3;
         Remote r = deviceUpgrade.getRemote();
         if (( r != null ) && r.getXShiftEnabled())
           return 4;
@@ -56,11 +58,11 @@ public class KeyMapPanel
           case 0:
             return b.getName();
           case 1:
-            return getName( b.getFunction());
+            return getName( deviceUpgrade.getFunction( b, Button.NORMAL_STATE ));
           case 2:
-            return getName( b.getShiftedFunction());
+            return getName( deviceUpgrade.getFunction( b, Button.SHIFTED_STATE ));
           case 3:
-            return getName( b.getXShiftedFunction());
+            return getName( deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE ));
           default:
             return null;
         }
@@ -119,9 +121,9 @@ public class KeyMapPanel
     for ( int i = 0; i < buttons.length; i++ )
     {
       Button b = buttons[ i ];
-      if (( b.getFunction() != null ) ||
-          ( b.getShiftedFunction() != null ) ||
-          ( b.getXShiftedFunction() != null ))
+      if (( deviceUpgrade.getFunction( b, Button.NORMAL_STATE ) != null ) ||
+          ( deviceUpgrade.getFunction( b, Button.SHIFTED_STATE ) != null ) ||
+          ( deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE ) != null ))
         list.add( b );
     }
   }

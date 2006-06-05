@@ -16,15 +16,23 @@ public class ButtonTableModel
   private static String[] columnNames =
   { "Button", "Function", "", "" };
   private static final Class[] columnClasses =
-  { Button.class, Button.class, Button.class, Button.class };
+  { Button.class, Function.class, Function.class, Function.class };
 
   public ButtonTableModel( DeviceUpgrade deviceUpgrade )
   {
     this.deviceUpgrade = deviceUpgrade;
   }
+  
+  public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
+  {
+    this.deviceUpgrade = deviceUpgrade;
+    fireTableDataChanged();
+  }
 
   public void setButtons()
   {
+    if ( deviceUpgrade == null )
+      return;
     Remote remote = deviceUpgrade.getRemote();
     this.buttons = remote.getUpgradeButtons();
     columnNames[ shiftedCol ] = remote.getShiftLabel();
@@ -42,17 +50,39 @@ public class ButtonTableModel
 
   public int getColumnCount()
   {
+    if ( deviceUpgrade == null )
+      return 3;
     Remote remote = deviceUpgrade.getRemote();
     if (( remote != null ) && remote.getXShiftEnabled())
       return 4;
     else
       return 3;
   }
+  
+  public boolean isCellEditable( int row, int col )
+  {
+    if ( col != buttonCol )
+      return true;
+    return false;
+  }
 
   public Object getValueAt( int row, int col )
   {
+    if ( row < 0 )
+      return null;
     Button button = buttons[ row ];
-    return button;
+    switch ( col )
+    {
+      case buttonCol:
+        return button;
+      case functionCol:
+        return deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
+      case shiftedCol:
+        return deviceUpgrade.getFunction( button, Button.SHIFTED_STATE );
+      case xShiftedCol:
+        return deviceUpgrade.getFunction( button, Button.XSHIFTED_STATE );
+    }
+   return null;
   }
 
   public void setValueAt( Object value, int row, int col )
@@ -64,15 +94,15 @@ public class ButtonTableModel
       case buttonCol:
         break;
       case functionCol:
-        button.setFunction(( Function )value );
+        deviceUpgrade.setFunction( button, ( Function )value, Button.NORMAL_STATE );
         relatedButton = button.getBaseButton();
         break;
       case shiftedCol:
-        button.setShiftedFunction(( Function )value );
+        deviceUpgrade.setFunction( button, ( Function )value, Button.SHIFTED_STATE );
         relatedButton = button.getShiftedButton();
         break;
       case xShiftedCol:
-        button.setXShiftedFunction(( Function )value );
+        deviceUpgrade.setFunction( button, ( Function )value, Button.XSHIFTED_STATE );
         relatedButton = button.getXShiftedButton();
       default:
         break;

@@ -87,9 +87,11 @@ public class ImageMap
             double x2 = Double.parseDouble( st.nextToken());
             double y2 = Double.parseDouble( st.nextToken());
             double w = x2 - x;
+            double h = y2 - y;
+            if ( w == 0 )
+              w = h;
             x -= w;
             w += w;
-            double h = y2 - y;
             y -= h;
             h += h;
             shape = new Ellipse2D.Double( x, y, w, h );

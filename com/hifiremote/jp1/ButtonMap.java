@@ -98,7 +98,7 @@ public class ButtonMap
     return rc;
   }
 
-  public short[] toBitMap( boolean digitMapUsed, boolean keyMovesOnly )
+  public short[] toBitMap( boolean digitMapUsed, boolean keyMovesOnly, ButtonAssignments assignments )
   {
     int len = ( buttons.length + 6 )/ 7;
     if ( len == 0 )
@@ -114,7 +114,7 @@ public class ButtonMap
       {
         Function func = null;
         if ( inner[ j ] != null )
-          func = inner[ j ].getFunction();
+          func = assignments.getAssignment( inner[ j ], inner[ j ].getState());
         if ( digitMapUsed && ( i == 0 ))
           func = null;
         if ( keyMovesOnly )
@@ -142,7 +142,7 @@ public class ButtonMap
     return result;
   }
 
-  public short[] toCommandList( boolean digitMapUsed, boolean keyMovesOnly )
+  public short[] toCommandList( boolean digitMapUsed, boolean keyMovesOnly, ButtonAssignments assignments )
   {
     int count = 0;
     int funcLen = 0;
@@ -153,7 +153,7 @@ public class ButtonMap
       flags[ i ] = false;
       for ( int j = 0; j < inner.length; j++ )
       {
-        Function func = inner[ j ].getFunction();
+        Function func = assignments.getAssignment( inner[ j ], inner[ j ].getState());
         if ( digitMapUsed && ( i == 0 ))
           func = null;
         if ( keyMovesOnly )
@@ -180,7 +180,7 @@ public class ButtonMap
         for ( int j = 0; j < inner.length; j++ )
         {
           short[] hex = null;
-          Function func = inner[ j ].getFunction();
+          Function func = assignments.getAssignment( inner[ j ], inner[ j ].getState());
           if ( digitMapUsed && ( i == 0 ))
             func = null;
           if (  keyMovesOnly )

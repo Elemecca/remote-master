@@ -21,7 +21,7 @@ public class DeviceUpgrade
 
     // remove all currently assigned functions
     if ( remote != null )
-      remote.clearButtonAssignments();
+      assignments.clear();
 
     Remote[] remotes = RemoteManager.getRemoteManager().getRemotes();
     if ( remote == null )
@@ -182,55 +182,31 @@ public class DeviceUpgrade
         customCode = null;
       Button[] buttons = remote.getUpgradeButtons();
       Button[] newButtons = newRemote.getUpgradeButtons();
+      ButtonAssignments newAssignments = new ButtonAssignments();
       Vector unassigned = new Vector();
       for ( int i = 0; i < buttons.length; i++ )
       {
         Button b = buttons[ i ];
-        Function f = b.getFunction();
-        Function sf = b.getShiftedFunction();
-        Function xf = b.getXShiftedFunction();
-        if (( f != null ) || ( sf != null ) || ( xf != null ))
+        for ( int state = Button.NORMAL_STATE; state <= Button.XSHIFTED_STATE; ++state )
         {
+          Function f = assignments.getAssignment( b, state );
           if ( f != null )
-            b.setFunction( null );
-          if ( sf != null )
-            b.setShiftedFunction( null );
-          if ( xf != null )
-            b.setXShiftedFunction( null );
-
-          Button newB = newRemote.findByStandardName( b );
-          if ( newB != null )
           {
-            if ( f != null )
-              newB.setFunction( f );
-            if ( sf != null )
-              newB.setShiftedFunction( sf );
-            if ( xf != null )
-              newB.setXShiftedFunction( xf );
-          }
-          else // keep track of lost assignments
-          {
+            assignments.assign( b, null, state );
+  
+            Button newB = newRemote.findByStandardName( b );
             Vector temp = null;
             if ( f != null )
-            {
-              temp = new Vector();
-              temp.add( f.getName());
-              temp.add( b.getName());
-              unassigned.add( temp );
-            }
-            if ( sf != null )
-            {
-              temp = new Vector();
-              temp.add( sf.getName());
-              temp.add( b.getShiftedName());
-              unassigned.add( temp );
-            }
-            if ( xf != null )
-            {
-              temp = new Vector();
-              temp.add( xf.getName());
-              temp.add( b.getXShiftedName());
-              unassigned.add( temp );
+            {  
+              if (( newB != null ) && newB.allowsKeyMove( state ))
+                newAssignments.assign( newB, f, state );
+              else
+              {
+                temp = new Vector();
+                temp.add( f.getName());
+                temp.add( b.getName());
+                unassigned.add( temp );
+              }
             }
           }
         }
@@ -265,6 +241,7 @@ public class DeviceUpgrade
         frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
         frame.show();
       }
+      assignments = newAssignments;
     }
     remote = newRemote;
   }
@@ -407,10 +384,12 @@ public class DeviceUpgrade
     return extFunctions;
   }
 
+  /*
   public Vector getKeyMoves()
   {
     return keymoves;
   }
+  */
 
   public void setFile( File file )
   {
@@ -434,7 +413,7 @@ public class DeviceUpgrade
         short rc = -1;
         for ( int j = 0; ; j++ )
         {
-          Function f = buttons[ j ].getFunction();
+          Function f = assignments.getAssignment( buttons[ j ]);
           if (( f != null ) && !f.isExternal())
           {
             if (( f.getHex().getData()[ 0 ] & 0xFF ) == codes[ j ])
@@ -480,7 +459,7 @@ public class DeviceUpgrade
         Hex hex = new Hex( cmd );
         f.setHex( hex );
         Button b = map.get( i );
-        b.setFunction( f );
+        assignments.assign( b, f );
         functions.add( f );
       }
     }
@@ -497,7 +476,7 @@ public class DeviceUpgrade
     int cmdLength = 0;
     short[] fixedData = null;
     Hex fixedDataHex = null;
-    if ( pCode != null )
+    if (( pCode != null ) && ( pCode.length() > 2 ))
     {
       int value = pCode.getData()[ 2 ] & 0x00FF;
       fixedDataLength = value >> 4;
@@ -551,13 +530,16 @@ public class DeviceUpgrade
 
     if ( tentative != null )
     {
-      System.err.println( "Using " + p.getDiagnosticName());
       p = tentative;
+      System.err.println( "Using " + p.getDiagnosticName());
       fixedDataLength = p.getFixedDataLength();
       cmdLength = p.getDefaultCmd().length();
       parmValues = tentativeVals;
       if (( pCode != null ) && !pCode.equals( p.getCode( remote )))
+      {
+        System.err.println( "But the code is different, so we're gonna use it" );
         customCode = pCode;
+      }
     }
     else 
     {
@@ -583,7 +565,7 @@ public class DeviceUpgrade
       f.setName( b.getName());
       f.setHex( new Hex( cmd ));
       functions.add( f );
-      b.setFunction( f );
+      assignments.assign( b, f );
     }
   }
 
@@ -641,11 +623,11 @@ public class DeviceUpgrade
     for ( i = 0; i < buttons.length; i++ )
     {
       Button b = buttons[ i ];
-      Function f = b.getFunction();
-      Function sf = b.getShiftedFunction();
+      Function f = assignments.getAssignment( b, Button.NORMAL_STATE );
+      Function sf = assignments.getAssignment( b, Button.SHIFTED_STATE );
       if ( b.getShiftedButton() != null )
         sf = null;
-      Function xf = b.getXShiftedFunction();
+      Function xf = assignments.getAssignment( b, Button.XSHIFTED_STATE );
       if ( b.getXShiftedButton() != null )
         xf = null;
       if ((( f != null ) && (( map == null ) || protocol.getKeyMovesOnly() || !map.isPresent( b ) || f.isExternal())) ||
@@ -664,15 +646,15 @@ public class DeviceUpgrade
       {
         Button button = buttons[ i ];
 
-        Function f = button.getFunction();
+        Function f = assignments.getAssignment( button, Button.NORMAL_STATE );
         first = appendKeyMove( buff, button.getKeyMove( f, 0, deviceCode, devType, remote, protocol.getKeyMovesOnly()),
                                f, includeNotes, first );
-        f = button.getShiftedFunction();
+        f = assignments.getAssignment( button, Button.SHIFTED_STATE );
         if ( button.getShiftedButton() != null )
           f = null;
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote, protocol.getKeyMovesOnly()),
                                f, includeNotes, first );
-        f = button.getXShiftedFunction();
+        f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
         if ( button.getXShiftedButton() != null )
           f = null;
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote, protocol.getKeyMovesOnly()),
@@ -704,14 +686,14 @@ public class DeviceUpgrade
     ButtonMap map = devType.getButtonMap();
     if ( map != null )
     {
-      rc += map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly()).length;
+      rc += map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly(), assignments ).length;
     }
 
     rc += protocol.getFixedData( parmValues ).length();
 
     if ( map != null )
     {
-      short[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly());
+      short[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly(), assignments );
       if ( data != null )
         rc += data.length;
     }
@@ -745,14 +727,14 @@ public class DeviceUpgrade
     ButtonMap map = devType.getButtonMap();
     if ( map != null )
     {
-      work.add( map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly()));
+      work.add( map.toBitMap( digitMapIndex != -1, protocol.getKeyMovesOnly(), assignments ));
     }
 
     work.add( protocol.getFixedData( parmValues ).getData());
 
     if ( map != null )
     {
-      data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly());
+      data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly(), assignments );
       if (( data != null ) && ( data.length != 0 ))
         work.add( data );
     }
@@ -887,7 +869,7 @@ public class DeviceUpgrade
     for ( i = 0; i < buttons.length; i++ )
     {
       Button b = buttons[ i ];
-      Function f = b.getFunction();
+      Function f = assignments.getAssignment( b, Button.NORMAL_STATE );
 
       String fstr;
       if ( f == null )
@@ -895,14 +877,14 @@ public class DeviceUpgrade
       else
         fstr = f.getName().replaceAll( regex, replace );
 
-      Function sf = b.getShiftedFunction();
+      Function sf = assignments.getAssignment( b, Button.SHIFTED_STATE );
       String sstr;
       if ( sf == null )
         sstr = "null";
       else
         sstr = sf.getName().replaceAll( regex, replace );
 
-      Function xf = b.getXShiftedFunction();
+      Function xf = assignments.getAssignment( b, Button.XSHIFTED_STATE );
       String xstr;
       if ( xf == null )
         xstr = null;
@@ -942,12 +924,12 @@ public class DeviceUpgrade
   public void load( BufferedReader reader, boolean loadButtons )
     throws Exception
   {
-    reset();
     reader.mark( 160 );
     String line = reader.readLine();
     reader.reset();
     if ( line.startsWith( "Name:" ))
     {
+      reset();
       importUpgrade( reader, loadButtons );
       return;
     }
@@ -960,7 +942,13 @@ public class DeviceUpgrade
       props.put( property.name, property.value );
     }
     reader.close();
+    
+    load( props, loadButtons );
+  }
 
+  public void load( Properties props, boolean loadButtons )
+  {
+    reset();
     String str = props.getProperty( "Description" );
     if ( str != null )
       description = str;
@@ -1073,13 +1061,13 @@ public class DeviceUpgrade
         if ( !str.equals( "null" ))
         {
           func = getFunction( str.replaceAll( regex, replace ));
-          b.setFunction( func );
+          assignments.assign( b, func, Button.NORMAL_STATE );
         }
         str = st.nextToken();
         if ( !str.equals( "null" ))
         {
           func = getFunction( str.replaceAll( regex, replace ));
-          b.setShiftedFunction( func );
+          assignments.assign( b, func, Button.SHIFTED_STATE );
         }
         if ( st.hasMoreTokens())
         {
@@ -1087,7 +1075,7 @@ public class DeviceUpgrade
           if ( !str.equals( "null" ))
           {
             func = getFunction( str.replaceAll( regex, replace ));
-            b.setXShiftedFunction( func );
+            assignments.assign( b, func, Button.XSHIFTED_STATE );
           }
         }
       }
@@ -1562,7 +1550,7 @@ public class DeviceUpgrade
         else if ( loadButtons )
         {
           System.err.println( "Setting function " + name + " on button " + b );
-          b.setFunction( func );
+          assignments.assign( b, f, Button.NORMAL_STATE );
         }
       }
 
@@ -1633,7 +1621,7 @@ public class DeviceUpgrade
           unassigned.add( temp );
         }
         else if ( loadButtons )
-          b.setShiftedFunction( func );
+          assignments.assign( b, func, Button.SHIFTED_STATE );
       }
     }
 
@@ -1728,15 +1716,12 @@ public class DeviceUpgrade
     for ( int i = 0; i < buttons.length; i++ )
     {
       Button b = buttons[ i ];
-      Function f = b.getFunction();
-      if (( f != null ) && ( f.getHex() == null ))
-        b.setFunction( null );
-      f = b.getShiftedFunction();
-      if (( f != null ) && ( f.getHex() == null ))
-        b.setShiftedFunction( null );
-      f = b.getXShiftedFunction();
-      if (( f != null ) && ( f.getHex() == null ))
-        b.setXShiftedFunction( null );
+      for ( int state = Button.NORMAL_STATE; state <= Button.XSHIFTED_STATE; ++state )
+      {
+        Function f = assignments.getAssignment( b, state );
+        if (( f != null ) && ( f.getHex() == null ))
+          assignments.assign( b, null, state );
+      }
     }
     System.err.println( "Done!" );
   }
@@ -1773,12 +1758,12 @@ public class DeviceUpgrade
         for ( int i = 0; i < buttons.length; i++ )
         {
           Button b = buttons[ i ];
-          if ( b.getFunction() == null )
+          if ( assignments.getAssignment( b ) == null )
           {
             if ( b.getName().equalsIgnoreCase( func.getName()) ||
                  b.getStandardName().equalsIgnoreCase( func.getName()))
             {
-              b.setFunction( func );
+              assignments.assign( b, func );
               break;
             }
           }
@@ -1866,9 +1851,18 @@ public class DeviceUpgrade
   private String notes = null;
   private Vector functions = new Vector();
   private Vector extFunctions = new Vector();
-  private Vector keymoves = new Vector();
+  // private Vector keymoves = new Vector();
   private File file = null;
   private Hex customCode = null;
+  private ButtonAssignments assignments = new ButtonAssignments();
+  public void setFunction( Button b, Function f, int state )
+  {
+    assignments.assign( b, f, state );
+  }
+  public Function getFunction( Button b, int state )
+  {
+    return assignments.getAssignment( b, state );
+  }
 
   private static final String[] deviceTypeAliasNames =
   {

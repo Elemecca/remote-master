@@ -41,7 +41,7 @@ public class KeyMove
 
   public int getSetupCode()
   {
-    return data.get( SETUP_CODE_INDEX ) & 0x0FFF;
+    return data.get( SETUP_CODE_INDEX ) & 0x03FF;
   }
 
   public void setSetupCode( int newCode )

@@ -115,6 +115,8 @@ public class SetupPanel
 
   public void update()
   {
+    if ( deviceUpgrade == null )
+      return;
     updateInProgress = true;
     setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
     Protocol p = deviceUpgrade.getProtocol();
