@@ -16,7 +16,12 @@ public class Pioneer3DevXlator
 
   private int getDevice( Hex hex )
   {
-    return reverse( extract( hex, 8, 2 ), 2 ) - 1;
+    int temp = extract( hex, 8, 3 );
+    if ( temp == 4 )
+      return 0;
+    if ( temp == 2 )
+      return 1;
+    return 2;
   }
 
   private int getDevice( Value[] parms )
@@ -24,12 +29,13 @@ public class Pioneer3DevXlator
     if (( parms[ devIndex ] == null ) ||
         ( parms[ devIndex ].getValue() == null ))
       return 0;
-    return (( Integer )parms[ devIndex ].getValue()).intValue();
+    return (( Number )parms[ devIndex ].getValue()).intValue();
   }
 
   private void setDevice( int device, Hex hex )
   {
-    insert( hex, 8, 2, reverse( device + 1, 2 ));
+    int temp = 1 << ( 2 - device );
+    insert( hex, 8, 3, temp );
   }
 
   private int getObc( Hex hex )
@@ -39,7 +45,7 @@ public class Pioneer3DevXlator
 
   private int getObc( Value[] parms )
   {
-    return (( Integer )parms[ obcIndex ].getValue()).intValue();
+    return (( Number )parms[ obcIndex ].getValue()).intValue();
   }
 
   private void setObc( int obc, Hex hex )
@@ -121,5 +127,4 @@ public class Pioneer3DevXlator
     Integer obc2 = getObc2( hex );
     parms[ obc2Index ] = new Value( obc2 );
   }
-
 }

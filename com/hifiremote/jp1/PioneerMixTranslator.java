@@ -19,7 +19,7 @@ public class PioneerMixTranslator
         continue;
       if (( parms[ i ] != null ) && ( parms[ i ].getValue() != null ))
       {
-        int val = (( Integer )parms[ i ].getValue()).intValue();
+        int val = (( Number )parms[ i ].getValue()).intValue();
         switch( i )
         {
           case 0: // Prefix device
@@ -31,7 +31,7 @@ public class PioneerMixTranslator
           case 1: // Prefix cmd
             if ( val == 0 ) // none
               flag = 0;
-            else 
+            else
               flag = (( val - 1 ) << 1 ) + 1;
             break;
           case 2:  // Device

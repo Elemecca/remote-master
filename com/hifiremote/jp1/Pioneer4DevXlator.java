@@ -81,7 +81,7 @@ public class Pioneer4DevXlator
     if (( parms[ i ] != null ) && ( parms[ i ].getValue() != null ))
     {
       System.err.println( "parms[i].getValue() is a " + parms[ i ].getValue().getClass());
-      value = (( Integer )parms[ i ].getValue()).intValue();
+      value = (( Number )parms[ i ].getValue()).intValue();
     }
     return ( short )value;
   }

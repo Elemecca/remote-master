@@ -58,12 +58,12 @@ public class Translator
   {
     if ( styleIndex != -1 )
     {
-      int style = (( Integer )devParms[ styleIndex ].getValueOrDefault()).intValue();
+      int style = (( Number )devParms[ styleIndex ].getValueOrDefault()).intValue();
       lsb = (( style & 2 ) == 2 );
       comp = (( style & 1 ) == 1 );
     }
     if ( bitsIndex != - 1 )
-      bits = (( Integer )devParms[ bitsIndex ].getValueOrDefault()).intValue();
+      bits = (( Number )devParms[ bitsIndex ].getValueOrDefault()).intValue();
   }
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )

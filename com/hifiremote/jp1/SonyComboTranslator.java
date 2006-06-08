@@ -13,7 +13,7 @@ public class SonyComboTranslator
     System.err.println( "SonyComboTranslator.in(), parmToSet=" + parmToSet );
     if (( parmToSet < 0 ) || ( parmToSet == 3 ))
       return;
-    int parm = (( Integer )parms[ parmToSet ].getValue()).intValue();
+    int parm = (( Number )parms[ parmToSet ].getValue()).intValue();
 
     switch ( parmToSet )
     {

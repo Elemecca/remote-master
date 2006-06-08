@@ -16,26 +16,26 @@ public class Rc5Translator
     if ( onlyIndex == 0 )
     {
       // User has specified which device to use.
-      select = (( Integer )parms[ 0 ].getValue()).intValue();
+      select = (( Number )parms[ 0 ].getValue()).intValue();
       insert( hexData, 6, 2, select );
     }
     else if ( onlyIndex == 1 )
     {
       // User is trying to set the OBC. so get the value
-      obc = (( Integer )parms[ 1 ].getValue()).intValue();
+      obc = (( Number )parms[ 1 ].getValue()).intValue();
 
       // We need to know which device is selected so get that.
       select = hexData.getData()[ 0 ] & 3;
       if ( select == 3 )
         select = 0;
       // We need to know if the device supports OBC less than or greater than 64
-      int flag = (( Integer )devParms[ (2 * select ) + 1 ].getValue()).intValue();
+      int flag = (( Number )devParms[ (2 * select ) + 1 ].getValue()).intValue();
 
       // if the flag and obc value aren't compatible
       if ((( flag == 0 ) && ( obc > 63 )) || (( flag == 1 ) && ( obc < 64 )))
       {
         // get the device number, since we need to match it.
-        int device = (( Integer )devParms[ 2 * select ].getValue()).intValue();
+        int device = (( Number )devParms[ 2 * select ].getValue()).intValue();
         // cycle through the device parms
         for ( int i = 0; i < 3; i++ )
         {
@@ -51,9 +51,9 @@ public class Rc5Translator
           // extract the device number
           if (( devParms[ index ] == null ) || devParms[ index ].getValue() == null )
             continue;
-          int tempDevice = (( Integer )devParms[ index ].getValue()).intValue();
+          int tempDevice = (( Number )devParms[ index ].getValue()).intValue();
           // extract the flag
-          int tempFlag = (( Integer )devParms[ index + 1 ].getValue()).intValue();
+          int tempFlag = (( Number )devParms[ index + 1 ].getValue()).intValue();
           // if they will work for the new OBC value
           if (( tempDevice == device ) && ( tempFlag != flag ))
           {
@@ -69,11 +69,11 @@ public class Rc5Translator
     {
       if (( parms[ 0 ] == null ) || ( parms[ 0 ].getValue() == null ))
         return;
-      select = (( Integer )parms[ 0 ].getValue()).intValue();
+      select = (( Number )parms[ 0 ].getValue()).intValue();
       insert( hexData, 6, 2, select );
       if (( parms[ 1 ] == null ) || ( parms[ 1 ].getValue() == null ))
         return;
-      obc = (( Integer )parms[ 1 ].getValue()).intValue();
+      obc = (( Number )parms[ 1 ].getValue()).intValue();
       insert( hexData, 0, 6, complement( obc, 6 ));
     }
   }
@@ -94,7 +94,7 @@ public class Rc5Translator
       if (( devParms[ index ] != null ) &&
           ( devParms[ index ].getValue() != null ))
       {
-        int flag = (( Integer )devParms[ index + 1 ].getValue()).intValue();
+        int flag = (( Number )devParms[ index + 1 ].getValue()).intValue();
         if ( flag != 0 )
           obc |= 64;
         break;

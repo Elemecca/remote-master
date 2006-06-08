@@ -13,7 +13,7 @@ public class ZenithCmdTranslator
     Value obcVal = parms[ 0 ];
     if ( obcVal == null )
       return;
-    Integer obcInt = ( Integer )obcVal.getValue();
+    Number obcInt = ( Number )obcVal.getValue();
     if ( obcInt == null )
       return;
 
@@ -28,7 +28,7 @@ public class ZenithCmdTranslator
     }
     else
       bits = bitsInt.intValue();
-    
+
     insert( hex, 1, bits, val );
   }
 
@@ -43,7 +43,7 @@ public class ZenithCmdTranslator
     }
     else
       bits = bitsInt.intValue();
-    
+
     int val = extract( hex, 1, bits );
 
     parms[ 0 ] = new Value( new Integer( val ), null );

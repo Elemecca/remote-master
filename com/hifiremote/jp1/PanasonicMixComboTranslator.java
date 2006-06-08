@@ -63,7 +63,7 @@ public class PanasonicMixComboTranslator
     if ( onlyIndex == 1 ) // device
     {
       // User has specified which device to use.
-      device = (( Integer )parms[ 1 ].getValue()).intValue();
+      device = (( Number )parms[ 1 ].getValue()).intValue();
       byte2 = hexData.getData()[ 1 ];
       subDevice = getSubDevice( byte2 );
       int value = combineValues( device, subDevice );
@@ -73,7 +73,7 @@ public class PanasonicMixComboTranslator
     {
       byte2 = hexData.getData()[ 1 ];
       device = getDevice( byte2 );
-      subDevice = (( Integer )parms[ 2 ].getValue()).intValue() + 1;
+      subDevice = (( Number )parms[ 2 ].getValue()).intValue() + 1;
       int value = combineValues( device, subDevice );
       insert( hexData, 10, bitLength, value );
     }
@@ -83,8 +83,8 @@ public class PanasonicMixComboTranslator
         return;
       if (( parms[ 2 ] == null ) || ( parms[ 2 ].getValue() == null ))
         return;
-      device = (( Integer )parms[ 1 ].getValue()).intValue();
-      subDevice = (( Integer )parms[ 2 ].getValue()).intValue() + 1;
+      device = (( Number )parms[ 1 ].getValue()).intValue();
+      subDevice = (( Number )parms[ 2 ].getValue()).intValue() + 1;
       insert( hexData, 10, bitLength, combineValues( device, subDevice ));
     }
   }

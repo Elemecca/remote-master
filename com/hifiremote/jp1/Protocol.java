@@ -131,9 +131,13 @@ public class Protocol
     if (( cmdParms.length == 0 ) && ( code.size() > 0 ))
     {
       // First figure out how many fixed bytes and cmd bytes there are
-      Iterator it = code.values().iterator();
-      Hex pCode = ( Hex )it.next();
+      Set keys = code.keySet();
+      Iterator it = keys.iterator();
+      String key = ( String )it.next();
+      Hex pCode = ( Hex )code.get( key );
       int value = pCode.getData()[ 2 ];
+      if ( key.equals( "HCS08" ))
+        value = pCode.getData()[ 4 ];
       int fixedDataLength = value >> 4;
       int cmdLength = value & 0x0F;
 

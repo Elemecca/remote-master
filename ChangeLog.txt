@@ -1,3 +1,10 @@
+Changes for v1.58
+- Various Translator fixes
+- Fix for Pioneer 3DEV protocol generating incorrect commands
+
+Changes for v1.57
+- Fixes for HCS08 based remotes
+
 Changes for v1.56
 - Fix for map files created with "Keep NCSA circles true"
 - Add HCS08 protocol code entries

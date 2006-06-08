@@ -13,7 +13,7 @@ public class LutronTranslator
   {
     if ( deviceOrCommand == DEVICE )
     {
-      int device = (( Integer )parms[ 0 ].getValue()).intValue();
+      int device = (( Number )parms[ 0 ].getValue()).intValue();
       int temp = ( device & 0xE0 ) >> 5;
       insert( hexData, 8, 4, encode[ temp ]);
 
@@ -22,26 +22,26 @@ public class LutronTranslator
     }
     else
     {
-      int device = (( Integer )devParms[ 0 ].getValueOrDefault()).intValue();
+      int device = (( Number )devParms[ 0 ].getValueOrDefault()).intValue();
       if (( parms[ 1 ] != null ) && ( parms[ 1 ].getValue() != null ))
       {
         device &= 0xFC;
-        device |= (( Integer )parms[ 1 ].getValue()).intValue();
+        device |= (( Number )parms[ 1 ].getValue()).intValue();
       }
       int temp =  device & 3; // get last 2 bits
       temp <<= 1;                                                               // shift left 1
-  
-      int obc = (( Integer )parms[ 0 ].getValue()).intValue();  // get the OBC
-   
+
+      int obc = (( Number )parms[ 0 ].getValue()).intValue();  // get the OBC
+
       temp |= ( obc & 0x80 ) >> 7; // add in bit 0 of the OBC
       insert( hexData, 0, 4, encode[ temp ]); // encode it and store it in the hex at bit offest 0
-  
+
       temp = ( obc & 0x70 ) >> 4; // get bits 1-3 of the OBC
       insert( hexData, 4, 4, encode[ temp ]); // encode it and store it in the hex at bit offset 4
-  
+
       temp = ( obc & 0x0E ) >> 1; // get bits 4-6 of the OBC
       insert( hexData, 8, 4, encode[ temp ]); // encode it and store it in the hex at bit offset 8
-  
+
       temp =  device ^ obc;
       int checksum = 0;
       checksum ^= ( temp & 0x03 );
@@ -51,7 +51,7 @@ public class LutronTranslator
       checksum ^= ( temp & 0x03 );
       temp >>= 2;
       checksum ^= ( temp & 0x03 );
-      
+
       temp = (( obc & 0x01 ) << 2 ); // get bit 7 of the OBC
       temp |= checksum; // add the checksum bits
       insert( hexData, 12, 4, encode[ temp ]);
@@ -93,7 +93,7 @@ public class LutronTranslator
         return i;
     }
     System.err.println( "LutronTranslator.decode( " + val + " ) failed!" );
-    return -1;
+    return 0;
   }
 
   private static int[] encode = { 1, 2, 7, 4, 13, 14, 11, 8 };

@@ -12,10 +12,10 @@ public class Sony1215Translator
   {
     short[] hex = hexData.getData();
 
-    int device1 = (( Integer )parms[ 0 ].getValue()).intValue();
-    boolean force1 = (( Integer )parms[ 1 ].getValue()).intValue() != 0;
-    int device2 = (( Integer )parms[ 2 ].getValue()).intValue();
-    boolean force2 = (( Integer )parms[ 3 ].getValue()).intValue() != 0;
+    int device1 = (( Number )parms[ 0 ].getValue()).intValue();
+    boolean force1 = (( Number )parms[ 1 ].getValue()).intValue() != 0;
+    int device2 = (( Number )parms[ 2 ].getValue()).intValue();
+    boolean force2 = (( Number )parms[ 3 ].getValue()).intValue() != 0;
 
     if (( device1 > 31 ) || force1 )
       hex[ 2 ] = 0x80;
@@ -29,8 +29,8 @@ public class Sony1215Translator
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
     short[] hex = hexData.getData();
-    int device1 = (( Integer )parms[ 0 ].getValue()).intValue();
-    int device2 = (( Integer )parms[ 2 ].getValue()).intValue();
+    int device1 = (( Number )parms[ 0 ].getValue()).intValue();
+    int device2 = (( Number )parms[ 2 ].getValue()).intValue();
     int force1 = 0;
     int force2 = 0;
 

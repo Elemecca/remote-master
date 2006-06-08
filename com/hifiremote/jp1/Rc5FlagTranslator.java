@@ -17,10 +17,10 @@ public class Rc5FlagTranslator
     {
       int parmIndex = 2 * i;
       Object val = parms[ parmIndex ].getUserValue();
-      int thisFlag = (( Integer )parms[ parmIndex + 1 ].getValue()).intValue();
+      int thisFlag = (( Number )parms[ parmIndex + 1 ].getValue()).intValue();
       if (( i != 0 ) && ( val == null ))
         thisFlag = 1 - flag;
-      
+
       hex[ i ] = ( short )(( hex[ i ] & 0xBF) | ( thisFlag * 0x40 ));
       flag = thisFlag;
     }
