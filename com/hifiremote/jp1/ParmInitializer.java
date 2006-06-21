@@ -6,10 +6,8 @@ public class ParmInitializer
   public ParmInitializer( String[] parms )
   {
     if ( parms.length != 4 )
-    {
-      KeyMapMaster.showMessage( "ParmInitializer requires exactly four values" );
-      return;
-    }
+      throw new IllegalArgumentException( "ParmInitializer requires exactly four values" );
+
     cmdNdx = Integer.parseInt( parms[ 0 ]);
     devNdx = Integer.parseInt( parms[ 1 ]);
     bitPos = Integer.parseInt( parms[ 2 ]);

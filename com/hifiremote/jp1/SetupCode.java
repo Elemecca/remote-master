@@ -6,9 +6,7 @@ public class SetupCode
 
   public SetupCode( String s )
   {
-    value = Integer.parseInt( s );
-    if (( value < 0 ) || ( value > 2047 ))
-      throw new NumberFormatException( "Value must be between 0 and 2047" );
+    this( Integer.parseInt( s ));
   }
 
   public SetupCode( int value )

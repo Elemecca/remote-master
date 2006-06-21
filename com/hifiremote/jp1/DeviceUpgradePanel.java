@@ -12,33 +12,50 @@ import java.beans.PropertyChangeListener;
 
 public class DeviceUpgradePanel
   extends RMTablePanel
-  implements ListSelectionListener, ChangeListener, ActionListener
+  implements ListSelectionListener, ChangeListener, ActionListener, DocumentListener
 {
   public DeviceUpgradePanel()
   {
     super( new DeviceUpgradeTableModel(), BorderLayout.LINE_START );
     table.getSelectionModel().addListSelectionListener( this );
+
+    JPanel panel = new JPanel( new BorderLayout());
+    panel.setBorder( BorderFactory.createTitledBorder( "Device Details" ));
+    add( panel, BorderLayout.CENTER );
+    
+    Box box = Box.createHorizontalBox();
+    box.add( new JLabel( "Description" ));
+    box.add( Box.createHorizontalStrut( 5 ));
+    box.add( description );
+    panel.add( box, BorderLayout.NORTH );
+    description.setEnabled( false );
+    description.getDocument().addDocumentListener( this );
+    new TextPopupMenu( description );
+    
     tabbedPane = new JTabbedPane();
-    tabbedPane.setBorder( BorderFactory.createTitledBorder( "Device Information" ));
     tabbedPane.addChangeListener( this );
-    add( tabbedPane, BorderLayout.CENTER );
+    tabbedPane.setEnabled( false );
+    panel.add( tabbedPane, BorderLayout.CENTER );
     
     loadButton = new JButton( "Load" );
     loadButton.setMnemonic( KeyEvent.VK_L );
     loadButton.setToolTipText( "Load a device upgrade from a file." );
     loadButton.addActionListener( this );
+    loadButton.setEnabled( false );
     super.buttonPanel.add( loadButton );
     
     importButton = new JButton( "Import" );
     importButton.setMnemonic( KeyEvent.VK_I );
     importButton.setToolTipText( "Import a device upgrade from the clipboard." );
     importButton.addActionListener( this );
+    importButton.setEnabled( false );
     super.buttonPanel.add( importButton );
     
     exportButton = new JButton( "Export" );
     exportButton.setMnemonic( KeyEvent.VK_X );
     exportButton.setToolTipText( "Save the current device upgrade to a file." );
     exportButton.addActionListener( this );
+    exportButton.setEnabled( false );
     super.buttonPanel.add( exportButton );
     
     setupPanel = new SetupPanel( null );
@@ -82,14 +99,29 @@ public class DeviceUpgradePanel
       int row = table.getSelectedRow();
       DeviceUpgrade upgrade = null;
       if ( row != -1 )
+      {
         upgrade = ( DeviceUpgrade )getRowObject( row );
-      exportButton.setEnabled( row != -1 );
-      loadButton.setEnabled( row != -1 );
-      importButton.setEnabled( row != -1 );
+        description.setText( upgrade.getDescription());
+      }
+      else 
+        description.setText( "" );
+
+      boolean enableFlag = row != -1;
+      description.setEnabled( enableFlag );
+      exportButton.setEnabled( enableFlag );
+      loadButton.setEnabled( enableFlag );
+      importButton.setEnabled( enableFlag );
+      tabbedPane.setEnabled( enableFlag );
+      
+      setupPanel.setEnabled( enableFlag );
       setupPanel.setDeviceUpgrade( upgrade );
+      functionPanel.setEnabled( enableFlag );
       functionPanel.setDeviceUpgrade( upgrade );
+      buttonPanel.setEnabled( enableFlag );
       buttonPanel.setDeviceUpgrade( upgrade );
+      layoutPanel.setEnabled( enableFlag );
       layoutPanel.setDeviceUpgrade( upgrade );
+      keyMapPanel.setEnabled( enableFlag );
       keyMapPanel.setDeviceUpgrade( upgrade );
       currPanel.update();
     }
@@ -101,6 +133,7 @@ public class DeviceUpgradePanel
     if ( currPanel != null )
       currPanel.commit();
     currPanel = ( KMPanel )(( JTabbedPane )e.getSource()).getSelectedComponent();
+    currPanel.setEnabled( true );
     currPanel.update();
     // SwingUtilities.updateComponentTreeUI( currPanel );
     // validateUpgrade();
@@ -218,8 +251,35 @@ public class DeviceUpgradePanel
     deviceUpgrade.load( file );
     deviceUpgrade.setRemote( remoteConfig.getRemote());
   }
+
+  // DocumentListener methods
+  private void updateDescription()
+  {
+    int row = table.getSelectedRow();
+    if ( row != -1 )
+    {
+      DeviceUpgrade upgrade = ( DeviceUpgrade )getRowObject( row );
+      upgrade.setDescription( description.getText());
+    }
+  }
+  
+  public void changedUpdate( DocumentEvent e )
+  {
+    updateDescription();
+  }
+
+  public void insertUpdate( DocumentEvent e )
+  {
+    updateDescription();
+  }
+
+  public void removeUpdate( DocumentEvent e )
+  {
+    updateDescription();
+  }  
   
   private RemoteConfiguration remoteConfig;
+  private JTextField description = new JTextField();
   private JTabbedPane tabbedPane = null;
   private SetupPanel setupPanel = null;
   private FunctionPanel functionPanel = null;

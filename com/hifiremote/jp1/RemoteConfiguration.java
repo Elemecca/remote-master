@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.beans.*;
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class RemoteConfiguration
@@ -65,7 +66,7 @@ public class RemoteConfiguration
     {
       if ( line.length() == 0 )
         continue;
-      if ( line.equals( "[Device Upgrade]" ))
+      if ( line.charAt( 0 ) == '[' )
         break;
       int pos = line.indexOf( '=' );
       String temp = line.substring( 0, pos );
@@ -101,24 +102,65 @@ public class RemoteConfiguration
       v.add( text );
     }
     
+    decodeLearnedSignals( learnedNotes );
+    
+    if ( file.getName().toLowerCase().endsWith( ".ir" ))
+    {
+      decodeUpgrades( deviceNotes, protocolNotes );
+      decodeAdvancedCodes( advNotes );
+      return;
+    }
+
     Property property = null;
     PropertyReader pr = new PropertyReader( in );
-    if ( "[Device Upgrade]".equals( line ))
+//  if ( "[Device Upgrade]".equals( line ))
+    if (( line != null ) && ( line.charAt( 0 ) == '[' ))
       property = new Property( line, "" );
     
+    String className = null;
     Properties props = new Properties();
     while ( true )
     {
-      if (( property == null ) || property.name.equals( "[Device Upgrade]" ))
+      if (( property == null ) || ( property.name.charAt( 0 ) == '[' ))
       {
-        if ( !props.isEmpty())
+        if ( className != null )
         {
-          DeviceUpgrade upgrade = new DeviceUpgrade();
-          upgrade.load( props, true );
-          devices.add( upgrade );
+          if ( className.equals( "KeyMove" ))
+          {
+            KeyMove keyMove = new KeyMove( props );
+            keymoves.add(  keyMove );
+          }
+          else if ( className.equals( "KeyMoveEFC" ))
+          {
+            KeyMoveEFC keyMove = new KeyMoveEFC( props );
+            keymoves.add( keyMove );
+          }
+          else if ( className.equals( "KeyMoveEFC5" ))
+          {
+            KeyMoveEFC5 keyMove = new KeyMoveEFC5( props );
+            keymoves.add( keyMove );
+          }
+          else if ( className.equals( "KeyMoveKey" ))
+          {
+            KeyMoveKey keyMove = new KeyMoveKey( props );
+            keymoves.add( keyMove );
+          }
+          else if ( className.equals( "Macro" ))
+          {
+            Macro macro = new Macro( props );
+            macros.add( macro );
+          }
+          else if ( className.equals( "DeviceUpgrade" ))
+          {
+            DeviceUpgrade upgrade = new DeviceUpgrade();
+            upgrade.load( props );
+            devices.add( upgrade );
+          }
           props.clear();
         }
-        if ( property == null )
+        if ( property != null )
+          className = property.name.substring( 1, property.name.length() - 1 );
+        else
           break;
       }
       else
@@ -126,11 +168,6 @@ public class RemoteConfiguration
       property = pr.nextProperty( property );
     }
     in.close();
-
-    decodeAdvancedCodes( advNotes );    
-    if ( devices.isEmpty())
-      decodeUpgrades( deviceNotes, protocolNotes );
-    decodeLearnedSignals( learnedNotes );
   }
   
   private DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
@@ -160,8 +197,8 @@ public class RemoteConfiguration
   public void parseData()
   {
     Vector v = new Vector();
-    decodeAdvancedCodes( v );    
     decodeUpgrades( v, v );
+    decodeAdvancedCodes( v );    
     decodeLearnedSignals( v );
   }
 
@@ -231,6 +268,43 @@ public class RemoteConfiguration
         if (( boundUpgrade != null ) && ( boundUpgrade == moveUpgrade ))
         {    
           // Add the keymove to the device upgrade instead of the keymove collection
+          Function f = boundUpgrade.getFunction( hex );
+          if ( f == null )
+          {
+            if ( text == null )
+              text = remote.getButtonName( keyCode );
+            f = new Function( text, hex, "imported from keyMove" );
+            int state = Button.NORMAL_STATE;
+            Button b = remote.getButton( keyCode );
+            if ( b == null )
+            {
+              int mask = keyCode & 0xC0;
+              int baseCode = keyCode & 0x3F;
+              if ( baseCode != 0 )
+              {
+                b = remote.getButton( baseCode );
+                if (( baseCode | remote.getShiftMask()) == keyCode )
+                  state = Button.SHIFTED_STATE;
+                if (( baseCode | remote.getXShiftMask()) == keyCode )
+                  state = Button.XSHIFTED_STATE;
+              }
+              else
+              {
+                baseCode = keyCode & ~remote.getShiftMask();
+                b = remote.getButton( baseCode );
+                if ( b != null )
+                  state = Button.SHIFTED_STATE;
+                else
+                {
+                  baseCode = keyCode & ~ remote.getXShiftMask();
+                  b = remote.getButton( baseCode );
+                  if ( b != null )
+                    state = Button.XSHIFTED_STATE;
+                }
+              }
+            }
+            boundUpgrade.setFunction( b, f, state );
+          }
         }
         else
           keymoves.add( keyMove );
@@ -421,7 +495,8 @@ public class RemoteConfiguration
       DeviceUpgrade upgrade = new DeviceUpgrade();
       upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
       upgrade.setSetupCode( setupCode );
-      upgrade.setDescription( text );
+      if ( text != null )
+        upgrade.setDescription( text );
       
       devices.add( upgrade );
     }
@@ -615,17 +690,19 @@ public class RemoteConfiguration
     out.print( "[Notes]" );
     printNote( 0, notes, out );
 
-    int j = 0;
-    for ( Enumeration e = keymoves.elements(); e.hasMoreElements(); )
-    {
-      AdvancedCode item = ( AdvancedCode )e.nextElement();
-      printNote( 0x1000 + j, item.getNotes(), out );
-    }
-    for ( Enumeration e = macros.elements(); e.hasMoreElements(); )
-    {
-      AdvancedCode item = ( AdvancedCode )e.nextElement();
-      printNote( 0x1000 + j, item.getNotes(), out );
-    }
+    
+//    int j = 0;
+//    for ( Enumeration e = keymoves.elements(); e.hasMoreElements(); )
+//    {
+//      AdvancedCode item = ( AdvancedCode )e.nextElement();
+//      printNote( 0x1000 + j, item.getNotes(), out );
+//    }
+
+//    for ( Enumeration e = macros.elements(); e.hasMoreElements(); )
+//    {
+//      AdvancedCode item = ( AdvancedCode )e.nextElement();
+//      printNote( 0x1000 + j, item.getNotes(), out );
+//    }
     
 //    for ( j = 0; j < devices.size(); ++j )
 //    {
@@ -639,19 +716,40 @@ public class RemoteConfiguration
 //      printNote( 0x4000 + j, protocol.getNotes(), out );
 //    }
 
-    for ( j = 0; j < learned.size(); ++j )
+    for ( int j = 0; j < learned.size(); ++j )
     {
       LearnedSignal signal = ( LearnedSignal )learned.elementAt( j );
       printNote( 0x5000 + j, signal.getNotes(), out );
     }
     
     out.println();
-    for ( j = 0; j < devices.size(); ++j )
+    PropertyWriter pw = new PropertyWriter( out );
+    
+    for ( Enumeration e = keymoves.elements(); e.hasMoreElements(); )
+    {
+      KeyMove keyMove = ( KeyMove )e.nextElement();
+      out.println();
+      String className = keyMove.getClass().getName();
+      int dot = className.lastIndexOf( '.' );
+      className = className.substring( dot + 1 );
+      out.println( className );
+      keyMove.store( pw );
+    }
+
+    for ( Enumeration e = macros.elements(); e.hasMoreElements(); )
+    {
+      Macro macro = ( Macro )e.nextElement();
+      out.println();
+      out.println( "[Macro]" );
+      macro.store( pw );
+    }
+    
+    for ( int j = 0; j < devices.size(); ++j )
     {
       DeviceUpgrade device = ( DeviceUpgrade )devices.elementAt( j );
       out.println();
-      out.println( "[Device Upgrade]" );
-      device.store( out );
+      out.println( "[DeviceUpgrade]" );
+      device.store( pw );
     }
     
     out.close();

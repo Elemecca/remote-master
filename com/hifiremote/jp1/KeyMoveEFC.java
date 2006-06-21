@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.util.Properties;
+
 public class KeyMoveEFC
   extends KeyMove
 {
@@ -8,6 +10,11 @@ public class KeyMoveEFC
     super( keyCode, deviceButtonIndex, data, notes );
   }
 
+  public KeyMoveEFC( Properties props )
+  {
+    super( props );
+  }
+  
   public Object getValue()
   {
     return new EFC(( short )data.get( CMD_INDEX ));

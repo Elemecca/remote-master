@@ -1,7 +1,9 @@
 package com.hifiremote.jp1;
 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import javax.swing.*;
 import javax.swing.table.*;
 
 public class Protocol
@@ -605,6 +607,7 @@ public class Protocol
       newValues[ i ] = new Value( null, newProtocol.cmdParms[ i ].getDefaultValue());
 
     // now convert each defined function
+    Vector failedToConvert = new Vector();
     for ( Enumeration en = funcs.elements(); en.hasMoreElements(); )
     {
       Function f = ( Function )en.nextElement();
@@ -623,12 +626,52 @@ public class Protocol
         }
 
         // generate the appropriate hex for the new protocol
-        for ( int i = 0; i < newProtocol.cmdTranslators.length; i++ )
-          newProtocol.cmdTranslators[ i ].in( newValues, newHex, newProtocol.devParms, -1 );
-
+        try 
+        {
+          for ( int i = 0; i < newProtocol.cmdTranslators.length; i++ )
+            newProtocol.cmdTranslators[ i ].in( newValues, newHex, newProtocol.devParms, -1 );
+        }
+        catch ( IllegalArgumentException ex )
+        {
+          Vector temp = new Vector( 2 );
+          temp.add( f.getName());
+          temp.add( ex.getMessage());
+          failedToConvert.add( temp );
+        }
         // store the hex back into the function
         f.setHex( newHex );
       }
+    }
+    if ( !failedToConvert.isEmpty())
+    {
+      String message = "<html>The following functions could not be converted for use with the " + newProtocol.getName() +
+                       " protocol.<p>If you need help figuring out what to do about this, please post<br>" +
+                       "a question in the JP1 Forums at http://www.hifi-remote.com/forums</html>";
+
+      JFrame frame = new JFrame( "Change Protocol Error" );
+      Container container = frame.getContentPane();
+
+      JLabel text = new JLabel( message );
+      text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+      container.add( text, BorderLayout.NORTH );
+      
+      Vector titles = new Vector();
+      titles.add( "Function" );
+      titles.add( "Reason" );
+      JTableX table = new JTableX( failedToConvert, titles );
+      Dimension d = table.getPreferredScrollableViewportSize();
+      int showRows = 14;
+      if ( failedToConvert.size() < showRows )
+        showRows = failedToConvert.size();
+      System.err.println( "Height was " + d.height );
+      d.height = ( table.getRowHeight() + table.getRowMargin()) * showRows;
+      System.err.println( "Height is " + d.height );
+      table.setPreferredScrollableViewportSize( d );
+
+      container.add( new JScrollPane( table ), BorderLayout.CENTER );
+      frame.pack();
+      frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
+      frame.show();
     }
   }
 

@@ -90,12 +90,11 @@ public class Pioneer3DevXlator
       insert( hex, 11, 5, reverse( val, 5 ));
       Integer temp = getObc2( hex );
       if ( !obc2.equals( temp ))
-        JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
-                                       "The combination of OBC and OBC2 values you have entered " +
-                                       "are not supported by the Pioneer 3DEV protocol.  You " +
-                                       "should use the Pioneer 4DEV protocol instead.",
-                                       "Value not supported.",
-                                       JOptionPane.ERROR_MESSAGE );
+//        JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
+        throw new IllegalArgumentException(
+                                         "OBC=" + getObc( hex ) + " and OBC2=" + val + " can not be sent using Pioneer 3DEV. Use Pioneer 4DEV instead." );
+//                                       "Value not supported.",
+//                                       JOptionPane.ERROR_MESSAGE );
     }
     else
       insert( hex, 11, 5, 0 );

@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.util.Properties;
+
 public class KeyMove
   extends AdvancedCode
 {
@@ -7,6 +9,12 @@ public class KeyMove
   {
     super( keyCode, data, notes );
     this.deviceButtonIndex = deviceButtonIndex;
+  }
+  
+  public KeyMove( Properties props )
+  {
+    super( props );
+    deviceButtonIndex = Integer.parseInt( props.getProperty( "DeviceButtonIndex" ));
   }
 
   public Object getValue()
@@ -54,6 +62,12 @@ public class KeyMove
   public Hex getCmd()
   {
     return data.subHex( CMD_INDEX );
+  }
+  
+  public void store( PropertyWriter pw )
+  {
+    pw.print( "DeviceButtonIndex", Integer.toString( deviceButtonIndex ));
+    super.store( pw );
   }
 
   protected final static int DEVICE_TYPE_INDEX = 0;

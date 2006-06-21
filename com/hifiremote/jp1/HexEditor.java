@@ -50,12 +50,12 @@ public class HexEditor
       else if ( temp.length() != defaultHex.length() )
       {
         String msg = "The hex command must contain exactly " + defaultHex.length() + " bytes.";
-        KeyMapMaster.showMessage( msg );
+        KeyMapMaster.showMessage( msg, tf );
         throw new NumberFormatException( msg );
       }
       else
       {
-        KeyMapMaster.clearMessage();
+        KeyMapMaster.clearMessage( tf );
         rc = temp;
       }
     }

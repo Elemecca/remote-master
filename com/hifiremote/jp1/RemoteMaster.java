@@ -10,7 +10,7 @@ import java.util.*;
 import javax.swing.*;
 
 public class RemoteMaster
- extends JFrame
+ extends JP1Frame
  implements ActionListener, PropertyChangeListener
 {
   private static RemoteMaster me = null;
@@ -340,17 +340,25 @@ public class RemoteMaster
         return null;
     }
     
-    JMenuItem item = new JMenuItem( file.getCanonicalPath());
-    item.setActionCommand( file.getCanonicalPath());
-    item.addActionListener( this );
-    recentFiles.insert( item, 0 );
-    while ( recentFiles.getItemCount() > 10 )
-      recentFiles.remove( 10 ); 
-    recentFiles.setEnabled( true );
-    dir = file.getParentFile();
-    preferences.setProperty( "fileFolder", dir.getCanonicalPath());
-    saveItem.setEnabled( true );
-    saveAsItem.setEnabled( true );
+    if ( file.getName().toLowerCase().endsWith( ".rmir" ))
+    {
+      JMenuItem item = new JMenuItem( file.getCanonicalPath());
+      item.setActionCommand( file.getCanonicalPath());
+      item.addActionListener( this );
+      recentFiles.insert( item, 0 );
+      while ( recentFiles.getItemCount() > 10 )
+        recentFiles.remove( 10 ); 
+      recentFiles.setEnabled( true );
+      dir = file.getParentFile();
+      preferences.setProperty( "fileFolder", dir.getCanonicalPath());
+      saveItem.setEnabled( true );
+      saveAsItem.setEnabled( true );
+    }
+    else
+    {
+      saveItem.setEnabled( false );
+      saveAsItem.setEnabled( true );
+    }
     remoteConfig = new RemoteConfiguration( file );
     generalPanel.set( remoteConfig );
 

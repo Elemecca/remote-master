@@ -103,7 +103,7 @@ public class ExternalFunctionPanel
   protected void doNotDelete( Object o )
   {
     String message = "Function is assigned to a button, it can not be deleted.";
-    KeyMapMaster.showMessage( message );
+    JP1Frame.showMessage( message, this );
     throw new IllegalArgumentException( message );
   }
 

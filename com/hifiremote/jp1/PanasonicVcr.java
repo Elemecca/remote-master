@@ -24,10 +24,10 @@ public class PanasonicVcr
     (( ChoiceEditor )devCmdParm.getEditor()).initialize();
     (( ChoiceEditor )subCmdParm.getEditor()).initialize();
     if ( ( dev & sub & ~17 ) != 0 )
-      KeyMapMaster.showMessage( "All four combinations will have wrong check bytes" );
+      throw new IllegalArgumentException( "All four combinations will have wrong check bytes" );
     else if ( ( dev & 1 ) != 0 )
-      KeyMapMaster.showMessage( dev +"."+ (sub|1) +" and "+ (dev^16) +"."+ (sub|1) +" will have wrong check bytes" );
+      throw new IllegalArgumentException( dev +"."+ (sub|1) +" and "+ (dev^16) +"."+ (sub|1) +" will have wrong check bytes" );
     else if ( ( sub & 16 ) != 0 )
-      KeyMapMaster.showMessage( (dev|16) +"."+ sub +" and "+ (dev|16) +"."+ (sub^1) +" will have wrong check bytes" );
+      throw new IllegalArgumentException( (dev|16) +"."+ sub +" and "+ (dev|16) +"."+ (sub^1) +" will have wrong check bytes" );
   }
 }

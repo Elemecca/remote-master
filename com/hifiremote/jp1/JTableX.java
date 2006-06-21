@@ -135,6 +135,21 @@ public class JTableX extends JTable
     return c;
   }
   private static Border pad = BorderFactory.createEmptyBorder( 0, 3, 0, 3 );
+  
+  public void setValueAt( Object value, int row, int col )
+  {
+    JP1Frame.clearMessage( this );
+    try
+    {
+      super.setValueAt( value, row, col );
+    }
+    catch ( Exception except )
+    {
+      JP1Frame.showMessage( except.getMessage(), this );
+      except.printStackTrace( System.err );
+      changeSelection( row, col, false, false );
+    }
+  }
 
   public void setColumnWidth( int col, String text, boolean setMax )
   {

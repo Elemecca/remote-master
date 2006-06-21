@@ -11,11 +11,11 @@ import java.io.*;
 import java.awt.datatransfer.*;
 
 public class KeyMapMaster
- extends JFrame
+ extends JP1Frame
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.58";
+  public static final String version = "v1.59";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -32,7 +32,7 @@ public class KeyMapMaster
   private JMenuItem writeBinaryItem = null;
   private JMenuItem updateItem = null;
   private JMenuItem aboutItem = null;
-  private JLabel messageLabel = null;
+//  private JLabel messageLabel = null;
   private JTextField description = null;
   private JComboBox remoteList = null;
   private JComboBox deviceTypeList = null;
@@ -138,10 +138,10 @@ public class KeyMapMaster
 
     mainPanel.add( panel, BorderLayout.NORTH );
 
-    messageLabel = new JLabel( " " );
-    messageLabel.setForeground( Color.red );
+//    messageLabel = new JLabel( " " );
 
-    mainPanel.add( messageLabel, BorderLayout.SOUTH );
+
+//    mainPanel.add( messageLabel, BorderLayout.SOUTH );
 
     protocolManager.load( new File( homeDirectory, "protocols.ini" ));
 
@@ -390,7 +390,7 @@ public class KeyMapMaster
 
     return fileToOpen;
   }
-
+/*
   public static void showMessage( String msg )
   {
     if ( me == null )
@@ -407,7 +407,7 @@ public class KeyMapMaster
       return;
     me.messageLabel.setText( " " );
   }
-
+*/
   public void setRemotes()
   {
     if ( remoteList != null )

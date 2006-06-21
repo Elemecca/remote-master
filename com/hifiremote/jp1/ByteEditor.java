@@ -57,12 +57,12 @@ public class ByteEditor
       if (( temp < min ) || ( temp > max ))
       {
         String msg = "Value entered must be between " + min + " and " + max + '.';
-        KeyMapMaster.showMessage( msg );
+        JP1Frame.showMessage( msg, tf );
         throw new NumberFormatException( msg );
       }
       else
       {
-        KeyMapMaster.clearMessage();
+        JP1Frame.clearMessage( tf );
         rc = new Integer( temp );
       }
     }

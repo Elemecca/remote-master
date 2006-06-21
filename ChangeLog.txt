@@ -1,3 +1,6 @@
+Changes for v1.59
+- Fix scrambled button assignments when importing KM upgrades
+
 Changes for v1.58
 - Various Translator fixes
 - Fix for Pioneer 3DEV protocol generating incorrect commands

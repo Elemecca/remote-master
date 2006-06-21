@@ -152,7 +152,6 @@ public class Function
   }
 
   public class User
-  
   {
     public User( Button b, int state )
     {

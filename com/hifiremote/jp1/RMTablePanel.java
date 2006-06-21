@@ -140,7 +140,7 @@ public abstract class RMTablePanel
             String message = ex.getMessage();
             if ( message == null )
               message = ex.toString();
-            KeyMapMaster.showMessage( message );
+            JP1Frame.showMessage( message, table );
             ex.printStackTrace( System.err );
           }
         }

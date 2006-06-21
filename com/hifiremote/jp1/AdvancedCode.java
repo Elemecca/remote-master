@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.util.Properties;
+
 public abstract class AdvancedCode
 {
   public AdvancedCode( int keyCode, Hex data, String notes )
@@ -7,6 +9,13 @@ public abstract class AdvancedCode
     this.keyCode = keyCode;
     this.data = data;
     this.notes = notes;
+  }
+  
+  public AdvancedCode( Properties props )
+  {
+    keyCode = Integer.parseInt( props.getProperty( "KeyCode" ));
+    data = new Hex( props.getProperty( "Data" ));
+    notes = props.getProperty( "Notes" );
   }
 
   private int keyCode;
@@ -30,11 +39,19 @@ public abstract class AdvancedCode
       data = hex;
   }
 
-  private String notes;
+  private String notes = null;
   public String getNotes(){ return notes; }
   public void setNotes( String notes )
   {
     if (( notes != this.notes ) && !notes.equals( this.notes ))
       this.notes = notes;
+  }
+  
+  public void store( PropertyWriter pw )
+  {
+    pw.print( "KeyCode", Integer.toString( keyCode ));
+    pw.print( "Data", data.toString());
+    if (( notes != null ) && ( notes.length() > 0 ))
+      pw.print( "Notes", notes );
   }
 }

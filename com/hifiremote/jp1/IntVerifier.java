@@ -54,10 +54,10 @@ public class IntVerifier
     {
       String minStr = Integer.toString( min, base );
       String maxStr = Integer.toString( max, base );
-      KeyMapMaster.showMessage( "The value must be between " + minStr + " and " + maxStr );
+      KeyMapMaster.showMessage( "The value must be between " + minStr + " and " + maxStr, c );
     }
     else
-      KeyMapMaster.clearMessage();
+      KeyMapMaster.clearMessage( c );
     return rc;
   }
 

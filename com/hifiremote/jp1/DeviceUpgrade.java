@@ -213,19 +213,15 @@ public class DeviceUpgrade
       }
       if ( !unassigned.isEmpty())
       {
-        String message = "Some of the functions defined in the device upgrade " +
-                         "were assigned to buttons that do not match buttons on the newly selected remote. " +
-                         "The functions and the corresponding button names from the original remote are listed below." +
-                         "\n\nUse the Button or Layout panel to assign those functions properly.";
+        String message = "Some of the functions defined in the device upgrade were assigned to buttons<br>" +
+                         "that do not match buttons on the newly selected remote.  The functions and the<br>" +
+                         "corresponding button names from the original remote are listed below." +
+                         "<br><br>Use the Button or Layout panel to assign those functions properly.</html>";
 
         JFrame frame = new JFrame( "Lost Function Assignments" );
         Container container = frame.getContentPane();
 
-        JTextArea text = new JTextArea( message );
-        text.setEditable( false );
-        text.setLineWrap( true );
-        text.setWrapStyleWord( true );
-        text.setBackground( container.getBackground() );
+        JLabel text = new JLabel( message );
         text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
         container.add( text, BorderLayout.NORTH );
         Vector titles = new Vector();
@@ -233,9 +229,11 @@ public class DeviceUpgrade
         titles.add( "Button name" );
         JTableX table = new JTableX( unassigned, titles );
         Dimension d = table.getPreferredScrollableViewportSize();
-        d.height = d.height / 4;
+        int showRows = 14;
+        if ( unassigned.size() < showRows )
+          showRows = unassigned.size();
+        d.height = ( table.getRowHeight() + table.getRowMargin()) * showRows;
         table.setPreferredScrollableViewportSize( d );
-
         container.add( new JScrollPane( table ), BorderLayout.CENTER );
         frame.pack();
         frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
@@ -278,6 +276,7 @@ public class DeviceUpgrade
   public void setProtocol( Protocol newProtocol )
   {
     // Convert device parameters to the new protocol
+    Vector failedToConvert = null;
     if ( protocol != null )
     {
       if ( protocol == newProtocol )
@@ -371,12 +370,20 @@ public class DeviceUpgrade
       Function func = ( Function )e.nextElement();
       String funcName = func.getName();
       if (( funcName != null ) && funcName.equalsIgnoreCase( name ))
-      {
-        rc = func;
-        break;
-      }
+        return func;
     }
-    return rc;
+    return null;
+  }
+  
+  public Function getFunction( Hex hex )
+  {
+    for ( Enumeration e = functions.elements(); e.hasMoreElements(); )
+    {
+      Function f = ( Function )e.nextElement();
+      if ( hex.equals( f.getHex()))
+        return f;
+    }
+    return null;
   }
 
   public Vector getExternalFunctions()
@@ -827,16 +834,14 @@ public class DeviceUpgrade
     throws IOException
   {
     this.file = file;
-    PrintWriter pw = new PrintWriter( new FileWriter( file ));
+    PropertyWriter pw = new PropertyWriter( new PrintWriter( new FileWriter( file )));
     store( pw );
     pw.close();
   }
   
-  public void store( PrintWriter pw )
+  public void store( PropertyWriter out )
     throws IOException
   {
-    PropertyWriter out = new PropertyWriter( pw );
-
     if ( description != null )
       out.print( "Description", description );
     out.print( "Remote.name", remote.getName());
@@ -944,6 +949,11 @@ public class DeviceUpgrade
     reader.close();
     
     load( props, loadButtons );
+  }
+  
+  public void load( Properties props )
+  {
+    load( props, true );
   }
 
   public void load( Properties props, boolean loadButtons )
@@ -1550,7 +1560,7 @@ public class DeviceUpgrade
         else if ( loadButtons )
         {
           System.err.println( "Setting function " + name + " on button " + b );
-          assignments.assign( b, f, Button.NORMAL_STATE );
+          assignments.assign( b, func, Button.NORMAL_STATE );
         }
       }
 

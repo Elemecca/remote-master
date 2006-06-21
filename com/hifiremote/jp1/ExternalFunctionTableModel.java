@@ -80,8 +80,6 @@ public class ExternalFunctionTableModel
     if (( value == null ) && f.assigned() )
     {
       String msg = "Function " + f.getName() + " is assigned to a button, and must not be cleared!";
-
-      KeyMapMaster.showMessage( msg );
       throw new IllegalArgumentException( msg );
     }
   }
