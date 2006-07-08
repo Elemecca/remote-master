@@ -5,15 +5,15 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-public abstract class KMTableModel
-  extends JP1TableModel
+public abstract class KMTableModel< E >
+  extends JP1TableModel< E >
 {
   public KMTableModel()
   {
     super();
   }
 
-  public KMTableModel( Vector data )
+  public KMTableModel( Vector< E > data )
   {
     super();
     setData( data );

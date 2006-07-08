@@ -6,7 +6,7 @@ public class ProcessorManager
 {
   private ProcessorManager()
   {
-    processors = new Hashtable();
+    processors = new Hashtable< String, Processor >();
     add( new S3C80Processor());
     
     Processor p = new Processor( "6805", "C9" );
@@ -73,7 +73,7 @@ public class ProcessorManager
     String lookup = name;
     if ( version != null )
       lookup = name + '-' + version;
-    return ( Processor )processorManager.processors.get( lookup );
+    return processorManager.processors.get( lookup );
   }
 
   public static Processor getProcessor( String text )
@@ -85,10 +85,10 @@ public class ProcessorManager
       name = text.substring( 1 );
     else if ( text.equals( "P8/740" ))
       name = "740";
-    return ( Processor )processorManager.processors.get( name );
+    return processorManager.processors.get( name );
   }
 
-  public static Enumeration getProcessorNames()
+  public static Enumeration< String > getProcessorNames()
   {
     return processorManager.processors.keys();
   }
@@ -99,5 +99,5 @@ public class ProcessorManager
   }
 
   private static ProcessorManager processorManager = new ProcessorManager();
-  private Hashtable processors = null;
+  private Hashtable< String, Processor > processors = null;
 }

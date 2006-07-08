@@ -7,7 +7,7 @@ import javax.swing.table.*;
 import javax.swing.text.*;
 
 public class LearnedSignalPanel
-  extends RMTablePanel
+  extends RMTablePanel< LearnedSignal >
 {
   public LearnedSignalPanel()
   {
@@ -19,7 +19,7 @@ public class LearnedSignalPanel
     (( LearnedSignalTableModel )model ).set( remoteConfig ); 
   }
   
-  public Object createRowObject()
+  public LearnedSignal createRowObject()
   {
     return null;
   }

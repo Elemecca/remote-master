@@ -32,7 +32,7 @@ public class ProtocolEditor
     }
     JFrame frame = new JFrame( "Test" );
     ProtocolEditor e = new ProtocolEditor( frame );
-    e.show();
+    e.setVisible( true );
     System.exit( 0 );
   }
 
@@ -134,9 +134,9 @@ public class ProtocolEditor
       treeModel.insertNodeInto( newNode, selectedNode, children );
       ProtocolEditorPanel newPanel = newNode.getEditingPanel();
       cardPanel.add( newPanel, newPanel.getTitle());
-      for ( Enumeration enum = newNode.children(); enum.hasMoreElements(); )
+      for ( Enumeration en = newNode.children(); en.hasMoreElements(); )
       {
-        ProtocolEditorNode child = ( ProtocolEditorNode )enum.nextElement();
+        ProtocolEditorNode child = ( ProtocolEditorNode )en.nextElement();
         TreePath path = new TreePath( child.getPath());
         tree.expandPath( path );
         tree.scrollPathToVisible( path );

@@ -10,11 +10,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
 
-public abstract class TablePanel
+public abstract class TablePanel< E >
   extends KMPanel
   implements ActionListener, ListSelectionListener
 {
-  public TablePanel( String name, DeviceUpgrade devUpgrade, KMTableModel model )
+  public TablePanel( String name, DeviceUpgrade devUpgrade, KMTableModel< E > model )
   {
     super( name, devUpgrade );
     setLayout( new BorderLayout());
@@ -23,7 +23,7 @@ public abstract class TablePanel
     clipboard = kit.getSystemClipboard();
 
     this.model = model;
-    sorter = new TableSorter( model );
+    sorter = new TableSorter< E >( model );
     table = new JTableX( sorter );
     sorter.addMouseListenerToHeaderInTable( table );
     table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
@@ -364,7 +364,7 @@ public abstract class TablePanel
     }
   }
 
-  protected abstract Object createRowObject();
+  protected abstract E createRowObject();
   protected boolean canDelete( Object o ){ return true; }
   protected void doNotDelete( Object o ){}
 
@@ -395,7 +395,7 @@ public abstract class TablePanel
     if (( source == newButton ) ||
         ( source == newItem ))
     {
-      Object o = createRowObject();
+      E o = createRowObject();
       if ( row == -1 )
       {
         sorter.addRow( o );
@@ -559,8 +559,8 @@ public abstract class TablePanel
   }
 
   protected JTableX table = null;
-  protected KMTableModel model = null;
-  private TableSorter sorter = null;
+  protected KMTableModel< E > model = null;
+  private TableSorter< E > sorter = null;
   protected JPanel buttonPanel = null;
   private JButton newButton = null;
   private JButton deleteButton = null;

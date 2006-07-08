@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class ProtocolUpgradeTableModel
-  extends JP1TableModel
+  extends JP1TableModel< ProtocolUpgrade >
 {
   public ProtocolUpgradeTableModel(){}
 

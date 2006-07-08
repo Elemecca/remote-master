@@ -59,7 +59,7 @@ public class TextPopupMenu
   private void initMenuItems()
   {
     Action[] actions = c.getActions();
-    Hashtable h = new Hashtable();
+    Hashtable< String, Action > h = new Hashtable< String, Action >();
     for ( int i = 0; i < actions.length; i++ )
     {
       String name = ( String )actions[ i ].getValue( javax.swing.Action.NAME );

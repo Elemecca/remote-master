@@ -32,7 +32,8 @@ public class RawDataPanel
   
   public void addPropertyChangeListener( PropertyChangeListener l )
   {
-    model.addPropertyChangeListener( l );
+    if (( model != null ) && ( l != null ))
+      model.addPropertyChangeListener( l );
   }
   RawDataTableModel model = null;
   UnsignedByteRenderer byteRenderer = new UnsignedByteRenderer();

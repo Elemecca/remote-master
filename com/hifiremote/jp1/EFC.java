@@ -1,7 +1,7 @@
 package com.hifiremote.jp1;
 
 public class EFC
-  implements Comparable
+  implements Comparable< EFC >
 {
   public EFC( String text )
   {
@@ -82,9 +82,9 @@ public class EFC
     return buff.toString();
   }
 
-  public int compareTo( Object o )
+  public int compareTo( EFC efc )
   {
-    int other = (( EFC )o ).value;
+    int other = efc.value;
     if ( value < other )
       return -1;
     else if ( value == other )

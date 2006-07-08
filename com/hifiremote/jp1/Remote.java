@@ -141,9 +141,9 @@ public class Remote
       for ( int i = 0; i < buttonMaps.length; i++ )
         buttonMaps[ i ].setButtons( this );
 
-      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+      for ( Enumeration< DeviceType> e = deviceTypes.elements(); e.hasMoreElements(); )
       {
-        DeviceType type = ( DeviceType )e.nextElement();
+        DeviceType type = e.nextElement();
         int map = type.getMap();
         if ( map == -1 )
           System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
@@ -158,7 +158,7 @@ public class Remote
 
       if ( deviceTypeAliasNames == null )
       {
-        Vector v = new Vector();
+        Vector<String> v = new Vector<String>();
         DeviceType vcrType = null;
         boolean hasPVRalias = false;
         for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
@@ -185,16 +185,16 @@ public class Remote
 
       // find the longest button map
       ButtonMap longestMap = null;
-      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+      for ( Enumeration< DeviceType> e = deviceTypes.elements(); e.hasMoreElements(); )
       {
-        DeviceType type = ( DeviceType )e.nextElement();
+        DeviceType type = e.nextElement();
         ButtonMap thisMap = type.getButtonMap();
         if (( longestMap == null ) || ( longestMap.size() < thisMap.size() ))
           longestMap = thisMap;
       }
 
       // Now figure out which buttons are bindable
-      Vector bindableButtons = new Vector();
+      Vector< Button > bindableButtons = new Vector< Button >();
 
       // first copy the bindable buttons from the longest map
       int index = 0;
@@ -207,9 +207,8 @@ public class Remote
       }
 
       // now copy the rest of the bindable buttons, skipping those already added
-      for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
+      for ( Button b : buttons )
       {
-        Button b = ( Button )e.nextElement();
         if (( b.allowsKeyMove() ||
               b.allowsShiftedKeyMove() ||
               b.allowsXShiftedKeyMove())
@@ -258,12 +257,12 @@ public class Remote
 
     double diameter = 2 * radius;
     double x = gap;
-    Vector maps = new Vector();
+    Vector< ImageMap > maps = new Vector< ImageMap >();
     if ( imageMaps.length > 0 )
       maps.add( imageMaps[ mapIndex ]);
-    for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+    for ( Enumeration< DeviceType> e = deviceTypes.elements(); e.hasMoreElements(); )
     {
-      DeviceType type = ( DeviceType )e.nextElement();
+      DeviceType type = e.nextElement();
       if ( type.getImageMaps().length == 0 )
         continue;
       ImageMap[] devMaps = type.getImageMaps()[ mapIndex ];
@@ -271,9 +270,8 @@ public class Remote
         maps.add( devMaps[ i ]);
     }
 
-    for ( Enumeration e = maps.elements(); e.hasMoreElements(); )
+    for ( ImageMap map : maps )
     {
-      ImageMap map = ( ImageMap )e.nextElement();
       int h = map.getImage().getIconHeight();
       int w = map.getImage().getIconWidth();
       if ( h > height )
@@ -301,9 +299,8 @@ public class Remote
       }
     }
     height = ( int )( y + gap + diameter );
-    for ( Enumeration e = maps.elements(); e.hasMoreElements(); )
+    for ( ImageMap map : maps )
     {
-      ImageMap map = ( ImageMap )e.nextElement();
       map.getShapes().addAll( phantomShapes );
     }
   }
@@ -557,7 +554,7 @@ public class Remote
         omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
       else if ( parm.equals( "ImageMap" ))
       {
-        File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
+        File imageDir = new File( KeyMapMaster.getHomeDirectory(), "Images" );
         String mapList = st.nextToken();
         StringTokenizer mapTokenizer = new StringTokenizer( mapList, "," );
         int mapCount = mapTokenizer.countTokens();
@@ -680,7 +677,7 @@ public class Remote
     int rc = 0;
     if ( restrictionTable == null )
     {
-      restrictionTable = new Hashtable( 46 );
+      restrictionTable = new Hashtable< String, Integer >( 46 );
       restrictionTable.put( "MoveBind", new Integer( Button.MOVE_BIND ));
       restrictionTable.put( "ShiftMoveBind", new Integer( Button.SHIFT_MOVE_BIND ));
       restrictionTable.put( "XShiftMoveBind", new Integer( Button.XSHIFT_MOVE_BIND ));
@@ -728,7 +725,7 @@ public class Remote
         isAdd = false;
       else
       {
-        Integer value = ( Integer )restrictionTable.get( token );
+        Integer value = restrictionTable.get( token );
         if ( value == null )
           continue;
         if ( isAdd )
@@ -743,7 +740,7 @@ public class Remote
   private String parseCheckSums( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
+    Vector< CheckSum > work = new Vector< CheckSum >();
     String line;
     while ( true )
     {
@@ -775,7 +772,7 @@ public class Remote
     throws Exception
   {
     String line;
-    Vector work = new Vector();
+    Vector< Setting > work = new Vector< Setting >();
     while ( true )
     {
       line = rdr.readLine();
@@ -792,7 +789,7 @@ public class Remote
       int initialValue = rdr.parseNumber( st.nextToken());
       boolean inverted = ( rdr.parseNumber( st.nextToken()) != 0 );
 
-      Vector options = null;
+      Vector< String> options = null;
       String sectionName = null;
 
       if ( st.hasMoreTokens())
@@ -800,7 +797,7 @@ public class Remote
         String token = st.nextToken( ",;)" ).trim();
         if ( token.charAt( 0 ) == '(' )
         {
-          options = new Vector();
+          options = new Vector< String >();
           options.add( token.substring( 1 ));
           while ( st.hasMoreTokens())
           {
@@ -815,9 +812,9 @@ public class Remote
       {
         optionsList = new String[ options.size()];
         int i = 0;
-        for ( Enumeration e = options.elements(); e.hasMoreElements(); i++ )
+        for ( String option : options )
         {
-          optionsList[ i ] = ( String )e.nextElement();
+          optionsList[ i ] = option;
         }
       }
       work.add( new Setting( title, byteAddress, bitNumber,
@@ -844,8 +841,8 @@ public class Remote
   private String parseFixedData( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
-    Vector temp = new Vector();
+    Vector< FixedData > work = new Vector< FixedData >();
+    Vector< Byte > temp = new Vector< Byte >();
     String line;
     int address = -1;
     int value = -1;
@@ -908,19 +905,19 @@ public class Remote
     temp.add( new Byte(( byte )value ));
     byte[] b = new byte[ temp.size()];
     int j = 0;
-    for ( Enumeration en = temp.elements(); en.hasMoreElements(); ++j )
+    for ( Byte by : temp )
     {
-      b[ j ] = (( Byte )en.nextElement()).byteValue();
+      b[ j ] = by.byteValue();
     }
     work.add( new FixedData( address, b ));
-    fixedData = ( FixedData[] )work.toArray( fixedData );
+    fixedData = work.toArray( fixedData );
     return line;
   }
 
   private String parseDeviceButtons( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
+    Vector< DeviceButton > work = new Vector< DeviceButton >();
     String line;
     while ( true )
     {
@@ -938,7 +935,7 @@ public class Remote
         typeAddr = rdr.parseNumber( st.nextToken());
       work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr ));
     }
-    deviceButtons = ( DeviceButton[] )work.toArray( deviceButtons );
+    deviceButtons = work.toArray( deviceButtons );
     return line;
   }
 
@@ -974,7 +971,7 @@ public class Remote
   private String parseDigitMaps( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
+    Vector< Integer > work = new Vector< Integer >();
     String line;
     while ( true )
     {
@@ -992,9 +989,9 @@ public class Remote
 
     digitMaps = new short[ work.size()];
     int i = 0;
-    for ( Enumeration e = work.elements(); e.hasMoreElements(); ++i )
+    for ( Integer v : work )
     {
-      digitMaps[ i ] = (( Integer )e.nextElement()).shortValue();
+      digitMaps[ i ] = v.shortValue();
     }
     return line;
   }
@@ -1029,7 +1026,7 @@ public class Remote
     throws Exception
   {
     String line;
-    Vector v = new Vector();
+    Vector< String > v = new Vector< String >();
     DeviceType vcrType = null;
     boolean hasPVRalias = false;
     while ( true )
@@ -1061,7 +1058,7 @@ public class Remote
       deviceTypeAliases.put( "PVR", vcrType );
     }
     deviceTypeAliasNames = new String[ 0 ];
-    deviceTypeAliasNames = ( String[] )v.toArray( deviceTypeAliasNames );
+    deviceTypeAliasNames = v.toArray( deviceTypeAliasNames );
     Arrays.sort( deviceTypeAliasNames );
     return line;
   }
@@ -1075,13 +1072,12 @@ public class Remote
   private String parseDeviceTypeImageMaps( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
     String line;
     DeviceType type = null;
-    Vector outer = new Vector();
-    Vector inner = null;
+    Vector< Vector< ImageMap >> outer = new Vector< Vector< ImageMap >>();
+    Vector< ImageMap > inner = null;
     boolean nested = false;
-    File imageDir = new File( KeyMapMaster.getHomeDirectory(), "images" );
+    File imageDir = new File( KeyMapMaster.getHomeDirectory(), "Images" );
 
     while ( true )
     {
@@ -1099,13 +1095,13 @@ public class Remote
         {
           nested = true;
           token = token.substring( 1 );
-          inner = new Vector();
+          inner = new Vector< ImageMap >();
           outer.add( inner );
         }
 
         if ( !nested )
         {
-          inner = new Vector();
+          inner = new Vector< ImageMap >();
           outer.add( inner );
         }
 
@@ -1120,17 +1116,16 @@ public class Remote
       }
       ImageMap[][] outerb = new ImageMap[ outer.size()][];
       int o = 0;
-      for ( Enumeration oe = outer.elements(); oe.hasMoreElements(); o++ )
+      for ( Vector< ImageMap > maps : outer )
       {
-        inner = ( Vector )oe.nextElement();
-        ImageMap[] innerb = new ImageMap[ inner.size()];
-        outerb[ o ] = innerb;
+        ImageMap[] innerb = new ImageMap[ maps.size()];
+        outerb[ o++ ] = innerb;
         int i = 0;
-        for ( Enumeration ie = inner.elements(); ie.hasMoreElements(); i++ )
+        for ( ImageMap map : maps )
         {
-          innerb[ i ] = ( ImageMap )ie.nextElement();
+          innerb[ i++ ] = map;
         }
-        inner.clear();
+        maps.clear();
       }
       outer.clear();
       type.setImageMaps( outerb );
@@ -1342,12 +1337,12 @@ public class Remote
   private String parseButtonMaps( RDFReader rdr )
     throws Exception
   {
-    Vector work = new Vector();
+    Vector< ButtonMap > work = new Vector< ButtonMap >();
     String line;
     ButtonMap map = null;
     int name = -1;
-    Vector outer = new Vector();
-    Vector inner = null;
+    Vector< Vector< Integer >> outer = new Vector< Vector< Integer >>();
+    Vector< Integer > inner = null;
     boolean nested = false;
 
     while ( true )
@@ -1363,17 +1358,16 @@ public class Remote
         {
           short[][] outerb = new short[ outer.size()][];
           int o = 0;
-          for ( Enumeration oe = outer.elements(); oe.hasMoreElements(); o++ )
+          for ( Vector< Integer > maps : outer )
           {
-            inner = ( Vector )oe.nextElement();
-            short[] innerb = new short[ inner.size()];
-            outerb[ o ] = innerb;
+            short[] innerb = new short[ maps.size()];
+            outerb[ o++ ] = innerb;
             int i = 0;
-            for ( Enumeration ie = inner.elements(); ie.hasMoreElements(); i++ )
+            for ( Integer v : maps )
             {
-              innerb[ i ] = (( Integer )ie.nextElement()).shortValue();
+              innerb[ i++ ] = v.shortValue();
             }
-            inner.clear();
+            maps.clear();
           }
           outer.clear();
           work.add( new ButtonMap( name, outerb ));
@@ -1388,13 +1382,13 @@ public class Remote
         {
           nested = true;
           token = token.substring( 1 );
-          inner = new Vector();
+          inner = new Vector< Integer >();
           outer.add( inner );
         }
 
         if ( !nested )
         {
-          inner = new Vector();
+          inner = new Vector< Integer >();
           outer.add( inner );
         }
 
@@ -1411,22 +1405,21 @@ public class Remote
     {
       short[][] outerb = new short[ outer.size()][];
       int o = 0;
-      for ( Enumeration oe = outer.elements(); oe.hasMoreElements(); o++ )
+      for ( Vector< Integer > maps : outer )
       {
-        inner = ( Vector )oe.nextElement();
-        short[] innerb = new short[ inner.size()];
-        outerb[ o ] = innerb;
+        short[] innerb = new short[ maps.size()];
+        outerb[ o++ ] = innerb;
         int i = 0;
-        for ( Enumeration ie = inner.elements(); ie.hasMoreElements(); i++ )
+        for ( Integer v : maps )
         {
-          innerb[ i ] = (( Integer )ie.nextElement()).shortValue();
+          innerb[ i++ ] = v.shortValue();
         }
-        inner.clear();
+        maps.clear();
       }
       outer.clear();
       work.add( new ButtonMap( name, outerb ));
     }
-    buttonMaps = ( ButtonMap[] )work.toArray( buttonMaps );
+    buttonMaps = work.toArray( buttonMaps );
     return line;
   }
 
@@ -1456,10 +1449,10 @@ public class Remote
             token = token.substring( 0, colon );
           }
           Hex pid = new Hex( token );
-          Vector v = ( Vector )protocolVariantNames.get( pid );
+          Vector< String > v = ( Vector< String > )protocolVariantNames.get( pid );
           if ( v == null )
           {
-            v = new Vector();
+            v = new Vector< String >();
             protocolVariantNames.put( pid, v );
           }
           v.add( variantName );
@@ -1578,19 +1571,19 @@ public class Remote
   private Setting[] settings = new Setting[ 0 ];
   private FixedData[] fixedData = new FixedData[ 0 ];
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
-  private Hashtable deviceTypes = new Hashtable();
-  private Hashtable deviceTypeAliases = new Hashtable();
+  private Hashtable< String, DeviceType> deviceTypes = new Hashtable< String, DeviceType >();
+  private Hashtable< String, DeviceType> deviceTypeAliases = new Hashtable< String, DeviceType >();
   private String[] deviceTypeAliasNames = null;
-  private Vector buttons = new Vector();
-  private Hashtable buttonsByKeyCode = new Hashtable();
-  private Hashtable buttonsByName = new Hashtable();
-  private Hashtable buttonsByStandardName = new Hashtable();
+  private Vector<Button> buttons = new Vector<Button>();
+  private Hashtable< Integer, Button > buttonsByKeyCode = new Hashtable< Integer, Button >();
+  private Hashtable< String, Button > buttonsByName = new Hashtable< String, Button >();
+  private Hashtable< String, Button > buttonsByStandardName = new Hashtable< String, Button >();
   private Button[] upgradeButtons = new Button[ 0 ];
-  private Vector phantomShapes = new Vector();
+  private Vector< ButtonShape> phantomShapes = new Vector< ButtonShape >();
   private short[] digitMaps = new short[ 0 ];
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
   private boolean omitDigitMapByte = false;
-  private Hashtable protocolVariantNames = new Hashtable();
+  private Hashtable< Hex, Vector< String >> protocolVariantNames = new Hashtable< Hex, Vector< String >>();
   private Vector protocols = null;
   private ImageMap[] imageMaps = new ImageMap[ 0 ];
   private int mapIndex = 0;
@@ -1618,5 +1611,5 @@ public class Remote
   private short sectionTerminator = 0;
   public short getSectionTerminator(){ return sectionTerminator; }
 
-  private static Hashtable restrictionTable = null;
+  private static Hashtable< String, Integer > restrictionTable = null;
  }

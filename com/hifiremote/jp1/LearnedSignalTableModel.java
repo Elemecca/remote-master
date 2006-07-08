@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class LearnedSignalTableModel
-  extends JP1TableModel
+  extends JP1TableModel< LearnedSignal >
 {
   public LearnedSignalTableModel(){}
 

@@ -32,9 +32,10 @@ import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
-public class TableSorter extends TableMap {
+public class TableSorter< E > extends TableMap< E >
+{
     int             indexes[];
-    Vector          sortingColumns = new Vector();
+    Vector< Integer >          sortingColumns = new Vector< Integer >();
     boolean         ascending = true;
     int compares;
     DecimalFormat df = new DecimalFormat( "000" );
@@ -43,15 +44,16 @@ public class TableSorter extends TableMap {
         indexes = new int[0]; // for consistency
     }
 
-    public TableSorter( JP1TableModel model ) {
+    public TableSorter( JP1TableModel< E > model ) {
         setModel( model );
     }
 
-    public void setModel( JP1TableModel model ) {
+    public void setModel( JP1TableModel< E > model ) {
         super.setModel( model );
         reallocateIndexes();
     }
 
+    @SuppressWarnings("unchecked")
     public int compareRowsByColumn(int row1, int row2, int column) {
         Class type = model.getColumnClass(column);
         TableModel data = model;
@@ -267,7 +269,7 @@ public class TableSorter extends TableMap {
     public void sortByColumn(int column, boolean ascending) {
         this.ascending = ascending;
         sortingColumns.removeAllElements();
-        sortingColumns.addElement(new Integer(column));
+        sortingColumns.addElement(new Integer( column ));
         sort(this);
         super.tableChanged(new TableModelEvent(this));
     }
@@ -302,12 +304,12 @@ public class TableSorter extends TableMap {
         th.addMouseListener(listMouseListener);
     }
 
-    public Object getRow( int row )
+    public E getRow( int row )
     {
       return model.getRow( indexes[ row ]);
     }
 
-    public void addRow( Object object )
+    public void addRow( E object )
     {
       model.addRow( object );
       int[] saved = indexes;
@@ -318,7 +320,7 @@ public class TableSorter extends TableMap {
       indexes[ i ] = i;
     }
 
-    public void insertRow( int row, Object object )
+    public void insertRow( int row, E object )
     {
       model.insertRow( indexes[ row ], object );
       int mappedRow = indexes[ row ];
@@ -378,7 +380,7 @@ public class TableSorter extends TableMap {
 
    public void moveRow( int from, int to )
    {
-     Object o = getRow( from );
+     E o = getRow( from );
      if ( from < to )
        to++;
      if ( to >= indexes.length )

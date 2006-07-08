@@ -76,9 +76,9 @@ public abstract class HexParmEditorNode
   public void setFormat( int newFormat ){ format = newFormat; }
   public int getFormat(){ return format; }
 
-  private Vector choices = new Vector();
-  public Vector getChoices(){ return choices; }
-  public void setChoices( Vector newChoices ){ choices = newChoices; }
+  private Vector< Integer > choices = new Vector< Integer >();
+  public Vector< Integer > getChoices(){ return choices; }
+  public void setChoices( Vector< Integer > newChoices ){ choices = newChoices; }
   private int defaultValue = -1;
 
   public final static int NUMBER = 0;

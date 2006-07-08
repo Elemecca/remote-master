@@ -57,11 +57,11 @@ public class RemoteConfiguration
     savedData = new short[ data.length ];
     System.arraycopy( data, 0, savedData, 0, data.length );
 
-    Vector advNotes = new Vector();
-    Vector favNotes = new Vector();
-    Vector deviceNotes = new Vector();
-    Vector protocolNotes = new Vector();
-    Vector learnedNotes = new Vector();
+    Vector<String> advNotes = new Vector<String>();
+    Vector<String> favNotes = new Vector<String>();
+    Vector<String> deviceNotes = new Vector<String>();
+    Vector<String> protocolNotes = new Vector<String>();
+    Vector<String> learnedNotes = new Vector<String>();
     while (( line = in.readLine()) != null )
     {
       if ( line.length() == 0 )
@@ -80,7 +80,7 @@ public class RemoteConfiguration
       int flag = index >> 12;
       index &= 0x0FFF;
       String text = importNotes( line.substring( pos + 1 ));
-      Vector v = null;
+      Vector< String > v = null;
       if ( flag == 0 )
       {
         notes = text;
@@ -178,9 +178,8 @@ public class RemoteConfiguration
 
   private DeviceUpgrade findDeviceUpgrade( int deviceTypeIndex, int setupCode )
   {
-    for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
+    for ( DeviceUpgrade deviceUpgrade : devices )
     {
-      DeviceUpgrade deviceUpgrade = ( DeviceUpgrade )e.nextElement();
       if (( deviceTypeIndex == deviceUpgrade.getDeviceType().getNumber()) &&
           ( setupCode == deviceUpgrade.getSetupCode()))
         return deviceUpgrade;
@@ -196,15 +195,15 @@ public class RemoteConfiguration
   
   public void parseData()
   {
-    Vector v = new Vector();
+    Vector< String > v = new Vector< String >();
     decodeUpgrades( v, v );
     decodeAdvancedCodes( v );    
     decodeLearnedSignals( v );
   }
 
-  private void decodeAdvancedCodes( Vector notes )
+  private void decodeAdvancedCodes( Vector< String > notes )
   {
-    Enumeration notesEnum = notes.elements();
+    Enumeration< String > notesEnum = notes.elements();
     AddressRange advCodeRange = remote.getAdvanceCodeAddress();
     int offset = advCodeRange.getStart();
     int endOffset = advCodeRange.getEnd();
@@ -237,7 +236,7 @@ public class RemoteConfiguration
 
       String text = null;
       if ( notesEnum.hasMoreElements())
-        text = ( String )notesEnum.nextElement();
+        text = notesEnum.nextElement();
       if ( "".equals( text ))
         text = null;
       if ( isMacro )
@@ -339,9 +338,8 @@ public class RemoteConfiguration
   {
     AddressRange range = remote.getAdvanceCodeAddress();
     int offset = range.getStart();
-    for ( Enumeration e = keymoves.elements(); e.hasMoreElements(); )
+    for ( KeyMove keyMove : keymoves )
     {
-      KeyMove keyMove = ( KeyMove )e.nextElement();
       data[ offset++ ] = ( short )keyMove.getKeyCode();
       int lengthOffset;
       if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
@@ -363,9 +361,8 @@ public class RemoteConfiguration
       data[ lengthOffset ] |= ( short )hexLength;        
     }
   
-    for ( Enumeration e = macros.elements(); e.hasMoreElements(); )
+    for ( Macro macro : macros )
     {
-      Macro macro = ( Macro )e.nextElement();
       data[ offset++ ] = ( short )macro.getKeyCode();
       int lengthOffset = 0;
       if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
@@ -398,21 +395,20 @@ public class RemoteConfiguration
 
   private ProtocolUpgrade getProtocol( int pid )
   {
-    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    for ( ProtocolUpgrade pu : protocols )
     {
-      ProtocolUpgrade pu = ( ProtocolUpgrade )e.nextElement();
       if ( pu.getPid() == pid )
         return pu;
     }
     return null;
   }
   
-  private void decodeUpgrades( Vector deviceNotes, Vector protocolNotes )
+  private void decodeUpgrades( Vector< String > deviceNotes, Vector< String > protocolNotes )
   {
     AddressRange addr = remote.getUpgradeAddress();
 
     // first parse the protocols
-    Enumeration notesEnum = protocolNotes.elements();
+    Enumeration< String > notesEnum = protocolNotes.elements();
     int offset = Hex.get( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of protocol table
     int count = Hex.get( data, offset ); // get number of entries in upgrade table
     offset += 2;  // skip to first entry
@@ -431,7 +427,7 @@ public class RemoteConfiguration
       Hex code = Hex.subHex( data, codeOffset, nextCode - codeOffset );
       String text = null;
       if ( notesEnum.hasMoreElements())
-        text = ( String )notesEnum.nextElement();
+        text = notesEnum.nextElement();
       if ( "".equals( text ))
         text = null;
       protocols.add( new ProtocolUpgrade( pid, code, text )); 
@@ -488,7 +484,7 @@ public class RemoteConfiguration
       
       String text = null;
       if ( notesEnum.hasMoreElements())
-        text = ( String )notesEnum.nextElement();
+        text = notesEnum.nextElement();
       if ( "".equals( text ))
         text = null;
 
@@ -531,11 +527,11 @@ public class RemoteConfiguration
 
     // store the device upgrades
     int[] devOffsets = new int[ devCount ];
-    Enumeration e = devices.elements();
+    Enumeration< DeviceUpgrade > de = devices.elements();
     for ( int i = 0; i < devCount; ++i )
     {
       devOffsets[ i ] = offset;
-      DeviceUpgrade dev = ( DeviceUpgrade )e.nextElement();
+      DeviceUpgrade dev = de.nextElement();
       Hex hex = dev.getUpgradeHex();
       Hex.put( hex, data, offset );
       offset += hex.length();
@@ -543,11 +539,11 @@ public class RemoteConfiguration
 
     // store the protocol upgrades 
     int[] prOffsets = new int[ prCount ];
-    e = protocols.elements();
+    Enumeration< ProtocolUpgrade > pe = protocols.elements();
     for ( int i = 0; i < prCount; ++i )
     {
       prOffsets[ i ] = offset;
-      ProtocolUpgrade upgrade = ( ProtocolUpgrade )e.nextElement();
+      ProtocolUpgrade upgrade = pe.nextElement();
       Hex hex = upgrade.getCode();
       Hex.put( hex, data, offset );
       offset += hex.length();
@@ -559,10 +555,10 @@ public class RemoteConfiguration
     // create the device table
     Hex.put( devCount, data, offset );
     offset += 2;
-    e = devices.elements();
+    de = devices.elements();
     for ( int i = 0; i < devCount; ++i )
     {
-      DeviceUpgrade dev = ( DeviceUpgrade )e.nextElement();
+      DeviceUpgrade dev = de.nextElement();
       Hex.put( dev.getHexSetupCode(), data, offset );
       offset += 2;
     }
@@ -578,10 +574,10 @@ public class RemoteConfiguration
     // create the protocol table
     Hex.put( prCount, data, offset );
     offset += 2;
-    e = protocols.elements();
+    pe = protocols.elements();
     for ( int i = 0; i < prCount; ++i )
     {
-      ProtocolUpgrade pr = ( ProtocolUpgrade )e.nextElement();
+      ProtocolUpgrade pr = pe.nextElement();
       Hex.put( pr.getPid(), data, offset );
       offset += 2;
     }
@@ -594,13 +590,13 @@ public class RemoteConfiguration
     return offset - addr.getStart();
   }
 
-  public void decodeLearnedSignals( Vector notes )
+  public void decodeLearnedSignals( Vector< String > notes )
   {
     AddressRange addr = remote.getLearnedAddress();
     if ( addr == null )
       return;
 
-    Enumeration notesEnum = notes.elements();
+    Enumeration< String > notesEnum = notes.elements();
     int offset = addr.getStart();
     while (( offset < addr.getEnd()) && ( data[ offset ] != remote.getSectionTerminator()))
     {
@@ -609,7 +605,7 @@ public class RemoteConfiguration
       int length = data[ offset++ ];
       String text = null;
       if ( notesEnum.hasMoreElements())
-        text = ( String )notesEnum.nextElement();
+        text = notesEnum.nextElement();
       if ( "".equals( text ))
         text = null;
 
@@ -642,9 +638,8 @@ public class RemoteConfiguration
       return 0;
 
     int offset = addr.getStart();
-    for ( Enumeration e = learned.elements(); e.hasMoreElements(); )
+    for ( LearnedSignal l : learned )
     {
-      LearnedSignal l = ( LearnedSignal )e.nextElement();
       data[ offset++ ] = ( short )l.getKeyCode();
       data[ offset++ ] = ( short )( l.getDeviceButtonIndex() << 4 );
       Hex hex = l.getData();
@@ -725,9 +720,8 @@ public class RemoteConfiguration
     out.println();
     PropertyWriter pw = new PropertyWriter( out );
     
-    for ( Enumeration e = keymoves.elements(); e.hasMoreElements(); )
+    for ( KeyMove keyMove : keymoves )
     {
-      KeyMove keyMove = ( KeyMove )e.nextElement();
       out.println();
       String className = keyMove.getClass().getName();
       int dot = className.lastIndexOf( '.' );
@@ -736,17 +730,15 @@ public class RemoteConfiguration
       keyMove.store( pw );
     }
 
-    for ( Enumeration e = macros.elements(); e.hasMoreElements(); )
+    for ( Macro macro : macros )
     {
-      Macro macro = ( Macro )e.nextElement();
       out.println();
       out.println( "[Macro]" );
       macro.store( pw );
     }
     
-    for ( int j = 0; j < devices.size(); ++j )
+    for ( DeviceUpgrade device : devices )
     {
-      DeviceUpgrade device = ( DeviceUpgrade )devices.elementAt( j );
       out.println();
       out.println( "[DeviceUpgrade]" );
       device.store( pw );
@@ -818,20 +810,20 @@ public class RemoteConfiguration
 
   public short[] getData(){ return data; }
   public short[] getSavedData(){ return savedData; }
-  public Vector getKeyMoves(){ return keymoves; }
-  public Vector getMacros(){ return macros; }
-  public Vector getDeviceUpgrades(){ return devices; }
-  public Vector getProtocolUpgrades(){ return protocols; }
-  public Vector getLearnedSignals(){ return learned; }
+  public Vector< KeyMove > getKeyMoves(){ return keymoves; }
+  public Vector< Macro > getMacros(){ return macros; }
+  public Vector< DeviceUpgrade > getDeviceUpgrades(){ return devices; }
+  public Vector< ProtocolUpgrade > getProtocolUpgrades(){ return protocols; }
+  public Vector< LearnedSignal > getLearnedSignals(){ return learned; }
 
   private Remote remote = null;
   private short[] data = null;
   private short[] savedData = null;
-  private Vector keymoves = new Vector();
-  private Vector macros = new Vector();
-  private Vector devices = new Vector();
-  private Vector protocols = new Vector();
-  private Vector learned = new Vector();
+  private Vector< KeyMove > keymoves = new Vector< KeyMove >();
+  private Vector< Macro > macros = new Vector< Macro >();
+  private Vector< DeviceUpgrade > devices = new Vector< DeviceUpgrade >();
+  private Vector< ProtocolUpgrade > protocols = new Vector< ProtocolUpgrade >();
+  private Vector< LearnedSignal > learned = new Vector< LearnedSignal >();
   private boolean changed = false;
   private String notes = null;
 }

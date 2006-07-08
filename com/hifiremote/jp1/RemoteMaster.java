@@ -14,7 +14,7 @@ public class RemoteMaster
  implements ActionListener, PropertyChangeListener
 {
   private static RemoteMaster me = null;
-  public static final String version = "v0.04";
+  public static final String version = "v0.05";
   private File dir = null;
   public File file = null;
   private RemoteConfiguration remoteConfig = null;
@@ -193,7 +193,7 @@ public class RemoteMaster
     }
     else
       pack();
-    show();
+    setVisible( true );
   }
 
   public static RemoteMaster getRemoteMaster(){ return me;}

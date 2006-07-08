@@ -217,7 +217,7 @@ public class KeyMapPanel
   private JTableX table = null;
   private JTableHeader header = null;
   private JButton print = null;
-  private Vector list = new Vector();
+  private Vector< Button > list = new Vector< Button >();
   private static String[] headers =
   {
     "Button", "Normal Function", "Shifted Function", "XShifted Function" };

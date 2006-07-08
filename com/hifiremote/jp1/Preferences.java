@@ -169,9 +169,9 @@ public class Preferences
   private void adjustFontSize( float adjustment )
   {
     UIDefaults defaults = UIManager.getDefaults(); // Build of Map of attributes for each component
-    for( Enumeration enum = defaults.keys(); enum.hasMoreElements(); )
+    for( Enumeration en = defaults.keys(); en.hasMoreElements(); )
     {
-      Object o = enum.nextElement();
+      Object o = en.nextElement();
       if ( o.getClass() != String.class )
         continue;
       String key = ( String )o; 
@@ -364,15 +364,14 @@ public class Preferences
     if ( preferredRemotes.length == 0 )
     {
       RemoteManager rm = RemoteManager.getRemoteManager();
-      Vector work = new Vector();
-      for ( Enumeration e = preferredRemoteNames.elements(); e.hasMoreElements(); )
+      Vector< Remote > work = new Vector< Remote >();
+      for ( String name : preferredRemoteNames )
       {
-        String name = ( String )e.nextElement();
         Remote r = rm.findRemoteByName( name );
         if ( r != null )
           work.add( r );
       }
-      preferredRemotes = ( Remote[] )work.toArray( preferredRemotes );
+      preferredRemotes = work.toArray( preferredRemotes );
       preferredRemoteNames.removeAllElements();
       preferredRemoteNames = null;
     }
@@ -490,7 +489,7 @@ public class Preferences
   {
     KeyMapMaster km = KeyMapMaster.getKeyMapMaster();
     PreferredRemoteDialog d = new PreferredRemoteDialog( km, preferredRemotes );
-    d.show();
+    d.setVisible( true );
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
       preferredRemotes = d.getPreferredRemotes();
@@ -524,7 +523,7 @@ public class Preferences
   private void editCustomNames()
   {
     CustomNameDialog d = new CustomNameDialog( KeyMapMaster.getKeyMapMaster(), customNames );
-    d.show();
+    d.setVisible( true );
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
       customNames = d.getCustomNames();
@@ -548,7 +547,7 @@ public class Preferences
   private float fontSizeAdjustment = 0f;
   private String lastRemoteName = null;
   private String lastRemoteSignature = null;
-  private Vector preferredRemoteNames = new Vector( 0 );
+  private Vector< String > preferredRemoteNames = new Vector< String >();
   private static String[] customNames = null;
 
   private final static String upgradeDirectory = "Upgrades";

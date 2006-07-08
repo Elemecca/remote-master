@@ -31,11 +31,10 @@ public class DeviceUpgrade
     if ( protocol != null )
       protocol.reset();
     ProtocolManager pm = ProtocolManager.getProtocolManager();
-    Vector names = pm.getNames();
+    Vector< String > names = pm.getNames();
     Protocol tentative = null;
-    for ( Enumeration e = names.elements(); e.hasMoreElements(); )
+    for ( String protocolName : names )
     {
-      String protocolName = ( String )e.nextElement();
       Protocol p = pm.findProtocolForRemote( remote, protocolName );
       if ( p != null )
       {
@@ -95,7 +94,7 @@ public class DeviceUpgrade
   {
     Protocol p = protocol;
     ProtocolManager pm = ProtocolManager.getProtocolManager();
-    Vector protocols = pm.getProtocolsForRemote( newRemote, false );
+    Vector< Protocol > protocols = pm.getProtocolsForRemote( newRemote, false );
     if ( !protocols.contains( p ))
     {
       System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName() +
@@ -183,7 +182,7 @@ public class DeviceUpgrade
       Button[] buttons = remote.getUpgradeButtons();
       Button[] newButtons = newRemote.getUpgradeButtons();
       ButtonAssignments newAssignments = new ButtonAssignments();
-      Vector unassigned = new Vector();
+      Vector< Vector< String >> unassigned = new Vector< Vector< String >>();
       for ( int i = 0; i < buttons.length; i++ )
       {
         Button b = buttons[ i ];
@@ -195,14 +194,14 @@ public class DeviceUpgrade
             assignments.assign( b, null, state );
   
             Button newB = newRemote.findByStandardName( b );
-            Vector temp = null;
+            Vector< String > temp = null;
             if ( f != null )
             {  
               if (( newB != null ) && newB.allowsKeyMove( state ))
                 newAssignments.assign( newB, f, state );
               else
               {
-                temp = new Vector();
+                temp = new Vector< String >();
                 temp.add( f.getName());
                 temp.add( b.getName());
                 unassigned.add( temp );
@@ -213,7 +212,7 @@ public class DeviceUpgrade
       }
       if ( !unassigned.isEmpty())
       {
-        String message = "Some of the functions defined in the device upgrade were assigned to buttons<br>" +
+        String message = "<html>Some of the functions defined in the device upgrade were assigned to buttons<br>" +
                          "that do not match buttons on the newly selected remote.  The functions and the<br>" +
                          "corresponding button names from the original remote are listed below." +
                          "<br><br>Use the Button or Layout panel to assign those functions properly.</html>";
@@ -224,7 +223,7 @@ public class DeviceUpgrade
         JLabel text = new JLabel( message );
         text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
         container.add( text, BorderLayout.NORTH );
-        Vector titles = new Vector();
+        Vector< String > titles = new Vector< String >();
         titles.add( "Function name" );
         titles.add( "Button name" );
         JTableX table = new JTableX( unassigned, titles );
@@ -237,7 +236,7 @@ public class DeviceUpgrade
         container.add( new JScrollPane( table ), BorderLayout.CENTER );
         frame.pack();
         frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
-        frame.show();
+        frame.setVisible( true );
       }
       assignments = newAssignments;
     }
@@ -276,7 +275,6 @@ public class DeviceUpgrade
   public void setProtocol( Protocol newProtocol )
   {
     // Convert device parameters to the new protocol
-    Vector failedToConvert = null;
     if ( protocol != null )
     {
       if ( protocol == newProtocol )
@@ -349,7 +347,7 @@ public class DeviceUpgrade
     return notes;
   }
 
-  public Vector getFunctions()
+  public Vector< Function > getFunctions()
   {
     return functions;
   }
@@ -358,16 +356,15 @@ public class DeviceUpgrade
   {
     Function rc = getFunction( name, functions );
     if ( rc == null )
-      rc =  getFunction( name, extFunctions );
+      rc = getFunction( name, extFunctions );
     return rc;
   }
 
-  public Function getFunction( String name, Vector funcs )
+  public Function getFunction( String name, Vector< Function > funcs )
   {
     Function rc = null;
-    for ( Enumeration e = funcs.elements(); e.hasMoreElements(); )
+    for ( Function func : funcs )
     {
-      Function func = ( Function )e.nextElement();
       String funcName = func.getName();
       if (( funcName != null ) && funcName.equalsIgnoreCase( name ))
         return func;
@@ -377,22 +374,21 @@ public class DeviceUpgrade
   
   public Function getFunction( Hex hex )
   {
-    for ( Enumeration e = functions.elements(); e.hasMoreElements(); )
+    for ( Function f : functions )
     {
-      Function f = ( Function )e.nextElement();
       if ( hex.equals( f.getHex()))
         return f;
     }
     return null;
   }
 
-  public Vector getExternalFunctions()
+  public Vector< Function > getExternalFunctions()
   {
     return extFunctions;
   }
 
   /*
-  public Vector getKeyMoves()
+  public Vector< KeyMove > getKeyMoves()
   {
     return keymoves;
   }
@@ -474,7 +470,7 @@ public class DeviceUpgrade
     if ( map != null )
       buttons = map.parseBitMap( code, index, digitMapIndex != -1 );
     else
-      buttons = new Vector();
+      buttons = new Vector< Button >();
 
     while (( code[ index++ ] & 1 ) == 0 ); // skip over the bitMap
 
@@ -709,7 +705,7 @@ public class DeviceUpgrade
 
   public Hex getUpgradeHex()
   {
-    Vector work = new Vector();
+    Vector< short[]> work = new Vector< short[]>();
 
     // add the 2nd byte of the PID
     short[] data = new short[ 1 ];
@@ -1263,7 +1259,7 @@ public class DeviceUpgrade
       int cmdBits = Integer.parseInt( bitsStr.substring( 1 ), 16 );
       System.err.println( "devBits=" + devBits + " and cmdBits=" + cmdBits );
 
-      Vector values = new Vector();
+      Vector< Integer > values = new Vector< Integer >();
 
       str = getNextField( st, delim ); // Device 1
       if ( str != null )
@@ -1380,8 +1376,8 @@ public class DeviceUpgrade
     DeviceCombiner combiner = null;
     if ( protocol.getClass() == DeviceCombiner.class )
       combiner = ( DeviceCombiner )protocol;
-    Vector unassigned = new Vector();
-    Vector usedFunctions = new Vector();
+    Vector< Vector< String >> unassigned = new Vector< Vector< String >>();
+    Vector< Function > usedFunctions = new Vector< Function >();
     for ( int i = 0; i < 128; i++ )
     {
       line = in.readLine();
@@ -1551,7 +1547,7 @@ public class DeviceUpgrade
 
         if ( b == null )
         {
-          Vector temp = new Vector( 2 );
+          Vector< String > temp = new Vector< String >( 2 );
           temp.add( name );
           temp.add( actualName );
           unassigned.add( temp );
@@ -1571,7 +1567,7 @@ public class DeviceUpgrade
       if ( !f.isEmpty())
       {
         if ( f.isExternal())
-          extFunctions.add( f );
+          extFunctions.add(( ExternalFunction )f );
         else
           functions.add( f );
       }
@@ -1625,7 +1621,7 @@ public class DeviceUpgrade
         }
         if ( b == null )
         {
-          Vector temp = new Vector( 2 );
+          Vector< String > temp = new Vector< String >( 2 );
           temp.add( name );
           temp.add( "shift-" + buttonName );
           unassigned.add( temp );
@@ -1708,7 +1704,7 @@ public class DeviceUpgrade
       text.setBackground( container.getBackground() );
       text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
       container.add( text, BorderLayout.NORTH );
-      Vector titles = new Vector();
+      Vector< String > titles = new Vector< String >();
       titles.add( "Function name" );
       titles.add( "Button name" );
       JTableX table = new JTableX( unassigned, titles );
@@ -1719,7 +1715,7 @@ public class DeviceUpgrade
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       frame.pack();
       frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
-      frame.show();
+      frame.setVisible( true );
     }
     Button[] buttons = remote.getUpgradeButtons();
     System.err.println( "Removing assigned functions with no hex!" );
@@ -1859,9 +1855,9 @@ public class DeviceUpgrade
   private Protocol protocol = null;
   private Value[] parmValues = new Value[ 0 ];
   private String notes = null;
-  private Vector functions = new Vector();
-  private Vector extFunctions = new Vector();
-  // private Vector keymoves = new Vector();
+  private Vector< Function > functions = new Vector< Function >();
+  private Vector< Function > extFunctions = new Vector< Function >();
+  // private Vector< KeyMove > keymoves = new Vector< KeyMove >();
   private File file = null;
   private Hex customCode = null;
   private ButtonAssignments assignments = new ButtonAssignments();

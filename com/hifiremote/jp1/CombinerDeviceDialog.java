@@ -49,7 +49,7 @@ public class CombinerDeviceDialog
     boolean allowUpgrades =  r.getProcessor().getFullName().equals( "S3C80" );
     Vector allProtocols = 
       ProtocolManager.getProtocolManager().getProtocolsForRemote( r, allowUpgrades );
-    Vector protocols = new Vector();
+    Vector< Protocol > protocols = new Vector< Protocol >();
     if ( allowUpgrades )
       protocols.add( new ManualProtocol( null, null ));
     for ( Enumeration e = allProtocols.elements(); e.hasMoreElements(); )

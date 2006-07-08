@@ -6,13 +6,13 @@ public class EFC5
   public EFC5( String text )
   {
     super(( short )0 );
-    value = Integer.parseInt( text ) & 0xFFFF;
+    value = Integer.parseInt( text ) & 0x0FFFF;
   }
 
   public EFC5( int value )
   {
     super(( short )value );
-    this.value = value;
+    this.value = value & 0x0FFFF;
   }
 
   public EFC5( Hex hex )
@@ -26,7 +26,7 @@ public class EFC5
   public String toString()
   {
     StringBuffer buff = new StringBuffer( 5 );
-    String temp = Short.toString(( short )( value & 0x0FFFF ));
+    String temp = Integer.toString( value & 0x0FFFF );
     int len = 5 - temp.length();
     for ( int i = 0; i < len; i++ )
       buff.append( '0' );
@@ -67,7 +67,7 @@ public class EFC5
 
   public void fromHex( Hex hex )
   {
-    value = parseHex( hex );
+    value = parseHex( hex ) & 0x0FFFF;
   }
   
   public static short parseHex( Hex hex )

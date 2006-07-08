@@ -210,9 +210,9 @@ public class ImageMap
   }
 
   public ImageIcon getImage(){ return image; }
-  public Vector getShapes(){ return shapes; }
+  public Vector< ButtonShape > getShapes(){ return shapes; }
 
   private File mapFile;
   private ImageIcon image;
-  private Vector shapes = new Vector();
+  private Vector< ButtonShape> shapes = new Vector< ButtonShape >();
 }

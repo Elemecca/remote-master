@@ -37,7 +37,7 @@ public class CodeEditorNode
 
   public Hex getCode( String processor )
   {
-    return ( Hex )codes.get( processor );
+    return codes.get( processor );
   }
   
   public void removeCode( String processor )
@@ -46,5 +46,5 @@ public class CodeEditorNode
   }
   
   private static CodeEditorPanel editorPanel = null;
-  private HashMap codes = new HashMap( 4 );
+  private HashMap< String, Hex > codes = new HashMap< String, Hex >( 6 );
 }

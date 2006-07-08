@@ -16,7 +16,6 @@ public class GeneralPanel
     add( panel, BorderLayout.NORTH );
 
     // first the device button table.
-    deviceModel = new DeviceButtonTableModel();
     // JTableX table = new JTableX( deviceModel );
     JP1Table table = new JP1Table( deviceModel );
     JScrollPane scrollPane = new JScrollPane( table, 
@@ -34,7 +33,6 @@ public class GeneralPanel
     table.setPreferredScrollableViewportSize( d );
 
     // now the other settings table
-    settingModel = new SettingsTableModel();
     table = new JP1Table( settingModel );
     table.setCellEditorModel( settingModel );
 
@@ -71,12 +69,17 @@ public class GeneralPanel
 
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
-    deviceModel.addPropertyChangeListener( listener );
-    settingModel.addPropertyChangeListener( listener );
+    if ( listener != null )
+    {
+      if ( deviceModel != null )
+        deviceModel.addPropertyChangeListener( listener );
+      if ( settingModel != null )
+        settingModel.addPropertyChangeListener( listener );
+    }
   }
   
-  private DeviceButtonTableModel deviceModel = null;
-  private SettingsTableModel settingModel = null;
+  private DeviceButtonTableModel deviceModel = new DeviceButtonTableModel();
+  private SettingsTableModel settingModel = new SettingsTableModel();
   private JTextArea notes = null;
 }
   

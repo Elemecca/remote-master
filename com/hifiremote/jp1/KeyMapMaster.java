@@ -15,7 +15,7 @@ public class KeyMapMaster
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.59";
+  public static final String version = "v1.61";
   private Preferences preferences = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -207,7 +207,7 @@ public class KeyMapMaster
 
     loadUpgrade( fileToOpen );
 
-    show();
+    setVisible( true );
   }
 
   public static KeyMapMaster getKeyMapMaster(){ return me;}
@@ -345,7 +345,7 @@ public class KeyMapMaster
   {
     ManualSettingsDialog d =
       new ManualSettingsDialog( this, protocolManager.getManualProtocol());
-    d.show();
+    d.setVisible( true );
   }
 
   private File parseArgs( String[] args )
@@ -588,12 +588,12 @@ public class KeyMapMaster
       else if ( source == editorItem )
       {
         ProtocolEditor d = new ProtocolEditor( this );
-        d.show();
+        d.setVisible( true );
       }
       else if ( source == rawItem )
       {
         ImportRawUpgradeDialog d = new ImportRawUpgradeDialog( this, deviceUpgrade );
-        d.show();
+        d.setVisible( true );
         currPanel.update();
       }
       else if ( source == binaryItem )

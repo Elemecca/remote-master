@@ -7,7 +7,7 @@ import javax.swing.table.*;
 import javax.swing.text.*;
 
 public class ProtocolUpgradePanel
-  extends RMTablePanel
+  extends RMTablePanel< ProtocolUpgrade >
 {
   public ProtocolUpgradePanel()
   {
@@ -19,7 +19,7 @@ public class ProtocolUpgradePanel
     (( ProtocolUpgradeTableModel )model ).set( remoteConfig ); 
   }
   
-  public Object createRowObject()
+  public ProtocolUpgrade createRowObject()
   {
     return null;
   }

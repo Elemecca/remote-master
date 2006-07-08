@@ -107,11 +107,11 @@ public class DeviceCombinerPanel
             new CombinerDeviceDialog( KeyMapMaster.getKeyMapMaster(),
                                       null, 
                                       deviceUpgrade.getRemote());
-          d.show();
+          d.setVisible( true );
           if ( d.getUserAction() == JOptionPane.OK_OPTION )
           {
             DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-            Vector devices = combiner.getDevices();
+            Vector< CombinerDevice > devices = combiner.getDevices();
             int newRow = devices.size();
             CombinerDevice device = d.getCombinerDevice();
             devices.add( device );
@@ -159,20 +159,20 @@ public class DeviceCombinerPanel
             }
 
             FunctionImportDialog d = new FunctionImportDialog( null, importedUpgrade );
-            d.show();
+            d.setVisible( true );
             if ( d.getUserAction() == JOptionPane.OK_OPTION )
             {
               CombinerDevice device = new CombinerDevice( importedProtocol, importedUpgrade.getParmValues());
               DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-              Vector devices = combiner.getDevices();
+              Vector< CombinerDevice > devices = combiner.getDevices();
               int index = devices.size();
               Integer indexInt = new Integer( index );
               devices.add( device );
               
-              Vector importedFunctions = d.getSelectedFunctions();
+              Vector< Function > importedFunctions = d.getSelectedFunctions();
               if ( importedFunctions.size() > 0 )
               {
-                Vector functions = deviceUpgrade.getFunctions();
+                Vector< Function > functions = deviceUpgrade.getFunctions();
                 int firstRow =  functions.size();
                 for ( Enumeration en = importedFunctions.elements(); en.hasMoreElements(); )
                 {
@@ -257,14 +257,14 @@ public class DeviceCombinerPanel
   private void editDevice()
   {
     DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-    Vector devices = combiner.getDevices();
+    Vector< CombinerDevice > devices = combiner.getDevices();
     int row = table.getSelectedRow();
     CombinerDevice device = ( CombinerDevice )devices.elementAt( row );
     CombinerDeviceDialog d = 
       new CombinerDeviceDialog( KeyMapMaster.getKeyMapMaster(),
                                 device, 
                                 deviceUpgrade.getRemote());
-    d.show();
+    d.setVisible( true );
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
       devices.setElementAt( d.getCombinerDevice(), row );

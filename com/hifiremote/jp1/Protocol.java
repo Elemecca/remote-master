@@ -414,7 +414,7 @@ public class Protocol
     return notes;
   }
 
-  public Vector getOldNames()
+  public Vector< String > getOldNames()
   {
     return oldNames;
   }
@@ -607,7 +607,7 @@ public class Protocol
       newValues[ i ] = new Value( null, newProtocol.cmdParms[ i ].getDefaultValue());
 
     // now convert each defined function
-    Vector failedToConvert = new Vector();
+    Vector< Vector< String >> failedToConvert = new Vector< Vector< String >>();
     for ( Enumeration en = funcs.elements(); en.hasMoreElements(); )
     {
       Function f = ( Function )en.nextElement();
@@ -633,7 +633,7 @@ public class Protocol
         }
         catch ( IllegalArgumentException ex )
         {
-          Vector temp = new Vector( 2 );
+          Vector< String > temp = new Vector< String >( 2 );
           temp.add( f.getName());
           temp.add( ex.getMessage());
           failedToConvert.add( temp );
@@ -655,7 +655,7 @@ public class Protocol
       text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
       container.add( text, BorderLayout.NORTH );
       
-      Vector titles = new Vector();
+      Vector< String > titles = new Vector< String >();
       titles.add( "Function" );
       titles.add( "Reason" );
       JTableX table = new JTableX( failedToConvert, titles );
@@ -671,7 +671,7 @@ public class Protocol
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       frame.pack();
       frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
-      frame.show();
+      frame.setVisible( true );
     }
   }
 
@@ -788,11 +788,11 @@ public class Protocol
   protected Translate[] cmdTranslators = null;
   protected Translate[] importCmdTranslators = null;
   protected Importer[] devImporters = null;
-  protected HashMap code = new HashMap( 4 );
-  protected HashMap codeTranslator = new HashMap( 4 );
+  protected HashMap< String, Hex > code = new HashMap< String, Hex >( 6 );
+  protected HashMap< String, Translate[] > codeTranslator = new HashMap< String, Translate[]>( 6 );
   protected Initializer[] cmdParmInit = null;
   protected String notes = null;
-  private Vector oldNames = new Vector();
-  private Vector altPIDOverrideList = new Vector();
+  private Vector< String > oldNames = new Vector< String >();
+  private Vector< String > altPIDOverrideList = new Vector< String >();
   private boolean keyMovesOnly = false;
 }

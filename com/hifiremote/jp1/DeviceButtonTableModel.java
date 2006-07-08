@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class DeviceButtonTableModel
-  extends JP1TableModel
+  extends JP1TableModel< DeviceButton >
 {
   public DeviceButtonTableModel(){}
 

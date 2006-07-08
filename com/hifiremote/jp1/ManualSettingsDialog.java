@@ -347,10 +347,10 @@ public class ManualSettingsDialog
 
   private ManualProtocol protocol = null;
 
-  private Vector deviceParms = new Vector();
-  private Vector deviceTranslators = new Vector();
-  private Vector cmdParms = new Vector();
-  private Vector cmdTranslators = new Vector();
+  private Vector< DeviceParameter > deviceParms = new Vector< DeviceParameter >();
+  private Vector< Translate > deviceTranslators = new Vector< Translate >();
+  private Vector< CmdParameter > cmdParms = new Vector< CmdParameter >();
+  private Vector< Translate > cmdTranslators = new Vector< Translate >();
 
   private ParameterTableModel deviceModel = null;
   private JTableX deviceTable = null;

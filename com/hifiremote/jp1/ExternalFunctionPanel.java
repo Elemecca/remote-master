@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class ExternalFunctionPanel
-  extends TablePanel
+  extends TablePanel< Function >
 {
   public ExternalFunctionPanel( DeviceUpgrade devUpgrade )
   {
@@ -38,13 +38,13 @@ public class ExternalFunctionPanel
       {
         importedUpgrade.load( file );
         FunctionImportDialog d = new FunctionImportDialog( null, importedUpgrade );
-        d.show();
+        d.setVisible( true );
         if ( d.getUserAction() == JOptionPane.OK_OPTION )
         {
           Vector importedFunctions = d.getSelectedFunctions();
           if ( importedFunctions.size() > 0 )
           {
-            Vector externalFunctions = deviceUpgrade.getExternalFunctions();
+            Vector< Function > externalFunctions = deviceUpgrade.getExternalFunctions();
             int firstRow =  externalFunctions.size();
             for ( Enumeration e = importedFunctions.elements(); e.hasMoreElements(); )
             {
@@ -90,7 +90,7 @@ public class ExternalFunctionPanel
     super.update();
   }
 
-  protected Object createRowObject()
+  protected ExternalFunction createRowObject()
   {
     return new ExternalFunction();
   }

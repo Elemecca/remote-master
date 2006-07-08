@@ -6,7 +6,7 @@ import javax.swing.table.TableCellRenderer;
 import java.util.Vector;
 
 public class FunctionTableModel
-  extends KMTableModel
+  extends KMTableModel< Function >
 {
   private Vector functions = null;
   private Protocol protocol = null;
@@ -278,18 +278,16 @@ public class FunctionTableModel
 
   public TableCellEditor getColumnEditor( int col )
   {
-    TableCellEditor rc = null;
-    if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ))
-      rc = null;
-    else if ( col == efcCol )
-      rc = new EFCEditor( 3 );
-    else if ( col == efc5col )
-        rc = new EFCEditor( 5 );
-    else if ( col == hexCol )
-      rc = new HexEditor( protocol.getDefaultCmd());
+    if (( remote == null ) || ( protocol == null ) || ( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ))
+      return null;
+    if ( col == efcCol )
+      return new EFCEditor( 3 );
+    if ( col == efc5col )
+      return new EFCEditor( 5 );
+    if ( col == hexCol )
+      return new HexEditor( protocol.getDefaultCmd());
     else
-      rc = protocol.getColumnEditor( col - colOffset );
-    return rc;
+      return protocol.getColumnEditor( col - colOffset );
   }
 
   public TableCellRenderer getColumnRenderer( int col )

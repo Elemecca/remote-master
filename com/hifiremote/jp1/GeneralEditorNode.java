@@ -49,7 +49,7 @@ public class GeneralEditorNode
     altId = newId; 
   } 
 
-  private HashMap codes = new HashMap( 4 );
+  private HashMap< String, Hex > codes = new HashMap< String, Hex >( 6 );
 
   public Set getKeys(){ return codes.keySet(); }
   public void addCode( String processor, Hex code )

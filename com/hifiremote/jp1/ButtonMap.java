@@ -71,9 +71,9 @@ public class ButtonMap
 
   public int size(){ return size; }
 
-  public Vector parseBitMap( short[] bitMap, int offset, boolean digitMapUsed )
+  public Vector< Button > parseBitMap( short[] bitMap, int offset, boolean digitMapUsed )
   {
-    Vector rc = new Vector();
+    Vector< Button > rc = new Vector< Button >();
     int count = 0;
     int mask = 0x80;
     for ( int i = 0; i < buttons.length; i++ )

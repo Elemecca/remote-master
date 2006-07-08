@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class DeviceUpgradeTableModel
-  extends JP1TableModel
+  extends JP1TableModel< DeviceUpgrade >
 {
   public DeviceUpgradeTableModel(){}
 
@@ -60,7 +60,7 @@ public class DeviceUpgradeTableModel
 
   public Object getValueAt( int row, int column )
   {
-    DeviceUpgrade device = ( DeviceUpgrade )remoteConfig.getDeviceUpgrades().elementAt( row );
+    DeviceUpgrade device = getRow( row );
     switch ( column )
     {
       case 0:

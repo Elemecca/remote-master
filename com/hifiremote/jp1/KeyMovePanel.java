@@ -7,7 +7,7 @@ import javax.swing.table.*;
 import javax.swing.text.*;
 
 public class KeyMovePanel
-  extends RMTablePanel
+  extends RMTablePanel< KeyMove >
 {
   public KeyMovePanel()
   {
@@ -19,7 +19,7 @@ public class KeyMovePanel
     (( KeyMoveTableModel )model ).set( remoteConfig ); 
   }
   
-  protected Object createRowObject()
+  protected KeyMove createRowObject()
   {
     return null;
   }

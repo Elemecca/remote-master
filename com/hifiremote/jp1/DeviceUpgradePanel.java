@@ -11,7 +11,7 @@ import javax.swing.text.*;
 import java.beans.PropertyChangeListener;
 
 public class DeviceUpgradePanel
-  extends RMTablePanel
+  extends RMTablePanel< DeviceUpgrade >
   implements ListSelectionListener, ChangeListener, ActionListener, DocumentListener
 {
   public DeviceUpgradePanel()
@@ -82,7 +82,7 @@ public class DeviceUpgradePanel
 //    buttonPanel.setDeviceUpgrade( remoteConfig.getDeviceUpgrade());
   }
   
-  public Object createRowObject()
+  public DeviceUpgrade createRowObject()
   {
     System.err.println( "DeviceUpgradePanel.createRowObject()" );
     DeviceUpgrade upgrade = new DeviceUpgrade();

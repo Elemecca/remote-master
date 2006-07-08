@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class MacroTableModel
-  extends JP1TableModel
+  extends JP1TableModel< Macro >
 {
   public MacroTableModel(){}
 

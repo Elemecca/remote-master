@@ -16,15 +16,15 @@ import javax.swing.table.*;
 import javax.swing.event.TableModelListener; 
 import javax.swing.event.TableModelEvent; 
 
-public class TableMap extends JP1TableModel 
+public class TableMap< E > extends JP1TableModel< E > 
                       implements TableModelListener {
-    protected JP1TableModel model; 
+    protected JP1TableModel< E > model; 
 
     public TableModel getModel() {
         return model;
     }
 
-    public void setModel( JP1TableModel model ) {
+    public void setModel( JP1TableModel< E > model ) {
         this.model = model; 
         model.addTableModelListener( this ); 
     }
@@ -89,12 +89,12 @@ public class TableMap extends JP1TableModel
         fireTableChanged(e);
     }
 
-    public void addRow( Object object )
+    public void addRow( E object )
     {
       model.addRow( object );
     }
 
-    public void insertRow( int row, Object object )
+    public void insertRow( int row, E object )
     {
       model.insertRow( row, object );
     }
@@ -104,7 +104,7 @@ public class TableMap extends JP1TableModel
       model.removeRow( row );
     }
 
-    public Object getRow( int row )
+    public E getRow( int row )
     {
       return model.getRow( row );
     }

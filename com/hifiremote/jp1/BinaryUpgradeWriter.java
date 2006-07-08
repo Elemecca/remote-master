@@ -63,7 +63,7 @@ public class BinaryUpgradeWriter
         {
           prefs.setBinaryUpgradePath( file.getParentFile());
 
-          Vector v = new Vector();
+          Vector< short[]> v = new Vector< short[]>();
 
           Remote remote = deviceUpgrade.getRemote();
           Protocol protocol = deviceUpgrade.getProtocol();
@@ -72,8 +72,8 @@ public class BinaryUpgradeWriter
           v.add( deviceUpgrade.getUpgradeHex().getData());
 
           short length = 0;
-          for ( Enumeration e = v.elements(); e.hasMoreElements();)
-            length += (( short[] )e.nextElement()).length;
+          for ( short[] data : v )
+            length += data.length;
 
           short protocolOffset = length;
 
@@ -106,9 +106,8 @@ public class BinaryUpgradeWriter
 
           DataOutputStream out = new DataOutputStream( new FileOutputStream( file ));
           EncrypterDecrypter encdec = deviceUpgrade.getRemote().getEncrypterDecrypter();
-          for ( Enumeration e = v.elements(); e.hasMoreElements();)
+          for ( short[] data : v )
           {
-            short[] data = ( short[] )e.nextElement();
             for ( int i = 0; i < data.length; i++ )
             {
               short val = data[ i ];

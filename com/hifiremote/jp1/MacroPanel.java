@@ -7,7 +7,7 @@ import javax.swing.table.*;
 import javax.swing.text.*;
 
 public class MacroPanel
-  extends RMTablePanel
+  extends RMTablePanel< Macro >
 {
   public MacroPanel()
   {
@@ -19,7 +19,7 @@ public class MacroPanel
     (( MacroTableModel )model ).set( remoteConfig );
   }
   
-  public Object createRowObject()
+  public Macro createRowObject()
   {
     return null;
   }

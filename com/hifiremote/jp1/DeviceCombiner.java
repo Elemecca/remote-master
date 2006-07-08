@@ -89,7 +89,7 @@ public class DeviceCombiner
     return panel;
   }
 
-  public Vector getDevices(){ return devices; }
+  public Vector< CombinerDevice > getDevices(){ return devices; }
 
   public void store( PropertyWriter out, Value[] vals )
     throws IOException
@@ -366,5 +366,5 @@ public class DeviceCombiner
   }
 
   private DeviceCombinerPanel panel = null;
-  private Vector devices = new Vector();
+  private Vector< CombinerDevice > devices = new Vector< CombinerDevice >();
 }

@@ -1,3 +1,11 @@
+Changes for v1.61
+- Fixes for Linux
+
+Changes for v1.60
+- Fixes for EFC5 display
+- Migrate to Java 5.0
+- Fix width of "Lost Function Assignments" window.
+
 Changes for v1.59
 - Fix scrambled button assignments when importing KM upgrades
 

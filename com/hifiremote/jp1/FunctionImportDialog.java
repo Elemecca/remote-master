@@ -134,18 +134,16 @@ public class FunctionImportDialog
     if (( source == selectAll ) || ( source == selectNone ))
     {
       boolean flag = ( source == selectAll );
-      for ( Enumeration enum = data.elements(); enum.hasMoreElements(); )
+      for ( SelectHolder h : data )
       {
-        SelectHolder h = ( SelectHolder )enum.nextElement();
         h.setSelected( flag );
       }
       model.fireTableDataChanged();
     }
     else if ( source == selectToggle )
     {
-      for ( Enumeration enum = data.elements(); enum.hasMoreElements(); )
+      for ( SelectHolder h : data )
       {
-        SelectHolder h = ( SelectHolder )enum.nextElement();
         h.setSelected( !h.isSelected());
       }
       model.fireTableDataChanged();
@@ -164,9 +162,9 @@ public class FunctionImportDialog
     }
   }
 
-  public Vector getSelectedFunctions()
+  public Vector< Function > getSelectedFunctions()
   {
-    Vector v = new Vector();
+    Vector< Function > v = new Vector< Function >();
     for ( Enumeration e = data.elements(); e.hasMoreElements(); )
     {
       SelectHolder h = ( SelectHolder )e.nextElement();
@@ -241,7 +239,7 @@ public class FunctionImportDialog
     private Function data = null;
   }
 
-  private Vector data = new Vector();
+  private Vector< SelectHolder > data = new Vector< SelectHolder >();
   private AbstractTableModel model = null;
   private JButton selectAll = null;
   private JButton selectNone = null;

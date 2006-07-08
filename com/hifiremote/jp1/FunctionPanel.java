@@ -1,7 +1,7 @@
 package com.hifiremote.jp1;
 
 public class FunctionPanel
-  extends TablePanel
+  extends TablePanel< Function >
 {
   public FunctionPanel( DeviceUpgrade devUpgrade )
   {
@@ -31,7 +31,7 @@ public class FunctionPanel
     super.update();
   }
 
-  protected Object createRowObject()
+  protected Function createRowObject()
   {
     return new Function();
   }

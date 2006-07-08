@@ -5,7 +5,7 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 public class KeyMoveTableModel
-  extends JP1TableModel
+  extends JP1TableModel< KeyMove >
 {
   public KeyMoveTableModel(){}
 

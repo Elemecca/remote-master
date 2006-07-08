@@ -48,7 +48,7 @@ public class RemoteManager
       loadPath = dir;
     }
 
-    Vector work = new Vector();
+    Vector< Remote > work = new Vector< Remote >();
     for ( int i = 0; i < files.length; i++ )
     {
       File rdf = files[ i ];
@@ -58,7 +58,7 @@ public class RemoteManager
       for ( int j = 1; j < r.getNameCount(); j++ )
         work.add( new Remote( r, j ));
     }
-    remotes = ( Remote[] )work.toArray( remotes );
+    remotes = work.toArray( remotes );
     Arrays.sort( remotes );
 
     this.loadPath = loadPath;
@@ -107,7 +107,7 @@ public class RemoteManager
         subNames[ 0 ] = nameTokenizer.nextToken();
       }
       int mostMatches = 0;
-      Vector similarRemotes = new Vector();
+      Vector< Remote > similarRemotes = new Vector< Remote >();
       for ( int i = 0; i < remotes.length; i++ )
       {
         int numMatches = 0;
@@ -170,7 +170,7 @@ public class RemoteManager
       File file = new File( loadPath, "OldRemoteNames.ini" );
       if ( file.exists())
       {
-        oldRemoteNames = new Hashtable();
+        oldRemoteNames = new Hashtable< String, String >();
         BufferedReader rdr = new BufferedReader( new FileReader( file ));
         String line = null;
         while (( line = rdr.readLine() ) != null )
@@ -213,14 +213,14 @@ public class RemoteManager
   public Remote[] findRemoteBySignature( String signature )
   {
     Remote[] rc = new Remote[ 0 ];
-    Vector v = new Vector();
+    Vector< Remote > v = new Vector< Remote >();
     for ( int i = 0; i < remotes.length; i++ )
     {
       Remote r = remotes[ i ];
       if ( r.getSignature().equals( signature ))
         v.add( r );
     }
-    rc = ( Remote[])v.toArray( rc );
+    rc = v.toArray( rc );
     return rc;
   }
 
@@ -228,6 +228,6 @@ public class RemoteManager
 
   private Remote[] remotes = new Remote[ 0 ];
   private File loadPath = null;
-  private Hashtable oldRemoteNames = null;
+  private Hashtable< String, String > oldRemoteNames = null;
 
 }

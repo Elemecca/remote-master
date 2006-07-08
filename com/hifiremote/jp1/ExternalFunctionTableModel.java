@@ -9,7 +9,7 @@ import javax.swing.DefaultComboBoxModel;
 import java.util.Vector;
 
 public class ExternalFunctionTableModel
-  extends KMTableModel
+  extends KMTableModel< Function >
 {
   private DeviceUpgrade upgrade = null;
   private final static int rowCol = 0;
@@ -38,7 +38,7 @@ public class ExternalFunctionTableModel
 
   public Object getValueAt( int row, int col )
   {
-    Vector functions = upgrade.getExternalFunctions();
+    Vector< Function > functions = upgrade.getExternalFunctions();
     ExternalFunction function = ( ExternalFunction )functions.elementAt( row );
     Hex hex = function.getHex();
 

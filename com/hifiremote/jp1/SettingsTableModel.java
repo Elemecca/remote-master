@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class SettingsTableModel
-  extends JP1TableModel
+  extends JP1TableModel< Setting >
   implements CellEditorModel
 {
   public SettingsTableModel()

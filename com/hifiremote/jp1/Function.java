@@ -179,5 +179,5 @@ public class Function
   protected Hex hex = null;
   private FunctionLabel label = null;
   private FunctionItem item = null;
-  private Vector users = new Vector();
+  private Vector< User > users = new Vector< User >();
 }

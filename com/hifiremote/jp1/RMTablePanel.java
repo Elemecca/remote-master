@@ -11,19 +11,19 @@ import java.awt.event.*;
 import java.awt.datatransfer.*;
 import java.beans.PropertyChangeListener;
 
-public abstract class RMTablePanel
+public abstract class RMTablePanel< E >
   extends RMPanel
   implements ActionListener, ListSelectionListener
 {
-  public RMTablePanel( JP1TableModel model )
+  public RMTablePanel( JP1TableModel< E > model )
   {
     this( model, BorderLayout.CENTER );
   }
   
-  public RMTablePanel( JP1TableModel model, String location )
+  public RMTablePanel( JP1TableModel< E > model, String location )
   {
     this.model = model;
-    sorter = new TableSorter( model );
+    sorter = new TableSorter< E >( model );
     table = new JP1Table( sorter );
     sorter.addMouseListenerToHeaderInTable( table );
     table.getSelectionModel().addListSelectionListener( this );
@@ -300,8 +300,8 @@ public abstract class RMTablePanel
     }
   }
 
-  protected abstract Object createRowObject();
-  protected Object getRowObject( int row )
+  protected abstract E createRowObject();
+  protected E getRowObject( int row )
   {
     return sorter.getRow( row );
   }
@@ -334,7 +334,7 @@ public abstract class RMTablePanel
     if (( source == newButton ) ||
         ( source == newItem ))
     {
-      Object o = createRowObject();
+      E o = createRowObject();
       if ( row == -1 )
       {
         sorter.addRow( o );
@@ -429,14 +429,15 @@ public abstract class RMTablePanel
 
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
-    model.addPropertyChangeListener( listener );
+    if (( model != null ) && ( listener != null ))
+      model.addPropertyChangeListener( listener );
   }
   
   public JP1TableModel getModel(){ return model; }
 
   protected JP1Table table = null;
-  protected JP1TableModel model = null;
-  private TableSorter sorter = null;
+  protected JP1TableModel< E > model = null;
+  private TableSorter< E > sorter = null;
   protected JPanel buttonPanel = null;
   private JButton newButton = null;
   private JButton deleteButton = null;
