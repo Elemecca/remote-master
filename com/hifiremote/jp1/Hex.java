@@ -119,24 +119,27 @@ public class Hex
       StringTokenizer st = new StringTokenizer( text, " _.$h\n\r" );
       length = st.countTokens();
       rc = new short[ length ];
-      st = new StringTokenizer( text, " _.$h\n\r", true );
-      int i = 0;
-      short value = 0;
-      while ( st.hasMoreTokens())
-      {
-        String token = st.nextToken();
-        if ( token.equals( " " ) || token.equals( "$" ) || token.equals( "h" ) || token.equals( "\n") || token.equals( "\r" ))
-          value = 0;
-        else if ( token.equals( "_" ))
-          value = ADD_OFFSET;
-        else if ( token.equals( "." ))
-          value = NO_MATCH;
-        else
-          rc[ i++ ] = ( short )( value | Short.parseShort( token, 16 ));
-      }
+      parseHex( text, rc, 0 );
     }
-
     return rc;
+  }
+  
+  public static void parseHex( String text, short[] data,  int offset )
+  {
+    StringTokenizer st = new StringTokenizer( text, " _.$h\n\r", true );
+    short value = 0;
+    while ( st.hasMoreTokens())
+    {
+      String token = st.nextToken();
+      if ( token.equals( " " ) || token.equals( "$" ) || token.equals( "h" ) || token.equals( "\n") || token.equals( "\r" ))
+        value = 0;
+      else if ( token.equals( "_" ))
+        value = ADD_OFFSET;
+      else if ( token.equals( "." ))
+        value = NO_MATCH;
+      else
+        data[ offset++ ] = ( short )( value | Short.parseShort( token, 16 ));
+    }
   }
 
   public static String asString( int value )
@@ -187,12 +190,18 @@ public class Hex
 
   public static String toString( short[] data, int breakAt )
   {
+    return toString( data, breakAt, 0, data.length );
+  }
+  
+  public static String toString( short[] data, int breakAt, int offset, int length )
+  {
     if ( data == null )
       return null;
 
     StringBuffer rc = new StringBuffer( 4 * data.length );
     int breakCount = breakAt;
-    for ( int i = 0; i < data.length; i++ )
+    int last = offset + length;
+    for ( int i = offset; i < last; ++i )
     {
       if ( breakCount == 0 )
       {
@@ -201,7 +210,7 @@ public class Hex
       }
       --breakCount;
 
-      if ( i > 0 )
+      if ( i > offset )
         rc.append( ' ' );
 
       String str = Integer.toHexString( data[ i ] & 0xFF );
@@ -220,6 +229,16 @@ public class Hex
   public String toString( int breakAt )
   {
     return toString( data, breakAt );
+  }
+  
+  public String toString( int offset, int length )
+  {
+    return toString( data, -1, offset, length );
+  }
+  
+  public static String toString( short[] data, int offset, int length )
+  {
+    return toString( data, -1, offset, length );
   }
 
   public boolean equals( Object obj )

@@ -13,6 +13,17 @@ public class CustomNameDialog
   public CustomNameDialog( JFrame owner, String[] customNames )
   {
     super( owner, "Custom Function Names", true );
+    createGui( owner, customNames );
+  }
+    
+  public CustomNameDialog( JDialog owner, String[] customNames )
+  {
+    super( owner, "Custom Function Names", true );
+    createGui( owner, customNames );
+  }
+    
+  private void createGui( Component owner, String[] customNames )
+  {
     setLocationRelativeTo( owner );
 
     textArea = new JTextArea( 20, 20 );

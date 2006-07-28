@@ -28,8 +28,7 @@ public abstract class AdvancedCode
     }
   }
   
-  public abstract Object getValue();
-  public abstract void setValue( Object value );
+  public abstract String getValueString( Remote remote );
 
   protected Hex data;
   public Hex getData(){ return data; }
@@ -49,8 +48,8 @@ public abstract class AdvancedCode
   
   public void store( PropertyWriter pw )
   {
-    pw.print( "KeyCode", Integer.toString( keyCode ));
-    pw.print( "Data", data.toString());
+    pw.print( "KeyCode", keyCode );
+    pw.print( "Data", data );
     if (( notes != null ) && ( notes.length() > 0 ))
       pw.print( "Notes", notes );
   }

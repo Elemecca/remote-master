@@ -39,6 +39,17 @@ public class ProtocolEditor
   public ProtocolEditor( JFrame owner )
   {
     super( owner, "Protocol Editor", true );
+    createGui( owner );
+  }
+    
+  public ProtocolEditor( JDialog owner )
+  {
+    super( owner, "Protocol Editor", true );
+    createGui( owner );
+  }
+    
+  private void createGui( Component owner )
+  {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
 

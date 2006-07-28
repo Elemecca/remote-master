@@ -17,9 +17,19 @@ public class ManualSettingsDialog
   extends JDialog
   implements ActionListener, PropertyChangeListener, DocumentListener
 {
+  public ManualSettingsDialog( JDialog owner, ManualProtocol protocol )
+  {
+    super( owner, "Manual Settings", true );
+    createGui( owner );
+  }
   public ManualSettingsDialog( JFrame owner, ManualProtocol protocol )
   {
     super( owner, "Manual Settings", true );
+    createGui( owner );
+  }
+  
+  private void createGui( Component owner )
+  {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
 

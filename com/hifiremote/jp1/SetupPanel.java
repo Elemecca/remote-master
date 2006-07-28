@@ -240,7 +240,9 @@ public class SetupPanel
   private void updateSetupCode()
   {
     int val = (( Integer )setupCode.getValue()).intValue();
+    int oldSetupCode = deviceUpgrade.getSetupCode();
     deviceUpgrade.setSetupCode( val );
+    propertyChangeSupport.firePropertyChange( "setupCode", oldSetupCode, val ); 
   }
 
   private void docChanged( DocumentEvent e )
@@ -303,6 +305,11 @@ public class SetupPanel
   {
     controlToSelectAll.selectAll();
   }
+  
+  public void addPropertyChangeListener( PropertyChangeListener listener )
+  {
+    propertyChangeSupport.addPropertyChangeListener( listener );
+  }
 
   private JFormattedTextField setupCode = null;
   private JRadioButton useEFC = null;
@@ -318,5 +325,6 @@ public class SetupPanel
   private boolean updateInProgress = false;
   private static DecimalFormat nf = new DecimalFormat( "0000" );
   private JTextComponent controlToSelectAll = null;
+  private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
 }
 

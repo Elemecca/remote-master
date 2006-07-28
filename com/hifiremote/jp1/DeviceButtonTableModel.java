@@ -15,12 +15,17 @@ public class DeviceButtonTableModel
     setData( remoteConfig.getRemote().getDeviceButtons());
     fireTableDataChanged();
   }
+  
+  public void setEditable( boolean flag )
+  {
+    editable = false;
+  }
 
   public int getColumnCount(){ return 4; }
 
   private static final String[] colNames = 
   {
-    "#", "Device Button", "Type", "Code"
+    "#", "Device Button", "Type", "<html>Setup<br>Code</html>"
   };
   public String getColumnName( int col )
   {
@@ -52,7 +57,7 @@ public class DeviceButtonTableModel
 
   public boolean isCellEditable( int row, int col )
   {
-    if ( col > 1 )
+    if ( editable && ( col > 1 ))
       return true;
 
     return false;
@@ -108,6 +113,9 @@ public class DeviceButtonTableModel
   
   public TableCellEditor getColumnEditor( int col )
   {
+    if ( !editable )
+      return null;
+    
     if ( col == 2 )
     {
       DefaultCellEditor e = new DefaultCellEditor( deviceTypeBox );
@@ -119,4 +127,5 @@ public class DeviceButtonTableModel
 
   private RemoteConfiguration remoteConfig = null;
   private JComboBox deviceTypeBox = new JComboBox();
+  private boolean editable = true;
 }

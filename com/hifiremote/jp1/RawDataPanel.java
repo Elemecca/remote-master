@@ -13,7 +13,7 @@ public class RawDataPanel
   {
     model = new RawDataTableModel();
     JP1Table table = new JP1Table( model );
-
+    table.initColumns( model );
     table.setGridColor( Color.lightGray );
     table.getTableHeader().setResizingAllowed( false );
     table.setDefaultRenderer( UnsignedByte.class, byteRenderer );

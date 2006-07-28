@@ -20,10 +20,21 @@ public class ImportRawUpgradeDialog
   public ImportRawUpgradeDialog( JFrame owner, DeviceUpgrade deviceUpgrade )
   {
     super( owner, "Import Raw Upgrade", true );
+    this.deviceUpgrade = deviceUpgrade;
+    createGui( owner );
+  }
+  
+  public ImportRawUpgradeDialog( JDialog owner, DeviceUpgrade deviceUpgrade )
+  {
+    super( owner, "Import Raw Upgrade", true );
+    this.deviceUpgrade = deviceUpgrade;
+    createGui( owner );
+  }
+  
+  private void createGui( Component owner )
+  {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
-
-    this.deviceUpgrade = deviceUpgrade;
 
     double b = 5;        // space between rows and around border
     double c = 10;       // space between columns

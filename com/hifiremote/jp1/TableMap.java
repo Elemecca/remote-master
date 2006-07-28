@@ -108,6 +108,11 @@ public class TableMap< E > extends JP1TableModel< E >
     {
       return model.getRow( row );
     }
+    
+    public void setRow( int row, E value )
+    {
+      model.setRow( row, value );
+    }
 
     public void moveRow( int from, int to )
     {

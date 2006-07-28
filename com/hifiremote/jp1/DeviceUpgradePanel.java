@@ -2,13 +2,13 @@ package com.hifiremote.jp1;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.*;
 import java.io.*;
 import java.text.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.text.*;
-import java.beans.PropertyChangeListener;
 
 public class DeviceUpgradePanel
   extends RMTablePanel< DeviceUpgrade >
@@ -16,9 +16,23 @@ public class DeviceUpgradePanel
 {
   public DeviceUpgradePanel()
   {
-    super( new DeviceUpgradeTableModel(), BorderLayout.LINE_START );
+//    super( new DeviceUpgradeTableModel(), BorderLayout.LINE_START );
+    super( new DeviceUpgradeTableModel());
     table.getSelectionModel().addListSelectionListener( this );
+    table.addMouseListener( new MouseAdapter()
+    {
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( e.getClickCount() != 2 )
+          return;
+        int row = table.getSelectedRow();
+        if ( row == -1 )
+          return;
+        editRowObject( row );
+      }
+    });
 
+    /*
     JPanel panel = new JPanel( new BorderLayout());
     panel.setBorder( BorderFactory.createTitledBorder( "Device Details" ));
     add( panel, BorderLayout.CENTER );
@@ -27,6 +41,11 @@ public class DeviceUpgradePanel
     box.add( new JLabel( "Description" ));
     box.add( Box.createHorizontalStrut( 5 ));
     box.add( description );
+    box.add( Box.createHorizontalStrut( 10 ));
+    box.add( new JLabel( "Device Type" ));
+    box.add( Box.createHorizontalStrut( 5 ));
+    box.add( deviceType ); 
+    deviceType.addActionListener( this );
     panel.add( box, BorderLayout.NORTH );
     description.setEnabled( false );
     description.getDocument().addDocumentListener( this );
@@ -36,7 +55,7 @@ public class DeviceUpgradePanel
     tabbedPane.addChangeListener( this );
     tabbedPane.setEnabled( false );
     panel.add( tabbedPane, BorderLayout.CENTER );
-    
+    */
     loadButton = new JButton( "Load" );
     loadButton.setMnemonic( KeyEvent.VK_L );
     loadButton.setToolTipText( "Load a device upgrade from a file." );
@@ -57,7 +76,7 @@ public class DeviceUpgradePanel
     exportButton.addActionListener( this );
     exportButton.setEnabled( false );
     super.buttonPanel.add( exportButton );
-    
+    /*
     setupPanel = new SetupPanel( null );
     tabbedPane.add( "Setup", setupPanel );
 
@@ -73,44 +92,64 @@ public class DeviceUpgradePanel
     keyMapPanel = new KeyMapPanel( null );
     tabbedPane.add( "Key Map", keyMapPanel );
     currPanel = ( KMPanel )tabbedPane.getSelectedComponent();
+    */
   }
 
   public void set( RemoteConfiguration remoteConfig )
   {
     (( DeviceUpgradeTableModel )model ).set( remoteConfig );
     this.remoteConfig = remoteConfig;
-//    buttonPanel.setDeviceUpgrade( remoteConfig.getDeviceUpgrade());
+    // deviceType.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceTypeAliasNames()));
   }
   
-  public DeviceUpgrade createRowObject()
+  public DeviceUpgrade createRowObject( DeviceUpgrade baseUpgrade )
   {
     System.err.println( "DeviceUpgradePanel.createRowObject()" );
-    DeviceUpgrade upgrade = new DeviceUpgrade();
-    upgrade.reset();
-    upgrade.setRemote( remoteConfig.getRemote());
-    return upgrade;
+    DeviceUpgrade upgrade = null;
+    if ( baseUpgrade == null )
+    {
+      upgrade = new DeviceUpgrade();
+      upgrade.setRemote( remoteConfig.getRemote());
+    }
+    else
+      upgrade = new DeviceUpgrade( baseUpgrade );
+      
+    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, table );
+    Remote[] remotes = new Remote[ 1 ];
+    remotes[ 0 ] = remoteConfig.getRemote();
+    DeviceUpgradeEditor editor = new DeviceUpgradeEditor( rm, upgrade, remotes );
+    return editor.getDeviceUpgrade();
   }
 
   // Interface ListSelectionListener
   public void valueChanged( ListSelectionEvent e )
   {
+    super.valueChanged( e );
     if ( !e.getValueIsAdjusting() )
     {
-      int row = table.getSelectedRow();
       DeviceUpgrade upgrade = null;
+      int row = table.getSelectedRow();
       if ( row != -1 )
       {
         upgrade = ( DeviceUpgrade )getRowObject( row );
+        /*
         description.setText( upgrade.getDescription());
+        deviceType.setSelectedItem( upgrade.getDeviceTypeAliasName());
+        */
       }
+      /*
       else 
+      {
         description.setText( "" );
-
+        deviceType.setSelectedIndex( 0 );
+      }
+*/
       boolean enableFlag = row != -1;
-      description.setEnabled( enableFlag );
+  //    description.setEnabled( enableFlag );
       exportButton.setEnabled( enableFlag );
       loadButton.setEnabled( enableFlag );
       importButton.setEnabled( enableFlag );
+      /*
       tabbedPane.setEnabled( enableFlag );
       
       setupPanel.setEnabled( enableFlag );
@@ -124,8 +163,10 @@ public class DeviceUpgradePanel
       keyMapPanel.setEnabled( enableFlag );
       keyMapPanel.setDeviceUpgrade( upgrade );
       currPanel.update();
+      */
     }
   }
+  
   
   private KMPanel currPanel = null;
   public void stateChanged( ChangeEvent e )
@@ -135,8 +176,6 @@ public class DeviceUpgradePanel
     currPanel = ( KMPanel )(( JTabbedPane )e.getSource()).getSelectedComponent();
     currPanel.setEnabled( true );
     currPanel.update();
-    // SwingUtilities.updateComponentTreeUI( currPanel );
-    // validateUpgrade();
   }
   
   public void actionPerformed( ActionEvent e )
@@ -145,8 +184,10 @@ public class DeviceUpgradePanel
     {
       Object source = e.getSource();
       int row = table.getSelectedRow();
-      DeviceUpgrade deviceUpgrade = ( DeviceUpgrade )getRowObject( row ); 
-      if ( source == exportButton )
+      DeviceUpgrade deviceUpgrade = ( DeviceUpgrade )getRowObject( row );
+      if ( source == deviceType )
+        deviceUpgrade.setDeviceTypeAliasName(( String )deviceType.getSelectedItem());
+      else if ( source == exportButton )
         export( deviceUpgrade );
       else if ( source == loadButton )
       {
@@ -173,11 +214,18 @@ public class DeviceUpgradePanel
     RMFileChooser chooser = new RMFileChooser();
     String[] endings = { ".rmdu" };
     chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", endings ));
+    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     File f = deviceUpgrade.getFile();
     if ( f != null )
       chooser.setSelectedFile( f );
-    JFrame frame = ( JFrame )SwingUtilities.getAncestorOfClass( JFrame.class, this );
-    int returnVal = chooser.showSaveDialog( frame );
+    else
+    {
+      String path = rm.getPreferences().getProperty( "UpgradePath" );
+      if ( path != null )
+        chooser.setCurrentDirectory( new File( path ));
+    }
+
+    int returnVal = chooser.showSaveDialog( rm );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
@@ -187,7 +235,7 @@ public class DeviceUpgradePanel
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists())
       {
-        rc = JOptionPane.showConfirmDialog( frame,
+        rc = JOptionPane.showConfirmDialog( rm,
                                             file.getName() + " already exists.  Do you want to replace it?",
                                             "Replace existing file?",
                                             JOptionPane.YES_NO_OPTION );
@@ -218,25 +266,27 @@ public class DeviceUpgradePanel
     endings[ 0 ] = ".rmdu";
     chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", endings ));
 
-    JFrame frame = ( JFrame )SwingUtilities.getAncestorOfClass( JFrame.class, this );
-    
+    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+    String dir = rm.getPreferences().getProperty( "UpgradePath" );
+    if ( dir != null )
+      chooser.setCurrentDirectory( new File( dir ));
     while ( true )
     {
-      if ( chooser.showOpenDialog( frame ) == RMFileChooser.APPROVE_OPTION )
+      if ( chooser.showOpenDialog( rm ) == RMFileChooser.APPROVE_OPTION )
       {
         file = chooser.getSelectedFile();
   
         int rc = JOptionPane.YES_OPTION;
         if ( !file.exists())
         {
-          JOptionPane.showMessageDialog( frame,
+          JOptionPane.showMessageDialog( rm,
                                          file.getName() + " doesn't exist.",
                                          "File doesn't exist.",
                                          JOptionPane.ERROR_MESSAGE );
         }
         else if ( file.isDirectory())
         {
-          JOptionPane.showMessageDialog( frame,
+          JOptionPane.showMessageDialog( rm,
                                          file.getName() + " is a directory.",
                                          "File doesn't exist.",
                                          JOptionPane.ERROR_MESSAGE );
@@ -249,8 +299,10 @@ public class DeviceUpgradePanel
     }
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
+    rm.getPreferences().put( "UpgradePath", file.getParent());
     deviceUpgrade.setRemote( remoteConfig.getRemote());
   }
+
 
   // DocumentListener methods
   private void updateDescription()
@@ -276,10 +328,11 @@ public class DeviceUpgradePanel
   public void removeUpdate( DocumentEvent e )
   {
     updateDescription();
-  }  
-  
+  }
+
   private RemoteConfiguration remoteConfig;
   private JTextField description = new JTextField();
+  private JComboBox deviceType = new JComboBox();
   private JTabbedPane tabbedPane = null;
   private SetupPanel setupPanel = null;
   private FunctionPanel functionPanel = null;

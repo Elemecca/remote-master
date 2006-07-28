@@ -16,12 +16,20 @@ public class KeyMovePanel
 
   public void set( RemoteConfiguration remoteConfig )
   {
-    (( KeyMoveTableModel )model ).set( remoteConfig ); 
+    (( KeyMoveTableModel )model ).set( remoteConfig );
+    JTableHeader th = table.getTableHeader();
+    TableColumnModel tcm = th.getColumnModel();
+    TableColumn tc = tcm.getColumn( 7 );
+    if ( remoteConfig.getRemote().getEFCDigits() == 3 )
+      tc.setHeaderValue( "<html>EFC or<br>Key Name</html>" );
+    else
+      tc.setHeaderValue( "<html>EFC-5 or<br>Key Name</html>" );
+    th.repaint();
   }
   
-  protected KeyMove createRowObject()
+  protected KeyMove createRowObject( KeyMove baseKeyMove )
   {
-    return null;
+    return KeyMoveDialog.showDialog( this, baseKeyMove, (( KeyMoveTableModel )model ).getRemoteConfig());
   }
 }
   

@@ -173,68 +173,44 @@ public class Button
       return allowsKeyMove();
   }
 
-  /*
-  public Button setFunction( Function newFunc )
+  public boolean allowsMacro()
   {
-    if ( function != null )
-    {
-      function.removeReference( this, NORMAL_STATE );
-    }
-    function = newFunc;
-    if ( newFunc != null )
-    {
-      newFunc.addReference( this, NORMAL_STATE );
-    }
-    return this;
-  }
-  public Function getFunction(){ return function; }
-
-  public Button setShiftedFunction( Function newFunc )
-  {
-    if ( shiftedButton != null )
-      shiftedButton.setFunction( newFunc );
-    else
-    {
-      if ( shiftedFunction != null )
-        shiftedFunction.removeReference( this, SHIFTED_STATE );
-      shiftedFunction = newFunc;
-      if ( newFunc != null )
-        newFunc.addReference( this, SHIFTED_STATE );
-    }
-    return this;
+    return (( restrictions & MACRO_BIND ) == 0 );
   }
 
-  public Function getShiftedFunction()
+  public boolean allowsShiftedMacro()
   {
-    if ( shiftedButton != null )
-      return shiftedButton.getFunction();
-    else
-      return shiftedFunction;
+    if ( isShifted || isXShifted )
+      return false;
+    return (( restrictions & SHIFT_MACRO_BIND ) == 0 );
   }
 
-  public Button setXShiftedFunction( Function newFunc )
+  public boolean allowsXShiftedMacro()
   {
-    if ( xShiftedButton != null )
-      xShiftedButton.setFunction( newFunc );
-    else
-    {
-      if ( xShiftedFunction != null )
-        xShiftedFunction.removeReference( this, XSHIFTED_STATE );
-      xShiftedFunction = newFunc;
-      if ( newFunc != null )
-        newFunc.addReference( this, XSHIFTED_STATE );
-    }
-    return this;
+    if ( isShifted || isXShifted )
+      return false;
+    return (( restrictions & XSHIFT_MACRO_BIND ) == 0 );
+  }
+  
+  public boolean canAssignToMacro()
+  {
+    return (( restrictions & MACRO_DATA ) == 0 );
   }
 
-  public Function getXShiftedFunction()
+  public boolean canAssignShiftedToMacro()
   {
-    if ( xShiftedButton != null )
-      return xShiftedButton.getFunction();
-    return xShiftedFunction;
+    if ( isShifted || isXShifted )
+      return false;
+    return (( restrictions & SHIFT_MACRO_DATA ) == 0 );
   }
-  */
-
+  
+  public boolean canAssignXShiftedToMacro()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return (( restrictions & XSHIFT_MACRO_DATA ) == 0 );
+  }
+  
   public void addButtonMap( int mapIndex )
   {
     buttonMaps |= ( 1 << mapIndex );
@@ -250,23 +226,6 @@ public class Button
   {
     return buttonMaps;
   }
-
-  /*
-  public short[] getKeyMoves( short[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
-  {
-    short[] move1 = getKeyMove( function, 0, deviceCode, devType, remote, keyMovesOnly );
-    short[] move2 = getKeyMove( shiftedFunction, remote.getShiftMask(), deviceCode, devType, remote, keyMovesOnly );
-    short[] move3 = getKeyMove( xShiftedFunction, remote.getXShiftMask(), deviceCode, devType, remote, keyMovesOnly );
-
-    short[] rc = new short[ move1.length + move2.length + move3.length ];
-
-    System.arraycopy( move1, 0, rc, 0, move1.length );
-    System.arraycopy( move2, 0, rc, move1.length, move2.length );
-    System.arraycopy( move3, 0, rc, move1.length + move2.length, move3.length );
-
-    return rc;
-  }
-  */
 
   public short[] getKeyMove( Function f, int mask,
                              short[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )

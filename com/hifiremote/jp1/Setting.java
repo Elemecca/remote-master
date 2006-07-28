@@ -30,6 +30,7 @@ public class Setting
     inverted = invert;
     optionList = options;
     sectionName = section;
+    value = initVal;
   }
 
   public String toString()
@@ -58,8 +59,18 @@ public class Setting
 
     return temp.toString();
   }
+  
+  public int getValue()
+  {
+    return value;
+  }
+  
+  public void setValue( int value )
+  {
+    this.value = value;
+  }
 
-  public int getValue( short[] data )
+  public void decode( short[] data )
   {
     int mask = ( 1 << numberOfBits ) - 1;
     int temp = data[ byteAddress ];
@@ -68,11 +79,12 @@ public class Setting
     temp &= mask;
     int shift = bitNumber - numberOfBits + 1;
     temp >>= shift;
-    return temp;
+    value = temp;
   }
 
-  public void setValue( short[] data, int val )
+  public void store( short[] data )
   {
+    int val = value;
     int mask = ( 1 << numberOfBits ) - 1;
     if ( inverted )
       val = ~val;
@@ -84,6 +96,11 @@ public class Setting
     temp |= ( val << shift );
     data[ byteAddress ] = ( short )temp;
   }
+  
+  public void store( PropertyWriter pw )
+  {
+    pw.print( title, value );
+  }
 
   private String title;
   private int byteAddress;
@@ -93,4 +110,5 @@ public class Setting
   private boolean inverted;
   private Object[] optionList = null;
   private String sectionName = null;
+  private int value = 0;
 }

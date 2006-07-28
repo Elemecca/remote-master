@@ -11,19 +11,28 @@ public class KeyMoveTableModel
 
   public void set( RemoteConfiguration remoteConfig )
   {
-    setData( remoteConfig.getKeyMoves());
     this.remoteConfig = remoteConfig;
-    deviceButtonBox.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceButtons()));
-    keyRenderer.setRemote( remoteConfig.getRemote());
-    keyEditor.setRemote( remoteConfig.getRemote());
-    deviceTypeBox.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceTypes()));
+    Remote remote = remoteConfig.getRemote();
+
+    setData( remoteConfig.getKeyMoves());
+    deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons()));
+    keyRenderer.setRemote( remote );
+    keyEditor.setRemote( remote );
+    keyMoveRenderer.setRemote( remote );
+    keyMoveEditor.setRemoteConfiguration( remoteConfig );
+    deviceTypeBox.setModel( new DefaultComboBoxModel( remote.getDeviceTypes()));
+  }
+  
+  public RemoteConfiguration getRemoteConfig()
+  {
+    return remoteConfig;
   }
 
-  public int getColumnCount(){ return 8; }
+  public int getColumnCount(){ return colNames.length; }
 
-  private static final String[] colNames = 
+  private static String[] colNames = 
   {
-    "#", "<html>Device<br>Button</html>", "Key", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "Raw Data", "<html>EFC or<br>Key Name</html>", "Notes"
+    "#", "<html>Device<br>Button</html>", "Key", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "Raw Data", "Hex", "<html>EFC or<br>Key Name</html>", "Notes"
   };
   public String getColumnName( int col )
   {
@@ -32,7 +41,7 @@ public class KeyMoveTableModel
 
   private static final String[] colPrototypeNames = 
   {
-    "00", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", " Raw Data", "xshift-CBL/SAT", "A reasonable length long note"
+    "00", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", "00 (key code)", "FF FF", "xshift-CBL/SAT", "A reasonable length long note"
   };
 
   public String getColumnPrototypeName( int col )
@@ -42,7 +51,7 @@ public class KeyMoveTableModel
 
   private static boolean[] colWidths = 
   {
-    true, true, false, true, true, true, false, false 
+    true, true, false, true, true, true, true, false, false 
   };
 
   public boolean isColumnWidthFixed( int col )
@@ -52,8 +61,9 @@ public class KeyMoveTableModel
   
   private static final Class[] colClasses =
   {
-    Integer.class, DeviceButton.class, Integer.class, DeviceType.class, SetupCode.class, Hex.class, Object.class, String.class
+    Integer.class, DeviceButton.class, Integer.class, DeviceType.class, SetupCode.class, KeyMove.class, KeyMove.class, KeyMove.class, String.class
   };
+  
   public Class getColumnClass( int col )
   {
     return colClasses[ col ];
@@ -61,15 +71,15 @@ public class KeyMoveTableModel
 
   public boolean isCellEditable( int row, int col )
   {
-    if (( col == 1 ) || ( col == 2 ) || ( col == 3 ) || ( col == 4 ) || ( col == 7 ))
-      return true;
+    if ( col == 0 )
+      return false;
 
-    return false;
+    return true;
   }
 
   public Object getValueAt(int row, int column)
   {
-    KeyMove keyMove = ( KeyMove )getRow( row );
+    KeyMove keyMove = getRow( row );
     Remote r = remoteConfig.getRemote();
     switch ( column )
     {
@@ -84,10 +94,12 @@ public class KeyMoveTableModel
       case 4:
         return new SetupCode( keyMove.getSetupCode());
       case 5:
-        return keyMove.getCmd();
+        return keyMove;
       case 6:
-        return keyMove.getValue();
+        return keyMove;
       case 7:
+        return keyMove;
+      case 8:
         return keyMove.getNotes();
       default:
         return null;
@@ -96,7 +108,7 @@ public class KeyMoveTableModel
 
   public void setValueAt( Object value, int row, int col )
   {
-    KeyMove keyMove = ( KeyMove )getRow( row );
+    KeyMove keyMove = getRow( row );
     if ( col == 1 )
     {
       Remote r = remoteConfig.getRemote();
@@ -114,7 +126,12 @@ public class KeyMoveTableModel
       keyMove.setDeviceType((( DeviceType )value ).getNumber());
     else if ( col == 4 )
       keyMove.setSetupCode((( SetupCode )value ).getValue());
-    else if ( col == 7 )
+    else if (( col > 4 ) && ( col < 8 ))
+    {
+      if ( value != null )
+        setRow( row, ( KeyMove )value );
+    }
+    else if ( col == 8 )
       keyMove.setNotes(( String )value );
     else
       return;
@@ -139,7 +156,10 @@ public class KeyMoveTableModel
       editor.setClickCountToStart( 2 );
       return editor;
     }
-    
+    else if (( col > 4 ) && ( col < 8 ))
+    {
+      return keyMoveEditor;
+    }
     return null;
   }
   
@@ -149,6 +169,8 @@ public class KeyMoveTableModel
       return new RowNumberRenderer();
     else if ( col == 2 )
       return keyRenderer;
+    else if (( col > 4 ) && ( col < 8 ))
+      return keyMoveRenderer;
     
     return null;
   }
@@ -158,4 +180,6 @@ public class KeyMoveTableModel
   private JComboBox deviceTypeBox = new JComboBox();
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
   private KeyEditor keyEditor = new KeyEditor();
+  private KeyMoveRenderer keyMoveRenderer = new KeyMoveRenderer();
+  private KeyMoveEditor keyMoveEditor = new KeyMoveEditor();
 }

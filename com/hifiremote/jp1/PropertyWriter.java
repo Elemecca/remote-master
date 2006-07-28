@@ -10,9 +10,30 @@ public class PropertyWriter
     super( writer );
     this.writer = writer;
   }
+  
+  public void printHeader( String name )
+  {
+    if ( !fresh )
+      writer.println();
+    fresh = false;
+    writer.print( '[' );
+    writer.print( name );
+    writer.println( ']' );
+  }
 
+  public void print( String name, int value )
+  {
+    print( name, Integer.toString( value ));
+  }
+  
+  public void print( String name, Object obj )
+  {
+    print( name, obj.toString());
+  }
+  
   public void print( String name, String value )
   {
+    fresh = false;
     writer.print( name );
     writer.print( '=' );
     
@@ -68,5 +89,6 @@ public class PropertyWriter
     writer.println();
   }
 
-  PrintWriter writer = null;
+  private PrintWriter writer = null;
+  private boolean fresh = true;
 }

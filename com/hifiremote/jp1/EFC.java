@@ -47,6 +47,13 @@ public class EFC
   }
 
   public int getValue(){ return value; }
+  
+  public Hex toHex()
+  {
+    Hex hex = new Hex( 1 );
+    toHex( hex );
+    return hex;
+  }
 
   public void toHex( Hex hex )
   {
@@ -70,15 +77,27 @@ public class EFC
     temp = ( short )(( temp >> 3 ) | ( temp << 5 ));
     hex.getData()[ index ] = temp;
   }
+  
+  public static Hex toHex( int val )
+  {
+    Hex hex = new Hex( 1 );
+    toHex( val, hex );
+    return hex;
+  }
 
   public String toString()
   {
+    return toString( value );
+  }
+  
+  public static String toString( int efc )
+  {
     StringBuffer buff = new StringBuffer( 3 );
-    if ( value < 100 )
+    if ( efc < 100 )
       buff.append( '0' );
-    if ( value < 10 )
+    if ( efc < 10 )
       buff.append( '0' );
-    buff.append( Integer.toString( value ));
+    buff.append( Integer.toString( efc ));
     return buff.toString();
   }
 

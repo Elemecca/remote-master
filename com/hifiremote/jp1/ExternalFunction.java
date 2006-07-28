@@ -6,6 +6,19 @@ import java.util.Properties;
 public class ExternalFunction
   extends Function
 {
+  public ExternalFunction()
+  {
+    super();
+  }
+  
+  public ExternalFunction( ExternalFunction base )
+  {
+    super( base );
+    deviceTypeAliasName = base.deviceTypeAliasName;
+    type = base.type;
+    setupCode = base.setupCode;
+  }
+  
   public boolean isExternal(){ return true; }
 
   public boolean isEmpty()

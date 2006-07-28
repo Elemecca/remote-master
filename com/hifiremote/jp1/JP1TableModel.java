@@ -56,24 +56,34 @@ public abstract class JP1TableModel < E >
       return array[ row ];
     return null;
   }
+  
+  public void setRow( int row, E value )
+  {
+    data.set( row, value );
+    propertyChangeSupport.firePropertyChange( "data", null, null );
+    fireTableRowsUpdated( row, row );
+  }
 
   public void removeRow( int row )
   {
     data.remove( row );
     propertyChangeSupport.firePropertyChange( "size", null, null );
+    fireTableRowsDeleted( row, row );
   }
 
   public void insertRow( int row, E value )
   {
     data.insertElementAt( value, row );
     propertyChangeSupport.firePropertyChange( "size", null, null );
+    fireTableRowsInserted( row, row );
   }
 
   public void addRow( E value )
   {
     data.add( value );
     propertyChangeSupport.firePropertyChange( "size", null, null );
-
+    int row = data.size() - 1;
+    fireTableRowsInserted( row, row );
   }
 
   public void moveRow( int from, int to )
@@ -83,6 +93,7 @@ public abstract class JP1TableModel < E >
       to--;
     data.insertElementAt( o, to );
     propertyChangeSupport.firePropertyChange( "order", null, null );
+    fireTableRowsUpdated( from, to );
   }
   
   public abstract boolean isColumnWidthFixed( int col );

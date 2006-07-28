@@ -17,6 +17,17 @@ public class CombinerDeviceDialog
   public CombinerDeviceDialog( JFrame owner, CombinerDevice dev, Remote r )
   {
     super( owner, "Combiner Device", true );
+    createGui( owner, dev, r );
+  }
+    
+  public CombinerDeviceDialog( JDialog owner, CombinerDevice dev, Remote r )
+  {
+    super( owner, "Combiner Device", true );
+    createGui( owner, dev, r );
+  }
+    
+  private void createGui( Component owner, CombinerDevice dev, Remote r )
+  {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
 

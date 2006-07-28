@@ -4,6 +4,7 @@ import java.beans.*;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
+import javax.swing.*;
 
 public class RemoteConfiguration
 {
@@ -11,65 +12,165 @@ public class RemoteConfiguration
     throws IOException
   {
     BufferedReader in = new BufferedReader( new FileReader( file ));
-    String line = in.readLine();
-    StringTokenizer st = new StringTokenizer( line, ": " );
-    int baseAddr = Integer.parseInt( st.nextToken(), 16 );
-    short[] first = new short[ st.countTokens()];
-    for ( int i = 0; i < first.length; ++i )
-      first[ i ] = Short.parseShort( st.nextToken(), 16 );
+    PropertyReader pr = new PropertyReader( in );
+    if ( file.getName().toLowerCase().endsWith( ".rmir" ))
+      parse( pr );
+    else
+      importIR( pr );
+    in.close();
+  }
+  
+  public void parse( PropertyReader pr )
+    throws IOException
+  {
+    IniSection section = pr.nextSection();
+    
+    if ( section == null )
+      throw new IOException( "The file is empty." );
+    
+    if ( !"General".equals( section.getName()))
+      throw new IOException( "Doesn't start with a [General] section/" );
+    
+    remote = RemoteManager.getRemoteManager().findRemoteByName( section.getProperty( "Remote.name" ));
+    notes = section.getProperty( "Notes" );
 
-    char[] sig = new char[ 8 ];
-    for ( int i = 0; i < sig.length; ++i )
-      sig[ i ] = ( char )first[ i + 2 ];
-
-    String signature = new String( sig );
-    RemoteManager rm = RemoteManager.getRemoteManager();
-    Remote[] remotes = rm.findRemoteBySignature( signature );
-    if ( remotes.length == 0 )
+    loadBuffer( pr );    
+   
+    while (( section = pr.nextSection()) != null )
     {
-      for ( int i = 0; i < sig.length; ++i )
-        sig[ i ] = ( char )first[ i ];
-      remotes = rm.findRemoteBySignature( signature );
+      String sectionName = section.getName();
+      if ( sectionName.equals( "Settings" ))
+      {
+        for ( Setting setting : remote.getSettings())
+          setting.setValue( Integer.parseInt( section.getProperty( setting.getTitle())));
+      }
+      else if ( sectionName.equals( "DeviceUpgrade" ))
+      {
+        DeviceUpgrade upgrade = new DeviceUpgrade();
+        upgrade.load( section );
+        devices.add( upgrade );
+      }
+      else
+      {
+        try
+        {
+          Class c = Class.forName( "com.hifiremote.jp1." + sectionName );
+          Constructor ct = c.getConstructor( Properties.class );
+          Object o = ct.newInstance( section );
+          if ( o instanceof KeyMove )
+            keymoves.add(( KeyMove )o );
+          else if ( sectionName.equals( "Macro" ))
+            macros.add(( Macro )o );
+          else if ( sectionName.equals( "ProtocolUpgrade" ))
+            protocols.add(( ProtocolUpgrade )o );
+          else if ( sectionName.equals( "LearnedSignal" ))
+            learned.add(( LearnedSignal )o );
+        }
+        catch ( Exception e )
+        {
+          e.printStackTrace( System.err );
+          throw new IOException( "Unable to create instance of " + sectionName );
+        }
+      }
     }
-    remote = ( Remote )remotes[ 0 ];
+  }
+  
+  private Property loadBuffer( PropertyReader pr )
+    throws IOException
+  {
+    Property property = pr.nextProperty();
+    
+    if ( property.name.equals( "[Buffer]" ))
+      property = pr.nextProperty();
+    
+    int baseAddr = Integer.parseInt( property.name, 16 );
+    short[] first = Hex.parseHex( property.value );
+
+    if ( remote == null )
+    {
+      char[] sig = new char[ 8 ];
+      for ( int i = 0; i < sig.length; ++i )
+        sig[ i ] = ( char )first[ i + 2 ];
+  
+      String signature = new String( sig );
+      String signature2 = null;
+      RemoteManager rm = RemoteManager.getRemoteManager();
+      Remote[] remotes = rm.findRemoteBySignature( signature );
+      if ( remotes.length == 0 )
+      {
+        for ( int i = 0; i < sig.length; ++i )
+          sig[ i ] = ( char )first[ i ];
+        signature2 = new String( sig );
+        remotes = rm.findRemoteBySignature( signature2 );
+      }
+      if (( remotes == null ) || ( remotes.length == 0 ))
+      {
+        String message = "No remote found for with signature " + signature + " or " + signature2;
+        JOptionPane.showMessageDialog( null, message, "Unknown remote", JOptionPane.ERROR_MESSAGE );
+        throw new IllegalArgumentException(  );
+      }
+      else if ( remotes.length == 1 )
+        remote = remotes[ 0 ];
+      else
+      {
+        if ( signature2 != null )
+          signature = signature2;
+        String message = "The file you are loading is for a remote with signature \"" + signature + 
+        "\".\nThere are multiple remotes with that signature.  Please choose the best match from the list below:";
+  
+        remote = ( Remote )JOptionPane.showInputDialog( null,
+                                                        message,
+                                                        "Unknown Remote",
+                                                        JOptionPane.ERROR_MESSAGE,
+                                                        null,
+                                                        remotes,
+                                                        remotes[ 0 ]);
+        if ( remote == null )
+          throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
+      }
+    }
     remote.load();
+    System.err.println( "Remote is " + remote );
 
     if ( remote.getBaseAddress() != baseAddr )
-      throw new IOException( "BaseAddress of " + file + " doesn't match baseAddress in RDF." );
+      throw new IOException( "The base address of the remote image doesn't match the remote's baseAddress." );
     
     data = new short[ remote.getEepromSize()];
+    System.arraycopy( first, 0, data, 0, first.length );
 
-    for ( int i = 0; i < first.length; ++i )
-      data[ i ] = first[ i ];
     first = null;
-    while ((  line = in.readLine()) != null )
+    while ((  property = pr.nextProperty()) != null )
     {
-      if ( line.length() == 0 )
-        continue;
-      if ( line.equals( "[Notes]" ))
+      if ( property.name.length() == 0 )
         break;
-      st = new StringTokenizer( line, ": " );
-      int offset = Integer.parseInt( st.nextToken(), 16 ) - baseAddr;
-      while ( st.hasMoreTokens())
-        data[ offset++ ] = Short.parseShort( st.nextToken(), 16 );  
+      int offset = Integer.parseInt( property.name, 16 ) - baseAddr;
+      Hex.parseHex( property.value, data, offset );
     }
     
     savedData = new short[ data.length ];
     System.arraycopy( data, 0, savedData, 0, data.length );
+    
+    return property;
+  }
+  
+  private void importIR( PropertyReader pr )
+    throws IOException
+  {
+    Property property = loadBuffer( pr );
+    
+    while (( property != null ) && ( !property.name.equals( "[Notes]" )))
+      property = pr.nextProperty();
 
     Vector<String> advNotes = new Vector<String>();
     Vector<String> favNotes = new Vector<String>();
     Vector<String> deviceNotes = new Vector<String>();
     Vector<String> protocolNotes = new Vector<String>();
     Vector<String> learnedNotes = new Vector<String>();
-    while (( line = in.readLine()) != null )
+    while (( property = pr.nextProperty()) != null )
     {
-      if ( line.length() == 0 )
-        continue;
-      if ( line.charAt( 0 ) == '[' )
+      if ( property.name.charAt( 0 ) == '[' )
         break;
-      int pos = line.indexOf( '=' );
-      String temp = line.substring( 0, pos );
+      String temp = property.name;
       int base = 10;
       if ( temp.charAt( 0 ) == '$' )
       {
@@ -79,7 +180,7 @@ public class RemoteConfiguration
       int index = Integer.parseInt( temp, base );
       int flag = index >> 12;
       index &= 0x0FFF;
-      String text = importNotes( line.substring( pos + 1 ));
+      String text = importNotes( property.value );
       Vector< String > v = null;
       if ( flag == 0 )
       {
@@ -102,72 +203,10 @@ public class RemoteConfiguration
       v.add( text );
     }
     
+    decodeSettings();
+    decodeUpgrades( deviceNotes, protocolNotes );
+    decodeAdvancedCodes( advNotes );
     decodeLearnedSignals( learnedNotes );
-    
-    if ( file.getName().toLowerCase().endsWith( ".ir" ))
-    {
-      decodeUpgrades( deviceNotes, protocolNotes );
-      decodeAdvancedCodes( advNotes );
-      return;
-    }
-
-    Property property = null;
-    PropertyReader pr = new PropertyReader( in );
-//  if ( "[Device Upgrade]".equals( line ))
-    if (( line != null ) && ( line.charAt( 0 ) == '[' ))
-      property = new Property( line, "" );
-    
-    String className = null;
-    Properties props = new Properties();
-    while ( true )
-    {
-      if (( property == null ) || ( property.name.charAt( 0 ) == '[' ))
-      {
-        if ( className != null )
-        {
-          if ( className.equals( "KeyMove" ))
-          {
-            KeyMove keyMove = new KeyMove( props );
-            keymoves.add(  keyMove );
-          }
-          else if ( className.equals( "KeyMoveEFC" ))
-          {
-            KeyMoveEFC keyMove = new KeyMoveEFC( props );
-            keymoves.add( keyMove );
-          }
-          else if ( className.equals( "KeyMoveEFC5" ))
-          {
-            KeyMoveEFC5 keyMove = new KeyMoveEFC5( props );
-            keymoves.add( keyMove );
-          }
-          else if ( className.equals( "KeyMoveKey" ))
-          {
-            KeyMoveKey keyMove = new KeyMoveKey( props );
-            keymoves.add( keyMove );
-          }
-          else if ( className.equals( "Macro" ))
-          {
-            Macro macro = new Macro( props );
-            macros.add( macro );
-          }
-          else if ( className.equals( "DeviceUpgrade" ))
-          {
-            DeviceUpgrade upgrade = new DeviceUpgrade();
-            upgrade.load( props );
-            devices.add( upgrade );
-          }
-          props.clear();
-        }
-        if ( property != null )
-          className = property.name.substring( 1, property.name.length() - 1 );
-        else
-          break;
-      }
-      else
-        props.setProperty( property.name, property.value );
-      property = pr.nextProperty( property );
-    }
-    in.close();
   }
   
   private DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
@@ -196,9 +235,17 @@ public class RemoteConfiguration
   public void parseData()
   {
     Vector< String > v = new Vector< String >();
+    decodeSettings();
     decodeUpgrades( v, v );
     decodeAdvancedCodes( v );    
     decodeLearnedSignals( v );
+  }
+  
+  public void decodeSettings()
+  {
+    Setting[] settings = remote.getSettings();
+    for ( Setting setting : settings )
+      setting.decode( data );
   }
 
   private void decodeAdvancedCodes( Vector< String > notes )
@@ -225,12 +272,12 @@ public class RemoteConfiguration
         boundDeviceIndex >>= 1;
         length = data[ offset++ ] & 0x0F;
       }
-      else
+      else // LONG
       {
-        int type = data[ offset ] >> 4; 
+        int type = data[ offset++ ]; 
         if ( type == 0x80 )
           isMacro = true;
-        boundDeviceIndex = data[ offset++ ] & 0x0F;
+        boundDeviceIndex = type & 0x0F;
         length = data[ offset++ ];
       }  
 
@@ -267,49 +314,81 @@ public class RemoteConfiguration
         if (( boundUpgrade != null ) && ( boundUpgrade == moveUpgrade ))
         {    
           // Add the keymove to the device upgrade instead of the keymove collection
-          Function f = boundUpgrade.getFunction( hex );
+          Hex cmd = keyMove.getCmd();
+          Function f = boundUpgrade.getFunction( cmd );
           if ( f == null )
           {
             if ( text == null )
               text = remote.getButtonName( keyCode );
-            f = new Function( text, hex, "imported from keyMove" );
-            int state = Button.NORMAL_STATE;
-            Button b = remote.getButton( keyCode );
-            if ( b == null )
+            f = new Function( text, cmd, "imported from keyMove" );
+          }
+          int state = Button.NORMAL_STATE;
+          Button b = remote.getButton( keyCode );
+          if ( b == null )
+          {
+            int mask = keyCode & 0xC0;
+            int baseCode = keyCode & 0x3F;
+            if ( baseCode != 0 )
             {
-              int mask = keyCode & 0xC0;
-              int baseCode = keyCode & 0x3F;
-              if ( baseCode != 0 )
-              {
-                b = remote.getButton( baseCode );
-                if (( baseCode | remote.getShiftMask()) == keyCode )
-                  state = Button.SHIFTED_STATE;
-                if (( baseCode | remote.getXShiftMask()) == keyCode )
-                  state = Button.XSHIFTED_STATE;
-              }
+              b = remote.getButton( baseCode );
+              if (( baseCode | remote.getShiftMask()) == keyCode )
+                state = Button.SHIFTED_STATE;
+              if (( baseCode | remote.getXShiftMask()) == keyCode )
+                state = Button.XSHIFTED_STATE;
+            }
+            else
+            {
+              baseCode = keyCode & ~remote.getShiftMask();
+              b = remote.getButton( baseCode );
+              if ( b != null )
+                state = Button.SHIFTED_STATE;
               else
               {
-                baseCode = keyCode & ~remote.getShiftMask();
+                baseCode = keyCode & ~ remote.getXShiftMask();
                 b = remote.getButton( baseCode );
                 if ( b != null )
-                  state = Button.SHIFTED_STATE;
-                else
-                {
-                  baseCode = keyCode & ~ remote.getXShiftMask();
-                  b = remote.getButton( baseCode );
-                  if ( b != null )
-                    state = Button.XSHIFTED_STATE;
-                }
+                  state = Button.XSHIFTED_STATE;
               }
             }
-            boundUpgrade.setFunction( b, f, state );
           }
+          boundUpgrade.setFunction( b, f, state );
         }
         else
           keymoves.add( keyMove );
       }
       offset += length;
     }
+  }
+  
+  public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode, int movedKeyCode, String notes )
+  {
+    KeyMove keyMove = null;
+    keyMove = new KeyMoveKey( keyCode, deviceIndex, deviceType, setupCode, movedKeyCode, notes );
+    return keyMove;
+  }
+
+  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, Hex cmd, String notes )
+  {
+    KeyMove keyMove = null;
+    if ( remote.getAdvCodeFormat() == remote.HEX )
+      keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
+    else if ( remote.getEFCDigits() == 3 )
+      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ), notes );
+    else // EFCDigits == 5
+      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, EFC5.parseHex( cmd ), notes );
+    return keyMove;
+  }
+
+  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, int efc, String notes )
+  {
+    KeyMove keyMove = null;
+    if ( remote.getAdvCodeFormat() == remote.HEX )
+      keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC.toHex( efc ), notes );
+    else if ( remote.getEFCDigits() == 3 )
+      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
+    else // EFCDigits == 5
+      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
+    return keyMove;
   }
 
   public int getAdvancedCodeBytesUsed()
@@ -354,7 +433,7 @@ public class RemoteConfiguration
         lengthOffset = offset++;
         data[ lengthOffset ] = 0;
       }        
-      Hex hex = keyMove.getData();
+      Hex hex = keyMove.getRawHex();
       int hexLength = hex.length();
       Hex.put( hex, data, offset );
       offset += hexLength;
@@ -381,7 +460,10 @@ public class RemoteConfiguration
       offset += hexLength;
       data[ lengthOffset ] |= ( short )hexLength;        
     }
-    data[ offset ] = 0;
+    data[ offset ] = remote.getSectionTerminator();
+    
+    for ( int i = offset + 1; i < range.getEnd(); ++i )
+      data[ i ] = 0xFF;
     
     return offset - range.getStart();
   }
@@ -435,6 +517,8 @@ public class RemoteConfiguration
       offset += 2; // for the next upgrade      
     }
 
+    // To keep track of the protocol upgrades that are actually used by device upgrades
+    Vector< ProtocolUpgrade > usedProtocols = new Vector< ProtocolUpgrade >();
     // now parse the devices
     notesEnum = deviceNotes.elements();
     offset = Hex.get( data, addr.getStart()) - remote.getBaseAddress(); // get offset of device table
@@ -467,7 +551,11 @@ public class RemoteConfiguration
       ProtocolUpgrade pu = getProtocol( pid );
       Hex protocolCode = null;
       if ( pu != null )
+      {
         protocolCode = pu.getCode();
+        if ( !usedProtocols.contains( pu ))
+          usedProtocols.add( pu );
+      }
 
       String[] aliases = remote.getDeviceTypeAliasNames();
       String alias = null;
@@ -496,6 +584,9 @@ public class RemoteConfiguration
       
       devices.add( upgrade );
     }
+    // Protoocl Upgrades that are used by a device upgrade are managed as part of the device upgrade 
+    for ( ProtocolUpgrade pu : usedProtocols )
+      protocols.remove( pu );
   }
 
   public int getUpgradeCodeBytesUsed()
@@ -647,7 +738,7 @@ public class RemoteConfiguration
       Hex.put( hex, data, offset );
       offset += hex.length();
     }
-    data[ offset ] = 0;
+    data[ offset ] = remote.getSectionTerminator();
     return offset - addr.getStart();
   }
 
@@ -668,81 +759,56 @@ public class RemoteConfiguration
     throws IOException
   {
     PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter( file )));
-    for ( int i = 0; i < data.length; ++i )
-    {
-      if (( i % 16 ) == 0 )
-      {
-        if ( i != 0 )
-          out.println();
-        out.print( toHex( i ));
-        out.print( ':' );
-      }
-      out.print( "  " );
-      out.print( toHex( data[ i ]));
-    }
-    out.println();
-    out.println();
-    out.print( "[Notes]" );
-    printNote( 0, notes, out );
-
-    
-//    int j = 0;
-//    for ( Enumeration e = keymoves.elements(); e.hasMoreElements(); )
-//    {
-//      AdvancedCode item = ( AdvancedCode )e.nextElement();
-//      printNote( 0x1000 + j, item.getNotes(), out );
-//    }
-
-//    for ( Enumeration e = macros.elements(); e.hasMoreElements(); )
-//    {
-//      AdvancedCode item = ( AdvancedCode )e.nextElement();
-//      printNote( 0x1000 + j, item.getNotes(), out );
-//    }
-    
-//    for ( j = 0; j < devices.size(); ++j )
-//    {
-//      DeviceUpgrade upgrade = ( DeviceUpgrade )devices.elementAt( j );
-//      printNote( 0x3000 + j, upgrade.getNotes(), out );
-//    }
-
-//    for ( j = 0; j < protocols.size(); ++j )
-//    {
-//      ProtocolUpgrade protocol = ( ProtocolUpgrade )protocols.elementAt( j );
-//      printNote( 0x4000 + j, protocol.getNotes(), out );
-//    }
-
-    for ( int j = 0; j < learned.size(); ++j )
-    {
-      LearnedSignal signal = ( LearnedSignal )learned.elementAt( j );
-      printNote( 0x5000 + j, signal.getNotes(), out );
-    }
-    
-    out.println();
     PropertyWriter pw = new PropertyWriter( out );
     
+    pw.printHeader( "General" );
+    pw.print( "Remote.name", remote.getName());
+    pw.print( "Remote.signature", remote.getSignature());
+    pw.print( "Notes", notes );
+    
+    pw.printHeader( "Buffer" );
+    int base = remote.getBaseAddress();
+    for ( int i = 0; i < data.length; i += 16 )
+    {
+      pw.print( toHex( i + base ), Hex.toString( data, i, 16 ));
+    }
+    
+    pw.printHeader( "Settings" );
+    for ( Setting setting : remote.getSettings())
+      setting.store( pw );
+
     for ( KeyMove keyMove : keymoves )
     {
-      out.println();
       String className = keyMove.getClass().getName();
       int dot = className.lastIndexOf( '.' );
       className = className.substring( dot + 1 );
-      out.println( className );
+      pw.printHeader( className );
       keyMove.store( pw );
     }
 
     for ( Macro macro : macros )
     {
-      out.println();
-      out.println( "[Macro]" );
+      pw.printHeader( "Macro" );
       macro.store( pw );
     }
     
     for ( DeviceUpgrade device : devices )
     {
-      out.println();
-      out.println( "[DeviceUpgrade]" );
+      pw.printHeader( "DeviceUpgrade" );
       device.store( pw );
     }
+    
+    for ( ProtocolUpgrade protocol : protocols )
+    {
+      pw.printHeader( "ProtocolUpgrade" );
+      protocol.store( pw );
+    }
+
+    for ( LearnedSignal signal : learned )
+    {
+      pw.printHeader( "LearnedSignal" );
+      signal.store( pw );
+    }    
     
     out.close();
   }

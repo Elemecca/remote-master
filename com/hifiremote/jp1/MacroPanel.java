@@ -19,9 +19,9 @@ public class MacroPanel
     (( MacroTableModel )model ).set( remoteConfig );
   }
   
-  public Macro createRowObject()
+  public Macro createRowObject( Macro baseMacro )
   {
-    return null;
+    return MacroDialog.showDialog( this, baseMacro, (( MacroTableModel )model ).getRemoteConfig());
   }
 
 }

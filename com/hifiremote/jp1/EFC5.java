@@ -45,6 +45,13 @@ public class EFC5
   {
     toHex( value, hex );
   }
+  
+  public static Hex toHex( int val )
+  {
+    Hex hex = new Hex( 2 );
+    toHex( val, hex );
+    return hex;
+  }
 
   public static void toHex( int val, Hex hex )
   {

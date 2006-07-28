@@ -4,27 +4,61 @@ import java.util.Properties;
 
 public class KeyMove
   extends AdvancedCode
+  implements Cloneable
 {
   public KeyMove( int keyCode, int deviceButtonIndex, Hex data, String notes )
   {
-    super( keyCode, data, notes );
+    super( keyCode, data.subHex( CMD_INDEX ), notes );
     this.deviceButtonIndex = deviceButtonIndex;
+    setDeviceType( data.getData()[ DEVICE_TYPE_INDEX ] >> 4 );
+    setSetupCode( data.get( SETUP_CODE_INDEX ) & 0x07FF );
   }
+  
+  public KeyMove( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
+  {
+    super( keyCode, cmd, notes );
+    setDeviceButtonIndex( deviceButtonIndex );
+    setDeviceType( deviceType );
+    setSetupCode( setupCode );
+  }    
   
   public KeyMove( Properties props )
   {
     super( props );
     deviceButtonIndex = Integer.parseInt( props.getProperty( "DeviceButtonIndex" ));
+    deviceType = Integer.parseInt( props.getProperty( "DeviceType" ));
+    setupCode = Integer.parseInt( props.getProperty( "SetupCode" ));
+  }
+  
+  protected Object clone()
+    throws CloneNotSupportedException
+  {
+    return new KeyMove( getKeyCode(), getDeviceButtonIndex(), getDeviceType(), getSetupCode(), ( Hex )getCmd().clone(), getNotes());
+  }
+  
+  public EFC getEFC()
+  {
+    return new EFC( data );
+  }
+  
+  public void setEFC( EFC efc )
+  {
+    efc.toHex( data );
+  }
+  
+  public Hex getCmd()
+  {
+    return data;
+  }
+  
+  public void setCmd( Hex hex )
+  {
+    data = hex;
   }
 
-  public Object getValue()
+  public String getValueString( Remote remote )
   {
-    return new EFC( data, CMD_INDEX );
-  }
-
-  public void setValue( Object value )
-  {
-    (( EFC )value ).toHex( data, CMD_INDEX );
+    return getEFC().toString();
   }
 
   private int deviceButtonIndex;
@@ -34,39 +68,42 @@ public class KeyMove
     deviceButtonIndex = newIndex;
   }
 
+  private int deviceType;
   public int getDeviceType()
   {
-    return data.getData()[ DEVICE_TYPE_INDEX ] >> 4;
+    return deviceType;
   }
   
   public void setDeviceType( int newDeviceType )
   {
-    short[] hex = data.getData();
-    short temp = ( short )( hex[ DEVICE_TYPE_INDEX ] & 0x0F);
-    temp |= ( short )( newDeviceType << 4 );
-    hex[ DEVICE_TYPE_INDEX ] = ( short )temp;
+    deviceType = newDeviceType;
   }
-
+  
+  private int setupCode;
   public int getSetupCode()
   {
-    return data.get( SETUP_CODE_INDEX ) & 0x03FF;
+    return setupCode;
   }
 
   public void setSetupCode( int newCode )
   {
-    int temp = data.get( 0 );
-    temp &= 0xF000;
-    data.put(( temp & 0xF000 ) | newCode, SETUP_CODE_INDEX );
+    setupCode = newCode;
   }
 
-  public Hex getCmd()
+  public Hex getRawHex()
   {
-    return data.subHex( CMD_INDEX );
+    Hex hex = new Hex( CMD_INDEX + data.length());
+    int temp = ( deviceType << 12 ) | setupCode;
+    hex.put( temp, SETUP_CODE_INDEX );
+    hex.put( data, CMD_INDEX );
+    return hex;
   }
-  
+
   public void store( PropertyWriter pw )
   {
-    pw.print( "DeviceButtonIndex", Integer.toString( deviceButtonIndex ));
+    pw.print( "DeviceButtonIndex", deviceButtonIndex );
+    pw.print( "DeviceType", deviceType );
+    pw.print( "SetupCode", setupCode );
     super.store( pw );
   }
 

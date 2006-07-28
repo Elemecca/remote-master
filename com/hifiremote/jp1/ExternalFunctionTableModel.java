@@ -9,7 +9,7 @@ import javax.swing.DefaultComboBoxModel;
 import java.util.Vector;
 
 public class ExternalFunctionTableModel
-  extends KMTableModel< Function >
+  extends KMTableModel< ExternalFunction >
 {
   private DeviceUpgrade upgrade = null;
   private final static int rowCol = 0;
@@ -38,8 +38,7 @@ public class ExternalFunctionTableModel
 
   public Object getValueAt( int row, int col )
   {
-    Vector< Function > functions = upgrade.getExternalFunctions();
-    ExternalFunction function = ( ExternalFunction )functions.elementAt( row );
+    ExternalFunction function = getRow( row );
     Hex hex = function.getHex();
 
     Object rc = null;
@@ -86,9 +85,7 @@ public class ExternalFunctionTableModel
 
   public void setValueAt( Object value, int row, int col )
   {
-    Vector functions = upgrade.getExternalFunctions();
-    Object o = functions.elementAt( row );
-    ExternalFunction function = ( ExternalFunction )functions.elementAt( row );
+    ExternalFunction function = getRow( row );
     switch ( col )
     {
       case nameCol:

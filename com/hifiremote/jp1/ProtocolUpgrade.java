@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.util.*;
+
 public class ProtocolUpgrade
 {
   public ProtocolUpgrade( int pid, Hex code, String notes )
@@ -7,6 +9,21 @@ public class ProtocolUpgrade
     this.pid = pid;
     this.code = code;
     this.notes = notes;
+  }
+  
+  public ProtocolUpgrade( Properties props )
+  {
+    pid = Integer.parseInt( props.getProperty( "PID" ));
+    code = new Hex( props.getProperty( "Code" ));
+    notes = props.getProperty( "Notes" );
+  }
+  
+  public void store( PropertyWriter pw )
+  {
+    pw.print( "PID", Integer.toString( pid ));
+    pw.print( "Code", code.toString());
+    if (( notes != null ) && !notes.equals( "" ))
+      pw.print( "Notes", notes );
   }
   
   public int getPid(){ return pid; }

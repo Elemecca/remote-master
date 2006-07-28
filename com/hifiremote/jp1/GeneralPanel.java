@@ -29,12 +29,14 @@ public class GeneralPanel
 
     Dimension d = table.getPreferredScrollableViewportSize();
     d.width = table.getPreferredSize().width;
-    d.height = table.getRowHeight( 10 * table.getRowHeight());
+    d.height = 10 * table.getRowHeight();
     table.setPreferredScrollableViewportSize( d );
+    table.initColumns( deviceModel );
 
     // now the other settings table
     table = new JP1Table( settingModel );
     table.setCellEditorModel( settingModel );
+    table.initColumns( settingModel );
 
     scrollPane = new JScrollPane( table );
     scrollPane.setBorder(
@@ -45,7 +47,7 @@ public class GeneralPanel
 
     d = table.getPreferredScrollableViewportSize();
     d.width = table.getPreferredSize().width;
-    d.height = 160;
+    d.height = 10 * table.getRowHeight();
     table.setPreferredScrollableViewportSize( d );
 
     notes = new JTextArea( 10, 20 );

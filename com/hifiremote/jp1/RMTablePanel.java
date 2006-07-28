@@ -20,14 +20,16 @@ public abstract class RMTablePanel< E >
     this( model, BorderLayout.CENTER );
   }
   
-  public RMTablePanel( JP1TableModel< E > model, String location )
+  public RMTablePanel( JP1TableModel< E > tableModel, String location )
   {
-    this.model = model;
-    sorter = new TableSorter< E >( model );
+    super();
+    model = tableModel;
+    sorter = new TableSorter( model );
     table = new JP1Table( sorter );
-    sorter.addMouseListenerToHeaderInTable( table );
+    sorter.setTableHeader( table.getTableHeader());
+    // sorter.addMouseListenerToHeaderInTable( table );
     table.getSelectionModel().addListSelectionListener( this );
-    table.getTableHeader().setToolTipText( "Click to sort is ascending order, or shift-click to sort in descending order." );
+    table.getTableHeader().setToolTipText( "Click to sort in ascending order, or shift-click to sort in descending order." );
 
     TransferHandler th = new TransferHandler()
     {
@@ -71,9 +73,9 @@ public abstract class RMTablePanel< E >
             int col = table.getSelectedColumn();
             for ( String line = in.readLine(); line != null; line = in.readLine())
             {
-              if ( row == sorter.getRowCount() )
+              if ( row == model.getRowCount() )
               {
-                sorter.addRow( createRowObject());
+                model.addRow( createRowObject( null ));
                 if ( addedRow == -1 )
                   addedRow = row;
               }
@@ -152,12 +154,14 @@ public abstract class RMTablePanel< E >
             int dropRow = table.getSelectedRow();
             if ( dropRow != dragRow )
             {
-              sorter.moveRow( dragRow, dropRow );
+              dragRow = sorter.modelIndex( dragRow );
+              dropRow = sorter.modelIndex( dropRow );
+              model.moveRow( dragRow, dropRow );
   
               if ( dropRow < dragRow )
-                sorter.fireTableRowsUpdated( dropRow, dragRow );
+                model.fireTableRowsUpdated( dropRow, dragRow );
               else
-                sorter.fireTableRowsUpdated( dragRow, dropRow );
+                model.fireTableRowsUpdated( dragRow, dropRow );
               rc = true;
             }
           }
@@ -207,12 +211,24 @@ public abstract class RMTablePanel< E >
     table.setTransferHandler( th );
 
     popup = new JPopupMenu();
+    editItem = new JMenuItem( "Edit" );
+    editItem.setEnabled( false );
+    editItem.addActionListener( this );
+    popup.add( editItem );
+
     newItem = new JMenuItem( "New" );
     newItem.addActionListener( this );
+    newItem.setEnabled( false );
     popup.add( newItem );
+
+    cloneItem = new JMenuItem( "Clone" );
+    cloneItem.addActionListener( this );
+    cloneItem.setEnabled( false );
+    popup.add( cloneItem );
 
     deleteItem = new JMenuItem( "Delete" );
     deleteItem.addActionListener( this );
+    deleteItem.setEnabled( false );
     popup.add( deleteItem );
 
     MouseAdapter mh = new MouseAdapter()
@@ -254,25 +270,37 @@ public abstract class RMTablePanel< E >
       }
     };
     table.addMouseMotionListener( mmh );
-
+    table.initColumns( model );
     JScrollPane scrollPane = new JScrollPane( table );
     Dimension d = table.getPreferredScrollableViewportSize();
     d.width = table.getPreferredSize().width;
     table.setPreferredScrollableViewportSize( d );
     add( scrollPane, location );
-    // add( new JScrollPane( table ), location );
 
     buttonPanel = new JPanel();
     add( buttonPanel, BorderLayout.SOUTH );
+
+    editButton = new JButton( "Edit" );
+    editButton.addActionListener( this );
+    editButton.setToolTipText( "Edit the selected item." );
+    editButton.setEnabled( false );
+    buttonPanel.add( editButton );
 
     newButton = new JButton( "New" );
     newButton.addActionListener( this );
     newButton.setToolTipText( "Add a new item." );
     buttonPanel.add( newButton );
 
+    cloneButton = new JButton( "Clone" );
+    cloneButton.addActionListener( this );
+    cloneButton.setToolTipText( "Add a copy of the selected item." );
+    cloneButton.setEnabled( false );
+    buttonPanel.add( cloneButton );
+
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
     deleteButton.setToolTipText( "Delete the selected item." );
+    deleteButton.setEnabled( false );
     buttonPanel.add( deleteButton );
 
     upButton = new JButton( "Up" );
@@ -288,6 +316,16 @@ public abstract class RMTablePanel< E >
     buttonPanel.add( downButton );
   }
 
+  public void setFont( Font aFont )
+  {
+    super.setFont( aFont );
+    if (( table == null ) || ( aFont == null ))
+      return;
+    table.setRowHeight( aFont.getSize() + 2 );
+    // if ( model != null )
+    table.initColumns( model );
+  }
+
   private void finishEditing()
   {
     int editRow = table.getEditingRow();
@@ -300,13 +338,20 @@ public abstract class RMTablePanel< E >
     }
   }
 
-  protected abstract E createRowObject();
+  protected abstract E createRowObject( E baseObject );
   protected E getRowObject( int row )
   {
-    return sorter.getRow( row );
+    return model.getRow( sorter.modelIndex( row ));
   }
   protected boolean canDelete( Object o ){ return true; }
   protected void doNotDelete( Object o ){}
+  
+  protected void editRowObject( int row )
+  {
+    E o = createRowObject( getRowObject( row ));
+    if ( o != null )
+      model.setRow( sorter.modelIndex( row ), o );
+  }
 
   // Interface ActionListener
   public void actionPerformed( ActionEvent e )
@@ -330,32 +375,58 @@ public abstract class RMTablePanel< E >
       if ( table.isRowSelected( row ))
         select = true;
     }
+    int modelRow = sorter.modelIndex( row );
 
-    if (( source == newButton ) ||
-        ( source == newItem ))
+    if (( source == editButton ) || ( source == editItem ))
     {
-      E o = createRowObject();
+      editRowObject( row );
+    }
+    if (( source == newButton ) || ( source == newItem ))
+    {
+      E o = createRowObject( null );
+      if ( o == null )
+        return;
       if ( row == -1 )
       {
-        sorter.addRow( o );
-        row = sorter.getRowCount();
+        model.addRow( o );
+        row = model.getRowCount();
       }
       else
       {
-        sorter.insertRow( row, o );
+        model.insertRow( modelRow, o );
       }
 
-      sorter.fireTableRowsInserted( row, row );
+      model.fireTableRowsInserted( modelRow, modelRow );
       if ( select )
         table.setRowSelectionInterval( row, row );
     }
-    else if (( source == deleteButton ) ||
-             ( source == deleteItem ))
+    if (( source == cloneButton ) || ( source == cloneItem ))
     {
-      if ( !canDelete( sorter.getRow( row )))
+      E o = createRowObject( getRowObject( row ));
+      if ( o == null )
+        return;
+      if ( row == -1 )
+      {
+        model.addRow( o );
+        row = model.getRowCount();
+        modelRow = row;
+      }
+      else
+      {
+        model.insertRow( modelRow, o );
+      }
+
+      model.fireTableRowsInserted( modelRow, modelRow );
+      if ( select )
+        table.setRowSelectionInterval( row, row );
+    }
+    else if (( source == deleteButton ) || ( source == deleteItem ))
+    {
+      if ( !canDelete( model.getRow( sorter.modelIndex( row ))))
       {
         deleteButton.setEnabled( false );
-        doNotDelete( sorter.getRow( row ));
+        deleteItem.setEnabled( false );
+        doNotDelete( model.getRow( modelRow ));
       }
       else
       {
@@ -367,12 +438,10 @@ public abstract class RMTablePanel< E >
         if ( select && ( rowToSelect > -1 ))
           table.setRowSelectionInterval( rowToSelect, rowToSelect );
         
-        sorter.removeRow( row );
-        sorter.fireTableRowsDeleted( row, row );
+        model.removeRow( modelRow );
       }
     }
-    else if (( source == upButton ) ||
-             ( source == downButton ))
+    else if (( source == upButton ) || ( source == downButton ))
     {
       int start = 0;
       int end = 0;
@@ -394,8 +463,7 @@ public abstract class RMTablePanel< E >
         to = end;
         sel = end;
       }
-      sorter.moveRow( from, to );
-      sorter.fireTableRowsUpdated( start, end );
+      model.moveRow( sorter.modelIndex( from ), sorter.modelIndex( to ));
       if ( select )
         table.setRowSelectionInterval( sel, sel );
     }
@@ -407,18 +475,21 @@ public abstract class RMTablePanel< E >
     if ( !e.getValueIsAdjusting() )
     {
       int row = table.getSelectedRow();
-      if ( row != -1 )
-      {
-        upButton.setEnabled( row > 0 );
-        downButton.setEnabled( row < ( sorter.getRowCount() - 1 ));
-        deleteButton.setEnabled( canDelete( sorter.getRow( row )));
-      }
-      else
-      {
-        deleteButton.setEnabled( false );
-        upButton.setEnabled( false );
-        downButton.setEnabled( false );
-      }
+
+      boolean selected = ( row != -1 );
+      editButton.setEnabled( selected );
+      editItem.setEnabled( selected );
+      cloneButton.setEnabled( selected );
+      cloneItem.setEnabled( selected );
+      deleteButton.setEnabled( selected );
+      deleteItem.setEnabled( selected );
+
+      boolean deleteAllowed = selected && canDelete( model.getRow( sorter.modelIndex( row )));
+      deleteButton.setEnabled( deleteAllowed );
+      deleteItem.setEnabled( deleteAllowed );
+      
+      upButton.setEnabled( row > 0  );
+      downButton.setEnabled( selected && ( row < ( sorter.getRowCount() - 1 )));
     }
   }
 
@@ -433,20 +504,24 @@ public abstract class RMTablePanel< E >
       model.addPropertyChangeListener( listener );
   }
   
-  public JP1TableModel getModel(){ return model; }
+  public JP1TableModel< E > getModel(){ return model; }
 
   protected JP1Table table = null;
   protected JP1TableModel< E > model = null;
-  private TableSorter< E > sorter = null;
+  protected TableSorter sorter = null;
   protected JPanel buttonPanel = null;
+  private JButton editButton = null;
   private JButton newButton = null;
+  private JButton cloneButton = null;
   private JButton deleteButton = null;
   private JButton upButton = null;
   private JButton downButton = null;
   private int popupRow = 0;
   private int popupCol = 0;
   protected JPopupMenu popup = null;
+  private JMenuItem editItem = null;
   private JMenuItem newItem = null;
+  private JMenuItem cloneItem = null;
   private JMenuItem deleteItem = null;
   private final static Class[] classes = { String.class };
 }

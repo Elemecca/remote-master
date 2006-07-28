@@ -1,10 +1,12 @@
 package com.hifiremote.jp1;
 
-import java.util.*;
+import java.awt.*;
+import java.beans.*;
 import java.io.*;
 import java.text.*;
+import java.util.*;
 import javax.swing.*;
-import java.awt.*;
+import javax.swing.event.*;
 
 public class DeviceUpgrade
 {
@@ -12,6 +14,47 @@ public class DeviceUpgrade
   {
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
     initFunctions();
+  }
+  
+  public DeviceUpgrade( DeviceUpgrade base )
+  {
+    description = base.description;
+    setupCode = base.setupCode;
+    devTypeAliasName = base.devTypeAliasName;
+    remote = base.remote;
+    notes = base.notes;
+    protocol = base.protocol;
+    
+    // copy the device parameter values
+    protocol.setDeviceParms( base.parmValues );
+    parmValues = protocol.getDeviceParmValues();
+    
+    // Copy the functions and their assignments
+    for ( Function f : base.functions )
+    {
+      Function f2 = new Function( f );
+      functions.add( f2 );
+      for ( Enumeration< Function.User > e = f.getUsers(); e.hasMoreElements(); )
+      {
+        Function.User user = e.nextElement();
+        assignments.assign( user.button, f2, user.state );
+      }
+    }
+    
+    // Copy the external functions and their assignments
+    for ( ExternalFunction f : base.extFunctions )
+    {
+      ExternalFunction f2 = new ExternalFunction( f );
+      extFunctions.add( f2 );
+      for ( Enumeration< Function.User > e = f.getUsers(); e.hasMoreElements(); )
+      {
+        Function.User user = e.nextElement();
+        assignments.assign( user.button, f2, user.state );
+      }
+    }
+    
+    if ( base.customCode != null )
+      customCode = new Hex( base.customCode );
   }
 
   public void reset()
@@ -82,7 +125,9 @@ public class DeviceUpgrade
 
   public void setSetupCode( int setupCode )
   {
+    int oldSetupCode = this.setupCode;
     this.setupCode = setupCode;
+    propertyChangeSupport.firePropertyChange( "setupCode", oldSetupCode, setupCode );
   }
 
   public int getSetupCode()
@@ -250,16 +295,20 @@ public class DeviceUpgrade
 
   public void setDeviceTypeAliasName( String name )
   {
+    String oldName = devTypeAliasName;
     if ( name != null )
     {
       if ( remote.getDeviceTypeByAliasName( name ) != null )
       {
         devTypeAliasName = name;
-        return;
       }
-      System.err.println( "Unable to find device type with alias name " + name );
+      else
+      {
+        devTypeAliasName = deviceTypeAliasNames[ 0 ];
+        System.err.println( "Unable to find device type with alias name " + name );
+      }
     }
-    devTypeAliasName = deviceTypeAliasNames[ 0 ];
+    propertyChangeSupport.firePropertyChange( "deviceTypeAliasName", oldName, devTypeAliasName );
   }
 
   public String getDeviceTypeAliasName()
@@ -360,7 +409,7 @@ public class DeviceUpgrade
     return rc;
   }
 
-  public Function getFunction( String name, Vector< Function > funcs )
+  public Function getFunction( String name, Vector< ? extends Function > funcs )
   {
     Function rc = null;
     for ( Function func : funcs )
@@ -382,7 +431,7 @@ public class DeviceUpgrade
     return null;
   }
 
-  public Vector< Function > getExternalFunctions()
+  public Vector< ExternalFunction > getExternalFunctions()
   {
     return extFunctions;
   }
@@ -482,6 +531,8 @@ public class DeviceUpgrade
     if (( pCode != null ) && ( pCode.length() > 2 ))
     {
       int value = pCode.getData()[ 2 ] & 0x00FF;
+      if ( newRemote.getProcessor().getFullName().equals( "HCS08" ))
+        value = pCode.getData()[ 4 ] & 0xFF;
       fixedDataLength = value >> 4;
       cmdLength = value & 0x000F;
       fixedData = new short[ fixedDataLength ];
@@ -938,7 +989,7 @@ public class DeviceUpgrade
     Properties props = new Properties();
     Property property = new Property();
     PropertyReader pr = new PropertyReader( reader );
-    while (( property = pr.nextProperty( property )) != null )
+    while (( property = pr.nextProperty()) != null )
     {
       props.put( property.name, property.value );
     }
@@ -1312,7 +1363,7 @@ public class DeviceUpgrade
       }
       protocol = p;
 
-      Value[] importParms = new Value[ 4 ];
+      Value[] importParms = new Value[ 6 ];
       for ( int i = 0; i < importParms.length; i++ )
       {
         token = getNextField( st, delim );
@@ -1502,6 +1553,8 @@ public class DeviceUpgrade
       {
         System.err.println( "Searching for button w/ name " + buttonName );
         b = remote.findByStandardName( new Button( buttonName, null, ( byte )0, remote ));
+        if ( b == null )
+          b = remote.getButton( buttonName );
         System.err.println( "Found button " + b );
       }
       else
@@ -1856,10 +1909,19 @@ public class DeviceUpgrade
   private Value[] parmValues = new Value[ 0 ];
   private String notes = null;
   private Vector< Function > functions = new Vector< Function >();
-  private Vector< Function > extFunctions = new Vector< Function >();
+  private Vector< ExternalFunction > extFunctions = new Vector< ExternalFunction >();
   // private Vector< KeyMove > keymoves = new Vector< KeyMove >();
   private File file = null;
   private Hex customCode = null;
+  private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
+  public void addPropertyChangeListener( PropertyChangeListener listener )
+  {
+    propertyChangeSupport.addPropertyChangeListener( listener );
+  }
+  public void removePropertyChangeListener( PropertyChangeListener listener )
+  {
+    propertyChangeSupport.removePropertyChangeListener( listener );
+  }
   private ButtonAssignments assignments = new ButtonAssignments();
   public void setFunction( Button b, Function f, int state )
   {

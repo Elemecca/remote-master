@@ -18,6 +18,9 @@ public class ProtocolManager
   public void load( File f )
     throws Exception
   {
+    if ( loaded )
+      return;
+    
     while ( !f.canRead() )
     {
       JOptionPane.showMessageDialog( null, "Couldn't read " + f.getName() + "!",
@@ -115,6 +118,8 @@ public class ProtocolManager
     names = new Vector< String >( temp.length );
     for ( int i = 0; i < temp.length; i++ )
       names.add( temp[ i ]);
+    
+    loaded = true;
   }
 
   public void add( Protocol p )
@@ -366,6 +371,7 @@ public class ProtocolManager
 
   private static ProtocolManager protocolManager = new ProtocolManager();
   private static ManualProtocol manualProtocol = null;
+  private boolean loaded = false;
   private Vector< String > names = new Vector< String >();
   private Hashtable< String, Vector< Protocol >> byName = new Hashtable< String, Vector < Protocol >>();
   private Hashtable< Hex, Vector< Protocol >> byPID = new Hashtable< Hex, Vector< Protocol >>();

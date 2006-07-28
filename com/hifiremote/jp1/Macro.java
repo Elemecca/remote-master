@@ -19,6 +19,19 @@ public class Macro
   {
     return getData();
   }
+  
+  public String getValueString( Remote remote )
+  {
+    StringBuffer buff = new StringBuffer();
+    short[] keys = data.getData();
+    for ( int i = 0; i < keys.length; ++i )
+    {
+      if ( i != 0 )
+        buff.append( ';' );
+      buff.append( remote.getButtonName( keys[ i ]));
+    }
+    return buff.toString();
+  }
 
   public void setValue( Object value )
   {

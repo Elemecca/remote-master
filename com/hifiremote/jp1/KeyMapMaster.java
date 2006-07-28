@@ -11,12 +11,14 @@ import java.io.*;
 import java.awt.datatransfer.*;
 
 public class KeyMapMaster
- extends JP1Frame
+ extends JFrame
  implements ActionListener, ChangeListener, DocumentListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.61";
+  public static final String version = "v1.62";
   private Preferences preferences = null;
+  
+  private DeviceEditorPanel editorPanel = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
@@ -32,7 +34,10 @@ public class KeyMapMaster
   private JMenuItem writeBinaryItem = null;
   private JMenuItem updateItem = null;
   private JMenuItem aboutItem = null;
-//  private JLabel messageLabel = null;
+  private JPanel actionPanel = null;
+  private JButton okButton = null;
+  private JButton cancelButton = null;
+  private JLabel messageLabel = null;
   private JTextField description = null;
   private JComboBox remoteList = null;
   private JComboBox deviceTypeList = null;
@@ -49,23 +54,18 @@ public class KeyMapMaster
   private ProgressMonitor progressMonitor = null;
   private DeviceUpgrade deviceUpgrade = null;
   private static File homeDirectory = null;
-  private File propertiesFile = null;
   private static String upgradeExtension = ".rmdu";
   public final static int ACTION_EXIT = 1;
   public final static int ACTION_LOAD = 2;
 
-  public KeyMapMaster( String[] args )
-    throws Exception
+  public KeyMapMaster( PropertyFile prefs )
   {
     super( "RemoteMaster" );
     me = this;
 
-    File fileToOpen = parseArgs( args );
+    setDefaultCloseOperation( DISPOSE_ON_CLOSE );
 
-    setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
-//    setDefaultLookAndFeelDecorated( true );
-
-    preferences = new Preferences( homeDirectory, propertiesFile );
+    preferences = new Preferences( prefs );
 
     addWindowListener( new WindowAdapter()
     {
@@ -82,7 +82,7 @@ public class KeyMapMaster
           System.err.println( "KeyMapMaster.windowClosing() caught an exception!" );
           e.printStackTrace( System.out );
         }
-        System.exit( 0 );
+//        setVisible( false );
       }
     });
 
@@ -91,7 +91,24 @@ public class KeyMapMaster
     preferences.load( recentFileMenu );
 
     deviceUpgrade = new DeviceUpgrade();
-
+    Remote r = null;
+    
+    String name = preferences.getLastRemoteName();
+    RemoteManager rm = RemoteManager.getRemoteManager();
+    if ( name != null )
+      r = rm.findRemoteByName( name );
+    if ( r == null )
+      r = getRemotes()[ 0 ];
+    Protocol protocol = protocolManager.getProtocolsForRemote( r ).elementAt( 0 );
+    deviceUpgrade.setProtocol( protocol );
+    deviceUpgrade.setRemote( r );
+    
+    editorPanel = new DeviceEditorPanel( deviceUpgrade, getRemotes());
+    add( editorPanel, BorderLayout.CENTER );
+    messageLabel = new JLabel( " " );
+    messageLabel.setForeground( Color.RED );
+    add( messageLabel, BorderLayout.SOUTH );
+/*
     Container mainPanel = getContentPane();
     tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
@@ -138,12 +155,23 @@ public class KeyMapMaster
 
     mainPanel.add( panel, BorderLayout.NORTH );
 
-//    messageLabel = new JLabel( " " );
+    JPanel bottomPanel = new JPanel( new BorderLayout());
+    mainPanel.add( bottomPanel, BorderLayout.SOUTH );
+    
+    actionPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+    bottomPanel.add( actionPanel, BorderLayout.NORTH );
+    
+    okButton = new JButton( "OK" );
+    okButton.addActionListener( this );
+    actionPanel.add( okButton );
+    
+    cancelButton = new JButton( "Cancel" );
+    cancelButton.addActionListener( this );
+    actionPanel.add( cancelButton );
 
-
-//    mainPanel.add( messageLabel, BorderLayout.SOUTH );
-
-    protocolManager.load( new File( homeDirectory, "protocols.ini" ));
+    messageLabel = new JLabel( " " );
+    messageLabel.setForeground( Color.RED );
+    bottomPanel.add( messageLabel, BorderLayout.SOUTH );
 
     setupPanel = new SetupPanel( deviceUpgrade );
     setupPanel.setToolTipText( "Enter general information about the upgrade." );
@@ -173,40 +201,19 @@ public class KeyMapMaster
     outputPanel = new OutputPanel( deviceUpgrade );
     outputPanel.setToolTipText( "The output to copy-n-paste into IR." );
     addPanel( outputPanel );
-
-    RemoteManager rm = RemoteManager.getRemoteManager();
-    preferences.setRDFPath( rm.loadRemotes( preferences.getRDFPath()));
-
     setRemotes();
-
-    Remote r = null;
-    String name = preferences.getLastRemoteName();
-    if ( name != null )
-      r = rm.findRemoteByName( name );
-    if ( r == null )
-      r = rm.getRemotes()[ 0 ];
-    r.load();
-    Protocol protocol =
-      ( Protocol )protocolManager.getProtocolsForRemote( r ).elementAt( 0 );
-    deviceUpgrade.setProtocol( protocol );
-    setRemote( r );
-    remoteList.setSelectedItem( r );
+    setRemote( deviceUpgrade.getRemote());
 
     remoteList.addActionListener( this );
     deviceTypeList.addActionListener( this );
+     
     tabbedPane.addChangeListener( this );
-
-    currPanel.update();
-
-    clearMessage();
+    */
 
     pack();
     Rectangle bounds = preferences.getBounds();
     if ( bounds != null )
       setBounds( bounds );
-
-    loadUpgrade( fileToOpen );
-
     setVisible( true );
   }
 
@@ -219,6 +226,11 @@ public class KeyMapMaster
     remoteList.setModel( new DefaultComboBoxModel( remotes ));
     remoteList.setSelectedItem( r );
     remoteList.addActionListener( this );
+  }
+  
+  public void hideActionPanel()
+  {
+    actionPanel.setVisible( false );
   }
 
   private void createMenus()
@@ -348,66 +360,52 @@ public class KeyMapMaster
     d.setVisible( true );
   }
 
-  private File parseArgs( String[] args )
+  public void showMessage( String message )
   {
-    homeDirectory = new File( System.getProperty( "user.dir" ));
-    File fileToOpen = null;
-    for ( int i = 0; i < args.length; i++ )
-    {
-      String arg = args[ i ];
-      if ( arg.charAt( 0 ) == '-' )
-      {
-        char flag = arg.charAt( 1 );
-        String parm = args[ ++i ];
-        if ( flag == 'h' )
-        {
-          homeDirectory = new File( parm );
-        }
-        else if ( flag == 'p' )
-        {
-          propertiesFile = new File( parm );
-        }
-      }
-      else
-        fileToOpen = new File( arg );
-    }
-    try
-    {
-      System.setErr( new PrintStream( new FileOutputStream( new File ( homeDirectory, "rmaster.err" ))));
-    }
-    catch ( Exception e )
-    {
-      e.printStackTrace( System.err );
-    }
-    if ( propertiesFile == null )
-    {
-      propertiesFile = new File( homeDirectory, "RemoteMaster.properties" );
-    }
-    System.err.println( "RemoteMaster version is " + version );
-    System.err.println( "Java version is " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ));
-    System.err.println( "Home directory is " + homeDirectory );
-    System.err.println( "Properties files is " + propertiesFile );
-
-    return fileToOpen;
-  }
-/*
-  public static void showMessage( String msg )
-  {
-    if ( me == null )
-      return;
-    if ( msg.length() == 0 )
-      msg = " ";
-    me.messageLabel.setText( msg );
+    messageLabel.setText( message );
     Toolkit.getDefaultToolkit().beep();
   }
-
-  public static void clearMessage()
+  
+  public static void showMessage( String message, Component c )
   {
-    if ( me == null )
+    KeyMapMaster km = ( KeyMapMaster )SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
+    if ( km != null )
+    {
+      km.showMessage( message );
       return;
-    me.messageLabel.setText( " " );
+    }
+    
+    JP1Frame frame = ( JP1Frame )SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
+    if ( frame != null )
+    {
+      frame.showMessage( message );
+      return;
+    }
+    JOptionPane.showMessageDialog( c, message );
   }
-*/
+  
+  public void clearMessage()
+  {
+    messageLabel.setText( " " );
+  }
+    
+  public static void clearMessage( Component c )
+  {
+    KeyMapMaster km = ( KeyMapMaster )SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
+    if ( km != null )
+    {
+      km.clearMessage();
+      return;
+    }
+    
+    JP1Frame frame = ( JP1Frame )SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
+    if ( frame != null )
+    {
+      frame.clearMessage();
+      return;
+    }
+  }
+
   public void setRemotes()
   {
     if ( remoteList != null )
@@ -425,7 +423,7 @@ public class KeyMapMaster
 
   public void setRemote( Remote remote )
   {
-    if (( remoteList != null ) && ( remote != deviceUpgrade.getRemote()))
+    if ( remoteList != null )
     {
       try
       {
@@ -654,7 +652,7 @@ public class KeyMapMaster
                                             reader.getPid(),
                                             reader.getProtocolCode());
             deviceUpgrade.setSetupCode( reader.getSetupCode());
-            refresh();
+            editorPanel.refresh();
           }
         }
       }
@@ -704,6 +702,15 @@ public class KeyMapMaster
         scroll.setPreferredSize( d );
 
         JOptionPane.showMessageDialog( this, scroll, "About RemoteMaster", JOptionPane.INFORMATION_MESSAGE );
+      }
+      else if ( source == okButton )
+      {
+        setVisible( false );
+      }
+      else if ( source == cancelButton )
+      {
+        deviceUpgrade = null;
+        setVisible( false );
       }
     }
     catch ( Exception ex )
@@ -874,13 +881,13 @@ public class KeyMapMaster
       addPanel( newPanel, 1 );
     if (( oldPanel != null ) || ( newPanel != null ))
       tabbedPane.validate();
-    refresh();
+    editorPanel.refresh();
 
     boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
 
     if ( isRMDU )
     {
-      setTitle( file.getCanonicalPath() + " - RemoteMaster" );
+      setTitle( file.getAbsolutePath() + " - RemoteMaster" );
       updateRecentFiles( file );
     }
     else
@@ -889,6 +896,7 @@ public class KeyMapMaster
   }
 
   private void updateRecentFiles( File file )
+    throws IOException
   {
     boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
 
@@ -900,7 +908,7 @@ public class KeyMapMaster
         JMenuItem item = recentFileMenu.getItem( i );
         FileAction action = ( FileAction  )item.getAction();
         File f = action.getFile();
-        if ( f.getAbsolutePath().equals( file.getAbsolutePath()))
+        if ( f.getCanonicalPath().equals( file.getCanonicalPath()))
           recentFileMenu.remove( i );
         --i;
       }
@@ -928,7 +936,7 @@ public class KeyMapMaster
       addPanel( newPanel, 1 );
     if (( oldPanel != null ) || ( newPanel != null ))
       tabbedPane.validate();
-    refresh();
+    editorPanel.refresh();
   }
 
   private void refresh()
@@ -936,14 +944,7 @@ public class KeyMapMaster
     String title = "RemoteMaster";
     File file = deviceUpgrade.getFile();
     if ( file != null )
-    try
-    {
-      title = file.getCanonicalPath() + " - RemoteMaster";
-    }
-    catch ( Exception e )
-    {
-      e.printStackTrace( System.err );
-    }
+      title = file.getAbsolutePath() + " - RemoteMaster";
 
     saveItem.setEnabled( file != null );
     writeBinaryItem.setEnabled( deviceUpgrade.getRemote().getSupportsBinaryUpgrades());
@@ -1063,6 +1064,11 @@ public class KeyMapMaster
   {
     return preferences;
   }
+  
+  public DeviceUpgrade getDeviceUpgrade()
+  {
+    return deviceUpgrade;
+  }
 
   // DocumentListener methods
   public void changedUpdate( DocumentEvent e )
@@ -1085,3 +1091,4 @@ public class KeyMapMaster
   private final static String[] rmEndings = { ".km", upgradeExtension };
   private final static String[] binaryEndings = { ".bin", "_obj" };
 }
+

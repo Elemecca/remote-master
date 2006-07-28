@@ -355,7 +355,7 @@ public class Remote
     return deviceButtons;
   }
 
-  public Vector getButtons()
+  public Vector< Button > getButtons()
   {
     load();
     return buttons;
@@ -367,7 +367,7 @@ public class Remote
     return upgradeButtons;
   }
 
-  public Vector getPhantomShapes()
+  public Vector< ButtonShape > getPhantomShapes()
   {
     load();
     return phantomShapes;
@@ -800,27 +800,17 @@ public class Remote
           options = new Vector< String >();
           options.add( token.substring( 1 ));
           while ( st.hasMoreTokens())
-          {
             options.add( st.nextToken());
-          }
         }
         else
           sectionName = token.trim();
       }
       String[] optionsList = null;
       if ( options != null )
-      {
-        optionsList = new String[ options.size()];
-        int i = 0;
-        for ( String option : options )
-        {
-          optionsList[ i ] = option;
-        }
-      }
+        optionsList = options.toArray( new String[ 0 ]);
       work.add( new Setting( title, byteAddress, bitNumber,
-                                 numberOfBits, initialValue, inverted,
-                                 optionsList,
-                                 sectionName ));
+                             numberOfBits, initialValue, inverted,
+                             optionsList, sectionName ));
     }
     settings = ( Setting[] )work.toArray( settings );
     return line;
@@ -991,7 +981,7 @@ public class Remote
     int i = 0;
     for ( Integer v : work )
     {
-      digitMaps[ i ] = v.shortValue();
+      digitMaps[ i++ ] = v.shortValue();
     }
     return line;
   }
@@ -1215,7 +1205,7 @@ public class Remote
         b = getButton( baseCode );
         if (( baseCode | shiftMask ) == keyCode )
           return b.getShiftedName();
-        if (( baseCode | xShiftMask ) == keyCode )
+        if ( xShiftEnabled && (( baseCode | xShiftMask ) == keyCode ))
           return b.getXShiftedName();
       }
       baseCode = keyCode & ~ shiftMask;
@@ -1471,7 +1461,7 @@ public class Remote
   public boolean supportsVariant( Hex pid, String name )
   {
     load();
-    Vector v = ( Vector )protocolVariantNames.get( pid );
+    Vector< String > v = protocolVariantNames.get( pid );
     if (( v == null ) || v.isEmpty())
       return false;
 
@@ -1481,10 +1471,10 @@ public class Remote
     return false;
   }
 
-  public Vector getSupportedVariantNames( Hex pid )
+  public Vector< String > getSupportedVariantNames( Hex pid )
   {
     load();
-    return ( Vector )protocolVariantNames.get( pid );
+    return protocolVariantNames.get( pid );
   }
 
   /*
@@ -1498,13 +1488,13 @@ public class Remote
   }
   */
 
-  public void setProtocols( Vector protocols )
+  public void setProtocols( Vector< Protocol > protocols )
   {
     load();
     this.protocols = protocols;
   }
 
-  public Vector getProtocols()
+  public Vector< Protocol > getProtocols()
   {
     load();
     return protocols;
@@ -1584,7 +1574,7 @@ public class Remote
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
   private boolean omitDigitMapByte = false;
   private Hashtable< Hex, Vector< String >> protocolVariantNames = new Hashtable< Hex, Vector< String >>();
-  private Vector protocols = null;
+  private Vector< Protocol > protocols = null;
   private ImageMap[] imageMaps = new ImageMap[ 0 ];
   private int mapIndex = 0;
   private int shiftMask = 0x80;

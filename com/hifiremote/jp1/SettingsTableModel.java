@@ -75,7 +75,7 @@ public class SettingsTableModel
         return setting.getTitle();
       case 2:
       {
-        int val = setting.getValue( data );
+        int val = setting.getValue();
         Object[] choices = setting.getOptions( r );
         if ( choices == null )
           return new Integer( val );
@@ -95,11 +95,11 @@ public class SettingsTableModel
       short[] data = remoteConfig.getData();
       Object[] choices = setting.getOptions( r );
       if ( choices == null )
-        setting.setValue( data, (( Integer )value ).intValue());
+        setting.setValue((( Integer )value ).intValue());
       else
         for ( int i = 0; i < choices.length; ++i )
           if ( choices[ i ].equals( value ))
-            setting.setValue( data, i );
+            setting.setValue( i );
     }
   }
   

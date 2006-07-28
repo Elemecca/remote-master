@@ -11,9 +11,17 @@ public class MacroTableModel
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    keyRenderer.setRemote( remoteConfig.getRemote());
-    keyEditor.setRemote( remoteConfig.getRemote());
+    Remote remote = remoteConfig.getRemote();
+    keyRenderer.setRemote( remote );
+    keyEditor.setRemote( remote );
+    macroRenderer.setRemote( remote );
+    macroEditor.setRemoteConfiguration( remoteConfig );
     setData( remoteConfig.getMacros());
+  }
+  
+  public RemoteConfiguration getRemoteConfig()
+  {
+    return remoteConfig;
   }
 
   public int getColumnCount(){ return colNames.length; }
@@ -29,7 +37,7 @@ public class MacroTableModel
 
   private static final Class[] colClasses =
   {
-    Integer.class, Integer.class, String.class, String.class
+    Integer.class, Integer.class, Macro.class, String.class
   };
   public Class getColumnClass( int col )
   {
@@ -48,10 +56,10 @@ public class MacroTableModel
   
   public boolean isCellEditable( int row, int col )
   {
-    if (( col == 1 ) || ( col == 3 ))
-      return true;
+    if ( col == 0 )
+      return false;
 
-    return false;
+    return true;
   }
 
   public Object getValueAt(int row, int column)
@@ -65,17 +73,7 @@ public class MacroTableModel
       case 1:
         return new Integer( macro.getKeyCode());
       case 2:
-      {
-        StringBuffer buff = new StringBuffer();
-        short[] keys = macro.getData().getData();
-        for ( int i = 0; i < keys.length; ++i )
-        {
-          if ( i != 0 )
-            buff.append( ';' );
-          buff.append( r.getButtonName( keys[ i ]));
-        }
-        return buff.toString();
-      }
+       return macro;
       case 3:
         return macro.getNotes();
       default:
@@ -88,6 +86,11 @@ public class MacroTableModel
     Macro macro = ( Macro )getRow( row );
     if ( col == 1 )
       macro.setKeyCode((( Integer )value ).intValue());
+    else if ( col == 2 )
+    {
+      if ( value != null )
+        setRow( row, ( Macro )value );
+    }
     else if ( col == 3 )
       macro.setNotes(( String )value );
     propertyChangeSupport.firePropertyChange( "data", null, null );
@@ -99,6 +102,8 @@ public class MacroTableModel
       return new RowNumberRenderer();
     else if ( col == 1 )
       return keyRenderer;
+    else if ( col == 2 )
+      return macroRenderer;
     return null;
   }
   
@@ -106,10 +111,14 @@ public class MacroTableModel
   {
     if ( col == 1 )
       return keyEditor;
+    else if ( col == 2 )
+      return macroEditor;
     return null;
   }
   
   private RemoteConfiguration remoteConfig = null;
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
   private KeyEditor keyEditor = new KeyEditor();
+  private MacroRenderer macroRenderer = new MacroRenderer();
+  private MacroEditor macroEditor = new MacroEditor();
 }

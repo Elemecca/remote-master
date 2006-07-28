@@ -19,7 +19,7 @@ public class LearnedSignalPanel
     (( LearnedSignalTableModel )model ).set( remoteConfig ); 
   }
   
-  public LearnedSignal createRowObject()
+  public LearnedSignal createRowObject( LearnedSignal baseSignal )
   {
     return null;
   }

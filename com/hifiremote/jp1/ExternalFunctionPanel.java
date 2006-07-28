@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class ExternalFunctionPanel
-  extends TablePanel< Function >
+  extends TablePanel< ExternalFunction >
 {
   public ExternalFunctionPanel( DeviceUpgrade devUpgrade )
   {
@@ -44,7 +44,7 @@ public class ExternalFunctionPanel
           Vector importedFunctions = d.getSelectedFunctions();
           if ( importedFunctions.size() > 0 )
           {
-            Vector< Function > externalFunctions = deviceUpgrade.getExternalFunctions();
+            Vector< ExternalFunction > externalFunctions = deviceUpgrade.getExternalFunctions();
             int firstRow =  externalFunctions.size();
             for ( Enumeration e = importedFunctions.elements(); e.hasMoreElements(); )
             {

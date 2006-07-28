@@ -14,7 +14,7 @@ public abstract class TablePanel< E >
   extends KMPanel
   implements ActionListener, ListSelectionListener
 {
-  public TablePanel( String name, DeviceUpgrade devUpgrade, KMTableModel< E > model )
+  public TablePanel( String name, DeviceUpgrade devUpgrade, KMTableModel< E > tableModel )
   {
     super( name, devUpgrade );
     setLayout( new BorderLayout());
@@ -22,10 +22,10 @@ public abstract class TablePanel< E >
     kit = Toolkit.getDefaultToolkit();
     clipboard = kit.getSystemClipboard();
 
-    this.model = model;
-    sorter = new TableSorter< E >( model );
+    model = tableModel;
+    sorter = new TableSorter( model );
     table = new JTableX( sorter );
-    sorter.addMouseListenerToHeaderInTable( table );
+    sorter.setTableHeader( table.getTableHeader());
     table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
     table.setCellSelectionEnabled( true );
@@ -80,9 +80,9 @@ public abstract class TablePanel< E >
             int col = table.getSelectedColumn();
             for ( String line = in.readLine(); line != null; line = in.readLine())
             {
-              if ( row == sorter.getRowCount() )
+              if ( row == model.getRowCount() )
               {
-                sorter.addRow( createRowObject());
+                model.addRow( createRowObject());
                 if ( addedRow == -1 )
                   addedRow = row;
               }
@@ -161,12 +161,14 @@ public abstract class TablePanel< E >
             int dropRow = table.getSelectedRow();
             if ( dropRow != dragRow )
             {
-              sorter.moveRow( dragRow, dropRow );
+              dragRow = sorter.modelIndex( dragRow );
+              dropRow = sorter.modelIndex( dropRow );
+              model.moveRow( dragRow, dropRow );
 
               if ( dropRow < dragRow )
-                sorter.fireTableRowsUpdated( dropRow, dragRow );
+                model.fireTableRowsUpdated( dropRow, dragRow );
               else
-                sorter.fireTableRowsUpdated( dragRow, dropRow );
+                model.fireTableRowsUpdated( dragRow, dropRow );
               rc = true;
             }
           }
@@ -261,7 +263,7 @@ public abstract class TablePanel< E >
           if ( popupCol == 0 )
             return false;
 
-          Function func = ( Function )sorter.getRow( popupRow );
+          Function func = ( Function )model.getRow( sorter.modelIndex( popupRow ));
           deleteItem.setEnabled( !func.assigned());
 
           Transferable clipData = clipboard.getContents( clipboard );
@@ -398,31 +400,31 @@ public abstract class TablePanel< E >
       E o = createRowObject();
       if ( row == -1 )
       {
-        sorter.addRow( o );
-        row = sorter.getRowCount();
+        model.addRow( o );
+        row = model.getRowCount();
       }
       else
       {
-        sorter.insertRow( row, o );
+        model.insertRow( sorter.modelIndex( row ), o );
       }
 
-      sorter.fireTableRowsInserted( row, row );
+      model.fireTableRowsInserted( sorter.modelIndex( row ), sorter.modelIndex( row ));
       if ( select )
         table.setRowSelectionInterval( row, row );
     }
     else if (( source == deleteButton ) ||
              ( source == deleteItem ))
     {
-      if ( !canDelete( sorter.getRow( row )))
+      if ( !canDelete( model.getRow( sorter.modelIndex( row ))))
       {
         deleteButton.setEnabled( false );
-        doNotDelete( sorter.getRow( row ));
+        doNotDelete( model.getRow( sorter.modelIndex( row )));
       }
       else
       {
-        sorter.removeRow( row );
-        sorter.fireTableRowsDeleted( row, row );
-        if ( row == sorter.getRowCount())
+        model.removeRow( sorter.modelIndex( row ));
+        model.fireTableRowsDeleted( sorter.modelIndex( row ), sorter.modelIndex( row ));
+        if ( row == model.getRowCount())
           --row;
         if ( select )
           table.setRowSelectionInterval( row, row );
@@ -462,8 +464,8 @@ public abstract class TablePanel< E >
         to = end;
         sel = end;
       }
-      sorter.moveRow( from, to );
-      sorter.fireTableRowsUpdated( start, end );
+      model.moveRow( sorter.modelIndex( from ), sorter.modelIndex( to ));
+      model.fireTableRowsUpdated( sorter.modelIndex( start ), sorter.modelIndex( end ));
       if ( select )
         table.setRowSelectionInterval( sel, sel );
     }
@@ -493,7 +495,7 @@ public abstract class TablePanel< E >
       {
         upButton.setEnabled( row > 0 );
         downButton.setEnabled( row < ( sorter.getRowCount() - 1 ));
-        deleteButton.setEnabled( canDelete( sorter.getRow( row )));
+        deleteButton.setEnabled( canDelete( model.getRow( sorter.modelIndex( row ))));
         Transferable clipData = clipboard.getContents( clipboard );
         copyButton.setEnabled( true );
         if (( clipData != null ) &&
@@ -560,7 +562,7 @@ public abstract class TablePanel< E >
 
   protected JTableX table = null;
   protected KMTableModel< E > model = null;
-  private TableSorter< E > sorter = null;
+  private TableSorter sorter = null;
   protected JPanel buttonPanel = null;
   private JButton newButton = null;
   private JButton deleteButton = null;

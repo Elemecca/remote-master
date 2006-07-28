@@ -19,7 +19,7 @@ public class ProtocolUpgradePanel
     (( ProtocolUpgradeTableModel )model ).set( remoteConfig ); 
   }
   
-  public ProtocolUpgrade createRowObject()
+  public ProtocolUpgrade createRowObject( ProtocolUpgrade baseUpgrade )
   {
     return null;
   }

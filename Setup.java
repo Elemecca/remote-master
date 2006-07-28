@@ -63,6 +63,33 @@ public class Setup
       pw.println( "@=\"RMDeviceUpgrade\"" );
       pw.println();
 
+      pw.println( "[HKEY_CLASSES_ROOT\\RMRemoteConfig]" );
+      pw.println( "@=\"Remote Master Remote Configuration\"" );
+      pw.println();
+
+      pw.println( "[HKEY_CLASSES_ROOT\\RMRemoteConfig\\DefaultIcon]" );
+      pw.println( "@=\"" + doubleSlashes( icoFile ) + "\"" );
+      pw.println();
+
+      pw.println( "[HKEY_CLASSES_ROOT\\RMRemoteConfig\\Shell]" );
+      pw.println( "@=\"\"");
+      pw.println();
+
+      pw.println( "[HKEY_CLASSES_ROOT\\RMRemoteConfig\\Shell\\open]" );
+      pw.println( "@=\"\"");
+      pw.println();
+
+      pw.println( "[HKEY_CLASSES_ROOT\\RMRemoteConfig\\Shell\\open\\command]" );
+      pw.println( "@=\"\\\"" + doubleSlashes( javaw ) +
+                  "\\\" -jar \\\"" + doubleSlashes( jarFile ) +
+                  "\\\" -h \\\"" + doubleSlashes( workDir ) +
+                  "\\\" -ir \\\"%1\\\"\"" );
+      pw.println();
+
+      pw.println( "[HKEY_CLASSES_ROOT\\.rmir]" );
+      pw.println( "@=\"RMDRemoteConfig\"" );
+      pw.println();
+
       pw.flush();
       pw.close();
     }

@@ -1,394 +1,487 @@
-/**
- * A sorter for TableModels. The sorter has a model (conforming to TableModel)
- * and itself implements TableModel. TableSorter does not store or copy
- * the data in the TableModel, instead it maintains an array of
- * integers which it keeps the same size as the number of rows in its
- * model. When the model changes it notifies the sorter that something
- * has changed eg. "rowsAdded" so that its internal array of integers
- * can be reallocated. As requests are made of the sorter (like
- * getValueAt(row, col) it redirects them to its model via the mapping
- * array. That way the TableSorter appears to hold another copy of the table
- * with the rows in a different order. The sorting algorthm used is stable
- * which means that it does not move around rows when its comparison
- * function returns 0 to denote that they are equivalent.
- *
- * @version 1.5 12/17/97
- * @author Philip Milne
- */
-
 package com.hifiremote.jp1;
 
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
-import javax.swing.table.TableModel;
+import java.util.List;
+
+import javax.swing.*;
 import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.*;
 
-// Imports for picking up mouse events from the JTable.
+/**
+ * TableSorter is a decorator for TableModels; adding sorting
+ * functionality to a supplied TableModel. TableSorter does
+ * not store or copy the data in its TableModel; instead it maintains
+ * a map from the row indexes of the view to the row indexes of the
+ * model. As requests are made of the sorter (like getValueAt(row, col))
+ * they are passed to the underlying model after the row numbers
+ * have been translated via the internal mapping array. This way,
+ * the TableSorter appears to hold another copy of the table
+ * with the rows in a different order.
+ * <p/>
+ * TableSorter registers itself as a listener to the underlying model,
+ * just as the JTable itself would. Events recieved from the model
+ * are examined, sometimes manipulated (typically widened), and then
+ * passed on to the TableSorter's listeners (typically the JTable).
+ * If a change to the model has invalidated the order of TableSorter's
+ * rows, a note of this is made and the sorter will resort the
+ * rows the next time a value is requested.
+ * <p/>
+ * When the tableHeader property is set, either by using the
+ * setTableHeader() method or the two argument constructor, the
+ * table header may be used as a complete UI for TableSorter.
+ * The default renderer of the tableHeader is decorated with a renderer
+ * that indicates the sorting status of each column. In addition,
+ * a mouse listener is installed with the following behavior:
+ * <ul>
+ * <li>
+ * Mouse-click: Clears the sorting status of all other columns
+ * and advances the sorting status of that column through three
+ * values: {NOT_SORTED, ASCENDING, DESCENDING} (then back to
+ * NOT_SORTED again).
+ * <li>
+ * SHIFT-mouse-click: Clears the sorting status of all other columns
+ * and cycles the sorting status of the column through the same
+ * three values, in the opposite order: {NOT_SORTED, DESCENDING, ASCENDING}.
+ * <li>
+ * CONTROL-mouse-click and CONTROL-SHIFT-mouse-click: as above except
+ * that the changes to the column do not cancel the statuses of columns
+ * that are already sorting - giving a way to initiate a compound
+ * sort.
+ * </ul>
+ * <p/>
+ * This is a long overdue rewrite of a class of the same name that
+ * first appeared in the swing table demos in 1997.
+ * 
+ * @author Philip Milne
+ * @author Brendon McLean 
+ * @author Dan van Enckevort
+ * @author Parwinder Sekhon
+ * @version 2.0 02/27/04
+ */
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.InputEvent;
-import java.text.DecimalFormat;
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
+public class TableSorter extends AbstractTableModel {
+    protected TableModel tableModel;
 
-public class TableSorter< E > extends TableMap< E >
-{
-    int             indexes[];
-    Vector< Integer >          sortingColumns = new Vector< Integer >();
-    boolean         ascending = true;
-    int compares;
-    DecimalFormat df = new DecimalFormat( "000" );
+    public static final int DESCENDING = -1;
+    public static final int NOT_SORTED = 0;
+    public static final int ASCENDING = 1;
+
+    private static Directive EMPTY_DIRECTIVE = new Directive(-1, NOT_SORTED);
+
+    public static final Comparator COMPARABLE_COMAPRATOR = new Comparator() {
+        @SuppressWarnings("unchecked")
+        public int compare(Object o1, Object o2) {
+            return ((Comparable) o1).compareTo(o2);
+        }
+    };
+    public static final Comparator LEXICAL_COMPARATOR = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            return o1.toString().compareTo(o2.toString());
+        }
+    };
+
+    private Row[] viewToModel;
+    private int[] modelToView;
+
+    private JTableHeader tableHeader;
+    private MouseListener mouseListener;
+    private TableModelListener tableModelListener;
+    private Map columnComparators = new HashMap();
+    private List sortingColumns = new ArrayList();
 
     public TableSorter() {
-        indexes = new int[0]; // for consistency
+        this.mouseListener = new MouseHandler();
+        this.tableModelListener = new TableModelHandler();
     }
 
-    public TableSorter( JP1TableModel< E > model ) {
-        setModel( model );
+    public TableSorter(TableModel tableModel) {
+        this();
+        setTableModel(tableModel);
     }
 
-    public void setModel( JP1TableModel< E > model ) {
-        super.setModel( model );
-        reallocateIndexes();
+    public TableSorter(TableModel tableModel, JTableHeader tableHeader) {
+        this();
+        setTableHeader(tableHeader);
+        setTableModel(tableModel);
+    }
+
+    private void clearSortingState() {
+        viewToModel = null;
+        modelToView = null;
+    }
+
+    public TableModel getTableModel() {
+        return tableModel;
+    }
+
+    public void setTableModel(TableModel tableModel) {
+        if (this.tableModel != null) {
+            this.tableModel.removeTableModelListener(tableModelListener);
+        }
+
+        this.tableModel = tableModel;
+        if (this.tableModel != null) {
+            this.tableModel.addTableModelListener(tableModelListener);
+        }
+
+        clearSortingState();
+        fireTableStructureChanged();
+    }
+
+    public JTableHeader getTableHeader() {
+        return tableHeader;
+    }
+
+    public void setTableHeader(JTableHeader tableHeader) {
+        if (this.tableHeader != null) {
+            this.tableHeader.removeMouseListener(mouseListener);
+            TableCellRenderer defaultRenderer = this.tableHeader.getDefaultRenderer();
+            if (defaultRenderer instanceof SortableHeaderRenderer) {
+                this.tableHeader.setDefaultRenderer(((SortableHeaderRenderer) defaultRenderer).tableCellRenderer);
+            }
+        }
+        this.tableHeader = tableHeader;
+        if (this.tableHeader != null) {
+            this.tableHeader.addMouseListener(mouseListener);
+            this.tableHeader.setDefaultRenderer(
+                    new SortableHeaderRenderer(this.tableHeader.getDefaultRenderer()));
+        }
+    }
+
+    public boolean isSorting() {
+        return sortingColumns.size() != 0;
+    }
+
+    private Directive getDirective(int column) {
+        for (int i = 0; i < sortingColumns.size(); i++) {
+            Directive directive = (Directive)sortingColumns.get(i);
+            if (directive.column == column) {
+                return directive;
+            }
+        }
+        return EMPTY_DIRECTIVE;
+    }
+
+    public int getSortingStatus(int column) {
+        return getDirective(column).direction;
+    }
+
+    private void sortingStatusChanged() {
+        clearSortingState();
+        fireTableDataChanged();
+        if (tableHeader != null) {
+            tableHeader.repaint();
+        }
     }
 
     @SuppressWarnings("unchecked")
-    public int compareRowsByColumn(int row1, int row2, int column) {
-        Class type = model.getColumnClass(column);
-        TableModel data = model;
+    public void setSortingStatus(int column, int status) {
+        Directive directive = getDirective(column);
+        if (directive != EMPTY_DIRECTIVE) {
+            sortingColumns.remove(directive);
+        }
+        if (status != NOT_SORTED) {
+            sortingColumns.add(new Directive(column, status));
+        }
+        sortingStatusChanged();
+    }
 
-        // Check for nulls.
+    protected Icon getHeaderRendererIcon(int column, int size) {
+        Directive directive = getDirective(column);
+        if (directive == EMPTY_DIRECTIVE) {
+            return null;
+        }
+        return new Arrow(directive.direction == DESCENDING, size, sortingColumns.indexOf(directive));
+    }
 
-        Object o1 = data.getValueAt(row1, column);
-        Object o2 = data.getValueAt(row2, column);
+    private void cancelSorting() {
+        sortingColumns.clear();
+        sortingStatusChanged();
+    }
 
-        // If both values are null, return 0.
-        if (o1 == null && o2 == null) {
+    @SuppressWarnings("unchecked")
+    public void setColumnComparator(Class type, Comparator comparator) {
+        if (comparator == null) {
+            columnComparators.remove(type);
+        } else {
+            columnComparators.put(type, comparator);
+        }
+    }
+
+    protected Comparator getComparator(int column) {
+        Class columnType = tableModel.getColumnClass(column);
+        Comparator comparator = (Comparator) columnComparators.get(columnType);
+        if (comparator != null) {
+            return comparator;
+        }
+        if (Comparable.class.isAssignableFrom(columnType)) {
+            return COMPARABLE_COMAPRATOR;
+        }
+        return LEXICAL_COMPARATOR;
+    }
+
+    private Row[] getViewToModel() {
+        if (viewToModel == null) {
+            int tableModelRowCount = tableModel.getRowCount();
+            viewToModel = new Row[tableModelRowCount];
+            for (int row = 0; row < tableModelRowCount; row++) {
+                viewToModel[row] = new Row(row);
+            }
+
+            if (isSorting()) {
+                Arrays.sort(viewToModel);
+            }
+        }
+        return viewToModel;
+    }
+
+    public int modelIndex(int viewIndex) {
+        return getViewToModel()[viewIndex].modelIndex;
+    }
+
+    private int[] getModelToView() {
+        if (modelToView == null) {
+            int n = getViewToModel().length;
+            modelToView = new int[n];
+            for (int i = 0; i < n; i++) {
+                modelToView[modelIndex(i)] = i;
+            }
+        }
+        return modelToView;
+    }
+
+    // TableModel interface methods 
+
+    public int getRowCount() {
+        return (tableModel == null) ? 0 : tableModel.getRowCount();
+    }
+
+    public int getColumnCount() {
+        return (tableModel == null) ? 0 : tableModel.getColumnCount();
+    }
+
+    public String getColumnName(int column) {
+        return tableModel.getColumnName(column);
+    }
+
+    public Class getColumnClass(int column) {
+        return tableModel.getColumnClass(column);
+    }
+
+    public boolean isCellEditable(int row, int column) {
+        return tableModel.isCellEditable(modelIndex(row), column);
+    }
+
+    public Object getValueAt(int row, int column) {
+        return tableModel.getValueAt(modelIndex(row), column);
+    }
+
+    public void setValueAt(Object aValue, int row, int column) {
+        tableModel.setValueAt(aValue, modelIndex(row), column);
+    }
+
+    // Helper classes
+    
+    private class Row implements Comparable {
+        private int modelIndex;
+
+        public Row(int index) {
+            this.modelIndex = index;
+        }
+
+        @SuppressWarnings("unchecked")
+        public int compareTo(Object o) {
+            int row1 = modelIndex;
+            int row2 = ((Row) o).modelIndex;
+
+            for (Iterator it = sortingColumns.iterator(); it.hasNext();) {
+                Directive directive = (Directive) it.next();
+                int column = directive.column;
+                Object o1 = tableModel.getValueAt(row1, column);
+                Object o2 = tableModel.getValueAt(row2, column);
+
+                int comparison = 0;
+                // Define null less than everything, except null.
+                if (o1 == null && o2 == null) {
+                    comparison = 0;
+                } else if (o1 == null) {
+                    comparison = -1;
+                } else if (o2 == null) {
+                    comparison = 1;
+                } else {
+                    comparison = getComparator(column).compare(o1, o2);
+                }
+                if (comparison != 0) {
+                    return directive.direction == DESCENDING ? -comparison : comparison;
+                }
+            }
             return 0;
-        } else if (o1 == null) { // Define null less than everything.
-            return -1;
-        } else if (o2 == null) {
-            return 1;
-        }
-
-        /*
-         * We copy all returned values from the getValue call in case
-         * an optimised model is reusing one object to return many
-         * values.  The Number subclasses in the JDK are immutable and
-         * so will not be used in this way but other subclasses of
-         * Number might want to do this to save space and avoid
-         * unnecessary heap allocation.
-         */
-
-        if ( o1 instanceof Comparable )
-        {
-          Comparable c1 = ( Comparable )o1;
-          Comparable c2 = ( Comparable )o2;
-          return c1.compareTo( c2 );
-        }
-        else
-        {
-          String s1 = o1.toString();
-          String s2 = o2.toString();
-          return s1.compareTo(s2);
         }
     }
 
-    public int compare(int row1, int row2) {
-        compares++;
-        for (int level = 0; level < sortingColumns.size(); level++) {
-            Integer column = (Integer)sortingColumns.elementAt(level);
-            int result = compareRowsByColumn(row1, row2, column.intValue());
-            if (result != 0) {
-                return ascending ? result : -result;
+    private class TableModelHandler implements TableModelListener {
+        public void tableChanged(TableModelEvent e) {
+            // If we're not sorting by anything, just pass the event along.             
+            if (!isSorting()) {
+                clearSortingState();
+                fireTableChanged(e);
+                return;
             }
-        }
-        return 0;
-    }
-
-    public void reallocateIndexes() {
-        int rowCount = model.getRowCount();
-
-        // Set up a new array of indexes with the right number of elements
-        // for the new data model.
-        indexes = new int[rowCount];
-
-        // Initialise with the identity mapping.
-        for (int row = 0; row < rowCount; row++) {
-            indexes[row] = row;
-        }
-    }
-
-    private int convertModelRowToIndex( int row )
-    {
-      int i = 0;
-      for ( ; i < indexes.length; i++ )
-      {
-        if ( indexes[ i ] == row )
-          break;
-      }
-      return i;
-    }
-
-    public void tableChanged(TableModelEvent e)
-    {
-      //System.out.println("Sorter: tableChanged");
-      int firstRow = e.getFirstRow();
-      int firstIndex = 0;
-      if ( firstRow != -1 )
-        firstIndex = convertModelRowToIndex( firstRow );
-      else
-        firstIndex = -1;
-      int lastRow = e.getLastRow();
-      int lastIndex = 0;
-      if ( lastRow != -1 )
-      {
-        if ( lastRow == firstRow )
-          lastIndex = firstIndex;
-        else
-          lastIndex = convertModelRowToIndex( lastRow );
-      }
-      else
-        lastIndex = -1;
-
-      if (( firstIndex == -1 ) || ( lastIndex == -1 ))
-        reallocateIndexes();
-
-      TableModelEvent newEvent = new TableModelEvent(( TableModel )e.getSource(),
-                                                      firstIndex, lastIndex,
-                                                      e.getColumn(),
-                                                      e.getType());
-      super.tableChanged( e );
-    }
-
-    public void checkModel()
-    {
-      if (indexes.length != model.getRowCount())
-      {
-        System.err.println("Sorter not informed of a change in model.");
-        reallocateIndexes();
-      }
-    }
-
-    public void sort(Object sender) {
-        checkModel();
-
-        compares = 0;
-        // n2sort();
-        // qsort(0, indexes.length-1);
-        shuttlesort((int[])indexes.clone(), indexes, 0, indexes.length);
-        //System.out.println("Compares: "+compares);
-    }
-
-    public void n2sort() {
-        for (int i = 0; i < getRowCount(); i++) {
-            for (int j = i+1; j < getRowCount(); j++) {
-                if (compare(indexes[i], indexes[j]) == -1) {
-                    swap(i, j);
-                }
+                
+            // If the table structure has changed, cancel the sorting; the             
+            // sorting columns may have been either moved or deleted from             
+            // the model. 
+            if (e.getFirstRow() == TableModelEvent.HEADER_ROW) {
+                cancelSorting();
+                fireTableChanged(e);
+                return;
             }
-        }
-    }
 
-    // This is a home-grown implementation which we have not had time
-    // to research - it may perform poorly in some circumstances. It
-    // requires twice the space of an in-place algorithm and makes
-    // NlogN assigments shuttling the values between the two
-    // arrays. The number of compares appears to vary between N-1 and
-    // NlogN depending on the initial order but the main reason for
-    // using it here is that, unlike qsort, it is stable.
-    public void shuttlesort(int from[], int to[], int low, int high) {
-        if (high - low < 2) {
+            // We can map a cell event through to the view without widening             
+            // when the following conditions apply: 
+            // 
+            // a) all the changes are on one row (e.getFirstRow() == e.getLastRow()) and, 
+            // b) all the changes are in one column (column != TableModelEvent.ALL_COLUMNS) and,
+            // c) we are not sorting on that column (getSortingStatus(column) == NOT_SORTED) and, 
+            // d) a reverse lookup will not trigger a sort (modelToView != null)
+            //
+            // Note: INSERT and DELETE events fail this test as they have column == ALL_COLUMNS.
+            // 
+            // The last check, for (modelToView != null) is to see if modelToView 
+            // is already allocated. If we don't do this check; sorting can become 
+            // a performance bottleneck for applications where cells  
+            // change rapidly in different parts of the table. If cells 
+            // change alternately in the sorting column and then outside of             
+            // it this class can end up re-sorting on alternate cell updates - 
+            // which can be a performance problem for large tables. The last 
+            // clause avoids this problem. 
+            int column = e.getColumn();
+            if (e.getFirstRow() == e.getLastRow()
+                    && column != TableModelEvent.ALL_COLUMNS
+                    && getSortingStatus(column) == NOT_SORTED
+                    && modelToView != null) {
+                int viewIndex = getModelToView()[e.getFirstRow()];
+                fireTableChanged(new TableModelEvent(TableSorter.this, 
+                                                     viewIndex, viewIndex, 
+                                                     column, e.getType()));
+                return;
+            }
+
+            // Something has happened to the data that may have invalidated the row order. 
+            clearSortingState();
+            fireTableDataChanged();
             return;
         }
-        int middle = (low + high)/2;
-        shuttlesort(to, from, low, middle);
-        shuttlesort(to, from, middle, high);
-
-        int p = low;
-        int q = middle;
-
-        /* This is an optional short-cut; at each recursive call,
-        check to see if the elements in this subset are already
-        ordered.  If so, no further comparisons are needed; the
-        sub-array can just be copied.  The array must be copied rather
-        than assigned otherwise sister calls in the recursion might
-        get out of sinc.  When the number of elements is three they
-        are partitioned so that the first set, [low, mid), has one
-        element and and the second, [mid, high), has two. We skip the
-        optimisation when the number of elements is three or less as
-        the first compare in the normal merge will produce the same
-        sequence of steps. This optimisation seems to be worthwhile
-        for partially ordered lists but some analysis is needed to
-        find out how the performance drops to Nlog(N) as the initial
-        order diminishes - it may drop very quickly.  */
-
-        if (high - low >= 4 && compare(from[middle-1], from[middle]) <= 0) {
-            for (int i = low; i < high; i++) {
-                to[i] = from[i];
-            }
-            return;
-        }
-
-        // A normal merge.
-
-        for (int i = low; i < high; i++) {
-            if (q >= high || (p < middle && compare(from[p], from[q]) <= 0)) {
-                to[i] = from[p++];
-            }
-            else {
-                to[i] = from[q++];
-            }
-        }
     }
 
-    public void swap(int i, int j) {
-        int tmp = indexes[i];
-        indexes[i] = indexes[j];
-        indexes[j] = tmp;
-    }
-
-    // The mapping only affects the contents of the data rows.
-    // Pass all requests to these rows through the mapping array: "indexes".
-
-    public Object getValueAt(int aRow, int aColumn) {
-        checkModel();
-        return model.getValueAt(indexes[aRow], aColumn);
-    }
-
-    public void setValueAt(Object aValue, int aRow, int aColumn) {
-        checkModel();
-        model.setValueAt(aValue, indexes[aRow], aColumn);
-    }
-
-    public void sortByColumn(int column) {
-        sortByColumn(column, true);
-    }
-
-    public void sortByColumn(int column, boolean ascending) {
-        this.ascending = ascending;
-        sortingColumns.removeAllElements();
-        sortingColumns.addElement(new Integer( column ));
-        sort(this);
-        super.tableChanged(new TableModelEvent(this));
-    }
-
-    public int convertRowIndexToModel( int aRow )
-    {
-      checkModel();
-      return indexes[ aRow ];
-    }
-
-    // There is no-where else to put this.
-    // Add a mouse listener to the Table to trigger a table sort
-    // when a column heading is clicked in the JTable.
-    public void addMouseListenerToHeaderInTable(JTable table) {
-        final TableSorter sorter = this;
-        final JTable tableView = table;
-        tableView.setColumnSelectionAllowed(false);
-        MouseAdapter listMouseListener = new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                TableColumnModel columnModel = tableView.getColumnModel();
-                int viewColumn = columnModel.getColumnIndexAtX(e.getX());
-                int column = tableView.convertColumnIndexToModel(viewColumn);
-                if (e.getClickCount() == 1 && column != -1) {
-                    //System.out.println("Sorting ...");
-                    int shiftPressed = e.getModifiers()&InputEvent.SHIFT_MASK;
-                    boolean ascending = (shiftPressed == 0);
-                    sorter.sortByColumn(column, ascending);
+    private class MouseHandler extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            JTableHeader h = (JTableHeader) e.getSource();
+            TableColumnModel columnModel = h.getColumnModel();
+            int viewColumn = columnModel.getColumnIndexAtX(e.getX());
+            int column = columnModel.getColumn(viewColumn).getModelIndex();
+            if (column != -1) {
+                int status = getSortingStatus(column);
+                if (!e.isControlDown()) {
+                    cancelSorting();
                 }
+                // Cycle the sorting states through {NOT_SORTED, ASCENDING, DESCENDING} or 
+                // {NOT_SORTED, DESCENDING, ASCENDING} depending on whether shift is pressed. 
+                status = status + (e.isShiftDown() ? -1 : 1);
+                status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
+                setSortingStatus(column, status);
             }
-        };
-        JTableHeader th = tableView.getTableHeader();
-        th.addMouseListener(listMouseListener);
+        }
     }
 
-    public E getRow( int row )
-    {
-      return model.getRow( indexes[ row ]);
+    private static class Arrow implements Icon {
+        private boolean descending;
+        private int size;
+        private int priority;
+
+        public Arrow(boolean descending, int size, int priority) {
+            this.descending = descending;
+            this.size = size;
+            this.priority = priority;
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Color color = c == null ? Color.GRAY : c.getBackground();             
+            // In a compound sort, make each succesive triangle 20% 
+            // smaller than the previous one. 
+            int dx = (int)(size/2*Math.pow(0.8, priority));
+            int dy = descending ? dx : -dx;
+            // Align icon (roughly) with font baseline. 
+            y = y + 5*size/6 + (descending ? -dy : 0);
+            int shift = descending ? 1 : -1;
+            g.translate(x, y);
+
+            // Right diagonal. 
+            g.setColor(color.darker());
+            g.drawLine(dx / 2, dy, 0, 0);
+            g.drawLine(dx / 2, dy + shift, 0, shift);
+            
+            // Left diagonal. 
+            g.setColor(color.brighter());
+            g.drawLine(dx / 2, dy, dx, 0);
+            g.drawLine(dx / 2, dy + shift, dx, shift);
+            
+            // Horizontal line. 
+            if (descending) {
+                g.setColor(color.darker().darker());
+            } else {
+                g.setColor(color.brighter().brighter());
+            }
+            g.drawLine(dx, 0, 0, 0);
+
+            g.setColor(color);
+            g.translate(-x, -y);
+        }
+
+        public int getIconWidth() {
+            return size;
+        }
+
+        public int getIconHeight() {
+            return size;
+        }
     }
 
-    public void addRow( E object )
-    {
-      model.addRow( object );
-      int[] saved = indexes;
-      indexes = new int[ saved.length + 1 ];
-      int i;
-      for ( i = 0; i < saved.length; i++ )
-        indexes[ i ] = saved[ i ];
-      indexes[ i ] = i;
+    private class SortableHeaderRenderer implements TableCellRenderer {
+        private TableCellRenderer tableCellRenderer;
+
+        public SortableHeaderRenderer(TableCellRenderer tableCellRenderer) {
+            this.tableCellRenderer = tableCellRenderer;
+        }
+
+        public Component getTableCellRendererComponent(JTable table, 
+                                                       Object value,
+                                                       boolean isSelected, 
+                                                       boolean hasFocus,
+                                                       int row, 
+                                                       int column) {
+            Component c = tableCellRenderer.getTableCellRendererComponent(table, 
+                    value, isSelected, hasFocus, row, column);
+            if (c instanceof JLabel) {
+                JLabel l = (JLabel) c;
+                l.setHorizontalTextPosition(JLabel.LEFT);
+                int modelColumn = table.convertColumnIndexToModel(column);
+                l.setIcon(getHeaderRendererIcon(modelColumn, l.getFont().getSize()));
+            }
+            return c;
+        }
     }
 
-    public void insertRow( int row, E object )
-    {
-      model.insertRow( indexes[ row ], object );
-      int mappedRow = indexes[ row ];
-      int[] saved = indexes;
-      indexes = new int[ indexes.length + 1 ];
-      int temp;
-      for ( int i = 0; i < indexes.length; i++ )
-      {
-        if ( i < row )
-        {
-          temp = saved[ i ];
-        }
-        else if ( i == row )
-        {
-          temp = saved[ i ];
-        }
-        else // temp > row
-        {
-          temp = saved[ i - 1 ];
-        }
+    private static class Directive {
+        private int column;
+        private int direction;
 
-        if (( i != row ) && ( temp >= mappedRow ))
-        {
-          temp++;
+        public Directive(int column, int direction) {
+            this.column = column;
+            this.direction = direction;
         }
-
-        indexes[ i ] = temp;
-      }
     }
-
-    public void removeRow( int row )
-    {
-      model.removeRow( indexes[ row ]);
-      int modelRow = indexes[ row ];
-      int[] saved = indexes;
-      indexes = new int[ saved.length - 1 ];
-      int temp;
-      for ( int i = 0; i < indexes.length; i++ )
-      {
-        if ( i < row )
-        {
-          temp = saved[ i ];
-        }
-        else
-        {
-          temp = saved[ i + 1 ];
-        }
-
-        if ( temp > modelRow )
-        {
-          temp--;
-        }
-
-        indexes[ i ] = temp;
-      }
-   }
-
-   public void moveRow( int from, int to )
-   {
-     E o = getRow( from );
-     if ( from < to )
-       to++;
-     if ( to >= indexes.length )
-       addRow( o );
-     else
-       insertRow( to, o );
-     if ( from > to )
-       from++;
-     removeRow( from );
-   }
 }

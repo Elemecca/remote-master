@@ -17,7 +17,7 @@ public class HexEditor
     super( new JTextField());
 //    setClickCountToStart( 1 );
     this.defaultHex = defaultHex;
-    (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
+//    (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
 
   public Component getTableCellEditorComponent( JTable table, Object value,

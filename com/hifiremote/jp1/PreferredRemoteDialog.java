@@ -13,7 +13,19 @@ public class PreferredRemoteDialog
   public PreferredRemoteDialog( JFrame owner, Remote[] preferredRemotes )
   {
     super( owner, "Preferred Remotes", true );
-    setLocationRelativeTo( owner );
+    createGui( owner, preferredRemotes );
+  }
+    
+  public PreferredRemoteDialog( JDialog owner, Remote[] preferredRemotes )
+  {
+    super( owner, "Preferred Remotes", true );
+    createGui( owner, preferredRemotes );
+  }
+    
+  private void createGui( Component owner, Remote[] preferredRemotes )
+  {
+    if ( owner != null )
+      setLocationRelativeTo( owner );
 
     Remote[] remotes = RemoteManager.getRemoteManager().getRemotes();    
 

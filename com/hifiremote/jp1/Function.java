@@ -20,6 +20,14 @@ public class Function
   {
     this.name = name;
   }
+  
+  public Function( Function base )
+  {
+    name = base.name;
+    if ( base.hex != null )
+      hex = new Hex( base.hex );
+    notes = base.notes;
+  }
 
   public boolean isExternal(){ return false; }
 
@@ -146,7 +154,7 @@ public class Function
     return ( !users.isEmpty() );
   }
 
-  public Enumeration getUsers()
+  public Enumeration< User > getUsers()
   {
     return users.elements();
   }

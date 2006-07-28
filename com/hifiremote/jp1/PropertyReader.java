@@ -10,21 +10,19 @@ public class PropertyReader
     this.reader = reader;
   }
 
-  public Property nextProperty( Property property )
+  public Property nextProperty()
   {
-    String line = "";
     try
     {
-      while (( line.length() == 0 ) ||
-          ( line.charAt( 0 ) == '#' ) ||
-          ( line.charAt( 0 ) == '!' ))
+      String line;
+      do 
       {
         line = reader.readLine();
         if ( line == null )
           return null;
         line = line.trim();
-      }
-       
+      } while (( line.length() != 0 ) && (( line.charAt( 0 ) == '#' ) || ( line.charAt( 0 ) == '!' )));
+      
       int pos = line.indexOf( '=' );
       if ( pos == -1 )
         pos = line.indexOf( ':' );
@@ -77,6 +75,31 @@ public class PropertyReader
     }
     return buff.toString();
   }
+  
+  public IniSection nextSection()
+  {
+    Property p = nextProperty();
+    // skip empty lines
+    while (( p != null ) && ( p.name.length() == 0 ))
+      p = nextProperty();
+    
+    if ( p == null )
+      return null;
+    
+    IniSection section = new IniSection();
+    if ( p.name.charAt( 0 ) == '[' )
+    {
+      section.setName( p.name.substring( 1, p.name.length() - 1 ));
+      p = nextProperty();
+    }
+    while (( p != null ) && ( p.name.length() != 0 ))
+    {
+      section.setProperty( p.name, p.value );
+      p = nextProperty();
+    }
+    return section;
+  }
 
   private BufferedReader reader = null;
+  private Property property = new Property();
 }

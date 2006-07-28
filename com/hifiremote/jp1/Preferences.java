@@ -9,69 +9,15 @@ import javax.swing.plaf.FontUIResource;
 
 public class Preferences
 {
-  public Preferences( File home, File file )
+  public Preferences( PropertyFile file )
   {
-    this.home = home;
     this.file = file;
   }
 
   public void load( JMenu recentFileMenu )
-    throws Exception
   {
-    System.err.println( "Preferences.load(), file='" + file + "'" );
-    Properties props = new Properties();
-
-    if ( file.canRead())
-    {
-      FileInputStream in = new FileInputStream( file );
-      props.load( in );
-      in.close();
-    }
-
-    String temp = props.getProperty( "RDFPath" );
-    System.err.println( "Got RDFPath as '" + temp + "' from file" ); 
-    if ( temp != null )
-      rdfPath = new File( temp );
-    else
-    {
-      rdfPath = new File( home, "rdf" );
-      System.err.println( "Using default: '" + rdfPath + "'" );
-    }
-    System.err.println( "Searching for existing directory." );
-    System.err.println( "Checking '" + rdfPath + "'" );
-    while ( !rdfPath.exists() && !rdfPath.isDirectory())
-    {
-      rdfPath = rdfPath.getParentFile();
-      System.err.println( "Checking '" + rdfPath + "'" );
-    }
-    System.err.println( "Using '" + rdfPath + "'" );
-
-    temp = props.getProperty( "UpgradePath" );
-    if ( temp == null )
-      temp = props.getProperty( "KMPath" );
-    if ( temp != null )
-      upgradePath = new File( temp );
-    else
-      upgradePath = new File( home, upgradeDirectory );
-    while (( upgradePath != null ) && !upgradePath.exists() && !upgradePath.isDirectory())
-      upgradePath = upgradePath.getParentFile();
-
-    if (  upgradePath == null )
-      upgradePath = new File( home, upgradeDirectory );
-
-    temp = props.getProperty( "BinaryUpgradePath" );
-    if ( temp != null )
-      binaryUpgradePath = new File( temp );
-    else
-      binaryUpgradePath = new File( home, upgradeDirectory );
-    while (( binaryUpgradePath != null ) && !binaryUpgradePath.exists() && !binaryUpgradePath.isDirectory())
-      binaryUpgradePath = binaryUpgradePath.getParentFile();
-
-    if (  binaryUpgradePath == null )
-      binaryUpgradePath = new File( home, upgradeDirectory );
-
     String defaultLookAndFeel = UIManager.getSystemLookAndFeelClassName();
-    temp = props.getProperty( "LookAndFeel", defaultLookAndFeel );
+    String temp = file.getProperty( "LookAndFeel", defaultLookAndFeel );
     try
     {
       UIManager.setLookAndFeel( temp );
@@ -90,17 +36,18 @@ public class Preferences
       System.err.println( "Exception thrown when setting look and feel to " + temp );
     }
 
+    /*
     lastRemoteName = props.getProperty( "Remote.name" );
     lastRemoteSignature = props.getProperty( "Remote.signature" );
-
-    temp = props.getProperty( "FontSizeAdjustment" );
+    */
+    temp = file.getProperty( "FontSizeAdjustment" );
     if ( temp != null )
     {
       fontSizeAdjustment = Float.parseFloat( temp );
       adjustFontSize( fontSizeAdjustment );
     }
 
-    temp = props.getProperty( "PromptToSave", promptStrings[ 0 ] );
+    temp = file.getProperty( "PromptToSave", promptStrings[ 0 ] );
     for ( int i = 0; i < promptStrings.length; i++ )
       if ( promptStrings[ i ].equals( temp ))
         promptFlag = i;
@@ -111,14 +58,14 @@ public class Preferences
 
     for ( int i = 0; true; i++ )
     {
-      temp = props.getProperty( "PreferredRemotes." + i );
+      temp = file.getProperty( "PreferredRemotes." + i );
       if ( temp == null )
         break;
       System.err.println( "Preferred remote name " + temp );
       preferredRemoteNames.add( temp );
     }
 
-    temp = props.getProperty( "ShowRemotes", "All" );
+    temp = file.getProperty( "ShowRemotes", "All" );
     if ( temp.equals( "All" ))
       useAllRemotes.setSelected( true );
     else
@@ -129,30 +76,10 @@ public class Preferences
       useAllRemotes.setSelected( true );
       usePreferredRemotes.setEnabled( false );
     }
-    for ( int i = 0; i < 10; i++ )
-    {
-      temp = props.getProperty( "RecentFiles." + i );
-      if ( temp == null )
-        break;
-      File f = new File( temp );
-      if ( f.canRead() )
-        recentFileMenu.add( new FileAction( f ));
-    }
-    if ( recentFileMenu.getItemCount() > 0 )
-      recentFileMenu.setEnabled( true );
+    
+    file.updateFileMenu( recentFileMenu, "RecentUpgrades." );
 
-    temp = props.getProperty( "Bounds" );
-    if ( temp != null )
-    {
-      bounds = new Rectangle();
-      StringTokenizer st = new StringTokenizer( temp, "," );
-      bounds.x = Integer.parseInt( st.nextToken());
-      bounds.y = Integer.parseInt( st.nextToken());
-      bounds.width = Integer.parseInt( st.nextToken());
-      bounds.height = Integer.parseInt( st.nextToken());
-    }
-
-    temp = props.getProperty( "CustomNames" );
+    temp = file.getProperty( "CustomNames" );
     if ( temp != null )
     {
       StringTokenizer st = new StringTokenizer( temp, "|" );
@@ -162,7 +89,7 @@ public class Preferences
         customNames[ i ] = st.nextToken();
     }
 
-    temp = props.getProperty( "UseCustomNames" );
+    temp = file.getProperty( "UseCustomNames" );
     useCustomNames.setSelected( temp != null );
   }
 
@@ -359,7 +286,6 @@ public class Preferences
   }
 
   public Remote[] getPreferredRemotes()
-//    throws Exception
   {
     if ( preferredRemotes.length == 0 )
     {
@@ -382,45 +308,43 @@ public class Preferences
   public void save( JMenu recentFileMenu )
     throws Exception
   {
-    Properties props = new Properties();
-    props.setProperty( "RDFPath", rdfPath.getAbsolutePath());
-    props.setProperty( "UpgradePath", upgradePath.getAbsolutePath());
-    props.setProperty( "BinaryUpgradePath", binaryUpgradePath.getAbsolutePath());
-    props.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
+    file.setProperty( "LookAndFeel", UIManager.getLookAndFeel().getClass().getName());
     if ( fontSizeAdjustment != 0f )
-      props.setProperty( "FontSizeAdjustment", Float.toString( fontSizeAdjustment ));
+      file.setProperty( "FontSizeAdjustment", Float.toString( fontSizeAdjustment ));
     Remote remote = KeyMapMaster.getRemote();
-    props.setProperty( "Remote.name", remote.getName());
-    props.setProperty( "Remote.signature", remote.getSignature());
-    props.setProperty( "PromptToSave", promptStrings[ promptFlag ]);
+    file.setProperty( "Remote.name", remote.getName());
+    file.setProperty( "Remote.signature", remote.getSignature());
+    file.setProperty( "PromptToSave", promptStrings[ promptFlag ]);
     if ( useAllRemotes.isSelected())
-      props.setProperty( "ShowRemotes", "All" );
+      file.setProperty( "ShowRemotes", "All" );
     else
-      props.setProperty( "ShowRemotes", "Preferred" );
+      file.setProperty( "ShowRemotes", "Preferred" );
 
     for ( int i = 0; i < recentFileMenu.getItemCount(); i++ )
     {
       JMenuItem item = recentFileMenu.getItem( i );
       FileAction action = ( FileAction )item.getAction();
       File f = action.getFile();
-      props.setProperty( "RecentFiles." + i, f.getAbsolutePath());
+      file.setProperty( "RecentUpgrades." + i, f.getAbsolutePath());
     }
 
     for ( int i = 0; i < preferredRemotes.length; i++ )
     {
       Remote r = preferredRemotes[ i ];
-      props.setProperty( "PreferredRemotes." + i, r.getName());
+      file.setProperty( "PreferredRemotes." + i, r.getName());
     }
 
     KeyMapMaster km = KeyMapMaster.getKeyMapMaster();
+    /*
     int state = km.getExtendedState();
     if ( state != Frame.NORMAL )
       km.setExtendedState( Frame.NORMAL );
+    */
     Rectangle bounds = km.getBounds();
-    props.setProperty( "Bounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
+    setBounds( km.getBounds());
 
     if ( useCustomNames.isSelected())
-      props.setProperty( "UseCustomNames", "yes" );
+      file.setProperty( "UseCustomNames", "yes" );
 
     if ( customNames != null )
     {
@@ -431,53 +355,76 @@ public class Preferences
           value.append( '|' );
         value.append( customNames[ i ]);
       }
-      props.setProperty( "CustomNames", value.toString() );
+      file.setProperty( "CustomNames", value.toString() );
     }
-
-    FileOutputStream out = new FileOutputStream( file );
-    props.store( out, null );
-    out.flush();
-    out.close();
+    file.save();
   }
 
   public File getRDFPath()
   {
-    return rdfPath;
+    return file.getFileProperty( "RDFPath" );
   }
-
-  public void setRDFPath( File path )
-  {
-    rdfPath = path;
-  }
-
+  
   public File getUpgradePath()
   {
-    return upgradePath;
+    File path = file.getFileProperty( "UpgradePath" );
+    if ( path != null )
+      return path;
+    path = file.getFileProperty( "KMPath" );
+    if ( path != null )
+    {
+      file.remove( "KMPath" );
+      setUpgradePath( path );
+      return path;
+    }
+        
+    path = new File( file.getFile().getParentFile(), upgradeDirectory );
+    setUpgradePath( path );
+    return path;
   }
 
   public void setUpgradePath( File path )
   {
-    upgradePath = path;
+    file.setProperty( "UpgradePath", path );
   }
 
   public File getBinaryUpgradePath()
   {
-    return binaryUpgradePath;
+    return file.getFileProperty( "BinaryUpgradePath", getUpgradePath());
   }
 
   public void setBinaryUpgradePath( File path )
   {
-    binaryUpgradePath = path;
+    file.setProperty( "BinaryUpgradePath", path );
   }
 
   public Rectangle getBounds()
   {
+    String temp = file.getProperty( "KMBounds" );
+    if ( temp == null )
+      return null;
+    Rectangle bounds = new Rectangle();
+    StringTokenizer st = new StringTokenizer( temp, "," );
+    bounds.x = Integer.parseInt( st.nextToken());
+    bounds.y = Integer.parseInt( st.nextToken());
+    bounds.width = Integer.parseInt( st.nextToken());
+    bounds.height = Integer.parseInt( st.nextToken());
     return bounds;
+  }
+  
+  public void setBounds( Rectangle bounds )
+  {
+    file.setProperty( "KMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
   }
 
   public String getLastRemoteName()
   {
-    return lastRemoteName;
+    return file.getProperty( "Remote.name" );
+  }
+  
+  public void setLastRemoteName( String name )
+  {
+    file.setProperty( "Remote.name", name );
   }
 
   public int getPromptFlag()
@@ -537,16 +484,10 @@ public class Preferences
     }
   }
 
-  private File home;
-  private File file;
-  private File rdfPath;
-  private File upgradePath = null;
-  private File binaryUpgradePath = null;
+  private PropertyFile file;
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
   private JRadioButtonMenuItem[] promptButtons = null;
   private float fontSizeAdjustment = 0f;
-  private String lastRemoteName = null;
-  private String lastRemoteSignature = null;
   private Vector< String > preferredRemoteNames = new Vector< String >();
   private static String[] customNames = null;
 

@@ -13,7 +13,7 @@ import java.awt.datatransfer.*;
 public class JP1Table
   extends JTableX
 {
-  public JP1Table( JP1TableModel model )
+  public JP1Table( TableModel model )
   {
     super( model );
     setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
@@ -24,14 +24,10 @@ public class JP1Table
     tableHeader.setReorderingAllowed( false );
     DefaultCellEditor e = ( DefaultCellEditor )getDefaultEditor( String.class );
     new TextPopupMenu(( JTextComponent )e.getComponent());
-
-    initColumns();
   }
-    
-  protected void initColumns()
-  {
-    JP1TableModel model = ( JP1TableModel )dataModel;
 
+  public void initColumns( JP1TableModel model )
+  {
     TableColumnModel columnModel = getColumnModel();
     TableColumn column;
 
@@ -39,10 +35,7 @@ public class JP1Table
     for ( int i = 0; i < cols; i++ )
     {
       boolean isFixed = model.isColumnWidthFixed( i );
-      setColumnWidth( i, 
-                      model.getColumnPrototypeName( i ),
-                      model.isColumnWidthFixed( i ),
-                      0 );
+      setColumnWidth( i, model.getColumnPrototypeName( i ), model.isColumnWidthFixed( i ), 0 );
       column = columnModel.getColumn( i );
 
       TableCellEditor editor = model.getColumnEditor( i );
@@ -55,19 +48,9 @@ public class JP1Table
       
       if ( model.getColumnName( i ).startsWith( "<html>" ))
       {
-        column.setHeaderRenderer( tableHeader.getDefaultRenderer());
+        column.setHeaderRenderer( getTableHeader().getDefaultRenderer());
       }
     }
     doLayout();
-  }
-
-  public void setFont( Font aFont )
-  {
-    super.setFont( aFont );
-    if ( aFont == null )
-      return;
-    setRowHeight( aFont.getSize() + 2 );
-    // if ( model != null )
-    initColumns();
   }
 }
