@@ -29,7 +29,7 @@ public class KeyMovePanel
   
   protected KeyMove createRowObject( KeyMove baseKeyMove )
   {
-    return KeyMoveDialog.showDialog( this, baseKeyMove, (( KeyMoveTableModel )model ).getRemoteConfig());
+    return KeyMoveDialog.showDialog(( JFrame )SwingUtilities.getRoot( this ), baseKeyMove, (( KeyMoveTableModel )model ).getRemoteConfig());
   }
 }
   

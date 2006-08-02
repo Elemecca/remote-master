@@ -13,7 +13,7 @@ public class RemoteMaster
  extends JP1Frame
  implements ActionListener, PropertyChangeListener
 {
-  private static RemoteMaster me = null;
+  private static JFrame frame = null;
   public static final String version = "v0.06";
   private File dir = null;
   public File file = null;
@@ -55,7 +55,6 @@ public class RemoteMaster
     throws Exception
   {
     super( "Java IR" );
-    me = this;
     preferences = prefs;
 
     dir = preferences.getFileProperty( "IRPath", workDir );
@@ -178,12 +177,9 @@ public class RemoteMaster
     setVisible( true );
   }
 
-  public static RemoteMaster getRemoteMaster( Component c )
+  public static JFrame getFrame()
   {
-    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, c );
-    if ( rm != null )
-      return rm;
-    return me;
+    return frame;
   }
 
   public PropertyFile getPreferences(){ return preferences; }
@@ -662,11 +658,13 @@ public class RemoteMaster
         RemoteMaster rm = new RemoteMaster( workDir, properties );
         if ( fileToOpen != null )
           rm.openFile( fileToOpen );
+        frame = rm;
       }
       else
       {
         KeyMapMaster km = new KeyMapMaster( properties );
         km.loadUpgrade( fileToOpen );
+        frame = km;
       }
     }
     catch ( Exception e )

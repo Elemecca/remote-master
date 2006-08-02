@@ -60,6 +60,8 @@ public class DeviceUpgradeTableModel
 
   public boolean isCellEditable( int row, int col )
   {
+    if ( col == 3 )
+      return true;
     return false;
   }
 
@@ -78,6 +80,13 @@ public class DeviceUpgradeTableModel
         return device.getDescription();
     }
     return null;
+  }
+  
+  public void setValueAt( Object value, int row, int col )
+  {
+    DeviceUpgrade device = getRow( row );
+    if ( col == 3 )
+      device.setDescription(( String )value );
   }
   
   public TableCellRenderer getColumnRenderer( int col )

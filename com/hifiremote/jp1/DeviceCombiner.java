@@ -56,27 +56,14 @@ public class DeviceCombiner
         p.setDeviceParms( values );
         values = p.getDeviceParmValues();
       }
-      devices.add( new CombinerDevice( p, values, notes ));
+      add( new CombinerDevice( p, values, notes ));
     }
   }
-
-//  public void addProtocol( Protocol p, Hex fixedData )
-//  {
-//    Value[] values = p.getDeviceParmValues();
-//    if ( p.deviceTranslators != null )
-//    {
-//      for ( int i = 0; i < p.deviceTranslators.length; i++ )
-//      {
-//        p.deviceTranslators[ i ].out( fixedData, values, p.devParms );
-//      }
-//    }
-//    CombinerDevice device = new CombinerDevice( p, values );
-//    devices.add( device );
-//  }
 
   public void add( CombinerDevice device )
   {
     devices.add( device );
+    System.err.println( "DeviceCombiner.add(): device count=" + devices.size());
   }
 
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )

@@ -19,6 +19,9 @@ public class DeviceCombinerPanel
     setToolTipText( "Combine multiple devices into a single upgrade" );
     setLayout( new BorderLayout());
 
+    System.err.println( "DeviceCombinerPanel ctor: deviceCount = " + 
+                        (( DeviceCombiner )deviceUpgrade.getProtocol()).getDevices().size());
+    
     model = new AbstractTableModel()
     {
       public String getColumnName( int col )
@@ -42,7 +45,9 @@ public class DeviceCombinerPanel
       public int getRowCount()
       {
         DeviceCombiner deviceCombiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-        return deviceCombiner.getDevices().size();
+        int rows = deviceCombiner.getDevices().size();
+        System.err.println( "DeviceCombinerPanel.TableModel.getRowCount: rows=" + rows );
+        return rows;
       }
 
       public Object getValueAt( int row, int col )
@@ -104,7 +109,7 @@ public class DeviceCombinerPanel
         if ( source == addButton )
         {
           CombinerDeviceDialog d = 
-            new CombinerDeviceDialog( KeyMapMaster.getKeyMapMaster(),
+            new CombinerDeviceDialog( RemoteMaster.getFrame(),
                                       null, 
                                       deviceUpgrade.getRemote());
           d.setVisible( true );
@@ -232,7 +237,7 @@ public class DeviceCombinerPanel
       }
     };
 
-    JPanel panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+    JPanel panel = new JPanel();
 
     addButton = new JButton( "Add" );
     addButton.addActionListener( al );
@@ -261,7 +266,7 @@ public class DeviceCombinerPanel
     int row = table.getSelectedRow();
     CombinerDevice device = ( CombinerDevice )devices.elementAt( row );
     CombinerDeviceDialog d = 
-      new CombinerDeviceDialog( KeyMapMaster.getKeyMapMaster(),
+      new CombinerDeviceDialog( RemoteMaster.getFrame(),
                                 device, 
                                 deviceUpgrade.getRemote());
     d.setVisible( true );
@@ -272,18 +277,21 @@ public class DeviceCombinerPanel
     }
   }
 
+  protected void setColumnWidth( JTable table, int col, String text )
+  {
+    JLabel l = ( JLabel )
+      table.getTableHeader().getDefaultRenderer().getTableCellRendererComponent( table, text, false, false, 0, col );
+    int width = l.getPreferredSize().width + 2;
+    TableColumn column = table.getColumnModel().getColumn( col );
+    column.setMinWidth( width / 2 );
+    column.setPreferredWidth( width );
+    column.setMaxWidth(( width * 3 ) / 2 );
+  }
+  
   protected void initColumns( JTable table )
   {
-
-    TableColumnModel columnModel = table.getColumnModel();
-
-    JLabel l = new JLabel( model.getColumnName( 0 ));
-    l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
-    columnModel.getColumn( 0 ).setMaxWidth( l.getPreferredSize().width );
-
-    l.setText( model.getColumnName( 2 ));
-    columnModel.getColumn( 2 ).setMaxWidth( l.getPreferredSize().width );
-
+    setColumnWidth( table, 0, "16" );
+    setColumnWidth( table, 2, "FF FF" );
     table.doLayout();
   }
 
@@ -298,13 +306,16 @@ public class DeviceCombinerPanel
     editButton.setEnabled( flag );
     if ( flag )
     {
-      Vector functions = deviceUpgrade.getFunctions();
-      for ( Enumeration en = functions.elements(); en.hasMoreElements(); )
+      for ( Function f : deviceUpgrade.getFunctions())
       {
-        Function f = ( Function )en.nextElement();
         if ( f.getHex() == null )
           continue;
-        int temp = (( Choice )combiner.getValueAt( 0, f.getHex())).getIndex();
+        int temp = 0;
+        Object val = combiner.getValueAt( 0, f.getHex());
+        if ( val instanceof Choice )
+          temp = (( Choice )val ).getIndex();
+        else if ( val instanceof Number )
+          temp = (( Number )val ).intValue();
         if ( temp == row )
         {
           flag = false;
@@ -344,8 +355,8 @@ public class DeviceCombinerPanel
     }
   }
 
-  private static String[] titles = { "#",           "Protocol",   "  PID  ", "Fixed Data", "Notes" };
-  private static Class[] classes = { Integer.class, String.class, Hex.class,  Hex.class,   String.class };
+  private static String[] titles = { "#",           "Protocol",   "PID",      "Fixed Data", "Notes" };
+  private static Class[] classes = { Integer.class, String.class, Hex.class,  Hex.class,    String.class };
 
   private AbstractTableModel model = null;
   private JTableX table = null;

@@ -199,14 +199,8 @@ public class SetupPanel
       Protocol oldProtocol = deviceUpgrade.getProtocol();
       if ( newProtocol != oldProtocol )
       {
-        KMPanel panel = oldProtocol.getPanel( deviceUpgrade );
-        if ( panel != null )
-          KeyMapMaster.getKeyMapMaster().removePanel( panel );
         protocolID.setText( newProtocol.getID( deviceUpgrade.getRemote()).toString());
         deviceUpgrade.setProtocol( newProtocol );
-        panel = newProtocol.getPanel( deviceUpgrade );
-        if ( panel != null )
-          KeyMapMaster.getKeyMapMaster().addPanel( panel, 1 );
         updateParameters();
         fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues()).toString());
         revalidate();

@@ -89,8 +89,6 @@ public abstract class JP1TableModel < E >
   public void moveRow( int from, int to )
   {
     E o = data.remove( from );
-    if ( to > from )
-      to--;
     data.insertElementAt( o, to );
     propertyChangeSupport.firePropertyChange( "order", null, null );
     fireTableRowsUpdated( from, to );

@@ -12,8 +12,13 @@ public class DeviceUpgrade
 {
   public DeviceUpgrade()
   {
+    this(( String[] )null );
+  }
+  
+  public DeviceUpgrade( String[] defaultNames )
+  {
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
-    initFunctions();
+    initFunctions( defaultNames );
   }
   
   public DeviceUpgrade( DeviceUpgrade base )
@@ -24,6 +29,7 @@ public class DeviceUpgrade
     remote = base.remote;
     notes = base.notes;
     protocol = base.protocol;
+    defaultNames = base.defaultNames;
     
     // copy the device parameter values
     protocol.setDeviceParms( base.parmValues );
@@ -98,19 +104,19 @@ public class DeviceUpgrade
     file = null;
 
     functions.clear();
-    initFunctions();
+    initFunctions( defaultNames );
 
     extFunctions.clear();
     customCode = null;
   }
 
-  private void initFunctions()
+  private void initFunctions( String[] names )
   {
-    String[] names = KeyMapMaster.getCustomNames();
-    if ( names == null )
-      names = defaultFunctionNames;
-    for ( int i = 0; i < names.length; i++ )
-      functions.add( new Function( names[ i ]));
+    defaultNames = names;
+    if ( defaultNames == null )
+      defaultNames = defaultFunctionNames;
+    for ( int i = 0; i < defaultNames.length; i++ )
+      functions.add( new Function( defaultNames[ i ]));
   }
 
   public void setDescription( String text )
@@ -209,10 +215,15 @@ public class DeviceUpgrade
             protocol = newp;
             customCode = null;
           }
+          if (( p instanceof DeviceCombiner ) && ( newp instanceof DeviceCombiner ))
+          {
+            for ( CombinerDevice dev : (( DeviceCombiner )p ).getDevices())
+              (( DeviceCombiner )newp ).add( dev );
+          }
         }
       }
       else
-        JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                        "The selected protocol " + p.getDiagnosticName() +
                                        "\nis not compatible with the selected remote.\n" +
                                        "This upgrade will NOT function correctly.\n" +
@@ -280,7 +291,7 @@ public class DeviceUpgrade
         table.setPreferredScrollableViewportSize( d );
         container.add( new JScrollPane( table ), BorderLayout.CENTER );
         frame.pack();
-        frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
+        frame.setLocationRelativeTo( RemoteMaster.getFrame());
         frame.setVisible( true );
       }
       assignments = newAssignments;
@@ -323,6 +334,7 @@ public class DeviceUpgrade
 
   public void setProtocol( Protocol newProtocol )
   {
+    Protocol oldProtocol = protocol;
     // Convert device parameters to the new protocol
     if ( protocol != null )
     {
@@ -379,6 +391,7 @@ public class DeviceUpgrade
     protocol = newProtocol;
     customCode = null;
     parmValues = protocol.getDeviceParmValues();
+    propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, protocol );
   }
 
   public Protocol getProtocol()
@@ -1012,7 +1025,7 @@ public class DeviceUpgrade
     str = props.getProperty( "Remote.name" );
     if ( str == null )
     {
-      JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                      "The upgrade you are trying to import is not valid!  It does not contain a value for Remote.name",
                                      "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
@@ -1042,11 +1055,12 @@ public class DeviceUpgrade
     }
     else
     {
-      protocol = pm.findNearestProtocol( name, pid, variantName );
+//      protocol = pm.findNearestProtocol( name, pid, variantName );
+      protocol = pm.findProtocolForRemote( remote, pid );
 
       if ( protocol == null )
       {
-        JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                        "No protocol found with name=\"" + name +
                                        "\", ID=" + pid.toString() +
                                        ", and variantName=\"" + variantName + "\"",
@@ -1198,7 +1212,7 @@ public class DeviceUpgrade
     String token = line.substring( 0, 5 );
     if ( !token.equals( "Name:" ))
     {
-      JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                      "The upgrade you are trying to import is not valid!",
                                      "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
@@ -1259,7 +1273,7 @@ public class DeviceUpgrade
       str + ".  Please select one of the supported device types below to use instead.\n";
       while ( rc == null )
       {
-        rc = ( String )JOptionPane.showInputDialog( KeyMapMaster.getKeyMapMaster(),
+        rc = ( String )JOptionPane.showInputDialog( RemoteMaster.getFrame(),
                                                     msg,
                                                     "Unsupported Device Type",
                                                     JOptionPane.ERROR_MESSAGE,
@@ -1353,7 +1367,7 @@ public class DeviceUpgrade
 
         if ( p == null )
         {
-          JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
+          JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                          "No protocol found with name=\"" + protocolName +
                                          "\" for remote \"" + remote.getName() + "\".",
                                          "Import Failure", JOptionPane.ERROR_MESSAGE );
@@ -1475,7 +1489,7 @@ public class DeviceUpgrade
             devName + ".\n\nPlease select one of the supported device types below to use instead.";
             while ( match == null )
             {
-              match = ( String )JOptionPane.showInputDialog( KeyMapMaster.getKeyMapMaster(),
+              match = ( String )JOptionPane.showInputDialog( RemoteMaster.getFrame(),
                                                              msg,
                                                              "Unsupported Device Type",
                                                              JOptionPane.ERROR_MESSAGE,
@@ -1767,7 +1781,7 @@ public class DeviceUpgrade
 
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       frame.pack();
-      frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
+      frame.setLocationRelativeTo( RemoteMaster.getFrame());
       frame.setVisible( true );
     }
     Button[] buttons = remote.getUpgradeButtons();
@@ -1840,8 +1854,6 @@ public class DeviceUpgrade
     if (( protocolLimit == null ) && ( upgradeLimit == null ) && ( combinedLimit == null ))
       return true;
 
-    KeyMapMaster km = KeyMapMaster.getKeyMapMaster();
-
     int protocolLength = 0;
     Hex protocolCode = getCode();
     if ( protocolCode != null )
@@ -1849,7 +1861,7 @@ public class DeviceUpgrade
 
     if (( protocolLimit != null ) && ( protocolLength > protocolLimit.intValue()))
     {
-      JOptionPane.showMessageDialog( km, 
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), 
                                      "The protocol upgrade exceeds the maximum allowed by the remote.",
                                      "Protocol Upgrade Limit Exceeded",
                                      JOptionPane.ERROR_MESSAGE );      
@@ -1859,7 +1871,7 @@ public class DeviceUpgrade
     int upgradeLength = getUpgradeLength();
     if (( upgradeLimit != null ) && ( upgradeLength > upgradeLimit.intValue()))
     {
-      JOptionPane.showMessageDialog( km, 
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                      "The device upgrade exceeds the maximum allowed by the remote.",
                                      "Device Upgrade Limit Exceeded",
                                      JOptionPane.ERROR_MESSAGE );      
@@ -1869,7 +1881,7 @@ public class DeviceUpgrade
     int combinedLength = upgradeLength + protocolLength;
     if (( combinedLimit != null ) && ( combinedLength > combinedLimit.intValue()))
     {
-      JOptionPane.showMessageDialog( km, 
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), 
                                      "The combined upgrade exceeds the maximum allowed by the remote.",
                                      "Combined Upgrade Limit Exceeded",
                                      JOptionPane.ERROR_MESSAGE );      
@@ -1918,10 +1930,19 @@ public class DeviceUpgrade
   {
     propertyChangeSupport.addPropertyChangeListener( listener );
   }
+  public void addPropertyChangeListener( String propertyName, PropertyChangeListener listener )
+  {
+    propertyChangeSupport.addPropertyChangeListener( propertyName, listener );
+  }
   public void removePropertyChangeListener( PropertyChangeListener listener )
   {
     propertyChangeSupport.removePropertyChangeListener( listener );
   }
+  public void removePropertyChangeListener( String propertyName, PropertyChangeListener listener )
+  {
+    propertyChangeSupport.removePropertyChangeListener( propertyName, listener );
+  }
+
   private ButtonAssignments assignments = new ButtonAssignments();
   public void setFunction( Button b, Function f, int state )
   {
@@ -1938,6 +1959,7 @@ public class DeviceUpgrade
     "DAT", "Home Auto", "Misc Audio", "Phono", "Video Acc", "Amp", "PVR", "OEM Mode"
   };
 
+  private static String[] defaultNames = null;
   private static final String[] defaultFunctionNames =
   {
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",

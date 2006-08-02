@@ -30,7 +30,19 @@ public abstract class RMTablePanel< E >
     // sorter.addMouseListenerToHeaderInTable( table );
     table.getSelectionModel().addListSelectionListener( this );
     table.getTableHeader().setToolTipText( "Click to sort in ascending order, or shift-click to sort in descending order." );
-
+    table.addMouseListener( new MouseAdapter()
+    {
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( e.getClickCount() != 2 )
+          return;
+        int row = table.getSelectedRow();
+        if ( row == -1 )
+          return;
+        if ( !table.isCellEditable( row, table.columnAtPoint( e.getPoint())))
+          editRowObject( row );
+      }
+    });
     TransferHandler th = new TransferHandler()
     {
       protected Transferable createTransferable( JComponent c )
@@ -443,25 +455,21 @@ public abstract class RMTablePanel< E >
     }
     else if (( source == upButton ) || ( source == downButton ))
     {
-      int start = 0;
-      int end = 0;
       int sel = 0;
       int from = row;
       int to;
 
       if ( source == upButton )
       {
-        start = row - 1;
-        end = row;
-        to = start;
-        sel = start;
+        from = row - 1;
+        to = row;
+        sel = from;
       }
-      else
+      else // down button
       {
-        start = row;
-        end = row + 1;
-        to = end;
-        sel = end;
+        from = row;
+        to = row + 1;
+        sel = to;
       }
       model.moveRow( sorter.modelIndex( from ), sorter.modelIndex( to ));
       if ( select )

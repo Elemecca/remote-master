@@ -1,23 +1,24 @@
 package com.hifiremote.jp1;
 
 import info.clearthought.layout.TableLayout;
-import javax.swing.*;
-import javax.swing.filechooser.*;
-import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.io.*;
 import java.awt.datatransfer.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.filechooser.*;
+import javax.swing.plaf.FontUIResource;
 
 public class KeyMapMaster
  extends JFrame
- implements ActionListener, ChangeListener, DocumentListener
+ implements ActionListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.62";
+  public static final String version = "v1.63";
   private Preferences preferences = null;
-  
+
   private DeviceEditorPanel editorPanel = null;
   private JMenuItem newItem = null;
   private JMenuItem openItem = null;
@@ -38,20 +39,8 @@ public class KeyMapMaster
   private JButton okButton = null;
   private JButton cancelButton = null;
   private JLabel messageLabel = null;
-  private JTextField description = null;
-  private JComboBox remoteList = null;
-  private JComboBox deviceTypeList = null;
   private Remote[] remotes = new Remote[ 0 ];
   private ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
-  private JTabbedPane tabbedPane = null;
-  private SetupPanel setupPanel = null;
-  private FunctionPanel functionPanel = null;
-  private ExternalFunctionPanel externalFunctionPanel = null;
-  private ButtonPanel buttonPanel = null;
-  private LayoutPanel layoutPanel = null;
-  private OutputPanel outputPanel = null;
-  private KeyMapPanel keyMapPanel = null;
-  private ProgressMonitor progressMonitor = null;
   private DeviceUpgrade deviceUpgrade = null;
   private static File homeDirectory = null;
   private static String upgradeExtension = ".rmdu";
@@ -75,7 +64,7 @@ public class KeyMapMaster
         {
           if ( !promptToSaveUpgrade( ACTION_EXIT ))
             return;
-          preferences.save( recentFileMenu );
+          savePreferences();
         }
         catch ( Exception e )
         {
@@ -88,11 +77,11 @@ public class KeyMapMaster
 
     createMenus();
 
-    preferences.load( recentFileMenu );
+    preferences.load( recentFileMenu, this );
 
     deviceUpgrade = new DeviceUpgrade();
     Remote r = null;
-    
+
     String name = preferences.getLastRemoteName();
     RemoteManager rm = RemoteManager.getRemoteManager();
     if ( name != null )
@@ -102,113 +91,15 @@ public class KeyMapMaster
     Protocol protocol = protocolManager.getProtocolsForRemote( r ).elementAt( 0 );
     deviceUpgrade.setProtocol( protocol );
     deviceUpgrade.setRemote( r );
-    
+
     editorPanel = new DeviceEditorPanel( deviceUpgrade, getRemotes());
     add( editorPanel, BorderLayout.CENTER );
     messageLabel = new JLabel( " " );
     messageLabel.setForeground( Color.RED );
     add( messageLabel, BorderLayout.SOUTH );
-/*
-    Container mainPanel = getContentPane();
-    tabbedPane = new JTabbedPane();
-    mainPanel.add( tabbedPane, BorderLayout.CENTER );
 
-    double b = 10;       // space around border/columns
-    double i = 5;        // space between rows
-    double f = TableLayout.FILL;
-    double p = TableLayout.PREFERRED;
-    double size[][] =
-    {
-      { b, p, b, f, b, p, b, p, b },                     // cols
-      { b, p, i, p, b }         // rows
-    };
-    TableLayout tl = new TableLayout( size );
-    JPanel panel = new JPanel( tl );
-
-    JLabel label = new JLabel( "Description:" );
-    panel.add( label, "1, 1" );
-    description = new JTextField( 50 );
-    description.setToolTipText( "Enter a short description for the upgrade being created." );
-    label.setLabelFor( description );
-    description.getDocument().addDocumentListener( this );
-    panel.add( description, "3, 1, 7, 1" );
-
-    new TextPopupMenu( description );
-
-    label = new JLabel( "Remote:" );
-    panel.add( label, "1, 3" );
-    remoteList = new JComboBox();
-    label.setLabelFor( remoteList );
-    remoteList.setMaximumRowCount( 16 );
-    remoteList.setPrototypeDisplayValue( "A Really Long Remote Control Name with an Extender and more" );
-    remoteList.setToolTipText( "Choose the remote for the upgrade being created." );
-    panel.add( remoteList, "3, 3" );
-
-    label = new JLabel( "Device Type:" );
-    panel.add( label, "5, 3" );
-//    String[] aliasNames = deviceUpgrade.getDeviceTypeAliasNames();
-    deviceTypeList = new JComboBox();
-    label.setLabelFor( deviceTypeList );
-    deviceTypeList.setPrototypeDisplayValue( "A Device Type" );
-    deviceTypeList.setToolTipText( "Choose the device type for the upgrade being created." );
-    panel.add( deviceTypeList, "7, 3" );
-
-    mainPanel.add( panel, BorderLayout.NORTH );
-
-    JPanel bottomPanel = new JPanel( new BorderLayout());
-    mainPanel.add( bottomPanel, BorderLayout.SOUTH );
-    
-    actionPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-    bottomPanel.add( actionPanel, BorderLayout.NORTH );
-    
-    okButton = new JButton( "OK" );
-    okButton.addActionListener( this );
-    actionPanel.add( okButton );
-    
-    cancelButton = new JButton( "Cancel" );
-    cancelButton.addActionListener( this );
-    actionPanel.add( cancelButton );
-
-    messageLabel = new JLabel( " " );
-    messageLabel.setForeground( Color.RED );
-    bottomPanel.add( messageLabel, BorderLayout.SOUTH );
-
-    setupPanel = new SetupPanel( deviceUpgrade );
-    setupPanel.setToolTipText( "Enter general information about the upgrade." );
-    currPanel = setupPanel;
-    addPanel( setupPanel );
-
-    functionPanel = new FunctionPanel( deviceUpgrade );
-    functionPanel.setToolTipText( "Define function names and parameters." );
-    addPanel( functionPanel );
-
-    externalFunctionPanel = new ExternalFunctionPanel( deviceUpgrade );
-    externalFunctionPanel.setToolTipText( "Define functions from other device codes." );
-    addPanel( externalFunctionPanel );
-
-    buttonPanel = new ButtonPanel( deviceUpgrade );
-    buttonPanel.setToolTipText( "Assign functions to buttons." );
-    addPanel( buttonPanel );
-
-    layoutPanel = new LayoutPanel( deviceUpgrade );
-    layoutPanel.setToolTipText( "Button Layout information." );
-    addPanel( layoutPanel );
-
-    keyMapPanel = new KeyMapPanel( deviceUpgrade );
-    keyMapPanel.setToolTipText( "Printable list of buttons and their assigned functions" );
-    addPanel( keyMapPanel );
-
-    outputPanel = new OutputPanel( deviceUpgrade );
-    outputPanel.setToolTipText( "The output to copy-n-paste into IR." );
-    addPanel( outputPanel );
-    setRemotes();
-    setRemote( deviceUpgrade.getRemote());
-
-    remoteList.addActionListener( this );
-    deviceTypeList.addActionListener( this );
-     
-    tabbedPane.addChangeListener( this );
-    */
+    fontSizeAdjustment = preferences.getFontSizeAdjustment();
+      adjustFontSize( fontSizeAdjustment );
 
     pack();
     Rectangle bounds = preferences.getBounds();
@@ -217,21 +108,7 @@ public class KeyMapMaster
     setVisible( true );
   }
 
-  public static KeyMapMaster getKeyMapMaster(){ return me;}
-
-  public void setRemoteList( Remote[] remotes )
-  {
-    Remote r = ( Remote )remoteList.getSelectedItem();
-    remoteList.removeActionListener( this );
-    remoteList.setModel( new DefaultComboBoxModel( remotes ));
-    remoteList.setSelectedItem( r );
-    remoteList.addActionListener( this );
-  }
-  
-  public void hideActionPanel()
-  {
-    actionPanel.setVisible( false );
-  }
+//  public static KeyMapMaster getKeyMapMaster(){ return me;}
 
   private void createMenus()
   {
@@ -288,7 +165,200 @@ public class KeyMapMaster
     menu.setMnemonic( KeyEvent.VK_O );
     menuBar.add( menu );
 
-    preferences.createMenuItems( menu );
+    JMenu submenu = new JMenu( "Look and Feel" );
+    submenu.setMnemonic( KeyEvent.VK_L );
+    menu.add( submenu );
+
+    ActionListener al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        try
+        {
+          JRadioButtonMenuItem item = ( JRadioButtonMenuItem )e.getSource();
+          String lf = item.getActionCommand();
+          UIManager.setLookAndFeel( lf );
+          SwingUtilities.updateComponentTreeUI( SwingUtilities.getAncestorOfClass( KeyMapMaster.class, item ));
+          preferences.setLookAndFeel( lf );
+        }
+        catch ( Exception x )
+        {}
+      }
+    };
+
+    String lookAndFeel = preferences.getLookAndFeel();
+    try
+    {
+      UIManager.setLookAndFeel( lookAndFeel );
+      SwingUtilities.updateComponentTreeUI( this );
+    }
+    catch ( Exception e )
+    {
+      System.err.println( "Exception thrown when setting look and feel to " + lookAndFeel );
+    }
+    ButtonGroup group = new ButtonGroup();
+    UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
+    lookAndFeelItems = new JRadioButtonMenuItem[ info.length ];
+    for ( int i = 0; i < info.length; i++ )
+    {
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName());
+      lookAndFeelItems[ i ] = item;
+      item.setMnemonic( item.getText().charAt( 0 ));
+      item.setActionCommand( info[ i ].getClassName());
+      group.add( item );
+      submenu.add( item );
+      if ( item.getActionCommand().equals( lookAndFeel ))
+        item.setSelected( true );
+      item.addActionListener( al );
+    }
+
+    submenu = new JMenu( "Font size" );
+    submenu.setMnemonic( KeyEvent.VK_F );
+    menu.add( submenu );
+
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        JMenuItem button = ( JMenuItem )e.getSource();
+        float adjustment = Float.parseFloat( button.getActionCommand());
+        adjustFontSize( adjustment );
+        fontSizeAdjustment += adjustment;
+      }
+    };
+
+    JMenuItem menuItem = new JMenuItem( "Increase" );
+    menuItem.setMnemonic( KeyEvent.VK_I );
+    submenu.add( menuItem );
+    menuItem.addActionListener( al );
+    menuItem.setActionCommand( "1f" );
+
+    menuItem = new JMenuItem( "Decrease" );
+    menuItem.setMnemonic( KeyEvent.VK_I );
+    submenu.add( menuItem );
+    menuItem.addActionListener( al );
+    menuItem.setActionCommand( "-1f" );
+
+    group = new ButtonGroup();
+    submenu = new JMenu( "Prompt to Save" );
+    submenu.setMnemonic( KeyEvent.VK_P );
+    menu.add( submenu );
+
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        Object source = e.getSource();
+        for ( int i = 0; i < promptButtons.length; i++ )
+          if ( promptButtons[ i ] == source )
+          {
+            promptFlag = i;
+            preferences.setPromptToSave( promptStrings[ i ]);
+            break;
+          }
+      }
+    };
+
+    String promptText = preferences.getPromptToSave();
+    promptButtons = new JRadioButtonMenuItem[ promptStrings.length ];
+    for ( int i = 0; i < promptStrings.length; i++ )
+    {
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem( promptStrings[ i ] );
+      item.setMnemonic( promptMnemonics[ i ]);
+      promptButtons[ i ] = item;
+      if ( promptStrings[ i ].equals( promptText ))
+      {
+        item.setSelected( true );
+        promptFlag = i;
+      }
+      item.addActionListener( al );
+      group.add( item );
+      submenu.add( item );
+    }
+
+    submenu = new JMenu( "Remotes" );
+    submenu.setMnemonic( KeyEvent.VK_R );
+    menu.add( submenu );
+
+    group = new ButtonGroup();
+    useAllRemotes = new JRadioButtonMenuItem( "All" );
+    useAllRemotes.setMnemonic( KeyEvent.VK_A );
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        Object source = e.getSource();
+        if ( source == useAllRemotes )
+          editorPanel.setRemotes( RemoteManager.getRemoteManager().getRemotes());
+        else if ( source == usePreferredRemotes )
+          editorPanel.setRemotes( preferences.getPreferredRemotes());
+        else
+          editPreferredRemotes();
+      }
+    };
+    useAllRemotes.setSelected( true );
+    group.add( useAllRemotes );
+    submenu.add( useAllRemotes );
+
+    usePreferredRemotes = new JRadioButtonMenuItem( "Preferred" );
+    usePreferredRemotes.setMnemonic( KeyEvent.VK_P );
+    group.add( usePreferredRemotes );
+    submenu.add( usePreferredRemotes );
+
+    String temp = preferences.getShowRemotes();
+    if ( temp.equals( "All" ))
+      useAllRemotes.setSelected( true );
+    else
+      usePreferredRemotes.setSelected( true );
+
+    if ( preferences.getPreferredRemotes().length == 0 )
+    {
+      useAllRemotes.setSelected( true );
+      usePreferredRemotes.setEnabled( false );
+    }
+    useAllRemotes.addActionListener( al );
+    usePreferredRemotes.addActionListener( al );
+
+    submenu.addSeparator();
+    JMenuItem item = new JMenuItem( "Edit preferred..." );
+    item.setMnemonic( KeyEvent.VK_E );
+    item.addActionListener( al );
+    submenu.add( item );
+
+    submenu = new JMenu( "Function names" );
+    submenu.setMnemonic( KeyEvent.VK_F );
+    menu.add( submenu );
+
+    group = new ButtonGroup();
+    useDefaultNames = new JRadioButtonMenuItem( "Default" );
+    useDefaultNames.setMnemonic( KeyEvent.VK_D );
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        Object source = e.getSource();
+        if (( source != useDefaultNames ) && ( source != useCustomNames ))
+          editCustomNames();
+      }
+    };
+    useDefaultNames.setSelected( true );
+    useDefaultNames.addActionListener( al );
+    group.add( useDefaultNames );
+    submenu.add( useDefaultNames );
+
+    useCustomNames = new JRadioButtonMenuItem( "Custom" );
+    useCustomNames.setMnemonic( KeyEvent.VK_C );
+    useCustomNames.setSelected( preferences.getUseCustomNames());
+
+    useCustomNames.addActionListener( al );
+    group.add( useCustomNames );
+    submenu.add( useCustomNames );
+
+    submenu.addSeparator();
+    item = new JMenuItem( "Edit custom names..." );
+    item.setMnemonic( KeyEvent.VK_E );
+    item.addActionListener( al );
+    submenu.add( item );
 
     menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
@@ -327,30 +397,17 @@ public class KeyMapMaster
     updateItem = new JMenuItem( "Check for updates", KeyEvent.VK_C );
     updateItem.addActionListener( this );
     menu.add( updateItem );
-    
+
     aboutItem = new JMenuItem( "About..." );
     aboutItem.setMnemonic( KeyEvent.VK_A );
     aboutItem.addActionListener( this );
     menu.add( aboutItem );
   }
 
-  public void addPanel( KMPanel panel )
+  private void savePreferences()
+    throws Exception
   {
-    tabbedPane.addTab( panel.getName(), null, panel, panel.getToolTipText());
-  }
-
-  public void addPanel( KMPanel panel, int index )
-  {
-    System.err.println( "KeyMapMaster.addPanel()" + panel );
-    tabbedPane.insertTab( panel.getName(), null, panel, panel.getToolTipText(), index );
-  }
-
-  public void removePanel( KMPanel panel )
-  {
-    System.err.println( "KeyMapMaster.removePanel()" + panel );
-    tabbedPane.removeTabAt( 1 );
-//    tabbedPane.remove( panel );
-    tabbedPane.validate();
+    preferences.save( recentFileMenu );
   }
 
   private void editManualSettings()
@@ -365,7 +422,7 @@ public class KeyMapMaster
     messageLabel.setText( message );
     Toolkit.getDefaultToolkit().beep();
   }
-  
+
   public static void showMessage( String message, Component c )
   {
     KeyMapMaster km = ( KeyMapMaster )SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
@@ -374,7 +431,7 @@ public class KeyMapMaster
       km.showMessage( message );
       return;
     }
-    
+
     JP1Frame frame = ( JP1Frame )SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
     if ( frame != null )
     {
@@ -383,12 +440,12 @@ public class KeyMapMaster
     }
     JOptionPane.showMessageDialog( c, message );
   }
-  
+
   public void clearMessage()
   {
     messageLabel.setText( " " );
   }
-    
+
   public static void clearMessage( Component c )
   {
     KeyMapMaster km = ( KeyMapMaster )SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
@@ -397,94 +454,12 @@ public class KeyMapMaster
       km.clearMessage();
       return;
     }
-    
+
     JP1Frame frame = ( JP1Frame )SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
     if ( frame != null )
     {
       frame.clearMessage();
       return;
-    }
-  }
-
-  public void setRemotes()
-  {
-    if ( remoteList != null )
-    {
-      try
-      {
-        remoteList.setModel( new DefaultComboBoxModel( getRemotes()));
-      }
-      catch ( Exception e )
-      {
-        e.printStackTrace( System.err );
-      }
-    }
-  }
-
-  public void setRemote( Remote remote )
-  {
-    if ( remoteList != null )
-    {
-      try
-      {
-        String[] aliasNames = remote.getDeviceTypeAliasNames();
-        String alias = deviceUpgrade.getDeviceTypeAliasName();
-        deviceTypeList.removeActionListener( this );
-        deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ));
-        deviceTypeList.setMaximumRowCount( aliasNames.length );
-
-        int index = 0;
-        for ( index = 0; index < aliasNames.length; index++ )
-        {
-          if ( aliasNames[ index ].equals( alias ))
-            break;
-        }
-        while (( index == aliasNames.length ))
-        {
-          String msg = "Remote \"" + remote.getName() + "\" does not support the device type " +
-          alias + ".  Please select one of the supported device types below to use instead.\n";
-          String rc = ( String )JOptionPane.showInputDialog( null,
-                                                             msg,
-                                                             "Unsupported Device Type",
-                                                             JOptionPane.ERROR_MESSAGE,
-                                                             null,
-                                                             aliasNames,
-                                                             null );
-          for ( index = 0; index < aliasNames.length; index++ )
-          {
-            if ( aliasNames[ index ].equals( rc ))
-              break;
-          }
-        }
-
-        deviceTypeList.setSelectedIndex( index );
-
-        deviceUpgrade.setRemote( remote );
-        deviceUpgrade.setDeviceTypeAliasName( aliasNames[ index ]);
-        deviceTypeList.addActionListener( this );
-        writeBinaryItem.setEnabled( remote.getSupportsBinaryUpgrades());
-        deviceUpgrade.checkSize();
-      }
-      catch ( Exception e )
-      {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter( sw );
-        e.printStackTrace( pw );
-        pw.flush();
-        pw.close();
-        JOptionPane.showMessageDialog( null, sw.toString(), "Remote Load Error",
-                                       JOptionPane.ERROR_MESSAGE );
-        System.err.println( sw.toString());
-      }
-    }
-  }
-
-  public void setDeviceTypeName( String aliasName )
-  {
-    if (( deviceTypeList != null ) && ( !aliasName.equals( deviceUpgrade.getDeviceTypeAliasName())))
-    {
-      deviceUpgrade.setDeviceTypeAliasName( aliasName );
-      deviceTypeList.setSelectedItem( aliasName );
     }
   }
 
@@ -495,53 +470,19 @@ public class KeyMapMaster
     {
       Object source = e.getSource();
 
-      if ( source == remoteList )
-      {
-        Remote remote = ( Remote )remoteList.getSelectedItem();
-        setRemote( remote );
-        currPanel.update();
-        validateUpgrade();
-      }
-      else if ( source == deviceTypeList )
-      {
-        String typeName = ( String )deviceTypeList.getSelectedItem();
-        setDeviceTypeName( typeName );
-        currPanel.update();
-      }
-      else if ( source == newItem )
+      if ( source == newItem )
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ))
           return;
         Protocol oldProtocol = deviceUpgrade.getProtocol();
         deviceUpgrade.reset();
-        Protocol newProtocol = deviceUpgrade.getProtocol();
-        if ( newProtocol != oldProtocol )
-        {
-          KMPanel oldPanel = oldProtocol.getPanel( deviceUpgrade );
-          if ( oldPanel != null )
-            removePanel( oldPanel );
-          KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
-          if ( newPanel != null )
-            addPanel( newPanel, 1 );
-          if (( oldPanel != null ) || ( newPanel != null ))
-            tabbedPane.validate();
-        }
-        oldProtocol.reset();
-        setTitle( "RemoteMapMaster" );
-        description.setText( null );
-        remoteList.setSelectedItem( deviceUpgrade.getRemote());
-        deviceTypeList.setSelectedItem( deviceUpgrade.getDeviceTypeAliasName());
-        saveItem.setEnabled( false );
-        currPanel.update();
       }
       else if ( source == saveItem )
       {
-        currPanel.commit();
         deviceUpgrade.store();
       }
       else if ( source == saveAsItem )
       {
-        currPanel.commit();
         saveAs();
       }
       else if ( source == openItem )
@@ -592,7 +533,6 @@ public class KeyMapMaster
       {
         ImportRawUpgradeDialog d = new ImportRawUpgradeDialog( this, deviceUpgrade );
         d.setVisible( true );
-        currPanel.update();
       }
       else if ( source == binaryItem )
       {
@@ -652,13 +592,14 @@ public class KeyMapMaster
                                             reader.getPid(),
                                             reader.getProtocolCode());
             deviceUpgrade.setSetupCode( reader.getSetupCode());
-            editorPanel.refresh();
           }
         }
       }
       else if ( source == writeBinaryItem )
       {
-        BinaryUpgradeWriter.write( deviceUpgrade );
+        File path = BinaryUpgradeWriter.write( deviceUpgrade, preferences.getBinaryUpgradePath());
+        if ( path != null )
+          preferences.setBinaryUpgradePath( path );
       }
       else if ( source == updateItem )
       {
@@ -673,7 +614,7 @@ public class KeyMapMaster
           text = "<html>Version " + latestVersion + " of RemoteMaster is available, but you are still using version " + version +
                  "<p>The new version is available for download from<br><a href=\"http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion + ".zip?download\">" +
                  "http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion + ".zip?download</a></html>";
-        
+
         JEditorPane pane = new JEditorPane( "text/html", text );
         pane.setEditable( false );
         pane.setBackground( getContentPane().getBackground());
@@ -712,26 +653,19 @@ public class KeyMapMaster
         deviceUpgrade = null;
         setVisible( false );
       }
+      else // must be a recent file
+      {
+        JMenuItem item = ( JMenuItem )source;
+        File f = new File( item.getText());
+        loadUpgrade( f );
+      }
+      refresh();
     }
     catch ( Exception ex )
     {
       ex.printStackTrace( System.err );
     }
   } // actionPerformed
-
-  private void removeListeners()
-  {
-    description.getDocument().removeDocumentListener( this );
-    remoteList.removeActionListener( this );
-    deviceTypeList.removeActionListener( this );
-  }
-
-  private void addListeners()
-  {
-    description.getDocument().addDocumentListener( this );
-    remoteList.addActionListener( this );
-    deviceTypeList.addActionListener( this );
-  }
 
   public static File promptForUpgradeFile( File path )
   {
@@ -824,20 +758,13 @@ public class KeyMapMaster
     }
   }
 
-  public static String[] getCustomNames()
-  {
-    if ( me == null )
-      return null;
-    return me.preferences.getCustomNames();
-  }
-
   public boolean promptToSaveUpgrade( int action )
     throws IOException
   {
-    int promptFlag = preferences.getPromptFlag();
-    if ( promptFlag == Preferences.PROMPT_NEVER )
+    String promptFlag = preferences.getPromptToSave();
+    if ( promptFlag.equals( promptStrings[ PROMPT_NEVER ]))
       return true;
-    else if ( promptFlag != Preferences.PROMPT_ALWAYS )
+    else if ( !promptFlag.equals( promptStrings[ PROMPT_ALWAYS ]))
     {
       if ( action != ACTION_EXIT )
         return true;
@@ -853,7 +780,6 @@ public class KeyMapMaster
     if ( rc == JOptionPane.NO_OPTION )
       return true;
 
-    currPanel.commit();
     if ( deviceUpgrade.getFile() != null )
       deviceUpgrade.store();
     else
@@ -867,32 +793,15 @@ public class KeyMapMaster
     if (( file == null ) || !file.exists())
       return;
 
-    Protocol oldProtocol = deviceUpgrade.getProtocol();
-    KMPanel oldPanel = oldProtocol.getPanel( deviceUpgrade );
-    if ( oldPanel != null )
-      removePanel( oldPanel );
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
-    Protocol newProtocol = deviceUpgrade.getProtocol();
-    if ( newProtocol == null )
-      return;
-    KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
-    if ( newPanel != null )
-      addPanel( newPanel, 1 );
-    if (( oldPanel != null ) || ( newPanel != null ))
-      tabbedPane.validate();
-    editorPanel.refresh();
 
     boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
 
     if ( isRMDU )
-    {
-      setTitle( file.getAbsolutePath() + " - RemoteMaster" );
       updateRecentFiles( file );
-    }
-    else
-      setTitle( "RemoteMaster" );
     preferences.setUpgradePath( file.getParentFile());
+    refresh();
   }
 
   private void updateRecentFiles( File file )
@@ -906,8 +815,7 @@ public class KeyMapMaster
       while ( i >= 0 )
       {
         JMenuItem item = recentFileMenu.getItem( i );
-        FileAction action = ( FileAction  )item.getAction();
-        File f = action.getFile();
+        File f = new File( item.getText());
         if ( f.getCanonicalPath().equals( file.getCanonicalPath()))
           recentFileMenu.remove( i );
         --i;
@@ -915,7 +823,10 @@ public class KeyMapMaster
       i = recentFileMenu.getItemCount();
       while ( i > 9 )
         recentFileMenu.remove( --i );
-      recentFileMenu.add( new JMenuItem( new FileAction( file )), 0 );
+
+      JMenuItem item = new JMenuItem( file.getAbsolutePath());
+      item.addActionListener( this );
+      recentFileMenu.add( item, 0 );
 
       recentFileMenu.setEnabled( true );
     }
@@ -924,19 +835,9 @@ public class KeyMapMaster
   public void loadUpgrade( BufferedReader reader )
     throws Exception
   {
-    Protocol oldProtocol = deviceUpgrade.getProtocol();
-    KMPanel oldPanel = oldProtocol.getPanel( deviceUpgrade );
-    if ( oldPanel != null )
-      removePanel( oldPanel );
     deviceUpgrade.reset();
     deviceUpgrade.load( reader );
-    Protocol newProtocol = deviceUpgrade.getProtocol();
-    KMPanel newPanel = newProtocol.getPanel( deviceUpgrade );
-    if ( newPanel != null )
-      addPanel( newPanel, 1 );
-    if (( oldPanel != null ) || ( newPanel != null ))
-      tabbedPane.validate();
-    editorPanel.refresh();
+    refresh();
   }
 
   private void refresh()
@@ -948,22 +849,9 @@ public class KeyMapMaster
 
     saveItem.setEnabled( file != null );
     writeBinaryItem.setEnabled( deviceUpgrade.getRemote().getSupportsBinaryUpgrades());
-    removeListeners();
-    description.setText( deviceUpgrade.getDescription());
-    String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
-    Remote r = deviceUpgrade.getRemote();
-//    setRemote( r );
-    remoteList.setSelectedItem( r );
-    if ( remoteList.getSelectedItem() != r )
-    {
-      remoteList.addItem( r );
-      remoteList.setSelectedItem( r );
-    }
-    deviceTypeList.setSelectedItem( savedTypeName );
-    addListeners();
-    currPanel.update();
 
     validateUpgrade();
+    editorPanel.refresh();
   }
 
   public void importUpgrade( BufferedReader in )
@@ -971,34 +859,7 @@ public class KeyMapMaster
   {
     deviceUpgrade.reset();
     deviceUpgrade.importUpgrade( in );
-    setTitle( "RemoteMaster" );
-    removeListeners();
-    description.setText( deviceUpgrade.getDescription());
-    String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
-    Remote r = deviceUpgrade.getRemote();
-    setRemote( r );
-    remoteList.setSelectedItem( r );
-    if ( remoteList.getSelectedItem() != r )
-    {
-      remoteList.addItem( r );
-      remoteList.setSelectedItem( r );
-    }
-    setDeviceTypeName( savedTypeName );
-    addListeners();
-    currPanel.update();
-
-    validateUpgrade();
-  }
-
-  // ChangeListener methods
-  private KMPanel currPanel = null;
-  public void stateChanged( ChangeEvent e )
-  {
-    currPanel.commit();
-    currPanel = ( KMPanel )(( JTabbedPane )e.getSource()).getSelectedComponent();
-    currPanel.update();
-    // SwingUtilities.updateComponentTreeUI( currPanel );
-    validateUpgrade();
+    refresh();
   }
 
   public static File getHomeDirectory()
@@ -1041,12 +902,6 @@ public class KeyMapMaster
     }
   }
 
-  private void updateDescription()
-  {
-    deviceUpgrade.setDescription( description.getText());
-    currPanel.update();
-  }
-
   public static Remote getRemote()
   {
     return me.deviceUpgrade.getRemote();
@@ -1054,7 +909,7 @@ public class KeyMapMaster
 
   public Remote[] getRemotes()
   {
-    if ( preferences.getUsePreferredRemotes())
+    if ( preferences.getShowRemotes().equals( "Preferred" ))
       return preferences.getPreferredRemotes();
     else
       return RemoteManager.getRemoteManager().getRemotes();
@@ -1064,28 +919,107 @@ public class KeyMapMaster
   {
     return preferences;
   }
-  
+
   public DeviceUpgrade getDeviceUpgrade()
   {
     return deviceUpgrade;
   }
 
-  // DocumentListener methods
-  public void changedUpdate( DocumentEvent e )
+  private void editPreferredRemotes()
   {
-    updateDescription();
+    PreferredRemoteDialog d = new PreferredRemoteDialog( this, preferences.getPreferredRemotes());
+    d.setVisible( true );
+    if ( d.getUserAction() == JOptionPane.OK_OPTION )
+    {
+      Remote[] preferredRemotes = d.getPreferredRemotes();
+      if ( preferredRemotes.length == 0 )
+      {
+        usePreferredRemotes.setEnabled( false );
+        if  ( !useAllRemotes.isSelected())
+        {
+          useAllRemotes.setSelected( true );
+
+          editorPanel.setRemotes( RemoteManager.getRemoteManager().getRemotes());
+        }
+      }
+      else
+        usePreferredRemotes.setEnabled( true );
+
+      if ( usePreferredRemotes.isSelected())
+        editorPanel.setRemotes( preferredRemotes );
+    }
   }
 
-  public void insertUpdate( DocumentEvent e )
+  public String[] getCustomNames()
   {
-    updateDescription();
+    if ( useCustomNames.isSelected())
+      return preferences.getCustomNames();
+    else
+      return null;
   }
 
-  public void removeUpdate( DocumentEvent e )
+  private void editCustomNames()
   {
-    updateDescription();
+    CustomNameDialog d = new CustomNameDialog( this, preferences.getCustomNames());
+    d.setVisible( true );
+    if ( d.getUserAction() == JOptionPane.OK_OPTION )
+    {
+      String[] customNames = d.getCustomNames();
+      if (( customNames == null ) || customNames.length == 0 )
+      {
+        useCustomNames.setEnabled( false );
+        useDefaultNames.setSelected( true );
+      }
+      else
+      {
+        useCustomNames.setEnabled( true );
+        preferences.setCustomNames( customNames );
+      }
+    }
   }
 
+  private void adjustFontSize( float adjustment )
+  {
+    if ( adjustment == 0.0f )
+      return;
+    UIDefaults defaults = UIManager.getDefaults(); // Build of Map of attributes for each component
+    for( Enumeration en = defaults.keys(); en.hasMoreElements(); )
+    {
+      Object o = en.nextElement();
+      if ( o.getClass() != String.class )
+        continue;
+      String key = ( String )o;
+      if ( key.endsWith(".font") && !key.startsWith("class") && !key.startsWith("javax"))
+      {
+        FontUIResource font = ( FontUIResource )UIManager.get( key );
+        FontUIResource newFont = new FontUIResource( font.deriveFont( font.getSize2D() + adjustment ));
+        if ( key.indexOf( "Table") != -1 )
+        {
+          System.err.println( "key=" + key );
+          System.err.println( "got font " + font );
+          System.err.println( "set font " + newFont );
+        }
+        UIManager.put( key, newFont );
+      }
+    }
+    SwingUtilities.updateComponentTreeUI( this );
+    pack();
+  }
+
+  private JRadioButtonMenuItem[] lookAndFeelItems = null;
+  private JRadioButtonMenuItem[] promptButtons = null;
+  private JMenuItem useAllRemotes = null;
+  private JMenuItem usePreferredRemotes = null;
+  private JMenuItem useDefaultNames = null;
+  private JMenuItem useCustomNames = null;
+  private Float fontSizeAdjustment = 0.0f;
+  private int promptFlag = 0;
+  private Rectangle bounds = null;
+
+  private final static String[] promptStrings = { "Always", "On Exit", "Never" };
+  private final static int[] promptMnemonics = { KeyEvent.VK_A, KeyEvent.VK_X, KeyEvent.VK_N };
+  public final static int PROMPT_NEVER = 2;
+  public final static int PROMPT_ALWAYS = 0;
   private final static String[] anyEndings = { ".txt", ".km", upgradeExtension };
   private final static String[] kmEndings = { ".txt" };
   private final static String[] rmEndings = { ".km", upgradeExtension };

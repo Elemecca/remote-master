@@ -20,18 +20,9 @@ public class MacroDialog
     
     dialog.setRemoteConfiguration( config );
     dialog.setMacro( macro );
-    dialog.setLocationRelativeTo( locationComp );
 
     dialog.pack();
-    if ( locationComp instanceof JPanel )
-    {
-      Rectangle rect = dialog.getBounds();
-      int x = rect.x - rect.width / 2;
-      if ( x < 0 ) x = 10;
-      int y = rect.y - rect.height / 2;
-      if ( y < 0 ) y = 10;
-      dialog.setLocation( x, y );
-    }
+    dialog.setLocationRelativeTo( locationComp );
     dialog.setVisible( true );
     return dialog.macro;
   }

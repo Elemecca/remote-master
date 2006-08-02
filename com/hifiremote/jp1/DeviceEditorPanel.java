@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import info.clearthought.layout.TableLayout;
+import java.beans.*;
 import javax.swing.*;
 import javax.swing.filechooser.*;
 import javax.swing.event.*;
@@ -12,7 +13,7 @@ import java.awt.datatransfer.*;
 
 public class DeviceEditorPanel
  extends JPanel
- implements ActionListener, ChangeListener, DocumentListener
+ implements ActionListener, ChangeListener, DocumentListener, PropertyChangeListener
 {
   private JTextField description = null;
   private JComboBox remoteList = null;
@@ -38,6 +39,7 @@ public class DeviceEditorPanel
     super( new BorderLayout());
 
     deviceUpgrade = upgrade;
+    upgrade.addPropertyChangeListener( "protocol", this );
 
     tabbedPane = new JTabbedPane();
     add( tabbedPane, BorderLayout.CENTER );
@@ -124,7 +126,10 @@ public class DeviceEditorPanel
   
   public void setDeviceUpgrade( DeviceUpgrade upgrade )
   {
+    if ( deviceUpgrade != null )
+      deviceUpgrade.removePropertyChangeListener( "protocol", this );
     deviceUpgrade = upgrade;
+    deviceUpgrade.addPropertyChangeListener( "protocol", this );
     for ( int i = 0; i < tabbedPane.getTabCount(); ++i )
     {
       KMPanel panel = ( KMPanel )tabbedPane.getComponentAt( i );
@@ -292,6 +297,12 @@ public class DeviceEditorPanel
     }
     deviceTypeList.setSelectedItem( savedTypeName );
     addListeners();
+    KMPanel protocolPanel = deviceUpgrade.getProtocol().getPanel( deviceUpgrade );
+    KMPanel tabPanel = ( KMPanel )tabbedPane.getComponentAt( 1 );
+    if (( protocolPanel == null ) && ( tabPanel != functionPanel ))
+      removePanel( protocolPanel );
+    if (( protocolPanel != null ) && ( tabPanel != protocolPanel ))
+      addPanel( protocolPanel, 1 );
     currPanel.update();
 
     validateUpgrade();
@@ -367,6 +378,23 @@ public class DeviceEditorPanel
   public void removeUpdate( DocumentEvent e )
   {
     updateDescription();
+  }
+  
+  // PropertyChangeListener
+  public void propertyChange( PropertyChangeEvent evt )
+  {
+    Protocol protocol = ( Protocol )evt.getOldValue();
+    System.err.print( "DeviceEditorPanel.propertyChange( " + protocol.getDiagnosticName() + ", " );
+    KMPanel panel = protocol.getPanel( deviceUpgrade );
+    protocol = ( Protocol )evt.getNewValue();
+    System.err.println( protocol.getDiagnosticName());
+    /*
+    if ( panel != null ) 
+      removePanel( panel );
+    panel = protocol.getPanel( deviceUpgrade );
+    if ( panel != null )
+      addPanel( panel, 1 );
+    */
   }
 }
 

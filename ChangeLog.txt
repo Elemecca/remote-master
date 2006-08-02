@@ -1,3 +1,7 @@
+Changes for v1.63
+- Fixed all the broken menu items (broken in v1.62)
+- Fixed Device Combiner issues (importing and changing remotes)
+
 Changes for v1.62
 - Fixed importing of KM upgrades that have more than 4 device parms
 - Fixed problem with digitmaps when importing raw/binary upgrades

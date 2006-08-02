@@ -6,14 +6,12 @@ import javax.swing.*;
 
 public class BinaryUpgradeWriter
 {
-  public static void write( DeviceUpgrade deviceUpgrade )
+  public static File write( DeviceUpgrade deviceUpgrade, File defaultPath )
   {
     try
     {
       File file = null;
-      KeyMapMaster km = KeyMapMaster.getKeyMapMaster();
-      Preferences prefs = km.getPreferences();
-      RMFileChooser chooser = new RMFileChooser( prefs.getBinaryUpgradePath());
+      RMFileChooser chooser = new RMFileChooser( defaultPath );
       try
       {
         chooser.setAcceptAllFileFilterUsed( false );
@@ -33,8 +31,8 @@ public class BinaryUpgradeWriter
       setupString = "0000".substring( 0, 4 - setupString.length()) + setupString;
       String defaultName = deviceUpgrade.getDeviceType().getAbbreviation() +
                            setupString + ending;
-      chooser.setSelectedFile( new File( prefs.getBinaryUpgradePath(), defaultName ));
-      int returnVal = chooser.showSaveDialog( km );
+      chooser.setSelectedFile( new File( defaultPath, defaultName ));
+      int returnVal = chooser.showSaveDialog( RemoteMaster.getFrame());
       if ( returnVal == RMFileChooser.APPROVE_OPTION )
       {
         file = chooser.getSelectedFile();
@@ -54,15 +52,13 @@ public class BinaryUpgradeWriter
         int rc = JOptionPane.YES_OPTION;
         if ( file.exists())
         {
-          rc = JOptionPane.showConfirmDialog( km,
+          rc = JOptionPane.showConfirmDialog( RemoteMaster.getFrame(),
                                               file.getName() + " already exists.  Do you want to replace it?",
                                               "Replace existing file?",
                                               JOptionPane.YES_NO_OPTION );
         }
         if ( rc == JOptionPane.YES_OPTION )
         {
-          prefs.setBinaryUpgradePath( file.getParentFile());
-
           Vector< short[]> v = new Vector< short[]>();
 
           Remote remote = deviceUpgrade.getRemote();
@@ -117,6 +113,7 @@ public class BinaryUpgradeWriter
             }
           }
           out.close();
+          return file.getParentFile();
         }
       }
     }
@@ -124,5 +121,6 @@ public class BinaryUpgradeWriter
     {
       e.printStackTrace( System.err );
     }
+    return null;
   }
 }

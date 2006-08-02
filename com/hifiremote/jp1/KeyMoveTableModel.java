@@ -18,8 +18,6 @@ public class KeyMoveTableModel
     deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons()));
     keyRenderer.setRemote( remote );
     keyEditor.setRemote( remote );
-    keyMoveRenderer.setRemote( remote );
-    keyMoveEditor.setRemoteConfiguration( remoteConfig );
     deviceTypeBox.setModel( new DefaultComboBoxModel( remote.getDeviceTypes()));
   }
   
@@ -61,7 +59,7 @@ public class KeyMoveTableModel
   
   private static final Class[] colClasses =
   {
-    Integer.class, DeviceButton.class, Integer.class, DeviceType.class, SetupCode.class, KeyMove.class, KeyMove.class, KeyMove.class, String.class
+    Integer.class, DeviceButton.class, Integer.class, DeviceType.class, SetupCode.class, Hex.class, Hex.class, String.class, String.class
   };
   
   public Class getColumnClass( int col )
@@ -71,7 +69,7 @@ public class KeyMoveTableModel
 
   public boolean isCellEditable( int row, int col )
   {
-    if ( col == 0 )
+    if (( col == 0 ) || (( col > 4 ) && ( col < 8 )))
       return false;
 
     return true;
@@ -94,11 +92,11 @@ public class KeyMoveTableModel
       case 4:
         return new SetupCode( keyMove.getSetupCode());
       case 5:
-        return keyMove;
+        return keyMove.getData();
       case 6:
-        return keyMove;
+        return keyMove.getCmd();
       case 7:
-        return keyMove;
+        return keyMove.getValueString( r );
       case 8:
         return keyMove.getNotes();
       default:
@@ -126,11 +124,11 @@ public class KeyMoveTableModel
       keyMove.setDeviceType((( DeviceType )value ).getNumber());
     else if ( col == 4 )
       keyMove.setSetupCode((( SetupCode )value ).getValue());
-    else if (( col > 4 ) && ( col < 8 ))
-    {
-      if ( value != null )
-        setRow( row, ( KeyMove )value );
-    }
+//    else if (( col > 4 ) && ( col < 8 ))
+//    {
+//      if ( value != null )
+//        setRow( row, ( KeyMove )value );
+//    }
     else if ( col == 8 )
       keyMove.setNotes(( String )value );
     else
@@ -156,10 +154,6 @@ public class KeyMoveTableModel
       editor.setClickCountToStart( 2 );
       return editor;
     }
-    else if (( col > 4 ) && ( col < 8 ))
-    {
-      return keyMoveEditor;
-    }
     return null;
   }
   
@@ -169,8 +163,6 @@ public class KeyMoveTableModel
       return new RowNumberRenderer();
     else if ( col == 2 )
       return keyRenderer;
-    else if (( col > 4 ) && ( col < 8 ))
-      return keyMoveRenderer;
     
     return null;
   }
@@ -180,6 +172,4 @@ public class KeyMoveTableModel
   private JComboBox deviceTypeBox = new JComboBox();
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
   private KeyEditor keyEditor = new KeyEditor();
-  private KeyMoveRenderer keyMoveRenderer = new KeyMoveRenderer();
-  private KeyMoveEditor keyMoveEditor = new KeyMoveEditor();
 }

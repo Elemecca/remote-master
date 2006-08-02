@@ -22,7 +22,6 @@ public class DeviceUpgradeEditor
   
   private void createGUI( Window owner, DeviceUpgrade deviceUpgrade, Remote[] remotes )
   {
-    setLocationRelativeTo( owner );
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
     addWindowListener( new WindowAdapter()
     {
@@ -43,10 +42,7 @@ public class DeviceUpgradeEditor
     okButton.addActionListener( this );
     cancelButton.addActionListener( this );
     pack();
-    Rectangle rect = getBounds();
-    int x = rect.x - rect.width / 2;
-    int y = rect.y - rect.height / 2;
-    setLocation( x, y );
+    setLocationRelativeTo( owner );
     setVisible( true );
   }
   

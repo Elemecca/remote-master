@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
@@ -20,7 +21,7 @@ public class PropertyFile
       updatePropertyNames( "RecentFiles.", "RecentUpgrades." );
     }
   }
-  
+
   private void updatePropertyNames( String oldBase, String newBase )
   {
     int i = 0;
@@ -50,7 +51,7 @@ public class PropertyFile
       }
     }
   }
-  
+
   public void save()
     throws IOException
   {
@@ -58,12 +59,12 @@ public class PropertyFile
     store( out, null );
     out.close();
   }
-  
+
   public void setProperty( String name, File file )
   {
     setProperty( name, file.getAbsolutePath());
   }
-  
+
   public File getFileProperty( String name )
   {
     String value = getProperty( name );
@@ -71,7 +72,7 @@ public class PropertyFile
       return null;
     return new File( value );
   }
-  
+
   public File getFileProperty( String name, File defaultFile )
   {
     File file = getFileProperty( name );
@@ -82,8 +83,8 @@ public class PropertyFile
     }
     return file;
   }
-  
-  public void updateFileMenu( JMenu menu, String prefix )
+
+  public void populateFileMenu( JMenu menu, String prefix, ActionListener l )
   {
     File f = null;
     int i = 0;
@@ -94,14 +95,18 @@ public class PropertyFile
       if ( f != null )
       {
         if ( f.canRead() )
-          menu.add( new FileAction( f ));
+        {
+          JMenuItem item = new JMenuItem( f.getAbsolutePath());
+          menu.add( item );
+          item.addActionListener( l );
+        }
         else
           remove( name );
       }
     } while ( f != null );
     menu.setEnabled( menu.getItemCount() > 0 );
   }
-  
+
   public File getFile(){ return file; }
 
   private File file = null;

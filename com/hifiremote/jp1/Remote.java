@@ -243,7 +243,7 @@ public class Remote
       e.printStackTrace( pw );
       pw.flush();
       pw.close();
-      JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                      sw.toString(), "Remote Load Error",
                                      JOptionPane.ERROR_MESSAGE );
       System.err.println( sw.toString());

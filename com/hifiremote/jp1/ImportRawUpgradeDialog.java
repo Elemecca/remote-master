@@ -52,7 +52,7 @@ public class ImportRawUpgradeDialog
     JLabel label = new JLabel( "Remote:" );
     mainPanel.add( label, "1, 1" );
 
-    Remote[] remotes = KeyMapMaster.getKeyMapMaster().getRemotes();
+    Remote[] remotes = RemoteManager.getRemoteManager().getRemotes();
     remoteList = new JComboBox( remotes );
     label.setLabelFor( remoteList );
     remoteList.setSelectedItem( deviceUpgrade.getRemote());

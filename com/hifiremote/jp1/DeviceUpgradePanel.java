@@ -16,90 +16,28 @@ public class DeviceUpgradePanel
 {
   public DeviceUpgradePanel()
   {
-//    super( new DeviceUpgradeTableModel(), BorderLayout.LINE_START );
     super( new DeviceUpgradeTableModel());
     table.getSelectionModel().addListSelectionListener( this );
-    table.addMouseListener( new MouseAdapter()
-    {
-      public void mouseClicked( MouseEvent e )
-      {
-        if ( e.getClickCount() != 2 )
-          return;
-        int row = table.getSelectedRow();
-        if ( row == -1 )
-          return;
-        editRowObject( row );
-      }
-    });
 
-    /*
-    JPanel panel = new JPanel( new BorderLayout());
-    panel.setBorder( BorderFactory.createTitledBorder( "Device Details" ));
-    add( panel, BorderLayout.CENTER );
-    
-    Box box = Box.createHorizontalBox();
-    box.add( new JLabel( "Description" ));
-    box.add( Box.createHorizontalStrut( 5 ));
-    box.add( description );
-    box.add( Box.createHorizontalStrut( 10 ));
-    box.add( new JLabel( "Device Type" ));
-    box.add( Box.createHorizontalStrut( 5 ));
-    box.add( deviceType ); 
-    deviceType.addActionListener( this );
-    panel.add( box, BorderLayout.NORTH );
-    description.setEnabled( false );
-    description.getDocument().addDocumentListener( this );
-    new TextPopupMenu( description );
-    
-    tabbedPane = new JTabbedPane();
-    tabbedPane.addChangeListener( this );
-    tabbedPane.setEnabled( false );
-    panel.add( tabbedPane, BorderLayout.CENTER );
-    */
-    loadButton = new JButton( "Load" );
-    loadButton.setMnemonic( KeyEvent.VK_L );
-    loadButton.setToolTipText( "Load a device upgrade from a file." );
-    loadButton.addActionListener( this );
-    loadButton.setEnabled( false );
-    super.buttonPanel.add( loadButton );
-    
     importButton = new JButton( "Import" );
-    importButton.setMnemonic( KeyEvent.VK_I );
-    importButton.setToolTipText( "Import a device upgrade from the clipboard." );
     importButton.addActionListener( this );
+    importButton.setMnemonic( KeyEvent.VK_L );
+    importButton.setToolTipText( "Import a device upgrade from a file." );
     importButton.setEnabled( false );
     super.buttonPanel.add( importButton );
-    
+
     exportButton = new JButton( "Export" );
-    exportButton.setMnemonic( KeyEvent.VK_X );
-    exportButton.setToolTipText( "Save the current device upgrade to a file." );
     exportButton.addActionListener( this );
+    exportButton.setMnemonic( KeyEvent.VK_X );
+    exportButton.setToolTipText( "Export the current device upgrade to a file or the clipboard." );
     exportButton.setEnabled( false );
     super.buttonPanel.add( exportButton );
-    /*
-    setupPanel = new SetupPanel( null );
-    tabbedPane.add( "Setup", setupPanel );
-
-    functionPanel = new FunctionPanel( null );
-    tabbedPane.add( "Functions", functionPanel );
-    
-    buttonPanel = new ButtonPanel( null );
-    tabbedPane.add( "Buttons", buttonPanel );
-    
-    layoutPanel = new LayoutPanel( null );
-    tabbedPane.add( "Layout", layoutPanel );
-    
-    keyMapPanel = new KeyMapPanel( null );
-    tabbedPane.add( "Key Map", keyMapPanel );
-    currPanel = ( KMPanel )tabbedPane.getSelectedComponent();
-    */
   }
 
   public void set( RemoteConfiguration remoteConfig )
   {
     (( DeviceUpgradeTableModel )model ).set( remoteConfig );
     this.remoteConfig = remoteConfig;
-    // deviceType.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceTypeAliasNames()));
   }
   
   public DeviceUpgrade createRowObject( DeviceUpgrade baseUpgrade )
@@ -132,41 +70,13 @@ public class DeviceUpgradePanel
       if ( row != -1 )
       {
         upgrade = ( DeviceUpgrade )getRowObject( row );
-        /*
-        description.setText( upgrade.getDescription());
-        deviceType.setSelectedItem( upgrade.getDeviceTypeAliasName());
-        */
       }
-      /*
-      else 
-      {
-        description.setText( "" );
-        deviceType.setSelectedIndex( 0 );
-      }
-*/
       boolean enableFlag = row != -1;
-  //    description.setEnabled( enableFlag );
       exportButton.setEnabled( enableFlag );
-      loadButton.setEnabled( enableFlag );
       importButton.setEnabled( enableFlag );
-      /*
-      tabbedPane.setEnabled( enableFlag );
-      
-      setupPanel.setEnabled( enableFlag );
-      setupPanel.setDeviceUpgrade( upgrade );
-      functionPanel.setEnabled( enableFlag );
-      functionPanel.setDeviceUpgrade( upgrade );
-      buttonPanel.setEnabled( enableFlag );
-      buttonPanel.setDeviceUpgrade( upgrade );
-      layoutPanel.setEnabled( enableFlag );
-      layoutPanel.setDeviceUpgrade( upgrade );
-      keyMapPanel.setEnabled( enableFlag );
-      keyMapPanel.setDeviceUpgrade( upgrade );
-      currPanel.update();
-      */
+      exportButton.setEnabled( enableFlag );
     }
   }
-  
   
   private KMPanel currPanel = null;
   public void stateChanged( ChangeEvent e )
@@ -180,6 +90,7 @@ public class DeviceUpgradePanel
   
   public void actionPerformed( ActionEvent e )
   {
+    System.err.println( "DeviceUpgradePanel.actionPerformed()" );
     try
     {
       Object source = e.getSource();
@@ -189,15 +100,11 @@ public class DeviceUpgradePanel
         deviceUpgrade.setDeviceTypeAliasName(( String )deviceType.getSelectedItem());
       else if ( source == exportButton )
         export( deviceUpgrade );
-      else if ( source == loadButton )
+      else if ( source == importButton )
       {
         load( deviceUpgrade );
         model.fireTableDataChanged();
         table.setRowSelectionInterval( row, row );
-      }
-      else if ( source == importButton )
-      {
-//        importFromClipboard( deviceUpgrade );
       }
       else
         super.actionPerformed( e );
@@ -211,6 +118,7 @@ public class DeviceUpgradePanel
   public void export( DeviceUpgrade deviceUpgrade )
     throws IOException
   {
+    System.err.println( "DeviceUpgradePanel.export()" );
     RMFileChooser chooser = new RMFileChooser();
     String[] endings = { ".rmdu" };
     chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", endings ));
@@ -248,6 +156,7 @@ public class DeviceUpgradePanel
   public void load( DeviceUpgrade deviceUpgrade )
     throws Exception
   {
+    System.err.println( "DeviceUpgradePanel.load()" );
     File file = null;
     RMFileChooser chooser = new RMFileChooser();
     try
@@ -303,7 +212,6 @@ public class DeviceUpgradePanel
     deviceUpgrade.setRemote( remoteConfig.getRemote());
   }
 
-
   // DocumentListener methods
   private void updateDescription()
   {
@@ -339,7 +247,6 @@ public class DeviceUpgradePanel
   private ButtonPanel buttonPanel = null;
   private LayoutPanel layoutPanel = null;
   private KeyMapPanel keyMapPanel = null;
-  private JButton loadButton = null;
   private JButton importButton = null;
   private JButton exportButton = null;
 }

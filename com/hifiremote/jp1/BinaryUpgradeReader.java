@@ -21,7 +21,7 @@ public class BinaryUpgradeReader
       Remote[] remotes = RemoteManager.getRemoteManager().findRemoteBySignature( "BIN" + tag.toUpperCase() );
       if ( remotes.length == 0 )
       {
-        JOptionPane.showMessageDialog( KeyMapMaster.getKeyMapMaster(),
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                        "The binary file \"" + name + "\" isn't a supported binary upgrade file.",
                                        "Invalid binary file",
                                        JOptionPane.ERROR_MESSAGE );
@@ -31,7 +31,7 @@ public class BinaryUpgradeReader
         remote = remotes[ 0 ];
       else
       {
-        remote = ( Remote )JOptionPane.showInputDialog( KeyMapMaster.getKeyMapMaster(),
+        remote = ( Remote )JOptionPane.showInputDialog( RemoteMaster.getFrame(),
                                                         "The selected binary upgrade can be used for multiple remotes.  Please select the desired remote.",
                                                         "Select a remote",
                                                         JOptionPane.QUESTION_MESSAGE,

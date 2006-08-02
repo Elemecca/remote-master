@@ -14,8 +14,6 @@ public class MacroTableModel
     Remote remote = remoteConfig.getRemote();
     keyRenderer.setRemote( remote );
     keyEditor.setRemote( remote );
-    macroRenderer.setRemote( remote );
-    macroEditor.setRemoteConfiguration( remoteConfig );
     setData( remoteConfig.getMacros());
   }
   
@@ -37,7 +35,7 @@ public class MacroTableModel
 
   private static final Class[] colClasses =
   {
-    Integer.class, Integer.class, Macro.class, String.class
+    Integer.class, Integer.class, String.class, String.class
   };
   public Class getColumnClass( int col )
   {
@@ -56,7 +54,7 @@ public class MacroTableModel
   
   public boolean isCellEditable( int row, int col )
   {
-    if ( col == 0 )
+    if (( col == 0 ) || ( col == 2 ))
       return false;
 
     return true;
@@ -73,7 +71,7 @@ public class MacroTableModel
       case 1:
         return new Integer( macro.getKeyCode());
       case 2:
-       return macro;
+       return macro.getValueString( r );
       case 3:
         return macro.getNotes();
       default:
@@ -86,11 +84,6 @@ public class MacroTableModel
     Macro macro = ( Macro )getRow( row );
     if ( col == 1 )
       macro.setKeyCode((( Integer )value ).intValue());
-    else if ( col == 2 )
-    {
-      if ( value != null )
-        setRow( row, ( Macro )value );
-    }
     else if ( col == 3 )
       macro.setNotes(( String )value );
     propertyChangeSupport.firePropertyChange( "data", null, null );
@@ -102,8 +95,6 @@ public class MacroTableModel
       return new RowNumberRenderer();
     else if ( col == 1 )
       return keyRenderer;
-    else if ( col == 2 )
-      return macroRenderer;
     return null;
   }
   
@@ -111,14 +102,10 @@ public class MacroTableModel
   {
     if ( col == 1 )
       return keyEditor;
-    else if ( col == 2 )
-      return macroEditor;
     return null;
   }
   
   private RemoteConfiguration remoteConfig = null;
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
   private KeyEditor keyEditor = new KeyEditor();
-  private MacroRenderer macroRenderer = new MacroRenderer();
-  private MacroEditor macroEditor = new MacroEditor();
 }

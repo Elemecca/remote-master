@@ -670,7 +670,7 @@ public class Protocol
 
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       frame.pack();
-      frame.setLocationRelativeTo( KeyMapMaster.getKeyMapMaster());
+      frame.setLocationRelativeTo( RemoteMaster.getFrame());
       frame.setVisible( true );
     }
   }

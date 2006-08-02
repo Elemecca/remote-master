@@ -11,35 +11,24 @@ public class KeyMoveDialog
   extends JDialog
   implements ActionListener, FocusListener, Runnable, ItemListener
 {
-  public static KeyMove showDialog( Component locationComp,
+  public static KeyMove showDialog( JFrame frame,
                                     KeyMove keyMove, RemoteConfiguration config )
   {
     if ( dialog == null )
-      dialog = new KeyMoveDialog( locationComp );
+      dialog = new KeyMoveDialog( frame );
     
     dialog.setRemoteConfiguration( config );
     dialog.setKeyMove( keyMove );
-    dialog.setLocationRelativeTo( locationComp );
-
     dialog.pack();
-    if ( locationComp instanceof JPanel )
-    {
-      Rectangle rect = dialog.getBounds();
-      int x = rect.x - rect.width / 2;
-      if ( x < 0 ) x = 10;
-      int y = rect.y - rect.height / 2;
-      if ( y < 0 ) y = 10;
-      dialog.setLocation( x, y );
-    }
+    dialog.setLocationRelativeTo( frame );
     dialog.setVisible( true );
+
     return dialog.keyMove;
   }
 
-  private KeyMoveDialog( Component c ) 
+  private KeyMoveDialog( JFrame frame ) 
   {
-    super(( JFrame )SwingUtilities.getRoot( c ));
-    setTitle( "Key Move" );
-    setModal( true );
+    super( frame, "Key Move", true );
     
     this.config = config;
     
