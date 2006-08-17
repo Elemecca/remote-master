@@ -30,6 +30,12 @@ public class KeyMove
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ));
   }
   
+  public KeyMove( KeyMove keyMove )
+  {
+    this( keyMove.getKeyCode(), keyMove.getDeviceButtonIndex(), keyMove.getDeviceType(),
+          keyMove.getSetupCode(), new Hex( keyMove.getCmd()), keyMove.getNotes());
+  }
+  
   protected Object clone()
     throws CloneNotSupportedException
   {
@@ -56,7 +62,7 @@ public class KeyMove
     data = hex;
   }
 
-  public String getValueString( Remote remote )
+  public String getValueString( RemoteConfiguration remoteConfig )
   {
     return getEFC().toString();
   }

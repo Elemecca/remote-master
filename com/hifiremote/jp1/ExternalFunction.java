@@ -44,7 +44,16 @@ public class ExternalFunction
       setType( new Integer( str ));
     str = props.getProperty( prefix + ".deviceType" );
     if ( str != null )
-      setDeviceTypeAliasName( str );
+    {
+      String match = null;
+      String[] devNames = remote.getDeviceTypeAliasNames();
+      for ( String name : remote.getDeviceTypeAliasNames())
+        if ( name.equalsIgnoreCase( str ))
+        {
+          setDeviceTypeAliasName( name );
+          break;
+        }
+    }
     str = props.getProperty( prefix + ".setupCode" );
     if ( str != null )
       setSetupCode( Integer.parseInt( str ));
@@ -55,7 +64,7 @@ public class ExternalFunction
 
   public final static int EFCType = 0;
   public final static int HexType = 1;
-
+/*
   public String toString()
   {
     String rc = "";
@@ -64,7 +73,7 @@ public class ExternalFunction
       rc = o.toString(); 
     return rc;
   }
-
+*/
   public void setType( int type )
   {
     this.type = type;

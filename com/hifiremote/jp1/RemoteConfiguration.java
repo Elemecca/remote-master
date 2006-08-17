@@ -57,6 +57,8 @@ public class RemoteConfiguration
           Class c = Class.forName( "com.hifiremote.jp1." + sectionName );
           Constructor ct = c.getConstructor( Properties.class );
           Object o = ct.newInstance( section );
+          if ( o instanceof SpecialProtocolFunction )
+            specialFunctions.add(( SpecialProtocolFunction )o );
           if ( o instanceof KeyMove )
             keymoves.add(( KeyMove )o );
           else if ( sectionName.equals( "Macro" ))
@@ -209,10 +211,109 @@ public class RemoteConfiguration
     decodeLearnedSignals( learnedNotes );
   }
   
+  private int exportAdvancedCodeNotes( Vector< ? extends AdvancedCode > codes, int index, PrintWriter out )
+    throws IOException
+  {
+    for ( AdvancedCode code : codes )
+    {
+      String text = code.getNotes();
+      if ( text != null )
+        out.printf( "$%4X=%s\n", index, exportNotes( text ));
+      ++index;
+    }
+    return index;
+  }
+ 
+  public void exportIR( File file )
+    throws IOException
+  {
+    updateImage();
+    PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter( file )));
+
+    int base = remote.getBaseAddress();
+    for ( int i = 0; i < data.length; i += 16 )
+    {
+      out.print( toHex( i + base ));
+      out.print( ":" );
+      for ( int j = 0; j < 16; ++j )
+        out.printf( "  %02X", data[ i + j ] & 0xFF );
+      out.println();
+    }
+
+    out.println();
+    out.println( "[Notes]" );
+    // start with the overall notes
+    if ( notes != null )
+      out.println( "$0000=" + exportNotes( notes ));
+    
+    // Do the advanced codes
+    int i = 0x1000;
+    i = exportAdvancedCodeNotes( keymoves, i, out );    
+    i = exportAdvancedCodeNotes( specialFunctions, i, out );    
+    i = exportAdvancedCodeNotes( macros, i, out );    
+
+    // Do the Favs????
+    i = 0x2000;
+    
+    // Do the device upgrades
+    i = 0x3000;
+    for ( DeviceUpgrade device : devices )
+    {
+      String text = device.getDescription();
+      if ( text != null )
+        out.printf( "$%4X=%s\n", i, exportNotes( text ));
+      ++i;
+    }
+    
+    // Do the protocol upgrades
+    LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
+    for ( DeviceUpgrade dev : devices )
+    {
+      Hex pCode = dev.getCode();
+      if ( pCode != null )
+      {
+        Protocol p = dev.getProtocol();
+        Hex pid = p.getID();
+        if ( !requiredProtocols.containsKey( pid ))
+          requiredProtocols.put( pid.get( 0 ), new ProtocolUpgrade( pid.get( 0 ), pCode, p.getName()));
+      }
+    }
+    
+    for ( ProtocolUpgrade pu : protocols )
+      requiredProtocols.put( pu.getPid(), pu );
+
+    i = 0x4000;
+    for ( ProtocolUpgrade protocol : requiredProtocols.values())
+    {
+      String text = protocol.getNotes();
+      if ( text != null )
+        out.printf( "$%4X=%s\n", i, exportNotes( text ));
+      ++i;
+    }
+    
+    // Do the learned signals
+    i = 0x5000;
+    for ( LearnedSignal signal : learned )
+    {
+      String text = signal.getNotes();
+      if ( text != null )
+        out.printf( "$%4X=%s\n", i, exportNotes( text ));
+      ++i;
+    }
+    out.close();
+  }
+  
   private DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
   {
-    return findDeviceUpgrade( deviceButton.getDeviceTypeIndex( data ), 
+    return findDeviceUpgrade( deviceButton.getDeviceSetupCode( data ), 
                               deviceButton.getSetupCode( data ));
+  }
+  
+  private DeviceUpgrade findDeviceUpgrade( int deviceTypeSetupCode )
+  {
+    int deviceTypeIndex = deviceTypeSetupCode >> 12;
+    int setupCode = deviceTypeSetupCode & 0x7FF;
+    return findDeviceUpgrade( deviceTypeIndex, setupCode );
   }
 
   private DeviceUpgrade findDeviceUpgrade( int deviceTypeIndex, int setupCode )
@@ -254,6 +355,17 @@ public class RemoteConfiguration
     AddressRange advCodeRange = remote.getAdvanceCodeAddress();
     int offset = advCodeRange.getStart();
     int endOffset = advCodeRange.getEnd();
+    
+    // Determine which upgrades are special protocol upgrades
+    Vector< DeviceUpgrade > specialUpgrades = new Vector< DeviceUpgrade >();
+    Vector< SpecialProtocol > specialProtocols = remote.getSpecialProtocols();
+    for ( SpecialProtocol sp : specialProtocols )
+    {
+      DeviceUpgrade device = sp.getDeviceUpgrade( devices );
+      if ( device != null )
+        specialUpgrades.add( device );
+    }
+    
     int count = 0;
     while ( offset <= endOffset )
     {
@@ -353,11 +465,27 @@ public class RemoteConfiguration
           }
           boundUpgrade.setFunction( b, f, state );
         }
+        else if (( moveUpgrade != null ) && specialUpgrades.contains( moveUpgrade ))
+        {
+          SpecialProtocolFunction sf = getSpecialProtocol( moveUpgrade ).createFunction( keyMove );
+          if ( sf != null )
+            specialFunctions.add( sf );
+        }
         else
           keymoves.add( keyMove );
       }
       offset += length;
     }
+  }
+  
+  public SpecialProtocol getSpecialProtocol( DeviceUpgrade upgrade )
+  {
+    for ( SpecialProtocol sp : remote.getSpecialProtocols())
+    {
+      if ( upgrade.getProtocol().getID().equals( sp.getPid()))
+        return sp;
+    }
+    return null;
   }
   
   public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode, int movedKeyCode, String notes )
@@ -412,12 +540,19 @@ public class RemoteConfiguration
     }
     return offset - advCodeRange.getStart();
   }
-
-  public int updateAdvancedCodes()
+  
+  public void updateImage()
   {
-    AddressRange range = remote.getAdvanceCodeAddress();
-    int offset = range.getStart();
-    for ( KeyMove keyMove : keymoves )
+    updateSettings();
+    updateAdvancedCodes();
+    updateUpgrades();
+    updateLearnedSignals();
+    updateCheckSums();
+  }
+  
+  private int updateKeyMoves( Vector< ? extends KeyMove >moves, int offset )
+  {
+    for ( KeyMove keyMove : moves )
     {
       data[ offset++ ] = ( short )keyMove.getKeyCode();
       int lengthOffset;
@@ -439,7 +574,16 @@ public class RemoteConfiguration
       offset += hexLength;
       data[ lengthOffset ] |= ( short )hexLength;        
     }
+    return offset;
+  }
   
+  public int updateAdvancedCodes()
+  {
+    AddressRange range = remote.getAdvanceCodeAddress();
+    int offset = range.getStart();
+    offset = updateKeyMoves( keymoves, offset );
+    offset = updateKeyMoves( specialFunctions, offset );
+    
     for ( Macro macro : macros )
     {
       data[ offset++ ] = ( short )macro.getKeyCode();
@@ -460,19 +604,27 @@ public class RemoteConfiguration
       offset += hexLength;
       data[ lengthOffset ] |= ( short )hexLength;        
     }
-    data[ offset ] = remote.getSectionTerminator();
     
-    for ( int i = offset + 1; i < range.getEnd(); ++i )
-      data[ i ] = 0xFF;
+    data[ offset ] = remote.getSectionTerminator();
+
+//    for ( int i = offset + 1; i < range.getEnd(); ++i )
+//      data[ i ] = 0xFF;
     
     return offset - range.getStart();
   }
-  
+
   public void updateCheckSums()
   {
     CheckSum[] sums = remote.getCheckSums();
     for ( int i = 0; i < sums.length; ++i )
       sums[ i ].setCheckSum( data );
+  }
+  
+  public void updateSettings()
+  {
+    Setting[] settings = remote.getSettings();
+    for ( Setting setting : settings )
+      setting.store( data );
   }
 
   private ProtocolUpgrade getProtocol( int pid )
@@ -605,7 +757,24 @@ public class RemoteConfiguration
     AddressRange addr = remote.getUpgradeAddress();
     int offset = addr.getStart() + 4; // skip over the table pointers
     int devCount = devices.size();
-    int prCount = protocols.size();
+    
+    LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
+    for ( DeviceUpgrade dev : devices )
+    {
+      Hex pCode = dev.getCode();
+      if ( pCode != null )
+      {
+        Protocol p = dev.getProtocol();
+        Hex pid = p.getID();
+        if ( !requiredProtocols.containsKey( pid ))
+          requiredProtocols.put( pid.get( 0 ), new ProtocolUpgrade( pid.get( 0 ), pCode, p.getName()));
+      }
+    }
+    
+    for ( ProtocolUpgrade pu : protocols )
+      requiredProtocols.put( pu.getPid(), pu );
+        
+    int prCount = requiredProtocols.size();
 
     // Handle the special case where there are no upgrades installed
     if (( devCount == 0 ) && ( prCount == 0 ))
@@ -618,11 +787,10 @@ public class RemoteConfiguration
 
     // store the device upgrades
     int[] devOffsets = new int[ devCount ];
-    Enumeration< DeviceUpgrade > de = devices.elements();
-    for ( int i = 0; i < devCount; ++i )
+    int i = 0;
+    for ( DeviceUpgrade dev : devices )
     {
-      devOffsets[ i ] = offset;
-      DeviceUpgrade dev = de.nextElement();
+      devOffsets[ i++ ] = offset;
       Hex hex = dev.getUpgradeHex();
       Hex.put( hex, data, offset );
       offset += hex.length();
@@ -630,32 +798,31 @@ public class RemoteConfiguration
 
     // store the protocol upgrades 
     int[] prOffsets = new int[ prCount ];
-    Enumeration< ProtocolUpgrade > pe = protocols.elements();
-    for ( int i = 0; i < prCount; ++i )
+    i = 0;
+    for ( ProtocolUpgrade upgrade : requiredProtocols.values())
     {
-      prOffsets[ i ] = offset;
-      ProtocolUpgrade upgrade = pe.nextElement();
+      prOffsets[ i++ ] = offset;
       Hex hex = upgrade.getCode();
       Hex.put( hex, data, offset );
       offset += hex.length();
     }
     
-    // ser the pointer to the device table.
+    // set the pointer to the device table.
     Hex.put( offset + remote.getBaseAddress(), data, addr.getStart());
     
     // create the device table
     Hex.put( devCount, data, offset );
     offset += 2;
-    de = devices.elements();
-    for ( int i = 0; i < devCount; ++i )
+    // store the setup codes
+    for ( DeviceUpgrade dev : devices )
     {
-      DeviceUpgrade dev = de.nextElement();
       Hex.put( dev.getHexSetupCode(), data, offset );
       offset += 2;
     }
-    for ( int i = 0; i < devCount; ++i )
+    //store the offsets
+    for ( int devOffset : devOffsets )
     {
-      Hex.put( devOffsets[ i ] + remote.getBaseAddress(), data, offset );
+      Hex.put( devOffset + remote.getBaseAddress(), data, offset );
       offset+= 2;
     }
     
@@ -665,14 +832,12 @@ public class RemoteConfiguration
     // create the protocol table
     Hex.put( prCount, data, offset );
     offset += 2;
-    pe = protocols.elements();
-    for ( int i = 0; i < prCount; ++i )
+    for ( ProtocolUpgrade pr : requiredProtocols.values())
     {
-      ProtocolUpgrade pr = pe.nextElement();
       Hex.put( pr.getPid(), data, offset );
       offset += 2;
     }
-    for ( int i = 0; i < prCount; ++i )
+    for ( i = 0; i < prCount; ++i )
     {
       Hex.put( prOffsets[ i ] + remote.getBaseAddress(), data, offset );
       offset+= 2;
@@ -791,6 +956,15 @@ public class RemoteConfiguration
       pw.printHeader( "Macro" );
       macro.store( pw );
     }
+
+    for ( SpecialProtocolFunction sp : specialFunctions )
+    {
+      String className = sp.getClass().getName();
+      int dot = className.lastIndexOf( '.' );
+      className = className.substring( dot + 1 );
+      pw.printHeader( className );
+      sp.store( pw );
+    }
     
     for ( DeviceUpgrade device : devices )
     {
@@ -881,15 +1055,19 @@ public class RemoteConfiguration
   public Vector< DeviceUpgrade > getDeviceUpgrades(){ return devices; }
   public Vector< ProtocolUpgrade > getProtocolUpgrades(){ return protocols; }
   public Vector< LearnedSignal > getLearnedSignals(){ return learned; }
+  public Vector< SpecialProtocolFunction > getSpecialFunctions(){ return specialFunctions; }
 
   private Remote remote = null;
   private short[] data = null;
   private short[] savedData = null;
+  
   private Vector< KeyMove > keymoves = new Vector< KeyMove >();
   private Vector< Macro > macros = new Vector< Macro >();
   private Vector< DeviceUpgrade > devices = new Vector< DeviceUpgrade >();
   private Vector< ProtocolUpgrade > protocols = new Vector< ProtocolUpgrade >();
   private Vector< LearnedSignal > learned = new Vector< LearnedSignal >();
+  private Vector< SpecialProtocolFunction > specialFunctions = new Vector< SpecialProtocolFunction >();
+  
   private boolean changed = false;
   private String notes = null;
 }

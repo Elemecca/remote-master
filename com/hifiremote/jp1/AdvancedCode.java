@@ -28,7 +28,7 @@ public abstract class AdvancedCode
     }
   }
   
-  public abstract String getValueString( Remote remote );
+  public abstract String getValueString( RemoteConfiguration remoteConfig );
 
   protected Hex data;
   public Hex getData(){ return data; }

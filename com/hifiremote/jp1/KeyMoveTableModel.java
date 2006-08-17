@@ -96,7 +96,7 @@ public class KeyMoveTableModel
       case 6:
         return keyMove.getCmd();
       case 7:
-        return keyMove.getValueString( r );
+        return keyMove.getValueString( remoteConfig );
       case 8:
         return keyMove.getNotes();
       default:

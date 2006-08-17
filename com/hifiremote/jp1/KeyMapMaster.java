@@ -16,7 +16,7 @@ public class KeyMapMaster
  implements ActionListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.63";
+  public static final String version = "v1.64";
   private Preferences preferences = null;
 
   private DeviceEditorPanel editorPanel = null;
@@ -52,7 +52,7 @@ public class KeyMapMaster
     super( "RemoteMaster" );
     me = this;
 
-    setDefaultCloseOperation( DISPOSE_ON_CLOSE );
+    setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
 
     preferences = new Preferences( prefs );
 
@@ -65,6 +65,8 @@ public class KeyMapMaster
           if ( !promptToSaveUpgrade( ACTION_EXIT ))
             return;
           savePreferences();
+          setVisible( false );
+          dispose();
         }
         catch ( Exception e )
         {
@@ -289,9 +291,15 @@ public class KeyMapMaster
       {
         Object source = e.getSource();
         if ( source == useAllRemotes )
+        {
           editorPanel.setRemotes( RemoteManager.getRemoteManager().getRemotes());
+          preferences.setShowRemotes( "All" );
+        }
         else if ( source == usePreferredRemotes )
+        {
           editorPanel.setRemotes( preferences.getPreferredRemotes());
+          preferences.setShowRemotes( "Preferred" );
+        }
         else
           editPreferredRemotes();
       }
@@ -932,6 +940,7 @@ public class KeyMapMaster
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
       Remote[] preferredRemotes = d.getPreferredRemotes();
+      preferences.setPreferredRemotes( preferredRemotes );
       if ( preferredRemotes.length == 0 )
       {
         usePreferredRemotes.setEnabled( false );

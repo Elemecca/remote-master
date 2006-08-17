@@ -20,8 +20,9 @@ public class Macro
     return getData();
   }
   
-  public String getValueString( Remote remote )
+  public String getValueString( RemoteConfiguration remoteConfig )
   {
+    Remote remote = remoteConfig.getRemote();
     StringBuffer buff = new StringBuffer();
     short[] keys = data.getData();
     for ( int i = 0; i < keys.length; ++i )

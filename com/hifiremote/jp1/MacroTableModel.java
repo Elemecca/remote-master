@@ -71,7 +71,7 @@ public class MacroTableModel
       case 1:
         return new Integer( macro.getKeyCode());
       case 2:
-       return macro.getValueString( r );
+       return macro.getValueString( remoteConfig );
       case 3:
         return macro.getNotes();
       default:

@@ -302,7 +302,8 @@ public class SetupPanel
   
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
-    propertyChangeSupport.addPropertyChangeListener( listener );
+    if (( propertyChangeSupport != null ) && ( listener != null ))
+      propertyChangeSupport.addPropertyChangeListener( listener );
   }
 
   private JFormattedTextField setupCode = null;

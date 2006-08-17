@@ -52,7 +52,7 @@ public class Preferences
 
   public String getShowRemotes()
   {
-    return file.getProperty( "ShowRemotes" );
+    return file.getProperty( "ShowRemotes", "All" );
   }
 
   public void setShowRemotes( String str )

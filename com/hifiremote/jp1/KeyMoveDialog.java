@@ -37,7 +37,7 @@ public class KeyMoveDialog
     contentPane.setLayout( new BoxLayout( contentPane, BoxLayout.PAGE_AXIS ));
     
     // Add the bound device and key controls
-    JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT ));
+    JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     contentPane.add( panel );
     panel.setBorder( BorderFactory.createTitledBorder( "Bound Key" ));
@@ -96,7 +96,7 @@ public class KeyMoveDialog
     deviceBox.add( scroll );
     deviceBox.add( Box.createVerticalStrut( 10 ));
     
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     deviceBox.add( panel );
     label = new JLabel( "Device Type:" ); 
@@ -121,7 +121,7 @@ public class KeyMoveDialog
     panel.add( setupCode );
     
     // Add the EFC/Hex/Key controls
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     functionBox.add( panel );
     
@@ -234,7 +234,7 @@ public class KeyMoveDialog
     {
       efcHexField.setText( null );
       useEFC.setSelected( true );
-      efcHexField.setText( keyMove.getValueString( config.getRemote()));
+      efcHexField.setText( keyMove.getValueString( config ));
     }
     
     notes.setText( keyMove.getNotes());

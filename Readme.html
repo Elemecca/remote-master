@@ -171,7 +171,42 @@ the current cell in the Functions panel.
 </tr>
 <tr>
 <th>Import&nbsp;<u>R</u>aw&nbsp;Upgrade...</th>
-<td>Imports a raw hex device upgrade.  This is useful when a remote is sent back to UEI to have a device upgrade added.</td>
+<td>Imports a raw hex device upgrade.  This is useful when a remote is sent back to UEI to have a device upgrade added.
+<p>Use the following procedure to import a raw device upgrade:
+<ul>
+  <li>In IR
+     <ul>
+      <li>Go to the <b>Devices</b> tab, and select the device upgrade you want to copy.
+      <li>Press the <b>Edit</b> button.
+      <li>Right click on the highlighted text in the <b>Device Upgrade</b> field and select <b>Copy</b>.
+    </ul>
+  <li>In RM
+    <ul>
+      <li>Go to <b>Advanced -&gt; Import Raw Upgrade</b>
+      <li>Select the correct remote in the <b>Remote</b> combo box
+      <li>Select the correct device type in the <b>Device Type</b> combo box
+      <li>If the <b>Protocol > FF</b> box is checked in IR, check the <b>Protocol > FF</b> box in RM
+      <li>Right-click in the Upgrade Code field in RM and select <b>Paste</b>.
+    </ul>
+  <li>If the device upgrade uses a custom protocol (the <b>OK</b> is still disabled after you've pasted)
+    <ul>
+      <li>In IR
+        <ul>
+            <li>Press the <b>Cancel</b> button
+            <li>Goto the <b>Protocol</b> tab
+            <li>Select the protocol that you need
+            <li>Press the <b>Edit</b> button
+            <li>Right-click in the <b>Protocol Code</b> fiels and select <b>Copy</b>
+        </ul>
+      <li>In RM
+        <ul>
+          <li>Right click in the <b>Protocol Code</b> field and select <b>Paste</b>
+        </ul>
+    </ul>
+  <li>Press the <b>OK</b> button 
+  <li>On the <b>Setup</b> tab, change the <b>Setup Code</b> field to match the setup code of the imported upgrade.
+</ul>
+</td>
 </tr>
 <tr>
 <th>Import&nbsp;<u>B</u>inary&nbsp;Upgrade...</th>

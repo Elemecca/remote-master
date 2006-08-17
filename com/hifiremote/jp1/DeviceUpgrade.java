@@ -465,35 +465,21 @@ public class DeviceUpgrade
 
   private short findDigitMapIndex()
   {
-    Button[] buttons = remote.getUpgradeButtons();
     short[] digitMaps = remote.getDigitMaps();
-    if (( digitMaps != null ) && ( protocol.getDefaultCmd().length() == 1 ))
+    if ( digitMaps == null )
+      return -1;
+    
+    int cmdLength = protocol.getDefaultCmd().length();
+    short[] digitKeyCodes = new short[ 10 * cmdLength ];
+    Button[] buttons = remote.getUpgradeButtons();
+    int offset = 0;
+    for ( int i = 0; i < 10; i++, offset += cmdLength )
     {
-      for ( short i = 0; i < digitMaps.length; i++ )
-      {
-        int mapNum = digitMaps[ i ];
-        if ( mapNum == 999 )
-          continue;
-        short[] codes = DigitMaps.data[ mapNum ];
-        short rc = -1;
-        for ( int j = 0; ; j++ )
-        {
-          Function f = assignments.getAssignment( buttons[ j ]);
-          if (( f != null ) && !f.isExternal())
-          {
-            if (( f.getHex().getData()[ 0 ] & 0xFF ) == codes[ j ])
-              rc = ( short )( i + 1 );
-            else
-              break;
-          }
-          if ( j == 9 )
-          {
-            return rc;
-          }
-        }
-      }
+      Function f = assignments.getAssignment( buttons[ i ]);
+      if (( f != null ) && !f.isExternal())
+        Hex.put( f.getHex(), digitKeyCodes, offset );
     }
-    return -1;
+    return DigitMaps.findDigitMapIndex( digitMaps, digitKeyCodes );
   }
 
   public void importRawUpgrade( Hex hexCode, Remote newRemote, String newDeviceTypeAliasName, Hex pid, Hex pCode )
@@ -511,23 +497,6 @@ public class DeviceUpgrade
     int digitMapIndex = -1;
     if ( !remote.getOmitDigitMapByte())
       digitMapIndex = code[ index++ ] - 1;
-    if ( digitMapIndex != -1 )
-    {
-      short[] digitMap = DigitMaps.data[ remote.getDigitMaps()[ digitMapIndex ]];
-      for ( int i = 0; i < digitMap.length; i++ )
-      {
-        Function f = new Function();
-        String name = Integer.toString( i );
-        f.setName( name );
-        short[] cmd = new short[ 1 ];
-        cmd[ 0 ] = digitMap[ i ];
-        Hex hex = new Hex( cmd );
-        f.setHex( hex );
-        Button b = map.get( i );
-        assignments.assign( b, f );
-        functions.add( f );
-      }
-    }
     Vector buttons = null;
     if ( map != null )
       buttons = map.parseBitMap( code, index, digitMapIndex != -1 );
@@ -617,8 +586,26 @@ public class DeviceUpgrade
         cmdType = ManualProtocol.AFTER_CMD;
       mp = new ManualProtocol( "PID " + pid, pid, cmdType, "MSB", 8, new Vector(), fixedData, 8 );
       mp.setCode( pCode, remote.getProcessor() );
+      customCode = pCode;
       p = mp;
     }
+    
+    if ( digitMapIndex != -1 )
+    {
+      int mapNum = remote.getDigitMaps()[ digitMapIndex ];
+      Hex[] hexCmds = DigitMaps.getHexCmds( mapNum, cmdLength );
+      for ( int i = 0; i < hexCmds.length; ++i )
+      {
+        Function f = new Function();
+        String name = Integer.toString( i );
+        f.setName( name );
+        f.setHex( hexCmds[ i ] );
+        Button b = map.get( i );
+        assignments.assign( b, f );
+        functions.add( f );
+      }
+    }
+
     index += fixedDataLength;
 
     protocol = p;
@@ -1055,8 +1042,8 @@ public class DeviceUpgrade
     }
     else
     {
-//      protocol = pm.findNearestProtocol( name, pid, variantName );
-      protocol = pm.findProtocolForRemote( remote, pid );
+      // Need to consider all protocol attributes, to handle things like "Acer Keyboard (01 11)" and "TiVo (01 11)"
+      protocol = pm.findNearestProtocol( name, pid, variantName );
 
       if ( protocol == null )
       {
@@ -1478,10 +1465,11 @@ public class DeviceUpgrade
           String devName = name.substring( 1, slash );
           String match = null;
           String[] names = remote.getDeviceTypeAliasNames();
-          for ( int j = 0; j < names.length; j++ )
+          for ( int j = 0;( j < names.length ) && ( match == null ); j++ )
           { 
             if ( devName.equalsIgnoreCase( names[ j ]))
               match = names[ j ];
+              
           }
           if ( match == null )
           {

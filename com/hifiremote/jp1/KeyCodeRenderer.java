@@ -21,7 +21,5 @@ public class KeyCodeRenderer
     int keyCode = (( Integer )value ).intValue();
     super.setValue( remote.getButtonName( keyCode ));
   }
-
-  private static DecimalFormat df = null;
 }
 

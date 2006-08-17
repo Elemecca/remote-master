@@ -48,9 +48,9 @@ public class KeyMoveKey
   public void setCmd( Hex cmd )
   {}
   
-  public String getValueString( Remote remote )
+  public String getValueString( RemoteConfiguration remoteConfig )
   {
-    return remote.getButtonName( getMovedKeyCode());
+    return remoteConfig.getRemote().getButtonName( getMovedKeyCode());
   }
 
   public void setMovedKeyCode( short keyCode )

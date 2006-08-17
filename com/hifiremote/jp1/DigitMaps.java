@@ -1,7 +1,52 @@
 package com.hifiremote.jp1;
 
+import java.io.*;
+
 public class DigitMaps
 {
+  public static void load( File file )
+    throws IOException
+  {
+    data = new short[( int )file.length()];
+    BufferedInputStream in = new BufferedInputStream( new FileInputStream( file ));
+    for ( int i = 0; i < data.length; ++i )
+      data[ i ] = ( short )( in.read() & 0xFF );
+    in.close();
+  }  
+  
+  public static short findDigitMapIndex( short[] digitMaps, short[] digitKeyCodes )
+  {
+    for ( int i = 0; i < digitMaps.length; ++i )
+    {
+      int mapNum = digitMaps[ i ];
+      if ( matches( mapNum, digitKeyCodes ))
+        return ( short )( i + 1 );
+    }
+    return ( short )-1;
+  }
+  
+  private static boolean matches( int mapNumber, short[] digitKeyCodes )
+  {
+    int offset = 10 * mapNumber;
+    for ( int i = 0; i < digitKeyCodes.length; ++i, ++offset )
+    {
+      if (( offset >= data.length ) || (( data[ offset ] & 0xFF ) != ( digitKeyCodes[ i ] & 0xFF )))
+        return false;
+    }
+    return true;
+  }
+  
+  public static Hex[] getHexCmds( int mapNumber, int cmdLength )
+  {
+    int offset = mapNumber * 10;
+    Hex[] rc = new Hex[ 10 ];
+    for ( int i = 0; i < rc.length; ++i, offset += cmdLength )
+      rc[ i ] = Hex.subHex( data, offset, cmdLength );
+    return rc;
+  }
+  
+  public static short[] data = null;
+  /*
   public final static short[][] data =
   {
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // 0
@@ -338,4 +383,5 @@ public class DigitMaps
     { 0x4F, 0x3F, 0x2F, 0x37, 0x9F, 0x8F, 0x97, 0xBF, 0xAF, 0xB7 }, // 331
     { 0x90, 0xB8, 0xB4, 0xB0, 0xAC, 0xA8, 0xA4, 0xA0, 0x9C, 0x98 }  // 332
   };
+  */
 }

@@ -96,6 +96,8 @@ public class Remote
 
           if ( line.equals( "General" ))
             line = parseGeneralSection( rdr );
+          else if ( line.equals( "SpecialProtocols" ))
+            line = parseSpecialProtocols( rdr );
           else if ( line.equals( "Checksums" ))
             line = parseCheckSums( rdr );
           else if ( line.equals( "Settings" ))
@@ -736,7 +738,26 @@ public class Remote
     }
     return rc;
   }
+  private String parseSpecialProtocols( RDFReader rdr )
+    throws Exception
+  {
+    Vector< CheckSum > work = new Vector< CheckSum >();
+    String line;
+    while ( true )
+    {
+      line = rdr.readLine();
+      if (( line == null ) || ( line.length() == 0 ))
+        break;
 
+      StringTokenizer st = new StringTokenizer( line, "=" );
+      String name = st.nextToken();
+      Hex pid = new Hex( st.nextToken());
+      specialProtocols.add( new SpecialProtocol( name, pid ));
+    }
+    checkSums = ( CheckSum[] )work.toArray( checkSums );
+    return line;
+  }
+  
   private String parseCheckSums( RDFReader rdr )
     throws Exception
   {
@@ -1600,6 +1621,8 @@ public class Remote
   private Integer maxCombinedUpgradeLength = null;
   private short sectionTerminator = 0;
   public short getSectionTerminator(){ return sectionTerminator; }
+  public Vector< SpecialProtocol > specialProtocols = new Vector< SpecialProtocol >();
+  public Vector< SpecialProtocol > getSpecialProtocols(){ return specialProtocols; }
 
   private static Hashtable< String, Integer > restrictionTable = null;
  }

@@ -247,7 +247,7 @@ public class Button
         deviceCode[ 0 ] = ( short )( temp >> 8 );
         deviceCode[ 1 ] = temp;
       }
-      else if ( remote.getAdvCodeFormat() == Remote.EFC )
+      if ( remote.getAdvCodeFormat() == Remote.EFC )
       {
         if (( hex.length() == 1 ) && ( remote.getEFCDigits() == 3 ))
         {

@@ -21,6 +21,11 @@ public class DeviceButton
     return name;
   }
   
+  public int getDeviceSetupCode( short[] data )
+  {
+    return ( data[ highAddress ] << 7 ) | data[ lowAddress ];
+  }
+  
   public int getDeviceTypeIndex( short[] data )
   {
     return data[ highAddress ] >> 4;

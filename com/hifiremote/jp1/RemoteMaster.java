@@ -26,6 +26,7 @@ public class RemoteMaster
   private JMenuItem openItem = null;
   private JMenuItem saveItem = null;
   private JMenuItem saveAsItem = null;
+  private JMenuItem exportIRItem = null;
   private JMenuItem revertItem = null;
   private JMenu recentFiles = null;
   private JMenuItem exitItem = null;
@@ -42,6 +43,7 @@ public class RemoteMaster
   private GeneralPanel generalPanel = null;
   private KeyMovePanel keyMovePanel = null;
   private MacroPanel macroPanel = null;
+  private SpecialFunctionPanel specialFunctionPanel = null;
   private DeviceUpgradePanel devicePanel = null;
   private ProtocolUpgradePanel protocolPanel = null;
   private LearnedSignalPanel learnedPanel = null;
@@ -106,7 +108,10 @@ public class RemoteMaster
     tabbedPane.addTab( "Macros", macroPanel );
     macroPanel.addPropertyChangeListener( this );
 
-    // tabbedPane.addTab( "Special Functions", new JPanel());
+    specialFunctionPanel = new SpecialFunctionPanel();
+    tabbedPane.add( "Special Functions", specialFunctionPanel );
+    specialFunctionPanel.addPropertyChangeListener( this );
+    
     // tabbedPane.addTab( "Scan/Fav", new JPanel());
 
     devicePanel = new DeviceUpgradePanel();
@@ -216,6 +221,12 @@ public class RemoteMaster
 //    revertItem.setMnemonic( KeyEvent.VK_R );
 //    revertItem.addActionListener( this );
 //    menu.add( revertItem );
+
+    menu.addSeparator();
+    exportIRItem = new JMenuItem( "Export as IR...", KeyEvent.VK_I );
+    exportIRItem.setEnabled( false );
+    exportIRItem.addActionListener( this );
+    menu.add( exportIRItem );
 
     menu.addSeparator();
     recentFiles = new JMenu( "Recent" );
@@ -347,48 +358,10 @@ public class RemoteMaster
       saveItem.setEnabled( false );
       saveAsItem.setEnabled( true );
     }
+    exportIRItem.setEnabled( true );
+    uploadItem.setEnabled( true );
     remoteConfig = new RemoteConfiguration( file );
-    generalPanel.set( remoteConfig );
-
-    keyMovePanel.set( remoteConfig );
-    macroPanel.set( remoteConfig );
-    AddressRange range = remoteConfig.getRemote().getAdvanceCodeAddress();
-    int available = range.getEnd() - range.getStart();
-    advProgressBar.setMinimum( 0 );
-    advProgressBar.setMaximum( available );
-    int used = remoteConfig.getAdvancedCodeBytesUsed();
-    advProgressBar.setValue( used );
-    advProgressBar.setString( Integer.toString( available - used ) + " free" );
-
-    devicePanel.set( remoteConfig );
-    protocolPanel.set( remoteConfig );
-    range = remoteConfig.getRemote().getUpgradeAddress();
-    available = range.getEnd() - range.getStart();
-    upgradeProgressBar.setMinimum( 0 );
-    upgradeProgressBar.setMaximum( available );
-    used = remoteConfig.getUpgradeCodeBytesUsed();
-    upgradeProgressBar.setValue( used );
-    upgradeProgressBar.setString( Integer.toString( available - used ) + " free" );
-
-    learnedPanel.set( remoteConfig );
-    range = remoteConfig.getRemote().getLearnedAddress();
-    if ( range != null )
-    {
-      available = range.getEnd() - range.getStart();
-      learnedProgressBar.setMinimum( 0 );
-      learnedProgressBar.setMaximum( available );
-      used = remoteConfig.getLearnedSignalBytesUsed();
-      learnedProgressBar.setValue( used );
-      learnedProgressBar.setString( Integer.toString( available - used ) + " free" );
-    }
-    else
-    {
-      learnedProgressBar.setValue( 0 );
-      learnedProgressBar.setString( "N/A" );
-    }
-
-    rawDataPanel.set( remoteConfig );
-
+    update();
     setTitleFile( file );
     this.file = file;
     return file;
@@ -459,6 +432,43 @@ public class RemoteMaster
       setTitleFile( file );
       updateRecentFiles( file );
       saveItem.setEnabled( true );
+      exportIRItem.setEnabled( true );
+      uploadItem.setEnabled( true );
+    }
+  }
+
+  public void exportAsIR()
+    throws IOException
+  {
+    RMFileChooser chooser = getFileChooser();
+    String name = file.getName().toLowerCase();
+    if ( !name.endsWith( ".ir" ) )
+    {
+      int dot = name.lastIndexOf( '.' );
+      name = name.substring( 0, dot ) + ".IR";
+      file = new File( name );
+    }
+    chooser.setSelectedFile( file );
+    int returnVal = chooser.showSaveDialog( this );
+    if ( returnVal == RMFileChooser.APPROVE_OPTION )
+    {
+      name = chooser.getSelectedFile().getAbsolutePath();
+      if ( !name.toLowerCase().endsWith( ".ir" ))
+        name = name + ".IR";
+      File newFile = new File( name );
+      int rc = JOptionPane.YES_OPTION;
+      if ( newFile.exists())
+      {
+        rc = JOptionPane.showConfirmDialog( this,
+                                            newFile.getName() + " already exists.  Do you want to replace it?",
+                                            "Replace existing file?",
+                                            JOptionPane.YES_NO_OPTION );
+      }
+      if ( rc != JOptionPane.YES_OPTION )
+        return;
+
+      file = newFile;
+      remoteConfig.exportIR( file );
     }
   }
 
@@ -481,6 +491,8 @@ public class RemoteMaster
         remoteConfig.save( file );
       else if ( source == saveAsItem )
         saveAs();
+      else if ( source == exportIRItem )
+        exportAsIR();
       else if ( source == exitItem )
         dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ));
       else if ( source == aboutItem )
@@ -542,39 +554,25 @@ public class RemoteMaster
         remoteConfig = new RemoteConfiguration( remote );
         serial.readRemote( remote.getBaseAddress(), remoteConfig.getData());
         remoteConfig.parseData();
-        generalPanel.set( remoteConfig );
-
-        keyMovePanel.set( remoteConfig );
-        macroPanel.set( remoteConfig );
-        AddressRange range = remoteConfig.getRemote().getAdvanceCodeAddress();
-        int available = range.getEnd() - range.getStart();
-        advProgressBar.setMinimum( 0 );
-        advProgressBar.setMaximum( available );
-        int used = remoteConfig.getAdvancedCodeBytesUsed();
-        advProgressBar.setValue( used );
-        advProgressBar.setString( Integer.toString( available - used ) + " free" );
-
-        devicePanel.set( remoteConfig );
-        protocolPanel.set( remoteConfig );
-        range = remoteConfig.getRemote().getUpgradeAddress();
-        available = range.getEnd() - range.getStart();
-        upgradeProgressBar.setMinimum( 0 );
-        upgradeProgressBar.setMaximum( available );
-        used = remoteConfig.getUpgradeCodeBytesUsed();
-        upgradeProgressBar.setValue( used );
-        upgradeProgressBar.setString( Integer.toString( available - used ) + " free" );
-
-        learnedPanel.set( remoteConfig );
-        range = remoteConfig.getRemote().getLearnedAddress();
-        available = range.getEnd() - range.getStart();
-        learnedProgressBar.setMinimum( 0 );
-        learnedProgressBar.setMaximum( available );
-        used = remoteConfig.getLearnedSignalBytesUsed();
-        learnedProgressBar.setValue( used );
-        learnedProgressBar.setString( Integer.toString( available - used ) + " free" );
-
-        rawDataPanel.set( remoteConfig );
-
+        update();
+      }
+      else if ( source == uploadItem )
+      {
+        JP12Serial serial = new JP12Serial();
+        String port = serial.openRemote( null );
+        if ( port == null )
+        {
+          JOptionPane.showMessageDialog( this, "No response from remote!\n" );
+          return;
+        }
+        String sig = serial.getRemoteSignature();
+        if ( !sig.equals( remoteConfig.getRemote().getSignature()))
+        {
+          JOptionPane.showMessageDialog( this, "Signatures don't match!\n" );
+          return;
+        }
+        int rc = serial.writeRemote( remoteConfig.getRemote().getBaseAddress(), remoteConfig.getData());
+        JOptionPane.showMessageDialog( this, "writeRemote returned " + rc );
       }
       else
       {
@@ -590,11 +588,66 @@ public class RemoteMaster
       ex.printStackTrace( System.err );
     }
   }
+  
+  private void update()
+  {
+    generalPanel.set( remoteConfig );
+    keyMovePanel.set( remoteConfig );
+    macroPanel.set( remoteConfig );
+    if ( remoteConfig.getRemote().getSpecialProtocols().isEmpty())
+    {
+      if ( tabbedPane.getComponentAt( 3 ) == specialFunctionPanel )
+        tabbedPane.remove( 3 );
+    }
+    else
+    {
+      if ( tabbedPane.getComponentAt( 3 ) != specialFunctionPanel )
+        tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, 3 );
+    }
+
+    specialFunctionPanel.set( remoteConfig );
+    AddressRange range = remoteConfig.getRemote().getAdvanceCodeAddress();
+    int available = range.getEnd() - range.getStart();
+    advProgressBar.setMinimum( 0 );
+    advProgressBar.setMaximum( available );
+    int used = remoteConfig.getAdvancedCodeBytesUsed();
+    advProgressBar.setValue( used );
+    advProgressBar.setString( Integer.toString( available - used ) + " free" );
+
+    devicePanel.set( remoteConfig );
+    protocolPanel.set( remoteConfig );
+    range = remoteConfig.getRemote().getUpgradeAddress();
+    available = range.getEnd() - range.getStart();
+    upgradeProgressBar.setMinimum( 0 );
+    upgradeProgressBar.setMaximum( available );
+    used = remoteConfig.getUpgradeCodeBytesUsed();
+    upgradeProgressBar.setValue( used );
+    upgradeProgressBar.setString( Integer.toString( available - used ) + " free" );
+
+    learnedPanel.set( remoteConfig );
+    range = remoteConfig.getRemote().getLearnedAddress();
+    if ( range != null )
+    {
+      available = range.getEnd() - range.getStart();
+      learnedProgressBar.setMinimum( 0 );
+      learnedProgressBar.setMaximum( available );
+      used = remoteConfig.getLearnedSignalBytesUsed();
+      learnedProgressBar.setValue( used );
+      learnedProgressBar.setString( Integer.toString( available - used ) + " free" );
+    }
+    else
+    {
+      learnedProgressBar.setValue( 0 );
+      learnedProgressBar.setString( "N/A" );
+    }
+
+    rawDataPanel.set( remoteConfig );
+  }
 
   public void propertyChange( PropertyChangeEvent event )
   {
     Object source = event.getSource();
-    if (( source == keyMovePanel.getModel()) || ( source == macroPanel.getModel()))
+    if (( source == keyMovePanel.getModel()) || ( source == macroPanel.getModel()) || ( source == specialFunctionPanel.getModel()))
     {
       int used = remoteConfig.updateAdvancedCodes();
       advProgressBar.setValue( used );
@@ -653,6 +706,8 @@ public class RemoteMaster
       properties.setProperty( "RDFPath", rdfDir );
       
       ProtocolManager.getProtocolManager().load( new File( workDir, "protocols.ini" ));
+      
+      DigitMaps.load( new File( workDir, "digitmaps.bin" ));
       if ( launchRM )
       {
         RemoteMaster rm = new RemoteMaster( workDir, properties );

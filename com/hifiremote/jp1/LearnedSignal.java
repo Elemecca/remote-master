@@ -23,7 +23,7 @@ public class LearnedSignal
   public void store( PropertyWriter pw )
   {
     pw.print( "KeyCode", keyCode );
-    pw.print( "DeviceButtonINdex", deviceButtonIndex );
+    pw.print( "DeviceButtonIndex", deviceButtonIndex );
     pw.print( "Data", data );
     if (( notes != null ) && !notes.equals( "" ));
       pw.print( "Notes", notes );
