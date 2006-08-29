@@ -44,7 +44,7 @@ public class ToadTogFunction
   {
     int style = getStyle();
     
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( "ToadTog" );
     buff.append( '(' );
     buff.append( Integer.toString( getToggleNumber()));
@@ -60,7 +60,7 @@ public class ToadTogFunction
     int style = getStyle();
     short[] keyCodes = data.getData();
     
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( '[' );
     buff.append( onStrings[ style ]);
     buff.append( "]:" );
@@ -95,6 +95,47 @@ public class ToadTogFunction
     }
     
     return buff.toString();
+  }
+
+  public void update( SpecialFunctionDialog dlg )
+  {
+    dlg.setToggle( getToggleNumber());
+    dlg.setCondition( getStyle());
+    
+    short[] keyCodes = data.getData();
+
+    int length = getOnLength();
+    Integer[] temp = new Integer[ length ];    
+    int offset = 1;
+    for ( int i = 0; i < length; ++i )
+      temp[ i ] = new Integer( keyCodes[ offset++ ]);
+    dlg.setFirstMacroButtons( temp );
+
+    length = keyCodes.length - length - 1;
+    temp = new Integer[ length ];    
+    for ( int i = 0; i < length; ++i )
+      temp[ i ] = new Integer( keyCodes[ offset++ ]);
+    dlg.setSecondMacroButtons( temp );
+  }
+  
+  public static Hex createHex( SpecialFunctionDialog dlg )
+  {
+    int toggle = dlg.getToggle();
+    int condition = dlg.getCondition();
+    
+    Integer[] firstKeyCodes = dlg.getFirstMacroButtons();
+    Integer[] secondKeyCodes = dlg.getSecondMacroButtons();
+    
+    short[] temp = new short[ 1 + firstKeyCodes.length + secondKeyCodes.length ];
+    temp[ 0 ] = ( short )((( condition & 2 ) << 6 ) | (( condition & 1 ) << 3 ) |
+                          ( toggle << 4 ) | firstKeyCodes.length );
+    int offset = 1;
+    for ( int i = 0; i < firstKeyCodes.length; ++i )
+      temp[ offset++ ] = firstKeyCodes[ i ].shortValue();
+    for ( int i = 0; i < secondKeyCodes.length; ++i )
+      temp[ offset++ ] = secondKeyCodes[ i ].shortValue();
+    
+    return new Hex( temp );
   }
   
   public static int TOGGLE = 0;

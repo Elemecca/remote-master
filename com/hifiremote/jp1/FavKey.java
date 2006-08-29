@@ -20,7 +20,7 @@ public class FavKey
 
   public String toString()
   {
-    StringBuffer temp = new StringBuffer( 25 );
+    StringBuilder temp = new StringBuilder( 25 );
     temp.append( '$' )
         .append( Integer.toHexString( keyCode ))
         .append( ", $" )

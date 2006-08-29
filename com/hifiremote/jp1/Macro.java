@@ -23,13 +23,20 @@ public class Macro
   public String getValueString( RemoteConfiguration remoteConfig )
   {
     Remote remote = remoteConfig.getRemote();
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     short[] keys = data.getData();
     for ( int i = 0; i < keys.length; ++i )
     {
       if ( i != 0 )
         buff.append( ';' );
-      buff.append( remote.getButtonName( keys[ i ]));
+      if ( keys[ i ] == 0 )
+      {
+        buff.append( "{Pause}" );
+        while (( i < keys.length ) && ( keys[ i ] == 0 ))
+          ++i;
+      }
+      else
+        buff.append( remote.getButtonName( keys[ i ]));
     }
     return buff.toString();
   }

@@ -59,7 +59,7 @@ public class RemoteConfiguration
           Object o = ct.newInstance( section );
           if ( o instanceof SpecialProtocolFunction )
             specialFunctions.add(( SpecialProtocolFunction )o );
-          if ( o instanceof KeyMove )
+          else if ( o instanceof KeyMove )
             keymoves.add(( KeyMove )o );
           else if ( sectionName.equals( "Macro" ))
             macros.add(( Macro )o );
@@ -305,7 +305,7 @@ public class RemoteConfiguration
   
   private DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
   {
-    return findDeviceUpgrade( deviceButton.getDeviceSetupCode( data ), 
+    return findDeviceUpgrade( deviceButton.getDeviceTypeIndex( data ), 
                               deviceButton.getSetupCode( data ));
   }
   
@@ -349,6 +349,20 @@ public class RemoteConfiguration
       setting.decode( data );
   }
 
+  public Vector< SpecialProtocol > getSpecialProtocols()
+  {
+    // Determine which upgrades are special protocol upgrades
+    Vector< SpecialProtocol > specialUpgrades = new Vector< SpecialProtocol >();
+    Vector< SpecialProtocol > specialProtocols = remote.getSpecialProtocols();
+    for ( SpecialProtocol sp : specialProtocols )
+    {
+      DeviceUpgrade device = sp.getDeviceUpgrade( devices );
+      if ( device != null )
+        specialUpgrades.add( sp );
+    }
+    return specialUpgrades;
+  }
+  
   private void decodeAdvancedCodes( Vector< String > notes )
   {
     Enumeration< String > notesEnum = notes.elements();
@@ -367,22 +381,32 @@ public class RemoteConfiguration
     }
     
     int count = 0;
+    FavKey favKey = remote.getFavKey();
     while ( offset <= endOffset )
     {
+      System.err.print( "Decoding advCode at $" + Integer.toHexString( offset ));
       short keyCode = data[ offset++ ];
       if ( keyCode == remote.getSectionTerminator())
         break;
+      System.err.println( ", keyCode=" + keyCode + ':' + remote.getButtonName( keyCode ));
 
       int boundDeviceIndex = 0;
       boolean isMacro = false;
+      boolean isFav = false;
       int length = 0;
       if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
       {
         boundDeviceIndex = data[ offset ] >> 4;
+        length = ( data[ offset++ ] & 0x0F );
         if ( boundDeviceIndex == 1 )
           isMacro = true;
+        if ( boundDeviceIndex == 3 )
+        {
+          isFav = true;
+          if (( favKey != null ) && ( keyCode == favKey.getKeyCode()))
+            length *= favKey.getEntrySize();
+        }
         boundDeviceIndex >>= 1;
-        length = data[ offset++ ] & 0x0F;
       }
       else // LONG
       {
@@ -391,14 +415,21 @@ public class RemoteConfiguration
           isMacro = true;
         boundDeviceIndex = type & 0x0F;
         length = data[ offset++ ];
-      }  
+        if (( favKey != null ) && ( keyCode == favKey.getKeyCode()))
+        {
+          isFav = true;
+          length *= favKey.getEntrySize();
+        }
+      }
+        
+      System.err.println( "length=" + length );
 
       String text = null;
       if ( notesEnum.hasMoreElements())
         text = notesEnum.nextElement();
       if ( "".equals( text ))
         text = null;
-      if ( isMacro )
+      if ( isMacro || isFav )
       {
         Hex keyCodes = Hex.subHex( data, offset, length );
         macros.add( new Macro( keyCode, keyCodes, text ));
@@ -407,7 +438,7 @@ public class RemoteConfiguration
       {
         KeyMove keyMove = null;
         Hex hex = Hex.subHex( data, offset, length );
-        if ( remote.getAdvCodeFormat() == remote.HEX )
+        if ( remote.getAdvCodeFormat() == remote.HEX_FORMAT )
           keyMove = new KeyMove( keyCode, boundDeviceIndex, hex, text );
         else if ( remote.getEFCDigits() == 3 )
         {
@@ -433,6 +464,7 @@ public class RemoteConfiguration
             if ( text == null )
               text = remote.getButtonName( keyCode );
             f = new Function( text, cmd, "imported from keyMove" );
+            boundUpgrade.getFunctions().add( f );
           }
           int state = Button.NORMAL_STATE;
           Button b = remote.getButton( keyCode );
@@ -478,6 +510,19 @@ public class RemoteConfiguration
     }
   }
   
+  public int getDeviceButtonIndex( DeviceUpgrade upgrade )
+  {
+    DeviceButton[] deviceButtons = remote.getDeviceButtons();
+    for ( int i = 0; i < deviceButtons.length; ++i )
+    {
+      DeviceButton button = deviceButtons[ i ];
+      if (( button.getDeviceTypeIndex( data ) == upgrade.getDeviceType().getNumber()) &&
+          ( button.getSetupCode( data ) == upgrade.getSetupCode()))
+        return i;
+    }
+    return -1;
+  }
+  
   public SpecialProtocol getSpecialProtocol( DeviceUpgrade upgrade )
   {
     for ( SpecialProtocol sp : remote.getSpecialProtocols())
@@ -488,37 +533,6 @@ public class RemoteConfiguration
     return null;
   }
   
-  public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode, int movedKeyCode, String notes )
-  {
-    KeyMove keyMove = null;
-    keyMove = new KeyMoveKey( keyCode, deviceIndex, deviceType, setupCode, movedKeyCode, notes );
-    return keyMove;
-  }
-
-  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, Hex cmd, String notes )
-  {
-    KeyMove keyMove = null;
-    if ( remote.getAdvCodeFormat() == remote.HEX )
-      keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
-    else if ( remote.getEFCDigits() == 3 )
-      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ), notes );
-    else // EFCDigits == 5
-      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, EFC5.parseHex( cmd ), notes );
-    return keyMove;
-  }
-
-  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, int efc, String notes )
-  {
-    KeyMove keyMove = null;
-    if ( remote.getAdvCodeFormat() == remote.HEX )
-      keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC.toHex( efc ), notes );
-    else if ( remote.getEFCDigits() == 3 )
-      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
-    else // EFCDigits == 5
-      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
-    return keyMove;
-  }
-
   public int getAdvancedCodeBytesUsed()
   {
     AddressRange advCodeRange = remote.getAdvanceCodeAddress();
@@ -577,11 +591,29 @@ public class RemoteConfiguration
     return offset;
   }
   
+  public Vector< KeyMove > getUpgradeKeyMoves()
+  {
+    Vector< KeyMove > rc = new Vector< KeyMove >();
+    for ( DeviceUpgrade device : devices )
+    {
+      int devButtonIndex = getDeviceButtonIndex( device );
+      if ( devButtonIndex == -1 )
+        continue;
+      for ( KeyMove keyMove : device.getKeyMoves())
+      {
+        keyMove.setDeviceButtonIndex( devButtonIndex );
+        rc.add( keyMove );
+      }
+    }
+    return rc;
+  }
+  
   public int updateAdvancedCodes()
   {
     AddressRange range = remote.getAdvanceCodeAddress();
     int offset = range.getStart();
     offset = updateKeyMoves( keymoves, offset );
+    offset = updateKeyMoves( getUpgradeKeyMoves(), offset );
     offset = updateKeyMoves( specialFunctions, offset );
     
     for ( Macro macro : macros )
@@ -679,7 +711,7 @@ public class RemoteConfiguration
     {
       offset += 2;
       int setupCode = Hex.get( data, offset ) & 0x7FF;
-      DeviceType devType = remote.getDeviceTypes()[ data[ offset ] >> 4 ];
+      DeviceType devType = remote.getDeviceTypeByIndex( data[ offset ] >> 4 );
       int codeOffset = offset + 2 * count; // compute offset to offset of upgrade code
       codeOffset = Hex.get( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
       int pid = data[ codeOffset ];
@@ -709,14 +741,7 @@ public class RemoteConfiguration
           usedProtocols.add( pu );
       }
 
-      String[] aliases = remote.getDeviceTypeAliasNames();
-      String alias = null;
-      for ( int j = 0; j < aliases.length; ++j )
-      {
-        alias = aliases[ j ];
-        if ( remote.getDeviceTypeByAliasName( alias ) == devType )
-          break;
-      }
+      String alias = remote.getDeviceTypeAlias( devType );
 
       short[] pidHex = new short[ 2 ];
       pidHex[ 0 ] = ( short )(( pid > 0xFF ) ? 1 : 0 );
@@ -1009,7 +1034,7 @@ public class RemoteConfiguration
     throws IOException
   {
     BufferedReader br = new BufferedReader( new StringReader( text ));
-    StringBuffer buff = new StringBuffer( text.length());
+    StringBuilder buff = new StringBuilder( text.length());
     String line = br.readLine();
     while ( line != null )
     {

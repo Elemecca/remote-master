@@ -65,7 +65,7 @@ public class ProtocolUpgradeTableModel
       case 1:
       {
         int pid = pu.getPid();
-        StringBuffer buff = new StringBuffer( 4 );
+        StringBuilder buff = new StringBuilder( 4 );
         buff.append( '0' );
         if ( pid < 0x100 )
           buff.append( '0' );

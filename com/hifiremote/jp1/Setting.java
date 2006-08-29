@@ -35,7 +35,7 @@ public class Setting
 
   public String toString()
   {
-    StringBuffer temp = new StringBuffer( 100 );
+    StringBuilder temp = new StringBuilder( 100 );
     temp.append( title )
         .append( "=$" ).append( Integer.toHexString( byteAddress ))
         .append( '.' ).append( bitNumber )
@@ -76,10 +76,9 @@ public class Setting
     int temp = data[ byteAddress ];
     if ( inverted )
       temp = ~temp;
-    temp &= mask;
     int shift = bitNumber - numberOfBits + 1;
     temp >>= shift;
-    value = temp;
+    value = temp & mask;
   }
 
   public void store( short[] data )

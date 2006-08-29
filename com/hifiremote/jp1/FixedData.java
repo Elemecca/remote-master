@@ -13,7 +13,7 @@ public class FixedData
 
   public String toString()
   {
-    StringBuffer temp = new StringBuffer( 200 );
+    StringBuilder temp = new StringBuilder( 200 );
     temp.append( '$' ).append( Integer.toHexString( address ))
         .append( " =" );
     for ( int i = 0; i < data.length ; i++ )

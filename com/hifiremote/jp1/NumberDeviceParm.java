@@ -101,7 +101,7 @@ public class NumberDeviceParm
 
   public String toString()
   {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( name );
     if (( base == 6 ) || ( bits != 8 ))
       buff.append( ':' );

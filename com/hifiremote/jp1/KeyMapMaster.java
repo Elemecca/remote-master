@@ -16,7 +16,6 @@ public class KeyMapMaster
  implements ActionListener
 {
   private static KeyMapMaster me = null;
-  public static final String version = "v1.64";
   private Preferences preferences = null;
 
   private DeviceEditorPanel editorPanel = null;
@@ -55,6 +54,7 @@ public class KeyMapMaster
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
 
     preferences = new Preferences( prefs );
+    homeDirectory = prefs.getFile().getParentFile();
 
     addWindowListener( new WindowAdapter()
     {
@@ -616,10 +616,10 @@ public class KeyMapMaster
         String latestVersion = in.readLine();
         in.close();
         String text = null;
-        if ( version.equals( latestVersion ))
-          text = "You are using the latest version (" + version + ") of RemoteMaster.";
+        if ( RemoteMaster.version.equals( latestVersion ))
+          text = "You are using the latest version (" + RemoteMaster.version + ") of RemoteMaster.";
         else
-          text = "<html>Version " + latestVersion + " of RemoteMaster is available, but you are still using version " + version +
+          text = "<html>Version " + latestVersion + " of RemoteMaster is available, but you are still using version " + RemoteMaster.version +
                  "<p>The new version is available for download from<br><a href=\"http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion + ".zip?download\">" +
                  "http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion + ".zip?download</a></html>";
 
@@ -631,7 +631,7 @@ public class KeyMapMaster
       }
       else if ( source == aboutItem )
       {
-        String text = "<html><b>RemoteMaster Device Upgrade Editor, " + version + "</b>" +
+        String text = "<html><b>RemoteMaster Device Upgrade Editor, " + RemoteMaster.version + "</b>" +
                       "<p>Get the latest version at <a href=\"http://controlremote.sourceforge.net\">http://controlremote.sourceforge.net</a></p>" +
                       "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
                       "<p>RDFs loaded from <b>" + preferences.getRDFPath() + "</b></p>" +

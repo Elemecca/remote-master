@@ -39,7 +39,7 @@ public class Preferences
       file.remove( "CustomNames" );
     else
     {
-      StringBuffer value = new StringBuffer();
+      StringBuilder value = new StringBuilder();
       for ( int i = 0; i < customNames.length; i++ )
       {
         if ( i != 0 )

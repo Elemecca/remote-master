@@ -167,7 +167,7 @@ public class DeviceCombiner
     Processor processor = r.getProcessor();
     String name = processor.getName();
     String version = processor.getVersion();
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     Hex base = null;
     int[] devComb = r.getDevCombAddresses();
     if ( devComb == null )
@@ -328,7 +328,7 @@ public class DeviceCombiner
 
   private String intToString( int val )
   {
-    StringBuffer buff = new StringBuffer( 5 );
+    StringBuilder buff = new StringBuilder( 5 );
     buff.append( Integer.toHexString( val >> 8 ));
     buff.append( ' ' );
     buff.append( Integer.toHexString( val & 0xFF ));
@@ -337,7 +337,7 @@ public class DeviceCombiner
 
   private String intToStringReverse( int val )
   {
-    StringBuffer buff = new StringBuffer( 5 );
+    StringBuilder buff = new StringBuilder( 5 );
     buff.append( Integer.toHexString( val & 0xFF ));
     buff.append( ' ' );
     buff.append( Integer.toHexString( val >> 8 ));

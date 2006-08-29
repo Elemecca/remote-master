@@ -185,7 +185,7 @@ public abstract class TablePanel< E >
         JTable table = ( JTable )comp;
         int[] selectedRows = table.getSelectedRows();
         int[] selectedCols = table.getSelectedColumns();
-        StringBuffer buff = new StringBuffer( 200 );
+        StringBuilder buff = new StringBuilder( 200 );
         for ( int rowNum = 0; rowNum < selectedRows.length; rowNum ++ )
         {
           if ( rowNum != 0 )

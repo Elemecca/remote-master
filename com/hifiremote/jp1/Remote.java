@@ -317,7 +317,6 @@ public class Remote
   public DeviceType[] getDeviceTypes()
   {
     DeviceType[] types = new DeviceType[ deviceTypes.size() ];
-    int i = 0;
     for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
     {
       DeviceType type = ( DeviceType )e.nextElement();
@@ -349,6 +348,30 @@ public class Remote
         return type;
     }
     return null;
+  }
+  
+  public String getDeviceTypeAlias( DeviceType type )
+  {
+    String tentative = null;
+    for ( String alias : deviceTypeAliasNames )
+    {
+      if ( getDeviceTypeByAliasName( alias ) != type )
+        continue;
+      String typeName = type.getName();
+      if ( typeName.equals( alias ))
+        return alias;
+      if (( typeName.contains( alias ) || alias.contains( typeName )) && ( tentative == null ))
+        tentative = alias;
+    }  
+    if ( tentative != null )
+      return tentative;
+    for ( String alias : deviceTypeAliasNames )
+      if ( getDeviceTypeByAliasName( alias ) == type )
+      {
+        tentative = alias;
+        break;
+      }
+    return tentative;
   }
 
   public DeviceButton[] getDeviceButtons()
@@ -469,7 +492,7 @@ public class Remote
         int entrySize = rdr.parseNumber( st.nextToken());
         boolean segregated = false;
         if ( st.hasMoreTokens())
-           segregated = ( rdr.parseNumber( st.nextToken()) != 0 );
+           segregated = rdr.parseNumber( st.nextToken()) != 0;
         favKey = new FavKey( keyCode, deviceButtonAddress, maxEntries, entrySize, segregated );
       }
       else if ( parm.equals( "OEMDevice" ))
@@ -588,9 +611,9 @@ public class Remote
       {
         String value = st.nextToken();
         if ( value.equals( "HEX" ))
-          advCodeFormat = HEX;
+          advCodeFormat = HEX_FORMAT;
         else if ( value.equals( "EFC" ))
-          advCodeFormat = EFC;
+          advCodeFormat = EFC_FORMAT;
       }
       else if ( parm.equals( "AdvCodeBindFormat" ))
       {
@@ -752,7 +775,7 @@ public class Remote
       StringTokenizer st = new StringTokenizer( line, "=" );
       String name = st.nextToken();
       Hex pid = new Hex( st.nextToken());
-      specialProtocols.add( new SpecialProtocol( name, pid ));
+      specialProtocols.add( SpecialProtocol.create( name, pid ));
     }
     checkSums = ( CheckSum[] )work.toArray( checkSums );
     return line;
@@ -1527,6 +1550,42 @@ public class Remote
     return encdec;
   }
 
+  public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode, int movedKeyCode, String notes )
+  {
+    KeyMove keyMove = null;
+    keyMove = new KeyMoveKey( keyCode, deviceIndex, deviceType, setupCode, movedKeyCode, notes );
+    return keyMove;
+  }
+
+  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, Hex cmd, String notes )
+  {
+    KeyMove keyMove = null;
+    if ( advCodeFormat == HEX_FORMAT )
+      keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
+    else if ( efcDigits == 3 )
+      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ), notes );
+    else // EFCDigits == 5
+      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, EFC5.parseHex( cmd ), notes );
+    return keyMove;
+  }
+
+  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, int efc, String notes )
+  {
+    KeyMove keyMove = null;
+    if ( advCodeFormat == HEX_FORMAT )
+    {
+      if ( efcDigits == 3 )
+        keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC.toHex( efc ), notes );
+      else // EFCDigits == 5
+        keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC5.toHex( efc ), notes );
+    }
+    else if ( efcDigits == 3 )
+      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
+    else // EFCDigits == 5
+      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
+    return keyMove;
+  }
+
   public Integer getMaxUpgradeLength(){ return maxUpgradeLength; }
   public Integer getMaxProtocolLength(){ return maxProtocolLength; }
   public Integer getMaxCombinedUpgradeLength(){ return maxCombinedUpgradeLength; }
@@ -1556,6 +1615,7 @@ public class Remote
   private int eepromSize;
   private int deviceCodeOffset;
   private FavKey favKey = null;
+  public FavKey getFavKey(){ return favKey; }
   private OEMDevice oemDevice = null;
   private int oemControl = 0;
   private boolean upgradeBug = false;
@@ -1604,11 +1664,11 @@ public class Remote
   private String shiftLabel = "Shift";
   private String xShiftLabel = "XShift";
   private int defaultRestrictions = 0;
-  public static final int HEX = 0;
-  public static final int EFC = 1;
+  public static final int HEX_FORMAT = 0;
+  public static final int EFC_FORMAT = 1;
   public static final int NORMAL = 0;
   public static final int LONG = 1;
-  private int advCodeFormat = HEX;
+  private int advCodeFormat = HEX_FORMAT;
   private int advCodeBindFormat = NORMAL;
   private int efcDigits = 3;
   private int[] devCombAddress = null;

@@ -70,7 +70,7 @@ public class ChoiceDeviceParm
 
   public String toString()
   {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( name );
     buff.append( ':' );
     for ( int i = 1; i < choices.length; i ++ )

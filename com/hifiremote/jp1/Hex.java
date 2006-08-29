@@ -78,6 +78,11 @@ public class Hex
     data[ offset + 1 ] = ( short )( value & 0xFF );
   }
 
+  public void put( Hex src )
+  {
+    put( src, 0 );
+  }
+  
   public void put( Hex src, int index )
   {
     put( src.data, index );
@@ -95,7 +100,10 @@ public class Hex
 
   public static void put( short[] src, short[] dest, int index )
   {
-    System.arraycopy( src, 0, dest, index, src.length );
+    int length = src.length;
+    if (( index + length ) > dest.length )
+      length = dest.length - index;
+    System.arraycopy( src, 0, dest, index, length );
   }
 
   public static short[] parseHex( String text )
@@ -144,7 +152,7 @@ public class Hex
 
   public static String asString( int value )
   {
-    StringBuffer buff = new StringBuffer( 2 );
+    StringBuilder buff = new StringBuilder( 2 );
     String str = Integer.toHexString( value & 0xFF );
     if ( str.length() < 2 )
       buff.append( '0' );
@@ -157,7 +165,7 @@ public class Hex
     if ( data == null )
       return null;
 
-    StringBuffer rc = new StringBuffer( 3 * data.length );
+    StringBuilder rc = new StringBuilder( 3 * data.length );
     for ( int i = 0; i < data.length; i++ )
     {
       int val = data[ i ];
@@ -198,7 +206,7 @@ public class Hex
     if ( data == null )
       return null;
 
-    StringBuffer rc = new StringBuffer( 4 * data.length );
+    StringBuilder rc = new StringBuilder( 4 * data.length );
     int breakCount = breakAt;
     int last = offset + length;
     for ( int i = offset; i < last; ++i )

@@ -38,7 +38,7 @@ public class IntOrNullFormatter
               }
             }
             String text = getFormattedTextField().getText();
-            StringBuffer buff = new StringBuffer( chars.length + string.length());
+            StringBuilder buff = new StringBuilder( chars.length + string.length());
             buff.append( text.substring( 0, offset ));
             buff.append( string );
             buff.append( text.substring( offset ));
@@ -75,7 +75,7 @@ public class IntOrNullFormatter
             }
             String text = getFormattedTextField().getText();
 
-            StringBuffer buff = new StringBuffer();
+            StringBuilder buff = new StringBuilder();
             buff.append( text.substring( 0, offset ));
             buff.append( string );
             buff.append( text.substring( offset + length ));

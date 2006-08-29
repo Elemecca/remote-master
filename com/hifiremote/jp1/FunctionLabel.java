@@ -70,7 +70,7 @@ public class FunctionLabel
 
   public void updateToolTipText()
   {
-    StringBuffer buff = new StringBuffer( 400 );
+    StringBuilder buff = new StringBuilder( 400 );
     buff.append( "<html>" );
     if ( function == null )
       buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;clear the function performed by a button." );

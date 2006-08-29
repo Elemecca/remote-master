@@ -92,7 +92,7 @@ public class EFC
   
   public static String toString( int efc )
   {
-    StringBuffer buff = new StringBuffer( 3 );
+    StringBuilder buff = new StringBuilder( 3 );
     if ( efc < 100 )
       buff.append( '0' );
     if ( efc < 10 )

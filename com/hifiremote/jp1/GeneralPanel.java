@@ -51,6 +51,8 @@ public class GeneralPanel
     table.setPreferredScrollableViewportSize( d );
 
     notes = new JTextArea( 10, 20 );
+    notes.setLineWrap( true );
+    notes.setWrapStyleWord( true );
     scrollPane = new JScrollPane( notes );
     scrollPane.setBorder(
       BorderFactory.createCompoundBorder(

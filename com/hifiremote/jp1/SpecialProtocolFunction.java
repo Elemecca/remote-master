@@ -20,6 +20,8 @@ public abstract class SpecialProtocolFunction
     super( props );
   }
   
+  public abstract void update( SpecialFunctionDialog dlg );
+  
   public abstract String getType();
   public abstract String getDisplayType();
 }

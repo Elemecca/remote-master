@@ -190,7 +190,7 @@ public abstract class RMTablePanel< E >
         JTable table = ( JTable )comp;
         int[] selectedRows = table.getSelectedRows();
         int[] selectedCols = table.getSelectedColumns();
-        StringBuffer buff = new StringBuffer( 200 );
+        StringBuilder buff = new StringBuilder( 200 );
         for ( int rowNum = 0; rowNum < selectedRows.length; rowNum ++ )
         {
           if ( rowNum != 0 )
@@ -353,7 +353,9 @@ public abstract class RMTablePanel< E >
   protected abstract E createRowObject( E baseObject );
   protected E getRowObject( int row )
   {
-    return model.getRow( sorter.modelIndex( row ));
+    if ( row != -1 )
+      return model.getRow( sorter.modelIndex( row ));
+    return null;
   }
   protected boolean canDelete( Object o ){ return true; }
   protected void doNotDelete( Object o ){}
@@ -387,7 +389,9 @@ public abstract class RMTablePanel< E >
       if ( table.isRowSelected( row ))
         select = true;
     }
-    int modelRow = sorter.modelIndex( row );
+    int modelRow = -1;
+    if ( row != -1 )
+      modelRow = sorter.modelIndex( row );
 
     if (( source == editButton ) || ( source == editItem ))
     {

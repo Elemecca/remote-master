@@ -25,7 +25,7 @@ public class EFC5
 
   public String toString()
   {
-    StringBuffer buff = new StringBuffer( 5 );
+    StringBuilder buff = new StringBuilder( 5 );
     String temp = Integer.toString( value & 0x0FFFF );
     int len = 5 - temp.length();
     for ( int i = 0; i < len; i++ )
@@ -58,13 +58,22 @@ public class EFC5
     short[] data = hex.getData();
     if ( hex.length() == 2 )
     {
-      short byte1 = ( short )( val >> 8 & 0x00FF );
-      byte1 += 100;
-      byte1 = ( short )(( byte1 << 5 ) | ( byte1 >> 3 ));
-      byte1 ^= 0x00D5;
-      data[ 0 ] = ( short )( byte1 & 0x00FF );
-
-      data[ 1 ] = ( short )(( val & 0x00FF ) ^ 0x00C5 );
+      if ( val < 1000 )
+      {
+        int temp = val & 0xFF;
+        EFC.toHex( temp, hex, 0 );
+        data[ 1 ] = ( short )temp;
+      }
+      else
+      {
+        short byte1 = ( short )( val >> 8 & 0x00FF );
+        byte1 += 100;
+        byte1 = ( short )(( byte1 << 5 ) | ( byte1 >> 3 ));
+        byte1 ^= 0x00D5;
+        data[ 0 ] = ( short )( byte1 & 0x00FF );
+  
+        data[ 1 ] = ( short )(( val & 0x00FF ) ^ 0x00C5 );
+      }
     }
     else
     {
@@ -82,6 +91,8 @@ public class EFC5
     short[] data = hex.getData();
     if ( data.length == 2 )
     {
+//      if ( EFC.parseHex( hex, 0 ) == data[ 1 ] )
+//        return data[ 1 ];
       short byte1 = ( short )( data[ 0 ] & 0x00FF );
       byte1 ^= 0x00D5;
       byte1 = ( short )(( byte1 >> 5 ) | ( byte1 << 3 ));
@@ -89,7 +100,10 @@ public class EFC5
 
       short byte2 = ( short )(( data[ 1 ] & 0x00FF ) ^ 0x00C5 );
 
-      return ( short )(( byte1 << 8 ) + byte2 );
+      short rc = ( short )(( byte1 << 8 ) + byte2 );
+      if ( rc < 1000 )
+        rc += 65536;
+      return rc;
     }
     else
     {

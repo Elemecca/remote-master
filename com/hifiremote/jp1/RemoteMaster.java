@@ -14,7 +14,7 @@ public class RemoteMaster
  implements ActionListener, PropertyChangeListener
 {
   private static JFrame frame = null;
-  public static final String version = "v0.06";
+  public static final String version = "v1.66";
   private File dir = null;
   public File file = null;
   private RemoteConfiguration remoteConfig = null;
@@ -553,7 +553,9 @@ public class RemoteMaster
         remote.load();
         remoteConfig = new RemoteConfiguration( remote );
         serial.readRemote( remote.getBaseAddress(), remoteConfig.getData());
+        serial.closeRemote();
         remoteConfig.parseData();
+        saveAsItem.setEnabled( true );
         update();
       }
       else if ( source == uploadItem )

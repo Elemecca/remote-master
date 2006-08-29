@@ -388,13 +388,12 @@ public class DeviceEditorPanel
     KMPanel panel = protocol.getPanel( deviceUpgrade );
     protocol = ( Protocol )evt.getNewValue();
     System.err.println( protocol.getDiagnosticName());
-    /*
+    
     if ( panel != null ) 
       removePanel( panel );
     panel = protocol.getPanel( deviceUpgrade );
     if ( panel != null )
       addPanel( panel, 1 );
-    */
   }
 }
 

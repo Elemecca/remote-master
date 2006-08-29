@@ -31,7 +31,7 @@ public class PauseFunction
   public String getValueString( RemoteConfiguration remoteConfig )
   {
     /*
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( Integer.toString( getDuration()));
     buff.append( " ($" );
     buff.append( data.toString());
@@ -39,5 +39,17 @@ public class PauseFunction
     return buff.toString();
     */
     return Integer.toString( getDuration());
+  }
+  
+  public void update( SpecialFunctionDialog dlg )
+  {
+    dlg.setDuration( getDuration());
+  }
+  
+  public static Hex createHex( SpecialFunctionDialog dlg )
+  {
+    short[] hex = new short[ 1 ];
+    hex[ 0 ] = ( short )dlg.getDuration();
+    return new Hex( hex );
   }
 }

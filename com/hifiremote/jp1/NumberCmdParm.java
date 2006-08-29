@@ -69,7 +69,7 @@ public class NumberCmdParm
 
   public String toString()
   {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( name );
     if (( bits != 8 ) || ( base != 10 ))
     {

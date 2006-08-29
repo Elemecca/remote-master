@@ -35,11 +35,26 @@ public class MultiplexFunction
   
   public String getValueString( RemoteConfiguration remoteConfig )
   {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( remoteConfig.getRemote().getDeviceTypeByIndex( getNewDeviceTypeIndex()).getName());
     buff.append( ':' );
     buff.append( SetupCode.toString( getNewSetupCode()));
     
     return buff.toString();
+  }
+  
+  public void update( SpecialFunctionDialog dlg )
+  {
+    dlg.setDeviceType( getNewDeviceTypeIndex());
+    dlg.setSetupCode( getNewSetupCode());
+  }
+  
+  public static Hex createHex( SpecialFunctionDialog dlg )
+  {
+    short[] hex = new short[ 2 ];
+    int setupCode = dlg.getSetupCode();
+    hex[ 0 ] = ( short )(( dlg.getDeviceType() << 4 ) | ( setupCode >> 8 ));
+    hex[ 1 ] = ( short )( setupCode & 0xFF );
+    return new Hex( hex );
   }
 }

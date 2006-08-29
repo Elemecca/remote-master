@@ -146,7 +146,9 @@ public class DeviceUpgrade
     Protocol p = protocol;
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     Vector< Protocol > protocols = pm.getProtocolsForRemote( newRemote, false );
-    if ( !protocols.contains( p ))
+    if ( p == null )
+      protocol = protocols.firstElement();
+    else if ( !protocols.contains( p ))
     {
       System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName() +
                           " is not built into remote " + newRemote.getName());
@@ -495,15 +497,15 @@ public class DeviceUpgrade
     ButtonMap map = devType.getButtonMap();
 
     int digitMapIndex = -1;
-    if ( !remote.getOmitDigitMapByte())
+    if ( !remote.getOmitDigitMapByte() && ( index < code.length ))
       digitMapIndex = code[ index++ ] - 1;
     Vector buttons = null;
-    if ( map != null )
+    if (( map != null ) && ( index < code.length ))
       buttons = map.parseBitMap( code, index, digitMapIndex != -1 );
     else
       buttons = new Vector< Button >();
 
-    while (( code[ index++ ] & 1 ) == 0 ); // skip over the bitMap
+    while (( index < code.length ) && (( code[ index++ ] & 1 ) == 0 )); // skip over the bitMap
 
     int fixedDataOffset = index;
     int fixedDataLength = 0;
@@ -599,7 +601,10 @@ public class DeviceUpgrade
         Function f = new Function();
         String name = Integer.toString( i );
         f.setName( name );
-        f.setHex( hexCmds[ i ] );
+        Hex hex = hexCmds[ i ];
+        if ( cmdLength < hex.length() )
+          hex = hex.subHex( 0, cmdLength );
+        f.setHex( hex );
         Button b = map.get( i );
         assignments.assign( b, f );
         functions.add( f );
@@ -637,9 +642,41 @@ public class DeviceUpgrade
     return rc;
   }
 
+  public Vector< KeyMove > getKeyMoves()
+  {
+    Vector< KeyMove > keyMoves = new Vector< KeyMove >();
+    DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
+    ButtonMap map = devType.getButtonMap();
+    Button[] buttons = remote.getUpgradeButtons();
+    for ( int i = 0; i < buttons.length; i++ )
+    {
+      Button button = buttons[ i ];
+
+      Function f = assignments.getAssignment( button, Button.NORMAL_STATE );
+      KeyMove keyMove = button.getKeyMove( f, 0, setupCode, devType, remote, protocol.getKeyMovesOnly());
+      if (  keyMove != null )
+        keyMoves.add( keyMove );
+                             
+      f = assignments.getAssignment( button, Button.SHIFTED_STATE );
+      if ( button.getShiftedButton() != null )
+        f = null;
+      keyMove = button.getKeyMove( f, remote.getShiftMask(), setupCode, devType, remote, protocol.getKeyMovesOnly());
+      if (  keyMove != null )
+        keyMoves.add( keyMove );
+                            
+      f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
+      if ( button.getXShiftedButton() != null )
+        f = null;
+      keyMove = button.getKeyMove( f, remote.getXShiftMask(), setupCode, devType, remote, protocol.getKeyMovesOnly());
+      if (  keyMove != null )
+        keyMoves.add( keyMove );
+    }
+    return keyMoves;
+  }
+
   public String getUpgradeText( boolean includeNotes )
   {
-    StringBuffer buff = new StringBuffer( 400 );
+    StringBuilder buff = new StringBuilder( 400 );
     buff.append( "Upgrade code 0 = " );
 
     short[] deviceCode = getHexSetupCode();
@@ -662,7 +699,7 @@ public class DeviceUpgrade
         buff.append( descr );
       }
       buff.append( " (RM " );
-      buff.append( KeyMapMaster.version );
+      buff.append( RemoteMaster.version );
       buff.append( ')' );
     }
     buff.append( "\n " );
@@ -811,7 +848,7 @@ public class DeviceUpgrade
     return new Hex( rc );
   }
 
-  private boolean appendKeyMove( StringBuffer buff, short[] keyMove,Function f, boolean includeNotes, boolean first )
+  private boolean appendKeyMove( StringBuilder buff, short[] keyMove,Function f, boolean includeNotes, boolean first )
   {
     if (( keyMove == null ) || ( keyMove.length == 0 ))
       return first;
@@ -845,7 +882,7 @@ public class DeviceUpgrade
 
   public static String valueArrayToString( Value[] parms )
   {
-    StringBuffer buff = new StringBuffer( 200 );
+    StringBuilder buff = new StringBuilder( 200 );
     for ( int i = 0; i < parms.length; i++ )
     {
       if ( i > 0 )
@@ -1158,7 +1195,7 @@ public class DeviceUpgrade
           }
           else
           {
-            StringBuffer buff = new StringBuffer( 200 );
+            StringBuilder buff = new StringBuilder( 200 );
             buff.append( rc.substring( 1 ));
             while ( true )
             {
@@ -1310,6 +1347,8 @@ public class DeviceUpgrade
       int devBits = Integer.parseInt( bitsStr.substring( 0, 1 ), 16);
       int cmdBits = Integer.parseInt( bitsStr.substring( 1 ), 16 );
       System.err.println( "devBits=" + devBits + " and cmdBits=" + cmdBits );
+      if ( devBits == 0 ) devBits = 8;
+      if ( cmdBits == 0 ) cmdBits = 8;
 
       Vector< Integer > values = new Vector< Integer >();
 
@@ -1645,7 +1684,7 @@ public class DeviceUpgrade
           combiner.add( dev );
         }
         else
-       {
+        {
           ManualProtocol mp = new ManualProtocol( newPid, new Properties());
           mp.setRawHex( fixedData );
           combiner.add( new CombinerDevice( mp, null, null ));
@@ -1694,7 +1733,7 @@ public class DeviceUpgrade
       {
         if ( token.equals( "Line Notes:" ) || token.equals( "Notes:" ))
         {
-          StringBuffer buff = new StringBuffer();
+          StringBuilder buff = new StringBuilder();
           boolean first = true;
           String tempDelim = null;
           while (( line = in.readLine()) != null )
@@ -1720,7 +1759,17 @@ public class DeviceUpgrade
           }
           notes = buff.toString().trim();
           if ( protocol.getClass() == ManualProtocol.class )
+          {
             protocol.importUpgradeCode( notes );
+            Hex h = protocol.getCode( remote );
+            int value = h.getData()[ 2 ] & 0xFF;
+            if ( remote.getProcessor().getFullName().equals( "HCS08" ))
+              value = h.getData()[ 4 ] & 0xFF;
+            int fixedDataLength = value >> 4;
+            int cmdLength = value & 0x000F;
+            (( ManualProtocol )protocol ).setDefaultCmd( new Hex( cmdLength ));
+
+          }
         }
       }
     }

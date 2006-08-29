@@ -31,9 +31,9 @@ public class UDSMFunction
   public String getValueString( RemoteConfiguration remoteConfig )
   {
     Remote remote = remoteConfig.getRemote();
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     int keyCode = getMacroKeyCode();
-    buff.append( remote.getButton( keyCode ));
+    buff.append( remote.getButtonName( keyCode ));
     for ( Macro m : remoteConfig.getMacros())
     {
       if ( m.getKeyCode() == keyCode )
@@ -45,5 +45,17 @@ public class UDSMFunction
       }
     }
     return buff.toString();
+  }
+  
+  public void update( SpecialFunctionDialog dlg )
+  {
+    dlg.setMacroKey( getMacroKeyCode());
+  }
+  
+  public static Hex createHex( SpecialFunctionDialog dlg )
+  {
+    short[] hex = new short[ 1 ];
+    hex[ 0 ] = ( short )dlg.getMacroKey();
+    return new Hex( hex );
   }
 }

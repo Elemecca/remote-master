@@ -44,29 +44,20 @@ public class ULDKPFunction
   {
     int duration = getDuration();
     int style = getStyle();
-    StringBuffer buff = new StringBuffer();
-    if( style == DSM )
-      buff.append( "DSM" );
-    else
-    {
-      if ( style == LKP )
-        buff.append( "LKP(" );
-      else
-        buff.append( "DKP(" );
-      buff.append( Integer.toString( duration ));
-      buff.append( ')' );
-    }
+    StringBuilder buff = new StringBuilder();
+    buff.append( styleStrings[ style ]);
+    if ( style == DSM )
+      return buff.toString();
+    
+    buff.append( '(' );
+    buff.append( Integer.toString( duration ));
+    buff.append( ')' );
     return buff.toString();
   }
 
   public String getType()
   {
-    int style = getStyle();
-    if( style == DSM )
-      return "UDSM";
-    if ( style == LKP )
-      return "ULKP";
-    return( "UDKP" );
+    return typeStrings[ getStyle()];
   }
   
   public String getValueString( RemoteConfiguration remoteConfig )
@@ -78,24 +69,80 @@ public class ULDKPFunction
     if ( style == DSM )
       return keyName;
     
-    StringBuffer buff = new StringBuffer();
-    
-    if ( style == LKP )
-      buff.append( "[Short]:" );
-    else
-      buff.append( "[Single]:" );
+    StringBuilder buff = new StringBuilder();
+  
+    buff.append( '[' );
+    buff.append( firstStrings[ style ]);
+    buff.append( "]:" );
     buff.append( keyName );
-    buff.append( ' ' );
-    if ( style == LKP )
-      buff.append( "[Long]:" );
-    else
-      buff.append( "[Double]:" );
+    buff.append( " [" );
+    buff.append( secondStrings[ style ]);
+    buff.append( "]:" );
     buff.append( remote.getButtonName( getSecondKeyCode()));
     
     return buff.toString();
   }
   
+  public void update( SpecialFunctionDialog dlg )
+  {
+    int style = getStyle();
+    int keyCode = getFirstKeyCode();
+    if ( style == DSM )
+    {
+      dlg.setMacroKey( keyCode );
+      return;
+    }
+    dlg.setFirstMacroKey( keyCode );
+    dlg.setSecondMacroKey( getSecondKeyCode());
+  }
+  
+  public static Hex createHex( SpecialFunctionDialog dlg )
+  {
+    String type = dlg.getType();
+    int style = DSM;
+    for ( int i = 0; i < styleStrings.length; ++i )
+    {
+      if ( styleStrings[ i ].equals( type ))
+      {
+        style = i;
+        break;
+      }
+    }
+    
+    short[] temp = new short[ 3 ];
+    temp[ 0 ] = ( short )( style << 4 );
+    if ( style == DSM )
+    {
+      temp[ 1 ] = ( short )dlg.getMacroKey();
+      temp[ 2 ] = ( short )0;
+      return new Hex( temp );
+    }
+    
+    temp[ 0 ] |= ( short )dlg.getULDKPDuration();
+    temp[ 1 ] = ( short )dlg.getFirstMacroKey();
+    temp[ 2 ] = ( short )dlg.getSecondMacroKey();
+    
+    return new Hex( temp );
+  }
+  
   public static int DSM = 0;
   public static int LKP = 1;
   public static int DKP = 2;
+  
+  public final static String[] typeStrings = 
+  {
+    "UDSM", "ULKP", "UDKP"
+  };
+  public final static String[] styleStrings = 
+  {
+    "DSM", "LKP", "DKP"
+  };
+  public final static String[] firstStrings =
+  {
+    null, "Short", "Single"
+  };
+  public final static String[] secondStrings =
+  {
+    null, "Long", "Double"
+  };
 }

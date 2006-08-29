@@ -52,6 +52,11 @@ public class KeyMove
     efc.toHex( data );
   }
   
+  public EFC5 getEFC5()
+  {
+    return new EFC5( data );
+  }
+  
   public Hex getCmd()
   {
     return data;
@@ -64,7 +69,10 @@ public class KeyMove
 
   public String getValueString( RemoteConfiguration remoteConfig )
   {
-    return getEFC().toString();
+    String rc = getEFC().toString();
+    if ( remoteConfig.getRemote().getEFCDigits() == 3 )
+      return rc;
+    return "00" + rc + " or " + getEFC5().toString(); 
   }
 
   private int deviceButtonIndex;

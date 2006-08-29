@@ -174,7 +174,7 @@ public class ManualProtocol
   {
     if ( devParms.length > 0 )
     {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       for ( int i = 0; i < devParms.length; i++ )
       {
         if ( i > 0 )
@@ -186,7 +186,7 @@ public class ManualProtocol
     }
     if (( deviceTranslators != null ) && ( deviceTranslators.length > 0 ))
     {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       for ( int i = 0; i < deviceTranslators.length; i++ )
       {
         if ( i > 0 )
@@ -197,7 +197,7 @@ public class ManualProtocol
     }
     if ( cmdParms.length > 0 )
     {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       for ( int i = 0; i < cmdParms.length; i++ )
       {
         if ( i > 0 )
@@ -208,7 +208,7 @@ public class ManualProtocol
     }
     if ( cmdTranslators.length > 0 )
     {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       for ( int i = 0; i < cmdTranslators.length; i++ )
       {
         if ( i > 0 )

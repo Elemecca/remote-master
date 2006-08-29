@@ -14,7 +14,7 @@ public class StatusBit
   public int getOnValue(){ return onValue; }
   public String toString()
   {
-    StringBuffer temp = new StringBuffer( 20 );
+    StringBuilder temp = new StringBuilder( 20 );
     temp.append( '$' ).append( Integer.toHexString( address ))
         .append( '.' ).append( bit );
     if ( onValue == 0 )

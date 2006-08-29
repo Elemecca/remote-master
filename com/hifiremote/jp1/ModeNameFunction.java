@@ -35,4 +35,25 @@ public class ModeNameFunction
       
     return new String( chars );
   }
+  
+  public void update( SpecialFunctionDialog dlg )
+  {
+    short[] bytes = data.getData();
+    char[] chars = new char[ bytes.length ];
+    for ( int i = 0; i < bytes.length; ++i )
+      chars[ i ] = ( char )bytes[ i ];
+      
+    String text = new String( chars );
+    dlg.setModeName( text );
+    
+  }
+  
+  public static Hex createHex( SpecialFunctionDialog dlg )
+  {
+    String temp = dlg.getModeName();
+    short[] hex = new short[ temp.length()];
+    for ( int i = 0; i < hex.length; ++i )
+      hex[ i ] = ( short )temp.charAt( i );
+    return new Hex( hex );
+  }
 }

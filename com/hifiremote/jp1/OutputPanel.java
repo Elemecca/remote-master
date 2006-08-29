@@ -132,7 +132,7 @@ public class OutputPanel
       protocolLabel.setForeground( Color.RED );
       protocolLabel.setText( "Upgrade Protocol Code *** REQUIRED ***" );
       Processor processor = r.getProcessor();
-      StringBuffer buff = new StringBuffer( 300 );
+      StringBuilder buff = new StringBuilder( 300 );
       buff.append( "Upgrade protocol 0 = " );
       buff.append( p.getID( r ).toString());
       buff.append( " (" );
@@ -143,7 +143,7 @@ public class OutputPanel
         buff.append( ' ' );
         buff.append( p.getName());
         buff.append( " (RM " );
-        buff.append( KeyMapMaster.version );
+        buff.append( RemoteMaster.version );
         buff.append( ')' );
       }
       buff.append( "\n " );

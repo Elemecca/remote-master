@@ -12,7 +12,7 @@ public class OEMDevice
   public int getDeviceAddress(){ return deviceAddress; }
   public String toString()
   {
-    StringBuffer temp = new StringBuffer( 10 );
+    StringBuilder temp = new StringBuilder( 10 );
     temp.append( deviceNumber )
         .append( ", $" )
         .append( Integer.toHexString( deviceAddress ));

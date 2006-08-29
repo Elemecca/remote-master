@@ -186,7 +186,7 @@ public class KeyMoveDialog
       useEFC.setText( "EFC-5" );
     else
       useEFC.setText( "EFC" );
-    useKey.setVisible( remote.getAdvCodeFormat() != Remote.HEX );
+    useKey.setVisible( remote.getAdvCodeFormat() != Remote.HEX_FORMAT );
     movedKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons()));
     shiftMovedKey.setText( remote.getShiftLabel());
     xShiftMovedKey.setText( remote.getXShiftLabel());
@@ -368,12 +368,12 @@ public class KeyMoveDialog
               showWarning( "EFCs repeat after 255.  Standardizing " + oldEfc + " to " + efc + '.' );
             }
           }
-          else if (( efc < 0 ) || ( efc > 65535 ))
+          else if (( efc < 0 ) || ( efc > 99999 ))
           {
-            showWarning( "EFC-5s must be between 0 and 65535." );
+            showWarning( "EFC-5s must be between 0 and 99999." );
             return;
           }
-          keyMove = config.createKeyMove( keyCode, deviceIndex, deviceTypeIndex, setupId, efc, notesStr );
+          keyMove = remote.createKeyMove( keyCode, deviceIndex, deviceTypeIndex, setupId, efc, notesStr );
         }
         catch ( NumberFormatException ex )
         {
@@ -399,13 +399,13 @@ public class KeyMoveDialog
           showWarning( text + " isn't a valid hex command." );
           return;
         }
-        if (( remote.getAdvCodeFormat() == Remote.EFC ) && ( remote.getEFCDigits() == 3 ) && ( cmd.length() > 1 ))
+        if (( remote.getAdvCodeFormat() == Remote.EFC_FORMAT ) && ( remote.getEFCDigits() == 3 ) && ( cmd.length() > 1 ))
         {
           showWarning( "The " + remote.getName() + " doesn't support key moves with multi-byte commands." );
           return;
         }
         
-        keyMove = config.createKeyMove( keyCode, deviceIndex, deviceTypeIndex, setupId, cmd, notesStr );
+        keyMove = remote.createKeyMove( keyCode, deviceIndex, deviceTypeIndex, setupId, cmd, notesStr );
       }
       else if ( useKey.isSelected())
       {
@@ -415,7 +415,7 @@ public class KeyMoveDialog
           return;
         }
         int movedKeyCode = getKeyCode( movedKey, shiftMovedKey, xShiftMovedKey );
-        keyMove = config.createKeyMoveKey( keyCode, deviceIndex, deviceTypeIndex, setupId, movedKeyCode, notesStr );
+        keyMove = remote.createKeyMoveKey( keyCode, deviceIndex, deviceTypeIndex, setupId, movedKeyCode, notesStr );
       }
       setVisible( false );
     }
@@ -455,7 +455,7 @@ public class KeyMoveDialog
       {
         try
         {
-          if ( source == useEFC ) // was useHEx
+          if ( source == useEFC )
           {
             cmd = new Hex( text );
             EFC efc = null;
@@ -466,7 +466,7 @@ public class KeyMoveDialog
             
             text = efc.toString();
           }
-          else // useHex, was useEFC
+          else 
           {
             EFC efc = null;
             if ( config.getRemote().getEFCDigits() == 3 )

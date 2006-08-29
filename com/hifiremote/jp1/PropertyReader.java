@@ -47,7 +47,7 @@ public class PropertyReader
 
   public static String decode( String text )
   {
-    StringBuffer buff = new StringBuffer( text.length());
+    StringBuilder buff = new StringBuilder( text.length());
     char[] chars = text.toCharArray();
     for ( int i = 0; i < chars.length; i++ )
     {

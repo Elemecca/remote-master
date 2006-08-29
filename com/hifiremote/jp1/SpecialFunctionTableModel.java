@@ -38,7 +38,7 @@ public class SpecialFunctionTableModel
 
   private static final String[] colPrototypeNames = 
   {
-    "00", "_VCR/DVD_", "shift-Thumbs_Up", "Multiplexer", "[Short]:DiscreteON;DiscreteON; [Long]:DiscreteOFF;DiscreteOFF", "00 11 22 33", "A reasonable length note"
+    "00", "_VCR/DVD_", "shift-Thumbs_Up", " ToadTog(0,ForceOff) ", "[Short]:DiscreteON;DiscreteON; [Long]:DiscreteOFF;DiscreteOFF", "00 11 22 33", "A reasonable length note"
   };
 
   public String getColumnPrototypeName( int col )
@@ -48,7 +48,7 @@ public class SpecialFunctionTableModel
 
   private static boolean[] colWidths = 
   {
-    true, true, true, true, false, false, false 
+    true, true, true, false, false, false, false 
   };
 
   public boolean isColumnWidthFixed( int col )

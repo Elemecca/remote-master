@@ -99,7 +99,7 @@ public class ChoiceCmdParm
 
   public String toString()
   {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( name );
     buff.append( ':' );
     for ( int i = 0; i < choices.length; i ++ )

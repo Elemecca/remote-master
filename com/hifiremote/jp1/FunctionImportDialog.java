@@ -40,8 +40,19 @@ public class FunctionImportDialog
     {
       public String getColumnName(int col) 
       {
-        if ( col == 0 ) return " ";
-        else return "Function";
+        switch ( col )
+        {
+        case 0:
+          return " ";
+        case 1:
+          return "Function";
+        case 2: 
+          return "Notes";
+        case 3: 
+          return "Hex";
+        default:
+          return null;
+        }  
       }
       public Class getColumnClass( int col )
       {
@@ -51,10 +62,10 @@ public class FunctionImportDialog
           return String.class;
       }
       public int getRowCount() { return data.size(); }
-      public int getColumnCount() { return 2; }
+      public int getColumnCount() { return 4; }
       public Object getValueAt( int row, int col ) 
       {
-        SelectHolder h = ( SelectHolder )data.elementAt( row );
+        SelectHolder h = ( SelectHolder )data.elementAt( row ); 
         if ( col == 0 )
         {
           if ( h.isSelected())
@@ -62,8 +73,13 @@ public class FunctionImportDialog
           else
             return Boolean.FALSE;
         }
+        Function f = h.getData();
+        if ( col == 1 )
+          return f.getName();
+        else if ( col == 2)
+          return f.getNotes();
         else
-          return h.getData().getName();
+          return f.getHex().toString();
       }
     
       public boolean isCellEditable(int row, int col)

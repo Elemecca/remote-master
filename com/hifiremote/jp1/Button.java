@@ -227,6 +227,35 @@ public class Button
     return buttonMaps;
   }
 
+  public KeyMove getKeyMove( Function f, int mask, int setupCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
+  {
+    KeyMove rc = null;
+    if (( f != null ) && ( f.getHex() != null ))
+    {
+      int len = 0;
+      Hex hex = f.getHex();
+      if ( f.isExternal())
+      {
+        ExternalFunction ef = ( ExternalFunction )f;
+        devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName());
+        setupCode = ef.getSetupCode();
+      }
+
+      if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
+      {
+        StringBuilder sb = new StringBuilder( f.getName());
+        String notes = f.getNotes();
+        if (( notes != null ) && ( notes.length() != 0 ))
+        {
+          sb.append( ": " );
+          sb.append( notes );
+        }
+        rc = remote.createKeyMove( keyCode | mask, 0x0F, devType.getNumber(), setupCode, hex, sb.toString());
+      }
+    }
+    return rc;
+  }
+
   public short[] getKeyMove( Function f, int mask,
                              short[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
   {
@@ -247,7 +276,7 @@ public class Button
         deviceCode[ 0 ] = ( short )( temp >> 8 );
         deviceCode[ 1 ] = temp;
       }
-      if ( remote.getAdvCodeFormat() == Remote.EFC )
+      if ( remote.getAdvCodeFormat() == Remote.EFC_FORMAT )
       {
         if (( hex.length() == 1 ) && ( remote.getEFCDigits() == 3 ))
         {
@@ -267,6 +296,13 @@ public class Button
           hex = new Hex( newData );
         }
       }
+      else if (( hex.length() == 1 ) && ( remote.getAdvCodeBindFormat() == Remote.LONG ))
+      {
+        short[] newData = new short[ 2 ];
+        newData[ 0 ] = hex.getData()[ 0 ];
+        hex = new Hex( newData );
+        newData[ 1 ] = EFC.parseHex( hex ); 
+      }    
 
       if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
         len = ( 4 + hex.length());

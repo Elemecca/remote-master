@@ -135,7 +135,7 @@ public class Translator
 
   public String toString()
   {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( "Translator(" );
     if ( getLSB())
       buff.append( "lsb," );

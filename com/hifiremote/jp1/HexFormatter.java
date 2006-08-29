@@ -18,7 +18,7 @@ public class HexFormatter
 
   public void setLength( int length )
   {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     if ( length > 0 )
     {
       buff.append( "\\p{XDigit}{2}" );

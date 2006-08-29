@@ -23,7 +23,7 @@ public class SetupCode
 
   public static String toString( int value )
   {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     if ( value < 1000 )
       buff.append( '0' );
     if ( value < 100 )

@@ -85,7 +85,7 @@ public class CombinerDevice
     if (( notes != null ) && ( notes.length() > 0 ))
       return notes;
 
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append( protocol.getName());
     if (( values != null ) && ( values.length != 0 ))
     {

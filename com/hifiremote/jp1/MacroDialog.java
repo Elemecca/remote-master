@@ -60,11 +60,13 @@ public class MacroDialog
     JPanel availableBox = new JPanel( new BorderLayout());
     macroBox.add( availableBox );
     availableBox.add( new JLabel( "Available keys:" ), BorderLayout.NORTH );
+    availableButtons.setFixedCellWidth( 100 );
     availableBox.add( new JScrollPane( availableButtons ), BorderLayout.CENTER );
     availableButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     availableButtons.addListSelectionListener( this );
     
-    panel = new JPanel( new GridLayout( 0, 2, 5, 5 ));
+    panel = new JPanel( new GridLayout( 3, 2, 2, 2 ));
+    panel.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ));
     availableBox.add( panel, BorderLayout.SOUTH );
     add.addActionListener( this );
     panel.add( add );
@@ -84,13 +86,15 @@ public class MacroDialog
     JPanel keysBox = new JPanel( new BorderLayout());
     macroBox.add( keysBox );
     keysBox.add( new JLabel( "Macro Keys:" ), BorderLayout.NORTH );
+    macroButtons.setFixedCellWidth( 100 );
     keysBox.add( new JScrollPane( macroButtons ), BorderLayout.CENTER );
     macroButtons.setModel( macroButtonModel );
     macroButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     macroButtons.setCellRenderer( macroButtonRenderer );
     macroButtons.addListSelectionListener( this );
     
-    JPanel buttonBox = new JPanel( new GridLayout( 0, 2, 5, 5 ));
+    JPanel buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ));
+    buttonBox.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ));
     keysBox.add( buttonBox, BorderLayout.SOUTH );
     moveUp.addActionListener( this );
     buttonBox.add( moveUp );
@@ -417,25 +421,6 @@ public class MacroDialog
       return;
     
     enableButtons();
-  }
-  
-  private class MacroButtonRenderer
-    extends DefaultListCellRenderer
-  {
-    private Remote remote = null;
-    
-    public MacroButtonRenderer(){}
-    
-    public void setRemote( Remote remote )
-    {
-      this.remote = remote;
-    }
-    
-    public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus )
-    {
-      String text = remote.getButtonName((( Number )value ).intValue());
-      return super.getListCellRendererComponent( list, text, index, isSelected, cellHasFocus );
-    }
   }
   
   private JComboBox boundKey = new JComboBox();
