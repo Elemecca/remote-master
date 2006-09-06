@@ -296,7 +296,7 @@ public class DeviceCombiner
     {
       header[ i ] = ( short )offset;
       CombinerDevice device = ( CombinerDevice )e.nextElement();
-      ids[ i ] = device.getProtocol().getID();
+      ids[ i ] = device.getProtocol().getID( r );
       offset += 2;
       Hex hex = device.getFixedData();
       data[ i ] = hex;

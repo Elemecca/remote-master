@@ -63,7 +63,7 @@ public class DeviceCombinerPanel
         else if ( col == 1 )
           return device.getProtocol().getName();
         else if ( col == 2 )
-          return device.getProtocol().getID();
+          return device.getProtocol().getID( deviceUpgrade.getRemote());
         else if ( col == 3 )
         {
           return device.getFixedData();

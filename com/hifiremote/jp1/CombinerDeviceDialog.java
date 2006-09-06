@@ -30,6 +30,7 @@ public class CombinerDeviceDialog
   {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
+    remote = r;
 
     protocolHolder = new JPanel( new BorderLayout());
     protocolHolder.setBorder( BorderFactory.createTitledBorder( "Protocol Parameters" ));
@@ -167,7 +168,7 @@ public class CombinerDeviceDialog
     deviceNotes.getDocument().removeDocumentListener( this );
 
     fixedData.setText( device.getFixedData().toString());
-    Hex id = p.getID();
+    Hex id = p.getID( remote );
     if ( id != null )
       protocolID.setText( id.toString());
     else
@@ -254,7 +255,7 @@ public class CombinerDeviceDialog
       {
         oldProtocol.reset();
         protocolID.getDocument().removeDocumentListener( this );
-        Hex id = newProtocol.getID();
+        Hex id = newProtocol.getID( remote );
         if ( id != null )
           protocolID.setText( id.toString());
         else
@@ -357,6 +358,7 @@ public class CombinerDeviceDialog
   }
 
   private CombinerDevice device = null;
+  private Remote remote = null;
   private JPanel mainPanel = null;
   private JPanel protocolHolder = null;
   private JComboBox protocolList = null;
