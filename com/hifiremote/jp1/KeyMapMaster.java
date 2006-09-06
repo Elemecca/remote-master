@@ -180,25 +180,19 @@ public class KeyMapMaster
           JRadioButtonMenuItem item = ( JRadioButtonMenuItem )e.getSource();
           String lf = item.getActionCommand();
           UIManager.setLookAndFeel( lf );
-          SwingUtilities.updateComponentTreeUI( SwingUtilities.getAncestorOfClass( KeyMapMaster.class, item ));
+          preferences.setLookAndFeel( lf );
+          SwingUtilities.updateComponentTreeUI( me );
           preferences.setLookAndFeel( lf );
         }
         catch ( Exception x )
-        {}
+        {
+          x.printStackTrace( System.err );
+        }
       }
     };
 
-    String lookAndFeel = preferences.getLookAndFeel();
-    try
-    {
-      UIManager.setLookAndFeel( lookAndFeel );
-      SwingUtilities.updateComponentTreeUI( this );
-    }
-    catch ( Exception e )
-    {
-      System.err.println( "Exception thrown when setting look and feel to " + lookAndFeel );
-    }
     ButtonGroup group = new ButtonGroup();
+    String lookAndFeel = UIManager.getLookAndFeel().getClass().getName();
     UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
     lookAndFeelItems = new JRadioButtonMenuItem[ info.length ];
     for ( int i = 0; i < info.length; i++ )

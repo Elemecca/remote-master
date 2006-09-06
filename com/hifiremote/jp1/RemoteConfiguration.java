@@ -249,6 +249,7 @@ public class RemoteConfiguration
     // Do the advanced codes
     int i = 0x1000;
     i = exportAdvancedCodeNotes( keymoves, i, out );    
+    i = exportAdvancedCodeNotes( upgradeKeyMoves, i, out );    
     i = exportAdvancedCodeNotes( specialFunctions, i, out );    
     i = exportAdvancedCodeNotes( macros, i, out );    
 
@@ -463,7 +464,7 @@ public class RemoteConfiguration
           {
             if ( text == null )
               text = remote.getButtonName( keyCode );
-            f = new Function( text, cmd, "imported from keyMove" );
+            f = new Function( text, cmd, null );
             boundUpgrade.getFunctions().add( f );
           }
           int state = Button.NORMAL_STATE;
@@ -613,7 +614,8 @@ public class RemoteConfiguration
     AddressRange range = remote.getAdvanceCodeAddress();
     int offset = range.getStart();
     offset = updateKeyMoves( keymoves, offset );
-    offset = updateKeyMoves( getUpgradeKeyMoves(), offset );
+    upgradeKeyMoves = getUpgradeKeyMoves();
+    offset = updateKeyMoves( upgradeKeyMoves, offset );
     offset = updateKeyMoves( specialFunctions, offset );
     
     for ( Macro macro : macros )
@@ -1087,6 +1089,7 @@ public class RemoteConfiguration
   private short[] savedData = null;
   
   private Vector< KeyMove > keymoves = new Vector< KeyMove >();
+  private Vector< KeyMove > upgradeKeyMoves = new Vector< KeyMove >();
   private Vector< Macro > macros = new Vector< Macro >();
   private Vector< DeviceUpgrade > devices = new Vector< DeviceUpgrade >();
   private Vector< ProtocolUpgrade > protocols = new Vector< ProtocolUpgrade >();

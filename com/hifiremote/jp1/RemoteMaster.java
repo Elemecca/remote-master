@@ -14,7 +14,7 @@ public class RemoteMaster
  implements ActionListener, PropertyChangeListener
 {
   private static JFrame frame = null;
-  public static final String version = "v1.66";
+  public static final String version = "v1.67";
   private File dir = null;
   public File file = null;
   private RemoteConfiguration remoteConfig = null;
@@ -675,7 +675,6 @@ public class RemoteMaster
   {
     try
     {
-      UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName());
       File workDir = new File( System.getProperty( "user.dir" ));
       File propertiesFile = null;
       File fileToOpen = null;
@@ -712,6 +711,7 @@ public class RemoteMaster
       DigitMaps.load( new File( workDir, "digitmaps.bin" ));
       if ( launchRM )
       {
+        UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName());
         RemoteMaster rm = new RemoteMaster( workDir, properties );
         if ( fileToOpen != null )
           rm.openFile( fileToOpen );
@@ -719,6 +719,8 @@ public class RemoteMaster
       }
       else
       {
+        String lookAndFeel = properties.getProperty( "LookAndFeel", UIManager.getSystemLookAndFeelClassName());
+        UIManager.setLookAndFeel( lookAndFeel );
         KeyMapMaster km = new KeyMapMaster( properties );
         km.loadUpgrade( fileToOpen );
         frame = km;

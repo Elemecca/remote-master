@@ -70,7 +70,7 @@ public class RawDataTableModel
   {
     if ( col == 0 )
       return "0000";
-    return "CC";
+    return " CC ";
   }
   
   public boolean isColumnWidthFixed( int col )
