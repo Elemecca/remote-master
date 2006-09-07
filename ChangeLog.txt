@@ -1,3 +1,6 @@
+Changes for v1.67
+- Fix Device Combiner upgrades that use protocols with Alternate PIDs
+
 Changes for v1.66
 - Reinstate Device Combiner support
 - Another "don't abort import of .IR files that use Fav/Scan" fix.
