@@ -322,7 +322,7 @@ public class DeviceEditorPanel
   {
     Remote r = deviceUpgrade.getRemote();
     Protocol p = deviceUpgrade.getProtocol();
-    Vector protocols = protocolManager.getProtocolsForRemote( r );
+    java.util.List< Protocol > protocols = protocolManager.getProtocolsForRemote( r );
     if ( !protocols.contains( p ) && !p.hasCode( r ))
     {
       System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName() +
@@ -331,9 +331,8 @@ public class DeviceEditorPanel
       // Find a matching protocol for this remote
       Protocol match = null;
       String name = p.getName();
-      for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+      for ( Protocol p2 : protocols )
       {
-        Protocol p2 = ( Protocol )e.nextElement();
         if ( p2.getName().equals( name ))
         {
           match = p2;

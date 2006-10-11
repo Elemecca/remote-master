@@ -52,7 +52,7 @@ public class KeyMapPanel
       public int getRowCount() { return list.size();}
       public Object getValueAt(int row, int col)
       {
-        Button b = ( Button )list.elementAt( row );
+        Button b = list.get( row );
         switch ( col )
         {
           case 0:
@@ -217,7 +217,7 @@ public class KeyMapPanel
   private JTableX table = null;
   private JTableHeader header = null;
   private JButton print = null;
-  private Vector< Button > list = new Vector< Button >();
+  private java.util.List< Button > list = new ArrayList< Button >();
   private static String[] headers =
   {
     "Button", "Normal Function", "Shifted Function", "XShifted Function" };

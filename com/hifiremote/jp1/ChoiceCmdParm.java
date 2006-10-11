@@ -7,26 +7,22 @@ import javax.swing.table.*;
 public class ChoiceCmdParm
   extends CmdParameter
 {
-  public ChoiceCmdParm( String name, DefaultValue defaultValue, Vector textChoices )
+  public ChoiceCmdParm( String name, DefaultValue defaultValue, List< String > textChoices )
   {
     super( name, defaultValue );
     int numChoices = 0;
-    for ( Enumeration e = textChoices.elements(); e.hasMoreElements(); )
+    for ( String str : textChoices )
     {
-      String str = ( String )e.nextElement();
       if ( str != null )
         numChoices++;
     }
     choices = new Choice[ numChoices ];
     int index = 0;
     int i = 0;
-    for ( Enumeration e = textChoices.elements(); e.hasMoreElements(); )
+    for ( String str : textChoices )
     {
-      String str = ( String )e.nextElement();
       if ( str != null )
-      {
         choices[ i++ ] = new Choice( index, str );
-      }
       index++;
     }
 

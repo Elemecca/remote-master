@@ -15,7 +15,7 @@ public class IniSection
     super();
     this.name = name;
   }
-  
+    
   public IniSection( Properties defaults )
   {
     super( defaults );
@@ -32,8 +32,14 @@ public class IniSection
   {
     this.name = name;
   }
+
   public String getName()
   {
     return name;
+  }
+  
+  public void add( Property property )
+  {
+    setProperty( property.name, property.value );
   }
 }

@@ -3,12 +3,12 @@ package com.hifiremote.jp1;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FunctionTableModel
   extends KMTableModel< Function >
 {
-  private Vector functions = null;
   private Protocol protocol = null;
   private Remote remote = null;
   private final static int rowCol = 0;
@@ -73,7 +73,7 @@ public class FunctionTableModel
 
   public Object getValueAt( int row, int col )
   {
-    Function function = ( Function )data.elementAt( row );
+    Function function = data.get( row );
     Hex hex = function.getHex();
 
     Object rc = "";
@@ -124,7 +124,7 @@ public class FunctionTableModel
 
   public void setValueAt( Object value, int row, int col )
   {
-    Function function = ( Function )data.elementAt( row );
+    Function function = data.get( row );
     if ( col == nameCol )
     {
       String text = ( String )value;

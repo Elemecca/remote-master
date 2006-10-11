@@ -53,7 +53,7 @@ public class DeviceCombinerPanel
       public Object getValueAt( int row, int col )
       {
         DeviceCombiner deviceCombiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-        CombinerDevice device = ( CombinerDevice )deviceCombiner.getDevices().elementAt( row );
+        CombinerDevice device = deviceCombiner.getDevices().get( row );
         if ( device == null )
           return null;
         if ( device.getProtocol() == null )
@@ -78,7 +78,7 @@ public class DeviceCombinerPanel
         if ( col == 4 )
         {
           DeviceCombiner deviceCombiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-          CombinerDevice device = ( CombinerDevice )deviceCombiner.getDevices().elementAt( row );
+          CombinerDevice device = deviceCombiner.getDevices().get( row );
           device.setNotes(( String )value );
         }
       }
@@ -116,7 +116,7 @@ public class DeviceCombinerPanel
           if ( d.getUserAction() == JOptionPane.OK_OPTION )
           {
             DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-            Vector< CombinerDevice > devices = combiner.getDevices();
+            java.util.List< CombinerDevice > devices = combiner.getDevices();
             int newRow = devices.size();
             CombinerDevice device = d.getCombinerDevice();
             devices.add( device );
@@ -169,19 +169,18 @@ public class DeviceCombinerPanel
             {
               CombinerDevice device = new CombinerDevice( importedProtocol, importedUpgrade.getParmValues());
               DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-              Vector< CombinerDevice > devices = combiner.getDevices();
+              java.util.List< CombinerDevice > devices = combiner.getDevices();
               int index = devices.size();
               Integer indexInt = new Integer( index );
               devices.add( device );
               
-              Vector< Function > importedFunctions = d.getSelectedFunctions();
+              java.util.List< Function > importedFunctions = d.getSelectedFunctions();
               if ( importedFunctions.size() > 0 )
               {
-                Vector< Function > functions = deviceUpgrade.getFunctions();
+                java.util.List< Function > functions = deviceUpgrade.getFunctions();
                 int firstRow =  functions.size();
-                for ( Enumeration en = importedFunctions.elements(); en.hasMoreElements(); )
+                for ( Function f : importedFunctions )
                 {
-                  Function f = ( Function )en.nextElement();
                   Function newF = new Function();
                   Hex hex = combiner.getDefaultCmd();
                   combiner.setValueAt( 0, hex, indexInt );
@@ -214,11 +213,10 @@ public class DeviceCombinerPanel
         {
           int row = table.getSelectedRow();
           DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-          Vector devices = combiner.getDevices();
-          Vector functions = deviceUpgrade.getFunctions();
-          for ( Enumeration en = functions.elements(); en.hasMoreElements(); )
+          java.util.List< CombinerDevice > devices = combiner.getDevices();
+          java.util.List< Function > functions = deviceUpgrade.getFunctions();
+          for ( Function f : functions )
           {
-            Function f = ( Function )en.nextElement();
             Hex hex = f.getHex();
             if ( hex == null )
               continue;
@@ -230,7 +228,7 @@ public class DeviceCombinerPanel
               combiner.setValueAt( 0, hex, new Integer( i )); 
             }
           }
-          devices.removeElementAt( row );
+          devices.remove( row );
           model.fireTableRowsDeleted( row, row );
         }
         update();
@@ -262,9 +260,9 @@ public class DeviceCombinerPanel
   private void editDevice()
   {
     DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-    Vector< CombinerDevice > devices = combiner.getDevices();
+    java.util.List< CombinerDevice > devices = combiner.getDevices();
     int row = table.getSelectedRow();
-    CombinerDevice device = ( CombinerDevice )devices.elementAt( row );
+    CombinerDevice device = devices.get( row );
     CombinerDeviceDialog d = 
       new CombinerDeviceDialog( RemoteMaster.getFrame(),
                                 device, 
@@ -272,7 +270,7 @@ public class DeviceCombinerPanel
     d.setVisible( true );
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
-      devices.setElementAt( d.getCombinerDevice(), row );
+      devices.set( row, d.getCombinerDevice());
       model.fireTableRowsUpdated( row, row );
     }
   }
@@ -337,10 +335,9 @@ public class DeviceCombinerPanel
       if ( flag )
       {
         DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
-        Vector functions = deviceUpgrade.getFunctions();
-        for ( Enumeration en = functions.elements(); en.hasMoreElements(); )
+        java.util.List< Function > functions = deviceUpgrade.getFunctions();
+        for ( Function f : functions )
         {
-          Function f = ( Function )en.nextElement();
           if ( f.getHex() == null )
             continue;
           int temp = (( Choice )combiner.getValueAt( 0, f.getHex())).getIndex();

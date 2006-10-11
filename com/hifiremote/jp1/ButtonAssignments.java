@@ -13,11 +13,12 @@ public class ButtonAssignments
       Function f = assignedFunctions[ i ];
       if ( f != null )
       {
-        for ( Enumeration e = f.getUsers(); e.hasMoreElements(); )
+        for ( Iterator< Function.User > it = f.getUsers().iterator(); it.hasNext(); )
         {
-          Function.User user = ( Function.User )e.nextElement();
-          f.removeReference( user.button, user.state );
+          it.next();
+          it.remove();
         }
+
         assignedFunctions[ i ] = null;
       }
     }

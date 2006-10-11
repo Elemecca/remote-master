@@ -21,16 +21,14 @@ public class FunctionImportDialog
     JLabel instructions = new JLabel( "Select the functions to be imported." );
     contentPane.add( instructions, BorderLayout.NORTH );
     
-    for ( Enumeration e = upgrade.getFunctions().elements(); e.hasMoreElements(); )
+    for ( Function f : upgrade.getFunctions())
     {
-      Function f = ( Function )e.nextElement();
       if (( f.getName() != null ) && ( f.getName().length() > 0 ) &&
           ( f.getHex() != null ) && ( f.getHex().length() > 0 ))
         data.add( new SelectHolder( f ));
     }
-    for ( Enumeration e = upgrade.getExternalFunctions().elements(); e.hasMoreElements(); )
+    for ( Function f : upgrade.getExternalFunctions())
     {
-      Function f = ( Function )e.nextElement();
       if (( f.getName() != null ) && ( f.getName().length() > 0 ) &&
           ( f.getHex() != null ) && ( f.getHex().length() > 0 ))
         data.add( new SelectHolder( f ));
@@ -65,7 +63,7 @@ public class FunctionImportDialog
       public int getColumnCount() { return 4; }
       public Object getValueAt( int row, int col ) 
       {
-        SelectHolder h = ( SelectHolder )data.elementAt( row ); 
+        SelectHolder h = data.get( row ); 
         if ( col == 0 )
         {
           if ( h.isSelected())
@@ -87,7 +85,7 @@ public class FunctionImportDialog
 
       public void setValueAt(Object value, int row, int col) 
       {
-        SelectHolder h = ( SelectHolder )data.elementAt( row );
+        SelectHolder h = ( SelectHolder )data.get( row );
         h.setSelected((( Boolean )value ).booleanValue());
       }
     };
@@ -178,12 +176,11 @@ public class FunctionImportDialog
     }
   }
 
-  public Vector< Function > getSelectedFunctions()
+  public java.util.List< Function > getSelectedFunctions()
   {
-    Vector< Function > v = new Vector< Function >();
-    for ( Enumeration e = data.elements(); e.hasMoreElements(); )
+    java.util.List< Function > v = new ArrayList< Function >();
+    for ( SelectHolder h : data )
     {
-      SelectHolder h = ( SelectHolder )e.nextElement();
       if ( h.isSelected())
         v.add( h.getData());
     }
@@ -255,7 +252,7 @@ public class FunctionImportDialog
     private Function data = null;
   }
 
-  private Vector< SelectHolder > data = new Vector< SelectHolder >();
+  private java.util.List< SelectHolder > data = new ArrayList< SelectHolder >();
   private AbstractTableModel model = null;
   private JButton selectAll = null;
   private JButton selectNone = null;

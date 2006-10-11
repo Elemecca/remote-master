@@ -210,9 +210,9 @@ public class ImageMap
   }
 
   public ImageIcon getImage(){ return image; }
-  public Vector< ButtonShape > getShapes(){ return shapes; }
+  public java.util.List< ButtonShape > getShapes(){ return shapes; }
 
   private File mapFile;
   private ImageIcon image;
-  private Vector< ButtonShape> shapes = new Vector< ButtonShape >();
+  private java.util.List< ButtonShape> shapes = new ArrayList< ButtonShape >();
 }

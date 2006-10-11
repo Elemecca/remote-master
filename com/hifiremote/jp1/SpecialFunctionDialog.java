@@ -282,24 +282,24 @@ public class SpecialFunctionDialog
     boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons()));
     deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes()));
     
-    Vector< String > specialFunctions = new Vector< String >();
+    java.util.List< String > specialFunctions = new ArrayList< String >();
     for ( SpecialProtocol sp : config.getSpecialProtocols())
     {
       for ( String func : sp.getFunctions())
         specialFunctions.add( func );
     }
-    type.setModel( new DefaultComboBoxModel( specialFunctions ));
+    type.setModel( new DefaultComboBoxModel( specialFunctions.toArray()));
     
     keyCodeRenderer.setRemote( remote );
-    Vector< Integer >macroKeys = new Vector< Integer >();
+    java.util.List< Integer >macroKeys = new ArrayList< Integer >();
     for ( Macro macro : config.getMacros())
       macroKeys.add( new Integer( macro.getKeyCode()));
-    DefaultComboBoxModel model = new DefaultComboBoxModel( macroKeys ); 
+    DefaultComboBoxModel model = new DefaultComboBoxModel( macroKeys.toArray()); 
     macroKey.setModel( model );
     firstMacroKey.setModel( model );
     secondMacroKey.setModel( model );
 
-    Vector< Button > buttons = remote.getButtons();
+    java.util.List< Button > buttons = remote.getButtons();
     DefaultListModel listModel = new DefaultListModel();
     for ( Button b : buttons )
     {

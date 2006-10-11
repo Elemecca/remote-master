@@ -1,9 +1,5 @@
 package com.hifiremote.jp1;
 
-import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.Vector;
-
 public class DevParmEditorNode
   extends HexParmEditorNode
 {

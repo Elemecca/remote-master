@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -90,7 +91,7 @@ public class KeyMapMaster
       r = rm.findRemoteByName( name );
     if ( r == null )
       r = getRemotes()[ 0 ];
-    Protocol protocol = protocolManager.getProtocolsForRemote( r ).elementAt( 0 );
+    Protocol protocol = protocolManager.getProtocolsForRemote( r ).get( 0 );
     deviceUpgrade.setProtocol( protocol );
     deviceUpgrade.setRemote( r );
 
@@ -795,6 +796,9 @@ public class KeyMapMaster
     if (( file == null ) || !file.exists())
       return;
 
+    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " + 
+                        DateFormat.getInstance().format( new Date( file.lastModified())));    
+    
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
 
@@ -873,7 +877,7 @@ public class KeyMapMaster
   {
     Remote r = deviceUpgrade.getRemote();
     Protocol p = deviceUpgrade.getProtocol();
-    Vector protocols = protocolManager.getProtocolsForRemote( r );
+    java.util.List< Protocol > protocols = protocolManager.getProtocolsForRemote( r );
     if ( !protocols.contains( p ) && !p.hasCode( r ))
     {
       System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName() +
@@ -882,9 +886,8 @@ public class KeyMapMaster
       // Find a matching protocol for this remote
       Protocol match = null;
       String name = p.getName();
-      for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+      for ( Protocol p2 : protocols )
       {
-        Protocol p2 = ( Protocol )e.nextElement();
         if ( p2.getName().equals( name ))
         {
           match = p2;

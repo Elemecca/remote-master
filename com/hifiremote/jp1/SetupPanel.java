@@ -121,20 +121,20 @@ public class SetupPanel
     setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
-    Vector< Protocol > protocols = ProtocolManager.getProtocolManager().getProtocolsForRemote( remote );
+    java.util.List< Protocol > protocols = ProtocolManager.getProtocolManager().getProtocolsForRemote( remote );
     if ( !protocols.contains( p ))
     {
       // ??? There should be a better way to handle this (the current protocol is
       // incompatible with the current remote), but this way is at least better than
       // the old way of displaying the first compatible protocol.
-      protocols = new Vector< Protocol >( protocols );
+      protocols = new ArrayList< Protocol >( protocols );
       protocols.add( p );
     }
 
     Value[] vals = deviceUpgrade.getParmValues();
     p.setDeviceParms( vals );
     updateParameters();
-    protocolList.setModel( new DefaultComboBoxModel( protocols ));
+    protocolList.setModel( new DefaultComboBoxModel( protocols.toArray()));
     protocolList.setSelectedItem( p );
     protocolID.setText( p.getID( remote ).toString());
     notes.setText( deviceUpgrade.getNotes());

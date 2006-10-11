@@ -414,7 +414,7 @@ public class Protocol
     return notes;
   }
 
-  public Vector< String > getOldNames()
+  public java.util.List< String > getOldNames()
   {
     return oldNames;
   }
@@ -500,7 +500,19 @@ public class Protocol
     Value[] values = new Value[ st.countTokens() ];
     int index = 0;
     while ( st.hasMoreTokens())
-      values[ index++ ] = new Value( new Integer( st.nextToken()));
+    {
+      String val = st.nextToken();
+      Object obj = null;
+      try
+      {
+        obj = new Integer( val );
+      }
+      catch ( NumberFormatException x )
+      {
+        obj = val;
+      }
+      values[ index++ ] = new Value( obj );
+    }
 
     for ( index = 0; index < values.length; index++ )
     {
@@ -535,9 +547,8 @@ public class Protocol
     if ( p != null )
       builtin = p.getVariantName();
 
-    for ( Enumeration e = altPIDOverrideList.elements(); e.hasMoreElements(); )
+    for ( String temp : altPIDOverrideList  )
     {
-      String temp = ( String )e.nextElement();
       if ( temp.equalsIgnoreCase( builtin ))
         return id;
     }
@@ -572,7 +583,7 @@ public class Protocol
   public int getFixedDataLength(){ return fixedData.length(); }
 
   // convert the functions defined in this protocol to the new Protocol
-  public void convertFunctions( Vector funcs, Protocol newProtocol )
+  public void convertFunctions( java.util.List< Function > funcs, Protocol newProtocol )
   {
     CmdParameter[] newParms = newProtocol.cmdParms;
 
@@ -607,10 +618,9 @@ public class Protocol
       newValues[ i ] = new Value( null, newProtocol.cmdParms[ i ].getDefaultValue());
 
     // now convert each defined function
-    Vector< Vector< String >> failedToConvert = new Vector< Vector< String >>();
-    for ( Enumeration en = funcs.elements(); en.hasMoreElements(); )
+    java.util.List< java.util.List< String >> failedToConvert = new ArrayList< java.util.List< String >>();
+    for ( Function f : funcs )
     {
-      Function f = ( Function )en.nextElement();
       Hex hex = f.getHex();
       Hex newHex = newProtocol.getDefaultCmd();
       if ( hex != null )
@@ -633,7 +643,7 @@ public class Protocol
         }
         catch ( IllegalArgumentException ex )
         {
-          Vector< String > temp = new Vector< String >( 2 );
+          java.util.List< String > temp = new ArrayList< String >( 2 );
           temp.add( f.getName());
           temp.add( ex.getMessage());
           failedToConvert.add( temp );
@@ -655,10 +665,14 @@ public class Protocol
       text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
       container.add( text, BorderLayout.NORTH );
       
-      Vector< String > titles = new Vector< String >();
+      java.util.List< String > titles = new ArrayList< String >();
       titles.add( "Function" );
       titles.add( "Reason" );
-      JTableX table = new JTableX( failedToConvert, titles );
+      Object[][] failedToConvertArray = new Object[ failedToConvert.size()][];
+      int i = 0;
+      for ( java.util.List< String > l : failedToConvert )
+        failedToConvertArray[ i++ ] = l.toArray();
+      JTableX table = new JTableX( failedToConvertArray, titles.toArray());
       Dimension d = table.getPreferredScrollableViewportSize();
       int showRows = 14;
       if ( failedToConvert.size() < showRows )
@@ -675,12 +689,11 @@ public class Protocol
     }
   }
 
-  public void updateFunctions( Vector funcs )
+  public void updateFunctions( java.util.List< Function > funcs )
   {
     Value[] values = new Value[ cmdParms.length ];
-    for ( Enumeration en = funcs.elements(); en.hasMoreElements(); )
+    for ( Function f : funcs )
     {
-      Function f = ( Function )en.nextElement();
       Hex hex = f.getHex();
       if ( hex != null )
       {
@@ -792,7 +805,7 @@ public class Protocol
   protected HashMap< String, Translate[] > codeTranslator = new HashMap< String, Translate[]>( 6 );
   protected Initializer[] cmdParmInit = null;
   protected String notes = null;
-  private Vector< String > oldNames = new Vector< String >();
-  private Vector< String > altPIDOverrideList = new Vector< String >();
+  private java.util.List< String > oldNames = new ArrayList< String >();
+  private java.util.List< String > altPIDOverrideList = new ArrayList< String >();
   private boolean keyMovesOnly = false;
 }

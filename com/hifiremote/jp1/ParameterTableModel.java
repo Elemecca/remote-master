@@ -7,7 +7,7 @@ public class ParameterTableModel
   extends AbstractTableModel
 
 {
-  public ParameterTableModel( Vector parms, Vector xlators )
+  public ParameterTableModel( List< ? extends Parameter > parms, List< Translate > xlators )
   {
     super();
     this.parms = parms;
@@ -50,7 +50,7 @@ public class ParameterTableModel
 
   public Object getValueAt( int row, int col )
   {
-    Parameter parm = ( Parameter )parms.get( row );
+    Parameter parm = parms.get( row );
     Translator translator = ( Translator )xlators.get( row );
     switch ( col )
     {
@@ -71,7 +71,7 @@ public class ParameterTableModel
 
   public void setValueAt( Object value, int row, int col )
   {
-    Parameter parm = ( Parameter )parms.get( row );
+    Parameter parm = parms.get( row );
     Translator translator = ( Translator )xlators.get( row );
     switch ( col )
     {
@@ -93,8 +93,8 @@ public class ParameterTableModel
     }
   }
 
-  private Vector parms;
-  private Vector xlators;
+  private List< ? extends Parameter > parms;
+  private List< Translate > xlators;
 
   private final static int nameCol = 0;
   private final static int typeCol = 1;

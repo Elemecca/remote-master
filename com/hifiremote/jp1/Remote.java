@@ -160,7 +160,7 @@ public class Remote
 
       if ( deviceTypeAliasNames == null )
       {
-        Vector<String> v = new Vector<String>();
+        java.util.List<String> v = new ArrayList<String>();
         DeviceType vcrType = null;
         boolean hasPVRalias = false;
         for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
@@ -196,7 +196,7 @@ public class Remote
       }
 
       // Now figure out which buttons are bindable
-      Vector< Button > bindableButtons = new Vector< Button >();
+      java.util.List< Button > bindableButtons = new ArrayList< Button >();
 
       // first copy the bindable buttons from the longest map
       int index = 0;
@@ -259,7 +259,7 @@ public class Remote
 
     double diameter = 2 * radius;
     double x = gap;
-    Vector< ImageMap > maps = new Vector< ImageMap >();
+    java.util.List< ImageMap > maps = new ArrayList< ImageMap >();
     if ( imageMaps.length > 0 )
       maps.add( imageMaps[ mapIndex ]);
     for ( Enumeration< DeviceType> e = deviceTypes.elements(); e.hasMoreElements(); )
@@ -380,7 +380,7 @@ public class Remote
     return deviceButtons;
   }
 
-  public Vector< Button > getButtons()
+  public java.util.List< Button > getButtons()
   {
     load();
     return buttons;
@@ -392,7 +392,7 @@ public class Remote
     return upgradeButtons;
   }
 
-  public Vector< ButtonShape > getPhantomShapes()
+  public java.util.List< ButtonShape > getPhantomShapes()
   {
     load();
     return phantomShapes;
@@ -764,7 +764,7 @@ public class Remote
   private String parseSpecialProtocols( RDFReader rdr )
     throws Exception
   {
-    Vector< CheckSum > work = new Vector< CheckSum >();
+    java.util.List< CheckSum > work = new ArrayList< CheckSum >();
     String line;
     while ( true )
     {
@@ -784,7 +784,7 @@ public class Remote
   private String parseCheckSums( RDFReader rdr )
     throws Exception
   {
-    Vector< CheckSum > work = new Vector< CheckSum >();
+    java.util.List< CheckSum > work = new ArrayList< CheckSum >();
     String line;
     while ( true )
     {
@@ -816,7 +816,7 @@ public class Remote
     throws Exception
   {
     String line;
-    Vector< Setting > work = new Vector< Setting >();
+    java.util.List< Setting > work = new ArrayList< Setting >();
     while ( true )
     {
       line = rdr.readLine();
@@ -833,7 +833,7 @@ public class Remote
       int initialValue = rdr.parseNumber( st.nextToken());
       boolean inverted = ( rdr.parseNumber( st.nextToken()) != 0 );
 
-      Vector< String> options = null;
+      java.util.List< String> options = null;
       String sectionName = null;
 
       if ( st.hasMoreTokens())
@@ -841,7 +841,7 @@ public class Remote
         String token = st.nextToken( ",;)" ).trim();
         if ( token.charAt( 0 ) == '(' )
         {
-          options = new Vector< String >();
+          options = new ArrayList< String >();
           options.add( token.substring( 1 ));
           while ( st.hasMoreTokens())
             options.add( st.nextToken());
@@ -875,8 +875,8 @@ public class Remote
   private String parseFixedData( RDFReader rdr )
     throws Exception
   {
-    Vector< FixedData > work = new Vector< FixedData >();
-    Vector< Byte > temp = new Vector< Byte >();
+    java.util.List< FixedData > work = new ArrayList< FixedData >();
+    java.util.List< Byte > temp = new ArrayList< Byte >();
     String line;
     int address = -1;
     int value = -1;
@@ -899,10 +899,9 @@ public class Remote
           {
             byte[] b = new byte[ temp.size()];
             int i = 0;
-            for ( Enumeration e = temp.elements();
-                  e.hasMoreElements(); ++i )
+            for ( Byte val : temp )
             {
-              b[ i ] = (( Byte )e.nextElement()).byteValue();
+              b[ i++ ] = val.byteValue();
             }
             work.add( new FixedData( address, b ));
             temp.clear();
@@ -951,7 +950,7 @@ public class Remote
   private String parseDeviceButtons( RDFReader rdr )
     throws Exception
   {
-    Vector< DeviceButton > work = new Vector< DeviceButton >();
+    java.util.List< DeviceButton > work = new ArrayList< DeviceButton >();
     String line;
     while ( true )
     {
@@ -1005,7 +1004,7 @@ public class Remote
   private String parseDigitMaps( RDFReader rdr )
     throws Exception
   {
-    Vector< Integer > work = new Vector< Integer >();
+    java.util.List< Integer > work = new ArrayList< Integer >();
     String line;
     while ( true )
     {
@@ -1060,7 +1059,7 @@ public class Remote
     throws Exception
   {
     String line;
-    Vector< String > v = new Vector< String >();
+    java.util.List< String > v = new ArrayList< String >();
     DeviceType vcrType = null;
     boolean hasPVRalias = false;
     while ( true )
@@ -1108,8 +1107,8 @@ public class Remote
   {
     String line;
     DeviceType type = null;
-    Vector< Vector< ImageMap >> outer = new Vector< Vector< ImageMap >>();
-    Vector< ImageMap > inner = null;
+    java.util.List< java.util.List< ImageMap >> outer = new ArrayList< java.util.List< ImageMap >>();
+    java.util.List< ImageMap > inner = null;
     boolean nested = false;
     File imageDir = new File( KeyMapMaster.getHomeDirectory(), "Images" );
 
@@ -1129,13 +1128,13 @@ public class Remote
         {
           nested = true;
           token = token.substring( 1 );
-          inner = new Vector< ImageMap >();
+          inner = new ArrayList< ImageMap >();
           outer.add( inner );
         }
 
         if ( !nested )
         {
-          inner = new Vector< ImageMap >();
+          inner = new ArrayList< ImageMap >();
           outer.add( inner );
         }
 
@@ -1150,7 +1149,7 @@ public class Remote
       }
       ImageMap[][] outerb = new ImageMap[ outer.size()][];
       int o = 0;
-      for ( Vector< ImageMap > maps : outer )
+      for ( java.util.List< ImageMap > maps : outer )
       {
         ImageMap[] innerb = new ImageMap[ maps.size()];
         outerb[ o++ ] = innerb;
@@ -1371,12 +1370,12 @@ public class Remote
   private String parseButtonMaps( RDFReader rdr )
     throws Exception
   {
-    Vector< ButtonMap > work = new Vector< ButtonMap >();
+    java.util.List< ButtonMap > work = new ArrayList< ButtonMap >();
     String line;
     ButtonMap map = null;
     int name = -1;
-    Vector< Vector< Integer >> outer = new Vector< Vector< Integer >>();
-    Vector< Integer > inner = null;
+    java.util.List< java.util.List< Integer >> outer = new ArrayList< java.util.List< Integer >>();
+    java.util.List< Integer > inner = null;
     boolean nested = false;
 
     while ( true )
@@ -1392,7 +1391,7 @@ public class Remote
         {
           short[][] outerb = new short[ outer.size()][];
           int o = 0;
-          for ( Vector< Integer > maps : outer )
+          for ( java.util.List< Integer > maps : outer )
           {
             short[] innerb = new short[ maps.size()];
             outerb[ o++ ] = innerb;
@@ -1416,13 +1415,13 @@ public class Remote
         {
           nested = true;
           token = token.substring( 1 );
-          inner = new Vector< Integer >();
+          inner = new ArrayList< Integer >();
           outer.add( inner );
         }
 
         if ( !nested )
         {
-          inner = new Vector< Integer >();
+          inner = new ArrayList< Integer >();
           outer.add( inner );
         }
 
@@ -1439,7 +1438,7 @@ public class Remote
     {
       short[][] outerb = new short[ outer.size()][];
       int o = 0;
-      for ( Vector< Integer > maps : outer )
+      for ( java.util.List< Integer > maps : outer )
       {
         short[] innerb = new short[ maps.size()];
         outerb[ o++ ] = innerb;
@@ -1483,10 +1482,10 @@ public class Remote
             token = token.substring( 0, colon );
           }
           Hex pid = new Hex( token );
-          Vector< String > v = ( Vector< String > )protocolVariantNames.get( pid );
+          java.util.List< String > v = protocolVariantNames.get( pid );
           if ( v == null )
           {
-            v = new Vector< String >();
+            v = new ArrayList< String >();
             protocolVariantNames.put( pid, v );
           }
           v.add( variantName );
@@ -1505,7 +1504,7 @@ public class Remote
   public boolean supportsVariant( Hex pid, String name )
   {
     load();
-    Vector< String > v = protocolVariantNames.get( pid );
+    java.util.List< String > v = protocolVariantNames.get( pid );
     if (( v == null ) || v.isEmpty())
       return false;
 
@@ -1515,7 +1514,7 @@ public class Remote
     return false;
   }
 
-  public Vector< String > getSupportedVariantNames( Hex pid )
+  public java.util.List< String > getSupportedVariantNames( Hex pid )
   {
     load();
     return protocolVariantNames.get( pid );
@@ -1532,13 +1531,13 @@ public class Remote
   }
   */
 
-  public void setProtocols( Vector< Protocol > protocols )
+  public void setProtocols( java.util.List< Protocol > protocols )
   {
     load();
     this.protocols = protocols;
   }
 
-  public Vector< Protocol > getProtocols()
+  public java.util.List< Protocol > getProtocols()
   {
     load();
     return protocols;
@@ -1645,17 +1644,17 @@ public class Remote
   private Hashtable< String, DeviceType> deviceTypes = new Hashtable< String, DeviceType >();
   private Hashtable< String, DeviceType> deviceTypeAliases = new Hashtable< String, DeviceType >();
   private String[] deviceTypeAliasNames = null;
-  private Vector<Button> buttons = new Vector<Button>();
+  private java.util.List<Button> buttons = new ArrayList<Button>();
   private Hashtable< Integer, Button > buttonsByKeyCode = new Hashtable< Integer, Button >();
   private Hashtable< String, Button > buttonsByName = new Hashtable< String, Button >();
   private Hashtable< String, Button > buttonsByStandardName = new Hashtable< String, Button >();
   private Button[] upgradeButtons = new Button[ 0 ];
-  private Vector< ButtonShape> phantomShapes = new Vector< ButtonShape >();
+  private java.util.List< ButtonShape> phantomShapes = new ArrayList< ButtonShape >();
   private short[] digitMaps = new short[ 0 ];
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
   private boolean omitDigitMapByte = false;
-  private Hashtable< Hex, Vector< String >> protocolVariantNames = new Hashtable< Hex, Vector< String >>();
-  private Vector< Protocol > protocols = null;
+  private Hashtable< Hex, java.util.List< String >> protocolVariantNames = new Hashtable< Hex, java.util.List< String >>();
+  private java.util.List< Protocol > protocols = null;
   private ImageMap[] imageMaps = new ImageMap[ 0 ];
   private int mapIndex = 0;
   private int shiftMask = 0x80;
@@ -1681,8 +1680,8 @@ public class Remote
   private Integer maxCombinedUpgradeLength = null;
   private short sectionTerminator = 0;
   public short getSectionTerminator(){ return sectionTerminator; }
-  public Vector< SpecialProtocol > specialProtocols = new Vector< SpecialProtocol >();
-  public Vector< SpecialProtocol > getSpecialProtocols(){ return specialProtocols; }
+  public java.util.List< SpecialProtocol > specialProtocols = new ArrayList< SpecialProtocol >();
+  public java.util.List< SpecialProtocol > getSpecialProtocols(){ return specialProtocols; }
 
   private static Hashtable< String, Integer > restrictionTable = null;
  }

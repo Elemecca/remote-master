@@ -1,11 +1,13 @@
 package com.hifiremote.jp1;
 
 import com.hifiremote.jp1.io.*;
+import com.hifiremote.decodeir.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
+import java.text.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -14,7 +16,7 @@ public class RemoteMaster
  implements ActionListener, PropertyChangeListener
 {
   private static JFrame frame = null;
-  public static final String version = "v1.67";
+  public static final String version = "v1.69";
   private File dir = null;
   public File file = null;
   private RemoteConfiguration remoteConfig = null;
@@ -111,7 +113,7 @@ public class RemoteMaster
     specialFunctionPanel = new SpecialFunctionPanel();
     tabbedPane.add( "Special Functions", specialFunctionPanel );
     specialFunctionPanel.addPropertyChangeListener( this );
-    
+
     // tabbedPane.addTab( "Scan/Fav", new JPanel());
 
     devicePanel = new DeviceUpgradePanel();
@@ -335,11 +337,13 @@ public class RemoteMaster
       else
         return null;
     }
-    
+
+    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " +
+                        DateFormat.getInstance().format( new Date( file.lastModified())));
     String ext = file.getName().toLowerCase();
     int dot = ext.lastIndexOf( '.' );
     ext = ext.substring( dot );
-    
+
     if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ))
     {
       KeyMapMaster km = new KeyMapMaster( preferences );
@@ -375,7 +379,7 @@ public class RemoteMaster
     for ( int i = 0; i < recentFiles.getItemCount(); ++i )
     {
       File temp = new File( recentFiles.getItem( i ).getText());
-      
+
       if ( temp.getCanonicalPath().equals( path ))
       {
         item = recentFiles.getItem( i );
@@ -500,6 +504,7 @@ public class RemoteMaster
         String text = "<html><b>Java IR, " + version + "</b>" +
                       "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
                       "<p>RDFs loaded from <b>" + preferences.getProperty( "RDFPath" ) + "</b></p>" +
+                      "<p>DecodeIR version " + new DecodeIRCaller().getVersion() + "<p>" +
                       "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
                       "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>" +
                       "</html>";
@@ -590,7 +595,7 @@ public class RemoteMaster
       ex.printStackTrace( System.err );
     }
   }
-  
+
   private void update()
   {
     generalPanel.set( remoteConfig );
@@ -667,7 +672,8 @@ public class RemoteMaster
       learnedProgressBar.setValue( used );
       learnedProgressBar.setString( Integer.toString( learnedProgressBar.getMaximum() - used ) + " free" );
     }
-    System.err.println( "source is " + source );
+    else
+      System.err.println( "propertyChange source is " + source );
     remoteConfig.updateCheckSums();
   }
 
@@ -688,7 +694,7 @@ public class RemoteMaster
           workDir = new File( args[ ++i ]);
         else if ( parm.charAt( 1 ) == 'p' )
           propertiesFile = new File( args[ ++i ]);
-        else 
+        else
           fileToOpen = new File( parm );
       }
       if ( propertiesFile == null )
@@ -702,16 +708,25 @@ public class RemoteMaster
       {
         e.printStackTrace( System.err );
       }
+
+      if ( launchRM )
+        UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName());
+      else
+      {
+        String lookAndFeel = properties.getProperty( "LookAndFeel", UIManager.getSystemLookAndFeelClassName());
+        UIManager.setLookAndFeel( lookAndFeel );
+      }
+
       File rdfDir = properties.getFileProperty( "RDFPath", new File( workDir, "rdf" ));
       rdfDir = RemoteManager.getRemoteManager().loadRemotes( rdfDir );
       properties.setProperty( "RDFPath", rdfDir );
-      
+
       ProtocolManager.getProtocolManager().load( new File( workDir, "protocols.ini" ));
-      
+
       DigitMaps.load( new File( workDir, "digitmaps.bin" ));
+
       if ( launchRM )
       {
-        UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName());
         RemoteMaster rm = new RemoteMaster( workDir, properties );
         if ( fileToOpen != null )
           rm.openFile( fileToOpen );
@@ -719,8 +734,6 @@ public class RemoteMaster
       }
       else
       {
-        String lookAndFeel = properties.getProperty( "LookAndFeel", UIManager.getSystemLookAndFeelClassName());
-        UIManager.setLookAndFeel( lookAndFeel );
         KeyMapMaster km = new KeyMapMaster( properties );
         km.loadUpgrade( fileToOpen );
         frame = km;

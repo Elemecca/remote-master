@@ -210,22 +210,12 @@ public class LayoutPanel
     FunctionItem item = null;
 
     functionPanel.removeAll();
-    FunctionLabel label = null;
-    Function function = null;
 
-    Vector funcs = deviceUpgrade.getFunctions();
-    for ( int i = 0; i < funcs.size(); i++ )
-    {
-      function = ( Function )funcs.elementAt( i );
+    for ( Function function : deviceUpgrade.getFunctions())
       addFunction( function );
-    }
-    funcs = deviceUpgrade.getExternalFunctions();
-    for ( int i = 0; i < funcs.size(); i++ )
-    {
-      function = ( Function )funcs.elementAt( i );
+
+    for ( Function function : deviceUpgrade.getExternalFunctions())
       addFunction( function );
-    }
-    // addFunction( null ); // the "none" function
   }
 
   private void enableScrollButtons()
@@ -257,11 +247,9 @@ public class LayoutPanel
     imagePanel.setMinimumSize( d );
     imagePanel.setMaximumSize( d );
     imagePanel.revalidate();
-    Vector buttonShapes = map.getShapes();
     boolean found = false;
-    for ( Enumeration e = buttonShapes.elements(); e.hasMoreElements(); )
+    for ( ButtonShape shape : map.getShapes())
     {
-      ButtonShape shape = ( ButtonShape )e.nextElement();
       if ( currentShape == shape )
       {
         found = true;
@@ -331,12 +319,10 @@ public class LayoutPanel
 
   public ButtonShape getShapeAtPoint( Point p )
   {
-    Vector buttonShapes = map.getShapes();
     ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
     ButtonShape closestMatch = null;
-    for ( Enumeration e = buttonShapes.elements(); e.hasMoreElements(); )
+    for ( ButtonShape buttonShape : map.getShapes())
     {
-      ButtonShape buttonShape = ( ButtonShape )e.nextElement();
       Shape s = buttonShape.getShape();
       if (( s != null ) && s.contains( p ))
       {
@@ -552,14 +538,9 @@ public class LayoutPanel
       if ( icon != null )
         g2.drawImage( icon.getImage(), null, null );
 
-      Vector phantomShapes = r.getPhantomShapes();
-      
       g2.setPaint( Color.darkGray );
-      for ( Enumeration e = phantomShapes.elements(); e.hasMoreElements(); )
-      {
-        ButtonShape shape = ( ButtonShape )e.nextElement();
+      for ( ButtonShape shape : r.getPhantomShapes())
         g2.fill( shape.getShape());
-      }
 
       if ( currentShape != null )
       {
@@ -573,10 +554,8 @@ public class LayoutPanel
       DeviceType devType = deviceUpgrade.getDeviceType();
       ButtonMap buttonMap = devType.getButtonMap();
 
-      Vector buttonShapes = map.getShapes();
-      for ( Enumeration e = buttonShapes.elements(); e.hasMoreElements(); )
+      for ( ButtonShape buttonShape : map.getShapes())
       {
-        ButtonShape buttonShape = ( ButtonShape )e.nextElement();
         Button b = getButtonForShape( buttonShape );
         if ( b == null )
           continue;

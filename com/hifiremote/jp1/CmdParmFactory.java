@@ -14,7 +14,7 @@ public class CmdParmFactory
     int bits = -1;
     int base = 10;
     String name = st.nextToken();
-    Vector< String > choices = null;
+    List< String > choices = null;
 //    Dimension d = null;
     while ( st.hasMoreTokens())
     {
@@ -64,7 +64,7 @@ public class CmdParmFactory
         if ( str.indexOf( '|' ) != -1 )
         {
           StringTokenizer st2 = new StringTokenizer( str, "|", true );
-          choices = new Vector< String >();
+          choices = new ArrayList< String >();
           while ( st2.hasMoreTokens())
           {
             String val = st2.nextToken();

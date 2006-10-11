@@ -36,7 +36,7 @@ public abstract class SpecialProtocol
     return null;
   }
   
-  public DeviceUpgrade getDeviceUpgrade( Vector< DeviceUpgrade > upgrades )
+  public DeviceUpgrade getDeviceUpgrade( List< DeviceUpgrade > upgrades )
   {
     for ( DeviceUpgrade upgrade : upgrades )
     {

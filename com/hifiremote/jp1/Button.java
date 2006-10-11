@@ -40,7 +40,7 @@ public class Button
     else
       return remote.getXShiftLabel() + '-' + name;
   }
-  
+
   public String getName( int state )
   {
     if ( state == SHIFTED_STATE )
@@ -50,7 +50,7 @@ public class Button
     else
       return getName();
   }
-  
+
   public String getStandardName(){ return standardName; }
   public void setStandardName( String name ){ standardName = name.toLowerCase(); }
   public short getKeyCode(){ return keyCode; }
@@ -64,7 +64,7 @@ public class Button
       return getXShiftedKeyCode();
     return getKeyCode();
   }
-  
+
   public int getMultiMacroAddress(){ return multiMacroAddress; }
   public void setMultiMacroAddress( int addr ){ multiMacroAddress = addr; }
 
@@ -123,7 +123,7 @@ public class Button
       restrictions |= ( SHIFT | XSHIFT );
   }
   public boolean getIsXShifted(){ return isXShifted; }
-  
+
   public int getState()
   {
     if ( getIsShifted())
@@ -162,7 +162,7 @@ public class Button
       return false;
     return (( restrictions & XSHIFT_MOVE_BIND ) == 0 );
   }
-  
+
   public boolean allowsKeyMove( int state )
   {
     if ( state == SHIFTED_STATE )
@@ -191,7 +191,7 @@ public class Button
       return false;
     return (( restrictions & XSHIFT_MACRO_BIND ) == 0 );
   }
-  
+
   public boolean canAssignToMacro()
   {
     return (( restrictions & MACRO_DATA ) == 0 );
@@ -203,14 +203,33 @@ public class Button
       return false;
     return (( restrictions & SHIFT_MACRO_DATA ) == 0 );
   }
-  
+
   public boolean canAssignXShiftedToMacro()
   {
     if ( isShifted || isXShifted )
       return false;
     return (( restrictions & XSHIFT_MACRO_DATA ) == 0 );
   }
-  
+
+  public boolean allowsLearnedSignal()
+  {
+    return (( restrictions & LEARN_BIND ) == 0 );
+  }
+
+  public boolean allowsShiftedLearnedSignal()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return (( restrictions & SHIFT_LEARN_BIND ) == 0 );
+  }
+
+  public boolean allowsXShiftedLearnedSignal()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return (( restrictions & XSHIFT_LEARN_BIND ) == 0 );
+  }
+
   public void addButtonMap( int mapIndex )
   {
     buttonMaps |= ( 1 << mapIndex );
@@ -301,8 +320,8 @@ public class Button
         short[] newData = new short[ 2 ];
         newData[ 0 ] = hex.getData()[ 0 ];
         hex = new Hex( newData );
-        newData[ 1 ] = EFC.parseHex( hex ); 
-      }    
+        newData[ 1 ] = EFC.parseHex( hex );
+      }
 
       if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
         len = ( 4 + hex.length());
@@ -313,7 +332,7 @@ public class Button
           ++len;
 
         rc = new short[ len ];
-      
+
         int index = 0;
         rc[ index ] = ( short )( keyCode | mask );
 

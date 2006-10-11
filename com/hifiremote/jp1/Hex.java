@@ -82,7 +82,7 @@ public class Hex
   {
     put( src, 0 );
   }
-  
+
   public void put( Hex src, int index )
   {
     put( src.data, index );
@@ -131,7 +131,7 @@ public class Hex
     }
     return rc;
   }
-  
+
   public static void parseHex( String text, short[] data,  int offset )
   {
     StringTokenizer st = new StringTokenizer( text, " _.$h\n\r", true );
@@ -200,7 +200,7 @@ public class Hex
   {
     return toString( data, breakAt, 0, data.length );
   }
-  
+
   public static String toString( short[] data, int breakAt, int offset, int length )
   {
     if ( data == null )
@@ -229,6 +229,25 @@ public class Hex
     return rc.toString().toUpperCase();
   }
 
+  public static String toString( int[] data )
+  {
+    if ( data == null )
+      return null;
+
+    StringBuilder rc = new StringBuilder( 4 * data.length );
+    for ( int i = 0; i < data.length; ++i )
+    {
+      if ( i > 0 )
+        rc.append( ' ' );
+
+      String str = Integer.toHexString( data[ i ]);
+      if ( str.length() < 2  )
+        rc.append( '0' );
+      rc.append( str );
+    }
+    return rc.toString().toUpperCase();
+  }
+
   public String toString()
   {
     return toString( data );
@@ -238,12 +257,12 @@ public class Hex
   {
     return toString( data, breakAt );
   }
-  
+
   public String toString( int offset, int length )
   {
     return toString( data, -1, offset, length );
   }
-  
+
   public static String toString( short[] data, int offset, int length )
   {
     return toString( data, -1, offset, length );

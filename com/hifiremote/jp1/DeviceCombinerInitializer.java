@@ -5,7 +5,7 @@ import java.util.*;
 public class DeviceCombinerInitializer
   extends Initializer
 {
-  public DeviceCombinerInitializer( Vector devices, ChoiceCmdParm choice )
+  public DeviceCombinerInitializer( List< CombinerDevice > devices, ChoiceCmdParm choice )
   {
     this.devices = devices;
     this.choice = choice;
@@ -15,9 +15,8 @@ public class DeviceCombinerInitializer
   {
     Choice[] choices = choice.getChoices();
     int i = 0;
-    for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
+    for ( CombinerDevice device : devices )
     {
-      CombinerDevice device = ( CombinerDevice )e.nextElement();
       Choice choice = choices[ i++ ];
       choice.setText( device.toString());
       choice.setHidden( false );
@@ -30,6 +29,6 @@ public class DeviceCombinerInitializer
     (( ChoiceEditor )choice.getEditor()).initialize();
   } 
 
-  private Vector devices = null;
+  private List< CombinerDevice > devices = null;
   private ChoiceCmdParm choice = null;
 }

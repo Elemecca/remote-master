@@ -62,7 +62,7 @@ public class MacroTableModel
 
   public Object getValueAt(int row, int column)
   {
-    Macro macro = ( Macro )remoteConfig.getMacros().elementAt( row );
+    Macro macro = remoteConfig.getMacros().get( row );
     Remote r = remoteConfig.getRemote();
     switch ( column )
     {
@@ -81,7 +81,7 @@ public class MacroTableModel
 
   public void setValueAt( Object value, int row, int col )
   {
-    Macro macro = ( Macro )getRow( row );
+    Macro macro = getRow( row );
     if ( col == 1 )
       macro.setKeyCode((( Integer )value ).intValue());
     else if ( col == 3 )

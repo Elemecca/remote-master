@@ -2,8 +2,8 @@ package com.hifiremote.jp1;
 
 import java.util.Properties;
 import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Function
 {
@@ -154,9 +154,9 @@ public class Function
     return ( !users.isEmpty() );
   }
 
-  public Enumeration< User > getUsers()
+  public List< User > getUsers()
   {
-    return users.elements();
+    return users;
   }
 
   public class User
@@ -187,5 +187,5 @@ public class Function
   protected Hex hex = null;
   private FunctionLabel label = null;
   private FunctionItem item = null;
-  private Vector< User > users = new Vector< User >();
+  private List< User > users = new ArrayList< User >();
 }

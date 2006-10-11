@@ -12,6 +12,7 @@ public class PropertyReader
 
   public Property nextProperty()
   {
+    Property property = new Property();
     try
     {
       String line;
@@ -33,6 +34,8 @@ public class PropertyReader
         return property;
       }
       property.name = line.substring( 0, pos );
+      if ( property.name.charAt( pos - 1 ) == ':' )
+        property.name = property.name.substring( 0, pos - 1 );
       line = line.substring( pos + 1 );
       while ( line.endsWith( "\\" ))
         line = line.substring( 0, line.length() - 1 ).trim() + reader.readLine().trim();
@@ -94,12 +97,11 @@ public class PropertyReader
     }
     while (( p != null ) && ( p.name.length() != 0 ))
     {
-      section.setProperty( p.name, p.value );
+      section.add( p );
       p = nextProperty();
     }
     return section;
   }
 
   private BufferedReader reader = null;
-  private Property property = new Property();
 }

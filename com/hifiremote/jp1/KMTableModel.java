@@ -1,6 +1,6 @@
 package com.hifiremote.jp1;
 
-import java.util.Vector;
+import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -13,7 +13,7 @@ public abstract class KMTableModel< E >
     super();
   }
 
-  public KMTableModel( Vector< E > data )
+  public KMTableModel( List< E > data )
   {
     super();
     setData( data );

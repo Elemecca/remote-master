@@ -59,7 +59,7 @@ public class BinaryUpgradeWriter
         }
         if ( rc == JOptionPane.YES_OPTION )
         {
-          Vector< short[]> v = new Vector< short[]>();
+          List< short[]> v = new ArrayList< short[]>();
 
           Remote remote = deviceUpgrade.getRemote();
           Protocol protocol = deviceUpgrade.getProtocol();

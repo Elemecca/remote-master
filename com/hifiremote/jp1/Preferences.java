@@ -63,7 +63,7 @@ public class Preferences
   public Remote[] getPreferredRemotes()
   {
     RemoteManager rm = RemoteManager.getRemoteManager();
-    Vector< Remote > work = new Vector< Remote >();
+    java.util.List< Remote > work = new ArrayList< Remote >();
     for ( int i = 0; true; i++ )
     {
       String name = file.getProperty( "PreferredRemotes." + i );
@@ -225,7 +225,7 @@ public class Preferences
 
   private PropertyFile file;
   private float fontSizeAdjustment = 0f;
-  private Vector< String > preferredRemoteNames = new Vector< String >();
+  private java.util.List< String > preferredRemoteNames = new ArrayList< String >();
   private static String[] customNames = null;
 
   private final static String upgradeDirectory = "Upgrades";

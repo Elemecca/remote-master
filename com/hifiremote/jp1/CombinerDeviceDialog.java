@@ -59,27 +59,24 @@ public class CombinerDeviceDialog
     mainPanel.add( label, "2, 1" );
 
     boolean allowUpgrades =  r.getProcessor().getFullName().equals( "S3C80" );
-    Vector allProtocols = 
+    java.util.List< Protocol > allProtocols = 
       ProtocolManager.getProtocolManager().getProtocolsForRemote( r, allowUpgrades );
-    Vector< Protocol > protocols = new Vector< Protocol >();
+    java.util.List< Protocol > protocols = new ArrayList< Protocol >();
     if ( allowUpgrades )
       protocols.add( new ManualProtocol( null, null ));
-    for ( Enumeration e = allProtocols.elements(); e.hasMoreElements(); )
+    for ( Protocol protocol : allProtocols )
     {
-      Protocol protocol = ( Protocol )e.nextElement();
       if ( protocol.getDefaultCmd().length() == 1 )
-      {
         protocols.add( protocol );
-      }
     }
     if ( dev == null )
-      device = new CombinerDevice(( Protocol )protocols.elementAt( 1 ), new Value[ 0 ]);
+      device = new CombinerDevice(( Protocol )protocols.get( 1 ), new Value[ 0 ]);
     else
       device = new CombinerDevice( dev );
 
     device.getProtocol().reset();
 
-    protocolList = new JComboBox( protocols );
+    protocolList = new JComboBox( protocols.toArray());
     protocolList.addActionListener( this );
     label.setLabelFor( protocolList );
     protocolList.setToolTipText( "Select the protocol to be used for this device upgrade from the drop-down list." );
@@ -118,7 +115,7 @@ public class CombinerDeviceDialog
 
     protocolNotes = new JTextArea( 15, 60 );
     protocolNotes.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
-    protocolNotes.setText((( Protocol )protocols.elementAt( 0 )).getNotes()); 
+    protocolNotes.setText( protocols.get( 0 ).getNotes()); 
     protocolNotes.setBackground( label.getBackground());
     protocolNotes.setToolTipText( "Notes about the selected protocol." );
     protocolNotes.setEditable( false );

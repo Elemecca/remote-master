@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -17,35 +18,47 @@ public class LearnedSignalTableModel
     setData( remoteConfig.getLearnedSignals());
   }
 
-  private static final String[] colNames = 
+  private static final String[] colNames =
   {
-    "#", "<html>Device<br>Button</html>", "Key", "Raw Signal", "Notes"
+    "#", "<html>Device<br>Button</html>", "Key", "Notes", "Size", "Freq.", "Protocol", "Device", "<html>Sub<br>Device</html>", "OBC", "Hex Cmd", "Misc"
   };
   public int getColumnCount(){ return colNames.length; }
   public String getColumnName( int col )
   {
     return colNames[ col ];
   }
-  
-  private static final String[] colPrototypeNames = 
+
+  private static final String[] colPrototypeNames =
   {
-    "00", "__VCR/DVD__", "_xshift-VCR/DVD_", "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", "A reasonable comment"
+    "00", "__VCR/DVD__", "_xshift-VCR/DVD_", "A longish comment or note", "1024", "99999", "Protocol", "Device", "Device", "OBC" , "Hex Cmd", "Miscellaneous"
   };
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ col ];
   }
-  
+
   public boolean isColumnWidthFixed( int col )
   {
-    if ( col < 3 )
+    if (( col == 3 ) || ( col == 6 ) || ( col == 11 ))
+      return false;
+    else
       return true;
-    return false;
   }
-  
+
   private static final Class[] colClasses =
   {
-    Integer.class, DeviceButton.class, Integer.class, Hex.class, String.class
+    Integer.class, // row
+    DeviceButton.class, // DeviceButton
+    Integer.class, // keycode
+    String.class, // notes
+    Integer.class, // size
+    Integer.class, // frequency
+    String.class, // protocol
+    Integer.class, // device
+    Integer.class, // sub-device
+    Integer.class, // OBC
+    String.class, // hex cmd
+    String.class // misc
   };
   public Class getColumnClass( int col )
   {
@@ -54,7 +67,7 @@ public class LearnedSignalTableModel
 
   public boolean isCellEditable( int row, int col )
   {
-    if (( col == 1 ) || ( col == 2 ) || ( col == 4 ))
+    if (( col > 0 ) && ( col < 4 ))
       return true;
     return false;
   }
@@ -62,18 +75,46 @@ public class LearnedSignalTableModel
   public Object getValueAt(int row, int column)
   {
     LearnedSignal l = ( LearnedSignal )getRow( row );
+    UnpackLearned ul = l.getUnpackLearned();
+    ArrayList< LearnedSignalDecode > da = l.getDecodes();
+    int numDecodes = da.size();
+    if (( numDecodes != 1 ) && ( column > 6 ))
+      return null;
+    LearnedSignalDecode decode = null;
+    if (( numDecodes == 1 ) && ( column > 5 ))
+      decode = da.get( 0 );
     switch ( column )
     {
-      case 0:
+      case 0:  // row number
         return new Integer( row + 1 );
-      case 1:
+      case 1:  // deviceButton
         return remoteConfig.getRemote().getDeviceButtons()[ l.getDeviceButtonIndex()];
-      case 2:
+      case 2: // key
         return new Integer( l.getKeyCode());
-      case 3:
-        return l.getData();
-      case 4:
+      case 3: // notes
         return l.getNotes();
+      case 4: // size
+        return l.getData().length();
+      case 5: // frequency
+        return new Integer( ul.frequency );
+      case 6: // protocol
+        if ( numDecodes == 0 )
+          return "** None **";
+        if ( numDecodes > 1 )
+          return "** Multiple **";
+        return decode.protocolName;
+      case 7: // device
+        return new Integer( decode.device );
+      case 8: // subDevice
+        if ( decode.subDevice == -1 )
+          return null;
+        return new Integer( decode.subDevice );
+      case 9: // obc
+        return new Integer( decode.obc );
+      case 10:
+        return Hex.toString( decode.hex );
+      case 11:
+        return decode.miscMessage;
     }
     return null;
   }
@@ -101,7 +142,7 @@ public class LearnedSignalTableModel
     }
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
-  
+
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
@@ -110,7 +151,7 @@ public class LearnedSignalTableModel
       return keyRenderer;
     return null;
   }
-  
+
   public TableCellEditor getColumnEditor( int col )
   {
     if ( col == 1 )
@@ -118,12 +159,12 @@ public class LearnedSignalTableModel
       DefaultCellEditor e = new DefaultCellEditor( deviceComboBox );
       e.setClickCountToStart( 2 );
       return e;
-    }  
+    }
     else if ( col == 2 )
       return keyEditor;
     return null;
   }
-  
+
   private RemoteConfiguration remoteConfig = null;
   private JComboBox deviceComboBox = new JComboBox();
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();

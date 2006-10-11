@@ -27,7 +27,7 @@ public class ManualProtocol
   }
 
   public ManualProtocol( String name, Hex id, int cmdType, String signalStyle,
-                         int devBits, Vector parms, short[] rawHex, int cmdBits )
+                         int devBits, List parms, short[] rawHex, int cmdBits )
   {
     super( name, id, new Properties());
 
@@ -46,7 +46,7 @@ public class ManualProtocol
     for ( int i = 0; i < parms.size(); i++ )
     {
       devParms[ i ] = new NumberDeviceParm( "Device " + ( i + 1 ), defaultValue, 10, devBits );
-      devParms[ i ].setValue( parms.elementAt( i ));
+      devParms[ i ].setValue( parms.get( i ));
       deviceTranslators[ i ] = new Translator( lsb, comp, i, devBits, i * 8 );
     }
 
@@ -99,44 +99,28 @@ public class ManualProtocol
       return "Manual Settings";
   }
 
-  public void setDeviceParms( Vector v )
+  public void setDeviceParms( List< DeviceParameter > v )
   {
     devParms = new DeviceParameter[ v.size()];
-    int i = 0;
-    for ( Enumeration e = v.elements(); e.hasMoreElements(); )
-    {
-      devParms[ i++ ] = ( DeviceParameter )e.nextElement();
-    }
+    v.toArray( devParms );
   }
 
-  public void setDeviceTranslators( Vector v )
+  public void setDeviceTranslators( List< Translate > v )
   {
     deviceTranslators = new Translator[ v.size()];
-    int i = 0;
-    for ( Enumeration e = v.elements(); e.hasMoreElements(); )
-    {
-      deviceTranslators[ i++ ] = ( Translator )e.nextElement();
-    }
+    v.toArray( deviceTranslators );
   }
 
-  public void setCommandParms( Vector v )
+  public void setCommandParms( List< CmdParameter > v )
   {
     cmdParms = new CmdParameter[ v.size()];
-    int i = 0;
-    for ( Enumeration e = v.elements(); e.hasMoreElements(); )
-    {
-      cmdParms[ i++ ] = ( CmdParameter )e.nextElement();
-    }
+    v.toArray( cmdParms );
   }
 
-  public void setCommandTranslators( Vector v )
+  public void setCommandTranslators( List< Translate > v )
   {
     cmdTranslators = new Translator[ v.size()];
-    int i = 0;
-    for ( Enumeration e = v.elements(); e.hasMoreElements(); )
-    {
-      cmdTranslators[ i++ ] = ( Translator )e.nextElement();
-    }
+    v.toArray( cmdTranslators );
   }
 
   public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )

@@ -80,18 +80,17 @@ public class FunctionLabel
         buff.append( "&nbsp;" + function.getNotes());
       else
         buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;set the function performed by a button." );
-      Enumeration e = function.getUsers();
-      if ( e.hasMoreElements())
+      java.util.List< Function.User > users = function.getUsers();
+      if ( !users.isEmpty())
       {
         buff.append( "<br><hr>&nbsp;" + function.getName() + " is assigned to: " );
         boolean first = true;
-        while ( e.hasMoreElements())
+        for ( Function.User user : users )
         {
           if ( first )
             first = false;
           else
             buff.append( ", " );
-          Function.User user = ( Function.User )e.nextElement();
           Button b = user.button;
           int state = user.state;
           if ( state == Button.NORMAL_STATE )

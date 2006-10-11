@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import com.hifiremote.decodeir.*;
 import java.util.*;
 
 public class LearnedSignal
@@ -11,7 +12,7 @@ public class LearnedSignal
     this.data = data;
     this.notes = notes;
   }
-  
+
   public LearnedSignal( Properties properties )
   {
     keyCode = Integer.parseInt( properties.getProperty( "KeyCode" ));
@@ -19,7 +20,7 @@ public class LearnedSignal
     data = new Hex( properties.getProperty( "Data" ));
     notes = properties.getProperty( "Notes" );
   }
-  
+
   public void store( PropertyWriter pw )
   {
     pw.print( "KeyCode", keyCode );
@@ -32,7 +33,7 @@ public class LearnedSignal
   private int keyCode;
   public int getKeyCode(){ return keyCode; }
   public void setKeyCode( int code ){ keyCode = code; }
-  
+
   private int deviceButtonIndex;
   public int getDeviceButtonIndex(){ return deviceButtonIndex; }
   public void setDeviceButtonIndex( int newIndex )
@@ -43,8 +44,35 @@ public class LearnedSignal
   private Hex data = null;
   public Hex getData(){ return data; }
   public void setData( Hex hex ){ data = hex; }
-  
+
   private String notes = null;
   public String getNotes(){ return notes; }
   public void setNotes( String text ){ notes = text; }
+
+  private UnpackLearned unpackLearned = null;
+  public UnpackLearned getUnpackLearned()
+  {
+    if ( unpackLearned == null )
+      unpackLearned = new UnpackLearned( data );
+    return unpackLearned;
+  }
+
+  private ArrayList< LearnedSignalDecode > decodes = null;
+  public ArrayList< LearnedSignalDecode > getDecodes()
+  {
+    if ( decodes == null )
+    {
+      UnpackLearned ul = getUnpackLearned();
+      if ( !ul.ok )
+        return null;
+      DecodeIRCaller decodeIR = new DecodeIRCaller();
+      decodeIR.setBursts( ul.durations, ul.repeat );
+      decodeIR.setFrequency( ul.frequency );
+      decodeIR.initDecoder();
+      decodes = new ArrayList< LearnedSignalDecode >();
+      while ( decodeIR.decode())
+        decodes.add( new LearnedSignalDecode( decodeIR ));
+    }
+    return decodes;
+  }
 }

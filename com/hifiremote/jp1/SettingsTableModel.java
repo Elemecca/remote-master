@@ -79,8 +79,11 @@ public class SettingsTableModel
         Object[] choices = setting.getOptions( r );
         if ( choices == null )
           return new Integer( val );
-        else
-          return choices[ val ];
+        
+        if ( val > choices.length )
+          return null;
+          
+        return choices[ val ];
       }
     }
     return null;

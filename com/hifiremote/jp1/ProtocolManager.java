@@ -115,7 +115,7 @@ public class ProtocolManager
     String[] temp = new String[ 0 ];
     temp = names.toArray( temp );
     Arrays.sort( temp );
-    names = new Vector< String >( temp.length );
+    names = new ArrayList< String >( temp.length );
     for ( int i = 0; i < temp.length; i++ )
       names.add( temp[ i ]);
     
@@ -132,10 +132,10 @@ public class ProtocolManager
 
     // Add the protocol to the byName hashtable
     String name = p.getName();
-    Vector< Protocol > v = byName.get( name );
+    List< Protocol > v = byName.get( name );
     if ( v == null )
     {
-      v = new Vector< Protocol >();
+      v = new ArrayList< Protocol >();
       byName.put( name, v );
       names.add( name );
     }
@@ -146,7 +146,7 @@ public class ProtocolManager
     v = byPID.get( id );
     if ( v == null )
     {
-      v = new Vector< Protocol >();
+      v = new ArrayList< Protocol >();
       byPID.put( id, v );
     }
     v.add( p );
@@ -157,23 +157,23 @@ public class ProtocolManager
       v = byAlternatePID.get( id );
       if ( v == null )
       {
-        v = new Vector< Protocol >();
+        v = new ArrayList< Protocol >();
         byAlternatePID.put( id, v );
       }
       v.add( p );
     }
   }
 
-  public Vector< String > getNames(){ return names; }
+  public List< String > getNames(){ return names; }
 
-  public Vector< Protocol > getProtocolsForRemote( Remote remote )
+  public List< Protocol > getProtocolsForRemote( Remote remote )
   {
     return getProtocolsForRemote( remote, true );
   }
 
-  public Vector< Protocol > getProtocolsForRemote( Remote remote, boolean allowUpgrades )
+  public List< Protocol > getProtocolsForRemote( Remote remote, boolean allowUpgrades )
   {
-    Vector< Protocol > rc = new Vector< Protocol >();
+    List< Protocol > rc = new ArrayList< Protocol >();
     for ( String name : names )
     {
       Protocol p = findProtocolForRemote( remote, name, allowUpgrades );
@@ -185,26 +185,26 @@ public class ProtocolManager
     return rc;
   }
 
-  public Vector< Protocol > findByName( String name )
+  public List< Protocol > findByName( String name )
   {
-    Vector< Protocol > v = byName.get( name );
+    List< Protocol > v = byName.get( name );
     if (( v == null ) && name.equals( manualProtocol.getName()))
     {
-      v = new Vector< Protocol >();
+      v = new ArrayList< Protocol >();
       v.add( manualProtocol );
     }
     return v;
   }
 
-  public Vector< Protocol > findByPID( Hex id )
+  public List< Protocol > findByPID( Hex id )
   {
-    Vector< Protocol > rc = byPID.get( id );
+    List< Protocol > rc = byPID.get( id );
     if ( rc == null )
-     rc = new Vector< Protocol >( 0 );
+     rc = new ArrayList< Protocol >( 0 );
     return rc;
   }
 
-  public Vector< Protocol > findByAlternatePID( Hex id )
+  public List< Protocol > findByAlternatePID( Hex id )
   {
     return byAlternatePID.get( id );
   }
@@ -219,13 +219,11 @@ public class ProtocolManager
     Protocol protocol = null;
     Protocol tentative = null;
 
-    Vector< Protocol > protocols = findByName( name );
+    List< Protocol > protocols = findByName( name );
     if ( protocols == null )
       return null;
-    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    for ( Protocol p : protocols  )
     {
-      Protocol p = ( Protocol )e.nextElement();
-
       if ( remote.supportsVariant( p.getID(), p.getVariantName()))
       {
         protocol = p;
@@ -246,7 +244,7 @@ public class ProtocolManager
 
   public Protocol findProtocolForRemote( Remote remote, Hex id, Hex fixedData )
   {
-    Vector< Protocol > protocols = protocolManager.findByPID( id );
+    List< Protocol > protocols = protocolManager.findByPID( id );
     for ( Protocol p : protocols )
     {
       if ( !remote.supportsVariant( id, p.getVariantName()))
@@ -268,7 +266,7 @@ public class ProtocolManager
   {
     Protocol protocol = null;
     Protocol tentative = null;
-    Vector< Protocol > protocols = findByPID( id );
+    List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
       protocols = findByAlternatePID( id );
 
@@ -296,15 +294,14 @@ public class ProtocolManager
   public Protocol findProtocolByOldName( Remote remote, String name, Hex pid )
   {
     Protocol matchByName = null;
-    Vector< Protocol > protocols = getProtocolsForRemote( remote );
+    List< Protocol > protocols = getProtocolsForRemote( remote );
     if ( protocols == null )
       return null;
     for ( Protocol p : protocols )
     {
-      Vector< String > oldNames = p.getOldNames();
-      for ( Enumeration f = oldNames.elements(); f.hasMoreElements(); )
+      for ( String oldName : p.getOldNames())
       {
-        if ( name.equals(( String )f.nextElement()))
+        if ( name.equals( oldName ))
         {
           if ( matchByName == null )
             matchByName = p;
@@ -319,12 +316,11 @@ public class ProtocolManager
 
   public Protocol findProtocol( String name, Hex id, String variantName )
   {
-    Vector< Protocol > protocols = findByPID( id );
+    List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
       return null;
-    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    for ( Protocol p : protocols )
     {
-      Protocol p = ( Protocol )e.nextElement();
       if ( p.getName().equals( name ) &&
            p.getVariantName().equals( variantName ))
       {
@@ -337,14 +333,13 @@ public class ProtocolManager
   public Protocol findNearestProtocol( String name, Hex id, String variantName )
   {
     Protocol near = null;
-    Vector< Protocol > protocols = findByPID( id );
+    List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
       protocols = findByAlternatePID( id );
     if ( protocols == null )
       return null;
-    for ( Enumeration e = protocols.elements(); e.hasMoreElements(); )
+    for ( Protocol p : protocols )
     {
-      Protocol p = ( Protocol )e.nextElement();
       if (( variantName != null ) &&  p.getVariantName().equals( variantName ) )
       {
         if ( p.getName().equals( name ) )
@@ -372,8 +367,8 @@ public class ProtocolManager
   private static ProtocolManager protocolManager = new ProtocolManager();
   private static ManualProtocol manualProtocol = null;
   private boolean loaded = false;
-  private Vector< String > names = new Vector< String >();
-  private Hashtable< String, Vector< Protocol >> byName = new Hashtable< String, Vector < Protocol >>();
-  private Hashtable< Hex, Vector< Protocol >> byPID = new Hashtable< Hex, Vector< Protocol >>();
-  private Hashtable< Hex, Vector< Protocol >> byAlternatePID = new Hashtable< Hex, Vector< Protocol >>();
+  private List< String > names = new ArrayList< String >();
+  private Hashtable< String, List< Protocol >> byName = new Hashtable< String, List< Protocol >>();
+  private Hashtable< Hex, List< Protocol >> byPID = new Hashtable< Hex, List< Protocol >>();
+  private Hashtable< Hex, List< Protocol >> byAlternatePID = new Hashtable< Hex, List< Protocol >>();
 }

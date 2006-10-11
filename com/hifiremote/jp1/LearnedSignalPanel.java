@@ -16,12 +16,14 @@ public class LearnedSignalPanel
 
   public void set( RemoteConfiguration remoteConfig )
   {
-    (( LearnedSignalTableModel )model ).set( remoteConfig ); 
+    (( LearnedSignalTableModel )model ).set( remoteConfig );
   }
-  
-  public LearnedSignal createRowObject( LearnedSignal baseSignal )
+
+  public LearnedSignal createRowObject( LearnedSignal learnedSignal )
   {
+    LearnedSignalDialog.showDialog(( JFrame )SwingUtilities.getRoot( this ),
+                                   learnedSignal );
     return null;
   }
 }
-  
+

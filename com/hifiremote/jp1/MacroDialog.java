@@ -140,7 +140,7 @@ public class MacroDialog
     xShift.setText( remote.getXShiftLabel());
     xShift.setEnabled( remote.getXShiftEnabled());
 
-    Vector< Button > buttons = remote.getButtons();
+    java.util.List< Button > buttons = remote.getButtons();
     DefaultListModel model = new DefaultListModel();
     for ( Button b : buttons )
     {

@@ -41,14 +41,13 @@ public class ExternalFunctionPanel
         d.setVisible( true );
         if ( d.getUserAction() == JOptionPane.OK_OPTION )
         {
-          Vector importedFunctions = d.getSelectedFunctions();
+          List< Function > importedFunctions = d.getSelectedFunctions();
           if ( importedFunctions.size() > 0 )
           {
-            Vector< ExternalFunction > externalFunctions = deviceUpgrade.getExternalFunctions();
+            List< ExternalFunction > externalFunctions = deviceUpgrade.getExternalFunctions();
             int firstRow =  externalFunctions.size();
-            for ( Enumeration e = importedFunctions.elements(); e.hasMoreElements(); )
+            for ( Function f : importedFunctions )
             {
-              Function f = ( Function )e.nextElement();
               ExternalFunction ef = null;
               if ( f.isExternal())
                 ef = ( ExternalFunction )f;

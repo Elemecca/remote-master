@@ -2,7 +2,8 @@ package com.hifiremote.jp1;
 
 import java.io.PrintWriter;
 import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class HexParmEditorNode
   extends ProtocolEditorNode
@@ -27,11 +28,14 @@ public abstract class HexParmEditorNode
       pw.print( bits );
     else if ( type == CHOICE )
     {
-      for ( Enumeration e = choices.elements(); e.hasMoreElements(); )
+      boolean first = true;
+      for ( Integer choice : choices )
       {
-        pw.print( e.nextElement());
-        if ( e.hasMoreElements())
+        if ( first )
+          first = false;
+        else
           pw.print( "|" );
+        pw.print( choice );
       }
     }
     else if ( type == FLAG )
@@ -76,9 +80,9 @@ public abstract class HexParmEditorNode
   public void setFormat( int newFormat ){ format = newFormat; }
   public int getFormat(){ return format; }
 
-  private Vector< Integer > choices = new Vector< Integer >();
-  public Vector< Integer > getChoices(){ return choices; }
-  public void setChoices( Vector< Integer > newChoices ){ choices = newChoices; }
+  private List< Integer > choices = new ArrayList< Integer >();
+  public List< Integer > getChoices(){ return choices; }
+  public void setChoices( List< Integer > newChoices ){ choices = newChoices; }
   private int defaultValue = -1;
 
   public final static int NUMBER = 0;

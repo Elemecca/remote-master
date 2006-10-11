@@ -57,7 +57,7 @@ public class ProtocolUpgradeTableModel
 
   public Object getValueAt( int row, int column )
   {
-    ProtocolUpgrade pu = ( ProtocolUpgrade )remoteConfig.getProtocolUpgrades().elementAt( row );
+    ProtocolUpgrade pu = remoteConfig.getProtocolUpgrades().get( row );
     switch ( column )
     {
       case 0:
@@ -82,7 +82,7 @@ public class ProtocolUpgradeTableModel
   
   public void setValueAt( Object value, int row, int col )
   {
-    ProtocolUpgrade pu = ( ProtocolUpgrade )remoteConfig.getProtocolUpgrades().elementAt( row );
+    ProtocolUpgrade pu = remoteConfig.getProtocolUpgrades().get( row );
     if ( col == 3 )
       pu.setNotes(( String )value );
   }

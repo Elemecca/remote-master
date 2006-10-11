@@ -6,7 +6,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
-public abstract class JP1TableModel < E >
+public abstract class JP1TableModel< E >
   extends AbstractTableModel
 {
   public JP1TableModel()
@@ -21,7 +21,7 @@ public abstract class JP1TableModel < E >
   
   public abstract String getColumnPrototypeName( int col );
   
-  public void setData( Vector< E > data )
+  public void setData( List< E > data )
   {
     this.data = data;
     fireTableDataChanged();
@@ -33,7 +33,7 @@ public abstract class JP1TableModel < E >
     fireTableDataChanged();
   }
 
-  public Vector< E > getData(){ return data; }
+  public List< E > getData(){ return data; }
   
   public E[] getArray(){ return array; }
   
@@ -51,7 +51,7 @@ public abstract class JP1TableModel < E >
   public E getRow( int row )
   {
     if ( data != null )
-      return data.elementAt( row );
+      return data.get( row );
     if ( array != null )
       return array[ row ];
     return null;
@@ -73,7 +73,7 @@ public abstract class JP1TableModel < E >
 
   public void insertRow( int row, E value )
   {
-    data.insertElementAt( value, row );
+    data.add( row, value );
     propertyChangeSupport.firePropertyChange( "size", null, null );
     fireTableRowsInserted( row, row );
   }
@@ -89,7 +89,7 @@ public abstract class JP1TableModel < E >
   public void moveRow( int from, int to )
   {
     E o = data.remove( from );
-    data.insertElementAt( o, to );
+    data.add( to, o );
     propertyChangeSupport.firePropertyChange( "order", null, null );
     fireTableRowsUpdated( from, to );
   }
@@ -99,7 +99,7 @@ public abstract class JP1TableModel < E >
   public TableCellEditor getColumnEditor( int col ){ return null; }
   public TableCellRenderer getColumnRenderer( int col ){ return null; }
 
-  protected Vector< E > data = null;
+  protected List< E > data = null;
   protected E[] array = null;
   protected SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
 }

@@ -1,3 +1,13 @@
+Changes for v1.69
+- Fix for importing KM v9.05 upgrades
+
+Changes for v1.68
+- Fix importing of KM upgrades that use the NEC 2DEV Combo or NEC 4DEV Combo protocol
+- After loading a device upgrade with external functions, remove any matching keymoves that may have been imported (RMIR)
+- Fix for button names being replaced by keycodes after adding keymoves (RMIR)
+- Fix for Other Settings where the value in the EEPROM image isn't in the set of allowed values as defined in the RDF (RMIR)
+- Add file name and timestamp to rmaster.err when loading/importing files.
+
 Changes for v1.67
 - Fix Device Combiner upgrades that use protocols with Alternate PIDs
 

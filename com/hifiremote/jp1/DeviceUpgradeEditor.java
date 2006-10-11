@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.*;
+import java.util.*;
 import javax.swing.*;
 
 public class DeviceUpgradeEditor
@@ -151,8 +153,11 @@ public class DeviceUpgradeEditor
       else
         return;
     }
-    DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
-    Remote remote = deviceUpgrade.getRemote();
+
+    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " + 
+                        DateFormat.getInstance().format( new Date( file.lastModified())));    DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
+
+                        Remote remote = deviceUpgrade.getRemote();
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
     rm.getPreferences().put( "UpgradePath", file.getParent());

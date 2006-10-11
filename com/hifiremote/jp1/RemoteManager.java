@@ -48,7 +48,7 @@ public class RemoteManager
       loadPath = dir;
     }
 
-    Vector< Remote > work = new Vector< Remote >();
+    List< Remote > work = new ArrayList< Remote >();
     for ( int i = 0; i < files.length; i++ )
     {
       File rdf = files[ i ];
@@ -107,7 +107,7 @@ public class RemoteManager
         subNames[ 0 ] = nameTokenizer.nextToken();
       }
       int mostMatches = 0;
-      Vector< Remote > similarRemotes = new Vector< Remote >();
+      List< Remote > similarRemotes = new ArrayList< Remote >();
       for ( int i = 0; i < remotes.length; i++ )
       {
         int numMatches = 0;
@@ -133,7 +133,7 @@ public class RemoteManager
       if ( similarRemotes.size() == 0 )
         simRemotes = remotes;
       else if ( similarRemotes.size() == 1 )
-        remote = ( Remote )similarRemotes.firstElement();
+        remote = ( Remote )similarRemotes.get( 0 );
       else
       {
         simRemotes = new Object[ similarRemotes.size() ];
@@ -213,7 +213,7 @@ public class RemoteManager
   public Remote[] findRemoteBySignature( String signature )
   {
     Remote[] rc = new Remote[ 0 ];
-    Vector< Remote > v = new Vector< Remote >();
+    List< Remote > v = new ArrayList< Remote >();
     for ( int i = 0; i < remotes.length; i++ )
     {
       Remote r = remotes[ i ];

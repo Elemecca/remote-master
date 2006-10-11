@@ -76,16 +76,15 @@ public class DeviceCombiner
     return panel;
   }
 
-  public Vector< CombinerDevice > getDevices(){ return devices; }
+  public List< CombinerDevice > getDevices(){ return devices; }
 
   public void store( PropertyWriter out, Value[] vals )
     throws IOException
   {
     super.store( out, vals );
     int i = 0;
-    for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
+    for ( CombinerDevice device : devices )
     {
-      CombinerDevice device = ( CombinerDevice )e.nextElement();
       String prefix = "Combiner." + i++;
       Protocol p = device.getProtocol();
       out.print( prefix + ".name", p.getName());
@@ -292,10 +291,9 @@ public class DeviceCombiner
     Hex[] ids = new Hex[ devices.size()];
     Hex[] data = new Hex[ ids.length ];
     int i = 0;
-    for ( Enumeration e = devices.elements(); e.hasMoreElements(); )
+    for ( CombinerDevice device : devices )
     {
       header[ i ] = ( short )offset;
-      CombinerDevice device = ( CombinerDevice )e.nextElement();
       ids[ i ] = device.getProtocol().getID( r );
       offset += 2;
       Hex hex = device.getFixedData();
@@ -353,5 +351,5 @@ public class DeviceCombiner
   }
 
   private DeviceCombinerPanel panel = null;
-  private Vector< CombinerDevice > devices = new Vector< CombinerDevice >();
+  private List< CombinerDevice > devices = new ArrayList< CombinerDevice >();
 }

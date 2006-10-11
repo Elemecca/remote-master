@@ -50,8 +50,8 @@ public class Setup
 
       pw.println( "[HKEY_CLASSES_ROOT\\RMDeviceUpgrade\\Shell\\open\\command]" );
       pw.println( "@=\"\\\"" + doubleSlashes( javaw ) +
-                  "\\\" -jar \\\"" + doubleSlashes( jarFile ) +
-                  "\\\" -h \\\"" + doubleSlashes( workDir ) +
+                  "\\\" -jar \\\"" + doubleSlashes( jarFile ) + doubleSlashes( workDir ) +
+                  "\\\" com.hifiremote.jp1.RemoteMaster -h \\\"" + doubleSlashes( workDir ) +
                   "\\\" \\\"%1\\\"\"" );
       pw.println();
 
@@ -81,14 +81,22 @@ public class Setup
 
       pw.println( "[HKEY_CLASSES_ROOT\\RMRemoteConfig\\Shell\\open\\command]" );
       pw.println( "@=\"\\\"" + doubleSlashes( javaw ) +
-                  "\\\" -jar \\\"" + doubleSlashes( jarFile ) +
-                  "\\\" -h \\\"" + doubleSlashes( workDir ) +
+                  "\\\" -cp \\\"" + doubleSlashes( jarFile ) + ";" + doubleSlashes( workDir ) +
+                  "\\\" com.hifiremote.jp1.RemoteMaster -h \\\"" + doubleSlashes( workDir ) +
                   "\\\" -ir \\\"%1\\\"\"" );
       pw.println();
 
       pw.println( "[HKEY_CLASSES_ROOT\\.rmir]" );
-      pw.println( "@=\"RMDRemoteConfig\"" );
+      pw.println( "@=\"RMRemoteConfig\"" );
       pw.println();
+
+      pw.flush();
+      pw.close();
+
+      File batFile = new File( workDir, "rmaster.bat" );
+      pw = new PrintWriter( new FileWriter( batFile ));
+
+      pw.println( "@javaw -cp " + jarFile + ";" + workDir + " com.hifiremote.jp1.RemoteMaster %1" );
 
       pw.flush();
       pw.close();

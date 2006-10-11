@@ -357,10 +357,10 @@ public class ManualSettingsDialog
 
   private ManualProtocol protocol = null;
 
-  private Vector< DeviceParameter > deviceParms = new Vector< DeviceParameter >();
-  private Vector< Translate > deviceTranslators = new Vector< Translate >();
-  private Vector< CmdParameter > cmdParms = new Vector< CmdParameter >();
-  private Vector< Translate > cmdTranslators = new Vector< Translate >();
+  private java.util.List< DeviceParameter > deviceParms = new ArrayList< DeviceParameter >();
+  private java.util.List< Translate > deviceTranslators = new ArrayList< Translate >();
+  private java.util.List< CmdParameter > cmdParms = new ArrayList< CmdParameter >();
+  private java.util.List< Translate > cmdTranslators = new ArrayList< Translate >();
 
   private ParameterTableModel deviceModel = null;
   private JTableX deviceTable = null;

@@ -170,10 +170,6 @@ public abstract class RMTablePanel< E >
               dropRow = sorter.modelIndex( dropRow );
               model.moveRow( dragRow, dropRow );
   
-              if ( dropRow < dragRow )
-                model.fireTableRowsUpdated( dropRow, dragRow );
-              else
-                model.fireTableRowsUpdated( dragRow, dropRow );
               rc = true;
             }
           }
@@ -412,7 +408,6 @@ public abstract class RMTablePanel< E >
         model.insertRow( modelRow, o );
       }
 
-      model.fireTableRowsInserted( modelRow, modelRow );
       if ( select )
         table.setRowSelectionInterval( row, row );
     }
@@ -432,7 +427,6 @@ public abstract class RMTablePanel< E >
         model.insertRow( modelRow, o );
       }
 
-      model.fireTableRowsInserted( modelRow, modelRow );
       if ( select )
         table.setRowSelectionInterval( row, row );
     }

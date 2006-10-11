@@ -230,29 +230,16 @@ public class ButtonPanel
 
   private void setFunctions()
   {
-    /*
-    popup = new JPopupMenu();
-    popup.setLayout( new GridLayout( 0, 3 ));
-    FunctionItem item = null;
-    */
     popupEditor.removeAll();
 
     functionPanel.removeAll();
-    FunctionLabel label = null;
-    Function function = null;
 
-    Vector funcs = deviceUpgrade.getFunctions();
-    for ( int i = 0; i < funcs.size(); i++ )
-    {
-      function = ( Function )funcs.elementAt( i );
+    for ( Function function : deviceUpgrade.getFunctions())
       addFunction( function );
-    }
-    funcs = deviceUpgrade.getExternalFunctions();
-    for ( int i = 0; i < funcs.size(); i++ )
-    {
-      function = ( Function )funcs.elementAt( i );
+ 
+    for ( ExternalFunction function : deviceUpgrade.getExternalFunctions())
       addFunction( function );
-    }
+
     functionPanel.doLayout();
   }
 

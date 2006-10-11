@@ -6,7 +6,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
-import java.util.Vector;
 
 public class ExternalFunctionTableModel
   extends KMTableModel< ExternalFunction >

@@ -432,7 +432,7 @@ public abstract class TablePanel< E >
     }
     else if ( source == cleanButton )
     {
-      Vector functions = model.getData();
+      java.util.List functions = model.getData();
       for ( ListIterator i = functions.listIterator(); i.hasNext();)
       {
         Function f = ( Function )i.next();

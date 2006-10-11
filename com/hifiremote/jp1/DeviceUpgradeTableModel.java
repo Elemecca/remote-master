@@ -118,7 +118,7 @@ public class DeviceUpgradeTableModel
   public void propertyChange( PropertyChangeEvent e )
   {
     Object source = e.getSource();
-    Vector< DeviceUpgrade > upgrades = remoteConfig.getDeviceUpgrades();
+    List< DeviceUpgrade > upgrades = remoteConfig.getDeviceUpgrades();
     for ( int i = 0; i < upgrades.size(); ++i )
     {
       DeviceUpgrade upgrade = upgrades.get( i );
