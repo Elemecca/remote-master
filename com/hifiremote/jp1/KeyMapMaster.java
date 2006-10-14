@@ -410,6 +410,10 @@ public class KeyMapMaster
   private void savePreferences()
     throws Exception
   {
+    int state = getExtendedState();
+    if ( state != Frame.NORMAL )
+      setExtendedState( Frame.NORMAL );
+    preferences.setBounds( getBounds());
     preferences.save( recentFileMenu );
   }
 
@@ -796,9 +800,9 @@ public class KeyMapMaster
     if (( file == null ) || !file.exists())
       return;
 
-    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " + 
-                        DateFormat.getInstance().format( new Date( file.lastModified())));    
-    
+    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " +
+                        DateFormat.getInstance().format( new Date( file.lastModified())));
+
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
 
@@ -870,6 +874,12 @@ public class KeyMapMaster
 
   public static File getHomeDirectory()
   {
+    if ( homeDirectory == null )
+    {
+      String temp = System.getProperty( "user.dir" );
+      if ( temp != null )
+        homeDirectory = new File( temp );
+    }
     return homeDirectory;
   }
 
@@ -1020,7 +1030,6 @@ public class KeyMapMaster
   private JMenuItem useCustomNames = null;
   private Float fontSizeAdjustment = 0.0f;
   private int promptFlag = 0;
-  private Rectangle bounds = null;
 
   private final static String[] promptStrings = { "Always", "On Exit", "Never" };
   private final static int[] promptMnemonics = { KeyEvent.VK_A, KeyEvent.VK_X, KeyEvent.VK_N };

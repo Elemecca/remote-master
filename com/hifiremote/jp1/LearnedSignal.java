@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import com.hifiremote.decodeir.*;
+import java.io.*;
 import java.util.*;
 
 public class LearnedSignal
@@ -65,7 +66,7 @@ public class LearnedSignal
       UnpackLearned ul = getUnpackLearned();
       if ( !ul.ok )
         return null;
-      DecodeIRCaller decodeIR = new DecodeIRCaller();
+      getDecodeIR();
       decodeIR.setBursts( ul.durations, ul.repeat );
       decodeIR.setFrequency( ul.frequency );
       decodeIR.initDecoder();
@@ -75,4 +76,14 @@ public class LearnedSignal
     }
     return decodes;
   }
+
+  public static DecodeIRCaller getDecodeIR()
+  {
+    if ( decodeIR == null )
+      decodeIR = new DecodeIRCaller( new File( System.getProperty( "user.dir" )));
+
+    return decodeIR;
+  }
+
+  private static DecodeIRCaller decodeIR = null;
 }

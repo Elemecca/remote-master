@@ -5,6 +5,6 @@ javac -deprecation -Xlint:unchecked -d classes -classpath .;classes UpdateDigitM
 java -cp classes UpdateDigitMapsBin
 del num-master.txt
 :go
-javac %1 %2 -deprecation -Xlint:unchecked -d classes -classpath .;classes;d:\rmwork com/hifiremote/jp1/*.java
+javac %1 %2 -deprecation -Xlint:unchecked -d classes -classpath .;classes;d:\DecodeIR\ com/hifiremote/jp1/*.java
 javac -deprecation -Xlint:unchecked -d classes -classpath .;classes Setup.java
 

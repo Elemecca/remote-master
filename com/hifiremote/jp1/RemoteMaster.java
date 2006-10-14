@@ -504,7 +504,7 @@ public class RemoteMaster
         String text = "<html><b>Java IR, " + version + "</b>" +
                       "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
                       "<p>RDFs loaded from <b>" + preferences.getProperty( "RDFPath" ) + "</b></p>" +
-                      "<p>DecodeIR version " + new DecodeIRCaller().getVersion() + "<p>" +
+                      "<p>DecodeIR version " + LearnedSignal.getDecodeIR().getVersion() + "<p>" +
                       "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
                       "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>" +
                       "</html>";
@@ -688,18 +688,19 @@ public class RemoteMaster
       for ( int i = 0; i < args.length; ++i )
       {
         String parm = args[ i ];
-        if ( parm.equals( "-ir" ))
+        if ( parm.equalsIgnoreCase( "-ir" ))
           launchRM = true;
-        else if ( parm.charAt( 1 ) == 'h' )
+        else if ( parm.equalsIgnoreCase( "-h" ))
+        {
           workDir = new File( args[ ++i ]);
-        else if ( parm.charAt( 1 ) == 'p' )
+          System.setProperty( "user.dir", workDir.getCanonicalPath());
+        }
+        else if ( parm.equalsIgnoreCase( "-p" ))
           propertiesFile = new File( args[ ++i ]);
         else
           fileToOpen = new File( parm );
       }
-      if ( propertiesFile == null )
-        propertiesFile = new File( workDir, "RemoteMaster.properties" );
-      PropertyFile properties = new PropertyFile( propertiesFile );
+
       try
       {
         System.setErr( new PrintStream( new FileOutputStream( new File ( workDir, "rmaster.err" ))));
@@ -708,6 +709,26 @@ public class RemoteMaster
       {
         e.printStackTrace( System.err );
       }
+
+      ClassPathAdder.addFile( workDir );
+
+      FilenameFilter filter = new FilenameFilter()
+      {
+        public boolean accept( File dir, String name )
+        {
+          String temp = name.toLowerCase();
+          return temp.endsWith( ".jar" ) &&
+                 !temp.endsWith( "remotemaster.jar" ) &&
+                 !temp.endsWith( "setup.jar" );
+        }
+      };
+
+      File[] jarFiles = workDir.listFiles( filter );
+      ClassPathAdder.addFiles( jarFiles );
+
+      if ( propertiesFile == null )
+        propertiesFile = new File( workDir, "RemoteMaster.properties" );
+      PropertyFile properties = new PropertyFile( propertiesFile );
 
       if ( launchRM )
         UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName());
