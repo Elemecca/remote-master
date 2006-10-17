@@ -30,8 +30,11 @@ public class ProtocolUpgrade
   public Hex getCode(){ return code; }
   public String getNotes(){ return notes; }
   public void setNotes( String text ){ notes = text; }
+  public boolean isUsed(){ return used; }
+  public void setUsed( boolean flag ){ used = flag; }
 
   private int pid;
   private Hex code;
   private String notes;
+  private boolean used = false;
 }

@@ -154,6 +154,57 @@ public class RemoteConfiguration
 
     return property;
   }
+  
+  private KeyMove findKeyMove( List< KeyMove > advCodes, String deviceName, String keyName )
+  {
+    DeviceButton[] deviceButtons = remote.getDeviceButtons();
+    
+    for ( KeyMove keyMove : advCodes )
+    {
+      DeviceButton devButton = deviceButtons[ keyMove.getDeviceButtonIndex()];
+      if ( !devButton.getName().equals( deviceName ))
+        continue;
+      int keyCode = keyMove.getKeyCode();
+      String buttonName = remote.getButtonName( keyCode );
+      if ( buttonName.equalsIgnoreCase( keyName ))
+        return keyMove;
+    }
+    System.err.println( "No keymove found matching " + deviceName + ':' + keyName );
+    return null;
+  }
+
+  private Macro findMacro( String keyName )
+  {
+    DeviceButton[] deviceButtons = remote.getDeviceButtons();
+    
+    for ( Macro macro : macros )
+    {
+      int keyCode = macro.getKeyCode();
+      String buttonName = remote.getButtonName( keyCode );
+      if ( buttonName.equalsIgnoreCase( keyName ))
+        return macro;
+    }
+    System.err.println( "No macro found assigned to key " + keyName );
+    return null;
+  }
+
+  private LearnedSignal findLearnedSignal( String deviceName, String keyName )
+  {
+    DeviceButton[] deviceButtons = remote.getDeviceButtons();
+    
+    for ( LearnedSignal ls : learned )
+    {
+      DeviceButton devButton = deviceButtons[ ls.getDeviceButtonIndex()];
+      if ( !devButton.getName().equals( deviceName ))
+        continue;
+      int keyCode = ls.getKeyCode();
+      String buttonName = remote.getButtonName( keyCode );
+      if ( buttonName.equalsIgnoreCase( keyName ))
+        return ls;
+    }
+    System.err.println( "No learned signal found matching " + deviceName + ':' + keyName );
+    return null;
+  }
 
   private void importIR( PropertyReader pr )
     throws IOException
@@ -161,8 +212,8 @@ public class RemoteConfiguration
     Property property = loadBuffer( pr );
 
     decodeSettings();
-    List< ? extends AdvancedCode > advCodes = decodeAdvancedCodes();
     decodeUpgrades();
+    List< KeyMove > advCodes = decodeAdvancedCodes();
     decodeLearnedSignals();
 
     while (( property != null ) && ( !property.name.startsWith( "[" )))
@@ -200,8 +251,8 @@ public class RemoteConfiguration
             ;// fav/scan?
           else if ( flag == 3 )
             devices.get( index ).setDescription( text );
-//          else if ( flag == 4 )
-//            protocols.get( index ).setNotes( text );
+          else if ( flag == 4 )
+            protocols.get( index ).setNotes( text );
           else if ( flag == 5 )
             learned.get( index ).setNotes( text );
         }
@@ -225,13 +276,60 @@ public class RemoteConfiguration
           StringTokenizer st = new StringTokenizer( key, ":" );
           String deviceName = st.nextToken();
           String keyName = st.nextToken();
-          if ( key.equals( "Notes" ))
-            notes = text;
+          KeyMove km = findKeyMove( advCodes, deviceName, keyName );
+          if ( km != null )
+            km.setNotes( text );
+        }
+      }
+      else if ( name.equals( "Macros" ))
+      {
+        for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+        {
+          String keyName = ( String )keys.nextElement();
+          String text = importNotes( section.getProperty( keyName ));
+          Macro macro = findMacro( keyName );
+          if ( macro != null )
+            macro.setNotes( text );
+        }
+      }
+      else if ( name.equals( "Devices" ))
+      {
+        for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+        {
+          String key = ( String )keys.nextElement();
+          String text = importNotes( section.getProperty( key ));
+          StringTokenizer st = new StringTokenizer( key, ": " );
+          String deviceTypeName = st.nextToken();
+          int setupCode = Integer.parseInt( st.nextToken());
+          DeviceUpgrade device = findDeviceUpgrade( remote.getDeviceType( deviceTypeName ).getNumber(), setupCode );
+          if ( device != null )
+            device.setDescription( text );
+        }
+      }
+      else if ( name.equals( "Learned" ))
+      {
+        for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+        {
+          String key = ( String )keys.nextElement();
+          String text = importNotes( section.getProperty( key ));
+          StringTokenizer st = new StringTokenizer( key, ": " );
+          String deviceName = st.nextToken();
+          String keyName = st.nextToken();
+          LearnedSignal ls = findLearnedSignal( deviceName, keyName );
+          if ( ls != null )
+            ls.setNotes( text );
         }
       }
       section = pr.nextSection();
     }
     migrateKeyMovesToDeviceUpgrades();
+    
+    // remove protocol upgrades that are used by device upgrades
+    for ( Iterator< ProtocolUpgrade > it = protocols.iterator(); it.hasNext(); )
+    {
+      if ( it.next().isUsed())
+        it.remove();
+    }
   }
 
   private int exportAdvancedCodeNotes( List< ? extends AdvancedCode > codes, int index, PrintWriter out )
@@ -376,6 +474,14 @@ public class RemoteConfiguration
   {
     decodeSettings();
     decodeUpgrades();
+    
+    // remove protocol upgrades that are used by device upgrades
+    for ( Iterator< ProtocolUpgrade > it = protocols.iterator(); it.hasNext(); )
+    {
+      if ( it.next().isUsed())
+        it.remove();
+    }
+
     decodeAdvancedCodes();
     decodeLearnedSignals();
   }
@@ -401,9 +507,9 @@ public class RemoteConfiguration
     return specialUpgrades;
   }
 
-  private List< AdvancedCode > decodeAdvancedCodes()
+  private List< KeyMove > decodeAdvancedCodes()
   {
-    List< AdvancedCode > advCodes = new ArrayList< AdvancedCode >();
+    List< KeyMove > advCodes = new ArrayList< KeyMove >();
     AddressRange advCodeRange = remote.getAdvanceCodeAddress();
     int offset = advCodeRange.getStart();
     int endOffset = advCodeRange.getEnd();
@@ -413,19 +519,23 @@ public class RemoteConfiguration
     List< SpecialProtocol > specialProtocols = remote.getSpecialProtocols();
     for ( SpecialProtocol sp : specialProtocols )
     {
+      System.err.println( "Checking for Special Procotol " + sp.getName() + " w/ PID=" + sp.getPid().toString());
       DeviceUpgrade device = sp.getDeviceUpgrade( devices );
       if ( device != null )
+      {
         specialUpgrades.add( device );
+        System.err.println( "SpecialFunction Upgrade at " + device.getDeviceType().getName() + "/" + device.getSetupCode());
+      }
     }
 
     FavKey favKey = remote.getFavKey();
     while ( offset <= endOffset )
     {
-      System.err.print( "Decoding advCode at $" + Integer.toHexString( offset ));
       short keyCode = data[ offset++ ];
       if ( keyCode == remote.getSectionTerminator())
         break;
-      System.err.println( ", keyCode=" + keyCode + ':' + remote.getButtonName( keyCode ));
+      System.err.println( "Decoding advCode at $" + Integer.toHexString( offset ) + 
+                        ", keyCode=" + keyCode + ':' + remote.getButtonName( keyCode ));
 
       int boundDeviceIndex = 0;
       boolean isMacro = false;
@@ -466,7 +576,6 @@ public class RemoteConfiguration
         Hex keyCodes = Hex.subHex( data, offset, length );
         Macro macro = new Macro( keyCode, keyCodes, null );
         macros.add( macro );
-        advCodes.add( macro );
       }
       else
       {
@@ -785,9 +894,8 @@ public class RemoteConfiguration
       Hex protocolCode = null;
       if ( pu != null )
       {
+        pu.setUsed( true );
         protocolCode = pu.getCode();
-        if ( !usedProtocols.contains( pu ))
-          usedProtocols.add( pu );
       }
 
       String alias = remote.getDeviceTypeAlias( devType );
@@ -802,9 +910,6 @@ public class RemoteConfiguration
 
       devices.add( upgrade );
     }
-    // Protoocl Upgrades that are used by a device upgrade are managed as part of the device upgrade
-    for ( ProtocolUpgrade pu : usedProtocols )
-      protocols.remove( pu );
   }
 
   public int getUpgradeCodeBytesUsed()
