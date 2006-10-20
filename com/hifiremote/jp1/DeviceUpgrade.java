@@ -147,6 +147,7 @@ public class DeviceUpgrade
       System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName() +
                           " is not built into remote " + newRemote.getName());
       Protocol newp = pm.findProtocolForRemote( newRemote, p.getName() );
+      System.err.println( "Testing if protocol " + newp.getDiagnosticName() + " can be used." );
 
       if ( newp != null )
       {
@@ -197,18 +198,22 @@ public class DeviceUpgrade
           if ( parmsMatch )
           {
             // copy parameters from p to p2!
+            Value[] vals = new Value[ parms2.length ];
             System.err.println( "\tCopying dev. parms" );
             for ( int i = 0; i < map.length; i++ )
             {
               if ( map[ i ] == -1 )
                 continue;
-              System.err.println( "\tfrom index " + i + " to index " + map[ i ]);
+                System.err.println( "\tfrom index " + i + " (=" + parms[ i ].getValue() + ") to index " + map[ i ]);
               parms2[ map[ i ]].setValue( parms[ i ].getValue());
+              vals[ map[ i ]] = new Value( parms[ i ].getValue());
             }
+            newp.setDeviceParms( vals );
             System.err.println();
             System.err.println( "Protocol " + newp.getDiagnosticName() + " will be used." );
             p.convertFunctions( functions, newp );
             protocol = newp;
+            parmValues = vals;
             customCode = null;
           }
           if (( p instanceof DeviceCombiner ) && ( newp instanceof DeviceCombiner ))
@@ -831,10 +836,11 @@ public class DeviceUpgrade
 
     int length = 0;
     for ( short[] temp : work )
-      length += data.length;
+      length += temp.length;
 
     int offset = 0;
     short[] rc = new short[ length ];
+    System.err.println( "total length is " + length );
     for ( short[] source : work )
     {
       System.err.println( "Copying " + source.length + " bytes to offset " + offset );
@@ -938,11 +944,11 @@ public class DeviceUpgrade
       out.print( "CustomCode", customCode.toString());
     int i = 0;
     for ( Function func : functions )
-      func.store( out, "Function." + i );
+      func.store( out, "Function." + i++ );
 
     i = 0;
     for ( ExternalFunction func : extFunctions )
-      func.store( out, "ExtFunction." + i );
+      func.store( out, "ExtFunction." + i++ );
  
     Button[] buttons = remote.getUpgradeButtons();
     String regex = "\\|";

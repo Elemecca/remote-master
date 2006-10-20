@@ -188,6 +188,17 @@ public class RemoteConfiguration
     return null;
   }
 
+  private ProtocolUpgrade findProtocolUpgrade( int pid )
+  {
+    for ( ProtocolUpgrade pu : protocols )
+    {
+      if ( pu.getPid() == pid )
+        return pu;
+    }
+    System.err.println( "No protocol upgrade found w/ pid $" + Integer.toHexString( pid ));
+    return null;
+  }
+
   private LearnedSignal findLearnedSignal( String deviceName, String keyName )
   {
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
@@ -304,6 +315,20 @@ public class RemoteConfiguration
           DeviceUpgrade device = findDeviceUpgrade( remote.getDeviceType( deviceTypeName ).getNumber(), setupCode );
           if ( device != null )
             device.setDescription( text );
+        }
+      }
+      else if ( name.equals( "Protocols" ))
+      {
+        for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+        {
+          String key = ( String )keys.nextElement();
+          String text = importNotes( section.getProperty( key ));
+          StringTokenizer st = new StringTokenizer( key, "$" );
+          st.nextToken(); // discard the "Protocol: " header
+          int pid = Integer.parseInt( st.nextToken(), 16 );
+          ProtocolUpgrade protocol = findProtocolUpgrade( pid );
+          if ( protocol != null )
+            protocol.setNotes( text );
         }
       }
       else if ( name.equals( "Learned" ))
