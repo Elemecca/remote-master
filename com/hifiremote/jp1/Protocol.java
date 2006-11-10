@@ -442,7 +442,7 @@ public class Protocol
 
   public String getColumnName( int col )
   {
-    return cmdParms[ col ].getName();
+    return cmdParms[ col ].getDisplayName();
   }
 
   public Value[] getValues( Hex hex )

@@ -14,6 +14,7 @@ public abstract class DeviceParameter
   public DeviceParameter( String name, DefaultValue defaultValue )
   {
     super( name, defaultValue );
+    name = getDisplayName();
     if ( name.length() > 0 )
       label = new JLabel( name + ':', SwingConstants.RIGHT );
     else

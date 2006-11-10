@@ -1,5 +1,11 @@
 Changes for v1.69
 - Fix for importing KM v9.05 upgrades
+- Add support of decoding learned signals (RMIR), requires DecodeIR 2.32 or later
+- Add RC-6 variant 2
+- PID 012A:2 for MCE and RC6-M-32 (thanks johnsfine)
+- Added PID 0092:3 for ReplayTV and RC6-M-24 (thanks johnsfine)
+- Improvements for using builtin protocols if possible when changing remotes
+- Import notes from IR files that use seperate sections for each category (RMIR)
 
 Changes for v1.68
 - Fix importing of KM upgrades that use the NEC 2DEV Combo or NEC 4DEV Combo protocol

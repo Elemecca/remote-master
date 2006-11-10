@@ -11,12 +11,29 @@ public abstract class Parameter
 
   public Parameter( String name, DefaultValue defaultValue )
   {
-    this.name = name;
+    setName( name );
     this.defaultValue = defaultValue;
   }
 
   public String getName(){ return name; }
-  public void setName( String name ){ this.name = name; }
+  public void setName( String aName )
+  {
+    int semi = aName.indexOf( ';' );
+    if ( semi == -1 )
+      name = aName;
+    else
+    {
+      name = aName.substring( 0, semi );
+      displayName = aName.substring( semi + 1 );
+    }
+  }
+  
+  public String getDisplayName()
+  {
+    if ( displayName != null )
+      return displayName;
+    return name;
+  }
 
   public abstract String getDescription();
 
@@ -45,5 +62,6 @@ public abstract class Parameter
   public abstract void setValue( Object value );
 
   protected String name;
+  protected String displayName = null;
   protected DefaultValue defaultValue;
 }

@@ -10,18 +10,7 @@ public class LearnedSignalDecode
     device = decodeIRCaller.getDevice();
     subDevice = decodeIRCaller.getSubDevice();
     obc = decodeIRCaller.getOBC();
-
-    // temporary until DecodeIR is fixed to return an array of the correct length
-    int[] src = decodeIRCaller.getHex();
-    int len = 0;
-    for ( len = 0; len < src.length; ++len )
-    {
-      if ( src[ len ] == -1 )
-        break;
-    }
-    hex = new int[ len ];
-    System.arraycopy( src, 0, hex, 0, len );
-
+    hex = decodeIRCaller.getHex();
     miscMessage = decodeIRCaller.getMiscMessage();
     errorMessage = decodeIRCaller.getErrorMessage();
   }

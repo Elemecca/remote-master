@@ -72,7 +72,9 @@ public class KeyMove
     String rc = getEFC().toString();
     if ( remoteConfig.getRemote().getEFCDigits() == 3 )
       return rc;
-    return "00" + rc + " or " + getEFC5().toString(); 
+    if ( rc.length() == 3 )
+      rc = "00" + rc;
+    return rc + " or " + getEFC5().toString(); 
   }
 
   private int deviceButtonIndex;
