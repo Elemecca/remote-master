@@ -4,6 +4,7 @@ import info.clearthought.layout.TableLayout;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.event.*;
+import java.beans.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -14,7 +15,7 @@ import javax.swing.plaf.FontUIResource;
 
 public class KeyMapMaster
  extends JFrame
- implements ActionListener
+ implements ActionListener, PropertyChangeListener
 {
   private static KeyMapMaster me = null;
   private Preferences preferences = null;
@@ -97,6 +98,7 @@ public class KeyMapMaster
 
     editorPanel = new DeviceEditorPanel( deviceUpgrade, getRemotes());
     add( editorPanel, BorderLayout.CENTER );
+    editorPanel.addPropertyChangeListener( this, "remote" );
     messageLabel = new JLabel( " " );
     messageLabel.setForeground( Color.RED );
     add( messageLabel, BorderLayout.SOUTH );
@@ -1020,6 +1022,11 @@ public class KeyMapMaster
     }
     SwingUtilities.updateComponentTreeUI( this );
     pack();
+  }
+  
+  public void propertyChange( PropertyChangeEvent evt )
+  {
+    refresh();
   }
 
   private JRadioButtonMenuItem[] lookAndFeelItems = null;

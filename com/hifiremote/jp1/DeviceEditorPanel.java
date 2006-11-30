@@ -31,12 +31,14 @@ public class DeviceEditorPanel
   private DeviceUpgrade deviceUpgrade = null;
   private static File homeDirectory = null;
   private static String upgradeExtension = ".rmdu";
+  private SwingPropertyChangeSupport propertyChangeSupport = null;
   public final static int ACTION_EXIT = 1;
   public final static int ACTION_LOAD = 2;
 
   public DeviceEditorPanel( DeviceUpgrade upgrade, Remote[] remotes )
   {
     super( new BorderLayout());
+    propertyChangeSupport = new SwingPropertyChangeSupport( this );
 
     deviceUpgrade = upgrade;
     upgrade.addPropertyChangeListener( "protocol", this );
@@ -168,6 +170,11 @@ public class DeviceEditorPanel
     tabbedPane.removeTabAt( 1 );
     tabbedPane.validate();
   }
+  
+  public void addPropertyChangeListener( PropertyChangeListener l, String propertyName )
+  {
+    propertyChangeSupport.addPropertyChangeListener( propertyName, l );
+  }
 
   public void setRemote( Remote remote )
   {
@@ -246,13 +253,16 @@ public class DeviceEditorPanel
       if ( source == remoteList )
       {
         Remote remote = ( Remote )remoteList.getSelectedItem();
+        Remote oldRemote = deviceUpgrade.getRemote();
         setRemote( remote );
         currPanel.update();
         validateUpgrade();
+        propertyChangeSupport.firePropertyChange( "remote", oldRemote, remote ); 
       }
       else if ( source == deviceTypeList )
       {
         String typeName = ( String )deviceTypeList.getSelectedItem();
+        String oldDeviceType = deviceUpgrade.getDeviceTypeAliasName();
         setDeviceTypeName( typeName );
         currPanel.update();
       }
