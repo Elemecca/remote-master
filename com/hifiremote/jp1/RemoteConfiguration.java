@@ -224,7 +224,7 @@ public class RemoteConfiguration
 
     decodeSettings();
     decodeUpgrades();
-    List< KeyMove > advCodes = decodeAdvancedCodes();
+    List< AdvancedCode > advCodes = decodeAdvancedCodes();
     decodeLearnedSignals();
 
     while (( property != null ) && ( !property.name.startsWith( "[" )))
@@ -287,7 +287,7 @@ public class RemoteConfiguration
           StringTokenizer st = new StringTokenizer( key, ":" );
           String deviceName = st.nextToken();
           String keyName = st.nextToken();
-          KeyMove km = findKeyMove( advCodes, deviceName, keyName );
+          KeyMove km = findKeyMove( keymoves, deviceName, keyName );
           if ( km != null )
             km.setNotes( text );
         }
@@ -532,9 +532,9 @@ public class RemoteConfiguration
     return specialUpgrades;
   }
 
-  private List< KeyMove > decodeAdvancedCodes()
+  private List< AdvancedCode > decodeAdvancedCodes()
   {
-    List< KeyMove > advCodes = new ArrayList< KeyMove >();
+    List< AdvancedCode > advCodes = new ArrayList< AdvancedCode >();
     AddressRange advCodeRange = remote.getAdvanceCodeAddress();
     int offset = advCodeRange.getStart();
     int endOffset = advCodeRange.getEnd();
@@ -601,6 +601,7 @@ public class RemoteConfiguration
         Hex keyCodes = Hex.subHex( data, offset, length );
         Macro macro = new Macro( keyCode, keyCodes, null );
         macros.add( macro );
+        advCodes.add( macro );
       }
       else
       {
