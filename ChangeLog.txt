@@ -1,3 +1,12 @@
+Changes for v1.70
+- Correctly enable/disable menu items when remote changes.
+- Fix for importing IR files with intermixed keymoves and macros with notes (RMIR)
+- Use BitDoubler instead of many Translate bits for some of the RC6 entries that need it. (johnsfine)
+- Added kludge for RC5/6 combo (johnsfine)
+- Changed my mind about variant naming (johnsfine)
+- Removed incorrect attempt to support the useless variant of 0184 (johsfine)
+- Fixed pid 114 for newer remotes.  (rdf file change is required before this fix has any effect). (johnsfine)
+
 Changes for v1.69
 - Fix for importing KM v9.05 upgrades
 - Add support of decoding learned signals (RMIR), requires DecodeIR 2.32 or later

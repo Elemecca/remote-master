@@ -16,7 +16,7 @@ public class RemoteMaster
  implements ActionListener, PropertyChangeListener
 {
   private static JFrame frame = null;
-  public static final String version = "v1.69";
+  public static final String version = "v1.70";
   private File dir = null;
   public File file = null;
   private RemoteConfiguration remoteConfig = null;
