@@ -1,3 +1,10 @@
+Changes for v1.71a
+- Fix BitDoubler so extracting parms from hex works correctly.
+- Allow uploading to JP1.x remotes
+
+Changes for v1.71
+- Fix for handling advanced codes assigned to the Fav key (RMIR)
+
 Changes for v1.70
 - Correctly enable/disable menu items when remote changes.
 - Fix for importing IR files with intermixed keymoves and macros with notes (RMIR)

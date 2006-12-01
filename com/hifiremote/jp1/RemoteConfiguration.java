@@ -241,6 +241,7 @@ public class RemoteConfiguration
       String name = section.getName();
       if ( name.equals( "Notes" ))
       {
+        System.err.println( "Importing notes" );
         for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
         {
           String key = ( String )keys.nextElement();
@@ -254,6 +255,7 @@ public class RemoteConfiguration
           int index = Integer.parseInt( key, base );
           int flag = index >> 12;
           index &= 0x0FFF;
+          System.err.println( "index=" + index + ", flag=" + flag + ",text=" + text );
           if ( flag == 0 )
             notes = text;
           else if ( flag == 1 )
@@ -572,27 +574,23 @@ public class RemoteConfiguration
         length = ( data[ offset++ ] & 0x0F );
         if ( boundDeviceIndex == 1 )
           isMacro = true;
-        if ( boundDeviceIndex == 3 )
-        {
+        else if ( boundDeviceIndex == 3 )
           isFav = true;
-          if (( favKey != null ) && ( keyCode == favKey.getKeyCode()))
-            length *= favKey.getEntrySize();
-        }
         boundDeviceIndex >>= 1;
       }
       else // LONG
       {
         int type = data[ offset++ ];
-        if ( type == 0x80 )
-          isMacro = true;
         boundDeviceIndex = type & 0x0F;
+        type >>= 4;
         length = data[ offset++ ];
-        if (( favKey != null ) && ( keyCode == favKey.getKeyCode()))
-        {
+        if ( type == 8 )
+          isMacro = true;
+        else if ( type == 3 )
           isFav = true;
-          length *= favKey.getEntrySize();
-        }
       }
+      if ( isFav && ( favKey != null ))
+         length *= favKey.getEntrySize();
 
       System.err.println( "length=" + length );
 

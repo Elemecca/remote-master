@@ -1,8 +1,5 @@
 package com.hifiremote.jp1;
 
-import com.hifiremote.jp1.io.*;
-import com.hifiremote.decodeir.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -10,14 +7,29 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import javax.swing.*;
+import com.hifiremote.decodeir.*;
 
+import com.hifiremote.jp1.io.*;
+
+/**
+ *  Description of the Class
+ *
+ *@author     Greg
+ *@created    November 30, 2006
+ */
 public class RemoteMaster
- extends JP1Frame
- implements ActionListener, PropertyChangeListener
+   extends JP1Frame
+   implements ActionListener, PropertyChangeListener
 {
   private static JFrame frame = null;
-  public static final String version = "v1.70";
+  /**
+   *  Description of the Field
+   */
+  public final static String version = "v1.71a";
   private File dir = null;
+  /**
+   *  Description of the Field
+   */
   public File file = null;
   private RemoteConfiguration remoteConfig = null;
   private RMFileChooser chooser = null;
@@ -55,6 +67,13 @@ public class RemoteMaster
   private JProgressBar upgradeProgressBar = null;
   private JProgressBar learnedProgressBar = null;
 
+  /**
+   *  Constructor for the RemoteMaster object
+   *
+   *@param  workDir        Description of the Parameter
+   *@param  prefs          Description of the Parameter
+   *@exception  Exception  Description of the Exception
+   */
   public RemoteMaster( File workDir, PropertyFile prefs )
     throws Exception
   {
@@ -67,32 +86,33 @@ public class RemoteMaster
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
 
-    addWindowListener( new WindowAdapter()
-    {
-      public void windowClosing( WindowEvent event )
+    addWindowListener(
+      new WindowAdapter()
       {
-        try
+        public void windowClosing( WindowEvent event )
         {
-          for ( int i = 0; i < recentFiles.getItemCount(); ++i )
+          try
           {
-            JMenuItem item = recentFiles.getItem( i );
-            preferences.setProperty( "RecentIRs." + i, item.getActionCommand());
-          }
-          int state = getExtendedState();
-          if ( state != Frame.NORMAL )
-            setExtendedState( Frame.NORMAL );
-          Rectangle bounds = getBounds();
-          preferences.setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
+            for ( int i = 0; i < recentFiles.getItemCount(); ++i )
+            {
+              JMenuItem item = recentFiles.getItem( i );
+              preferences.setProperty( "RecentIRs." + i, item.getActionCommand() );
+            }
+            int state = getExtendedState();
+            if ( state != Frame.NORMAL )
+              setExtendedState( Frame.NORMAL );
+            Rectangle bounds = getBounds();
+            preferences.setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
 
-          preferences.save();
+            preferences.save();
+          }
+          catch ( Exception exc )
+          {
+            exc.printStackTrace( System.err );
+          }
+          System.exit( 0 );
         }
-        catch ( Exception exc )
-        {
-          exc.printStackTrace( System.err );
-        }
-        System.exit( 0 );
-      }
-    });
+      } );
 
     Container mainPanel = getContentPane();
     tabbedPane = new JTabbedPane();
@@ -135,33 +155,33 @@ public class RemoteMaster
     JPanel statusBar = new JPanel();
     mainPanel.add( statusBar, BorderLayout.SOUTH );
 
-    statusBar.add( new JLabel( "Move/Macro:" ));
+    statusBar.add( new JLabel( "Move/Macro:" ) );
 
     advProgressBar = new JProgressBar();
     advProgressBar.setStringPainted( true );
     advProgressBar.setString( "N/A" );
     statusBar.add( advProgressBar );
 
-    statusBar.add( Box.createHorizontalStrut( 5 ));
+    statusBar.add( Box.createHorizontalStrut( 5 ) );
     JSeparator sep = new JSeparator( SwingConstants.VERTICAL );
     Dimension d = sep.getPreferredSize();
     d.height = advProgressBar.getPreferredSize().height;
     sep.setPreferredSize( d );
     statusBar.add( sep );
 
-    statusBar.add( new JLabel( "Upgrade:" ));
+    statusBar.add( new JLabel( "Upgrade:" ) );
 
     upgradeProgressBar = new JProgressBar();
     upgradeProgressBar.setStringPainted( true );
     upgradeProgressBar.setString( "N/A" );
     statusBar.add( upgradeProgressBar );
 
-    statusBar.add( Box.createHorizontalStrut( 5 ));
+    statusBar.add( Box.createHorizontalStrut( 5 ) );
     sep = new JSeparator( SwingConstants.VERTICAL );
     sep.setPreferredSize( d );
     statusBar.add( sep );
 
-    statusBar.add( new JLabel( "Learned:" ));
+    statusBar.add( new JLabel( "Learned:" ) );
 
     learnedProgressBar = new JProgressBar();
     learnedProgressBar.setStringPainted( true );
@@ -173,10 +193,10 @@ public class RemoteMaster
     {
       Rectangle bounds = new Rectangle();
       StringTokenizer st = new StringTokenizer( temp, "," );
-      bounds.x = Integer.parseInt( st.nextToken());
-      bounds.y = Integer.parseInt( st.nextToken());
-      bounds.width = Integer.parseInt( st.nextToken());
-      bounds.height = Integer.parseInt( st.nextToken());
+      bounds.x = Integer.parseInt( st.nextToken() );
+      bounds.y = Integer.parseInt( st.nextToken() );
+      bounds.width = Integer.parseInt( st.nextToken() );
+      bounds.height = Integer.parseInt( st.nextToken() );
       setBounds( bounds );
     }
     else
@@ -184,13 +204,29 @@ public class RemoteMaster
     setVisible( true );
   }
 
+  /**
+   *  Gets the frame attribute of the RemoteMaster class
+   *
+   *@return    The frame value
+   */
   public static JFrame getFrame()
   {
     return frame;
   }
 
-  public PropertyFile getPreferences(){ return preferences; }
+  /**
+   *  Gets the preferences attribute of the RemoteMaster object
+   *
+   *@return    The preferences value
+   */
+  public PropertyFile getPreferences()
+  {
+    return preferences;
+  }
 
+  /**
+   *  Description of the Method
+   */
   private void createMenus()
   {
     JMenuBar menuBar = new JMenuBar();
@@ -213,7 +249,7 @@ public class RemoteMaster
     saveItem.addActionListener( this );
     menu.add( saveItem );
 
-    saveAsItem = new JMenuItem( "Save as...",  KeyEvent.VK_A );
+    saveAsItem = new JMenuItem( "Save as...", KeyEvent.VK_A );
     saveAsItem.setDisplayedMnemonicIndex( 5 );
     saveAsItem.setEnabled( false );
     saveAsItem.addActionListener( this );
@@ -242,7 +278,7 @@ public class RemoteMaster
         break;
       preferences.remove( propName );
       File f = new File( temp );
-      if ( f.canRead())
+      if ( f.canRead() )
       {
         JMenuItem item = new JMenuItem( temp );
         item.setActionCommand( temp );
@@ -285,6 +321,11 @@ public class RemoteMaster
     menu.add( aboutItem );
   }
 
+  /**
+   *  Gets the fileChooser attribute of the RemoteMaster object
+   *
+   *@return    The fileChooser value
+   */
   public RMFileChooser getFileChooser()
   {
     if ( chooser != null )
@@ -293,20 +334,33 @@ public class RemoteMaster
     RMFileChooser chooser = new RMFileChooser( dir );
     EndingFileFilter irFilter = new EndingFileFilter( "RM IR files (*.rmir)", rmirEndings );
     chooser.addChoosableFileFilter( irFilter );
-    chooser.addChoosableFileFilter( new EndingFileFilter( "IR files (*.ir)", irEndings ));
-    chooser.addChoosableFileFilter( new EndingFileFilter( "RM Device Upgrades (*.rmdu)", rmduEndings ));
-    chooser.addChoosableFileFilter( new EndingFileFilter( "KM Device Upgrades (*.txt)", txtEndings ));
+    chooser.addChoosableFileFilter( new EndingFileFilter( "IR files (*.ir)", irEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "RM Device Upgrades (*.rmdu)", rmduEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "KM Device Upgrades (*.txt)", txtEndings ) );
     chooser.setFileFilter( irFilter );
 
     return chooser;
   }
 
+  /**
+   *  Description of the Method
+   *
+   *@return                Description of the Return Value
+   *@exception  Exception  Description of the Exception
+   */
   public File openFile()
     throws Exception
   {
     return openFile( null );
   }
 
+  /**
+   *  Description of the Method
+   *
+   *@param  file           Description of the Parameter
+   *@return                Description of the Return Value
+   *@exception  Exception  Description of the Exception
+   */
   public File openFile( File file )
     throws Exception
   {
@@ -319,39 +373,37 @@ public class RemoteMaster
         file = chooser.getSelectedFile();
 
         int rc = JOptionPane.YES_OPTION;
-        if ( !file.exists())
-        {
+        if ( !file.exists() )
           JOptionPane.showMessageDialog( this,
-                                         file.getName() + " doesn't exist.",
-                                         "File doesn't exist.",
-                                         JOptionPane.ERROR_MESSAGE );
-        }
-        else if ( file.isDirectory())
-        {
+            file.getName() + " doesn't exist.",
+            "File doesn't exist.",
+            JOptionPane.ERROR_MESSAGE );
+
+        else if ( file.isDirectory() )
           JOptionPane.showMessageDialog( this,
-                                         file.getName() + " is a directory.",
-                                         "File doesn't exist.",
-                                         JOptionPane.ERROR_MESSAGE );
-        }
+            file.getName() + " is a directory.",
+            "File doesn't exist.",
+            JOptionPane.ERROR_MESSAGE );
+
       }
       else
         return null;
     }
 
     System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " +
-                        DateFormat.getInstance().format( new Date( file.lastModified())));
+      DateFormat.getInstance().format( new Date( file.lastModified() ) ) );
     String ext = file.getName().toLowerCase();
     int dot = ext.lastIndexOf( '.' );
     ext = ext.substring( dot );
 
-    if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ))
+    if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ) )
     {
       KeyMapMaster km = new KeyMapMaster( preferences );
       km.loadUpgrade( file );
       return null;
     }
 
-    if ( ext.equals( ".rmir" ))
+    if ( ext.equals( ".rmir" ) )
     {
       updateRecentFiles( file );
       saveItem.setEnabled( true );
@@ -371,6 +423,12 @@ public class RemoteMaster
     return file;
   }
 
+  /**
+   *  Description of the Method
+   *
+   *@param  file             Description of the Parameter
+   *@exception  IOException  Description of the Exception
+   */
   private void updateRecentFiles( File file )
     throws IOException
   {
@@ -378,9 +436,9 @@ public class RemoteMaster
     String path = file.getCanonicalPath();
     for ( int i = 0; i < recentFiles.getItemCount(); ++i )
     {
-      File temp = new File( recentFiles.getItem( i ).getText());
+      File temp = new File( recentFiles.getItem( i ).getText() );
 
-      if ( temp.getCanonicalPath().equals( path ))
+      if ( temp.getCanonicalPath().equals( path ) )
       {
         item = recentFiles.getItem( i );
         recentFiles.remove( i );
@@ -401,12 +459,17 @@ public class RemoteMaster
     preferences.setProperty( "IRPath", dir );
   }
 
+  /**
+   *  Description of the Method
+   *
+   *@exception  IOException  Description of the Exception
+   */
   public void saveAs()
     throws IOException
   {
     RMFileChooser chooser = getFileChooser();
     String name = file.getName().toLowerCase();
-    if ( name.endsWith( ".ir" ) || name.endsWith( ".txt" ))
+    if ( name.endsWith( ".ir" ) || name.endsWith( ".txt" ) )
     {
       int dot = name.lastIndexOf( '.' );
       name = name.substring( 0, dot ) + ".rmir";
@@ -417,17 +480,16 @@ public class RemoteMaster
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( ".rmir" ))
+      if ( !name.toLowerCase().endsWith( ".rmir" ) )
         name = name + ".rmir";
       File newFile = new File( name );
       int rc = JOptionPane.YES_OPTION;
-      if ( newFile.exists())
-      {
+      if ( newFile.exists() )
         rc = JOptionPane.showConfirmDialog( this,
-                                            newFile.getName() + " already exists.  Do you want to replace it?",
-                                            "Replace existing file?",
-                                            JOptionPane.YES_NO_OPTION );
-      }
+          newFile.getName() + " already exists.  Do you want to replace it?",
+          "Replace existing file?",
+          JOptionPane.YES_NO_OPTION );
+
       if ( rc != JOptionPane.YES_OPTION )
         return;
 
@@ -441,6 +503,11 @@ public class RemoteMaster
     }
   }
 
+  /**
+   *  Description of the Method
+   *
+   *@exception  IOException  Description of the Exception
+   */
   public void exportAsIR()
     throws IOException
   {
@@ -457,17 +524,16 @@ public class RemoteMaster
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( ".ir" ))
+      if ( !name.toLowerCase().endsWith( ".ir" ) )
         name = name + ".IR";
       File newFile = new File( name );
       int rc = JOptionPane.YES_OPTION;
-      if ( newFile.exists())
-      {
+      if ( newFile.exists() )
         rc = JOptionPane.showConfirmDialog( this,
-                                            newFile.getName() + " already exists.  Do you want to replace it?",
-                                            "Replace existing file?",
-                                            JOptionPane.YES_NO_OPTION );
-      }
+          newFile.getName() + " already exists.  Do you want to replace it?",
+          "Replace existing file?",
+          JOptionPane.YES_NO_OPTION );
+
       if ( rc != JOptionPane.YES_OPTION )
         return;
 
@@ -476,14 +542,24 @@ public class RemoteMaster
     }
   }
 
+  /**
+   *  Sets the titleFile attribute of the RemoteMaster object
+   *
+   *@param  file  The new titleFile value
+   */
   private void setTitleFile( File file )
   {
     if ( file == null )
       setTitle( "Java IR" );
     else
-      setTitle( "Java IR: " + file.getName() + " - " + remoteConfig.getRemote().getName());
+      setTitle( "Java IR: " + file.getName() + " - " + remoteConfig.getRemote().getName() );
   }
 
+  /**
+   *  Description of the Method
+   *
+   *@param  e  Description of the Parameter
+   */
   public void actionPerformed( ActionEvent e )
   {
     try
@@ -498,20 +574,29 @@ public class RemoteMaster
       else if ( source == exportIRItem )
         exportAsIR();
       else if ( source == exitItem )
-        dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ));
+        dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ) );
       else if ( source == aboutItem )
       {
         String text = "<html><b>Java IR, " + version + "</b>" +
-                      "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
-                      "<p>RDFs loaded from <b>" + preferences.getProperty( "RDFPath" ) + "</b></p>" +
-                      "<p>DecodeIR version " + LearnedSignal.getDecodeIR().getVersion() + "<p>" +
-                      "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
-                      "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>" +
-                      "</html>";
+          "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
+          "<p>RDFs loaded from <b>" + preferences.getProperty( "RDFPath" ) + "</b></p>";
+        try
+        {
+          String v = LearnedSignal.getDecodeIR().getVersion();
+          text += "<p>DecodeIR version " + v + "<p>";
+        }
+        catch ( NoSuchMethodError ex )
+        {
+        }
+        JP12Serial serial = new JP12Serial();
+        text += "<p>" + serial.getInterfaceName() + " version " + serial.getInterfaceVersion() + "</p>" +
+          "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
+          "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>" +
+          "</html>";
 
         JEditorPane pane = new JEditorPane( "text/html", text );
         pane.setEditable( false );
-        pane.setBackground( getContentPane().getBackground());
+        pane.setBackground( getContentPane().getBackground() );
         new TextPopupMenu( pane );
         JScrollPane scroll = new JScrollPane( pane );
         Dimension d = pane.getPreferredSize();
@@ -539,25 +624,26 @@ public class RemoteMaster
           return;
         }
         else if ( remotes.length == 1 )
-          remote = remotes[ 0 ];
-        else // ( remotes.length > 1 )
-        {
-            String message = "Please pick the best match to your remote from the following list:";
-            Object rc = ( Remote )JOptionPane.showInputDialog( null,
-                                                               message,
-                                                               "Ambiguous Remote",
-                                                               JOptionPane.ERROR_MESSAGE,
-                                                               null,
-                                                               remotes,
-                                                               remotes[ 0 ]);
-            if ( rc == null )
-              return;
-            else
-              remote = ( Remote )rc;
+          remote = remotes[0];
+        else
+        {// ( remotes.length > 1 )
+
+          String message = "Please pick the best match to your remote from the following list:";
+          Object rc = ( Remote )JOptionPane.showInputDialog( null,
+            message,
+            "Ambiguous Remote",
+            JOptionPane.ERROR_MESSAGE,
+            null,
+            remotes,
+            remotes[0] );
+          if ( rc == null )
+            return;
+          else
+            remote = ( Remote )rc;
         }
         remote.load();
         remoteConfig = new RemoteConfiguration( remote );
-        serial.readRemote( remote.getBaseAddress(), remoteConfig.getData());
+        serial.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
         serial.closeRemote();
         remoteConfig.parseData();
         saveAsItem.setEnabled( true );
@@ -573,20 +659,26 @@ public class RemoteMaster
           return;
         }
         String sig = serial.getRemoteSignature();
-        if ( !sig.equals( remoteConfig.getRemote().getSignature()))
+        if ( !sig.equals( remoteConfig.getRemote().getSignature() ) )
         {
           JOptionPane.showMessageDialog( this, "Signatures don't match!\n" );
+          serial.closeRemote();
           return;
         }
-        int rc = serial.writeRemote( remoteConfig.getRemote().getBaseAddress(), remoteConfig.getData());
-        JOptionPane.showMessageDialog( this, "writeRemote returned " + rc );
+        int rc = serial.writeRemote( remoteConfig.getRemote().getBaseAddress(), remoteConfig.getData() );
+        serial.closeRemote();
+
+        if ( rc != remoteConfig.getData().length )
+          JOptionPane.showMessageDialog( this, "writeRemote returned " + rc );
+        else
+          JOptionPane.showMessageDialog( this, "Upload complete!" );
       }
       else
       {
         JMenuItem item = ( JMenuItem )source;
-        File file = new File( item.getActionCommand());
+        File file = new File( item.getActionCommand() );
         recentFiles.remove( item );
-        if ( file.canRead())
+        if ( file.canRead() )
           openFile( file );
       }
     }
@@ -596,21 +688,22 @@ public class RemoteMaster
     }
   }
 
+  /**
+   *  Description of the Method
+   */
   private void update()
   {
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
     macroPanel.set( remoteConfig );
-    if ( remoteConfig.getRemote().getSpecialProtocols().isEmpty())
+    if ( remoteConfig.getRemote().getSpecialProtocols().isEmpty() )
     {
       if ( tabbedPane.getComponentAt( 3 ) == specialFunctionPanel )
         tabbedPane.remove( 3 );
     }
     else
-    {
       if ( tabbedPane.getComponentAt( 3 ) != specialFunctionPanel )
-        tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, 3 );
-    }
+      tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, 3 );
 
     specialFunctionPanel.set( remoteConfig );
     AddressRange range = remoteConfig.getRemote().getAdvanceCodeAddress();
@@ -651,22 +744,27 @@ public class RemoteMaster
     rawDataPanel.set( remoteConfig );
   }
 
+  /**
+   *  Description of the Method
+   *
+   *@param  event  Description of the Parameter
+   */
   public void propertyChange( PropertyChangeEvent event )
   {
     Object source = event.getSource();
-    if (( source == keyMovePanel.getModel()) || ( source == macroPanel.getModel()) || ( source == specialFunctionPanel.getModel()))
+    if ( ( source == keyMovePanel.getModel() ) || ( source == macroPanel.getModel() ) || ( source == specialFunctionPanel.getModel() ) )
     {
       int used = remoteConfig.updateAdvancedCodes();
       advProgressBar.setValue( used );
       advProgressBar.setString( Integer.toString( advProgressBar.getMaximum() - used ) + " free" );
     }
-    else if (( source == devicePanel.getModel()) || ( source == protocolPanel.getModel()))
+    else if ( ( source == devicePanel.getModel() ) || ( source == protocolPanel.getModel() ) )
     {
       int used = remoteConfig.updateUpgrades();
       upgradeProgressBar.setValue( used );
       upgradeProgressBar.setString( Integer.toString( upgradeProgressBar.getMaximum() - used ) + " free" );
     }
-    else if ( source == learnedPanel.getModel())
+    else if ( source == learnedPanel.getModel() )
     {
       int used = remoteConfig.updateLearnedSignals();
       learnedProgressBar.setValue( used );
@@ -677,33 +775,38 @@ public class RemoteMaster
     remoteConfig.updateCheckSums();
   }
 
+  /**
+   *  Description of the Method
+   *
+   *@param  args  Description of the Parameter
+   */
   private static void createAndShowGUI( String[] args )
   {
     try
     {
-      File workDir = new File( System.getProperty( "user.dir" ));
+      File workDir = new File( System.getProperty( "user.dir" ) );
       File propertiesFile = null;
       File fileToOpen = null;
       boolean launchRM = false;
       for ( int i = 0; i < args.length; ++i )
       {
-        String parm = args[ i ];
-        if ( parm.equalsIgnoreCase( "-ir" ))
+        String parm = args[i];
+        if ( parm.equalsIgnoreCase( "-ir" ) )
           launchRM = true;
-        else if ( parm.equalsIgnoreCase( "-h" ))
+        else if ( parm.equalsIgnoreCase( "-h" ) )
         {
-          workDir = new File( args[ ++i ]);
-          System.setProperty( "user.dir", workDir.getCanonicalPath());
+          workDir = new File( args[++i] );
+          System.setProperty( "user.dir", workDir.getCanonicalPath() );
         }
-        else if ( parm.equalsIgnoreCase( "-p" ))
-          propertiesFile = new File( args[ ++i ]);
+        else if ( parm.equalsIgnoreCase( "-p" ) )
+          propertiesFile = new File( args[++i] );
         else
           fileToOpen = new File( parm );
       }
 
       try
       {
-        System.setErr( new PrintStream( new FileOutputStream( new File ( workDir, "rmaster.err" ))));
+        System.setErr( new PrintStream( new FileOutputStream( new File( workDir, "rmaster.err" ) ) ) );
       }
       catch ( Exception e )
       {
@@ -712,16 +815,17 @@ public class RemoteMaster
 
       ClassPathAdder.addFile( workDir );
 
-      FilenameFilter filter = new FilenameFilter()
-      {
-        public boolean accept( File dir, String name )
+      FilenameFilter filter =
+        new FilenameFilter()
         {
-          String temp = name.toLowerCase();
-          return temp.endsWith( ".jar" ) &&
-                 !temp.endsWith( "remotemaster.jar" ) &&
-                 !temp.endsWith( "setup.jar" );
-        }
-      };
+          public boolean accept( File dir, String name )
+          {
+            String temp = name.toLowerCase();
+            return temp.endsWith( ".jar" ) &&
+              !temp.endsWith( "remotemaster.jar" ) &&
+              !temp.endsWith( "setup.jar" );
+          }
+        };
 
       File[] jarFiles = workDir.listFiles( filter );
       ClassPathAdder.addFiles( jarFiles );
@@ -731,20 +835,20 @@ public class RemoteMaster
       PropertyFile properties = new PropertyFile( propertiesFile );
 
       if ( launchRM )
-        UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName());
+        UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
       else
       {
-        String lookAndFeel = properties.getProperty( "LookAndFeel", UIManager.getSystemLookAndFeelClassName());
+        String lookAndFeel = properties.getProperty( "LookAndFeel", UIManager.getSystemLookAndFeelClassName() );
         UIManager.setLookAndFeel( lookAndFeel );
       }
 
-      File rdfDir = properties.getFileProperty( "RDFPath", new File( workDir, "rdf" ));
+      File rdfDir = properties.getFileProperty( "RDFPath", new File( workDir, "rdf" ) );
       rdfDir = RemoteManager.getRemoteManager().loadRemotes( rdfDir );
       properties.setProperty( "RDFPath", rdfDir );
 
-      ProtocolManager.getProtocolManager().load( new File( workDir, "protocols.ini" ));
+      ProtocolManager.getProtocolManager().load( new File( workDir, "protocols.ini" ) );
 
-      DigitMaps.load( new File( workDir, "digitmaps.bin" ));
+      DigitMaps.load( new File( workDir, "digitmaps.bin" ) );
 
       if ( launchRM )
       {
@@ -770,6 +874,11 @@ public class RemoteMaster
     System.err.flush();
   }
 
+  /**
+   *  The main program for the RemoteMaster class
+   *
+   *@param  args  The command line arguments
+   */
   public static void main( String[] args )
   {
     JDialog.setDefaultLookAndFeelDecorated( true );
@@ -777,18 +886,21 @@ public class RemoteMaster
     Toolkit.getDefaultToolkit().setDynamicLayout( true );
 
     parms = args;
-    javax.swing.SwingUtilities.invokeLater( new Runnable()
-    {
-      public void run()
+    javax.swing.SwingUtilities.invokeLater(
+      new Runnable()
       {
-        createAndShowGUI( parms );
-      }
-    });
+        public void run()
+        {
+          createAndShowGUI( parms );
+        }
+      } );
   }
+
   private static String[] parms = null;
 
-  private final static String[] rmirEndings = { ".rmir" };
-  private final static String[] rmduEndings = { ".rmdu" };
-  private final static String[] irEndings = { ".ir" };
-  private final static String[] txtEndings = { ".txt" };
+  private final static String[] rmirEndings = {".rmir"};
+  private final static String[] rmduEndings = {".rmdu"};
+  private final static String[] irEndings = {".ir"};
+  private final static String[] txtEndings = {".txt"};
 }
+
