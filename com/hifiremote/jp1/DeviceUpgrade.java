@@ -1226,6 +1226,21 @@ public class DeviceUpgrade
     importUpgrade( in, true );
   }
 
+  private static Integer parseInt( String str )
+  {
+    int base = 10;
+    if ( str.charAt( 0 ) == '$' )
+    {
+      base = 16;
+      str = str.substring( 1 );
+    }
+    else if ( str.charAt( str.length() - 1 ) == 'h' )
+    {
+      base = 16;
+      str = str.substring( 0, str.length() - 1 );
+    }
+    return Integer.valueOf( str, base );
+  }
 
   public void importUpgrade( BufferedReader in, boolean loadButtons )
     throws Exception
@@ -1356,15 +1371,15 @@ public class DeviceUpgrade
 
       str = getNextField( st, delim ); // Device 1
       if ( str != null )
-        values.add( new Integer( str ));
+        values.add( parseInt( str ));
 
       str = getNextField( st, delim ); // Device 2
       if ( str != null )
-        values.add( new Integer( str ));
+        values.add( parseInt( str ));
 
       str = getNextField( st, delim ); // Device 3
       if ( str != null )
-        values.add( new Integer( str ));
+        values.add( parseInt( str ));
 
       str = getNextField( st, delim ); // Raw Fixed Data
       if ( str == null )

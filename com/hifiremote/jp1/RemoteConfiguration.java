@@ -220,134 +220,139 @@ public class RemoteConfiguration
   private void importIR( PropertyReader pr )
     throws IOException
   {
-    Property property = loadBuffer( pr );
+    Property property = null;
+    if ( pr != null )
+      loadBuffer( pr );
 
     decodeSettings();
     decodeUpgrades();
     List< AdvancedCode > advCodes = decodeAdvancedCodes();
     decodeLearnedSignals();
 
-    while (( property != null ) && ( !property.name.startsWith( "[" )))
-      property = pr.nextProperty();
-
-    if ( property == null )
-      return;
-
-    IniSection section = pr.nextSection();
-    section.setName( property.name.substring( 1, property.name.length() - 1 ));
-
-    while ( section != null )
+    if ( pr != null )
     {
-      String name = section.getName();
-      if ( name.equals( "Notes" ))
+      while (( property != null ) && ( !property.name.startsWith( "[" )))
+        property = pr.nextProperty();
+  
+      if ( property == null )
+        return;
+  
+      IniSection section = pr.nextSection();
+      section.setName( property.name.substring( 1, property.name.length() - 1 ));
+  
+      while ( section != null )
       {
-        System.err.println( "Importing notes" );
-        for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+        String name = section.getName();
+        if ( name.equals( "Notes" ))
         {
-          String key = ( String )keys.nextElement();
-          String text = importNotes( section.getProperty( key ));
-          int base = 10;
-          if ( key.charAt( 0 ) == '$' )
+          System.err.println( "Importing notes" );
+          for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
           {
-            base = 16;
-            key = key.substring( 1 );
+            String key = ( String )keys.nextElement();
+            String text = importNotes( section.getProperty( key ));
+            int base = 10;
+            if ( key.charAt( 0 ) == '$' )
+            {
+              base = 16;
+              key = key.substring( 1 );
+            }
+            int index = Integer.parseInt( key, base );
+            int flag = index >> 12;
+            index &= 0x0FFF;
+            System.err.println( "index=" + index + ", flag=" + flag + ",text=" + text );
+            if ( flag == 0 )
+              notes = text;
+            else if ( flag == 1 )
+              advCodes.get( index ).setNotes( text );
+            else if ( flag == 2 )
+              ;// fav/scan?
+            else if ( flag == 3 )
+              devices.get( index ).setDescription( text );
+            else if ( flag == 4 )
+              protocols.get( index ).setNotes( text );
+            else if ( flag == 5 )
+              learned.get( index ).setNotes( text );
           }
-          int index = Integer.parseInt( key, base );
-          int flag = index >> 12;
-          index &= 0x0FFF;
-          System.err.println( "index=" + index + ", flag=" + flag + ",text=" + text );
-          if ( flag == 0 )
-            notes = text;
-          else if ( flag == 1 )
-            advCodes.get( index ).setNotes( text );
-          else if ( flag == 2 )
-            ;// fav/scan?
-          else if ( flag == 3 )
-            devices.get( index ).setDescription( text );
-          else if ( flag == 4 )
-            protocols.get( index ).setNotes( text );
-          else if ( flag == 5 )
-            learned.get( index ).setNotes( text );
         }
-      }
-      else if ( name.equals( "General" ))
-      {
-        for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+        else if ( name.equals( "General" ))
         {
-          String key = ( String )keys.nextElement();
-          String text = importNotes( section.getProperty( key ));
-          if ( key.equals( "Notes" ))
-            notes = text;
+          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          {
+            String key = ( String )keys.nextElement();
+            String text = importNotes( section.getProperty( key ));
+            if ( key.equals( "Notes" ))
+              notes = text;
+          }
         }
-      }
-      else if ( name.equals( "KeyMoves" ))
-      {
-        for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+        else if ( name.equals( "KeyMoves" ))
         {
-          String key = ( String )keys.nextElement();
-          String text = importNotes( section.getProperty( key ));
-          StringTokenizer st = new StringTokenizer( key, ":" );
-          String deviceName = st.nextToken();
-          String keyName = st.nextToken();
-          KeyMove km = findKeyMove( keymoves, deviceName, keyName );
-          if ( km != null )
-            km.setNotes( text );
+          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          {
+            String key = ( String )keys.nextElement();
+            String text = importNotes( section.getProperty( key ));
+            StringTokenizer st = new StringTokenizer( key, ":" );
+            String deviceName = st.nextToken();
+            String keyName = st.nextToken();
+            KeyMove km = findKeyMove( keymoves, deviceName, keyName );
+            if ( km != null )
+              km.setNotes( text );
+          }
         }
-      }
-      else if ( name.equals( "Macros" ))
-      {
-        for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+        else if ( name.equals( "Macros" ))
         {
-          String keyName = ( String )keys.nextElement();
-          String text = importNotes( section.getProperty( keyName ));
-          Macro macro = findMacro( keyName );
-          if ( macro != null )
-            macro.setNotes( text );
+          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          {
+            String keyName = ( String )keys.nextElement();
+            String text = importNotes( section.getProperty( keyName ));
+            Macro macro = findMacro( keyName );
+            if ( macro != null )
+              macro.setNotes( text );
+          }
         }
-      }
-      else if ( name.equals( "Devices" ))
-      {
-        for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+        else if ( name.equals( "Devices" ))
         {
-          String key = ( String )keys.nextElement();
-          String text = importNotes( section.getProperty( key ));
-          StringTokenizer st = new StringTokenizer( key, ": " );
-          String deviceTypeName = st.nextToken();
-          int setupCode = Integer.parseInt( st.nextToken());
-          DeviceUpgrade device = findDeviceUpgrade( remote.getDeviceType( deviceTypeName ).getNumber(), setupCode );
-          if ( device != null )
-            device.setDescription( text );
+          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          {
+            String key = ( String )keys.nextElement();
+            String text = importNotes( section.getProperty( key ));
+            StringTokenizer st = new StringTokenizer( key, ": " );
+            String deviceTypeName = st.nextToken();
+            int setupCode = Integer.parseInt( st.nextToken());
+            DeviceUpgrade device = findDeviceUpgrade( remote.getDeviceType( deviceTypeName ).getNumber(), setupCode );
+            if ( device != null )
+              device.setDescription( text );
+          }
         }
-      }
-      else if ( name.equals( "Protocols" ))
-      {
-        for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+        else if ( name.equals( "Protocols" ))
         {
-          String key = ( String )keys.nextElement();
-          String text = importNotes( section.getProperty( key ));
-          StringTokenizer st = new StringTokenizer( key, "$" );
-          st.nextToken(); // discard the "Protocol: " header
-          int pid = Integer.parseInt( st.nextToken(), 16 );
-          ProtocolUpgrade protocol = findProtocolUpgrade( pid );
-          if ( protocol != null )
-            protocol.setNotes( text );
+          for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+          {
+            String key = ( String )keys.nextElement();
+            String text = importNotes( section.getProperty( key ));
+            StringTokenizer st = new StringTokenizer( key, "$" );
+            st.nextToken(); // discard the "Protocol: " header
+            int pid = Integer.parseInt( st.nextToken(), 16 );
+            ProtocolUpgrade protocol = findProtocolUpgrade( pid );
+            if ( protocol != null )
+              protocol.setNotes( text );
+          }
         }
-      }
-      else if ( name.equals( "Learned" ))
-      {
-        for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+        else if ( name.equals( "Learned" ))
         {
-          String key = ( String )keys.nextElement();
-          String text = importNotes( section.getProperty( key ));
-          StringTokenizer st = new StringTokenizer( key, ": " );
-          String deviceName = st.nextToken();
-          String keyName = st.nextToken();
-          LearnedSignal ls = findLearnedSignal( deviceName, keyName );
-          if ( ls != null )
-            ls.setNotes( text );
+          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          {
+            String key = ( String )keys.nextElement();
+            String text = importNotes( section.getProperty( key ));
+            StringTokenizer st = new StringTokenizer( key, ": " );
+            String deviceName = st.nextToken();
+            String keyName = st.nextToken();
+            LearnedSignal ls = findLearnedSignal( deviceName, keyName );
+            if ( ls != null )
+              ls.setNotes( text );
+          }
         }
+        section = pr.nextSection();
       }
-      section = pr.nextSection();
     }
     migrateKeyMovesToDeviceUpgrades();
     
@@ -498,7 +503,10 @@ public class RemoteConfiguration
   }
 
   public void parseData()
+    throws IOException
   {
+    importIR( null );
+    /*
     decodeSettings();
     decodeUpgrades();
     
@@ -510,7 +518,9 @@ public class RemoteConfiguration
     }
 
     decodeAdvancedCodes();
+    migrateKeyMovesToDeviceUpgrades();
     decodeLearnedSignals();
+    */
   }
 
   public void decodeSettings()
@@ -651,6 +661,8 @@ public class RemoteConfiguration
       DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode());
       if (( boundUpgrade != null ) && ( boundUpgrade == moveUpgrade ))
       {
+        System.err.println( "Moving keymove on " + boundDeviceButton + ':' + remote.getButtonName( keyMove.getKeyCode()) +
+                            " to device upgrade " + boundUpgrade.getDeviceType() + '/' + boundUpgrade.getSetupCode());
         it.remove();
         // Add the keymove to the device upgrade instead of the keymove collection
         Hex cmd = keyMove.getCmd();

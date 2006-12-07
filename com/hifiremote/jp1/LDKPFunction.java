@@ -2,57 +2,114 @@ package com.hifiremote.jp1;
 
 import java.util.*;
 
+/**
+ *  Description of the Class
+ *
+ *@author     Greg
+ *@created    December 2, 2006
+ */
 public class LDKPFunction
-  extends SpecialProtocolFunction
+   extends SpecialProtocolFunction
 {
+  /**
+   *  Constructor for the LDKPFunction object
+   *
+   *@param  keyMove  Description of the Parameter
+   */
   public LDKPFunction( KeyMove keyMove )
   {
     super( keyMove );
   }
-  
+
+  /**
+   *  Constructor for the LDKPFunction object
+   *
+   *@param  keyCode            Description of the Parameter
+   *@param  deviceButtonIndex  Description of the Parameter
+   *@param  deviceType         Description of the Parameter
+   *@param  setupCode          Description of the Parameter
+   *@param  cmd                Description of the Parameter
+   *@param  notes              Description of the Parameter
+   */
   public LDKPFunction( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
     super( keyCode, deviceButtonIndex, deviceType, setupCode, cmd, notes );
-  }    
-  
+  }
+
+  /**
+   *  Constructor for the LDKPFunction object
+   *
+   *@param  props  Description of the Parameter
+   */
   public LDKPFunction( Properties props )
   {
     super( props );
   }
-  
+
+  /**
+   *  Gets the duration attribute of the LDKPFunction object
+   *
+   *@return    The duration value
+   */
   public int getDuration()
   {
-    return data.getData()[ 0 ] >> 4;
+    return data.getData()[0] >> 4;
   }
-  
+
+  /**
+   *  Gets the style attribute of the LDKPFunction object
+   *
+   *@return    The style value
+   */
   public int getStyle()
   {
-    return ( data.getData()[ 0 ] & 8 ) >> 3;
+    return ( data.getData()[0] & 8 ) >> 3;
   }
-  
+
+  /**
+   *  Gets the firstLength attribute of the LDKPFunction object
+   *
+   *@return    The firstLength value
+   */
   public int getFirstLength()
   {
-    return data.getData()[ 0 ] & 7;
+    return data.getData()[0] & 7;
   }
-  
+
+  /**
+   *  Gets the type attribute of the LDKPFunction object
+   *
+   *@return    The type value
+   */
   public String getType()
   {
-    return styleStrings[ getStyle() ];
+    return styleStrings[getStyle()];
   }
-  
+
+  /**
+   *  Gets the displayType attribute of the LDKPFunction object
+   *
+   *@return    The displayType value
+   */
   public String getDisplayType()
   {
-    short val = data.getData()[ 0 ];
+    short val = data.getData()[0];
     int duration = getDuration();
     int style = getStyle();
     StringBuilder buff = new StringBuilder();
-    buff.append( styleStrings[ style ]);
+    buff.append( styleStrings[style] );
     buff.append( '(' );
-    buff.append( Integer.toString( getDuration()));
+    buff.append( Integer.toString( getDuration() ) );
     buff.append( ')' );
     return buff.toString();
   }
-  
+
+  /**
+   *  Gets the valueString attribute of the LDKPFunction object
+   *
+   *@param  remoteConfig  Description of the Parameter
+   *@return               The valueString value
+   */
   public String getValueString( RemoteConfiguration remoteConfig )
   {
     Remote remote = remoteConfig.getRemote();
@@ -60,88 +117,117 @@ public class LDKPFunction
     short[] vals = data.getData();
     int style = getStyle();
     buff.append( '[' );
-    buff.append( firstStrings[ style ]);
+    buff.append( firstStrings[style] );
     buff.append( "]:" );
     int firstLength = getFirstLength();
+    if ( firstLength == 0 )
+      buff.append( "<none>" );
     int i = 0;
     for ( ; i < firstLength; ++i )
     {
       if ( i != 0 )
         buff.append( ';' );
-      buff.append( remote.getButtonName( vals[ i + 1 ]));
+      buff.append( remote.getButtonName( vals[i + 1] ) );
     }
     buff.append( " [" );
-    buff.append( secondStrings[ style ]);
+    buff.append( secondStrings[style] );
     buff.append( "]:" );
+    if ( i == ( vals.length - 1 ) )
+      buff.append( "<none>" );
     for ( ; i + 1 < vals.length; ++i )
     {
       if ( i != firstLength )
         buff.append( ';' );
-      buff.append( remote.getButtonName( vals[ i + 1 ]));
+      buff.append( remote.getButtonName( vals[i + 1] ) );
     }
-    
+
     return buff.toString();
   }
-  
+
+  /**
+   *  Description of the Method
+   *
+   *@param  dlg  Description of the Parameter
+   */
   public void update( SpecialFunctionDialog dlg )
   {
-    dlg.setDuration( getDuration());
+    dlg.setDuration( getDuration() );
     short[] vals = data.getData();
-    int firstLength = vals[ 0 ] & 7;
+    int firstLength = vals[0] & 7;
     int secondLength = vals.length - firstLength - 1;
     int offset = 1;
-    
-    Integer[] temp = new Integer[ firstLength ];
+
+    Integer[] temp = new Integer[firstLength];
     for ( int i = 0; i < firstLength; ++i )
-      temp[ i ] = new Integer( vals[ offset++ ]);
+      temp[i] = new Integer( vals[offset++] );
     dlg.setFirstMacroButtons( temp );
 
-    temp = new Integer[ secondLength ];
+    temp = new Integer[secondLength];
     for ( int i = 0; i < secondLength; ++i )
-      temp[ i ] = new Integer( vals[ offset++ ]);
+      temp[i] = new Integer( vals[offset++] );
     dlg.setSecondMacroButtons( temp );
   }
-  
+
+  /**
+   *  Description of the Method
+   *
+   *@param  dlg  Description of the Parameter
+   *@return      Description of the Return Value
+   */
   public static Hex createHex( SpecialFunctionDialog dlg )
   {
     String type = dlg.getType();
     int style = LKP;
     for ( int i = 0; i < styleStrings.length; ++i )
-    {
-      if ( styleStrings[ i ].equals( type ))
+      if ( styleStrings[i].equals( type ) )
       {
         style = i;
         break;
       }
-    }
-    
+
     Integer[] firstKeyCodes = dlg.getFirstMacroButtons();
     Integer[] secondKeyCodes = dlg.getSecondMacroButtons();
-    
-    short[] temp = new short[ 1 + firstKeyCodes.length + secondKeyCodes.length ];
-    temp[ 0 ] = ( short )(( dlg.getDuration() << 4 ) | ( style << 3 ) | firstKeyCodes.length );
+
+    short[] temp = new short[1 + firstKeyCodes.length + secondKeyCodes.length];
+    temp[0] = ( short )( ( dlg.getDuration() << 4 ) | ( style << 3 ) | firstKeyCodes.length );
     int offset = 1;
     for ( int i = 0; i < firstKeyCodes.length; ++i )
-      temp[ offset++ ] = firstKeyCodes[ i ].shortValue();
+      temp[offset++] = firstKeyCodes[i].shortValue();
     for ( int i = 0; i < secondKeyCodes.length; ++i )
-      temp[ offset++ ] = secondKeyCodes[ i ].shortValue();
-    
+      temp[offset++] = secondKeyCodes[i].shortValue();
+
     return new Hex( temp );
   }
-  
+
+  /**
+   *  Description of the Field
+   */
   public static int LKP = 0;
+  /**
+   *  Description of the Field
+   */
   public static int DKP = 1;
-  
-  public static String[] styleStrings = 
-  { 
+
+  /**
+   *  Description of the Field
+   */
+  public static String[] styleStrings =
+    {
     "LKP", "DKP"
-  };
-  public static String[] firstStrings = 
-  {
+    };
+  /**
+   *  Description of the Field
+   */
+  public static String[] firstStrings =
+    {
     "Short", "Single"
-  };
-  public static String[] secondStrings = 
-  {
+    };
+  /**
+   *  Description of the Field
+   */
+  public static String[] secondStrings =
+    {
     "Long", "Double"
-  };
+    };
 }
+

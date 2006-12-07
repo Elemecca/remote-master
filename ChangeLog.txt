@@ -1,6 +1,9 @@
-Changes for v1.71a
+Changed for v1.72
+- Fix for 'Save As' when no file has already been opened (RMIR).
+- Make parsing eeprom data work the same as parsing an IR file (RMIR).
 - Fix BitDoubler so extracting parms from hex works correctly.
-- Allow uploading to JP1.x remotes
+- Allow uploading to JP1.x remotes (RMIR)
+- Fix importing of KM files that use Manual Settings with hex device parameters
 
 Changes for v1.71
 - Fix for handling advanced codes assigned to the Fav key (RMIR)

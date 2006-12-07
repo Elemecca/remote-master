@@ -25,7 +25,7 @@ public class RemoteMaster
   /**
    *  Description of the Field
    */
-  public final static String version = "v1.71a";
+  public final static String version = "v1.72";
   private File dir = null;
   /**
    *  Description of the Field
@@ -468,18 +468,21 @@ public class RemoteMaster
     throws IOException
   {
     RMFileChooser chooser = getFileChooser();
-    String name = file.getName().toLowerCase();
-    if ( name.endsWith( ".ir" ) || name.endsWith( ".txt" ) )
+    if ( file != null )
     {
-      int dot = name.lastIndexOf( '.' );
-      name = name.substring( 0, dot ) + ".rmir";
-      file = new File( name );
+      String name = file.getName().toLowerCase();
+      if ( name.endsWith( ".ir" ) || name.endsWith( ".txt" ) )
+      {
+        int dot = name.lastIndexOf( '.' );
+        name = name.substring( 0, dot ) + ".rmir";
+        file = new File( name );
+      }
+      chooser.setSelectedFile( file );
     }
-    chooser.setSelectedFile( file );
     int returnVal = chooser.showSaveDialog( this );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
-      name = chooser.getSelectedFile().getAbsolutePath();
+      String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( ".rmir" ) )
         name = name + ".rmir";
       File newFile = new File( name );
