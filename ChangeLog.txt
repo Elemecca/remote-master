@@ -1,4 +1,8 @@
-Changed for v1.72
+Changes for v1.73
+- Fix importing KM upgrades that use Manual Settings with 2 bytes in the "byte2" column
+- Add home directory to About screen
+
+Changes for v1.72
 - Fix for 'Save As' when no file has already been opened (RMIR).
 - Make parsing eeprom data work the same as parsing an IR file (RMIR).
 - Fix BitDoubler so extracting parms from hex works correctly.
