@@ -1361,8 +1361,14 @@ public class DeviceUpgrade
       String signalStyle = getNextField( manual, delim );
       System.err.println( "SignalStyle=" + signalStyle );
       String bitsStr = getNextField( manual, delim );
-      int devBits = Integer.parseInt( bitsStr.substring( 0, 1 ), 16);
-      int cmdBits = Integer.parseInt( bitsStr.substring( 1 ), 16 );
+      int devBits = 8;
+      int cmdBits = 8;
+      try
+      {
+        devBits = Integer.parseInt( bitsStr.substring( 0, 1 ), 16);
+        cmdBits = Integer.parseInt( bitsStr.substring( 1 ), 16 );
+      }
+      catch ( NumberFormatException nfe ){}
       System.err.println( "devBits=" + devBits + " and cmdBits=" + cmdBits );
       if ( devBits == 0 ) devBits = 8;
       if ( cmdBits == 0 ) cmdBits = 8;
@@ -1459,13 +1465,13 @@ public class DeviceUpgrade
         break;
     }
 
-    String match1 = "fByte2" + delim + "bButtons" + delim + "bFunctions" + delim + "fNotes" + delim + "Device Combiner" + delim;
-    String match2 = "byte2" + delim + "Buttons" + delim + "Functions" + delim + delim + "Device Combiner (max 16):" + delim;
+    String match1 = "fByte2" + delim + "bButtons" + delim + "bFunctions" + delim + "fNotes" + delim + "Device Combiner";
+    String match2 = "byte2" + delim + "Buttons" + delim + "Functions" + delim + "Notes" + delim + "Device Combiner";
 
     while ( true )
     {
       line = in.readLine();
-      if (( line.indexOf( match1 ) != -1 ) || (line.indexOf( match2 ) != -1 ))
+      if (( line == null ) || ( line.indexOf( match1 ) != -1 ) || (line.indexOf( match2 ) != -1 ))
         break;
     }
 
@@ -1474,11 +1480,69 @@ public class DeviceUpgrade
     DeviceCombiner combiner = null;
     if ( protocol.getClass() == DeviceCombiner.class )
       combiner = ( DeviceCombiner )protocol;
+    
+    // save the function definition/assignment lines for later parsing
+    String[] lines = new String[ 128 ];
+    for ( int i = 0; i < 128; ++i )
+      lines[ i ] = in.readLine();
+    
+    // read in the notes, which may have the protocol code
+    while (( line = in.readLine()) != null )
+    {
+      st = new StringTokenizer( line, delim );
+      token = getNextField( st, delim );
+      if ( token != null )
+      {
+        if ( token.equals( "Line Notes:" ) || token.equals( "Notes:" ))
+        {
+          StringBuilder buff = new StringBuilder();
+          boolean first = true;
+          String tempDelim = null;
+          while (( line = in.readLine()) != null )
+          {
+            if ( line.charAt( 0 ) == '"' )
+              tempDelim = "\"";
+            else
+              tempDelim = delim;
+            st = new StringTokenizer( line, tempDelim );
+            if ( st.hasMoreTokens())
+            {
+              token = st.nextToken();
+              if ( token.startsWith( "EOF Marker" ))
+                break;
+              if ( first )
+                first = false;
+              else
+                buff.append( "\n" );
+              buff.append( token.trim());
+            }
+            else
+              buff.append( "\n" );
+          }
+          notes = buff.toString().trim();
+          if ( protocol.getClass() == ManualProtocol.class )
+          {
+            protocol.importUpgradeCode( notes );
+            /*
+            Hex h = protocol.getCode( remote );
+            int value = h.getData()[ 2 ] & 0xFF;
+            if ( remote.getProcessor().getFullName().equals( "HCS08" ))
+              value = h.getData()[ 4 ] & 0xFF;
+            int fixedDataLength = value >> 4;
+            int cmdLength = value & 0x000F;
+            (( ManualProtocol )protocol ).setDefaultCmd( new Hex( cmdLength ));
+            */
+          }
+        }
+      }
+    }
+    
+    // Parse the function definition/assignment lines
     java.util.List< java.util.List< String >> unassigned = new ArrayList< java.util.List< String >>();
     java.util.List< Function > usedFunctions = new ArrayList< Function >();
     for ( int i = 0; i < 128; i++ )
     {
-      line = in.readLine();
+      line = lines[ i ];
       st = new StringTokenizer( line, delim, true );
       token = getNextField( st, delim ); // get the name (field 1)
       if (( token != null ) && ( token.length() == 5 ) &&
@@ -1732,54 +1796,6 @@ public class DeviceUpgrade
       }
     }
 
-    while (( line = in.readLine()) != null )
-    {
-      st = new StringTokenizer( line, delim );
-      token = getNextField( st, delim );
-      if ( token != null )
-      {
-        if ( token.equals( "Line Notes:" ) || token.equals( "Notes:" ))
-        {
-          StringBuilder buff = new StringBuilder();
-          boolean first = true;
-          String tempDelim = null;
-          while (( line = in.readLine()) != null )
-          {
-            if ( line.charAt( 0 ) == '"' )
-              tempDelim = "\"";
-            else
-              tempDelim = delim;
-            st = new StringTokenizer( line, tempDelim );
-            if ( st.hasMoreTokens())
-            {
-              token = st.nextToken();
-              if ( token.startsWith( "EOF Marker" ))
-                break;
-              if ( first )
-                first = false;
-              else
-                buff.append( "\n" );
-              buff.append( token.trim());
-            }
-            else
-              buff.append( "\n" );
-          }
-          notes = buff.toString().trim();
-          if ( protocol.getClass() == ManualProtocol.class )
-          {
-            protocol.importUpgradeCode( notes );
-            Hex h = protocol.getCode( remote );
-            int value = h.getData()[ 2 ] & 0xFF;
-            if ( remote.getProcessor().getFullName().equals( "HCS08" ))
-              value = h.getData()[ 4 ] & 0xFF;
-            int fixedDataLength = value >> 4;
-            int cmdLength = value & 0x000F;
-            (( ManualProtocol )protocol ).setDefaultCmd( new Hex( cmdLength ));
-
-          }
-        }
-      }
-    }
     if ( !unassigned.isEmpty())
     {
       System.err.println( "Removing undefined functions from usedFunctions" );

@@ -250,4 +250,45 @@ public class ManualProtocol
   {
     id = newID;
   }
+  
+  public Hex importUpgradeCode( String notes )
+  {
+    Hex importedCode = super.importUpgradeCode( notes );
+    if ( importedCode == null )
+      return null;
+    
+    int importedCmdLength = getCmdLengthFromCode();
+    // There's more bytes than we thought, so need to add another cmd parameter, translator, and importer
+    if ( importedCmdLength > defaultCmd.length())
+    {
+      short[] newCmd = new short[ importedCmdLength ];
+      defaultCmd = new Hex( newCmd );
+      int newParmIndex = importedCmdLength - 1;
+      
+      CmdParameter[] newParms = new CmdParameter[ cmdParms.length + 1  ];
+      Translate[] newTranslators = new Translate[ cmdTranslators.length + 1 ];
+      Translate[] newImporters = new Translate[ importCmdTranslators.length + 1 ];
+      
+      System.arraycopy( cmdParms, 0, newParms, 0, cmdParms.length );
+      System.arraycopy( cmdTranslators, 0, newTranslators, 0, cmdTranslators.length );
+      System.arraycopy( importCmdTranslators, 0, newImporters, 0, importCmdTranslators.length );
+      
+      cmdParms = newParms;
+      cmdTranslators = newTranslators;
+      importCmdTranslators = newImporters;
+      
+      int newIndex = 2;
+      if ( cmdIndex == 1 )
+      {
+        (( Translator )cmdTranslators[ 0 ] ).setBitOffset( 16 );
+        newIndex = 1;
+      }
+
+      cmdParms[ newParmIndex ] = new NumberCmdParm( "Byte 3", new DirectDefaultValue( new Integer( 0 )), 8, 16 );
+      cmdTranslators[ newParmIndex ] = new Translator( false, false, 2, 8, newIndex * 8 );
+      importCmdTranslators[ newParmIndex - 1 ] = new Translator( false, false, 1, 8, newIndex * 8 );
+    }
+    
+    return importedCode;
+  }
 }

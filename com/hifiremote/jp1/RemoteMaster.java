@@ -25,7 +25,7 @@ public class RemoteMaster
   /**
    *  Description of the Field
    */
-  public final static String version = "v1.72";
+  public final static String version = "v1.73";
   private File dir = null;
   /**
    *  Description of the Field

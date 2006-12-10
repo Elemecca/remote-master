@@ -167,10 +167,13 @@ public class Translator
   public void setComp( boolean comp ){ this.comp = comp; }
   public void setStyleIndex( int index ){ styleIndex = index; }
   public int getIndex(){ return index; }
+  public void setIndex( int newIndex ){ index = newIndex; }
   public int getBits(){ return bits; }
   public void setBits( int bits ){ this.bits = bits; }
+  public int getBitsIndex(){ return bitsIndex; }
   public void setBitsIndex( int index ){ bitsIndex = index; }
   public int getBitOffset(){ return bitOffset; }
+  public void setBitOffset( int newOffset ){ bitOffset = newOffset; }
   protected boolean lsb = false;
   protected boolean comp = false;
   protected int styleIndex = -1;

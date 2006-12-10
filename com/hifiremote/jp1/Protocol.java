@@ -196,6 +196,18 @@ public class Protocol
       }
     }
   }
+  
+  public int getCmdLengthFromCode()
+  {
+    Set keys = code.keySet();
+    Iterator it = keys.iterator();
+    String key = ( String )it.next();
+    Hex pCode = ( Hex )code.get( key );
+    int value = pCode.getData()[ 2 ];
+    if ( key.equals( "HCS08" ))
+      value = pCode.getData()[ 4 ];
+    return value & 0x0F;
+  }
 
   public void reset()
   {
@@ -208,8 +220,9 @@ public class Protocol
 
   public void setProperties( Properties props ){}
 
-  public void importUpgradeCode( String notes )
+  public Hex importUpgradeCode( String notes )
   {
+    Hex importedCode = null;
     StringTokenizer st = new StringTokenizer( notes, "\n" );
     String text = null;
     String processor = null;
@@ -239,9 +252,11 @@ public class Protocol
           text = text + ' ' + temp;
         }
         Processor p = ProcessorManager.getProcessor( processor );
-        code.put( p.getFullName(), new Hex( text ));
+        importedCode = new Hex( text );
+        code.put( p.getFullName(), importedCode );
       }
     }
+    return importedCode;
   }
 
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
