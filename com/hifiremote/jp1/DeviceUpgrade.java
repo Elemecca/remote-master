@@ -134,6 +134,21 @@ public class DeviceUpgrade
   {
     return setupCode;
   }
+  
+  public boolean hasDefinedFunctions()
+  {
+    for ( Function func : functions )
+    {
+      if ( func.getHex() != null )
+        return true;
+    }
+    for ( Function func : extFunctions )
+    {
+      if ( func.getHex() != null )
+        return true;
+    }
+    return false;
+  }
 
   public void setRemote( Remote newRemote )
   {
@@ -147,12 +162,12 @@ public class DeviceUpgrade
       System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName() +
                           " is not built into remote " + newRemote.getName());
       Protocol newp = pm.findProtocolForRemote( newRemote, p.getName() );
-      System.err.println( "Testing if protocol " + newp.getDiagnosticName() + " can be used." );
 
       if ( newp != null )
       {
         if ( newp != p )
         {
+          System.err.println( "Testing if protocol " + newp.getDiagnosticName() + " can be used." );
           System.err.println( "\tChecking for matching dev. parms" );
           DeviceParameter[] parms = p.getDeviceParameters();
           DeviceParameter[] parms2 = newp.getDeviceParameters();
@@ -223,13 +238,21 @@ public class DeviceUpgrade
           }
         }
       }
+      else if (( description == null ) && ( file == null ) && ( assignments.isEmpty()) && !hasDefinedFunctions())
+      {
+        remote = newRemote;
+        protocol = null;
+        reset();
+      }
       else
+      {
         JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                        "The selected protocol " + p.getDiagnosticName() +
                                        "\nis not compatible with the selected remote.\n" +
                                        "This upgrade will NOT function correctly.\n" +
                                        "Please choose a different protocol.",
                                        "Error", JOptionPane.ERROR_MESSAGE );
+      }
 
     }
     if (( remote != null ) && ( remote != newRemote ))

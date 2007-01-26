@@ -51,5 +51,15 @@ public class ButtonAssignments
     return assignedFunctions[ b.getKeyCode( state )];
   }
   
+  public boolean isEmpty()
+  {
+    for ( int i = 0; i < assignedFunctions.length; ++i )
+    {
+      if ( assignedFunctions[ i ] != null )
+        return false;
+    }
+    return true;
+  }
+  
   private Function[] assignedFunctions = new Function[ 256 ];
 }

@@ -237,14 +237,14 @@ public class ToadTogFunction
    */
   public static String[] onStrings =
     {
-    "On/Off", "On/Off", "On", "Already On"
+    "On->Off", "On->Off", "On", "Already On"
     };
   /**
    *  Description of the Field
    */
   public static String[] offStrings =
     {
-    "Off/On", "Already Off", "Off", "On/Off"
+    "Off->On", "Already Off", "Off", "On->Off"
     };
 }
 

@@ -1,3 +1,6 @@
+Changes for v1.74
+- Fix NullPointerException when changing remote to a remote that doesn't support any variant of the current protocol.
+
 Changes for v1.73
 - Fix importing KM upgrades that use Manual Settings with 2 bytes in the "byte2" column
 - Add home directory to About screen
