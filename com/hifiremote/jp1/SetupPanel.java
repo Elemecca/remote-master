@@ -200,15 +200,23 @@ public class SetupPanel
       if ( newProtocol != oldProtocol )
       {
         protocolID.setText( newProtocol.getID( deviceUpgrade.getRemote()).toString());
-        deviceUpgrade.setProtocol( newProtocol );
-        updateParameters();
-        fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues()).toString());
-        revalidate();
-        protocolNotes.setText( newProtocol.getNotes());
-        protocolNotes.setCaretPosition( 0 );
-        protocolNotes.revalidate();
+        if ( deviceUpgrade.setProtocol( newProtocol ))
+        {
+          updateParameters();
+          fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues()).toString());
+          revalidate();
+          protocolNotes.setText( newProtocol.getNotes());
+          protocolNotes.setCaretPosition( 0 );
+          protocolNotes.revalidate();
 
-        deviceUpgrade.checkSize();
+          deviceUpgrade.checkSize();
+        }
+        else
+        {
+          protocolList.removeActionListener( this );
+          protocolList.setSelectedItem( oldProtocol );
+          protocolList.addActionListener( this );
+        }
       }
     }
     else // must be a protocol parameter
@@ -236,7 +244,7 @@ public class SetupPanel
     int val = (( Integer )setupCode.getValue()).intValue();
     int oldSetupCode = deviceUpgrade.getSetupCode();
     deviceUpgrade.setSetupCode( val );
-    propertyChangeSupport.firePropertyChange( "setupCode", oldSetupCode, val ); 
+    propertyChangeSupport.firePropertyChange( "setupCode", oldSetupCode, val );
   }
 
   private void docChanged( DocumentEvent e )
@@ -299,7 +307,7 @@ public class SetupPanel
   {
     controlToSelectAll.selectAll();
   }
-  
+
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
     if (( propertyChangeSupport != null ) && ( listener != null ))

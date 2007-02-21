@@ -14,13 +14,13 @@ public class DeviceUpgrade
   {
     this(( String[] )null );
   }
-  
+
   public DeviceUpgrade( String[] defaultNames )
   {
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
     initFunctions( defaultNames );
   }
-  
+
   public DeviceUpgrade( DeviceUpgrade base )
   {
     description = base.description;
@@ -30,11 +30,11 @@ public class DeviceUpgrade
     notes = base.notes;
     protocol = base.protocol;
     defaultNames = base.defaultNames;
-    
+
     // copy the device parameter values
     protocol.setDeviceParms( base.parmValues );
     parmValues = protocol.getDeviceParmValues();
-    
+
     // Copy the functions and their assignments
     for ( Function f : base.functions )
     {
@@ -43,7 +43,7 @@ public class DeviceUpgrade
       for ( Function.User user : f.getUsers())
         assignments.assign( user.button, f2, user.state );
     }
-    
+
     // Copy the external functions and their assignments
     for ( ExternalFunction f : base.extFunctions )
     {
@@ -52,7 +52,7 @@ public class DeviceUpgrade
       for ( Function.User user : f.getUsers())
         assignments.assign( user.button, f2, user.state );
     }
-    
+
     if ( base.customCode != null )
       customCode = new Hex( base.customCode );
   }
@@ -134,7 +134,7 @@ public class DeviceUpgrade
   {
     return setupCode;
   }
-  
+
   public boolean hasDefinedFunctions()
   {
     for ( Function func : functions )
@@ -272,11 +272,11 @@ public class DeviceUpgrade
           if ( f != null )
           {
             assignments.assign( b, null, state );
-  
+
             Button newB = newRemote.findByStandardName( b );
             java.util.List< String > temp = null;
             if ( f != null )
-            {  
+            {
               if (( newB != null ) && newB.allowsKeyMove( state ))
                 newAssignments.assign( newB, f, state );
               else
@@ -360,14 +360,14 @@ public class DeviceUpgrade
     return remote.getDeviceTypeByAliasName( devTypeAliasName );
   }
 
-  public void setProtocol( Protocol newProtocol )
+  public boolean setProtocol( Protocol newProtocol )
   {
     Protocol oldProtocol = protocol;
     // Convert device parameters to the new protocol
     if ( protocol != null )
     {
       if ( protocol == newProtocol )
-        return;
+        return false;
 
       newProtocol.reset();
 
@@ -376,7 +376,7 @@ public class DeviceUpgrade
 
       DeviceParameter[] parms = protocol.getDeviceParameters();
       DeviceParameter[] parms2 = newProtocol.getDeviceParameters();
-  
+
       int[] map = new int[ parms.length ];
       for ( int i = 0; i < map.length; i++ )
         map[ i ] = -1;
@@ -397,7 +397,7 @@ public class DeviceUpgrade
         if ( nameMatch )
           parmsMatch = true;
       }
-  
+
       if ( parmsMatch )
       {
         // copy parameters from p to p2!
@@ -412,14 +412,19 @@ public class DeviceUpgrade
           }
         }
       }
-  
-      // convert the functions to the new protocol 
-      protocol.convertFunctions( functions, newProtocol );
+
+      // convert the functions to the new protocol
+      if ( !protocol.convertFunctions( functions, newProtocol ))
+      {
+        propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, oldProtocol );
+        return false;
+      }
     }
     protocol = newProtocol;
     customCode = null;
     parmValues = protocol.getDeviceParmValues();
     propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, protocol );
+    return true;
   }
 
   public Protocol getProtocol()
@@ -461,7 +466,7 @@ public class DeviceUpgrade
     }
     return null;
   }
-  
+
   public Function getFunction( Hex hex )
   {
     for ( Function f : functions )
@@ -496,7 +501,7 @@ public class DeviceUpgrade
     short[] digitMaps = remote.getDigitMaps();
     if ( digitMaps == null )
       return -1;
-    
+
     int cmdLength = protocol.getDefaultCmd().length();
     short[] digitKeyCodes = new short[ 10 * cmdLength ];
     Button[] buttons = remote.getUpgradeButtons();
@@ -589,7 +594,7 @@ public class DeviceUpgrade
         }
       }
     }
-    
+
     ManualProtocol mp = null;
 
     if ( tentative != null )
@@ -605,7 +610,7 @@ public class DeviceUpgrade
         customCode = pCode;
       }
     }
-    else 
+    else
     {
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
@@ -617,7 +622,7 @@ public class DeviceUpgrade
       customCode = pCode;
       p = mp;
     }
-    
+
     if ( digitMapIndex != -1 )
     {
       int mapNum = remote.getDigitMaps()[ digitMapIndex ];
@@ -683,14 +688,14 @@ public class DeviceUpgrade
       KeyMove keyMove = button.getKeyMove( f, 0, setupCode, devType, remote, protocol.getKeyMovesOnly());
       if (  keyMove != null )
         keyMoves.add( keyMove );
-                             
+
       f = assignments.getAssignment( button, Button.SHIFTED_STATE );
       if ( button.getShiftedButton() != null )
         f = null;
       keyMove = button.getKeyMove( f, remote.getShiftMask(), setupCode, devType, remote, protocol.getKeyMovesOnly());
       if (  keyMove != null )
         keyMoves.add( keyMove );
-                            
+
       f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
       if ( button.getXShiftedButton() != null )
         f = null;
@@ -786,7 +791,7 @@ public class DeviceUpgrade
   }
 
   public int getUpgradeLength()
-  { 
+  {
     int rc = 0;
 
     // add the 2nd byte of the PID
@@ -825,7 +830,7 @@ public class DeviceUpgrade
     // add the 2nd byte of the PID
     short[] data = new short[ 1 ];
     data[ 0 ] = protocol.getID( remote ).getData()[ 1 ];
-    work.add( data );    
+    work.add( data );
 
     short digitMapIndex = -1;
 
@@ -898,7 +903,7 @@ public class DeviceUpgrade
     }
     return false;
   }
-  
+
   public void store()
     throws IOException
   {
@@ -947,7 +952,7 @@ public class DeviceUpgrade
     store( pw );
     pw.close();
   }
-  
+
   public void store( PropertyWriter out )
     throws IOException
   {
@@ -972,7 +977,7 @@ public class DeviceUpgrade
     i = 0;
     for ( ExternalFunction func : extFunctions )
       func.store( out, "ExtFunction." + i++ );
- 
+
     Button[] buttons = remote.getUpgradeButtons();
     String regex = "\\|";
     String replace = "\\\\u007c";
@@ -1052,10 +1057,10 @@ public class DeviceUpgrade
       props.put( property.name, property.value );
     }
     reader.close();
-    
+
     load( props, loadButtons );
   }
-  
+
   public void load( Properties props )
   {
     load( props, true );
@@ -1503,12 +1508,12 @@ public class DeviceUpgrade
     DeviceCombiner combiner = null;
     if ( protocol.getClass() == DeviceCombiner.class )
       combiner = ( DeviceCombiner )protocol;
-    
+
     // save the function definition/assignment lines for later parsing
     String[] lines = new String[ 128 ];
     for ( int i = 0; i < 128; ++i )
       lines[ i ] = in.readLine();
-    
+
     // read in the notes, which may have the protocol code
     while (( line = in.readLine()) != null )
     {
@@ -1559,7 +1564,7 @@ public class DeviceUpgrade
         }
       }
     }
-    
+
     // Parse the function definition/assignment lines
     java.util.List< java.util.List< String >> unassigned = new ArrayList< java.util.List< String >>();
     java.util.List< Function > usedFunctions = new ArrayList< Function >();
@@ -1599,10 +1604,10 @@ public class DeviceUpgrade
           String match = null;
           String[] names = remote.getDeviceTypeAliasNames();
           for ( int j = 0;( j < names.length ) && ( match == null ); j++ )
-          { 
+          {
             if ( devName.equalsIgnoreCase( names[ j ]))
               match = names[ j ];
-              
+
           }
           if ( match == null )
           {
@@ -1651,7 +1656,7 @@ public class DeviceUpgrade
             hex = protocol.getDefaultCmd();
             protocol.importCommand( hex, token, useOBC, obcIndex, useEFC );
           }
-          
+
           token = getNextField( st, delim ); // get byte2 (field 3)
           if ( token != null )
             protocol.importCommandParms( hex, token );
@@ -1789,7 +1794,7 @@ public class DeviceUpgrade
       for ( int j = 8; j < 13; j++ )
         token = getNextField( st, delim );
 
-      if (( token != null ) && !token.equals( "" )) 
+      if (( token != null ) && !token.equals( "" ))
       {
         String name = token.substring( 5 );
         if (( name.length() == 5 ) && name.startsWith( "num " ) &&
@@ -1947,10 +1952,10 @@ public class DeviceUpgrade
 
     if (( protocolLimit != null ) && ( protocolLength > protocolLimit.intValue()))
     {
-      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), 
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                      "The protocol upgrade exceeds the maximum allowed by the remote.",
                                      "Protocol Upgrade Limit Exceeded",
-                                     JOptionPane.ERROR_MESSAGE );      
+                                     JOptionPane.ERROR_MESSAGE );
       return false;
     }
 
@@ -1960,21 +1965,21 @@ public class DeviceUpgrade
       JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                      "The device upgrade exceeds the maximum allowed by the remote.",
                                      "Device Upgrade Limit Exceeded",
-                                     JOptionPane.ERROR_MESSAGE );      
+                                     JOptionPane.ERROR_MESSAGE );
       return false;
     }
 
     int combinedLength = upgradeLength + protocolLength;
     if (( combinedLimit != null ) && ( combinedLength > combinedLimit.intValue()))
     {
-      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), 
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
                                      "The combined upgrade exceeds the maximum allowed by the remote.",
                                      "Combined Upgrade Limit Exceeded",
-                                     JOptionPane.ERROR_MESSAGE );      
+                                     JOptionPane.ERROR_MESSAGE );
       return false;
     }
 
-    return true;      
+    return true;
   }
 
   public Hex getCode()

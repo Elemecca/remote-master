@@ -87,7 +87,7 @@ public class Protocol
     notes = props.getProperty( "Notes" );
 
     for ( Enumeration e = ProcessorManager.getProcessorNames(); e.hasMoreElements(); )
-    {  
+    {
       String pName = ( String ) e.nextElement();
 
       temp = props.getProperty( "Code." + pName );
@@ -128,7 +128,7 @@ public class Protocol
 
     temp = props.getProperty( "KeyMovesOnly" );
     keyMovesOnly = ( temp != null );
-    
+
     // Figure out protocols that only have protocol code
     if (( cmdParms.length == 0 ) && ( code.size() > 0 ))
     {
@@ -191,12 +191,12 @@ public class Protocol
         cmdParms[ i ] = new NumberCmdParm( "Byte " + i, null );
         Translator translator = new Translator( false, false, i, 8, i * 8 );
         cmdTranslators[ i ] = translator;
-        translator.setStyleIndex( styleIndex );                  
-        translator.setBitsIndex( cmdBitsIndex );                  
+        translator.setStyleIndex( styleIndex );
+        translator.setBitsIndex( cmdBitsIndex );
       }
     }
   }
-  
+
   public int getCmdLengthFromCode()
   {
     Set keys = code.keySet();
@@ -406,7 +406,7 @@ public class Protocol
 
   public int getCmdIndex()
   {
-    return cmdIndex; 
+    return cmdIndex;
   }
 
   public void setCmdIndex(  int index )
@@ -498,7 +498,7 @@ public class Protocol
   {
     if ( useEFC )
       EFC.toHex( Short.parseShort( text ), hex, cmdIndex );
-    else // if ( useOBC ) 
+    else // if ( useOBC )
       setValueAt( obcIndex, hex, new Short( text ));
   }
 
@@ -598,7 +598,7 @@ public class Protocol
   public int getFixedDataLength(){ return fixedData.length(); }
 
   // convert the functions defined in this protocol to the new Protocol
-  public void convertFunctions( java.util.List< Function > funcs, Protocol newProtocol )
+  public boolean convertFunctions( java.util.List< Function > funcs, Protocol newProtocol )
   {
     CmdParameter[] newParms = newProtocol.cmdParms;
 
@@ -634,6 +634,8 @@ public class Protocol
 
     // now convert each defined function
     java.util.List< java.util.List< String >> failedToConvert = new ArrayList< java.util.List< String >>();
+    Hex[] convertedHex = new Hex[ funcs.size()];
+    int index = 0;
     for ( Function f : funcs )
     {
       Hex hex = f.getHex();
@@ -651,7 +653,7 @@ public class Protocol
         }
 
         // generate the appropriate hex for the new protocol
-        try 
+        try
         {
           for ( int i = 0; i < newProtocol.cmdTranslators.length; i++ )
             newProtocol.cmdTranslators[ i ].in( newValues, newHex, newProtocol.devParms, -1 );
@@ -663,8 +665,7 @@ public class Protocol
           temp.add( ex.getMessage());
           failedToConvert.add( temp );
         }
-        // store the hex back into the function
-        f.setHex( newHex );
+        convertedHex[ index++ ] = newHex;
       }
     }
     if ( !failedToConvert.isEmpty())
@@ -673,35 +674,59 @@ public class Protocol
                        " protocol.<p>If you need help figuring out what to do about this, please post<br>" +
                        "a question in the JP1 Forums at http://www.hifi-remote.com/forums</html>";
 
-      JFrame frame = new JFrame( "Change Protocol Error" );
-      Container container = frame.getContentPane();
+      JPanel panel = new JPanel( new BorderLayout());
 
       JLabel text = new JLabel( message );
       text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
-      container.add( text, BorderLayout.NORTH );
-      
+      panel.add( text, BorderLayout.NORTH );
+
       java.util.List< String > titles = new ArrayList< String >();
       titles.add( "Function" );
       titles.add( "Reason" );
-      Object[][] failedToConvertArray = new Object[ failedToConvert.size()][];
+      String[][] failedToConvertArray = new String[ failedToConvert.size()][];
       int i = 0;
       for ( java.util.List< String > l : failedToConvert )
-        failedToConvertArray[ i++ ] = l.toArray();
+        failedToConvertArray[ i++ ] = l.toArray( new String[ 2 ]);
       JTableX table = new JTableX( failedToConvertArray, titles.toArray());
       Dimension d = table.getPreferredScrollableViewportSize();
-      int showRows = 14;
-      if ( failedToConvert.size() < showRows )
-        showRows = failedToConvert.size();
-      System.err.println( "Height was " + d.height );
-      d.height = ( table.getRowHeight() + table.getRowMargin()) * showRows;
-      System.err.println( "Height is " + d.height );
+      int showRows = Math.min( 14, failedToConvert.size());
+//      d.height = ( table.getRowHeight() + table.getIntercellSpacing().height ) * showRows;
+      d.height = table.getRowHeight() * showRows;
+      int nameWidth = 0;
+      int warningWidth = 0;
+      TableColumnModel cm = table.getColumnModel();
+      JTableHeader th = table.getTableHeader();
+      DefaultTableCellRenderer cr = ( DefaultTableCellRenderer )th.getDefaultRenderer();
+      for ( int j = 0; j < failedToConvertArray.length; ++j )
+      {
+        String[] vals = failedToConvertArray[ j ];
+        cr.setText( vals[ 0 ]);
+        nameWidth = Math.max( nameWidth, cr.getPreferredSize().width );
+        cr.setText( vals[ 1 ]);
+        warningWidth = Math.max( warningWidth, cr.getPreferredSize().width );
+      }
+      cm.getColumn( 0 ).setPreferredWidth( nameWidth );
+      cm.getColumn( 1 ).setPreferredWidth( warningWidth );
+      d.width = nameWidth + table.getIntercellSpacing().width + warningWidth + 10;
       table.setPreferredScrollableViewportSize( d );
+      panel.add( new JScrollPane( table ), BorderLayout.CENTER );
 
-      container.add( new JScrollPane( table ), BorderLayout.CENTER );
-      frame.pack();
-      frame.setLocationRelativeTo( RemoteMaster.getFrame());
-      frame.setVisible( true );
+      String[] buttonText =
+      {
+        "Use " + newProtocol + " anyway",
+        "Revert to " + this
+      };
+      int rc = JOptionPane.showOptionDialog( null, panel, "Change Protocol Error",
+                                             JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+                                             null, buttonText, buttonText[ 0 ]);
+      if ( rc == JOptionPane.NO_OPTION )
+        return false;
     }
+    // copy the converted hex values into the functions
+    index = 0;
+    for ( Function f : funcs )
+      f.setHex( convertedHex[ index++ ]);
+    return true;
   }
 
   public void updateFunctions( java.util.List< Function > funcs )
