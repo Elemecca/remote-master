@@ -18,7 +18,7 @@ public class ExternalFunctionRenderer
     if ( value != null )
     {
       ExternalFunction f = ( ExternalFunction )value;
-      rc = f.toString();
+      rc = f.getValue();
     }
 
     super.setValue( rc );

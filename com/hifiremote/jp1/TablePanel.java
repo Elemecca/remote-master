@@ -342,7 +342,7 @@ public abstract class TablePanel< E >
     pasteButton.setEnabled( false );
     buttonPanel.add( pasteButton );
   }
-  
+
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
   {
     super.setDeviceUpgrade( deviceUpgrade );
@@ -401,7 +401,7 @@ public abstract class TablePanel< E >
       if ( row == -1 )
       {
         model.addRow( o );
-        row = model.getRowCount();
+        row = 0;
       }
       else
       {

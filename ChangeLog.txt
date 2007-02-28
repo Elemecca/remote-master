@@ -1,3 +1,6 @@
+Changes for v1.76
+- Fix External Function tab where the EFC/Hex column was displaying the function name rather than the EFC/Hex for the function.
+
 Changes for v1.75
 - Allow user to revert to previous protocol when there are errors converting functions to the newly selected protocol, preserving the function details.
 

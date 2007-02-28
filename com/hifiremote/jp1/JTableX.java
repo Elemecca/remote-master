@@ -83,9 +83,9 @@ public class JTableX extends JTable
 
   private boolean isTruncated( int row, int col )
   {
-                Object o = getValueAt( row, col );
-                if( o == null )
-                        return false;
+    Object o = getValueAt( row, col );
+    if ( o == null )
+      return false;
     Rectangle rect = getCellRect( row, col, true );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
     r.getTableCellRendererComponent( this, o, false, false, row, col );
@@ -110,19 +110,19 @@ public class JTableX extends JTable
     return null;
   }
 
-        public Point getToolTipLocation( MouseEvent event )
-        {
-                int row = rowAtPoint( event.getPoint() );
-                int col = columnAtPoint( event.getPoint() );
+  public Point getToolTipLocation( MouseEvent event )
+  {
+    int row = rowAtPoint( event.getPoint() );
+    int col = columnAtPoint( event.getPoint() );
     col = convertColumnIndexToModel( col );
     if ( isTruncated( row, col ))
     {
-                  Point rc = getCellRect( row, col, true ).getLocation();
+      Point rc = getCellRect( row, col, true ).getLocation();
       rc.translate( -1, -1 );
       return rc;
     }
-                return null;
-        }
+    return null;
+  }
 
   public Component prepareRenderer( TableCellRenderer r, int row, int col )
   {
