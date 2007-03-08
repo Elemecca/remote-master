@@ -1,3 +1,7 @@
+Changes for v1.77
+- Improve notes for Pioneer combo protocols
+- Improve handling of missing Images folder
+
 Changes for v1.76
 - Fix External Function tab where the EFC/Hex column was displaying the function name rather than the EFC/Hex for the function.
 
