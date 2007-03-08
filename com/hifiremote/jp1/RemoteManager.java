@@ -8,16 +8,15 @@ public class RemoteManager
 {
   protected RemoteManager(){}
 
-  public File loadRemotes( File loadPath )
+  public void loadRemotes( PropertyFile properties )
     throws Exception
   {
-    if ( this.loadPath != null )
-      return this.loadPath;
+    if ( loadPath != null )
+      return;
 
+    loadPath = properties.getFileProperty( "RDFPath" );
     while ( !loadPath.exists() && !loadPath.isDirectory())
-    {
       loadPath = loadPath.getParentFile();
-    }
 
     File[] files = new File[ 0 ];
     File dir = loadPath;
@@ -48,6 +47,8 @@ public class RemoteManager
       loadPath = dir;
     }
 
+    properties.setProperty( "RDFPath", loadPath );
+
     List< Remote > work = new ArrayList< Remote >();
     for ( int i = 0; i < files.length; i++ )
     {
@@ -60,9 +61,6 @@ public class RemoteManager
     }
     remotes = work.toArray( remotes );
     Arrays.sort( remotes );
-
-    this.loadPath = loadPath;
-    return loadPath;
   }
 
   public Remote[] getRemotes(){ return remotes; }

@@ -25,7 +25,7 @@ public class RemoteMaster
   /**
    *  Description of the Field
    */
-  public final static String version = "v1.76";
+  public final static String version = "v1.77";
   private File dir = null;
   /**
    *  Description of the Field
@@ -33,7 +33,6 @@ public class RemoteMaster
   public File file = null;
   private RemoteConfiguration remoteConfig = null;
   private RMFileChooser chooser = null;
-  private PropertyFile preferences = null;
 
   // File menu items
   private JMenuItem newItem = null;
@@ -77,10 +76,9 @@ public class RemoteMaster
   public RemoteMaster( File workDir, PropertyFile prefs )
     throws Exception
   {
-    super( "Java IR" );
-    preferences = prefs;
+    super( "Java IR", prefs );
 
-    dir = preferences.getFileProperty( "IRPath", workDir );
+    dir = properties.getFileProperty( "IRPath", workDir );
     createMenus();
 
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
@@ -96,15 +94,15 @@ public class RemoteMaster
             for ( int i = 0; i < recentFiles.getItemCount(); ++i )
             {
               JMenuItem item = recentFiles.getItem( i );
-              preferences.setProperty( "RecentIRs." + i, item.getActionCommand() );
+              properties.setProperty( "RecentIRs." + i, item.getActionCommand() );
             }
             int state = getExtendedState();
             if ( state != Frame.NORMAL )
               setExtendedState( Frame.NORMAL );
             Rectangle bounds = getBounds();
-            preferences.setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
+            properties.setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
 
-            preferences.save();
+            properties.save();
           }
           catch ( Exception exc )
           {
@@ -188,7 +186,7 @@ public class RemoteMaster
     learnedProgressBar.setString( "N/A" );
     statusBar.add( learnedProgressBar );
 
-    String temp = preferences.getProperty( "RMBounds" );
+    String temp = properties.getProperty( "RMBounds" );
     if ( temp != null )
     {
       Rectangle bounds = new Rectangle();
@@ -212,16 +210,6 @@ public class RemoteMaster
   public static JFrame getFrame()
   {
     return frame;
-  }
-
-  /**
-   *  Gets the preferences attribute of the RemoteMaster object
-   *
-   *@return    The preferences value
-   */
-  public PropertyFile getPreferences()
-  {
-    return preferences;
   }
 
   /**
@@ -273,10 +261,10 @@ public class RemoteMaster
     for ( int i = 0; i < 10; i++ )
     {
       String propName = "RecentIRs." + i;
-      String temp = preferences.getProperty( propName );
+      String temp = properties.getProperty( propName );
       if ( temp == null )
         break;
-      preferences.remove( propName );
+      properties.remove( propName );
       File f = new File( temp );
       if ( f.canRead() )
       {
@@ -398,7 +386,7 @@ public class RemoteMaster
 
     if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ) )
     {
-      KeyMapMaster km = new KeyMapMaster( preferences );
+      KeyMapMaster km = new KeyMapMaster( properties );
       km.loadUpgrade( file );
       return null;
     }
@@ -456,7 +444,7 @@ public class RemoteMaster
       recentFiles.remove( 10 );
     recentFiles.setEnabled( true );
     dir = file.getParentFile();
-    preferences.setProperty( "IRPath", dir );
+    properties.setProperty( "IRPath", dir );
   }
 
   /**
@@ -582,7 +570,7 @@ public class RemoteMaster
       {
         String text = "<html><b>Java IR, " + version + "</b>" +
           "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
-          "<p>RDFs loaded from <b>" + preferences.getProperty( "RDFPath" ) + "</b></p>";
+          "<p>RDFs loaded from <b>" + properties.getProperty( "RDFPath" ) + "</b></p>";
         try
         {
           String v = LearnedSignal.getDecodeIR().getVersion();
@@ -846,8 +834,7 @@ public class RemoteMaster
       }
 
       File rdfDir = properties.getFileProperty( "RDFPath", new File( workDir, "rdf" ) );
-      rdfDir = RemoteManager.getRemoteManager().loadRemotes( rdfDir );
-      properties.setProperty( "RDFPath", rdfDir );
+      RemoteManager.getRemoteManager().loadRemotes( properties );
 
       ProtocolManager.getProtocolManager().load( new File( workDir, "protocols.ini" ) );
 

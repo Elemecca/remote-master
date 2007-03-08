@@ -232,7 +232,7 @@ public class Remote
           for ( int i = 0; i < a.length; ++i )
             a[ i ].parse( this );
         }
-      }  
+      }
 
       setPhantomShapes();
 
@@ -349,7 +349,7 @@ public class Remote
     }
     return null;
   }
-  
+
   public String getDeviceTypeAlias( DeviceType type )
   {
     String tentative = null;
@@ -362,7 +362,7 @@ public class Remote
         return alias;
       if (( typeName.contains( alias ) || alias.contains( typeName )) && ( tentative == null ))
         tentative = alias;
-    }  
+    }
     if ( tentative != null )
       return tentative;
     for ( String alias : deviceTypeAliasNames )
@@ -579,7 +579,25 @@ public class Remote
         omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
       else if ( parm.equals( "ImageMap" ))
       {
-        File imageDir = new File( KeyMapMaster.getHomeDirectory(), "Images" );
+        PropertyFile properties = JP1Frame.getProperties();
+        File imageDir = properties.getFileProperty( "ImagePath" );
+        if ( imageDir == null )
+          imageDir = new File( properties.getFile().getParentFile(), "Images" );
+
+        if ( !imageDir.exists())
+        {
+          JOptionPane.showMessageDialog( null, "Images folder not found!",
+                                         "Error", JOptionPane.ERROR_MESSAGE );
+          RMFileChooser chooser = new RMFileChooser( imageDir.getParentFile());
+          chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
+          chooser.setDialogTitle( "Choose the directory containing the remote images and maps" );
+          if ( chooser.showOpenDialog( null ) != RMFileChooser.APPROVE_OPTION )
+            System.exit( -1 );
+
+          imageDir = chooser.getSelectedFile();
+          properties.setProperty( "ImagePath", imageDir );
+        }
+
         String mapList = st.nextToken();
         StringTokenizer mapTokenizer = new StringTokenizer( mapList, "," );
         int mapCount = mapTokenizer.countTokens();
@@ -780,7 +798,7 @@ public class Remote
     checkSums = ( CheckSum[] )work.toArray( checkSums );
     return line;
   }
-  
+
   private String parseCheckSums( RDFReader rdr )
     throws Exception
   {
@@ -809,7 +827,7 @@ public class Remote
     checkSums = ( CheckSum[] )work.toArray( checkSums );
     return line;
   }
-  
+
   public CheckSum[] getCheckSums(){ return checkSums; }
 
   private String parseSettings( RDFReader rdr )
@@ -1260,7 +1278,7 @@ public class Remote
       if ( b != null )
         return b.getXShiftedName();
     }
-    
+
     return b.getName();
   }
 

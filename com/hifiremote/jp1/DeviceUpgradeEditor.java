@@ -17,13 +17,13 @@ public class DeviceUpgradeEditor
     super( owner, "Device Upgrade Editor", true );
     createGUI( owner, deviceUpgrade, remotes );
   }
-  
+
   public DeviceUpgradeEditor( JDialog owner, DeviceUpgrade deviceUpgrade, Remote[] remotes )
   {
     super( owner, "Device Upgrade Editor", true );
     createGUI( owner, deviceUpgrade, remotes );
   }
-  
+
   private void createGUI( Window owner, DeviceUpgrade deviceUpgrade, Remote[] remotes )
   {
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
@@ -36,11 +36,11 @@ public class DeviceUpgradeEditor
     });
     editorPanel = new DeviceEditorPanel( deviceUpgrade, remotes );
     add( editorPanel, BorderLayout.CENTER );
-    
+
     Box buttonBox = Box.createHorizontalBox();
     buttonBox.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
     add( buttonBox, BorderLayout.SOUTH );
-    
+
     buttonBox.add( loadButton );
     buttonBox.add( Box.createHorizontalStrut( 5 ));
     buttonBox.add( importButton );
@@ -50,13 +50,13 @@ public class DeviceUpgradeEditor
     buttonBox.add( okButton );
     buttonBox.add( Box.createHorizontalStrut( 5 ));
     buttonBox.add( cancelButton );
-    
+
     loadButton.setToolTipText( "Load a device upgrade from a file." );
     importButton.setToolTipText( "Load a device upgrade from the clipboard." );
     saveAsButton.setToolTipText( "Save the device upgrade to a file." );
     okButton.setToolTipText( "Commit any changes and dismiss the dialog." );
     cancelButton.setToolTipText( "Dismiss the dialog without commiting changes." );
-    
+
     loadButton.addActionListener( this );
     importButton.addActionListener( this );
     saveAsButton.addActionListener( this );
@@ -66,18 +66,18 @@ public class DeviceUpgradeEditor
     setLocationRelativeTo( owner );
     setVisible( true );
   }
-  
+
   public DeviceUpgrade getDeviceUpgrade()
   {
     if ( cancelled )
       return null;
-      
+
     return editorPanel.getDeviceUpgrade();
   }
-  
+
   public void actionPerformed( ActionEvent e )
   {
-    try 
+    try
     {
       Object source = e.getSource();
       if ( source == cancelButton )
@@ -99,7 +99,7 @@ public class DeviceUpgradeEditor
       ex.printStackTrace( System.err );
     }
   }
-  
+
   public void load()
     throws Exception
   {
@@ -123,7 +123,7 @@ public class DeviceUpgradeEditor
     chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", endings ));
 
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
-    String dir = rm.getPreferences().getProperty( "UpgradePath" );
+    String dir = rm.getProperties().getProperty( "UpgradePath" );
     if ( dir != null )
       chooser.setCurrentDirectory( new File( dir ));
     while ( true )
@@ -131,7 +131,7 @@ public class DeviceUpgradeEditor
       if ( chooser.showOpenDialog( rm ) == RMFileChooser.APPROVE_OPTION )
       {
         file = chooser.getSelectedFile();
-  
+
         int rc = JOptionPane.YES_OPTION;
         if ( !file.exists())
         {
@@ -154,17 +154,17 @@ public class DeviceUpgradeEditor
         return;
     }
 
-    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " + 
+    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " +
                         DateFormat.getInstance().format( new Date( file.lastModified())));    DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
 
                         Remote remote = deviceUpgrade.getRemote();
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
-    rm.getPreferences().put( "UpgradePath", file.getParent());
+    rm.getProperties().put( "UpgradePath", file.getParent());
     deviceUpgrade.setRemote( remote );
     editorPanel.refresh();
   }
-  
+
   public void importFromClipboard()
   {
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -207,7 +207,7 @@ public class DeviceUpgradeEditor
       chooser.setSelectedFile( f );
     else
     {
-      String path = rm.getPreferences().getProperty( "UpgradePath" );
+      String path = rm.getProperties().getProperty( "UpgradePath" );
       if ( path != null )
         chooser.setCurrentDirectory( new File( path ));
     }

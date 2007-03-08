@@ -132,7 +132,7 @@ public class Preferences
   {
     file.setProperty( "UpgradePath", path );
   }
-
+  
   public File getBinaryUpgradePath()
   {
     File path = file.getFileProperty( "BinaryUpgradePath", getUpgradePath());

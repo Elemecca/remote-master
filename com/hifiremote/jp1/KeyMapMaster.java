@@ -14,7 +14,7 @@ import javax.swing.filechooser.*;
 import javax.swing.plaf.FontUIResource;
 
 public class KeyMapMaster
- extends JFrame
+ extends JP1Frame
  implements ActionListener, PropertyChangeListener
 {
   private static KeyMapMaster me = null;
@@ -50,7 +50,7 @@ public class KeyMapMaster
 
   public KeyMapMaster( PropertyFile prefs )
   {
-    super( "RemoteMaster" );
+    super( "RemoteMaster", prefs );
     me = this;
 
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
@@ -112,8 +112,6 @@ public class KeyMapMaster
       setBounds( bounds );
     setVisible( true );
   }
-
-//  public static KeyMapMaster getKeyMapMaster(){ return me;}
 
   private void createMenus()
   {
@@ -635,7 +633,7 @@ public class KeyMapMaster
         String text = "<html><b>RemoteMaster Device Upgrade Editor, " + RemoteMaster.version + "</b>" +
                       "<p>Get the latest version at <a href=\"http://controlremote.sourceforge.net\">http://controlremote.sourceforge.net</a></p>" +
                       "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
-                      "<p>Home directory is <b>" + homeDirectory + "</b></p>" + 
+                      "<p>Home directory is <b>" + homeDirectory + "</b></p>" +
                       "<p>RDFs loaded from <b>" + preferences.getRDFPath() + "</b></p>" +
                       "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
                       "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>" +
@@ -1024,7 +1022,7 @@ public class KeyMapMaster
     SwingUtilities.updateComponentTreeUI( this );
     pack();
   }
-  
+
   public void propertyChange( PropertyChangeEvent evt )
   {
     refresh();

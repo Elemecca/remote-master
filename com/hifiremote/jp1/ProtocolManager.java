@@ -20,7 +20,7 @@ public class ProtocolManager
   {
     if ( loaded )
       return;
-    
+
     while ( !f.canRead() )
     {
       JOptionPane.showMessageDialog( null, "Couldn't read " + f.getName() + "!",
@@ -34,7 +34,8 @@ public class ProtocolManager
       else
         f = chooser.getSelectedFile();
     }
-    BufferedReader rdr = new BufferedReader( new FileReader( f ));
+    LineNumberReader rdr = new LineNumberReader( new FileReader( f ));
+    rdr.setLineNumber( 1 );
     Properties props = null;
     String name = null;
     Hex id = null;
@@ -77,6 +78,7 @@ public class ProtocolManager
       }
       else
       {
+        System.out.println( "Parsing line #" + rdr.getLineNumber());
         StringTokenizer st = new StringTokenizer( line, "=", true );
         String parmName = st.nextToken().trim();
         String parmValue = null;
@@ -118,7 +120,7 @@ public class ProtocolManager
     names = new ArrayList< String >( temp.length );
     for ( int i = 0; i < temp.length; i++ )
       names.add( temp[ i ]);
-    
+
     loaded = true;
   }
 
