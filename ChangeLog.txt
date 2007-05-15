@@ -1,3 +1,10 @@
+Changes for v1.78
+- Add support for new upgrade format that uses two byte PIDs
+- Fix parsing of DeviceTypeImageMaps section to handle tabs
+- Correct variant name of Pioneer DVD
+- Add support for S3F80 processor
+- Addes Nokia32 protocol (thanks johnsfine)
+
 Changes for v1.77
 - Improve notes for Pioneer combo protocols
 - Improve handling of missing Images folder

@@ -78,7 +78,6 @@ public class ProtocolManager
       }
       else
       {
-        System.out.println( "Parsing line #" + rdr.getLineNumber());
         StringTokenizer st = new StringTokenizer( line, "=", true );
         String parmName = st.nextToken().trim();
         String parmValue = null;
