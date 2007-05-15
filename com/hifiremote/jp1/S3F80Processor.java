@@ -1,16 +1,11 @@
 package com.hifiremote.jp1;
 
-public class S3C80Processor
-  extends Processor
+public class S3F80Processor
+  extends S3C80Processor
 {
-  public S3C80Processor()
+  public S3F80Processor()
   {
-    this( "S3C80" );
-  }
-
-  protected S3C80Processor( String name )
-  {
-    super( name, null );
+    super( "S3F80" );
   }
 
   public Hex translate( Hex hex, Remote remote )
