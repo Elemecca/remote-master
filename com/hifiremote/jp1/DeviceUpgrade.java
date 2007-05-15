@@ -519,6 +519,9 @@ public class DeviceUpgrade
   {
     reset();
     int index = 1;
+    if ( newRemote.usesTwoBytePID())
+      index++;
+
     short[] code = hexCode.getData();
     remote = newRemote;
     customCode = null;
@@ -665,8 +668,9 @@ public class DeviceUpgrade
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     short[] id = protocol.getID( remote ).getData();
     short temp = ( short )( devType.getNumber() * 0x1000 +
-               ( id[ 0 ] & 1 ) * 0x0800 +
                setupCode - remote.getDeviceCodeOffset());
+    if ( !remote.usesTwoBytePID())
+      temp += ( id[ 0 ] & 1 ) * 0x0800;
 
     short[] rc = new short[2];
     rc[ 0 ] = ( short )( temp >> 8 );
@@ -709,7 +713,10 @@ public class DeviceUpgrade
   public String getUpgradeText( boolean includeNotes )
   {
     StringBuilder buff = new StringBuilder( 400 );
-    buff.append( "Upgrade code 0 = " );
+    if ( remote.usesTwoBytePID())
+      buff.append( "Upgrade Code2 = " );
+    else
+      buff.append( "Upgrade Code 0 = " );
 
     short[] deviceCode = getHexSetupCode();
 
@@ -828,8 +835,15 @@ public class DeviceUpgrade
     java.util.List< short[]> work = new ArrayList< short[]>();
 
     // add the 2nd byte of the PID
-    short[] data = new short[ 1 ];
-    data[ 0 ] = protocol.getID( remote ).getData()[ 1 ];
+
+    short[] data = null;
+    if ( remote.usesTwoBytePID())
+      data = protocol.getID( remote ).getData();
+    else
+    {
+      data = new short[ 1 ];
+      data[ 0 ] = protocol.getID( remote ).getData()[ 1 ];
+    }
     work.add( data );
 
     short digitMapIndex = -1;

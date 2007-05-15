@@ -37,6 +37,12 @@ public class Hex
     System.arraycopy( h.data, 0, data, 0, data.length );
   }
 
+  public Hex( Hex h, int offset, int length )
+  {
+    data = new short[ length ];
+    System.arraycopy( h.data, 0, data, 0, length );
+  }
+
   public int length()
   {
     return data.length;

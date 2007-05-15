@@ -23,14 +23,14 @@ public class ImportRawUpgradeDialog
     this.deviceUpgrade = deviceUpgrade;
     createGui( owner );
   }
-  
+
   public ImportRawUpgradeDialog( JDialog owner, DeviceUpgrade deviceUpgrade )
   {
     super( owner, "Import Raw Upgrade", true );
     this.deviceUpgrade = deviceUpgrade;
     createGui( owner );
   }
-  
+
   private void createGui( Component owner )
   {
     setLocationRelativeTo( owner );
@@ -74,6 +74,7 @@ public class ImportRawUpgradeDialog
     protocolGreaterThanFF = new JCheckBox( "Protocol > FF" );
     protocolGreaterThanFF.addItemListener( this );
     mainPanel.add( protocolGreaterThanFF, "3, 5" );
+    protocolGreaterThanFF.setVisible( !deviceUpgrade.getRemote().usesTwoBytePID());
 
     label = new JLabel( "Upgrade Code:" );
     mainPanel.add( label, "1, 7, 3, 7" );
@@ -127,6 +128,7 @@ public class ImportRawUpgradeDialog
         deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ));
         deviceTypeList.setMaximumRowCount( aliasNames.length );
         deviceTypeList.setSelectedItem( alias );
+        protocolGreaterThanFF.setVisible( !remote.usesTwoBytePID());
         validateInput();
       }
       catch ( Exception ex )
@@ -138,7 +140,7 @@ public class ImportRawUpgradeDialog
     {
       userAction = JOptionPane.OK_OPTION;
       setVisible( false );
-      deviceUpgrade.importRawUpgrade( uCode, 
+      deviceUpgrade.importRawUpgrade( uCode,
                                       ( Remote )remoteList.getSelectedItem(),
                                       ( String )deviceTypeList.getSelectedItem(),
                                       pid, pCode );
@@ -162,12 +164,21 @@ public class ImportRawUpgradeDialog
       protocolLabel.setEnabled( false );
       return;
     }
-    short[] temp = new short[ 2 ];
-    temp[ 0 ] = ( short )( protocolGreaterThanFF.isSelected() ? 1 : 0 );
-    temp[ 1 ] = uCode.getData()[ 0 ];
-    pid = new Hex( temp );
-    
-    Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote(( Remote )remoteList.getSelectedItem() , pid );
+
+    Remote remote = ( Remote )remoteList.getSelectedItem();
+    if ( remote.usesTwoBytePID())
+    {
+      pid = new Hex( uCode, 0, 2 );
+    }
+    else
+    {
+      short[] temp = new short[ 2 ];
+      temp[ 0 ] = ( short )( protocolGreaterThanFF.isSelected() ? 1 : 0 );
+      temp[ 1 ] = uCode.getData()[ 0 ];
+      pid = new Hex( temp );
+    }
+
+    Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, pid );
     if ( p != null )
     {
       protocolLabel.setText( "Protocol Code:" );
@@ -180,7 +191,7 @@ public class ImportRawUpgradeDialog
       protocolLabel.setEnabled( true );
       protocolCode.setEnabled( true );
     }
-     
+
     if ( pCode == null )
     {
       ok.setEnabled( false );
@@ -203,7 +214,7 @@ public class ImportRawUpgradeDialog
       }
       else
       {
-        try 
+        try
         {
           uCode = new Hex( text );
         }
@@ -234,7 +245,7 @@ public class ImportRawUpgradeDialog
     }
     validateInput();
   }
-    
+
   public void changedUpdate( DocumentEvent e )
   {
     documentChanged( e );

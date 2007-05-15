@@ -124,8 +124,6 @@ public class Remote
             line = parseButtonMaps( rdr );
           else if ( line.equals( "Protocols" ))
             line = parseProtocols( rdr );
-  //          else if ( line.equals( "NoBind" ))
-  //            line = parseNoBind( rdr );
           else
             line = rdr.readLine();
         }
@@ -327,7 +325,7 @@ public class Remote
 
   public DeviceType getDeviceType( String typeName )
   {
-    DeviceType devType =( DeviceType )deviceTypes.get( typeName );
+    DeviceType devType = deviceTypes.get( typeName );
     return devType;
   }
 
@@ -476,7 +474,6 @@ public class Remote
 
       String parm = st.nextToken();
       if ( parm.equals( "Name" ))
-//        name = st.nextToken();
         ;
       else if ( parm.equals( "BaseAddr" ))
         baseAddress = rdr.parseNumber( st.nextToken());
@@ -704,6 +701,13 @@ public class Remote
         maxCombinedUpgradeLength = new Integer( rdr.parseNumber( st.nextToken()));
       else if ( parm.equals( "SectionTerminator" ))
         sectionTerminator = ( short )rdr.parseNumber( st.nextToken());
+      else if ( parm.equalsIgnoreCase( "2BytePid" ))
+      {
+        String flag = st.nextToken( " =\t" );
+        System.out.println( "2BytePid=" + flag );
+        if ( flag.equalsIgnoreCase( "YES" ))
+          twoBytePID = true;
+      }
     }
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
@@ -1136,8 +1140,10 @@ public class Remote
       if (( line == null ) || ( line.length() == 0 ))
         break;
 
-      StringTokenizer st = new StringTokenizer( line, "=, " );
-      type = getDeviceType( st.nextToken());
+      StringTokenizer st = new StringTokenizer( line, "=, \t" );
+      String typeName = st.nextToken();
+      type = getDeviceType( typeName );
+      System.out.println( "deviceType for \"" + typeName + "\" is " + type );
 
       while ( st.hasMoreTokens())
       {
@@ -1700,6 +1706,8 @@ public class Remote
   public short getSectionTerminator(){ return sectionTerminator; }
   public java.util.List< SpecialProtocol > specialProtocols = new ArrayList< SpecialProtocol >();
   public java.util.List< SpecialProtocol > getSpecialProtocols(){ return specialProtocols; }
+  private boolean twoBytePID = false;
+  public boolean usesTwoBytePID(){ return twoBytePID; }
 
   private static Hashtable< String, Integer > restrictionTable = null;
  }
