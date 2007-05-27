@@ -66,11 +66,11 @@ public class GeneralEditorPanel
 
     // Lay out the panel.
     SpringUtilities.makeCompactGrid( formPanel,
-                                     numPairs, 2,  // rows, cols 
+                                     numPairs, 2,  // rows, cols
                                      5, 5,      // initX, initY
                                      5, 5 );    // xPad, yPad
 
-    JPanel panel = new JPanel( new BorderLayout());                                     
+    JPanel panel = new JPanel( new BorderLayout());
     JPanel tablePanel = new JPanel( new BorderLayout());
     panel.add( tablePanel, BorderLayout.NORTH );
     contentPane.add( panel, BorderLayout.CENTER );
@@ -108,16 +108,16 @@ public class GeneralEditorPanel
 //    d.height = height;
 //    table.setMinimumSize( d );
 //    table.setMaximumSize( d );
-//     
+//
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     tablePanel.add( buttonPanel, BorderLayout.SOUTH );
 
     importButton = new JButton( "Import from clipboard" );
     importButton.addActionListener( this );
-    importButton.setToolTipText( "Import protocol code from the clipboard" );    
+    importButton.setToolTipText( "Import protocol code from the clipboard" );
     buttonPanel.add( importButton );
 
-    setText( "Enter the requested information about the protocol." );                                     
+    setText( "Enter the requested information about the protocol." );
   }
 
   public void commit(){;}
@@ -174,7 +174,7 @@ public class GeneralEditorPanel
   }
 
   public void insertUpdate( DocumentEvent e )
-  { 
+  {
     docChanged( e );
   }
 
@@ -285,6 +285,6 @@ public class GeneralEditorPanel
   private JButton importButton = null;
   private static String[] colNames = { "Processor", "Protocol Code" };
   private static Class[] classes = { String.class, Hex.class };
-  private static String[] procNames = { "S3C80", "740", "6805-C9", "6805-RC16/18" };
+  private static String[] procNames = { "S3C80", "740", "6805-C9", "6805-RC16/18", "S3F80" };
 
 }

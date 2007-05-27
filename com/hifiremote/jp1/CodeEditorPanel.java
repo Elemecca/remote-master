@@ -44,16 +44,16 @@ public class CodeEditorPanel
     }
 
     table.doLayout();
-     
+
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     panel.add( buttonPanel, BorderLayout.SOUTH );
 
     importButton = new JButton( "Import from clipboard" );
     importButton.addActionListener( this );
-    importButton.setToolTipText( "Import protocol code from the clipboard" );    
+    importButton.setToolTipText( "Import protocol code from the clipboard" );
     buttonPanel.add( importButton );
 
-    setText( "Enter the requested information about the protocol.  Fields with names in red are required." );                                     
+    setText( "Enter the requested information about the protocol.  Fields with names in red are required." );
   }
 
   public void commit(){;}
@@ -74,7 +74,7 @@ public class CodeEditorPanel
   }
 
   public void insertUpdate( DocumentEvent e )
-  { 
+  {
     docChanged( e );
   }
 
@@ -192,5 +192,5 @@ public class CodeEditorPanel
   private JTableX table = null;
   private static String[] colNames = { "Processor", "Protocol Code" };
   private static Class[] classes = { String.class, Hex.class };
-  private static String[] procNames = { "S3C80", "740", "6805-C9", "6805-RC16/18" };
+  private static String[] procNames = { "S3C80", "740", "6805-C9", "6805-RC16/18", "S3F80" };
 }

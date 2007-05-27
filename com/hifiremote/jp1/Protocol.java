@@ -253,7 +253,7 @@ public class Protocol
         }
         Processor p = ProcessorManager.getProcessor( processor );
         importedCode = new Hex( text );
-        code.put( p.getFullName(), importedCode );
+        code.put( p.getEquivalentName(), importedCode );
       }
     }
     return importedCode;
@@ -291,12 +291,12 @@ public class Protocol
   public Hex getCode( Remote remote )
   {
     Processor p = remote.getProcessor();
-    return ( Hex )code.get( p.getFullName());
+    return ( Hex )code.get( p.getEquivalentName());
   }
 
   public Translate[] getCodeTranslators( Remote remote )
   {
-    return ( Translate[] )codeTranslator.get( remote.getProcessor().getFullName());
+    return ( Translate[] )codeTranslator.get( remote.getProcessor().getEquivalentName());
   }
 
   public void importDeviceParms( Value[] parms )

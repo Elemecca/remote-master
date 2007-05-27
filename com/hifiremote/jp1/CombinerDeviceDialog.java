@@ -19,13 +19,13 @@ public class CombinerDeviceDialog
     super( owner, "Combiner Device", true );
     createGui( owner, dev, r );
   }
-    
+
   public CombinerDeviceDialog( JDialog owner, CombinerDevice dev, Remote r )
   {
     super( owner, "Combiner Device", true );
     createGui( owner, dev, r );
   }
-    
+
   private void createGui( Component owner, CombinerDevice dev, Remote r )
   {
     setLocationRelativeTo( owner );
@@ -58,8 +58,8 @@ public class CombinerDeviceDialog
     JLabel label = new JLabel( "Protocol:", SwingConstants.RIGHT );
     mainPanel.add( label, "2, 1" );
 
-    boolean allowUpgrades =  r.getProcessor().getFullName().equals( "S3C80" );
-    java.util.List< Protocol > allProtocols = 
+    boolean allowUpgrades =  r.getProcessor().getEquivalentName().equals( "S3C80" );
+    java.util.List< Protocol > allProtocols =
       ProtocolManager.getProtocolManager().getProtocolsForRemote( r, allowUpgrades );
     java.util.List< Protocol > protocols = new ArrayList< Protocol >();
     if ( allowUpgrades )
@@ -115,21 +115,21 @@ public class CombinerDeviceDialog
 
     protocolNotes = new JTextArea( 15, 60 );
     protocolNotes.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
-    protocolNotes.setText( protocols.get( 0 ).getNotes()); 
+    protocolNotes.setText( protocols.get( 0 ).getNotes());
     protocolNotes.setBackground( label.getBackground());
     protocolNotes.setToolTipText( "Notes about the selected protocol." );
     protocolNotes.setEditable( false );
     protocolNotes.setLineWrap( true );
     protocolNotes.setWrapStyleWord( true );
     JScrollPane scrollPane = new JScrollPane( protocolNotes );
-    scrollPane.setBorder( 
-      BorderFactory.createCompoundBorder( 
+    scrollPane.setBorder(
+      BorderFactory.createCompoundBorder(
         BorderFactory.createTitledBorder( "Protocol Notes" ),
         scrollPane.getBorder()));
     mainPanel.add( scrollPane, "1, 9, 7, 9" );
 
     JPanel panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-    contentPane.add( panel, BorderLayout.SOUTH ); 
+    contentPane.add( panel, BorderLayout.SOUTH );
 
     okButton = new JButton( "OK" );
     okButton.addActionListener( this );
@@ -175,12 +175,9 @@ public class CombinerDeviceDialog
     fixedData.getDocument().addDocumentListener( this );
     protocolID.getDocument().addDocumentListener( this );
     deviceNotes.getDocument().addDocumentListener( this );
-    
+
     protocolNotes.setText( p.getNotes());
     protocolNotes.setCaretPosition( 0 );
-
-//    boolean allowUpgrades =  r.getProcessor().getFullName().equals( "S3C80" );
-
   }
 
   public void updateParameters()
@@ -369,6 +366,6 @@ public class CombinerDeviceDialog
 
   private JButton okButton = null;
   private JButton cancelButton = null;
-  
+
   private int userAction = JOptionPane.CANCEL_OPTION;
 }

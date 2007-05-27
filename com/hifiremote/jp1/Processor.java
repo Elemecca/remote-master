@@ -18,7 +18,7 @@ public class Processor
     this.opCodes = opcodes;
     this.addresses = addresses;
   }
-  
+
 
   public void setDataEditData( int min, int max )
   {
@@ -34,6 +34,11 @@ public class Processor
       return name;
     else
       return name + '-' + version;
+  }
+
+  public String getEquivalentName()
+  {
+    return getFullName();
   }
 
   public Hex translate( Hex hex, Remote remote )
@@ -102,7 +107,7 @@ public class Processor
 
     for ( int i = 0; i < data.length - 1; i++ )
     {
-      if ((( data[ i ] & hex.ADD_OFFSET ) != 0 ) && 
+      if ((( data[ i ] & hex.ADD_OFFSET ) != 0 ) &&
           (( data[ i + 1 ] & hex.ADD_OFFSET ) != 0 ))
       {
         int temp = getInt( data, i );

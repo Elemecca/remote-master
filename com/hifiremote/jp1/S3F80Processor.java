@@ -8,6 +8,11 @@ public class S3F80Processor
     super( "S3F80" );
   }
 
+  public String getEquivalentName()
+  {
+    return "S3C80";
+  }
+
   public Hex translate( Hex hex, Remote remote )
   {
     if ( remote.getRAMAddress() == 0x8000 )
