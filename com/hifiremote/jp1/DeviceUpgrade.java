@@ -1029,6 +1029,40 @@ public class DeviceUpgrade
     out.flush();
   }
 
+  public boolean hasChanged()
+    throws IOException
+  {
+    if ( file == null )
+      return true;
+    else
+      return hasChanged( file );
+  }
+
+  public boolean hasChanged( File baseFile )
+    throws IOException
+  {
+    File tempFile = File.createTempFile( "rmdu", ".tmp" );
+    store( tempFile );
+
+    BufferedReader baseReader = new BufferedReader( new FileReader( baseFile ));
+    BufferedReader tempReader = new BufferedReader( new FileReader( tempFile ));
+    String baseLine = null;
+    String tempLine = null;
+    do
+    {
+      baseLine = baseReader.readLine();
+      tempLine = tempReader.readLine();
+    } while (( baseLine != null ) && ( tempLine != null ) && baseLine.equals( tempLine ));
+    baseReader.close();
+    tempReader.close();
+    tempFile.delete();
+
+    if ( baseLine == tempLine )
+      return false;
+
+    return true;
+  }
+
   public void load( File file )
     throws Exception
   {
@@ -1112,7 +1146,7 @@ public class DeviceUpgrade
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     if ( name.equals( "Manual Settings" ) ||
          name.equals( "Manual" ) ||
-         name.equals( "PID " + pid.toString()))
+         name.equalsIgnoreCase( "PID " + pid.toString()))
     {
       protocol = new ManualProtocol( pid, props );
       pm.add( protocol );
