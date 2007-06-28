@@ -176,6 +176,16 @@ public class Preferences
     file.setProperty( "Remote.name", name );
   }
 
+  public String getLastRemoteSignature()
+  {
+    return file.getProperty( "Remote.signature" );
+  }
+
+  public void setLastRemoteSignature( String sig )
+  {
+    file.setProperty( "Remote.signature", sig );
+  }
+
   public void setLookAndFeel( String lf )
   {
     file.setProperty( "LookAndFeel", lf );

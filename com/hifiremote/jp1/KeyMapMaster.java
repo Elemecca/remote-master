@@ -66,6 +66,8 @@ public class KeyMapMaster
         {
           if ( !promptToSaveUpgrade( ACTION_EXIT ))
             return;
+          preferences.setLastRemoteName( getRemote().getName());
+          preferences.setLastRemoteSignature( getRemote().getSignature());
           savePreferences();
           setVisible( false );
           dispose();
@@ -769,6 +771,9 @@ public class KeyMapMaster
   public boolean promptToSaveUpgrade( int action )
     throws IOException
   {
+    if ( !deviceUpgrade.hasChanged())
+      return true;
+
     String promptFlag = preferences.getPromptToSave();
     if ( promptFlag.equals( promptStrings[ PROMPT_NEVER ]))
       return true;

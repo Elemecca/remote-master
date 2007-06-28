@@ -1032,6 +1032,7 @@ public class DeviceUpgrade
   public boolean hasChanged()
     throws IOException
   {
+    System.err.println( "DeviceUpgrade.hasChanged(), file=" + file );
     if ( file == null )
       return true;
     else
@@ -1041,7 +1042,9 @@ public class DeviceUpgrade
   public boolean hasChanged( File baseFile )
     throws IOException
   {
+    System.err.println( "DeviceUpgrade.hasChanged( " + baseFile + " )" );
     File tempFile = File.createTempFile( "rmdu", ".tmp" );
+    System.err.println( "Storing top " + tempFile );
     store( tempFile );
 
     BufferedReader baseReader = new BufferedReader( new FileReader( baseFile ));
@@ -1051,11 +1054,18 @@ public class DeviceUpgrade
     do
     {
       baseLine = baseReader.readLine();
+      while (( baseLine != null ) && !baseLine.startsWith( '#' ))
+        baseLine = baseReader.readLine();
+
       tempLine = tempReader.readLine();
+      while (( tempLine != null ) && !tempLine.startsWith( '#' ))
+        tempLine = tempReader.readLine();
+      System.err.println( "baseLine=" + baseLine );
+      System.err.println( "tempLine=" + tempLine );
     } while (( baseLine != null ) && ( tempLine != null ) && baseLine.equals( tempLine ));
     baseReader.close();
     tempReader.close();
-    tempFile.delete();
+//    tempFile.delete();
 
     if ( baseLine == tempLine )
       return false;

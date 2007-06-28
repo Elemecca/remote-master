@@ -345,10 +345,11 @@ public class LayoutPanel
     ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
     if ( normalMode.isSelected())
     {
-      if ( !b.getIsNormal())
-        return null;
-      else if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
-        return b;
+//      if ( !b.getIsNormal())
+//        return null;
+//      else 
+        if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
+          return b;
     }
     else if ( shiftMode.isSelected())
     {
@@ -385,7 +386,8 @@ public class LayoutPanel
       if ( b.getIsXShifted())
       {
         if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
-          return b.getBaseButton();
+//          return b.getBaseButton();
+          return b;
       }
       else if ( b.allowsXShiftedKeyMove())
         return b;
