@@ -362,6 +362,7 @@ public class ProtocolManager
 
   public ManualProtocol getManualProtocol()
   {
+    System.err.println( "ProtocolManager.getManualProtocol(): " + manualProtocol );
     return manualProtocol;
   }
 

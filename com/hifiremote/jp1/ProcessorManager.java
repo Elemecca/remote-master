@@ -6,7 +6,7 @@ public class ProcessorManager
 {
   private ProcessorManager()
   {
-    processors = new Hashtable< String, Processor >();
+    processors = new LinkedHashMap< String, Processor >();
     add( new S3C80Processor());
 
     Processor p = new Processor( "6805", "C9" );
@@ -89,16 +89,24 @@ public class ProcessorManager
     return processorManager.processors.get( name );
   }
 
-  public static Enumeration< String > getProcessorNames()
+  public static Set< String > getProcessorNames()
   {
-    return processorManager.processors.keys();
+    return processorManager.processors.keySet();
   }
 
   private void add( Processor p )
   {
     processors.put( p.getFullName(), p );
   }
+  
+  public static Processor[] getProcessors()
+  {
+    Collection< Processor > procs = processorManager.processors.values();
+    Processor[] rc = new Processor[ procs.size()];
+    rc = ( Processor[] )procs.toArray( rc );
+    return rc;
+  }
 
   private static ProcessorManager processorManager = new ProcessorManager();
-  private Hashtable< String, Processor > processors = null;
+  private LinkedHashMap< String, Processor > processors = null;
 }

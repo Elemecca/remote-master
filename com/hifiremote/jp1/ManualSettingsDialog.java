@@ -20,20 +20,21 @@ public class ManualSettingsDialog
   public ManualSettingsDialog( JDialog owner, ManualProtocol protocol )
   {
     super( owner, "Manual Settings", true );
-    createGui( owner );
+    createGui( owner, protocol );
   }
   public ManualSettingsDialog( JFrame owner, ManualProtocol protocol )
   {
     super( owner, "Manual Settings", true );
-    createGui( owner );
+    createGui( owner, protocol );
   }
   
-  private void createGui( Component owner )
+  private void createGui( Component owner, ManualProtocol protocol )
   {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
 
     this.protocol = protocol;
+    System.err.println( "protocol=" + protocol );
 
     {
       System.err.println( "Copying device parameters" );
@@ -55,8 +56,8 @@ public class ManualSettingsDialog
     double pr = TableLayout.PREFERRED;
     double size[][] =
     {
-      { b, pr, c, pr, b },              // cols
-      { b, pr, b, pr, b, f, b, pr, b, f }         // rows
+      { b, pr, c, pr, b },                        // cols
+      { b, pr, b, pr, b, f, b, f, b, pr, b, f }         // rows
     };
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
@@ -65,7 +66,7 @@ public class ManualSettingsDialog
     JLabel label = new JLabel( "Name:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 1" );
     name = new JTextField( protocol.getName());
-    name.setEnabled( false );
+    name.setEditable( false );
     name.getDocument().addDocumentListener( this );
     mainPanel.add( name, "3, 1" );
 
@@ -76,6 +77,42 @@ public class ManualSettingsDialog
     pid.addPropertyChangeListener( "value", this );
     mainPanel.add( pid, "3, 3" );
 
+    // Protocol Code Table
+    JPanel codePanel = new JPanel( new BorderLayout());
+    JPanel codeTablePanel = new JPanel( new BorderLayout());
+    codePanel.add( codeTablePanel, BorderLayout.NORTH );
+    mainPanel.add( codePanel, "1, 5, 3, 5" );
+    codeTablePanel.setBorder( BorderFactory.createTitledBorder( "Protocol code" ));
+    TableModel codeTableModel = new TableModel();
+    JTableX codeTable = new JTableX( codeTableModel );
+    DefaultTableCellRenderer r = ( DefaultTableCellRenderer )codeTable.getDefaultRenderer( String.class );
+    r.setHorizontalAlignment( SwingConstants.CENTER );
+    codeTable.setDefaultEditor( Hex.class, new HexEditor());
+    codeTablePanel.add( codeTable.getTableHeader(), BorderLayout.NORTH );
+    codeTablePanel.add( codeTable, BorderLayout.CENTER );
+
+    JLabel l = new JLabel( colNames [ 0 ]);
+    l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
+
+    TableColumnModel columnModel = codeTable.getColumnModel();
+    TableColumn column = columnModel.getColumn( 0 );
+    int width = l.getPreferredSize().width;
+
+    procs = ProcessorManager.getProcessors();
+    for ( int i = 0; i < procs.length; i++ )
+    {
+      l.setText( procs[ i ].getFullName());
+      width =  Math.max( width, l.getPreferredSize().width );
+    }
+    for ( int i = 0; i < procs.length; i++ )
+    {
+      column.setMinWidth( width );
+      column.setMaxWidth( width );
+      column.setPreferredWidth( width );
+    }
+    codeTable.doLayout();
+    
+    // Device Parameter Table
     deviceModel = new ParameterTableModel( deviceParms, deviceTranslators );
 
     deviceTable = new JTableX( deviceModel );
@@ -85,7 +122,7 @@ public class ManualSettingsDialog
     Box box = Box.createVerticalBox();
     box.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ));
     box.add( scrollPane );
-    mainPanel.add( box, "1, 5, 3, 5" );
+    mainPanel.add( box, "1, 7, 3, 7" );
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     addDevice = new JButton( "Add" );
     addDevice.addActionListener( this );
@@ -102,9 +139,9 @@ public class ManualSettingsDialog
     deviceTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Raw Fixed Data:", SwingConstants.RIGHT );
-    mainPanel.add( label, "1, 7" );
+    mainPanel.add( label, "1, 9" );
     rawHexData = new JTextField();
-    mainPanel.add( rawHexData, "3, 7" );
+    mainPanel.add( rawHexData, "3, 9" );
 
     {
       System.err.println( "Copying comand parameters" );
@@ -128,7 +165,7 @@ public class ManualSettingsDialog
     box = Box.createVerticalBox();
     box.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ));
     box.add( scrollPane );
-    mainPanel.add( box, "1, 9, 3, 9" );
+    mainPanel.add( box, "1, 11, 3, 11" );
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     buttonPanel.add( new JButton( "Add" ));
     buttonPanel.add( new JButton( "Edit" ));
@@ -288,10 +325,12 @@ public class ManualSettingsDialog
       {
         ex.printStackTrace( System.err );
       }
-      JTextArea ta = new JTextArea( sw.toString());
+      JTextArea ta = new JTextArea( sw.toString(), 10, 70 );
       new TextPopupMenu( ta );
       ta.setEditable( false );
-      JOptionPane.showMessageDialog( this, ta, "Protocol.ini entry text", JOptionPane.PLAIN_MESSAGE );
+//      ta.setLineWrap( true );
+//      ta.setWrapStyleWord( true );
+      JOptionPane.showMessageDialog( this, new JScrollPane( ta ), "Protocol.ini entry text", JOptionPane.PLAIN_MESSAGE );
     }
     else if ( source == ok )
     {
@@ -355,6 +394,88 @@ public class ManualSettingsDialog
     documentChanged( e );
   }
 
+  public class TableModel
+    extends AbstractTableModel
+  {
+    public int getRowCount(){ return procs.length; }
+    public int getColumnCount(){ return colNames.length; }
+    public String getColumnName( int col ){ return colNames[ col ]; }
+    public Class getColumnClass( int col ){ return classes[ col ]; }
+    public boolean isCellEditable( int row, int col ){ return ( col == 1 ); }
+    public Object getValueAt( int row, int col )
+    {
+      if ( col == 0 )
+        return procs[ row ];
+      else
+        return protocol.getCode( procs[ row ]);
+    }
+    public void setValueAt( Object value, int row, int col )
+    {
+      if ( col == 1 )
+      {
+        protocol.setCode(( Hex )value, procs[ row ] );
+        fireTableRowsUpdated( row, row );
+      }
+    }
+  }
+
+  private void importProtocolCode( String string )
+  {
+    StringTokenizer st = new StringTokenizer( string, "\n" );
+    String text = null;
+    String processor = null;
+    while( st.hasMoreTokens())
+    {
+      while ( st.hasMoreTokens())
+      {
+        text = st.nextToken().toUpperCase();
+        System.err.println( "got '" + text );
+        if ( text.startsWith( "UPGRADE PROTOCOL 0 =" ))
+        {
+          StringTokenizer st2 = new StringTokenizer( text, "()=" );
+          st2.nextToken(); // discard everything before the =
+          String pidStr = st2.nextToken().trim();
+          System.err.println( "Imported pid is " + pidStr );
+          processor = st2.nextToken().trim();
+          System.err.println( "processorName is " + processor );
+          if ( processor.startsWith( "S3C8" ))
+            processor = "S3C80";
+          if ( st2.hasMoreTokens())
+          {
+            String importedName = st2.nextToken().trim();
+            System.err.println( "importedName is " + importedName );
+          }
+          break;
+        }
+      }
+      if ( st.hasMoreTokens())
+      {
+        text = st.nextToken(); // 1st line of code
+        while ( st.hasMoreTokens())
+        {
+          String temp = st.nextToken();
+          if ( temp.equals( "End" ))
+            break;
+          text = text + ' ' + temp;
+        }
+        System.err.println( "getting processor with name " + processor );
+        Processor p = ProcessorManager.getProcessor( processor );
+        if ( p != null )
+          processor = p.getFullName();
+        System.err.println( "Adding code for processor " + processor );
+        System.err.println( "Code is "  + text );
+        protocol.setCode( new Hex( text ), p );
+        /*
+        for ( int i = 0; i < procNames.length; i++ )
+        {
+          if ( procNames[ i ].equals( processor ))
+            tableModel.fireTableRowsUpdated( i, i );
+        }
+        */
+      }
+    }
+  }
+
   private ManualProtocol protocol = null;
 
   private java.util.List< DeviceParameter > deviceParms = new ArrayList< DeviceParameter >();
@@ -394,6 +515,9 @@ public class ManualSettingsDialog
     "MSB (Most Significant Bit First)",
     "LSB (Least Significant Bit First)"
   };
+  private final static String[] colNames = { "Processor", "Protocol Code" };
+  private final static Class[] classes = { Processor.class, Hex.class };
+  private static Processor[] procs = new Processor[ 0 ];
 
 
 }

@@ -86,10 +86,8 @@ public class Protocol
 
     notes = props.getProperty( "Notes" );
 
-    for ( Enumeration e = ProcessorManager.getProcessorNames(); e.hasMoreElements(); )
+    for ( String pName : ProcessorManager.getProcessorNames())
     {
-      String pName = ( String ) e.nextElement();
-
       temp = props.getProperty( "Code." + pName );
       if ( temp != null )
         code.put( pName, new Hex( temp ));
@@ -291,6 +289,11 @@ public class Protocol
   public Hex getCode( Remote remote )
   {
     Processor p = remote.getProcessor();
+    return ( Hex )code.get( p.getEquivalentName());
+  }
+
+  public Hex getCode( Processor p )
+  {
     return ( Hex )code.get( p.getEquivalentName());
   }
 

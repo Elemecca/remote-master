@@ -704,7 +704,6 @@ public class Remote
       else if ( parm.equalsIgnoreCase( "2BytePid" ))
       {
         String flag = st.nextToken( " =\t" );
-        System.out.println( "2BytePid=" + flag );
         if ( flag.equalsIgnoreCase( "YES" ))
           twoBytePID = true;
       }
@@ -1143,7 +1142,6 @@ public class Remote
       StringTokenizer st = new StringTokenizer( line, "=, \t" );
       String typeName = st.nextToken();
       type = getDeviceType( typeName );
-      System.out.println( "deviceType for \"" + typeName + "\" is " + type );
 
       while ( st.hasMoreTokens())
       {

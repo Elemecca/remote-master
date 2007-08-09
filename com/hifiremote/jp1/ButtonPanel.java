@@ -125,9 +125,6 @@ public class ButtonPanel
     {
       x.printStackTrace( System.err );
     }
-    /*
-    table.addMouseListener( new PopupListener());
-    */
 
     add( new JScrollPane( table ), BorderLayout.CENTER );
 
@@ -215,15 +212,6 @@ public class ButtonPanel
       l.addMouseListener( doubleClickListener );
       functionPanel.add( l );
 
-      /*
-      FunctionItem item;
-      if ( f == null )
-        item = new FunctionItem( null );
-      else
-        item = f.getItem();
-      item.addActionListener( this );
-      popup.add( item );
-      */
       popupEditor.addObject( f );
     }
   }
@@ -247,12 +235,7 @@ public class ButtonPanel
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-/*    if ( source.getClass() == FunctionItem.class )
-    {
-      Function function = (( FunctionItem )source ).getFunction();
-      setFunctionAt( function, mouseRow, mouseCol );
-    }
-    else */ if ( source == autoAssign )
+    if ( source == autoAssign )
     {
       deviceUpgrade.autoAssignFunctions();
       model.setButtons();
@@ -260,65 +243,9 @@ public class ButtonPanel
     deviceUpgrade.checkSize();
   }
 
-  /*
-  class PopupListener
-    extends MouseAdapter
-  {
-    public void mousePressed( MouseEvent e )
-    {
-      showPopup( e );
-    }
-
-    public void mouseReleased( MouseEvent e )
-    {
-      showPopup( e );
-    }
-
-    private void showPopup( MouseEvent e )
-    {
-      if ( e.isPopupTrigger() )
-      {
-        mouseCol = table.columnAtPoint( e.getPoint());
-        mouseRow = table.rowAtPoint( e.getPoint());
-        if ( canAssign( mouseRow, mouseCol ))
-          popup.show( e.getComponent(), e.getX(), e.getY());
-      }
-    }
-  }
-  */
-
   private boolean canAssign( int row, int col )
   {
-    if ( col == 0 )
-      return false;
-
-    DeviceType devType = deviceUpgrade.getDeviceType();
-    ButtonMap map = devType.getButtonMap();
-    Button b = ( Button )model.getValueAt( row, 0 );
-    if ( b == null )
-      return false;
-    if ( col == 1 )
-    {
-      if ( b.allowsKeyMove() || map.isPresent( b ))
-        return true;
-      else
-        return false;
-    }
-    else if ( col == 2 )
-    {
-      if ( b.allowsShiftedKeyMove())
-        return true;
-      else
-        return false;
-    }
-    else if ( col == 3 )
-    {
-      if ( b.allowsXShiftedKeyMove())
-        return true;
-      else
-        return false;
-    }
-    return false;
+    return model.isCellEditable( row, col );
   }
 
   private void setFunctionAt( Function function, int row, int col )
@@ -388,7 +315,7 @@ public class ButtonPanel
   private JTableX table = null;
   private ButtonTableModel model = null;
   private JPanel functionPanel = null;
-  private JPopupMenu popup = null;
+  // private JPopupMenu popup = null;
   private int mouseRow = 0;
   private int mouseCol = 0;
   private DoubleClickListener doubleClickListener = new DoubleClickListener();

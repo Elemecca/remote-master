@@ -80,8 +80,8 @@ public class ButtonMap
     {
       if ( bitMap[ offset ] == 1 )
         return rc;
-      
-      boolean useIt = (( bitMap[ offset ] & mask ) != 0 ); 
+
+      boolean useIt = (( bitMap[ offset ] & mask ) != 0 );
       if ( useIt )
       {
         Button[] inner = buttons[ i ];
@@ -114,7 +114,8 @@ public class ButtonMap
       {
         Function func = null;
         if ( inner[ j ] != null )
-          func = assignments.getAssignment( inner[ j ], inner[ j ].getState());
+//          func = assignments.getAssignment( inner[ j ], inner[ j ].getState());
+          func = assignments.getAssignment( inner[ j ], Button.NORMAL_STATE );
         if ( digitMapUsed && ( i == 0 ))
           func = null;
         if ( keyMovesOnly )
@@ -153,7 +154,7 @@ public class ButtonMap
       flags[ i ] = false;
       for ( int j = 0; j < inner.length; j++ )
       {
-        Function func = assignments.getAssignment( inner[ j ], inner[ j ].getState());
+        Function func = assignments.getAssignment( inner[ j ], Button.NORMAL_STATE );
         if ( digitMapUsed && ( i == 0 ))
           func = null;
         if ( keyMovesOnly )
@@ -180,7 +181,7 @@ public class ButtonMap
         for ( int j = 0; j < inner.length; j++ )
         {
           short[] hex = null;
-          Function func = assignments.getAssignment( inner[ j ], inner[ j ].getState());
+          Function func = assignments.getAssignment( inner[ j ], Button.NORMAL_STATE );
           if ( digitMapUsed && ( i == 0 ))
             func = null;
           if (  keyMovesOnly )

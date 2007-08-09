@@ -24,6 +24,12 @@ public class RemoteManager
     {
       public boolean accept( File dir, String name )
       {
+        int open = name.indexOf( '(' );
+        int close = name.indexOf( ')' );
+        if (( open == -1 ) || ( close == -1 ) || ( close < open ))
+          return false;
+          
+        // name must end if ".rdf"
         return name.toLowerCase().endsWith( ".rdf" );
       }
     };

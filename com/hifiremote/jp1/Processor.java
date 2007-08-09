@@ -63,6 +63,11 @@ public class Processor
     return hex;
   }
 
+  public Hex importCode( Hex code, String processorName )
+  {
+    return code;
+  }
+
   private short getInt( short[] data, int offset )
   {
     return ( short )((( data[ offset ] & 0xFF ) << 8 ) + ( data[ offset + 1 ] & 0xFF ));
@@ -129,6 +134,11 @@ public class Processor
         data[ i ] = ( short )( temp & 0xFF );
       }
     }
+  }
+  
+  public String toString()
+  {
+    return getFullName();
   }
 
   private String name = null;

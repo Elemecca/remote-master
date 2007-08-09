@@ -335,7 +335,7 @@ public class LayoutPanel
     }
     return closestMatch;
   }
-
+  
   public Button getButtonForShape( ButtonShape buttonShape )
   {
     if ( buttonShape == null )
@@ -343,13 +343,14 @@ public class LayoutPanel
 
     Button b = buttonShape.getButton();
     ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
+    
+    if ( !b.getIsNormal() && !normalMode.isSelected())
+      return null;
+    
     if ( normalMode.isSelected())
     {
-//      if ( !b.getIsNormal())
-//        return null;
-//      else 
-        if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
-          return b;
+      if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
+        return b;
     }
     else if ( shiftMode.isSelected())
     {

@@ -61,8 +61,27 @@ public class ButtonTableModel
   
   public boolean isCellEditable( int row, int col )
   {
-    if ( col != buttonCol )
-      return true;
+    if ( deviceUpgrade == null )
+      return false;
+    
+    if ( row < 0 )
+      return false;
+    
+    if ( col == buttonCol )
+      return false;
+    
+    Button b = buttons[ row ];
+    DeviceType devType = deviceUpgrade.getDeviceType();
+    ButtonMap map = devType.getButtonMap();
+
+    if ( b == null )
+      return false;
+    if ( col == 1 )
+      return ( b.allowsKeyMove() || map.isPresent( b ));
+    else if ( col == 2 )
+      return b.allowsShiftedKeyMove();
+    else if ( col == 3 )
+      return b.allowsXShiftedKeyMove();
     return false;
   }
 

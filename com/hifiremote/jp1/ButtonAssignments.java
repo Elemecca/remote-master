@@ -5,7 +5,7 @@ import java.util.*;
 public class ButtonAssignments
 {
   public ButtonAssignments(){};
-  
+
   public void clear()
   {
     for ( int i = 0; i < assignedFunctions.length; ++i )
@@ -23,34 +23,38 @@ public class ButtonAssignments
       }
     }
   }
-  
+
   public void assign( Button b, Function f )
   {
     assign( b, f, Button.NORMAL_STATE );
   }
-  
+
   public void assign( Button b, Function f, int state )
   {
     short keyCode = b.getKeyCode( state );
     Function oldFunction = assignedFunctions[ keyCode ];
     if ( oldFunction != null )
-      oldFunction.removeReference( b, state ); 
+      oldFunction.removeReference( b, state );
 
     assignedFunctions[ keyCode ] = f;
     if ( f != null )
-      f.addReference( b, state ); 
+      f.addReference( b, state );
   }
-  
+
   public Function getAssignment( Button b )
   {
     return getAssignment( b, Button.NORMAL_STATE );
   }
-  
+
   public Function getAssignment( Button b, int state )
   {
+    if ( b.getIsNormal() && ( state != Button.NORMAL_STATE ) && !b.allowsKeyMove( state ))
+      return null;
+    if ( !b.getIsNormal() && ( state != Button.NORMAL_STATE ))
+      return null;
     return assignedFunctions[ b.getKeyCode( state )];
   }
-  
+
   public boolean isEmpty()
   {
     for ( int i = 0; i < assignedFunctions.length; ++i )
@@ -60,6 +64,6 @@ public class ButtonAssignments
     }
     return true;
   }
-  
+
   private Function[] assignedFunctions = new Function[ 256 ];
 }

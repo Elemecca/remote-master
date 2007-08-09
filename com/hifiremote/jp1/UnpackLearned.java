@@ -45,15 +45,6 @@ public class UnpackLearned
         charPos[i] = str.length();
         str.append((( i & 1 ) == 0 ? +1 : -1 ) * bursts[ i ]);
       }
-    /*
-      for (int i = 0; i < positions.size(); i++)
-      {
-        int[] pos = positions.get(i);
-        System.out.println("pos[] = " + pos[0] + ", " + pos[1] );
-        pos[2] = charPos[ 2 * pos[0] ];
-        pos[3] = charPos[ 2 * pos[1] - 1 ] - 1;
-      }
-      */
     }
     if (str.length() == 0)
       return "** No signal **";

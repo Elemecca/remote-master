@@ -52,9 +52,6 @@ public class DeviceUpgrade
       for ( Function.User user : f.getUsers())
         assignments.assign( user.button, f2, user.state );
     }
-
-    if ( base.customCode != null )
-      customCode = new Hex( base.customCode );
   }
 
   public void reset()
@@ -101,7 +98,6 @@ public class DeviceUpgrade
     initFunctions( defaultNames );
 
     extFunctions.clear();
-    customCode = null;
   }
 
   private void initFunctions( String[] names )
@@ -229,7 +225,6 @@ public class DeviceUpgrade
             p.convertFunctions( functions, newp );
             protocol = newp;
             parmValues = vals;
-            customCode = null;
           }
           if (( p instanceof DeviceCombiner ) && ( newp instanceof DeviceCombiner ))
           {
@@ -257,8 +252,6 @@ public class DeviceUpgrade
     }
     if (( remote != null ) && ( remote != newRemote ))
     {
-      if ( remote.getProcessor() != newRemote.getProcessor() )
-        customCode = null;
       Button[] buttons = remote.getUpgradeButtons();
       Button[] newButtons = newRemote.getUpgradeButtons();
       ButtonAssignments newAssignments = new ButtonAssignments();
@@ -421,7 +414,6 @@ public class DeviceUpgrade
       }
     }
     protocol = newProtocol;
-    customCode = null;
     parmValues = protocol.getDeviceParmValues();
     propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, protocol );
     return true;
@@ -524,7 +516,6 @@ public class DeviceUpgrade
 
     short[] code = hexCode.getData();
     remote = newRemote;
-    customCode = null;
     functions.clear();
     devTypeAliasName = newDeviceTypeAliasName;
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
@@ -600,21 +591,16 @@ public class DeviceUpgrade
 
     ManualProtocol mp = null;
 
-    if ( tentative != null )
+    if (( tentative != null ) && ( pCode != null ) && !pCode.equals( tentative.getCode( remote )))
     {
-      p = tentative;
       System.err.println( "Using " + p.getDiagnosticName());
       fixedDataLength = p.getFixedDataLength();
       cmdLength = p.getDefaultCmd().length();
       parmValues = tentativeVals;
-      if (( pCode != null ) && !pCode.equals( p.getCode( remote )))
-      {
-        System.err.println( "But the code is different, so we're gonna use it" );
-        customCode = pCode;
-      }
     }
     else
     {
+      System.err.println( "Using a Manual Protocol" );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       int cmdType = ManualProtocol.ONE_BYTE;
@@ -622,7 +608,6 @@ public class DeviceUpgrade
         cmdType = ManualProtocol.AFTER_CMD;
       mp = new ManualProtocol( "PID " + pid, pid, cmdType, "MSB", 8, new ArrayList(), fixedData, 8 );
       mp.setCode( pCode, remote.getProcessor() );
-      customCode = pCode;
       p = mp;
     }
 
@@ -982,8 +967,6 @@ public class DeviceUpgrade
     protocol.store( out, parmValues );
     if ( notes != null )
       out.print( "Notes", notes );
-    if ( customCode != null )
-      out.print( "CustomCode", customCode.toString());
     int i = 0;
     for ( Function func : functions )
       func.store( out, "Function." + i++ );
@@ -1054,11 +1037,11 @@ public class DeviceUpgrade
     do
     {
       baseLine = baseReader.readLine();
-      while (( baseLine != null ) && !baseLine.startsWith( '#' ))
+      while (( baseLine != null ) && !baseLine.startsWith( "#" ))
         baseLine = baseReader.readLine();
 
       tempLine = tempReader.readLine();
-      while (( tempLine != null ) && !tempLine.startsWith( '#' ))
+      while (( tempLine != null ) && !tempLine.startsWith( "#" ))
         tempLine = tempReader.readLine();
       System.err.println( "baseLine=" + baseLine );
       System.err.println( "tempLine=" + tempLine );
@@ -1140,7 +1123,6 @@ public class DeviceUpgrade
     }
     String sig = props.getProperty( "Remote.signature" );
     remote = RemoteManager.getRemoteManager().findRemoteByName( str );
-    customCode = null;
     remote.load();
     int index = -1;
     str = props.getProperty( "DeviceIndex" );
@@ -1188,10 +1170,6 @@ public class DeviceUpgrade
     protocol.setProperties( props );
 
     notes = props.getProperty( "Notes" );
-
-    str = props.getProperty( "CustomCode" );
-    if ( str != null )
-      customCode = new Hex( str );
 
     functions.clear();
     int i = 0;
@@ -1361,7 +1339,6 @@ public class DeviceUpgrade
     String str = token.substring( 5 );
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( str );
-    customCode = null;
     if ( remote == null )
     {
       reset();
@@ -2042,21 +2019,18 @@ public class DeviceUpgrade
 
   public Hex getCode()
   {
-    Hex code = customCode;
-    if ( code == null )
+    Hex code = null;
+    if ( protocol.needsCode( remote ))
+      code = protocol.getCode( remote );
+    if ( code != null )
     {
-      if ( protocol.needsCode( remote ))
-        code = protocol.getCode( remote );
-      if ( code != null )
+      code = remote.getProcessor().translate( code, remote );
+      Translate[] xlators = protocol.getCodeTranslators( remote );
+      if ( xlators != null )
       {
-        code = remote.getProcessor().translate( code, remote );
-        Translate[] xlators = protocol.getCodeTranslators( remote );
-        if ( xlators != null )
-        {
-          Value[] values = getParmValues();
-          for ( int i = 0; i < xlators.length; i++ )
-            xlators[ i ].in( values, code, null, -1 );
-        }
+        Value[] values = getParmValues();
+        for ( int i = 0; i < xlators.length; i++ )
+          xlators[ i ].in( values, code, null, -1 );
       }
     }
     return code;
@@ -2073,7 +2047,6 @@ public class DeviceUpgrade
   private java.util.List< ExternalFunction > extFunctions = new ArrayList< ExternalFunction >();
   // private java.util.List< KeyMove > keymoves = new ArrayList< KeyMove >();
   private File file = null;
-  private Hex customCode = null;
   private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
