@@ -57,7 +57,7 @@ public class ManualSettingsDialog
     double size[][] =
     {
       { b, pr, c, pr, b },                        // cols
-      { b, pr, b, pr, b, f, b, f, b, pr, b, f }         // rows
+      { b, pr, b, pr, b, pr, b, pr, b, pr, b, pr, b }         // rows
     };
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
@@ -78,27 +78,40 @@ public class ManualSettingsDialog
     mainPanel.add( pid, "3, 3" );
 
     // Protocol Code Table
-    JPanel codePanel = new JPanel( new BorderLayout());
-    JPanel codeTablePanel = new JPanel( new BorderLayout());
-    codePanel.add( codeTablePanel, BorderLayout.NORTH );
-    mainPanel.add( codePanel, "1, 5, 3, 5" );
-    codeTablePanel.setBorder( BorderFactory.createTitledBorder( "Protocol code" ));
-    TableModel codeTableModel = new TableModel();
-    JTableX codeTable = new JTableX( codeTableModel );
+    JPanel tablePanel = new JPanel( new BorderLayout());
+    mainPanel.add( tablePanel, "1, 5, 3, 5" );
+    tablePanel.setBorder( BorderFactory.createTitledBorder( "Protocol code" ));
+    codeModel = new CodeTableModel();
+    codeTable = new JTableX( codeModel );
+    tablePanel.add( new JScrollPane( codeTable ), BorderLayout.CENTER );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )codeTable.getDefaultRenderer( String.class );
     r.setHorizontalAlignment( SwingConstants.CENTER );
     codeTable.setDefaultEditor( Hex.class, new HexEditor());
-    codeTablePanel.add( codeTable.getTableHeader(), BorderLayout.NORTH );
-    codeTablePanel.add( codeTable, BorderLayout.CENTER );
 
-    JLabel l = new JLabel( colNames [ 0 ]);
-    l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
+    JLabel l = ( JLabel )
+      codeTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent( codeTable, colNames[ 0 ], false, false, 0, 0 );
 
     TableColumnModel columnModel = codeTable.getColumnModel();
     TableColumn column = columnModel.getColumn( 0 );
     int width = l.getPreferredSize().width;
 
     procs = ProcessorManager.getProcessors();
+    int count = 0;
+    for ( int i = 0; i < procs.length; i++ )
+    {
+      Processor proc = procs[ i ];
+      if ( proc.getEquivalentName().equals( proc.getFullName()))
+        ++count;
+    }
+    Processor[] uProcs = new Processor[ count ];
+    count = 0;
+    for ( int i = 0; i < procs.length; i++ )
+    {
+      Processor proc = procs[ i ];
+      if ( proc.getEquivalentName().equals( proc.getFullName()))
+        uProcs[ count++ ] = proc;
+    }
+    procs = uProcs;
     for ( int i = 0; i < procs.length; i++ )
     {
       l.setText( procs[ i ].getFullName());
@@ -111,6 +124,14 @@ public class ManualSettingsDialog
       column.setPreferredWidth( width );
     }
     codeTable.doLayout();
+    codeTable.setPreferredScrollableViewportSize( codeTable.getPreferredSize() );
+    
+    JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+    importButton = new JButton( "Import Protocol Upgrade" );
+    importButton.addActionListener( this );
+    importButton.setToolTipText( "Import Protocol Upgrades(s) from the Clipboard" );
+    buttonPanel.add( importButton );
+    tablePanel.add( buttonPanel, BorderLayout.SOUTH );
     
     // Device Parameter Table
     deviceModel = new ParameterTableModel( deviceParms, deviceTranslators );
@@ -119,23 +140,17 @@ public class ManualSettingsDialog
     SpinnerCellEditor editor = new SpinnerCellEditor( 0, 8, 1 );
     deviceTable.setDefaultEditor( Integer.class, editor );
     JScrollPane scrollPane = new JScrollPane( deviceTable );
-    Box box = Box.createVerticalBox();
-    box.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ));
-    box.add( scrollPane );
-    mainPanel.add( box, "1, 7, 3, 7" );
-    JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-    addDevice = new JButton( "Add" );
-    addDevice.addActionListener( this );
-    buttonPanel.add( addDevice );
+    tablePanel = new JPanel( new BorderLayout());
+    tablePanel.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ));
+    tablePanel.add( scrollPane, BorderLayout.CENTER );
+    mainPanel.add( tablePanel, "1, 7, 3, 7" );
+    buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     editDevice = new JButton( "Edit" );
     editDevice.addActionListener( this );
     buttonPanel.add( editDevice );
-    deleteDevice = new JButton( "Delete" );
-    deleteDevice.addActionListener( this );
-    buttonPanel.add( deleteDevice );
-    box.add( buttonPanel );
+    tablePanel.add( buttonPanel, BorderLayout.SOUTH );
     Dimension d = deviceTable.getPreferredScrollableViewportSize();
-    d.height = deviceTable.getRowHeight() * 5;
+    d.height = deviceTable.getRowHeight() * 4;
     deviceTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Raw Fixed Data:", SwingConstants.RIGHT );
@@ -157,22 +172,22 @@ public class ManualSettingsDialog
       }
     }
 
+    // Command Parameter table
     commandModel = new ParameterTableModel( cmdParms, cmdTranslators );
 
     commandTable = new JTableX( commandModel );
     commandTable.setDefaultEditor( Integer.class, editor );
     scrollPane = new JScrollPane( commandTable );
-    box = Box.createVerticalBox();
-    box.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ));
-    box.add( scrollPane );
-    mainPanel.add( box, "1, 11, 3, 11" );
+    tablePanel = new JPanel( new BorderLayout());
+    tablePanel.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ));
+    tablePanel.add( scrollPane, BorderLayout.CENTER );
+    mainPanel.add( tablePanel, "1, 11, 3, 11" );
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-    buttonPanel.add( new JButton( "Add" ));
-    buttonPanel.add( new JButton( "Edit" ));
-    buttonPanel.add( new JButton( "Delete" ));
-    box.add( buttonPanel );
+    editCommand = new JButton( "Edit" );
+    buttonPanel.add( editCommand );
+    tablePanel.add( buttonPanel, BorderLayout.SOUTH );
     d = commandTable.getPreferredScrollableViewportSize();
-    d.height = commandTable.getRowHeight() * 5;
+    d.height = commandTable.getRowHeight() * 4;
     commandTable.setPreferredScrollableViewportSize( d );
 
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
@@ -223,93 +238,11 @@ public class ManualSettingsDialog
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( source == addDevice )
-    {
-      String name =
-        ( String )JOptionPane.showInputDialog( this,
-                                               "Please enter a name for the device parameter.",
-                                               "Parameter Name",
-                                               JOptionPane.QUESTION_MESSAGE );
-      if ( name == null )
-        return;
-      String type = ( String )JOptionPane.showInputDialog( this,
-                                                        "How will the parameter \"" + name + "\" be presented to the user?",
-                                                        "Device Parameter Type",
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,
-                                                        typeChoices,
-                                                        typeChoices[ 0 ]);
-      if ( type == null )
-        return;
-      int bits = 0;
-      if ( type.equals( typeChoices[ 0 ]))
-      {
-        bits = 8;
-        NumberDeviceParm parm = new NumberDeviceParm( name,
-                                                      new DirectDefaultValue( new Integer( 0 )),
-                                                      10,
-                                                      bits );
-        deviceParms.add( parm );
-
-      }
-      else if ( type.equals( typeChoices[ 1 ]))
-      {
-        bits = 8;
-        JTextArea textArea = new JTextArea( 8, 20 );
-        new TextPopupMenu( textArea );
-        Box box = Box.createVerticalBox();
-        box.add( new JLabel( "Enter the choices for paramter \"" + name + ",\" one on each line." ));
-        box.add( new JScrollPane( textArea ));
-        int temp = JOptionPane.showConfirmDialog( this, box, "Drop-down list choices", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
-        if ( temp == JOptionPane.CANCEL_OPTION )
-          return;
-        StringTokenizer st = new StringTokenizer( textArea.getText(), "\n" );
-        String[] choices = new String[ st.countTokens()];
-        int i = 0;
-        while ( st.hasMoreTokens())
-        {
-          choices[ i++ ] = st.nextToken().trim();
-        }
-        ChoiceDeviceParm parm = new ChoiceDeviceParm( name,
-                                                    new DirectDefaultValue( new Integer( 0 )),
-                                                    choices );
-        deviceParms.add( parm );
-      }
-      else // Check box
-      {
-        bits = 1;
-        FlagDeviceParm parm = new FlagDeviceParm( name,
-                                                  new DirectDefaultValue( new Integer( 0 )));
-        deviceParms.add( parm );
-
-      }
-
-      int index = deviceTranslators.size();
-      Translator xlator = new Translator( false, false, index, bits, index * 8 );
-      deviceTranslators.add( xlator );
-      int newRow = deviceParms.size() - 1;
-      deviceModel.fireTableRowsInserted( newRow, newRow );
-    }
-    else if ( source == editDevice )
+    if ( source == editDevice )
     {
     }
-    else if ( source == deleteDevice )
+    else if ( source == editCommand )
     {
-      int row = deviceTable.getSelectedRow();
-      if (( row < 0 ) || ( row >= deviceParms.size()))
-        return;
-      deviceParms.remove( row );
-      deviceTranslators.remove( row );
-      deviceModel.fireTableRowsDeleted( row, row );
-    }
-    else if ( source == deleteCommand )
-    {
-      int row = commandTable.getSelectedRow();
-      if (( row < 0 ) || ( row >= deviceParms.size()))
-        return;
-      deviceParms.remove( row );
-      deviceTranslators.remove( row );
-      deviceModel.fireTableRowsDeleted( row, row );
     }
     else if ( source == view )
     {
@@ -328,8 +261,6 @@ public class ManualSettingsDialog
       JTextArea ta = new JTextArea( sw.toString(), 10, 70 );
       new TextPopupMenu( ta );
       ta.setEditable( false );
-//      ta.setLineWrap( true );
-//      ta.setWrapStyleWord( true );
       JOptionPane.showMessageDialog( this, new JScrollPane( ta ), "Protocol.ini entry text", JOptionPane.PLAIN_MESSAGE );
     }
     else if ( source == ok )
@@ -394,7 +325,7 @@ public class ManualSettingsDialog
     documentChanged( e );
   }
 
-  public class TableModel
+  public class CodeTableModel
     extends AbstractTableModel
   {
     public int getRowCount(){ return procs.length; }
@@ -413,6 +344,12 @@ public class ManualSettingsDialog
     {
       if ( col == 1 )
       {
+        if ( !protocol.hasAnyCode())
+        {
+          // create default device and cmd parms and translators
+          deviceModel.fireTableDataChanged();
+          commandModel.fireTableDataChanged();
+        }
         protocol.setCode(( Hex )value, procs[ row ] );
         fireTableRowsUpdated( row, row );
       }
@@ -465,13 +402,11 @@ public class ManualSettingsDialog
         System.err.println( "Adding code for processor " + processor );
         System.err.println( "Code is "  + text );
         protocol.setCode( new Hex( text ), p );
-        /*
-        for ( int i = 0; i < procNames.length; i++ )
+        for ( int i = 0; i < procs.length; i++ )
         {
-          if ( procNames[ i ].equals( processor ))
-            tableModel.fireTableRowsUpdated( i, i );
+          if ( procs[ i ] == p )
+            codeModel.fireTableRowsUpdated( i, i );
         }
-        */
       }
     }
   }
@@ -483,38 +418,28 @@ public class ManualSettingsDialog
   private java.util.List< CmdParameter > cmdParms = new ArrayList< CmdParameter >();
   private java.util.List< Translate > cmdTranslators = new ArrayList< Translate >();
 
+  private CodeTableModel codeModel = null;
+  private JTableX codeTable = null;
   private ParameterTableModel deviceModel = null;
   private JTableX deviceTable = null;
   private ParameterTableModel commandModel = null;
   private JTableX commandTable = null;
 
   private JTextField name = null;
-
   private JFormattedTextField pid = null;
-
   private JTextField rawHexData = null;
 
-  private JTextArea protocolCode = null;
-
-  private JButton addDevice = null;
+  private JButton importButton = null;
   private JButton editDevice = null;
-  private JButton deleteDevice = null;
-
-  private JButton addCommand = null;
   private JButton editCommand = null;
-  private JButton deleteCommand = null;
 
   private JButton view = null;
   private JButton ok = null;
   private JButton cancel = null;
   private int userAction = JOptionPane.CANCEL_OPTION;
-  private final static Object[] typeChoices = { "Numeric entry", "Drop-down list", "Check-box" };
+//  private final static Object[] typeChoices = { "Numeric entry", "Drop-down list", "Check-box" };
   private final static Object[] bitChoices = { "8", "7", "6", "5", "4", "3", "2", "1" };
-  private final static Object[] orderChoices =
-  {
-    "MSB (Most Significant Bit First)",
-    "LSB (Least Significant Bit First)"
-  };
+  private final static Object[] styleChoices = { "MSB", "MSB-Comp", "LSB", "LSB-Comp" };
   private final static String[] colNames = { "Processor", "Protocol Code" };
   private final static Class[] classes = { Processor.class, Hex.class };
   private static Processor[] procs = new Processor[ 0 ];

@@ -45,6 +45,15 @@ public class Value
   {
     this.defaultValue = defaultValue;
   }
+  
+  public String toString()
+  {
+    Object rc = getValue();
+    if ( rc == null )
+      return null;
+    else
+      return rc.toString();
+  }
 
   private Object userValue;
   private DefaultValue defaultValue;

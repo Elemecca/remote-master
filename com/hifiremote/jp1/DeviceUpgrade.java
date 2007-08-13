@@ -510,6 +510,12 @@ public class DeviceUpgrade
   public void importRawUpgrade( Hex hexCode, Remote newRemote, String newDeviceTypeAliasName, Hex pid, Hex pCode )
   {
     reset();
+    System.err.println( "DeviceUpgrade.importRawUpgrade" );
+    System.err.println( "  hexCode=" + hexCode.toString());
+    System.err.println( "  newRemote=" + newRemote );
+    System.err.println( "  newDeviceTypeAliasName=" + newDeviceTypeAliasName );
+    System.err.println( "  pid=" + pid.toString());
+    System.err.println( "  pCode=" + pCode.toString());
     int index = 1;
     if ( newRemote.usesTwoBytePID())
       index++;
@@ -544,6 +550,7 @@ public class DeviceUpgrade
         value = pCode.getData()[ 4 ] & 0xFF;
       fixedDataLength = value >> 4;
       cmdLength = value & 0x000F;
+      System.err.println( "fixedDataLength=" + fixedDataLength + " and cmdLength=" + cmdLength );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       fixedDataHex = new Hex( fixedData );
@@ -604,10 +611,19 @@ public class DeviceUpgrade
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       int cmdType = ManualProtocol.ONE_BYTE;
-      if ( cmdLength != 1 )
+      if ( cmdLength == 2 )
         cmdType = ManualProtocol.AFTER_CMD;
-      mp = new ManualProtocol( "PID " + pid, pid, cmdType, "MSB", 8, new ArrayList(), fixedData, 8 );
-      mp.setCode( pCode, remote.getProcessor() );
+      if ( cmdLength > 2 )
+        cmdType = cmdLength << 4; 
+
+      ArrayList< Value > parms = new ArrayList< Value >();
+      for ( short temp : fixedData )
+        parms.add( new Value( temp & 0xFF ));
+      parmValues = parms.toArray( new Value[ fixedDataLength ]);
+       
+      mp = new ManualProtocol( "PID " + pid, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
+      mp.setCode( pCode, remote.getProcessor());
+      ProtocolManager.getProtocolManager().add( mp );
       p = mp;
     }
 
@@ -1290,7 +1306,7 @@ public class DeviceUpgrade
     importUpgrade( in, true );
   }
 
-  private static Integer parseInt( String str )
+  private static int parseInt( String str )
   {
     int base = 10;
     if ( str.charAt( 0 ) == '$' )
@@ -1303,7 +1319,7 @@ public class DeviceUpgrade
       base = 16;
       str = str.substring( 0, str.length() - 1 );
     }
-    return Integer.valueOf( str, base );
+    return Integer.parseInt( str, base );
   }
 
   public void importUpgrade( BufferedReader in, boolean loadButtons )
@@ -1436,19 +1452,19 @@ public class DeviceUpgrade
       if ( devBits == 0 ) devBits = 8;
       if ( cmdBits == 0 ) cmdBits = 8;
 
-      java.util.List< Integer > values = new ArrayList< Integer >();
+      java.util.List< Value > values = new ArrayList< Value >();
 
       str = getNextField( st, delim ); // Device 1
       if ( str != null )
-        values.add( parseInt( str ));
+        values.add( new Value( parseInt( str )));
 
       str = getNextField( st, delim ); // Device 2
       if ( str != null )
-        values.add( parseInt( str ));
+        values.add( new Value( parseInt( str )));
 
       str = getNextField( st, delim ); // Device 3
       if ( str != null )
-        values.add( parseInt( str ));
+        values.add( new Value( parseInt( str )));
 
       str = getNextField( st, delim ); // Raw Fixed Data
       if ( str == null )

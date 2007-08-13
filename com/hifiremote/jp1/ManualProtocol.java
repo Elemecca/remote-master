@@ -27,9 +27,18 @@ public class ManualProtocol
   }
 
   public ManualProtocol( String name, Hex id, int cmdType, String signalStyle,
-                         int devBits, List parms, short[] rawHex, int cmdBits )
+                         int devBits, List< Value > parms, short[] rawHex, int cmdBits )
   {
     super( name, id, new Properties());
+    System.err.println( "ManualProtocol constructor:" );
+    System.err.println( "  name=" + name );
+    System.err.println( "  id=" + id );
+    System.err.println( "  cmdType=" + cmdType );
+    System.err.println( "  signalStyle=" + signalStyle );
+    System.err.println( "  devBits=" + devBits );
+    System.err.println( "  parms.size()=" + parms.size());
+    System.err.println( "  rawHex=" + rawHex );
+    System.err.println( "  cmdBits=" + cmdBits );
 
     boolean lsb = false;
     boolean comp = false;
@@ -43,42 +52,68 @@ public class ManualProtocol
     devParms = new DeviceParameter[ parms.size() ];
     deviceTranslators = new Translator[ parms.size() ];
 
+    int offset = parms.size();
+    short[] fixedBytes = new short[ offset + rawHex.length ];
+
     for ( int i = 0; i < parms.size(); i++ )
     {
       devParms[ i ] = new NumberDeviceParm( "Device " + ( i + 1 ), defaultValue, 10, devBits );
+      System.err.println( "Setting devParms[ " + i + " ]=" + parms.get( i ));
       devParms[ i ].setValue( parms.get( i ));
+      fixedBytes[ i ] = (( Integer )( parms.get( i ).getUserValue())).shortValue();
       deviceTranslators[ i ] = new Translator( lsb, comp, i, devBits, i * 8 );
     }
 
-    int offset = parms.size();
-    short[] fixedBytes = new short[ offset + rawHex.length ];
     for ( int i = 0 ; i < rawHex.length; i++ )
       fixedBytes[ i + offset ] = rawHex[ i ];
 
     fixedData = new Hex( fixedBytes );
 
     int byte2Index = 0;
+    int cmdLength = cmdType >> 4;
     switch ( cmdType )
     {
       case ONE_BYTE:
-        defaultCmd = new Hex( new short[ 1 ]);
         cmdIndex = 0;
+        cmdLength = 1;
         break;
       case BEFORE_CMD:
-        defaultCmd = new Hex( new short[ 2 ]);
-        cmdIndex = 1;
+        cmdIndex = cmdLength - 1;
+        cmdLength = 2;
         byte2Index = 0;
         break;
       case AFTER_CMD:
-        defaultCmd = new Hex( new short[ 2 ]);
         cmdIndex = 0;
+        cmdLength = 2;
         byte2Index = 1;
         break;
+      default:
+        cmdIndex = 0;
+        byte2Index = 0;
     }
-
-    cmdParms = new CmdParameter[ defaultCmd.length() ];
+    
+    defaultCmd = new Hex( new short[ cmdLength ]);
+    cmdParms = new CmdParameter[ cmdLength ];
+    cmdTranslators = new Translator[ cmdLength ];
+    importCmdTranslators = new Translator[ cmdLength - 1 ];
+    for ( int i = 0; i < cmdLength; ++i )
+    {
+      if ( i == cmdIndex )
+      {
+        System.err.println( "Creating OBC parm & translator for index " + i + " at bit " + i * 8 );
+        cmdParms[ i ] = new NumberCmdParm( "OBC", null, cmdBits );
+        cmdTranslators[ i ] = new Translator( lsb, comp, cmdIndex, cmdBits, cmdIndex * 8 );
+      }
+      else
+      {
+        System.err.println( "Creating Byte " + ( i + 1 ) + " parm & translators for index " + i + " at bit " + i * 8 );
+        cmdParms[ i ] = new NumberCmdParm( "Byte " + ( i + 1 ), defaultValue, cmdBits );
+        cmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );
+        importCmdTranslators[ i - 1 ] = new Translator( false, false, i - 1, 8, i * 8 );
+      }
+    }
+    /*
     cmdParms[ 0 ] = new NumberCmdParm( "OBC", null, cmdBits );
-    cmdTranslators = new Translator[ defaultCmd.length() ];
     cmdTranslators[ 0 ] = new Translator( lsb, comp, 0, cmdBits, cmdIndex * 8 );
     if ( defaultCmd.length() > 1 )
     {
@@ -87,6 +122,7 @@ public class ManualProtocol
       importCmdTranslators = new Translator[ 1 ];
       importCmdTranslators[ 0 ] = new Translator( false, false, 0, 8, byte2Index * 8 );
     }
+    */
   }
 
   public String getName()

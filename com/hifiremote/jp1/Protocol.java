@@ -280,6 +280,11 @@ public class Protocol
     else
       return true;
   }
+  
+  public boolean hasAnyCode()
+  {
+    return !code.isEmpty();
+  }
 
   public boolean hasCode( Remote remote )
   {

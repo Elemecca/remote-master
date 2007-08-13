@@ -1,4 +1,4 @@
 @echo off
-call compile
+call compile -g
 call makejar
 call makezip %1
