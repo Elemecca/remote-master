@@ -344,11 +344,22 @@ public class ManualSettingsDialog
     {
       if ( col == 1 )
       {
-        if ( !protocol.hasAnyCode())
+        Hex newCode = ( Hex )value;
+        if (( newCode != null ) && ( newCode.length() != 0 ))
         {
-          // create default device and cmd parms and translators
-          deviceModel.fireTableDataChanged();
-          commandModel.fireTableDataChanged();
+          if ( !protocol.hasAnyCode())
+          {
+            int fixedDataLength = Protocol.getFixedDataLengthFromCode( procs[ row ], newCode );
+            ArrayList< Value > devParms = new ArrayList< Value >();
+            Value zero = new Value( 0 );
+            for ( int i = 0; i < fixedDataLength; ++i )
+              devParms.add( zero );
+            int cmdLength = Protocol.getCmdLengthFromCode( procs[ row ], newCode );
+            protocol.createDefaultParmsAndTranslators( cmdLength << 4, false, false,
+                         8, devParms, new short[ 0 ], 8 );
+            deviceModel.fireTableDataChanged();
+            commandModel.fireTableDataChanged();
+          }
         }
         protocol.setCode(( Hex )value, procs[ row ] );
         fireTableRowsUpdated( row, row );

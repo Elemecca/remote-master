@@ -47,6 +47,12 @@ public class ManualProtocol
     if ( signalStyle.endsWith( "COMP" ))
       comp = true;
 
+    createDefaultParmsAndTranslators( cmdType, lsb, comp, devBits, parms, rawHex, cmdBits );
+  }
+
+  public void createDefaultParmsAndTranslators( int cmdType, boolean lsb, boolean comp,
+                         int devBits, List< Value > parms, short[] rawHex, int cmdBits )
+  {
     DirectDefaultValue defaultValue = new DirectDefaultValue( new Integer( 0 ));
 
     devParms = new DeviceParameter[ parms.size() ];

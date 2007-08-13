@@ -545,11 +545,9 @@ public class DeviceUpgrade
     Hex fixedDataHex = null;
     if (( pCode != null ) && ( pCode.length() > 2 ))
     {
-      int value = pCode.getData()[ 2 ] & 0x00FF;
-      if ( newRemote.getProcessor().getFullName().equals( "HCS08" ))
-        value = pCode.getData()[ 4 ] & 0xFF;
-      fixedDataLength = value >> 4;
-      cmdLength = value & 0x000F;
+      Processor proc = newRemote.getProcessor();
+      fixedDataLength = Protocol.getFixedDataLengthFromCode( proc, pCode );
+      cmdLength = Protocol.getCmdLengthFromCode( proc, pCode );
       System.err.println( "fixedDataLength=" + fixedDataLength + " and cmdLength=" + cmdLength );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );

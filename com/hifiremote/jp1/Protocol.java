@@ -195,14 +195,38 @@ public class Protocol
     }
   }
 
-  public int getCmdLengthFromCode()
+  public Processor getFirstProcessor()
   {
     Set keys = code.keySet();
     Iterator it = keys.iterator();
     String key = ( String )it.next();
-    Hex pCode = ( Hex )code.get( key );
+    return ProcessorManager.getProcessor( key );
+  }
+
+  public int getCmdLengthFromCode()
+  {
+    Processor proc = getFirstProcessor();
+    return getCmdLengthFromCode( proc, getCode( proc ));
+  }
+
+  public static int getCmdLengthFromCode( Processor proc, Hex pCode )
+  {
     int value = pCode.getData()[ 2 ];
-    if ( key.equals( "HCS08" ))
+    if ( proc.getFullName().equals( "HCS08" ))
+      value = pCode.getData()[ 4 ];
+    return value >> 4;
+  }
+
+  public int getFixedDataLengthFromCode()
+  {
+    Processor proc = getFirstProcessor();
+    return getFixedDataLengthFromCode( proc, getCode( proc ));
+  }
+
+  public static int getFixedDataLengthFromCode( Processor proc, Hex pCode )
+  {
+    int value = pCode.getData()[ 2 ];
+    if ( proc.getFullName().equals( "HCS08" ))
       value = pCode.getData()[ 4 ];
     return value & 0x0F;
   }
