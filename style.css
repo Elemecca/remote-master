@@ -93,22 +93,6 @@ th {
   border-width : 2px;/* the border property in longhand*/
   }
 
-P, OL, UL, DL {font-size: 13px;}
-/*font-family is already defined, here I only set the font-size*/
-P OL, P UL, P DL, OL UL {font-size: 13px;}
-/*and here the I prevent the incredible shrinking text*/
-
-.six {font-size: 11px;
-  color: #999999; /*this is for small text*/
-  background: transparent;}
-.mit {text-align: justify;/*justified text*/}
-.red {color : #FF0000; background: white;}
-.mint {color: #009999; background: white;}
-.ROT {font-size: 16px; /*also red, but bigger and in bold*/
-  color: #FF0000;
-  font-weight: 600;
-  background: white;}
-
 a {
   text-decoration: none;
   background: white;

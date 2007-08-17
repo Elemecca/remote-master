@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.*;
+import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -27,7 +28,7 @@ public class ManualSettingsDialog
     super( owner, "Manual Settings", true );
     createGui( owner, protocol );
   }
-  
+
   private void createGui( Component owner, ManualProtocol protocol )
   {
     setLocationRelativeTo( owner );
@@ -111,14 +112,14 @@ public class ManualSettingsDialog
     }
     codeTable.doLayout();
     codeTable.setPreferredScrollableViewportSize( codeTable.getPreferredSize() );
-    
+
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
     importButton = new JButton( "Import Protocol Upgrade" );
     importButton.addActionListener( this );
     importButton.setToolTipText( "Import Protocol Upgrades(s) from the Clipboard" );
     buttonPanel.add( importButton );
     tablePanel.add( buttonPanel, BorderLayout.SOUTH );
-    
+
     // Device Parameter Table
     deviceModel = new ParameterTableModel( protocol, ParameterTableModel.Type.DEVICE );
 
@@ -130,11 +131,6 @@ public class ManualSettingsDialog
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ));
     tablePanel.add( scrollPane, BorderLayout.CENTER );
     mainPanel.add( tablePanel, "1, 7, 3, 7" );
-    buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-    editDevice = new JButton( "Edit" );
-    editDevice.addActionListener( this );
-    buttonPanel.add( editDevice );
-    tablePanel.add( buttonPanel, BorderLayout.SOUTH );
     Dimension d = deviceTable.getPreferredScrollableViewportSize();
     d.height = deviceTable.getRowHeight() * 4;
     deviceTable.setPreferredScrollableViewportSize( d );
@@ -154,10 +150,6 @@ public class ManualSettingsDialog
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ));
     tablePanel.add( scrollPane, BorderLayout.CENTER );
     mainPanel.add( tablePanel, "1, 11, 3, 11" );
-    buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-    editCommand = new JButton( "Edit" );
-    buttonPanel.add( editCommand );
-    tablePanel.add( buttonPanel, BorderLayout.SOUTH );
     d = commandTable.getPreferredScrollableViewportSize();
     d.height = commandTable.getRowHeight() * 4;
     commandTable.setPreferredScrollableViewportSize( d );
@@ -210,11 +202,26 @@ public class ManualSettingsDialog
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( source == editDevice )
+    if ( source == importButton )
     {
-    }
-    else if ( source == editCommand )
-    {
+      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+      Transferable clipData = clipboard.getContents( clipboard );
+      if ( clipData != null )
+      {
+        try
+        {
+          if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
+          {
+            String s =
+              ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
+            importProtocolCode( s );
+          }
+        }
+        catch (Exception ex)
+        {
+          ex.printStackTrace( System.err );
+        }
+      }
     }
     else if ( source == view )
     {
@@ -384,11 +391,10 @@ public class ManualSettingsDialog
           processor = p.getFullName();
         System.err.println( "Adding code for processor " + processor );
         System.err.println( "Code is "  + text );
-        protocol.setCode( new Hex( text ), p );
         for ( int i = 0; i < procs.length; i++ )
         {
           if ( procs[ i ] == p )
-            codeModel.fireTableRowsUpdated( i, i );
+            codeModel.setValueAt( new Hex( text ), i, 1 );
         }
       }
     }
@@ -408,8 +414,6 @@ public class ManualSettingsDialog
   private JTextField rawHexData = null;
 
   private JButton importButton = null;
-  private JButton editDevice = null;
-  private JButton editCommand = null;
 
   private JButton view = null;
   private JButton ok = null;
