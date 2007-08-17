@@ -7,16 +7,32 @@ public class ParameterTableModel
   extends AbstractTableModel
 
 {
-  public ParameterTableModel( List< ? extends Parameter > parms, List< Translate > xlators )
+  public ParameterTableModel( ManualProtocol protocol, Type type )
   {
     super();
-    this.parms = parms;
-    this.xlators = xlators;
+    this.protocol = protocol;
+    this.type = type;
+  }
+  
+  private void getProtocolInfo()
+  {
+    switch ( type )
+    {
+      case DEVICE:
+        parms = protocol.getDeviceParameters();
+        xlators = protocol.getDeviceTranslators();
+        break;
+      case COMMAND:
+        parms = protocol.getCommandParameters();
+        xlators = protocol.getCmdTranslators();
+        break;
+    }
   }
 
   public int getRowCount()
   {
-    return parms.size();
+    getProtocolInfo();
+    return parms.length;
   }
 
   public int getColumnCount()
@@ -42,22 +58,18 @@ public class ParameterTableModel
 
   public boolean isCellEditable( int row, int col )
   {
-    if ( col == typeCol )
-      return false;
-    else
-      return true;
+    return true;
   }
 
   public Object getValueAt( int row, int col )
   {
-    Parameter parm = parms.get( row );
-    Translator translator = ( Translator )xlators.get( row );
+    getProtocolInfo();
+    Parameter parm = parms[ row ];
+    Translator translator = ( Translator )xlators[ row ];
     switch ( col )
     {
       case nameCol:
         return parm.getName();
-      case typeCol:
-        return parm.getDescription();
       case bitsCol:
         return new Integer( translator.getBits());
       case orderCol:
@@ -71,17 +83,26 @@ public class ParameterTableModel
 
   public void setValueAt( Object value, int row, int col )
   {
-    Parameter parm = parms.get( row );
-    Translator translator = ( Translator )xlators.get( row );
+    getProtocolInfo();
+    Parameter parm = parms[ row ];
+    Translator translator = ( Translator )xlators[ row ];
     switch ( col )
     {
       case nameCol:
         parm.setName(( String )value );
         break;
-      case typeCol:
-        break;
       case bitsCol:
-        translator.setBits((( Integer )value ).intValue());
+        int bits = (( Integer )value ).intValue();
+        switch ( type )
+        {
+          case DEVICE:
+            (( NumberDeviceParm )parm ).setBits( bits );
+            break;
+          case COMMAND:
+            (( NumberCmdParm )parm ).setBits( bits );
+            break;
+        }
+        translator.setBits( bits );
         break;
       case orderCol:
         translator.setLSB((( Boolean )value ).booleanValue());
@@ -93,22 +114,26 @@ public class ParameterTableModel
     }
   }
 
-  private List< ? extends Parameter > parms;
-  private List< Translate > xlators;
+  private Parameter[] parms;
+  private Translate[] xlators;
 
+  private ManualProtocol protocol = null;
+  
+  public enum Type { DEVICE, COMMAND };
+  private Type type = Type.DEVICE;
+  
   private final static int nameCol = 0;
-  private final static int typeCol = 1;
-  private final static int bitsCol = 2;
-  private final static int orderCol = 3;
-  private final static int compCol = 4;
+  private final static int bitsCol = 1;
+  private final static int orderCol = 2;
+  private final static int compCol = 3;
 
   private final static String[] colNames =
   {
-   "Name", "Type", "Bits", "LSB", "Comp"
+   "Name", "Bits", "LSB", "Comp"
   };
 
   private final static Class[] colClasses =
   {
-    String.class, String.class, Integer.class, Boolean.class, Boolean.class
+    String.class, Integer.class, Boolean.class, Boolean.class
   };
 }

@@ -104,6 +104,7 @@ public class ProtocolManager
     rdr.close();
     add( ProtocolFactory.createProtocol( name, id, type, props ));
     manualProtocol = new ManualProtocol( null, null );
+    manualProtocol.setName( manualProtocol.getName());
 
     if ( byName.size() == 0 )
     {

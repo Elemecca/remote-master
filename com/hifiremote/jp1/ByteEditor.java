@@ -27,6 +27,11 @@ public class ByteEditor
     this.max = max;
     this.parm = parm;
   }
+  
+  public void setBits( int bits )
+  {
+    max = ( 1 << bits ) - 1;
+  }
 
   public Component getTableCellEditorComponent( JTable table, Object value,
                                                 boolean isSelected, int row,

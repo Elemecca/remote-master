@@ -9,23 +9,6 @@ import java.awt.event.*;
 public class NumberDeviceParm
   extends DeviceParameter
 {
-  public class JTextFieldDefault
-    extends JTextField
-  {
-    JTextFieldDefault( String str, DefaultValue defaultValue, int base )
-    {
-      this.defaultValue = defaultValue;
-      this.base = base;
-      setToolTipText( str );
-    }
-    public String getToolTipText(MouseEvent event)
-    {
-      return super.getToolTipText() + Integer.toString((( Integer )defaultValue.value()).intValue(), base ) + '.';
-    }
-    DefaultValue defaultValue;
-    int base;
-  }
-
   public NumberDeviceParm( String name, DefaultValue defaultValue )
   {
     this( name, defaultValue, 10 );
@@ -40,19 +23,34 @@ public class NumberDeviceParm
   {
     super( name, defaultValue );
     this.bits = bits;
-    this.min = 0;
-    this.max = (( 1 << bits ) - 1 );
+    min = 0;
+    max = (( 1 << bits ) - 1 );
     this.base = base;
     verifier = new IntVerifier( min, max, true );
     verifier.setBase(base);
-    // JSF28may03 Questionable design decision: DeviceParameter always has non null defaultValue
+    tf = new JTextField();
+    tf.setInputVerifier( verifier );
+    setToolTipText();
+  }
+  
+  private void setToolTipText()
+  {
     String numType = "";
     if ( base == 16 )
       numType = "hex ";
     String helpText = "Enter a " + numType
-      + "number in the range " + min + ".." + max + ".  The default is ";
-    tf = new JTextFieldDefault( helpText, defaultValue, base);
-    tf.setInputVerifier( verifier );
+      + "number in the range " + min + ".." + max + ".";
+    if (( defaultValue != null ) && ( defaultValue.value() != null ))
+      helpText += "The default is " + Integer.toString((( Integer )defaultValue.value()).intValue(), base ) + '.';
+    tf.setToolTipText( helpText );
+  }    
+
+  public void setBits( int bits )
+  {
+    this.bits = bits;
+    max = (( 1 << bits ) - 1 );
+    verifier.setMax( max );
+    setToolTipText();
   }
 
   public JComponent getComponent()
@@ -91,9 +89,9 @@ public class NumberDeviceParm
     {
       String temp = null;
       Class aClass = value.getClass();
-      if (( aClass == Integer.class ) && base != 10 )
+      if (( aClass == Integer.class ) && ( base != 10 ))
         temp = Integer.toHexString((( Integer )value ).intValue());
-      else 
+      else
         temp = value.toString();
       tf.setText( temp );
     }
@@ -103,7 +101,7 @@ public class NumberDeviceParm
   {
     StringBuilder buff = new StringBuilder();
     buff.append( name );
-    if (( base == 6 ) || ( bits != 8 ))
+    if (( base == 16 ) || ( bits != 8 ))
       buff.append( ':' );
     if ( base == 16 )
       buff.append( '$' );

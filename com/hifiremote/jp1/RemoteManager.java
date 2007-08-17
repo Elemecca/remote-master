@@ -24,13 +24,18 @@ public class RemoteManager
     {
       public boolean accept( File dir, String name )
       {
+        if ( !name.toLowerCase().endsWith( ".rdf" ))
+          return false;
+        
         int open = name.indexOf( '(' );
         int close = name.indexOf( ')' );
-        if (( open == -1 ) || ( close == -1 ) || ( close < open ))
+        if (( open == -1 ) || ( close == -1 ) || ( close < open ) || ( name.charAt( open - 1 ) != ' ' ))
+        {
+          System.err.println( "Invalid RDF file name: " + name );
           return false;
+        }
           
-        // name must end if ".rdf"
-        return name.toLowerCase().endsWith( ".rdf" );
+        return true;
       }
     };
 

@@ -195,40 +195,42 @@ public class Protocol
     }
   }
 
-  public Processor getFirstProcessor()
+  public String getFirstProcessor()
   {
     Set keys = code.keySet();
     Iterator it = keys.iterator();
     String key = ( String )it.next();
-    return ProcessorManager.getProcessor( key );
+    System.err.println( "Protocol.getFirstProcessor() key=" + key );
+    return key;
   }
 
   public int getCmdLengthFromCode()
   {
-    Processor proc = getFirstProcessor();
-    return getCmdLengthFromCode( proc, getCode( proc ));
+    String proc = getFirstProcessor();
+    System.err.println( "Protocol.getCmdLengthFromCode() proc=" + proc );
+    return getCmdLengthFromCode( proc, code.get( proc ));
   }
 
-  public static int getCmdLengthFromCode( Processor proc, Hex pCode )
+  public static int getCmdLengthFromCode( String proc, Hex pCode )
   {
     int value = pCode.getData()[ 2 ];
-    if ( proc.getFullName().equals( "HCS08" ))
+    if ( proc.equals( "HCS08" ))
       value = pCode.getData()[ 4 ];
-    return value >> 4;
+    return value & 0x0F;
   }
 
   public int getFixedDataLengthFromCode()
   {
-    Processor proc = getFirstProcessor();
-    return getFixedDataLengthFromCode( proc, getCode( proc ));
+    String proc = getFirstProcessor();
+    return getFixedDataLengthFromCode( proc, code.get( proc ));
   }
 
-  public static int getFixedDataLengthFromCode( Processor proc, Hex pCode )
+  public static int getFixedDataLengthFromCode( String proc, Hex pCode )
   {
     int value = pCode.getData()[ 2 ];
-    if ( proc.getFullName().equals( "HCS08" ))
+    if ( proc.equals( "HCS08" ))
       value = pCode.getData()[ 4 ];
-    return value & 0x0F;
+    return value >> 4;
   }
 
   public void reset()
@@ -275,6 +277,7 @@ public class Protocol
         }
         Processor p = ProcessorManager.getProcessor( processor );
         importedCode = new Hex( text );
+        System.err.println( "Protocol.importUpgradeCode(), putting code for name=" + p.getEquivalentName() + ",code=" + importedCode );
         code.put( p.getEquivalentName(), importedCode );
       }
     }

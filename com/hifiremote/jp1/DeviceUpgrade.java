@@ -546,8 +546,8 @@ public class DeviceUpgrade
     if (( pCode != null ) && ( pCode.length() > 2 ))
     {
       Processor proc = newRemote.getProcessor();
-      fixedDataLength = Protocol.getFixedDataLengthFromCode( proc, pCode );
-      cmdLength = Protocol.getCmdLengthFromCode( proc, pCode );
+      fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), pCode );
+      cmdLength = Protocol.getCmdLengthFromCode( proc.getEquivalentName(), pCode );
       System.err.println( "fixedDataLength=" + fixedDataLength + " and cmdLength=" + cmdLength );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
@@ -612,13 +612,13 @@ public class DeviceUpgrade
       if ( cmdLength == 2 )
         cmdType = ManualProtocol.AFTER_CMD;
       if ( cmdLength > 2 )
-        cmdType = cmdLength << 4; 
+        cmdType = cmdLength << 4;
 
       ArrayList< Value > parms = new ArrayList< Value >();
       for ( short temp : fixedData )
         parms.add( new Value( temp & 0xFF ));
       parmValues = parms.toArray( new Value[ fixedDataLength ]);
-       
+
       mp = new ManualProtocol( "PID " + pid, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
       mp.setCode( pCode, remote.getProcessor());
       ProtocolManager.getProtocolManager().add( mp );
@@ -1154,7 +1154,9 @@ public class DeviceUpgrade
          name.equals( "Manual" ) ||
          name.equalsIgnoreCase( "PID " + pid.toString()))
     {
-      protocol = new ManualProtocol( pid, props );
+      ManualProtocol mp = new ManualProtocol( pid, props );
+      mp.setName( name );
+      protocol = mp;
       pm.add( protocol );
     }
     else
@@ -1320,6 +1322,39 @@ public class DeviceUpgrade
     return Integer.parseInt( str, base );
   }
 
+  private String cleanName( String name )
+  {
+      if (( name != null ) && ( name.length() == 5 ) &&
+          name.startsWith( "num " ) && Character.isDigit( name.charAt( 4 )))
+        return name.substring( 4 );
+      return name;
+  }
+
+  private boolean isExternalFunctionName( String name )
+  {
+    char firstChar = name.charAt( 0 );
+    int slash = name.indexOf( '/' );
+    int space = name.indexOf( ' ' );
+    if ( space == -1 )
+      space = name.length();
+    if (( firstChar == '=' ) && ( slash > 1 ) && ( space > slash ))
+    {
+      String devName = name.substring( 1, slash );
+      String setupString = name.substring( slash + 1, space );
+      if ( setupString.length() == 4 )
+      {
+        try
+        {
+          int setupCode = Integer.parseInt( setupString );
+          return true;
+        }
+        catch ( NumberFormatException nfe )
+        {}
+      }
+    }
+    return false;
+  }
+
   public void importUpgrade( BufferedReader in, boolean loadButtons )
     throws Exception
   {
@@ -1442,8 +1477,11 @@ public class DeviceUpgrade
       int cmdBits = 8;
       try
       {
-        devBits = Integer.parseInt( bitsStr.substring( 0, 1 ), 16);
-        cmdBits = Integer.parseInt( bitsStr.substring( 1 ), 16 );
+        if ( bitsStr != null )
+        {
+          devBits = Integer.parseInt( bitsStr.substring( 0, 1 ), 16);
+          cmdBits = Integer.parseInt( bitsStr.substring( 1 ), 16 );
+        }
       }
       catch ( NumberFormatException nfe ){}
       System.err.println( "devBits=" + devBits + " and cmdBits=" + cmdBits );
@@ -1534,16 +1572,19 @@ public class DeviceUpgrade
     else if ( buttonStyle.equals( "EFC" ))
       useEFC = true;
 
-    int obcIndex = -1;
+    int obcIndex = 0;
     CmdParameter[] cmdParms = protocol.getCommandParameters();
-    for ( obcIndex = 0; obcIndex < cmdParms.length; obcIndex++ )
+    for ( int i = 0; i < cmdParms.length; i++ )
     {
-      if ( cmdParms[ obcIndex ].getName().equals( "OBC" ))
+      if ( cmdParms[ i ].getName().equals( "OBC" ))
+      {
+        obcIndex = i;
         break;
+      }
     }
 
     String match1 = "fByte2" + delim + "bButtons" + delim + "bFunctions" + delim + "fNotes" + delim + "Device Combiner";
-    String match2 = "byte2" + delim + "Buttons" + delim + "Functions" + delim + "Notes" + delim + "Device Combiner";
+    String match2 = "byte2" + delim + "Buttons" + delim + "Functions" + delim;
 
     while ( true )
     {
@@ -1577,7 +1618,7 @@ public class DeviceUpgrade
           String tempDelim = null;
           while (( line = in.readLine()) != null )
           {
-            if ( line.charAt( 0 ) == '"' )
+            if (( line.length() > 0 ) && ( line.charAt( 0 ) == '"' ))
               tempDelim = "\"";
             else
               tempDelim = delim;
@@ -1598,51 +1639,46 @@ public class DeviceUpgrade
           }
           notes = buff.toString().trim();
           if ( protocol.getClass() == ManualProtocol.class )
-          {
             protocol.importUpgradeCode( notes );
-            /*
-            Hex h = protocol.getCode( remote );
-            int value = h.getData()[ 2 ] & 0xFF;
-            if ( remote.getProcessor().getFullName().equals( "HCS08" ))
-              value = h.getData()[ 4 ] & 0xFF;
-            int fixedDataLength = value >> 4;
-            int cmdLength = value & 0x000F;
-            (( ManualProtocol )protocol ).setDefaultCmd( new Hex( cmdLength ));
-            */
-          }
         }
       }
     }
 
-    // Parse the function definition/assignment lines
-    java.util.List< java.util.List< String >> unassigned = new ArrayList< java.util.List< String >>();
-    java.util.List< Function > usedFunctions = new ArrayList< Function >();
+    // Parse the function definitions
+    ArrayList< ArrayList< String >> unassigned = new ArrayList< ArrayList< String >>();
     for ( int i = 0; i < 128; i++ )
     {
       line = lines[ i ];
       st = new StringTokenizer( line, delim, true );
-      token = getNextField( st, delim ); // get the name (field 1)
-      if (( token != null ) && ( token.length() == 5 ) &&
-          token.startsWith( "num " ) && Character.isDigit( token.charAt( 4 )))
-        token = token.substring( 4 );
+      String funcName = cleanName( getNextField( st, delim ));
+      String code = getNextField( st, delim );
+      String byte2 = getNextField( st, delim );
+      String buttonName = getNextField( st, delim );
+      String assignedName = getNextField( st, delim );
+      String notes = getNextField( st, delim );
+      String pidStr = getNextField( st, delim ); // field 7
+      String fixedDataStr = getNextField( st, delim ); // field 8
 
-      System.err.println( "Looking for function " + token );
-      Function f = getFunction( token, usedFunctions );
-      if ( f == null )
+      Function f = null;
+      if (( code != null ) || ( byte2 != null ))
       {
-        System.err.println( "Had to create a new one!" );
-        if (( token != null ) && ( token.charAt( 0 ) == '=' ) && ( token.indexOf( '/' ) != -1 ))
-          f = new ExternalFunction();
-        else
-          f = new Function();
-        f.setName( token );
-      }
-      else
-        System.err.println( "Found it!" );
-
-      token = getNextField( st, delim );  // get the function code (field 2)
-      if ( token != null )
-      {
+        System.err.println( "Creating a new one!" );
+        boolean isExternal = false;
+        if ( code != null )
+        {
+          isExternal = isExternalFunctionName( funcName );
+          if ( isExternal )
+          {
+            f = new ExternalFunction();
+            extFunctions.add(( ExternalFunction )f );
+          }
+          else
+          {
+            f = new Function();
+            functions.add( f );
+          }
+          f.setName( funcName );
+        }
         Hex hex = null;
         if ( f.isExternal())
         {
@@ -1655,8 +1691,10 @@ public class DeviceUpgrade
           for ( int j = 0;( j < names.length ) && ( match == null ); j++ )
           {
             if ( devName.equalsIgnoreCase( names[ j ]))
+            {
               match = names[ j ];
-
+              break;
+            }
           }
           if ( match == null )
           {
@@ -1681,46 +1719,83 @@ public class DeviceUpgrade
           else
             codeString = name.substring( slash + 1, space );
           ef.setSetupCode( Integer.parseInt( codeString ));
-          if (( token.indexOf( 'h' ) != -1 ) || ( token.indexOf( '$') != -1 ) || (token.indexOf( ' ' ) != -1 ))
+          if (( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$') != -1 ) || ( code.indexOf( ' ' ) != -1 ))
           {
-            hex = new Hex( token );
+            hex = new Hex( code );
             ef.setType( ExternalFunction.HexType );
           }
           else
           {
             hex = new Hex( 1 );
-            EFC.toHex( Short.parseShort( token ), hex, 0 );
+            EFC.toHex( Short.parseShort( code ), hex, 0 );
             ef.setType( ExternalFunction.EFCType );
           }
-          getNextField( st, delim ); // skip byte2 (field 3)
         }
-        else
+        else // not external
         {
-          if (( token.indexOf( 'h' ) != -1 ) || ( token.indexOf( '$') != -1 ) || (token.indexOf( ' ' ) != -1 ))
+          if (( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$') != -1 ) || ( code.indexOf( ' ' ) != -1 ))
           {
-            hex = new Hex( token );
+            hex = new Hex( code );
           }
           else
           {
             hex = protocol.getDefaultCmd();
-            protocol.importCommand( hex, token, useOBC, obcIndex, useEFC );
+            protocol.importCommand( hex, code, useOBC, obcIndex, useEFC );
           }
 
-          token = getNextField( st, delim ); // get byte2 (field 3)
-          if ( token != null )
-            protocol.importCommandParms( hex, token );
+          if ( byte2 != null )
+            protocol.importCommandParms( hex, byte2 );
         }
         f.setHex( hex );
       }
-      else
+
+      if (( combiner != null ) && ( pidStr != null ) &&
+          !pidStr.equals( "Protocol ID" ))
       {
-        token = getNextField( st, delim ); // skip field 3
+        Hex fixedData = new Hex();
+        if ( fixedDataStr != null )
+          fixedData = new Hex( fixedDataStr );
+
+        Hex newPid = new Hex( pidStr );
+        Protocol p = protocolManager.findProtocolForRemote( remote, newPid, fixedData );
+        if ( p != null )
+        {
+          CombinerDevice dev = new CombinerDevice( p, fixedData );
+          combiner.add( dev );
+        }
+        else
+        {
+          ManualProtocol mp = new ManualProtocol( newPid, new Properties());
+          mp.setRawHex( fixedData );
+          combiner.add( new CombinerDevice( mp, null, null ));
+        }
       }
-      String actualName = getNextField( st, delim ); // get assigned button name (field 4)
+    }
+
+    // Parse the button assignments
+    for ( int i = 0; i < 128; i++ )
+    {
+      line = lines[ i ];
+      st = new StringTokenizer( line, delim, true );
+      String funcName = getNextField( st, delim );
+      String code = getNextField( st, delim );
+      String byte2 = getNextField( st, delim );
+      String actualName = cleanName( getNextField( st, delim )); // get assigned button name (field 4)
       System.err.println( "actualName='" + actualName + "'" );
+      String assignedName = getNextField( st, delim ); // get assinged functionName (field 5)
+      String notes = getNextField( st, delim ); // get function notes (field 6 )
+
+      // skip to field 13
+      String shiftAssignedName = null;
+      for ( int j = 7; j < 13; j++ )
+        shiftAssignedName = getNextField( st, delim );
 
       if (( actualName != null ) && actualName.length() == 0 )
         actualName = null;
+
+      if ( actualName == null )
+        continue;
+
       String buttonName = null;
       if ( actualName != null )
       {
@@ -1749,149 +1824,89 @@ public class DeviceUpgrade
       else
         System.err.println( "No buttonName for actualName=" + actualName + " and i=" + i );
 
-      token = getNextField( st, delim );  // get normal function (field 5)
-      if (( buttonName != null ) && ( token != null ) &&
-           Character.isDigit( token.charAt( 0 )) &&
-           Character.isDigit( token.charAt( 1 )) &&
-           ( token.charAt( 2 ) == ' ' ) &&
-           ( token.charAt( 3 ) == '-' ) &&
-           ( token.charAt( 4 ) == ' ' ))
+      if (( buttonName != null ) && ( assignedName != null ) &&
+           Character.isDigit( assignedName.charAt( 0 )) &&
+           Character.isDigit( assignedName.charAt( 1 )) &&
+           ( assignedName.charAt( 2 ) == ' ' ) &&
+           ( assignedName.charAt( 3 ) == '-' ) &&
+           ( assignedName.charAt( 4 ) == ' ' ))
       {
-        String name = token.substring( 5 );
+        String name = cleanName( assignedName.substring( 5 ));
         if (( name.length() == 5 ) && name.startsWith( "num " ) &&
               Character.isDigit( name.charAt( 4 )))
           name = name.substring( 4 );
 
         Function func = null;
-        if (( f.getName() != null ) && f.getName().equalsIgnoreCase( name ))
-          func = f;
+        if ( isExternalFunctionName( name ))
+          func = getFunction( name, extFunctions );
         else
-        {
           func = getFunction( name, functions );
-          if ( func == null )
-            func = getFunction( name, extFunctions );
-          if ( func == null )
-            func = getFunction( name, usedFunctions );
-        }
+
         if ( func == null )
         {
-          System.err.println( "Creating new function " + name );
-          if (( name.charAt( 0 ) == '=' ) && ( name.indexOf( '/' ) != -1 ))
-            func = new ExternalFunction();
-          else
-            func = new Function();
-          func.setName( name );
-          if ( b != null )
-            usedFunctions.add( func );
+          System.err.println( "Could not find function " + name );
+          continue;
         }
         else
           System.err.println( "Found function " + name );
 
         if ( b == null )
         {
-          java.util.List< String > temp = new ArrayList< String >( 2 );
+          ArrayList< String > temp = new ArrayList< String >( 2 );
           temp.add( name );
           temp.add( actualName );
           unassigned.add( temp );
           System.err.println( "Couldn't find button " + buttonName + " to assign function " + name );
         }
-        else if ( loadButtons )
+        else if ( loadButtons && ( func.getHex() != null ))
         {
           System.err.println( "Setting function " + name + " on button " + b );
           assignments.assign( b, func, Button.NORMAL_STATE );
         }
       }
 
-      token = getNextField( st, delim );  // get notes (field 6)
-      if ( token != null )
-        f.setNotes( token );
-
-      if ( !f.isEmpty())
+      if (( shiftAssignedName != null ) && !shiftAssignedName.equals( "" ))
       {
-        if ( f.isExternal())
-          extFunctions.add(( ExternalFunction )f );
-        else
-          functions.add( f );
-      }
-
-      String pidStr = getNextField( st, delim ); // field 7
-      String fixedDataStr = getNextField( st, delim ); // field 8
-
-      if (( combiner != null ) && ( pidStr != null ) && // ( fixedDataStr != null ) &&
-          !pidStr.equals( "Protocol ID" )) // && !fixedDataStr.equals( "Fixed Data" )
-      {
-        Hex fixedData = new Hex();
-        if ( fixedDataStr != null )
-          fixedData = new Hex( fixedDataStr );
-
-        Hex newPid = new Hex( pidStr );
-        Protocol p = protocolManager.findProtocolForRemote( remote, newPid, fixedData );
-        if ( p != null )
-        {
-          CombinerDevice dev = new CombinerDevice( p, fixedData );
-          combiner.add( dev );
-        }
-        else
-        {
-          ManualProtocol mp = new ManualProtocol( newPid, new Properties());
-          mp.setRawHex( fixedData );
-          combiner.add( new CombinerDevice( mp, null, null ));
-        }
-      }
-
-      // skip to field 13
-      for ( int j = 8; j < 13; j++ )
-        token = getNextField( st, delim );
-
-      if (( token != null ) && !token.equals( "" ))
-      {
-        String name = token.substring( 5 );
-        if (( name.length() == 5 ) && name.startsWith( "num " ) &&
-              Character.isDigit( token.charAt( 4 )))
-          name = name.substring( 4 );
-        Function func = getFunction( name, functions );
-        if ( func == null )
+        String name = cleanName( shiftAssignedName.substring( 5 ));
+        Function func = null;
+        if ( isExternalFunctionName( name ))
           func = getFunction( name, extFunctions );
-        if ( func == null )
-        {
-          if (( name.charAt( 0 ) == '=' ) && ( name.indexOf( '/' ) != -1 ))
-            func = new ExternalFunction();
-          else
-            func = new Function();
-          func.setName( name );
-          usedFunctions.add( func );
-        }
+        else
+          func = getFunction( name, functions );
         if ( b == null )
         {
-          java.util.List< String > temp = new ArrayList< String >( 2 );
+          ArrayList< String > temp = new ArrayList< String >( 2 );
           temp.add( name );
           temp.add( "shift-" + buttonName );
           unassigned.add( temp );
         }
-        else if ( loadButtons )
+        else if ( loadButtons && ( func.getHex() != null ))
           assignments.assign( b, func, Button.SHIFTED_STATE );
       }
     }
 
+/*
     if ( !unassigned.isEmpty())
     {
       System.err.println( "Removing undefined functions from usedFunctions" );
-      for( ListIterator< java.util.List< String >> i = unassigned.listIterator(); i.hasNext(); )
+      for( ListIterator< ArrayList< String >> i = unassigned.listIterator(); i.hasNext(); )
       {
         java.util.List< String > temp = i.next();
         String funcName = ( String )temp.get( 0 );
-        System.err.print( "Checking '" + funcName + "'" );
+        System.err.println( "Checking '" + funcName + "'" );
         Function f = getFunction( funcName, usedFunctions );
-        if (( f == null ) || ( f.getHex() == null ) || ( f.getHex().length() == 0 ))
+        if (( f != null ) && (( f.getHex() == null ) || ( f.getHex().length() == 0 )))
         {
           System.err.println( "Removing function " + f + ", which has name '" + funcName + "'" );
           i.remove();
         }
       }
     }
+*/
+
     if ( !unassigned.isEmpty())
     {
-      String message = "Some of the functions defined in the imported device upgrade " +
+      String message = Integer.toString( unassigned.size()) + " functions defined in the imported device upgrade " +
                        "were assigned to buttons that could not be matched by name. " +
                        "The functions and the corresponding button names are listed below." +
                        "\n\nPlease post this information in the \"JP1 - Software\" section of the " +
@@ -1899,6 +1914,7 @@ public class DeviceUpgrade
                        "\n\nUse the Button or Layout panel to assign those functions properly.";
 
       JFrame frame = new JFrame( "Import Failure" );
+      frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
       Container container = frame.getContentPane();
 
       JTextArea text = new JTextArea( message );
@@ -1916,11 +1932,13 @@ public class DeviceUpgrade
       for ( java.util.List< String > l : unassigned )
         unassignedArray[ i++ ] = l.toArray();
       JTableX table = new JTableX( unassignedArray, titles.toArray() );
-      Dimension d = table.getPreferredScrollableViewportSize();
-      d.height = d.height / 4;
-      table.setPreferredScrollableViewportSize( d );
-
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
+/*
+      Dimension d = table.getPreferredScrollableViewportSize();
+      d.height = table.getPreferredSize().height;
+      table.setPreferredScrollableViewportSize( d );
+      */
+
       frame.pack();
       frame.setLocationRelativeTo( RemoteMaster.getFrame());
       frame.setVisible( true );

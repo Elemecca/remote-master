@@ -21,6 +21,16 @@ public class IntVerifier
   {
     this.base = base;
   }
+  
+  public void setMin( int min )
+  {
+    this.min = min;
+  }
+  
+  public void setMax( int max )
+  {
+    this.max = max;
+  }
 
   public boolean verify( JComponent input )
   {

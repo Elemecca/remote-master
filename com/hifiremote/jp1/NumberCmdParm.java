@@ -86,6 +86,12 @@ public class NumberCmdParm
     }
     return buff.toString();
   }
+  
+  public void setBits( int bits )
+  {
+    this.bits = bits;
+    editor.setBits( bits );
+  }
 
   public void setBase( int base )
   {

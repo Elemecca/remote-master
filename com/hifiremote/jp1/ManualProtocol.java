@@ -115,7 +115,7 @@ public class ManualProtocol
         System.err.println( "Creating Byte " + ( i + 1 ) + " parm & translators for index " + i + " at bit " + i * 8 );
         cmdParms[ i ] = new NumberCmdParm( "Byte " + ( i + 1 ), defaultValue, cmdBits );
         cmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );
-        importCmdTranslators[ i - 1 ] = new Translator( false, false, i - 1, 8, i * 8 );
+        importCmdTranslators[ i == 0 ? 0 : i - 1 ] = new Translator( false, false, i - 1, 8, i * 8 );
       }
     }
     /*
@@ -300,9 +300,11 @@ public class ManualProtocol
       return null;
 
     int importedCmdLength = getCmdLengthFromCode();
+    System.err.println( "importedCmdLength=" + importedCmdLength + ", but defaultCmd.length()=" + defaultCmd.length());
     // There's more bytes than we thought, so need to add another cmd parameter, translator, and importer
-    if ( importedCmdLength > defaultCmd.length())
+    if ( importedCmdLength != defaultCmd.length())
     {
+      /*
       short[] newCmd = new short[ importedCmdLength ];
       defaultCmd = new Hex( newCmd );
       int newParmIndex = importedCmdLength - 1;
@@ -329,6 +331,48 @@ public class ManualProtocol
       cmdParms[ newParmIndex ] = new NumberCmdParm( "Byte 3", new DirectDefaultValue( new Integer( 0 )), 8, 16 );
       cmdTranslators[ newParmIndex ] = new Translator( false, false, 2, 8, newIndex * 8 );
       importCmdTranslators[ newParmIndex - 1 ] = new Translator( false, false, 1, 8, newIndex * 8 );
+      */
+      boolean lsb = (( Translator )cmdTranslators[ cmdIndex ]).getLSB();
+      boolean comp = (( Translator )cmdTranslators[ cmdIndex ]).getComp();
+      
+      defaultCmd = new Hex( new short[ importedCmdLength ]);
+      if ( cmdIndex != 0 )
+        cmdIndex = importedCmdLength - 1;
+
+      cmdParms = new CmdParameter[ importedCmdLength ];
+      cmdTranslators = new Translate[ importedCmdLength ];
+      importCmdTranslators = new Translate[ importedCmdLength - 1 ];
+
+      DirectDefaultValue zero = new DirectDefaultValue( Integer.valueOf( 0 ));
+      for ( int i = 0; i < importedCmdLength; ++i )
+      {
+        if ( i == cmdIndex )
+        {
+          cmdParms[ i ] = new NumberCmdParm( "OBC", zero, 8, 10 );
+          cmdTranslators[ i ] = new Translator( lsb, comp, i, 8, i * 8 );
+        }
+        else
+        {
+          cmdParms[ i ] = new NumberCmdParm( "Byte " + ( i + 1 ), zero, 8, 16 );
+          cmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );
+        }
+        if ( cmdIndex == 0 )
+        {
+          if ( i > 0 )
+          {
+            System.err.printf( "Creating importCmdTranslator for index %d to bit %d\n", Integer.valueOf( i - 1 ), Integer.valueOf( i * 8 ));
+            importCmdTranslators[ i - 1 ] = new Translator( false, false, i - 1, 8, i * 8 );
+          }
+        }
+        else
+        {
+          if ( i < ( importedCmdLength - 1 ))
+          {
+            System.err.printf( "Creating importCmdTranslator for index %d to bit %d\n", Integer.valueOf( i ), Integer.valueOf( i * 8 ));
+            importCmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );
+          }
+        }
+      }
     }
 
     return importedCode;

@@ -36,20 +36,6 @@ public class ManualSettingsDialog
     this.protocol = protocol;
     System.err.println( "protocol=" + protocol );
 
-    {
-      System.err.println( "Copying device parameters" );
-      DeviceParameter[] parms = protocol.getDeviceParameters();
-      if ( parms != null )
-      {
-        Translate[] xlators = protocol.getDeviceTranslators();
-        for ( int i = 0; i < parms.length; i++ )
-        {
-          deviceParms.add( parms[ i ]);
-          deviceTranslators.add( xlators[ i ]);
-        }
-      }
-    }
-
     double b = 5;        // space between rows and around border
     double c = 10;       // space between columns
     double f = TableLayout.FILL;
@@ -134,7 +120,7 @@ public class ManualSettingsDialog
     tablePanel.add( buttonPanel, BorderLayout.SOUTH );
     
     // Device Parameter Table
-    deviceModel = new ParameterTableModel( deviceParms, deviceTranslators );
+    deviceModel = new ParameterTableModel( protocol, ParameterTableModel.Type.DEVICE );
 
     deviceTable = new JTableX( deviceModel );
     SpinnerCellEditor editor = new SpinnerCellEditor( 0, 8, 1 );
@@ -158,22 +144,8 @@ public class ManualSettingsDialog
     rawHexData = new JTextField();
     mainPanel.add( rawHexData, "3, 9" );
 
-    {
-      System.err.println( "Copying comand parameters" );
-      CmdParameter[] parms = protocol.getCommandParameters();
-      if ( parms != null )
-      {
-        Translate[] xlators = protocol.getCmdTranslators();
-        for ( int i = 0; i < parms.length; i++ )
-        {
-          cmdParms.add( parms[ i ]);
-          cmdTranslators.add( xlators[ i ]);
-        }
-      }
-    }
-
     // Command Parameter table
-    commandModel = new ParameterTableModel( cmdParms, cmdTranslators );
+    commandModel = new ParameterTableModel( protocol, ParameterTableModel.Type.COMMAND );
 
     commandTable = new JTableX( commandModel );
     commandTable.setDefaultEditor( Integer.class, editor );
@@ -282,10 +254,10 @@ public class ManualSettingsDialog
     if ( userAction != JOptionPane.OK_OPTION )
       return null;
 
-    protocol.setDeviceParms( deviceParms );
-    protocol.setDeviceTranslators( deviceTranslators );
-    protocol.setCommandParms( cmdParms );
-    protocol.setCommandTranslators( cmdTranslators );
+//    protocol.setDeviceParms( deviceParms );
+//    protocol.setDeviceTranslators( deviceTranslators );
+//    protocol.setCommandParms( cmdParms );
+//    protocol.setCommandTranslators( cmdTranslators );
     protocol.setRawHex( new Hex( rawHexData.getText()));
 
     return protocol;
@@ -349,12 +321,12 @@ public class ManualSettingsDialog
         {
           if ( !protocol.hasAnyCode())
           {
-            int fixedDataLength = Protocol.getFixedDataLengthFromCode( procs[ row ], newCode );
+            int fixedDataLength = Protocol.getFixedDataLengthFromCode( procs[ row ].getEquivalentName(), newCode );
             ArrayList< Value > devParms = new ArrayList< Value >();
             Value zero = new Value( 0 );
             for ( int i = 0; i < fixedDataLength; ++i )
               devParms.add( zero );
-            int cmdLength = Protocol.getCmdLengthFromCode( procs[ row ], newCode );
+            int cmdLength = Protocol.getCmdLengthFromCode( procs[ row ].getEquivalentName(), newCode );
             protocol.createDefaultParmsAndTranslators( cmdLength << 4, false, false,
                          8, devParms, new short[ 0 ], 8 );
             deviceModel.fireTableDataChanged();
@@ -423,11 +395,6 @@ public class ManualSettingsDialog
   }
 
   private ManualProtocol protocol = null;
-
-  private java.util.List< DeviceParameter > deviceParms = new ArrayList< DeviceParameter >();
-  private java.util.List< Translate > deviceTranslators = new ArrayList< Translate >();
-  private java.util.List< CmdParameter > cmdParms = new ArrayList< CmdParameter >();
-  private java.util.List< Translate > cmdTranslators = new ArrayList< Translate >();
 
   private CodeTableModel codeModel = null;
   private JTableX codeTable = null;
