@@ -1641,7 +1641,7 @@ public class Remote
   private int oemControl = 0;
   private boolean upgradeBug = false;
   private AddressRange advancedCodeAddress = null;
-  public AddressRange getAdvanceCodeAddress(){ return advancedCodeAddress; }
+  public AddressRange getAdvancedCodeAddress(){ return advancedCodeAddress; }
   private boolean macroSupport = true;
   private AddressRange upgradeAddress = null;
   public AddressRange getUpgradeAddress(){ return upgradeAddress; }

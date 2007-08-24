@@ -222,10 +222,10 @@ public class Hex
         rc.append( '\n' );
         breakCount = breakAt;
       }
-      --breakCount;
-
-      if ( i > offset )
+      else if ( i > offset )
         rc.append( ' ' );
+
+      --breakCount;
 
       String str = Integer.toHexString( data[ i ] & 0xFF );
       if ( str.length() < 2  )

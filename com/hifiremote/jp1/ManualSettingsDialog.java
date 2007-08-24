@@ -61,6 +61,7 @@ public class ManualSettingsDialog
     mainPanel.add( label, "1, 3" );
 
     pid = new JFormattedTextField( new HexFormat( 2, 2 ));
+    new TextPopupMenu( pid );
     pid.addPropertyChangeListener( "value", this );
     mainPanel.add( pid, "3, 3" );
 
@@ -73,7 +74,7 @@ public class ManualSettingsDialog
     tablePanel.add( new JScrollPane( codeTable ), BorderLayout.CENTER );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )codeTable.getDefaultRenderer( String.class );
     r.setHorizontalAlignment( SwingConstants.CENTER );
-    codeTable.setDefaultEditor( Hex.class, new HexEditor());
+    codeTable.setDefaultEditor( Hex.class, new HexCodeEditor());
 
     JLabel l = ( JLabel )
       codeTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent( codeTable, colNames[ 0 ], false, false, 0, 0 );
@@ -125,6 +126,7 @@ public class ManualSettingsDialog
 
     deviceTable = new JTableX( deviceModel );
     SpinnerCellEditor editor = new SpinnerCellEditor( 0, 8, 1 );
+    new TextPopupMenu(( JTextField )(( DefaultCellEditor )deviceTable.getDefaultEditor( String.class )).getComponent());
     deviceTable.setDefaultEditor( Integer.class, editor );
     JScrollPane scrollPane = new JScrollPane( deviceTable );
     tablePanel = new JPanel( new BorderLayout());
@@ -138,6 +140,7 @@ public class ManualSettingsDialog
     label = new JLabel( "Raw Fixed Data:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 9" );
     rawHexData = new JTextField();
+    new TextPopupMenu( rawHexData );
     mainPanel.add( rawHexData, "3, 9" );
 
     // Command Parameter table
@@ -145,6 +148,7 @@ public class ManualSettingsDialog
 
     commandTable = new JTableX( commandModel );
     commandTable.setDefaultEditor( Integer.class, editor );
+    new TextPopupMenu(( JTextField )(( DefaultCellEditor )commandTable.getDefaultEditor( String.class )).getComponent());
     scrollPane = new JScrollPane( commandTable );
     tablePanel = new JPanel( new BorderLayout());
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ));
@@ -274,15 +278,12 @@ public class ManualSettingsDialog
   public void propertyChange( PropertyChangeEvent e )
   {
     Object source = e.getSource();
+    Hex id = ( Hex )pid.getValue();
+    boolean flag = ( id != null ) && protocol.hasAnyCode();
+    ok.setEnabled( flag );
+    view.setEnabled( flag );
     if ( source == pid )
-    {
-      Hex id = ( Hex )pid.getValue();
-      System.err.println( "propertyChange:pid is " + id );
-      boolean flag = ( id != null );
-      ok.setEnabled( flag );
-      view.setEnabled( flag );
       protocol.setID( id );
-    }
   }
 
   // DocumentListener methods

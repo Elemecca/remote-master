@@ -12,21 +12,34 @@ public class NECStyleImporter
 
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    Object obj = parms[ styleParmIndex ].getUserValue();
-    int styleIndex = 0;
-    if ( obj.getClass() == Integer.class )
-      styleIndex = (( Integer )obj ).intValue() - 1;
-    else
+    System.err.println( "NECStyleImporter.in" );
+    System.err.println( "  parms:" );
+    for ( int i = 0; i < parms.length; ++i )
     {
-      String styleStr = ( String )obj;
-      if ( styleStr.equalsIgnoreCase( "x1" ))
-        styleIndex = 2;
-      else if ( styleStr.equalsIgnoreCase( "x2" ))
-        styleIndex = 3;
+      Object obj = parms[ i ].getUserValue();
+      System.err.println( "    ( " + obj.getClass().getName() + " )" + obj );
+    }
+
+    int styleIndex = 0;
+    if ( styleParmIndex < parms.length ) 
+    {
+      Object obj = parms[ styleParmIndex ].getUserValue();
+      if ( obj.getClass() == Integer.class )
+        styleIndex = (( Integer )obj ).intValue() - 1;
+      else
+      {
+        String styleStr = ( String )obj;
+        if ( styleStr.equalsIgnoreCase( "x1" ))
+          styleIndex = 2;
+        else if ( styleStr.equalsIgnoreCase( "x2" ))
+          styleIndex = 3;
+      }
     }
     
-    insert( hexData, 11, 1, styleIndex & 1 );
-    insert( hexData, 15, 1, styleIndex >> 1 );
+    System.err.println( "  styleIndex=" + styleIndex );
+    
+    insert( hexData, 11, 1, styleIndex >> 1 );
+    insert( hexData, 15, 1, styleIndex & 1 );
   }
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )

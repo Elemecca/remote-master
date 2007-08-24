@@ -154,11 +154,11 @@ public class RemoteConfiguration
 
     return property;
   }
-  
+
   private KeyMove findKeyMove( List< KeyMove > advCodes, String deviceName, String keyName )
   {
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
-    
+
     for ( KeyMove keyMove : advCodes )
     {
       DeviceButton devButton = deviceButtons[ keyMove.getDeviceButtonIndex()];
@@ -176,7 +176,7 @@ public class RemoteConfiguration
   private Macro findMacro( String keyName )
   {
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
-    
+
     for ( Macro macro : macros )
     {
       int keyCode = macro.getKeyCode();
@@ -202,7 +202,7 @@ public class RemoteConfiguration
   private LearnedSignal findLearnedSignal( String deviceName, String keyName )
   {
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
-    
+
     for ( LearnedSignal ls : learned )
     {
       DeviceButton devButton = deviceButtons[ ls.getDeviceButtonIndex()];
@@ -222,7 +222,7 @@ public class RemoteConfiguration
   {
     Property property = null;
     if ( pr != null )
-      loadBuffer( pr );
+      property = loadBuffer( pr );
 
     decodeSettings();
     decodeUpgrades();
@@ -232,14 +232,17 @@ public class RemoteConfiguration
     if ( pr != null )
     {
       while (( property != null ) && ( !property.name.startsWith( "[" )))
+      {
+        System.err.println( "property.name=" + property.name );
         property = pr.nextProperty();
-  
+      }
+
       if ( property == null )
         return;
-  
+
       IniSection section = pr.nextSection();
       section.setName( property.name.substring( 1, property.name.length() - 1 ));
-  
+
       while ( section != null )
       {
         String name = section.getName();
@@ -355,7 +358,7 @@ public class RemoteConfiguration
       }
     }
     migrateKeyMovesToDeviceUpgrades();
-    
+
     // remove protocol upgrades that are used by device upgrades
     for ( Iterator< ProtocolUpgrade > it = protocols.iterator(); it.hasNext(); )
     {
@@ -509,7 +512,7 @@ public class RemoteConfiguration
     /*
     decodeSettings();
     decodeUpgrades();
-    
+
     // remove protocol upgrades that are used by device upgrades
     for ( Iterator< ProtocolUpgrade > it = protocols.iterator(); it.hasNext(); )
     {
@@ -547,7 +550,7 @@ public class RemoteConfiguration
   private List< AdvancedCode > decodeAdvancedCodes()
   {
     List< AdvancedCode > advCodes = new ArrayList< AdvancedCode >();
-    AddressRange advCodeRange = remote.getAdvanceCodeAddress();
+    AddressRange advCodeRange = remote.getAdvancedCodeAddress();
     int offset = advCodeRange.getStart();
     int endOffset = advCodeRange.getEnd();
 
@@ -571,7 +574,7 @@ public class RemoteConfiguration
       short keyCode = data[ offset++ ];
       if ( keyCode == remote.getSectionTerminator())
         break;
-      System.err.println( "Decoding advCode at $" + Integer.toHexString( offset ) + 
+      System.err.println( "Decoding advCode at $" + Integer.toHexString( offset ) +
                         ", keyCode=" + keyCode + ':' + remote.getButtonName( keyCode ));
 
       int boundDeviceIndex = 0;
@@ -734,7 +737,7 @@ public class RemoteConfiguration
 
   public int getAdvancedCodeBytesUsed()
   {
-    AddressRange advCodeRange = remote.getAdvanceCodeAddress();
+    AddressRange advCodeRange = remote.getAdvancedCodeAddress();
     int offset = advCodeRange.getStart();
     int endOffset = advCodeRange.getEnd();
     while (( offset <= endOffset ) && ( data[ offset ] != remote.getSectionTerminator()))
@@ -809,7 +812,7 @@ public class RemoteConfiguration
 
   public int updateAdvancedCodes()
   {
-    AddressRange range = remote.getAdvanceCodeAddress();
+    AddressRange range = remote.getAdvancedCodeAddress();
     int offset = range.getStart();
     offset = updateKeyMoves( keymoves, offset );
     upgradeKeyMoves = getUpgradeKeyMoves();
@@ -869,27 +872,57 @@ public class RemoteConfiguration
     return null;
   }
 
+  private int getLimit( int offset, int[] bounds )
+  {
+    int limit = remote.getEepromSize();
+    for ( int i = 0; i < bounds.length; ++i )
+    {
+      if (( bounds[ i ] != 0 ) && ( offset < bounds[ i ] ) && ( limit > bounds[ i ]))
+        limit = bounds[ i ];
+    }
+    return limit;
+  }
+
   private void decodeUpgrades()
   {
     AddressRange addr = remote.getUpgradeAddress();
 
-    // first parse the protocols
-    int offset = Hex.get( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of protocol table
+    // get the offsets to the device and protocol tables
+    int deviceTableOffset = Hex.get( data, addr.getStart()) - remote.getBaseAddress(); // get offset of device table
+    int protocolTableOffset = Hex.get( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of protocol table
+
+    // build an array containing the ends of all the possible ranges
+
+    int[] bounds = new int[ 7 ];
+    bounds[ 0 ] = 0;  // leave space for the next entry in the table
+    bounds[ 1 ] = 0;  // leave space for the 1st protocol code
+    bounds[ 2 ] = deviceTableOffset;
+    bounds[ 3 ] = protocolTableOffset;
+    bounds[ 4 ] = addr.getEnd() - 1;
+    bounds[ 5 ] = remote.getAdvancedCodeAddress().getEnd() - 1;
+    if ( remote.getLearnedAddress() != null )
+      bounds[ 6 ] = remote.getLearnedAddress().getEnd() - 1;
+    else
+      bounds[ 6 ] = 0;
+
+    // parse the protocol tables
+    int offset = protocolTableOffset;
     int count = Hex.get( data, offset ); // get number of entries in upgrade table
     offset += 2;  // skip to first entry
+
     for ( int i = 0; i < count; ++i )
     {
       int pid = Hex.get( data, offset );
       int codeOffset = Hex.get( data, offset + 2 * count ) - remote.getBaseAddress();
-      int nextCode = 0;
-      if ( i == count - 1 ) // the last protocol, so use the start of the device table
-      {
-        nextCode = addr.getStart();
-        nextCode = Hex.get( data, addr.getStart()) - remote.getBaseAddress();
-      }
+      if ( i == 0 )
+        bounds[ 1 ] = codeOffset; // save the offset of the first protocol code
+      if ( i == count - 1 ) // the last entry, so there is no next extry
+        bounds[ 0 ] = 0;
       else
-        nextCode = Hex.get( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress();
-      Hex code = Hex.subHex( data, codeOffset, nextCode - codeOffset );
+        bounds[ 0 ] = Hex.get( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress();
+
+      int limit = getLimit( codeOffset, bounds );
+      Hex code = Hex.subHex( data, codeOffset, limit - codeOffset );
       protocols.add( new ProtocolUpgrade( pid, code, null ));
 
       offset += 2; // for the next upgrade
@@ -899,7 +932,7 @@ public class RemoteConfiguration
     List< ProtocolUpgrade > usedProtocols = new ArrayList< ProtocolUpgrade >();
 
     // now parse the devices
-    offset = Hex.get( data, addr.getStart()) - remote.getBaseAddress(); // get offset of device table
+    offset = deviceTableOffset;
     count = Hex.get( data, offset ); // get number of entries in upgrade table
     for ( int i = 0; i < count; ++i )
     {
@@ -912,20 +945,12 @@ public class RemoteConfiguration
       if (( data[ offset ] & 8 ) == 8 ) // pid > 0xFF
         pid += 0x100;
 
-      int nextCode = 0;
-      if ( i == count - 1 ) // this is the last device upgrade
-      {  // try using the 1st protocol
-        int pOffset = Hex.get( data, addr.getStart() + 2 ) - remote.getBaseAddress();
-        int pCount = Hex.get( data, pOffset );
-        pOffset += 2; // skip count & point to first PID
-        if ( pCount > 0 )
-          nextCode = Hex.get( data, pOffset + ( 2 * pCount )) - remote.getBaseAddress();
-        else // there are no protocol upgrades, use the device upgrade table itself
-          nextCode = Hex.get( data, addr.getStart()) - remote.getBaseAddress();
-      }
+      if ( i == count - 1 )
+        bounds[ 0 ] = 0;
       else
-        nextCode = Hex.get( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress(); // next device upgrade
-      Hex deviceHex = Hex.subHex( data, codeOffset, nextCode - codeOffset );
+        bounds[ 0 ] = Hex.get( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress(); // next device upgrade
+      int limit = getLimit( offset, bounds );
+      Hex deviceHex = Hex.subHex( data, codeOffset, limit - codeOffset );
       ProtocolUpgrade pu = getProtocol( pid );
       Hex protocolCode = null;
       if ( pu != null )

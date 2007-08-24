@@ -103,10 +103,11 @@ public class ProtocolManager
     }
     rdr.close();
     add( ProtocolFactory.createProtocol( name, id, type, props ));
-    manualProtocol = new ManualProtocol( null, null );
+    ManualProtocol manualProtocol = new ManualProtocol( new Hex( "FF FF" ), null );
     manualProtocol.setName( manualProtocol.getName());
+    add( manualProtocol );
 
-    if ( byName.size() == 0 )
+    if ( byName.size() < 2 )
     {
       JOptionPane.showMessageDialog( null, "No protocols were loaded!",
                                      "Error", JOptionPane.ERROR_MESSAGE );
@@ -126,11 +127,13 @@ public class ProtocolManager
 
   public void add( Protocol p )
   {
+    /*
     if ( p.getClass() == ManualProtocol.class )
     {
       manualProtocol = ( ManualProtocol )p;
       return;
     }
+    */
 
     // Add the protocol to the byName hashtable
     String name = p.getName();
@@ -150,6 +153,17 @@ public class ProtocolManager
     {
       v = new ArrayList< Protocol >();
       byPID.put( id, v );
+    }
+    else
+    {
+      String pvName = p.getVariantName();
+      for ( Protocol tryit : v )
+      {
+        String tryName = tryit.getVariantName();
+        if ((( pvName == null ) && ( tryName == null )) ||
+            pvName.equals( tryName ))
+        System.err.println( "**** Warning: multiple protocols with PID " + id + " and variantName " + pvName );
+      }
     }
     v.add( p );
 
@@ -182,19 +196,23 @@ public class ProtocolManager
       if ( p != null )
         rc.add( p );
     }
+    /*
     if ( allowUpgrades && manualProtocol.hasCode( remote ))
       rc.add( manualProtocol );
+    */
     return rc;
   }
 
   public List< Protocol > findByName( String name )
   {
     List< Protocol > v = byName.get( name );
+    /*
     if (( v == null ) && name.equals( manualProtocol.getName()))
     {
       v = new ArrayList< Protocol >();
       v.add( manualProtocol );
     }
+    */
     return v;
   }
 
@@ -361,14 +379,14 @@ public class ProtocolManager
     return null;
   }
 
-  public ManualProtocol getManualProtocol()
+/*   public ManualProtocol getManualProtocol()
   {
     System.err.println( "ProtocolManager.getManualProtocol(): " + manualProtocol );
     return manualProtocol;
   }
-
+ */
   private static ProtocolManager protocolManager = new ProtocolManager();
-  private static ManualProtocol manualProtocol = null;
+//  private static ManualProtocol manualProtocol = null;
   private boolean loaded = false;
   private List< String > names = new ArrayList< String >();
   private Hashtable< String, List< Protocol >> byName = new Hashtable< String, List< Protocol >>();

@@ -100,6 +100,14 @@ public class Setup
 
       pw.flush();
       pw.close();
+
+      batFile = new File( workDir, "rmir.bat" );
+      pw = new PrintWriter( new FileWriter( batFile ));
+
+      pw.println( "@javaw -jar \"" + jarFile + "\" -h \"" + workDir + "\" -ir %*" );
+
+      pw.flush();
+      pw.close();
     }
     catch ( Exception e )
     {

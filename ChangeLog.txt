@@ -1,3 +1,26 @@
+Changes for v1.80
+- Fix for ReplayTV (Official) and unit code
+- Fix for TiVo (Official 2-byte)
+- Fix for importing KM files that use the Fujitsu protocol
+- Fix for importing KM files that use the NEC 2DEV Combo protocol
+- Add full support for Manual Settings (see Readme.html, Menus, Advanced)
+- Ignore improperly named RDF files
+- When importing raw upgrades that don't include protocol upgrade code, ignore
+  protocols that aren't built into the remote when matching the protocol.  Also
+  applies to RMIR when importing an IR file or downloading from a remote.
+- Add digit maps through 409
+- Allow named (x-)shifted buttons in button maps
+- RMIR: allow importing IR files (or downloading from a remote)
+  with device/protocol upgrades that have overflowed into the advanced code
+  or learning sections.
+- RMIR: under Linux (developed and tested on Ubuntu 7.04), enable communication with JP1.x
+  remotes
+
+Changes for v1.79
+- Fix for importing KM files that use Dish Network or Dish Network Combo protocols
+- Allow remotes that use the S3F80 processor to use S3C80 protocol code
+- Fix for importing KM files that use JVC Combo protocol
+
 Changes for v1.78
 - Add support for new upgrade format that uses two byte PIDs
 - Fix parsing of DeviceTypeImageMaps section to handle tabs

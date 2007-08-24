@@ -199,9 +199,9 @@ public class SetupPanel
       Protocol oldProtocol = deviceUpgrade.getProtocol();
       if ( newProtocol != oldProtocol )
       {
-        protocolID.setText( newProtocol.getID( deviceUpgrade.getRemote()).toString());
         if ( deviceUpgrade.setProtocol( newProtocol ))
         {
+          protocolID.setText( newProtocol.getID( deviceUpgrade.getRemote()).toString());
           updateParameters();
           fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues()).toString());
           revalidate();
@@ -210,6 +210,7 @@ public class SetupPanel
           protocolNotes.revalidate();
 
           deviceUpgrade.checkSize();
+          propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, newProtocol );
         }
         else
         {

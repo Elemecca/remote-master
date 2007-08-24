@@ -14,6 +14,7 @@ public class HexCodeEditor
   private Hex hex = new Hex();
   private JDialog dialog = null;
   private JTextArea textArea = new JTextArea();
+  private TextPopupMenu popup = null;
   private int preferredWidth = 0;
 
   private void showDialog( Component c, String text )
@@ -33,6 +34,7 @@ public class HexCodeEditor
     textArea.setText( text );
     textArea.getDocument().addUndoableEditListener( this );
     textArea.addFocusListener( this );
+    popup = new TextPopupMenu( textArea );
     Dimension size = textArea.getPreferredSize();
     size.width = preferredWidth;
     textArea.setPreferredSize( size );
@@ -141,7 +143,10 @@ public class HexCodeEditor
 
   public void focusLost( FocusEvent event )
   {
-    stopCellEditing();
+    Component c = event.getOppositeComponent();
+    System.err.println( "focusLost to " + c.getClass().getName());
+    if ( c.getClass() != JRootPane.class )
+      stopCellEditing();
   }
 
 }

@@ -19,6 +19,7 @@ public class PropertyReader
       do 
       {
         line = reader.readLine();
+        System.err.println( "Read '" + line + "'" );
         if ( line == null )
           return null;
         line = line.trim();

@@ -142,9 +142,25 @@ public class RemoteMaster
     tabbedPane.addTab( "Protocols", protocolPanel );
     protocolPanel.addPropertyChangeListener( this );
 
-    learnedPanel = new LearnedSignalPanel();
-    tabbedPane.addTab( "Learned Signals", learnedPanel );
-    learnedPanel.addPropertyChangeListener( this );
+    try
+    {
+      LearnedSignal.getDecodeIR();
+      learnedPanel = new LearnedSignalPanel();
+      tabbedPane.addTab( "Learned Signals", learnedPanel );
+      learnedPanel.addPropertyChangeListener( this );
+    }
+    catch ( NoClassDefFoundError ncdfe )
+    {
+      System.err.println( "DecodeIR class not found!" );
+    }
+    catch ( NoSuchMethodError nsme )
+    {
+      System.err.println( "DecodeIR class is wrong version!" );
+    }
+    catch ( UnsatisfiedLinkError ule )
+    {
+      System.err.println( "DecodeIR JNI interface not found!" );
+    }
 
     rawDataPanel = new RawDataPanel();
     tabbedPane.addTab( "Raw Data", rawDataPanel );
@@ -286,14 +302,30 @@ public class RemoteMaster
     menu.setMnemonic( KeyEvent.VK_R );
     menuBar.add( menu );
 
-    downloadItem = new JMenuItem( "Download from Remote", KeyEvent.VK_D );
-    downloadItem.addActionListener( this );
-    menu.add( downloadItem );
+    try
+    {
+      JP12Serial serial = new JP12Serial( new File( System.getProperty( "user.dir" )));
+      downloadItem = new JMenuItem( "Download from Remote", KeyEvent.VK_D );
+      downloadItem.addActionListener( this );
+      menu.add( downloadItem );
 
-    uploadItem = new JMenuItem( "Upload to Remote", KeyEvent.VK_U );
-    uploadItem.setEnabled( false );
-    uploadItem.addActionListener( this );
-    menu.add( uploadItem );
+      uploadItem = new JMenuItem( "Upload to Remote", KeyEvent.VK_U );
+      uploadItem.setEnabled( false );
+      uploadItem.addActionListener( this );
+      menu.add( uploadItem );
+    }
+    catch ( NoClassDefFoundError ncdfe )
+    {
+      System.err.println( "JP12Serial class not found!" );
+    }
+    catch ( UnsatisfiedLinkError ule )
+    {
+      System.err.println( "JP12Serial JNI interface not found!" );
+    }
+    catch ( Exception e )
+    {
+      e.printStackTrace( System.err );
+    }
 
     uploadWavItem = new JMenuItem( "Upload using WAV", KeyEvent.VK_W );
     uploadWavItem.setEnabled( false );
@@ -574,14 +606,32 @@ public class RemoteMaster
         try
         {
           String v = LearnedSignal.getDecodeIR().getVersion();
-          text += "<p>DecodeIR version " + v + "<p>";
+          text += "<p>DecodeIR version " + v + "</p>";
         }
-        catch ( NoSuchMethodError ex )
+        catch ( NoClassDefFoundError ncdfe )
         {
+          text += "<p><b>DecodeIR is not available!</b></p>";
         }
-        JP12Serial serial = new JP12Serial();
-        text += "<p>" + serial.getInterfaceName() + " version " + serial.getInterfaceVersion() + "</p>" +
-          "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
+        catch ( NoSuchMethodError nsme )
+        {
+          text += "<p><b>DecodeIR is not available!</b></p>";
+        }
+        catch ( UnsatisfiedLinkError ule )
+        {
+          text += "<p><b>DecodeIR is not available!</b></p>";
+        }
+
+        try
+        {
+          JP12Serial serial = new JP12Serial( new File( System.getProperty( "user.dir" )));
+          text += "<p>" + serial.getInterfaceName() + " version " + serial.getInterfaceVersion() + "</p>";
+        }
+        catch ( UnsatisfiedLinkError ule )
+        {
+          text += "<p><b>JP12Serial interface is not available!</b></p>";
+        }
+
+        text += "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
           "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>" +
           "</html>";
 
@@ -599,7 +649,7 @@ public class RemoteMaster
       }
       else if ( source == downloadItem )
       {
-        JP12Serial serial = new JP12Serial();
+        JP12Serial serial = new JP12Serial( new File( System.getProperty( "user.dir" )));
         String port = serial.openRemote( null );
         if ( port == null )
         {
@@ -697,7 +747,7 @@ public class RemoteMaster
       tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, 3 );
 
     specialFunctionPanel.set( remoteConfig );
-    AddressRange range = remoteConfig.getRemote().getAdvanceCodeAddress();
+    AddressRange range = remoteConfig.getRemote().getAdvancedCodeAddress();
     int available = range.getEnd() - range.getStart();
     advProgressBar.setMinimum( 0 );
     advProgressBar.setMaximum( available );
@@ -715,7 +765,8 @@ public class RemoteMaster
     upgradeProgressBar.setValue( used );
     upgradeProgressBar.setString( Integer.toString( available - used ) + " free" );
 
-    learnedPanel.set( remoteConfig );
+    if ( learnedPanel != null )
+      learnedPanel.set( remoteConfig );
     range = remoteConfig.getRemote().getLearnedAddress();
     if ( range != null )
     {
@@ -755,7 +806,7 @@ public class RemoteMaster
       upgradeProgressBar.setValue( used );
       upgradeProgressBar.setString( Integer.toString( upgradeProgressBar.getMaximum() - used ) + " free" );
     }
-    else if ( source == learnedPanel.getModel() )
+    else if (( learnedPanel != null ) && ( source == learnedPanel.getModel()))
     {
       int used = remoteConfig.updateLearnedSignals();
       learnedProgressBar.setValue( used );
@@ -782,15 +833,22 @@ public class RemoteMaster
       for ( int i = 0; i < args.length; ++i )
       {
         String parm = args[i];
+        System.err.println( "Parsing argument \"" + parm + '"' );
         if ( parm.equalsIgnoreCase( "-ir" ) )
           launchRM = true;
         else if ( parm.equalsIgnoreCase( "-h" ) )
         {
-          workDir = new File( args[++i] );
+          String dirName = args[ ++i ];
+          System.err.println( "-h applies to \"" + dirName + '"' );
+          workDir = new File( dirName );
           System.setProperty( "user.dir", workDir.getCanonicalPath() );
         }
         else if ( parm.equalsIgnoreCase( "-p" ) )
-          propertiesFile = new File( args[++i] );
+        {
+          String fileName = args[ ++i ];
+          System.err.println( "Properties file name is \"" + fileName + '"' );
+          propertiesFile = new File( fileName );
+        }
         else
           fileToOpen = new File( parm );
       }

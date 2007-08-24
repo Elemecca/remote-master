@@ -17,6 +17,8 @@ public class ManualProtocol
     {
       notes = props.getProperty( "Protocol.notes" );
     }
+    if ( variantName == null )
+      variantName = "manual";
   }
 
   public ManualProtocol( ManualProtocol p )

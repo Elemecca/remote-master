@@ -865,7 +865,7 @@ public class Protocol
   protected String name = null;;
   protected Hex id = null;
   private Hex alternatePID = null;
-  private String variantName = null;
+  protected String variantName = null;
   protected Hex fixedData = null;
   protected Hex defaultCmd = null;
   protected int cmdIndex;

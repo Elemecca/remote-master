@@ -1,5 +1,6 @@
 package com.hifiremote.jp1.io;
 
+import java.io.File;
 import com.hifiremote.jp1.Hex;
 
 public class JP12Serial
@@ -14,11 +15,29 @@ public class JP12Serial
   public native int getRemoteEepromSize();
   public native int readRemote( int address, byte[] buffer, int length );
   public native int writeRemote( int address, byte[] buffer, int length );
+  private static boolean isLoaded = false;
 
-  static
+  public JP12Serial()
+    throws UnsatisfiedLinkError
   {
-    System.loadLibrary( "jp12serial" );
+    if ( !isLoaded )
+    {
+      System.loadLibrary( "jp12serial" );
+      isLoaded = true;
+    }
   }
+
+  public JP12Serial( File folder )
+    throws UnsatisfiedLinkError
+  {
+    if ( !isLoaded )
+    {
+      File file = new File( folder, System.mapLibraryName( "jp12serial" ));
+      System.load( file.getAbsolutePath());
+      isLoaded = true;
+    }
+  }
+
 
   public static void main( String[] args )
   {

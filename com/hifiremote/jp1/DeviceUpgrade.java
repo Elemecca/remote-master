@@ -515,7 +515,7 @@ public class DeviceUpgrade
     System.err.println( "  newRemote=" + newRemote );
     System.err.println( "  newDeviceTypeAliasName=" + newDeviceTypeAliasName );
     System.err.println( "  pid=" + pid.toString());
-    System.err.println( "  pCode=" + pCode.toString());
+    System.err.println( "  pCode=" + pCode );
     int index = 1;
     if ( newRemote.usesTwoBytePID())
       index++;
@@ -554,7 +554,15 @@ public class DeviceUpgrade
       fixedDataHex = new Hex( fixedData );
     }
     Value[] vals = parmValues;
-    java.util.List< Protocol > protocols = ProtocolManager.getProtocolManager().findByPID( pid );
+    java.util.List< Protocol > protocols = null;
+    if ( pCode == null )
+    {
+      protocols = new ArrayList< Protocol >();
+      protocols.add( ProtocolManager.getProtocolManager().findProtocolForRemote( remote, pid, false ));
+    }
+    else
+      protocols = ProtocolManager.getProtocolManager().findByPID( pid );
+      
     Protocol tentative = null;
     Value[] tentativeVals = null;
     Protocol p = null;
@@ -596,7 +604,7 @@ public class DeviceUpgrade
 
     ManualProtocol mp = null;
 
-    if (( tentative != null ) && ( pCode != null ) && !pCode.equals( tentative.getCode( remote )))
+    if (( tentative != null ) && (( pCode == null ) || pCode.equals( tentative.getCode( remote ))))
     {
       System.err.println( "Using " + p.getDiagnosticName());
       fixedDataLength = p.getFixedDataLength();
@@ -740,9 +748,22 @@ public class DeviceUpgrade
       buff.append( RemoteMaster.version );
       buff.append( ')' );
     }
-    buff.append( "\n " );
 
-    buff.append( Hex.toString( getUpgradeHex().getData(), 16 ));
+    try 
+    {
+      BufferedReader rdr = new BufferedReader( new StringReader( Hex.toString( getUpgradeHex().getData(), 16 )));
+      String line = null;
+      while (( line = rdr.readLine()) != null )
+      {
+        buff.append( "\n " );
+        buff.append( line );
+      }
+    }
+    catch ( IOException ioe )
+    {
+      ioe.printStackTrace( System.err );
+    }
+
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     ButtonMap map = devType.getButtonMap();
     Button[] buttons = remote.getUpgradeButtons();
@@ -1332,6 +1353,8 @@ public class DeviceUpgrade
 
   private boolean isExternalFunctionName( String name )
   {
+    if ( name == null )
+      return false;
     char firstChar = name.charAt( 0 );
     int slash = name.indexOf( '/' );
     int space = name.indexOf( ' ' );
@@ -1650,35 +1673,40 @@ public class DeviceUpgrade
     {
       line = lines[ i ];
       st = new StringTokenizer( line, delim, true );
-      String funcName = cleanName( getNextField( st, delim ));
-      String code = getNextField( st, delim );
-      String byte2 = getNextField( st, delim );
-      String buttonName = getNextField( st, delim );
-      String assignedName = getNextField( st, delim );
-      String notes = getNextField( st, delim );
+      String funcName = cleanName( getNextField( st, delim )); // field 1
+      String code = getNextField( st, delim ); // field 2
+      String byte2 = getNextField( st, delim ); // field 3
+      String buttonName = getNextField( st, delim ); // field 4
+      String assignedName = getNextField( st, delim ); // field 5
+      String notes = getNextField( st, delim ); // field 6
       String pidStr = getNextField( st, delim ); // field 7
       String fixedDataStr = getNextField( st, delim ); // field 8
 
       Function f = null;
-      if (( code != null ) || ( byte2 != null ))
+      if (( code != null ) || ( byte2 != null ) || ( notes != null ))
       {
-        System.err.println( "Creating a new one!" );
-        boolean isExternal = false;
-        if ( code != null )
+        System.err.println( "Creating a new function, because:" );
+        System.err.println( "code=" + code );
+        System.err.println( "byte2=" + byte2 );
+        System.err.println( "notes=" + notes );
+        
+        boolean isExternal = isExternalFunctionName( funcName );
+        if ( isExternal )
         {
-          isExternal = isExternalFunctionName( funcName );
-          if ( isExternal )
-          {
-            f = new ExternalFunction();
-            extFunctions.add(( ExternalFunction )f );
-          }
-          else
-          {
-            f = new Function();
-            functions.add( f );
-          }
-          f.setName( funcName );
+          f = new ExternalFunction();
+          extFunctions.add(( ExternalFunction )f );
         }
+        else
+        {
+          f = new Function();
+          functions.add( f );
+        }
+        System.err.println( "Creating function w/ name " + funcName );
+        f.setName( funcName );
+
+        if ( notes != null )
+          f.setNotes( notes );
+
         Hex hex = null;
         if ( f.isExternal())
         {
@@ -1731,7 +1759,7 @@ public class DeviceUpgrade
             ef.setType( ExternalFunction.EFCType );
           }
         }
-        else // not external
+        else if ( code != null ) // not external and there is a command code
         {
           if (( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$') != -1 ) || ( code.indexOf( ' ' ) != -1 ))
           {
@@ -1777,17 +1805,17 @@ public class DeviceUpgrade
     {
       line = lines[ i ];
       st = new StringTokenizer( line, delim, true );
-      String funcName = getNextField( st, delim );
-      String code = getNextField( st, delim );
-      String byte2 = getNextField( st, delim );
+      String funcName = getNextField( st, delim );  // the function being defined, if any (field 1)
+      String code = getNextField( st, delim );      // the EFC or OBC, if any (field 2 )
+      String byte2 = getNextField( st, delim );     // byte2, if any (field 3)
       String actualName = cleanName( getNextField( st, delim )); // get assigned button name (field 4)
       System.err.println( "actualName='" + actualName + "'" );
       String assignedName = getNextField( st, delim ); // get assinged functionName (field 5)
-      String notes = getNextField( st, delim ); // get function notes (field 6 )
+      String notes = getNextField( st, delim ); // get function notes (field 6)
 
       // skip to field 13
       String shiftAssignedName = null;
-      for ( int j = 7; j < 13; j++ )
+      for ( int j = 7; j < 14; j++ )
         shiftAssignedName = getNextField( st, delim );
 
       if (( actualName != null ) && actualName.length() == 0 )
@@ -1865,6 +1893,8 @@ public class DeviceUpgrade
         }
       }
 
+      if ( shiftAssignedName != null )
+        System.err.println( "shiftAssignedName=" + shiftAssignedName );
       if (( shiftAssignedName != null ) && !shiftAssignedName.equals( "" ))
       {
         String name = cleanName( shiftAssignedName.substring( 5 ));

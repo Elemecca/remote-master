@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import javax.swing.*;
 import java.awt.datatransfer.*;
 
@@ -146,8 +147,21 @@ public class OutputPanel
         buff.append( RemoteMaster.version );
         buff.append( ')' );
       }
-      buff.append( "\n " );
-      buff.append( code.toString( 16 ));
+      
+      try 
+      {
+        BufferedReader rdr = new BufferedReader( new StringReader( code.toString( 16 )));
+        String line = null;
+        while (( line = rdr.readLine()) != null )
+        {
+          buff.append( "\n " );
+          buff.append( line );
+        }
+      }
+      catch ( IOException ioe )
+      {
+        ioe.printStackTrace( System.err );
+      }
       buff.append( "\nEnd" );
       protocolText.setText( buff.toString());
 

@@ -87,9 +87,9 @@ public class JTableX extends JTable
     if ( o == null )
       return false;
     Rectangle rect = getCellRect( row, col, true );
-    DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
-    r.getTableCellRendererComponent( this, o, false, false, row, col );
-    Dimension d = r.getPreferredSize();
+    TableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
+    Component c = r.getTableCellRendererComponent( this, o, false, false, row, col );
+    Dimension d = c.getPreferredSize();
     if ( d.width < rect.width - 4 )
       return false;
     return true;
@@ -105,7 +105,10 @@ public class JTableX extends JTable
     if ( isTruncated( row, col ))
     {
       DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
-      return r.getText();
+      int width = getColumnModel().getColumn( col ).getWidth();
+      String rc = "<html><div style=\"width: " + width + "px\">" + r.getText() + "</div></html>";
+      System.err.println( "getToolTipText returning \"" + rc + "\"" );
+      return rc;
     }
     return null;
   }

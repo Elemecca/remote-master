@@ -30,7 +30,7 @@ public class KeyMapMaster
   private JMenu recentFileMenu = null;
   private JMenuItem exitItem = null;
   private JMenuItem manualItem = null;
-  private JMenuItem editorItem = null;
+//  private JMenuItem editorItem = null;
   private JMenuItem rawItem = null;
   private JMenuItem binaryItem = null;
   private JMenuItem writeBinaryItem = null;
@@ -373,12 +373,12 @@ public class KeyMapMaster
     manualItem.setMnemonic( KeyEvent.VK_M );
     manualItem.addActionListener( this );
     menu.add( manualItem );
-
+/*
     editorItem = new JMenuItem( "Protocol Editor..." );
     editorItem.setMnemonic( KeyEvent.VK_P );
     editorItem.addActionListener( this );
     menu.add( editorItem );
-
+*/
     rawItem = new JMenuItem( "Import Raw Upgrade..." );
     rawItem.setMnemonic( KeyEvent.VK_R );
     rawItem.addActionListener( this );
@@ -421,9 +421,18 @@ public class KeyMapMaster
 
   private void editManualSettings()
   {
+    Protocol p = deviceUpgrade.getProtocol();
+    ManualProtocol mp = null;
+    if ( p.getClass() == ManualProtocol.class )
+      mp = ( ManualProtocol )p;
+    else
+      mp = new ManualProtocol( null, null );
     ManualSettingsDialog d =
-      new ManualSettingsDialog( this, protocolManager.getManualProtocol());
+      new ManualSettingsDialog( this, mp );
     d.setVisible( true );
+    mp = d.getProtocol();
+    if ( mp != null )
+      ProtocolManager.getProtocolManager().add( mp );
   }
 
   public void showMessage( String message )
@@ -533,11 +542,13 @@ public class KeyMapMaster
       {
         editManualSettings();
       }
+      /*
       else if ( source == editorItem )
       {
         ProtocolEditor d = new ProtocolEditor( this );
         d.setVisible( true );
       }
+      */
       else if ( source == rawItem )
       {
         ImportRawUpgradeDialog d = new ImportRawUpgradeDialog( this, deviceUpgrade );
