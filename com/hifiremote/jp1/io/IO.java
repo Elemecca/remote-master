@@ -4,12 +4,18 @@ public abstract class IO
 {
   public abstract String getInterfaceName();
   public abstract String getInterfaceVersion();
+  public abstract String[] getPortNames();
   public abstract String openRemote( String portName );
   public abstract void closeRemote();
   public abstract String getRemoteSignature();
   public abstract int getRemoteEepromAddress();
   public abstract int getRemoteEepromSize();
 
+  public String openRemote()
+  {
+    return openRemote( null );
+  }
+  
   public int readRemote( int address, short[] sBuffer )
   {
     return readRemote( address, sBuffer, sBuffer.length );

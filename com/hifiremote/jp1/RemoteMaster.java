@@ -7,8 +7,8 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import javax.swing.*;
-import com.hifiremote.decodeir.*;
 
+import com.hifiremote.decodeir.*;
 import com.hifiremote.jp1.io.*;
 
 /**
@@ -25,7 +25,7 @@ public class RemoteMaster
   /**
    *  Description of the Field
    */
-  public final static String version = "v1.80";
+  public final static String version = "v1.81";
   private File dir = null;
   /**
    *  Description of the Field
@@ -45,11 +45,12 @@ public class RemoteMaster
   private JMenuItem exitItem = null;
 
   // Remote menu items
+  private ArrayList< IO > interfaces = new ArrayList< IO >();
   private JMenuItem downloadItem = null;
   private JMenuItem uploadItem = null;
   private JMenuItem uploadWavItem = null;
 
-  // Interface menu items
+  // Help menu items
   private JMenuItem aboutItem = null;
 
   private JTabbedPane tabbedPane = null;
@@ -76,7 +77,7 @@ public class RemoteMaster
   public RemoteMaster( File workDir, PropertyFile prefs )
     throws Exception
   {
-    super( "Java IR", prefs );
+    super( "RM IR", prefs );
 
     dir = properties.getFileProperty( "IRPath", workDir );
     createMenus();
@@ -302,30 +303,108 @@ public class RemoteMaster
     menu.setMnemonic( KeyEvent.VK_R );
     menuBar.add( menu );
 
+    File userDir = new File( System.getProperty( "user.dir" ));
     try
     {
-      JP12Serial serial = new JP12Serial( new File( System.getProperty( "user.dir" )));
-      downloadItem = new JMenuItem( "Download from Remote", KeyEvent.VK_D );
-      downloadItem.addActionListener( this );
-      menu.add( downloadItem );
+      interfaces.add( new JP1Parallel( userDir ));
+    }
+    catch ( LinkageError le )
+    {
+      System.err.println( "Unable to create JP1Parallel object: " + le.getMessage());
+    }
+    
+    try
+    {
+      interfaces.add( new JP12Serial( userDir ));
+    }
+    catch ( LinkageError le )
+    {
+      System.err.println( "Unable to create JP12Serial object: " + le.getMessage());
+    }
+    
+    ActionListener interfaceListener = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent event )
+      {
+        String command = event.getActionCommand();
+        if ( command.equals( "autodetect" ))
+        {
+          properties.remove( "Interface" );
+          properties.remove( "Port" );
+          return;
+        }
+        
+        for ( IO io : interfaces )
+        {
+          if ( io.getInterfaceName().equals( command ))
+          {
+            String defaultPort = null;
+            if ( command.equals( properties.getProperty( "Interface" )))
+              defaultPort = properties.getProperty( "Port" );
 
-      uploadItem = new JMenuItem( "Upload to Remote", KeyEvent.VK_U );
-      uploadItem.setEnabled( false );
-      uploadItem.addActionListener( this );
-      menu.add( uploadItem );
-    }
-    catch ( NoClassDefFoundError ncdfe )
+            String[] availablePorts = io.getPortNames();
+            String[] choices = new String[ availablePorts.length + 1 ];
+            choices[ 0 ] = "Auto-detect";
+            System.arraycopy( availablePorts, 0, choices, 1, availablePorts.length );
+            
+            String rc = ( String )JOptionPane.showInputDialog( RemoteMaster.this, 
+                                                               "Select the port to use:", 
+                                                               command + " Port Selection",
+                                                               JOptionPane.PLAIN_MESSAGE,
+                                                               null,
+                                                               choices,
+                                                               defaultPort );
+            if ( rc == null )
+              return;
+            
+            properties.setProperty( "Interface", command );
+            
+            if ( rc.equals( choices[ 0 ]))
+              properties.remove( "Port" );
+            else
+              properties.setProperty( "Port", rc );
+            break;
+          }
+        }
+      }
+    };
+    
+    if ( !interfaces.isEmpty())
     {
-      System.err.println( "JP12Serial class not found!" );
+      JMenu subMenu = new JMenu( "Interface" );
+      menu.add( subMenu );
+      subMenu.setMnemonic( KeyEvent.VK_I );
+      ButtonGroup group = new ButtonGroup();
+      String preferredInterface = properties.getProperty( "Interface" );
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem( "Auto-detect" );
+      item.setActionCommand( "autodetect" );
+      item.setSelected( preferredInterface == null );
+      subMenu.add( item );
+      group.add( item );
+      item.setMnemonic( KeyEvent.VK_A );
+      item.addActionListener( interfaceListener );
+      
+      for ( IO io : interfaces )
+      {
+        String ioName = io.getInterfaceName();
+        item = new JRadioButtonMenuItem( ioName + "..." );
+        item.setActionCommand( ioName );
+        item.setSelected( ioName.equals( preferredInterface ));
+        subMenu.add( item );
+        group.add( item );
+        item.addActionListener( interfaceListener );
+      }
     }
-    catch ( UnsatisfiedLinkError ule )
-    {
-      System.err.println( "JP12Serial JNI interface not found!" );
-    }
-    catch ( Exception e )
-    {
-      e.printStackTrace( System.err );
-    }
+    
+    downloadItem = new JMenuItem( "Download from Remote", KeyEvent.VK_D );
+    downloadItem.setEnabled( !interfaces.isEmpty());
+    downloadItem.addActionListener( this );
+    menu.add( downloadItem );
+
+    uploadItem = new JMenuItem( "Upload to Remote", KeyEvent.VK_U );
+    uploadItem.setEnabled( false );
+    uploadItem.addActionListener( this );
+    menu.add( uploadItem );
 
     uploadWavItem = new JMenuItem( "Upload using WAV", KeyEvent.VK_W );
     uploadWavItem.setEnabled( false );
@@ -435,7 +514,7 @@ public class RemoteMaster
       saveAsItem.setEnabled( true );
     }
     exportIRItem.setEnabled( true );
-    uploadItem.setEnabled( true );
+    uploadItem.setEnabled( !interfaces.isEmpty());
     remoteConfig = new RemoteConfiguration( file );
     update();
     setTitleFile( file );
@@ -522,7 +601,7 @@ public class RemoteMaster
       updateRecentFiles( file );
       saveItem.setEnabled( true );
       exportIRItem.setEnabled( true );
-      uploadItem.setEnabled( true );
+      uploadItem.setEnabled( !interfaces.isEmpty());
     }
   }
 
@@ -578,6 +657,32 @@ public class RemoteMaster
       setTitle( "Java IR: " + file.getName() + " - " + remoteConfig.getRemote().getName() );
   }
 
+  private IO getOpenInterface()
+  {
+    String interfaceName = properties.getProperty( "Interface" );
+    String portName = properties.getProperty( "Port" );
+    if ( interfaceName != null )
+    {
+      for ( IO temp : interfaces )
+      {
+        if ( temp.getInterfaceName().equals( interfaceName ))
+        {
+          if ( temp.openRemote( portName ) != null )
+            return temp;
+        }
+      }
+    }
+    else
+    {
+      for ( IO temp : interfaces )
+      {
+        portName = temp.openRemote();
+        if ( portName != null )
+          return temp;
+      }
+    }
+    return null;
+  }
   /**
    *  Description of the Method
    *
@@ -608,27 +713,17 @@ public class RemoteMaster
           String v = LearnedSignal.getDecodeIR().getVersion();
           text += "<p>DecodeIR version " + v + "</p>";
         }
-        catch ( NoClassDefFoundError ncdfe )
-        {
-          text += "<p><b>DecodeIR is not available!</b></p>";
-        }
-        catch ( NoSuchMethodError nsme )
-        {
-          text += "<p><b>DecodeIR is not available!</b></p>";
-        }
-        catch ( UnsatisfiedLinkError ule )
+        catch ( LinkageError le )
         {
           text += "<p><b>DecodeIR is not available!</b></p>";
         }
 
-        try
+        if ( !interfaces.isEmpty())
         {
-          JP12Serial serial = new JP12Serial( new File( System.getProperty( "user.dir" )));
-          text += "<p>" + serial.getInterfaceName() + " version " + serial.getInterfaceVersion() + "</p>";
-        }
-        catch ( UnsatisfiedLinkError ule )
-        {
-          text += "<p><b>JP12Serial interface is not available!</b></p>";
+          text += "<p>Interfaces:<ul>";
+          for ( IO io : interfaces )
+            text += "<li>" + io.getInterfaceName() + " version " + io.getInterfaceVersion() + "</li>";
+          text += "</ul></p>";
         }
 
         text += "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
@@ -645,18 +740,17 @@ public class RemoteMaster
         d.width = ( d.width * 2 ) / 3;
         scroll.setPreferredSize( d );
 
-        JOptionPane.showMessageDialog( this, scroll, "About Java IR", JOptionPane.INFORMATION_MESSAGE );
+        JOptionPane.showMessageDialog( this, scroll, "About Java IR", JOptionPane.INFORMATION_MESSAGE, null );
       }
       else if ( source == downloadItem )
       {
-        JP12Serial serial = new JP12Serial( new File( System.getProperty( "user.dir" )));
-        String port = serial.openRemote( null );
-        if ( port == null )
+        IO io = getOpenInterface();
+        if ( io == null )
         {
-          JOptionPane.showMessageDialog( this, "No response from remote!\n" );
+          JOptionPane.showMessageDialog( this, "No remotes found!" );
           return;
         }
-        String sig = serial.getRemoteSignature();
+        String sig = io.getRemoteSignature();
         Remote[] remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
         Remote remote = null;
         if ( remotes.length == 0 )
@@ -684,30 +778,29 @@ public class RemoteMaster
         }
         remote.load();
         remoteConfig = new RemoteConfiguration( remote );
-        serial.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
-        serial.closeRemote();
+        io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
+        io.closeRemote();
         remoteConfig.parseData();
         saveAsItem.setEnabled( true );
         update();
       }
       else if ( source == uploadItem )
       {
-        JP12Serial serial = new JP12Serial();
-        String port = serial.openRemote( null );
-        if ( port == null )
+        IO io = getOpenInterface();
+        if ( io == null )
         {
-          JOptionPane.showMessageDialog( this, "No response from remote!\n" );
+          JOptionPane.showMessageDialog( this, "No remotes found!" );
           return;
         }
-        String sig = serial.getRemoteSignature();
+        String sig = io.getRemoteSignature();
         if ( !sig.equals( remoteConfig.getRemote().getSignature() ) )
         {
           JOptionPane.showMessageDialog( this, "Signatures don't match!\n" );
-          serial.closeRemote();
+          io.closeRemote();
           return;
         }
-        int rc = serial.writeRemote( remoteConfig.getRemote().getBaseAddress(), remoteConfig.getData() );
-        serial.closeRemote();
+        int rc = io.writeRemote( remoteConfig.getRemote().getBaseAddress(), remoteConfig.getData() );
+        io.closeRemote();
 
         if ( rc != remoteConfig.getData().length )
           JOptionPane.showMessageDialog( this, "writeRemote returned " + rc );
@@ -734,6 +827,11 @@ public class RemoteMaster
    */
   private void update()
   {
+    if ( remoteConfig != null )
+      setTitle( "RMIR - " + remoteConfig.getRemote().getName());
+    else
+      setTitle( "RMIR" );
+    
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
     macroPanel.set( remoteConfig );

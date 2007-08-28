@@ -3,7 +3,7 @@ package com.hifiremote.jp1.io;
 import java.io.File;
 import com.hifiremote.jp1.Hex;
 
-public class JP12Serial
+public class JP1Parallel
   extends IO
 {
   public native String getInterfaceName();
@@ -18,31 +18,30 @@ public class JP12Serial
   public native int writeRemote( int address, byte[] buffer, int length );
   private static boolean isLoaded = false;
 
-  public JP12Serial()
+  public JP1Parallel()
     throws UnsatisfiedLinkError
   {
     if ( !isLoaded )
     {
-      System.loadLibrary( "jp12serial" );
+      System.loadLibrary( "jp1parallel" );
       isLoaded = true;
     }
   }
 
-  public JP12Serial( File folder )
+  public JP1Parallel( File folder )
     throws UnsatisfiedLinkError
   {
     if ( !isLoaded )
     {
-      File file = new File( folder, System.mapLibraryName( "jp12serial" ));
+      File file = new File( folder, System.mapLibraryName( "jp1parallel" ));
       System.load( file.getAbsolutePath());
       isLoaded = true;
     }
   }
 
-
   public static void main( String[] args )
   {
-    JP12Serial test = new JP12Serial();
+    JP1Parallel test = new JP1Parallel();
     String portName = null;
     for ( int i = 0; i < args.length; ++i )
     {
@@ -54,7 +53,6 @@ public class JP12Serial
       }
     }
     portName = test.openRemote( portName );
-
     if ( portName != null )
     {
       System.err.println( "Found remote on port " + portName );
@@ -79,7 +77,7 @@ public class JP12Serial
     }
     else
     {
-      System.err.println( "No JP1.2 compatible remote found!" );
+      System.err.println( "No JP1 compatible remote found!" );
     }
   }
 }
