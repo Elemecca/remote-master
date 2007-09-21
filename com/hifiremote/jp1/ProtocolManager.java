@@ -160,9 +160,11 @@ public class ProtocolManager
       for ( Protocol tryit : v )
       {
         String tryName = tryit.getVariantName();
-        if ((( pvName == null ) && ( tryName == null )) ||
-            pvName.equals( tryName ))
-        System.err.println( "**** Warning: multiple protocols with PID " + id + " and variantName " + pvName );
+        if ((( pvName == null ) && ( tryName == null )) || pvName.equals( tryName ))
+        {
+          System.err.println( "**** Warning: multiple protocols with PID " + id + " and variantName " + pvName );
+          break;
+        }
       }
     }
     v.add( p );

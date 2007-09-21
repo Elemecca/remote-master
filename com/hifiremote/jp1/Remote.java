@@ -457,6 +457,20 @@ public class Remote
     return efcDigits;
   }
 
+  private boolean parseFlag( StringTokenizer st )
+  {
+    String flag = st.nextToken( " =\t" );
+    if ( flag.equalsIgnoreCase( "Y" ) ||
+         flag.equalsIgnoreCase( "Yes" ) ||
+         flag.equalsIgnoreCase( "T" ) ||
+         flag.equalsIgnoreCase( "True" ) ||
+         flag.equalsIgnoreCase( "1" ))
+    {
+      return true;
+    }
+    return false;
+  }
+
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
   {
@@ -501,7 +515,7 @@ public class Remote
       else if ( parm.equals( "OEMControl" ))
         oemControl = rdr.parseNumber( st.nextToken());
       else if ( parm.equals( "UpgradeBug" ))
-        upgradeBug = ( rdr.parseNumber( st.nextToken()) != 0 );
+        upgradeBug = parseFlag( st );
       else if ( parm.equals( "AdvCodeAddr" ))
       {
         int start = rdr.parseNumber( st.nextToken( ".=" ));
@@ -529,7 +543,7 @@ public class Remote
         timedMacroAddress = new AddressRange( start, end );
       }
       else if ( parm.equals( "TimedMacroWarning" ))
-        timedMacroWarning = ( rdr.parseNumber( st.nextToken()) != 0 );
+        timedMacroWarning = parseFlag( st );
       else if ( parm.equals( "LearnedAddr" ))
       {
         int start = rdr.parseNumber( st.nextToken( ".=" ));
@@ -573,7 +587,7 @@ public class Remote
         vptStatusBit = new StatusBit( addr, bit, onVal );
       }
       else if ( parm.equals( "OmitDigitMapByte" ))
-        omitDigitMapByte = ( rdr.parseNumber( st.nextToken()) != 0 );
+        omitDigitMapByte = parseFlag( st );
       else if ( parm.equals( "ImageMap" ))
       {
         PropertyFile properties = JP1Frame.getProperties();
@@ -702,11 +716,9 @@ public class Remote
       else if ( parm.equals( "SectionTerminator" ))
         sectionTerminator = ( short )rdr.parseNumber( st.nextToken());
       else if ( parm.equalsIgnoreCase( "2BytePid" ))
-      {
-        String flag = st.nextToken( " =\t" );
-        if ( flag.equalsIgnoreCase( "YES" ))
-          twoBytePID = true;
-      }
+        twoBytePID = parseFlag( st );
+      else if ( parm.equalsIgnoreCase( "LearnedDevBtnSwapped" ))
+        learnedDevBtnSwapped = parseFlag( st );
     }
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
@@ -1706,6 +1718,8 @@ public class Remote
   public java.util.List< SpecialProtocol > getSpecialProtocols(){ return specialProtocols; }
   private boolean twoBytePID = false;
   public boolean usesTwoBytePID(){ return twoBytePID; }
+  private boolean learnedDevBtnSwapped = false;
+  public boolean getLearnedDevBtnSwapped(){ return learnedDevBtnSwapped; }
 
   private static Hashtable< String, Integer > restrictionTable = null;
  }

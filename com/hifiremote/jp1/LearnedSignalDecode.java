@@ -10,7 +10,12 @@ public class LearnedSignalDecode
     device = decodeIRCaller.getDevice();
     subDevice = decodeIRCaller.getSubDevice();
     obc = decodeIRCaller.getOBC();
-    hex = decodeIRCaller.getHex();
+    int[] temp = decodeIRCaller.getHex();
+    int len = 0;
+    for ( int i = 0; ( i < temp.length ) && ( temp[ i ] >= 0 ); ++i )
+      ++len;
+    hex = new int[ len ];
+    System.arraycopy( temp, 0, hex, 0, len );
     miscMessage = decodeIRCaller.getMiscMessage();
     errorMessage = decodeIRCaller.getErrorMessage();
   }

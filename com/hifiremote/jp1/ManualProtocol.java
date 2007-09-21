@@ -39,9 +39,10 @@ public class ManualProtocol
     System.err.println( "  signalStyle=" + signalStyle );
     System.err.println( "  devBits=" + devBits );
     System.err.println( "  parms.size()=" + parms.size());
-    System.err.println( "  rawHex=" + rawHex );
+    System.err.println( "  rawHex=" + Hex.toString( rawHex ));
     System.err.println( "  cmdBits=" + cmdBits );
 
+    variantName = "manual";
     boolean lsb = false;
     boolean comp = false;
     if ( signalStyle.startsWith( "LSB" ))

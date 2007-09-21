@@ -262,6 +262,7 @@ public class Protocol
           processor = text.substring( pos + 1, pos2 );
           if ( processor.startsWith( "S3C8" ))
             processor = "S3C80";
+          System.err.println( "Imported processor name=" + processor );
           break;
         }
       }
@@ -276,6 +277,7 @@ public class Protocol
           text = text + ' ' + temp;
         }
         Processor p = ProcessorManager.getProcessor( processor );
+        System.err.println( "Processor=" + p );
         importedCode = new Hex( text );
         System.err.println( "Protocol.importUpgradeCode(), putting code for name=" + p.getEquivalentName() + ",code=" + importedCode );
         code.put( p.getEquivalentName(), importedCode );
@@ -307,7 +309,7 @@ public class Protocol
     else
       return true;
   }
-  
+
   public boolean hasAnyCode()
   {
     return !code.isEmpty();

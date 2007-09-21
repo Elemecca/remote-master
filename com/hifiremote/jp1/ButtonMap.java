@@ -35,6 +35,24 @@ public class ButtonMap
                               ", Creating button!" );
           String name = "button" + Integer.toHexString( keyCode & 0xFF ).toUpperCase();
           button = new Button( name, name, keyCode, remote );
+          if ( button.getIsShifted())
+          {
+            Button baseButton = remote.getButton( keyCode & 0x3F );
+            if ( baseButton != null )
+            {
+              button.setBaseButton( baseButton );
+              baseButton.setShiftedButton( button );
+            }
+          }
+          else if ( button.getIsXShifted())
+          {
+            Button baseButton = remote.getButton( keyCode & 0x3F );
+            if ( baseButton != null )
+            {
+              button.setBaseButton( baseButton );
+              baseButton.setXShiftedButton( button );
+            }
+          }
           remote.addButton( button );
         }
         button.addButtonMap( number );

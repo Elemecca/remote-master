@@ -73,8 +73,13 @@ public class DecodeTableModel
       case 5:
         return Hex.toString( decode.hex );
       case 6: // EFC
-        return null;
-      case 7:
+        short[] temp = new short[ decode.hex.length ];
+        for ( int i = 0; i < temp.length; ++i )
+          temp[ i ] = ( short )decode.hex[ i ];
+        Hex hex = new Hex( temp );
+        EFC efc = new EFC( hex );
+        return efc.toString();
+      case 7: // Misc
         return decode.miscMessage;
       default:
         return null;

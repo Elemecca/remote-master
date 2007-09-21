@@ -39,6 +39,8 @@ public class RMFileChooser
 
   public void updateUI()
   {
+    if ( System.getProperty( "os.name" ).startsWith( "Windows" ) && 
+         ( System.getProperty( "java.version" ).compareTo( "1.6.0" ) < 0 ))
     putClientProperty( "FileChooser.useShellFolder", Boolean.FALSE );
     super.updateUI();
   }

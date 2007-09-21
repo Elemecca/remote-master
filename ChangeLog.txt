@@ -1,3 +1,6 @@
+Changed for v1.82
+- Fix for importing KM files with HCS08 protocol code.
+
 Changed for v1.81
 - RMIR: add JP1 Parallel port interface (Windows and Linux).  Requires administrator (Windows) or superuser (Linux) privileges.
 

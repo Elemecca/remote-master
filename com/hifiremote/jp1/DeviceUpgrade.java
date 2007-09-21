@@ -562,7 +562,7 @@ public class DeviceUpgrade
     }
     else
       protocols = ProtocolManager.getProtocolManager().findByPID( pid );
-      
+
     Protocol tentative = null;
     Value[] tentativeVals = null;
     Protocol p = null;
@@ -588,6 +588,9 @@ public class DeviceUpgrade
       }
       System.err.println( "Imported fixedData is " + fixedDataHex );
       vals = p.importFixedData( fixedDataHex );
+      System.err.print( "Imported device parms are:" );
+      for ( Value v : vals )
+        System.err.print( " " + v.getValue());
       Hex calculatedFixedData = p.getFixedData( vals );
       System.err.println( "Calculated fixedData is " + calculatedFixedData );
       if ( calculatedFixedData.equals( fixedDataHex ))
@@ -627,7 +630,7 @@ public class DeviceUpgrade
         parms.add( new Value( temp & 0xFF ));
       parmValues = parms.toArray( new Value[ fixedDataLength ]);
 
-      mp = new ManualProtocol( "PID " + pid, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
+      mp = new ManualProtocol( "Manual Settings", pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
       mp.setCode( pCode, remote.getProcessor());
       ProtocolManager.getProtocolManager().add( mp );
       p = mp;
@@ -749,7 +752,7 @@ public class DeviceUpgrade
       buff.append( ')' );
     }
 
-    try 
+    try
     {
       BufferedReader rdr = new BufferedReader( new StringReader( Hex.toString( getUpgradeHex().getData(), 16 )));
       String line = null;
@@ -1689,7 +1692,7 @@ public class DeviceUpgrade
         System.err.println( "code=" + code );
         System.err.println( "byte2=" + byte2 );
         System.err.println( "notes=" + notes );
-        
+
         boolean isExternal = isExternalFunctionName( funcName );
         if ( isExternal )
         {

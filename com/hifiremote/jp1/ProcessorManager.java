@@ -86,6 +86,8 @@ public class ProcessorManager
       name = text.substring( 1 );
     else if ( text.equals( "P8/740" ))
       name = "740";
+    else
+      name = text;
     return processorManager.processors.get( name );
   }
 
@@ -98,7 +100,7 @@ public class ProcessorManager
   {
     processors.put( p.getFullName(), p );
   }
-  
+
   public static Processor[] getProcessors()
   {
     Collection< Processor > procs = processorManager.processors.values();

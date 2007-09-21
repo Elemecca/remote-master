@@ -25,7 +25,7 @@ public class RemoteMaster
   /**
    *  Description of the Field
    */
-  public final static String version = "v1.81";
+  public final static String version = "v1.82";
   private File dir = null;
   /**
    *  Description of the Field
@@ -312,7 +312,7 @@ public class RemoteMaster
     {
       System.err.println( "Unable to create JP1Parallel object: " + le.getMessage());
     }
-    
+
     try
     {
       interfaces.add( new JP12Serial( userDir ));
@@ -321,7 +321,7 @@ public class RemoteMaster
     {
       System.err.println( "Unable to create JP12Serial object: " + le.getMessage());
     }
-    
+
     ActionListener interfaceListener = new ActionListener()
     {
       public void actionPerformed( ActionEvent event )
@@ -333,7 +333,7 @@ public class RemoteMaster
           properties.remove( "Port" );
           return;
         }
-        
+
         for ( IO io : interfaces )
         {
           if ( io.getInterfaceName().equals( command ))
@@ -346,9 +346,9 @@ public class RemoteMaster
             String[] choices = new String[ availablePorts.length + 1 ];
             choices[ 0 ] = "Auto-detect";
             System.arraycopy( availablePorts, 0, choices, 1, availablePorts.length );
-            
-            String rc = ( String )JOptionPane.showInputDialog( RemoteMaster.this, 
-                                                               "Select the port to use:", 
+
+            String rc = ( String )JOptionPane.showInputDialog( RemoteMaster.this,
+                                                               "Select the port to use:",
                                                                command + " Port Selection",
                                                                JOptionPane.PLAIN_MESSAGE,
                                                                null,
@@ -356,9 +356,9 @@ public class RemoteMaster
                                                                defaultPort );
             if ( rc == null )
               return;
-            
+
             properties.setProperty( "Interface", command );
-            
+
             if ( rc.equals( choices[ 0 ]))
               properties.remove( "Port" );
             else
@@ -368,7 +368,7 @@ public class RemoteMaster
         }
       }
     };
-    
+
     if ( !interfaces.isEmpty())
     {
       JMenu subMenu = new JMenu( "Interface" );
@@ -383,7 +383,7 @@ public class RemoteMaster
       group.add( item );
       item.setMnemonic( KeyEvent.VK_A );
       item.addActionListener( interfaceListener );
-      
+
       for ( IO io : interfaces )
       {
         String ioName = io.getInterfaceName();
@@ -395,7 +395,7 @@ public class RemoteMaster
         item.addActionListener( interfaceListener );
       }
     }
-    
+
     downloadItem = new JMenuItem( "Download from Remote", KeyEvent.VK_D );
     downloadItem.setEnabled( !interfaces.isEmpty());
     downloadItem.addActionListener( this );
@@ -831,7 +831,7 @@ public class RemoteMaster
       setTitle( "RMIR - " + remoteConfig.getRemote().getName());
     else
       setTitle( "RMIR" );
-    
+
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
     macroPanel.set( remoteConfig );

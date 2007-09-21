@@ -1088,7 +1088,10 @@ public class RemoteConfiguration
     while (( offset < addr.getEnd()) && ( data[ offset ] != remote.getSectionTerminator()))
     {
       short keyCode = data[ offset++ ];
-      int device = data[ offset++ ] >> 4;
+      int device = data[ offset ] >> 4;
+      if ( remote.getLearnedDevBtnSwapped())
+        device = data[ offset ] & 0x0F;
+      ++offset;
       int length = data[ offset++ ];
       learned.add( new LearnedSignal( keyCode, device, new Hex( data, offset, length ), null ));
       offset += length;

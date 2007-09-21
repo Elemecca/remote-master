@@ -16,6 +16,8 @@ public class Button
       setIsShifted( true );
     else if ( maskedCode == r.getXShiftMask())
       setIsXShifted( true );
+    else if ( maskedCode != 0 )
+      restrictions |= ( SHIFT | XSHIFT );
   }
 
   public String toString(){ return name; }
