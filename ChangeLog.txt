@@ -1,5 +1,9 @@
 Changed for v1.82
 - Fix for importing KM files with HCS08 protocol code.
+- Fix for buttons with keycodes >$40 that are not shifted/x-shifted
+- Improve manual settings support
+- RMIR: Fix for displaying EFC and Hex of learned signals
+- Add support for LearnedDevBtnSwapped
 
 Changed for v1.81
 - RMIR: add JP1 Parallel port interface (Windows and Linux).  Requires administrator (Windows) or superuser (Linux) privileges.
