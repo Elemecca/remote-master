@@ -56,6 +56,11 @@ public class DeviceUpgrade
 
   public void reset()
   {
+    reset( defaultNames );
+  }
+  
+  public void reset( String[] defaultNames )
+  {
     description = null;
     setupCode = 0;
 

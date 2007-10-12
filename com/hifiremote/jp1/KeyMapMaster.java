@@ -53,7 +53,7 @@ public class KeyMapMaster
     super( "RemoteMaster", prefs );
     me = this;
 
-    setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
+    setDefaultCloseOperation( EXIT_ON_CLOSE );
 
     preferences = new Preferences( prefs );
     homeDirectory = prefs.getFile().getParentFile();
@@ -77,7 +77,6 @@ public class KeyMapMaster
           System.err.println( "KeyMapMaster.windowClosing() caught an exception!" );
           e.printStackTrace( System.out );
         }
-//        setVisible( false );
       }
     });
 
@@ -85,7 +84,7 @@ public class KeyMapMaster
 
     preferences.load( recentFileMenu, this );
 
-    deviceUpgrade = new DeviceUpgrade();
+    deviceUpgrade = new DeviceUpgrade( getCustomNames());
     Remote r = null;
 
     String name = preferences.getLastRemoteName();
@@ -342,7 +341,11 @@ public class KeyMapMaster
       public void actionPerformed( ActionEvent e )
       {
         Object source = e.getSource();
-        if (( source != useDefaultNames ) && ( source != useCustomNames ))
+        if ( source == useDefaultNames )
+          preferences.setUseCustomNames( false );
+        else if ( source == useCustomNames )
+          preferences.setUseCustomNames( true );
+        else
           editCustomNames();
       }
     };
@@ -353,10 +356,10 @@ public class KeyMapMaster
 
     useCustomNames = new JRadioButtonMenuItem( "Custom" );
     useCustomNames.setMnemonic( KeyEvent.VK_C );
+    group.add( useCustomNames );
     useCustomNames.setSelected( preferences.getUseCustomNames());
 
     useCustomNames.addActionListener( al );
-    group.add( useCustomNames );
     submenu.add( useCustomNames );
 
     submenu.addSeparator();
@@ -493,7 +496,7 @@ public class KeyMapMaster
         if ( !promptToSaveUpgrade( ACTION_LOAD ))
           return;
         Protocol oldProtocol = deviceUpgrade.getProtocol();
-        deviceUpgrade.reset();
+        deviceUpgrade.reset( getCustomNames());
       }
       else if ( source == saveItem )
       {

@@ -1,3 +1,8 @@
+Changed for v1.83
+- Fix for using custom function names
+- Make RM terminate when closed
+- RMIR: enable other port entry in port selection dialog
+
 Changed for v1.82
 - Fix for importing KM files with HCS08 protocol code.
 - Fix for buttons with keycodes >$40 that are not shifted/x-shifted

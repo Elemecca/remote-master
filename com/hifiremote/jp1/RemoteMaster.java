@@ -25,7 +25,7 @@ public class RemoteMaster
   /**
    *  Description of the Field
    */
-  public final static String version = "v1.82";
+  public final static String version = "v1.83";
   private File dir = null;
   /**
    *  Description of the Field
@@ -82,7 +82,7 @@ public class RemoteMaster
     dir = properties.getFileProperty( "IRPath", workDir );
     createMenus();
 
-    setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
+    setDefaultCloseOperation( EXIT_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
 
     addWindowListener(
@@ -109,7 +109,6 @@ public class RemoteMaster
           {
             exc.printStackTrace( System.err );
           }
-          System.exit( 0 );
         }
       } );
 
@@ -343,26 +342,19 @@ public class RemoteMaster
               defaultPort = properties.getProperty( "Port" );
 
             String[] availablePorts = io.getPortNames();
-            String[] choices = new String[ availablePorts.length + 1 ];
-            choices[ 0 ] = "Auto-detect";
-            System.arraycopy( availablePorts, 0, choices, 1, availablePorts.length );
+            
+            PortDialog d = new PortDialog( RemoteMaster.this, availablePorts, defaultPort );
+            d.setVisible( true );
+            if ( d.getUserAction() == JOptionPane.OK_OPTION )
+            {
+              String port = d.getPort();
+              properties.setProperty( "Interface", io.getInterfaceName());
+              if ( port.equals( PortDialog.AUTODETECT ))
+                properties.remove( "Port" );
+              else
+                properties.setProperty( "Port", port );
+            }
 
-            String rc = ( String )JOptionPane.showInputDialog( RemoteMaster.this,
-                                                               "Select the port to use:",
-                                                               command + " Port Selection",
-                                                               JOptionPane.PLAIN_MESSAGE,
-                                                               null,
-                                                               choices,
-                                                               defaultPort );
-            if ( rc == null )
-              return;
-
-            properties.setProperty( "Interface", command );
-
-            if ( rc.equals( choices[ 0 ]))
-              properties.remove( "Port" );
-            else
-              properties.setProperty( "Port", rc );
             break;
           }
         }
