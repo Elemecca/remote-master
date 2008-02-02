@@ -1,2 +1,2 @@
-setup.jar
+java -cp RemoteMaster.jar Setup
 setup.reg
