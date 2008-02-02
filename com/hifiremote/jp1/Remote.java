@@ -1143,7 +1143,10 @@ public class Remote
     java.util.List< java.util.List< ImageMap >> outer = new ArrayList< java.util.List< ImageMap >>();
     java.util.List< ImageMap > inner = null;
     boolean nested = false;
-    File imageDir = new File( KeyMapMaster.getHomeDirectory(), "Images" );
+    PropertyFile properties = JP1Frame.getProperties();
+    File imageDir = properties.getFileProperty( "ImagePath" );
+    if ( imageDir == null )
+      imageDir = new File( properties.getFile().getParentFile(), "Images" );    
 
     while ( true )
     {
