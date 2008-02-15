@@ -6,36 +6,36 @@
   <property name="src" location="."/>
   <property name="build" location="build"/>
   <property name="dist" location="dist"/>
-  <available file="num-master.txt" property="nummaster.exists"/> 
+  <available file="num-master.txt" property="nummaster.exists"/>
 
   <target name="init">
     <!-- Create the build directory structure used by compile -->
     <mkdir dir="${build}"/>
-  	<mkdir dir="${dist}"/>
+        <mkdir dir="${dist}"/>
   </target>
-	
+
   <target name="compile" depends="init" description="compile the source">
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac classpath=".;info" srcdir="${src}" destdir="${build}"/>
+    <javac target="1.5" debug="on" classpath=".;info" srcdir="${src}" destdir="${build}"/>
   </target>
-	
+
   <target name="digitmaps" depends="compile" if="nummaster.exists">
-	<java classpath="${build}" classname="UpdateDigitMapsBin"/>
-  	<delete>
-  	  <file file="num-master.txt"/>
+        <java classpath="${build}" classname="UpdateDigitMapsBin"/>
+        <delete>
+          <file file="num-master.txt"/>
     </delete>
   </target>
-	
-	
+
+
   <target name="rmjar" depends="compile" description="RemoteMaster.jar">
     <jar destfile="${dist}/RemoteMaster.jar" manifest="RemoteMaster.mf">
-	  <fileset dir="${build}" includes="com/**,Setup.class"/>
-	  <fileset dir="${src}" includes="info/**"/>
-	</jar>
+          <fileset dir="${build}" includes="com/**,Setup.class"/>
+          <fileset dir="${src}" includes="info/**"/>
+        </jar>
   </target>
-	
+
   <target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution" >
-  	<copy todir="${dist}" flatten="true">
+        <copy todir="${dist}" flatten="true">
       <resources>
         <file file="${src}/Readme.html"/>
         <file file="${src}/style.css"/>

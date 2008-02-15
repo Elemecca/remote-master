@@ -172,7 +172,7 @@ public class DeviceCombiner
     if ( devComb == null )
       return null;
 
-    if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ))
+    if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ) || name.equals( "S3F80" ))
     {
       if (( devComb[ 1 ] == -1 ) ||
           ( devComb[ 5 ] == -1 ) ||
@@ -284,6 +284,7 @@ public class DeviceCombiner
     int offset = header.length;
     if ( name.equals( "S3C80" ) ||
          name.equals( "S3C80+" ) || 
+         name.equals( "S3F80" ) ||
          name.equals( "HCS08" ))
     {
       offset += base.length();
@@ -303,7 +304,7 @@ public class DeviceCombiner
     }
     header[ i ] = ( short )offset;
 
-    if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ))
+    if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ) && !name.equals( "S3F80" ))
       offset += base.length();
 
     short[] code = new short[ offset ];
