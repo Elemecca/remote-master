@@ -25,7 +25,7 @@ public class RemoteMaster
   /**
    *  Description of the Field
    */
-  public final static String version = "v1.83";
+  public final static String version = "v1.84";
   private File dir = null;
   /**
    *  Description of the Field
@@ -319,6 +319,15 @@ public class RemoteMaster
     catch ( LinkageError le )
     {
       System.err.println( "Unable to create JP12Serial object: " + le.getMessage());
+    }
+
+    try
+    {
+      interfaces.add( new JP1USB( userDir ));
+    }
+    catch ( LinkageError le )
+    {
+      System.err.println( "Unable to create JP1USB object: " + le.getMessage());
     }
 
     ActionListener interfaceListener = new ActionListener()

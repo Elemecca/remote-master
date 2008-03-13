@@ -9,7 +9,7 @@ public class ProcessorManager
     processors = new LinkedHashMap< String, Processor >();
     add( new S3C80Processor());
 
-    Processor p = new Processor( "6805", "C9" );
+    Processor p = new BigEndianProcessor( "6805", "C9" );
     int[] opcodes = { 0xCC, 0xCD };
     int[] addresses =
     {
@@ -35,7 +35,7 @@ public class ProcessorManager
     p.setVectorEditData( opcodes, addresses );
     add( p );
 
-    p = new Processor( "6805", "RC16/18" );
+    p = new BigEndianProcessor( "6805", "RC16/18" );
     int[] moreAddresses =
     {
       0x0180,
@@ -63,8 +63,8 @@ public class ProcessorManager
     };
     p.setVectorEditData( opcodes, moreAddresses );
     add( p );
-    add( new Processor( "740" ));
-    add( new Processor( "HCS08" ));
+    add( new LittleEndianProcessor( "740" ));
+    add( new BigEndianProcessor( "HCS08" ));
     add( new S3F80Processor());
   }
 

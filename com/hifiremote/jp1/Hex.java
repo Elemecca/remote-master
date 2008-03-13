@@ -210,7 +210,7 @@ public class Hex
   public static String toString( short[] data, int breakAt, int offset, int length )
   {
     if ( data == null )
-      return null;
+      return "null";
 
     StringBuilder rc = new StringBuilder( 4 * data.length );
     int breakCount = breakAt;

@@ -65,6 +65,7 @@ public class SetupPanel
     protocolList = new JComboBox();
     protocolList.addActionListener( this );
     label.setLabelFor( protocolList );
+    protocolList.setMaximumRowCount( 25 );
     protocolList.setToolTipText( "Select the protocol to be used for this device upgrade from the drop-down list." );
     add( protocolList, "4, 3" );
 

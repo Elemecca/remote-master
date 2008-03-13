@@ -13,9 +13,15 @@ public class CmdParmFactory
     DefaultValue defaultValue = null;
     int bits = -1;
     int base = 10;
+    boolean optional = false;
+    
     String name = st.nextToken();
+    if ( name.charAt( 0 ) == '[' )
+    {
+      name = name.substring( 1, name.length() - 2 );
+      optional = true;
+    }
     List< String > choices = null;
-//    Dimension d = null;
     while ( st.hasMoreTokens())
     {
       String sep = st.nextToken();
@@ -75,12 +81,6 @@ public class CmdParmFactory
             choices.add( val );
           }
         }
-//        else if ( str.indexOf( '-' ) != -1 )
-//        {
-//          StringTokenizer st3 = new StringTokenizer( str, "-" );
-//          d = new Dimension( Integer.parseInt( st3.nextToken()),
-//                             Integer.parseInt( st3.nextToken()));
-//        }
         else if ( str.length() > 0 )
         {
           bits = Integer.parseInt( str );
@@ -89,15 +89,14 @@ public class CmdParmFactory
     }
     if ( choices != null )
       rc = new ChoiceCmdParm( name, defaultValue, choices );
-    else if ( bits != -1 )
-      rc = new NumberCmdParm( name, defaultValue, bits, base );
-//    else if ( d != null )
-//      rc = new NumberCmdParm( name, defaultValue, d.width, d.height );
     else
     {
-      rc = new NumberCmdParm( name, defaultValue, 8, base );
+      if ( bits == -1 )
+        bits = 8;
+      rc = new NumberCmdParm( name, defaultValue, bits, base );
     }
 
+    rc.setOptional( optional );
     return rc;
   }
 }

@@ -57,14 +57,14 @@ public class NumberCmdParm
 
   public Object convertValue( Object value )
   {
-    Object rc = null;
+    if ( value == null ) return null;
+
     Class c = value.getClass();
     System.err.println( "NumberCmdParm.convertValue(): class is " + c );
     if (( c == Integer.class ) || ( c == Short.class ))
-      rc = value;
+      return value;
     else // assume String
-      rc = Integer.valueOf(( String )value, base );
-    return rc;
+      return Integer.valueOf(( String )value, base );
   }
 
   public String toString()

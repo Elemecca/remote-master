@@ -563,7 +563,10 @@ public class DeviceUpgrade
     if ( pCode == null )
     {
       protocols = new ArrayList< Protocol >();
-      protocols.add( ProtocolManager.getProtocolManager().findProtocolForRemote( remote, pid, false ));
+
+      Protocol builtinProtocol = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, pid, false );
+      if ( builtinProtocol != null )
+        protocols.add( builtinProtocol );
     }
     else
       protocols = ProtocolManager.getProtocolManager().findByPID( pid );
@@ -612,8 +615,9 @@ public class DeviceUpgrade
 
     ManualProtocol mp = null;
 
-    if (( tentative != null ) && (( pCode == null ) || pCode.equals( tentative.getCode( remote ))))
+    if (( tentative != null ) && (( pCode == null ) || pCode.equals( getCode( tentative ))))
     {
+      p = tentative;
       System.err.println( "Using " + p.getDiagnosticName());
       fixedDataLength = p.getFixedDataLength();
       cmdLength = p.getDefaultCmd().length();
@@ -2089,9 +2093,14 @@ public class DeviceUpgrade
 
   public Hex getCode()
   {
+    return getCode( protocol );
+  }
+
+  public Hex getCode( Protocol p )
+  {
     Hex code = null;
-    if ( protocol.needsCode( remote ))
-      code = protocol.getCode( remote );
+    if ( p.needsCode( remote ))
+      code = p.getCode( remote );
     if ( code != null )
     {
       code = remote.getProcessor().translate( code, remote );

@@ -1,10 +1,24 @@
 package com.hifiremote.jp1;
 
-import java.beans.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import javax.swing.JOptionPane;
 
 public class RemoteConfiguration
 {
@@ -887,9 +901,10 @@ public class RemoteConfiguration
   {
     AddressRange addr = remote.getUpgradeAddress();
 
+    Processor processor = remote.getProcessor();
     // get the offsets to the device and protocol tables
-    int deviceTableOffset = Hex.get( data, addr.getStart()) - remote.getBaseAddress(); // get offset of device table
-    int protocolTableOffset = Hex.get( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of protocol table
+    int deviceTableOffset = processor.getInt( data, addr.getStart()) - remote.getBaseAddress(); // get offset of device table
+    int protocolTableOffset = processor.getInt( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of protocol table
 
     // build an array containing the ends of all the possible ranges
 
@@ -907,19 +922,19 @@ public class RemoteConfiguration
 
     // parse the protocol tables
     int offset = protocolTableOffset;
-    int count = Hex.get( data, offset ); // get number of entries in upgrade table
+    int count = processor.getInt( data, offset ); // get number of entries in upgrade table
     offset += 2;  // skip to first entry
 
     for ( int i = 0; i < count; ++i )
     {
-      int pid = Hex.get( data, offset );
-      int codeOffset = Hex.get( data, offset + 2 * count ) - remote.getBaseAddress();
+      int pid = processor.getInt( data, offset );
+      int codeOffset = processor.getInt( data, offset + 2 * count ) - remote.getBaseAddress();
       if ( i == 0 )
         bounds[ 1 ] = codeOffset; // save the offset of the first protocol code
       if ( i == count - 1 ) // the last entry, so there is no next extry
         bounds[ 0 ] = 0;
       else
-        bounds[ 0 ] = Hex.get( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress();
+        bounds[ 0 ] = processor.getInt( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress();
 
       int limit = getLimit( codeOffset, bounds );
       Hex code = Hex.subHex( data, codeOffset, limit - codeOffset );
@@ -933,14 +948,14 @@ public class RemoteConfiguration
 
     // now parse the devices
     offset = deviceTableOffset;
-    count = Hex.get( data, offset ); // get number of entries in upgrade table
+    count = processor.getInt( data, offset ); // get number of entries in upgrade table
     for ( int i = 0; i < count; ++i )
     {
       offset += 2;
-      int setupCode = Hex.get( data, offset ) & 0x7FF;
+      int setupCode = processor.getInt( data, offset ) & 0x7FF;
       DeviceType devType = remote.getDeviceTypeByIndex( data[ offset ] >> 4 );
       int codeOffset = offset + 2 * count; // compute offset to offset of upgrade code
-      codeOffset = Hex.get( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
+      codeOffset = processor.getInt( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
       int pid = data[ codeOffset ];
       if (( data[ offset ] & 8 ) == 8 ) // pid > 0xFF
         pid += 0x100;
@@ -948,7 +963,7 @@ public class RemoteConfiguration
       if ( i == count - 1 )
         bounds[ 0 ] = 0;
       else
-        bounds[ 0 ] = Hex.get( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress(); // next device upgrade
+        bounds[ 0 ] = processor.getInt( data, offset + 2 * ( count + 1 )) - remote.getBaseAddress(); // next device upgrade
       int limit = getLimit( offset, bounds );
       Hex deviceHex = Hex.subHex( data, codeOffset, limit - codeOffset );
       ProtocolUpgrade pu = getProtocol( pid );
@@ -976,9 +991,9 @@ public class RemoteConfiguration
   public int getUpgradeCodeBytesUsed()
   {
     AddressRange addr = remote.getUpgradeAddress();
-
-    int offset = Hex.get( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of protocol table
-    int count = Hex.get( data, offset ); // get number of protocol upgrades
+    Processor processor = remote.getProcessor();
+    int offset = processor.getInt( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of protocol table
+    int count = processor.getInt( data, offset ); // get number of protocol upgrades
     offset += 2;  // skip to first entry
     offset += ( 4 * count ); // the are 4 bytes for each entry ( 2 for PID, 2 for the code pointer )
     return offset - addr.getStart() - 1;
@@ -1008,12 +1023,13 @@ public class RemoteConfiguration
 
     int prCount = requiredProtocols.size();
 
+    Processor processor = remote.getProcessor();
     // Handle the special case where there are no upgrades installed
     if (( devCount == 0 ) && ( prCount == 0 ))
     {
-      Hex.put( offset + remote.getBaseAddress(), data, addr.getStart());
-      Hex.put( offset + remote.getBaseAddress(), data, addr.getStart() + 2 );
-      Hex.put( 0, data, offset );
+      processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart());
+      processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart() + 2 );
+      processor.putInt( 0, data, offset );
       return offset - addr.getStart();
     }
 
@@ -1040,10 +1056,10 @@ public class RemoteConfiguration
     }
 
     // set the pointer to the device table.
-    Hex.put( offset + remote.getBaseAddress(), data, addr.getStart());
+    processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart());
 
     // create the device table
-    Hex.put( devCount, data, offset );
+    processor.putInt( devCount, data, offset );
     offset += 2;
     // store the setup codes
     for ( DeviceUpgrade dev : devices )
@@ -1054,24 +1070,24 @@ public class RemoteConfiguration
     //store the offsets
     for ( int devOffset : devOffsets )
     {
-      Hex.put( devOffset + remote.getBaseAddress(), data, offset );
+      processor.putInt( devOffset + remote.getBaseAddress(), data, offset );
       offset+= 2;
     }
 
     // set the pointer to the protocol table
-    Hex.put( offset + remote.getBaseAddress(), data, addr.getStart() + 2 );
+    processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart() + 2 );
 
     // create the protocol table
-    Hex.put( prCount, data, offset );
+    processor.putInt( prCount, data, offset );
     offset += 2;
     for ( ProtocolUpgrade pr : requiredProtocols.values())
     {
-      Hex.put( pr.getPid(), data, offset );
+    	processor.putInt( pr.getPid(), data, offset );
       offset += 2;
     }
     for ( i = 0; i < prCount; ++i )
     {
-      Hex.put( prOffsets[ i ] + remote.getBaseAddress(), data, offset );
+      processor.putInt( prOffsets[ i ] + remote.getBaseAddress(), data, offset );
       offset+= 2;
     }
 

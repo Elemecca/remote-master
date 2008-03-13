@@ -1,16 +1,27 @@
 package com.hifiremote.jp1;
 
-public class Processor
+public abstract class Processor
 {
   public Processor( String name )
   {
-    this( name, null );
+    this( name, null, false );
+  }
+  
+  public Processor( String name, boolean reverse )
+  {
+	  this( name, null, reverse );
   }
 
   public Processor( String name, String version )
   {
+	this( name, version, false );
+  }
+  
+  public Processor( String name, String version, boolean reverse )
+  {
     this.name = name;
     this.version = version;
+    this.reverse = reverse;
   }
 
   public void setVectorEditData( int[] opcodes, int[] addresses )
@@ -68,17 +79,10 @@ public class Processor
     return code;
   }
 
-  private short getInt( short[] data, int offset )
-  {
-    return ( short )((( data[ offset ] & 0xFF ) << 8 ) + ( data[ offset + 1 ] & 0xFF ));
-  }
-
-  private void putInt( short[] data, int offset, int val )
-  {
-    data[ offset ] = ( short )( val >> 8 );
-    data[ offset + 1 ] = ( short )( val & 0xFF );
-  }
-
+  public abstract short getInt( short[] data, int offset );
+  
+  public abstract void putInt( int val, short[] data, int offset );
+  
   private void doVectorEdit( Hex hex, int vectorOffset )
   {
     short[] data = hex.getData();
@@ -95,7 +99,7 @@ public class Processor
             if ( addresses[ k ] == address )
             {
               address += vectorOffset;
-              putInt( data, i + 1, address );
+              putInt( address, data, i + 1 );
               break;
             }
           }
@@ -112,14 +116,14 @@ public class Processor
 
     for ( int i = 0; i < data.length - 1; i++ )
     {
-      if ((( data[ i ] & hex.ADD_OFFSET ) != 0 ) &&
-          (( data[ i + 1 ] & hex.ADD_OFFSET ) != 0 ))
+      if ((( data[ i ] & Hex.ADD_OFFSET ) != 0 ) &&
+          (( data[ i + 1 ] & Hex.ADD_OFFSET ) != 0 ))
       {
         int temp = getInt( data, i );
         if (( temp < minDataAddress ) || ( temp > maxDataAddress ))
           continue;
         temp += dataOffset;
-        putInt( data, i, temp );
+        putInt( temp, data, i);
         i++;
       }
     }
@@ -127,7 +131,7 @@ public class Processor
     for ( int i = 0; i < data.length; i++ )
     {
       int temp = data[ i ];
-      if (( temp & hex.ADD_OFFSET ) != 0 )
+      if (( temp & Hex.ADD_OFFSET ) != 0 )
       {
         temp &= 0xFF;
         temp += dataOffset;
@@ -147,4 +151,5 @@ public class Processor
   private int[] addresses = new int[ 0 ];
   private int minDataAddress = 0x64;
   private int maxDataAddress = 0x80;
+  private boolean reverse = false;
 }

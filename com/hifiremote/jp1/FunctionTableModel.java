@@ -188,7 +188,7 @@ public class FunctionTableModel
         value = defaultValue.value();
       System.err.println( "FunctionTableModel.setValueAt(): value is " + value );
 
-      if ( value == null )
+      if (( value == null ) && !cmdParms[ parmIndex ].isOptional())
         function.setHex( null );
       else
       {
@@ -198,7 +198,7 @@ public class FunctionTableModel
           hex = protocol.getDefaultCmd();
           function.setHex( hex );
         }
-        protocol.setValueAt( col - colOffset, hex, value );
+        protocol.setValueAt( parmIndex, hex, value );
       }
     }
     fireTableRowsUpdated( row, row );

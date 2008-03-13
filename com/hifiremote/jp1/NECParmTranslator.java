@@ -57,9 +57,12 @@ public class NECParmTranslator
     temp = complement( hex[ 2 ] );
     if (( hex[ 2 ] != hex[ 1 ]) && ( hex[ 1 ] != temp ))
       subDevice = new Integer( reverse( temp ));
+    
+    short defaultParm = ( short )initialDefaultParm;
+    if ( subDevice != null )
+    	defaultParm |= 0x20;
 
-    if (( hex[ 0 ] != initialDefaultParm ) &&
-        ( hex[ 0 ] != ( initialDefaultParm + 0x20 )))
+    if ( hex[ 0 ] != defaultParm )
         parm = new Integer( hex[ 0 ] & 0xFF );
 
     parms[ 0 ] = new Value( deviceNumber, null );

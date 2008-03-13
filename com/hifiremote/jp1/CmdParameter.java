@@ -35,4 +35,8 @@ public abstract class CmdParameter
   public abstract TableCellEditor getEditor();
   public abstract TableCellRenderer getRenderer();
   public abstract Class getValueClass();
+  
+  private boolean optional = false;
+  public boolean isOptional(){ return optional; }
+  public void setOptional( boolean flag ){ optional = flag; }
 }

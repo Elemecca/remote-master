@@ -505,7 +505,7 @@ public class Protocol
     for ( int i = 0; i < cmdParms.length; i++ )
     {
       System.err.println( "Setting default for index " + i );
-      System.err.println( "vals[" +  i + " ] is " + vals[ i ] );
+      System.err.println( "vals[ " +  i + " ] is " + vals[ i ] );
       vals[ i ].setDefaultValue( cmdParms[ i ].getDefaultValue());
     }
     return vals;

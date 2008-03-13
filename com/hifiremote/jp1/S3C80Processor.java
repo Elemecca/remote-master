@@ -1,7 +1,7 @@
 package com.hifiremote.jp1;
 
 public class S3C80Processor
-  extends Processor
+  extends BigEndianProcessor
 {
   public S3C80Processor()
   {

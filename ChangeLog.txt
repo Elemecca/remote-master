@@ -1,3 +1,12 @@
+Changes for v1.84
+- Fix Sony20 and Sony Combo (12/20)
+- Update protocol notes (thanks Capn!)
+- RMIR: Add support for JP1 USB interface (Windows only)
+- RMIR: Add support for "other" ports
+- RMIR: Bring JP1.x USB/Serial support up to date
+- RMIR: Fix endian issues
+- Enable S3F80 processors to use S3C80 code for Device Combiner
+
 Changed for v1.83
 - Fix for using custom function names
 - Make RM terminate when closed

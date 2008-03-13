@@ -4,19 +4,18 @@
     </description>
   <!-- set global properties for this build -->
   <property name="src" location="."/>
-  <property name="build" location="build"/>
+  <property name="build" location="."/>
   <property name="dist" location="dist"/>
   <available file="num-master.txt" property="nummaster.exists"/>
 
   <target name="init">
     <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${build}"/>
-        <mkdir dir="${dist}"/>
+    <mkdir dir="${dist}"/>
   </target>
 
   <target name="compile" depends="init" description="compile the source">
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac target="1.5" debug="on" classpath=".;info" srcdir="${src}" destdir="${build}"/>
+    <javac target="1.5" debug="on" classpath="." srcdir="${src}" destdir="${build}"/>
   </target>
 
   <target name="digitmaps" depends="compile" if="nummaster.exists">
@@ -26,32 +25,28 @@
     </delete>
   </target>
 
-
   <target name="rmjar" depends="compile" description="RemoteMaster.jar">
     <jar destfile="${dist}/RemoteMaster.jar" manifest="RemoteMaster.mf">
-          <fileset dir="${build}" includes="com/**,Setup.class"/>
+          <fileset dir="${build}" includes="com/**/*.class,Setup.class"/>
           <fileset dir="${src}" includes="info/**"/>
         </jar>
   </target>
 
   <target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution" >
-        <copy todir="${dist}" flatten="true">
-      <resources>
-        <file file="${src}/Readme.html"/>
-        <file file="${src}/style.css"/>
-        <file file="${src}/styleie.css"/>
-        <file file="${src}/protocols.ini"/>
-        <file file="${src}/setup.bat"/>
-        <file file="${src}/ChangeLog.txt"/>
-        <file file="${src}/digitmaps.bin"/>
-        <file file="${src}/jp1parallel.dll"/>
-        <file file="${src}/porttalk.sys"/>
-        <file file="${src}/jp12serial.dll"/>
-        <file file="${src}/libjp12serial.so"/>
-        <file file="${src}/libjp1parallel.so"/>
-        <file file="${src}/rmaster.sh"/>
-        <file file="${src}/rmir.sh"/>
-      </resources>
+      <copy todir="${dist}" flatten="true">
+        <resources>
+          <file file="${src}/Readme.html"/>
+          <file file="${src}/style.css"/>
+          <file file="${src}/styleie.css"/>
+          <file file="${src}/protocols.ini"/>
+          <file file="${src}/setup.bat"/>
+          <file file="${src}/ChangeLog.txt"/>
+          <file file="${src}/digitmaps.bin"/>
+          <fileset dir="${src}" includes="jp1*.dll,libjp1*.so"/>
+          <file file="${src}/porttalk.sys"/>
+          <file file="${src}/rmaster.sh"/>
+          <file file="${src}/rmir.sh"/>
+       </resources>
   	</copy>
 
     <zip destfile="${src}/RemoteMaster.zip" basedir="${dist}"/>
