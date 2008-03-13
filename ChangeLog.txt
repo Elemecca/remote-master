@@ -6,6 +6,7 @@ Changes for v1.84
 - RMIR: Bring JP1.x USB/Serial support up to date
 - RMIR: Fix endian issues
 - Enable S3F80 processors to use S3C80 code for Device Combiner
+- Update digitmaps through 434
 
 Changed for v1.83
 - Fix for using custom function names
