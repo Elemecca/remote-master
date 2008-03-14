@@ -37,6 +37,7 @@
 
 	<target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution">
 		<zip destfile="${src}/RemoteMaster.${rmversion}.zip" filesonly="true">
+			<file file="${src}/RemoteMaster.jar" />
 			<file file="${src}/Readme.html" />
 			<file file="${src}/style.css" />
 			<file file="${src}/styleie.css" />
