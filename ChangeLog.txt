@@ -14,6 +14,7 @@ Changed for v1.83
 - RMIR: enable other port entry in port selection dialog
 - Update digitmaps through 430
 - Fix support for device type specific images
+- Make it easy to use with Eclipse
 
 Changed for v1.82
 - Fix for importing KM files with HCS08 protocol code.

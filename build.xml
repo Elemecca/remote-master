@@ -1,63 +1,62 @@
 <project name="RemoteMaster" default="rmzip" basedir=".">
-    <description>
-        RemoteMaster build file
-    </description>
-  <!-- set global properties for this build -->
-  <property name="src" location="."/>
-  <property name="build" location="."/>
-  <property name="dist" location="dist"/>
-  <available file="num-master.txt" property="nummaster.exists"/>
+	<description>RemoteMaster build file</description>
+	<property name="src" location="." />
+	<property name="build" location="." />
+	<property name="dist" location="dist" />
+	<available file="num-master.txt" property="nummaster.exists" />
 
-  <target name="init">
-    <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${dist}"/>
-  </target>
+	<target name="init">
+		<mkdir dir="${dist}" />
+	</target>
 
-  <target name="compile" depends="init" description="compile the source">
-    <!-- Compile the java code from ${src} into ${build} -->
-    <javac target="1.5" debug="on" classpath="." srcdir="${src}" destdir="${build}"/>
-  </target>
+	<target name="compile" depends="init" description="compile the source">
+		<javac target="1.5" debug="on" classpath="." srcdir="${src}" destdir="${build}" />
+	</target>
 
-  <target name="digitmaps" depends="compile" if="nummaster.exists">
-        <java classpath="${build}" classname="UpdateDigitMapsBin"/>
-        <delete>
-          <file file="num-master.txt"/>
-    </delete>
-  </target>
+	<target name="digitmaps" depends="compile" if="nummaster.exists">
+		<java classpath="${build}" classname="UpdateDigitMapsBin" />
+		<delete>
+			<file file="num-master.txt" />
+		</delete>
+	</target>
 
-  <target name="rmjar" depends="compile" description="RemoteMaster.jar">
-    <jar destfile="${dist}/RemoteMaster.jar" manifest="RemoteMaster.mf">
-          <fileset dir="${build}" includes="com/**/*.class,Setup.class"/>
-          <fileset dir="${src}" includes="info/**"/>
-        </jar>
-  </target>
+	<target name="rmjar" depends="compile" description="RemoteMaster.jar">
+		<jar destfile="RemoteMaster.jar" manifest="RemoteMaster.mf" update="true">
+			<fileset dir="${build}" includes="com/**/*.class,Setup.class" />
+			<fileset dir="${src}" includes="info/**" />
+		</jar>
+		<java classpath="${src}" classname="com.hifiremote.jp1.RemoteMaster" outputproperty="rmversion">
+			<arg value="-version" />
+			<redirector outputproperty="rmversion">
+				<outputfilterchain>
+					<trim />
+				</outputfilterchain>
+			</redirector>
+		</java>
+	</target>
 
-  <target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution" >
-      <copy todir="${dist}" flatten="true">
-        <resources>
-          <file file="${src}/Readme.html"/>
-          <file file="${src}/style.css"/>
-          <file file="${src}/styleie.css"/>
-          <file file="${src}/protocols.ini"/>
-          <file file="${src}/setup.bat"/>
-          <file file="${src}/ChangeLog.txt"/>
-          <file file="${src}/digitmaps.bin"/>
-          <fileset dir="${src}" includes="jp1*.dll,libjp1*.so"/>
-          <file file="${src}/porttalk.sys"/>
-          <file file="${src}/rmaster.sh"/>
-          <file file="${src}/rmir.sh"/>
-       </resources>
-  	</copy>
+	<target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution">
+		<zip destfile="${src}/RemoteMaster.${rmversion}.zip" filesonly="true">
+			<file file="${src}/Readme.html" />
+			<file file="${src}/style.css" />
+			<file file="${src}/styleie.css" />
+			<file file="${src}/protocols.ini" />
+			<file file="${src}/setup.bat" />
+			<file file="${src}/ChangeLog.txt" />
+			<file file="${src}/digitmaps.bin" />
+			<fileset dir="${src}" includes="jp1*.dll,libjp1*.so" />
+			<file file="${src}/porttalk.sys" />
+			<file file="${src}/rmaster.sh" />
+			<file file="${src}/rmir.sh" />
+		</zip>
+	</target>
 
-    <zip destfile="${src}/RemoteMaster.zip" basedir="${dist}"/>
-  </target>
-
-  <target name="clean" description="clean up" >
-    <delete>
-      <fileset dir="${build}"/>
-      <fileset dir="${dist}"/>
-      <file file="RemoteMaster.jar"/>
-      <file file="RemoteMaster.zip"/>
-    </delete>
-  </target>
+	<target name="clean" description="clean up">
+		<delete>
+			<fileset dir="${build}" />
+			<fileset dir="${dist}" />
+			<file file="RemoteMaster.jar" />
+			<file file="RemoteMaster.zip" />
+		</delete>
+	</target>
 </project>

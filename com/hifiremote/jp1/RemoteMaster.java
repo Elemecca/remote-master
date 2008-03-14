@@ -921,7 +921,7 @@ public class RemoteMaster
    *
    *@param  args  Description of the Parameter
    */
-  private static void createAndShowGUI( String[] args )
+  private static void createAndShowGUI( ArrayList< String > args )
   {
     try
     {
@@ -929,22 +929,21 @@ public class RemoteMaster
       File propertiesFile = null;
       File fileToOpen = null;
       boolean launchRM = false;
-      for ( int i = 0; i < args.length; ++i )
+      for ( int i = 0; i < args.size(); ++i )
       {
-        String parm = args[i];
-        System.err.println( "Parsing argument \"" + parm + '"' );
+        String parm = args.get( i );
         if ( parm.equalsIgnoreCase( "-ir" ) )
           launchRM = true;
-        else if ( parm.equalsIgnoreCase( "-h" ) )
+        else if ( "-home".startsWith( parm ))
         {
-          String dirName = args[ ++i ];
-          System.err.println( "-h applies to \"" + dirName + '"' );
+          String dirName = args.get( ++i );
+          System.err.println( parm + " applies to \"" + dirName + '"' );
           workDir = new File( dirName );
           System.setProperty( "user.dir", workDir.getCanonicalPath() );
         }
-        else if ( parm.equalsIgnoreCase( "-p" ) )
+        else if ( "-properties".startsWith( parm ))
         {
-          String fileName = args[ ++i ];
+          String fileName = args.get( ++i );
           System.err.println( "Properties file name is \"" + fileName + '"' );
           propertiesFile = new File( fileName );
         }
@@ -1032,7 +1031,16 @@ public class RemoteMaster
     JFrame.setDefaultLookAndFeelDecorated( true );
     Toolkit.getDefaultToolkit().setDynamicLayout( true );
 
-    parms = args;
+    for ( String arg: args )
+    {
+      if ( "-version".startsWith( arg ))
+      {
+        System.out.println( version );
+        return;
+      }
+      else
+        parms.add( arg );
+    }
     javax.swing.SwingUtilities.invokeLater(
       new Runnable()
       {
@@ -1043,7 +1051,7 @@ public class RemoteMaster
       } );
   }
 
-  private static String[] parms = null;
+  private static ArrayList<String> parms = new ArrayList<String>();
 
   private final static String[] rmirEndings = {".rmir"};
   private final static String[] rmduEndings = {".rmdu"};
