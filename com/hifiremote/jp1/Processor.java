@@ -21,7 +21,6 @@ public abstract class Processor
   {
     this.name = name;
     this.version = version;
-    this.reverse = reverse;
   }
 
   public void setVectorEditData( int[] opcodes, int[] addresses )
@@ -79,7 +78,7 @@ public abstract class Processor
     return code;
   }
 
-  public abstract short getInt( short[] data, int offset );
+  public abstract int getInt( short[] data, int offset );
   
   public abstract void putInt( int val, short[] data, int offset );
   
@@ -151,5 +150,4 @@ public abstract class Processor
   private int[] addresses = new int[ 0 ];
   private int minDataAddress = 0x64;
   private int maxDataAddress = 0x80;
-  private boolean reverse = false;
 }

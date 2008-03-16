@@ -29,9 +29,9 @@ public class LittleEndianProcessor extends Processor
     super(name, version);
   }
 
-  public short getInt( short[] data, int offset )
+  public int getInt( short[] data, int offset )
   {
-    return (short) (((data[offset + 1] & 0xFF) << 8) + (data[offset] & 0xFF));
+    return ((( data[ offset + 1 ] & 0xFF ) << 8 ) + ( data[ offset ] & 0xFF )) & 0xFFFF;
   }
 
   public void putInt( int val, short[] data, int offset )
