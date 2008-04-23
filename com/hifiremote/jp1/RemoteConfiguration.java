@@ -68,8 +68,8 @@ public class RemoteConfiguration
       {
         try
         {
-          Class c = Class.forName( "com.hifiremote.jp1." + sectionName );
-          Constructor ct = c.getConstructor( Properties.class );
+          Class<?> c = Class.forName( "com.hifiremote.jp1." + sectionName );
+          Constructor<?> ct = c.getConstructor( Properties.class );
           Object o = ct.newInstance( section );
           if ( o instanceof SpecialProtocolFunction )
             specialFunctions.add(( SpecialProtocolFunction )o );
@@ -189,8 +189,6 @@ public class RemoteConfiguration
 
   private Macro findMacro( String keyName )
   {
-    DeviceButton[] deviceButtons = remote.getDeviceButtons();
-
     for ( Macro macro : macros )
     {
       int keyCode = macro.getKeyCode();
@@ -480,13 +478,15 @@ public class RemoteConfiguration
                               deviceButton.getSetupCode( data ));
   }
 
+  /*
   private DeviceUpgrade findDeviceUpgrade( int deviceTypeSetupCode )
   {
     int deviceTypeIndex = deviceTypeSetupCode >> 12;
     int setupCode = deviceTypeSetupCode & 0x7FF;
     return findDeviceUpgrade( deviceTypeIndex, setupCode );
   }
-
+  */
+  
   private DeviceUpgrade findDeviceUpgrade( int deviceTypeIndex, int setupCode )
   {
     for ( DeviceUpgrade deviceUpgrade : devices )
@@ -611,9 +611,9 @@ public class RemoteConfiguration
         boundDeviceIndex = type & 0x0F;
         type >>= 4;
         length = data[ offset++ ];
-        if ( type == 8 )
+        if (( type & 8 ) == 8 )
           isMacro = true;
-        else if ( type == 3 )
+        else if (( type & 3 ) == 3 )
           isFav = true;
       }
       if ( isFav && ( favKey != null ))
@@ -696,7 +696,6 @@ public class RemoteConfiguration
         Button b = remote.getButton( keyCode );
         if ( b == null )
         {
-          int mask = keyCode & 0xC0;
           int baseCode = keyCode & 0x3F;
           if ( baseCode != 0 )
           {
@@ -957,8 +956,13 @@ public class RemoteConfiguration
       int codeOffset = offset + 2 * count; // compute offset to offset of upgrade code
       codeOffset = processor.getInt( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
       int pid = data[ codeOffset ];
-      if (( data[ offset ] & 8 ) == 8 ) // pid > 0xFF
-        pid += 0x100;
+      if ( remote.usesTwoBytePID())
+        pid = processor.getInt( data, codeOffset );
+      else
+      {
+        if (( data[ offset ] & 8 ) == 8 ) // pid > 0xFF
+          pid += 0x100;
+      }
 
       if ( i == count - 1 )
         bounds[ 0 ] = 0;
@@ -981,10 +985,17 @@ public class RemoteConfiguration
       pidHex[ 1 ] = ( short )( pid & 0xFF );
 
       DeviceUpgrade upgrade = new DeviceUpgrade();
-      upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
-      upgrade.setSetupCode( setupCode );
+      try 
+      {
+        upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
+        upgrade.setSetupCode( setupCode );
 
-      devices.add( upgrade );
+        devices.add( upgrade );
+      }
+      catch ( java.text.ParseException pe )
+      {
+        pe.printStackTrace( System.err );
+      }
     }
   }
 

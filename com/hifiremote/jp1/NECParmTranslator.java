@@ -43,28 +43,32 @@ public class NECParmTranslator
 
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
-    Integer deviceNumber = null;
-    Integer subDevice = null;
-    Integer parm = null;
-
     short[] hex = hexData.getData();
-    int temp = reverse( complement( hex[ 1 ])) & 0xFF ;
-    if ( temp == 0 )
-      deviceNumber = null;
-    else
-      deviceNumber = new Integer( temp );
-
-    temp = complement( hex[ 2 ] );
-    if (( hex[ 2 ] != hex[ 1 ]) && ( hex[ 1 ] != temp ))
-      subDevice = new Integer( reverse( temp ));
     
-    short defaultParm = ( short )initialDefaultParm;
-    if ( subDevice != null )
-    	defaultParm |= 0x20;
+    Integer deviceNumber = new Integer( byte2int( reverse( complement( hex[ 1 ]))));
 
-    if ( hex[ 0 ] != defaultParm )
-        parm = new Integer( hex[ 0 ] & 0xFF );
+    Integer subDevice = new Integer( byte2int( reverse( complement( hex[ 2 ] ))));
 
+    Integer parm = new Integer( hex[ 0 ]);
+   
+    if (( parm.intValue() & 0x20 ) == 0 )
+    {
+      if ( subDevice.equals( deviceNumber ))
+        subDevice = null;
+      if ( parm.intValue() == initialDefaultParm )
+        parm = null;
+    }  
+    else
+    {
+      if ( subDevice.equals( byte2int( complement( deviceNumber.intValue()))))
+        subDevice = null;
+      if ( parm.intValue() == ( initialDefaultParm | 0x20 ))
+        parm = null;
+    }
+    
+    if ( deviceNumber.intValue() == 0 )
+      deviceNumber = null;
+    
     parms[ 0 ] = new Value( deviceNumber, null );
     parms[ 1 ] = new Value( subDevice, null );
     parms[ 2 ] = new Value( parm, null );

@@ -68,7 +68,18 @@ public class Protocol
       }
     }
 
-    this.fixedData = new Hex( props.getProperty( "FixedData", "" ));
+    fixedData = new Hex( props.getProperty( "FixedData", "" ));
+    temp = props.getProperty( "FixedDataMask");
+    if ( temp != null )
+      fixedDataMask = new Hex( temp );
+    else
+    {
+      short[] mask = new short[ fixedData.length() ];
+      for ( int i = 0; i < mask.length; ++i )
+        mask[ i ] = 0xFF;
+      
+      fixedDataMask = new Hex( mask );
+    }
 
     temp = props.getProperty( "CmdTranslator" );
     if ( temp != null )
@@ -194,12 +205,17 @@ public class Protocol
       }
     }
   }
+  
+  public Hex getFixedDataMask()
+  {
+    return fixedDataMask;
+  }
 
   public String getFirstProcessor()
   {
-    Set keys = code.keySet();
-    Iterator it = keys.iterator();
-    String key = ( String )it.next();
+    Set< String > keys = code.keySet();
+    Iterator< String > it = keys.iterator();
+    String key = it.next();
     System.err.println( "Protocol.getFirstProcessor() key=" + key );
     return key;
   }
@@ -869,6 +885,7 @@ public class Protocol
   private Hex alternatePID = null;
   protected String variantName = null;
   protected Hex fixedData = null;
+  protected Hex fixedDataMask = null;
   protected Hex defaultCmd = null;
   protected int cmdIndex;
   protected DeviceParameter[] devParms = null;

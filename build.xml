@@ -54,7 +54,6 @@
 
 	<target name="clean" description="clean up">
 		<delete>
-			<fileset dir="${build}" />
 			<fileset dir="${dist}" />
 			<file file="RemoteMaster.jar" />
 			<file file="RemoteMaster.zip" />

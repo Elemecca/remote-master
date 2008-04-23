@@ -3,7 +3,7 @@ package com.hifiremote.jp1;
 import java.util.StringTokenizer;
 
 public class Hex
-  implements Cloneable, Comparable
+  implements Cloneable, Comparable< Hex >
 {
   public Hex()
   {
@@ -306,11 +306,11 @@ public class Hex
     return rc;
   }
 
-  public int compareTo( Object o )
+  public int compareTo( Hex o )
   {
     int rc;
     int compareLen;
-    short[] otherData = (( Hex )o ).data;
+    short[] otherData = o.data;
     if ( data.length < otherData.length )
     {
       compareLen = data.length;
@@ -400,6 +400,19 @@ public class Hex
     return new Hex( dest );
   }
 
+  public Hex applyMask( Hex mask )
+  {
+    if ( data.length != mask.data.length )
+      throw new IllegalArgumentException( "Mask length doesn't equal data length");
+    
+    short[] result = new short[ data.length ];
+    
+    for ( int i = 0; i < data.length; ++i )
+      result[ i ] = ( short )( data[ i ] & mask.data[ i ]);
+    
+    return new Hex( result );
+  }
+  
   protected Object clone()
     throws CloneNotSupportedException
   {

@@ -513,6 +513,7 @@ public class DeviceUpgrade
   }
 
   public void importRawUpgrade( Hex hexCode, Remote newRemote, String newDeviceTypeAliasName, Hex pid, Hex pCode )
+    throws java.text.ParseException
   {
     reset();
     System.err.println( "DeviceUpgrade.importRawUpgrade" );
@@ -601,7 +602,10 @@ public class DeviceUpgrade
         System.err.print( " " + v.getValue());
       Hex calculatedFixedData = p.getFixedData( vals );
       System.err.println( "Calculated fixedData is " + calculatedFixedData );
-      if ( calculatedFixedData.equals( fixedDataHex ))
+      Hex mask = p.getFixedDataMask();
+      Hex maskedCalculatedData = calculatedFixedData.applyMask( mask );
+      Hex maskedImportedData = fixedDataHex.applyMask( mask );
+      if ( maskedCalculatedData.equals( maskedImportedData ))
       {
         System.err.println( "It's a match!" );
         if (( tentative == null ) || ( tempLength > tentative.getFixedDataLength()))
@@ -615,16 +619,44 @@ public class DeviceUpgrade
 
     ManualProtocol mp = null;
 
-    if (( tentative != null ) && (( pCode == null ) || pCode.equals( getCode( tentative ))))
+    if ( tentative != null ) // && (( pCode == null ) || pCode.equals( getCode( tentative ))))
     {
+      // Found a match.
+      // Might want to check if the protocol code matches
       p = tentative;
       System.err.println( "Using " + p.getDiagnosticName());
       fixedDataLength = p.getFixedDataLength();
       cmdLength = p.getDefaultCmd().length();
       parmValues = tentativeVals;
     }
-    else
+    else if (( p != null ) && ( pCode == null ))
     {
+      // Found a matching PID, and there's protocol code, 
+      // but couldn't recreate the fixed data.
+      // Maybe there's some reason to use non-standard fixed data.
+      
+      System.err.println( "Creating a derived protocol");
+      Properties props = new Properties();
+      for ( Processor pr : ProcessorManager.getProcessors())
+      {
+        Hex hCode = p.getCode( pr );
+        if ( hCode != null )
+        {
+          props.put( "Code." + pr.getEquivalentName(), hCode.toString());
+        }
+      }
+      String variant = p.getVariantName();
+      if (( variant != null ) && ( variant.length() > 0 ))
+        props.put( "VariantName", variant );
+      p = ProtocolFactory.createProtocol( "pid: " + pid.toString(), pid, "Protocol", props );
+      ProtocolManager.getProtocolManager().add( p );
+      fixedDataLength = p.getFixedDataLength();
+      cmdLength = p.getDefaultCmd().length();
+      parmValues = p.importFixedData( fixedDataHex );
+    }
+    else if ( pCode != null )
+    {
+      // Don't have anything we can use, so create a manual protocol
       System.err.println( "Using a Manual Protocol" );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
@@ -639,11 +671,13 @@ public class DeviceUpgrade
         parms.add( new Value( temp & 0xFF ));
       parmValues = parms.toArray( new Value[ fixedDataLength ]);
 
-      mp = new ManualProtocol( "Manual Settings", pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
+      mp = new ManualProtocol( "Manual Settings: " + pid, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
       mp.setCode( pCode, remote.getProcessor());
       ProtocolManager.getProtocolManager().add( mp );
       p = mp;
     }
+    else
+      throw new ParseException( "Unable to import device upgrade", index );
 
     if ( digitMapIndex != -1 )
     {
