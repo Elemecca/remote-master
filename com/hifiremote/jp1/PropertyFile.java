@@ -5,9 +5,21 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PropertyFile.
+ */
 public class PropertyFile
   extends Properties
 {
+  
+  /**
+   * Instantiates a new property file.
+   * 
+   * @param file the file
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public PropertyFile( File file )
     throws IOException
   {
@@ -22,6 +34,12 @@ public class PropertyFile
     }
   }
 
+  /**
+   * Update property names.
+   * 
+   * @param oldBase the old base
+   * @param newBase the new base
+   */
   private void updatePropertyNames( String oldBase, String newBase )
   {
     int i = 0;
@@ -52,6 +70,11 @@ public class PropertyFile
     }
   }
 
+  /**
+   * Save.
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public void save()
     throws IOException
   {
@@ -60,11 +83,24 @@ public class PropertyFile
     out.close();
   }
 
+  /**
+   * Sets the property.
+   * 
+   * @param name the name
+   * @param file the file
+   */
   public void setProperty( String name, File file )
   {
     setProperty( name, file.getAbsolutePath());
   }
 
+  /**
+   * Gets the file property.
+   * 
+   * @param name the name
+   * 
+   * @return the file property
+   */
   public File getFileProperty( String name )
   {
     String value = getProperty( name );
@@ -73,6 +109,14 @@ public class PropertyFile
     return new File( value );
   }
 
+  /**
+   * Gets the file property.
+   * 
+   * @param name the name
+   * @param defaultFile the default file
+   * 
+   * @return the file property
+   */
   public File getFileProperty( String name, File defaultFile )
   {
     File file = getFileProperty( name );
@@ -84,6 +128,13 @@ public class PropertyFile
     return file;
   }
 
+  /**
+   * Populate file menu.
+   * 
+   * @param menu the menu
+   * @param prefix the prefix
+   * @param l the l
+   */
   public void populateFileMenu( JMenu menu, String prefix, ActionListener l )
   {
     File f = null;
@@ -107,7 +158,13 @@ public class PropertyFile
     menu.setEnabled( menu.getItemCount() > 0 );
   }
 
+  /**
+   * Gets the file.
+   * 
+   * @return the file
+   */
   public File getFile(){ return file; }
 
+  /** The file. */
   private File file = null;
 }

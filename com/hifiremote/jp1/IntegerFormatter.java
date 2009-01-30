@@ -3,9 +3,19 @@ package com.hifiremote.jp1;
 import java.text.*;
 import javax.swing.text.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class IntegerFormatter.
+ */
 public class IntegerFormatter
   extends NumberFormatter
 {
+  
+  /**
+   * Instantiates a new integer formatter.
+   * 
+   * @param bits the bits
+   */
   public IntegerFormatter( int bits )
   {
     super( new DecimalFormat());
@@ -18,6 +28,11 @@ public class IntegerFormatter
     setCommitsOnValidEdit( true );
   }
 
+  /**
+   * Sets the bits.
+   * 
+   * @param bits the new bits
+   */
   public void setBits( int bits )
   {
     int max = ( 2 << ( bits - 1 )) - 1;

@@ -1,15 +1,30 @@
 package com.hifiremote.jp1;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PropertyReader.
+ */
 public class PropertyReader
 {
+  
+  /**
+   * Instantiates a new property reader.
+   * 
+   * @param reader the reader
+   */
   public PropertyReader( BufferedReader reader )
   {
     this.reader = reader;
   }
 
+  /**
+   * Next property.
+   * 
+   * @return the property
+   */
   public Property nextProperty()
   {
     Property property = new Property();
@@ -49,6 +64,13 @@ public class PropertyReader
     return property;
   }
 
+  /**
+   * Decode.
+   * 
+   * @param text the text
+   * 
+   * @return the string
+   */
   public static String decode( String text )
   {
     StringBuilder buff = new StringBuilder( text.length());
@@ -80,6 +102,11 @@ public class PropertyReader
     return buff.toString();
   }
   
+  /**
+   * Next section.
+   * 
+   * @return the ini section
+   */
   public IniSection nextSection()
   {
     Property p = nextProperty();
@@ -104,5 +131,6 @@ public class PropertyReader
     return section;
   }
 
+  /** The reader. */
   private BufferedReader reader = null;
 }

@@ -1,18 +1,20 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
 /**
- *  Description of the Class
- *
- *@author     Greg
- *@created    December 1, 2006
+ * Description of the Class.
+ * 
+ * @author     Greg
+ * @created    December 1, 2006
  */
 public class BitDoubler
    extends Translate
 {
+  
   /**
-   *  Constructor for the BitDoubler object
-   *
-   *@param  textParms  Description of the Parameter
+   * Constructor for the BitDoubler object.
+   * 
+   * @param textParms the text parms
    */
   public BitDoubler( String[] textParms )
   {
@@ -23,10 +25,11 @@ public class BitDoubler
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  value  Description of the Parameter
-   *@return        Description of the Return Value
+   * Description of the Method.
+   * 
+   * @param value the value
+   * 
+   * @return        Description of the Return Value
    */
   private int doubleIt( int value )
   {
@@ -48,12 +51,12 @@ public class BitDoubler
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  parms      Description of the Parameter
-   *@param  hexData    Description of the Parameter
-   *@param  devParms   Description of the Parameter
-   *@param  onlyIndex  Description of the Parameter
+   * Description of the Method.
+   * 
+   * @param parms the parms
+   * @param hexData the hex data
+   * @param devParms the dev parms
+   * @param onlyIndex the only index
    */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
@@ -63,14 +66,14 @@ public class BitDoubler
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  value  Description of the Parameter
-   *@return        Description of the Return Value
+   * Description of the Method.
+   * 
+   * @param value the value
+   * 
+   * @return        Description of the Return Value
    */
   private int halveIt( int value )
   {
-    int halved = 0;
     int test = 3;
     int rc = 0;
     int one = 1;
@@ -88,11 +91,11 @@ public class BitDoubler
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  hexData   Description of the Parameter
-   *@param  parms     Description of the Parameter
-   *@param  devParms  Description of the Parameter
+   * Description of the Method.
+   * 
+   * @param hexData the hex data
+   * @param parms the parms
+   * @param devParms the dev parms
    */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
@@ -101,8 +104,13 @@ public class BitDoubler
     parms[parmIndex] = new Value( new Integer( halved ) );
   }
 
+  /** The parm index. */
   private int parmIndex = 0;
+  
+  /** The bits. */
   private int bits = 0;
+  
+  /** The offset. */
   private int offset = 0;
 }
 

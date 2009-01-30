@@ -4,11 +4,20 @@ import java.awt.datatransfer.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ButtonAssignmentTable.
+ */
 public class ButtonAssignmentTable
   extends JTable
 {
+  
+  /** The model. */
   private ButtonAssignmentTableModel model;
 
+  /**
+   * Instantiates a new button assignment table.
+   */
   public ButtonAssignmentTable()
   {
     model = new ButtonAssignmentTableModel();
@@ -67,6 +76,11 @@ public class ButtonAssignmentTable
     setTransferHandler( th );
   }
 
+  /**
+   * Sets the assignments.
+   * 
+   * @param assignments the new assignments
+   */
   public void setAssignments( ButtonAssignment[] assignments )
   {
     model.setAssignments( assignments );

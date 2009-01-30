@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Rc5Translator.
+ */
 public class Rc5Translator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new rc5 translator.
+   * 
+   * @param textParms the text parms
+   */
   public Rc5Translator( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     int select = 0;
@@ -78,6 +91,9 @@ public class Rc5Translator
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
     // first do the device selector

@@ -1,19 +1,45 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RC5_5xComboTranslator.
+ */
 public class RC5_5xComboTranslator
   extends Translate
 {
+  
+  /** The Constant TYPE. */
   private final static int TYPE = 0;
+  
+  /** The Constant OBC. */
   private final static int OBC = 1;
+  
+  /** The Constant RC5_DEVICE. */
   private final static int RC5_DEVICE = 2;
+  
+  /** The Constant RC5X_DEVICE. */
   private final static int RC5X_DEVICE = 3;
+  
+  /** The Constant RC5X_SUB_DEVICE. */
   private final static int RC5X_SUB_DEVICE = 4;
 
+  /**
+   * Instantiates a new r c5_5x combo translator.
+   * 
+   * @param textParms the text parms
+   */
   public RC5_5xComboTranslator( String[] textParms )
   {
     super( textParms );
   }
 
+  /**
+   * Gets the value.
+   * 
+   * @param value the value
+   * 
+   * @return the value
+   */
   public Integer getValue( Value value )
   {
     if ( value == null )
@@ -21,6 +47,9 @@ public class RC5_5xComboTranslator
     return ( Integer )value.getValue();
   }
     
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     int type;
@@ -80,6 +109,9 @@ public class RC5_5xComboTranslator
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
     int type = extract( hexData, 15, 1 );

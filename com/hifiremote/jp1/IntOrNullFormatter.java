@@ -6,15 +6,29 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DocumentFilter;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class IntOrNullFormatter.
+ */
 public class IntOrNullFormatter
   extends DefaultFormatter
 {
+  
+  /**
+   * Instantiates a new int or null formatter.
+   * 
+   * @param min the min
+   * @param max the max
+   */
   public IntOrNullFormatter( int min, int max )
   {
     this.minVal = min;
     this.maxVal = max;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.text.DefaultFormatter#getDocumentFilter()
+   */
   protected DocumentFilter getDocumentFilter()
   {
     if ( docFilter == null )
@@ -95,11 +109,17 @@ public class IntOrNullFormatter
     return docFilter;
   }
 
-  public Class getValueClass()
+  /* (non-Javadoc)
+   * @see javax.swing.text.DefaultFormatter#getValueClass()
+   */
+  public Class<?> getValueClass()
   {
     return Integer.class;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.text.DefaultFormatter#stringToValue(java.lang.String)
+   */
   public Object stringToValue( String string )
     throws ParseException
   {
@@ -109,7 +129,12 @@ public class IntOrNullFormatter
       return new Integer( string );
   }
 
+  /** The min val. */
   private int minVal = 0;
+  
+  /** The max val. */
   private int maxVal = 0;
+  
+  /** The doc filter. */
   private DocumentFilter docFilter = null;
 }

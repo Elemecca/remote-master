@@ -1,22 +1,59 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import javax.swing.border.*;
-import javax.swing.*;
-import java.text.*;
-import javax.swing.text.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import javax.swing.event.*;
-import java.util.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
-import info.clearthought.layout.*;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.Scrollable;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class LayoutPanel.
+ */
 public class LayoutPanel
   extends KMPanel
   implements ActionListener
 {
+  
+  /**
+   * Instantiates a new layout panel.
+   * 
+   * @param devUpgrade the dev upgrade
+   */
   public LayoutPanel( DeviceUpgrade devUpgrade )
   {
     super( "Layout", devUpgrade );
@@ -180,6 +217,11 @@ public class LayoutPanel
     imagePanel.addMouseListener( ml );
   }
 
+  /**
+   * Adds the function.
+   * 
+   * @param f the f
+   */
   private void addFunction( Function f )
   {
     if (( f == null ) ||
@@ -203,12 +245,13 @@ public class LayoutPanel
     }
   }
 
+  /**
+   * Sets the functions.
+   */
   private void setFunctions()
   {
     popup = new JPopupMenu();
     popup.setLayout( new GridLayout( 0, 3 ));
-    FunctionItem item = null;
-
     functionPanel.removeAll();
 
     for ( Function function : deviceUpgrade.getFunctions())
@@ -218,6 +261,9 @@ public class LayoutPanel
       addFunction( function );
   }
 
+  /**
+   * Enable scroll buttons.
+   */
   private void enableScrollButtons()
   {
     if ( maps.length > 1 )
@@ -234,6 +280,9 @@ public class LayoutPanel
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#update()
+   */
   public void update()
   {
     Remote r = deviceUpgrade.getRemote();
@@ -276,11 +325,20 @@ public class LayoutPanel
     doRepaint();
   }
 
+  /**
+   * Do repaint.
+   */
   private void doRepaint()
   {
     imagePanel.repaint( 0L, 0, 0, imagePanel.getWidth(), imagePanel.getHeight());
   }
 
+  /**
+   * Sets the button text.
+   * 
+   * @param buttonShape the button shape
+   * @param b the b
+   */
   private void setButtonText( ButtonShape buttonShape, Button b )
   {
     if (( buttonShape != null ) && ( b != null ))
@@ -317,6 +375,13 @@ public class LayoutPanel
     }
   }
 
+  /**
+   * Gets the shape at point.
+   * 
+   * @param p the p
+   * 
+   * @return the shape at point
+   */
   public ButtonShape getShapeAtPoint( Point p )
   {
     ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
@@ -336,6 +401,13 @@ public class LayoutPanel
     return closestMatch;
   }
   
+  /**
+   * Gets the button for shape.
+   * 
+   * @param buttonShape the button shape
+   * 
+   * @return the button for shape
+   */
   public Button getButtonForShape( ButtonShape buttonShape )
   {
     if ( buttonShape == null )
@@ -396,6 +468,12 @@ public class LayoutPanel
     return null;
   }
 
+  /**
+   * Sets the function.
+   * 
+   * @param shape the shape
+   * @param f the f
+   */
   private void setFunction( ButtonShape shape, Function f )
   {
     Button b = getButtonForShape( shape );
@@ -413,6 +491,9 @@ public class LayoutPanel
   }
 
   // From interface ActionListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -451,9 +532,24 @@ public class LayoutPanel
     }
   }
 
+  /**
+   * The listener interface for receiving doubleClick events.
+   * The class that is interested in processing a doubleClick
+   * event implements this interface, and the object created
+   * with that class is registered with a component using the
+   * component's <code>addDoubleClickListener<code> method. When
+   * the doubleClick event occurs, that object's appropriate
+   * method is invoked.
+   * 
+   * @see DoubleClickEvent
+   */
   class DoubleClickListener
     extends MouseAdapter
   {
+    
+    /* (non-Javadoc)
+     * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
+     */
     public void mouseClicked( MouseEvent e )
     {
       if (( currentShape != null ) && ( e.getClickCount() >= 2 ))
@@ -469,14 +565,24 @@ public class LayoutPanel
     }
   }
 
+  /**
+   * The Class LayoutDropTarget.
+   */
   class LayoutDropTarget
     extends DropTarget
   {
+    
+    /**
+     * Instantiates a new layout drop target.
+     */
     public LayoutDropTarget()
     {
       setDefaultActions( DnDConstants.ACTION_COPY );
     }
 
+    /* (non-Javadoc)
+     * @see java.awt.dnd.DropTarget#dragOver(java.awt.dnd.DropTargetDragEvent)
+     */
     public void dragOver( DropTargetDragEvent dtde )
     {
       Point p = dtde.getLocation();
@@ -492,6 +598,9 @@ public class LayoutPanel
       doRepaint();
     }
 
+    /* (non-Javadoc)
+     * @see java.awt.dnd.DropTarget#drop(java.awt.dnd.DropTargetDropEvent)
+     */
     public void drop( DropTargetDropEvent dtde )
     {
       Point p = dtde.getLocation();
@@ -502,7 +611,6 @@ public class LayoutPanel
         int action = dtde.getDropAction();
         dtde.acceptDrop( action );
         Transferable tf = dtde.getTransferable();
-        DataFlavor[] flavors = tf.getTransferDataFlavors();
         try
         {
           Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor());
@@ -519,10 +627,17 @@ public class LayoutPanel
     }
   }
 
+  /**
+   * The Class ImagePanel.
+   */
   private class ImagePanel
     extends JPanel
     implements Scrollable
   {
+    
+    /**
+     * Instantiates a new image panel.
+     */
     public ImagePanel()
     {
       super();
@@ -530,6 +645,9 @@ public class LayoutPanel
 //      setVerticalAlignment( SwingConstants.TOP );      
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.JComponent#paint(java.awt.Graphics)
+     */
     public void paint( Graphics g )
     {
       super.paint( g );
@@ -599,6 +717,9 @@ public class LayoutPanel
       }
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.JComponent#getToolTipText(java.awt.event.MouseEvent)
+     */
     public String getToolTipText( MouseEvent e )
     {
       ButtonShape buttonShape = getShapeAtPoint( e.getPoint());
@@ -612,7 +733,6 @@ public class LayoutPanel
       String name = buttonShape.getName();
       if ( name == null )
       {
-        Remote r = deviceUpgrade.getRemote();
         if ( normalMode.isSelected())
           name = b.getName();
         else if ( shiftMode.isSelected())
@@ -635,6 +755,9 @@ public class LayoutPanel
       return text;
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.Scrollable#getPreferredScrollableViewportSize()
+     */
     public Dimension getPreferredScrollableViewportSize()
     {
       Dimension rc = null;
@@ -654,6 +777,9 @@ public class LayoutPanel
       return rc;
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.Scrollable#getScrollableUnitIncrement(java.awt.Rectangle, int, int)
+     */
     public int getScrollableUnitIncrement( Rectangle visibleRect,
                                            int orientation,
                                            int direction )
@@ -661,6 +787,9 @@ public class LayoutPanel
       return 1;
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.Scrollable#getScrollableBlockIncrement(java.awt.Rectangle, int, int)
+     */
     public int getScrollableBlockIncrement( Rectangle visibleRect,
                                             int orientation,
                                             int direction )
@@ -668,34 +797,77 @@ public class LayoutPanel
       return visibleRect.height;
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.Scrollable#getScrollableTracksViewportWidth()
+     */
     public boolean getScrollableTracksViewportWidth()
     {
       return true;
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.Scrollable#getScrollableTracksViewportHeight()
+     */
     public boolean getScrollableTracksViewportHeight()
     {
       return false;
     }
   }
 
+  /** The maps. */
   private ImageMap[] maps = null;
+  
+  /** The map. */
   private ImageMap map = null;
+  
+  /** The screen index. */
   private int screenIndex = 0;
+  
+  /** The current shape. */
   private ButtonShape currentShape = null;
+  
+  /** The scroll panel. */
   private Box scrollPanel = null;
+  
+  /** The scroll left. */
   private JButton scrollLeft = null;
+  
+  /** The scroll right. */
   private JButton scrollRight = null;
+  
+  /** The image panel. */
   private ImagePanel imagePanel = null;
+  
+  /** The normal mode. */
   private JRadioButton normalMode = null;
+  
+  /** The shift mode. */
   private JRadioButton shiftMode = null;
+  
+  /** The x shift mode. */
   private JRadioButton xShiftMode = null;
+  
+  /** The button name. */
   private JTextField buttonName = null;
+  
+  /** The function. */
   private JTextField function = null;
+  
+  /** The auto assign. */
   private JButton autoAssign = null;
+  
+  /** The delete action. */
   private AbstractAction deleteAction = null;
+  
+  /** The popup. */
   private JPopupMenu popup = null;
+  
+  /** The function panel. */
   private JPanel functionPanel = null;
+  
+  /** The scroll pane. */
   private JScrollPane scrollPane = null;
+  
+  /** The double click listener. */
   private DoubleClickListener doubleClickListener = new DoubleClickListener();
 }

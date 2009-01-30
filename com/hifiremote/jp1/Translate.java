@@ -1,16 +1,58 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Translate.
+ */
 public abstract class Translate
 {
+  
+  /**
+   * Instantiates a new translate.
+   * 
+   * @param textParms the text parms
+   */
   public Translate( String[] textParms ){}
+  
+  /**
+   * In.
+   * 
+   * @param parms the parms
+   * @param hex the hex
+   * @param devParms the dev parms
+   * @param onlyIndex the only index
+   */
   public abstract void in( Value[] parms, Hex hex, DeviceParameter[] devParms, int onlyIndex );
+  
+  /**
+   * Out.
+   * 
+   * @param hex the hex
+   * @param parms the parms
+   * @param devParms the dev parms
+   */
   public abstract void out( Hex hex, Value[] parms, DeviceParameter[] devParms );
 
+  /**
+   * Reverse.
+   * 
+   * @param b the b
+   * 
+   * @return the int
+   */
   public static int reverse( int b )
   {
     return reverse( b, 8 );
   }
 
+  /**
+   * Reverse.
+   * 
+   * @param v the v
+   * @param bits the bits
+   * 
+   * @return the int
+   */
   public static int reverse( int v, int bits )
   {
     int rc;
@@ -22,22 +64,52 @@ public abstract class Translate
     return rc >>> ( 32 - bits );
   }
 
+  /**
+   * Complement.
+   * 
+   * @param b the b
+   * 
+   * @return the int
+   */
   public static int complement( int b )
   {
     return complement( b, 8 );
   }
 
+  /**
+   * Complement.
+   * 
+   * @param v the v
+   * @param bits the bits
+   * 
+   * @return the int
+   */
   public static int complement( int v, int bits )
   {
     return ( 2 << ( bits - 1 )) - 1 - v;
   }
 
+  /**
+   * Byte2int.
+   * 
+   * @param b the b
+   * 
+   * @return the int
+   */
   public static int byte2int( int b )
   {
     return b & 0xFF;
   }
 
   // insert a field of up to 32 bits crossing up to 9 bytes
+  /**
+   * Insert.
+   * 
+   * @param hexData the hex data
+   * @param msbOffset the msb offset
+   * @param bits the bits
+   * @param v the v
+   */
   public static void insert( Hex hexData, int msbOffset, int bits, int v)
   {
     short[] hex = hexData.getData();
@@ -62,6 +134,16 @@ public abstract class Translate
   }
 
   // insert a field of up to 32 bits into a single Value object
+  /**
+   * Insert.
+   * 
+   * @param data the data
+   * @param lsbOffset the lsb offset
+   * @param bits the bits
+   * @param v the v
+   * 
+   * @return the value
+   */
   public static Value insert( Value data, int lsbOffset, int bits, int v)
   {
     int mask = ( ( 1 << bits ) - 1 ) << lsbOffset;
@@ -72,6 +154,15 @@ public abstract class Translate
   }
 
   // extract a field of up to 32 bits crossing up to 9 bytes
+  /**
+   * Extract.
+   * 
+   * @param hexData the hex data
+   * @param msbOffset the msb offset
+   * @param bits the bits
+   * 
+   * @return the int
+   */
   public static int extract( Hex hexData, int msbOffset, int bits )
   {
     short[] hex = hexData.getData();

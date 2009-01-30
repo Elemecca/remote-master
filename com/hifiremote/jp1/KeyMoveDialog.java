@@ -1,16 +1,60 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import java.text.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.text.NumberFormatter;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class KeyMoveDialog.
+ */
 public class KeyMoveDialog
   extends JDialog
   implements ActionListener, FocusListener, Runnable, ItemListener
 {
+  
+  /**
+   * Show dialog.
+   * 
+   * @param frame the frame
+   * @param keyMove the key move
+   * @param config the config
+   * 
+   * @return the key move
+   */
   public static KeyMove showDialog( JFrame frame,
                                     KeyMove keyMove, RemoteConfiguration config )
   {
@@ -26,11 +70,14 @@ public class KeyMoveDialog
     return dialog.keyMove;
   }
 
+  /**
+   * Instantiates a new key move dialog.
+   * 
+   * @param frame the frame
+   */
   private KeyMoveDialog( JFrame frame ) 
   {
     super( frame, "Key Move", true );
-    
-    this.config = config;
     
     JComponent contentPane = ( JComponent )getContentPane();
     contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
@@ -170,6 +217,11 @@ public class KeyMoveDialog
     panel.add( cancelButton );
   }
   
+  /**
+   * Sets the remote configuration.
+   * 
+   * @param config the new remote configuration
+   */
   private void setRemoteConfiguration( RemoteConfiguration config )
   {
     this.config = config;
@@ -192,6 +244,11 @@ public class KeyMoveDialog
     xShiftMovedKey.setText( remote.getXShiftLabel());
   }
   
+  /**
+   * Sets the key move.
+   * 
+   * @param keyMove the new key move
+   */
   private void setKeyMove( KeyMove keyMove )
   {
     this.keyMove = null;
@@ -240,6 +297,14 @@ public class KeyMoveDialog
     notes.setText( keyMove.getNotes());
   }
   
+  /**
+   * Sets the button.
+   * 
+   * @param code the code
+   * @param comboBox the combo box
+   * @param shiftBox the shift box
+   * @param xShiftBox the x shift box
+   */
   private void setButton( int code, JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox)
   {
     Remote remote = config.getRemote();
@@ -289,6 +354,15 @@ public class KeyMoveDialog
     comboBox.addActionListener( this );
   }
   
+  /**
+   * Gets the key code.
+   * 
+   * @param comboBox the combo box
+   * @param shiftBox the shift box
+   * @param xShiftBox the x shift box
+   * 
+   * @return the key code
+   */
   private int getKeyCode( JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox)
   {
     int keyCode = (( Button )comboBox.getSelectedItem()).getKeyCode();
@@ -299,11 +373,19 @@ public class KeyMoveDialog
     return keyCode;
   }
   
+  /**
+   * Show warning.
+   * 
+   * @param message the message
+   */
   private void showWarning( String message )
   {
     JOptionPane.showMessageDialog( this, message, "Missing Information", JOptionPane.ERROR_MESSAGE);
   }
   
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
@@ -437,6 +519,9 @@ public class KeyMoveDialog
   }
   
   // ItemListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
+   */
   public void itemStateChanged( ItemEvent e )
   {
     if ( e.getStateChange() != ItemEvent.SELECTED ) 
@@ -504,45 +589,98 @@ public class KeyMoveDialog
   }
 
   // FocusListener
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+   */
   public void focusGained( FocusEvent e )
   {
     focusField = ( JTextField )e.getSource();
     SwingUtilities.invokeLater( this );
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+   */
   public void focusLost( FocusEvent e )
   {
     // intentionally left empty
   }
 
   // Runnable
+  /* (non-Javadoc)
+   * @see java.lang.Runnable#run()
+   */
   public void run()
   {
     focusField.selectAll();
   }  
   
+  /** The bound device. */
   private JComboBox boundDevice = new JComboBox();
+  
+  /** The bound key. */
   private JComboBox boundKey = new JComboBox();
+  
+  /** The shift. */
   private JCheckBox shift = new JCheckBox();
+  
+  /** The x shift. */
   private JCheckBox xShift = new JCheckBox();
+  
+  /** The ok button. */
   private JButton okButton = new JButton( "OK" );
+  
+  /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
+  
+  /** The model. */
   private DeviceButtonTableModel model = new DeviceButtonTableModel();
+  
+  /** The table. */
   private JP1Table table = new JP1Table( model );
+  
+  /** The device type. */
   private JComboBox deviceType = new JComboBox();
+  
+  /** The setup code. */
   private JFormattedTextField setupCode = null;
+  
+  /** The use efc. */
   private JRadioButton useEFC = new JRadioButton( "EFC" );
+  
+  /** The use hex. */
   private JRadioButton useHex = new JRadioButton( "Hex" );
+  
+  /** The use key. */
   private JRadioButton useKey = new JRadioButton( "Key" );
+  
+  /** The efc hex field. */
   private JTextField efcHexField = new JTextField( 15 );
+  
+  /** The moved key. */
   private JComboBox movedKey = new JComboBox();
+  
+  /** The shift moved key. */
   private JCheckBox shiftMovedKey = new JCheckBox();
+  
+  /** The x shift moved key. */
   private JCheckBox xShiftMovedKey = new JCheckBox();
+  
+  /** The notes. */
   private JTextArea notes = new JTextArea( 2, 10 );
+  
+  /** The focus field. */
   private JTextField focusField = null;
   
+  /** The config. */
   private RemoteConfiguration config = null;
+  
+  /** The key move. */
   private KeyMove keyMove = null;
+  
+  /** The cmd. */
   private Hex cmd = null;
+  
+  /** The dialog. */
   private static KeyMoveDialog dialog = null;
 }

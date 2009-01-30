@@ -1,43 +1,93 @@
 package com.hifiremote.jp1;
 
 import info.clearthought.layout.TableLayout;
-import java.beans.*;
-import javax.swing.*;
-import javax.swing.filechooser.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.io.*;
-import java.awt.datatransfer.*;
 
-public class DeviceEditorPanel
- extends JPanel
- implements ActionListener, ChangeListener, DocumentListener, PropertyChangeListener
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Collection;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.SwingPropertyChangeSupport;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class DeviceEditorPanel.
+ */
+public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeListener,
+    DocumentListener, PropertyChangeListener
 {
+
+  /** The description. */
   private JTextField description = null;
+
+  /** The remote list. */
   private JComboBox remoteList = null;
+
+  /** The device type list. */
   private JComboBox deviceTypeList = null;
-  private Remote[] remotes = new Remote[ 0 ];
-  private ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
+
+  /** The tabbed pane. */
   private JTabbedPane tabbedPane = null;
+
+  /** The setup panel. */
   private SetupPanel setupPanel = null;
+
+  /** The function panel. */
   private FunctionPanel functionPanel = null;
+
+  /** The external function panel. */
   private ExternalFunctionPanel externalFunctionPanel = null;
+
+  /** The button panel. */
   private ButtonPanel buttonPanel = null;
+
+  /** The layout panel. */
   private LayoutPanel layoutPanel = null;
+
+  /** The output panel. */
   private OutputPanel outputPanel = null;
+
+  /** The key map panel. */
   private KeyMapPanel keyMapPanel = null;
+
+  /** The device upgrade. */
   private DeviceUpgrade deviceUpgrade = null;
-  private static File homeDirectory = null;
-  private static String upgradeExtension = ".rmdu";
+
+  /** The property change support. */
   private SwingPropertyChangeSupport propertyChangeSupport = null;
+
+  /** The Constant ACTION_EXIT. */
   public final static int ACTION_EXIT = 1;
+
+  /** The Constant ACTION_LOAD. */
   public final static int ACTION_LOAD = 2;
 
-  public DeviceEditorPanel( DeviceUpgrade upgrade, Remote[] remotes )
+  /**
+   * Instantiates a new device editor panel.
+   * 
+   * @param upgrade
+   *          the upgrade
+   * @param remotes
+   *          the remotes
+   */
+  public DeviceEditorPanel( DeviceUpgrade upgrade, Collection< Remote > remotes )
   {
-    super( new BorderLayout());
+    super( new BorderLayout() );
     propertyChangeSupport = new SwingPropertyChangeSupport( this );
 
     deviceUpgrade = upgrade;
@@ -46,14 +96,14 @@ public class DeviceEditorPanel
     tabbedPane = new JTabbedPane();
     add( tabbedPane, BorderLayout.CENTER );
 
-    double b = 10;       // space around border/columns
-    double i = 5;        // space between rows
+    double b = 10; // space around border/columns
+    double i = 5; // space between rows
     double f = TableLayout.FILL;
     double p = TableLayout.PREFERRED;
     double size[][] =
     {
-      { b, p, b, f, b, p, b, p, b },                     // cols
-      { b, p, i, p, b }         // rows
+    { b, p, b, f, b, p, b, p, b }, // cols
+        { b, p, i, p, b } // rows
     };
     TableLayout tl = new TableLayout( size );
     JPanel panel = new JPanel( tl );
@@ -70,16 +120,17 @@ public class DeviceEditorPanel
 
     label = new JLabel( "Remote:" );
     panel.add( label, "1, 3" );
-    remoteList = new JComboBox( remotes );
+    remoteList = new JComboBox( remotes.toArray( new Remote[ remotes.size() ] ) );
     label.setLabelFor( remoteList );
     remoteList.setMaximumRowCount( 16 );
-    remoteList.setPrototypeDisplayValue( "A Really Long Remote Control Name with an Extender and more" );
+    remoteList
+        .setPrototypeDisplayValue( "A Really Long Remote Control Name with an Extender and more" );
     remoteList.setToolTipText( "Choose the remote for the upgrade being created." );
     panel.add( remoteList, "3, 3" );
 
     label = new JLabel( "Device Type:" );
     panel.add( label, "5, 3" );
-//    String[] aliasNames = deviceUpgrade.getDeviceTypeAliasNames();
+    // String[] aliasNames = deviceUpgrade.getDeviceTypeAliasNames();
     deviceTypeList = new JComboBox();
     label.setLabelFor( deviceTypeList );
     deviceTypeList.setPrototypeDisplayValue( "A Device Type" );
@@ -117,7 +168,7 @@ public class DeviceEditorPanel
     outputPanel.setToolTipText( "The output to copy-n-paste into IR." );
     addPanel( outputPanel );
 
-    setRemote( deviceUpgrade.getRemote());
+    setRemote( deviceUpgrade.getRemote() );
 
     remoteList.addActionListener( this );
     deviceTypeList.addActionListener( this );
@@ -125,7 +176,13 @@ public class DeviceEditorPanel
 
     refresh();
   }
-  
+
+  /**
+   * Sets the device upgrade.
+   * 
+   * @param upgrade
+   *          the new device upgrade
+   */
   public void setDeviceUpgrade( DeviceUpgrade upgrade )
   {
     if ( deviceUpgrade != null )
@@ -134,18 +191,25 @@ public class DeviceEditorPanel
     deviceUpgrade.addPropertyChangeListener( "protocol", this );
     for ( int i = 0; i < tabbedPane.getTabCount(); ++i )
     {
-      KMPanel panel = ( KMPanel )tabbedPane.getComponentAt( i );
+      KMPanel panel = ( KMPanel ) tabbedPane.getComponentAt( i );
       panel.setDeviceUpgrade( upgrade );
     }
 
     refresh();
   }
 
-  public void setRemotes( Remote[] remotes )
+  /**
+   * Sets the remotes.
+   * 
+   * @param remotes
+   *          the new remotes
+   */
+  public void setRemotes( Collection< Remote > remotes )
   {
-    Remote r = ( Remote )remoteList.getSelectedItem();
+    Remote r = ( Remote ) remoteList.getSelectedItem();
+    Remote[] array = remotes.toArray( new Remote[ remotes.size() ] );
     remoteList.removeActionListener( this );
-    remoteList.setModel( new DefaultComboBoxModel( remotes ));
+    remoteList.setModel( new DefaultComboBoxModel( array ) );
     if ( r != null )
       remoteList.setSelectedItem( r );
     else
@@ -153,29 +217,63 @@ public class DeviceEditorPanel
     remoteList.addActionListener( this );
   }
 
+  /**
+   * Adds the panel.
+   * 
+   * @param panel
+   *          the panel
+   */
   public void addPanel( KMPanel panel )
   {
-    tabbedPane.addTab( panel.getName(), null, panel, panel.getToolTipText());
+    tabbedPane.addTab( panel.getName(), null, panel, panel.getToolTipText() );
   }
 
+  /**
+   * Adds the panel.
+   * 
+   * @param panel
+   *          the panel
+   * @param index
+   *          the index
+   */
   public void addPanel( KMPanel panel, int index )
   {
     System.err.println( "KeyMapMaster.addPanel()" + panel );
     tabbedPane.insertTab( panel.getName(), null, panel, panel.getToolTipText(), index );
   }
 
+  /**
+   * Removes the panel.
+   * 
+   * @param panel
+   *          the panel
+   */
   public void removePanel( KMPanel panel )
   {
     System.err.println( "KeyMapMaster.removePanel()" + panel );
     tabbedPane.removeTabAt( 1 );
     tabbedPane.validate();
   }
-  
+
+  /**
+   * Adds the property change listener.
+   * 
+   * @param l
+   *          the l
+   * @param propertyName
+   *          the property name
+   */
   public void addPropertyChangeListener( PropertyChangeListener l, String propertyName )
   {
     propertyChangeSupport.addPropertyChangeListener( propertyName, l );
   }
 
+  /**
+   * Sets the remote.
+   * 
+   * @param remote
+   *          the new remote
+   */
   public void setRemote( Remote remote )
   {
     if ( remoteList != null )
@@ -185,30 +283,26 @@ public class DeviceEditorPanel
         String[] aliasNames = remote.getDeviceTypeAliasNames();
         String alias = deviceUpgrade.getDeviceTypeAliasName();
         deviceTypeList.removeActionListener( this );
-        deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ));
+        deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ) );
         deviceTypeList.setMaximumRowCount( aliasNames.length );
 
         int index = 0;
         for ( index = 0; index < aliasNames.length; index++ )
         {
-          if ( aliasNames[ index ].equals( alias ))
+          if ( aliasNames[ index ].equals( alias ) )
             break;
         }
-        while (( index == aliasNames.length ))
+        while ( ( index == aliasNames.length ) )
         {
-          String msg = "Remote \"" + remote.getName() + "\" does not support the device type " +
-          alias + ".  Please select one of the supported device types below to use instead.\n";
-          
-          String rc = ( String )JOptionPane.showInputDialog( null,
-                                                             msg,
-                                                             "Unsupported Device Type",
-                                                             JOptionPane.ERROR_MESSAGE,
-                                                             null,
-                                                             aliasNames,
-                                                             null );
+          String msg = "Remote \"" + remote.getName() + "\" does not support the device type "
+              + alias
+              + ".  Please select one of the supported device types below to use instead.\n";
+
+          String rc = ( String ) JOptionPane.showInputDialog( null, msg, "Unsupported Device Type",
+              JOptionPane.ERROR_MESSAGE, null, aliasNames, null );
           for ( index = 0; index < aliasNames.length; index++ )
           {
-            if ( aliasNames[ index ].equals( rc ))
+            if ( aliasNames[ index ].equals( rc ) )
               break;
           }
         }
@@ -216,7 +310,7 @@ public class DeviceEditorPanel
         deviceTypeList.setSelectedIndex( index );
 
         deviceUpgrade.setRemote( remote );
-        deviceUpgrade.setDeviceTypeAliasName( aliasNames[ index ]);
+        deviceUpgrade.setDeviceTypeAliasName( aliasNames[ index ] );
         deviceTypeList.addActionListener( this );
         deviceUpgrade.checkSize();
       }
@@ -228,15 +322,22 @@ public class DeviceEditorPanel
         pw.flush();
         pw.close();
         JOptionPane.showMessageDialog( null, sw.toString(), "Remote Load Error",
-                                       JOptionPane.ERROR_MESSAGE );
-        System.err.println( sw.toString());
+            JOptionPane.ERROR_MESSAGE );
+        System.err.println( sw.toString() );
       }
     }
   }
 
+  /**
+   * Sets the device type name.
+   * 
+   * @param aliasName
+   *          the new device type name
+   */
   public void setDeviceTypeName( String aliasName )
   {
-    if (( deviceTypeList != null ) && ( !aliasName.equals( deviceUpgrade.getDeviceTypeAliasName())))
+    if ( ( deviceTypeList != null )
+        && ( !aliasName.equals( deviceUpgrade.getDeviceTypeAliasName() ) ) )
     {
       deviceUpgrade.setDeviceTypeAliasName( aliasName );
       deviceTypeList.setSelectedItem( aliasName );
@@ -244,6 +345,11 @@ public class DeviceEditorPanel
   }
 
   // ActionListener Methods
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     try
@@ -252,17 +358,16 @@ public class DeviceEditorPanel
 
       if ( source == remoteList )
       {
-        Remote remote = ( Remote )remoteList.getSelectedItem();
+        Remote remote = ( Remote ) remoteList.getSelectedItem();
         Remote oldRemote = deviceUpgrade.getRemote();
         setRemote( remote );
         currPanel.update();
         validateUpgrade();
-        propertyChangeSupport.firePropertyChange( "remote", oldRemote, remote ); 
+        propertyChangeSupport.firePropertyChange( "remote", oldRemote, remote );
       }
       else if ( source == deviceTypeList )
       {
-        String typeName = ( String )deviceTypeList.getSelectedItem();
-        String oldDeviceType = deviceUpgrade.getDeviceTypeAliasName();
+        String typeName = ( String ) deviceTypeList.getSelectedItem();
         setDeviceTypeName( typeName );
         currPanel.update();
       }
@@ -273,6 +378,9 @@ public class DeviceEditorPanel
     }
   } // actionPerformed
 
+  /**
+   * Removes the listeners.
+   */
   private void removeListeners()
   {
     description.getDocument().removeDocumentListener( this );
@@ -280,6 +388,9 @@ public class DeviceEditorPanel
     deviceTypeList.removeActionListener( this );
   }
 
+  /**
+   * Adds the listeners.
+   */
   private void addListeners()
   {
     description.getDocument().addDocumentListener( this );
@@ -287,18 +398,16 @@ public class DeviceEditorPanel
     deviceTypeList.addActionListener( this );
   }
 
+  /**
+   * Refresh.
+   */
   public void refresh()
   {
-    String title = "RemoteMaster";
-    File file = deviceUpgrade.getFile();
-    if ( file != null )
-      title = file.getAbsolutePath() + " - RemoteMaster";
-
     removeListeners();
-    description.setText( deviceUpgrade.getDescription());
+    description.setText( deviceUpgrade.getDescription() );
     String savedTypeName = deviceUpgrade.getDeviceTypeAliasName();
     Remote r = deviceUpgrade.getRemote();
-//    setRemote( r );
+    // setRemote( r );
     remoteList.setSelectedItem( r );
     if ( remoteList.getSelectedItem() != r )
     {
@@ -308,10 +417,10 @@ public class DeviceEditorPanel
     deviceTypeList.setSelectedItem( savedTypeName );
     addListeners();
     KMPanel protocolPanel = deviceUpgrade.getProtocol().getPanel( deviceUpgrade );
-    KMPanel tabPanel = ( KMPanel )tabbedPane.getComponentAt( 1 );
-    if (( protocolPanel == null ) && ( tabPanel != functionPanel ))
+    KMPanel tabPanel = ( KMPanel ) tabbedPane.getComponentAt( 1 );
+    if ( ( protocolPanel == null ) && ( tabPanel != functionPanel ) )
       removePanel( protocolPanel );
-    if (( protocolPanel != null ) && ( tabPanel != protocolPanel ))
+    if ( ( protocolPanel != null ) && ( tabPanel != protocolPanel ) )
       addPanel( protocolPanel, 1 );
     currPanel.update();
 
@@ -319,34 +428,45 @@ public class DeviceEditorPanel
   }
 
   // ChangeListener methods
+  /** The curr panel. */
   private KMPanel currPanel = null;
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
+   */
   public void stateChanged( ChangeEvent e )
   {
     currPanel.commit();
-    currPanel = ( KMPanel )(( JTabbedPane )e.getSource()).getSelectedComponent();
+    currPanel = ( KMPanel ) ( ( JTabbedPane ) e.getSource() ).getSelectedComponent();
     currPanel.update();
     validateUpgrade();
   }
 
+  /**
+   * Validate upgrade.
+   */
   public void validateUpgrade()
   {
     Remote r = deviceUpgrade.getRemote();
     Protocol p = deviceUpgrade.getProtocol();
-    java.util.List< Protocol > protocols = protocolManager.getProtocolsForRemote( r );
-    if ( !protocols.contains( p ) && !p.hasCode( r ))
+    java.util.List< Protocol > protocols = ProtocolManager.getProtocolManager()
+        .getProtocolsForRemote( r );
+    if ( !protocols.contains( p ) && !p.hasCode( r ) )
     {
-      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName() +
-                          "is not compatible with remote " + r.getName());
+      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName()
+          + "is not compatible with remote " + r.getName() );
 
       // Find a matching protocol for this remote
       Protocol match = null;
       String name = p.getName();
       for ( Protocol p2 : protocols )
       {
-        if ( p2.getName().equals( name ))
+        if ( p2.getName().equals( name ) )
         {
           match = p2;
-          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName());
+          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName() );
           break;
         }
       }
@@ -354,55 +474,81 @@ public class DeviceEditorPanel
         deviceUpgrade.setProtocol( match );
       else
         JOptionPane.showMessageDialog( this,
-                                       "The selected protocol " + p.getDiagnosticName() +
-                                       "\nis not compatible with the selected remote.\n" +
-                                       "This upgrade will NOT function correctly.\n" +
-                                       "Please choose a different protocol.",
-                                       "Error", JOptionPane.ERROR_MESSAGE );
+            "The selected protocol " + p.getDiagnosticName()
+                + "\nis not compatible with the selected remote.\n"
+                + "This upgrade will NOT function correctly.\n"
+                + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
     }
   }
 
+  /**
+   * Update description.
+   */
   private void updateDescription()
   {
-    deviceUpgrade.setDescription( description.getText());
+    deviceUpgrade.setDescription( description.getText() );
     currPanel.update();
   }
 
+  /**
+   * Gets the device upgrade.
+   * 
+   * @return the device upgrade
+   */
   public DeviceUpgrade getDeviceUpgrade()
   {
     return deviceUpgrade;
   }
 
   // DocumentListener methods
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
+   */
   public void changedUpdate( DocumentEvent e )
   {
     updateDescription();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
+   */
   public void insertUpdate( DocumentEvent e )
   {
     updateDescription();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
+   */
   public void removeUpdate( DocumentEvent e )
   {
     updateDescription();
   }
-  
+
   // PropertyChangeListener
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+   */
   public void propertyChange( PropertyChangeEvent evt )
   {
-    Protocol protocol = ( Protocol )evt.getOldValue();
+    Protocol protocol = ( Protocol ) evt.getOldValue();
     System.err.print( "DeviceEditorPanel.propertyChange( " + protocol.getDiagnosticName() + ", " );
     KMPanel panel = protocol.getPanel( deviceUpgrade );
-    protocol = ( Protocol )evt.getNewValue();
-    System.err.println( protocol.getDiagnosticName());
-    
-    if ( panel != null ) 
+    protocol = ( Protocol ) evt.getNewValue();
+    System.err.println( protocol.getDiagnosticName() );
+
+    if ( panel != null )
       removePanel( panel );
     panel = protocol.getPanel( deviceUpgrade );
     if ( panel != null )
       addPanel( panel, 1 );
   }
 }
-

@@ -1,7 +1,26 @@
+Changes for v1.87
+- Fix importing of KM updates for remotes that use 2-byte PIDs
+- Update digitmaps through 447
+- Fix NEC 2/4DEV Combo bug requiring default sub-device
+
+Changes for v1.86
+- Fixed Bug 1835121: NPE during save operation
+- Add HCS08 Code to Pioneer DVD
+- Fix command parameter initializer for Pioneer DVD
+- Add HCS08 Code to Pioneer 4DEV
+- Add MZC-88 protocol
+- Fixed HCS08 Code for NEC 2DEV Combo
+- Added HCS08 Code for Sony DSP
+- Added HCS08 Code for Streamzap and Streamzap_57khz
+- Added HCS08 Code for Somfy
+- Added HCS08 Code for Lutron
+- Added HCS08 Code for RC5/6 Combo
+- NEC[1] (2/4)DEV Combo: On Function tab Device column changed to Dev.Sub
+
 Changed for v1.85
 - Improve importing of raw NEC upgrades
 - RMIR: General improvements to parsing remote images
-- Fix uploading through USB JP1 interface 
+- Fix uploading through USB JP1 interface
 
 Changes for v1.84
 - Fix Sony20 and Sony Combo (12/20)

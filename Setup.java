@@ -1,7 +1,19 @@
 import java.io.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Setup.
+ */
 public class Setup
 {
+  
+  /**
+   * Double slashes.
+   * 
+   * @param str the str
+   * 
+   * @return the string
+   */
   public static String doubleSlashes( String str )
   {
     StringBuffer buff = new StringBuffer( str.length() * 2 );
@@ -16,6 +28,11 @@ public class Setup
     return buff.toString();
   }
 
+  /**
+   * The main method.
+   * 
+   * @param args the arguments
+   */
   public static void main( String[] args )
   {
     try

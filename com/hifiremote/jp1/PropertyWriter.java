@@ -2,15 +2,30 @@ package com.hifiremote.jp1;
 
 import java.io.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PropertyWriter.
+ */
 public class PropertyWriter
   extends FilterWriter
 {
+  
+  /**
+   * Instantiates a new property writer.
+   * 
+   * @param writer the writer
+   */
   public PropertyWriter( PrintWriter writer )
   {
     super( writer );
     this.writer = writer;
   }
   
+  /**
+   * Prints the header.
+   * 
+   * @param name the name
+   */
   public void printHeader( String name )
   {
     if ( !fresh )
@@ -21,16 +36,34 @@ public class PropertyWriter
     writer.println( ']' );
   }
 
+  /**
+   * Prints the.
+   * 
+   * @param name the name
+   * @param value the value
+   */
   public void print( String name, int value )
   {
     print( name, Integer.toString( value ));
   }
   
+  /**
+   * Prints the.
+   * 
+   * @param name the name
+   * @param obj the obj
+   */
   public void print( String name, Object obj )
   {
     print( name, obj.toString());
   }
   
+  /**
+   * Prints the.
+   * 
+   * @param name the name
+   * @param value the value
+   */
   public void print( String name, String value )
   {
     fresh = false;
@@ -89,6 +122,9 @@ public class PropertyWriter
     writer.println();
   }
 
+  /** The writer. */
   private PrintWriter writer = null;
+  
+  /** The fresh. */
   private boolean fresh = true;
 }

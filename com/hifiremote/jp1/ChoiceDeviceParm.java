@@ -4,9 +4,21 @@ import javax.swing.*;
 import java.util.*;
 import java.awt.event.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ChoiceDeviceParm.
+ */
 public class ChoiceDeviceParm
   extends DeviceParameter
 {
+  
+  /**
+   * Instantiates a new choice device parm.
+   * 
+   * @param name the name
+   * @param defaultValue the default value
+   * @param choices the choices
+   */
   public ChoiceDeviceParm( String name, DefaultValue defaultValue, String[] choices )
   {
     super( name, defaultValue );
@@ -21,18 +33,30 @@ public class ChoiceDeviceParm
     comboBox.setToolTipText( helpText );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.DeviceParameter#getComponent()
+   */
   public JComponent getComponent(){ return comboBox; }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.DeviceParameter#addListener(java.util.EventListener)
+   */
   public void addListener( EventListener l )
   {
     comboBox.addActionListener(( ActionListener )l );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.DeviceParameter#removeListener(java.util.EventListener)
+   */
   public void removeListener( EventListener l )
   {
     comboBox.removeActionListener(( ActionListener )l );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Parameter#getValue()
+   */
   public Object getValue()
   {
     Object rc = null;
@@ -47,13 +71,16 @@ public class ChoiceDeviceParm
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Parameter#setValue(java.lang.Object)
+   */
   public void setValue( Object val )
   {
     if ( val == null )
       comboBox.setSelectedIndex( 0 );
     else
     {
-      Class c = val.getClass();
+      Class<?> c = val.getClass();
       if ( c == Integer.class )
       {
         int index = (( Integer )val ).intValue();
@@ -68,6 +95,9 @@ public class ChoiceDeviceParm
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString()
   {
     StringBuilder buff = new StringBuilder();
@@ -87,9 +117,17 @@ public class ChoiceDeviceParm
     return buff.toString();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Parameter#getDescription()
+   */
   public String getDescription(){ return "Choice"; }
 
+  /** The combo box. */
   private JComboBox comboBox = null;
+  
+  /** The choices. */
   private String[] choices = null;
+  
+  /** The allow null. */
   private boolean allowNull = false;
 }

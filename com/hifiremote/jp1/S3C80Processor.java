@@ -1,18 +1,34 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class S3C80Processor.
+ */
 public class S3C80Processor
   extends BigEndianProcessor
 {
+  
+  /**
+   * Instantiates a new s3 c80 processor.
+   */
   public S3C80Processor()
   {
     this( "S3C80" );
   }
 
+  /**
+   * Instantiates a new s3 c80 processor.
+   * 
+   * @param name the name
+   */
   protected S3C80Processor( String name )
   {
     super( name, null );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Processor#translate(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Remote)
+   */
   public Hex translate( Hex hex, Remote remote )
   {
     if ( remote.getRAMAddress() == 0x8000 )
@@ -52,6 +68,13 @@ public class S3C80Processor
     return hex;
   }
 
+  /**
+   * Adjust.
+   * 
+   * @param val the val
+   * 
+   * @return the int
+   */
   private int adjust( int val )
   {
     int temp1 = val - 0x2C;

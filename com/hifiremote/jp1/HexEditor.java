@@ -1,17 +1,32 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.Component;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexEditor.
+ */
 public class HexEditor
   extends DefaultCellEditor
 {
+  
+  /**
+   * Instantiates a new hex editor.
+   */
   public HexEditor()
   {
     this( null );
   }
 
+  /**
+   * Instantiates a new hex editor.
+   * 
+   * @param defaultHex the default hex
+   */
   public HexEditor( Hex defaultHex )
   {
     super( new JTextField());
@@ -20,6 +35,9 @@ public class HexEditor
 //    (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+   */
   public Component getTableCellEditorComponent( JTable table, Object value,
                                                 boolean isSelected, int row,
                                                 int col )
@@ -36,6 +54,9 @@ public class HexEditor
     return tf;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getCellEditorValue()
+   */
   public Object getCellEditorValue()
     throws NumberFormatException
   {
@@ -63,6 +84,7 @@ public class HexEditor
     return rc;
   }
 
+  /** The default hex. */
   Hex defaultHex = null;
 }
 

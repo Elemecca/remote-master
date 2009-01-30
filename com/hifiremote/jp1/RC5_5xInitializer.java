@@ -1,12 +1,25 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RC5_5xInitializer.
+ */
 public class RC5_5xInitializer
   extends Initializer
 {
+  
+  /**
+   * Instantiates a new r c5_5x initializer.
+   * 
+   * @param parms the parms
+   */
   public RC5_5xInitializer( String[] parms )
   {
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Initializer#initialize(com.hifiremote.jp1.DeviceParameter[], com.hifiremote.jp1.CmdParameter[])
+   */
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
     ChoiceCmdParm choiceParm = ( ChoiceCmdParm )cmdParms[ 3 ];
@@ -22,5 +35,6 @@ public class RC5_5xInitializer
     (( ChoiceEditor )choiceParm.getEditor()).initialize();
   }
 
+  /** The Constant extra. */
   private final static String[] extra = { ",Sub<64", ",Sub>63" };
 }

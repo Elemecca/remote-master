@@ -1,12 +1,25 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class LutronInitializer.
+ */
 public class LutronInitializer
   extends Initializer
 {
+  
+  /**
+   * Instantiates a new lutron initializer.
+   * 
+   * @param parms the parms
+   */
   public LutronInitializer( String[] parms )
   {
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Initializer#initialize(com.hifiremote.jp1.DeviceParameter[], com.hifiremote.jp1.CmdParameter[])
+   */
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
     int device = (( Integer )devParms[ 0 ].getValueOrDefault()).intValue();

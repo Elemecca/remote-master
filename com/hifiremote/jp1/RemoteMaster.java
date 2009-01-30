@@ -8,71 +8,118 @@ import java.text.*;
 import java.util.*;
 import javax.swing.*;
 
-import com.hifiremote.decodeir.*;
 import com.hifiremote.jp1.io.*;
 
+// TODO: Auto-generated Javadoc
 /**
- *  Description of the Class
- *
- *@author     Greg
- *@created    November 30, 2006
+ * Description of the Class.
+ * 
+ * @author     Greg
+ * @created    November 30, 2006
  */
 public class RemoteMaster
    extends JP1Frame
    implements ActionListener, PropertyChangeListener
 {
+  
+  /** The frame. */
   private static JFrame frame = null;
-  /**
-   *  Description of the Field
-   */
-  public final static String version = "v1.85";
+  
+  /** Description of the Field. */
+  public final static String version = "v1.87";
+  
+  /** The dir. */
   private File dir = null;
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public File file = null;
+  
+  /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
+  
+  /** The chooser. */
   private RMFileChooser chooser = null;
 
-  // File menu items
-  private JMenuItem newItem = null;
+  /** The open item. */
   private JMenuItem openItem = null;
+  
+  /** The save item. */
   private JMenuItem saveItem = null;
+  
+  /** The save as item. */
   private JMenuItem saveAsItem = null;
+  
+  /** The export ir item. */
   private JMenuItem exportIRItem = null;
-  private JMenuItem revertItem = null;
+  
+  /** The recent files. */
   private JMenu recentFiles = null;
+  
+  /** The exit item. */
   private JMenuItem exitItem = null;
 
   // Remote menu items
+  /** The interfaces. */
   private ArrayList< IO > interfaces = new ArrayList< IO >();
+  
+  /** The download item. */
   private JMenuItem downloadItem = null;
+  
+  /** The upload item. */
   private JMenuItem uploadItem = null;
+  
+  /** The upload wav item. */
   private JMenuItem uploadWavItem = null;
 
   // Help menu items
+  /** The about item. */
   private JMenuItem aboutItem = null;
 
+  /** The tabbed pane. */
   private JTabbedPane tabbedPane = null;
+  
+  /** The general panel. */
   private GeneralPanel generalPanel = null;
+  
+  /** The key move panel. */
   private KeyMovePanel keyMovePanel = null;
+  
+  /** The macro panel. */
   private MacroPanel macroPanel = null;
+  
+  /** The special function panel. */
   private SpecialFunctionPanel specialFunctionPanel = null;
+  
+  /** The device panel. */
   private DeviceUpgradePanel devicePanel = null;
+  
+  /** The protocol panel. */
   private ProtocolUpgradePanel protocolPanel = null;
+  
+  /** The learned panel. */
   private LearnedSignalPanel learnedPanel = null;
+  
+  /** The raw data panel. */
   private RawDataPanel rawDataPanel = null;
 
+  /** The adv progress bar. */
   private JProgressBar advProgressBar = null;
+  
+  /** The upgrade progress bar. */
   private JProgressBar upgradeProgressBar = null;
+  
+  /** The learned progress bar. */
   private JProgressBar learnedProgressBar = null;
 
   /**
-   *  Constructor for the RemoteMaster object
-   *
-   *@param  workDir        Description of the Parameter
-   *@param  prefs          Description of the Parameter
-   *@exception  Exception  Description of the Exception
+   * Constructor for the RemoteMaster object.
+   * 
+   * @param workDir the work dir
+   * @param prefs the prefs
+   * 
+   * @throws Exception the exception
+   * 
+   * @exception  Exception  Description of the Exception
    */
   public RemoteMaster( File workDir, PropertyFile prefs )
     throws Exception
@@ -219,9 +266,9 @@ public class RemoteMaster
   }
 
   /**
-   *  Gets the frame attribute of the RemoteMaster class
-   *
-   *@return    The frame value
+   * Gets the frame attribute of the RemoteMaster class.
+   * 
+   * @return    The frame value
    */
   public static JFrame getFrame()
   {
@@ -229,7 +276,7 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
+   * Description of the Method.
    */
   private void createMenus()
   {
@@ -422,9 +469,9 @@ public class RemoteMaster
   }
 
   /**
-   *  Gets the fileChooser attribute of the RemoteMaster object
-   *
-   *@return    The fileChooser value
+   * Gets the fileChooser attribute of the RemoteMaster object.
+   * 
+   * @return    The fileChooser value
    */
   public RMFileChooser getFileChooser()
   {
@@ -443,10 +490,13 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
-   *
-   *@return                Description of the Return Value
-   *@exception  Exception  Description of the Exception
+   * Description of the Method.
+   * 
+   * @return                Description of the Return Value
+   * 
+   * @throws Exception the exception
+   * 
+   * @exception  Exception  Description of the Exception
    */
   public File openFile()
     throws Exception
@@ -455,11 +505,15 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  file           Description of the Parameter
-   *@return                Description of the Return Value
-   *@exception  Exception  Description of the Exception
+   * Description of the Method.
+   * 
+   * @param file the file
+   * 
+   * @return                Description of the Return Value
+   * 
+   * @throws Exception the exception
+   * 
+   * @exception  Exception  Description of the Exception
    */
   public File openFile( File file )
     throws Exception
@@ -472,7 +526,6 @@ public class RemoteMaster
       {
         file = chooser.getSelectedFile();
 
-        int rc = JOptionPane.YES_OPTION;
         if ( !file.exists() )
           JOptionPane.showMessageDialog( this,
             file.getName() + " doesn't exist.",
@@ -524,10 +577,13 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  file             Description of the Parameter
-   *@exception  IOException  Description of the Exception
+   * Description of the Method.
+   * 
+   * @param file the file
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   * 
+   * @exception  IOException  Description of the Exception
    */
   private void updateRecentFiles( File file )
     throws IOException
@@ -560,9 +616,11 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
-   *
-   *@exception  IOException  Description of the Exception
+   * Description of the Method.
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   * 
+   * @exception  IOException  Description of the Exception
    */
   public void saveAs()
     throws IOException
@@ -607,9 +665,11 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
-   *
-   *@exception  IOException  Description of the Exception
+   * Description of the Method.
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   * 
+   * @exception  IOException  Description of the Exception
    */
   public void exportAsIR()
     throws IOException
@@ -646,9 +706,9 @@ public class RemoteMaster
   }
 
   /**
-   *  Sets the titleFile attribute of the RemoteMaster object
-   *
-   *@param  file  The new titleFile value
+   * Sets the titleFile attribute of the RemoteMaster object.
+   * 
+   * @param file the file
    */
   private void setTitleFile( File file )
   {
@@ -658,6 +718,11 @@ public class RemoteMaster
       setTitle( "Java IR: " + file.getName() + " - " + remoteConfig.getRemote().getName() );
   }
 
+  /**
+   * Gets the open interface.
+   * 
+   * @return the open interface
+   */
   private IO getOpenInterface()
   {
     String interfaceName = properties.getProperty( "Interface" );
@@ -684,10 +749,11 @@ public class RemoteMaster
     }
     return null;
   }
+  
   /**
-   *  Description of the Method
-   *
-   *@param  e  Description of the Parameter
+   * Description of the Method.
+   * 
+   * @param e the e
    */
   public void actionPerformed( ActionEvent e )
   {
@@ -824,7 +890,7 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
+   * Description of the Method.
    */
   private void update()
   {
@@ -886,9 +952,9 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  event  Description of the Parameter
+   * Description of the Method.
+   * 
+   * @param event the event
    */
   public void propertyChange( PropertyChangeEvent event )
   {
@@ -917,9 +983,9 @@ public class RemoteMaster
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  args  Description of the Parameter
+   * Description of the Method.
+   * 
+   * @param args the args
    */
   private static void createAndShowGUI( ArrayList< String > args )
   {
@@ -989,7 +1055,6 @@ public class RemoteMaster
         UIManager.setLookAndFeel( lookAndFeel );
       }
 
-      File rdfDir = properties.getFileProperty( "RDFPath", new File( workDir, "rdf" ) );
       RemoteManager.getRemoteManager().loadRemotes( properties );
 
       ProtocolManager.getProtocolManager().load( new File( workDir, "protocols.ini" ) );
@@ -1021,9 +1086,9 @@ public class RemoteMaster
   }
 
   /**
-   *  The main program for the RemoteMaster class
-   *
-   *@param  args  The command line arguments
+   * The main program for the RemoteMaster class.
+   * 
+   * @param args the args
    */
   public static void main( String[] args )
   {
@@ -1051,11 +1116,19 @@ public class RemoteMaster
       } );
   }
 
+  /** The parms. */
   private static ArrayList<String> parms = new ArrayList<String>();
 
+  /** The Constant rmirEndings. */
   private final static String[] rmirEndings = {".rmir"};
+  
+  /** The Constant rmduEndings. */
   private final static String[] rmduEndings = {".rmdu"};
+  
+  /** The Constant irEndings. */
   private final static String[] irEndings = {".ir"};
+  
+  /** The Constant txtEndings. */
   private final static String[] txtEndings = {".txt"};
 }
 

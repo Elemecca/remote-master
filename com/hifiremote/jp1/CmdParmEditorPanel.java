@@ -1,13 +1,16 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-
+// TODO: Auto-generated Javadoc
+/**
+ * The Class CmdParmEditorPanel.
+ */
 public class CmdParmEditorPanel
   extends HexParmEditorPanel
 {
+  
+  /**
+   * Instantiates a new cmd parm editor panel.
+   */
   public CmdParmEditorPanel()
   {
     super( "Command Parameter" );

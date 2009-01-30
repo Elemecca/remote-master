@@ -1,10 +1,21 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class TranslatorWithDevBool.
+ */
 public class TranslatorWithDevBool
   extends Translator
 {
+  
+  /** The dev index. */
   private int devIndex = 0;
 
+  /**
+   * Instantiates a new translator with dev bool.
+   * 
+   * @param textParms the text parms
+   */
   public TranslatorWithDevBool( String[] textParms )
   {
     super( new String[0] );
@@ -49,6 +60,9 @@ public class TranslatorWithDevBool
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translator#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
     super.out( hexData, parms, devParms );

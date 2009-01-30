@@ -1,6 +1,6 @@
 package com.hifiremote.jp1;
 
-import info.clearthought.layout.*;
+import info.clearthought.layout.TableLayout;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -13,6 +13,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.text.ParseException;
+import java.util.Collection;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -29,10 +30,22 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
-public class ImportRawUpgradeDialog
-  extends JDialog
-  implements ActionListener, DocumentListener, ItemListener
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ImportRawUpgradeDialog.
+ */
+public class ImportRawUpgradeDialog extends JDialog implements ActionListener, DocumentListener,
+    ItemListener
 {
+
+  /**
+   * Instantiates a new import raw upgrade dialog.
+   * 
+   * @param owner
+   *          the owner
+   * @param deviceUpgrade
+   *          the device upgrade
+   */
   public ImportRawUpgradeDialog( JFrame owner, DeviceUpgrade deviceUpgrade )
   {
     super( owner, "Import Raw Upgrade", true );
@@ -40,6 +53,14 @@ public class ImportRawUpgradeDialog
     createGui( owner );
   }
 
+  /**
+   * Instantiates a new import raw upgrade dialog.
+   * 
+   * @param owner
+   *          the owner
+   * @param deviceUpgrade
+   *          the device upgrade
+   */
   public ImportRawUpgradeDialog( JDialog owner, DeviceUpgrade deviceUpgrade )
   {
     super( owner, "Import Raw Upgrade", true );
@@ -47,19 +68,24 @@ public class ImportRawUpgradeDialog
     createGui( owner );
   }
 
+  /**
+   * Creates the gui.
+   * 
+   * @param owner
+   *          the owner
+   */
   private void createGui( Component owner )
   {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
 
-    double b = 5;        // space between rows and around border
-    double c = 10;       // space between columns
-    double f = TableLayout.FILL;
+    double b = 5; // space between rows and around border
+    double c = 10; // space between columns
     double pr = TableLayout.PREFERRED;
     double size[][] =
     {
-      { b, pr, c, pr, b },                         // cols
-      { b, pr, b, pr, b, pr, b, pr, pr, b, pr, pr, b, pr, b }  // rows
+    { b, pr, c, pr, b }, // cols
+        { b, pr, b, pr, b, pr, b, pr, pr, b, pr, pr, b, pr, b } // rows
     };
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
@@ -68,10 +94,10 @@ public class ImportRawUpgradeDialog
     JLabel label = new JLabel( "Remote:" );
     mainPanel.add( label, "1, 1" );
 
-    Remote[] remotes = RemoteManager.getRemoteManager().getRemotes();
-    remoteList = new JComboBox( remotes );
+    Collection< Remote > remotes = RemoteManager.getRemoteManager().getRemotes();
+    remoteList = new JComboBox( remotes.toArray() );
     label.setLabelFor( remoteList );
-    remoteList.setSelectedItem( deviceUpgrade.getRemote());
+    remoteList.setSelectedItem( deviceUpgrade.getRemote() );
     remoteList.addActionListener( this );
     mainPanel.add( remoteList, "3, 1" );
 
@@ -90,7 +116,7 @@ public class ImportRawUpgradeDialog
     protocolGreaterThanFF = new JCheckBox( "Protocol > FF" );
     protocolGreaterThanFF.addItemListener( this );
     mainPanel.add( protocolGreaterThanFF, "3, 5" );
-    protocolGreaterThanFF.setVisible( !deviceUpgrade.getRemote().usesTwoBytePID());
+    protocolGreaterThanFF.setVisible( !deviceUpgrade.getRemote().usesTwoBytePID() );
 
     label = new JLabel( "Upgrade Code:" );
     mainPanel.add( label, "1, 7, 3, 7" );
@@ -108,7 +134,7 @@ public class ImportRawUpgradeDialog
     protocolLabel.setLabelFor( protocolCode );
     mainPanel.add( new JScrollPane( protocolCode ), "1, 11, 3, 11" );
 
-    JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+    JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
 
     ok = new JButton( "OK" );
     ok.setEnabled( false );
@@ -130,6 +156,11 @@ public class ImportRawUpgradeDialog
     setLocation( x, y );
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -137,14 +168,14 @@ public class ImportRawUpgradeDialog
     {
       try
       {
-        Remote remote = ( Remote )remoteList.getSelectedItem();
+        Remote remote = ( Remote ) remoteList.getSelectedItem();
         remote.load();
         String[] aliasNames = remote.getDeviceTypeAliasNames();
         String alias = deviceUpgrade.getDeviceTypeAliasName();
-        deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ));
+        deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ) );
         deviceTypeList.setMaximumRowCount( aliasNames.length );
         deviceTypeList.setSelectedItem( alias );
-        protocolGreaterThanFF.setVisible( !remote.usesTwoBytePID());
+        protocolGreaterThanFF.setVisible( !remote.usesTwoBytePID() );
         validateInput();
       }
       catch ( Exception ex )
@@ -154,29 +185,29 @@ public class ImportRawUpgradeDialog
     }
     else if ( source == ok )
     {
-      userAction = JOptionPane.OK_OPTION;
       setVisible( false );
-      try 
+      try
       {
-        deviceUpgrade.importRawUpgrade( uCode,
-                                        ( Remote )remoteList.getSelectedItem(),
-                                        ( String )deviceTypeList.getSelectedItem(),
-                                        pid, pCode );
+        deviceUpgrade.importRawUpgrade( uCode, ( Remote ) remoteList.getSelectedItem(),
+            ( String ) deviceTypeList.getSelectedItem(), pid, pCode );
       }
       catch ( ParseException pe )
       {
-        JOptionPane.showMessageDialog( this, pe.getMessage(), "Import Error", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( this, pe.getMessage(), "Import Error",
+            JOptionPane.ERROR_MESSAGE );
       }
       dispose();
     }
     else if ( source == cancel )
     {
-      userAction = JOptionPane.CANCEL_OPTION;
       setVisible( false );
       dispose();
     }
   }
 
+  /**
+   * Validate input.
+   */
   private void validateInput()
   {
     if ( uCode == null )
@@ -188,15 +219,15 @@ public class ImportRawUpgradeDialog
       return;
     }
 
-    Remote remote = ( Remote )remoteList.getSelectedItem();
-    if ( remote.usesTwoBytePID())
+    Remote remote = ( Remote ) remoteList.getSelectedItem();
+    if ( remote.usesTwoBytePID() )
     {
       pid = new Hex( uCode, 0, 2 );
     }
     else
     {
       short[] temp = new short[ 2 ];
-      temp[ 0 ] = ( short )( protocolGreaterThanFF.isSelected() ? 1 : 0 );
+      temp[ 0 ] = ( short ) ( protocolGreaterThanFF.isSelected() ? 1 : 0 );
       temp[ 1 ] = uCode.getData()[ 0 ];
       pid = new Hex( temp );
     }
@@ -225,13 +256,19 @@ public class ImportRawUpgradeDialog
   }
 
   // DocumentListener methods
+  /**
+   * Document changed.
+   * 
+   * @param e
+   *          the e
+   */
   public void documentChanged( DocumentEvent e )
   {
     Document doc = e.getDocument();
-    if ( doc == upgradeCode.getDocument())
+    if ( doc == upgradeCode.getDocument() )
     {
       String text = upgradeCode.getText().trim();
-      if (( text == null ) || ( text.length() == 0 ))
+      if ( ( text == null ) || ( text.length() == 0 ) )
       {
         uCode = null;
       }
@@ -247,10 +284,10 @@ public class ImportRawUpgradeDialog
         }
       }
     }
-    else if ( doc == protocolCode.getDocument())
+    else if ( doc == protocolCode.getDocument() )
     {
       String text = protocolCode.getText().trim();
-      if (( text == null ) || ( text.length() == 0 ))
+      if ( ( text == null ) || ( text.length() == 0 ) )
       {
         pCode = null;
       }
@@ -269,38 +306,80 @@ public class ImportRawUpgradeDialog
     validateInput();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
+   */
   public void changedUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
+   */
   public void insertUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
+   */
   public void removeUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
 
   // ItemListener methods
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
+   */
   public void itemStateChanged( ItemEvent e )
   {
     validateInput();
   }
 
+  /** The device upgrade. */
   private DeviceUpgrade deviceUpgrade = null;
 
+  /** The remote list. */
   private JComboBox remoteList = null;
+
+  /** The device type list. */
   private JComboBox deviceTypeList = null;
+
+  /** The protocol greater than ff. */
   private JCheckBox protocolGreaterThanFF = null;
+
+  /** The upgrade code. */
   private JTextArea upgradeCode = null;
+
+  /** The protocol label. */
   private JLabel protocolLabel = null;
+
+  /** The protocol code. */
   private JTextArea protocolCode = null;
+
+  /** The u code. */
   private Hex uCode = null;
+
+  /** The pid. */
   private Hex pid = null;
+
+  /** The p code. */
   private Hex pCode = null;
 
+  /** The ok. */
   private JButton ok = null;
+
+  /** The cancel. */
   private JButton cancel = null;
-  private int userAction = JOptionPane.CANCEL_OPTION;
 }

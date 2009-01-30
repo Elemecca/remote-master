@@ -1,53 +1,135 @@
 package com.hifiremote.jp1;
 
-import info.clearthought.layout.TableLayout;
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.filechooser.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.text.DateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 
-public class KeyMapMaster
- extends JP1Frame
- implements ActionListener, PropertyChangeListener
+// TODO: Auto-generated Javadoc
+/**
+ * The Class KeyMapMaster.
+ */
+public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyChangeListener
 {
+
+  /** The me. */
   private static KeyMapMaster me = null;
+
+  /** The preferences. */
   private Preferences preferences = null;
 
+  /** The editor panel. */
   private DeviceEditorPanel editorPanel = null;
+
+  /** The new item. */
   private JMenuItem newItem = null;
+
+  /** The open item. */
   private JMenuItem openItem = null;
+
+  /** The save item. */
   private JMenuItem saveItem = null;
+
+  /** The save as item. */
   private JMenuItem saveAsItem = null;
-//  private JMenuItem importItem = null;
+  // private JMenuItem importItem = null;
+  /** The import from clipboard item. */
   private JMenuItem importFromClipboardItem = null;
+
+  /** The recent file menu. */
   private JMenu recentFileMenu = null;
+
+  /** The exit item. */
   private JMenuItem exitItem = null;
+
+  /** The manual item. */
   private JMenuItem manualItem = null;
-//  private JMenuItem editorItem = null;
+  // private JMenuItem editorItem = null;
+  /** The raw item. */
   private JMenuItem rawItem = null;
+
+  /** The binary item. */
   private JMenuItem binaryItem = null;
+
+  /** The write binary item. */
   private JMenuItem writeBinaryItem = null;
+
+  /** The update item. */
   private JMenuItem updateItem = null;
+
+  /** The about item. */
   private JMenuItem aboutItem = null;
-  private JPanel actionPanel = null;
+
+  /** The ok button. */
   private JButton okButton = null;
+
+  /** The cancel button. */
   private JButton cancelButton = null;
+
+  /** The message label. */
   private JLabel messageLabel = null;
-  private Remote[] remotes = new Remote[ 0 ];
+
+  /** The protocol manager. */
   private ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
+
+  /** The device upgrade. */
   private DeviceUpgrade deviceUpgrade = null;
+
+  /** The home directory. */
   private static File homeDirectory = null;
+
+  /** The upgrade extension. */
   private static String upgradeExtension = ".rmdu";
+
+  /** The Constant ACTION_EXIT. */
   public final static int ACTION_EXIT = 1;
+
+  /** The Constant ACTION_LOAD. */
   public final static int ACTION_LOAD = 2;
 
+  /**
+   * Instantiates a new key map master.
+   * 
+   * @param prefs
+   *          the prefs
+   */
   public KeyMapMaster( PropertyFile prefs )
   {
     super( "RemoteMaster", prefs );
@@ -64,10 +146,10 @@ public class KeyMapMaster
       {
         try
         {
-          if ( !promptToSaveUpgrade( ACTION_EXIT ))
+          if ( !promptToSaveUpgrade( ACTION_EXIT ) )
             return;
-          preferences.setLastRemoteName( getRemote().getName());
-          preferences.setLastRemoteSignature( getRemote().getSignature());
+          preferences.setLastRemoteName( getRemote().getName() );
+          preferences.setLastRemoteSignature( getRemote().getSignature() );
           savePreferences();
           setVisible( false );
           dispose();
@@ -78,13 +160,13 @@ public class KeyMapMaster
           e.printStackTrace( System.out );
         }
       }
-    });
+    } );
 
     createMenus();
 
     preferences.load( recentFileMenu, this );
 
-    deviceUpgrade = new DeviceUpgrade( getCustomNames());
+    deviceUpgrade = new DeviceUpgrade( getCustomNames() );
     Remote r = null;
 
     String name = preferences.getLastRemoteName();
@@ -92,12 +174,12 @@ public class KeyMapMaster
     if ( name != null )
       r = rm.findRemoteByName( name );
     if ( r == null )
-      r = getRemotes()[ 0 ];
+      r = getRemotes().iterator().next();
     Protocol protocol = protocolManager.getProtocolsForRemote( r ).get( 0 );
     deviceUpgrade.setProtocol( protocol );
     deviceUpgrade.setRemote( r );
 
-    editorPanel = new DeviceEditorPanel( deviceUpgrade, getRemotes());
+    editorPanel = new DeviceEditorPanel( deviceUpgrade, getRemotes() );
     add( editorPanel, BorderLayout.CENTER );
     editorPanel.addPropertyChangeListener( this, "remote" );
     messageLabel = new JLabel( " " );
@@ -105,7 +187,7 @@ public class KeyMapMaster
     add( messageLabel, BorderLayout.SOUTH );
 
     fontSizeAdjustment = preferences.getFontSizeAdjustment();
-      adjustFontSize( fontSizeAdjustment );
+    adjustFontSize( fontSizeAdjustment );
 
     pack();
     Rectangle bounds = preferences.getBounds();
@@ -114,6 +196,9 @@ public class KeyMapMaster
     setVisible( true );
   }
 
+  /**
+   * Creates the menus.
+   */
   private void createMenus()
   {
     JMenuBar menuBar = new JMenuBar();
@@ -142,11 +227,11 @@ public class KeyMapMaster
 
     menu.addSeparator();
 
-//    importItem = new JMenuItem( "Import KM file..." );
-//    importItem.setMnemonic( KeyEvent.VK_K );
-//    importItem.addActionListener( this );
-//    menu.add( importItem );
-//
+    // importItem = new JMenuItem( "Import KM file..." );
+    // importItem.setMnemonic( KeyEvent.VK_K );
+    // importItem.addActionListener( this );
+    // menu.add( importItem );
+    //
     importFromClipboardItem = new JMenuItem( "Import from Clipboard" );
     importFromClipboardItem.setMnemonic( KeyEvent.VK_C );
     importFromClipboardItem.addActionListener( this );
@@ -179,7 +264,7 @@ public class KeyMapMaster
       {
         try
         {
-          JRadioButtonMenuItem item = ( JRadioButtonMenuItem )e.getSource();
+          JRadioButtonMenuItem item = ( JRadioButtonMenuItem ) e.getSource();
           String lf = item.getActionCommand();
           UIManager.setLookAndFeel( lf );
           preferences.setLookAndFeel( lf );
@@ -199,13 +284,13 @@ public class KeyMapMaster
     lookAndFeelItems = new JRadioButtonMenuItem[ info.length ];
     for ( int i = 0; i < info.length; i++ )
     {
-      JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName());
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem( info[ i ].getName() );
       lookAndFeelItems[ i ] = item;
-      item.setMnemonic( item.getText().charAt( 0 ));
-      item.setActionCommand( info[ i ].getClassName());
+      item.setMnemonic( item.getText().charAt( 0 ) );
+      item.setActionCommand( info[ i ].getClassName() );
       group.add( item );
       submenu.add( item );
-      if ( item.getActionCommand().equals( lookAndFeel ))
+      if ( item.getActionCommand().equals( lookAndFeel ) )
         item.setSelected( true );
       item.addActionListener( al );
     }
@@ -218,8 +303,8 @@ public class KeyMapMaster
     {
       public void actionPerformed( ActionEvent e )
       {
-        JMenuItem button = ( JMenuItem )e.getSource();
-        float adjustment = Float.parseFloat( button.getActionCommand());
+        JMenuItem button = ( JMenuItem ) e.getSource();
+        float adjustment = Float.parseFloat( button.getActionCommand() );
         adjustFontSize( adjustment );
         fontSizeAdjustment += adjustment;
       }
@@ -250,8 +335,7 @@ public class KeyMapMaster
         for ( int i = 0; i < promptButtons.length; i++ )
           if ( promptButtons[ i ] == source )
           {
-            promptFlag = i;
-            preferences.setPromptToSave( promptStrings[ i ]);
+            preferences.setPromptToSave( promptStrings[ i ] );
             break;
           }
       }
@@ -262,12 +346,11 @@ public class KeyMapMaster
     for ( int i = 0; i < promptStrings.length; i++ )
     {
       JRadioButtonMenuItem item = new JRadioButtonMenuItem( promptStrings[ i ] );
-      item.setMnemonic( promptMnemonics[ i ]);
+      item.setMnemonic( promptMnemonics[ i ] );
       promptButtons[ i ] = item;
-      if ( promptStrings[ i ].equals( promptText ))
+      if ( promptStrings[ i ].equals( promptText ) )
       {
         item.setSelected( true );
-        promptFlag = i;
       }
       item.addActionListener( al );
       group.add( item );
@@ -288,12 +371,12 @@ public class KeyMapMaster
         Object source = e.getSource();
         if ( source == useAllRemotes )
         {
-          editorPanel.setRemotes( RemoteManager.getRemoteManager().getRemotes());
+          editorPanel.setRemotes( RemoteManager.getRemoteManager().getRemotes() );
           preferences.setShowRemotes( "All" );
         }
         else if ( source == usePreferredRemotes )
         {
-          editorPanel.setRemotes( preferences.getPreferredRemotes());
+          editorPanel.setRemotes( preferences.getPreferredRemotes() );
           preferences.setShowRemotes( "Preferred" );
         }
         else
@@ -310,12 +393,12 @@ public class KeyMapMaster
     submenu.add( usePreferredRemotes );
 
     String temp = preferences.getShowRemotes();
-    if ( temp.equals( "All" ))
+    if ( temp.equals( "All" ) )
       useAllRemotes.setSelected( true );
     else
       usePreferredRemotes.setSelected( true );
 
-    if ( preferences.getPreferredRemotes().length == 0 )
+    if ( preferences.getPreferredRemotes().size() == 0 )
     {
       useAllRemotes.setSelected( true );
       usePreferredRemotes.setEnabled( false );
@@ -357,7 +440,7 @@ public class KeyMapMaster
     useCustomNames = new JRadioButtonMenuItem( "Custom" );
     useCustomNames.setMnemonic( KeyEvent.VK_C );
     group.add( useCustomNames );
-    useCustomNames.setSelected( preferences.getUseCustomNames());
+    useCustomNames.setSelected( preferences.getUseCustomNames() );
 
     useCustomNames.addActionListener( al );
     submenu.add( useCustomNames );
@@ -376,12 +459,10 @@ public class KeyMapMaster
     manualItem.setMnemonic( KeyEvent.VK_M );
     manualItem.addActionListener( this );
     menu.add( manualItem );
-/*
-    editorItem = new JMenuItem( "Protocol Editor..." );
-    editorItem.setMnemonic( KeyEvent.VK_P );
-    editorItem.addActionListener( this );
-    menu.add( editorItem );
-*/
+    /*
+     * editorItem = new JMenuItem( "Protocol Editor..." ); editorItem.setMnemonic( KeyEvent.VK_P );
+     * editorItem.addActionListener( this ); menu.add( editorItem );
+     */
     rawItem = new JMenuItem( "Import Raw Upgrade..." );
     rawItem.setMnemonic( KeyEvent.VK_R );
     rawItem.addActionListener( this );
@@ -412,48 +493,68 @@ public class KeyMapMaster
     menu.add( aboutItem );
   }
 
-  private void savePreferences()
-    throws Exception
+  /**
+   * Save preferences.
+   * 
+   * @throws Exception
+   *           the exception
+   */
+  private void savePreferences() throws Exception
   {
     int state = getExtendedState();
     if ( state != Frame.NORMAL )
       setExtendedState( Frame.NORMAL );
-    preferences.setBounds( getBounds());
+    preferences.setBounds( getBounds() );
     preferences.save( recentFileMenu );
   }
 
+  /**
+   * Edits the manual settings.
+   */
   private void editManualSettings()
   {
     Protocol p = deviceUpgrade.getProtocol();
     ManualProtocol mp = null;
     if ( p.getClass() == ManualProtocol.class )
-      mp = ( ManualProtocol )p;
+      mp = ( ManualProtocol ) p;
     else
       mp = new ManualProtocol( null, null );
-    ManualSettingsDialog d =
-      new ManualSettingsDialog( this, mp );
+    ManualSettingsDialog d = new ManualSettingsDialog( this, mp );
     d.setVisible( true );
     mp = d.getProtocol();
     if ( mp != null )
       ProtocolManager.getProtocolManager().add( mp );
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.JP1Frame#showMessage(java.lang.String)
+   */
   public void showMessage( String message )
   {
     messageLabel.setText( message );
     Toolkit.getDefaultToolkit().beep();
   }
 
+  /**
+   * Show message.
+   * 
+   * @param message
+   *          the message
+   * @param c
+   *          the c
+   */
   public static void showMessage( String message, Component c )
   {
-    KeyMapMaster km = ( KeyMapMaster )SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
+    KeyMapMaster km = ( KeyMapMaster ) SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
     if ( km != null )
     {
       km.showMessage( message );
       return;
     }
 
-    JP1Frame frame = ( JP1Frame )SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
+    JP1Frame frame = ( JP1Frame ) SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
     if ( frame != null )
     {
       frame.showMessage( message );
@@ -462,21 +563,32 @@ public class KeyMapMaster
     JOptionPane.showMessageDialog( c, message );
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.JP1Frame#clearMessage()
+   */
   public void clearMessage()
   {
     messageLabel.setText( " " );
   }
 
+  /**
+   * Clear message.
+   * 
+   * @param c
+   *          the c
+   */
   public static void clearMessage( Component c )
   {
-    KeyMapMaster km = ( KeyMapMaster )SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
+    KeyMapMaster km = ( KeyMapMaster ) SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
     if ( km != null )
     {
       km.clearMessage();
       return;
     }
 
-    JP1Frame frame = ( JP1Frame )SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
+    JP1Frame frame = ( JP1Frame ) SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
     if ( frame != null )
     {
       frame.clearMessage();
@@ -485,6 +597,11 @@ public class KeyMapMaster
   }
 
   // ActionListener Methods
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     try
@@ -493,10 +610,9 @@ public class KeyMapMaster
 
       if ( source == newItem )
       {
-        if ( !promptToSaveUpgrade( ACTION_LOAD ))
+        if ( !promptToSaveUpgrade( ACTION_LOAD ) )
           return;
-        Protocol oldProtocol = deviceUpgrade.getProtocol();
-        deviceUpgrade.reset( getCustomNames());
+        deviceUpgrade.reset( getCustomNames() );
       }
       else if ( source == saveItem )
       {
@@ -508,14 +624,14 @@ public class KeyMapMaster
       }
       else if ( source == openItem )
       {
-        if ( !promptToSaveUpgrade( ACTION_LOAD ))
+        if ( !promptToSaveUpgrade( ACTION_LOAD ) )
           return;
-        File file = getUpgradeFile( preferences.getUpgradePath());
+        File file = getUpgradeFile( preferences.getUpgradePath() );
         loadUpgrade( file );
       }
       else if ( source == importFromClipboardItem )
       {
-        if ( !promptToSaveUpgrade( ACTION_LOAD ))
+        if ( !promptToSaveUpgrade( ACTION_LOAD ) )
           return;
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable clipData = clipboard.getContents( clipboard );
@@ -523,15 +639,14 @@ public class KeyMapMaster
         {
           try
           {
-            if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ))
+            if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
             {
-              String s =
-                ( String )( clipData.getTransferData( DataFlavor.stringFlavor ));
-              BufferedReader in = new BufferedReader( new StringReader( s ));
+              String s = ( String ) ( clipData.getTransferData( DataFlavor.stringFlavor ) );
+              BufferedReader in = new BufferedReader( new StringReader( s ) );
               loadUpgrade( in );
             }
           }
-          catch (Exception ex)
+          catch ( Exception ex )
           {
             ex.printStackTrace( System.err );
           }
@@ -539,19 +654,16 @@ public class KeyMapMaster
       }
       else if ( source == exitItem )
       {
-        dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ));
+        dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ) );
       }
       else if ( source == manualItem )
       {
         editManualSettings();
       }
       /*
-      else if ( source == editorItem )
-      {
-        ProtocolEditor d = new ProtocolEditor( this );
-        d.setVisible( true );
-      }
-      */
+       * else if ( source == editorItem ) { ProtocolEditor d = new ProtocolEditor( this );
+       * d.setVisible( true ); }
+       */
       else if ( source == rawItem )
       {
         ImportRawUpgradeDialog d = new ImportRawUpgradeDialog( this, deviceUpgrade );
@@ -560,7 +672,7 @@ public class KeyMapMaster
       else if ( source == binaryItem )
       {
         File file = null;
-        RMFileChooser chooser = new RMFileChooser( preferences.getBinaryUpgradePath());
+        RMFileChooser chooser = new RMFileChooser( preferences.getBinaryUpgradePath() );
         try
         {
           chooser.setAcceptAllFileFilterUsed( false );
@@ -569,96 +681,105 @@ public class KeyMapMaster
         {
           ex.printStackTrace( System.err );
         }
-        chooser.setFileFilter( new EndingFileFilter( "Binary upgrade files", binaryEndings ));
+        chooser.setFileFilter( new EndingFileFilter( "Binary upgrade files", binaryEndings ) );
         int returnVal = chooser.showOpenDialog( this );
         if ( returnVal == RMFileChooser.APPROVE_OPTION )
         {
           file = chooser.getSelectedFile();
 
-          int rc = JOptionPane.YES_OPTION;
-          if ( !file.exists())
+          if ( !file.exists() )
           {
-            JOptionPane.showMessageDialog( this,
-                                           file.getName() + " doesn't exist.",
-                                           "File doesn't exist.",
-                                           JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog( this, file.getName() + " doesn't exist.",
+                "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
           }
-          else if ( file.isDirectory())
+          else if ( file.isDirectory() )
           {
-            JOptionPane.showMessageDialog( this,
-                                           file.getName() + " is a directory.",
-                                           "File doesn't exist.",
-                                           JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog( this, file.getName() + " is a directory.",
+                "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
           }
           else
           {
-            preferences.setBinaryUpgradePath( file.getParentFile());
+            preferences.setBinaryUpgradePath( file.getParentFile() );
             BinaryUpgradeReader reader = new BinaryUpgradeReader( file );
             Remote r = reader.getRemote();
-            DeviceType devType = r.getDeviceTypeByIndex( reader.getDeviceIndex());
+            DeviceType devType = r.getDeviceTypeByIndex( reader.getDeviceIndex() );
             String aliasName = null;
             String[] aliasNames = r.getDeviceTypeAliasNames();
             boolean nameMatch = false;
-            for ( int i = 0; i < aliasNames.length && !nameMatch ; i++ )
+            for ( int i = 0; i < aliasNames.length && !nameMatch; i++ )
             {
               String tryit = aliasNames[ i ];
-              if ( devType == r.getDeviceTypeByAliasName( tryit ))
+              if ( devType == r.getDeviceTypeByAliasName( tryit ) )
               {
                 nameMatch = devType.getName().equalsIgnoreCase( tryit );
-                if (( aliasName == null ) || nameMatch )
+                if ( ( aliasName == null ) || nameMatch )
                   aliasName = tryit;
               }
             }
-            deviceUpgrade.importRawUpgrade( reader.getCode(),
-                                            r,
-                                            aliasName,
-                                            reader.getPid(),
-                                            reader.getProtocolCode());
-            deviceUpgrade.setSetupCode( reader.getSetupCode());
+            deviceUpgrade.importRawUpgrade( reader.getCode(), r, aliasName, reader.getPid(), reader
+                .getProtocolCode() );
+            deviceUpgrade.setSetupCode( reader.getSetupCode() );
           }
         }
       }
       else if ( source == writeBinaryItem )
       {
-        File path = BinaryUpgradeWriter.write( deviceUpgrade, preferences.getBinaryUpgradePath());
+        File path = BinaryUpgradeWriter.write( deviceUpgrade, preferences.getBinaryUpgradePath() );
         if ( path != null )
           preferences.setBinaryUpgradePath( path );
       }
       else if ( source == updateItem )
       {
         java.net.URL url = new java.net.URL( "http://controlremote.sourceforge.net/version.dat" );
-        BufferedReader in = new BufferedReader( new InputStreamReader( url.openStream()));
+        BufferedReader in = new BufferedReader( new InputStreamReader( url.openStream() ) );
         String latestVersion = in.readLine();
         in.close();
         String text = null;
-        if ( RemoteMaster.version.equals( latestVersion ))
+        if ( RemoteMaster.version.equals( latestVersion ) )
           text = "You are using the latest version (" + RemoteMaster.version + ") of RemoteMaster.";
         else
-          text = "<html>Version " + latestVersion + " of RemoteMaster is available, but you are still using version " + RemoteMaster.version +
-                 "<p>The new version is available for download from<br><a href=\"http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion + ".zip?download\">" +
-                 "http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion + ".zip?download</a></html>";
+          text = "<html>Version "
+              + latestVersion
+              + " of RemoteMaster is available, but you are still using version "
+              + RemoteMaster.version
+              + "<p>The new version is available for download from<br><a href=\"http://prdownloads.sourceforge.net/controlremote/RemoteMaster."
+              + latestVersion + ".zip?download\">"
+              + "http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion
+              + ".zip?download</a></html>";
 
         JEditorPane pane = new JEditorPane( "text/html", text );
         pane.setEditable( false );
-        pane.setBackground( getContentPane().getBackground());
+        pane.setBackground( getContentPane().getBackground() );
         new TextPopupMenu( pane );
-        JOptionPane.showMessageDialog( this, pane, "RemoteMaster Version Check", JOptionPane.INFORMATION_MESSAGE );
+        JOptionPane.showMessageDialog( this, pane, "RemoteMaster Version Check",
+            JOptionPane.INFORMATION_MESSAGE );
       }
       else if ( source == aboutItem )
       {
-        String text = "<html><b>RemoteMaster Device Upgrade Editor, " + RemoteMaster.version + "</b>" +
-                      "<p>Get the latest version at <a href=\"http://controlremote.sourceforge.net\">http://controlremote.sourceforge.net</a></p>" +
-                      "<p>Java version " + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>" +
-                      "<p>Home directory is <b>" + homeDirectory + "</b></p>" +
-                      "<p>RDFs loaded from <b>" + preferences.getRDFPath() + "</b></p>" +
-                      "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations " +
-                      "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>" +
-                      "<p>Other contributors include:<blockquote>" + "John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, " +
-                      "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></html>";
+        String text = "<html><b>RemoteMaster Device Upgrade Editor, "
+            + RemoteMaster.version
+            + "</b>"
+            + "<p>Get the latest version at <a href=\"http://controlremote.sourceforge.net\">http://controlremote.sourceforge.net</a></p>"
+            + "<p>Java version "
+            + System.getProperty( "java.version" )
+            + " from "
+            + System.getProperty( "java.vendor" )
+            + "</p>"
+            + "<p>Home directory is <b>"
+            + homeDirectory
+            + "</b></p>"
+            + "<p>RDFs loaded from <b>"
+            + preferences.getRDFPath()
+            + "</b></p>"
+            + "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations "
+            + "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>"
+            + "<p>Other contributors include:<blockquote>"
+            + "John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, "
+            + "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></html>";
 
         JEditorPane pane = new JEditorPane( "text/html", text );
         pane.setEditable( false );
-        pane.setBackground( getContentPane().getBackground());
+        pane.setBackground( getContentPane().getBackground() );
         new TextPopupMenu( pane );
         JScrollPane scroll = new JScrollPane( pane );
         Dimension d = pane.getPreferredSize();
@@ -666,7 +787,8 @@ public class KeyMapMaster
         d.width = ( d.width * 2 ) / 3;
         scroll.setPreferredSize( d );
 
-        JOptionPane.showMessageDialog( this, scroll, "About RemoteMaster", JOptionPane.INFORMATION_MESSAGE );
+        JOptionPane.showMessageDialog( this, scroll, "About RemoteMaster",
+            JOptionPane.INFORMATION_MESSAGE );
       }
       else if ( source == okButton )
       {
@@ -677,10 +799,11 @@ public class KeyMapMaster
         deviceUpgrade = null;
         setVisible( false );
       }
-      else // must be a recent file
+      else
+      // must be a recent file
       {
-        JMenuItem item = ( JMenuItem )source;
-        File f = new File( item.getText());
+        JMenuItem item = ( JMenuItem ) source;
+        File f = new File( item.getText() );
         loadUpgrade( f );
       }
       refresh();
@@ -691,11 +814,27 @@ public class KeyMapMaster
     }
   } // actionPerformed
 
+  /**
+   * Prompt for upgrade file.
+   * 
+   * @param path
+   *          the path
+   * 
+   * @return the file
+   */
   public static File promptForUpgradeFile( File path )
   {
     return me.getUpgradeFile( path );
   }
 
+  /**
+   * Gets the upgrade file.
+   * 
+   * @param path
+   *          the path
+   * 
+   * @return the upgrade file
+   */
   public File getUpgradeFile( File path )
   {
     if ( path == null )
@@ -711,44 +850,46 @@ public class KeyMapMaster
     {
       e.printStackTrace( System.err );
     }
-    chooser.setFileFilter( new EndingFileFilter( "All device upgrade files", anyEndings ));
-    chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files", kmEndings ));
-    chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files", rmEndings ));
+    chooser.setFileFilter( new EndingFileFilter( "All device upgrade files", anyEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files",
+        kmEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files",
+        rmEndings ) );
 
     int returnVal = chooser.showOpenDialog( this );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       file = chooser.getSelectedFile();
 
-      int rc = JOptionPane.YES_OPTION;
-      if ( !file.exists())
+      if ( !file.exists() )
       {
-        JOptionPane.showMessageDialog( this,
-                                       file.getName() + " doesn't exist.",
-                                       "File doesn't exist.",
-                                       JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( this, file.getName() + " doesn't exist.",
+            "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
       }
-      else if ( file.isDirectory())
+      else if ( file.isDirectory() )
       {
-        JOptionPane.showMessageDialog( this,
-                                       file.getName() + " is a directory.",
-                                       "File doesn't exist.",
-                                       JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( this, file.getName() + " is a directory.",
+            "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
       }
       else
       {
-        String str = file.getName().toLowerCase();
-        preferences.setUpgradePath( file.getParentFile());
+        preferences.setUpgradePath( file.getParentFile() );
       }
     }
     return file;
   }
 
-  public void saveAs()
-    throws IOException
+  /**
+   * Save as.
+   * 
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
+  public void saveAs() throws IOException
   {
-    RMFileChooser chooser = new RMFileChooser( preferences.getUpgradePath());
-    chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", rmEndings ));
+    RMFileChooser chooser = new RMFileChooser( preferences.getUpgradePath() );
+    chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)",
+        rmEndings ) );
     File f = deviceUpgrade.getFile();
     if ( f == null )
     {
@@ -761,16 +902,15 @@ public class KeyMapMaster
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( upgradeExtension ))
+      if ( !name.toLowerCase().endsWith( upgradeExtension ) )
         name = name + upgradeExtension;
       File file = new File( name );
       int rc = JOptionPane.YES_OPTION;
-      if ( file.exists())
+      if ( file.exists() )
       {
-        rc = JOptionPane.showConfirmDialog( this,
-                                            file.getName() + " already exists.  Do you want to replace it?",
-                                            "Replace existing file?",
-                                            JOptionPane.YES_NO_OPTION );
+        rc = JOptionPane.showConfirmDialog( this, file.getName()
+            + " already exists.  Do you want to replace it?", "Replace existing file?",
+            JOptionPane.YES_NO_OPTION );
       }
       if ( rc == JOptionPane.YES_OPTION )
       {
@@ -782,27 +922,36 @@ public class KeyMapMaster
     }
   }
 
-  public boolean promptToSaveUpgrade( int action )
-    throws IOException
+  /**
+   * Prompt to save upgrade.
+   * 
+   * @param action
+   *          the action
+   * 
+   * @return true, if successful
+   * 
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
+  public boolean promptToSaveUpgrade( int action ) throws IOException
   {
-    if ( !deviceUpgrade.hasChanged())
+    if ( !deviceUpgrade.hasChanged() )
       return true;
 
     String promptFlag = preferences.getPromptToSave();
-    if ( promptFlag.equals( promptStrings[ PROMPT_NEVER ]))
+    if ( promptFlag.equals( promptStrings[ PROMPT_NEVER ] ) )
       return true;
-    else if ( !promptFlag.equals( promptStrings[ PROMPT_ALWAYS ]))
+    else if ( !promptFlag.equals( promptStrings[ PROMPT_ALWAYS ] ) )
     {
       if ( action != ACTION_EXIT )
         return true;
     }
 
     int rc = JOptionPane.showConfirmDialog( this,
-//                                            "All changes made to the current upgrade will be lost if you proceed.\n\n" +
-                                            "Do you want to save the current upgrade before proceeding?",
-                                            "Save upgrade?",
-                                            JOptionPane.YES_NO_CANCEL_OPTION );
-    if (( rc == JOptionPane.CANCEL_OPTION ) || ( rc == JOptionPane.CLOSED_OPTION ))
+        // "All changes made to the current upgrade will be lost if you proceed.\n\n" +
+        "Do you want to save the current upgrade before proceeding?", "Save upgrade?",
+        JOptionPane.YES_NO_CANCEL_OPTION );
+    if ( ( rc == JOptionPane.CANCEL_OPTION ) || ( rc == JOptionPane.CLOSED_OPTION ) )
       return false;
     if ( rc == JOptionPane.NO_OPTION )
       return true;
@@ -814,14 +963,22 @@ public class KeyMapMaster
     return true;
   }
 
-  public void loadUpgrade( File file )
-    throws Exception
+  /**
+   * Load upgrade.
+   * 
+   * @param file
+   *          the file
+   * 
+   * @throws Exception
+   *           the exception
+   */
+  public void loadUpgrade( File file ) throws Exception
   {
-    if (( file == null ) || !file.exists())
+    if ( ( file == null ) || !file.exists() )
       return;
 
-    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified " +
-                        DateFormat.getInstance().format( new Date( file.lastModified())));
+    System.err.println( "Opening " + file.getCanonicalPath() + ", last modified "
+        + DateFormat.getInstance().format( new Date( file.lastModified() ) ) );
 
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
@@ -830,12 +987,20 @@ public class KeyMapMaster
 
     if ( isRMDU )
       updateRecentFiles( file );
-    preferences.setUpgradePath( file.getParentFile());
+    preferences.setUpgradePath( file.getParentFile() );
     refresh();
   }
 
-  private void updateRecentFiles( File file )
-    throws IOException
+  /**
+   * Update recent files.
+   * 
+   * @param file
+   *          the file
+   * 
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
+  private void updateRecentFiles( File file ) throws IOException
   {
     boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
 
@@ -845,8 +1010,8 @@ public class KeyMapMaster
       while ( i >= 0 )
       {
         JMenuItem item = recentFileMenu.getItem( i );
-        File f = new File( item.getText());
-        if ( f.getCanonicalPath().equals( file.getCanonicalPath()))
+        File f = new File( item.getText() );
+        if ( f.getCanonicalPath().equals( file.getCanonicalPath() ) )
           recentFileMenu.remove( i );
         --i;
       }
@@ -854,7 +1019,7 @@ public class KeyMapMaster
       while ( i > 9 )
         recentFileMenu.remove( --i );
 
-      JMenuItem item = new JMenuItem( file.getAbsolutePath());
+      JMenuItem item = new JMenuItem( file.getAbsolutePath() );
       item.addActionListener( this );
       recentFileMenu.add( item, 0 );
 
@@ -862,36 +1027,56 @@ public class KeyMapMaster
     }
   }
 
-  public void loadUpgrade( BufferedReader reader )
-    throws Exception
+  /**
+   * Load upgrade.
+   * 
+   * @param reader
+   *          the reader
+   * 
+   * @throws Exception
+   *           the exception
+   */
+  public void loadUpgrade( BufferedReader reader ) throws Exception
   {
     deviceUpgrade.reset();
     deviceUpgrade.load( reader );
     refresh();
   }
 
+  /**
+   * Refresh.
+   */
   private void refresh()
   {
-    String title = "RemoteMaster";
     File file = deviceUpgrade.getFile();
-    if ( file != null )
-      title = file.getAbsolutePath() + " - RemoteMaster";
-
     saveItem.setEnabled( file != null );
-    writeBinaryItem.setEnabled( deviceUpgrade.getRemote().getSupportsBinaryUpgrades());
+    writeBinaryItem.setEnabled( deviceUpgrade.getRemote().getSupportsBinaryUpgrades() );
 
     validateUpgrade();
     editorPanel.refresh();
   }
 
-  public void importUpgrade( BufferedReader in )
-    throws Exception
+  /**
+   * Import upgrade.
+   * 
+   * @param in
+   *          the in
+   * 
+   * @throws Exception
+   *           the exception
+   */
+  public void importUpgrade( BufferedReader in ) throws Exception
   {
     deviceUpgrade.reset();
     deviceUpgrade.importUpgrade( in );
     refresh();
   }
 
+  /**
+   * Gets the home directory.
+   * 
+   * @return the home directory
+   */
   public static File getHomeDirectory()
   {
     if ( homeDirectory == null )
@@ -903,25 +1088,28 @@ public class KeyMapMaster
     return homeDirectory;
   }
 
+  /**
+   * Validate upgrade.
+   */
   public void validateUpgrade()
   {
     Remote r = deviceUpgrade.getRemote();
     Protocol p = deviceUpgrade.getProtocol();
     java.util.List< Protocol > protocols = protocolManager.getProtocolsForRemote( r );
-    if ( !protocols.contains( p ) && !p.hasCode( r ))
+    if ( !protocols.contains( p ) && !p.hasCode( r ) )
     {
-      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName() +
-                          "is not compatible with remote " + r.getName());
+      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName()
+          + "is not compatible with remote " + r.getName() );
 
       // Find a matching protocol for this remote
       Protocol match = null;
       String name = p.getName();
       for ( Protocol p2 : protocols )
       {
-        if ( p2.getName().equals( name ))
+        if ( p2.getName().equals( name ) )
         {
           match = p2;
-          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName());
+          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName() );
           break;
         }
       }
@@ -929,79 +1117,109 @@ public class KeyMapMaster
         deviceUpgrade.setProtocol( match );
       else
         JOptionPane.showMessageDialog( this,
-                                       "The selected protocol " + p.getDiagnosticName() +
-                                       "\nis not compatible with the selected remote.\n" +
-                                       "This upgrade will NOT function correctly.\n" +
-                                       "Please choose a different protocol.",
-                                       "Error", JOptionPane.ERROR_MESSAGE );
+            "The selected protocol " + p.getDiagnosticName()
+                + "\nis not compatible with the selected remote.\n"
+                + "This upgrade will NOT function correctly.\n"
+                + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
     }
   }
 
+  /**
+   * Gets the remote.
+   * 
+   * @return the remote
+   */
   public static Remote getRemote()
   {
     return me.deviceUpgrade.getRemote();
   }
 
-  public Remote[] getRemotes()
+  /**
+   * Gets the remotes.
+   * 
+   * @return the remotes
+   */
+  public Collection< Remote > getRemotes()
   {
-    if ( preferences.getShowRemotes().equals( "Preferred" ))
+    if ( preferences.getShowRemotes().equals( "Preferred" ) )
       return preferences.getPreferredRemotes();
     else
       return RemoteManager.getRemoteManager().getRemotes();
   }
 
+  /**
+   * Gets the preferences.
+   * 
+   * @return the preferences
+   */
   public Preferences getPreferences()
   {
     return preferences;
   }
 
+  /**
+   * Gets the device upgrade.
+   * 
+   * @return the device upgrade
+   */
   public DeviceUpgrade getDeviceUpgrade()
   {
     return deviceUpgrade;
   }
 
+  /**
+   * Edits the preferred remotes.
+   */
   private void editPreferredRemotes()
   {
-    PreferredRemoteDialog d = new PreferredRemoteDialog( this, preferences.getPreferredRemotes());
+    PreferredRemoteDialog d = new PreferredRemoteDialog( this, preferences.getPreferredRemotes() );
     d.setVisible( true );
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
-      Remote[] preferredRemotes = d.getPreferredRemotes();
+      Collection< Remote > preferredRemotes = d.getPreferredRemotes();
       preferences.setPreferredRemotes( preferredRemotes );
-      if ( preferredRemotes.length == 0 )
+      if ( preferredRemotes.size() == 0 )
       {
         usePreferredRemotes.setEnabled( false );
-        if  ( !useAllRemotes.isSelected())
+        if ( !useAllRemotes.isSelected() )
         {
           useAllRemotes.setSelected( true );
 
-          editorPanel.setRemotes( RemoteManager.getRemoteManager().getRemotes());
+          editorPanel.setRemotes( RemoteManager.getRemoteManager().getRemotes() );
         }
       }
       else
         usePreferredRemotes.setEnabled( true );
 
-      if ( usePreferredRemotes.isSelected())
+      if ( usePreferredRemotes.isSelected() )
         editorPanel.setRemotes( preferredRemotes );
     }
   }
 
+  /**
+   * Gets the custom names.
+   * 
+   * @return the custom names
+   */
   public String[] getCustomNames()
   {
-    if ( useCustomNames.isSelected())
+    if ( useCustomNames.isSelected() )
       return preferences.getCustomNames();
     else
       return null;
   }
 
+  /**
+   * Edits the custom names.
+   */
   private void editCustomNames()
   {
-    CustomNameDialog d = new CustomNameDialog( this, preferences.getCustomNames());
+    CustomNameDialog d = new CustomNameDialog( this, preferences.getCustomNames() );
     d.setVisible( true );
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
       String[] customNames = d.getCustomNames();
-      if (( customNames == null ) || customNames.length == 0 )
+      if ( ( customNames == null ) || customNames.length == 0 )
       {
         useCustomNames.setEnabled( false );
         useDefaultNames.setSelected( true );
@@ -1014,22 +1232,29 @@ public class KeyMapMaster
     }
   }
 
+  /**
+   * Adjust font size.
+   * 
+   * @param adjustment
+   *          the adjustment
+   */
   private void adjustFontSize( float adjustment )
   {
     if ( adjustment == 0.0f )
       return;
     UIDefaults defaults = UIManager.getDefaults(); // Build of Map of attributes for each component
-    for( Enumeration en = defaults.keys(); en.hasMoreElements(); )
+    for ( Enumeration< Object > en = defaults.keys(); en.hasMoreElements(); )
     {
       Object o = en.nextElement();
       if ( o.getClass() != String.class )
         continue;
-      String key = ( String )o;
-      if ( key.endsWith(".font") && !key.startsWith("class") && !key.startsWith("javax"))
+      String key = ( String ) o;
+      if ( key.endsWith( ".font" ) && !key.startsWith( "class" ) && !key.startsWith( "javax" ) )
       {
-        FontUIResource font = ( FontUIResource )UIManager.get( key );
-        FontUIResource newFont = new FontUIResource( font.deriveFont( font.getSize2D() + adjustment ));
-        if ( key.indexOf( "Table") != -1 )
+        FontUIResource font = ( FontUIResource ) UIManager.get( key );
+        FontUIResource newFont = new FontUIResource( font
+            .deriveFont( font.getSize2D() + adjustment ) );
+        if ( key.indexOf( "Table" ) != -1 )
         {
           System.err.println( "key=" + key );
           System.err.println( "got font " + font );
@@ -1042,27 +1267,64 @@ public class KeyMapMaster
     pack();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+   */
   public void propertyChange( PropertyChangeEvent evt )
   {
     refresh();
   }
 
+  /** The look and feel items. */
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
+
+  /** The prompt buttons. */
   private JRadioButtonMenuItem[] promptButtons = null;
+
+  /** The use all remotes. */
   private JMenuItem useAllRemotes = null;
+
+  /** The use preferred remotes. */
   private JMenuItem usePreferredRemotes = null;
+
+  /** The use default names. */
   private JMenuItem useDefaultNames = null;
+
+  /** The use custom names. */
   private JMenuItem useCustomNames = null;
+
+  /** The font size adjustment. */
   private Float fontSizeAdjustment = 0.0f;
-  private int promptFlag = 0;
 
-  private final static String[] promptStrings = { "Always", "On Exit", "Never" };
-  private final static int[] promptMnemonics = { KeyEvent.VK_A, KeyEvent.VK_X, KeyEvent.VK_N };
+  /** The Constant promptStrings. */
+  private final static String[] promptStrings =
+  { "Always", "On Exit", "Never" };
+
+  /** The Constant promptMnemonics. */
+  private final static int[] promptMnemonics =
+  { KeyEvent.VK_A, KeyEvent.VK_X, KeyEvent.VK_N };
+
+  /** The Constant PROMPT_NEVER. */
   public final static int PROMPT_NEVER = 2;
-  public final static int PROMPT_ALWAYS = 0;
-  private final static String[] anyEndings = { ".txt", ".km", upgradeExtension };
-  private final static String[] kmEndings = { ".txt" };
-  private final static String[] rmEndings = { ".km", upgradeExtension };
-  private final static String[] binaryEndings = { ".bin", "_obj" };
-}
 
+  /** The Constant PROMPT_ALWAYS. */
+  public final static int PROMPT_ALWAYS = 0;
+
+  /** The Constant anyEndings. */
+  private final static String[] anyEndings =
+  { ".txt", ".km", upgradeExtension };
+
+  /** The Constant kmEndings. */
+  private final static String[] kmEndings =
+  { ".txt" };
+
+  /** The Constant rmEndings. */
+  private final static String[] rmEndings =
+  { ".km", upgradeExtension };
+
+  /** The Constant binaryEndings. */
+  private final static String[] binaryEndings =
+  { ".bin", "_obj" };
+}

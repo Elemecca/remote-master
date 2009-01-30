@@ -48,25 +48,58 @@
 
 package com.hifiremote.decodeir;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class DecodeIRCaller.
+ */
 public class DecodeIRCaller
 {
+    
+    /** The bursts. */
     private int[] bursts;
+    
+    /** The repeat part. */
     private int repeatPart;
+    
+    /** The frequency. */
     private int frequency;
 
+    /** The decoder_ctx. */
     private int[] decoder_ctx = new int[2];
+    
+    /** The device. */
     private int device;
+    
+    /** The sub device. */
     private int subDevice;
+    
+    /** The obc. */
     private int obc;
+    
+    /** The hex. */
     private int hex[] = new int[4];
+    
+    /** The protocol name. */
     private String protocolName = new String("");
+    
+    /** The misc message. */
     private String miscMessage = new String("");
+    
+    /** The error message. */
     private String errorMessage = new String("");
+    
+    /** The loaded. */
     private static boolean loaded = false;
 
+    /**
+     * Instantiates a new decode ir caller.
+     * 
+     * @param folder the folder
+     * 
+     * @throws UnsatisfiedLinkError the unsatisfied link error
+     */
     public DecodeIRCaller( File folder )
       throws UnsatisfiedLinkError
     {
@@ -79,6 +112,11 @@ public class DecodeIRCaller
       }
     }
 
+    /**
+     * Instantiates a new decode ir caller.
+     * 
+     * @throws UnsatisfiedLinkError the unsatisfied link error
+     */
     public DecodeIRCaller()
       throws UnsatisfiedLinkError
     {
@@ -89,31 +127,121 @@ public class DecodeIRCaller
       }
     }
 
+    /**
+     * Sets the bursts.
+     * 
+     * @param b the b
+     * @param r the r
+     */
     public void setBursts( int[] b, int r ) { bursts = b; repeatPart = r; }
+    
+    /**
+     * Sets the frequency.
+     * 
+     * @param f the new frequency
+     */
     public void setFrequency( int f ) { frequency = f; }
+    
+    /**
+     * Inits the decoder.
+     */
     public void initDecoder()
     {
         decoder_ctx[0] = decoder_ctx[1] = 0;
     }
 
+    /**
+     * Decode.
+     * 
+     * @return true, if successful
+     */
     public synchronized boolean decode()
     {
         return decode( decoder_ctx, bursts, repeatPart, frequency );
     }
 
+    /**
+     * Gets the protocol name.
+     * 
+     * @return the protocol name
+     */
     public String getProtocolName() { return protocolName; }
+    
+    /**
+     * Gets the device.
+     * 
+     * @return the device
+     */
     public int getDevice() { return device; }
+    
+    /**
+     * Gets the sub device.
+     * 
+     * @return the sub device
+     */
     public int getSubDevice() { return subDevice; }
+    
+    /**
+     * Gets the oBC.
+     * 
+     * @return the oBC
+     */
     public int getOBC() { return obc; }
+    
+    /**
+     * Gets the hex.
+     * 
+     * @return the hex
+     */
     public int[] getHex() { return hex; }
+    
+    /**
+     * Gets the misc message.
+     * 
+     * @return the misc message
+     */
     public String getMiscMessage() { return miscMessage; }
+    
+    /**
+     * Gets the error message.
+     * 
+     * @return the error message
+     */
     public String getErrorMessage() { return errorMessage; }
+    
+    /**
+     * Decode start.
+     * 
+     * @return the int
+     */
     public int decodeStart() { return decoder_ctx[0] & 0xfffff; }
+    
+    /**
+     * Decode size.
+     * 
+     * @return the int
+     */
     public int decodeSize() { return 2 + (decoder_ctx[1]>>16); }
 
     // native methods
 
+    /**
+     * Gets the version.
+     * 
+     * @return the version
+     */
     public native String getVersion();
+    
+    /**
+     * Decode.
+     * 
+     * @param decoder_ctx the decoder_ctx
+     * @param bursts the bursts
+     * @param r the r
+     * @param freq the freq
+     * 
+     * @return true, if successful
+     */
     private native boolean decode( int[] decoder_ctx, int[] bursts, int r, int freq );
 
 }

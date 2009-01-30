@@ -1,34 +1,65 @@
 package com.hifiremote.jp1;
 
-import javax.swing.table.*;
-import java.util.*;
+import javax.swing.table.AbstractTableModel;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ButtonTableModel.
+ */
 public class ButtonTableModel
   extends AbstractTableModel
 {
+  
+  /** The buttons. */
   private Button[] buttons = null;
+  
+  /** The device upgrade. */
   private DeviceUpgrade deviceUpgrade = null;
+  
+  /** The Constant buttonCol. */
   private static final int buttonCol = 0;
+  
+  /** The Constant functionCol. */
   private static final int functionCol = 1;
+  
+  /** The Constant shiftedCol. */
   private static final int shiftedCol = 2;
+  
+  /** The Constant xShiftedCol. */
   private static final int xShiftedCol = 3;
 
+  /** The column names. */
   private static String[] columnNames =
   { "Button", "Function", "", "" };
-  private static final Class[] columnClasses =
+  
+  /** The Constant columnClasses. */
+  private static final Class<?>[] columnClasses =
   { Button.class, Function.class, Function.class, Function.class };
 
+  /**
+   * Instantiates a new button table model.
+   * 
+   * @param deviceUpgrade the device upgrade
+   */
   public ButtonTableModel( DeviceUpgrade deviceUpgrade )
   {
     this.deviceUpgrade = deviceUpgrade;
   }
   
+  /**
+   * Sets the device upgrade.
+   * 
+   * @param deviceUpgrade the new device upgrade
+   */
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
   {
     this.deviceUpgrade = deviceUpgrade;
     fireTableDataChanged();
   }
 
+  /**
+   * Sets the buttons.
+   */
   public void setButtons()
   {
     if ( deviceUpgrade == null )
@@ -40,6 +71,9 @@ public class ButtonTableModel
     fireTableStructureChanged();
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getRowCount()
+   */
   public int getRowCount()
   {
     if ( buttons == null )
@@ -48,6 +82,9 @@ public class ButtonTableModel
       return buttons.length;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getColumnCount()
+   */
   public int getColumnCount()
   {
     if ( deviceUpgrade == null )
@@ -59,6 +96,9 @@ public class ButtonTableModel
       return 3;
   }
   
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+   */
   public boolean isCellEditable( int row, int col )
   {
     if ( deviceUpgrade == null )
@@ -85,6 +125,9 @@ public class ButtonTableModel
     return false;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getValueAt(int, int)
+   */
   public Object getValueAt( int row, int col )
   {
     if ( row < 0 )
@@ -104,6 +147,9 @@ public class ButtonTableModel
    return null;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+   */
   public void setValueAt( Object value, int row, int col )
   {
     Button button = buttons[ row ];
@@ -144,12 +190,18 @@ public class ButtonTableModel
       fireTableRowsUpdated( otherRow, row );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+   */
   public String getColumnName( int col )
   {
     return columnNames[ col ];
   }
 
-  public Class getColumnClass( int col )
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+   */
+  public Class<?> getColumnClass( int col )
   {
     return columnClasses[ col ];
   }

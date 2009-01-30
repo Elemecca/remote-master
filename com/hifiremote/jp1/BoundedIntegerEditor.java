@@ -1,8 +1,9 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import javax.swing.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTextField;
 
+// TODO: Auto-generated Javadoc
 /**
  * Implements a cell editor that uses a formatted text field
  * to edit Integer values.
@@ -10,15 +11,30 @@ import javax.swing.*;
 public class BoundedIntegerEditor
   extends DefaultCellEditor
 {
+  
+  /** The min. */
   private int min = Integer.MIN_VALUE;
+  
+  /** The max. */
   private int max = Integer.MAX_VALUE;
+  
+  /** The use prefix. */
   boolean usePrefix = false;
 
+  /**
+   * Instantiates a new bounded integer editor.
+   */
   public BoundedIntegerEditor()
   {
     super( new JTextField());
   }
 
+  /**
+   * Instantiates a new bounded integer editor.
+   * 
+   * @param minValue the min value
+   * @param maxValue the max value
+   */
   public BoundedIntegerEditor( int minValue, int maxValue )
   {
     super( new JTextField());
@@ -26,21 +42,39 @@ public class BoundedIntegerEditor
     this.max = maxValue;
   }
 
+  /**
+   * Sets the use prefix.
+   * 
+   * @param flag the new use prefix
+   */
   public void setUsePrefix( boolean flag )
   {
     usePrefix = flag;
   }
 
+  /**
+   * Sets the min.
+   * 
+   * @param min the new min
+   */
   public void setMin( int min )
   {
     this.min = min;
   }
 
+  /**
+   * Sets the max.
+   * 
+   * @param max the new max
+   */
   public void setMax( int max )
   {
     this.max = max;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getCellEditorValue()
+   */
   public Object getCellEditorValue() 
   {
     Object value = super.getCellEditorValue();

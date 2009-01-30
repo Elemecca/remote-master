@@ -1,14 +1,20 @@
 package com.hifiremote.jp1;
 
-import java.awt.Insets;
-import java.awt.event.*;
-import java.awt.datatransfer.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JMenuItem;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class FunctionItem.
+ */
 public class FunctionItem
   extends JMenuItem
 {
+  
+  /**
+   * Instantiates a new function item.
+   * 
+   * @param function the function
+   */
   public FunctionItem( Function function )
   {
     this.function = function;
@@ -21,7 +27,14 @@ public class FunctionItem
     }
   }
 
+  /**
+   * Gets the function.
+   * 
+   * @return the function
+   */
   public Function getFunction(){ return function; }
+  
+  /** The function. */
   private Function function = null;
 }
 

@@ -6,17 +6,36 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexCodeEditor.
+ */
 public class HexCodeEditor
   extends DefaultCellEditor
   implements TableCellEditor, ActionListener, UndoableEditListener, FocusListener
 {
+  
+  /** The button. */
   private JButton button;
+  
+  /** The hex. */
   private Hex hex = new Hex();
+  
+  /** The dialog. */
   private JDialog dialog = null;
+  
+  /** The text area. */
   private JTextArea textArea = new JTextArea();
-  private TextPopupMenu popup = null;
+  
+  /** The preferred width. */
   private int preferredWidth = 0;
 
+  /**
+   * Show dialog.
+   * 
+   * @param c the c
+   * @param text the text
+   */
   private void showDialog( Component c, String text )
   {
     Component root = SwingUtilities.getRoot( c );
@@ -34,7 +53,7 @@ public class HexCodeEditor
     textArea.setText( text );
     textArea.getDocument().addUndoableEditListener( this );
     textArea.addFocusListener( this );
-    popup = new TextPopupMenu( textArea );
+    new TextPopupMenu( textArea );
     Dimension size = textArea.getPreferredSize();
     size.width = preferredWidth;
     textArea.setPreferredSize( size );
@@ -58,11 +77,17 @@ public class HexCodeEditor
     dialog.setVisible( true );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.UndoableEditListener#undoableEditHappened(javax.swing.event.UndoableEditEvent)
+   */
   public void undoableEditHappened( UndoableEditEvent e )
   {
     update();
   }
 
+  /**
+   * Update.
+   */
   private void update()
   {
     textArea.setPreferredSize( null );
@@ -73,6 +98,9 @@ public class HexCodeEditor
     dialog.pack();
   }
 
+  /**
+   * Instantiates a new hex code editor.
+   */
   public HexCodeEditor()
   {
     super( new JTextField());
@@ -88,6 +116,8 @@ public class HexCodeEditor
   /**
    * Handles events from the editor button and from
    * the dialog's OK button.
+   * 
+   * @param e the e
    */
   public void actionPerformed( ActionEvent e )
   {
@@ -102,12 +132,18 @@ public class HexCodeEditor
   }
 
   //Implement the one CellEditor method that AbstractCellEditor doesn't.
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getCellEditorValue()
+   */
   public Object getCellEditorValue()
   {
     return hex;
   }
 
   //Implement the one method defined by TableCellEditor.
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+   */
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int column )
   {
     hex = ( Hex )value;
@@ -117,6 +153,9 @@ public class HexCodeEditor
     return button;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#stopCellEditing()
+   */
   public boolean stopCellEditing()
   {
     System.err.println( "stopCellEditing()" );
@@ -132,6 +171,9 @@ public class HexCodeEditor
     }
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#cancelCellEditing()
+   */
   public void cancelCellEditing()
   {
     System.err.println( "cancelCellEditing()" );
@@ -139,8 +181,14 @@ public class HexCodeEditor
     super.cancelCellEditing();
   }
   
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+   */
   public void focusGained( FocusEvent event ){}
 
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+   */
   public void focusLost( FocusEvent event )
   {
     Component c = event.getOppositeComponent();

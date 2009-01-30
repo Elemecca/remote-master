@@ -11,10 +11,20 @@ import java.util.*;
 import info.clearthought.layout.*;
 import java.beans.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SetupPanel.
+ */
 public class SetupPanel
   extends KMPanel
   implements ActionListener, ItemListener, PropertyChangeListener, DocumentListener, FocusListener, Runnable
 {
+  
+  /**
+   * Instantiates a new setup panel.
+   * 
+   * @param deviceUpgrade the device upgrade
+   */
   public SetupPanel( DeviceUpgrade deviceUpgrade )
   {
     super( "Setup", deviceUpgrade );
@@ -114,6 +124,9 @@ public class SetupPanel
     add( scrollPane, "1, 10, 7, 10" );
   } // SetupPanel
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#update()
+   */
   public void update()
   {
     if ( deviceUpgrade == null )
@@ -145,6 +158,9 @@ public class SetupPanel
     updateInProgress = false;
   }
 
+  /**
+   * Update parameters.
+   */
   public void updateParameters()
   {
     DeviceParameter[] newParameters = deviceUpgrade.getProtocol().getDeviceParameters();
@@ -181,6 +197,9 @@ public class SetupPanel
     }
   }
 
+  /**
+   * Update fixed data.
+   */
   public void updateFixedData()
   {
     Protocol p = deviceUpgrade.getProtocol();
@@ -190,6 +209,9 @@ public class SetupPanel
   }
 
   // ActionListener Methods
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -225,22 +247,36 @@ public class SetupPanel
       updateFixedData();
   } // actionPerformed
 
+  /**
+   * Gets the selected protocol.
+   * 
+   * @return the selected protocol
+   */
   public Protocol getSelectedProtocol()
   {
     Protocol protocol = ( Protocol )protocolList.getSelectedItem();
     return protocol;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#commit()
+   */
   public void commit()
   {
     deviceUpgrade.getProtocol().updateFunctions( deviceUpgrade.getFunctions());
   }
 
+  /**
+   * Update notes.
+   */
   private void updateNotes()
   {
     deviceUpgrade.setNotes( notes.getText());
   }
 
+  /**
+   * Update setup code.
+   */
   private void updateSetupCode()
   {
     int val = (( Integer )setupCode.getValue()).intValue();
@@ -249,6 +285,11 @@ public class SetupPanel
     propertyChangeSupport.firePropertyChange( "setupCode", oldSetupCode, val );
   }
 
+  /**
+   * Doc changed.
+   * 
+   * @param e the e
+   */
   private void docChanged( DocumentEvent e )
   {
     if ( !updateInProgress )
@@ -262,33 +303,51 @@ public class SetupPanel
   }
 
   // DocumentListener
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
+   */
   public void changedUpdate( DocumentEvent e )
   {
     docChanged( e );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
+   */
   public void insertUpdate( DocumentEvent e )
   {
     docChanged( e );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
+   */
   public void removeUpdate( DocumentEvent e )
   {
     docChanged( e );
   }
 
   // FocusListener
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+   */
   public void focusGained( FocusEvent e )
   {
     controlToSelectAll = ( JTextComponent )e.getSource();
     SwingUtilities.invokeLater( this );
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+   */
   public void focusLost( FocusEvent e )
   {
   }
 
   // ItemListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
+   */
   public void itemStateChanged( ItemEvent e )
   {
     if ( !updateInProgress )
@@ -296,6 +355,9 @@ public class SetupPanel
   }
 
   // PropertyChangeListener methods
+  /* (non-Javadoc)
+   * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+   */
   public void propertyChange( PropertyChangeEvent e )
   {
     if ( !updateInProgress )
@@ -305,31 +367,57 @@ public class SetupPanel
   }
 
   // Runnable
+  /* (non-Javadoc)
+   * @see java.lang.Runnable#run()
+   */
   public void run()
   {
     controlToSelectAll.selectAll();
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.Container#addPropertyChangeListener(java.beans.PropertyChangeListener)
+   */
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
     if (( propertyChangeSupport != null ) && ( listener != null ))
       propertyChangeSupport.addPropertyChangeListener( listener );
   }
 
+  /** The setup code. */
   private JFormattedTextField setupCode = null;
-  private JRadioButton useEFC = null;
-  private JRadioButton useOBC = null;
+  
+  /** The protocol list. */
   private JComboBox protocolList = null;
+  
+  /** The protocol id. */
   private JTextField protocolID = null;
+  
+  /** The notes. */
   private JTextArea notes = null;
+  
+  /** The protocol holder. */
   private JPanel protocolHolder = null;
+  
+  /** The fixed data. */
   private JTextField fixedData = null;
+  
+  /** The protocol notes. */
   private JTextArea protocolNotes = null;
+  
+  /** The parameters. */
   private DeviceParameter[] parameters = null;
+  
+  /** The tl. */
   private TableLayout tl;
+  
+  /** The update in progress. */
   private boolean updateInProgress = false;
-  private static DecimalFormat nf = new DecimalFormat( "0000" );
+  
+  /** The control to select all. */
   private JTextComponent controlToSelectAll = null;
+  
+  /** The property change support. */
   private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
 }
 

@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SharpDVDTranslator.
+ */
 public class SharpDVDTranslator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new sharp dvd translator.
+   * 
+   * @param textParms the text parms
+   */
   public SharpDVDTranslator( String[] textParms )
   {
     super( textParms );
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hex, DeviceParameter[] devParms, int onlyIndex )
   {
     int data = 0x70;
@@ -26,6 +39,9 @@ public class SharpDVDTranslator
     insert( hex, 8, 8, data );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms ){}
   
 }

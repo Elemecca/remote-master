@@ -1,28 +1,54 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class EFC5.
+ */
 public class EFC5
   extends EFC
 {
+  
+  /**
+   * Instantiates a new eF c5.
+   * 
+   * @param text the text
+   */
   public EFC5( String text )
   {
     super(( short )0 );
     value = Integer.parseInt( text ) & 0x0FFFF;
   }
 
+  /**
+   * Instantiates a new eF c5.
+   * 
+   * @param value the value
+   */
   public EFC5( int value )
   {
     super(( short )value );
     this.value = value & 0x0FFFF;
   }
 
+  /**
+   * Instantiates a new eF c5.
+   * 
+   * @param hex the hex
+   */
   public EFC5( Hex hex )
   {
     super(( short )0 );
     fromHex( hex );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EFC#getValue()
+   */
   public int getValue(){ return value; }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EFC#toString()
+   */
   public String toString()
   {
     StringBuilder buff = new StringBuilder( 5 );
@@ -34,6 +60,9 @@ public class EFC5
     return buff.toString();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EFC#toHex()
+   */
   public Hex toHex()
   {
     Hex rc = new Hex( 2 );
@@ -41,11 +70,21 @@ public class EFC5
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EFC#toHex(com.hifiremote.jp1.Hex)
+   */
   public void toHex( Hex hex )
   {
     toHex( value, hex );
   }
   
+  /**
+   * To hex.
+   * 
+   * @param val the val
+   * 
+   * @return the hex
+   */
   public static Hex toHex( int val )
   {
     Hex hex = new Hex( 2 );
@@ -53,6 +92,12 @@ public class EFC5
     return hex;
   }
 
+  /**
+   * To hex.
+   * 
+   * @param val the val
+   * @param hex the hex
+   */
   public static void toHex( int val, Hex hex )
   {
     short[] data = hex.getData();
@@ -81,11 +126,21 @@ public class EFC5
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EFC#fromHex(com.hifiremote.jp1.Hex)
+   */
   public void fromHex( Hex hex )
   {
     value = parseHex( hex ) & 0x0FFFF;
   }
   
+  /**
+   * Parses the hex.
+   * 
+   * @param hex the hex
+   * 
+   * @return the short
+   */
   public static short parseHex( Hex hex )
   {
     short[] data = hex.getData();

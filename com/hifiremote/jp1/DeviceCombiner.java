@@ -3,9 +3,21 @@ package com.hifiremote.jp1;
 import java.util.*;
 import java.io.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class DeviceCombiner.
+ */
 public class DeviceCombiner
   extends Protocol
 {
+  
+  /**
+   * Instantiates a new device combiner.
+   * 
+   * @param name the name
+   * @param id the id
+   * @param props the props
+   */
   public DeviceCombiner( String name, Hex id, Properties props )
   {
     super( name, id, props );
@@ -14,12 +26,18 @@ public class DeviceCombiner
       new DeviceCombinerInitializer( devices, ( ChoiceCmdParm )cmdParms[ 0 ]);
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#reset()
+   */
   public void reset()
   {
     devices.clear();
     super.reset();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#setProperties(java.util.Properties)
+   */
   public void setProperties( Properties props )
   {
     System.err.println( "DeviceCombiner.setProperties()" );
@@ -60,12 +78,20 @@ public class DeviceCombiner
     }
   }
 
+  /**
+   * Adds the.
+   * 
+   * @param device the device
+   */
   public void add( CombinerDevice device )
   {
     devices.add( device );
     System.err.println( "DeviceCombiner.add(): device count=" + devices.size());
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#getPanel(com.hifiremote.jp1.DeviceUpgrade)
+   */
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
   {
     if ( panel == null )
@@ -76,8 +102,16 @@ public class DeviceCombiner
     return panel;
   }
 
+  /**
+   * Gets the devices.
+   * 
+   * @return the devices
+   */
   public List< CombinerDevice > getDevices(){ return devices; }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#store(com.hifiremote.jp1.PropertyWriter, com.hifiremote.jp1.Value[])
+   */
   public void store( PropertyWriter out, Value[] vals )
     throws IOException
   {
@@ -105,28 +139,31 @@ public class DeviceCombiner
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#hasCode(com.hifiremote.jp1.Remote)
+   */
   public boolean hasCode( Remote r )
   {
     boolean rc = true;
     Processor p = r.getProcessor();
     String name = p.getName();
-    String version = p.getVersion();
+    String equivalentName = p.getEquivalentName();
     int[] devCombAddresses = r.getDevCombAddresses();
     if ( devCombAddresses == null )
       return false;
 
     if ( getVariantName().equals( "S3C80" ))
     {
-      if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ))
+      if ( !equivalentName.equals( "S3C80" ) && !equivalentName.equals( "S3C80+" ))
         return false;
     }
     else
     {
-      if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ))
+      if ( equivalentName.equals( "S3C80" ) || equivalentName.equals( "S3C80+" ))
         return false;
     }
 
-    if ( name.equals( "S3C80" ) || name.equals( "S3c80+" ))
+    if ( equivalentName.equals( "S3C80" ) || equivalentName.equals( "S3c80+" ))
     {
       if (( devCombAddresses[ 1 ] == -1 ) ||
           ( devCombAddresses[ 2 ] == -1 ) ||
@@ -159,20 +196,23 @@ public class DeviceCombiner
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#getCode(com.hifiremote.jp1.Remote)
+   */
   public Hex getCode( Remote r )
   {
     short[] header = new short[ devices.size() + 1 ];
 
     Processor processor = r.getProcessor();
     String name = processor.getName();
-    String version = processor.getVersion();
+    String equivalentName = processor.getEquivalentName();
     StringBuilder buff = new StringBuilder();
     Hex base = null;
     int[] devComb = r.getDevCombAddresses();
     if ( devComb == null )
       return null;
 
-    if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ) || name.equals( "S3F80" ))
+    if ( equivalentName.equals( "S3C80" ) || equivalentName.equals( "S3C80+" ))
     {
       if (( devComb[ 1 ] == -1 ) ||
           ( devComb[ 5 ] == -1 ) ||
@@ -325,6 +365,13 @@ public class DeviceCombiner
     return new Hex( code );
   }
 
+  /**
+   * Int to string.
+   * 
+   * @param val the val
+   * 
+   * @return the string
+   */
   private String intToString( int val )
   {
     StringBuilder buff = new StringBuilder( 5 );
@@ -334,6 +381,13 @@ public class DeviceCombiner
     return buff.toString();
   }
 
+  /**
+   * Int to string reverse.
+   * 
+   * @param val the val
+   * 
+   * @return the string
+   */
   private String intToStringReverse( int val )
   {
     StringBuilder buff = new StringBuilder( 5 );
@@ -343,6 +397,9 @@ public class DeviceCombiner
     return buff.toString();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#isColumnWidthFixed(int)
+   */
   public boolean isColumnWidthFixed( int col )
   {
     if ( col == 0 )
@@ -351,6 +408,9 @@ public class DeviceCombiner
       return true;
   }
 
+  /** The panel. */
   private DeviceCombinerPanel panel = null;
+  
+  /** The devices. */
   private List< CombinerDevice > devices = new ArrayList< CombinerDevice >();
 }

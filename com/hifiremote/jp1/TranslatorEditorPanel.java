@@ -7,10 +7,18 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class TranslatorEditorPanel.
+ */
 public class TranslatorEditorPanel
   extends ProtocolEditorPanel
   implements ActionListener, TableColumnModelListener, AdjustmentListener, ChangeListener 
 {
+  
+  /**
+   * Instantiates a new translator editor panel.
+   */
   public TranslatorEditorPanel()
   {
     super( "Translator" );
@@ -97,6 +105,9 @@ public class TranslatorEditorPanel
     setText( "Translators are used to store the value a user enters for a parameter in the appropriate bits of the protocol data." );    
   }
 
+  /**
+   * Adjust sizes.
+   */
   private void adjustSizes()
   {
     int h = dataBar.getMinimumSize().height;
@@ -138,6 +149,9 @@ public class TranslatorEditorPanel
     dataBar.setMinimumSize( s );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.ProtocolEditorPanel#update(com.hifiremote.jp1.ProtocolEditorNode)
+   */
   public void update( ProtocolEditorNode aNode )
   {
     node = ( TranslatorEditorNode )aNode;
@@ -167,6 +181,9 @@ public class TranslatorEditorPanel
   }
 
   // ActionListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -179,14 +196,29 @@ public class TranslatorEditorPanel
   }
 
   // TabelColumnModelListener
+  /* (non-Javadoc)
+   * @see javax.swing.event.TableColumnModelListener#columnAdded(javax.swing.event.TableColumnModelEvent)
+   */
   public void columnAdded( TableColumnModelEvent e ){}
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.TableColumnModelListener#columnRemoved(javax.swing.event.TableColumnModelEvent)
+   */
   public void columnRemoved( TableColumnModelEvent e ){}
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.TableColumnModelListener#columnMoved(javax.swing.event.TableColumnModelEvent)
+   */
   public void columnMoved( TableColumnModelEvent e ){}
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.TableColumnModelListener#columnMarginChanged(javax.swing.event.ChangeEvent)
+   */
   public void columnMarginChanged( ChangeEvent e ){}
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.TableColumnModelListener#columnSelectionChanged(javax.swing.event.ListSelectionEvent)
+   */
   public void columnSelectionChanged( ListSelectionEvent e )
   {
     if ( e.getValueIsAdjusting())
@@ -218,6 +250,9 @@ public class TranslatorEditorPanel
   }
 
   // AdjustmentListener
+  /* (non-Javadoc)
+   * @see java.awt.event.AdjustmentListener#adjustmentValueChanged(java.awt.event.AdjustmentEvent)
+   */
   public void adjustmentValueChanged( AdjustmentEvent e )
   {
     int value = e.getValue();
@@ -227,6 +262,9 @@ public class TranslatorEditorPanel
   }
 
   // ChangeListener
+  /* (non-Javadoc)
+   * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
+   */
   public void stateChanged( ChangeEvent e )
   {
     Object source = e.getSource();
@@ -237,48 +275,108 @@ public class TranslatorEditorPanel
     }
   }
  
+  /**
+   * The Class ParmDefaultTableModel.
+   */
   private class ParmDefaultTableModel
     extends AbstractTableModel
   {
+    
+    /**
+     * Instantiates a new parm default table model.
+     * 
+     * @param cols the cols
+     */
     public ParmDefaultTableModel( int cols ){ this.cols = cols; }
+    
+    /**
+     * Sets the cols.
+     * 
+     * @param cols the new cols
+     */
     public void setCols( int cols )
     {
       this.cols = cols;
       fireTableStructureChanged();
     }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getRowCount()
+     */
     public int getRowCount(){ return 1; }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getColumnCount()
+     */
     public int getColumnCount(){ return cols; }
-    public Class getColumnClass( int col ){ return Integer.class; }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+     */
+    public Class<?> getColumnClass( int col ){ return Integer.class; }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getValueAt(int, int)
+     */
     public Object getValueAt( int row, int col )
     {
       return new Integer( cols - col - 1 );
     }
     
+    /** The cols. */
     private int cols;
   }
 
+  /**
+   * The Class DataDefaultTableModel.
+   */
   private class DataDefaultTableModel
     extends ParmDefaultTableModel
   {
+    
+    /**
+     * Instantiates a new data default table model.
+     * 
+     * @param cols the cols
+     */
     public DataDefaultTableModel( int cols )
     {
       super( cols );
     }
 
+    /* (non-Javadoc)
+     * @see com.hifiremote.jp1.TranslatorEditorPanel.ParmDefaultTableModel#getValueAt(int, int)
+     */
     public Object getValueAt( int row, int col )
     {
       return new Integer( col );
     }
   }
 
+  /**
+   * The Class MyScrollBar.
+   */
   private class MyScrollBar
     extends JScrollBar
   {
+    
+    /**
+     * Instantiates a new my scroll bar.
+     * 
+     * @param orientation the orientation
+     * @param value the value
+     * @param extent the extent
+     * @param min the min
+     * @param max the max
+     */
     public MyScrollBar( int orientation, int value, int extent, int min, int max )
     {
       super( orientation, value, extent, min, max );
     }
     
+    /* (non-Javadoc)
+     * @see javax.swing.JScrollBar#getMaximumSize()
+     */
     public Dimension getMaximumSize()
     {
       if ( max != null )
@@ -286,6 +384,9 @@ public class TranslatorEditorPanel
       return super.getMaximumSize();
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.JScrollBar#getMinimumSize()
+     */
     public Dimension getMinimumSize()
     {
       if ( min != null )
@@ -293,16 +394,25 @@ public class TranslatorEditorPanel
       return super.getMinimumSize();
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.JComponent#setMaximumSize(java.awt.Dimension)
+     */
     public void setMaximumSize( Dimension size )
     {
       max = size;
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.JComponent#setMinimumSize(java.awt.Dimension)
+     */
     public void setMinimumSize( Dimension size )
     {
       min = size;
     }
 
+    /* (non-Javadoc)
+     * @see java.awt.Component#setSize(int, int)
+     */
     public void setSize( int width, int height )
     {
       if ( height < min.height )
@@ -316,6 +426,9 @@ public class TranslatorEditorPanel
       super.setSize( width, height );
     }
 
+    /* (non-Javadoc)
+     * @see java.awt.Component#setBounds(int, int, int, int)
+     */
     public void setBounds( int x, int y, int width, int height )
     {
       if ( height < min.height )
@@ -329,17 +442,37 @@ public class TranslatorEditorPanel
       super.setBounds( x, y, width, height );
     }
     
+    /** The max. */
     private Dimension max = null;
+    
+    /** The min. */
     private Dimension min = null;
   }
 
+  /** The node. */
   private TranslatorEditorNode node = null;
+  
+  /** The msb. */
   private JRadioButton msb = null;
+  
+  /** The lsb. */
   private JRadioButton lsb = null;
+  
+  /** The comp. */
   private JCheckBox comp = null;
+  
+  /** The parm table. */
   private JTableX parmTable = null;
+  
+  /** The data box. */
   private Box dataBox = null;
+  
+  /** The data table. */
   private JTableX dataTable = null;
+  
+  /** The data bar. */
   private MyScrollBar dataBar = null;
+  
+  /** The adjustment. */
   private JSpinner adjustment = null;
 }

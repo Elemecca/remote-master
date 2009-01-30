@@ -1,24 +1,48 @@
 package com.hifiremote.jp1;
 
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import java.util.ArrayList;
-import java.util.List;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class FunctionTableModel.
+ */
 public class FunctionTableModel
   extends KMTableModel< Function >
 {
+  
+  /** The protocol. */
   private Protocol protocol = null;
+  
+  /** The remote. */
   private Remote remote = null;
+  
+  /** The Constant rowCol. */
   private final static int rowCol = 0;
+  
+  /** The Constant nameCol. */
   private final static int nameCol = rowCol + 1;
+  
+  /** The Constant efcCol. */
   private final static int efcCol = nameCol + 1;
+  
+  /** The efc5col. */
   private int efc5col = -1;
+  
+  /** The col offset. */
   private int colOffset = efcCol + 1;
+  
+  /** The hex col. */
   private int hexCol = colOffset;
+  
+  /** The notes col. */
   private int notesCol = hexCol + 1;
 
+  /**
+   * Instantiates a new function table model.
+   * 
+   * @param deviceUpgrade the device upgrade
+   */
   public FunctionTableModel( DeviceUpgrade deviceUpgrade )
   {
     super();
@@ -26,6 +50,11 @@ public class FunctionTableModel
       setDeviceUpgrade( deviceUpgrade );
   }
   
+  /**
+   * Sets the device upgrade.
+   * 
+   * @param deviceUpgrade the new device upgrade
+   */
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
   {
     if ( deviceUpgrade == null )
@@ -35,11 +64,20 @@ public class FunctionTableModel
     functionsUpdated();
   }
 
+  /**
+   * Functions updated.
+   */
   public void functionsUpdated()
   {
     fireTableStructureChanged();
   }
 
+  /**
+   * Sets the protocol.
+   * 
+   * @param protocol the protocol
+   * @param remote the remote
+   */
   public void setProtocol( Protocol protocol, Remote remote )
   {
     if (( this.protocol == protocol ) && ( this.remote == remote ))
@@ -61,6 +99,9 @@ public class FunctionTableModel
     fireTableStructureChanged();
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getColumnCount()
+   */
   public int getColumnCount()
   {
     int rc = 5;
@@ -71,6 +112,9 @@ public class FunctionTableModel
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getValueAt(int, int)
+   */
   public Object getValueAt( int row, int col )
   {
     Function function = data.get( row );
@@ -108,6 +152,14 @@ public class FunctionTableModel
     return rc;
   }
 
+  /**
+   * Check function assigned.
+   * 
+   * @param f the f
+   * @param value the value
+   * 
+   * @throws IllegalArgumentException the illegal argument exception
+   */
   public void checkFunctionAssigned( Function f, Object value )
     throws IllegalArgumentException
   {
@@ -122,6 +174,9 @@ public class FunctionTableModel
 //      KeyMapMaster.clearMessage();
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+   */
   public void setValueAt( Object value, int row, int col )
   {
     Function function = data.get( row );
@@ -204,6 +259,9 @@ public class FunctionTableModel
     fireTableRowsUpdated( row, row );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+   */
   public String getColumnName( int col )
   {
     String rc = null;
@@ -224,6 +282,9 @@ public class FunctionTableModel
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
+   */
   public String getColumnPrototypeName( int col )
   {
     String rc = null;
@@ -244,9 +305,12 @@ public class FunctionTableModel
     return rc;
   }
 
-  public Class getColumnClass( int col )
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+   */
+  public Class<?> getColumnClass( int col )
   {
-    Class rc = null;
+    Class<?> rc = null;
     if (( col == nameCol ) || ( col == notesCol ))
       rc = String.class;
     else if ( col == rowCol )
@@ -263,6 +327,9 @@ public class FunctionTableModel
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+   */
   public boolean isCellEditable( int row, int col )
   {
     boolean rc = false;
@@ -276,6 +343,9 @@ public class FunctionTableModel
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
+   */
   public TableCellEditor getColumnEditor( int col )
   {
     if (( remote == null ) || ( protocol == null ) || ( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ))
@@ -290,6 +360,9 @@ public class FunctionTableModel
       return protocol.getColumnEditor( col - colOffset );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
+   */
   public TableCellRenderer getColumnRenderer( int col )
   {
     TableCellRenderer rc = null;
@@ -308,6 +381,9 @@ public class FunctionTableModel
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMTableModel#isColumnWidthFixed(int)
+   */
   public boolean isColumnWidthFixed( int col )
   {
     if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == efcCol ) || ( col == efc5col ) || ( col == hexCol ))

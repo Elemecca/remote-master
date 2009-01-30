@@ -20,8 +20,20 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RemoteConfiguration.
+ */
 public class RemoteConfiguration
 {
+  
+  /**
+   * Instantiates a new remote configuration.
+   * 
+   * @param file the file
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public RemoteConfiguration( File file )
     throws IOException
   {
@@ -34,6 +46,13 @@ public class RemoteConfiguration
     in.close();
   }
 
+  /**
+   * Parses the.
+   * 
+   * @param pr the pr
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public void parse( PropertyReader pr )
     throws IOException
   {
@@ -91,6 +110,15 @@ public class RemoteConfiguration
     }
   }
 
+  /**
+   * Load buffer.
+   * 
+   * @param pr the pr
+   * 
+   * @return the property
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   private Property loadBuffer( PropertyReader pr )
     throws IOException
   {
@@ -169,6 +197,15 @@ public class RemoteConfiguration
     return property;
   }
 
+  /**
+   * Find key move.
+   * 
+   * @param advCodes the adv codes
+   * @param deviceName the device name
+   * @param keyName the key name
+   * 
+   * @return the key move
+   */
   private KeyMove findKeyMove( List< KeyMove > advCodes, String deviceName, String keyName )
   {
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
@@ -187,6 +224,13 @@ public class RemoteConfiguration
     return null;
   }
 
+  /**
+   * Find macro.
+   * 
+   * @param keyName the key name
+   * 
+   * @return the macro
+   */
   private Macro findMacro( String keyName )
   {
     for ( Macro macro : macros )
@@ -200,6 +244,13 @@ public class RemoteConfiguration
     return null;
   }
 
+  /**
+   * Find protocol upgrade.
+   * 
+   * @param pid the pid
+   * 
+   * @return the protocol upgrade
+   */
   private ProtocolUpgrade findProtocolUpgrade( int pid )
   {
     for ( ProtocolUpgrade pu : protocols )
@@ -211,6 +262,14 @@ public class RemoteConfiguration
     return null;
   }
 
+  /**
+   * Find learned signal.
+   * 
+   * @param deviceName the device name
+   * @param keyName the key name
+   * 
+   * @return the learned signal
+   */
   private LearnedSignal findLearnedSignal( String deviceName, String keyName )
   {
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
@@ -229,6 +288,13 @@ public class RemoteConfiguration
     return null;
   }
 
+  /**
+   * Import ir.
+   * 
+   * @param pr the pr
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   private void importIR( PropertyReader pr )
     throws IOException
   {
@@ -379,6 +445,17 @@ public class RemoteConfiguration
     }
   }
 
+  /**
+   * Export advanced code notes.
+   * 
+   * @param codes the codes
+   * @param index the index
+   * @param out the out
+   * 
+   * @return the int
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   private int exportAdvancedCodeNotes( List< ? extends AdvancedCode > codes, int index, PrintWriter out )
     throws IOException
   {
@@ -392,6 +469,13 @@ public class RemoteConfiguration
     return index;
   }
 
+  /**
+   * Export ir.
+   * 
+   * @param file the file
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public void exportIR( File file )
     throws IOException
   {
@@ -472,6 +556,13 @@ public class RemoteConfiguration
     out.close();
   }
 
+  /**
+   * Find device upgrade.
+   * 
+   * @param deviceButton the device button
+   * 
+   * @return the device upgrade
+   */
   private DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
   {
     return findDeviceUpgrade( deviceButton.getDeviceTypeIndex( data ),
@@ -487,6 +578,14 @@ public class RemoteConfiguration
   }
   */
   
+  /**
+   * Find device upgrade.
+   * 
+   * @param deviceTypeIndex the device type index
+   * @param setupCode the setup code
+   * 
+   * @return the device upgrade
+   */
   private DeviceUpgrade findDeviceUpgrade( int deviceTypeIndex, int setupCode )
   {
     for ( DeviceUpgrade deviceUpgrade : devices )
@@ -498,6 +597,13 @@ public class RemoteConfiguration
     return null;
   }
 
+  /**
+   * Find bound device button index.
+   * 
+   * @param upgrade the upgrade
+   * 
+   * @return the int
+   */
   public int findBoundDeviceButtonIndex( DeviceUpgrade upgrade )
   {
     int deviceTypeIndex = upgrade.getDeviceType().getNumber();
@@ -513,12 +619,22 @@ public class RemoteConfiguration
     return -1;
   }
 
+  /**
+   * Instantiates a new remote configuration.
+   * 
+   * @param remote the remote
+   */
   public RemoteConfiguration( Remote remote )
   {
     this.remote = remote;
     data = new short[ remote.getEepromSize()];
   }
 
+  /**
+   * Parses the data.
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public void parseData()
     throws IOException
   {
@@ -540,6 +656,9 @@ public class RemoteConfiguration
     */
   }
 
+  /**
+   * Decode settings.
+   */
   public void decodeSettings()
   {
     Setting[] settings = remote.getSettings();
@@ -547,6 +666,11 @@ public class RemoteConfiguration
       setting.decode( data );
   }
 
+  /**
+   * Gets the special protocols.
+   * 
+   * @return the special protocols
+   */
   public List< SpecialProtocol > getSpecialProtocols()
   {
     // Determine which upgrades are special protocol upgrades
@@ -561,6 +685,11 @@ public class RemoteConfiguration
     return specialUpgrades;
   }
 
+  /**
+   * Decode advanced codes.
+   * 
+   * @return the list< advanced code>
+   */
   private List< AdvancedCode > decodeAdvancedCodes()
   {
     List< AdvancedCode > advCodes = new ArrayList< AdvancedCode >();
@@ -665,6 +794,9 @@ public class RemoteConfiguration
     return advCodes;
   }
 
+  /**
+   * Migrate key moves to device upgrades.
+   */
   private void migrateKeyMovesToDeviceUpgrades()
   {
     for ( Iterator< KeyMove > it = keymoves.iterator(); it.hasNext(); )
@@ -725,6 +857,13 @@ public class RemoteConfiguration
     }
   }
 
+  /**
+   * Gets the device button index.
+   * 
+   * @param upgrade the upgrade
+   * 
+   * @return the device button index
+   */
   public int getDeviceButtonIndex( DeviceUpgrade upgrade )
   {
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
@@ -738,6 +877,13 @@ public class RemoteConfiguration
     return -1;
   }
 
+  /**
+   * Gets the special protocol.
+   * 
+   * @param upgrade the upgrade
+   * 
+   * @return the special protocol
+   */
   public SpecialProtocol getSpecialProtocol( DeviceUpgrade upgrade )
   {
     for ( SpecialProtocol sp : remote.getSpecialProtocols())
@@ -748,6 +894,11 @@ public class RemoteConfiguration
     return null;
   }
 
+  /**
+   * Gets the advanced code bytes used.
+   * 
+   * @return the advanced code bytes used
+   */
   public int getAdvancedCodeBytesUsed()
   {
     AddressRange advCodeRange = remote.getAdvancedCodeAddress();
@@ -770,6 +921,9 @@ public class RemoteConfiguration
     return offset - advCodeRange.getStart();
   }
 
+  /**
+   * Update image.
+   */
   public void updateImage()
   {
     updateSettings();
@@ -779,6 +933,14 @@ public class RemoteConfiguration
     updateCheckSums();
   }
 
+  /**
+   * Update key moves.
+   * 
+   * @param moves the moves
+   * @param offset the offset
+   * 
+   * @return the int
+   */
   private int updateKeyMoves( List< ? extends KeyMove >moves, int offset )
   {
     for ( KeyMove keyMove : moves )
@@ -806,6 +968,11 @@ public class RemoteConfiguration
     return offset;
   }
 
+  /**
+   * Gets the upgrade key moves.
+   * 
+   * @return the upgrade key moves
+   */
   public List< KeyMove > getUpgradeKeyMoves()
   {
     List< KeyMove > rc = new ArrayList< KeyMove >();
@@ -823,6 +990,11 @@ public class RemoteConfiguration
     return rc;
   }
 
+  /**
+   * Update advanced codes.
+   * 
+   * @return the int
+   */
   public int updateAdvancedCodes()
   {
     AddressRange range = remote.getAdvancedCodeAddress();
@@ -861,6 +1033,9 @@ public class RemoteConfiguration
     return offset - range.getStart();
   }
 
+  /**
+   * Update check sums.
+   */
   public void updateCheckSums()
   {
     CheckSum[] sums = remote.getCheckSums();
@@ -868,6 +1043,9 @@ public class RemoteConfiguration
       sums[ i ].setCheckSum( data );
   }
 
+  /**
+   * Update settings.
+   */
   public void updateSettings()
   {
     Setting[] settings = remote.getSettings();
@@ -875,6 +1053,13 @@ public class RemoteConfiguration
       setting.store( data );
   }
 
+  /**
+   * Gets the protocol.
+   * 
+   * @param pid the pid
+   * 
+   * @return the protocol
+   */
   private ProtocolUpgrade getProtocol( int pid )
   {
     for ( ProtocolUpgrade pu : protocols )
@@ -885,6 +1070,14 @@ public class RemoteConfiguration
     return null;
   }
 
+  /**
+   * Gets the limit.
+   * 
+   * @param offset the offset
+   * @param bounds the bounds
+   * 
+   * @return the limit
+   */
   private int getLimit( int offset, int[] bounds )
   {
     int limit = remote.getEepromSize();
@@ -896,6 +1089,9 @@ public class RemoteConfiguration
     return limit;
   }
 
+  /**
+   * Decode upgrades.
+   */
   private void decodeUpgrades()
   {
     AddressRange addr = remote.getUpgradeAddress();
@@ -941,9 +1137,6 @@ public class RemoteConfiguration
 
       offset += 2; // for the next upgrade
     }
-
-    // To keep track of the protocol upgrades that are actually used by device upgrades
-    List< ProtocolUpgrade > usedProtocols = new ArrayList< ProtocolUpgrade >();
 
     // now parse the devices
     offset = deviceTableOffset;
@@ -999,6 +1192,11 @@ public class RemoteConfiguration
     }
   }
 
+  /**
+   * Gets the upgrade code bytes used.
+   * 
+   * @return the upgrade code bytes used
+   */
   public int getUpgradeCodeBytesUsed()
   {
     AddressRange addr = remote.getUpgradeAddress();
@@ -1010,6 +1208,11 @@ public class RemoteConfiguration
     return offset - addr.getStart() - 1;
   }
 
+  /**
+   * Update upgrades.
+   * 
+   * @return the int
+   */
   public int updateUpgrades()
   {
     AddressRange addr = remote.getUpgradeAddress();
@@ -1105,6 +1308,9 @@ public class RemoteConfiguration
     return offset - addr.getStart();
   }
 
+  /**
+   * Decode learned signals.
+   */
   public void decodeLearnedSignals()
   {
     AddressRange addr = remote.getLearnedAddress();
@@ -1125,6 +1331,11 @@ public class RemoteConfiguration
     }
   }
 
+  /**
+   * Gets the learned signal bytes used.
+   * 
+   * @return the learned signal bytes used
+   */
   public int getLearnedSignalBytesUsed()
   {
     AddressRange addr = remote.getLearnedAddress();
@@ -1142,6 +1353,11 @@ public class RemoteConfiguration
     return offset - addr.getStart();
   }
 
+  /**
+   * Update learned signals.
+   * 
+   * @return the int
+   */
   public int updateLearnedSignals()
   {
     AddressRange addr = remote.getLearnedAddress();
@@ -1162,19 +1378,13 @@ public class RemoteConfiguration
     return offset - addr.getStart();
   }
 
-  private void printNote( int index, String text, PrintWriter out )
-    throws IOException
-  {
-    if (( text == null ) || ( text.length() == 0 ))
-      return;
-
-    out.println();
-    out.print( '$' );
-    out.print( toHex( index ));
-    out.print( '=' );
-    out.print( exportNotes( text ));
-  }
-
+  /**
+   * Save.
+   * 
+   * @param file the file
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public void save( File file )
     throws IOException
   {
@@ -1242,6 +1452,13 @@ public class RemoteConfiguration
     out.close();
   }
 
+  /**
+   * Import notes.
+   * 
+   * @param text the text
+   * 
+   * @return the string
+   */
   private String importNotes( String text )
   {
     StringTokenizer st = new StringTokenizer( text, "®" );
@@ -1260,6 +1477,15 @@ public class RemoteConfiguration
     return rc;
   }
 
+  /**
+   * Export notes.
+   * 
+   * @param text the text
+   * 
+   * @return the string
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   private String exportNotes( String text )
     throws IOException
   {
@@ -1276,20 +1502,50 @@ public class RemoteConfiguration
     return buff.toString();
   }
 
+  /**
+   * Gets the remote.
+   * 
+   * @return the remote
+   */
   public Remote getRemote()
   {
     return remote;
   }
 
+  /**
+   * Gets the notes.
+   * 
+   * @return the notes
+   */
   public String getNotes(){ return notes; }
+  
+  /**
+   * Sets the notes.
+   * 
+   * @param text the new notes
+   */
   public void setNotes( String text ){ notes = text; }
 
+  /**
+   * To hex.
+   * 
+   * @param value the value
+   * 
+   * @return the string
+   */
   public static String toHex( int value )
   // Returns an hexadecimal string representation with 4 digits and leading 0s
   {
     return ( Integer.toHexString( 0x10000 | value ).substring( 1 ).toUpperCase());
   }
 
+  /**
+   * To hex.
+   * 
+   * @param value the value
+   * 
+   * @return the string
+   */
   public static String toHex( short value )
   // Returns an hexadecimal string representation with 2 digits and leading 0s
   {
@@ -1303,27 +1559,92 @@ public class RemoteConfiguration
 //    updateAdvCodeArea();
 //  }
 
+  /**
+   * Gets the data.
+   * 
+   * @return the data
+   */
   public short[] getData(){ return data; }
+  
+  /**
+   * Gets the saved data.
+   * 
+   * @return the saved data
+   */
   public short[] getSavedData(){ return savedData; }
+  
+  /**
+   * Gets the key moves.
+   * 
+   * @return the key moves
+   */
   public List< KeyMove > getKeyMoves(){ return keymoves; }
+  
+  /**
+   * Gets the macros.
+   * 
+   * @return the macros
+   */
   public List< Macro > getMacros(){ return macros; }
+  
+  /**
+   * Gets the device upgrades.
+   * 
+   * @return the device upgrades
+   */
   public List< DeviceUpgrade > getDeviceUpgrades(){ return devices; }
+  
+  /**
+   * Gets the protocol upgrades.
+   * 
+   * @return the protocol upgrades
+   */
   public List< ProtocolUpgrade > getProtocolUpgrades(){ return protocols; }
+  
+  /**
+   * Gets the learned signals.
+   * 
+   * @return the learned signals
+   */
   public List< LearnedSignal > getLearnedSignals(){ return learned; }
+  
+  /**
+   * Gets the special functions.
+   * 
+   * @return the special functions
+   */
   public List< SpecialProtocolFunction > getSpecialFunctions(){ return specialFunctions; }
 
+  /** The remote. */
   private Remote remote = null;
+  
+  /** The data. */
   private short[] data = null;
+  
+  /** The saved data. */
   private short[] savedData = null;
 
+  /** The keymoves. */
   private List< KeyMove > keymoves = new ArrayList< KeyMove >();
+  
+  /** The upgrade key moves. */
   private List< KeyMove > upgradeKeyMoves = new ArrayList< KeyMove >();
+  
+  /** The macros. */
   private List< Macro > macros = new ArrayList< Macro >();
+  
+  /** The devices. */
   private List< DeviceUpgrade > devices = new ArrayList< DeviceUpgrade >();
+  
+  /** The protocols. */
   private List< ProtocolUpgrade > protocols = new ArrayList< ProtocolUpgrade >();
+  
+  /** The learned. */
   private List< LearnedSignal > learned = new ArrayList< LearnedSignal >();
+  
+  /** The special functions. */
   private List< SpecialProtocolFunction > specialFunctions = new ArrayList< SpecialProtocolFunction >();
 
-  private boolean changed = false;
+  /** The notes. */
   private String notes = null;
 }

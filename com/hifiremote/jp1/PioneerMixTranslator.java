@@ -1,14 +1,27 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PioneerMixTranslator.
+ */
 public class PioneerMixTranslator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new pioneer mix translator.
+   * 
+   * @param textParms the text parms
+   */
   public PioneerMixTranslator( String[] textParms )
   {
     super( textParms );
   }
 
   // called to store parms into hex data
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hex, DeviceParameter[] devParms, int onlyIndex )
   {
     int flag = extract( hex, 13, 3 );
@@ -52,6 +65,9 @@ public class PioneerMixTranslator
   }
 
   // called to extract parms from hex data
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
     int val = extract( hex, 13, 3 );

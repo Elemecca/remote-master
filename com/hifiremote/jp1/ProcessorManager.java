@@ -2,8 +2,16 @@ package com.hifiremote.jp1;
 
 import java.util.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ProcessorManager.
+ */
 public class ProcessorManager
 {
+  
+  /**
+   * Instantiates a new processor manager.
+   */
   private ProcessorManager()
   {
     processors = new LinkedHashMap< String, Processor >();
@@ -69,6 +77,14 @@ public class ProcessorManager
   }
 
 
+  /**
+   * Gets the processor.
+   * 
+   * @param name the name
+   * @param version the version
+   * 
+   * @return the processor
+   */
   public static Processor getProcessor( String name, String version )
   {
     String lookup = name;
@@ -77,6 +93,13 @@ public class ProcessorManager
     return processorManager.processors.get( lookup );
   }
 
+  /**
+   * Gets the processor.
+   * 
+   * @param text the text
+   * 
+   * @return the processor
+   */
   public static Processor getProcessor( String text )
   {
     String name = "";
@@ -91,16 +114,31 @@ public class ProcessorManager
     return processorManager.processors.get( name );
   }
 
+  /**
+   * Gets the processor names.
+   * 
+   * @return the processor names
+   */
   public static Set< String > getProcessorNames()
   {
     return processorManager.processors.keySet();
   }
 
+  /**
+   * Adds the.
+   * 
+   * @param p the p
+   */
   private void add( Processor p )
   {
     processors.put( p.getFullName(), p );
   }
 
+  /**
+   * Gets the processors.
+   * 
+   * @return the processors
+   */
   public static Processor[] getProcessors()
   {
     Collection< Processor > procs = processorManager.processors.values();
@@ -109,6 +147,9 @@ public class ProcessorManager
     return rc;
   }
 
+  /** The processor manager. */
   private static ProcessorManager processorManager = new ProcessorManager();
+  
+  /** The processors. */
   private LinkedHashMap< String, Processor > processors = null;
 }

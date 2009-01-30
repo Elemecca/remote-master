@@ -1,8 +1,18 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Translator.
+ */
 public class Translator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new translator.
+   * 
+   * @param textParms the text parms
+   */
   public Translator( String[] textParms )
   {
     super( textParms );
@@ -44,6 +54,15 @@ public class Translator
     }
   }
 
+  /**
+   * Instantiates a new translator.
+   * 
+   * @param lsb the lsb
+   * @param comp the comp
+   * @param index the index
+   * @param bits the bits
+   * @param bitOffset the bit offset
+   */
   public Translator( boolean lsb, boolean comp, int index, int bits, int bitOffset )
   {
     super( null );
@@ -54,6 +73,11 @@ public class Translator
     this.bitOffset = bitOffset;
   }
 
+  /**
+   * Adjust style and bits.
+   * 
+   * @param devParms the dev parms
+   */
   private void adjustStyleAndBits( DeviceParameter[] devParms )
   {
     if ( styleIndex != -1 )
@@ -66,6 +90,9 @@ public class Translator
       bits = (( Number )devParms[ bitsIndex ].getValueOrDefault()).intValue();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     adjustStyleAndBits( devParms );
@@ -113,6 +140,9 @@ public class Translator
     insert( hexData, bitOffset, bits, w );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
     adjustStyleAndBits( devParms );
@@ -133,6 +163,9 @@ public class Translator
     parms[ index ] = insert( parms[ index ], lsbOffset, bits, w - adjust );
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString()
   {
     StringBuilder buff = new StringBuilder();
@@ -161,33 +194,137 @@ public class Translator
     return buff.toString();
   }
 
+  /**
+   * Gets the lSB.
+   * 
+   * @return the lSB
+   */
   public boolean getLSB(){ return lsb; }
+  
+  /**
+   * Sets the lSB.
+   * 
+   * @param lsb the new lSB
+   */
   public void setLSB( boolean lsb ){ this.lsb = lsb; }
+  
+  /**
+   * Gets the comp.
+   * 
+   * @return the comp
+   */
   public boolean getComp(){ return comp; }
+  
+  /**
+   * Sets the comp.
+   * 
+   * @param comp the new comp
+   */
   public void setComp( boolean comp ){ this.comp = comp; }
+  
+  /**
+   * Sets the style index.
+   * 
+   * @param index the new style index
+   */
   public void setStyleIndex( int index ){ styleIndex = index; }
+  
+  /**
+   * Gets the index.
+   * 
+   * @return the index
+   */
   public int getIndex(){ return index; }
+  
+  /**
+   * Sets the index.
+   * 
+   * @param newIndex the new index
+   */
   public void setIndex( int newIndex ){ index = newIndex; }
+  
+  /**
+   * Gets the bits.
+   * 
+   * @return the bits
+   */
   public int getBits(){ return bits; }
+  
+  /**
+   * Sets the bits.
+   * 
+   * @param bits the new bits
+   */
   public void setBits( int bits ){ this.bits = bits; }
+  
+  /**
+   * Gets the bits index.
+   * 
+   * @return the bits index
+   */
   public int getBitsIndex(){ return bitsIndex; }
+  
+  /**
+   * Sets the bits index.
+   * 
+   * @param index the new bits index
+   */
   public void setBitsIndex( int index ){ bitsIndex = index; }
+  
+  /**
+   * Gets the bit offset.
+   * 
+   * @return the bit offset
+   */
   public int getBitOffset(){ return bitOffset; }
+  
+  /**
+   * Sets the bit offset.
+   * 
+   * @param newOffset the new bit offset
+   */
   public void setBitOffset( int newOffset ){ bitOffset = newOffset; }
+  
+  /** The lsb. */
   protected boolean lsb = false;
+  
+  /** The comp. */
   protected boolean comp = false;
+  
+  /** The style index. */
   protected int styleIndex = -1;
+  
+  /** The index. */
   protected int index = 0;
+  
+  /** The bits. */
   protected int bits = 8;
+  
+  /** The bits index. */
   protected int bitsIndex = -1;
+  
+  /** The bit offset. */
   protected int bitOffset = 0;
+  
+  /** The lsb offset. */
   protected int lsbOffset = 0;
+  
+  /** The adjust. */
   protected int adjust = 0;
 
+  /** The Constant IndexIndex. */
   protected final static int IndexIndex = 0;
+  
+  /** The Constant BitsIndex. */
   protected final static int BitsIndex = 1;
+  
+  /** The Constant BitOffsetIndex. */
   protected final static int BitOffsetIndex = 2;
+  
+  /** The Constant LsbOffsetIndex. */
   protected final static int LsbOffsetIndex = 3;
+  
+  /** The Constant AdjustOffset. */
   protected final static int AdjustOffset = 4;
 }
 

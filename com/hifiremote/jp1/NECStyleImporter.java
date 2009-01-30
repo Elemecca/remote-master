@@ -1,15 +1,30 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class NECStyleImporter.
+ */
 public class NECStyleImporter
   extends Translator
 {
+  
+  /** The style parm index. */
   int styleParmIndex = 0;
+  
+  /**
+   * Instantiates a new nEC style importer.
+   * 
+   * @param textParms the text parms
+   */
   public NECStyleImporter( String[] textParms )
   {
     super( textParms );
     styleParmIndex = Integer.parseInt( textParms[ 0 ]);
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translator#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     System.err.println( "NECStyleImporter.in" );
@@ -42,6 +57,9 @@ public class NECStyleImporter
     insert( hexData, 15, 1, styleIndex & 1 );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translator#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {}
 }

@@ -1,26 +1,67 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PortDialog.
+ */
 public class PortDialog
   extends JDialog
   implements ActionListener
 {
+  
+  /**
+   * Instantiates a new port dialog.
+   * 
+   * @param owner the owner
+   * @param portNames the port names
+   * @param port the port
+   */
   public PortDialog( JFrame owner, String[] portNames, String port )
   {
     super( owner, "Port Selection", true );
     createGui( owner, portNames, port );
   }
 
+  /**
+   * Instantiates a new port dialog.
+   * 
+   * @param owner the owner
+   * @param portNames the port names
+   * @param port the port
+   */
   public PortDialog( JDialog owner, String[] portNames, String port )
   {
     super( owner, "Port Selection", true );
     createGui( owner, portNames, port );
   }
 
+  /**
+   * Creates the gui.
+   * 
+   * @param owner the owner
+   * @param portNames the port names
+   * @param port the port
+   */
   private void createGui( Component owner, String[] portNames, String port )
   {
     setLocationRelativeTo( owner );
@@ -44,7 +85,12 @@ public class PortDialog
     Box box = Box.createVerticalBox();
     box.add( new JLabel( "Select the desired port:" ));
     box.add( box.createVerticalStrut( 5 ));
-    JPanel panel = new JPanel( new GridLayout( 0, 3, 5, 5 ));
+    int numColumns = 3;
+    if ( portNames.length < 3 )
+      numColumns = portNames.length;
+    if ( numColumns == 0 )
+      numColumns = 1;
+    JPanel panel = new JPanel( new GridLayout( 0, numColumns, 5, 5 ));
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     boolean foundMatch = false;
     for ( int j = 0; j < buttons.length; j++ )
@@ -58,8 +104,8 @@ public class PortDialog
         button.setSelected( true );
         foundMatch = true;
       }
-      if ( text.equals( OTHER ) && (( j % 3 ) == 2 ))
-        panel.add( new JLabel());
+//      if ( text.equals( OTHER ) && (( j % 3 ) == 2 ))
+//        panel.add( new JLabel());
       if ( j == 0 )
       {
         box.add( button );
@@ -105,6 +151,9 @@ public class PortDialog
     setLocation( x, y );
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -128,6 +177,11 @@ public class PortDialog
     }
   }
 
+  /**
+   * Gets the port.
+   * 
+   * @return the port
+   */
   public String getPort()
   {
     if ( OTHER.equals( port ))
@@ -135,17 +189,34 @@ public class PortDialog
     return port;
   }
 
+  /**
+   * Gets the user action.
+   * 
+   * @return the user action
+   */
   public int getUserAction()
   {
     return userAction;
   }
 
+  /** The port. */
   private String port = null;
+  
+  /** The other. */
   private JTextField other = new JTextField( 15 );
+  
+  /** The ok. */
   private JButton ok = null;
+  
+  /** The cancel. */
   private JButton cancel = null;
+  
+  /** The user action. */
   private int userAction = JOptionPane.CANCEL_OPTION;
   
+  /** The Constant AUTODETECT. */
   public final static String AUTODETECT = "Auto-detect";
+  
+  /** The Constant OTHER. */
   public final static String OTHER = "Other:";
 }

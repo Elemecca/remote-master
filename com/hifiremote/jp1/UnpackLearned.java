@@ -1,18 +1,45 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class UnpackLearned.
+ */
 public class UnpackLearned
 {
+  
+  /** The ok. */
   public boolean    ok;
+  
+  /** The error. */
   public String     error;
+  
+  /** The frequency. */
   public int        frequency;
+  
+  /** The bursts. */
   public int[]      bursts;
+  
+  /** The durations. */
   public int[]      durations;
+  
+  /** The one time. */
   public int        oneTime;
+  
+  /** The repeat. */
   public int        repeat;
+  
+  /** The parts. */
   public int[]      parts;
+  
+  /** The part types. */
   public boolean[]  partTypes;
 
 
+  /**
+   * Instantiates a new unpack learned.
+   * 
+   * @param hex the hex
+   */
   public UnpackLearned( Hex hex )
   {
     ok = true;
@@ -31,6 +58,9 @@ public class UnpackLearned
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString()
   {
     int[] charPos = new int[ bursts.length ];
@@ -51,6 +81,13 @@ public class UnpackLearned
     return str.toString();
   }
 
+  /**
+   * Load burst table.
+   * 
+   * @param hex the hex
+   * 
+   * @return the int
+   */
   private int loadBurstTable( Hex hex )
   {
     int burstNum = hex.getData()[2];
@@ -99,6 +136,12 @@ public class UnpackLearned
   }
 
 
+  /**
+   * Load durations.
+   * 
+   * @param hex the hex
+   * @param offset the offset
+   */
   private void loadDurations( Hex hex, int offset )
   {
     int partNdx = 0;
@@ -152,6 +195,8 @@ public class UnpackLearned
     repeat = ( partTypes[partNdx] ) ? parts[partNdx] : 0;
     oneTime = total - repeat;
   }
+  
+  /** The rom bursts. */
   private final int[] romBursts = {
       0x01A3,0x4A81,0x068F,0x0690,0x01A3,0x04F6,0x01A3,0x01A4,                              // 0
       0x00D2,0xAF0C,0x00D2,0x4507,0x0277,0x00D3,0x00D2,0x0278,                              // 8
@@ -177,6 +222,8 @@ public class UnpackLearned
       0x006B,0xFFFF,                                                                        // 186
       0x006B,0x1DFF,0x006B,0x17EC,0x006B,0x11D6,0x006B,0x0BC0,0x006B,0x05AA,                // 188
       0x0013,0x7B5B,0x0013,0x10C2,0x0013,0x0B22 };                                          // 198
+  
+  /** The rom index. */
   private final int[] romIndex =
   {
     48, 56, 64, 74, 86, 8, 98, 16, 22, 30, 144, 150, 158, 108, 118, 130, 0, 38, 168, 170, 180, 186, 188, 198

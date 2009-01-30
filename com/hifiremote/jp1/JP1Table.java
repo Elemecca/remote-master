@@ -1,18 +1,28 @@
 package com.hifiremote.jp1;
 
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.text.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.datatransfer.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class JP1Table.
+ */
 public class JP1Table
   extends JTableX
 {
+  
+  /**
+   * Instantiates a new j p1 table.
+   * 
+   * @param model the model
+   */
   public JP1Table( TableModel model )
   {
     super( model );
@@ -26,7 +36,12 @@ public class JP1Table
     new TextPopupMenu(( JTextComponent )e.getComponent());
   }
 
-  public void initColumns( JP1TableModel model )
+  /**
+   * Inits the columns.
+   * 
+   * @param model the model
+   */
+  public void initColumns( JP1TableModel<?> model )
   {
     TableColumnModel columnModel = getColumnModel();
     TableColumn column;
@@ -34,7 +49,6 @@ public class JP1Table
     int cols = columnModel.getColumnCount();
     for ( int i = 0; i < cols; i++ )
     {
-      boolean isFixed = model.isColumnWidthFixed( i );
       setColumnWidth( i, model.getColumnPrototypeName( i ), model.isColumnWidthFixed( i ), 0 );
       column = columnModel.getColumn( i );
 

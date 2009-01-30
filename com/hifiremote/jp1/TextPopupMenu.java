@@ -7,9 +7,19 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 import java.util.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class TextPopupMenu.
+ */
 public class TextPopupMenu
   extends JPopupMenu
 {
+  
+  /**
+   * Instantiates a new text popup menu.
+   * 
+   * @param comp the comp
+   */
   TextPopupMenu( JTextComponent comp )
   {
     super();
@@ -56,6 +66,9 @@ public class TextPopupMenu
     c.addMouseListener( ml );
   }
 
+  /**
+   * Inits the menu items.
+   */
   private void initMenuItems()
   {
     Action[] actions = c.getActions();
@@ -77,6 +90,14 @@ public class TextPopupMenu
     selectItem = addItem(( Action )h.get( "select-all" ), "Select All" );    
   }
 
+  /**
+   * Adds the item.
+   * 
+   * @param a the a
+   * @param text the text
+   * 
+   * @return the j menu item
+   */
   private JMenuItem addItem( Action a, String text )
   {
     JMenuItem item = new JMenuItem( a );
@@ -85,9 +106,18 @@ public class TextPopupMenu
     return item;
   }
   
+  /** The c. */
   private JTextComponent c = null;
+  
+  /** The copy item. */
   private JMenuItem copyItem = null;
+  
+  /** The cut item. */
   private JMenuItem cutItem = null;
+  
+  /** The paste item. */
   private JMenuItem pasteItem = null;
+  
+  /** The select item. */
   private JMenuItem selectItem = null;
 }

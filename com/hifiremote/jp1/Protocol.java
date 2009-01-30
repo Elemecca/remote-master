@@ -6,8 +6,20 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Protocol.
+ */
 public class Protocol
 {
+  
+  /**
+   * Instantiates a new protocol.
+   * 
+   * @param name the name
+   * @param id the id
+   * @param props the props
+   */
   public Protocol( String name, Hex id, Properties props )
   {
     this.name = name;
@@ -142,10 +154,10 @@ public class Protocol
     if (( cmdParms.length == 0 ) && ( code.size() > 0 ))
     {
       // First figure out how many fixed bytes and cmd bytes there are
-      Set keys = code.keySet();
-      Iterator it = keys.iterator();
-      String key = ( String )it.next();
-      Hex pCode = ( Hex )code.get( key );
+      Set< String > keys = code.keySet();
+      Iterator< String > it = keys.iterator();
+      String key = it.next();
+      Hex pCode = code.get( key );
       int value = pCode.getData()[ 2 ];
       if ( key.equals( "HCS08" ))
         value = pCode.getData()[ 4 ];
@@ -203,14 +215,30 @@ public class Protocol
         translator.setStyleIndex( styleIndex );
         translator.setBitsIndex( cmdBitsIndex );
       }
+      
+      short[] mask = new short[ fixedData.length() ];
+      for ( int i = 0; i < mask.length; ++i )
+        mask[ i ] = 0xFF;
+      
+      fixedDataMask = new Hex( mask );
     }
   }
   
+  /**
+   * Gets the fixed data mask.
+   * 
+   * @return the fixed data mask
+   */
   public Hex getFixedDataMask()
   {
     return fixedDataMask;
   }
 
+  /**
+   * Gets the first processor.
+   * 
+   * @return the first processor
+   */
   public String getFirstProcessor()
   {
     Set< String > keys = code.keySet();
@@ -220,6 +248,11 @@ public class Protocol
     return key;
   }
 
+  /**
+   * Gets the cmd length from code.
+   * 
+   * @return the cmd length from code
+   */
   public int getCmdLengthFromCode()
   {
     String proc = getFirstProcessor();
@@ -227,6 +260,14 @@ public class Protocol
     return getCmdLengthFromCode( proc, code.get( proc ));
   }
 
+  /**
+   * Gets the cmd length from code.
+   * 
+   * @param proc the proc
+   * @param pCode the code
+   * 
+   * @return the cmd length from code
+   */
   public static int getCmdLengthFromCode( String proc, Hex pCode )
   {
     int value = pCode.getData()[ 2 ];
@@ -235,12 +276,25 @@ public class Protocol
     return value & 0x0F;
   }
 
+  /**
+   * Gets the fixed data length from code.
+   * 
+   * @return the fixed data length from code
+   */
   public int getFixedDataLengthFromCode()
   {
     String proc = getFirstProcessor();
     return getFixedDataLengthFromCode( proc, code.get( proc ));
   }
 
+  /**
+   * Gets the fixed data length from code.
+   * 
+   * @param proc the proc
+   * @param pCode the code
+   * 
+   * @return the fixed data length from code
+   */
   public static int getFixedDataLengthFromCode( String proc, Hex pCode )
   {
     int value = pCode.getData()[ 2 ];
@@ -249,6 +303,9 @@ public class Protocol
     return value >> 4;
   }
 
+  /**
+   * Reset.
+   */
   public void reset()
   {
     int len = devParms.length;
@@ -258,8 +315,20 @@ public class Protocol
     setDeviceParms( vals );
   }
 
+  /**
+   * Sets the properties.
+   * 
+   * @param props the new properties
+   */
   public void setProperties( Properties props ){}
 
+  /**
+   * Import upgrade code.
+   * 
+   * @param notes the notes
+   * 
+   * @return the hex
+   */
   public Hex importUpgradeCode( String notes )
   {
     Hex importedCode = null;
@@ -302,11 +371,21 @@ public class Protocol
     return importedCode;
   }
 
+  /**
+   * Gets the panel.
+   * 
+   * @param deviceUpgrade the device upgrade
+   * 
+   * @return the panel
+   */
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
   {
     return null;
   }
 
+  /**
+   * Initialize parms.
+   */
   public void initializeParms()
   {
     if ( cmdParmInit != null )
@@ -318,6 +397,13 @@ public class Protocol
     }
   }
 
+  /**
+   * Needs code.
+   * 
+   * @param remote the remote
+   * 
+   * @return true, if successful
+   */
   public boolean needsCode( Remote remote )
   {
     if ( remote.supportsVariant( id, variantName ))
@@ -326,32 +412,70 @@ public class Protocol
       return true;
   }
 
+  /**
+   * Checks for any code.
+   * 
+   * @return true, if successful
+   */
   public boolean hasAnyCode()
   {
     return !code.isEmpty();
   }
 
+  /**
+   * Checks for code.
+   * 
+   * @param remote the remote
+   * 
+   * @return true, if successful
+   */
   public boolean hasCode( Remote remote )
   {
     return ( getCode( remote ) != null );
   }
 
+  /**
+   * Gets the code.
+   * 
+   * @param remote the remote
+   * 
+   * @return the code
+   */
   public Hex getCode( Remote remote )
   {
     Processor p = remote.getProcessor();
     return ( Hex )code.get( p.getEquivalentName());
   }
 
+  /**
+   * Gets the code.
+   * 
+   * @param p the p
+   * 
+   * @return the code
+   */
   public Hex getCode( Processor p )
   {
     return ( Hex )code.get( p.getEquivalentName());
   }
 
+  /**
+   * Gets the code translators.
+   * 
+   * @param remote the remote
+   * 
+   * @return the code translators
+   */
   public Translate[] getCodeTranslators( Remote remote )
   {
     return ( Translate[] )codeTranslator.get( remote.getProcessor().getEquivalentName());
   }
 
+  /**
+   * Import device parms.
+   * 
+   * @param parms the parms
+   */
   public void importDeviceParms( Value[] parms )
   {
     if ( devImporters != null )
@@ -362,6 +486,13 @@ public class Protocol
     setDeviceParms( parms );
   }
 
+  /**
+   * Import fixed data.
+   * 
+   * @param hex the hex
+   * 
+   * @return the value[]
+   */
   public Value[] importFixedData( Hex hex )
   {
     Value[] vals = getDeviceParmValues();
@@ -370,6 +501,11 @@ public class Protocol
     return vals;
   }
 
+  /**
+   * Sets the device parms.
+   * 
+   * @param parms the new device parms
+   */
   public void setDeviceParms( Value[] parms )
   {
     if ( parms.length != devParms.length )
@@ -389,6 +525,11 @@ public class Protocol
     }
   }
 
+  /**
+   * Gets the device parm values.
+   * 
+   * @return the device parm values
+   */
   public Value[] getDeviceParmValues()
   {
     Value[] rc = new Value[ devParms.length ];
@@ -430,7 +571,12 @@ public class Protocol
 //    return hex2efc( hex, cmdIndex );
 //  }
 //
-  public Hex getDefaultCmd()
+  /**
+ * Gets the default cmd.
+ * 
+ * @return the default cmd
+ */
+public Hex getDefaultCmd()
   {
     Hex rc = null;
     try
@@ -457,62 +603,132 @@ public class Protocol
     return rc;
   }
 
+  /**
+   * Gets the cmd index.
+   * 
+   * @return the cmd index
+   */
   public int getCmdIndex()
   {
     return cmdIndex;
   }
 
+  /**
+   * Sets the cmd index.
+   * 
+   * @param index the new cmd index
+   */
   public void setCmdIndex(  int index )
   {
     cmdIndex = index;
   }
 
+  /**
+   * Gets the device parameters.
+   * 
+   * @return the device parameters
+   */
   public DeviceParameter[] getDeviceParameters()
   {
     return devParms;
   }
 
+  /**
+   * Gets the command parameters.
+   * 
+   * @return the command parameters
+   */
   public CmdParameter[] getCommandParameters()
   {
     return cmdParms;
   }
 
+  /**
+   * Gets the notes.
+   * 
+   * @return the notes
+   */
   public String getNotes()
   {
     return notes;
   }
 
+  /**
+   * Gets the old names.
+   * 
+   * @return the old names
+   */
   public java.util.List< String > getOldNames()
   {
     return oldNames;
   }
 
   // These methods allow adding columns to the Functions Panel
+  /**
+   * Gets the column count.
+   * 
+   * @return the column count
+   */
   public int getColumnCount()
   {
     return cmdParms.length;
   }
 
-  public Class getColumnClass( int col )
+  /**
+   * Gets the column class.
+   * 
+   * @param col the col
+   * 
+   * @return the column class
+   */
+  public Class<?> getColumnClass( int col )
   {
     return cmdParms[ col ].getValueClass();
   }
 
+  /**
+   * Gets the column editor.
+   * 
+   * @param col the col
+   * 
+   * @return the column editor
+   */
   public TableCellEditor getColumnEditor( int col )
   {
     return cmdParms[ col ].getEditor();
   }
 
+  /**
+   * Gets the column renderer.
+   * 
+   * @param col the col
+   * 
+   * @return the column renderer
+   */
   public TableCellRenderer getColumnRenderer( int col )
   {
     return cmdParms[ col ].getRenderer();
   }
 
+  /**
+   * Gets the column name.
+   * 
+   * @param col the col
+   * 
+   * @return the column name
+   */
   public String getColumnName( int col )
   {
     return cmdParms[ col ].getDisplayName();
   }
 
+  /**
+   * Gets the values.
+   * 
+   * @param hex the hex
+   * 
+   * @return the values
+   */
   public Value[] getValues( Hex hex )
   {
     Value[] vals = new Value[ cmdParms.length ];
@@ -527,6 +743,14 @@ public class Protocol
     return vals;
   }
 
+  /**
+   * Gets the value at.
+   * 
+   * @param col the col
+   * @param hex the hex
+   * 
+   * @return the value at
+   */
   public Object getValueAt( int col, Hex hex )
   {
     Value[] vals = getValues( hex );
@@ -539,6 +763,13 @@ public class Protocol
     return cmdParms[ col ].getValue( v.getValue());
   }
 
+  /**
+   * Sets the value at.
+   * 
+   * @param col the col
+   * @param hex the hex
+   * @param value the value
+   */
   public void setValueAt( int col, Hex hex, Object value )
   {
     Value[] vals = getValues( hex );
@@ -547,6 +778,15 @@ public class Protocol
       cmdTranslators[ i ].in( vals, hex, devParms, col );
   }
 
+  /**
+   * Import command.
+   * 
+   * @param hex the hex
+   * @param text the text
+   * @param useOBC the use obc
+   * @param obcIndex the obc index
+   * @param useEFC the use efc
+   */
   public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )
   {
     if ( useEFC )
@@ -555,6 +795,12 @@ public class Protocol
       setValueAt( obcIndex, hex, new Short( text ));
   }
 
+  /**
+   * Import command parms.
+   * 
+   * @param hex the hex
+   * @param text the text
+   */
   public void importCommandParms( Hex hex, String text )
   {
     System.err.println( "Protocol.importCommandParms( " + text + " ), cmdParms.length=" + cmdParms.length );
@@ -589,16 +835,48 @@ public class Protocol
     }
   }
 
+  /**
+   * Checks if is editable.
+   * 
+   * @param col the col
+   * 
+   * @return true, if is editable
+   */
   public boolean isEditable( int col ){ return true; }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString(){ return getName(); }
 
+  /**
+   * Gets the name.
+   * 
+   * @return the name
+   */
   public String getName(){ return name; }
 
+  /**
+   * Gets the iD.
+   * 
+   * @return the iD
+   */
   public Hex getID(){ return id; }
 
+  /**
+   * Gets the alternate pid.
+   * 
+   * @return the alternate pid
+   */
   public Hex getAlternatePID(){ return alternatePID; }
 
+  /**
+   * Gets the iD.
+   * 
+   * @param remote the remote
+   * 
+   * @return the iD
+   */
   public Hex getID( Remote remote )
   {
     if ( alternatePID == null )
@@ -623,8 +901,18 @@ public class Protocol
     return alternatePID;
   }
 
+  /**
+   * Gets the variant name.
+   * 
+   * @return the variant name
+   */
   public String getVariantName(){ return variantName; }
 
+  /**
+   * Gets the diagnostic name.
+   * 
+   * @return the diagnostic name
+   */
   public String getDiagnosticName( )
   {
     String result = "\"" + name + "\" (" + id;
@@ -633,6 +921,13 @@ public class Protocol
     return result + ")";
   }
 
+  /**
+   * Gets the fixed data.
+   * 
+   * @param parms the parms
+   * 
+   * @return the fixed data
+   */
   public Hex getFixedData( Value[] parms )
   {
     Hex temp = null;
@@ -648,9 +943,22 @@ public class Protocol
     return temp;
   }
 
+  /**
+   * Gets the fixed data length.
+   * 
+   * @return the fixed data length
+   */
   public int getFixedDataLength(){ return fixedData.length(); }
 
   // convert the functions defined in this protocol to the new Protocol
+  /**
+   * Convert functions.
+   * 
+   * @param funcs the funcs
+   * @param newProtocol the new protocol
+   * 
+   * @return true, if successful
+   */
   public boolean convertFunctions( java.util.List< Function > funcs, Protocol newProtocol )
   {
     CmdParameter[] newParms = newProtocol.cmdParms;
@@ -782,6 +1090,11 @@ public class Protocol
     return true;
   }
 
+  /**
+   * Update functions.
+   * 
+   * @param funcs the funcs
+   */
   public void updateFunctions( java.util.List< Function > funcs )
   {
     Value[] values = new Value[ cmdParms.length ];
@@ -804,6 +1117,13 @@ public class Protocol
     }
   }
 
+  /**
+   * Different.
+   * 
+   * @param props the props
+   * 
+   * @return the int
+   */
   public int different(Properties props)
   //
   // This is intended to become a fuzzy comparison to help select the best protocol
@@ -844,6 +1164,14 @@ public class Protocol
     return result;
   }
 
+  /**
+   * Store.
+   * 
+   * @param out the out
+   * @param parms the parms
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public void store( PropertyWriter out, Value[] parms )
     throws IOException
   {
@@ -858,48 +1186,114 @@ public class Protocol
       out.print( "FixedData", getFixedData( parms ).toString());
   }
 
+  /**
+   * Gets the device translators.
+   * 
+   * @return the device translators
+   */
   public Translate[] getDeviceTranslators()
   {
     return deviceTranslators;
   }
 
+  /**
+   * Gets the cmd translators.
+   * 
+   * @return the cmd translators
+   */
   public Translate[] getCmdTranslators()
   {
     return cmdTranslators;
   }
 
+  /**
+   * Checks if is column width fixed.
+   * 
+   * @param col the col
+   * 
+   * @return true, if is column width fixed
+   */
   public boolean isColumnWidthFixed( int col )
   {
     return true;
   }
 
+  /**
+   * Gets the key moves only.
+   * 
+   * @return the key moves only
+   */
   public boolean getKeyMovesOnly()
   {
     return keyMovesOnly;
   }
 
+  /** The Constant tooDifferent. */
   public final static int tooDifferent = 0x7FFFFFFF;
 
+  /** The name. */
   protected String name = null;;
+  
+  /** The id. */
   protected Hex id = null;
+  
+  /** The alternate pid. */
   private Hex alternatePID = null;
+  
+  /** The variant name. */
   protected String variantName = null;
+  
+  /** The fixed data. */
   protected Hex fixedData = null;
+  
+  /** The fixed data mask. */
   protected Hex fixedDataMask = null;
+  
+  /** The default cmd. */
   protected Hex defaultCmd = null;
+  
+  /** The cmd index. */
   protected int cmdIndex;
+  
+  /** The dev parms. */
   protected DeviceParameter[] devParms = null;
+  
+  /** The device translators. */
   protected Translate[] deviceTranslators = new Translate[ 0 ];
+  
+  /** The dev import translators. */
   protected Translate[] devImportTranslators = null;
+  
+  /** The cmd parms. */
   protected CmdParameter[] cmdParms = null;
+  
+  /** The cmd translators. */
   protected Translate[] cmdTranslators = null;
+  
+  /** The import cmd translators. */
   protected Translate[] importCmdTranslators = null;
+  
+  /** The dev importers. */
   protected Importer[] devImporters = null;
+  
+  /** The code. */
   protected HashMap< String, Hex > code = new HashMap< String, Hex >( 6 );
+  
+  /** The code translator. */
   protected HashMap< String, Translate[] > codeTranslator = new HashMap< String, Translate[]>( 6 );
+  
+  /** The cmd parm init. */
   protected Initializer[] cmdParmInit = null;
+  
+  /** The notes. */
   protected String notes = null;
+  
+  /** The old names. */
   private java.util.List< String > oldNames = new ArrayList< String >();
+  
+  /** The alt pid override list. */
   private java.util.List< String > altPIDOverrideList = new ArrayList< String >();
+  
+  /** The key moves only. */
   private boolean keyMovesOnly = false;
 }

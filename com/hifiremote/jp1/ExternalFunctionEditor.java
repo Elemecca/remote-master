@@ -1,13 +1,23 @@
 package com.hifiremote.jp1;
 
 import java.awt.Component;
-import javax.swing.*;
-import java.text.*;
-import javax.swing.table.*;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ExternalFunctionEditor.
+ */
 public class ExternalFunctionEditor
   extends DefaultCellEditor
 {
+  
+  /**
+   * Instantiates a new external function editor.
+   */
   public ExternalFunctionEditor()
   {
     super( new JTextField());
@@ -17,6 +27,9 @@ public class ExternalFunctionEditor
     this.max = 255;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+   */
   public Component getTableCellEditorComponent( JTable table, Object value,
                                                 boolean isSelected, int row,
                                                 int col )
@@ -32,6 +45,9 @@ public class ExternalFunctionEditor
     return tf;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getCellEditorValue()
+   */
   public Object getCellEditorValue()
     throws NumberFormatException
   {
@@ -65,7 +81,12 @@ public class ExternalFunctionEditor
     return rc;
   }
 
+  /** The min. */
   private int min;
+  
+  /** The max. */
   private int max;
+  
+  /** The f. */
   private ExternalFunction f;
 }

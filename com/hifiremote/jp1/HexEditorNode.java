@@ -1,12 +1,25 @@
 package com.hifiremote.jp1;
 
-import java.beans.*;
 import java.io.PrintWriter;
 import java.util.Enumeration;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexEditorNode.
+ */
 public abstract class HexEditorNode
   extends ProtocolEditorNode
 {
+  
+  /**
+   * Instantiates a new hex editor node.
+   * 
+   * @param name the name
+   * @param defaultHex the default hex
+   * @param hexName the hex name
+   * @param parmsName the parms name
+   * @param translatorName the translator name
+   */
   public HexEditorNode( String name, Hex defaultHex, String hexName, String parmsName, String translatorName )
   {
      super( name, true );
@@ -20,8 +33,21 @@ public abstract class HexEditorNode
      this.translatorName = translatorName;
   }
 
+  /** The hex. */
   private Hex hex = null;
+  
+  /**
+   * Gets the hex.
+   * 
+   * @return the hex
+   */
   public Hex getHex(){ return hex; }
+  
+  /**
+   * Sets the hex.
+   * 
+   * @param newHex the new hex
+   */
   public void setHex( Hex newHex )
   { 
     if ( newHex == null )
@@ -31,6 +57,9 @@ public abstract class HexEditorNode
     firePropertyChange( "Hex", oldHex, newHex );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.ProtocolEditorNode#print(java.io.PrintWriter)
+   */
   public void print( PrintWriter pw )
   {
     if ( hex != nullHex )
@@ -75,6 +104,9 @@ public abstract class HexEditorNode
     pw.println();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.ProtocolEditorNode#canAddChildren()
+   */
   public boolean canAddChildren()
   {
     if (( hex != nullHex ) && ( hex.length() > 0 ))
@@ -82,8 +114,15 @@ public abstract class HexEditorNode
    return false; 
   }
 
+  /** The null hex. */
   private static Hex nullHex = null;
+  
+  /** The hex name. */
   private String hexName = null;
+  
+  /** The parms name. */
   private String parmsName = null;
+  
+  /** The translator name. */
   private String translatorName = null;
 }

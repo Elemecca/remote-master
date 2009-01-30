@@ -3,8 +3,20 @@ package com.hifiremote.jp1;
 import java.util.StringTokenizer;
 import java.lang.reflect.Constructor;
 
+// TODO: Auto-generated Javadoc
+/**
+ * A factory for creating Translator objects.
+ */
 public class TranslatorFactory
 {
+  
+  /**
+   * Creates a new Translator object.
+   * 
+   * @param text the text
+   * 
+   * @return the translate[]
+   */
   public static Translate[] createTranslators( String text )
   {
     StringTokenizer st = new StringTokenizer( text );
@@ -33,11 +45,12 @@ public class TranslatorFactory
         if ( name.indexOf( '.' ) == -1 )
           name = "com.hifiremote.jp1." + name;
 
-        Class cl = Class.forName( name );
-        Class[] classes = { String[].class };
-        Constructor ct = cl.getConstructor( classes );
+        Class<?> cl = Class.forName( name );
+        Class< ? extends Translate > cl2 = cl.asSubclass( Translate.class );
+        Class<?>[] classes = { String[].class };
+        Constructor< ? extends Translate > ct = cl2.getConstructor( classes );
         Object[] ctParms = { parms };
-        translators[ i ] = ( Translate )ct.newInstance( ctParms );
+        translators[ i ] = ct.newInstance( ctParms );
       }
       catch ( Exception e )
       {

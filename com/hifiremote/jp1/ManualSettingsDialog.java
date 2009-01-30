@@ -1,34 +1,86 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import java.text.*;
-import java.beans.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
-import info.clearthought.layout.*;
+import info.clearthought.layout.TableLayout;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ManualSettingsDialog.
+ */
 public class ManualSettingsDialog
   extends JDialog
   implements ActionListener, PropertyChangeListener, DocumentListener
 {
+  
+  /**
+   * Instantiates a new manual settings dialog.
+   * 
+   * @param owner the owner
+   * @param protocol the protocol
+   */
   public ManualSettingsDialog( JDialog owner, ManualProtocol protocol )
   {
     super( owner, "Manual Settings", true );
     createGui( owner, protocol );
   }
+  
+  /**
+   * Instantiates a new manual settings dialog.
+   * 
+   * @param owner the owner
+   * @param protocol the protocol
+   */
   public ManualSettingsDialog( JFrame owner, ManualProtocol protocol )
   {
     super( owner, "Manual Settings", true );
     createGui( owner, protocol );
   }
 
+  /**
+   * Creates the gui.
+   * 
+   * @param owner the owner
+   * @param protocol the protocol
+   */
   private void createGui( Component owner, ManualProtocol protocol )
   {
     setLocationRelativeTo( owner );
@@ -39,7 +91,6 @@ public class ManualSettingsDialog
 
     double b = 5;        // space between rows and around border
     double c = 10;       // space between columns
-    double f = TableLayout.FILL;
     double pr = TableLayout.PREFERRED;
     double size[][] =
     {
@@ -189,20 +240,9 @@ public class ManualSettingsDialog
     setLocation( x, y );
   }
 
-  private MaskFormatter createMaskFormatter( String mask )
-  {
-    MaskFormatter f = null;
-    try
-    {
-      f = new MaskFormatter( "HH HH" );
-    }
-    catch (ParseException e)
-    {
-      e.printStackTrace( System.err );
-    }
-    return f;
-  }
-
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -260,6 +300,11 @@ public class ManualSettingsDialog
     }
   }
 
+  /**
+   * Gets the protocol.
+   * 
+   * @return the protocol
+   */
   public ManualProtocol getProtocol()
   {
     if ( userAction != JOptionPane.OK_OPTION )
@@ -275,6 +320,9 @@ public class ManualSettingsDialog
   }
 
   // PropertyChangeListener methods
+  /* (non-Javadoc)
+   * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+   */
   public void propertyChange( PropertyChangeEvent e )
   {
     Object source = e.getSource();
@@ -287,32 +335,76 @@ public class ManualSettingsDialog
   }
 
   // DocumentListener methods
+  /**
+   * Document changed.
+   * 
+   * @param e the e
+   */
   public void documentChanged( DocumentEvent e )
   {
     String text = name.getText();
     protocol.setName( text );
   }
+  
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
+   */
   public void changedUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
+  
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
+   */
   public void insertUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
+  
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
+   */
   public void removeUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
 
+  /**
+   * The Class CodeTableModel.
+   */
   public class CodeTableModel
     extends AbstractTableModel
   {
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getRowCount()
+     */
     public int getRowCount(){ return procs.length; }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getColumnCount()
+     */
     public int getColumnCount(){ return colNames.length; }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+     */
     public String getColumnName( int col ){ return colNames[ col ]; }
-    public Class getColumnClass( int col ){ return classes[ col ]; }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+     */
+    public Class<?> getColumnClass( int col ){ return classes[ col ]; }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+     */
     public boolean isCellEditable( int row, int col ){ return ( col == 1 ); }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getValueAt(int, int)
+     */
     public Object getValueAt( int row, int col )
     {
       if ( col == 0 )
@@ -320,6 +412,10 @@ public class ManualSettingsDialog
       else
         return protocol.getCode( procs[ row ]);
     }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+     */
     public void setValueAt( Object value, int row, int col )
     {
       if ( col == 1 )
@@ -347,6 +443,11 @@ public class ManualSettingsDialog
     }
   }
 
+  /**
+   * Import protocol code.
+   * 
+   * @param string the string
+   */
   private void importProtocolCode( String string )
   {
     StringTokenizer st = new StringTokenizer( string, "\n" );
@@ -401,30 +502,58 @@ public class ManualSettingsDialog
     }
   }
 
+  /** The protocol. */
   private ManualProtocol protocol = null;
 
+  /** The code model. */
   private CodeTableModel codeModel = null;
+  
+  /** The code table. */
   private JTableX codeTable = null;
+  
+  /** The device model. */
   private ParameterTableModel deviceModel = null;
+  
+  /** The device table. */
   private JTableX deviceTable = null;
+  
+  /** The command model. */
   private ParameterTableModel commandModel = null;
+  
+  /** The command table. */
   private JTableX commandTable = null;
 
+  /** The name. */
   private JTextField name = null;
+  
+  /** The pid. */
   private JFormattedTextField pid = null;
+  
+  /** The raw hex data. */
   private JTextField rawHexData = null;
 
+  /** The import button. */
   private JButton importButton = null;
 
+  /** The view. */
   private JButton view = null;
+  
+  /** The ok. */
   private JButton ok = null;
+  
+  /** The cancel. */
   private JButton cancel = null;
+  
+  /** The user action. */
   private int userAction = JOptionPane.CANCEL_OPTION;
 //  private final static Object[] typeChoices = { "Numeric entry", "Drop-down list", "Check-box" };
-  private final static Object[] bitChoices = { "8", "7", "6", "5", "4", "3", "2", "1" };
-  private final static Object[] styleChoices = { "MSB", "MSB-Comp", "LSB", "LSB-Comp" };
-  private final static String[] colNames = { "Processor", "Protocol Code" };
-  private final static Class[] classes = { Processor.class, Hex.class };
+  /** The Constant colNames. */
+private final static String[] colNames = { "Processor", "Protocol Code" };
+  
+  /** The Constant classes. */
+  private final static Class<?>[] classes = { Processor.class, Hex.class };
+  
+  /** The procs. */
   private static Processor[] procs = new Processor[ 0 ];
 
 

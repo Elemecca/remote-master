@@ -1,23 +1,35 @@
 package com.hifiremote.jp1;
 
-import java.beans.*;
-import java.io.PrintWriter;
-import java.util.Enumeration;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class FixedDataEditorNode.
+ */
 public class FixedDataEditorNode
   extends HexEditorNode
 {
+  
+  /**
+   * Instantiates a new fixed data editor node.
+   * 
+   * @param length the length
+   */
   public FixedDataEditorNode( int length )
   {
     super( "Device Parameters", null, "FixedData=", "DevParms=", "DeviceTranslator=" );
-    this.length = length;
-  }
+ }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.ProtocolEditorNode#createChild()
+   */
   public ProtocolEditorNode createChild()
   {
     return new DevParmEditorNode();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.ProtocolEditorNode#getEditingPanel()
+   */
   public ProtocolEditorPanel getEditingPanel()
   {
     if ( editingPanel == null )
@@ -25,13 +37,17 @@ public class FixedDataEditorNode
     return editingPanel;
   }
 
+  /**
+   * Sets the length.
+   * 
+   * @param length the new length
+   */
   public void setLength( int length )
   {
-    this.length = length;
     if ( editingPanel != null )
       editingPanel.setLength( length );
   }
   
+  /** The editing panel. */
   private static FixedDataEditorPanel editingPanel = null;
-  private int length = 0;
 }

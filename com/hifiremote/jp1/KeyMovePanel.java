@@ -1,19 +1,32 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.text.*;
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.text.*;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class KeyMovePanel.
+ */
 public class KeyMovePanel
   extends RMTablePanel< KeyMove >
 {
+  
+  /**
+   * Instantiates a new key move panel.
+   */
   public KeyMovePanel()
   {
     super( new KeyMoveTableModel());
   }
 
+  /**
+   * Sets the.
+   * 
+   * @param remoteConfig the remote config
+   */
   public void set( RemoteConfiguration remoteConfig )
   {
     (( KeyMoveTableModel )model ).set( remoteConfig );
@@ -27,6 +40,9 @@ public class KeyMovePanel
     th.repaint();
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.RMTablePanel#createRowObject(java.lang.Object)
+   */
   protected KeyMove createRowObject( KeyMove baseKeyMove )
   {
     return KeyMoveDialog.showDialog(( JFrame )SwingUtilities.getRoot( this ), baseKeyMove, (( KeyMoveTableModel )model ).getRemoteConfig());

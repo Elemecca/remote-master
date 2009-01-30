@@ -5,8 +5,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.File;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RDFReader.
+ */
 public class RDFReader
 {
+  
+  /**
+   * Instantiates a new rDF reader.
+   * 
+   * @param file the file
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public RDFReader( File file )
     throws IOException
   {
@@ -14,6 +26,13 @@ public class RDFReader
     in = new BufferedReader( new FileReader( file ));
   }
 
+  /**
+   * Read line.
+   * 
+   * @return the string
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public String readLine()
     throws IOException
   {
@@ -35,6 +54,15 @@ public class RDFReader
     return rc;
   }
 
+  /**
+   * Parses the number.
+   * 
+   * @param text the text
+   * 
+   * @return the int
+   * 
+   * @throws Exception the exception
+   */
   public int parseNumber( String text )
     throws Exception
   {
@@ -62,15 +90,30 @@ public class RDFReader
     return rc;
   }
 
+  /**
+   * Gets the line number.
+   * 
+   * @return the line number
+   */
   public int getLineNumber(){ return lineNumber; }
 
+  /**
+   * Close.
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public void close()
     throws IOException
   {
     in.close();
   }
 
+  /** The file name. */
   private String fileName;
+  
+  /** The line number. */
   private int lineNumber = 0;
+  
+  /** The in. */
   private BufferedReader in = null;
 }

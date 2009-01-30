@@ -1,25 +1,60 @@
 package com.hifiremote.jp1;
 
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.text.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.datatransfer.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.util.StringTokenizer;
 
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.TransferHandler;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RMTablePanel.
+ */
 public abstract class RMTablePanel< E >
   extends RMPanel
   implements ActionListener, ListSelectionListener
 {
+  
+  /**
+   * Instantiates a new rM table panel.
+   * 
+   * @param model the model
+   */
   public RMTablePanel( JP1TableModel< E > model )
   {
     this( model, BorderLayout.CENTER );
   }
   
+  /**
+   * Instantiates a new rM table panel.
+   * 
+   * @param tableModel the table model
+   * @param location the location
+   */
   public RMTablePanel( JP1TableModel< E > tableModel, String location )
   {
     super();
@@ -72,7 +107,6 @@ public abstract class RMTablePanel< E >
       public boolean importData( JComponent c, Transferable t )
       {
         boolean rc = false;
-        DataFlavor[] flavors = t.getTransferDataFlavors();
         if ( t.isDataFlavorSupported( DataFlavor.stringFlavor ))
         {
           try
@@ -126,7 +160,7 @@ public abstract class RMTablePanel< E >
                 }
                 prevToken = token;
 
-                Class aClass = sorter.getColumnClass( modelCol );
+                Class<?> aClass = sorter.getColumnClass( modelCol );
                 if ( aClass == String.class )
                 {
                   if (( token != null ) &&
@@ -257,7 +291,6 @@ public abstract class RMTablePanel< E >
         {
           finishEditing();
           popupRow = table.rowAtPoint( e.getPoint());
-          popupCol = table.columnAtPoint( e.getPoint());
           popup.show( table, e.getX(), e.getY());
           return true;
         }
@@ -324,6 +357,9 @@ public abstract class RMTablePanel< E >
     buttonPanel.add( downButton );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.JComponent#setFont(java.awt.Font)
+   */
   public void setFont( Font aFont )
   {
     super.setFont( aFont );
@@ -334,6 +370,9 @@ public abstract class RMTablePanel< E >
     table.initColumns( model );
   }
 
+  /**
+   * Finish editing.
+   */
   private void finishEditing()
   {
     int editRow = table.getEditingRow();
@@ -346,16 +385,50 @@ public abstract class RMTablePanel< E >
     }
   }
 
+  /**
+   * Creates the row object.
+   * 
+   * @param baseObject the base object
+   * 
+   * @return the e
+   */
   protected abstract E createRowObject( E baseObject );
+  
+  /**
+   * Gets the row object.
+   * 
+   * @param row the row
+   * 
+   * @return the row object
+   */
   protected E getRowObject( int row )
   {
     if ( row != -1 )
       return model.getRow( sorter.modelIndex( row ));
     return null;
   }
+  
+  /**
+   * Can delete.
+   * 
+   * @param o the o
+   * 
+   * @return true, if successful
+   */
   protected boolean canDelete( Object o ){ return true; }
+  
+  /**
+   * Do not delete.
+   * 
+   * @param o the o
+   */
   protected void doNotDelete( Object o ){}
   
+  /**
+   * Edits the row object.
+   * 
+   * @param row the row
+   */
   protected void editRowObject( int row )
   {
     E o = createRowObject( getRowObject( row ));
@@ -364,24 +437,24 @@ public abstract class RMTablePanel< E >
   }
 
   // Interface ActionListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     finishEditing();
     int row = 0;
-    int col = 0;
     boolean select = false;
     Object source = e.getSource();
     if ( source.getClass() == JButton.class )
     {
       row = table.getSelectedRow();
-      col = table.getSelectedColumn();
       if ( row != -1 )
         select = true;
     }
     else
     {
       row = popupRow;
-      col = popupCol;
       if ( table.isRowSelected( row ))
         select = true;
     }
@@ -476,6 +549,9 @@ public abstract class RMTablePanel< E >
   }
 
   // Interface ListSelectionListener
+  /* (non-Javadoc)
+   * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+   */
   public void valueChanged( ListSelectionEvent e )
   {
     if ( !e.getValueIsAdjusting() )
@@ -499,35 +575,75 @@ public abstract class RMTablePanel< E >
     }
   }
 
+  /**
+   * Commit.
+   */
   public void commit()
   {
     finishEditing();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
+   */
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
     if (( model != null ) && ( listener != null ))
       model.addPropertyChangeListener( listener );
   }
   
+  /**
+   * Gets the model.
+   * 
+   * @return the model
+   */
   public JP1TableModel< E > getModel(){ return model; }
 
+  /** The table. */
   protected JP1Table table = null;
+  
+  /** The model. */
   protected JP1TableModel< E > model = null;
+  
+  /** The sorter. */
   protected TableSorter sorter = null;
+  
+  /** The button panel. */
   protected JPanel buttonPanel = null;
+  
+  /** The edit button. */
   private JButton editButton = null;
+  
+  /** The new button. */
   private JButton newButton = null;
+  
+  /** The clone button. */
   private JButton cloneButton = null;
+  
+  /** The delete button. */
   private JButton deleteButton = null;
+  
+  /** The up button. */
   private JButton upButton = null;
+  
+  /** The down button. */
   private JButton downButton = null;
+  
+  /** The popup row. */
   private int popupRow = 0;
-  private int popupCol = 0;
+  
+  /** The popup. */
   protected JPopupMenu popup = null;
+  
+  /** The edit item. */
   private JMenuItem editItem = null;
+  
+  /** The new item. */
   private JMenuItem newItem = null;
+  
+  /** The clone item. */
   private JMenuItem cloneItem = null;
+  
+  /** The delete item. */
   private JMenuItem deleteItem = null;
-  private final static Class[] classes = { String.class };
 }

@@ -1,15 +1,25 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.beans.*;
-import java.text.*;
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.text.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.beans.PropertyChangeListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class GeneralPanel.
+ */
 public class GeneralPanel
   extends RMPanel
 {
+  
+  /**
+   * Instantiates a new general panel.
+   */
   public GeneralPanel()
   {
     JPanel panel = new JPanel( new BorderLayout( 5, 0 ));
@@ -62,6 +72,11 @@ public class GeneralPanel
     add( scrollPane, BorderLayout.CENTER );
   }
 
+  /**
+   * Sets the.
+   * 
+   * @param remoteConfig the remote config
+   */
   public void set( RemoteConfiguration remoteConfig )
   {
     deviceModel.set( remoteConfig );
@@ -71,6 +86,9 @@ public class GeneralPanel
       notes.setText( remoteConfig.getNotes());
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
+   */
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
     if ( listener != null )
@@ -82,8 +100,13 @@ public class GeneralPanel
     }
   }
   
+  /** The device model. */
   private DeviceButtonTableModel deviceModel = new DeviceButtonTableModel();
+  
+  /** The setting model. */
   private SettingsTableModel settingModel = new SettingsTableModel();
+  
+  /** The notes. */
   private JTextArea notes = null;
 }
   

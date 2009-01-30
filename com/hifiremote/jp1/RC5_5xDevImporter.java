@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RC5_5xDevImporter.
+ */
 public class RC5_5xDevImporter
   extends Importer
 {
+  
+  /**
+   * Instantiates a new r c5_5x dev importer.
+   * 
+   * @param textParms the text parms
+   */
   public RC5_5xDevImporter( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Importer#convertParms(com.hifiremote.jp1.Value[])
+   */
   public Value[] convertParms( Value[] parms )
   {
     Value[] outParms = new Value[ 2 * parms.length ];
@@ -33,7 +46,6 @@ public class RC5_5xDevImporter
           Value flag = zero;
           for ( int j = i - 1; ( j >= 0 ) && !match; j-- )
           {
-            Value prev = parms[ j ];
             if ( parms[ j ] == null )
               continue;
             if ( parms[ j ].getValue().equals( value ))

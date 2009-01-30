@@ -4,26 +4,53 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ClassPathAdder.
+ */
 public class ClassPathAdder
 {
-  private static final Class[] classes = new Class[]{ URL.class };
+  
+  /** The Constant classes. */
+  private static final Class<?>[] classes = new Class<?>[]{ URL.class };
 
+  /**
+   * Adds the file.
+   * 
+   * @param name the name
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static void addFile( String name ) throws IOException
   {
     addFile( new File( name ));
   }
 
+  /**
+   * Adds the file.
+   * 
+   * @param file the file
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static void addFile( File file )
     throws IOException
   {
-    addURL( file.toURL());
+    addURL( file.toURI().toURL());
   }
 
+  /**
+   * Adds the url.
+   * 
+   * @param url the url
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static void addURL( URL url )
     throws IOException
   {
     URLClassLoader sysloader = ( URLClassLoader )ClassLoader.getSystemClassLoader();
-    Class sysclass = URLClassLoader.class;
+    Class<?> sysclass = URLClassLoader.class;
 
     try
     {
@@ -39,20 +66,34 @@ public class ClassPathAdder
     }
   }
 
+  /**
+   * Adds the files.
+   * 
+   * @param files the files
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static void addFiles( File[] files )
     throws IOException
   {
     URL[] urls = new URL[ files.length ];
     for ( int i = 0; i < files.length; ++i )
-      urls[ i ] = files[ i ].toURL();
+      urls[ i ] = files[ i ].toURI().toURL();
     addURLs( urls );
   }
 
+  /**
+   * Adds the ur ls.
+   * 
+   * @param urls the urls
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static void addURLs( URL[] urls )
     throws IOException
   {
     URLClassLoader sysloader = ( URLClassLoader )ClassLoader.getSystemClassLoader();
-    Class sysclass = URLClassLoader.class;
+    Class<?> sysclass = URLClassLoader.class;
     Object[] parms = new Object[ 1 ];
 
     try

@@ -1,17 +1,36 @@
 package com.hifiremote.jp1;
 
 import java.awt.Component;
-import javax.swing.*;
-import javax.swing.table.*;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JTable;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ChoiceEditor.
+ */
 public class ChoiceEditor
   extends DefaultCellEditor
 {
+  
+  /**
+   * Instantiates a new choice editor.
+   * 
+   * @param choices the choices
+   */
   public ChoiceEditor( Choice[] choices )
   {
     this( choices, true );
   }
 
+  /**
+   * Instantiates a new choice editor.
+   * 
+   * @param choices the choices
+   * @param allowNull the allow null
+   */
   public ChoiceEditor( Choice[] choices, boolean allowNull )
   {
     super( new JComboBox());
@@ -25,6 +44,9 @@ public class ChoiceEditor
     initialize();
   }
 
+  /**
+   * Initialize.
+   */
   public void initialize()
   {
     int visibleCount = 0;
@@ -55,6 +77,9 @@ public class ChoiceEditor
     comboBox.setModel( new DefaultComboBoxModel( temp ));
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getCellEditorValue()
+   */
   public Object getCellEditorValue()
   {
     Choice temp = ( Choice )super.getCellEditorValue();
@@ -64,12 +89,15 @@ public class ChoiceEditor
       return temp;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+   */
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int col )
   {
     System.err.println( "ChoiceEditor.getTableCellEditorComponent(), value=" + value + ", row=" + row );
     if ( value != null )
     {
-      Class c = value.getClass();
+      Class<?> c = value.getClass();
       if ( c == String.class )
       {
         for ( int i = 0; i < choices.length; i++ )
@@ -90,7 +118,12 @@ public class ChoiceEditor
     return comboBox;
   }
 
+  /** The combo box. */
   private JComboBox comboBox = null;
+  
+  /** The choices. */
   private Choice[] choices = null;
+  
+  /** The adjust. */
   private int adjust;
 }

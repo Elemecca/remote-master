@@ -1,19 +1,34 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import javax.swing.border.*;
-import java.awt.color.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.Component;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RowNumberRenderer.
+ */
 public class RowNumberRenderer
   extends DefaultTableCellRenderer
 {
+  
+  /**
+   * Instantiates a new row number renderer.
+   */
   public RowNumberRenderer()
   {
     this( false );
   }
 
+  /**
+   * Instantiates a new row number renderer.
+   * 
+   * @param useHex the use hex
+   */
   public RowNumberRenderer( boolean useHex )
   {
     JButton b = new JButton();
@@ -25,6 +40,9 @@ public class RowNumberRenderer
     this.useHex = useHex;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.DefaultTableCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
+   */
   public Component getTableCellRendererComponent( JTable table, Object value, 
                                                   boolean isSelected, boolean hasFocus,
                                                   int row, int col )
@@ -34,5 +52,6 @@ public class RowNumberRenderer
     return super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
   }
 
+  /** The use hex. */
   private boolean useHex = false;
 }

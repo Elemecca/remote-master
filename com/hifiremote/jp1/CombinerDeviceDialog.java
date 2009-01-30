@@ -1,31 +1,82 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
-import javax.swing.text.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import info.clearthought.layout.*;
+import info.clearthought.layout.TableLayout;
+import info.clearthought.layout.TableLayoutConstraints;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class CombinerDeviceDialog.
+ */
 public class CombinerDeviceDialog
   extends JDialog
   implements ActionListener, ItemListener, DocumentListener, FocusListener, Runnable
 {
+  
+  /**
+   * Instantiates a new combiner device dialog.
+   * 
+   * @param owner the owner
+   * @param dev the dev
+   * @param r the r
+   */
   public CombinerDeviceDialog( JFrame owner, CombinerDevice dev, Remote r )
   {
     super( owner, "Combiner Device", true );
     createGui( owner, dev, r );
   }
 
+  /**
+   * Instantiates a new combiner device dialog.
+   * 
+   * @param owner the owner
+   * @param dev the dev
+   * @param r the r
+   */
   public CombinerDeviceDialog( JDialog owner, CombinerDevice dev, Remote r )
   {
     super( owner, "Combiner Device", true );
     createGui( owner, dev, r );
   }
 
+  /**
+   * Creates the gui.
+   * 
+   * @param owner the owner
+   * @param dev the dev
+   * @param r the r
+   */
   private void createGui( Component owner, CombinerDevice dev, Remote r )
   {
     setLocationRelativeTo( owner );
@@ -43,7 +94,6 @@ public class CombinerDeviceDialog
     double b = 10;       // space around border
     double i = 5;        // space between rows
     double v = 20;       // space between groupings
-    double c = 10;       // space between columns
     double f = TableLayout.FILL;
     double p = TableLayout.PREFERRED;
     double size[][] =
@@ -148,6 +198,9 @@ public class CombinerDeviceDialog
     setLocation( x, y );
   }
 
+  /**
+   * Update.
+   */
   public void update()
   {
     Protocol p = device.getProtocol();
@@ -180,6 +233,9 @@ public class CombinerDeviceDialog
     protocolNotes.setCaretPosition( 0 );
   }
 
+  /**
+   * Update parameters.
+   */
   public void updateParameters()
   {
     DeviceParameter[] newParameters = device.getProtocol().getDeviceParameters();
@@ -191,6 +247,11 @@ public class CombinerDeviceDialog
     }
   }
 
+  /**
+   * Removes the parameters.
+   * 
+   * @param parameters the parameters
+   */
   private void removeParameters( DeviceParameter[] parameters )
   {
     if ( parameters != null )
@@ -206,6 +267,11 @@ public class CombinerDeviceDialog
     }
   }
 
+  /**
+   * Adds the parameters.
+   * 
+   * @param parameters the parameters
+   */
   private void addParameters( DeviceParameter[] parameters )
   {
     if ( parameters != null )
@@ -227,6 +293,9 @@ public class CombinerDeviceDialog
   }
 
 
+  /**
+   * Update fixed data.
+   */
   public void updateFixedData()
   {
     Protocol p = device.getProtocol();
@@ -237,6 +306,9 @@ public class CombinerDeviceDialog
   }
 
   // ActionListener Methods
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -290,21 +362,35 @@ public class CombinerDeviceDialog
   } // actionPerformed
 
   // DocumentListener
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
+   */
   public void changedUpdate( DocumentEvent e )
   {
     docUpdated( e );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
+   */
   public void insertUpdate( DocumentEvent e )
   {
     docUpdated( e );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
+   */
   public void removeUpdate( DocumentEvent e )
   {
     docUpdated( e );
   }
 
+  /**
+   * Doc updated.
+   * 
+   * @param e the e
+   */
   private void docUpdated( DocumentEvent e )
   {
     Document doc = e.getDocument();
@@ -319,53 +405,102 @@ public class CombinerDeviceDialog
   }
 
   // FocusListener
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+   */
   public void focusGained( FocusEvent e )
   {
     controlToSelectAll = ( JTextComponent )e.getSource();
     SwingUtilities.invokeLater( this );
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+   */
   public void focusLost( FocusEvent e )
   {
   }
 
   // ItemListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
+   */
   public void itemStateChanged( ItemEvent e )
   {
     updateFixedData();
   }
 
   // Runnable
+  /* (non-Javadoc)
+   * @see java.lang.Runnable#run()
+   */
   public void run()
   {
     controlToSelectAll.selectAll();
   }
 
+  /**
+   * Gets the user action.
+   * 
+   * @return the user action
+   */
   public int getUserAction()
   {
     return userAction;
   }
 
+  /**
+   * Gets the combiner device.
+   * 
+   * @return the combiner device
+   */
   public CombinerDevice getCombinerDevice()
   {
     return device;
   }
 
+  /** The device. */
   private CombinerDevice device = null;
+  
+  /** The remote. */
   private Remote remote = null;
+  
+  /** The main panel. */
   private JPanel mainPanel = null;
+  
+  /** The protocol holder. */
   private JPanel protocolHolder = null;
+  
+  /** The protocol list. */
   private JComboBox protocolList = null;
+  
+  /** The device notes. */
   private JTextField deviceNotes = null;
+  
+  /** The protocol id. */
   private JTextField protocolID = null;
+  
+  /** The fixed data. */
   private JTextField fixedData = null;
+  
+  /** The protocol notes. */
   private JTextArea protocolNotes = null;
+  
+  /** The tl. */
   private TableLayout tl = null;
+  
+  /** The parameters. */
   private DeviceParameter[] parameters = null;
+  
+  /** The control to select all. */
   private JTextComponent controlToSelectAll = null;
 
+  /** The ok button. */
   private JButton okButton = null;
+  
+  /** The cancel button. */
   private JButton cancelButton = null;
 
+  /** The user action. */
   private int userAction = JOptionPane.CANCEL_OPTION;
 }

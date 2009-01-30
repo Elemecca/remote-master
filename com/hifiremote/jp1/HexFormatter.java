@@ -1,11 +1,19 @@
 package com.hifiremote.jp1;
 
-import javax.swing.*;
-import javax.swing.text.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexFormatter.
+ */
 public class HexFormatter
   extends RegexFormatter
 {
+  
+  /**
+   * Instantiates a new hex formatter.
+   * 
+   * @param length the length
+   */
   HexFormatter( int length )
   {
     super();
@@ -16,6 +24,11 @@ public class HexFormatter
     setLength( length );
   }
 
+  /**
+   * Sets the length.
+   * 
+   * @param length the new length
+   */
   public void setLength( int length )
   {
     StringBuilder buff = new StringBuilder();

@@ -1,18 +1,39 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.text.JTextComponent;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class DeviceCombinerPanel.
+ */
 public class DeviceCombinerPanel
   extends KMPanel
   implements ListSelectionListener
 {
+  
+  /**
+   * Instantiates a new device combiner panel.
+   * 
+   * @param devUpgrade the dev upgrade
+   */
   public DeviceCombinerPanel( DeviceUpgrade devUpgrade )
   {
     super( "Device Combiner", devUpgrade );
@@ -29,7 +50,7 @@ public class DeviceCombinerPanel
         return titles[ col ];
       }
       
-      public Class getColumnClass( int col )
+      public Class<?> getColumnClass( int col )
       {
         return classes[ col ];
       }
@@ -178,7 +199,6 @@ public class DeviceCombinerPanel
               if ( importedFunctions.size() > 0 )
               {
                 java.util.List< Function > functions = deviceUpgrade.getFunctions();
-                int firstRow =  functions.size();
                 for ( Function f : importedFunctions )
                 {
                   Function newF = new Function();
@@ -257,6 +277,9 @@ public class DeviceCombinerPanel
     initColumns( table );
   }
 
+  /**
+   * Edits the device.
+   */
   private void editDevice()
   {
     DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
@@ -275,6 +298,13 @@ public class DeviceCombinerPanel
     }
   }
 
+  /**
+   * Sets the column width.
+   * 
+   * @param table the table
+   * @param col the col
+   * @param text the text
+   */
   protected void setColumnWidth( JTable table, int col, String text )
   {
     JLabel l = ( JLabel )
@@ -286,6 +316,11 @@ public class DeviceCombinerPanel
     column.setMaxWidth(( width * 3 ) / 2 );
   }
   
+  /**
+   * Inits the columns.
+   * 
+   * @param table the table
+   */
   protected void initColumns( JTable table )
   {
     setColumnWidth( table, 0, "16" );
@@ -293,6 +328,9 @@ public class DeviceCombinerPanel
     table.doLayout();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#update()
+   */
   public void update()
   {
     DeviceCombiner combiner = ( DeviceCombiner )deviceUpgrade.getProtocol();
@@ -325,6 +363,9 @@ public class DeviceCombinerPanel
   }
 
   // Interface ListSelectionListener
+  /* (non-Javadoc)
+   * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+   */
   public void valueChanged( ListSelectionEvent e )
   {
     if ( !e.getValueIsAdjusting() )
@@ -352,13 +393,27 @@ public class DeviceCombinerPanel
     }
   }
 
+  /** The titles. */
   private static String[] titles = { "#",           "Protocol",   "PID",      "Fixed Data", "Notes" };
-  private static Class[] classes = { Integer.class, String.class, Hex.class,  Hex.class,    String.class };
+  
+  /** The classes. */
+  private static Class<?>[] classes = { Integer.class, String.class, Hex.class,  Hex.class,    String.class };
 
+  /** The model. */
   private AbstractTableModel model = null;
+  
+  /** The table. */
   private JTableX table = null;
+  
+  /** The add button. */
   private JButton addButton = null;
+  
+  /** The import button. */
   private JButton importButton = null;
+  
+  /** The edit button. */
   private JButton editButton = null;
+  
+  /** The remove button. */
   private JButton removeButton = null;
 }

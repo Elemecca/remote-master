@@ -2,20 +2,37 @@ package com.hifiremote.jp1;
 
 import java.text.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexFormat.
+ */
 public class HexFormat
   extends Format
 {
+  
+  /**
+   * Instantiates a new hex format.
+   */
   public HexFormat()
   {
     this( -1, -1 );
   }
 
+  /**
+   * Instantiates a new hex format.
+   * 
+   * @param minLength the min length
+   * @param maxLength the max length
+   */
   public HexFormat( int minLength, int maxLength )
   {
     this.minLength = minLength;
     this.maxLength = maxLength;
   }
 
+  /* (non-Javadoc)
+   * @see java.text.Format#format(java.lang.Object, java.lang.StringBuffer, java.text.FieldPosition)
+   */
   public StringBuffer format( Object obj,
                               StringBuffer buff,
                               FieldPosition pos )
@@ -27,6 +44,9 @@ public class HexFormat
     return buff;
   }
 
+  /* (non-Javadoc)
+   * @see java.text.Format#parseObject(java.lang.String)
+   */
   public Object parseObject( String text )
     throws ParseException
   {
@@ -54,6 +74,9 @@ public class HexFormat
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.text.Format#parseObject(java.lang.String, java.text.ParsePosition)
+   */
   public Object parseObject( String text, ParsePosition pos )
   {
     int index = pos.getIndex();
@@ -71,7 +94,10 @@ public class HexFormat
     return new Hex( text.substring( index ));
   }
 
+  /** The min length. */
   private int minLength;
+  
+  /** The max length. */
   private int maxLength;
 }
 

@@ -1,19 +1,30 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SonyComboImporter.
+ */
 public class SonyComboImporter
   extends Translate
 {
+  
+  /**
+   * Instantiates a new sony combo importer.
+   * 
+   * @param textParms the text parms
+   */
   public SonyComboImporter( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int parmToSet )
   {
     if ( parmToSet < 0 )
       return;
-
-    short[] hex = hexData.getData();
 
     int device = 0;
     int protocol = 0;
@@ -65,10 +76,18 @@ public class SonyComboImporter
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {}
 
+  /** The Sony12. */
   private static int Sony12 = 0;
+  
+  /** The Sony15. */
   private static int Sony15 = 1;
+  
+  /** The Sony20. */
   private static int Sony20 = 2;
 }

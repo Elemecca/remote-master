@@ -1,11 +1,26 @@
 package com.hifiremote.jp1;
 
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class BinaryUpgradeReader.
+ */
 public class BinaryUpgradeReader
 {
+  
+  /**
+   * Instantiates a new binary upgrade reader.
+   * 
+   * @param file the file
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public BinaryUpgradeReader( File file )
     throws IOException
   {
@@ -85,6 +100,15 @@ public class BinaryUpgradeReader
     }
   }
 
+  /**
+   * Read unsigned byte.
+   * 
+   * @param encdec the encdec
+   * 
+   * @return the short
+   * 
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   private short readUnsignedByte( EncrypterDecrypter encdec )
     throws IOException
   {
@@ -94,18 +118,66 @@ public class BinaryUpgradeReader
     return val;
   }
 
+  /**
+   * Gets the remote.
+   * 
+   * @return the remote
+   */
   public Remote getRemote(){ return remote; }
+  
+  /**
+   * Gets the setup code.
+   * 
+   * @return the setup code
+   */
   public int getSetupCode(){ return setupCode; }
+  
+  /**
+   * Gets the device index.
+   * 
+   * @return the device index
+   */
   public int getDeviceIndex(){ return deviceIndex; }
+  
+  /**
+   * Gets the pid.
+   * 
+   * @return the pid
+   */
   public Hex getPid(){ return pid; }
+  
+  /**
+   * Gets the code.
+   * 
+   * @return the code
+   */
   public Hex getCode(){ return code; }
+  
+  /**
+   * Gets the protocol code.
+   * 
+   * @return the protocol code
+   */
   public Hex getProtocolCode(){ return pCode; }
 
+  /** The remote. */
   private Remote remote = null;
+  
+  /** The dis. */
   private DataInputStream dis = null;
+  
+  /** The setup code. */
   private int setupCode = 0;
+  
+  /** The device index. */
   private int deviceIndex = 0;
+  
+  /** The pid. */
   private Hex pid = null;
+  
+  /** The code. */
   private Hex code = null;
+  
+  /** The p code. */
   private Hex pCode = null;
 }

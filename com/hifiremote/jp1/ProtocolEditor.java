@@ -1,18 +1,44 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import java.text.*;
-import java.beans.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Enumeration;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ProtocolEditor.
+ */
 public class ProtocolEditor
   extends JDialog
   implements ActionListener,
@@ -20,6 +46,12 @@ public class ProtocolEditor
              DocumentListener,
              TreeSelectionListener
 {
+  
+  /**
+   * The main method.
+   * 
+   * @param args the arguments
+   */
   public static void main( String[] args )
   {
     try
@@ -36,18 +68,34 @@ public class ProtocolEditor
     System.exit( 0 );
   }
 
+  /**
+   * Instantiates a new protocol editor.
+   * 
+   * @param owner the owner
+   */
   public ProtocolEditor( JFrame owner )
   {
     super( owner, "Protocol Editor", true );
     createGui( owner );
   }
     
+  /**
+   * Instantiates a new protocol editor.
+   * 
+   * @param owner the owner
+   */
   public ProtocolEditor( JDialog owner )
   {
     super( owner, "Protocol Editor", true );
     createGui( owner );
   }
     
+  /**
+   * Creates the gui.
+   * 
+   * @param owner the owner
+   */
+  @SuppressWarnings("unchecked")
   private void createGui( Component owner )
   {
     setLocationRelativeTo( owner );
@@ -134,6 +182,10 @@ public class ProtocolEditor
   }
 
   // ActionListener methods
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
+  @SuppressWarnings("unchecked")
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -193,6 +245,9 @@ public class ProtocolEditor
   }
 
   // PropertyChangeListener methods
+  /* (non-Javadoc)
+   * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+   */
   public void propertyChange( PropertyChangeEvent e )
   {
     ProtocolEditorNode node = ( ProtocolEditorNode )e.getSource();
@@ -221,25 +276,42 @@ public class ProtocolEditor
   }
 
   // DocumentListener methods
+  /**
+   * Document changed.
+   * 
+   * @param e the e
+   */
   public void documentChanged( DocumentEvent e )
   {
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
+   */
   public void changedUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
+   */
   public void insertUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
+   */
   public void removeUpdate( DocumentEvent e )
   {
     documentChanged( e );
   }
 
+  /**
+   * Enable buttons.
+   */
   public void enableButtons()
   {
     addButton.setEnabled( selectedNode.canAddChildren());
@@ -247,6 +319,9 @@ public class ProtocolEditor
   }
 
   // TreeSelectionListener methods
+  /* (non-Javadoc)
+   * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
+   */
   public void valueChanged( TreeSelectionEvent e )
   {
     selectedNode =
@@ -258,20 +333,45 @@ public class ProtocolEditor
     getContentPane().validate();
   }
 
+  /** The card layout. */
   private CardLayout cardLayout;
+  
+  /** The card panel. */
   private JPanel cardPanel;
-  private JLabel title;
+  
+  /** The editor panel. */
   private ProtocolEditorPanel editorPanel = null;
+  
+  /** The tree model. */
   private DefaultTreeModel treeModel;
+  
+  /** The tree. */
   private JTree tree;
+  
+  /** The selected node. */
   private ProtocolEditorNode selectedNode;
+  
+  /** The root. */
   private DefaultMutableTreeNode root;
-  private String nodeInfo;
+  
+  /** The general node. */
   private GeneralEditorNode generalNode = null;
+  
+  /** The fixed data node. */
   private FixedDataEditorNode fixedDataNode = null;
+  
+  /** The cmd data node. */
   private CmdEditorNode cmdDataNode = null;
+  
+  /** The view button. */
   private JButton viewButton;
+  
+  /** The add button. */
   private JButton addButton;
+  
+  /** The delete button. */
   private JButton deleteButton;
+  
+  /** The ok button. */
   private JButton okButton;
 }

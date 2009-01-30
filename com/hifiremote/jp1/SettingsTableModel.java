@@ -3,41 +3,70 @@ package com.hifiremote.jp1;
 import javax.swing.*;
 import javax.swing.table.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SettingsTableModel.
+ */
 public class SettingsTableModel
   extends JP1TableModel< Setting >
   implements CellEditorModel
 {
+  
+  /**
+   * Instantiates a new settings table model.
+   */
   public SettingsTableModel()
   {
     comboEditor.setClickCountToStart( 2 );    
   }
 
+  /**
+   * Sets the.
+   * 
+   * @param remoteConfig the remote config
+   */
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
     setData( remoteConfig.getRemote().getSettings());
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getColumnCount()
+   */
   public int getColumnCount(){ return colNames.length; }
 
+  /** The Constant colNames. */
   private static final String[] colNames = 
   {
     "#", "Setting", "Value"
   };
+  
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+   */
   public String getColumnName( int col )
   {
     return colNames[ col ];
   }
   
+  /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
     "00", "A Long Setting Name", "A Longer Setting Value Name"
   };
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
+   */
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ col ];
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
+   */
   public boolean isColumnWidthFixed( int col )
   {
     if ( col == 0 )
@@ -45,15 +74,23 @@ public class SettingsTableModel
     return false;
   }
 
-  private static final Class[] colClasses =
+  /** The Constant colClasses. */
+  private static final Class<?>[] colClasses =
   {
     Integer.class, String.class, Setting.class
   };
-  public Class getColumnClass( int col )
+  
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+   */
+  public Class<?> getColumnClass( int col )
   {
     return colClasses[ col ];
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+   */
   public boolean isCellEditable( int row, int col )
   {
     if ( col > 1 )
@@ -62,10 +99,12 @@ public class SettingsTableModel
     return false;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getValueAt(int, int)
+   */
   public Object getValueAt(int row, int column)
   {
     Remote r = remoteConfig.getRemote();
-    short[] data = remoteConfig.getData();
     Setting setting = r.getSettings()[ row ];
     switch ( column )
     {
@@ -89,13 +128,15 @@ public class SettingsTableModel
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+   */
   public void setValueAt( Object value, int row, int col )
   {
     if ( col == 2 )
     {
       Remote r = remoteConfig.getRemote();
       Setting setting = r.getSettings()[ row ];
-      short[] data = remoteConfig.getData();
       Object[] choices = setting.getOptions( r );
       if ( choices == null )
         setting.setValue((( Integer )value ).intValue());
@@ -106,6 +147,9 @@ public class SettingsTableModel
     }
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
+   */
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
@@ -113,6 +157,9 @@ public class SettingsTableModel
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.CellEditorModel#getCellEditor(int, int)
+   */
   public TableCellEditor getCellEditor( int row, int col )
   {
     if ( col != 2 )
@@ -133,7 +180,12 @@ public class SettingsTableModel
     return comboEditor;
   }
   
+  /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
+  
+  /** The int editor. */
   private BoundedIntegerEditor intEditor = new BoundedIntegerEditor();
+  
+  /** The combo editor. */
   private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox());
 }

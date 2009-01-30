@@ -1,16 +1,28 @@
 package com.hifiremote.jp1;
 
-import java.io.PrintWriter;
 import java.util.Properties;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ExternalFunction.
+ */
 public class ExternalFunction
   extends Function
 {
+  
+  /**
+   * Instantiates a new external function.
+   */
   public ExternalFunction()
   {
     super();
   }
   
+  /**
+   * Instantiates a new external function.
+   * 
+   * @param base the base
+   */
   public ExternalFunction( ExternalFunction base )
   {
     super( base );
@@ -19,14 +31,23 @@ public class ExternalFunction
     setupCode = base.setupCode;
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Function#isExternal()
+   */
   public boolean isExternal(){ return true; }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Function#isEmpty()
+   */
   public boolean isEmpty()
   {
     return super.isEmpty() && ( deviceTypeAliasName == null ) && ( setupCode == 0 ) &&
       ( type == EFCType );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Function#store(com.hifiremote.jp1.PropertyWriter, java.lang.String)
+   */
   public void store( PropertyWriter out, String prefix )
   {
     super.store( out, prefix );
@@ -36,6 +57,13 @@ public class ExternalFunction
     out.print( prefix + ".setupCode", Integer.toString( setupCode ));
   }
 
+  /**
+   * Load.
+   * 
+   * @param props the props
+   * @param prefix the prefix
+   * @param remote the remote
+   */
   public void load( Properties props, String prefix, Remote remote )
   {
     super.load( props, prefix );
@@ -45,8 +73,6 @@ public class ExternalFunction
     str = props.getProperty( prefix + ".deviceType" );
     if ( str != null )
     {
-      String match = null;
-      String[] devNames = remote.getDeviceTypeAliasNames();
       for ( String name : remote.getDeviceTypeAliasNames())
         if ( name.equalsIgnoreCase( str ))
         {
@@ -59,10 +85,24 @@ public class ExternalFunction
       setSetupCode( Integer.parseInt( str ));
   }
 
+  /**
+   * Gets the device type alias name.
+   * 
+   * @return the device type alias name
+   */
   public String getDeviceTypeAliasName(){ return deviceTypeAliasName; }
+  
+  /**
+   * Sets the device type alias name.
+   * 
+   * @param name the new device type alias name
+   */
   public void setDeviceTypeAliasName( String name ){ deviceTypeAliasName = name; }
 
+  /** The Constant EFCType. */
   public final static int EFCType = 0;
+  
+  /** The Constant HexType. */
   public final static int HexType = 1;
 /*
   public String toString()
@@ -74,21 +114,41 @@ public class ExternalFunction
     return rc;
   }
 */
-  public void setType( int type )
+  /**
+ * Sets the type.
+ * 
+ * @param type the new type
+ */
+public void setType( int type )
   {
     this.type = type;
   }
 
+  /**
+   * Sets the type.
+   * 
+   * @param type the new type
+   */
   public void setType( Integer type )
   {
     setType( type.intValue());
   }
 
+  /**
+   * Gets the type.
+   * 
+   * @return the type
+   */
   public int getType()
   {
     return type;
   }
 
+  /**
+   * Sets the value.
+   * 
+   * @param value the new value
+   */
   public void setValue( Object value )
   {
     if ( value == null )
@@ -100,6 +160,11 @@ public class ExternalFunction
         setHex(( Hex )value );
   }
 
+  /**
+   * Gets the value.
+   * 
+   * @return the value
+   */
   public Object getValue()
   {
     if ( type == EFCType )
@@ -108,9 +173,25 @@ public class ExternalFunction
       return getHex();
   }
 
+  /**
+   * Sets the setup code.
+   * 
+   * @param code the new setup code
+   */
   public void setSetupCode( int code ){ setupCode = code; }
+  
+  /**
+   * Gets the setup code.
+   * 
+   * @return the setup code
+   */
   public int getSetupCode(){ return setupCode; }
 
+  /**
+   * Gets the eFC.
+   * 
+   * @return the eFC
+   */
   public EFC getEFC()
   {
     EFC rc = null;
@@ -119,6 +200,11 @@ public class ExternalFunction
     return rc;
   }
 
+  /**
+   * Sets the eFC.
+   * 
+   * @param efc the new eFC
+   */
   public void setEFC( EFC efc )
   {
     if ( efc != null )
@@ -131,7 +217,12 @@ public class ExternalFunction
       hex = null;
   }
 
+  /** The device type alias name. */
   private String deviceTypeAliasName;
+  
+  /** The setup code. */
   private int setupCode;
+  
+  /** The type. */
   private int type;
 }

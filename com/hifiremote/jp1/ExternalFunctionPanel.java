@@ -6,9 +6,19 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ExternalFunctionPanel.
+ */
 public class ExternalFunctionPanel
   extends TablePanel< ExternalFunction >
 {
+  
+  /**
+   * Instantiates a new external function panel.
+   * 
+   * @param devUpgrade the dev upgrade
+   */
   public ExternalFunctionPanel( DeviceUpgrade devUpgrade )
   {
     super( "External Functions", devUpgrade,
@@ -27,6 +37,9 @@ public class ExternalFunctionPanel
     initColumns();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.TablePanel#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
@@ -83,22 +96,34 @@ public class ExternalFunctionPanel
     super.actionPerformed( event );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.TablePanel#update()
+   */
   public void update()
   {
     (( ExternalFunctionTableModel ) model ).update();
     super.update();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.TablePanel#createRowObject()
+   */
   protected ExternalFunction createRowObject()
   {
     return new ExternalFunction();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.TablePanel#canDelete(java.lang.Object)
+   */
   protected boolean canDelete( Object o )
   {
     return !(( Function ) o).assigned();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.TablePanel#doNotDelete(java.lang.Object)
+   */
   protected void doNotDelete( Object o )
   {
     String message = "Function is assigned to a button, it can not be deleted.";
@@ -106,6 +131,9 @@ public class ExternalFunctionPanel
     throw new IllegalArgumentException( message );
   }
 
+  /** The import item. */
   private JMenuItem importItem = null;
+  
+  /** The import button. */
   private JButton importButton = null;
 }

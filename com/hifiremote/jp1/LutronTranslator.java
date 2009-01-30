@@ -1,14 +1,27 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class LutronTranslator.
+ */
 public class LutronTranslator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new lutron translator.
+   * 
+   * @param textParms the text parms
+   */
   public LutronTranslator( String[] textParms )
   {
     super( textParms );
     deviceOrCommand = Integer.parseInt( textParms[ 0 ] );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     if ( deviceOrCommand == DEVICE )
@@ -58,6 +71,9 @@ public class LutronTranslator
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
     if ( deviceOrCommand == DEVICE )
@@ -85,6 +101,13 @@ public class LutronTranslator
     }
   }
 
+  /**
+   * Decode.
+   * 
+   * @param val the val
+   * 
+   * @return the int
+   */
   private int decode( int val )
   {
     for ( int i = 0; i < encode.length; i++ )
@@ -96,9 +119,16 @@ public class LutronTranslator
     return 0;
   }
 
+  /** The encode. */
   private static int[] encode = { 1, 2, 7, 4, 13, 14, 11, 8 };
 
+  /** The device or command. */
   private int deviceOrCommand = 0;
+  
+  /** The Constant DEVICE. */
   private final static int DEVICE = 0;
+  
+  /** The Constant COMMAND. */
+  @SuppressWarnings("unused")
   private final static int COMMAND = 1;
 }

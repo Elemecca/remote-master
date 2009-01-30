@@ -6,9 +6,19 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.datatransfer.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class OutputPanel.
+ */
 public class OutputPanel
   extends KMPanel implements ActionListener
 {
+  
+  /**
+   * Instantiates a new output panel.
+   * 
+   * @param deviceUpgrade the device upgrade
+   */
   public OutputPanel( DeviceUpgrade deviceUpgrade )
   {
     super( "Output", deviceUpgrade );
@@ -100,25 +110,14 @@ public class OutputPanel
     add( scroll );
   }
 
-  private int adjust( int val )
-  {
-    int temp1 = val - 0x2C;
-    int temp2 = val - 0x46;
-    if ((( 0 <= temp1 ) && ( temp1 <= 0x0E ) && ( temp1 % 7 == 0 )) ||
-        (( 0 <= temp2 ) && ( temp2 <= 0x0E ) && ( temp2 % 3 == 0 )))
-    {
-      val -= 0x13;
-    }
-    return val;
-  }
-
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#update()
+   */
   public void update()
   {
     boolean flag = includeNotes.isSelected();
     upgradeText.setText( deviceUpgrade.getUpgradeText( flag ));
     Protocol p = deviceUpgrade.getProtocol();
-    String pVariant = p.getVariantName();
-
     Remote r = deviceUpgrade.getRemote();
 
     Hex code = deviceUpgrade.getCode();
@@ -169,6 +168,9 @@ public class OutputPanel
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     JTextArea area = null;
@@ -189,14 +191,33 @@ public class OutputPanel
     clipboard.setContents( data, data );
   }
 
+  /** The protocol label. */
   private JLabel protocolLabel = null;
+  
+  /** The upgrade text. */
   private JTextArea upgradeText = null;
+  
+  /** The protocol text. */
   private JTextArea protocolText = null;
+  
+  /** The popover. */
   private JTextArea popover = null;
+  
+  /** The popup. */
   private JPopupMenu popup = null;
+  
+  /** The copy item. */
   private JMenuItem copyItem = null;
+  
+  /** The copy device upgrade. */
   private JButton copyDeviceUpgrade = null;
+  
+  /** The copy protocol upgrade. */
   private JButton copyProtocolUpgrade = null;
+  
+  /** The clipboard. */
   private Clipboard clipboard = null;
+  
+  /** The include notes. */
   private JCheckBox includeNotes = null;
 }

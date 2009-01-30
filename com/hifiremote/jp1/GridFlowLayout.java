@@ -2,12 +2,26 @@ package com.hifiremote.jp1;
 
 import java.awt.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class GridFlowLayout.
+ */
 public class GridFlowLayout implements LayoutManager
 {
+    
+    /* (non-Javadoc)
+     * @see java.awt.LayoutManager#addLayoutComponent(java.lang.String, java.awt.Component)
+     */
     public void addLayoutComponent( String name, Component comp ){}
 
+    /* (non-Javadoc)
+     * @see java.awt.LayoutManager#removeLayoutComponent(java.awt.Component)
+     */
     public void removeLayoutComponent( Component comp ){}
 
+    /* (non-Javadoc)
+     * @see java.awt.LayoutManager#preferredLayoutSize(java.awt.Container)
+     */
     public Dimension preferredLayoutSize( Container target )
     {
       Insets insets = target.getInsets();
@@ -33,6 +47,9 @@ public class GridFlowLayout implements LayoutManager
       return d;
     }
 
+    /* (non-Javadoc)
+     * @see java.awt.LayoutManager#minimumLayoutSize(java.awt.Container)
+     */
     public Dimension minimumLayoutSize( Container target ) 
     {
       Dimension dim = new Dimension(0, 0);
@@ -54,6 +71,18 @@ public class GridFlowLayout implements LayoutManager
       return dim;
     }
 
+    /**
+     * Move components.
+     * 
+     * @param target the target
+     * @param x the x
+     * @param y the y
+     * @param width the width
+     * @param height the height
+     * @param rowStart the row start
+     * @param rowEnd the row end
+     * @param ltr the ltr
+     */
     private void moveComponents( Container target, int x, int y, int width, int height,
                                 int rowStart, int rowEnd, boolean ltr) 
     {
@@ -75,6 +104,9 @@ public class GridFlowLayout implements LayoutManager
       }
     }
 
+    /* (non-Javadoc)
+     * @see java.awt.LayoutManager#layoutContainer(java.awt.Container)
+     */
     public void layoutContainer( Container target ) 
     {
       Insets insets = target.getInsets();

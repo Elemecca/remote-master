@@ -4,9 +4,19 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class FunctionRenderer.
+ */
 public class FunctionRenderer
   extends DefaultTableCellRenderer
 {
+  
+  /**
+   * Instantiates a new function renderer.
+   * 
+   * @param deviceUpgrade the device upgrade
+   */
   public FunctionRenderer( DeviceUpgrade deviceUpgrade )
   {
     this.deviceUpgrade = deviceUpgrade;
@@ -14,11 +24,19 @@ public class FunctionRenderer
 
   }
   
+  /**
+   * Sets the device upgrade.
+   * 
+   * @param deviceUpgrade the new device upgrade
+   */
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
   {
     this.deviceUpgrade = deviceUpgrade;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.DefaultTableCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
+   */
   public Component  getTableCellRendererComponent( JTable table, Object value,
                                                    boolean isSelected, boolean hasFocus,
                                                    int row, int col )
@@ -78,5 +96,6 @@ public class FunctionRenderer
     return c;
   }
   
+  /** The device upgrade. */
   private DeviceUpgrade deviceUpgrade = null;
 }

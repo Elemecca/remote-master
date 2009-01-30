@@ -1,11 +1,19 @@
 package com.hifiremote.jp1;
 
-import java.text.*;
-import javax.swing.text.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexIntegerFormatter.
+ */
 public class HexIntegerFormatter
   extends RegexFormatter
 {
+  
+  /**
+   * Instantiates a new hex integer formatter.
+   * 
+   * @param bits the bits
+   */
   public HexIntegerFormatter( int bits )
   {
     super();
@@ -14,6 +22,11 @@ public class HexIntegerFormatter
     setCommitsOnValidEdit( true );
   }
 
+  /**
+   * Sets the bits.
+   * 
+   * @param bits the new bits
+   */
   public void setBits( int bits )
   {
     String textPattern = null;
@@ -28,8 +41,10 @@ public class HexIntegerFormatter
     setPattern( textPattern );
   }
 
+  /** The hex digit pattern. */
   private String hexDigitPattern = "\\p{XDigit}";
 
+  /** The patterns. */
   private String[] patterns = 
   {
     "[01]",

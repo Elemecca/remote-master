@@ -1,45 +1,75 @@
 package com.hifiremote.jp1;
 
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ExternalFunctionTableModel.
+ */
 public class ExternalFunctionTableModel
   extends KMTableModel< ExternalFunction >
 {
+  
+  /** The upgrade. */
   private DeviceUpgrade upgrade = null;
+  
+  /** The Constant rowCol. */
   private final static int rowCol = 0;
+  
+  /** The Constant nameCol. */
   private final static int nameCol = rowCol + 1;
+  
+  /** The Constant devTypeCol. */
   private final static int devTypeCol = nameCol + 1;
+  
+  /** The Constant setupCodeCol. */
   private final static int setupCodeCol = devTypeCol + 1;
+  
+  /** The Constant typeCol. */
   private final static int typeCol = setupCodeCol + 1;
+  
+  /** The Constant hexCol. */
   private final static int hexCol = typeCol + 1;
+  
+  /** The Constant notesCol. */
   private final static int notesCol = hexCol + 1;
 
+  /**
+   * Instantiates a new external function table model.
+   * 
+   * @param upgrade the upgrade
+   */
   public ExternalFunctionTableModel( DeviceUpgrade upgrade )
   {
     super( upgrade.getExternalFunctions());
     this.upgrade = upgrade;
   }
 
+  /**
+   * Update.
+   */
   public void update()
   {
     fireTableDataChanged();
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getColumnCount()
+   */
   public int getColumnCount()
   {
     return 7;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getValueAt(int, int)
+   */
   public Object getValueAt( int row, int col )
   {
     ExternalFunction function = getRow( row );
-    Hex hex = function.getHex();
-
     Object rc = null;
 
     switch ( col )
@@ -72,6 +102,14 @@ public class ExternalFunctionTableModel
     return rc;
   }
 
+  /**
+   * Check function assigned.
+   * 
+   * @param f the f
+   * @param value the value
+   * 
+   * @throws IllegalArgumentException the illegal argument exception
+   */
   public void checkFunctionAssigned( Function f, Object value )
     throws IllegalArgumentException
   {
@@ -82,6 +120,9 @@ public class ExternalFunctionTableModel
     }
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+   */
   public void setValueAt( Object value, int row, int col )
   {
     ExternalFunction function = getRow( row );
@@ -132,6 +173,9 @@ public class ExternalFunctionTableModel
     fireTableRowsUpdated( row, row );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
+   */
   public TableCellEditor getColumnEditor( int col )
   {
     TableCellEditor rc = null;
@@ -160,6 +204,9 @@ public class ExternalFunctionTableModel
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
+   */
   public TableCellRenderer getColumnRenderer( int col )
   {
     TableCellRenderer rc = null;
@@ -190,21 +237,33 @@ public class ExternalFunctionTableModel
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+   */
   public String getColumnName( int col )
   {
     return names[ col ];
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
+   */
   public String getColumnPrototypeName( int col )
   {
     return prototypeNames[ col ];
   }
 
-  public Class getColumnClass( int col )
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+   */
+  public Class<?> getColumnClass( int col )
   {
     return classes[ col ];
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+   */
   public boolean isCellEditable( int row, int col )
   {
     boolean rc = true;
@@ -213,6 +272,9 @@ public class ExternalFunctionTableModel
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMTableModel#isColumnWidthFixed(int)
+   */
   public boolean isColumnWidthFixed( int col )
   {
     if (( col == nameCol ) || ( col == hexCol ) || ( col == notesCol ))
@@ -220,13 +282,19 @@ public class ExternalFunctionTableModel
     return true;
   }
 
+  /** The Constant names. */
   private final static String[] names =
     { "#", "Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "Notes" };
+  
+  /** The Constant prototypeNames. */
   private final static String[] prototypeNames =
     { " # ", "Function Name", "Device Type", "Setup Code", "Type", "EFC/Hex", "A reasonanble comment" };
-  private final static Class[] classes =
+  
+  /** The Constant classes. */
+  private final static Class<?>[] classes =
     { Integer.class, String.class, String.class, Integer.class, Choice.class, ExternalFunction.class, String.class };
 
+  /** The Constant choices. */
   private final static Choice[] choices =
   {
     new Choice( ExternalFunction.EFCType, "EFC" ),

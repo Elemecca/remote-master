@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RC5Importer.
+ */
 public class RC5Importer
   extends Importer
 {
+  
+  /**
+   * Instantiates a new r c5 importer.
+   * 
+   * @param textParms the text parms
+   */
   public RC5Importer( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Importer#convertParms(com.hifiremote.jp1.Value[])
+   */
   public Value[] convertParms( Value[] parms )
   {
     Value[] outParms = new Value[ 2 * parms.length ];

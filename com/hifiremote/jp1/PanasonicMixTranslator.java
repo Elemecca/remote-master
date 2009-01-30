@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PanasonicMixTranslator.
+ */
 public class PanasonicMixTranslator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new panasonic mix translator.
+   * 
+   * @param textParms the text parms
+   */
   public PanasonicMixTranslator( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     int iDev;
@@ -45,6 +58,9 @@ public class PanasonicMixTranslator
     insert( hexData, 10, 6, iDev );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
     int v = hex.getData()[1] & 0x3F;

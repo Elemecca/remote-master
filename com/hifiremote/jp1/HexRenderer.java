@@ -1,17 +1,27 @@
 package com.hifiremote.jp1;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import java.text.*;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexRenderer.
+ */
 public class HexRenderer
   extends DefaultTableCellRenderer
 {
+  
+  /**
+   * Instantiates a new hex renderer.
+   */
   public HexRenderer()
   {
     setHorizontalAlignment( SwingConstants.CENTER );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.DefaultTableCellRenderer#setValue(java.lang.Object)
+   */
   protected void setValue( Object value )
   {
     if ( value != null )
@@ -19,7 +29,5 @@ public class HexRenderer
     else
       super.setValue( value );
   }
-
-  private static DecimalFormat df = null;
 }
 

@@ -2,19 +2,21 @@ package com.hifiremote.jp1;
 
 import java.util.*;
 
+// TODO: Auto-generated Javadoc
 /**
- *  Description of the Class
- *
- *@author     Greg
- *@created    December 2, 2006
+ * Description of the Class.
+ * 
+ * @author     Greg
+ * @created    December 2, 2006
  */
 public class ToadTogFunction
    extends SpecialProtocolFunction
 {
+  
   /**
-   *  Constructor for the ToadTogFunction object
-   *
-   *@param  keyMove  Description of the Parameter
+   * Constructor for the ToadTogFunction object.
+   * 
+   * @param keyMove the key move
    */
   public ToadTogFunction( KeyMove keyMove )
   {
@@ -22,14 +24,14 @@ public class ToadTogFunction
   }
 
   /**
-   *  Constructor for the ToadTogFunction object
-   *
-   *@param  keyCode            Description of the Parameter
-   *@param  deviceButtonIndex  Description of the Parameter
-   *@param  deviceType         Description of the Parameter
-   *@param  setupCode          Description of the Parameter
-   *@param  cmd                Description of the Parameter
-   *@param  notes              Description of the Parameter
+   * Constructor for the ToadTogFunction object.
+   * 
+   * @param keyCode the key code
+   * @param deviceButtonIndex the device button index
+   * @param deviceType the device type
+   * @param setupCode the setup code
+   * @param cmd the cmd
+   * @param notes the notes
    */
   public ToadTogFunction( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
@@ -37,9 +39,9 @@ public class ToadTogFunction
   }
 
   /**
-   *  Constructor for the ToadTogFunction object
-   *
-   *@param  props  Description of the Parameter
+   * Constructor for the ToadTogFunction object.
+   * 
+   * @param props the props
    */
   public ToadTogFunction( Properties props )
   {
@@ -47,9 +49,9 @@ public class ToadTogFunction
   }
 
   /**
-   *  Gets the toggleNumber attribute of the ToadTogFunction object
-   *
-   *@return    The toggleNumber value
+   * Gets the toggleNumber attribute of the ToadTogFunction object.
+   * 
+   * @return    The toggleNumber value
    */
   public int getToggleNumber()
   {
@@ -57,9 +59,9 @@ public class ToadTogFunction
   }
 
   /**
-   *  Gets the onLength attribute of the ToadTogFunction object
-   *
-   *@return    The onLength value
+   * Gets the onLength attribute of the ToadTogFunction object.
+   * 
+   * @return    The onLength value
    */
   public int getOnLength()
   {
@@ -67,9 +69,9 @@ public class ToadTogFunction
   }
 
   /**
-   *  Gets the style attribute of the ToadTogFunction object
-   *
-   *@return    The style value
+   * Gets the style attribute of the ToadTogFunction object.
+   * 
+   * @return    The style value
    */
   public int getStyle()
   {
@@ -80,9 +82,9 @@ public class ToadTogFunction
   }
 
   /**
-   *  Gets the type attribute of the ToadTogFunction object
-   *
-   *@return    The type value
+   * Gets the type attribute of the ToadTogFunction object.
+   * 
+   * @return    The type value
    */
   public String getType()
   {
@@ -90,9 +92,9 @@ public class ToadTogFunction
   }
 
   /**
-   *  Gets the displayType attribute of the ToadTogFunction object
-   *
-   *@return    The displayType value
+   * Gets the displayType attribute of the ToadTogFunction object.
+   * 
+   * @return    The displayType value
    */
   public String getDisplayType()
   {
@@ -109,10 +111,11 @@ public class ToadTogFunction
   }
 
   /**
-   *  Gets the valueString attribute of the ToadTogFunction object
-   *
-   *@param  remoteConfig  Description of the Parameter
-   *@return               The valueString value
+   * Gets the valueString attribute of the ToadTogFunction object.
+   * 
+   * @param remoteConfig the remote config
+   * 
+   * @return               The valueString value
    */
   public String getValueString( RemoteConfiguration remoteConfig )
   {
@@ -158,9 +161,9 @@ public class ToadTogFunction
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  dlg  Description of the Parameter
+   * Description of the Method.
+   * 
+   * @param dlg the dlg
    */
   public void update( SpecialFunctionDialog dlg )
   {
@@ -184,10 +187,11 @@ public class ToadTogFunction
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  dlg  Description of the Parameter
-   *@return      Description of the Return Value
+   * Description of the Method.
+   * 
+   * @param dlg the dlg
+   * 
+   * @return      Description of the Return Value
    */
   public static Hex createHex( SpecialFunctionDialog dlg )
   {
@@ -209,39 +213,31 @@ public class ToadTogFunction
     return new Hex( temp );
   }
 
-  /**
-   *  Description of the Field
-   */
+  /** Description of the Field. */
   public static int TOGGLE = 0;
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static int FORCE_OFF = 1;
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static int TEST_ONLY = 2;
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static int FORCE_ON = 3;
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static String[] styleStrings =
     {
     "Toggle", "ForceOff", "TestOnly", "ForceOn"
     };
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static String[] onStrings =
     {
     "On->Off", "On->Off", "On", "Already On"
     };
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static String[] offStrings =
     {
     "Off->On", "Already Off", "Off", "On->Off"

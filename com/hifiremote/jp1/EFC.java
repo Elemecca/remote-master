@@ -1,43 +1,95 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class EFC.
+ */
 public class EFC
   implements Comparable< EFC >
 {
+  
+  /**
+   * Instantiates a new eFC.
+   * 
+   * @param text the text
+   */
   public EFC( String text )
   {
     value = Short.parseShort( text ) & 0xFF;
   }
 
+  /**
+   * Instantiates a new eFC.
+   * 
+   * @param value the value
+   */
   public EFC( short value )
   {
     this.value = ( value & 0xFF );
   }
 
+  /**
+   * Instantiates a new eFC.
+   * 
+   * @param hex the hex
+   * @param index the index
+   */
   public EFC( Hex hex, int index )
   {
     value = parseHex( hex, index );
   }
 
+  /**
+   * Instantiates a new eFC.
+   * 
+   * @param hex the hex
+   */
   public EFC( Hex hex )
   {
     this( hex, 0 );
   }
 
+  /**
+   * From hex.
+   * 
+   * @param hex the hex
+   */
   public void fromHex( Hex hex )
   {
     fromHex( hex, 0 );
   }
 
+  /**
+   * From hex.
+   * 
+   * @param hex the hex
+   * @param index the index
+   */
   public void fromHex( Hex hex, int index )
   {
     value = parseHex( hex, index );
   }
 
+  /**
+   * Parses the hex.
+   * 
+   * @param hex the hex
+   * 
+   * @return the short
+   */
   public static short parseHex( Hex hex )
   {
     return parseHex( hex, 0 );
   }
 
+  /**
+   * Parses the hex.
+   * 
+   * @param hex the hex
+   * @param index the index
+   * 
+   * @return the short
+   */
   public static short parseHex( Hex hex, int index )
   {
     short rc = ( short )( hex.getData()[ index ] & 0xFF );
@@ -46,8 +98,18 @@ public class EFC
     return ( short )( rc & 0xFF );
   }
 
+  /**
+   * Gets the value.
+   * 
+   * @return the value
+   */
   public int getValue(){ return value; }
   
+  /**
+   * To hex.
+   * 
+   * @return the hex
+   */
   public Hex toHex()
   {
     Hex hex = new Hex( 1 );
@@ -55,21 +117,45 @@ public class EFC
     return hex;
   }
 
+  /**
+   * To hex.
+   * 
+   * @param hex the hex
+   */
   public void toHex( Hex hex )
   {
     toHex( hex, 0 );
   }
 
+  /**
+   * To hex.
+   * 
+   * @param hex the hex
+   * @param index the index
+   */
   public void toHex( Hex hex, int index )
   {
     toHex( value, hex, index );
   }
 
+  /**
+   * To hex.
+   * 
+   * @param val the val
+   * @param hex the hex
+   */
   public static void toHex( int val, Hex hex )
   {
     toHex( val, hex, 0 );
   }
 
+  /**
+   * To hex.
+   * 
+   * @param val the val
+   * @param hex the hex
+   * @param index the index
+   */
   public static void toHex( int val, Hex hex, int index )
   {
     short temp = ( short )( val + 156 );
@@ -78,6 +164,13 @@ public class EFC
     hex.getData()[ index ] = temp;
   }
   
+  /**
+   * To hex.
+   * 
+   * @param val the val
+   * 
+   * @return the hex
+   */
   public static Hex toHex( int val )
   {
     Hex hex = new Hex( 1 );
@@ -85,11 +178,21 @@ public class EFC
     return hex;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString()
   {
     return toString( value );
   }
   
+  /**
+   * To string.
+   * 
+   * @param efc the efc
+   * 
+   * @return the string
+   */
   public static String toString( int efc )
   {
     StringBuilder buff = new StringBuilder( 3 );
@@ -101,6 +204,9 @@ public class EFC
     return buff.toString();
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   */
   public int compareTo( EFC efc )
   {
     int other = efc.value;
@@ -112,5 +218,6 @@ public class EFC
       return 1;
   }
 
+  /** The value. */
   protected int value = 0;
 }

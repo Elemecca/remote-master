@@ -1,18 +1,47 @@
 package com.hifiremote.jp1;
 
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ButtonPanel.
+ */
 public class ButtonPanel
   extends KMPanel
   implements ActionListener
 {
+  
+  /**
+   * Instantiates a new button panel.
+   * 
+   * @param devUpgrade the dev upgrade
+   */
   public ButtonPanel( DeviceUpgrade devUpgrade )
   {
     super( "Buttons", devUpgrade );
@@ -152,6 +181,9 @@ public class ButtonPanel
     add( panel, BorderLayout.SOUTH );
   }
 
+  /**
+   * Selection changed.
+   */
   private void selectionChanged()
   {
     boolean enableDelete = false;
@@ -181,6 +213,9 @@ public class ButtonPanel
     deleteAction.setEnabled( enableDelete );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#update()
+   */
   public void update()
   {
     model.setDeviceUpgrade( deviceUpgrade );
@@ -193,12 +228,21 @@ public class ButtonPanel
     }
   }
 
+  /**
+   * Sets the buttons.
+   * 
+   * @param buttons the new buttons
+   */
   private void setButtons( Button[] buttons )
   {
-    this.buttons = buttons;
     model.setButtons();
   }
 
+  /**
+   * Adds the function.
+   * 
+   * @param f the f
+   */
   private void addFunction( Function f )
   {
     if (( f == null ) ||
@@ -216,6 +260,9 @@ public class ButtonPanel
     }
   }
 
+  /**
+   * Sets the functions.
+   */
   private void setFunctions()
   {
     popupEditor.removeAll();
@@ -232,6 +279,9 @@ public class ButtonPanel
   }
 
   // From interface ActionListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -243,11 +293,26 @@ public class ButtonPanel
     deviceUpgrade.checkSize();
   }
 
+  /**
+   * Can assign.
+   * 
+   * @param row the row
+   * @param col the col
+   * 
+   * @return true, if successful
+   */
   private boolean canAssign( int row, int col )
   {
     return model.isCellEditable( row, col );
   }
 
+  /**
+   * Sets the function at.
+   * 
+   * @param function the function
+   * @param row the row
+   * @param col the col
+   */
   private void setFunctionAt( Function function, int row, int col )
   {
     int[] rows = null;
@@ -285,9 +350,24 @@ public class ButtonPanel
     selectionChanged();
   }
 
+  /**
+   * The listener interface for receiving doubleClick events.
+   * The class that is interested in processing a doubleClick
+   * event implements this interface, and the object created
+   * with that class is registered with a component using the
+   * component's <code>addDoubleClickListener<code> method. When
+   * the doubleClick event occurs, that object's appropriate
+   * method is invoked.
+   * 
+   * @see DoubleClickEvent
+   */
   class DoubleClickListener
     extends MouseAdapter
   {
+    
+    /* (non-Javadoc)
+     * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
+     */
     public void mouseClicked( MouseEvent e )
     {
       FunctionLabel label = ( FunctionLabel )e.getSource();
@@ -304,6 +384,9 @@ public class ButtonPanel
     }
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.JComponent#setFont(java.awt.Font)
+   */
   public void setFont( Font aFont )
   {
     super.setFont( aFont );
@@ -312,17 +395,28 @@ public class ButtonPanel
     table.setRowHeight( aFont.getSize() + 2 );
   }
 
+  /** The table. */
   private JTableX table = null;
+  
+  /** The model. */
   private ButtonTableModel model = null;
+  
+  /** The function panel. */
   private JPanel functionPanel = null;
   // private JPopupMenu popup = null;
-  private int mouseRow = 0;
-  private int mouseCol = 0;
+  /** The double click listener. */
   private DoubleClickListener doubleClickListener = new DoubleClickListener();
+  
+  /** The auto assign. */
   private JButton autoAssign = null;
+  
+  /** The delete action. */
   private AbstractAction deleteAction = null;
-  private Button[] buttons = null;
+  
+  /** The popup editor. */
   private PopupEditor popupEditor = new PopupEditor();
+  
+  /** The renderer. */
   private FunctionRenderer renderer = null;
 }
 

@@ -1,15 +1,33 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PanasonicMixComboTranslator.
+ */
 public class PanasonicMixComboTranslator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new panasonic mix combo translator.
+   * 
+   * @param textParms the text parms
+   */
   public PanasonicMixComboTranslator( String[] textParms )
   {
     super( textParms );
   }
 
+  /** The bit length. */
   private static int bitLength = 6;
 
+  /**
+   * Gets the device.
+   * 
+   * @param value the value
+   * 
+   * @return the device
+   */
   private static int getDevice( int value )
   {
     int rc = -1;
@@ -27,6 +45,13 @@ public class PanasonicMixComboTranslator
     return rc;
   }
 
+  /**
+   * Gets the sub device.
+   * 
+   * @param value the value
+   * 
+   * @return the sub device
+   */
   private static int getSubDevice( int value )
   {
     int rc = -1;
@@ -44,6 +69,14 @@ public class PanasonicMixComboTranslator
     return rc - 1;
   }
 
+  /**
+   * Combine values.
+   * 
+   * @param device the device
+   * @param subDevice the sub device
+   * 
+   * @return the int
+   */
   private int combineValues( int device, int subDevice )
   {
     if ( subDevice <= device )
@@ -54,6 +87,9 @@ public class PanasonicMixComboTranslator
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     int device = 0;
@@ -89,6 +125,9 @@ public class PanasonicMixComboTranslator
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
     int byte2 = hex.getData()[ 1 ];

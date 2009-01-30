@@ -1,10 +1,21 @@
 package com.hifiremote.jp1;
 
-import java.awt.Dimension;
 import java.util.StringTokenizer;
 
+// TODO: Auto-generated Javadoc
+/**
+ * A factory for creating DeviceParm objects.
+ */
 public class DeviceParmFactory
 {
+  
+  /**
+   * Creates a new DeviceParm object.
+   * 
+   * @param text the text
+   * 
+   * @return the device parameter[]
+   */
   public static DeviceParameter[] createParameters( String text )
   {
     StringTokenizer st = new StringTokenizer( text, "," );

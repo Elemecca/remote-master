@@ -4,17 +4,37 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ProtocolManager.
+ */
 public class ProtocolManager
 {
+  
+  /**
+   * Instantiates a new protocol manager.
+   */
   protected ProtocolManager()
   {
   }
 
+  /**
+   * Gets the protocol manager.
+   * 
+   * @return the protocol manager
+   */
   public static ProtocolManager getProtocolManager()
   {
     return protocolManager;
   }
 
+  /**
+   * Load.
+   * 
+   * @param f the f
+   * 
+   * @throws Exception the exception
+   */
   public void load( File f )
     throws Exception
   {
@@ -125,6 +145,11 @@ public class ProtocolManager
     loaded = true;
   }
 
+  /**
+   * Adds the.
+   * 
+   * @param p the p
+   */
   public void add( Protocol p )
   {
     /*
@@ -182,13 +207,33 @@ public class ProtocolManager
     }
   }
 
+  /**
+   * Gets the names.
+   * 
+   * @return the names
+   */
   public List< String > getNames(){ return names; }
 
+  /**
+   * Gets the protocols for remote.
+   * 
+   * @param remote the remote
+   * 
+   * @return the protocols for remote
+   */
   public List< Protocol > getProtocolsForRemote( Remote remote )
   {
     return getProtocolsForRemote( remote, true );
   }
 
+  /**
+   * Gets the protocols for remote.
+   * 
+   * @param remote the remote
+   * @param allowUpgrades the allow upgrades
+   * 
+   * @return the protocols for remote
+   */
   public List< Protocol > getProtocolsForRemote( Remote remote, boolean allowUpgrades )
   {
     List< Protocol > rc = new ArrayList< Protocol >();
@@ -205,6 +250,13 @@ public class ProtocolManager
     return rc;
   }
 
+  /**
+   * Find by name.
+   * 
+   * @param name the name
+   * 
+   * @return the list< protocol>
+   */
   public List< Protocol > findByName( String name )
   {
     List< Protocol > v = byName.get( name );
@@ -218,6 +270,13 @@ public class ProtocolManager
     return v;
   }
 
+  /**
+   * Find by pid.
+   * 
+   * @param id the id
+   * 
+   * @return the list< protocol>
+   */
   public List< Protocol > findByPID( Hex id )
   {
     List< Protocol > rc = byPID.get( id );
@@ -226,16 +285,40 @@ public class ProtocolManager
     return rc;
   }
 
+  /**
+   * Find by alternate pid.
+   * 
+   * @param id the id
+   * 
+   * @return the list< protocol>
+   */
   public List< Protocol > findByAlternatePID( Hex id )
   {
     return byAlternatePID.get( id );
   }
 
+  /**
+   * Find protocol for remote.
+   * 
+   * @param remote the remote
+   * @param name the name
+   * 
+   * @return the protocol
+   */
   public Protocol findProtocolForRemote( Remote remote, String name )
   {
     return findProtocolForRemote( remote, name, true );
   }
 
+  /**
+   * Find protocol for remote.
+   * 
+   * @param remote the remote
+   * @param name the name
+   * @param allowUpgrades the allow upgrades
+   * 
+   * @return the protocol
+   */
   public Protocol findProtocolForRemote( Remote remote, String name, boolean allowUpgrades )
   {
     Protocol protocol = null;
@@ -264,6 +347,15 @@ public class ProtocolManager
     return protocol;
   }
 
+  /**
+   * Find protocol for remote.
+   * 
+   * @param remote the remote
+   * @param id the id
+   * @param fixedData the fixed data
+   * 
+   * @return the protocol
+   */
   public Protocol findProtocolForRemote( Remote remote, Hex id, Hex fixedData )
   {
     List< Protocol > protocols = protocolManager.findByPID( id );
@@ -279,11 +371,28 @@ public class ProtocolManager
     return null;
   }
 
+  /**
+   * Find protocol for remote.
+   * 
+   * @param remote the remote
+   * @param id the id
+   * 
+   * @return the protocol
+   */
   public Protocol findProtocolForRemote( Remote remote, Hex id )
   {
     return findProtocolForRemote( remote, id, true );
   }
 
+  /**
+   * Find protocol for remote.
+   * 
+   * @param remote the remote
+   * @param id the id
+   * @param allowUpgrades the allow upgrades
+   * 
+   * @return the protocol
+   */
   public Protocol findProtocolForRemote( Remote remote, Hex id, boolean allowUpgrades )
   {
     Protocol protocol = null;
@@ -313,6 +422,15 @@ public class ProtocolManager
     return protocol;
   }
 
+  /**
+   * Find protocol by old name.
+   * 
+   * @param remote the remote
+   * @param name the name
+   * @param pid the pid
+   * 
+   * @return the protocol
+   */
   public Protocol findProtocolByOldName( Remote remote, String name, Hex pid )
   {
     Protocol matchByName = null;
@@ -336,6 +454,15 @@ public class ProtocolManager
     return matchByName;
   }
 
+  /**
+   * Find protocol.
+   * 
+   * @param name the name
+   * @param id the id
+   * @param variantName the variant name
+   * 
+   * @return the protocol
+   */
   public Protocol findProtocol( String name, Hex id, String variantName )
   {
     List< Protocol > protocols = findByPID( id );
@@ -352,6 +479,15 @@ public class ProtocolManager
     return null;
   }
 
+  /**
+   * Find nearest protocol.
+   * 
+   * @param name the name
+   * @param id the id
+   * @param variantName the variant name
+   * 
+   * @return the protocol
+   */
   public Protocol findNearestProtocol( String name, Hex id, String variantName )
   {
     Protocol near = null;
@@ -387,11 +523,21 @@ public class ProtocolManager
     return manualProtocol;
   }
  */
-  private static ProtocolManager protocolManager = new ProtocolManager();
+  /** The protocol manager. */
+private static ProtocolManager protocolManager = new ProtocolManager();
 //  private static ManualProtocol manualProtocol = null;
-  private boolean loaded = false;
+  /** The loaded. */
+private boolean loaded = false;
+  
+  /** The names. */
   private List< String > names = new ArrayList< String >();
+  
+  /** The by name. */
   private Hashtable< String, List< Protocol >> byName = new Hashtable< String, List< Protocol >>();
+  
+  /** The by pid. */
   private Hashtable< Hex, List< Protocol >> byPID = new Hashtable< Hex, List< Protocol >>();
+  
+  /** The by alternate pid. */
   private Hashtable< Hex, List< Protocol >> byAlternatePID = new Hashtable< Hex, List< Protocol >>();
 }

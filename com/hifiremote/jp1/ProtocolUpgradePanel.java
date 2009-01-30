@@ -1,24 +1,34 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.text.*;
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.text.*;
-
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ProtocolUpgradePanel.
+ */
 public class ProtocolUpgradePanel
   extends RMTablePanel< ProtocolUpgrade >
 {
+  
+  /**
+   * Instantiates a new protocol upgrade panel.
+   */
   public ProtocolUpgradePanel()
   {
     super( new ProtocolUpgradeTableModel());
   }
 
+  /**
+   * Sets the.
+   * 
+   * @param remoteConfig the remote config
+   */
   public void set( RemoteConfiguration remoteConfig )
   {
     (( ProtocolUpgradeTableModel )model ).set( remoteConfig ); 
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.RMTablePanel#createRowObject(java.lang.Object)
+   */
   public ProtocolUpgrade createRowObject( ProtocolUpgrade baseUpgrade )
   {
     return null;

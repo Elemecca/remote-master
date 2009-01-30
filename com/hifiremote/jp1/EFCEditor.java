@@ -1,12 +1,25 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.Component;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class EFCEditor.
+ */
 public class EFCEditor
   extends DefaultCellEditor
 {
+  
+  /**
+   * Instantiates a new eFC editor.
+   * 
+   * @param digits the digits
+   */
   public EFCEditor( int digits )
   {
     super( new JTextField());
@@ -15,6 +28,9 @@ public class EFCEditor
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+   */
   public Component getTableCellEditorComponent( JTable table, Object value,
                                                 boolean isSelected, int row,
                                                 int col )
@@ -31,6 +47,9 @@ public class EFCEditor
     return tf;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getCellEditorValue()
+   */
   public Object getCellEditorValue()
     throws NumberFormatException
   {
@@ -48,11 +67,17 @@ public class EFCEditor
     return rc;
   }
 
+  /**
+   * Sets the digits.
+   * 
+   * @param digits the new digits
+   */
   public void setDigits( int digits )
   {
     this.digits = digits;
   }
 
+  /** The digits. */
   private int digits = 3;
 }
 

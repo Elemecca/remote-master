@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Sony1215Translator.
+ */
 public class Sony1215Translator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new sony1215 translator.
+   * 
+   * @param textParms the text parms
+   */
   public Sony1215Translator( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     short[] hex = hexData.getData();
@@ -26,6 +39,9 @@ public class Sony1215Translator
       hex[ 2 ] |= 0x40;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
     short[] hex = hexData.getData();

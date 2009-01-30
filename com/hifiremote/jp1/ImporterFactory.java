@@ -3,8 +3,20 @@ package com.hifiremote.jp1;
 import java.util.StringTokenizer;
 import java.lang.reflect.Constructor;
 
+// TODO: Auto-generated Javadoc
+/**
+ * A factory for creating Importer objects.
+ */
 public class ImporterFactory
 {
+  
+  /**
+   * Creates a new Importer object.
+   * 
+   * @param text the text
+   * 
+   * @return the importer[]
+   */
   public static Importer[] createImporters( String text )
   {
     StringTokenizer st = new StringTokenizer( text );
@@ -33,9 +45,10 @@ public class ImporterFactory
         if ( name.indexOf( '.' ) == -1 )
           name = "com.hifiremote.jp1." + name;
 
-        Class cl = Class.forName( name );
-        Class[] classes = { String[].class };
-        Constructor ct = cl.getConstructor( classes );
+        Class<?> cl = Class.forName( name );
+        Class<? extends Importer> cl2 = cl.asSubclass( Importer.class );
+        Class<?>[] classes = { String[].class };
+        Constructor< ? extends Importer > ct = cl2.getConstructor( classes );
         Object[] ctParms = { parms };
         importers[ i ] = ( Importer )ct.newInstance( ctParms );
       }

@@ -1,20 +1,58 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class KeyChooser.
+ */
 public class KeyChooser
   extends JDialog
   implements ActionListener
 {
+  
+  /** The dialog. */
   private static KeyChooser dialog;
+  
+  /** The value. */
   private static Integer value; 
+  
+  /** The button box. */
   private JComboBox buttonBox = new JComboBox();
+  
+  /** The shift box. */
   private JCheckBox shiftBox = new JCheckBox();
+  
+  /** The x shift box. */
   private JCheckBox xShiftBox = new JCheckBox();
 
+  /**
+   * Show dialog.
+   * 
+   * @param locationComp the location comp
+   * @param remote the remote
+   * @param initialKeyCode the initial key code
+   * 
+   * @return the integer
+   */
   public static Integer showDialog( Component locationComp,
                                     Remote remote,
                                     Integer initialKeyCode )
@@ -30,6 +68,11 @@ public class KeyChooser
     return value;
   }
 
+  /**
+   * Instantiates a new key chooser.
+   * 
+   * @param c the c
+   */
   private KeyChooser( Component c ) 
   {
     super(( JFrame )SwingUtilities.getRoot( c ));
@@ -69,7 +112,14 @@ public class KeyChooser
     pack();
   }
 
+  /** The remote. */
   private Remote remote = null;
+  
+  /**
+   * Sets the remote.
+   * 
+   * @param remote the new remote
+   */
   public void setRemote( Remote remote )
   {
     this.remote = remote;
@@ -80,6 +130,11 @@ public class KeyChooser
     pack();
   }
 
+  /**
+   * Gets the key code.
+   * 
+   * @return the key code
+   */
   public Integer getKeyCode()
   {
     Button b = ( Button )buttonBox.getSelectedItem();
@@ -92,6 +147,11 @@ public class KeyChooser
     return new Integer( code );
   }
 
+  /**
+   * Sets the key code.
+   * 
+   * @param keyCode the new key code
+   */
   public void setKeyCode( Integer keyCode )
   {
     value = keyCode;
@@ -135,6 +195,9 @@ public class KeyChooser
     buttonBox.addActionListener( this );
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();

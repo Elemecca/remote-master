@@ -3,8 +3,20 @@ package com.hifiremote.jp1;
 import java.util.StringTokenizer;
 import java.lang.reflect.Constructor;
 
+// TODO: Auto-generated Javadoc
+/**
+ * A factory for creating Initializer objects.
+ */
 public class InitializerFactory
 {
+  
+  /**
+   * Creates the.
+   * 
+   * @param text the text
+   * 
+   * @return the initializer[]
+   */
   public static Initializer[] create( String text )
   {
     StringTokenizer st = new StringTokenizer( text );
@@ -25,9 +37,10 @@ public class InitializerFactory
         if ( name.indexOf( '.' ) == -1 )
           name = "com.hifiremote.jp1." + name;
 
-        Class cl = Class.forName( name );
-        Class[] classes = { String[].class };
-        Constructor ct = cl.getConstructor( classes );
+        Class<?> cl = Class.forName( name );
+        Class<? extends Initializer > cl2 = cl.asSubclass( Initializer.class );
+        Class<?>[] classes = { String[].class };
+        Constructor< ? extends Initializer > ct = cl2.getConstructor( classes );
         Object[] ctParms = { parms };
         initializers[ i ] = ( Initializer )ct.newInstance( ctParms );
       }

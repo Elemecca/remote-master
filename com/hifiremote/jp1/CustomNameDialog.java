@@ -1,27 +1,62 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.StringTokenizer;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class CustomNameDialog.
+ */
 public class CustomNameDialog
   extends JDialog
   implements ActionListener
 {
+  
+  /**
+   * Instantiates a new custom name dialog.
+   * 
+   * @param owner the owner
+   * @param customNames the custom names
+   */
   public CustomNameDialog( JFrame owner, String[] customNames )
   {
     super( owner, "Custom Function Names", true );
     createGui( owner, customNames );
   }
     
+  /**
+   * Instantiates a new custom name dialog.
+   * 
+   * @param owner the owner
+   * @param customNames the custom names
+   */
   public CustomNameDialog( JDialog owner, String[] customNames )
   {
     super( owner, "Custom Function Names", true );
     createGui( owner, customNames );
   }
     
+  /**
+   * Creates the gui.
+   * 
+   * @param owner the owner
+   * @param customNames the custom names
+   */
   private void createGui( Component owner, String[] customNames )
   {
     setLocationRelativeTo( owner );
@@ -82,6 +117,9 @@ public class CustomNameDialog
     setLocation( x, y );
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -110,6 +148,11 @@ public class CustomNameDialog
     }
   }
 
+  /**
+   * Gets the custom names.
+   * 
+   * @return the custom names
+   */
   public String[] getCustomNames()
   {
     StringTokenizer st = new StringTokenizer( textArea.getText().trim(), "\r\n" );
@@ -124,16 +167,28 @@ public class CustomNameDialog
     return customNames;
   }
 
+  /**
+   * Gets the user action.
+   * 
+   * @return the user action
+   */
   public int getUserAction()
   {
     return userAction;
   }
 
-  private DeviceUpgrade upgrade = null;
+  /** The text area. */
   private JTextArea textArea = null;
+  
+  /** The get button names. */
   private JButton getButtonNames = null;
+  
+  /** The ok. */
   private JButton ok = null;
+  
+  /** The cancel. */
   private JButton cancel = null;
-  private JPopupMenu popup = null;
+  
+  /** The user action. */
   private int userAction = JOptionPane.CANCEL_OPTION;
 }

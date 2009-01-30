@@ -1,15 +1,33 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.io.*;
-import javax.swing.*;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
 
+import javax.swing.JOptionPane;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Remote.
+ */
 public class Remote
-  implements Comparable
+  implements Comparable< Remote >
 {
+  
+  /**
+   * Instantiates a new remote.
+   * 
+   * @param aRemote the a remote
+   * @param index the index
+   */
   public Remote( Remote aRemote, int index )
   {
     this.file = aRemote.file;
@@ -19,6 +37,11 @@ public class Remote
     nameIndex = index;
   }
 
+  /**
+   * Instantiates a new remote.
+   * 
+   * @param rdf the rdf
+   */
   public Remote( File rdf )
   {
     file = rdf;
@@ -71,8 +94,16 @@ public class Remote
     }
   }
 
+  /**
+   * Gets the file.
+   * 
+   * @return the file
+   */
   public File getFile(){ return file; }
 
+  /**
+   * Load.
+   */
   public void load()
 //    throws Exception
   {
@@ -161,9 +192,9 @@ public class Remote
         java.util.List<String> v = new ArrayList<String>();
         DeviceType vcrType = null;
         boolean hasPVRalias = false;
-        for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+        for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
         {
-          DeviceType type = ( DeviceType )e.nextElement();
+          DeviceType type = e.nextElement();
 
           String typeName = type.getName();
           if ( typeName.startsWith( "VCR" ))
@@ -220,9 +251,9 @@ public class Remote
       if (( imageMaps.length > 0 ) && ( imageMaps[ mapIndex ] != null ))
         imageMaps[ mapIndex ].parse( this );
 
-      for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+      for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
       {
-        DeviceType type = ( DeviceType )e.nextElement();
+        DeviceType type = e.nextElement();
         ImageMap[][] maps = type.getImageMaps();
         if ( maps.length > 0 )
         {
@@ -250,6 +281,9 @@ public class Remote
     }
   }
 
+  /**
+   * Sets the phantom shapes.
+   */
   private void setPhantomShapes()
   {
     double radius = 8;
@@ -305,30 +339,89 @@ public class Remote
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString(){ return names[ nameIndex ]; }
+  
+  /**
+   * Gets the signature.
+   * 
+   * @return the signature
+   */
   public String getSignature(){ return signature; }
+  
+  /**
+   * Gets the name.
+   * 
+   * @return the name
+   */
   public String getName(){ return names[ nameIndex ]; }
+  
+  /**
+   * Gets the name count.
+   * 
+   * @return the name count
+   */
   public int getNameCount(){ return names.length; }
+  
+  /**
+   * Gets the base address.
+   * 
+   * @return the base address
+   */
   public int getBaseAddress(){ return baseAddress; }
+  
+  /**
+   * Gets the eeprom size.
+   * 
+   * @return the eeprom size
+   */
   public int getEepromSize(){ return eepromSize; }
+  
+  /**
+   * Gets the device code offset.
+   * 
+   * @return the device code offset
+   */
   public int getDeviceCodeOffset(){ return deviceCodeOffset; }
+  
+  /**
+   * Gets the device types.
+   * 
+   * @return the device types
+   */
   public DeviceType[] getDeviceTypes()
   {
     DeviceType[] types = new DeviceType[ deviceTypes.size() ];
-    for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+    for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
     {
-      DeviceType type = ( DeviceType )e.nextElement();
+      DeviceType type = e.nextElement();
       types[ type.getNumber() ] = type;
     }
     return types;
   }
 
+  /**
+   * Gets the device type.
+   * 
+   * @param typeName the type name
+   * 
+   * @return the device type
+   */
   public DeviceType getDeviceType( String typeName )
   {
     DeviceType devType = deviceTypes.get( typeName );
     return devType;
   }
 
+  /**
+   * Gets the device type by alias name.
+   * 
+   * @param aliasName the alias name
+   * 
+   * @return the device type by alias name
+   */
   public DeviceType getDeviceTypeByAliasName( String aliasName )
   {
     DeviceType type = ( DeviceType )deviceTypeAliases.get( aliasName );
@@ -337,17 +430,31 @@ public class Remote
     return getDeviceType( aliasName );
   }
 
+  /**
+   * Gets the device type by index.
+   * 
+   * @param index the index
+   * 
+   * @return the device type by index
+   */
   public DeviceType getDeviceTypeByIndex( int index )
   {
-    for ( Enumeration e = deviceTypes.elements(); e.hasMoreElements(); )
+    for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
     {
-      DeviceType type = ( DeviceType )e.nextElement();
+      DeviceType type = e.nextElement();
       if ( type.getNumber() == index )
         return type;
     }
     return null;
   }
 
+  /**
+   * Gets the device type alias.
+   * 
+   * @param type the type
+   * 
+   * @return the device type alias
+   */
   public String getDeviceTypeAlias( DeviceType type )
   {
     String tentative = null;
@@ -372,30 +479,55 @@ public class Remote
     return tentative;
   }
 
+  /**
+   * Gets the device buttons.
+   * 
+   * @return the device buttons
+   */
   public DeviceButton[] getDeviceButtons()
   {
     load();
     return deviceButtons;
   }
 
+  /**
+   * Gets the buttons.
+   * 
+   * @return the buttons
+   */
   public java.util.List< Button > getButtons()
   {
     load();
     return buttons;
   }
 
+  /**
+   * Gets the upgrade buttons.
+   * 
+   * @return the upgrade buttons
+   */
   public Button[] getUpgradeButtons()
   {
     load();
     return upgradeButtons;
   }
 
+  /**
+   * Gets the phantom shapes.
+   * 
+   * @return the phantom shapes
+   */
   public java.util.List< ButtonShape > getPhantomShapes()
   {
     load();
     return phantomShapes;
   }
 
+  /**
+   * Gets the processor.
+   * 
+   * @return the processor
+   */
   public Processor getProcessor()
   {
     load();
@@ -407,24 +539,46 @@ public class Remote
     // return processorVersion;
   // }
 
+  /**
+   * Gets the rAM address.
+   * 
+   * @return the rAM address
+   */
   public int getRAMAddress()
   {
     load();
     return RAMAddress;
   }
 
+  /**
+   * Gets the digit maps.
+   * 
+   * @return the digit maps
+   */
   public short[] getDigitMaps()
   {
     load();
     return digitMaps;
   }
 
+  /**
+   * Gets the omit digit map byte.
+   * 
+   * @return the omit digit map byte
+   */
   public boolean getOmitDigitMapByte()
   {
     load();
     return omitDigitMapByte;
   }
 
+  /**
+   * Gets the image maps.
+   * 
+   * @param type the type
+   * 
+   * @return the image maps
+   */
   public ImageMap[] getImageMaps( DeviceType type )
   {
     load();
@@ -439,24 +593,46 @@ public class Remote
     }
   }
 
+  /**
+   * Gets the adv code format.
+   * 
+   * @return the adv code format
+   */
   public int getAdvCodeFormat()
   {
     load();
     return advCodeFormat;
   }
 
+  /**
+   * Gets the adv code bind format.
+   * 
+   * @return the adv code bind format
+   */
   public int getAdvCodeBindFormat()
   {
     load();
     return advCodeBindFormat;
   }
 
+  /**
+   * Gets the eFC digits.
+   * 
+   * @return the eFC digits
+   */
   public int getEFCDigits()
   {
     load();
     return efcDigits;
   }
 
+  /**
+   * Parses the flag.
+   * 
+   * @param st the st
+   * 
+   * @return true, if successful
+   */
   private boolean parseFlag( StringTokenizer st )
   {
     String flag = st.nextToken( " =\t" );
@@ -471,6 +647,15 @@ public class Remote
     return false;
   }
 
+  /**
+   * Parses the general section.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseGeneralSection( RDFReader rdr )
     throws Exception
   {
@@ -695,11 +880,12 @@ public class Remote
           if ( className.indexOf( '.' ) == -1 )
             className = "com.hifiremote.jp1." + className;
 
-          Class cl = Class.forName( className );
-          Class[] parmClasses = { String.class };
-          Constructor ct = cl.getConstructor( parmClasses );
+          Class<?> cl = Class.forName( className );
+          Class< ? extends EncrypterDecrypter> cl2 = cl.asSubclass( EncrypterDecrypter.class );
+          Class<?>[] parmClasses = { String.class };
+          Constructor< ? extends EncrypterDecrypter > ct = cl2.getConstructor( parmClasses );
           Object[] ctParms = { textParm };
-          encdec = ( EncrypterDecrypter )ct.newInstance( ctParms );
+          encdec = ct.newInstance( ctParms );
         }
         catch ( Exception e )
         {
@@ -724,12 +910,24 @@ public class Remote
     return line;
   }
 
+  /**
+   * Gets the dev comb addresses.
+   * 
+   * @return the dev comb addresses
+   */
   public int[] getDevCombAddresses()
   {
     load();
     return devCombAddress;
   }
 
+  /**
+   * Parses the restrictions.
+   * 
+   * @param str the str
+   * 
+   * @return the int
+   */
   private int parseRestrictions( String str )
   {
     int rc = 0;
@@ -794,6 +992,16 @@ public class Remote
     }
     return rc;
   }
+  
+  /**
+   * Parses the special protocols.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseSpecialProtocols( RDFReader rdr )
     throws Exception
   {
@@ -814,6 +1022,15 @@ public class Remote
     return line;
   }
 
+  /**
+   * Parses the check sums.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseCheckSums( RDFReader rdr )
     throws Exception
   {
@@ -843,8 +1060,22 @@ public class Remote
     return line;
   }
 
+  /**
+   * Gets the check sums.
+   * 
+   * @return the check sums
+   */
   public CheckSum[] getCheckSums(){ return checkSums; }
 
+  /**
+   * Parses the settings.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseSettings( RDFReader rdr )
     throws Exception
   {
@@ -893,8 +1124,20 @@ public class Remote
     return line;
   }
 
+  /**
+   * Gets the settings.
+   * 
+   * @return the settings
+   */
   public Setting[] getSettings(){ return settings; }
 
+  /**
+   * Gets the section.
+   * 
+   * @param name the name
+   * 
+   * @return the section
+   */
   public Object[] getSection( String name )
   {
     if ( name.equals( "DeviceButtons" ))
@@ -905,6 +1148,15 @@ public class Remote
     return null;
   }
 
+  /**
+   * Parses the fixed data.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseFixedData( RDFReader rdr )
     throws Exception
   {
@@ -980,6 +1232,15 @@ public class Remote
     return line;
   }
 
+  /**
+   * Parses the device buttons.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseDeviceButtons( RDFReader rdr )
     throws Exception
   {
@@ -1005,6 +1266,15 @@ public class Remote
     return line;
   }
 
+  /**
+   * Parses the device abbreviations.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseDeviceAbbreviations( RDFReader rdr )
     throws Exception
   {
@@ -1034,6 +1304,15 @@ public class Remote
     return line;
   }
 
+  /**
+   * Parses the digit maps.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseDigitMaps( RDFReader rdr )
     throws Exception
   {
@@ -1062,6 +1341,15 @@ public class Remote
     return line;
   }
 
+  /**
+   * Parses the device types.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseDeviceTypes( RDFReader rdr )
     throws Exception
   {
@@ -1088,6 +1376,15 @@ public class Remote
     return line;
   }
 
+  /**
+   * Parses the device type aliases.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseDeviceTypeAliases( RDFReader rdr )
     throws Exception
   {
@@ -1129,12 +1426,26 @@ public class Remote
     return line;
   }
 
+  /**
+   * Gets the device type alias names.
+   * 
+   * @return the device type alias names
+   */
   public String[] getDeviceTypeAliasNames()
   {
     load();
     return deviceTypeAliasNames;
   }
 
+  /**
+   * Parses the device type image maps.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseDeviceTypeImageMaps( RDFReader rdr )
     throws Exception
   {
@@ -1203,6 +1514,15 @@ public class Remote
     return line;
   }
 
+  /**
+   * Parses the buttons.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseButtons( RDFReader rdr )
     throws Exception
   {
@@ -1266,19 +1586,32 @@ public class Remote
     return line;
   }
 
+  /**
+   * Gets the button.
+   * 
+   * @param keyCode the key code
+   * 
+   * @return the button
+   */
   public Button getButton( int keyCode )
   {
     load();
     return ( Button )buttonsByKeyCode.get( new Integer( keyCode ));
   }
 
+  /**
+   * Gets the button name.
+   * 
+   * @param keyCode the key code
+   * 
+   * @return the button name
+   */
   public String getButtonName( int keyCode )
   {
     Button b = getButton( keyCode );
 
     if ( b == null )
     {
-      int mask = keyCode & 0xC0;
       int baseCode = keyCode & 0x3F;
       if ( baseCode != 0 )
       {
@@ -1301,12 +1634,24 @@ public class Remote
     return b.getName();
   }
 
+  /**
+   * Gets the button.
+   * 
+   * @param name the name
+   * 
+   * @return the button
+   */
   public Button getButton( String name )
   {
     load();
     return ( Button )buttonsByName.get( name.toLowerCase());
   }
 
+  /**
+   * Adds the button.
+   * 
+   * @param b the b
+   */
   public void addButton( Button b )
   {
     int keycode = b.getKeyCode();
@@ -1375,6 +1720,15 @@ public class Remote
     buttonsByKeyCode.put( new Integer( keycode ), b );
   }
 
+  /**
+   * Parses the multi macros.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseMultiMacros( RDFReader rdr )
     throws Exception
   {
@@ -1397,6 +1751,13 @@ public class Remote
     return line;
   }
 
+  /**
+   * Find by standard name.
+   * 
+   * @param b the b
+   * 
+   * @return the button
+   */
   public Button findByStandardName( Button b )
   {
     load();
@@ -1404,12 +1765,21 @@ public class Remote
   }
 
 
+  /**
+   * Parses the button maps.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseButtonMaps( RDFReader rdr )
     throws Exception
   {
     java.util.List< ButtonMap > work = new ArrayList< ButtonMap >();
     String line;
-    ButtonMap map = null;
+    // ButtonMap map = null;
     int name = -1;
     java.util.List< java.util.List< Integer >> outer = new ArrayList< java.util.List< Integer >>();
     java.util.List< Integer > inner = null;
@@ -1493,6 +1863,15 @@ public class Remote
     return line;
   }
 
+  /**
+   * Parses the protocols.
+   * 
+   * @param rdr the rdr
+   * 
+   * @return the string
+   * 
+   * @throws Exception the exception
+   */
   private String parseProtocols( RDFReader rdr )
     throws Exception
   {
@@ -1512,7 +1891,7 @@ public class Remote
           String token = st.nextToken().trim();
           String variantName = "";
           int colon = token.indexOf( ':' );
-          String name = token;
+          // String name = token;
           if ( colon != -1 )
           {
             variantName = token.substring( colon + 1 );
@@ -1532,12 +1911,34 @@ public class Remote
     return line;
   }
 
+  /**
+   * Gets the height.
+   * 
+   * @return the height
+   */
   public int getHeight(){ load(); return height; }
+  
+  /** The height. */
   private int height;
 
+  /**
+   * Gets the width.
+   * 
+   * @return the width
+   */
   public int getWidth(){ load(); return width; }
+  
+  /** The width. */
   private int width;
 
+  /**
+   * Supports variant.
+   * 
+   * @param pid the pid
+   * @param name the name
+   * 
+   * @return true, if successful
+   */
   public boolean supportsVariant( Hex pid, String name )
   {
     load();
@@ -1551,6 +1952,13 @@ public class Remote
     return false;
   }
 
+  /**
+   * Gets the supported variant names.
+   * 
+   * @param pid the pid
+   * 
+   * @return the supported variant names
+   */
   public java.util.List< String > getSupportedVariantNames( Hex pid )
   {
     load();
@@ -1568,24 +1976,51 @@ public class Remote
   }
   */
 
+  /**
+   * Sets the protocols.
+   * 
+   * @param protocols the new protocols
+   */
   public void setProtocols( java.util.List< Protocol > protocols )
   {
     load();
     this.protocols = protocols;
   }
 
+  /**
+   * Gets the protocols.
+   * 
+   * @return the protocols
+   */
   public java.util.List< Protocol > getProtocols()
   {
     load();
     return protocols;
   }
 
+  /**
+   * Gets the encrypter decrypter.
+   * 
+   * @return the encrypter decrypter
+   */
   public EncrypterDecrypter getEncrypterDecrypter()
   {
     load();
     return encdec;
   }
 
+  /**
+   * Creates the key move key.
+   * 
+   * @param keyCode the key code
+   * @param deviceIndex the device index
+   * @param deviceType the device type
+   * @param setupCode the setup code
+   * @param movedKeyCode the moved key code
+   * @param notes the notes
+   * 
+   * @return the key move
+   */
   public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode, int movedKeyCode, String notes )
   {
     KeyMove keyMove = null;
@@ -1593,6 +2028,18 @@ public class Remote
     return keyMove;
   }
 
+  /**
+   * Creates the key move.
+   * 
+   * @param keyCode the key code
+   * @param deviceIndex the device index
+   * @param deviceType the device type
+   * @param setupCode the setup code
+   * @param cmd the cmd
+   * @param notes the notes
+   * 
+   * @return the key move
+   */
   public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
     KeyMove keyMove = null;
@@ -1605,6 +2052,18 @@ public class Remote
     return keyMove;
   }
 
+  /**
+   * Creates the key move.
+   * 
+   * @param keyCode the key code
+   * @param deviceIndex the device index
+   * @param deviceType the device type
+   * @param setupCode the setup code
+   * @param efc the efc
+   * @param notes the notes
+   * 
+   * @return the key move
+   */
   public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, int efc, String notes )
   {
     KeyMove keyMove = null;
@@ -1622,107 +2081,384 @@ public class Remote
     return keyMove;
   }
 
+  /**
+   * Gets the max upgrade length.
+   * 
+   * @return the max upgrade length
+   */
   public Integer getMaxUpgradeLength(){ return maxUpgradeLength; }
+  
+  /**
+   * Gets the max protocol length.
+   * 
+   * @return the max protocol length
+   */
   public Integer getMaxProtocolLength(){ return maxProtocolLength; }
+  
+  /**
+   * Gets the max combined upgrade length.
+   * 
+   * @return the max combined upgrade length
+   */
   public Integer getMaxCombinedUpgradeLength(){ return maxCombinedUpgradeLength; }
 
   // Interface Comparable
-  public int compareTo( Object o )
+  /* (non-Javadoc)
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   */
+  public int compareTo( Remote o )
   {
-    return names[ nameIndex ].compareTo( o.toString());
+    return names[ nameIndex ].compareTo( o.names[ o.nameIndex ]);
   }
 
+  /**
+   * Gets the shift mask.
+   * 
+   * @return the shift mask
+   */
   public int getShiftMask(){ return shiftMask; }
+  
+  /**
+   * Gets the x shift mask.
+   * 
+   * @return the x shift mask
+   */
   public int getXShiftMask(){ return xShiftMask; }
+  
+  /**
+   * Gets the x shift enabled.
+   * 
+   * @return the x shift enabled
+   */
   public boolean getXShiftEnabled(){ return xShiftEnabled; }
+  
+  /**
+   * Sets the x shift enabled.
+   * 
+   * @param flag the new x shift enabled
+   */
   public void setXShiftEnabled( boolean flag ){ xShiftEnabled = flag; }
+  
+  /**
+   * Gets the shift label.
+   * 
+   * @return the shift label
+   */
   public String getShiftLabel(){ return shiftLabel; }
+  
+  /**
+   * Gets the x shift label.
+   * 
+   * @return the x shift label
+   */
   public String getXShiftLabel(){ return xShiftLabel; }
+  
+  /**
+   * Gets the protocol vector offset.
+   * 
+   * @return the protocol vector offset
+   */
   public int getProtocolVectorOffset(){ return protocolVectorOffset; }
+  
+  /**
+   * Gets the protocol data offset.
+   * 
+   * @return the protocol data offset
+   */
   public int getProtocolDataOffset(){ return protocolDataOffset; }
+  
+  /**
+   * Gets the supports binary upgrades.
+   * 
+   * @return the supports binary upgrades
+   */
   public boolean getSupportsBinaryUpgrades(){ return supportsBinaryUpgrades; }
 
+  /** The file. */
   private File file = null;
+  
+  /** The signature. */
   private String signature = null;
+  
+  /** The names. */
   private String[] names = new String[ 1 ];
+  
+  /** The name index. */
   private int nameIndex = 0;
+  
+  /** The loaded. */
   private boolean loaded = false;
+  
+  /** The base address. */
   private int baseAddress = 0;
+  
+  /** The eeprom size. */
   private int eepromSize;
+  
+  /** The device code offset. */
   private int deviceCodeOffset;
+  
+  /** The fav key. */
   private FavKey favKey = null;
+  
+  /**
+   * Gets the fav key.
+   * 
+   * @return the fav key
+   */
   public FavKey getFavKey(){ return favKey; }
+  
+  /** The oem device. */
+  @SuppressWarnings("unused")
   private OEMDevice oemDevice = null;
+  
+  /** The oem control. */
+  @SuppressWarnings("unused")
   private int oemControl = 0;
+  
+  /** The upgrade bug. */
+  @SuppressWarnings("unused")
   private boolean upgradeBug = false;
+  
+  /** The advanced code address. */
   private AddressRange advancedCodeAddress = null;
+  
+  /**
+   * Gets the advanced code address.
+   * 
+   * @return the advanced code address
+   */
   public AddressRange getAdvancedCodeAddress(){ return advancedCodeAddress; }
+  
+  /** The macro support. */
+  @SuppressWarnings("unused")
   private boolean macroSupport = true;
+  
+  /** The upgrade address. */
   private AddressRange upgradeAddress = null;
+  
+  /**
+   * Gets the upgrade address.
+   * 
+   * @return the upgrade address
+   */
   public AddressRange getUpgradeAddress(){ return upgradeAddress; }
+  
+  /** The device upgrade address. */
+  @SuppressWarnings("unused")
   private AddressRange deviceUpgradeAddress = null;
+  
+  /** The timed macro address. */
+  @SuppressWarnings("unused")
   private AddressRange timedMacroAddress = null;
+  
+  /** The timed macro warning. */
+  @SuppressWarnings("unused")
   private boolean timedMacroWarning = false;
+  
+  /** The learned address. */
   private AddressRange learnedAddress = null;
+  
+  /**
+   * Gets the learned address.
+   * 
+   * @return the learned address
+   */
   public AddressRange getLearnedAddress(){ return learnedAddress; }
+  
+  /** The processor. */
   private Processor processor = null;
   // private String processorVersion = null;
+  /** The RAM address. */
   private int RAMAddress;
+  
+  /** The time address. */
+  @SuppressWarnings("unused")
   private int timeAddress = 0;
+  
+  /** The RDF sync. */
+  @SuppressWarnings("unused")
   private int RDFSync;
+  
+  /** The punch thru base. */
+  @SuppressWarnings("unused")
   private int punchThruBase;
+  
+  /** The scan base. */
+  @SuppressWarnings("unused")
   private int scanBase = 0;
+  
+  /** The sleep status bit. */
+  @SuppressWarnings("unused")
   private StatusBit sleepStatusBit = null;
+  
+  /** The vpt status bit. */
+  @SuppressWarnings("unused")
   private StatusBit vptStatusBit = null;
+  
+  /** The check sums. */
   private CheckSum[] checkSums = new CheckSum[ 0 ];
+  
+  /** The settings. */
   private Setting[] settings = new Setting[ 0 ];
+  
+  /** The fixed data. */
   private FixedData[] fixedData = new FixedData[ 0 ];
+  
+  /** The device buttons. */
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
+  
+  /** The device types. */
   private Hashtable< String, DeviceType> deviceTypes = new Hashtable< String, DeviceType >();
+  
+  /** The device type aliases. */
   private Hashtable< String, DeviceType> deviceTypeAliases = new Hashtable< String, DeviceType >();
+  
+  /** The device type alias names. */
   private String[] deviceTypeAliasNames = null;
+  
+  /** The buttons. */
   private java.util.List<Button> buttons = new ArrayList<Button>();
+  
+  /** The buttons by key code. */
   private Hashtable< Integer, Button > buttonsByKeyCode = new Hashtable< Integer, Button >();
+  
+  /** The buttons by name. */
   private Hashtable< String, Button > buttonsByName = new Hashtable< String, Button >();
+  
+  /** The buttons by standard name. */
   private Hashtable< String, Button > buttonsByStandardName = new Hashtable< String, Button >();
+  
+  /** The upgrade buttons. */
   private Button[] upgradeButtons = new Button[ 0 ];
+  
+  /** The phantom shapes. */
   private java.util.List< ButtonShape> phantomShapes = new ArrayList< ButtonShape >();
+  
+  /** The digit maps. */
   private short[] digitMaps = new short[ 0 ];
+  
+  /** The button maps. */
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
+  
+  /** The omit digit map byte. */
   private boolean omitDigitMapByte = false;
+  
+  /** The protocol variant names. */
   private Hashtable< Hex, java.util.List< String >> protocolVariantNames = new Hashtable< Hex, java.util.List< String >>();
+  
+  /** The protocols. */
   private java.util.List< Protocol > protocols = null;
+  
+  /** The image maps. */
   private ImageMap[] imageMaps = new ImageMap[ 0 ];
+  
+  /** The map index. */
   private int mapIndex = 0;
+  
+  /** The shift mask. */
   private int shiftMask = 0x80;
+  
+  /** The x shift mask. */
   private int xShiftMask = 0xC0;
+  
+  /** The x shift enabled. */
   private boolean xShiftEnabled = false;
+  
+  /** The shift label. */
   private String shiftLabel = "Shift";
+  
+  /** The x shift label. */
   private String xShiftLabel = "XShift";
+  
+  /** The default restrictions. */
   private int defaultRestrictions = 0;
+  
+  /** The Constant HEX_FORMAT. */
   public static final int HEX_FORMAT = 0;
+  
+  /** The Constant EFC_FORMAT. */
   public static final int EFC_FORMAT = 1;
+  
+  /** The Constant NORMAL. */
   public static final int NORMAL = 0;
+  
+  /** The Constant LONG. */
   public static final int LONG = 1;
+  
+  /** The adv code format. */
   private int advCodeFormat = HEX_FORMAT;
+  
+  /** The adv code bind format. */
   private int advCodeBindFormat = NORMAL;
+  
+  /** The efc digits. */
   private int efcDigits = 3;
+  
+  /** The dev comb address. */
   private int[] devCombAddress = null;
+  
+  /** The protocol vector offset. */
   private int protocolVectorOffset = 0;
+  
+  /** The protocol data offset. */
   private int protocolDataOffset = 0;
+  
+  /** The encdec. */
   private EncrypterDecrypter encdec = null;
+  
+  /** The supports binary upgrades. */
   private boolean supportsBinaryUpgrades = false;
+  
+  /** The max protocol length. */
   private Integer maxProtocolLength = null;
+  
+  /** The max upgrade length. */
   private Integer maxUpgradeLength = null;
+  
+  /** The max combined upgrade length. */
   private Integer maxCombinedUpgradeLength = null;
+  
+  /** The section terminator. */
   private short sectionTerminator = 0;
+  
+  /**
+   * Gets the section terminator.
+   * 
+   * @return the section terminator
+   */
   public short getSectionTerminator(){ return sectionTerminator; }
+  
+  /** The special protocols. */
   public java.util.List< SpecialProtocol > specialProtocols = new ArrayList< SpecialProtocol >();
+  
+  /**
+   * Gets the special protocols.
+   * 
+   * @return the special protocols
+   */
   public java.util.List< SpecialProtocol > getSpecialProtocols(){ return specialProtocols; }
+  
+  /** The two byte pid. */
   private boolean twoBytePID = false;
+  
+  /**
+   * Uses two byte pid.
+   * 
+   * @return true, if successful
+   */
   public boolean usesTwoBytePID(){ return twoBytePID; }
+  
+  /** The learned dev btn swapped. */
   private boolean learnedDevBtnSwapped = false;
+  
+  /**
+   * Gets the learned dev btn swapped.
+   * 
+   * @return the learned dev btn swapped
+   */
   public boolean getLearnedDevBtnSwapped(){ return learnedDevBtnSwapped; }
 
+  /** The restriction table. */
   private static Hashtable< String, Integer > restrictionTable = null;
  }

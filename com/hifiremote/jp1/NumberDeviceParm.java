@@ -1,24 +1,52 @@
 package com.hifiremote.jp1;
 
-import java.text.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import java.util.*;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusListener;
+import java.util.EventListener;
 
+import javax.swing.JComponent;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentListener;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class NumberDeviceParm.
+ */
 public class NumberDeviceParm
   extends DeviceParameter
 {
+  
+  /**
+   * Instantiates a new number device parm.
+   * 
+   * @param name the name
+   * @param defaultValue the default value
+   */
   public NumberDeviceParm( String name, DefaultValue defaultValue )
   {
     this( name, defaultValue, 10 );
   }
 
+  /**
+   * Instantiates a new number device parm.
+   * 
+   * @param name the name
+   * @param defaultValue the default value
+   * @param base the base
+   */
   public NumberDeviceParm( String name, DefaultValue defaultValue, int base )
   {
     this( name, defaultValue, base, 8 );
   }
 
+  /**
+   * Instantiates a new number device parm.
+   * 
+   * @param name the name
+   * @param defaultValue the default value
+   * @param base the base
+   * @param bits the bits
+   */
   public NumberDeviceParm( String name, DefaultValue defaultValue, int base, int bits )
   {
     super( name, defaultValue );
@@ -33,6 +61,9 @@ public class NumberDeviceParm
     setToolTipText();
   }
   
+  /**
+   * Sets the tool tip text.
+   */
   private void setToolTipText()
   {
     String numType = "";
@@ -45,6 +76,11 @@ public class NumberDeviceParm
     tf.setToolTipText( helpText );
   }    
 
+  /**
+   * Sets the bits.
+   * 
+   * @param bits the new bits
+   */
   public void setBits( int bits )
   {
     this.bits = bits;
@@ -53,11 +89,17 @@ public class NumberDeviceParm
     setToolTipText();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.DeviceParameter#getComponent()
+   */
   public JComponent getComponent()
   {
     return tf;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.DeviceParameter#addListener(java.util.EventListener)
+   */
   public void addListener( EventListener l )
   {
     tf.addActionListener(( ActionListener )l );
@@ -65,6 +107,9 @@ public class NumberDeviceParm
     tf.getDocument().addDocumentListener(( DocumentListener )l );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.DeviceParameter#removeListener(java.util.EventListener)
+   */
   public void removeListener( EventListener l )
   {
     tf.removeActionListener(( ActionListener )l );
@@ -72,6 +117,9 @@ public class NumberDeviceParm
     tf.getDocument().removeDocumentListener(( DocumentListener )l );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Parameter#getValue()
+   */
   public Object getValue()
   {
     String text = tf.getText();
@@ -81,6 +129,9 @@ public class NumberDeviceParm
     return rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Parameter#setValue(java.lang.Object)
+   */
   public void setValue( Object value )
   {
     if ( value == null )
@@ -88,7 +139,7 @@ public class NumberDeviceParm
     else
     {
       String temp = null;
-      Class aClass = value.getClass();
+      Class<?> aClass = value.getClass();
       if (( aClass == Integer.class ) && ( base != 10 ))
         temp = Integer.toHexString((( Integer )value ).intValue());
       else
@@ -97,6 +148,9 @@ public class NumberDeviceParm
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString()
   {
     StringBuilder buff = new StringBuilder();
@@ -115,12 +169,26 @@ public class NumberDeviceParm
     return buff.toString();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Parameter#getDescription()
+   */
   public String getDescription(){ return "Number"; }
 
+  /** The tf. */
   private JTextField tf = null;
+  
+  /** The bits. */
   private int bits = 8;
+  
+  /** The min. */
   private int min;
+  
+  /** The max. */
   private int max;
+  
+  /** The base. */
   private int base = 10;
+  
+  /** The verifier. */
   private IntVerifier verifier = null;
 }

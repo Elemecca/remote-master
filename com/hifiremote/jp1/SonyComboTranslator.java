@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SonyComboTranslator.
+ */
 public class SonyComboTranslator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new sony combo translator.
+   * 
+   * @param textParms the text parms
+   */
   public SonyComboTranslator( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int parmToSet )
   {
     System.err.println( "SonyComboTranslator.in(), parmToSet=" + parmToSet );
@@ -20,9 +33,6 @@ public class SonyComboTranslator
       case 0: // Protocol
         {
           int protocol = parm;
-          int force15 = 0;
-          int device = 0;
-          int subDevice = 0;
           if ( protocol == 0 ) // Sony12
           {
             insert( hexData, 7, 1, 0 );  // clear Sony15 bit
@@ -55,7 +65,6 @@ public class SonyComboTranslator
       case 2: // SubDevice
         {
           int subDevice = parm;
-          boolean isSony15 = ( extract( hexData, 7, 1 ) == 1 );
           if ( subDevice == 0 )
           {
             insert( hexData, 13, 3, 0 );  // clear index and Sony20 bit
@@ -71,6 +80,9 @@ public class SonyComboTranslator
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
     System.err.println( "SonyComboTranslator( " + hex.toString() + " )" );

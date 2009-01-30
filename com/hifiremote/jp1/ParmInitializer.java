@@ -1,8 +1,18 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ParmInitializer.
+ */
 public class ParmInitializer
   extends Initializer
 {
+  
+  /**
+   * Instantiates a new parm initializer.
+   * 
+   * @param parms the parms
+   */
   public ParmInitializer( String[] parms )
   {
     if ( parms.length != 4 )
@@ -14,6 +24,9 @@ public class ParmInitializer
     bitCnt = Integer.parseInt( parms[ 3 ]);
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Initializer#initialize(com.hifiremote.jp1.DeviceParameter[], com.hifiremote.jp1.CmdParameter[])
+   */
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
     int step = 1 << bitPos;
@@ -36,8 +49,15 @@ public class ParmInitializer
     (( ChoiceEditor )devCmdParm.getEditor()).initialize();
   }
 
+  /** The cmd ndx. */
   private int cmdNdx=0;
+  
+  /** The dev ndx. */
   private int devNdx=0;
+  
+  /** The bit pos. */
   private int bitPos=0;
+  
+  /** The bit cnt. */
   private int bitCnt=1;
 }

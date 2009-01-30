@@ -3,21 +3,72 @@ package com.hifiremote.jp1.io;
 import java.io.File;
 import com.hifiremote.jp1.Hex;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class JP12Serial.
+ */
 public class JP12Serial
   extends IO
 {
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getInterfaceName()
+   */
   public native String getInterfaceName();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getInterfaceVersion()
+   */
   public native String getInterfaceVersion();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getPortNames()
+   */
   public native String[] getPortNames();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#openRemote(java.lang.String)
+   */
   public native String openRemote( String portName );
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#closeRemote()
+   */
   public native void closeRemote();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getRemoteSignature()
+   */
   public native String getRemoteSignature();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getRemoteEepromAddress()
+   */
   public native int getRemoteEepromAddress();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getRemoteEepromSize()
+   */
   public native int getRemoteEepromSize();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#readRemote(int, byte[], int)
+   */
   public native int readRemote( int address, byte[] buffer, int length );
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#writeRemote(int, byte[], int)
+   */
   public native int writeRemote( int address, byte[] buffer, int length );
+  
+  /** The is loaded. */
   private static boolean isLoaded = false;
 
+  /**
+   * Instantiates a new j p12 serial.
+   * 
+   * @throws UnsatisfiedLinkError the unsatisfied link error
+   */
   public JP12Serial()
     throws UnsatisfiedLinkError
   {
@@ -28,6 +79,13 @@ public class JP12Serial
     }
   }
 
+  /**
+   * Instantiates a new j p12 serial.
+   * 
+   * @param folder the folder
+   * 
+   * @throws UnsatisfiedLinkError the unsatisfied link error
+   */
   public JP12Serial( File folder )
     throws UnsatisfiedLinkError
   {
@@ -40,6 +98,11 @@ public class JP12Serial
   }
 
 
+  /**
+   * The main method.
+   * 
+   * @param args the arguments
+   */
   public static void main( String[] args )
   {
     JP12Serial test = new JP12Serial();

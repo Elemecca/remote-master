@@ -3,13 +3,29 @@ package com.hifiremote.jp1;
 import java.io.*;
 import java.util.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ManualProtocol.
+ */
 public class ManualProtocol
   extends Protocol
 {
+  
+  /** The Constant ONE_BYTE. */
   public final static int ONE_BYTE = 0;
+  
+  /** The Constant BEFORE_CMD. */
   public final static int BEFORE_CMD = 1;
+  
+  /** The Constant AFTER_CMD. */
   public final static int AFTER_CMD = 2;
 
+  /**
+   * Instantiates a new manual protocol.
+   * 
+   * @param id the id
+   * @param props the props
+   */
   public ManualProtocol( Hex id, Properties props )
   {
     super( null, id, props );
@@ -21,6 +37,11 @@ public class ManualProtocol
       variantName = "manual";
   }
 
+  /**
+   * Instantiates a new manual protocol.
+   * 
+   * @param p the p
+   */
   public ManualProtocol( ManualProtocol p )
   {
     super( p.getName(), p.id, null );
@@ -28,6 +49,18 @@ public class ManualProtocol
       fixedData = new Hex( p.fixedData );
   }
 
+  /**
+   * Instantiates a new manual protocol.
+   * 
+   * @param name the name
+   * @param id the id
+   * @param cmdType the cmd type
+   * @param signalStyle the signal style
+   * @param devBits the dev bits
+   * @param parms the parms
+   * @param rawHex the raw hex
+   * @param cmdBits the cmd bits
+   */
   public ManualProtocol( String name, Hex id, int cmdType, String signalStyle,
                          int devBits, List< Value > parms, short[] rawHex, int cmdBits )
   {
@@ -53,6 +86,17 @@ public class ManualProtocol
     createDefaultParmsAndTranslators( cmdType, lsb, comp, devBits, parms, rawHex, cmdBits );
   }
 
+  /**
+   * Creates the default parms and translators.
+   * 
+   * @param cmdType the cmd type
+   * @param lsb the lsb
+   * @param comp the comp
+   * @param devBits the dev bits
+   * @param parms the parms
+   * @param rawHex the raw hex
+   * @param cmdBits the cmd bits
+   */
   public void createDefaultParmsAndTranslators( int cmdType, boolean lsb, boolean comp,
                          int devBits, List< Value > parms, short[] rawHex, int cmdBits )
   {
@@ -78,7 +122,6 @@ public class ManualProtocol
 
     fixedData = new Hex( fixedBytes );
 
-    int byte2Index = 0;
     int cmdLength = cmdType >> 4;
     switch ( cmdType )
     {
@@ -89,16 +132,13 @@ public class ManualProtocol
       case BEFORE_CMD:
         cmdIndex = cmdLength - 1;
         cmdLength = 2;
-        byte2Index = 0;
         break;
       case AFTER_CMD:
         cmdIndex = 0;
         cmdLength = 2;
-        byte2Index = 1;
         break;
       default:
         cmdIndex = 0;
-        byte2Index = 0;
     }
     
     defaultCmd = new Hex( new short[ cmdLength ]);
@@ -134,6 +174,9 @@ public class ManualProtocol
     */
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#getName()
+   */
   public String getName()
   {
     if ( name != null )
@@ -144,30 +187,53 @@ public class ManualProtocol
       return "Manual Settings";
   }
 
+  /**
+   * Sets the device parms.
+   * 
+   * @param v the new device parms
+   */
   public void setDeviceParms( List< DeviceParameter > v )
   {
     devParms = new DeviceParameter[ v.size()];
     v.toArray( devParms );
   }
 
+  /**
+   * Sets the device translators.
+   * 
+   * @param v the new device translators
+   */
   public void setDeviceTranslators( List< Translate > v )
   {
     deviceTranslators = new Translator[ v.size()];
     v.toArray( deviceTranslators );
   }
 
+  /**
+   * Sets the command parms.
+   * 
+   * @param v the new command parms
+   */
   public void setCommandParms( List< CmdParameter > v )
   {
     cmdParms = new CmdParameter[ v.size()];
     v.toArray( cmdParms );
   }
 
+  /**
+   * Sets the command translators.
+   * 
+   * @param v the new command translators
+   */
   public void setCommandTranslators( List< Translate > v )
   {
     cmdTranslators = new Translator[ v.size()];
     v.toArray( cmdTranslators );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#importCommand(com.hifiremote.jp1.Hex, java.lang.String, boolean, int, boolean)
+   */
   public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )
   {
     if (( text.indexOf( ' ' ) != -1 ) || ( text.indexOf( 'h' ) != -1 ))
@@ -182,6 +248,9 @@ public class ManualProtocol
   }
 
   // for importing byte2 values from a KM upgrade.
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#importCommandParms(com.hifiremote.jp1.Hex, java.lang.String)
+   */
   public void importCommandParms( Hex hex, String text )
   {
     if ( cmdParms.length == 1 )
@@ -199,6 +268,11 @@ public class ManualProtocol
     }
   }
 
+  /**
+   * Store.
+   * 
+   * @param out the out
+   */
   public void store( PropertyWriter out )
   {
     if ( devParms.length > 0 )
@@ -249,15 +323,18 @@ public class ManualProtocol
     out.print( "DefaultCmd", defaultCmd.toString());
     out.print( "CmdIndex", Integer.toString( cmdIndex ));
     out.print( "FixedData", fixedData.toString());
-    for ( Iterator i = code.keySet().iterator(); i.hasNext(); )
+    for ( Iterator< String > i = code.keySet().iterator(); i.hasNext(); )
     {
       Object key = i.next();
-      out.print( "Code." + key, (( Hex )code.get( key )).toRawString());
+      out.print( "Code." + key, code.get( key ).toRawString());
     }
     if ( notes != null )
       out.print( "Protocol.notes", notes );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#store(com.hifiremote.jp1.PropertyWriter, com.hifiremote.jp1.Value[])
+   */
   public void store( PropertyWriter out, Value[] vals )
     throws IOException
   {
@@ -266,36 +343,68 @@ public class ManualProtocol
     store( out );
   }
 
+  /**
+   * Sets the default cmd.
+   * 
+   * @param cmd the new default cmd
+   */
   public void setDefaultCmd( Hex cmd )
   {
     defaultCmd = cmd;
   }
 
+  /**
+   * Sets the raw hex.
+   * 
+   * @param rawHex the new raw hex
+   */
   public void setRawHex( Hex rawHex )
   {
     fixedData = rawHex;
   }
 
+  /**
+   * Sets the code.
+   * 
+   * @param pCode the code
+   * @param p the p
+   */
   public void setCode( Hex pCode, Processor p )
   {
     code.put( p.getEquivalentName(), pCode );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#needsCode(com.hifiremote.jp1.Remote)
+   */
   public boolean needsCode( Remote r )
   {
     return true;
   }
 
+  /**
+   * Sets the name.
+   * 
+   * @param name the new name
+   */
   public void setName( String name )
   {
     this.name = name;
   }
 
+  /**
+   * Sets the iD.
+   * 
+   * @param newID the new iD
+   */
   public void setID( Hex newID )
   {
     id = newID;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Protocol#importUpgradeCode(java.lang.String)
+   */
   public Hex importUpgradeCode( String notes )
   {
     Hex importedCode = super.importUpgradeCode( notes );

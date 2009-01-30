@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class KeyedEncrypterDecrypter.
+ */
 public class KeyedEncrypterDecrypter
   extends EncrypterDecrypter
 {
+  
+  /**
+   * Instantiates a new keyed encrypter decrypter.
+   * 
+   * @param textParms the text parms
+   */
   public KeyedEncrypterDecrypter( String textParms )
   {
     key = Integer.parseInt( textParms );
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EncrypterDecrypter#encrypt(short)
+   */
   public short encrypt( short val )
   {
     val &= 0xFF;
@@ -25,6 +38,9 @@ public class KeyedEncrypterDecrypter
     return ( short )rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EncrypterDecrypter#decrypt(short)
+   */
   public short decrypt( short val )
   {
     int val1 = ( val + 256 - key ) & 0x00FF;
@@ -40,5 +56,6 @@ public class KeyedEncrypterDecrypter
     return rc;
   }
   
+  /** The key. */
   private int key = 0;
 }

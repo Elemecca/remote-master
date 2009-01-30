@@ -8,10 +8,24 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SpecialFunctionDialog.
+ */
 public class SpecialFunctionDialog
   extends JDialog
   implements ActionListener, FocusListener, Runnable, ItemListener, ListSelectionListener
 {
+  
+  /**
+   * Show dialog.
+   * 
+   * @param frame the frame
+   * @param function the function
+   * @param config the config
+   * 
+   * @return the special protocol function
+   */
   public static SpecialProtocolFunction showDialog( JFrame frame,
                                     SpecialProtocolFunction function, RemoteConfiguration config )
   {
@@ -27,17 +41,26 @@ public class SpecialFunctionDialog
     return dialog.function;
   }
 
+  /**
+   * Adds the to box.
+   * 
+   * @param j the j
+   * @param c the c
+   */
   private void addToBox( JComponent j, Container c )
   {
     j.setAlignmentX( Component.LEFT_ALIGNMENT );
     c.add( j );
   }
  
+  /**
+   * Instantiates a new special function dialog.
+   * 
+   * @param frame the frame
+   */
   private SpecialFunctionDialog( JFrame frame ) 
   {
     super( frame, "Special Function", true );
-    
-    this.config = config;
     
     JComponent contentPane = ( JComponent )getContentPane();
     contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
@@ -271,6 +294,11 @@ public class SpecialFunctionDialog
     panel.add( cancelButton );
   }
   
+  /**
+   * Sets the remote configuration.
+   * 
+   * @param config the new remote configuration
+   */
   private void setRemoteConfiguration( RemoteConfiguration config )
   {
     this.config = config;
@@ -312,6 +340,11 @@ public class SpecialFunctionDialog
 
   }
   
+  /**
+   * Sets the function.
+   * 
+   * @param function the new function
+   */
   private void setFunction( SpecialProtocolFunction function )
   {
     this.function = null;
@@ -340,6 +373,14 @@ public class SpecialFunctionDialog
     notes.setText( function.getNotes());
   }
   
+  /**
+   * Sets the button.
+   * 
+   * @param code the code
+   * @param comboBox the combo box
+   * @param shiftBox the shift box
+   * @param xShiftBox the x shift box
+   */
   private void setButton( int code, JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox)
   {
     Remote remote = config.getRemote();
@@ -389,6 +430,15 @@ public class SpecialFunctionDialog
     comboBox.addActionListener( this );
   }
   
+  /**
+   * Gets the key code.
+   * 
+   * @param comboBox the combo box
+   * @param shiftBox the shift box
+   * @param xShiftBox the x shift box
+   * 
+   * @return the key code
+   */
   private int getKeyCode( JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox)
   {
     int keyCode = (( Button )comboBox.getSelectedItem()).getKeyCode();
@@ -399,11 +449,19 @@ public class SpecialFunctionDialog
     return keyCode;
   }
   
+  /**
+   * Show warning.
+   * 
+   * @param message the message
+   */
   private void showWarning( String message )
   {
     JOptionPane.showMessageDialog( this, message, "Missing Information", JOptionPane.ERROR_MESSAGE);
   }
   
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
@@ -598,17 +656,32 @@ public class SpecialFunctionDialog
     }
   }
   
+  /**
+   * Gets the selected key code.
+   * 
+   * @return the selected key code
+   */
   private int getSelectedKeyCode()
   {
     return (( Button )availableButtons.getSelectedValue()).getKeyCode();
   }
   
+  /**
+   * Adds the key.
+   * 
+   * @param mask the mask
+   */
   private void addKey( int mask )
   {
     Integer value = new Integer( getSelectedKeyCode() | mask );
     (( DefaultListModel )targetList.getModel()).addElement( value );
   }
   
+  /**
+   * Insert key.
+   * 
+   * @param mask the mask
+   */
   private void insertKey( int mask )
   {
     Integer value = new Integer( getSelectedKeyCode() | mask );
@@ -622,6 +695,13 @@ public class SpecialFunctionDialog
     targetList.ensureIndexIsVisible( index + 1 );
   }
   
+  /**
+   * Swap.
+   * 
+   * @param list the list
+   * @param index1 the index1
+   * @param index2 the index2
+   */
   private void swap( JList list, int index1, int index2 )
   {
     DefaultListModel model = ( DefaultListModel )list.getModel();
@@ -633,11 +713,22 @@ public class SpecialFunctionDialog
     list.ensureIndexIsVisible( index2 );
   }
   
+  /**
+   * Enable macros.
+   * 
+   * @param flag the flag
+   */
   private void enableMacros( boolean flag )
   {
     enableMacros( flag, flag );
   }
   
+  /**
+   * Enable macros.
+   * 
+   * @param mainFlag the main flag
+   * @param secondFlag the second flag
+   */
   private void enableMacros( boolean mainFlag, boolean secondFlag )
   {
     if ( !mainFlag )
@@ -684,15 +775,20 @@ public class SpecialFunctionDialog
   }
   
   // ItemListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
+   */
   public void itemStateChanged( ItemEvent e )
   {
     if ( e.getStateChange() != ItemEvent.SELECTED ) 
       return;
     
-    Object source = e.getSource();
   }
 
   // FocusListener
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+   */
   public void focusGained( FocusEvent e )
   {
     Object source = e.getSource();
@@ -709,6 +805,11 @@ public class SpecialFunctionDialog
     }
   }
   
+  /**
+   * Sets the target.
+   * 
+   * @param list the new target
+   */
   private void setTarget( JList list )
   {
     if (( targetList != list ) && targetList.isEnabled())
@@ -717,18 +818,27 @@ public class SpecialFunctionDialog
     targetList.setBackground( activeColor );
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+   */
   public void focusLost( FocusEvent e )
   {
     // intentionally left empty
   }
 
   // Runnable
+  /* (non-Javadoc)
+   * @see java.lang.Runnable#run()
+   */
   public void run()
   {
     focusField.selectAll();
   }
 
   // ListSelectionListener
+  /* (non-Javadoc)
+   * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+   */
   public void valueChanged( ListSelectionEvent e ) 
   {
     if ( e.getValueIsAdjusting())
@@ -737,6 +847,9 @@ public class SpecialFunctionDialog
     enableButtons();
   }
   
+  /**
+   * Enable buttons.
+   */
   private void enableButtons()
   {
     int limit = 15;
@@ -773,6 +886,12 @@ public class SpecialFunctionDialog
     secondClear.setEnabled( isEnabled && ( listModel.getSize() > 0 ));
   }
 
+  /**
+   * Sets the macro buttons.
+   * 
+   * @param keyCodes the key codes
+   * @param list the list
+   */
   private void setMacroButtons( Integer[] keyCodes, JList list )
   {
     DefaultListModel model = ( DefaultListModel )list.getModel();
@@ -782,6 +901,13 @@ public class SpecialFunctionDialog
     list.setSelectedIndex( -1 );
   }
   
+  /**
+   * Gets the macro buttons.
+   * 
+   * @param list the list
+   * 
+   * @return the macro buttons
+   */
   private Integer[] getMacroButtons( JList list )
   {
     DefaultListModel model = ( DefaultListModel )list.getModel();
@@ -791,11 +917,21 @@ public class SpecialFunctionDialog
     return keyCodes;
   }
   
+  /**
+   * The Class FunctionTypeRenderer.
+   */
   public class FunctionTypeRenderer
     extends DefaultListCellRenderer
   {
+    
+    /**
+     * Instantiates a new function type renderer.
+     */
     public FunctionTypeRenderer(){}
     
+    /* (non-Javadoc)
+     * @see javax.swing.DefaultListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
+     */
     public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus )
     {
       String text = ( String )value;
@@ -805,41 +941,98 @@ public class SpecialFunctionDialog
     }
   }
   
+  /** The bound device. */
   private JComboBox boundDevice = new JComboBox();
+  
+  /** The bound key. */
   private JComboBox boundKey = new JComboBox();
+  
+  /** The shift. */
   private JCheckBox shift = new JCheckBox();
+  
+  /** The x shift. */
   private JCheckBox xShift = new JCheckBox();
+  
+  /** The type. */
   private JComboBox type = new JComboBox();
+  
+  /**
+   * Gets the type.
+   * 
+   * @return the type
+   */
   public String getType(){ return ( String )type.getSelectedItem(); }
+  
+  /** The parameter card. */
   private JPanel parameterCard = new JPanel( new CardLayout());
 //  private JTextField hex = new JTextField( 12 );
 
   // for ModeName
-  private JTextField modeName = new JTextField( 10 );
+  /** The mode name. */
+private JTextField modeName = new JTextField( 10 );
+  
+  /**
+   * Sets the mode name.
+   * 
+   * @param text the new mode name
+   */
   public void setModeName( String text )
   {
     modeName.setText( text );
   }
+  
+  /**
+   * Gets the mode name.
+   * 
+   * @return the mode name
+   */
   public String getModeName()
   {
     return modeName.getText();
   }
   
   // for Multiplex
+  /** The device type. */
   private JComboBox deviceType = new JComboBox();
+  
+  /**
+   * Sets the device type.
+   * 
+   * @param deviceTypeIndex the new device type
+   */
   public void setDeviceType( int deviceTypeIndex )
   {
     deviceType.setSelectedIndex( deviceTypeIndex );
   }
+  
+  /**
+   * Gets the device type.
+   * 
+   * @return the device type
+   */
   public int getDeviceType()
   {
     return deviceType.getSelectedIndex();
   }
+  
+  /** The setup code. */
   private JFormattedTextField setupCode = null;
+  
+  /**
+   * Sets the setup code.
+   * 
+   * @param code the new setup code
+   */
   public void setSetupCode( int code )
   {
     setupCode.setValue( new Integer( code ));
   }
+  
+  /**
+   * Gets the setup code.
+   * 
+   * @return the setup code
+   */
   public int getSetupCode()
   {
     return (( Integer )setupCode.getValue()).intValue();
@@ -847,74 +1040,174 @@ public class SpecialFunctionDialog
   
 
   // for Duration
+  /** The duration. */
   private JSpinner duration = new JSpinner( new WrappingSpinnerNumberModel( 0, 0, 255, 1 ));
+  
+  /**
+   * Sets the duration.
+   * 
+   * @param d the new duration
+   */
   public void setDuration( int d )
   {
     duration.setValue( new Integer( d ));
   }
+  
+  /**
+   * Gets the duration.
+   * 
+   * @return the duration
+   */
   public int getDuration()
   {
     return (( Integer )duration.getValue()).intValue();
   }
 
   // for ToadTog
+  /** The toggle. */
   private JComboBox toggle = null;
+  
+  /**
+   * Sets the toggle.
+   * 
+   * @param t the new toggle
+   */
   public void setToggle( int t )
   {
     toggle.setSelectedIndex( t );
   }
+  
+  /**
+   * Gets the toggle.
+   * 
+   * @return the toggle
+   */
   public int getToggle()
   {
     return toggle.getSelectedIndex();
   }
+  
+  /** The condition. */
   private JComboBox condition = new JComboBox( ToadTogFunction.styleStrings );
+  
+  /**
+   * Sets the condition.
+   * 
+   * @param c the new condition
+   */
   public void setCondition( int c )
   {
     condition.setSelectedIndex( c );
   }
+  
+  /**
+   * Gets the condition.
+   * 
+   * @return the condition
+   */
   public int getCondition()
   {
     return condition.getSelectedIndex();
   }
   
   // for UDSM
+  /** The macro key. */
   private JComboBox macroKey = new JComboBox();
+  
+  /**
+   * Sets the macro key.
+   * 
+   * @param keyCode the new macro key
+   */
   public void setMacroKey( int keyCode )
   {
     macroKey.setSelectedItem( new Integer( keyCode ));
   }
+  
+  /**
+   * Gets the macro key.
+   * 
+   * @return the macro key
+   */
   public int getMacroKey()
   {
     return (( Integer )macroKey.getSelectedItem()).intValue();
   }
+  
+  /** The key code renderer. */
   private KeyCodeListRenderer keyCodeRenderer = new KeyCodeListRenderer();
   
   // for ULDKP
+  /** The uldkp duration. */
   private JComboBox uldkpDuration = null;
+  
+  /**
+   * Sets the uLDKP duration.
+   * 
+   * @param d the new uLDKP duration
+   */
   public void setULDKPDuration( int d )
   {
     uldkpDuration.setSelectedIndex( d );
   }
+  
+  /**
+   * Gets the uLDKP duration.
+   * 
+   * @return the uLDKP duration
+   */
   public int getULDKPDuration()
   {
     return uldkpDuration.getSelectedIndex();
   }
+  
+  /** The first key label. */
   private JLabel firstKeyLabel = new JLabel();
+  
+  /** The first macro key. */
   private JComboBox firstMacroKey = new JComboBox();
+  
+  /**
+   * Sets the first macro key.
+   * 
+   * @param keyCode the new first macro key
+   */
   public void setFirstMacroKey( int keyCode )
   {
     firstMacroKey.setSelectedItem( new Integer( keyCode ));
   }
+  
+  /**
+   * Gets the first macro key.
+   * 
+   * @return the first macro key
+   */
   public int getFirstMacroKey()
   {
     return (( Integer )firstMacroKey.getSelectedItem()).intValue();
   }
+  
+  /** The second key label. */
   private JLabel secondKeyLabel = new JLabel();
+  
+  /** The second macro key. */
   private JComboBox secondMacroKey = new JComboBox();
+  
+  /**
+   * Sets the second macro key.
+   * 
+   * @param keyCode the new second macro key
+   */
   public void setSecondMacroKey( int keyCode )
   {
     secondMacroKey.setSelectedItem( new Integer( keyCode ));
   }
+  
+  /**
+   * Gets the second macro key.
+   * 
+   * @return the second macro key
+   */
   public int getSecondMacroKey()
   {
     return (( Integer )secondMacroKey.getSelectedItem()).intValue();
@@ -922,63 +1215,152 @@ public class SpecialFunctionDialog
 
   // For DSM/LDKP
   
+  /** The macro box. */
   private Box macroBox = null;
+  
+  /** The available label. */
   private JLabel availableLabel = new JLabel( "Available keys:" );
+  
+  /** The available buttons. */
   private JList availableButtons = new JList();
+  
+  /** The add. */
   private JButton add = new JButton( "Add" );
+  
+  /** The insert. */
   private JButton insert = new JButton( "Insert" );
+  
+  /** The add shift. */
   private JButton addShift = new JButton( "Add Shift" );
+  
+  /** The insert shift. */
   private JButton insertShift = new JButton( "Ins Shift" );
+  
+  /** The add x shift. */
   private JButton addXShift = new JButton( "Add xShift" );
+  
+  /** The insert x shift. */
   private JButton insertXShift = new JButton( "Ins xShift" );
   
+  /** The macro button renderer. */
   private MacroButtonRenderer macroButtonRenderer = new MacroButtonRenderer();
   
+  /** The first keys panel. */
   private JPanel firstKeysPanel = null;
+  
+  /** The first macro label. */
   private JLabel firstMacroLabel = new JLabel( "Short keys:" );
+  
+  /** The first macro buttons. */
   private JList firstMacroButtons = new JList();
+  
+  /** The target list. */
   private JList targetList = firstMacroButtons;
+  
+  /**
+   * Sets the first macro buttons.
+   * 
+   * @param keyCodes the new first macro buttons
+   */
   public void setFirstMacroButtons( Integer[] keyCodes )
   {
     setMacroButtons( keyCodes, firstMacroButtons );
   }
+  
+  /**
+   * Gets the first macro buttons.
+   * 
+   * @return the first macro buttons
+   */
   public Integer[] getFirstMacroButtons()
   {
     return getMacroButtons( firstMacroButtons );
   }
+  
+  /** The first move up. */
   private JButton firstMoveUp = new JButton( "Move up" );
+  
+  /** The first move down. */
   private JButton firstMoveDown = new JButton( "Move down" );
+  
+  /** The first remove. */
   private JButton firstRemove = new JButton( "Remove" );
+  
+  /** The first clear. */
   private JButton firstClear = new JButton( "Clear" );
 
+  /** The second keys panel. */
   private JPanel secondKeysPanel = null;
+  
+  /** The second macro label. */
   private JLabel secondMacroLabel = new JLabel( "Long keys:" );
+  
+  /** The second macro buttons. */
   private JList secondMacroButtons = new JList();
+  
+  /**
+   * Sets the second macro buttons.
+   * 
+   * @param keyCodes the new second macro buttons
+   */
   public void setSecondMacroButtons( Integer[] keyCodes )
   {
     setMacroButtons( keyCodes, secondMacroButtons );
   }
+  
+  /**
+   * Gets the second macro buttons.
+   * 
+   * @return the second macro buttons
+   */
   public Integer[] getSecondMacroButtons()
   {
     return getMacroButtons( firstMacroButtons );
   }
+  
+  /** The second move up. */
   private JButton secondMoveUp = new JButton( "Move up" );
+  
+  /** The second move down. */
   private JButton secondMoveDown = new JButton( "Move down" );
+  
+  /** The second remove. */
   private JButton secondRemove = new JButton( "Remove" );
+  
+  /** The second clear. */
   private JButton secondClear = new JButton( "Clear" );
   
+  /** The notes. */
   private JTextArea notes = new JTextArea( 2, 2 );
 
   // action Buttons
+  /** The ok button. */
   private JButton okButton = new JButton( "OK" );
+  
+  /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
+  
+  /** The focus field. */
   private JTextField focusField = null;
   
+  /** The config. */
   private RemoteConfiguration config = null;
+  
+  /** The function. */
   private SpecialProtocolFunction function = null;
+  
+  /** The cmd. */
   private Hex cmd = null;
+  
+  /** The dialog. */
   private static SpecialFunctionDialog dialog = null;
+  
+  /** The active color. */
   private Color activeColor;
+  
+  /** The inactive color. */
   private Color inactiveColor;
+  
+  /** The disabled color. */
   private Color disabledColor;
 }

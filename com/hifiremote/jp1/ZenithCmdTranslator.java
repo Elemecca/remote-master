@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ZenithCmdTranslator.
+ */
 public class ZenithCmdTranslator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new zenith cmd translator.
+   * 
+   * @param textParms the text parms
+   */
   public ZenithCmdTranslator( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hex, DeviceParameter[] devParms, int onlyIndex )
   {
     Value obcVal = parms[ 0 ];
@@ -32,6 +45,9 @@ public class ZenithCmdTranslator
     insert( hex, 1, bits, val );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
     int bits = 0;

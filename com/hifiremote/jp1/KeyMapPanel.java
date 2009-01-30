@@ -8,9 +8,19 @@ import javax.swing.table.*;
 import java.awt.print.*;
 import java.util.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class KeyMapPanel.
+ */
 public class KeyMapPanel
   extends KMPanel implements ActionListener, Printable
 {
+  
+  /**
+   * Instantiates a new key map panel.
+   * 
+   * @param devUpgrade the dev upgrade
+   */
   public KeyMapPanel( DeviceUpgrade devUpgrade )
   {
     super( "Key Map", devUpgrade );
@@ -80,7 +90,7 @@ public class KeyMapPanel
         return headers[column];
       }
 
-      public Class getColumnClass( int col )
+      public Class<?> getColumnClass( int col )
       {
         return String.class;
       }
@@ -113,6 +123,11 @@ public class KeyMapPanel
     add( panel, BorderLayout.SOUTH );
   }
 
+  /**
+   * Gets the assigned buttons.
+   * 
+   * @return the assigned buttons
+   */
   private void getAssignedButtons()
   {
     list.clear();
@@ -128,6 +143,9 @@ public class KeyMapPanel
     }
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.JComponent#paint(java.awt.Graphics)
+   */
   public void paint( Graphics g )
   {
     Graphics2D g2 = ( Graphics2D )g;
@@ -137,6 +155,9 @@ public class KeyMapPanel
     super.paint( g2 );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#update()
+   */
   public void update()
   {
     String text = deviceUpgrade.getDescription();
@@ -171,6 +192,9 @@ public class KeyMapPanel
 //    table.doLayout();
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     PrinterJob pj = PrinterJob.getPrinterJob();
@@ -186,6 +210,9 @@ public class KeyMapPanel
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
+   */
   public int print(Graphics g, PageFormat pageFormat, int pageIndex)
    throws PrinterException
   {
@@ -210,14 +237,31 @@ public class KeyMapPanel
     return Printable.PAGE_EXISTS;
   }
 
+  /** The df. */
   private static DecimalFormat df = new DecimalFormat( "0000" );
+  
+  /** The box. */
   private Box box = null;
+  
+  /** The title label. */
   private JLabel titleLabel = null;
+  
+  /** The subtitle label. */
   private JLabel subtitleLabel = null;
+  
+  /** The table. */
   private JTableX table = null;
+  
+  /** The header. */
   private JTableHeader header = null;
+  
+  /** The print. */
   private JButton print = null;
+  
+  /** The list. */
   private java.util.List< Button > list = new ArrayList< Button >();
+  
+  /** The headers. */
   private static String[] headers =
   {
     "Button", "Normal Function", "Shifted Function", "XShifted Function" };

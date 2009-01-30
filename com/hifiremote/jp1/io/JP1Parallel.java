@@ -3,21 +3,72 @@ package com.hifiremote.jp1.io;
 import java.io.File;
 import com.hifiremote.jp1.Hex;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class JP1Parallel.
+ */
 public class JP1Parallel
   extends IO
 {
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getInterfaceName()
+   */
   public native String getInterfaceName();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getInterfaceVersion()
+   */
   public native String getInterfaceVersion();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getPortNames()
+   */
   public native String[] getPortNames();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#openRemote(java.lang.String)
+   */
   public native String openRemote( String portName );
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#closeRemote()
+   */
   public native void closeRemote();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getRemoteSignature()
+   */
   public native String getRemoteSignature();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getRemoteEepromAddress()
+   */
   public native int getRemoteEepromAddress();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#getRemoteEepromSize()
+   */
   public native int getRemoteEepromSize();
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#readRemote(int, byte[], int)
+   */
   public native int readRemote( int address, byte[] buffer, int length );
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.io.IO#writeRemote(int, byte[], int)
+   */
   public native int writeRemote( int address, byte[] buffer, int length );
+  
+  /** The is loaded. */
   private static boolean isLoaded = false;
 
+  /**
+   * Instantiates a new j p1 parallel.
+   * 
+   * @throws UnsatisfiedLinkError the unsatisfied link error
+   */
   public JP1Parallel()
     throws UnsatisfiedLinkError
   {
@@ -28,6 +79,13 @@ public class JP1Parallel
     }
   }
 
+  /**
+   * Instantiates a new j p1 parallel.
+   * 
+   * @param folder the folder
+   * 
+   * @throws UnsatisfiedLinkError the unsatisfied link error
+   */
   public JP1Parallel( File folder )
     throws UnsatisfiedLinkError
   {
@@ -39,6 +97,11 @@ public class JP1Parallel
     }
   }
 
+  /**
+   * The main method.
+   * 
+   * @param args the arguments
+   */
   public static void main( String[] args )
   {
     JP1Parallel test = new JP1Parallel();

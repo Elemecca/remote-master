@@ -2,19 +2,21 @@ package com.hifiremote.jp1;
 
 import java.util.*;
 
+// TODO: Auto-generated Javadoc
 /**
- *  Description of the Class
- *
- *@author     Greg
- *@created    December 2, 2006
+ * Description of the Class.
+ * 
+ * @author     Greg
+ * @created    December 2, 2006
  */
 public class LDKPFunction
    extends SpecialProtocolFunction
 {
+  
   /**
-   *  Constructor for the LDKPFunction object
-   *
-   *@param  keyMove  Description of the Parameter
+   * Constructor for the LDKPFunction object.
+   * 
+   * @param keyMove the key move
    */
   public LDKPFunction( KeyMove keyMove )
   {
@@ -22,14 +24,14 @@ public class LDKPFunction
   }
 
   /**
-   *  Constructor for the LDKPFunction object
-   *
-   *@param  keyCode            Description of the Parameter
-   *@param  deviceButtonIndex  Description of the Parameter
-   *@param  deviceType         Description of the Parameter
-   *@param  setupCode          Description of the Parameter
-   *@param  cmd                Description of the Parameter
-   *@param  notes              Description of the Parameter
+   * Constructor for the LDKPFunction object.
+   * 
+   * @param keyCode the key code
+   * @param deviceButtonIndex the device button index
+   * @param deviceType the device type
+   * @param setupCode the setup code
+   * @param cmd the cmd
+   * @param notes the notes
    */
   public LDKPFunction( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
@@ -37,9 +39,9 @@ public class LDKPFunction
   }
 
   /**
-   *  Constructor for the LDKPFunction object
-   *
-   *@param  props  Description of the Parameter
+   * Constructor for the LDKPFunction object.
+   * 
+   * @param props the props
    */
   public LDKPFunction( Properties props )
   {
@@ -47,9 +49,9 @@ public class LDKPFunction
   }
 
   /**
-   *  Gets the duration attribute of the LDKPFunction object
-   *
-   *@return    The duration value
+   * Gets the duration attribute of the LDKPFunction object.
+   * 
+   * @return    The duration value
    */
   public int getDuration()
   {
@@ -57,9 +59,9 @@ public class LDKPFunction
   }
 
   /**
-   *  Gets the style attribute of the LDKPFunction object
-   *
-   *@return    The style value
+   * Gets the style attribute of the LDKPFunction object.
+   * 
+   * @return    The style value
    */
   public int getStyle()
   {
@@ -67,9 +69,9 @@ public class LDKPFunction
   }
 
   /**
-   *  Gets the firstLength attribute of the LDKPFunction object
-   *
-   *@return    The firstLength value
+   * Gets the firstLength attribute of the LDKPFunction object.
+   * 
+   * @return    The firstLength value
    */
   public int getFirstLength()
   {
@@ -77,9 +79,9 @@ public class LDKPFunction
   }
 
   /**
-   *  Gets the type attribute of the LDKPFunction object
-   *
-   *@return    The type value
+   * Gets the type attribute of the LDKPFunction object.
+   * 
+   * @return    The type value
    */
   public String getType()
   {
@@ -87,14 +89,12 @@ public class LDKPFunction
   }
 
   /**
-   *  Gets the displayType attribute of the LDKPFunction object
-   *
-   *@return    The displayType value
+   * Gets the displayType attribute of the LDKPFunction object.
+   * 
+   * @return    The displayType value
    */
   public String getDisplayType()
   {
-    short val = data.getData()[0];
-    int duration = getDuration();
     int style = getStyle();
     StringBuilder buff = new StringBuilder();
     buff.append( styleStrings[style] );
@@ -105,10 +105,11 @@ public class LDKPFunction
   }
 
   /**
-   *  Gets the valueString attribute of the LDKPFunction object
-   *
-   *@param  remoteConfig  Description of the Parameter
-   *@return               The valueString value
+   * Gets the valueString attribute of the LDKPFunction object.
+   * 
+   * @param remoteConfig the remote config
+   * 
+   * @return               The valueString value
    */
   public String getValueString( RemoteConfiguration remoteConfig )
   {
@@ -145,9 +146,9 @@ public class LDKPFunction
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  dlg  Description of the Parameter
+   * Description of the Method.
+   * 
+   * @param dlg the dlg
    */
   public void update( SpecialFunctionDialog dlg )
   {
@@ -169,10 +170,11 @@ public class LDKPFunction
   }
 
   /**
-   *  Description of the Method
-   *
-   *@param  dlg  Description of the Parameter
-   *@return      Description of the Return Value
+   * Description of the Method.
+   * 
+   * @param dlg the dlg
+   * 
+   * @return      Description of the Return Value
    */
   public static Hex createHex( SpecialFunctionDialog dlg )
   {
@@ -199,32 +201,25 @@ public class LDKPFunction
     return new Hex( temp );
   }
 
-  /**
-   *  Description of the Field
-   */
+  /** Description of the Field. */
   public static int LKP = 0;
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static int DKP = 1;
 
-  /**
-   *  Description of the Field
-   */
+  /** Description of the Field. */
   public static String[] styleStrings =
     {
     "LKP", "DKP"
     };
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static String[] firstStrings =
     {
     "Short", "Single"
     };
-  /**
-   *  Description of the Field
-   */
+  
+  /** Description of the Field. */
   public static String[] secondStrings =
     {
     "Long", "Double"

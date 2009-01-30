@@ -7,10 +7,20 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexParmEditorPanel.
+ */
 public class HexParmEditorPanel
   extends ProtocolEditorPanel
   implements ChangeListener, ActionListener, FocusListener, PropertyChangeListener, Runnable
 {
+  
+  /**
+   * Instantiates a new hex parm editor panel.
+   * 
+   * @param title the title
+   */
   public HexParmEditorPanel( String title )
   {
     super( title );
@@ -125,6 +135,11 @@ public class HexParmEditorPanel
     addListeners();
   }
 
+  /**
+   * Limit height.
+   * 
+   * @param c the c
+   */
   private static void limitHeight( JComponent c )
   {
     Dimension d = c.getMaximumSize();
@@ -132,6 +147,17 @@ public class HexParmEditorPanel
     c.setMaximumSize( d );
   }
 
+  /**
+   * Creates the radio button.
+   * 
+   * @param name the name
+   * @param mnemonic the mnemonic
+   * @param tip the tip
+   * @param panel the panel
+   * @param group the group
+   * 
+   * @return the j radio button
+   */
   private JRadioButton createRadioButton( String name, int mnemonic, String tip, JPanel panel, ButtonGroup group )
   {
     JRadioButton button = new JRadioButton( name );
@@ -142,6 +168,9 @@ public class HexParmEditorPanel
     return button;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.ProtocolEditorPanel#update(com.hifiremote.jp1.ProtocolEditorNode)
+   */
   public void update( ProtocolEditorNode newNode )
   {
     node = ( HexParmEditorNode )newNode;
@@ -179,6 +208,9 @@ public class HexParmEditorPanel
 //    bits.setValue( new Integer( node.getBits()));
   }
 
+  /**
+   * Removes the listeners.
+   */
   private void removeListeners()
   {
     name.removeActionListener( this );
@@ -191,6 +223,9 @@ public class HexParmEditorPanel
     defaultValue.removePropertyChangeListener( "value", this );
   }
 
+  /**
+   * Adds the listeners.
+   */
   private void addListeners()
   {
     name.addActionListener( this );
@@ -204,6 +239,9 @@ public class HexParmEditorPanel
   }
 
   // ChangeListener methods
+  /* (non-Javadoc)
+   * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
+   */
   public void stateChanged( ChangeEvent e )
   {
     Object source = e.getSource();
@@ -230,6 +268,11 @@ public class HexParmEditorPanel
     }
   }
 
+  /**
+   * Action or focus.
+   * 
+   * @param e the e
+   */
   private void actionOrFocus( AWTEvent e )
   {
     Object source = e.getSource();
@@ -242,6 +285,9 @@ public class HexParmEditorPanel
   }
 
   // ActionListener methods
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -279,6 +325,9 @@ public class HexParmEditorPanel
   }
 
   // FocusLlistener methods
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+   */
   public void focusGained( FocusEvent e )
   {
     Object source = e.getSource();
@@ -289,12 +338,18 @@ public class HexParmEditorPanel
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+   */
   public void focusLost( FocusEvent e )
   {
     actionOrFocus( e );
   }
 
   //
+  /* (non-Javadoc)
+   * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+   */
   public void propertyChange( PropertyChangeEvent e )
   {
     Object source = e.getSource();
@@ -313,25 +368,56 @@ public class HexParmEditorPanel
     }
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Runnable#run()
+   */
   public void run()
   {
     controlToSelectAll.selectAll();
   }
 
+  /** The node. */
   private HexParmEditorNode node = null;
+  
+  /** The name. */
   private JTextField name = null;
+  
+  /** The number button. */
   private JRadioButton numberButton = null;
+  
+  /** The choice button. */
   private JRadioButton choiceButton = null;
+  
+  /** The flag button. */
   private JRadioButton flagButton = null;
+  
+  /** The buttons. */
   private JRadioButton[] buttons = null;
+  
+  /** The card. */
   private JPanel card = null;
+  
+  /** The panels. */
   private JComponent[] panels = null;
+  
+  /** The bits. */
   private JSpinner bits = null;
+  
+  /** The decimal. */
   private JRadioButton decimal = null;
+  
+  /** The hex. */
   private JRadioButton hex = null;
-  private JPanel ftfPanel = null;
+  
+  /** The default value. */
   private JFormattedTextField defaultValue = null;
+  
+  /** The hex formatter. */
   private HexIntegerFormatter hexFormatter = null;
+  
+  /** The decimal formatter. */
   private IntegerFormatter decimalFormatter = null;
+  
+  /** The control to select all. */
   private JFormattedTextField controlToSelectAll = null;
 }

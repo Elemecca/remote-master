@@ -1,8 +1,18 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ReorderImporter.
+ */
 public class ReorderImporter
   extends Importer
 {
+  
+  /**
+   * Instantiates a new reorder importer.
+   * 
+   * @param textParms the text parms
+   */
   public ReorderImporter( String[] textParms )
   {
     super( textParms );
@@ -14,6 +24,9 @@ public class ReorderImporter
       reorderedIndexes[ i ] = Integer.parseInt( textParms[ i ]);
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Importer#convertParms(com.hifiremote.jp1.Value[])
+   */
   public Value[] convertParms( Value[] parms )
   {
     Value[] outParms = new Value[ parms.length ];
@@ -24,5 +37,6 @@ public class ReorderImporter
     return outParms;
   }
 
+  /** The reordered indexes. */
   private int[] reorderedIndexes = null;
 }

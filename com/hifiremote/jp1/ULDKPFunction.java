@@ -2,44 +2,92 @@ package com.hifiremote.jp1;
 
 import java.util.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ULDKPFunction.
+ */
 public class ULDKPFunction
   extends SpecialProtocolFunction
 {
+  
+  /**
+   * Instantiates a new uLDKP function.
+   * 
+   * @param keyMove the key move
+   */
   public ULDKPFunction( KeyMove keyMove )
   {
     super( keyMove );
   }
   
+  /**
+   * Instantiates a new uLDKP function.
+   * 
+   * @param keyCode the key code
+   * @param deviceButtonIndex the device button index
+   * @param deviceType the device type
+   * @param setupCode the setup code
+   * @param cmd the cmd
+   * @param notes the notes
+   */
   public ULDKPFunction( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
     super( keyCode, deviceButtonIndex, deviceType, setupCode, cmd, notes );
   }    
   
+  /**
+   * Instantiates a new uLDKP function.
+   * 
+   * @param props the props
+   */
   public ULDKPFunction( Properties props )
   {
     super( props );
   }
   
+  /**
+   * Gets the duration.
+   * 
+   * @return the duration
+   */
   public int getDuration()
   {
     return data.getData()[ 0 ] & 0x0f;
   }
   
+  /**
+   * Gets the style.
+   * 
+   * @return the style
+   */
   public int getStyle()
   {
     return data.getData()[ 0 ] >> 4;
   }
   
+  /**
+   * Gets the first key code.
+   * 
+   * @return the first key code
+   */
   public int getFirstKeyCode()
   {
     return data.getData()[ 1 ];
   }
   
+  /**
+   * Gets the second key code.
+   * 
+   * @return the second key code
+   */
   public int getSecondKeyCode()
   {
     return data.getData()[ 2 ];
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.SpecialProtocolFunction#getDisplayType()
+   */
   public String getDisplayType()
   {
     int duration = getDuration();
@@ -55,11 +103,17 @@ public class ULDKPFunction
     return buff.toString();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.SpecialProtocolFunction#getType()
+   */
   public String getType()
   {
     return typeStrings[ getStyle()];
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KeyMove#getValueString(com.hifiremote.jp1.RemoteConfiguration)
+   */
   public String getValueString( RemoteConfiguration remoteConfig )
   {
     Remote remote = remoteConfig.getRemote();
@@ -83,6 +137,9 @@ public class ULDKPFunction
     return buff.toString();
   }
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.SpecialProtocolFunction#update(com.hifiremote.jp1.SpecialFunctionDialog)
+   */
   public void update( SpecialFunctionDialog dlg )
   {
     int style = getStyle();
@@ -96,6 +153,13 @@ public class ULDKPFunction
     dlg.setSecondMacroKey( getSecondKeyCode());
   }
   
+  /**
+   * Creates the hex.
+   * 
+   * @param dlg the dlg
+   * 
+   * @return the hex
+   */
   public static Hex createHex( SpecialFunctionDialog dlg )
   {
     String type = dlg.getType();
@@ -125,22 +189,34 @@ public class ULDKPFunction
     return new Hex( temp );
   }
   
+  /** The DSM. */
   public static int DSM = 0;
+  
+  /** The LKP. */
   public static int LKP = 1;
+  
+  /** The DKP. */
   public static int DKP = 2;
   
+  /** The Constant typeStrings. */
   public final static String[] typeStrings = 
   {
     "UDSM", "ULKP", "UDKP"
   };
+  
+  /** The Constant styleStrings. */
   public final static String[] styleStrings = 
   {
     "DSM", "LKP", "DKP"
   };
+  
+  /** The Constant firstStrings. */
   public final static String[] firstStrings =
   {
     null, "Short", "Single"
   };
+  
+  /** The Constant secondStrings. */
   public final static String[] secondStrings =
   {
     null, "Long", "Double"

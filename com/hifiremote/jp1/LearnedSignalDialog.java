@@ -1,17 +1,40 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import java.text.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class LearnedSignalDialog.
+ */
 public class LearnedSignalDialog
   extends JDialog
   implements ActionListener
 {
+  
+  /**
+   * Show dialog.
+   * 
+   * @param locationComp the location comp
+   * @param learnedSignal the learned signal
+   * 
+   * @return the learned signal
+   */
   public static LearnedSignal showDialog( Component locationComp,
                                           LearnedSignal learnedSignal )
   {
@@ -26,6 +49,13 @@ public class LearnedSignalDialog
     return dialog.learnedSignal;
   }
 
+  /**
+   * To string.
+   * 
+   * @param data the data
+   * 
+   * @return the string
+   */
   private static String toString( int[] data )
   {
     int[] charPos = new int[ data.length ];
@@ -55,6 +85,11 @@ public class LearnedSignalDialog
     return str.toString();
   }
 
+  /**
+   * Instantiates a new learned signal dialog.
+   * 
+   * @param c the c
+   */
   private LearnedSignalDialog( Component c )
   {
     super(( JFrame )SwingUtilities.getRoot( c ));
@@ -111,6 +146,11 @@ public class LearnedSignalDialog
     panel.add( okButton );
   }
 
+  /**
+   * Sets the learned signal.
+   * 
+   * @param learnedSignal the new learned signal
+   */
   private void setLearnedSignal( LearnedSignal learnedSignal )
   {
     this.learnedSignal = null;
@@ -129,6 +169,9 @@ public class LearnedSignalDialog
     enableButtons();
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
@@ -139,15 +182,28 @@ public class LearnedSignalDialog
     enableButtons();
   }
 
+  /**
+   * Enable buttons.
+   */
   private void enableButtons()
   {
   }
 
+  /** The ok button. */
   private JButton okButton = new JButton( "OK" );
+  
+  /** The burst text area. */
   private JTextArea burstTextArea = new JTextArea( 4, 70 );
+  
+  /** The duration text area. */
   private JTextArea durationTextArea = new JTextArea( 8, 70 );
 
+  /** The learned signal. */
   private LearnedSignal learnedSignal = null;
+  
+  /** The model. */
   private DecodeTableModel model = new DecodeTableModel();
+  
+  /** The dialog. */
   private static LearnedSignalDialog dialog = null;
 }

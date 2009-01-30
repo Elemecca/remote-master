@@ -1,30 +1,43 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.text.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
-public class DeviceUpgradePanel
-  extends RMTablePanel< DeviceUpgrade >
+import javax.swing.SwingUtilities;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class DeviceUpgradePanel.
+ */
+public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
 {
+
+  /**
+   * Instantiates a new device upgrade panel.
+   */
   public DeviceUpgradePanel()
   {
-    super( new DeviceUpgradeTableModel());
+    super( new DeviceUpgradeTableModel() );
   }
 
+  /**
+   * Sets the.
+   * 
+   * @param remoteConfig
+   *          the remote config
+   */
   public void set( RemoteConfiguration remoteConfig )
   {
-    (( DeviceUpgradeTableModel )model ).set( remoteConfig );
+    ( ( DeviceUpgradeTableModel ) model ).set( remoteConfig );
     this.remoteConfig = remoteConfig;
   }
-  
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.RMTablePanel#createRowObject(java.lang.Object)
+   */
   public DeviceUpgrade createRowObject( DeviceUpgrade baseUpgrade )
   {
     System.err.println( "DeviceUpgradePanel.createRowObject()" );
@@ -32,23 +45,24 @@ public class DeviceUpgradePanel
     if ( baseUpgrade == null )
     {
       upgrade = new DeviceUpgrade();
-      upgrade.setRemote( remoteConfig.getRemote());
+      upgrade.setRemote( remoteConfig.getRemote() );
     }
     else
       upgrade = new DeviceUpgrade( baseUpgrade );
-      
-    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, table );
-    Remote[] remotes = new Remote[ 1 ];
-    remotes[ 0 ] = remoteConfig.getRemote();
+
+    RemoteMaster rm = ( RemoteMaster ) SwingUtilities
+        .getAncestorOfClass( RemoteMaster.class, table );
+    List< Remote > remotes = new ArrayList< Remote >( 1 );
+    remotes.add( remoteConfig.getRemote() );
     DeviceUpgradeEditor editor = new DeviceUpgradeEditor( rm, upgrade, remotes );
     upgrade = editor.getDeviceUpgrade();
     if ( upgrade == null )
       return null;
-    
+
     int boundDeviceButtonIndex = remoteConfig.findBoundDeviceButtonIndex( upgrade );
     if ( boundDeviceButtonIndex == -1 )
       return upgrade;
-    
+
     java.util.List< KeyMove > upgradeKeyMoves = upgrade.getKeyMoves();
     java.util.List< KeyMove > keyMoves = remoteConfig.getKeyMoves();
     for ( KeyMove upgradeKeyMove : upgradeKeyMoves )
@@ -58,12 +72,14 @@ public class DeviceUpgradePanel
         KeyMove keyMove = li.next();
         if ( keyMove.getDeviceButtonIndex() != boundDeviceButtonIndex )
           continue;
-        if ( keyMove.getKeyCode() == upgradeKeyMove.getKeyCode())
+        if ( keyMove.getKeyCode() == upgradeKeyMove.getKeyCode() )
         {
           li.remove();
           Remote remote = remoteConfig.getRemote();
-          System.err.println( "Removed keyMove assigned to " + remote.getDeviceButtons()[ boundDeviceButtonIndex ] + 
-                              ':' + remote.getButtonName( keyMove.getKeyCode()) + " since there is one assigned in the device upgrade" );
+          System.err.println( "Removed keyMove assigned to "
+              + remote.getDeviceButtons()[ boundDeviceButtonIndex ] + ':'
+              + remote.getButtonName( keyMove.getKeyCode() )
+              + " since there is one assigned in the device upgrade" );
           break;
         }
       }
@@ -71,6 +87,6 @@ public class DeviceUpgradePanel
     return upgrade;
   }
 
+  /** The remote config. */
   private RemoteConfiguration remoteConfig;
 }
-  

@@ -6,32 +6,62 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PopupEditor.
+ */
 public class PopupEditor
   extends DefaultCellEditor
   implements TableCellEditor, ActionListener, PopupMenuListener, Runnable
 {
+  
+  /** The button. */
   private JButton button = new JButton();
+  
+  /** The table. */
   private JTable table = null;
+  
+  /** The value. */
   private Object value = null;
+  
+  /** The popup. */
   private JPopupMenu popup = new JPopupMenu();
 
+  /**
+   * The Class ObjectItem.
+   */
   private class ObjectItem 
     extends JMenuItem
   {
+    
+    /** The value. */
     private Object value;
     
+    /**
+     * Instantiates a new object item.
+     * 
+     * @param value the value
+     */
     public ObjectItem( Object value )
     {
       super( value.toString());
       this.value = value;
     }
     
+    /**
+     * Gets the value.
+     * 
+     * @return the value
+     */
     public Object getValue()
     {
       return value;
     }
   }   
   
+  /**
+   * Instantiates a new popup editor.
+   */
   public PopupEditor()
   {
     super( new JTextField());
@@ -46,6 +76,11 @@ public class PopupEditor
     popup.addPopupMenuListener( this );
   }
   
+  /**
+   * Adds the object.
+   * 
+   * @param value the value
+   */
   public void addObject( Object value )
   {
     ObjectItem item = new ObjectItem( value );
@@ -53,6 +88,9 @@ public class PopupEditor
     item.addActionListener( this );
   }
   
+  /**
+   * Removes the all.
+   */
   public void removeAll()
   {
     MenuElement[] elements = popup.getSubElements();
@@ -67,6 +105,8 @@ public class PopupEditor
   /**
    * Handles events from the editor button and from
    * the dialog's OK button.
+   * 
+   * @param e the e
    */
   public void actionPerformed( ActionEvent e )
   {
@@ -84,21 +124,38 @@ public class PopupEditor
     }
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.event.PopupMenuListener#popupMenuCanceled(javax.swing.event.PopupMenuEvent)
+   */
   public void popupMenuCanceled( PopupMenuEvent e )
   {
     fireEditingCanceled();
     giveFocusToTable();
   }
+  
+  /* (non-Javadoc)
+   * @see javax.swing.event.PopupMenuListener#popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent)
+   */
   public void popupMenuWillBecomeInvisible( PopupMenuEvent e ){}
+  
+  /* (non-Javadoc)
+   * @see javax.swing.event.PopupMenuListener#popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent)
+   */
   public void popupMenuWillBecomeVisible( PopupMenuEvent e ){}
 
   //Implement the one CellEditor method that AbstractCellEditor doesn't.
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getCellEditorValue()
+   */
   public Object getCellEditorValue()
   {
     return value;
   }
 
   //Implement the one method defined by TableCellEditor.
+  /* (non-Javadoc)
+   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+   */
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int column )
   {
     this.table = table;
@@ -122,11 +179,17 @@ public class PopupEditor
     return button;
   }
   
+  /**
+   * Give focus to table.
+   */
   private void giveFocusToTable()
   {
     table.requestFocusInWindow();
   }
   
+  /* (non-Javadoc)
+   * @see java.lang.Runnable#run()
+   */
   public void run()
   {
     popup.show( button, 0, button.getSize().height );

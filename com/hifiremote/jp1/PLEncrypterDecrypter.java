@@ -1,11 +1,24 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PLEncrypterDecrypter.
+ */
 public class PLEncrypterDecrypter
   extends EncrypterDecrypter
 {
+  
+  /**
+   * Instantiates a new pL encrypter decrypter.
+   * 
+   * @param textParms the text parms
+   */
   public PLEncrypterDecrypter( String textParms )
   {}
   
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EncrypterDecrypter#encrypt(short)
+   */
   public short encrypt( short val )
   {
     val &= 0xFF;
@@ -23,6 +36,9 @@ public class PLEncrypterDecrypter
     return ( short )rc;
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.EncrypterDecrypter#decrypt(short)
+   */
   public short decrypt( short val )
   {
     if ( val == 0x4E )  // Special cases for which the formula doesn't work.

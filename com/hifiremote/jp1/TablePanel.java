@@ -10,10 +10,22 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class TablePanel.
+ */
 public abstract class TablePanel< E >
   extends KMPanel
   implements ActionListener, ListSelectionListener
 {
+  
+  /**
+   * Instantiates a new table panel.
+   * 
+   * @param name the name
+   * @param devUpgrade the dev upgrade
+   * @param tableModel the table model
+   */
   public TablePanel( String name, DeviceUpgrade devUpgrade, KMTableModel< E > tableModel )
   {
     super( name, devUpgrade );
@@ -121,7 +133,7 @@ public abstract class TablePanel< E >
                 }
                 prevToken = token;
 
-                Class aClass = sorter.getColumnClass( modelCol );
+                Class<?> aClass = sorter.getColumnClass( modelCol );
                 if ( aClass == String.class )
                 {
                   if (( token != null ) &&
@@ -343,17 +355,26 @@ public abstract class TablePanel< E >
     buttonPanel.add( pasteButton );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#setDeviceUpgrade(com.hifiremote.jp1.DeviceUpgrade)
+   */
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
   {
     super.setDeviceUpgrade( deviceUpgrade );
     this.initColumns();
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#update()
+   */
   public void update()
   {
     cleanButton.setEnabled( table.getRowCount() > 0 );
   }
 
+  /**
+   * Finish editing.
+   */
   private void finishEditing()
   {
     int editRow = table.getEditingRow();
@@ -366,30 +387,49 @@ public abstract class TablePanel< E >
     }
   }
 
+  /**
+   * Creates the row object.
+   * 
+   * @return the e
+   */
   protected abstract E createRowObject();
+  
+  /**
+   * Can delete.
+   * 
+   * @param o the o
+   * 
+   * @return true, if successful
+   */
   protected boolean canDelete( Object o ){ return true; }
+  
+  /**
+   * Do not delete.
+   * 
+   * @param o the o
+   */
   protected void doNotDelete( Object o ){}
 
   // Interface ActionListener
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     finishEditing();
     // KeyMapMaster.clearMessage();
     int row = 0;
-    int col = 0;
     boolean select = false;
     Object source = e.getSource();
     if ( source.getClass() == JButton.class )
     {
       row = table.getSelectedRow();
-      col = table.getSelectedColumn();
       if ( row != -1 )
         select = true;
     }
     else
     {
       row = popupRow;
-      col = popupCol;
       if ( table.isRowSelected( row ))
         select = true;
     }
@@ -432,8 +472,8 @@ public abstract class TablePanel< E >
     }
     else if ( source == cleanButton )
     {
-      java.util.List functions = model.getData();
-      for ( ListIterator i = functions.listIterator(); i.hasNext();)
+      java.util.List< E > functions = model.getData();
+      for ( ListIterator< E > i = functions.listIterator(); i.hasNext();)
       {
         Function f = ( Function )i.next();
         if (( f.getHex() == null ) || ( f.getHex().length() == 0 ))
@@ -485,6 +525,9 @@ public abstract class TablePanel< E >
   }
 
   // Interface ListSelectionListener
+  /* (non-Javadoc)
+   * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+   */
   public void valueChanged( ListSelectionEvent e )
   {
     if ( !e.getValueIsAdjusting() )
@@ -516,11 +559,17 @@ public abstract class TablePanel< E >
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.KMPanel#commit()
+   */
   public void commit()
   {
     finishEditing();
   }
 
+  /**
+   * Inits the columns.
+   */
   protected void initColumns()
   {
     JLabel l = new JLabel();
@@ -528,12 +577,10 @@ public abstract class TablePanel< E >
 
     TableColumnModel columnModel = table.getColumnModel();
     TableColumn column;
-    int width;
 
     int cols = model.getColumnCount();
     for ( int i = 0; i < cols; i++ )
     {
-      boolean isFixed = model.isColumnWidthFixed( i );
       table.setColumnWidth( i,
                             model.getColumnPrototypeName( i ),
                             model.isColumnWidthFixed( i ),
@@ -551,6 +598,9 @@ public abstract class TablePanel< E >
     table.doLayout();
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.JComponent#setFont(java.awt.Font)
+   */
   public void setFont( Font aFont )
   {
     super.setFont( aFont );
@@ -560,25 +610,63 @@ public abstract class TablePanel< E >
     initColumns();
   }
 
+  /** The table. */
   protected JTableX table = null;
+  
+  /** The model. */
   protected KMTableModel< E > model = null;
+  
+  /** The sorter. */
   private TableSorter sorter = null;
+  
+  /** The button panel. */
   protected JPanel buttonPanel = null;
+  
+  /** The new button. */
   private JButton newButton = null;
+  
+  /** The delete button. */
   private JButton deleteButton = null;
+  
+  /** The clean button. */
   private JButton cleanButton = null;
+  
+  /** The up button. */
   private JButton upButton = null;
+  
+  /** The down button. */
   private JButton downButton = null;
+  
+  /** The copy button. */
   private JButton copyButton = null;
+  
+  /** The paste button. */
   private JButton pasteButton = null;
+  
+  /** The popup row. */
   private int popupRow = 0;
+  
+  /** The popup col. */
   private int popupCol = 0;
+  
+  /** The popup. */
   protected JPopupMenu popup = null;
+  
+  /** The new item. */
   private JMenuItem newItem = null;
+  
+  /** The delete item. */
   private JMenuItem deleteItem = null;
+  
+  /** The copy item. */
   private JMenuItem copyItem = null;
+  
+  /** The paste item. */
   private JMenuItem pasteItem = null;
+  
+  /** The clipboard. */
   private Clipboard clipboard = null;
+  
+  /** The kit. */
   private Toolkit kit = null;
-  private final static Class[] classes = { String.class };
 }

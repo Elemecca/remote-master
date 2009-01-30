@@ -1,10 +1,25 @@
 package com.hifiremote.jp1;
 
-import java.awt.Dimension;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
+// TODO: Auto-generated Javadoc
+/**
+ * A factory for creating CmdParm objects.
+ */
 public class CmdParmFactory
 {
+  
+  /**
+   * Creates a new CmdParm object.
+   * 
+   * @param string the string
+   * @param devParms the dev parms
+   * @param cmdParms the cmd parms
+   * 
+   * @return the cmd parameter
+   */
   public static CmdParameter createParameter( String string, DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
     CmdParameter rc = null;

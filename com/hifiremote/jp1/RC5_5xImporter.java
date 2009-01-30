@@ -1,13 +1,26 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RC5_5xImporter.
+ */
 public class RC5_5xImporter
   extends Translate
 {
+  
+  /**
+   * Instantiates a new r c5_5x importer.
+   * 
+   * @param textParms the text parms
+   */
   public RC5_5xImporter( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int parmToSet )
   {
     if ( parmToSet < 0 )
@@ -35,10 +48,21 @@ public class RC5_5xImporter
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {}
 
+  /** The Sony12. */
+  @SuppressWarnings("unused")
   private static int Sony12 = 0;
+  
+  /** The Sony15. */
+  @SuppressWarnings("unused")
   private static int Sony15 = 1;
+  
+  /** The Sony20. */
+  @SuppressWarnings("unused")
   private static int Sony20 = 2;
 }

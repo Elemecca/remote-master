@@ -1,14 +1,27 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class NECParmTranslator.
+ */
 public class NECParmTranslator
   extends Translate
 {
+  
+  /**
+   * Instantiates a new nEC parm translator.
+   * 
+   * @param textParms the text parms
+   */
   public NECParmTranslator( String[] textParms )
   {
     super( textParms );
     initialDefaultParm = Integer.parseInt( textParms[ 0 ], 16 );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     short[] hex = hexData.getData();
@@ -41,6 +54,9 @@ public class NECParmTranslator
       hex[ 2 ] = ( short )reverse( complement( subDevice.intValue()));
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
     short[] hex = hexData.getData();
@@ -74,5 +90,6 @@ public class NECParmTranslator
     parms[ 2 ] = new Value( parm, null );
   }
 
+  /** The initial default parm. */
   private int initialDefaultParm;
 }

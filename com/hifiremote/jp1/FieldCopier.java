@@ -1,5 +1,9 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class FieldCopier.
+ */
 public class FieldCopier
   extends Translate
 {
@@ -12,6 +16,11 @@ public class FieldCopier
   //   destOffset - msbOffset where field should be copied to
   //   bits - the bit length of the field
 
+  /**
+   * Instantiates a new field copier.
+   * 
+   * @param textParms the text parms
+   */
   public FieldCopier( String[] textParms )
   {
     super( textParms );
@@ -46,6 +55,9 @@ public class FieldCopier
   }
 
   // called to store parms into hex data
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hex, DeviceParameter[] devParms, int onlyIndex )
   {
     int val = extract( hex, srcOffset, bits );
@@ -57,18 +69,35 @@ public class FieldCopier
   }
 
   // called to extract parms from hex data
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
     ;
   }
 
+  /** The comp. */
   private boolean comp = false;
+  
+  /** The lsb. */
   private boolean lsb = false;
+  
+  /** The src offset. */
   private int srcOffset;
+  
+  /** The dest offset. */
   private int destOffset;
+  
+  /** The bits. */
   private int bits;
 
+  /** The Constant srcOffsetIndex. */
   private final static int srcOffsetIndex = 0;
+  
+  /** The Constant destOffsetIndex. */
   private final static int destOffsetIndex = 1;
+  
+  /** The Constant bitsIndex. */
   private final static int bitsIndex = 2;
 }

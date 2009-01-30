@@ -1,14 +1,28 @@
 package com.hifiremote.jp1;
 
-import java.util.Properties;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Function.
+ */
 public class Function
 {
+  
+  /**
+   * Instantiates a new function.
+   */
   public Function(){}
 
+  /**
+   * Instantiates a new function.
+   * 
+   * @param name the name
+   * @param hex the hex
+   * @param notes the notes
+   */
   public Function( String name, Hex hex, String notes )
   {
     this.name = name;
@@ -16,11 +30,21 @@ public class Function
     this.notes = notes;
   }
 
+  /**
+   * Instantiates a new function.
+   * 
+   * @param name the name
+   */
   public Function( String name )
   {
     this.name = name;
   }
   
+  /**
+   * Instantiates a new function.
+   * 
+   * @param base the base
+   */
   public Function( Function base )
   {
     name = base.name;
@@ -29,13 +53,29 @@ public class Function
     notes = base.notes;
   }
 
+  /**
+   * Checks if is external.
+   * 
+   * @return true, if is external
+   */
   public boolean isExternal(){ return false; }
 
+  /**
+   * Checks if is empty.
+   * 
+   * @return true, if is empty
+   */
   public boolean isEmpty()
   {
     return ( name == null ) && ( hex == null ) && ( notes == null );
   }
 
+  /**
+   * Store.
+   * 
+   * @param props the props
+   * @param prefix the prefix
+   */
   public void store( Properties props, String prefix )
   {
     if ( isEmpty())
@@ -49,6 +89,12 @@ public class Function
       props.setProperty( prefix + ".notes", notes );
   }
 
+  /**
+   * Store.
+   * 
+   * @param out the out
+   * @param prefix the prefix
+   */
   public void store( PropertyWriter out, String prefix )
   {
     if ( isEmpty())
@@ -62,6 +108,12 @@ public class Function
       out.print( prefix + ".notes", notes );
   }
 
+  /**
+   * Load.
+   * 
+   * @param props the props
+   * @param prefix the prefix
+   */
   public void load( Properties props, String prefix )
   {
     String str = props.getProperty( prefix + ".name" );
@@ -75,6 +127,13 @@ public class Function
       setNotes( str );
   }
 
+  /**
+   * Sets the name.
+   * 
+   * @param name the name
+   * 
+   * @return the function
+   */
   public Function setName( String name )
   {
     this.name = name;
@@ -85,6 +144,13 @@ public class Function
     return this;
   }
 
+  /**
+   * Sets the notes.
+   * 
+   * @param notes the notes
+   * 
+   * @return the function
+   */
   public Function setNotes( String notes )
   {
     this.notes = notes;
@@ -95,20 +161,53 @@ public class Function
     return this;
   }
 
+  /**
+   * Sets the hex.
+   * 
+   * @param hex the hex
+   * 
+   * @return the function
+   */
   public Function setHex( Hex hex )
   {
     this.hex = hex;
     return this;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString()
   {
     return name;
   }
+  
+  /**
+   * Gets the name.
+   * 
+   * @return the name
+   */
   public String getName(){ return name; }
+  
+  /**
+   * Gets the notes.
+   * 
+   * @return the notes
+   */
   public String getNotes(){ return notes; }
+  
+  /**
+   * Gets the hex.
+   * 
+   * @return the hex
+   */
   public Hex getHex(){ return hex; }
 
+  /**
+   * Gets the label.
+   * 
+   * @return the label
+   */
   public FunctionLabel getLabel()
   {
     if ( label == null )
@@ -121,6 +220,11 @@ public class Function
     return label;
   }
 
+  /**
+   * Gets the item.
+   * 
+   * @return the item
+   */
   public FunctionItem getItem()
   {
     if ( item == null )
@@ -128,6 +232,12 @@ public class Function
     return item;
   }
 
+  /**
+   * Adds the reference.
+   * 
+   * @param b the b
+   * @param state the state
+   */
   public void addReference( Button b, int state )
   {
     users.add( new User( b, state ));
@@ -138,6 +248,12 @@ public class Function
     }
   }
 
+  /**
+   * Removes the reference.
+   * 
+   * @param b the b
+   * @param state the state
+   */
   public void removeReference( Button b, int state )
   {
     users.remove( new User( b, state ));
@@ -149,28 +265,50 @@ public class Function
     }
   }
 
+  /**
+   * Assigned.
+   * 
+   * @return true, if successful
+   */
   public boolean assigned()
   {
     return ( !users.isEmpty() );
   }
 
+  /**
+   * Gets the users.
+   * 
+   * @return the users
+   */
   public List< User > getUsers()
   {
     return users;
   }
 
+  /**
+   * The Class User.
+   */
   public class User
   {
+    
+    /**
+     * Instantiates a new user.
+     * 
+     * @param b the b
+     * @param state the state
+     */
     public User( Button b, int state )
     {
       button = b;
       this.state = state;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     public boolean equals( Object o )
     {
       User u = ( User )o;
-      boolean rc = true;
       if ( button != u.button )
         return false;
       if ( state != u.state )
@@ -178,14 +316,28 @@ public class Function
       return true;
     }
     
+    /** The button. */
     public Button button;
+    
+    /** The state. */
     public int state; 
   }
 
+  /** The name. */
   protected String name = null;
+  
+  /** The notes. */
   protected String notes = null;
+  
+  /** The hex. */
   protected Hex hex = null;
+  
+  /** The label. */
   private FunctionLabel label = null;
+  
+  /** The item. */
   private FunctionItem item = null;
+  
+  /** The users. */
   private List< User > users = new ArrayList< User >();
 }

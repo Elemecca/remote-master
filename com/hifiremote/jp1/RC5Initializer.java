@@ -1,12 +1,25 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RC5Initializer.
+ */
 public class RC5Initializer
   extends Initializer
 {
+  
+  /**
+   * Instantiates a new r c5 initializer.
+   * 
+   * @param parms the parms
+   */
   public RC5Initializer( String[] parms )
   {
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Initializer#initialize(com.hifiremote.jp1.DeviceParameter[], com.hifiremote.jp1.CmdParameter[])
+   */
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
     Choice[] choices = (( ChoiceCmdParm )cmdParms[ 0 ]).getChoices();

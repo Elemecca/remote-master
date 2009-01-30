@@ -1,16 +1,28 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class TranslatorFromDev.
+ */
 public class TranslatorFromDev
   extends Translator
 {
+  
+  /**
+   * Instantiates a new translator from dev.
+   * 
+   * @param textParms the text parms
+   */
   public TranslatorFromDev( String[] textParms )
   {
     super( textParms );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translator#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+   */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
-    short[] hex = hexData.getData();
     if ( index >= devParms.length )
     {
       System.err.println("TranslatorFromDev.in() index="+ index +" exceeds "+ devParms.length +" item buffer");
@@ -33,6 +45,9 @@ public class TranslatorFromDev
     insert( hexData, bitOffset, bits, w );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Translator#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+   */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
   }

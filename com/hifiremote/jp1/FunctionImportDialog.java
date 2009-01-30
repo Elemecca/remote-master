@@ -1,16 +1,43 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class FunctionImportDialog.
+ */
 public class FunctionImportDialog
   extends JDialog
   implements ActionListener
 {
+  
+  /**
+   * Instantiates a new function import dialog.
+   * 
+   * @param owner the owner
+   * @param upgrade the upgrade
+   */
   public FunctionImportDialog( JFrame owner, DeviceUpgrade upgrade )
   {
     super( owner, "Import Functions", true );
@@ -52,7 +79,7 @@ public class FunctionImportDialog
           return null;
         }  
       }
-      public Class getColumnClass( int col )
+      public Class<?> getColumnClass( int col )
       {
         if ( col == 0 )
           return Boolean.class;
@@ -141,6 +168,9 @@ public class FunctionImportDialog
     setLocation( x, y );
   }
 
+  /* (non-Javadoc)
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -176,6 +206,11 @@ public class FunctionImportDialog
     }
   }
 
+  /**
+   * Gets the selected functions.
+   * 
+   * @return the selected functions
+   */
   public java.util.List< Function > getSelectedFunctions()
   {
     java.util.List< Function > v = new ArrayList< Function >();
@@ -187,49 +222,35 @@ public class FunctionImportDialog
     return v;
   }
 
+  /**
+   * Gets the user action.
+   * 
+   * @return the user action
+   */
   public int getUserAction()
   {
     return userAction;
   }
 
-  private void transfer( JList fromList, JList toList )
-  {
-    DefaultListModel fromModel = ( DefaultListModel )fromList.getModel();
-    int fromIndex = fromList.getMaxSelectionIndex();
-    int first = fromList.getMinSelectionIndex();
-    DefaultListModel toModel = ( DefaultListModel )toList.getModel();
-    int toIndex = toModel.getSize();
-    
-    while ( fromIndex >= first )
-    {
-      if ( fromList.isSelectedIndex( fromIndex ))
-      {
-        Function f = ( Function )fromModel.getElementAt( fromIndex );
-        fromModel.removeElementAt( fromIndex );
-
-        while ( toIndex > 0 )
-        {
-          Function f2 = ( Function )toModel.elementAt( toIndex - 1 );
-          int rc = f2.getName().compareTo( f.getName());
-          
-          if ( rc < 0 )
-            break;
-          --toIndex;
-        }
-        toModel.add( toIndex, f );
-      }
-      --fromIndex;
-    }
-  }
-
+  /**
+   * The Class SelectionRenderer.
+   */
   public class SelectionRenderer
     extends JCheckBox
     implements ListCellRenderer
   {
+    
+    /**
+     * Instantiates a new selection renderer.
+     */
     public SelectionRenderer()
     {
       setOpaque( true );
     }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
+     */
     public Component getListCellRendererComponent(
       JList list, Object value, int index, boolean isSelected, boolean hasFocus )
     {
@@ -239,25 +260,71 @@ public class FunctionImportDialog
     }
   }
 
+  /**
+   * The Class SelectHolder.
+   */
   public class SelectHolder
   {
+    
+    /**
+     * Instantiates a new select holder.
+     * 
+     * @param f the f
+     */
     public SelectHolder( Function f )
     {
       this.data = f;
     }
+    
+    /**
+     * Checks if is selected.
+     * 
+     * @return true, if is selected
+     */
     public boolean isSelected(){ return selected; }
+    
+    /**
+     * Sets the selected.
+     * 
+     * @param flag the new selected
+     */
     public void setSelected( boolean flag ){ selected = flag; }
+    
+    /**
+     * Gets the data.
+     * 
+     * @return the data
+     */
     public Function getData(){ return data; }
+    
+    /** The selected. */
     private boolean selected = false;
+    
+    /** The data. */
     private Function data = null;
   }
 
+  /** The data. */
   private java.util.List< SelectHolder > data = new ArrayList< SelectHolder >();
+  
+  /** The model. */
   private AbstractTableModel model = null;
+  
+  /** The select all. */
   private JButton selectAll = null;
+  
+  /** The select none. */
   private JButton selectNone = null;
+  
+  /** The select toggle. */
   private JButton selectToggle = null;
+  
+  /** The ok. */
   private JButton ok = null;
+  
+  /** The cancel. */
   private JButton cancel = null;
+  
+  /** The user action. */
   private int userAction = JOptionPane.CANCEL_OPTION;
 }

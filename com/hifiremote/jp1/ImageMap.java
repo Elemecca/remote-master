@@ -6,13 +6,30 @@ import java.io.*;
 import java.util.*;
 import javax.swing.ImageIcon;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ImageMap.
+ */
 public class ImageMap
 {
+  
+  /**
+   * Instantiates a new image map.
+   * 
+   * @param mapFile the map file
+   */
   public ImageMap( File mapFile )
   {
     this.mapFile = mapFile;
   }
 
+  /**
+   * Parses the.
+   * 
+   * @param remote the remote
+   * 
+   * @throws Exception the exception
+   */
   public void parse( Remote remote )
     throws Exception
   {
@@ -209,10 +226,26 @@ public class ImageMap
     in.close();
   }
 
+  /**
+   * Gets the image.
+   * 
+   * @return the image
+   */
   public ImageIcon getImage(){ return image; }
+  
+  /**
+   * Gets the shapes.
+   * 
+   * @return the shapes
+   */
   public java.util.List< ButtonShape > getShapes(){ return shapes; }
 
+  /** The map file. */
   private File mapFile;
+  
+  /** The image. */
   private ImageIcon image;
+  
+  /** The shapes. */
   private java.util.List< ButtonShape> shapes = new ArrayList< ButtonShape >();
 }

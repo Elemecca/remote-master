@@ -1,13 +1,16 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-
+// TODO: Auto-generated Javadoc
+/**
+ * The Class DevParmEditorPanel.
+ */
 public class DevParmEditorPanel
   extends HexParmEditorPanel
 {
+  
+  /**
+   * Instantiates a new dev parm editor panel.
+   */
   public DevParmEditorPanel()
   {
     super( "Device Parameter" );

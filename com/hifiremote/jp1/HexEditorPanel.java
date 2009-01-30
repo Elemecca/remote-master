@@ -1,17 +1,34 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-import javax.swing.text.*;
 
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HexEditorPanel.
+ */
 public class HexEditorPanel
   extends ProtocolEditorPanel
   implements PropertyChangeListener
 {
+  
+  /**
+   * Instantiates a new hex editor panel.
+   * 
+   * @param title the title
+   * @param name the name
+   * @param toolTipText the tool tip text
+   * @param directions the directions
+   * @param length the length
+   */
   public HexEditorPanel( String title, String name, String toolTipText, String directions, int length )
   {
     super( title );
@@ -44,7 +61,14 @@ public class HexEditorPanel
     setText( directions );
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.ProtocolEditorPanel#commit()
+   */
   public void commit(){;}
+  
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.ProtocolEditorPanel#update(com.hifiremote.jp1.ProtocolEditorNode)
+   */
   public void update( ProtocolEditorNode newNode )
   {
     node = ( HexEditorNode )newNode;
@@ -54,6 +78,9 @@ public class HexEditorPanel
   }
 
   // PropertyChangeListener methods
+  /* (non-Javadoc)
+   * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+   */
   public void propertyChange( PropertyChangeEvent e )
   {
     Object source = e.getSource();
@@ -64,6 +91,11 @@ public class HexEditorPanel
     }
   }
 
+  /**
+   * Sets the length.
+   * 
+   * @param length the new length
+   */
   public void setLength( int length )
   {
     Hex current = ( Hex )hex.getValue();
@@ -80,7 +112,12 @@ public class HexEditorPanel
     hex.setValue( newHex );
   }
 
+  /** The node. */
   private HexEditorNode node = null;
+  
+  /** The hex formatter. */
   private HexFormatter hexFormatter = null;
+  
+  /** The hex. */
   private JFormattedTextField hex = null;
 }

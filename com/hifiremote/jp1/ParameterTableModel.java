@@ -1,12 +1,22 @@
 package com.hifiremote.jp1;
 
-import java.util.*;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ParameterTableModel.
+ */
 public class ParameterTableModel
   extends AbstractTableModel
 
 {
+  
+  /**
+   * Instantiates a new parameter table model.
+   * 
+   * @param protocol the protocol
+   * @param type the type
+   */
   public ParameterTableModel( ManualProtocol protocol, Type type )
   {
     super();
@@ -14,6 +24,11 @@ public class ParameterTableModel
     this.type = type;
   }
   
+  /**
+   * Gets the protocol info.
+   * 
+   * @return the protocol info
+   */
   private void getProtocolInfo()
   {
     switch ( type )
@@ -29,17 +44,26 @@ public class ParameterTableModel
     }
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getRowCount()
+   */
   public int getRowCount()
   {
     getProtocolInfo();
     return parms.length;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getColumnCount()
+   */
   public int getColumnCount()
   {
     return colNames.length;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+   */
   public String getColumnName( int col )
   {
     if ( col < colNames.length )
@@ -48,7 +72,10 @@ public class ParameterTableModel
       return null;
   }
 
-  public Class getColumnClass( int col )
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+   */
+  public Class<?> getColumnClass( int col )
   {
     if ( col < colClasses.length )
       return colClasses[ col ];
@@ -56,11 +83,17 @@ public class ParameterTableModel
       return null;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+   */
   public boolean isCellEditable( int row, int col )
   {
     return true;
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.TableModel#getValueAt(int, int)
+   */
   public Object getValueAt( int row, int col )
   {
     getProtocolInfo();
@@ -81,6 +114,9 @@ public class ParameterTableModel
     }
   }
 
+  /* (non-Javadoc)
+   * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+   */
   public void setValueAt( Object value, int row, int col )
   {
     getProtocolInfo();
@@ -114,25 +150,45 @@ public class ParameterTableModel
     }
   }
 
+  /** The parms. */
   private Parameter[] parms;
+  
+  /** The xlators. */
   private Translate[] xlators;
 
+  /** The protocol. */
   private ManualProtocol protocol = null;
   
-  public enum Type { DEVICE, COMMAND };
+  /**
+   * The Enum Type.
+   */
+  public enum Type { /** The DEVICE. */
+ DEVICE, /** The COMMAND. */
+ COMMAND };
+  
+  /** The type. */
   private Type type = Type.DEVICE;
   
+  /** The Constant nameCol. */
   private final static int nameCol = 0;
+  
+  /** The Constant bitsCol. */
   private final static int bitsCol = 1;
+  
+  /** The Constant orderCol. */
   private final static int orderCol = 2;
+  
+  /** The Constant compCol. */
   private final static int compCol = 3;
 
+  /** The Constant colNames. */
   private final static String[] colNames =
   {
    "Name", "Bits", "LSB", "Comp"
   };
 
-  private final static Class[] colClasses =
+  /** The Constant colClasses. */
+  private final static Class<?>[] colClasses =
   {
     String.class, Integer.class, Boolean.class, Boolean.class
   };

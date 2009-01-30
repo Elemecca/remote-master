@@ -1,12 +1,25 @@
 package com.hifiremote.jp1;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PanasonicVcr.
+ */
 public class PanasonicVcr
   extends Initializer
 {
+  
+  /**
+   * Instantiates a new panasonic vcr.
+   * 
+   * @param parms the parms
+   */
   public PanasonicVcr( String[] parms )
   {
   }
 
+  /* (non-Javadoc)
+   * @see com.hifiremote.jp1.Initializer#initialize(com.hifiremote.jp1.DeviceParameter[], com.hifiremote.jp1.CmdParameter[])
+   */
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
     int dev = (( Integer )devParms[0].getValueOrDefault()).intValue();

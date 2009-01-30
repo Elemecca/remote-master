@@ -4,8 +4,21 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class BinaryUpgradeWriter.
+ */
 public class BinaryUpgradeWriter
 {
+  
+  /**
+   * Write.
+   * 
+   * @param deviceUpgrade the device upgrade
+   * @param defaultPath the default path
+   * 
+   * @return the file
+   */
   public static File write( DeviceUpgrade deviceUpgrade, File defaultPath )
   {
     try
@@ -60,9 +73,6 @@ public class BinaryUpgradeWriter
         if ( rc == JOptionPane.YES_OPTION )
         {
           List< short[]> v = new ArrayList< short[]>();
-
-          Remote remote = deviceUpgrade.getRemote();
-          Protocol protocol = deviceUpgrade.getProtocol();
 
           v.add( deviceUpgrade.getHexSetupCode());
           v.add( deviceUpgrade.getUpgradeHex().getData());
