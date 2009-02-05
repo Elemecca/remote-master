@@ -1,7 +1,14 @@
+Changes for v1.87b
+- More fixes for HCS08 Device Combiner
+
+Changes for v1.87a
+- Fix HCS08 Device Combiner so protocol upgrade code is shown. 
+
 Changes for v1.87
 - Fix importing of KM updates for remotes that use 2-byte PIDs
 - Update digitmaps through 447
 - Fix NEC 2/4DEV Combo bug requiring default sub-device
+- Fix DeviceCombiner for HCS08 to enable duration control
 
 Changes for v1.86
 - Fixed Bug 1835121: NPE during save operation
