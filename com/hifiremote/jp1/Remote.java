@@ -18,15 +18,16 @@ import javax.swing.JOptionPane;
 /**
  * The Class Remote.
  */
-public class Remote
-  implements Comparable< Remote >
+public class Remote implements Comparable< Remote >
 {
-  
+
   /**
    * Instantiates a new remote.
    * 
-   * @param aRemote the a remote
-   * @param index the index
+   * @param aRemote
+   *          the a remote
+   * @param index
+   *          the index
    */
   public Remote( Remote aRemote, int index )
   {
@@ -40,7 +41,8 @@ public class Remote
   /**
    * Instantiates a new remote.
    * 
-   * @param rdf the rdf
+   * @param rdf
+   *          the rdf
    */
   public Remote( File rdf )
   {
@@ -57,10 +59,10 @@ public class Remote
     String postfix = "";
     String[] middles = null;
     boolean foundUnderscore = false;
-    while ( st.hasMoreTokens())
+    while ( st.hasMoreTokens() )
     {
       String token = st.nextToken();
-      if (( token.length() > 3 ) && ( token.indexOf( '_' ) != -1 ))
+      if ( ( token.length() > 3 ) && ( token.indexOf( '_' ) != -1 ) )
       {
         foundUnderscore = true;
         StringTokenizer st2 = new StringTokenizer( token, "_" );
@@ -86,10 +88,10 @@ public class Remote
       names = new String[ middles.length ];
       for ( int i = 0; i < middles.length; i++ )
       {
-         if ( middles[ i ].length() < middles[ 0 ].length() )
-           names[ i ] = middles[ i ] + postfix;
-         else
-           names[ i ] = prefix + middles[ i ] + postfix;
+        if ( middles[ i ].length() < middles[ 0 ].length() )
+          names[ i ] = middles[ i ] + postfix;
+        else
+          names[ i ] = prefix + middles[ i ] + postfix;
       }
     }
   }
@@ -99,13 +101,16 @@ public class Remote
    * 
    * @return the file
    */
-  public File getFile(){ return file; }
+  public File getFile()
+  {
+    return file;
+  }
 
   /**
    * Load.
    */
   public void load()
-//    throws Exception
+  // throws Exception
   {
     try
     {
@@ -125,35 +130,35 @@ public class Remote
           StringTokenizer st = new StringTokenizer( line, "[]" );
           line = st.nextToken();
 
-          if ( line.equals( "General" ))
+          if ( line.equals( "General" ) )
             line = parseGeneralSection( rdr );
-          else if ( line.equals( "SpecialProtocols" ))
+          else if ( line.equals( "SpecialProtocols" ) )
             line = parseSpecialProtocols( rdr );
-          else if ( line.equals( "Checksums" ))
+          else if ( line.equals( "Checksums" ) )
             line = parseCheckSums( rdr );
-          else if ( line.equals( "Settings" ))
+          else if ( line.equals( "Settings" ) )
             line = parseSettings( rdr );
-          else if ( line.equals( "FixedData" ))
+          else if ( line.equals( "FixedData" ) )
             line = parseFixedData( rdr );
-          else if ( line.equals( "DeviceButtons" ))
+          else if ( line.equals( "DeviceButtons" ) )
             line = parseDeviceButtons( rdr );
-          else if ( line.equals( "DigitMaps" ))
+          else if ( line.equals( "DigitMaps" ) )
             line = parseDigitMaps( rdr );
-          else if ( line.equals( "DeviceTypes" ))
+          else if ( line.equals( "DeviceTypes" ) )
             line = parseDeviceTypes( rdr );
-          else if ( line.equals( "DeviceAbbreviations" ))
+          else if ( line.equals( "DeviceAbbreviations" ) )
             line = parseDeviceAbbreviations( rdr );
-          else if ( line.equals( "DeviceTypeAliases" ))
+          else if ( line.equals( "DeviceTypeAliases" ) )
             line = parseDeviceTypeAliases( rdr );
-          else if ( line.equals( "DeviceTypeImageMaps" ))
+          else if ( line.equals( "DeviceTypeImageMaps" ) )
             line = parseDeviceTypeImageMaps( rdr );
-          else if ( line.equals( "Buttons" ))
+          else if ( line.equals( "Buttons" ) )
             line = parseButtons( rdr );
-          else if ( line.equals( "MultiMacros" ))
+          else if ( line.equals( "MultiMacros" ) )
             line = parseMultiMacros( rdr );
-          else if ( line.equals( "ButtonMaps" ))
+          else if ( line.equals( "ButtonMaps" ) )
             line = parseButtonMaps( rdr );
-          else if ( line.equals( "Protocols" ))
+          else if ( line.equals( "Protocols" ) )
             line = parseProtocols( rdr );
           else
             line = rdr.readLine();
@@ -167,29 +172,31 @@ public class Remote
       {
         System.err.println( "ERROR: " + file.getName() + " does not specify any ButtonMaps!" );
         buttonMaps = new ButtonMap[ 1 ];
-        buttonMaps[ 0 ] = new ButtonMap( 0, new short[ 0 ][ 0 ]);
+        buttonMaps[ 0 ] = new ButtonMap( 0, new short[ 0 ][ 0 ] );
       }
       for ( int i = 0; i < buttonMaps.length; i++ )
         buttonMaps[ i ].setButtons( this );
 
-      for ( Enumeration< DeviceType> e = deviceTypes.elements(); e.hasMoreElements(); )
+      for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
       {
         DeviceType type = e.nextElement();
         int map = type.getMap();
         if ( map == -1 )
-          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
+          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName()
+              + " doesn't have a map." );
         if ( map >= buttonMaps.length )
         {
-          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " uses an undefined map index." );
+          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName()
+              + " uses an undefined map index." );
           map = buttonMaps.length - 1;
         }
-        if (( map != -1 ) && ( buttonMaps.length > 0 ))
+        if ( ( map != -1 ) && ( buttonMaps.length > 0 ) )
           type.setButtonMap( buttonMaps[ map ] );
       }
 
       if ( deviceTypeAliasNames == null )
       {
-        java.util.List<String> v = new ArrayList<String>();
+        java.util.List< String > v = new ArrayList< String >();
         DeviceType vcrType = null;
         boolean hasPVRalias = false;
         for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
@@ -197,9 +204,9 @@ public class Remote
           DeviceType type = e.nextElement();
 
           String typeName = type.getName();
-          if ( typeName.startsWith( "VCR" ))
+          if ( typeName.startsWith( "VCR" ) )
             vcrType = type;
-          if ( typeName.equals( "PVR" ))
+          if ( typeName.equals( "PVR" ) )
             hasPVRalias = true;
           deviceTypeAliases.put( typeName, type );
           v.add( typeName );
@@ -210,17 +217,17 @@ public class Remote
           deviceTypeAliases.put( "PVR", vcrType );
         }
         deviceTypeAliasNames = new String[ 0 ];
-        deviceTypeAliasNames = ( String[] )v.toArray( deviceTypeAliasNames );
+        deviceTypeAliasNames = ( String[] ) v.toArray( deviceTypeAliasNames );
         Arrays.sort( deviceTypeAliasNames );
       }
 
       // find the longest button map
       ButtonMap longestMap = null;
-      for ( Enumeration< DeviceType> e = deviceTypes.elements(); e.hasMoreElements(); )
+      for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
       {
         DeviceType type = e.nextElement();
         ButtonMap thisMap = type.getButtonMap();
-        if (( longestMap == null ) || ( longestMap.size() < thisMap.size() ))
+        if ( ( longestMap == null ) || ( longestMap.size() < thisMap.size() ) )
           longestMap = thisMap;
       }
 
@@ -229,26 +236,23 @@ public class Remote
 
       // first copy the bindable buttons from the longest map
       int index = 0;
-      while ( index < longestMap.size())
+      while ( index < longestMap.size() )
       {
         Button b = longestMap.get( index++ );
-        if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() ||
-             b.allowsXShiftedKeyMove())
+        if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
           bindableButtons.add( b );
       }
 
       // now copy the rest of the bindable buttons, skipping those already added
       for ( Button b : buttons )
       {
-        if (( b.allowsKeyMove() ||
-              b.allowsShiftedKeyMove() ||
-              b.allowsXShiftedKeyMove())
-            && !bindableButtons.contains( b ))
+        if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
+            && !bindableButtons.contains( b ) )
           bindableButtons.add( b );
       }
-      upgradeButtons = ( Button[] )bindableButtons.toArray( upgradeButtons );
+      upgradeButtons = ( Button[] ) bindableButtons.toArray( upgradeButtons );
 
-      if (( imageMaps.length > 0 ) && ( imageMaps[ mapIndex ] != null ))
+      if ( ( imageMaps.length > 0 ) && ( imageMaps[ mapIndex ] != null ) )
         imageMaps[ mapIndex ].parse( this );
 
       for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
@@ -274,10 +278,9 @@ public class Remote
       e.printStackTrace( pw );
       pw.flush();
       pw.close();
-      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
-                                     sw.toString(), "Remote Load Error",
-                                     JOptionPane.ERROR_MESSAGE );
-      System.err.println( sw.toString());
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), sw.toString(), "Remote Load Error",
+          JOptionPane.ERROR_MESSAGE );
+      System.err.println( sw.toString() );
     }
   }
 
@@ -293,15 +296,15 @@ public class Remote
     double x = gap;
     java.util.List< ImageMap > maps = new ArrayList< ImageMap >();
     if ( imageMaps.length > 0 )
-      maps.add( imageMaps[ mapIndex ]);
-    for ( Enumeration< DeviceType> e = deviceTypes.elements(); e.hasMoreElements(); )
+      maps.add( imageMaps[ mapIndex ] );
+    for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
     {
       DeviceType type = e.nextElement();
       if ( type.getImageMaps().length == 0 )
         continue;
       ImageMap[] devMaps = type.getImageMaps()[ mapIndex ];
       for ( int i = 0; i < devMaps.length; ++i )
-        maps.add( devMaps[ i ]);
+        maps.add( devMaps[ i ] );
     }
 
     for ( ImageMap map : maps )
@@ -318,9 +321,9 @@ public class Remote
     for ( int i = 0; i < upgradeButtons.length; i++ )
     {
       Button b = upgradeButtons[ i ];
-      if ( !b.getHasShape() && !b.getIsShifted() && !b.getIsXShifted())
+      if ( !b.getHasShape() && !b.getIsShifted() && !b.getIsXShifted() )
       {
-        if (( x + diameter + gap ) > width )
+        if ( ( x + diameter + gap ) > width )
         {
           x = gap;
           y += ( gap + diameter );
@@ -332,60 +335,83 @@ public class Remote
         b.setHasShape( true );
       }
     }
-    height = ( int )( y + gap + diameter );
+    height = ( int ) ( y + gap + diameter );
     for ( ImageMap map : maps )
     {
       map.getShapes().addAll( phantomShapes );
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
-  public String toString(){ return names[ nameIndex ]; }
-  
+  public String toString()
+  {
+    return names[ nameIndex ];
+  }
+
   /**
    * Gets the signature.
    * 
    * @return the signature
    */
-  public String getSignature(){ return signature; }
-  
+  public String getSignature()
+  {
+    return signature;
+  }
+
   /**
    * Gets the name.
    * 
    * @return the name
    */
-  public String getName(){ return names[ nameIndex ]; }
-  
+  public String getName()
+  {
+    return names[ nameIndex ];
+  }
+
   /**
    * Gets the name count.
    * 
    * @return the name count
    */
-  public int getNameCount(){ return names.length; }
-  
+  public int getNameCount()
+  {
+    return names.length;
+  }
+
   /**
    * Gets the base address.
    * 
    * @return the base address
    */
-  public int getBaseAddress(){ return baseAddress; }
-  
+  public int getBaseAddress()
+  {
+    return baseAddress;
+  }
+
   /**
    * Gets the eeprom size.
    * 
    * @return the eeprom size
    */
-  public int getEepromSize(){ return eepromSize; }
-  
+  public int getEepromSize()
+  {
+    return eepromSize;
+  }
+
   /**
    * Gets the device code offset.
    * 
    * @return the device code offset
    */
-  public int getDeviceCodeOffset(){ return deviceCodeOffset; }
-  
+  public int getDeviceCodeOffset()
+  {
+    return deviceCodeOffset;
+  }
+
   /**
    * Gets the device types.
    * 
@@ -405,7 +431,8 @@ public class Remote
   /**
    * Gets the device type.
    * 
-   * @param typeName the type name
+   * @param typeName
+   *          the type name
    * 
    * @return the device type
    */
@@ -418,13 +445,14 @@ public class Remote
   /**
    * Gets the device type by alias name.
    * 
-   * @param aliasName the alias name
+   * @param aliasName
+   *          the alias name
    * 
    * @return the device type by alias name
    */
   public DeviceType getDeviceTypeByAliasName( String aliasName )
   {
-    DeviceType type = ( DeviceType )deviceTypeAliases.get( aliasName );
+    DeviceType type = ( DeviceType ) deviceTypeAliases.get( aliasName );
     if ( type != null )
       return type;
     return getDeviceType( aliasName );
@@ -433,7 +461,8 @@ public class Remote
   /**
    * Gets the device type by index.
    * 
-   * @param index the index
+   * @param index
+   *          the index
    * 
    * @return the device type by index
    */
@@ -451,7 +480,8 @@ public class Remote
   /**
    * Gets the device type alias.
    * 
-   * @param type the type
+   * @param type
+   *          the type
    * 
    * @return the device type alias
    */
@@ -463,9 +493,9 @@ public class Remote
       if ( getDeviceTypeByAliasName( alias ) != type )
         continue;
       String typeName = type.getName();
-      if ( typeName.equals( alias ))
+      if ( typeName.equals( alias ) )
         return alias;
-      if (( typeName.contains( alias ) || alias.contains( typeName )) && ( tentative == null ))
+      if ( ( typeName.contains( alias ) || alias.contains( typeName ) ) && ( tentative == null ) )
         tentative = alias;
     }
     if ( tentative != null )
@@ -536,7 +566,7 @@ public class Remote
 
   // public String getProcessorVersion()
   // {
-    // return processorVersion;
+  // return processorVersion;
   // }
 
   /**
@@ -575,7 +605,8 @@ public class Remote
   /**
    * Gets the image maps.
    * 
-   * @param type the type
+   * @param type
+   *          the type
    * 
    * @return the image maps
    */
@@ -583,7 +614,7 @@ public class Remote
   {
     load();
     ImageMap[][] maps = type.getImageMaps();
-    if (( maps != null ) && ( maps.length != 0 ))
+    if ( ( maps != null ) && ( maps.length != 0 ) )
       return maps[ mapIndex ];
     else
     {
@@ -629,18 +660,17 @@ public class Remote
   /**
    * Parses the flag.
    * 
-   * @param st the st
+   * @param st
+   *          the st
    * 
    * @return true, if successful
    */
   private boolean parseFlag( StringTokenizer st )
   {
     String flag = st.nextToken( " =\t" );
-    if ( flag.equalsIgnoreCase( "Y" ) ||
-         flag.equalsIgnoreCase( "Yes" ) ||
-         flag.equalsIgnoreCase( "T" ) ||
-         flag.equalsIgnoreCase( "True" ) ||
-         flag.equalsIgnoreCase( "1" ))
+    if ( flag.equalsIgnoreCase( "Y" ) || flag.equalsIgnoreCase( "Yes" )
+        || flag.equalsIgnoreCase( "T" ) || flag.equalsIgnoreCase( "True" )
+        || flag.equalsIgnoreCase( "1" ) )
     {
       return true;
     }
@@ -650,14 +680,15 @@ public class Remote
   /**
    * Parses the general section.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseGeneralSection( RDFReader rdr )
-    throws Exception
+  private String parseGeneralSection( RDFReader rdr ) throws Exception
   {
     String processorName = null;
     String processorVersion = null;
@@ -666,125 +697,125 @@ public class Remote
     {
       line = rdr.readLine();
 
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line, "=" );
 
       String parm = st.nextToken();
-      if ( parm.equals( "Name" ))
+      if ( parm.equals( "Name" ) )
         ;
-      else if ( parm.equals( "BaseAddr" ))
-        baseAddress = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "EepromSize" ))
-        eepromSize = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "DevCodeOffset" ))
-        deviceCodeOffset = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "FavKey" ))
+      else if ( parm.equals( "BaseAddr" ) )
+        baseAddress = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "EepromSize" ) )
+        eepromSize = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "DevCodeOffset" ) )
+        deviceCodeOffset = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "FavKey" ) )
       {
-        int keyCode = rdr.parseNumber( st.nextToken( "=, \t" ));
-        int deviceButtonAddress = rdr.parseNumber( st.nextToken());
-        int maxEntries = rdr.parseNumber( st.nextToken());
-        int entrySize = rdr.parseNumber( st.nextToken());
+        int keyCode = rdr.parseNumber( st.nextToken( "=, \t" ) );
+        int deviceButtonAddress = rdr.parseNumber( st.nextToken() );
+        int maxEntries = rdr.parseNumber( st.nextToken() );
+        int entrySize = rdr.parseNumber( st.nextToken() );
         boolean segregated = false;
-        if ( st.hasMoreTokens())
-           segregated = rdr.parseNumber( st.nextToken()) != 0;
+        if ( st.hasMoreTokens() )
+          segregated = rdr.parseNumber( st.nextToken() ) != 0;
         favKey = new FavKey( keyCode, deviceButtonAddress, maxEntries, entrySize, segregated );
       }
-      else if ( parm.equals( "OEMDevice" ))
+      else if ( parm.equals( "OEMDevice" ) )
       {
-        int deviceNumber = rdr.parseNumber( st.nextToken(",="));
-        int deviceAddress = rdr.parseNumber( st.nextToken());
+        int deviceNumber = rdr.parseNumber( st.nextToken( ",=" ) );
+        int deviceAddress = rdr.parseNumber( st.nextToken() );
         oemDevice = new OEMDevice( deviceNumber, deviceAddress );
       }
-      else if ( parm.equals( "OEMControl" ))
-        oemControl = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "UpgradeBug" ))
+      else if ( parm.equals( "OEMControl" ) )
+        oemControl = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "UpgradeBug" ) )
         upgradeBug = parseFlag( st );
-      else if ( parm.equals( "AdvCodeAddr" ))
+      else if ( parm.equals( "AdvCodeAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ));
-        int end = rdr.parseNumber( st.nextToken());
+        int start = rdr.parseNumber( st.nextToken( ".=" ) );
+        int end = rdr.parseNumber( st.nextToken() );
         advancedCodeAddress = new AddressRange( start, end );
       }
-      else if ( parm.equals( "MacroSupport" ))
-        macroSupport = ( rdr.parseNumber( st.nextToken()) != 0 );
-      else if ( parm.equals( "UpgradeAddr" ))
+      else if ( parm.equals( "MacroSupport" ) )
+        macroSupport = ( rdr.parseNumber( st.nextToken() ) != 0 );
+      else if ( parm.equals( "UpgradeAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken(".="));
-        int end = rdr.parseNumber( st.nextToken());
+        int start = rdr.parseNumber( st.nextToken( ".=" ) );
+        int end = rdr.parseNumber( st.nextToken() );
         upgradeAddress = new AddressRange( start, end );
       }
-      else if ( parm.equals( "DevUpgradeAddr" ))
+      else if ( parm.equals( "DevUpgradeAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ));
-        int end = rdr.parseNumber( st.nextToken());
+        int start = rdr.parseNumber( st.nextToken( ".=" ) );
+        int end = rdr.parseNumber( st.nextToken() );
         deviceUpgradeAddress = new AddressRange( start, end );
       }
-      else if ( parm.equals( "TimedMacroAddr" ))
+      else if ( parm.equals( "TimedMacroAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ));
-        int end = rdr.parseNumber( st.nextToken());
+        int start = rdr.parseNumber( st.nextToken( ".=" ) );
+        int end = rdr.parseNumber( st.nextToken() );
         timedMacroAddress = new AddressRange( start, end );
       }
-      else if ( parm.equals( "TimedMacroWarning" ))
+      else if ( parm.equals( "TimedMacroWarning" ) )
         timedMacroWarning = parseFlag( st );
-      else if ( parm.equals( "LearnedAddr" ))
+      else if ( parm.equals( "LearnedAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ));
-        int end = rdr.parseNumber( st.nextToken());
+        int start = rdr.parseNumber( st.nextToken( ".=" ) );
+        int end = rdr.parseNumber( st.nextToken() );
         learnedAddress = new AddressRange( start, end );
       }
-      else if ( parm.equals( "Processor" ))
+      else if ( parm.equals( "Processor" ) )
       {
         processorName = st.nextToken();
-        if ( processorName.equals( "6805" ) && ( processorVersion == null ))
+        if ( processorName.equals( "6805" ) && ( processorVersion == null ) )
           processorVersion = "C9";
       }
-      else if ( parm.equals( "ProcessorVersion" ))
+      else if ( parm.equals( "ProcessorVersion" ) )
         processorVersion = st.nextToken();
-      else if ( parm.equals( "RAMAddr" ))
-        RAMAddress = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "TimeAddr" ))
-        timeAddress = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "RDFSync" ))
-        RDFSync = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "PunchThruBase" ))
-        punchThruBase = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "ScanBase" ))
-        scanBase = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "SleepStatusBit" ))
+      else if ( parm.equals( "RAMAddr" ) )
+        RAMAddress = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "TimeAddr" ) )
+        timeAddress = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "RDFSync" ) )
+        RDFSync = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "PunchThruBase" ) )
+        punchThruBase = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "ScanBase" ) )
+        scanBase = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "SleepStatusBit" ) )
       {
-        int addr = rdr.parseNumber( st.nextToken( ".=" ));
-        int bit = rdr.parseNumber( st.nextToken());
+        int addr = rdr.parseNumber( st.nextToken( ".=" ) );
+        int bit = rdr.parseNumber( st.nextToken() );
         int onVal = 1;
-        if ( st.hasMoreTokens())
-          onVal = rdr.parseNumber( st.nextToken());
+        if ( st.hasMoreTokens() )
+          onVal = rdr.parseNumber( st.nextToken() );
         sleepStatusBit = new StatusBit( addr, bit, onVal );
       }
-      else if ( parm.equals( "VPTStatusBit" ))
+      else if ( parm.equals( "VPTStatusBit" ) )
       {
-        int addr = rdr.parseNumber( st.nextToken( ".=" ));
-        int bit = rdr.parseNumber( st.nextToken());
+        int addr = rdr.parseNumber( st.nextToken( ".=" ) );
+        int bit = rdr.parseNumber( st.nextToken() );
         int onVal = 1;
-        if ( st.hasMoreTokens())
-          onVal = rdr.parseNumber( st.nextToken());
+        if ( st.hasMoreTokens() )
+          onVal = rdr.parseNumber( st.nextToken() );
         vptStatusBit = new StatusBit( addr, bit, onVal );
       }
-      else if ( parm.equals( "OmitDigitMapByte" ))
+      else if ( parm.equals( "OmitDigitMapByte" ) )
         omitDigitMapByte = parseFlag( st );
-      else if ( parm.equals( "ImageMap" ))
+      else if ( parm.equals( "ImageMap" ) )
       {
         PropertyFile properties = JP1Frame.getProperties();
         File imageDir = properties.getFileProperty( "ImagePath" );
         if ( imageDir == null )
           imageDir = new File( properties.getFile().getParentFile(), "Images" );
 
-        if ( !imageDir.exists())
+        if ( !imageDir.exists() )
         {
-          JOptionPane.showMessageDialog( null, "Images folder not found!",
-                                         "Error", JOptionPane.ERROR_MESSAGE );
-          RMFileChooser chooser = new RMFileChooser( imageDir.getParentFile());
+          JOptionPane.showMessageDialog( null, "Images folder not found!", "Error",
+              JOptionPane.ERROR_MESSAGE );
+          RMFileChooser chooser = new RMFileChooser( imageDir.getParentFile() );
           chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
           chooser.setDialogTitle( "Choose the directory containing the remote images and maps" );
           if ( chooser.showOpenDialog( null ) != RMFileChooser.APPROVE_OPTION )
@@ -799,65 +830,65 @@ public class Remote
         int mapCount = mapTokenizer.countTokens();
         imageMaps = new ImageMap[ mapCount ];
         for ( int m = 0; m < mapCount; ++m )
-          imageMaps[ m ] = new ImageMap( new File( imageDir, mapTokenizer.nextToken()));
+          imageMaps[ m ] = new ImageMap( new File( imageDir, mapTokenizer.nextToken() ) );
 
         if ( nameIndex >= mapCount )
           mapIndex = mapCount - 1;
         else
           mapIndex = nameIndex;
       }
-      else if ( parm.equals( "DefaultRestrictions" ))
-        defaultRestrictions = parseRestrictions( st.nextToken());
-      else if ( parm.equals( "Shift" ))
+      else if ( parm.equals( "DefaultRestrictions" ) )
+        defaultRestrictions = parseRestrictions( st.nextToken() );
+      else if ( parm.equals( "Shift" ) )
       {
-        shiftMask = rdr.parseNumber( st.nextToken( "=," ));
-        if ( st.hasMoreTokens())
+        shiftMask = rdr.parseNumber( st.nextToken( "=," ) );
+        if ( st.hasMoreTokens() )
           shiftLabel = st.nextToken().trim();
       }
-      else if ( parm.equals( "XShift" ))
+      else if ( parm.equals( "XShift" ) )
       {
         xShiftEnabled = true;
-        xShiftMask = rdr.parseNumber( st.nextToken( "=," ));
-        if ( st.hasMoreTokens())
+        xShiftMask = rdr.parseNumber( st.nextToken( "=," ) );
+        if ( st.hasMoreTokens() )
           xShiftLabel = st.nextToken().trim();
       }
-      else if ( parm.equals( "AdvCodeFormat" ))
+      else if ( parm.equals( "AdvCodeFormat" ) )
       {
         String value = st.nextToken();
-        if ( value.equals( "HEX" ))
+        if ( value.equals( "HEX" ) )
           advCodeFormat = HEX_FORMAT;
-        else if ( value.equals( "EFC" ))
+        else if ( value.equals( "EFC" ) )
           advCodeFormat = EFC_FORMAT;
       }
-      else if ( parm.equals( "AdvCodeBindFormat" ))
+      else if ( parm.equals( "AdvCodeBindFormat" ) )
       {
         String value = st.nextToken();
-        if ( value.equals( "NORMAL" ))
+        if ( value.equals( "NORMAL" ) )
           advCodeBindFormat = NORMAL;
-        else if ( value.equals( "LONG" ))
+        else if ( value.equals( "LONG" ) )
           advCodeBindFormat = LONG;
       }
-      else if ( parm.equals( "EFCDigits" ))
+      else if ( parm.equals( "EFCDigits" ) )
       {
         String value = st.nextToken();
         efcDigits = rdr.parseNumber( value );
       }
-      else if ( parm.equals( "DevComb" ))
+      else if ( parm.equals( "DevComb" ) )
       {
         devCombAddress = new int[ 7 ];
         String combParms = st.nextToken();
         StringTokenizer st2 = new StringTokenizer( combParms, ",", true );
         for ( int i = 0; i < 7; i++ )
         {
-          if ( st2.hasMoreTokens())
+          if ( st2.hasMoreTokens() )
           {
             String tok = st2.nextToken();
-            if ( tok.equals( "," ))
+            if ( tok.equals( "," ) )
               devCombAddress[ i ] = -1;
             else
             {
               devCombAddress[ i ] = rdr.parseNumber( tok );
-              if ( st2.hasMoreTokens())
+              if ( st2.hasMoreTokens() )
                 st2.nextToken(); // skip delimeter
             }
           }
@@ -865,26 +896,28 @@ public class Remote
             devCombAddress[ i ] = -1;
         }
       }
-      else if ( parm.equals( "ProtocolVectorOffset" ))
-        protocolVectorOffset = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "ProtocolDataOffset" ))
-        protocolDataOffset = rdr.parseNumber( st.nextToken());
-      else if ( parm.equals( "EncDec" ))
+      else if ( parm.equals( "ProtocolVectorOffset" ) )
+        protocolVectorOffset = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "ProtocolDataOffset" ) )
+        protocolDataOffset = rdr.parseNumber( st.nextToken() );
+      else if ( parm.equals( "EncDec" ) )
       {
-        String className = st.nextToken("=()");
+        String className = st.nextToken( "=()" );
         String textParm = null;
-        if ( st.hasMoreTokens())
+        if ( st.hasMoreTokens() )
           textParm = st.nextToken();
         try
         {
           if ( className.indexOf( '.' ) == -1 )
             className = "com.hifiremote.jp1." + className;
 
-          Class<?> cl = Class.forName( className );
-          Class< ? extends EncrypterDecrypter> cl2 = cl.asSubclass( EncrypterDecrypter.class );
-          Class<?>[] parmClasses = { String.class };
+          Class< ? > cl = Class.forName( className );
+          Class< ? extends EncrypterDecrypter > cl2 = cl.asSubclass( EncrypterDecrypter.class );
+          Class< ? >[] parmClasses =
+          { String.class };
           Constructor< ? extends EncrypterDecrypter > ct = cl2.getConstructor( parmClasses );
-          Object[] ctParms = { textParm };
+          Object[] ctParms =
+          { textParm };
           encdec = ct.newInstance( ctParms );
         }
         catch ( Exception e )
@@ -893,17 +926,17 @@ public class Remote
           e.printStackTrace( System.err );
         }
       }
-      else if ( parm.equals( "MaxUpgradeLength" ))
-        maxUpgradeLength = new Integer( rdr.parseNumber( st.nextToken()));
-      else if ( parm.equals( "MaxProtocolLength" ))
-        maxProtocolLength = new Integer( rdr.parseNumber( st.nextToken()));
-      else if ( parm.equals( "MaxCombinedUpgradeLength" ))
-        maxCombinedUpgradeLength = new Integer( rdr.parseNumber( st.nextToken()));
-      else if ( parm.equals( "SectionTerminator" ))
-        sectionTerminator = ( short )rdr.parseNumber( st.nextToken());
-      else if ( parm.equalsIgnoreCase( "2BytePid" ))
+      else if ( parm.equals( "MaxUpgradeLength" ) )
+        maxUpgradeLength = new Integer( rdr.parseNumber( st.nextToken() ) );
+      else if ( parm.equals( "MaxProtocolLength" ) )
+        maxProtocolLength = new Integer( rdr.parseNumber( st.nextToken() ) );
+      else if ( parm.equals( "MaxCombinedUpgradeLength" ) )
+        maxCombinedUpgradeLength = new Integer( rdr.parseNumber( st.nextToken() ) );
+      else if ( parm.equals( "SectionTerminator" ) )
+        sectionTerminator = ( short ) rdr.parseNumber( st.nextToken() );
+      else if ( parm.equalsIgnoreCase( "2BytePid" ) )
         twoBytePID = parseFlag( st );
-      else if ( parm.equalsIgnoreCase( "LearnedDevBtnSwapped" ))
+      else if ( parm.equalsIgnoreCase( "LearnedDevBtnSwapped" ) )
         learnedDevBtnSwapped = parseFlag( st );
     }
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
@@ -924,7 +957,8 @@ public class Remote
   /**
    * Parses the restrictions.
    * 
-   * @param str the str
+   * @param str
+   *          the str
    * 
    * @return the int
    */
@@ -934,50 +968,50 @@ public class Remote
     if ( restrictionTable == null )
     {
       restrictionTable = new Hashtable< String, Integer >( 46 );
-      restrictionTable.put( "MoveBind", new Integer( Button.MOVE_BIND ));
-      restrictionTable.put( "ShiftMoveBind", new Integer( Button.SHIFT_MOVE_BIND ));
-      restrictionTable.put( "XShiftMoveBind", new Integer( Button.XSHIFT_MOVE_BIND ));
-      restrictionTable.put( "AllMoveBind", new Integer( Button.ALL_MOVE_BIND ));
-      restrictionTable.put( "MacroBind", new Integer( Button.MACRO_BIND ));
-      restrictionTable.put( "ShiftMacroBind", new Integer( Button.SHIFT_MACRO_BIND ));
-      restrictionTable.put( "XShiftMacroBind", new Integer( Button.XSHIFT_MACRO_BIND ));
-      restrictionTable.put( "AllMacroBind", new Integer( Button.ALL_MACRO_BIND ));
-      restrictionTable.put( "LearnBind", new Integer( Button.LEARN_BIND ));
-      restrictionTable.put( "ShiftLearnBind", new Integer( Button.SHIFT_LEARN_BIND ));
-      restrictionTable.put( "XShiftLearnBind", new Integer( Button.XSHIFT_LEARN_BIND ));
-      restrictionTable.put( "AllLearnBind", new Integer( Button.ALL_LEARN_BIND ));
-      restrictionTable.put( "MacroData", new Integer( Button.MACRO_DATA ));
-      restrictionTable.put( "ShiftMacroData", new Integer( Button.SHIFT_MACRO_DATA ));
-      restrictionTable.put( "XShiftMacroData", new Integer( Button.XSHIFT_MACRO_DATA ));
-      restrictionTable.put( "AllMacroData", new Integer( Button.ALL_MACRO_DATA ));
-      restrictionTable.put( "TMacroData", new Integer( Button.TMACRO_DATA ));
-      restrictionTable.put( "ShiftTMacroData", new Integer( Button.SHIFT_TMACRO_DATA ));
-      restrictionTable.put( "XShiftMacroData", new Integer( Button.XSHIFT_TMACRO_DATA ));
-      restrictionTable.put( "AllTMacroData", new Integer( Button.ALL_TMACRO_DATA ));
-      restrictionTable.put( "FavData", new Integer( Button.FAV_DATA ));
-      restrictionTable.put( "ShiftFavData", new Integer( Button.SHIFT_FAV_DATA ));
-      restrictionTable.put( "XShiftFavData", new Integer( Button.XSHIFT_FAV_DATA ));
-      restrictionTable.put( "AllFavData", new Integer( Button.ALL_FAV_DATA ));
-      restrictionTable.put( "Bind", new Integer( Button.BIND ));
-      restrictionTable.put( "ShiftBind", new Integer( Button.SHIFT_BIND ));
-      restrictionTable.put( "XShiftBind", new Integer( Button.XSHIFT_BIND ));
-      restrictionTable.put( "Data", new Integer( Button.DATA ));
-      restrictionTable.put( "ShiftData", new Integer( Button.SHIFT_DATA ));
-      restrictionTable.put( "XShiftData", new Integer( Button.XSHIFT_DATA ));
-      restrictionTable.put( "AllBind", new Integer( Button.ALL_BIND ));
-      restrictionTable.put( "AllData", new Integer( Button.ALL_DATA ));
-      restrictionTable.put( "Shift", new Integer( Button.SHIFT ));
-      restrictionTable.put( "XShift", new Integer( Button.XSHIFT ));
-      restrictionTable.put( "All", new Integer( Button.ALL ));
+      restrictionTable.put( "MoveBind", new Integer( Button.MOVE_BIND ) );
+      restrictionTable.put( "ShiftMoveBind", new Integer( Button.SHIFT_MOVE_BIND ) );
+      restrictionTable.put( "XShiftMoveBind", new Integer( Button.XSHIFT_MOVE_BIND ) );
+      restrictionTable.put( "AllMoveBind", new Integer( Button.ALL_MOVE_BIND ) );
+      restrictionTable.put( "MacroBind", new Integer( Button.MACRO_BIND ) );
+      restrictionTable.put( "ShiftMacroBind", new Integer( Button.SHIFT_MACRO_BIND ) );
+      restrictionTable.put( "XShiftMacroBind", new Integer( Button.XSHIFT_MACRO_BIND ) );
+      restrictionTable.put( "AllMacroBind", new Integer( Button.ALL_MACRO_BIND ) );
+      restrictionTable.put( "LearnBind", new Integer( Button.LEARN_BIND ) );
+      restrictionTable.put( "ShiftLearnBind", new Integer( Button.SHIFT_LEARN_BIND ) );
+      restrictionTable.put( "XShiftLearnBind", new Integer( Button.XSHIFT_LEARN_BIND ) );
+      restrictionTable.put( "AllLearnBind", new Integer( Button.ALL_LEARN_BIND ) );
+      restrictionTable.put( "MacroData", new Integer( Button.MACRO_DATA ) );
+      restrictionTable.put( "ShiftMacroData", new Integer( Button.SHIFT_MACRO_DATA ) );
+      restrictionTable.put( "XShiftMacroData", new Integer( Button.XSHIFT_MACRO_DATA ) );
+      restrictionTable.put( "AllMacroData", new Integer( Button.ALL_MACRO_DATA ) );
+      restrictionTable.put( "TMacroData", new Integer( Button.TMACRO_DATA ) );
+      restrictionTable.put( "ShiftTMacroData", new Integer( Button.SHIFT_TMACRO_DATA ) );
+      restrictionTable.put( "XShiftMacroData", new Integer( Button.XSHIFT_TMACRO_DATA ) );
+      restrictionTable.put( "AllTMacroData", new Integer( Button.ALL_TMACRO_DATA ) );
+      restrictionTable.put( "FavData", new Integer( Button.FAV_DATA ) );
+      restrictionTable.put( "ShiftFavData", new Integer( Button.SHIFT_FAV_DATA ) );
+      restrictionTable.put( "XShiftFavData", new Integer( Button.XSHIFT_FAV_DATA ) );
+      restrictionTable.put( "AllFavData", new Integer( Button.ALL_FAV_DATA ) );
+      restrictionTable.put( "Bind", new Integer( Button.BIND ) );
+      restrictionTable.put( "ShiftBind", new Integer( Button.SHIFT_BIND ) );
+      restrictionTable.put( "XShiftBind", new Integer( Button.XSHIFT_BIND ) );
+      restrictionTable.put( "Data", new Integer( Button.DATA ) );
+      restrictionTable.put( "ShiftData", new Integer( Button.SHIFT_DATA ) );
+      restrictionTable.put( "XShiftData", new Integer( Button.XSHIFT_DATA ) );
+      restrictionTable.put( "AllBind", new Integer( Button.ALL_BIND ) );
+      restrictionTable.put( "AllData", new Integer( Button.ALL_DATA ) );
+      restrictionTable.put( "Shift", new Integer( Button.SHIFT ) );
+      restrictionTable.put( "XShift", new Integer( Button.XSHIFT ) );
+      restrictionTable.put( "All", new Integer( Button.ALL ) );
     }
     StringTokenizer st = new StringTokenizer( str, "+-", true );
     boolean isAdd = true;
-    while ( st.hasMoreTokens())
+    while ( st.hasMoreTokens() )
     {
       String token = st.nextToken();
-      if ( token.equals( "+" ))
+      if ( token.equals( "+" ) )
         isAdd = true;
-      else if ( token.equals( "-" ))
+      else if ( token.equals( "-" ) )
         isAdd = false;
       else
       {
@@ -992,63 +1026,65 @@ public class Remote
     }
     return rc;
   }
-  
+
   /**
    * Parses the special protocols.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseSpecialProtocols( RDFReader rdr )
-    throws Exception
+  private String parseSpecialProtocols( RDFReader rdr ) throws Exception
   {
     java.util.List< CheckSum > work = new ArrayList< CheckSum >();
     String line;
     while ( true )
     {
       line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line, "=" );
       String name = st.nextToken();
-      Hex pid = new Hex( st.nextToken());
-      specialProtocols.add( SpecialProtocol.create( name, pid ));
+      Hex pid = new Hex( st.nextToken() );
+      specialProtocols.add( SpecialProtocol.create( name, pid ) );
     }
-    checkSums = ( CheckSum[] )work.toArray( checkSums );
+    checkSums = ( CheckSum[] ) work.toArray( checkSums );
     return line;
   }
 
   /**
    * Parses the check sums.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseCheckSums( RDFReader rdr )
-    throws Exception
+  private String parseCheckSums( RDFReader rdr ) throws Exception
   {
     java.util.List< CheckSum > work = new ArrayList< CheckSum >();
     String line;
     while ( true )
     {
       line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       char ch = line.charAt( 0 );
 
       line = line.substring( 1 );
       StringTokenizer st = new StringTokenizer( line, ":." );
-      int addr = rdr.parseNumber( st.nextToken());
-      AddressRange range = new AddressRange( rdr.parseNumber( st.nextToken()),
-                                             rdr.parseNumber( st.nextToken()));
+      int addr = rdr.parseNumber( st.nextToken() );
+      AddressRange range = new AddressRange( rdr.parseNumber( st.nextToken() ), rdr.parseNumber( st
+          .nextToken() ) );
       CheckSum sum = null;
       if ( ch == '+' )
         sum = new AddCheckSum( addr, range );
@@ -1056,7 +1092,7 @@ public class Remote
         sum = new XorCheckSum( addr, range );
       work.add( sum );
     }
-    checkSums = ( CheckSum[] )work.toArray( checkSums );
+    checkSums = ( CheckSum[] ) work.toArray( checkSums );
     return line;
   }
 
@@ -1065,19 +1101,23 @@ public class Remote
    * 
    * @return the check sums
    */
-  public CheckSum[] getCheckSums(){ return checkSums; }
+  public CheckSum[] getCheckSums()
+  {
+    return checkSums;
+  }
 
   /**
    * Parses the settings.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseSettings( RDFReader rdr )
-    throws Exception
+  private String parseSettings( RDFReader rdr ) throws Exception
   {
     String line;
     java.util.List< Setting > work = new ArrayList< Setting >();
@@ -1085,42 +1125,41 @@ public class Remote
     {
       line = rdr.readLine();
 
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line, "=" );
       String title = st.nextToken();
 
-      int byteAddress = rdr.parseNumber( st.nextToken( ".= \t" ));
-      int bitNumber = rdr.parseNumber( st.nextToken());
-      int numberOfBits = rdr.parseNumber( st.nextToken());
-      int initialValue = rdr.parseNumber( st.nextToken());
-      boolean inverted = ( rdr.parseNumber( st.nextToken()) != 0 );
+      int byteAddress = rdr.parseNumber( st.nextToken( ".= \t" ) );
+      int bitNumber = rdr.parseNumber( st.nextToken() );
+      int numberOfBits = rdr.parseNumber( st.nextToken() );
+      int initialValue = rdr.parseNumber( st.nextToken() );
+      boolean inverted = ( rdr.parseNumber( st.nextToken() ) != 0 );
 
-      java.util.List< String> options = null;
+      java.util.List< String > options = null;
       String sectionName = null;
 
-      if ( st.hasMoreTokens())
+      if ( st.hasMoreTokens() )
       {
         String token = st.nextToken( ",;)" ).trim();
         if ( token.charAt( 0 ) == '(' )
         {
           options = new ArrayList< String >();
-          options.add( token.substring( 1 ));
-          while ( st.hasMoreTokens())
-            options.add( st.nextToken());
+          options.add( token.substring( 1 ) );
+          while ( st.hasMoreTokens() )
+            options.add( st.nextToken() );
         }
         else
           sectionName = token.trim();
       }
       String[] optionsList = null;
       if ( options != null )
-        optionsList = options.toArray( new String[ 0 ]);
-      work.add( new Setting( title, byteAddress, bitNumber,
-                             numberOfBits, initialValue, inverted,
-                             optionsList, sectionName ));
+        optionsList = options.toArray( new String[ 0 ] );
+      work.add( new Setting( title, byteAddress, bitNumber, numberOfBits, initialValue, inverted,
+          optionsList, sectionName ) );
     }
-    settings = ( Setting[] )work.toArray( settings );
+    settings = ( Setting[] ) work.toArray( settings );
     return line;
   }
 
@@ -1129,20 +1168,24 @@ public class Remote
    * 
    * @return the settings
    */
-  public Setting[] getSettings(){ return settings; }
+  public Setting[] getSettings()
+  {
+    return settings;
+  }
 
   /**
    * Gets the section.
    * 
-   * @param name the name
+   * @param name
+   *          the name
    * 
    * @return the section
    */
   public Object[] getSection( String name )
   {
-    if ( name.equals( "DeviceButtons" ))
+    if ( name.equals( "DeviceButtons" ) )
       return getDeviceButtons();
-    else if ( name.equals( "DeviceTypes" ))
+    else if ( name.equals( "DeviceTypes" ) )
       return getDeviceTypes();
 
     return null;
@@ -1151,14 +1194,15 @@ public class Remote
   /**
    * Parses the fixed data.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseFixedData( RDFReader rdr )
-    throws Exception
+  private String parseFixedData( RDFReader rdr ) throws Exception
   {
     java.util.List< FixedData > work = new ArrayList< FixedData >();
     java.util.List< Byte > temp = new ArrayList< Byte >();
@@ -1170,25 +1214,25 @@ public class Remote
     {
       line = rdr.readLine();
 
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
-      StringTokenizer st =  new StringTokenizer( line, ",; \t" );
+      StringTokenizer st = new StringTokenizer( line, ",; \t" );
       String token = st.nextToken();
-      while( true )
+      while ( true )
       {
         if ( token.charAt( 0 ) == '=' ) // the last token was an address
         {
           token = token.substring( 1 );
-          if ( address != -1 )                       // we've seen some bytes
+          if ( address != -1 ) // we've seen some bytes
           {
-            byte[] b = new byte[ temp.size()];
+            byte[] b = new byte[ temp.size() ];
             int i = 0;
             for ( Byte val : temp )
             {
               b[ i++ ] = val.byteValue();
             }
-            work.add( new FixedData( address, b ));
+            work.add( new FixedData( address, b ) );
             temp.clear();
           }
           address = value;
@@ -1206,7 +1250,7 @@ public class Remote
           }
           if ( value != -1 )
           {
-            temp.add( new Byte(( byte )value ));
+            temp.add( new Byte( ( byte ) value ) );
           }
           value = rdr.parseNumber( token );
           if ( equal != -1 )
@@ -1220,14 +1264,14 @@ public class Remote
         token = st.nextToken();
       }
     }
-    temp.add( new Byte(( byte )value ));
-    byte[] b = new byte[ temp.size()];
+    temp.add( new Byte( ( byte ) value ) );
+    byte[] b = new byte[ temp.size() ];
     int j = 0;
     for ( Byte by : temp )
     {
       b[ j ] = by.byteValue();
     }
-    work.add( new FixedData( address, b ));
+    work.add( new FixedData( address, b ) );
     fixedData = work.toArray( fixedData );
     return line;
   }
@@ -1235,32 +1279,33 @@ public class Remote
   /**
    * Parses the device buttons.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseDeviceButtons( RDFReader rdr )
-    throws Exception
+  private String parseDeviceButtons( RDFReader rdr ) throws Exception
   {
     java.util.List< DeviceButton > work = new ArrayList< DeviceButton >();
     String line;
     while ( true )
     {
       line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line );
       String name = st.nextToken( "= \t" );
 
-      int hiAddr = rdr.parseNumber( st.nextToken( ",= \t" ));
-      int lowAddr = rdr.parseNumber( st.nextToken());
+      int hiAddr = rdr.parseNumber( st.nextToken( ",= \t" ) );
+      int lowAddr = rdr.parseNumber( st.nextToken() );
       int typeAddr = 0;
-      if ( st.hasMoreTokens())
-        typeAddr = rdr.parseNumber( st.nextToken());
-      work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr ));
+      if ( st.hasMoreTokens() )
+        typeAddr = rdr.parseNumber( st.nextToken() );
+      work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr ) );
     }
     deviceButtons = work.toArray( deviceButtons );
     return line;
@@ -1269,14 +1314,15 @@ public class Remote
   /**
    * Parses the device abbreviations.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseDeviceAbbreviations( RDFReader rdr )
-    throws Exception
+  private String parseDeviceAbbreviations( RDFReader rdr ) throws Exception
   {
     String line;
     while ( true )
@@ -1284,10 +1330,10 @@ public class Remote
       line = rdr.readLine();
       if ( line == null )
         break;
-      if (( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ))
-          break;
+      if ( ( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ) )
+        break;
       StringTokenizer st = new StringTokenizer( line, "," );
-      while ( st.hasMoreTokens())
+      while ( st.hasMoreTokens() )
       {
         String token = st.nextToken().trim();
         int equal = token.indexOf( '=' );
@@ -1307,14 +1353,15 @@ public class Remote
   /**
    * Parses the digit maps.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseDigitMaps( RDFReader rdr )
-    throws Exception
+  private String parseDigitMaps( RDFReader rdr ) throws Exception
   {
     java.util.List< Integer > work = new ArrayList< Integer >();
     String line;
@@ -1322,17 +1369,17 @@ public class Remote
     {
       line = rdr.readLine();
 
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line, ",; \t" );
-      while ( st.hasMoreTokens())
+      while ( st.hasMoreTokens() )
       {
-        work.add( new Integer( rdr.parseNumber( st.nextToken())));
+        work.add( new Integer( rdr.parseNumber( st.nextToken() ) ) );
       }
     }
 
-    digitMaps = new short[ work.size()];
+    digitMaps = new short[ work.size() ];
     int i = 0;
     for ( Integer v : work )
     {
@@ -1344,33 +1391,34 @@ public class Remote
   /**
    * Parses the device types.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseDeviceTypes( RDFReader rdr )
-    throws Exception
+  private String parseDeviceTypes( RDFReader rdr ) throws Exception
   {
     String line;
     int type = 0;
     while ( true )
     {
       line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line, "=, \t" );
       String name = st.nextToken();
       int map = 0;
-      if ( st.hasMoreTokens())
+      if ( st.hasMoreTokens() )
       {
-        map = rdr.parseNumber( st.nextToken());
-        if ( st.hasMoreTokens())
-          type = rdr.parseNumber( st.nextToken());
+        map = rdr.parseNumber( st.nextToken() );
+        if ( st.hasMoreTokens() )
+          type = rdr.parseNumber( st.nextToken() );
       }
-      deviceTypes.put( name, new DeviceType( name, map, type ));
+      deviceTypes.put( name, new DeviceType( name, map, type ) );
       type += 0x0101;
     }
     return line;
@@ -1379,14 +1427,15 @@ public class Remote
   /**
    * Parses the device type aliases.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseDeviceTypeAliases( RDFReader rdr )
-    throws Exception
+  private String parseDeviceTypeAliases( RDFReader rdr ) throws Exception
   {
     String line;
     java.util.List< String > v = new ArrayList< String >();
@@ -1395,7 +1444,7 @@ public class Remote
     while ( true )
     {
       line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line, "= \t" );
@@ -1404,18 +1453,18 @@ public class Remote
       st.nextToken( "=" );
       String rest = st.nextToken().trim();
       st = new StringTokenizer( rest, "," );
-      while ( st.hasMoreTokens())
+      while ( st.hasMoreTokens() )
       {
         String aliasName = st.nextToken().trim();
-        if ( aliasName.equals( "VCR" ))
+        if ( aliasName.equals( "VCR" ) )
           vcrType = type;
-        if ( aliasName.equals( "PVR" ))
+        if ( aliasName.equals( "PVR" ) )
           hasPVRalias = true;
         deviceTypeAliases.put( aliasName, type );
         v.add( aliasName );
       }
     }
-    if ( !hasPVRalias && ( vcrType != null ))
+    if ( !hasPVRalias && ( vcrType != null ) )
     {
       v.add( "PVR" );
       deviceTypeAliases.put( "PVR", vcrType );
@@ -1440,14 +1489,15 @@ public class Remote
   /**
    * Parses the device type image maps.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseDeviceTypeImageMaps( RDFReader rdr )
-    throws Exception
+  private String parseDeviceTypeImageMaps( RDFReader rdr ) throws Exception
   {
     String line;
     DeviceType type = null;
@@ -1457,19 +1507,19 @@ public class Remote
     PropertyFile properties = JP1Frame.getProperties();
     File imageDir = properties.getFileProperty( "ImagePath" );
     if ( imageDir == null )
-      imageDir = new File( properties.getFile().getParentFile(), "Images" );    
+      imageDir = new File( properties.getFile().getParentFile(), "Images" );
 
     while ( true )
     {
       line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line, "=, \t" );
       String typeName = st.nextToken();
       type = getDeviceType( typeName );
 
-      while ( st.hasMoreTokens())
+      while ( st.hasMoreTokens() )
       {
         String token = st.nextToken();
         if ( token.charAt( 0 ) == '(' ) // it's a list
@@ -1493,13 +1543,13 @@ public class Remote
           token = token.substring( 0, closeParen );
         }
 
-        inner.add( new ImageMap( new File( imageDir, token )));
+        inner.add( new ImageMap( new File( imageDir, token ) ) );
       }
-      ImageMap[][] outerb = new ImageMap[ outer.size()][];
+      ImageMap[][] outerb = new ImageMap[ outer.size() ][];
       int o = 0;
       for ( java.util.List< ImageMap > maps : outer )
       {
-        ImageMap[] innerb = new ImageMap[ maps.size()];
+        ImageMap[] innerb = new ImageMap[ maps.size() ];
         outerb[ o++ ] = innerb;
         int i = 0;
         for ( ImageMap map : maps )
@@ -1517,14 +1567,15 @@ public class Remote
   /**
    * Parses the buttons.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseButtons( RDFReader rdr )
-    throws Exception
+  private String parseButtons( RDFReader rdr ) throws Exception
   {
     String line;
     short keycode = 1;
@@ -1534,10 +1585,10 @@ public class Remote
       line = rdr.readLine();
       if ( line == null )
         break;
-      if (( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ))
-          break;
+      if ( ( line.length() == 0 ) || ( line.charAt( 0 ) == '[' ) )
+        break;
       StringTokenizer st = new StringTokenizer( line, "," );
-      while ( st.hasMoreTokens())
+      while ( st.hasMoreTokens() )
       {
         String token = st.nextToken().trim();
         int equal = token.indexOf( '=' );
@@ -1554,7 +1605,7 @@ public class Remote
           }
           else
             restrictions = defaultRestrictions;
-          keycode = ( short )rdr.parseNumber( keycodeStr );
+          keycode = ( short ) rdr.parseNumber( keycodeStr );
         }
 
         int colon = token.indexOf( ':' );
@@ -1563,14 +1614,14 @@ public class Remote
         {
           name = token.substring( colon + 1 );
           char ch = name.charAt( 0 );
-          if (( ch == '\'' ) || ch == '"' )
+          if ( ( ch == '\'' ) || ch == '"' )
           {
             int end = name.lastIndexOf( ch );
             name = name.substring( 1, end );
           }
           token = token.substring( 0, colon );
           ch = token.charAt( 0 );
-          if (( ch == '\'' ) || ch == '"' )
+          if ( ( ch == '\'' ) || ch == '"' )
           {
             int end = token.lastIndexOf( ch );
             token = token.substring( 1, end );
@@ -1578,7 +1629,7 @@ public class Remote
         }
         Button b = new Button( token, name, keycode, this );
         b.setRestrictions( restrictions );
-        keycode++;
+        keycode++ ;
         addButton( b );
       }
     }
@@ -1589,20 +1640,22 @@ public class Remote
   /**
    * Gets the button.
    * 
-   * @param keyCode the key code
+   * @param keyCode
+   *          the key code
    * 
    * @return the button
    */
   public Button getButton( int keyCode )
   {
     load();
-    return ( Button )buttonsByKeyCode.get( new Integer( keyCode ));
+    return ( Button ) buttonsByKeyCode.get( new Integer( keyCode ) );
   }
 
   /**
    * Gets the button name.
    * 
-   * @param keyCode the key code
+   * @param keyCode
+   *          the key code
    * 
    * @return the button name
    */
@@ -1616,19 +1669,46 @@ public class Remote
       if ( baseCode != 0 )
       {
         b = getButton( baseCode );
-        if (( baseCode | shiftMask ) == keyCode )
+        if ( ( baseCode | shiftMask ) == keyCode )
           return b.getShiftedName();
-        if ( xShiftEnabled && (( baseCode | xShiftMask ) == keyCode ))
+        if ( xShiftEnabled && ( ( baseCode | xShiftMask ) == keyCode ) )
           return b.getXShiftedName();
       }
-      baseCode = keyCode & ~ shiftMask;
+      baseCode = keyCode & ~shiftMask;
       b = getButton( baseCode );
       if ( b != null )
         return b.getShiftedName();
-      baseCode = keyCode & ~ xShiftMask;
+      baseCode = keyCode & ~xShiftMask;
       b = getButton( baseCode );
       if ( b != null )
         return b.getXShiftedName();
+    }
+
+    if ( b == null )
+    {
+      System.err.println( "ERROR: Unknown keycode $" + Integer.toHexString( keyCode & 0xFF )
+          + ", Creating button!" );
+      String name = "button" + Integer.toHexString( keyCode & 0xFF ).toUpperCase();
+      b = new Button( name, name, ( short ) keyCode, this );
+      if ( b.getIsShifted() )
+      {
+        Button baseButton = getButton( keyCode & 0x3F );
+        if ( baseButton != null )
+        {
+          b.setBaseButton( baseButton );
+          baseButton.setShiftedButton( b );
+        }
+      }
+      else if ( b.getIsXShifted() )
+      {
+        Button baseButton = getButton( keyCode & 0x3F );
+        if ( baseButton != null )
+        {
+          b.setBaseButton( baseButton );
+          baseButton.setXShiftedButton( b );
+        }
+      }
+      addButton( b );
     }
 
     return b.getName();
@@ -1637,26 +1717,28 @@ public class Remote
   /**
    * Gets the button.
    * 
-   * @param name the name
+   * @param name
+   *          the name
    * 
    * @return the button
    */
   public Button getButton( String name )
   {
     load();
-    return ( Button )buttonsByName.get( name.toLowerCase());
+    return ( Button ) buttonsByName.get( name.toLowerCase() );
   }
 
   /**
    * Adds the button.
    * 
-   * @param b the b
+   * @param b
+   *          the b
    */
   public void addButton( Button b )
   {
     int keycode = b.getKeyCode();
     int unshiftedCode = keycode & 0x3f;
-    if ( b.getIsShifted())
+    if ( b.getIsShifted() )
     {
       Button c = getButton( unshiftedCode );
       if ( c != null )
@@ -1671,7 +1753,7 @@ public class Remote
         }
       }
     }
-    else if ( b.getIsXShifted())
+    else if ( b.getIsXShifted() )
     {
       Button c = getButton( unshiftedCode );
       if ( c != null )
@@ -1723,30 +1805,30 @@ public class Remote
   /**
    * Parses the multi macros.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseMultiMacros( RDFReader rdr )
-    throws Exception
+  private String parseMultiMacros( RDFReader rdr ) throws Exception
   {
     String line;
     while ( true )
     {
       line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
-
 
       StringTokenizer st = new StringTokenizer( line, "=" );
       String name = st.nextToken();
 
       // Find the matching button
-      Button button = ( Button )buttonsByName.get( name );
+      Button button = ( Button ) buttonsByName.get( name );
       if ( button != null )
-        button.setMultiMacroAddress( rdr.parseNumber( st.nextToken()));
+        button.setMultiMacroAddress( rdr.parseNumber( st.nextToken() ) );
     }
     return line;
   }
@@ -1754,28 +1836,29 @@ public class Remote
   /**
    * Find by standard name.
    * 
-   * @param b the b
+   * @param b
+   *          the b
    * 
    * @return the button
    */
   public Button findByStandardName( Button b )
   {
     load();
-    return ( Button )buttonsByStandardName.get( b.getStandardName().toLowerCase());
+    return ( Button ) buttonsByStandardName.get( b.getStandardName().toLowerCase() );
   }
-
 
   /**
    * Parses the button maps.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseButtonMaps( RDFReader rdr )
-    throws Exception
+  private String parseButtonMaps( RDFReader rdr ) throws Exception
   {
     java.util.List< ButtonMap > work = new ArrayList< ButtonMap >();
     String line;
@@ -1788,7 +1871,7 @@ public class Remote
     while ( true )
     {
       line = rdr.readLine();
-      if (( line == null ) || ( line.length() == 0 ))
+      if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
       StringTokenizer st = new StringTokenizer( line, "=, \t" );
@@ -1796,11 +1879,11 @@ public class Remote
       {
         if ( name != -1 )
         {
-          short[][] outerb = new short[ outer.size()][];
+          short[][] outerb = new short[ outer.size() ][];
           int o = 0;
           for ( java.util.List< Integer > maps : outer )
           {
-            short[] innerb = new short[ maps.size()];
+            short[] innerb = new short[ maps.size() ];
             outerb[ o++ ] = innerb;
             int i = 0;
             for ( Integer v : maps )
@@ -1810,12 +1893,12 @@ public class Remote
             maps.clear();
           }
           outer.clear();
-          work.add( new ButtonMap( name, outerb ));
+          work.add( new ButtonMap( name, outerb ) );
         }
-        name = rdr.parseNumber( st.nextToken());
+        name = rdr.parseNumber( st.nextToken() );
       }
 
-      while ( st.hasMoreTokens())
+      while ( st.hasMoreTokens() )
       {
         String token = st.nextToken();
         if ( token.charAt( 0 ) == '(' ) // it's a list
@@ -1839,15 +1922,15 @@ public class Remote
           token = token.substring( 0, closeParen );
         }
 
-        inner.add( new Integer( rdr.parseNumber( token )));
+        inner.add( new Integer( rdr.parseNumber( token ) ) );
       }
     }
     {
-      short[][] outerb = new short[ outer.size()][];
+      short[][] outerb = new short[ outer.size() ][];
       int o = 0;
       for ( java.util.List< Integer > maps : outer )
       {
-        short[] innerb = new short[ maps.size()];
+        short[] innerb = new short[ maps.size() ];
         outerb[ o++ ] = innerb;
         int i = 0;
         for ( Integer v : maps )
@@ -1857,7 +1940,7 @@ public class Remote
         maps.clear();
       }
       outer.clear();
-      work.add( new ButtonMap( name, outerb ));
+      work.add( new ButtonMap( name, outerb ) );
     }
     buttonMaps = work.toArray( buttonMaps );
     return line;
@@ -1866,14 +1949,15 @@ public class Remote
   /**
    * Parses the protocols.
    * 
-   * @param rdr the rdr
+   * @param rdr
+   *          the rdr
    * 
    * @return the string
    * 
-   * @throws Exception the exception
+   * @throws Exception
+   *           the exception
    */
-  private String parseProtocols( RDFReader rdr )
-    throws Exception
+  private String parseProtocols( RDFReader rdr ) throws Exception
   {
     String line;
     while ( true )
@@ -1883,10 +1967,10 @@ public class Remote
         break;
       if ( line.length() != 0 )
       {
-        if (line.charAt( 0 ) == '[')
+        if ( line.charAt( 0 ) == '[' )
           break;
         StringTokenizer st = new StringTokenizer( line, "," );
-        while ( st.hasMoreTokens())
+        while ( st.hasMoreTokens() )
         {
           String token = st.nextToken().trim();
           String variantName = "";
@@ -1916,8 +2000,12 @@ public class Remote
    * 
    * @return the height
    */
-  public int getHeight(){ load(); return height; }
-  
+  public int getHeight()
+  {
+    load();
+    return height;
+  }
+
   /** The height. */
   private int height;
 
@@ -1926,16 +2014,22 @@ public class Remote
    * 
    * @return the width
    */
-  public int getWidth(){ load(); return width; }
-  
+  public int getWidth()
+  {
+    load();
+    return width;
+  }
+
   /** The width. */
   private int width;
 
   /**
    * Supports variant.
    * 
-   * @param pid the pid
-   * @param name the name
+   * @param pid
+   *          the pid
+   * @param name
+   *          the name
    * 
    * @return true, if successful
    */
@@ -1943,11 +2037,11 @@ public class Remote
   {
     load();
     java.util.List< String > v = protocolVariantNames.get( pid );
-    if (( v == null ) || v.isEmpty())
+    if ( ( v == null ) || v.isEmpty() )
       return false;
 
-    if ( v.contains( name ))
-        return true;
+    if ( v.contains( name ) )
+      return true;
 
     return false;
   }
@@ -1955,7 +2049,8 @@ public class Remote
   /**
    * Gets the supported variant names.
    * 
-   * @param pid the pid
+   * @param pid
+   *          the pid
    * 
    * @return the supported variant names
    */
@@ -1966,20 +2061,16 @@ public class Remote
   }
 
   /*
-  public void clearButtonAssignments()
-  {
-    load();
-    for ( Enumeration e = buttons.elements(); e.hasMoreElements(); )
-    {
-      (( Button )e.nextElement()).setFunction( null ).setShiftedFunction( null ).setXShiftedFunction( null );
-    }
-  }
-  */
+   * public void clearButtonAssignments() { load(); for ( Enumeration e = buttons.elements();
+   * e.hasMoreElements(); ) { (( Button )e.nextElement()).setFunction( null ).setShiftedFunction(
+   * null ).setXShiftedFunction( null ); } }
+   */
 
   /**
    * Sets the protocols.
    * 
-   * @param protocols the new protocols
+   * @param protocols
+   *          the new protocols
    */
   public void setProtocols( java.util.List< Protocol > protocols )
   {
@@ -2012,16 +2103,23 @@ public class Remote
   /**
    * Creates the key move key.
    * 
-   * @param keyCode the key code
-   * @param deviceIndex the device index
-   * @param deviceType the device type
-   * @param setupCode the setup code
-   * @param movedKeyCode the moved key code
-   * @param notes the notes
+   * @param keyCode
+   *          the key code
+   * @param deviceIndex
+   *          the device index
+   * @param deviceType
+   *          the device type
+   * @param setupCode
+   *          the setup code
+   * @param movedKeyCode
+   *          the moved key code
+   * @param notes
+   *          the notes
    * 
    * @return the key move
    */
-  public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode, int movedKeyCode, String notes )
+  public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode,
+      int movedKeyCode, String notes )
   {
     KeyMove keyMove = null;
     keyMove = new KeyMoveKey( keyCode, deviceIndex, deviceType, setupCode, movedKeyCode, notes );
@@ -2031,52 +2129,72 @@ public class Remote
   /**
    * Creates the key move.
    * 
-   * @param keyCode the key code
-   * @param deviceIndex the device index
-   * @param deviceType the device type
-   * @param setupCode the setup code
-   * @param cmd the cmd
-   * @param notes the notes
+   * @param keyCode
+   *          the key code
+   * @param deviceIndex
+   *          the device index
+   * @param deviceType
+   *          the device type
+   * @param setupCode
+   *          the setup code
+   * @param cmd
+   *          the cmd
+   * @param notes
+   *          the notes
    * 
    * @return the key move
    */
-  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, Hex cmd, String notes )
+  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode,
+      Hex cmd, String notes )
   {
     KeyMove keyMove = null;
     if ( advCodeFormat == HEX_FORMAT )
       keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
     else if ( efcDigits == 3 )
-      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ), notes );
-    else // EFCDigits == 5
-      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, EFC5.parseHex( cmd ), notes );
+      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ),
+          notes );
+    else
+      // EFCDigits == 5
+      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, EFC5.parseHex( cmd ),
+          notes );
     return keyMove;
   }
 
   /**
    * Creates the key move.
    * 
-   * @param keyCode the key code
-   * @param deviceIndex the device index
-   * @param deviceType the device type
-   * @param setupCode the setup code
-   * @param efc the efc
-   * @param notes the notes
+   * @param keyCode
+   *          the key code
+   * @param deviceIndex
+   *          the device index
+   * @param deviceType
+   *          the device type
+   * @param setupCode
+   *          the setup code
+   * @param efc
+   *          the efc
+   * @param notes
+   *          the notes
    * 
    * @return the key move
    */
-  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, int efc, String notes )
+  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode,
+      int efc, String notes )
   {
     KeyMove keyMove = null;
     if ( advCodeFormat == HEX_FORMAT )
     {
       if ( efcDigits == 3 )
         keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC.toHex( efc ), notes );
-      else // EFCDigits == 5
-        keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC5.toHex( efc ), notes );
+      else
+        // EFCDigits == 5
+        keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC5.toHex( efc ),
+            notes );
     }
     else if ( efcDigits == 3 )
       keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
-    else // EFCDigits == 5
+    else
+      // EFCDigits == 5
       keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
     return keyMove;
   }
@@ -2086,29 +2204,40 @@ public class Remote
    * 
    * @return the max upgrade length
    */
-  public Integer getMaxUpgradeLength(){ return maxUpgradeLength; }
-  
+  public Integer getMaxUpgradeLength()
+  {
+    return maxUpgradeLength;
+  }
+
   /**
    * Gets the max protocol length.
    * 
    * @return the max protocol length
    */
-  public Integer getMaxProtocolLength(){ return maxProtocolLength; }
-  
+  public Integer getMaxProtocolLength()
+  {
+    return maxProtocolLength;
+  }
+
   /**
    * Gets the max combined upgrade length.
    * 
    * @return the max combined upgrade length
    */
-  public Integer getMaxCombinedUpgradeLength(){ return maxCombinedUpgradeLength; }
+  public Integer getMaxCombinedUpgradeLength()
+  {
+    return maxCombinedUpgradeLength;
+  }
 
   // Interface Comparable
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
   public int compareTo( Remote o )
   {
-    return names[ nameIndex ].compareTo( o.names[ o.nameIndex ]);
+    return names[ nameIndex ].compareTo( o.names[ o.nameIndex ] );
   }
 
   /**
@@ -2116,349 +2245,401 @@ public class Remote
    * 
    * @return the shift mask
    */
-  public int getShiftMask(){ return shiftMask; }
-  
+  public int getShiftMask()
+  {
+    return shiftMask;
+  }
+
   /**
    * Gets the x shift mask.
    * 
    * @return the x shift mask
    */
-  public int getXShiftMask(){ return xShiftMask; }
-  
+  public int getXShiftMask()
+  {
+    return xShiftMask;
+  }
+
   /**
    * Gets the x shift enabled.
    * 
    * @return the x shift enabled
    */
-  public boolean getXShiftEnabled(){ return xShiftEnabled; }
-  
+  public boolean getXShiftEnabled()
+  {
+    return xShiftEnabled;
+  }
+
   /**
    * Sets the x shift enabled.
    * 
-   * @param flag the new x shift enabled
+   * @param flag
+   *          the new x shift enabled
    */
-  public void setXShiftEnabled( boolean flag ){ xShiftEnabled = flag; }
-  
+  public void setXShiftEnabled( boolean flag )
+  {
+    xShiftEnabled = flag;
+  }
+
   /**
    * Gets the shift label.
    * 
    * @return the shift label
    */
-  public String getShiftLabel(){ return shiftLabel; }
-  
+  public String getShiftLabel()
+  {
+    return shiftLabel;
+  }
+
   /**
    * Gets the x shift label.
    * 
    * @return the x shift label
    */
-  public String getXShiftLabel(){ return xShiftLabel; }
-  
+  public String getXShiftLabel()
+  {
+    return xShiftLabel;
+  }
+
   /**
    * Gets the protocol vector offset.
    * 
    * @return the protocol vector offset
    */
-  public int getProtocolVectorOffset(){ return protocolVectorOffset; }
-  
+  public int getProtocolVectorOffset()
+  {
+    return protocolVectorOffset;
+  }
+
   /**
    * Gets the protocol data offset.
    * 
    * @return the protocol data offset
    */
-  public int getProtocolDataOffset(){ return protocolDataOffset; }
-  
+  public int getProtocolDataOffset()
+  {
+    return protocolDataOffset;
+  }
+
   /**
    * Gets the supports binary upgrades.
    * 
    * @return the supports binary upgrades
    */
-  public boolean getSupportsBinaryUpgrades(){ return supportsBinaryUpgrades; }
+  public boolean getSupportsBinaryUpgrades()
+  {
+    return supportsBinaryUpgrades;
+  }
 
   /** The file. */
   private File file = null;
-  
+
   /** The signature. */
   private String signature = null;
-  
+
   /** The names. */
   private String[] names = new String[ 1 ];
-  
+
   /** The name index. */
   private int nameIndex = 0;
-  
+
   /** The loaded. */
   private boolean loaded = false;
-  
+
   /** The base address. */
   private int baseAddress = 0;
-  
+
   /** The eeprom size. */
   private int eepromSize;
-  
+
   /** The device code offset. */
   private int deviceCodeOffset;
-  
+
   /** The fav key. */
   private FavKey favKey = null;
-  
+
   /**
    * Gets the fav key.
    * 
    * @return the fav key
    */
-  public FavKey getFavKey(){ return favKey; }
-  
+  public FavKey getFavKey()
+  {
+    return favKey;
+  }
+
   /** The oem device. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private OEMDevice oemDevice = null;
-  
+
   /** The oem control. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private int oemControl = 0;
-  
+
   /** The upgrade bug. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private boolean upgradeBug = false;
-  
+
   /** The advanced code address. */
   private AddressRange advancedCodeAddress = null;
-  
+
   /**
    * Gets the advanced code address.
    * 
    * @return the advanced code address
    */
-  public AddressRange getAdvancedCodeAddress(){ return advancedCodeAddress; }
-  
+  public AddressRange getAdvancedCodeAddress()
+  {
+    return advancedCodeAddress;
+  }
+
   /** The macro support. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private boolean macroSupport = true;
-  
+
   /** The upgrade address. */
   private AddressRange upgradeAddress = null;
-  
+
   /**
    * Gets the upgrade address.
    * 
    * @return the upgrade address
    */
-  public AddressRange getUpgradeAddress(){ return upgradeAddress; }
-  
+  public AddressRange getUpgradeAddress()
+  {
+    return upgradeAddress;
+  }
+
   /** The device upgrade address. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private AddressRange deviceUpgradeAddress = null;
-  
+
   /** The timed macro address. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private AddressRange timedMacroAddress = null;
-  
+
   /** The timed macro warning. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private boolean timedMacroWarning = false;
-  
+
   /** The learned address. */
   private AddressRange learnedAddress = null;
-  
+
   /**
    * Gets the learned address.
    * 
    * @return the learned address
    */
-  public AddressRange getLearnedAddress(){ return learnedAddress; }
-  
+  public AddressRange getLearnedAddress()
+  {
+    return learnedAddress;
+  }
+
   /** The processor. */
   private Processor processor = null;
   // private String processorVersion = null;
   /** The RAM address. */
   private int RAMAddress;
-  
+
   /** The time address. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private int timeAddress = 0;
-  
+
   /** The RDF sync. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private int RDFSync;
-  
+
   /** The punch thru base. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private int punchThruBase;
-  
+
   /** The scan base. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private int scanBase = 0;
-  
+
   /** The sleep status bit. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private StatusBit sleepStatusBit = null;
-  
+
   /** The vpt status bit. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private StatusBit vptStatusBit = null;
-  
+
   /** The check sums. */
   private CheckSum[] checkSums = new CheckSum[ 0 ];
-  
+
   /** The settings. */
   private Setting[] settings = new Setting[ 0 ];
-  
+
   /** The fixed data. */
   private FixedData[] fixedData = new FixedData[ 0 ];
-  
+
   /** The device buttons. */
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
-  
+
   /** The device types. */
-  private Hashtable< String, DeviceType> deviceTypes = new Hashtable< String, DeviceType >();
-  
+  private Hashtable< String, DeviceType > deviceTypes = new Hashtable< String, DeviceType >();
+
   /** The device type aliases. */
-  private Hashtable< String, DeviceType> deviceTypeAliases = new Hashtable< String, DeviceType >();
-  
+  private Hashtable< String, DeviceType > deviceTypeAliases = new Hashtable< String, DeviceType >();
+
   /** The device type alias names. */
   private String[] deviceTypeAliasNames = null;
-  
+
   /** The buttons. */
-  private java.util.List<Button> buttons = new ArrayList<Button>();
-  
+  private java.util.List< Button > buttons = new ArrayList< Button >();
+
   /** The buttons by key code. */
   private Hashtable< Integer, Button > buttonsByKeyCode = new Hashtable< Integer, Button >();
-  
+
   /** The buttons by name. */
   private Hashtable< String, Button > buttonsByName = new Hashtable< String, Button >();
-  
+
   /** The buttons by standard name. */
   private Hashtable< String, Button > buttonsByStandardName = new Hashtable< String, Button >();
-  
+
   /** The upgrade buttons. */
   private Button[] upgradeButtons = new Button[ 0 ];
-  
+
   /** The phantom shapes. */
-  private java.util.List< ButtonShape> phantomShapes = new ArrayList< ButtonShape >();
-  
+  private java.util.List< ButtonShape > phantomShapes = new ArrayList< ButtonShape >();
+
   /** The digit maps. */
   private short[] digitMaps = new short[ 0 ];
-  
+
   /** The button maps. */
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
-  
+
   /** The omit digit map byte. */
   private boolean omitDigitMapByte = false;
-  
+
   /** The protocol variant names. */
   private Hashtable< Hex, java.util.List< String >> protocolVariantNames = new Hashtable< Hex, java.util.List< String >>();
-  
+
   /** The protocols. */
   private java.util.List< Protocol > protocols = null;
-  
+
   /** The image maps. */
   private ImageMap[] imageMaps = new ImageMap[ 0 ];
-  
+
   /** The map index. */
   private int mapIndex = 0;
-  
+
   /** The shift mask. */
   private int shiftMask = 0x80;
-  
+
   /** The x shift mask. */
   private int xShiftMask = 0xC0;
-  
+
   /** The x shift enabled. */
   private boolean xShiftEnabled = false;
-  
+
   /** The shift label. */
   private String shiftLabel = "Shift";
-  
+
   /** The x shift label. */
   private String xShiftLabel = "XShift";
-  
+
   /** The default restrictions. */
   private int defaultRestrictions = 0;
-  
+
   /** The Constant HEX_FORMAT. */
   public static final int HEX_FORMAT = 0;
-  
+
   /** The Constant EFC_FORMAT. */
   public static final int EFC_FORMAT = 1;
-  
+
   /** The Constant NORMAL. */
   public static final int NORMAL = 0;
-  
+
   /** The Constant LONG. */
   public static final int LONG = 1;
-  
+
   /** The adv code format. */
   private int advCodeFormat = HEX_FORMAT;
-  
+
   /** The adv code bind format. */
   private int advCodeBindFormat = NORMAL;
-  
+
   /** The efc digits. */
   private int efcDigits = 3;
-  
+
   /** The dev comb address. */
   private int[] devCombAddress = null;
-  
+
   /** The protocol vector offset. */
   private int protocolVectorOffset = 0;
-  
+
   /** The protocol data offset. */
   private int protocolDataOffset = 0;
-  
+
   /** The encdec. */
   private EncrypterDecrypter encdec = null;
-  
+
   /** The supports binary upgrades. */
   private boolean supportsBinaryUpgrades = false;
-  
+
   /** The max protocol length. */
   private Integer maxProtocolLength = null;
-  
+
   /** The max upgrade length. */
   private Integer maxUpgradeLength = null;
-  
+
   /** The max combined upgrade length. */
   private Integer maxCombinedUpgradeLength = null;
-  
+
   /** The section terminator. */
   private short sectionTerminator = 0;
-  
+
   /**
    * Gets the section terminator.
    * 
    * @return the section terminator
    */
-  public short getSectionTerminator(){ return sectionTerminator; }
-  
+  public short getSectionTerminator()
+  {
+    return sectionTerminator;
+  }
+
   /** The special protocols. */
   public java.util.List< SpecialProtocol > specialProtocols = new ArrayList< SpecialProtocol >();
-  
+
   /**
    * Gets the special protocols.
    * 
    * @return the special protocols
    */
-  public java.util.List< SpecialProtocol > getSpecialProtocols(){ return specialProtocols; }
-  
+  public java.util.List< SpecialProtocol > getSpecialProtocols()
+  {
+    return specialProtocols;
+  }
+
   /** The two byte pid. */
   private boolean twoBytePID = false;
-  
+
   /**
    * Uses two byte pid.
    * 
    * @return true, if successful
    */
-  public boolean usesTwoBytePID(){ return twoBytePID; }
-  
+  public boolean usesTwoBytePID()
+  {
+    return twoBytePID;
+  }
+
   /** The learned dev btn swapped. */
   private boolean learnedDevBtnSwapped = false;
-  
+
   /**
    * Gets the learned dev btn swapped.
    * 
    * @return the learned dev btn swapped
    */
-  public boolean getLearnedDevBtnSwapped(){ return learnedDevBtnSwapped; }
+  public boolean getLearnedDevBtnSwapped()
+  {
+    return learnedDevBtnSwapped;
+  }
 
   /** The restriction table. */
   private static Hashtable< String, Integer > restrictionTable = null;
- }
+}

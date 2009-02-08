@@ -6,13 +6,16 @@ package com.hifiremote.jp1;
  */
 public class DeviceType
 {
-  
+
   /**
    * Instantiates a new device type.
    * 
-   * @param aName the a name
-   * @param aMap the a map
-   * @param aType the a type
+   * @param aName
+   *          the a name
+   * @param aMap
+   *          the a map
+   * @param aType
+   *          the a type
    */
   DeviceType( String aName, int aMap, int aType )
   {
@@ -21,43 +24,61 @@ public class DeviceType
     this.type = aType;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
-  public String toString(){ return name; }
-  
+  public String toString()
+  {
+    return name;
+  }
+
   /**
    * Gets the name.
    * 
    * @return the name
    */
-  public String getName(){ return name; }
-  
+  public String getName()
+  {
+    return name;
+  }
+
   /**
    * Gets the number.
    * 
    * @return the number
    */
-  public int getNumber(){ return type & 0x0F; }
-  
+  public int getNumber()
+  {
+    return type & 0x0F;
+  }
+
   /**
    * Gets the map.
    * 
    * @return the map
    */
-  public int getMap(){ return map; }
-  
+  public int getMap()
+  {
+    return map;
+  }
+
   /**
    * Gets the type.
    * 
    * @return the type
    */
-  public int getType(){ return type; }
-  
+  public int getType()
+  {
+    return type;
+  }
+
   /**
    * Sets the button map.
    * 
-   * @param buttonMap the button map
+   * @param buttonMap
+   *          the button map
    * 
    * @return the device type
    */
@@ -66,7 +87,7 @@ public class DeviceType
     this.buttonMap = buttonMap;
     return this;
   }
-  
+
   /**
    * Gets the button map.
    * 
@@ -80,7 +101,8 @@ public class DeviceType
   /**
    * Checks if is mapped.
    * 
-   * @param b the b
+   * @param b
+   *          the b
    * 
    * @return true, if is mapped
    */
@@ -92,7 +114,8 @@ public class DeviceType
   /**
    * Sets the abbreviation.
    * 
-   * @param text the new abbreviation
+   * @param text
+   *          the new abbreviation
    */
   public void setAbbreviation( String text )
   {
@@ -116,33 +139,50 @@ public class DeviceType
    * 
    * @return the image maps
    */
-  public ImageMap[][] getImageMaps(){ return imageMaps; }
+  public ImageMap[][] getImageMaps()
+  {
+    return imageMaps;
+  }
 
   /**
    * Sets the image maps.
    * 
-   * @param maps the new image maps
+   * @param maps
+   *          the new image maps
    */
   public void setImageMaps( ImageMap[][] maps )
   {
     imageMaps = maps;
   }
 
+  public boolean equals( Object anObject )
+  {
+    if ( this == anObject )
+      return true;
+
+    if ( !( anObject instanceof DeviceType ) )
+      return false;
+
+    DeviceType aDeviceType = ( DeviceType ) anObject;
+
+    return name.equals( aDeviceType.getName() );
+  }
+
   /** The name. */
   private String name;
-  
+
   /** The abbreviation. */
   public String abbreviation;
-  
+
   /** The map. */
   private int map;
-  
+
   /** The type. */
   private int type;
-  
+
   /** The button map. */
   private ButtonMap buttonMap = null;
-  
+
   /** The image maps. */
   private ImageMap[][] imageMaps = new ImageMap[ 0 ][];
 }

@@ -15,6 +15,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ListIterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -1993,6 +1994,16 @@ public class DeviceUpgrade
       setParmValues( protocol.getDeviceParmValues() );
       protocolManager.add( protocol );
       java.util.List< Protocol > v = protocolManager.findByPID( pid );
+      ListIterator< Protocol > li = v.listIterator();
+      while ( li.hasNext() )
+      {
+        Protocol p = li.next();
+        if ( p.getFixedDataLength() != rawHex.length )
+        {
+          li.remove();
+          continue;
+        }
+      }
       if ( v.size() != 0 )
       {
         Protocol p = v.get( 0 );
