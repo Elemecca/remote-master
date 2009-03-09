@@ -31,6 +31,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   {
     ( ( DeviceUpgradeTableModel ) model ).set( remoteConfig );
     this.remoteConfig = remoteConfig;
+    table.initColumns(model);
   }
 
   /*

@@ -13,61 +13,52 @@ import javax.swing.JTextArea;
 /**
  * The Class GeneralPanel.
  */
-public class GeneralPanel
-  extends RMPanel
+public class GeneralPanel extends RMPanel
 {
-  
+
   /**
    * Instantiates a new general panel.
    */
   public GeneralPanel()
   {
-    JPanel panel = new JPanel( new BorderLayout( 5, 0 ));
+    JPanel panel = new JPanel( new BorderLayout( 5, 0 ) );
     add( panel, BorderLayout.NORTH );
 
     // first the device button table.
     // JTableX table = new JTableX( deviceModel );
-    JP1Table table = new JP1Table( deviceModel );
-    JScrollPane scrollPane = new JScrollPane( table, 
-                                              JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                                              JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
-    scrollPane.setBorder(
-      BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder( "Device Buttons" ),
-        scrollPane.getBorder()));
+    deviceButtonTable = new JP1Table( deviceModel );
+    deviceButtonTable.initColumns( deviceModel );
+    JScrollPane scrollPane = new JScrollPane( deviceButtonTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Device Buttons" ),
+        scrollPane.getBorder() ) );
     panel.add( scrollPane, BorderLayout.LINE_START );
 
-    Dimension d = table.getPreferredScrollableViewportSize();
-    d.width = table.getPreferredSize().width;
-    d.height = 10 * table.getRowHeight();
-    table.setPreferredScrollableViewportSize( d );
-    table.initColumns( deviceModel );
+    Dimension d = deviceButtonTable.getPreferredSize();
+    d.height = 10 * deviceButtonTable.getRowHeight();
+    deviceButtonTable.setPreferredScrollableViewportSize( d );
 
     // now the other settings table
-    table = new JP1Table( settingModel );
-    table.setCellEditorModel( settingModel );
-    table.initColumns( settingModel );
+    settingTable = new JP1Table( settingModel );
+    settingTable.setCellEditorModel( settingModel );
+    settingTable.initColumns( settingModel );
 
-    scrollPane = new JScrollPane( table );
-    scrollPane.setBorder(
-      BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder( "Other Settings" ),
-        scrollPane.getBorder()));
+    scrollPane = new JScrollPane( settingTable );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Other Settings" ),
+        scrollPane.getBorder() ) );
     panel.add( scrollPane, BorderLayout.CENTER );
 
-    d = table.getPreferredScrollableViewportSize();
-    d.width = table.getPreferredSize().width;
-    d.height = 10 * table.getRowHeight();
-    table.setPreferredScrollableViewportSize( d );
+    d = settingTable.getPreferredScrollableViewportSize();
+    d.width = settingTable.getPreferredSize().width;
+    d.height = 10 * settingTable.getRowHeight();
+    settingTable.setPreferredScrollableViewportSize( d );
 
     notes = new JTextArea( 10, 20 );
     notes.setLineWrap( true );
     notes.setWrapStyleWord( true );
     scrollPane = new JScrollPane( notes );
-    scrollPane.setBorder(
-      BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder( "General Notes" ),
-        scrollPane.getBorder()));
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "General Notes" ),
+        scrollPane.getBorder() ) );
 
     add( scrollPane, BorderLayout.CENTER );
   }
@@ -75,18 +66,33 @@ public class GeneralPanel
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
     deviceModel.set( remoteConfig );
+    deviceButtonTable.initColumns( deviceModel );
+    Dimension d = deviceButtonTable.getPreferredSize();
+    d.height = 10 * deviceButtonTable.getRowHeight();
+    deviceButtonTable.setPreferredScrollableViewportSize( d );
+
     settingModel.set( remoteConfig );
+    settingTable.initColumns( settingModel );
+    d = settingTable.getPreferredSize();
+    d.height = 10 * settingTable.getRowHeight();
+    settingTable.setPreferredScrollableViewportSize( d );
+
     String text = remoteConfig.getNotes();
     if ( text != null )
-      notes.setText( remoteConfig.getNotes());
+      notes.setText( text );
+
+    validate();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
    */
   public void addPropertyChangeListener( PropertyChangeListener listener )
@@ -99,14 +105,15 @@ public class GeneralPanel
         settingModel.addPropertyChangeListener( listener );
     }
   }
-  
+
   /** The device model. */
+  private JP1Table deviceButtonTable = null;
   private DeviceButtonTableModel deviceModel = new DeviceButtonTableModel();
-  
+
   /** The setting model. */
+  private JP1Table settingTable = null;
   private SettingsTableModel settingModel = new SettingsTableModel();
-  
+
   /** The notes. */
   private JTextArea notes = null;
 }
-  

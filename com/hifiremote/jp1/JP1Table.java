@@ -14,34 +14,42 @@ import javax.swing.text.JTextComponent;
 /**
  * The Class JP1Table.
  */
-public class JP1Table
-  extends JTableX
+public class JP1Table extends JTableX
 {
-  
+
   /**
    * Instantiates a new j p1 table.
    * 
-   * @param model the model
+   * @param model
+   *          the model
    */
   public JP1Table( TableModel model )
   {
     super( model );
     setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
-    //  getSelectionModel().addListSelectionListener( this );
+    // getSelectionModel().addListSelectionListener( this );
     setCellSelectionEnabled( true );
     setSurrendersFocusOnKeystroke( true );
     setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     tableHeader.setReorderingAllowed( false );
     DefaultCellEditor e = ( DefaultCellEditor )getDefaultEditor( String.class );
-    new TextPopupMenu(( JTextComponent )e.getComponent());
+    new TextPopupMenu( ( JTextComponent )e.getComponent() );
+  }
+
+  public void initColumns()
+  {
+    JP1TableModel< ? > model = ( JP1TableModel< ? > )getModel();
+    if ( model != null )
+      initColumns( model );
   }
 
   /**
    * Inits the columns.
    * 
-   * @param model the model
+   * @param model
+   *          the model
    */
-  public void initColumns( JP1TableModel<?> model )
+  public void initColumns( JP1TableModel< ? > model )
   {
     TableColumnModel columnModel = getColumnModel();
     TableColumn column;
@@ -59,12 +67,12 @@ public class JP1Table
       TableCellRenderer renderer = model.getColumnRenderer( i );
       if ( renderer != null )
         column.setCellRenderer( renderer );
-      
-      if ( model.getColumnName( i ).startsWith( "<html>" ))
+
+      if ( model.getColumnName( i ).startsWith( "<html>" ) )
       {
-        column.setHeaderRenderer( getTableHeader().getDefaultRenderer());
+        column.setHeaderRenderer( getTableHeader().getDefaultRenderer() );
       }
     }
-    doLayout();
+    validate();
   }
 }

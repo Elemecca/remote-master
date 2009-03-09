@@ -30,6 +30,13 @@
                 <jar destfile="RemoteMaster.jar" manifest="RemoteMaster.mf" update="true">
                         <fileset dir="${build}" includes="com/**/*.class,info/**/*.class,Setup.class" />
                         <zipfileset src="${lib.dir}/TableLayout.jar" includes="**/*.class"/>
+                        <zipfileset src="${src}/jlfgr-1_0.jar">
+							<include name="toolbarButtonGraphics/general/Open24.gif"/>
+							<include name="toolbarButtonGraphics/general/Save24.gif"/>
+							<include name="toolbarButtonGraphics/general/SaveAs24.gif"/>
+							<include name="toolbarButtonGraphics/general/Import24.gif"/>
+							<include name="toolbarButtonGraphics/general/Export24.gif"/>
+						</zipfileset> 
                 </jar>
                 <java classpath="${build}" classname="com.hifiremote.jp1.RemoteMaster" outputproperty="rmversion">
                         <arg value="-version" />
@@ -42,7 +49,7 @@
         </target>
 
         <target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution">
-                <zip destfile="${src}/RemoteMaster.${rmversion}.zip" filesonly="true">
+                <zip destfile="${src}/RemoteMaster.${rmversion}.zip">
                         <file file="${src}/RemoteMaster.jar" />
                         <file file="${src}/Readme.html" />
                         <file file="${src}/style.css" />
@@ -55,6 +62,7 @@
                         <file file="${src}/porttalk.sys" />
                         <file file="${src}/rmaster.sh" />
                         <file file="${src}/rmir.sh" />
+                        <zipfileset dir="tutorial" includes="**/*" prefix="tutorial" />
                 </zip>
         </target>
 

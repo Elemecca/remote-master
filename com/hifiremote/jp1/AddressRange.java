@@ -1,50 +1,53 @@
 package com.hifiremote.jp1;
 
+import java.util.StringTokenizer;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class AddressRange.
  */
-public class AddressRange
+public class AddressRange extends RDFParameter
 {
-  
-  /**
-   * Instantiates a new address range.
-   * 
-   * @param start the start
-   * @param end the end
-   */
-  public AddressRange( int start, int end )
+  public void parse( String text ) throws Exception
   {
-    this.start = start;
-    this.end = end;
+    StringTokenizer st = new StringTokenizer( text, ".=" );
+    start = RDFReader.parseNumber( st.nextToken() );
+    end = RDFReader.parseNumber( st.nextToken() );
   }
-  
+
   /**
    * Gets the start.
    * 
    * @return the start
    */
-  public int getStart(){ return start; }
-  
+  public int getStart()
+  {
+    return start;
+  }
+
   /**
    * Gets the end.
    * 
    * @return the end
    */
-  public int getEnd(){ return end; }
-  
-  /* (non-Javadoc)
+  public int getEnd()
+  {
+    return end;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   public String toString()
   {
-    return "$" + Integer.toHexString( start ) +
-           "..$" + Integer.toHexString( end );
+    return "$" + Integer.toHexString( start ) + "..$" + Integer.toHexString( end );
   }
 
   /** The start. */
   private int start;
-  
+
   /** The end. */
   private int end;
 }

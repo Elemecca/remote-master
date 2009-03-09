@@ -1,62 +1,73 @@
 package com.hifiremote.jp1;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class SettingsTableModel.
  */
-public class SettingsTableModel
-  extends JP1TableModel< Setting >
-  implements CellEditorModel
+public class SettingsTableModel extends JP1TableModel< Setting > implements CellEditorModel
 {
-  
+
   /**
    * Instantiates a new settings table model.
    */
   public SettingsTableModel()
   {
-    comboEditor.setClickCountToStart( 2 );    
+    comboEditor.setClickCountToStart( 2 );
   }
 
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    setData( remoteConfig.getRemote().getSettings());
+    setData( remoteConfig.getRemote().getSettings() );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getColumnCount()
    */
-  public int getColumnCount(){ return colNames.length; }
+  public int getColumnCount()
+  {
+    return colNames.length;
+  }
 
   /** The Constant colNames. */
-  private static final String[] colNames = 
+  private static final String[] colNames =
   {
-    "#", "Setting", "Value"
+      "#", "Setting", "Value"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
   public String getColumnName( int col )
   {
     return colNames[ col ];
   }
-  
+
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-    "00", "A Long Setting Name", "A Longer Setting Value Name"
+      "00", "A Setting Name", "A Value"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
   public String getColumnPrototypeName( int col )
@@ -64,45 +75,38 @@ public class SettingsTableModel
     return colPrototypeNames[ col ];
   }
 
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
-   */
-  public boolean isColumnWidthFixed( int col )
-  {
-    if ( col == 0 )
-      return true;
-    return false;
-  }
-
   /** The Constant colClasses. */
-  private static final Class<?>[] colClasses =
+  private static final Class< ? >[] colClasses =
   {
-    Integer.class, String.class, Setting.class
+      Integer.class, String.class, Setting.class
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
-  public Class<?> getColumnClass( int col )
+  public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable( int row, int col )
   {
-    if ( col > 1 )
-      return true;
-
-    return false;
+    return ( col > 1 ) && ( row < remoteConfig.getRemote().getStartReadOnlySettings() );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
-  public Object getValueAt(int row, int column)
+  public Object getValueAt( int row, int column )
   {
     Remote r = remoteConfig.getRemote();
     Setting setting = r.getSettings()[ row ];
@@ -118,17 +122,19 @@ public class SettingsTableModel
         Object[] choices = setting.getOptions( r );
         if ( choices == null )
           return new Integer( val );
-        
+
         if ( val > choices.length )
           return null;
-          
+
         return choices[ val ];
       }
     }
     return null;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
   public void setValueAt( Object value, int row, int col )
@@ -139,15 +145,17 @@ public class SettingsTableModel
       Setting setting = r.getSettings()[ row ];
       Object[] choices = setting.getOptions( r );
       if ( choices == null )
-        setting.setValue((( Integer )value ).intValue());
+        setting.setValue( ( ( Integer )value ).intValue() );
       else
         for ( int i = 0; i < choices.length; ++i )
-          if ( choices[ i ].equals( value ))
+          if ( choices[ i ].equals( value ) )
             setting.setValue( i );
     }
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
   public TableCellRenderer getColumnRenderer( int col )
@@ -157,7 +165,9 @@ public class SettingsTableModel
     return null;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.CellEditorModel#getCellEditor(int, int)
    */
   public TableCellEditor getCellEditor( int row, int col )
@@ -171,21 +181,21 @@ public class SettingsTableModel
     {
       int bits = setting.getNumberOfBits();
       intEditor.setMin( 0 );
-      intEditor.setMax(( 1 << bits ) - 1 );
+      intEditor.setMax( ( 1 << bits ) - 1 );
       return intEditor;
     }
 
     JComboBox cb = ( JComboBox )comboEditor.getComponent();
-    cb.setModel( new DefaultComboBoxModel( options ));
+    cb.setModel( new DefaultComboBoxModel( options ) );
     return comboEditor;
   }
-  
+
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
-  
+
   /** The int editor. */
   private BoundedIntegerEditor intEditor = new BoundedIntegerEditor();
-  
+
   /** The combo editor. */
-  private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox());
+  private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox() );
 }

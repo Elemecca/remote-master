@@ -5,7 +5,6 @@ import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -20,6 +19,11 @@ import javax.swing.JOptionPane;
  */
 public class Remote implements Comparable< Remote >
 {
+
+  public enum TimeFormat
+  {
+    HEX, BCD12, BCD24
+  };
 
   /**
    * Instantiates a new remote.
@@ -132,14 +136,23 @@ public class Remote implements Comparable< Remote >
 
           if ( line.equals( "General" ) )
             line = parseGeneralSection( rdr );
-          else if ( line.equals( "SpecialProtocols" ) )
+          else if ( ( line.equals( "SpecialProtocols" ) || line.equals( "SpecialProtocols+" ) )
+              && specialProtocols.isEmpty() )
             line = parseSpecialProtocols( rdr );
           else if ( line.equals( "Checksums" ) )
             line = parseCheckSums( rdr );
           else if ( line.equals( "Settings" ) )
             line = parseSettings( rdr );
           else if ( line.equals( "FixedData" ) )
-            line = parseFixedData( rdr );
+          {
+            fixedData = FixedData.parse( rdr );
+            line = "";
+          }
+          else if ( line.equals( "AutoSet" ) )
+          {
+            autoSet = FixedData.parse( rdr );
+            line = "";
+          }
           else if ( line.equals( "DeviceButtons" ) )
             line = parseDeviceButtons( rdr );
           else if ( line.equals( "DigitMaps" ) )
@@ -182,8 +195,7 @@ public class Remote implements Comparable< Remote >
         DeviceType type = e.nextElement();
         int map = type.getMap();
         if ( map == -1 )
-          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName()
-              + " doesn't have a map." );
+          System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName() + " doesn't have a map." );
         if ( map >= buttonMaps.length )
         {
           System.err.println( "ERROR:" + file.getName() + ": DeviceType " + type.getName()
@@ -217,7 +229,7 @@ public class Remote implements Comparable< Remote >
           deviceTypeAliases.put( "PVR", vcrType );
         }
         deviceTypeAliasNames = new String[ 0 ];
-        deviceTypeAliasNames = ( String[] ) v.toArray( deviceTypeAliasNames );
+        deviceTypeAliasNames = ( String[] )v.toArray( deviceTypeAliasNames );
         Arrays.sort( deviceTypeAliasNames );
       }
 
@@ -250,7 +262,7 @@ public class Remote implements Comparable< Remote >
             && !bindableButtons.contains( b ) )
           bindableButtons.add( b );
       }
-      upgradeButtons = ( Button[] ) bindableButtons.toArray( upgradeButtons );
+      upgradeButtons = ( Button[] )bindableButtons.toArray( upgradeButtons );
 
       if ( ( imageMaps.length > 0 ) && ( imageMaps[ mapIndex ] != null ) )
         imageMaps[ mapIndex ].parse( this );
@@ -335,7 +347,7 @@ public class Remote implements Comparable< Remote >
         b.setHasShape( true );
       }
     }
-    height = ( int ) ( y + gap + diameter );
+    height = ( int )( y + gap + diameter );
     for ( ImageMap map : maps )
     {
       map.getShapes().addAll( phantomShapes );
@@ -433,7 +445,6 @@ public class Remote implements Comparable< Remote >
    * 
    * @param typeName
    *          the type name
-   * 
    * @return the device type
    */
   public DeviceType getDeviceType( String typeName )
@@ -447,12 +458,11 @@ public class Remote implements Comparable< Remote >
    * 
    * @param aliasName
    *          the alias name
-   * 
    * @return the device type by alias name
    */
   public DeviceType getDeviceTypeByAliasName( String aliasName )
   {
-    DeviceType type = ( DeviceType ) deviceTypeAliases.get( aliasName );
+    DeviceType type = ( DeviceType )deviceTypeAliases.get( aliasName );
     if ( type != null )
       return type;
     return getDeviceType( aliasName );
@@ -463,7 +473,6 @@ public class Remote implements Comparable< Remote >
    * 
    * @param index
    *          the index
-   * 
    * @return the device type by index
    */
   public DeviceType getDeviceTypeByIndex( int index )
@@ -482,7 +491,6 @@ public class Remote implements Comparable< Remote >
    * 
    * @param type
    *          the type
-   * 
    * @return the device type alias
    */
   public String getDeviceTypeAlias( DeviceType type )
@@ -607,7 +615,6 @@ public class Remote implements Comparable< Remote >
    * 
    * @param type
    *          the type
-   * 
    * @return the image maps
    */
   public ImageMap[] getImageMaps( DeviceType type )
@@ -658,33 +665,11 @@ public class Remote implements Comparable< Remote >
   }
 
   /**
-   * Parses the flag.
-   * 
-   * @param st
-   *          the st
-   * 
-   * @return true, if successful
-   */
-  private boolean parseFlag( StringTokenizer st )
-  {
-    String flag = st.nextToken( " =\t" );
-    if ( flag.equalsIgnoreCase( "Y" ) || flag.equalsIgnoreCase( "Yes" )
-        || flag.equalsIgnoreCase( "T" ) || flag.equalsIgnoreCase( "True" )
-        || flag.equalsIgnoreCase( "1" ) )
-    {
-      return true;
-    }
-    return false;
-  }
-
-  /**
    * Parses the general section.
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -693,6 +678,8 @@ public class Remote implements Comparable< Remote >
     String processorName = null;
     String processorVersion = null;
     String line = null;
+    String parm = null;
+    String value = null;
     while ( true )
     {
       line = rdr.readLine();
@@ -700,110 +687,105 @@ public class Remote implements Comparable< Remote >
       if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
-      StringTokenizer st = new StringTokenizer( line, "=" );
+      {
+        StringTokenizer st = new StringTokenizer( line, "=" );
 
-      String parm = st.nextToken();
+        parm = st.nextToken().trim();
+        value = st.nextToken().trim();
+      }
+
       if ( parm.equals( "Name" ) )
         ;
       else if ( parm.equals( "BaseAddr" ) )
-        baseAddress = rdr.parseNumber( st.nextToken() );
+        baseAddress = rdr.parseNumber( value );
       else if ( parm.equals( "EepromSize" ) )
-        eepromSize = rdr.parseNumber( st.nextToken() );
+        eepromSize = rdr.parseNumber( value );
       else if ( parm.equals( "DevCodeOffset" ) )
-        deviceCodeOffset = rdr.parseNumber( st.nextToken() );
+        deviceCodeOffset = rdr.parseNumber( value );
       else if ( parm.equals( "FavKey" ) )
       {
-        int keyCode = rdr.parseNumber( st.nextToken( "=, \t" ) );
-        int deviceButtonAddress = rdr.parseNumber( st.nextToken() );
-        int maxEntries = rdr.parseNumber( st.nextToken() );
-        int entrySize = rdr.parseNumber( st.nextToken() );
-        boolean segregated = false;
-        if ( st.hasMoreTokens() )
-          segregated = rdr.parseNumber( st.nextToken() ) != 0;
-        favKey = new FavKey( keyCode, deviceButtonAddress, maxEntries, entrySize, segregated );
+        favKey = new FavKey();
+        favKey.parse( value );
       }
       else if ( parm.equals( "OEMDevice" ) )
       {
-        int deviceNumber = rdr.parseNumber( st.nextToken( ",=" ) );
-        int deviceAddress = rdr.parseNumber( st.nextToken() );
-        oemDevice = new OEMDevice( deviceNumber, deviceAddress );
+        oemDevice = new OEMDevice();
+        oemDevice.parse( value );
       }
       else if ( parm.equals( "OEMControl" ) )
-        oemControl = rdr.parseNumber( st.nextToken() );
+        oemControl = rdr.parseNumber( value );
       else if ( parm.equals( "UpgradeBug" ) )
-        upgradeBug = parseFlag( st );
+        upgradeBug = rdr.parseFlag( value );
       else if ( parm.equals( "AdvCodeAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ) );
-        int end = rdr.parseNumber( st.nextToken() );
-        advancedCodeAddress = new AddressRange( start, end );
+        advancedCodeAddress = new AddressRange();
+        advancedCodeAddress.parse( value );
+      }
+      else if ( parm.equals( "KeyMoveSupport" ) )
+      {
+        keyMoveSupport = rdr.parseFlag( value );
       }
       else if ( parm.equals( "MacroSupport" ) )
-        macroSupport = ( rdr.parseNumber( st.nextToken() ) != 0 );
+      {
+        macroSupport = rdr.parseFlag( value );
+      }
       else if ( parm.equals( "UpgradeAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ) );
-        int end = rdr.parseNumber( st.nextToken() );
-        upgradeAddress = new AddressRange( start, end );
+        upgradeAddress = new AddressRange();
+        upgradeAddress.parse( value );
       }
       else if ( parm.equals( "DevUpgradeAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ) );
-        int end = rdr.parseNumber( st.nextToken() );
-        deviceUpgradeAddress = new AddressRange( start, end );
+        deviceUpgradeAddress = new AddressRange();
+        deviceUpgradeAddress.parse( value );
       }
       else if ( parm.equals( "TimedMacroAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ) );
-        int end = rdr.parseNumber( st.nextToken() );
-        timedMacroAddress = new AddressRange( start, end );
+        timedMacroAddress = new AddressRange();
+        timedMacroAddress.parse( value );
       }
       else if ( parm.equals( "TimedMacroWarning" ) )
-        timedMacroWarning = parseFlag( st );
+        timedMacroWarning = rdr.parseFlag( value );
       else if ( parm.equals( "LearnedAddr" ) )
       {
-        int start = rdr.parseNumber( st.nextToken( ".=" ) );
-        int end = rdr.parseNumber( st.nextToken() );
-        learnedAddress = new AddressRange( start, end );
+        learnedAddress = new AddressRange();
+        learnedAddress.parse( value );
       }
       else if ( parm.equals( "Processor" ) )
       {
-        processorName = st.nextToken();
+        processorName = value;
         if ( processorName.equals( "6805" ) && ( processorVersion == null ) )
           processorVersion = "C9";
       }
       else if ( parm.equals( "ProcessorVersion" ) )
-        processorVersion = st.nextToken();
+        processorVersion = value;
       else if ( parm.equals( "RAMAddr" ) )
-        RAMAddress = rdr.parseNumber( st.nextToken() );
-      else if ( parm.equals( "TimeAddr" ) )
+        RAMAddress = rdr.parseNumber( value );
+      else if ( ( parm.equals( "TimeAddr" ) || parm.equals( "TimeAddr+" ) ) && ( timeAddress == 0 ) )
+      {
+        StringTokenizer st = new StringTokenizer( value, ", " );
         timeAddress = rdr.parseNumber( st.nextToken() );
+        if ( st.hasMoreTokens() )
+          timeFormat = TimeFormat.valueOf( st.nextToken() );
+      }
       else if ( parm.equals( "RDFSync" ) )
-        RDFSync = rdr.parseNumber( st.nextToken() );
+        RDFSync = rdr.parseNumber( value );
       else if ( parm.equals( "PunchThruBase" ) )
-        punchThruBase = rdr.parseNumber( st.nextToken() );
+        punchThruBase = rdr.parseNumber( value );
       else if ( parm.equals( "ScanBase" ) )
-        scanBase = rdr.parseNumber( st.nextToken() );
+        scanBase = rdr.parseNumber( value );
       else if ( parm.equals( "SleepStatusBit" ) )
       {
-        int addr = rdr.parseNumber( st.nextToken( ".=" ) );
-        int bit = rdr.parseNumber( st.nextToken() );
-        int onVal = 1;
-        if ( st.hasMoreTokens() )
-          onVal = rdr.parseNumber( st.nextToken() );
-        sleepStatusBit = new StatusBit( addr, bit, onVal );
+        sleepStatusBit = new StatusBit();
+        sleepStatusBit.parse( value );
       }
       else if ( parm.equals( "VPTStatusBit" ) )
       {
-        int addr = rdr.parseNumber( st.nextToken( ".=" ) );
-        int bit = rdr.parseNumber( st.nextToken() );
-        int onVal = 1;
-        if ( st.hasMoreTokens() )
-          onVal = rdr.parseNumber( st.nextToken() );
-        vptStatusBit = new StatusBit( addr, bit, onVal );
+        vptStatusBit = new StatusBit();
+        vptStatusBit.parse( value );
       }
       else if ( parm.equals( "OmitDigitMapByte" ) )
-        omitDigitMapByte = parseFlag( st );
+        omitDigitMapByte = RDFReader.parseFlag( value );
       else if ( parm.equals( "ImageMap" ) )
       {
         PropertyFile properties = JP1Frame.getProperties();
@@ -813,8 +795,7 @@ public class Remote implements Comparable< Remote >
 
         if ( !imageDir.exists() )
         {
-          JOptionPane.showMessageDialog( null, "Images folder not found!", "Error",
-              JOptionPane.ERROR_MESSAGE );
+          JOptionPane.showMessageDialog( null, "Images folder not found!", "Error", JOptionPane.ERROR_MESSAGE );
           RMFileChooser chooser = new RMFileChooser( imageDir.getParentFile() );
           chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
           chooser.setDialogTitle( "Choose the directory containing the remote images and maps" );
@@ -825,7 +806,7 @@ public class Remote implements Comparable< Remote >
           properties.setProperty( "ImagePath", imageDir );
         }
 
-        String mapList = st.nextToken();
+        String mapList = value;
         StringTokenizer mapTokenizer = new StringTokenizer( mapList, "," );
         int mapCount = mapTokenizer.countTokens();
         imageMaps = new ImageMap[ mapCount ];
@@ -838,23 +819,24 @@ public class Remote implements Comparable< Remote >
           mapIndex = nameIndex;
       }
       else if ( parm.equals( "DefaultRestrictions" ) )
-        defaultRestrictions = parseRestrictions( st.nextToken() );
+        defaultRestrictions = parseRestrictions( value );
       else if ( parm.equals( "Shift" ) )
       {
-        shiftMask = rdr.parseNumber( st.nextToken( "=," ) );
+        StringTokenizer st = new StringTokenizer( value, "=," );
+        shiftMask = rdr.parseNumber( st.nextToken() );
         if ( st.hasMoreTokens() )
           shiftLabel = st.nextToken().trim();
       }
       else if ( parm.equals( "XShift" ) )
       {
         xShiftEnabled = true;
-        xShiftMask = rdr.parseNumber( st.nextToken( "=," ) );
+        StringTokenizer st = new StringTokenizer( value, "=," );
+        xShiftMask = rdr.parseNumber( st.nextToken() );
         if ( st.hasMoreTokens() )
           xShiftLabel = st.nextToken().trim();
       }
       else if ( parm.equals( "AdvCodeFormat" ) )
       {
-        String value = st.nextToken();
         if ( value.equals( "HEX" ) )
           advCodeFormat = HEX_FORMAT;
         else if ( value.equals( "EFC" ) )
@@ -862,7 +844,6 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "AdvCodeBindFormat" ) )
       {
-        String value = st.nextToken();
         if ( value.equals( "NORMAL" ) )
           advCodeBindFormat = NORMAL;
         else if ( value.equals( "LONG" ) )
@@ -870,14 +851,12 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "EFCDigits" ) )
       {
-        String value = st.nextToken();
         efcDigits = rdr.parseNumber( value );
       }
       else if ( parm.equals( "DevComb" ) )
       {
         devCombAddress = new int[ 7 ];
-        String combParms = st.nextToken();
-        StringTokenizer st2 = new StringTokenizer( combParms, ",", true );
+        StringTokenizer st2 = new StringTokenizer( value, ",", true );
         for ( int i = 0; i < 7; i++ )
         {
           if ( st2.hasMoreTokens() )
@@ -897,48 +876,74 @@ public class Remote implements Comparable< Remote >
         }
       }
       else if ( parm.equals( "ProtocolVectorOffset" ) )
-        protocolVectorOffset = rdr.parseNumber( st.nextToken() );
+        protocolVectorOffset = rdr.parseNumber( value );
       else if ( parm.equals( "ProtocolDataOffset" ) )
-        protocolDataOffset = rdr.parseNumber( st.nextToken() );
+        protocolDataOffset = rdr.parseNumber( value );
       else if ( parm.equals( "EncDec" ) )
       {
-        String className = st.nextToken( "=()" );
-        String textParm = null;
-        if ( st.hasMoreTokens() )
-          textParm = st.nextToken();
-        try
-        {
-          if ( className.indexOf( '.' ) == -1 )
-            className = "com.hifiremote.jp1." + className;
-
-          Class< ? > cl = Class.forName( className );
-          Class< ? extends EncrypterDecrypter > cl2 = cl.asSubclass( EncrypterDecrypter.class );
-          Class< ? >[] parmClasses =
-          { String.class };
-          Constructor< ? extends EncrypterDecrypter > ct = cl2.getConstructor( parmClasses );
-          Object[] ctParms =
-          { textParm };
-          encdec = ct.newInstance( ctParms );
-        }
-        catch ( Exception e )
-        {
-          System.err.println( "Error creating an instance of " + className );
-          e.printStackTrace( System.err );
-        }
+        encdec = EncrypterDecrypter.createInstance( value );
       }
       else if ( parm.equals( "MaxUpgradeLength" ) )
-        maxUpgradeLength = new Integer( rdr.parseNumber( st.nextToken() ) );
+        maxUpgradeLength = new Integer( rdr.parseNumber( value ) );
       else if ( parm.equals( "MaxProtocolLength" ) )
-        maxProtocolLength = new Integer( rdr.parseNumber( st.nextToken() ) );
+        maxProtocolLength = new Integer( rdr.parseNumber( value ) );
       else if ( parm.equals( "MaxCombinedUpgradeLength" ) )
-        maxCombinedUpgradeLength = new Integer( rdr.parseNumber( st.nextToken() ) );
+        maxCombinedUpgradeLength = new Integer( rdr.parseNumber( value ) );
       else if ( parm.equals( "SectionTerminator" ) )
-        sectionTerminator = ( short ) rdr.parseNumber( st.nextToken() );
+        sectionTerminator = ( short )rdr.parseNumber( value );
       else if ( parm.equalsIgnoreCase( "2BytePid" ) )
-        twoBytePID = parseFlag( st );
+        twoBytePID = RDFReader.parseFlag( value );
       else if ( parm.equalsIgnoreCase( "LearnedDevBtnSwapped" ) )
-        learnedDevBtnSwapped = parseFlag( st );
+        learnedDevBtnSwapped = RDFReader.parseFlag( value );
+      else if ( parm.equalsIgnoreCase( "Labels" ) )
+      {
+        labels = new DeviceLabels();
+        labels.parse( value );
+      }
+      else if ( parm.equalsIgnoreCase( "SoftDev" ) )
+      {
+        softDevices = new SoftDevices();
+        softDevices.parse( value );
+        if ( !softDevices.inUse() )
+          softDevices = null;
+      }
+      else if ( parm.equalsIgnoreCase( "SoftHT" ) )
+      {
+        softHomeTheater = new SoftHomeTheater();
+        softHomeTheater.parse( value );
+      }
+      else if ( parm.equalsIgnoreCase( "MacroCodingType" ) )
+      {
+        macroCodingType = new MacroCodingType();
+        macroCodingType.parse( value );
+      }
+      else if ( parm.equalsIgnoreCase( "StartReadOnlySettings" ) )
+      {
+        startReadOnlySettings = rdr.parseNumber( value );
+      }
+      else if ( parm.equalsIgnoreCase( "PauseParameters" ) )
+      {
+        PauseParameters parms = new PauseParameters();
+        parms.parse( value );
+        pauseParameters.put( parms.getUserName(), parms );
+      }
+      else if ( parm.equalsIgnoreCase( "PowerButtons" ) )
+      {
+        StringTokenizer st = new StringTokenizer( value, ", " );
+        int len = st.countTokens();
+        powerButtons = new short[ len ];
+        int i = 0;
+        while ( st.hasMoreElements() )
+        {
+          powerButtons[ i++ ] = ( short )rdr.parseNumber( st.nextToken() );
+        }
+      }
+      else if ( parm.equalsIgnoreCase( "WaveUpgrade " ) )
+      {
+        waveUpgrade = rdr.parseFlag( value );
+      }
     }
+
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
   }
@@ -959,7 +964,6 @@ public class Remote implements Comparable< Remote >
    * 
    * @param str
    *          the str
-   * 
    * @return the int
    */
   private int parseRestrictions( String str )
@@ -1032,15 +1036,12 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
   private String parseSpecialProtocols( RDFReader rdr ) throws Exception
   {
-    java.util.List< CheckSum > work = new ArrayList< CheckSum >();
     String line;
     while ( true )
     {
@@ -1049,11 +1050,10 @@ public class Remote implements Comparable< Remote >
         break;
 
       StringTokenizer st = new StringTokenizer( line, "=" );
-      String name = st.nextToken();
-      Hex pid = new Hex( st.nextToken() );
-      specialProtocols.add( SpecialProtocol.create( name, pid ) );
+      String name = st.nextToken().trim();
+      String value = st.nextToken().trim();
+      specialProtocols.add( SpecialProtocol.create( name, value ) );
     }
-    checkSums = ( CheckSum[] ) work.toArray( checkSums );
     return line;
   }
 
@@ -1062,9 +1062,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1081,10 +1079,10 @@ public class Remote implements Comparable< Remote >
       char ch = line.charAt( 0 );
 
       line = line.substring( 1 );
-      StringTokenizer st = new StringTokenizer( line, ":." );
+      StringTokenizer st = new StringTokenizer( line, ":" );
       int addr = rdr.parseNumber( st.nextToken() );
-      AddressRange range = new AddressRange( rdr.parseNumber( st.nextToken() ), rdr.parseNumber( st
-          .nextToken() ) );
+      AddressRange range = new AddressRange();
+      range.parse( st.nextToken() );
       CheckSum sum = null;
       if ( ch == '+' )
         sum = new AddCheckSum( addr, range );
@@ -1092,7 +1090,7 @@ public class Remote implements Comparable< Remote >
         sum = new XorCheckSum( addr, range );
       work.add( sum );
     }
-    checkSums = ( CheckSum[] ) work.toArray( checkSums );
+    checkSums = ( CheckSum[] )work.toArray( checkSums );
     return line;
   }
 
@@ -1111,9 +1109,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1156,10 +1152,10 @@ public class Remote implements Comparable< Remote >
       String[] optionsList = null;
       if ( options != null )
         optionsList = options.toArray( new String[ 0 ] );
-      work.add( new Setting( title, byteAddress, bitNumber, numberOfBits, initialValue, inverted,
-          optionsList, sectionName ) );
+      work.add( new Setting( title, byteAddress, bitNumber, numberOfBits, initialValue, inverted, optionsList,
+          sectionName ) );
     }
-    settings = ( Setting[] ) work.toArray( settings );
+    settings = ( Setting[] )work.toArray( settings );
     return line;
   }
 
@@ -1178,7 +1174,6 @@ public class Remote implements Comparable< Remote >
    * 
    * @param name
    *          the name
-   * 
    * @return the section
    */
   public Object[] getSection( String name )
@@ -1192,98 +1187,11 @@ public class Remote implements Comparable< Remote >
   }
 
   /**
-   * Parses the fixed data.
-   * 
-   * @param rdr
-   *          the rdr
-   * 
-   * @return the string
-   * 
-   * @throws Exception
-   *           the exception
-   */
-  private String parseFixedData( RDFReader rdr ) throws Exception
-  {
-    java.util.List< FixedData > work = new ArrayList< FixedData >();
-    java.util.List< Byte > temp = new ArrayList< Byte >();
-    String line;
-    int address = -1;
-    int value = -1;
-
-    while ( true )
-    {
-      line = rdr.readLine();
-
-      if ( ( line == null ) || ( line.length() == 0 ) )
-        break;
-
-      StringTokenizer st = new StringTokenizer( line, ",; \t" );
-      String token = st.nextToken();
-      while ( true )
-      {
-        if ( token.charAt( 0 ) == '=' ) // the last token was an address
-        {
-          token = token.substring( 1 );
-          if ( address != -1 ) // we've seen some bytes
-          {
-            byte[] b = new byte[ temp.size() ];
-            int i = 0;
-            for ( Byte val : temp )
-            {
-              b[ i++ ] = val.byteValue();
-            }
-            work.add( new FixedData( address, b ) );
-            temp.clear();
-          }
-          address = value;
-          value = -1;
-          if ( token.length() != 0 )
-            continue;
-        }
-        else
-        {
-          int equal = token.indexOf( '=' );
-          String saved = token;
-          if ( equal != -1 )
-          {
-            token = token.substring( 0, equal );
-          }
-          if ( value != -1 )
-          {
-            temp.add( new Byte( ( byte ) value ) );
-          }
-          value = rdr.parseNumber( token );
-          if ( equal != -1 )
-          {
-            token = saved.substring( equal );
-            continue;
-          }
-        }
-        if ( !st.hasMoreTokens() )
-          break;
-        token = st.nextToken();
-      }
-    }
-    temp.add( new Byte( ( byte ) value ) );
-    byte[] b = new byte[ temp.size() ];
-    int j = 0;
-    for ( Byte by : temp )
-    {
-      b[ j ] = by.byteValue();
-    }
-    work.add( new FixedData( address, b ) );
-    fixedData = work.toArray( fixedData );
-    return line;
-  }
-
-  /**
    * Parses the device buttons.
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1297,15 +1205,23 @@ public class Remote implements Comparable< Remote >
       if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
-      StringTokenizer st = new StringTokenizer( line );
-      String name = st.nextToken( "= \t" );
+      StringTokenizer st = new StringTokenizer( line, "," );
+      int defaultSetupCode = 0;
+      line = st.nextToken();
+      if ( st.hasMoreTokens() )
+      {
+        defaultSetupCode = rdr.parseNumber( st.nextToken().trim() );
+      }
 
-      int hiAddr = rdr.parseNumber( st.nextToken( ",= \t" ) );
+      st = new StringTokenizer( line, "= \t" );
+      String name = st.nextToken();
+
+      int hiAddr = rdr.parseNumber( st.nextToken() );
       int lowAddr = rdr.parseNumber( st.nextToken() );
       int typeAddr = 0;
       if ( st.hasMoreTokens() )
         typeAddr = rdr.parseNumber( st.nextToken() );
-      work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr ) );
+      work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode ) );
     }
     deviceButtons = work.toArray( deviceButtons );
     return line;
@@ -1316,9 +1232,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1355,9 +1269,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1393,9 +1305,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1429,9 +1339,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1491,9 +1399,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1569,9 +1475,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1605,7 +1509,7 @@ public class Remote implements Comparable< Remote >
           }
           else
             restrictions = defaultRestrictions;
-          keycode = ( short ) rdr.parseNumber( keycodeStr );
+          keycode = ( short )rdr.parseNumber( keycodeStr );
         }
 
         int colon = token.indexOf( ':' );
@@ -1642,13 +1546,12 @@ public class Remote implements Comparable< Remote >
    * 
    * @param keyCode
    *          the key code
-   * 
    * @return the button
    */
   public Button getButton( int keyCode )
   {
     load();
-    return ( Button ) buttonsByKeyCode.get( new Integer( keyCode ) );
+    return ( Button )buttonsByKeyCode.get( new Integer( keyCode ) );
   }
 
   /**
@@ -1656,7 +1559,6 @@ public class Remote implements Comparable< Remote >
    * 
    * @param keyCode
    *          the key code
-   * 
    * @return the button name
    */
   public String getButtonName( int keyCode )
@@ -1686,10 +1588,9 @@ public class Remote implements Comparable< Remote >
 
     if ( b == null )
     {
-      System.err.println( "ERROR: Unknown keycode $" + Integer.toHexString( keyCode & 0xFF )
-          + ", Creating button!" );
+      System.err.println( "ERROR: Unknown keycode $" + Integer.toHexString( keyCode & 0xFF ) + ", Creating button!" );
       String name = "button" + Integer.toHexString( keyCode & 0xFF ).toUpperCase();
-      b = new Button( name, name, ( short ) keyCode, this );
+      b = new Button( name, name, ( short )keyCode, this );
       if ( b.getIsShifted() )
       {
         Button baseButton = getButton( keyCode & 0x3F );
@@ -1719,13 +1620,12 @@ public class Remote implements Comparable< Remote >
    * 
    * @param name
    *          the name
-   * 
    * @return the button
    */
   public Button getButton( String name )
   {
     load();
-    return ( Button ) buttonsByName.get( name.toLowerCase() );
+    return ( Button )buttonsByName.get( name.toLowerCase() );
   }
 
   /**
@@ -1807,9 +1707,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1826,7 +1724,7 @@ public class Remote implements Comparable< Remote >
       String name = st.nextToken();
 
       // Find the matching button
-      Button button = ( Button ) buttonsByName.get( name );
+      Button button = ( Button )buttonsByName.get( name );
       if ( button != null )
         button.setMultiMacroAddress( rdr.parseNumber( st.nextToken() ) );
     }
@@ -1838,13 +1736,12 @@ public class Remote implements Comparable< Remote >
    * 
    * @param b
    *          the b
-   * 
    * @return the button
    */
   public Button findByStandardName( Button b )
   {
     load();
-    return ( Button ) buttonsByStandardName.get( b.getStandardName().toLowerCase() );
+    return ( Button )buttonsByStandardName.get( b.getStandardName().toLowerCase() );
   }
 
   /**
@@ -1852,9 +1749,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1951,9 +1846,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @param rdr
    *          the rdr
-   * 
    * @return the string
-   * 
    * @throws Exception
    *           the exception
    */
@@ -2030,20 +1923,16 @@ public class Remote implements Comparable< Remote >
    *          the pid
    * @param name
    *          the name
-   * 
    * @return true, if successful
    */
-  public boolean supportsVariant( Hex pid, String name )
+  public boolean supportsVariant( Hex pid, String variantName )
   {
     load();
     java.util.List< String > v = protocolVariantNames.get( pid );
     if ( ( v == null ) || v.isEmpty() )
       return false;
 
-    if ( v.contains( name ) )
-      return true;
-
-    return false;
+    return v.contains( variantName );
   }
 
   /**
@@ -2051,7 +1940,6 @@ public class Remote implements Comparable< Remote >
    * 
    * @param pid
    *          the pid
-   * 
    * @return the supported variant names
    */
   public java.util.List< String > getSupportedVariantNames( Hex pid )
@@ -2061,9 +1949,8 @@ public class Remote implements Comparable< Remote >
   }
 
   /*
-   * public void clearButtonAssignments() { load(); for ( Enumeration e = buttons.elements();
-   * e.hasMoreElements(); ) { (( Button )e.nextElement()).setFunction( null ).setShiftedFunction(
-   * null ).setXShiftedFunction( null ); } }
+   * public void clearButtonAssignments() { load(); for ( Enumeration e = buttons.elements(); e.hasMoreElements(); ) {
+   * (( Button )e.nextElement()).setFunction( null ).setShiftedFunction( null ).setXShiftedFunction( null ); } }
    */
 
   /**
@@ -2115,11 +2002,10 @@ public class Remote implements Comparable< Remote >
    *          the moved key code
    * @param notes
    *          the notes
-   * 
    * @return the key move
    */
-  public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode,
-      int movedKeyCode, String notes )
+  public KeyMove createKeyMoveKey( int keyCode, int deviceIndex, int deviceType, int setupCode, int movedKeyCode,
+      String notes )
   {
     KeyMove keyMove = null;
     keyMove = new KeyMoveKey( keyCode, deviceIndex, deviceType, setupCode, movedKeyCode, notes );
@@ -2141,22 +2027,18 @@ public class Remote implements Comparable< Remote >
    *          the cmd
    * @param notes
    *          the notes
-   * 
    * @return the key move
    */
-  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode,
-      Hex cmd, String notes )
+  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
     KeyMove keyMove = null;
     if ( advCodeFormat == HEX_FORMAT )
       keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
     else if ( efcDigits == 3 )
-      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ),
-          notes );
+      keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ), notes );
     else
       // EFCDigits == 5
-      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, EFC5.parseHex( cmd ),
-          notes );
+      keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, EFC5.parseHex( cmd ), notes );
     return keyMove;
   }
 
@@ -2175,11 +2057,9 @@ public class Remote implements Comparable< Remote >
    *          the efc
    * @param notes
    *          the notes
-   * 
    * @return the key move
    */
-  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode,
-      int efc, String notes )
+  public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, int efc, String notes )
   {
     KeyMove keyMove = null;
     if ( advCodeFormat == HEX_FORMAT )
@@ -2188,8 +2068,7 @@ public class Remote implements Comparable< Remote >
         keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC.toHex( efc ), notes );
       else
         // EFCDigits == 5
-        keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC5.toHex( efc ),
-            notes );
+        keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC5.toHex( efc ), notes );
     }
     else if ( efcDigits == 3 )
       keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
@@ -2369,7 +2248,6 @@ public class Remote implements Comparable< Remote >
   }
 
   /** The oem device. */
-  @SuppressWarnings( "unused" )
   private OEMDevice oemDevice = null;
 
   /** The oem control. */
@@ -2394,8 +2272,19 @@ public class Remote implements Comparable< Remote >
   }
 
   /** The macro support. */
-  @SuppressWarnings( "unused" )
   private boolean macroSupport = true;
+
+  public boolean hasMacroSupport()
+  {
+    return macroSupport;
+  }
+
+  private boolean keyMoveSupport = true;
+
+  public boolean hasKeyMoveSupport()
+  {
+    return keyMoveSupport;
+  }
 
   /** The upgrade address. */
   private AddressRange upgradeAddress = null;
@@ -2411,11 +2300,9 @@ public class Remote implements Comparable< Remote >
   }
 
   /** The device upgrade address. */
-  @SuppressWarnings( "unused" )
   private AddressRange deviceUpgradeAddress = null;
 
   /** The timed macro address. */
-  @SuppressWarnings( "unused" )
   private AddressRange timedMacroAddress = null;
 
   /** The timed macro warning. */
@@ -2444,6 +2331,8 @@ public class Remote implements Comparable< Remote >
   /** The time address. */
   @SuppressWarnings( "unused" )
   private int timeAddress = 0;
+  @SuppressWarnings( "unused" )
+  private TimeFormat timeFormat = TimeFormat.HEX;
 
   /** The RDF sync. */
   @SuppressWarnings( "unused" )
@@ -2458,11 +2347,9 @@ public class Remote implements Comparable< Remote >
   private int scanBase = 0;
 
   /** The sleep status bit. */
-  @SuppressWarnings( "unused" )
   private StatusBit sleepStatusBit = null;
 
   /** The vpt status bit. */
-  @SuppressWarnings( "unused" )
   private StatusBit vptStatusBit = null;
 
   /** The check sums. */
@@ -2473,6 +2360,9 @@ public class Remote implements Comparable< Remote >
 
   /** The fixed data. */
   private FixedData[] fixedData = new FixedData[ 0 ];
+
+  /** The auto set data */
+  private FixedData[] autoSet = new FixedData[ 0 ];
 
   /** The device buttons. */
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
@@ -2642,4 +2532,65 @@ public class Remote implements Comparable< Remote >
 
   /** The restriction table. */
   private static Hashtable< String, Integer > restrictionTable = null;
+
+  private DeviceLabels labels = null;
+
+  public DeviceLabels getDeviceLabels()
+  {
+    return labels;
+  }
+
+  private SoftDevices softDevices = null;
+
+  public SoftDevices getSoftDevices()
+  {
+    return softDevices;
+  }
+
+  private SoftHomeTheater softHomeTheater = null;
+
+  public SoftHomeTheater getSoftHomeTheater()
+  {
+    return softHomeTheater;
+  }
+
+  private MacroCodingType macroCodingType = null;
+
+  public MacroCodingType getMacroCodingType()
+  {
+    return macroCodingType;
+  }
+
+  private int startReadOnlySettings = Integer.MAX_VALUE;
+
+  public int getStartReadOnlySettings()
+  {
+    return startReadOnlySettings;
+  }
+
+  public Hashtable< String, PauseParameters > pauseParameters = new Hashtable< String, PauseParameters >();
+
+  private short[] powerButtons = new short[ 0 ];
+
+  public short[] getPowerButtons()
+  {
+    return powerButtons;
+  }
+
+  private boolean waveUpgrade = true;
+
+  public boolean supportWaveUpgrade()
+  {
+    return waveUpgrade;
+  }
+
+  public FixedData[] getFixedData()
+  {
+    return fixedData;
+  }
+
+  public FixedData[] getAutoSet()
+  {
+    return autoSet;
+  }
 }

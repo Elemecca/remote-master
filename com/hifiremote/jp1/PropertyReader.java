@@ -9,11 +9,12 @@ import java.io.IOException;
  */
 public class PropertyReader
 {
-  
+
   /**
    * Instantiates a new property reader.
    * 
-   * @param reader the reader
+   * @param reader
+   *          the reader
    */
   public PropertyReader( BufferedReader reader )
   {
@@ -31,15 +32,15 @@ public class PropertyReader
     try
     {
       String line;
-      do 
+      do
       {
         line = reader.readLine();
-        System.err.println( "Read '" + line + "'" );
         if ( line == null )
           return null;
         line = line.trim();
-      } while (( line.length() != 0 ) && (( line.charAt( 0 ) == '#' ) || ( line.charAt( 0 ) == '!' )));
-      
+      }
+      while ( ( line.length() != 0 ) && ( ( line.charAt( 0 ) == '#' ) || ( line.charAt( 0 ) == '!' ) ) );
+
       int pos = line.indexOf( '=' );
       if ( pos == -1 )
         pos = line.indexOf( ':' );
@@ -53,7 +54,7 @@ public class PropertyReader
       if ( property.name.charAt( pos - 1 ) == ':' )
         property.name = property.name.substring( 0, pos - 1 );
       line = line.substring( pos + 1 );
-      while ( line.endsWith( "\\" ))
+      while ( line.endsWith( "\\" ) )
         line = line.substring( 0, line.length() - 1 ).trim() + reader.readLine().trim();
       property.value = decode( line );
     }
@@ -67,13 +68,13 @@ public class PropertyReader
   /**
    * Decode.
    * 
-   * @param text the text
-   * 
+   * @param text
+   *          the text
    * @return the string
    */
   public static String decode( String text )
   {
-    StringBuilder buff = new StringBuilder( text.length());
+    StringBuilder buff = new StringBuilder( text.length() );
     char[] chars = text.toCharArray();
     for ( int i = 0; i < chars.length; i++ )
     {
@@ -90,18 +91,20 @@ public class PropertyReader
         else if ( ch == 'u' )
         {
           String val = new String( chars, ++i, 4 );
-          buff.append(( char )Integer.parseInt( val ));
+          buff.append( ( char )Integer.parseInt( val ) );
           i += 4;
         }
-        else 
+        else
           buff.append( ch );
       }
+      else if ( ch == '®' )
+        buff.append( '\n' );
       else
         buff.append( ch );
     }
     return buff.toString();
   }
-  
+
   /**
    * Next section.
    * 
@@ -111,19 +114,19 @@ public class PropertyReader
   {
     Property p = nextProperty();
     // skip empty lines
-    while (( p != null ) && ( p.name.length() == 0 ))
+    while ( ( p != null ) && ( p.name.length() == 0 ) )
       p = nextProperty();
-    
+
     if ( p == null )
       return null;
-    
+
     IniSection section = new IniSection();
     if ( p.name.charAt( 0 ) == '[' )
     {
-      section.setName( p.name.substring( 1, p.name.length() - 1 ));
+      section.setName( p.name.substring( 1, p.name.length() - 1 ) );
       p = nextProperty();
     }
-    while (( p != null ) && ( p.name.length() != 0 ))
+    while ( ( p != null ) && ( p.name.length() != 0 ) )
     {
       section.add( p );
       p = nextProperty();

@@ -40,7 +40,6 @@ public class ProtocolManager
    * 
    * @param f
    *          the f
-   * 
    * @throws Exception
    *           the exception
    */
@@ -51,8 +50,7 @@ public class ProtocolManager
 
     while ( !f.canRead() )
     {
-      JOptionPane.showMessageDialog( null, "Couldn't read " + f.getName() + "!", "Error",
-          JOptionPane.ERROR_MESSAGE );
+      JOptionPane.showMessageDialog( null, "Couldn't read " + f.getName() + "!", "Error", JOptionPane.ERROR_MESSAGE );
       RMFileChooser chooser = new RMFileChooser( f.getParentFile() );
       chooser.setFileSelectionMode( RMFileChooser.FILES_ONLY );
       chooser.setDialogTitle( "Pick the file containing the protocol definitions" );
@@ -136,8 +134,7 @@ public class ProtocolManager
 
     if ( byName.size() < 2 )
     {
-      JOptionPane.showMessageDialog( null, "No protocols were loaded!", "Error",
-          JOptionPane.ERROR_MESSAGE );
+      JOptionPane.showMessageDialog( null, "No protocols were loaded!", "Error", JOptionPane.ERROR_MESSAGE );
       System.exit( -1 );
     }
 
@@ -191,8 +188,7 @@ public class ProtocolManager
         String tryName = tryit.getVariantName();
         if ( ( ( pvName == null ) && ( tryName == null ) ) || pvName.equals( tryName ) )
         {
-          System.err.println( "**** Warning: multiple protocols with PID " + id
-              + " and variantName " + pvName );
+          System.err.println( "**** Warning: multiple protocols with PID " + id + " and variantName " + pvName );
           break;
         }
       }
@@ -227,7 +223,6 @@ public class ProtocolManager
    * 
    * @param remote
    *          the remote
-   * 
    * @return the protocols for remote
    */
   public List< Protocol > getProtocolsForRemote( Remote remote )
@@ -242,7 +237,6 @@ public class ProtocolManager
    *          the remote
    * @param allowUpgrades
    *          the allow upgrades
-   * 
    * @return the protocols for remote
    */
   public List< Protocol > getProtocolsForRemote( Remote remote, boolean allowUpgrades )
@@ -265,15 +259,14 @@ public class ProtocolManager
    * 
    * @param name
    *          the name
-   * 
    * @return the list< protocol>
    */
   public List< Protocol > findByName( String name )
   {
     List< Protocol > v = byName.get( name );
     /*
-     * if (( v == null ) && name.equals( manualProtocol.getName())) { v = new ArrayList< Protocol
-     * >(); v.add( manualProtocol ); }
+     * if (( v == null ) && name.equals( manualProtocol.getName())) { v = new ArrayList< Protocol >(); v.add(
+     * manualProtocol ); }
      */
     return v;
   }
@@ -283,7 +276,6 @@ public class ProtocolManager
    * 
    * @param id
    *          the id
-   * 
    * @return the list< protocol>
    */
   public List< Protocol > findByPID( Hex id )
@@ -300,12 +292,24 @@ public class ProtocolManager
     return rc;
   }
 
+  public List< Protocol > getBuiltinProtocolsForRemote( Remote remote, Hex pid )
+  {
+    List< Protocol > results = new ArrayList< Protocol >();
+    for ( Protocol protocol : findByPID( pid ) )
+    {
+      if ( remote.supportsVariant( pid, protocol.getVariantName() ) )
+      {
+        results.add( protocol );
+      }
+    }
+    return results;
+  }
+
   /**
    * Find by alternate pid.
    * 
    * @param id
    *          the id
-   * 
    * @return the list< protocol>
    */
   public List< Protocol > findByAlternatePID( Hex id )
@@ -320,7 +324,6 @@ public class ProtocolManager
    *          the remote
    * @param name
    *          the name
-   * 
    * @return the protocol
    */
   public Protocol findProtocolForRemote( Remote remote, String name )
@@ -337,7 +340,6 @@ public class ProtocolManager
    *          the name
    * @param allowUpgrades
    *          the allow upgrades
-   * 
    * @return the protocol
    */
   public Protocol findProtocolForRemote( Remote remote, String name, boolean allowUpgrades )
@@ -377,7 +379,6 @@ public class ProtocolManager
    *          the id
    * @param fixedData
    *          the fixed data
-   * 
    * @return the protocol
    */
   public Protocol findProtocolForRemote( Remote remote, Hex id, Hex fixedData )
@@ -402,7 +403,6 @@ public class ProtocolManager
    *          the remote
    * @param id
    *          the id
-   * 
    * @return the protocol
    */
   public Protocol findProtocolForRemote( Remote remote, Hex id )
@@ -419,7 +419,6 @@ public class ProtocolManager
    *          the id
    * @param allowUpgrades
    *          the allow upgrades
-   * 
    * @return the protocol
    */
   public Protocol findProtocolForRemote( Remote remote, Hex id, boolean allowUpgrades )
@@ -460,7 +459,6 @@ public class ProtocolManager
    *          the name
    * @param pid
    *          the pid
-   * 
    * @return the protocol
    */
   public Protocol findProtocolByOldName( Remote remote, String name, Hex pid )
@@ -495,7 +493,6 @@ public class ProtocolManager
    *          the id
    * @param variantName
    *          the variant name
-   * 
    * @return the protocol
    */
   public Protocol findProtocol( String name, Hex id, String variantName )
@@ -522,7 +519,6 @@ public class ProtocolManager
    *          the id
    * @param variantName
    *          the variant name
-   * 
    * @return the protocol
    */
   public Protocol findNearestProtocol( String name, Hex id, String variantName )
@@ -550,13 +546,13 @@ public class ProtocolManager
       return near;
     protocols = findByName( name );
     if ( protocols != null )
-      return ( Protocol ) protocols.get( 0 );
+      return ( Protocol )protocols.get( 0 );
     return null;
   }
 
   /*
-   * public ManualProtocol getManualProtocol() { System.err.println(
-   * "ProtocolManager.getManualProtocol(): " + manualProtocol ); return manualProtocol; }
+   * public ManualProtocol getManualProtocol() { System.err.println( "ProtocolManager.getManualProtocol(): " +
+   * manualProtocol ); return manualProtocol; }
    */
   /** The protocol manager. */
   private static ProtocolManager protocolManager = new ProtocolManager();

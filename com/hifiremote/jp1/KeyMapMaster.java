@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Rectangle;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -94,7 +96,17 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The update item. */
   private JMenuItem updateItem = null;
 
-  /** The about item. */
+  /** For help */
+  private Desktop desktop = null;
+
+  private JMenuItem readmeItem = null;
+
+  private JMenuItem tutorialItem = null;
+
+  private JMenuItem homePageItem = null;
+
+  private JMenuItem forumItem = null;
+
   private JMenuItem aboutItem = null;
 
   /** The ok button. */
@@ -483,6 +495,31 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_H );
     menuBar.add( menu );
 
+    if ( Desktop.isDesktopSupported() )
+    {
+      desktop = Desktop.getDesktop();
+
+      readmeItem = new JMenuItem( "Readme", KeyEvent.VK_R );
+      readmeItem.addActionListener( this );
+      menu.add( readmeItem );
+
+      tutorialItem = new JMenuItem( "Tutorial", KeyEvent.VK_T );
+      tutorialItem.addActionListener( this );
+      menu.add( tutorialItem );
+
+      menu.addSeparator();
+
+      homePageItem = new JMenuItem( "Home Page", KeyEvent.VK_H );
+      homePageItem.addActionListener( this );
+      menu.add( homePageItem );
+
+      forumItem = new JMenuItem( "Forums", KeyEvent.VK_F );
+      forumItem.addActionListener( this );
+      menu.add( forumItem );
+
+      menu.addSeparator();
+    }
+
     updateItem = new JMenuItem( "Check for updates", KeyEvent.VK_C );
     updateItem.addActionListener( this );
     menu.add( updateItem );
@@ -735,7 +772,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         String latestVersion = in.readLine();
         in.close();
         String text = null;
-        if ( RemoteMaster.version.equals( latestVersion ) )
+        if ( RemoteMaster.version.compareTo( latestVersion ) >= 0 )
           text = "You are using the latest version (" + RemoteMaster.version + ") of RemoteMaster.";
         else
           text = "<html>Version "
@@ -753,6 +790,26 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         new TextPopupMenu( pane );
         JOptionPane.showMessageDialog( this, pane, "RemoteMaster Version Check",
             JOptionPane.INFORMATION_MESSAGE );
+      }
+      else if ( source == readmeItem )
+      {
+        File readme = new File( "Readme.html" );
+        desktop.browse( readme.toURI() );
+      }
+      else if ( source == tutorialItem )
+      {
+        File file = new File( "tutorial/tutorial.html" );
+        desktop.browse( file.toURI() );
+      }
+      else if ( source == homePageItem )
+      {
+        URL url = new URL( "http://controlremote.sourceforge.net/" );
+        desktop.browse( url.toURI() );
+      }
+      else if ( source == forumItem )
+      {
+        URL url = new URL( "http://www.hifi-remote.com/forums/" );
+        desktop.browse( url.toURI() );
       }
       else if ( source == aboutItem )
       {

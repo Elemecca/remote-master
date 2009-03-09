@@ -12,10 +12,9 @@ import javax.swing.table.TableCellRenderer;
 /**
  * The Class JP1TableModel.
  */
-public abstract class JP1TableModel< E >
-  extends AbstractTableModel
+public abstract class JP1TableModel< E > extends AbstractTableModel
 {
-  
+
   /**
    * Instantiates a new j p1 table model.
    */
@@ -23,46 +22,49 @@ public abstract class JP1TableModel< E >
   {
     super();
   }
-  
+
   /**
    * Adds the property change listener.
    * 
-   * @param listener the listener
+   * @param listener
+   *          the listener
    */
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
     propertyChangeSupport.addPropertyChangeListener( listener );
   }
-  
+
   /**
    * Gets the column prototype name.
    * 
-   * @param col the col
-   * 
+   * @param col
+   *          the col
    * @return the column prototype name
    */
   public abstract String getColumnPrototypeName( int col );
-  
+
   /**
    * Sets the data.
    * 
-   * @param data the new data
+   * @param data
+   *          the new data
    */
   public void setData( List< E > data )
   {
     this.data = data;
-    fireTableDataChanged();
+    fireTableStructureChanged();
   }
-  
+
   /**
    * Sets the data.
    * 
-   * @param array the new data
+   * @param array
+   *          the new data
    */
   public void setData( E[] array )
   {
     this.array = array;
-    fireTableDataChanged();
+    fireTableStructureChanged();
   }
 
   /**
@@ -70,16 +72,24 @@ public abstract class JP1TableModel< E >
    * 
    * @return the data
    */
-  public List< E > getData(){ return data; }
-  
+  public List< E > getData()
+  {
+    return data;
+  }
+
   /**
    * Gets the array.
    * 
    * @return the array
    */
-  public E[] getArray(){ return array; }
-  
-  /* (non-Javadoc)
+  public E[] getArray()
+  {
+    return array;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getRowCount()
    */
   public int getRowCount()
@@ -96,8 +106,8 @@ public abstract class JP1TableModel< E >
   /**
    * Gets the row.
    * 
-   * @param row the row
-   * 
+   * @param row
+   *          the row
    * @return the row
    */
   public E getRow( int row )
@@ -108,12 +118,14 @@ public abstract class JP1TableModel< E >
       return array[ row ];
     return null;
   }
-  
+
   /**
    * Sets the row.
    * 
-   * @param row the row
-   * @param value the value
+   * @param row
+   *          the row
+   * @param value
+   *          the value
    */
   public void setRow( int row, E value )
   {
@@ -125,7 +137,8 @@ public abstract class JP1TableModel< E >
   /**
    * Removes the row.
    * 
-   * @param row the row
+   * @param row
+   *          the row
    */
   public void removeRow( int row )
   {
@@ -137,8 +150,10 @@ public abstract class JP1TableModel< E >
   /**
    * Insert row.
    * 
-   * @param row the row
-   * @param value the value
+   * @param row
+   *          the row
+   * @param value
+   *          the value
    */
   public void insertRow( int row, E value )
   {
@@ -150,7 +165,8 @@ public abstract class JP1TableModel< E >
   /**
    * Adds the row.
    * 
-   * @param value the value
+   * @param value
+   *          the value
    */
   public void addRow( E value )
   {
@@ -163,8 +179,10 @@ public abstract class JP1TableModel< E >
   /**
    * Move row.
    * 
-   * @param from the from
-   * @param to the to
+   * @param from
+   *          the from
+   * @param to
+   *          the to
    */
   public void moveRow( int from, int to )
   {
@@ -173,40 +191,49 @@ public abstract class JP1TableModel< E >
     propertyChangeSupport.firePropertyChange( "order", null, null );
     fireTableRowsUpdated( from, to );
   }
-  
+
   /**
    * Checks if is column width fixed.
    * 
-   * @param col the col
-   * 
+   * @param col
+   *          the col
    * @return true, if is column width fixed
    */
-  public abstract boolean isColumnWidthFixed( int col );
+  public boolean isColumnWidthFixed( int col )
+  {
+    return col == 0;
+  }
 
   /**
    * Gets the column editor.
    * 
-   * @param col the col
-   * 
+   * @param col
+   *          the col
    * @return the column editor
    */
-  public TableCellEditor getColumnEditor( int col ){ return null; }
-  
+  public TableCellEditor getColumnEditor( int col )
+  {
+    return null;
+  }
+
   /**
    * Gets the column renderer.
    * 
-   * @param col the col
-   * 
+   * @param col
+   *          the col
    * @return the column renderer
    */
-  public TableCellRenderer getColumnRenderer( int col ){ return null; }
+  public TableCellRenderer getColumnRenderer( int col )
+  {
+    return null;
+  }
 
   /** The data. */
   protected List< E > data = null;
-  
+
   /** The array. */
   protected E[] array = null;
-  
+
   /** The property change support. */
   protected SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
 }

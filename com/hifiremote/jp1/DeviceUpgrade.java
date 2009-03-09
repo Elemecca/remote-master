@@ -40,7 +40,7 @@ public class DeviceUpgrade
    */
   public DeviceUpgrade()
   {
-    this( ( String[] ) null );
+    this( ( String[] )null );
   }
 
   /**
@@ -247,8 +247,8 @@ public class DeviceUpgrade
       protocol = protocols.get( 0 );
     else if ( !protocols.contains( p ) )
     {
-      System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName()
-          + " is not built into remote " + newRemote.getName() );
+      System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName() + " is not built into remote "
+          + newRemote.getName() );
       Protocol newp = pm.findProtocolForRemote( newRemote, p.getName() );
 
       if ( newp != null )
@@ -282,7 +282,7 @@ public class DeviceUpgrade
               Object v = parms[ i ].getValue();
               Object d = parms[ i ].getDefaultValue();
               if ( d != null )
-                d = ( ( DefaultValue ) d ).value();
+                d = ( ( DefaultValue )d ).value();
               System.err.print( " no match!" );
 
               if ( ( v == null ) || ( v.equals( d ) ) )
@@ -306,8 +306,7 @@ public class DeviceUpgrade
             {
               if ( map[ i ] == -1 )
                 continue;
-              System.err.println( "\tfrom index " + i + " (=" + parms[ i ].getValue()
-                  + ") to index " + map[ i ] );
+              System.err.println( "\tfrom index " + i + " (=" + parms[ i ].getValue() + ") to index " + map[ i ] );
               parms2[ map[ i ] ].setValue( parms[ i ].getValue() );
               vals[ map[ i ] ] = new Value( parms[ i ].getValue() );
             }
@@ -320,13 +319,12 @@ public class DeviceUpgrade
           }
           if ( ( p instanceof DeviceCombiner ) && ( newp instanceof DeviceCombiner ) )
           {
-            for ( CombinerDevice dev : ( ( DeviceCombiner ) p ).getDevices() )
-              ( ( DeviceCombiner ) newp ).add( dev );
+            for ( CombinerDevice dev : ( ( DeviceCombiner )p ).getDevices() )
+              ( ( DeviceCombiner )newp ).add( dev );
           }
         }
       }
-      else if ( ( description == null ) && ( file == null ) && ( assignments.isEmpty() )
-          && !hasDefinedFunctions() )
+      else if ( ( description == null ) && ( file == null ) && ( assignments.isEmpty() ) && !hasDefinedFunctions() )
       {
         remote = newRemote;
         protocol = null;
@@ -334,11 +332,9 @@ public class DeviceUpgrade
       }
       else
       {
-        JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
-            "The selected protocol " + p.getDiagnosticName()
-                + "\nis not compatible with the selected remote.\n"
-                + "This upgrade will NOT function correctly.\n"
-                + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "The selected protocol " + p.getDiagnosticName()
+            + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
+            + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
       }
 
     }
@@ -470,7 +466,6 @@ public class DeviceUpgrade
    * 
    * @param newProtocol
    *          the new protocol
-   * 
    * @return true, if successful
    */
   public boolean setProtocol( Protocol newProtocol )
@@ -585,7 +580,6 @@ public class DeviceUpgrade
    * 
    * @param name
    *          the name
-   * 
    * @return the function
    */
   public Function getFunction( String name )
@@ -603,7 +597,6 @@ public class DeviceUpgrade
    *          the name
    * @param funcs
    *          the funcs
-   * 
    * @return the function
    */
   public Function getFunction( String name, java.util.List< ? extends Function > funcs )
@@ -622,7 +615,6 @@ public class DeviceUpgrade
    * 
    * @param hex
    *          the hex
-   * 
    * @return the function
    */
   public Function getFunction( Hex hex )
@@ -707,12 +699,11 @@ public class DeviceUpgrade
    *          the pid
    * @param pCode
    *          the code
-   * 
    * @throws ParseException
    *           the parse exception
    */
-  public void importRawUpgrade( Hex hexCode, Remote newRemote, String newDeviceTypeAliasName,
-      Hex pid, Hex pCode ) throws java.text.ParseException
+  public void importRawUpgrade( Hex hexCode, Remote newRemote, String newDeviceTypeAliasName, Hex pid, Hex pCode )
+      throws java.text.ParseException
   {
     reset();
     System.err.println( "DeviceUpgrade.importRawUpgrade" );
@@ -763,16 +754,12 @@ public class DeviceUpgrade
     java.util.List< Protocol > protocols = null;
     if ( pCode == null )
     {
-      protocols = new ArrayList< Protocol >();
-
-      Protocol builtinProtocol = ProtocolManager.getProtocolManager().findProtocolForRemote(
-          remote, pid, false );
-      if ( builtinProtocol != null )
-        protocols.add( builtinProtocol );
+      protocols = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid );
     }
     else
+    {
       protocols = ProtocolManager.getProtocolManager().findByPID( pid );
-
+    }
     Protocol tentative = null;
     Value[] tentativeVals = null;
     Protocol p = null;
@@ -800,6 +787,7 @@ public class DeviceUpgrade
       System.err.print( "Imported device parms are:" );
       for ( Value v : vals )
         System.err.print( " " + v.getValue() );
+      System.err.println();
       Hex calculatedFixedData = p.getFixedData( vals );
       System.err.println( "Calculated fixedData is " + calculatedFixedData );
       Hex mask = p.getFixedDataMask();
@@ -871,8 +859,7 @@ public class DeviceUpgrade
         parms.add( new Value( temp & 0xFF ) );
       parmValues = parms.toArray( new Value[ fixedDataLength ] );
 
-      mp = new ManualProtocol( "Manual Settings: " + pid, pid, cmdType, "MSB", 8, parms,
-          new short[ 0 ], 8 );
+      mp = new ManualProtocol( "Manual Settings: " + pid, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
       mp.setCode( pCode, remote.getProcessor() );
       ProtocolManager.getProtocolManager().add( mp );
       p = mp;
@@ -926,13 +913,12 @@ public class DeviceUpgrade
   {
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     short[] id = protocol.getID( remote ).getData();
-    short temp = ( short ) ( devType.getNumber() * 0x1000 + setupCode - remote
-        .getDeviceCodeOffset() );
+    short temp = ( short )( devType.getNumber() * 0x1000 + setupCode - remote.getDeviceCodeOffset() );
     if ( !remote.usesTwoBytePID() )
       temp += ( id[ 0 ] & 1 ) * 0x0800;
 
     short[] rc = new short[ 2 ];
-    rc[ 0 ] = ( short ) ( temp >> 8 );
+    rc[ 0 ] = ( short )( temp >> 8 );
     rc[ 1 ] = temp;
     return rc;
   }
@@ -952,24 +938,21 @@ public class DeviceUpgrade
       Button button = buttons[ i ];
 
       Function f = assignments.getAssignment( button, Button.NORMAL_STATE );
-      KeyMove keyMove = button.getKeyMove( f, 0, setupCode, devType, remote, protocol
-          .getKeyMovesOnly() );
+      KeyMove keyMove = button.getKeyMove( f, 0, setupCode, devType, remote, protocol.getKeyMovesOnly() );
       if ( keyMove != null )
         keyMoves.add( keyMove );
 
       f = assignments.getAssignment( button, Button.SHIFTED_STATE );
       if ( button.getShiftedButton() != null )
         f = null;
-      keyMove = button.getKeyMove( f, remote.getShiftMask(), setupCode, devType, remote, protocol
-          .getKeyMovesOnly() );
+      keyMove = button.getKeyMove( f, remote.getShiftMask(), setupCode, devType, remote, protocol.getKeyMovesOnly() );
       if ( keyMove != null )
         keyMoves.add( keyMove );
 
       f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
       if ( button.getXShiftedButton() != null )
         f = null;
-      keyMove = button.getKeyMove( f, remote.getXShiftMask(), setupCode, devType, remote, protocol
-          .getKeyMovesOnly() );
+      keyMove = button.getKeyMove( f, remote.getXShiftMask(), setupCode, devType, remote, protocol.getKeyMovesOnly() );
       if ( keyMove != null )
         keyMoves.add( keyMove );
     }
@@ -981,7 +964,6 @@ public class DeviceUpgrade
    * 
    * @param includeNotes
    *          the include notes
-   * 
    * @return the upgrade text
    */
   public String getUpgradeText( boolean includeNotes )
@@ -1018,8 +1000,7 @@ public class DeviceUpgrade
 
     try
     {
-      BufferedReader rdr = new BufferedReader( new StringReader( Hex.toString( getUpgradeHex()
-          .getData(), 16 ) ) );
+      BufferedReader rdr = new BufferedReader( new StringReader( Hex.toString( getUpgradeHex().getData(), 16 ) ) );
       String line = null;
       while ( ( line = rdr.readLine() ) != null )
       {
@@ -1047,10 +1028,8 @@ public class DeviceUpgrade
       Function xf = assignments.getAssignment( b, Button.XSHIFTED_STATE );
       if ( b.getXShiftedButton() != null )
         xf = null;
-      if ( ( ( f != null ) && ( ( map == null ) || protocol.getKeyMovesOnly() || !map.isPresent( b ) || f
-          .isExternal() ) )
-          || ( ( sf != null ) && ( sf.getHex() != null ) )
-          || ( ( xf != null ) && ( xf.getHex() != null ) ) )
+      if ( ( ( f != null ) && ( ( map == null ) || protocol.getKeyMovesOnly() || !map.isPresent( b ) || f.isExternal() ) )
+          || ( ( sf != null ) && ( sf.getHex() != null ) ) || ( ( xf != null ) && ( xf.getHex() != null ) ) )
       {
         hasKeyMoves = true;
         break;
@@ -1058,7 +1037,7 @@ public class DeviceUpgrade
     }
     if ( hasKeyMoves )
     {
-      deviceCode[ 0 ] = ( short ) ( deviceCode[ 0 ] & 0xF7 );
+      deviceCode[ 0 ] = ( short )( deviceCode[ 0 ] & 0xF7 );
       buff.append( "\nKeyMoves" );
       boolean first = true;
       for ( ; i < buttons.length; i++ )
@@ -1066,18 +1045,18 @@ public class DeviceUpgrade
         Button button = buttons[ i ];
 
         Function f = assignments.getAssignment( button, Button.NORMAL_STATE );
-        first = appendKeyMove( buff, button.getKeyMove( f, 0, deviceCode, devType, remote, protocol
-            .getKeyMovesOnly() ), f, includeNotes, first );
+        first = appendKeyMove( buff,
+            button.getKeyMove( f, 0, deviceCode, devType, remote, protocol.getKeyMovesOnly() ), f, includeNotes, first );
         f = assignments.getAssignment( button, Button.SHIFTED_STATE );
         if ( button.getShiftedButton() != null )
           f = null;
-        first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode,
-            devType, remote, protocol.getKeyMovesOnly() ), f, includeNotes, first );
+        first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote, protocol
+            .getKeyMovesOnly() ), f, includeNotes, first );
         f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
         if ( button.getXShiftedButton() != null )
           f = null;
-        first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode,
-            devType, remote, protocol.getKeyMovesOnly() ), f, includeNotes, first );
+        first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote,
+            protocol.getKeyMovesOnly() ), f, includeNotes, first );
       }
     }
 
@@ -1117,8 +1096,7 @@ public class DeviceUpgrade
 
     if ( map != null )
     {
-      short[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly(),
-          assignments );
+      short[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly(), assignments );
       if ( data != null )
         rc += data.length;
     }
@@ -1205,11 +1183,9 @@ public class DeviceUpgrade
    *          the include notes
    * @param first
    *          the first
-   * 
    * @return true, if successful
    */
-  private boolean appendKeyMove( StringBuilder buff, short[] keyMove, Function f,
-      boolean includeNotes, boolean first )
+  private boolean appendKeyMove( StringBuilder buff, short[] keyMove, Function f, boolean includeNotes, boolean first )
   {
     if ( ( keyMove == null ) || ( keyMove.length == 0 ) )
       return first;
@@ -1251,7 +1227,6 @@ public class DeviceUpgrade
    * 
    * @param parms
    *          the parms
-   * 
    * @return the string
    */
   public static String valueArrayToString( Value[] parms )
@@ -1275,7 +1250,6 @@ public class DeviceUpgrade
    * 
    * @param str
    *          the str
-   * 
    * @return the value[]
    */
   public static Value[] stringToValueArray( String str )
@@ -1305,7 +1279,6 @@ public class DeviceUpgrade
    * 
    * @param file
    *          the file
-   * 
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
@@ -1322,7 +1295,6 @@ public class DeviceUpgrade
    * 
    * @param out
    *          the out
-   * 
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
@@ -1377,8 +1349,7 @@ public class DeviceUpgrade
         xstr = xf.getName().replaceAll( regex, replace );
       if ( ( f != null ) || ( sf != null ) || ( xf != null ) )
       {
-        out.print( "Button." + Integer.toHexString( b.getKeyCode() ), fstr + '|' + sstr + '|'
-            + xstr );
+        out.print( "Button." + Integer.toHexString( b.getKeyCode() ), fstr + '|' + sstr + '|' + xstr );
       }
 
     }
@@ -1389,7 +1360,6 @@ public class DeviceUpgrade
    * Checks for changed.
    * 
    * @return true, if successful
-   * 
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
@@ -1407,9 +1377,7 @@ public class DeviceUpgrade
    * 
    * @param baseFile
    *          the base file
-   * 
    * @return true, if successful
-   * 
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
@@ -1452,7 +1420,6 @@ public class DeviceUpgrade
    * 
    * @param file
    *          the file
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1468,7 +1435,6 @@ public class DeviceUpgrade
    *          the file
    * @param loadButtons
    *          the load buttons
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1485,7 +1451,6 @@ public class DeviceUpgrade
    * 
    * @param reader
    *          the reader
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1501,7 +1466,6 @@ public class DeviceUpgrade
    *          the reader
    * @param loadButtons
    *          the load buttons
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1557,11 +1521,9 @@ public class DeviceUpgrade
     str = props.getProperty( "Remote.name" );
     if ( str == null )
     {
-      JOptionPane
-          .showMessageDialog(
-              RemoteMaster.getFrame(),
-              "The upgrade you are trying to import is not valid!  It does not contain a value for Remote.name",
-              "Import Failure", JOptionPane.ERROR_MESSAGE );
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
+          "The upgrade you are trying to import is not valid!  It does not contain a value for Remote.name",
+          "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
     }
     remote = RemoteManager.getRemoteManager().findRemoteByName( str );
@@ -1577,7 +1539,7 @@ public class DeviceUpgrade
     String variantName = props.getProperty( "Protocol.variantName", "" );
 
     ProtocolManager pm = ProtocolManager.getProtocolManager();
-    if ( name.equals( "Manual Settings" ) || name.equals( "Manual" )
+    if ( name.startsWith( "Manual Settings" ) || name.equals( "Manual" )
         || name.equalsIgnoreCase( "PID " + pid.toString() ) )
     {
       ManualProtocol mp = new ManualProtocol( pid, props );
@@ -1593,9 +1555,9 @@ public class DeviceUpgrade
 
       if ( protocol == null )
       {
-        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "No protocol found with name=\""
-            + name + "\", ID=" + pid.toString() + ", and variantName=\"" + variantName + "\"",
-            "File Load Error", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "No protocol found with name=\"" + name + "\", ID="
+            + pid.toString() + ", and variantName=\"" + variantName + "\"", "File Load Error",
+            JOptionPane.ERROR_MESSAGE );
         return;
       }
     }
@@ -1687,7 +1649,6 @@ public class DeviceUpgrade
    *          the st
    * @param delim
    *          the delim
-   * 
    * @return the next field
    */
   private String getNextField( StringTokenizer st, String delim )
@@ -1740,7 +1701,6 @@ public class DeviceUpgrade
    * 
    * @param in
    *          the in
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1754,7 +1714,6 @@ public class DeviceUpgrade
    * 
    * @param str
    *          the str
-   * 
    * @return the int
    */
   private static int parseInt( String str )
@@ -1778,7 +1737,6 @@ public class DeviceUpgrade
    * 
    * @param name
    *          the name
-   * 
    * @return the string
    */
   private String cleanName( String name )
@@ -1794,7 +1752,6 @@ public class DeviceUpgrade
    * 
    * @param name
    *          the name
-   * 
    * @return true, if is external function name
    */
   private boolean isExternalFunctionName( String name )
@@ -1833,7 +1790,6 @@ public class DeviceUpgrade
    *          the in
    * @param loadButtons
    *          the load buttons
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1843,9 +1799,8 @@ public class DeviceUpgrade
     String token = line.substring( 0, 5 );
     if ( !token.equals( "Name:" ) )
     {
-      JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
-          "The upgrade you are trying to import is not valid!", "Import Failure",
-          JOptionPane.ERROR_MESSAGE );
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "The upgrade you are trying to import is not valid!",
+          "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
     }
     String delim = line.substring( 5, 6 );
@@ -1881,8 +1836,7 @@ public class DeviceUpgrade
       if ( ( line != null ) && ( line.length() > 0 ) && ( line.charAt( 0 ) == '\"' ) )
         line = line.substring( 1 );
       int equals = line.indexOf( '=' );
-      if ( ( equals != -1 )
-          && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code" ) )
+      if ( ( equals != -1 ) && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code" ) )
       {
         short[] id = new short[ 2 ];
         short temp = Short.parseShort( line.substring( equals + 2, equals + 4 ), 16 );
@@ -1908,9 +1862,8 @@ public class DeviceUpgrade
           + ".  Please select one of the supported device types below to use instead.\n";
       while ( rc == null )
       {
-        rc = ( String ) JOptionPane.showInputDialog( RemoteMaster.getFrame(), msg,
-            "Unsupported Device Type", JOptionPane.ERROR_MESSAGE, null, remote
-                .getDeviceTypeAliasNames(), null );
+        rc = ( String )JOptionPane.showInputDialog( RemoteMaster.getFrame(), msg, "Unsupported Device Type",
+            JOptionPane.ERROR_MESSAGE, null, remote.getDeviceTypeAliasNames(), null );
       }
       str = rc;
     }
@@ -1941,8 +1894,8 @@ public class DeviceUpgrade
         {
           short pidInt = Short.parseShort( pidStr, 16 );
           short[] data = new short[ 2 ];
-          data[ 0 ] = ( short ) ( ( pidInt & 0xFF00 ) >> 8 );
-          data[ 1 ] = ( short ) ( pidInt & 0xFF );
+          data[ 0 ] = ( short )( ( pidInt & 0xFF00 ) >> 8 );
+          data[ 1 ] = ( short )( pidInt & 0xFF );
           pid = new Hex( data );
         }
       }
@@ -1988,8 +1941,7 @@ public class DeviceUpgrade
         str = "";
       short[] rawHex = Hex.parseHex( str );
 
-      protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values,
-          rawHex, cmdBits );
+      protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
       protocolName = protocol.getName();
       setParmValues( protocol.getDeviceParmValues() );
       protocolManager.add( protocol );
@@ -2009,7 +1961,7 @@ public class DeviceUpgrade
         Protocol p = v.get( 0 );
         Hex code = p.getCode( remote );
         if ( code != null )
-          ( ( ManualProtocol ) protocol ).setCode( code, remote.getProcessor() );
+          ( ( ManualProtocol )protocol ).setCode( code, remote.getProcessor() );
       }
     }
     else
@@ -2023,9 +1975,8 @@ public class DeviceUpgrade
 
         if ( p == null )
         {
-          JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "No protocol found with name=\""
-              + protocolName + "\" for remote \"" + remote.getName() + "\".", "Import Failure",
-              JOptionPane.ERROR_MESSAGE );
+          JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "No protocol found with name=\"" + protocolName
+              + "\" for remote \"" + remote.getName() + "\".", "Import Failure", JOptionPane.ERROR_MESSAGE );
           reset();
           return;
         }
@@ -2074,8 +2025,7 @@ public class DeviceUpgrade
       }
     }
 
-    String match1 = "fByte2" + delim + "bButtons" + delim + "bFunctions" + delim + "fNotes" + delim
-        + "Device Combiner";
+    String match1 = "fByte2" + delim + "bButtons" + delim + "bFunctions" + delim + "fNotes" + delim + "Device Combiner";
     String match2 = "byte2" + delim + "Buttons" + delim + "Functions" + delim;
 
     while ( true )
@@ -2091,7 +2041,7 @@ public class DeviceUpgrade
 
     DeviceCombiner combiner = null;
     if ( protocol.getClass() == DeviceCombiner.class )
-      combiner = ( DeviceCombiner ) protocol;
+      combiner = ( DeviceCombiner )protocol;
 
     // save the function definition/assignment lines for later parsing
     String[] lines = new String[ 128 ];
@@ -2167,7 +2117,7 @@ public class DeviceUpgrade
         if ( isExternal )
         {
           f = new ExternalFunction();
-          extFunctions.add( ( ExternalFunction ) f );
+          extFunctions.add( ( ExternalFunction )f );
         }
         else
         {
@@ -2183,7 +2133,7 @@ public class DeviceUpgrade
         Hex hex = null;
         if ( f.isExternal() )
         {
-          ExternalFunction ef = ( ExternalFunction ) f;
+          ExternalFunction ef = ( ExternalFunction )f;
           String name = ef.getName();
           int slash = name.indexOf( '/' );
           String devName = name.substring( 1, slash );
@@ -2200,12 +2150,11 @@ public class DeviceUpgrade
           if ( match == null )
           {
             String msg = "The Keymap Master device upgrade you are importing includes an\nexternal function that uses the unknown device type "
-                + devName
-                + ".\n\nPlease select one of the supported device types below to use instead.";
+                + devName + ".\n\nPlease select one of the supported device types below to use instead.";
             while ( match == null )
             {
-              match = ( String ) JOptionPane.showInputDialog( RemoteMaster.getFrame(), msg,
-                  "Unsupported Device Type", JOptionPane.ERROR_MESSAGE, null, names, null );
+              match = ( String )JOptionPane.showInputDialog( RemoteMaster.getFrame(), msg, "Unsupported Device Type",
+                  JOptionPane.ERROR_MESSAGE, null, names, null );
             }
           }
           ef.setDeviceTypeAliasName( match );
@@ -2216,8 +2165,7 @@ public class DeviceUpgrade
           else
             codeString = name.substring( slash + 1, space );
           ef.setSetupCode( Integer.parseInt( codeString ) );
-          if ( ( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$' ) != -1 )
-              || ( code.indexOf( ' ' ) != -1 ) )
+          if ( ( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$' ) != -1 ) || ( code.indexOf( ' ' ) != -1 ) )
           {
             hex = new Hex( code );
             ef.setType( ExternalFunction.HexType );
@@ -2231,8 +2179,7 @@ public class DeviceUpgrade
         }
         else if ( code != null ) // not external and there is a command code
         {
-          if ( ( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$' ) != -1 )
-              || ( code.indexOf( ' ' ) != -1 ) )
+          if ( ( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$' ) != -1 ) || ( code.indexOf( ' ' ) != -1 ) )
           {
             hex = new Hex( code );
           }
@@ -2334,7 +2281,7 @@ public class DeviceUpgrade
       if ( b == null && buttonName != null )
       {
         System.err.println( "Searching for button w/ name " + buttonName );
-        b = remote.findByStandardName( new Button( buttonName, null, ( byte ) 0, remote ) );
+        b = remote.findByStandardName( new Button( buttonName, null, ( byte )0, remote ) );
         if ( b == null )
           b = remote.getButton( buttonName );
         System.err.println( "Found button " + b );
@@ -2342,14 +2289,12 @@ public class DeviceUpgrade
       else
         System.err.println( "No buttonName for actualName=" + actualName + " and i=" + i );
 
-      if ( ( buttonName != null ) && ( assignedName != null )
-          && Character.isDigit( assignedName.charAt( 0 ) )
+      if ( ( buttonName != null ) && ( assignedName != null ) && Character.isDigit( assignedName.charAt( 0 ) )
           && Character.isDigit( assignedName.charAt( 1 ) ) && ( assignedName.charAt( 2 ) == ' ' )
           && ( assignedName.charAt( 3 ) == '-' ) && ( assignedName.charAt( 4 ) == ' ' ) )
       {
         String name = cleanName( assignedName.substring( 5 ) );
-        if ( ( name.length() == 5 ) && name.startsWith( "num " )
-            && Character.isDigit( name.charAt( 4 ) ) )
+        if ( ( name.length() == 5 ) && name.startsWith( "num " ) && Character.isDigit( name.charAt( 4 ) ) )
           name = name.substring( 4 );
 
         Function func = null;
@@ -2404,19 +2349,17 @@ public class DeviceUpgrade
     }
 
     /*
-     * if ( !unassigned.isEmpty()) { System.err.println(
-     * "Removing undefined functions from usedFunctions" ); for( ListIterator< ArrayList< String >>
-     * i = unassigned.listIterator(); i.hasNext(); ) { java.util.List< String > temp = i.next();
-     * String funcName = ( String )temp.get( 0 ); System.err.println( "Checking '" + funcName + "'"
-     * ); Function f = getFunction( funcName, usedFunctions ); if (( f != null ) && (( f.getHex() ==
-     * null ) || ( f.getHex().length() == 0 ))) { System.err.println( "Removing function " + f +
-     * ", which has name '" + funcName + "'" ); i.remove(); } } }
+     * if ( !unassigned.isEmpty()) { System.err.println( "Removing undefined functions from usedFunctions" ); for(
+     * ListIterator< ArrayList< String >> i = unassigned.listIterator(); i.hasNext(); ) { java.util.List< String > temp
+     * = i.next(); String funcName = ( String )temp.get( 0 ); System.err.println( "Checking '" + funcName + "'" );
+     * Function f = getFunction( funcName, usedFunctions ); if (( f != null ) && (( f.getHex() == null ) || (
+     * f.getHex().length() == 0 ))) { System.err.println( "Removing function " + f + ", which has name '" + funcName +
+     * "'" ); i.remove(); } } }
      */
 
     if ( !unassigned.isEmpty() )
     {
-      String message = Integer.toString( unassigned.size() )
-          + " functions defined in the imported device upgrade "
+      String message = Integer.toString( unassigned.size() ) + " functions defined in the imported device upgrade "
           + "were assigned to buttons that could not be matched by name. "
           + "The functions and the corresponding button names are listed below."
           + "\n\nPlease post this information in the \"JP1 - Software\" section of the "
@@ -2444,8 +2387,8 @@ public class DeviceUpgrade
       JTableX table = new JTableX( unassignedArray, titles.toArray() );
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       /*
-       * Dimension d = table.getPreferredScrollableViewportSize(); d.height =
-       * table.getPreferredSize().height; table.setPreferredScrollableViewportSize( d );
+       * Dimension d = table.getPreferredScrollableViewportSize(); d.height = table.getPreferredSize().height;
+       * table.setPreferredScrollableViewportSize( d );
        */
 
       frame.pack();
@@ -2559,8 +2502,8 @@ public class DeviceUpgrade
     if ( ( protocolLimit != null ) && ( protocolLength > protocolLimit.intValue() ) )
     {
       JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
-          "The protocol upgrade exceeds the maximum allowed by the remote.",
-          "Protocol Upgrade Limit Exceeded", JOptionPane.ERROR_MESSAGE );
+          "The protocol upgrade exceeds the maximum allowed by the remote.", "Protocol Upgrade Limit Exceeded",
+          JOptionPane.ERROR_MESSAGE );
       return false;
     }
 
@@ -2568,8 +2511,8 @@ public class DeviceUpgrade
     if ( ( upgradeLimit != null ) && ( upgradeLength > upgradeLimit.intValue() ) )
     {
       JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
-          "The device upgrade exceeds the maximum allowed by the remote.",
-          "Device Upgrade Limit Exceeded", JOptionPane.ERROR_MESSAGE );
+          "The device upgrade exceeds the maximum allowed by the remote.", "Device Upgrade Limit Exceeded",
+          JOptionPane.ERROR_MESSAGE );
       return false;
     }
 
@@ -2577,8 +2520,8 @@ public class DeviceUpgrade
     if ( ( combinedLimit != null ) && ( combinedLength > combinedLimit.intValue() ) )
     {
       JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
-          "The combined upgrade exceeds the maximum allowed by the remote.",
-          "Combined Upgrade Limit Exceeded", JOptionPane.ERROR_MESSAGE );
+          "The combined upgrade exceeds the maximum allowed by the remote.", "Combined Upgrade Limit Exceeded",
+          JOptionPane.ERROR_MESSAGE );
       return false;
     }
 
@@ -2600,7 +2543,6 @@ public class DeviceUpgrade
    * 
    * @param p
    *          the p
-   * 
    * @return the code
    */
   public Hex getCode( Protocol p )
@@ -2728,7 +2670,6 @@ public class DeviceUpgrade
    *          the b
    * @param state
    *          the state
-   * 
    * @return the function
    */
   public Function getFunction( Button b, int state )
@@ -2738,33 +2679,35 @@ public class DeviceUpgrade
 
   /** The Constant deviceTypeAliasNames. */
   private static final String[] deviceTypeAliasNames =
-  { "Cable", "TV", "VCR", "CD", "Tuner", "DVD", "SAT", "Tape", "Laserdisc", "DAT", "Home Auto",
-      "Misc Audio", "Phono", "Video Acc", "Amp", "PVR", "OEM Mode" };
+  {
+      "Cable", "TV", "VCR", "CD", "Tuner", "DVD", "SAT", "Tape", "Laserdisc", "DAT", "Home Auto", "Misc Audio",
+      "Phono", "Video Acc", "Amp", "PVR", "OEM Mode"
+  };
 
   /** The default names. */
   private static String[] defaultNames = null;
 
   /** The Constant defaultFunctionNames. */
   private static final String[] defaultFunctionNames =
-  { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "vol up", "vol down", "mute", "channel up",
-      "channel down", "power", "enter", "tv/vcr", "last (prev ch)", "menu", "program guide",
-      "up arrow", "down arrow", "left arrow", "right arrow", "select", "sleep", "pip on/off",
-      "display", "pip swap", "pip move", "play", "pause", "rewind", "fast fwd", "stop", "record",
-      "exit", "surround", "input toggle", "+100", "fav/scan", "device button", "next track",
-      "prev track", "shift-left", "shift-right", "pip freeze", "slow", "eject", "slow+", "slow-",
-      "X2", "center", "rear" };
+  {
+      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "vol up", "vol down", "mute", "channel up", "channel down",
+      "power", "enter", "tv/vcr", "last (prev ch)", "menu", "program guide", "up arrow", "down arrow", "left arrow",
+      "right arrow", "select", "sleep", "pip on/off", "display", "pip swap", "pip move", "play", "pause", "rewind",
+      "fast fwd", "stop", "record", "exit", "surround", "input toggle", "+100", "fav/scan", "device button",
+      "next track", "prev track", "shift-left", "shift-right", "pip freeze", "slow", "eject", "slow+", "slow-", "X2",
+      "center", "rear"
+  };
 
   /** The Constant genericButtonNames. */
   private final static String[] genericButtonNames =
-  { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "vol up", "vol down", "mute", "channel up",
-      "channel down", "power", "enter", "tv/vcr", "prev ch", "menu", "guide", "up arrow",
-      "down arrow", "left arrow", "right arrow", "select", "sleep", "pip on/off", "display",
-      "pip swap", "pip move", "play", "pause", "rewind", "fast fwd", "stop", "record", "exit",
-      "surround", "input", "+100", "fav/scan", "device button", "next track", "prev track",
-      "shift-left", "shift-right", "pip freeze", "slow", "eject", "slow+", "slow-", "x2", "center",
-      "rear", "phantom1", "phantom2", "phantom3", "phantom4", "phantom5", "phantom6", "phantom7",
-      "phantom8", "phantom9", "phantom10", "setup", "light", "theater", "macro1", "macro2",
-      "macro3", "macro4", "learn1", "learn2", "learn3", "learn4" // ,
+  {
+      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "vol up", "vol down", "mute", "channel up", "channel down",
+      "power", "enter", "tv/vcr", "prev ch", "menu", "guide", "up arrow", "down arrow", "left arrow", "right arrow",
+      "select", "sleep", "pip on/off", "display", "pip swap", "pip move", "play", "pause", "rewind", "fast fwd",
+      "stop", "record", "exit", "surround", "input", "+100", "fav/scan", "device button", "next track", "prev track",
+      "shift-left", "shift-right", "pip freeze", "slow", "eject", "slow+", "slow-", "x2", "center", "rear", "phantom1",
+      "phantom2", "phantom3", "phantom4", "phantom5", "phantom6", "phantom7", "phantom8", "phantom9", "phantom10",
+      "setup", "light", "theater", "macro1", "macro2", "macro3", "macro4", "learn1", "learn2", "learn3", "learn4" // ,
   // "button85", "button86", "button87", "button88", "button89", "button90",
   // "button91", "button92", "button93", "button94", "button95", "button96",
   // "button97", "button98", "button99", "button100", "button101", "button102",

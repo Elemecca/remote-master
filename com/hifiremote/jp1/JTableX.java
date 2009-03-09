@@ -1,11 +1,24 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -13,7 +26,7 @@ import java.util.Vector;
  */
 public class JTableX extends JTable
 {
-  
+
   /** The cell model. */
   protected CellEditorModel cellModel;
 
@@ -29,7 +42,8 @@ public class JTableX extends JTable
   /**
    * Instantiates a new j table x.
    * 
-   * @param tm the tm
+   * @param tm
+   *          the tm
    */
   public JTableX( TableModel tm )
   {
@@ -40,48 +54,56 @@ public class JTableX extends JTable
   /**
    * Instantiates a new j table x.
    * 
-   * @param tm the tm
-   * @param cm the cm
+   * @param tm
+   *          the tm
+   * @param cm
+   *          the cm
    */
   public JTableX( TableModel tm, TableColumnModel cm )
   {
-    super( tm,cm );
+    super( tm, cm );
     cellModel = null;
   }
 
   /**
    * Instantiates a new j table x.
    * 
-   * @param tm the tm
-   * @param cm the cm
-   * @param sm the sm
+   * @param tm
+   *          the tm
+   * @param cm
+   *          the cm
+   * @param sm
+   *          the sm
    */
-  public JTableX( TableModel tm, TableColumnModel cm,
-    ListSelectionModel sm )
+  public JTableX( TableModel tm, TableColumnModel cm, ListSelectionModel sm )
   {
-    super( tm,cm,sm );
+    super( tm, cm, sm );
     cellModel = null;
   }
 
   /**
    * Instantiates a new j table x.
    * 
-   * @param rows the rows
-   * @param cols the cols
+   * @param rows
+   *          the rows
+   * @param cols
+   *          the cols
    */
   public JTableX( int rows, int cols )
   {
-    super( rows,cols );
+    super( rows, cols );
     cellModel = null;
   }
 
   /**
    * Instantiates a new j table x.
    * 
-   * @param rowData the row data
-   * @param columnNames the column names
+   * @param rowData
+   *          the row data
+   * @param columnNames
+   *          the column names
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings( "unchecked" )
   public JTableX( final Vector rowData, final Vector< String > columnNames )
   {
     super( rowData, columnNames );
@@ -91,8 +113,10 @@ public class JTableX extends JTable
   /**
    * Instantiates a new j table x.
    * 
-   * @param rowData the row data
-   * @param colNames the col names
+   * @param rowData
+   *          the row data
+   * @param colNames
+   *          the col names
    */
   public JTableX( final Object[][] rowData, final Object[] colNames )
   {
@@ -104,19 +128,22 @@ public class JTableX extends JTable
   /**
    * Instantiates a new j table x.
    * 
-   * @param tm the tm
-   * @param cellModel the cell model
+   * @param tm
+   *          the tm
+   * @param cellModel
+   *          the cell model
    */
   public JTableX( TableModel tm, CellEditorModel cellModel )
   {
-    super( tm,null,null );
+    super( tm, null, null );
     this.cellModel = cellModel;
   }
 
   /**
    * Sets the cell editor model.
    * 
-   * @param cellModel the new cell editor model
+   * @param cellModel
+   *          the new cell editor model
    */
   public void setCellEditorModel( CellEditorModel cellModel )
   {
@@ -133,7 +160,9 @@ public class JTableX extends JTable
     return cellModel;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.JTable#getCellEditor(int, int)
    */
   public TableCellEditor getCellEditor( int row, int col )
@@ -143,14 +172,16 @@ public class JTableX extends JTable
       tmpEditor = cellModel.getCellEditor( row, col );
     if ( tmpEditor != null )
       return tmpEditor;
-    return super.getCellEditor( row,col );
+    return super.getCellEditor( row, col );
   }
 
   /**
    * Checks if is truncated.
    * 
-   * @param row the row
-   * @param col the col
+   * @param row
+   *          the row
+   * @param col
+   *          the col
    * 
    * @return true, if is truncated
    */
@@ -160,7 +191,7 @@ public class JTableX extends JTable
     if ( o == null )
       return false;
     Rectangle rect = getCellRect( row, col, true );
-    TableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
+    TableCellRenderer r = ( DefaultTableCellRenderer ) getCellRenderer( row, col );
     Component c = r.getTableCellRendererComponent( this, o, false, false, row, col );
     Dimension d = c.getPreferredSize();
     if ( d.width < rect.width - 4 )
@@ -168,7 +199,9 @@ public class JTableX extends JTable
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.JTable#getToolTipText(java.awt.event.MouseEvent)
    */
   public String getToolTipText( MouseEvent e )
@@ -177,18 +210,19 @@ public class JTableX extends JTable
     int row = rowAtPoint( p );
     int col = columnAtPoint( p );
     col = convertColumnIndexToModel( col );
-    if ( isTruncated( row, col ))
+    if ( isTruncated( row, col ) )
     {
-      DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
+      DefaultTableCellRenderer r = ( DefaultTableCellRenderer ) getCellRenderer( row, col );
       int width = getColumnModel().getColumn( col ).getWidth();
       String rc = "<html><div style=\"width: " + width + "px\">" + r.getText() + "</div></html>";
-      System.err.println( "getToolTipText returning \"" + rc + "\"" );
       return rc;
     }
     return null;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.JComponent#getToolTipLocation(java.awt.event.MouseEvent)
    */
   public Point getToolTipLocation( MouseEvent event )
@@ -196,7 +230,7 @@ public class JTableX extends JTable
     int row = rowAtPoint( event.getPoint() );
     int col = columnAtPoint( event.getPoint() );
     col = convertColumnIndexToModel( col );
-    if ( isTruncated( row, col ))
+    if ( isTruncated( row, col ) )
     {
       Point rc = getCellRect( row, col, true ).getLocation();
       rc.translate( -1, -1 );
@@ -205,24 +239,28 @@ public class JTableX extends JTable
     return null;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.JTable#prepareRenderer(javax.swing.table.TableCellRenderer, int, int)
    */
   public Component prepareRenderer( TableCellRenderer r, int row, int col )
   {
-    JComponent c = ( JComponent )super.prepareRenderer( r, row, col );
+    JComponent c = ( JComponent ) super.prepareRenderer( r, row, col );
     Border b = c.getBorder();
     if ( b != null )
       c.setBorder( pad );
     else
-      c.setBorder( BorderFactory.createCompoundBorder( b, pad ));
+      c.setBorder( BorderFactory.createCompoundBorder( b, pad ) );
     return c;
   }
-  
+
   /** The pad. */
   private static Border pad = BorderFactory.createEmptyBorder( 0, 3, 0, 3 );
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.JTable#setValueAt(java.lang.Object, int, int)
    */
   public void setValueAt( Object value, int row, int col )
@@ -243,9 +281,12 @@ public class JTableX extends JTable
   /**
    * Sets the column width.
    * 
-   * @param col the col
-   * @param text the text
-   * @param setMax the set max
+   * @param col
+   *          the col
+   * @param text
+   *          the text
+   * @param setMax
+   *          the set max
    */
   public void setColumnWidth( int col, String text, boolean setMax )
   {
@@ -255,21 +296,25 @@ public class JTableX extends JTable
   /**
    * Sets the column width.
    * 
-   * @param col the col
-   * @param text the text
-   * @param setMax the set max
-   * @param limit the limit
+   * @param col
+   *          the col
+   * @param text
+   *          the text
+   * @param setMax
+   *          the set max
+   * @param limit
+   *          the limit
    */
   public void setColumnWidth( int col, String text, boolean setMax, int limit )
   {
-    JLabel l = ( JLabel )
-      tableHeader.getDefaultRenderer().getTableCellRendererComponent( this, text, false, false, 0, col );
+    JLabel l = ( JLabel ) tableHeader.getDefaultRenderer().getTableCellRendererComponent( this,
+        text, false, false, 0, col );
     int width = l.getPreferredSize().width + 2;
     TableColumn column = columnModel.getColumn( col );
     column.setMinWidth( width / 2 );
     column.setPreferredWidth( width );
     if ( setMax )
-      column.setMaxWidth(( width * 3 ) / 2 );
+      column.setMaxWidth( ( width * 3 ) / 2 );
     else if ( limit != 0 )
       column.setMaxWidth( width * limit );
   }

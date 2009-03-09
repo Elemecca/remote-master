@@ -1,3 +1,22 @@
+Changes for v1.89
+- Improvements to import raw upgrade
+- Fix Device Combiner for HCS08 remotes
+- Include tutorial (JP1 - Just How Easy Is It?)
+- Add help menu items (Readme, Tutorial, Home page, Forums)
+- Add parsing support for RDF enhancements for IR 8.05
+- Upgrade to Java 6 for Desktop support (specifically launching default browser).
+- Another fix for importing raw NEC upgrades
+- RMIR: Add support for changing the look and feel
+- RMIR: Fixes for loading .rmir files with special protocols
+- RMIR: Support for device button labels
+- RMIR: Support for soft device sequence numbers
+- RMIR: Support read-only settings
+- RMIR: Add Toolbar with buttons for Open, Save, Save As, Download, Upload
+
+Changes for v1.88
+- Better importing of KM upgrades that use Manual Settings
+- RMIR: Fix importing of IR files that use undefined (not in RDF) keys in keymoves or macros.
+
 Changes for v1.87b
 - More fixes for HCS08 Device Combiner
 

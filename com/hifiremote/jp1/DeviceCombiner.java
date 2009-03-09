@@ -307,11 +307,11 @@ public class DeviceCombiner extends Protocol
       if ( ( devComb[ 1 ] == -1 ) || ( devComb[ 2 ] == -1 ) )
         return null;
 
-      buff.append( "20 10 00 00 02 00 B7 7A 55 BB AF 00 81 3C 7F 7E 5F 81 " );
+      buff.append( "20 10 00 00 02 00 B7 6F 55 BB AF 00 81 3C 74 7E 5F 81 " );
       buff.append( "4E 61 54 45 00 10 B6 60 52 48 27 02 B7 B2 8B 86 AB " );
       buff.append( "00 " ); // placeholder x1, index = 35
-      buff.append( "BD 75 9E AE 8B 9F BD 75 35 52 86 BD 75 7E 56 7E 57 BD " );
-      buff.append( "7C 75 52 23 FA 45 00 54 BD 7E " );
+      buff.append( "BD 6A 9E AE 8B 9F BD 6A 35 52 86 BD 6A 7E 56 7E 57 BD " );
+      buff.append( "71 75 52 23 FA 45 00 54 BD 73 " );
       if ( devComb[ 4 ] != -1 )
       {
         buff.append( intToString( devComb[ 4 ] ) );

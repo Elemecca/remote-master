@@ -12,10 +12,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 /**
  * The Class RowNumberRenderer.
  */
-public class RowNumberRenderer
-  extends DefaultTableCellRenderer
+public class RowNumberRenderer extends DefaultTableCellRenderer
 {
-  
+
   /**
    * Instantiates a new row number renderer.
    */
@@ -27,28 +26,31 @@ public class RowNumberRenderer
   /**
    * Instantiates a new row number renderer.
    * 
-   * @param useHex the use hex
+   * @param useHex
+   *          the use hex
    */
   public RowNumberRenderer( boolean useHex )
   {
     JButton b = new JButton();
-    setBackground( b.getBackground());
-    setBorder( BorderFactory.createRaisedBevelBorder());
+    setBackground( b.getBackground() );
+    setBorder( BorderFactory.createRaisedBevelBorder() );
     setHorizontalAlignment( SwingConstants.CENTER );
     setToolTipText( "Drag a row up or down to change the order." );
 
     this.useHex = useHex;
   }
 
-  /* (non-Javadoc)
-   * @see javax.swing.table.DefaultTableCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.table.DefaultTableCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object,
+   * boolean, boolean, int, int)
    */
-  public Component getTableCellRendererComponent( JTable table, Object value, 
-                                                  boolean isSelected, boolean hasFocus,
-                                                  int row, int col )
+  public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
+      int row, int col )
   {
     if ( useHex )
-      value = RemoteConfiguration.toHex((( Integer )value ).intValue());
+      value = RemoteConfiguration.toHex( ( ( Integer )value ).intValue() ) + ':';
     return super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
   }
 
