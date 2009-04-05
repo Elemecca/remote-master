@@ -6,35 +6,42 @@ import javax.swing.table.DefaultTableCellRenderer;
 /**
  * The Class KeyCodeRenderer.
  */
-public class KeyCodeRenderer
-  extends DefaultTableCellRenderer
+public class KeyCodeRenderer extends DefaultTableCellRenderer
 {
-  
+
   /** The remote. */
   private Remote remote;
 
   /**
    * Instantiates a new key code renderer.
    */
-  public KeyCodeRenderer(){}
+  public KeyCodeRenderer()
+  {}
 
   /**
    * Sets the remote.
    * 
-   * @param remote the new remote
+   * @param remote
+   *          the new remote
    */
   public void setRemote( Remote remote )
   {
     this.remote = remote;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.DefaultTableCellRenderer#setValue(java.lang.Object)
    */
   protected void setValue( Object value )
   {
-    int keyCode = (( Integer )value ).intValue();
-    super.setValue( remote.getButtonName( keyCode ));
+    if ( value == null )
+      super.setValue( null );
+    else
+    {
+      int keyCode = ( ( Integer )value ).intValue();
+      super.setValue( remote.getButtonName( keyCode ) );
+    }
   }
 }
-

@@ -1,37 +1,74 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.NumberFormatter;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class SpecialFunctionDialog.
  */
-public class SpecialFunctionDialog
-  extends JDialog
-  implements ActionListener, FocusListener, Runnable, ItemListener, ListSelectionListener
+public class SpecialFunctionDialog extends JDialog implements ActionListener, FocusListener, Runnable, ItemListener,
+    ListSelectionListener
 {
-  
+
   /**
    * Show dialog.
    * 
-   * @param frame the frame
-   * @param function the function
-   * @param config the config
-   * 
+   * @param frame
+   *          the frame
+   * @param function
+   *          the function
+   * @param config
+   *          the config
    * @return the special protocol function
    */
-  public static SpecialProtocolFunction showDialog( JFrame frame,
-                                    SpecialProtocolFunction function, RemoteConfiguration config )
+  public static SpecialProtocolFunction showDialog( JFrame frame, SpecialProtocolFunction function,
+      RemoteConfiguration config )
   {
     if ( dialog == null )
       dialog = new SpecialFunctionDialog( frame );
-    
+
     dialog.setRemoteConfiguration( config );
     dialog.setFunction( function );
     dialog.pack();
@@ -44,94 +81,94 @@ public class SpecialFunctionDialog
   /**
    * Adds the to box.
    * 
-   * @param j the j
-   * @param c the c
+   * @param j
+   *          the j
+   * @param c
+   *          the c
    */
   private void addToBox( JComponent j, Container c )
   {
     j.setAlignmentX( Component.LEFT_ALIGNMENT );
     c.add( j );
   }
- 
+
   /**
    * Instantiates a new special function dialog.
    * 
-   * @param frame the frame
+   * @param frame
+   *          the frame
    */
-  private SpecialFunctionDialog( JFrame frame ) 
+  private SpecialFunctionDialog( JFrame frame )
   {
     super( frame, "Special Function", true );
-    
+
     JComponent contentPane = ( JComponent )getContentPane();
-    contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
-    contentPane.setLayout( new BoxLayout( contentPane, BoxLayout.PAGE_AXIS ));
-    
+    contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    contentPane.setLayout( new BoxLayout( contentPane, BoxLayout.PAGE_AXIS ) );
+
     // Add the bound device and key controls
-    JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
+    JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ) );
     addToBox( panel, contentPane );
-    panel.setBorder( BorderFactory.createTitledBorder( "Bound Key" ));
-    
-    panel.add( new JLabel( "Device:" ));
+    panel.setBorder( BorderFactory.createTitledBorder( "Bound Key" ) );
+
+    panel.add( new JLabel( "Device:" ) );
     panel.add( boundDevice );
-    
-    panel.add( Box.createHorizontalStrut( 5 ));
-    
-    panel.add( new JLabel( "Key:" ));
+
+    panel.add( Box.createHorizontalStrut( 5 ) );
+
+    panel.add( new JLabel( "Key:" ) );
     panel.add( boundKey );
-  
+
     shift.addActionListener( this );
     panel.add( shift );
-    
+
     xShift.addActionListener( this );
     panel.add( xShift );
-    
+
     // Add the Parameters
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 0 ));
-    panel.add( Box.createHorizontalStrut( 5 ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 0 ) );
+    panel.add( Box.createHorizontalStrut( 5 ) );
     addToBox( panel, contentPane );
-    panel.setBorder( BorderFactory.createTitledBorder( "Parameters" ));
+    panel.setBorder( BorderFactory.createTitledBorder( "Parameters" ) );
     Box box = Box.createVerticalBox();
     addToBox( new JLabel( "Type:" ), box );
     addToBox( type, box );
     panel.add( box );
-    type.setRenderer( new FunctionTypeRenderer());
+    type.setRenderer( new FunctionTypeRenderer() );
     type.addActionListener( this );
-    
+
     panel.add( parameterCard );
     /*
-    box = box.createVerticalBox();
-    addToBox( new JLabel( "Hex:" ), box );
-    addToBox( hex, box );
-    box.setBorder( null );
-    panel.add( box );
-    */
+     * box = box.createVerticalBox(); addToBox( new JLabel( "Hex:" ), box ); addToBox( hex, box ); box.setBorder( null
+     * ); panel.add( box );
+     */
     // Empty panel
     panel = new JPanel();
     parameterCard.add( panel, "Empty" );
-    
+
     // ModeName parameter panel
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
     parameterCard.add( panel, "ModeName" );
     box = Box.createVerticalBox();
     addToBox( new JLabel( "Text:" ), box );
     addToBox( modeName, box );
     panel.add( box );
-    
+
     // Multiplex parameter panel
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
     parameterCard.add( panel, "Multiplex" );
     box = Box.createVerticalBox();
     addToBox( new JLabel( "Device Type:" ), box );
     addToBox( deviceType, box );
     panel.add( box );
-    
+
     DecimalFormat format = new DecimalFormat( "0000" );
     format.setParseIntegerOnly( true );
     format.setGroupingUsed( false );
     NumberFormatter formatter = new NumberFormatter( format );
     formatter.setValueClass( Integer.class );
-    formatter.setMinimum( new Integer( 0 ));
-    formatter.setMaximum( new Integer( 2047 ));
+    formatter.setMinimum( new Integer( 0 ) );
+    formatter.setMaximum( new Integer( 2047 ) );
     setupCode = new JFormattedTextField( formatter );
     setupCode.setColumns( 4 );
     setupCode.addFocusListener( this );
@@ -140,46 +177,52 @@ public class SpecialFunctionDialog
     addToBox( new JLabel( "Setup Code:" ), box );
     addToBox( setupCode, box );
     panel.add( box );
-    
+
     // Duration parameter panel
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
     parameterCard.add( panel, "Duration" );
     box = Box.createVerticalBox();
     addToBox( new JLabel( "Duration:" ), box );
     addToBox( duration, box );
     panel.add( box );
-    
+
     // ToadTog parameter panel
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
     parameterCard.add( panel, "ToadTog" );
     box = Box.createVerticalBox();
     addToBox( new JLabel( "Toggle #:" ), box );
-    Integer[] toggles = { 0, 1, 2, 3, 4, 5, 6, 7 };
+    Integer[] toggles =
+    {
+        0, 1, 2, 3, 4, 5, 6, 7
+    };
     toggle = new JComboBox( toggles );
     addToBox( toggle, box );
     panel.add( box );
-    
+
     box = Box.createVerticalBox();
     addToBox( new JLabel( "Condition:" ), box );
     addToBox( condition, box );
     condition.addActionListener( this );
     panel.add( box );
-    
+
     // UDSM parameter panel
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
     parameterCard.add( panel, "UDSM" );
     box = Box.createVerticalBox();
     addToBox( new JLabel( "Key w/ Macro:" ), box );
     addToBox( macroKey, box );
     panel.add( box );
     macroKey.setRenderer( keyCodeRenderer );
-    
+
     // ULDKP parameter panel
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
     parameterCard.add( panel, "ULDKP" );
     box = Box.createVerticalBox();
     addToBox( new JLabel( "Duration:" ), box );
-    Integer[] durations = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    Integer[] durations =
+    {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+    };
     uldkpDuration = new JComboBox( durations );
     addToBox( uldkpDuration, box );
     panel.add( box );
@@ -193,13 +236,13 @@ public class SpecialFunctionDialog
     addToBox( secondMacroKey, box );
     panel.add( box );
     secondMacroKey.setRenderer( keyCodeRenderer );
-    
+
     // Add the Macro definition panel
     macroBox = Box.createHorizontalBox();
-    macroBox.setBorder( BorderFactory.createTitledBorder( "Macro Definition:" ));
+    macroBox.setBorder( BorderFactory.createTitledBorder( "Macro Definition:" ) );
     addToBox( macroBox, contentPane );
-    
-    JPanel availableBox = new JPanel( new BorderLayout());
+
+    JPanel availableBox = new JPanel( new BorderLayout() );
     macroBox.add( availableBox );
     availableBox.add( availableLabel, BorderLayout.NORTH );
     availableButtons.setFixedCellWidth( 100 );
@@ -210,8 +253,8 @@ public class SpecialFunctionDialog
     activeColor = availableButtons.getBackground();
     availableButtons.setEnabled( false );
     disabledColor = availableButtons.getBackground();
-    inactiveColor = new Color( 216, 228, 248 );    
-    panel = new JPanel( new GridLayout( 3, 2, 2, 2 ));
+    inactiveColor = new Color( 216, 228, 248 );
+    panel = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
     availableBox.add( panel, BorderLayout.SOUTH );
     add.addActionListener( this );
     panel.add( add );
@@ -225,21 +268,21 @@ public class SpecialFunctionDialog
     panel.add( addXShift );
     insertXShift.addActionListener( this );
     panel.add( insertXShift );
-    
-    macroBox.add( Box.createHorizontalStrut( 10 ));
-    
-    firstKeysPanel = new JPanel( new BorderLayout());
+
+    macroBox.add( Box.createHorizontalStrut( 10 ) );
+
+    firstKeysPanel = new JPanel( new BorderLayout() );
     macroBox.add( firstKeysPanel );
     firstKeysPanel.add( firstMacroLabel, BorderLayout.NORTH );
     firstMacroButtons.setFixedCellWidth( 100 );
     firstKeysPanel.add( new JScrollPane( firstMacroButtons ), BorderLayout.CENTER );
-    firstMacroButtons.setModel( new DefaultListModel());
+    firstMacroButtons.setModel( new DefaultListModel() );
     firstMacroButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     firstMacroButtons.setCellRenderer( macroButtonRenderer );
     firstMacroButtons.addListSelectionListener( this );
     firstMacroButtons.addFocusListener( this );
-    
-    JPanel buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ));
+
+    JPanel buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
     firstKeysPanel.add( buttonBox, BorderLayout.SOUTH );
     firstMoveUp.addActionListener( this );
     buttonBox.add( firstMoveUp );
@@ -251,20 +294,20 @@ public class SpecialFunctionDialog
     buttonBox.add( firstClear );
 
     // The second macro
-    macroBox.add( Box.createHorizontalStrut( 10 ));
-    
-    secondKeysPanel = new JPanel( new BorderLayout());
+    macroBox.add( Box.createHorizontalStrut( 10 ) );
+
+    secondKeysPanel = new JPanel( new BorderLayout() );
     macroBox.add( secondKeysPanel );
     secondKeysPanel.add( secondMacroLabel, BorderLayout.NORTH );
     secondMacroButtons.setFixedCellWidth( 100 );
     secondKeysPanel.add( new JScrollPane( secondMacroButtons ), BorderLayout.CENTER );
-    secondMacroButtons.setModel( new DefaultListModel());
+    secondMacroButtons.setModel( new DefaultListModel() );
     secondMacroButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     secondMacroButtons.setCellRenderer( macroButtonRenderer );
     secondMacroButtons.addListSelectionListener( this );
     secondMacroButtons.addFocusListener( this );
-    
-    buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ));
+
+    buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
     secondKeysPanel.add( buttonBox, BorderLayout.SOUTH );
     secondMoveUp.addActionListener( this );
     buttonBox.add( secondMoveUp );
@@ -276,53 +319,54 @@ public class SpecialFunctionDialog
     buttonBox.add( secondClear );
 
     // Add the notes
-    panel = new JPanel( new BorderLayout());
+    panel = new JPanel( new BorderLayout() );
     addToBox( panel, contentPane );
-    panel.setBorder( BorderFactory.createTitledBorder( "Notes" ));
+    panel.setBorder( BorderFactory.createTitledBorder( "Notes" ) );
     notes.setLineWrap( true );
-    panel.add( new JScrollPane( notes, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
-                                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER ));
-    
+    panel.add( new JScrollPane( notes, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER ) );
+
     // Add the action buttons
-    panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+    panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
     addToBox( panel, contentPane );
-    
+
     okButton.addActionListener( this );
     panel.add( okButton );
 
     cancelButton.addActionListener( this );
     panel.add( cancelButton );
   }
-  
+
   /**
    * Sets the remote configuration.
    * 
-   * @param config the new remote configuration
+   * @param config
+   *          the new remote configuration
    */
   private void setRemoteConfiguration( RemoteConfiguration config )
   {
     this.config = config;
     Remote remote = config.getRemote();
-    shift.setText( remote.getShiftLabel());
-    xShift.setText( remote.getXShiftLabel());
-    xShift.setVisible( remote.getXShiftEnabled());
-    boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons()));
-    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons()));
-    deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes()));
-    
+    shift.setText( remote.getShiftLabel() );
+    xShift.setText( remote.getXShiftLabel() );
+    xShift.setVisible( remote.getXShiftEnabled() );
+    boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+    deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
+
     java.util.List< String > specialFunctions = new ArrayList< String >();
-    for ( SpecialProtocol sp : config.getSpecialProtocols())
+    for ( SpecialProtocol sp : config.getSpecialProtocols() )
     {
-      for ( String func : sp.getFunctions())
+      for ( String func : sp.getFunctions() )
         specialFunctions.add( func );
     }
-    type.setModel( new DefaultComboBoxModel( specialFunctions.toArray()));
-    
+    type.setModel( new DefaultComboBoxModel( specialFunctions.toArray() ) );
+
     keyCodeRenderer.setRemote( remote );
-    java.util.List< Integer >macroKeys = new ArrayList< Integer >();
-    for ( Macro macro : config.getMacros())
-      macroKeys.add( new Integer( macro.getKeyCode()));
-    DefaultComboBoxModel model = new DefaultComboBoxModel( macroKeys.toArray()); 
+    java.util.List< Integer > macroKeys = new ArrayList< Integer >();
+    for ( Macro macro : config.getMacros() )
+      macroKeys.add( new Integer( macro.getKeyCode() ) );
+    DefaultComboBoxModel model = new DefaultComboBoxModel( macroKeys.toArray() );
     macroKey.setModel( model );
     firstMacroKey.setModel( model );
     secondMacroKey.setModel( model );
@@ -331,19 +375,20 @@ public class SpecialFunctionDialog
     DefaultListModel listModel = new DefaultListModel();
     for ( Button b : buttons )
     {
-      if ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro())
+      if ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
         listModel.addElement( b );
     }
     availableButtons.setModel( listModel );
-    
+
     macroButtonRenderer.setRemote( remote );
 
   }
-  
+
   /**
    * Sets the function.
    * 
-   * @param function the new function
+   * @param function
+   *          the new function
    */
   private void setFunction( SpecialProtocolFunction function )
   {
@@ -358,30 +403,34 @@ public class SpecialFunctionDialog
       type.setSelectedIndex( 0 );
       return;
     }
-    
+
     cmd = function.getCmd();
     if ( cmd != null )
       cmd = new Hex( cmd );
-    boundDevice.setSelectedIndex( function.getDeviceButtonIndex());
+    boundDevice.setSelectedIndex( function.getDeviceButtonIndex() );
     shift.setSelected( false );
     xShift.setSelected( false );
     setButton( function.getKeyCode(), boundKey, shift, xShift );
-    
-    type.setSelectedItem( function.getType());
+
+    type.setSelectedItem( function.getType() );
     function.update( this );
-    
-    notes.setText( function.getNotes());
+
+    notes.setText( function.getNotes() );
   }
-  
+
   /**
    * Sets the button.
    * 
-   * @param code the code
-   * @param comboBox the combo box
-   * @param shiftBox the shift box
-   * @param xShiftBox the x shift box
+   * @param code
+   *          the code
+   * @param comboBox
+   *          the combo box
+   * @param shiftBox
+   *          the shift box
+   * @param xShiftBox
+   *          the x shift box
    */
-  private void setButton( int code, JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox)
+  private void setButton( int code, JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox )
   {
     Remote remote = config.getRemote();
     Button b = remote.getButton( code );
@@ -391,113 +440,118 @@ public class SpecialFunctionDialog
       if ( base != 0 )
       {
         b = remote.getButton( base );
-        if (( base | remote.getShiftMask()) == code )
+        if ( ( base | remote.getShiftMask() ) == code )
         {
-          shiftBox.setEnabled( b.allowsShiftedMacro());
+          shiftBox.setEnabled( b.allowsShiftedMacro() );
           shiftBox.setSelected( true );
           comboBox.setSelectedItem( b );
           return;
         }
-        if ( remote.getXShiftEnabled() && (( base | remote.getXShiftMask()) == code ))
+        if ( remote.getXShiftEnabled() && ( ( base | remote.getXShiftMask() ) == code ) )
         {
-          xShiftBox.setEnabled( remote.getXShiftEnabled() & b.allowsXShiftedMacro());
+          xShiftBox.setEnabled( remote.getXShiftEnabled() & b.allowsXShiftedMacro() );
           xShiftBox.setSelected( true );
           comboBox.setSelectedItem( b );
           return;
         }
       }
-      b = remote.getButton( code & ~remote.getShiftMask());
+      b = remote.getButton( code & ~remote.getShiftMask() );
       if ( b != null )
         shiftBox.setSelected( true );
-      else if ( remote.getXShiftEnabled())
+      else if ( remote.getXShiftEnabled() )
       {
-        b = remote.getButton( code ^ ~remote.getXShiftMask());
+        b = remote.getButton( code ^ ~remote.getXShiftMask() );
         if ( b != null )
           xShiftBox.setSelected( true );
       }
     }
-      
-    shiftBox.setEnabled( b.allowsShiftedKeyMove());
-    xShiftBox.setEnabled( b.allowsXShiftedKeyMove());
 
-    if ( b.getIsXShifted())
-      xShiftBox.setSelected( true );      
-    else if ( b.getIsShifted())
+    shiftBox.setEnabled( b.allowsShiftedKeyMove() );
+    xShiftBox.setEnabled( b.allowsXShiftedKeyMove() );
+
+    if ( b.getIsXShifted() )
+      xShiftBox.setSelected( true );
+    else if ( b.getIsShifted() )
       shiftBox.setSelected( true );
-    
+
     comboBox.removeActionListener( this );
-    comboBox.setSelectedItem( b );  
+    comboBox.setSelectedItem( b );
     comboBox.addActionListener( this );
   }
-  
+
   /**
    * Gets the key code.
    * 
-   * @param comboBox the combo box
-   * @param shiftBox the shift box
-   * @param xShiftBox the x shift box
-   * 
+   * @param comboBox
+   *          the combo box
+   * @param shiftBox
+   *          the shift box
+   * @param xShiftBox
+   *          the x shift box
    * @return the key code
    */
-  private int getKeyCode( JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox)
+  private int getKeyCode( JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox )
   {
-    int keyCode = (( Button )comboBox.getSelectedItem()).getKeyCode();
-    if ( shiftBox.isSelected())
+    int keyCode = ( ( Button )comboBox.getSelectedItem() ).getKeyCode();
+    if ( shiftBox.isSelected() )
       keyCode |= config.getRemote().getShiftMask();
-    else if ( xShiftBox.isSelected())
+    else if ( xShiftBox.isSelected() )
       keyCode |= config.getRemote().getXShiftMask();
     return keyCode;
   }
-  
+
   /**
    * Show warning.
    * 
-   * @param message the message
+   * @param message
+   *          the message
    */
   private void showWarning( String message )
   {
-    JOptionPane.showMessageDialog( this, message, "Missing Information", JOptionPane.ERROR_MESSAGE);
+    JOptionPane.showMessageDialog( this, message, "Missing Information", JOptionPane.ERROR_MESSAGE );
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
     Remote remote = config.getRemote();
-    
+
     if ( source == type )
     {
       String typeStr = ( String )type.getSelectedItem();
       String cardStr = typeStr;
-      if ( typeStr.equals( "DKP" ))
+      if ( typeStr.equals( "DKP" ) )
       {
         cardStr = "Duration";
         enableMacros( true );
-        firstMacroLabel.setText( "Single keys:" );  
+        firstMacroLabel.setText( "Single keys:" );
         secondMacroLabel.setText( "Double keys:" );
       }
-      else if ( typeStr.equals( "DSM" ))
+      else if ( typeStr.equals( "DSM" ) )
       {
         cardStr = "Empty";
         enableMacros( true, false );
         setTarget( firstMacroButtons );
         firstMacroLabel.setText( "Keys:" );
       }
-      else if ( typeStr.equals( "LKP" ))
+      else if ( typeStr.equals( "LKP" ) )
       {
         cardStr = "Duration";
         enableMacros( true );
         firstMacroLabel.setText( "Short keys:" );
         secondMacroLabel.setText( "Long keys:" );
       }
-      else if ( typeStr.equals( "Pause" ))
+      else if ( typeStr.equals( "Pause" ) )
       {
         cardStr = "Duration";
         enableMacros( false );
       }
-      else if ( typeStr.equals( "ToadTog" ))
+      else if ( typeStr.equals( "ToadTog" ) )
       {
         enableMacros( true );
         int i = condition.getSelectedIndex();
@@ -505,14 +559,14 @@ public class SpecialFunctionDialog
           i = 0;
         condition.setSelectedIndex( i );
       }
-      else if ( typeStr.equals( "ULKP" ))
+      else if ( typeStr.equals( "ULKP" ) )
       {
         cardStr = "ULDKP";
         firstKeyLabel.setText( "Short Key:" );
         secondKeyLabel.setText( "Long Key:" );
         enableMacros( false );
       }
-      else if ( typeStr.equals( "UDKP" ))
+      else if ( typeStr.equals( "UDKP" ) )
       {
         cardStr = "ULDKP";
         firstKeyLabel.setText( "Single Key:" );
@@ -527,8 +581,8 @@ public class SpecialFunctionDialog
     else if ( source == condition )
     {
       int i = condition.getSelectedIndex();
-      firstMacroLabel.setText( ToadTogFunction.onStrings[ i ]);
-      secondMacroLabel.setText( ToadTogFunction.offStrings[ i ]);
+      firstMacroLabel.setText( ToadTogFunction.onStrings[ i ] );
+      secondMacroLabel.setText( ToadTogFunction.offStrings[ i ] );
     }
     else if ( source == okButton )
     {
@@ -547,12 +601,12 @@ public class SpecialFunctionDialog
       int keyCode = getKeyCode( boundKey, shift, xShift );
 
       String typeStr = ( String )type.getSelectedItem();
-      SpecialProtocol protocol = null;      
-      for ( SpecialProtocol sp : config.getSpecialProtocols())
+      SpecialProtocol protocol = null;
+      for ( SpecialProtocol sp : config.getSpecialProtocols() )
       {
-        for ( String func : sp.getFunctions())
+        for ( String func : sp.getFunctions() )
         {
-          if ( func.equals( typeStr ))
+          if ( func.equals( typeStr ) )
           {
             protocol = sp;
             break;
@@ -566,10 +620,10 @@ public class SpecialFunctionDialog
         showWarning( "No special protocol found for type " + typeStr );
         return;
       }
-      
+
       Hex hex = protocol.createHex( this );
-      KeyMove km = new KeyMove( keyCode, deviceIndex, protocol.getDeviceType().getNumber(), 
-                                protocol.getSetupCode(), hex, notes.getText());
+      KeyMove km = new KeyMove( keyCode, deviceIndex, protocol.getDeviceType().getNumber(), protocol.getSetupCode(),
+          hex, notes.getText() );
       function = protocol.createFunction( km );
       if ( function == null )
         return;
@@ -583,12 +637,12 @@ public class SpecialFunctionDialog
     }
     else if ( source == shift )
     {
-      if ( shift.isSelected())
+      if ( shift.isSelected() )
         xShift.setSelected( false );
     }
     else if ( source == xShift )
     {
-      if ( xShift.isSelected())
+      if ( xShift.isSelected() )
         shift.setSelected( false );
     }
     else if ( source == add )
@@ -601,21 +655,21 @@ public class SpecialFunctionDialog
     }
     else if ( source == addShift )
     {
-      addKey( remote.getShiftMask());
+      addKey( remote.getShiftMask() );
     }
     else if ( source == insertShift )
     {
-      insertKey( remote.getShiftMask());
+      insertKey( remote.getShiftMask() );
     }
     else if ( source == addXShift )
     {
-      addKey( remote.getXShiftMask());
+      addKey( remote.getXShiftMask() );
     }
     else if ( source == insertXShift )
     {
-      insertKey( remote.getXShiftMask());
+      insertKey( remote.getXShiftMask() );
     }
-    else if (( source == firstMoveUp ) || ( source == secondMoveUp ))
+    else if ( ( source == firstMoveUp ) || ( source == secondMoveUp ) )
     {
       JList list = firstMacroButtons;
       if ( source == secondMoveUp )
@@ -623,7 +677,7 @@ public class SpecialFunctionDialog
       int index = list.getSelectedIndex();
       swap( list, index, index - 1 );
     }
-    else if (( source == firstMoveDown ) || ( source == secondMoveDown ))
+    else if ( ( source == firstMoveDown ) || ( source == secondMoveDown ) )
     {
       JList list = firstMacroButtons;
       if ( source == secondMoveDown )
@@ -631,7 +685,7 @@ public class SpecialFunctionDialog
       int index = list.getSelectedIndex();
       swap( list, index, index + 1 );
     }
-    else if (( source == firstRemove ) || ( source == secondRemove ))
+    else if ( ( source == firstRemove ) || ( source == secondRemove ) )
     {
       JList list = firstMacroButtons;
       if ( source == secondRemove )
@@ -646,16 +700,16 @@ public class SpecialFunctionDialog
     }
     else if ( source == firstClear )
     {
-      
-      (( DefaultListModel )firstMacroButtons.getModel()).clear();
+
+      ( ( DefaultListModel )firstMacroButtons.getModel() ).clear();
     }
     else if ( source == secondClear )
     {
-      
-      (( DefaultListModel )secondMacroButtons.getModel()).clear();
+
+      ( ( DefaultListModel )secondMacroButtons.getModel() ).clear();
     }
   }
-  
+
   /**
    * Gets the selected key code.
    * 
@@ -663,24 +717,26 @@ public class SpecialFunctionDialog
    */
   private int getSelectedKeyCode()
   {
-    return (( Button )availableButtons.getSelectedValue()).getKeyCode();
+    return ( ( Button )availableButtons.getSelectedValue() ).getKeyCode();
   }
-  
+
   /**
    * Adds the key.
    * 
-   * @param mask the mask
+   * @param mask
+   *          the mask
    */
   private void addKey( int mask )
   {
     Integer value = new Integer( getSelectedKeyCode() | mask );
-    (( DefaultListModel )targetList.getModel()).addElement( value );
+    ( ( DefaultListModel )targetList.getModel() ).addElement( value );
   }
-  
+
   /**
    * Insert key.
    * 
-   * @param mask the mask
+   * @param mask
+   *          the mask
    */
   private void insertKey( int mask )
   {
@@ -694,13 +750,16 @@ public class SpecialFunctionDialog
     targetList.setSelectedIndex( index + 1 );
     targetList.ensureIndexIsVisible( index + 1 );
   }
-  
+
   /**
    * Swap.
    * 
-   * @param list the list
-   * @param index1 the index1
-   * @param index2 the index2
+   * @param list
+   *          the list
+   * @param index1
+   *          the index1
+   * @param index2
+   *          the index2
    */
   private void swap( JList list, int index1, int index2 )
   {
@@ -712,28 +771,31 @@ public class SpecialFunctionDialog
     list.setSelectedIndex( index2 );
     list.ensureIndexIsVisible( index2 );
   }
-  
+
   /**
    * Enable macros.
    * 
-   * @param flag the flag
+   * @param flag
+   *          the flag
    */
   private void enableMacros( boolean flag )
   {
     enableMacros( flag, flag );
   }
-  
+
   /**
    * Enable macros.
    * 
-   * @param mainFlag the main flag
-   * @param secondFlag the second flag
+   * @param mainFlag
+   *          the main flag
+   * @param secondFlag
+   *          the second flag
    */
   private void enableMacros( boolean mainFlag, boolean secondFlag )
   {
     if ( !mainFlag )
       secondFlag = false;
-    
+
     macroBox.setEnabled( mainFlag );
     availableLabel.setEnabled( mainFlag );
     availableButtons.setEnabled( mainFlag );
@@ -743,7 +805,7 @@ public class SpecialFunctionDialog
     insertShift.setEnabled( mainFlag );
     addXShift.setEnabled( mainFlag );
     insertXShift.setEnabled( mainFlag );
-    
+
     firstKeysPanel.setEnabled( mainFlag );
     firstMacroLabel.setEnabled( mainFlag );
     firstMacroButtons.setEnabled( mainFlag );
@@ -751,7 +813,7 @@ public class SpecialFunctionDialog
     firstMoveDown.setEnabled( mainFlag );
     firstRemove.setEnabled( mainFlag );
     firstClear.setEnabled( mainFlag );
-  
+
     secondKeysPanel.setEnabled( secondFlag );
     secondMacroLabel.setEnabled( secondFlag );
     secondMacroButtons.setEnabled( secondFlag );
@@ -760,33 +822,37 @@ public class SpecialFunctionDialog
     secondRemove.setEnabled( secondFlag );
     secondClear.setEnabled( secondFlag );
 
-    if ( firstMacroButtons.isEnabled())
+    if ( firstMacroButtons.isEnabled() )
     {
       targetList = firstMacroButtons;
       targetList.setBackground( activeColor );
     }
     else
       firstMacroButtons.setBackground( disabledColor );
-    
-    if ( secondMacroButtons.isEnabled())
+
+    if ( secondMacroButtons.isEnabled() )
       secondMacroButtons.setBackground( inactiveColor );
     else
       secondMacroButtons.setBackground( disabledColor );
   }
-  
+
   // ItemListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
    */
   public void itemStateChanged( ItemEvent e )
   {
-    if ( e.getStateChange() != ItemEvent.SELECTED ) 
+    if ( e.getStateChange() != ItemEvent.SELECTED )
       return;
-    
+
   }
 
   // FocusListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
    */
   public void focusGained( FocusEvent e )
@@ -800,34 +866,39 @@ public class SpecialFunctionDialog
     }
     if ( source instanceof JList )
     {
-      setTarget(( JList )source );
+      setTarget( ( JList )source );
       return;
     }
   }
-  
+
   /**
    * Sets the target.
    * 
-   * @param list the new target
+   * @param list
+   *          the new target
    */
   private void setTarget( JList list )
   {
-    if (( targetList != list ) && targetList.isEnabled())
+    if ( ( targetList != list ) && targetList.isEnabled() )
       targetList.setBackground( inactiveColor );
     targetList = list;
     targetList.setBackground( activeColor );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
    */
   public void focusLost( FocusEvent e )
   {
-    // intentionally left empty
+  // intentionally left empty
   }
 
   // Runnable
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Runnable#run()
    */
   public void run()
@@ -836,61 +907,65 @@ public class SpecialFunctionDialog
   }
 
   // ListSelectionListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
    */
-  public void valueChanged( ListSelectionEvent e ) 
+  public void valueChanged( ListSelectionEvent e )
   {
-    if ( e.getValueIsAdjusting())
+    if ( e.getValueIsAdjusting() )
       return;
-    
+
     enableButtons();
   }
-  
+
   /**
    * Enable buttons.
    */
   private void enableButtons()
   {
     int limit = 15;
-    if ( config.getRemote().getAdvCodeBindFormat() == Remote.LONG )
+    if ( config.getRemote().getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
       limit = 255;
     DefaultListModel listModel = ( DefaultListModel )firstMacroButtons.getModel();
     boolean moreRoom = listModel.getSize() < limit;
     Button b = ( Button )availableButtons.getSelectedValue();
     boolean canAdd = ( b != null ) && moreRoom;
-    
-    add.setEnabled( canAdd && b.canAssignToMacro());
-    insert.setEnabled( canAdd && b.canAssignToMacro());
-    addShift.setEnabled( canAdd && b.canAssignShiftedToMacro());
-    insertShift.setEnabled( canAdd && b.canAssignShiftedToMacro());
+
+    add.setEnabled( canAdd && b.canAssignToMacro() );
+    insert.setEnabled( canAdd && b.canAssignToMacro() );
+    addShift.setEnabled( canAdd && b.canAssignShiftedToMacro() );
+    insertShift.setEnabled( canAdd && b.canAssignShiftedToMacro() );
     boolean xShiftEnabled = config.getRemote().getXShiftEnabled();
-    addXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro());
-    insertXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro());
+    addXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
+    insertXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
 
     int selected = firstMacroButtons.getSelectedIndex();
     firstMoveUp.setEnabled( selected > 0 );
-    firstMoveDown.setEnabled(( selected != -1 ) && ( selected < ( listModel.getSize() - 1 )));
+    firstMoveDown.setEnabled( ( selected != -1 ) && ( selected < ( listModel.getSize() - 1 ) ) );
     firstRemove.setEnabled( selected != -1 );
     firstClear.setEnabled( listModel.getSize() > 0 );
 
     listModel = ( DefaultListModel )secondMacroButtons.getModel();
     moreRoom = listModel.getSize() < limit;
     canAdd = ( b != null ) && moreRoom;
-    
+
     boolean isEnabled = secondMacroButtons.isEnabled();
     selected = secondMacroButtons.getSelectedIndex();
-    secondMoveUp.setEnabled( isEnabled && ( selected > 0 ));
-    secondMoveDown.setEnabled( isEnabled && ( selected != -1 ) && ( selected < ( listModel.getSize() - 1 )));
-    secondRemove.setEnabled( isEnabled && ( selected != -1 ));
-    secondClear.setEnabled( isEnabled && ( listModel.getSize() > 0 ));
+    secondMoveUp.setEnabled( isEnabled && ( selected > 0 ) );
+    secondMoveDown.setEnabled( isEnabled && ( selected != -1 ) && ( selected < ( listModel.getSize() - 1 ) ) );
+    secondRemove.setEnabled( isEnabled && ( selected != -1 ) );
+    secondClear.setEnabled( isEnabled && ( listModel.getSize() > 0 ) );
   }
 
   /**
    * Sets the macro buttons.
    * 
-   * @param keyCodes the key codes
-   * @param list the list
+   * @param keyCodes
+   *          the key codes
+   * @param list
+   *          the list
    */
   private void setMacroButtons( Integer[] keyCodes, JList list )
   {
@@ -900,87 +975,95 @@ public class SpecialFunctionDialog
       model.addElement( keyCode );
     list.setSelectedIndex( -1 );
   }
-  
+
   /**
    * Gets the macro buttons.
    * 
-   * @param list the list
-   * 
+   * @param list
+   *          the list
    * @return the macro buttons
    */
   private Integer[] getMacroButtons( JList list )
   {
     DefaultListModel model = ( DefaultListModel )list.getModel();
-    Integer[] keyCodes = new Integer[ model.size()];
+    Integer[] keyCodes = new Integer[ model.size() ];
     for ( int i = 0; i < keyCodes.length; ++i )
       keyCodes[ i ] = ( Integer )model.elementAt( i );
     return keyCodes;
   }
-  
+
   /**
    * The Class FunctionTypeRenderer.
    */
-  public class FunctionTypeRenderer
-    extends DefaultListCellRenderer
+  public class FunctionTypeRenderer extends DefaultListCellRenderer
   {
-    
+
     /**
      * Instantiates a new function type renderer.
      */
-    public FunctionTypeRenderer(){}
-    
-    /* (non-Javadoc)
-     * @see javax.swing.DefaultListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
+    public FunctionTypeRenderer()
+    {}
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.swing.DefaultListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int,
+     * boolean, boolean)
      */
-    public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus )
+    public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected,
+        boolean cellHasFocus )
     {
       String text = ( String )value;
       if ( text.charAt( 0 ) == 'U' )
-        text = text.substring( 1 ); 
+        text = text.substring( 1 );
       return super.getListCellRendererComponent( list, text, index, isSelected, cellHasFocus );
     }
   }
-  
+
   /** The bound device. */
   private JComboBox boundDevice = new JComboBox();
-  
+
   /** The bound key. */
   private JComboBox boundKey = new JComboBox();
-  
+
   /** The shift. */
   private JCheckBox shift = new JCheckBox();
-  
+
   /** The x shift. */
   private JCheckBox xShift = new JCheckBox();
-  
+
   /** The type. */
   private JComboBox type = new JComboBox();
-  
+
   /**
    * Gets the type.
    * 
    * @return the type
    */
-  public String getType(){ return ( String )type.getSelectedItem(); }
-  
+  public String getType()
+  {
+    return ( String )type.getSelectedItem();
+  }
+
   /** The parameter card. */
-  private JPanel parameterCard = new JPanel( new CardLayout());
-//  private JTextField hex = new JTextField( 12 );
+  private JPanel parameterCard = new JPanel( new CardLayout() );
+  // private JTextField hex = new JTextField( 12 );
 
   // for ModeName
   /** The mode name. */
-private JTextField modeName = new JTextField( 10 );
-  
+  private JTextField modeName = new JTextField( 10 );
+
   /**
    * Sets the mode name.
    * 
-   * @param text the new mode name
+   * @param text
+   *          the new mode name
    */
   public void setModeName( String text )
   {
     modeName.setText( text );
   }
-  
+
   /**
    * Gets the mode name.
    * 
@@ -990,21 +1073,22 @@ private JTextField modeName = new JTextField( 10 );
   {
     return modeName.getText();
   }
-  
+
   // for Multiplex
   /** The device type. */
   private JComboBox deviceType = new JComboBox();
-  
+
   /**
    * Sets the device type.
    * 
-   * @param deviceTypeIndex the new device type
+   * @param deviceTypeIndex
+   *          the new device type
    */
   public void setDeviceType( int deviceTypeIndex )
   {
     deviceType.setSelectedIndex( deviceTypeIndex );
   }
-  
+
   /**
    * Gets the device type.
    * 
@@ -1014,20 +1098,21 @@ private JTextField modeName = new JTextField( 10 );
   {
     return deviceType.getSelectedIndex();
   }
-  
+
   /** The setup code. */
   private JFormattedTextField setupCode = null;
-  
+
   /**
    * Sets the setup code.
    * 
-   * @param code the new setup code
+   * @param code
+   *          the new setup code
    */
   public void setSetupCode( int code )
   {
-    setupCode.setValue( new Integer( code ));
+    setupCode.setValue( new Integer( code ) );
   }
-  
+
   /**
    * Gets the setup code.
    * 
@@ -1035,24 +1120,24 @@ private JTextField modeName = new JTextField( 10 );
    */
   public int getSetupCode()
   {
-    return (( Integer )setupCode.getValue()).intValue();
+    return ( ( Integer )setupCode.getValue() ).intValue();
   }
-  
 
   // for Duration
   /** The duration. */
-  private JSpinner duration = new JSpinner( new WrappingSpinnerNumberModel( 0, 0, 255, 1 ));
-  
+  private JSpinner duration = new JSpinner( new WrappingSpinnerNumberModel( 0, 0, 255, 1 ) );
+
   /**
    * Sets the duration.
    * 
-   * @param d the new duration
+   * @param d
+   *          the new duration
    */
   public void setDuration( int d )
   {
-    duration.setValue( new Integer( d ));
+    duration.setValue( new Integer( d ) );
   }
-  
+
   /**
    * Gets the duration.
    * 
@@ -1060,23 +1145,24 @@ private JTextField modeName = new JTextField( 10 );
    */
   public int getDuration()
   {
-    return (( Integer )duration.getValue()).intValue();
+    return ( ( Integer )duration.getValue() ).intValue();
   }
 
   // for ToadTog
   /** The toggle. */
   private JComboBox toggle = null;
-  
+
   /**
    * Sets the toggle.
    * 
-   * @param t the new toggle
+   * @param t
+   *          the new toggle
    */
   public void setToggle( int t )
   {
     toggle.setSelectedIndex( t );
   }
-  
+
   /**
    * Gets the toggle.
    * 
@@ -1086,20 +1172,21 @@ private JTextField modeName = new JTextField( 10 );
   {
     return toggle.getSelectedIndex();
   }
-  
+
   /** The condition. */
   private JComboBox condition = new JComboBox( ToadTogFunction.styleStrings );
-  
+
   /**
    * Sets the condition.
    * 
-   * @param c the new condition
+   * @param c
+   *          the new condition
    */
   public void setCondition( int c )
   {
     condition.setSelectedIndex( c );
   }
-  
+
   /**
    * Gets the condition.
    * 
@@ -1109,21 +1196,22 @@ private JTextField modeName = new JTextField( 10 );
   {
     return condition.getSelectedIndex();
   }
-  
+
   // for UDSM
   /** The macro key. */
   private JComboBox macroKey = new JComboBox();
-  
+
   /**
    * Sets the macro key.
    * 
-   * @param keyCode the new macro key
+   * @param keyCode
+   *          the new macro key
    */
   public void setMacroKey( int keyCode )
   {
-    macroKey.setSelectedItem( new Integer( keyCode ));
+    macroKey.setSelectedItem( new Integer( keyCode ) );
   }
-  
+
   /**
    * Gets the macro key.
    * 
@@ -1131,26 +1219,27 @@ private JTextField modeName = new JTextField( 10 );
    */
   public int getMacroKey()
   {
-    return (( Integer )macroKey.getSelectedItem()).intValue();
+    return ( ( Integer )macroKey.getSelectedItem() ).intValue();
   }
-  
+
   /** The key code renderer. */
   private KeyCodeListRenderer keyCodeRenderer = new KeyCodeListRenderer();
-  
+
   // for ULDKP
   /** The uldkp duration. */
   private JComboBox uldkpDuration = null;
-  
+
   /**
    * Sets the uLDKP duration.
    * 
-   * @param d the new uLDKP duration
+   * @param d
+   *          the new uLDKP duration
    */
   public void setULDKPDuration( int d )
   {
     uldkpDuration.setSelectedIndex( d );
   }
-  
+
   /**
    * Gets the uLDKP duration.
    * 
@@ -1160,23 +1249,24 @@ private JTextField modeName = new JTextField( 10 );
   {
     return uldkpDuration.getSelectedIndex();
   }
-  
+
   /** The first key label. */
   private JLabel firstKeyLabel = new JLabel();
-  
+
   /** The first macro key. */
   private JComboBox firstMacroKey = new JComboBox();
-  
+
   /**
    * Sets the first macro key.
    * 
-   * @param keyCode the new first macro key
+   * @param keyCode
+   *          the new first macro key
    */
   public void setFirstMacroKey( int keyCode )
   {
-    firstMacroKey.setSelectedItem( new Integer( keyCode ));
+    firstMacroKey.setSelectedItem( new Integer( keyCode ) );
   }
-  
+
   /**
    * Gets the first macro key.
    * 
@@ -1184,25 +1274,26 @@ private JTextField modeName = new JTextField( 10 );
    */
   public int getFirstMacroKey()
   {
-    return (( Integer )firstMacroKey.getSelectedItem()).intValue();
+    return ( ( Integer )firstMacroKey.getSelectedItem() ).intValue();
   }
-  
+
   /** The second key label. */
   private JLabel secondKeyLabel = new JLabel();
-  
+
   /** The second macro key. */
   private JComboBox secondMacroKey = new JComboBox();
-  
+
   /**
    * Sets the second macro key.
    * 
-   * @param keyCode the new second macro key
+   * @param keyCode
+   *          the new second macro key
    */
   public void setSecondMacroKey( int keyCode )
   {
-    secondMacroKey.setSelectedItem( new Integer( keyCode ));
+    secondMacroKey.setSelectedItem( new Integer( keyCode ) );
   }
-  
+
   /**
    * Gets the second macro key.
    * 
@@ -1210,63 +1301,64 @@ private JTextField modeName = new JTextField( 10 );
    */
   public int getSecondMacroKey()
   {
-    return (( Integer )secondMacroKey.getSelectedItem()).intValue();
+    return ( ( Integer )secondMacroKey.getSelectedItem() ).intValue();
   }
 
   // For DSM/LDKP
-  
+
   /** The macro box. */
   private Box macroBox = null;
-  
+
   /** The available label. */
   private JLabel availableLabel = new JLabel( "Available keys:" );
-  
+
   /** The available buttons. */
   private JList availableButtons = new JList();
-  
+
   /** The add. */
   private JButton add = new JButton( "Add" );
-  
+
   /** The insert. */
   private JButton insert = new JButton( "Insert" );
-  
+
   /** The add shift. */
   private JButton addShift = new JButton( "Add Shift" );
-  
+
   /** The insert shift. */
   private JButton insertShift = new JButton( "Ins Shift" );
-  
+
   /** The add x shift. */
   private JButton addXShift = new JButton( "Add xShift" );
-  
+
   /** The insert x shift. */
   private JButton insertXShift = new JButton( "Ins xShift" );
-  
+
   /** The macro button renderer. */
   private MacroButtonRenderer macroButtonRenderer = new MacroButtonRenderer();
-  
+
   /** The first keys panel. */
   private JPanel firstKeysPanel = null;
-  
+
   /** The first macro label. */
   private JLabel firstMacroLabel = new JLabel( "Short keys:" );
-  
+
   /** The first macro buttons. */
   private JList firstMacroButtons = new JList();
-  
+
   /** The target list. */
   private JList targetList = firstMacroButtons;
-  
+
   /**
    * Sets the first macro buttons.
    * 
-   * @param keyCodes the new first macro buttons
+   * @param keyCodes
+   *          the new first macro buttons
    */
   public void setFirstMacroButtons( Integer[] keyCodes )
   {
     setMacroButtons( keyCodes, firstMacroButtons );
   }
-  
+
   /**
    * Gets the first macro buttons.
    * 
@@ -1276,38 +1368,39 @@ private JTextField modeName = new JTextField( 10 );
   {
     return getMacroButtons( firstMacroButtons );
   }
-  
+
   /** The first move up. */
   private JButton firstMoveUp = new JButton( "Move up" );
-  
+
   /** The first move down. */
   private JButton firstMoveDown = new JButton( "Move down" );
-  
+
   /** The first remove. */
   private JButton firstRemove = new JButton( "Remove" );
-  
+
   /** The first clear. */
   private JButton firstClear = new JButton( "Clear" );
 
   /** The second keys panel. */
   private JPanel secondKeysPanel = null;
-  
+
   /** The second macro label. */
   private JLabel secondMacroLabel = new JLabel( "Long keys:" );
-  
+
   /** The second macro buttons. */
   private JList secondMacroButtons = new JList();
-  
+
   /**
    * Sets the second macro buttons.
    * 
-   * @param keyCodes the new second macro buttons
+   * @param keyCodes
+   *          the new second macro buttons
    */
   public void setSecondMacroButtons( Integer[] keyCodes )
   {
     setMacroButtons( keyCodes, secondMacroButtons );
   }
-  
+
   /**
    * Gets the second macro buttons.
    * 
@@ -1315,52 +1408,52 @@ private JTextField modeName = new JTextField( 10 );
    */
   public Integer[] getSecondMacroButtons()
   {
-    return getMacroButtons( firstMacroButtons );
+    return getMacroButtons( secondMacroButtons );
   }
-  
+
   /** The second move up. */
   private JButton secondMoveUp = new JButton( "Move up" );
-  
+
   /** The second move down. */
   private JButton secondMoveDown = new JButton( "Move down" );
-  
+
   /** The second remove. */
   private JButton secondRemove = new JButton( "Remove" );
-  
+
   /** The second clear. */
   private JButton secondClear = new JButton( "Clear" );
-  
+
   /** The notes. */
   private JTextArea notes = new JTextArea( 2, 2 );
 
   // action Buttons
   /** The ok button. */
   private JButton okButton = new JButton( "OK" );
-  
+
   /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
-  
+
   /** The focus field. */
   private JTextField focusField = null;
-  
+
   /** The config. */
   private RemoteConfiguration config = null;
-  
+
   /** The function. */
   private SpecialProtocolFunction function = null;
-  
+
   /** The cmd. */
   private Hex cmd = null;
-  
+
   /** The dialog. */
   private static SpecialFunctionDialog dialog = null;
-  
+
   /** The active color. */
   private Color activeColor;
-  
+
   /** The inactive color. */
   private Color inactiveColor;
-  
+
   /** The disabled color. */
   private Color disabledColor;
 }

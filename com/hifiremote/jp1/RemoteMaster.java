@@ -14,22 +14,28 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.ListIterator;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -69,7 +75,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.89";
+  public final static String version = "v1.91";
 
   /** The dir. */
   private File dir = null;
@@ -105,11 +111,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The interfaces. */
   private ArrayList< IO > interfaces = new ArrayList< IO >();
 
-  /** The download item. */
+  /** The download action. */
   private RMAction downloadAction = null;
 
-  /** The upload item. */
+  /** The upload action. */
   private RMAction uploadAction = null;
+
+  /** The raw download item */
+  private JMenuItem downloadRawItem = null;
+
+  /** The verify upload item */
+  private JCheckBoxMenuItem verifyUploadItem = null;
 
   /** The upload wav item. */
   private JMenuItem uploadWavItem = null;
@@ -203,25 +215,37 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
           String sig = io.getRemoteSignature();
-          Remote[] remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
+          Remote currentRemote = null;
           Remote remote = null;
-          if ( remotes.length == 0 )
+          if ( remoteConfig != null )
           {
-            JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature " + sig );
-            return;
+            currentRemote = remoteConfig.getRemote();
           }
-          else if ( remotes.length == 1 )
-            remote = remotes[ 0 ];
-          else
-          {// ( remotes.length > 1 )
-
-            String message = "Please pick the best match to your remote from the following list:";
-            Object rc = ( Remote )JOptionPane.showInputDialog( null, message, "Ambiguous Remote",
-                JOptionPane.ERROR_MESSAGE, null, remotes, remotes[ 0 ] );
-            if ( rc == null )
+          if ( ( currentRemote == null ) || !currentRemote.getSignature().equals( sig ) )
+          {
+            Remote[] remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
+            if ( remotes.length == 0 )
+            {
+              JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature " + sig );
               return;
+            }
+            else if ( remotes.length == 1 )
+              remote = remotes[ 0 ];
             else
-              remote = ( Remote )rc;
+            {// ( remotes.length > 1 )
+
+              String message = "Please pick the best match to your remote from the following list:";
+              Object rc = ( Remote )JOptionPane.showInputDialog( null, message, "Ambiguous Remote",
+                  JOptionPane.ERROR_MESSAGE, null, remotes, remotes[ 0 ] );
+              if ( rc == null )
+                return;
+              else
+                remote = ( Remote )rc;
+            }
+          }
+          else
+          {
+            remote = currentRemote;
           }
           remote.load();
           remoteConfig = new RemoteConfiguration( remote );
@@ -248,12 +272,36 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
           int rc = io.writeRemote( remoteConfig.getRemote().getBaseAddress(), remoteConfig.getData() );
-          io.closeRemote();
 
           if ( rc != remoteConfig.getData().length )
+          {
+            io.closeRemote();
             JOptionPane.showMessageDialog( RemoteMaster.this, "writeRemote returned " + rc );
+            return;
+          }
+          if ( verifyUploadItem.isSelected() )
+          {
+            short[] data = remoteConfig.getData();
+            short[] readBack = new short[ data.length ];
+            rc = io.readRemote( remoteConfig.getRemote().getBaseAddress(), readBack );
+            io.closeRemote();
+            if ( rc != data.length )
+            {
+              JOptionPane.showMessageDialog( RemoteMaster.this, "Upload verify failed: read back " + rc
+                  + " byte, but expected " + data.length );
+
+            }
+            else if ( !Arrays.equals( data, readBack ) )
+            {
+              JOptionPane.showMessageDialog( RemoteMaster.this,
+                  "Upload verify failed: data read back doesn't match data written." );
+            }
+          }
           else
+          {
+            io.closeRemote();
             JOptionPane.showMessageDialog( RemoteMaster.this, "Upload complete!" );
+          }
         }
       }
       catch ( Exception ex )
@@ -435,7 +483,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return frame;
   }
 
-  protected static ImageIcon createIcon( String imageName )
+  public static ImageIcon createIcon( String imageName )
   {
     String imgLocation = "toolbarButtonGraphics/general/" + imageName + ".gif";
     URLClassLoader sysloader = ( URLClassLoader )ClassLoader.getSystemClassLoader();
@@ -470,18 +518,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // menu.add( newItem );
 
     openAction = new RMAction( "Open...", "OPEN", createIcon( "Open24" ), "Open a file", KeyEvent.VK_O );
-    menu.add( openAction );
+    menu.add( openAction ).setIcon( null );
     toolBar.add( openAction );
 
     saveAction = new RMAction( "Save", "SAVE", createIcon( "Save24" ), "Save to file", KeyEvent.VK_S );
     saveAction.setEnabled( false );
-    menu.add( saveAction );
+    menu.add( saveAction ).setIcon( null );
     toolBar.add( saveAction );
 
     saveAsAction = new RMAction( "Save as...", "SAVEAS", createIcon( "SaveAs24" ), "Save to a different file",
         KeyEvent.VK_A );
     saveAsAction.setEnabled( false );
-    menu.add( saveAsAction ).setDisplayedMnemonicIndex( 5 );
+    JMenuItem menuItem = menu.add( saveAsAction );
+    menuItem.setDisplayedMnemonicIndex( 5 );
+    menuItem.setIcon( null );
     toolBar.add( saveAsAction );
 
     // revertItem = new JMenuItem( "Revert to saved" );
@@ -492,12 +542,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.addSeparator();
     toolBar.addSeparator();
 
-    exportIRItem = new JMenuItem( "Export as IR...", KeyEvent.VK_I );
-    exportIRItem.setEnabled( false );
-    exportIRItem.addActionListener( this );
-    menu.add( exportIRItem );
+    // exportIRItem = new JMenuItem( "Export as IR...", KeyEvent.VK_I );
+    // exportIRItem.setEnabled( false );
+    // exportIRItem.addActionListener( this );
+    // menu.add( exportIRItem );
+    // menu.addSeparator();
 
-    menu.addSeparator();
     recentFiles = new JMenu( "Recent" );
     menu.add( recentFiles );
     recentFiles.setEnabled( false );
@@ -612,34 +662,65 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       item.setMnemonic( KeyEvent.VK_A );
       item.addActionListener( interfaceListener );
 
-      for ( IO io : interfaces )
+      ListIterator< IO > it = interfaces.listIterator();
+      while ( it.hasNext() )
       {
-        String ioName = io.getInterfaceName();
-        item = new JRadioButtonMenuItem( ioName + "..." );
-        item.setActionCommand( ioName );
-        item.setSelected( ioName.equals( preferredInterface ) );
-        subMenu.add( item );
-        group.add( item );
-        item.addActionListener( interfaceListener );
+        IO io = it.next();
+        try
+        {
+          String ioName = io.getInterfaceName();
+          item = new JRadioButtonMenuItem( ioName + "..." );
+          item.setActionCommand( ioName );
+          item.setSelected( ioName.equals( preferredInterface ) );
+          subMenu.add( item );
+          group.add( item );
+          item.addActionListener( interfaceListener );
+        }
+        catch ( UnsatisfiedLinkError ule )
+        {
+          it.remove();
+          String className = io.getClass().getName();
+          int dot = className.lastIndexOf( '.' );
+          if ( dot != -1 )
+          {
+            className = className.substring( dot + 1 );
+          }
+          JOptionPane.showMessageDialog( this, "An incompatible version of the " + className
+              + " driver was detected.  You will not be able to download or upload using that driver.",
+              "Incompatible Driver", JOptionPane.ERROR_MESSAGE );
+
+        }
       }
     }
 
     downloadAction = new RMAction( "Download from Remote", "DOWNLOAD", createIcon( "Import24" ),
         "Download from the attached remote", KeyEvent.VK_D );
     downloadAction.setEnabled( !interfaces.isEmpty() );
-    menu.add( downloadAction );
+    menu.add( downloadAction ).setIcon( null );
     toolBar.add( downloadAction );
 
     uploadAction = new RMAction( "Upload to Remote", "UPLOAD", createIcon( "Export24" ),
         "Upload to the attached remote", KeyEvent.VK_U );
     uploadAction.setEnabled( false );
-    menu.add( uploadAction );
+    menu.add( uploadAction ).setIcon( null );
     toolBar.add( uploadAction );
 
-    uploadWavItem = new JMenuItem( "Upload using WAV", KeyEvent.VK_W );
+    uploadWavItem = new JMenuItem( "Create WAV", KeyEvent.VK_W );
     uploadWavItem.setEnabled( false );
     uploadWavItem.addActionListener( this );
     menu.add( uploadWavItem );
+
+    menu.addSeparator();
+    downloadRawItem = new JMenuItem( "Raw download", KeyEvent.VK_R );
+    downloadRawItem.addActionListener( this );
+    menu.add( downloadRawItem );
+
+    menu.addSeparator();
+    verifyUploadItem = new JCheckBoxMenuItem( "Verify after upload" );
+    verifyUploadItem.setMnemonic( KeyEvent.VK_V );
+    verifyUploadItem.setSelected( Boolean.parseBoolean( properties.getProperty( "verifyUpload", "true" ) ) );
+    verifyUploadItem.addActionListener( this );
+    menu.add( verifyUploadItem );
 
     menu = new JMenu( "Options" );
     menu.setMnemonic( KeyEvent.VK_O );
@@ -813,7 +894,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       saveAction.setEnabled( false );
       saveAsAction.setEnabled( true );
     }
-    exportIRItem.setEnabled( true );
+    // exportIRItem.setEnabled( true );
     uploadAction.setEnabled( !interfaces.isEmpty() );
     remoteConfig = new RemoteConfiguration( file );
     update();
@@ -1005,9 +1086,68 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       Object source = e.getSource();
       if ( source == exportIRItem )
+      {
         exportAsIR();
+      }
       else if ( source == exitItem )
+      {
         dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ) );
+      }
+      else if ( source == downloadRawItem )
+      {
+        IO io = getOpenInterface();
+        if ( io == null )
+        {
+          JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
+          return;
+        }
+        String signature = io.getRemoteSignature();
+        int baseAddr = io.getRemoteEepromAddress();
+        int buffSize = io.getRemoteEepromSize();
+        if ( buffSize <= 0 )
+        {
+          String[] choices =
+          {
+              "1K", "2K", "4K", "8K"
+          };
+          String choice = ( String )JOptionPane.showInputDialog( this,
+              "Select the number of bytes to download from the remote.", "Raw Download Size",
+              JOptionPane.QUESTION_MESSAGE, null, choices, choices[ 1 ] );
+          if ( choice == null )
+          {
+            return;
+          }
+          buffSize = Integer.parseInt( choice.substring( 0, 1 ) ) * 1024;
+        }
+        short[] buffer = new short[ buffSize ];
+        io.readRemote( baseAddr, buffer );
+        io.closeRemote();
+        RMFileChooser chooser = getFileChooser();
+        File rawFile = new File( signature + ".ir" );
+        chooser.setSelectedFile( rawFile );
+        int returnVal = chooser.showSaveDialog( this );
+        if ( returnVal == RMFileChooser.APPROVE_OPTION )
+        {
+          rawFile = chooser.getSelectedFile();
+          int rc = JOptionPane.YES_OPTION;
+          if ( rawFile.exists() )
+            rc = JOptionPane.showConfirmDialog( this, rawFile.getName()
+                + " already exists.  Do you want to replace it?", "Replace existing file?", JOptionPane.YES_NO_OPTION );
+
+          if ( rc != JOptionPane.YES_OPTION )
+            return;
+          PrintWriter pw = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
+
+          Hex.print( pw, buffer, baseAddr );
+
+          pw.close();
+        }
+
+      }
+      else if ( source == verifyUploadItem )
+      {
+        properties.setProperty( "verifyUpload", Boolean.toString( verifyUploadItem.isSelected() ) );
+      }
       else if ( source == aboutItem )
       {
         String text = "<html><b>Java IR, " + version + "</b>" + "<p>Java version "
@@ -1104,43 +1244,65 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, 3 );
 
     specialFunctionPanel.set( remoteConfig );
-    AddressRange range = remoteConfig.getRemote().getAdvancedCodeAddress();
-    int available = range.getEnd() - range.getStart();
-    advProgressBar.setMinimum( 0 );
-    advProgressBar.setMaximum( available );
-    int used = remoteConfig.getAdvancedCodeBytesUsed();
-    advProgressBar.setValue( used );
-    advProgressBar.setString( Integer.toString( available - used ) + " free" );
 
     devicePanel.set( remoteConfig );
     protocolPanel.set( remoteConfig );
-    range = remoteConfig.getRemote().getUpgradeAddress();
-    available = range.getEnd() - range.getStart();
-    upgradeProgressBar.setMinimum( 0 );
-    upgradeProgressBar.setMaximum( available );
-    used = remoteConfig.getUpgradeCodeBytesUsed();
-    upgradeProgressBar.setValue( used );
-    upgradeProgressBar.setString( Integer.toString( available - used ) + " free" );
 
     if ( learnedPanel != null )
       learnedPanel.set( remoteConfig );
-    range = remoteConfig.getRemote().getLearnedAddress();
+
+    updateUsage();
+
+    rawDataPanel.set( remoteConfig );
+  }
+
+  private boolean updateUsage( JProgressBar bar, AddressRange range, int used )
+  {
     if ( range != null )
     {
-      available = range.getEnd() - range.getStart();
-      learnedProgressBar.setMinimum( 0 );
-      learnedProgressBar.setMaximum( available );
-      used = remoteConfig.getLearnedSignalBytesUsed();
-      learnedProgressBar.setValue( used );
-      learnedProgressBar.setString( Integer.toString( available - used ) + " free" );
+      int available = range.getSize();
+      bar.setMinimum( 0 );
+      bar.setMaximum( available );
+      bar.setValue( used );
+      bar.setString( Integer.toString( available - used ) + " free" );
+
+      return available >= used;
     }
     else
     {
-      learnedProgressBar.setValue( 0 );
-      learnedProgressBar.setString( "N/A" );
-    }
+      bar.setMinimum( 0 );
+      bar.setMaximum( 0 );
+      bar.setValue( 0 );
+      bar.setString( "N/A" );
 
-    rawDataPanel.set( remoteConfig );
+      return true;
+    }
+  }
+
+  private void updateUsage()
+  {
+    Remote remote = remoteConfig.getRemote();
+    if ( !updateUsage( advProgressBar, remote.getAdvancedCodeAddress(), remoteConfig.getAdvancedCodeBytesNeeded() ) )
+    {
+      JOptionPane.showMessageDialog( this,
+          "The defined advanced codes (keymoves, macros, special functions) use more space than is available."
+              + "defined than there is space available.  Please remove some.", "Available Space Exceeded",
+          JOptionPane.ERROR_MESSAGE );
+    }
+    if ( !updateUsage( upgradeProgressBar, remote.getUpgradeAddress(), remoteConfig.getUpgradeCodeBytesNeeded() ) )
+    {
+      JOptionPane.showMessageDialog( this,
+          "The defined advanced codes (keymoves, macros, special functions) use more space than is available."
+              + "defined than there is space available.  Please remove some.", "Available Space Exceeded",
+          JOptionPane.ERROR_MESSAGE );
+    }
+    if ( !updateUsage( learnedProgressBar, remote.getLearnedAddress(), remoteConfig.getLearnedSignalBytesNeeded() ) )
+    {
+      JOptionPane.showMessageDialog( this,
+          "The defined advanced codes (keymoves, macros, special functions) use more space than is available."
+              + "defined than there is space available.  Please remove some.", "Available Space Exceeded",
+          JOptionPane.ERROR_MESSAGE );
+    }
   }
 
   /**
@@ -1151,29 +1313,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void propertyChange( PropertyChangeEvent event )
   {
-    Object source = event.getSource();
-    if ( ( source == keyMovePanel.getModel() ) || ( source == macroPanel.getModel() )
-        || ( source == specialFunctionPanel.getModel() ) )
-    {
-      int used = remoteConfig.updateAdvancedCodes();
-      advProgressBar.setValue( used );
-      advProgressBar.setString( Integer.toString( advProgressBar.getMaximum() - used ) + " free" );
-    }
-    else if ( ( source == devicePanel.getModel() ) || ( source == protocolPanel.getModel() ) )
-    {
-      int used = remoteConfig.updateUpgrades();
-      upgradeProgressBar.setValue( used );
-      upgradeProgressBar.setString( Integer.toString( upgradeProgressBar.getMaximum() - used ) + " free" );
-    }
-    else if ( ( learnedPanel != null ) && ( source == learnedPanel.getModel() ) )
-    {
-      int used = remoteConfig.updateLearnedSignals();
-      learnedProgressBar.setValue( used );
-      learnedProgressBar.setString( Integer.toString( learnedProgressBar.getMaximum() - used ) + " free" );
-    }
-    else
-      System.err.println( "propertyChange source is " + source );
-    remoteConfig.updateCheckSums();
+    remoteConfig.updateImage();
+    updateUsage();
   }
 
   /**

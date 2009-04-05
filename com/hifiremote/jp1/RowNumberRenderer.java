@@ -50,7 +50,7 @@ public class RowNumberRenderer extends DefaultTableCellRenderer
       int row, int col )
   {
     if ( useHex )
-      value = RemoteConfiguration.toHex( ( ( Integer )value ).intValue() ) + ':';
+      value = String.format( "%04X:", ( ( Integer )value ).intValue() );
     return super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
   }
 

@@ -10,31 +10,32 @@ import javax.swing.table.TableCellRenderer;
 /**
  * The Class SpecialFunctionTableModel.
  */
-public class SpecialFunctionTableModel
-  extends JP1TableModel< SpecialProtocolFunction >
+public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFunction >
 {
-  
+
   /**
    * Instantiates a new special function table model.
    */
-  public SpecialFunctionTableModel(){}
+  public SpecialFunctionTableModel()
+  {}
 
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
     Remote remote = remoteConfig.getRemote();
 
-    setData( remoteConfig.getSpecialFunctions());
-    deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons()));
+    setData( remoteConfig.getSpecialFunctions() );
+    deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
     keyRenderer.setRemote( remote );
     keyEditor.setRemote( remote );
   }
-  
+
   /**
    * Gets the remote config.
    * 
@@ -45,18 +46,25 @@ public class SpecialFunctionTableModel
     return remoteConfig;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getColumnCount()
    */
-  public int getColumnCount(){ return colNames.length; }
+  public int getColumnCount()
+  {
+    return colNames.length;
+  }
 
   /** The col names. */
-  private static String[] colNames = 
+  private static String[] colNames =
   {
-    "#", "<html>Device<br>Button</html>", "Key", "Type", "Function", "Hex", "Notes"
+      "#", "<html>Device<br>Button</html>", "Key", "Type", "Function", "Hex", "Notes"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
   public String getColumnName( int col )
@@ -65,12 +73,15 @@ public class SpecialFunctionTableModel
   }
 
   /** The Constant colPrototypeNames. */
-  private static final String[] colPrototypeNames = 
+  private static final String[] colPrototypeNames =
   {
-    "00", "_VCR/DVD_", "shift-Thumbs_Up", " ToadTog(0,ForceOff) ", "[Short]:DiscreteON;DiscreteON; [Long]:DiscreteOFF;DiscreteOFF", "00 11 22 33", "A reasonable length note"
+      "00", "_VCR/DVD_", "shift-Thumbs_Up", " ToadTog(0,ForceOff) ",
+      "[Short]:DiscreteON;DiscreteON; [Long]:DiscreteOFF;DiscreteOFF", "00 11 22 33", "A reasonable length note"
   };
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
   public String getColumnPrototypeName( int col )
@@ -79,48 +90,53 @@ public class SpecialFunctionTableModel
   }
 
   /** The col widths. */
-  private static boolean[] colWidths = 
+  private static boolean[] colWidths =
   {
-    true, true, true, false, false, false, false 
+      true, true, true, false, false, false, false
   };
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
   public boolean isColumnWidthFixed( int col )
   {
     return colWidths[ col ];
   }
-  
+
   /** The Constant colClasses. */
-  private static final Class<?>[] colClasses =
+  private static final Class< ? >[] colClasses =
   {
-    Integer.class, DeviceButton.class, Integer.class, String.class, String.class, Hex.class, String.class
+      Integer.class, DeviceButton.class, Integer.class, String.class, String.class, Hex.class, String.class
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
-  public Class<?> getColumnClass( int col )
+  public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable( int row, int col )
   {
-    if (( col == 0 ) || ( col == 3 ) || ( col == 4 ) || ( col == 5 ))
-      return false;
-
-    return true;
+    return !( ( col == 0 ) || ( col == 3 ) || ( col == 4 ) || ( col == 5 ) );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
-  public Object getValueAt(int row, int column)
+  public Object getValueAt( int row, int column )
   {
     SpecialProtocolFunction sf = getRow( row );
     Remote r = remoteConfig.getRemote();
@@ -132,13 +148,13 @@ public class SpecialFunctionTableModel
         int index = sf.getDeviceButtonIndex();
         return r.getDeviceButtons()[ index ];
       case 2:
-        return new Integer( sf.getKeyCode());
+        return new Integer( sf.getKeyCode() );
       case 3:
         return sf.getDisplayType();
       case 4:
         return sf.getValueString( remoteConfig );
       case 5:
-        return sf.getData();
+        return sf.getCmd();
       case 6:
         return sf.getNotes();
       default:
@@ -146,7 +162,9 @@ public class SpecialFunctionTableModel
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
   public void setValueAt( Object value, int row, int col )
@@ -164,15 +182,17 @@ public class SpecialFunctionTableModel
         }
     }
     else if ( col == 2 )
-      keyMove.setKeyCode((( Integer )value ).intValue());
+      keyMove.setKeyCode( ( ( Integer )value ).intValue() );
     else if ( col == 6 )
-      keyMove.setNotes(( String )value );
+      keyMove.setNotes( ( String )value );
     else
       return;
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
   public TableCellEditor getColumnEditor( int col )
@@ -189,8 +209,10 @@ public class SpecialFunctionTableModel
     }
     return null;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
   public TableCellRenderer getColumnRenderer( int col )
@@ -199,19 +221,19 @@ public class SpecialFunctionTableModel
       return new RowNumberRenderer();
     else if ( col == 2 )
       return keyRenderer;
-    
+
     return null;
   }
-  
+
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
-  
+
   /** The device button box. */
   private JComboBox deviceButtonBox = new JComboBox();
-  
+
   /** The key renderer. */
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
-  
+
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
 }

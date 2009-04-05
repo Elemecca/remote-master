@@ -86,7 +86,7 @@ public class RawDataTableModel extends JP1TableModel< short[] >
     else if ( remoteConfig == null )
       return null;
     else
-      return new UnsignedByte( remoteConfig.getData()[ getOffset( row, col ) ] );
+      return new UnsignedByte( ( short )( remoteConfig.getData()[ getOffset( row, col ) ] & 0xFF ) );
   }
 
   /*

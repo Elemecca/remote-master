@@ -1,15 +1,16 @@
 package com.hifiremote.jp1;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class Hex.
  */
-public class Hex
-  implements Cloneable, Comparable< Hex >
+public class Hex implements Cloneable, Comparable< Hex >
 {
-  
+
   /**
    * Instantiates a new hex.
    */
@@ -21,7 +22,8 @@ public class Hex
   /**
    * Instantiates a new hex.
    * 
-   * @param length the length
+   * @param length
+   *          the length
    */
   public Hex( int length )
   {
@@ -31,7 +33,8 @@ public class Hex
   /**
    * Instantiates a new hex.
    * 
-   * @param text the text
+   * @param text
+   *          the text
    */
   public Hex( String text )
   {
@@ -41,7 +44,8 @@ public class Hex
   /**
    * Instantiates a new hex.
    * 
-   * @param data the data
+   * @param data
+   *          the data
    */
   public Hex( short[] data )
   {
@@ -51,9 +55,12 @@ public class Hex
   /**
    * Instantiates a new hex.
    * 
-   * @param newData the new data
-   * @param offset the offset
-   * @param length the length
+   * @param newData
+   *          the new data
+   * @param offset
+   *          the offset
+   * @param length
+   *          the length
    */
   public Hex( short[] newData, int offset, int length )
   {
@@ -64,7 +71,8 @@ public class Hex
   /**
    * Instantiates a new hex.
    * 
-   * @param h the h
+   * @param h
+   *          the h
    */
   public Hex( Hex h )
   {
@@ -75,9 +83,12 @@ public class Hex
   /**
    * Instantiates a new hex.
    * 
-   * @param h the h
-   * @param offset the offset
-   * @param length the length
+   * @param h
+   *          the h
+   * @param offset
+   *          the offset
+   * @param length
+   *          the length
    */
   public Hex( Hex h, int offset, int length )
   {
@@ -108,7 +119,8 @@ public class Hex
   /**
    * Sets the.
    * 
-   * @param data the data
+   * @param data
+   *          the data
    */
   public void set( short[] data )
   {
@@ -118,7 +130,8 @@ public class Hex
   /**
    * Sets the.
    * 
-   * @param text the text
+   * @param text
+   *          the text
    */
   public void set( String text )
   {
@@ -128,8 +141,8 @@ public class Hex
   /**
    * Gets the.
    * 
-   * @param offset the offset
-   * 
+   * @param offset
+   *          the offset
    * @return the int
    */
   public int get( int offset )
@@ -140,21 +153,24 @@ public class Hex
   /**
    * Gets the.
    * 
-   * @param data the data
-   * @param offset the offset
-   * 
+   * @param data
+   *          the data
+   * @param offset
+   *          the offset
    * @return the int
    */
   public static int get( short[] data, int offset )
   {
-    return ( data[ offset ] << 8 ) | data[ offset  + 1  ];
+    return ( data[ offset ] << 8 ) | data[ offset + 1 ];
   }
 
   /**
    * Put.
    * 
-   * @param value the value
-   * @param offset the offset
+   * @param value
+   *          the value
+   * @param offset
+   *          the offset
    */
   public void put( int value, int offset )
   {
@@ -164,20 +180,24 @@ public class Hex
   /**
    * Put.
    * 
-   * @param value the value
-   * @param data the data
-   * @param offset the offset
+   * @param value
+   *          the value
+   * @param data
+   *          the data
+   * @param offset
+   *          the offset
    */
   public static void put( int value, short[] data, int offset )
   {
-    data[ offset ] = ( short )(( value >> 8 ) & 0xFF );
+    data[ offset ] = ( short )( ( value >> 8 ) & 0xFF );
     data[ offset + 1 ] = ( short )( value & 0xFF );
   }
 
   /**
-   * Put.
+   * Copy from src
    * 
-   * @param src the src
+   * @param src
+   *          the src
    */
   public void put( Hex src )
   {
@@ -185,10 +205,12 @@ public class Hex
   }
 
   /**
-   * Put.
+   * Copy from src to index
    * 
-   * @param src the src
-   * @param index the index
+   * @param src
+   *          the src
+   * @param index
+   *          the index
    */
   public void put( Hex src, int index )
   {
@@ -196,10 +218,12 @@ public class Hex
   }
 
   /**
-   * Put.
+   * Copy from src to index
    * 
-   * @param src the src
-   * @param index the index
+   * @param src
+   *          the src
+   * @param index
+   *          the index
    */
   public void put( short[] src, int index )
   {
@@ -207,11 +231,14 @@ public class Hex
   }
 
   /**
-   * Put.
+   * Copy src into dest at index
    * 
-   * @param src the src
-   * @param dest the dest
-   * @param index the index
+   * @param src
+   *          the src
+   * @param dest
+   *          the dest
+   * @param index
+   *          the index into dest
    */
   public static void put( Hex src, short[] dest, int index )
   {
@@ -219,16 +246,19 @@ public class Hex
   }
 
   /**
-   * Put.
+   * Copy src into dest at index
    * 
-   * @param src the src
-   * @param dest the dest
-   * @param index the index
+   * @param src
+   *          the src
+   * @param dest
+   *          the dest
+   * @param index
+   *          the index into dest
    */
   public static void put( short[] src, short[] dest, int index )
   {
     int length = src.length;
-    if (( index + length ) > dest.length )
+    if ( ( index + length ) > dest.length )
       length = dest.length - index;
     System.arraycopy( src, 0, dest, index, length );
   }
@@ -236,8 +266,8 @@ public class Hex
   /**
    * Parses the hex.
    * 
-   * @param text the text
-   * 
+   * @param text
+   *          the text
    * @return the short[]
    */
   public static short[] parseHex( String text )
@@ -245,7 +275,7 @@ public class Hex
     short[] rc = null;
     int length = 0;
     int space = text.indexOf( ' ' );
-    if (( space == -1 ) && ( text.length() > 3 ))
+    if ( ( space == -1 ) && ( text.length() > 3 ) )
     {
       length = text.length() / 2;
       rc = new short[ length ];
@@ -269,33 +299,37 @@ public class Hex
   /**
    * Parses the hex.
    * 
-   * @param text the text
-   * @param data the data
-   * @param offset the offset
+   * @param text
+   *          the text
+   * @param data
+   *          the data
+   * @param offset
+   *          the offset
    */
-  public static void parseHex( String text, short[] data,  int offset )
+  public static void parseHex( String text, short[] data, int offset )
   {
     StringTokenizer st = new StringTokenizer( text, " _.$h\n\r", true );
     short value = 0;
-    while ( st.hasMoreTokens())
+    while ( st.hasMoreTokens() )
     {
       String token = st.nextToken();
-      if ( token.equals( " " ) || token.equals( "$" ) || token.equals( "h" ) || token.equals( "\n") || token.equals( "\r" ))
+      if ( token.equals( " " ) || token.equals( "$" ) || token.equals( "h" ) || token.equals( "\n" )
+          || token.equals( "\r" ) )
         value = 0;
-      else if ( token.equals( "_" ))
+      else if ( token.equals( "_" ) )
         value = ADD_OFFSET;
-      else if ( token.equals( "." ))
+      else if ( token.equals( "." ) )
         value = NO_MATCH;
       else
-        data[ offset++ ] = ( short )( value | Short.parseShort( token, 16 ));
+        data[ offset++ ] = ( short )( value | Short.parseShort( token, 16 ) );
     }
   }
 
   /**
    * As string.
    * 
-   * @param value the value
-   * 
+   * @param value
+   *          the value
    * @return the string
    */
   public static String asString( int value )
@@ -347,8 +381,8 @@ public class Hex
   /**
    * To string.
    * 
-   * @param data the data
-   * 
+   * @param data
+   *          the data
    * @return the string
    */
   public static String toString( short[] data )
@@ -359,9 +393,10 @@ public class Hex
   /**
    * To string.
    * 
-   * @param data the data
-   * @param breakAt the break at
-   * 
+   * @param data
+   *          the data
+   * @param breakAt
+   *          the break at
    * @return the string
    */
   public static String toString( short[] data, int breakAt )
@@ -372,11 +407,14 @@ public class Hex
   /**
    * To string.
    * 
-   * @param data the data
-   * @param breakAt the break at
-   * @param offset the offset
-   * @param length the length
-   * 
+   * @param data
+   *          the data
+   * @param breakAt
+   *          the break at
+   * @param offset
+   *          the offset
+   * @param length
+   *          the length
    * @return the string
    */
   public static String toString( short[] data, int breakAt, int offset, int length )
@@ -400,7 +438,7 @@ public class Hex
       --breakCount;
 
       String str = Integer.toHexString( data[ i ] & 0xFF );
-      if ( str.length() < 2  )
+      if ( str.length() < 2 )
         rc.append( '0' );
       rc.append( str );
     }
@@ -410,8 +448,8 @@ public class Hex
   /**
    * To string.
    * 
-   * @param data the data
-   * 
+   * @param data
+   *          the data
    * @return the string
    */
   public static String toString( int[] data )
@@ -425,15 +463,17 @@ public class Hex
       if ( i > 0 )
         rc.append( ' ' );
 
-      String str = Integer.toHexString( data[ i ]);
-      if ( str.length() < 2  )
+      String str = Integer.toHexString( data[ i ] );
+      if ( str.length() < 2 )
         rc.append( '0' );
       rc.append( str );
     }
     return rc.toString().toUpperCase();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   public String toString()
@@ -444,8 +484,8 @@ public class Hex
   /**
    * To string.
    * 
-   * @param breakAt the break at
-   * 
+   * @param breakAt
+   *          the break at
    * @return the string
    */
   public String toString( int breakAt )
@@ -456,9 +496,10 @@ public class Hex
   /**
    * To string.
    * 
-   * @param offset the offset
-   * @param length the length
-   * 
+   * @param offset
+   *          the offset
+   * @param length
+   *          the length
    * @return the string
    */
   public String toString( int offset, int length )
@@ -469,10 +510,12 @@ public class Hex
   /**
    * To string.
    * 
-   * @param data the data
-   * @param offset the offset
-   * @param length the length
-   * 
+   * @param data
+   *          the data
+   * @param offset
+   *          the offset
+   * @param length
+   *          the length
    * @return the string
    */
   public static String toString( short[] data, int offset, int length )
@@ -480,26 +523,60 @@ public class Hex
     return toString( data, -1, offset, length );
   }
 
-  /* (non-Javadoc)
+  public void print( PrintWriter pw ) throws IOException
+  {
+    print( pw, 0 );
+  }
+
+  public void print( PrintWriter pw, int base ) throws IOException
+  {
+    print( pw, data, base );
+  }
+
+  public static void print( PrintWriter pw, short[] data ) throws IOException
+  {
+    print( pw, data, 0 );
+  }
+
+  public static void print( PrintWriter pw, short[] data, int base ) throws IOException
+  {
+    for ( int i = 0; i < data.length; i += 16 )
+    {
+      pw.printf( "%04X:", i + base );
+      for ( int j = 0; j < 16; ++j )
+        pw.printf( "  %02X", data[ i + j ] & 0xFF );
+      pw.println();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   public boolean equals( Object obj )
   {
     Hex aHex = ( Hex )obj;
-    if ( this ==  aHex )
+    if ( this == aHex )
       return true;
 
     if ( data.length != aHex.data.length )
       return false;
 
     for ( int i = 0; i < data.length; i++ )
-      if (( data[ i ] & 0xFF ) != ( aHex.data[ i ] & 0xFF ))
+    {
+      if ( ( data[ i ] & 0xFF ) != ( aHex.data[ i ] & 0xFF ) )
+      {
         return false;
+      }
+    }
 
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   public int hashCode()
@@ -508,7 +585,7 @@ public class Hex
     if ( data.length == 0 )
       return 0;
 
-    int multiplier = ( int )Math.pow( 31, data.length - 1);
+    int multiplier = ( int )Math.pow( 31, data.length - 1 );
 
     for ( int i = 0; i < data.length; i++ )
     {
@@ -518,7 +595,9 @@ public class Hex
     return rc;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
   public int compareTo( Hex o )
@@ -564,8 +643,8 @@ public class Hex
   /**
    * Index of.
    * 
-   * @param needle the needle
-   * 
+   * @param needle
+   *          the needle
    * @return the int
    */
   public int indexOf( Hex needle )
@@ -576,9 +655,10 @@ public class Hex
   /**
    * Index of.
    * 
-   * @param needle the needle
-   * @param start the start
-   * 
+   * @param needle
+   *          the needle
+   * @param start
+   *          the start
    * @return the int
    */
   public int indexOf( Hex needle, int start )
@@ -589,8 +669,8 @@ public class Hex
   /**
    * Index of.
    * 
-   * @param needle the needle
-   * 
+   * @param needle
+   *          the needle
    * @return the int
    */
   public int indexOf( short[] needle )
@@ -601,9 +681,10 @@ public class Hex
   /**
    * Index of.
    * 
-   * @param needle the needle
-   * @param start the start
-   * 
+   * @param needle
+   *          the needle
+   * @param start
+   *          the start
    * @return the int
    */
   public int indexOf( short[] needle, int start )
@@ -623,7 +704,7 @@ public class Hex
       }
       if ( match )
         return index;
-      index++;
+      index++ ;
     }
     return -1;
   }
@@ -631,8 +712,8 @@ public class Hex
   /**
    * Sub hex.
    * 
-   * @param index the index
-   * 
+   * @param index
+   *          the index
    * @return the hex
    */
   public Hex subHex( int index )
@@ -643,9 +724,10 @@ public class Hex
   /**
    * Sub hex.
    * 
-   * @param index the index
-   * @param len the len
-   * 
+   * @param index
+   *          the index
+   * @param len
+   *          the len
    * @return the hex
    */
   public Hex subHex( int index, int len )
@@ -656,10 +738,12 @@ public class Hex
   /**
    * Sub hex.
    * 
-   * @param src the src
-   * @param index the index
-   * @param len the len
-   * 
+   * @param src
+   *          the src
+   * @param index
+   *          the index
+   * @param len
+   *          the len
    * @return the hex
    */
   public static Hex subHex( short[] src, int index, int len )
@@ -672,28 +756,29 @@ public class Hex
   /**
    * Apply mask.
    * 
-   * @param mask the mask
-   * 
+   * @param mask
+   *          the mask
    * @return the hex
    */
   public Hex applyMask( Hex mask )
   {
     if ( data.length != mask.data.length )
-      throw new IllegalArgumentException( "Mask length doesn't equal data length");
-    
+      throw new IllegalArgumentException( "Mask length doesn't equal data length" );
+
     short[] result = new short[ data.length ];
-    
+
     for ( int i = 0; i < data.length; ++i )
-      result[ i ] = ( short )( data[ i ] & mask.data[ i ]);
-    
+      result[ i ] = ( short )( data[ i ] & mask.data[ i ] );
+
     return new Hex( result );
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#clone()
    */
-  protected Object clone()
-    throws CloneNotSupportedException
+  protected Object clone() throws CloneNotSupportedException
   {
     Hex rc = ( Hex )super.clone();
     rc.data = ( short[] )data.clone();
@@ -705,7 +790,7 @@ public class Hex
 
   /** The N o_ match. */
   public static short NO_MATCH = 0x100;
-  
+
   /** The AD d_ offset. */
   public static short ADD_OFFSET = 0x200;
 }

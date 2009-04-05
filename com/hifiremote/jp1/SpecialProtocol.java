@@ -14,13 +14,13 @@ public abstract class SpecialProtocol
   private String name = null;
 
   /** Is the protocol internal? */
+  @SuppressWarnings( "unused" )
   private boolean internal = false;
 
+  @SuppressWarnings( "unused" )
   private int internalSerial = 0;
 
-  private String builtInDeviceType = null;
-
-  private String builtInSetupCode = null;
+  private String deviceTypeName = null;
 
   /** The pid. */
   private Hex pid = null;
@@ -29,8 +29,9 @@ public abstract class SpecialProtocol
   private DeviceType deviceType = null;
 
   /** The setup code. */
-  private int setupCode;
+  private int setupCode = -1;
 
+  @SuppressWarnings( "unused" )
   private List< String > userNames = new ArrayList< String >();
 
   /**
@@ -113,8 +114,8 @@ public abstract class SpecialProtocol
       else
       {
         int slash = prefix.indexOf( '/' );
-        sp.builtInDeviceType = prefix.substring( 0, slash );
-        sp.builtInSetupCode = prefix.substring( slash + 1 );
+        sp.deviceTypeName = prefix.substring( 0, slash );
+        sp.setupCode = Integer.parseInt( prefix.substring( slash + 1 ) );
       }
     }
 
@@ -130,6 +131,11 @@ public abstract class SpecialProtocol
    */
   public DeviceUpgrade getDeviceUpgrade( List< DeviceUpgrade > upgrades )
   {
+    if ( deviceTypeName != null )
+    {
+      // When the setup code is "builtin"
+      return null;
+    }
     for ( DeviceUpgrade upgrade : upgrades )
     {
       if ( upgrade.getProtocol().getID().equals( pid ) )
@@ -140,6 +146,18 @@ public abstract class SpecialProtocol
       }
     }
     return null;
+  }
+
+  public boolean isPresent( RemoteConfiguration config )
+  {
+    if ( deviceTypeName == null )
+    {
+      return getDeviceUpgrade( config.getDeviceUpgrades() ) != null;
+    }
+
+    Remote remote = config.getRemote();
+    deviceType = remote.getDeviceType( deviceTypeName );
+    return config.getRemote().hasSetupCode( deviceType, setupCode );
   }
 
   /**

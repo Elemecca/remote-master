@@ -41,26 +41,25 @@ import javax.swing.text.NumberFormatter;
 /**
  * The Class KeyMoveDialog.
  */
-public class KeyMoveDialog
-  extends JDialog
-  implements ActionListener, FocusListener, Runnable, ItemListener
+public class KeyMoveDialog extends JDialog implements ActionListener, FocusListener, Runnable, ItemListener
 {
-  
+
   /**
    * Show dialog.
    * 
-   * @param frame the frame
-   * @param keyMove the key move
-   * @param config the config
-   * 
+   * @param frame
+   *          the frame
+   * @param keyMove
+   *          the key move
+   * @param config
+   *          the config
    * @return the key move
    */
-  public static KeyMove showDialog( JFrame frame,
-                                    KeyMove keyMove, RemoteConfiguration config )
+  public static KeyMove showDialog( JFrame frame, KeyMove keyMove, RemoteConfiguration config )
   {
     if ( dialog == null )
       dialog = new KeyMoveDialog( frame );
-    
+
     dialog.setRemoteConfiguration( config );
     dialog.setKeyMove( keyMove );
     dialog.pack();
@@ -73,49 +72,50 @@ public class KeyMoveDialog
   /**
    * Instantiates a new key move dialog.
    * 
-   * @param frame the frame
+   * @param frame
+   *          the frame
    */
-  private KeyMoveDialog( JFrame frame ) 
+  private KeyMoveDialog( JFrame frame )
   {
     super( frame, "Key Move", true );
-    
+
     JComponent contentPane = ( JComponent )getContentPane();
-    contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
-    contentPane.setLayout( new BoxLayout( contentPane, BoxLayout.PAGE_AXIS ));
-    
+    contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    contentPane.setLayout( new BoxLayout( contentPane, BoxLayout.PAGE_AXIS ) );
+
     // Add the bound device and key controls
-    JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
+    JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ) );
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     contentPane.add( panel );
-    panel.setBorder( BorderFactory.createTitledBorder( "Bound Key" ));
-    
-    panel.add( new JLabel( "Device:" ));
+    panel.setBorder( BorderFactory.createTitledBorder( "Bound Key" ) );
+
+    panel.add( new JLabel( "Device:" ) );
     panel.add( boundDevice );
-    
-    panel.add( Box.createHorizontalStrut( 5 ));
-    
-    panel.add( new JLabel( "Key:" ));
+
+    panel.add( Box.createHorizontalStrut( 5 ) );
+
+    panel.add( new JLabel( "Key:" ) );
     panel.add( boundKey );
-  
+
     shift.addActionListener( this );
     panel.add( shift );
-    
+
     xShift.addActionListener( this );
     panel.add( xShift );
-    
+
     // Add the Function definitions
     Box functionBox = Box.createVerticalBox();
-    functionBox.setBorder( BorderFactory.createTitledBorder( "Function to Perform" ));
+    functionBox.setBorder( BorderFactory.createTitledBorder( "Function to Perform" ) );
     contentPane.add( functionBox );
-    
+
     Box deviceBox = Box.createVerticalBox();
     functionBox.add( deviceBox );
-    deviceBox.setBorder( BorderFactory.createTitledBorder( "Device" ));
+    deviceBox.setBorder( BorderFactory.createTitledBorder( "Device" ) );
     JLabel label = new JLabel( "Double-click a row to select a type/code, or enter a device below." );
     label.setAlignmentX( Component.LEFT_ALIGNMENT );
     deviceBox.add( label );
-    deviceBox.add( Box.createVerticalStrut( 5 ));
-    
+    deviceBox.add( Box.createVerticalStrut( 5 ) );
+
     model.setEditable( false );
     table.setColumnSelectionAllowed( false );
     table.initColumns( model );
@@ -125,11 +125,11 @@ public class KeyMoveDialog
       {
         if ( e.getClickCount() != 2 )
           return;
-        int row = table.rowAtPoint( e.getPoint());
+        int row = table.rowAtPoint( e.getPoint() );
         if ( row != -1 )
         {
-          deviceType.setSelectedItem( table.getValueAt( row, 2 ));
-          setupCode.setValue( new Integer((( SetupCode )table.getValueAt( row, 3 )).getValue()));
+          deviceType.setSelectedItem( table.getValueAt( row, 2 ) );
+          setupCode.setValue( new Integer( ( ( SetupCode )table.getValueAt( row, 3 ) ).getValue() ) );
         }
       }
     };
@@ -141,16 +141,16 @@ public class KeyMoveDialog
     JScrollPane scroll = new JScrollPane( table );
     scroll.setAlignmentX( Component.LEFT_ALIGNMENT );
     deviceBox.add( scroll );
-    deviceBox.add( Box.createVerticalStrut( 10 ));
-    
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
+    deviceBox.add( Box.createVerticalStrut( 10 ) );
+
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ) );
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     deviceBox.add( panel );
-    label = new JLabel( "Device Type:" ); 
+    label = new JLabel( "Device Type:" );
     panel.add( label );
     panel.add( deviceType );
     label.setLabelFor( deviceType );
-    panel.add( Box.createHorizontalStrut( 5 ));
+    panel.add( Box.createHorizontalStrut( 5 ) );
     label = new JLabel( "Setup Code:" );
     panel.add( label );
 
@@ -159,95 +159,97 @@ public class KeyMoveDialog
     format.setGroupingUsed( false );
     NumberFormatter formatter = new NumberFormatter( format );
     formatter.setValueClass( Integer.class );
-    formatter.setMinimum( new Integer( 0 ));
-    formatter.setMaximum( new Integer( 2047 ));
+    formatter.setMinimum( new Integer( 0 ) );
+    formatter.setMaximum( new Integer( 2047 ) );
     setupCode = new JFormattedTextField( formatter );
     setupCode.setColumns( 4 );
     setupCode.addFocusListener( this );
     label.setLabelFor( setupCode );
     panel.add( setupCode );
-    
+
     // Add the EFC/Hex/Key controls
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ) );
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     functionBox.add( panel );
-    
+
     ButtonGroup group = new ButtonGroup();
-    
+
     useEFC.addItemListener( this );
     panel.add( useEFC );
     group.add( useEFC );
-    
+
     useHex.addItemListener( this );
     panel.add( useHex );
     group.add( useHex );
-    
+
     useKey.addItemListener( this );
     panel.add( useKey );
     group.add( useKey );
-    
+
     panel.add( efcHexField );
     efcHexField.addFocusListener( this );
     panel.add( movedKey );
-    
+
     shiftMovedKey.addActionListener( this );
     panel.add( shiftMovedKey );
-    
+
     xShiftMovedKey.addActionListener( this );
     panel.add( xShiftMovedKey );
-    
+
     // Add the notes
-    panel = new JPanel( new BorderLayout());
+    panel = new JPanel( new BorderLayout() );
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     contentPane.add( panel, BorderLayout.CENTER );
-    panel.setBorder( BorderFactory.createTitledBorder( "Notes" ));
+    panel.setBorder( BorderFactory.createTitledBorder( "Notes" ) );
     notes.setLineWrap( true );
-    panel.add( new JScrollPane( notes, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
-                                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER ));
-    
+    panel.add( new JScrollPane( notes, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER ) );
+
     // Add the action buttons
-    panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+    panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
     contentPane.add( panel );
-    
+
     okButton.addActionListener( this );
     panel.add( okButton );
 
     cancelButton.addActionListener( this );
     panel.add( cancelButton );
   }
-  
+
   /**
    * Sets the remote configuration.
    * 
-   * @param config the new remote configuration
+   * @param config
+   *          the new remote configuration
    */
   private void setRemoteConfiguration( RemoteConfiguration config )
   {
     this.config = config;
     Remote remote = config.getRemote();
-    shift.setText( remote.getShiftLabel());
-    xShift.setText( remote.getXShiftLabel());
-    xShift.setVisible( remote.getXShiftEnabled());
-    boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons()));
-    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons()));
+    shift.setText( remote.getShiftLabel() );
+    xShift.setText( remote.getXShiftLabel() );
+    xShift.setVisible( remote.getXShiftEnabled() );
+    boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
     model.set( config );
-    deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes()));
-    
+    deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
+
     if ( remote.getEFCDigits() == 5 )
       useEFC.setText( "EFC-5" );
     else
       useEFC.setText( "EFC" );
-    useKey.setVisible( remote.getAdvCodeFormat() != Remote.HEX_FORMAT );
-    movedKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons()));
-    shiftMovedKey.setText( remote.getShiftLabel());
-    xShiftMovedKey.setText( remote.getXShiftLabel());
+    useKey.setVisible( remote.getAdvCodeFormat() != AdvancedCode.Format.HEX );
+    movedKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+    shiftMovedKey.setText( remote.getShiftLabel() );
+    xShiftMovedKey.setText( remote.getXShiftLabel() );
   }
-  
+
   /**
    * Sets the key move.
    * 
-   * @param keyMove the new key move
+   * @param keyMove
+   *          the new key move
    */
   private void setKeyMove( KeyMove keyMove )
   {
@@ -266,46 +268,50 @@ public class KeyMoveDialog
       movedKey.setSelectedIndex( -1 );
       shiftMovedKey.setSelected( false );
       xShiftMovedKey.setSelected( false );
-      
+
       return;
     }
-    
+
     cmd = keyMove.getCmd();
     if ( cmd != null )
       cmd = new Hex( cmd );
-    boundDevice.setSelectedIndex( keyMove.getDeviceButtonIndex());
+    boundDevice.setSelectedIndex( keyMove.getDeviceButtonIndex() );
     shift.setSelected( false );
     xShift.setSelected( false );
     setButton( keyMove.getKeyCode(), boundKey, shift, xShift );
-    
-    deviceType.setSelectedIndex( keyMove.getDeviceType());
-    setupCode.setValue( new Integer( keyMove.getSetupCode()));
-    
+
+    deviceType.setSelectedIndex( keyMove.getDeviceType() );
+    setupCode.setValue( new Integer( keyMove.getSetupCode() ) );
+
     if ( keyMove.getClass() == KeyMoveKey.class )
     {
       useKey.setSelected( true );
-      int code = (( KeyMoveKey )keyMove ).getMovedKeyCode();
+      int code = ( ( KeyMoveKey )keyMove ).getMovedKeyCode();
       setButton( code, movedKey, shiftMovedKey, xShiftMovedKey );
     }
     else
     {
       efcHexField.setText( null );
       useEFC.setSelected( true );
-      efcHexField.setText( keyMove.getValueString( config ));
+      efcHexField.setText( keyMove.getValueString( config ) );
     }
-    
-    notes.setText( keyMove.getNotes());
+
+    notes.setText( keyMove.getNotes() );
   }
-  
+
   /**
    * Sets the button.
    * 
-   * @param code the code
-   * @param comboBox the combo box
-   * @param shiftBox the shift box
-   * @param xShiftBox the x shift box
+   * @param code
+   *          the code
+   * @param comboBox
+   *          the combo box
+   * @param shiftBox
+   *          the shift box
+   * @param xShiftBox
+   *          the x shift box
    */
-  private void setButton( int code, JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox)
+  private void setButton( int code, JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox )
   {
     Remote remote = config.getRemote();
     Button b = remote.getButton( code );
@@ -315,81 +321,86 @@ public class KeyMoveDialog
       if ( base != 0 )
       {
         b = remote.getButton( base );
-        if (( base | remote.getShiftMask()) == code )
+        if ( ( base | remote.getShiftMask() ) == code )
         {
-          shiftBox.setEnabled( b.allowsShiftedMacro());
+          shiftBox.setEnabled( b.allowsShiftedMacro() );
           shiftBox.setSelected( true );
           comboBox.setSelectedItem( b );
           return;
         }
-        if ( remote.getXShiftEnabled() && (( base | remote.getXShiftMask()) == code ))
+        if ( remote.getXShiftEnabled() && ( ( base | remote.getXShiftMask() ) == code ) )
         {
-          xShiftBox.setEnabled( remote.getXShiftEnabled() & b.allowsXShiftedMacro());
+          xShiftBox.setEnabled( remote.getXShiftEnabled() & b.allowsXShiftedMacro() );
           xShiftBox.setSelected( true );
           comboBox.setSelectedItem( b );
           return;
         }
       }
-      b = remote.getButton( code & ~remote.getShiftMask());
+      b = remote.getButton( code & ~remote.getShiftMask() );
       if ( b != null )
         shiftBox.setSelected( true );
-      else if ( remote.getXShiftEnabled())
+      else if ( remote.getXShiftEnabled() )
       {
-        b = remote.getButton( code ^ ~remote.getXShiftMask());
+        b = remote.getButton( code ^ ~remote.getXShiftMask() );
         if ( b != null )
           xShiftBox.setSelected( true );
       }
     }
-      
-    shiftBox.setEnabled( b.allowsShiftedKeyMove());
-    xShiftBox.setEnabled( b.allowsXShiftedKeyMove());
 
-    if ( b.getIsXShifted())
-      xShiftBox.setSelected( true );      
-    else if ( b.getIsShifted())
+    shiftBox.setEnabled( b.allowsShiftedKeyMove() );
+    xShiftBox.setEnabled( b.allowsXShiftedKeyMove() );
+
+    if ( b.getIsXShifted() )
+      xShiftBox.setSelected( true );
+    else if ( b.getIsShifted() )
       shiftBox.setSelected( true );
-    
+
     comboBox.removeActionListener( this );
-    comboBox.setSelectedItem( b );  
+    comboBox.setSelectedItem( b );
     comboBox.addActionListener( this );
   }
-  
+
   /**
    * Gets the key code.
    * 
-   * @param comboBox the combo box
-   * @param shiftBox the shift box
-   * @param xShiftBox the x shift box
-   * 
+   * @param comboBox
+   *          the combo box
+   * @param shiftBox
+   *          the shift box
+   * @param xShiftBox
+   *          the x shift box
    * @return the key code
    */
-  private int getKeyCode( JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox)
+  private int getKeyCode( JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox )
   {
-    int keyCode = (( Button )comboBox.getSelectedItem()).getKeyCode();
-    if ( shiftBox.isSelected())
+    int keyCode = ( ( Button )comboBox.getSelectedItem() ).getKeyCode();
+    if ( shiftBox.isSelected() )
       keyCode |= config.getRemote().getShiftMask();
-    else if ( xShiftBox.isSelected())
+    else if ( xShiftBox.isSelected() )
       keyCode |= config.getRemote().getXShiftMask();
     return keyCode;
   }
-  
+
   /**
    * Show warning.
    * 
-   * @param message the message
+   * @param message
+   *          the message
    */
   private void showWarning( String message )
   {
-    JOptionPane.showMessageDialog( this, message, "Missing Information", JOptionPane.ERROR_MESSAGE);
+    JOptionPane.showMessageDialog( this, message, "Missing Information", JOptionPane.ERROR_MESSAGE );
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
-    
+
     if ( source == okButton )
     {
       int deviceIndex = boundDevice.getSelectedIndex();
@@ -417,18 +428,18 @@ public class KeyMoveDialog
         showWarning( "You must specify a setup code for the function to perform." );
         return;
       }
-      if ( !setupCode.isEditValid())
+      if ( !setupCode.isEditValid() )
       {
         showWarning( setupCode.getText() + " isn't an integer between 0 and 2047." );
       }
-      int setupId = (( Integer )setupCode.getValue()).intValue();
-      
+      int setupId = ( ( Integer )setupCode.getValue() ).intValue();
+
       String notesStr = notes.getText();
       Remote remote = config.getRemote();
-      if ( useEFC.isSelected())
+      if ( useEFC.isSelected() )
       {
         String text = efcHexField.getText().trim();
-        if (( text == null ) || text.equals( "" ))
+        if ( ( text == null ) || text.equals( "" ) )
         {
           showWarning( "You must specify an EFC for the function to perform." );
           return;
@@ -450,7 +461,7 @@ public class KeyMoveDialog
               showWarning( "EFCs repeat after 255.  Standardizing " + oldEfc + " to " + efc + '.' );
             }
           }
-          else if (( efc < 0 ) || ( efc > 99999 ))
+          else if ( ( efc < 0 ) || ( efc > 99999 ) )
           {
             showWarning( "EFC-5s must be between 0 and 99999." );
             return;
@@ -463,10 +474,10 @@ public class KeyMoveDialog
           return;
         }
       }
-      else if ( useHex.isSelected())
+      else if ( useHex.isSelected() )
       {
         String text = efcHexField.getText().trim();
-        if (( text == null ) || text.equals( "" ))
+        if ( ( text == null ) || text.equals( "" ) )
         {
           showWarning( "You must specify an EFC for the function to perform." );
           return;
@@ -481,15 +492,16 @@ public class KeyMoveDialog
           showWarning( text + " isn't a valid hex command." );
           return;
         }
-        if (( remote.getAdvCodeFormat() == Remote.EFC_FORMAT ) && ( remote.getEFCDigits() == 3 ) && ( cmd.length() > 1 ))
+        if ( ( remote.getAdvCodeFormat() == AdvancedCode.Format.EFC ) && ( remote.getEFCDigits() == 3 )
+            && ( cmd.length() > 1 ) )
         {
           showWarning( "The " + remote.getName() + " doesn't support key moves with multi-byte commands." );
           return;
         }
-        
+
         keyMove = remote.createKeyMove( keyCode, deviceIndex, deviceTypeIndex, setupId, cmd, notesStr );
       }
-      else if ( useKey.isSelected())
+      else if ( useKey.isSelected() )
       {
         if ( movedKey.getSelectedItem() == null )
         {
@@ -508,27 +520,29 @@ public class KeyMoveDialog
     }
     else if ( source == shift )
     {
-      if ( shift.isSelected())
+      if ( shift.isSelected() )
         xShift.setSelected( false );
     }
     else if ( source == xShift )
     {
-      if ( xShift.isSelected())
+      if ( xShift.isSelected() )
         shift.setSelected( false );
     }
   }
-  
+
   // ItemListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
    */
   public void itemStateChanged( ItemEvent e )
   {
-    if ( e.getStateChange() != ItemEvent.SELECTED ) 
+    if ( e.getStateChange() != ItemEvent.SELECTED )
       return;
-    
+
     Object source = e.getSource();
-    if (( source == useEFC ) || ( source == useHex ))
+    if ( ( source == useEFC ) || ( source == useHex ) )
     {
       efcHexField.setVisible( true );
       movedKey.setVisible( false );
@@ -536,7 +550,7 @@ public class KeyMoveDialog
       xShiftMovedKey.setVisible( false );
 
       String text = efcHexField.getText();
-      if (( text != null ) && !text.equals( "" ))
+      if ( ( text != null ) && !text.equals( "" ) )
       {
         try
         {
@@ -546,24 +560,26 @@ public class KeyMoveDialog
             EFC efc = null;
             if ( config.getRemote().getEFCDigits() == 3 )
               efc = new EFC( cmd );
-            else // 5 digit EFGs
+            else
+              // 5 digit EFGs
               efc = new EFC5( cmd );
-            
+
             text = efc.toString();
           }
-          else 
+          else
           {
             EFC efc = null;
             if ( config.getRemote().getEFCDigits() == 3 )
               efc = new EFC( text );
-            else // 5 digit EFCs
+            else
+              // 5 digit EFCs
               efc = new EFC5( text );
-              
+
             if ( cmd == null )
               cmd = efc.toHex();
             else
               efc.toHex( cmd );
-            
+
             text = cmd.toString();
           }
           efcHexField.setText( text );
@@ -583,13 +599,15 @@ public class KeyMoveDialog
       movedKey.setSelectedIndex( -1 );
       shiftMovedKey.setVisible( true );
       shiftMovedKey.setSelected( false );
-      xShiftMovedKey.setVisible( config.getRemote().getXShiftEnabled());
+      xShiftMovedKey.setVisible( config.getRemote().getXShiftEnabled() );
       xShiftMovedKey.setSelected( false );
     }
   }
 
   // FocusListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
    */
   public void focusGained( FocusEvent e )
@@ -598,89 +616,93 @@ public class KeyMoveDialog
     SwingUtilities.invokeLater( this );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
    */
   public void focusLost( FocusEvent e )
   {
-    // intentionally left empty
+  // intentionally left empty
   }
 
   // Runnable
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Runnable#run()
    */
   public void run()
   {
     focusField.selectAll();
-  }  
-  
+  }
+
   /** The bound device. */
   private JComboBox boundDevice = new JComboBox();
-  
+
   /** The bound key. */
   private JComboBox boundKey = new JComboBox();
-  
+
   /** The shift. */
   private JCheckBox shift = new JCheckBox();
-  
+
   /** The x shift. */
   private JCheckBox xShift = new JCheckBox();
-  
+
   /** The ok button. */
   private JButton okButton = new JButton( "OK" );
-  
+
   /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
-  
+
   /** The model. */
   private DeviceButtonTableModel model = new DeviceButtonTableModel();
-  
+
   /** The table. */
   private JP1Table table = new JP1Table( model );
-  
+
   /** The device type. */
   private JComboBox deviceType = new JComboBox();
-  
+
   /** The setup code. */
   private JFormattedTextField setupCode = null;
-  
+
   /** The use efc. */
   private JRadioButton useEFC = new JRadioButton( "EFC" );
-  
+
   /** The use hex. */
   private JRadioButton useHex = new JRadioButton( "Hex" );
-  
+
   /** The use key. */
   private JRadioButton useKey = new JRadioButton( "Key" );
-  
+
   /** The efc hex field. */
   private JTextField efcHexField = new JTextField( 15 );
-  
+
   /** The moved key. */
   private JComboBox movedKey = new JComboBox();
-  
+
   /** The shift moved key. */
   private JCheckBox shiftMovedKey = new JCheckBox();
-  
+
   /** The x shift moved key. */
   private JCheckBox xShiftMovedKey = new JCheckBox();
-  
+
   /** The notes. */
   private JTextArea notes = new JTextArea( 2, 10 );
-  
+
   /** The focus field. */
   private JTextField focusField = null;
-  
+
   /** The config. */
   private RemoteConfiguration config = null;
-  
+
   /** The key move. */
   private KeyMove keyMove = null;
-  
+
   /** The cmd. */
   private Hex cmd = null;
-  
+
   /** The dialog. */
   private static KeyMoveDialog dialog = null;
 }

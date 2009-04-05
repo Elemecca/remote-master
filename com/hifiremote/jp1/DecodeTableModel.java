@@ -6,53 +6,62 @@ import javax.swing.table.TableCellRenderer;
 /**
  * The Class DecodeTableModel.
  */
-public class DecodeTableModel
-  extends JP1TableModel< LearnedSignalDecode >
+public class DecodeTableModel extends JP1TableModel< LearnedSignalDecode >
 {
-  
+
   /**
    * Instantiates a new decode table model.
    */
-  public DecodeTableModel(){}
+  public DecodeTableModel()
+  {}
 
   /**
    * Sets the.
    * 
-   * @param learnedSignal the learned signal
+   * @param learnedSignal
+   *          the learned signal
    */
   public void set( LearnedSignal learnedSignal )
   {
-    setData( learnedSignal.getDecodes());
+    setData( learnedSignal.getDecodes() );
     fireTableDataChanged();
   }
-
 
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-    "#", "Protocol", "Device", "<html>Sub<br>Device</html>", "OBC", "Hex Cmd", "EFC", "Misc"
+      "#", "Protocol", "Device", "<html>Sub<br>Device</html>", "OBC", "Hex Cmd", "EFC", "Misc"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
   public String getColumnName( int col )
   {
     return colNames[ col ];
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getColumnCount()
    */
-  public int getColumnCount(){ return colNames.length; }
+  public int getColumnCount()
+  {
+    return colNames.length;
+  }
 
   /** The col prototype names. */
   private static String[] colPrototypeNames =
   {
-    "00", "Protocol Name", "Device", "Device", "OBC", "Hex Cmd", "EFC", "Miscellaneous"
+      "00", "Protocol Name", "Device", "Device", "OBC", "Hex Cmd", "EFC", "Miscellaneous"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
   public String getColumnPrototypeName( int col )
@@ -60,34 +69,41 @@ public class DecodeTableModel
     return colPrototypeNames[ col ];
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
   public boolean isColumnWidthFixed( int col )
   {
-    if (( col == 1 ) || ( col == 7 ))
+    if ( ( col == 1 ) || ( col == 7 ) )
       return false;
     return true;
   }
 
   /** The Constant colClasses. */
-  private static final Class<?>[] colClasses =
+  private static final Class< ? >[] colClasses =
   {
-    Integer.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class, String.class, String.class
+      Integer.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class, String.class,
+      String.class
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
-  public Class<?> getColumnClass( int col )
+  public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
-  public Object getValueAt(int row, int column)
+  public Object getValueAt( int row, int column )
   {
     LearnedSignalDecode decode = getRow( row );
     switch ( column )
@@ -110,6 +126,8 @@ public class DecodeTableModel
         return Hex.toString( decode.hex );
       case 6: // EFC
         short[] temp = new short[ decode.hex.length ];
+        if ( temp.length == 0 )
+          return null;
         for ( int i = 0; i < temp.length; ++i )
           temp[ i ] = ( short )decode.hex[ i ];
         Hex hex = new Hex( temp );
@@ -122,7 +140,9 @@ public class DecodeTableModel
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
   public TableCellRenderer getColumnRenderer( int col )

@@ -1,44 +1,51 @@
 package com.hifiremote.jp1;
 
-import java.util.*;
+import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class UDSMFunction.
  */
-public class UDSMFunction
-  extends SpecialProtocolFunction
+public class UDSMFunction extends SpecialProtocolFunction
 {
-  
+
   /**
    * Instantiates a new uDSM function.
    * 
-   * @param keyMove the key move
+   * @param keyMove
+   *          the key move
    */
   public UDSMFunction( KeyMove keyMove )
   {
     super( keyMove );
   }
-  
+
   /**
    * Instantiates a new uDSM function.
    * 
-   * @param keyCode the key code
-   * @param deviceButtonIndex the device button index
-   * @param deviceType the device type
-   * @param setupCode the setup code
-   * @param cmd the cmd
-   * @param notes the notes
+   * @param keyCode
+   *          the key code
+   * @param deviceButtonIndex
+   *          the device button index
+   * @param deviceType
+   *          the device type
+   * @param setupCode
+   *          the setup code
+   * @param cmd
+   *          the cmd
+   * @param notes
+   *          the notes
    */
   public UDSMFunction( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
     super( keyCode, deviceButtonIndex, deviceType, setupCode, cmd, notes );
-  }    
-  
+  }
+
   /**
    * Instantiates a new uDSM function.
    * 
-   * @param props the props
+   * @param props
+   *          the props
    */
   public UDSMFunction( Properties props )
   {
@@ -52,20 +59,32 @@ public class UDSMFunction
    */
   public int getMacroKeyCode()
   {
-    return data.getData()[ 0 ];
+    return getCmd().getData()[ 0 ];
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#getType()
    */
-  public String getType(){ return "UDSM"; }
-  
-  /* (non-Javadoc)
+  public String getType()
+  {
+    return "UDSM";
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#getDisplayType()
    */
-  public String getDisplayType(){ return "DSM"; }
-  
-  /* (non-Javadoc)
+  public String getDisplayType()
+  {
+    return "DSM";
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KeyMove#getValueString(com.hifiremote.jp1.RemoteConfiguration)
    */
   public String getValueString( RemoteConfiguration remoteConfig )
@@ -73,33 +92,35 @@ public class UDSMFunction
     Remote remote = remoteConfig.getRemote();
     StringBuilder buff = new StringBuilder();
     int keyCode = getMacroKeyCode();
-    buff.append( remote.getButtonName( keyCode ));
-    for ( Macro m : remoteConfig.getMacros())
+    buff.append( remote.getButtonName( keyCode ) );
+    for ( Macro m : remoteConfig.getMacros() )
     {
       if ( m.getKeyCode() == keyCode )
       {
         buff.append( ": (" );
-        buff.append( m.getValueString( remoteConfig ));
+        buff.append( m.getValueString( remoteConfig ) );
         buff.append( ')' );
         break;
       }
     }
     return buff.toString();
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#update(com.hifiremote.jp1.SpecialFunctionDialog)
    */
   public void update( SpecialFunctionDialog dlg )
   {
-    dlg.setMacroKey( getMacroKeyCode());
+    dlg.setMacroKey( getMacroKeyCode() );
   }
-  
+
   /**
    * Creates the hex.
    * 
-   * @param dlg the dlg
-   * 
+   * @param dlg
+   *          the dlg
    * @return the hex
    */
   public static Hex createHex( SpecialFunctionDialog dlg )

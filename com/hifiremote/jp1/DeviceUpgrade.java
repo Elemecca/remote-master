@@ -340,6 +340,9 @@ public class DeviceUpgrade
     }
     if ( ( remote != null ) && ( remote != newRemote ) )
     {
+      AdvancedCode.setFormat( remote.getAdvCodeFormat() );
+      AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
+
       Button[] buttons = remote.getUpgradeButtons();
       ButtonAssignments newAssignments = new ButtonAssignments();
       java.util.List< java.util.List< String >> unassigned = new ArrayList< java.util.List< String >>();
@@ -796,9 +799,15 @@ public class DeviceUpgrade
       if ( maskedCalculatedData.equals( maskedImportedData ) )
       {
         System.err.println( "It's a match!" );
-        if ( ( tentative == null ) || ( tempLength > tentative.getFixedDataLength() ) )
+        Hex tentativeCode = null;
+        if ( pCode != null )
         {
-          System.err.println( "And it's longer!" );
+          tentativeCode = getCode( p );
+        }
+        if ( ( tentative == null ) || ( tempLength > tentative.getFixedDataLength() )
+            || ( ( pCode != null ) && pCode.equals( tentativeCode ) ) )
+        {
+          System.err.println( "And it's longer, or the protocol code matches!" );
           tentative = p;
           tentativeVals = vals;
         }
@@ -966,7 +975,7 @@ public class DeviceUpgrade
    *          the include notes
    * @return the upgrade text
    */
-  public String getUpgradeText( boolean includeNotes )
+  public String getUpgradeText()
   {
     StringBuilder buff = new StringBuilder( 400 );
     if ( remote.usesTwoBytePID() )
@@ -983,20 +992,18 @@ public class DeviceUpgrade
     DecimalFormat df = new DecimalFormat( "0000" );
     buff.append( df.format( setupCode ) );
     buff.append( ")" );
-    if ( includeNotes )
+
+    String descr = "";
+    if ( description != null )
+      descr = description.trim();
+    if ( descr.length() != 0 )
     {
-      String descr = "";
-      if ( description != null )
-        descr = description.trim();
-      if ( descr.length() != 0 )
-      {
-        buff.append( ' ' );
-        buff.append( descr );
-      }
-      buff.append( " (RM " );
-      buff.append( RemoteMaster.version );
-      buff.append( ')' );
+      buff.append( ' ' );
+      buff.append( descr );
     }
+    buff.append( " (RM " );
+    buff.append( RemoteMaster.version );
+    buff.append( ')' );
 
     try
     {
@@ -1046,17 +1053,17 @@ public class DeviceUpgrade
 
         Function f = assignments.getAssignment( button, Button.NORMAL_STATE );
         first = appendKeyMove( buff,
-            button.getKeyMove( f, 0, deviceCode, devType, remote, protocol.getKeyMovesOnly() ), f, includeNotes, first );
+            button.getKeyMove( f, 0, deviceCode, devType, remote, protocol.getKeyMovesOnly() ), f, first );
         f = assignments.getAssignment( button, Button.SHIFTED_STATE );
         if ( button.getShiftedButton() != null )
           f = null;
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote, protocol
-            .getKeyMovesOnly() ), f, includeNotes, first );
+            .getKeyMovesOnly() ), f, first );
         f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
         if ( button.getXShiftedButton() != null )
           f = null;
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote,
-            protocol.getKeyMovesOnly() ), f, includeNotes, first );
+            protocol.getKeyMovesOnly() ), f, first );
       }
     }
 
@@ -1185,29 +1192,28 @@ public class DeviceUpgrade
    *          the first
    * @return true, if successful
    */
-  private boolean appendKeyMove( StringBuilder buff, short[] keyMove, Function f, boolean includeNotes, boolean first )
+  private boolean appendKeyMove( StringBuilder buff, short[] keyMove, Function f, boolean first )
   {
     if ( ( keyMove == null ) || ( keyMove.length == 0 ) )
       return first;
 
-    if ( includeNotes && !first )
+    if ( !first )
       buff.append( '\u00a6' );
+
     buff.append( "\n " );
 
     buff.append( Hex.toString( keyMove ) );
 
-    if ( includeNotes )
+    buff.append( '\u00ab' );
+    buff.append( f.getName() );
+    String notes = f.getNotes();
+    if ( ( notes != null ) && ( notes.length() != 0 ) )
     {
-      buff.append( '\u00ab' );
-      buff.append( f.getName() );
-      String notes = f.getNotes();
-      if ( ( notes != null ) && ( notes.length() != 0 ) )
-      {
-        buff.append( ": " );
-        buff.append( notes );
-      }
-      buff.append( '\u00bb' );
+      buff.append( ": " );
+      buff.append( notes );
     }
+    buff.append( '\u00bb' );
+
     return false;
   }
 
@@ -2528,6 +2534,29 @@ public class DeviceUpgrade
     return true;
   }
 
+  public boolean needsProtocolCode()
+  {
+    if ( protocol.needsCode( remote ) )
+    {
+      return true;
+    }
+    Translate[] translators = protocol.getCodeTranslators( remote );
+    if ( translators != null )
+    {
+      for ( Translate translate : translators )
+      {
+        Translator translator = ( Translator )translate;
+        int devParmIndex = translator.index;
+        Value parmVal = parmValues[ devParmIndex ];
+        if ( parmVal.hasUserValue() && !parmVal.getUserValue().equals( parmVal.getDefaultValue() ) )
+        {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /**
    * Gets the code.
    * 
@@ -2547,9 +2576,7 @@ public class DeviceUpgrade
    */
   public Hex getCode( Protocol p )
   {
-    Hex code = null;
-    if ( p.needsCode( remote ) )
-      code = p.getCode( remote );
+    Hex code = p.getCode( remote );
     if ( code != null )
     {
       code = remote.getProcessor().translate( code, remote );
@@ -2568,7 +2595,7 @@ public class DeviceUpgrade
   private String description = null;
 
   /** The setup code. */
-  private int setupCode = 0;
+  protected int setupCode = 0;
 
   /** The remote. */
   private Remote remote = null;
@@ -2577,7 +2604,7 @@ public class DeviceUpgrade
   private String devTypeAliasName = null;
 
   /** The protocol. */
-  private Protocol protocol = null;
+  protected Protocol protocol = null;
 
   /** The parm values. */
   private Value[] parmValues = new Value[ 0 ];

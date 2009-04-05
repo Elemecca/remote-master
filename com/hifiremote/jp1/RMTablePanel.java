@@ -34,26 +34,27 @@ import javax.swing.table.TableCellEditor;
 /**
  * The Class RMTablePanel.
  */
-public abstract class RMTablePanel< E >
-  extends RMPanel
-  implements ActionListener, ListSelectionListener
+public abstract class RMTablePanel< E > extends RMPanel implements ActionListener, ListSelectionListener
 {
-  
+
   /**
    * Instantiates a new rM table panel.
    * 
-   * @param model the model
+   * @param model
+   *          the model
    */
   public RMTablePanel( JP1TableModel< E > model )
   {
     this( model, BorderLayout.CENTER );
   }
-  
+
   /**
    * Instantiates a new rM table panel.
    * 
-   * @param tableModel the table model
-   * @param location the location
+   * @param tableModel
+   *          the table model
+   * @param location
+   *          the location
    */
   public RMTablePanel( JP1TableModel< E > tableModel, String location )
   {
@@ -61,10 +62,11 @@ public abstract class RMTablePanel< E >
     model = tableModel;
     sorter = new TableSorter( model );
     table = new JP1Table( sorter );
-    sorter.setTableHeader( table.getTableHeader());
+    sorter.setTableHeader( table.getTableHeader() );
     // sorter.addMouseListenerToHeaderInTable( table );
     table.getSelectionModel().addListSelectionListener( this );
-    table.getTableHeader().setToolTipText( "Click to sort in ascending order, or shift-click to sort in descending order." );
+    table.getTableHeader().setToolTipText(
+        "Click to sort in ascending order, or shift-click to sort in descending order." );
     table.addMouseListener( new MouseAdapter()
     {
       public void mouseClicked( MouseEvent e )
@@ -74,15 +76,15 @@ public abstract class RMTablePanel< E >
         int row = table.getSelectedRow();
         if ( row == -1 )
           return;
-        if ( !table.isCellEditable( row, table.columnAtPoint( e.getPoint())))
+        if ( !table.isCellEditable( row, table.columnAtPoint( e.getPoint() ) ) )
           editRowObject( row );
       }
-    });
+    } );
     TransferHandler th = new TransferHandler()
     {
       protected Transferable createTransferable( JComponent c )
       {
-        return new LocalObjectTransferable( new Integer( table.getSelectedRow()));
+        return new LocalObjectTransferable( new Integer( table.getSelectedRow() ) );
       }
 
       public int getSourceActions( JComponent c )
@@ -95,7 +97,7 @@ public abstract class RMTablePanel< E >
         boolean rc = false;
         for ( int i = 0; i < flavors.length; i++ )
         {
-          if (( flavors[ i ] == DataFlavor.stringFlavor ) || ( flavors[ i ] == LocalObjectTransferable.getFlavor()))
+          if ( ( flavors[ i ] == DataFlavor.stringFlavor ) || ( flavors[ i ] == LocalObjectTransferable.getFlavor() ) )
           {
             rc = true;
             break;
@@ -107,21 +109,21 @@ public abstract class RMTablePanel< E >
       public boolean importData( JComponent c, Transferable t )
       {
         boolean rc = false;
-        if ( t.isDataFlavorSupported( DataFlavor.stringFlavor ))
+        if ( t.isDataFlavorSupported( DataFlavor.stringFlavor ) )
         {
           try
           {
-            String s = ( String )( t.getTransferData( DataFlavor.stringFlavor ));
-            BufferedReader in = new BufferedReader( new StringReader( s ));
+            String s = ( String )( t.getTransferData( DataFlavor.stringFlavor ) );
+            BufferedReader in = new BufferedReader( new StringReader( s ) );
             int colCount = table.getModel().getColumnCount();
             int addedRow = -1;
             int row = table.getSelectedRow();
             int col = table.getSelectedColumn();
-            for ( String line = in.readLine(); line != null; line = in.readLine())
+            for ( String line = in.readLine(); line != null; line = in.readLine() )
             {
               if ( row == model.getRowCount() )
               {
-                model.addRow( createRowObject( null ));
+                model.addRow( createRowObject( null ) );
                 if ( addedRow == -1 )
                   addedRow = row;
               }
@@ -135,7 +137,7 @@ public abstract class RMTablePanel< E >
               {
                 if ( workCol == colCount )
                   break;
-                if ( st.hasMoreTokens())
+                if ( st.hasMoreTokens() )
                   token = st.nextToken();
                 else
                   token = null;
@@ -148,7 +150,7 @@ public abstract class RMTablePanel< E >
                   if ( prevToken != null )
                     break;
                 }
-                else if ( token.equals( "\t" ))
+                else if ( token.equals( "\t" ) )
                 {
                   if ( prevToken == null )
                     token = null;
@@ -160,13 +162,11 @@ public abstract class RMTablePanel< E >
                 }
                 prevToken = token;
 
-                Class<?> aClass = sorter.getColumnClass( modelCol );
+                Class< ? > aClass = sorter.getColumnClass( modelCol );
                 if ( aClass == String.class )
                 {
-                  if (( token != null ) &&
-                      ( token.length() == 5 ) &&
-                      token.startsWith( "num " ) &&
-                      Character.isDigit( token.charAt( 4 )))
+                  if ( ( token != null ) && ( token.length() == 5 ) && token.startsWith( "num " )
+                      && Character.isDigit( token.charAt( 4 ) ) )
                     value = token.substring( 4 );
                   else
                     value = token;
@@ -175,15 +175,15 @@ public abstract class RMTablePanel< E >
                   value = token;
 
                 sorter.setValueAt( value, row, modelCol );
-                workCol++;
+                workCol++ ;
               }
-              row++;
+              row++ ;
             }
             if ( addedRow != -1 )
               sorter.fireTableRowsInserted( addedRow, row - 1 );
             sorter.fireTableRowsUpdated( popupRow, row - 1 );
           }
-          catch (Exception ex)
+          catch ( Exception ex )
           {
             String message = ex.getMessage();
             if ( message == null )
@@ -192,18 +192,18 @@ public abstract class RMTablePanel< E >
             ex.printStackTrace( System.err );
           }
         }
-        else if ( t.isDataFlavorSupported( LocalObjectTransferable.getFlavor()))
+        else if ( t.isDataFlavorSupported( LocalObjectTransferable.getFlavor() ) )
         {
           try
           {
-            int dragRow = (( Integer )t.getTransferData( LocalObjectTransferable.getFlavor())).intValue();
+            int dragRow = ( ( Integer )t.getTransferData( LocalObjectTransferable.getFlavor() ) ).intValue();
             int dropRow = table.getSelectedRow();
             if ( dropRow != dragRow )
             {
               dragRow = sorter.modelIndex( dragRow );
               dropRow = sorter.modelIndex( dropRow );
               model.moveRow( dragRow, dropRow );
-  
+
               rc = true;
             }
           }
@@ -221,7 +221,7 @@ public abstract class RMTablePanel< E >
         int[] selectedRows = table.getSelectedRows();
         int[] selectedCols = table.getSelectedColumns();
         StringBuilder buff = new StringBuilder( 200 );
-        for ( int rowNum = 0; rowNum < selectedRows.length; rowNum ++ )
+        for ( int rowNum = 0; rowNum < selectedRows.length; rowNum++ )
         {
           if ( rowNum != 0 )
             buff.append( "\n" );
@@ -236,7 +236,8 @@ public abstract class RMTablePanel< E >
             Object value = table.getValueAt( selRow, selCol );
             if ( value != null )
             {
-              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn( selCol ).getCellRenderer();
+              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn(
+                  selCol ).getCellRenderer();
               if ( cellRenderer != null )
               {
                 cellRenderer.getTableCellRendererComponent( table, value, false, false, selRow, convertedCol );
@@ -246,7 +247,7 @@ public abstract class RMTablePanel< E >
             }
           }
         }
-        StringSelection data = new StringSelection( buff.toString());
+        StringSelection data = new StringSelection( buff.toString() );
         clipboard.setContents( data, data );
       }
     };
@@ -290,8 +291,8 @@ public abstract class RMTablePanel< E >
         if ( e.isPopupTrigger() )
         {
           finishEditing();
-          popupRow = table.rowAtPoint( e.getPoint());
-          popup.show( table, e.getX(), e.getY());
+          popupRow = table.rowAtPoint( e.getPoint() );
+          popup.show( table, e.getX(), e.getY() );
           return true;
         }
         else
@@ -304,7 +305,7 @@ public abstract class RMTablePanel< E >
     {
       public void mouseDragged( MouseEvent e )
       {
-        int tableCol = table.columnAtPoint( e.getPoint());
+        int tableCol = table.columnAtPoint( e.getPoint() );
         int modelCol = table.convertColumnIndexToModel( tableCol );
         if ( modelCol == 0 )
           table.getTransferHandler().exportAsDrag( table, e, TransferHandler.MOVE );
@@ -357,13 +358,15 @@ public abstract class RMTablePanel< E >
     buttonPanel.add( downButton );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.JComponent#setFont(java.awt.Font)
    */
   public void setFont( Font aFont )
   {
     super.setFont( aFont );
-    if (( table == null ) || ( aFont == null ))
+    if ( ( table == null ) || ( aFont == null ) )
       return;
     table.setRowHeight( aFont.getSize() + 2 );
     // if ( model != null )
@@ -378,8 +381,7 @@ public abstract class RMTablePanel< E >
     int editRow = table.getEditingRow();
     if ( editRow != -1 )
     {
-      TableCellEditor editor =
-        table.getCellEditor( editRow, table.getEditingColumn());
+      TableCellEditor editor = table.getCellEditor( editRow, table.getEditingColumn() );
       if ( !editor.stopCellEditing() )
         editor.cancelCellEditing();
     }
@@ -388,56 +390,64 @@ public abstract class RMTablePanel< E >
   /**
    * Creates the row object.
    * 
-   * @param baseObject the base object
-   * 
+   * @param baseObject
+   *          the base object
    * @return the e
    */
   protected abstract E createRowObject( E baseObject );
-  
+
   /**
    * Gets the row object.
    * 
-   * @param row the row
-   * 
+   * @param row
+   *          the row
    * @return the row object
    */
   protected E getRowObject( int row )
   {
     if ( row != -1 )
-      return model.getRow( sorter.modelIndex( row ));
+      return model.getRow( sorter.modelIndex( row ) );
     return null;
   }
-  
+
   /**
    * Can delete.
    * 
-   * @param o the o
-   * 
+   * @param o
+   *          the o
    * @return true, if successful
    */
-  protected boolean canDelete( Object o ){ return true; }
-  
+  protected boolean canDelete( Object o )
+  {
+    return true;
+  }
+
   /**
    * Do not delete.
    * 
-   * @param o the o
+   * @param o
+   *          the o
    */
-  protected void doNotDelete( Object o ){}
-  
+  protected void doNotDelete( Object o )
+  {}
+
   /**
    * Edits the row object.
    * 
-   * @param row the row
+   * @param row
+   *          the row
    */
   protected void editRowObject( int row )
   {
-    E o = createRowObject( getRowObject( row ));
+    E o = createRowObject( getRowObject( row ) );
     if ( o != null )
       model.setRow( sorter.modelIndex( row ), o );
   }
 
   // Interface ActionListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
   public void actionPerformed( ActionEvent e )
@@ -455,18 +465,18 @@ public abstract class RMTablePanel< E >
     else
     {
       row = popupRow;
-      if ( table.isRowSelected( row ))
+      if ( table.isRowSelected( row ) )
         select = true;
     }
     int modelRow = -1;
     if ( row != -1 )
       modelRow = sorter.modelIndex( row );
 
-    if (( source == editButton ) || ( source == editItem ))
+    if ( ( source == editButton ) || ( source == editItem ) )
     {
       editRowObject( row );
     }
-    if (( source == newButton ) || ( source == newItem ))
+    if ( ( source == newButton ) || ( source == newItem ) )
     {
       E o = createRowObject( null );
       if ( o == null )
@@ -484,9 +494,9 @@ public abstract class RMTablePanel< E >
       if ( select )
         table.setRowSelectionInterval( row, row );
     }
-    if (( source == cloneButton ) || ( source == cloneItem ))
+    if ( ( source == cloneButton ) || ( source == cloneItem ) )
     {
-      E o = createRowObject( getRowObject( row ));
+      E o = createRowObject( getRowObject( row ) );
       if ( o == null )
         return;
       if ( row == -1 )
@@ -503,28 +513,28 @@ public abstract class RMTablePanel< E >
       if ( select )
         table.setRowSelectionInterval( row, row );
     }
-    else if (( source == deleteButton ) || ( source == deleteItem ))
+    else if ( ( source == deleteButton ) || ( source == deleteItem ) )
     {
-      if ( !canDelete( model.getRow( sorter.modelIndex( row ))))
+      if ( !canDelete( model.getRow( sorter.modelIndex( row ) ) ) )
       {
         deleteButton.setEnabled( false );
         deleteItem.setEnabled( false );
-        doNotDelete( model.getRow( modelRow ));
+        doNotDelete( model.getRow( modelRow ) );
       }
       else
       {
         int rowToSelect = row;
-        if ( rowToSelect == ( sorter.getRowCount() - 1 ))
+        if ( rowToSelect == ( sorter.getRowCount() - 1 ) )
           --rowToSelect;
-        else 
+        else
           ++rowToSelect;
-        if ( select && ( rowToSelect > -1 ))
+        if ( select && ( rowToSelect > -1 ) )
           table.setRowSelectionInterval( rowToSelect, rowToSelect );
-        
+
         model.removeRow( modelRow );
       }
     }
-    else if (( source == upButton ) || ( source == downButton ))
+    else if ( ( source == upButton ) || ( source == downButton ) )
     {
       int sel = 0;
       int from = row;
@@ -536,20 +546,23 @@ public abstract class RMTablePanel< E >
         to = row;
         sel = from;
       }
-      else // down button
+      else
+      // down button
       {
         from = row;
         to = row + 1;
         sel = to;
       }
-      model.moveRow( sorter.modelIndex( from ), sorter.modelIndex( to ));
+      model.moveRow( sorter.modelIndex( from ), sorter.modelIndex( to ) );
       if ( select )
         table.setRowSelectionInterval( sel, sel );
     }
   }
 
   // Interface ListSelectionListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
    */
   public void valueChanged( ListSelectionEvent e )
@@ -566,12 +579,12 @@ public abstract class RMTablePanel< E >
       deleteButton.setEnabled( selected );
       deleteItem.setEnabled( selected );
 
-      boolean deleteAllowed = selected && canDelete( model.getRow( sorter.modelIndex( row )));
+      boolean deleteAllowed = selected && canDelete( model.getRow( sorter.modelIndex( row ) ) );
       deleteButton.setEnabled( deleteAllowed );
       deleteItem.setEnabled( deleteAllowed );
-      
-      upButton.setEnabled( row > 0  );
-      downButton.setEnabled( selected && ( row < ( sorter.getRowCount() - 1 )));
+
+      upButton.setEnabled( row > 0 );
+      downButton.setEnabled( selected && ( row < ( sorter.getRowCount() - 1 ) ) );
     }
   }
 
@@ -583,67 +596,72 @@ public abstract class RMTablePanel< E >
     finishEditing();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
    */
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
-    if (( model != null ) && ( listener != null ))
+    if ( ( model != null ) && ( listener != null ) )
       model.addPropertyChangeListener( listener );
   }
-  
+
   /**
    * Gets the model.
    * 
    * @return the model
    */
-  public JP1TableModel< E > getModel(){ return model; }
+  public JP1TableModel< E > getModel()
+  {
+    return model;
+  }
 
   /** The table. */
   protected JP1Table table = null;
-  
+
   /** The model. */
   protected JP1TableModel< E > model = null;
-  
+
   /** The sorter. */
   protected TableSorter sorter = null;
-  
+
   /** The button panel. */
   protected JPanel buttonPanel = null;
-  
+
   /** The edit button. */
   private JButton editButton = null;
-  
+
   /** The new button. */
-  private JButton newButton = null;
-  
+  protected JButton newButton = null;
+
   /** The clone button. */
   private JButton cloneButton = null;
-  
+
   /** The delete button. */
   private JButton deleteButton = null;
-  
+
   /** The up button. */
   private JButton upButton = null;
-  
+
   /** The down button. */
   private JButton downButton = null;
-  
+
   /** The popup row. */
   private int popupRow = 0;
-  
+
   /** The popup. */
   protected JPopupMenu popup = null;
-  
+
   /** The edit item. */
   private JMenuItem editItem = null;
-  
+
   /** The new item. */
   private JMenuItem newItem = null;
-  
+
   /** The clone item. */
   private JMenuItem cloneItem = null;
-  
+
   /** The delete item. */
   private JMenuItem deleteItem = null;
 }

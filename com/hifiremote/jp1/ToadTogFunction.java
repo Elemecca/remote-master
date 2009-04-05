@@ -1,22 +1,22 @@
 package com.hifiremote.jp1;
 
-import java.util.*;
+import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
 /**
  * Description of the Class.
  * 
- * @author     Greg
- * @created    December 2, 2006
+ * @author Greg
+ * @created December 2, 2006
  */
-public class ToadTogFunction
-   extends SpecialProtocolFunction
+public class ToadTogFunction extends SpecialProtocolFunction
 {
-  
+
   /**
    * Constructor for the ToadTogFunction object.
    * 
-   * @param keyMove the key move
+   * @param keyMove
+   *          the key move
    */
   public ToadTogFunction( KeyMove keyMove )
   {
@@ -26,12 +26,18 @@ public class ToadTogFunction
   /**
    * Constructor for the ToadTogFunction object.
    * 
-   * @param keyCode the key code
-   * @param deviceButtonIndex the device button index
-   * @param deviceType the device type
-   * @param setupCode the setup code
-   * @param cmd the cmd
-   * @param notes the notes
+   * @param keyCode
+   *          the key code
+   * @param deviceButtonIndex
+   *          the device button index
+   * @param deviceType
+   *          the device type
+   * @param setupCode
+   *          the setup code
+   * @param cmd
+   *          the cmd
+   * @param notes
+   *          the notes
    */
   public ToadTogFunction( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
@@ -41,7 +47,8 @@ public class ToadTogFunction
   /**
    * Constructor for the ToadTogFunction object.
    * 
-   * @param props the props
+   * @param props
+   *          the props
    */
   public ToadTogFunction( Properties props )
   {
@@ -51,31 +58,31 @@ public class ToadTogFunction
   /**
    * Gets the toggleNumber attribute of the ToadTogFunction object.
    * 
-   * @return    The toggleNumber value
+   * @return The toggleNumber value
    */
   public int getToggleNumber()
   {
-    return ( data.getData()[0] & 0x70 ) >> 4;
+    return ( data.getData()[ 0 ] & 0x70 ) >> 4;
   }
 
   /**
    * Gets the onLength attribute of the ToadTogFunction object.
    * 
-   * @return    The onLength value
+   * @return The onLength value
    */
   public int getOnLength()
   {
-    return data.getData()[0] & 0x07;
+    return data.getData()[ 0 ] & 0x07;
   }
 
   /**
    * Gets the style attribute of the ToadTogFunction object.
    * 
-   * @return    The style value
+   * @return The style value
    */
   public int getStyle()
   {
-    int val = data.getData()[0];
+    int val = data.getData()[ 0 ];
     int style = ( val & 0x80 ) >> 6;
     style |= ( val & 0x08 ) >> 3;
     return style;
@@ -84,7 +91,7 @@ public class ToadTogFunction
   /**
    * Gets the type attribute of the ToadTogFunction object.
    * 
-   * @return    The type value
+   * @return The type value
    */
   public String getType()
   {
@@ -94,7 +101,7 @@ public class ToadTogFunction
   /**
    * Gets the displayType attribute of the ToadTogFunction object.
    * 
-   * @return    The displayType value
+   * @return The displayType value
    */
   public String getDisplayType()
   {
@@ -105,7 +112,7 @@ public class ToadTogFunction
     buff.append( '(' );
     buff.append( Integer.toString( getToggleNumber() ) );
     buff.append( ',' );
-    buff.append( styleStrings[style] );
+    buff.append( styleStrings[ style ] );
     buff.append( ')' );
     return buff.toString();
   }
@@ -113,19 +120,19 @@ public class ToadTogFunction
   /**
    * Gets the valueString attribute of the ToadTogFunction object.
    * 
-   * @param remoteConfig the remote config
-   * 
-   * @return               The valueString value
+   * @param remoteConfig
+   *          the remote config
+   * @return The valueString value
    */
   public String getValueString( RemoteConfiguration remoteConfig )
   {
     Remote remote = remoteConfig.getRemote();
     int style = getStyle();
-    short[] keyCodes = data.getData();
+    short[] keyCodes = getCmd().getData();
 
     StringBuilder buff = new StringBuilder();
     buff.append( '[' );
-    buff.append( onStrings[style] );
+    buff.append( onStrings[ style ] );
     buff.append( "]:" );
     if ( getOnLength() == 0 )
       buff.append( "<none>" );
@@ -137,12 +144,12 @@ public class ToadTogFunction
         first = false;
       else
         buff.append( ';' );
-      buff.append( remote.getButtonName( keyCodes[i + 1] ) );
+      buff.append( remote.getButtonName( keyCodes[ i + 1 ] ) );
       ++i;
     }
 
     buff.append( " [" );
-    buff.append( offStrings[style] );
+    buff.append( offStrings[ style ] );
     buff.append( "]:" );
     if ( i == ( keyCodes.length - 1 ) )
       buff.append( "<none>" );
@@ -153,7 +160,7 @@ public class ToadTogFunction
         first = false;
       else
         buff.append( ';' );
-      buff.append( remote.getButtonName( keyCodes[i + 1] ) );
+      buff.append( remote.getButtonName( keyCodes[ i + 1 ] ) );
       ++i;
     }
 
@@ -163,7 +170,8 @@ public class ToadTogFunction
   /**
    * Description of the Method.
    * 
-   * @param dlg the dlg
+   * @param dlg
+   *          the dlg
    */
   public void update( SpecialFunctionDialog dlg )
   {
@@ -173,25 +181,25 @@ public class ToadTogFunction
     short[] keyCodes = data.getData();
 
     int length = getOnLength();
-    Integer[] temp = new Integer[length];
+    Integer[] temp = new Integer[ length ];
     int offset = 1;
     for ( int i = 0; i < length; ++i )
-      temp[i] = new Integer( keyCodes[offset++] );
+      temp[ i ] = new Integer( keyCodes[ offset++ ] );
     dlg.setFirstMacroButtons( temp );
 
     length = keyCodes.length - length - 1;
-    temp = new Integer[length];
+    temp = new Integer[ length ];
     for ( int i = 0; i < length; ++i )
-      temp[i] = new Integer( keyCodes[offset++] );
+      temp[ i ] = new Integer( keyCodes[ offset++ ] );
     dlg.setSecondMacroButtons( temp );
   }
 
   /**
    * Description of the Method.
    * 
-   * @param dlg the dlg
-   * 
-   * @return      Description of the Return Value
+   * @param dlg
+   *          the dlg
+   * @return Description of the Return Value
    */
   public static Hex createHex( SpecialFunctionDialog dlg )
   {
@@ -201,46 +209,44 @@ public class ToadTogFunction
     Integer[] firstKeyCodes = dlg.getFirstMacroButtons();
     Integer[] secondKeyCodes = dlg.getSecondMacroButtons();
 
-    short[] temp = new short[1 + firstKeyCodes.length + secondKeyCodes.length];
-    temp[0] = ( short )( ( ( condition & 2 ) << 6 ) | ( ( condition & 1 ) << 3 ) |
-      ( toggle << 4 ) | firstKeyCodes.length );
+    short[] temp = new short[ 1 + firstKeyCodes.length + secondKeyCodes.length ];
+    temp[ 0 ] = ( short )( ( ( condition & 2 ) << 6 ) | ( ( condition & 1 ) << 3 ) | ( toggle << 4 ) | firstKeyCodes.length );
     int offset = 1;
     for ( int i = 0; i < firstKeyCodes.length; ++i )
-      temp[offset++] = firstKeyCodes[i].shortValue();
+      temp[ offset++ ] = firstKeyCodes[ i ].shortValue();
     for ( int i = 0; i < secondKeyCodes.length; ++i )
-      temp[offset++] = secondKeyCodes[i].shortValue();
+      temp[ offset++ ] = secondKeyCodes[ i ].shortValue();
 
     return new Hex( temp );
   }
 
   /** Description of the Field. */
   public static int TOGGLE = 0;
-  
+
   /** Description of the Field. */
   public static int FORCE_OFF = 1;
-  
+
   /** Description of the Field. */
   public static int TEST_ONLY = 2;
-  
+
   /** Description of the Field. */
   public static int FORCE_ON = 3;
-  
+
   /** Description of the Field. */
   public static String[] styleStrings =
-    {
-    "Toggle", "ForceOff", "TestOnly", "ForceOn"
-    };
-  
+  {
+      "Toggle", "ForceOff", "TestOnly", "ForceOn"
+  };
+
   /** Description of the Field. */
   public static String[] onStrings =
-    {
-    "On->Off", "On->Off", "On", "Already On"
-    };
-  
+  {
+      "On->Off", "On->Off", "On", "Already On"
+  };
+
   /** Description of the Field. */
   public static String[] offStrings =
-    {
-    "Off->On", "Already Off", "Off", "On->Off"
-    };
+  {
+      "Off->On", "Already Off", "Off", "On->Off"
+  };
 }
-

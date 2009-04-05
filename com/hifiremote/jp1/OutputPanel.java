@@ -1,57 +1,74 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import javax.swing.*;
-import java.awt.datatransfer.*;
+import java.awt.Color;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class OutputPanel.
  */
-public class OutputPanel
-  extends KMPanel implements ActionListener
+public class OutputPanel extends KMPanel implements ActionListener
 {
-  
+
   /**
    * Instantiates a new output panel.
    * 
-   * @param deviceUpgrade the device upgrade
+   * @param deviceUpgrade
+   *          the device upgrade
    */
   public OutputPanel( DeviceUpgrade deviceUpgrade )
   {
     super( "Output", deviceUpgrade );
     BoxLayout bl = new BoxLayout( this, BoxLayout.Y_AXIS );
     setLayout( bl );
-    setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+    setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
 
     clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-    includeNotes = new JCheckBox( "Include embedded notes in upgrades (requires IR v 5.01 or later)", true );
-    includeNotes.addActionListener( this );
-    add( includeNotes );
-
     Box box = Box.createHorizontalBox();
-    box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ));
+    box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ) );
     add( box );
 
-    JLabel label = new JLabel( "Device Upgrade Code" );
-    label.setAlignmentY( 1f );
-    box.add( label );
+    deviceLabel = new JLabel( "Device Upgrade Code" );
+    deviceLabel.setAlignmentY( 1f );
+    box.add( deviceLabel );
 
-    box.add( box.createHorizontalGlue());
+    box.add( box.createHorizontalGlue() );
 
-    copyDeviceUpgrade = new JButton( "Copy" );
+    ImageIcon copyIcon = RemoteMaster.createIcon( "Copy24" );
+
+    copyDeviceUpgrade = new JButton( copyIcon );
+    copyDeviceUpgrade.setToolTipText( "Copy to clipboard" );
     copyDeviceUpgrade.setAlignmentY( 1f );
     copyDeviceUpgrade.addActionListener( this );
     box.add( copyDeviceUpgrade );
 
     upgradeText = new JTextArea( 10, 40 );
-    upgradeText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+    upgradeText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
     upgradeText.setEditable( false );
     upgradeText.setDragEnabled( true );
-    upgradeText.setBackground( label.getBackground());
+    upgradeText.setBackground( deviceLabel.getBackground() );
     JScrollPane scroll = new JScrollPane( upgradeText );
     add( scroll );
 
@@ -77,24 +94,25 @@ public class OutputPanel
         if ( e.isPopupTrigger() )
         {
           popover = ( JTextArea )e.getSource();
-          popup.show( popover, e.getX(), e.getY());
+          popup.show( popover, e.getX(), e.getY() );
         }
       }
     };
     upgradeText.addMouseListener( mh );
 
-    add( Box.createVerticalStrut( 20 ));
+    add( Box.createVerticalStrut( 20 ) );
 
     box = Box.createHorizontalBox();
     add( box );
-    box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ));
+    box.setBorder( BorderFactory.createEmptyBorder( 0, 0, 5, 0 ) );
 
     protocolLabel = new JLabel( "Upgrade Protocol Code" );
     protocolLabel.setAlignmentY( 1f );
     box.add( protocolLabel );
-    box.add( box.createHorizontalGlue());
+    box.add( box.createHorizontalGlue() );
 
-    copyProtocolUpgrade = new JButton( "Copy" );
+    copyProtocolUpgrade = new JButton( copyIcon );
+    copyProtocolUpgrade.setToolTipText( "Copy to clipboard" );
     copyProtocolUpgrade.setAlignmentY( 1f );
     copyProtocolUpgrade.addActionListener( this );
     box.add( copyProtocolUpgrade );
@@ -103,55 +121,70 @@ public class OutputPanel
     protocolText.setEditable( false );
     protocolText.setDragEnabled( true );
     protocolText.addMouseListener( mh );
-    protocolText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
-    protocolText.setBackground( label.getBackground());
+    protocolText.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    protocolText.setBackground( protocolLabel.getBackground() );
 
     scroll = new JScrollPane( protocolText );
     add( scroll );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KMPanel#update()
    */
   public void update()
   {
-    boolean flag = includeNotes.isSelected();
-    upgradeText.setText( deviceUpgrade.getUpgradeText( flag ));
-    Protocol p = deviceUpgrade.getProtocol();
     Remote r = deviceUpgrade.getRemote();
 
-    Hex code = deviceUpgrade.getCode();
-    if ( code == null )
+    int keyMoveBytes = 0;
+    for ( KeyMove keyMove : deviceUpgrade.getKeyMoves() )
     {
-      protocolLabel.setForeground( Color.BLACK );
-      protocolLabel.setText( "Upgrade Protocol Code" );
-      protocolText.setText( null );
+      keyMoveBytes += keyMove.getSize();
+    }
+    deviceLabel.setText( String.format( "Device Upgrade Code (%1$d bytes + %2$d Key Move bytes)", deviceUpgrade
+        .getUpgradeHex().length(), keyMoveBytes ) );
+
+    upgradeText.setText( deviceUpgrade.getUpgradeText() );
+    Protocol p = deviceUpgrade.getProtocol();
+    Hex code = deviceUpgrade.getCode();
+
+    if ( deviceUpgrade.needsProtocolCode() )
+    {
+      protocolLabel.setForeground( Color.black );
+      protocolLabel.setText( String.format( "Upgrade Protocol Code *** REQUIRED *** (%1$d bytes)", code.length() ) );
+      protocolText.setForeground( Color.black );
     }
     else
     {
-      protocolLabel.setForeground( Color.RED );
-      protocolLabel.setText( "Upgrade Protocol Code *** REQUIRED ***" );
+      protocolLabel.setForeground( Color.red );
+      protocolLabel.setText( "Upgrade Protocol Code NOT REQUIRED" );
+      protocolText.setForeground( protocolText.getBackground() );
+    }
+    if ( code == null )
+    {
+      protocolText.setText( "" );
+    }
+    else
+    {
       Processor processor = r.getProcessor();
       StringBuilder buff = new StringBuilder( 300 );
       buff.append( "Upgrade protocol 0 = " );
-      buff.append( p.getID( r ).toString());
+      buff.append( p.getID( r ).toString() );
       buff.append( " (" );
-      buff.append( processor.getFullName());
+      buff.append( processor.getFullName() );
       buff.append( ")" );
-      if ( flag )
+      buff.append( ' ' );
+      buff.append( p.getName() );
+      buff.append( " (RM " );
+      buff.append( RemoteMaster.version );
+      buff.append( ')' );
+
+      try
       {
-        buff.append( ' ' );
-        buff.append( p.getName());
-        buff.append( " (RM " );
-        buff.append( RemoteMaster.version );
-        buff.append( ')' );
-      }
-      
-      try 
-      {
-        BufferedReader rdr = new BufferedReader( new StringReader( code.toString( 16 )));
+        BufferedReader rdr = new BufferedReader( new StringReader( code.toString( 16 ) ) );
         String line = null;
-        while (( line = rdr.readLine()) != null )
+        while ( ( line = rdr.readLine() ) != null )
         {
           buff.append( "\n " );
           buff.append( line );
@@ -162,13 +195,14 @@ public class OutputPanel
         ioe.printStackTrace( System.err );
       }
       buff.append( "\nEnd" );
-      protocolText.setText( buff.toString());
-
-      deviceUpgrade.checkSize();
+      protocolText.setText( buff.toString() );
     }
+    deviceUpgrade.checkSize();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
   public void actionPerformed( ActionEvent e )
@@ -184,40 +218,44 @@ public class OutputPanel
       area = upgradeText;
     else if ( source == copyProtocolUpgrade )
       area = protocolText;
-    else // assume copyItem
+    else
+      // assume copyItem
       area = popover;
 
-    StringSelection data = new StringSelection( area.getText());
+    StringSelection data = new StringSelection( area.getText() );
     clipboard.setContents( data, data );
   }
 
+  /** the device label */
+  private JLabel deviceLabel = null;
+
   /** The protocol label. */
   private JLabel protocolLabel = null;
-  
+
   /** The upgrade text. */
   private JTextArea upgradeText = null;
-  
+
   /** The protocol text. */
   private JTextArea protocolText = null;
-  
+
   /** The popover. */
   private JTextArea popover = null;
-  
+
   /** The popup. */
   private JPopupMenu popup = null;
-  
+
   /** The copy item. */
   private JMenuItem copyItem = null;
-  
+
   /** The copy device upgrade. */
   private JButton copyDeviceUpgrade = null;
-  
+
   /** The copy protocol upgrade. */
   private JButton copyProtocolUpgrade = null;
-  
+
   /** The clipboard. */
   private Clipboard clipboard = null;
-  
+
   /** The include notes. */
   private JCheckBox includeNotes = null;
 }

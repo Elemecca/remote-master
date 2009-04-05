@@ -7,36 +7,38 @@ import javax.swing.SwingUtilities;
 /**
  * The Class LearnedSignalPanel.
  */
-public class LearnedSignalPanel
-  extends RMTablePanel< LearnedSignal >
+public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
 {
-  
+
   /**
    * Instantiates a new learned signal panel.
    */
   public LearnedSignalPanel()
   {
-    super( new LearnedSignalTableModel());
+    super( new LearnedSignalTableModel() );
   }
 
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
-    (( LearnedSignalTableModel )model ).set( remoteConfig );
+    ( ( LearnedSignalTableModel )model ).set( remoteConfig );
+    table.initColumns( model );
+    newButton.setEnabled( remoteConfig.getRemote().getLearnedAddress() != null );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.RMTablePanel#createRowObject(java.lang.Object)
    */
   public LearnedSignal createRowObject( LearnedSignal learnedSignal )
   {
-    LearnedSignalDialog.showDialog(( JFrame )SwingUtilities.getRoot( this ),
-                                   learnedSignal );
+    LearnedSignalDialog.showDialog( ( JFrame )SwingUtilities.getRoot( this ), learnedSignal );
     return null;
   }
 }
-

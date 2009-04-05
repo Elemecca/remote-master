@@ -36,6 +36,9 @@
 							<include name="toolbarButtonGraphics/general/SaveAs24.gif"/>
 							<include name="toolbarButtonGraphics/general/Import24.gif"/>
 							<include name="toolbarButtonGraphics/general/Export24.gif"/>
+							<include name="toolbarButtonGraphics/general/Copy24.gif"/>
+							<include name="toolbarButtonGraphics/general/Paste.gif"/>
+							<include name="toolbarButtonGraphics/general/New.gif"/>
 						</zipfileset> 
                 </jar>
                 <java classpath="${build}" classname="com.hifiremote.jp1.RemoteMaster" outputproperty="rmversion">
@@ -58,10 +61,13 @@
                         <file file="${src}/setup.bat" />
                         <file file="${src}/ChangeLog.txt" />
                         <file file="${src}/digitmaps.bin" />
-                        <fileset dir="${src}" includes="jp1*.dll,libjp1*.so" />
+                        <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" />
+					    <zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" filemode="755"/>
+                        <zipfileset src="${src}/jp12serial_0.13_bin.zip" includes="jp12serial_0.13/windows_bin/jp12serial.dll" fullpath="jp12serial.dll" />
+					    <zipfileset src="${src}/jp12serial_0.13_bin.zip" includes="jp12serial_0.13/linux_bin/libjp12serial.so" fullpath="libjp12serial.so" filemode="755"/>
+                        <zipfileset src="${src}/jp1usb.zip" includes="jp1usb.dll" />
                         <file file="${src}/porttalk.sys" />
-                        <file file="${src}/rmaster.sh" />
-                        <file file="${src}/rmir.sh" />
+                        <zipfileset dir="${src}" includes="*.sh" filemode="755" />
                         <zipfileset dir="tutorial" includes="**/*" prefix="tutorial" />
                 </zip>
         </target>

@@ -12,6 +12,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,6 +66,9 @@ public class RemoteConfiguration
       throw new IOException( "Doesn't start with a [General] section/" );
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( section.getProperty( "Remote.name" ) );
+    AdvancedCode.setFormat( remote.getAdvCodeFormat() );
+    AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
+    LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
     notes = section.getProperty( "Notes" );
 
     loadBuffer( pr );
@@ -168,6 +172,10 @@ public class RemoteConfiguration
       }
     }
     remote.load();
+    AdvancedCode.setFormat( remote.getAdvCodeFormat() );
+    AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
+    LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
+
     System.err.println( "Remote is " + remote );
 
     if ( remote.getBaseAddress() != baseAddr )
@@ -481,15 +489,7 @@ public class RemoteConfiguration
     updateImage();
     PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
 
-    int base = remote.getBaseAddress();
-    for ( int i = 0; i < data.length; i += 16 )
-    {
-      out.print( toHex( i + base ) );
-      out.print( ":" );
-      for ( int j = 0; j < 16; ++j )
-        out.printf( "  %02X", data[ i + j ] & 0xFF );
-      out.println();
-    }
+    Hex.print( out, data, remote.getBaseAddress() );
 
     out.println();
     out.println( "[Notes]" );
@@ -623,6 +623,10 @@ public class RemoteConfiguration
   public RemoteConfiguration( Remote remote )
   {
     this.remote = remote;
+    AdvancedCode.setFormat( remote.getAdvCodeFormat() );
+    AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
+    LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
+
     data = new short[ remote.getEepromSize() ];
   }
 
@@ -663,15 +667,16 @@ public class RemoteConfiguration
   public List< SpecialProtocol > getSpecialProtocols()
   {
     // Determine which upgrades are special protocol upgrades
-    List< SpecialProtocol > specialUpgrades = new ArrayList< SpecialProtocol >();
+    List< SpecialProtocol > availableSpecialProtocols = new ArrayList< SpecialProtocol >();
     List< SpecialProtocol > specialProtocols = remote.getSpecialProtocols();
     for ( SpecialProtocol sp : specialProtocols )
     {
-      DeviceUpgrade device = sp.getDeviceUpgrade( devices );
-      if ( device != null )
-        specialUpgrades.add( sp );
+      if ( sp.isPresent( this ) )
+      {
+        availableSpecialProtocols.add( sp );
+      }
     }
-    return specialUpgrades;
+    return availableSpecialProtocols;
   }
 
   /**
@@ -714,7 +719,7 @@ public class RemoteConfiguration
       boolean isMacro = false;
       boolean isFav = false;
       int length = 0;
-      if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
+      if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
       {
         boundDeviceIndex = data[ offset ] >> 4;
         length = ( data[ offset++ ] & 0x0F );
@@ -752,7 +757,7 @@ public class RemoteConfiguration
       {
         KeyMove keyMove = null;
         Hex hex = Hex.subHex( data, offset, length );
-        if ( remote.getAdvCodeFormat() == remote.HEX_FORMAT )
+        if ( remote.getAdvCodeFormat() == AdvancedCode.Format.HEX )
           keyMove = new KeyMove( keyCode, boundDeviceIndex, hex, null );
         else if ( remote.getEFCDigits() == 3 )
         {
@@ -887,31 +892,30 @@ public class RemoteConfiguration
     return null;
   }
 
-  /**
-   * Gets the advanced code bytes used.
-   * 
-   * @return the advanced code bytes used
-   */
-  public int getAdvancedCodeBytesUsed()
+  private int getAdvancedCodesBytesNeeded( List< ? extends AdvancedCode > codes )
   {
-    AddressRange advCodeRange = remote.getAdvancedCodeAddress();
-    int offset = advCodeRange.getStart();
-    int endOffset = advCodeRange.getEnd();
-    while ( ( offset <= endOffset ) && ( data[ offset ] != remote.getSectionTerminator() ) )
+    int count = 0;
+    for ( AdvancedCode code : codes )
     {
-      offset++ ; // skip the keyCode
-
-      int length = 0;
-      if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
-        length = data[ offset++ ] & 0x0F;
-      else
-      {
-        offset++ ; // skip the type
-        length = data[ offset++ ];
-      }
-      offset += length;
+      count += code.getSize(); // the key code and type/length
     }
-    return offset - advCodeRange.getStart();
+    return count;
+  }
+
+  public int getAdvancedCodeBytesNeeded()
+  {
+    int size = getAdvancedCodesBytesNeeded( keymoves );
+    upgradeKeyMoves = getUpgradeKeyMoves();
+    size += getAdvancedCodesBytesNeeded( upgradeKeyMoves );
+    size += getAdvancedCodesBytesNeeded( specialFunctions );
+    size += getAdvancedCodesBytesNeeded( macros );
+    size++ ; // the section terminator
+    return size;
+  }
+
+  public int getAdvancedCodeBytesAvailable()
+  {
+    return remote.getAdvancedCodeAddress().getSize();
   }
 
   /**
@@ -941,25 +945,7 @@ public class RemoteConfiguration
   {
     for ( KeyMove keyMove : moves )
     {
-      data[ offset++ ] = ( short )keyMove.getKeyCode();
-      int lengthOffset;
-      if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
-      {
-        int temp = keyMove.getDeviceButtonIndex() << 5;
-        data[ offset ] = ( short )temp;
-        lengthOffset = offset++ ;
-      }
-      else
-      {
-        data[ offset++ ] = ( short )( 0x10 | ( keyMove.getDeviceButtonIndex() << 4 ) );
-        lengthOffset = offset++ ;
-        data[ lengthOffset ] = 0;
-      }
-      Hex hex = keyMove.getRawHex();
-      int hexLength = hex.length();
-      Hex.put( hex, data, offset );
-      offset += hexLength;
-      data[ lengthOffset ] |= ( short )hexLength;
+      offset = keyMove.store( data, offset );
     }
     return offset;
   }
@@ -991,7 +977,7 @@ public class RemoteConfiguration
    * 
    * @return the int
    */
-  public int updateAdvancedCodes()
+  private void updateAdvancedCodes()
   {
     AddressRange range = remote.getAdvancedCodeAddress();
     int offset = range.getStart();
@@ -1002,37 +988,22 @@ public class RemoteConfiguration
 
     for ( Macro macro : macros )
     {
-      data[ offset++ ] = ( short )macro.getKeyCode();
-      int lengthOffset = 0;
-      if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
-      {
-        data[ offset ] = 0x10;
-        lengthOffset = offset++ ;
-      }
-      else
-      {
-        data[ offset++ ] = 0x80;
-        lengthOffset = offset++ ;
-      }
-      Hex hex = macro.getData();
-      int hexLength = hex.length();
-      Hex.put( hex, data, offset );
-      offset += hexLength;
-      data[ lengthOffset ] |= ( short )hexLength;
+      offset = macro.store( data, offset );
+    }
+    data[ offset++ ] = remote.getSectionTerminator();
+
+    // Fill the rest of the advance code section with the section terminator
+    while ( offset < range.getEnd() )
+    {
+      data[ offset++ ] = remote.getSectionTerminator();
     }
 
-    data[ offset ] = remote.getSectionTerminator();
-
-    // for ( int i = offset + 1; i < range.getEnd(); ++i )
-    // data[ i ] = 0xFF;
-
-    return offset - range.getStart();
   }
 
   /**
    * Update check sums.
    */
-  public void updateCheckSums()
+  private void updateCheckSums()
   {
     CheckSum[] sums = remote.getCheckSums();
     for ( int i = 0; i < sums.length; ++i )
@@ -1042,14 +1013,14 @@ public class RemoteConfiguration
   /**
    * Update settings.
    */
-  public void updateSettings()
+  private void updateSettings()
   {
     Setting[] settings = remote.getSettings();
     for ( Setting setting : settings )
       setting.store( data );
   }
 
-  public void updateFixedData()
+  private void updateFixedData()
   {
     FixedData[] fixedData = remote.getFixedData();
     if ( fixedData == null )
@@ -1060,7 +1031,7 @@ public class RemoteConfiguration
     }
   }
 
-  public void updateAutoSet()
+  private void updateAutoSet()
   {
     FixedData[] autoSet = remote.getAutoSet();
     if ( autoSet == null )
@@ -1214,22 +1185,85 @@ public class RemoteConfiguration
     }
   }
 
+  public HashMap< Integer, ProtocolUpgrade > getRequiredProtocolUpgrades()
+  {
+    // Build a list of the required protocol upgrades
+    LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
+    for ( DeviceUpgrade dev : devices )
+    {
+      if ( dev.needsProtocolCode() )
+      {
+        Hex pCode = dev.getCode();
+        Protocol p = dev.getProtocol();
+        int pid = p.getID().get( 0 );
+        ProtocolUpgrade pu = requiredProtocols.get( pid );
+        if ( pu == null )
+        {
+          requiredProtocols.put( pid, new ProtocolUpgrade( pid, pCode, p.getName() ) );
+        }
+        else
+        {
+          if ( !pu.getCode().equals( pCode ) )
+          {
+            String message = "The protocol code used by the device upgrade for " + dev.getDeviceTypeAliasName() + '/'
+                + dev.getSetupCode()
+                + " is different than the code already used by another device upgrade, and may not work as intended.";
+            JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+          }
+        }
+      }
+    }
+
+    // The installed protocols that aren't used by any device upgrade.
+    for ( ProtocolUpgrade pu : protocols )
+      requiredProtocols.put( pu.getPid(), pu );
+
+    return requiredProtocols;
+  }
+
   /**
    * Gets the upgrade code bytes used.
    * 
    * @return the upgrade code bytes used
    */
-  public int getUpgradeCodeBytesUsed()
+  public int getUpgradeCodeBytesNeeded()
   {
-    AddressRange addr = remote.getUpgradeAddress();
-    Processor processor = remote.getProcessor();
+    int size = 4; // Allow for the table pointers
 
-    // get offset of protocol table
-    int offset = processor.getInt( data, addr.getStart() + 2 ) - remote.getBaseAddress();
-    int count = processor.getInt( data, offset ); // get number of protocol upgrades
-    offset += 2; // skip to first entry
-    offset += ( 4 * count ); // the are 4 bytes for each entry ( 2 for PID, 2 for the code pointer )
-    return offset - addr.getStart() - 1;
+    int devCount = devices.size();
+
+    HashMap< Integer, ProtocolUpgrade > requiredProtocols = getRequiredProtocolUpgrades();
+    // Calculate the size of the upgrade table
+
+    int prCount = requiredProtocols.size();
+
+    // Handle the special case where there are no upgrades installed
+    if ( ( devCount == 0 ) && ( prCount == 0 ) )
+    {
+      return size;
+    }
+
+    // the device upgrades
+    for ( DeviceUpgrade upgrade : devices )
+    {
+      size += upgrade.getUpgradeHex().length();
+    }
+
+    // the protocol upgrades
+    for ( ProtocolUpgrade upgrade : requiredProtocols.values() )
+    {
+      size += upgrade.getCode().length();
+    }
+
+    // The device upgrade table
+    size += 2; // the count
+    size += 4 * devCount; // the setup code and offset for each upgrade
+
+    // The protocol upgrade table
+    size += 2; // the count
+    size += 4 * prCount; // the pid and offset for each upgrade
+
+    return size;
   }
 
   /**
@@ -1237,27 +1271,44 @@ public class RemoteConfiguration
    * 
    * @return the int
    */
-  public int updateUpgrades()
+  private void updateUpgrades()
   {
     AddressRange addr = remote.getUpgradeAddress();
     int offset = addr.getStart() + 4; // skip over the table pointers
     int devCount = devices.size();
 
+    // Build a list of the required protocol upgrades
     LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
     for ( DeviceUpgrade dev : devices )
     {
-      Hex pCode = dev.getCode();
-      if ( pCode != null )
+      if ( dev.needsProtocolCode() )
       {
+        Hex pCode = dev.getCode();
         Protocol p = dev.getProtocol();
-        Hex pid = p.getID();
-        if ( !requiredProtocols.containsKey( pid ) )
-          requiredProtocols.put( pid.get( 0 ), new ProtocolUpgrade( pid.get( 0 ), pCode, p.getName() ) );
+        int pid = p.getID().get( 0 );
+        ProtocolUpgrade pu = requiredProtocols.get( pid );
+        if ( pu == null )
+        {
+          requiredProtocols.put( pid, new ProtocolUpgrade( pid, pCode, p.getName() ) );
+        }
+        else
+        {
+          if ( !pu.getCode().equals( pCode ) )
+          {
+            String message = "The protocol code used by the device upgrade for " + dev.getDeviceTypeAliasName() + '/'
+                + dev.getSetupCode()
+                + " is different than the code already used by another device upgrade, and may not work as intended.";
+            JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+          }
+        }
       }
     }
 
+    // The installed protocols that aren't used by any device upgrade.
     for ( ProtocolUpgrade pu : protocols )
       requiredProtocols.put( pu.getPid(), pu );
+
+    // Calculate the size of the upgrade table
 
     int prCount = requiredProtocols.size();
 
@@ -1268,7 +1319,7 @@ public class RemoteConfiguration
       processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart() );
       processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart() + 2 );
       processor.putInt( 0, data, offset );
-      return offset - addr.getStart();
+      return;
     }
 
     // store the device upgrades
@@ -1328,8 +1379,6 @@ public class RemoteConfiguration
       processor.putInt( prOffsets[ i ] + remote.getBaseAddress(), data, offset );
       offset += 2;
     }
-
-    return offset - addr.getStart();
   }
 
   /**
@@ -1360,21 +1409,18 @@ public class RemoteConfiguration
    * 
    * @return the learned signal bytes used
    */
-  public int getLearnedSignalBytesUsed()
+  public int getLearnedSignalBytesNeeded()
   {
-    AddressRange addr = remote.getLearnedAddress();
-    if ( addr == null )
+    int size = 0;
+    if ( remote.getLearnedAddress() == null )
       return 0;
 
-    int offset = addr.getStart();
-    while ( ( offset < addr.getEnd() ) && ( data[ offset ] != remote.getSectionTerminator() ) )
+    for ( LearnedSignal ls : learned )
     {
-      offset += 2; // skip keycode and device button
-      int length = data[ offset++ ];
-      offset += length;
+      size += ls.getSize();
     }
-
-    return offset - addr.getStart();
+    size += 1; // section terminator;
+    return size;
   }
 
   /**
@@ -1382,24 +1428,18 @@ public class RemoteConfiguration
    * 
    * @return the int
    */
-  public int updateLearnedSignals()
+  private void updateLearnedSignals()
   {
     AddressRange addr = remote.getLearnedAddress();
     if ( addr == null )
-      return 0;
+      return;
 
     int offset = addr.getStart();
-    for ( LearnedSignal l : learned )
+    for ( LearnedSignal ls : learned )
     {
-      data[ offset++ ] = ( short )l.getKeyCode();
-      data[ offset++ ] = ( short )( l.getDeviceButtonIndex() << 4 );
-      Hex hex = l.getData();
-      data[ offset++ ] = ( short )hex.length();
-      Hex.put( hex, data, offset );
-      offset += hex.length();
+      offset = ls.store( data, offset );
     }
     data[ offset ] = remote.getSectionTerminator();
-    return offset - addr.getStart();
   }
 
   /**
@@ -1424,7 +1464,7 @@ public class RemoteConfiguration
     int base = remote.getBaseAddress();
     for ( int i = 0; i < data.length; i += 16 )
     {
-      pw.print( toHex( i + base ), Hex.toString( data, i, 16 ) );
+      pw.print( String.format( "%04X", i + base ), Hex.toString( data, i, 16 ) );
     }
 
     pw.printHeader( "Settings" );
@@ -1555,39 +1595,6 @@ public class RemoteConfiguration
   {
     notes = text;
   }
-
-  /**
-   * To hex.
-   * 
-   * @param value
-   *          the value
-   * @return the string
-   */
-  public static String toHex( int value )
-  // Returns an hexadecimal string representation with 4 digits and leading 0s
-  {
-    return ( Integer.toHexString( 0x10000 | value ).substring( 1 ).toUpperCase() );
-  }
-
-  /**
-   * To hex.
-   * 
-   * @param value
-   *          the value
-   * @return the string
-   */
-  public static String toHex( short value )
-  // Returns an hexadecimal string representation with 2 digits and leading 0s
-  {
-    return ( Integer.toHexString( 0x100 | value ).substring( 1 ).toUpperCase() );
-  }
-
-  // PropertyChangeListener
-  // public void propertyChange( PropertyChangeEvent event )
-  // {
-  // changed = true;
-  // updateAdvCodeArea();
-  // }
 
   /**
    * Gets the data.

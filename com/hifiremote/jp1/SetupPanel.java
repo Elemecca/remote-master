@@ -1,35 +1,61 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import javax.swing.border.*;
-import javax.swing.*;
-import java.text.*;
-import javax.swing.text.*;
-import java.awt.event.*;
-import javax.swing.event.*;
-import java.util.*;
-import info.clearthought.layout.*;
-import java.beans.*;
+import info.clearthought.layout.TableLayout;
+import info.clearthought.layout.TableLayoutConstraints;
+
+import java.awt.BorderLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+
+import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.SwingPropertyChangeSupport;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.NumberFormatter;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class SetupPanel.
  */
-public class SetupPanel
-  extends KMPanel
-  implements ActionListener, ItemListener, PropertyChangeListener, DocumentListener, FocusListener, Runnable
+public class SetupPanel extends KMPanel implements ActionListener, ItemListener, PropertyChangeListener,
+    DocumentListener, FocusListener, Runnable
 {
-  
+
   /**
    * Instantiates a new setup panel.
    * 
-   * @param deviceUpgrade the device upgrade
+   * @param deviceUpgrade
+   *          the device upgrade
    */
   public SetupPanel( DeviceUpgrade deviceUpgrade )
   {
     super( "Setup", deviceUpgrade );
 
-    protocolHolder = new JPanel( new BorderLayout());
+    protocolHolder = new JPanel( new BorderLayout() );
     Border border = BorderFactory.createTitledBorder( "Protocol Parameters" );
     protocolHolder.setBorder( border );
 
@@ -38,16 +64,21 @@ public class SetupPanel
     double bl = insets.left + 10;
     double br = insets.right;
     double bb = insets.bottom;
-    double b = 10;       // space around border
-    double i = 5;        // space between rows
-    double v = 20;       // space between groupings
-    double c = 10;       // space between columns
+    double b = 10; // space around border
+    double i = 5; // space between rows
+    double v = 20; // space between groupings
+    double c = 10; // space between columns
     double f = TableLayout.FILL;
     double p = TableLayout.PREFERRED;
     double size[][] =
     {
-      { b, bl, p, b, p, br, c, f, b },                     // cols
-      { b, p, v, p, i, p, v, bt, p, bb, f, b }         // rows
+        {
+            b, bl, p, b, p, br, c, f, b
+        }, // cols
+        {
+            b, p, v, p, i, p, v, bt, p, bb, f, b
+        }
+    // rows
     };
     tl = new TableLayout( size );
     setLayout( tl );
@@ -55,10 +86,10 @@ public class SetupPanel
     JLabel label = new JLabel( "Setup Code:", SwingConstants.RIGHT );
     add( label, "2, 1" );
 
-    NumberFormatter nf = new NumberFormatter( new DecimalFormat( "0000" ));
+    NumberFormatter nf = new NumberFormatter( new DecimalFormat( "0000" ) );
     nf.setValueClass( Integer.class );
-    nf.setMinimum( new Integer( 0 ));
-    nf.setMaximum( new Integer( 2047));
+    nf.setMinimum( new Integer( 0 ) );
+    nf.setMaximum( new Integer( 2047 ) );
     nf.setCommitsOnValidEdit( true );
 
     setupCode = new JFormattedTextField( nf );
@@ -101,30 +132,28 @@ public class SetupPanel
     notes.setLineWrap( true );
     notes.setWrapStyleWord( true );
     JScrollPane scrollPane = new JScrollPane( notes );
-    scrollPane.setBorder(
-      BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder( "Upgrade Notes" ),
-        scrollPane.getBorder()));
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Upgrade Notes" ),
+        scrollPane.getBorder() ) );
     notes.getDocument().addDocumentListener( this );
     new TextPopupMenu( notes );
     add( scrollPane, "7, 1, 7, 9" );
 
-    protocolNotes = new JTextArea();
-    protocolNotes.setBackground( label.getBackground());
+    protocolNotes = new JEditorPane();
+    protocolNotes.setBackground( label.getBackground() );
     protocolNotes.setToolTipText( "Notes about the selected protocol." );
-    protocolNotes.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ));
+    protocolNotes.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
     protocolNotes.setEditable( false );
-    protocolNotes.setLineWrap( true );
-    protocolNotes.setWrapStyleWord( true );
+    // protocolNotes.setLineWrap( true );
+    // protocolNotes.setWrapStyleWord( true );
     scrollPane = new JScrollPane( protocolNotes );
-    scrollPane.setBorder(
-      BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder( "Protocol Notes" ),
-        scrollPane.getBorder()));
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Protocol Notes" ),
+        scrollPane.getBorder() ) );
     add( scrollPane, "1, 10, 7, 10" );
   } // SetupPanel
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KMPanel#update()
    */
   public void update()
@@ -132,11 +161,11 @@ public class SetupPanel
     if ( deviceUpgrade == null )
       return;
     updateInProgress = true;
-    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode()));
+    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode() ) );
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
     java.util.List< Protocol > protocols = ProtocolManager.getProtocolManager().getProtocolsForRemote( remote );
-    if ( !protocols.contains( p ))
+    if ( !protocols.contains( p ) )
     {
       // ??? There should be a better way to handle this (the current protocol is
       // incompatible with the current remote), but this way is at least better than
@@ -148,13 +177,14 @@ public class SetupPanel
     Value[] vals = deviceUpgrade.getParmValues();
     p.setDeviceParms( vals );
     updateParameters();
-    protocolList.setModel( new DefaultComboBoxModel( protocols.toArray()));
+    protocolList.setModel( new DefaultComboBoxModel( protocols.toArray() ) );
     protocolList.setSelectedItem( p );
-    protocolID.setText( p.getID( remote ).toString());
-    notes.setText( deviceUpgrade.getNotes());
-    fixedData.setText( p.getFixedData( vals ).toString());
-    protocolNotes.setText( p.getNotes());
-    protocolNotes.setCaretPosition( 0 );
+    protocolID.setText( p.getID( remote ).toString() );
+    notes.setText( deviceUpgrade.getNotes() );
+    fixedData.setText( p.getFixedData( vals ).toString() );
+
+    updateProtocolNotes( p.getNotes() );
+
     updateInProgress = false;
   }
 
@@ -171,8 +201,8 @@ public class SetupPanel
         for ( int i = 0; i < parameters.length; i++ )
         {
           parameters[ i ].removeListener( this );
-          remove( parameters[ i ].getLabel());
-          remove( parameters[ i ].getComponent());
+          remove( parameters[ i ].getLabel() );
+          remove( parameters[ i ].getComponent() );
           tl.deleteRow( 8 );
           tl.deleteRow( 8 );
         }
@@ -186,9 +216,9 @@ public class SetupPanel
           parameters[ i ].addListener( this );
           tl.insertRow( row, TableLayout.PREFERRED );
           add( parameters[ i ].getLabel(), "2, " + row );
-          add( parameters[ i ].getComponent() , "4, " + row );
-          row++;
-          tl.insertRow( row++, 5 );
+          add( parameters[ i ].getComponent(), "4, " + row );
+          row++ ;
+          tl.insertRow( row++ , 5 );
         }
         TableLayoutConstraints tlc = tl.getConstraints( protocolHolder );
         remove( protocolHolder );
@@ -204,12 +234,14 @@ public class SetupPanel
   {
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
-    deviceUpgrade.setParmValues( p.getDeviceParmValues());
-    fixedData.setText( p.getFixedData( deviceUpgrade.getParmValues()).toString());
+    deviceUpgrade.setParmValues( p.getDeviceParmValues() );
+    fixedData.setText( p.getFixedData( deviceUpgrade.getParmValues() ).toString() );
   }
 
   // ActionListener Methods
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
   public void actionPerformed( ActionEvent e )
@@ -222,15 +254,13 @@ public class SetupPanel
       Protocol oldProtocol = deviceUpgrade.getProtocol();
       if ( newProtocol != oldProtocol )
       {
-        if ( deviceUpgrade.setProtocol( newProtocol ))
+        if ( deviceUpgrade.setProtocol( newProtocol ) )
         {
-          protocolID.setText( newProtocol.getID( deviceUpgrade.getRemote()).toString());
+          protocolID.setText( newProtocol.getID( deviceUpgrade.getRemote() ).toString() );
           updateParameters();
-          fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues()).toString());
+          fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues() ).toString() );
+          updateProtocolNotes( newProtocol.getNotes() );
           revalidate();
-          protocolNotes.setText( newProtocol.getNotes());
-          protocolNotes.setCaretPosition( 0 );
-          protocolNotes.revalidate();
 
           deviceUpgrade.checkSize();
           propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, newProtocol );
@@ -243,9 +273,24 @@ public class SetupPanel
         }
       }
     }
-    else // must be a protocol parameter
+    else
+      // must be a protocol parameter
       updateFixedData();
   } // actionPerformed
+
+  protected void updateProtocolNotes( String text )
+  {
+    String contentType = "text/plain";
+    if ( text != null && text.startsWith( "<" ) )
+    {
+      contentType = "text/html";
+    }
+    EditorKit kit = protocolNotes.getEditorKitForContentType( contentType );
+    protocolNotes.setEditorKit( kit );
+    protocolNotes.setText( text );
+    protocolNotes.setCaretPosition( 0 );
+    protocolNotes.revalidate();
+  }
 
   /**
    * Gets the selected protocol.
@@ -258,12 +303,14 @@ public class SetupPanel
     return protocol;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KMPanel#commit()
    */
   public void commit()
   {
-    deviceUpgrade.getProtocol().updateFunctions( deviceUpgrade.getFunctions());
+    deviceUpgrade.getProtocol().updateFunctions( deviceUpgrade.getFunctions() );
   }
 
   /**
@@ -271,7 +318,7 @@ public class SetupPanel
    */
   private void updateNotes()
   {
-    deviceUpgrade.setNotes( notes.getText());
+    deviceUpgrade.setNotes( notes.getText() );
   }
 
   /**
@@ -279,7 +326,7 @@ public class SetupPanel
    */
   private void updateSetupCode()
   {
-    int val = (( Integer )setupCode.getValue()).intValue();
+    int val = ( ( Integer )setupCode.getValue() ).intValue();
     int oldSetupCode = deviceUpgrade.getSetupCode();
     deviceUpgrade.setSetupCode( val );
     propertyChangeSupport.firePropertyChange( "setupCode", oldSetupCode, val );
@@ -288,7 +335,8 @@ public class SetupPanel
   /**
    * Doc changed.
    * 
-   * @param e the e
+   * @param e
+   *          the e
    */
   private void docChanged( DocumentEvent e )
   {
@@ -303,7 +351,9 @@ public class SetupPanel
   }
 
   // DocumentListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
    */
   public void changedUpdate( DocumentEvent e )
@@ -311,7 +361,9 @@ public class SetupPanel
     docChanged( e );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
    */
   public void insertUpdate( DocumentEvent e )
@@ -319,7 +371,9 @@ public class SetupPanel
     docChanged( e );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
    */
   public void removeUpdate( DocumentEvent e )
@@ -328,7 +382,9 @@ public class SetupPanel
   }
 
   // FocusListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
    */
   public void focusGained( FocusEvent e )
@@ -337,15 +393,18 @@ public class SetupPanel
     SwingUtilities.invokeLater( this );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
    */
   public void focusLost( FocusEvent e )
-  {
-  }
+  {}
 
   // ItemListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
    */
   public void itemStateChanged( ItemEvent e )
@@ -355,7 +414,9 @@ public class SetupPanel
   }
 
   // PropertyChangeListener methods
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
    */
   public void propertyChange( PropertyChangeEvent e )
@@ -367,7 +428,9 @@ public class SetupPanel
   }
 
   // Runnable
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Runnable#run()
    */
   public void run()
@@ -375,49 +438,50 @@ public class SetupPanel
     controlToSelectAll.selectAll();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.Container#addPropertyChangeListener(java.beans.PropertyChangeListener)
    */
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
-    if (( propertyChangeSupport != null ) && ( listener != null ))
+    if ( ( propertyChangeSupport != null ) && ( listener != null ) )
       propertyChangeSupport.addPropertyChangeListener( listener );
   }
 
   /** The setup code. */
   private JFormattedTextField setupCode = null;
-  
+
   /** The protocol list. */
   private JComboBox protocolList = null;
-  
+
   /** The protocol id. */
   private JTextField protocolID = null;
-  
+
   /** The notes. */
   private JTextArea notes = null;
-  
+
   /** The protocol holder. */
   private JPanel protocolHolder = null;
-  
+
   /** The fixed data. */
   private JTextField fixedData = null;
-  
+
   /** The protocol notes. */
-  private JTextArea protocolNotes = null;
-  
+  private JEditorPane protocolNotes = null;
+
   /** The parameters. */
   private DeviceParameter[] parameters = null;
-  
+
   /** The tl. */
   private TableLayout tl;
-  
+
   /** The update in progress. */
   private boolean updateInProgress = false;
-  
+
   /** The control to select all. */
   private JTextComponent controlToSelectAll = null;
-  
+
   /** The property change support. */
   private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
 }
-

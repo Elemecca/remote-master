@@ -6,26 +6,29 @@ import java.util.Properties;
 /**
  * The Class Macro.
  */
-public class Macro
-  extends AdvancedCode
+public class Macro extends AdvancedCode
 {
-  
+
   /**
    * Instantiates a new macro.
    * 
-   * @param keyCode the key code
-   * @param keyCodes the key codes
-   * @param notes the notes
+   * @param keyCode
+   *          the key code
+   * @param keyCodes
+   *          the key codes
+   * @param notes
+   *          the notes
    */
   public Macro( int keyCode, Hex keyCodes, String notes )
   {
     super( keyCode, keyCodes, notes );
   }
-  
+
   /**
    * Instantiates a new macro.
    * 
-   * @param props the props
+   * @param props
+   *          the props
    */
   public Macro( Properties props )
   {
@@ -41,8 +44,10 @@ public class Macro
   {
     return getData();
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.AdvancedCode#getValueString(com.hifiremote.jp1.RemoteConfiguration)
    */
   public String getValueString( RemoteConfiguration remoteConfig )
@@ -57,11 +62,11 @@ public class Macro
       if ( keys[ i ] == 0 )
       {
         buff.append( "{Pause}" );
-        while (( i < keys.length ) && ( keys[ i ] == 0 ))
+        while ( ( i < keys.length ) && ( keys[ i ] == 0 ) )
           ++i;
       }
       else
-        buff.append( remote.getButtonName( keys[ i ]));
+        buff.append( remote.getButtonName( keys[ i ] ) );
     }
     return buff.toString();
   }
@@ -69,10 +74,30 @@ public class Macro
   /**
    * Sets the value.
    * 
-   * @param value the new value
+   * @param value
+   *          the new value
    */
   public void setValue( Object value )
   {
-    setData(( Hex )value );
+    setData( ( Hex )value );
   }
+
+  public int store( short[] buffer, int offset )
+  {
+    buffer[ offset++ ] = ( short )getKeyCode();
+    if ( bindFormat == BindFormat.NORMAL )
+    {
+      buffer[ offset ] = 0x10;
+    }
+    else
+    {
+      buffer[ offset++ ] = 0x80;
+    }
+    int dataLength = data.length();
+    buffer[ offset++ ] |= ( short )dataLength;
+    Hex.put( data, buffer, offset );
+
+    return offset + dataLength;
+  }
+
 }

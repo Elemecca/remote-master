@@ -6,14 +6,18 @@ package com.hifiremote.jp1;
  */
 public class Button
 {
-  
+
   /**
    * Instantiates a new button.
    * 
-   * @param standardName the standard name
-   * @param name the name
-   * @param code the code
-   * @param r the r
+   * @param standardName
+   *          the standard name
+   * @param name
+   *          the name
+   * @param code
+   *          the code
+   * @param r
+   *          the r
    */
   public Button( String standardName, String name, short code, Remote r )
   {
@@ -23,33 +27,45 @@ public class Button
     remote = r;
     multiMacroAddress = 0;
     int maskedCode = code & 0xC0;
-    if ( maskedCode == r.getShiftMask())
+    if ( maskedCode == r.getShiftMask() )
       setIsShifted( true );
-    else if ( maskedCode == r.getXShiftMask())
+    else if ( maskedCode == r.getXShiftMask() )
       setIsXShifted( true );
     else if ( maskedCode != 0 )
       restrictions |= ( SHIFT | XSHIFT );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
-  public String toString(){ return name; }
-  
+  public String toString()
+  {
+    return name;
+  }
+
   /**
    * Gets the name.
    * 
    * @return the name
    */
-  public String getName(){ return name; }
-  
+  public String getName()
+  {
+    return name;
+  }
+
   /**
    * Sets the name.
    * 
-   * @param name the new name
+   * @param name
+   *          the new name
    */
-  public void setName( String name ){ this.name = name; }
-  
+  public void setName( String name )
+  {
+    this.name = name;
+  }
+
   /**
    * Gets the shifted name.
    * 
@@ -83,8 +99,8 @@ public class Button
   /**
    * Gets the name.
    * 
-   * @param state the state
-   * 
+   * @param state
+   *          the state
    * @return the name
    */
   public String getName( int state )
@@ -102,41 +118,57 @@ public class Button
    * 
    * @return the standard name
    */
-  public String getStandardName(){ return standardName; }
-  
+  public String getStandardName()
+  {
+    return standardName;
+  }
+
   /**
    * Sets the standard name.
    * 
-   * @param name the new standard name
+   * @param name
+   *          the new standard name
    */
-  public void setStandardName( String name ){ standardName = name.toLowerCase(); }
-  
+  public void setStandardName( String name )
+  {
+    standardName = name.toLowerCase();
+  }
+
   /**
    * Gets the key code.
    * 
    * @return the key code
    */
-  public short getKeyCode(){ return keyCode; }
-  
+  public short getKeyCode()
+  {
+    return keyCode;
+  }
+
   /**
    * Gets the shifted key code.
    * 
    * @return the shifted key code
    */
-  public short getShiftedKeyCode(){ return ( short )( keyCode | remote.getShiftMask()); }
-  
+  public short getShiftedKeyCode()
+  {
+    return ( short )( keyCode | remote.getShiftMask() );
+  }
+
   /**
    * Gets the x shifted key code.
    * 
    * @return the x shifted key code
    */
-  public short getXShiftedKeyCode(){ return ( short )( keyCode | remote.getXShiftMask()); }
-  
+  public short getXShiftedKeyCode()
+  {
+    return ( short )( keyCode | remote.getXShiftMask() );
+  }
+
   /**
    * Gets the key code.
    * 
-   * @param state the state
-   * 
+   * @param state
+   *          the state
    * @return the key code
    */
   public short getKeyCode( int state )
@@ -153,26 +185,34 @@ public class Button
    * 
    * @return the multi macro address
    */
-  public int getMultiMacroAddress(){ return multiMacroAddress; }
-  
+  public int getMultiMacroAddress()
+  {
+    return multiMacroAddress;
+  }
+
   /**
    * Sets the multi macro address.
    * 
-   * @param addr the new multi macro address
+   * @param addr
+   *          the new multi macro address
    */
-  public void setMultiMacroAddress( int addr ){ multiMacroAddress = addr; }
+  public void setMultiMacroAddress( int addr )
+  {
+    multiMacroAddress = addr;
+  }
 
   /**
    * Sets the base button.
    * 
-   * @param button the new base button
+   * @param button
+   *          the new base button
    */
   public void setBaseButton( Button button )
   {
     baseButton = button;
-    if ( isShifted && !allowsKeyMove())
+    if ( isShifted && !allowsKeyMove() )
       baseButton.addRestrictions( SHIFT_MOVE_BIND );
-    if ( isXShifted && ! allowsKeyMove())
+    if ( isXShifted && !allowsKeyMove() )
       baseButton.addRestrictions( XSHIFT_MOVE_BIND );
   }
 
@@ -199,7 +239,8 @@ public class Button
   /**
    * Sets the shifted button.
    * 
-   * @param button the new shifted button
+   * @param button
+   *          the new shifted button
    */
   public void setShiftedButton( Button button )
   {
@@ -209,13 +250,14 @@ public class Button
   /**
    * Sets the x shifted button.
    * 
-   * @param button the new x shifted button
+   * @param button
+   *          the new x shifted button
    */
   public void setXShiftedButton( Button button )
   {
     xShiftedButton = button;
   }
-  
+
   /**
    * Gets the x shifted button.
    * 
@@ -233,13 +275,14 @@ public class Button
    */
   public boolean getIsNormal()
   {
-    return (!isShifted && !isXShifted );
+    return ( !isShifted && !isXShifted );
   }
-  
+
   /**
    * Sets the checks if is shifted.
    * 
-   * @param flag the new checks if is shifted
+   * @param flag
+   *          the new checks if is shifted
    */
   public void setIsShifted( boolean flag )
   {
@@ -247,7 +290,7 @@ public class Button
     if ( isShifted )
       restrictions |= ( SHIFT | XSHIFT );
   }
-  
+
   /**
    * Gets the checks if is shifted.
    * 
@@ -261,7 +304,8 @@ public class Button
   /**
    * Sets the checks if is x shifted.
    * 
-   * @param flag the new checks if is x shifted
+   * @param flag
+   *          the new checks if is x shifted
    */
   public void setIsXShifted( boolean flag )
   {
@@ -269,13 +313,16 @@ public class Button
     if ( isXShifted )
       restrictions |= ( SHIFT | XSHIFT );
   }
-  
+
   /**
    * Gets the checks if is x shifted.
    * 
    * @return the checks if is x shifted
    */
-  public boolean getIsXShifted(){ return isXShifted; }
+  public boolean getIsXShifted()
+  {
+    return isXShifted;
+  }
 
   /**
    * Gets the state.
@@ -284,9 +331,9 @@ public class Button
    */
   public int getState()
   {
-    if ( getIsShifted())
+    if ( getIsShifted() )
       return SHIFTED_STATE;
-    else if( getIsXShifted())
+    else if ( getIsXShifted() )
       return XSHIFTED_STATE;
     else
       return NORMAL_STATE;
@@ -297,26 +344,31 @@ public class Button
    * 
    * @return the restrictions
    */
-  public int getRestrictions(){ return restrictions; }
-  
+  public int getRestrictions()
+  {
+    return restrictions;
+  }
+
   /**
    * Sets the restrictions.
    * 
-   * @param restrictions the new restrictions
+   * @param restrictions
+   *          the new restrictions
    */
   public void setRestrictions( int restrictions )
   {
     this.restrictions = restrictions;
   }
-  
+
   /**
    * Adds the restrictions.
    * 
-   * @param restrictions the restrictions
+   * @param restrictions
+   *          the restrictions
    */
   public void addRestrictions( int restrictions )
   {
-    this.restrictions  |= restrictions;
+    this.restrictions |= restrictions;
   }
 
   /**
@@ -326,7 +378,7 @@ public class Button
    */
   public boolean allowsKeyMove()
   {
-    return (( restrictions & MOVE_BIND ) == 0 );
+    return ( ( restrictions & MOVE_BIND ) == 0 );
   }
 
   /**
@@ -338,7 +390,7 @@ public class Button
   {
     if ( isShifted || isXShifted )
       return false;
-    return (( restrictions & SHIFT_MOVE_BIND ) == 0 );
+    return ( ( restrictions & SHIFT_MOVE_BIND ) == 0 );
   }
 
   /**
@@ -350,14 +402,14 @@ public class Button
   {
     if ( isShifted || isXShifted )
       return false;
-    return (( restrictions & XSHIFT_MOVE_BIND ) == 0 );
+    return ( ( restrictions & XSHIFT_MOVE_BIND ) == 0 );
   }
 
   /**
    * Allows key move.
    * 
-   * @param state the state
-   * 
+   * @param state
+   *          the state
    * @return true, if successful
    */
   public boolean allowsKeyMove( int state )
@@ -377,7 +429,7 @@ public class Button
    */
   public boolean allowsMacro()
   {
-    return (( restrictions & MACRO_BIND ) == 0 );
+    return ( ( restrictions & MACRO_BIND ) == 0 );
   }
 
   /**
@@ -389,7 +441,7 @@ public class Button
   {
     if ( isShifted || isXShifted )
       return false;
-    return (( restrictions & SHIFT_MACRO_BIND ) == 0 );
+    return ( ( restrictions & SHIFT_MACRO_BIND ) == 0 );
   }
 
   /**
@@ -401,7 +453,7 @@ public class Button
   {
     if ( isShifted || isXShifted )
       return false;
-    return (( restrictions & XSHIFT_MACRO_BIND ) == 0 );
+    return ( ( restrictions & XSHIFT_MACRO_BIND ) == 0 );
   }
 
   /**
@@ -411,7 +463,7 @@ public class Button
    */
   public boolean canAssignToMacro()
   {
-    return (( restrictions & MACRO_DATA ) == 0 );
+    return ( ( restrictions & MACRO_DATA ) == 0 );
   }
 
   /**
@@ -423,7 +475,7 @@ public class Button
   {
     if ( isShifted || isXShifted )
       return false;
-    return (( restrictions & SHIFT_MACRO_DATA ) == 0 );
+    return ( ( restrictions & SHIFT_MACRO_DATA ) == 0 );
   }
 
   /**
@@ -435,7 +487,7 @@ public class Button
   {
     if ( isShifted || isXShifted )
       return false;
-    return (( restrictions & XSHIFT_MACRO_DATA ) == 0 );
+    return ( ( restrictions & XSHIFT_MACRO_DATA ) == 0 );
   }
 
   /**
@@ -445,7 +497,7 @@ public class Button
    */
   public boolean allowsLearnedSignal()
   {
-    return (( restrictions & LEARN_BIND ) == 0 );
+    return ( ( restrictions & LEARN_BIND ) == 0 );
   }
 
   /**
@@ -457,7 +509,7 @@ public class Button
   {
     if ( isShifted || isXShifted )
       return false;
-    return (( restrictions & SHIFT_LEARN_BIND ) == 0 );
+    return ( ( restrictions & SHIFT_LEARN_BIND ) == 0 );
   }
 
   /**
@@ -469,13 +521,14 @@ public class Button
   {
     if ( isShifted || isXShifted )
       return false;
-    return (( restrictions & XSHIFT_LEARN_BIND ) == 0 );
+    return ( ( restrictions & XSHIFT_LEARN_BIND ) == 0 );
   }
 
   /**
    * Adds the button map.
    * 
-   * @param mapIndex the map index
+   * @param mapIndex
+   *          the map index
    */
   public void addButtonMap( int mapIndex )
   {
@@ -485,14 +538,14 @@ public class Button
   /**
    * In button map.
    * 
-   * @param mapIndex the map index
-   * 
+   * @param mapIndex
+   *          the map index
    * @return true, if successful
    */
   public boolean inButtonMap( int mapIndex )
   {
     int mask = ( 1 << mapIndex );
-    return (( buttonMaps & mask ) != 0 );
+    return ( ( buttonMaps & mask ) != 0 );
   }
 
   /**
@@ -508,38 +561,44 @@ public class Button
   /**
    * Gets the key move.
    * 
-   * @param f the f
-   * @param mask the mask
-   * @param setupCode the setup code
-   * @param devType the dev type
-   * @param remote the remote
-   * @param keyMovesOnly the key moves only
-   * 
+   * @param f
+   *          the f
+   * @param mask
+   *          the mask
+   * @param setupCode
+   *          the setup code
+   * @param devType
+   *          the dev type
+   * @param remote
+   *          the remote
+   * @param keyMovesOnly
+   *          the key moves only
    * @return the key move
    */
-  public KeyMove getKeyMove( Function f, int mask, int setupCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
+  public KeyMove getKeyMove( Function f, int mask, int setupCode, DeviceType devType, Remote remote,
+      boolean keyMovesOnly )
   {
     KeyMove rc = null;
-    if (( f != null ) && ( f.getHex() != null ))
+    if ( ( f != null ) && ( f.getHex() != null ) )
     {
       Hex hex = f.getHex();
-      if ( f.isExternal())
+      if ( f.isExternal() )
       {
         ExternalFunction ef = ( ExternalFunction )f;
-        devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName());
+        devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName() );
         setupCode = ef.getSetupCode();
       }
 
-      if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
+      if ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
       {
-        StringBuilder sb = new StringBuilder( f.getName());
+        StringBuilder sb = new StringBuilder( f.getName() );
         String notes = f.getNotes();
-        if (( notes != null ) && ( notes.length() != 0 ))
+        if ( ( notes != null ) && ( notes.length() != 0 ) )
         {
           sb.append( ": " );
           sb.append( notes );
         }
-        rc = remote.createKeyMove( keyCode | mask, 0x0F, devType.getNumber(), setupCode, hex, sb.toString());
+        rc = remote.createKeyMove( keyCode | mask, 0x0F, devType.getNumber(), setupCode, hex, sb.toString() );
       }
     }
     return rc;
@@ -548,27 +607,32 @@ public class Button
   /**
    * Gets the key move.
    * 
-   * @param f the f
-   * @param mask the mask
-   * @param deviceCode the device code
-   * @param devType the dev type
-   * @param remote the remote
-   * @param keyMovesOnly the key moves only
-   * 
+   * @param f
+   *          the f
+   * @param mask
+   *          the mask
+   * @param deviceCode
+   *          the device code
+   * @param devType
+   *          the dev type
+   * @param remote
+   *          the remote
+   * @param keyMovesOnly
+   *          the key moves only
    * @return the key move
    */
-  public short[] getKeyMove( Function f, int mask,
-                             short[] deviceCode, DeviceType devType, Remote remote, boolean keyMovesOnly )
+  public short[] getKeyMove( Function f, int mask, short[] deviceCode, DeviceType devType, Remote remote,
+      boolean keyMovesOnly )
   {
     short[] rc = new short[ 0 ];
-    if (( f != null ) && ( f.getHex() != null ))
+    if ( ( f != null ) && ( f.getHex() != null ) )
     {
       int len = 0;
       Hex hex = f.getHex();
-      if ( f.isExternal())
+      if ( f.isExternal() )
       {
         ExternalFunction ef = ( ExternalFunction )f;
-        devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName());
+        devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName() );
         short temp = ( short )( devType.getNumber() * 0x1000 );
         temp += ( short )ef.getSetupCode();
         temp -= ( short )remote.getDeviceCodeOffset();
@@ -577,9 +641,9 @@ public class Button
         deviceCode[ 0 ] = ( short )( temp >> 8 );
         deviceCode[ 1 ] = temp;
       }
-      if ( remote.getAdvCodeFormat() == Remote.EFC_FORMAT )
+      if ( AdvancedCode.getFormat() == AdvancedCode.Format.EFC )
       {
-        if (( hex.length() == 1 ) && ( remote.getEFCDigits() == 3 ))
+        if ( ( hex.length() == 1 ) && ( remote.getEFCDigits() == 3 ) )
         {
           short[] data = new short[ 2 ];
           data[ 0 ] = 0;
@@ -588,16 +652,16 @@ public class Button
         }
         else
         {
-          short[] newData = new short[ 2 ];
+          short[] data = new short[ 2 ];
           short value = EFC5.parseHex( hex );
 
-          newData[ 0 ] = ( short )( value >> 8 );
-          newData[ 1 ] = ( short )( value & 0xFF );
+          data[ 0 ] = ( short )( value >> 8 );
+          data[ 1 ] = ( short )( value & 0xFF );
 
-          hex = new Hex( newData );
+          hex = new Hex( data );
         }
       }
-      else if (( hex.length() == 1 ) && ( remote.getAdvCodeBindFormat() == Remote.LONG ))
+      else if ( ( hex.length() == 1 ) && ( AdvancedCode.getBindFormat() == AdvancedCode.BindFormat.LONG ) )
       {
         short[] newData = new short[ 2 ];
         newData[ 0 ] = hex.getData()[ 0 ];
@@ -605,12 +669,12 @@ public class Button
         newData[ 1 ] = EFC.parseHex( hex );
       }
 
-      if  ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
-        len = ( 4 + hex.length());
+      if ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )
+        len = ( 4 + hex.length() );
 
       if ( len != 0 )
       {
-        if ( remote.getAdvCodeBindFormat() == Remote.LONG )
+        if ( AdvancedCode.getBindFormat() == AdvancedCode.BindFormat.LONG )
           ++len;
 
         rc = new short[ len ];
@@ -619,13 +683,13 @@ public class Button
         rc[ index ] = ( short )( keyCode | mask );
 
         rc[ ++index ] = 0xF0;
-        if ( remote.getAdvCodeBindFormat() == Remote.NORMAL )
-          rc[ index ] += ( short )( 2 + hex.length());
+        if ( AdvancedCode.getBindFormat() == AdvancedCode.BindFormat.NORMAL )
+          rc[ index ] += ( short )( 2 + hex.length() );
         else
-          rc[ ++index ] = ( short )( 2 + hex.length());
+          rc[ ++index ] = ( short )( 2 + hex.length() );
 
         System.arraycopy( deviceCode, 0, rc, ++index, 2 );
-        System.arraycopy( hex.getData(), 0, rc, index + 2, hex.length());
+        System.arraycopy( hex.getData(), 0, rc, index + 2, hex.length() );
       }
     }
     return rc;
@@ -634,7 +698,8 @@ public class Button
   /**
    * Sets the checks for shape.
    * 
-   * @param flag the new checks for shape
+   * @param flag
+   *          the new checks for shape
    */
   public void setHasShape( boolean flag )
   {
@@ -651,162 +716,163 @@ public class Button
    * 
    * @return the checks for shape
    */
-  public boolean getHasShape(){ return hasShape; }
+  public boolean getHasShape()
+  {
+    return hasShape;
+  }
 
   /** The name. */
   private String name;
-  
+
   /** The standard name. */
   private String standardName;
-  
+
   /** The key code. */
   private short keyCode;
-  
+
   /** The remote. */
   private Remote remote;
-  
+
   /** The multi macro address. */
   private int multiMacroAddress;
   /*
-  private Function function;
-  private Function shiftedFunction;
-  private Function xShiftedFunction;
-  */
+   * private Function function; private Function shiftedFunction; private Function xShiftedFunction;
+   */
   /** The base button. */
   private Button baseButton = null;
-  
+
   /** The shifted button. */
   private Button shiftedButton = null;
-  
+
   /** The x shifted button. */
   private Button xShiftedButton = null;
-  
+
   /** The is shifted. */
   private boolean isShifted = false;
-  
+
   /** The is x shifted. */
   private boolean isXShifted = false;
-  
+
   /** The restrictions. */
   private int restrictions = 0;
-  
+
   /** The button maps. */
   private int buttonMaps = 0;
-  
+
   /** The has shape. */
   private boolean hasShape = false;
 
   /** The NORMA l_ state. */
   public static int NORMAL_STATE = 0;
-  
+
   /** The SHIFTE d_ state. */
   public static int SHIFTED_STATE = 1;
-  
+
   /** The XSHIFTE d_ state. */
   public static int XSHIFTED_STATE = 2;
 
   /** The MOV e_ bind. */
   public static int MOVE_BIND = 0x01;
-  
+
   /** The SHIF t_ mov e_ bind. */
   public static int SHIFT_MOVE_BIND = 0x02;
-  
+
   /** The XSHIF t_ mov e_ bind. */
   public static int XSHIFT_MOVE_BIND = 0x04;
-  
+
   /** The AL l_ mov e_ bind. */
   public static int ALL_MOVE_BIND = MOVE_BIND | SHIFT_MOVE_BIND | XSHIFT_MOVE_BIND;
-  
+
   /** The MACR o_ bind. */
   public static int MACRO_BIND = 0x08;
-  
+
   /** The SHIF t_ macr o_ bind. */
   public static int SHIFT_MACRO_BIND = 0x10;
-  
+
   /** The XSHIF t_ macr o_ bind. */
   public static int XSHIFT_MACRO_BIND = 0x20;
-  
+
   /** The AL l_ macr o_ bind. */
   public static int ALL_MACRO_BIND = MACRO_BIND | SHIFT_MACRO_BIND | XSHIFT_MACRO_BIND;
-  
+
   /** The LEAR n_ bind. */
   public static int LEARN_BIND = 0x40;
-  
+
   /** The SHIF t_ lear n_ bind. */
   public static int SHIFT_LEARN_BIND = 0x80;
-  
+
   /** The XSHIF t_ lear n_ bind. */
   public static int XSHIFT_LEARN_BIND = 0x100;
-  
+
   /** The AL l_ lear n_ bind. */
   public static int ALL_LEARN_BIND = LEARN_BIND | SHIFT_LEARN_BIND | XSHIFT_LEARN_BIND;
-  
+
   /** The MACR o_ data. */
   public static int MACRO_DATA = 0x200;
-  
+
   /** The SHIF t_ macr o_ data. */
   public static int SHIFT_MACRO_DATA = 0x400;
-  
+
   /** The XSHIF t_ macr o_ data. */
   public static int XSHIFT_MACRO_DATA = 0x800;
-  
+
   /** The AL l_ macr o_ data. */
   public static int ALL_MACRO_DATA = MACRO_DATA | SHIFT_MACRO_DATA | XSHIFT_MACRO_DATA;
-  
+
   /** The TMACR o_ data. */
   public static int TMACRO_DATA = 0x1000;
-  
+
   /** The SHIF t_ tmacr o_ data. */
   public static int SHIFT_TMACRO_DATA = 0x2000;
-  
+
   /** The XSHIF t_ tmacr o_ data. */
   public static int XSHIFT_TMACRO_DATA = 0x4000;
-  
+
   /** The AL l_ tmacr o_ data. */
   public static int ALL_TMACRO_DATA = TMACRO_DATA | SHIFT_TMACRO_DATA | XSHIFT_TMACRO_DATA;
-  
+
   /** The FA v_ data. */
   public static int FAV_DATA = 0x8000;
-  
+
   /** The SHIF t_ fa v_ data. */
   public static int SHIFT_FAV_DATA = 0x10000;
-  
+
   /** The XSHIF t_ fa v_ data. */
   public static int XSHIFT_FAV_DATA = 0x20000;
-  
+
   /** The AL l_ fa v_ data. */
   public static int ALL_FAV_DATA = FAV_DATA | SHIFT_FAV_DATA | XSHIFT_FAV_DATA;
-  
+
   /** The BIND. */
   public static int BIND = MOVE_BIND | MACRO_BIND | LEARN_BIND;
-  
+
   /** The SHIF t_ bind. */
   public static int SHIFT_BIND = SHIFT_MOVE_BIND | SHIFT_MACRO_BIND | SHIFT_LEARN_BIND;
-  
+
   /** The XSHIF t_ bind. */
   public static int XSHIFT_BIND = XSHIFT_MOVE_BIND | XSHIFT_MACRO_BIND | XSHIFT_LEARN_BIND;
-  
+
   /** The AL l_ bind. */
   public static int ALL_BIND = ALL_MOVE_BIND | ALL_MACRO_BIND | ALL_LEARN_BIND;
-  
+
   /** The DATA. */
   public static int DATA = MACRO_DATA | TMACRO_DATA | FAV_DATA;
-  
+
   /** The SHIF t_ data. */
   public static int SHIFT_DATA = SHIFT_MACRO_DATA | SHIFT_TMACRO_DATA | SHIFT_FAV_DATA;
-  
+
   /** The XSHIF t_ data. */
   public static int XSHIFT_DATA = XSHIFT_MACRO_DATA | XSHIFT_TMACRO_DATA | XSHIFT_FAV_DATA;
-  
+
   /** The AL l_ data. */
   public static int ALL_DATA = ALL_MACRO_DATA | ALL_TMACRO_DATA | ALL_FAV_DATA;
-  
+
   /** The SHIFT. */
   public static int SHIFT = SHIFT_BIND | SHIFT_DATA;
-  
+
   /** The XSHIFT. */
   public static int XSHIFT = XSHIFT_BIND | XSHIFT_DATA;
-  
+
   /** The ALL. */
   public static int ALL = ALL_DATA | ALL_BIND;
 }

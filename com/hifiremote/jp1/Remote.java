@@ -3,11 +3,13 @@ package com.hifiremote.jp1;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
@@ -23,6 +25,11 @@ public class Remote implements Comparable< Remote >
   public enum TimeFormat
   {
     HEX, BCD12, BCD24
+  };
+
+  public enum SetupValidation
+  {
+    OFF, WARN, ENFORCE
   };
 
   /**
@@ -173,6 +180,8 @@ public class Remote implements Comparable< Remote >
             line = parseButtonMaps( rdr );
           else if ( line.equals( "Protocols" ) )
             line = parseProtocols( rdr );
+          else if ( line.equals( "SetupCodes" ) )
+            line = parseSetupCodes( rdr );
           else
             line = rdr.readLine();
         }
@@ -636,7 +645,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @return the adv code format
    */
-  public int getAdvCodeFormat()
+  public AdvancedCode.Format getAdvCodeFormat()
   {
     load();
     return advCodeFormat;
@@ -647,7 +656,7 @@ public class Remote implements Comparable< Remote >
    * 
    * @return the adv code bind format
    */
-  public int getAdvCodeBindFormat()
+  public AdvancedCode.BindFormat getAdvCodeBindFormat()
   {
     load();
     return advCodeBindFormat;
@@ -837,17 +846,11 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "AdvCodeFormat" ) )
       {
-        if ( value.equals( "HEX" ) )
-          advCodeFormat = HEX_FORMAT;
-        else if ( value.equals( "EFC" ) )
-          advCodeFormat = EFC_FORMAT;
+        advCodeFormat = AdvancedCode.Format.valueOf( value.toUpperCase() );
       }
       else if ( parm.equals( "AdvCodeBindFormat" ) )
       {
-        if ( value.equals( "NORMAL" ) )
-          advCodeBindFormat = NORMAL;
-        else if ( value.equals( "LONG" ) )
-          advCodeBindFormat = LONG;
+        advCodeBindFormat = AdvancedCode.BindFormat.valueOf( value.toUpperCase() );
       }
       else if ( parm.equals( "EFCDigits" ) )
       {
@@ -938,9 +941,13 @@ public class Remote implements Comparable< Remote >
           powerButtons[ i++ ] = ( short )rdr.parseNumber( st.nextToken() );
         }
       }
-      else if ( parm.equalsIgnoreCase( "WaveUpgrade " ) )
+      else if ( parm.equalsIgnoreCase( "WaveUpgrade" ) )
       {
         waveUpgrade = rdr.parseFlag( value );
+      }
+      else if ( parm.equalsIgnoreCase( "SetupValidation" ) )
+      {
+        setupValidation = SetupValidation.valueOf( parm );
       }
     }
 
@@ -1976,6 +1983,63 @@ public class Remote implements Comparable< Remote >
     return protocols;
   }
 
+  HashMap< Integer, HashMap< Integer, Integer >> setupCodes = new HashMap< Integer, HashMap< Integer, Integer >>();
+
+  private String parseSetupCodes( RDFReader rdr ) throws IOException
+  {
+    String line = null;
+    HashMap< Integer, Integer > map = null;
+    while ( true )
+    {
+      line = rdr.readLine();
+
+      if ( ( line == null ) || ( line.length() == 0 ) )
+        break;
+
+      int pos = line.indexOf( '=' );
+      if ( pos != -1 )
+      {
+        StringTokenizer st = new StringTokenizer( line, "=" );
+        int devTypeIndex = Integer.parseInt( st.nextToken().trim() );
+        map = setupCodes.get( devTypeIndex );
+        if ( map == null )
+        {
+          map = new HashMap< Integer, Integer >();
+          setupCodes.put( devTypeIndex, map );
+        }
+        line = st.nextToken().trim();
+      }
+      StringTokenizer st = new StringTokenizer( line, " ," );
+      while ( st.hasMoreTokens() )
+      {
+        Integer code = new Integer( st.nextToken() );
+        map.put( code, code );
+      }
+    }
+
+    return line;
+  }
+
+  public HashMap< Integer, HashMap< Integer, Integer >> getSetupCodes()
+  {
+    return setupCodes;
+  }
+
+  public boolean hasSetupCode( int deviceTypeIndex, int setupCode )
+  {
+    HashMap< Integer, Integer > map = setupCodes.get( deviceTypeIndex );
+    if ( map == null )
+    {
+      return false;
+    }
+    return map.containsKey( setupCode );
+  }
+
+  public boolean hasSetupCode( DeviceType deviceType, int setupCode )
+  {
+    return hasSetupCode( deviceType.getNumber(), setupCode );
+  }
+
   /**
    * Gets the encrypter decrypter.
    * 
@@ -2032,7 +2096,7 @@ public class Remote implements Comparable< Remote >
   public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
     KeyMove keyMove = null;
-    if ( advCodeFormat == HEX_FORMAT )
+    if ( advCodeFormat == AdvancedCode.Format.HEX )
       keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
     else if ( efcDigits == 3 )
       keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ), notes );
@@ -2062,7 +2126,7 @@ public class Remote implements Comparable< Remote >
   public KeyMove createKeyMove( int keyCode, int deviceIndex, int deviceType, int setupCode, int efc, String notes )
   {
     KeyMove keyMove = null;
-    if ( advCodeFormat == HEX_FORMAT )
+    if ( advCodeFormat == AdvancedCode.Format.HEX )
     {
       if ( efcDigits == 3 )
         keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, EFC.toHex( efc ), notes );
@@ -2329,7 +2393,6 @@ public class Remote implements Comparable< Remote >
   private int RAMAddress;
 
   /** The time address. */
-  @SuppressWarnings( "unused" )
   private int timeAddress = 0;
   @SuppressWarnings( "unused" )
   private TimeFormat timeFormat = TimeFormat.HEX;
@@ -2433,23 +2496,11 @@ public class Remote implements Comparable< Remote >
   /** The default restrictions. */
   private int defaultRestrictions = 0;
 
-  /** The Constant HEX_FORMAT. */
-  public static final int HEX_FORMAT = 0;
-
-  /** The Constant EFC_FORMAT. */
-  public static final int EFC_FORMAT = 1;
-
-  /** The Constant NORMAL. */
-  public static final int NORMAL = 0;
-
-  /** The Constant LONG. */
-  public static final int LONG = 1;
-
   /** The adv code format. */
-  private int advCodeFormat = HEX_FORMAT;
+  private AdvancedCode.Format advCodeFormat = AdvancedCode.Format.HEX;
 
   /** The adv code bind format. */
-  private int advCodeBindFormat = NORMAL;
+  private AdvancedCode.BindFormat advCodeBindFormat = AdvancedCode.BindFormat.NORMAL;
 
   /** The efc digits. */
   private int efcDigits = 3;
@@ -2593,4 +2644,12 @@ public class Remote implements Comparable< Remote >
   {
     return autoSet;
   }
+
+  private SetupValidation setupValidation = SetupValidation.OFF;
+
+  public SetupValidation getSetupValidation()
+  {
+    return setupValidation;
+  }
+
 }
