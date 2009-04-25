@@ -2,7 +2,6 @@ package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Rectangle;
@@ -55,7 +54,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.HyperlinkListener;
 
+import com.hifiremote.LibraryLoader;
 import com.hifiremote.jp1.io.IO;
 import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
@@ -68,14 +69,14 @@ import com.hifiremote.jp1.io.JP1USB;
  * @author Greg
  * @created November 30, 2006
  */
-public class RemoteMaster extends JP1Frame implements ActionListener, PropertyChangeListener
+public class RemoteMaster extends JP1Frame implements ActionListener, PropertyChangeListener, HyperlinkListener
 {
 
   /** The frame. */
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.91";
+  public final static String version = "v1.92";
 
   /** The dir. */
   private File dir = null;
@@ -85,9 +86,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
-
-  /** The chooser. */
-  private RMFileChooser chooser = null;
 
   /** The open item. */
   private RMAction openAction = null;
@@ -130,8 +128,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
 
   // Help menu items
-  private Desktop desktop = null;
-
   private JMenuItem readmeItem = null;
 
   private JMenuItem tutorialItem = null;
@@ -334,7 +330,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     createMenus( toolBar );
 
-    setDefaultCloseOperation( EXIT_ON_CLOSE );
+    setDefaultCloseOperation( DISPOSE_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
 
     addWindowListener( new WindowAdapter()
@@ -712,6 +708,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     menu.addSeparator();
     downloadRawItem = new JMenuItem( "Raw download", KeyEvent.VK_R );
+    downloadRawItem.setEnabled( false );
     downloadRawItem.addActionListener( this );
     menu.add( downloadRawItem );
 
@@ -771,10 +768,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_H );
     menuBar.add( menu );
 
-    if ( Desktop.isDesktopSupported() )
+    if ( desktop != null )
     {
-      desktop = Desktop.getDesktop();
-
       readmeItem = new JMenuItem( "Readme", KeyEvent.VK_R );
       readmeItem.addActionListener( this );
       menu.add( readmeItem );
@@ -808,9 +803,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public RMFileChooser getFileChooser()
   {
-    if ( chooser != null )
-      return chooser;
-
     RMFileChooser chooser = new RMFileChooser( dir );
     EndingFileFilter irFilter = new EndingFileFilter( "RM IR files (*.rmir)", rmirEndings );
     chooser.addChoosableFileFilter( irFilter );
@@ -858,13 +850,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         file = chooser.getSelectedFile();
 
         if ( !file.exists() )
+        {
           JOptionPane.showMessageDialog( this, file.getName() + " doesn't exist.", "File doesn't exist.",
               JOptionPane.ERROR_MESSAGE );
-
+        }
         else if ( file.isDirectory() )
+        {
           JOptionPane.showMessageDialog( this, file.getName() + " is a directory.", "File doesn't exist.",
               JOptionPane.ERROR_MESSAGE );
-
+        }
       }
       else
         return null;
@@ -872,9 +866,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     System.err.println( "Opening " + file.getCanonicalPath() + ", last modified "
         + DateFormat.getInstance().format( new Date( file.lastModified() ) ) );
+
     String ext = file.getName().toLowerCase();
     int dot = ext.lastIndexOf( '.' );
     ext = ext.substring( dot );
+
+    if ( ext.equals( ".rmir" ) || ext.equals( ".ir" ) )
+    {
+      dir = file.getParentFile();
+      properties.setProperty( "IRPath", dir );
+    }
 
     if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ) )
     {
@@ -978,6 +979,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       if ( rc != JOptionPane.YES_OPTION )
         return;
+
+      dir = newFile.getParentFile();
+      properties.setProperty( "IRPath", dir );
 
       file = newFile;
       remoteConfig.save( file );
@@ -1150,32 +1154,68 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == aboutItem )
       {
-        String text = "<html><b>Java IR, " + version + "</b>" + "<p>Java version "
-            + System.getProperty( "java.version" ) + " from " + System.getProperty( "java.vendor" ) + "</p>"
-            + "<p>RDFs loaded from <b>" + properties.getProperty( "RDFPath" ) + "</b></p>";
+        StringBuilder sb = new StringBuilder( 1000 );
+        sb.append( "<html><b>RemoteMaster " );
+        sb.append( version );
+        sb.append( "</b>" );
+        sb.append( "<p>Written primarily by <i>Greg Bush</i>, now accepting donations at " );
+        sb
+            .append( "<a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>" );
+        sb.append( "</p><p>RDFs loaded from <b>" );
+        sb.append( properties.getProperty( "RDFPath" ) );
+        sb.append( "</b></p>" );
+
+        sb.append( "</p><p>Images and Maps loaded from <b>" );
+        sb.append( properties.getProperty( "ImagePath" ) );
+        sb.append( "</b></p>" );
         try
         {
           String v = LearnedSignal.getDecodeIR().getVersion();
-          text += "<p>DecodeIR version " + v + "</p>";
+          sb.append( "<p>DecodeIR version " );
+          sb.append( v );
+          sb.append( "</p>" );
         }
         catch ( LinkageError le )
         {
-          text += "<p><b>DecodeIR is not available!</b></p>";
+          sb.append( "<p><b>DecodeIR is not available!</b></p>" );
         }
 
         if ( !interfaces.isEmpty() )
         {
-          text += "<p>Interfaces:<ul>";
+          sb.append( "<p>Interfaces:<ul>" );
           for ( IO io : interfaces )
-            text += "<li>" + io.getInterfaceName() + " version " + io.getInterfaceVersion() + "</li>";
-          text += "</ul></p>";
+          {
+            sb.append( "<li>" );
+            sb.append( io.getInterfaceName() );
+            sb.append( " version " );
+            sb.append( io.getInterfaceVersion() );
+            sb.append( "</li>" );
+          }
+          sb.append( "</ul></p>" );
         }
 
-        text += "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations "
-            + "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>"
-            + "</html>";
+        String[] propertyNames =
+        {
+            "java.version", "java.vendor", "os.name", "os.arch"
+        };
 
-        JEditorPane pane = new JEditorPane( "text/html", text );
+        sb.append( "<p>System Properties:<ul>" );
+        for ( String name : propertyNames )
+        {
+          sb.append( "<li>" );
+          sb.append( name );
+          sb.append( " = \"" );
+          sb.append( System.getProperty( name ) );
+          sb.append( "\"</li>" );
+        }
+        sb.append( "</ul>" );
+
+        sb.append( "<p>Libraries loaded from " );
+        sb.append( LibraryLoader.getLibraryFolder() );
+        sb.append( "</p></html>" );
+
+        JEditorPane pane = new JEditorPane( "text/html", sb.toString() );
+        pane.addHyperlinkListener( this );
         pane.setEditable( false );
         pane.setBackground( getContentPane().getBackground() );
         new TextPopupMenu( pane );
@@ -1335,7 +1375,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         String parm = args.get( i );
         if ( parm.equalsIgnoreCase( "-ir" ) )
+        {
           launchRM = true;
+        }
+        else if ( parm.equalsIgnoreCase( "-rm" ) )
+        {
+          launchRM = false;
+        }
         else if ( "-home".startsWith( parm ) )
         {
           String dirName = args.get( ++i );
@@ -1477,4 +1523,5 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     ".txt"
   };
+
 }

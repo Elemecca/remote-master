@@ -31,6 +31,8 @@ public abstract class SpecialProtocol
   /** The setup code. */
   private int setupCode = -1;
 
+  private boolean assumePresent = false;
+
   @SuppressWarnings( "unused" )
   private List< String > userNames = new ArrayList< String >();
 
@@ -83,6 +85,13 @@ public abstract class SpecialProtocol
       }
     }
 
+    boolean hasDash = false;
+    if ( text.startsWith( "-" ) )
+    {
+      text = text.substring( 1 );
+      hasDash = true;
+    }
+
     Hex pid = new Hex( text );
 
     SpecialProtocol sp = null;
@@ -103,6 +112,8 @@ public abstract class SpecialProtocol
       sp = new ToadTogSpecialProtocol( name, pid );
     else if ( name.equals( "ModeName" ) )
       sp = new ModeNameSpecialProtocol( name, pid );
+
+    sp.assumePresent = hasDash;
 
     if ( prefix != null )
     {
@@ -142,6 +153,7 @@ public abstract class SpecialProtocol
       {
         setupCode = upgrade.getSetupCode();
         deviceType = upgrade.getDeviceType();
+        deviceTypeName = deviceType.getName();
         return upgrade;
       }
     }
@@ -150,14 +162,40 @@ public abstract class SpecialProtocol
 
   public boolean isPresent( RemoteConfiguration config )
   {
-    if ( deviceTypeName == null )
+    if ( assumePresent )
     {
-      return getDeviceUpgrade( config.getDeviceUpgrades() ) != null;
+      return true;
     }
 
     Remote remote = config.getRemote();
-    deviceType = remote.getDeviceType( deviceTypeName );
-    return config.getRemote().hasSetupCode( deviceType, setupCode );
+    if ( deviceType == null )
+    {
+      if ( deviceTypeName != null )
+      {
+        deviceType = remote.getDeviceType( deviceTypeName );
+      }
+      else
+      {
+        DeviceUpgrade deviceUpgrade = getDeviceUpgrade( config.getDeviceUpgrades() );
+        if ( deviceUpgrade != null )
+        {
+          return true;
+        }
+      }
+    }
+
+    if ( deviceTypeName == null )
+    {
+      if ( getDeviceUpgrade( config.getDeviceUpgrades() ) != null )
+      {
+        return true;
+      }
+    }
+    if ( deviceType == null )
+    {
+      deviceType = remote.getDeviceType( deviceTypeName );
+    }
+    return remote.hasSetupCode( deviceType, setupCode );
   }
 
   /**

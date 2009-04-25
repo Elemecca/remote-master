@@ -182,7 +182,6 @@ public class JTableX extends JTable
    *          the row
    * @param col
    *          the col
-   * 
    * @return true, if is truncated
    */
   private boolean isTruncated( int row, int col )
@@ -191,7 +190,7 @@ public class JTableX extends JTable
     if ( o == null )
       return false;
     Rectangle rect = getCellRect( row, col, true );
-    TableCellRenderer r = ( DefaultTableCellRenderer ) getCellRenderer( row, col );
+    TableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
     Component c = r.getTableCellRendererComponent( this, o, false, false, row, col );
     Dimension d = c.getPreferredSize();
     if ( d.width < rect.width - 4 )
@@ -212,7 +211,7 @@ public class JTableX extends JTable
     col = convertColumnIndexToModel( col );
     if ( isTruncated( row, col ) )
     {
-      DefaultTableCellRenderer r = ( DefaultTableCellRenderer ) getCellRenderer( row, col );
+      DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
       int width = getColumnModel().getColumn( col ).getWidth();
       String rc = "<html><div style=\"width: " + width + "px\">" + r.getText() + "</div></html>";
       return rc;
@@ -246,7 +245,7 @@ public class JTableX extends JTable
    */
   public Component prepareRenderer( TableCellRenderer r, int row, int col )
   {
-    JComponent c = ( JComponent ) super.prepareRenderer( r, row, col );
+    JComponent c = ( JComponent )super.prepareRenderer( r, row, col );
     Border b = c.getBorder();
     if ( b != null )
       c.setBorder( pad );
@@ -307,9 +306,9 @@ public class JTableX extends JTable
    */
   public void setColumnWidth( int col, String text, boolean setMax, int limit )
   {
-    JLabel l = ( JLabel ) tableHeader.getDefaultRenderer().getTableCellRendererComponent( this,
-        text, false, false, 0, col );
-    int width = l.getPreferredSize().width + 2;
+    JLabel l = ( JLabel )tableHeader.getDefaultRenderer().getTableCellRendererComponent( this, text, false, false, 0,
+        col );
+    int width = l.getPreferredSize().width + 4;
     TableColumn column = columnModel.getColumn( col );
     column.setMinWidth( width / 2 );
     column.setPreferredWidth( width );

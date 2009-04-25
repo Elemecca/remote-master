@@ -4,30 +4,34 @@ package com.hifiremote.jp1;
 /**
  * The Class FunctionPanel.
  */
-public class FunctionPanel
-  extends TablePanel< Function >
+public class FunctionPanel extends TablePanel< Function >
 {
-  
+
   /**
    * Instantiates a new function panel.
    * 
-   * @param devUpgrade the dev upgrade
+   * @param devUpgrade
+   *          the dev upgrade
    */
   public FunctionPanel( DeviceUpgrade devUpgrade )
   {
-    super( "Functions", devUpgrade, new FunctionTableModel( devUpgrade ));
+    super( "Functions", devUpgrade, new FunctionTableModel( devUpgrade ) );
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#setDeviceUpgrade(com.hifiremote.jp1.DeviceUpgrade)
    */
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
   {
-    (( FunctionTableModel )model ).setDeviceUpgrade( deviceUpgrade );
+    ( ( FunctionTableModel )model ).setDeviceUpgrade( deviceUpgrade );
     super.setDeviceUpgrade( deviceUpgrade );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#update()
    */
   public void update()
@@ -37,17 +41,14 @@ public class FunctionPanel
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
     Remote r = deviceUpgrade.getRemote();
-    (( FunctionTableModel )model ).setProtocol( p, r );
-    if (( p != savedProtocol ) || ( r != savedRemote ))
-    {
-      initColumns();
-      savedProtocol = p;
-      savedRemote = r;
-    }
+    ( ( FunctionTableModel )model ).setProtocol( p, r );
+    initColumns();
     super.update();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#createRowObject()
    */
   protected Function createRowObject()
@@ -55,7 +56,9 @@ public class FunctionPanel
     return new Function();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#canDelete(java.lang.Object)
    */
   protected boolean canDelete( Object o )
@@ -64,7 +67,9 @@ public class FunctionPanel
     return !f.assigned();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#doNotDelete(java.lang.Object)
    */
   protected void doNotDelete( Object o )
@@ -73,10 +78,4 @@ public class FunctionPanel
     JP1Frame.showMessage( message, this );
     throw new IllegalArgumentException( message );
   }
-
-  /** The saved protocol. */
-  private Protocol savedProtocol = null;
-  
-  /** The saved remote. */
-  private Remote savedRemote = null;
 }

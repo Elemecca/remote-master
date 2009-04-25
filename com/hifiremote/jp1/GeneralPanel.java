@@ -15,6 +15,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -32,11 +33,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
    */
   public GeneralPanel()
   {
-    JPanel panel = new JPanel( new BorderLayout( 5, 0 ) );
-    add( panel, BorderLayout.PAGE_START );
-
-    JPanel deviceButtonPanel = new JPanel( new BorderLayout() );
-    panel.add( deviceButtonPanel, BorderLayout.LINE_START );
+    deviceButtonPanel = new JPanel( new BorderLayout() );
 
     deviceButtonPanel.setBorder( BorderFactory.createTitledBorder( "Device Buttons" ) );
 
@@ -59,8 +56,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       }
     } );
 
-    JScrollPane scrollPane = new JScrollPane( deviceButtonTable );
-    deviceButtonPanel.add( scrollPane, BorderLayout.CENTER );
+    deviceScrollPane = new JScrollPane( deviceButtonTable );
+    deviceButtonPanel.add( deviceScrollPane, BorderLayout.CENTER );
     JPanel editPanel = new JPanel();
     editButton = new JButton( "Edit Device" );
     editButton.setEnabled( false );
@@ -68,33 +65,57 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     editButton.addActionListener( this );
     deviceButtonPanel.add( editPanel, BorderLayout.PAGE_END );
 
-    Dimension d = deviceButtonTable.getPreferredSize();
-    d.height = 10 * deviceButtonTable.getRowHeight();
-    deviceButtonTable.setPreferredScrollableViewportSize( d );
+    // deviceScrollPane.setPreferredSize( deviceButtonPanel.getPreferredSize() );
 
     // now the other settings table
     settingTable = new JP1Table( settingModel );
     settingTable.setCellEditorModel( settingModel );
     settingTable.initColumns( settingModel );
 
-    scrollPane = new JScrollPane( settingTable );
-    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Other Settings" ),
-        scrollPane.getBorder() ) );
-    panel.add( scrollPane, BorderLayout.CENTER );
+    settingsScrollPane = new JScrollPane( settingTable );
+    settingsScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory
+        .createTitledBorder( "Other Settings" ), settingsScrollPane.getBorder() ) );
+    // settingsScrollPane.setPreferredSize( settingTable.getPreferredSize() );
+    upperPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, deviceButtonPanel, settingsScrollPane );
+    upperPane.setResizeWeight( 0.5 );
 
-    d = settingTable.getPreferredScrollableViewportSize();
-    d.width = settingTable.getPreferredSize().width;
-    d.height = 10 * settingTable.getRowHeight();
-    settingTable.setPreferredScrollableViewportSize( d );
-
-    notes = new JTextArea( 10, 20 );
+    notes = new JTextArea( 6, 20 );
     notes.setLineWrap( true );
     notes.setWrapStyleWord( true );
-    scrollPane = new JScrollPane( notes );
-    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "General Notes" ),
-        scrollPane.getBorder() ) );
+    notesScrollPane = new JScrollPane( notes );
+    notesScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "General Notes" ),
+        notesScrollPane.getBorder() ) );
 
-    add( scrollPane, BorderLayout.CENTER );
+    mainPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, upperPane, notesScrollPane );
+    mainPane.setResizeWeight( 0.7 );
+
+    add( mainPane, BorderLayout.CENTER );
+
+    adjustPreferredViewportSizes();
+  }
+
+  private void adjustPreferredViewportSizes()
+  {
+    int rows = 8;
+    if ( remoteConfig != null )
+    {
+      rows = Math.min( 8, remoteConfig.getRemote().getDeviceButtons().length );
+    }
+    Dimension d = deviceButtonTable.getPreferredSize();
+    d.height = deviceButtonTable.getRowHeight() * rows;
+    deviceButtonTable.setPreferredScrollableViewportSize( d );
+
+    rows = 10;
+    if ( remoteConfig != null )
+    {
+      rows = Math.min( 12, remoteConfig.getRemote().getSettings().length );
+    }
+    d = settingTable.getPreferredSize();
+    d.height = 12 * settingTable.getRowHeight();
+    settingTable.setPreferredScrollableViewportSize( d );
+
+    upperPane.resetToPreferredSizes();
+    mainPane.resetToPreferredSizes();
   }
 
   /**
@@ -108,23 +129,19 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     this.remoteConfig = remoteConfig;
     deviceModel.set( remoteConfig );
     deviceButtonTable.initColumns( deviceModel );
-    Dimension d = deviceButtonTable.getPreferredSize();
-    int rows = Math.min( 12, remoteConfig.getRemote().getDeviceButtons().length );
-    d.height = rows * deviceButtonTable.getRowHeight();
-    deviceButtonTable.setPreferredScrollableViewportSize( d );
 
     settingModel.set( remoteConfig );
     settingTable.initColumns( settingModel );
-    d = settingTable.getPreferredSize();
-    rows = Math.min( remoteConfig.getRemote().getSettings().length, 12 );
-    d.height = rows * settingTable.getRowHeight();
-    settingTable.setPreferredScrollableViewportSize( d );
 
     String text = remoteConfig.getNotes();
-    if ( text != null )
+    if ( text == null )
     {
-      notes.setText( text );
+      text = "";
     }
+    notes.setText( text );
+
+    adjustPreferredViewportSizes();
+
     validate();
   }
 
@@ -215,6 +232,15 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   }
 
   private RemoteConfiguration remoteConfig = null;
+
+  private JSplitPane upperPane = null;
+  private JSplitPane mainPane = null;
+
+  private JPanel deviceButtonPanel = null;
+
+  private JScrollPane deviceScrollPane = null;
+  private JScrollPane settingsScrollPane = null;
+  private JScrollPane notesScrollPane = null;
 
   /** The device model. */
   private JP1Table deviceButtonTable = null;

@@ -15,6 +15,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -1505,9 +1506,9 @@ public class DeviceUpgrade
    * @param props
    *          the props
    */
-  public void load( Properties props )
+  public void load( Properties props, boolean loadButtons )
   {
-    load( props, true );
+    load( props, true, null );
   }
 
   /**
@@ -1518,7 +1519,7 @@ public class DeviceUpgrade
    * @param loadButtons
    *          the load buttons
    */
-  public void load( Properties props, boolean loadButtons )
+  public void load( Properties props, boolean loadButtons, Remote theRemote )
   {
     reset();
     String str = props.getProperty( "Description" );
@@ -1532,7 +1533,14 @@ public class DeviceUpgrade
           "Import Failure", JOptionPane.ERROR_MESSAGE );
       return;
     }
-    remote = RemoteManager.getRemoteManager().findRemoteByName( str );
+    if ( theRemote != null )
+    {
+      remote = theRemote;
+    }
+    else
+    {
+      remote = RemoteManager.getRemoteManager().findRemoteByName( str );
+    }
     remote.load();
     str = props.getProperty( "DeviceIndex" );
     if ( str != null )
@@ -1657,29 +1665,36 @@ public class DeviceUpgrade
    *          the delim
    * @return the next field
    */
-  private String getNextField( StringTokenizer st, String delim )
+  private List< String > tokenizeLine( String line, String delim )
   {
-    String rc = null;
-    if ( st.hasMoreTokens() )
+    StringTokenizer st = new StringTokenizer( line, delim, true );
+    List< String > rc = new ArrayList< String >( st.countTokens() );
+    while ( st.hasMoreTokens() )
     {
-      rc = st.nextToken();
-      if ( rc.equals( delim ) )
-        rc = null;
+      String token = st.nextToken();
+      if ( token.equals( delim ) )
+      {
+        rc.add( null );
+        if ( !st.hasMoreTokens() )
+        {
+          rc.add( null );
+        }
+      }
       else
       {
-        if ( rc.startsWith( "\"" ) )
+        if ( token.startsWith( "\"" ) )
         {
-          if ( rc.endsWith( "\"" ) )
+          if ( token.endsWith( "\"" ) )
           {
-            rc = rc.substring( 1, rc.length() - 1 ).replaceAll( "\"\"", "\"" );
+            token = token.substring( 1, token.length() - 1 ).replaceAll( "\"\"", "\"" );
           }
           else
           {
             StringBuilder buff = new StringBuilder( 200 );
-            buff.append( rc.substring( 1 ) );
+            buff.append( token.substring( 1 ) );
             while ( true )
             {
-              String token = st.nextToken(); // skip delim
+              token = st.nextToken(); // skip delim
               buff.append( delim );
               token = st.nextToken();
               if ( token.endsWith( "\"" ) )
@@ -1690,15 +1705,21 @@ public class DeviceUpgrade
               else
                 buff.append( token );
             }
-            rc = buff.toString().replaceAll( "\"\"", "\"" );
+            token = buff.toString().replaceAll( "\"\"", "\"" );
           }
         }
+        rc.add( token );
         if ( st.hasMoreTokens() )
+        {
           st.nextToken(); // skip delim
+          if ( !st.hasMoreTokens() )
+          {
+            rc.add( null );
+          }
+        }
       }
     }
-    if ( rc != null )
-      rc = rc.trim();
+
     return rc;
   }
 
@@ -1747,7 +1768,7 @@ public class DeviceUpgrade
    */
   private String cleanName( String name )
   {
-    if ( ( name != null ) && ( name.length() == 5 ) && name.startsWith( "num " )
+    if ( ( name != null ) && ( name.length() == 5 ) && name.toLowerCase().startsWith( "num " )
         && Character.isDigit( name.charAt( 4 ) ) )
       return name.substring( 4 );
     return name;
@@ -1801,7 +1822,7 @@ public class DeviceUpgrade
    */
   public void importUpgrade( BufferedReader in, boolean loadButtons ) throws Exception
   {
-    String line = in.readLine(); // line 1
+    String line = in.readLine(); // line 1 "Name:"
     String token = line.substring( 0, 5 );
     if ( !token.equals( "Name:" ) )
     {
@@ -1810,23 +1831,19 @@ public class DeviceUpgrade
       return;
     }
     String delim = line.substring( 5, 6 );
-    StringTokenizer st = new StringTokenizer( line, delim, true );
-    getNextField( st, delim );
-    description = getNextField( st, delim );
-    for ( int i = 0; i < 3; ++i )
-      getNextField( st, delim );
-    String kmVersion = getNextField( st, delim );
+    List< String > fields = tokenizeLine( line, delim );
+    description = fields.get( 1 );
+    String kmVersion = fields.get( 5 );
     System.err.println( "KM version of imported file is '" + kmVersion + '\'' );
 
-    String protocolLine = in.readLine(); // line 3
-    String manualLine = in.readLine(); // line 4
+    String protocolLine = in.readLine(); // line 2 "Devices:"
+    String manualLine = in.readLine(); // line 3 "Manual:"
 
-    line = in.readLine(); // line 5
-    st = new StringTokenizer( line, delim );
-    st.nextToken();
-    token = st.nextToken();
+    line = in.readLine(); // line 4 "Setup:"
+    List< String > setupFields = tokenizeLine( line, delim );
+    token = setupFields.get( 1 );
     setupCode = Integer.parseInt( token );
-    token = st.nextToken();
+    token = setupFields.get( 2 );
     String str = token.substring( 5 );
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( str );
@@ -1858,7 +1875,7 @@ public class DeviceUpgrade
     }
 
     remote.load();
-    token = st.nextToken();
+    token = setupFields.get( 3 );
     str = token.substring( 5 );
 
     if ( remote.getDeviceTypeByAliasName( str ) == null )
@@ -1875,19 +1892,18 @@ public class DeviceUpgrade
     }
     setDeviceTypeAliasName( str );
 
-    String buttonStyle = st.nextToken();
-    st = new StringTokenizer( protocolLine, delim, true );
-    getNextField( st, delim ); // skip header
-    String protocolName = getNextField( st, delim ); // protocol name
+    String buttonStyle = setupFields.get( 4 );
+
+    List< String > deviceFields = tokenizeLine( protocolLine, delim );
+    String protocolName = deviceFields.get( 1 ); // protocol name
 
     ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
     if ( protocolName.equals( "Manual Settings" ) )
     {
       System.err.println( "protocolName=" + protocolName );
       System.err.println( "manualLine=" + manualLine );
-      StringTokenizer manual = new StringTokenizer( manualLine, delim, true );
-      System.err.println( "skipping " + getNextField( manual, delim ) ); // skip header
-      String pidStr = getNextField( manual, delim );
+      List< String > manualFields = tokenizeLine( manualLine, delim );
+      String pidStr = manualFields.get( 1 );
       System.err.println( "pid=" + pidStr );
       if ( pidStr != null )
       {
@@ -1905,11 +1921,11 @@ public class DeviceUpgrade
           pid = new Hex( data );
         }
       }
-      int byte2 = Integer.parseInt( getNextField( manual, delim ).substring( 0, 1 ) );
+      int byte2 = Integer.parseInt( manualFields.get( 2 ).substring( 0, 1 ) );
       System.err.println( "byte2=" + byte2 );
-      String signalStyle = getNextField( manual, delim );
+      String signalStyle = manualFields.get( 3 );
       System.err.println( "SignalStyle=" + signalStyle );
-      String bitsStr = getNextField( manual, delim );
+      String bitsStr = manualFields.get( 4 );
       int devBits = 8;
       int cmdBits = 8;
       try
@@ -1930,19 +1946,19 @@ public class DeviceUpgrade
 
       java.util.List< Value > values = new ArrayList< Value >();
 
-      str = getNextField( st, delim ); // Device 1
+      str = deviceFields.get( 2 ); // Device 1
       if ( str != null )
         values.add( new Value( parseInt( str ) ) );
 
-      str = getNextField( st, delim ); // Device 2
+      str = deviceFields.get( 3 ); // Device 2
       if ( str != null )
         values.add( new Value( parseInt( str ) ) );
 
-      str = getNextField( st, delim ); // Device 3
+      str = deviceFields.get( 4 ); // Device 3
       if ( str != null )
         values.add( new Value( parseInt( str ) ) );
 
-      str = getNextField( st, delim ); // Raw Fixed Data
+      str = setupFields.get( 6 ); // Raw Fixed Data
       if ( str == null )
         str = "";
       short[] rawHex = Hex.parseHex( str );
@@ -1992,7 +2008,7 @@ public class DeviceUpgrade
       Value[] importParms = new Value[ 6 ];
       for ( int i = 0; i < importParms.length; i++ )
       {
-        token = getNextField( st, delim );
+        token = deviceFields.get( 2 + i );
         Object val = null;
         if ( token == null )
           val = null;
@@ -2041,7 +2057,9 @@ public class DeviceUpgrade
         break;
     }
 
-    boolean hasButtonCodes = line.indexOf( "bBtnCd" ) != -1;
+    fields = tokenizeLine( line, delim );
+
+    int buttonCodeIndex = fields.indexOf( "bBtnCd" );
 
     functions.clear();
 
@@ -2057,8 +2075,8 @@ public class DeviceUpgrade
     // read in the notes, which may have the protocol code
     while ( ( line = in.readLine() ) != null )
     {
-      st = new StringTokenizer( line, delim );
-      token = getNextField( st, delim );
+      fields = tokenizeLine( line, delim );
+      token = fields.get( 0 );
       if ( token != null )
       {
         if ( token.equals( "Line Notes:" ) || token.equals( "Notes:" ) )
@@ -2072,7 +2090,7 @@ public class DeviceUpgrade
               tempDelim = "\"";
             else
               tempDelim = delim;
-            st = new StringTokenizer( line, tempDelim );
+            StringTokenizer st = new StringTokenizer( line, tempDelim );
             if ( st.hasMoreTokens() )
             {
               token = st.nextToken();
@@ -2099,17 +2117,17 @@ public class DeviceUpgrade
     for ( int i = 0; i < 128; i++ )
     {
       line = lines[ i ];
-      st = new StringTokenizer( line, delim, true );
-      String funcName = cleanName( getNextField( st, delim ) ); // field 1
-      String code = getNextField( st, delim ); // field 2
-      String byte2 = getNextField( st, delim ); // field 3
+      fields = tokenizeLine( line, delim );
+      String funcName = cleanName( fields.get( 0 ) ); // field 1
+      String code = fields.get( 1 ); // field 2
+      String byte2 = fields.get( 2 ); // field 3
       @SuppressWarnings( "unused" )
-      String buttonName = getNextField( st, delim ); // field 4
+      String buttonName = fields.get( 3 ); // field 4
       @SuppressWarnings( "unused" )
-      String assignedName = getNextField( st, delim ); // field 5
-      String notes = getNextField( st, delim ); // field 6
-      String pidStr = getNextField( st, delim ); // field 7
-      String fixedDataStr = getNextField( st, delim ); // field 8
+      String assignedName = fields.get( 4 ); // field 5
+      String notes = fields.get( 5 ); // field 6
+      String pidStr = fields.get( 6 ); // field 7
+      String fixedDataStr = fields.get( 7 ); // field 8
 
       Function f = null;
       if ( ( code != null ) || ( byte2 != null ) || ( notes != null ) )
@@ -2227,40 +2245,31 @@ public class DeviceUpgrade
     for ( int i = 0; i < 128; i++ )
     {
       line = lines[ i ];
-      st = new StringTokenizer( line, delim, true );
+      fields = tokenizeLine( line, delim );
       @SuppressWarnings( "unused" )
-      String funcName = getNextField( st, delim ); // the function being defined, if any (field 1)
+      String funcName = fields.get( 0 ); // the function being defined, if any (field 1)
       @SuppressWarnings( "unused" )
-      String code = getNextField( st, delim ); // the EFC or OBC, if any (field 2 )
+      String code = fields.get( 1 ); // the EFC or OBC, if any (field 2 )
       @SuppressWarnings( "unused" )
-      String byte2 = getNextField( st, delim ); // byte2, if any (field 3)
-      String actualName = cleanName( getNextField( st, delim ) ); // get assigned button name (field
-      // 4)
+      String byte2 = fields.get( 2 ); // byte2, if any (field 3)
+      String actualName = cleanName( fields.get( 3 ) ); // get assigned button name (field 4)
       System.err.println( "actualName='" + actualName + "'" );
-      String assignedName = getNextField( st, delim ); // get assinged functionName (field 5)
+      if ( actualName == null )
+        continue;
+
+      String assignedName = fields.get( 4 ); // get assigned functionName (field 5)
       @SuppressWarnings( "unused" )
-      String notes = getNextField( st, delim ); // get function notes (field 6)
+      String notes = fields.get( 5 ); // get function notes (field 6)
+
+      String shiftAssignedName = fields.get( 12 );
 
       String buttonCode = null;
-      if ( hasButtonCodes )
+      if ( buttonCodeIndex != -1 )
       {
-        int lastDash = line.lastIndexOf( ',' );
-        int previousDash = line.lastIndexOf( ',', lastDash - 1 );
-        buttonCode = line.substring( previousDash + 1, lastDash );
+        buttonCode = fields.get( buttonCodeIndex );
         if ( buttonCode.length() < 2 )
           buttonCode = null;
       }
-
-      // skip to field 13
-      String shiftAssignedName = null;
-      for ( int j = 7; j < 14; j++ )
-        shiftAssignedName = getNextField( st, delim );
-
-      if ( ( actualName != null ) && actualName.length() == 0 )
-        actualName = null;
-
-      if ( actualName == null )
-        continue;
 
       String buttonName = null;
       if ( actualName != null )

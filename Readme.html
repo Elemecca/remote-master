@@ -49,7 +49,7 @@ the Java Runtime Environemt installed, version 6.0 or later.  Either of these ca
 <p>Take, for example, the Layout panel, which shows an image of the remote being used on the left, and a list of the available functions on the right.  There are 3 different ways to assign a function to a button:
 <ol>
 <li>Drag and drop the desired function onto the desired button.
-<li>Right-click on a button and select the desired function from the context menu
+<li>Double-click on a button and select the desired function from the context menu
 <li>Highlight a button by clicking on it.  Then double-click on the function you want assigned to it.
 </ol>
 <h1><a name="start"></a>Getting Started</h1>
@@ -464,11 +464,11 @@ This column  is only shown for this remotes that support it, and it may have a d
 <p>There are a number of different ways to assign functions to buttons.  Use whichever you like better:
 <ol>
 <li>Use the <b>Auto assign</b> button to automatically match functions to buttons by name.  Buttons that already have functions assigned will not get reassigned.</li>
-<li>Use the context menu (right-click) in a cell where you want to assign a function, then click the desired function in the context menu.</li>
+<li>Double-click in a cell where you want to assign a function, then click the desired function from the list.</li>
 <li>Drag-n-drop a function onto the desired cell.</li>
 <li>Highlight the cell where you want to assing a function by clicking on it, then
 double-click the function you want to assign to it.</li>
-<li>Use the <b>Delete</b> key or the <b>Remove</b> button to remove the an assigned function from a button.</li>
+<li>Use the <b>Delete</b> key or the <b>Remove</b> button to remove an assigned function from a cell.</li>
 </ol>
 <div class="noshow">
 At the top of the [Buttons] sheet (cell G2) is an unlabeled check
@@ -672,14 +672,14 @@ mapping.
 <td>Again, no data entry is allowed here. As RM works its
 magic, if it determines that the selected remote also requires a
 protocol upgrade, it will display the necessary code here. In
-that case, you will see a highlighted prompt that says
-<br>
-<font color="red">Upgrade Protocol Code *** REQUIRED ***</font>
-<br>
+that case, you will see the text
+<p>Upgrade Protocol Code *** REQUIRED ***</p>
 This is a reminder to copy and paste this code into IR's
 Protocols tab. If you create a Device Upgrade that requires
 Protocol Code as well, and don't add it into IR, your upgrade
 most likely won't work.
+<p></p>If no protocol upgrade is needed, you will see the text</p>	
+<p><font color="red">Upgrade Protocol Code NOT REQUIRED</font></p>	
 <p>
 To copy the Protocol Code to the Windows clipboard for pasting
 into the IR Protocols tab, press the <b>Copy</b> button or use the

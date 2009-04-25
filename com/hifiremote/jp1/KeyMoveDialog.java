@@ -233,13 +233,14 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
     boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
     boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
     model.set( config );
+    table.initColumns( model );
     deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
 
     if ( remote.getEFCDigits() == 5 )
       useEFC.setText( "EFC-5" );
     else
       useEFC.setText( "EFC" );
-    useKey.setVisible( remote.getAdvCodeFormat() != AdvancedCode.Format.HEX );
+    useKey.setVisible( ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG ) );
     movedKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
     shiftMovedKey.setText( remote.getShiftLabel() );
     xShiftMovedKey.setText( remote.getXShiftLabel() );
@@ -293,7 +294,16 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
     {
       efcHexField.setText( null );
       useEFC.setSelected( true );
-      efcHexField.setText( keyMove.getValueString( config ) );
+      String text = null;
+      if ( config.getRemote().getEFCDigits() == 3 )
+      {
+        text = keyMove.getEFC().toString();
+      }
+      else
+      {
+        text = keyMove.getEFC5().toString();
+      }
+      efcHexField.setText( text );
     }
 
     notes.setText( keyMove.getNotes() );
@@ -538,10 +548,76 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
    */
   public void itemStateChanged( ItemEvent e )
   {
-    if ( e.getStateChange() != ItemEvent.SELECTED )
-      return;
-
     Object source = e.getSource();
+    if ( e.getStateChange() == ItemEvent.DESELECTED )
+    {
+      try
+      {
+        if ( source == useEFC )
+        {
+          String text = efcHexField.getText().trim();
+          if ( !text.equals( "" ) )
+          {
+            int efc = Integer.parseInt( text );
+            if ( config.getRemote().getEFCDigits() == 3 )
+            {
+              if ( efc > 255 )
+              {
+                efc &= 0xFF;
+              }
+              if ( efc >= 0 )
+              {
+                cmd = EFC.toHex( efc );
+              }
+              else
+                cmd = null;
+            }
+            else
+            {
+              if ( ( efc >= 0 ) && ( efc <= 99999 ) )
+              {
+                cmd = EFC5.toHex( efc );
+              }
+            }
+          }
+          else
+          {
+            cmd = null;
+          }
+        }
+        else if ( source == useHex )
+        {
+          String text = efcHexField.getText().trim();
+          if ( !text.equals( "" ) )
+          {
+            cmd = new Hex( text );
+          }
+          else
+          {
+            cmd = null;
+          }
+        }
+        else
+        // source == useKey
+        {
+          if ( movedKey.getSelectedItem() == null )
+          {
+            cmd = null;
+          }
+          else
+          {
+            int movedKeyCode = getKeyCode( movedKey, shiftMovedKey, xShiftMovedKey );
+            cmd = new Hex( 1 );
+            cmd.set( ( short )movedKeyCode, 0 );
+          }
+        }
+      }
+      catch ( NumberFormatException nfe )
+      {
+        cmd = null;
+      }
+      return;
+    }
     if ( ( source == useEFC ) || ( source == useHex ) )
     {
       efcHexField.setVisible( true );
@@ -549,14 +625,13 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
       shiftMovedKey.setVisible( false );
       xShiftMovedKey.setVisible( false );
 
-      String text = efcHexField.getText();
-      if ( ( text != null ) && !text.equals( "" ) )
+      String text = null;
+      if ( cmd != null )
       {
         try
         {
           if ( source == useEFC )
           {
-            cmd = new Hex( text );
             EFC efc = null;
             if ( config.getRemote().getEFCDigits() == 3 )
               efc = new EFC( cmd );
@@ -567,40 +642,32 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
             text = efc.toString();
           }
           else
+          // source == useHex
           {
-            EFC efc = null;
-            if ( config.getRemote().getEFCDigits() == 3 )
-              efc = new EFC( text );
-            else
-              // 5 digit EFCs
-              efc = new EFC5( text );
-
-            if ( cmd == null )
-              cmd = efc.toHex();
-            else
-              efc.toHex( cmd );
-
             text = cmd.toString();
           }
-          efcHexField.setText( text );
         }
-        catch ( NumberFormatException ex )
+        catch ( Exception ex )
         {
-          efcHexField.setText( null );
+          ex.printStackTrace( System.err );
         }
       }
+      efcHexField.setText( text );
     }
     else if ( source == useKey )
     {
       efcHexField.setVisible( false );
       efcHexField.setText( null );
-      cmd = null;
       movedKey.setVisible( true );
       movedKey.setSelectedIndex( -1 );
       shiftMovedKey.setVisible( true );
       shiftMovedKey.setSelected( false );
       xShiftMovedKey.setVisible( config.getRemote().getXShiftEnabled() );
       xShiftMovedKey.setSelected( false );
+      if ( cmd != null )
+      {
+        setButton( cmd.getData()[ 0 ], movedKey, shiftMovedKey, xShiftMovedKey );
+      }
     }
   }
 

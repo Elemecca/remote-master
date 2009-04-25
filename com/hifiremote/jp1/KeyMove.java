@@ -74,6 +74,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
   public KeyMove( Properties props )
   {
     super( props );
+    cmd = data.subHex( CMD_INDEX );
     deviceButtonIndex = Integer.parseInt( props.getProperty( "DeviceButtonIndex" ) );
     setDeviceType( Integer.parseInt( props.getProperty( "DeviceType" ) ) );
     setSetupCode( Integer.parseInt( props.getProperty( "SetupCode" ) ) );
@@ -153,12 +154,10 @@ public class KeyMove extends AdvancedCode implements Cloneable
    */
   public String getValueString( RemoteConfiguration remoteConfig )
   {
-    String rc = getEFC().toString();
-    if ( remoteConfig.getRemote().getEFCDigits() == 3 )
-      return rc;
-    if ( rc.length() == 3 )
-      rc = "00" + rc;
-    return rc + " or " + getEFC5().toString();
+    if ( cmd.length() == 1 )
+      return getEFC().toString();
+    else
+      return getEFC5().toString();
   }
 
   /** The device button index. */

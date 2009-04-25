@@ -1,106 +1,117 @@
 package com.hifiremote.jp1.io;
 
 import java.io.File;
+
 import com.hifiremote.jp1.Hex;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class JP1USB.
  */
-public class JP1USB
-  extends IO
+public class JP1USB extends IO
 {
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#getInterfaceName()
    */
   public native String getInterfaceName();
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#getInterfaceVersion()
    */
   public native String getInterfaceVersion();
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#getPortNames()
    */
   public native String[] getPortNames();
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#openRemote(java.lang.String)
    */
   public native String openRemote( String portName );
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#closeRemote()
    */
   public native void closeRemote();
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#getRemoteSignature()
    */
   public native String getRemoteSignature();
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#getRemoteEepromAddress()
    */
   public native int getRemoteEepromAddress();
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#getRemoteEepromSize()
    */
   public native int getRemoteEepromSize();
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#readRemote(int, byte[], int)
    */
   public native int readRemote( int address, byte[] buffer, int length );
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.io.IO#writeRemote(int, byte[], int)
    */
   public native int writeRemote( int address, byte[] buffer, int length );
-  
+
   /** The is loaded. */
   private static boolean isLoaded = false;
 
   /**
    * Instantiates a new j p1 usb.
    * 
-   * @throws UnsatisfiedLinkError the unsatisfied link error
+   * @throws UnsatisfiedLinkError
+   *           the unsatisfied link error
    */
-  public JP1USB()
-    throws UnsatisfiedLinkError
+  public JP1USB() throws UnsatisfiedLinkError
   {
-    if ( !isLoaded )
-    {
-      System.loadLibrary( "jp1usb" );
-      isLoaded = true;
-    }
+    super( libraryName );
   }
 
   /**
    * Instantiates a new j p1 usb.
    * 
-   * @param folder the folder
-   * 
-   * @throws UnsatisfiedLinkError the unsatisfied link error
+   * @param folder
+   *          the folder
+   * @throws UnsatisfiedLinkError
+   *           the unsatisfied link error
    */
-  public JP1USB( File folder )
-    throws UnsatisfiedLinkError
+  public JP1USB( File folder ) throws UnsatisfiedLinkError
   {
-    if ( !isLoaded )
-    {
-      File file = new File( folder, System.mapLibraryName( "jp1usb" ));
-      System.load( file.getAbsolutePath());
-      isLoaded = true;
-    }
+    super( folder, libraryName );
   }
 
   /**
    * The main method.
    * 
-   * @param args the arguments
+   * @param args
+   *          the arguments
    */
   public static void main( String[] args )
   {
@@ -109,7 +120,7 @@ public class JP1USB
     for ( int i = 0; i < args.length; ++i )
     {
       String arg = args[ i ];
-      if ( arg.equals( "-port" ) && (( i + 1 ) < args.length ))
+      if ( arg.equals( "-port" ) && ( ( i + 1 ) < args.length ) )
       {
         portName = args[ ++i ];
         System.err.println( "Using port " + portName );
@@ -119,9 +130,9 @@ public class JP1USB
     if ( portName != null )
     {
       System.err.println( "Found remote on port " + portName );
-      System.err.println( "signature=" + test.getRemoteSignature());
+      System.err.println( "signature=" + test.getRemoteSignature() );
       int address = test.getRemoteEepromAddress();
-      System.err.println( "address=" + Integer.toHexString( address ).toUpperCase());
+      System.err.println( "address=" + Integer.toHexString( address ).toUpperCase() );
       int size = test.getRemoteEepromSize();
       System.err.println( "size=" + size );
       short[] buffer = new short[ 0x20 ];
@@ -133,8 +144,8 @@ public class JP1USB
       else
       {
         System.err.println( "Start of EEPROM:" );
-        System.err.print( ' '  );
-        System.err.println( Hex.toString( buffer, 16 ));
+        System.err.print( ' ' );
+        System.err.println( Hex.toString( buffer, 16 ) );
       }
       test.closeRemote();
     }
@@ -143,4 +154,6 @@ public class JP1USB
       System.err.println( "No JP1 compatible remote found!" );
     }
   }
+
+  private final static String libraryName = "jp1usb";
 }

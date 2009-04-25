@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -147,7 +148,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     super( "RemoteMaster", prefs );
     me = this;
 
-    setDefaultCloseOperation( EXIT_ON_CLOSE );
+    setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
 
     preferences = new Preferences( prefs );
     homeDirectory = prefs.getFile().getParentFile();
@@ -276,7 +277,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         try
         {
-          JRadioButtonMenuItem item = ( JRadioButtonMenuItem ) e.getSource();
+          JRadioButtonMenuItem item = ( JRadioButtonMenuItem )e.getSource();
           String lf = item.getActionCommand();
           UIManager.setLookAndFeel( lf );
           preferences.setLookAndFeel( lf );
@@ -315,7 +316,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       public void actionPerformed( ActionEvent e )
       {
-        JMenuItem button = ( JMenuItem ) e.getSource();
+        JMenuItem button = ( JMenuItem )e.getSource();
         float adjustment = Float.parseFloat( button.getActionCommand() );
         adjustFontSize( adjustment );
         fontSizeAdjustment += adjustment;
@@ -553,7 +554,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     Protocol p = deviceUpgrade.getProtocol();
     ManualProtocol mp = null;
     if ( p.getClass() == ManualProtocol.class )
-      mp = ( ManualProtocol ) p;
+      mp = ( ManualProtocol )p;
     else
       mp = new ManualProtocol( null, null );
     ManualSettingsDialog d = new ManualSettingsDialog( this, mp );
@@ -584,14 +585,14 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public static void showMessage( String message, Component c )
   {
-    KeyMapMaster km = ( KeyMapMaster ) SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
+    KeyMapMaster km = ( KeyMapMaster )SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
     if ( km != null )
     {
       km.showMessage( message );
       return;
     }
 
-    JP1Frame frame = ( JP1Frame ) SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
+    JP1Frame frame = ( JP1Frame )SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
     if ( frame != null )
     {
       frame.showMessage( message );
@@ -618,14 +619,14 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public static void clearMessage( Component c )
   {
-    KeyMapMaster km = ( KeyMapMaster ) SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
+    KeyMapMaster km = ( KeyMapMaster )SwingUtilities.getAncestorOfClass( KeyMapMaster.class, c );
     if ( km != null )
     {
       km.clearMessage();
       return;
     }
 
-    JP1Frame frame = ( JP1Frame ) SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
+    JP1Frame frame = ( JP1Frame )SwingUtilities.getAncestorOfClass( JP1Frame.class, c );
     if ( frame != null )
     {
       frame.clearMessage();
@@ -678,7 +679,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
             {
-              String s = ( String ) ( clipData.getTransferData( DataFlavor.stringFlavor ) );
+              String s = ( String )( clipData.getTransferData( DataFlavor.stringFlavor ) );
               BufferedReader in = new BufferedReader( new StringReader( s ) );
               loadUpgrade( in );
             }
@@ -698,8 +699,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         editManualSettings();
       }
       /*
-       * else if ( source == editorItem ) { ProtocolEditor d = new ProtocolEditor( this );
-       * d.setVisible( true ); }
+       * else if ( source == editorItem ) { ProtocolEditor d = new ProtocolEditor( this ); d.setVisible( true ); }
        */
       else if ( source == rawItem )
       {
@@ -726,13 +726,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
           if ( !file.exists() )
           {
-            JOptionPane.showMessageDialog( this, file.getName() + " doesn't exist.",
-                "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog( this, file.getName() + " doesn't exist.", "File doesn't exist.",
+                JOptionPane.ERROR_MESSAGE );
           }
           else if ( file.isDirectory() )
           {
-            JOptionPane.showMessageDialog( this, file.getName() + " is a directory.",
-                "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog( this, file.getName() + " is a directory.", "File doesn't exist.",
+                JOptionPane.ERROR_MESSAGE );
           }
           else
           {
@@ -753,8 +753,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
                   aliasName = tryit;
               }
             }
-            deviceUpgrade.importRawUpgrade( reader.getCode(), r, aliasName, reader.getPid(), reader
-                .getProtocolCode() );
+            deviceUpgrade.importRawUpgrade( reader.getCode(), r, aliasName, reader.getPid(), reader.getProtocolCode() );
             deviceUpgrade.setSetupCode( reader.getSetupCode() );
           }
         }
@@ -780,16 +779,14 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
               + " of RemoteMaster is available, but you are still using version "
               + RemoteMaster.version
               + "<p>The new version is available for download from<br><a href=\"http://prdownloads.sourceforge.net/controlremote/RemoteMaster."
-              + latestVersion + ".zip?download\">"
-              + "http://prdownloads.sourceforge.net/controlremote/RemoteMaster." + latestVersion
-              + ".zip?download</a></html>";
+              + latestVersion + ".zip?download\">" + "http://prdownloads.sourceforge.net/controlremote/RemoteMaster."
+              + latestVersion + ".zip?download</a></html>";
 
         JEditorPane pane = new JEditorPane( "text/html", text );
         pane.setEditable( false );
         pane.setBackground( getContentPane().getBackground() );
         new TextPopupMenu( pane );
-        JOptionPane.showMessageDialog( this, pane, "RemoteMaster Version Check",
-            JOptionPane.INFORMATION_MESSAGE );
+        JOptionPane.showMessageDialog( this, pane, "RemoteMaster Version Check", JOptionPane.INFORMATION_MESSAGE );
       }
       else if ( source == readmeItem )
       {
@@ -835,6 +832,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
             + "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></html>";
 
         JEditorPane pane = new JEditorPane( "text/html", text );
+        pane.addHyperlinkListener( this );
         pane.setEditable( false );
         pane.setBackground( getContentPane().getBackground() );
         new TextPopupMenu( pane );
@@ -844,8 +842,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         d.width = ( d.width * 2 ) / 3;
         scroll.setPreferredSize( d );
 
-        JOptionPane.showMessageDialog( this, scroll, "About RemoteMaster",
-            JOptionPane.INFORMATION_MESSAGE );
+        JOptionPane.showMessageDialog( this, scroll, "About RemoteMaster", JOptionPane.INFORMATION_MESSAGE );
       }
       else if ( source == okButton )
       {
@@ -859,7 +856,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       else
       // must be a recent file
       {
-        JMenuItem item = ( JMenuItem ) source;
+        JMenuItem item = ( JMenuItem )source;
         File f = new File( item.getText() );
         loadUpgrade( f );
       }
@@ -876,7 +873,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @param path
    *          the path
-   * 
    * @return the file
    */
   public static File promptForUpgradeFile( File path )
@@ -889,7 +885,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @param path
    *          the path
-   * 
    * @return the upgrade file
    */
   public File getUpgradeFile( File path )
@@ -908,10 +903,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       e.printStackTrace( System.err );
     }
     chooser.setFileFilter( new EndingFileFilter( "All device upgrade files", anyEndings ) );
-    chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files",
-        kmEndings ) );
-    chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files",
-        rmEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files", kmEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files", rmEndings ) );
 
     int returnVal = chooser.showOpenDialog( this );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
@@ -920,13 +913,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
       if ( !file.exists() )
       {
-        JOptionPane.showMessageDialog( this, file.getName() + " doesn't exist.",
-            "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( this, file.getName() + " doesn't exist.", "File doesn't exist.",
+            JOptionPane.ERROR_MESSAGE );
       }
       else if ( file.isDirectory() )
       {
-        JOptionPane.showMessageDialog( this, file.getName() + " is a directory.",
-            "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( this, file.getName() + " is a directory.", "File doesn't exist.",
+            JOptionPane.ERROR_MESSAGE );
       }
       else
       {
@@ -945,8 +938,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   public void saveAs() throws IOException
   {
     RMFileChooser chooser = new RMFileChooser( preferences.getUpgradePath() );
-    chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)",
-        rmEndings ) );
+    chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", rmEndings ) );
     File f = deviceUpgrade.getFile();
     if ( f == null )
     {
@@ -965,9 +957,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists() )
       {
-        rc = JOptionPane.showConfirmDialog( this, file.getName()
-            + " already exists.  Do you want to replace it?", "Replace existing file?",
-            JOptionPane.YES_NO_OPTION );
+        rc = JOptionPane.showConfirmDialog( this, file.getName() + " already exists.  Do you want to replace it?",
+            "Replace existing file?", JOptionPane.YES_NO_OPTION );
       }
       if ( rc == JOptionPane.YES_OPTION )
       {
@@ -984,9 +975,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @param action
    *          the action
-   * 
    * @return true, if successful
-   * 
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
@@ -1004,10 +993,11 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         return true;
     }
 
-    int rc = JOptionPane.showConfirmDialog( this,
-        // "All changes made to the current upgrade will be lost if you proceed.\n\n" +
-        "Do you want to save the current upgrade before proceeding?", "Save upgrade?",
-        JOptionPane.YES_NO_CANCEL_OPTION );
+    int rc = JOptionPane
+        .showConfirmDialog( this,
+            // "All changes made to the current upgrade will be lost if you proceed.\n\n" +
+            "Do you want to save the current upgrade before proceeding?", "Save upgrade?",
+            JOptionPane.YES_NO_CANCEL_OPTION );
     if ( ( rc == JOptionPane.CANCEL_OPTION ) || ( rc == JOptionPane.CLOSED_OPTION ) )
       return false;
     if ( rc == JOptionPane.NO_OPTION )
@@ -1025,7 +1015,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @param file
    *          the file
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1053,7 +1042,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @param file
    *          the file
-   * 
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
@@ -1089,7 +1077,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @param reader
    *          the reader
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1118,7 +1105,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @param in
    *          the in
-   * 
    * @throws Exception
    *           the exception
    */
@@ -1173,11 +1159,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( match != null )
         deviceUpgrade.setProtocol( match );
       else
-        JOptionPane.showMessageDialog( this,
-            "The selected protocol " + p.getDiagnosticName()
-                + "\nis not compatible with the selected remote.\n"
-                + "This upgrade will NOT function correctly.\n"
-                + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( this, "The selected protocol " + p.getDiagnosticName()
+            + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
+            + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
     }
   }
 
@@ -1305,12 +1289,11 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       Object o = en.nextElement();
       if ( o.getClass() != String.class )
         continue;
-      String key = ( String ) o;
+      String key = ( String )o;
       if ( key.endsWith( ".font" ) && !key.startsWith( "class" ) && !key.startsWith( "javax" ) )
       {
-        FontUIResource font = ( FontUIResource ) UIManager.get( key );
-        FontUIResource newFont = new FontUIResource( font
-            .deriveFont( font.getSize2D() + adjustment ) );
+        FontUIResource font = ( FontUIResource )UIManager.get( key );
+        FontUIResource newFont = new FontUIResource( font.deriveFont( font.getSize2D() + adjustment ) );
         if ( key.indexOf( "Table" ) != -1 )
         {
           System.err.println( "key=" + key );
@@ -1357,11 +1340,15 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The Constant promptStrings. */
   private final static String[] promptStrings =
-  { "Always", "On Exit", "Never" };
+  {
+      "Always", "On Exit", "Never"
+  };
 
   /** The Constant promptMnemonics. */
   private final static int[] promptMnemonics =
-  { KeyEvent.VK_A, KeyEvent.VK_X, KeyEvent.VK_N };
+  {
+      KeyEvent.VK_A, KeyEvent.VK_X, KeyEvent.VK_N
+  };
 
   /** The Constant PROMPT_NEVER. */
   public final static int PROMPT_NEVER = 2;
@@ -1371,17 +1358,25 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The Constant anyEndings. */
   private final static String[] anyEndings =
-  { ".txt", ".km", upgradeExtension };
+  {
+      ".txt", ".km", upgradeExtension
+  };
 
   /** The Constant kmEndings. */
   private final static String[] kmEndings =
-  { ".txt" };
+  {
+    ".txt"
+  };
 
   /** The Constant rmEndings. */
   private final static String[] rmEndings =
-  { ".km", upgradeExtension };
+  {
+      ".km", upgradeExtension
+  };
 
   /** The Constant binaryEndings. */
   private final static String[] binaryEndings =
-  { ".bin", "_obj" };
+  {
+      ".bin", "_obj"
+  };
 }

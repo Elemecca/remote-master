@@ -3,17 +3,26 @@ Changes for v1.91
   - Make protocol upgrade code available but invisible when not required
   - Allow HTML in the protocol notes (triggered when the first character in the notes is '<')
   - Expand notes for DirecTV protocol to explain relationship between Device Number and Remote Address
-  - Show number of bytes used for device, key moves, and protocol
+  - Show number of bytes used for device upgrade, key moves, and protocol upgrade
+  - Fixes for Manual Settings and unnamed protocols.
+  - Define variants of PID 01 61 - requires updated RDFs (newer than v1.28)
+  - Fixes for importing new(ish) KM upgrades
+  - Fix importing KM upgrades that use Sony Egg
+  - Minor updates to Readme.html
 - RMIR:
-  - Upgrade jp1parallel communication library to 0.02
-  - Upgrade jp12serial/usb communication library to 0.13
+  - Upgrade jp1parallel communication library to 0.02 (With support added for 64-bit Linux)
+  - Upgrade jp12serial/usb communication library to 0.13 (With support added for 64-bit Linux)
   - When downloading from the remote, and the remote signature matches the signature of the current remote, assume it's the same remote.
   - Don't show action icons in the menus, only in the tool bar
   - Add "Verify uploads" option
   - Improve tracking of bytes used/available for advanced functions, upgrades, and learned signals
-  - Remove need for dummy special protocol device and protocol upgrades (such as DSM in the 6131 and Atlas SA_7 extender)
+  - Support invisible special protocols (such as DSM in the 6131 and Atlas SA_7 extender)
     This uses some of the new RDF v4 syntax from IR 8.0x, which makes the RDF incompatible with IR 7.x.
-    In the [SpecialProtocols] section use DSM=TV/1103:01FC and add a [SetupCodes] sections with 01 = 1103
+    In the [SpecialProtocols] section use DSM=TV/1103:-01FC
+  - Save directory after opening .ir files, not just .rmir files.
+  - Fix key style keymove support
+  - Use split panes on General tab to allow resizing tables
+  - Bundle DecodeIR (Windows, Linux 32-bit, and Linux 64-bit)
 
 Changes for v1.90
 - Fix bug in special protocol dialog for protocols that use the 2nd column of functions.

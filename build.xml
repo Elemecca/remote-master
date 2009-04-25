@@ -2,7 +2,7 @@
         <description>RemoteMaster build file</description>
         <property name="src" location="." />
         <property name="build" location="classes" />
-        <property name="lib.dir"     value="lib"/>
+        <property name="lib.dir" value="lib"/>
 
     <path id="project.classpath">
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -53,20 +53,16 @@
 
         <target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution">
                 <zip destfile="${src}/RemoteMaster.${rmversion}.zip">
-                        <file file="${src}/RemoteMaster.jar" />
-                        <file file="${src}/Readme.html" />
-                        <file file="${src}/style.css" />
-                        <file file="${src}/styleie.css" />
-                        <file file="${src}/protocols.ini" />
-                        <file file="${src}/setup.bat" />
-                        <file file="${src}/ChangeLog.txt" />
-                        <file file="${src}/digitmaps.bin" />
-                        <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" />
-					    <zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" filemode="755"/>
-                        <zipfileset src="${src}/jp12serial_0.13_bin.zip" includes="jp12serial_0.13/windows_bin/jp12serial.dll" fullpath="jp12serial.dll" />
-					    <zipfileset src="${src}/jp12serial_0.13_bin.zip" includes="jp12serial_0.13/linux_bin/libjp12serial.so" fullpath="libjp12serial.so" filemode="755"/>
-                        <zipfileset src="${src}/jp1usb.zip" includes="jp1usb.dll" />
-                        <file file="${src}/porttalk.sys" />
+                        <zipfileset dir="${src}" includes="RemoteMaster.jar,Readme.html,*.css,protocols.ini,setup.bat,ChangeLog.txt,digitmaps.bin,porttalk.sys" />
+                        <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows"/>
+					    <zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" prefix="Linux-i386" filemode="755"/>
+					    <zipfileset src="${src}/par64.zip" includes="libjp1parallel.so" prefix="Linux-amd64" filemode="755"/>
+                        <zipfileset src="${src}/jp12serial_src-0.131.zip" includes="bin_win32/jp12serial.dll" fullpath="Windows/jp12serial.dll"/>
+					    <zipfileset src="${src}/jp12serial_src-0.131.zip" includes="bin_Linux-x86_64/libjp12serial.so" fullpath="Linux-amd64/libjp12serial.so" filemode="755"/>
+					    <zipfileset src="${src}/jp12serial_0.13_bin.zip" includes="jp12serial_0.13/linux_bin/libjp12serial.so" fullpath="Linux-i386/libjp12serial.so" filemode="755"/>
+                        <zipfileset src="${src}/jp1usb.zip" includes="jp1usb.dll" prefix="Windows"/>
+					    <zipfileset src="${src}/DecodeIR.zip" includes="**/*.so" filemode="755"/>
+					    <zipfileset src="${src}/DecodeIR.zip" includes="**/*.dll"/>
                         <zipfileset dir="${src}" includes="*.sh" filemode="755" />
                         <zipfileset dir="tutorial" includes="**/*" prefix="tutorial" />
                 </zip>

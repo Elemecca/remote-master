@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -138,12 +139,18 @@ public class OutputPanel extends KMPanel implements ActionListener
     Remote r = deviceUpgrade.getRemote();
 
     int keyMoveBytes = 0;
-    for ( KeyMove keyMove : deviceUpgrade.getKeyMoves() )
+    List< KeyMove > keyMoves = deviceUpgrade.getKeyMoves();
+    for ( KeyMove keyMove : keyMoves )
     {
       keyMoveBytes += keyMove.getSize();
     }
-    deviceLabel.setText( String.format( "Device Upgrade Code (%1$d bytes + %2$d Key Move bytes)", deviceUpgrade
-        .getUpgradeHex().length(), keyMoveBytes ) );
+    String keyMoveInfo = "";
+    if ( keyMoves.size() > 0 )
+    {
+      keyMoveInfo = String.format( " + %1$d bytes from %2$d keymoves", keyMoveBytes, keyMoves.size() );
+    }
+    deviceLabel.setText( String.format( "Device Upgrade Code (%1$d bytes%2$s)", deviceUpgrade.getUpgradeHex().length(),
+        keyMoveInfo ) );
 
     upgradeText.setText( deviceUpgrade.getUpgradeText() );
     Protocol p = deviceUpgrade.getProtocol();

@@ -7,41 +7,41 @@ import javax.swing.table.TableCellRenderer;
 /**
  * The Class FunctionTableModel.
  */
-public class FunctionTableModel
-  extends KMTableModel< Function >
+public class FunctionTableModel extends KMTableModel< Function >
 {
-  
+
   /** The protocol. */
   private Protocol protocol = null;
-  
+
   /** The remote. */
   private Remote remote = null;
-  
+
   /** The Constant rowCol. */
   private final static int rowCol = 0;
-  
+
   /** The Constant nameCol. */
   private final static int nameCol = rowCol + 1;
-  
+
   /** The Constant efcCol. */
   private final static int efcCol = nameCol + 1;
-  
+
   /** The efc5col. */
   private int efc5col = -1;
-  
+
   /** The col offset. */
   private int colOffset = efcCol + 1;
-  
+
   /** The hex col. */
   private int hexCol = colOffset;
-  
+
   /** The notes col. */
   private int notesCol = hexCol + 1;
 
   /**
    * Instantiates a new function table model.
    * 
-   * @param deviceUpgrade the device upgrade
+   * @param deviceUpgrade
+   *          the device upgrade
    */
   public FunctionTableModel( DeviceUpgrade deviceUpgrade )
   {
@@ -49,18 +49,19 @@ public class FunctionTableModel
     if ( deviceUpgrade != null )
       setDeviceUpgrade( deviceUpgrade );
   }
-  
+
   /**
    * Sets the device upgrade.
    * 
-   * @param deviceUpgrade the new device upgrade
+   * @param deviceUpgrade
+   *          the new device upgrade
    */
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
   {
     if ( deviceUpgrade == null )
       return;
-    setData( deviceUpgrade.getFunctions());
-    setProtocol( deviceUpgrade.getProtocol(), deviceUpgrade.getRemote());
+    setData( deviceUpgrade.getFunctions() );
+    setProtocol( deviceUpgrade.getProtocol(), deviceUpgrade.getRemote() );
     functionsUpdated();
   }
 
@@ -75,17 +76,17 @@ public class FunctionTableModel
   /**
    * Sets the protocol.
    * 
-   * @param protocol the protocol
-   * @param remote the remote
+   * @param protocol
+   *          the protocol
+   * @param remote
+   *          the remote
    */
   public void setProtocol( Protocol protocol, Remote remote )
   {
-    if (( this.protocol == protocol ) && ( this.remote == remote ))
-      return;
     this.protocol = protocol;
     this.remote = remote;
     colOffset = efcCol + 1;
-    if (( remote != null ) && ( remote.getEFCDigits() == 5 ))
+    if ( ( remote != null ) && ( remote.getEFCDigits() == 5 ) )
     {
       efc5col = colOffset;
       colOffset += 1;
@@ -99,20 +100,24 @@ public class FunctionTableModel
     fireTableStructureChanged();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getColumnCount()
    */
   public int getColumnCount()
   {
     int rc = 5;
-    if (( remote != null ) && ( remote.getEFCDigits() == 5 ))
+    if ( ( remote != null ) && ( remote.getEFCDigits() == 5 ) )
       rc += 1;
     if ( protocol != null )
-      rc += protocol.getColumnCount() ;
+      rc += protocol.getColumnCount();
     return rc;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
   public Object getValueAt( int row, int col )
@@ -129,7 +134,7 @@ public class FunctionTableModel
     {
       if ( hex == null )
         return null;
-      rc = new EFC( hex, protocol.getCmdIndex());
+      rc = new EFC( hex, protocol.getCmdIndex() );
     }
     else if ( col == efc5col )
     {
@@ -155,26 +160,29 @@ public class FunctionTableModel
   /**
    * Check function assigned.
    * 
-   * @param f the f
-   * @param value the value
-   * 
-   * @throws IllegalArgumentException the illegal argument exception
+   * @param f
+   *          the f
+   * @param value
+   *          the value
+   * @throws IllegalArgumentException
+   *           the illegal argument exception
    */
-  public void checkFunctionAssigned( Function f, Object value )
-    throws IllegalArgumentException
+  public void checkFunctionAssigned( Function f, Object value ) throws IllegalArgumentException
   {
-    if (( value == null ) && f.assigned() )
+    if ( ( value == null ) && f.assigned() )
     {
       String msg = "Function " + f.getName() + " is assigned to a button, and must not be cleared!";
 
       // KeyMapMaster.showMessage( msg );
       throw new IllegalArgumentException( msg );
     }
-//    else
-//      KeyMapMaster.clearMessage();
+    // else
+    // KeyMapMaster.clearMessage();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
   public void setValueAt( Object value, int row, int col )
@@ -183,7 +191,7 @@ public class FunctionTableModel
     if ( col == nameCol )
     {
       String text = ( String )value;
-      if (( text != null ) && ( text.length() == 0 ))
+      if ( ( text != null ) && ( text.length() == 0 ) )
         text = null;
       checkFunctionAssigned( function, text );
       function.setName( text );
@@ -199,9 +207,9 @@ public class FunctionTableModel
         if ( hex == null )
           hex = protocol.getDefaultCmd();
         if ( value.getClass() == String.class )
-          EFC.toHex( Short.parseShort(( String )value ), hex, protocol.getCmdIndex());
+          EFC.toHex( Short.parseShort( ( String )value ), hex, protocol.getCmdIndex() );
         else
-          (( EFC )value ).toHex( hex, protocol.getCmdIndex());
+          ( ( EFC )value ).toHex( hex, protocol.getCmdIndex() );
         function.setHex( hex );
       }
     }
@@ -216,21 +224,21 @@ public class FunctionTableModel
         if ( hex == null )
           hex = protocol.getDefaultCmd();
         if ( value.getClass() == String.class )
-          EFC5.toHex( Short.parseShort(( String )value ), hex );
+          EFC5.toHex( Short.parseShort( ( String )value ), hex );
         else
-          (( EFC5 )value ).toHex( hex );
+          ( ( EFC5 )value ).toHex( hex );
         function.setHex( hex );
       }
     }
     else if ( col == hexCol )
     {
       checkFunctionAssigned( function, value );
-      if (( value != null ) && ( value.getClass() == String.class ))
-        value = new Hex(( String )value );
-      function.setHex(( Hex )value );
+      if ( ( value != null ) && ( value.getClass() == String.class ) )
+        value = new Hex( ( String )value );
+      function.setHex( ( Hex )value );
     }
     else if ( col == notesCol )
-      function.setNotes(( String )value );
+      function.setNotes( ( String )value );
     else
     {
       CmdParameter[] cmdParms = protocol.getCommandParameters();
@@ -239,11 +247,11 @@ public class FunctionTableModel
       System.err.println( "FunctionTableModel.setValueAt(): defaultValue is " + defaultValue );
       if ( defaultValue != null )
         checkFunctionAssigned( function, value );
-      if ( value == null && defaultValue != null)
+      if ( value == null && defaultValue != null )
         value = defaultValue.value();
       System.err.println( "FunctionTableModel.setValueAt(): value is " + value );
 
-      if (( value == null ) && !cmdParms[ parmIndex ].isOptional())
+      if ( ( value == null ) && !cmdParms[ parmIndex ].isOptional() )
         function.setHex( null );
       else
       {
@@ -259,7 +267,9 @@ public class FunctionTableModel
     fireTableRowsUpdated( row, row );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
   public String getColumnName( int col )
@@ -282,7 +292,9 @@ public class FunctionTableModel
     return rc;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
   public String getColumnPrototypeName( int col )
@@ -305,13 +317,15 @@ public class FunctionTableModel
     return rc;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
-  public Class<?> getColumnClass( int col )
+  public Class< ? > getColumnClass( int col )
   {
-    Class<?> rc = null;
-    if (( col == nameCol ) || ( col == notesCol ))
+    Class< ? > rc = null;
+    if ( ( col == nameCol ) || ( col == notesCol ) )
       rc = String.class;
     else if ( col == rowCol )
       rc = Integer.class;
@@ -327,7 +341,9 @@ public class FunctionTableModel
     return rc;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable( int row, int col )
@@ -335,7 +351,7 @@ public class FunctionTableModel
     boolean rc = false;
     if ( col == rowCol )
       rc = false;
-    else if (( col <= hexCol ) || ( col == notesCol ))
+    else if ( ( col <= hexCol ) || ( col == notesCol ) )
       rc = true;
     else
       rc = protocol.isEditable( col - colOffset );
@@ -343,24 +359,28 @@ public class FunctionTableModel
     return rc;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
   public TableCellEditor getColumnEditor( int col )
   {
-    if (( remote == null ) || ( protocol == null ) || ( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ))
+    if ( ( remote == null ) || ( protocol == null ) || ( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) )
       return null;
     if ( col == efcCol )
       return new EFCEditor( 3 );
     if ( col == efc5col )
       return new EFCEditor( 5 );
     if ( col == hexCol )
-      return new HexEditor( protocol.getDefaultCmd());
+      return new HexEditor( protocol.getDefaultCmd() );
     else
       return protocol.getColumnEditor( col - colOffset );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
   public TableCellRenderer getColumnRenderer( int col )
@@ -368,7 +388,7 @@ public class FunctionTableModel
     TableCellRenderer rc = null;
     if ( col == rowCol )
       rc = new RowNumberRenderer();
-    else if (( col == nameCol ) || ( col == notesCol ))
+    else if ( ( col == nameCol ) || ( col == notesCol ) )
       rc = null;
     else if ( col == efcCol )
       rc = new EFCRenderer();
@@ -381,15 +401,17 @@ public class FunctionTableModel
     return rc;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KMTableModel#isColumnWidthFixed(int)
    */
   public boolean isColumnWidthFixed( int col )
   {
-    if (( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == efcCol ) || ( col == efc5col ) || ( col == hexCol ))
+    if ( ( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == efcCol ) || ( col == efc5col )
+        || ( col == hexCol ) )
       return super.isColumnWidthFixed( col );
     else
       return protocol.isColumnWidthFixed( col - colOffset );
   }
 }
-

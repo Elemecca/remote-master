@@ -127,11 +127,31 @@ public class Protocol
 
     notes = props.getProperty( "Notes" );
 
+    int fixedBytes = -1;
+    int variableBytes = -1;
     for ( String pName : ProcessorManager.getProcessorNames() )
     {
       temp = props.getProperty( "Code." + pName );
       if ( temp != null )
-        code.put( pName, new Hex( temp ) );
+      {
+        Hex hex = new Hex( temp );
+        int value = hex.getData()[ 2 ];
+        if ( pName.equals( "HCS08" ) )
+          value = hex.getData()[ 4 ];
+        int fixedDataLength = value >> 4;
+        int cmdLength = value & 0x0F;
+        if ( fixedBytes == -1 )
+        {
+          fixedBytes = fixedDataLength;
+          variableBytes = cmdLength;
+        }
+        else if ( ( fixedBytes != fixedDataLength ) || ( variableBytes != cmdLength ) )
+        {
+          System.err.println( "Protocol code for " + pName + " uses " + fixedDataLength + " fixed bytes and "
+              + cmdLength + " variable bytes instead of " + fixedBytes + " and " + variableBytes );
+        }
+        code.put( pName, hex );
+      }
       temp = props.getProperty( "CodeTranslator." + pName );
       if ( temp != null )
       {
@@ -233,7 +253,12 @@ public class Protocol
       cmdParms = new CmdParameter[ cmdLength ];
       for ( int i = 0; i < cmdLength; i++ )
       {
-        cmdParms[ i ] = new NumberCmdParm( "Byte " + i, null );
+        String parmName = "OBC";
+        if ( i != cmdIndex )
+        {
+          parmName = "Byte " + ( i + 1 );
+        }
+        cmdParms[ i ] = new NumberCmdParm( parmName, null );
         Translator translator = new Translator( false, false, i, 8, i * 8 );
         cmdTranslators[ i ] = translator;
         translator.setStyleIndex( styleIndex );
@@ -572,36 +597,6 @@ public class Protocol
     return rc;
   }
 
-  // public static Hex efc2hex( EFC efc, Hex hex, int index )
-  // {
-  // int temp = efc.getValue() + 156;
-  // temp = ( temp & 0xFF ) ^ 0xAE;
-  // temp = ( temp >> 3 ) | ( temp << 5 );
-  // hex.getData()[ index ] = temp;
-  // return hex;
-  // }
-  //
-  // public Hex efc2hex( EFC efc, Hex hex )
-  // {
-  // if ( hex == null )
-  // hex = getDefaultCmd();
-  // return efc2hex( efc, hex, cmdIndex );
-  // }
-  //
-  // public static EFC hex2efc( Hex hex, int index )
-  // {
-  // int temp = hex.getData()[ index ] & 0xFF;
-  // temp = ( temp << 3 ) | ( temp >> 5 );
-  // temp = ( temp ^ 0xAE ) - 156;
-  // EFC efc = new EFC( temp );
-  // return efc;
-  // }
-  //
-  // public EFC hex2efc( Hex hex )
-  // {
-  // return hex2efc( hex, cmdIndex );
-  // }
-  //
   /**
    * Gets the default cmd.
    * 
@@ -649,9 +644,26 @@ public class Protocol
    * @param index
    *          the new cmd index
    */
-  public void setCmdIndex( int index )
+  public boolean setCmdIndex( int newIndex )
   {
-    cmdIndex = index;
+    boolean nameChanged = false;
+
+    if ( cmdIndex != newIndex )
+    {
+      if ( cmdParms[ newIndex ].getName().equals( "Byte " + ( newIndex + 1 ) ) )
+      {
+        cmdParms[ newIndex ].setName( "OBC" );
+        nameChanged = true;
+      }
+      if ( cmdParms[ cmdIndex ].getName().equals( "OBC" ) )
+      {
+        cmdParms[ cmdIndex ].setName( "Byte " + ( cmdIndex + 1 ) );
+        nameChanged = true;
+      }
+
+      cmdIndex = newIndex;
+    }
+    return nameChanged;
   }
 
   /**

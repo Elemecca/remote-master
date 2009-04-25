@@ -1014,7 +1014,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         boolean cellHasFocus )
     {
       String text = ( String )value;
-      if ( text.charAt( 0 ) == 'U' )
+      if ( ( text != null ) && ( text.length() > 0 ) && ( text.charAt( 0 ) == 'U' ) )
         text = text.substring( 1 );
       return super.getListCellRendererComponent( list, text, index, isSelected, cellHasFocus );
     }

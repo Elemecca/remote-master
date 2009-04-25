@@ -1,35 +1,65 @@
 package com.hifiremote.jp1;
 
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.text.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.datatransfer.*;
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.util.ListIterator;
+import java.util.StringTokenizer;
+
+import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.text.JTextComponent;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class TablePanel.
  */
-public abstract class TablePanel< E >
-  extends KMPanel
-  implements ActionListener, ListSelectionListener
+public abstract class TablePanel< E > extends KMPanel implements ActionListener, ListSelectionListener
 {
-  
+
   /**
    * Instantiates a new table panel.
    * 
-   * @param name the name
-   * @param devUpgrade the dev upgrade
-   * @param tableModel the table model
+   * @param name
+   *          the name
+   * @param devUpgrade
+   *          the dev upgrade
+   * @param tableModel
+   *          the table model
    */
   public TablePanel( String name, DeviceUpgrade devUpgrade, KMTableModel< E > tableModel )
   {
     super( name, devUpgrade );
-    setLayout( new BorderLayout());
+    setLayout( new BorderLayout() );
 
     kit = Toolkit.getDefaultToolkit();
     clipboard = kit.getSystemClipboard();
@@ -37,21 +67,22 @@ public abstract class TablePanel< E >
     model = tableModel;
     sorter = new TableSorter( model );
     table = new JTableX( sorter );
-    sorter.setTableHeader( table.getTableHeader());
+    sorter.setTableHeader( table.getTableHeader() );
     table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
     table.setCellSelectionEnabled( true );
     table.setSurrendersFocusOnKeystroke( true );
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
-    table.getTableHeader().setToolTipText( "Click to sort is ascending order, or shift-click to sort in descending order." );
+    table.getTableHeader().setToolTipText(
+        "Click to sort is ascending order, or shift-click to sort in descending order." );
     DefaultCellEditor e = ( DefaultCellEditor )table.getDefaultEditor( String.class );
-    new TextPopupMenu(( JTextComponent )e.getComponent());
+    new TextPopupMenu( ( JTextComponent )e.getComponent() );
 
     TransferHandler th = new TransferHandler()
     {
       protected Transferable createTransferable( JComponent c )
       {
-        return new LocalObjectTransferable( new Integer( table.getSelectedRow()));
+        return new LocalObjectTransferable( new Integer( table.getSelectedRow() ) );
       }
 
       public int getSourceActions( JComponent c )
@@ -64,7 +95,7 @@ public abstract class TablePanel< E >
         boolean rc = false;
         for ( int i = 0; i < flavors.length; i++ )
         {
-          if (( flavors[ i ] == DataFlavor.stringFlavor ) || ( flavors[ i ] == LocalObjectTransferable.getFlavor()))
+          if ( ( flavors[ i ] == DataFlavor.stringFlavor ) || ( flavors[ i ] == LocalObjectTransferable.getFlavor() ) )
           {
             rc = true;
             break;
@@ -79,22 +110,22 @@ public abstract class TablePanel< E >
         System.err.println( "importData: flavors are" );
         DataFlavor[] flavors = t.getTransferDataFlavors();
         for ( int i = 0; i < flavors.length; i++ )
-          System.err.println( "\t" + flavors[ i ].toString());
-        if ( t.isDataFlavorSupported( DataFlavor.stringFlavor ))
+          System.err.println( "\t" + flavors[ i ].toString() );
+        if ( t.isDataFlavorSupported( DataFlavor.stringFlavor ) )
         {
           try
           {
-            String s = ( String )( t.getTransferData( DataFlavor.stringFlavor ));
-            BufferedReader in = new BufferedReader( new StringReader( s ));
+            String s = ( String )( t.getTransferData( DataFlavor.stringFlavor ) );
+            BufferedReader in = new BufferedReader( new StringReader( s ) );
             int colCount = table.getModel().getColumnCount();
             int addedRow = -1;
             int row = table.getSelectedRow();
             int col = table.getSelectedColumn();
-            for ( String line = in.readLine(); line != null; line = in.readLine())
+            for ( String line = in.readLine(); line != null; line = in.readLine() )
             {
               if ( row == model.getRowCount() )
               {
-                model.addRow( createRowObject());
+                model.addRow( createRowObject() );
                 if ( addedRow == -1 )
                   addedRow = row;
               }
@@ -108,7 +139,7 @@ public abstract class TablePanel< E >
               {
                 if ( workCol == colCount )
                   break;
-                if ( st.hasMoreTokens())
+                if ( st.hasMoreTokens() )
                   token = st.nextToken();
                 else
                   token = null;
@@ -121,7 +152,7 @@ public abstract class TablePanel< E >
                   if ( prevToken != null )
                     break;
                 }
-                else if ( token.equals( "\t" ))
+                else if ( token.equals( "\t" ) )
                 {
                   if ( prevToken == null )
                     token = null;
@@ -133,13 +164,11 @@ public abstract class TablePanel< E >
                 }
                 prevToken = token;
 
-                Class<?> aClass = sorter.getColumnClass( modelCol );
+                Class< ? > aClass = sorter.getColumnClass( modelCol );
                 if ( aClass == String.class )
                 {
-                  if (( token != null ) &&
-                      ( token.length() == 5 ) &&
-                      token.startsWith( "num " ) &&
-                      Character.isDigit( token.charAt( 4 )))
+                  if ( ( token != null ) && ( token.length() == 5 ) && token.startsWith( "num " )
+                      && Character.isDigit( token.charAt( 4 ) ) )
                     value = token.substring( 4 );
                   else
                     value = token;
@@ -148,15 +177,15 @@ public abstract class TablePanel< E >
                   value = token;
 
                 sorter.setValueAt( value, row, modelCol );
-                workCol++;
+                workCol++ ;
               }
-              row++;
+              row++ ;
             }
             if ( addedRow != -1 )
               sorter.fireTableRowsInserted( addedRow, row - 1 );
             sorter.fireTableRowsUpdated( popupRow, row - 1 );
           }
-          catch (Exception ex)
+          catch ( Exception ex )
           {
             String message = ex.getMessage();
             if ( message == null )
@@ -165,11 +194,11 @@ public abstract class TablePanel< E >
             ex.printStackTrace( System.err );
           }
         }
-        else if ( t.isDataFlavorSupported( LocalObjectTransferable.getFlavor()))
+        else if ( t.isDataFlavorSupported( LocalObjectTransferable.getFlavor() ) )
         {
           try
           {
-            int dragRow = (( Integer )t.getTransferData( LocalObjectTransferable.getFlavor())).intValue();
+            int dragRow = ( ( Integer )t.getTransferData( LocalObjectTransferable.getFlavor() ) ).intValue();
             int dropRow = table.getSelectedRow();
             if ( dropRow != dragRow )
             {
@@ -198,7 +227,7 @@ public abstract class TablePanel< E >
         int[] selectedRows = table.getSelectedRows();
         int[] selectedCols = table.getSelectedColumns();
         StringBuilder buff = new StringBuilder( 200 );
-        for ( int rowNum = 0; rowNum < selectedRows.length; rowNum ++ )
+        for ( int rowNum = 0; rowNum < selectedRows.length; rowNum++ )
         {
           if ( rowNum != 0 )
             buff.append( "\n" );
@@ -207,13 +236,14 @@ public abstract class TablePanel< E >
             if ( colNum != 0 )
               buff.append( "\t" );
             int selRow = selectedRows[ rowNum ];
-//            int convertedRow = sorter.convertRowIndexToModel( selRow );
+            // int convertedRow = sorter.convertRowIndexToModel( selRow );
             int selCol = selectedCols[ colNum ];
             int convertedCol = table.convertColumnIndexToModel( selCol );
             Object value = table.getValueAt( selRow, selCol );
             if ( value != null )
             {
-              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn( selCol ).getCellRenderer();
+              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn(
+                  selCol ).getCellRenderer();
               if ( cellRenderer != null )
               {
                 cellRenderer.getTableCellRendererComponent( table, value, false, false, selRow, convertedCol );
@@ -223,7 +253,7 @@ public abstract class TablePanel< E >
             }
           }
         }
-        StringSelection data = new StringSelection( buff.toString());
+        StringSelection data = new StringSelection( buff.toString() );
         clipboard.setContents( data, data );
       }
     };
@@ -240,7 +270,7 @@ public abstract class TablePanel< E >
     deleteItem.addActionListener( this );
     popup.add( deleteItem );
 
-    popup.add( new JSeparator());
+    popup.add( new JSeparator() );
 
     copyItem = new JMenuItem( "Copy" );
     copyItem.setToolTipText( "Copy the selection to the clipboard." );
@@ -269,25 +299,23 @@ public abstract class TablePanel< E >
         if ( e.isPopupTrigger() )
         {
           finishEditing();
-          popupRow = table.rowAtPoint( e.getPoint());
-          popupCol = table.columnAtPoint( e.getPoint());
+          popupRow = table.rowAtPoint( e.getPoint() );
+          popupCol = table.columnAtPoint( e.getPoint() );
 
           if ( popupCol == 0 )
             return false;
 
-          Function func = ( Function )model.getRow( sorter.modelIndex( popupRow ));
-          deleteItem.setEnabled( !func.assigned());
+          Function func = ( Function )model.getRow( sorter.modelIndex( popupRow ) );
+          deleteItem.setEnabled( !func.assigned() );
 
           Transferable clipData = clipboard.getContents( clipboard );
-          if (( clipData != null ) &&
-              clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) &&
-              ( popupCol != 0 ))
+          if ( ( clipData != null ) && clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) && ( popupCol != 0 ) )
             pasteItem.setEnabled( true );
           else
             pasteItem.setEnabled( false );
 
           copyItem.setEnabled( table.getSelectedRowCount() > 0 );
-          popup.show( table, e.getX(), e.getY());
+          popup.show( table, e.getX(), e.getY() );
           return true;
         }
         else
@@ -300,7 +328,7 @@ public abstract class TablePanel< E >
     {
       public void mouseDragged( MouseEvent e )
       {
-        int tableCol = table.columnAtPoint( e.getPoint());
+        int tableCol = table.columnAtPoint( e.getPoint() );
         int modelCol = table.convertColumnIndexToModel( tableCol );
         if ( modelCol == 0 )
           table.getTransferHandler().exportAsDrag( table, e, TransferHandler.MOVE );
@@ -355,7 +383,9 @@ public abstract class TablePanel< E >
     buttonPanel.add( pasteButton );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KMPanel#setDeviceUpgrade(com.hifiremote.jp1.DeviceUpgrade)
    */
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
@@ -364,7 +394,9 @@ public abstract class TablePanel< E >
     this.initColumns();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KMPanel#update()
    */
   public void update()
@@ -380,8 +412,7 @@ public abstract class TablePanel< E >
     int editRow = table.getEditingRow();
     if ( editRow != -1 )
     {
-      TableCellEditor editor =
-        table.getCellEditor( editRow, table.getEditingColumn());
+      TableCellEditor editor = table.getCellEditor( editRow, table.getEditingColumn() );
       if ( !editor.stopCellEditing() )
         editor.cancelCellEditing();
     }
@@ -393,25 +424,32 @@ public abstract class TablePanel< E >
    * @return the e
    */
   protected abstract E createRowObject();
-  
+
   /**
    * Can delete.
    * 
-   * @param o the o
-   * 
+   * @param o
+   *          the o
    * @return true, if successful
    */
-  protected boolean canDelete( Object o ){ return true; }
-  
+  protected boolean canDelete( Object o )
+  {
+    return true;
+  }
+
   /**
    * Do not delete.
    * 
-   * @param o the o
+   * @param o
+   *          the o
    */
-  protected void doNotDelete( Object o ){}
+  protected void doNotDelete( Object o )
+  {}
 
   // Interface ActionListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
   public void actionPerformed( ActionEvent e )
@@ -430,12 +468,11 @@ public abstract class TablePanel< E >
     else
     {
       row = popupRow;
-      if ( table.isRowSelected( row ))
+      if ( table.isRowSelected( row ) )
         select = true;
     }
 
-    if (( source == newButton ) ||
-        ( source == newItem ))
+    if ( ( source == newButton ) || ( source == newItem ) )
     {
       E o = createRowObject();
       if ( row == -1 )
@@ -448,23 +485,22 @@ public abstract class TablePanel< E >
         model.insertRow( sorter.modelIndex( row ), o );
       }
 
-      model.fireTableRowsInserted( sorter.modelIndex( row ), sorter.modelIndex( row ));
+      model.fireTableRowsInserted( sorter.modelIndex( row ), sorter.modelIndex( row ) );
       if ( select )
         table.setRowSelectionInterval( row, row );
     }
-    else if (( source == deleteButton ) ||
-             ( source == deleteItem ))
+    else if ( ( source == deleteButton ) || ( source == deleteItem ) )
     {
-      if ( !canDelete( model.getRow( sorter.modelIndex( row ))))
+      if ( !canDelete( model.getRow( sorter.modelIndex( row ) ) ) )
       {
         deleteButton.setEnabled( false );
-        doNotDelete( model.getRow( sorter.modelIndex( row )));
+        doNotDelete( model.getRow( sorter.modelIndex( row ) ) );
       }
       else
       {
-        model.removeRow( sorter.modelIndex( row ));
-        model.fireTableRowsDeleted( sorter.modelIndex( row ), sorter.modelIndex( row ));
-        if ( row == model.getRowCount())
+        model.removeRow( sorter.modelIndex( row ) );
+        model.fireTableRowsDeleted( sorter.modelIndex( row ), sorter.modelIndex( row ) );
+        if ( row == model.getRowCount() )
           --row;
         if ( select )
           table.setRowSelectionInterval( row, row );
@@ -473,16 +509,15 @@ public abstract class TablePanel< E >
     else if ( source == cleanButton )
     {
       java.util.List< E > functions = model.getData();
-      for ( ListIterator< E > i = functions.listIterator(); i.hasNext();)
+      for ( ListIterator< E > i = functions.listIterator(); i.hasNext(); )
       {
         Function f = ( Function )i.next();
-        if (( f.getHex() == null ) || ( f.getHex().length() == 0 ))
+        if ( ( f.getHex() == null ) || ( f.getHex().length() == 0 ) )
           i.remove();
       }
       model.fireTableDataChanged();
     }
-    else if (( source == upButton ) ||
-             ( source == downButton ))
+    else if ( ( source == upButton ) || ( source == downButton ) )
     {
       int start = 0;
       int end = 0;
@@ -504,20 +539,20 @@ public abstract class TablePanel< E >
         to = end;
         sel = end;
       }
-      model.moveRow( sorter.modelIndex( from ), sorter.modelIndex( to ));
-      model.fireTableRowsUpdated( sorter.modelIndex( start ), sorter.modelIndex( end ));
+      model.moveRow( sorter.modelIndex( from ), sorter.modelIndex( to ) );
+      model.fireTableRowsUpdated( sorter.modelIndex( start ), sorter.modelIndex( end ) );
       if ( select )
         table.setRowSelectionInterval( sel, sel );
     }
-    else if (( source == copyItem ) || ( source == copyButton ))
+    else if ( ( source == copyItem ) || ( source == copyButton ) )
     {
       table.getTransferHandler().exportToClipboard( table, clipboard, TransferHandler.COPY );
     }
-    else if (( source == pasteItem ) || ( source == pasteButton ))
+    else if ( ( source == pasteItem ) || ( source == pasteButton ) )
     {
       Transferable clipData = clipboard.getContents( clipboard );
       if ( clipData != null )
-        table.getTransferHandler().importData( table, clipboard.getContents( clipboard ));
+        table.getTransferHandler().importData( table, clipboard.getContents( clipboard ) );
       else
         kit.beep();
     }
@@ -525,7 +560,9 @@ public abstract class TablePanel< E >
   }
 
   // Interface ListSelectionListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
    */
   public void valueChanged( ListSelectionEvent e )
@@ -537,13 +574,12 @@ public abstract class TablePanel< E >
       if ( row != -1 )
       {
         upButton.setEnabled( row > 0 );
-        downButton.setEnabled( row < ( sorter.getRowCount() - 1 ));
-        deleteButton.setEnabled( canDelete( model.getRow( sorter.modelIndex( row ))));
+        downButton.setEnabled( row < ( sorter.getRowCount() - 1 ) );
+        deleteButton.setEnabled( canDelete( model.getRow( sorter.modelIndex( row ) ) ) );
         Transferable clipData = clipboard.getContents( clipboard );
         copyButton.setEnabled( true );
-        if (( clipData != null ) &&
-            clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) &&
-            ( table.convertColumnIndexToModel( table.getSelectedColumn() ) != 0 ))
+        if ( ( clipData != null ) && clipData.isDataFlavorSupported( DataFlavor.stringFlavor )
+            && ( table.convertColumnIndexToModel( table.getSelectedColumn() ) != 0 ) )
           pasteButton.setEnabled( true );
         else
           pasteButton.setEnabled( false );
@@ -559,7 +595,9 @@ public abstract class TablePanel< E >
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KMPanel#commit()
    */
   public void commit()
@@ -573,7 +611,7 @@ public abstract class TablePanel< E >
   protected void initColumns()
   {
     JLabel l = new JLabel();
-    l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
+    l.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ) );
 
     TableColumnModel columnModel = table.getColumnModel();
     TableColumn column;
@@ -581,10 +619,7 @@ public abstract class TablePanel< E >
     int cols = model.getColumnCount();
     for ( int i = 0; i < cols; i++ )
     {
-      table.setColumnWidth( i,
-                            model.getColumnPrototypeName( i ),
-                            model.isColumnWidthFixed( i ),
-                            4 );
+      table.setColumnWidth( i, model.getColumnPrototypeName( i ), model.isColumnWidthFixed( i ), 4 );
       column = columnModel.getColumn( i );
 
       TableCellEditor editor = model.getColumnEditor( i );
@@ -594,17 +629,25 @@ public abstract class TablePanel< E >
       TableCellRenderer renderer = model.getColumnRenderer( i );
       if ( renderer != null )
         column.setCellRenderer( renderer );
+
+      if ( model.getColumnName( i ).startsWith( "<html>" ) )
+      {
+        column.setHeaderRenderer( table.getTableHeader().getDefaultRenderer() );
+      }
     }
-    table.doLayout();
+    // table.doLayout();
+    table.validate();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.JComponent#setFont(java.awt.Font)
    */
   public void setFont( Font aFont )
   {
     super.setFont( aFont );
-    if (( aFont == null ) || ( table == null ))
+    if ( ( aFont == null ) || ( table == null ) )
       return;
     table.setRowHeight( aFont.getSize() + 2 );
     initColumns();
@@ -612,61 +655,61 @@ public abstract class TablePanel< E >
 
   /** The table. */
   protected JTableX table = null;
-  
+
   /** The model. */
   protected KMTableModel< E > model = null;
-  
+
   /** The sorter. */
   private TableSorter sorter = null;
-  
+
   /** The button panel. */
   protected JPanel buttonPanel = null;
-  
+
   /** The new button. */
   private JButton newButton = null;
-  
+
   /** The delete button. */
   private JButton deleteButton = null;
-  
+
   /** The clean button. */
   private JButton cleanButton = null;
-  
+
   /** The up button. */
   private JButton upButton = null;
-  
+
   /** The down button. */
   private JButton downButton = null;
-  
+
   /** The copy button. */
   private JButton copyButton = null;
-  
+
   /** The paste button. */
   private JButton pasteButton = null;
-  
+
   /** The popup row. */
   private int popupRow = 0;
-  
+
   /** The popup col. */
   private int popupCol = 0;
-  
+
   /** The popup. */
   protected JPopupMenu popup = null;
-  
+
   /** The new item. */
   private JMenuItem newItem = null;
-  
+
   /** The delete item. */
   private JMenuItem deleteItem = null;
-  
+
   /** The copy item. */
   private JMenuItem copyItem = null;
-  
+
   /** The paste item. */
   private JMenuItem pasteItem = null;
-  
+
   /** The clipboard. */
   private Clipboard clipboard = null;
-  
+
   /** The kit. */
   private Toolkit kit = null;
 }

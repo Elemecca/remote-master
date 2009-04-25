@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -291,6 +292,11 @@ public class Remote implements Comparable< Remote >
       setPhantomShapes();
 
       loaded = true;
+    }
+    catch ( FileNotFoundException fnfe )
+    {
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), fnfe.getMessage(), "Remote Load Error",
+          JOptionPane.ERROR_MESSAGE );
     }
     catch ( Exception e )
     {
@@ -947,7 +953,7 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equalsIgnoreCase( "SetupValidation" ) )
       {
-        setupValidation = SetupValidation.valueOf( parm );
+        setupValidation = SetupValidation.valueOf( parm.toUpperCase() );
       }
     }
 

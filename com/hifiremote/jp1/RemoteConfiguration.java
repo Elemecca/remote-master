@@ -84,7 +84,7 @@ public class RemoteConfiguration
       else if ( sectionName.equals( "DeviceUpgrade" ) )
       {
         DeviceUpgrade upgrade = new DeviceUpgrade();
-        upgrade.load( section );
+        upgrade.load( section, true, remote );
         devices.add( upgrade );
       }
       else
@@ -757,23 +757,31 @@ public class RemoteConfiguration
       {
         KeyMove keyMove = null;
         Hex hex = Hex.subHex( data, offset, length );
-        if ( remote.getAdvCodeFormat() == AdvancedCode.Format.HEX )
-          keyMove = new KeyMove( keyCode, boundDeviceIndex, hex, null );
-        else if ( remote.getEFCDigits() == 3 )
+        if ( ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG ) && ( length == 3 ) )
         {
-          if ( length == 1 )
-            keyMove = new KeyMoveKey( keyCode, boundDeviceIndex, hex, null );
-          else
-            keyMove = new KeyMoveEFC( keyCode, boundDeviceIndex, hex, null );
+          keyMove = new KeyMoveKey( keyCode, boundDeviceIndex, hex, null );
+        }
+        else if ( remote.getAdvCodeFormat() == AdvancedCode.Format.HEX )
+        {
+          keyMove = new KeyMove( keyCode, boundDeviceIndex, hex, null );
         }
         else
-          // EFCDigits == 5
-          keyMove = new KeyMoveEFC5( keyCode, boundDeviceIndex, hex, null );
-
-        DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
-        if ( ( moveUpgrade != null ) && specialUpgrades.contains( moveUpgrade ) )
         {
-          SpecialProtocolFunction sf = getSpecialProtocol( moveUpgrade ).createFunction( keyMove );
+          if ( remote.getEFCDigits() == 3 )
+          {
+            keyMove = new KeyMoveEFC( keyCode, boundDeviceIndex, hex, null );
+          }
+          else
+          // EFCDigits == 5
+          {
+            keyMove = new KeyMoveEFC5( keyCode, boundDeviceIndex, hex, null );
+          }
+        }
+
+        SpecialProtocol sp = getSpecialProtocol( keyMove, specialUpgrades );
+        if ( sp != null )
+        {
+          SpecialProtocolFunction sf = sp.createFunction( keyMove );
           if ( sf != null )
           {
             specialFunctions.add( sf );
@@ -799,6 +807,13 @@ public class RemoteConfiguration
     for ( Iterator< KeyMove > it = keymoves.iterator(); it.hasNext(); )
     {
       KeyMove keyMove = it.next();
+
+      // ignore key-style keymoves
+      if ( keyMove.getClass() == KeyMoveKey.class )
+      {
+        continue;
+      }
+
       int keyCode = keyMove.getKeyCode();
 
       // check if the keymove comes from a device upgrade
@@ -889,6 +904,30 @@ public class RemoteConfiguration
       if ( upgrade.getProtocol().getID().equals( sp.getPid() ) )
         return sp;
     }
+    return null;
+  }
+
+  private SpecialProtocol getSpecialProtocol( KeyMove keyMove, List< DeviceUpgrade > specialUpgrades )
+  {
+    int setupCode = keyMove.getSetupCode();
+    int deviceType = keyMove.getDeviceType();
+    for ( SpecialProtocol sp : remote.getSpecialProtocols() )
+    {
+      if ( sp.isPresent( this ) )
+      {
+        if ( ( setupCode == sp.getSetupCode() ) && ( deviceType == sp.getDeviceType().getNumber() ) )
+        {
+          return sp;
+        }
+      }
+    }
+
+    DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
+    if ( ( moveUpgrade != null ) && specialUpgrades.contains( moveUpgrade ) )
+    {
+      return getSpecialProtocol( moveUpgrade );
+    }
+
     return null;
   }
 

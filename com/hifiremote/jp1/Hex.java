@@ -193,6 +193,11 @@ public class Hex implements Cloneable, Comparable< Hex >
     data[ offset + 1 ] = ( short )( value & 0xFF );
   }
 
+  public void set( short value, int offset )
+  {
+    data[ offset ] = value;
+  }
+
   /**
    * Copy from src
    * 
