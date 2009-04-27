@@ -37,8 +37,6 @@ public class ManualProtocol extends Protocol
     {
       notes = props.getProperty( "Protocol.notes" );
     }
-    if ( variantName == null )
-      variantName = "manual";
   }
 
   /**
@@ -88,7 +86,6 @@ public class ManualProtocol extends Protocol
     System.err.println( "  rawHex=" + Hex.toString( rawHex ) );
     System.err.println( "  cmdBits=" + cmdBits );
 
-    variantName = "manual";
     boolean lsb = false;
     boolean comp = false;
     if ( signalStyle.startsWith( "LSB" ) )

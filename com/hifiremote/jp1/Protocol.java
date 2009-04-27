@@ -460,10 +460,7 @@ public class Protocol
    */
   public boolean needsCode( Remote remote )
   {
-    if ( remote.supportsVariant( id, variantName ) )
-      return false;
-    else
-      return true;
+    return !remote.supportsVariant( id, variantName );
   }
 
   /**

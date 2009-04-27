@@ -1,3 +1,7 @@
+Changes for v1.92
+- Fix EFC5 to Hex translation
+- Manual Settings improvements
+
 Changes for v1.91
 - RM: 
   - Make protocol upgrade code available but invisible when not required

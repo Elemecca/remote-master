@@ -45,7 +45,7 @@ public class EFC5 extends EFC
   public EFC5( Hex hex, int offset )
   {
     super( ( short )0 );
-    fromHex( hex, offset );
+    value = parseHex( hex, offset );
   }
 
   /*
@@ -55,7 +55,7 @@ public class EFC5 extends EFC
    */
   public int getValue()
   {
-    return value;
+    return value & 0xFFFF;
   }
 
   /*
@@ -65,13 +65,7 @@ public class EFC5 extends EFC
    */
   public String toString()
   {
-    StringBuilder buff = new StringBuilder( 5 );
-    String temp = Integer.toString( value & 0x0FFFF );
-    int len = 5 - temp.length();
-    for ( int i = 0; i < len; i++ )
-      buff.append( '0' );
-    buff.append( temp );
-    return buff.toString();
+    return String.format( "%1$05d", value & 0xFFFF );
   }
 
   /*
@@ -131,8 +125,9 @@ public class EFC5 extends EFC
       }
       else
       {
-        short byte1 = ( short )( val >> 8 & 0x00FF );
+        short byte1 = ( short )( ( val >> 8 ) & 0x00FF );
         byte1 += 100;
+        byte1 &= 0xFF;
         byte1 = ( short )( ( byte1 << 5 ) | ( byte1 >> 3 ) );
         byte1 ^= 0x00D5;
         data[ 0 ] = ( short )( byte1 & 0x00FF );
@@ -173,17 +168,17 @@ public class EFC5 extends EFC
     short[] data = hex.getData();
     if ( data.length == offset + 2 )
     {
-      short byte1 = ( short )( data[ offset ] & 0x00FF );
+      short byte1 = ( short )( data[ offset ] & 0xFF );
       byte1 ^= 0x00D5;
-      byte1 = ( short )( ( byte1 >> 5 ) | ( byte1 << 3 ) );
-      byte1 = ( short )( ( byte1 - 100 ) & 0x00FF );
+      byte1 = ( short )( ( ( byte1 >> 5 ) | ( byte1 << 3 ) ) & 0xFF );
+      byte1 = ( short )( ( byte1 - 100 ) & 0xFF );
 
-      short byte2 = ( short )( ( data[ offset + 1 ] & 0x00FF ) ^ 0x00C5 );
+      short byte2 = ( short )( ( data[ offset + 1 ] & 0xFF ) ^ 0xC5 );
 
       short rc = ( short )( ( byte1 << 8 ) + byte2 );
       if ( rc < 1000 )
         rc += 65536;
-      return rc;
+      return ( short )( rc & 0xFFFF );
     }
     else
     {
