@@ -1,3 +1,6 @@
+Changes for v1.92a
+- Fix for parsing RDFs that use SetupValidation
+
 Changes for v1.92
 - Fix EFC5 to Hex translation
 - Manual Settings improvements

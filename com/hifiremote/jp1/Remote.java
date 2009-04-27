@@ -953,7 +953,7 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equalsIgnoreCase( "SetupValidation" ) )
       {
-        setupValidation = SetupValidation.valueOf( parm.toUpperCase() );
+        setupValidation = SetupValidation.valueOf( value.toUpperCase() );
       }
     }
 
