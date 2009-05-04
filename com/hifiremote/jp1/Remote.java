@@ -127,7 +127,11 @@ public class Remote implements Comparable< Remote >
     try
     {
       if ( loaded )
+      {
+        AdvancedCode.setBindFormat( advCodeBindFormat );
+        AdvancedCode.setFormat( advCodeFormat );
         return;
+      }
       loaded = true;
       RDFReader rdr = new RDFReader( file );
       String line = rdr.readLine();
@@ -309,6 +313,9 @@ public class Remote implements Comparable< Remote >
           JOptionPane.ERROR_MESSAGE );
       System.err.println( sw.toString() );
     }
+
+    AdvancedCode.setBindFormat( advCodeBindFormat );
+    AdvancedCode.setFormat( advCodeFormat );
   }
 
   /**
@@ -1368,12 +1375,9 @@ public class Remote implements Comparable< Remote >
       if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
-      StringTokenizer st = new StringTokenizer( line, "= \t" );
-      String typeName = st.nextToken();
+      StringTokenizer st = new StringTokenizer( line, "=," );
+      String typeName = st.nextToken().trim();
       DeviceType type = getDeviceType( typeName );
-      st.nextToken( "=" );
-      String rest = st.nextToken().trim();
-      st = new StringTokenizer( rest, "," );
       while ( st.hasMoreTokens() )
       {
         String aliasName = st.nextToken().trim();

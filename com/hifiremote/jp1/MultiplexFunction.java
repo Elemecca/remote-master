@@ -59,7 +59,7 @@ public class MultiplexFunction extends SpecialProtocolFunction
    */
   public int getNewDeviceTypeIndex()
   {
-    return data.getData()[ 0 ] >> 4;
+    return getCmd().getData()[ 0 ] >> 4;
   }
 
   /**

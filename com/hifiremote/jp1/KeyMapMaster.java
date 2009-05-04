@@ -166,6 +166,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           savePreferences();
           setVisible( false );
           dispose();
+          System.exit( 0 );
         }
         catch ( Exception e )
         {
@@ -191,6 +192,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     Protocol protocol = protocolManager.getProtocolsForRemote( r ).get( 0 );
     deviceUpgrade.setProtocol( protocol );
     deviceUpgrade.setRemote( r );
+    deviceUpgrade.setBaseline();
 
     editorPanel = new DeviceEditorPanel( deviceUpgrade, getRemotes() );
     add( editorPanel, BorderLayout.CENTER );

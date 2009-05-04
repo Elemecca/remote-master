@@ -11,10 +11,9 @@ import javax.swing.JScrollPane;
 /**
  * The Class RawDataPanel.
  */
-public class RawDataPanel
-  extends RMPanel
+public class RawDataPanel extends RMPanel
 {
-  
+
   /**
    * Instantiates a new raw data panel.
    */
@@ -26,7 +25,8 @@ public class RawDataPanel
     table.setGridColor( Color.lightGray );
     table.getTableHeader().setResizingAllowed( false );
     table.setDefaultRenderer( UnsignedByte.class, byteRenderer );
-    JScrollPane scrollPane = new JScrollPane( table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
+    JScrollPane scrollPane = new JScrollPane( table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
     Dimension d = table.getPreferredScrollableViewportSize();
     d.width = table.getPreferredSize().width;
     table.setPreferredScrollableViewportSize( d );
@@ -36,27 +36,29 @@ public class RawDataPanel
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
-    model.set( remoteConfig );
-    byteRenderer.setSavedData( remoteConfig.getSavedData());
+    model.set( remoteConfig.getData(), remoteConfig.getRemote().getBaseAddress() );
+    byteRenderer.setSavedData( remoteConfig.getSavedData() );
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
    */
   public void addPropertyChangeListener( PropertyChangeListener l )
   {
-    if (( model != null ) && ( l != null ))
+    if ( ( model != null ) && ( l != null ) )
       model.addPropertyChangeListener( l );
   }
-  
+
   /** The model. */
   RawDataTableModel model = null;
-  
+
   /** The byte renderer. */
   UnsignedByteRenderer byteRenderer = new UnsignedByteRenderer();
 }
-  

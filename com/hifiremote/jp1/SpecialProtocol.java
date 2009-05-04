@@ -194,8 +194,10 @@ public abstract class SpecialProtocol
     if ( deviceType == null )
     {
       deviceType = remote.getDeviceType( deviceTypeName );
+      return remote.hasSetupCode( deviceType, setupCode );
     }
-    return remote.hasSetupCode( deviceType, setupCode );
+    else
+      return true;
   }
 
   /**

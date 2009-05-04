@@ -664,9 +664,10 @@ public class Button
       else if ( ( hex.length() == 1 ) && ( AdvancedCode.getBindFormat() == AdvancedCode.BindFormat.LONG ) )
       {
         short[] newData = new short[ 2 ];
-        newData[ 0 ] = hex.getData()[ 0 ];
+        short efc = hex.getData()[ 0 ];
+        newData[ 0 ] = efc;
         hex = new Hex( newData );
-        newData[ 1 ] = EFC.parseHex( hex );
+        newData[ 1 ] = EFC.parseHex( efc );
       }
 
       if ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )

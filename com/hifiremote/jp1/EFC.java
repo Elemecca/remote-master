@@ -74,7 +74,7 @@ public class EFC implements Comparable< EFC >
    */
   public void fromHex( Hex hex, int index )
   {
-    value = parseHex( hex, index );
+    value = parseHex( hex.getData()[ index ] );
   }
 
   /**
@@ -100,7 +100,12 @@ public class EFC implements Comparable< EFC >
    */
   public static short parseHex( Hex hex, int index )
   {
-    short rc = ( short )( hex.getData()[ index ] & 0xFF );
+    return parseHex( hex.getData()[ index ] );
+  }
+
+  public static short parseHex( short hex )
+  {
+    short rc = ( short )( hex & 0xFF );
     rc = ( short )( ( rc << 3 ) | ( rc >> 5 ) );
     rc = ( short )( ( rc ^ 0xAE ) - 156 );
     return ( short )( rc & 0xFF );

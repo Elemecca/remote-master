@@ -1,3 +1,14 @@
+Changes for v1.93
+- Improve changed device upgrade detection
+- Improve parsing of DeviceTypeAlias
+- Exit on close
+- Fix for saving preferences on Vista
+- Fix for Multiplex special protocol
+- Raw download support
+
+Changes for v1.92b
+- Fix for keymoves when AdvCodeBindFormat=LONG and AdvCodeFormat=HEX
+
 Changes for v1.92a
 - Fix for parsing RDFs that use SetupValidation
 

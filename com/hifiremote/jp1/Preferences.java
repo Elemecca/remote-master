@@ -154,7 +154,6 @@ public class Preferences
    * 
    * @param recentFileMenu
    *          the recent file menu
-   * 
    * @throws Exception
    *           the exception
    */
@@ -265,8 +264,7 @@ public class Preferences
    */
   public void setBounds( Rectangle bounds )
   {
-    file.setProperty( "KMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ','
-        + bounds.height );
+    file.setProperty( "KMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
   }
 
   /**
@@ -364,7 +362,7 @@ public class Preferences
    */
   public String getPromptToSave()
   {
-    return file.getProperty( "PromptToSave", "0" );
+    return file.getProperty( "PromptToSave", "Always" );
   }
 
   /**

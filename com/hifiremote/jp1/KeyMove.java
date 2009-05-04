@@ -298,8 +298,22 @@ public class KeyMove extends AdvancedCode implements Cloneable
     }
     int hexLength = data.length();
     Hex.put( data, buffer, offset );
+    if ( ( bindFormat == BindFormat.LONG ) && ( cmd.length() == 1 ) )
+    {
+      buffer[ offset + hexLength++ ] = EFC.parseHex( cmd.getData()[ 0 ] );
+    }
     buffer[ lengthOffset ] |= ( short )hexLength;
 
     return offset + hexLength;
+  }
+
+  public int getSize()
+  {
+    int size = super.getSize(); // for the key code and type/length
+    if ( ( bindFormat == BindFormat.LONG ) && ( cmd.length() == 1 ) )
+    {
+      size++ ; // length is stored in it's own byte, not with the type;
+    }
+    return size;
   }
 }

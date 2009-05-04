@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -1292,9 +1293,15 @@ public class DeviceUpgrade
   public void store( File file ) throws IOException
   {
     this.file = file;
-    PropertyWriter pw = new PropertyWriter( new PrintWriter( new FileWriter( file ) ) );
+    StringWriter sw = new StringWriter();
+    PropertyWriter pw = new PropertyWriter( new PrintWriter( sw ) );
     store( pw );
     pw.close();
+    baseline = sw.toString();
+    FileWriter fw = new FileWriter( file );
+    fw.write( baseline );
+    fw.flush();
+    fw.close();
   }
 
   /**
@@ -1363,20 +1370,20 @@ public class DeviceUpgrade
     out.flush();
   }
 
-  /**
-   * Checks for changed.
-   * 
-   * @return true, if successful
-   * @throws IOException
-   *           Signals that an I/O exception has occurred.
-   */
-  public boolean hasChanged() throws IOException
+  private String baseline = "";
+
+  public void setBaseline()
   {
-    System.err.println( "DeviceUpgrade.hasChanged(), file=" + file );
-    if ( file == null )
-      return true;
-    else
-      return hasChanged( file );
+    try
+    {
+      StringWriter sw = new StringWriter();
+      store( new PropertyWriter( new PrintWriter( sw ) ) );
+      baseline = sw.toString();
+    }
+    catch ( IOException ioe )
+    {
+      ioe.printStackTrace( System.err );
+    }
   }
 
   /**
@@ -1388,25 +1395,25 @@ public class DeviceUpgrade
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
-  public boolean hasChanged( File baseFile ) throws IOException
+  public boolean hasChanged() throws IOException
   {
-    System.err.println( "DeviceUpgrade.hasChanged( " + baseFile + " )" );
-    File tempFile = File.createTempFile( "rmdu", ".tmp" );
-    System.err.println( "Storing top " + tempFile );
-    store( tempFile );
+    StringWriter sw = new StringWriter();
+    store( new PropertyWriter( new PrintWriter( sw ) ) );
 
-    BufferedReader baseReader = new BufferedReader( new FileReader( baseFile ) );
-    BufferedReader tempReader = new BufferedReader( new FileReader( tempFile ) );
+    String latest = sw.toString();
+
+    BufferedReader baseReader = new BufferedReader( new StringReader( baseline ) );
+    BufferedReader tempReader = new BufferedReader( new StringReader( latest ) );
     String baseLine = null;
     String tempLine = null;
     do
     {
       baseLine = baseReader.readLine();
-      while ( ( baseLine != null ) && !baseLine.startsWith( "#" ) )
+      while ( ( baseLine != null ) && baseLine.startsWith( "#" ) )
         baseLine = baseReader.readLine();
 
       tempLine = tempReader.readLine();
-      while ( ( tempLine != null ) && !tempLine.startsWith( "#" ) )
+      while ( ( tempLine != null ) && tempLine.startsWith( "#" ) )
         tempLine = tempReader.readLine();
       System.err.println( "baseLine=" + baseLine );
       System.err.println( "tempLine=" + tempLine );
@@ -1485,19 +1492,21 @@ public class DeviceUpgrade
     {
       reset();
       importUpgrade( reader, loadButtons );
-      return;
     }
-
-    Properties props = new Properties();
-    Property property = new Property();
-    PropertyReader pr = new PropertyReader( reader );
-    while ( ( property = pr.nextProperty() ) != null )
+    else
     {
-      props.put( property.name, property.value );
-    }
-    reader.close();
+      Properties props = new Properties();
+      Property property = new Property();
+      PropertyReader pr = new PropertyReader( reader );
+      while ( ( property = pr.nextProperty() ) != null )
+      {
+        props.put( property.name, property.value );
+      }
+      reader.close();
 
-    load( props, loadButtons );
+      load( props, loadButtons );
+    }
+    setBaseline();
   }
 
   /**
@@ -1654,6 +1663,7 @@ public class DeviceUpgrade
         }
       }
     }
+    setBaseline();
   }
 
   /**

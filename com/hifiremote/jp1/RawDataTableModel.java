@@ -21,9 +21,10 @@ public class RawDataTableModel extends JP1TableModel< short[] >
    * @param remoteConfig
    *          the remote config
    */
-  public void set( RemoteConfiguration remoteConfig )
+  public void set( short[] data, int baseAddress )
   {
-    this.remoteConfig = remoteConfig;
+    this.data = data;
+    this.baseAddress = baseAddress;
     fireTableDataChanged();
   }
 
@@ -34,9 +35,9 @@ public class RawDataTableModel extends JP1TableModel< short[] >
    */
   public int getRowCount()
   {
-    if ( remoteConfig == null )
+    if ( data == null )
       return 0;
-    return remoteConfig.getData().length / 16;
+    return data.length / 16;
   }
 
   /*
@@ -82,11 +83,11 @@ public class RawDataTableModel extends JP1TableModel< short[] >
   {
     int base = row * 16;
     if ( col == 0 )
-      return new Integer( base + remoteConfig.getRemote().getBaseAddress() );
-    else if ( remoteConfig == null )
+      return new Integer( base + baseAddress );
+    else if ( data == null )
       return null;
     else
-      return new UnsignedByte( ( short )( remoteConfig.getData()[ getOffset( row, col ) ] & 0xFF ) );
+      return new UnsignedByte( ( short )( data[ getOffset( row, col ) ] & 0xFF ) );
   }
 
   /*
@@ -96,7 +97,7 @@ public class RawDataTableModel extends JP1TableModel< short[] >
    */
   public void setValueAt( Object value, int row, int col )
   {
-    remoteConfig.getData()[ getOffset( row, col ) ] = ( ( UnsignedByte )value ).getValue();
+    data[ getOffset( row, col ) ] = ( ( UnsignedByte )value ).getValue();
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
 
@@ -163,5 +164,6 @@ public class RawDataTableModel extends JP1TableModel< short[] >
   }
 
   /** The remote config. */
-  private RemoteConfiguration remoteConfig = null;
+  private short[] data = null;
+  private int baseAddress = 0;
 }

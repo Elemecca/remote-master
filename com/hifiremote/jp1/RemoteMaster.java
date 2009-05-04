@@ -13,14 +13,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
@@ -76,7 +73,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.92a";
+  public final static String version = "v1.92b";
 
   /** The dir. */
   private File dir = null;
@@ -708,7 +705,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     menu.addSeparator();
     downloadRawItem = new JMenuItem( "Raw download", KeyEvent.VK_R );
-    downloadRawItem.setEnabled( false );
+    downloadRawItem.setEnabled( true );
     downloadRawItem.addActionListener( this );
     menu.add( downloadRawItem );
 
@@ -1051,7 +1048,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @return the open interface
    */
-  private IO getOpenInterface()
+  public IO getOpenInterface()
   {
     String interfaceName = properties.getProperty( "Interface" );
     String portName = properties.getProperty( "Port" );
@@ -1099,54 +1096,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == downloadRawItem )
       {
-        IO io = getOpenInterface();
-        if ( io == null )
-        {
-          JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
-          return;
-        }
-        String signature = io.getRemoteSignature();
-        int baseAddr = io.getRemoteEepromAddress();
-        int buffSize = io.getRemoteEepromSize();
-        if ( buffSize <= 0 )
-        {
-          String[] choices =
-          {
-              "1K", "2K", "4K", "8K"
-          };
-          String choice = ( String )JOptionPane.showInputDialog( this,
-              "Select the number of bytes to download from the remote.", "Raw Download Size",
-              JOptionPane.QUESTION_MESSAGE, null, choices, choices[ 1 ] );
-          if ( choice == null )
-          {
-            return;
-          }
-          buffSize = Integer.parseInt( choice.substring( 0, 1 ) ) * 1024;
-        }
-        short[] buffer = new short[ buffSize ];
-        io.readRemote( baseAddr, buffer );
-        io.closeRemote();
-        RMFileChooser chooser = getFileChooser();
-        File rawFile = new File( signature + ".ir" );
-        chooser.setSelectedFile( rawFile );
-        int returnVal = chooser.showSaveDialog( this );
-        if ( returnVal == RMFileChooser.APPROVE_OPTION )
-        {
-          rawFile = chooser.getSelectedFile();
-          int rc = JOptionPane.YES_OPTION;
-          if ( rawFile.exists() )
-            rc = JOptionPane.showConfirmDialog( this, rawFile.getName()
-                + " already exists.  Do you want to replace it?", "Replace existing file?", JOptionPane.YES_NO_OPTION );
-
-          if ( rc != JOptionPane.YES_OPTION )
-            return;
-          PrintWriter pw = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
-
-          Hex.print( pw, buffer, baseAddr );
-
-          pw.close();
-        }
-
+        RawDataDialog dlg = new RawDataDialog( this );
+        dlg.setVisible( true );
       }
       else if ( source == verifyUploadItem )
       {
@@ -1423,7 +1374,30 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       ClassPathAdder.addFiles( jarFiles );
 
       if ( propertiesFile == null )
-        propertiesFile = new File( workDir, "RemoteMaster.properties" );
+      {
+        File dir = workDir;
+        propertiesFile = new File( dir, "RemoteMaster.properties" );
+        if ( !propertiesFile.exists() )
+        {
+          if ( System.getProperty( "os.name" ).startsWith( "Windows" )
+              && ( Float.parseFloat( System.getProperty( "os.version" ) ) >= 6.0f ) )
+          {
+            String baseFolderName = System.getenv( "APPDATA" );
+            if ( ( baseFolderName == null ) || "".equals( baseFolderName ) )
+            {
+              baseFolderName = System.getProperty( "user.home" );
+            }
+
+            dir = new File( baseFolderName, "RemoteMaster" );
+            if ( !dir.exists() )
+            {
+              dir.mkdirs();
+            }
+          }
+
+          propertiesFile = new File( dir, "RemoteMaster.properties" );
+        }
+      }
       PropertyFile properties = new PropertyFile( propertiesFile );
 
       String lookAndFeel = properties.getProperty( "LookAndFeel", UIManager.getSystemLookAndFeelClassName() );
