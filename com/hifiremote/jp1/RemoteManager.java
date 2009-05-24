@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -31,7 +32,6 @@ public class RemoteManager
    * 
    * @param properties
    *          the properties
-   * 
    * @throws Exception
    *           the exception
    */
@@ -58,8 +58,7 @@ public class RemoteManager
 
         int open = name.indexOf( '(' );
         int close = name.indexOf( ')' );
-        if ( ( open == -1 ) || ( close == -1 ) || ( close < open )
-            || ( name.charAt( open - 1 ) != ' ' ) )
+        if ( ( open == -1 ) || ( close == -1 ) || ( close < open ) || ( name.charAt( open - 1 ) != ' ' ) )
         {
           System.err.println( "Invalid RDF file name: " + name );
           return false;
@@ -74,8 +73,7 @@ public class RemoteManager
       files = dir.listFiles( filter );
       if ( files.length == 0 )
       {
-        JOptionPane.showMessageDialog( null, "No RDF files were found!", "Error",
-            JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( null, "No RDF files were found!", "Error", JOptionPane.ERROR_MESSAGE );
         RMFileChooser chooser = new RMFileChooser( dir );
         chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle( "Choose the directory containing the RDFs" );
@@ -90,20 +88,31 @@ public class RemoteManager
 
     properties.setProperty( "RDFPath", loadPath );
 
-    TreeMap< String, Remote > work = new TreeMap< String, Remote >();
     for ( int i = 0; i < files.length; i++ )
     {
       File rdf = files[ i ];
 
       Remote r = new Remote( rdf );
-      work.put( r.getName(), r );
-      for ( int j = 1; j < r.getNameCount(); j++ )
-      {
-        Remote dupRemote = new Remote( r, j );
-        work.put( dupRemote.getName(), dupRemote );
-      }
+      addRemote( r );
     }
-    remotes = work;
+  }
+
+  private void addRemote( Remote remote )
+  {
+    remotes.put( remote.getName(), remote );
+    List< Remote > list = remotesBySignature.get( remote.getSignature() );
+    if ( list == null )
+    {
+      list = new ArrayList< Remote >();
+      remotesBySignature.put( remote.getSignature(), list );
+    }
+    list.add( remote );
+    for ( int j = 1; j < remote.getNameCount(); j++ )
+    {
+      Remote dupRemote = new Remote( remote, j );
+      remotes.put( dupRemote.getName(), dupRemote );
+      list.add( dupRemote );
+    }
   }
 
   /**
@@ -131,7 +140,6 @@ public class RemoteManager
    * 
    * @param name
    *          the name
-   * 
    * @return the remote
    */
   public Remote findRemoteByName( String name )
@@ -176,8 +184,7 @@ public class RemoteManager
         {
           if ( r.getName().indexOf( subNames[ j ] ) != -1 )
           {
-            System.err.println( "Remote '" + r.getName() + "' matches subName '" + subNames[ j ]
-                + "'" );
+            System.err.println( "Remote '" + r.getName() + "' matches subName '" + subNames[ j ] + "'" );
             numMatches++ ;
           }
         }
@@ -202,16 +209,15 @@ public class RemoteManager
 
       if ( remote == null )
       {
-        String message = "The upgrade file you are loading is for the remote \""
-            + name
+        String message = "The upgrade file you are loading is for the remote \"" + name
             + "\".\nThere is no remote with that exact name.  Please choose the best match from the list below:";
 
-        Object rc = ( Remote ) JOptionPane.showInputDialog( null, message, "Unknown Remote",
-            JOptionPane.ERROR_MESSAGE, null, simRemotes, simRemotes[ 0 ] );
+        Object rc = ( Remote )JOptionPane.showInputDialog( null, message, "Unknown Remote", JOptionPane.ERROR_MESSAGE,
+            null, simRemotes, simRemotes[ 0 ] );
         if ( rc == null )
           return remote;
         else
-          remote = ( Remote ) rc;
+          remote = ( Remote )rc;
       }
     }
     remote.load();
@@ -258,7 +264,6 @@ public class RemoteManager
    * 
    * @param oldName
    *          the old name
-   * 
    * @return the remote
    */
   public Remote findRemoteByOldName( String oldName )
@@ -278,20 +283,16 @@ public class RemoteManager
    * 
    * @param signature
    *          the signature
-   * 
    * @return the remote[]
    */
-  public Remote[] findRemoteBySignature( String signature )
+  public List< Remote > findRemoteBySignature( String signature )
   {
-    Remote[] rc = new Remote[ 0 ];
-    List< Remote > v = new ArrayList< Remote >();
-
-    for ( Remote r : remotes.values() )
+    List< Remote > rc = new ArrayList< Remote >();
+    List< Remote > list = remotesBySignature.get( signature );
+    if ( list != null )
     {
-      if ( r.getSignature().equals( signature ) )
-        v.add( r );
+      rc.addAll( list );
     }
-    rc = v.toArray( rc );
     return rc;
   }
 
@@ -300,6 +301,8 @@ public class RemoteManager
 
   /** The remotes. */
   private TreeMap< String, Remote > remotes = new TreeMap< String, Remote >();
+
+  private HashMap< String, List< Remote >> remotesBySignature = new HashMap< String, List< Remote >>();
 
   /** The load path. */
   private File loadPath = null;

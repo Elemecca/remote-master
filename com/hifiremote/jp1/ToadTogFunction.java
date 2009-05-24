@@ -62,7 +62,7 @@ public class ToadTogFunction extends SpecialProtocolFunction
    */
   public int getToggleNumber()
   {
-    return ( data.getData()[ 0 ] & 0x70 ) >> 4;
+    return ( getCmd().getData()[ 0 ] & 0x70 ) >> 4;
   }
 
   /**
@@ -72,7 +72,7 @@ public class ToadTogFunction extends SpecialProtocolFunction
    */
   public int getOnLength()
   {
-    return data.getData()[ 0 ] & 0x07;
+    return getCmd().getData()[ 0 ] & 0x07;
   }
 
   /**
@@ -82,7 +82,7 @@ public class ToadTogFunction extends SpecialProtocolFunction
    */
   public int getStyle()
   {
-    int val = data.getData()[ 0 ];
+    int val = getCmd().getData()[ 0 ];
     int style = ( val & 0x80 ) >> 6;
     style |= ( val & 0x08 ) >> 3;
     return style;

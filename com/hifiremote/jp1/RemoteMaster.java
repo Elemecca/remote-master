@@ -24,6 +24,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
 
@@ -73,7 +74,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.92b";
+  public final static String version = "v1.93";
 
   /** The dir. */
   private File dir = null;
@@ -216,20 +217,36 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
           if ( ( currentRemote == null ) || !currentRemote.getSignature().equals( sig ) )
           {
-            Remote[] remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
-            if ( remotes.length == 0 )
+            List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
+            if ( remotes.isEmpty() )
             {
               JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature " + sig );
               return;
             }
-            else if ( remotes.length == 1 )
-              remote = remotes[ 0 ];
+            else if ( remotes.size() == 1 )
+            {
+              remote = remotes.get( 0 );
+            }
             else
             {// ( remotes.length > 1 )
+              int maxEepromSize = 0;
+              for ( Remote r : remotes )
+              {
+                r.load();
+                for ( FixedData fixedData : r.getFixedData() )
+                {
+                  maxEepromSize = Math.max( maxEepromSize, fixedData.getAddress() + fixedData.getData().length - 1 );
+                }
+              }
 
+              short[] buffer = new short[ maxEepromSize ];
+              io.readRemote( remotes.get( 0 ).getBaseAddress(), buffer );
+
+              Remote[] choices = new Remote[ remotes.size() ];
+              choices = remotes.toArray( choices );
               String message = "Please pick the best match to your remote from the following list:";
               Object rc = ( Remote )JOptionPane.showInputDialog( null, message, "Ambiguous Remote",
-                  JOptionPane.ERROR_MESSAGE, null, remotes, remotes[ 0 ] );
+                  JOptionPane.ERROR_MESSAGE, null, choices, choices[ 0 ] );
               if ( rc == null )
                 return;
               else
@@ -1357,6 +1374,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       catch ( Exception e )
       {
         e.printStackTrace( System.err );
+      }
+
+      System.err.println( "RemoteMaster " + RemoteMaster.version );
+      String[] propertyNames =
+      {
+          "java.version", "java.vendor", "os.name", "os.arch"
+      };
+
+      System.err.println( "System Properties:" );
+      for ( String name : propertyNames )
+      {
+        System.err.println( "   " + name + " = " + System.getProperty( name ) );
       }
 
       ClassPathAdder.addFile( workDir );

@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
@@ -472,6 +473,22 @@ public class Remote implements Comparable< Remote >
   public DeviceType getDeviceType( String typeName )
   {
     DeviceType devType = deviceTypes.get( typeName );
+    if ( devType == null )
+    {
+      for ( Map.Entry< String, DeviceType > entry : deviceTypes.entrySet() )
+      {
+        String name = entry.getKey();
+        int slash = name.indexOf( '/' );
+        if ( slash != -1 )
+        {
+          if ( typeName.equals( name.substring( 0, slash ) ) || typeName.equals( name.substring( slash + 1 ) ) )
+          {
+            devType = entry.getValue();
+            break;
+          }
+        }
+      }
+    }
     return devType;
   }
 

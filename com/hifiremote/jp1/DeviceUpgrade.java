@@ -1169,10 +1169,8 @@ public class DeviceUpgrade
 
     int offset = 0;
     short[] rc = new short[ length ];
-    System.err.println( "total length is " + length );
     for ( short[] source : work )
     {
-      System.err.println( "Copying " + source.length + " bytes to offset " + offset );
       System.arraycopy( source, 0, rc, offset, source.length );
       offset += source.length;
     }
@@ -2721,6 +2719,11 @@ public class DeviceUpgrade
   public Function getFunction( Button b, int state )
   {
     return assignments.getAssignment( b, state );
+  }
+
+  public String toString()
+  {
+    return devTypeAliasName + '/' + setupCode + '(' + description + ')';
   }
 
   /** The Constant deviceTypeAliasNames. */

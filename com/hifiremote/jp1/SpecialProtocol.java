@@ -33,6 +33,11 @@ public abstract class SpecialProtocol
 
   private boolean assumePresent = false;
 
+  public boolean getAssumePresent()
+  {
+    return assumePresent;
+  }
+
   @SuppressWarnings( "unused" )
   private List< String > userNames = new ArrayList< String >();
 
@@ -142,62 +147,56 @@ public abstract class SpecialProtocol
    */
   public DeviceUpgrade getDeviceUpgrade( List< DeviceUpgrade > upgrades )
   {
-    if ( deviceTypeName != null )
+    System.err.println( "in getDeviceUpgrade" );
+    if ( assumePresent )
     {
-      // When the setup code is "builtin"
+      System.err.println( "deviceUpgrade assumed present, returning null" );
       return null;
     }
     for ( DeviceUpgrade upgrade : upgrades )
     {
+      System.err.println( "Checking " + upgrade );
       if ( upgrade.getProtocol().getID().equals( pid ) )
       {
-        setupCode = upgrade.getSetupCode();
-        deviceType = upgrade.getDeviceType();
-        deviceTypeName = deviceType.getName();
+        System.err.println( "It's a match!" );
         return upgrade;
       }
     }
+    System.err.println( "No match found!" );
     return null;
   }
 
   public boolean isPresent( RemoteConfiguration config )
   {
+    System.err.println( "in isPresent" );
     if ( assumePresent )
     {
+      System.err.println( "Assumed present!" );
       return true;
     }
 
     Remote remote = config.getRemote();
-    if ( deviceType == null )
-    {
-      if ( deviceTypeName != null )
-      {
-        deviceType = remote.getDeviceType( deviceTypeName );
-      }
-      else
-      {
-        DeviceUpgrade deviceUpgrade = getDeviceUpgrade( config.getDeviceUpgrades() );
-        if ( deviceUpgrade != null )
-        {
-          return true;
-        }
-      }
-    }
 
-    if ( deviceTypeName == null )
+    if ( deviceTypeName != null )
     {
-      if ( getDeviceUpgrade( config.getDeviceUpgrades() ) != null )
+      System.err.println( "deviceTypeName=" + deviceTypeName );
+      DeviceType deviceType = remote.getDeviceType( deviceTypeName );
+      System.err.println( "deviceType=" + deviceType );
+      if ( deviceType == null )
       {
+        System.err.println( "DeviceType not found!" );
+        return false;
+      }
+      System.err.println( "Looking for upgrade" );
+      if ( config.findDeviceUpgrade( deviceType.getNumber(), setupCode ) != null )
+      {
+        System.err.println( "Found upgrade" );
         return true;
       }
-    }
-    if ( deviceType == null )
-    {
-      deviceType = remote.getDeviceType( deviceTypeName );
+      System.err.println( "Checking for builtin setupCode:" + deviceType + '/' + setupCode );
       return remote.hasSetupCode( deviceType, setupCode );
     }
-    else
-      return true;
+    return getDeviceUpgrade( config.getDeviceUpgrades() ) != null;
   }
 
   /**
@@ -263,5 +262,23 @@ public abstract class SpecialProtocol
   public int getSetupCode()
   {
     return setupCode;
+  }
+
+  public String toString()
+  {
+    StringBuilder sb = new StringBuilder();
+    sb.append( name );
+    sb.append( ':' );
+    if ( pid != null )
+    {
+      sb.append( pid.toString() );
+    }
+    else if ( deviceTypeName != null )
+    {
+      sb.append( deviceTypeName );
+      sb.append( '/' );
+      sb.append( setupCode );
+    }
+    return sb.toString();
   }
 }

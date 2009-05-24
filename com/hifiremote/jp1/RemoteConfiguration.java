@@ -142,22 +142,24 @@ public class RemoteConfiguration
       String signature = new String( sig );
       String signature2 = null;
       RemoteManager rm = RemoteManager.getRemoteManager();
-      Remote[] remotes = rm.findRemoteBySignature( signature );
-      if ( remotes.length == 0 )
+      List< Remote > remotes = rm.findRemoteBySignature( signature );
+      if ( remotes.isEmpty() )
       {
         for ( int i = 0; i < sig.length; ++i )
           sig[ i ] = ( char )first[ i ];
         signature2 = new String( sig );
         remotes = rm.findRemoteBySignature( signature2 );
       }
-      if ( ( remotes == null ) || ( remotes.length == 0 ) )
+      if ( ( remotes == null ) || remotes.isEmpty() )
       {
         String message = "No remote found for with signature " + signature + " or " + signature2;
         JOptionPane.showMessageDialog( null, message, "Unknown remote", JOptionPane.ERROR_MESSAGE );
         throw new IllegalArgumentException();
       }
-      else if ( remotes.length == 1 )
-        remote = remotes[ 0 ];
+      else if ( remotes.size() == 1 )
+      {
+        remote = remotes.get( 0 );
+      }
       else
       {
         if ( signature2 != null )
@@ -165,8 +167,10 @@ public class RemoteConfiguration
         String message = "The file you are loading is for a remote with signature \"" + signature
             + "\".\nThere are multiple remotes with that signature.  Please choose the best match from the list below:";
 
+        Remote[] choices = new Remote[ remotes.size() ];
+        choices = remotes.toArray( choices );
         remote = ( Remote )JOptionPane.showInputDialog( null, message, "Unknown Remote", JOptionPane.ERROR_MESSAGE,
-            null, remotes, remotes[ 0 ] );
+            null, choices, choices[ 0 ] );
         if ( remote == null )
           throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
       }
@@ -581,14 +585,20 @@ public class RemoteConfiguration
    *          the setup code
    * @return the device upgrade
    */
-  private DeviceUpgrade findDeviceUpgrade( int deviceTypeIndex, int setupCode )
+  public DeviceUpgrade findDeviceUpgrade( int deviceTypeIndex, int setupCode )
   {
+    System.err.println( "in findDeviceUpgrade( " + deviceTypeIndex + ", " + setupCode + " )" );
     for ( DeviceUpgrade deviceUpgrade : devices )
     {
+      System.err.println( "Checking " + deviceUpgrade );
       if ( ( deviceTypeIndex == deviceUpgrade.getDeviceType().getNumber() )
           && ( setupCode == deviceUpgrade.getSetupCode() ) )
+      {
+        System.err.println( "It's a match!" );
         return deviceUpgrade;
+      }
     }
+    System.err.println( "No match found!" );
     return null;
   }
 
@@ -909,10 +919,13 @@ public class RemoteConfiguration
 
   private SpecialProtocol getSpecialProtocol( KeyMove keyMove, List< DeviceUpgrade > specialUpgrades )
   {
+    System.err.println( "getSpecialProtocol" );
     int setupCode = keyMove.getSetupCode();
     int deviceType = keyMove.getDeviceType();
+    System.err.println( "getSpecialProtocol: looking for " + deviceType + '/' + setupCode );
     for ( SpecialProtocol sp : remote.getSpecialProtocols() )
     {
+      System.err.println( "Checking " + sp );
       if ( sp.isPresent( this ) )
       {
         if ( ( setupCode == sp.getSetupCode() ) && ( deviceType == sp.getDeviceType().getNumber() ) )

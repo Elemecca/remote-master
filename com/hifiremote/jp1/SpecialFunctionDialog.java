@@ -381,7 +381,6 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     availableButtons.setModel( listModel );
 
     macroButtonRenderer.setRemote( remote );
-
   }
 
   /**
@@ -401,6 +400,17 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       shift.setSelected( false );
       xShift.setSelected( false );
       type.setSelectedIndex( 0 );
+      notes.setText( "" );
+
+      // Clear out all optional fields
+      setupCode.setValue( null );
+      setDuration( 0 );
+      setULDKPDuration( 0 );
+      setModeName( "" );
+      setToggle( 0 );
+      setCondition( 0 );
+      ( ( DefaultListModel )firstMacroButtons.getModel() ).clear();
+      ( ( DefaultListModel )secondMacroButtons.getModel() ).clear();
       return;
     }
 
@@ -622,8 +632,20 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       }
 
       Hex hex = protocol.createHex( this );
-      KeyMove km = new KeyMove( keyCode, deviceIndex, protocol.getDeviceType().getNumber(), protocol.getSetupCode(),
-          hex, notes.getText() );
+      DeviceType devType = null;
+      int setupCode = 0;
+      if ( protocol.getAssumePresent() )
+      {
+        devType = protocol.getDeviceType();
+        setupCode = protocol.getSetupCode();
+      }
+      else
+      {
+        DeviceUpgrade deviceUpgrade = protocol.getDeviceUpgrade( config.getDeviceUpgrades() );
+        devType = deviceUpgrade.getDeviceType();
+        setupCode = deviceUpgrade.getSetupCode();
+      }
+      KeyMove km = new KeyMove( keyCode, deviceIndex, devType.getNumber(), setupCode, hex, notes.getText() );
       function = protocol.createFunction( km );
       if ( function == null )
         return;

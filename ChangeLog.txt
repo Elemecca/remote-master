@@ -1,10 +1,11 @@
 Changes for v1.93
 - Improve changed device upgrade detection
 - Improve parsing of DeviceTypeAlias
-- Exit on close
+- Exit on close correctly
 - Fix for saving preferences on Vista
-- Fix for Multiplex special protocol
+- Various fixes for Special Protocols
 - Raw download support
+- Additional logging
 
 Changes for v1.92b
 - Fix for keymoves when AdvCodeBindFormat=LONG and AdvCodeFormat=HEX
