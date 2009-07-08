@@ -1966,7 +1966,7 @@ public class DeviceUpgrade
       if ( str != null )
         values.add( new Value( parseInt( str ) ) );
 
-      str = setupFields.get( 6 ); // Raw Fixed Data
+      str = deviceFields.get( 5 ); // Raw Fixed Data
       if ( str == null )
         str = "";
       short[] rawHex = Hex.parseHex( str );

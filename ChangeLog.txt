@@ -1,3 +1,6 @@
+Changes for v1.94
+- Fix for importing KM upgrades that use Manual Settings
+
 Changes for v1.93
 - Improve changed device upgrade detection
 - Improve parsing of DeviceTypeAlias
