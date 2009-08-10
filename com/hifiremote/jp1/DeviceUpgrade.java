@@ -2014,7 +2014,7 @@ public class DeviceUpgrade
       protocol = p;
 
       Value[] importParms = new Value[ 6 ];
-      for ( int i = 0; i < importParms.length; i++ )
+      for ( int i = 0; i < importParms.length && i + 2 < deviceFields.size(); i++ )
       {
         token = deviceFields.get( 2 + i );
         Object val = null;
@@ -2126,16 +2126,16 @@ public class DeviceUpgrade
     {
       line = lines[ i ];
       fields = tokenizeLine( line, delim );
-      String funcName = cleanName( fields.get( 0 ) ); // field 1
-      String code = fields.get( 1 ); // field 2
-      String byte2 = fields.get( 2 ); // field 3
+      String funcName = cleanName( fields.get( 0 ) );
+      String code = fields.get( 1 );
+      String byte2 = fields.get( 2 );
       @SuppressWarnings( "unused" )
-      String buttonName = fields.get( 3 ); // field 4
+      String buttonName = fields.get( 3 );
       @SuppressWarnings( "unused" )
-      String assignedName = fields.get( 4 ); // field 5
-      String notes = fields.get( 5 ); // field 6
-      String pidStr = fields.get( 6 ); // field 7
-      String fixedDataStr = fields.get( 7 ); // field 8
+      String assignedName = fields.get( 4 );
+      String notes = fields.size() > 5 ? fields.get( 5 ) : null;
+      String pidStr = fields.size() > 6 ? fields.get( 6 ) : null;
+      String fixedDataStr = fields.size() > 7 ? fields.get( 7 ) : null;
 
       Function f = null;
       if ( ( code != null ) || ( byte2 != null ) || ( notes != null ) )
@@ -2265,11 +2265,11 @@ public class DeviceUpgrade
       if ( actualName == null )
         continue;
 
-      String assignedName = fields.get( 4 ); // get assigned functionName (field 5)
+      String assignedName = fields.size() > 4 ? fields.get( 4 ) : null; // get assigned functionName
       @SuppressWarnings( "unused" )
-      String notes = fields.get( 5 ); // get function notes (field 6)
+      String notes = fields.size() > 5 ? fields.get( 5 ) : null; // get function notes
 
-      String shiftAssignedName = fields.get( 12 );
+      String shiftAssignedName = fields.size() > 12 ? fields.get( 12 ) : null;
 
       String buttonCode = null;
       if ( buttonCodeIndex != -1 )
@@ -2366,7 +2366,7 @@ public class DeviceUpgrade
           temp.add( "shift-" + buttonName );
           unassigned.add( temp );
         }
-        else if ( loadButtons && ( func.getHex() != null ) )
+        else if ( loadButtons && ( func != null ) && ( func.getHex() != null ) )
           assignments.assign( b, func, Button.SHIFTED_STATE );
       }
     }

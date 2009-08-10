@@ -1,3 +1,9 @@
+Changes for v1.96
+- Fix for importing old KM upgrades
+
+Changes for v1.95
+- Fix for importing KM upgrades that use RC-5/5x Combo
+
 Changes for v1.94
 - Fix for importing KM upgrades that use Manual Settings
 
