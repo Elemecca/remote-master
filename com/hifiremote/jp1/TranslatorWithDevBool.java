@@ -4,28 +4,28 @@ package com.hifiremote.jp1;
 /**
  * The Class TranslatorWithDevBool.
  */
-public class TranslatorWithDevBool
-  extends Translator
+public class TranslatorWithDevBool extends Translator
 {
-  
+
   /** The dev index. */
   private int devIndex = 0;
 
   /**
    * Instantiates a new translator with dev bool.
    * 
-   * @param textParms the text parms
+   * @param textParms
+   *          the text parms
    */
   public TranslatorWithDevBool( String[] textParms )
   {
-    super( new String[0] );
+    super( new String[ 0 ] );
     int parmIndex = 0;
-    for ( int i = 0; i < textParms.length; i ++ )
+    for ( int i = 0; i < textParms.length; i++ )
     {
       String text = textParms[ i ];
-      if ( text.equalsIgnoreCase( "lsb" ))
+      if ( text.equalsIgnoreCase( "lsb" ) )
         lsb = true;
-      else if ( text.equalsIgnoreCase( "comp" ))
+      else if ( text.equalsIgnoreCase( "comp" ) )
         comp = true;
       else
       {
@@ -55,22 +55,23 @@ public class TranslatorWithDevBool
           default:
             break;
         }
-        parmIndex++;
+        parmIndex++ ;
       }
     }
   }
 
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.Translator#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.Translator#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[],
+   * com.hifiremote.jp1.DeviceParameter[])
    */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
     super.out( hexData, parms, devParms );
-    Integer v = ( Integer )parms[ index ].getValue();
-    Integer i = ( Integer )devParms[ devIndex ].getValueOrDefault();
+    Number v = ( Number )parms[ index ].getValue();
+    Number i = ( Number )devParms[ devIndex ].getValueOrDefault();
     int val = ( i.intValue() << bits ) + v.intValue();
-    parms[ index ] = new Value( new Integer( val ));
+    parms[ index ] = new Value( new Integer( val ) );
   }
 }
-
-

@@ -371,8 +371,9 @@ public class Protocol
    * 
    * @param props
    *          the new properties
+   * @param remote
    */
-  public void setProperties( Properties props )
+  public void setProperties( Properties props, Remote remote )
   {}
 
   /**

@@ -521,33 +521,47 @@ public class ProtocolManager
    *          the variant name
    * @return the protocol
    */
-  public Protocol findNearestProtocol( String name, Hex id, String variantName )
+  public Protocol findNearestProtocol( Remote remote, String name, Hex id, String variantName )
   {
+    System.err
+        .println( "ProtocolManager.findNearestProtocol( " + remote + ", " + name + ", " + id + ", " + variantName );
     Protocol near = null;
     List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
       protocols = findByAlternatePID( id );
     if ( protocols == null )
+    {
+      System.err.println( "No protocol found" );
       return null;
+    }
     for ( Protocol p : protocols )
     {
-      if ( ( variantName != null ) && p.getVariantName().equals( variantName ) )
+      if ( p.getName().equals( name ) )
       {
-        if ( p.getName().equals( name ) )
+        if ( ( variantName == null || variantName.equals( p.getVariantName() ) )
+            && remote.supportsVariant( id, p.getVariantName() ) )
+        {
+          System.err.println( "Found built-in protocol " + p );
           return p;
-        near = p;
-      }
-      if ( p.getName().equals( name ) && near == null )
-      {
-        near = p;
+        }
+        if ( near == null )
+        {
+          near = p;
+        }
       }
     }
     if ( near != null )
+    {
+      System.err.println( "Found protocol " + near );
       return near;
+    }
     protocols = findByName( name );
     if ( protocols != null )
-      return ( Protocol )protocols.get( 0 );
-    return null;
+    {
+      near = ( Protocol )protocols.get( 0 );
+    }
+    System.err.println( "Found protocol " + near );
+    return near;
   }
 
   /*

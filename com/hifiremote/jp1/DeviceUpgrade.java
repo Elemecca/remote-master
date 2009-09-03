@@ -1572,7 +1572,7 @@ public class DeviceUpgrade
     {
       // Need to consider all protocol attributes, to handle things like "Acer Keyboard (01 11)" and
       // "TiVo (01 11)"
-      protocol = pm.findNearestProtocol( name, pid, variantName );
+      protocol = pm.findNearestProtocol( remote, name, pid, variantName );
 
       if ( protocol == null )
       {
@@ -1591,7 +1591,7 @@ public class DeviceUpgrade
       parmValues = protocol.getDeviceParmValues();
     }
 
-    protocol.setProperties( props );
+    protocol.setProperties( props, remote );
 
     notes = props.getProperty( "Notes" );
 
@@ -1997,7 +1997,7 @@ public class DeviceUpgrade
     else
     {
       // protocol = protocolManager.findProtocolForRemote( remote, protocolName );
-      Protocol p = protocolManager.findNearestProtocol( protocolName, pid, null );
+      Protocol p = protocolManager.findNearestProtocol( remote, protocolName, pid, null );
 
       if ( p == null )
       {

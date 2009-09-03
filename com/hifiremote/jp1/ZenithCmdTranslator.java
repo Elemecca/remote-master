@@ -4,22 +4,25 @@ package com.hifiremote.jp1;
 /**
  * The Class ZenithCmdTranslator.
  */
-public class ZenithCmdTranslator
-  extends Translate
+public class ZenithCmdTranslator extends Translate
 {
-  
+
   /**
    * Instantiates a new zenith cmd translator.
    * 
-   * @param textParms the text parms
+   * @param textParms
+   *          the text parms
    */
   public ZenithCmdTranslator( String[] textParms )
   {
     super( textParms );
   }
 
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.Translate#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex,
+   * com.hifiremote.jp1.DeviceParameter[], int)
    */
   public void in( Value[] parms, Hex hex, DeviceParameter[] devParms, int onlyIndex )
   {
@@ -33,10 +36,10 @@ public class ZenithCmdTranslator
     int val = obcInt.intValue();
 
     int bits = 0;
-    Integer bitsInt = ( Integer )devParms[ 0 ].getValue();
+    Number bitsInt = ( Number )devParms[ 0 ].getValue();
     if ( bitsInt == null )
     {
-      bitsInt = ( Integer )devParms[ 0 ].getValueOrDefault();
+      bitsInt = ( Number )devParms[ 0 ].getValueOrDefault();
       bits = bitsInt.intValue() - 1;
     }
     else
@@ -45,16 +48,19 @@ public class ZenithCmdTranslator
     insert( hex, 1, bits, val );
   }
 
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.Translate#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[],
+   * com.hifiremote.jp1.DeviceParameter[])
    */
   public void out( Hex hex, Value[] parms, DeviceParameter[] devParms )
   {
     int bits = 0;
-    Integer bitsInt = ( Integer )devParms[ 0 ].getValue();
+    Number bitsInt = ( Number )devParms[ 0 ].getValue();
     if ( bitsInt == null )
     {
-      bitsInt = ( Integer )devParms[ 0 ].getValueOrDefault();
+      bitsInt = ( Number )devParms[ 0 ].getValueOrDefault();
       bits = bitsInt.intValue() - 1;
     }
     else

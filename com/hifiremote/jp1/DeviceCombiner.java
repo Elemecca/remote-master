@@ -26,7 +26,7 @@ public class DeviceCombiner extends Protocol
   {
     super( name, id, props );
     cmdParmInit = new Initializer[ 1 ];
-    cmdParmInit[ 0 ] = new DeviceCombinerInitializer( devices, ( ChoiceCmdParm ) cmdParms[ 0 ] );
+    cmdParmInit[ 0 ] = new DeviceCombinerInitializer( devices, ( ChoiceCmdParm )cmdParms[ 0 ] );
   }
 
   /*
@@ -45,7 +45,7 @@ public class DeviceCombiner extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#setProperties(java.util.Properties)
    */
-  public void setProperties( Properties props )
+  public void setProperties( Properties props, Remote remote )
   {
     System.err.println( "DeviceCombiner.setProperties()" );
     for ( int i = 0; i < 16; i++ )
@@ -76,7 +76,7 @@ public class DeviceCombiner extends Protocol
       }
       else
       {
-        p = ProtocolManager.getProtocolManager().findNearestProtocol( nameStr, pid, variantName );
+        p = ProtocolManager.getProtocolManager().findNearestProtocol( remote, nameStr, pid, variantName );
         values = DeviceUpgrade.stringToValueArray( parmStr );
         p.setDeviceParms( values );
         values = p.getDeviceParmValues();
@@ -125,8 +125,7 @@ public class DeviceCombiner extends Protocol
   /*
    * (non-Javadoc)
    * 
-   * @see com.hifiremote.jp1.Protocol#store(com.hifiremote.jp1.PropertyWriter,
-   * com.hifiremote.jp1.Value[])
+   * @see com.hifiremote.jp1.Protocol#store(com.hifiremote.jp1.PropertyWriter, com.hifiremote.jp1.Value[])
    */
   public void store( PropertyWriter out, Value[] vals ) throws IOException
   {
@@ -182,21 +181,19 @@ public class DeviceCombiner extends Protocol
 
     if ( equivalentName.equals( "S3C80" ) || equivalentName.equals( "S3C80+" ) )
     {
-      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 )
-          || ( devCombAddresses[ 4 ] == -1 ) || ( devCombAddresses[ 5 ] == -1 ) )
+      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 ) || ( devCombAddresses[ 4 ] == -1 )
+          || ( devCombAddresses[ 5 ] == -1 ) )
         rc = false;
     }
     else if ( name.equals( "6805" ) )
     {
-      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 )
-          || ( devCombAddresses[ 3 ] == -1 ) || ( devCombAddresses[ 5 ] == -1 )
-          || ( devCombAddresses[ 6 ] == -1 ) )
+      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 ) || ( devCombAddresses[ 3 ] == -1 )
+          || ( devCombAddresses[ 5 ] == -1 ) || ( devCombAddresses[ 6 ] == -1 ) )
         rc = false;
     }
     else if ( name.equals( "740" ) )
     {
-      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 )
-          || ( devCombAddresses[ 3 ] == -1 ) )
+      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 ) || ( devCombAddresses[ 3 ] == -1 ) )
         rc = false;
     }
     else if ( name.equals( "HCS08" ) )
@@ -234,8 +231,7 @@ public class DeviceCombiner extends Protocol
       // add code to handle favscan patch here???
       buff.append( "08 06 96 10 04 90 05 6B 03 E4 05 0D 38 04 2C " );
       buff.append( Integer.toHexString( r.getRAMAddress() >> 8 ) );
-      buff
-          .append( " E7 62 ff E7 32 ff E3 42 E3 52 1C 03 E3 72 D7 17 1E A2 36 3B F7 97 01 FF 06 D9 02 56 " );
+      buff.append( " E7 62 ff E7 32 ff E3 42 E3 52 1C 03 E3 72 D7 17 1E A2 36 3B F7 97 01 FF 06 D9 02 56 " );
       buff.append( intToString( devComb[ 4 ] ) ); // comb4
       buff.append( " C6 " );
       if ( devComb[ 6 ] != -1 ) // comb6
@@ -253,14 +249,14 @@ public class DeviceCombiner extends Protocol
 
       base = new Hex( buff.toString() );
       short[] hex = base.getData();
-      short length = ( short ) hex.length;
-      hex[ 21 ] = ( short ) ( length + 1 );
+      short length = ( short )hex.length;
+      hex[ 21 ] = ( short )( length + 1 );
       hex[ 24 ] = length;
     }
     else if ( name.equals( "6805" ) )
     {
-      if ( ( devComb[ 1 ] == -1 ) || ( devComb[ 2 ] == -1 ) || ( devComb[ 3 ] == -1 )
-          || ( devComb[ 5 ] == -1 ) || ( devComb[ 6 ] == -1 ) )
+      if ( ( devComb[ 1 ] == -1 ) || ( devComb[ 2 ] == -1 ) || ( devComb[ 3 ] == -1 ) || ( devComb[ 5 ] == -1 )
+          || ( devComb[ 6 ] == -1 ) )
         return null;
 
       buff.append( "00 00 02 BE 5A DE ff ff BF E0 D6 ff ff B7 C1 D6 ff ff B7 C2 CD " );
@@ -275,16 +271,16 @@ public class DeviceCombiner extends Protocol
       base = new Hex( buff.toString() );
       short[] hex = base.getData();
       int pointer = devComb[ 6 ] + hex.length;
-      hex[ 6 ] = ( short ) ( pointer >> 8 );
-      hex[ 7 ] = ( short ) ( pointer & 0xFF );
+      hex[ 6 ] = ( short )( pointer >> 8 );
+      hex[ 7 ] = ( short )( pointer & 0xFF );
       hex[ 11 ] = hex[ 6 ];
       hex[ 12 ] = hex[ 7 ];
       pointer++ ;
-      hex[ 16 ] = ( short ) ( pointer >> 8 );
-      hex[ 17 ] = ( short ) ( pointer & 0xFF );
+      hex[ 16 ] = ( short )( pointer >> 8 );
+      hex[ 17 ] = ( short )( pointer & 0xFF );
       pointer++ ;
-      hex[ 54 ] = ( short ) ( pointer >> 8 );
-      hex[ 55 ] = ( short ) ( pointer & 0xFF );
+      hex[ 54 ] = ( short )( pointer >> 8 );
+      hex[ 55 ] = ( short )( pointer & 0xFF );
     }
     else if ( name.equals( "740" ) )
     {
@@ -326,13 +322,12 @@ public class DeviceCombiner extends Protocol
 
       base = new Hex( buff.toString() );
       short[] hex = base.getData();
-      short length = ( short ) hex.length;
+      short length = ( short )hex.length;
       hex[ 35 ] = length;
     }
 
     int offset = header.length;
-    if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ) || name.equals( "S3F80" )
-        || name.equals( "HCS08" ) )
+    if ( name.equals( "S3C80" ) || name.equals( "S3C80+" ) || name.equals( "S3F80" ) || name.equals( "HCS08" ) )
     {
       offset += base.length();
     }
@@ -341,7 +336,7 @@ public class DeviceCombiner extends Protocol
     int i = 0;
     for ( CombinerDevice device : devices )
     {
-      header[ i ] = ( short ) offset;
+      header[ i ] = ( short )offset;
       ids[ i ] = device.getProtocol().getID( r );
       offset += 2;
       Hex hex = device.getFixedData();
@@ -349,10 +344,9 @@ public class DeviceCombiner extends Protocol
       offset += hex.length();
       i++ ;
     }
-    header[ i ] = ( short ) offset;
+    header[ i ] = ( short )offset;
 
-    if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ) && !name.equals( "S3F80" )
-        && !name.equals( "HCS08" ) )
+    if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ) && !name.equals( "S3F80" ) && !name.equals( "HCS08" ) )
       offset += base.length();
 
     short[] code = new short[ offset ];
@@ -378,7 +372,6 @@ public class DeviceCombiner extends Protocol
    * 
    * @param val
    *          the val
-   * 
    * @return the string
    */
   private String intToString( int val )
@@ -395,7 +388,6 @@ public class DeviceCombiner extends Protocol
    * 
    * @param val
    *          the val
-   * 
    * @return the string
    */
   private String intToStringReverse( int val )

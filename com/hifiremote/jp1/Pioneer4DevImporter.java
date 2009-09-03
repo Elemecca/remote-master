@@ -4,21 +4,21 @@ package com.hifiremote.jp1;
 /**
  * The Class Pioneer4DevImporter.
  */
-public class Pioneer4DevImporter
-  extends Translator
+public class Pioneer4DevImporter extends Translator
 {
-  
+
   /** The dev index. */
   private int devIndex = 0;
-  
+
   /** The obc2 index. */
-  @SuppressWarnings("unused")
+  @SuppressWarnings( "unused" )
   private int obc2Index = 1;
 
   /**
    * Instantiates a new pioneer4 dev importer.
    * 
-   * @param textParms the text parms
+   * @param textParms
+   *          the text parms
    */
   public Pioneer4DevImporter( String[] textParms )
   {
@@ -28,9 +28,10 @@ public class Pioneer4DevImporter
   /**
    * Sets the device bit.
    * 
-   * @param obc the obc
-   * @param flag the flag
-   * 
+   * @param obc
+   *          the obc
+   * @param flag
+   *          the flag
    * @return the int
    */
   public int setDeviceBit( int obc, int flag )
@@ -45,10 +46,14 @@ public class Pioneer4DevImporter
   /**
    * Sets the hex.
    * 
-   * @param obc1 the obc1
-   * @param obc2 the obc2
-   * @param device the device
-   * @param hex the hex
+   * @param obc1
+   *          the obc1
+   * @param obc2
+   *          the obc2
+   * @param device
+   *          the device
+   * @param hex
+   *          the hex
    */
   private void setHex( int obc1, int obc2, int device, short[] hex )
   {
@@ -62,16 +67,16 @@ public class Pioneer4DevImporter
   /**
    * Gets the device.
    * 
-   * @param hex the hex
-   * 
+   * @param hex
+   *          the hex
    * @return the device
    */
   private int getDevice( short[] hex )
   {
     int device = 0;
-    if (( hex[ 0 ] & 0x04 ) > 0 )
+    if ( ( hex[ 0 ] & 0x04 ) > 0 )
       device += 2;
-    if (( hex[ 1 ] & 0x04 ) > 0 )
+    if ( ( hex[ 1 ] & 0x04 ) > 0 )
       device += 1;
 
     return device;
@@ -80,24 +85,25 @@ public class Pioneer4DevImporter
   /**
    * Gets the device.
    * 
-   * @param parms the parms
-   * 
+   * @param parms
+   *          the parms
    * @return the device
    */
   private int getDevice( Value[] parms )
   {
     int device = 0;
-    if (( parms[ devIndex ] != null ) && ( parms[ devIndex ].getValue() != null ))
-      device = (( Integer )parms[ devIndex ].getValue()).intValue() - 1;
+    if ( ( parms[ devIndex ] != null ) && ( parms[ devIndex ].getValue() != null ) )
+      device = ( ( Number )parms[ devIndex ].getValue() ).intValue() - 1;
     return device;
   }
 
   /**
    * Gets the obc.
    * 
-   * @param hex the hex
-   * @param index the index
-   * 
+   * @param hex
+   *          the hex
+   * @param index
+   *          the index
    * @return the obc
    */
   private int getObc( short[] hex, int index )
@@ -108,24 +114,29 @@ public class Pioneer4DevImporter
   /**
    * Gets the obc.
    * 
-   * @param parms the parms
-   * @param index the index
-   * @param value the value
-   * 
+   * @param parms
+   *          the parms
+   * @param index
+   *          the index
+   * @param value
+   *          the value
    * @return the obc
    */
   private int getObc( Value[] parms, int index, int value )
   {
-    if (( parms[ index ] != null ) && ( parms[ index ].getValue() != null ))
+    if ( ( parms[ index ] != null ) && ( parms[ index ].getValue() != null ) )
     {
-      System.err.println( "parms[index].getValue() is a " + parms[ index ].getValue().getClass());
-      value = (( Integer )parms[ index ].getValue()).intValue();
+      System.err.println( "parms[index].getValue() is a " + parms[ index ].getValue().getClass() );
+      value = ( ( Number )parms[ index ].getValue() ).intValue();
     }
     return value;
   }
 
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.Translator#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex, com.hifiremote.jp1.DeviceParameter[], int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.Translator#in(com.hifiremote.jp1.Value[], com.hifiremote.jp1.Hex,
+   * com.hifiremote.jp1.DeviceParameter[], int)
    */
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
@@ -147,8 +158,11 @@ public class Pioneer4DevImporter
       return;
   }
 
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.Translator#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[], com.hifiremote.jp1.DeviceParameter[])
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.Translator#out(com.hifiremote.jp1.Hex, com.hifiremote.jp1.Value[],
+   * com.hifiremote.jp1.DeviceParameter[])
    */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {}

@@ -28,9 +28,9 @@ public class NECParmTranslator extends Translate
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     short[] hex = hexData.getData();
-    Integer deviceNumber = ( Integer )parms[ 0 ].getUserValue();
-    Integer subDevice = ( Integer )parms[ 1 ].getUserValue();
-    Integer parm = ( Integer )parms[ 2 ].getUserValue();
+    Number deviceNumber = ( Number )parms[ 0 ].getUserValue();
+    Number subDevice = ( Number )parms[ 1 ].getUserValue();
+    Number parm = ( Number )parms[ 2 ].getUserValue();
 
     if ( parm != null )
       hex[ 0 ] = parm.shortValue();
