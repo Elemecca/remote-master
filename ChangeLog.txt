@@ -1,3 +1,11 @@
+Changes for v1.97
+- Fix Unicode characters in string literals
+- RMIR:
+  - Fix for keymoves when AdvCodeBindFormat=LONG
+  - Upgrade jp12serial communication library to version 0.14
+- RM:
+  - Fix for shuffled function hex when switching protocols and there are named functions without hex
+
 Changes for v1.96
 - Fix for importing old KM upgrades
 - Add CanalSat protocol

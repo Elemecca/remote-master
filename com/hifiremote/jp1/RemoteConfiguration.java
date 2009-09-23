@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -112,6 +111,7 @@ public class RemoteConfiguration
         }
       }
     }
+    updateImage();
   }
 
   /**
@@ -339,7 +339,7 @@ public class RemoteConfiguration
           for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
           {
             String key = ( String )keys.nextElement();
-            String text = importNotes( section.getProperty( key ) );
+            String text = section.getProperty( key );
             int base = 10;
             if ( key.charAt( 0 ) == '$' )
             {
@@ -369,7 +369,7 @@ public class RemoteConfiguration
           for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
           {
             String key = ( String )keys.nextElement();
-            String text = importNotes( section.getProperty( key ) );
+            String text = section.getProperty( key );
             if ( key.equals( "Notes" ) )
               notes = text;
           }
@@ -379,7 +379,7 @@ public class RemoteConfiguration
           for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
           {
             String key = ( String )keys.nextElement();
-            String text = importNotes( section.getProperty( key ) );
+            String text = section.getProperty( key );
             StringTokenizer st = new StringTokenizer( key, ":" );
             String deviceName = st.nextToken();
             String keyName = st.nextToken();
@@ -393,7 +393,7 @@ public class RemoteConfiguration
           for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
           {
             String keyName = ( String )keys.nextElement();
-            String text = importNotes( section.getProperty( keyName ) );
+            String text = section.getProperty( keyName );
             Macro macro = findMacro( keyName );
             if ( macro != null )
               macro.setNotes( text );
@@ -404,7 +404,7 @@ public class RemoteConfiguration
           for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
           {
             String key = ( String )keys.nextElement();
-            String text = importNotes( section.getProperty( key ) );
+            String text = section.getProperty( key );
             StringTokenizer st = new StringTokenizer( key, ": " );
             String deviceTypeName = st.nextToken();
             int setupCode = Integer.parseInt( st.nextToken() );
@@ -418,7 +418,7 @@ public class RemoteConfiguration
           for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
           {
             String key = ( String )keys.nextElement();
-            String text = importNotes( section.getProperty( key ) );
+            String text = section.getProperty( key );
             StringTokenizer st = new StringTokenizer( key, "$" );
             st.nextToken(); // discard the "Protocol: " header
             int pid = Integer.parseInt( st.nextToken(), 16 );
@@ -432,7 +432,7 @@ public class RemoteConfiguration
           for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
           {
             String key = ( String )keys.nextElement();
-            String text = importNotes( section.getProperty( key ) );
+            String text = section.getProperty( key );
             StringTokenizer st = new StringTokenizer( key, ": " );
             String deviceName = st.nextToken();
             String keyName = st.nextToken();
@@ -1569,31 +1569,6 @@ public class RemoteConfiguration
   }
 
   /**
-   * Import notes.
-   * 
-   * @param text
-   *          the text
-   * @return the string
-   */
-  private String importNotes( String text )
-  {
-    StringTokenizer st = new StringTokenizer( text, "�" );
-    StringWriter sw = new StringWriter( text.length() + st.countTokens() );
-    PrintWriter out = new PrintWriter( sw );
-    boolean first = true;
-    while ( st.hasMoreTokens() )
-    {
-      if ( first )
-        first = false;
-      else
-        out.println();
-      out.print( st.nextToken() );
-    }
-    String rc = sw.getBuffer().toString();
-    return rc;
-  }
-
-  /**
    * Export notes.
    * 
    * @param text
@@ -1612,7 +1587,9 @@ public class RemoteConfiguration
       buff.append( line );
       line = br.readLine();
       if ( line != null )
-        buff.append( '�' );
+      {
+        buff.append( '\u00AE' );
+      }
     }
     return buff.toString();
   }

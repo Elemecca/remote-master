@@ -943,11 +943,8 @@ public class DeviceUpgrade
   {
     java.util.List< KeyMove > keyMoves = new ArrayList< KeyMove >();
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
-    Button[] buttons = remote.getUpgradeButtons();
-    for ( int i = 0; i < buttons.length; i++ )
+    for ( Button button : remote.getUpgradeButtons() )
     {
-      Button button = buttons[ i ];
-
       Function f = assignments.getAssignment( button, Button.NORMAL_STATE );
       KeyMove keyMove = button.getKeyMove( f, 0, setupCode, devType, remote, protocol.getKeyMovesOnly() );
       if ( keyMove != null )

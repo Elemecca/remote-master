@@ -229,7 +229,8 @@ public class OutputPanel extends KMPanel implements ActionListener
       // assume copyItem
       area = popover;
 
-    StringSelection data = new StringSelection( area.getText() );
+    String text = area.getText();
+    StringSelection data = new StringSelection( text );
     clipboard.setContents( data, data );
   }
 

@@ -74,7 +74,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.96";
+  public final static String version = "v1.97";
 
   /** The dir. */
   private File dir = null;
@@ -698,7 +698,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           JOptionPane.showMessageDialog( this, "An incompatible version of the " + className
               + " driver was detected.  You will not be able to download or upload using that driver.",
               "Incompatible Driver", JOptionPane.ERROR_MESSAGE );
-
+          ule.printStackTrace( System.err );
         }
       }
     }
@@ -1002,7 +1002,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       setTitleFile( file );
       updateRecentFiles( file );
       saveAction.setEnabled( true );
-      exportIRItem.setEnabled( true );
+      // exportIRItem.setEnabled( true );
       uploadAction.setEnabled( !interfaces.isEmpty() );
     }
   }

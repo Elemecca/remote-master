@@ -52,20 +52,19 @@
         </target>
 
         <target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution">
-                <zip destfile="${src}/RemoteMaster.${rmversion}.zip">
-                        <zipfileset dir="${src}" includes="RemoteMaster.jar,Readme.html,*.css,protocols.ini,setup.bat,ChangeLog.txt,digitmaps.bin,porttalk.sys" />
-                        <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows"/>
-					    <zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" prefix="Linux-i386" filemode="755"/>
-					    <zipfileset src="${src}/par64.zip" includes="libjp1parallel.so" prefix="Linux-amd64" filemode="755"/>
-                        <zipfileset src="${src}/jp12serial_src-0.131.zip" includes="bin_win32/jp12serial.dll" fullpath="Windows/jp12serial.dll"/>
-					    <zipfileset src="${src}/jp12serial_src-0.131.zip" includes="bin_Linux-x86_64/libjp12serial.so" fullpath="Linux-amd64/libjp12serial.so" filemode="755"/>
-					    <zipfileset src="${src}/jp12serial_0.13_bin.zip" includes="jp12serial_0.13/linux_bin/libjp12serial.so" fullpath="Linux-i386/libjp12serial.so" filemode="755"/>
-                        <zipfileset src="${src}/jp1usb.zip" includes="jp1usb.dll" prefix="Windows"/>
-					    <zipfileset src="${src}/DecodeIR.zip" includes="**/*.so" filemode="755"/>
-					    <zipfileset src="${src}/DecodeIR.zip" includes="**/*.dll"/>
-                        <zipfileset dir="${src}" includes="*.sh" filemode="755" />
-                        <zipfileset dir="tutorial" includes="**/*" prefix="tutorial" />
-                </zip>
+          <zip destfile="${src}/RemoteMaster.${rmversion}.zip">
+            <zipfileset dir="${src}" includes="RemoteMaster.jar,Readme.html,*.css,protocols.ini,setup.bat,ChangeLog.txt,digitmaps.bin,porttalk.sys" />
+            <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows"/>
+			<zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" prefix="Linux-i386" filemode="755"/>
+			<zipfileset src="${src}/par64.zip" includes="libjp1parallel.so" prefix="Linux-amd64" filemode="755"/>
+            <zipfileset src="${src}/jp12serial_0.14_bin.zip" includes="**/*.dll"/>
+			<zipfileset src="${src}/jp12serial_0.14_bin.zip" includes="**/*.so" filemode="755"/>
+            <zipfileset src="${src}/jp1usb.zip" includes="jp1usb.dll" prefix="Windows"/>
+			<zipfileset src="${src}/DecodeIR.zip" includes="**/*.so" filemode="755"/>
+			<zipfileset src="${src}/DecodeIR.zip" includes="**/*.dll"/>
+            <zipfileset dir="${src}" includes="*.sh" filemode="755" />
+            <zipfileset dir="tutorial" includes="**/*" prefix="tutorial" />
+          </zip>
         </target>
 
         <target name="clean" description="clean up">

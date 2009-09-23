@@ -291,8 +291,9 @@ public class KeyMove extends AdvancedCode implements Cloneable
       lengthOffset = offset++ ;
     }
     else
+    // LONG Format
     {
-      buffer[ offset++ ] = ( short )( 0x10 | ( deviceButtonIndex << 4 ) );
+      buffer[ offset++ ] = ( short )( 0x10 | deviceButtonIndex );
       lengthOffset = offset++ ;
       buffer[ lengthOffset ] = 0;
     }

@@ -97,7 +97,7 @@ public class PropertyReader
         else
           buff.append( ch );
       }
-      else if ( ch == '®' )
+      else if ( ch == '\u00AE' )
         buff.append( '\n' );
       else
         buff.append( ch );

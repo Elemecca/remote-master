@@ -1108,6 +1108,10 @@ public class Protocol
         }
         convertedHex[ index++ ] = newHex;
       }
+      else
+      {
+        convertedHex[ index++ ] = null;
+      }
     }
     if ( !failedToConvert.isEmpty() )
     {
