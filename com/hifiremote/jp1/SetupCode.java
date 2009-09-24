@@ -6,33 +6,51 @@ package com.hifiremote.jp1;
  */
 public class SetupCode
 {
-  
+
   /** The value. */
   private int value;
 
+  private static int max = 2047;
+
+  public static void setMax( int newMax )
+  {
+    max = newMax;
+  }
+
+  public static int getMax()
+  {
+    return max;
+  }
+
   /**
    * Instantiates a new setup code.
    * 
-   * @param s the s
+   * @param s
+   *          the s
    */
   public SetupCode( String s )
   {
-    this( Integer.parseInt( s ));
+    this( Integer.parseInt( s ) );
+    if ( value < 0 || value > max )
+    {
+      throw new IllegalArgumentException();
+    }
   }
 
   /**
    * Instantiates a new setup code.
    * 
-   * @param value the value
+   * @param value
+   *          the value
    */
   public SetupCode( int value )
   {
-    if (( value < 0 ) || ( value > 2047 ))
-      throw new NumberFormatException( "Value must be between 0 and 2047" );
     this.value = value;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   public String toString()
@@ -43,8 +61,8 @@ public class SetupCode
   /**
    * To string.
    * 
-   * @param value the value
-   * 
+   * @param value
+   *          the value
    * @return the string
    */
   public static String toString( int value )
@@ -56,7 +74,7 @@ public class SetupCode
       buff.append( '0' );
     if ( value < 10 )
       buff.append( '0' );
-    buff.append( Integer.toString( value ));
+    buff.append( Integer.toString( value ) );
     return buff.toString();
   }
 
@@ -65,5 +83,8 @@ public class SetupCode
    * 
    * @return the value
    */
-  public int getValue(){ return value; }
+  public int getValue()
+  {
+    return value;
+  }
 }

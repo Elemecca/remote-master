@@ -1,3 +1,13 @@
+Changes for v1.98
+- Enable setup codes up to 4095 for remotes that use 2-byte PIDs
+- RMIR:
+  - Fix jp12 serial driver for 64-bit Linux
+  - Fix for macros when AdvCodeBindFormat=LONG
+  - Fix warning messages when available space for advanced codes, 
+    upgrades, or learned signals is exceeded
+  - Fix Settings
+  
+
 Changes for v1.97
 - Fix Unicode characters in string literals
 - RMIR:

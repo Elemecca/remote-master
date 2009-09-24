@@ -145,11 +145,23 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
       Setting setting = r.getSettings()[ row ];
       Object[] choices = setting.getOptions( r );
       if ( choices == null )
+      {
+        Integer oldValue = setting.getValue();
         setting.setValue( ( ( Integer )value ).intValue() );
+        propertyChangeSupport.firePropertyChange( "value", oldValue, value );
+      }
       else
+      {
         for ( int i = 0; i < choices.length; ++i )
+        {
+          Object oldValue = choices[ setting.getValue() ];
           if ( choices[ i ].equals( value ) )
+          {
             setting.setValue( i );
+            propertyChangeSupport.firePropertyChange( "value", oldValue, value );
+          }
+        }
+      }
     }
   }
 

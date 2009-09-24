@@ -6,24 +6,6 @@ package com.hifiremote.jp1;
  */
 public class DeviceButton
 {
-
-  /**
-   * Instantiates a new device button.
-   * 
-   * @param name
-   *          the name
-   * @param hiAddr
-   *          the hi addr
-   * @param lowAddr
-   *          the low addr
-   * @param typeAddr
-   *          the type addr
-   */
-  public DeviceButton( String name, int hiAddr, int lowAddr, int typeAddr )
-  {
-    this( name, hiAddr, lowAddr, typeAddr, 0 );
-  }
-
   /**
    * Instantiates a new device button.
    * 
@@ -37,6 +19,8 @@ public class DeviceButton
    *          the type addr
    * @param setupCode
    *          the default setup code
+   * @param maxSetupCode
+   *          the maximum allowed setup code
    */
   public DeviceButton( String name, int hiAddr, int lowAddr, int typeAddr, int setupCode )
   {
@@ -112,7 +96,6 @@ public class DeviceButton
    * 
    * @param data
    *          the data
-   * 
    * @return the device setup code
    */
   public int getDeviceSetupCode( short[] data )
@@ -125,7 +108,6 @@ public class DeviceButton
    * 
    * @param data
    *          the data
-   * 
    * @return the device type index
    */
   public int getDeviceTypeIndex( short[] data )
@@ -153,13 +135,15 @@ public class DeviceButton
    * 
    * @param data
    *          the data
-   * 
    * @return the setup code
    */
   public short getSetupCode( short[] data )
   {
     short setupCode = data[ highAddress ];
-    setupCode &= 0x07;
+    int mask = 0x07;
+    if ( SetupCode.getMax() > 2047 )
+      mask = 0x0F;
+    setupCode &= mask;
     setupCode <<= 8;
     setupCode |= data[ lowAddress ];
     return setupCode;
@@ -175,9 +159,16 @@ public class DeviceButton
    */
   public void setSetupCode( short setupCode, short[] data )
   {
+    if ( setupCode > SetupCode.getMax() )
+    {
+      throw new NumberFormatException( "Setup codes must be between 0 and " + SetupCode.getMax() );
+    }
     short temp = setupCode;
     temp >>= 8;
-    data[ highAddress ] &= 0xF8;
+    int mask = 0xF8;
+    if ( SetupCode.getMax() > 2047 )
+      mask = 0xF0;
+    data[ highAddress ] &= mask;
     data[ highAddress ] |= temp;
 
     setupCode &= 0xFF;

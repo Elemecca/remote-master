@@ -344,6 +344,7 @@ public class DeviceUpgrade
     {
       AdvancedCode.setFormat( remote.getAdvCodeFormat() );
       AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
+      SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
       Button[] buttons = remote.getUpgradeButtons();
       ButtonAssignments newAssignments = new ButtonAssignments();

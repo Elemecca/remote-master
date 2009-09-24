@@ -92,6 +92,7 @@ public class Macro extends AdvancedCode
     else
     {
       buffer[ offset++ ] = 0x80;
+      buffer[ offset ] = 0;
     }
     int dataLength = data.length();
     buffer[ offset++ ] |= ( short )dataLength;

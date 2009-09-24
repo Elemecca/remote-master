@@ -13,14 +13,12 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -32,10 +30,10 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.SwingPropertyChangeSupport;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.NumberFormatter;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -44,7 +42,6 @@ import javax.swing.text.NumberFormatter;
 public class SetupPanel extends KMPanel implements ActionListener, ItemListener, PropertyChangeListener,
     DocumentListener, FocusListener, Runnable
 {
-
   /**
    * Instantiates a new setup panel.
    * 
@@ -85,18 +82,15 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
     JLabel label = new JLabel( "Setup Code:", SwingConstants.RIGHT );
     add( label, "2, 1" );
-
-    NumberFormatter nf = new NumberFormatter( new DecimalFormat( "0000" ) );
-    nf.setValueClass( Integer.class );
-    nf.setMinimum( new Integer( 0 ) );
-    nf.setMaximum( new Integer( 2047 ) );
-    nf.setCommitsOnValidEdit( true );
-
-    setupCode = new JFormattedTextField( nf );
-    setupCode.addPropertyChangeListener( "value", this );
+    setupCode = new JTextField();
+    SetupCodeFilter filter = new SetupCodeFilter( setupCode );
+    ( ( AbstractDocument )setupCode.getDocument() ).setDocumentFilter( filter );
+    // setupCode.addPropertyChangeListener( "value", this );
+    setupCode.getDocument().addDocumentListener( this );
     setupCode.addFocusListener( this );
     label.setLabelFor( setupCode );
-    setupCode.setToolTipText( "Enter the desired setup code (between 0 and 2047) for the device upgrade." );
+    setupCode.setToolTipText( "Enter the desired setup code (between 0 and " + SetupCode.getMax()
+        + ") for the device upgrade." );
 
     add( setupCode, "4, 1" );
 
@@ -161,9 +155,11 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     if ( deviceUpgrade == null )
       return;
     updateInProgress = true;
-    setupCode.setValue( new Integer( deviceUpgrade.getSetupCode() ) );
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
+    setupCode.setText( SetupCode.toString( deviceUpgrade.getSetupCode() ) );
+    setupCode.setToolTipText( "Enter the desired setup code (between 0 and " + SetupCode.getMax()
+        + ") for the device upgrade." );
     java.util.List< Protocol > protocols = ProtocolManager.getProtocolManager().getProtocolsForRemote( remote );
     if ( !protocols.contains( p ) )
     {
@@ -326,7 +322,12 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
    */
   private void updateSetupCode()
   {
-    int val = ( ( Integer )setupCode.getValue() ).intValue();
+    String text = setupCode.getText();
+    if ( text.equals( "" ) )
+    {
+      return;
+    }
+    int val = Integer.parseInt( setupCode.getText() );
     int oldSetupCode = deviceUpgrade.getSetupCode();
     deviceUpgrade.setSetupCode( val );
     propertyChangeSupport.firePropertyChange( "setupCode", oldSetupCode, val );
@@ -345,8 +346,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       Document doc = e.getDocument();
       if ( doc == notes.getDocument() )
         updateNotes();
-      else
-        updateFixedData();
+      else if ( doc == setupCode.getDocument() )
+        updateSetupCode();
     }
   }
 
@@ -389,7 +390,9 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
    */
   public void focusGained( FocusEvent e )
   {
+    JP1Frame.clearMessage( controlToSelectAll );
     controlToSelectAll = ( JTextComponent )e.getSource();
+    JP1Frame.clearMessage( controlToSelectAll );
     SwingUtilities.invokeLater( this );
   }
 
@@ -450,7 +453,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   }
 
   /** The setup code. */
-  private JFormattedTextField setupCode = null;
+  private JTextField setupCode = null;
 
   /** The protocol list. */
   private JComboBox protocolList = null;

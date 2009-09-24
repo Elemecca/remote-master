@@ -131,6 +131,7 @@ public class Remote implements Comparable< Remote >
       {
         AdvancedCode.setBindFormat( advCodeBindFormat );
         AdvancedCode.setFormat( advCodeFormat );
+        SetupCode.setMax( usesTwoBytePID() ? 4095 : 2047 );
         return;
       }
       loaded = true;

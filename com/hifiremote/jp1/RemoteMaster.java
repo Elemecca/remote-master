@@ -74,7 +74,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.97";
+  public final static String version = "v1.98";
 
   /** The dir. */
   private File dir = null;
@@ -1292,24 +1292,23 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     Remote remote = remoteConfig.getRemote();
     if ( !updateUsage( advProgressBar, remote.getAdvancedCodeAddress(), remoteConfig.getAdvancedCodeBytesNeeded() ) )
     {
-      JOptionPane.showMessageDialog( this,
-          "The defined advanced codes (keymoves, macros, special functions) use more space than is available."
-              + "defined than there is space available.  Please remove some.", "Available Space Exceeded",
-          JOptionPane.ERROR_MESSAGE );
+      JOptionPane
+          .showMessageDialog(
+              this,
+              "The defined advanced codes (keymoves, macros, special functions) use more space than is available.  Please remove some.",
+              "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
     }
     if ( !updateUsage( upgradeProgressBar, remote.getUpgradeAddress(), remoteConfig.getUpgradeCodeBytesNeeded() ) )
     {
       JOptionPane.showMessageDialog( this,
-          "The defined advanced codes (keymoves, macros, special functions) use more space than is available."
-              + "defined than there is space available.  Please remove some.", "Available Space Exceeded",
-          JOptionPane.ERROR_MESSAGE );
+          "The defined device upgrades use more space than is available. Please remove some.",
+          "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
     }
     if ( !updateUsage( learnedProgressBar, remote.getLearnedAddress(), remoteConfig.getLearnedSignalBytesNeeded() ) )
     {
       JOptionPane.showMessageDialog( this,
-          "The defined advanced codes (keymoves, macros, special functions) use more space than is available."
-              + "defined than there is space available.  Please remove some.", "Available Space Exceeded",
-          JOptionPane.ERROR_MESSAGE );
+          "The defined learned signals use more space than is available.  Please remove some.",
+          "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
     }
   }
 

@@ -68,6 +68,7 @@ public class RemoteConfiguration
     AdvancedCode.setFormat( remote.getAdvCodeFormat() );
     AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
     LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
+    SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
     notes = section.getProperty( "Notes" );
 
     loadBuffer( pr );
@@ -179,6 +180,7 @@ public class RemoteConfiguration
     AdvancedCode.setFormat( remote.getAdvCodeFormat() );
     AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
     LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
+    SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
     System.err.println( "Remote is " + remote );
 
@@ -636,6 +638,7 @@ public class RemoteConfiguration
     AdvancedCode.setFormat( remote.getAdvCodeFormat() );
     AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
     LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
+    SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
     data = new short[ remote.getEepromSize() ];
   }
