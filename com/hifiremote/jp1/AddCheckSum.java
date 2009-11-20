@@ -6,19 +6,23 @@ package com.hifiremote.jp1;
  */
 public class AddCheckSum extends CheckSum
 {
-  
+
   /**
    * Instantiates a new adds the check sum.
    * 
-   * @param addr the addr
-   * @param range the range
+   * @param addr
+   *          the addr
+   * @param range
+   *          the range
    */
   public AddCheckSum( int addr, AddressRange range )
   {
     super( addr, range );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.CheckSum#toString()
    */
   public String toString()
@@ -26,7 +30,9 @@ public class AddCheckSum extends CheckSum
     return "+" + super.toString();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.CheckSum#calculateCheckSum(short[], int, int)
    */
   public short calculateCheckSum( short[] data, int start, int end )
@@ -34,7 +40,7 @@ public class AddCheckSum extends CheckSum
     short sum = 0;
     for ( int i = start; i <= end; i++ )
     {
-      sum += data[ i ];
+      sum += ( data[ i ] & 0xFF );
     }
     return ( short )( sum & 0xFF );
   }

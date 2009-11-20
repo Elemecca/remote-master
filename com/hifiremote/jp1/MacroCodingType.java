@@ -7,7 +7,6 @@ import java.util.List;
 
 /**
  * @author Greg
- * 
  */
 public class MacroCodingType extends RDFParameter
 {
@@ -15,7 +14,7 @@ public class MacroCodingType extends RDFParameter
   boolean timedMacros = false;
   int timedMacroCountAddress = 0;
 
-  public void parse( String text ) throws Exception
+  public void parse( String text, Remote remote ) throws Exception
   {
     List< String > settings = ParameterTokenizer.getTokens( text );
     type = RDFReader.parseNumber( settings.get( 0 ) );

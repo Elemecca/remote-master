@@ -33,6 +33,24 @@ public class Macro extends AdvancedCode
   public Macro( Properties props )
   {
     super( props );
+    String temp = props.getProperty( "SequenceNumber" );
+    try
+    {
+      sequenceNumber = Integer.parseInt( temp );
+    }
+    catch ( NumberFormatException nfe )
+    {
+      nfe.printStackTrace( System.err );
+    }
+    temp = props.getProperty( "DeviceIndex" );
+    try
+    {
+      deviceIndex = Integer.parseInt( temp );
+    }
+    catch ( NumberFormatException nfe )
+    {
+      nfe.printStackTrace( System.err );
+    }
   }
 
   /**
@@ -82,17 +100,22 @@ public class Macro extends AdvancedCode
     setData( ( Hex )value );
   }
 
-  public int store( short[] buffer, int offset )
+  public int store( short[] buffer, int offset, Remote remote )
   {
     buffer[ offset++ ] = ( short )getKeyCode();
-    if ( bindFormat == BindFormat.NORMAL )
+    if ( remote.getAdvCodeBindFormat() == BindFormat.NORMAL )
     {
       buffer[ offset ] = 0x10;
     }
+    else if ( remote.getMacroCodingType().getType() == 2 )
+    {
+      buffer[ offset ] = 0x3F;
+      buffer[ ++offset ] = 0;
+    }
     else
     {
-      buffer[ offset++ ] = 0x80;
-      buffer[ offset ] = 0;
+      buffer[ offset ] = ( short )( ( 0x80 | ( sequenceNumber << 4 ) | deviceIndex ) & 0xFF );
+      buffer[ ++offset ] = 0;
     }
     int dataLength = data.length();
     buffer[ offset++ ] |= ( short )dataLength;
@@ -101,4 +124,48 @@ public class Macro extends AdvancedCode
     return offset + dataLength;
   }
 
+  public void store( PropertyWriter pw )
+  {
+    super.store( pw );
+    if ( sequenceNumber != 0 )
+    {
+      pw.print( "SequenceNumber", sequenceNumber );
+    }
+  }
+
+  private int sequenceNumber = 0;
+
+  public int getSequenceNumber()
+  {
+    return sequenceNumber;
+  }
+
+  public void setSequenceNumber( int sequenceNumber )
+  {
+    this.sequenceNumber = sequenceNumber;
+  }
+
+  private int deviceIndex = 0x0F;
+
+  public int getDeviceIndex()
+  {
+    return deviceIndex;
+  }
+
+  public void setDeviceIndex( int deviceIndex )
+  {
+    this.deviceIndex = deviceIndex;
+  }
+
+  protected static MacroCodingType macroCodingType = null;
+
+  public static void setMacroCodingType( MacroCodingType aMacroCodingType )
+  {
+    macroCodingType = aMacroCodingType;
+  }
+
+  public static MacroCodingType getMacroCodingType()
+  {
+    return macroCodingType;
+  }
 }

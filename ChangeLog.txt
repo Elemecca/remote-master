@@ -1,12 +1,20 @@
 Changes for v1.98
 - Enable setup codes up to 4095 for remotes that use 2-byte PIDs
+- Tweak column widths
 - RMIR:
   - Fix jp12 serial driver for 64-bit Linux
   - Fix for macros when AdvCodeBindFormat=LONG
   - Fix warning messages when available space for advanced codes, 
     upgrades, or learned signals is exceeded
   - Fix Settings
-  
+  - Fixes for erroneous upload verification failure messages
+  - Upgrade to DecodeIR v2.38
+  - Add help menu item "Interpreting Decoded IR Signals"
+  - Initial MultiMacro support
+- RM
+  - Option to show remote signature
+  - Added HCS08 support for Pause protocol
+  - Fix for setting protocol parameters
 
 Changes for v1.97
 - Fix Unicode characters in string literals

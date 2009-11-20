@@ -62,7 +62,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      "00", "A Setting Name", "A Value"
+      " 00 ", "A Setting Name", "A Value"
   };
 
   /*

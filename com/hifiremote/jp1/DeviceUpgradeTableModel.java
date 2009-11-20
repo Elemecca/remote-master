@@ -10,69 +10,83 @@ import javax.swing.table.TableCellRenderer;
 /**
  * The Class DeviceUpgradeTableModel.
  */
-public class DeviceUpgradeTableModel
-  extends JP1TableModel< DeviceUpgrade >
-  implements PropertyChangeListener
+public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > implements PropertyChangeListener
 {
-  
+
   /**
    * Instantiates a new device upgrade table model.
    */
-  public DeviceUpgradeTableModel(){}
+  public DeviceUpgradeTableModel()
+  {}
 
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
     if ( this.remoteConfig != null )
-      for ( DeviceUpgrade upgrade : this.remoteConfig.getDeviceUpgrades())
+      for ( DeviceUpgrade upgrade : this.remoteConfig.getDeviceUpgrades() )
         upgrade.removePropertyChangeListener( this );
-      
+
     this.remoteConfig = remoteConfig;
-    for ( DeviceUpgrade upgrade : remoteConfig.getDeviceUpgrades())
+    for ( DeviceUpgrade upgrade : remoteConfig.getDeviceUpgrades() )
       upgrade.addPropertyChangeListener( this );
-    setData( remoteConfig.getDeviceUpgrades());
-      
+    setData( remoteConfig.getDeviceUpgrades() );
+
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getColumnCount()
    */
-  public int getColumnCount(){ return colNames.length; }
+  public int getColumnCount()
+  {
+    return colNames.length;
+  }
 
   /** The Constant colNames. */
-  private static final String[] colNames = 
+  private static final String[] colNames =
   {
-    "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "Description"
+      "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "Description"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
   public String getColumnName( int col )
   {
     return colNames[ col ];
   }
-  
+
   /** The Constant colPrototypeNames. */
-  private static final String[] colPrototypeNames = 
+  private static final String[] colPrototypeNames =
   {
-    "00", "CBL/SAT__", "Setup", "A long description"
+      " 00 ", "CBL/SAT__", "Setup ", "A long description"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
-  public String getColumnPrototypeName( int col ){ return colPrototypeNames[ col ]; }
-  
-  /* (non-Javadoc)
+  public String getColumnPrototypeName( int col )
+  {
+    return colPrototypeNames[ col ];
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
   public boolean isColumnWidthFixed( int col )
-  { 
+  {
     if ( col < 3 )
       return true;
     else
@@ -80,20 +94,24 @@ public class DeviceUpgradeTableModel
   }
 
   /** The Constant colClasses. */
-  private static final Class<?>[] colClasses =
+  private static final Class< ? >[] colClasses =
   {
-    Integer.class, String.class, SetupCode.class, String.class
+      Integer.class, String.class, SetupCode.class, String.class
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
-  public Class<?> getColumnClass( int col )
+  public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable( int row, int col )
@@ -103,7 +121,9 @@ public class DeviceUpgradeTableModel
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
   public Object getValueAt( int row, int column )
@@ -116,24 +136,28 @@ public class DeviceUpgradeTableModel
       case 1:
         return device.getDeviceTypeAliasName();
       case 2:
-        return new SetupCode( device.getSetupCode());
+        return new SetupCode( device.getSetupCode() );
       case 3:
         return device.getDescription();
     }
     return null;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
   public void setValueAt( Object value, int row, int col )
   {
     DeviceUpgrade device = getRow( row );
     if ( col == 3 )
-      device.setDescription(( String )value );
+      device.setDescription( ( String )value );
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
   public TableCellRenderer getColumnRenderer( int col )
@@ -142,8 +166,10 @@ public class DeviceUpgradeTableModel
       return new RowNumberRenderer();
     return null;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#removeRow(int)
    */
   public void removeRow( int row )
@@ -152,7 +178,9 @@ public class DeviceUpgradeTableModel
     super.removeRow( row );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#insertRow(int, java.lang.Object)
    */
   public void insertRow( int row, DeviceUpgrade upgrade )
@@ -161,7 +189,9 @@ public class DeviceUpgradeTableModel
     super.insertRow( row, upgrade );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#addRow(java.lang.Object)
    */
   public void addRow( DeviceUpgrade upgrade )
@@ -171,7 +201,9 @@ public class DeviceUpgradeTableModel
   }
 
   // PropertyChangeListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
    */
   public void propertyChange( PropertyChangeEvent e )
@@ -188,7 +220,7 @@ public class DeviceUpgradeTableModel
       }
     }
   }
-  
+
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
 }

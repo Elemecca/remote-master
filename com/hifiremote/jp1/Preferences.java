@@ -400,6 +400,23 @@ public class Preferences
       file.remove( "UseCustomNames" );
   }
 
+  public boolean getShowRemoteSignature()
+  {
+    return file.getProperty( "ShowRemoteSignature" ) != null;
+  }
+
+  public void setShowRemoteSignature( boolean flag )
+  {
+    if ( flag )
+    {
+      file.setProperty( "ShowRemoteSignature", "yes" );
+    }
+    else
+    {
+      file.remove( "ShowRemoteSignature" );
+    }
+  }
+
   /** The file. */
   private PropertyFile file;
 

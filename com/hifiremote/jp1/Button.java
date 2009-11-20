@@ -25,7 +25,6 @@ public class Button
     this.name = name;
     keyCode = code;
     remote = r;
-    multiMacroAddress = 0;
     int maskedCode = code & 0xC0;
     if ( maskedCode == r.getShiftMask() )
       setIsShifted( true );
@@ -185,9 +184,9 @@ public class Button
    * 
    * @return the multi macro address
    */
-  public int getMultiMacroAddress()
+  public MultiMacro getMultiMacro()
   {
-    return multiMacroAddress;
+    return multiMacro;
   }
 
   /**
@@ -196,9 +195,9 @@ public class Button
    * @param addr
    *          the new multi macro address
    */
-  public void setMultiMacroAddress( int addr )
+  public void setMultiMacro( MultiMacro multiMacro )
   {
-    multiMacroAddress = addr;
+    this.multiMacro = multiMacro;
   }
 
   /**
@@ -641,7 +640,7 @@ public class Button
         deviceCode[ 0 ] = ( short )( temp >> 8 );
         deviceCode[ 1 ] = temp;
       }
-      if ( AdvancedCode.getFormat() == AdvancedCode.Format.EFC )
+      if ( remote.getAdvCodeFormat() == AdvancedCode.Format.EFC )
       {
         if ( ( hex.length() == 1 ) && ( remote.getEFCDigits() == 3 ) )
         {
@@ -661,7 +660,7 @@ public class Button
           hex = new Hex( data );
         }
       }
-      else if ( ( hex.length() == 1 ) && ( AdvancedCode.getBindFormat() == AdvancedCode.BindFormat.LONG ) )
+      else if ( ( hex.length() == 1 ) && ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG ) )
       {
         short[] newData = new short[ 2 ];
         short efc = hex.getData()[ 0 ];
@@ -675,7 +674,7 @@ public class Button
 
       if ( len != 0 )
       {
-        if ( AdvancedCode.getBindFormat() == AdvancedCode.BindFormat.LONG )
+        if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
           ++len;
 
         rc = new short[ len ];
@@ -684,7 +683,7 @@ public class Button
         rc[ index ] = ( short )( keyCode | mask );
 
         rc[ ++index ] = 0xF0;
-        if ( AdvancedCode.getBindFormat() == AdvancedCode.BindFormat.NORMAL )
+        if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
           rc[ index ] += ( short )( 2 + hex.length() );
         else
           rc[ ++index ] = ( short )( 2 + hex.length() );
@@ -735,7 +734,7 @@ public class Button
   private Remote remote;
 
   /** The multi macro address. */
-  private int multiMacroAddress;
+  private MultiMacro multiMacro = null;
   /*
    * private Function function; private Function shiftedFunction; private Function xShiftedFunction;
    */

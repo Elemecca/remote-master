@@ -10,32 +10,33 @@ import javax.swing.table.TableCellRenderer;
 /**
  * The Class KeyMoveTableModel.
  */
-public class KeyMoveTableModel
-  extends JP1TableModel< KeyMove >
+public class KeyMoveTableModel extends JP1TableModel< KeyMove >
 {
-  
+
   /**
    * Instantiates a new key move table model.
    */
-  public KeyMoveTableModel(){}
+  public KeyMoveTableModel()
+  {}
 
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
     Remote remote = remoteConfig.getRemote();
 
-    setData( remoteConfig.getKeyMoves());
-    deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons()));
+    setData( remoteConfig.getKeyMoves() );
+    deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
     keyRenderer.setRemote( remote );
     keyEditor.setRemote( remote );
-    deviceTypeBox.setModel( new DefaultComboBoxModel( remote.getDeviceTypes()));
+    deviceTypeBox.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
   }
-  
+
   /**
    * Gets the remote config.
    * 
@@ -46,18 +47,26 @@ public class KeyMoveTableModel
     return remoteConfig;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getColumnCount()
    */
-  public int getColumnCount(){ return colNames.length; }
+  public int getColumnCount()
+  {
+    return colNames.length;
+  }
 
   /** The col names. */
-  private static String[] colNames = 
+  private static String[] colNames =
   {
-    "#", "<html>Device<br>Button</html>", "Key", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "Raw Data", "Hex", "<html>EFC or<br>Key Name</html>", "Notes"
+      "#", "<html>Device<br>Button</html>", "Key", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>",
+      "Raw Data", "Hex", "<html>EFC or<br>Key Name</html>", "Notes"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
   public String getColumnName( int col )
@@ -66,12 +75,15 @@ public class KeyMoveTableModel
   }
 
   /** The Constant colPrototypeNames. */
-  private static final String[] colPrototypeNames = 
+  private static final String[] colPrototypeNames =
   {
-    "00", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", "00 (key code)", "FF FF", "xshift-CBL/SAT", "A reasonable length long note"
+      " 00 ", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", "00 (key code)", "FF FF",
+      "xshift-CBL/SAT", "A reasonable length long note"
   };
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
   public String getColumnPrototypeName( int col )
@@ -80,48 +92,57 @@ public class KeyMoveTableModel
   }
 
   /** The col widths. */
-  private static boolean[] colWidths = 
+  private static boolean[] colWidths =
   {
-    true, true, false, true, true, true, true, false, false 
+      true, true, false, true, true, true, true, false, false
   };
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
   public boolean isColumnWidthFixed( int col )
   {
     return colWidths[ col ];
   }
-  
+
   /** The Constant colClasses. */
-  private static final Class<?>[] colClasses =
+  private static final Class< ? >[] colClasses =
   {
-    Integer.class, DeviceButton.class, Integer.class, DeviceType.class, SetupCode.class, Hex.class, Hex.class, String.class, String.class
+      Integer.class, DeviceButton.class, Integer.class, DeviceType.class, SetupCode.class, Hex.class, Hex.class,
+      String.class, String.class
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
-  public Class<?> getColumnClass( int col )
+  public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable( int row, int col )
   {
-    if (( col == 0 ) || (( col > 4 ) && ( col < 8 )))
+    if ( ( col == 0 ) || ( ( col > 4 ) && ( col < 8 ) ) )
       return false;
 
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
-  public Object getValueAt(int row, int column)
+  public Object getValueAt( int row, int column )
   {
     KeyMove keyMove = getRow( row );
     Remote r = remoteConfig.getRemote();
@@ -130,13 +151,13 @@ public class KeyMoveTableModel
       case 0:
         return new Integer( row + 1 );
       case 1:
-        return r.getDeviceButtons()[ keyMove.getDeviceButtonIndex()];
+        return r.getDeviceButtons()[ keyMove.getDeviceButtonIndex() ];
       case 2:
-        return new Integer( keyMove.getKeyCode());
+        return new Integer( keyMove.getKeyCode() );
       case 3:
-        return r.getDeviceTypeByIndex( keyMove.getDeviceType());
+        return r.getDeviceTypeByIndex( keyMove.getDeviceType() );
       case 4:
-        return new SetupCode( keyMove.getSetupCode());
+        return new SetupCode( keyMove.getSetupCode() );
       case 5:
         return keyMove.getData();
       case 6:
@@ -150,7 +171,9 @@ public class KeyMoveTableModel
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
   public void setValueAt( Object value, int row, int col )
@@ -168,24 +191,26 @@ public class KeyMoveTableModel
         }
     }
     else if ( col == 2 )
-      keyMove.setKeyCode((( Integer )value ).intValue());
+      keyMove.setKeyCode( ( ( Integer )value ).intValue() );
     else if ( col == 3 )
-      keyMove.setDeviceType((( DeviceType )value ).getNumber());
+      keyMove.setDeviceType( ( ( DeviceType )value ).getNumber() );
     else if ( col == 4 )
-      keyMove.setSetupCode((( SetupCode )value ).getValue());
-//    else if (( col > 4 ) && ( col < 8 ))
-//    {
-//      if ( value != null )
-//        setRow( row, ( KeyMove )value );
-//    }
+      keyMove.setSetupCode( ( ( SetupCode )value ).getValue() );
+    // else if (( col > 4 ) && ( col < 8 ))
+    // {
+    // if ( value != null )
+    // setRow( row, ( KeyMove )value );
+    // }
     else if ( col == 8 )
-      keyMove.setNotes(( String )value );
+      keyMove.setNotes( ( String )value );
     else
       return;
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
   public TableCellEditor getColumnEditor( int col )
@@ -208,8 +233,10 @@ public class KeyMoveTableModel
     }
     return null;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
   public TableCellRenderer getColumnRenderer( int col )
@@ -218,22 +245,22 @@ public class KeyMoveTableModel
       return new RowNumberRenderer();
     else if ( col == 2 )
       return keyRenderer;
-    
+
     return null;
   }
-  
+
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
-  
+
   /** The device button box. */
   private JComboBox deviceButtonBox = new JComboBox();
-  
+
   /** The device type box. */
   private JComboBox deviceTypeBox = new JComboBox();
-  
+
   /** The key renderer. */
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
-  
+
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
 }

@@ -56,7 +56,7 @@ public class DecodeTableModel extends JP1TableModel< LearnedSignalDecode >
   /** The col prototype names. */
   private static String[] colPrototypeNames =
   {
-      "00", "Protocol Name", "Device", "Device", "OBC", "Hex Cmd", "EFC", "Miscellaneous"
+      " 00 ", "Protocol Name", "Device", "Device", "OBC", "Hex Cmd", "EFC", "Miscellaneous"
   };
 
   /*

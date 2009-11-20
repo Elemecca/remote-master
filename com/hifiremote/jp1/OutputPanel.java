@@ -142,7 +142,7 @@ public class OutputPanel extends KMPanel implements ActionListener
     List< KeyMove > keyMoves = deviceUpgrade.getKeyMoves();
     for ( KeyMove keyMove : keyMoves )
     {
-      keyMoveBytes += keyMove.getSize();
+      keyMoveBytes += keyMove.getSize( deviceUpgrade.getRemote() );
     }
     String keyMoveInfo = "";
     if ( keyMoves.size() > 0 )

@@ -22,7 +22,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
@@ -74,7 +73,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.98";
+  public final static String version = "v1.98beta5";
 
   /** The dir. */
   private File dir = null;
@@ -131,6 +130,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem tutorialItem = null;
 
   private JMenuItem homePageItem = null;
+
+  private JMenuItem learnedSignalItem = null;
 
   private JMenuItem forumItem = null;
 
@@ -301,7 +302,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
                   + " byte, but expected " + data.length );
 
             }
-            else if ( !Arrays.equals( data, readBack ) )
+            else if ( !Hex.equals( data, readBack ) )
             {
               JOptionPane.showMessageDialog( RemoteMaster.this,
                   "Upload verify failed: data read back doesn't match data written." );
@@ -792,6 +793,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       tutorialItem.addActionListener( this );
       menu.add( tutorialItem );
 
+      learnedSignalItem = new JMenuItem( "Interpreting Decoded IR Signals", KeyEvent.VK_I );
+      learnedSignalItem.addActionListener( this );
+      menu.add( learnedSignalItem );
+
       menu.addSeparator();
 
       homePageItem = new JMenuItem( "Home Page", KeyEvent.VK_H );
@@ -1203,6 +1208,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == tutorialItem )
       {
         File file = new File( "tutorial/tutorial.html" );
+        desktop.browse( file.toURI() );
+      }
+      else if ( source == learnedSignalItem )
+      {
+        File file = new File( "DecodeIr.html" );
         desktop.browse( file.toURI() );
       }
       else if ( source == homePageItem )

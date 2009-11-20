@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -129,8 +131,6 @@ public class Remote implements Comparable< Remote >
     {
       if ( loaded )
       {
-        AdvancedCode.setBindFormat( advCodeBindFormat );
-        AdvancedCode.setFormat( advCodeFormat );
         SetupCode.setMax( usesTwoBytePID() ? 4095 : 2047 );
         return;
       }
@@ -315,9 +315,6 @@ public class Remote implements Comparable< Remote >
           JOptionPane.ERROR_MESSAGE );
       System.err.println( sw.toString() );
     }
-
-    AdvancedCode.setBindFormat( advCodeBindFormat );
-    AdvancedCode.setFormat( advCodeFormat );
   }
 
   /**
@@ -385,7 +382,7 @@ public class Remote implements Comparable< Remote >
    */
   public String toString()
   {
-    return names[ nameIndex ];
+    return getName();
   }
 
   /**
@@ -745,12 +742,12 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "FavKey" ) )
       {
         favKey = new FavKey();
-        favKey.parse( value );
+        favKey.parse( value, this );
       }
       else if ( parm.equals( "OEMDevice" ) )
       {
         oemDevice = new OEMDevice();
-        oemDevice.parse( value );
+        oemDevice.parse( value, this );
       }
       else if ( parm.equals( "OEMControl" ) )
         oemControl = rdr.parseNumber( value );
@@ -759,7 +756,7 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "AdvCodeAddr" ) )
       {
         advancedCodeAddress = new AddressRange();
-        advancedCodeAddress.parse( value );
+        advancedCodeAddress.parse( value, this );
       }
       else if ( parm.equals( "KeyMoveSupport" ) )
       {
@@ -772,24 +769,24 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "UpgradeAddr" ) )
       {
         upgradeAddress = new AddressRange();
-        upgradeAddress.parse( value );
+        upgradeAddress.parse( value, this );
       }
       else if ( parm.equals( "DevUpgradeAddr" ) )
       {
         deviceUpgradeAddress = new AddressRange();
-        deviceUpgradeAddress.parse( value );
+        deviceUpgradeAddress.parse( value, this );
       }
       else if ( parm.equals( "TimedMacroAddr" ) )
       {
         timedMacroAddress = new AddressRange();
-        timedMacroAddress.parse( value );
+        timedMacroAddress.parse( value, this );
       }
       else if ( parm.equals( "TimedMacroWarning" ) )
         timedMacroWarning = rdr.parseFlag( value );
       else if ( parm.equals( "LearnedAddr" ) )
       {
         learnedAddress = new AddressRange();
-        learnedAddress.parse( value );
+        learnedAddress.parse( value, this );
       }
       else if ( parm.equals( "Processor" ) )
       {
@@ -817,12 +814,12 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "SleepStatusBit" ) )
       {
         sleepStatusBit = new StatusBit();
-        sleepStatusBit.parse( value );
+        sleepStatusBit.parse( value, this );
       }
       else if ( parm.equals( "VPTStatusBit" ) )
       {
         vptStatusBit = new StatusBit();
-        vptStatusBit.parse( value );
+        vptStatusBit.parse( value, this );
       }
       else if ( parm.equals( "OmitDigitMapByte" ) )
         omitDigitMapByte = RDFReader.parseFlag( value );
@@ -890,23 +887,18 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "DevComb" ) )
       {
         devCombAddress = new int[ 7 ];
-        StringTokenizer st2 = new StringTokenizer( value, ",", true );
         for ( int i = 0; i < 7; i++ )
         {
-          if ( st2.hasMoreTokens() )
+          devCombAddress[ i ] = -1;
+        }
+        List< String > addrs = LineTokenizer.tokenize( value, "," );
+        int i = 0;
+        for ( String addr : addrs )
+        {
+          if ( addr != null )
           {
-            String tok = st2.nextToken();
-            if ( tok.equals( "," ) )
-              devCombAddress[ i ] = -1;
-            else
-            {
-              devCombAddress[ i ] = rdr.parseNumber( tok );
-              if ( st2.hasMoreTokens() )
-                st2.nextToken(); // skip delimeter
-            }
+            devCombAddress[ i ] = rdr.parseNumber( addr );
           }
-          else
-            devCombAddress[ i ] = -1;
         }
       }
       else if ( parm.equals( "ProtocolVectorOffset" ) )
@@ -932,24 +924,24 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equalsIgnoreCase( "Labels" ) )
       {
         labels = new DeviceLabels();
-        labels.parse( value );
+        labels.parse( value, this );
       }
       else if ( parm.equalsIgnoreCase( "SoftDev" ) )
       {
         softDevices = new SoftDevices();
-        softDevices.parse( value );
+        softDevices.parse( value, this );
         if ( !softDevices.inUse() )
           softDevices = null;
       }
       else if ( parm.equalsIgnoreCase( "SoftHT" ) )
       {
         softHomeTheater = new SoftHomeTheater();
-        softHomeTheater.parse( value );
+        softHomeTheater.parse( value, this );
       }
       else if ( parm.equalsIgnoreCase( "MacroCodingType" ) )
       {
         macroCodingType = new MacroCodingType();
-        macroCodingType.parse( value );
+        macroCodingType.parse( value, this );
       }
       else if ( parm.equalsIgnoreCase( "StartReadOnlySettings" ) )
       {
@@ -958,7 +950,7 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equalsIgnoreCase( "PauseParameters" ) )
       {
         PauseParameters parms = new PauseParameters();
-        parms.parse( value );
+        parms.parse( value, this );
         pauseParameters.put( parms.getUserName(), parms );
       }
       else if ( parm.equalsIgnoreCase( "PowerButtons" ) )
@@ -979,6 +971,10 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equalsIgnoreCase( "SetupValidation" ) )
       {
         setupValidation = SetupValidation.valueOf( value.toUpperCase() );
+      }
+      else if ( parm.equalsIgnoreCase( "AdvCodeTypes" ) )
+      {
+        parseAdvCodeTypes( value, rdr );
       }
     }
 
@@ -1090,7 +1086,14 @@ public class Remote implements Comparable< Remote >
       StringTokenizer st = new StringTokenizer( line, "=" );
       String name = st.nextToken().trim();
       String value = st.nextToken().trim();
-      specialProtocols.add( SpecialProtocol.create( name, value ) );
+      if ( name.equals( "DSM" ) && value.startsWith( "Internal:0" ) )
+      {
+        deviceIndexMask = 0x0F;
+      }
+      else
+      {
+        specialProtocols.add( SpecialProtocol.create( name, value ) );
+      }
     }
     return line;
   }
@@ -1120,7 +1123,7 @@ public class Remote implements Comparable< Remote >
       StringTokenizer st = new StringTokenizer( line, ":" );
       int addr = rdr.parseNumber( st.nextToken() );
       AddressRange range = new AddressRange();
-      range.parse( st.nextToken() );
+      range.parse( st.nextToken(), this );
       CheckSum sum = null;
       if ( ch == '+' )
         sum = new AddCheckSum( addr, range );
@@ -1749,19 +1752,29 @@ public class Remote implements Comparable< Remote >
   private String parseMultiMacros( RDFReader rdr ) throws Exception
   {
     String line;
+    if ( sequenceNumberMask == 0 )
+    {
+      sequenceNumberMask = 0x70;
+    }
+    if ( maxMultiMacros == 0 )
+    {
+      if ( advCodeBindFormat == AdvancedCode.BindFormat.NORMAL )
+      {
+        maxMultiMacros = 3;
+      }
+      else
+      {
+        maxMultiMacros = 5;
+      }
+    }
     while ( true )
     {
       line = rdr.readLine();
       if ( ( line == null ) || ( line.length() == 0 ) )
         break;
 
-      StringTokenizer st = new StringTokenizer( line, "=" );
-      String name = st.nextToken();
-
-      // Find the matching button
-      Button button = ( Button )buttonsByName.get( name );
-      if ( button != null )
-        button.setMultiMacroAddress( rdr.parseNumber( st.nextToken() ) );
+      MultiMacro multiMacro = new MultiMacro();
+      multiMacro.parse( line, this );
     }
     return line;
   }
@@ -2633,7 +2646,7 @@ public class Remote implements Comparable< Remote >
     return softHomeTheater;
   }
 
-  private MacroCodingType macroCodingType = null;
+  private MacroCodingType macroCodingType = new MacroCodingType();
 
   public MacroCodingType getMacroCodingType()
   {
@@ -2678,6 +2691,97 @@ public class Remote implements Comparable< Remote >
   public SetupValidation getSetupValidation()
   {
     return setupValidation;
+  }
+
+  private int keyMoveCode = 0;
+
+  public int getKeyMoveCode()
+  {
+    return keyMoveCode;
+  }
+
+  private int macroCode = 0x10;
+
+  public int getMacroCode()
+  {
+    return macroCode;
+  }
+
+  private int deviceIndexMask = 0x0F;
+
+  public int getDeviceIndexMask()
+  {
+    return deviceIndexMask;
+  }
+
+  private int sequenceNumberMask = 0x70;
+
+  public int getSequenceNumberMask()
+  {
+    return sequenceNumberMask;
+  }
+
+  private int maxMultiMacros = 3;
+
+  public int getMaxMultiMacros()
+  {
+    return maxMultiMacros;
+  }
+
+  private void parseAdvCodeTypes( String text, RDFReader rdr ) throws Exception
+  {
+    // AdvCodeTypes=KeyMoveCode,MacroCode[:DeviceIndexMask[:SequenceNumberMask:MaxMultiMacros]][,FavScanCode]
+    Iterator< String > iterator = LineTokenizer.tokenize( text, "," ).iterator();
+
+    String code = null;
+
+    // The key move code
+    if ( iterator.hasNext() && ( ( code = iterator.next() ) != null ) )
+    {
+      keyMoveCode = rdr.parseNumber( code );
+      keyMoveSupport = true;
+    }
+    else
+    {
+      keyMoveSupport = false;
+    }
+
+    // The Macro code and sub-types
+    if ( iterator.hasNext() && ( ( code = iterator.next() ) != null ) )
+    {
+      macroSupport = true;
+      String subCode = null;
+
+      Iterator< String > subIterator = LineTokenizer.tokenize( code, ":" ).iterator();
+
+      // The macro code
+      if ( iterator.hasNext() && ( ( subCode = subIterator.next() ) != null ) )
+      {
+        macroCode = rdr.parseNumber( code );
+      }
+
+      // The device index mask
+      if ( iterator.hasNext() && ( ( subCode = subIterator.next() ) != null ) )
+      {
+        deviceIndexMask = rdr.parseNumber( code );
+      }
+
+      // The multi macro sequence number mask
+      if ( iterator.hasNext() && ( ( subCode = subIterator.next() ) != null ) )
+      {
+        sequenceNumberMask = rdr.parseNumber( code );
+      }
+
+      // The maximum number of macros that can be assigned to a multi macro key
+      if ( iterator.hasNext() && ( ( subCode = subIterator.next() ) != null ) )
+      {
+        sequenceNumberMask = rdr.parseNumber( code );
+      }
+    }
+    else
+    {
+      macroSupport = false;
+    }
   }
 
 }

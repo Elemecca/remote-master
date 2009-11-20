@@ -399,7 +399,10 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       boundKey.setSelectedIndex( -1 );
       shift.setSelected( false );
       xShift.setSelected( false );
-      type.setSelectedIndex( 0 );
+      if ( type.getItemCount() > 0 )
+      {
+        type.setSelectedIndex( 0 );
+      }
       notes.setText( "" );
 
       // Clear out all optional fields

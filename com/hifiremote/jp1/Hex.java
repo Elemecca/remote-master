@@ -579,6 +579,23 @@ public class Hex implements Cloneable, Comparable< Hex >
     return true;
   }
 
+  public static boolean equals( short[] a, short[] b )
+  {
+    if ( a.length != b.length )
+    {
+      return false;
+    }
+    for ( int i = 0; i < a.length; ++i )
+    {
+      if ( ( a[ i ] & 0xFF ) != ( b[ i ] & 0xFF ) )
+      {
+        System.err.println( String.format( "%04X: %X != %X", i, a[ i ], b[ i ] ) );
+        return false;
+      }
+    }
+    return true;
+  }
+
   /*
    * (non-Javadoc)
    * 

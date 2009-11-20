@@ -22,7 +22,7 @@ public class PauseParameters extends RDFParameter
   @SuppressWarnings( "unused" )
   private float multiplier = 1f;
 
-  public void parse( String text ) throws Exception
+  public void parse( String text, Remote remote ) throws Exception
   {
     List< String > parms = ParameterTokenizer.getTokens( text );
     userName = parms.get( 0 );

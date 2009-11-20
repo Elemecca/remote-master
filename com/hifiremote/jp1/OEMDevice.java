@@ -8,7 +8,7 @@ import java.util.StringTokenizer;
  */
 public class OEMDevice extends RDFParameter
 {
-  public void parse( String text ) throws Exception
+  public void parse( String text, Remote remote ) throws Exception
   {
     StringTokenizer st = new StringTokenizer( ",= " );
     deviceNumber = RDFReader.parseNumber( st.nextToken() );

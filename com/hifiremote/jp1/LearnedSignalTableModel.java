@@ -66,7 +66,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      "00", "__VCR/DVD__", "_xshift-VCR/DVD_", "A longish comment or note", "1024", "99999", "Protocol", "Device",
+      " 00 ", "__VCR/DVD__", "_xshift-VCR/DVD_", "A longish comment or note", "1024", "99999", "Protocol", "Device",
       "Device", "OBC", "Hex Cmd", "Miscellaneous"
   };
 

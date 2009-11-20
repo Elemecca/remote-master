@@ -118,7 +118,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The col prototype names. */
   private static String[] colPrototypeNames =
   {
-      "00", "Device Button", "__VCR/DVD__", "Setup", "Label", "Seq"
+      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "Label", "Seq"
   };
 
   /*

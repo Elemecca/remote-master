@@ -61,7 +61,7 @@
 			<zipfileset src="${src}/jp12serial_0.14_bin.zip" includes="**/*.so" filemode="755"/>
             <zipfileset src="${src}/jp1usb.zip" includes="jp1usb.dll" prefix="Windows"/>
 			<zipfileset src="${src}/DecodeIR.zip" includes="**/*.so" filemode="755"/>
-			<zipfileset src="${src}/DecodeIR.zip" includes="**/*.dll"/>
+			<zipfileset src="${src}/DecodeIR.zip" includes="**/*.dll,DecodeIr.html,DecodeIR_ChangeLog.txt"/>
             <zipfileset dir="${src}" includes="*.sh" filemode="755" />
             <zipfileset dir="tutorial" includes="**/*" prefix="tutorial" />
           </zip>

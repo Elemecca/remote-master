@@ -33,15 +33,31 @@ public class LearnedSignal
     this.notes = notes;
   }
 
-  public LearnedSignal( short[] buffer, int offset )
+  public static LearnedSignal read( HexReader reader, Remote remote )
   {
-    keyCode = buffer[ offset++ ];
-    deviceButtonIndex = buffer[ offset ] >> 4;
-    if ( deviceButtonSwapped )
-      deviceButtonIndex = buffer[ offset ] & 0x0F;
-    ++offset;
-    int length = buffer[ offset++ ];
-    data = new Hex( data, offset, length );
+    if ( reader.peek() == remote.getSectionTerminator() )
+    {
+      return null;
+    }
+    if ( reader.available() < 4 )
+    {
+      return null;
+    }
+    int keyCode = reader.read();
+    int type = reader.read();
+    int deviceButtonIndex = 0;
+    if ( remote.getLearnedDevBtnSwapped() )
+    {
+      deviceButtonIndex = type & 0x0F;
+    }
+    else
+    {
+      deviceButtonIndex = type >> 4;
+    }
+    int length = reader.read();
+    short[] data = reader.read( length );
+
+    return new LearnedSignal( keyCode, deviceButtonIndex, new Hex( data ), null );
   }
 
   /**
@@ -175,10 +191,18 @@ public class LearnedSignal
     notes = text;
   }
 
-  public int store( short[] buffer, int offset )
+  public int store( short[] buffer, int offset, Remote remote )
   {
     buffer[ offset++ ] = ( short )keyCode;
-    buffer[ offset++ ] = ( short )( deviceButtonIndex << 4 );
+    if ( remote.getLearnedDevBtnSwapped() )
+    {
+      buffer[ offset ] = ( short )( 0xFF & ( deviceButtonIndex | 0x20 ) );
+    }
+    else
+    {
+      buffer[ offset ] = ( short )( 0xFF & ( ( deviceButtonIndex << 4 ) | 2 ) );
+    }
+    ++offset;
     int dataLength = data.length();
     buffer[ offset++ ] = ( short )dataLength;
     Hex.put( data, buffer, offset );
@@ -217,7 +241,7 @@ public class LearnedSignal
       if ( !ul.ok )
         return null;
       getDecodeIR();
-      decodeIR.setBursts( ul.durations, ul.repeat );
+      decodeIR.setBursts( ul.durations, ul.repeat, ul.extra );
       decodeIR.setFrequency( ul.frequency );
       decodeIR.initDecoder();
       decodes = new ArrayList< LearnedSignalDecode >();
@@ -242,11 +266,4 @@ public class LearnedSignal
 
   /** The decode ir. */
   private static DecodeIRCaller decodeIR = null;
-
-  private static boolean deviceButtonSwapped = false;
-
-  public static void setDeviceButtonSwapped( boolean flag )
-  {
-    deviceButtonSwapped = flag;
-  }
 }

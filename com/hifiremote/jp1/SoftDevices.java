@@ -15,7 +15,7 @@ public class SoftDevices extends RDFParameter
   private int countAddress = 0;
   private int sequenceAddress = 0;
 
-  public void parse( String text ) throws Exception
+  public void parse( String text, Remote remote ) throws Exception
   {
     // SoftDev=Use[, [AllowEmptyBtnSettings][, [CountAddr][, [SeqAddr]]]]
     List< String > settings = ParameterTokenizer.getTokens( text );

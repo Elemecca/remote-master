@@ -15,7 +15,7 @@ public class DeviceLabels extends RDFParameter
   private short fill = 0x20;
   private int defaultsAddr = 0;
 
-  public void parse( String text ) throws Exception
+  public void parse( String text, Remote remote ) throws Exception
   {
     List< String > settings = ParameterTokenizer.getTokens( text );
     addr = RDFReader.parseNumber( settings.get( 0 ) );

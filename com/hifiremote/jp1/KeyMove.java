@@ -280,11 +280,11 @@ public class KeyMove extends AdvancedCode implements Cloneable
    * @see com.hifiremote.jp1.AdvancedCode#store(short[], int)
    */
   @Override
-  public int store( short[] buffer, int offset )
+  public int store( short[] buffer, int offset, Remote remote )
   {
     buffer[ offset++ ] = ( short )keyCode;
     int lengthOffset;
-    if ( bindFormat == BindFormat.NORMAL )
+    if ( remote.getAdvCodeBindFormat() == BindFormat.NORMAL )
     {
       int temp = deviceButtonIndex << 5;
       buffer[ offset ] = ( short )temp;
@@ -299,7 +299,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
     }
     int hexLength = data.length();
     Hex.put( data, buffer, offset );
-    if ( ( bindFormat == BindFormat.LONG ) && ( cmd.length() == 1 ) )
+    if ( ( remote.getAdvCodeBindFormat() == BindFormat.LONG ) && ( cmd.length() == 1 ) )
     {
       buffer[ offset + hexLength++ ] = EFC.parseHex( cmd.getData()[ 0 ] );
     }
@@ -308,10 +308,10 @@ public class KeyMove extends AdvancedCode implements Cloneable
     return offset + hexLength;
   }
 
-  public int getSize()
+  public int getSize( Remote remote )
   {
-    int size = super.getSize(); // for the key code and type/length
-    if ( ( bindFormat == BindFormat.LONG ) && ( cmd.length() == 1 ) )
+    int size = super.getSize( remote ); // for the key code and type/length
+    if ( ( remote.getAdvCodeBindFormat() == BindFormat.LONG ) && ( cmd.length() == 1 ) )
     {
       size++ ; // length is stored in it's own byte, not with the type;
     }

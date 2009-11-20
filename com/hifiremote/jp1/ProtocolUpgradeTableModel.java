@@ -6,57 +6,72 @@ import javax.swing.table.TableCellRenderer;
 /**
  * The Class ProtocolUpgradeTableModel.
  */
-public class ProtocolUpgradeTableModel
-  extends JP1TableModel< ProtocolUpgrade >
+public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
 {
-  
+
   /**
    * Instantiates a new protocol upgrade table model.
    */
-  public ProtocolUpgradeTableModel(){}
+  public ProtocolUpgradeTableModel()
+  {}
 
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    setData( remoteConfig.getProtocolUpgrades());
+    setData( remoteConfig.getProtocolUpgrades() );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getColumnCount()
    */
-  public int getColumnCount(){ return colNames.length; }
+  public int getColumnCount()
+  {
+    return colNames.length;
+  }
 
   /** The Constant colNames. */
-  private static final String[] colNames = 
+  private static final String[] colNames =
   {
-    "#", "PID", "Protocol Code", "Notes"
+      "#", "PID", "Protocol Code", "Notes"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
   public String getColumnName( int col )
   {
     return colNames[ col ];
   }
-  
+
   /** The Constant colPrototypeNames. */
-  private static final String[] colPrototypeNames = 
+  private static final String[] colPrototypeNames =
   {
-    "00", "01CC", "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", "A resonable length note"
+      " 00 ", "01CC", "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", "A resonable length note"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
-  public String getColumnPrototypeName( int col ){ return colPrototypeNames[ col ]; }
+  public String getColumnPrototypeName( int col )
+  {
+    return colPrototypeNames[ col ];
+  }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
   public boolean isColumnWidthFixed( int col )
@@ -65,33 +80,39 @@ public class ProtocolUpgradeTableModel
       return true;
     return false;
   }
-  
+
   /** The Constant colClasses. */
-  private static final Class<?>[] colClasses =
+  private static final Class< ? >[] colClasses =
   {
-    Integer.class, String.class, Hex.class, String.class
+      Integer.class, String.class, Hex.class, String.class
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
-  public Class<?> getColumnClass( int col )
+  public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable( int row, int col )
   {
     if ( col == 3 )
-       return true;
+      return true;
 
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
   public Object getValueAt( int row, int column )
@@ -108,7 +129,7 @@ public class ProtocolUpgradeTableModel
         buff.append( '0' );
         if ( pid < 0x100 )
           buff.append( '0' );
-        buff.append( Integer.toHexString( pid ).toUpperCase());
+        buff.append( Integer.toHexString( pid ).toUpperCase() );
         return buff.toString();
       }
       case 2:
@@ -118,18 +139,22 @@ public class ProtocolUpgradeTableModel
     }
     return null;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
   public void setValueAt( Object value, int row, int col )
   {
     ProtocolUpgrade pu = remoteConfig.getProtocolUpgrades().get( row );
     if ( col == 3 )
-      pu.setNotes(( String )value );
+      pu.setNotes( ( String )value );
   }
- 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
   public TableCellRenderer getColumnRenderer( int col )
@@ -138,7 +163,7 @@ public class ProtocolUpgradeTableModel
       return new RowNumberRenderer();
     return null;
   }
-  
+
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
 }

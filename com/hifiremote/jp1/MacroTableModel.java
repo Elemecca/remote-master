@@ -7,19 +7,20 @@ import javax.swing.table.TableCellRenderer;
 /**
  * The Class MacroTableModel.
  */
-public class MacroTableModel
-  extends JP1TableModel< Macro >
+public class MacroTableModel extends JP1TableModel< Macro >
 {
-  
+
   /**
    * Instantiates a new macro table model.
    */
-  public MacroTableModel(){}
+  public MacroTableModel()
+  {}
 
   /**
    * Sets the.
    * 
-   * @param remoteConfig the remote config
+   * @param remoteConfig
+   *          the remote config
    */
   public void set( RemoteConfiguration remoteConfig )
   {
@@ -27,9 +28,9 @@ public class MacroTableModel
     Remote remote = remoteConfig.getRemote();
     keyRenderer.setRemote( remote );
     keyEditor.setRemote( remote );
-    setData( remoteConfig.getMacros());
+    setData( remoteConfig.getMacros() );
   }
-  
+
   /**
    * Gets the remote config.
    * 
@@ -40,18 +41,25 @@ public class MacroTableModel
     return remoteConfig;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getColumnCount()
    */
-  public int getColumnCount(){ return colNames.length; }
+  public int getColumnCount()
+  {
+    return colNames.length;
+  }
 
   /** The Constant colNames. */
-  private static final String[] colNames = 
+  private static final String[] colNames =
   {
-    "#", "Key", "Macro Keys", "Notes"
+      "#", "Key", "Macro Keys", "Notes"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
   public String getColumnName( int col )
@@ -60,54 +68,73 @@ public class MacroTableModel
   }
 
   /** The Constant colClasses. */
-  private static final Class<?>[] colClasses =
+  private static final Class< ? >[] colClasses =
   {
-    Integer.class, Integer.class, String.class, String.class
+      Integer.class, Integer.class, String.class, String.class
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
-  public Class<?> getColumnClass( int col )
+  public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
   }
 
   /** The Constant colPrototypeNames. */
-  private static final String[] colPrototypeNames = 
+  private static final String[] colPrototypeNames =
   {
-    "00", "_xShift-VCR/DVD_", "A reasonable length macro with a reasonable number of steps ", 
-    "A reasonable length note for a macro"
+      " 00 ", "_xShift-VCR/DVD_", "A reasonable length macro with a reasonable number of steps ",
+      "A reasonable length note for a macro"
   };
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
-  public String getColumnPrototypeName( int col ){ return colPrototypeNames[ col ]; }
-  
+  public String getColumnPrototypeName( int col )
+  {
+    return colPrototypeNames[ col ];
+  }
+
   /** The Constant colWidths. */
-  private static final boolean[] colWidths = { true, true, false, false };
-  
-  /* (non-Javadoc)
+  private static final boolean[] colWidths =
+  {
+      true, true, false, false
+  };
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
-  public boolean isColumnWidthFixed( int col ){ return colWidths[ col ]; }
-  
-  /* (non-Javadoc)
+  public boolean isColumnWidthFixed( int col )
+  {
+    return colWidths[ col ];
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable( int row, int col )
   {
-    if (( col == 0 ) || ( col == 2 ))
+    if ( ( col == 0 ) || ( col == 2 ) )
       return false;
 
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
-  public Object getValueAt(int row, int column)
+  public Object getValueAt( int row, int column )
   {
     Macro macro = remoteConfig.getMacros().get( row );
     switch ( column )
@@ -115,9 +142,9 @@ public class MacroTableModel
       case 0:
         return new Integer( row + 1 );
       case 1:
-        return new Integer( macro.getKeyCode());
+        return new Integer( macro.getKeyCode() );
       case 2:
-       return macro.getValueString( remoteConfig );
+        return macro.getValueString( remoteConfig );
       case 3:
         return macro.getNotes();
       default:
@@ -125,20 +152,24 @@ public class MacroTableModel
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
   public void setValueAt( Object value, int row, int col )
   {
     Macro macro = getRow( row );
     if ( col == 1 )
-      macro.setKeyCode((( Integer )value ).intValue());
+      macro.setKeyCode( ( ( Integer )value ).intValue() );
     else if ( col == 3 )
-      macro.setNotes(( String )value );
+      macro.setNotes( ( String )value );
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
   public TableCellRenderer getColumnRenderer( int col )
@@ -149,8 +180,10 @@ public class MacroTableModel
       return keyRenderer;
     return null;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
   public TableCellEditor getColumnEditor( int col )
@@ -159,13 +192,13 @@ public class MacroTableModel
       return keyEditor;
     return null;
   }
-  
+
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
-  
+
   /** The key renderer. */
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
-  
+
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
 }

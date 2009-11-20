@@ -342,8 +342,6 @@ public class DeviceUpgrade
     }
     if ( ( remote != null ) && ( remote != newRemote ) )
     {
-      AdvancedCode.setFormat( remote.getAdvCodeFormat() );
-      AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
       SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
       Button[] buttons = remote.getUpgradeButtons();
@@ -931,7 +929,7 @@ public class DeviceUpgrade
 
     short[] rc = new short[ 2 ];
     rc[ 0 ] = ( short )( temp >> 8 );
-    rc[ 1 ] = temp;
+    rc[ 1 ] = ( short )( temp & 0xFF );
     return rc;
   }
 
@@ -1544,7 +1542,11 @@ public class DeviceUpgrade
     }
     else
     {
-      remote = RemoteManager.getRemoteManager().findRemoteByName( str );
+      theRemote = RemoteManager.getRemoteManager().findRemoteByName( str );
+      if ( theRemote == null )
+      {
+        return;
+      }
     }
     remote.load();
     str = props.getProperty( "DeviceIndex" );
@@ -1663,73 +1665,6 @@ public class DeviceUpgrade
   }
 
   /**
-   * Gets the next field.
-   * 
-   * @param st
-   *          the st
-   * @param delim
-   *          the delim
-   * @return the next field
-   */
-  private List< String > tokenizeLine( String line, String delim )
-  {
-    StringTokenizer st = new StringTokenizer( line, delim, true );
-    List< String > rc = new ArrayList< String >( st.countTokens() );
-    while ( st.hasMoreTokens() )
-    {
-      String token = st.nextToken();
-      if ( token.equals( delim ) )
-      {
-        rc.add( null );
-        if ( !st.hasMoreTokens() )
-        {
-          rc.add( null );
-        }
-      }
-      else
-      {
-        if ( token.startsWith( "\"" ) )
-        {
-          if ( token.endsWith( "\"" ) )
-          {
-            token = token.substring( 1, token.length() - 1 ).replaceAll( "\"\"", "\"" );
-          }
-          else
-          {
-            StringBuilder buff = new StringBuilder( 200 );
-            buff.append( token.substring( 1 ) );
-            while ( true )
-            {
-              token = st.nextToken(); // skip delim
-              buff.append( delim );
-              token = st.nextToken();
-              if ( token.endsWith( "\"" ) )
-              {
-                buff.append( token.substring( 0, token.length() - 1 ) );
-                break;
-              }
-              else
-                buff.append( token );
-            }
-            token = buff.toString().replaceAll( "\"\"", "\"" );
-          }
-        }
-        rc.add( token );
-        if ( st.hasMoreTokens() )
-        {
-          st.nextToken(); // skip delim
-          if ( !st.hasMoreTokens() )
-          {
-            rc.add( null );
-          }
-        }
-      }
-    }
-
-    return rc;
-  }
-
-  /**
    * Import upgrade.
    * 
    * @param in
@@ -1837,7 +1772,7 @@ public class DeviceUpgrade
       return;
     }
     String delim = line.substring( 5, 6 );
-    List< String > fields = tokenizeLine( line, delim );
+    List< String > fields = LineTokenizer.tokenize( line, delim );
     description = fields.get( 1 );
     String kmVersion = fields.get( 5 );
     System.err.println( "KM version of imported file is '" + kmVersion + '\'' );
@@ -1846,7 +1781,7 @@ public class DeviceUpgrade
     String manualLine = in.readLine(); // line 3 "Manual:"
 
     line = in.readLine(); // line 4 "Setup:"
-    List< String > setupFields = tokenizeLine( line, delim );
+    List< String > setupFields = LineTokenizer.tokenize( line, delim );
     token = setupFields.get( 1 );
     setupCode = Integer.parseInt( token );
     token = setupFields.get( 2 );
@@ -1900,7 +1835,7 @@ public class DeviceUpgrade
 
     String buttonStyle = setupFields.get( 4 );
 
-    List< String > deviceFields = tokenizeLine( protocolLine, delim );
+    List< String > deviceFields = LineTokenizer.tokenize( protocolLine, delim );
     String protocolName = deviceFields.get( 1 ); // protocol name
 
     ProtocolManager protocolManager = ProtocolManager.getProtocolManager();
@@ -1908,7 +1843,7 @@ public class DeviceUpgrade
     {
       System.err.println( "protocolName=" + protocolName );
       System.err.println( "manualLine=" + manualLine );
-      List< String > manualFields = tokenizeLine( manualLine, delim );
+      List< String > manualFields = LineTokenizer.tokenize( manualLine, delim );
       String pidStr = manualFields.get( 1 );
       System.err.println( "pid=" + pidStr );
       if ( pidStr != null )
@@ -2063,7 +1998,7 @@ public class DeviceUpgrade
         break;
     }
 
-    fields = tokenizeLine( line, delim );
+    fields = LineTokenizer.tokenize( line, delim );
 
     int buttonCodeIndex = fields.indexOf( "bBtnCd" );
 
@@ -2081,7 +2016,7 @@ public class DeviceUpgrade
     // read in the notes, which may have the protocol code
     while ( ( line = in.readLine() ) != null )
     {
-      fields = tokenizeLine( line, delim );
+      fields = LineTokenizer.tokenize( line, delim );
       token = fields.get( 0 );
       if ( token != null )
       {
@@ -2123,7 +2058,7 @@ public class DeviceUpgrade
     for ( int i = 0; i < 128; i++ )
     {
       line = lines[ i ];
-      fields = tokenizeLine( line, delim );
+      fields = LineTokenizer.tokenize( line, delim );
       String funcName = cleanName( fields.get( 0 ) );
       String code = fields.get( 1 );
       String byte2 = fields.get( 2 );
@@ -2251,7 +2186,7 @@ public class DeviceUpgrade
     for ( int i = 0; i < 128; i++ )
     {
       line = lines[ i ];
-      fields = tokenizeLine( line, delim );
+      fields = LineTokenizer.tokenize( line, delim );
       @SuppressWarnings( "unused" )
       String funcName = fields.get( 0 ); // the function being defined, if any (field 1)
       @SuppressWarnings( "unused" )

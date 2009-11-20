@@ -75,7 +75,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      "00", "_VCR/DVD_", "shift-Thumbs_Up", " ToadTog(0,ForceOff) ",
+      " 00 ", "_VCR/DVD_", "shift-Thumbs_Up", " ToadTog(0,ForceOff) ",
       "[Short]:DiscreteON;DiscreteON; [Long]:DiscreteOFF;DiscreteOFF", "00 11 22 33", "A reasonable length note"
   };
 

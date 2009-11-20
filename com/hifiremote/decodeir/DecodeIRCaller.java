@@ -19,20 +19,31 @@
   Inspired by, but not ultimately copying much from, a related module
   by Mineharu Takahara <mtakahar@yahoo.com>
 
+  Edited Sep 28, 2009 by Graham Dixon to provide three-argument form of
+  setBursts, which enables the count of extra bursts (those after the repeat
+  part) to be passed to DecodeIR.
  */
 
 //  Usage
 //
 //  To prepare to decode a signal, call all three of the following in any order
 //
-//     setBursts( int[] b, int r );
+//     setBursts( int[] b, int r ) or setBursts( int[] b, int r, int e );
 //     setFrequency( int f );
 //     initDecoder();
 //
 //     b is an array of durations in microseconds.  All numbers should be positive.
 //          Even (0 based) positions are On durations, odd positions are Off durations.
-//     r is the length of the repeat part of b (b.size()-r is the length of the one time part.)
+//     r is the length of the repeat part of b.
+//     e is the length of the extra part of b (the part after the repeat part).
+//     b.size()-r-e is the length of the one time part.
 //     f is the frequency in hertz.
+//
+//  The two-argument form of setBursts is retained for compatibility, to allow
+//  this class to be used with legacy code.  It is equivalent to the three-
+//  argument form with e=0, but unless the array b really does not contain
+//  extra bursts, or r is set to 0 (which makes all bursts be treated as
+//  one-time) it will give the wrong value for the one-time count.
 //
 //  A signal may have multiple decodes.  For each decode call
 //     decode()
@@ -62,6 +73,9 @@ public class DecodeIRCaller
 
   /** The repeat part. */
   private int repeatPart;
+
+  /** The extra part. */
+  private int extraPart;
 
   /** The frequency. */
   private int frequency;
@@ -122,10 +136,21 @@ public class DecodeIRCaller
    * @param r
    *          the r
    */
+
+  // GD 2009 Added extraPart=0 to 2-arg form of setBursts and created
+  // 3-arg form
   public void setBursts( int[] b, int r )
   {
     bursts = b;
     repeatPart = r;
+    extraPart = 0;
+  }
+
+  public void setBursts( int[] b, int r, int e )
+  {
+    bursts = b;
+    repeatPart = r;
+    extraPart = e;
   }
 
   /**
@@ -154,7 +179,7 @@ public class DecodeIRCaller
    */
   public synchronized boolean decode()
   {
-    return decode( decoder_ctx, bursts, repeatPart, frequency );
+    return decode2( decoder_ctx, bursts, repeatPart, extraPart, frequency );
   }
 
   /**
@@ -265,11 +290,18 @@ public class DecodeIRCaller
    *          the bursts
    * @param r
    *          the r
+   * @param e
+   *          the e
    * @param freq
    *          the freq
    * @return true, if successful
    */
+
+  // declaration of decode(...), now unused, retained so that it is
+  // included in DecodeIRCaller.h
   private native boolean decode( int[] decoder_ctx, int[] bursts, int r, int freq );
+
+  private native boolean decode2( int[] decoder_ctx, int[] bursts, int r, int e, int freq );
 
   private final static String libraryName = "DecodeIR";
 }

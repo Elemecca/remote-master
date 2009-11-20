@@ -31,6 +31,7 @@ import java.util.Enumeration;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -197,6 +198,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     editorPanel = new DeviceEditorPanel( deviceUpgrade, getRemotes() );
     add( editorPanel, BorderLayout.CENTER );
     editorPanel.addPropertyChangeListener( this, "remote" );
+    editorPanel.setShowRemoteSignature( preferences.getShowRemoteSignature() );
     messageLabel = new JLabel( " " );
     messageLabel.setForeground( Color.RED );
     add( messageLabel, BorderLayout.SOUTH );
@@ -465,6 +467,23 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     item.setMnemonic( KeyEvent.VK_E );
     item.addActionListener( al );
     submenu.add( item );
+
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        JCheckBoxMenuItem checkItem = ( JCheckBoxMenuItem )e.getSource();
+        boolean state = checkItem.getState();
+        preferences.setShowRemoteSignature( state );
+        editorPanel.setShowRemoteSignature( state );
+      }
+    };
+
+    JCheckBoxMenuItem checkItem = new JCheckBoxMenuItem( "Show remote signature" );
+    checkItem.setMnemonic( KeyEvent.VK_S );
+    checkItem.setState( preferences.getShowRemoteSignature() );
+    checkItem.addActionListener( al );
+    menu.add( checkItem );
 
     menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
@@ -954,7 +973,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( upgradeExtension ) )
+      {
         name = name + upgradeExtension;
+      }
       File file = new File( name );
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists() )

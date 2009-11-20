@@ -7,7 +7,6 @@ import java.util.List;
 
 /**
  * @author Greg
- * 
  */
 public class SoftHomeTheater extends RDFParameter
 {
@@ -15,7 +14,7 @@ public class SoftHomeTheater extends RDFParameter
   private int deviceType = 0;
   private int deviceCode = 0;
 
-  public void parse( String text ) throws Exception
+  public void parse( String text, Remote remote ) throws Exception
   {
     List< String > settings = ParameterTokenizer.getTokens( text );
     use = RDFReader.parseFlag( settings.get( 0 ) );

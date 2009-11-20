@@ -8,7 +8,7 @@ import java.util.StringTokenizer;
  */
 public class FavKey extends RDFParameter
 {
-  public void parse( String text ) throws Exception
+  public void parse( String text, Remote remote ) throws Exception
   {
     StringTokenizer st = new StringTokenizer( text, "=, \t" );
     keyCode = RDFReader.parseNumber( st.nextToken() );
@@ -78,8 +78,8 @@ public class FavKey extends RDFParameter
   {
     StringBuilder temp = new StringBuilder( 25 );
     temp.append( '$' ).append( Integer.toHexString( keyCode ) ).append( ", $" ).append(
-        Integer.toHexString( deviceButtonAddress ) ).append( ", " ).append( maxEntries ).append(
-        ", " ).append( entrySize );
+        Integer.toHexString( deviceButtonAddress ) ).append( ", " ).append( maxEntries ).append( ", " ).append(
+        entrySize );
 
     if ( segregated )
       temp.append( ", 1" );

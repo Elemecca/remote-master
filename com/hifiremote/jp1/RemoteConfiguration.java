@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -40,10 +41,15 @@ public class RemoteConfiguration
     BufferedReader in = new BufferedReader( new FileReader( file ) );
     PropertyReader pr = new PropertyReader( in );
     if ( file.getName().toLowerCase().endsWith( ".rmir" ) )
+    {
       parse( pr );
+    }
     else
+    {
       importIR( pr );
+    }
     in.close();
+    updateImage();
   }
 
   /**
@@ -65,9 +71,6 @@ public class RemoteConfiguration
       throw new IOException( "Doesn't start with a [General] section/" );
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( section.getProperty( "Remote.name" ) );
-    AdvancedCode.setFormat( remote.getAdvCodeFormat() );
-    AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
-    LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
     notes = section.getProperty( "Notes" );
 
@@ -112,7 +115,6 @@ public class RemoteConfiguration
         }
       }
     }
-    updateImage();
   }
 
   /**
@@ -177,9 +179,6 @@ public class RemoteConfiguration
       }
     }
     remote.load();
-    AdvancedCode.setFormat( remote.getAdvCodeFormat() );
-    AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
-    LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
     System.err.println( "Remote is " + remote );
@@ -635,9 +634,6 @@ public class RemoteConfiguration
   public RemoteConfiguration( Remote remote )
   {
     this.remote = remote;
-    AdvancedCode.setFormat( remote.getAdvCodeFormat() );
-    AdvancedCode.setBindFormat( remote.getAdvCodeBindFormat() );
-    LearnedSignal.setDeviceButtonSwapped( remote.getLearnedDevBtnSwapped() );
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
     data = new short[ remote.getEepromSize() ];
@@ -699,11 +695,6 @@ public class RemoteConfiguration
    */
   private List< AdvancedCode > decodeAdvancedCodes()
   {
-    List< AdvancedCode > advCodes = new ArrayList< AdvancedCode >();
-    AddressRange advCodeRange = remote.getAdvancedCodeAddress();
-    int offset = advCodeRange.getStart();
-    int endOffset = advCodeRange.getEnd();
-
     // Determine which upgrades are special protocol upgrades
     List< DeviceUpgrade > specialUpgrades = new ArrayList< DeviceUpgrade >();
     List< SpecialProtocol > specialProtocols = remote.getSpecialProtocols();
@@ -719,78 +710,20 @@ public class RemoteConfiguration
       }
     }
 
-    FavKey favKey = remote.getFavKey();
-    while ( offset <= endOffset )
+    List< AdvancedCode > advCodes = new ArrayList< AdvancedCode >();
+    HexReader reader = new HexReader( data, remote.getAdvancedCodeAddress() );
+    AdvancedCode advCode = null;
+    while ( ( advCode = AdvancedCode.read( reader, remote ) ) != null )
     {
-      short keyCode = data[ offset++ ];
-      if ( keyCode == remote.getSectionTerminator() )
-        break;
-      System.err.println( "Decoding advCode at $" + Integer.toHexString( offset ) + ", keyCode=" + keyCode + ':'
-          + remote.getButtonName( keyCode ) );
-
-      int boundDeviceIndex = 0;
-      boolean isMacro = false;
-      boolean isFav = false;
-      int length = 0;
-      if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
+      if ( advCode instanceof Macro )
       {
-        boundDeviceIndex = data[ offset ] >> 4;
-        length = ( data[ offset++ ] & 0x0F );
-        if ( boundDeviceIndex == 1 )
-          isMacro = true;
-        else if ( boundDeviceIndex == 3 )
-          isFav = true;
-        boundDeviceIndex >>= 1;
-      }
-      else
-      // LONG
-      {
-        int type = data[ offset++ ];
-        boundDeviceIndex = type & 0x0F;
-        type >>= 4;
-        length = data[ offset++ ];
-        if ( ( type & 8 ) == 8 )
-          isMacro = true;
-        else if ( ( type & 3 ) == 3 )
-          isFav = true;
-      }
-      if ( isFav && ( favKey != null ) )
-        length *= favKey.getEntrySize();
-
-      System.err.println( "length=" + length );
-
-      if ( isMacro || isFav )
-      {
-        Hex keyCodes = Hex.subHex( data, offset, length );
-        Macro macro = new Macro( keyCode, keyCodes, null );
+        Macro macro = ( Macro )advCode;
         macros.add( macro );
         advCodes.add( macro );
       }
       else
       {
-        KeyMove keyMove = null;
-        Hex hex = Hex.subHex( data, offset, length );
-        if ( ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG ) && ( length == 3 ) )
-        {
-          keyMove = new KeyMoveKey( keyCode, boundDeviceIndex, hex, null );
-        }
-        else if ( remote.getAdvCodeFormat() == AdvancedCode.Format.HEX )
-        {
-          keyMove = new KeyMove( keyCode, boundDeviceIndex, hex, null );
-        }
-        else
-        {
-          if ( remote.getEFCDigits() == 3 )
-          {
-            keyMove = new KeyMoveEFC( keyCode, boundDeviceIndex, hex, null );
-          }
-          else
-          // EFCDigits == 5
-          {
-            keyMove = new KeyMoveEFC5( keyCode, boundDeviceIndex, hex, null );
-          }
-        }
-
+        KeyMove keyMove = ( KeyMove )advCode;
         SpecialProtocol sp = getSpecialProtocol( keyMove, specialUpgrades );
         if ( sp != null )
         {
@@ -807,7 +740,6 @@ public class RemoteConfiguration
           advCodes.add( keyMove );
         }
       }
-      offset += length;
     }
     return advCodes;
   }
@@ -952,7 +884,7 @@ public class RemoteConfiguration
     int count = 0;
     for ( AdvancedCode code : codes )
     {
-      count += code.getSize(); // the key code and type/length
+      count += code.getSize( remote ); // the key code and type/length
     }
     return count;
   }
@@ -985,6 +917,22 @@ public class RemoteConfiguration
     updateUpgrades();
     updateLearnedSignals();
     updateCheckSums();
+
+    checkImageForByteOverflows();
+  }
+
+  private void checkImageForByteOverflows()
+  {
+    for ( int i = 0; i < data.length; i++ )
+    {
+      short s = data[ i ];
+      if ( ( s & 0xFF00 ) != 0 )
+      {
+        String message = String.format( "Overflow at %04X: %04X", i, s );
+        System.err.println( message );
+        JOptionPane.showMessageDialog( null, message );
+      }
+    }
   }
 
   /**
@@ -1000,7 +948,7 @@ public class RemoteConfiguration
   {
     for ( KeyMove keyMove : moves )
     {
-      offset = keyMove.store( data, offset );
+      offset = keyMove.store( data, offset, remote );
     }
     return offset;
   }
@@ -1041,9 +989,27 @@ public class RemoteConfiguration
     offset = updateKeyMoves( upgradeKeyMoves, offset );
     offset = updateKeyMoves( specialFunctions, offset );
 
+    HashMap< Button, List< Macro >> multiMacros = new HashMap< Button, List< Macro >>();
     for ( Macro macro : macros )
     {
-      offset = macro.store( data, offset );
+      int keyCode = macro.getKeyCode();
+      Button button = remote.getButton( keyCode );
+      if ( button != null )
+      {
+        MultiMacro multiMacro = button.getMultiMacro();
+        if ( multiMacro != null )
+        {
+          List< Macro > list = multiMacros.get( button );
+          if ( list == null )
+          {
+            list = new ArrayList< Macro >();
+            multiMacros.put( button, list );
+          }
+          list.add( macro );
+          macro.setSequenceNumber( list.size() );
+        }
+      }
+      offset = macro.store( data, offset, remote );
     }
     data[ offset++ ] = remote.getSectionTerminator();
 
@@ -1053,6 +1019,15 @@ public class RemoteConfiguration
       data[ offset++ ] = remote.getSectionTerminator();
     }
 
+    // Update the multiMacros
+    for ( Map.Entry< Button, List< Macro >> entry : multiMacros.entrySet() )
+    {
+      Button button = entry.getKey();
+      List< Macro > macros = entry.getValue();
+      MultiMacro multiMacro = button.getMultiMacro();
+      multiMacro.setCount( macros.size() );
+      multiMacro.store( data, remote );
+    }
   }
 
   /**
@@ -1444,18 +1419,12 @@ public class RemoteConfiguration
     AddressRange addr = remote.getLearnedAddress();
     if ( addr == null )
       return;
+    HexReader reader = new HexReader( data, addr );
 
-    int offset = addr.getStart();
-    while ( ( offset < addr.getEnd() ) && ( data[ offset ] != remote.getSectionTerminator() ) )
+    LearnedSignal signal = null;
+    while ( ( signal = LearnedSignal.read( reader, remote ) ) != null )
     {
-      short keyCode = data[ offset++ ];
-      int device = data[ offset ] >> 4;
-      if ( remote.getLearnedDevBtnSwapped() )
-        device = data[ offset ] & 0x0F;
-      ++offset;
-      int length = data[ offset++ ];
-      learned.add( new LearnedSignal( keyCode, device, new Hex( data, offset, length ), null ) );
-      offset += length;
+      learned.add( signal );
     }
   }
 
@@ -1492,7 +1461,7 @@ public class RemoteConfiguration
     int offset = addr.getStart();
     for ( LearnedSignal ls : learned )
     {
-      offset = ls.store( data, offset );
+      offset = ls.store( data, offset, remote );
     }
     data[ offset ] = remote.getSectionTerminator();
   }

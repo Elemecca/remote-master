@@ -348,6 +348,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         updateNotes();
       else if ( doc == setupCode.getDocument() )
         updateSetupCode();
+      else
+        updateFixedData();
     }
   }
 
