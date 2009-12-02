@@ -44,37 +44,36 @@ import javax.swing.Scrollable;
 /**
  * The Class LayoutPanel.
  */
-public class LayoutPanel
-  extends KMPanel
-  implements ActionListener
+public class LayoutPanel extends KMPanel implements ActionListener
 {
-  
+
   /**
    * Instantiates a new layout panel.
    * 
-   * @param devUpgrade the dev upgrade
+   * @param devUpgrade
+   *          the dev upgrade
    */
   public LayoutPanel( DeviceUpgrade devUpgrade )
   {
     super( "Layout", devUpgrade );
-    setLayout( new BorderLayout());
+    setLayout( new BorderLayout() );
     imagePanel = new ImagePanel();
     // Don't know why, but tooltips don't work without this
     imagePanel.setToolTipText( "" );
     imagePanel.setFocusable( true );
-    imagePanel.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_DELETE, 0), "delete");
-    deleteAction = new AbstractAction( "Remove" ) 
+    imagePanel.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_DELETE, 0 ), "delete" );
+    deleteAction = new AbstractAction( "Remove" )
     {
-      public void actionPerformed( ActionEvent e ) 
+      public void actionPerformed( ActionEvent e )
       {
         setFunction( currentShape, null );
         doRepaint();
       }
     };
- 
-    imagePanel.getActionMap().put( "delete", deleteAction ); 
 
-    JPanel leftPanel = new JPanel( new BorderLayout());
+    imagePanel.getActionMap().put( "delete", deleteAction );
+
+    JPanel leftPanel = new JPanel( new BorderLayout() );
     scrollPanel = Box.createHorizontalBox();
     leftPanel.add( scrollPanel, BorderLayout.SOUTH );
     scrollLeft = new JButton( "<" );
@@ -82,26 +81,25 @@ public class LayoutPanel
     scrollLeft.addActionListener( this );
     scrollPanel.add( scrollLeft );
 
-    scrollPanel.add( Box.createHorizontalGlue());
-    scrollPanel.add( new JLabel( "Scroll" ));
-    scrollPanel.add( Box.createHorizontalGlue());
+    scrollPanel.add( Box.createHorizontalGlue() );
+    scrollPanel.add( new JLabel( "Scroll" ) );
+    scrollPanel.add( Box.createHorizontalGlue() );
 
     scrollRight = new JButton( ">" );
     scrollRight.setEnabled( false );
     scrollRight.addActionListener( this );
     scrollPanel.add( scrollRight );
-    
-    scrollPane = new JScrollPane( imagePanel,
-                                  JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                  JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+
+    scrollPane = new JScrollPane( imagePanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
     leftPanel.add( scrollPane, BorderLayout.WEST );
     add( leftPanel, BorderLayout.WEST );
 
-    JPanel rightPanel = new JPanel( new BorderLayout());
+    JPanel rightPanel = new JPanel( new BorderLayout() );
     add( rightPanel, BorderLayout.CENTER );
 
-    JPanel modePanel = new JPanel( new FlowLayout( FlowLayout.LEFT ));
-    modePanel.setBorder( BorderFactory.createTitledBorder( "Mode" ));
+    JPanel modePanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
+    modePanel.setBorder( BorderFactory.createTitledBorder( "Mode" ) );
 
     ButtonGroup group = new ButtonGroup();
 
@@ -120,7 +118,7 @@ public class LayoutPanel
     group.add( xShiftMode );
     modePanel.add( xShiftMode );
 
-    JPanel infoPanel = new JPanel( new GridLayout( 2, 2 ));
+    JPanel infoPanel = new JPanel( new GridLayout( 2, 2 ) );
 
     JLabel label = new JLabel( "Button:" );
     label.setToolTipText( "button label" );
@@ -129,7 +127,7 @@ public class LayoutPanel
     buttonName.setEditable( false );
     infoPanel.add( buttonName );
 
-    infoPanel.add( new JLabel( "Function:" ));
+    infoPanel.add( new JLabel( "Function:" ) );
     function = new JTextField();
     function.setEditable( false );
     infoPanel.add( function );
@@ -140,14 +138,14 @@ public class LayoutPanel
 
     rightPanel.add( box, BorderLayout.NORTH );
 
-    JPanel panel = new JPanel( new BorderLayout());
+    JPanel panel = new JPanel( new BorderLayout() );
     label = new JLabel( "Available Functions:" );
     label.setToolTipText( "available functions label" );
-    label.setBorder( BorderFactory.createEmptyBorder( 2, 2, 3, 2 ));
+    label.setBorder( BorderFactory.createEmptyBorder( 2, 2, 3, 2 ) );
     panel.add( label, BorderLayout.NORTH );
     rightPanel.add( panel, BorderLayout.CENTER );
 
-    JPanel outerPanel = new JPanel( new BorderLayout());
+    JPanel outerPanel = new JPanel( new BorderLayout() );
     functionPanel = new GridFlowPanel();
 
     outerPanel.add( new JScrollPane( functionPanel ), BorderLayout.CENTER );
@@ -164,7 +162,7 @@ public class LayoutPanel
     panel.add( button );
 
     box = Box.createVerticalBox();
-    box.add( new JSeparator());
+    box.add( new JSeparator() );
     box.add( panel );
 
     rightPanel.add( box, BorderLayout.SOUTH );
@@ -189,7 +187,7 @@ public class LayoutPanel
 
         if ( currentShape != savedShape )
         {
-          setButtonText( currentShape, getButtonForShape( currentShape ));
+          setButtonText( currentShape, getButtonForShape( currentShape ) );
           doRepaint();
         }
         showPopup( e );
@@ -204,12 +202,12 @@ public class LayoutPanel
       {
         if ( e.isPopupTrigger() )
         {
-          ButtonShape buttonShape = getShapeAtPoint( e.getPoint());
-          if (( buttonShape != null ) && ( getButtonForShape( buttonShape ) != null ))
+          ButtonShape buttonShape = getShapeAtPoint( e.getPoint() );
+          if ( ( buttonShape != null ) && ( getButtonForShape( buttonShape ) != null ) )
           {
             currentShape = buttonShape;
             doRepaint();
-            popup.show( imagePanel, e.getX(), e.getY());
+            popup.show( imagePanel, e.getX(), e.getY() );
           }
         }
       }
@@ -220,12 +218,12 @@ public class LayoutPanel
   /**
    * Adds the function.
    * 
-   * @param f the f
+   * @param f
+   *          the f
    */
   private void addFunction( Function f )
   {
-    if (( f == null ) ||
-        (( f.getHex() != null ) && ( f.getName() != null ) && (f.getName().length() > 0 )))
+    if ( ( f == null ) || ( ( f.getHex() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
     {
       FunctionLabel l;
       if ( f == null )
@@ -251,13 +249,13 @@ public class LayoutPanel
   private void setFunctions()
   {
     popup = new JPopupMenu();
-    popup.setLayout( new GridLayout( 0, 3 ));
+    popup.setLayout( new GridLayout( 0, 3 ) );
     functionPanel.removeAll();
 
-    for ( Function function : deviceUpgrade.getFunctions())
+    for ( Function function : deviceUpgrade.getFunctions() )
       addFunction( function );
 
-    for ( Function function : deviceUpgrade.getExternalFunctions())
+    for ( Function function : deviceUpgrade.getExternalFunctions() )
       addFunction( function );
   }
 
@@ -280,24 +278,27 @@ public class LayoutPanel
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.KMPanel#update()
    */
   public void update()
   {
     Remote r = deviceUpgrade.getRemote();
-    maps = r.getImageMaps( deviceUpgrade.getDeviceType());
+    maps = r.getImageMaps( deviceUpgrade.getDeviceType() );
     if ( screenIndex >= maps.length )
       screenIndex = maps.length - 1;
     enableScrollButtons();
     map = maps[ screenIndex ];
-    Dimension d = new Dimension( r.getWidth(), r.getHeight());
+    image = new ImageIcon( map.getImageFile().getAbsolutePath() );
+    Dimension d = new Dimension( r.getWidth(), r.getHeight() );
     imagePanel.setPreferredSize( d );
     imagePanel.setMinimumSize( d );
     imagePanel.setMaximumSize( d );
     imagePanel.revalidate();
     boolean found = false;
-    for ( ButtonShape shape : map.getShapes())
+    for ( ButtonShape shape : map.getShapes() )
     {
       if ( currentShape == shape )
       {
@@ -308,18 +309,18 @@ public class LayoutPanel
     if ( !found )
       currentShape = null;
 
-    setButtonText( currentShape, getButtonForShape( currentShape ));
+    setButtonText( currentShape, getButtonForShape( currentShape ) );
 
     setFunctions();
 
-    shiftMode.setText( r.getShiftLabel());
-    xShiftMode.setText( r.getXShiftLabel());
-    if ( r.getXShiftEnabled())
+    shiftMode.setText( r.getShiftLabel() );
+    xShiftMode.setText( r.getXShiftLabel() );
+    if ( r.getXShiftEnabled() )
       xShiftMode.setEnabled( true );
     else
     {
       xShiftMode.setEnabled( false );
-      if ( xShiftMode.isSelected())
+      if ( xShiftMode.isSelected() )
         normalMode.setSelected( true );
     }
     doRepaint();
@@ -330,39 +331,41 @@ public class LayoutPanel
    */
   private void doRepaint()
   {
-    imagePanel.repaint( 0L, 0, 0, imagePanel.getWidth(), imagePanel.getHeight());
+    imagePanel.repaint( 0L, 0, 0, imagePanel.getWidth(), imagePanel.getHeight() );
   }
 
   /**
    * Sets the button text.
    * 
-   * @param buttonShape the button shape
-   * @param b the b
+   * @param buttonShape
+   *          the button shape
+   * @param b
+   *          the b
    */
   private void setButtonText( ButtonShape buttonShape, Button b )
   {
-    if (( buttonShape != null ) && ( b != null ))
+    if ( ( buttonShape != null ) && ( b != null ) )
     {
       String name = buttonShape.getName();
       if ( name == null )
       {
-        if ( normalMode.isSelected())
+        if ( normalMode.isSelected() )
           name = b.getName();
-        else if ( shiftMode.isSelected())
+        else if ( shiftMode.isSelected() )
           name = b.getShiftedName();
-        else if ( xShiftMode.isSelected())
+        else if ( xShiftMode.isSelected() )
           name = b.getXShiftedName();
       }
       buttonName.setText( name );
       Function f = null;
-      if ( normalMode.isSelected())
+      if ( normalMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
-      else if ( shiftMode.isSelected())
+      else if ( shiftMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
-      else if ( xShiftMode.isSelected())
+      else if ( xShiftMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
       if ( f != null )
-        function.setText( f.getName());
+        function.setText( f.getName() );
       else
         function.setText( "" );
       deleteAction.setEnabled( f != null );
@@ -378,34 +381,34 @@ public class LayoutPanel
   /**
    * Gets the shape at point.
    * 
-   * @param p the p
-   * 
+   * @param p
+   *          the p
    * @return the shape at point
    */
   public ButtonShape getShapeAtPoint( Point p )
   {
     ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
     ButtonShape closestMatch = null;
-    for ( ButtonShape buttonShape : map.getShapes())
+    for ( ButtonShape buttonShape : map.getShapes() )
     {
       Shape s = buttonShape.getShape();
-      if (( s != null ) && s.contains( p ))
+      if ( ( s != null ) && s.contains( p ) )
       {
         if ( closestMatch == null )
           closestMatch = buttonShape;
         Button b = getButtonForShape( buttonShape );
-        if ( buttonMap.isPresent( b ))
+        if ( buttonMap.isPresent( b ) )
           return buttonShape;
       }
     }
     return closestMatch;
   }
-  
+
   /**
    * Gets the button for shape.
    * 
-   * @param buttonShape the button shape
-   * 
+   * @param buttonShape
+   *          the button shape
    * @return the button for shape
    */
   public Button getButtonForShape( ButtonShape buttonShape )
@@ -415,29 +418,29 @@ public class LayoutPanel
 
     Button b = buttonShape.getButton();
     ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
-    
-    if ( !b.getIsNormal() && !normalMode.isSelected())
+
+    if ( !b.getIsNormal() && !normalMode.isSelected() )
       return null;
-    
-    if ( normalMode.isSelected())
+
+    if ( normalMode.isSelected() )
     {
-      if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
+      if ( b.allowsKeyMove() || buttonMap.isPresent( b ) )
         return b;
     }
-    else if ( shiftMode.isSelected())
+    else if ( shiftMode.isSelected() )
     {
-      if ( b.getIsNormal())
+      if ( b.getIsNormal() )
       {
-        if ( !b.allowsShiftedKeyMove())
+        if ( !b.allowsShiftedKeyMove() )
           return null;
-        if (( b.getShiftedButton() != null ))
+        if ( ( b.getShiftedButton() != null ) )
           b = b.getShiftedButton();
         else
           return b;
       }
-      if ( b.getIsShifted())
+      if ( b.getIsShifted() )
       {
-        if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
+        if ( b.allowsKeyMove() || buttonMap.isPresent( b ) )
           return b.getBaseButton();
         else
           return null;
@@ -445,24 +448,24 @@ public class LayoutPanel
       else
         return null;
     }
-    else if ( xShiftMode.isSelected())
+    else if ( xShiftMode.isSelected() )
     {
-      if ( b.getIsNormal())
+      if ( b.getIsNormal() )
       {
-        if ( !b.allowsXShiftedKeyMove())
+        if ( !b.allowsXShiftedKeyMove() )
           return null;
         if ( b.getXShiftedButton() != null )
           b = b.getXShiftedButton();
         else
           return b;
       }
-      if ( b.getIsXShifted())
+      if ( b.getIsXShifted() )
       {
-        if ( b.allowsKeyMove() || buttonMap.isPresent( b ))
-//          return b.getBaseButton();
+        if ( b.allowsKeyMove() || buttonMap.isPresent( b ) )
+          // return b.getBaseButton();
           return b;
       }
-      else if ( b.allowsXShiftedKeyMove())
+      else if ( b.allowsXShiftedKeyMove() )
         return b;
     }
     return null;
@@ -471,19 +474,21 @@ public class LayoutPanel
   /**
    * Sets the function.
    * 
-   * @param shape the shape
-   * @param f the f
+   * @param shape
+   *          the shape
+   * @param f
+   *          the f
    */
   private void setFunction( ButtonShape shape, Function f )
   {
     Button b = getButtonForShape( shape );
     if ( b != null )
     {
-      if ( normalMode.isSelected())
+      if ( normalMode.isSelected() )
         deviceUpgrade.setFunction( b, f, Button.NORMAL_STATE );
-      else if ( shiftMode.isSelected())
+      else if ( shiftMode.isSelected() )
         deviceUpgrade.setFunction( b, f, Button.SHIFTED_STATE );
-      else if ( xShiftMode.isSelected())
+      else if ( xShiftMode.isSelected() )
         deviceUpgrade.setFunction( b, f, Button.XSHIFTED_STATE );
       setButtonText( currentShape, b );
       deviceUpgrade.checkSize();
@@ -491,7 +496,9 @@ public class LayoutPanel
   }
 
   // From interface ActionListener
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
   public void actionPerformed( ActionEvent e )
@@ -500,13 +507,15 @@ public class LayoutPanel
     if ( source == scrollLeft )
     {
       map = maps[ --screenIndex ];
-      
+      image = new ImageIcon( map.getImageFile().getAbsolutePath() );
+
       enableScrollButtons();
       doRepaint();
     }
     else if ( source == scrollRight )
     {
       map = maps[ ++screenIndex ];
+      image = new ImageIcon( map.getImageFile().getAbsolutePath() );
       enableScrollButtons();
       doRepaint();
     }
@@ -515,9 +524,7 @@ public class LayoutPanel
       deviceUpgrade.autoAssignFunctions();
       doRepaint();
     }
-    else if (( source == normalMode ) ||
-             ( source == shiftMode ) ||
-             ( source == xShiftMode ))
+    else if ( ( source == normalMode ) || ( source == shiftMode ) || ( source == xShiftMode ) )
     {
       Button b = getButtonForShape( currentShape );
       if ( b == null )
@@ -527,38 +534,37 @@ public class LayoutPanel
     }
     else
     {
-      setFunction( currentShape, (( FunctionItem )source ).getFunction()); 
+      setFunction( currentShape, ( ( FunctionItem )source ).getFunction() );
       doRepaint();
     }
   }
 
   /**
-   * The listener interface for receiving doubleClick events.
-   * The class that is interested in processing a doubleClick
-   * event implements this interface, and the object created
-   * with that class is registered with a component using the
+   * The listener interface for receiving doubleClick events. The class that is interested in processing a doubleClick
+   * event implements this interface, and the object created with that class is registered with a component using the
    * component's <code>addDoubleClickListener<code> method. When
    * the doubleClick event occurs, that object's appropriate
    * method is invoked.
    * 
    * @see DoubleClickEvent
    */
-  class DoubleClickListener
-    extends MouseAdapter
+  class DoubleClickListener extends MouseAdapter
   {
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
      */
     public void mouseClicked( MouseEvent e )
     {
-      if (( currentShape != null ) && ( e.getClickCount() >= 2 ))
+      if ( ( currentShape != null ) && ( e.getClickCount() >= 2 ) )
       {
         Button button = getButtonForShape( currentShape );
         if ( button == null )
           return;
 
-        Function f = ( Function )(( FunctionLabel )e.getSource()).getFunction();
+        Function f = ( Function )( ( FunctionLabel )e.getSource() ).getFunction();
         setFunction( currentShape, f );
       }
       doRepaint();
@@ -568,10 +574,9 @@ public class LayoutPanel
   /**
    * The Class LayoutDropTarget.
    */
-  class LayoutDropTarget
-    extends DropTarget
+  class LayoutDropTarget extends DropTarget
   {
-    
+
     /**
      * Instantiates a new layout drop target.
      */
@@ -580,7 +585,9 @@ public class LayoutPanel
       setDefaultActions( DnDConstants.ACTION_COPY );
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.awt.dnd.DropTarget#dragOver(java.awt.dnd.DropTargetDragEvent)
      */
     public void dragOver( DropTargetDragEvent dtde )
@@ -589,7 +596,7 @@ public class LayoutPanel
       currentShape = getShapeAtPoint( p );
       Button button = getButtonForShape( currentShape );
       if ( button != null )
-        dtde.acceptDrag( dtde.getDropAction());
+        dtde.acceptDrag( dtde.getDropAction() );
       else
       {
         currentShape = null;
@@ -598,7 +605,9 @@ public class LayoutPanel
       doRepaint();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.awt.dnd.DropTarget#drop(java.awt.dnd.DropTargetDropEvent)
      */
     public void drop( DropTargetDropEvent dtde )
@@ -613,7 +622,7 @@ public class LayoutPanel
         Transferable tf = dtde.getTransferable();
         try
         {
-          Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor());
+          Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor() );
           setFunction( currentShape, f );
         }
         catch ( Exception e )
@@ -630,52 +639,50 @@ public class LayoutPanel
   /**
    * The Class ImagePanel.
    */
-  private class ImagePanel
-    extends JPanel
-    implements Scrollable
+  private class ImagePanel extends JPanel implements Scrollable
   {
-    
+
     /**
      * Instantiates a new image panel.
      */
     public ImagePanel()
     {
       super();
-//      setHorizontalAlignment( SwingConstants.LEFT );
-//      setVerticalAlignment( SwingConstants.TOP );      
+      // setHorizontalAlignment( SwingConstants.LEFT );
+      // setVerticalAlignment( SwingConstants.TOP );
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.swing.JComponent#paint(java.awt.Graphics)
      */
     public void paint( Graphics g )
     {
       super.paint( g );
-      Graphics2D g2 = ( Graphics2D ) g;
-      g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
-                           RenderingHints.VALUE_ANTIALIAS_ON );
+      Graphics2D g2 = ( Graphics2D )g;
+      g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
       Remote r = deviceUpgrade.getRemote();
-      ImageIcon icon = map.getImage();
-      if ( icon != null )
-        g2.drawImage( icon.getImage(), null, null );
+      if ( image != null )
+        g2.drawImage( image.getImage(), null, null );
 
       g2.setPaint( Color.darkGray );
-      for ( ButtonShape shape : r.getPhantomShapes())
-        g2.fill( shape.getShape());
+      for ( ButtonShape shape : r.getPhantomShapes() )
+        g2.fill( shape.getShape() );
 
       if ( currentShape != null )
       {
         g2.setPaint( Color.white );
-        g2.setStroke( new BasicStroke( 6.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
-        g2.draw( currentShape.getShape());
+        g2.setStroke( new BasicStroke( 6.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+        g2.draw( currentShape.getShape() );
       }
 
-      g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+      g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
 
       DeviceType devType = deviceUpgrade.getDeviceType();
       ButtonMap buttonMap = devType.getButtonMap();
 
-      for ( ButtonShape buttonShape : map.getShapes())
+      for ( ButtonShape buttonShape : map.getShapes() )
       {
         Button b = getButtonForShape( buttonShape );
         if ( b == null )
@@ -684,11 +691,11 @@ public class LayoutPanel
         Shape s = buttonShape.getShape();
 
         Function f = null;
-        if ( normalMode.isSelected())
+        if ( normalMode.isSelected() )
           f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
-        else if ( shiftMode.isSelected())
+        else if ( shiftMode.isSelected() )
           f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
-        else if ( xShiftMode.isSelected())
+        else if ( xShiftMode.isSelected() )
           f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
 
         if ( f != null )
@@ -697,19 +704,19 @@ public class LayoutPanel
           g2.fill( s );
         }
 
-        if ( shiftMode.isSelected())
+        if ( shiftMode.isSelected() )
           b = b.getShiftedButton();
-        else if ( xShiftMode.isSelected())
+        else if ( xShiftMode.isSelected() )
           b = b.getXShiftedButton();
 
-        if ( buttonMap.isPresent( b ))
+        if ( buttonMap.isPresent( b ) )
         {
-          if (( currentShape != null ) && ( s == currentShape.getShape()))
+          if ( ( currentShape != null ) && ( s == currentShape.getShape() ) )
           {
             g2.setPaint( Color.white );
-            g2.setStroke( new BasicStroke( 6.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
-            g2.draw( currentShape.getShape());
-            g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+            g2.setStroke( new BasicStroke( 6.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+            g2.draw( currentShape.getShape() );
+            g2.setStroke( new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
           }
           g2.setPaint( Color.orange );
           g2.draw( s );
@@ -717,12 +724,14 @@ public class LayoutPanel
       }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.swing.JComponent#getToolTipText(java.awt.event.MouseEvent)
      */
     public String getToolTipText( MouseEvent e )
     {
-      ButtonShape buttonShape = getShapeAtPoint( e.getPoint());
+      ButtonShape buttonShape = getShapeAtPoint( e.getPoint() );
       if ( buttonShape == null )
         return null;
 
@@ -733,19 +742,19 @@ public class LayoutPanel
       String name = buttonShape.getName();
       if ( name == null )
       {
-        if ( normalMode.isSelected())
+        if ( normalMode.isSelected() )
           name = b.getName();
-        else if ( shiftMode.isSelected())
+        else if ( shiftMode.isSelected() )
           name = b.getShiftedName();
-        else if ( xShiftMode.isSelected())
+        else if ( xShiftMode.isSelected() )
           name = b.getXShiftedName();
       }
       Function f = null;
-      if ( normalMode.isSelected())
+      if ( normalMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
-      else if ( shiftMode.isSelected())
+      else if ( shiftMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
-      else if ( xShiftMode.isSelected())
+      else if ( xShiftMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
 
       String text = name;
@@ -755,7 +764,9 @@ public class LayoutPanel
       return text;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.swing.Scrollable#getPreferredScrollableViewportSize()
      */
     public Dimension getPreferredScrollableViewportSize()
@@ -777,27 +788,29 @@ public class LayoutPanel
       return rc;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.swing.Scrollable#getScrollableUnitIncrement(java.awt.Rectangle, int, int)
      */
-    public int getScrollableUnitIncrement( Rectangle visibleRect,
-                                           int orientation,
-                                           int direction )
+    public int getScrollableUnitIncrement( Rectangle visibleRect, int orientation, int direction )
     {
       return 1;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.swing.Scrollable#getScrollableBlockIncrement(java.awt.Rectangle, int, int)
      */
-    public int getScrollableBlockIncrement( Rectangle visibleRect,
-                                            int orientation,
-                                            int direction )
+    public int getScrollableBlockIncrement( Rectangle visibleRect, int orientation, int direction )
     {
       return visibleRect.height;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.swing.Scrollable#getScrollableTracksViewportWidth()
      */
     public boolean getScrollableTracksViewportWidth()
@@ -805,7 +818,9 @@ public class LayoutPanel
       return true;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.swing.Scrollable#getScrollableTracksViewportHeight()
      */
     public boolean getScrollableTracksViewportHeight()
@@ -816,58 +831,60 @@ public class LayoutPanel
 
   /** The maps. */
   private ImageMap[] maps = null;
-  
+
   /** The map. */
   private ImageMap map = null;
-  
+
   /** The screen index. */
   private int screenIndex = 0;
-  
+
   /** The current shape. */
   private ButtonShape currentShape = null;
-  
+
   /** The scroll panel. */
   private Box scrollPanel = null;
-  
+
   /** The scroll left. */
   private JButton scrollLeft = null;
-  
+
   /** The scroll right. */
   private JButton scrollRight = null;
-  
+
   /** The image panel. */
   private ImagePanel imagePanel = null;
-  
+
   /** The normal mode. */
   private JRadioButton normalMode = null;
-  
+
   /** The shift mode. */
   private JRadioButton shiftMode = null;
-  
+
   /** The x shift mode. */
   private JRadioButton xShiftMode = null;
-  
+
   /** The button name. */
   private JTextField buttonName = null;
-  
+
   /** The function. */
   private JTextField function = null;
-  
+
   /** The auto assign. */
   private JButton autoAssign = null;
-  
+
   /** The delete action. */
   private AbstractAction deleteAction = null;
-  
+
   /** The popup. */
   private JPopupMenu popup = null;
-  
+
   /** The function panel. */
   private JPanel functionPanel = null;
-  
+
   /** The scroll pane. */
   private JScrollPane scrollPane = null;
-  
+
   /** The double click listener. */
   private DoubleClickListener doubleClickListener = new DoubleClickListener();
+
+  private ImageIcon image = null;
 }

@@ -1269,7 +1269,7 @@ public class DeviceUpgrade
         else if ( token.equals( "false" ) )
           val = new Integer( 0 );
         else
-          val = new Integer( token );
+          val = Integer.parseInt( token );
       }
       parms[ i ] = new Value( val, null );
     }
@@ -1547,6 +1547,7 @@ public class DeviceUpgrade
       {
         return;
       }
+      remote = theRemote;
     }
     remote.load();
     str = props.getProperty( "DeviceIndex" );

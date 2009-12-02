@@ -43,8 +43,7 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
    * @param remotes
    *          the remotes
    */
-  public DeviceUpgradeEditor( JFrame owner, DeviceUpgrade deviceUpgrade,
-      Collection< Remote > remotes )
+  public DeviceUpgradeEditor( JFrame owner, DeviceUpgrade deviceUpgrade, Collection< Remote > remotes )
   {
     super( owner, "Device Upgrade Editor", true );
     createGUI( owner, deviceUpgrade, remotes );
@@ -60,8 +59,7 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
    * @param remotes
    *          the remotes
    */
-  public DeviceUpgradeEditor( JDialog owner, DeviceUpgrade deviceUpgrade,
-      Collection< Remote > remotes )
+  public DeviceUpgradeEditor( JDialog owner, DeviceUpgrade deviceUpgrade, Collection< Remote > remotes )
   {
     super( owner, "Device Upgrade Editor", true );
     createGUI( owner, deviceUpgrade, remotes );
@@ -183,17 +181,17 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
       e.printStackTrace( System.err );
     }
     String[] endings =
-    { ".rmdu", ".txt" };
+    {
+        ".rmdu", ".txt"
+    };
     chooser.setFileFilter( new EndingFileFilter( "All device upgrade files", endings ) );
     endings = new String[ 1 ];
     endings[ 0 ] = ".txt";
-    chooser.addChoosableFileFilter( new EndingFileFilter(
-        "KeyMapMaster device upgrade files (*.txt)", endings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files (*.txt)", endings ) );
     endings[ 0 ] = ".rmdu";
-    chooser.addChoosableFileFilter( new EndingFileFilter(
-        "RemoteMaster device upgrade files (*.rmdu)", endings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", endings ) );
 
-    RemoteMaster rm = ( RemoteMaster ) SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     String dir = rm.getProperties().getProperty( "UpgradePath" );
     if ( dir != null )
       chooser.setCurrentDirectory( new File( dir ) );
@@ -205,13 +203,13 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
 
         if ( !file.exists() )
         {
-          JOptionPane.showMessageDialog( rm, file.getName() + " doesn't exist.",
-              "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
+          JOptionPane.showMessageDialog( rm, file.getName() + " doesn't exist.", "File doesn't exist.",
+              JOptionPane.ERROR_MESSAGE );
         }
         else if ( file.isDirectory() )
         {
-          JOptionPane.showMessageDialog( rm, file.getName() + " is a directory.",
-              "File doesn't exist.", JOptionPane.ERROR_MESSAGE );
+          JOptionPane.showMessageDialog( rm, file.getName() + " is a directory.", "File doesn't exist.",
+              JOptionPane.ERROR_MESSAGE );
         }
         else
           break;
@@ -224,11 +222,11 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
         + DateFormat.getInstance().format( new Date( file.lastModified() ) ) );
     DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
 
-    Remote remote = deviceUpgrade.getRemote();
+    // Remote remote = deviceUpgrade.getRemote();
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
     rm.getProperties().put( "UpgradePath", file.getParent() );
-    deviceUpgrade.setRemote( remote );
+    // deviceUpgrade.setRemote( remote );
     editorPanel.refresh();
   }
 
@@ -245,7 +243,7 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
       {
         if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
         {
-          String s = ( String ) ( clipData.getTransferData( DataFlavor.stringFlavor ) );
+          String s = ( String )( clipData.getTransferData( DataFlavor.stringFlavor ) );
           BufferedReader in = new BufferedReader( new StringReader( s ) );
           DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
           Remote remote = deviceUpgrade.getRemote();
@@ -274,10 +272,11 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
     DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
     RMFileChooser chooser = new RMFileChooser();
     String[] endings =
-    { ".rmdu" };
-    chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)",
-        endings ) );
-    RemoteMaster rm = ( RemoteMaster ) SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+    {
+      ".rmdu"
+    };
+    chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", endings ) );
+    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     File f = deviceUpgrade.getFile();
     if ( f != null )
       chooser.setSelectedFile( f );
@@ -298,9 +297,8 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists() )
       {
-        rc = JOptionPane.showConfirmDialog( rm, file.getName()
-            + " already exists.  Do you want to replace it?", "Replace existing file?",
-            JOptionPane.YES_NO_OPTION );
+        rc = JOptionPane.showConfirmDialog( rm, file.getName() + " already exists.  Do you want to replace it?",
+            "Replace existing file?", JOptionPane.YES_NO_OPTION );
       }
       if ( rc == JOptionPane.YES_OPTION )
         deviceUpgrade.store( file );

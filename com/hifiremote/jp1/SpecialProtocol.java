@@ -14,10 +14,8 @@ public abstract class SpecialProtocol
   private String name = null;
 
   /** Is the protocol internal? */
-  @SuppressWarnings( "unused" )
   private boolean internal = false;
 
-  @SuppressWarnings( "unused" )
   private int internalSerial = 0;
 
   private String deviceTypeName = null;
@@ -64,7 +62,7 @@ public abstract class SpecialProtocol
    *          the pid
    * @return the special protocol
    */
-  public static SpecialProtocol create( String name, String text )
+  public static SpecialProtocol create( String name, String text, Remote remote )
   {
     int colon = text.indexOf( ':' );
     String prefix = null;
@@ -132,6 +130,12 @@ public abstract class SpecialProtocol
         int slash = prefix.indexOf( '/' );
         sp.deviceTypeName = prefix.substring( 0, slash );
         sp.setupCode = Integer.parseInt( prefix.substring( slash + 1 ) );
+        if ( sp.deviceTypeName != null )
+        {
+          System.err.println( "deviceTypeName=" + sp.deviceTypeName );
+          sp.deviceType = remote.getDeviceType( sp.deviceTypeName );
+          System.err.println( "deviceType=" + sp.deviceType );
+        }
       }
     }
 
@@ -166,12 +170,21 @@ public abstract class SpecialProtocol
     return null;
   }
 
+  public boolean isInternal()
+  {
+    return internal;
+  }
+
+  public int getInternalSerial()
+  {
+    return internalSerial;
+  }
+
   public boolean isPresent( RemoteConfiguration config )
   {
-    System.err.println( "in isPresent" );
-    if ( assumePresent )
+    if ( internal )
     {
-      System.err.println( "Assumed present!" );
+      System.err.println( "Present because internal" );
       return true;
     }
 

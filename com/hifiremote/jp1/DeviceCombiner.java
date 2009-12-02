@@ -65,7 +65,7 @@ public class DeviceCombiner extends Protocol
       String compStr = "PID " + pid.toString();
       System.err.println( "compStr is '" + compStr + "'" );
       String notes = props.getProperty( prefix + ".notes" );
-      if ( nameStr.equals( compStr ) )
+      if ( nameStr.equals( compStr ) || nameStr.equals( "Manual Settings" ) )
       {
         System.err.println( "Creating new ManualProtocol!" );
         ManualProtocol m = new ManualProtocol( pid, new Properties() );

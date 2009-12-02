@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 // TODO: Auto-generated Javadoc
@@ -342,8 +343,9 @@ public class Remote implements Comparable< Remote >
 
     for ( ImageMap map : maps )
     {
-      int h = map.getImage().getIconHeight();
-      int w = map.getImage().getIconWidth();
+      ImageIcon icon = new ImageIcon( map.getImageFile().getAbsolutePath() );
+      int h = icon.getIconHeight();
+      int w = icon.getIconWidth();
       if ( h > height )
         height = h;
       if ( w > width )
@@ -899,6 +901,7 @@ public class Remote implements Comparable< Remote >
           {
             devCombAddress[ i ] = rdr.parseNumber( addr );
           }
+          i++ ;
         }
       }
       else if ( parm.equals( "ProtocolVectorOffset" ) )
@@ -1092,7 +1095,7 @@ public class Remote implements Comparable< Remote >
       }
       else
       {
-        specialProtocols.add( SpecialProtocol.create( name, value ) );
+        specialProtocols.add( SpecialProtocol.create( name, value, this ) );
       }
     }
     return line;
