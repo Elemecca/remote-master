@@ -190,7 +190,7 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
     DefaultListModel model = new DefaultListModel();
     for ( Button b : buttons )
     {
-      if ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
+      if ( b.canAssignToMacro() || b.canAssignShiftedToMacro() || b.canAssignXShiftedToMacro() )
         model.addElement( b );
     }
     availableButtons.setModel( model );

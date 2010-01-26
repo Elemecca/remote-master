@@ -10,14 +10,17 @@ Changes for v1.98
     upgrades, or learned signals is exceeded
   - Fix Settings
   - Fixes for erroneous upload verification failure messages
-  - Upgrade to DecodeIR v2.38
+  - Upgrade to DecodeIR v2.39
   - Add help menu item "Interpreting Decoded IR Signals"
   - Initial MultiMacro support
+  - Fix parsing of assigned setup codes > 2047 on download from remote or import of IR file
+  - Fix buttons available for assignment to macros
 - RM
   - Option to show remote signature
   - Added HCS08 support for Pause protocol
   - Fix for setting protocol parameters
   - Fix for Device Combiner (2)
+  - Fix for loading protocol (aka device) parameters
 
 Changes for v1.97
 - Fix Unicode characters in string literals

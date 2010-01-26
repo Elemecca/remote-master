@@ -141,7 +141,7 @@ public class DeviceButton
   {
     short setupCode = data[ highAddress ];
     int mask = 0x07;
-    if ( SetupCode.getMax() > 2047 )
+    if ( SetupCode.getMax() > 2048 )
       mask = 0x0F;
     setupCode &= mask;
     setupCode <<= 8;
@@ -171,8 +171,7 @@ public class DeviceButton
     data[ highAddress ] &= mask;
     data[ highAddress ] |= temp;
 
-    setupCode &= 0xFF;
-    data[ lowAddress ] = setupCode;
+    data[ lowAddress ] = ( short )( setupCode & 0xFF );
   }
 
   /** The name. */

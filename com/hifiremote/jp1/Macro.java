@@ -34,22 +34,28 @@ public class Macro extends AdvancedCode
   {
     super( props );
     String temp = props.getProperty( "SequenceNumber" );
-    try
+    if ( temp != null )
     {
-      sequenceNumber = Integer.parseInt( temp );
-    }
-    catch ( NumberFormatException nfe )
-    {
-      nfe.printStackTrace( System.err );
+      try
+      {
+        sequenceNumber = Integer.parseInt( temp );
+      }
+      catch ( NumberFormatException nfe )
+      {
+        nfe.printStackTrace( System.err );
+      }
     }
     temp = props.getProperty( "DeviceIndex" );
-    try
+    if ( temp != null )
     {
-      deviceIndex = Integer.parseInt( temp );
-    }
-    catch ( NumberFormatException nfe )
-    {
-      nfe.printStackTrace( System.err );
+      try
+      {
+        deviceIndex = Integer.parseInt( temp );
+      }
+      catch ( NumberFormatException nfe )
+      {
+        nfe.printStackTrace( System.err );
+      }
     }
   }
 

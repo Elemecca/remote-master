@@ -73,7 +73,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.98beta6a";
+  public final static String version = "v1.98beta7";
 
   /** The dir. */
   private File dir = null;
