@@ -417,6 +417,16 @@ public class Preferences
     }
   }
 
+  public File getFileProperty( String name )
+  {
+    return file.getFileProperty( name );
+  }
+
+  public void setProperty( String name, File value )
+  {
+    file.setProperty( name, value );
+  }
+
   /** The file. */
   private PropertyFile file;
 

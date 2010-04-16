@@ -48,8 +48,8 @@ public class ManualProtocol extends Protocol
   public ManualProtocol( ManualProtocol p )
   {
     super( p.getName(), p.id, null );
-    if ( p.fixedData != null )
-      fixedData = new Hex( p.fixedData );
+    if ( p.defaultFixedData != null )
+      defaultFixedData = p.defaultFixedData;
   }
 
   /**
@@ -137,7 +137,7 @@ public class ManualProtocol extends Protocol
     for ( int i = 0; i < rawHex.length; i++ )
       fixedBytes[ i + offset ] = rawHex[ i ];
 
-    fixedData = new Hex( fixedBytes );
+    defaultFixedData = new Hex( fixedBytes );
 
     int cmdLength = cmdType >> 4;
     switch ( cmdType )
@@ -339,7 +339,7 @@ public class ManualProtocol extends Protocol
     }
     out.print( "DefaultCmd", defaultCmd.toString() );
     out.print( "CmdIndex", Integer.toString( cmdIndex ) );
-    out.print( "FixedData", fixedData.toString() );
+    out.print( "FixedData", defaultFixedData.toString() );
     for ( Iterator< String > i = code.keySet().iterator(); i.hasNext(); )
     {
       Object key = i.next();
@@ -380,7 +380,7 @@ public class ManualProtocol extends Protocol
    */
   public void setRawHex( Hex rawHex )
   {
-    fixedData = rawHex;
+    defaultFixedData = rawHex;
   }
 
   /**

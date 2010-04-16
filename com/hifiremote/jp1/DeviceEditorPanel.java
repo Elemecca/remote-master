@@ -435,6 +435,11 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
   /** The curr panel. */
   private KMPanel currPanel = null;
 
+  public void commit()
+  {
+    currPanel.commit();
+  }
+
   /*
    * (non-Javadoc)
    * 

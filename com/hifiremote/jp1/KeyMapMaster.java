@@ -485,6 +485,49 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     checkItem.addActionListener( al );
     menu.add( checkItem );
 
+    submenu = new JMenu( "Folders" );
+    menu.add( submenu );
+
+    al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        String name = e.getActionCommand();
+        File path = properties.getFileProperty( name + "Path" );
+
+        RMFileChooser chooser = new RMFileChooser( path );
+        chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
+        chooser.setDialogTitle( "Choose the directory containing the " + name + "s" );
+        int returnVal = chooser.showOpenDialog( null );
+        if ( returnVal == RMFileChooser.APPROVE_OPTION )
+        {
+          File newPath = chooser.getSelectedFile();
+          properties.setProperty( name + "Path", newPath );
+          RemoteManager mgr = RemoteManager.getRemoteManager();
+          mgr.reset();
+          mgr.loadRemotes( properties );
+          if ( useAllRemotes.isSelected() )
+          {
+            editorPanel.setRemotes( RemoteManager.getRemoteManager().getRemotes() );
+          }
+        }
+      }
+    };
+
+    menuItem = new JMenuItem( "RDF Folder..." );
+    menuItem.setMnemonic( KeyEvent.VK_R );
+    menuItem.setActionCommand( "RDF" );
+    menuItem.addActionListener( al );
+
+    submenu.add( menuItem );
+
+    menuItem = new JMenuItem( "Map Folder..." );
+    menuItem.setMnemonic( KeyEvent.VK_R );
+    menuItem.setActionCommand( "Image" );
+    menuItem.addActionListener( al );
+
+    submenu.add( menuItem );
+
     menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
@@ -665,6 +708,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     try
     {
+      editorPanel.commit();
+
       Object source = e.getSource();
 
       if ( source == newItem )

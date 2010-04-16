@@ -130,7 +130,7 @@ public class RemoteConfiguration
   {
     Property property = pr.nextProperty();
 
-    if ( property.name.equals( "[Buffer]" ) )
+    if ( property.name.equals( "[Buffer]" ) || property.name.equals( "" ) )
       property = pr.nextProperty();
 
     int baseAddr = Integer.parseInt( property.name, 16 );
@@ -192,7 +192,7 @@ public class RemoteConfiguration
     first = null;
     while ( ( property = pr.nextProperty() ) != null )
     {
-      if ( property.name.length() == 0 )
+      if ( property.name.length() == 0 || property.name.startsWith( "[" ) )
         break;
       int offset = Integer.parseInt( property.name, 16 ) - baseAddr;
       Hex.parseHex( property.value, data, offset );
@@ -1166,7 +1166,11 @@ public class RemoteConfiguration
     for ( int i = 0; i < count; ++i )
     {
       offset += 2;
-      int setupCode = processor.getInt( data, offset ) & 0x7FF;
+      int setupCode = processor.getInt( data, offset ) & 0xFFF;
+      if ( !remote.usesTwoBytePID() )
+      {
+        setupCode &= 0x7FF;
+      }
       DeviceType devType = remote.getDeviceTypeByIndex( data[ offset ] >> 4 );
       int codeOffset = offset + 2 * count; // compute offset to offset of upgrade code
       codeOffset = processor.getInt( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
@@ -1195,6 +1199,15 @@ public class RemoteConfiguration
       }
 
       String alias = remote.getDeviceTypeAlias( devType );
+      if ( alias == null )
+      {
+        String message = String
+            .format(
+                "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be imported and was discarded.",
+                devType, setupCode );
+        JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+        continue;
+      }
 
       short[] pidHex = new short[ 2 ];
       pidHex[ 0 ] = ( short )( ( pid > 0xFF ) ? 1 : 0 );

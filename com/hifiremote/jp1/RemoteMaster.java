@@ -73,7 +73,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.98beta7";
+  public final static String version = "v1.98beta8";
 
   /** The dir. */
   private File dir = null;
@@ -222,6 +222,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             if ( remotes.isEmpty() )
             {
               JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature " + sig );
+              io.closeRemote();
               return;
             }
             else if ( remotes.size() == 1 )
@@ -249,7 +250,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
               Object rc = ( Remote )JOptionPane.showInputDialog( null, message, "Ambiguous Remote",
                   JOptionPane.ERROR_MESSAGE, null, choices, choices[ 0 ] );
               if ( rc == null )
+              {
+                io.closeRemote();
                 return;
+              }
               else
                 remote = ( Remote )rc;
             }
@@ -278,9 +282,25 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           String sig = io.getRemoteSignature();
           if ( !sig.equals( remoteConfig.getRemote().getSignature() ) )
           {
-            JOptionPane.showMessageDialog( RemoteMaster.this, "Signatures don't match!\n" );
-            io.closeRemote();
-            return;
+            Object[] options =
+            {
+                "Upload to the remote", "Cancel the upload"
+            };
+            int rc = JOptionPane
+                .showOptionDialog(
+                    RemoteMaster.this,
+                    "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
+                        + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
+                        + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
+                        + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
+                        + "safe to upload to a remote when the signatures do not match.\n\n"
+                        + "How would you like to proceed?", "Upload Signature Mismatch", JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
+            if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
+            {
+              io.closeRemote();
+              return;
+            }
           }
           int rc = io.writeRemote( remoteConfig.getRemote().getBaseAddress(), remoteConfig.getData() );
 

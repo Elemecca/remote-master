@@ -98,13 +98,13 @@ public class Protocol
       }
     }
 
-    fixedData = new Hex( props.getProperty( "FixedData", "" ) );
+    defaultFixedData = new Hex( props.getProperty( "FixedData", "" ) );
     temp = props.getProperty( "FixedDataMask" );
     if ( temp != null )
       fixedDataMask = new Hex( temp );
     else
     {
-      short[] mask = new short[ fixedData.length() ];
+      short[] mask = new short[ defaultFixedData.length() ];
       for ( int i = 0; i < mask.length; ++i )
         mask[ i ] = 0xFF;
 
@@ -204,7 +204,7 @@ public class Protocol
 
       // Generate the Device Parameters and Translators
       short[] hex = new short[ fixedDataLength ];
-      fixedData = new Hex( hex );
+      defaultFixedData = new Hex( hex );
       int numDevParms = fixedDataLength; // Signal style and bits/cmd
       int styleIndex = numDevParms++ ;
       int devBitsIndex = -1;
@@ -265,7 +265,7 @@ public class Protocol
         translator.setBitsIndex( cmdBitsIndex );
       }
 
-      short[] mask = new short[ fixedData.length() ];
+      short[] mask = new short[ defaultFixedData.length() ];
       for ( int i = 0; i < mask.length; ++i )
         mask[ i ] = 0xFF;
 
@@ -1006,7 +1006,7 @@ public class Protocol
     Hex temp = null;
     try
     {
-      temp = ( Hex )fixedData.clone();
+      temp = ( Hex )defaultFixedData.clone();
     }
     catch ( CloneNotSupportedException e )
     {}
@@ -1026,7 +1026,7 @@ public class Protocol
    */
   public int getFixedDataLength()
   {
-    return fixedData.length();
+    return defaultFixedData.length();
   }
 
   // convert the functions defined in this protocol to the new Protocol
@@ -1234,7 +1234,7 @@ public class Protocol
     if ( str != null )
     {
       Hex hex = new Hex( str );
-      if ( hex.length() != fixedData.length() )
+      if ( hex.length() != defaultFixedData.length() )
       {
         result += 2000;
       }
@@ -1266,8 +1266,9 @@ public class Protocol
     // Value[] parms = getDeviceParmValues();
     if ( ( parms != null ) && ( parms.length != 0 ) )
       out.print( "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ) );
+    Hex fixedData = getFixedData( parms );
     if ( fixedData != null )
-      out.print( "FixedData", getFixedData( parms ).toString() );
+      out.print( "FixedData", fixedData.toString() );
   }
 
   /**
@@ -1328,7 +1329,7 @@ public class Protocol
   protected String variantName = null;
 
   /** The fixed data. */
-  protected Hex fixedData = null;
+  protected Hex defaultFixedData = null;
 
   /** The fixed data mask. */
   protected Hex fixedDataMask = null;

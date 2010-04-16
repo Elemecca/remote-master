@@ -222,11 +222,14 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
         + DateFormat.getInstance().format( new Date( file.lastModified() ) ) );
     DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
 
-    // Remote remote = deviceUpgrade.getRemote();
+    Remote remote = deviceUpgrade.getRemote();
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
     rm.getProperties().put( "UpgradePath", file.getParent() );
-    // deviceUpgrade.setRemote( remote );
+    if ( deviceUpgrade.getRemote() != remote )
+    {
+      deviceUpgrade.setRemote( remote );
+    }
     editorPanel.refresh();
   }
 

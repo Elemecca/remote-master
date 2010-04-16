@@ -230,7 +230,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   {
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
-    deviceUpgrade.setParmValues( p.getDeviceParmValues() );
+    // deviceUpgrade.setParmValues( p.getDeviceParmValues() );
     fixedData.setText( p.getFixedData( deviceUpgrade.getParmValues() ).toString() );
   }
 

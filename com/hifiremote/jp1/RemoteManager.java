@@ -27,6 +27,63 @@ public class RemoteManager
   protected RemoteManager()
   {}
 
+  protected class ExtensionFilter implements FilenameFilter
+  {
+    public ExtensionFilter( String match )
+    {
+      this.match = match;
+    }
+
+    public void setExtension( String extension )
+    {
+      match = extension;
+    }
+
+    public boolean accept( File dir, String name )
+    {
+      int dot = name.lastIndexOf( '.' );
+      if ( dot < 0 )
+        return false;
+      return name.substring( dot ).toLowerCase().equals( match );
+    }
+
+    private String match;
+  }
+
+  protected File initPath( PropertyFile properties, String propName, String defaultName, String extension, String type )
+  {
+    File path = properties.getFileProperty( propName );
+    if ( path == null )
+      path = new File( System.getProperty( "user.dir" ), defaultName );
+
+    while ( !path.exists() && !path.isDirectory() )
+      path = path.getParentFile();
+
+    File[] files = new File[ 0 ];
+    File dir = path;
+    FilenameFilter filter = new ExtensionFilter( extension );
+
+    while ( files.length == 0 )
+    {
+      files = dir.listFiles( filter );
+      if ( files.length == 0 )
+      {
+        JOptionPane.showMessageDialog( null, "No " + type + " files were found!", "Error", JOptionPane.ERROR_MESSAGE );
+        RMFileChooser chooser = new RMFileChooser( dir );
+        chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
+        chooser.setDialogTitle( "Choose the directory containing the " + type + " files" );
+        int returnVal = chooser.showOpenDialog( null );
+        if ( returnVal != RMFileChooser.APPROVE_OPTION )
+          return properties.getFileProperty( propName );
+        else
+          dir = chooser.getSelectedFile();
+      }
+      path = dir;
+    }
+    properties.setProperty( propName, path );
+    return path;
+  }
+
   /**
    * Load remotes.
    * 
@@ -35,59 +92,16 @@ public class RemoteManager
    * @throws Exception
    *           the exception
    */
-  public void loadRemotes( PropertyFile properties ) throws Exception
+  public void loadRemotes( PropertyFile properties )
   {
     if ( loadPath != null )
       return;
 
-    loadPath = properties.getFileProperty( "RDFPath" );
-    if ( loadPath == null )
-      loadPath = new File( System.getProperty( "user.dir" ) );
+    initPath( properties, "ImagePath", "Images", ".map", "Map" );
 
-    while ( !loadPath.exists() && !loadPath.isDirectory() )
-      loadPath = loadPath.getParentFile();
+    loadPath = initPath( properties, "RDFPath", "RDF", ".rdf", "RDF" );
 
-    File[] files = new File[ 0 ];
-    File dir = loadPath;
-    FilenameFilter filter = new FilenameFilter()
-    {
-      public boolean accept( File dir, String name )
-      {
-        if ( !name.toLowerCase().endsWith( ".rdf" ) )
-          return false;
-
-        int open = name.indexOf( '(' );
-        int close = name.indexOf( ')' );
-        if ( ( open == -1 ) || ( close == -1 ) || ( close < open ) || ( name.charAt( open - 1 ) != ' ' ) )
-        {
-          System.err.println( "Invalid RDF file name: " + name );
-          return false;
-        }
-
-        return true;
-      }
-    };
-
-    while ( files.length == 0 )
-    {
-      files = dir.listFiles( filter );
-      if ( files.length == 0 )
-      {
-        JOptionPane.showMessageDialog( null, "No RDF files were found!", "Error", JOptionPane.ERROR_MESSAGE );
-        RMFileChooser chooser = new RMFileChooser( dir );
-        chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
-        chooser.setDialogTitle( "Choose the directory containing the RDFs" );
-        int returnVal = chooser.showOpenDialog( null );
-        if ( returnVal != RMFileChooser.APPROVE_OPTION )
-          System.exit( -1 );
-        else
-          dir = chooser.getSelectedFile();
-      }
-      loadPath = dir;
-    }
-
-    properties.setProperty( "RDFPath", loadPath );
-
+    File[] files = loadPath.listFiles( new ExtensionFilter( ".rdf" ) );
     for ( int i = 0; i < files.length; i++ )
     {
       File rdf = files[ i ];
@@ -294,6 +308,14 @@ public class RemoteManager
       rc.addAll( list );
     }
     return rc;
+  }
+
+  public void reset()
+  {
+    remotes.clear();
+    remotesBySignature.clear();
+    loadPath = null;
+    oldRemoteNames = null;
   }
 
   /** The remote manager. */
