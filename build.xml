@@ -16,19 +16,19 @@
                 <mkdir dir="${build}" />
         </target>
 
-        <target name="compile" description="compile the source">
+        <target name="compile" description="Compile the source" depends="init">
                 <javac target="1.5" debug="on" srcdir="${src}" destdir="${build}">
                         <classpath refid="project.classpath"/>
                 </javac>
         </target>
 
-        <target name="digitmaps" depends="compile">
+        <target name="digitmaps" description="Update digitmaps.bin" depends="compile">
                 <java classpath="${build}" classname="UpdateDigitMapsBin" />
         </target>
 
-        <target name="rmjar" depends="compile" description="RemoteMaster.jar">
+        <target name="rmjar" depends="compile" description="Generate RemoteMaster.jar">
                 <jar destfile="RemoteMaster.jar" manifest="RemoteMaster.mf" update="true">
-                        <fileset dir="${build}" includes="com/**/*.class,info/**/*.class,Setup.class" />
+                        <fileset dir="${build}" includes="com/**/*.class,Setup.class" />
                         <zipfileset src="${lib.dir}/TableLayout.jar" includes="**/*.class"/>
                         <zipfileset src="${src}/jlfgr-1_0.jar">
 							<include name="toolbarButtonGraphics/general/Open24.gif"/>
@@ -51,7 +51,7 @@
                 </java>
         </target>
 
-        <target name="rmzip" depends="rmjar,digitmaps" description="generate the distribution">
+        <target name="rmzip" depends="rmjar,digitmaps" description="Generate the distribution zip file">
           <zip destfile="${src}/RemoteMaster.${rmversion}.zip">
             <zipfileset dir="${src}" includes="RemoteMaster.jar,Readme.html,*.css,protocols.ini,setup.bat,ChangeLog.txt,digitmaps.bin,porttalk.sys" />
             <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows"/>
