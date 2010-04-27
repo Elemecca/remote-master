@@ -73,7 +73,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JFrame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.98beta8";
+  public final static String version = "v1.98";
 
   /** The dir. */
   private File dir = null;
@@ -1232,7 +1232,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == learnedSignalItem )
       {
-        File file = new File( "DecodeIr.html" );
+        File file = new File( "DecodeIR.html" );
         desktop.browse( file.toURI() );
       }
       else if ( source == homePageItem )

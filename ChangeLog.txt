@@ -1,3 +1,7 @@
+Changes for v1.98
+- Corrected fix for corruption of fixed data when multiple
+- Fix failure to update tabs when downloading from or loading a file for a different remote.
+
 Changes for v1.98beta8
 - Fix for Thomson variant 7
 - Upgrade to DecodeIR v2.40

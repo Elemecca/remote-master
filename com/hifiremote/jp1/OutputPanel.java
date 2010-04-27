@@ -55,7 +55,7 @@ public class OutputPanel extends KMPanel implements ActionListener
     deviceLabel.setAlignmentY( 1f );
     box.add( deviceLabel );
 
-    box.add( box.createHorizontalGlue() );
+    box.add( Box.createHorizontalGlue() );
 
     ImageIcon copyIcon = RemoteMaster.createIcon( "Copy24" );
 
@@ -110,7 +110,7 @@ public class OutputPanel extends KMPanel implements ActionListener
     protocolLabel = new JLabel( "Upgrade Protocol Code" );
     protocolLabel.setAlignmentY( 1f );
     box.add( protocolLabel );
-    box.add( box.createHorizontalGlue() );
+    box.add( Box.createHorizontalGlue() );
 
     copyProtocolUpgrade = new JButton( copyIcon );
     copyProtocolUpgrade.setToolTipText( "Copy to clipboard" );

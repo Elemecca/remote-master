@@ -736,11 +736,11 @@ public class Remote implements Comparable< Remote >
       if ( parm.equals( "Name" ) )
         ;
       else if ( parm.equals( "BaseAddr" ) )
-        baseAddress = rdr.parseNumber( value );
+        baseAddress = RDFReader.parseNumber( value );
       else if ( parm.equals( "EepromSize" ) )
-        eepromSize = rdr.parseNumber( value );
+        eepromSize = RDFReader.parseNumber( value );
       else if ( parm.equals( "DevCodeOffset" ) )
-        deviceCodeOffset = rdr.parseNumber( value );
+        deviceCodeOffset = RDFReader.parseNumber( value );
       else if ( parm.equals( "FavKey" ) )
       {
         favKey = new FavKey();
@@ -752,9 +752,9 @@ public class Remote implements Comparable< Remote >
         oemDevice.parse( value, this );
       }
       else if ( parm.equals( "OEMControl" ) )
-        oemControl = rdr.parseNumber( value );
+        oemControl = RDFReader.parseNumber( value );
       else if ( parm.equals( "UpgradeBug" ) )
-        upgradeBug = rdr.parseFlag( value );
+        upgradeBug = RDFReader.parseFlag( value );
       else if ( parm.equals( "AdvCodeAddr" ) )
       {
         advancedCodeAddress = new AddressRange();
@@ -762,11 +762,11 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "KeyMoveSupport" ) )
       {
-        keyMoveSupport = rdr.parseFlag( value );
+        keyMoveSupport = RDFReader.parseFlag( value );
       }
       else if ( parm.equals( "MacroSupport" ) )
       {
-        macroSupport = rdr.parseFlag( value );
+        macroSupport = RDFReader.parseFlag( value );
       }
       else if ( parm.equals( "UpgradeAddr" ) )
       {
@@ -784,7 +784,7 @@ public class Remote implements Comparable< Remote >
         timedMacroAddress.parse( value, this );
       }
       else if ( parm.equals( "TimedMacroWarning" ) )
-        timedMacroWarning = rdr.parseFlag( value );
+        timedMacroWarning = RDFReader.parseFlag( value );
       else if ( parm.equals( "LearnedAddr" ) )
       {
         learnedAddress = new AddressRange();
@@ -799,20 +799,20 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "ProcessorVersion" ) )
         processorVersion = value;
       else if ( parm.equals( "RAMAddr" ) )
-        RAMAddress = rdr.parseNumber( value );
+        RAMAddress = RDFReader.parseNumber( value );
       else if ( ( parm.equals( "TimeAddr" ) || parm.equals( "TimeAddr+" ) ) && ( timeAddress == 0 ) )
       {
         StringTokenizer st = new StringTokenizer( value, ", " );
-        timeAddress = rdr.parseNumber( st.nextToken() );
+        timeAddress = RDFReader.parseNumber( st.nextToken() );
         if ( st.hasMoreTokens() )
           timeFormat = TimeFormat.valueOf( st.nextToken() );
       }
       else if ( parm.equals( "RDFSync" ) )
-        RDFSync = rdr.parseNumber( value );
+        RDFSync = RDFReader.parseNumber( value );
       else if ( parm.equals( "PunchThruBase" ) )
-        punchThruBase = rdr.parseNumber( value );
+        punchThruBase = RDFReader.parseNumber( value );
       else if ( parm.equals( "ScanBase" ) )
-        scanBase = rdr.parseNumber( value );
+        scanBase = RDFReader.parseNumber( value );
       else if ( parm.equals( "SleepStatusBit" ) )
       {
         sleepStatusBit = new StatusBit();
@@ -862,7 +862,7 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "Shift" ) )
       {
         StringTokenizer st = new StringTokenizer( value, "=," );
-        shiftMask = rdr.parseNumber( st.nextToken() );
+        shiftMask = RDFReader.parseNumber( st.nextToken() );
         if ( st.hasMoreTokens() )
           shiftLabel = st.nextToken().trim();
       }
@@ -870,7 +870,7 @@ public class Remote implements Comparable< Remote >
       {
         xShiftEnabled = true;
         StringTokenizer st = new StringTokenizer( value, "=," );
-        xShiftMask = rdr.parseNumber( st.nextToken() );
+        xShiftMask = RDFReader.parseNumber( st.nextToken() );
         if ( st.hasMoreTokens() )
           xShiftLabel = st.nextToken().trim();
       }
@@ -884,7 +884,7 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "EFCDigits" ) )
       {
-        efcDigits = rdr.parseNumber( value );
+        efcDigits = RDFReader.parseNumber( value );
       }
       else if ( parm.equals( "DevComb" ) )
       {
@@ -899,27 +899,27 @@ public class Remote implements Comparable< Remote >
         {
           if ( addr != null )
           {
-            devCombAddress[ i ] = rdr.parseNumber( addr );
+            devCombAddress[ i ] = RDFReader.parseNumber( addr );
           }
           i++ ;
         }
       }
       else if ( parm.equals( "ProtocolVectorOffset" ) )
-        protocolVectorOffset = rdr.parseNumber( value );
+        protocolVectorOffset = RDFReader.parseNumber( value );
       else if ( parm.equals( "ProtocolDataOffset" ) )
-        protocolDataOffset = rdr.parseNumber( value );
+        protocolDataOffset = RDFReader.parseNumber( value );
       else if ( parm.equals( "EncDec" ) )
       {
         encdec = EncrypterDecrypter.createInstance( value );
       }
       else if ( parm.equals( "MaxUpgradeLength" ) )
-        maxUpgradeLength = new Integer( rdr.parseNumber( value ) );
+        maxUpgradeLength = new Integer( RDFReader.parseNumber( value ) );
       else if ( parm.equals( "MaxProtocolLength" ) )
-        maxProtocolLength = new Integer( rdr.parseNumber( value ) );
+        maxProtocolLength = new Integer( RDFReader.parseNumber( value ) );
       else if ( parm.equals( "MaxCombinedUpgradeLength" ) )
-        maxCombinedUpgradeLength = new Integer( rdr.parseNumber( value ) );
+        maxCombinedUpgradeLength = new Integer( RDFReader.parseNumber( value ) );
       else if ( parm.equals( "SectionTerminator" ) )
-        sectionTerminator = ( short )rdr.parseNumber( value );
+        sectionTerminator = ( short )RDFReader.parseNumber( value );
       else if ( parm.equalsIgnoreCase( "2BytePid" ) )
         twoBytePID = RDFReader.parseFlag( value );
       else if ( parm.equalsIgnoreCase( "LearnedDevBtnSwapped" ) )
@@ -948,7 +948,7 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equalsIgnoreCase( "StartReadOnlySettings" ) )
       {
-        startReadOnlySettings = rdr.parseNumber( value );
+        startReadOnlySettings = RDFReader.parseNumber( value );
       }
       else if ( parm.equalsIgnoreCase( "PauseParameters" ) )
       {
@@ -964,12 +964,12 @@ public class Remote implements Comparable< Remote >
         int i = 0;
         while ( st.hasMoreElements() )
         {
-          powerButtons[ i++ ] = ( short )rdr.parseNumber( st.nextToken() );
+          powerButtons[ i++ ] = ( short )RDFReader.parseNumber( st.nextToken() );
         }
       }
       else if ( parm.equalsIgnoreCase( "WaveUpgrade" ) )
       {
-        waveUpgrade = rdr.parseFlag( value );
+        waveUpgrade = RDFReader.parseFlag( value );
       }
       else if ( parm.equalsIgnoreCase( "SetupValidation" ) )
       {
@@ -1124,7 +1124,7 @@ public class Remote implements Comparable< Remote >
 
       line = line.substring( 1 );
       StringTokenizer st = new StringTokenizer( line, ":" );
-      int addr = rdr.parseNumber( st.nextToken() );
+      int addr = RDFReader.parseNumber( st.nextToken() );
       AddressRange range = new AddressRange();
       range.parse( st.nextToken(), this );
       CheckSum sum = null;
@@ -1171,11 +1171,11 @@ public class Remote implements Comparable< Remote >
       StringTokenizer st = new StringTokenizer( line, "=" );
       String title = st.nextToken();
 
-      int byteAddress = rdr.parseNumber( st.nextToken( ".= \t" ) );
-      int bitNumber = rdr.parseNumber( st.nextToken() );
-      int numberOfBits = rdr.parseNumber( st.nextToken() );
-      int initialValue = rdr.parseNumber( st.nextToken() );
-      boolean inverted = ( rdr.parseNumber( st.nextToken() ) != 0 );
+      int byteAddress = RDFReader.parseNumber( st.nextToken( ".= \t" ) );
+      int bitNumber = RDFReader.parseNumber( st.nextToken() );
+      int numberOfBits = RDFReader.parseNumber( st.nextToken() );
+      int initialValue = RDFReader.parseNumber( st.nextToken() );
+      boolean inverted = ( RDFReader.parseNumber( st.nextToken() ) != 0 );
 
       java.util.List< String > options = null;
       String sectionName = null;
@@ -1254,17 +1254,17 @@ public class Remote implements Comparable< Remote >
       line = st.nextToken();
       if ( st.hasMoreTokens() )
       {
-        defaultSetupCode = rdr.parseNumber( st.nextToken().trim() );
+        defaultSetupCode = RDFReader.parseNumber( st.nextToken().trim() );
       }
 
       st = new StringTokenizer( line, "= \t" );
       String name = st.nextToken();
 
-      int hiAddr = rdr.parseNumber( st.nextToken() );
-      int lowAddr = rdr.parseNumber( st.nextToken() );
+      int hiAddr = RDFReader.parseNumber( st.nextToken() );
+      int lowAddr = RDFReader.parseNumber( st.nextToken() );
       int typeAddr = 0;
       if ( st.hasMoreTokens() )
-        typeAddr = rdr.parseNumber( st.nextToken() );
+        typeAddr = RDFReader.parseNumber( st.nextToken() );
       work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode ) );
     }
     deviceButtons = work.toArray( deviceButtons );
@@ -1331,7 +1331,7 @@ public class Remote implements Comparable< Remote >
       StringTokenizer st = new StringTokenizer( line, ",; \t" );
       while ( st.hasMoreTokens() )
       {
-        work.add( new Integer( rdr.parseNumber( st.nextToken() ) ) );
+        work.add( new Integer( RDFReader.parseNumber( st.nextToken() ) ) );
       }
     }
 
@@ -1368,9 +1368,9 @@ public class Remote implements Comparable< Remote >
       int map = 0;
       if ( st.hasMoreTokens() )
       {
-        map = rdr.parseNumber( st.nextToken() );
+        map = RDFReader.parseNumber( st.nextToken() );
         if ( st.hasMoreTokens() )
-          type = rdr.parseNumber( st.nextToken() );
+          type = RDFReader.parseNumber( st.nextToken() );
       }
       deviceTypes.put( name, new DeviceType( name, map, type ) );
       type += 0x0101;
@@ -1550,7 +1550,7 @@ public class Remote implements Comparable< Remote >
           }
           else
             restrictions = defaultRestrictions;
-          keycode = ( short )rdr.parseNumber( keycodeStr );
+          keycode = ( short )RDFReader.parseNumber( keycodeStr );
         }
 
         int colon = token.indexOf( ':' );
@@ -1841,7 +1841,7 @@ public class Remote implements Comparable< Remote >
           outer.clear();
           work.add( new ButtonMap( name, outerb ) );
         }
-        name = rdr.parseNumber( st.nextToken() );
+        name = RDFReader.parseNumber( st.nextToken() );
       }
 
       while ( st.hasMoreTokens() )
@@ -1868,7 +1868,7 @@ public class Remote implements Comparable< Remote >
           token = token.substring( 0, closeParen );
         }
 
-        inner.add( new Integer( rdr.parseNumber( token ) ) );
+        inner.add( new Integer( RDFReader.parseNumber( token ) ) );
       }
     }
     {
@@ -2741,7 +2741,7 @@ public class Remote implements Comparable< Remote >
     // The key move code
     if ( iterator.hasNext() && ( ( code = iterator.next() ) != null ) )
     {
-      keyMoveCode = rdr.parseNumber( code );
+      keyMoveCode = RDFReader.parseNumber( code );
       keyMoveSupport = true;
     }
     else
@@ -2760,25 +2760,25 @@ public class Remote implements Comparable< Remote >
       // The macro code
       if ( iterator.hasNext() && ( ( subCode = subIterator.next() ) != null ) )
       {
-        macroCode = rdr.parseNumber( code );
+        macroCode = RDFReader.parseNumber( code );
       }
 
       // The device index mask
       if ( iterator.hasNext() && ( ( subCode = subIterator.next() ) != null ) )
       {
-        deviceIndexMask = rdr.parseNumber( code );
+        deviceIndexMask = RDFReader.parseNumber( code );
       }
 
       // The multi macro sequence number mask
       if ( iterator.hasNext() && ( ( subCode = subIterator.next() ) != null ) )
       {
-        sequenceNumberMask = rdr.parseNumber( code );
+        sequenceNumberMask = RDFReader.parseNumber( code );
       }
 
       // The maximum number of macros that can be assigned to a multi macro key
       if ( iterator.hasNext() && ( ( subCode = subIterator.next() ) != null ) )
       {
-        sequenceNumberMask = rdr.parseNumber( code );
+        sequenceNumberMask = RDFReader.parseNumber( code );
       }
     }
     else

@@ -40,7 +40,7 @@ import javax.swing.text.JTextComponent;
  * The Class SetupPanel.
  */
 public class SetupPanel extends KMPanel implements ActionListener, ItemListener, PropertyChangeListener,
-    DocumentListener, FocusListener, Runnable
+    DocumentListener, FocusListener
 {
   /**
    * Instantiates a new setup panel.
@@ -87,7 +87,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     ( ( AbstractDocument )setupCode.getDocument() ).setDocumentFilter( filter );
     // setupCode.addPropertyChangeListener( "value", this );
     setupCode.getDocument().addDocumentListener( this );
-    setupCode.addFocusListener( this );
+    FocusSelector.selectOnFocus( setupCode );
     label.setLabelFor( setupCode );
     setupCode.setToolTipText( "Enter the desired setup code (between 0 and " + SetupCode.getMax()
         + ") for the device upgrade." );
@@ -230,7 +230,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   {
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
-    // deviceUpgrade.setParmValues( p.getDeviceParmValues() );
+    deviceUpgrade.setParmValues( p.getDeviceParmValues() );
     fixedData.setText( p.getFixedData( deviceUpgrade.getParmValues() ).toString() );
   }
 
@@ -333,6 +333,13 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     propertyChangeSupport.firePropertyChange( "setupCode", oldSetupCode, val );
   }
 
+  public void release()
+  {
+    for ( int i = 0; i < parameters.length; i++ )
+    {
+      parameters[ i ].removeListener( this );
+    }
+  }
   /**
    * Doc changed.
    * 
@@ -392,10 +399,9 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
    */
   public void focusGained( FocusEvent e )
   {
-    JP1Frame.clearMessage( controlToSelectAll );
-    controlToSelectAll = ( JTextComponent )e.getSource();
-    JP1Frame.clearMessage( controlToSelectAll );
-    SwingUtilities.invokeLater( this );
+    JP1Frame.clearMessage( controlWithFocus );
+    controlWithFocus = ( JTextComponent )e.getSource();
+    JP1Frame.clearMessage( controlWithFocus );
   }
 
   /*
@@ -430,17 +436,6 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     {
       updateSetupCode();
     }
-  }
-
-  // Runnable
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Runnable#run()
-   */
-  public void run()
-  {
-    controlToSelectAll.selectAll();
   }
 
   /*
@@ -485,7 +480,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   private boolean updateInProgress = false;
 
   /** The control to select all. */
-  private JTextComponent controlToSelectAll = null;
+  private JTextComponent controlWithFocus = null;
 
   /** The property change support. */
   private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );

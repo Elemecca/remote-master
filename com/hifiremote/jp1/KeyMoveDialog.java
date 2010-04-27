@@ -6,8 +6,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -34,14 +32,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.text.NumberFormatter;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class KeyMoveDialog.
  */
-public class KeyMoveDialog extends JDialog implements ActionListener, FocusListener, Runnable, ItemListener
+public class KeyMoveDialog extends JDialog implements ActionListener, ItemListener
 {
 
   /**
@@ -163,7 +160,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
     formatter.setMaximum( new Integer( 2047 ) );
     setupCode = new JFormattedTextField( formatter );
     setupCode.setColumns( 4 );
-    setupCode.addFocusListener( this );
+    FocusSelector.selectOnFocus( setupCode );
     label.setLabelFor( setupCode );
     panel.add( setupCode );
 
@@ -187,7 +184,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
     group.add( useKey );
 
     panel.add( efcHexField );
-    efcHexField.addFocusListener( this );
+    FocusSelector.selectOnFocus( efcHexField );
     panel.add( movedKey );
 
     shiftMovedKey.addActionListener( this );
@@ -671,39 +668,6 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
     }
   }
 
-  // FocusListener
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
-   */
-  public void focusGained( FocusEvent e )
-  {
-    focusField = ( JTextField )e.getSource();
-    SwingUtilities.invokeLater( this );
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
-   */
-  public void focusLost( FocusEvent e )
-  {
-  // intentionally left empty
-  }
-
-  // Runnable
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Runnable#run()
-   */
-  public void run()
-  {
-    focusField.selectAll();
-  }
-
   /** The bound device. */
   private JComboBox boundDevice = new JComboBox();
 
@@ -757,9 +721,6 @@ public class KeyMoveDialog extends JDialog implements ActionListener, FocusListe
 
   /** The notes. */
   private JTextArea notes = new JTextArea( 2, 10 );
-
-  /** The focus field. */
-  private JTextField focusField = null;
 
   /** The config. */
   private RemoteConfiguration config = null;

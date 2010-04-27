@@ -126,6 +126,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
    */
   public void set( RemoteConfiguration remoteConfig )
   {
+    setInProgress = true;
     this.remoteConfig = remoteConfig;
     deviceModel.set( remoteConfig );
     deviceButtonTable.initColumns( deviceModel );
@@ -143,6 +144,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     adjustPreferredViewportSizes();
 
     validate();
+    setInProgress = false;
   }
 
   /*
@@ -169,7 +171,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   @Override
   public void valueChanged( ListSelectionEvent e )
   {
-    if ( !e.getValueIsAdjusting() )
+    if ( !e.getValueIsAdjusting() && !setInProgress )
     {
       int selectedRow = deviceButtonTable.getSelectedRow();
       Remote remote = remoteConfig.getRemote();
@@ -255,4 +257,5 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
 
   private JButton editButton = null;
   private DeviceUpgrade selectedUpgrade = null;
+  private boolean setInProgress = false;
 }

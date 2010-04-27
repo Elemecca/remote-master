@@ -145,9 +145,15 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
       {
         cancelled = true;
         setVisible( false );
+        dispose();
+        editorPanel.releasePanels();
       }
       else if ( source == okButton )
+      {
         setVisible( false );
+        dispose();
+        editorPanel.releasePanels();
+      }
       else if ( source == loadButton )
         load();
       else if ( source == importButton )
@@ -192,7 +198,7 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
     chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", endings ) );
 
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
-    String dir = rm.getProperties().getProperty( "UpgradePath" );
+    String dir = JP1Frame.getProperties().getProperty( "UpgradePath" );
     if ( dir != null )
       chooser.setCurrentDirectory( new File( dir ) );
     while ( true )
@@ -225,7 +231,7 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
     Remote remote = deviceUpgrade.getRemote();
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
-    rm.getProperties().put( "UpgradePath", file.getParent() );
+    JP1Frame.getProperties().put( "UpgradePath", file.getParent() );
     if ( deviceUpgrade.getRemote() != remote )
     {
       deviceUpgrade.setRemote( remote );
@@ -285,7 +291,7 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
       chooser.setSelectedFile( f );
     else
     {
-      String path = rm.getProperties().getProperty( "UpgradePath" );
+      String path = JP1Frame.getProperties().getProperty( "UpgradePath" );
       if ( path != null )
         chooser.setCurrentDirectory( new File( path ) );
     }

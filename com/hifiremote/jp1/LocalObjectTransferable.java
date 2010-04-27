@@ -61,7 +61,7 @@ public class LocalObjectTransferable
    */
   public boolean isDataFlavorSupported( DataFlavor flavor )
   {
-    return ( flavor == this.flavor );
+    return ( flavor == LocalObjectTransferable.flavor );
   }
 
   /* (non-Javadoc)
@@ -70,7 +70,7 @@ public class LocalObjectTransferable
   public Object getTransferData( DataFlavor flavor )
     throws UnsupportedFlavorException
   {
-    if ( flavor != this.flavor )
+    if ( flavor != LocalObjectTransferable.flavor )
       throw new UnsupportedFlavorException( flavor );
     return o;
   }

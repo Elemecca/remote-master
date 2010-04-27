@@ -44,5 +44,10 @@ public class KMPanel
    * Update.
    */
   public void update(){}
+  
+  /**
+   * Release
+   */
+  public void release(){}
 }
 

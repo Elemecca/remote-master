@@ -84,7 +84,7 @@ public class PortDialog
 
     Box box = Box.createVerticalBox();
     box.add( new JLabel( "Select the desired port:" ));
-    box.add( box.createVerticalStrut( 5 ));
+    box.add( Box.createVerticalStrut( 5 ));
     int numColumns = 3;
     if ( portNames.length < 3 )
       numColumns = portNames.length;
@@ -109,9 +109,9 @@ public class PortDialog
       if ( j == 0 )
       {
         box.add( button );
-        box.add( box.createVerticalStrut( 5 ));
+        box.add( Box.createVerticalStrut( 5 ));
         box.add( panel );
-        box.add(  box.createVerticalStrut( 5 ));
+        box.add(  Box.createVerticalStrut( 5 ));
       }
       else if ( j == ( buttons.length -1 ))
       {

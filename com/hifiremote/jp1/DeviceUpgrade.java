@@ -71,7 +71,6 @@ public class DeviceUpgrade
     remote = base.remote;
     notes = base.notes;
     protocol = base.protocol;
-    defaultNames = base.defaultNames;
 
     // copy the device parameter values
     protocol.setDeviceParms( base.parmValues );
@@ -2374,7 +2373,7 @@ public class DeviceUpgrade
    */
   public Value[] getParmValues()
   {
-    return parmValues;
+    return parmValues.clone();
   }
 
   /**
@@ -2385,7 +2384,7 @@ public class DeviceUpgrade
    */
   public void setParmValues( Value[] parmValues )
   {
-    this.parmValues = parmValues;
+    this.parmValues = parmValues.clone();
   }
 
   /**

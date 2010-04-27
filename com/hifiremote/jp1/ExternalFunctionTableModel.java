@@ -12,10 +12,6 @@ import javax.swing.table.TableCellRenderer;
 public class ExternalFunctionTableModel
   extends KMTableModel< ExternalFunction >
 {
-  
-  /** The upgrade. */
-  private DeviceUpgrade upgrade = null;
-  
   /** The Constant rowCol. */
   private final static int rowCol = 0;
   
@@ -45,7 +41,6 @@ public class ExternalFunctionTableModel
   public ExternalFunctionTableModel( DeviceUpgrade upgrade )
   {
     super( upgrade.getExternalFunctions());
-    this.upgrade = upgrade;
   }
 
   /**
@@ -184,7 +179,7 @@ public class ExternalFunctionTableModel
       case nameCol:
         break;
       case devTypeCol:
-        rc = new DefaultCellEditor( new JComboBox( upgrade.getDeviceTypeAliasNames()));
+        rc = new DefaultCellEditor( new JComboBox( DeviceUpgrade.getDeviceTypeAliasNames()));
         break;
       case setupCodeCol:
         rc = new ByteEditor( 0, 2047, null );

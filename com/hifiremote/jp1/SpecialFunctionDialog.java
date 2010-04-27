@@ -48,7 +48,7 @@ import javax.swing.text.NumberFormatter;
 /**
  * The Class SpecialFunctionDialog.
  */
-public class SpecialFunctionDialog extends JDialog implements ActionListener, FocusListener, Runnable, ItemListener,
+public class SpecialFunctionDialog extends JDialog implements ActionListener, FocusListener, ItemListener,
     ListSelectionListener
 {
 
@@ -171,7 +171,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     formatter.setMaximum( new Integer( 2047 ) );
     setupCode = new JFormattedTextField( formatter );
     setupCode.setColumns( 4 );
-    setupCode.addFocusListener( this );
+    FocusSelector.selectOnFocus( setupCode );
 
     box = Box.createVerticalBox();
     addToBox( new JLabel( "Setup Code:" ), box );
@@ -375,8 +375,10 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     DefaultListModel listModel = new DefaultListModel();
     for ( Button b : buttons )
     {
-      if ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
+      if ( b.canAssignToMacro() || b.canAssignShiftedToMacro() || b.canAssignXShiftedToMacro() )
+      {
         listModel.addElement( b );
+      }
     }
     availableButtons.setModel( listModel );
 
@@ -883,17 +885,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
   public void focusGained( FocusEvent e )
   {
     Object source = e.getSource();
-    if ( source instanceof JTextField )
-    {
-      focusField = ( JTextField )source;
-      SwingUtilities.invokeLater( this );
-      return;
-    }
-    if ( source instanceof JList )
-    {
-      setTarget( ( JList )source );
-      return;
-    }
+    setTarget( ( JList )source );
   }
 
   /**
@@ -918,17 +910,6 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
   public void focusLost( FocusEvent e )
   {
   // intentionally left empty
-  }
-
-  // Runnable
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Runnable#run()
-   */
-  public void run()
-  {
-    focusField.selectAll();
   }
 
   // ListSelectionListener

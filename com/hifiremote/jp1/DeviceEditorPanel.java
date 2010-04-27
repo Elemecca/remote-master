@@ -568,4 +568,14 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
     remoteList.setVisible( false );
     remoteList.setVisible( true );
   }
+  
+  public void releasePanels()
+  {
+    for ( int i = 0; i < tabbedPane.getTabCount(); ++i )
+    {
+      KMPanel panel = ( KMPanel )tabbedPane.getComponentAt( i );
+      panel.release();
+    }
+    
+  }
 }

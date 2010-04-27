@@ -58,6 +58,7 @@ public class NumberDeviceParm
     verifier.setBase(base);
     tf = new JTextField();
     tf.setInputVerifier( verifier );
+    FocusSelector.selectOnFocus( tf );
     setToolTipText();
   }
   
@@ -103,7 +104,6 @@ public class NumberDeviceParm
   public void addListener( EventListener l )
   {
     tf.addActionListener(( ActionListener )l );
-    tf.addFocusListener(( FocusListener)l );
     tf.getDocument().addDocumentListener(( DocumentListener )l );
   }
 
@@ -113,7 +113,6 @@ public class NumberDeviceParm
   public void removeListener( EventListener l )
   {
     tf.removeActionListener(( ActionListener )l );
-    tf.removeFocusListener(( FocusListener )l );
     tf.getDocument().removeDocumentListener(( DocumentListener )l );
   }
 

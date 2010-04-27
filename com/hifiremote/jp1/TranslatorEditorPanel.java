@@ -40,7 +40,7 @@ public class TranslatorEditorPanel
     group.add( msb );
     group.add( lsb );
     outerBox.add( Box.createVerticalStrut( 5 ));
-    Box innerBox = box.createVerticalBox();
+    Box innerBox = Box.createVerticalBox();
     outerBox.add( innerBox );
     Insets insets = border.getBorderInsets( box );
     innerBox.setBorder( BorderFactory.createEmptyBorder( 0, insets.left, 0, 0 )); 
@@ -62,7 +62,7 @@ public class TranslatorEditorPanel
     parmTable.getColumnModel().addColumnModelListener( this );
     innerBox.add( parmTable );
 
-    innerBox.add( box.createVerticalStrut( 10 ));
+    innerBox.add( Box.createVerticalStrut( 10 ));
 
     innerBox.add( new JLabel( "Bits to receive the translated parameter bits:" ));
     dataBar = new MyScrollBar( JScrollBar.HORIZONTAL, 0, 8, 0, 24 );
@@ -71,8 +71,8 @@ public class TranslatorEditorPanel
     dataBar.setAlignmentY( Component.TOP_ALIGNMENT );
     int h = dataBar.getMinimumSize().height;
     innerBox.add( dataBar );
-    dataBox = box.createHorizontalBox();
-    dataBox.add( box.createHorizontalStrut( h ));
+    dataBox = Box.createHorizontalBox();
+    dataBox.add( Box.createHorizontalStrut( h ));
             
     dataTable = new JTableX( new DataDefaultTableModel( 24 ));
     (( DefaultTableCellRenderer )dataTable.getDefaultRenderer( Integer.class )).setHorizontalAlignment( SwingConstants.CENTER );
@@ -83,20 +83,20 @@ public class TranslatorEditorPanel
     dataTable.setAlignmentX( Component.LEFT_ALIGNMENT );
     dataTable.setAlignmentY( Component.TOP_ALIGNMENT );
     dataBox.add( dataTable );
-    dataBox.add( box.createHorizontalStrut( h ));
+    dataBox.add( Box.createHorizontalStrut( h ));
     dataBox.setAlignmentX( Component.LEFT_ALIGNMENT );
     innerBox.add( dataBox );
     adjustSizes();
 
-    innerBox.add( box.createVerticalStrut( 10 ));
-    box = box.createHorizontalBox();
+    innerBox.add( Box.createVerticalStrut( 10 ));
+    box = Box.createHorizontalBox();
     box.setAlignmentX( Component.LEFT_ALIGNMENT );
     box.add( new JLabel( "Adjustment:" ));
     adjustment = new JSpinner( new SpinnerNumberModel( 0, -8, 8, 1 ));
     adjustment.setMaximumSize( adjustment.getPreferredSize());
     adjustment.setToolTipText( "This value is added to the parameter before translation occurs." );
 //    (( JSpinner.NumberEditor )adjustment.getEditor()).getTextField().setToolTipText( adjustment.getToolTipText());
-    box.add( box.createHorizontalStrut( 5 ));
+    box.add( Box.createHorizontalStrut( 5 ));
     box.add( adjustment );
     adjustment.addChangeListener( this );
     box.setMaximumSize( box.getPreferredSize());

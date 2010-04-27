@@ -108,7 +108,7 @@ public class KeyMapPanel
     header.setResizingAllowed( false );
     header.setFont( new Font( fontName, Font.BOLD, 8 ));
 
-    Box tableBox = box.createVerticalBox();
+    Box tableBox = Box.createVerticalBox();
 //    box.setBorder( BorderFactory.createLineBorder( Color.BLACK ));
     tableBox.add( header );
     tableBox.add( table );

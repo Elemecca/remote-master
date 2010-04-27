@@ -103,7 +103,7 @@ public class FixedData
           {
             temp.add( new Short( ( short )value ) );
           }
-          value = rdr.parseNumber( token );
+          value = RDFReader.parseNumber( token );
           if ( equal != -1 )
           {
             token = saved.substring( equal );

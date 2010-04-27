@@ -41,7 +41,7 @@ import javax.swing.text.JTextComponent;
  */
 public class CombinerDeviceDialog
   extends JDialog
-  implements ActionListener, ItemListener, DocumentListener, FocusListener, Runnable
+  implements ActionListener, ItemListener, DocumentListener
 {
   
   /**
@@ -404,23 +404,6 @@ public class CombinerDeviceDialog
       updateFixedData();
   }
 
-  // FocusListener
-  /* (non-Javadoc)
-   * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
-   */
-  public void focusGained( FocusEvent e )
-  {
-    controlToSelectAll = ( JTextComponent )e.getSource();
-    SwingUtilities.invokeLater( this );
-  }
-
-  /* (non-Javadoc)
-   * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
-   */
-  public void focusLost( FocusEvent e )
-  {
-  }
-
   // ItemListener
   /* (non-Javadoc)
    * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
@@ -428,15 +411,6 @@ public class CombinerDeviceDialog
   public void itemStateChanged( ItemEvent e )
   {
     updateFixedData();
-  }
-
-  // Runnable
-  /* (non-Javadoc)
-   * @see java.lang.Runnable#run()
-   */
-  public void run()
-  {
-    controlToSelectAll.selectAll();
   }
 
   /**

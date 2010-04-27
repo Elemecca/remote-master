@@ -34,7 +34,7 @@ public class JP1Frame extends JFrame implements HyperlinkListener
   public JP1Frame( String title, PropertyFile properties )
   {
     super( title );
-    this.properties = properties;
+    JP1Frame.properties = properties;
     Container contentPane = super.getContentPane();
     contentPane.add( newContentPane, BorderLayout.CENTER );
     messageArea.setForeground( Color.red );
