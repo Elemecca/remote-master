@@ -1,16 +1,18 @@
-<project name="RemoteMaster" default="rmzip" basedir=".">
-        <description>RemoteMaster build file</description>
-        <property name="src" location="." />
-        <property name="build" location="classes" />
-        <property name="lib.dir" value="lib"/>
+<project name="RemoteMaster" default="rmjar" basedir=".">
+    <description>RemoteMaster build file</description>
+    
+	<property name="src" location="." />
+    <property name="build" location="classes" />
+    <property name="lib.dir" value="lib"/>
 
     <path id="project.classpath">
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
-                <pathelement location="${build}"/>
+        <pathelement location="${build}"/>
     </path>
 
-        <available file="num-master.txt" property="nummaster.exists" />
-        <available file="${build}/info" type="dir" property="info.exists" />
+    <available file="num-master.txt" property="nummaster.exists" />
+    <available file="${build}/info" type="dir" property="info.exists" />
+    <available file="UpgradeDigitMaps.java" type="dir" property="udm.exists" />
 
         <target name="init">
                 <mkdir dir="${build}" />
@@ -22,7 +24,7 @@
                 </javac>
         </target>
 
-        <target name="digitmaps" description="Update digitmaps.bin" depends="compile">
+        <target name="digitmaps" description="Update digitmaps.bin" depends="compile" if="udm.exists">
                 <java classpath="${build}" classname="UpdateDigitMapsBin" />
         </target>
 
