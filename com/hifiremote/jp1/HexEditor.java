@@ -11,7 +11,7 @@ import javax.swing.JTextField;
  * The Class HexEditor.
  */
 public class HexEditor
-  extends DefaultCellEditor
+  extends SelectAllCellEditor
 {
   
   /**
@@ -29,8 +29,7 @@ public class HexEditor
    */
   public HexEditor( Hex defaultHex )
   {
-    super( new JTextField());
-//    setClickCountToStart( 1 );
+    super();
     this.defaultHex = defaultHex;
 //    (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
@@ -49,7 +48,6 @@ public class HexEditor
       tf.setText( "" );
     else
       tf.setText((( Hex )value ).toString());
-    tf.selectAll();
 
     return tf;
   }

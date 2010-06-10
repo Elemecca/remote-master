@@ -18,7 +18,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
    */
   public SettingsTableModel()
   {
-    comboEditor.setClickCountToStart( 2 );
+    comboEditor.setClickCountToStart( 1 );
   }
 
   /**

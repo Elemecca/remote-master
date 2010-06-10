@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 // TODO: Auto-generated Javadoc
@@ -166,6 +167,14 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       return new RowNumberRenderer();
     return null;
   }
+  
+  public TableCellEditor getColumnEditor( int col )
+  {
+    if ( col == 3 )
+      return descriptionEditor;
+    else
+      return null;
+  }
 
   /*
    * (non-Javadoc)
@@ -223,4 +232,6 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
+  
+  private SelectAllCellEditor descriptionEditor = new SelectAllCellEditor();
 }

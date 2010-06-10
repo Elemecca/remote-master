@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 // TODO: Auto-generated Javadoc
@@ -163,7 +164,15 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
       return new RowNumberRenderer();
     return null;
   }
+  
+  public TableCellEditor getColumnEditor( int col )
+  {
+    if ( col == 3)
+      return noteEditor;
+    return null;
+  }
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
+  private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
 }

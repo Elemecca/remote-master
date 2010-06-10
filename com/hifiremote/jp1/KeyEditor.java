@@ -32,7 +32,7 @@ public class KeyEditor
   public KeyEditor() 
   {
     super( new JTextField());
-    setClickCountToStart( 2 );
+    setClickCountToStart( 1 );
     button = new JButton();
     button.setBorder( BorderFactory.createEmptyBorder( 1, 1, 1, 1 ));
     button.setHorizontalAlignment( SwingConstants.LEADING );

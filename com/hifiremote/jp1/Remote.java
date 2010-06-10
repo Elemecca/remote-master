@@ -703,6 +703,20 @@ public class Remote implements Comparable< Remote >
     return efcDigits;
   }
 
+  public void check( AddressRange addressRange, String name ) throws IllegalArgumentException
+  {
+    int bound = addressRange.getStart();
+    if ( bound >= eepromSize )
+    {
+      throw new IllegalArgumentException( "RDF Error: " + name + " starts at $" + Integer.toString( bound, 16 ) + ", beyond the eepromSize of $" + Integer.toString( eepromSize, 16 ));
+    }
+    bound = addressRange.getEnd();
+    if ( bound >= eepromSize )
+    {
+      throw new IllegalArgumentException( "RDF Error: " + name + " ends at $" + Integer.toString( bound, 16 ) + ", beyond the eepromSize of $" + Integer.toString( eepromSize, 16 ));
+    }
+  }
+
   /**
    * Parses the general section.
    * 
@@ -738,7 +752,9 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "BaseAddr" ) )
         baseAddress = RDFReader.parseNumber( value );
       else if ( parm.equals( "EepromSize" ) )
+      {
         eepromSize = RDFReader.parseNumber( value );
+      }
       else if ( parm.equals( "DevCodeOffset" ) )
         deviceCodeOffset = RDFReader.parseNumber( value );
       else if ( parm.equals( "FavKey" ) )
@@ -757,8 +773,8 @@ public class Remote implements Comparable< Remote >
         upgradeBug = RDFReader.parseFlag( value );
       else if ( parm.equals( "AdvCodeAddr" ) )
       {
-        advancedCodeAddress = new AddressRange();
-        advancedCodeAddress.parse( value, this );
+        advancedCodeAddress = new AddressRange( value, this );
+        check( advancedCodeAddress, "AdvCodeAddr" );
       }
       else if ( parm.equals( "KeyMoveSupport" ) )
       {
@@ -770,25 +786,25 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "UpgradeAddr" ) )
       {
-        upgradeAddress = new AddressRange();
-        upgradeAddress.parse( value, this );
+        upgradeAddress = new AddressRange( value, this );
+        check( upgradeAddress, "UpgradeAddr" );
       }
       else if ( parm.equals( "DevUpgradeAddr" ) )
       {
-        deviceUpgradeAddress = new AddressRange();
-        deviceUpgradeAddress.parse( value, this );
+        deviceUpgradeAddress = new AddressRange( value, this );
+        check( deviceUpgradeAddress, "DevUpgradeAddr" );
       }
       else if ( parm.equals( "TimedMacroAddr" ) )
       {
-        timedMacroAddress = new AddressRange();
-        timedMacroAddress.parse( value, this );
+        timedMacroAddress = new AddressRange( value, this );
+        check( timedMacroAddress, "TimedMacroAddr" );
       }
       else if ( parm.equals( "TimedMacroWarning" ) )
         timedMacroWarning = RDFReader.parseFlag( value );
       else if ( parm.equals( "LearnedAddr" ) )
       {
-        learnedAddress = new AddressRange();
-        learnedAddress.parse( value, this );
+        learnedAddress = new AddressRange( value, this );
+        check( learnedAddress, "LearnedAddr" );
       }
       else if ( parm.equals( "Processor" ) )
       {
@@ -1127,6 +1143,7 @@ public class Remote implements Comparable< Remote >
       int addr = RDFReader.parseNumber( st.nextToken() );
       AddressRange range = new AddressRange();
       range.parse( st.nextToken(), this );
+      check( range, "CheckSums" );
       CheckSum sum = null;
       if ( ch == '+' )
         sum = new AddCheckSum( addr, range );

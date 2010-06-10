@@ -19,9 +19,9 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   public DeviceButtonTableModel()
   {
     deviceTypeEditor = new DefaultCellEditor( deviceTypeBox );
-    deviceTypeEditor.setClickCountToStart( 2 );
+    deviceTypeEditor.setClickCountToStart( 1 );
     sequenceEditor = new DefaultCellEditor( sequenceBox );
-    sequenceEditor.setClickCountToStart( 2 );
+    sequenceEditor.setClickCountToStart( 1 );
   }
 
   /**
@@ -81,7 +81,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   public int getColumnCount()
   {
-    int count = 4;
+    int count = 5;
 
     if ( remoteConfig != null )
     {
@@ -102,7 +102,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "Label", "Seq"
+      "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "Note", "Label", "Seq"
   };
 
   /*
@@ -118,7 +118,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The col prototype names. */
   private static String[] colPrototypeNames =
   {
-      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "Label", "Seq"
+      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "A Meaningful Note", "Label", "Seq"
   };
 
   /*
@@ -134,7 +134,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, DeviceType.class, SetupCode.class, String.class, Integer.class
+      Integer.class, String.class, DeviceType.class, SetupCode.class, String.class, String.class, Integer.class
   };
 
   /*
@@ -154,10 +154,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   public boolean isCellEditable( int row, int col )
   {
-    if ( editable && ( col > 1 ) )
-      return true;
-
-    return false;
+    return editable && ( col > 1 );
   }
 
   /*
@@ -191,10 +188,18 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       case 4:
       {
+        String note = remoteConfig.getDeviceButtonNotes()[ row ];
+        if ( note == null )
+          return "";
+        else
+          return note;
+      }
+      case 5:
+      {
         DeviceLabels labels = remote.getDeviceLabels();
         return labels.getText( data, row );
       }
-      case 5:
+      case 6:
       {
         SoftDevices softDevices = remote.getSoftDevices();
         int seq = softDevices.getSequence( row, data );
@@ -254,13 +259,26 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     else if ( col == 3 )
     {
-      db.setSetupCode( ( short )( ( SetupCode )value ).getValue(), data );
+      SetupCode setupCode = null;
+      if ( value.getClass() == String.class )
+        setupCode = new SetupCode( ( String )value );
+      else
+        setupCode = ( SetupCode )value;
+      db.setSetupCode( ( short )setupCode.getValue(), data );
     }
     else if ( col == 4 )
     {
-      remote.getDeviceLabels().setText( ( String )value, row, data );
+      String strValue = (( String )value).trim();
+      if ( "".equals(  strValue ))
+        strValue = null;
+      
+      remoteConfig.getDeviceButtonNotes()[ row ] = strValue;
     }
     else if ( col == 5 )
+    {
+      remote.getDeviceLabels().setText( ( String )value, row, data );
+    }
+    else if ( col == 6 )
     {
       int rows = getRowCount();
       int newSeq = ( ( Integer )value ).intValue() - 1;
@@ -328,6 +346,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return deviceTypeEditor;
     }
+    else if ( col == 3 || col == 4 )
+    {
+      return selectAllEditor;
+    }
     else if ( col == 5 )
     {
       return sequenceEditor;
@@ -341,6 +363,9 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The device type box. */
   private DefaultCellEditor deviceTypeEditor = null;
   private JComboBox deviceTypeBox = new JComboBox();
+
+  /** The setup code editor */
+  private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
 
   private DefaultCellEditor sequenceEditor = null;
   private JComboBox sequenceBox = new JComboBox();

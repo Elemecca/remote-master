@@ -19,6 +19,8 @@ public abstract class RMPanel extends JPanel
   {
     super( new BorderLayout() );
   }
+  
+  public abstract void set( RemoteConfiguration remoteConfig );
 
   /*
    * (non-Javadoc)

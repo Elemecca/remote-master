@@ -8,13 +8,24 @@ import java.util.StringTokenizer;
  */
 public class AddressRange extends RDFParameter
 {
+  public AddressRange()
+  {
+    super();
+  }
+  
+  public AddressRange( String text, Remote remote ) throws Exception
+  {
+    super();
+    parse( text, remote );
+  }
+  
   public void parse( String text, Remote remote ) throws Exception
   {
     StringTokenizer st = new StringTokenizer( text, ".=" );
     start = RDFReader.parseNumber( st.nextToken() );
     end = RDFReader.parseNumber( st.nextToken() );
   }
-
+  
   /**
    * Gets the start.
    * 

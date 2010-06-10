@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,8 +38,6 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
 
     deviceButtonPanel.setBorder( BorderFactory.createTitledBorder( "Device Buttons" ) );
 
-    // first the device button table.
-    // JTableX table = new JTableX( deviceModel );
     deviceButtonTable = new JP1Table( deviceModel );
     deviceButtonTable.getSelectionModel().addListSelectionListener( this );
     deviceButtonTable.initColumns( deviceModel );

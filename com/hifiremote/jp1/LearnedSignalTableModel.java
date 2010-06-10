@@ -19,7 +19,9 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * Instantiates a new learned signal table model.
    */
   public LearnedSignalTableModel()
-  {}
+  {
+    deviceEditor.setClickCountToStart( 1 );
+  }
 
   /**
    * Sets the.
@@ -240,11 +242,14 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     if ( col == 1 )
     {
       DefaultCellEditor e = new DefaultCellEditor( deviceComboBox );
-      e.setClickCountToStart( 2 );
+      e.setClickCountToStart( 1 );
       return e;
     }
     else if ( col == 2 )
       return keyEditor;
+    else if ( col == 3 )
+      return noteEditor;
+      
     return null;
   }
 
@@ -253,10 +258,12 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
 
   /** The device combo box. */
   private JComboBox deviceComboBox = new JComboBox();
+  private DefaultCellEditor deviceEditor = new DefaultCellEditor( deviceComboBox );
 
   /** The key renderer. */
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
 
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
+  private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
 }

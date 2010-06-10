@@ -1,5 +1,8 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -195,7 +198,14 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     else if ( col == 3 )
       keyMove.setDeviceType( ( ( DeviceType )value ).getNumber() );
     else if ( col == 4 )
-      keyMove.setSetupCode( ( ( SetupCode )value ).getValue() );
+    {
+      SetupCode setupCode = null;
+      if ( value.getClass() == String.class )
+        setupCode = new SetupCode( ( String )value );
+      else
+        setupCode = ( SetupCode )value;
+      keyMove.setSetupCode( setupCode.getValue() );
+    }
     // else if (( col > 4 ) && ( col < 8 ))
     // {
     // if ( value != null )
@@ -218,7 +228,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     if ( col == 1 )
     {
       DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
-      editor.setClickCountToStart( 2 );
+      editor.setClickCountToStart( 1 );
       return editor;
     }
     else if ( col == 2 )
@@ -228,8 +238,12 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     else if ( col == 3 )
     {
       DefaultCellEditor editor = new DefaultCellEditor( deviceTypeBox );
-      editor.setClickCountToStart( 2 );
+      editor.setClickCountToStart( 1 );
       return editor;
+    }
+    else if ( col == 4 || col == 8 )
+    {
+      return selectAllEditor;
     }
     return null;
   }
@@ -263,4 +277,6 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
 
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
+
+  private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
 }

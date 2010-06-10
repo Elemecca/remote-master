@@ -12,7 +12,7 @@ import javax.swing.SwingConstants;
  * The Class ByteEditor.
  */
 public class ByteEditor
-  extends DefaultCellEditor
+  extends SelectAllCellEditor
 {
   
   /**
@@ -45,8 +45,8 @@ public class ByteEditor
    */
   public ByteEditor( int min, int max, Parameter parm )
   {
-    super( new JTextField());
-//    setClickCountToStart( 1 );
+    super();
+    setClickCountToStart( 1 );
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
     this.min = min;
     this.max = max;
@@ -79,7 +79,6 @@ public class ByteEditor
     else
       tf.setText( Integer.toString((( Integer )value ).intValue(), base ));
 
-    tf.selectAll();
     return tf;
   }
 

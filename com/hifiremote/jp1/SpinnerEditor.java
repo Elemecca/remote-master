@@ -52,7 +52,7 @@ public class SpinnerEditor extends AbstractCellEditor implements TableCellEditor
   {
     if ( evt instanceof MouseEvent )
     {
-      return ( ( MouseEvent )evt ).getClickCount() >= 2;
+      return ( ( MouseEvent )evt ).getClickCount() >= 1;
     }
     return true;
   }

@@ -12,7 +12,7 @@ import javax.swing.SwingConstants;
  * The Class EFCEditor.
  */
 public class EFCEditor
-  extends DefaultCellEditor
+  extends SelectAllCellEditor
 {
   
   /**
@@ -22,9 +22,8 @@ public class EFCEditor
    */
   public EFCEditor( int digits )
   {
-    super( new JTextField());
+    super();
     this.digits = digits;
-//    setClickCountToStart( 1 );
     (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.CENTER );
   }
 
@@ -42,7 +41,6 @@ public class EFCEditor
       tf.setText( "" );
     else
       tf.setText( value.toString());
-    tf.selectAll();
 
     return tf;
   }

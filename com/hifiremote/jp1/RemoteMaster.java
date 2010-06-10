@@ -51,6 +51,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkListener;
 
 import com.hifiremote.LibraryLoader;
@@ -66,14 +68,14 @@ import com.hifiremote.jp1.io.JP1USB;
  * @author Greg
  * @created November 30, 2006
  */
-public class RemoteMaster extends JP1Frame implements ActionListener, PropertyChangeListener, HyperlinkListener
+public class RemoteMaster extends JP1Frame implements ActionListener, PropertyChangeListener, HyperlinkListener, ChangeListener
 {
 
   /** The frame. */
-  private static JFrame frame = null;
+  private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.98";
+  public final static String version = "v1.99preview3";
 
   /** The dir. */
   private File dir = null;
@@ -140,6 +142,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The tabbed pane. */
   private JTabbedPane tabbedPane = null;
+  
+  private RMPanel currentPanel = null;
 
   /** The general panel. */
   private GeneralPanel generalPanel = null;
@@ -451,6 +455,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     rawDataPanel = new RawDataPanel();
     tabbedPane.addTab( "Raw Data", rawDataPanel );
     rawDataPanel.addPropertyChangeListener( this );
+    
+    tabbedPane.addChangeListener( this );
 
     JPanel statusBar = new JPanel();
     mainPanel.add( statusBar, BorderLayout.SOUTH );
@@ -509,7 +515,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @return The frame value
    */
-  public static JFrame getFrame()
+  public static JP1Frame getFrame()
   {
     return frame;
   }
@@ -1350,6 +1356,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void propertyChange( PropertyChangeEvent event )
   {
+    remoteConfig.checkUnassignedUpgrades();
     remoteConfig.updateImage();
     updateUsage();
   }
@@ -1555,5 +1562,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     ".txt"
   };
+
+  @Override
+  public void stateChanged( ChangeEvent event )
+  {
+    RMPanel newPanel = ( RMPanel )tabbedPane.getSelectedComponent();
+    if ( newPanel != currentPanel )
+    {
+      newPanel.set( remoteConfig );
+      currentPanel = newPanel;
+    }
+  }
 
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 // TODO: Auto-generated Javadoc
@@ -62,7 +63,9 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
 
     int boundDeviceButtonIndex = remoteConfig.findBoundDeviceButtonIndex( upgrade );
     if ( boundDeviceButtonIndex == -1 )
-      return upgrade;
+    {
+       return upgrade;
+    }
 
     java.util.List< KeyMove > upgradeKeyMoves = upgrade.getKeyMoves();
     java.util.List< KeyMove > keyMoves = remoteConfig.getKeyMoves();

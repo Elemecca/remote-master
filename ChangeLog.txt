@@ -1,5 +1,18 @@
+Changes for v1.99preview3
+- Add support for notes on device buttons
+- Add new protocols and translators
+
+Changes for v1.99preview2
+- Make editable table cells enter edit mode when single-clicked, and auto-select the contents
+- Detect bad RDFs where address ranges extend beyond the EEPROM size
+
+Changes for v1.99preview1
+- Added Start Menu entries for Windows users.  Run setup.bat
+- Prompt to assign a new device upgrade to a device button if not already assigned.
+- Make sure Lost Function Assignment warning gets focus when shown.
+
 Changes for v1.98
-- Corrected fix for corruption of fixed data when multiple
+- Corrected fix for corruption of fixed data when multiple upgrades use the same protocol
 - Fix failure to update tabs when downloading from or loading a file for a different remote.
 
 Changes for v1.98beta8

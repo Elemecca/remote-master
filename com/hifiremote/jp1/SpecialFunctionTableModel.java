@@ -200,12 +200,16 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     if ( col == 1 )
     {
       DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
-      editor.setClickCountToStart( 2 );
+      editor.setClickCountToStart( 1 );
       return editor;
     }
     else if ( col == 2 )
     {
       return keyEditor;
+    }
+    else if ( col == 6 )
+    {
+      return noteEditor;
     }
     return null;
   }
@@ -236,4 +240,6 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
 
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
+  
+  private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
 }

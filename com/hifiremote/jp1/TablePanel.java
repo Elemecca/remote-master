@@ -75,8 +75,9 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     table.getTableHeader().setToolTipText(
         "Click to sort is ascending order, or shift-click to sort in descending order." );
-    DefaultCellEditor e = ( DefaultCellEditor )table.getDefaultEditor( String.class );
+    SelectAllCellEditor e = new SelectAllCellEditor();
     new TextPopupMenu( ( JTextComponent )e.getComponent() );
+    table.setDefaultEditor( String.class, e );
 
     TransferHandler th = new TransferHandler()
     {

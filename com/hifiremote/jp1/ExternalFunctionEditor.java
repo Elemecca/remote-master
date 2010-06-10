@@ -11,55 +11,69 @@ import javax.swing.SwingConstants;
 /**
  * The Class ExternalFunctionEditor.
  */
-public class ExternalFunctionEditor
-  extends DefaultCellEditor
+public class ExternalFunctionEditor extends SelectAllCellEditor
 {
-  
+
   /**
    * Instantiates a new external function editor.
    */
   public ExternalFunctionEditor()
   {
-    super( new JTextField());
-//    setClickCountToStart( 1 );
-    (( JTextField )getComponent()).setHorizontalAlignment( SwingConstants.LEFT );
+    super();
+    ( ( JTextField )getComponent() ).setHorizontalAlignment( SwingConstants.LEFT );
     this.min = 0;
     this.max = 255;
   }
 
-  /* (non-Javadoc)
-   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int,
+   * int)
    */
-  public Component getTableCellEditorComponent( JTable table, Object value,
-                                                boolean isSelected, int row,
-                                                int col )
+  public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int col )
   {
-    JTextField tf =
-      ( JTextField )super.getTableCellEditorComponent( table, value,
-                                                       isSelected, row, col );
+    JTextField tf = ( JTextField )super.getTableCellEditorComponent( table, value, isSelected, row, col );
 
     f = ( ExternalFunction )value;
-    tf.setText( f.toString());
-    tf.selectAll();
+    if ( f.getType() == ExternalFunction.EFCType )
+    {
+      EFC efc = f.getEFC();
+      if ( efc != null )
+        tf.setText( efc.toString() );
+      else
+        tf.setText( "" );
+    }
+    else
+    {
+      Hex hex = f.getHex();
+      if ( hex != null )
+      {
+        tf.setText( hex.toString() );
+      }
+      else
+        tf.setText( "" );
+    }
 
     return tf;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.DefaultCellEditor#getCellEditorValue()
    */
-  public Object getCellEditorValue()
-    throws NumberFormatException
+  public Object getCellEditorValue() throws NumberFormatException
   {
     Object rc = f;
     JTextField tf = ( JTextField )getComponent();
     String str = tf.getText().trim();
-    if (( str != null ) && ( str.length() != 0 ))
+    if ( ( str != null ) && ( str.length() != 0 ) )
     {
       if ( f.getType() == ExternalFunction.EFCType )
       {
         short temp = Short.parseShort( str );
-        if (( temp < min ) || ( temp > max ))
+        if ( ( temp < min ) || ( temp > max ) )
         {
           String msg = "Value entered must be between " + min + " and " + max + '.';
           JP1Frame.showMessage( msg, tf );
@@ -68,11 +82,11 @@ public class ExternalFunctionEditor
         else
         {
           JP1Frame.clearMessage( tf );
-          f.setEFC( new EFC( temp ));
+          f.setEFC( new EFC( temp ) );
         }
       }
       else
-        f.setHex( new Hex( str ));
+        f.setHex( new Hex( str ) );
     }
     else
       f.setHex( null );
@@ -83,10 +97,10 @@ public class ExternalFunctionEditor
 
   /** The min. */
   private int min;
-  
+
   /** The max. */
   private int max;
-  
+
   /** The f. */
   private ExternalFunction f;
 }

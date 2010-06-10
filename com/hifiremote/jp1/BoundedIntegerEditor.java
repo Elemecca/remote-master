@@ -9,7 +9,7 @@ import javax.swing.JTextField;
  * to edit Integer values.
  */
 public class BoundedIntegerEditor
-  extends DefaultCellEditor
+  extends SelectAllCellEditor
 {
   
   /** The min. */
@@ -26,7 +26,7 @@ public class BoundedIntegerEditor
    */
   public BoundedIntegerEditor()
   {
-    super( new JTextField());
+    super();
   }
 
   /**
@@ -37,7 +37,7 @@ public class BoundedIntegerEditor
    */
   public BoundedIntegerEditor( int minValue, int maxValue )
   {
-    super( new JTextField());
+    super();
     this.min = minValue;
     this.max = maxValue;
   }

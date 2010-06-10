@@ -190,6 +190,8 @@ public class MacroTableModel extends JP1TableModel< Macro >
   {
     if ( col == 1 )
       return keyEditor;
+    else if ( col == 3 )
+      return noteEditor;
     return null;
   }
 
@@ -201,4 +203,5 @@ public class MacroTableModel extends JP1TableModel< Macro >
 
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
+  private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
 }

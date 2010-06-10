@@ -65,7 +65,7 @@ public class PopupEditor
   public PopupEditor()
   {
     super( new JTextField());
-    setClickCountToStart( 2 );
+    setClickCountToStart( 1 );
     button = new JButton();
     button.setBorder( BorderFactory.createEmptyBorder( 0, 3, 0, 3 ));
     button.setHorizontalAlignment( SwingConstants.LEADING );
@@ -192,7 +192,7 @@ public class PopupEditor
    */
   public void run()
   {
-    popup.show( button, 0, button.getSize().height );
+    popup.show( button, 0, 0 );
   }
 
 }

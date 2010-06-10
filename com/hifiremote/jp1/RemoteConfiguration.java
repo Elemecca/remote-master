@@ -74,12 +74,28 @@ public class RemoteConfiguration
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
     notes = section.getProperty( "Notes" );
 
+    deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
+
     loadBuffer( pr );
 
     while ( ( section = pr.nextSection() ) != null )
     {
       String sectionName = section.getName();
-      if ( sectionName.equals( "Settings" ) )
+
+      if ( sectionName.equals( "DeviceButtonNotes" ) )
+      {
+        DeviceButton[] buttons = remote.getDeviceButtons();
+        for ( int i = 0; i < buttons.length; ++i )
+        {
+          DeviceButton button = buttons[ i ];
+          String note = section.getProperty( button.getName() );
+          if ( note != null && !note.equals( "" ) )
+          {
+            deviceButtonNotes[ i ] = note;
+          }
+        }
+      }
+      else if ( sectionName.equals( "Settings" ) )
       {
         for ( Setting setting : remote.getSettings() )
           setting.setValue( Integer.parseInt( section.getProperty( setting.getTitle() ) ) );
@@ -186,6 +202,7 @@ public class RemoteConfiguration
     if ( remote.getBaseAddress() != baseAddr )
       throw new IOException( "The base address of the remote image doesn't match the remote's baseAddress." );
 
+    deviceButtonNotes = new String[ remote.getDeviceButtons().length];
     data = new short[ remote.getEepromSize() ];
     System.arraycopy( first, 0, data, 0, first.length );
 
@@ -363,6 +380,10 @@ public class RemoteConfiguration
               protocols.get( index ).setNotes( text );
             else if ( flag == 5 )
               learned.get( index ).setNotes( text );
+            else if ( flag == 6 )
+            {
+              deviceButtonNotes[ index ] = text;
+            }
           }
         }
         else if ( name.equals( "General" ) )
@@ -614,6 +635,11 @@ public class RemoteConfiguration
   {
     int deviceTypeIndex = upgrade.getDeviceType().getNumber();
     int setupCode = upgrade.getSetupCode();
+    return findBoundDeviceButtonIndex( deviceTypeIndex, setupCode );
+  }
+
+  public int findBoundDeviceButtonIndex( int deviceTypeIndex, int setupCode )
+  {
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
     for ( int i = 0; i < deviceButtons.length; ++i )
     {
@@ -903,6 +929,32 @@ public class RemoteConfiguration
   public int getAdvancedCodeBytesAvailable()
   {
     return remote.getAdvancedCodeAddress().getSize();
+  }
+
+  public void checkUnassignedUpgrades()
+  {
+    for ( DeviceUpgrade device : devices )
+    {
+      int boundDeviceButtonIndex = findBoundDeviceButtonIndex( device );
+      if ( !device.getKeyMoves().isEmpty() && boundDeviceButtonIndex == -1 )
+      {
+        // upgrade includes keymoves but isn't bound to a device button.
+        DeviceButton[] devButtons = remote.getDeviceButtons();
+        DeviceButton devButton = ( DeviceButton )JOptionPane
+            .showInputDialog(
+                RemoteMaster.getFrame(),
+                "The device upgrade \""
+                    + device.toString()
+                    + "\" uses keymoves.\n\nThese keymoves will not be available unless it is assigned to a device button.\n\nIf you like to assign this device upgrade to a device button?\nTo assign it, select the desired device button and press OK.  Otherwise please press Cancel.",
+                "Unassigned Device Upgrade", JOptionPane.QUESTION_MESSAGE, null, devButtons, null );
+        if ( devButton != null )
+        {
+          devButton.setSetupCode( ( short )device.getSetupCode(), data );
+          devButton.setDeviceTypeIndex( ( short )remote.getDeviceTypeByAliasName( device.getDeviceTypeAliasName() )
+              .getNumber(), data );
+        }
+      }
+    }
   }
 
   /**
@@ -1504,6 +1556,30 @@ public class RemoteConfiguration
       pw.print( String.format( "%04X", i + base ), Hex.toString( data, i, 16 ) );
     }
 
+    boolean haveNotes = false;
+    for ( String note : deviceButtonNotes )
+    {
+      if ( note != null )
+      {
+        haveNotes = true;
+        break;
+      }
+    }
+
+    if ( haveNotes )
+    {
+      pw.printHeader( "DeviceButtonNotes" );
+      DeviceButton[] deviceButtons = remote.getDeviceButtons();
+      for ( int i = 0; i < deviceButtonNotes.length; ++i )
+      {
+        String note = deviceButtonNotes[ i ];
+        if ( note != null )
+        {
+          pw.print( deviceButtons[ i ].getName(), note );
+        }
+      }
+    }
+
     pw.printHeader( "Settings" );
     for ( Setting setting : remote.getSettings() )
       setting.store( pw );
@@ -1629,6 +1705,11 @@ public class RemoteConfiguration
   {
     return savedData;
   }
+  
+  public String[] getDeviceButtonNotes()
+  {
+    return deviceButtonNotes;
+  }
 
   /**
    * Gets the key moves.
@@ -1722,4 +1803,6 @@ public class RemoteConfiguration
 
   /** The notes. */
   private String notes = null;
+
+  private String[] deviceButtonNotes = null;
 }
