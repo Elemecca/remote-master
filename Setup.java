@@ -110,6 +110,65 @@ public class Setup
       pw.flush();
       pw.close();
 
+      File vbsFile = new File( workDir, "Setup.vbs" );
+      pw = new PrintWriter( new FileWriter( vbsFile ) );
+
+      pw.println( "Set WshShell = WScript.CreateObject(\"WScript.Shell\")" );
+      pw.println( "sUserProfile = WshShell.Environment(\"PROCESS\").Item(\"USERPROFILE\")" );
+      pw.println();
+      pw.println( "Set objFS = WScript.CreateObject(\"Scripting.FileSystemObject\")" );
+      pw.println( "sRMFolder = sUserProfile & \"\\Start Menu\\Programs\\Remote Master\"" );
+      pw.println( "if Not objFS.FolderExists( sRMFolder ) Then" );
+      pw.println( "   objFS.CreateFolder( sRMFolder )" );
+      pw.println( "End If" );
+      pw.println();
+      pw.println( "sRMIcon = sRMFolder & \"\\Remote Master.LNK\"" );
+      pw.println();
+      pw.println( "Set oWS = WScript.CreateObject(\"WScript.Shell\")" );
+      pw.println( "Set oLink = oWS.CreateShortcut(sRMIcon)" );
+      pw.println();
+      pw.println( "oLink.TargetPath = \"" + workDir + "\\RemoteMaster.jar\"" );
+      pw.println( "oLink.Arguments = \"\"" );
+      pw.println( "oLink.Description = \"RemoteMaster\"" );
+      pw.println( "oLink.IconLocation = \"" + workDir + "\\RM.ICO\"" );
+      pw.println( "oLink.WindowStyle = \"1\"" );
+      pw.println( "oLink.WorkingDirectory = \"" + workDir + "\"" );
+      pw.println( "oLink.Save" );
+      pw.println();
+      pw.println( "sRMIRIcon = sRMFolder & \"\\RMIR.LNK\"" );
+      pw.println( "Set oLink = oWS.CreateShortcut(sRMIRIcon)" );
+      pw.println();
+      pw.println( "oLink.TargetPath = \"" + workDir + "\\RemoteMaster.jar\"" );
+      pw.println( "oLink.Arguments = \"-ir\"" );
+      pw.println( "oLink.Description = \"RMIR\"" );
+      pw.println( "oLink.IconLocation = \"" + workDir + "\\RMIR.ICO\"" );
+      pw.println( "oLink.WindowStyle = \"1\"" );
+      pw.println( "oLink.WorkingDirectory = \"" + workDir + "\"" );
+      pw.println( "oLink.Save" );
+      pw.println();
+      pw.println( "sReadmeIcon = sRMFolder & \"\\Read Me.LNK\"" );
+      pw.println( "Set oLink = oWS.CreateShortcut(sReadmeIcon)" );
+      pw.println();
+      pw.println( "oLink.TargetPath = \"" + workDir + "\\Readme.html\"" );
+      pw.println( "oLink.Arguments = \"\"" );
+      pw.println( "oLink.Description = \"Readme\"" );
+      pw.println( "oLink.WindowStyle = \"1\"" );
+      pw.println( "oLink.WorkingDirectory = \"" + workDir + "\"" );
+      pw.println( "oLink.Save" );
+      pw.println();
+      pw.println( "sTutorialIcon = sRMFolder & \"\\Tutorial.LNK\"" );
+      pw.println( "Set oLink = oWS.CreateShortcut(sTutorialIcon)" );
+      pw.println();
+      pw.println( "oLink.TargetPath = \"" + workDir + "\\tutorial\\tutorial.html\"" );
+      pw.println( "oLink.Arguments = \"\"" );
+      pw.println( "oLink.Description = \"Tutorial\"" );
+      pw.println( "oLink.WindowStyle = \"1\"" );
+      pw.println( "oLink.WorkingDirectory = \"" + workDir + "\\tutorial\"" );
+      pw.println( "oLink.Save" );
+
+      pw.flush();
+      pw.close();
+      
       File batFile = new File( workDir, "rmaster.bat" );
       pw = new PrintWriter( new FileWriter( batFile ));
 
