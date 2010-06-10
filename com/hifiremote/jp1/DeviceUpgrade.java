@@ -25,6 +25,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
@@ -380,12 +381,13 @@ public class DeviceUpgrade
             + "corresponding button names from the original remote are listed below."
             + "<br><br>Use the Button or Layout panel to assign those functions properly.</html>";
 
-        JFrame frame = new JFrame( "Lost Function Assignments" );
-        Container container = frame.getContentPane();
+        // JOptionPane.showM
+        // JFrame frame = new JFrame( "Lost Function Assignments" );
+        JPanel panel = new JPanel( new BorderLayout());
 
         JLabel text = new JLabel( message );
         text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
-        container.add( text, BorderLayout.NORTH );
+        panel.add( text, BorderLayout.NORTH );
         java.util.List< String > titles = new ArrayList< String >();
         titles.add( "Function name" );
         titles.add( "Button name" );
@@ -400,10 +402,9 @@ public class DeviceUpgrade
           showRows = unassigned.size();
         d.height = ( table.getRowHeight() + table.getRowMargin() ) * showRows;
         table.setPreferredScrollableViewportSize( d );
-        container.add( new JScrollPane( table ), BorderLayout.CENTER );
-        frame.pack();
-        frame.setLocationRelativeTo( RemoteMaster.getFrame() );
-        frame.setVisible( true );
+        panel.add( new JScrollPane( table ), BorderLayout.CENTER );
+        
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), panel, "Lost Function Assignments", JOptionPane.PLAIN_MESSAGE );
       }
       assignments = newAssignments;
     }
