@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -272,7 +273,6 @@ public class ButtonPanel extends KMPanel implements ActionListener
       x.printStackTrace( System.err );
     }
 
-    add( new JScrollPane( table ), BorderLayout.CENTER );
     popup = new JPopupMenu();
 
     deleteItem = new JMenuItem( deleteAction );
@@ -368,6 +368,10 @@ public class ButtonPanel extends KMPanel implements ActionListener
     outerPanel.add( functionPanel, BorderLayout.NORTH );
     panel.add( new JScrollPane( outerPanel ), BorderLayout.CENTER );
 
+    JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, new JScrollPane( table ), new JScrollPane( panel ));
+    splitPane.setResizeWeight( 0.3 );
+    
+    add( splitPane, BorderLayout.CENTER );
     panel = new JPanel();
     autoAssign = new JButton( "Auto assign" );
     autoAssign.setToolTipText( "Assign functions to buttons of the same name that don't have a functon." );
