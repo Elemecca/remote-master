@@ -2,6 +2,7 @@ Changes for v1.99preview3
 - Add support for notes on device buttons
 - Add new protocols and translators
 - Add draggable divider to RMs Buttons panel along the left edge of the Available Functions
+- Replaced setup.bat with Setup.vbs for creating the Start Menu shortcuts and file associations.
 
 Changes for v1.99preview2
 - Make editable table cells enter edit mode when single-clicked, and auto-select the contents

@@ -33,7 +33,6 @@
         <li><a href="#layout">Layout</a></li>
         <li><a href="#keymap">Key Map</a></li>
         <li><a href="#output">Output</a></li>
-        <li><a href="#protocols">Protocols</a></li>
 <!--
     </ul>
 -->
@@ -43,9 +42,9 @@
 <div class="content">
 <h1><a name="general"></a>General Notes</h1>
 <p>Remote Master (aka RM) was originally designed and developed primarily by Greg Bush, with significant contributions from John S Fine, Nils Ekberg, and others.</p>
-<p>RM is a Java application.  That means that in order to run RM, you must have either the Java Developer Kit or
-the Java Runtime Environemt installed, version 6.0 or later.  Either of these can be downloaded from the <a href="http://java.sun.com/javase/downloads/index.jsp">J2SE Downloads</a> page.</p>
-<p>The Remote Master user interface makes extensive use of context menus. On most platforms, context menus are accessed by clicking the right mouse button in an area when you want to do something.  RemoteMaster also often provides multiple ways to accomplish the same task.</p>
+<p>RM is a Java application.  That means that in order to run RM, you must have either the Java Developer Kit (JDK) or
+the Java Runtime Environment (JRE) installed, version 6.0 or later.  Either of these can be downloaded for free from the <a href="http://java.sun.com/javase/downloads/index.jsp">J2SE Downloads</a> page.</p>
+<p>The Remote Master user interface makes extensive use of context menus. Context menus are accessed by clicking the right mouse button in an area when you want to do something.  RemoteMaster also often provides multiple ways to accomplish the same task.</p>
 <p>Take, for example, the Layout panel, which shows an image of the remote being used on the left, and a list of the available functions on the right.  There are 3 different ways to assign a function to a button:
 <ol>
 <li>Drag and drop the desired function onto the desired button.
@@ -56,22 +55,22 @@ the Java Runtime Environemt installed, version 6.0 or later.  Either of these ca
 <ol>
 <li>If you haven't already, download and install Java version 6.0 or later.  You can download it from the <a href="http://java.sun.com/javase/downloads/index.jsp">J2SE Download</a> page.  Either the Java Developer Kit (JDK) or the Java Runtime Environment (JRE) will do.</li>
 <li>Download the latest version of Remote Master from <a href="https://sourceforge.net/project/showfiles.php?group_id=30560&package_id=22596">SourceForge</a>, and unzip it to the directory of your choice, preserving directory names.</li>
-<li>If you are using a version of Windows (95/98/NT/XP), double-click on the <b><tt>Setup.bat</tt></b> and then click <b>Yes</b>.</li>
-<li>Download the latest version of the Remote Images and Maps from the <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=81">Main</a> <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=7">Tools</a> section of the <a href="http://www.hifi-remote.com/forums/dload.php">File Section</a> of the <a href=http://www.hifi-remote.com/forums/>JP1 Remotes Forums</a> to the <b>same folder</b> in which you installed RemoteMaster. 
-<p>Unzip it, which will place all the images and maps in the <b>Images</b> sub-folder.</li>
-<li>If you haven't already, download the lastest version of the Remote Definition Files (RDFs) from the 
+<li>If you are using a version of Windows (95/98/NT/XP/Vista/Windows 7), double-click on <b>Setup.vbs</b>.</li>
+<li>Download the latest version of the <a href="http://www.hifi-remote.com/forums/dload.php?action=file&file_id=6160">Maps and Images required for RM</a> from the <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=81">Main</a> <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=7">Tools</a> section of the <a href="http://www.hifi-remote.com/forums/dload.php">File Section</a> of the <a href=http://www.hifi-remote.com/forums/>JP1 Remotes Forums</a>. 
+<p>Unzip it to the folder of your choice, creating a <b>maps</b> sub-folder containing all the maps and images.</li>
+<li>If you haven't already, download the lastest version of the <a href="http://www.hifi-remote.com/forums/dload.php?action=file&file_id=5338">RDF files needed for IR and RM</a> from the 
 <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=81">Main</a> <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=7">Tools</a> section of the <a href="http://www.hifi-remote.com/forums/dload.php">File Section</a> of the <a href=http://www.hifi-remote.com/forums/>JP1 Remotes Forums</a>
-<p>Unzip it to the directory of your choice.  It is recommended that you do <b>NOT</b> place it in the same directory as you placed Remote Master.</p>
+<p>Unzip it to the folder of your choice.  It is recommended that you do <b>NOT</b> place it in the same directory as you placed Remote Master.</p>
 <p><b><u>Note:</u></b> You must have RDFs for all supported remotes in order for RM to work correctly when importing or loading device upgrades that were created for remotes other than the one(s) you will be using.</p>
 </li>
 </ol>
 <p>That's it, Remote Master is now ready for your use!  There are a few different ways to start Remote Master:
 <ol>
-<li>Double-click on <b><tt>RemoteMaster.jar</tt></b>.</li>
-<li>Double-click on <b><tt>rmaster.bat</tt></b>.</li>
+<li>Click on the <b>Remote Master</b> shortcut in <b><tt>Start &gt; All Programs &gt; Remote Master</tt></b>.  You may want to send it to your desktop or drag it to your Quick Launch tool bar.</li>
+<li>Double-click on <b>RemoteMaster.jar</b>.</li>
 <li>Double-click on a Remote Master Device Upgrade file (*.rmdu).</li>
 <li>In Internet Explorer, click on a link to a Remote Master Device Upgade file (*.rmdu).</li>
-<li>From the command line, type<br><tt>java -jar &lt;path&gt;\RemoteMaster.jar -h &lt;path&gt;</tt><br> where &lt;path&gt; is the fully qualified path to the directory in which you installed Remote Master.</li>
+<li>From the command line, type<br><tt>java -jar &lt;path&gt;\RemoteMaster.jar -h &lt;path&gt;</tt><br> where &lt;path&gt; is the fully qualified path of the folder in which you installed Remote Master.</li>
 </ol>
 <p>There is a short tutorial available for RM.  See <a href="http://www.hifi-remote.com/jp1/help/rm.shtml">JP1 - Just How Easy Is It?</url>
 <h1><a name="main"></a>Using Remote Master</h1>
@@ -688,119 +687,6 @@ into the IR Protocols tab, press the <b>Copy</b> button or use the
 the context menu (right-click and select <b>Copy</b>).</p></td>
 </tr>
 </table>
-<h2><a name="protocols"></a>Protocols</h2>
-<p>RM does not yet support all the protocols supported by KM.
-Here is a list of the protocols that SHOULD work.  If you find a
-problem with one of these, please
-<a href="http://sourceforge.net/tracker/?func=add&group_id=30560&atid=399666">submit a Bug Report</a>.</p>
-<table border=0><tr valign=top>
-<td><ul>
-<li>Acer Keyboard
-<li>Aiwa
-<li>Aiwa2
-<li>Aiwa Combo
-<li>Akai
-<li>Anthem
-<li>Apex 1100W
-<li>Audiovox
-<li>B&K
-<li>Blaupunkt
-<li>Boston Accoustics
-<li>Boston Official
-<li>Denon
-<li>Denon Combo (Official)
-<li>Denon Combo
-<li>Device Combiner
-<li>DirecTV
-<li>Dishplayer
-<li>Dish Network
-<li>Dish Network Combo
-<li>Echostar 2200
-<li>Emerson
-<li>F12
-<li>Fujitsu
-<li>GI 4DTV Hacked
-<li>GI 4DTV Official
-<li>GI Cable
-<li>HK Combo
-<li>Jerrold
-<li>JVC
-<li>JVC-48
-<li>Kaseikyo
-<li>Lumagen
-</ul></td>
-<td><ul>
-<li>Mitsubishi
-<li>NEC 2DEV Combo
-<li>NEC1
-<li>NEC2
-<li>NEC Combo
-<li>NEC1 Combo
-<li>NEC1 2DEV Combo
-<li>NECx1
-<li>NECx2
-<li>Nokia Quad
-<li>NRC17
-<li>Pace
-<li>Panasonic (old)
-<li>Panasonic
-<li>Panasonic MIX Combo
-<li>Panasonic VCR Combo
-<li>Panasonic Mixed Combo
-<li>Panasonic Combo
-<li>Panasonic Multi-Device (Hacked)
-<li>Panasonic Combo (flawed)
-<li>Panasonic2 (LCD)
-<li>Pause Protocol (Special)
-<li>Pioneer
-<li>Pioneer DVD
-<li>Pioneer DVD2
-<li>Pioneer MIX
-<li>Pioneer 2CMD
-<li>Pioneer 3DEV
-<li>Pioneer 4DEV
-<li>Proton
-<li>RC-5
-<li>RC-5x
-</ul></td>
-<td><ul>
-<li>RC-5/5x Combo
-<li>RC-6
-<li>RC6-M-20n
-<li>RC6-M-24n
-<li>RCA
-<li>RCA (Old)
-<li>RCA Combo (Official)
-<li>RCA Combo (w/Duration)
-<li>RECS80 (45)
-<li>RECS80 (68)
-<li>RECS80 (90)
-<li>ReplayTV (Simple)
-<li>ReplayTV (Advanced)
-<li>ReplayTV (Official)
-<li>Scientific Atlanta
-<li>Sharp
-<li>Sharp Combo (Official)
-<li>Sharp DVD
-<li>Sony 12/15
-<li>Sony20
-<li>Sony Combo (12/20)
-<li>Sony Combo (12/15/20)
-<li>Sony DSP
-<li>Sony Egg
-<li>Streamzap
-<li>Teac-K
-<li>Thomson
-<li>TiVo (Advanced)
-<li>TiVo (Official)
-<li>TiVo (Official 2-byte)
-<li>X10
-<li>Zenith
-</ul></td>
-</tr></table>
-<p>Here is the list of protocols that are not <b>yet</b> supported:</p>
-<ul>
-</ul>
 
 <!--
 Key Move Code block:

@@ -30,7 +30,7 @@
 
         <target name="rmjar" depends="compile" description="Generate RemoteMaster.jar">
                 <jar destfile="RemoteMaster.jar" manifest="RemoteMaster.mf" update="true">
-                        <fileset dir="${build}" includes="com/**/*.class,Setup.class" />
+                        <fileset dir="${build}" includes="com/**/*.class" />
                         <zipfileset src="${lib.dir}/TableLayout.jar" includes="**/*.class"/>
                         <zipfileset src="${src}/jlfgr-1_0.jar">
 							<include name="toolbarButtonGraphics/general/Open24.gif"/>
@@ -55,7 +55,7 @@
 
         <target name="rmzip" depends="rmjar,digitmaps" description="Generate the distribution zip file">
           <zip destfile="${src}/RemoteMaster.${rmversion}.zip">
-            <zipfileset dir="${src}" includes="RemoteMaster.jar,Readme.html,*.css,protocols.ini,setup.bat,ChangeLog.txt,digitmaps.bin,porttalk.sys" />
+            <zipfileset dir="${src}" includes="RemoteMaster.jar,Readme.html,*.css,protocols.ini,ChangeLog.txt,digitmaps.bin,Setup.vbs,porttalk.sys" />
             <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows"/>
 			<zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" prefix="Linux-i386" filemode="755"/>
 			<zipfileset src="${src}/par64.zip" includes="libjp1parallel.so" prefix="Linux-amd64" filemode="755"/>
