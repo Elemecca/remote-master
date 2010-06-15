@@ -192,7 +192,7 @@ public class PopupEditor
    */
   public void run()
   {
-    popup.show( button, 0, 0 );
+    popup.show( button, 0, button.getHeight() );
   }
 
 }
