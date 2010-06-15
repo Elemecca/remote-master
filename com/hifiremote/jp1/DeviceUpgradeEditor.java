@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -24,15 +25,15 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class DeviceUpgradeEditor.
  */
-public class DeviceUpgradeEditor extends JDialog implements ActionListener
+public class DeviceUpgradeEditor extends JFrame implements ActionListener
 {
-
   /**
    * Instantiates a new device upgrade editor.
    * 
@@ -45,44 +46,39 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
    */
   public DeviceUpgradeEditor( JFrame owner, DeviceUpgrade deviceUpgrade, Collection< Remote > remotes )
   {
-    super( owner, "Device Upgrade Editor", true );
-    createGUI( owner, deviceUpgrade, remotes );
-  }
-
-  /**
-   * Instantiates a new device upgrade editor.
-   * 
-   * @param owner
-   *          the owner
-   * @param deviceUpgrade
-   *          the device upgrade
-   * @param remotes
-   *          the remotes
-   */
-  public DeviceUpgradeEditor( JDialog owner, DeviceUpgrade deviceUpgrade, Collection< Remote > remotes )
-  {
-    super( owner, "Device Upgrade Editor", true );
-    createGUI( owner, deviceUpgrade, remotes );
-  }
-
-  /**
-   * Creates the gui.
-   * 
-   * @param owner
-   *          the owner
-   * @param deviceUpgrade
-   *          the device upgrade
-   * @param remotes
-   *          the remotes
-   */
-  private void createGUI( Window owner, DeviceUpgrade deviceUpgrade, Collection< Remote > remotes )
-  {
+    super( "Device Upgrade Editor" );
+    this.owner = owner;
+    focusWindowAdapter = new WindowAdapter()
+    {
+      public void windowGainedFocus( WindowEvent e )
+      {
+        toFront();
+      }
+    };
+    
+    owner.addWindowFocusListener( focusWindowAdapter );
+    
+    addWindowStateListener( new WindowAdapter()
+    {
+      public void windowStateChanged(WindowEvent e)
+      {
+        int newState = e.getNewState();
+        int iconified = JFrame.ICONIFIED;
+        if ( e.getNewState() == JFrame.ICONIFIED )
+        {
+          setExtendedState( NORMAL );
+          toFront();
+        }
+      }
+    });
+    
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
     addWindowListener( new WindowAdapter()
     {
       public void windowClosing( WindowEvent event )
       {
         cancelButton.doClick();
+        DeviceUpgradeEditor.this.owner.removeWindowFocusListener( focusWindowAdapter );
       }
     } );
     editorPanel = new DeviceEditorPanel( deviceUpgrade, remotes );
@@ -117,7 +113,7 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
     setLocationRelativeTo( owner );
     setVisible( true );
   }
-
+  
   /**
    * Gets the device upgrade.
    * 
@@ -334,4 +330,8 @@ public class DeviceUpgradeEditor extends JDialog implements ActionListener
 
   /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
+  
+  private JFrame owner = null;
+  
+  private WindowAdapter focusWindowAdapter = null;
 }
