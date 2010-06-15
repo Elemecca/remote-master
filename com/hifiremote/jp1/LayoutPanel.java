@@ -19,10 +19,13 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -36,15 +39,17 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class LayoutPanel.
  */
-public class LayoutPanel extends KMPanel implements ActionListener
+public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 {
 
   /**
@@ -73,9 +78,9 @@ public class LayoutPanel extends KMPanel implements ActionListener
 
     imagePanel.getActionMap().put( "delete", deleteAction );
 
-    JPanel leftPanel = new JPanel( new BorderLayout() );
+    remotePanel = new JPanel( new BorderLayout() );
     scrollPanel = Box.createHorizontalBox();
-    leftPanel.add( scrollPanel, BorderLayout.SOUTH );
+    remotePanel.add( scrollPanel, BorderLayout.SOUTH );
     scrollLeft = new JButton( "<" );
     scrollLeft.setEnabled( false );
     scrollLeft.addActionListener( this );
@@ -90,13 +95,38 @@ public class LayoutPanel extends KMPanel implements ActionListener
     scrollRight.addActionListener( this );
     scrollPanel.add( scrollRight );
 
-    scrollPane = new JScrollPane( imagePanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+    scrollPane = new JScrollPane( imagePanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
-    leftPanel.add( scrollPane, BorderLayout.WEST );
-    add( leftPanel, BorderLayout.WEST );
+    remotePanel.add( scrollPane, BorderLayout.CENTER );
 
     JPanel rightPanel = new JPanel( new BorderLayout() );
-    add( rightPanel, BorderLayout.CENTER );
+
+    ComponentAdapter componentListener = new ComponentAdapter()
+    {
+      public void componentResized( ComponentEvent event )
+      {
+        int width = scrollPane.getViewport().getExtentSize().width;
+        Remote remote = deviceUpgrade.getRemote();
+        int height = ( width * remote.getHeight() ) / remote.getWidth();
+        Dimension d = new Dimension( width, height );
+        imagePanel.setPreferredSize( d );
+        if ( width != remote.getWidth() )
+        {
+          double scale = ( double )width / ( double )remote.getWidth();
+          transform = AffineTransform.getScaleInstance( scale, scale );
+        }
+        else
+        {
+          transform = null;
+        }
+
+        scrollPane.revalidate();
+      }
+    };
+    remotePanel.addComponentListener( componentListener );
+
+    splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, remotePanel, rightPanel );
+    add( splitPane, BorderLayout.CENTER );
 
     JPanel modePanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
     modePanel.setBorder( BorderFactory.createTitledBorder( "Mode" ) );
@@ -292,11 +322,9 @@ public class LayoutPanel extends KMPanel implements ActionListener
     enableScrollButtons();
     map = maps[ screenIndex ];
     image = new ImageIcon( map.getImageFile().getAbsolutePath() );
-    Dimension d = new Dimension( r.getWidth(), r.getHeight() );
-    imagePanel.setPreferredSize( d );
-    imagePanel.setMinimumSize( d );
-    imagePanel.setMaximumSize( d );
-    imagePanel.revalidate();
+
+    splitPane.setDividerLocation( r.getWidth() + scrollPane.getVerticalScrollBar().getWidth() );
+
     boolean found = false;
     for ( ButtonShape shape : map.getShapes() )
     {
@@ -392,13 +420,20 @@ public class LayoutPanel extends KMPanel implements ActionListener
     for ( ButtonShape buttonShape : map.getShapes() )
     {
       Shape s = buttonShape.getShape();
-      if ( ( s != null ) && s.contains( p ) )
+      if ( s != null )
       {
-        if ( closestMatch == null )
-          closestMatch = buttonShape;
-        Button b = getButtonForShape( buttonShape );
-        if ( buttonMap.isPresent( b ) )
-          return buttonShape;
+        if ( transform != null )
+        {
+          s = transform.createTransformedShape( s );
+        }
+        if ( s.contains( p ) )
+        {
+          if ( closestMatch == null )
+            closestMatch = buttonShape;
+          Button b = getButtonForShape( buttonShape );
+          if ( buttonMap.isPresent( b ) )
+            return buttonShape;
+        }
       }
     }
     return closestMatch;
@@ -660,9 +695,13 @@ public class LayoutPanel extends KMPanel implements ActionListener
     public void paint( Graphics g )
     {
       super.paint( g );
-      Graphics2D g2 = ( Graphics2D )g;
+      Graphics2D g2 = ( Graphics2D )g.create();
       g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
       Remote r = deviceUpgrade.getRemote();
+      if ( transform != null )
+      {
+        g2.transform( transform );
+      }
       if ( image != null )
         g2.drawImage( image.getImage(), null, null );
 
@@ -764,68 +803,43 @@ public class LayoutPanel extends KMPanel implements ActionListener
       return text;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.swing.Scrollable#getPreferredScrollableViewportSize()
-     */
+    @Override
     public Dimension getPreferredScrollableViewportSize()
     {
-      Dimension rc = null;
-
-      if ( map != null )
-      {
-        int w = deviceUpgrade.getRemote().getWidth();
-        int h = deviceUpgrade.getRemote().getHeight();
-        if ( scrollPane.getViewport().getExtentSize().height < h )
-          w += scrollPane.getVerticalScrollBar().getWidth();
-
-        rc = new Dimension( w, h );
-      }
-      else
-        rc = new Dimension( 0, 0 );
-
-      return rc;
+      return getPreferredSize();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.swing.Scrollable#getScrollableUnitIncrement(java.awt.Rectangle, int, int)
-     */
-    public int getScrollableUnitIncrement( Rectangle visibleRect, int orientation, int direction )
-    {
-      return 1;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.swing.Scrollable#getScrollableBlockIncrement(java.awt.Rectangle, int, int)
-     */
+    @Override
     public int getScrollableBlockIncrement( Rectangle visibleRect, int orientation, int direction )
     {
-      return visibleRect.height;
+      if ( orientation == SwingConstants.VERTICAL )
+      {
+        return visibleRect.height;
+      }
+
+      if ( orientation == SwingConstants.HORIZONTAL )
+      {
+        return visibleRect.width;
+      }
+      return 0;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.swing.Scrollable#getScrollableTracksViewportWidth()
-     */
+    @Override
+    public boolean getScrollableTracksViewportHeight()
+    {
+      return false;
+    }
+
+    @Override
     public boolean getScrollableTracksViewportWidth()
     {
       return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.swing.Scrollable#getScrollableTracksViewportHeight()
-     */
-    public boolean getScrollableTracksViewportHeight()
+    @Override
+    public int getScrollableUnitIncrement( Rectangle visibleRect, int orientation, int direction )
     {
-      return false;
+      return 1;
     }
   }
 
@@ -883,8 +897,20 @@ public class LayoutPanel extends KMPanel implements ActionListener
   /** The scroll pane. */
   private JScrollPane scrollPane = null;
 
+  private JSplitPane splitPane = null;
+
   /** The double click listener. */
   private DoubleClickListener doubleClickListener = new DoubleClickListener();
 
   private ImageIcon image = null;
+
+  private AffineTransform transform = null;
+
+  JPanel remotePanel = null;
+
+  @Override
+  public void run()
+  {
+    doRepaint();
+  }
 }
