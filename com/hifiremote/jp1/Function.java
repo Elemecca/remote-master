@@ -138,7 +138,10 @@ public class Function
   {
     this.name = name;
     if ( label != null )
+    {
       label.setText( name );
+      label.updateToolTipText();
+    }
     if ( item != null )
       item.setText( name );
     return this;

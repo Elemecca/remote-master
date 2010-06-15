@@ -33,6 +33,11 @@ public class FunctionLabel
       setText( "- none -" );
     else
     {
+      String text = function.getName();
+      if ( text.length() > 20 )
+      {
+        text = text.substring( 0, 17 ) + "...";
+      }
       setText( function.getName());
       if ( function.assigned() )
         showAssigned();
@@ -100,10 +105,9 @@ public class FunctionLabel
       buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;clear the function performed by a button." );
     else
     {
+      buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;set the function performed by a button." );
       if ( function.getNotes() != null )
-        buff.append( "&nbsp;" + function.getNotes());
-      else
-        buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;set the function performed by a button." );
+        buff.append( "<br><hr>&nbsp;" + function.getNotes());
       java.util.List< Function.User > users = function.getUsers();
       if ( !users.isEmpty())
       {
