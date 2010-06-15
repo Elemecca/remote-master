@@ -860,6 +860,22 @@ public class RemoteConfiguration
     }
     return -1;
   }
+  
+  public DeviceUpgrade getAssignedDeviceUpgrade( DeviceButton deviceButton )
+  {
+    DeviceType deviceType = remote.getDeviceTypeByIndex( deviceButton.getDeviceTypeIndex( data ) );
+    int setupCode = deviceButton.getSetupCode( data );
+    DeviceUpgrade upgrade = null;
+    for ( DeviceUpgrade candidate : devices )
+    {
+      if ( candidate.setupCode == setupCode && candidate.getDeviceType() == deviceType )
+      {
+        upgrade = candidate;
+        break;
+      }
+    }
+    return upgrade;
+  }
 
   /**
    * Gets the special protocol.

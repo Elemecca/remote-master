@@ -175,18 +175,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       int selectedRow = deviceButtonTable.getSelectedRow();
       Remote remote = remoteConfig.getRemote();
       DeviceButton deviceButton = remote.getDeviceButtons()[ selectedRow ];
-      short[] data = remoteConfig.getData();
-      DeviceType deviceType = remote.getDeviceTypeByIndex( deviceButton.getDeviceTypeIndex( data ) );
-      int setupCode = deviceButton.getSetupCode( data );
-      selectedUpgrade = null;
-      for ( DeviceUpgrade deviceUpgrade : remoteConfig.getDeviceUpgrades() )
-      {
-        if ( deviceUpgrade.setupCode == setupCode && deviceUpgrade.getDeviceType() == deviceType )
-        {
-          selectedUpgrade = deviceUpgrade;
-          break;
-        }
-      }
+      selectedUpgrade = remoteConfig.getAssignedDeviceUpgrade( deviceButton );
 
       editButton.setEnabled( selectedUpgrade != null );
     }

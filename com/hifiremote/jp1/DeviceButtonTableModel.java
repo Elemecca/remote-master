@@ -118,7 +118,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The col prototype names. */
   private static String[] colPrototypeNames =
   {
-      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "A Meaningful Note", "Label", "Seq"
+      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "A Meaningful, Reasonable Note", "Label", "Seq"
   };
 
   /*
@@ -189,6 +189,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       case 4:
       {
         String note = remoteConfig.getDeviceButtonNotes()[ row ];
+        if ( note == null )
+        {
+          DeviceUpgrade deviceUpgrade = remoteConfig.getAssignedDeviceUpgrade( db );
+          if ( deviceUpgrade != null )
+            note = deviceUpgrade.getDescription();
+        }
         if ( note == null )
           return "";
         else
