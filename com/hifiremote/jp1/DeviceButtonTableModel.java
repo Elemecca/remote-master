@@ -98,6 +98,21 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     return count;
   }
+  
+  /*
+   * A remote can have a Sequence column (index 6) but no Label column (index 5),
+   * so map actual column number to an effective column number
+   */
+  private int getEffectiveColumn(int col)
+  {
+    if ( remoteConfig != null 
+        && remoteConfig.getRemote().getDeviceLabels() == null
+        && col == 5)
+    {      
+        return 6;
+    }
+    return col;
+  }
 
   /** The Constant colNames. */
   private static final String[] colNames =
@@ -112,7 +127,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   public String getColumnName( int col )
   {
-    return colNames[ col ];
+     return colNames[ getEffectiveColumn( col ) ];
   }
 
   /** The col prototype names. */
@@ -128,7 +143,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   public String getColumnPrototypeName( int col )
   {
-    return colPrototypeNames[ col ];
+    return colPrototypeNames[ getEffectiveColumn( col ) ];
   }
 
   /** The Constant colClasses. */
@@ -144,7 +159,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   public Class< ? > getColumnClass( int col )
   {
-    return colClasses[ col ];
+    return colClasses[ getEffectiveColumn( col ) ];
   }
 
   /*
@@ -172,7 +187,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return null;
     }
-    switch ( column )
+    switch ( getEffectiveColumn( column ) )
     {
       case 0:
         return new Integer( row + 1 );
@@ -280,11 +295,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       
       remoteConfig.getDeviceButtonNotes()[ row ] = strValue;
     }
-    else if ( col == 5 )
+    else if ( getEffectiveColumn( col ) == 5 )
     {
       remote.getDeviceLabels().setText( ( String )value, row, data );
     }
-    else if ( col == 6 )
+    else if ( getEffectiveColumn( col ) == 6 )
     {
       int rows = getRowCount();
       int newSeq = ( ( Integer )value ).intValue() - 1;
@@ -356,7 +371,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return selectAllEditor;
     }
-    else if ( col == 5 )
+    else if ( getEffectiveColumn( col ) == 5 )
     {
       return sequenceEditor;
     }
