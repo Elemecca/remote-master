@@ -138,6 +138,11 @@ public class ManualProtocol extends Protocol
       fixedBytes[ i + offset ] = rawHex[ i ];
 
     defaultFixedData = new Hex( fixedBytes );
+    
+    short[] mask = new short[ defaultFixedData.length() ];
+    for ( int i = 0; i < mask.length; ++i )
+      mask[ i ] = 0xFF;
+    fixedDataMask = new Hex( mask );
 
     int cmdLength = cmdType >> 4;
     switch ( cmdType )
@@ -162,6 +167,7 @@ public class ManualProtocol extends Protocol
     cmdParms = new CmdParameter[ cmdLength ];
     cmdTranslators = new Translator[ cmdLength ];
     importCmdTranslators = new Translator[ cmdLength - 1 ];
+    
     for ( int i = 0; i < cmdLength; ++i )
     {
       if ( i == cmdIndex )
