@@ -940,7 +940,9 @@ public class Remote implements Comparable< Remote >
         twoBytePID = RDFReader.parseFlag( value );
       else if ( parm.equalsIgnoreCase( "LearnedDevBtnSwapped" ) )
         learnedDevBtnSwapped = RDFReader.parseFlag( value );
-      else if ( parm.equalsIgnoreCase( "Labels" ) )
+      else if ( ( parm.equalsIgnoreCase( "Labels" ) 
+                || parm.equalsIgnoreCase( "Labels+" ) )
+              && labels == null )
       {
         labels = new DeviceLabels();
         labels.parse( value, this );
