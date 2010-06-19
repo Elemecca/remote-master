@@ -81,7 +81,7 @@ public class FixedData
             int i = 0;
             for ( Short val : temp )
             {
-              b[ i++ ] = val.byteValue();
+              b[ i++ ] = val.shortValue();
             }
             work.add( new FixedData( address, b ) );
             temp.clear();
@@ -120,7 +120,7 @@ public class FixedData
     int j = 0;
     for ( Short by : temp )
     {
-      b[ j ] = by.shortValue();
+      b[ j++ ] = by.shortValue();
     }
     work.add( new FixedData( address, b ) );
     return work.toArray( new FixedData[ work.size() ] );
