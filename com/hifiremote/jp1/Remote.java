@@ -168,7 +168,8 @@ public class Remote implements Comparable< Remote >
             autoSet = FixedData.parse( rdr );
             line = "";
           }
-          else if ( line.equals( "DeviceButtons" ) )
+          else if ( ( line.equals( "DeviceButtons" ) || line.equals( "DeviceButtons+" ) )
+              && deviceButtons.length == 0 )
             line = parseDeviceButtons( rdr );
           else if ( line.equals( "DigitMaps" ) )
             line = parseDigitMaps( rdr );
@@ -968,7 +969,7 @@ public class Remote implements Comparable< Remote >
       {
         startReadOnlySettings = RDFReader.parseNumber( value );
       }
-      else if ( parm.equalsIgnoreCase( "PauseParameters" ) )
+      else if ( parm.equalsIgnoreCase( "PauseParams" ) )
       {
         PauseParameters parms = new PauseParameters();
         parms.parse( value, this );
