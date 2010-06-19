@@ -1249,7 +1249,7 @@ public class RemoteConfiguration
         pid = processor.getInt( data, codeOffset );
       else
       {
-        if ( ( fullCode & 0x100 ) == 0x100 ) // pid > 0xFF
+        if ( ( fullCode & 0x800 ) == 0x800 ) // pid > 0xFF
           pid += 0x100;
       }
 
