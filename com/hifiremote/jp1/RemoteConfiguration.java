@@ -1234,12 +1234,14 @@ public class RemoteConfiguration
     for ( int i = 0; i < count; ++i )
     {
       offset += 2;
-      int setupCode = processor.getInt( data, offset ) & 0xFFF;
+      
+      int fullCode = processor.getInt( data, offset );
+      int setupCode = fullCode & 0xFFF;
       if ( !remote.usesTwoBytePID() )
       {
         setupCode &= 0x7FF;
       }
-      DeviceType devType = remote.getDeviceTypeByIndex( data[ offset ] >> 4 );
+      DeviceType devType = remote.getDeviceTypeByIndex( (fullCode >> 12) & 0xF );
       int codeOffset = offset + 2 * count; // compute offset to offset of upgrade code
       codeOffset = processor.getInt( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
       int pid = data[ codeOffset ];
@@ -1247,7 +1249,7 @@ public class RemoteConfiguration
         pid = processor.getInt( data, codeOffset );
       else
       {
-        if ( ( data[ offset ] & 8 ) == 8 ) // pid > 0xFF
+        if ( ( fullCode & 0x100 ) == 0x100 ) // pid > 0xFF
           pid += 0x100;
       }
 
