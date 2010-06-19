@@ -928,7 +928,7 @@ public class DeviceUpgrade
       temp += ( id[ 0 ] & 1 ) * 0x0800;
 
     short[] rc = new short[ 2 ];
-    rc[ 0 ] = ( short )( temp >> 8 );
+    rc[ 0 ] = ( short )( ( temp >> 8 ) & 0xFF );
     rc[ 1 ] = ( short )( temp & 0xFF );
     return rc;
   }
