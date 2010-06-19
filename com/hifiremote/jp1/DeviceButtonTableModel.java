@@ -367,11 +367,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return deviceTypeEditor;
     }
-    else if ( col == 3 || col == 4 )
+    else if ( col == 3 || col == 4 || getEffectiveColumn( col ) == 5 )
     {
       return selectAllEditor;
     }
-    else if ( getEffectiveColumn( col ) == 5 )
+    else if ( getEffectiveColumn( col ) == 6 )
     {
       return sequenceEditor;
     }
