@@ -40,7 +40,7 @@ public class InitializerFactory
       {
         if ( name.indexOf( '.' ) == -1 )
         {
-          name = "com.hifiremote.jp1." + name;
+          name = "com.hifiremote.jp1.initialize." + name;
         }
 
         Class< ? > cl = Class.forName( name );

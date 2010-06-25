@@ -48,7 +48,7 @@ public class TranslatorFactory
       {
         if ( name.indexOf( '.' ) == -1 )
         {
-          name = "com.hifiremote.jp1." + name;
+          name = "com.hifiremote.jp1.translate." + name;
         }
 
         Class< ? > cl = Class.forName( name );

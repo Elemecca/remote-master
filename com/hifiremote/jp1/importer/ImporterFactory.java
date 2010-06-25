@@ -48,7 +48,7 @@ public class ImporterFactory
       {
         if ( name.indexOf( '.' ) == -1 )
         {
-          name = "com.hifiremote.jp1.importer" + name;
+          name = "com.hifiremote.jp1.importer." + name;
         }
 
         Class< ? > cl = Class.forName( name );
