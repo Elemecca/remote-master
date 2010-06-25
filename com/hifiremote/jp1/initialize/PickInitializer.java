@@ -1,6 +1,12 @@
-package com.hifiremote.jp1;
+package com.hifiremote.jp1.initialize;
 
 import java.util.StringTokenizer;
+
+import com.hifiremote.jp1.Choice;
+import com.hifiremote.jp1.ChoiceCmdParm;
+import com.hifiremote.jp1.ChoiceEditor;
+import com.hifiremote.jp1.CmdParameter;
+import com.hifiremote.jp1.DeviceParameter;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -62,21 +68,26 @@ public class PickInitializer extends Initializer
    *          the parms
    * @param useDefault
    *          the use default
-   * 
    * @return the parm
    */
   private String getParm( int index, DeviceParameter[] parms, boolean useDefault )
   {
     if ( index >= parms.length )
+    {
       return null;
+    }
 
     Object parm = parms[ index ].getValue();
 
-    if ( ( parm == null ) && useDefault )
+    if ( parm == null && useDefault )
+    {
       parm = parms[ index ].getDefaultValue();
+    }
 
     if ( parm == null )
+    {
       return null;
+    }
 
     return parm.toString();
   }
@@ -87,9 +98,10 @@ public class PickInitializer extends Initializer
    * @see com.hifiremote.jp1.Initializer#initialize(com.hifiremote.jp1.DeviceParameter[],
    * com.hifiremote.jp1.CmdParameter[])
    */
+  @Override
   public void initialize( DeviceParameter[] devParms, CmdParameter[] cmdParms )
   {
-    Choice[] choices = ( ( ChoiceCmdParm ) cmdParms[ index ] ).getChoices();
+    Choice[] choices = ( ( ChoiceCmdParm )cmdParms[ index ] ).getChoices();
     for ( int i = 0; i < choices.length && i < sources.length; i++ )
     {
       int s = sources[ i ];
@@ -136,7 +148,7 @@ public class PickInitializer extends Initializer
       }
     }
 
-    ( ( ChoiceEditor ) ( ( ChoiceCmdParm ) cmdParms[ index ] ).getEditor() ).initialize();
+    ( ( ChoiceEditor )( ( ChoiceCmdParm )cmdParms[ index ] ).getEditor() ).initialize();
   }
 
   /** The index. */

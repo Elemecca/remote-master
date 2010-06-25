@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.hifiremote.jp1.initialize.DeviceCombinerInitializer;
+import com.hifiremote.jp1.initialize.Initializer;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class DeviceCombiner.
@@ -34,6 +37,7 @@ public class DeviceCombiner extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#reset()
    */
+  @Override
   public void reset()
   {
     devices.clear();
@@ -45,6 +49,7 @@ public class DeviceCombiner extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#setProperties(java.util.Properties)
    */
+  @Override
   public void setProperties( Properties props, Remote remote )
   {
     System.err.println( "DeviceCombiner.setProperties()" );
@@ -53,7 +58,9 @@ public class DeviceCombiner extends Protocol
       String prefix = "Combiner." + i;
       String nameStr = props.getProperty( prefix + ".name" );
       if ( nameStr == null )
+      {
         break;
+      }
       System.err.println( "Name is '" + nameStr + "'" );
       Hex pid = new Hex( props.getProperty( prefix + ".id" ) );
       System.err.println( "pid is " + pid.toString() );
@@ -69,8 +76,10 @@ public class DeviceCombiner extends Protocol
       {
         System.err.println( "Creating new ManualProtocol!" );
         ManualProtocol m = new ManualProtocol( pid, new Properties() );
-        if ( ( parmStr != null ) && ( parmStr.length() > 0 ) )
+        if ( parmStr != null && parmStr.length() > 0 )
+        {
           m.setRawHex( new Hex( parmStr ) );
+        }
         p = m;
         values = new Value[ 0 ];
       }
@@ -102,12 +111,17 @@ public class DeviceCombiner extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#getPanel(com.hifiremote.jp1.DeviceUpgrade)
    */
+  @Override
   public KMPanel getPanel( DeviceUpgrade deviceUpgrade )
   {
     if ( panel == null )
+    {
       panel = new DeviceCombinerPanel( deviceUpgrade );
+    }
     else
+    {
       panel.setDeviceUpgrade( deviceUpgrade );
+    }
 
     return panel;
   }
@@ -127,6 +141,7 @@ public class DeviceCombiner extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#store(com.hifiremote.jp1.PropertyWriter, com.hifiremote.jp1.Value[])
    */
+  @Override
   public void store( PropertyWriter out, Value[] vals ) throws IOException
   {
     super.store( out, vals );
@@ -143,7 +158,9 @@ public class DeviceCombiner extends Protocol
       {
         Hex h = p.getFixedData( values );
         if ( h != null )
+        {
           out.print( prefix + ".parms", h.toString() );
+        }
       }
       else
       {
@@ -158,6 +175,7 @@ public class DeviceCombiner extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#hasCode(com.hifiremote.jp1.Remote)
    */
+  @Override
   public boolean hasCode( Remote r )
   {
     boolean rc = true;
@@ -166,40 +184,54 @@ public class DeviceCombiner extends Protocol
     String equivalentName = p.getEquivalentName();
     int[] devCombAddresses = r.getDevCombAddresses();
     if ( devCombAddresses == null )
+    {
       return false;
+    }
 
     if ( getVariantName().equals( "S3C80" ) )
     {
       if ( !equivalentName.equals( "S3C80" ) && !equivalentName.equals( "S3C80+" ) )
+      {
         return false;
+      }
     }
     else
     {
       if ( equivalentName.equals( "S3C80" ) || equivalentName.equals( "S3C80+" ) )
+      {
         return false;
+      }
     }
 
     if ( equivalentName.equals( "S3C80" ) || equivalentName.equals( "S3C80+" ) )
     {
-      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 ) || ( devCombAddresses[ 4 ] == -1 )
-          || ( devCombAddresses[ 5 ] == -1 ) )
+      if ( devCombAddresses[ 1 ] == -1 || devCombAddresses[ 2 ] == -1 || devCombAddresses[ 4 ] == -1
+          || devCombAddresses[ 5 ] == -1 )
+      {
         rc = false;
+      }
     }
     else if ( name.equals( "6805" ) )
     {
-      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 ) || ( devCombAddresses[ 3 ] == -1 )
-          || ( devCombAddresses[ 5 ] == -1 ) || ( devCombAddresses[ 6 ] == -1 ) )
+      if ( devCombAddresses[ 1 ] == -1 || devCombAddresses[ 2 ] == -1 || devCombAddresses[ 3 ] == -1
+          || devCombAddresses[ 5 ] == -1 || devCombAddresses[ 6 ] == -1 )
+      {
         rc = false;
+      }
     }
     else if ( name.equals( "740" ) )
     {
-      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 ) || ( devCombAddresses[ 3 ] == -1 ) )
+      if ( devCombAddresses[ 1 ] == -1 || devCombAddresses[ 2 ] == -1 || devCombAddresses[ 3 ] == -1 )
+      {
         rc = false;
+      }
     }
     else if ( name.equals( "HCS08" ) )
     {
-      if ( ( devCombAddresses[ 1 ] == -1 ) || ( devCombAddresses[ 2 ] == -1 ) )
+      if ( devCombAddresses[ 1 ] == -1 || devCombAddresses[ 2 ] == -1 )
+      {
         rc = false;
+      }
     }
     return rc;
   }
@@ -209,6 +241,7 @@ public class DeviceCombiner extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#getCode(com.hifiremote.jp1.Remote)
    */
+  @Override
   public Hex getCode( Remote r )
   {
     short[] header = new short[ devices.size() + 1 ];
@@ -220,12 +253,16 @@ public class DeviceCombiner extends Protocol
     Hex base = null;
     int[] devComb = r.getDevCombAddresses();
     if ( devComb == null )
+    {
       return null;
+    }
 
     if ( equivalentName.equals( "S3C80" ) || equivalentName.equals( "S3C80+" ) )
     {
-      if ( ( devComb[ 1 ] == -1 ) || ( devComb[ 5 ] == -1 ) || ( devComb[ 2 ] == -1 ) )
+      if ( devComb[ 1 ] == -1 || devComb[ 5 ] == -1 || devComb[ 2 ] == -1 )
+      {
         return null;
+      }
 
       buff.append( "00 00 22 " );
       // add code to handle favscan patch here???
@@ -255,9 +292,10 @@ public class DeviceCombiner extends Protocol
     }
     else if ( name.equals( "6805" ) )
     {
-      if ( ( devComb[ 1 ] == -1 ) || ( devComb[ 2 ] == -1 ) || ( devComb[ 3 ] == -1 ) || ( devComb[ 5 ] == -1 )
-          || ( devComb[ 6 ] == -1 ) )
+      if ( devComb[ 1 ] == -1 || devComb[ 2 ] == -1 || devComb[ 3 ] == -1 || devComb[ 5 ] == -1 || devComb[ 6 ] == -1 )
+      {
         return null;
+      }
 
       buff.append( "00 00 02 BE 5A DE ff ff BF E0 D6 ff ff B7 C1 D6 ff ff B7 C2 CD " );
       buff.append( intToString( devComb[ 1 ] ) );
@@ -284,8 +322,10 @@ public class DeviceCombiner extends Protocol
     }
     else if ( name.equals( "740" ) )
     {
-      if ( ( devComb[ 1 ] == -1 ) || ( devComb[ 2 ] == -1 ) || ( devComb[ 3 ] == -1 ) )
+      if ( devComb[ 1 ] == -1 || devComb[ 2 ] == -1 || devComb[ 3 ] == -1 )
+      {
         return null;
+      }
 
       buff.append( "00 00 02 A4 5D BE 7B 01 BD 7B 01 85 E7 BD 7C 01 85 E6 20 " );
       buff.append( intToStringReverse( devComb[ 1 ] ) );
@@ -300,8 +340,10 @@ public class DeviceCombiner extends Protocol
     }
     else if ( name.equals( "HCS08" ) )
     {
-      if ( ( devComb[ 1 ] == -1 ) || ( devComb[ 2 ] == -1 ) )
+      if ( devComb[ 1 ] == -1 || devComb[ 2 ] == -1 )
+      {
         return null;
+      }
 
       buff.append( "20 10 00 00 02 00 B7 6F 55 BB AF 00 81 3C 74 7E 5F 81 " );
       buff.append( "4E 61 54 45 00 10 B6 60 52 48 27 02 B7 B2 8B 86 AB " );
@@ -347,7 +389,9 @@ public class DeviceCombiner extends Protocol
     header[ i ] = ( short )offset;
 
     if ( !name.equals( "S3C80" ) && !name.equals( "S3C80+" ) && !name.equals( "S3F80" ) && !name.equals( "HCS08" ) )
+    {
       offset += base.length();
+    }
 
     short[] code = new short[ offset ];
     System.arraycopy( base.getData(), 0, code, 0, base.length() );
@@ -404,12 +448,17 @@ public class DeviceCombiner extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#isColumnWidthFixed(int)
    */
+  @Override
   public boolean isColumnWidthFixed( int col )
   {
     if ( col == 0 )
+    {
       return false;
+    }
     else
+    {
       return true;
+    }
   }
 
   /** The panel. */

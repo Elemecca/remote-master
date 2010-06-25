@@ -1,7 +1,7 @@
-package com.hifiremote.jp1;
+package com.hifiremote.jp1.initialize;
 
-import java.util.StringTokenizer;
 import java.lang.reflect.Constructor;
+import java.util.StringTokenizer;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -9,12 +9,12 @@ import java.lang.reflect.Constructor;
  */
 public class InitializerFactory
 {
-  
+
   /**
    * Creates the.
    * 
-   * @param text the text
-   * 
+   * @param text
+   *          the text
    * @return the initializer[]
    */
   public static Initializer[] create( String text )
@@ -28,21 +28,33 @@ public class InitializerFactory
       StringTokenizer st2 = new StringTokenizer( temp, "()" );
       String name = st2.nextToken();
       if ( st2.hasMoreTokens() )
+      {
         temp = st2.nextToken();
+      }
       else
+      {
         temp = new String();
-      String[] parms = temp.split(",");
+      }
+      String[] parms = temp.split( "," );
       try
       {
         if ( name.indexOf( '.' ) == -1 )
+        {
           name = "com.hifiremote.jp1." + name;
+        }
 
-        Class<?> cl = Class.forName( name );
-        Class<? extends Initializer > cl2 = cl.asSubclass( Initializer.class );
-        Class<?>[] classes = { String[].class };
+        Class< ? > cl = Class.forName( name );
+        Class< ? extends Initializer > cl2 = cl.asSubclass( Initializer.class );
+        Class< ? >[] classes =
+        {
+          String[].class
+        };
         Constructor< ? extends Initializer > ct = cl2.getConstructor( classes );
-        Object[] ctParms = { parms };
-        initializers[ i ] = ( Initializer )ct.newInstance( ctParms );
+        Object[] ctParms =
+        {
+          parms
+        };
+        initializers[ i ] = ct.newInstance( ctParms );
       }
       catch ( Exception e )
       {
