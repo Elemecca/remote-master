@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import com.hifiremote.jp1.translate.Translate;
+import com.hifiremote.jp1.translate.Translator;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class ManualProtocol.
@@ -49,7 +52,9 @@ public class ManualProtocol extends Protocol
   {
     super( p.getName(), p.id, null );
     if ( p.defaultFixedData != null )
+    {
       defaultFixedData = p.defaultFixedData;
+    }
   }
 
   /**
@@ -89,9 +94,13 @@ public class ManualProtocol extends Protocol
     boolean lsb = false;
     boolean comp = false;
     if ( signalStyle.startsWith( "LSB" ) )
+    {
       lsb = true;
+    }
     if ( signalStyle.endsWith( "COMP" ) )
+    {
       comp = true;
+    }
 
     createDefaultParmsAndTranslators( cmdType, lsb, comp, devBits, parms, rawHex, cmdBits );
   }
@@ -130,18 +139,22 @@ public class ManualProtocol extends Protocol
       devParms[ i ] = new NumberDeviceParm( "Device " + ( i + 1 ), defaultValue, 10, devBits );
       System.err.println( "Setting devParms[ " + i + " ]=" + parms.get( i ) );
       devParms[ i ].setValue( parms.get( i ) );
-      fixedBytes[ i ] = ( ( Integer )( parms.get( i ).getUserValue() ) ).shortValue();
+      fixedBytes[ i ] = ( ( Integer )parms.get( i ).getUserValue() ).shortValue();
       deviceTranslators[ i ] = new Translator( lsb, comp, i, devBits, i * 8 );
     }
 
     for ( int i = 0; i < rawHex.length; i++ )
+    {
       fixedBytes[ i + offset ] = rawHex[ i ];
+    }
 
     defaultFixedData = new Hex( fixedBytes );
-    
+
     short[] mask = new short[ defaultFixedData.length() ];
     for ( int i = 0; i < mask.length; ++i )
+    {
       mask[ i ] = 0xFF;
+    }
     fixedDataMask = new Hex( mask );
 
     int cmdLength = cmdType >> 4;
@@ -167,7 +180,7 @@ public class ManualProtocol extends Protocol
     cmdParms = new CmdParameter[ cmdLength ];
     cmdTranslators = new Translator[ cmdLength ];
     importCmdTranslators = new Translator[ cmdLength - 1 ];
-    
+
     for ( int i = 0; i < cmdLength; ++i )
     {
       if ( i == cmdIndex )
@@ -191,14 +204,21 @@ public class ManualProtocol extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#getName()
    */
+  @Override
   public String getName()
   {
     if ( name != null )
+    {
       return name;
+    }
     else if ( id != null )
+    {
       return "PID " + id.toString();
+    }
     else
+    {
       return "Manual Settings";
+    }
   }
 
   /**
@@ -254,17 +274,22 @@ public class ManualProtocol extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#importCommand(com.hifiremote.jp1.Hex, java.lang.String, boolean, int, boolean)
    */
+  @Override
   public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )
   {
-    if ( ( text.indexOf( ' ' ) != -1 ) || ( text.indexOf( 'h' ) != -1 ) )
+    if ( text.indexOf( ' ' ) != -1 || text.indexOf( 'h' ) != -1 )
     {
       Hex newHex = new Hex( text );
       if ( newHex.length() > hex.length() )
+      {
         setDefaultCmd( newHex );
+      }
       hex = newHex;
     }
     else
+    {
       super.importCommand( hex, text, useOBC, obcIndex, useEFC );
+    }
   }
 
   // for importing byte2 values from a KM upgrade.
@@ -273,20 +298,27 @@ public class ManualProtocol extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#importCommandParms(com.hifiremote.jp1.Hex, java.lang.String)
    */
+  @Override
   public void importCommandParms( Hex hex, String text )
   {
     if ( cmdParms.length == 1 )
+    {
       return;
+    }
     StringTokenizer st = new StringTokenizer( text );
     Value[] values = new Value[ st.countTokens() ];
     int index = 0;
     while ( st.hasMoreTokens() )
+    {
       values[ index++ ] = new Value( Integer.valueOf( st.nextToken(), 16 ) );
+    }
 
     for ( index = 0; index < values.length; index++ )
     {
       for ( int i = 0; i < importCmdTranslators.length; i++ )
+      {
         importCmdTranslators[ i ].in( values, hex, devParms, index );
+      }
     }
   }
 
@@ -304,19 +336,23 @@ public class ManualProtocol extends Protocol
       for ( int i = 0; i < devParms.length; i++ )
       {
         if ( i > 0 )
+        {
           buff.append( ',' );
+        }
         DeviceParameter devParm = devParms[ i ];
         buff.append( devParm.toString() );
       }
       out.print( "DevParms", buff.toString() );
     }
-    if ( ( deviceTranslators != null ) && ( deviceTranslators.length > 0 ) )
+    if ( deviceTranslators != null && deviceTranslators.length > 0 )
     {
       StringBuilder buff = new StringBuilder();
       for ( int i = 0; i < deviceTranslators.length; i++ )
       {
         if ( i > 0 )
+        {
           buff.append( ' ' );
+        }
         buff.append( deviceTranslators[ i ].toString() );
       }
       out.print( "DeviceTranslator", buff.toString() );
@@ -327,7 +363,9 @@ public class ManualProtocol extends Protocol
       for ( int i = 0; i < cmdParms.length; i++ )
       {
         if ( i > 0 )
+        {
           buff.append( ',' );
+        }
         buff.append( cmdParms[ i ] );
       }
       out.print( "CmdParms", buff.toString() );
@@ -338,7 +376,9 @@ public class ManualProtocol extends Protocol
       for ( int i = 0; i < cmdTranslators.length; i++ )
       {
         if ( i > 0 )
+        {
           buff.append( ' ' );
+        }
         buff.append( cmdTranslators[ i ] );
       }
       out.print( "CmdTranslator", buff.toString() );
@@ -352,7 +392,9 @@ public class ManualProtocol extends Protocol
       out.print( "Code." + key, code.get( key ).toRawString() );
     }
     if ( notes != null )
+    {
       out.print( "Protocol.notes", notes );
+    }
   }
 
   /*
@@ -360,6 +402,7 @@ public class ManualProtocol extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#store(com.hifiremote.jp1.PropertyWriter, com.hifiremote.jp1.Value[])
    */
+  @Override
   public void store( PropertyWriter out, Value[] vals ) throws IOException
   {
     System.err.println( "ManualProtocol.store" );
@@ -407,6 +450,7 @@ public class ManualProtocol extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#needsCode(com.hifiremote.jp1.Remote)
    */
+  @Override
   public boolean needsCode( Remote r )
   {
     return true;
@@ -439,11 +483,14 @@ public class ManualProtocol extends Protocol
    * 
    * @see com.hifiremote.jp1.Protocol#importUpgradeCode(java.lang.String)
    */
+  @Override
   public Hex importUpgradeCode( String notes )
   {
     Hex importedCode = super.importUpgradeCode( notes );
     if ( importedCode == null )
+    {
       return null;
+    }
 
     int importedCmdLength = getCmdLengthFromCode();
     System.err.println( "importedCmdLength=" + importedCmdLength + ", but defaultCmd.length()=" + defaultCmd.length() );
@@ -475,7 +522,9 @@ public class ManualProtocol extends Protocol
 
       defaultCmd = new Hex( new short[ importedCmdLength ] );
       if ( cmdIndex != 0 )
+      {
         cmdIndex = importedCmdLength - 1;
+      }
 
       cmdParms = new CmdParameter[ importedCmdLength ];
       cmdTranslators = new Translate[ importedCmdLength ];
@@ -505,7 +554,7 @@ public class ManualProtocol extends Protocol
         }
         else
         {
-          if ( i < ( importedCmdLength - 1 ) )
+          if ( i < importedCmdLength - 1 )
           {
             System.err.printf( "Creating importCmdTranslator for index %d to bit %d\n", Integer.valueOf( i ), Integer
                 .valueOf( i * 8 ) );

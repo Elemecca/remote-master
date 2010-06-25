@@ -31,6 +31,9 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import com.hifiremote.jp1.translate.Translate;
+import com.hifiremote.jp1.translate.Translator;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class DeviceUpgrade.
@@ -83,7 +86,9 @@ public class DeviceUpgrade
       Function f2 = new Function( f );
       functions.add( f2 );
       for ( Function.User user : f.getUsers() )
+      {
         assignments.assign( user.button, f2, user.state );
+      }
     }
 
     // Copy the external functions and their assignments
@@ -92,7 +97,9 @@ public class DeviceUpgrade
       ExternalFunction f2 = new ExternalFunction( f );
       extFunctions.add( f2 );
       for ( Function.User user : f.getUsers() )
+      {
         assignments.assign( user.button, f2, user.state );
+      }
     }
   }
 
@@ -117,15 +124,21 @@ public class DeviceUpgrade
 
     // remove all currently assigned functions
     if ( remote != null )
+    {
       assignments.clear();
+    }
 
     Collection< Remote > remotes = RemoteManager.getRemoteManager().getRemotes();
     if ( remote == null )
+    {
       remote = remotes.iterator().next();
+    }
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
 
     if ( protocol != null )
+    {
       protocol.reset();
+    }
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     java.util.List< String > names = pm.getNames();
     for ( String protocolName : names )
@@ -142,7 +155,9 @@ public class DeviceUpgrade
     {
       DeviceParameter[] devParms = protocol.getDeviceParameters();
       for ( int i = 0; i < devParms.length; i++ )
+      {
         devParms[ i ].setValue( null );
+      }
       setProtocol( protocol );
     }
 
@@ -165,9 +180,13 @@ public class DeviceUpgrade
   {
     defaultNames = names;
     if ( defaultNames == null )
+    {
       defaultNames = defaultFunctionNames;
+    }
     for ( int i = 0; i < defaultNames.length; i++ )
+    {
       functions.add( new Function( defaultNames[ i ] ) );
+    }
   }
 
   /**
@@ -224,12 +243,16 @@ public class DeviceUpgrade
     for ( Function func : functions )
     {
       if ( func.getHex() != null )
+      {
         return true;
+      }
     }
     for ( Function func : extFunctions )
     {
       if ( func.getHex() != null )
+      {
         return true;
+      }
     }
     return false;
   }
@@ -246,7 +269,9 @@ public class DeviceUpgrade
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     java.util.List< Protocol > protocols = pm.getProtocolsForRemote( newRemote, false );
     if ( p == null )
+    {
       protocol = protocols.get( 0 );
+    }
     else if ( !protocols.contains( p ) )
     {
       System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName() + " is not built into remote "
@@ -284,10 +309,12 @@ public class DeviceUpgrade
               Object v = parms[ i ].getValue();
               Object d = parms[ i ].getDefaultValue();
               if ( d != null )
+              {
                 d = ( ( DefaultValue )d ).value();
+              }
               System.err.print( " no match!" );
 
-              if ( ( v == null ) || ( v.equals( d ) ) )
+              if ( v == null || v.equals( d ) )
               {
                 nameMatch = true;
                 map[ i ] = -1;
@@ -297,7 +324,9 @@ public class DeviceUpgrade
             System.err.println();
             parmsMatch = nameMatch;
             if ( !parmsMatch )
+            {
               break;
+            }
           }
           if ( parmsMatch )
           {
@@ -307,7 +336,9 @@ public class DeviceUpgrade
             for ( int i = 0; i < map.length; i++ )
             {
               if ( map[ i ] == -1 )
+              {
                 continue;
+              }
               System.err.println( "\tfrom index " + i + " (=" + parms[ i ].getValue() + ") to index " + map[ i ] );
               parms2[ map[ i ] ].setValue( parms[ i ].getValue() );
               vals[ map[ i ] ] = new Value( parms[ i ].getValue() );
@@ -319,14 +350,16 @@ public class DeviceUpgrade
             protocol = newp;
             parmValues = vals;
           }
-          if ( ( p instanceof DeviceCombiner ) && ( newp instanceof DeviceCombiner ) )
+          if ( p instanceof DeviceCombiner && newp instanceof DeviceCombiner )
           {
             for ( CombinerDevice dev : ( ( DeviceCombiner )p ).getDevices() )
+            {
               ( ( DeviceCombiner )newp ).add( dev );
+            }
           }
         }
       }
-      else if ( ( description == null ) && ( file == null ) && ( assignments.isEmpty() ) && !hasDefinedFunctions() )
+      else if ( description == null && file == null && assignments.isEmpty() && !hasDefinedFunctions() )
       {
         remote = newRemote;
         protocol = null;
@@ -340,7 +373,7 @@ public class DeviceUpgrade
       }
 
     }
-    if ( ( remote != null ) && ( remote != newRemote ) )
+    if ( remote != null && remote != newRemote )
     {
       SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
@@ -361,8 +394,10 @@ public class DeviceUpgrade
             java.util.List< String > temp = null;
             if ( f != null )
             {
-              if ( ( newB != null ) && newB.allowsKeyMove( state ) )
+              if ( newB != null && newB.allowsKeyMove( state ) )
+              {
                 newAssignments.assign( newB, f, state );
+              }
               else
               {
                 temp = new ArrayList< String >();
@@ -383,7 +418,7 @@ public class DeviceUpgrade
 
         // JOptionPane.showM
         // JFrame frame = new JFrame( "Lost Function Assignments" );
-        JPanel panel = new JPanel( new BorderLayout());
+        JPanel panel = new JPanel( new BorderLayout() );
 
         JLabel text = new JLabel( message );
         text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
@@ -394,17 +429,22 @@ public class DeviceUpgrade
         Object[][] unassignedArray = new Object[ unassigned.size() ][];
         int i = 0;
         for ( java.util.List< String > l : unassigned )
+        {
           unassignedArray[ i++ ] = l.toArray();
+        }
         JTableX table = new JTableX( unassignedArray, titles.toArray() );
         Dimension d = table.getPreferredScrollableViewportSize();
         int showRows = 14;
         if ( unassigned.size() < showRows )
+        {
           showRows = unassigned.size();
+        }
         d.height = ( table.getRowHeight() + table.getRowMargin() ) * showRows;
         table.setPreferredScrollableViewportSize( d );
         panel.add( new JScrollPane( table ), BorderLayout.CENTER );
-        
-        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), panel, "Lost Function Assignments", JOptionPane.PLAIN_MESSAGE );
+
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), panel, "Lost Function Assignments",
+            JOptionPane.PLAIN_MESSAGE );
       }
       assignments = newAssignments;
     }
@@ -479,19 +519,25 @@ public class DeviceUpgrade
     if ( protocol != null )
     {
       if ( protocol == newProtocol )
+      {
         return false;
+      }
 
       newProtocol.reset();
 
       if ( newProtocol.getFixedDataLength() == protocol.getFixedDataLength() )
+      {
         newProtocol.importFixedData( protocol.getFixedData( parmValues ) );
+      }
 
       DeviceParameter[] parms = protocol.getDeviceParameters();
       DeviceParameter[] parms2 = newProtocol.getDeviceParameters();
 
       int[] map = new int[ parms.length ];
       for ( int i = 0; i < map.length; i++ )
+      {
         map[ i ] = -1;
+      }
       boolean parmsMatch = true;
       for ( int i = 0; i < parms.length; i++ )
       {
@@ -507,7 +553,9 @@ public class DeviceUpgrade
           }
         }
         if ( nameMatch )
+        {
           parmsMatch = true;
+        }
       }
 
       if ( parmsMatch )
@@ -590,7 +638,9 @@ public class DeviceUpgrade
   {
     Function rc = getFunction( name, functions );
     if ( rc == null )
+    {
       rc = getFunction( name, extFunctions );
+    }
     return rc;
   }
 
@@ -608,8 +658,10 @@ public class DeviceUpgrade
     for ( Function func : funcs )
     {
       String funcName = func.getName();
-      if ( ( funcName != null ) && funcName.equalsIgnoreCase( name ) )
+      if ( funcName != null && funcName.equalsIgnoreCase( name ) )
+      {
         return func;
+      }
     }
     return null;
   }
@@ -626,7 +678,9 @@ public class DeviceUpgrade
     for ( Function f : functions )
     {
       if ( hex.equals( f.getHex() ) )
+      {
         return f;
+      }
     }
     return null;
   }
@@ -675,7 +729,9 @@ public class DeviceUpgrade
   {
     short[] digitMaps = remote.getDigitMaps();
     if ( digitMaps == null )
+    {
       return -1;
+    }
 
     int cmdLength = protocol.getDefaultCmd().length();
     short[] digitKeyCodes = new short[ 10 * cmdLength ];
@@ -684,8 +740,10 @@ public class DeviceUpgrade
     for ( int i = 0; i < 10; i++ , offset += cmdLength )
     {
       Function f = assignments.getAssignment( buttons[ i ] );
-      if ( ( f != null ) && !f.isExternal() )
+      if ( f != null && !f.isExternal() )
+      {
         Hex.put( f.getHex(), digitKeyCodes, offset );
+      }
     }
     return DigitMaps.findDigitMapIndex( digitMaps, digitKeyCodes );
   }
@@ -718,7 +776,9 @@ public class DeviceUpgrade
     System.err.println( "  pCode=" + pCode );
     int index = 1;
     if ( newRemote.usesTwoBytePID() )
+    {
       index++ ;
+    }
 
     short[] code = hexCode.getData();
     remote = newRemote;
@@ -728,23 +788,31 @@ public class DeviceUpgrade
     ButtonMap map = devType.getButtonMap();
 
     int digitMapIndex = -1;
-    if ( !remote.getOmitDigitMapByte() && ( index < code.length ) )
+    if ( !remote.getOmitDigitMapByte() && index < code.length )
+    {
       digitMapIndex = code[ index++ ] - 1;
+    }
     java.util.List< Button > buttons = null;
-    if ( ( map != null ) && ( index < code.length ) )
+    if ( map != null && index < code.length )
+    {
       buttons = map.parseBitMap( code, index, digitMapIndex != -1 );
+    }
     else
+    {
       buttons = new ArrayList< Button >();
+    }
 
-    while ( ( index < code.length ) && ( ( code[ index++ ] & 1 ) == 0 ) )
+    while ( index < code.length && ( code[ index++ ] & 1 ) == 0 )
+    {
       ; // skip over the bitMap
+    }
 
     int fixedDataOffset = index;
     int fixedDataLength = 0;
     int cmdLength = 0;
     short[] fixedData = null;
     Hex fixedDataHex = null;
-    if ( ( pCode != null ) && ( pCode.length() > 2 ) )
+    if ( pCode != null && pCode.length() > 2 )
     {
       Processor proc = newRemote.getProcessor();
       fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), pCode );
@@ -772,7 +840,9 @@ public class DeviceUpgrade
       p = tryit;
       System.err.println( "Checking protocol " + p.getDiagnosticName() );
       if ( !remote.supportsVariant( pid, p.getVariantName() ) && !p.hasCode( remote ) )
+      {
         continue;
+      }
       int tempLength = fixedDataLength;
       if ( pCode == null )
       {
@@ -790,7 +860,9 @@ public class DeviceUpgrade
       vals = p.importFixedData( fixedDataHex );
       System.err.print( "Imported device parms are:" );
       for ( Value v : vals )
+      {
         System.err.print( " " + v.getValue() );
+      }
       System.err.println();
       Hex calculatedFixedData = p.getFixedData( vals );
       System.err.println( "Calculated fixedData is " + calculatedFixedData );
@@ -805,8 +877,8 @@ public class DeviceUpgrade
         {
           tentativeCode = getCode( p );
         }
-        if ( ( tentative == null ) || ( tempLength > tentative.getFixedDataLength() )
-            || ( ( pCode != null ) && pCode.equals( tentativeCode ) ) )
+        if ( tentative == null || tempLength > tentative.getFixedDataLength() || pCode != null
+            && pCode.equals( tentativeCode ) )
         {
           System.err.println( "And it's longer, or the protocol code matches!" );
           tentative = p;
@@ -827,7 +899,7 @@ public class DeviceUpgrade
       cmdLength = p.getDefaultCmd().length();
       parmValues = tentativeVals;
     }
-    else if ( ( p != null ) && ( pCode == null ) )
+    else if ( p != null && pCode == null )
     {
       // Found a matching PID, and there's protocol code,
       // but couldn't recreate the fixed data.
@@ -844,8 +916,10 @@ public class DeviceUpgrade
         }
       }
       String variant = p.getVariantName();
-      if ( ( variant != null ) && ( variant.length() > 0 ) )
+      if ( variant != null && variant.length() > 0 )
+      {
         props.put( "VariantName", variant );
+      }
       p = ProtocolFactory.createProtocol( "pid: " + pid.toString(), pid, "Protocol", props );
       ProtocolManager.getProtocolManager().add( p );
       fixedDataLength = p.getFixedDataLength();
@@ -860,13 +934,19 @@ public class DeviceUpgrade
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       int cmdType = ManualProtocol.ONE_BYTE;
       if ( cmdLength == 2 )
+      {
         cmdType = ManualProtocol.AFTER_CMD;
+      }
       if ( cmdLength > 2 )
+      {
         cmdType = cmdLength << 4;
+      }
 
       ArrayList< Value > parms = new ArrayList< Value >();
       for ( short temp : fixedData )
+      {
         parms.add( new Value( temp & 0xFF ) );
+      }
       parmValues = parms.toArray( new Value[ fixedDataLength ] );
 
       mp = new ManualProtocol( "Manual Settings: " + pid, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
@@ -875,7 +955,9 @@ public class DeviceUpgrade
       p = mp;
     }
     else
+    {
       throw new ParseException( "Unable to import device upgrade", index );
+    }
 
     if ( digitMapIndex != -1 )
     {
@@ -888,7 +970,9 @@ public class DeviceUpgrade
         f.setName( name );
         Hex hex = hexCmds[ i ];
         if ( cmdLength < hex.length() )
+        {
           hex = hex.subHex( 0, cmdLength );
+        }
         f.setHex( hex );
         Button b = map.get( i );
         assignments.assign( b, f );
@@ -902,10 +986,14 @@ public class DeviceUpgrade
     for ( Button b : buttons )
     {
       if ( index >= code.length )
+      {
         break;
+      }
       short[] cmd = new short[ cmdLength ];
       for ( int i = 0; i < cmdLength; i++ )
+      {
         cmd[ i ] = code[ index++ ];
+      }
       Function f = new Function();
       f.setName( b.getName() );
       f.setHex( new Hex( cmd ) );
@@ -925,10 +1013,12 @@ public class DeviceUpgrade
     short[] id = protocol.getID( remote ).getData();
     short temp = ( short )( devType.getNumber() * 0x1000 + setupCode - remote.getDeviceCodeOffset() );
     if ( !remote.usesTwoBytePID() )
+    {
       temp += ( id[ 0 ] & 1 ) * 0x0800;
+    }
 
     short[] rc = new short[ 2 ];
-    rc[ 0 ] = ( short )( ( temp >> 8 ) & 0xFF );
+    rc[ 0 ] = ( short )( temp >> 8 & 0xFF );
     rc[ 1 ] = ( short )( temp & 0xFF );
     return rc;
   }
@@ -947,21 +1037,31 @@ public class DeviceUpgrade
       Function f = assignments.getAssignment( button, Button.NORMAL_STATE );
       KeyMove keyMove = button.getKeyMove( f, 0, setupCode, devType, remote, protocol.getKeyMovesOnly() );
       if ( keyMove != null )
+      {
         keyMoves.add( keyMove );
+      }
 
       f = assignments.getAssignment( button, Button.SHIFTED_STATE );
       if ( button.getShiftedButton() != null )
+      {
         f = null;
+      }
       keyMove = button.getKeyMove( f, remote.getShiftMask(), setupCode, devType, remote, protocol.getKeyMovesOnly() );
       if ( keyMove != null )
+      {
         keyMoves.add( keyMove );
+      }
 
       f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
       if ( button.getXShiftedButton() != null )
+      {
         f = null;
+      }
       keyMove = button.getKeyMove( f, remote.getXShiftMask(), setupCode, devType, remote, protocol.getKeyMovesOnly() );
       if ( keyMove != null )
+      {
         keyMoves.add( keyMove );
+      }
     }
     return keyMoves;
   }
@@ -977,9 +1077,13 @@ public class DeviceUpgrade
   {
     StringBuilder buff = new StringBuilder( 400 );
     if ( remote.usesTwoBytePID() )
+    {
       buff.append( "Upgrade Code2 = " );
+    }
     else
+    {
       buff.append( "Upgrade Code 0 = " );
+    }
 
     short[] deviceCode = getHexSetupCode();
 
@@ -993,7 +1097,9 @@ public class DeviceUpgrade
 
     String descr = "";
     if ( description != null )
+    {
       descr = description.trim();
+    }
     if ( descr.length() != 0 )
     {
       buff.append( ' ' );
@@ -1029,12 +1135,16 @@ public class DeviceUpgrade
       Function f = assignments.getAssignment( b, Button.NORMAL_STATE );
       Function sf = assignments.getAssignment( b, Button.SHIFTED_STATE );
       if ( b.getShiftedButton() != null )
+      {
         sf = null;
+      }
       Function xf = assignments.getAssignment( b, Button.XSHIFTED_STATE );
       if ( b.getXShiftedButton() != null )
+      {
         xf = null;
-      if ( ( ( f != null ) && ( ( map == null ) || protocol.getKeyMovesOnly() || !map.isPresent( b ) || f.isExternal() ) )
-          || ( ( sf != null ) && ( sf.getHex() != null ) ) || ( ( xf != null ) && ( xf.getHex() != null ) ) )
+      }
+      if ( f != null && ( map == null || protocol.getKeyMovesOnly() || !map.isPresent( b ) || f.isExternal() )
+          || sf != null && sf.getHex() != null || xf != null && xf.getHex() != null )
       {
         hasKeyMoves = true;
         break;
@@ -1054,12 +1164,16 @@ public class DeviceUpgrade
             button.getKeyMove( f, 0, deviceCode, devType, remote, protocol.getKeyMovesOnly() ), f, first );
         f = assignments.getAssignment( button, Button.SHIFTED_STATE );
         if ( button.getShiftedButton() != null )
+        {
           f = null;
+        }
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote, protocol
             .getKeyMovesOnly() ), f, first );
         f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
         if ( button.getXShiftedButton() != null )
+        {
           f = null;
+        }
         first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote,
             protocol.getKeyMovesOnly() ), f, first );
       }
@@ -1103,7 +1217,9 @@ public class DeviceUpgrade
     {
       short[] data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly(), assignments );
       if ( data != null )
+      {
         rc += data.length;
+      }
     }
     return rc;
   }
@@ -1121,7 +1237,9 @@ public class DeviceUpgrade
 
     short[] data = null;
     if ( remote.usesTwoBytePID() )
+    {
       data = protocol.getID( remote ).getData();
+    }
     else
     {
       data = new short[ 1 ];
@@ -1136,9 +1254,13 @@ public class DeviceUpgrade
       data = new short[ 1 ];
       digitMapIndex = findDigitMapIndex();
       if ( digitMapIndex == -1 )
+      {
         data[ 0 ] = 0;
+      }
       else
+      {
         data[ 0 ] = digitMapIndex;
+      }
 
       work.add( data );
     }
@@ -1155,13 +1277,17 @@ public class DeviceUpgrade
     if ( map != null )
     {
       data = map.toCommandList( digitMapIndex != -1, protocol.getKeyMovesOnly(), assignments );
-      if ( ( data != null ) && ( data.length != 0 ) )
+      if ( data != null && data.length != 0 )
+      {
         work.add( data );
+      }
     }
 
     int length = 0;
     for ( short[] temp : work )
+    {
       length += temp.length;
+    }
 
     int offset = 0;
     short[] rc = new short[ length ];
@@ -1190,11 +1316,15 @@ public class DeviceUpgrade
    */
   private boolean appendKeyMove( StringBuilder buff, short[] keyMove, Function f, boolean first )
   {
-    if ( ( keyMove == null ) || ( keyMove.length == 0 ) )
+    if ( keyMove == null || keyMove.length == 0 )
+    {
       return first;
+    }
 
     if ( !first )
+    {
       buff.append( '\u00a6' );
+    }
 
     buff.append( "\n " );
 
@@ -1203,7 +1333,7 @@ public class DeviceUpgrade
     buff.append( '\u00ab' );
     buff.append( f.getName() );
     String notes = f.getNotes();
-    if ( ( notes != null ) && ( notes.length() != 0 ) )
+    if ( notes != null && notes.length() != 0 )
     {
       buff.append( ": " );
       buff.append( notes );
@@ -1237,12 +1367,18 @@ public class DeviceUpgrade
     for ( int i = 0; i < parms.length; i++ )
     {
       if ( i > 0 )
+      {
         buff.append( ' ' );
+      }
       Value parm = parms[ i ];
       if ( parm == null )
+      {
         buff.append( "null" );
+      }
       else
+      {
         buff.append( parms[ i ].getUserValue() );
+      }
     }
     return buff.toString();
   }
@@ -1265,11 +1401,17 @@ public class DeviceUpgrade
       if ( !token.equals( "null" ) )
       {
         if ( token.equals( "true" ) )
+        {
           val = new Integer( 1 );
+        }
         else if ( token.equals( "false" ) )
+        {
           val = new Integer( 0 );
+        }
         else
+        {
           val = Integer.parseInt( token );
+        }
       }
       parms[ i ] = new Value( val, null );
     }
@@ -1309,7 +1451,9 @@ public class DeviceUpgrade
   public void store( PropertyWriter out ) throws IOException
   {
     if ( description != null )
+    {
       out.print( "Description", description );
+    }
     out.print( "Remote.name", remote.getName() );
     out.print( "Remote.signature", remote.getSignature() );
     out.print( "DeviceType", devTypeAliasName );
@@ -1319,14 +1463,20 @@ public class DeviceUpgrade
     // protocol.setDeviceParms( parmValues );
     protocol.store( out, parmValues );
     if ( notes != null )
+    {
       out.print( "Notes", notes );
+    }
     int i = 0;
     for ( Function func : functions )
+    {
       func.store( out, "Function." + i++ );
+    }
 
     i = 0;
     for ( ExternalFunction func : extFunctions )
+    {
       func.store( out, "ExtFunction." + i++ );
+    }
 
     Button[] buttons = remote.getUpgradeButtons();
     String regex = "\\|";
@@ -1338,24 +1488,36 @@ public class DeviceUpgrade
 
       String fstr;
       if ( f == null )
+      {
         fstr = "null";
+      }
       else
+      {
         fstr = f.getName().replaceAll( regex, replace );
+      }
 
       Function sf = assignments.getAssignment( b, Button.SHIFTED_STATE );
       String sstr;
       if ( sf == null )
+      {
         sstr = "null";
+      }
       else
+      {
         sstr = sf.getName().replaceAll( regex, replace );
+      }
 
       Function xf = assignments.getAssignment( b, Button.XSHIFTED_STATE );
       String xstr;
       if ( xf == null )
+      {
         xstr = null;
+      }
       else
+      {
         xstr = xf.getName().replaceAll( regex, replace );
-      if ( ( f != null ) || ( sf != null ) || ( xf != null ) )
+      }
+      if ( f != null || sf != null || xf != null )
       {
         out.print( "Button." + Integer.toHexString( b.getKeyCode() ), fstr + '|' + sstr + '|' + xstr );
       }
@@ -1403,22 +1565,28 @@ public class DeviceUpgrade
     do
     {
       baseLine = baseReader.readLine();
-      while ( ( baseLine != null ) && baseLine.startsWith( "#" ) )
+      while ( baseLine != null && baseLine.startsWith( "#" ) )
+      {
         baseLine = baseReader.readLine();
+      }
 
       tempLine = tempReader.readLine();
-      while ( ( tempLine != null ) && tempLine.startsWith( "#" ) )
+      while ( tempLine != null && tempLine.startsWith( "#" ) )
+      {
         tempLine = tempReader.readLine();
+      }
       System.err.println( "baseLine=" + baseLine );
       System.err.println( "tempLine=" + tempLine );
     }
-    while ( ( baseLine != null ) && ( tempLine != null ) && baseLine.equals( tempLine ) );
+    while ( baseLine != null && tempLine != null && baseLine.equals( tempLine ) );
     baseReader.close();
     tempReader.close();
     // tempFile.delete();
 
     if ( baseLine == tempLine )
+    {
       return false;
+    }
 
     return true;
   }
@@ -1451,7 +1619,9 @@ public class DeviceUpgrade
     BufferedReader reader = new BufferedReader( new FileReader( file ) );
     load( reader, loadButtons );
     if ( file.getName().toLowerCase().endsWith( ".rmdu" ) )
+    {
       this.file = file;
+    }
   }
 
   /**
@@ -1527,7 +1697,9 @@ public class DeviceUpgrade
     reset();
     String str = props.getProperty( "Description" );
     if ( str != null )
+    {
       description = str;
+    }
     str = props.getProperty( "Remote.name" );
     if ( str == null )
     {
@@ -1586,7 +1758,7 @@ public class DeviceUpgrade
 
     str = props.getProperty( "ProtocolParms" );
     System.err.println( "ProtocolParms='" + str + "'" );
-    if ( ( str != null ) && ( str.length() != 0 ) )
+    if ( str != null && str.length() != 0 )
     {
       protocol.setDeviceParms( stringToValueArray( str ) );
       parmValues = protocol.getDeviceParmValues();
@@ -1710,9 +1882,11 @@ public class DeviceUpgrade
    */
   private String cleanName( String name )
   {
-    if ( ( name != null ) && ( name.length() == 5 ) && name.toLowerCase().startsWith( "num " )
+    if ( name != null && name.length() == 5 && name.toLowerCase().startsWith( "num " )
         && Character.isDigit( name.charAt( 4 ) ) )
+    {
       return name.substring( 4 );
+    }
     return name;
   }
 
@@ -1726,13 +1900,17 @@ public class DeviceUpgrade
   private boolean isExternalFunctionName( String name )
   {
     if ( name == null )
+    {
       return false;
+    }
     char firstChar = name.charAt( 0 );
     int slash = name.indexOf( '/' );
     int space = name.indexOf( ' ' );
     if ( space == -1 )
+    {
       space = name.length();
-    if ( ( firstChar == '=' ) && ( slash > 1 ) && ( space > slash ) )
+    }
+    if ( firstChar == '=' && slash > 1 && space > slash )
     {
       @SuppressWarnings( "unused" )
       String devName = name.substring( 1, slash );
@@ -1798,15 +1976,19 @@ public class DeviceUpgrade
     while ( true )
     {
       line = in.readLine();
-      if ( ( line != null ) && ( line.length() > 0 ) && ( line.charAt( 0 ) == '\"' ) )
+      if ( line != null && line.length() > 0 && line.charAt( 0 ) == '\"' )
+      {
         line = line.substring( 1 );
+      }
       int equals = line.indexOf( '=' );
-      if ( ( equals != -1 ) && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code" ) )
+      if ( equals != -1 && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code" ) )
       {
         short[] id = new short[ 2 ];
         short temp = Short.parseShort( line.substring( equals + 2, equals + 4 ), 16 );
         if ( ( temp & 8 ) != 0 )
+        {
           id[ 0 ] = 1;
+        }
 
         line = in.readLine();
         temp = Short.parseShort( line.substring( 0, 2 ), 16 );
@@ -1882,27 +2064,39 @@ public class DeviceUpgrade
       {}
       System.err.println( "devBits=" + devBits + " and cmdBits=" + cmdBits );
       if ( devBits == 0 )
+      {
         devBits = 8;
+      }
       if ( cmdBits == 0 )
+      {
         cmdBits = 8;
+      }
 
       java.util.List< Value > values = new ArrayList< Value >();
 
       str = deviceFields.get( 2 ); // Device 1
       if ( str != null )
+      {
         values.add( new Value( parseInt( str ) ) );
+      }
 
       str = deviceFields.get( 3 ); // Device 2
       if ( str != null )
+      {
         values.add( new Value( parseInt( str ) ) );
+      }
 
       str = deviceFields.get( 4 ); // Device 3
       if ( str != null )
+      {
         values.add( new Value( parseInt( str ) ) );
+      }
 
       str = deviceFields.get( 5 ); // Raw Fixed Data
       if ( str == null )
+      {
         str = "";
+      }
       short[] rawHex = Hex.parseHex( str );
 
       protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
@@ -1925,7 +2119,9 @@ public class DeviceUpgrade
         Protocol p = v.get( 0 );
         Hex code = p.getCode( remote );
         if ( code != null )
+        {
           ( ( ManualProtocol )protocol ).setCode( code, remote.getProcessor() );
+        }
       }
     }
     else
@@ -1953,16 +2149,24 @@ public class DeviceUpgrade
         token = deviceFields.get( 2 + i );
         Object val = null;
         if ( token == null )
+        {
           val = null;
+        }
         else
         {
           if ( token.equals( "true" ) )
+          {
             val = new Integer( 1 );
+          }
           else if ( token.equals( "false" ) )
+          {
             val = new Integer( 0 );
+          }
           else
+          {
             val = token;
-          // val = new Integer( token );
+            // val = new Integer( token );
+          }
         }
         importParms[ i ] = new Value( val );
       }
@@ -1974,9 +2178,13 @@ public class DeviceUpgrade
     boolean useOBC = false; // assume OBC???
     boolean useEFC = false;
     if ( buttonStyle.equals( "OBC" ) )
+    {
       useOBC = true;
+    }
     else if ( buttonStyle.equals( "EFC" ) )
+    {
       useEFC = true;
+    }
 
     int obcIndex = 0;
     CmdParameter[] cmdParms = protocol.getCommandParameters();
@@ -1995,8 +2203,10 @@ public class DeviceUpgrade
     while ( true )
     {
       line = in.readLine();
-      if ( ( line == null ) || ( line.indexOf( match1 ) != -1 ) || ( line.indexOf( match2 ) != -1 ) )
+      if ( line == null || line.indexOf( match1 ) != -1 || line.indexOf( match2 ) != -1 )
+      {
         break;
+      }
     }
 
     fields = LineTokenizer.tokenize( line, delim );
@@ -2007,12 +2217,16 @@ public class DeviceUpgrade
 
     DeviceCombiner combiner = null;
     if ( protocol.getClass() == DeviceCombiner.class )
+    {
       combiner = ( DeviceCombiner )protocol;
+    }
 
     // save the function definition/assignment lines for later parsing
     String[] lines = new String[ 128 ];
     for ( int i = 0; i < 128; ++i )
+    {
       lines[ i ] = in.readLine();
+    }
 
     // read in the notes, which may have the protocol code
     while ( ( line = in.readLine() ) != null )
@@ -2028,28 +2242,42 @@ public class DeviceUpgrade
           String tempDelim = null;
           while ( ( line = in.readLine() ) != null )
           {
-            if ( ( line.length() > 0 ) && ( line.charAt( 0 ) == '"' ) )
+            if ( line.length() > 0 && line.charAt( 0 ) == '"' )
+            {
               tempDelim = "\"";
+            }
             else
+            {
               tempDelim = delim;
+            }
             StringTokenizer st = new StringTokenizer( line, tempDelim );
             if ( st.hasMoreTokens() )
             {
               token = st.nextToken();
               if ( token.startsWith( "EOF Marker" ) )
+              {
                 break;
+              }
               if ( first )
+              {
                 first = false;
+              }
               else
+              {
                 buff.append( "\n" );
+              }
               buff.append( token.trim() );
             }
             else
+            {
               buff.append( "\n" );
+            }
           }
           notes = buff.toString().trim();
           if ( protocol.getClass() == ManualProtocol.class )
+          {
             protocol.importUpgradeCode( notes );
+          }
         }
       }
     }
@@ -2072,7 +2300,7 @@ public class DeviceUpgrade
       String fixedDataStr = fields.size() > 7 ? fields.get( 7 ) : null;
 
       Function f = null;
-      if ( ( code != null ) || ( byte2 != null ) || ( notes != null ) )
+      if ( code != null || byte2 != null || notes != null )
       {
         System.err.println( "Creating a new function, because:" );
         System.err.println( "code=" + code );
@@ -2094,7 +2322,9 @@ public class DeviceUpgrade
         f.setName( funcName );
 
         if ( notes != null )
+        {
           f.setNotes( notes );
+        }
 
         Hex hex = null;
         if ( f.isExternal() )
@@ -2105,7 +2335,7 @@ public class DeviceUpgrade
           String devName = name.substring( 1, slash );
           String match = null;
           String[] names = remote.getDeviceTypeAliasNames();
-          for ( int j = 0; ( j < names.length ) && ( match == null ); j++ )
+          for ( int j = 0; j < names.length && match == null; j++ )
           {
             if ( devName.equalsIgnoreCase( names[ j ] ) )
             {
@@ -2127,11 +2357,15 @@ public class DeviceUpgrade
           int space = name.indexOf( ' ', slash + 1 );
           String codeString = null;
           if ( space == -1 )
+          {
             codeString = name.substring( slash + 1 );
+          }
           else
+          {
             codeString = name.substring( slash + 1, space );
+          }
           ef.setSetupCode( Integer.parseInt( codeString ) );
-          if ( ( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$' ) != -1 ) || ( code.indexOf( ' ' ) != -1 ) )
+          if ( code.indexOf( 'h' ) != -1 || code.indexOf( '$' ) != -1 || code.indexOf( ' ' ) != -1 )
           {
             hex = new Hex( code );
             ef.setType( ExternalFunction.HexType );
@@ -2145,7 +2379,7 @@ public class DeviceUpgrade
         }
         else if ( code != null ) // not external and there is a command code
         {
-          if ( ( code.indexOf( 'h' ) != -1 ) || ( code.indexOf( '$' ) != -1 ) || ( code.indexOf( ' ' ) != -1 ) )
+          if ( code.indexOf( 'h' ) != -1 || code.indexOf( '$' ) != -1 || code.indexOf( ' ' ) != -1 )
           {
             hex = new Hex( code );
           }
@@ -2156,16 +2390,20 @@ public class DeviceUpgrade
           }
 
           if ( byte2 != null )
+          {
             protocol.importCommandParms( hex, byte2 );
+          }
         }
         f.setHex( hex );
       }
 
-      if ( ( combiner != null ) && ( pidStr != null ) && !pidStr.equals( "Protocol ID" ) )
+      if ( combiner != null && pidStr != null && !pidStr.equals( "Protocol ID" ) )
       {
         Hex fixedData = new Hex();
         if ( fixedDataStr != null )
+        {
           fixedData = new Hex( fixedDataStr );
+        }
 
         Hex newPid = new Hex( pidStr );
         Protocol p = protocolManager.findProtocolForRemote( remote, newPid, fixedData );
@@ -2197,7 +2435,9 @@ public class DeviceUpgrade
       String actualName = cleanName( fields.get( 3 ) ); // get assigned button name (field 4)
       System.err.println( "actualName='" + actualName + "'" );
       if ( actualName == null )
+      {
         continue;
+      }
 
       String assignedName = fields.size() > 4 ? fields.get( 4 ) : null; // get assigned functionName
       @SuppressWarnings( "unused" )
@@ -2210,22 +2450,30 @@ public class DeviceUpgrade
       {
         buttonCode = fields.get( buttonCodeIndex );
         if ( buttonCode.length() < 2 )
+        {
           buttonCode = null;
+        }
       }
 
       String buttonName = null;
       if ( actualName != null )
       {
         if ( i < genericButtonNames.length )
+        {
           buttonName = genericButtonNames[ i ];
+        }
         else
         {
           System.err.println( "No generic name available!" );
           Button b = remote.getButton( actualName );
           if ( b == null )
+          {
             b = remote.getButton( actualName.replace( ' ', '_' ) );
+          }
           if ( b != null )
+          {
             buttonName = b.getStandardName();
+          }
         }
       }
 
@@ -2240,25 +2488,35 @@ public class DeviceUpgrade
         System.err.println( "Searching for button w/ name " + buttonName );
         b = remote.findByStandardName( new Button( buttonName, null, ( byte )0, remote ) );
         if ( b == null )
+        {
           b = remote.getButton( buttonName );
+        }
         System.err.println( "Found button " + b );
       }
       else
+      {
         System.err.println( "No buttonName for actualName=" + actualName + " and i=" + i );
+      }
 
-      if ( ( buttonName != null ) && ( assignedName != null ) && Character.isDigit( assignedName.charAt( 0 ) )
-          && Character.isDigit( assignedName.charAt( 1 ) ) && ( assignedName.charAt( 2 ) == ' ' )
-          && ( assignedName.charAt( 3 ) == '-' ) && ( assignedName.charAt( 4 ) == ' ' ) )
+      if ( buttonName != null && assignedName != null && Character.isDigit( assignedName.charAt( 0 ) )
+          && Character.isDigit( assignedName.charAt( 1 ) ) && assignedName.charAt( 2 ) == ' '
+          && assignedName.charAt( 3 ) == '-' && assignedName.charAt( 4 ) == ' ' )
       {
         String name = cleanName( assignedName.substring( 5 ) );
-        if ( ( name.length() == 5 ) && name.startsWith( "num " ) && Character.isDigit( name.charAt( 4 ) ) )
+        if ( name.length() == 5 && name.startsWith( "num " ) && Character.isDigit( name.charAt( 4 ) ) )
+        {
           name = name.substring( 4 );
+        }
 
         Function func = null;
         if ( isExternalFunctionName( name ) )
+        {
           func = getFunction( name, extFunctions );
+        }
         else
+        {
           func = getFunction( name, functions );
+        }
 
         if ( func == null )
         {
@@ -2266,7 +2524,9 @@ public class DeviceUpgrade
           continue;
         }
         else
+        {
           System.err.println( "Found function " + name );
+        }
 
         if ( b == null )
         {
@@ -2276,7 +2536,7 @@ public class DeviceUpgrade
           unassigned.add( temp );
           System.err.println( "Couldn't find button " + buttonName + " to assign function " + name );
         }
-        else if ( loadButtons && ( func.getHex() != null ) )
+        else if ( loadButtons && func.getHex() != null )
         {
           System.err.println( "Setting function " + name + " on button " + b );
           assignments.assign( b, func, Button.NORMAL_STATE );
@@ -2284,15 +2544,21 @@ public class DeviceUpgrade
       }
 
       if ( shiftAssignedName != null )
+      {
         System.err.println( "shiftAssignedName=" + shiftAssignedName );
-      if ( ( shiftAssignedName != null ) && !shiftAssignedName.equals( "" ) )
+      }
+      if ( shiftAssignedName != null && !shiftAssignedName.equals( "" ) )
       {
         String name = cleanName( shiftAssignedName.substring( 5 ) );
         Function func = null;
         if ( isExternalFunctionName( name ) )
+        {
           func = getFunction( name, extFunctions );
+        }
         else
+        {
           func = getFunction( name, functions );
+        }
         if ( b == null )
         {
           ArrayList< String > temp = new ArrayList< String >( 2 );
@@ -2300,8 +2566,10 @@ public class DeviceUpgrade
           temp.add( "shift-" + buttonName );
           unassigned.add( temp );
         }
-        else if ( loadButtons && ( func != null ) && ( func.getHex() != null ) )
+        else if ( loadButtons && func != null && func.getHex() != null )
+        {
           assignments.assign( b, func, Button.SHIFTED_STATE );
+        }
       }
     }
 
@@ -2340,7 +2608,9 @@ public class DeviceUpgrade
       Object[][] unassignedArray = new Object[ unassigned.size() ][];
       int i = 0;
       for ( java.util.List< String > l : unassigned )
+      {
         unassignedArray[ i++ ] = l.toArray();
+      }
       JTableX table = new JTableX( unassignedArray, titles.toArray() );
       container.add( new JScrollPane( table ), BorderLayout.CENTER );
       /*
@@ -2360,8 +2630,10 @@ public class DeviceUpgrade
       for ( int state = Button.NORMAL_STATE; state <= Button.XSHIFTED_STATE; ++state )
       {
         Function f = assignments.getAssignment( b, state );
-        if ( ( f != null ) && ( f.getHex() == null ) )
+        if ( f != null && f.getHex() == null )
+        {
           assignments.assign( b, null, state );
+        }
       }
     }
     System.err.println( "Done!" );
@@ -2448,15 +2720,19 @@ public class DeviceUpgrade
     Integer upgradeLimit = remote.getMaxUpgradeLength();
     Integer combinedLimit = remote.getMaxCombinedUpgradeLength();
 
-    if ( ( protocolLimit == null ) && ( upgradeLimit == null ) && ( combinedLimit == null ) )
+    if ( protocolLimit == null && upgradeLimit == null && combinedLimit == null )
+    {
       return true;
+    }
 
     int protocolLength = 0;
     Hex protocolCode = getCode();
     if ( protocolCode != null )
+    {
       protocolLength = protocolCode.length();
+    }
 
-    if ( ( protocolLimit != null ) && ( protocolLength > protocolLimit.intValue() ) )
+    if ( protocolLimit != null && protocolLength > protocolLimit.intValue() )
     {
       JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
           "The protocol upgrade exceeds the maximum allowed by the remote.", "Protocol Upgrade Limit Exceeded",
@@ -2465,7 +2741,7 @@ public class DeviceUpgrade
     }
 
     int upgradeLength = getUpgradeLength();
-    if ( ( upgradeLimit != null ) && ( upgradeLength > upgradeLimit.intValue() ) )
+    if ( upgradeLimit != null && upgradeLength > upgradeLimit.intValue() )
     {
       JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
           "The device upgrade exceeds the maximum allowed by the remote.", "Device Upgrade Limit Exceeded",
@@ -2474,7 +2750,7 @@ public class DeviceUpgrade
     }
 
     int combinedLength = upgradeLength + protocolLength;
-    if ( ( combinedLimit != null ) && ( combinedLength > combinedLimit.intValue() ) )
+    if ( combinedLimit != null && combinedLength > combinedLimit.intValue() )
     {
       JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
           "The combined upgrade exceeds the maximum allowed by the remote.", "Combined Upgrade Limit Exceeded",
@@ -2497,7 +2773,7 @@ public class DeviceUpgrade
       for ( Translate translate : translators )
       {
         Translator translator = ( Translator )translate;
-        int devParmIndex = translator.index;
+        int devParmIndex = translator.getIndex();
         Value parmVal = parmValues[ devParmIndex ];
         if ( parmVal.hasUserValue() && !parmVal.getUserValue().equals( parmVal.getDefaultValue() ) )
         {
@@ -2536,7 +2812,9 @@ public class DeviceUpgrade
       {
         Value[] values = getParmValues();
         for ( int i = 0; i < xlators.length; i++ )
+        {
           xlators[ i ].in( values, code, null, -1 );
+        }
       }
     }
     return code;

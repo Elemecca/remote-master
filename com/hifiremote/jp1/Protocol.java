@@ -21,6 +21,13 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
+import com.hifiremote.jp1.importer.Importer;
+import com.hifiremote.jp1.importer.ImporterFactory;
+import com.hifiremote.jp1.importer.ReorderImporter;
+import com.hifiremote.jp1.translate.Translate;
+import com.hifiremote.jp1.translate.Translator;
+import com.hifiremote.jp1.translate.TranslatorFactory;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class Protocol.
@@ -44,11 +51,15 @@ public class Protocol
     this.id = id;
 
     if ( props == null )
+    {
       props = new Properties();
+    }
     this.variantName = props.getProperty( "VariantName", "" );
     String temp = props.getProperty( "DefaultCmd", "00" );
     if ( temp != null )
+    {
       this.defaultCmd = new Hex( temp );
+    }
     this.cmdIndex = Integer.parseInt( props.getProperty( "CmdIndex", "0" ) );
 
     temp = props.getProperty( "AlternatePID" );
@@ -57,12 +68,16 @@ public class Protocol
       StringTokenizer st = new StringTokenizer( temp.trim(), "," );
       alternatePID = new Hex( st.nextToken() );
       while ( st.hasMoreTokens() )
+      {
         altPIDOverrideList.add( st.nextToken() );
+      }
     }
 
     temp = props.getProperty( "DevParms", "" );
     if ( temp != null )
+    {
       devParms = DeviceParmFactory.createParameters( temp );
+    }
 
     temp = props.getProperty( "DeviceTranslator" );
     if ( temp != null )
@@ -86,9 +101,13 @@ public class Protocol
       {
         System.err.println( "DevParm is " + devParms[ i ].getName() );
         if ( devParms[ i ].getClass() != FlagDeviceParm.class )
+        {
           map[ i ] = Integer.toString( mappedIndex );
+        }
         else
+        {
           needRemap = true;
+        }
         mappedIndex++ ;
       }
       if ( needRemap )
@@ -101,12 +120,16 @@ public class Protocol
     defaultFixedData = new Hex( props.getProperty( "FixedData", "" ) );
     temp = props.getProperty( "FixedDataMask" );
     if ( temp != null )
+    {
       fixedDataMask = new Hex( temp );
+    }
     else
     {
       short[] mask = new short[ defaultFixedData.length() ];
       for ( int i = 0; i < mask.length; ++i )
+      {
         mask[ i ] = 0xFF;
+      }
 
       fixedDataMask = new Hex( mask );
     }
@@ -117,7 +140,9 @@ public class Protocol
       cmdTranslators = TranslatorFactory.createTranslators( temp );
     }
     else
+    {
       cmdTranslators = new Translate[ 0 ];
+    }
 
     temp = props.getProperty( "ImportCmdTranslator" );
     if ( temp != null )
@@ -137,7 +162,9 @@ public class Protocol
         Hex hex = new Hex( temp );
         int value = hex.getData()[ 2 ];
         if ( pName.equals( "HCS08" ) )
+        {
           value = hex.getData()[ 4 ];
+        }
         int fixedDataLength = value >> 4;
         int cmdLength = value & 0x0F;
         if ( fixedBytes == -1 )
@@ -145,7 +172,7 @@ public class Protocol
           fixedBytes = fixedDataLength;
           variableBytes = cmdLength;
         }
-        else if ( ( fixedBytes != fixedDataLength ) || ( variableBytes != cmdLength ) )
+        else if ( fixedBytes != fixedDataLength || variableBytes != cmdLength )
         {
           System.err.println( "Protocol code for " + pName + " uses " + fixedDataLength + " fixed bytes and "
               + cmdLength + " variable bytes instead of " + fixedBytes + " and " + variableBytes );
@@ -169,7 +196,9 @@ public class Protocol
       String str = st.nextToken();
       cmdParms[ i ] = CmdParmFactory.createParameter( str, devParms, cmdParms );
       if ( cmdParms[ i ] == null )
+      {
         System.err.println( "Protocol.Protocol(" + name + ") failed createParameter(" + str + ")" );
+      }
     }
     temp = props.getProperty( "CmdParmInit" );
     if ( temp != null )
@@ -182,14 +211,16 @@ public class Protocol
     {
       StringTokenizer st2 = new StringTokenizer( temp, "," );
       while ( st2.hasMoreTokens() )
+      {
         oldNames.add( st2.nextToken().trim() );
+      }
     }
 
     temp = props.getProperty( "KeyMovesOnly" );
-    keyMovesOnly = ( temp != null );
+    keyMovesOnly = temp != null;
 
     // Figure out protocols that only have protocol code
-    if ( ( cmdParms.length == 0 ) && ( code.size() > 0 ) )
+    if ( cmdParms.length == 0 && code.size() > 0 )
     {
       // First figure out how many fixed bytes and cmd bytes there are
       Set< String > keys = code.keySet();
@@ -198,7 +229,9 @@ public class Protocol
       Hex pCode = code.get( key );
       int value = pCode.getData()[ 2 ];
       if ( key.equals( "HCS08" ) )
+      {
         value = pCode.getData()[ 4 ];
+      }
       int fixedDataLength = value >> 4;
       int cmdLength = value & 0x0F;
 
@@ -209,11 +242,15 @@ public class Protocol
       int styleIndex = numDevParms++ ;
       int devBitsIndex = -1;
       if ( fixedDataLength > 0 )
+      {
         devBitsIndex = numDevParms++ ; // bits/dev
+      }
       int cmdBitsIndex = numDevParms++ ;
       int cmdByteIndex = -1;
       if ( cmdLength > 1 )
+      {
         cmdByteIndex = numDevParms++ ;
+      }
       devParms = new DeviceParameter[ numDevParms ];
       deviceTranslators = new Translator[ fixedDataLength ];
       DirectDefaultValue defaultZero = new DirectDefaultValue( new Integer( 0 ) );
@@ -224,7 +261,9 @@ public class Protocol
       devParms[ styleIndex ] = new ChoiceDeviceParm( "Signal Style", defaultZero, choices );
       DirectDefaultValue defaultEight = new DirectDefaultValue( new Integer( 8 ) );
       if ( devBitsIndex != -1 )
+      {
         devParms[ devBitsIndex ] = new NumberDeviceParm( "Bits / Device", defaultEight, 10, 4 );
+      }
       devParms[ cmdBitsIndex ] = new NumberDeviceParm( "Bits / Command", defaultEight, 10, 4 );
       if ( cmdByteIndex != -1 )
       {
@@ -244,7 +283,9 @@ public class Protocol
         deviceTranslators[ i ] = translator;
         translator.setStyleIndex( styleIndex );
         if ( devBitsIndex != -1 )
+        {
           translator.setBitsIndex( devBitsIndex );
+        }
       }
 
       hex = new short[ cmdLength ];
@@ -267,7 +308,9 @@ public class Protocol
 
       short[] mask = new short[ defaultFixedData.length() ];
       for ( int i = 0; i < mask.length; ++i )
+      {
         mask[ i ] = 0xFF;
+      }
 
       fixedDataMask = new Hex( mask );
     }
@@ -322,7 +365,9 @@ public class Protocol
   {
     int value = pCode.getData()[ 2 ];
     if ( proc.equals( "HCS08" ) )
+    {
       value = pCode.getData()[ 4 ];
+    }
     return value & 0x0F;
   }
 
@@ -350,7 +395,9 @@ public class Protocol
   {
     int value = pCode.getData()[ 2 ];
     if ( proc.equals( "HCS08" ) )
+    {
       value = pCode.getData()[ 4 ];
+    }
     return value >> 4;
   }
 
@@ -362,7 +409,9 @@ public class Protocol
     int len = devParms.length;
     Value[] vals = new Value[ len ];
     for ( int i = 0; i < len; i++ )
+    {
       vals[ i ] = new Value( null, devParms[ i ].getDefaultValue() );
+    }
     setDeviceParms( vals );
   }
 
@@ -400,7 +449,9 @@ public class Protocol
           int pos2 = text.indexOf( ')', pos );
           processor = text.substring( pos + 1, pos2 );
           if ( processor.startsWith( "S3C8" ) )
+          {
             processor = "S3C80";
+          }
           System.err.println( "Imported processor name=" + processor );
           break;
         }
@@ -412,7 +463,9 @@ public class Protocol
         {
           String temp = st.nextToken();
           if ( temp.equalsIgnoreCase( "End" ) )
+          {
             break;
+          }
           text = text + ' ' + temp;
         }
         Processor p = ProcessorManager.getProcessor( processor );
@@ -483,7 +536,7 @@ public class Protocol
    */
   public boolean hasCode( Remote remote )
   {
-    return ( getCode( remote ) != null );
+    return getCode( remote ) != null;
   }
 
   /**
@@ -496,7 +549,7 @@ public class Protocol
   public Hex getCode( Remote remote )
   {
     Processor p = remote.getProcessor();
-    return ( Hex )code.get( p.getEquivalentName() );
+    return code.get( p.getEquivalentName() );
   }
 
   /**
@@ -508,7 +561,7 @@ public class Protocol
    */
   public Hex getCode( Processor p )
   {
-    return ( Hex )code.get( p.getEquivalentName() );
+    return code.get( p.getEquivalentName() );
   }
 
   /**
@@ -534,7 +587,9 @@ public class Protocol
     if ( devImporters != null )
     {
       for ( int i = 0; i < devImporters.length; i++ )
+      {
         parms = devImporters[ i ].convertParms( parms );
+      }
     }
     setDeviceParms( parms );
   }
@@ -550,7 +605,9 @@ public class Protocol
   {
     Value[] vals = getDeviceParmValues();
     for ( int i = 0; i < deviceTranslators.length; i++ )
+    {
       deviceTranslators[ i ].out( hex, vals, devParms );
+    }
     return vals;
   }
 
@@ -570,7 +627,7 @@ public class Protocol
 
     for ( int i = 0; i < parms.length; i++ )
     {
-      if ( ( i < devParms.length ) && ( parms[ i ] != null ) ) // && ( parms[ i ].getUserValue() != null ))
+      if ( i < devParms.length && parms[ i ] != null ) // && ( parms[ i ].getUserValue() != null ))
       {
         System.err.println( "Setting devParms[ " + i + " ](" + devParms[ i ].getName() + ") to "
             + parms[ i ].getUserValue() );
@@ -616,12 +673,16 @@ public class Protocol
       DefaultValue def = cmdParms[ i ].getDefaultValue();
       Object val = null;
       if ( def != null )
+      {
         val = def.value();
+      }
       vals[ i ] = new Value( val );
     }
 
     for ( int i = 0; i < cmdTranslators.length; i++ )
+    {
       cmdTranslators[ i ].in( vals, rc, devParms, -1 );
+    }
 
     return rc;
   }
@@ -774,7 +835,9 @@ public class Protocol
   {
     Value[] vals = new Value[ cmdParms.length ];
     for ( int i = 0; i < cmdTranslators.length; i++ )
+    {
       cmdTranslators[ i ].out( hex, vals, devParms );
+    }
     for ( int i = 0; i < cmdParms.length; i++ )
     {
       System.err.println( "Setting default for index " + i );
@@ -820,7 +883,9 @@ public class Protocol
     Value[] vals = getValues( hex );
     vals[ col ] = new Value( cmdParms[ col ].convertValue( value ), null );
     for ( int i = 0; i < cmdTranslators.length; i++ )
+    {
       cmdTranslators[ i ].in( vals, hex, devParms, col );
+    }
   }
 
   /**
@@ -840,10 +905,14 @@ public class Protocol
   public void importCommand( Hex hex, String text, boolean useOBC, int obcIndex, boolean useEFC )
   {
     if ( useEFC )
+    {
       EFC.toHex( Short.parseShort( text ), hex, cmdIndex );
+    }
     else
+    {
       // if ( useOBC )
       setValueAt( obcIndex, hex, new Short( text ) );
+    }
   }
 
   /**
@@ -859,10 +928,14 @@ public class Protocol
     System.err.println( "Protocol.importCommandParms( " + text + " ), cmdParms.length=" + cmdParms.length );
 
     if ( cmdParms.length == 1 )
+    {
       return;
+    }
     Translate[] translators = importCmdTranslators;
     if ( translators == null )
+    {
       translators = cmdTranslators;
+    }
     StringTokenizer st = new StringTokenizer( text );
     Value[] values = new Value[ st.countTokens() ];
     int index = 0;
@@ -884,7 +957,9 @@ public class Protocol
     for ( index = 0; index < values.length; index++ )
     {
       for ( int i = 0; i < translators.length; i++ )
+      {
         translators[ i ].in( values, hex, devParms, index );
+      }
     }
   }
 
@@ -905,6 +980,7 @@ public class Protocol
    * 
    * @see java.lang.Object#toString()
    */
+  @Override
   public String toString()
   {
     return getName();
@@ -950,23 +1026,33 @@ public class Protocol
   public Hex getID( Remote remote )
   {
     if ( alternatePID == null )
+    {
       return id;
+    }
 
     if ( !needsCode( remote ) )
+    {
       return id;
+    }
 
     if ( altPIDOverrideList.isEmpty() )
+    {
       return alternatePID;
+    }
 
     Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, id, false );
     String builtin = "none";
     if ( p != null )
+    {
       builtin = p.getVariantName();
+    }
 
     for ( String temp : altPIDOverrideList )
     {
       if ( temp.equalsIgnoreCase( builtin ) )
+      {
         return id;
+      }
     }
     return alternatePID;
   }
@@ -990,7 +1076,9 @@ public class Protocol
   {
     String result = "\"" + name + "\" (" + id;
     if ( variantName.length() > 0 )
+    {
       result += " : " + variantName;
+    }
     return result + ")";
   }
 
@@ -1014,7 +1102,9 @@ public class Protocol
     if ( deviceTranslators != null )
     {
       for ( int i = 0; i < deviceTranslators.length; i++ )
+      {
         deviceTranslators[ i ].in( parms, temp, devParms, -1 );
+      }
     }
     return temp;
   }
@@ -1045,7 +1135,9 @@ public class Protocol
 
     int max = cmdParms.length;
     if ( newProtocol.cmdParms.length < max )
+    {
       max = newProtocol.cmdParms.length;
+    }
     // count the number of matching parameters
     int matchingParms = 0;
     // create a map of command parameter indexs from this protocol to the new one
@@ -1071,7 +1163,9 @@ public class Protocol
     Value[] newValues = new Value[ newProtocol.cmdParms.length ];
     // setup the correct default values.
     for ( int i = 0; i < newValues.length; i++ )
+    {
       newValues[ i ] = new Value( null, newProtocol.cmdParms[ i ].getDefaultValue() );
+    }
 
     // now convert each defined function
     java.util.List< java.util.List< String >> failedToConvert = new ArrayList< java.util.List< String >>();
@@ -1085,7 +1179,9 @@ public class Protocol
       {
         // extract the command parms from the hex
         for ( int i = 0; i < cmdTranslators.length; i++ )
+        {
           cmdTranslators[ i ].out( hex, currValues, devParms );
+        }
 
         // copy the matching parameters to the new Values;
         for ( int i = 0; i < matchingParms; i++ )
@@ -1097,7 +1193,9 @@ public class Protocol
         try
         {
           for ( int i = 0; i < newProtocol.cmdTranslators.length; i++ )
+          {
             newProtocol.cmdTranslators[ i ].in( newValues, newHex, newProtocol.devParms, -1 );
+          }
         }
         catch ( IllegalArgumentException ex )
         {
@@ -1131,7 +1229,9 @@ public class Protocol
       String[][] failedToConvertArray = new String[ failedToConvert.size() ][];
       int i = 0;
       for ( java.util.List< String > l : failedToConvert )
+      {
         failedToConvertArray[ i++ ] = l.toArray( new String[ 2 ] );
+      }
       JTableX table = new JTableX( failedToConvertArray, titles.toArray() );
       Dimension d = table.getPreferredScrollableViewportSize();
       int showRows = Math.min( 14, failedToConvert.size() );
@@ -1163,12 +1263,16 @@ public class Protocol
       int rc = JOptionPane.showOptionDialog( null, panel, "Change Protocol Error", JOptionPane.YES_NO_OPTION,
           JOptionPane.WARNING_MESSAGE, null, buttonText, buttonText[ 0 ] );
       if ( rc == JOptionPane.NO_OPTION )
+      {
         return false;
+      }
     }
     // copy the converted hex values into the functions
     index = 0;
     for ( Function f : funcs )
+    {
       f.setHex( convertedHex[ index++ ] );
+    }
     return true;
   }
 
@@ -1188,11 +1292,15 @@ public class Protocol
       {
         // extract the command parms from the hex
         for ( int i = 0; i < cmdTranslators.length; i++ )
+        {
           cmdTranslators[ i ].out( hex, values, devParms );
+        }
 
         // recompute the hex
         for ( int i = 0; i < cmdTranslators.length; i++ )
+        {
           cmdTranslators[ i ].in( values, hex, devParms, -1 );
+        }
 
         // store the hex back into the function
         f.setHex( hex );
@@ -1222,7 +1330,9 @@ public class Protocol
   {
     Hex pid = new Hex( props.getProperty( "Protocol" ) );
     if ( !pid.equals( id ) )
+    {
       return tooDifferent;
+    }
     int result = 0;
     String str = props.getProperty( "Protocol.name" );
     if ( str != null && !str.equals( name ) )
@@ -1262,13 +1372,19 @@ public class Protocol
     out.print( "Protocol", id.toString() );
     out.print( "Protocol.name", getName() );
     if ( variantName.length() > 0 )
+    {
       out.print( "Protocol.variantName", variantName );
+    }
     // Value[] parms = getDeviceParmValues();
-    if ( ( parms != null ) && ( parms.length != 0 ) )
+    if ( parms != null && parms.length != 0 )
+    {
       out.print( "ProtocolParms", DeviceUpgrade.valueArrayToString( parms ) );
+    }
     Hex fixedData = getFixedData( parms );
     if ( fixedData != null )
+    {
       out.print( "FixedData", fixedData.toString() );
+    }
   }
 
   /**
