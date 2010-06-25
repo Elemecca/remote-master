@@ -1,8 +1,5 @@
 package com.hifiremote.jp1;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;

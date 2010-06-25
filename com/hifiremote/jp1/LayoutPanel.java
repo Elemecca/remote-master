@@ -44,7 +44,6 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
 /**
  * The Class LayoutPanel.

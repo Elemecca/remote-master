@@ -11,8 +11,6 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -29,11 +27,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -466,9 +462,6 @@ public class CombinerDeviceDialog
   /** The parameters. */
   private DeviceParameter[] parameters = null;
   
-  /** The control to select all. */
-  private JTextComponent controlToSelectAll = null;
-
   /** The ok button. */
   private JButton okButton = null;
   

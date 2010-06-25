@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;

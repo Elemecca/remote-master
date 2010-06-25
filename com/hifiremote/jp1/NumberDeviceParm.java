@@ -1,7 +1,6 @@
 package com.hifiremote.jp1;
 
 import java.awt.event.ActionListener;
-import java.awt.event.FocusListener;
 import java.util.EventListener;
 
 import javax.swing.JComponent;

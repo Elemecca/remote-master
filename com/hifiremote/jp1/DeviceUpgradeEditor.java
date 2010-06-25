@@ -2,7 +2,6 @@ package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -10,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -22,10 +20,8 @@ import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 // TODO: Auto-generated Javadoc
@@ -62,8 +58,6 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     {
       public void windowStateChanged(WindowEvent e)
       {
-        int newState = e.getNewState();
-        int iconified = JFrame.ICONIFIED;
         if ( e.getNewState() == JFrame.ICONIFIED )
         {
           setExtendedState( NORMAL );

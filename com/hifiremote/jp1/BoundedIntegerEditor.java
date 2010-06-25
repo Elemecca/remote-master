@@ -1,7 +1,5 @@
 package com.hifiremote.jp1;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JTextField;
 
 // TODO: Auto-generated Javadoc
 /**

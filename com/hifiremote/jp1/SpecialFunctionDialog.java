@@ -39,7 +39,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.NumberFormatter;
@@ -1438,9 +1437,6 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
   /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
-
-  /** The focus field. */
-  private JTextField focusField = null;
 
   /** The config. */
   private RemoteConfiguration config = null;

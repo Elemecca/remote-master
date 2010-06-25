@@ -18,7 +18,6 @@ import java.util.ListIterator;
 import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;

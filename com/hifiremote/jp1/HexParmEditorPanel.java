@@ -384,7 +384,4 @@ public class HexParmEditorPanel extends ProtocolEditorPanel implements ChangeLis
 
   /** The decimal formatter. */
   private IntegerFormatter decimalFormatter = null;
-
-  /** The control to select all. */
-  private JFormattedTextField controlToSelectAll = null;
 }
