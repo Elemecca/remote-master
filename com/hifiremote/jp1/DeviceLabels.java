@@ -5,6 +5,8 @@ package com.hifiremote.jp1;
 
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 /**
  * @author Greg
  */
@@ -57,6 +59,12 @@ public class DeviceLabels extends RDFParameter
   {
     return defaultsAddr;
   }
+  
+  public boolean usesDefaultLabels()
+  {
+    return defaultsAddr != 0;
+  }
+  
 
   public String getDefaultText( short[] data, int index )
   {
@@ -83,6 +91,35 @@ public class DeviceLabels extends RDFParameter
 
     return new String( text, 0, pos );
   }
+  
+  public void setDefaultText( String text, int index, short[] data )
+  {
+    if ( defaultsAddr == 0 )
+      return;
+    if ( text == null )
+    {
+      text = "";
+    }
+    text = text.trim();
+
+    int offset = defaultsAddr + length * index;
+    int i = 0;
+    int len = Math.min( length, text.length() );
+
+    while ( i < len )
+    {
+      data[ offset + i ] = ( short )text.charAt( i );
+      ++i;
+    }
+
+    // fill
+    while ( i < length )
+    {
+      data[ offset + i ] = fill;
+      ++i;
+    }
+  }
+
 
   public String getText( short[] data, int index )
   {
@@ -102,38 +139,49 @@ public class DeviceLabels extends RDFParameter
       --pos;
     }
 
-    if ( pos == 0 )
-      return getDefaultText( data, index );
-
     return new String( text, 0, pos );
   }
 
   public void setText( String text, int index, short[] data )
   {
-    if ( text == null )
+    if ( text == null || text.equals( "" ) )
     {
-      text = "";
+      text = getDefaultText( data, index );
     }
-    text = text.trim();
+    text = text.trim().toUpperCase();
 
     int offset = addr + length * index;
-    int i = 0;
+    int i = 0, j = 0;
     int len = Math.min( length, text.length() );
 
-    if ( text.equals( getDefaultText( data, index ) ) )
-      len = 0;
-
+    boolean invalidChar = false;
     while ( i < len )
     {
-      data[ offset + i ] = ( short )text.charAt( i );
-      ++i;
+      Character ch = text.charAt( i );
+      // Skip invalid characters
+      if ( Character.isLetterOrDigit(ch) || ch.equals( ' ' ) || ch.equals( '.' ) )
+      {
+        data[ offset + j++ ] = ( short )text.charAt( i );
+      }
+      else
+      {
+        invalidChar = true;
+      }
+      i++;
     }
 
     // fill
-    while ( i < length )
+    while ( j < length )
     {
-      data[ offset + i ] = fill;
-      ++i;
+      data[ offset + j++ ] = fill;
     }
+    
+    if ( invalidChar )
+    {        
+      String message = "One or more invalid characters have been\r\n"
+        + "deleted.  The only allowed characters are\r\n"
+        + "letters, digits, space and full stop.";
+      JOptionPane.showMessageDialog( null, message );
+    }  
   }
 }

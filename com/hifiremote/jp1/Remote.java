@@ -959,6 +959,8 @@ public class Remote implements Comparable< Remote >
       {
         softHomeTheater = new SoftHomeTheater();
         softHomeTheater.parse( value, this );
+        if ( !softHomeTheater.inUse() )
+          softHomeTheater = null;
       }
       else if ( parm.equalsIgnoreCase( "MacroCodingType" ) )
       {
@@ -998,6 +1000,10 @@ public class Remote implements Comparable< Remote >
       {
         parseAdvCodeTypes( value, rdr );
       }
+      
+      // A SoftHT entry should be ignored unless SoftDevices is used.
+      if ( softDevices == null )
+        softHomeTheater = null;
     }
 
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
@@ -1392,7 +1398,9 @@ public class Remote implements Comparable< Remote >
         if ( st.hasMoreTokens() )
           type = RDFReader.parseNumber( st.nextToken() );
       }
-      deviceTypes.put( name, new DeviceType( name, map, type ) );
+      DeviceType devType = new DeviceType( name, map, type );
+      deviceTypes.put( name, devType );
+      deviceTypeList.add( devType );
       type += 0x0101;
     }
     return line;
@@ -2337,7 +2345,30 @@ public class Remote implements Comparable< Remote >
   {
     return supportsBinaryUpgrades;
   }
-
+  
+  public int getSoftHomeTheaterType()
+  {
+    // For remotes with soft Home Theater, returns the internal device index used 
+    // for this device type, as distinct from the index in the RDF entry that is the
+    // position of Home Theater in the [DeviceTypes] section.
+    if ( softHomeTheater == null )
+    {
+      return -1;
+    }
+    return deviceTypeList.get( softHomeTheater.getDeviceType() ).getNumber();
+  }
+  
+  public int getSoftHomeTheaterCode()
+  {
+    // For remotes with soft Home Theater, returns the setup code used
+    // for this device type.
+    if ( softHomeTheater == null )
+    {
+      return -1;
+    }
+    return softHomeTheater.getDeviceCode();
+  }
+  
   /** The file. */
   private File file = null;
 
@@ -2496,6 +2527,9 @@ public class Remote implements Comparable< Remote >
 
   /** The device types. */
   private Hashtable< String, DeviceType > deviceTypes = new Hashtable< String, DeviceType >();
+  
+  /** The device types as an array in the order given in the RDF. */
+  private java.util.List< DeviceType > deviceTypeList = new ArrayList< DeviceType >();
 
   /** The device type aliases. */
   private Hashtable< String, DeviceType > deviceTypeAliases = new Hashtable< String, DeviceType >();

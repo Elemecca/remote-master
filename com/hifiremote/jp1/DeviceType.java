@@ -51,7 +51,9 @@ public class DeviceType
    */
   public int getNumber()
   {
-    return type & 0x0F;
+    // A device type from the RDF cannot have a value > 15
+    // but a special one added as a signal may do so.
+    return type & 0xFF;
   }
 
   /**

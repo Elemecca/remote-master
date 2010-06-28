@@ -42,36 +42,6 @@ public class DeviceButton
   }
 
   /**
-   * Gets the high address.
-   * 
-   * @return the high address
-   */
-  public int getHighAddress()
-  {
-    return highAddress;
-  }
-
-  /**
-   * Gets the low address.
-   * 
-   * @return the low address
-   */
-  public int getLowAddress()
-  {
-    return lowAddress;
-  }
-
-  /**
-   * Gets the type address.
-   * 
-   * @return the type address
-   */
-  public int getTypeAddress()
-  {
-    return typeAddress;
-  }
-
-  /**
    * Gets the default setup code.
    * 
    * @return the default setup code
@@ -89,18 +59,6 @@ public class DeviceButton
   public String toString()
   {
     return name;
-  }
-
-  /**
-   * Gets the device setup code.
-   * 
-   * @param data
-   *          the data
-   * @return the device setup code
-   */
-  public int getDeviceSetupCode( short[] data )
-  {
-    return ( data[ highAddress ] << 7 ) | data[ lowAddress ];
   }
 
   /**
@@ -125,9 +83,17 @@ public class DeviceButton
    */
   public void setDeviceTypeIndex( short index, short[] data )
   {
-    data[ highAddress ] &= 0x0F;
-    index <<= 4;
-    data[ highAddress ] |= index;
+    if ( index == 0xFF )
+    {
+      data[ highAddress ] = 0xFF;
+      data[ lowAddress ] = 0xFF;
+    }
+    else
+    {
+      data[ highAddress ] &= 0x0F;
+      index <<= 4;
+      data[ highAddress ] |= index;
+    }
   }
 
   /**
@@ -173,7 +139,18 @@ public class DeviceButton
 
     data[ lowAddress ] = ( short )( setupCode & 0xFF );
   }
-
+  
+  public int getDeviceSlot( short[] data )
+  {
+    return ( data[ highAddress ] << 8 ) | data[ lowAddress ];
+  }
+  
+  public void zeroDeviceSlot( short[] data )
+  {
+    data[ highAddress ] = 0;
+    data[ lowAddress ] = 0;
+  }
+  
   /** The name. */
   private String name;
 
