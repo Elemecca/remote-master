@@ -250,7 +250,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       case 4:
       {
-        String note = remoteConfig.getDeviceButtonNotes()[ row ];
+        String[] notes = remoteConfig.getDeviceButtonNotes();
+        String note = null;
+        if ( notes != null )
+        {
+          note = notes[ row ];
+        }
         if ( note == null )
         {
           DeviceUpgrade deviceUpgrade = remoteConfig.getAssignedDeviceUpgrade( db );
