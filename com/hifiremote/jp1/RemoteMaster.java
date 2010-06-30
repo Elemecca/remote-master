@@ -284,7 +284,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
           String sig = io.getRemoteSignature();
-          if ( !sig.equals( remoteConfig.getRemote().getSignature() ) )
+          Remote remote = remoteConfig.getRemote();
+          if ( !sig.equals( remote.getSignature() ) )
           {
             Object[] options =
             {
@@ -306,9 +307,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
               return;
             }
           }
-          int rc = io.writeRemote( remoteConfig.getRemote().getBaseAddress(), remoteConfig.getData() );
 
-          if ( rc != remoteConfig.getData().length )
+          AutoClockSet autoClockSet = remote.getAutoClockSet();
+          short[] data = remoteConfig.getData();
+          if ( autoClockSet != null )
+          {
+            autoClockSet.saveTimeBytes( data );
+            autoClockSet.setTimeBytes( data );
+          }
+          
+          int rc = io.writeRemote( remote.getBaseAddress(), data );
+
+          if ( rc != data.length )
           {
             io.closeRemote();
             JOptionPane.showMessageDialog( RemoteMaster.this, "writeRemote returned " + rc );
@@ -316,9 +326,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
           if ( verifyUploadItem.isSelected() )
           {
-            short[] data = remoteConfig.getData();
             short[] readBack = new short[ data.length ];
-            rc = io.readRemote( remoteConfig.getRemote().getBaseAddress(), readBack );
+            rc = io.readRemote( remote.getBaseAddress(), readBack );
             io.closeRemote();
             if ( rc != data.length )
             {
@@ -336,6 +345,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             io.closeRemote();
             JOptionPane.showMessageDialog( RemoteMaster.this, "Upload complete!" );
+          }
+          if ( autoClockSet != null )
+          {
+            autoClockSet.restoreTimeBytes( data );
           }
         }
       }

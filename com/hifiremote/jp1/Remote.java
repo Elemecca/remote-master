@@ -27,11 +27,6 @@ import javax.swing.JOptionPane;
 public class Remote implements Comparable< Remote >
 {
 
-  public enum TimeFormat
-  {
-    HEX, BCD12, BCD24
-  };
-
   public enum SetupValidation
   {
     OFF, WARN, ENFORCE
@@ -817,12 +812,10 @@ public class Remote implements Comparable< Remote >
         processorVersion = value;
       else if ( parm.equals( "RAMAddr" ) )
         RAMAddress = RDFReader.parseNumber( value );
-      else if ( ( parm.equals( "TimeAddr" ) || parm.equals( "TimeAddr+" ) ) && ( timeAddress == 0 ) )
+      else if ( ( parm.equals( "TimeAddr" ) || parm.equals( "TimeAddr+" ) ) && ( autoClockSet == null ) )
       {
-        StringTokenizer st = new StringTokenizer( value, ", " );
-        timeAddress = RDFReader.parseNumber( st.nextToken() );
-        if ( st.hasMoreTokens() )
-          timeFormat = TimeFormat.valueOf( st.nextToken() );
+        autoClockSet = new AutoClockSet();
+        autoClockSet.parse( value, this );
       }
       else if ( parm.equals( "RDFSync" ) )
         RDFSync = RDFReader.parseNumber( value );
@@ -1008,6 +1001,11 @@ public class Remote implements Comparable< Remote >
 
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
+  }
+
+  public AutoClockSet getAutoClockSet()
+  {
+    return autoClockSet;
   }
 
   /**
@@ -2486,11 +2484,8 @@ public class Remote implements Comparable< Remote >
   // private String processorVersion = null;
   /** The RAM address. */
   private int RAMAddress;
-
-  /** The time address. */
-  private int timeAddress = 0;
-  @SuppressWarnings( "unused" )
-  private TimeFormat timeFormat = TimeFormat.HEX;
+  
+  private AutoClockSet autoClockSet = null;
 
   /** The RDF sync. */
   @SuppressWarnings( "unused" )
