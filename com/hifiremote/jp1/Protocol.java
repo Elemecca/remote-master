@@ -98,8 +98,8 @@ public class Protocol
       System.err.println( "Generating deviceImporter for protocol " + name );
       int mappedIndex = 0;
       boolean needRemap = false;
-      String[] map = new String[ 4 ];
-      int maxParm = Math.min( 4, devParms.length );
+      String[] map = new String[ 6 ];
+      int maxParm = Math.min( map.length, devParms.length );
       for ( int i = 0; i < maxParm; i++ )
       {
         System.err.println( "DevParm is " + devParms[ i ].getName() );

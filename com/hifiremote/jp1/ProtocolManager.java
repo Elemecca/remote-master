@@ -46,7 +46,9 @@ public class ProtocolManager
   public void load( File f ) throws Exception
   {
     if ( loaded )
+    {
       return;
+    }
 
     while ( !f.canRead() )
     {
@@ -56,9 +58,13 @@ public class ProtocolManager
       chooser.setDialogTitle( "Pick the file containing the protocol definitions" );
       int returnVal = chooser.showOpenDialog( null );
       if ( returnVal != RMFileChooser.APPROVE_OPTION )
+      {
         System.exit( -1 );
+      }
       else
+      {
         f = chooser.getSelectedFile();
+      }
     }
     LineNumberReader rdr = new LineNumberReader( new FileReader( f ) );
     rdr.setLineNumber( 1 );
@@ -71,12 +77,16 @@ public class ProtocolManager
     {
       String line = rdr.readLine();
       if ( line == null )
+      {
         break;
+      }
 
       line = line.trim();
 
-      if ( ( line.length() == 0 ) || ( line.charAt( 0 ) == '#' ) )
+      if ( line.length() == 0 || line.charAt( 0 ) == '#' )
+      {
         continue;
+      }
 
       line = line.replaceAll( "\\\\n", "\n" );
       line = line.replaceAll( "\\\\t", "\t" );
@@ -94,7 +104,9 @@ public class ProtocolManager
         {
           Protocol protocol = ProtocolFactory.createProtocol( name, id, type, props );
           if ( protocol != null )
+          {
             add( protocol );
+          }
         }
         name = line.substring( 1, line.length() - 1 ).trim();
         props = new Properties();
@@ -108,9 +120,13 @@ public class ProtocolManager
         String parmValue = null;
         st.nextToken(); // skip the =
         if ( !st.hasMoreTokens() )
+        {
           continue;
+        }
         else
+        {
           parmValue = st.nextToken( "" ); // .trim();
+        }
 
         if ( parmName.equals( "PID" ) )
         {
@@ -144,7 +160,9 @@ public class ProtocolManager
     Arrays.sort( temp );
     names = new ArrayList< String >( temp.length );
     for ( int i = 0; i < temp.length; i++ )
+    {
       names.add( temp[ i ] );
+    }
 
     loaded = true;
   }
@@ -186,7 +204,7 @@ public class ProtocolManager
       for ( Protocol tryit : v )
       {
         String tryName = tryit.getVariantName();
-        if ( ( ( pvName == null ) && ( tryName == null ) ) || pvName.equals( tryName ) )
+        if ( pvName == null && tryName == null || pvName.equals( tryName ) )
         {
           System.err.println( "**** Warning: multiple protocols with PID " + id + " and variantName " + pvName );
           break;
@@ -246,7 +264,9 @@ public class ProtocolManager
     {
       Protocol p = findProtocolForRemote( remote, name, allowUpgrades );
       if ( p != null )
+      {
         rc.add( p );
+      }
     }
     /*
      * if ( allowUpgrades && manualProtocol.hasCode( remote )) rc.add( manualProtocol );
@@ -283,7 +303,9 @@ public class ProtocolManager
     List< Protocol > rc = null;
     List< Protocol > list = byPID.get( id );
     if ( list == null )
+    {
       rc = new ArrayList< Protocol >( 0 );
+    }
     else
     {
       rc = new ArrayList< Protocol >( list.size() );
@@ -349,7 +371,9 @@ public class ProtocolManager
 
     List< Protocol > protocols = findByName( name );
     if ( protocols == null )
+    {
       return null;
+    }
     for ( Protocol p : protocols )
     {
       if ( remote.supportsVariant( p.getID(), p.getVariantName() ) )
@@ -361,11 +385,15 @@ public class ProtocolManager
       if ( tentative == null )
       {
         if ( allowUpgrades && p.hasCode( remote ) )
+        {
           tentative = p;
+        }
       }
     }
     if ( protocol == null )
+    {
       protocol = tentative;
+    }
 
     return protocol;
   }
@@ -387,11 +415,15 @@ public class ProtocolManager
     for ( Protocol p : protocols )
     {
       if ( !remote.supportsVariant( id, p.getVariantName() ) )
+      {
         continue;
+      }
       Value[] vals = p.importFixedData( fixedData );
       Hex calculatedFixedData = p.getFixedData( vals );
       if ( calculatedFixedData.equals( fixedData ) )
+      {
         return p;
+      }
     }
     return null;
   }
@@ -427,10 +459,14 @@ public class ProtocolManager
     Protocol tentative = null;
     List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
+    {
       protocols = findByAlternatePID( id );
+    }
 
     if ( protocols == null )
+    {
       return null;
+    }
 
     for ( Protocol p : protocols )
     {
@@ -442,11 +478,15 @@ public class ProtocolManager
       if ( tentative == null )
       {
         if ( allowUpgrades && p.hasCode( remote ) )
+        {
           tentative = p;
+        }
       }
     }
     if ( protocol == null )
+    {
       protocol = tentative;
+    }
     return protocol;
   }
 
@@ -466,7 +506,9 @@ public class ProtocolManager
     Protocol matchByName = null;
     List< Protocol > protocols = getProtocolsForRemote( remote );
     if ( protocols == null )
+    {
       return null;
+    }
     for ( Protocol p : protocols )
     {
       for ( String oldName : p.getOldNames() )
@@ -474,9 +516,13 @@ public class ProtocolManager
         if ( name.equals( oldName ) )
         {
           if ( matchByName == null )
+          {
             matchByName = p;
+          }
           if ( p.getID().equals( pid ) )
+          {
             return p;
+          }
         }
       }
     }
@@ -499,7 +545,9 @@ public class ProtocolManager
   {
     List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
+    {
       return null;
+    }
     for ( Protocol p : protocols )
     {
       if ( p.getName().equals( name ) && p.getVariantName().equals( variantName ) )
@@ -528,7 +576,9 @@ public class ProtocolManager
     Protocol near = null;
     List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
+    {
       protocols = findByAlternatePID( id );
+    }
     if ( protocols == null )
     {
       System.err.println( "No protocol found" );
@@ -544,7 +594,7 @@ public class ProtocolManager
           System.err.println( "Found built-in protocol " + p );
           return p;
         }
-        if ( near == null )
+        if ( p.hasCode( remote ) && near == null )
         {
           near = p;
         }
@@ -558,7 +608,7 @@ public class ProtocolManager
     protocols = findByName( name );
     if ( protocols != null )
     {
-      near = ( Protocol )protocols.get( 0 );
+      near = protocols.get( 0 );
     }
     System.err.println( "Found protocol " + near );
     return near;
