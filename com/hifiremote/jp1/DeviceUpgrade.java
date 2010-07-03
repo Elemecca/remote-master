@@ -2482,6 +2482,11 @@ public class DeviceUpgrade
       {
         int keyCode = Integer.parseInt( buttonCode, 16 );
         b = remote.getButton( keyCode );
+        if ( b != null )
+        {
+          System.err.println( "Found button " + b + " for keyCode " + keyCode );
+          buttonName = b.getStandardName();
+        }
       }
       if ( b == null && buttonName != null )
       {
@@ -2493,7 +2498,7 @@ public class DeviceUpgrade
         }
         System.err.println( "Found button " + b );
       }
-      else
+      if ( b == null )
       {
         System.err.println( "No buttonName for actualName=" + actualName + " and i=" + i );
       }
