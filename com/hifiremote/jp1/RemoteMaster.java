@@ -68,14 +68,15 @@ import com.hifiremote.jp1.io.JP1USB;
  * @author Greg
  * @created November 30, 2006
  */
-public class RemoteMaster extends JP1Frame implements ActionListener, PropertyChangeListener, HyperlinkListener, ChangeListener
+public class RemoteMaster extends JP1Frame implements ActionListener, PropertyChangeListener, HyperlinkListener,
+    ChangeListener
 {
 
   /** The frame. */
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.99preview4";
+  public final static String version = "v1.99preview5";
 
   /** The dir. */
   private File dir = null;
@@ -142,7 +143,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The tabbed pane. */
   private JTabbedPane tabbedPane = null;
-  
+
   private RMPanel currentPanel = null;
 
   /** The general panel. */
@@ -200,11 +201,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         String command = event.getActionCommand();
         if ( command.equals( "OPEN" ) )
+        {
           openFile();
+        }
         else if ( command.equals( "SAVE" ) )
+        {
           remoteConfig.save( file );
+        }
         else if ( command.equals( "SAVEAS" ) )
+        {
           saveAs();
+        }
         else if ( command.equals( "DOWNLOAD" ) )
         {
           IO io = getOpenInterface();
@@ -220,7 +227,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             currentRemote = remoteConfig.getRemote();
           }
-          if ( ( currentRemote == null ) || !currentRemote.getSignature().equals( sig ) )
+          if ( currentRemote == null || !currentRemote.getSignature().equals( sig ) )
           {
             List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
             if ( remotes.isEmpty() )
@@ -251,15 +258,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
               Remote[] choices = new Remote[ remotes.size() ];
               choices = remotes.toArray( choices );
               String message = "Please pick the best match to your remote from the following list:";
-              Object rc = ( Remote )JOptionPane.showInputDialog( null, message, "Ambiguous Remote",
-                  JOptionPane.ERROR_MESSAGE, null, choices, choices[ 0 ] );
+              Object rc = JOptionPane.showInputDialog( null, message, "Ambiguous Remote", JOptionPane.ERROR_MESSAGE,
+                  null, choices, choices[ 0 ] );
               if ( rc == null )
               {
                 io.closeRemote();
                 return;
               }
               else
+              {
                 remote = ( Remote )rc;
+              }
             }
           }
           else
@@ -315,7 +324,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             autoClockSet.saveTimeBytes( data );
             autoClockSet.setTimeBytes( data );
           }
-          
+
           int rc = io.writeRemote( remote.getBaseAddress(), data );
 
           if ( rc != data.length )
@@ -387,6 +396,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     addWindowListener( new WindowAdapter()
     {
+      @Override
       public void windowClosing( WindowEvent event )
       {
         try
@@ -398,7 +408,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
           int state = getExtendedState();
           if ( state != Frame.NORMAL )
+          {
             setExtendedState( Frame.NORMAL );
+          }
           Rectangle bounds = getBounds();
           properties
               .setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
@@ -468,7 +480,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     rawDataPanel = new RawDataPanel();
     tabbedPane.addTab( "Raw Data", rawDataPanel );
     rawDataPanel.addPropertyChangeListener( this );
-    
+
     tabbedPane.addChangeListener( this );
 
     JPanel statusBar = new JPanel();
@@ -519,7 +531,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       setBounds( bounds );
     }
     else
+    {
       pack();
+    }
     setVisible( true );
   }
 
@@ -606,7 +620,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       String propName = "RecentIRs." + i;
       String temp = properties.getProperty( propName );
       if ( temp == null )
+      {
         break;
+      }
       properties.remove( propName );
       File f = new File( temp );
       if ( f.canRead() )
@@ -618,7 +634,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
     }
     if ( recentFiles.getItemCount() > 0 )
+    {
       recentFiles.setEnabled( true );
+    }
     menu.addSeparator();
 
     exitItem = new JMenuItem( "Exit", KeyEvent.VK_X );
@@ -675,7 +693,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             String defaultPort = null;
             if ( command.equals( properties.getProperty( "Interface" ) ) )
+            {
               defaultPort = properties.getProperty( "Port" );
+            }
 
             String[] availablePorts = io.getPortNames();
 
@@ -686,9 +706,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
               String port = d.getPort();
               properties.setProperty( "Interface", io.getInterfaceName() );
               if ( port.equals( PortDialog.AUTODETECT ) )
+              {
                 properties.remove( "Port" );
+              }
               else
+              {
                 properties.setProperty( "Port", port );
+              }
             }
 
             break;
@@ -814,7 +838,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       group.add( item );
       subMenu.add( item );
       if ( item.getActionCommand().equals( lookAndFeel ) )
+      {
         item.setSelected( true );
+      }
       item.addActionListener( al );
     }
 
@@ -919,7 +945,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
       }
       else
+      {
         return null;
+      }
     }
 
     System.err.println( "Opening " + file.getCanonicalPath() + ", last modified "
@@ -995,7 +1023,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     recentFiles.insert( item, 0 );
     while ( recentFiles.getItemCount() > 10 )
+    {
       recentFiles.remove( 10 );
+    }
     recentFiles.setEnabled( true );
     dir = file.getParentFile();
     properties.setProperty( "IRPath", dir );
@@ -1028,15 +1058,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( ".rmir" ) )
+      {
         name = name + ".rmir";
+      }
       File newFile = new File( name );
       int rc = JOptionPane.YES_OPTION;
       if ( newFile.exists() )
+      {
         rc = JOptionPane.showConfirmDialog( this, newFile.getName() + " already exists.  Do you want to replace it?",
             "Replace existing file?", JOptionPane.YES_NO_OPTION );
+      }
 
       if ( rc != JOptionPane.YES_OPTION )
+      {
         return;
+      }
 
       dir = newFile.getParentFile();
       properties.setProperty( "IRPath", dir );
@@ -1075,15 +1111,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( ".ir" ) )
+      {
         name = name + ".IR";
+      }
       File newFile = new File( name );
       int rc = JOptionPane.YES_OPTION;
       if ( newFile.exists() )
+      {
         rc = JOptionPane.showConfirmDialog( this, newFile.getName() + " already exists.  Do you want to replace it?",
             "Replace existing file?", JOptionPane.YES_NO_OPTION );
+      }
 
       if ( rc != JOptionPane.YES_OPTION )
+      {
         return;
+      }
 
       file = newFile;
       remoteConfig.exportIR( file );
@@ -1099,9 +1141,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private void setTitleFile( File file )
   {
     if ( file == null )
+    {
       setTitle( "RM IR" );
+    }
     else
+    {
       setTitle( "RM IR: " + file.getName() + " - " + remoteConfig.getRemote().getName() );
+    }
   }
 
   /**
@@ -1120,7 +1166,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( temp.getInterfaceName().equals( interfaceName ) )
         {
           if ( temp.openRemote( portName ) != null )
+          {
             return temp;
+          }
         }
       }
     }
@@ -1130,7 +1178,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         portName = temp.openRemote();
         if ( portName != null )
+        {
           return temp;
+        }
       }
     }
     return null;
@@ -1233,8 +1283,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         new TextPopupMenu( pane );
         JScrollPane scroll = new JScrollPane( pane );
         Dimension d = pane.getPreferredSize();
-        d.height = ( d.height * 5 ) / 4;
-        d.width = ( d.width * 2 ) / 3;
+        d.height = d.height * 5 / 4;
+        d.width = d.width * 2 / 3;
         scroll.setPreferredSize( d );
 
         JOptionPane.showMessageDialog( this, scroll, "About Java IR", JOptionPane.INFORMATION_MESSAGE, null );
@@ -1270,7 +1320,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         File file = new File( item.getActionCommand() );
         recentFiles.remove( item );
         if ( file.canRead() )
+        {
           openFile( file );
+        }
       }
     }
     catch ( Exception ex )
@@ -1285,9 +1337,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private void update()
   {
     if ( remoteConfig != null )
+    {
       setTitle( "RM IR - " + remoteConfig.getRemote().getName() );
+    }
     else
+    {
       setTitle( "RM IR" );
+    }
 
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
@@ -1295,10 +1351,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( remoteConfig.getRemote().getSpecialProtocols().isEmpty() )
     {
       if ( tabbedPane.getComponentAt( 3 ) == specialFunctionPanel )
+      {
         tabbedPane.remove( 3 );
+      }
     }
     else if ( tabbedPane.getComponentAt( 3 ) != specialFunctionPanel )
+    {
       tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, 3 );
+    }
 
     specialFunctionPanel.set( remoteConfig );
 
@@ -1306,7 +1366,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     protocolPanel.set( remoteConfig );
 
     if ( learnedPanel != null )
+    {
       learnedPanel.set( remoteConfig );
+    }
 
     updateUsage();
 
@@ -1413,7 +1475,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           propertiesFile = new File( fileName );
         }
         else
+        {
           fileToOpen = new File( parm );
+        }
       }
 
       try
@@ -1458,10 +1522,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( !propertiesFile.exists() )
         {
           if ( System.getProperty( "os.name" ).startsWith( "Windows" )
-              && ( Float.parseFloat( System.getProperty( "os.version" ) ) >= 6.0f ) )
+              && Float.parseFloat( System.getProperty( "os.version" ) ) >= 6.0f )
           {
             String baseFolderName = System.getenv( "APPDATA" );
-            if ( ( baseFolderName == null ) || "".equals( baseFolderName ) )
+            if ( baseFolderName == null || "".equals( baseFolderName ) )
             {
               baseFolderName = System.getProperty( "user.home" );
             }
@@ -1498,7 +1562,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         RemoteMaster rm = new RemoteMaster( workDir, properties );
         if ( fileToOpen != null )
+        {
           rm.openFile( fileToOpen );
+        }
         frame = rm;
       }
       else
@@ -1538,7 +1604,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         return;
       }
       else
+      {
         parms.add( arg );
+      }
     }
     javax.swing.SwingUtilities.invokeLater( new Runnable()
     {

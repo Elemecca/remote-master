@@ -1,3 +1,19 @@
+Changes for v1.99preview5
+- Device Upgrade Editor: enable maximize
+- Bugfix: did not allow remote to use Soft Devices without also using Labels (Graham Dixon, a.k.a. mathdon)
+- Bugfix: Corrected RDF General parameter from "PauseParameters" to "PauseParams" (Graham Dixon, a.k.a. mathdon)
+- Bugfix: Corrected error in reading RDF Fixed Data bytes > 127 (Graham Dixon, a.k.a. mathdon)
+- Bugfix: Corrected error in reading Device Setup codes with device type index > 7 (Graham Dixon, a.k.a. mathdon)
+- Bugfix: decodeUpgrades did not properly handle little-endian processors such as Mitsubishi 740 (Graham Dixon, a.k.a. mathdon)
+- Upgrade to DecodeIR 2.41
+- Implemented the functionality of the TimeAddr entry of the General section of an RDF (Graham Dixon, a.k.a. mathdon)
+- Bugfix:  Corrected problem with Device Button Notes on download from remote. (Graham Dixon, a.k.a. mathdon)
+- Implemented the missing functionality of the SoftDev, SoftHT and Labels entries of the General section of an RDF. (Graham Dixon, a.k.a. mathdon)
+- Bugfix: keycode style keymoves
+- Improved XMP protocol support
+- Bugfix: some function assignments were lost when importing KM files
+- Upgrade JP1.X USB/Serial support to 0.17  
+
 Changes for v1.99preview4
 - General Panel: default device button notes to description of assigned device upgrade, if there is one.
 - Buttons/Layout tabs: limit display of function names to 20 characters, but show full name in hover help.
