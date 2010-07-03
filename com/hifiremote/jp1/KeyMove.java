@@ -97,6 +97,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
    * 
    * @see java.lang.Object#clone()
    */
+  @Override
   protected Object clone() throws CloneNotSupportedException
   {
     return new KeyMove( getKeyCode(), getDeviceButtonIndex(), getDeviceType(), getSetupCode(), ( Hex )getCmd().clone(),
@@ -152,12 +153,17 @@ public class KeyMove extends AdvancedCode implements Cloneable
    * 
    * @see com.hifiremote.jp1.AdvancedCode#getValueString(com.hifiremote.jp1.RemoteConfiguration)
    */
+  @Override
   public String getValueString( RemoteConfiguration remoteConfig )
   {
     if ( cmd.length() == 1 )
+    {
       return getEFC().toString();
+    }
     else
+    {
       return getEFC5().toString();
+    }
   }
 
   /** The device button index. */
@@ -216,7 +222,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
 
   private static void update( int deviceType, int setupCode, Hex data )
   {
-    int temp = ( deviceType << 12 ) | setupCode;
+    int temp = deviceType << 12 | setupCode;
     data.put( temp, SETUP_CODE_INDEX );
   }
 
@@ -257,6 +263,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
    * 
    * @see com.hifiremote.jp1.AdvancedCode#store(com.hifiremote.jp1.PropertyWriter)
    */
+  @Override
   public void store( PropertyWriter pw )
   {
     pw.print( "DeviceButtonIndex", deviceButtonIndex );
@@ -299,19 +306,16 @@ public class KeyMove extends AdvancedCode implements Cloneable
     }
     int hexLength = data.length();
     Hex.put( data, buffer, offset );
-    if ( ( remote.getAdvCodeBindFormat() == BindFormat.LONG ) && ( cmd.length() == 1 ) )
-    {
-      buffer[ offset + hexLength++ ] = EFC.parseHex( cmd.getData()[ 0 ] );
-    }
     buffer[ lengthOffset ] |= ( short )hexLength;
 
     return offset + hexLength;
   }
 
+  @Override
   public int getSize( Remote remote )
   {
     int size = super.getSize( remote ); // for the key code and type/length
-    if ( ( remote.getAdvCodeBindFormat() == BindFormat.LONG ) && ( cmd.length() == 1 ) )
+    if ( remote.getAdvCodeBindFormat() == BindFormat.LONG && cmd.length() == 1 )
     {
       size++ ; // length is stored in it's own byte, not with the type;
     }
