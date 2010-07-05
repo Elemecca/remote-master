@@ -189,8 +189,18 @@ public abstract class SpecialProtocol
     for ( DeviceUpgrade upgrade : upgrades )
     {
       System.err.println( "Checking " + upgrade );
-      if ( upgrade.getProtocol().getID().equals( pid ) )
+      // Allow for 4-byte XPIDs
+      if ( upgrade.getProtocol().getID().equals( pid.subHex( 0, 2 ) ) )
       {
+        if ( pid.getData().length == 4 )
+        {
+          // pid is an XPID, so check protocol code for match
+          if ( upgrade.getCode().getData()[ pid.getData()[2] ] != pid.getData()[3] )
+          {
+            System.err.println( "PID matched but failed XPID check" );
+            continue;
+          }
+        }
         System.err.println( "It's a match!" );
         return upgrade;
       }
@@ -233,6 +243,12 @@ public abstract class SpecialProtocol
       {
         if ( protocol.getPid() == spID )
         {
+          if ( pid.getData().length == 4 
+              && protocol.getCode().getData()[ pid.getData()[2] ] != pid.getData()[3] )
+          {
+            // pid is an XPID and the XPID check failed
+            return false;
+          }        
           System.err.println( "Found protocol upgrade");
           return true;
         }
