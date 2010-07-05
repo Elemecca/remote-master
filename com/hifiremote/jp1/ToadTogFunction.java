@@ -103,12 +103,12 @@ public class ToadTogFunction extends SpecialProtocolFunction
    * 
    * @return The displayType value
    */
-  public String getDisplayType()
+  public String getDisplayType( RemoteConfiguration remoteConfig )
   {
     int style = getStyle();
 
     StringBuilder buff = new StringBuilder();
-    buff.append( "ToadTog" );
+    buff.append( getUserFunctions( remoteConfig )[0] );
     buff.append( '(' );
     buff.append( Integer.toString( getToggleNumber() ) );
     buff.append( ',' );

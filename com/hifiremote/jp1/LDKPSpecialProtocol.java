@@ -40,5 +40,8 @@ public class LDKPSpecialProtocol extends SpecialProtocol
   public String[] getFunctions(){ return functions; }
   
   /** The Constant functions. */
-  private static final String[] functions = { "DKP", "LKP" };
+  /*  Order must be as specified in the RDF4 Specification, otherwise user names will be
+   *  misinterpreted.
+   */
+  private static final String[] functions = { "LKP", "DKP" };
 }

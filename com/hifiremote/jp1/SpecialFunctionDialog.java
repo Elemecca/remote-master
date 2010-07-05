@@ -353,13 +353,16 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
     deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
 
-    java.util.List< String > specialFunctions = new ArrayList< String >();
+    java.util.List< String > specialFunctionsByUserName = new ArrayList< String >();
     for ( SpecialProtocol sp : config.getSpecialProtocols() )
     {
-      for ( String func : sp.getFunctions() )
-        specialFunctions.add( func );
+      for ( int i = 0; i < sp.getFunctions().length; i++ )
+      {
+        specialFunctionsByUserName.add( sp.getUserFunctions()[ i ] );
+        specialFunctionsByRDFName.add( sp.getFunctions()[ i ] );
+      }
     }
-    type.setModel( new DefaultComboBoxModel( specialFunctions.toArray() ) );
+    type.setModel( new DefaultComboBoxModel( specialFunctionsByUserName.toArray() ) );
 
     keyCodeRenderer.setRemote( remote );
     java.util.List< Integer > macroKeys = new ArrayList< Integer >();
@@ -537,7 +540,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
     if ( source == type )
     {
-      String typeStr = ( String )type.getSelectedItem();
+      String typeStr = specialFunctionsByRDFName.get( type.getSelectedIndex() );
       String cardStr = typeStr;
       if ( typeStr.equals( "DKP" ) )
       {
@@ -618,7 +621,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       SpecialProtocol protocol = null;
       for ( SpecialProtocol sp : config.getSpecialProtocols() )
       {
-        for ( String func : sp.getFunctions() )
+        for ( String func : sp.getUserFunctions() )
         {
           if ( func.equals( typeStr ) )
           {
@@ -638,7 +641,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       Hex hex = protocol.createHex( this );
       DeviceType devType = null;
       int setupCode = 0;
-      if ( protocol.getAssumePresent() )
+      if ( protocol.getDeviceType() != null )
       {
         devType = protocol.getDeviceType();
         setupCode = protocol.getSetupCode();
@@ -1047,7 +1050,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
    */
   public String getType()
   {
-    return ( String )type.getSelectedItem();
+    return specialFunctionsByRDFName.get( type.getSelectedIndex() );
   }
 
   /** The parameter card. */
@@ -1458,4 +1461,6 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
   /** The disabled color. */
   private Color disabledColor;
+  
+  private java.util.List< String > specialFunctionsByRDFName = new ArrayList< String >();
 }

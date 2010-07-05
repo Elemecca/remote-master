@@ -150,7 +150,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
       case 2:
         return new Integer( sf.getKeyCode() );
       case 3:
-        return sf.getDisplayType();
+        return sf.getDisplayType( remoteConfig );
       case 4:
         return sf.getValueString( remoteConfig );
       case 5:

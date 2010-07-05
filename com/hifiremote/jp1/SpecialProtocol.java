@@ -36,8 +36,7 @@ public abstract class SpecialProtocol
     return assumePresent;
   }
 
-  @SuppressWarnings( "unused" )
-  private List< String > userNames = new ArrayList< String >();
+  private String[] userFunctions;
 
   /**
    * Instantiates a new special protocol.
@@ -116,6 +115,21 @@ public abstract class SpecialProtocol
     else if ( name.equals( "ModeName" ) )
       sp = new ModeNameSpecialProtocol( name, pid );
 
+    if ( sp != null )
+    {
+      sp.userFunctions = sp.getFunctions().clone();
+      if ( userNames != null )
+      {
+        for ( int i = 0; i < sp.userFunctions.length; i++ )
+        {
+          if ( i < userNames.size() )
+          {
+            sp.userFunctions[ i ] = userNames.get( i );
+          }
+        }
+      }
+    }
+
     sp.assumePresent = hasDash;
 
     if ( prefix != null )
@@ -141,6 +155,14 @@ public abstract class SpecialProtocol
 
     return sp;
   }
+  
+  public void checkSpecialProtocol(Remote remote)
+  {
+    if ( deviceTypeName != null && deviceType == null )
+    {
+      deviceType = remote.getDeviceType( deviceTypeName );
+    }
+  }
 
   /**
    * Gets the device upgrade.
@@ -152,11 +174,18 @@ public abstract class SpecialProtocol
   public DeviceUpgrade getDeviceUpgrade( List< DeviceUpgrade > upgrades )
   {
     System.err.println( "in getDeviceUpgrade" );
-    if ( assumePresent )
-    {
-      System.err.println( "deviceUpgrade assumed present, returning null" );
-      return null;
-    }
+/* 
+ *  GD: Commented out lines below as they are based on a misunderstanding of "assumePresent".  It is the
+ *  protocol, not the device upgrade, that is assumed present.  It is used when the PID given in the
+ *  Special Protocol RDF entry does not correspond to a protocol upgrade. If the Special Protocol entry
+ *  does not give a device type and setup code in a prefix then the PID must correspond to a device
+ *  upgrade, regardless of whether or not it is marked "assumePresent".
+*/    
+//    if ( assumePresent )
+//    {
+//      System.err.println( "deviceUpgrade assumed present, returning null" );
+//      return null;
+//    }
     for ( DeviceUpgrade upgrade : upgrades )
     {
       System.err.println( "Checking " + upgrade );
@@ -188,27 +217,28 @@ public abstract class SpecialProtocol
       return true;
     }
 
-    Remote remote = config.getRemote();
-
     if ( deviceTypeName != null )
     {
-      System.err.println( "deviceTypeName=" + deviceTypeName );
-      DeviceType deviceType = remote.getDeviceType( deviceTypeName );
-      System.err.println( "deviceType=" + deviceType );
-      if ( deviceType == null )
+      System.err.println( "Device upgrade present because built in" );
+      // Still need to check protocol 
+      if ( assumePresent )
       {
-        System.err.println( "DeviceType not found!" );
-        return false;
-      }
-      System.err.println( "Looking for upgrade" );
-      if ( config.findDeviceUpgrade( deviceType.getNumber(), setupCode ) != null )
-      {
-        System.err.println( "Found upgrade" );
+        System.err.println( "Protocol assumed built in");
         return true;
       }
-      System.err.println( "Checking for builtin setupCode:" + deviceType + '/' + setupCode );
-      return remote.hasSetupCode( deviceType, setupCode );
-    }
+      // Check if present among protocols not used by device upgrades
+      int spID = pid.get( 0 );
+      System.err.println( "Seeking protocol upgrade " + spID );
+      for ( ProtocolUpgrade protocol : config.getProtocolUpgrades() )
+      {
+        if ( protocol.getPid() == spID )
+        {
+          System.err.println( "Found protocol upgrade");
+          return true;
+        }
+      }
+      return false;
+    }  
     return getDeviceUpgrade( config.getDeviceUpgrades() ) != null;
   }
 
@@ -294,4 +324,10 @@ public abstract class SpecialProtocol
     }
     return sb.toString();
   }
+  
+  public String[] getUserFunctions()
+  {   
+    return userFunctions;
+  }
+  
 }

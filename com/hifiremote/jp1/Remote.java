@@ -981,8 +981,9 @@ public class Remote implements Comparable< Remote >
           powerButtons[ i++ ] = ( short )RDFReader.parseNumber( st.nextToken() );
         }
       }
-      else if ( parm.equalsIgnoreCase( "WaveUpgrade" ) )
+      else if ( parm.equalsIgnoreCase( "WavUpgrade" ) )
       {
+        // Note that the item name in the RDF Spec is WavUpgrade, not WaveUpgrade
         waveUpgrade = RDFReader.parseFlag( value );
       }
       else if ( parm.equalsIgnoreCase( "SetupValidation" ) )
@@ -1401,6 +1402,13 @@ public class Remote implements Comparable< Remote >
       deviceTypeList.add( devType );
       type += 0x0101;
     }
+    
+    // If [SpecialProtocols] occurs before [DeviceTypes] in the RDF, this check is needed
+    for ( SpecialProtocol sp : specialProtocols )
+    {
+      sp.checkSpecialProtocol( this );
+    }
+        
     return line;
   }
 

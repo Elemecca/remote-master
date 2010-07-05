@@ -45,6 +45,36 @@ public abstract class SpecialProtocolFunction
     super( props );
   }
   
+  public String[] getUserFunctions( RemoteConfiguration remoteConfig )
+  {
+    Remote remote = remoteConfig.getRemote();
+    for ( SpecialProtocol sp : remote.getSpecialProtocols() )
+    {
+      DeviceType type = null;
+      int code = 0;
+      
+      DeviceUpgrade upgrade = sp.getDeviceUpgrade( remoteConfig.getDeviceUpgrades() );
+      if ( upgrade != null )
+      {
+        type = upgrade.getDeviceType();
+        code = upgrade.getSetupCode();
+      }
+      else
+      {      
+        type = sp.getDeviceType();
+        code = sp.getSetupCode();
+      }
+      if ( type == null)
+        continue;
+      if ( type.getNumber() == getDeviceType()
+          && code == getSetupCode() )
+        return sp.getUserFunctions();
+    }
+    return unknownFunctions;
+  }
+  
+  private String[] unknownFunctions = { "<unknown>", "<unknown>", "<unknown>" };
+  
   /**
    * Update.
    * 
@@ -64,5 +94,5 @@ public abstract class SpecialProtocolFunction
    * 
    * @return the display type
    */
-  public abstract String getDisplayType();
+  public abstract String getDisplayType( RemoteConfiguration remoteConfig );
 }

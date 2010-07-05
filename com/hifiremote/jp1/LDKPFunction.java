@@ -100,11 +100,11 @@ public class LDKPFunction extends SpecialProtocolFunction
    * 
    * @return The displayType value
    */
-  public String getDisplayType()
+  public String getDisplayType( RemoteConfiguration remoteConfig )
   {
     int style = getStyle();
     StringBuilder buff = new StringBuilder();
-    buff.append( styleStrings[ style ] );
+    buff.append( getUserFunctions( remoteConfig )[ style ] );
     buff.append( '(' );
     buff.append( Integer.toString( getDuration() ) );
     buff.append( ')' );

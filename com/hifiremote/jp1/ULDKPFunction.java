@@ -97,12 +97,12 @@ public class ULDKPFunction extends SpecialProtocolFunction
    * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#getDisplayType()
    */
-  public String getDisplayType()
+  public String getDisplayType( RemoteConfiguration remoteConfig )
   {
     int duration = getDuration();
     int style = getStyle();
     StringBuilder buff = new StringBuilder();
-    buff.append( styleStrings[ style ] );
+    buff.append( getUserFunctions( remoteConfig )[ style ] );
     if ( style == DSM )
       return buff.toString();
 

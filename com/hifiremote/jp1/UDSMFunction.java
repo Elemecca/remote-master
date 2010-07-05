@@ -77,9 +77,9 @@ public class UDSMFunction extends SpecialProtocolFunction
    * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#getDisplayType()
    */
-  public String getDisplayType()
+  public String getDisplayType( RemoteConfiguration remoteConfig )
   {
-    return "DSM";
+    return getUserFunctions( remoteConfig )[0];
   }
 
   /*

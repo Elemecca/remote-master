@@ -51,7 +51,7 @@ public class DSMFunction extends SpecialProtocolFunction
   {
     super( props );
   }
-
+  
   /*
    * (non-Javadoc)
    * 
@@ -67,9 +67,9 @@ public class DSMFunction extends SpecialProtocolFunction
    * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#getDisplayType()
    */
-  public String getDisplayType()
+  public String getDisplayType( RemoteConfiguration remoteConfig )
   {
-    return "DSM";
+    return getUserFunctions( remoteConfig )[0];
   }
 
   /*
