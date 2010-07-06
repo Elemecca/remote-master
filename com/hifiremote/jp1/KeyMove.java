@@ -310,15 +310,4 @@ public class KeyMove extends AdvancedCode implements Cloneable
 
     return offset + hexLength;
   }
-
-  @Override
-  public int getSize( Remote remote )
-  {
-    int size = super.getSize( remote ); // for the key code and type/length
-    if ( remote.getAdvCodeBindFormat() == BindFormat.LONG && cmd.length() == 1 )
-    {
-      size++ ; // length is stored in it's own byte, not with the type;
-    }
-    return size;
-  }
 }
