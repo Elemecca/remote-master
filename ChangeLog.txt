@@ -1,3 +1,13 @@
+Changes since last build
+- Add DigitMaps through 486
+- Fix TiVo (Official 2-byte) Unit Code encoding
+- Added Kathrein protocol support
+- Implemented the functionality of XPIDs in the Special Protocols section (Graham Dixon, a.k.a. mathdon)
+- Implemented the functionality of User Names in the Special Protocols section (Graham Dixon, a.k.a. mathdon)
+- Corrected the interpretation of a "minus" prefix to PIDs in Special Protocols section (Graham Dixon, a.k.a. mathdon)
+- Corrected the keyword WaveUpgrade to WavUpgrade in processing of the General section (Graham Dixon, a.k.a. mathdon)
+- Fix keymove space used for keycode keymoves
+
 Changes for v1.99preview5
 - Device Upgrade Editor: enable maximize
 - Bugfix: did not allow remote to use Soft Devices without also using Labels (Graham Dixon, a.k.a. mathdon)
