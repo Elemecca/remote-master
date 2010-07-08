@@ -7,6 +7,7 @@ Changes since last build
 - Corrected the interpretation of a "minus" prefix to PIDs in Special Protocols section (Graham Dixon, a.k.a. mathdon)
 - Corrected the keyword WaveUpgrade to WavUpgrade in processing of the General section (Graham Dixon, a.k.a. mathdon)
 - Fix keymove space used for keycode keymoves
+- Change Apex 1100w protocol to use PID 00 46
 
 Changes for v1.99preview5
 - Device Upgrade Editor: enable maximize
