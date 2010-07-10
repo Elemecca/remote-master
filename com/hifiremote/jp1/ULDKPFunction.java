@@ -19,6 +19,11 @@ public class ULDKPFunction extends SpecialProtocolFunction
   {
     super( keyMove );
   }
+  
+  public ULDKPFunction( Macro macro )
+  {
+    super( macro );
+  }
 
   /**
    * Instantiates a new uLDKP function.

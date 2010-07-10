@@ -19,6 +19,11 @@ public class MultiplexFunction extends SpecialProtocolFunction
   {
     super( keyMove );
   }
+  
+  public MultiplexFunction( Macro macro )
+  {
+    super( macro );
+  }
 
   /**
    * Instantiates a new multiplex function.

@@ -26,6 +26,11 @@ public class DSMSpecialProtocol extends SpecialProtocol
     return new DSMFunction( keyMove );
   }
   
+  public SpecialProtocolFunction createFunction( Macro macro )
+  {
+    return new DSMFunction( macro );
+  }
+  
   /* (non-Javadoc)
    * @see com.hifiremote.jp1.SpecialProtocol#createHex(com.hifiremote.jp1.SpecialFunctionDialog)
    */

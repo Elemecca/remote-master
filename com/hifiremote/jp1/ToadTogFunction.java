@@ -22,6 +22,11 @@ public class ToadTogFunction extends SpecialProtocolFunction
   {
     super( keyMove );
   }
+  
+  public ToadTogFunction( Macro macro )
+  {
+    super( macro );
+  }
 
   /**
    * Constructor for the ToadTogFunction object.
@@ -178,7 +183,7 @@ public class ToadTogFunction extends SpecialProtocolFunction
     dlg.setToggle( getToggleNumber() );
     dlg.setCondition( getStyle() );
 
-    short[] keyCodes = data.getData();
+    short[] keyCodes = getKeyMove().data.getData();
 
     int length = getOnLength();
     Integer[] temp = new Integer[ length ];

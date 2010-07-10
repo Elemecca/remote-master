@@ -1113,14 +1113,23 @@ public class Remote implements Comparable< Remote >
       StringTokenizer st = new StringTokenizer( line, "=" );
       String name = st.nextToken().trim();
       String value = st.nextToken().trim();
-      if ( name.equals( "DSM" ) && value.startsWith( "Internal:0" ) )
-      {
-        deviceIndexMask = 0x0F;
-      }
-      else
-      {
+/*
+ * GD:  The lines commented out below appear to be the start of an attempt to handle
+ * device specific macros, or certain of them, through the Macro tab rather than the
+ * Special Functions tab.  It seems to be unfinished and deviceIndexMask seems to be
+ * unused.  I have commented them out, now that internal special protocols are fully
+ * implemented.  This is not intended to imply any disagreement with that approach,
+ * merely that DSM = Internal:0 can now be handled through special protocols while it
+ * cannot be handled through the Macros tab even if these lines are left active.
+ */
+//      if ( name.equals( "DSM" ) && value.startsWith( "Internal:0" ) )
+//      {
+//        deviceIndexMask = 0x0F;
+//      }
+//      else
+//      {
         specialProtocols.add( SpecialProtocol.create( name, value, this ) );
-      }
+//      }
     }
     return line;
   }

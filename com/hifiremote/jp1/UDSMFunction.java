@@ -20,6 +20,11 @@ public class UDSMFunction extends SpecialProtocolFunction
     super( keyMove );
   }
 
+  public UDSMFunction( Macro macro )
+  {
+    super( macro );
+  }
+  
   /**
    * Instantiates a new uDSM function.
    * 

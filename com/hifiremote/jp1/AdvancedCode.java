@@ -54,7 +54,11 @@ public abstract class AdvancedCode
       type >>= 4;
       if ( remote.getMacroCodingType().getType() == 2 )
       {
-        isMacro = ( type == 3 );
+        if ( type >= 3 && type < 8 )
+        {
+          isMacro = true;
+          sequenceNumber = type - 3;
+        }
       }
       else
       {
@@ -78,6 +82,7 @@ public abstract class AdvancedCode
     {
       Macro macro = new Macro( keyCode, hex, null );
       macro.setSequenceNumber( sequenceNumber );
+      macro.setDeviceIndex( boundDeviceIndex );
       return macro;
     }
     else

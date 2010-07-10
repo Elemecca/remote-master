@@ -26,6 +26,11 @@ public class LDKPSpecialProtocol extends SpecialProtocol
     return new LDKPFunction( keyMove );
   }
   
+  public SpecialProtocolFunction createFunction( Macro macro )
+  {
+    return new LDKPFunction( macro );
+  }
+  
   /* (non-Javadoc)
    * @see com.hifiremote.jp1.SpecialProtocol#createHex(com.hifiremote.jp1.SpecialFunctionDialog)
    */

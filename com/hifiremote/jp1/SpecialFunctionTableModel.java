@@ -169,22 +169,28 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    */
   public void setValueAt( Object value, int row, int col )
   {
-    KeyMove keyMove = getRow( row );
+    SpecialProtocolFunction sf = getRow( row );
     if ( col == 1 )
     {
       Remote r = remoteConfig.getRemote();
       DeviceButton[] deviceButtons = r.getDeviceButtons();
       for ( int i = 0; i < deviceButtons.length; ++i )
+      {
         if ( deviceButtons[ i ] == value )
         {
-          keyMove.setDeviceButtonIndex( i );
+          sf.setDeviceButtonIndex( i );
           break;
         }
+      }
     }
     else if ( col == 2 )
-      keyMove.setKeyCode( ( ( Integer )value ).intValue() );
+    {
+        sf.setKeyCode( ( ( Integer )value ).intValue() );
+    }
     else if ( col == 6 )
-      keyMove.setNotes( ( String )value );
+    {
+        sf.setNotes( ( String )value );
+    }
     else
       return;
     propertyChangeSupport.firePropertyChange( "data", null, null );

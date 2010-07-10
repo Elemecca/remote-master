@@ -20,6 +20,10 @@ public class ModeNameFunction extends SpecialProtocolFunction
     super( keyMove );
   }
 
+  public ModeNameFunction( Macro macro )
+  {
+    super( macro );
+  }
   /**
    * Instantiates a new mode name function.
    * 

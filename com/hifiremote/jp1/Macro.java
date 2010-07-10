@@ -8,6 +8,11 @@ import java.util.Properties;
  */
 public class Macro extends AdvancedCode
 {
+  
+  public Macro( Macro macro )
+  {
+    this(macro.keyCode, macro.data, macro.deviceIndex, macro.sequenceNumber, macro.notes );
+  }
 
   /**
    * Instantiates a new macro.
@@ -24,6 +29,13 @@ public class Macro extends AdvancedCode
     super( keyCode, keyCodes, notes );
   }
 
+  public Macro( int keyCode, Hex keyCodes, int deviceIndex, int sequenceNumber, String notes )
+  {
+    super( keyCode, keyCodes, notes );
+    this.deviceIndex = deviceIndex;
+    this.sequenceNumber = sequenceNumber;
+  }
+  
   /**
    * Instantiates a new macro.
    * 
@@ -115,11 +127,16 @@ public class Macro extends AdvancedCode
     }
     else if ( remote.getMacroCodingType().getType() == 2 )
     {
-      buffer[ offset ] = 0x3F;
+      // With deviceIndex $F this allows for MultiMacro types $4, $5, $6, $7 (value in high
+      // nibble) for type 2 coding even though no remote yet implements them.  With deviceIndex
+      // other than $F these represent internal special protocols.
+      buffer[ offset ] = ( short )( ( 0x30 + ( sequenceNumber << 4 ) + deviceIndex ) & 0xFF );
       buffer[ ++offset ] = 0;
     }
     else
     {
+      // High nibbles $9, $A, $B, $C, $D correspond to MultiMacros if deviceIndex is $F,
+      // for other values of deviceIndex they correspond to internal special protocols.
       buffer[ offset ] = ( short )( ( 0x80 | ( sequenceNumber << 4 ) | deviceIndex ) & 0xFF );
       buffer[ ++offset ] = 0;
     }
@@ -136,6 +153,10 @@ public class Macro extends AdvancedCode
     if ( sequenceNumber != 0 )
     {
       pw.print( "SequenceNumber", sequenceNumber );
+    }
+    if ( deviceIndex != 0x0F )
+    {
+      pw.print( "DeviceIndex", deviceIndex );
     }
   }
 

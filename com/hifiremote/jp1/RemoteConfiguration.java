@@ -21,6 +21,8 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
+import com.hifiremote.jp1.AdvancedCode.BindFormat;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class RemoteConfiguration.
@@ -525,10 +527,12 @@ public class RemoteConfiguration
 
     // Do the advanced codes
     int i = 0x1000;
+    updateSpecialFunctionSublists();
     i = exportAdvancedCodeNotes( keymoves, i, out );
     i = exportAdvancedCodeNotes( upgradeKeyMoves, i, out );
-    i = exportAdvancedCodeNotes( specialFunctions, i, out );
+    i = exportAdvancedCodeNotes( specialFunctionKeyMoves, i, out );
     i = exportAdvancedCodeNotes( macros, i, out );
+    i = exportAdvancedCodeNotes( specialFunctionMacros, i, out );
 
     // Do the Favs????
     i = 0x2000;
@@ -726,6 +730,10 @@ public class RemoteConfiguration
     List< SpecialProtocol > specialProtocols = remote.getSpecialProtocols();
     for ( SpecialProtocol sp : specialProtocols )
     {
+      if ( sp.isInternal() )
+      {
+        continue;
+      }
       System.err.println( "Checking for Special Procotol " + sp.getName() + " w/ PID=" + sp.getPid().toString() );
       DeviceUpgrade device = sp.getDeviceUpgrade( devices );
       if ( device != null )
@@ -744,8 +752,21 @@ public class RemoteConfiguration
       if ( advCode instanceof Macro )
       {
         Macro macro = ( Macro )advCode;
-        macros.add( macro );
-        advCodes.add( macro );
+        SpecialProtocol sp = getSpecialProtocol( macro );
+        if ( sp != null )
+        {
+          SpecialProtocolFunction sf = sp.createFunction( macro );
+          if ( sf != null )
+          {
+            specialFunctions.add( sf );
+            advCodes.add( sf.getMacro() );
+          }
+        }
+        else
+        {
+          macros.add( macro );
+          advCodes.add( macro );
+        }
       }
       else
       {
@@ -757,7 +778,7 @@ public class RemoteConfiguration
           if ( sf != null )
           {
             specialFunctions.add( sf );
-            advCodes.add( sf );
+            advCodes.add( sf.getKeyMove() );
           }
         }
         else
@@ -920,6 +941,19 @@ public class RemoteConfiguration
 
     return null;
   }
+  
+  private SpecialProtocol getSpecialProtocol( Macro macro )
+  {
+    for ( SpecialProtocol sp : remote.getSpecialProtocols() )
+    {
+      if ( sp.isInternal() && sp.getInternalSerial() == macro.getSequenceNumber() 
+          && macro.getDeviceIndex() != 0x0F )
+      {
+        return sp;
+      }
+    }
+    return null;
+  }
 
   private int getAdvancedCodesBytesNeeded( List< ? extends AdvancedCode > codes )
   {
@@ -933,11 +967,13 @@ public class RemoteConfiguration
 
   public int getAdvancedCodeBytesNeeded()
   {
+    updateSpecialFunctionSublists();
     int size = getAdvancedCodesBytesNeeded( keymoves );
     upgradeKeyMoves = getUpgradeKeyMoves();
     size += getAdvancedCodesBytesNeeded( upgradeKeyMoves );
-    size += getAdvancedCodesBytesNeeded( specialFunctions );
+    size += getAdvancedCodesBytesNeeded( specialFunctionKeyMoves );
     size += getAdvancedCodesBytesNeeded( macros );
+    size += getAdvancedCodesBytesNeeded( specialFunctionMacros );
     size++ ; // the section terminator
     return size;
   }
@@ -1052,10 +1088,11 @@ public class RemoteConfiguration
   {
     AddressRange range = remote.getAdvancedCodeAddress();
     int offset = range.getStart();
+    updateSpecialFunctionSublists();
     offset = updateKeyMoves( keymoves, offset );
     upgradeKeyMoves = getUpgradeKeyMoves();
     offset = updateKeyMoves( upgradeKeyMoves, offset );
-    offset = updateKeyMoves( specialFunctions, offset );
+    offset = updateKeyMoves( specialFunctionKeyMoves, offset );
 
     HashMap< Button, List< Macro >> multiMacros = new HashMap< Button, List< Macro >>();
     for ( Macro macro : macros )
@@ -1077,6 +1114,10 @@ public class RemoteConfiguration
           macro.setSequenceNumber( list.size() );
         }
       }
+      offset = macro.store( data, offset, remote );
+    }
+    for ( Macro macro : specialFunctionMacros )
+    {
       offset = macro.store( data, offset, remote );
     }
     data[ offset++ ] = remote.getSectionTerminator();
@@ -1623,7 +1664,15 @@ public class RemoteConfiguration
       int dot = className.lastIndexOf( '.' );
       className = className.substring( dot + 1 );
       pw.printHeader( className );
-      sp.store( pw );
+      pw.print( "Internal", sp.isInternal() ? 1 : 0 );
+      if ( sp.isInternal() )
+      {
+        sp.getMacro().store( pw );
+      }
+      else
+      {  
+        sp.getKeyMove().store( pw );
+      }
     }
 
     for ( DeviceUpgrade device : devices )
@@ -1818,7 +1867,26 @@ public class RemoteConfiguration
 
   /** The special functions. */
   private List< SpecialProtocolFunction > specialFunctions = new ArrayList< SpecialProtocolFunction >();
-
+  private List< KeyMove > specialFunctionKeyMoves = new ArrayList< KeyMove >();
+  private List< Macro > specialFunctionMacros = new ArrayList< Macro >();
+  
+  private void updateSpecialFunctionSublists()
+  {
+    specialFunctionKeyMoves.clear();
+    specialFunctionMacros.clear();
+    for ( SpecialProtocolFunction sp : specialFunctions )
+    {
+      if ( sp.isInternal() )
+      {
+        specialFunctionMacros.add( sp.getMacro() );
+      }
+      else
+      {  
+        specialFunctionKeyMoves.add(  sp.getKeyMove() );
+      }
+    }
+  }
+  
   /** The notes. */
   private String notes = null;
 

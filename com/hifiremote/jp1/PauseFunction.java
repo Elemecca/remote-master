@@ -19,6 +19,11 @@ public class PauseFunction extends SpecialProtocolFunction
   {
     super( keyMove );
   }
+  
+  public PauseFunction( Macro macro )
+  {
+    super( macro );
+  }
 
   /**
    * Instantiates a new pause function.

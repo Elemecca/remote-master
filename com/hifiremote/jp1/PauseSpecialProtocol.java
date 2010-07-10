@@ -26,6 +26,11 @@ public class PauseSpecialProtocol extends SpecialProtocol
     return new PauseFunction( keyMove );
   }
   
+  public SpecialProtocolFunction createFunction( Macro macro )
+  {
+    return new PauseFunction( macro );
+  }
+  
   /* (non-Javadoc)
    * @see com.hifiremote.jp1.SpecialProtocol#createHex(com.hifiremote.jp1.SpecialFunctionDialog)
    */

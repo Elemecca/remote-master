@@ -26,6 +26,11 @@ public class MultiplexSpecialProtocol extends SpecialProtocol
     return new MultiplexFunction( keyMove );
   }
   
+  public SpecialProtocolFunction createFunction( Macro macro )
+  {
+    return new MultiplexFunction( macro );
+  }
+  
   /* (non-Javadoc)
    * @see com.hifiremote.jp1.SpecialProtocol#createHex(com.hifiremote.jp1.SpecialFunctionDialog)
    */

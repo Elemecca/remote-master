@@ -26,6 +26,11 @@ public class ToadTogSpecialProtocol extends SpecialProtocol
     return new ToadTogFunction( keyMove );
   }
   
+  public SpecialProtocolFunction createFunction( Macro macro )
+  {
+    return new ToadTogFunction( macro );
+  }
+  
   /* (non-Javadoc)
    * @see com.hifiremote.jp1.SpecialProtocol#createHex(com.hifiremote.jp1.SpecialFunctionDialog)
    */

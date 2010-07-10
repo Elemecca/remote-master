@@ -186,6 +186,12 @@ public abstract class SpecialProtocol
 //      System.err.println( "deviceUpgrade assumed present, returning null" );
 //      return null;
 //    }
+    
+    if ( internal )
+    {
+      return null;
+    }
+    
     for ( DeviceUpgrade upgrade : upgrades )
     {
       System.err.println( "Checking " + upgrade );
@@ -266,6 +272,8 @@ public abstract class SpecialProtocol
    * @return the special protocol function
    */
   public abstract SpecialProtocolFunction createFunction( KeyMove keyMove );
+  
+  public abstract SpecialProtocolFunction createFunction( Macro macro );
 
   /**
    * Creates the hex.

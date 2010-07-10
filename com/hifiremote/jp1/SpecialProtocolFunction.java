@@ -7,8 +7,9 @@ import java.util.*;
  * The Class SpecialProtocolFunction.
  */
 public abstract class SpecialProtocolFunction
-  extends KeyMove
-{
+{ 
+  private KeyMove keyMove = null;
+  private Macro macro = null;
   
   /**
    * Instantiates a new special protocol function.
@@ -17,9 +18,14 @@ public abstract class SpecialProtocolFunction
    */
   public SpecialProtocolFunction( KeyMove keyMove )
   {
-    super( keyMove );
+    this.keyMove = new KeyMove( keyMove );
   }
   
+  public SpecialProtocolFunction( Macro macro )
+  {
+    this.macro = new Macro( macro );
+  }
+
   /**
    * Instantiates a new special protocol function.
    * 
@@ -32,7 +38,8 @@ public abstract class SpecialProtocolFunction
    */
   public SpecialProtocolFunction( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
-    super( keyCode, deviceButtonIndex, deviceType, setupCode, cmd, notes );
+    // GD:  This, and its equivalents in the individual special function classes, appear to be unused.
+    keyMove = new KeyMove( keyCode, deviceButtonIndex, deviceType, setupCode, cmd, notes );
   }    
   
   /**
@@ -42,7 +49,27 @@ public abstract class SpecialProtocolFunction
    */
   public SpecialProtocolFunction( Properties props )
   {
-    super( props );
+    boolean internal = false;
+    String temp = props.getProperty( "Internal" );
+    if ( temp != null )
+    {
+      try
+      {
+        internal = ( Integer.parseInt( temp ) != 0 );
+      }
+      catch ( NumberFormatException nfe )
+      {
+        nfe.printStackTrace( System.err );
+      }
+    }
+    if ( internal )
+    {
+      macro = new Macro( props );
+    }
+    else
+    {  
+      keyMove = new KeyMove( props );
+    }
   }
   
   public String[] getUserFunctions( RemoteConfiguration remoteConfig )
@@ -50,6 +77,23 @@ public abstract class SpecialProtocolFunction
     Remote remote = remoteConfig.getRemote();
     for ( SpecialProtocol sp : remote.getSpecialProtocols() )
     {
+      if ( isInternal() )
+      {
+        if ( sp.isInternal() && sp.getInternalSerial() == getInternalSerial() )
+        {
+          return sp.getUserFunctions();
+        }
+        else
+        {
+          continue;
+        }
+      }
+      
+      if ( sp.isInternal() )
+      {
+        continue;
+      }
+ 
       DeviceType type = null;
       int code = 0;
       
@@ -64,7 +108,7 @@ public abstract class SpecialProtocolFunction
         type = sp.getDeviceType();
         code = sp.getSetupCode();
       }
-      if ( type == null)
+      if ( type == null )
         continue;
       if ( type.getNumber() == getDeviceType()
           && code == getSetupCode() )
@@ -72,8 +116,134 @@ public abstract class SpecialProtocolFunction
     }
     return unknownFunctions;
   }
+    
+  public KeyMove getKeyMove()
+  {
+    return keyMove;
+  }
   
-  private String[] unknownFunctions = { "<unknown>", "<unknown>", "<unknown>" };
+  public Macro getMacro()
+  {
+    return macro;
+  }
+  
+  public int getKeyCode()
+  {
+    if ( keyMove != null )
+    {
+      return keyMove.getKeyCode();
+    }
+    else
+    {
+      return macro.getKeyCode();
+    }
+  }
+  
+  public void setKeyCode( int keyCode )
+  {
+    if ( keyMove != null )
+    {
+      keyMove.setKeyCode( keyCode );
+    }
+    else
+    {
+      macro.setKeyCode( keyCode );
+    }
+  }
+  
+  public String getValueString( RemoteConfiguration getValueString )
+  {
+    if ( keyMove != null )
+    {
+      return keyMove.getValueString( getValueString );
+    }
+    else
+    {
+      return macro.getValueString( getValueString );
+    }
+  }
+
+  public Hex getCmd()
+  {
+    if ( keyMove != null )
+    {
+      return keyMove.getCmd();
+    }
+    else
+    {
+      return macro.getData();
+    }    
+  }
+
+  public int getDeviceButtonIndex()
+  {
+    if ( keyMove != null )
+    {
+      return keyMove.getDeviceButtonIndex();
+    }
+    else
+    {
+      return macro.getDeviceIndex();
+    }
+  }
+
+  public void setDeviceButtonIndex( int index )
+  {
+    if ( keyMove != null )
+    {
+      keyMove.setDeviceButtonIndex( index );
+    }
+    else
+    {
+      macro.setDeviceIndex( index );
+    }
+  }
+  
+  public int getDeviceType()
+  {
+    return keyMove.getDeviceType();
+  }
+
+  public int getSetupCode()
+  {
+    return keyMove.getSetupCode();
+  }
+  
+  public int getInternalSerial()
+  {
+    return macro.getSequenceNumber();
+  }
+  
+  public boolean isInternal()
+  {
+    return macro != null;
+  }
+  
+  public String getNotes()
+  {
+    if ( keyMove != null )
+    {
+      return keyMove.getNotes();
+    }
+    else
+    {
+      return macro.getNotes();
+    }
+  }
+  
+  public void setNotes( String notes )
+  {
+    if ( keyMove != null )
+    {
+      keyMove.setNotes( notes );
+    }
+    else
+    {
+      macro.setNotes( notes );
+    }
+  }
+
+  private static final String[] unknownFunctions = { "<unknown>", "<unknown>", "<unknown>" };
   
   /**
    * Update.

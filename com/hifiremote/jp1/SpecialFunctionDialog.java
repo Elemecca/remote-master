@@ -637,25 +637,36 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         showWarning( "No special protocol found for type " + typeStr );
         return;
       }
-
+      
       Hex hex = protocol.createHex( this );
-      DeviceType devType = null;
-      int setupCode = 0;
-      if ( protocol.getDeviceType() != null )
+      
+      if ( protocol.isInternal() )
       {
-        devType = protocol.getDeviceType();
-        setupCode = protocol.getSetupCode();
+        Macro macro = new Macro( keyCode, hex, notes.getText() );
+        macro.setSequenceNumber( protocol.getInternalSerial() );
+        macro.setDeviceIndex( deviceIndex );
+        function = protocol.createFunction( macro );
       }
       else
       {
-        DeviceUpgrade deviceUpgrade = protocol.getDeviceUpgrade( config.getDeviceUpgrades() );
-        devType = deviceUpgrade.getDeviceType();
-        setupCode = deviceUpgrade.getSetupCode();
-      }
-      KeyMove km = new KeyMove( keyCode, deviceIndex, devType.getNumber(), setupCode, hex, notes.getText() );
-      function = protocol.createFunction( km );
+        DeviceType devType = null;
+        int setupCode = 0;
+        if ( protocol.getDeviceType() != null )
+        {
+          devType = protocol.getDeviceType();
+          setupCode = protocol.getSetupCode();
+        }
+        else
+        {
+          DeviceUpgrade deviceUpgrade = protocol.getDeviceUpgrade( config.getDeviceUpgrades() );
+          devType = deviceUpgrade.getDeviceType();
+          setupCode = deviceUpgrade.getSetupCode();
+        }
+        KeyMove km = new KeyMove( keyCode, deviceIndex, devType.getNumber(), setupCode, hex, notes.getText() );
+        function = protocol.createFunction( km );
+      }  
       if ( function == null )
-        return;
+      return;
 
       setVisible( false );
     }

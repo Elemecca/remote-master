@@ -57,7 +57,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
     this.cmd = cmd;
   }
 
-  private static Hex getRawHex( int deviceType, int setupCode, Hex cmd )
+  public static Hex getRawHex( int deviceType, int setupCode, Hex cmd )
   {
     Hex hex = new Hex( CMD_INDEX + cmd.length() );
     update( deviceType, setupCode, hex );

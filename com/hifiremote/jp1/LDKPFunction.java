@@ -22,6 +22,11 @@ public class LDKPFunction extends SpecialProtocolFunction
   {
     super( keyMove );
   }
+  
+  public LDKPFunction( Macro macro )
+  {
+    super( macro );
+  }
 
   /**
    * Constructor for the LDKPFunction object.
