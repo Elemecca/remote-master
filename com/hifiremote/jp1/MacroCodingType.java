@@ -19,17 +19,20 @@ public class MacroCodingType extends RDFParameter
     List< String > settings = ParameterTokenizer.getTokens( text );
     type = RDFReader.parseNumber( settings.get( 0 ) );
 
-    if ( type == 2 )
+    if ( type == 2 && settings.size() > 1 )
     {
       String setting = settings.get( 1 );
       if ( setting != null )
       {
         timedMacros = RDFReader.parseFlag( setting );
       }
-      setting = settings.get( 2 );
-      if ( setting != null )
+      if ( settings.size() > 2 )
       {
-        timedMacroCountAddress = RDFReader.parseNumber( setting );
+        setting = settings.get( 2 );
+        if ( setting != null )
+        {
+          timedMacroCountAddress = RDFReader.parseNumber( setting );
+        }
       }
     }
   }
