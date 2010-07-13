@@ -1195,6 +1195,11 @@ public class DeviceUpgrade
 
     // add the 2nd byte of the PID
     rc++ ;
+    
+    if ( remote.usesTwoBytePID() )
+    {
+      rc++;
+    }
 
     // add the digitMapIndex
     int digitMapIndex = -1;
@@ -1202,6 +1207,7 @@ public class DeviceUpgrade
     if ( !remote.getOmitDigitMapByte() )
     {
       rc++ ;
+      digitMapIndex = findDigitMapIndex();
     }
 
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
@@ -2854,7 +2860,7 @@ public class DeviceUpgrade
   // private java.util.List< KeyMove > keymoves = new ArrayList< KeyMove >();
   /** The file. */
   private File file = null;
-
+  
   /** The property change support. */
   private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
 
@@ -2984,4 +2990,5 @@ public class DeviceUpgrade
   // "button128", "button129", "button130", "button131", "button132", "button133",
   // "button134", "button135", "button136"
   };
+
 }
