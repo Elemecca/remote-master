@@ -1,9 +1,14 @@
 package com.hifiremote.jp1;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.swing.JOptionPane;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
 // TODO: Auto-generated Javadoc
@@ -19,6 +24,18 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   public DeviceUpgradePanel()
   {
     super( new DeviceUpgradeTableModel() );
+    this.add( upgradeBugPane, BorderLayout.PAGE_END );
+    Font font = upgradeBugPane.getFont();
+    Font font2 = font.deriveFont( Font.BOLD, 12 );
+    upgradeBugPane.setFont( font2 );
+    upgradeBugPane.setBackground( Color.RED );
+    upgradeBugPane.setForeground( Color.YELLOW );
+    String bugText = "NOTE:  This remote contains a bug that prevents device upgrades from working " +
+      "if they use upgraded protocols.\nWorkaround:  Set up devices that use upgraded protocols " +
+      "as \"Device Button Restricted\"";
+    upgradeBugPane.setText( bugText );
+    upgradeBugPane.setEditable( false );
+    upgradeBugPane.setVisible( false );
   }
 
   /**
@@ -32,6 +49,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     ( ( DeviceUpgradeTableModel ) model ).set( remoteConfig );
     this.remoteConfig = remoteConfig;
     table.initColumns(model);
+    upgradeBugPane.setVisible( remoteConfig != null && remoteConfig.getRemote().hasUpgradeBug() );
   }
 
   /*
@@ -46,7 +64,21 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     if ( baseUpgrade == null )
     {
       upgrade = new DeviceUpgrade();
-      upgrade.setRemote( remoteConfig.getRemote() );
+      Remote remote = remoteConfig.getRemote();
+      upgrade.setRemote( remote );
+      if ( remote.getDeviceUpgradeAddress() != null )
+      {
+        upgrade.setButtonIndependent( false );
+        upgrade.setButtonRestriction( DeviceButton.noButton );
+        String msg = "<html>This remote has device upgrades that are available on<br>" +
+        		"all device buttons and ones that are only available on a<br>" +
+            "specified button.  The same upgrade can even be in both<br>" +
+            "categories.  This new upgrade will be created as being in<br>" +
+            "neither category.  After pressing OK, edit the new table<br>" +
+            "entry to set the availability as required.</html>";
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), msg, "Creating a new device upgrade",
+            JOptionPane.PLAIN_MESSAGE );
+      }
     }
     else
       upgrade = new DeviceUpgrade( baseUpgrade );
@@ -92,4 +124,6 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig;
+  
+  private JTextPane upgradeBugPane = new JTextPane();
 }

@@ -53,14 +53,7 @@ public abstract class SpecialProtocolFunction
     String temp = props.getProperty( "Internal" );
     if ( temp != null )
     {
-      try
-      {
-        internal = ( Integer.parseInt( temp ) != 0 );
-      }
-      catch ( NumberFormatException nfe )
-      {
-        nfe.printStackTrace( System.err );
-      }
+      internal = Boolean.parseBoolean( temp );
     }
     if ( internal )
     {

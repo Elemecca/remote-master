@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -344,128 +345,127 @@ public class RemoteConfiguration
         property = pr.nextProperty();
       }
 
-      if ( property == null )
-        return;
-
-      IniSection section = pr.nextSection();
-      section.setName( property.name.substring( 1, property.name.length() - 1 ) );
-
-      while ( section != null )
+      if ( property != null )
       {
-        String name = section.getName();
-        if ( name.equals( "Notes" ) )
+        IniSection section = pr.nextSection();
+        section.setName( property.name.substring( 1, property.name.length() - 1 ) );
+        while ( section != null )
         {
-          System.err.println( "Importing notes" );
-          for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+          String name = section.getName();
+          if ( name.equals( "Notes" ) )
           {
-            String key = ( String )keys.nextElement();
-            String text = section.getProperty( key );
-            int base = 10;
-            if ( key.charAt( 0 ) == '$' )
+            System.err.println( "Importing notes" );
+            for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
             {
-              base = 16;
-              key = key.substring( 1 );
+              String key = ( String )keys.nextElement();
+              String text = section.getProperty( key );
+              int base = 10;
+              if ( key.charAt( 0 ) == '$' )
+              {
+                base = 16;
+                key = key.substring( 1 );
+              }
+              int index = Integer.parseInt( key, base );
+              int flag = index >> 12;
+              index &= 0x0FFF;
+              System.err.println( "index=" + index + ", flag=" + flag + ",text=" + text );
+              if ( flag == 0 )
+                notes = text;
+              else if ( flag == 1 )
+                advCodes.get( index ).setNotes( text );
+              else if ( flag == 2 )
+                ;// fav/scan?
+              else if ( flag == 3 )
+                devices.get( index ).setDescription( text );
+              else if ( flag == 4 )
+                protocols.get( index ).setNotes( text );
+              else if ( flag == 5 )
+                learned.get( index ).setNotes( text );
+              else if ( flag == 6 )
+              {
+                deviceButtonNotes[ index ] = text;
+              }
             }
-            int index = Integer.parseInt( key, base );
-            int flag = index >> 12;
-            index &= 0x0FFF;
-            System.err.println( "index=" + index + ", flag=" + flag + ",text=" + text );
-            if ( flag == 0 )
-              notes = text;
-            else if ( flag == 1 )
-              advCodes.get( index ).setNotes( text );
-            else if ( flag == 2 )
-              ;// fav/scan?
-            else if ( flag == 3 )
-              devices.get( index ).setDescription( text );
-            else if ( flag == 4 )
-              protocols.get( index ).setNotes( text );
-            else if ( flag == 5 )
-              learned.get( index ).setNotes( text );
-            else if ( flag == 6 )
+          }
+          else if ( name.equals( "General" ) )
+          {
+            for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
             {
-              deviceButtonNotes[ index ] = text;
+              String key = ( String )keys.nextElement();
+              String text = section.getProperty( key );
+              if ( key.equals( "Notes" ) )
+                notes = text;
             }
           }
-        }
-        else if ( name.equals( "General" ) )
-        {
-          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          else if ( name.equals( "KeyMoves" ) )
           {
-            String key = ( String )keys.nextElement();
-            String text = section.getProperty( key );
-            if ( key.equals( "Notes" ) )
-              notes = text;
+            for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+            {
+              String key = ( String )keys.nextElement();
+              String text = section.getProperty( key );
+              StringTokenizer st = new StringTokenizer( key, ":" );
+              String deviceName = st.nextToken();
+              String keyName = st.nextToken();
+              KeyMove km = findKeyMove( keymoves, deviceName, keyName );
+              if ( km != null )
+                km.setNotes( text );
+            }
           }
-        }
-        else if ( name.equals( "KeyMoves" ) )
-        {
-          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          else if ( name.equals( "Macros" ) )
           {
-            String key = ( String )keys.nextElement();
-            String text = section.getProperty( key );
-            StringTokenizer st = new StringTokenizer( key, ":" );
-            String deviceName = st.nextToken();
-            String keyName = st.nextToken();
-            KeyMove km = findKeyMove( keymoves, deviceName, keyName );
-            if ( km != null )
-              km.setNotes( text );
+            for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+            {
+              String keyName = ( String )keys.nextElement();
+              String text = section.getProperty( keyName );
+              Macro macro = findMacro( keyName );
+              if ( macro != null )
+                macro.setNotes( text );
+            }
           }
-        }
-        else if ( name.equals( "Macros" ) )
-        {
-          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          else if ( name.equals( "Devices" ) )
           {
-            String keyName = ( String )keys.nextElement();
-            String text = section.getProperty( keyName );
-            Macro macro = findMacro( keyName );
-            if ( macro != null )
-              macro.setNotes( text );
+            for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+            {
+              String key = ( String )keys.nextElement();
+              String text = section.getProperty( key );
+              StringTokenizer st = new StringTokenizer( key, ": " );
+              String deviceTypeName = st.nextToken();
+              int setupCode = Integer.parseInt( st.nextToken() );
+              DeviceUpgrade device = findDeviceUpgrade( remote.getDeviceType( deviceTypeName ).getNumber(), setupCode );
+              if ( device != null )
+                device.setDescription( text );
+            }
           }
-        }
-        else if ( name.equals( "Devices" ) )
-        {
-          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+          else if ( name.equals( "Protocols" ) )
           {
-            String key = ( String )keys.nextElement();
-            String text = section.getProperty( key );
-            StringTokenizer st = new StringTokenizer( key, ": " );
-            String deviceTypeName = st.nextToken();
-            int setupCode = Integer.parseInt( st.nextToken() );
-            DeviceUpgrade device = findDeviceUpgrade( remote.getDeviceType( deviceTypeName ).getNumber(), setupCode );
-            if ( device != null )
-              device.setDescription( text );
+            for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+            {
+              String key = ( String )keys.nextElement();
+              String text = section.getProperty( key );
+              StringTokenizer st = new StringTokenizer( key, "$" );
+              st.nextToken(); // discard the "Protocol: " header
+              int pid = Integer.parseInt( st.nextToken(), 16 );
+              ProtocolUpgrade protocol = findProtocolUpgrade( pid );
+              if ( protocol != null )
+                protocol.setNotes( text );
+            }
           }
-        }
-        else if ( name.equals( "Protocols" ) )
-        {
-          for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+          else if ( name.equals( "Learned" ) )
           {
-            String key = ( String )keys.nextElement();
-            String text = section.getProperty( key );
-            StringTokenizer st = new StringTokenizer( key, "$" );
-            st.nextToken(); // discard the "Protocol: " header
-            int pid = Integer.parseInt( st.nextToken(), 16 );
-            ProtocolUpgrade protocol = findProtocolUpgrade( pid );
-            if ( protocol != null )
-              protocol.setNotes( text );
+            for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
+            {
+              String key = ( String )keys.nextElement();
+              String text = section.getProperty( key );
+              StringTokenizer st = new StringTokenizer( key, ": " );
+              String deviceName = st.nextToken();
+              String keyName = st.nextToken();
+              LearnedSignal ls = findLearnedSignal( deviceName, keyName );
+              if ( ls != null )
+                ls.setNotes( text );
+            }
           }
+          section = pr.nextSection();
         }
-        else if ( name.equals( "Learned" ) )
-        {
-          for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
-          {
-            String key = ( String )keys.nextElement();
-            String text = section.getProperty( key );
-            StringTokenizer st = new StringTokenizer( key, ": " );
-            String deviceName = st.nextToken();
-            String keyName = st.nextToken();
-            LearnedSignal ls = findLearnedSignal( deviceName, keyName );
-            if ( ls != null )
-              ls.setNotes( text );
-          }
-        }
-        section = pr.nextSection();
       }
     }
     migrateKeyMovesToDeviceUpgrades();
@@ -1142,7 +1142,7 @@ public class RemoteConfiguration
   /**
    * Update check sums.
    */
-  private void updateCheckSums()
+  public void updateCheckSums()
   {
     CheckSum[] sums = remote.getCheckSums();
     for ( int i = 0; i < sums.length; ++i )
@@ -1224,6 +1224,9 @@ public class RemoteConfiguration
   private void decodeUpgrades()
   {
     AddressRange addr = remote.getUpgradeAddress();
+    // Also get address range for device specific upgrades, which will be null
+    // if these are not used by the remote.
+    AddressRange devAddr = remote.getDeviceUpgradeAddress();
 
     Processor processor = remote.getProcessor();
     // get the offsets to the device and protocol tables
@@ -1231,20 +1234,29 @@ public class RemoteConfiguration
     // table
     int protocolTableOffset = processor.getInt( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of
     // protocol table
+    int devDependentTableOffset = ( devAddr == null ) ? 0 : processor.getInt( data, devAddr.getStart() ) + devAddr.getStart();
+    // get offset of device dependent table, filled from top downwards; offset is to start of first entry
 
     // build an array containing the ends of all the possible ranges
 
-    int[] bounds = new int[ 7 ];
+    int[] bounds = new int[ 8 ];
     bounds[ 0 ] = 0; // leave space for the next entry in the table
     bounds[ 1 ] = 0; // leave space for the 1st protocol code
     bounds[ 2 ] = deviceTableOffset;
     bounds[ 3 ] = protocolTableOffset;
+    // GD:  Why the -1's in the following bounds?  Presumably to allow for the section
+    // terminator, but getEnd() returns the offset of the last byte of the section, not
+    // of the byte following it, which is already the address of the section terminator.
     bounds[ 4 ] = addr.getEnd() - 1;
     bounds[ 5 ] = remote.getAdvancedCodeAddress().getEnd() - 1;
     if ( remote.getLearnedAddress() != null )
       bounds[ 6 ] = remote.getLearnedAddress().getEnd() - 1;
     else
       bounds[ 6 ] = 0;
+    if ( devAddr != null )
+      bounds[ 7 ] = devAddr.getEnd() - 1;
+    else
+      bounds[ 7 ] = 0;
 
     // parse the protocol tables
     int offset = protocolTableOffset;
@@ -1257,7 +1269,7 @@ public class RemoteConfiguration
       int codeOffset = processor.getInt( data, offset + 2 * count ) - remote.getBaseAddress();
       if ( i == 0 )
         bounds[ 1 ] = codeOffset; // save the offset of the first protocol code
-      if ( i == count - 1 ) // the last entry, so there is no next extry
+      if ( i == count - 1 ) // the last entry, so there is no next entry
         bounds[ 0 ] = 0;
       else
         bounds[ 0 ] = processor.getInt( data, offset + 2 * ( count + 1 ) ) - remote.getBaseAddress();
@@ -1269,7 +1281,7 @@ public class RemoteConfiguration
       offset += 2; // for the next upgrade
     }
 
-    // now parse the devices
+    // now parse the devices in the device-independent upgrade section
     offset = deviceTableOffset;
     count = processor.getInt( data, offset ); // get number of entries in upgrade table
     for ( int i = 0; i < count; ++i )
@@ -1337,6 +1349,113 @@ public class RemoteConfiguration
         pe.printStackTrace( System.err );
       }
     }
+    
+    if ( devAddr == null )
+    {
+      return;
+    }
+    
+    // now parse the devices and protocols in the device-dependent upgrade section
+    offset = devDependentTableOffset;
+    while ( data[ offset] != remote.getSectionTerminator() )
+    {
+      // In this section the full code is stored big-endian, regardless of the processor!
+      DeviceButton deviceButton = remote.getDeviceButtons()[ data[ offset + 2 ] ];
+      int fullCode = Hex.get( data, offset + 3 );
+      int setupCode = fullCode & 0xFFF;
+      if ( !remote.usesTwoBytePID() )
+      {
+        setupCode &= 0x7FF;
+      }
+      int deviceTypeIndex = ( fullCode >> 12 ) & 0xF;
+      // Check if this upgrade is also in the device independent section.
+      DeviceUpgrade upg = findDeviceUpgrade( deviceTypeIndex, setupCode );
+      if ( upg != null )
+      {
+        upg.setButtonRestriction( deviceButton );
+      }
+      else
+      {
+        DeviceType devType = remote.getDeviceTypeByIndex( deviceTypeIndex );
+        int codeOffset = offset + 5;
+        int pid = data[ codeOffset ];
+        if ( remote.usesTwoBytePID() )
+          pid = processor.getInt( data, codeOffset );
+        else
+        {
+          if ( ( fullCode & 0x800 ) == 0x800 ) // pid > 0xFF
+            pid += 0x100;
+        }
+        // Note that the protocol entry can start *after* the end of the entire upgrade entry,
+        // if the upgrade uses the in-line protocol of another upgrade.
+        bounds[ 0 ] = offset + data[ offset ];      // start of following upgrade entry
+        bounds[ 1 ] = offset + data[ offset + 1 ];  // start of protocol entry (if present)
+        int limit = getLimit( offset, bounds );
+        Hex deviceHex = Hex.subHex( data, codeOffset, limit - codeOffset );
+        ProtocolUpgrade pu = getProtocol( pid );
+        Hex protocolCode = null;
+        if ( pu != null )
+        {
+          pu.setUsed( true );
+          protocolCode = pu.getCode();
+        }
+        else
+        {
+          // Get the in-line protocol, whether it is in this upgrade or another.
+          codeOffset = bounds[ 1 ];
+          while ( bounds[ 0 ] < codeOffset )
+          {
+            bounds[ 0 ] += data[ bounds[ 0 ] ];
+          }
+          // bounds[ 0 ] is now start of the upgrade entry following the protocol.
+
+          limit = getLimit( codeOffset, bounds );
+          protocolCode = Hex.subHex( data, codeOffset, limit - codeOffset );
+          pu = new ProtocolUpgrade( pid, protocolCode, null );
+          pu.setUsed( true );
+          protocols.add( pu );
+        }
+        
+        String alias = remote.getDeviceTypeAlias( devType );
+        if ( alias == null )
+        {
+          String message = String
+              .format(
+                  "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be imported and was discarded.",
+                  devType, setupCode );
+          JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+          continue;
+        }
+        
+        short[] pidHex = new short[ 2 ];
+        pidHex[ 0 ] = ( short )( ( pid > 0xFF ) ? 1 : 0 );
+        pidHex[ 1 ] = ( short )( pid & 0xFF );
+
+        DeviceUpgrade upgrade = new DeviceUpgrade();
+        try
+        {
+          upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
+          upgrade.setSetupCode( setupCode );
+          upgrade.setButtonIndependent( false );
+          upgrade.setButtonRestriction( deviceButton );
+
+          devices.add( upgrade );
+        }
+        catch ( java.text.ParseException pe )
+        {
+          pe.printStackTrace( System.err );
+        }    
+      }
+      
+      offset += data[ offset ];
+      
+      if ( offset > devAddr.getEnd() )
+      {
+        String message = "Invalid data in device-specific upgrade.  The data appears to overrun the section.";
+        JOptionPane.showMessageDialog( null, message, "Upgrade Error", JOptionPane.ERROR_MESSAGE );
+        break;
+      }
+    }
   }
 
   public HashMap< Integer, ProtocolUpgrade > getRequiredProtocolUpgrades()
@@ -1345,7 +1464,7 @@ public class RemoteConfiguration
     LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
     for ( DeviceUpgrade dev : devices )
     {
-      if ( dev.needsProtocolCode() )
+      if ( dev.getButtonIndependent() && dev.needsProtocolCode() )
       {
         Hex pCode = dev.getCode();
         Protocol p = dev.getProtocol();
@@ -1382,9 +1501,20 @@ public class RemoteConfiguration
    */
   public int getUpgradeCodeBytesNeeded()
   {
+    
+    List< DeviceUpgrade > devIndependent = new ArrayList< DeviceUpgrade >();
+
+    for ( DeviceUpgrade dev : devices )
+    {
+      if ( dev.getButtonIndependent() )
+      {
+        devIndependent.add( dev );
+      }
+    }
+    
     int size = 4; // Allow for the table pointers
 
-    int devCount = devices.size();
+    int devCount = devIndependent.size();
 
     HashMap< Integer, ProtocolUpgrade > requiredProtocols = getRequiredProtocolUpgrades();
     // Calculate the size of the upgrade table
@@ -1398,7 +1528,7 @@ public class RemoteConfiguration
     }
 
     // the device upgrades
-    for ( DeviceUpgrade upgrade : devices )
+    for ( DeviceUpgrade upgrade : devIndependent )
     {
       size += upgrade.getUpgradeHex().length();
     }
@@ -1416,10 +1546,58 @@ public class RemoteConfiguration
     // The protocol upgrade table
     size += 2; // the count
     size += 4 * prCount; // the pid and offset for each upgrade
+    
+    if ( remote.getProcessor().getName().equals( "740" ) )
+    {
+      // Remotes with the 740 processor store an additional address at the end of each
+      // of the device and protocol tables.
+      size += 4;
+    }
 
     return size;
   }
+  
+  public int getDevUpgradeCodeBytesNeeded()
+  {
+    List< DeviceUpgrade > devDependent = new ArrayList< DeviceUpgrade >();
+    for ( DeviceUpgrade dev : devices )
+    {
+      if ( dev.getButtonRestriction() != DeviceButton.noButton )
+      {
+        devDependent.add( dev );
+      }
+    }
 
+    Collections.sort( devDependent, new DependentUpgradeComparator() );
+    
+    int lastProtID = -1;
+    int lastProtAddr = -1;
+    int offset = 0x10000;   // value not relevant, it is just to prevent negative offsets
+    
+    for ( int i = 0; i < devDependent.size(); i++ )
+    {
+      DeviceUpgrade upg = devDependent.get( i );
+      int upgLength = upg.getUpgradeLength();
+      
+      if ( upg.needsProtocolCode() )
+      {
+        int protID = upg.getProtocol().getID().get( 0 );
+        if ( protID != lastProtID || ( lastProtAddr - offset + upgLength + 5 ) > 0xFF )
+        {
+          // In-line protocol required
+          Hex hex = upg.getCode();
+          offset -= hex.length();
+          lastProtAddr = offset;
+        }
+      }
+      // Device upgrade has an additional 5-byte header
+      offset -= upgLength + 5;
+
+    }
+    // Allow for storage of start address and section terminator.
+    return 0x10000 - offset + 3;
+  }
+  
   /**
    * Update upgrades.
    * 
@@ -1427,13 +1605,35 @@ public class RemoteConfiguration
    */
   private void updateUpgrades()
   {
+    // Split the device upgrades into separate device independent and device
+    // dependent lists.  An upgrade can occur in both lists.
+    List< DeviceUpgrade > devIndependent = new ArrayList< DeviceUpgrade >();
+    List< DeviceUpgrade > devDependent = new ArrayList< DeviceUpgrade >();
+    for ( DeviceUpgrade dev : devices )
+    {
+      if ( dev.getButtonIndependent() )
+      {
+        devIndependent.add( dev );
+      }
+      if ( dev.getButtonRestriction() != DeviceButton.noButton )
+      {
+        devDependent.add( dev );
+      }
+    }
+      
+    // First update device independent upgrades
     AddressRange addr = remote.getUpgradeAddress();
+    // Also get address range for device specific upgrades, which will be null
+    // if these are not used by the remote.
+    AddressRange devAddr = remote.getDeviceUpgradeAddress();
+    
     int offset = addr.getStart() + 4; // skip over the table pointers
-    int devCount = devices.size();
+    
+    int devCount = devIndependent.size();
 
     // Build a list of the required protocol upgrades
     LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
-    for ( DeviceUpgrade dev : devices )
+    for ( DeviceUpgrade dev : devIndependent )
     {
       if ( dev.needsProtocolCode() )
       {
@@ -1451,7 +1651,7 @@ public class RemoteConfiguration
           {
             String message = "The protocol code used by the device upgrade for " + dev.getDeviceTypeAliasName() + '/'
                 + dev.getSetupCode()
-                + " is different than the code already used by another device upgrade, and may not work as intended.";
+                + " is different from the code already used by another device upgrade, and may not work as intended.";
             JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
           }
         }
@@ -1459,6 +1659,7 @@ public class RemoteConfiguration
     }
 
     // The installed protocols that aren't used by any device upgrade.
+    // These also go in the device independent section.
     for ( ProtocolUpgrade pu : protocols )
       requiredProtocols.put( pu.getPid(), pu );
 
@@ -1476,16 +1677,18 @@ public class RemoteConfiguration
       return;
     }
 
-    // store the device upgrades
+    // store the device upgrades of the device independent section
     int[] devOffsets = new int[ devCount ];
     int i = 0;
-    for ( DeviceUpgrade dev : devices )
+    for ( DeviceUpgrade dev : devIndependent )
     {
       devOffsets[ i++ ] = offset;
       Hex hex = dev.getUpgradeHex();
       Hex.put( hex, data, offset );
       offset += hex.length();
     }
+    
+    int devUpgradesEnd = offset + remote.getBaseAddress();
 
     // store the protocol upgrades
     int[] prOffsets = new int[ prCount ];
@@ -1497,6 +1700,8 @@ public class RemoteConfiguration
       Hex.put( hex, data, offset );
       offset += hex.length();
     }
+    
+    int protUpgradesEnd = offset + remote.getBaseAddress();
 
     // set the pointer to the device table.
     processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart() );
@@ -1505,9 +1710,9 @@ public class RemoteConfiguration
     processor.putInt( devCount, data, offset );
     offset += 2;
     // store the setup codes
-    for ( DeviceUpgrade dev : devices )
-    {
-      Hex.put( dev.getHexSetupCode(), data, offset );
+    for ( DeviceUpgrade dev : devIndependent )
+    {      
+      processor.putInt( Hex.get( dev.getHexSetupCode(), 0 ), data, offset );
       offset += 2;
     }
     // store the offsets
@@ -1516,7 +1721,13 @@ public class RemoteConfiguration
       processor.putInt( devOffset + remote.getBaseAddress(), data, offset );
       offset += 2;
     }
-
+    
+    if ( processor.getName().equals( "740" ) )
+    {
+      processor.putInt( devUpgradesEnd, data, offset );
+      offset += 2;
+    }
+       
     // set the pointer to the protocol table
     processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart() + 2 );
 
@@ -1533,6 +1744,68 @@ public class RemoteConfiguration
       processor.putInt( prOffsets[ i ] + remote.getBaseAddress(), data, offset );
       offset += 2;
     }
+    
+    if ( processor.getName().equals( "740" ) )
+    {
+      processor.putInt( protUpgradesEnd, data, offset );
+      offset += 2;
+      processor.putInt( offset - addr.getStart() + 2, data, addr.getStart() - 2 );
+    }
+    
+    if ( devAddr == null )
+    {
+      return;  
+    }
+    
+    // Now update the device dependent section, with updates sorted for storage efficiency.
+    // Note that this section is filled from the top downwards.
+    Collections.sort( devDependent, new DependentUpgradeComparator() );
+    
+    int lastProtID = -1;
+    int lastProtAddr = -1;
+    offset = devAddr.getEnd();
+    int lastDevAddr = offset;
+    data[ offset ] = remote.getSectionTerminator();
+    
+    for ( i = 0; i < devDependent.size(); i++ )
+    {
+      DeviceUpgrade upg = devDependent.get( i );
+      int upgLength = upg.getUpgradeLength();
+      int protOffset = 0; // value used when protocol upgrade not required
+      int buttonIndex = upg.getButtonRestriction().getButtonIndex();
+      
+      if ( upg.needsProtocolCode() )
+      {
+        int protID = upg.getProtocol().getID().get( 0 );
+        if ( protID == lastProtID && ( lastProtAddr - offset + upgLength + 5 ) <= 0xFF )
+        {
+          // Upgrade can use a protocol already placed in this section
+          protOffset = lastProtAddr - offset + upgLength + 5;
+        }
+        else
+        {
+          // Store the protocol
+          Hex hex = upg.getCode();
+          offset -= hex.length();  
+          Hex.put( hex, data, offset );
+          lastProtID = protID;
+          lastProtAddr = offset;
+          protOffset = upgLength + 5;          
+        }
+      }
+      // Store the device upgrade
+      Hex hex = upg.getUpgradeHex();
+      offset -= upgLength + 5;
+      Hex.put( hex, data, offset + 5 );
+      Hex.put( upg.getHexSetupCode(), data, offset + 3 );
+      data[ offset + 2 ] = ( short )buttonIndex;
+      data[ offset + 1 ] = ( short )protOffset;
+      data[ offset ] = ( short )( lastDevAddr - offset );
+      lastDevAddr = offset;
+
+    }
+    offset = devAddr.getStart();
+    processor.putInt( lastDevAddr - offset, data, offset );
   }
 
   /**
@@ -1664,9 +1937,9 @@ public class RemoteConfiguration
       int dot = className.lastIndexOf( '.' );
       className = className.substring( dot + 1 );
       pw.printHeader( className );
-      pw.print( "Internal", sp.isInternal() ? 1 : 0 );
       if ( sp.isInternal() )
       {
+        pw.print( "Internal", "true" );
         sp.getMacro().store( pw );
       }
       else

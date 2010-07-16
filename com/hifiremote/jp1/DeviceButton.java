@@ -22,14 +22,17 @@ public class DeviceButton
    * @param maxSetupCode
    *          the maximum allowed setup code
    */
-  public DeviceButton( String name, int hiAddr, int lowAddr, int typeAddr, int setupCode )
+  public DeviceButton( String name, int hiAddr, int lowAddr, int typeAddr, int setupCode, int index  )
   {
     this.name = name;
     highAddress = hiAddr;
     lowAddress = lowAddr;
     typeAddress = typeAddr;
     defaultSetupCode = setupCode;
+    buttonIndex = index;
   }
+  
+  public static final DeviceButton noButton = new DeviceButton( "<none>", 0, 0, 0, 0, -1 );
 
   /**
    * Gets the name.
@@ -151,6 +154,11 @@ public class DeviceButton
     data[ lowAddress ] = 0;
   }
   
+  public int getButtonIndex()
+  {
+    return buttonIndex;
+  }
+
   /** The name. */
   private String name;
 
@@ -165,4 +173,6 @@ public class DeviceButton
 
   /** The default setup code */
   private int defaultSetupCode = 0;
+  
+  private int buttonIndex = 0;
 }

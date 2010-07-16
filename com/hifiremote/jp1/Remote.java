@@ -1277,6 +1277,7 @@ public class Remote implements Comparable< Remote >
   {
     java.util.List< DeviceButton > work = new ArrayList< DeviceButton >();
     String line;
+    int index = 0;
     while ( true )
     {
       line = rdr.readLine();
@@ -1299,7 +1300,8 @@ public class Remote implements Comparable< Remote >
       int typeAddr = 0;
       if ( st.hasMoreTokens() )
         typeAddr = RDFReader.parseNumber( st.nextToken() );
-      work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode ) );
+      work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode, index ) );
+      index++;
     }
     deviceButtons = work.toArray( deviceButtons );
     return line;
@@ -2429,8 +2431,12 @@ public class Remote implements Comparable< Remote >
   private int oemControl = 0;
 
   /** The upgrade bug. */
-  @SuppressWarnings( "unused" )
   private boolean upgradeBug = false;
+
+  public boolean hasUpgradeBug()
+  {
+    return upgradeBug;
+  }
 
   /** The advanced code address. */
   private AddressRange advancedCodeAddress = null;
@@ -2471,6 +2477,11 @@ public class Remote implements Comparable< Remote >
   public AddressRange getUpgradeAddress()
   {
     return upgradeAddress;
+  }
+
+  public AddressRange getDeviceUpgradeAddress()
+  {
+    return deviceUpgradeAddress;
   }
 
   /** The device upgrade address. */

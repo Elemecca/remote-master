@@ -75,6 +75,8 @@ public class DeviceUpgrade
     remote = base.remote;
     notes = base.notes;
     protocol = base.protocol;
+    buttonIndependent = base.buttonIndependent;
+    buttonRestriction = base.buttonRestriction;
 
     // copy the device parameter values
     protocol.setDeviceParms( base.parmValues );
@@ -1466,6 +1468,14 @@ public class DeviceUpgrade
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     out.print( "DeviceIndex", Integer.toHexString( devType.getNumber() ) );
     out.print( "SetupCode", Integer.toString( setupCode ) );
+    if ( !buttonIndependent )
+    {
+      out.print( "ButtonIndependent", "false" );
+    }
+    if ( buttonRestriction.getButtonIndex() != DeviceButton.noButton.getButtonIndex() )
+    {
+      out.print( "ButtonIndex", buttonRestriction.getButtonIndex() );
+    }
     // protocol.setDeviceParms( parmValues );
     protocol.store( out, parmValues );
     if ( notes != null )
@@ -1733,6 +1743,26 @@ public class DeviceUpgrade
     {}
     setDeviceTypeAliasName( props.getProperty( "DeviceType" ) );
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ) );
+    
+    str = props.getProperty( "ButtonIndependent" );
+    if ( str != null )
+    {
+        buttonIndependent = Boolean.parseBoolean( str );
+    }
+    
+    str = props.getProperty( "ButtonIndex" );
+    if ( str != null )
+    {
+      try
+      {
+        int index = Integer.parseInt( str );
+        buttonRestriction = remote.getDeviceButtons()[ index ];
+      }
+      catch ( NumberFormatException nfe )
+      {
+        nfe.printStackTrace( System.err );
+      }
+    }
 
     Hex pid = new Hex( props.getProperty( "Protocol", "0200" ) );
     String name = props.getProperty( "Protocol.name", "" );
@@ -2860,6 +2890,30 @@ public class DeviceUpgrade
   // private java.util.List< KeyMove > keymoves = new ArrayList< KeyMove >();
   /** The file. */
   private File file = null;
+  
+  private DeviceButton buttonRestriction = DeviceButton.noButton;
+  
+  private Boolean buttonIndependent = true;
+
+  public DeviceButton getButtonRestriction()
+  {
+    return buttonRestriction;
+  }
+
+  public void setButtonRestriction( DeviceButton buttonRestriction )
+  {
+    this.buttonRestriction = buttonRestriction;
+  }
+
+  public Boolean getButtonIndependent()
+  {
+    return buttonIndependent;
+  }
+
+  public void setButtonIndependent( Boolean buttonIndependent )
+  {
+    this.buttonIndependent = buttonIndependent;
+  }
   
   /** The property change support. */
   private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );

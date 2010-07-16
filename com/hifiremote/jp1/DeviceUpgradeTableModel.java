@@ -4,6 +4,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -36,7 +40,14 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     for ( DeviceUpgrade upgrade : remoteConfig.getDeviceUpgrades() )
       upgrade.addPropertyChangeListener( this );
     setData( remoteConfig.getDeviceUpgrades() );
-
+    
+    Remote remote = remoteConfig.getRemote();
+    if ( remote.getDeviceUpgradeAddress() != null )
+    {  
+      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
+      comboModel.insertElementAt( DeviceButton.noButton, 0 );
+      deviceButtonBox.setModel( comboModel );
+    }
   }
 
   /*
@@ -46,13 +57,36 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public int getColumnCount()
   {
-    return colNames.length;
+    int count = 4;
+
+    if ( remoteConfig != null )
+    {
+      Remote remote = remoteConfig.getRemote();
+      if ( remote.getDeviceUpgradeAddress() != null )
+      {
+        count += 2;
+      }
+    }
+    return count;
+  }
+  
+  public int getEffectiveColumn( int col )
+  {
+    if ( ( remoteConfig == null || ( remoteConfig != null 
+        && remoteConfig.getRemote().getDeviceUpgradeAddress() == null ) )
+        && col == 3)
+    {      
+        return 5;
+    }
+    return col;
   }
 
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "Description"
+      "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", 
+      "<html>Specific to<br>Device Button</html>", "<html>Available on<br>Other Buttons?</html>",
+      "Description"
   };
 
   /*
@@ -62,13 +96,13 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public String getColumnName( int col )
   {
-    return colNames[ col ];
+    return colNames[ getEffectiveColumn( col ) ];
   }
 
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "CBL/SAT__", "Setup ", "A long description"
+      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "A long description"
   };
 
   /*
@@ -78,7 +112,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public String getColumnPrototypeName( int col )
   {
-    return colPrototypeNames[ col ];
+    return colPrototypeNames[ getEffectiveColumn( col ) ];
   }
 
   /*
@@ -88,7 +122,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public boolean isColumnWidthFixed( int col )
   {
-    if ( col < 3 )
+    if ( getEffectiveColumn( col ) < 5 )
       return true;
     else
       return false;
@@ -97,7 +131,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, SetupCode.class, String.class
+      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, String.class
   };
 
   /*
@@ -107,7 +141,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public Class< ? > getColumnClass( int col )
   {
-    return colClasses[ col ];
+    return colClasses[ getEffectiveColumn( col ) ];
   }
 
   /*
@@ -117,7 +151,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public boolean isCellEditable( int row, int col )
   {
-    if ( col == 3 )
+    if ( col >= 3 )
       return true;
     return false;
   }
@@ -130,7 +164,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   public Object getValueAt( int row, int column )
   {
     DeviceUpgrade device = getRow( row );
-    switch ( column )
+    switch ( getEffectiveColumn( column ) )
     {
       case 0:
         return new Integer( row + 1 );
@@ -139,6 +173,10 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 2:
         return new SetupCode( device.getSetupCode() );
       case 3:
+        return device.getButtonRestriction().getName();
+      case 4:
+        return device.getButtonIndependent();
+      case 5:
         return device.getDescription();
     }
     return null;
@@ -152,8 +190,20 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   public void setValueAt( Object value, int row, int col )
   {
     DeviceUpgrade device = getRow( row );
-    if ( col == 3 )
-      device.setDescription( ( String )value );
+    switch ( getEffectiveColumn( col ) )
+    {
+      case 3:
+        device.setButtonRestriction( ( ( DeviceButton)value ) );
+        propertyChangeSupport.firePropertyChange( "device", null, null );
+        break;
+      case 4:
+        device.setButtonIndependent( ( Boolean )value );
+        propertyChangeSupport.firePropertyChange( "device", null, null );
+        break;
+      case 5:
+        device.setDescription( ( String )value );
+        break;
+    }
   }
 
   /*
@@ -170,11 +220,19 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   
   public TableCellEditor getColumnEditor( int col )
   {
-    if ( col == 3 )
-      return descriptionEditor;
-    else
+    switch ( getEffectiveColumn( col ) )
+    {
+      case 3:
+        DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
+        editor.setClickCountToStart( 1 );
+        return editor;
+      case 5:
+        return descriptionEditor;
+    }
       return null;
   }
+  
+//  private JCheckBox otherAvailabilityBox = new JCheckBox();
 
   /*
    * (non-Javadoc)
@@ -234,4 +292,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private RemoteConfiguration remoteConfig = null;
   
   private SelectAllCellEditor descriptionEditor = new SelectAllCellEditor();
+  
+  private DefaultCellEditor deviceButtonEditor = null;
+  private JComboBox deviceButtonBox = new JComboBox();
 }
