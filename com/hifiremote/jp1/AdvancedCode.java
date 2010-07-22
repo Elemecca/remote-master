@@ -31,6 +31,7 @@ public abstract class AdvancedCode
     int length = 0;
     int boundDeviceIndex = 0;
     boolean isMacro = false;
+    boolean isTimedMacro = false;
     boolean isFav = false;
     int sequenceNumber = 0;
     if ( remote.getAdvCodeBindFormat() == BindFormat.NORMAL )
@@ -45,6 +46,9 @@ public abstract class AdvancedCode
       else if ( type == 3 )
       {
         isFav = true;
+        FavKey favKey = remote.getFavKey();
+        if ( favKey != null )
+          length *= favKey.getEntrySize();
       }
     }
     else
@@ -59,6 +63,10 @@ public abstract class AdvancedCode
           isMacro = true;
           sequenceNumber = type - 3;
         }
+        else if ( ( type & 8 ) == 8 )
+        {
+          isTimedMacro = true;
+        }
       }
       else
       {
@@ -71,19 +79,22 @@ public abstract class AdvancedCode
           isFav = true;
       }
     }
-    FavKey favKey = remote.getFavKey();
-    if ( isFav && ( favKey != null ) )
-      length *= favKey.getEntrySize();
 
     System.err.println( "length=" + length );
     Hex hex = new Hex( reader.read( length ) );
 
-    if ( isMacro || isFav )
+    if ( isMacro )
     {
       Macro macro = new Macro( keyCode, hex, null );
       macro.setSequenceNumber( sequenceNumber );
       macro.setDeviceIndex( boundDeviceIndex );
       return macro;
+    }
+    else if ( isFav )
+    {
+      FavScan favScan = new FavScan( keyCode, hex, null );
+      favScan.setDeviceIndex( boundDeviceIndex );
+      return favScan;
     }
     else
     {

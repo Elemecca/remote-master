@@ -477,11 +477,6 @@ public class Button
     return ( ( restrictions & SHIFT_MACRO_DATA ) == 0 );
   }
 
-  /**
-   * Can assign x shifted to macro.
-   * 
-   * @return true, if successful
-   */
   public boolean canAssignXShiftedToMacro()
   {
     if ( isShifted || isXShifted )
@@ -489,6 +484,25 @@ public class Button
     return ( ( restrictions & XSHIFT_MACRO_DATA ) == 0 );
   }
 
+  public boolean canAssignToFav()
+  {
+    return ( ( restrictions & FAV_DATA ) == 0 );
+  }
+
+  public boolean canAssignShiftedToFav()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return ( ( restrictions & SHIFT_FAV_DATA ) == 0 );
+  }
+
+  public boolean canAssignXShiftedToFav()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return ( ( restrictions & XSHIFT_FAV_DATA ) == 0 );
+  }
+  
   /**
    * Allows learned signal.
    * 

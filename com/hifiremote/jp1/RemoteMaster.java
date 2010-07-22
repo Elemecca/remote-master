@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -159,6 +160,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The special function panel. */
   private SpecialFunctionPanel specialFunctionPanel = null;
+  
+  private FavScanPanel favScanPanel = null;
 
   /** The device panel. */
   private DeviceUpgradePanel devicePanel = null;
@@ -454,7 +457,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     tabbedPane.add( "Special Functions", specialFunctionPanel );
     specialFunctionPanel.addPropertyChangeListener( this );
 
-    // tabbedPane.addTab( "Scan/Fav", new JPanel());
+    favScanPanel = new FavScanPanel();
+    tabbedPane.addTab( "Fav/Scan", favScanPanel );
+    favScanPanel.addPropertyChangeListener( this );
 
     devicePanel = new DeviceUpgradePanel();
     tabbedPane.addTab( "Devices", devicePanel );
@@ -1375,19 +1380,35 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
     macroPanel.set( remoteConfig );
+    
+    int index = getTabIndex( specialFunctionPanel );
     if ( remoteConfig.getRemote().getSpecialProtocols().isEmpty() )
     {
-      if ( tabbedPane.getComponentAt( 3 ) == specialFunctionPanel )
+      if ( index >= 0 )
       {
-        tabbedPane.remove( 3 );
+        tabbedPane.remove( index );
       }
     }
-    else if ( tabbedPane.getComponentAt( 3 ) != specialFunctionPanel )
+    else if ( index < 0 )
     {
-      tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, 3 );
+      tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, getTabIndex( macroPanel ) + 1 );
+    }   
+
+    index = getTabIndex( favScanPanel );
+    if ( remoteConfig.getRemote().hasFavKey() )
+    {
+      if ( index < 0 )
+      {
+        tabbedPane.insertTab( "Fav/Scan", null, favScanPanel, null, getTabIndex( devicePanel ) );
+      }
     }
+    else if ( index >= 0 )
+    {
+      tabbedPane.remove( index );
+    }  
 
     specialFunctionPanel.set( remoteConfig );
+    favScanPanel.set( remoteConfig );
 
     devicePanel.set( remoteConfig );
     protocolPanel.set( remoteConfig );
@@ -1711,6 +1732,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       newPanel.set( remoteConfig );
       currentPanel = newPanel;
     }
+  }
+  
+  private int getTabIndex( Component c )
+  {
+    for ( int i = 0; i < tabbedPane.getTabCount(); i++ )
+    {
+      if ( tabbedPane.getComponentAt( i ).equals( c ) )
+      {
+        return i;
+      }
+    }
+    return -1;
   }
 
 }

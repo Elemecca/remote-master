@@ -122,6 +122,16 @@ public class RemoteConfiguration
             keymoves.add( ( KeyMove )o );
           else if ( sectionName.equals( "Macro" ) )
             macros.add( ( Macro )o );
+          else if ( sectionName.equals( "FavScan" ) )
+          {
+            FavScan favScan = ( FavScan )o;
+            favKeyDevButton = favScan.getDeviceButtonFromIndex( remote );
+            if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
+            {
+              favScan.setDeviceButton( favKeyDevButton );
+            }
+            favScans.add( favScan );
+          }
           else if ( sectionName.equals( "ProtocolUpgrade" ) )
             protocols.add( ( ProtocolUpgrade )o );
           else if ( sectionName.equals( "LearnedSignal" ) )
@@ -220,7 +230,22 @@ public class RemoteConfiguration
 
     savedData = new short[ data.length ];
     System.arraycopy( data, 0, savedData, 0, data.length );
-
+    
+    if ( remote.hasFavKey() )
+    {
+      if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
+      {
+        int buttonIndex = data[ remote.getFavKey().getDeviceButtonAddress() ] & 0x0F;
+        if ( buttonIndex == 0x0F )
+          favKeyDevButton = DeviceButton.noButton;
+        else
+          favKeyDevButton = remote.getDeviceButtons()[ buttonIndex ];
+      }
+      else
+      {
+        favKeyDevButton = DeviceButton.noButton;
+      }        
+    }
     return property;
   }
 
@@ -335,6 +360,10 @@ public class RemoteConfiguration
     decodeSettings();
     decodeUpgrades();
     List< AdvancedCode > advCodes = decodeAdvancedCodes();
+    if ( remote.hasFavKey() && remote.getFavKey().isSegregated() )
+    {
+      decodeFavScans();
+    }
     decodeLearnedSignals();
 
     if ( pr != null )
@@ -372,9 +401,15 @@ public class RemoteConfiguration
               if ( flag == 0 )
                 notes = text;
               else if ( flag == 1 )
-                advCodes.get( index ).setNotes( text );
+              {
+                // This test is needed because of a bug in IR.exe.
+                if ( index < advCodes.size() )
+                {  
+                  advCodes.get( index ).setNotes( text );
+                }
+              }  
               else if ( flag == 2 )
-                ;// fav/scan?
+                ;// TimedMacro
               else if ( flag == 3 )
                 devices.get( index ).setDescription( text );
               else if ( flag == 4 )
@@ -718,6 +753,21 @@ public class RemoteConfiguration
     return availableSpecialProtocols;
   }
 
+  private void decodeFavScans()
+  {
+    if ( ! remote.hasFavKey() || ! remote.getFavKey().isSegregated() )
+    {
+      return;
+    }
+    HexReader reader = new HexReader( data, remote.getFavScanAddress() );
+    FavScan favScan = FavScan.read( reader, remote );
+    if ( favScan != null )
+    {
+      favScans.add( favScan );
+      favKeyDevButton = favScan.getDeviceButtonFromIndex( remote );
+    }    
+  }
+  
   /**
    * Decode advanced codes.
    * 
@@ -767,6 +817,22 @@ public class RemoteConfiguration
           macros.add( macro );
           advCodes.add( macro );
         }
+      }
+      else if ( advCode instanceof FavScan )
+      {
+        FavScan favScan = ( FavScan )advCode;        
+        if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
+        {
+          favScan.setDeviceIndex( data[ remote.getFavKey().getDeviceButtonAddress() ] );
+          favKeyDevButton = favScan.getDeviceButtonFromIndex( remote );
+        }
+        else
+        {
+          favKeyDevButton = favScan.getDeviceButtonFromIndex( remote );
+          favScan.setDeviceButton( favKeyDevButton );
+        }        
+        favScans.add( favScan );
+        advCodes.add( favScan );
       }
       else
       {
@@ -974,6 +1040,10 @@ public class RemoteConfiguration
     size += getAdvancedCodesBytesNeeded( specialFunctionKeyMoves );
     size += getAdvancedCodesBytesNeeded( macros );
     size += getAdvancedCodesBytesNeeded( specialFunctionMacros );
+    if ( remote.hasFavKey() && !remote.getFavKey().isSegregated() )
+    {  
+      size += getAdvancedCodesBytesNeeded( favScans );
+    }
     size++ ; // the section terminator
     return size;
   }
@@ -1018,6 +1088,10 @@ public class RemoteConfiguration
     updateAutoSet();
     updateSettings();
     updateAdvancedCodes();
+    if ( remote.hasFavKey() && remote.getFavKey().isSegregated() )
+    {
+      updateFavScans();
+    }
     updateUpgrades();
     updateLearnedSignals();
     updateCheckSums();
@@ -1078,6 +1152,26 @@ public class RemoteConfiguration
     }
     return rc;
   }
+  
+  private void updateFavScans()
+  {
+    if ( ! remote.hasFavKey() || ! remote.getFavKey().isSegregated() )
+    {
+      return;
+    }
+    AddressRange range = remote.getFavScanAddress();
+    int offset = range.getStart();
+    if ( favScans.size() == 0 )
+    {
+      return;
+    }
+    // Segregated FavScan section allows only one entry.
+    FavScan favScan = favScans.get( 0 );
+    int buttonIndex = ( favKeyDevButton == DeviceButton.noButton ) ? 
+        0 : favKeyDevButton.getButtonIndex();
+    data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
+    favScan.store( data, offset, remote );
+  }
 
   /**
    * Update advanced codes.
@@ -1119,6 +1213,19 @@ public class RemoteConfiguration
     for ( Macro macro : specialFunctionMacros )
     {
       offset = macro.store( data, offset, remote );
+    }
+    if ( remote.hasFavKey() && !remote.getFavKey().isSegregated() )
+    {  
+      for ( FavScan favScan : favScans )
+      {
+        if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
+        {
+          // When the button is noButton, this gives a button index of 0xFF as required.
+          int buttonIndex = favKeyDevButton.getButtonIndex() & 0xFF;
+          data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
+        }
+        offset = favScan.store( data, offset, remote );
+      }
     }
     data[ offset++ ] = remote.getSectionTerminator();
 
@@ -1947,6 +2054,15 @@ public class RemoteConfiguration
         sp.getKeyMove().store( pw );
       }
     }
+    
+    for ( FavScan fs : favScans )
+    {
+      String className = fs.getClass().getName();
+      int dot = className.lastIndexOf( '.' );
+      className = className.substring( dot + 1 );
+      pw.printHeader( className );
+      fs.store( pw, this );
+    }
 
     for ( DeviceUpgrade device : devices )
     {
@@ -2071,6 +2187,11 @@ public class RemoteConfiguration
     return macros;
   }
 
+  public List< FavScan > getFavScans()
+  {
+    return favScans;
+  }
+
   /**
    * Gets the device upgrades.
    * 
@@ -2128,6 +2249,8 @@ public class RemoteConfiguration
 
   /** The macros. */
   private List< Macro > macros = new ArrayList< Macro >();
+  
+  private List< FavScan > favScans = new ArrayList< FavScan >();
 
   /** The devices. */
   private List< DeviceUpgrade > devices = new ArrayList< DeviceUpgrade >();
@@ -2159,9 +2282,36 @@ public class RemoteConfiguration
       }
     }
   }
-  
+   
+  public DeviceButton getFavKeyDevButton()
+  {
+    return favKeyDevButton;
+  }
+
+  public void setFavKeyDevButton( DeviceButton devButton )
+  {
+    this.favKeyDevButton = devButton;
+    if ( favScans.size() > 0 )
+    {
+      int size = favScans.size();
+      favScans.get( size - 1 ).setDeviceButton( devButton );
+    }
+    if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
+    {
+      // When the button is noButton, this gives a button index of 0xFF as required.
+      int buttonIndex = favKeyDevButton.getButtonIndex() & 0xFF;
+      data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
+    }
+    else
+    {
+      updateAdvancedCodes();
+    }  
+  }
+
   /** The notes. */
   private String notes = null;
 
   private String[] deviceButtonNotes = null;
+  
+  private DeviceButton favKeyDevButton = null;
 }

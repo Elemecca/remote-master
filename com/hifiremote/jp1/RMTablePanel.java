@@ -636,7 +636,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   protected JButton newButton = null;
 
   /** The clone button. */
-  private JButton cloneButton = null;
+  protected JButton cloneButton = null;
 
   /** The delete button. */
   private JButton deleteButton = null;
@@ -660,7 +660,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   private JMenuItem newItem = null;
 
   /** The clone item. */
-  private JMenuItem cloneItem = null;
+  protected JMenuItem cloneItem = null;
 
   /** The delete item. */
   private JMenuItem deleteItem = null;

@@ -2413,6 +2413,22 @@ public class Remote implements Comparable< Remote >
   /** The fav key. */
   private FavKey favKey = null;
 
+  public boolean hasFavKey()
+  {
+    if ( favKey == null )
+    {
+      return false;
+    }
+    if ( advCodeBindFormat == AdvancedCode.BindFormat.NORMAL )
+    {
+      return favKey.getDeviceButtonAddress() != 0;
+    }
+    else
+    {
+      return favKey.getDeviceButtonAddress() == 0;
+    }
+  }
+  
   /**
    * Gets the fav key.
    * 
@@ -2449,6 +2465,19 @@ public class Remote implements Comparable< Remote >
   public AddressRange getAdvancedCodeAddress()
   {
     return advancedCodeAddress;
+  }
+  
+  // Only used with remotes that have FavScan area segregated.
+  private AddressRange favScanAddress = null;
+
+  public AddressRange getFavScanAddress()
+  {
+    return favScanAddress;
+  }
+
+  public void setFavScanAddress( AddressRange favScanAddress )
+  {
+    this.favScanAddress = favScanAddress;
   }
 
   /** The macro support. */

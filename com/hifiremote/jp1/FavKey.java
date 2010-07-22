@@ -16,7 +16,16 @@ public class FavKey extends RDFParameter
     maxEntries = RDFReader.parseNumber( st.nextToken() );
     entrySize = RDFReader.parseNumber( st.nextToken() );
     if ( st.hasMoreTokens() )
+    {
       segregated = RDFReader.parseNumber( st.nextToken() ) != 0;
+      if ( segregated )
+      {
+        AddressRange favScanAddr = new AddressRange();
+        favScanAddr.setStart( deviceButtonAddress - 1 );
+        favScanAddr.setEnd( deviceButtonAddress + ( maxEntries * entrySize ) );
+        remote.setFavScanAddress( favScanAddr );
+      }
+    }  
   }
 
   /**

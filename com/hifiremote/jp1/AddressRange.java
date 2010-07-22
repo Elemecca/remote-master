@@ -46,6 +46,16 @@ public class AddressRange extends RDFParameter
     return end;
   }
 
+  public void setStart( int start )
+  {
+    this.start = start;
+  }
+
+  public void setEnd( int end )
+  {
+    this.end = end;
+  }
+
   public int getSize()
   {
     return end + 1 - start;
