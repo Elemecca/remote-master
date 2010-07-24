@@ -16,7 +16,7 @@ Changes for v1.99
 - Made several minor mods specific to 740 processor (Graham)
 - Improved the readability of text strings on the Progress Bars (Graham)
 - Improved the representation of internal Special Protocols in .rmir files (Graham)
-- Implemented Fav/Scan
+- Implemented Fav/Scan (Graham)
 
 Changes for v1.99preview5
 - Device Upgrade Editor: enable maximize
