@@ -79,7 +79,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.99preview5";
+  public final static String version = "v1.99";
 
   /** The dir. */
   private File dir = null;
@@ -160,7 +160,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The special function panel. */
   private SpecialFunctionPanel specialFunctionPanel = null;
-  
+
   private FavScanPanel favScanPanel = null;
 
   /** The device panel. */
@@ -181,7 +181,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The upgrade progress bar. */
   private JProgressBar upgradeProgressBar = null;
   private JProgressBar devUpgradeProgressBar = null;
-  
+
   private JPanel upgradeProgressPanel = null;
 
   /** The learned progress bar. */
@@ -494,18 +494,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     rawDataPanel.addPropertyChangeListener( this );
 
     tabbedPane.addChangeListener( this );
-    
+
     JPanel statusBar = new JPanel();
-    
+
     mainPanel.add( statusBar, BorderLayout.SOUTH );
 
     statusBar.add( new JLabel( "Move/Macro:" ) );
-    
+
     // Set color for text on Progress Bars
-    UIManager.put("ProgressBar.selectionBackground",
-      new javax.swing.plaf.ColorUIResource(Color.BLUE));
-    UIManager.put("ProgressBar.selectionForeground",
-      new javax.swing.plaf.ColorUIResource(Color.BLUE));
+    UIManager.put( "ProgressBar.selectionBackground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
+    UIManager.put( "ProgressBar.selectionForeground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
 
     advProgressBar = new JProgressBar();
     advProgressBar.setStringPainted( true );
@@ -524,19 +522,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     upgradeProgressBar = new JProgressBar();
     upgradeProgressBar.setStringPainted( true );
     upgradeProgressBar.setString( "N/A" );
-    
+
     upgradeProgressPanel = new JPanel();
     upgradeProgressPanel.setPreferredSize( advProgressBar.getPreferredSize() );
-    upgradeProgressPanel.setLayout( new BorderLayout() );    
-    
+    upgradeProgressPanel.setLayout( new BorderLayout() );
+
     devUpgradeProgressBar = new JProgressBar();
     devUpgradeProgressBar.setStringPainted( true );
     devUpgradeProgressBar.setString( "N/A" );
     devUpgradeProgressBar.setVisible( false );
 
-    upgradeProgressPanel.add( upgradeProgressBar, BorderLayout.NORTH);
-    upgradeProgressPanel.add( devUpgradeProgressBar, BorderLayout.SOUTH);
-    
+    upgradeProgressPanel.add( upgradeProgressBar, BorderLayout.NORTH );
+    upgradeProgressPanel.add( devUpgradeProgressBar, BorderLayout.SOUTH );
+
     statusBar.add( upgradeProgressPanel );
 
     statusBar.add( Box.createHorizontalStrut( 5 ) );
@@ -1380,7 +1378,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
     macroPanel.set( remoteConfig );
-    
+
     int index = getTabIndex( specialFunctionPanel );
     if ( remoteConfig.getRemote().getSpecialProtocols().isEmpty() )
     {
@@ -1392,7 +1390,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     else if ( index < 0 )
     {
       tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, getTabIndex( macroPanel ) + 1 );
-    }   
+    }
 
     index = getTabIndex( favScanPanel );
     if ( remoteConfig.getRemote().hasFavKey() )
@@ -1405,7 +1403,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     else if ( index >= 0 )
     {
       tabbedPane.remove( index );
-    }  
+    }
 
     specialFunctionPanel.set( remoteConfig );
     favScanPanel.set( remoteConfig );
@@ -1463,7 +1461,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     else
     {
       d.height /= 2;
-      Font font2 = font.deriveFont( ( float )font.getSize()*0.75f );
+      Font font2 = font.deriveFont( ( float )font.getSize() * 0.75f );
       upgradeProgressBar.setVisible( false );
       upgradeProgressBar.setPreferredSize( d );
       upgradeProgressBar.setFont( font2 );
@@ -1473,7 +1471,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       devUpgradeProgressBar.setFont( font2 );
       devUpgradeProgressBar.setVisible( true );
     }
-    
+
     if ( !updateUsage( advProgressBar, remote.getAdvancedCodeAddress(), remoteConfig.getAdvancedCodeBytesNeeded() ) )
     {
       JOptionPane
@@ -1488,7 +1486,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           "The defined device upgrades use more space than is available. Please remove some.",
           "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
     }
-    if ( remote.getDeviceUpgradeAddress() != null && !updateUsage( devUpgradeProgressBar, remote.getDeviceUpgradeAddress(), remoteConfig.getDevUpgradeCodeBytesNeeded() ) )
+    if ( remote.getDeviceUpgradeAddress() != null
+        && !updateUsage( devUpgradeProgressBar, remote.getDeviceUpgradeAddress(), remoteConfig
+            .getDevUpgradeCodeBytesNeeded() ) )
     {
       JOptionPane.showMessageDialog( this,
           "The defined button-dependent device upgrades use more space than is available. Please remove some.",
@@ -1733,7 +1733,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       currentPanel = newPanel;
     }
   }
-  
+
   private int getTabIndex( Component c )
   {
     for ( int i = 0; i < tabbedPane.getTabCount(); i++ )

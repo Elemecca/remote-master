@@ -1,13 +1,22 @@
-Changes since last build
+Changes for v1.99
 - Add DigitMaps through 486
 - Fix TiVo (Official 2-byte) Unit Code encoding
 - Added Kathrein protocol support
 - Implemented the functionality of XPIDs in the Special Protocols section (Graham Dixon, a.k.a. mathdon)
-- Implemented the functionality of User Names in the Special Protocols section (Graham Dixon, a.k.a. mathdon)
-- Corrected the interpretation of a "minus" prefix to PIDs in Special Protocols section (Graham Dixon, a.k.a. mathdon)
-- Corrected the keyword WaveUpgrade to WavUpgrade in processing of the General section (Graham Dixon, a.k.a. mathdon)
+- Implemented the functionality of User Names in the Special Protocols section (Graham)
+- Corrected the interpretation of a "minus" prefix to PIDs in Special Protocols section (Graham)
+- Corrected the keyword WaveUpgrade to WavUpgrade in processing of the General section (Graham)
 - Fix keymove space used for keycode keymoves
 - Change Apex 1100w protocol to use PID 00 46
+- Bugfix:  RMIR crashed if a MacroCodingType entry omitted the optional parameters (Graham)
+- Completed the RDF4 syntax for [SpecialProtocols] section by implementing internal special protocols (Graham)
+- Corrected the logic that determines when to return the alternatePID instead of the main PID (Graham)
+- Corrected getUpgradeLength(), which gave wrong value if remote uses two-byte PID or if digit map is nonzero (Graham)
+- Implemented Device-specific Upgrades (RDF General entries DevUpgradeAddr and UpgradeBug) (Graham)
+- Made several minor mods specific to 740 processor (Graham)
+- Improved the readability of text strings on the Progress Bars (Graham)
+- Improved the representation of internal Special Protocols in .rmir files (Graham)
+- Implemented Fav/Scan
 
 Changes for v1.99preview5
 - Device Upgrade Editor: enable maximize
