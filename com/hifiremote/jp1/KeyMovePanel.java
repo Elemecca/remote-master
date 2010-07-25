@@ -27,16 +27,21 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
    * @param remoteConfig
    *          the remote config
    */
+  @Override
   public void set( RemoteConfiguration remoteConfig )
   {
     ( ( KeyMoveTableModel )model ).set( remoteConfig );
     JTableHeader th = table.getTableHeader();
     TableColumnModel tcm = th.getColumnModel();
     TableColumn tc = tcm.getColumn( 7 );
-    if ( remoteConfig.getRemote().getEFCDigits() == 3 )
+    if ( remoteConfig != null && remoteConfig.getRemote().getEFCDigits() == 3 )
+    {
       tc.setHeaderValue( "<html>EFC or<br>Key Name</html>" );
+    }
     else
+    {
       tc.setHeaderValue( "<html>EFC-5 or<br>Key Name</html>" );
+    }
     table.initColumns( model );
   }
 
@@ -45,6 +50,7 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
    * 
    * @see com.hifiremote.jp1.RMTablePanel#createRowObject(java.lang.Object)
    */
+  @Override
   protected KeyMove createRowObject( KeyMove baseKeyMove )
   {
     return KeyMoveDialog.showDialog( ( JFrame )SwingUtilities.getRoot( this ), baseKeyMove,

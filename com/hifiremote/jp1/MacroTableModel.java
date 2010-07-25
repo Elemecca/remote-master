@@ -25,10 +25,13 @@ public class MacroTableModel extends JP1TableModel< Macro >
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    Remote remote = remoteConfig.getRemote();
-    keyRenderer.setRemote( remote );
-    keyEditor.setRemote( remote );
-    setData( remoteConfig.getMacros() );
+    if ( remoteConfig != null )
+    {
+      Remote remote = remoteConfig.getRemote();
+      keyRenderer.setRemote( remote );
+      keyEditor.setRemote( remote );
+      setData( remoteConfig.getMacros() );
+    }
   }
 
   /**
@@ -62,6 +65,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
     return colNames[ col ];
@@ -78,6 +82,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
@@ -95,6 +100,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
+  @Override
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ col ];
@@ -111,6 +117,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
+  @Override
   public boolean isColumnWidthFixed( int col )
   {
     return colWidths[ col ];
@@ -121,10 +128,13 @@ public class MacroTableModel extends JP1TableModel< Macro >
    * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
+  @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( ( col == 0 ) || ( col == 2 ) )
+    if ( col == 0 || col == 2 )
+    {
       return false;
+    }
 
     return true;
   }
@@ -157,13 +167,18 @@ public class MacroTableModel extends JP1TableModel< Macro >
    * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
+  @Override
   public void setValueAt( Object value, int row, int col )
   {
     Macro macro = getRow( row );
     if ( col == 1 )
+    {
       macro.setKeyCode( ( ( Integer )value ).intValue() );
+    }
     else if ( col == 3 )
+    {
       macro.setNotes( ( String )value );
+    }
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
 
@@ -172,12 +187,17 @@ public class MacroTableModel extends JP1TableModel< Macro >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
+    {
       return new RowNumberRenderer();
+    }
     else if ( col == 1 )
+    {
       return keyRenderer;
+    }
     return null;
   }
 
@@ -186,12 +206,17 @@ public class MacroTableModel extends JP1TableModel< Macro >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
+  @Override
   public TableCellEditor getColumnEditor( int col )
   {
     if ( col == 1 )
+    {
       return keyEditor;
+    }
     else if ( col == 3 )
+    {
       return noteEditor;
+    }
     return null;
   }
 

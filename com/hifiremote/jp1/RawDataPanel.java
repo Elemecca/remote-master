@@ -39,10 +39,14 @@ public class RawDataPanel extends RMPanel
    * @param remoteConfig
    *          the remote config
    */
+  @Override
   public void set( RemoteConfiguration remoteConfig )
   {
-    model.set( remoteConfig.getData(), remoteConfig.getRemote().getBaseAddress() );
-    byteRenderer.setSavedData( remoteConfig.getSavedData() );
+    if ( remoteConfig != null )
+    {
+      model.set( remoteConfig.getData(), remoteConfig.getRemote().getBaseAddress() );
+      byteRenderer.setSavedData( remoteConfig.getSavedData() );
+    }
   }
 
   /*
@@ -50,10 +54,13 @@ public class RawDataPanel extends RMPanel
    * 
    * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
    */
+  @Override
   public void addPropertyChangeListener( PropertyChangeListener l )
   {
-    if ( ( model != null ) && ( l != null ) )
+    if ( model != null && l != null )
+    {
       model.addPropertyChangeListener( l );
+    }
   }
 
   /** The model. */

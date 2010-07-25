@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -32,21 +31,27 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public void set( RemoteConfiguration remoteConfig )
   {
-    if ( this.remoteConfig != null )
-      for ( DeviceUpgrade upgrade : this.remoteConfig.getDeviceUpgrades() )
-        upgrade.removePropertyChangeListener( this );
-
     this.remoteConfig = remoteConfig;
-    for ( DeviceUpgrade upgrade : remoteConfig.getDeviceUpgrades() )
-      upgrade.addPropertyChangeListener( this );
-    setData( remoteConfig.getDeviceUpgrades() );
-    
-    Remote remote = remoteConfig.getRemote();
-    if ( remote.getDeviceUpgradeAddress() != null )
-    {  
-      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
-      comboModel.insertElementAt( DeviceButton.noButton, 0 );
-      deviceButtonBox.setModel( comboModel );
+    if ( remoteConfig != null )
+    {
+      for ( DeviceUpgrade upgrade : remoteConfig.getDeviceUpgrades() )
+      {
+        upgrade.removePropertyChangeListener( this );
+      }
+
+      for ( DeviceUpgrade upgrade : remoteConfig.getDeviceUpgrades() )
+      {
+        upgrade.addPropertyChangeListener( this );
+      }
+      setData( remoteConfig.getDeviceUpgrades() );
+
+      Remote remote = remoteConfig.getRemote();
+      if ( remote.getDeviceUpgradeAddress() != null )
+      {
+        DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
+        comboModel.insertElementAt( DeviceButton.noButton, 0 );
+        deviceButtonBox.setModel( comboModel );
+      }
     }
   }
 
@@ -69,14 +74,13 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     }
     return count;
   }
-  
+
   public int getEffectiveColumn( int col )
   {
-    if ( ( remoteConfig == null || ( remoteConfig != null 
-        && remoteConfig.getRemote().getDeviceUpgradeAddress() == null ) )
-        && col == 3)
-    {      
-        return 5;
+    if ( ( remoteConfig == null || remoteConfig != null && remoteConfig.getRemote().getDeviceUpgradeAddress() == null )
+        && col == 3 )
+    {
+      return 5;
     }
     return col;
   }
@@ -84,9 +88,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", 
-      "<html>Specific to<br>Device Button</html>", "<html>Available on<br>Other Buttons?</html>",
-      "Description"
+      "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "<html>Specific to<br>Device Button</html>",
+      "<html>Available on<br>Other Buttons?</html>", "Description"
   };
 
   /*
@@ -94,6 +97,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
     return colNames[ getEffectiveColumn( col ) ];
@@ -110,6 +114,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
+  @Override
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ getEffectiveColumn( col ) ];
@@ -120,12 +125,17 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
+  @Override
   public boolean isColumnWidthFixed( int col )
   {
     if ( getEffectiveColumn( col ) < 5 )
+    {
       return true;
+    }
     else
+    {
       return false;
+    }
   }
 
   /** The Constant colClasses. */
@@ -139,6 +149,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ getEffectiveColumn( col ) ];
@@ -149,10 +160,13 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
+  @Override
   public boolean isCellEditable( int row, int col )
   {
     if ( col >= 3 )
+    {
       return true;
+    }
     return false;
   }
 
@@ -187,13 +201,14 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
+  @Override
   public void setValueAt( Object value, int row, int col )
   {
     DeviceUpgrade device = getRow( row );
     switch ( getEffectiveColumn( col ) )
     {
       case 3:
-        device.setButtonRestriction( ( ( DeviceButton)value ) );
+        device.setButtonRestriction( ( ( DeviceButton )value ) );
         propertyChangeSupport.firePropertyChange( "device", null, null );
         break;
       case 4:
@@ -211,13 +226,17 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
+    {
       return new RowNumberRenderer();
+    }
     return null;
   }
-  
+
+  @Override
   public TableCellEditor getColumnEditor( int col )
   {
     switch ( getEffectiveColumn( col ) )
@@ -229,16 +248,17 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 5:
         return descriptionEditor;
     }
-      return null;
+    return null;
   }
-  
-//  private JCheckBox otherAvailabilityBox = new JCheckBox();
+
+  // private JCheckBox otherAvailabilityBox = new JCheckBox();
 
   /*
    * (non-Javadoc)
    * 
    * @see com.hifiremote.jp1.JP1TableModel#removeRow(int)
    */
+  @Override
   public void removeRow( int row )
   {
     getRow( row ).removePropertyChangeListener( this );
@@ -250,6 +270,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see com.hifiremote.jp1.JP1TableModel#insertRow(int, java.lang.Object)
    */
+  @Override
   public void insertRow( int row, DeviceUpgrade upgrade )
   {
     upgrade.addPropertyChangeListener( this );
@@ -261,6 +282,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    * 
    * @see com.hifiremote.jp1.JP1TableModel#addRow(java.lang.Object)
    */
+  @Override
   public void addRow( DeviceUpgrade upgrade )
   {
     upgrade.addPropertyChangeListener( this );
@@ -290,9 +312,9 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
-  
+
   private SelectAllCellEditor descriptionEditor = new SelectAllCellEditor();
-  
+
   private DefaultCellEditor deviceButtonEditor = null;
   private JComboBox deviceButtonBox = new JComboBox();
 }

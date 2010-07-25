@@ -1,6 +1,5 @@
 package com.hifiremote.jp1;
 
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 // TODO: Auto-generated Javadoc
@@ -24,11 +23,12 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
    * @param remoteConfig
    *          the remote config
    */
+  @Override
   public void set( RemoteConfiguration remoteConfig )
   {
     ( ( LearnedSignalTableModel )model ).set( remoteConfig );
     table.initColumns( model );
-    newButton.setEnabled( remoteConfig.getRemote().getLearnedAddress() != null );
+    newButton.setEnabled( remoteConfig != null && remoteConfig.getRemote().getLearnedAddress() != null );
   }
 
   /*
@@ -36,9 +36,10 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
    * 
    * @see com.hifiremote.jp1.RMTablePanel#createRowObject(java.lang.Object)
    */
+  @Override
   public LearnedSignal createRowObject( LearnedSignal learnedSignal )
   {
-    LearnedSignalDialog.showDialog( ( JFrame )SwingUtilities.getRoot( this ), learnedSignal );
+    LearnedSignalDialog.showDialog( SwingUtilities.getRoot( this ), learnedSignal );
     return null;
   }
 }

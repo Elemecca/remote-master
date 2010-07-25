@@ -30,7 +30,10 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    setData( remoteConfig.getRemote().getSettings() );
+    if ( remoteConfig != null )
+    {
+      setData( remoteConfig.getRemote().getSettings() );
+    }
   }
 
   /*
@@ -54,6 +57,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
     return colNames[ col ];
@@ -70,6 +74,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
+  @Override
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ col ];
@@ -86,6 +91,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
@@ -96,9 +102,10 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
    * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
+  @Override
   public boolean isCellEditable( int row, int col )
   {
-    return ( col > 1 ) && ( row < remoteConfig.getRemote().getStartReadOnlySettings() );
+    return col > 1 && row < remoteConfig.getRemote().getStartReadOnlySettings();
   }
 
   /*
@@ -121,10 +128,14 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
         int val = setting.getValue();
         Object[] choices = setting.getOptions( r );
         if ( choices == null )
+        {
           return new Integer( val );
+        }
 
         if ( val > choices.length )
+        {
           return null;
+        }
 
         return choices[ val ];
       }
@@ -137,6 +148,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
    * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
+  @Override
   public void setValueAt( Object value, int row, int col )
   {
     if ( col == 2 )
@@ -170,10 +182,13 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
+    {
       return new RowNumberRenderer();
+    }
     return null;
   }
 
@@ -185,7 +200,9 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   public TableCellEditor getCellEditor( int row, int col )
   {
     if ( col != 2 )
+    {
       return null;
+    }
     Remote r = remoteConfig.getRemote();
     Setting setting = remoteConfig.getRemote().getSettings()[ row ];
     Object[] options = setting.getOptions( r );

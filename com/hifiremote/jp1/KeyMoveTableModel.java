@@ -28,13 +28,16 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    Remote remote = remoteConfig.getRemote();
+    if ( remoteConfig != null )
+    {
+      Remote remote = remoteConfig.getRemote();
 
-    setData( remoteConfig.getKeyMoves() );
-    deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
-    keyRenderer.setRemote( remote );
-    keyEditor.setRemote( remote );
-    deviceTypeBox.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
+      setData( remoteConfig.getKeyMoves() );
+      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+      keyRenderer.setRemote( remote );
+      keyEditor.setRemote( remote );
+      deviceTypeBox.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
+    }
   }
 
   /**
@@ -69,6 +72,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
     return colNames[ col ];
@@ -86,6 +90,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
+  @Override
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ col ];
@@ -102,6 +107,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
+  @Override
   public boolean isColumnWidthFixed( int col )
   {
     return colWidths[ col ];
@@ -119,6 +125,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
@@ -129,10 +136,13 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
    * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
+  @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( ( col == 0 ) || ( ( col > 4 ) && ( col < 8 ) ) )
+    if ( col == 0 || col > 4 && col < 8 )
+    {
       return false;
+    }
 
     return true;
   }
@@ -176,6 +186,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
    * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
+  @Override
   public void setValueAt( Object value, int row, int col )
   {
     KeyMove keyMove = getRow( row );
@@ -184,23 +195,33 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       Remote r = remoteConfig.getRemote();
       DeviceButton[] deviceButtons = r.getDeviceButtons();
       for ( int i = 0; i < deviceButtons.length; ++i )
+      {
         if ( deviceButtons[ i ] == value )
         {
           keyMove.setDeviceButtonIndex( i );
           break;
         }
+      }
     }
     else if ( col == 2 )
+    {
       keyMove.setKeyCode( ( ( Integer )value ).intValue() );
+    }
     else if ( col == 3 )
+    {
       keyMove.setDeviceType( ( ( DeviceType )value ).getNumber() );
+    }
     else if ( col == 4 )
     {
       SetupCode setupCode = null;
       if ( value.getClass() == String.class )
+      {
         setupCode = new SetupCode( ( String )value );
+      }
       else
+      {
         setupCode = ( SetupCode )value;
+      }
       keyMove.setSetupCode( setupCode.getValue() );
     }
     // else if (( col > 4 ) && ( col < 8 ))
@@ -209,9 +230,13 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     // setRow( row, ( KeyMove )value );
     // }
     else if ( col == 8 )
+    {
       keyMove.setNotes( ( String )value );
+    }
     else
+    {
       return;
+    }
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
 
@@ -220,6 +245,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
+  @Override
   public TableCellEditor getColumnEditor( int col )
   {
     if ( col == 1 )
@@ -250,12 +276,17 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
+    {
       return new RowNumberRenderer();
+    }
     else if ( col == 2 )
+    {
       return keyRenderer;
+    }
 
     return null;
   }

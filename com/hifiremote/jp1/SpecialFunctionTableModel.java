@@ -28,12 +28,15 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    Remote remote = remoteConfig.getRemote();
+    if ( remoteConfig != null )
+    {
+      Remote remote = remoteConfig.getRemote();
 
-    setData( remoteConfig.getSpecialFunctions() );
-    deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
-    keyRenderer.setRemote( remote );
-    keyEditor.setRemote( remote );
+      setData( remoteConfig.getSpecialFunctions() );
+      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+      keyRenderer.setRemote( remote );
+      keyEditor.setRemote( remote );
+    }
   }
 
   /**
@@ -67,6 +70,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
     return colNames[ col ];
@@ -84,6 +88,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
+  @Override
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ col ];
@@ -100,6 +105,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
+  @Override
   public boolean isColumnWidthFixed( int col )
   {
     return colWidths[ col ];
@@ -116,6 +122,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
@@ -126,9 +133,10 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
+  @Override
   public boolean isCellEditable( int row, int col )
   {
-    return !( ( col == 0 ) || ( col == 3 ) || ( col == 4 ) || ( col == 5 ) );
+    return !( col == 0 || col == 3 || col == 4 || col == 5 );
   }
 
   /*
@@ -167,6 +175,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
+  @Override
   public void setValueAt( Object value, int row, int col )
   {
     SpecialProtocolFunction sf = getRow( row );
@@ -185,14 +194,16 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     }
     else if ( col == 2 )
     {
-        sf.setKeyCode( ( ( Integer )value ).intValue() );
+      sf.setKeyCode( ( ( Integer )value ).intValue() );
     }
     else if ( col == 6 )
     {
-        sf.setNotes( ( String )value );
+      sf.setNotes( ( String )value );
     }
     else
+    {
       return;
+    }
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
 
@@ -201,6 +212,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
+  @Override
   public TableCellEditor getColumnEditor( int col )
   {
     if ( col == 1 )
@@ -225,12 +237,17 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
+    {
       return new RowNumberRenderer();
+    }
     else if ( col == 2 )
+    {
       return keyRenderer;
+    }
 
     return null;
   }
@@ -246,6 +263,6 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
 
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
-  
+
   private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
 }

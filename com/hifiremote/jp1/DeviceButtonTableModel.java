@@ -16,7 +16,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /**
    * Instantiates a new device button table model.
    */
- 
+
   public DeviceButtonTableModel()
   {
     deviceTypeEditor = new DeviceTypeEditor( deviceTypeBox, softHT );
@@ -34,30 +34,33 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    Remote remote = remoteConfig.getRemote();
-    setData( remote.getDeviceButtons() );
-    SoftDevices softDevices = remote.getSoftDevices();
-    DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceTypes() );
-    if ( remote.getSoftHomeTheaterType() >= 0 )
+    if ( remoteConfig != null )
     {
-      // Set the values passed to DeviceTypeEditor
-      softHT.setUse( true );
-      softHT.setDeviceType( remote.getSoftHomeTheaterType() );
-      softHT.setDeviceCode( remote.getSoftHomeTheaterCode() );
-    }
-    
-    if ( ( softDevices != null ) && softDevices.getAllowEmptyButtonSettings() )
-    {
-      comboModel.addElement( new DeviceType( "", 0, 0xFFFF ) );
-    }
-    deviceTypeBox.setModel( comboModel );
+      Remote remote = remoteConfig.getRemote();
+      setData( remote.getDeviceButtons() );
+      SoftDevices softDevices = remote.getSoftDevices();
+      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceTypes() );
+      if ( remote.getSoftHomeTheaterType() >= 0 )
+      {
+        // Set the values passed to DeviceTypeEditor
+        softHT.setUse( true );
+        softHT.setDeviceType( remote.getSoftHomeTheaterType() );
+        softHT.setDeviceCode( remote.getSoftHomeTheaterCode() );
+      }
 
-    if ( ( softDevices != null ) && softDevices.usesSequence() )
-    {
-      adjustSequenceRange();
+      if ( softDevices != null && softDevices.getAllowEmptyButtonSettings() )
+      {
+        comboModel.addElement( new DeviceType( "", 0, 0xFFFF ) );
+      }
+      deviceTypeBox.setModel( comboModel );
+
+      if ( softDevices != null && softDevices.usesSequence() )
+      {
+        adjustSequenceRange();
+      }
     }
   }
-  
+
   private int getDeviceCount()
   {
     int len = 0;
@@ -81,7 +84,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     sequenceBox.setModel( new DefaultComboBoxModel( values ) );
   }
-  
+
   /**
    * Sets the editable.
    * 
@@ -110,36 +113,34 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         ++count;
       }
       SoftDevices softDevices = remote.getSoftDevices();
-      if ( ( softDevices != null ) && softDevices.usesSequence() )
+      if ( softDevices != null && softDevices.usesSequence() )
       {
         ++count;
       }
     }
     return count;
   }
-  
+
   /*
-   * A remote can have a Sequence column (index 6) but no Label column (index 5),
-   * so map actual column number to an effective column number
+   * A remote can have a Sequence column (index 6) but no Label column (index 5), so map actual column number to an
+   * effective column number
    */
-  private int getEffectiveColumn(int col)
+  private int getEffectiveColumn( int col )
   {
-    if ( remoteConfig != null 
-        && remoteConfig.getRemote().getDeviceLabels() == null
-        && col == 5)
-    {      
-        return 6;
+    if ( remoteConfig != null && remoteConfig.getRemote().getDeviceLabels() == null && col == 5 )
+    {
+      return 6;
     }
     return col;
   }
-  
+
   private int getExtendedTypeIndex( int row )
   {
     // This extends the range of values of the device type index beyond 0x0F to use a distinctive
     // value, 0xFF, to signify an empty device slot in a remote that uses soft devices.
     short[] data = remoteConfig.getData();
     Remote remote = remoteConfig.getRemote();
-    DeviceButton db = ( DeviceButton )getRow( row );
+    DeviceButton db = getRow( row );
     if ( remote.getSoftDevices() == null || db.getDeviceSlot( data ) != 0xFFFF )
     {
       return db.getDeviceTypeIndex( data );
@@ -163,9 +164,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
-     return colNames[ getEffectiveColumn( col ) ];
+    return colNames[ getEffectiveColumn( col ) ];
   }
 
   /** The col prototype names. */
@@ -179,6 +181,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
+  @Override
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ getEffectiveColumn( col ) ];
@@ -195,6 +198,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ getEffectiveColumn( col ) ];
@@ -205,11 +209,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
+  @Override
   public boolean isCellEditable( int row, int col )
   {
     // If remote uses soft devices, device type must be set before other columns can be edited.
     // If remote uses soft home theater, the setup code is left blank and is not editable.
-    return editable && ( col > 1 ) && ( col == 2 || getExtendedTypeIndex( row ) != 0xFF )
+    return editable && col > 1 && ( col == 2 || getExtendedTypeIndex( row ) != 0xFF )
         && ( col != 3 || getValueAt( row, col ) != null );
   }
 
@@ -222,7 +227,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   {
     short[] data = remoteConfig.getData();
     Remote remote = remoteConfig.getRemote();
-    DeviceButton db = ( DeviceButton )getRow( row );
+    DeviceButton db = getRow( row );
     int typeIndex = getExtendedTypeIndex( row );
     if ( typeIndex == 0xFF && column > 1 )
     {
@@ -260,12 +265,18 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         {
           DeviceUpgrade deviceUpgrade = remoteConfig.getAssignedDeviceUpgrade( db );
           if ( deviceUpgrade != null )
+          {
             note = deviceUpgrade.getDescription();
+          }
         }
         if ( note == null )
+        {
           return "";
+        }
         else
+        {
           return note;
+        }
       }
       case 5:
       {
@@ -295,11 +306,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
+  @Override
   public void setValueAt( Object value, int row, int col )
   {
     short[] data = remoteConfig.getData();
     Remote remote = remoteConfig.getRemote();
-    DeviceButton db = ( DeviceButton )getRow( row );
+    DeviceButton db = getRow( row );
     SoftDevices softDevices = remote.getSoftDevices();
 
     if ( col == 2 )
@@ -317,7 +329,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         db.zeroDeviceSlot( data );
         db.setDeviceTypeIndex( ( short )newIndex, data );
         db.setSetupCode( ( short )softHT.getDeviceCode(), data );
-      }      
+      }
       else
       {
         if ( oldIndex == 0xFF )
@@ -325,24 +337,24 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           db.zeroDeviceSlot( data );
         }
         db.setDeviceTypeIndex( ( short )newIndex, data );
-      }      
-      
+      }
+
       if ( labels != null )
       {
-        String name = ( newIndex == 0xFF ) ? "" : remote.getDeviceTypeByIndex( newIndex ).getName();
+        String name = newIndex == 0xFF ? "" : remote.getDeviceTypeByIndex( newIndex ).getName();
         labels.setText( name, row, data );
         if ( labels.usesDefaultLabels() )
         {
           labels.setDefaultText( name, row, data );
-        }        
+        }
       }
-      
-      if ( ( softDevices != null ) && softDevices.usesFilledSlotCount() )
+
+      if ( softDevices != null && softDevices.usesFilledSlotCount() )
       {
         softDevices.setFilledSlotCount( getDeviceCount(), data );
       }
-      
-      if ( ( softDevices != null ) && softDevices.usesSequence() )
+
+      if ( softDevices != null && softDevices.usesSequence() )
       {
         adjustSequenceRange();
         if ( oldIndex == 0xFF )
@@ -359,17 +371,23 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       SetupCode setupCode = null;
       if ( value.getClass() == String.class )
+      {
         setupCode = new SetupCode( ( String )value );
+      }
       else
+      {
         setupCode = ( SetupCode )value;
+      }
       db.setSetupCode( ( short )setupCode.getValue(), data );
     }
     else if ( col == 4 )
     {
-      String strValue = (( String )value).trim();
-      if ( "".equals(  strValue ))
+      String strValue = ( ( String )value ).trim();
+      if ( "".equals( strValue ) )
+      {
         strValue = null;
-      
+      }
+
       remoteConfig.getDeviceButtonNotes()[ row ] = strValue;
     }
     else if ( getEffectiveColumn( col ) == 5 )
@@ -398,10 +416,13 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
+    {
       return new RowNumberRenderer();
+    }
     return null;
   }
 
@@ -410,10 +431,13 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
+  @Override
   public TableCellEditor getColumnEditor( int col )
   {
     if ( !editable )
+    {
       return null;
+    }
 
     if ( col == 2 )
     {

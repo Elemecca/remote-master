@@ -35,9 +35,9 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
     headerPanel.add( deviceBoxPanel, BorderLayout.PAGE_START );
     headerPanel.add( macroLabelPanel, BorderLayout.PAGE_END );
 
-    deviceBoxPanel.add( new JLabel("Scan device:   ") );
+    deviceBoxPanel.add( new JLabel( "Scan device:   " ) );
     deviceBoxPanel.add( deviceButtonBox );
-    macroLabelPanel.add( new JLabel("Scan macros:"), BorderLayout.LINE_START );
+    macroLabelPanel.add( new JLabel( "Scan macros:" ), BorderLayout.LINE_START );
     macroLabelPanel.setBorder( BorderFactory.createEmptyBorder( 10, 5, 5, 5 ) );
   }
 
@@ -46,8 +46,7 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
   {
     FavScanTableModel favScanTableModel = ( FavScanTableModel )model;
     RemoteConfiguration config = favScanTableModel.getRemoteConfig();
-    if ( baseFavScan == null && config.getRemote().getFavKey().isSegregated() 
-        && favScanTableModel.getRowCount() == 1 )
+    if ( baseFavScan == null && config.getRemote().getFavKey().isSegregated() && favScanTableModel.getRowCount() == 1 )
     {
       String message = "This remote does not support more than one Fav/Scan entry.";
       String title = "Fav/Scan";
@@ -62,19 +61,22 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
   {
     ( ( FavScanTableModel )model ).set( remoteConfig );
     table.initColumns( model );
-    Remote remote = remoteConfig.getRemote();
-    DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
-    if ( !remote.getFavKey().isSegregated() )
+    if ( remoteConfig != null )
     {
-      // It appears from IR.exe that when Fav/Scan is segregated, there is no option for
-      // "none", since there it has the same index, 0, as the first real device button.
-      // So it seems better simply not to allow it.
-      comboModel.insertElementAt( DeviceButton.noButton, 0 );
-    }  
-    deviceButtonBox.setModel( comboModel );
-    deviceButtonBox.setSelectedItem( remoteConfig.getFavKeyDevButton() );
+      Remote remote = remoteConfig.getRemote();
+      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
+      if ( !remote.getFavKey().isSegregated() )
+      {
+        // It appears from IR.exe that when Fav/Scan is segregated, there is no option for
+        // "none", since there it has the same index, 0, as the first real device button.
+        // So it seems better simply not to allow it.
+        comboModel.insertElementAt( DeviceButton.noButton, 0 );
+      }
+      deviceButtonBox.setModel( comboModel );
+      deviceButtonBox.setSelectedItem( remoteConfig.getFavKeyDevButton() );
+    }
   }
-  
+
   @Override
   public void valueChanged( ListSelectionEvent e )
   {
@@ -82,9 +84,9 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
     cloneButton.setEnabled( false );
     cloneItem.setEnabled( false );
   }
-  
+
   @Override
-  public void actionPerformed(ActionEvent event )
+  public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
     if ( source == deviceButtonBox )
@@ -92,7 +94,7 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
       DeviceButton deviceButton = ( DeviceButton )deviceButtonBox.getSelectedItem();
       RemoteConfiguration config = ( ( FavScanTableModel )model ).getRemoteConfig();
       if ( deviceButton != config.getFavKeyDevButton() )
-      {  
+      {
         config.setFavKeyDevButton( deviceButton );
       }
       return;
@@ -100,11 +102,9 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
     super.actionPerformed( event );
   }
 
-  
   private JPanel deviceBoxPanel = null;
   private JPanel headerPanel = null;
   private JPanel macroLabelPanel = null;
   protected JComboBox deviceButtonBox = null;
 
 }
-

@@ -32,10 +32,13 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    deviceComboBox.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceButtons() ) );
-    keyRenderer.setRemote( remoteConfig.getRemote() );
-    keyEditor.setRemote( remoteConfig.getRemote() );
-    setData( remoteConfig.getLearnedSignals() );
+    if ( remoteConfig != null )
+    {
+      deviceComboBox.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceButtons() ) );
+      keyRenderer.setRemote( remoteConfig.getRemote() );
+      keyEditor.setRemote( remoteConfig.getRemote() );
+      setData( remoteConfig.getLearnedSignals() );
+    }
   }
 
   /** The Constant colNames. */
@@ -60,6 +63,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
     return colNames[ col ];
@@ -77,6 +81,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
+  @Override
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ col ];
@@ -87,12 +92,17 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
+  @Override
   public boolean isColumnWidthFixed( int col )
   {
-    if ( ( col == 3 ) || ( col == 6 ) || ( col == 11 ) )
+    if ( col == 3 || col == 6 || col == 11 )
+    {
       return false;
+    }
     else
+    {
       return true;
+    }
   }
 
   /** The Constant colClasses. */
@@ -118,6 +128,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
@@ -128,10 +139,13 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
+  @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( ( col > 0 ) && ( col < 4 ) )
+    if ( col > 0 && col < 4 )
+    {
       return true;
+    }
     return false;
   }
 
@@ -142,17 +156,23 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    */
   public Object getValueAt( int row, int column )
   {
-    LearnedSignal l = ( LearnedSignal )getRow( row );
+    LearnedSignal l = getRow( row );
     UnpackLearned ul = l.getUnpackLearned();
     ArrayList< LearnedSignalDecode > da = l.getDecodes();
     int numDecodes = 0;
     if ( da != null )
+    {
       numDecodes = da.size();
-    if ( ( numDecodes != 1 ) && ( column > 6 ) )
+    }
+    if ( numDecodes != 1 && column > 6 )
+    {
       return null;
+    }
     LearnedSignalDecode decode = null;
-    if ( ( numDecodes == 1 ) && ( column > 5 ) )
+    if ( numDecodes == 1 && column > 5 )
+    {
       decode = da.get( 0 );
+    }
     switch ( column )
     {
       case 0: // row number
@@ -169,15 +189,21 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         return new Integer( ul.frequency );
       case 6: // protocol
         if ( numDecodes == 0 )
+        {
           return "** None **";
+        }
         if ( numDecodes > 1 )
+        {
           return "** Multiple **";
+        }
         return decode.protocolName;
       case 7: // device
         return new Integer( decode.device );
       case 8: // subDevice
         if ( decode.subDevice == -1 )
+        {
           return null;
+        }
         return new Integer( decode.subDevice );
       case 9: // obc
         return new Integer( decode.obc );
@@ -194,9 +220,10 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
+  @Override
   public void setValueAt( Object value, int row, int col )
   {
-    LearnedSignal l = ( LearnedSignal )getRow( row );
+    LearnedSignal l = getRow( row );
     switch ( col )
     {
       case 1:
@@ -205,7 +232,9 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         for ( short i = 0; i < deviceButtons.length; ++i )
         {
           if ( deviceButtons[ i ] == value )
+          {
             l.setDeviceButtonIndex( i );
+          }
         }
         break;
       }
@@ -223,12 +252,17 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
+    {
       return new RowNumberRenderer();
+    }
     else if ( col == 2 )
+    {
       return keyRenderer;
+    }
     return null;
   }
 
@@ -237,6 +271,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnEditor(int)
    */
+  @Override
   public TableCellEditor getColumnEditor( int col )
   {
     if ( col == 1 )
@@ -246,10 +281,14 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
       return e;
     }
     else if ( col == 2 )
+    {
       return keyEditor;
+    }
     else if ( col == 3 )
+    {
       return noteEditor;
-      
+    }
+
     return null;
   }
 

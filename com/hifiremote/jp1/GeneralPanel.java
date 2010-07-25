@@ -42,15 +42,22 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     deviceButtonTable.initColumns( deviceModel );
     deviceButtonTable.addMouseListener( new MouseAdapter()
     {
+      @Override
       public void mouseClicked( MouseEvent e )
       {
         if ( e.getClickCount() != 2 )
+        {
           return;
+        }
         int row = deviceButtonTable.getSelectedRow();
         if ( row == -1 )
+        {
           return;
+        }
         if ( !deviceButtonTable.isCellEditable( row, deviceButtonTable.columnAtPoint( e.getPoint() ) ) )
+        {
           editUpgradeInRow( row );
+        }
       }
     } );
 
@@ -122,6 +129,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
    * @param remoteConfig
    *          the remote config
    */
+  @Override
   public void set( RemoteConfiguration remoteConfig )
   {
     setInProgress = true;
@@ -132,16 +140,19 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     settingModel.set( remoteConfig );
     settingTable.initColumns( settingModel );
 
-    String text = remoteConfig.getNotes();
-    if ( text == null )
+    if ( remoteConfig != null )
     {
-      text = "";
+      String text = remoteConfig.getNotes();
+      if ( text == null )
+      {
+        text = "";
+      }
+      notes.setText( text );
+
+      adjustPreferredViewportSizes();
+
+      validate();
     }
-    notes.setText( text );
-
-    adjustPreferredViewportSizes();
-
-    validate();
     setInProgress = false;
   }
 
@@ -150,14 +161,19 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
    * 
    * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
    */
+  @Override
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
     if ( listener != null )
     {
       if ( deviceModel != null )
+      {
         deviceModel.addPropertyChangeListener( listener );
+      }
       if ( settingModel != null )
+      {
         settingModel.addPropertyChangeListener( listener );
+      }
     }
   }
 
@@ -194,7 +210,9 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   public void editUpgradeInRow( int row )
   {
     if ( row == -1 )
+    {
       return;
+    }
 
     DeviceUpgrade newUpgrade = new DeviceUpgrade( selectedUpgrade );
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
@@ -203,7 +221,9 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     DeviceUpgradeEditor editor = new DeviceUpgradeEditor( rm, newUpgrade, remotes );
     newUpgrade = editor.getDeviceUpgrade();
     if ( newUpgrade == null )
+    {
       return;
+    }
 
     ListIterator< DeviceUpgrade > upgrades = remoteConfig.getDeviceUpgrades().listIterator();
     while ( upgrades.hasNext() )

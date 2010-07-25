@@ -25,7 +25,10 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    setData( remoteConfig.getProtocolUpgrades() );
+    if ( remoteConfig != null )
+    {
+      setData( remoteConfig.getProtocolUpgrades() );
+    }
   }
 
   /*
@@ -49,6 +52,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
     return colNames[ col ];
@@ -65,6 +69,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnPrototypeName(int)
    */
+  @Override
   public String getColumnPrototypeName( int col )
   {
     return colPrototypeNames[ col ];
@@ -75,10 +80,13 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
+  @Override
   public boolean isColumnWidthFixed( int col )
   {
     if ( col < 2 )
+    {
       return true;
+    }
     return false;
   }
 
@@ -93,6 +101,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
@@ -103,10 +112,13 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
    * 
    * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
    */
+  @Override
   public boolean isCellEditable( int row, int col )
   {
     if ( col == 3 )
+    {
       return true;
+    }
 
     return false;
   }
@@ -129,7 +141,9 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
         StringBuilder buff = new StringBuilder( 4 );
         buff.append( '0' );
         if ( pid < 0x100 )
+        {
           buff.append( '0' );
+        }
         buff.append( Integer.toHexString( pid ).toUpperCase() );
         return buff.toString();
       }
@@ -146,11 +160,14 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
    * 
    * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
    */
+  @Override
   public void setValueAt( Object value, int row, int col )
   {
     ProtocolUpgrade pu = remoteConfig.getProtocolUpgrades().get( row );
     if ( col == 3 )
+    {
       pu.setNotes( ( String )value );
+    }
   }
 
   /*
@@ -158,17 +175,23 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#getColumnRenderer(int)
    */
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
+    {
       return new RowNumberRenderer();
+    }
     return null;
   }
-  
+
+  @Override
   public TableCellEditor getColumnEditor( int col )
   {
-    if ( col == 3)
+    if ( col == 3 )
+    {
       return noteEditor;
+    }
     return null;
   }
 

@@ -9,19 +9,21 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   {
   // TODO Auto-generated constructor stub
   }
-  
+
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    setData( remoteConfig.getFavScans() );
+    if ( remoteConfig != null )
+    {
+      setData( remoteConfig.getFavScans() );
+    }
   }
 
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "A reasonable length macro with a reasonable number of steps ",
-      "A reasonable length note for a macro"
+      " 00 ", "A reasonable length macro with a reasonable number of steps ", "A reasonable length note for a macro"
   };
-  
+
   /** The Constant colWidths. */
   private static final boolean[] colWidths =
   {
@@ -33,11 +35,13 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
    * 
    * @see com.hifiremote.jp1.JP1TableModel#isColumnWidthFixed(int)
    */
+  @Override
   public boolean isColumnWidthFixed( int col )
   {
     return colWidths[ col ];
   }
-  
+
+  @Override
   public boolean isCellEditable( int row, int col )
   {
     if ( col < 2 )
@@ -46,7 +50,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     }
     return true;
   }
- 
+
   /** The Constant colNames. */
   private static final String[] colNames =
   {
@@ -58,11 +62,12 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnName(int)
    */
+  @Override
   public String getColumnName( int col )
   {
     return colNames[ col ];
   }
-  
+
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
@@ -74,11 +79,12 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
    * 
    * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
    */
+  @Override
   public Class< ? > getColumnClass( int col )
   {
     return colClasses[ col ];
   }
-  
+
   @Override
   public String getColumnPrototypeName( int col )
   {
@@ -90,7 +96,8 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   {
     return 3;
   }
-  
+
+  @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
     if ( col == 0 )
@@ -116,13 +123,13 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
         return null;
     }
   }
-  
+
   @Override
   public void setValueAt( Object value, int row, int col )
   {
     FavScan favScan = getRow( row );
     if ( col == 2 )
-    {  
+    {
       favScan.setNotes( ( String )value );
     }
     propertyChangeSupport.firePropertyChange( "data", null, null );
@@ -132,6 +139,6 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   {
     return remoteConfig;
   }
-  
+
   private RemoteConfiguration remoteConfig = null;
 }
