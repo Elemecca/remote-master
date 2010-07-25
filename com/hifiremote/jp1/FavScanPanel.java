@@ -65,7 +65,7 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
     {
       Remote remote = remoteConfig.getRemote();
       DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
-      if ( !remote.getFavKey().isSegregated() )
+      if ( remote.getFavKey() != null && !remote.getFavKey().isSegregated() )
       {
         // It appears from IR.exe that when Fav/Scan is segregated, there is no option for
         // "none", since there it has the same index, 0, as the first real device button.
