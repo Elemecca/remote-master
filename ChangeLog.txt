@@ -1,3 +1,8 @@
+Changes for v1.99a
+- Fix harmless NullPointerExceptions logged when switching tabs before loading a remote configuration
+- Include .ico files in distribution zip
+- Fix missing buttons on Devices tab (moved upgrade bug warning to top) 
+
 Changes for v1.99
 - Add DigitMaps through 486
 - Fix TiVo (Official 2-byte) Unit Code encoding
