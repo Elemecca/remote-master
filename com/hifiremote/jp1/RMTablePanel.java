@@ -318,9 +318,11 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     d.width = table.getPreferredSize().width;
     table.setPreferredScrollableViewportSize( d );
     add( scrollPane, location );
-
+    
+    footerPanel = new JPanel( new BorderLayout() );
+    add ( footerPanel, BorderLayout.PAGE_END );
     buttonPanel = new JPanel();
-    add( buttonPanel, BorderLayout.SOUTH );
+    footerPanel.add( buttonPanel, BorderLayout.PAGE_END );
 
     editButton = new JButton( "Edit" );
     editButton.addActionListener( this );
@@ -628,6 +630,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
 
   /** The button panel. */
   protected JPanel buttonPanel = null;
+  
+  protected JPanel footerPanel = null;
 
   /** The edit button. */
   private JButton editButton = null;

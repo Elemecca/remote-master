@@ -24,7 +24,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   public DeviceUpgradePanel()
   {
     super( new DeviceUpgradeTableModel() );
-    add( upgradeBugPane, BorderLayout.PAGE_START );
+    footerPanel.add( upgradeBugPane, BorderLayout.PAGE_START );
     Font font = upgradeBugPane.getFont();
     Font font2 = font.deriveFont( Font.BOLD, 12 );
     upgradeBugPane.setFont( font2 );
