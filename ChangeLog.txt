@@ -1,3 +1,7 @@
+Changes for v1.99b
+- Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
+- Fixed null pointer exception caused by absence of FavKey entry in RDF (Graham)
+
 Changes for v1.99a
 - Fix harmless NullPointerExceptions logged when switching tabs before loading a remote configuration
 - Include .ico files in distribution zip
