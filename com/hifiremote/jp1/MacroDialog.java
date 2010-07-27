@@ -3,7 +3,6 @@ package com.hifiremote.jp1;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -23,17 +22,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class MacroDialog.
  */
-public class MacroDialog extends JDialog implements ActionListener, ListSelectionListener
+public class MacroDialog extends JDialog implements ActionListener
 {
 
   /**
@@ -92,61 +88,16 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
     xShift.addActionListener( this );
     panel.add( xShift );
 
-    // Add the Macro definition controls
-    Box macroBox = Box.createHorizontalBox();
-    macroBox.setBorder( BorderFactory.createTitledBorder( "Macro Definition" ) );
-    contentPane.add( macroBox, BorderLayout.CENTER );
-
-    JPanel availableBox = new JPanel( new BorderLayout() );
-    macroBox.add( availableBox );
-    availableBox.add( new JLabel( "Available keys:" ), BorderLayout.NORTH );
-    availableButtons.setFixedCellWidth( 100 );
-    availableBox.add( new JScrollPane( availableButtons ), BorderLayout.CENTER );
-    availableButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
-    availableButtons.addListSelectionListener( this );
-
-    panel = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
-    panel.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
-    availableBox.add( panel, BorderLayout.SOUTH );
-    add.addActionListener( this );
-    panel.add( add );
-    insert.addActionListener( this );
-    panel.add( insert );
-    addShift.addActionListener( this );
-    panel.add( addShift );
-    insertShift.addActionListener( this );
-    panel.add( insertShift );
-    addXShift.addActionListener( this );
-    panel.add( addXShift );
-    insertXShift.addActionListener( this );
-    panel.add( insertXShift );
-
-    macroBox.add( Box.createHorizontalStrut( 20 ) );
-
-    JPanel keysBox = new JPanel( new BorderLayout() );
-    macroBox.add( keysBox );
-    keysBox.add( new JLabel( "Macro Keys:" ), BorderLayout.NORTH );
-    macroButtons.setFixedCellWidth( 100 );
-    keysBox.add( new JScrollPane( macroButtons ), BorderLayout.CENTER );
     macroButtons.setModel( macroButtonModel );
-    macroButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
-    macroButtons.setCellRenderer( macroButtonRenderer );
-    macroButtons.addListSelectionListener( this );
-
-    JPanel buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
-    buttonBox.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
-    keysBox.add( buttonBox, BorderLayout.SOUTH );
-    moveUp.addActionListener( this );
-    buttonBox.add( moveUp );
-    moveDown.addActionListener( this );
-    buttonBox.add( moveDown );
-    remove.addActionListener( this );
-    buttonBox.add( remove );
-    clear.addActionListener( this );
-    buttonBox.add( clear );
+//    macroButtons.setCellRenderer( macroButtonRenderer );
+    
+    // Add the Macro definition controls
+    macroBox = new MacroDefinitionBox( this, availableButtons, macroButtons );
+    contentPane.add( macroBox, BorderLayout.CENTER );
 
     JPanel bottomPanel = new JPanel( new BorderLayout() );
     contentPane.add( bottomPanel, BorderLayout.SOUTH );
+    
     // Add the notes
     panel = new JPanel( new BorderLayout() );
     bottomPanel.add( panel, BorderLayout.NORTH );
@@ -194,8 +145,8 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
         model.addElement( b );
     }
     availableButtons.setModel( model );
-
-    macroButtonRenderer.setRemote( remote );
+    
+    macroBox.setRemoteConfiguration( config );
   }
 
   /**
@@ -217,7 +168,7 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
       shift.setSelected( false );
       xShift.setSelected( false );
       notes.setText( null );
-      enableButtons();
+      macroBox.enableButtons();
       return;
     }
 
@@ -229,7 +180,7 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
 
     notes.setText( macro.getNotes() );
 
-    enableButtons();
+    macroBox.enableButtons();
   }
 
   /**
@@ -328,64 +279,6 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
     JOptionPane.showMessageDialog( this, message, "Missing Information", JOptionPane.ERROR_MESSAGE );
   }
 
-  /**
-   * Gets the selected key code.
-   * 
-   * @return the selected key code
-   */
-  private int getSelectedKeyCode()
-  {
-    return ( ( Button )availableButtons.getSelectedValue() ).getKeyCode();
-  }
-
-  /**
-   * Adds the key.
-   * 
-   * @param mask
-   *          the mask
-   */
-  private void addKey( int mask )
-  {
-    Integer value = new Integer( getSelectedKeyCode() | mask );
-    macroButtonModel.addElement( value );
-  }
-
-  /**
-   * Insert key.
-   * 
-   * @param mask
-   *          the mask
-   */
-  private void insertKey( int mask )
-  {
-    Integer value = new Integer( getSelectedKeyCode() | mask );
-    int index = macroButtons.getSelectedIndex();
-    if ( index == -1 )
-      macroButtonModel.add( 0, value );
-    else
-      macroButtonModel.add( index, value );
-    macroButtons.setSelectedIndex( index + 1 );
-    macroButtons.ensureIndexIsVisible( index + 1 );
-  }
-
-  /**
-   * Swap.
-   * 
-   * @param index1
-   *          the index1
-   * @param index2
-   *          the index2
-   */
-  private void swap( int index1, int index2 )
-  {
-    Object o1 = macroButtonModel.get( index1 );
-    Object o2 = macroButtonModel.get( index2 );
-    macroButtonModel.set( index1, o2 );
-    macroButtonModel.set( index2, o1 );
-    macroButtons.setSelectedIndex( index2 );
-    macroButtons.ensureIndexIsVisible( index2 );
-  }
-
   /*
    * (non-Javadoc)
    * 
@@ -452,60 +345,12 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
       if ( b.getIsXShifted() )
         xShift.setSelected( true );
     }
-    else if ( source == add )
-    {
-      addKey( 0 );
-    }
-    else if ( source == insert )
-    {
-      insertKey( 0 );
-    }
-    else if ( source == addShift )
-    {
-      addKey( remote.getShiftMask() );
-    }
-    else if ( source == insertShift )
-    {
-      insertKey( remote.getShiftMask() );
-    }
-    else if ( source == addXShift )
-    {
-      addKey( remote.getXShiftMask() );
-    }
-    else if ( source == insertXShift )
-    {
-      insertKey( remote.getXShiftMask() );
-    }
-    else if ( source == moveUp )
-    {
-      int index = macroButtons.getSelectedIndex();
-      swap( index, index - 1 );
-    }
-    else if ( source == moveDown )
-    {
-      int index = macroButtons.getSelectedIndex();
-      swap( index, index + 1 );
-    }
-    else if ( source == remove )
-    {
-      int index = macroButtons.getSelectedIndex();
-      macroButtonModel.removeElementAt( index );
-      int last = macroButtonModel.getSize() - 1;
-      if ( index > last )
-        index = last;
-      macroButtons.setSelectedIndex( index );
-    }
-    else if ( source == clear )
-    {
-      macroButtonModel.clear();
-    }
-    enableButtons();
   }
 
   /**
-   * Enable buttons.
+   * Enable available buttons.
    */
-  private void enableButtons()
+  protected void enableAvailableButtons()
   {
     int limit = 15;
     if ( config.getRemote().getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
@@ -514,32 +359,14 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
     Button b = ( Button )availableButtons.getSelectedValue();
     boolean canAdd = ( b != null ) && moreRoom;
 
-    add.setEnabled( canAdd && b.canAssignToMacro() );
-    insert.setEnabled( canAdd && b.canAssignToMacro() );
-    addShift.setEnabled( canAdd && b.canAssignShiftedToMacro() );
-    insertShift.setEnabled( canAdd && b.canAssignShiftedToMacro() );
+    macroBox.add.setEnabled( canAdd && b.canAssignToMacro() );
+    macroBox.insert.setEnabled( canAdd && b.canAssignToMacro() );
+    macroBox.addShift.setEnabled( canAdd && b.canAssignShiftedToMacro() );
+    macroBox.insertShift.setEnabled( canAdd && b.canAssignShiftedToMacro() );
     boolean xShiftEnabled = config.getRemote().getXShiftEnabled();
-    addXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
-    insertXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
+    macroBox.addXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
+    macroBox.insertXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
 
-    int selected = macroButtons.getSelectedIndex();
-    moveUp.setEnabled( selected > 0 );
-    moveDown.setEnabled( ( selected != -1 ) && ( selected < ( macroButtonModel.getSize() - 1 ) ) );
-    remove.setEnabled( selected != -1 );
-    clear.setEnabled( macroButtonModel.getSize() > 0 );
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-   */
-  public void valueChanged( ListSelectionEvent e )
-  {
-    if ( e.getValueIsAdjusting() )
-      return;
-
-    enableButtons();
   }
 
   /** The bound key. */
@@ -554,44 +381,11 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
   /** The available buttons. */
   private JList availableButtons = new JList();
 
-  /** The add. */
-  private JButton add = new JButton( "Add" );
-
-  /** The insert. */
-  private JButton insert = new JButton( "Insert" );
-
-  /** The add shift. */
-  private JButton addShift = new JButton( "Add Shift" );
-
-  /** The insert shift. */
-  private JButton insertShift = new JButton( "Ins Shift" );
-
-  /** The add x shift. */
-  private JButton addXShift = new JButton( "Add xShift" );
-
-  /** The insert x shift. */
-  private JButton insertXShift = new JButton( "Ins xShift" );
-
-  /** The macro button renderer. */
-  private MacroButtonRenderer macroButtonRenderer = new MacroButtonRenderer();
-
   /** The macro button model. */
   private DefaultListModel macroButtonModel = new DefaultListModel();
 
   /** The macro buttons. */
   private JList macroButtons = new JList();
-
-  /** The move up. */
-  private JButton moveUp = new JButton( "Move up" );
-
-  /** The move down. */
-  private JButton moveDown = new JButton( "Move down" );
-
-  /** The remove. */
-  private JButton remove = new JButton( "Remove" );
-
-  /** The clear. */
-  private JButton clear = new JButton( "Clear" );
 
   /** The ok button. */
   private JButton okButton = new JButton( "OK" );
@@ -607,7 +401,10 @@ public class MacroDialog extends JDialog implements ActionListener, ListSelectio
 
   /** The macro. */
   private Macro macro = null;
+  
+  private MacroDefinitionBox macroBox = null;
 
   /** The dialog. */
   private static MacroDialog dialog = null;
+  
 }
