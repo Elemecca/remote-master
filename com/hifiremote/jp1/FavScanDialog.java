@@ -454,7 +454,7 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     DefaultListModel model = new DefaultListModel();
     for ( Button b : buttons )
     {
-      if ( b.canAssignToMacro() || b.canAssignShiftedToMacro() || b.canAssignXShiftedToMacro() )
+      if ( b.canAssignToFav() || b.canAssignShiftedToFav() || b.canAssignXShiftedToFav() )
         model.addElement( b );
     }
     availableButtons.setModel( model );

@@ -1,3 +1,5 @@
+- Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan.
+
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
 - Fixed null pointer exception caused by absence of FavKey entry in RDF (Graham)
