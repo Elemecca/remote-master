@@ -29,7 +29,7 @@ import javax.swing.SwingUtilities;
 /**
  * The Class MacroDialog.
  */
-public class MacroDialog extends JDialog implements ActionListener
+public class MacroDialog extends JDialog implements ActionListener, ButtonEnabler
 {
 
   /**
@@ -89,7 +89,6 @@ public class MacroDialog extends JDialog implements ActionListener
     panel.add( xShift );
 
     macroButtons.setModel( macroButtonModel );
-//    macroButtons.setCellRenderer( macroButtonRenderer );
     
     // Add the Macro definition controls
     macroBox = new MacroDefinitionBox( this, availableButtons, macroButtons );
@@ -168,10 +167,9 @@ public class MacroDialog extends JDialog implements ActionListener
       shift.setSelected( false );
       xShift.setSelected( false );
       notes.setText( null );
-      macroBox.enableButtons();
-      return;
     }
-
+    else
+    {
     setButton( macro.getKeyCode(), boundKey, shift, xShift );
     short[] data = macro.getData().getData();
     for ( int i = 0; i < data.length; ++i )
@@ -179,7 +177,9 @@ public class MacroDialog extends JDialog implements ActionListener
     macroButtons.setSelectedIndex( -1 );
 
     notes.setText( macro.getNotes() );
-
+    }
+    
+    enableButtons();
     macroBox.enableButtons();
   }
 
@@ -347,10 +347,8 @@ public class MacroDialog extends JDialog implements ActionListener
     }
   }
 
-  /**
-   * Enable available buttons.
-   */
-  protected void enableAvailableButtons()
+  @Override
+  public void enableButtons()
   {
     int limit = 15;
     if ( config.getRemote().getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )

@@ -10,7 +10,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -21,10 +20,10 @@ import javax.swing.event.ListSelectionListener;
 
 public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener
 {
-  public MacroDefinitionBox( JDialog dialog, JList availableButtons, JList macroButtons )
+  public MacroDefinitionBox( ButtonEnabler buttonEnabler, JList availableButtons, JList macroButtons )
   {
     super( BoxLayout.X_AXIS );
-    this.dialog = dialog;
+    this.buttonEnabler = buttonEnabler;
     this.availableButtons = availableButtons;
     this.macroButtons = macroButtons;
     macroButtonModel = ( DefaultListModel )macroButtons.getModel();
@@ -137,6 +136,7 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
       macroButtonModel.clear();
     }
     enableButtons();
+    buttonEnabler.enableButtons();
   }
   
   /**
@@ -208,6 +208,7 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
       return;
 
     enableButtons();
+    buttonEnabler.enableButtons();
   }
   
   /**
@@ -215,11 +216,6 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
    */
   public void enableButtons()
   {
-    if ( dialog instanceof MacroDialog )
-    {
-      ( ( MacroDialog )dialog ).enableAvailableButtons();
-    }
-
     int selected = macroButtons.getSelectedIndex();
     moveUp.setEnabled( selected > 0 );
     moveDown.setEnabled( ( selected != -1 ) && ( selected < ( macroButtonModel.getSize() - 1 ) ) );
@@ -268,7 +264,7 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
   
   private JPanel panel = null;
   
-  private JDialog dialog = null;
+  private ButtonEnabler buttonEnabler = null;
   
   /** The macro button model. */
   private DefaultListModel macroButtonModel = null;

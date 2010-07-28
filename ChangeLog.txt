@@ -1,5 +1,6 @@
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)
 - Split off a new class, MacroDefinitionBox, from MacroDialog to allow its re-use with Timed Macros. (Graham)
+- Create new interface, ButtonEnabler, and use it to improve logical separation between MacroDefinitionBox and MacroDialog. (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
