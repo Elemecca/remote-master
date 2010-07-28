@@ -218,7 +218,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     if ( col == 1 )
     {
       DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
-      editor.setClickCountToStart( 1 );
+      editor.setClickCountToStart( RMConstants.ClickCountToStart );
       return editor;
     }
     else if ( col == 2 )

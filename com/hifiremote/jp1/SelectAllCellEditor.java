@@ -10,24 +10,38 @@ import javax.swing.SwingUtilities;
 public class SelectAllCellEditor extends DefaultCellEditor implements Runnable
 {
   private JTextField textField = null;
+  private String selectText = null;
+
   public SelectAllCellEditor()
   {
     super( new JTextField() );
-    setClickCountToStart( 1 );
+    setClickCountToStart( RMConstants.ClickCountToStart );
     textField = ( JTextField )super.getComponent();
   }
-  
+
   @Override
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int column )
   {
     super.getTableCellEditorComponent( table, value, isSelected, row, column );
-    SwingUtilities.invokeLater( this );
+    if ( RMConstants.EnableCellEditorSelectAll )
+    {
+      selectText = textField.getText();
+      SwingUtilities.invokeLater( this );
+    }
     return textField;
   }
 
   @Override
   public void run()
   {
-    textField.selectAll();
+    String text = textField.getText();
+    if ( text.equals( selectText ) )
+    {
+      textField.selectAll();
+    }
+    else
+    {
+      textField.setText( text.substring( selectText.length() ) );
+    }
   }
 }

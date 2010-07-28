@@ -251,7 +251,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     if ( col == 1 )
     {
       DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
-      editor.setClickCountToStart( 1 );
+      editor.setClickCountToStart( RMConstants.ClickCountToStart );
       return editor;
     }
     else if ( col == 2 )
@@ -261,7 +261,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     else if ( col == 3 )
     {
       DefaultCellEditor editor = new DefaultCellEditor( deviceTypeBox );
-      editor.setClickCountToStart( 1 );
+      editor.setClickCountToStart( RMConstants.ClickCountToStart );
       return editor;
     }
     else if ( col == 4 || col == 8 )

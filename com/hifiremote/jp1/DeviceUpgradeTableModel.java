@@ -243,7 +243,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     {
       case 3:
         DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
-        editor.setClickCountToStart( 1 );
+        editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
       case 5:
         return descriptionEditor;

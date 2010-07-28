@@ -20,7 +20,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    */
   public LearnedSignalTableModel()
   {
-    deviceEditor.setClickCountToStart( 1 );
+    deviceEditor.setClickCountToStart( RMConstants.ClickCountToStart );
   }
 
   /**
@@ -277,7 +277,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     if ( col == 1 )
     {
       DefaultCellEditor e = new DefaultCellEditor( deviceComboBox );
-      e.setClickCountToStart( 1 );
+      e.setClickCountToStart( RMConstants.ClickCountToStart );
       return e;
     }
     else if ( col == 2 )

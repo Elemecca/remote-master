@@ -1,5 +1,8 @@
+Changes for v1.99c
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)
 - Split off a new class, MacroDefinitionBox, from MacroDialog to allow its re-use with Timed Macros. (Graham)
+- Restore double-click to edit table cells (Greg)
+- Typing when not in edit more will start edit mode and replace cell contents (Greg)
 - Create new interface, ButtonEnabler, and use it to improve logical separation between MacroDefinitionBox and MacroDialog. (Graham)
 
 Changes for v1.99b

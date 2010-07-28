@@ -56,6 +56,7 @@
         <target name="rmzip" depends="rmjar,digitmaps" description="Generate the distribution zip file">
           <zip destfile="${src}/RemoteMaster.${rmversion}.zip">
             <zipfileset dir="${src}" includes="RemoteMaster.jar,Readme.html,*.css,protocols.ini,ChangeLog.txt,digitmaps.bin,Setup.vbs,porttalk.sys,*.ico" />
+            <zipfileset src="${src}/jp1parallel.zip" includes="porttalk.sys"/>
             <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows"/>
 			<zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" prefix="Linux-i386" filemode="755"/>
 			<zipfileset src="${src}/par64.zip" includes="libjp1parallel.so" prefix="Linux-amd64" filemode="755"/>

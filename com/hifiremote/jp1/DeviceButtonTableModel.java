@@ -20,9 +20,9 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   public DeviceButtonTableModel()
   {
     deviceTypeEditor = new DeviceTypeEditor( deviceTypeBox, softHT );
-    deviceTypeEditor.setClickCountToStart( 1 );
+    deviceTypeEditor.setClickCountToStart( RMConstants.ClickCountToStart );
     sequenceEditor = new DefaultCellEditor( sequenceBox );
-    sequenceEditor.setClickCountToStart( 1 );
+    sequenceEditor.setClickCountToStart( RMConstants.ClickCountToStart );
   }
 
   /**

@@ -11,14 +11,14 @@ import javax.swing.JTable;
 /**
  * The Class ChoiceEditor.
  */
-public class ChoiceEditor
-  extends DefaultCellEditor
+public class ChoiceEditor extends DefaultCellEditor
 {
-  
+
   /**
    * Instantiates a new choice editor.
    * 
-   * @param choices the choices
+   * @param choices
+   *          the choices
    */
   public ChoiceEditor( Choice[] choices )
   {
@@ -28,16 +28,20 @@ public class ChoiceEditor
   /**
    * Instantiates a new choice editor.
    * 
-   * @param choices the choices
-   * @param allowNull the allow null
+   * @param choices
+   *          the choices
+   * @param allowNull
+   *          the allow null
    */
   public ChoiceEditor( Choice[] choices, boolean allowNull )
   {
-    super( new JComboBox());
-    setClickCountToStart( 1 );
+    super( new JComboBox() );
+    setClickCountToStart( RMConstants.ClickCountToStart );
     this.choices = choices;
     if ( allowNull )
+    {
       adjust = 1;
+    }
 
     comboBox = ( JComboBox )getComponent();
 
@@ -52,9 +56,9 @@ public class ChoiceEditor
     int visibleCount = 0;
     for ( int i = 0; i < choices.length; i++ )
     {
-      if ( !choices[ i ].isHidden())
+      if ( !choices[ i ].isHidden() )
       {
-        visibleCount++;
+        visibleCount++ ;
       }
     }
 
@@ -69,61 +73,79 @@ public class ChoiceEditor
     }
     for ( int i = 0; i < choices.length; i++ )
     {
-      if ( !choices[ i ].isHidden())
+      if ( !choices[ i ].isHidden() )
       {
         temp[ tempIndex++ ] = choices[ i ];
       }
     }
-    comboBox.setModel( new DefaultComboBoxModel( temp ));
+    comboBox.setModel( new DefaultComboBoxModel( temp ) );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.DefaultCellEditor#getCellEditorValue()
    */
+  @Override
   public Object getCellEditorValue()
   {
     Choice temp = ( Choice )super.getCellEditorValue();
     if ( temp.getIndex() == -1 )
+    {
       return null;
+    }
     else
+    {
       return temp;
+    }
   }
 
-  /* (non-Javadoc)
-   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.DefaultCellEditor#getTableCellEditorComponent(javax.swing.JTable, java.lang.Object, boolean, int,
+   * int)
    */
+  @Override
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int col )
   {
     System.err.println( "ChoiceEditor.getTableCellEditorComponent(), value=" + value + ", row=" + row );
     if ( value != null )
     {
-      Class<?> c = value.getClass();
+      Class< ? > c = value.getClass();
       if ( c == String.class )
       {
         for ( int i = 0; i < choices.length; i++ )
         {
           Choice choice = choices[ i ];
-          if ( choice.getText().equals( value ))
+          if ( choice.getText().equals( value ) )
+          {
             comboBox.setSelectedItem( choice );
+          }
         }
       }
       else if ( c == Choice.class )
-        comboBox.setSelectedItem(( Choice )value );
+      {
+        comboBox.setSelectedItem( value );
+      }
       else if ( c == Integer.class )
-
-        comboBox.setSelectedIndex((( Integer )value ).intValue() + adjust );
+      {
+        comboBox.setSelectedIndex( ( ( Integer )value ).intValue() + adjust );
+      }
     }
     else
+    {
       comboBox.setSelectedIndex( 0 );
+    }
     return comboBox;
   }
 
   /** The combo box. */
   private JComboBox comboBox = null;
-  
+
   /** The choices. */
   private Choice[] choices = null;
-  
+
   /** The adjust. */
   private int adjust;
 }
