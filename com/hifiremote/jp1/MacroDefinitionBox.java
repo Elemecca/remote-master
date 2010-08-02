@@ -20,13 +20,11 @@ import javax.swing.event.ListSelectionListener;
 
 public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener
 {
-  public MacroDefinitionBox( ButtonEnabler buttonEnabler, JList availableButtons, JList macroButtons )
+  public MacroDefinitionBox( ButtonEnabler buttonEnabler )
   {
     super( BoxLayout.X_AXIS );
     this.buttonEnabler = buttonEnabler;
-    this.availableButtons = availableButtons;
-    this.macroButtons = macroButtons;
-    macroButtonModel = ( DefaultListModel )macroButtons.getModel();
+    macroButtons.setModel( macroButtonModel );
     setBorder( BorderFactory.createTitledBorder( "Macro Definition" ) );
 
     JPanel availableBox = new JPanel( new BorderLayout() );
@@ -82,6 +80,16 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
     this.config = config;
     Remote remote = config.getRemote();
     macroButtonRenderer.setRemote( remote );
+    
+    java.util.List< Button > buttons = remote.getButtons();
+    for ( Button b : buttons )
+    {
+      if ( buttonEnabler.isAvailable( b ) )
+      {  
+        availableButtonModel.addElement( b );
+      }
+    }
+    availableButtons.setModel( availableButtonModel );
   }  
   
   public void actionPerformed( ActionEvent event )
@@ -136,7 +144,6 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
       macroButtonModel.clear();
     }
     enableButtons();
-    buttonEnabler.enableButtons();
   }
   
   /**
@@ -197,6 +204,27 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
     return ( ( Button )availableButtons.getSelectedValue() ).getKeyCode();
   }
   
+  public boolean isMoreRoom( int limit )
+  {
+    return macroButtonModel.getSize() < limit;
+  }
+
+  public boolean isEmpty()
+  {
+    return macroButtonModel.getSize() == 0;
+  }
+  
+  public Hex getData()
+  {
+    int length = macroButtonModel.getSize();
+    short[] keyCodes = new short[ length ];
+    for ( int i = 0; i < length; ++i )
+    {  
+      keyCodes[ i ] = ( ( Number )macroButtonModel.elementAt( i ) ).shortValue();
+    }  
+    return new Hex( keyCodes );
+  }
+  
   /*
    * (non-Javadoc)
    * 
@@ -208,7 +236,20 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
       return;
 
     enableButtons();
-    buttonEnabler.enableButtons();
+  }
+  
+  public void setData( Hex hex )
+  {
+    availableButtons.setSelectedIndex( -1 );
+    macroButtonModel.clear();
+    if ( hex == null )
+    {
+      return;
+    }
+    short[] data = hex.getData();
+    for ( int i = 0; i < data.length; ++i )
+      macroButtonModel.addElement( new Integer( data[ i ] ) );
+    macroButtons.setSelectedIndex( -1 );
   }
   
   /**
@@ -221,6 +262,9 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
     moveDown.setEnabled( ( selected != -1 ) && ( selected < ( macroButtonModel.getSize() - 1 ) ) );
     remove.setEnabled( selected != -1 );
     clear.setEnabled( macroButtonModel.getSize() > 0 );
+    
+    Button baseButton = ( Button )availableButtons.getSelectedValue();
+    buttonEnabler.enableButtons( baseButton );
   }
 
   
@@ -259,6 +303,8 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
   /** The available buttons. */
   private JList availableButtons = new JList();
   
+  private DefaultListModel availableButtonModel = new DefaultListModel();
+  
   /** The macro buttons. */
   private JList macroButtons = new JList();
   
@@ -267,7 +313,7 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
   private ButtonEnabler buttonEnabler = null;
   
   /** The macro button model. */
-  private DefaultListModel macroButtonModel = null;
+  private DefaultListModel macroButtonModel = new DefaultListModel();
   
   /** The macro button renderer. */
   private MacroButtonRenderer macroButtonRenderer = new MacroButtonRenderer();

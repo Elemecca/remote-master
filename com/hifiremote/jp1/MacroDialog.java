@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -17,7 +16,6 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -88,10 +86,8 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     xShift.addActionListener( this );
     panel.add( xShift );
 
-    macroButtons.setModel( macroButtonModel );
-    
     // Add the Macro definition controls
-    macroBox = new MacroDefinitionBox( this, availableButtons, macroButtons );
+    macroBox = new MacroDefinitionBox( this );
     contentPane.add( macroBox, BorderLayout.CENTER );
 
     JPanel bottomPanel = new JPanel( new BorderLayout() );
@@ -136,15 +132,6 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     xShift.setText( remote.getXShiftLabel() );
     xShift.setEnabled( remote.getXShiftEnabled() );
 
-    java.util.List< Button > buttons = remote.getButtons();
-    DefaultListModel model = new DefaultListModel();
-    for ( Button b : buttons )
-    {
-      if ( b.canAssignToMacro() || b.canAssignShiftedToMacro() || b.canAssignXShiftedToMacro() )
-        model.addElement( b );
-    }
-    availableButtons.setModel( model );
-    
     macroBox.setRemoteConfiguration( config );
   }
 
@@ -158,28 +145,21 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   {
     this.macro = null;
 
-    availableButtons.setSelectedIndex( -1 );
-    macroButtonModel.clear();
-
     if ( macro == null )
     {
       boundKey.setSelectedIndex( -1 );
       shift.setSelected( false );
       xShift.setSelected( false );
+      macroBox.setData( null );
       notes.setText( null );
     }
     else
     {
     setButton( macro.getKeyCode(), boundKey, shift, xShift );
-    short[] data = macro.getData().getData();
-    for ( int i = 0; i < data.length; ++i )
-      macroButtonModel.addElement( new Integer( data[ i ] ) );
-    macroButtons.setSelectedIndex( -1 );
-
+    macroBox.setData( macro.getData() );
     notes.setText( macro.getNotes() );
     }
     
-    enableButtons();
     macroBox.enableButtons();
   }
 
@@ -297,20 +277,17 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       }
       int keyCode = getKeyCode( boundKey, shift, xShift );
 
-      int length = macroButtonModel.getSize();
-      if ( length == 0 )
+      if ( macroBox.isEmpty() )
       {
         showWarning( "You haven't included any keys in your macro!" );
         return;
       }
-
-      short[] keyCodes = new short[ length ];
-      for ( int i = 0; i < length; ++i )
-        keyCodes[ i ] = ( ( Number )macroButtonModel.elementAt( i ) ).shortValue();
+      
+      Hex data = macroBox.getData();
 
       String notesStr = notes.getText();
 
-      macro = new Macro( keyCode, new Hex( keyCodes ), notesStr );
+      macro = new Macro( keyCode, data, notesStr );
       setVisible( false );
     }
     else if ( source == cancelButton )
@@ -348,14 +325,12 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   }
 
   @Override
-  public void enableButtons()
+  public void enableButtons( Button b )
   {
     int limit = 15;
     if ( config.getRemote().getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
       limit = 255;
-    boolean moreRoom = macroButtonModel.getSize() < limit;
-    Button b = ( Button )availableButtons.getSelectedValue();
-    boolean canAdd = ( b != null ) && moreRoom;
+    boolean canAdd = ( b != null ) && macroBox.isMoreRoom( limit );
 
     macroBox.add.setEnabled( canAdd && b.canAssignToMacro() );
     macroBox.insert.setEnabled( canAdd && b.canAssignToMacro() );
@@ -364,7 +339,14 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     boolean xShiftEnabled = config.getRemote().getXShiftEnabled();
     macroBox.addXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
     macroBox.insertXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
-
+  }
+  
+  @Override
+  public boolean isAvailable( Button b )
+  {
+    return  b.canAssignToMacro() 
+    || b.canAssignShiftedToMacro() 
+    || b.canAssignXShiftedToMacro();
   }
 
   /** The bound key. */
@@ -375,15 +357,6 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
 
   /** The x shift. */
   private JCheckBox xShift = new JCheckBox();
-
-  /** The available buttons. */
-  private JList availableButtons = new JList();
-
-  /** The macro button model. */
-  private DefaultListModel macroButtonModel = new DefaultListModel();
-
-  /** The macro buttons. */
-  private JList macroButtons = new JList();
 
   /** The ok button. */
   private JButton okButton = new JButton( "OK" );
