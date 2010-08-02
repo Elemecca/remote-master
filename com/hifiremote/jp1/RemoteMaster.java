@@ -161,6 +161,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The special function panel. */
   private SpecialFunctionPanel specialFunctionPanel = null;
 
+  private TimedMacroPanel timedMacroPanel = null;
+  
   private FavScanPanel favScanPanel = null;
 
   /** The device panel. */
@@ -437,6 +439,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     Container mainPanel = getContentPane();
 
     mainPanel.add( toolBar, BorderLayout.PAGE_START );
+    
+    // Set color for text on Progress Bars
+    UIManager.put( "ProgressBar.selectionBackground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
+    UIManager.put( "ProgressBar.selectionForeground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
 
     tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
@@ -456,6 +462,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     specialFunctionPanel = new SpecialFunctionPanel();
     tabbedPane.add( "Special Functions", specialFunctionPanel );
     specialFunctionPanel.addPropertyChangeListener( this );
+    
+    timedMacroPanel = new TimedMacroPanel();
+    tabbedPane.add( "Timed Macros", timedMacroPanel );
+    timedMacroPanel.addPropertyChangeListener( this );
 
     favScanPanel = new FavScanPanel();
     tabbedPane.addTab( "Fav/Scan", favScanPanel );
@@ -500,10 +510,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     mainPanel.add( statusBar, BorderLayout.SOUTH );
 
     statusBar.add( new JLabel( "Move/Macro:" ) );
-
-    // Set color for text on Progress Bars
-    UIManager.put( "ProgressBar.selectionBackground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
-    UIManager.put( "ProgressBar.selectionForeground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
 
     advProgressBar = new JProgressBar();
     advProgressBar.setStringPainted( true );
@@ -1374,13 +1380,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       setTitle( "RM IR" );
     }
+    
+    Remote remote = remoteConfig.getRemote();
 
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
     macroPanel.set( remoteConfig );
 
     int index = getTabIndex( specialFunctionPanel );
-    if ( remoteConfig.getRemote().getSpecialProtocols().isEmpty() )
+    if ( remote.getSpecialProtocols().isEmpty() )
     {
       if ( index >= 0 )
       {
@@ -1391,9 +1399,27 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, getTabIndex( macroPanel ) + 1 );
     }
+    
+    index = getTabIndex( timedMacroPanel );
+    if ( remote.hasTimedMacroSupport() )
+    {
+      if ( index < 0 )
+      {
+        index = getTabIndex( specialFunctionPanel );
+        if ( index < 0 )
+        {
+          index = getTabIndex( macroPanel );
+        }
+        tabbedPane.insertTab( "Timed Macros", null, timedMacroPanel, null, index + 1 );
+      }
+    }
+    else if ( index > 0 )
+    {
+      tabbedPane.remove( index );
+    }
 
     index = getTabIndex( favScanPanel );
-    if ( remoteConfig.getRemote().hasFavKey() )
+    if ( remote.hasFavKey() )
     {
       if ( index < 0 )
       {
@@ -1406,6 +1432,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
 
     specialFunctionPanel.set( remoteConfig );
+    timedMacroPanel.set( remoteConfig );
     favScanPanel.set( remoteConfig );
 
     devicePanel.set( remoteConfig );
@@ -1448,7 +1475,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     Remote remote = remoteConfig.getRemote();
     Dimension d = advProgressBar.getPreferredSize();
-    Color color = advProgressBar.getForeground();
     Font font = advProgressBar.getFont();
     if ( remote.getDeviceUpgradeAddress() == null )
     {
@@ -1477,8 +1503,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       JOptionPane
           .showMessageDialog(
               this,
-              "The defined advanced codes (keymoves, macros, special functions) use more space than is available.  Please remove some.",
+              "The defined advanced codes (keymoves, macros, special functions etc.) use more space than is available.  Please remove some.",
               "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
+    }
+    if ( !updateUsage( timedMacroPanel.timedMacroProgressBar, remote.getTimedMacroAddress(), remoteConfig.getTimedMacroBytesNeeded() ) )
+    {
+      JOptionPane.showMessageDialog( this,
+          "The defined timed macros use more space than is available.  Please remove some.",
+          "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
     }
     if ( !updateUsage( upgradeProgressBar, remote.getUpgradeAddress(), remoteConfig.getUpgradeCodeBytesNeeded() ) )
     {
@@ -1486,8 +1518,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           "The defined device upgrades use more space than is available. Please remove some.",
           "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
     }
-    if ( remote.getDeviceUpgradeAddress() != null
-        && !updateUsage( devUpgradeProgressBar, remote.getDeviceUpgradeAddress(), remoteConfig
+    if ( !updateUsage( devUpgradeProgressBar, remote.getDeviceUpgradeAddress(), remoteConfig
             .getDevUpgradeCodeBytesNeeded() ) )
     {
       JOptionPane.showMessageDialog( this,

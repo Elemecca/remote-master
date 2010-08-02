@@ -10,9 +10,9 @@ import java.util.List;
  */
 public class MacroCodingType extends RDFParameter
 {
-  int type = 1;
-  boolean timedMacros = false;
-  int timedMacroCountAddress = 0;
+  private int type = 1;
+  private boolean timedMacros = false;
+  private int timedMacroCountAddress = 0;
 
   public void parse( String text, Remote remote ) throws Exception
   {
@@ -47,7 +47,7 @@ public class MacroCodingType extends RDFParameter
     this.timedMacros = timedMacros;
   }
 
-  public boolean getTimedMacros()
+  public boolean hasTimedMacros()
   {
     return timedMacros;
   }

@@ -4,6 +4,7 @@ Changes for v1.99c
 - Restore double-click to edit table cells (Greg)
 - Typing when not in edit more will start edit mode and replace cell contents (Greg)
 - Create new interface, ButtonEnabler, and use it to improve logical separation between MacroDefinitionBox and MacroDialog. (Graham)
+- Implement Timed Macros (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

@@ -27,7 +27,8 @@ public abstract class AdvancedCode
       return null;
     }
     int keyCode = reader.read();
-    int type = reader.read();
+    int typeByte = reader.read();
+    int type = typeByte;
     int length = 0;
     int boundDeviceIndex = 0;
     boolean isMacro = false;
@@ -58,15 +59,18 @@ public abstract class AdvancedCode
       type >>= 4;
       if ( remote.getMacroCodingType().getType() == 2 )
       {
-        if ( type >= 3 && type < 8 )
+        if ( type >= 3 )
         {
-          isMacro = true;
-          sequenceNumber = type - 3;
-        }
-        else if ( ( type & 8 ) == 8 )
-        {
-          isTimedMacro = true;
-        }
+          if ( ( ( type & 8 ) == 8 ) && remote.hasTimedMacroSupport() )
+          {  
+            isTimedMacro = true;
+          }
+          else
+          {
+            isMacro = true;
+            sequenceNumber = type - 3;
+          }
+        }  
       }
       else
       {
@@ -95,6 +99,11 @@ public abstract class AdvancedCode
       FavScan favScan = new FavScan( keyCode, hex, null );
       favScan.setDeviceIndex( boundDeviceIndex );
       return favScan;
+    }
+    else if ( isTimedMacro )
+    {
+      TimedMacro timedMacro = new TimedMacro( keyCode, typeByte, hex, null );
+      return timedMacro;
     }
     else
     {
@@ -148,7 +157,9 @@ public abstract class AdvancedCode
    */
   public AdvancedCode( Properties props )
   {
-    keyCode = Integer.parseInt( props.getProperty( "KeyCode" ) );
+    // Allow for missing "KeyCode" entry, as it is not used by Timed Macros
+    String temp = props.getProperty( "KeyCode" ); 
+    keyCode = ( temp == null ) ? 0 : Integer.parseInt( temp );      
     data = new Hex( props.getProperty( "Data" ) );
     notes = props.getProperty( "Notes" );
   }

@@ -95,16 +95,6 @@ public class Macro extends AdvancedCode
     {
       if ( i != 0 )
         buff.append( ';' );
-//      if ( keys[ i ] == 0 )
-//      {
-//        buff.append( "{Pause}" );
-//        while ( ( i < keys.length ) && ( keys[ i ] == 0 ) )
-//        {  
-//          ++i;
-//        }
-//        --i; // leave pointing to last zero
-//      }
-//      else
         buff.append( remote.getButtonName( keys[ i ] ) );
     }
     return buff.toString();

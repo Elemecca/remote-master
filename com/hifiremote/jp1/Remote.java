@@ -766,7 +766,7 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "OEMControl" ) )
         oemControl = RDFReader.parseNumber( value );
       else if ( parm.equals( "UpgradeBug" ) )
-        upgradeBug = RDFReader.parseFlag( value );
+        upgradeBug = ( RDFReader.parseNumber( value ) != 0 );
       else if ( parm.equals( "AdvCodeAddr" ) )
       {
         advancedCodeAddress = new AddressRange( value, this );
@@ -796,7 +796,7 @@ public class Remote implements Comparable< Remote >
         check( timedMacroAddress, "TimedMacroAddr" );
       }
       else if ( parm.equals( "TimedMacroWarning" ) )
-        timedMacroWarning = RDFReader.parseFlag( value );
+        timedMacroWarning = ( RDFReader.parseNumber( value ) != 0 );
       else if ( parm.equals( "LearnedAddr" ) )
       {
         learnedAddress = new AddressRange( value, this );
@@ -997,7 +997,17 @@ public class Remote implements Comparable< Remote >
       
       // A SoftHT entry should be ignored unless SoftDevices is used.
       if ( softDevices == null )
+      {  
         softHomeTheater = null;
+      }  
+      
+      // A TimedMacroAddr entry should be ignored if timed macros are stored in the
+      // Advanced Codes section.
+      if ( macroCodingType.hasTimedMacros() )
+      {  
+        timedMacroAddress = null;
+      }
+        
     }
 
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
@@ -2438,6 +2448,12 @@ public class Remote implements Comparable< Remote >
   {
     return favKey;
   }
+  
+  public boolean hasTimedMacroSupport()
+  {
+    return ( timedMacroAddress != null ) || macroCodingType.hasTimedMacros();
+  }
+  
 
   /** The oem device. */
   private OEMDevice oemDevice = null;
@@ -2534,6 +2550,16 @@ public class Remote implements Comparable< Remote >
   public AddressRange getLearnedAddress()
   {
     return learnedAddress;
+  }
+
+  public AddressRange getTimedMacroAddress()
+  {
+    return timedMacroAddress;
+  }
+
+  public boolean hasTimedMacroWarning()
+  {
+    return timedMacroWarning;
   }
 
   /** The processor. */

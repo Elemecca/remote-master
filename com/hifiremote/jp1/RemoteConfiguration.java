@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
 
 import com.hifiremote.jp1.AdvancedCode.BindFormat;
 
@@ -122,6 +123,8 @@ public class RemoteConfiguration
             keymoves.add( ( KeyMove )o );
           else if ( sectionName.equals( "Macro" ) )
             macros.add( ( Macro )o );
+          else if ( sectionName.equals( "TimedMacro" ) )
+            timedMacros.add( ( TimedMacro )o );
           else if ( sectionName.equals( "FavScan" ) )
           {
             FavScan favScan = ( FavScan )o;
@@ -364,6 +367,10 @@ public class RemoteConfiguration
     {
       decodeFavScans();
     }
+    if ( remote.hasTimedMacroSupport() && ( remote.getMacroCodingType().getType() == 1 ) )
+    {
+      decodeTimedMacros();
+    }
     decodeLearnedSignals();
 
     if ( pr != null )
@@ -402,14 +409,20 @@ public class RemoteConfiguration
                 notes = text;
               else if ( flag == 1 )
               {
-                // This test is needed because of a bug in IR.exe.
+                // This test is needed because of a bug in IR.exe.  In a remote with segregated
+                // Fav/Scans, IR.exe allows a note to be stored, but it is put in sequence with
+                // Advanced Code notes even though the Fav/Scan is not in the Advanced Code section.
+                // This causes both IR.exe and RMIR to get the association between Advanced Codes
+                // and their notes wrong, and can lead to a Note index that is out of bounds for
+                // the Advanced Codes list.  "Pure" RMIR handles Fav/Scan notes for such remotes
+                // correctly.
                 if ( index < advCodes.size() )
                 {  
                   advCodes.get( index ).setNotes( text );
                 }
               }  
-              else if ( flag == 2 )
-                ;// TimedMacro
+              else if ( flag == 2 && remote.getTimedMacroAddress() != null )
+                timedMacros.get( index ).setNotes( text );
               else if ( flag == 3 )
                 devices.get( index ).setDescription( text );
               else if ( flag == 4 )
@@ -768,6 +781,20 @@ public class RemoteConfiguration
     }    
   }
   
+  private void decodeTimedMacros()
+  {
+    if ( ( remote.getMacroCodingType().getType() == 2 ) || ! remote.hasTimedMacroSupport() )
+    {
+      return;
+    }
+    HexReader reader = new HexReader( data, remote.getTimedMacroAddress() );
+    TimedMacro timedMacro = null;
+    while ( ( timedMacro = TimedMacro.read( reader, remote ) ) != null )
+    {
+      timedMacros.add( timedMacro );
+    }
+  }
+  
   /**
    * Decode advanced codes.
    * 
@@ -833,6 +860,12 @@ public class RemoteConfiguration
         }        
         favScans.add( favScan );
         advCodes.add( favScan );
+      }
+      else if ( advCode instanceof TimedMacro )
+      {
+        TimedMacro timedMacro = ( TimedMacro )advCode;
+        timedMacros.add( timedMacro );
+        advCodes.add( timedMacro );
       }
       else
       {
@@ -1021,6 +1054,16 @@ public class RemoteConfiguration
     return null;
   }
 
+  public int getTimedMacroBytesNeeded()
+  {
+    int count = 0;
+    for ( TimedMacro timedMacro : timedMacros )
+    {
+      count += timedMacro.getSize( remote );
+    }
+    return count;
+  }
+  
   private int getAdvancedCodesBytesNeeded( List< ? extends AdvancedCode > codes )
   {
     int count = 0;
@@ -1043,6 +1086,10 @@ public class RemoteConfiguration
     if ( remote.hasFavKey() && !remote.getFavKey().isSegregated() )
     {  
       size += getAdvancedCodesBytesNeeded( favScans );
+    }
+    if ( remote.getMacroCodingType().hasTimedMacros() )
+    {
+      size += getAdvancedCodesBytesNeeded( timedMacros );
     }
     size++ ; // the section terminator
     return size;
@@ -1091,6 +1138,10 @@ public class RemoteConfiguration
     if ( remote.hasFavKey() && remote.getFavKey().isSegregated() )
     {
       updateFavScans();
+    }
+    if ( remote.getTimedMacroAddress() != null )
+    {
+      updateTimedMacros();
     }
     updateUpgrades();
     updateLearnedSignals();
@@ -1172,7 +1223,22 @@ public class RemoteConfiguration
     data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
     favScan.store( data, offset, remote );
   }
-
+  
+  private void updateTimedMacros()
+  {
+    AddressRange range = remote.getTimedMacroAddress();
+    if ( range == null || timedMacros.size() == 0 )
+    {
+      return;
+    }
+    int offset = range.getStart();
+    for ( TimedMacro timedMacro : timedMacros )
+    {
+      offset = timedMacro.store( data, offset, remote );
+    } 
+    data[ offset++ ] = remote.getSectionTerminator();
+  }
+  
   /**
    * Update advanced codes.
    * 
@@ -1225,6 +1291,18 @@ public class RemoteConfiguration
           data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
         }
         offset = favScan.store( data, offset, remote );
+      }
+    }
+    if ( remote.getMacroCodingType().hasTimedMacros() )
+    {
+      for ( TimedMacro timedMacro : timedMacros )
+      {
+        offset = timedMacro.store( data, offset, remote );
+      }
+      int timedMacroCountAddress = remote.getMacroCodingType().getTimedMacroCountAddress();
+      if ( timedMacroCountAddress > 0 )
+      {
+        data[ timedMacroCountAddress ] = ( short )timedMacros.size();
       }
     }
     data[ offset++ ] = remote.getSectionTerminator();
@@ -2055,6 +2133,15 @@ public class RemoteConfiguration
       }
     }
     
+    for ( TimedMacro tm : timedMacros )
+    {
+      String className = tm.getClass().getName();
+      int dot = className.lastIndexOf( '.' );
+      className = className.substring( dot + 1 );
+      pw.printHeader( className );
+      tm.store( pw );
+    }
+    
     for ( FavScan fs : favScans )
     {
       String className = fs.getClass().getName();
@@ -2192,6 +2279,11 @@ public class RemoteConfiguration
     return favScans;
   }
 
+  public List< TimedMacro > getTimedMacros()
+  {
+    return timedMacros;
+  }
+
   /**
    * Gets the device upgrades.
    * 
@@ -2249,6 +2341,8 @@ public class RemoteConfiguration
 
   /** The macros. */
   private List< Macro > macros = new ArrayList< Macro >();
+  
+  private List< TimedMacro > timedMacros = new ArrayList< TimedMacro >();
   
   private List< FavScan > favScans = new ArrayList< FavScan >();
 
@@ -2314,4 +2408,5 @@ public class RemoteConfiguration
   private String[] deviceButtonNotes = null;
   
   private DeviceButton favKeyDevButton = null;
+  
 }

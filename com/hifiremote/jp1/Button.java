@@ -503,6 +503,25 @@ public class Button
     return ( ( restrictions & XSHIFT_FAV_DATA ) == 0 );
   }
   
+  public boolean canAssignToTimedMacro()
+  {
+    return ( ( restrictions & TMACRO_DATA ) == 0 );
+  }
+
+  public boolean canAssignShiftedToTimedMacro()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return ( ( restrictions & SHIFT_TMACRO_DATA ) == 0 );
+  }
+
+  public boolean canAssignXShiftedToTimedMacro()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return ( ( restrictions & XSHIFT_TMACRO_DATA ) == 0 );
+  }
+  
   /**
    * Allows learned signal.
    * 
