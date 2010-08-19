@@ -89,6 +89,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
+  
+  private RMAction newAction = null;
 
   /** The open item. */
   private RMAction openAction = null;
@@ -210,7 +212,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       try
       {
         String command = event.getActionCommand();
-        if ( command.equals( "OPEN" ) )
+        if ( command.equals( "NEW" ) )
+        {
+          Remote remote =  RMNewDialog.showDialog( RemoteMaster.this );
+          remote.load();
+          remoteConfig = new RemoteConfiguration( remote );
+          remoteConfig.initializeSetup();
+          remoteConfig.updateImage();
+          remoteConfig.setDateIndicator();
+          remoteConfig.setSavedData();
+          update();
+          saveAction.setEnabled( false );
+          saveAsAction.setEnabled( true );
+          uploadAction.setEnabled( !interfaces.isEmpty() );
+        }
+        else if ( command.equals( "OPEN" ) )
         {
           openFile();
         }
@@ -616,6 +632,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // newItem = new JMenuItem( "New", KeyEvent.VK_N );
     // newItem.addActionListener( this );
     // menu.add( newItem );
+    
+    newAction = new RMAction( "New...", "NEW", createIcon( "New24" ), "Create new file", KeyEvent.VK_N );
+    menu.add( newAction ).setIcon( null );
+    toolBar.add( newAction );
 
     openAction = new RMAction( "Open...", "OPEN", createIcon( "Open24" ), "Open a file", KeyEvent.VK_O );
     menu.add( openAction ).setIcon( null );

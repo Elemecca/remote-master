@@ -39,7 +39,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       Remote remote = remoteConfig.getRemote();
       setData( remote.getDeviceButtons() );
       SoftDevices softDevices = remote.getSoftDevices();
-      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceTypes() );
+      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getAllDeviceTypes() );
       if ( remote.getSoftHomeTheaterType() >= 0 )
       {
         // Set the values passed to DeviceTypeEditor
@@ -48,7 +48,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         softHT.setDeviceCode( remote.getSoftHomeTheaterCode() );
       }
 
-      if ( softDevices != null && softDevices.getAllowEmptyButtonSettings() )
+      if ( softDevices != null && softDevices.inUse() )
       {
         comboModel.addElement( new DeviceType( "", 0, 0xFFFF ) );
       }
@@ -229,6 +229,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
     int typeIndex = getExtendedTypeIndex( row );
+    int group = db.getDeviceGroup( data );
     if ( typeIndex == 0xFF && column > 1 )
     {
       return null;
@@ -241,7 +242,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         return db.getName();
       case 2:
       {
-        return remote.getDeviceTypeByIndex( typeIndex );
+//        return remote.getDeviceTypeByIndex( typeIndex );
+        return remote.getDeviceTypeByIndexAndGroup( typeIndex, group );
       }
       case 3:
       {
@@ -316,11 +318,14 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
 
     if ( col == 2 )
     {
+      DeviceType devType = ( DeviceType )value;
       int oldIndex = getExtendedTypeIndex( row );
-      int newIndex = ( ( DeviceType )value ).getNumber();
+      int oldGroup = db.getDeviceGroup( data );
+      int newIndex = devType.getNumber();
+      int newGroup = devType.getGroup();
       DeviceLabels labels = remote.getDeviceLabels();
 
-      if ( oldIndex == newIndex )
+      if ( ( oldIndex == newIndex ) && ( oldGroup == newGroup ) )
       {
         return;
       }
@@ -337,6 +342,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           db.zeroDeviceSlot( data );
         }
         db.setDeviceTypeIndex( ( short )newIndex, data );
+        db.setDeviceGroup( ( short )newGroup, data );
       }
 
       if ( labels != null )

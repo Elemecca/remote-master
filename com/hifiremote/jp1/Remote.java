@@ -458,6 +458,24 @@ public class Remote implements Comparable< Remote >
     }
     return types;
   }
+  
+  public DeviceType[] getAllDeviceTypes()
+  {
+    ArrayList< DeviceType > tempList = new ArrayList< DeviceType >();
+    DeviceType d = null;
+    for ( DeviceType deviceType : deviceTypeList )
+    {
+      // Ensure that duplicate entries in the list are described by the same
+      // DeviceType, so that the "contains" works as desired.
+      d = devicesByType.get( deviceType.getType() );
+      if ( ! tempList.contains( d ) )
+      {
+        tempList.add( d );
+      }
+    }
+    DeviceType[] types = tempList.toArray( new DeviceType[0] );
+    return types;
+  }
 
   /**
    * Gets the device type.
@@ -520,6 +538,12 @@ public class Remote implements Comparable< Remote >
     }
     return null;
   }
+  
+  public DeviceType getDeviceTypeByIndexAndGroup( int index, int group )
+  {
+    int fullType = index | ( group << 8 );
+    return devicesByType.get( fullType );
+  }
 
   /**
    * Gets the device type alias.
@@ -550,6 +574,11 @@ public class Remote implements Comparable< Remote >
         break;
       }
     return tentative;
+  }
+
+  public java.util.List< DeviceType > getDeviceTypeList()
+  {
+    return deviceTypeList;
   }
 
   /**
@@ -744,7 +773,9 @@ public class Remote implements Comparable< Remote >
       }
 
       if ( parm.equals( "Name" ) )
-        ;
+        rdfName = value;
+      else if ( parm.equals( "Identification" ) )
+        rdfIdentification = value;
       else if ( parm.equals( "BaseAddr" ) )
         baseAddress = RDFReader.parseNumber( value );
       else if ( parm.equals( "EepromSize" ) )
@@ -810,7 +841,7 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "ProcessorVersion" ) )
         processorVersion = value;
-      else if ( parm.equals( "RAMAddr" ) )
+      else if ( parm.equalsIgnoreCase( "RAMAddr" ) ) // RDF Spec says key is called RamAddr
         RAMAddress = RDFReader.parseNumber( value );
       else if ( ( parm.equals( "TimeAddr" ) || parm.equals( "TimeAddr+" ) ) && ( autoClockSet == null ) )
       {
@@ -1009,7 +1040,25 @@ public class Remote implements Comparable< Remote >
       }
         
     }
-
+    
+    // Set values for RAMAddr for processors where it does not need to be specified
+    if ( processorName.equals( "S3C80" ) && RAMAddress != 0xFF00 && RAMAddress !=0x8000 )
+    {
+      RAMAddress = 0x8000;  // No other values are allowed than 0xFF00 and the default 0x8000
+    }
+    else if ( processorName.equals( "S3F80" ) )
+    {
+      RAMAddress = 0xFF00;
+    }
+    else if ( processorName.equals( "740" ) )
+    {
+      RAMAddress = 0x0132;
+    }
+    else
+    {
+      RAMAddress = 0x0100;
+    }
+   
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
   }
@@ -1419,7 +1468,12 @@ public class Remote implements Comparable< Remote >
           type = RDFReader.parseNumber( st.nextToken() );
       }
       DeviceType devType = new DeviceType( name, map, type );
+      // Note that each of the next three collections may contain more elements than
+      // the preceding one, as the RDF may contain several Device Type entries with the
+      // same name and type number (i.e. low byte of type) but different groups (i.e.
+      // high byte of type) and also may contain entirely duplicate entries.
       deviceTypes.put( name, devType );
+      devicesByType.put( type, devType );
       deviceTypeList.add( devType );
       type += 0x0101;
     }
@@ -2240,6 +2294,74 @@ public class Remote implements Comparable< Remote >
       keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, efc, notes );
     return keyMove;
   }
+  
+  public String getInterfaceType()
+  {
+    String name = getProcessor().getName();
+    if ( name.equals( "HCS08" ) )
+    {
+      return "JP1.2";
+    }
+    else if ( name.equals( "S3F80" ) )
+    {
+      return "JP1.3";
+    }
+    else if ( name.equals( "SST" ) )
+    {
+      return "JP1.1";
+    }
+    else
+    {
+      return "JP1";
+    }
+  }
+  
+  public String getProcessorDescription()
+  {
+    String name = getProcessor().getName();
+    if ( name.equals( "S3C80" ) )
+    {
+      if ( RAMAddress == 0xFF00 )
+      {
+        return "Samsung S3C8+";
+      }
+      else 
+      {
+        return "Samsung S3C8";
+      }
+    }
+    else if ( name.equals( "S3F80" ) )
+    {
+      return "Samsung S3F8";
+    }
+    else if ( name.equals( "HCS08" ) )
+    {
+      return "Freescale HCS08";
+    }
+    else if ( name.equals( "6805" ) )
+    {
+      if ( getProcessor().getVersion().equals( "RC16/18" ) )
+      {
+        return "Motorola 6805RC16/18";
+      }
+      else
+      {
+        return "Motorola 6805C9";
+      }
+    }
+    else if ( name.equals( "SST" ) )
+    {
+      return "SST SST65";
+    }
+    else if ( name.equals( "740" ) )
+    {
+      return "Mitsubishi P8/740";
+    }
+    else
+    {
+      return "<Unknown>";
+    }
+  }
 
   /**
    * Gets the max upgrade length.
@@ -2561,12 +2683,21 @@ public class Remote implements Comparable< Remote >
   {
     return timedMacroWarning;
   }
+  
+  public ImageIcon getImage()
+  {
+    if ( imageMaps == null || mapIndex >= imageMaps.length )
+      return null;
+    
+    ImageMap map = imageMaps[ mapIndex ];
+    return new ImageIcon( map.getImageFile().getAbsolutePath() );
+  }
 
   /** The processor. */
   private Processor processor = null;
   // private String processorVersion = null;
   /** The RAM address. */
-  private int RAMAddress;
+  private int RAMAddress = 0x8000;  // Default for the S3C80
   
   private AutoClockSet autoClockSet = null;
 
@@ -2605,6 +2736,7 @@ public class Remote implements Comparable< Remote >
 
   /** The device types. */
   private Hashtable< String, DeviceType > deviceTypes = new Hashtable< String, DeviceType >();
+  private Hashtable< Integer, DeviceType > devicesByType = new Hashtable< Integer, DeviceType >();
   
   /** The device types as an array in the order given in the RDF. */
   private java.util.List< DeviceType > deviceTypeList = new ArrayList< DeviceType >();
@@ -2861,6 +2993,20 @@ public class Remote implements Comparable< Remote >
   public int getMaxMultiMacros()
   {
     return maxMultiMacros;
+  }
+  
+  private String rdfName = "Not Specified";
+  
+  public String getRdfName()
+  {
+    return rdfName;
+  }
+
+  private String rdfIdentification = "None";
+
+  public String getRdfIdentification()
+  {
+    return rdfIdentification;
   }
 
   private void parseAdvCodeTypes( String text, RDFReader rdr ) throws Exception

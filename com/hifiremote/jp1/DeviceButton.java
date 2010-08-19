@@ -75,7 +75,7 @@ public class DeviceButton
   {
     return data[ highAddress ] >> 4;
   }
-
+  
   /**
    * Sets the device type index.
    * 
@@ -98,6 +98,21 @@ public class DeviceButton
       data[ highAddress ] |= index;
     }
   }
+  
+  public int getDeviceGroup( short[] data )
+  {
+    if ( typeAddress > 0 ) return data[ typeAddress ];
+    else return getDeviceTypeIndex( data );
+  }
+  
+  public void setDeviceGroup( short group, short[] data )
+  {
+    if ( typeAddress > 0 )
+    {
+      data[ typeAddress ] = group;
+    }
+  }
+
 
   /**
    * Gets the setup code.

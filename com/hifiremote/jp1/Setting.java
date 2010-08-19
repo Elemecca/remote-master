@@ -76,12 +76,27 @@ public class Setting
    */
   public Object[] getOptions( Remote r )
   {
+    Object[] choices = null;
     if ( optionList != null )
-      return optionList;
+    {  
+      choices = optionList;
+    }
     else if ( sectionName != null )
-      return r.getSection( sectionName );
+    {
+      choices = r.getSection( sectionName );
 
-    return null;
+      if ( r.getSoftDevices() != null
+            && r.getSoftDevices().getAllowEmptyButtonSettings() 
+            && sectionName.equals( "DeviceButtons" ) )
+      {
+        Object[] oldChoices = choices;
+        int length = oldChoices.length;
+        choices = new Object[ length + 1 ];
+        System.arraycopy( oldChoices, 0, choices, 0, length );
+        choices[ length ] = DeviceButton.noButton;
+      }
+    }
+    return choices;
   }
 
   /**
@@ -174,10 +189,19 @@ public class Setting
    * @param data
    *          the data
    */
-  public void decode( short[] data )
+  public void decode( short[] data, Remote remote )
   {
-    int mask = ( 1 << numberOfBits ) - 1;
     int temp = data[ byteAddress ];
+    if ( remote.getSoftDevices() != null 
+        && remote.getSoftDevices().getAllowEmptyButtonSettings()
+        && sectionName != null
+        && sectionName.equals( "DeviceButtons" ) 
+        && temp == 0xFF )
+    {
+      value = getOptions( remote ).length - 1;
+      return;
+    }
+    int mask = ( 1 << numberOfBits ) - 1;
     if ( inverted )
       temp = ~temp;
     int shift = bitNumber - numberOfBits + 1;
@@ -191,8 +215,18 @@ public class Setting
    * @param data
    *          the data
    */
-  public void store( short[] data )
+  public void store( short[] data, Remote remote )
   {
+    if ( remote.getSoftDevices() != null 
+        && remote.getSoftDevices().getAllowEmptyButtonSettings()
+        && sectionName != null
+        && sectionName.equals( "DeviceButtons" ) 
+        && value == getOptions( remote ).length - 1 )
+    {
+      data[ byteAddress ] = 0xFF;
+      return;
+    }
+    
     int mask = ( 1 << numberOfBits ) - 1;
     int shift = bitNumber - numberOfBits + 1;
     int val = value;
