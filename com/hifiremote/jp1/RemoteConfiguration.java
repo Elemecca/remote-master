@@ -24,9 +24,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-
-import com.hifiremote.jp1.AdvancedCode.BindFormat;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -72,10 +69,14 @@ public class RemoteConfiguration
     IniSection section = pr.nextSection();
 
     if ( section == null )
+    {
       throw new IOException( "The file is empty." );
+    }
 
     if ( !"General".equals( section.getName() ) )
+    {
       throw new IOException( "Doesn't start with a [General] section/" );
+    }
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( section.getProperty( "Remote.name" ) );
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
@@ -105,7 +106,9 @@ public class RemoteConfiguration
       else if ( sectionName.equals( "Settings" ) )
       {
         for ( Setting setting : remote.getSettings() )
+        {
           setting.setValue( Integer.parseInt( section.getProperty( setting.getTitle() ) ) );
+        }
       }
       else if ( sectionName.equals( "DeviceUpgrade" ) )
       {
@@ -121,13 +124,21 @@ public class RemoteConfiguration
           Constructor< ? > ct = c.getConstructor( Properties.class );
           Object o = ct.newInstance( section );
           if ( o instanceof SpecialProtocolFunction )
+          {
             specialFunctions.add( ( SpecialProtocolFunction )o );
+          }
           else if ( o instanceof KeyMove )
+          {
             keymoves.add( ( KeyMove )o );
+          }
           else if ( sectionName.equals( "Macro" ) )
+          {
             macros.add( ( Macro )o );
+          }
           else if ( sectionName.equals( "TimedMacro" ) )
+          {
             timedMacros.add( ( TimedMacro )o );
+          }
           else if ( sectionName.equals( "FavScan" ) )
           {
             FavScan favScan = ( FavScan )o;
@@ -139,9 +150,13 @@ public class RemoteConfiguration
             favScans.add( favScan );
           }
           else if ( sectionName.equals( "ProtocolUpgrade" ) )
+          {
             protocols.add( ( ProtocolUpgrade )o );
+          }
           else if ( sectionName.equals( "LearnedSignal" ) )
+          {
             learned.add( ( LearnedSignal )o );
+          }
         }
         catch ( Exception e )
         {
@@ -166,7 +181,9 @@ public class RemoteConfiguration
     Property property = pr.nextProperty();
 
     if ( property.name.equals( "[Buffer]" ) || property.name.equals( "" ) )
+    {
       property = pr.nextProperty();
+    }
 
     int baseAddr = Integer.parseInt( property.name, 16 );
     short[] first = Hex.parseHex( property.value );
@@ -175,7 +192,9 @@ public class RemoteConfiguration
     {
       char[] sig = new char[ 8 ];
       for ( int i = 0; i < sig.length; ++i )
+      {
         sig[ i ] = ( char )first[ i + 2 ];
+      }
 
       String signature = new String( sig );
       String signature2 = null;
@@ -184,11 +203,13 @@ public class RemoteConfiguration
       if ( remotes.isEmpty() )
       {
         for ( int i = 0; i < sig.length; ++i )
+        {
           sig[ i ] = ( char )first[ i ];
+        }
         signature2 = new String( sig );
         remotes = rm.findRemoteBySignature( signature2 );
       }
-      if ( ( remotes == null ) || remotes.isEmpty() )
+      if ( remotes == null || remotes.isEmpty() )
       {
         String message = "No remote found for with signature " + signature + " or " + signature2;
         JOptionPane.showMessageDialog( null, message, "Unknown remote", JOptionPane.ERROR_MESSAGE );
@@ -201,7 +222,9 @@ public class RemoteConfiguration
       else
       {
         if ( signature2 != null )
+        {
           signature = signature2;
+        }
         String message = "The file you are loading is for a remote with signature \"" + signature
             + "\".\nThere are multiple remotes with that signature.  Please choose the best match from the list below:";
 
@@ -210,7 +233,9 @@ public class RemoteConfiguration
         remote = ( Remote )JOptionPane.showInputDialog( null, message, "Unknown Remote", JOptionPane.ERROR_MESSAGE,
             null, choices, choices[ 0 ] );
         if ( remote == null )
+        {
           throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
+        }
       }
     }
     remote.load();
@@ -219,9 +244,11 @@ public class RemoteConfiguration
     System.err.println( "Remote is " + remote );
 
     if ( remote.getBaseAddress() != baseAddr )
+    {
       throw new IOException( "The base address of the remote image doesn't match the remote's baseAddress." );
+    }
 
-    deviceButtonNotes = new String[ remote.getDeviceButtons().length];
+    deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
     data = new short[ remote.getEepromSize() ];
     System.arraycopy( first, 0, data, 0, first.length );
 
@@ -229,29 +256,35 @@ public class RemoteConfiguration
     while ( ( property = pr.nextProperty() ) != null )
     {
       if ( property.name.length() == 0 || property.name.startsWith( "[" ) )
+      {
         break;
+      }
       int offset = Integer.parseInt( property.name, 16 ) - baseAddr;
       Hex.parseHex( property.value, data, offset );
     }
-       
+
     if ( remote.hasFavKey() )
     {
       if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
       {
         int buttonIndex = data[ remote.getFavKey().getDeviceButtonAddress() ] & 0x0F;
         if ( buttonIndex == 0x0F )
+        {
           favKeyDevButton = DeviceButton.noButton;
+        }
         else
+        {
           favKeyDevButton = remote.getDeviceButtons()[ buttonIndex ];
+        }
       }
       else
       {
         favKeyDevButton = DeviceButton.noButton;
-      }        
+      }
     }
-    
+
     setSavedData();
-    
+
     return property;
   }
 
@@ -274,11 +307,15 @@ public class RemoteConfiguration
     {
       DeviceButton devButton = deviceButtons[ keyMove.getDeviceButtonIndex() ];
       if ( !devButton.getName().equals( deviceName ) )
+      {
         continue;
+      }
       int keyCode = keyMove.getKeyCode();
       String buttonName = remote.getButtonName( keyCode );
       if ( buttonName.equalsIgnoreCase( keyName ) )
+      {
         return keyMove;
+      }
     }
     System.err.println( "No keymove found matching " + deviceName + ':' + keyName );
     return null;
@@ -298,7 +335,9 @@ public class RemoteConfiguration
       int keyCode = macro.getKeyCode();
       String buttonName = remote.getButtonName( keyCode );
       if ( buttonName.equalsIgnoreCase( keyName ) )
+      {
         return macro;
+      }
     }
     System.err.println( "No macro found assigned to key " + keyName );
     return null;
@@ -316,7 +355,9 @@ public class RemoteConfiguration
     for ( ProtocolUpgrade pu : protocols )
     {
       if ( pu.getPid() == pid )
+      {
         return pu;
+      }
     }
     System.err.println( "No protocol upgrade found w/ pid $" + Integer.toHexString( pid ) );
     return null;
@@ -339,11 +380,15 @@ public class RemoteConfiguration
     {
       DeviceButton devButton = deviceButtons[ ls.getDeviceButtonIndex() ];
       if ( !devButton.getName().equals( deviceName ) )
+      {
         continue;
+      }
       int keyCode = ls.getKeyCode();
       String buttonName = remote.getButtonName( keyCode );
       if ( buttonName.equalsIgnoreCase( keyName ) )
+      {
         return ls;
+      }
     }
     System.err.println( "No learned signal found matching " + deviceName + ':' + keyName );
     return null;
@@ -361,7 +406,9 @@ public class RemoteConfiguration
   {
     Property property = null;
     if ( pr != null )
+    {
       property = loadBuffer( pr );
+    }
 
     decodeSettings();
     decodeUpgrades();
@@ -370,7 +417,7 @@ public class RemoteConfiguration
     {
       decodeFavScans();
     }
-    if ( remote.hasTimedMacroSupport() && ( remote.getMacroCodingType().getType() == 1 ) )
+    if ( remote.hasTimedMacroSupport() && remote.getMacroCodingType().getType() == 1 )
     {
       decodeTimedMacros();
     }
@@ -378,7 +425,7 @@ public class RemoteConfiguration
 
     if ( pr != null )
     {
-      while ( ( property != null ) && ( !property.name.startsWith( "[" ) ) )
+      while ( property != null && !property.name.startsWith( "[" ) )
       {
         System.err.println( "property.name=" + property.name );
         property = pr.nextProperty();
@@ -394,7 +441,7 @@ public class RemoteConfiguration
           if ( name.equals( "Notes" ) )
           {
             System.err.println( "Importing notes" );
-            for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+            for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
             {
               String key = ( String )keys.nextElement();
               String text = section.getProperty( key );
@@ -409,29 +456,39 @@ public class RemoteConfiguration
               index &= 0x0FFF;
               System.err.println( "index=" + index + ", flag=" + flag + ",text=" + text );
               if ( flag == 0 )
+              {
                 notes = text;
+              }
               else if ( flag == 1 )
               {
-                // This test is needed because of a bug in IR.exe.  In a remote with segregated
+                // This test is needed because of a bug in IR.exe. In a remote with segregated
                 // Fav/Scans, IR.exe allows a note to be stored, but it is put in sequence with
                 // Advanced Code notes even though the Fav/Scan is not in the Advanced Code section.
                 // This causes both IR.exe and RMIR to get the association between Advanced Codes
                 // and their notes wrong, and can lead to a Note index that is out of bounds for
-                // the Advanced Codes list.  "Pure" RMIR handles Fav/Scan notes for such remotes
+                // the Advanced Codes list. "Pure" RMIR handles Fav/Scan notes for such remotes
                 // correctly.
                 if ( index < advCodes.size() )
-                {  
+                {
                   advCodes.get( index ).setNotes( text );
                 }
-              }  
+              }
               else if ( flag == 2 && remote.getTimedMacroAddress() != null )
+              {
                 timedMacros.get( index ).setNotes( text );
+              }
               else if ( flag == 3 )
+              {
                 devices.get( index ).setDescription( text );
+              }
               else if ( flag == 4 )
+              {
                 protocols.get( index ).setNotes( text );
+              }
               else if ( flag == 5 )
+              {
                 learned.get( index ).setNotes( text );
+              }
               else if ( flag == 6 )
               {
                 deviceButtonNotes[ index ] = text;
@@ -445,7 +502,9 @@ public class RemoteConfiguration
               String key = ( String )keys.nextElement();
               String text = section.getProperty( key );
               if ( key.equals( "Notes" ) )
+              {
                 notes = text;
+              }
             }
           }
           else if ( name.equals( "KeyMoves" ) )
@@ -459,7 +518,9 @@ public class RemoteConfiguration
               String keyName = st.nextToken();
               KeyMove km = findKeyMove( keymoves, deviceName, keyName );
               if ( km != null )
+              {
                 km.setNotes( text );
+              }
             }
           }
           else if ( name.equals( "Macros" ) )
@@ -470,7 +531,9 @@ public class RemoteConfiguration
               String text = section.getProperty( keyName );
               Macro macro = findMacro( keyName );
               if ( macro != null )
+              {
                 macro.setNotes( text );
+              }
             }
           }
           else if ( name.equals( "Devices" ) )
@@ -484,12 +547,14 @@ public class RemoteConfiguration
               int setupCode = Integer.parseInt( st.nextToken() );
               DeviceUpgrade device = findDeviceUpgrade( remote.getDeviceType( deviceTypeName ).getNumber(), setupCode );
               if ( device != null )
+              {
                 device.setDescription( text );
+              }
             }
           }
           else if ( name.equals( "Protocols" ) )
           {
-            for ( Enumeration< ? > keys = ( Enumeration< ? > )section.propertyNames(); keys.hasMoreElements(); )
+            for ( Enumeration< ? > keys = section.propertyNames(); keys.hasMoreElements(); )
             {
               String key = ( String )keys.nextElement();
               String text = section.getProperty( key );
@@ -498,7 +563,9 @@ public class RemoteConfiguration
               int pid = Integer.parseInt( st.nextToken(), 16 );
               ProtocolUpgrade protocol = findProtocolUpgrade( pid );
               if ( protocol != null )
+              {
                 protocol.setNotes( text );
+              }
             }
           }
           else if ( name.equals( "Learned" ) )
@@ -512,7 +579,9 @@ public class RemoteConfiguration
               String keyName = st.nextToken();
               LearnedSignal ls = findLearnedSignal( deviceName, keyName );
               if ( ls != null )
+              {
                 ls.setNotes( text );
+              }
             }
           }
           section = pr.nextSection();
@@ -525,7 +594,9 @@ public class RemoteConfiguration
     for ( Iterator< ProtocolUpgrade > it = protocols.iterator(); it.hasNext(); )
     {
       if ( it.next().isUsed() )
+      {
         it.remove();
+      }
     }
   }
 
@@ -549,7 +620,9 @@ public class RemoteConfiguration
     {
       String text = code.getNotes();
       if ( text != null )
+      {
         out.printf( "$%4X=%s\n", index, exportNotes( text ) );
+      }
       ++index;
     }
     return index;
@@ -574,7 +647,9 @@ public class RemoteConfiguration
     out.println( "[Notes]" );
     // start with the overall notes
     if ( notes != null )
+    {
       out.println( "$0000=" + exportNotes( notes ) );
+    }
 
     // Do the advanced codes
     int i = 0x1000;
@@ -594,7 +669,9 @@ public class RemoteConfiguration
     {
       String text = device.getDescription();
       if ( text != null )
+      {
         out.printf( "$%4X=%s\n", i, exportNotes( text ) );
+      }
       ++i;
     }
 
@@ -608,19 +685,25 @@ public class RemoteConfiguration
         Protocol p = dev.getProtocol();
         Hex pid = p.getID();
         if ( !requiredProtocols.containsKey( pid ) )
+        {
           requiredProtocols.put( pid.get( 0 ), new ProtocolUpgrade( pid.get( 0 ), pCode, p.getName() ) );
+        }
       }
     }
 
     for ( ProtocolUpgrade pu : protocols )
+    {
       requiredProtocols.put( pu.getPid(), pu );
+    }
 
     i = 0x4000;
     for ( ProtocolUpgrade protocol : requiredProtocols.values() )
     {
       String text = protocol.getNotes();
       if ( text != null )
+      {
         out.printf( "$%4X=%s\n", i, exportNotes( text ) );
+      }
       ++i;
     }
 
@@ -630,7 +713,9 @@ public class RemoteConfiguration
     {
       String text = signal.getNotes();
       if ( text != null )
+      {
         out.printf( "$%4X=%s\n", i, exportNotes( text ) );
+      }
       ++i;
     }
     out.close();
@@ -668,8 +753,7 @@ public class RemoteConfiguration
     for ( DeviceUpgrade deviceUpgrade : devices )
     {
       System.err.println( "Checking " + deviceUpgrade );
-      if ( ( deviceTypeIndex == deviceUpgrade.getDeviceType().getNumber() )
-          && ( setupCode == deviceUpgrade.getSetupCode() ) )
+      if ( deviceTypeIndex == deviceUpgrade.getDeviceType().getNumber() && setupCode == deviceUpgrade.getSetupCode() )
       {
         System.err.println( "It's a match!" );
         return deviceUpgrade;
@@ -699,9 +783,10 @@ public class RemoteConfiguration
     for ( int i = 0; i < deviceButtons.length; ++i )
     {
       DeviceButton deviceButton = deviceButtons[ i ];
-      if ( ( deviceButton.getDeviceTypeIndex( data ) == deviceTypeIndex )
-          && ( deviceButton.getSetupCode( data ) == setupCode ) )
+      if ( deviceButton.getDeviceTypeIndex( data ) == deviceTypeIndex && deviceButton.getSetupCode( data ) == setupCode )
+      {
         return i;
+      }
     }
     return -1;
   }
@@ -746,7 +831,9 @@ public class RemoteConfiguration
   {
     Setting[] settings = remote.getSettings();
     for ( Setting setting : settings )
+    {
       setting.decode( data, remote );
+    }
   }
 
   /**
@@ -771,7 +858,7 @@ public class RemoteConfiguration
 
   private void decodeFavScans()
   {
-    if ( ! remote.hasFavKey() || ! remote.getFavKey().isSegregated() )
+    if ( !remote.hasFavKey() || !remote.getFavKey().isSegregated() )
     {
       return;
     }
@@ -781,12 +868,12 @@ public class RemoteConfiguration
     {
       favScans.add( favScan );
       favKeyDevButton = favScan.getDeviceButtonFromIndex( remote );
-    }    
+    }
   }
-  
+
   private void decodeTimedMacros()
   {
-    if ( ( remote.getMacroCodingType().getType() == 2 ) || ! remote.hasTimedMacroSupport() )
+    if ( remote.getMacroCodingType().getType() == 2 || !remote.hasTimedMacroSupport() )
     {
       return;
     }
@@ -797,7 +884,7 @@ public class RemoteConfiguration
       timedMacros.add( timedMacro );
     }
   }
-  
+
   /**
    * Decode advanced codes.
    * 
@@ -850,7 +937,7 @@ public class RemoteConfiguration
       }
       else if ( advCode instanceof FavScan )
       {
-        FavScan favScan = ( FavScan )advCode;        
+        FavScan favScan = ( FavScan )advCode;
         if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
         {
           favScan.setDeviceIndex( data[ remote.getFavKey().getDeviceButtonAddress() ] );
@@ -860,7 +947,7 @@ public class RemoteConfiguration
         {
           favKeyDevButton = favScan.getDeviceButtonFromIndex( remote );
           favScan.setDeviceButton( favKeyDevButton );
-        }        
+        }
         favScans.add( favScan );
         advCodes.add( favScan );
       }
@@ -914,7 +1001,7 @@ public class RemoteConfiguration
       DeviceButton boundDeviceButton = remote.getDeviceButtons()[ keyMove.getDeviceButtonIndex() ];
       DeviceUpgrade boundUpgrade = findDeviceUpgrade( boundDeviceButton );
       DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
-      if ( ( boundUpgrade != null ) && ( boundUpgrade == moveUpgrade ) )
+      if ( boundUpgrade != null && boundUpgrade == moveUpgrade )
       {
         System.err.println( "Moving keymove on " + boundDeviceButton + ':'
             + remote.getButtonName( keyMove.getKeyCode() ) + " to device upgrade " + boundUpgrade.getDeviceType() + '/'
@@ -927,7 +1014,9 @@ public class RemoteConfiguration
         {
           String text = keyMove.getNotes();
           if ( text == null )
+          {
             text = remote.getButtonName( keyCode );
+          }
           f = new Function( text, cmd, null );
           boundUpgrade.getFunctions().add( f );
         }
@@ -940,22 +1029,30 @@ public class RemoteConfiguration
           {
             b = remote.getButton( baseCode );
             if ( ( baseCode | remote.getShiftMask() ) == keyCode )
+            {
               state = Button.SHIFTED_STATE;
+            }
             if ( ( baseCode | remote.getXShiftMask() ) == keyCode )
+            {
               state = Button.XSHIFTED_STATE;
+            }
           }
           else
           {
             baseCode = keyCode & ~remote.getShiftMask();
             b = remote.getButton( baseCode );
             if ( b != null )
+            {
               state = Button.SHIFTED_STATE;
+            }
             else
             {
               baseCode = keyCode & ~remote.getXShiftMask();
               b = remote.getButton( baseCode );
               if ( b != null )
+              {
                 state = Button.XSHIFTED_STATE;
+              }
             }
           }
         }
@@ -977,13 +1074,15 @@ public class RemoteConfiguration
     for ( int i = 0; i < deviceButtons.length; ++i )
     {
       DeviceButton button = deviceButtons[ i ];
-      if ( ( button.getDeviceTypeIndex( data ) == upgrade.getDeviceType().getNumber() )
-          && ( button.getSetupCode( data ) == upgrade.getSetupCode() ) )
+      if ( button.getDeviceTypeIndex( data ) == upgrade.getDeviceType().getNumber()
+          && button.getSetupCode( data ) == upgrade.getSetupCode() )
+      {
         return i;
+      }
     }
     return -1;
   }
-  
+
   public DeviceUpgrade getAssignedDeviceUpgrade( DeviceButton deviceButton )
   {
     DeviceType deviceType = remote.getDeviceTypeByIndex( deviceButton.getDeviceTypeIndex( data ) );
@@ -1012,7 +1111,9 @@ public class RemoteConfiguration
     for ( SpecialProtocol sp : remote.getSpecialProtocols() )
     {
       if ( upgrade.getProtocol().getID().equals( sp.getPid() ) )
+      {
         return sp;
+      }
     }
     return null;
   }
@@ -1028,7 +1129,7 @@ public class RemoteConfiguration
       System.err.println( "Checking " + sp );
       if ( sp.isPresent( this ) )
       {
-        if ( ( setupCode == sp.getSetupCode() ) && ( deviceType == sp.getDeviceType().getNumber() ) )
+        if ( setupCode == sp.getSetupCode() && deviceType == sp.getDeviceType().getNumber() )
         {
           return sp;
         }
@@ -1036,20 +1137,19 @@ public class RemoteConfiguration
     }
 
     DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
-    if ( ( moveUpgrade != null ) && specialUpgrades.contains( moveUpgrade ) )
+    if ( moveUpgrade != null && specialUpgrades.contains( moveUpgrade ) )
     {
       return getSpecialProtocol( moveUpgrade );
     }
 
     return null;
   }
-  
+
   private SpecialProtocol getSpecialProtocol( Macro macro )
   {
     for ( SpecialProtocol sp : remote.getSpecialProtocols() )
     {
-      if ( sp.isInternal() && sp.getInternalSerial() == macro.getSequenceNumber() 
-          && macro.getDeviceIndex() != 0x0F )
+      if ( sp.isInternal() && sp.getInternalSerial() == macro.getSequenceNumber() && macro.getDeviceIndex() != 0x0F )
       {
         return sp;
       }
@@ -1066,7 +1166,7 @@ public class RemoteConfiguration
     }
     return count;
   }
-  
+
   private int getAdvancedCodesBytesNeeded( List< ? extends AdvancedCode > codes )
   {
     int count = 0;
@@ -1087,7 +1187,7 @@ public class RemoteConfiguration
     size += getAdvancedCodesBytesNeeded( macros );
     size += getAdvancedCodesBytesNeeded( specialFunctionMacros );
     if ( remote.hasFavKey() && !remote.getFavKey().isSegregated() )
-    {  
+    {
       size += getAdvancedCodesBytesNeeded( favScans );
     }
     if ( remote.getMacroCodingType().hasTimedMacros() )
@@ -1197,7 +1297,9 @@ public class RemoteConfiguration
     {
       int devButtonIndex = getDeviceButtonIndex( device );
       if ( devButtonIndex == -1 )
+      {
         continue;
+      }
       for ( KeyMove keyMove : device.getKeyMoves() )
       {
         keyMove.setDeviceButtonIndex( devButtonIndex );
@@ -1206,10 +1308,10 @@ public class RemoteConfiguration
     }
     return rc;
   }
-  
+
   private void updateFavScans()
   {
-    if ( ! remote.hasFavKey() || ! remote.getFavKey().isSegregated() )
+    if ( !remote.hasFavKey() || !remote.getFavKey().isSegregated() )
     {
       return;
     }
@@ -1222,12 +1324,11 @@ public class RemoteConfiguration
     }
     // Segregated FavScan section allows only one entry.
     FavScan favScan = favScans.get( 0 );
-    int buttonIndex = ( favKeyDevButton == DeviceButton.noButton ) ? 
-        0 : favKeyDevButton.getButtonIndex();
+    int buttonIndex = favKeyDevButton == DeviceButton.noButton ? 0 : favKeyDevButton.getButtonIndex();
     data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
     favScan.store( data, offset, remote );
   }
-  
+
   private void updateTimedMacros()
   {
     AddressRange range = remote.getTimedMacroAddress();
@@ -1239,10 +1340,10 @@ public class RemoteConfiguration
     for ( TimedMacro timedMacro : timedMacros )
     {
       offset = timedMacro.store( data, offset, remote );
-    } 
+    }
     data[ offset++ ] = remote.getSectionTerminator();
   }
-  
+
   /**
    * Update advanced codes.
    * 
@@ -1251,6 +1352,10 @@ public class RemoteConfiguration
   private void updateAdvancedCodes()
   {
     AddressRange range = remote.getAdvancedCodeAddress();
+    if ( range == null )
+    {
+      return;
+    }
     int offset = range.getStart();
     updateSpecialFunctionSublists();
     offset = updateKeyMoves( keymoves, offset );
@@ -1285,7 +1390,7 @@ public class RemoteConfiguration
       offset = macro.store( data, offset, remote );
     }
     if ( remote.hasFavKey() && !remote.getFavKey().isSegregated() )
-    {  
+    {
       for ( FavScan favScan : favScans )
       {
         if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL )
@@ -1310,15 +1415,15 @@ public class RemoteConfiguration
       }
     }
     data[ offset++ ] = remote.getSectionTerminator();
-    
-//  Next step commented out as it overwrites the date indicator generated by File/New
-//  and is not necessary.  IR.exe doesn't fill with section terminators.    
 
-//    // Fill the rest of the advance code section with the section terminator
-//    while ( offset <= range.getEnd() )
-//    {
-//      data[ offset++ ] = remote.getSectionTerminator();
-//    }
+    // Next step commented out as it overwrites the date indicator generated by File/New
+    // and is not necessary. IR.exe doesn't fill with section terminators.
+
+    // // Fill the rest of the advance code section with the section terminator
+    // while ( offset <= range.getEnd() )
+    // {
+    // data[ offset++ ] = remote.getSectionTerminator();
+    // }
 
     // Update the multiMacros
     for ( Map.Entry< Button, List< Macro >> entry : multiMacros.entrySet() )
@@ -1338,7 +1443,9 @@ public class RemoteConfiguration
   {
     CheckSum[] sums = remote.getCheckSums();
     for ( int i = 0; i < sums.length; ++i )
+    {
       sums[ i ].setCheckSum( data );
+    }
   }
 
   /**
@@ -1348,14 +1455,18 @@ public class RemoteConfiguration
   {
     Setting[] settings = remote.getSettings();
     for ( Setting setting : settings )
+    {
       setting.store( data, remote );
+    }
   }
 
   private void updateFixedData()
   {
     FixedData[] fixedData = remote.getFixedData();
     if ( fixedData == null )
+    {
       return;
+    }
     for ( FixedData fixed : fixedData )
     {
       fixed.store( data );
@@ -1366,7 +1477,9 @@ public class RemoteConfiguration
   {
     FixedData[] autoSet = remote.getAutoSet();
     if ( autoSet == null )
+    {
       return;
+    }
     for ( FixedData auto : autoSet )
     {
       auto.store( data );
@@ -1385,7 +1498,9 @@ public class RemoteConfiguration
     for ( ProtocolUpgrade pu : protocols )
     {
       if ( pu.getPid() == pid )
+      {
         return pu;
+      }
     }
     return null;
   }
@@ -1404,8 +1519,10 @@ public class RemoteConfiguration
     int limit = remote.getEepromSize();
     for ( int i = 0; i < bounds.length; ++i )
     {
-      if ( ( bounds[ i ] != 0 ) && ( offset < bounds[ i ] ) && ( limit > bounds[ i ] ) )
+      if ( bounds[ i ] != 0 && offset < bounds[ i ] && limit > bounds[ i ] )
+      {
         limit = bounds[ i ];
+      }
     }
     return limit;
   }
@@ -1426,7 +1543,8 @@ public class RemoteConfiguration
     // table
     int protocolTableOffset = processor.getInt( data, addr.getStart() + 2 ) - remote.getBaseAddress(); // get offset of
     // protocol table
-    int devDependentTableOffset = ( devAddr == null ) ? 0 : processor.getInt( data, devAddr.getStart() ) + devAddr.getStart();
+    int devDependentTableOffset = devAddr == null ? 0 : processor.getInt( data, devAddr.getStart() )
+        + devAddr.getStart();
     // get offset of device dependent table, filled from top downwards; offset is to start of first entry
 
     // build an array containing the ends of all the possible ranges
@@ -1436,19 +1554,27 @@ public class RemoteConfiguration
     bounds[ 1 ] = 0; // leave space for the 1st protocol code
     bounds[ 2 ] = deviceTableOffset;
     bounds[ 3 ] = protocolTableOffset;
-    // GD:  Why the -1's in the following bounds?  Presumably to allow for the section
+    // GD: Why the -1's in the following bounds? Presumably to allow for the section
     // terminator, but getEnd() returns the offset of the last byte of the section, not
     // of the byte following it, which is already the address of the section terminator.
     bounds[ 4 ] = addr.getEnd() - 1;
     bounds[ 5 ] = remote.getAdvancedCodeAddress().getEnd() - 1;
     if ( remote.getLearnedAddress() != null )
+    {
       bounds[ 6 ] = remote.getLearnedAddress().getEnd() - 1;
+    }
     else
+    {
       bounds[ 6 ] = 0;
+    }
     if ( devAddr != null )
+    {
       bounds[ 7 ] = devAddr.getEnd() - 1;
+    }
     else
+    {
       bounds[ 7 ] = 0;
+    }
 
     // parse the protocol tables
     int offset = protocolTableOffset;
@@ -1460,11 +1586,17 @@ public class RemoteConfiguration
       int pid = processor.getInt( data, offset );
       int codeOffset = processor.getInt( data, offset + 2 * count ) - remote.getBaseAddress();
       if ( i == 0 )
+      {
         bounds[ 1 ] = codeOffset; // save the offset of the first protocol code
-      if ( i == count - 1 ) // the last entry, so there is no next entry
+      }
+      if ( i == count - 1 )
+      {
         bounds[ 0 ] = 0;
+      }
       else
+      {
         bounds[ 0 ] = processor.getInt( data, offset + 2 * ( count + 1 ) ) - remote.getBaseAddress();
+      }
 
       int limit = getLimit( codeOffset, bounds );
       Hex code = Hex.subHex( data, codeOffset, limit - codeOffset );
@@ -1479,29 +1611,37 @@ public class RemoteConfiguration
     for ( int i = 0; i < count; ++i )
     {
       offset += 2;
-      
+
       int fullCode = processor.getInt( data, offset );
       int setupCode = fullCode & 0xFFF;
       if ( !remote.usesTwoBytePID() )
       {
         setupCode &= 0x7FF;
       }
-      DeviceType devType = remote.getDeviceTypeByIndex( (fullCode >> 12) & 0xF );
+      DeviceType devType = remote.getDeviceTypeByIndex( fullCode >> 12 & 0xF );
       int codeOffset = offset + 2 * count; // compute offset to offset of upgrade code
       codeOffset = processor.getInt( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
       int pid = data[ codeOffset ];
       if ( remote.usesTwoBytePID() )
+      {
         pid = processor.getInt( data, codeOffset );
+      }
       else
       {
-        if ( ( fullCode & 0x800 ) == 0x800 ) // pid > 0xFF
+        if ( ( fullCode & 0x800 ) == 0x800 )
+        {
           pid += 0x100;
+        }
       }
 
       if ( i == count - 1 )
+      {
         bounds[ 0 ] = 0;
+      }
       else
+      {
         bounds[ 0 ] = processor.getInt( data, offset + 2 * ( count + 1 ) ) - remote.getBaseAddress(); // next device
+      }
       // upgrade
       int limit = getLimit( offset, bounds );
       Hex deviceHex = Hex.subHex( data, codeOffset, limit - codeOffset );
@@ -1525,7 +1665,7 @@ public class RemoteConfiguration
       }
 
       short[] pidHex = new short[ 2 ];
-      pidHex[ 0 ] = ( short )( ( pid > 0xFF ) ? 1 : 0 );
+      pidHex[ 0 ] = ( short )( pid > 0xFF ? 1 : 0 );
       pidHex[ 1 ] = ( short )( pid & 0xFF );
 
       DeviceUpgrade upgrade = new DeviceUpgrade();
@@ -1541,15 +1681,15 @@ public class RemoteConfiguration
         pe.printStackTrace( System.err );
       }
     }
-    
+
     if ( devAddr == null )
     {
       return;
     }
-    
+
     // now parse the devices and protocols in the device-dependent upgrade section
     offset = devDependentTableOffset;
-    while ( data[ offset] != remote.getSectionTerminator() )
+    while ( data[ offset ] != remote.getSectionTerminator() )
     {
       // In this section the full code is stored big-endian, regardless of the processor!
       DeviceButton deviceButton = remote.getDeviceButtons()[ data[ offset + 2 ] ];
@@ -1559,7 +1699,7 @@ public class RemoteConfiguration
       {
         setupCode &= 0x7FF;
       }
-      int deviceTypeIndex = ( fullCode >> 12 ) & 0xF;
+      int deviceTypeIndex = fullCode >> 12 & 0xF;
       // Check if this upgrade is also in the device independent section.
       DeviceUpgrade upg = findDeviceUpgrade( deviceTypeIndex, setupCode );
       if ( upg != null )
@@ -1572,16 +1712,20 @@ public class RemoteConfiguration
         int codeOffset = offset + 5;
         int pid = data[ codeOffset ];
         if ( remote.usesTwoBytePID() )
+        {
           pid = processor.getInt( data, codeOffset );
+        }
         else
         {
-          if ( ( fullCode & 0x800 ) == 0x800 ) // pid > 0xFF
+          if ( ( fullCode & 0x800 ) == 0x800 )
+          {
             pid += 0x100;
+          }
         }
         // Note that the protocol entry can start *after* the end of the entire upgrade entry,
         // if the upgrade uses the in-line protocol of another upgrade.
-        bounds[ 0 ] = offset + data[ offset ];      // start of following upgrade entry
-        bounds[ 1 ] = offset + data[ offset + 1 ];  // start of protocol entry (if present)
+        bounds[ 0 ] = offset + data[ offset ]; // start of following upgrade entry
+        bounds[ 1 ] = offset + data[ offset + 1 ]; // start of protocol entry (if present)
         int limit = getLimit( offset, bounds );
         Hex deviceHex = Hex.subHex( data, codeOffset, limit - codeOffset );
         ProtocolUpgrade pu = getProtocol( pid );
@@ -1607,7 +1751,7 @@ public class RemoteConfiguration
           pu.setUsed( true );
           protocols.add( pu );
         }
-        
+
         String alias = remote.getDeviceTypeAlias( devType );
         if ( alias == null )
         {
@@ -1618,9 +1762,9 @@ public class RemoteConfiguration
           JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
           continue;
         }
-        
+
         short[] pidHex = new short[ 2 ];
-        pidHex[ 0 ] = ( short )( ( pid > 0xFF ) ? 1 : 0 );
+        pidHex[ 0 ] = ( short )( pid > 0xFF ? 1 : 0 );
         pidHex[ 1 ] = ( short )( pid & 0xFF );
 
         DeviceUpgrade upgrade = new DeviceUpgrade();
@@ -1636,11 +1780,11 @@ public class RemoteConfiguration
         catch ( java.text.ParseException pe )
         {
           pe.printStackTrace( System.err );
-        }    
+        }
       }
-      
+
       offset += data[ offset ];
-      
+
       if ( offset > devAddr.getEnd() )
       {
         String message = "Invalid data in device-specific upgrade.  The data appears to overrun the section.";
@@ -1681,7 +1825,9 @@ public class RemoteConfiguration
 
     // The installed protocols that aren't used by any device upgrade.
     for ( ProtocolUpgrade pu : protocols )
+    {
       requiredProtocols.put( pu.getPid(), pu );
+    }
 
     return requiredProtocols;
   }
@@ -1693,7 +1839,7 @@ public class RemoteConfiguration
    */
   public int getUpgradeCodeBytesNeeded()
   {
-    
+
     List< DeviceUpgrade > devIndependent = new ArrayList< DeviceUpgrade >();
 
     for ( DeviceUpgrade dev : devices )
@@ -1703,7 +1849,7 @@ public class RemoteConfiguration
         devIndependent.add( dev );
       }
     }
-    
+
     int size = 4; // Allow for the table pointers
 
     int devCount = devIndependent.size();
@@ -1714,7 +1860,7 @@ public class RemoteConfiguration
     int prCount = requiredProtocols.size();
 
     // Handle the special case where there are no upgrades installed
-    if ( ( devCount == 0 ) && ( prCount == 0 ) )
+    if ( devCount == 0 && prCount == 0 )
     {
       return size;
     }
@@ -1738,7 +1884,7 @@ public class RemoteConfiguration
     // The protocol upgrade table
     size += 2; // the count
     size += 4 * prCount; // the pid and offset for each upgrade
-    
+
     if ( remote.getProcessor().getName().equals( "740" ) )
     {
       // Remotes with the 740 processor store an additional address at the end of each
@@ -1748,7 +1894,7 @@ public class RemoteConfiguration
 
     return size;
   }
-  
+
   public int getDevUpgradeCodeBytesNeeded()
   {
     List< DeviceUpgrade > devDependent = new ArrayList< DeviceUpgrade >();
@@ -1761,20 +1907,20 @@ public class RemoteConfiguration
     }
 
     Collections.sort( devDependent, new DependentUpgradeComparator() );
-    
+
     int lastProtID = -1;
     int lastProtAddr = -1;
-    int offset = 0x10000;   // value not relevant, it is just to prevent negative offsets
-    
+    int offset = 0x10000; // value not relevant, it is just to prevent negative offsets
+
     for ( int i = 0; i < devDependent.size(); i++ )
     {
       DeviceUpgrade upg = devDependent.get( i );
       int upgLength = upg.getUpgradeLength();
-      
+
       if ( upg.needsProtocolCode() )
       {
         int protID = upg.getProtocol().getID().get( 0 );
-        if ( protID != lastProtID || ( lastProtAddr - offset + upgLength + 5 ) > 0xFF )
+        if ( protID != lastProtID || lastProtAddr - offset + upgLength + 5 > 0xFF )
         {
           // In-line protocol required
           Hex hex = upg.getCode();
@@ -1789,7 +1935,7 @@ public class RemoteConfiguration
     // Allow for storage of start address and section terminator.
     return 0x10000 - offset + 3;
   }
-  
+
   /**
    * Update upgrades.
    * 
@@ -1798,7 +1944,7 @@ public class RemoteConfiguration
   private void updateUpgrades()
   {
     // Split the device upgrades into separate device independent and device
-    // dependent lists.  An upgrade can occur in both lists.
+    // dependent lists. An upgrade can occur in both lists.
     List< DeviceUpgrade > devIndependent = new ArrayList< DeviceUpgrade >();
     List< DeviceUpgrade > devDependent = new ArrayList< DeviceUpgrade >();
     for ( DeviceUpgrade dev : devices )
@@ -1812,15 +1958,19 @@ public class RemoteConfiguration
         devDependent.add( dev );
       }
     }
-      
+
     // First update device independent upgrades
     AddressRange addr = remote.getUpgradeAddress();
     // Also get address range for device specific upgrades, which will be null
     // if these are not used by the remote.
     AddressRange devAddr = remote.getDeviceUpgradeAddress();
-    
+    if ( addr == null || devAddr == null )
+    {
+      return;
+    }
+
     int offset = addr.getStart() + 4; // skip over the table pointers
-    
+
     int devCount = devIndependent.size();
 
     // Build a list of the required protocol upgrades
@@ -1853,7 +2003,9 @@ public class RemoteConfiguration
     // The installed protocols that aren't used by any device upgrade.
     // These also go in the device independent section.
     for ( ProtocolUpgrade pu : protocols )
+    {
       requiredProtocols.put( pu.getPid(), pu );
+    }
 
     // Calculate the size of the upgrade table
 
@@ -1871,7 +2023,7 @@ public class RemoteConfiguration
       Hex.put( hex, data, offset );
       offset += hex.length();
     }
-    
+
     int devUpgradesEnd = offset + remote.getBaseAddress();
 
     // store the protocol upgrades
@@ -1884,7 +2036,7 @@ public class RemoteConfiguration
       Hex.put( hex, data, offset );
       offset += hex.length();
     }
-    
+
     int protUpgradesEnd = offset + remote.getBaseAddress();
 
     // set the pointer to the device table.
@@ -1895,7 +2047,7 @@ public class RemoteConfiguration
     offset += 2;
     // store the setup codes
     for ( DeviceUpgrade dev : devIndependent )
-    {      
+    {
       processor.putInt( Hex.get( dev.getHexSetupCode(), 0 ), data, offset );
       offset += 2;
     }
@@ -1905,20 +2057,20 @@ public class RemoteConfiguration
       processor.putInt( devOffset + remote.getBaseAddress(), data, offset );
       offset += 2;
     }
-    
+
     if ( processor.getName().equals( "740" ) )
     {
       processor.putInt( devUpgradesEnd, data, offset );
       offset += 2;
     }
-    
-    if ( ( devCount == 0 ) && ( prCount == 0 ) )
+
+    if ( devCount == 0 && prCount == 0 )
     {
       // When no devices or protocols, the tables are the same so we reset
       // the offset to the start of the device table.
       offset = protUpgradesEnd - remote.getBaseAddress();
     }
-       
+
     // set the pointer to the protocol table
     processor.putInt( offset + remote.getBaseAddress(), data, addr.getStart() + 2 );
 
@@ -1935,40 +2087,40 @@ public class RemoteConfiguration
       processor.putInt( prOffsets[ i ] + remote.getBaseAddress(), data, offset );
       offset += 2;
     }
-    
+
     if ( processor.getName().equals( "740" ) )
     {
       processor.putInt( protUpgradesEnd, data, offset );
       offset += 2;
       processor.putInt( offset - addr.getStart() + 2, data, addr.getStart() - 2 );
     }
-    
+
     if ( devAddr == null )
     {
-      return;  
+      return;
     }
-    
+
     // Now update the device dependent section, with updates sorted for storage efficiency.
     // Note that this section is filled from the top downwards.
     Collections.sort( devDependent, new DependentUpgradeComparator() );
-    
+
     int lastProtID = -1;
     int lastProtAddr = -1;
     offset = devAddr.getEnd();
     int lastDevAddr = offset;
     data[ offset ] = remote.getSectionTerminator();
-    
+
     for ( i = 0; i < devDependent.size(); i++ )
     {
       DeviceUpgrade upg = devDependent.get( i );
       int upgLength = upg.getUpgradeLength();
       int protOffset = 0; // value used when protocol upgrade not required
       int buttonIndex = upg.getButtonRestriction().getButtonIndex();
-      
+
       if ( upg.needsProtocolCode() )
       {
         int protID = upg.getProtocol().getID().get( 0 );
-        if ( protID == lastProtID && ( lastProtAddr - offset + upgLength + 5 ) <= 0xFF )
+        if ( protID == lastProtID && lastProtAddr - offset + upgLength + 5 <= 0xFF )
         {
           // Upgrade can use a protocol already placed in this section
           protOffset = lastProtAddr - offset + upgLength + 5;
@@ -1977,11 +2129,11 @@ public class RemoteConfiguration
         {
           // Store the protocol
           Hex hex = upg.getCode();
-          offset -= hex.length();  
+          offset -= hex.length();
           Hex.put( hex, data, offset );
           lastProtID = protID;
           lastProtAddr = offset;
-          protOffset = upgLength + 5;          
+          protOffset = upgLength + 5;
         }
       }
       // Store the device upgrade
@@ -2006,7 +2158,9 @@ public class RemoteConfiguration
   {
     AddressRange addr = remote.getLearnedAddress();
     if ( addr == null )
+    {
       return;
+    }
     HexReader reader = new HexReader( data, addr );
 
     LearnedSignal signal = null;
@@ -2025,7 +2179,9 @@ public class RemoteConfiguration
   {
     int size = 0;
     if ( remote.getLearnedAddress() == null )
+    {
       return 0;
+    }
 
     for ( LearnedSignal ls : learned )
     {
@@ -2044,7 +2200,9 @@ public class RemoteConfiguration
   {
     AddressRange addr = remote.getLearnedAddress();
     if ( addr == null )
+    {
       return;
+    }
 
     int offset = addr.getStart();
     for ( LearnedSignal ls : learned )
@@ -2105,7 +2263,9 @@ public class RemoteConfiguration
 
     pw.printHeader( "Settings" );
     for ( Setting setting : remote.getSettings() )
+    {
       setting.store( pw );
+    }
 
     for ( KeyMove keyMove : keymoves )
     {
@@ -2134,11 +2294,11 @@ public class RemoteConfiguration
         sp.getMacro().store( pw );
       }
       else
-      {  
+      {
         sp.getKeyMove().store( pw );
       }
     }
-    
+
     for ( TimedMacro tm : timedMacros )
     {
       String className = tm.getClass().getName();
@@ -2147,7 +2307,7 @@ public class RemoteConfiguration
       pw.printHeader( className );
       tm.store( pw );
     }
-    
+
     for ( FavScan fs : favScans )
     {
       String className = fs.getClass().getName();
@@ -2254,7 +2414,7 @@ public class RemoteConfiguration
   {
     return savedData;
   }
-  
+
   public void setSavedData()
   {
     savedData = new short[ data.length ];
@@ -2353,9 +2513,9 @@ public class RemoteConfiguration
 
   /** The macros. */
   private List< Macro > macros = new ArrayList< Macro >();
-  
+
   private List< TimedMacro > timedMacros = new ArrayList< TimedMacro >();
-  
+
   private List< FavScan > favScans = new ArrayList< FavScan >();
 
   /** The devices. */
@@ -2371,7 +2531,7 @@ public class RemoteConfiguration
   private List< SpecialProtocolFunction > specialFunctions = new ArrayList< SpecialProtocolFunction >();
   private List< KeyMove > specialFunctionKeyMoves = new ArrayList< KeyMove >();
   private List< Macro > specialFunctionMacros = new ArrayList< Macro >();
-  
+
   private void updateSpecialFunctionSublists()
   {
     specialFunctionKeyMoves.clear();
@@ -2383,12 +2543,12 @@ public class RemoteConfiguration
         specialFunctionMacros.add( sp.getMacro() );
       }
       else
-      {  
-        specialFunctionKeyMoves.add(  sp.getKeyMove() );
+      {
+        specialFunctionKeyMoves.add( sp.getKeyMove() );
       }
     }
   }
-   
+
   public DeviceButton getFavKeyDevButton()
   {
     return favKeyDevButton;
@@ -2411,17 +2571,17 @@ public class RemoteConfiguration
     else
     {
       updateAdvancedCodes();
-    }  
+    }
   }
-  
+
   public void initializeSetup()
   {
     // Fill buffer with 0xFF
     Arrays.fill( data, ( short )0xFF );
-    
+
     // Write signature to buffer
-    int start = ( remote.getInterfaceType().equals( "JP1" ) ) ? 2 : 0;
-    byte[] sigBytes = new byte[0];
+    int start = remote.getInterfaceType().equals( "JP1" ) ? 2 : 0;
+    byte[] sigBytes = new byte[ 0 ];
     try
     {
       sigBytes = remote.getSignature().getBytes( "UTF-8" );
@@ -2432,11 +2592,11 @@ public class RemoteConfiguration
     }
     for ( int i = 0; i < sigBytes.length; i++ )
     {
-      data[ start + i ] = (short)( sigBytes[ i ] & 0xFF );
+      data[ start + i ] = ( short )( sigBytes[ i ] & 0xFF );
     }
-    
+
     // Unless remote uses soft devices, set default device types and setup codes in buffer
-    if ( remote.getSoftDevices() == null || ! remote.getSoftDevices().inUse() )
+    if ( remote.getSoftDevices() == null || !remote.getSoftDevices().inUse() )
     {
       DeviceButton[] devBtns = remote.getDeviceButtons();
       java.util.List< DeviceType > devTypeList = remote.getDeviceTypeList();
@@ -2449,23 +2609,26 @@ public class RemoteConfiguration
         db.setDeviceTypeIndex( ( short )dt.getNumber(), data );
         db.setDeviceGroup( ( short )dt.getGroup(), data );
         db.setSetupCode( ( short )db.getDefaultSetupCode(), data );
-        if ( j < devTypeList.size() - 1 ) j++;
+        if ( j < devTypeList.size() - 1 )
+        {
+          j++ ;
+        }
       }
     }
     else if ( remote.getSoftDevices().usesFilledSlotCount() )
     {
       data[ remote.getSoftDevices().getCountAddress() ] = 0;
     }
-    
+
     // Zero the settings bytes for non-inverted settings
     for ( Setting setting : remote.getSettings() )
     {
-      if ( ! setting.isInverted() )
+      if ( !setting.isInverted() )
       {
         data[ setting.getByteAddress() ] = 0;
       }
     }
-    
+
     // If remote has segregated Fav key, initialize Fav section
     if ( remote.hasFavKey() && remote.getFavKey().isSegregated() )
     {
@@ -2474,20 +2637,24 @@ public class RemoteConfiguration
       data[ offset++ ] = 0;
     }
   }
-  
+
   public void setDateIndicator()
   {
-    // Set date in yy-mm-dd format, using BCD encoding, at end of Advanced 
+    // Set date in yy-mm-dd format, using BCD encoding, at end of Advanced
     // Code section as indicator that file was initially produced by New, rather
     // than by downloading from a remote.
     Calendar now = Calendar.getInstance();
     int year = now.get( Calendar.YEAR ) % 100;
     int month = now.get( Calendar.MONTH ) - Calendar.JANUARY + 1;
     int date = now.get( Calendar.DATE );
+    if ( remote.getAdvancedCodeAddress() == null )
+    {
+      return;
+    }
     int offset = remote.getAdvancedCodeAddress().getEnd() - 2;
-    data[ offset++ ] = ( short )( ( ( year / 10 ) << 4 ) | ( year % 10 ) );
-    data[ offset++ ] = ( short )( ( ( month / 10 ) << 4 ) | ( month % 10 ) );
-    data[ offset++ ] = ( short )( ( ( date / 10 ) << 4 ) | ( date % 10 ) );
+    data[ offset++ ] = ( short )( year / 10 << 4 | year % 10 );
+    data[ offset++ ] = ( short )( month / 10 << 4 | month % 10 );
+    data[ offset++ ] = ( short )( date / 10 << 4 | date % 10 );
     updateCheckSums();
   }
 
@@ -2495,7 +2662,7 @@ public class RemoteConfiguration
   private String notes = null;
 
   private String[] deviceButtonNotes = null;
-  
+
   private DeviceButton favKeyDevButton = null;
-  
+
 }

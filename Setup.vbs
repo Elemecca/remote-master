@@ -1,12 +1,8 @@
 Set WshShell = WScript.CreateObject("WScript.Shell")
 Set objFS = WScript.CreateObject("Scripting.FileSystemObject")
 
-sCurrDir =  objFS.GetAbsolutePathName(".")
-
-sRMFolder = WshShell.SpecialFolders("Programs") & "\Remote Master"
-if Not objFS.FolderExists( sRMFolder ) Then
-   objFS.CreateFolder( sRMFolder )
-End If
+sCurrDir = objFS.GetParentFolderName(Wscript.ScriptFullName) 
+WScript.Echo "Installation folder is " & sCurrDir
 
 Sub makeShortcut( lnkFile, path, args, desc, icon, dir )
     Set shortcut = WshShell.CreateShortcut( lnkFile )
@@ -21,23 +17,32 @@ Sub makeShortcut( lnkFile, path, args, desc, icon, dir )
     shortcut.save
 End Sub
 
-call makeShortcut( sRMFolder & "\Remote Master.LNK", sCurrDir & "\RemoteMaster.jar",        "",    "RemoteMaster", sCurrDir & "\RM.ICO",   sCurrDir )
-call makeShortcut( sRMFolder & "\RMIR.LNK",          sCurrDir & "\RemoteMaster.jar",        "-ir", "RMIR",         sCurrDir & "\RMIR.ICO", sCurrDir )
-call makeShortcut( sRMFolder & "\Read Me.LNK",       sCurrDir & "\Readme.html",             "",    "Read Me",      Null,                   sCurrDir )
-call makeShortcut( sRMFolder & "\Tutorial.LNK",      sCurrDir & "\tutorial\tutorial.html",  "",    "Tutorial",     Null,                   sCurrDir & "\tutorial" )
-
 Sub associate( name, desc, icon, command, ext )
-    call WshShell.RegWrite( "HKCR\" & name & "\", desc, "REG_SZ" )
-    call WshShell.RegWrite( "HKCR\" & name & "\DefaultIcon\", """" & icon & """", "REG_SZ" )
-    call WshShell.RegWrite( "HKCR\" & name & "\Shell\open\command\", command, "REG_SZ" )
-    call WshShell.RegWrite( "HKCR\" & ext & "\", name, "REG_SZ" )
+    call WshShell.RegWrite( "HKEY_CLASSES_ROOT\" & name & "\", desc, "REG_SZ" )
+    call WshShell.RegWrite( "HKEY_CLASSES_ROOT\" & name & "\DefaultIcon\", icon, "REG_SZ" )
+    call WshShell.RegWrite( "HKEY_CLASSES_ROOT\" & name & "\Shell\open\command\", command, "REG_SZ" )
+    call WshShell.RegWrite( "HKEY_CLASSES_ROOT\" & ext & "\", name, "REG_SZ" )
 End Sub
 
-sJarType = WshShell.RegRead("HKCR\.jar\")
-sJavaw = WshShell.RegRead("HKCR\" & sJarType & "\shell\open\command\" )
-iPos = InStr( 1, sJavaw, " -jar" )
-sJavaw = left( sJavaw, iPos + 6 )
-sRunRM = sJavaw & sCurrDir & "\RemoteMaster.jar"" -h """ & sCurrDir & """ ""%1""" 
+sRMFolder = WshShell.SpecialFolders("Programs") & "\Remote Master"
+if Not objFS.FolderExists( sRMFolder ) Then
+   objFS.CreateFolder( sRMFolder )
+End If
 
-call associate( "RMDeviceUpgrade", "Remote Master Device Upgrade",       sCurrDir & "\RM.ico",   sRunRM,          ".rmdu" )
-call associate( "RMRemoteConfig",  "Remote Master Remote Configuration", sCurrDir & "\RMIR.ico", sRunRM & " -ir", ".rmir" )
+sJavaw = WshShell.RegRead("HKLM\SOFTWARE\JavaSoft\Java Runtime Environment\1.6\JavaHome") & "\bin\javaw.exe"
+
+if objFs.FileExists( sJavaw ) Then 
+	sRunRM = """" & sJavaw & """ -jar """ & sCurrDir & "\RemoteMaster.jar"" -h """ & sCurrDir & """"
+	sRunRMIR = sRunRM & " -ir" 
+
+	call makeShortcut( sRMFolder & "\Remote Master.LNK", sJavaw,                               "-jar RemoteMaster.jar",     "RemoteMaster", sCurrDir & "\RM.ICO",   sCurrDir )
+	call makeShortcut( sRMFolder & "\RMIR.LNK",          sJavaw,                               "-jar RemoteMaster.jar -ir", "RMIR",         sCurrDir & "\RMIR.ICO", sCurrDir )
+	call makeShortcut( sRMFolder & "\Read Me.LNK",       sCurrDir & "\Readme.html",            "",                          "Read Me",      Null,                   sCurrDir )
+	call makeShortcut( sRMFolder & "\Tutorial.LNK",      sCurrDir & "\tutorial\tutorial.html", "",                          "Tutorial",     Null,                   sCurrDir & "\tutorial" )
+
+	call associate( "RMDeviceUpgrade", "Remote Master Device Upgrade",       sCurrDir & "\RM.ico",   sRunRM & " ""%1""", ".rmdu" )
+	call associate( "RMRemoteConfig",  "Remote Master Remote Configuration", sCurrDir & "\RMIR.ico", sRunRMIR & " ""%1""", ".rmir" )
+	WScript.Echo "Program shortcuts created successfully."
+Else
+	WScript.Echo "Program shortcuts were not created because javaw.exe was not found."
+End If

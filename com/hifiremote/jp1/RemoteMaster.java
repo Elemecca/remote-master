@@ -79,7 +79,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.99b";
+  public final static String version = "v1.99c-preview2";
 
   /** The dir. */
   private File dir = null;
@@ -89,7 +89,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
-  
+
   private RMAction newAction = null;
 
   /** The open item. */
@@ -164,7 +164,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private SpecialFunctionPanel specialFunctionPanel = null;
 
   private TimedMacroPanel timedMacroPanel = null;
-  
+
   private FavScanPanel favScanPanel = null;
 
   /** The device panel. */
@@ -214,7 +214,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         String command = event.getActionCommand();
         if ( command.equals( "NEW" ) )
         {
-          Remote remote =  RMNewDialog.showDialog( RemoteMaster.this );
+          Remote remote = RMNewDialog.showDialog( RemoteMaster.this );
           remote.load();
           remoteConfig = new RemoteConfiguration( remote );
           remoteConfig.initializeSetup();
@@ -455,7 +455,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     Container mainPanel = getContentPane();
 
     mainPanel.add( toolBar, BorderLayout.PAGE_START );
-    
+
     // Set color for text on Progress Bars
     UIManager.put( "ProgressBar.selectionBackground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
     UIManager.put( "ProgressBar.selectionForeground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
@@ -478,7 +478,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     specialFunctionPanel = new SpecialFunctionPanel();
     tabbedPane.add( "Special Functions", specialFunctionPanel );
     specialFunctionPanel.addPropertyChangeListener( this );
-    
+
     timedMacroPanel = new TimedMacroPanel();
     tabbedPane.add( "Timed Macros", timedMacroPanel );
     timedMacroPanel.addPropertyChangeListener( this );
@@ -632,7 +632,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // newItem = new JMenuItem( "New", KeyEvent.VK_N );
     // newItem.addActionListener( this );
     // menu.add( newItem );
-    
+
     newAction = new RMAction( "New...", "NEW", createIcon( "New24" ), "Create new file", KeyEvent.VK_N );
     menu.add( newAction ).setIcon( null );
     toolBar.add( newAction );
@@ -949,6 +949,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     chooser.addChoosableFileFilter( new EndingFileFilter( "IR files (*.ir)", irEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "RM Device Upgrades (*.rmdu)", rmduEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "KM Device Upgrades (*.txt)", txtEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "Sling Learned Signals (*.xml)", slingEndings ) );
     chooser.setFileFilter( irFilter );
 
     return chooser;
@@ -1034,6 +1035,31 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     else
     {
+      if ( ext.equals( ".xml" ) )
+      {
+        List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( "XMLLEARN" );
+        if ( remotes.isEmpty() )
+        {
+          JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
+              "The RDF for XML Slingbox Learns was not found.  Please place it in the RDF folder and try again.",
+              "Missing RDF File", JOptionPane.ERROR_MESSAGE );
+          return null;
+        }
+        Remote remote = remotes.get( 0 );
+        remote.load();
+        remoteConfig = new RemoteConfiguration( remote );
+        remoteConfig.initializeSetup();
+        remoteConfig.updateImage();
+        remoteConfig.setDateIndicator();
+        remoteConfig.setSavedData();
+        SlingLearnParser.parse( file, remoteConfig );
+        remoteConfig.updateImage();
+        update();
+        saveAction.setEnabled( false );
+        saveAsAction.setEnabled( true );
+        uploadAction.setEnabled( !interfaces.isEmpty() );
+        return null;
+      }
       saveAction.setEnabled( false );
       saveAsAction.setEnabled( true );
     }
@@ -1400,7 +1426,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       setTitle( "RM IR" );
     }
-    
+
     Remote remote = remoteConfig.getRemote();
 
     generalPanel.set( remoteConfig );
@@ -1419,7 +1445,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, getTabIndex( macroPanel ) + 1 );
     }
-    
+
     index = getTabIndex( timedMacroPanel );
     if ( remote.hasTimedMacroSupport() )
     {
@@ -1526,7 +1552,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
               "The defined advanced codes (keymoves, macros, special functions etc.) use more space than is available.  Please remove some.",
               "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
     }
-    if ( !updateUsage( timedMacroPanel.timedMacroProgressBar, remote.getTimedMacroAddress(), remoteConfig.getTimedMacroBytesNeeded() ) )
+    if ( !updateUsage( timedMacroPanel.timedMacroProgressBar, remote.getTimedMacroAddress(), remoteConfig
+        .getTimedMacroBytesNeeded() ) )
     {
       JOptionPane.showMessageDialog( this,
           "The defined timed macros use more space than is available.  Please remove some.",
@@ -1539,7 +1566,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
     }
     if ( !updateUsage( devUpgradeProgressBar, remote.getDeviceUpgradeAddress(), remoteConfig
-            .getDevUpgradeCodeBytesNeeded() ) )
+        .getDevUpgradeCodeBytesNeeded() ) )
     {
       JOptionPane.showMessageDialog( this,
           "The defined button-dependent device upgrades use more space than is available. Please remove some.",
@@ -1772,6 +1799,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private final static String[] txtEndings =
   {
     ".txt"
+  };
+
+  private final static String[] slingEndings =
+  {
+    ".xml"
   };
 
   @Override
