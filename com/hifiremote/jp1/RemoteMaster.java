@@ -1302,10 +1302,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         sb.append( "<html><b>RemoteMaster " );
         sb.append( version );
         sb.append( "</b>" );
-        sb.append( "<p>Written primarily by <i>Greg Bush</i>, now accepting donations at " );
+        sb.append( "<p>Written primarily by <i>Greg Bush</i> (now accepting donations at " );
         sb
-            .append( "<a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>" );
-        sb.append( "</p><p>RDFs loaded from <b>" );
+            .append( "<a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>)</p>" );
+        sb.append( "<p>Other contributors include:<blockquote>" );
+        sb
+            .append( "Graham&nbsp;Dixon, John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, " );
+        sb.append( "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></p>" );
+
+        sb.append( "<p>RDFs loaded from <b>" );
         sb.append( properties.getProperty( "RDFPath" ) );
         sb.append( "</b></p>" );
 

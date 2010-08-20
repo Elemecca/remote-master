@@ -156,12 +156,15 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
     addWindowListener( new WindowAdapter()
     {
+      @Override
       public void windowClosing( WindowEvent event )
       {
         try
         {
           if ( !promptToSaveUpgrade( ACTION_EXIT ) )
+          {
             return;
+          }
           preferences.setLastRemoteName( getRemote().getName() );
           preferences.setLastRemoteSignature( getRemote().getSignature() );
           savePreferences();
@@ -187,9 +190,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     String name = preferences.getLastRemoteName();
     RemoteManager rm = RemoteManager.getRemoteManager();
     if ( name != null )
+    {
       r = rm.findRemoteByName( name );
+    }
     if ( r == null )
+    {
       r = getRemotes().iterator().next();
+    }
     Protocol protocol = protocolManager.getProtocolsForRemote( r ).get( 0 );
     deviceUpgrade.setProtocol( protocol );
     deviceUpgrade.setRemote( r );
@@ -209,7 +216,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     pack();
     Rectangle bounds = preferences.getBounds();
     if ( bounds != null )
+    {
       setBounds( bounds );
+    }
     setVisible( true );
   }
 
@@ -308,7 +317,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       group.add( item );
       submenu.add( item );
       if ( item.getActionCommand().equals( lookAndFeel ) )
+      {
         item.setSelected( true );
+      }
       item.addActionListener( al );
     }
 
@@ -350,11 +361,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         Object source = e.getSource();
         for ( int i = 0; i < promptButtons.length; i++ )
+        {
           if ( promptButtons[ i ] == source )
           {
             preferences.setPromptToSave( promptStrings[ i ] );
             break;
           }
+        }
       }
     };
 
@@ -397,7 +410,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           preferences.setShowRemotes( "Preferred" );
         }
         else
+        {
           editPreferredRemotes();
+        }
       }
     };
     useAllRemotes.setSelected( true );
@@ -411,9 +426,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
     String temp = preferences.getShowRemotes();
     if ( temp.equals( "All" ) )
+    {
       useAllRemotes.setSelected( true );
+    }
     else
+    {
       usePreferredRemotes.setSelected( true );
+    }
 
     if ( preferences.getPreferredRemotes().size() == 0 )
     {
@@ -442,11 +461,17 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         Object source = e.getSource();
         if ( source == useDefaultNames )
+        {
           preferences.setUseCustomNames( false );
+        }
         else if ( source == useCustomNames )
+        {
           preferences.setUseCustomNames( true );
+        }
         else
+        {
           editCustomNames();
+        }
       }
     };
     useDefaultNames.setSelected( true );
@@ -605,7 +630,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     int state = getExtendedState();
     if ( state != Frame.NORMAL )
+    {
       setExtendedState( Frame.NORMAL );
+    }
     preferences.setBounds( getBounds() );
     preferences.save( recentFileMenu );
   }
@@ -618,14 +645,20 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     Protocol p = deviceUpgrade.getProtocol();
     ManualProtocol mp = null;
     if ( p.getClass() == ManualProtocol.class )
+    {
       mp = ( ManualProtocol )p;
+    }
     else
+    {
       mp = new ManualProtocol( null, null );
+    }
     ManualSettingsDialog d = new ManualSettingsDialog( this, mp );
     d.setVisible( true );
     mp = d.getProtocol();
     if ( mp != null )
+    {
       ProtocolManager.getProtocolManager().add( mp );
+    }
   }
 
   /*
@@ -633,6 +666,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @see com.hifiremote.jp1.JP1Frame#showMessage(java.lang.String)
    */
+  @Override
   public void showMessage( String message )
   {
     messageLabel.setText( message );
@@ -670,6 +704,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @see com.hifiremote.jp1.JP1Frame#clearMessage()
    */
+  @Override
   public void clearMessage()
   {
     messageLabel.setText( " " );
@@ -715,7 +750,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( source == newItem )
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ) )
+        {
           return;
+        }
         deviceUpgrade.reset( getCustomNames() );
       }
       else if ( source == saveItem )
@@ -729,14 +766,18 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == openItem )
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ) )
+        {
           return;
+        }
         File file = getUpgradeFile( preferences.getUpgradePath() );
         loadUpgrade( file );
       }
       else if ( source == importFromClipboardItem )
       {
         if ( !promptToSaveUpgrade( ACTION_LOAD ) )
+        {
           return;
+        }
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable clipData = clipboard.getContents( clipboard );
         if ( clipData != null )
@@ -745,7 +786,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
             {
-              String s = ( String )( clipData.getTransferData( DataFlavor.stringFlavor ) );
+              String s = ( String )clipData.getTransferData( DataFlavor.stringFlavor );
               BufferedReader in = new BufferedReader( new StringReader( s ) );
               loadUpgrade( in );
             }
@@ -815,8 +856,10 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
               if ( devType == r.getDeviceTypeByAliasName( tryit ) )
               {
                 nameMatch = devType.getName().equalsIgnoreCase( tryit );
-                if ( ( aliasName == null ) || nameMatch )
+                if ( aliasName == null || nameMatch )
+                {
                   aliasName = tryit;
+                }
               }
             }
             deviceUpgrade.importRawUpgrade( reader.getCode(), r, aliasName, reader.getPid(), reader.getProtocolCode() );
@@ -828,7 +871,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         File path = BinaryUpgradeWriter.write( deviceUpgrade, preferences.getBinaryUpgradePath() );
         if ( path != null )
+        {
           preferences.setBinaryUpgradePath( path );
+        }
       }
       else if ( source == updateItem )
       {
@@ -838,8 +883,11 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         in.close();
         String text = null;
         if ( RemoteMaster.version.compareTo( latestVersion ) >= 0 )
+        {
           text = "You are using the latest version (" + RemoteMaster.version + ") of RemoteMaster.";
+        }
         else
+        {
           text = "<html>Version "
               + latestVersion
               + " of RemoteMaster is available, but you are still using version "
@@ -847,6 +895,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
               + "<p>The new version is available for download from<br><a href=\"http://prdownloads.sourceforge.net/controlremote/RemoteMaster."
               + latestVersion + ".zip?download\">" + "http://prdownloads.sourceforge.net/controlremote/RemoteMaster."
               + latestVersion + ".zip?download</a></html>";
+        }
 
         JEditorPane pane = new JEditorPane( "text/html", text );
         pane.setEditable( false );
@@ -891,10 +940,10 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
             + "<p>RDFs loaded from <b>"
             + preferences.getRDFPath()
             + "</b></p>"
-            + "<p>Written primarily by <i>Greg Bush</i>, and now accepting donations "
-            + "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a></p>"
+            + "<p>Written primarily by <i>Greg Bush</i> (and now accepting donations "
+            + "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>)</p>"
             + "<p>Other contributors include:<blockquote>"
-            + "John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, "
+            + "Graham&nbsp;Dixon, John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, "
             + "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></html>";
 
         JEditorPane pane = new JEditorPane( "text/html", text );
@@ -904,8 +953,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         new TextPopupMenu( pane );
         JScrollPane scroll = new JScrollPane( pane );
         Dimension d = pane.getPreferredSize();
-        d.height = ( d.height * 5 ) / 4;
-        d.width = ( d.width * 2 ) / 3;
+        d.height = d.height * 5 / 4;
+        d.width = d.width * 2 / 3;
         scroll.setPreferredSize( d );
 
         JOptionPane.showMessageDialog( this, scroll, "About RemoteMaster", JOptionPane.INFORMATION_MESSAGE );
@@ -956,7 +1005,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   public File getUpgradeFile( File path )
   {
     if ( path == null )
+    {
       path = preferences.getUpgradePath();
+    }
 
     File file = null;
     RMFileChooser chooser = new RMFileChooser( path );
@@ -1050,15 +1101,21 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   public boolean promptToSaveUpgrade( int action ) throws IOException
   {
     if ( !deviceUpgrade.hasChanged() )
+    {
       return true;
+    }
 
     String promptFlag = preferences.getPromptToSave();
     if ( promptFlag.equals( promptStrings[ PROMPT_NEVER ] ) )
+    {
       return true;
+    }
     else if ( !promptFlag.equals( promptStrings[ PROMPT_ALWAYS ] ) )
     {
       if ( action != ACTION_EXIT )
+      {
         return true;
+      }
     }
 
     int rc = JOptionPane
@@ -1066,15 +1123,23 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
             // "All changes made to the current upgrade will be lost if you proceed.\n\n" +
             "Do you want to save the current upgrade before proceeding?", "Save upgrade?",
             JOptionPane.YES_NO_CANCEL_OPTION );
-    if ( ( rc == JOptionPane.CANCEL_OPTION ) || ( rc == JOptionPane.CLOSED_OPTION ) )
+    if ( rc == JOptionPane.CANCEL_OPTION || rc == JOptionPane.CLOSED_OPTION )
+    {
       return false;
+    }
     if ( rc == JOptionPane.NO_OPTION )
+    {
       return true;
+    }
 
     if ( deviceUpgrade.getFile() != null )
+    {
       deviceUpgrade.store();
+    }
     else
+    {
       saveAs();
+    }
     return true;
   }
 
@@ -1088,8 +1153,10 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void loadUpgrade( File file ) throws Exception
   {
-    if ( ( file == null ) || !file.exists() )
+    if ( file == null || !file.exists() )
+    {
       return;
+    }
 
     System.err.println( "Opening " + file.getCanonicalPath() + ", last modified "
         + DateFormat.getInstance().format( new Date( file.lastModified() ) ) );
@@ -1100,7 +1167,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
 
     if ( isRMDU )
+    {
       updateRecentFiles( file );
+    }
     preferences.setUpgradePath( file.getParentFile() );
     refresh();
   }
@@ -1125,12 +1194,16 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         JMenuItem item = recentFileMenu.getItem( i );
         File f = new File( item.getText() );
         if ( f.getCanonicalPath().equals( file.getCanonicalPath() ) )
+        {
           recentFileMenu.remove( i );
+        }
         --i;
       }
       i = recentFileMenu.getItemCount();
       while ( i > 9 )
+      {
         recentFileMenu.remove( --i );
+      }
 
       JMenuItem item = new JMenuItem( file.getAbsolutePath() );
       item.addActionListener( this );
@@ -1194,7 +1267,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       String temp = System.getProperty( "user.dir" );
       if ( temp != null )
+      {
         homeDirectory = new File( temp );
+      }
     }
     return homeDirectory;
   }
@@ -1225,11 +1300,15 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         }
       }
       if ( match != null )
+      {
         deviceUpgrade.setProtocol( match );
+      }
       else
+      {
         JOptionPane.showMessageDialog( this, "The selected protocol " + p.getDiagnosticName()
             + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
             + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
+      }
     }
   }
 
@@ -1251,9 +1330,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   public Collection< Remote > getRemotes()
   {
     if ( preferences.getShowRemotes().equals( "Preferred" ) )
+    {
       return preferences.getPreferredRemotes();
+    }
     else
+    {
       return RemoteManager.getRemoteManager().getRemotes();
+    }
   }
 
   /**
@@ -1298,10 +1381,14 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         }
       }
       else
+      {
         usePreferredRemotes.setEnabled( true );
+      }
 
       if ( usePreferredRemotes.isSelected() )
+      {
         editorPanel.setRemotes( preferredRemotes );
+      }
     }
   }
 
@@ -1313,9 +1400,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   public String[] getCustomNames()
   {
     if ( useCustomNames.isSelected() )
+    {
       return preferences.getCustomNames();
+    }
     else
+    {
       return null;
+    }
   }
 
   /**
@@ -1328,7 +1419,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( d.getUserAction() == JOptionPane.OK_OPTION )
     {
       String[] customNames = d.getCustomNames();
-      if ( ( customNames == null ) || customNames.length == 0 )
+      if ( customNames == null || customNames.length == 0 )
       {
         useCustomNames.setEnabled( false );
         useDefaultNames.setSelected( true );
@@ -1350,13 +1441,17 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private void adjustFontSize( float adjustment )
   {
     if ( adjustment == 0.0f )
+    {
       return;
+    }
     UIDefaults defaults = UIManager.getDefaults(); // Build of Map of attributes for each component
     for ( Enumeration< Object > en = defaults.keys(); en.hasMoreElements(); )
     {
       Object o = en.nextElement();
       if ( o.getClass() != String.class )
+      {
         continue;
+      }
       String key = ( String )o;
       if ( key.endsWith( ".font" ) && !key.startsWith( "class" ) && !key.startsWith( "javax" ) )
       {
