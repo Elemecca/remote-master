@@ -50,6 +50,7 @@ public class SlingLearnParser
           String name = null;
           String command = null;
           int keyCode = -1;
+          boolean isTested = false;
           String elementName = element.getName().getLocalPart();
           if ( elementName.equals( "learntremote" ) )
           {
@@ -97,8 +98,13 @@ public class SlingLearnParser
               {
                 command = value.substring( 6 );
               }
+              else if ( localName.equals( "isTested" ) )
+              {
+                isTested = Integer.valueOf( value ) == 1;
+              }
             }
-            LearnedSignal signal = new LearnedSignal( keyCode, deviceType, new Hex( command ), name );
+            LearnedSignal signal = new LearnedSignal( keyCode, deviceType, new Hex( command ), name
+                + ( isTested ? " (tested)" : " (untested)" ) );
             learnedSignals.add( signal );
           }
         }

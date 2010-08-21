@@ -100,7 +100,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The save as item. */
   private RMAction saveAsAction = null;
-  
+
   private RMAction openRdfAction = null;
 
   /** The export ir item. */
@@ -391,7 +391,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             remoteConfig.updateCheckSums();
           }
         }
-        else if ( command == "OPENRDF")
+        else if ( command == "OPENRDF" )
         {
           String title = "View/Edit RDF";
           TextFileViewer.showFile( RemoteMaster.this, remoteConfig.getRemote().getFile(), title, false );
@@ -419,7 +419,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   public RemoteMaster( File workDir, PropertyFile prefs ) throws Exception
   {
     super( "RM IR", prefs );
-
     dir = properties.getFileProperty( "IRPath", workDir );
 
     JToolBar toolBar = new JToolBar();
@@ -637,10 +636,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_F );
     menuBar.add( menu );
 
-    // newItem = new JMenuItem( "New", KeyEvent.VK_N );
-    // newItem.addActionListener( this );
-    // menu.add( newItem );
-
     newAction = new RMAction( "New...", "NEW", createIcon( "RMNew24" ), "Create new file", KeyEvent.VK_N );
     menu.add( newAction ).setIcon( null );
     toolBar.add( newAction );
@@ -661,7 +656,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menuItem.setDisplayedMnemonicIndex( 5 );
     menuItem.setIcon( null );
     toolBar.add( saveAsAction );
-    
+
     // revertItem = new JMenuItem( "Revert to saved" );
     // revertItem.setMnemonic( KeyEvent.VK_R );
     // revertItem.addActionListener( this );
@@ -842,10 +837,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     uploadAction.setEnabled( false );
     menu.add( uploadAction ).setIcon( null );
     toolBar.add( uploadAction );
-    
+
     toolBar.addSeparator();
-    openRdfAction = new RMAction( "Open RDF...", "OPENRDF", createIcon( "RMOpenRDF24" ),
-        "Open RDF to view or edit", null );
+    openRdfAction = new RMAction( "Open RDF...", "OPENRDF", createIcon( "RMOpenRDF24" ), "Open RDF to view or edit",
+        null );
     openRdfAction.setEnabled( false );
     toolBar.add( openRdfAction );
 

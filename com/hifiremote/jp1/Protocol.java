@@ -1037,18 +1037,18 @@ public class Protocol
     {
       return id;
     }
-    
-    // At this point we know that this protocol variant is not built-in, and that there is 
-    // an alternate PID.  But we should only use the alternate PID if the remote has a
-    // different variant of the main PID built in.  If this is not so, use the main PID.
-    
+
+    // At this point we know that this protocol variant is not built-in, and that there is
+    // an alternate PID. But we should only use the alternate PID if the remote has a
+    // different variant of the main PID built in. If this is not so, use the main PID.
+
     Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, id, false );
-    
+
     if ( p == null )
     {
       return id;
     }
-    
+
     // There is a protocol with this ID in the remote, so use the alternate PID unless
     // the variant in the remote is included in the override list of the alternate.
 
@@ -1058,14 +1058,14 @@ public class Protocol
       return alternatePID;
     }
 
-    // There is an override list, so check if the built-in variant is included.  If it is,
-    // then we override it in the remote by using the main PID, not the alternate.  An entry
+    // There is an override list, so check if the built-in variant is included. If it is,
+    // then we override it in the remote by using the main PID, not the alternate. An entry
     // of "none" in the override list corresponds to overriding the null variant, whose value
-    // is an empty string.  For safety, check for either a null string or an empty one.
+    // is an empty string. For safety, check for either a null string or an empty one.
 
     String builtin = p.getVariantName();
     if ( builtin == null || builtin.isEmpty() )
-    {    
+    {
       builtin = "none";
     }
 
@@ -1141,9 +1141,9 @@ public class Protocol
     return defaultFixedData.length();
   }
 
-  // convert the functions defined in this protocol to the new Protocol
+  // 
   /**
-   * Convert functions.
+   * Convert the functions defined in this protocol to the new Protocol
    * 
    * @param funcs
    *          the funcs
@@ -1162,7 +1162,7 @@ public class Protocol
     }
     // count the number of matching parameters
     int matchingParms = 0;
-    // create a map of command parameter indexs from this protocol to the new one
+    // create a map of command parameter indexes from this protocol to the new one
     int[] oldIndex = new int[ max ];
     int[] newIndex = new int[ max ];
     for ( int i = 0; i < cmdParms.length; i++ )

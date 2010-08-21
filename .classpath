@@ -4,5 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="C:/rm/km/lib/TableLayout.jar"/>
 	<classpathentry kind="lib" path="jlfgr-1_0.jar"/>
+	<classpathentry kind="lib" path="lib/RMGraphics.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
