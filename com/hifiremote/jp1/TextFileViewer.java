@@ -27,10 +27,18 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
   {
     super( ( c instanceof JDialog ) ? (JDialog)c : ( JFrame )SwingUtilities.getRoot( c ) );
     this.file = file;
+    openedFromToolBar = ( c instanceof RemoteMaster );
     
     setDefaultCloseOperation( DISPOSE_ON_CLOSE );
     setTitle( title );
-    setModal( true );
+    if ( openedFromToolBar )
+    {
+      remoteMaster = ( RemoteMaster )c;
+    }
+    else
+    {
+      setModal( true );
+    }
     
     textArea = new JTextArea( 30, 80 );
     textArea.setEditable( file.canWrite() );
@@ -84,10 +92,23 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
     }
     else if ( source == saveButton )
     {
-      String message = "Are you sure you want to save your changes?";
+      String message = null;
+      if ( openedFromToolBar )
+      {
+        message = "Do you want to apply your changes?\n\n" +
+        "Yes = save and apply changes\n" +
+        "No = save changes without applying them\n" +
+        "Cancel = abort the save operation";        
+      }
+      else
+      {
+        message = "Are you sure you want to save your changes?";
+      }
       String title = "Confirm save";
-      if ( JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, 
-          JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
+      int response = JOptionPane.showConfirmDialog( this, message, title, 
+          ( ! openedFromToolBar ) ? JOptionPane.OK_CANCEL_OPTION : JOptionPane.YES_NO_CANCEL_OPTION ,
+          JOptionPane.QUESTION_MESSAGE );
+      if (  response == JOptionPane.CANCEL_OPTION )
       {
         return;
       }
@@ -104,6 +125,21 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
         e.printStackTrace();
       }
       saveButton.setEnabled( false );
+      if ( response == JOptionPane.YES_OPTION )
+      {
+        String rmTitle = remoteMaster.getTitle();
+        RemoteConfiguration remoteConfig = remoteMaster.getRemoteConfiguration();
+        remoteConfig.setSavedData();
+        Remote oldRemote = remoteConfig.getRemote();
+        Remote newRemote = new Remote();
+        newRemote.setFile( oldRemote.getFile() );
+        newRemote.load();
+        remoteConfig.setRemote( newRemote );
+        SetupCode.setMax( newRemote.usesTwoBytePID() ? 4095 : 2047 );
+        remoteConfig.updateImage();
+        remoteMaster.update();
+        remoteMaster.setTitle( rmTitle );
+      }
     }
   }
   
@@ -121,6 +157,8 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
   
   private File file = null;
   private JTextArea textArea = null;
+  private boolean openedFromToolBar = false;
+  private RemoteMaster remoteMaster = null;
   
   private JButton saveButton = new JButton( "Save" );
   private JButton closeButton = new JButton( "Close" );

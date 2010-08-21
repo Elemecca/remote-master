@@ -2498,6 +2498,11 @@ public class RemoteConfiguration
 
   /** The remote. */
   private Remote remote = null;
+  
+  public void setRemote( Remote remote )
+  {
+    this.remote = remote;
+  }
 
   /** The data. */
   private short[] data = null;

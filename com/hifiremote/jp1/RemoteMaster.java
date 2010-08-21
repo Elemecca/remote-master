@@ -100,6 +100,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The save as item. */
   private RMAction saveAsAction = null;
+  
+  private RMAction openRdfAction = null;
 
   /** The export ir item. */
   private JMenuItem exportIRItem = null;
@@ -224,6 +226,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           update();
           saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
+          openRdfAction.setEnabled( true );
           uploadAction.setEnabled( !interfaces.isEmpty() );
         }
         else if ( command.equals( "OPEN" ) )
@@ -387,6 +390,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             autoClockSet.restoreTimeBytes( data );
             remoteConfig.updateCheckSums();
           }
+        }
+        else if ( command == "OPENRDF")
+        {
+          String title = "View/Edit RDF";
+          TextFileViewer.showFile( RemoteMaster.this, remoteConfig.getRemote().getFile(), title, false );
         }
       }
       catch ( Exception ex )
@@ -633,7 +641,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // newItem.addActionListener( this );
     // menu.add( newItem );
 
-    newAction = new RMAction( "New...", "NEW", createIcon( "New24" ), "Create new file", KeyEvent.VK_N );
+    newAction = new RMAction( "New...", "NEW", createIcon( "RMNew24" ), "Create new file", KeyEvent.VK_N );
     menu.add( newAction ).setIcon( null );
     toolBar.add( newAction );
 
@@ -653,7 +661,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menuItem.setDisplayedMnemonicIndex( 5 );
     menuItem.setIcon( null );
     toolBar.add( saveAsAction );
-
+    
     // revertItem = new JMenuItem( "Revert to saved" );
     // revertItem.setMnemonic( KeyEvent.VK_R );
     // revertItem.addActionListener( this );
@@ -834,6 +842,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     uploadAction.setEnabled( false );
     menu.add( uploadAction ).setIcon( null );
     toolBar.add( uploadAction );
+    
+    toolBar.addSeparator();
+    openRdfAction = new RMAction( "Open RDF...", "OPENRDF", createIcon( "RMOpenRDF24" ),
+        "Open RDF to view or edit", null );
+    openRdfAction.setEnabled( false );
+    toolBar.add( openRdfAction );
 
     uploadWavItem = new JMenuItem( "Create WAV", KeyEvent.VK_W );
     uploadWavItem.setEnabled( false );
@@ -1032,6 +1046,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       updateRecentFiles( file );
       saveAction.setEnabled( true );
       saveAsAction.setEnabled( true );
+      openRdfAction.setEnabled( true );
     }
     else
     {
@@ -1058,10 +1073,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         saveAction.setEnabled( false );
         saveAsAction.setEnabled( true );
         uploadAction.setEnabled( !interfaces.isEmpty() );
+        openRdfAction.setEnabled( true );
         return null;
       }
       saveAction.setEnabled( false );
       saveAsAction.setEnabled( true );
+      openRdfAction.setEnabled( true );
     }
     // exportIRItem.setEnabled( true );
     uploadAction.setEnabled( !interfaces.isEmpty() );
@@ -1421,7 +1438,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /**
    * Description of the Method.
    */
-  private void update()
+  public void update()
   {
     if ( remoteConfig != null )
     {
@@ -1832,6 +1849,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
     }
     return -1;
+  }
+
+  public RemoteConfiguration getRemoteConfiguration()
+  {
+    return remoteConfig;
   }
 
 }

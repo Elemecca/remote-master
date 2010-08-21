@@ -7,7 +7,8 @@ Changes for v1.99c
 - Fix Setup.vbs for Windows users who don't run as Admin, Updated Readme.html (Greg)
 - Implement Timed Macros (Graham)
 - Implement File/New (Graham)
-- Implement File/Open of Sling Learned Signal XML files (Greg_
+- Implement File/Open of Sling Learned Signal XML files (Greg)
+- Add toolbar button to open RDF for viewing or live editing (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

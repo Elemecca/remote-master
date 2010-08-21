@@ -132,16 +132,15 @@ public class RMNewDialog extends JDialog implements ActionListener, ListSelectio
     remotesList.setCellRenderer( renderer );
   }
   
-  public static Remote showDialog( Component locationComp )
+  public static Remote showDialog( RemoteMaster owner )
   {
     if ( dialog == null )
-      dialog = new RMNewDialog( locationComp );
+      dialog = new RMNewDialog( owner );
     dialog.pack();
-    dialog.setLocationRelativeTo( locationComp );
+    dialog.setLocationRelativeTo( owner );
     dialog.setVisible( true );
     return remote;
   }
-  
   
   @Override
   public void actionPerformed( ActionEvent event )

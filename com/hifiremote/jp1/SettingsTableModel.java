@@ -105,7 +105,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    return col > 1 && row < remoteConfig.getRemote().getStartReadOnlySettings();
+    return col > 1 && row < remoteConfig.getRemote().getStartReadOnlySettings() - 1;
   }
 
   /*

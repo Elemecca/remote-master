@@ -48,6 +48,8 @@ public class Remote implements Comparable< Remote >
     this.names = aRemote.names;
     nameIndex = index;
   }
+  
+  public Remote(){};
 
   /**
    * Instantiates a new remote.
@@ -2521,6 +2523,11 @@ public class Remote implements Comparable< Remote >
   /** The file. */
   private File file = null;
 
+  public void setFile( File file )
+  {
+    this.file = file;
+  }
+
   /** The signature. */
   private String signature = null;
 
@@ -2658,7 +2665,6 @@ public class Remote implements Comparable< Remote >
   private AddressRange timedMacroAddress = null;
 
   /** The timed macro warning. */
-  @SuppressWarnings( "unused" )
   private boolean timedMacroWarning = false;
 
   /** The learned address. */
