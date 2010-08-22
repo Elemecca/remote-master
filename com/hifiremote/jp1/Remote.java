@@ -394,6 +394,11 @@ public class Remote implements Comparable< Remote >
   {
     return signature;
   }
+  
+  public void setSignature( String signature )
+  {
+    this.signature = signature;
+  }
 
   /**
    * Gets the name.
@@ -1026,6 +1031,19 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equalsIgnoreCase( "AdvCodeTypes" ) )
       {
         parseAdvCodeTypes( value, rdr );
+      }
+      else if ( parm.equalsIgnoreCase( "ExtenderVersionAddr" ) )
+      {
+        extenderVersionParm = new ExtenderVersionParm();
+        extenderVersionParm.parse( value, this );
+        if ( ! extenderVersionParm.displayExtenderVersion() )
+        {
+          extenderVersionParm = null;
+        }
+      }
+      else if ( parm.equalsIgnoreCase( "RDFVersionAddr" ) )
+      {
+        rdfVersionAddress = RDFReader.parseNumber( value );
       }
       
       // A SoftHT entry should be ignored unless SoftDevices is used.
@@ -2706,6 +2724,13 @@ public class Remote implements Comparable< Remote >
   private int RAMAddress = 0x8000;  // Default for the S3C80
   
   private AutoClockSet autoClockSet = null;
+  
+  private ExtenderVersionParm extenderVersionParm = null;
+
+  public ExtenderVersionParm getExtenderVersionParm()
+  {
+    return extenderVersionParm;
+  }
 
   /** The RDF sync. */
   @SuppressWarnings( "unused" )
@@ -2845,6 +2870,13 @@ public class Remote implements Comparable< Remote >
 
   /** The section terminator. */
   private short sectionTerminator = 0;
+  
+  private int rdfVersionAddress = 0;
+
+  public int getRdfVersionAddress()
+  {
+    return rdfVersionAddress;
+  }
 
   /**
    * Gets the section terminator.

@@ -71,9 +71,12 @@ import com.hifiremote.jp1.io.JP1USB;
  * @author Greg
  * @created November 30, 2006
  */
+
 public class RemoteMaster extends JP1Frame implements ActionListener, PropertyChangeListener, HyperlinkListener,
     ChangeListener
 {
+  public static final int MAX_RDF_SYNC = 4;
+  public static final int MIN_RDF_SYNC = 3;
 
   /** The frame. */
   private static JP1Frame frame = null;
@@ -640,7 +643,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.add( newAction ).setIcon( null );
     toolBar.add( newAction );
 
-    openAction = new RMAction( "Open...", "OPEN", createIcon( "Open24" ), "Open a file", KeyEvent.VK_O );
+    openAction = new RMAction( "Open...", "OPEN", createIcon( "RMOpen24" ), "Open a file", KeyEvent.VK_O );
     menu.add( openAction ).setIcon( null );
     toolBar.add( openAction );
 

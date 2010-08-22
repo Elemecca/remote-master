@@ -9,6 +9,9 @@ Changes for v1.99c
 - Implement File/New (Graham)
 - Implement File/Open of Sling Learned Signal XML files (Greg)
 - Add toolbar button to open RDF for viewing or live editing (Graham)
+- Add display of Signature, Processor, Interface and Extender Version to Raw Data tab (Graham)
+- Implement the ExtenderVersionAddr and RDFVersionAddr parameters of the RDF [General] section (Graham)
+- Change the toolbar icon for File/Open (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

@@ -133,6 +133,7 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
         Remote oldRemote = remoteConfig.getRemote();
         Remote newRemote = new Remote();
         newRemote.setFile( oldRemote.getFile() );
+        newRemote.setSignature( oldRemote.getSignature() );
         newRemote.load();
         remoteConfig.setRemote( newRemote );
         SetupCode.setMax( newRemote.usesTwoBytePID() ? 4095 : 2047 );

@@ -1484,6 +1484,12 @@ public class RemoteConfiguration
     {
       auto.store( data );
     }
+    
+    int rdfVersionAddress = remote.getRdfVersionAddress();
+    if ( rdfVersionAddress > 0 )
+    {
+      data[ rdfVersionAddress ] = RemoteMaster.MAX_RDF_SYNC;
+    }
   }
 
   /**

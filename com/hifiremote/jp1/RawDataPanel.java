@@ -5,6 +5,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
 // TODO: Auto-generated Javadoc
@@ -31,6 +34,20 @@ public class RawDataPanel extends RMPanel
     d.width = table.getPreferredSize().width;
     table.setPreferredScrollableViewportSize( d );
     add( scrollPane, BorderLayout.WEST );
+    
+    infoBox = Box.createVerticalBox();
+    infoBox.setAlignmentX( LEFT_ALIGNMENT );
+    infoBox.setBorder( BorderFactory.createEmptyBorder( 20, 10, 5, 5 ) );
+    add( infoBox, BorderLayout.CENTER );
+
+    infoBox.add( signatureLabel );
+    infoBox.add( Box.createVerticalStrut( 5 ) );
+    infoBox.add( processorLabel );
+    infoBox.add( Box.createVerticalStrut( 5 ) );
+    infoBox.add( interfaceLabel );
+    infoBox.add( Box.createVerticalStrut( 5 ) );
+    infoBox.add( extenderLabel );
+    infoBox.add( Box.createVerticalGlue());
   }
 
   /**
@@ -46,6 +63,19 @@ public class RawDataPanel extends RMPanel
     {
       model.set( remoteConfig.getData(), remoteConfig.getRemote().getBaseAddress() );
       byteRenderer.setSavedData( remoteConfig.getSavedData() );
+      Remote remote = remoteConfig.getRemote();
+      signatureLabel.setText( "Signature:  " + remote.getSignature() );
+      processorLabel.setText( "Processor:  " + remote.getProcessorDescription() );
+      interfaceLabel.setText( "Interface:  " + remote.getInterfaceType() );
+      if ( remote.getExtenderVersionParm() != null )
+      {
+        extenderLabel.setText( "Extender version:  " + 
+            remote.getExtenderVersionParm().getExtenderVersion( remoteConfig ) );
+      }
+      else
+      {
+        extenderLabel.setText( "" );
+      }
     }
   }
 
@@ -68,4 +98,12 @@ public class RawDataPanel extends RMPanel
 
   /** The byte renderer. */
   UnsignedByteRenderer byteRenderer = new UnsignedByteRenderer();
+  
+  JLabel signatureLabel = new JLabel();  
+  JLabel processorLabel = new JLabel();  
+  JLabel interfaceLabel = new JLabel();  
+  JLabel extenderLabel = new JLabel();
+  
+  Box infoBox = null; 
+  
 }
