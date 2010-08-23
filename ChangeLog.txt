@@ -1,17 +1,23 @@
-Changes for v1.99c
+Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)
 - Split off a new class, MacroDefinitionBox, from MacroDialog to allow its re-use with Timed Macros. (Graham)
 - Restore double-click to edit table cells (Greg)
-- Typing when not in edit more will start edit mode and replace cell contents (Greg)
+- Typing when not in edit mode will start edit mode and replace cell contents (Greg)
 - Create new interface, ButtonEnabler, and use it to improve logical separation between MacroDefinitionBox and MacroDialog. (Graham)
 - Fix Setup.vbs for Windows users who don't run as Admin, Updated Readme.html (Greg)
 - Implement Timed Macros (Graham)
 - Implement File/New (Graham)
 - Implement File/Open of Sling Learned Signal XML files (Greg)
 - Add toolbar button to open RDF for viewing or live editing (Graham)
+- Fix Fujitsu protocol (Greg)
+- Add (tested) or (untested) to notes for Sling Learned Signals (Greg)
+- RMIR: allow multicell selection in most tables, and Copy item in popup menu to copy to the clipboard (Greg)
 - Add display of Signature, Processor, Interface and Extender Version to Raw Data tab (Graham)
-- Implement the ExtenderVersionAddr and RDFVersionAddr parameters of the RDF [General] section (Graham)
-- Change the toolbar icon for File/Open (Graham)
+- Implement the ExtenderVersionAddr and RDFVersionAddr parameters of the RDF [General] section (Graham).
+- Change the toolbar icon for File/Open (Graham).
+- Added Bound Key to Learned Signal edit dialog, and enabled OK/Cancel button.
+- Removed New button and context menu item from Learned Signal tab
+- Fixed Clone button and content menu item on Learned Signal tab
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

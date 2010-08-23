@@ -15,6 +15,10 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
   public LearnedSignalPanel()
   {
     super( new LearnedSignalTableModel() );
+    newItem.setEnabled( false );
+    newItem.setVisible( false );
+    newButton.setEnabled( false );
+    newButton.setVisible( false );
   }
 
   /**
@@ -26,6 +30,7 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
   @Override
   public void set( RemoteConfiguration remoteConfig )
   {
+    this.remoteConfig = remoteConfig;
     ( ( LearnedSignalTableModel )model ).set( remoteConfig );
     table.initColumns( model );
     newButton.setEnabled( remoteConfig != null && remoteConfig.getRemote().getLearnedAddress() != null );
@@ -39,7 +44,13 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
   @Override
   public LearnedSignal createRowObject( LearnedSignal learnedSignal )
   {
-    LearnedSignalDialog.showDialog( SwingUtilities.getRoot( this ), learnedSignal );
-    return null;
+    LearnedSignal newSignal = null;
+    if ( learnedSignal != null )
+    {
+      newSignal = new LearnedSignal( learnedSignal );
+    }
+    return LearnedSignalDialog.showDialog( SwingUtilities.getRoot( this ), newSignal, remoteConfig );
   }
+
+  private RemoteConfiguration remoteConfig = null;
 }

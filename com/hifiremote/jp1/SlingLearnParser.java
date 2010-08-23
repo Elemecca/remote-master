@@ -60,7 +60,7 @@ public class SlingLearnParser
             {
               Attribute attr = attrs.next();
               String localName = attr.getName().getLocalPart();
-              String value = attr.getValue();
+              String value = attr.getValue().trim();
               if ( localName.equals( "brandName" ) )
               {
                 brandName = value;
@@ -85,7 +85,7 @@ public class SlingLearnParser
             {
               Attribute attr = attrs.next();
               String localName = attr.getName().getLocalPart();
-              String value = attr.getValue();
+              String value = attr.getValue().trim();
               if ( localName.equals( "name" ) )
               {
                 name = value;
@@ -100,7 +100,7 @@ public class SlingLearnParser
               }
               else if ( localName.equals( "isTested" ) )
               {
-                isTested = Integer.valueOf( value ) == 1;
+                isTested = "true".equals( value ) || "1".equals( value );
               }
             }
             LearnedSignal signal = new LearnedSignal( keyCode, deviceType, new Hex( command ), name

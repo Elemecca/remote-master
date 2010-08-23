@@ -9,10 +9,14 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -34,11 +38,15 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
    *          the learned signal
    * @return the learned signal
    */
-  public static LearnedSignal showDialog( Component locationComp, LearnedSignal learnedSignal )
+  public static LearnedSignal showDialog( Component locationComp, LearnedSignal learnedSignal,
+      RemoteConfiguration config )
   {
     if ( dialog == null )
+    {
       dialog = new LearnedSignalDialog( locationComp );
+    }
 
+    dialog.setRemoteConfiguration( config );
     dialog.setLearnedSignal( learnedSignal );
 
     dialog.pack();
@@ -63,8 +71,10 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
     {
       for ( int i = 0; i < data.length; i++ )
       {
-        if ( ( i > 0 ) && ( ( i & 1 ) == 0 ) )
+        if ( i > 0 && ( i & 1 ) == 0 )
+        {
           str.append( " " );
+        }
         charPos[ i ] = str.length();
         str.append( ( ( i & 1 ) == 0 ? +1 : -1 ) * data[ i ] );
       }
@@ -74,7 +84,9 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
        */
     }
     if ( str.length() == 0 )
+    {
       return "** No signal **";
+    }
     return str.toString();
   }
 
@@ -92,6 +104,26 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
 
     JComponent contentPane = ( JComponent )getContentPane();
     contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+
+    // Add the bound device and key controls
+    JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ) );
+    panel.setAlignmentX( Component.LEFT_ALIGNMENT );
+    contentPane.add( panel, BorderLayout.PAGE_START );
+    panel.setBorder( BorderFactory.createTitledBorder( "Bound Key" ) );
+
+    panel.add( new JLabel( "Device:" ) );
+    panel.add( boundDevice );
+
+    panel.add( Box.createHorizontalStrut( 5 ) );
+
+    panel.add( new JLabel( "Key:" ) );
+    panel.add( boundKey );
+
+    shift.addActionListener( this );
+    panel.add( shift );
+
+    xShift.addActionListener( this );
+    panel.add( xShift );
 
     table = new JP1Table( model );
     table.setCellSelectionEnabled( false );
@@ -127,11 +159,14 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
     bottomPanel.add( scrollPane );
 
     // Add the action buttons
-    JPanel panel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
-    bottomPanel.add( panel );
+    JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
+    bottomPanel.add( buttonPanel );
 
     okButton.addActionListener( this );
-    panel.add( okButton );
+    buttonPanel.add( okButton );
+
+    cancelButton.addActionListener( this );
+    buttonPanel.add( cancelButton );
   }
 
   /**
@@ -142,21 +177,83 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
    */
   private void setLearnedSignal( LearnedSignal learnedSignal )
   {
-    this.learnedSignal = null;
+    this.learnedSignal = learnedSignal;
 
-    if ( learnedSignal == null )
-    {
-      enableButtons();
-      return;
-    }
-
+    boundDevice.setSelectedIndex( learnedSignal.getDeviceButtonIndex() );
+    setButton( learnedSignal.getKeyCode(), boundKey, shift, xShift );
     model.set( learnedSignal );
     table.initColumns( model );
     UnpackLearned ul = learnedSignal.getUnpackLearned();
     burstTextArea.setText( toString( ul.bursts ) );
     durationTextArea.setText( toString( ul.durations ) );
+  }
 
-    enableButtons();
+  private void setRemoteConfiguration( RemoteConfiguration config )
+  {
+    this.config = config;
+    Remote remote = config.getRemote();
+    shift.setText( remote.getShiftLabel() );
+    xShift.setText( remote.getXShiftLabel() );
+    xShift.setVisible( remote.getXShiftEnabled() );
+    boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+  }
+
+  private void setButton( int code, JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox )
+  {
+    Remote remote = config.getRemote();
+    Button b = remote.getButton( code );
+    if ( b == null )
+    {
+      int base = code & 0x3F;
+      if ( base != 0 )
+      {
+        b = remote.getButton( base );
+        if ( ( base | remote.getShiftMask() ) == code )
+        {
+          shiftBox.setEnabled( b.allowsShiftedMacro() );
+          shiftBox.setSelected( true );
+          comboBox.setSelectedItem( b );
+          return;
+        }
+        if ( remote.getXShiftEnabled() && ( base | remote.getXShiftMask() ) == code )
+        {
+          xShiftBox.setEnabled( remote.getXShiftEnabled() & b.allowsXShiftedMacro() );
+          xShiftBox.setSelected( true );
+          comboBox.setSelectedItem( b );
+          return;
+        }
+      }
+      b = remote.getButton( code & ~remote.getShiftMask() );
+      if ( b != null )
+      {
+        shiftBox.setSelected( true );
+      }
+      else if ( remote.getXShiftEnabled() )
+      {
+        b = remote.getButton( code ^ ~remote.getXShiftMask() );
+        if ( b != null )
+        {
+          xShiftBox.setSelected( true );
+        }
+      }
+    }
+
+    shiftBox.setEnabled( b.allowsShiftedKeyMove() );
+    xShiftBox.setEnabled( b.allowsXShiftedKeyMove() );
+
+    if ( b.getIsXShifted() )
+    {
+      xShiftBox.setSelected( true );
+    }
+    else if ( b.getIsShifted() )
+    {
+      shiftBox.setSelected( true );
+    }
+
+    comboBox.removeActionListener( this );
+    comboBox.setSelectedItem( b );
+    comboBox.addActionListener( this );
   }
 
   /*
@@ -169,19 +266,51 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
     Object source = event.getSource();
     if ( source == okButton )
     {
+      int deviceIndex = boundDevice.getSelectedIndex();
+      learnedSignal.setDeviceButtonIndex( deviceIndex );
+      int keyCode = getKeyCode( boundKey, shift, xShift );
+      learnedSignal.setKeyCode( keyCode );
       setVisible( false );
     }
-    enableButtons();
+    else if ( source == cancelButton )
+    {
+      learnedSignal = null;
+      setVisible( false );
+    }
   }
 
-  /**
-   * Enable buttons.
-   */
-  private void enableButtons()
-  {}
+  private int getKeyCode( JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox )
+  {
+    int keyCode = ( ( Button )comboBox.getSelectedItem() ).getKeyCode();
+    if ( shiftBox.isSelected() )
+    {
+      keyCode |= config.getRemote().getShiftMask();
+    }
+    else if ( xShiftBox.isSelected() )
+    {
+      keyCode |= config.getRemote().getXShiftMask();
+    }
+    return keyCode;
+  }
+
+  private RemoteConfiguration config = null;
+
+  /** The bound device. */
+  private JComboBox boundDevice = new JComboBox();
+
+  /** The bound key. */
+  private JComboBox boundKey = new JComboBox();
+
+  /** The shift. */
+  private JCheckBox shift = new JCheckBox();
+
+  /** The x shift. */
+  private JCheckBox xShift = new JCheckBox();
 
   /** The ok button. */
   private JButton okButton = new JButton( "OK" );
+
+  private JButton cancelButton = new JButton( "Cancel" );
 
   /** The burst text area. */
   private JTextArea burstTextArea = new JTextArea( 4, 70 );

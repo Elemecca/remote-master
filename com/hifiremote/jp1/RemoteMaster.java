@@ -64,7 +64,6 @@ import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
 import com.hifiremote.jp1.io.JP1USB;
 
-// TODO: Auto-generated Javadoc
 /**
  * Description of the Class.
  * 
@@ -82,7 +81,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v1.99c-preview2";
+  public final static String version = "v2.00-preview2";
 
   /** The dir. */
   private File dir = null;

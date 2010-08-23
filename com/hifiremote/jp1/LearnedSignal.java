@@ -33,6 +33,14 @@ public class LearnedSignal
     this.notes = notes;
   }
 
+  public LearnedSignal( LearnedSignal signal )
+  {
+    keyCode = signal.keyCode;
+    deviceButtonIndex = signal.deviceButtonIndex;
+    data = new Hex( signal.data );
+    notes = signal.notes;
+  }
+
   public static LearnedSignal read( HexReader reader, Remote remote )
   {
     if ( reader.peek() == remote.getSectionTerminator() )
@@ -90,8 +98,10 @@ public class LearnedSignal
     pw.print( "KeyCode", keyCode );
     pw.print( "DeviceButtonIndex", deviceButtonIndex );
     pw.print( "Data", data );
-    if ( ( notes != null ) && !notes.equals( "" ) )
+    if ( notes != null && !notes.equals( "" ) )
+    {
       ;
+    }
     pw.print( "Notes", notes );
   }
 
@@ -200,7 +210,7 @@ public class LearnedSignal
     }
     else
     {
-      buffer[ offset ] = ( short )( 0xFF & ( ( deviceButtonIndex << 4 ) | 2 ) );
+      buffer[ offset ] = ( short )( 0xFF & ( deviceButtonIndex << 4 | 2 ) );
     }
     ++offset;
     int dataLength = data.length();
@@ -221,7 +231,9 @@ public class LearnedSignal
   public UnpackLearned getUnpackLearned()
   {
     if ( unpackLearned == null )
+    {
       unpackLearned = new UnpackLearned( data );
+    }
     return unpackLearned;
   }
 
@@ -239,14 +251,18 @@ public class LearnedSignal
     {
       UnpackLearned ul = getUnpackLearned();
       if ( !ul.ok )
+      {
         return null;
+      }
       getDecodeIR();
       decodeIR.setBursts( ul.durations, ul.repeat, ul.extra );
       decodeIR.setFrequency( ul.frequency );
       decodeIR.initDecoder();
       decodes = new ArrayList< LearnedSignalDecode >();
       while ( decodeIR.decode() )
+      {
         decodes.add( new LearnedSignalDecode( decodeIR ) );
+      }
     }
     return decodes;
   }
@@ -259,7 +275,9 @@ public class LearnedSignal
   public static DecodeIRCaller getDecodeIR()
   {
     if ( decodeIR == null )
+    {
       decodeIR = new DecodeIRCaller( new File( System.getProperty( "user.dir" ) ) );
+    }
 
     return decodeIR;
   }
