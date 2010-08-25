@@ -142,11 +142,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( col > 0 && col < 4 )
-    {
-      return true;
-    }
-    return false;
+    return col > 0 && col < 4;
   }
 
   /*
@@ -160,18 +156,34 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     UnpackLearned ul = l.getUnpackLearned();
     ArrayList< LearnedSignalDecode > da = l.getDecodes();
     int numDecodes = 0;
+    int decodeIndex = 0;
+    LearnedSignalDecode decode = null;
     if ( da != null )
     {
       numDecodes = da.size();
+      if ( numDecodes > 1 )
+      {
+        for ( int i = 0; i < da.size(); ++i )
+        {
+          decode = da.get( i );
+          if ( decode.ignore )
+          {
+            numDecodes-- ;
+          }
+          else
+          {
+            decodeIndex = i;
+          }
+        }
+      }
     }
     if ( numDecodes != 1 && column > 6 )
     {
       return null;
     }
-    LearnedSignalDecode decode = null;
     if ( numDecodes == 1 && column > 5 )
     {
-      decode = da.get( 0 );
+      decode = da.get( decodeIndex );
     }
     switch ( column )
     {

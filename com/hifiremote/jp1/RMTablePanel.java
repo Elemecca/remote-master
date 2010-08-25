@@ -22,9 +22,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class RMTablePanel.
  */
@@ -56,7 +56,9 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     model = tableModel;
     sorter = new TableSorter( model );
     table = new JP1Table( sorter );
-    sorter.setTableHeader( table.getTableHeader() );
+    JTableHeader header = table.getTableHeader();
+    header.setReorderingAllowed( true );
+    sorter.setTableHeader( header );
     // sorter.addMouseListenerToHeaderInTable( table );
     table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     table.getSelectionModel().addListSelectionListener( this );
@@ -84,209 +86,6 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         }
       }
     } );
-    // TransferHandler th = new TransferHandler()
-    // {
-    // @Override
-    // protected Transferable createTransferable( JComponent c )
-    // {
-    // return new LocalObjectTransferable( new Integer( table.getSelectedRow() ) );
-    // }
-    //
-    // @Override
-    // public int getSourceActions( JComponent c )
-    // {
-    // return TransferHandler.COPY_OR_MOVE;
-    // }
-    //
-    // @Override
-    // public boolean canImport( JComponent comp, DataFlavor[] flavors )
-    // {
-    // boolean rc = false;
-    // for ( int i = 0; i < flavors.length; i++ )
-    // {
-    // if ( flavors[ i ] == DataFlavor.stringFlavor || flavors[ i ] == LocalObjectTransferable.getFlavor() )
-    // {
-    // rc = true;
-    // break;
-    // }
-    // }
-    // return rc;
-    // }
-    //
-    // @Override
-    // public boolean importData( JComponent c, Transferable t )
-    // {
-    // boolean rc = false;
-    // if ( t.isDataFlavorSupported( DataFlavor.stringFlavor ) )
-    // {
-    // try
-    // {
-    // String s = ( String )t.getTransferData( DataFlavor.stringFlavor );
-    // BufferedReader in = new BufferedReader( new StringReader( s ) );
-    // int colCount = table.getModel().getColumnCount();
-    // int addedRow = -1;
-    // int row = table.getSelectedRow();
-    // int col = table.getSelectedColumn();
-    // for ( String line = in.readLine(); line != null; line = in.readLine() )
-    // {
-    // if ( row == model.getRowCount() )
-    // {
-    // model.addRow( createRowObject( null ) );
-    // if ( addedRow == -1 )
-    // {
-    // addedRow = row;
-    // }
-    // }
-    //
-    // StringTokenizer st = new StringTokenizer( line, "\t", true );
-    // int workCol = col;
-    // boolean done = false;
-    // String token = null;
-    // String prevToken = null;
-    // while ( !done )
-    // {
-    // if ( workCol == colCount )
-    // {
-    // break;
-    // }
-    // if ( st.hasMoreTokens() )
-    // {
-    // token = st.nextToken();
-    // }
-    // else
-    // {
-    // token = null;
-    // }
-    //
-    // Object value = null;
-    // int modelCol = table.convertColumnIndexToModel( workCol );
-    // if ( token == null )
-    // {
-    // done = true;
-    // if ( prevToken != null )
-    // {
-    // break;
-    // }
-    // }
-    // else if ( token.equals( "\t" ) )
-    // {
-    // if ( prevToken == null )
-    // {
-    // token = null;
-    // }
-    // else
-    // {
-    // prevToken = null;
-    // continue;
-    // }
-    // }
-    // prevToken = token;
-    //
-    // Class< ? > aClass = sorter.getColumnClass( modelCol );
-    // if ( aClass == String.class )
-    // {
-    // if ( token != null && token.length() == 5 && token.startsWith( "num " )
-    // && Character.isDigit( token.charAt( 4 ) ) )
-    // {
-    // value = token.substring( 4 );
-    // }
-    // else
-    // {
-    // value = token;
-    // }
-    // }
-    // else
-    // {
-    // value = token;
-    // }
-    //
-    // sorter.setValueAt( value, row, modelCol );
-    // workCol++ ;
-    // }
-    // row++ ;
-    // }
-    // if ( addedRow != -1 )
-    // {
-    // sorter.fireTableRowsInserted( addedRow, row - 1 );
-    // }
-    // sorter.fireTableRowsUpdated( popupRow, row - 1 );
-    // }
-    // catch ( Exception ex )
-    // {
-    // String message = ex.getMessage();
-    // if ( message == null )
-    // {
-    // message = ex.toString();
-    // }
-    // JP1Frame.showMessage( message, table );
-    // ex.printStackTrace( System.err );
-    // }
-    // }
-    // else if ( t.isDataFlavorSupported( LocalObjectTransferable.getFlavor() ) )
-    // {
-    // try
-    // {
-    // int dragRow = ( ( Integer )t.getTransferData( LocalObjectTransferable.getFlavor() ) ).intValue();
-    // int dropRow = table.getSelectedRow();
-    // if ( dropRow != dragRow )
-    // {
-    // dragRow = sorter.modelIndex( dragRow );
-    // dropRow = sorter.modelIndex( dropRow );
-    // model.moveRow( dragRow, dropRow );
-    //
-    // rc = true;
-    // }
-    // }
-    // catch ( Exception e )
-    // {
-    // e.printStackTrace( System.err );
-    // }
-    // }
-    // return rc;
-    // }
-    //
-    // @Override
-    // public void exportToClipboard( JComponent comp, Clipboard clipboard, int action )
-    // {
-    // JTable table = ( JTable )comp;
-    // int[] selectedRows = table.getSelectedRows();
-    // int[] selectedCols = table.getSelectedColumns();
-    // StringBuilder buff = new StringBuilder( 200 );
-    // for ( int rowNum = 0; rowNum < selectedRows.length; rowNum++ )
-    // {
-    // if ( rowNum != 0 )
-    // {
-    // buff.append( "\n" );
-    // }
-    // for ( int colNum = 0; colNum < selectedCols.length; colNum++ )
-    // {
-    // if ( colNum != 0 )
-    // {
-    // buff.append( "\t" );
-    // }
-    // int selRow = selectedRows[ rowNum ];
-    // // int convertedRow = sorter.convertRowIndexToModel( selRow );
-    // int selCol = selectedCols[ colNum ];
-    // int convertedCol = table.convertColumnIndexToModel( selCol );
-    // Object value = table.getValueAt( selRow, selCol );
-    // if ( value != null )
-    // {
-    // DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn(
-    // selCol ).getCellRenderer();
-    // if ( cellRenderer != null )
-    // {
-    // cellRenderer.getTableCellRendererComponent( table, value, false, false, selRow, convertedCol );
-    // value = cellRenderer.getText();
-    // }
-    // buff.append( value.toString() );
-    // }
-    // }
-    // }
-    // StringSelection data = new StringSelection( buff.toString() );
-    // clipboard.setContents( data, data );
-    // }
-    // };
-    // table.setTransferHandler( th );
 
     popup = new JPopupMenu();
     editItem = new JMenuItem( "Edit" );
@@ -348,20 +147,6 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     };
     table.addMouseListener( mh );
 
-    // MouseMotionAdapter mmh = new MouseMotionAdapter()
-    // {
-    // @Override
-    // public void mouseDragged( MouseEvent e )
-    // {
-    // int tableCol = table.columnAtPoint( e.getPoint() );
-    // int modelCol = table.convertColumnIndexToModel( tableCol );
-    // if ( modelCol == 0 )
-    // {
-    // table.getTransferHandler().exportAsDrag( table, e, TransferHandler.MOVE );
-    // }
-    // }
-    // };
-    // table.addMouseMotionListener( mmh );
     table.initColumns( model );
     JScrollPane scrollPane = new JScrollPane( table );
     Dimension d = table.getPreferredScrollableViewportSize();
@@ -642,34 +427,45 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     }
     else if ( source == copyItem )
     {
+      int[] rows = table.getSelectedRows();
+      int[] cols = table.getSelectedColumns();
       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+      boolean firstRow = true;
       StringBuilder buff = new StringBuilder( 200 );
-      row = table.getSelectedRow();
-      for ( int rowOffset = 0; rowOffset < table.getSelectedRowCount(); rowOffset++ )
+      for ( int tableRow : rows )
       {
-        int selectedRow = row + rowOffset;
-        if ( rowOffset != 0 )
+        if ( firstRow )
+        {
+          firstRow = false;
+        }
+        else
         {
           buff.append( "\n" );
         }
 
-        int col = table.getSelectedColumn();
-        for ( int colOffset = 0; colOffset < table.getSelectedColumnCount(); colOffset++ )
+        modelRow = table.convertRowIndexToModel( tableRow );
+
+        boolean firstCol = true;
+        for ( int tableCol : cols )
         {
-          if ( colOffset != 0 )
+          if ( firstCol )
+          {
+            firstCol = false;
+          }
+          else
           {
             buff.append( "\t" );
           }
-          int selectedCol = col + colOffset;
+          int modelCol = table.convertColumnIndexToModel( tableCol );
 
-          Object value = sorter.getValueAt( row + rowOffset, col + colOffset );
+          Object value = sorter.getValueAt( modelRow, modelCol );
           if ( value != null )
           {
             DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn(
-                col + colOffset ).getCellRenderer();
+                tableCol ).getCellRenderer();
             if ( cellRenderer != null )
             {
-              cellRenderer.getTableCellRendererComponent( table, value, false, false, selectedRow, selectedCol );
+              cellRenderer.getTableCellRendererComponent( table, value, false, false, modelRow, modelCol );
               value = cellRenderer.getText();
             }
             buff.append( value.toString() );

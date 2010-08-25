@@ -149,7 +149,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     super( "RemoteMaster", prefs );
     me = this;
 
-    setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
+    setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 
     preferences = new Preferences( prefs );
     homeDirectory = prefs.getFile().getParentFile();
@@ -168,9 +168,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           preferences.setLastRemoteName( getRemote().getName() );
           preferences.setLastRemoteSignature( getRemote().getSignature() );
           savePreferences();
-          setVisible( false );
-          dispose();
-          System.exit( 0 );
+          me = null;
         }
         catch ( Exception e )
         {

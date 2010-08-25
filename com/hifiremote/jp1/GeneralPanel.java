@@ -85,6 +85,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     upperPane.setResizeWeight( 0.5 );
 
     notes = new JTextArea( 6, 20 );
+    new TextPopupMenu( notes );
     notes.setLineWrap( true );
     notes.setWrapStyleWord( true );
     notesScrollPane = new JScrollPane( notes );

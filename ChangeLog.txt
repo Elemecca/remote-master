@@ -15,9 +15,16 @@ Changes for v2.00
 - Add display of Signature, Processor, Interface and Extender Version to Raw Data tab (Graham)
 - Implement the ExtenderVersionAddr and RDFVersionAddr parameters of the RDF [General] section (Graham).
 - Change the toolbar icon for File/Open (Graham).
-- Added Bound Key to Learned Signal edit dialog, and enabled OK/Cancel button.
-- Removed New button and context menu item from Learned Signal tab
-- Fixed Clone button and content menu item on Learned Signal tab
+- Added Bound Key to Learned Signal edit dialog, and enabled OK/Cancel button (Greg)
+- Removed New button and context menu item from Learned Signal tab (Greg)
+- Fixed Clone button and content menu item on Learned Signal tab (Greg)
+- Enable column reordering in most tables (Greg)
+- Always open RMIR, launch RM as separate window when opening RMDU files (Greg)
+- Add edit context menu to protocol parameters (Greg)
+- Add edit context menu to General Notes on General tab (Greg)
+- Remember the folder in which files are opened regardless of type (Greg)
+- Add an "All supported files" type to the file open dialog, and use it as the default (Greg)
+- Add transient, user controlled ignore field to learned signal decodes (Greg)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

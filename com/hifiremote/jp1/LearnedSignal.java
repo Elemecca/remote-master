@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import com.hifiremote.decodeir.DecodeIRCaller;
@@ -39,6 +40,17 @@ public class LearnedSignal
     deviceButtonIndex = signal.deviceButtonIndex;
     data = new Hex( signal.data );
     notes = signal.notes;
+
+    unpackLearned = signal.unpackLearned;
+    if ( signal.decodes != null )
+    {
+      List< LearnedSignalDecode > signalDecodes = signal.getDecodes();
+      decodes = new ArrayList< LearnedSignalDecode >( signalDecodes.size() );
+      for ( LearnedSignalDecode decode : signalDecodes )
+      {
+        decodes.add( new LearnedSignalDecode( decode ) );
+      }
+    }
   }
 
   public static LearnedSignal read( HexReader reader, Remote remote )
@@ -100,9 +112,8 @@ public class LearnedSignal
     pw.print( "Data", data );
     if ( notes != null && !notes.equals( "" ) )
     {
-      ;
+      pw.print( "Notes", notes );
     }
-    pw.print( "Notes", notes );
   }
 
   /** The key code. */

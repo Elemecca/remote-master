@@ -81,7 +81,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.00-preview2";
+  public final static String version = "v2.00-preview3";
 
   /** The dir. */
   private File dir = null;
@@ -93,6 +93,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private RemoteConfiguration remoteConfig = null;
 
   private RMAction newAction = null;
+  private RMAction newUpgradeAction = null;
 
   /** The open item. */
   private RMAction openAction = null;
@@ -230,6 +231,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           saveAsAction.setEnabled( true );
           openRdfAction.setEnabled( true );
           uploadAction.setEnabled( !interfaces.isEmpty() );
+        }
+        else if ( command.equals( "NEWDEVICE" ) )
+        {
+          new KeyMapMaster( properties );
         }
         else if ( command.equals( "OPEN" ) )
         {
@@ -638,9 +643,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_F );
     menuBar.add( menu );
 
-    newAction = new RMAction( "New...", "NEW", createIcon( "RMNew24" ), "Create new file", KeyEvent.VK_N );
-    menu.add( newAction ).setIcon( null );
+    JMenu newMenu = new JMenu( "New" );
+    newMenu.setMnemonic( KeyEvent.VK_N );
+    menu.add( newMenu );
+
+    newAction = new RMAction( "Remote Image...", "NEW", createIcon( "RMNew24" ), "Create new file", KeyEvent.VK_R );
+    newMenu.add( newAction ).setIcon( null );
     toolBar.add( newAction );
+
+    newUpgradeAction = new RMAction( "Device Upgrade", "NEWDEVICE", null, "Create new Device Upgrade", KeyEvent.VK_D );
+    newMenu.add( newUpgradeAction );
 
     openAction = new RMAction( "Open...", "OPEN", createIcon( "RMOpen24" ), "Open a file", KeyEvent.VK_O );
     menu.add( openAction ).setIcon( null );
@@ -955,8 +967,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   public RMFileChooser getFileChooser()
   {
     RMFileChooser chooser = new RMFileChooser( dir );
-    EndingFileFilter irFilter = new EndingFileFilter( "RM IR files (*.rmir)", rmirEndings );
+    EndingFileFilter irFilter = new EndingFileFilter( "All supported files", allEndings );
     chooser.addChoosableFileFilter( irFilter );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "RM IR files (*.rmir)", rmirEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "IR files (*.ir)", irEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "RM Device Upgrades (*.rmdu)", rmduEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "KM Device Upgrades (*.txt)", txtEndings ) );
@@ -1025,11 +1038,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     int dot = ext.lastIndexOf( '.' );
     ext = ext.substring( dot );
 
-    if ( ext.equals( ".rmir" ) || ext.equals( ".ir" ) )
-    {
-      dir = file.getParentFile();
-      properties.setProperty( "IRPath", dir );
-    }
+    dir = file.getParentFile();
+    properties.setProperty( "IRPath", dir );
 
     if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ) )
     {
@@ -1734,21 +1744,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       DigitMaps.load( new File( workDir, "digitmaps.bin" ) );
 
-      if ( launchRM )
+      // if ( launchRM )
+      // {
+      RemoteMaster rm = new RemoteMaster( workDir, properties );
+      if ( fileToOpen != null )
       {
-        RemoteMaster rm = new RemoteMaster( workDir, properties );
-        if ( fileToOpen != null )
-        {
-          rm.openFile( fileToOpen );
-        }
-        frame = rm;
+        rm.openFile( fileToOpen );
       }
-      else
-      {
-        KeyMapMaster km = new KeyMapMaster( properties );
-        km.loadUpgrade( fileToOpen );
-        frame = km;
-      }
+      frame = rm;
+      // }
+      // else
+      // {
+      // KeyMapMaster km = new KeyMapMaster( properties );
+      // km.loadUpgrade( fileToOpen );
+      // frame = km;
+      // }
     }
     catch ( Exception e )
     {
@@ -1823,6 +1833,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private final static String[] slingEndings =
   {
     ".xml"
+  };
+
+  private final static String[] allEndings =
+  {
+      ".rmir", ".ir", ".rmdu", ".txt", ".xml"
   };
 
   @Override
