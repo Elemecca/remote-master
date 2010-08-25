@@ -10,7 +10,7 @@ Changes for v2.00
 - Implement File/Open of Sling Learned Signal XML files (Greg)
 - Add toolbar button to open RDF for viewing or live editing (Graham)
 - Fix Fujitsu protocol (Greg)
-- Add (tested) or (untested) to notes for Sling Learned Signals (Greg)
+- Append " (untested)" to notes for Sling Learned Signals when appropriate (Greg)
 - RMIR: allow multicell selection in most tables, and Copy item in popup menu to copy to the clipboard (Greg)
 - Add display of Signature, Processor, Interface and Extender Version to Raw Data tab (Graham)
 - Implement the ExtenderVersionAddr and RDFVersionAddr parameters of the RDF [General] section (Graham).
