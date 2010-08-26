@@ -42,7 +42,7 @@
 							<include name="toolbarButtonGraphics/general/Paste.gif"/>
 							<include name="toolbarButtonGraphics/general/New.gif"/>
 						</zipfileset> 
-                        <zipfileset src="${src}/jlfgr-1_0.jar"/> 
+                        <zipfileset src="${lib.dir}/RMGraphics.jar"/> 
                 </jar>
                 <java classpath="${build}" classname="com.hifiremote.jp1.RemoteMaster" outputproperty="rmversion">
                         <arg value="-version" />
