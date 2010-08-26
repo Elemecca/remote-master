@@ -195,6 +195,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The learned progress bar. */
   private JProgressBar learnedProgressBar = null;
+  
+  private boolean hasInvalidCodes = false;
 
   private class RMAction extends AbstractAction
   {
@@ -242,11 +244,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         else if ( command.equals( "SAVE" ) )
         {
+          if ( ! allowSave( Remote.SetupValidation.WARN ) ) return;
           remoteConfig.save( file );
         }
         else if ( command.equals( "SAVEAS" ) )
         {
-          saveAs();
+          if ( ! allowSave( Remote.SetupValidation.WARN ) ) return;         
+          saveAs();  
         }
         else if ( command.equals( "DOWNLOAD" ) )
         {
@@ -322,6 +326,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         else if ( command.equals( "UPLOAD" ) )
         {
+          Remote remote = remoteConfig.getRemote();
+          if ( ! allowSave( remote.getSetupValidation() ) ) return;
           IO io = getOpenInterface();
           if ( io == null )
           {
@@ -329,7 +335,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
           String sig = io.getRemoteSignature();
-          Remote remote = remoteConfig.getRemote();
           if ( !sig.equals( remote.getSignature() ) )
           {
             Object[] options =
@@ -455,9 +460,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
           Rectangle bounds = getBounds();
           properties
-              .setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
+          .setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
 
           properties.save();
+          
+          if ( generalPanel.getDeviceUpgradeEditor() != null )
+          {
+            generalPanel.getDeviceUpgradeEditor().dispose();
+          }
+          if ( devicePanel.getDeviceUpgradeEditor() != null )
+          {
+            devicePanel.getDeviceUpgradeEditor().dispose();
+          }
+
         }
         catch ( Exception exc )
         {
@@ -1620,6 +1635,30 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     remoteConfig.checkUnassignedUpgrades();
     remoteConfig.updateImage();
     updateUsage();
+    hasInvalidCodes = generalPanel.setWarning();
+  }
+  
+  private boolean allowSave( Remote.SetupValidation setupValidation )
+  {
+    if ( ! hasInvalidCodes )
+    {
+      return true;
+    }
+    String title = "Setup codes";
+    if ( setupValidation == Remote.SetupValidation.WARN )
+    {
+      String message = "The current setup contains invalid device codes.\n" +
+      "Are you sure you wish to continue?";
+      return JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION ) == JOptionPane.YES_OPTION;
+    }
+    else if ( setupValidation == Remote.SetupValidation.ENFORCE )
+    {
+      String message = "The current setup contains invalid device codes\n" +
+      "which would cause this remote to malfunction.\n" + 
+      "Please correct these codes and try again.";
+      JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+    }
+    return false;
   }
 
   /**
@@ -1867,5 +1906,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     return remoteConfig;
   }
+
+  public GeneralPanel getGeneralPanel()
+  {
+    return generalPanel;
+  }
+
+  public DeviceUpgradePanel getDeviceUpgradePanel()
+  {
+    return devicePanel;
+  }
+  
+  
 
 }

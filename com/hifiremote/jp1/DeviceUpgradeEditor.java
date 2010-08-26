@@ -40,10 +40,13 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
    * @param remotes
    *          the remotes
    */
-  public DeviceUpgradeEditor( JFrame owner, DeviceUpgrade deviceUpgrade, Collection< Remote > remotes )
+  public DeviceUpgradeEditor( RemoteMaster owner, DeviceUpgrade deviceUpgrade, 
+      Collection< Remote > remotes, Integer row, RMPanel panel )
   {
     super( "Device Upgrade Editor" );
     this.owner = owner;
+    this.row = row;
+    this.panel = panel;
     focusWindowAdapter = new WindowAdapter()
     {
       public void windowGainedFocus( WindowEvent e )
@@ -131,18 +134,23 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     try
     {
       Object source = e.getSource();
-      if ( source == cancelButton )
+      if ( source == okButton || source == cancelButton )
       {
-        cancelled = true;
+        if ( source == cancelButton )
+        {
+          cancelled = true;
+        }
         setVisible( false );
         dispose();
         editorPanel.releasePanels();
-      }
-      else if ( source == okButton )
-      {
-        setVisible( false );
-        dispose();
-        editorPanel.releasePanels();
+        if ( panel instanceof GeneralPanel )
+        {
+          ( ( GeneralPanel )panel ).endEdit( this, row );
+        }
+        else if ( panel instanceof DeviceUpgradePanel )
+        {
+          ( ( DeviceUpgradePanel )panel ).endEdit( this, row );
+        }
       }
       else if ( source == loadButton )
         load();
@@ -325,7 +333,14 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
   /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
   
-  private JFrame owner = null;
+  private RemoteMaster owner = null;
+  
+  private RMPanel panel = null;
   
   private WindowAdapter focusWindowAdapter = null;
+  
+//  private RemoteMaster rm = null;
+  
+  private Integer row = null;
+
 }

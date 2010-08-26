@@ -25,6 +25,8 @@ Changes for v2.00
 - Remember the folder in which files are opened regardless of type (Greg)
 - Add an "All supported files" type to the file open dialog, and use it as the default (Greg)
 - Add transient, user controlled ignore field to learned signal decodes (Greg)
+- Implement Setup Code Validation (Graham)
+- Resolve an issue with Device Upgrade Editor that caused, among other things, the OK and Cancel buttons to have the same effect (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

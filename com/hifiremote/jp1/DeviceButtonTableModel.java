@@ -58,6 +58,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       {
         adjustSequenceRange();
       }
+      setupCodeRenderer = new SetupCodeRenderer( remoteConfig );
+      setupCodeEditor = new SetupCodeEditor( setupCodeRenderer );
     }
   }
 
@@ -302,6 +304,30 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         return null;
     }
   }
+  
+  public boolean hasInvalidCodes()
+  {
+    Remote remote = remoteConfig.getRemote();
+    if ( remote.getSetupValidation() == Remote.SetupValidation.OFF )
+    {
+      return false;
+    }
+    
+    boolean result = false;    
+    for ( int i = 0; i < remote.getDeviceButtons().length; i++ )
+    {
+      DeviceButton deviceButton = remote.getDeviceButtons()[ i ];
+      DeviceType deviceType = ( DeviceType )getValueAt( i, 2 );
+      SetupCode setupCode = ( SetupCode )getValueAt( i, 3 );
+      if ( deviceType != null && setupCode != null )
+      {
+        setupCodeRenderer.setDeviceButton( deviceButton );
+        setupCodeRenderer.setDeviceType( deviceType );
+        result = result || !setupCodeRenderer.isValid( setupCode.getValue() );
+      }
+    }
+    return result;
+  }
 
   /*
    * (non-Javadoc)
@@ -429,6 +455,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return new RowNumberRenderer();
     }
+    else if ( col == 3 )
+    {
+      return setupCodeRenderer;
+    }
     return null;
   }
 
@@ -449,7 +479,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return deviceTypeEditor;
     }
-    else if ( col == 3 || col == 4 || getEffectiveColumn( col ) == 5 )
+    else if ( col == 3 )
+    {
+      return setupCodeEditor;
+    }
+    else if ( col == 4 || getEffectiveColumn( col ) == 5 )
     {
       return selectAllEditor;
     }
@@ -469,6 +503,9 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
 
   /** The setup code editor */
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
+  
+  private SetupCodeRenderer setupCodeRenderer = null;
+  private SetupCodeEditor setupCodeEditor = null;
 
   private DefaultCellEditor sequenceEditor = null;
   private JComboBox sequenceBox = new JComboBox();

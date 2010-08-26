@@ -2200,6 +2200,10 @@ public class Remote implements Comparable< Remote >
 
   public boolean hasSetupCode( int deviceTypeIndex, int setupCode )
   {
+    if ( setupCodes.size() == 0 )
+    {
+      return true;
+    }
     HashMap< Integer, Integer > map = setupCodes.get( deviceTypeIndex );
     if ( map == null )
     {

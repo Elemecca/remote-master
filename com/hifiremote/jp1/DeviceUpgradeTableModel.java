@@ -315,6 +315,5 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
 
   private SelectAllCellEditor descriptionEditor = new SelectAllCellEditor();
 
-  private DefaultCellEditor deviceButtonEditor = null;
   private JComboBox deviceButtonBox = new JComboBox();
 }

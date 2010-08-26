@@ -61,6 +61,12 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   @Override
   public DeviceUpgrade createRowObject( DeviceUpgrade baseUpgrade )
   {
+    // Never used, the methods that call it are overridden separately.
+    return null;
+  }
+  
+  private void createRowObjectA( DeviceUpgrade baseUpgrade )
+  {
     System.err.println( "DeviceUpgradePanel.createRowObject()" );
     DeviceUpgrade upgrade = null;
     if ( baseUpgrade == null )
@@ -86,24 +92,33 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     {
       upgrade = new DeviceUpgrade( baseUpgrade );
     }
+    oldUpgrade = baseUpgrade;
 
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, table );
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );
-    DeviceUpgradeEditor editor = new DeviceUpgradeEditor( rm, upgrade, remotes );
-    upgrade = editor.getDeviceUpgrade();
-    if ( upgrade == null )
+    
+    editor = new DeviceUpgradeEditor( rm, upgrade, remotes, rowOut, this );
+  }
+
+  private DeviceUpgrade createRowObjectB( DeviceUpgradeEditor editor )
+  { 
+    this.editor = null;
+    DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
+    if ( newUpgrade == null || oldUpgrade == null )
     {
-      return null;
+      return newUpgrade;
     }
 
-    int boundDeviceButtonIndex = remoteConfig.findBoundDeviceButtonIndex( upgrade );
-    if ( boundDeviceButtonIndex == -1 )
+    int boundDeviceButtonIndex = remoteConfig.findBoundDeviceButtonIndex( oldUpgrade );
+    rowBound = boundDeviceButtonIndex;
+    if ( rowBound == -1 )
     {
-      return upgrade;
-    }
+      rowBound = null;
+      return newUpgrade;
+    }  
 
-    java.util.List< KeyMove > upgradeKeyMoves = upgrade.getKeyMoves();
+    java.util.List< KeyMove > upgradeKeyMoves = newUpgrade.getKeyMoves();
     java.util.List< KeyMove > keyMoves = remoteConfig.getKeyMoves();
     for ( KeyMove upgradeKeyMove : upgradeKeyMoves )
     {
@@ -125,11 +140,82 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         }
       }
     }
-    return upgrade;
+    return newUpgrade;
   }
 
+  @Override
+  protected void editRowObject( int row )
+  {
+    rowOut = row;
+    createRowObjectA( getRowObject( row ) );    
+  }
+  
+  @Override
+  protected void newRowObject( DeviceUpgrade baseUpgrade, int row, int modelRow, boolean select )
+  {
+    rowOut = null;
+    rowNew = ( row == -1 ) ? null : row;
+    rowModel = ( modelRow == -1 ) ? null : modelRow;
+    this.select = select;
+    createRowObjectA( baseUpgrade );
+  }
+  
+  public void endEdit( DeviceUpgradeEditor editor, Integer row)
+  {
+    DeviceUpgrade newUpgrade = createRowObjectB( editor );
+    if ( newUpgrade == null )
+    {
+      return;
+    }
+    if ( row != null )
+    {
+      // Edit
+      model.setRow( sorter.modelIndex( row ), newUpgrade );
+
+      RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+      DeviceButtonTableModel deviceModel = rm.getGeneralPanel().getDeviceButtonTableModel();
+
+      if ( rowBound != null )
+      {
+        deviceModel.setValueAt( newUpgrade.getDeviceType(), rowBound, 2 );
+        deviceModel.setValueAt( new SetupCode( newUpgrade.getSetupCode() ), rowBound, 3 );
+        deviceModel.fireTableRowsUpdated( rowBound, rowBound );
+      }
+    }
+    else
+    {
+      // New, Clone
+      if ( rowNew == null )
+      {
+        model.addRow( newUpgrade );
+        row = model.getRowCount();
+      }
+      else
+      {
+        model.insertRow( rowModel, newUpgrade );
+      }
+
+      if ( select )
+        table.setRowSelectionInterval( rowNew, rowNew );
+    }
+  }
+  
+  public DeviceUpgradeEditor getDeviceUpgradeEditor()
+  {
+    return editor;
+  }
+
+  private Integer rowOut = null;
+  private Integer rowBound = null;
+  private Integer rowNew = null;
+  private Integer rowModel = null;
+  private Boolean select = null;
+  private DeviceUpgrade oldUpgrade = null;
+  private DeviceUpgradeEditor editor = null;
+  
   /** The remote config. */
   private RemoteConfiguration remoteConfig;
 
   private JTextPane upgradeBugPane = new JTextPane();
+  
 }

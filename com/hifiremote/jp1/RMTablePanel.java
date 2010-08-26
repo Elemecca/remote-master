@@ -289,6 +289,28 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
       model.setRow( sorter.modelIndex( row ), o );
     }
   }
+  
+  protected void newRowObject( E baseObject, int row, int modelRow, boolean select )
+  {
+    E o = createRowObject( baseObject );
+    if ( o == null )
+    {
+      return;
+    }
+    if ( row == -1 )
+    {
+      model.addRow( o );
+      row = model.getRowCount();
+    }
+    else
+    {
+      model.insertRow( modelRow, o );
+    }
+
+    if ( select )
+      table.setRowSelectionInterval( row, row );
+  }
+
 
   // Interface ActionListener
   /*
@@ -330,48 +352,11 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     }
     else if ( source == newButton || source == newItem )
     {
-      E o = createRowObject( null );
-      if ( o == null )
-      {
-        return;
-      }
-      if ( row == -1 )
-      {
-        model.addRow( o );
-        row = model.getRowCount();
-      }
-      else
-      {
-        model.insertRow( modelRow, o );
-      }
-
-      if ( select )
-      {
-        table.setRowSelectionInterval( row, row );
-      }
+      newRowObject( null, row, modelRow, select );
     }
     else if ( source == cloneButton || source == cloneItem )
     {
-      E o = createRowObject( getRowObject( row ) );
-      if ( o == null )
-      {
-        return;
-      }
-      if ( row == -1 )
-      {
-        model.addRow( o );
-        row = model.getRowCount();
-        modelRow = row;
-      }
-      else
-      {
-        model.insertRow( modelRow, o );
-      }
-
-      if ( select )
-      {
-        table.setRowSelectionInterval( row, row );
-      }
+      newRowObject( getRowObject( row ), row, modelRow, select );
     }
     else if ( source == deleteButton || source == deleteItem )
     {

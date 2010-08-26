@@ -1,7 +1,10 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -13,6 +16,7 @@ import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -91,8 +95,24 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     notesScrollPane = new JScrollPane( notes );
     notesScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "General Notes" ),
         notesScrollPane.getBorder() ) );
+    
+    JPanel lowerPanel = new JPanel( new BorderLayout() );
+    warningPanel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
+    warningPanel.setBackground( Color.RED );
+    warningPanel.setVisible( false );
+    
+    String warningText = "WARNING:  Setup Codes shown in RED are invalid";
+    JLabel warningLabel = new JLabel( warningText );
+    Font font = warningLabel.getFont();
+    Font font2 = font.deriveFont( Font.BOLD, 12 );
+    warningLabel.setFont( font2 );
+    warningLabel.setForeground( Color.YELLOW );
+    
+    warningPanel.add( warningLabel );
+    lowerPanel.add( notesScrollPane, BorderLayout.CENTER );
+    lowerPanel.add( warningPanel, BorderLayout.PAGE_END );
 
-    mainPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, upperPane, notesScrollPane );
+    mainPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, upperPane, lowerPanel );
     mainPane.setResizeWeight( 0.7 );
 
     add( mainPane, BorderLayout.CENTER );
@@ -149,6 +169,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         text = "";
       }
       notes.setText( text );
+      
+      setWarning();
 
       adjustPreferredViewportSizes();
 
@@ -219,9 +241,17 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );
-    DeviceUpgradeEditor editor = new DeviceUpgradeEditor( rm, newUpgrade, remotes );
-    newUpgrade = editor.getDeviceUpgrade();
-    if ( newUpgrade == null )
+    editor = new DeviceUpgradeEditor( rm, newUpgrade, remotes, row, this );
+  }
+    
+  public void endEdit( DeviceUpgradeEditor editor, int row )
+  {
+    Remote remote = remoteConfig.getRemote();
+    DeviceButton deviceButton = remote.getDeviceButtons()[ row ];
+    DeviceUpgrade oldUpgrade = remoteConfig.getAssignedDeviceUpgrade( deviceButton );
+    DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
+    this.editor = null;
+    if ( oldUpgrade == null || newUpgrade == null )
     {
       return;
     }
@@ -230,7 +260,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     while ( upgrades.hasNext() )
     {
       DeviceUpgrade upgrade = upgrades.next();
-      if ( upgrade == selectedUpgrade )
+      if ( upgrade == oldUpgrade )
       {
         upgrades.set( newUpgrade );
         deviceModel.setValueAt( newUpgrade.getDeviceType(), row, 2 );
@@ -239,6 +269,25 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         break;
       }
     }
+    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+    rm.getDeviceUpgradePanel().model.fireTableDataChanged();
+  }
+  
+  public boolean setWarning()
+  {
+    boolean result = deviceModel.hasInvalidCodes();
+    warningPanel.setVisible( result );
+    return result;
+  }
+  
+  public DeviceButtonTableModel getDeviceButtonTableModel()
+  {
+    return deviceModel;
+  }
+
+  public DeviceUpgradeEditor getDeviceUpgradeEditor()
+  {
+    return editor;
   }
 
   private RemoteConfiguration remoteConfig = null;
@@ -247,6 +296,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   private JSplitPane mainPane = null;
 
   private JPanel deviceButtonPanel = null;
+  private JPanel warningPanel = null;
 
   private JScrollPane deviceScrollPane = null;
   private JScrollPane settingsScrollPane = null;
@@ -266,4 +316,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   private JButton editButton = null;
   private DeviceUpgrade selectedUpgrade = null;
   private boolean setInProgress = false;
+  
+  private DeviceUpgradeEditor editor;
+
 }
