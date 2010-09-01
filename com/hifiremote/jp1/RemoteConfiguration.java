@@ -479,7 +479,11 @@ public class RemoteConfiguration
               }
               else if ( flag == 3 )
               {
-                devices.get( index ).setDescription( text );
+                DeviceUpgrade device = devices.get( index );
+                if ( device != null )
+                {
+                  device.setDescription( text );
+                }
               }
               else if ( flag == 4 )
               {
@@ -594,6 +598,15 @@ public class RemoteConfiguration
     for ( Iterator< ProtocolUpgrade > it = protocols.iterator(); it.hasNext(); )
     {
       if ( it.next().isUsed() )
+      {
+        it.remove();
+      }
+    }
+
+    // clean up device upgrades that couldn't be imported
+    for ( Iterator< DeviceUpgrade > it = devices.iterator(); it.hasNext(); )
+    {
+      if ( it.next() == null )
       {
         it.remove();
       }
@@ -1484,7 +1497,7 @@ public class RemoteConfiguration
     {
       auto.store( data );
     }
-    
+
     int rdfVersionAddress = remote.getRdfVersionAddress();
     if ( rdfVersionAddress > 0 )
     {
@@ -1679,13 +1692,14 @@ public class RemoteConfiguration
       {
         upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
         upgrade.setSetupCode( setupCode );
-
-        devices.add( upgrade );
       }
       catch ( java.text.ParseException pe )
       {
         pe.printStackTrace( System.err );
+        upgrade = null;
       }
+
+      devices.add( upgrade );
     }
 
     if ( devAddr == null )
@@ -1780,13 +1794,14 @@ public class RemoteConfiguration
           upgrade.setSetupCode( setupCode );
           upgrade.setButtonIndependent( false );
           upgrade.setButtonRestriction( deviceButton );
-
-          devices.add( upgrade );
         }
         catch ( java.text.ParseException pe )
         {
           pe.printStackTrace( System.err );
+          upgrade = null;
         }
+
+        devices.add( upgrade );
       }
 
       offset += data[ offset ];
@@ -2504,7 +2519,7 @@ public class RemoteConfiguration
 
   /** The remote. */
   private Remote remote = null;
-  
+
   public void setRemote( Remote remote )
   {
     this.remote = remote;

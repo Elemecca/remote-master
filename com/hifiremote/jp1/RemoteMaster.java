@@ -145,6 +145,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem homePageItem = null;
 
   private JMenuItem learnedSignalItem = null;
+  
+  private JMenuItem wikiItem = null;
 
   private JMenuItem forumItem = null;
 
@@ -962,6 +964,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       homePageItem.addActionListener( this );
       menu.add( homePageItem );
 
+      wikiItem = new JMenuItem( "Wiki", KeyEvent.VK_W );
+      wikiItem.addActionListener( this );
+      menu.add( wikiItem );
+
       forumItem = new JMenuItem( "Forums", KeyEvent.VK_F );
       forumItem.addActionListener( this );
       menu.add( forumItem );
@@ -1433,6 +1439,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == homePageItem )
       {
         URL url = new URL( "http://controlremote.sourceforge.net/" );
+        desktop.browse( url.toURI() );
+      }
+      else if ( source == wikiItem )
+      {
+        URL url = new URL( "https://sourceforge.net/apps/mediawiki/controlremote/index.php?title=Main_Page" );
         desktop.browse( url.toURI() );
       }
       else if ( source == forumItem )
