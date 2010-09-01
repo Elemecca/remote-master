@@ -122,9 +122,10 @@ public class ULDKPFunction extends SpecialProtocolFunction
    * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#getType()
    */
-  public String getType()
+  public String getType( RemoteConfiguration remoteConfig )
   {
-    return typeStrings[ getStyle() ];
+    return getUserFunctions( remoteConfig )[ getStyle() ];
+//    return typeStrings[ getStyle() ];
   }
 
   /*

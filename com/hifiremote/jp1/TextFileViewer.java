@@ -73,12 +73,13 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
     }
   }
   
-  public static void showFile( Component locationComp, File file, String title, boolean editable )
+  public static TextFileViewer showFile( Component locationComp, File file, String title, boolean editable )
   {
     TextFileViewer viewer = new TextFileViewer( locationComp, file, title, editable );
     viewer.pack();
     viewer.setLocationRelativeTo( locationComp );
     viewer.setVisible( true ); 
+    return viewer;
   }
 
   @Override
@@ -131,13 +132,12 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
         RemoteConfiguration remoteConfig = remoteMaster.getRemoteConfiguration();
         remoteConfig.setSavedData();
         Remote oldRemote = remoteConfig.getRemote();
-        Remote newRemote = new Remote();
-        newRemote.setFile( oldRemote.getFile() );
-        newRemote.setSignature( oldRemote.getSignature() );
+        Remote newRemote = new Remote( oldRemote, oldRemote.getNameIndex() );
         newRemote.load();
         remoteConfig.setRemote( newRemote );
         SetupCode.setMax( newRemote.usesTwoBytePID() ? 4095 : 2047 );
         remoteConfig.updateImage();
+        RemoteConfiguration.resetDialogs();
         remoteMaster.update();
         remoteMaster.setTitle( rmTitle );
       }

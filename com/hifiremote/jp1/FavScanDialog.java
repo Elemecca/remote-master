@@ -397,6 +397,15 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     dialog.setVisible( true );
     return dialog.favScan;
   }
+  
+  public static void reset()
+  {
+    if ( dialog != null )
+    {
+      dialog.dispose();
+      dialog = null;
+    }
+  }
 
   private void setFavScan( FavScan favScan )
   {

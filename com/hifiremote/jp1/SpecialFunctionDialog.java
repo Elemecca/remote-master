@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,6 +15,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -76,6 +78,15 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
     return dialog.function;
   }
+  
+  public static void reset()
+  {
+    if ( dialog != null )
+    {
+      dialog.dispose();
+      dialog = null;
+    }
+  }
 
   /**
    * Adds the to box.
@@ -125,18 +136,19 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     panel.add( xShift );
 
     // Add the Parameters
-    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 0 ) );
-    panel.add( Box.createHorizontalStrut( 5 ) );
-    addToBox( panel, contentPane );
-    panel.setBorder( BorderFactory.createTitledBorder( "Parameters" ) );
+    paramPanel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 0 ) );
+    paramPanel.add( Box.createHorizontalStrut( 5 ) );
+    addToBox( paramPanel, contentPane );
+    paramPanel.setBorder( BorderFactory.createTitledBorder( "Parameters" ) );
     Box box = Box.createVerticalBox();
     addToBox( new JLabel( "Type:" ), box );
     addToBox( type, box );
-    panel.add( box );
     type.setRenderer( new FunctionTypeRenderer() );
     type.addActionListener( this );
-
-    panel.add( parameterCard );
+    
+    paramPanel.add( box );
+    paramPanel.add( parameterCard );
+    
     /*
      * box = box.createVerticalBox(); addToBox( new JLabel( "Hex:" ), box ); addToBox( hex, box ); box.setBorder( null
      * ); panel.add( box );
@@ -203,6 +215,40 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     addToBox( condition, box );
     condition.addActionListener( this );
     panel.add( box );
+
+    // Pause parameter panel
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
+    parameterCard.add( panel, "Pause" );
+    box = Box.createVerticalBox();
+    addToBox( new JLabel( "Duration:" ), box );
+    
+    Box durationBox = Box.createHorizontalBox();
+    formatter = new NumberFormatter( PauseFunction.pauseFormat );
+    formatter.setValueClass( Float.class );
+    pauseDuration = new PauseField( formatter );
+    durationBox.add( pauseDuration );
+    durationBox.add(  Box.createHorizontalStrut( 5 ) );
+    durationBox.add ( new JLabel( "secs") );
+    addToBox( durationBox, box );
+    
+    panel.add( box );
+    
+    noteBox = Box.createVerticalBox();
+    JLabel label = new JLabel( "Note: A decimal point is" );
+    Font font = label.getFont();
+    Font font2 = font.deriveFont( font.getSize2D()-1 );
+    label.setFont( font2 );
+    noteBox.add( label );
+    label = new JLabel( "allowed in the duration" );
+    label.setFont( font2 );
+    noteBox.add( label );
+    label = new JLabel( "value" );
+    label.setFont( font2 );
+    noteBox.add( label );
+
+    panel.add( Box.createHorizontalStrut( 10 ));
+    panel.add( noteBox );
+    paramPanel.add( Box.createVerticalStrut( noteBox.getPreferredSize().height ) );
 
     // UDSM parameter panel
     panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
@@ -412,6 +458,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       // Clear out all optional fields
       setupCode.setValue( null );
       setDuration( 0 );
+      setPauseDuration( null );
       setULDKPDuration( 0 );
       setModeName( "" );
       setToggle( 0 );
@@ -429,7 +476,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     xShift.setSelected( false );
     setButton( function.getKeyCode(), boundKey, shift, xShift );
 
-    type.setSelectedItem( function.getType() );
+    type.setSelectedItem( function.getType( config ) );
     function.update( this );
 
     notes.setText( function.getNotes() );
@@ -565,7 +612,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       }
       else if ( typeStr.equals( "Pause" ) )
       {
-        cardStr = "Duration";
+        cardStr = "Pause";
         enableMacros( false );
       }
       else if ( typeStr.equals( "ToadTog" ) )
@@ -594,6 +641,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         enableMacros( false );
       CardLayout cl = ( CardLayout )parameterCard.getLayout();
       cl.show( parameterCard, cardStr );
+      noteBox.setVisible(typeStr.equals( "Pause" ));
     }
     else if ( source == condition )
     {
@@ -639,6 +687,10 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       }
       
       Hex hex = protocol.createHex( this );
+      if ( hex == null )
+      {
+        return;
+      }
       
       if ( protocol.isInternal() )
       {
@@ -1166,7 +1218,60 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
   {
     return ( ( Integer )duration.getValue() ).intValue();
   }
+  
+  // for Pause
+  private class PauseField extends JFormattedTextField
+  {
+    public PauseField( NumberFormatter nf )
+    {
+      super( nf );
+      setColumns( 8 );
+      setFocusLostBehavior( JFormattedTextField.PERSIST );
+    }
+    protected void processFocusEvent( FocusEvent e ) 
+    {
+      super.processFocusEvent( e );
+      if ( e.getID() == FocusEvent.FOCUS_GAINED )
+      {  
+        selectAll();
+      }  
+    }
+  }
+ 
+  private PauseField pauseDuration = null;
 
+  public Float getPauseDuration()
+  {
+    if ( pauseDuration.getText().isEmpty() || ! pauseDuration.isEditValid() )
+    {
+      showWarning( "The pause value must be a number.  A decimal\n"
+                 + "point is allowed.  Examples of valid entries are\n"
+                 + "0.6, 2, 3.45.");
+      return null;
+    }
+    try
+    {
+      pauseDuration.commitEdit();
+    }
+    catch ( ParseException e )
+    {
+      e.printStackTrace();
+    }
+    return ( Float )pauseDuration.getValue();
+  }
+  
+  public void setPauseDuration( Float f )
+  {
+    if ( f == null )
+    {
+      pauseDuration.setText( null );
+    }
+    else
+    {
+      pauseDuration.setValue( new Float( f ) );
+    }
+  }
+  
   // for ToadTog
   /** The toggle. */
   private JComboBox toggle = null;
@@ -1451,9 +1556,16 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
   /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
+  
+  private JPanel paramPanel = null;
 
   /** The config. */
   private RemoteConfiguration config = null;
+  
+  public RemoteConfiguration getRemoteConfiguration()
+  {
+    return config;
+  }
 
   /** The function. */
   private SpecialProtocolFunction function = null;
@@ -1462,7 +1574,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
   private Hex cmd = null;
 
   /** The dialog. */
-  private static SpecialFunctionDialog dialog = null;
+  public static SpecialFunctionDialog dialog = null;
 
   /** The active color. */
   private Color activeColor;
@@ -1474,4 +1586,6 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
   private Color disabledColor;
   
   private java.util.List< String > specialFunctionsByRDFName = new ArrayList< String >();
+
+  private Box noteBox = null;
 }

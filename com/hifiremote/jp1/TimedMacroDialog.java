@@ -37,6 +37,15 @@ public class TimedMacroDialog extends JDialog implements ActionListener, ButtonE
     return dialog.timedMacro;
   }
   
+  public static void reset()
+  {
+    if ( dialog != null )
+    {
+      dialog.dispose();
+      dialog = null;
+    }
+  }
+  
   private TimedMacroDialog( Component c )
   {
     super( ( JFrame )SwingUtilities.getRoot( c ) );

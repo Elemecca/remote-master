@@ -54,6 +54,15 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
     dialog.setVisible( true );
     return dialog.learnedSignal;
   }
+  
+  public static void reset()
+  {
+    if ( dialog != null )
+    {
+      dialog.dispose();
+      dialog = null;
+    }
+  }
 
   /**
    * To string.

@@ -10,17 +10,38 @@ import java.util.List;
  */
 public class PauseParameters extends RDFParameter
 {
+  // Default value corresponds to:
+  //   PauseParams = <userName>, 2/1, 10.66  for S3C8 remotes
+  //   PauseParams = <userName>, 2/1, 16  for all other remotes, including S3C8+
+  
   private String userName = "";
-  @SuppressWarnings( "unused" )
-  private int dataLength = 1;
-  @SuppressWarnings( "unused" )
+
+  private int dataLength = 2;
+
   private int offset = 0;
-  @SuppressWarnings( "unused" )
+
   private int bytesUsed = 1;
-  @SuppressWarnings( "unused" )
+
   private boolean lsb = false;
-  @SuppressWarnings( "unused" )
+
   private float multiplier = 1f;
+  
+  public PauseParameters( String userName, Remote remote )
+  {
+    this.userName = userName;
+    if ( remote.getProcessor().getName().equals( "S3C80" ) 
+        && remote.getRAMAddress() != 0xFF00 )
+    {
+      // Processor is S3C8 (and not S3C8+)
+      multiplier = 10.66f;
+    }
+    else
+    {
+      multiplier = 16f;
+    }        
+  }
+  
+  public PauseParameters(){};
 
   public void parse( String text, Remote remote ) throws Exception
   {
@@ -70,4 +91,30 @@ public class PauseParameters extends RDFParameter
   {
     return userName;
   }
+
+  public int getDataLength()
+  {
+    return dataLength;
+  }
+
+  public int getOffset()
+  {
+    return offset;
+  }
+
+  public int getBytesUsed()
+  {
+    return bytesUsed;
+  }
+
+  public boolean isLsb()
+  {
+    return lsb;
+  }
+
+  public float getMultiplier()
+  {
+    return multiplier;
+  }
+  
 }

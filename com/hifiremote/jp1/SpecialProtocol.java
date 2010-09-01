@@ -145,6 +145,11 @@ public abstract class SpecialProtocol
         }
       }
     }
+    
+    if ( name.equals( "Pause" ) )
+    {
+      ( ( PauseSpecialProtocol )sp ).setPauseParameters( remote );
+    }
 
     sp.assumePresent = hasDash;
 

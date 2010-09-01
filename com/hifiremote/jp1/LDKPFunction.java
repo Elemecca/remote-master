@@ -95,9 +95,10 @@ public class LDKPFunction extends SpecialProtocolFunction
    * 
    * @return The type value
    */
-  public String getType()
+  public String getType( RemoteConfiguration remoteConfig )
   {
-    return styleStrings[ getStyle() ];
+    return getUserFunctions( remoteConfig )[ getStyle() ];
+//    return styleStrings[ getStyle() ];
   }
 
   /**

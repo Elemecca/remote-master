@@ -285,6 +285,11 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     return deviceModel;
   }
 
+  public JP1Table getDeviceButtonTable()
+  {
+    return deviceButtonTable;
+  }
+
   public DeviceUpgradeEditor getDeviceUpgradeEditor()
   {
     return editor;

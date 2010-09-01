@@ -54,6 +54,15 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     dialog.setVisible( true );
     return dialog.macro;
   }
+  
+  public static void reset()
+  {
+    if ( dialog != null )
+    {
+      dialog.dispose();
+      dialog = null;
+    }
+  }
 
   /**
    * Instantiates a new macro dialog.

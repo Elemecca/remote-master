@@ -250,7 +250,7 @@ public abstract class SpecialProtocolFunction
    * 
    * @return the type
    */
-  public abstract String getType();
+  public abstract String getType( RemoteConfiguration remoteConfig );
   
   /**
    * Gets the display type.

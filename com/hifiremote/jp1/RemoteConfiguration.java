@@ -243,9 +243,13 @@ public class RemoteConfiguration
 
     System.err.println( "Remote is " + remote );
 
-    if ( remote.getBaseAddress() != baseAddr )
+    if ( baseAddr != remote.getBaseAddress() )
     {
-      throw new IOException( "The base address of the remote image doesn't match the remote's baseAddress." );
+      //      throw new IOException( "The base address of the remote image doesn't match the remote's baseAddress." );
+      // GD:  This is probably because the file is a raw data file that always has a base address of 0, so
+      // just print a message and continue/
+      System.err.println( String.format( "Base address of image (%04X) differs from that in RDF " +
+          "(%04X) but continuing execution.", baseAddr, remote.getBaseAddress() ) );
     }
 
     deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
@@ -816,6 +820,7 @@ public class RemoteConfiguration
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
     data = new short[ remote.getEepromSize() ];
+    deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
   }
 
   /**
@@ -2682,6 +2687,16 @@ public class RemoteConfiguration
     data[ offset++ ] = ( short )( month / 10 << 4 | month % 10 );
     data[ offset++ ] = ( short )( date / 10 << 4 | date % 10 );
     updateCheckSums();
+  }
+  
+  public static void resetDialogs()
+  {   
+    KeyMoveDialog.reset();
+    MacroDialog.reset();
+    TimedMacroDialog.reset();
+    SpecialFunctionDialog.reset();
+    FavScanDialog.reset();
+    LearnedSignalDialog.reset();
   }
 
   /** The notes. */

@@ -6,6 +6,16 @@ package com.hifiremote.jp1;
  */
 public class PauseSpecialProtocol extends SpecialProtocol
 {
+  public static PauseParameters getPauseParameters( String userName, Remote remote )
+  {
+    PauseParameters pauseParameters = remote.getPauseParameters().get( userName );
+    if ( pauseParameters == null )
+    {
+      // set the default value
+      pauseParameters = new PauseParameters( userName, remote );
+    }
+    return pauseParameters;
+  }
   
   /**
    * Instantiates a new pause special protocol.
@@ -16,6 +26,11 @@ public class PauseSpecialProtocol extends SpecialProtocol
   public PauseSpecialProtocol( String name, Hex pid )
   {
     super( name, pid );
+  }
+  
+  public void setPauseParameters( Remote remote )
+  {
+    pauseParameters = getPauseParameters( getUserFunctions()[ 0 ], remote );
   }
   
   /* (non-Javadoc)
@@ -34,9 +49,10 @@ public class PauseSpecialProtocol extends SpecialProtocol
   /* (non-Javadoc)
    * @see com.hifiremote.jp1.SpecialProtocol#createHex(com.hifiremote.jp1.SpecialFunctionDialog)
    */
+  @Override
   public Hex createHex( SpecialFunctionDialog dlg )
   {
-    return PauseFunction.createHex( dlg );
+    return PauseFunction.createHex( dlg, pauseParameters );
   }
   
   /* (non-Javadoc)
@@ -46,4 +62,7 @@ public class PauseSpecialProtocol extends SpecialProtocol
   
   /** The Constant functions. */
   private static final String[] functions = { "Pause" };
+  
+  private PauseParameters pauseParameters = null;
+
 }

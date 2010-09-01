@@ -394,11 +394,6 @@ public class Remote implements Comparable< Remote >
   {
     return signature;
   }
-  
-  public void setSignature( String signature )
-  {
-    this.signature = signature;
-  }
 
   /**
    * Gets the name.
@@ -408,6 +403,11 @@ public class Remote implements Comparable< Remote >
   public String getName()
   {
     return names[ nameIndex ];
+  }
+
+  public int getNameIndex()
+  {
+    return nameIndex;
   }
 
   /**
@@ -642,11 +642,6 @@ public class Remote implements Comparable< Remote >
     load();
     return processor;
   }
-
-  // public String getProcessorVersion()
-  // {
-  // return processorVersion;
-  // }
 
   /**
    * Gets the rAM address.
@@ -2156,7 +2151,7 @@ public class Remote implements Comparable< Remote >
     return protocols;
   }
 
-  HashMap< Integer, HashMap< Integer, Integer >> setupCodes = new HashMap< Integer, HashMap< Integer, Integer >>();
+  private HashMap< Integer, HashMap< Integer, Integer >> setupCodes = new HashMap< Integer, HashMap< Integer, Integer >>();
 
   private String parseSetupCodes( RDFReader rdr ) throws IOException
   {
@@ -2544,11 +2539,6 @@ public class Remote implements Comparable< Remote >
   
   /** The file. */
   private File file = null;
-
-  public void setFile( File file )
-  {
-    this.file = file;
-  }
 
   /** The signature. */
   private String signature = null;
@@ -2969,7 +2959,12 @@ public class Remote implements Comparable< Remote >
     return startReadOnlySettings;
   }
 
-  public Hashtable< String, PauseParameters > pauseParameters = new Hashtable< String, PauseParameters >();
+  private Hashtable< String, PauseParameters > pauseParameters = new Hashtable< String, PauseParameters >();
+
+  public Hashtable< String, PauseParameters > getPauseParameters()
+  {
+    return pauseParameters;
+  }
 
   private short[] powerButtons = new short[ 0 ];
 

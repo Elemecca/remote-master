@@ -65,6 +65,15 @@ public class KeyMoveDialog extends JDialog implements ActionListener, ItemListen
 
     return dialog.keyMove;
   }
+  
+  public static void reset()
+  {
+    if ( dialog != null )
+    {
+      dialog.dispose();
+      dialog = null;
+    }
+  }
 
   /**
    * Instantiates a new key move dialog.

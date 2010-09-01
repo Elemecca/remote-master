@@ -27,6 +27,12 @@ Changes for v2.00
 - Add transient, user controlled ignore field to learned signal decodes (Greg)
 - Implement Setup Code Validation (Graham)
 - Resolve an issue with Device Upgrade Editor that caused, among other things, the OK and Cancel buttons to have the same effect (Graham)
+- Implement Code Selector (Graham)
+- Create user-friendly interface for Pause Special Protocol, implementing the PauseParams entry in RDF [General] section (Graham)
+- Commented out the entry in protocols.ini for "Panasonic Combo (flawed)", as it contains no code entries (Graham)
+- Corrected a bug present since v1.99preview3, an oversight caused by the introduction of Device Button Notes that caused Save As, when following a download, to give empty .rmir file (Graham)
+- Disable Save action after a download (Graham)
+- Allow execution to continue when base address in .ir file and RDF differ, as the .ir file is probably a raw download (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

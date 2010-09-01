@@ -62,9 +62,9 @@ public class DSMFunction extends SpecialProtocolFunction
    * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#getType()
    */
-  public String getType()
+  public String getType( RemoteConfiguration remoteConfig )
   {
-    return "DSM";
+    return getUserFunctions( remoteConfig )[ 0 ];
   }
 
   /*

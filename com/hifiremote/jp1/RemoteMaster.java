@@ -94,6 +94,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   private RMAction newAction = null;
   private RMAction newUpgradeAction = null;
+  
+  private RMAction codesAction = null;
 
   /** The open item. */
   private RMAction openAction = null;
@@ -199,6 +201,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JProgressBar learnedProgressBar = null;
   
   private boolean hasInvalidCodes = false;
+  
+  private CodeSelectorDialog codeSelectorDialog = null;
+  
+  private TextFileViewer rdfViewer = null;
 
   private class RMAction extends AbstractAction
   {
@@ -322,6 +328,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
           io.closeRemote();
           remoteConfig.parseData();
+          saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
           uploadAction.setEnabled( true );
           update();
@@ -408,7 +415,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         else if ( command == "OPENRDF" )
         {
           String title = "View/Edit RDF";
-          TextFileViewer.showFile( RemoteMaster.this, remoteConfig.getRemote().getFile(), title, false );
+          rdfViewer = TextFileViewer.showFile( RemoteMaster.this, remoteConfig.getRemote().getFile(), title, false );
+        }
+        else if ( command == "OPENCODES" )
+        {
+          codeSelectorDialog = CodeSelectorDialog.showDialog( RemoteMaster.this );
+          codeSelectorDialog.enableAssign( currentPanel == generalPanel );
         }
       }
       catch ( Exception ex )
@@ -617,6 +629,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       pack();
     }
+    currentPanel = generalPanel;
     setVisible( true );
   }
 
@@ -874,6 +887,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         null );
     openRdfAction.setEnabled( false );
     toolBar.add( openRdfAction );
+    
+    codesAction = new RMAction( "Code Selector...", "OPENCODES", createIcon( "RMCodes24" ), "Open Code Selector",
+        null );
+    codesAction.setEnabled( false );
+    toolBar.add( codesAction );
 
     uploadWavItem = new JMenuItem( "Create WAV", KeyEvent.VK_W );
     uploadWavItem.setEnabled( false );
@@ -1543,6 +1561,25 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       learnedPanel.set( remoteConfig );
     }
+    
+    codesAction.setEnabled( remote.getSetupCodes().size() > 0 );
+    if ( codeSelectorDialog != null )
+    {
+      if ( codeSelectorDialog.isDisplayable() )
+      {
+        codeSelectorDialog.dispose();
+      }
+      codeSelectorDialog = null;
+    }
+    
+    if ( rdfViewer != null )
+    {
+      if ( rdfViewer.isDisplayable() )
+      {
+        rdfViewer.dispose();
+      }
+      rdfViewer = null;
+    }
 
     updateUsage();
 
@@ -1899,6 +1936,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       newPanel.set( remoteConfig );
       currentPanel = newPanel;
     }
+    if ( codeSelectorDialog != null )
+    {
+      codeSelectorDialog.enableAssign( currentPanel == generalPanel );
+    }
   }
 
   private int getTabIndex( Component c )
@@ -1927,7 +1968,5 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     return devicePanel;
   }
-  
-  
 
 }

@@ -61,9 +61,9 @@ public class ModeNameFunction extends SpecialProtocolFunction
    * 
    * @see com.hifiremote.jp1.SpecialProtocolFunction#getType()
    */
-  public String getType()
+  public String getType( RemoteConfiguration remoteConfig )
   {
-    return "ModeName";
+    return getUserFunctions( remoteConfig )[ 0 ];
   }
 
   /*
