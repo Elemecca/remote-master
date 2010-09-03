@@ -62,7 +62,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public int getColumnCount()
   {
-    int count = 4;
+    int count = 7;
 
     if ( remoteConfig != null )
     {
@@ -78,9 +78,9 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   public int getEffectiveColumn( int col )
   {
     if ( ( remoteConfig == null || remoteConfig != null && remoteConfig.getRemote().getDeviceUpgradeAddress() == null )
-        && col == 3 )
+        && col >= 3 )
     {
-      return 5;
+      return col + 2;
     }
     return col;
   }
@@ -89,7 +89,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private static final String[] colNames =
   {
       "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "<html>Specific to<br>Device Button</html>",
-      "<html>Available on<br>Other Buttons?</html>", "Description"
+      "<html>Available on<br>Other Buttons?</html>", "PID", "Variant", "Protocol Name", "Description"
   };
 
   /*
@@ -106,7 +106,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "A long description"
+      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "0000_", "Variant", "Panasonic Mixed Combo__", "A long description"
   };
 
   /*
@@ -128,7 +128,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   @Override
   public boolean isColumnWidthFixed( int col )
   {
-    if ( getEffectiveColumn( col ) < 5 )
+    if ( getEffectiveColumn( col ) < 7 )
     {
       return true;
     }
@@ -141,7 +141,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, String.class
+      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, 
+      String.class, String.class, String.class, String.class
   };
 
   /*
@@ -163,7 +164,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( col >= 3 )
+    if ( col == 3 || col == 4 || col == 8 )
     {
       return true;
     }
@@ -191,6 +192,12 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 4:
         return device.getButtonIndependent();
       case 5:
+        return device.getProtocol().getID().toString();
+      case 6:
+        return device.getProtocol().getVariantName();
+      case 7:
+        return device.getProtocol().getName();        
+      case 8:
         return device.getDescription();
     }
     return null;
@@ -215,7 +222,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         device.setButtonIndependent( ( Boolean )value );
         propertyChangeSupport.firePropertyChange( "device", null, null );
         break;
-      case 5:
+      case 8:
         device.setDescription( ( String )value );
         break;
     }
@@ -245,7 +252,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
-      case 5:
+      case 8:
         return descriptionEditor;
     }
     return null;

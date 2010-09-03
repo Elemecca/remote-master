@@ -33,6 +33,7 @@ Changes for v2.00
 - Corrected a bug present since v1.99preview3, an oversight caused by the introduction of Device Button Notes that caused Save As, when following a download, to give empty .rmir file (Graham)
 - Disable Save action after a download (Graham)
 - Allow execution to continue when base address in .ir file and RDF differ, as the .ir file is probably a raw download (Graham)
+- Add display of protocol ID, variant and name to Devices tab (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
