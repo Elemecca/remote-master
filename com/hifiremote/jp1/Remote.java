@@ -1057,9 +1057,12 @@ public class Remote implements Comparable< Remote >
     }
     
     // Set values for RAMAddr for processors where it does not need to be specified
-    if ( processorName.equals( "S3C80" ) && RAMAddress != 0xFF00 && RAMAddress !=0x8000 )
+    if ( processorName.equals( "S3C80" ) )
     {
-      RAMAddress = 0x8000;  // No other values are allowed than 0xFF00 and the default 0x8000
+      if ( RAMAddress != 0xFF00 && RAMAddress !=0x8000 )
+      {
+        RAMAddress = 0x8000;  // No other values are allowed than 0xFF00 and the default 0x8000
+      }
     }
     else if ( processorName.equals( "S3F80" ) )
     {
