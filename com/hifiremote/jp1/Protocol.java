@@ -654,6 +654,27 @@ public class Protocol
     }
     return rc;
   }
+  
+  public int getOEMParmVariance( Value[] vals )
+  {
+    int index = 0;
+    for ( int i = 0; i < devParms.length; i++ )
+    {
+      String parmName = devParms[ i ].getName().toUpperCase();
+      if ( parmName.startsWith( "OEM" ) || parmName.startsWith( "PARM" ) )
+      {
+        
+        if ( ( vals[ i ].getValue() instanceof Integer )
+            && ( devParms[ i ].getDefaultValue().value() instanceof Integer ) )
+        {
+          Integer userValue = ( Integer )vals[ i ].getValue();
+          Integer defaultValue = ( Integer )devParms[ i ].getDefaultValue().value();
+          index += Math.abs(  userValue.intValue() - defaultValue.intValue() );
+        } 
+      }          
+    }    
+    return index;    
+  }
 
   /**
    * Gets the default cmd.

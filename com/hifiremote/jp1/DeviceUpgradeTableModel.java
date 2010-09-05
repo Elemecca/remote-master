@@ -89,7 +89,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private static final String[] colNames =
   {
       "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "<html>Specific to<br>Device Button</html>",
-      "<html>Available on<br>Other Buttons?</html>", "PID", "Variant", "Protocol Name", "Description"
+      "<html>Available on<br>Other Buttons?</html>", "PID", "Variant", "Protocol", "Description"
   };
 
   /*
@@ -142,7 +142,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private static final Class< ? >[] colClasses =
   {
       Integer.class, String.class, SetupCode.class, String.class, Boolean.class, 
-      String.class, String.class, String.class, String.class
+      String.class, String.class, Protocol.class, String.class
   };
 
   /*
@@ -196,7 +196,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 6:
         return device.getProtocol().getVariantName();
       case 7:
-        return device.getProtocol().getName();        
+        return device.getProtocol();        
       case 8:
         return device.getDescription();
     }

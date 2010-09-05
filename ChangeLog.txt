@@ -34,6 +34,7 @@ Changes for v2.00
 - Disable Save action after a download (Graham)
 - Allow execution to continue when base address in .ir file and RDF differ, as the .ir file is probably a raw download (Graham)
 - Add display of protocol ID, variant and name to Devices tab (Graham)
+- Improve identification of raw protocols by checking variance of OEM and Parm device parameters from default values (Graham) 
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

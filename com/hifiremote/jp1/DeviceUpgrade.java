@@ -886,6 +886,15 @@ public class DeviceUpgrade
           tentative = p;
           tentativeVals = vals;
         }
+        if ( tentative != null && pCode != null 
+            && getCode( p ).equals( getCode( tentative ) )
+            && p.getOEMParmVariance( vals ) < tentative.getOEMParmVariance( vals ) )
+        {
+          System.err.println( String.format( "Protocols are identical but better match on OEM or Parm parameters " +
+              "(variance %d instead of %d)", p.getOEMParmVariance( vals ), tentative.getOEMParmVariance( vals ) ) );
+          tentative = p;
+          tentativeVals = vals;
+        }
       }
     }
 
