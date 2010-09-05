@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -198,6 +199,23 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       if ( select )
         table.setRowSelectionInterval( rowNew, rowNew );
     }
+    // If new upgrade uses an upgrade protocol not previously used, delete that protocol
+    // from the list of unused protocols.
+    
+    ProtocolUpgrade puUsed = null;
+    for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
+    {
+      if ( pu.getPid() == newUpgrade.getProtocol().getID().get( 0 ) )
+      {
+        puUsed = pu;
+        break;
+      }
+    }
+    if ( puUsed != null )
+    {
+      remoteConfig.getProtocolUpgrades().remove( puUsed );
+    }
+    
   }
   
   public DeviceUpgradeEditor getDeviceUpgradeEditor()

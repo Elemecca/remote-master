@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import javax.swing.SwingUtilities;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class ProtocolUpgradePanel.
@@ -25,6 +27,7 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
   {
     ( ( ProtocolUpgradeTableModel )model ).set( remoteConfig );
     table.initColumns( model );
+    this.remoteConfig = remoteConfig;
   }
 
   /*
@@ -34,6 +37,47 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
    */
   public ProtocolUpgrade createRowObject( ProtocolUpgrade baseUpgrade )
   {
+    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+    ManualProtocol mp = null;
+    if ( baseUpgrade == null )
+    {      
+      mp = new ManualProtocol( null, null );
+    }
+    else 
+    {
+      int pid = baseUpgrade.getPid();
+      short[] hex = new short[ 2 ];
+      hex[ 0 ] = ( short )( pid / 0x100 );
+      hex[ 1 ] = ( short )( pid % 0x100 );
+
+      Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote(
+          remoteConfig.getRemote(), new Hex( hex ), true );
+      if ( p != null && ( p instanceof ManualProtocol ) )
+      {
+        mp = ( ManualProtocol )p;
+      }
+      else
+      {
+        return null;
+      }
+    }
+    
+    ManualSettingsDialog d = new ManualSettingsDialog( rm, mp );
+    d.setVisible( true );
+    mp = d.getProtocol();
+    if ( mp != null )
+    {
+      mp.setName( "Manual Settings: " + mp.getID().toString() );
+      ProtocolManager.getProtocolManager().add( mp );
+      ProtocolUpgrade pu = new ProtocolUpgrade( mp.getID().get( 0 ), 
+          mp.getCode( remoteConfig.getRemote() ), null);
+      return pu;
+    }
+
     return null;
   }
+
+  private RemoteConfiguration remoteConfig = null;
 }
+
+

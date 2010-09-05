@@ -164,9 +164,16 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   @Override
   public boolean isCellEditable( int row, int col )
   {
+    col = getEffectiveColumn( col );
     if ( col == 3 || col == 4 || col == 8 )
     {
       return true;
+    }
+    else if ( col == 7 )
+    {
+      Protocol p = getRow( row ).getProtocol();
+      return ( p instanceof ManualProtocol );
+      
     }
     return false;
   }
@@ -222,6 +229,10 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         device.setButtonIndependent( ( Boolean )value );
         propertyChangeSupport.firePropertyChange( "device", null, null );
         break;
+      case 7:
+        device.setProtocol( ( Protocol )value );
+        propertyChangeSupport.firePropertyChange( "device", null, null );
+        break;
       case 8:
         device.setDescription( ( String )value );
         break;
@@ -252,6 +263,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
+      case 7:
+        return manualSettingsEditor;        
       case 8:
         return descriptionEditor;
     }
@@ -321,6 +334,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private RemoteConfiguration remoteConfig = null;
 
   private SelectAllCellEditor descriptionEditor = new SelectAllCellEditor();
+  
+  private ManualSettingsEditor manualSettingsEditor = new ManualSettingsEditor();
 
   private JComboBox deviceButtonBox = new JComboBox();
 }

@@ -1990,7 +1990,7 @@ public class RemoteConfiguration
     // Also get address range for device specific upgrades, which will be null
     // if these are not used by the remote.
     AddressRange devAddr = remote.getDeviceUpgradeAddress();
-    if ( addr == null || devAddr == null )
+    if ( addr == null && devAddr == null )
     {
       return;
     }

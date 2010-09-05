@@ -68,6 +68,7 @@ Changes for v1.99
 - Improved the readability of text strings on the Progress Bars (Graham)
 - Improved the representation of internal Special Protocols in .rmir files (Graham)
 - Implemented Fav/Scan (Graham)
+- Added facility to import and edit protocols from ProtocolBuilder (Graham) 
 
 Changes for v1.99preview5
 - Device Upgrade Editor: enable maximize
