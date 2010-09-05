@@ -1017,9 +1017,11 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       e.printStackTrace( System.err );
     }
-    chooser.setFileFilter( new EndingFileFilter( "All device upgrade files", anyEndings ) );
+    EndingFileFilter filter = new EndingFileFilter( "All device upgrade files", anyEndings );
+    chooser.addChoosableFileFilter( filter );
     chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files", kmEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files", rmEndings ) );
+    chooser.setFileFilter( filter );
 
     int returnVal = chooser.showOpenDialog( this );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )

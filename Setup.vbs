@@ -32,11 +32,11 @@ End If
 sJavaw = WshShell.RegRead("HKLM\SOFTWARE\JavaSoft\Java Runtime Environment\1.6\JavaHome") & "\bin\javaw.exe"
 
 if objFs.FileExists( sJavaw ) Then 
-	sRunRM = """" & sJavaw & """ -jar """ & sCurrDir & "\RemoteMaster.jar"" -h """ & sCurrDir & """"
-	sRunRMIR = sRunRM & " -ir" 
+	sRunRMIR = """" & sJavaw & """ -jar """ & sCurrDir & "\RemoteMaster.jar"" -h """ & sCurrDir & """"
+	sRunRM = sRunRM & " -rm" 
 
-	call makeShortcut( sRMFolder & "\Remote Master.LNK", sJavaw,                               "-jar RemoteMaster.jar",     "RemoteMaster", sCurrDir & "\RM.ICO",   sCurrDir )
-	call makeShortcut( sRMFolder & "\RMIR.LNK",          sJavaw,                               "-jar RemoteMaster.jar -ir", "RMIR",         sCurrDir & "\RMIR.ICO", sCurrDir )
+	call makeShortcut( sRMFolder & "\Remote Master.LNK", sJavaw,                               "-jar RemoteMaster.jar -rm",     "RemoteMaster", sCurrDir & "\RM.ICO",   sCurrDir )
+	call makeShortcut( sRMFolder & "\RMIR.LNK",          sJavaw,                               "-jar RemoteMaster.jar", "RMIR",         sCurrDir & "\RMIR.ICO", sCurrDir )
 	call makeShortcut( sRMFolder & "\Read Me.LNK",       sCurrDir & "\Readme.html",            "",                          "Read Me",      Null,                   sCurrDir )
 	call makeShortcut( sRMFolder & "\Tutorial.LNK",      sCurrDir & "\tutorial\tutorial.html", "",                          "Tutorial",     Null,                   sCurrDir & "\tutorial" )
 

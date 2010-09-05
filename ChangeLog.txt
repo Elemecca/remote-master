@@ -34,6 +34,10 @@ Changes for v2.00
 - Disable Save action after a download (Graham)
 - Allow execution to continue when base address in .ir file and RDF differ, as the .ir file is probably a raw download (Graham)
 - Add display of protocol ID, variant and name to Devices tab (Graham)
+- Add link to Wiki in About > Help (Greg)
+- Load IR file: maintain correct notes when invalid, empty device upgrade discarded (Greg)
+- Launch RM directly from RM icon (Run Setup.vbs to create/update the shortcuts)
+- Add .rmdu as well as .rmir files to RMIR's recent file list
 - Improve identification of raw protocols by checking variance of OEM and Parm device parameters from default values (Graham) 
 
 Changes for v1.99b

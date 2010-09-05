@@ -81,7 +81,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.00-preview3";
+  public final static String version = "v2.00-preview4";
 
   /** The dir. */
   private File dir = null;
@@ -94,7 +94,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   private RMAction newAction = null;
   private RMAction newUpgradeAction = null;
-  
+
   private RMAction codesAction = null;
 
   /** The open item. */
@@ -147,7 +147,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem homePageItem = null;
 
   private JMenuItem learnedSignalItem = null;
-  
+
   private JMenuItem wikiItem = null;
 
   private JMenuItem forumItem = null;
@@ -199,11 +199,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The learned progress bar. */
   private JProgressBar learnedProgressBar = null;
-  
+
   private boolean hasInvalidCodes = false;
-  
+
   private CodeSelectorDialog codeSelectorDialog = null;
-  
+
   private TextFileViewer rdfViewer = null;
 
   private class RMAction extends AbstractAction
@@ -252,13 +252,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         else if ( command.equals( "SAVE" ) )
         {
-          if ( ! allowSave( Remote.SetupValidation.WARN ) ) return;
+          if ( !allowSave( Remote.SetupValidation.WARN ) )
+          {
+            return;
+          }
           remoteConfig.save( file );
         }
         else if ( command.equals( "SAVEAS" ) )
         {
-          if ( ! allowSave( Remote.SetupValidation.WARN ) ) return;         
-          saveAs();  
+          if ( !allowSave( Remote.SetupValidation.WARN ) )
+          {
+            return;
+          }
+          saveAs();
         }
         else if ( command.equals( "DOWNLOAD" ) )
         {
@@ -336,7 +342,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         else if ( command.equals( "UPLOAD" ) )
         {
           Remote remote = remoteConfig.getRemote();
-          if ( ! allowSave( remote.getSetupValidation() ) ) return;
+          if ( !allowSave( remote.getSetupValidation() ) )
+          {
+            return;
+          }
           IO io = getOpenInterface();
           if ( io == null )
           {
@@ -474,10 +483,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
           Rectangle bounds = getBounds();
           properties
-          .setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
+              .setProperty( "RMBounds", "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
 
           properties.save();
-          
+
           if ( generalPanel.getDeviceUpgradeEditor() != null )
           {
             generalPanel.getDeviceUpgradeEditor().dispose();
@@ -887,9 +896,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         null );
     openRdfAction.setEnabled( false );
     toolBar.add( openRdfAction );
-    
-    codesAction = new RMAction( "Code Selector...", "OPENCODES", createIcon( "RMCodes24" ), "Open Code Selector",
-        null );
+
+    codesAction = new RMAction( "Code Selector...", "OPENCODES", createIcon( "RMCodes24" ), "Open Code Selector", null );
     codesAction.setEnabled( false );
     toolBar.add( codesAction );
 
@@ -1080,6 +1088,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     dir = file.getParentFile();
     properties.setProperty( "IRPath", dir );
 
+    if ( ext.equals( ".rmdu" ) || ext.equals( ".rmir" ) )
+    {
+      updateRecentFiles( file );
+
+    }
+
     if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ) )
     {
       KeyMapMaster km = new KeyMapMaster( properties );
@@ -1087,41 +1101,42 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       return null;
     }
 
+    if ( ext.equals( ".xml" ) )
+    {
+      List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( "XMLLEARN" );
+      if ( remotes.isEmpty() )
+      {
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
+            "The RDF for XML Slingbox Learns was not found.  Please place it in the RDF folder and try again.",
+            "Missing RDF File", JOptionPane.ERROR_MESSAGE );
+        return null;
+      }
+      Remote remote = remotes.get( 0 );
+      remote.load();
+      remoteConfig = new RemoteConfiguration( remote );
+      remoteConfig.initializeSetup();
+      remoteConfig.updateImage();
+      remoteConfig.setDateIndicator();
+      remoteConfig.setSavedData();
+      SlingLearnParser.parse( file, remoteConfig );
+      remoteConfig.updateImage();
+      update();
+      saveAction.setEnabled( false );
+      saveAsAction.setEnabled( true );
+      uploadAction.setEnabled( !interfaces.isEmpty() );
+      openRdfAction.setEnabled( true );
+      return null;
+    }
+
     if ( ext.equals( ".rmir" ) )
     {
-      updateRecentFiles( file );
       saveAction.setEnabled( true );
       saveAsAction.setEnabled( true );
       openRdfAction.setEnabled( true );
     }
     else
+    // ext.equals( ".ir" )
     {
-      if ( ext.equals( ".xml" ) )
-      {
-        List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( "XMLLEARN" );
-        if ( remotes.isEmpty() )
-        {
-          JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
-              "The RDF for XML Slingbox Learns was not found.  Please place it in the RDF folder and try again.",
-              "Missing RDF File", JOptionPane.ERROR_MESSAGE );
-          return null;
-        }
-        Remote remote = remotes.get( 0 );
-        remote.load();
-        remoteConfig = new RemoteConfiguration( remote );
-        remoteConfig.initializeSetup();
-        remoteConfig.updateImage();
-        remoteConfig.setDateIndicator();
-        remoteConfig.setSavedData();
-        SlingLearnParser.parse( file, remoteConfig );
-        remoteConfig.updateImage();
-        update();
-        saveAction.setEnabled( false );
-        saveAsAction.setEnabled( true );
-        uploadAction.setEnabled( !interfaces.isEmpty() );
-        openRdfAction.setEnabled( true );
-        return null;
-      }
       saveAction.setEnabled( false );
       saveAsAction.setEnabled( true );
       openRdfAction.setEnabled( true );
@@ -1561,7 +1576,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       learnedPanel.set( remoteConfig );
     }
-    
+
     codesAction.setEnabled( remote.getSetupCodes().size() > 0 );
     if ( codeSelectorDialog != null )
     {
@@ -1571,7 +1586,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       codeSelectorDialog = null;
     }
-    
+
     if ( rdfViewer != null )
     {
       if ( rdfViewer.isDisplayable() )
@@ -1685,25 +1700,23 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     updateUsage();
     hasInvalidCodes = generalPanel.setWarning();
   }
-  
+
   private boolean allowSave( Remote.SetupValidation setupValidation )
   {
-    if ( ! hasInvalidCodes )
+    if ( !hasInvalidCodes )
     {
       return true;
     }
     String title = "Setup codes";
     if ( setupValidation == Remote.SetupValidation.WARN )
     {
-      String message = "The current setup contains invalid device codes.\n" +
-      "Are you sure you wish to continue?";
+      String message = "The current setup contains invalid device codes.\n" + "Are you sure you wish to continue?";
       return JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION ) == JOptionPane.YES_OPTION;
     }
     else if ( setupValidation == Remote.SetupValidation.ENFORCE )
     {
-      String message = "The current setup contains invalid device codes\n" +
-      "which would cause this remote to malfunction.\n" + 
-      "Please correct these codes and try again.";
+      String message = "The current setup contains invalid device codes\n"
+          + "which would cause this remote to malfunction.\n" + "Please correct these codes and try again.";
       JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
     }
     return false;
@@ -1722,7 +1735,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       File workDir = new File( System.getProperty( "user.dir" ) );
       File propertiesFile = null;
       File fileToOpen = null;
-      boolean launchRM = false;
+      boolean launchRM = true;
       for ( int i = 0; i < args.size(); ++i )
       {
         String parm = args.get( i );
@@ -1831,21 +1844,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       DigitMaps.load( new File( workDir, "digitmaps.bin" ) );
 
-      // if ( launchRM )
-      // {
-      RemoteMaster rm = new RemoteMaster( workDir, properties );
-      if ( fileToOpen != null )
+      if ( launchRM )
       {
-        rm.openFile( fileToOpen );
+        RemoteMaster rm = new RemoteMaster( workDir, properties );
+        if ( fileToOpen != null )
+        {
+          rm.openFile( fileToOpen );
+        }
+        frame = rm;
       }
-      frame = rm;
-      // }
-      // else
-      // {
-      // KeyMapMaster km = new KeyMapMaster( properties );
-      // km.loadUpgrade( fileToOpen );
-      // frame = km;
-      // }
+      else
+      {
+        KeyMapMaster km = new KeyMapMaster( properties );
+        km.loadUpgrade( fileToOpen );
+        frame = km;
+      }
     }
     catch ( Exception e )
     {
