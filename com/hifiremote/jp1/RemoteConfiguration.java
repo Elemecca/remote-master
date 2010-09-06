@@ -1689,7 +1689,8 @@ public class RemoteConfiguration
       }
 
       short[] pidHex = new short[ 2 ];
-      pidHex[ 0 ] = ( short )( pid > 0xFF ? 1 : 0 );
+//      pidHex[ 0 ] = ( short )( pid > 0xFF ? 1 : 0 );
+      pidHex[ 0 ] = ( short )( pid >> 8 ); // pids can now be > 0x1FF
       pidHex[ 1 ] = ( short )( pid & 0xFF );
 
       DeviceUpgrade upgrade = new DeviceUpgrade();

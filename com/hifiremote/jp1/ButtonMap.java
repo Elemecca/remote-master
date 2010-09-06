@@ -153,9 +153,6 @@ public class ButtonMap
     int mask = 0x80;
     for ( int i = 0; i < buttons.length; i++ )
     {
-      if ( bitMap[ offset ] == 1 )
-        return rc;
-
       boolean useIt = (( bitMap[ offset ] & mask ) != 0 );
       if ( useIt )
       {
@@ -166,8 +163,15 @@ public class ButtonMap
       mask >>= 1;
       if ( mask == 1 )
       {
-        mask = 0x80;
-        offset++;
+        if ( ( bitMap[ offset ] & mask ) == 1 )
+        {
+          return rc;
+        }
+        else
+        {
+          mask = 0x80;
+          offset++;
+        }
       }
     }
     return rc;

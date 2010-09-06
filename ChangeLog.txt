@@ -38,7 +38,9 @@ Changes for v2.00
 - Load IR file: maintain correct notes when invalid, empty device upgrade discarded (Greg)
 - Launch RM directly from RM icon (Run Setup.vbs to create/update the shortcuts)
 - Add .rmdu as well as .rmir files to RMIR's recent file list
-- Improve identification of raw protocols by checking variance of OEM and Parm device parameters from default values (Graham) 
+- Improve identification of raw protocols by checking variance of OEM and Parm device parameters from default values (Graham)
+- Correct bug in reading of device upgrade button maps which caused spurious buttons to be treated as mapped (Graham)
+- Correct bug that would cause error with pids > $01FF (Graham) 
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
