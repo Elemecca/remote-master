@@ -41,6 +41,7 @@ Changes for v2.00
 - Improve identification of raw protocols by checking variance of OEM and Parm device parameters from default values (Graham)
 - Correct bug in reading of device upgrade button maps which caused spurious buttons to be treated as mapped (Graham)
 - Correct bug that would cause error with pids > $01FF (Graham) 
+- Added facility to import and edit protocols from ProtocolBuilder (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
@@ -70,7 +71,7 @@ Changes for v1.99
 - Improved the readability of text strings on the Progress Bars (Graham)
 - Improved the representation of internal Special Protocols in .rmir files (Graham)
 - Implemented Fav/Scan (Graham)
-- Added facility to import and edit protocols from ProtocolBuilder (Graham) 
+- Fix Setup.vbs for 64-bit Windows
 
 Changes for v1.99preview5
 - Device Upgrade Editor: enable maximize
