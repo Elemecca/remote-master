@@ -40,7 +40,9 @@ Changes for v2.00
 - Add .rmdu as well as .rmir files to RMIR's recent file list
 - Improve identification of raw protocols by checking variance of OEM and Parm device parameters from default values (Graham)
 - Correct bug in reading of device upgrade button maps which caused spurious buttons to be treated as mapped (Graham)
-- Correct bug that would cause error with pids > $01FF (Graham) 
+- Correct bug that would cause error with pids > $01FF (Graham)
+- When changing device button assignment from a device upgrade with key moves, ask if user wants to retain the key moves (Graham)
+- Show key moves of device upgrades on key move tab, as grayed out and not editable (Graham)
 - Added facility to import and edit protocols from ProtocolBuilder (Graham)
 
 Changes for v1.99b

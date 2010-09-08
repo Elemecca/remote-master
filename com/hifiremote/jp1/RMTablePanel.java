@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
@@ -66,7 +67,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     table.setSurrendersFocusOnKeystroke( true );
     table.getTableHeader().setToolTipText(
         "Click to sort in ascending order, or shift-click to sort in descending order." );
-    table.addMouseListener( new MouseAdapter()
+    
+    openEditor = new MouseAdapter()
     {
       @Override
       public void mouseClicked( MouseEvent e )
@@ -85,7 +87,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
           editRowObject( row );
         }
       }
-    } );
+    } ;
+    table.addMouseListener( openEditor );
 
     popup = new JPopupMenu();
     editItem = new JMenuItem( "Edit" );
@@ -554,7 +557,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   protected JPanel footerPanel = null;
 
   /** The edit button. */
-  private JButton editButton = null;
+  protected JButton editButton = null;
 
   /** The new button. */
   protected JButton newButton = null;
@@ -563,13 +566,13 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   protected JButton cloneButton = null;
 
   /** The delete button. */
-  private JButton deleteButton = null;
+  protected JButton deleteButton = null;
 
   /** The up button. */
-  private JButton upButton = null;
+  protected JButton upButton = null;
 
   /** The down button. */
-  private JButton downButton = null;
+  protected JButton downButton = null;
 
   /** The popup row. */
   private int popupRow = 0;
@@ -590,4 +593,6 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   private JMenuItem deleteItem = null;
 
   private JMenuItem copyItem = null;
+  
+  public MouseListener openEditor = null;
 }

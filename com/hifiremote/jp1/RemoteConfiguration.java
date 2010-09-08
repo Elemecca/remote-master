@@ -2463,6 +2463,11 @@ public class RemoteConfiguration
     return keymoves;
   }
 
+  public void setKeyMoves( List< KeyMove > keymoves )
+  {
+    this.keymoves = keymoves;
+  }
+
   /**
    * Gets the macros.
    * 

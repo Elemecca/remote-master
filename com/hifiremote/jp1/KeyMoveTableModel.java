@@ -1,8 +1,14 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.util.ArrayList;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -29,10 +35,28 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   {
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
-    {
+    {      
       Remote remote = remoteConfig.getRemote();
+      allKeyMoves = new ArrayList< KeyMove >( remoteConfig.getKeyMoves() );
+      DeviceButton[] deviceButtons = remote.getDeviceButtons();
+      short[] remoteData = remoteConfig.getData();
+      upgradeKeyMoveCount = 0;
+      for ( int i = 0; i < deviceButtons.length; i++ )
+      {
+        DeviceButton db = deviceButtons[ i ];
+        DeviceUpgrade du = remoteConfig.findDeviceUpgrade( db.getDeviceTypeIndex( remoteData ), db.getSetupCode( remoteData ) );
+        if ( du != null )
+        {
+          for ( KeyMove keyMove : du.getKeyMoves() )
+          {
+            keyMove.setDeviceButtonIndex( i );
+            allKeyMoves.add( keyMove );
+            upgradeKeyMoveCount++;
+          }
+        }
+      }
 
-      setData( remoteConfig.getKeyMoves() );
+      setData( allKeyMoves );
       deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
@@ -139,6 +163,10 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   @Override
   public boolean isCellEditable( int row, int col )
   {
+    if ( row >=  remoteConfig.getKeyMoves().size() )
+    {
+      return false;
+    }
     if ( col == 0 || col > 4 && col < 8 )
     {
       return false;
@@ -288,7 +316,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       return keyRenderer;
     }
 
-    return null;
+    return kmRenderer;
   }
 
   /** The remote config. */
@@ -301,10 +329,54 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private JComboBox deviceTypeBox = new JComboBox();
 
   /** The key renderer. */
-  private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
+  private KeyCodeRenderer keyRenderer = new KeyCodeRenderer()
+  {
+    @Override
+    public Component getTableCellRendererComponent( JTable table, Object value, 
+        boolean isSelected, boolean hasFocus,
+        int row, int col )
+    {
+      int modelRow = sorter.modelIndex( row );
+      Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
+      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? Color.BLACK : Color.GRAY );        
+      return c;
+    }
+  };
+  
+  private DefaultTableCellRenderer kmRenderer = new DefaultTableCellRenderer()
+  {
+    @Override
+    public Component getTableCellRendererComponent( JTable table, Object value, 
+        boolean isSelected, boolean hasFocus,
+        int row, int col )
+    {
+      int modelRow = sorter.modelIndex( row );
+      Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
+      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? Color.BLACK : Color.GRAY ); 
+      return c;
+    }
+  };
+ 
+  public void resetKeyMoves()
+  {
+    java.util.List< KeyMove > keymoves = new ArrayList< KeyMove >();
+    keymoves.addAll( allKeyMoves.subList( 0, allKeyMoves.size() - upgradeKeyMoveCount ) );
+    remoteConfig.setKeyMoves( keymoves );
+  }
+  
+  private int upgradeKeyMoveCount = 0;
+
+  public int getUpgradeKeyMoveCount()
+  {
+    return upgradeKeyMoveCount;
+  }
+  
+  private java.util.List< KeyMove > allKeyMoves = null;
 
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
 
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
+  
+  public TableSorter sorter = null;
 }

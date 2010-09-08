@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -341,20 +342,39 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
     SoftDevices softDevices = remote.getSoftDevices();
-
+    DeviceType oldDevType = null;
+    SetupCode oldSetupCode = null;
+    if ( col == 2 || col == 3 )
+    {
+      oldDevType = ( DeviceType )getValueAt( row, 2 );
+      oldSetupCode = ( SetupCode )getValueAt( row, 3  );
+    }
+    
     if ( col == 2 )
     {
-      DeviceType devType = ( DeviceType )value;
+      DeviceType newDevType = ( DeviceType )value;
+      if ( ! isValidDevice( row, newDevType, oldSetupCode ) )
+      {
+        return;
+      }
+
+      int newIndex = newDevType.getNumber();
+      int newGroup = newDevType.getGroup();
       int oldIndex = getExtendedTypeIndex( row );
       int oldGroup = db.getDeviceGroup( data );
-      int newIndex = devType.getNumber();
-      int newGroup = devType.getGroup();
+      
       DeviceLabels labels = remote.getDeviceLabels();
 
       if ( ( oldIndex == newIndex ) && ( oldGroup == newGroup ) )
       {
         return;
       }
+      
+      if ( isUpgradeWithKeymoves( oldDevType, oldSetupCode, true ) )
+      {
+        preserveKeyMoves( row, oldDevType, oldSetupCode );
+      }
+      
       if ( softHT.inUse() && newIndex == softHT.getDeviceType() )
       {
         db.zeroDeviceSlot( data );
@@ -401,16 +421,28 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     else if ( col == 3 )
     {
-      SetupCode setupCode = null;
+      SetupCode newSetupCode = null;
       if ( value.getClass() == String.class )
       {
-        setupCode = new SetupCode( ( String )value );
+        newSetupCode = new SetupCode( ( String )value );
       }
       else
       {
-        setupCode = ( SetupCode )value;
+        newSetupCode = ( SetupCode )value;
       }
-      db.setSetupCode( ( short )setupCode.getValue(), data );
+      
+      if ( newSetupCode.getValue() == oldSetupCode.getValue() 
+          || ! isValidDevice( row, oldDevType, newSetupCode ) )
+      {
+        return;
+      }
+      
+      if ( isUpgradeWithKeymoves( oldDevType, oldSetupCode, true ) )
+      {
+        preserveKeyMoves( row, oldDevType, oldSetupCode );
+      }
+      
+      db.setSetupCode( ( short )newSetupCode.getValue(), data );
     }
     else if ( col == 4 )
     {
@@ -441,6 +473,69 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       fireTableDataChanged();
     }
     propertyChangeSupport.firePropertyChange( "value", null, null );
+  }
+  
+  private boolean isValidDevice( int row, DeviceType devType, SetupCode setupCode )
+  {
+    Remote remote = remoteConfig.getRemote();
+    DeviceButton db = getRow( row );
+    Button button = remote.getButton( db.getName() );
+
+    if ( isUpgradeWithKeymoves( devType, setupCode, false )
+        && ( ( button != null && ! button.allowsKeyMove() )// case of real device button
+            || ( row > 7 && remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL ) ) ) // case of phantom device button
+    {
+      String message = "Device " + devType.getName() + " " + setupCode.getValue() + 
+      " cannot be assigned to\nbutton " + db.getName() + " as it is an upgrade " +
+      "that contains\nkeymoves";
+      String title = "Device Button Assignment";
+      JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
+      return false;
+    }
+    return true;
+  }
+   
+  private boolean isUpgradeWithKeymoves( DeviceType devType, SetupCode setupCode, boolean ask )
+  {
+    if ( devType != null && setupCode != null )
+    {
+      DeviceUpgrade du = remoteConfig.findDeviceUpgrade( devType.getNumber(), setupCode.getValue() );
+      if ( du != null && du.getKeyMoves().size() > 0 )
+      {
+        if ( ask )
+        {
+          // If user does not wish to preserve keymoves, treat as not having any
+          String message = "The current device " + devType.getName() + " " + setupCode.getValue() + 
+          " contains keymoves.  Do you want to preserve them?";
+          String title = "Device Change";
+          return JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+              JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION;
+        }
+        else
+        {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  
+  private void preserveKeyMoves( int devButtonIndex, DeviceType devType, SetupCode setupCode )
+  {
+    if ( devType == null || setupCode == null )
+    {
+      return;
+    }
+    DeviceUpgrade du = remoteConfig.findDeviceUpgrade( devType.getNumber(), setupCode.getValue() );
+    if ( du == null )
+    {
+      return;
+    }    
+    for ( KeyMove keyMove : du.getKeyMoves() )
+    {
+      keyMove.setDeviceButtonIndex( devButtonIndex );
+      remoteConfig.getKeyMoves().add( keyMove );
+    }
   }
 
   /*

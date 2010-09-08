@@ -1695,10 +1695,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void propertyChange( PropertyChangeEvent event )
   {
-    remoteConfig.checkUnassignedUpgrades();
+    // No need to check unassigned upgrades as keymoves are saved in .rmir file
+    // remoteConfig.checkUnassignedUpgrades();
     remoteConfig.updateImage();
     updateUsage();
     hasInvalidCodes = generalPanel.setWarning();
+    if ( currentPanel == keyMovePanel )
+    {
+      ( ( KeyMoveTableModel )keyMovePanel.getModel() ).resetKeyMoves();
+    }
   }
 
   private boolean allowSave( Remote.SetupValidation setupValidation )
