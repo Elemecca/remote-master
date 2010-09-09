@@ -20,15 +20,15 @@ Sub makeShortcut( lnkFile, path, args, desc, icon, dir )
 End Sub
 
 Sub associate( name, desc, icon, command, ext )
-    call WshShell.RegWrite( "HKEY_CLASSES_ROOT\" & name & "\", desc, "REG_SZ" )
+    call WshShell.RegWrite( "HKEY_CURRENT_USER\Software\Classes\" & name & "\", desc, "REG_SZ" )
     If Err.Number <> 0 Then
         WScript.Echo "Got an error writing to the registry, launching with UAC"
         objShell.ShellExecute "wscript.exe", """" & Wscript.ScriptFullName & """", sCurrDir, "runas", 1 
         WScript.Quit
     End If
-    call WshShell.RegWrite( "HKEY_CLASSES_ROOT\" & name & "\DefaultIcon\", icon, "REG_SZ" )
-    call WshShell.RegWrite( "HKEY_CLASSES_ROOT\" & name & "\Shell\open\command\", command, "REG_SZ" )
-    call WshShell.RegWrite( "HKEY_CLASSES_ROOT\" & ext & "\", name, "REG_SZ" )
+    call WshShell.RegWrite( "HKEY_CURRENT_USER\Software\Classes\" & name & "\DefaultIcon\", icon, "REG_SZ" )
+    call WshShell.RegWrite( "HKEY_CURRENT_USER\Software\Classes\" & name & "\Shell\open\command\", command, "REG_SZ" )
+    call WshShell.RegWrite( "HKEY_CURRENT_USER\Software\Classes\" & ext & "\", name, "REG_SZ" )
 End Sub
 
 sRMFolder = WshShell.SpecialFolders("Programs") & "\Remote Master"
@@ -36,24 +36,33 @@ if Not objFS.FolderExists( sRMFolder ) Then
    objFS.CreateFolder( sRMFolder )
 End If
 
-sJavaw = WshShell.RegRead("HKLM\SOFTWARE\JavaSoft\Java Runtime Environment\1.6\JavaHome") & "\bin\javaw.exe"
+sJavaw = WshShell.RegRead("HKCR\jarfile\shell\open\command\")
 If Err.Number <> 0 Then
-    sJavaw = WshShell.RegRead("HKLM\SOFTWARE\Wow6432Node\JavaSoft\Java Runtime Environment\1.6\JavaHome") & "\bin\javaw.exe"
+	sJavaw = WshShell.RegRead("HKLM\SOFTWARE\JavaSoft\Java Runtime Environment\1.6\JavaHome") & "\bin\javaw.exe"
     If Err.Number <> 0 Then 
-        sJavaw = WshShell.RegRead("HKCR\jarfile\shell\open\command\")
-        iPos = InStr( 1, sJavaw, " -jar" )
-        sJavaw = left( sJavaw, iPos + 6 )
+        sJavaw = WshShell.RegRead("HKLM\SOFTWARE\Wow6432Node\JavaSoft\Java Runtime Environment\1.6\JavaHome") & "\bin\javaw.exe"
     End If
+Else
+    iPos = InStr( 1, sJavaw, """ -jar" )
+    sJavaw = left( sJavaw, iPos - 1 )
+    sJavaw = right( sJavaw, len( sJavaw ) -  1 )
 End If
 
 if objFs.FileExists( sJavaw ) Then 
-	sRunRM = """" & sJavaw & """ -jar """ & sCurrDir & "\RemoteMaster.jar"" -h """ & sCurrDir & """"
-	sRunRMIR = sRunRM & " -ir" 
+	sRunRMIR = """" & sJavaw & """ -jar """ & sCurrDir & "\RemoteMaster.jar"" -h """ & sCurrDir & """"
+	sRunRM = sRunRMIR & " -rm" 
 
-	call makeShortcut( sRMFolder & "\Remote Master.LNK", sJavaw,                               "-jar RemoteMaster.jar",     "RemoteMaster", sCurrDir & "\RM.ICO",   sCurrDir )
-	call makeShortcut( sRMFolder & "\RMIR.LNK",          sJavaw,                               "-jar RemoteMaster.jar -ir", "RMIR",         sCurrDir & "\RMIR.ICO", sCurrDir )
+    'Make shortcuts in the Start menu
+	call makeShortcut( sRMFolder & "\Remote Master.LNK", sJavaw,                               "-jar RemoteMaster.jar -rm", "RemoteMaster", sCurrDir & "\RM.ICO",   sCurrDir )
+	call makeShortcut( sRMFolder & "\RMIR.LNK",          sJavaw,                               "-jar RemoteMaster.jar",     "RMIR",         sCurrDir & "\RMIR.ICO", sCurrDir )
 	call makeShortcut( sRMFolder & "\Read Me.LNK",       sCurrDir & "\Readme.html",            "",                          "Read Me",      Null,                   sCurrDir )
 	call makeShortcut( sRMFolder & "\Tutorial.LNK",      sCurrDir & "\tutorial\tutorial.html", "",                          "Tutorial",     Null,                   sCurrDir & "\tutorial" )
+	
+	'Make shortcuts in the installation folder as well
+	call makeShortcut( sCurrDir & "\Remote Master.LNK", sJavaw,                               "-jar RemoteMaster.jar -rm", "RemoteMaster", sCurrDir & "\RM.ICO",   sCurrDir )
+	call makeShortcut( sCurrDir & "\RMIR.LNK",          sJavaw,                               "-jar RemoteMaster.jar",     "RMIR",         sCurrDir & "\RMIR.ICO", sCurrDir )
+	call makeShortcut( sCurrDir & "\Read Me.LNK",       sCurrDir & "\Readme.html",            "",                          "Read Me",      Null,                   sCurrDir )
+	call makeShortcut( sCurrDir & "\Tutorial.LNK",      sCurrDir & "\tutorial\tutorial.html", "",                          "Tutorial",     Null,                   sCurrDir & "\tutorial" )
 
 	call associate( "RMDeviceUpgrade", "Remote Master Device Upgrade",       sCurrDir & "\RM.ico",   sRunRM & " ""%1""", ".rmdu" )
 	call associate( "RMRemoteConfig",  "Remote Master Remote Configuration", sCurrDir & "\RMIR.ico", sRunRMIR & " ""%1""", ".rmir" )

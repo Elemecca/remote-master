@@ -67,7 +67,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     table.setSurrendersFocusOnKeystroke( true );
     table.getTableHeader().setToolTipText(
         "Click to sort in ascending order, or shift-click to sort in descending order." );
-    
+
     openEditor = new MouseAdapter()
     {
       @Override
@@ -87,7 +87,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
           editRowObject( row );
         }
       }
-    } ;
+    };
     table.addMouseListener( openEditor );
 
     popup = new JPopupMenu();
@@ -292,7 +292,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
       model.setRow( sorter.modelIndex( row ), o );
     }
   }
-  
+
   protected void newRowObject( E baseObject, int row, int modelRow, boolean select )
   {
     E o = createRowObject( baseObject );
@@ -311,9 +311,10 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     }
 
     if ( select )
+    {
       table.setRowSelectionInterval( row, row );
+    }
   }
-
 
   // Interface ActionListener
   /*
@@ -581,7 +582,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   protected JPopupMenu popup = null;
 
   /** The edit item. */
-  private JMenuItem editItem = null;
+  protected JMenuItem editItem = null;
 
   /** The new item. */
   protected JMenuItem newItem = null;
@@ -590,9 +591,9 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   protected JMenuItem cloneItem = null;
 
   /** The delete item. */
-  private JMenuItem deleteItem = null;
+  protected JMenuItem deleteItem = null;
 
   private JMenuItem copyItem = null;
-  
+
   public MouseListener openEditor = null;
 }

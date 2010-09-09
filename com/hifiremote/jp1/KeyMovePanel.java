@@ -52,9 +52,9 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
         }
       }
     } );
-       
+
     table.getSelectionModel().addListSelectionListener( new ListSelectionListener()
-    {      
+    {
       @Override
       public void valueChanged( ListSelectionEvent e )
       {
@@ -68,15 +68,18 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
         if ( row >= limit )
         {
           editButton.setEnabled( false );
+          editItem.setEnabled( false );
           cloneButton.setEnabled( false );
+          cloneItem.setEnabled( false );
           deleteButton.setEnabled( false );
+          deleteItem.setEnabled( false );
           upButton.setEnabled( false );
           downButton.setEnabled( false );
         }
         else if ( row == limit - 1 )
         {
           downButton.setEnabled( false );
-        }      
+        }
       }
     } );
   }
@@ -117,7 +120,7 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
     return KeyMoveDialog.showDialog( ( JFrame )SwingUtilities.getRoot( this ), baseKeyMove,
         ( ( KeyMoveTableModel )model ).getRemoteConfig() );
   }
-  
+
   @Override
   protected void newRowObject( KeyMove baseObject, int row, int modelRow, boolean select )
   {
@@ -136,7 +139,7 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
         row = model.getRowCount();
       }
       else
-      {        
+      {
         model.insertRow( effectiveEnd, km );
         row += 1;
       }
@@ -147,10 +150,12 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
     }
 
     if ( select )
+    {
       table.setRowSelectionInterval( row, row );
+    }
   }
-  
+
   private KeyMovePanel thisPanel = null;
-  
+
   private RemoteConfiguration remoteConfig = null;
 }

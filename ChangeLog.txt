@@ -44,6 +44,8 @@ Changes for v2.00
 - When changing device button assignment from a device upgrade with key moves, ask if user wants to retain the key moves (Graham)
 - Show key moves of device upgrades on key move tab, as grayed out and not editable (Graham)
 - Added facility to import and edit protocols from ProtocolBuilder (Graham)
+- Tentative fix for Setup.vbs on 64-bit Windows 7 (Greg)
+- Disable context menu items for device upgrade keymoves shown on the keymove panel (Greg)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
