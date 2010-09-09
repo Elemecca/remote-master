@@ -636,7 +636,7 @@ public class RemoteConfiguration
     for ( AdvancedCode code : codes )
     {
       String text = code.getNotes();
-      if ( text != null )
+      if ( text != null && !text.trim().isEmpty() )
       {
         out.printf( "$%4X=%s\n", index, exportNotes( text ) );
       }
@@ -663,7 +663,7 @@ public class RemoteConfiguration
     out.println();
     out.println( "[Notes]" );
     // start with the overall notes
-    if ( notes != null )
+    if ( notes != null && !notes.trim().isEmpty() )
     {
       out.println( "$0000=" + exportNotes( notes ) );
     }
@@ -676,48 +676,111 @@ public class RemoteConfiguration
     i = exportAdvancedCodeNotes( specialFunctionKeyMoves, i, out );
     i = exportAdvancedCodeNotes( macros, i, out );
     i = exportAdvancedCodeNotes( specialFunctionMacros, i, out );
+    if ( remote.hasFavKey() && !remote.getFavKey().isSegregated() )
+    {
+      i = exportAdvancedCodeNotes( favScans, i, out );
+    }
+    if ( remote.getMacroCodingType().hasTimedMacros() )
+    {
+      i = exportAdvancedCodeNotes( timedMacros, i, out );
+    }
 
-    // Do the Favs????
+    // Do the timed macros when they are in a separate section
     i = 0x2000;
+    if ( remote.getTimedMacroAddress() != null )
+    {
+      i = exportAdvancedCodeNotes( timedMacros, i, out );
+    }
 
     // Do the device upgrades
     i = 0x3000;
-    for ( DeviceUpgrade device : devices )
+    // Split the device upgrades into separate button-independent and button-
+    // dependent-only lists. An upgrade can occur in only one list.  Sort the
+    // second list into the order in which they will be read by IR.exe.
+    List< DeviceUpgrade > devIndependent = new ArrayList< DeviceUpgrade >();
+    List< DeviceUpgrade > devDependent = new ArrayList< DeviceUpgrade >();
+    for ( DeviceUpgrade dev : devices )
+    {
+      if ( dev.getButtonIndependent() )
+      {
+        devIndependent.add( dev );
+      }
+      else if ( dev.getButtonRestriction() != DeviceButton.noButton )
+      {
+        devDependent.add( dev );
+      }
+    }
+    // Sort button-dependent ones into order in which they are stored in buffer.
+    Collections.sort( devDependent, new DependentUpgradeComparator() ); 
+        
+    // First do the upgrades in the button-independent area    
+    for ( DeviceUpgrade device : devIndependent )
     {
       String text = device.getDescription();
-      if ( text != null )
+      if ( text != null && !text.trim().isEmpty() )
       {
         out.printf( "$%4X=%s\n", i, exportNotes( text ) );
       }
       ++i;
     }
 
-    // Do the protocol upgrades
-    LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
-    for ( DeviceUpgrade dev : devices )
+    // Process button-dependent upgrades in reverse order as they are stored from top downwards
+    for ( int j = devDependent.size() - 1; j >= 0; j-- )
     {
-      Hex pCode = dev.getCode();
-      if ( pCode != null )
+      String text = devDependent.get( j ).getDescription();
+      if ( text != null && !text.trim().isEmpty() )
       {
+        out.printf( "$%4X=%s\n", i, exportNotes( text ) );
+      }
+      ++i;
+    }
+
+    // Get the protocol upgrades in button-independent device upgrades
+    LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
+    for ( DeviceUpgrade dev : devIndependent )
+    {    
+      if ( dev.needsProtocolCode() )
+      {       
+        Hex pCode = dev.getCode();
         Protocol p = dev.getProtocol();
-        Hex pid = p.getID();
+        int pid = p.getID().get( 0 );
         if ( !requiredProtocols.containsKey( pid ) )
         {
-          requiredProtocols.put( pid.get( 0 ), new ProtocolUpgrade( pid.get( 0 ), pCode, p.getName() ) );
+          requiredProtocols.put( pid, new ProtocolUpgrade( pid, pCode, p.getName() ) );
         }
       }
     }
-
+    
+    // Add the protocols not used in any upgrade
     for ( ProtocolUpgrade pu : protocols )
     {
       requiredProtocols.put( pu.getPid(), pu );
     }
+    
+    // Finally add the protocol upgrades from button-dependent section
+//    List< ProtocolUpgrade > protDependent = new ArrayList< ProtocolUpgrade >();
+//    // First get them in the order in which they will be stored top-down
+    for ( int j = devDependent.size() - 1; j >= 0; j-- )
+    {
+      DeviceUpgrade dev = devDependent.get( j );
+      if ( dev.needsProtocolCode() )
+      {       
+        Hex pCode = dev.getCode();
+        Protocol p = dev.getProtocol();
+        int pid = p.getID().get( 0 );
+        if ( !requiredProtocols.containsKey( pid ) )
+        {
+          requiredProtocols.put( pid, new ProtocolUpgrade( pid, pCode, p.getName() ) );
+        }
+      }
+    }    
 
+    // Now write the protocol notes
     i = 0x4000;
     for ( ProtocolUpgrade protocol : requiredProtocols.values() )
     {
       String text = protocol.getNotes();
-      if ( text != null )
+      if ( text != null && !text.trim().isEmpty() )
       {
         out.printf( "$%4X=%s\n", i, exportNotes( text ) );
       }
@@ -729,12 +792,24 @@ public class RemoteConfiguration
     for ( LearnedSignal signal : learned )
     {
       String text = signal.getNotes();
-      if ( text != null )
+      if ( text != null && !text.trim().isEmpty() )
       {
         out.printf( "$%4X=%s\n", i, exportNotes( text ) );
       }
       ++i;
     }
+    
+    // Do the device buttons
+    i = 0x6000;
+    for ( int j = 0; j < deviceButtonNotes.length; j++ )
+    {
+      String text = deviceButtonNotes[ j ];
+      if ( text != null && !text.trim().isEmpty() )
+      {
+        out.printf( "$%4X=%s\n", i + j, exportNotes( text ) );
+      }
+    }
+    
     out.close();
   }
 

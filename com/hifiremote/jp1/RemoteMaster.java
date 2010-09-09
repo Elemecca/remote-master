@@ -336,6 +336,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           remoteConfig.parseData();
           saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
+          exportIRItem.setEnabled( true );
           uploadAction.setEnabled( true );
           update();
         }
@@ -718,11 +719,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.addSeparator();
     toolBar.addSeparator();
 
-    // exportIRItem = new JMenuItem( "Export as IR...", KeyEvent.VK_I );
-    // exportIRItem.setEnabled( false );
-    // exportIRItem.addActionListener( this );
-    // menu.add( exportIRItem );
-    // menu.addSeparator();
+    exportIRItem = new JMenuItem( "Export as IR...", KeyEvent.VK_I );
+    exportIRItem.setEnabled( false );
+    exportIRItem.addActionListener( this );
+    menu.add( exportIRItem );
+    menu.addSeparator();
 
     recentFiles = new JMenu( "Recent" );
     menu.add( recentFiles );
@@ -1141,7 +1142,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       saveAsAction.setEnabled( true );
       openRdfAction.setEnabled( true );
     }
-    // exportIRItem.setEnabled( true );
+    exportIRItem.setEnabled( true );
     uploadAction.setEnabled( !interfaces.isEmpty() );
     remoteConfig = new RemoteConfiguration( file );
     update();
@@ -1217,7 +1218,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( ".rmir" ) )
+      if ( !name.toLowerCase().endsWith( ".rmir" ) && !name.toLowerCase().endsWith( ".ir" ) )
       {
         name = name + ".rmir";
       }
@@ -1238,11 +1239,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       properties.setProperty( "IRPath", dir );
 
       file = newFile;
-      remoteConfig.save( file );
-      setTitleFile( file );
-      updateRecentFiles( file );
-      saveAction.setEnabled( true );
-      // exportIRItem.setEnabled( true );
+      if ( name.toLowerCase().endsWith( ".ir" ) )
+      {
+        remoteConfig.exportIR( file );
+      }
+      else
+      {
+        remoteConfig.save( file );
+        setTitleFile( file );
+        updateRecentFiles( file );
+        saveAction.setEnabled( true );
+      }
+      exportIRItem.setEnabled( true );
       uploadAction.setEnabled( !interfaces.isEmpty() );
     }
   }
@@ -1257,19 +1265,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void exportAsIR() throws IOException
   {
-    RMFileChooser chooser = getFileChooser();
-    String name = file.getName().toLowerCase();
-    if ( !name.endsWith( ".ir" ) )
+    RMFileChooser chooser = getFileChooser(); 
+    if ( file != null )
     {
-      int dot = name.lastIndexOf( '.' );
-      name = name.substring( 0, dot ) + ".IR";
-      file = new File( name );
+      String name = file.getName().toLowerCase();
+      if ( !name.endsWith( ".ir" ) )
+      {
+        int dot = name.lastIndexOf( '.' );
+        name = name.substring( 0, dot ) + ".IR";
+        file = new File( name );
+      }
+      chooser.setSelectedFile( file );
     }
-    chooser.setSelectedFile( file );
     int returnVal = chooser.showSaveDialog( this );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
-      name = chooser.getSelectedFile().getAbsolutePath();
+      String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( ".ir" ) )
       {
         name = name + ".IR";
