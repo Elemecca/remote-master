@@ -195,6 +195,37 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       {
         model.insertRow( rowModel, newUpgrade );
       }
+      if ( remoteConfig.findBoundDeviceButtonIndex( newUpgrade ) == -1 )
+      {
+        // upgrade isn't bound to a device button.
+        Remote remote = remoteConfig.getRemote();
+        DeviceButton[] devButtons = remote.getDeviceButtons();
+        DeviceButton devButton = ( DeviceButton )JOptionPane
+            .showInputDialog(
+                RemoteMaster.getFrame(),
+                "The device upgrade \""
+                    + newUpgrade.toString()
+                    + "\" is not assigned to a device button.\nDo you want to assign it now?\n"
+                    + "To do so, select the desired device button and press OK.\n"
+                    + "Otherwise please press Cancel.\n",
+                "Unassigned Device Upgrade", JOptionPane.QUESTION_MESSAGE, null, devButtons, null );
+        if ( devButton != null )
+        {
+          short[] data = remoteConfig.getData();
+          DeviceType devType = remote.getDeviceTypeByAliasName( newUpgrade.getDeviceTypeAliasName() );
+          devButton.setSetupCode( ( short )newUpgrade.getSetupCode(), data );
+          devButton.setDeviceTypeIndex( ( short )devType.getNumber(), data );
+          devButton.setDeviceGroup( ( short )devType.getGroup(), data );
+          if ( remote.getDeviceUpgradeAddress() != null )
+          {
+            String message = "Remember to set the button-dependent and/or button-independent\n"
+                           + " settings in a manner consistent with your choice of button\n"
+                           + " assignment.";
+            String title = "Creating a new device upgrade";
+            JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
+          }
+        }
+      }
 
       if ( select )
         table.setRowSelectionInterval( rowNew, rowNew );

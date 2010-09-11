@@ -3009,7 +3009,7 @@ public class DeviceUpgrade
 
   public String toString()
   {
-    return devTypeAliasName + '/' + setupCode + '(' + description + ')';
+    return devTypeAliasName + '/' + setupCode + " (" + description + ')';
   }
 
   /** The Constant deviceTypeAliasNames. */
