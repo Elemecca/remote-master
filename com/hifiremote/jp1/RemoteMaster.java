@@ -336,6 +336,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           remoteConfig.parseData();
           saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
+          openRdfAction.setEnabled( true );
           exportIRItem.setEnabled( true );
           uploadAction.setEnabled( true );
           update();
@@ -512,6 +513,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // Set color for text on Progress Bars
     UIManager.put( "ProgressBar.selectionBackground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
     UIManager.put( "ProgressBar.selectionForeground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
+    UIManager.put( "ProgressBar.foreground", new javax.swing.plaf.ColorUIResource( new Color(127, 255, 212 ) ) ); // Aquamarine
 
     tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );

@@ -169,6 +169,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         text = "";
       }
       notes.setText( text );
+      notes.setCaretPosition( 0 );
       
       setWarning();
 

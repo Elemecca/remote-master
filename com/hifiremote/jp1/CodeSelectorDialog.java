@@ -174,9 +174,13 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
     int row = deviceButtonTable.getSelectedRow();
 
     if ( source == deviceComboBox )
-    {      
-      ArrayList< Integer > codes = new ArrayList< Integer >(
-          setupCodes.get( deviceType.getNumber() ).values() );
+    {
+      HashMap< Integer, Integer> typeCodes = setupCodes.get( deviceType.getNumber() );
+      ArrayList< Integer > codes = new ArrayList< Integer >();
+      if ( typeCodes != null )
+      {
+        codes.addAll( setupCodes.get( deviceType.getNumber() ).values() );
+      }
       internalArea.setText( getCodeText( codes ) );
       codes = new ArrayList< Integer >();
       for ( DeviceUpgrade devUpgrade : remoteConfig.getDeviceUpgrades() )
