@@ -2856,7 +2856,12 @@ public class DeviceUpgrade
     Hex code = p.getCode( remote );
     if ( code != null )
     {
-      code = remote.getProcessor().translate( code, remote );
+      if ( ! ( p instanceof ManualProtocol ) )
+      {
+        // The assumption is that a manual protocol will have been downloaded from a remote,
+        // or otherwise created, with any such translation already incorporated.
+        code = remote.getProcessor().translate( code, remote );
+      }
       Translate[] xlators = protocol.getCodeTranslators( remote );
       if ( xlators != null )
       {
