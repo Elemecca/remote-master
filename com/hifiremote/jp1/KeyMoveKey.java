@@ -45,7 +45,7 @@ public class KeyMoveKey extends KeyMove
   public KeyMoveKey( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, int movedKeyCode, String notes )
   {
     super( keyCode, deviceButtonIndex, deviceType, setupCode, new Hex( 1 ), notes );
-    getCmd().getData()[ 0 ] = ( short )movedKeyCode;
+    setMovedKeyCode( ( short )movedKeyCode );
   }
 
   /**
@@ -64,6 +64,7 @@ public class KeyMoveKey extends KeyMove
    * 
    * @see com.hifiremote.jp1.KeyMove#clone()
    */
+  @Override
   public Object clone()
   {
     return new KeyMoveKey( getKeyCode(), getDeviceButtonIndex(), getDeviceType(), getSetupCode(), getMovedKeyCode(),
@@ -85,6 +86,7 @@ public class KeyMoveKey extends KeyMove
    * 
    * @see com.hifiremote.jp1.KeyMove#getValueString(com.hifiremote.jp1.RemoteConfiguration)
    */
+  @Override
   public String getValueString( RemoteConfiguration remoteConfig )
   {
     return remoteConfig.getRemote().getButtonName( getMovedKeyCode() );
@@ -98,8 +100,9 @@ public class KeyMoveKey extends KeyMove
    */
   public void setMovedKeyCode( short keyCode )
   {
-    Hex cmd = getCmd();
-    cmd.getData()[ 0 ] = keyCode;
+    Hex hex = getCmd();
+    hex.set( keyCode, 0 );
+    setCmd( hex );
   }
 
   /**

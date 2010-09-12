@@ -677,6 +677,10 @@ public class DeviceUpgrade
    */
   public Function getFunction( Hex hex )
   {
+    if ( hex == null )
+    {
+      return null;
+    }
     for ( Function f : functions )
     {
       if ( hex.equals( f.getHex() ) )
@@ -886,12 +890,11 @@ public class DeviceUpgrade
           tentative = p;
           tentativeVals = vals;
         }
-        if ( tentative != null && pCode != null 
-            && getCode( p ).equals( getCode( tentative ) )
+        if ( tentative != null && pCode != null && getCode( p ).equals( getCode( tentative ) )
             && p.getOEMParmVariance( vals ) < tentative.getOEMParmVariance( vals ) )
         {
-          System.err.println( String.format( "Protocols are identical but better match on OEM or Parm parameters " +
-              "(variance %d instead of %d)", p.getOEMParmVariance( vals ), tentative.getOEMParmVariance( vals ) ) );
+          System.err.println( String.format( "Protocols are identical but better match on OEM or Parm parameters "
+              + "(variance %d instead of %d)", p.getOEMParmVariance( vals ), tentative.getOEMParmVariance( vals ) ) );
           tentative = p;
           tentativeVals = vals;
         }
@@ -1206,10 +1209,10 @@ public class DeviceUpgrade
 
     // add the 2nd byte of the PID
     rc++ ;
-    
+
     if ( remote.usesTwoBytePID() )
     {
-      rc++;
+      rc++ ;
     }
 
     // add the digitMapIndex
@@ -1752,13 +1755,13 @@ public class DeviceUpgrade
     {}
     setDeviceTypeAliasName( props.getProperty( "DeviceType" ) );
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ) );
-    
+
     str = props.getProperty( "ButtonIndependent" );
     if ( str != null )
     {
-        buttonIndependent = Boolean.parseBoolean( str );
+      buttonIndependent = Boolean.parseBoolean( str );
     }
-    
+
     str = props.getProperty( "ButtonIndex" );
     if ( str != null )
     {
@@ -2904,9 +2907,9 @@ public class DeviceUpgrade
   // private java.util.List< KeyMove > keymoves = new ArrayList< KeyMove >();
   /** The file. */
   private File file = null;
-  
+
   private DeviceButton buttonRestriction = DeviceButton.noButton;
-  
+
   private Boolean buttonIndependent = true;
 
   public DeviceButton getButtonRestriction()
@@ -2928,7 +2931,7 @@ public class DeviceUpgrade
   {
     this.buttonIndependent = buttonIndependent;
   }
-  
+
   /** The property change support. */
   private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
 

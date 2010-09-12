@@ -53,6 +53,9 @@ Changes for v2.00
 - Scroll notes of General Panel to top upon opening (Graham)
 - If new device upgrade is not assigned to a device button, open dialog giving user an opportunity to do so (Graham)
 - Prevented manual protocols from undergoing translation when updating buffer (Graham)
+- Add support for using device upgrade functions in the keymove editor (Greg)
+- Fix KM file filtering in Device Upgrade Editor open file dialog (Greg)
+- Fix key code keymove support (Greg)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

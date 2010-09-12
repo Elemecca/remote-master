@@ -106,7 +106,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "0000_", "Variant", "Panasonic Mixed Combo__", "A long description"
+      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "0000_", "Variant", "Panasonic Mixed Combo__",
+      "A long description"
   };
 
   /*
@@ -141,8 +142,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, 
-      String.class, String.class, Protocol.class, String.class
+      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, String.class, String.class,
+      Protocol.class, String.class
   };
 
   /*
@@ -172,8 +173,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     else if ( col == 7 )
     {
       Protocol p = getRow( row ).getProtocol();
-      return ( p instanceof ManualProtocol );
-      
+      return p instanceof ManualProtocol;
+
     }
     return false;
   }
@@ -199,11 +200,16 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 4:
         return device.getButtonIndependent();
       case 5:
-        return device.getProtocol().getID().toString();
+        String id = device.getProtocol().getID().toString();
+        if ( device.getProtocol().needsCode( remoteConfig.getRemote() ) )
+        {
+          id += "*";
+        }
+        return id;
       case 6:
         return device.getProtocol().getVariantName();
       case 7:
-        return device.getProtocol();        
+        return device.getProtocol();
       case 8:
         return device.getDescription();
     }
@@ -264,7 +270,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
       case 7:
-        return manualSettingsEditor;        
+        return manualSettingsEditor;
       case 8:
         return descriptionEditor;
     }
@@ -334,7 +340,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private RemoteConfiguration remoteConfig = null;
 
   private SelectAllCellEditor descriptionEditor = new SelectAllCellEditor();
-  
+
   private ManualSettingsEditor manualSettingsEditor = new ManualSettingsEditor();
 
   private JComboBox deviceButtonBox = new JComboBox();

@@ -245,11 +245,11 @@ public class RemoteConfiguration
 
     if ( baseAddr != remote.getBaseAddress() )
     {
-      //      throw new IOException( "The base address of the remote image doesn't match the remote's baseAddress." );
-      // GD:  This is probably because the file is a raw data file that always has a base address of 0, so
+      // throw new IOException( "The base address of the remote image doesn't match the remote's baseAddress." );
+      // GD: This is probably because the file is a raw data file that always has a base address of 0, so
       // just print a message and continue/
-      System.err.println( String.format( "Base address of image (%04X) differs from that in RDF " +
-          "(%04X) but continuing execution.", baseAddr, remote.getBaseAddress() ) );
+      System.err.println( String.format( "Base address of image (%04X) differs from that in RDF "
+          + "(%04X) but continuing execution.", baseAddr, remote.getBaseAddress() ) );
     }
 
     deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
@@ -695,7 +695,7 @@ public class RemoteConfiguration
     // Do the device upgrades
     i = 0x3000;
     // Split the device upgrades into separate button-independent and button-
-    // dependent-only lists. An upgrade can occur in only one list.  Sort the
+    // dependent-only lists. An upgrade can occur in only one list. Sort the
     // second list into the order in which they will be read by IR.exe.
     List< DeviceUpgrade > devIndependent = new ArrayList< DeviceUpgrade >();
     List< DeviceUpgrade > devDependent = new ArrayList< DeviceUpgrade >();
@@ -711,9 +711,9 @@ public class RemoteConfiguration
       }
     }
     // Sort button-dependent ones into order in which they are stored in buffer.
-    Collections.sort( devDependent, new DependentUpgradeComparator() ); 
-        
-    // First do the upgrades in the button-independent area    
+    Collections.sort( devDependent, new DependentUpgradeComparator() );
+
+    // First do the upgrades in the button-independent area
     for ( DeviceUpgrade device : devIndependent )
     {
       String text = device.getDescription();
@@ -738,9 +738,9 @@ public class RemoteConfiguration
     // Get the protocol upgrades in button-independent device upgrades
     LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
     for ( DeviceUpgrade dev : devIndependent )
-    {    
+    {
       if ( dev.needsProtocolCode() )
-      {       
+      {
         Hex pCode = dev.getCode();
         Protocol p = dev.getProtocol();
         int pid = p.getID().get( 0 );
@@ -750,21 +750,21 @@ public class RemoteConfiguration
         }
       }
     }
-    
+
     // Add the protocols not used in any upgrade
     for ( ProtocolUpgrade pu : protocols )
     {
       requiredProtocols.put( pu.getPid(), pu );
     }
-    
+
     // Finally add the protocol upgrades from button-dependent section
-//    List< ProtocolUpgrade > protDependent = new ArrayList< ProtocolUpgrade >();
-//    // First get them in the order in which they will be stored top-down
+    // List< ProtocolUpgrade > protDependent = new ArrayList< ProtocolUpgrade >();
+    // // First get them in the order in which they will be stored top-down
     for ( int j = devDependent.size() - 1; j >= 0; j-- )
     {
       DeviceUpgrade dev = devDependent.get( j );
       if ( dev.needsProtocolCode() )
-      {       
+      {
         Hex pCode = dev.getCode();
         Protocol p = dev.getProtocol();
         int pid = p.getID().get( 0 );
@@ -773,7 +773,7 @@ public class RemoteConfiguration
           requiredProtocols.put( pid, new ProtocolUpgrade( pid, pCode, p.getName() ) );
         }
       }
-    }    
+    }
 
     // Now write the protocol notes
     i = 0x4000;
@@ -798,7 +798,7 @@ public class RemoteConfiguration
       }
       ++i;
     }
-    
+
     // Do the device buttons
     i = 0x6000;
     for ( int j = 0; j < deviceButtonNotes.length; j++ )
@@ -809,7 +809,7 @@ public class RemoteConfiguration
         out.printf( "$%4X=%s\n", i + j, exportNotes( text ) );
       }
     }
-    
+
     out.close();
   }
 
@@ -1764,7 +1764,7 @@ public class RemoteConfiguration
       }
 
       short[] pidHex = new short[ 2 ];
-//      pidHex[ 0 ] = ( short )( pid > 0xFF ? 1 : 0 );
+      // pidHex[ 0 ] = ( short )( pid > 0xFF ? 1 : 0 );
       pidHex[ 0 ] = ( short )( pid >> 8 ); // pids can now be > 0x1FF
       pidHex[ 1 ] = ( short )( pid & 0xFF );
 
@@ -2769,10 +2769,9 @@ public class RemoteConfiguration
     data[ offset++ ] = ( short )( date / 10 << 4 | date % 10 );
     updateCheckSums();
   }
-  
+
   public static void resetDialogs()
-  {   
-    KeyMoveDialog.reset();
+  {
     MacroDialog.reset();
     TimedMacroDialog.reset();
     SpecialFunctionDialog.reset();

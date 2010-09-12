@@ -81,7 +81,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.00-preview5";
+  public final static String version = "v2.00-preview6";
 
   /** The dir. */
   private File dir = null;
@@ -107,9 +107,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private RMAction saveAsAction = null;
 
   private RMAction openRdfAction = null;
-
-  /** The export ir item. */
-  private JMenuItem exportIRItem = null;
 
   /** The recent files. */
   private JMenu recentFiles = null;
@@ -337,7 +334,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
           openRdfAction.setEnabled( true );
-          exportIRItem.setEnabled( true );
           uploadAction.setEnabled( true );
           update();
         }
@@ -513,7 +509,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // Set color for text on Progress Bars
     UIManager.put( "ProgressBar.selectionBackground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
     UIManager.put( "ProgressBar.selectionForeground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
-    UIManager.put( "ProgressBar.foreground", new javax.swing.plaf.ColorUIResource( new Color(127, 255, 212 ) ) ); // Aquamarine
+    UIManager.put( "ProgressBar.foreground", new javax.swing.plaf.ColorUIResource( new Color( 127, 255, 212 ) ) ); // Aquamarine
 
     tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
@@ -720,12 +716,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     menu.addSeparator();
     toolBar.addSeparator();
-
-    exportIRItem = new JMenuItem( "Export as IR...", KeyEvent.VK_I );
-    exportIRItem.setEnabled( false );
-    exportIRItem.addActionListener( this );
-    menu.add( exportIRItem );
-    menu.addSeparator();
 
     recentFiles = new JMenu( "Recent" );
     menu.add( recentFiles );
@@ -1029,6 +1019,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return chooser;
   }
 
+  public RMFileChooser getFileSaveChooser()
+  {
+    RMFileChooser chooser = new RMFileChooser( dir );
+    chooser.setAcceptAllFileFilterUsed( false );
+    EndingFileFilter rmirFilter = new EndingFileFilter( "RM Remote Image (*.rmir)", rmirEndings );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "IR file (*.ir)", irEndings ) );
+    chooser.setFileFilter( rmirFilter );
+    return chooser;
+  }
+
   /**
    * Description of the Method.
    * 
@@ -1144,7 +1144,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       saveAsAction.setEnabled( true );
       openRdfAction.setEnabled( true );
     }
-    exportIRItem.setEnabled( true );
     uploadAction.setEnabled( !interfaces.isEmpty() );
     remoteConfig = new RemoteConfiguration( file );
     update();
@@ -1204,7 +1203,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void saveAs() throws IOException
   {
-    RMFileChooser chooser = getFileChooser();
+    RMFileChooser chooser = getFileSaveChooser();
     if ( file != null )
     {
       String name = file.getName().toLowerCase();
@@ -1219,10 +1218,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     int returnVal = chooser.showSaveDialog( this );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
+      String ending = ( ( EndingFileFilter )chooser.getFileFilter() ).getEndings()[ 0 ];
       String name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( ".rmir" ) && !name.toLowerCase().endsWith( ".ir" ) )
+      if ( !name.toLowerCase().endsWith( ending ) )
       {
-        name = name + ".rmir";
+        name = name + ending;
       }
       File newFile = new File( name );
       int rc = JOptionPane.YES_OPTION;
@@ -1241,7 +1241,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       properties.setProperty( "IRPath", dir );
 
       file = newFile;
-      if ( name.toLowerCase().endsWith( ".ir" ) )
+      if ( ending == irEndings[ 0 ] )
       {
         remoteConfig.exportIR( file );
       }
@@ -1252,56 +1252,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         updateRecentFiles( file );
         saveAction.setEnabled( true );
       }
-      exportIRItem.setEnabled( true );
       uploadAction.setEnabled( !interfaces.isEmpty() );
-    }
-  }
-
-  /**
-   * Description of the Method.
-   * 
-   * @throws IOException
-   *           Signals that an I/O exception has occurred.
-   * @exception IOException
-   *              Description of the Exception
-   */
-  public void exportAsIR() throws IOException
-  {
-    RMFileChooser chooser = getFileChooser(); 
-    if ( file != null )
-    {
-      String name = file.getName().toLowerCase();
-      if ( !name.endsWith( ".ir" ) )
-      {
-        int dot = name.lastIndexOf( '.' );
-        name = name.substring( 0, dot ) + ".IR";
-        file = new File( name );
-      }
-      chooser.setSelectedFile( file );
-    }
-    int returnVal = chooser.showSaveDialog( this );
-    if ( returnVal == RMFileChooser.APPROVE_OPTION )
-    {
-      String name = chooser.getSelectedFile().getAbsolutePath();
-      if ( !name.toLowerCase().endsWith( ".ir" ) )
-      {
-        name = name + ".IR";
-      }
-      File newFile = new File( name );
-      int rc = JOptionPane.YES_OPTION;
-      if ( newFile.exists() )
-      {
-        rc = JOptionPane.showConfirmDialog( this, newFile.getName() + " already exists.  Do you want to replace it?",
-            "Replace existing file?", JOptionPane.YES_NO_OPTION );
-      }
-
-      if ( rc != JOptionPane.YES_OPTION )
-      {
-        return;
-      }
-
-      file = newFile;
-      remoteConfig.exportIR( file );
     }
   }
 
@@ -1370,11 +1321,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     try
     {
       Object source = e.getSource();
-      if ( source == exportIRItem )
-      {
-        exportAsIR();
-      }
-      else if ( source == exitItem )
+      if ( source == exitItem )
       {
         dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ) );
       }
@@ -1716,7 +1663,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     remoteConfig.updateImage();
     updateUsage();
-    hasInvalidCodes = generalPanel.setWarning();   
+    hasInvalidCodes = generalPanel.setWarning();
   }
 
   private boolean allowSave( Remote.SetupValidation setupValidation )

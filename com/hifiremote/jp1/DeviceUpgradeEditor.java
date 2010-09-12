@@ -40,8 +40,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
    * @param remotes
    *          the remotes
    */
-  public DeviceUpgradeEditor( RemoteMaster owner, DeviceUpgrade deviceUpgrade, 
-      Collection< Remote > remotes, Integer row, RMPanel panel )
+  public DeviceUpgradeEditor( RemoteMaster owner, DeviceUpgrade deviceUpgrade, Collection< Remote > remotes,
+      Integer row, RMPanel panel )
   {
     super( "Device Upgrade Editor" );
     this.owner = owner;
@@ -49,17 +49,19 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     this.panel = panel;
     focusWindowAdapter = new WindowAdapter()
     {
+      @Override
       public void windowGainedFocus( WindowEvent e )
       {
         toFront();
       }
     };
-    
+
     owner.addWindowFocusListener( focusWindowAdapter );
-    
+
     addWindowStateListener( new WindowAdapter()
     {
-      public void windowStateChanged(WindowEvent e)
+      @Override
+      public void windowStateChanged( WindowEvent e )
       {
         if ( e.getNewState() == JFrame.ICONIFIED )
         {
@@ -67,11 +69,12 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
           toFront();
         }
       }
-    });
-    
+    } );
+
     setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
     addWindowListener( new WindowAdapter()
     {
+      @Override
       public void windowClosing( WindowEvent event )
       {
         cancelButton.doClick();
@@ -110,7 +113,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     setLocationRelativeTo( owner );
     setVisible( true );
   }
-  
+
   /**
    * Gets the device upgrade.
    * 
@@ -119,7 +122,9 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
   public DeviceUpgrade getDeviceUpgrade()
   {
     if ( cancelled )
+    {
       return null;
+    }
 
     return editorPanel.getDeviceUpgrade();
   }
@@ -153,11 +158,17 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         }
       }
       else if ( source == loadButton )
+      {
         load();
+      }
       else if ( source == importButton )
+      {
         importFromClipboard();
+      }
       else if ( source == saveAsButton )
+      {
         save();
+      }
     }
     catch ( Exception ex )
     {
@@ -184,21 +195,30 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     {
       e.printStackTrace( System.err );
     }
-    String[] endings =
+    String[] allEndings =
     {
         ".rmdu", ".txt"
     };
-    chooser.setFileFilter( new EndingFileFilter( "All device upgrade files", endings ) );
-    endings = new String[ 1 ];
-    endings[ 0 ] = ".txt";
-    chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files (*.txt)", endings ) );
-    endings[ 0 ] = ".rmdu";
-    chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", endings ) );
+    String[] rmEndings =
+    {
+      ".rmdu"
+    };
+    String[] kmEndings =
+    {
+      ".txt"
+    };
+    EndingFileFilter allFilter = new EndingFileFilter( "All device upgrade files (*.rmdu,*.txt)", allEndings );
+    chooser.addChoosableFileFilter( allFilter );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", rmEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "KeyMapMaster device upgrade files (*.txt)", kmEndings ) );
+    chooser.setFileFilter( allFilter );
 
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     String dir = JP1Frame.getProperties().getProperty( "UpgradePath" );
     if ( dir != null )
+    {
       chooser.setCurrentDirectory( new File( dir ) );
+    }
     while ( true )
     {
       if ( chooser.showOpenDialog( rm ) == RMFileChooser.APPROVE_OPTION )
@@ -216,10 +236,14 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
               JOptionPane.ERROR_MESSAGE );
         }
         else
+        {
           break;
+        }
       }
       else
+      {
         return;
+      }
     }
 
     System.err.println( "Opening " + file.getCanonicalPath() + ", last modified "
@@ -250,7 +274,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
       {
         if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
         {
-          String s = ( String )( clipData.getTransferData( DataFlavor.stringFlavor ) );
+          String s = ( String )clipData.getTransferData( DataFlavor.stringFlavor );
           BufferedReader in = new BufferedReader( new StringReader( s ) );
           DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
           Remote remote = deviceUpgrade.getRemote();
@@ -286,12 +310,16 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     File f = deviceUpgrade.getFile();
     if ( f != null )
+    {
       chooser.setSelectedFile( f );
+    }
     else
     {
       String path = JP1Frame.getProperties().getProperty( "UpgradePath" );
       if ( path != null )
+      {
         chooser.setCurrentDirectory( new File( path ) );
+      }
     }
 
     int returnVal = chooser.showSaveDialog( rm );
@@ -299,7 +327,9 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     {
       String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( ".rmdu" ) )
+      {
         name = name + ".rmdu";
+      }
       File file = new File( name );
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists() )
@@ -308,7 +338,9 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
             "Replace existing file?", JOptionPane.YES_NO_OPTION );
       }
       if ( rc == JOptionPane.YES_OPTION )
+      {
         deviceUpgrade.store( file );
+      }
     }
   }
 
@@ -332,15 +364,15 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
 
   /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );
-  
+
   private RemoteMaster owner = null;
-  
+
   private RMPanel panel = null;
-  
+
   private WindowAdapter focusWindowAdapter = null;
-  
-//  private RemoteMaster rm = null;
-  
+
+  // private RemoteMaster rm = null;
+
   private Integer row = null;
 
 }

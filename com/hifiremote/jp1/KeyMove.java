@@ -54,7 +54,6 @@ public class KeyMove extends AdvancedCode implements Cloneable
     setDeviceButtonIndex( deviceButtonIndex );
     this.deviceType = deviceType;
     this.setupCode = setupCode;
-    this.cmd = cmd;
   }
 
   public static Hex getRawHex( int deviceType, int setupCode, Hex cmd )
