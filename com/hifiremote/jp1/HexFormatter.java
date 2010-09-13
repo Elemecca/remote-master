@@ -17,7 +17,7 @@ public class HexFormatter extends RegexFormatter
   {
     super();
     setValueClass( Hex.class );
-    setAllowsInvalid( false );
+    setAllowsInvalid( true );
     setOverwriteMode( true );
     setCommitsOnValidEdit( false );
     setLength( length );

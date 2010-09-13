@@ -2272,7 +2272,19 @@ public class Remote implements Comparable< Remote >
   {
     KeyMove keyMove = null;
     if ( advCodeFormat == AdvancedCode.Format.HEX )
-      keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
+    {
+      if ( advCodeBindFormat == AdvancedCode.BindFormat.LONG && cmd.length() == 1 )
+      {
+        Hex newCmd = new Hex( 2 );
+        newCmd.getData()[ 0 ] = cmd.getData()[ 0 ];
+        newCmd.getData()[ 1 ] = EFC.parseHex( cmd );
+        keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, newCmd, notes );
+      }
+      else
+      {
+        keyMove = new KeyMove( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
+      }      
+    }
     else if ( efcDigits == 3 )
       keyMove = new KeyMoveEFC( keyCode, deviceIndex, deviceType, setupCode, EFC.parseHex( cmd ), notes );
     else

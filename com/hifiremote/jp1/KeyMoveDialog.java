@@ -557,7 +557,8 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
         }
         else if ( useHex.isSelected() )
         {
-          showWarning( "You must specify the Hex command for the function to perform." );
+          showWarning( "You must specify a valid Hex command for the function to perform,\n"
+              + "such as 1B or 1B C2.");
         }
         else if ( useKey.isSelected() )
         {
