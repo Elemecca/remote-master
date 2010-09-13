@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -28,8 +29,10 @@ import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -182,6 +185,47 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     setupCode.addPropertyChangeListener( this );
     label.setLabelFor( setupCode );
     panel.add( setupCode );
+
+    chooseUpgrade.addActionListener( this );
+    panel.add( chooseUpgrade );
+
+    ActionListener al = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        JMenuItem source = ( JMenuItem )e.getSource();
+        int index = Integer.valueOf( source.getActionCommand() );
+        DeviceUpgrade upgrade = KeyMoveDialog.this.config.getDeviceUpgrades().get( index );
+        KeyMoveDialog.this.deviceType.setSelectedIndex( upgrade.getDeviceType().getNumber() );
+        KeyMoveDialog.this.setupCode.setValue( upgrade.getSetupCode() );
+      }
+    };
+
+    List< DeviceUpgrade > upgrades = config.getDeviceUpgrades();
+    for ( int i = 0; i < upgrades.size(); ++i )
+    {
+      DeviceUpgrade upgrade = upgrades.get( i );
+      String desc = upgrade.getDescription();
+      if ( getValidFunctions( upgrade ).size() > 0 )
+      {
+        if ( config.findBoundDeviceButtonIndex( upgrade ) == -1 )
+        {
+          if ( desc == null || desc.trim().length() == 0 )
+          {
+            desc = String.format( "%s/%04d", upgrade.getDeviceType().toString(), upgrade.getSetupCode() );
+          }
+          JMenuItem item = new JMenuItem( desc );
+          popup.add( item );
+          item.setActionCommand( Integer.toString( i ) );
+          item.addActionListener( al );
+        }
+      }
+    }
+
+    if ( popup.getComponentCount() == 0 )
+    {
+      chooseUpgrade.setVisible( false );
+    }
 
     // Add the EFC/Hex/Key controls
     panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ) );
@@ -649,6 +693,10 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     {
       checkForUpgrade();
     }
+    else if ( source == chooseUpgrade )
+    {
+      popup.show( chooseUpgrade, 0, chooseUpgrade.getHeight() );
+    }
   }
 
   /** The bound device. */
@@ -680,6 +728,9 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
 
   /** The setup code. */
   private JFormattedTextField setupCode = null;
+
+  private JPopupMenu popup = new JPopupMenu();
+  private JButton chooseUpgrade = new JButton( "Device Upgrades" );
 
   /** The use efc. */
   public boolean use3DigitEFCs = true;
@@ -725,6 +776,20 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
 
   private DeviceUpgrade upgrade = null;
 
+  protected List< Function > getValidFunctions( DeviceUpgrade upgrade )
+  {
+    List< Function > functions = new ArrayList< Function >();
+    for ( Function function : upgrade.getFunctions() )
+    {
+      Hex hex = function.getHex();
+      if ( hex != null && hex.length() > 0 )
+      {
+        functions.add( function );
+      }
+    }
+    return functions;
+  }
+
   protected DeviceUpgrade checkForUpgrade()
   {
     upgrade = null;
@@ -737,19 +802,22 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       Function func = null;
       if ( upgrade != null )
       {
-        List< Function > functions = upgrade.getFunctions();
-        function.removeActionListener( this );
-        function.setModel( new DefaultComboBoxModel( functions.toArray() ) );
-        useFunction.setVisible( true );
-        if ( cmd != null )
+        List< Function > functions = getValidFunctions( upgrade );
+        if ( functions.size() > 0 )
         {
-          func = upgrade.getFunction( cmd );
-          if ( func != null )
+          function.removeActionListener( this );
+          function.setModel( new DefaultComboBoxModel( functions.toArray() ) );
+          useFunction.setVisible( true );
+          if ( cmd != null )
           {
-            function.setSelectedItem( func );
+            func = upgrade.getFunction( cmd );
+            if ( func != null )
+            {
+              function.setSelectedItem( func );
+            }
           }
+          function.addActionListener( this );
         }
-        function.addActionListener( this );
       }
     }
 
