@@ -61,9 +61,11 @@ Changes for v2.00
 - Fix KM file filtering in Device Upgrade Editor open file dialog (Greg)
 - Fix key code keymove support (Greg)
 -- Preview 7 --
+- Add Detach button and context menu item to Key Moves tab, to detach keymoves what are associated to device upgrades.  Supports multiple selection (Greg)
 - Add installed upgrade selector to keymove editor, for upgrades that aren't assigned to a device button (Greg)
 - Add * after PID in Device tab to indicate a protocol upgrade will be installed with the device upgrade. (Greg)
-- More fixed for EFC5 handling of single-byte functions (Greg)
+- Fixes for EFC5 handling of single-byte functions (Graham/Greg)
+- Fix bug to allow entry of Hex data in Key Move Dialog (Graham)
 - When decoding an E2image, don't associate keymoves to a device upgrade when the key is in the button map. (Greg)
 -- Preview 8 --
 
