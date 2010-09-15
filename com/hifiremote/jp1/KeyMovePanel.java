@@ -1,15 +1,20 @@
 package com.hifiremote.jp1;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -58,30 +63,83 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
       @Override
       public void valueChanged( ListSelectionEvent e )
       {
+        if ( e.getValueIsAdjusting() )
+        {
+          return;
+        }
         thisPanel.valueChanged( e );
-        int row = table.getSelectedRow();
-        if ( row != -1 )
-        {
-          row = sorter.modelIndex( row );
-        }
+
+        int[] rows = table.getSelectedRows();
+        boolean enableDetach = rows.length > 0;
         int limit = remoteConfig.getKeyMoves().size();
-        if ( row >= limit )
+        for ( int tableRow : rows )
         {
-          editButton.setEnabled( false );
-          editItem.setEnabled( false );
-          cloneButton.setEnabled( false );
-          cloneItem.setEnabled( false );
-          deleteButton.setEnabled( false );
-          deleteItem.setEnabled( false );
-          upButton.setEnabled( false );
-          downButton.setEnabled( false );
+          int row = sorter.modelIndex( tableRow );
+
+          if ( row >= limit )
+          {
+            editButton.setEnabled( false );
+            editItem.setEnabled( false );
+            cloneButton.setEnabled( false );
+            cloneItem.setEnabled( false );
+            deleteButton.setEnabled( false );
+            deleteItem.setEnabled( false );
+            upButton.setEnabled( false );
+            downButton.setEnabled( false );
+          }
+          else if ( row == limit - 1 )
+          {
+            downButton.setEnabled( false );
+          }
+          if ( row < limit )
+          {
+            enableDetach = false;
+          }
         }
-        else if ( row == limit - 1 )
-        {
-          downButton.setEnabled( false );
-        }
+        detach.setEnabled( enableDetach );
       }
     } );
+
+    detach = new DetachAction();
+    buttonPanel.add( new JButton( detach ) );
+    detach.setEnabled( false );
+    popup.add( detach );
+  }
+
+  @Override
+  protected boolean showPopup( MouseEvent e )
+  {
+    if ( e.isPopupTrigger() )
+    {
+      finishEditing();
+      popupRow = table.rowAtPoint( e.getPoint() );
+      // int popupCol = table.columnAtPoint( e.getPoint() );
+      int limit = remoteConfig.getKeyMoves().size();
+      if ( table.isRowSelected( popupRow ) )
+      {
+        boolean canDetach = true;
+        for ( int row : table.getSelectedRows() )
+        {
+
+          if ( sorter.modelIndex( row ) < limit )
+          {
+            canDetach = false;
+          }
+        }
+        detach.setEnabled( canDetach );
+      }
+      else
+      {
+        int row = sorter.modelIndex( popupRow );
+        detach.setEnabled( row >= limit );
+      }
+      popup.show( table, e.getX(), e.getY() );
+      return true;
+    }
+    else
+    {
+      return false;
+    }
   }
 
   /**
@@ -95,17 +153,6 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
   {
     ( ( KeyMoveTableModel )model ).set( remoteConfig );
     this.remoteConfig = remoteConfig;
-    JTableHeader th = table.getTableHeader();
-    TableColumnModel tcm = th.getColumnModel();
-    TableColumn tc = tcm.getColumn( 7 );
-    if ( remoteConfig != null && remoteConfig.getRemote().getEFCDigits() == 3 )
-    {
-      tc.setHeaderValue( "<html>EFC or<br>Key Name</html>" );
-    }
-    else
-    {
-      tc.setHeaderValue( "<html>EFC-5 or<br>Key Name</html>" );
-    }
     table.initColumns( model );
   }
 
@@ -155,7 +202,61 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
     }
   }
 
+  protected class DetachAction extends AbstractAction
+  {
+    public DetachAction()
+    {
+      super( "Detach" );
+      setToolTipText( "Detach from upgrade" );
+    }
+
+    public void actionPerformed( ActionEvent event )
+    {
+      AbstractButton source = ( AbstractButton )event.getSource();
+      int[] rows =
+      {
+        popupRow
+      };
+      if ( source instanceof JButton )
+      {
+        rows = table.getSelectedRows();
+      }
+      else if ( source instanceof JMenuItem )
+      {
+        if ( table.isRowSelected( popupRow ) )
+        {
+          rows = table.getSelectedRows();
+        }
+      }
+
+      List< KeyMove > keymoves = remoteConfig.getKeyMoves();
+      List< KeyMove > toDetach = new ArrayList< KeyMove >( rows.length );
+      int firstRow = keymoves.size();
+      int lastRow = firstRow;
+      for ( int row : rows )
+      {
+        if ( row > lastRow )
+        {
+          lastRow = row;
+        }
+        KeyMove keyMove = model.getRow( sorter.modelIndex( row ) );
+        toDetach.add( keyMove );
+      }
+
+      for ( KeyMove keyMove : toDetach )
+      {
+        DeviceUpgrade upgrade = remoteConfig.findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
+        keymoves.add( keyMove );
+        upgrade.setFunction( keyMove.getKeyCode(), null );
+      }
+      ( ( KeyMoveTableModel )model ).refresh();
+      model.fireTableDataChanged();
+    }
+  }
+
   private KeyMovePanel thisPanel = null;
 
   private RemoteConfiguration remoteConfig = null;
+
+  protected Action detach = null;
 }

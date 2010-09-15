@@ -6,10 +6,9 @@ import java.util.Properties;
 /**
  * The Class ExternalFunction.
  */
-public class ExternalFunction
-  extends Function
+public class ExternalFunction extends Function
 {
-  
+
   /**
    * Instantiates a new external function.
    */
@@ -17,11 +16,12 @@ public class ExternalFunction
   {
     super();
   }
-  
+
   /**
    * Instantiates a new external function.
    * 
-   * @param base the base
+   * @param base
+   *          the base
    */
   public ExternalFunction( ExternalFunction base )
   {
@@ -30,59 +30,81 @@ public class ExternalFunction
     type = base.type;
     setupCode = base.setupCode;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.Function#isExternal()
    */
-  public boolean isExternal(){ return true; }
-
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.Function#isEmpty()
-   */
-  public boolean isEmpty()
+  @Override
+  public boolean isExternal()
   {
-    return super.isEmpty() && ( deviceTypeAliasName == null ) && ( setupCode == 0 ) &&
-      ( type == EFCType );
+    return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.hifiremote.jp1.Function#isEmpty()
+   */
+  @Override
+  public boolean isEmpty()
+  {
+    return super.isEmpty() && deviceTypeAliasName == null && setupCode == 0 && type == EFCType;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.Function#store(com.hifiremote.jp1.PropertyWriter, java.lang.String)
    */
+  @Override
   public void store( PropertyWriter out, String prefix )
   {
     super.store( out, prefix );
-    out.print( prefix + ".type", Integer.toString( type ));
+    out.print( prefix + ".type", Integer.toString( type ) );
     if ( deviceTypeAliasName != null )
+    {
       out.print( prefix + ".deviceType", deviceTypeAliasName );
-    out.print( prefix + ".setupCode", Integer.toString( setupCode ));
+    }
+    out.print( prefix + ".setupCode", Integer.toString( setupCode ) );
   }
 
   /**
    * Load.
    * 
-   * @param props the props
-   * @param prefix the prefix
-   * @param remote the remote
+   * @param props
+   *          the props
+   * @param prefix
+   *          the prefix
+   * @param remote
+   *          the remote
    */
   public void load( Properties props, String prefix, Remote remote )
   {
     super.load( props, prefix );
     String str = props.getProperty( prefix + ".type" );
     if ( str != null )
-      setType( new Integer( str ));
+    {
+      setType( new Integer( str ) );
+    }
     str = props.getProperty( prefix + ".deviceType" );
     if ( str != null )
     {
-      for ( String name : remote.getDeviceTypeAliasNames())
-        if ( name.equalsIgnoreCase( str ))
+      for ( String name : remote.getDeviceTypeAliasNames() )
+      {
+        if ( name.equalsIgnoreCase( str ) )
         {
           setDeviceTypeAliasName( name );
           break;
         }
+      }
     }
     str = props.getProperty( prefix + ".setupCode" );
     if ( str != null )
-      setSetupCode( Integer.parseInt( str ));
+    {
+      setSetupCode( Integer.parseInt( str ) );
+    }
   }
 
   /**
@@ -90,36 +112,38 @@ public class ExternalFunction
    * 
    * @return the device type alias name
    */
-  public String getDeviceTypeAliasName(){ return deviceTypeAliasName; }
-  
+  public String getDeviceTypeAliasName()
+  {
+    return deviceTypeAliasName;
+  }
+
   /**
    * Sets the device type alias name.
    * 
-   * @param name the new device type alias name
+   * @param name
+   *          the new device type alias name
    */
-  public void setDeviceTypeAliasName( String name ){ deviceTypeAliasName = name; }
+  public void setDeviceTypeAliasName( String name )
+  {
+    deviceTypeAliasName = name;
+  }
 
   /** The Constant EFCType. */
   public final static int EFCType = 0;
-  
+
   /** The Constant HexType. */
   public final static int HexType = 1;
-/*
-  public String toString()
-  {
-    String rc = "";
-    Object o = getValue();
-    if ( o != null )
-      rc = o.toString(); 
-    return rc;
-  }
-*/
+
+  /*
+   * public String toString() { String rc = ""; Object o = getValue(); if ( o != null ) rc = o.toString(); return rc; }
+   */
   /**
- * Sets the type.
- * 
- * @param type the new type
- */
-public void setType( int type )
+   * Sets the type.
+   * 
+   * @param type
+   *          the new type
+   */
+  public void setType( int type )
   {
     this.type = type;
   }
@@ -127,11 +151,12 @@ public void setType( int type )
   /**
    * Sets the type.
    * 
-   * @param type the new type
+   * @param type
+   *          the new type
    */
   public void setType( Integer type )
   {
-    setType( type.intValue());
+    setType( type.intValue() );
   }
 
   /**
@@ -147,17 +172,23 @@ public void setType( int type )
   /**
    * Sets the value.
    * 
-   * @param value the new value
+   * @param value
+   *          the new value
    */
   public void setValue( Object value )
   {
     if ( value == null )
+    {
       setHex( null );
+    }
+    else if ( type == EFCType )
+    {
+      setEFC( ( EFC )value );
+    }
     else
-      if ( type == EFCType )
-        setEFC(( EFC )value );
-      else
-        setHex(( Hex )value );
+    {
+      setHex( ( Hex )value );
+    }
   }
 
   /**
@@ -168,24 +199,35 @@ public void setType( int type )
   public Object getValue()
   {
     if ( type == EFCType )
+    {
       return getEFC();
+    }
     else
+    {
       return getHex();
+    }
   }
 
   /**
    * Sets the setup code.
    * 
-   * @param code the new setup code
+   * @param code
+   *          the new setup code
    */
-  public void setSetupCode( int code ){ setupCode = code; }
-  
+  public void setSetupCode( int code )
+  {
+    setupCode = code;
+  }
+
   /**
    * Gets the setup code.
    * 
    * @return the setup code
    */
-  public int getSetupCode(){ return setupCode; }
+  public int getSetupCode()
+  {
+    return setupCode;
+  }
 
   /**
    * Gets the eFC.
@@ -196,33 +238,36 @@ public void setType( int type )
   {
     EFC rc = null;
     if ( hex != null )
+    {
       rc = new EFC( hex, 0 );
+    }
     return rc;
   }
 
   /**
    * Sets the eFC.
    * 
-   * @param efc the new eFC
+   * @param efc
+   *          the new eFC
    */
   public void setEFC( EFC efc )
   {
     if ( efc != null )
     {
-      if ( hex == null )
-        hex = new Hex( 1 );
       efc.toHex( hex, 0 );
     }
     else
+    {
       hex = null;
+    }
   }
 
   /** The device type alias name. */
   private String deviceTypeAliasName;
-  
+
   /** The setup code. */
   private int setupCode;
-  
+
   /** The type. */
   private int type;
 }

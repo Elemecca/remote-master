@@ -22,7 +22,7 @@ public abstract class AdvancedCode
 
   public static AdvancedCode read( HexReader reader, Remote remote )
   {
-    if ( ( reader.available() < 4 ) || ( reader.peek() == remote.getSectionTerminator() ) )
+    if ( reader.available() < 4 || reader.peek() == remote.getSectionTerminator() )
     {
       return null;
     }
@@ -49,7 +49,9 @@ public abstract class AdvancedCode
         isFav = true;
         FavKey favKey = remote.getFavKey();
         if ( favKey != null )
+        {
           length *= favKey.getEntrySize();
+        }
       }
     }
     else
@@ -61,8 +63,8 @@ public abstract class AdvancedCode
       {
         if ( type >= 3 )
         {
-          if ( ( ( type & 8 ) == 8 ) && remote.hasTimedMacroSupport() )
-          {  
+          if ( ( type & 8 ) == 8 && remote.hasTimedMacroSupport() )
+          {
             isTimedMacro = true;
           }
           else
@@ -70,7 +72,7 @@ public abstract class AdvancedCode
             isMacro = true;
             sequenceNumber = type - 3;
           }
-        }  
+        }
       }
       else
       {
@@ -80,7 +82,9 @@ public abstract class AdvancedCode
           sequenceNumber = type & 0x07;
         }
         else if ( ( type & 3 ) == 3 )
+        {
           isFav = true;
+        }
       }
     }
 
@@ -108,7 +112,7 @@ public abstract class AdvancedCode
     else
     {
       KeyMove keyMove = null;
-      if ( ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG ) && ( length == 3 ) )
+      if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG && length == 3 )
       {
         keyMove = new KeyMoveKey( keyCode, boundDeviceIndex, hex, null );
       }
@@ -158,8 +162,8 @@ public abstract class AdvancedCode
   public AdvancedCode( Properties props )
   {
     // Allow for missing "KeyCode" entry, as it is not used by Timed Macros
-    String temp = props.getProperty( "KeyCode" ); 
-    keyCode = ( temp == null ) ? 0 : Integer.parseInt( temp );      
+    String temp = props.getProperty( "KeyCode" );
+    keyCode = temp == null ? 0 : Integer.parseInt( temp );
     data = new Hex( props.getProperty( "Data" ) );
     notes = props.getProperty( "Notes" );
   }
@@ -233,8 +237,7 @@ public abstract class AdvancedCode
    */
   public void setData( Hex hex )
   {
-    if ( ( data != hex ) && !data.equals( hex ) )
-      data = hex;
+    data = hex;
   }
 
   /** The notes. */
@@ -258,8 +261,10 @@ public abstract class AdvancedCode
    */
   public void setNotes( String notes )
   {
-    if ( ( notes != this.notes ) && !notes.equals( this.notes ) )
+    if ( notes != this.notes && !notes.equals( this.notes ) )
+    {
       this.notes = notes;
+    }
   }
 
   /**
@@ -272,7 +277,9 @@ public abstract class AdvancedCode
   {
     pw.print( "KeyCode", keyCode );
     pw.print( "Data", data );
-    if ( ( notes != null ) && ( notes.length() > 0 ) )
+    if ( notes != null && notes.length() > 0 )
+    {
       pw.print( "Notes", notes );
+    }
   }
 }

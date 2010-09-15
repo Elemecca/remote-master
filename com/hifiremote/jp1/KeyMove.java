@@ -49,14 +49,15 @@ public class KeyMove extends AdvancedCode implements Cloneable
    */
   public KeyMove( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
-    super( keyCode, getRawHex( deviceType, setupCode, cmd ), notes );
+    super( keyCode, null, notes );
+    setData( getRawHex( deviceType, setupCode, cmd ) );
     this.cmd = cmd;
     setDeviceButtonIndex( deviceButtonIndex );
     this.deviceType = deviceType;
     this.setupCode = setupCode;
   }
 
-  public static Hex getRawHex( int deviceType, int setupCode, Hex cmd )
+  public Hex getRawHex( int deviceType, int setupCode, Hex cmd )
   {
     Hex hex = new Hex( CMD_INDEX + cmd.length() );
     update( deviceType, setupCode, hex );
@@ -114,18 +115,6 @@ public class KeyMove extends AdvancedCode implements Cloneable
   }
 
   /**
-   * Sets the eFC.
-   * 
-   * @param efc
-   *          the new eFC
-   */
-  public void setEFC( EFC efc )
-  {
-    efc.toHex( cmd );
-    data.put( cmd, CMD_INDEX );
-  }
-
-  /**
    * Gets the eF c5.
    * 
    * @return the eF c5
@@ -155,6 +144,16 @@ public class KeyMove extends AdvancedCode implements Cloneable
   @Override
   public String getValueString( RemoteConfiguration remoteConfig )
   {
+    DeviceUpgrade deviceUpgrade = remoteConfig.findDeviceUpgrade( getDeviceType(), getSetupCode() );
+    if ( deviceUpgrade != null )
+    {
+      Function f = deviceUpgrade.getFunction( getCmd() );
+      if ( f != null )
+      {
+        return "\"" + f.getName() + '"';
+      }
+    }
+
     if ( cmd.length() == 1 )
     {
       return getEFC().toString();
@@ -219,7 +218,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
     update( deviceType, setupCode, data );
   }
 
-  private static void update( int deviceType, int setupCode, Hex data )
+  protected static void update( int deviceType, int setupCode, Hex data )
   {
     int temp = deviceType << 12 | setupCode;
     data.put( temp, SETUP_CODE_INDEX );

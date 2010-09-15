@@ -132,21 +132,6 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
       {
         showPopup( e );
       }
-
-      private boolean showPopup( MouseEvent e )
-      {
-        if ( e.isPopupTrigger() )
-        {
-          finishEditing();
-          popupRow = table.rowAtPoint( e.getPoint() );
-          popup.show( table, e.getX(), e.getY() );
-          return true;
-        }
-        else
-        {
-          return false;
-        }
-      }
     };
     table.addMouseListener( mh );
 
@@ -198,6 +183,21 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     buttonPanel.add( downButton );
   }
 
+  protected boolean showPopup( MouseEvent e )
+  {
+    if ( e.isPopupTrigger() )
+    {
+      finishEditing();
+      popupRow = table.rowAtPoint( e.getPoint() );
+      popup.show( table, e.getX(), e.getY() );
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -219,7 +219,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   /**
    * Finish editing.
    */
-  private void finishEditing()
+  protected void finishEditing()
   {
     int editRow = table.getEditingRow();
     if ( editRow != -1 )
@@ -576,7 +576,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   protected JButton downButton = null;
 
   /** The popup row. */
-  private int popupRow = 0;
+  protected int popupRow = 0;
 
   /** The popup. */
   protected JPopupMenu popup = null;

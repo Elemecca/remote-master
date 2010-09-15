@@ -15,6 +15,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#getInterfaceName()
    */
+  @Override
   public native String getInterfaceName();
 
   /*
@@ -22,6 +23,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#getInterfaceVersion()
    */
+  @Override
   public native String getInterfaceVersion();
 
   /*
@@ -29,6 +31,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#getPortNames()
    */
+  @Override
   public native String[] getPortNames();
 
   /*
@@ -36,6 +39,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#openRemote(java.lang.String)
    */
+  @Override
   public native String openRemote( String portName );
 
   /*
@@ -43,6 +47,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#closeRemote()
    */
+  @Override
   public native void closeRemote();
 
   /*
@@ -50,6 +55,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#getRemoteSignature()
    */
+  @Override
   public native String getRemoteSignature();
 
   /*
@@ -57,6 +63,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#getRemoteEepromAddress()
    */
+  @Override
   public native int getRemoteEepromAddress();
 
   /*
@@ -64,6 +71,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#getRemoteEepromSize()
    */
+  @Override
   public native int getRemoteEepromSize();
 
   /*
@@ -71,6 +79,7 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#readRemote(int, byte[], int)
    */
+  @Override
   public native int readRemote( int address, byte[] buffer, int length );
 
   /*
@@ -78,9 +87,11 @@ public class JP12Serial extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#writeRemote(int, byte[], int)
    */
+  @Override
   public native int writeRemote( int address, byte[] buffer, int length );
 
   /** The is loaded. */
+  @SuppressWarnings( "unused" )
   private static boolean isLoaded = false;
 
   /**
@@ -120,7 +131,7 @@ public class JP12Serial extends IO
     for ( int i = 0; i < args.length; ++i )
     {
       String arg = args[ i ];
-      if ( arg.equals( "-port" ) && ( ( i + 1 ) < args.length ) )
+      if ( arg.equals( "-port" ) && i + 1 < args.length )
       {
         portName = args[ ++i ];
         System.err.println( "Using port " + portName );

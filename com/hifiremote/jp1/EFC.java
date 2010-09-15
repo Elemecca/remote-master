@@ -26,7 +26,7 @@ public class EFC implements Comparable< EFC >
    */
   public EFC( short value )
   {
-    this.value = ( value & 0xFF );
+    this.value = value & 0xFF;
   }
 
   /**
@@ -106,7 +106,7 @@ public class EFC implements Comparable< EFC >
   public static short parseHex( short hex )
   {
     short rc = ( short )( hex & 0xFF );
-    rc = ( short )( ( rc << 3 ) | ( rc >> 5 ) );
+    rc = ( short )( rc << 3 | rc >> 5 );
     rc = ( short )( ( rc ^ 0xAE ) - 156 );
     return ( short )( rc & 0xFF );
   }
@@ -124,37 +124,14 @@ public class EFC implements Comparable< EFC >
   /**
    * To hex.
    * 
-   * @return the hex
-   */
-  public Hex toHex()
-  {
-    Hex hex = new Hex( 1 );
-    toHex( hex );
-    return hex;
-  }
-
-  /**
-   * To hex.
-   * 
-   * @param hex
-   *          the hex
-   */
-  public void toHex( Hex hex )
-  {
-    toHex( hex, 0 );
-  }
-
-  /**
-   * To hex.
-   * 
    * @param hex
    *          the hex
    * @param index
    *          the index
    */
-  public void toHex( Hex hex, int index )
+  public Hex toHex( Hex hex, int index )
   {
-    toHex( value, hex, index );
+    return toHex( value, hex, index );
   }
 
   /**
@@ -165,9 +142,9 @@ public class EFC implements Comparable< EFC >
    * @param hex
    *          the hex
    */
-  public static void toHex( int val, Hex hex )
+  public static Hex toHex( int val, Hex hex )
   {
-    toHex( val, hex, 0 );
+    return toHex( val, hex, 0 );
   }
 
   /**
@@ -180,12 +157,17 @@ public class EFC implements Comparable< EFC >
    * @param index
    *          the index
    */
-  public static void toHex( int val, Hex hex, int index )
+  public static Hex toHex( int val, Hex hex, int index )
   {
+    if ( hex == null )
+    {
+      hex = new Hex( index + 1 );
+    }
     short temp = ( short )( val + 156 );
-    temp = ( short )( ( temp & 0xFF ) ^ 0xAE );
-    temp = ( short )( ( temp >> 3 ) | ( temp << 5 ) );
+    temp = ( short )( temp & 0xFF ^ 0xAE );
+    temp = ( short )( temp >> 3 | temp << 5 );
     hex.getData()[ index ] = ( short )( temp & 0xFF );
+    return hex;
   }
 
   /**
@@ -207,6 +189,7 @@ public class EFC implements Comparable< EFC >
    * 
    * @see java.lang.Object#toString()
    */
+  @Override
   public String toString()
   {
     return toString( value );
@@ -223,9 +206,13 @@ public class EFC implements Comparable< EFC >
   {
     StringBuilder buff = new StringBuilder( 3 );
     if ( efc < 100 )
+    {
       buff.append( '0' );
+    }
     if ( efc < 10 )
+    {
       buff.append( '0' );
+    }
     buff.append( Integer.toString( efc ) );
     return buff.toString();
   }
@@ -239,11 +226,17 @@ public class EFC implements Comparable< EFC >
   {
     int other = efc.value;
     if ( value < other )
+    {
       return -1;
+    }
     else if ( value == other )
+    {
       return 0;
+    }
     else
+    {
       return 1;
+    }
   }
 
   /** The value. */

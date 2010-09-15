@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -65,7 +64,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     // Never used, the methods that call it are overridden separately.
     return null;
   }
-  
+
   private void createRowObjectA( DeviceUpgrade baseUpgrade )
   {
     System.err.println( "DeviceUpgradePanel.createRowObject()" );
@@ -98,12 +97,12 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, table );
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );
-    
+
     editor = new DeviceUpgradeEditor( rm, upgrade, remotes, rowOut, this );
   }
 
   private DeviceUpgrade createRowObjectB( DeviceUpgradeEditor editor )
-  { 
+  {
     this.editor = null;
     DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
     if ( newUpgrade == null || oldUpgrade == null )
@@ -117,7 +116,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     {
       rowBound = null;
       return newUpgrade;
-    }  
+    }
 
     java.util.List< KeyMove > upgradeKeyMoves = newUpgrade.getKeyMoves();
     java.util.List< KeyMove > keyMoves = remoteConfig.getKeyMoves();
@@ -148,20 +147,20 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   protected void editRowObject( int row )
   {
     rowOut = row;
-    createRowObjectA( getRowObject( row ) );    
+    createRowObjectA( getRowObject( row ) );
   }
-  
+
   @Override
   protected void newRowObject( DeviceUpgrade baseUpgrade, int row, int modelRow, boolean select )
   {
     rowOut = null;
-    rowNew = ( row == -1 ) ? null : row;
-    rowModel = ( modelRow == -1 ) ? null : modelRow;
+    rowNew = row == -1 ? null : row;
+    rowModel = modelRow == -1 ? null : modelRow;
     this.select = select;
     createRowObjectA( baseUpgrade );
   }
-  
-  public void endEdit( DeviceUpgradeEditor editor, Integer row)
+
+  public void endEdit( DeviceUpgradeEditor editor, Integer row )
   {
     DeviceUpgrade newUpgrade = createRowObjectB( editor );
     if ( newUpgrade == null )
@@ -200,15 +199,11 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         // upgrade isn't bound to a device button.
         Remote remote = remoteConfig.getRemote();
         DeviceButton[] devButtons = remote.getDeviceButtons();
-        DeviceButton devButton = ( DeviceButton )JOptionPane
-            .showInputDialog(
-                RemoteMaster.getFrame(),
-                "The device upgrade \""
-                    + newUpgrade.toString()
-                    + "\" is not assigned to a device button.\nDo you want to assign it now?\n"
-                    + "To do so, select the desired device button and press OK.\n"
-                    + "Otherwise please press Cancel.\n",
-                "Unassigned Device Upgrade", JOptionPane.QUESTION_MESSAGE, null, devButtons, null );
+        DeviceButton devButton = ( DeviceButton )JOptionPane.showInputDialog( RemoteMaster.getFrame(),
+            "The device upgrade \"" + newUpgrade.toString()
+                + "\" is not assigned to a device button.\nDo you want to assign it now?\n"
+                + "To do so, select the desired device button and press OK.\n" + "Otherwise please press Cancel.\n",
+            "Unassigned Device Upgrade", JOptionPane.QUESTION_MESSAGE, null, devButtons, null );
         if ( devButton != null )
         {
           short[] data = remoteConfig.getData();
@@ -219,8 +214,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
           if ( remote.getDeviceUpgradeAddress() != null )
           {
             String message = "Remember to set the button-dependent and/or button-independent\n"
-                           + " settings in a manner consistent with your choice of button\n"
-                           + " assignment.";
+                + " settings in a manner consistent with your choice of button\n" + " assignment.";
             String title = "Creating a new device upgrade";
             JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
           }
@@ -228,11 +222,13 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       }
 
       if ( select )
+      {
         table.setRowSelectionInterval( rowNew, rowNew );
+      }
     }
     // If new upgrade uses an upgrade protocol not previously used, delete that protocol
     // from the list of unused protocols.
-    
+
     ProtocolUpgrade puUsed = null;
     for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
     {
@@ -246,9 +242,9 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     {
       remoteConfig.getProtocolUpgrades().remove( puUsed );
     }
-    
+
   }
-  
+
   public DeviceUpgradeEditor getDeviceUpgradeEditor()
   {
     return editor;
@@ -261,10 +257,10 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   private Boolean select = null;
   private DeviceUpgrade oldUpgrade = null;
   private DeviceUpgradeEditor editor = null;
-  
+
   /** The remote config. */
   private RemoteConfiguration remoteConfig;
 
   private JTextPane upgradeBugPane = new JTextPane();
-  
+
 }

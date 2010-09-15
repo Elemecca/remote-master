@@ -53,6 +53,7 @@ public class EFC5 extends EFC
    * 
    * @see com.hifiremote.jp1.EFC#getValue()
    */
+  @Override
   public int getValue()
   {
     return value & 0xFFFF;
@@ -63,6 +64,7 @@ public class EFC5 extends EFC
    * 
    * @see com.hifiremote.jp1.EFC#toString()
    */
+  @Override
   public String toString()
   {
     return String.format( "%1$05d", value & 0xFFFF );
@@ -71,23 +73,11 @@ public class EFC5 extends EFC
   /*
    * (non-Javadoc)
    * 
-   * @see com.hifiremote.jp1.EFC#toHex()
-   */
-  public Hex toHex()
-  {
-    Hex rc = new Hex( 2 );
-    toHex( rc );
-    return rc;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
    * @see com.hifiremote.jp1.EFC#toHex(com.hifiremote.jp1.Hex)
    */
-  public void toHex( Hex hex )
+  public Hex toHex( Hex hex )
   {
-    toHex( value, hex );
+    return toHex( value, hex );
   }
 
   /**
@@ -99,9 +89,7 @@ public class EFC5 extends EFC
    */
   public static Hex toHex( int val )
   {
-    Hex hex = new Hex( 2 );
-    toHex( val, hex );
-    return hex;
+    return toHex( val, null );
   }
 
   /**
@@ -112,33 +100,45 @@ public class EFC5 extends EFC
    * @param hex
    *          the hex
    */
-  public static void toHex( int val, Hex hex )
+  public static Hex toHex( int val, Hex hex )
   {
-    short[] data = hex.getData();
-    if ( hex.length() == 2 )
+    short[] data = null;
+    if ( hex != null )
     {
-      if ( val < 1000 )
-      {
-        int temp = val & 0xFF;
-        EFC.toHex( temp, hex, 0 );
-        data[ 1 ] = ( short )temp;
-      }
-      else
-      {
-        short byte1 = ( short )( ( val >> 8 ) & 0x00FF );
-        byte1 += 100;
-        byte1 &= 0xFF;
-        byte1 = ( short )( ( byte1 << 5 ) | ( byte1 >> 3 ) );
-        byte1 ^= 0x00D5;
-        data[ 0 ] = ( short )( byte1 & 0x00FF );
+      data = hex.getData();
+    }
 
-        data[ 1 ] = ( short )( ( val & 0x00FF ) ^ 0x00C5 );
+    if ( val < 1000 )
+    {
+      if ( hex == null )
+      {
+        hex = new Hex( 1 );
+        data = hex.getData();
+      }
+      int temp = val & 0xFF;
+      EFC.toHex( temp, hex, 0 );
+      if ( data.length > 1 )
+      {
+        data[ 1 ] = ( short )temp;
       }
     }
     else
     {
-      EFC.toHex( val, hex, 0 );
+      if ( hex == null )
+      {
+        hex = new Hex( 2 );
+        data = hex.getData();
+      }
+      short byte1 = ( short )( val >> 8 & 0x00FF );
+      byte1 += 100;
+      byte1 &= 0xFF;
+      byte1 = ( short )( byte1 << 5 | byte1 >> 3 );
+      byte1 ^= 0x00D5;
+      data[ 0 ] = ( short )( byte1 & 0x00FF );
+
+      data[ 1 ] = ( short )( val & 0x00FF ^ 0x00C5 );
     }
+    return hex;
   }
 
   /*
@@ -146,6 +146,7 @@ public class EFC5 extends EFC
    * 
    * @see com.hifiremote.jp1.EFC#fromHex(com.hifiremote.jp1.Hex)
    */
+  @Override
   public void fromHex( Hex hex )
   {
     value = parseHex( hex ) & 0x0FFFF;
@@ -170,14 +171,16 @@ public class EFC5 extends EFC
     {
       short byte1 = ( short )( data[ offset ] & 0xFF );
       byte1 ^= 0x00D5;
-      byte1 = ( short )( ( ( byte1 >> 5 ) | ( byte1 << 3 ) ) & 0xFF );
-      byte1 = ( short )( ( byte1 - 100 ) & 0xFF );
+      byte1 = ( short )( ( byte1 >> 5 | byte1 << 3 ) & 0xFF );
+      byte1 = ( short )( byte1 - 100 & 0xFF );
 
-      short byte2 = ( short )( ( data[ offset + 1 ] & 0xFF ) ^ 0xC5 );
+      short byte2 = ( short )( data[ offset + 1 ] & 0xFF ^ 0xC5 );
 
       short rc = ( short )( ( byte1 << 8 ) + byte2 );
       if ( rc < 1000 )
+      {
         rc += 65536;
+      }
       return ( short )( rc & 0xFFFF );
     }
     else

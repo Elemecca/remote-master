@@ -2859,7 +2859,7 @@ public class DeviceUpgrade
     Hex code = p.getCode( remote );
     if ( code != null )
     {
-      if ( ! ( p instanceof ManualProtocol ) )
+      if ( !( p instanceof ManualProtocol ) )
       {
         // The assumption is that a manual protocol will have been downloaded from a remote,
         // or otherwise created, with any such translation already incorporated.
@@ -3001,6 +3001,60 @@ public class DeviceUpgrade
     assignments.assign( b, f, state );
   }
 
+  private class ButtonState
+  {
+    public Button button;
+    public int state;
+  }
+
+  private ButtonState getButtonState( int keyCode )
+  {
+    ButtonState bs = new ButtonState();
+    bs.state = Button.NORMAL_STATE;
+    bs.button = remote.getButton( keyCode );
+    if ( bs.button == null )
+    {
+      int baseCode = keyCode & 0x3F;
+      if ( baseCode != 0 )
+      {
+        bs.button = remote.getButton( baseCode );
+        if ( ( baseCode | remote.getShiftMask() ) == keyCode )
+        {
+          bs.state = Button.SHIFTED_STATE;
+        }
+        if ( ( baseCode | remote.getXShiftMask() ) == keyCode )
+        {
+          bs.state = Button.XSHIFTED_STATE;
+        }
+      }
+      else
+      {
+        baseCode = keyCode & ~remote.getShiftMask();
+        bs.button = remote.getButton( baseCode );
+        if ( bs.button != null )
+        {
+          bs.state = Button.SHIFTED_STATE;
+        }
+        else
+        {
+          baseCode = keyCode & ~remote.getXShiftMask();
+          bs.button = remote.getButton( baseCode );
+          if ( bs.button != null )
+          {
+            bs.state = Button.XSHIFTED_STATE;
+          }
+        }
+      }
+    }
+    return bs;
+  }
+
+  public void setFunction( int keyCode, Function f )
+  {
+    ButtonState bs = getButtonState( keyCode );
+    setFunction( bs.button, f, bs.state );
+  }
+
   /**
    * Gets the function.
    * 
@@ -3013,6 +3067,12 @@ public class DeviceUpgrade
   public Function getFunction( Button b, int state )
   {
     return assignments.getAssignment( b, state );
+  }
+
+  public Function getFunction( int keyCode )
+  {
+    ButtonState bs = getButtonState( keyCode );
+    return assignments.getAssignment( bs.button, bs.state );
   }
 
   public String toString()

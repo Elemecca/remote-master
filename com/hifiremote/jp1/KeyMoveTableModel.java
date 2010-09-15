@@ -35,33 +35,49 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   {
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
-    {      
+    {
       Remote remote = remoteConfig.getRemote();
-      allKeyMoves = new ArrayList< KeyMove >( remoteConfig.getKeyMoves() );
-      DeviceButton[] deviceButtons = remote.getDeviceButtons();
-      short[] remoteData = remoteConfig.getData();
-      upgradeKeyMoveCount = 0;
-      for ( int i = 0; i < deviceButtons.length; i++ )
-      {
-        DeviceButton db = deviceButtons[ i ];
-        DeviceUpgrade du = remoteConfig.findDeviceUpgrade( db.getDeviceTypeIndex( remoteData ), db.getSetupCode( remoteData ) );
-        if ( du != null )
-        {
-          for ( KeyMove keyMove : du.getKeyMoves() )
-          {
-            keyMove.setDeviceButtonIndex( i );
-            allKeyMoves.add( keyMove );
-            upgradeKeyMoveCount++;
-          }
-        }
-      }
-
-      setData( allKeyMoves );
       deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
       deviceTypeBox.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
+
+      StringBuilder sb = new StringBuilder( "<html>EFC" );
+      if ( remote.getEFCDigits() == 5 )
+      {
+        sb.append( "-5" );
+      }
+      if ( remote.supportsKeyCodeKeyMoves() )
+      {
+        sb.append( ", Key" );
+      }
+      sb.append( " or<br/>Function Name</html>" );
+      colNames[ 7 ] = sb.toString();
+
+      refresh();
+      setData( allKeyMoves );
     }
+  }
+
+  public void refresh()
+  {
+    allKeyMoves = new ArrayList< KeyMove >( remoteConfig.getKeyMoves() );
+    DeviceButton[] deviceButtons = remoteConfig.getRemote().getDeviceButtons();
+    upgradeKeyMoveCount = 0;
+    for ( int i = 0; i < deviceButtons.length; i++ )
+    {
+      DeviceUpgrade du = remoteConfig.getAssignedDeviceUpgrade( deviceButtons[ i ] );
+      if ( du != null )
+      {
+        for ( KeyMove keyMove : du.getKeyMoves() )
+        {
+          keyMove.setDeviceButtonIndex( i );
+          allKeyMoves.add( keyMove );
+          upgradeKeyMoveCount++ ;
+        }
+      }
+    }
+    data = allKeyMoves;
   }
 
   /**
@@ -88,7 +104,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private static String[] colNames =
   {
       "#", "<html>Device<br>Button</html>", "Key", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>",
-      "Raw Data", "Hex", "<html>EFC or<br>Key Name</html>", "Notes"
+      "Raw Data", "Hex", "<html>EFC, Key, or<br>Function Name</html>", "Notes"
   };
 
   /*
@@ -163,7 +179,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( row >=  remoteConfig.getKeyMoves().size() )
+    if ( row >= remoteConfig.getKeyMoves().size() )
     {
       return false;
     }
@@ -332,51 +348,49 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer()
   {
     @Override
-    public Component getTableCellRendererComponent( JTable table, Object value, 
-        boolean isSelected, boolean hasFocus,
+    public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
         int row, int col )
     {
       int modelRow = sorter.modelIndex( row );
       Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
-      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? Color.BLACK : Color.GRAY );        
+      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? Color.BLACK : Color.GRAY );
       return c;
     }
   };
-  
+
   private DefaultTableCellRenderer kmRenderer = new DefaultTableCellRenderer()
   {
     @Override
-    public Component getTableCellRendererComponent( JTable table, Object value, 
-        boolean isSelected, boolean hasFocus,
+    public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
         int row, int col )
     {
       int modelRow = sorter.modelIndex( row );
       Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
-      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? Color.BLACK : Color.GRAY ); 
+      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? Color.BLACK : Color.GRAY );
       return c;
     }
   };
- 
+
   public void resetKeyMoves()
   {
     java.util.List< KeyMove > keymoves = new ArrayList< KeyMove >();
     keymoves.addAll( allKeyMoves.subList( 0, allKeyMoves.size() - upgradeKeyMoveCount ) );
     remoteConfig.setKeyMoves( keymoves );
   }
-  
+
   private int upgradeKeyMoveCount = 0;
 
   public int getUpgradeKeyMoveCount()
   {
     return upgradeKeyMoveCount;
   }
-  
+
   private java.util.List< KeyMove > allKeyMoves = null;
 
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
 
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
-  
+
   public TableSorter sorter = null;
 }

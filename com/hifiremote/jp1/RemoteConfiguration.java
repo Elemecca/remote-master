@@ -19,11 +19,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
+
+import com.hifiremote.jp1.AdvancedCode.BindFormat;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -1078,7 +1081,7 @@ public class RemoteConfiguration
    */
   private void migrateKeyMovesToDeviceUpgrades()
   {
-    for ( Iterator< KeyMove > it = keymoves.iterator(); it.hasNext(); )
+    for ( ListIterator< KeyMove > it = keymoves.listIterator(); it.hasNext(); )
     {
       KeyMove keyMove = it.next();
 
@@ -1096,12 +1099,15 @@ public class RemoteConfiguration
       DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
       if ( boundUpgrade != null && boundUpgrade == moveUpgrade )
       {
-        System.err.println( "Moving keymove on " + boundDeviceButton + ':'
-            + remote.getButtonName( keyMove.getKeyCode() ) + " to device upgrade " + boundUpgrade.getDeviceType() + '/'
-            + boundUpgrade.getSetupCode() );
-        it.remove();
-        // Add the keymove to the device upgrade instead of the keymove collection
         Hex cmd = keyMove.getCmd();
+        if ( remote.getAdvCodeBindFormat() == BindFormat.LONG
+            && moveUpgrade.getProtocol().getDefaultCmd().length() == 1 )
+        {
+          cmd = cmd.subHex( 0, 1 );
+          keyMove = new KeyMoveLong( keyCode, keyMove.getDeviceButtonIndex(), keyMove.getDeviceType(), keyMove
+              .getSetupCode(), cmd, keyMove.getNotes() );
+          it.set( keyMove );
+        }
         Function f = boundUpgrade.getFunction( cmd );
         if ( f == null )
         {
@@ -1113,43 +1119,23 @@ public class RemoteConfiguration
           f = new Function( text, cmd, null );
           boundUpgrade.getFunctions().add( f );
         }
-        int state = Button.NORMAL_STATE;
-        Button b = remote.getButton( keyCode );
-        if ( b == null )
+
+        boolean migrate = true;
+        // Don't migrate keymoves on buttons in the button map for the device type
+        Button b = remote.getButton( keyMove.getKeyCode() );
+        if ( b != null )
         {
-          int baseCode = keyCode & 0x3F;
-          if ( baseCode != 0 )
-          {
-            b = remote.getButton( baseCode );
-            if ( ( baseCode | remote.getShiftMask() ) == keyCode )
-            {
-              state = Button.SHIFTED_STATE;
-            }
-            if ( ( baseCode | remote.getXShiftMask() ) == keyCode )
-            {
-              state = Button.XSHIFTED_STATE;
-            }
-          }
-          else
-          {
-            baseCode = keyCode & ~remote.getShiftMask();
-            b = remote.getButton( baseCode );
-            if ( b != null )
-            {
-              state = Button.SHIFTED_STATE;
-            }
-            else
-            {
-              baseCode = keyCode & ~remote.getXShiftMask();
-              b = remote.getButton( baseCode );
-              if ( b != null )
-              {
-                state = Button.XSHIFTED_STATE;
-              }
-            }
-          }
+          migrate = !remote.getDeviceTypeByIndex( keyMove.getDeviceType() ).getButtonMap().isPresent( b );
         }
-        boundUpgrade.setFunction( b, f, state );
+
+        if ( migrate )
+        {
+          System.err.println( "Moving keymove on " + boundDeviceButton + ':'
+              + remote.getButtonName( keyMove.getKeyCode() ) + " to device upgrade " + boundUpgrade.getDeviceType()
+              + '/' + boundUpgrade.getSetupCode() );
+          boundUpgrade.setFunction( keyCode, f );
+          it.remove();
+        }
       }
     }
   }
