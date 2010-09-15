@@ -6,6 +6,7 @@ Changes for v2.00
 - Create new interface, ButtonEnabler, and use it to improve logical separation between MacroDefinitionBox and MacroDialog. (Graham)
 - Fix Setup.vbs for Windows users who don't run as Admin, Updated Readme.html (Greg)
 - Implement Timed Macros (Graham)
+-- Preview 3 --
 - Implement File/New (Graham)
 - Implement File/Open of Sling Learned Signal XML files (Greg)
 - Add toolbar button to open RDF for viewing or live editing (Graham)
@@ -25,6 +26,7 @@ Changes for v2.00
 - Remember the folder in which files are opened regardless of type (Greg)
 - Add an "All supported files" type to the file open dialog, and use it as the default (Greg)
 - Add transient, user controlled ignore field to learned signal decodes (Greg)
+-- Preview 4 --
 - Implement Setup Code Validation (Graham)
 - Resolve an issue with Device Upgrade Editor that caused, among other things, the OK and Cancel buttons to have the same effect (Graham)
 - Implement Code Selector (Graham)
@@ -39,6 +41,7 @@ Changes for v2.00
 - Launch RM directly from RM icon (Run Setup.vbs to create/update the shortcuts)
 - Add .rmdu as well as .rmir files to RMIR's recent file list
 - Improve identification of raw protocols by checking variance of OEM and Parm device parameters from default values (Graham)
+-- Preview 5 --
 - Correct bug in reading of device upgrade button maps which caused spurious buttons to be treated as mapped (Graham)
 - Correct bug that would cause error with pids > $01FF (Graham)
 - When changing device button assignment from a device upgrade with key moves, ask if user wants to retain the key moves (Graham)
@@ -46,6 +49,7 @@ Changes for v2.00
 - Added facility to import and edit protocols from ProtocolBuilder (Graham)
 - Tentative fix for Setup.vbs on 64-bit Windows 7 (Greg)
 - Disable context menu items for device upgrade keymoves shown on the keymove panel (Greg)
+-- Preview 6 --
 - Enable export as a .ir file
 - Enable Open RDF toolbar button after a download (Graham)
 - Change bar color of Progress Bars to aquamarine, for greater contrast with blue text (Graham)
@@ -56,6 +60,7 @@ Changes for v2.00
 - Add support for using device upgrade functions in the keymove editor (Greg)
 - Fix KM file filtering in Device Upgrade Editor open file dialog (Greg)
 - Fix key code keymove support (Greg)
+-- Preview 7 --
 - Add installed upgrade selector to keymove editor, for upgrades that aren't assigned to a device button (Greg)
 - Add * after PID in Device tab to indicate a protocol upgrade will be installed with the device upgrade. (Greg)
 - More fixed for EFC5 handling of single-byte functions (Greg)
