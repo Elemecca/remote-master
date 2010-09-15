@@ -512,6 +512,7 @@ public class Remote implements Comparable< Remote >
    */
   public int getEepromSize()
   {
+    load();
     return eepromSize;
   }
 
@@ -3253,6 +3254,11 @@ public class Remote implements Comparable< Remote >
   public FixedData[] getFixedData()
   {
     return fixedData;
+  }
+
+  public void setFixedData( FixedData[] fixedData )
+  {
+    this.fixedData = fixedData;
   }
 
   public FixedData[] getAutoSet()

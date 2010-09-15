@@ -1,6 +1,8 @@
 package com.hifiremote.jp1;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 // TODO: Auto-generated Javadoc
@@ -136,6 +138,28 @@ public class FixedData
       }
     }
     return true;
+  }
+  
+  public static Remote[] filter( List< Remote > remotes, short[] buffer )
+  {
+    List< Remote > passed = new ArrayList< Remote >();
+    for ( Remote remote : remotes )
+    {
+      boolean pass = true;
+      for ( FixedData fixedData : remote.getFixedData() )
+      {
+        if ( ! fixedData.check( buffer ) )
+        {
+          pass = false;
+          break;
+        }
+      }
+      if ( pass )
+      {
+        passed.add( remote );
+      }   
+    }    
+    return passed.toArray( new Remote[ 0 ] );
   }
 
   public void store( short[] buffer )

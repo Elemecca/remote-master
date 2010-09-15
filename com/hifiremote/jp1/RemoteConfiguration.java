@@ -189,14 +189,39 @@ public class RemoteConfiguration
     }
 
     int baseAddr = Integer.parseInt( property.name, 16 );
-    short[] first = Hex.parseHex( property.value );
+    
+    List< Integer > offsets = new ArrayList< Integer >();    
+    List< short[] > values = new ArrayList< short[] >();
+    
+    while ( property != null )
+    {
+      if ( property.name.length() == 0 || property.name.startsWith( "[" ) )
+      {
+        break;
+      }
+      offsets.add( Integer.parseInt( property.name, 16 ) - baseAddr );
+      values.add( Hex.parseHex( property.value ) );
+      property = pr.nextProperty();
+    }
+    
+    int eepromSize = 0;
+    for ( int i = 0; i < offsets.size(); i++ )
+    {
+      eepromSize = Math.max( eepromSize, offsets.get( i ) + values.get( i ).length );
+    }
+    
+    data = new short[ eepromSize ];
+    for ( int i = 0; i < offsets.size(); i++ )
+    {
+      System.arraycopy( values.get( i ), 0, data, offsets.get( i ), values.get( i ).length );
+    }
 
     if ( remote == null )
     {
       char[] sig = new char[ 8 ];
       for ( int i = 0; i < sig.length; ++i )
       {
-        sig[ i ] = ( char )first[ i + 2 ];
+        sig[ i ] = ( char )data[ i + 2 ];
       }
 
       String signature = new String( sig );
@@ -207,14 +232,23 @@ public class RemoteConfiguration
       {
         for ( int i = 0; i < sig.length; ++i )
         {
-          sig[ i ] = ( char )first[ i ];
+          sig[ i ] = ( char )data[ i ];
         }
         signature2 = new String( sig );
         remotes = rm.findRemoteBySignature( signature2 );
       }
+      // Filter on matching eeprom size
+      for ( Iterator< Remote > it = remotes.iterator(); it.hasNext(); )
+      {
+        if ( it.next().getEepromSize() != eepromSize )
+        {
+            it.remove();
+        }
+      }        
       if ( remotes == null || remotes.isEmpty() )
       {
-        String message = "No remote found for with signature " + signature + " or " + signature2;
+        String message = "No remote found with signature " + signature + " or " + signature2
+          + " and EEPROM size " + ( eepromSize >> 10 ) + "k";
         JOptionPane.showMessageDialog( null, message, "Unknown remote", JOptionPane.ERROR_MESSAGE );
         throw new IllegalArgumentException();
       }
@@ -228,16 +262,28 @@ public class RemoteConfiguration
         {
           signature = signature2;
         }
-        String message = "The file you are loading is for a remote with signature \"" + signature
-            + "\".\nThere are multiple remotes with that signature.  Please choose the best match from the list below:";
-
-        Remote[] choices = new Remote[ remotes.size() ];
-        choices = remotes.toArray( choices );
-        remote = ( Remote )JOptionPane.showInputDialog( null, message, "Unknown Remote", JOptionPane.ERROR_MESSAGE,
-            null, choices, choices[ 0 ] );
-        if ( remote == null )
+        // Filter on matching fixed data
+        Remote[] choices = FixedData.filter( remotes, data );
+        if ( choices.length == 0 )
         {
-          throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
+          // None of the remotes match on fixed data, so offer whole list
+          choices = remotes.toArray( choices );
+        }
+        if ( choices.length == 1 )
+        {
+          remote = choices[ 0 ];
+        }
+        else
+        {
+          String message = "The file you are loading is for a remote with signature \"" + signature
+          + "\".\nThere are multiple remotes with that signature.  Please choose the best match from the list below:";
+
+          remote = ( Remote )JOptionPane.showInputDialog( null, message, "Unknown Remote", JOptionPane.ERROR_MESSAGE,
+              null, choices, choices[ 0 ] );
+          if ( remote == null )
+          {
+            throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
+          }
         }
       }
     }
@@ -256,19 +302,6 @@ public class RemoteConfiguration
     }
 
     deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
-    data = new short[ remote.getEepromSize() ];
-    System.arraycopy( first, 0, data, 0, first.length );
-
-    first = null;
-    while ( ( property = pr.nextProperty() ) != null )
-    {
-      if ( property.name.length() == 0 || property.name.startsWith( "[" ) )
-      {
-        break;
-      }
-      int offset = Integer.parseInt( property.name, 16 ) - baseAddr;
-      Hex.parseHex( property.value, data, offset );
-    }
 
     if ( remote.hasFavKey() )
     {
@@ -1548,6 +1581,18 @@ public class RemoteConfiguration
     }
     for ( FixedData fixed : fixedData )
     {
+      if ( ! fixed.check( data ) )
+      {
+        String message = "The fixed data in the RDF does not match the values in the remote.\n"
+          + "Do you want to replace the values in the remote with those from the RDF?";
+        String title = "Fixed data mismatch";
+        if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+            JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
+        {
+          remote.setFixedData( null );
+          return;
+        }
+      }
       fixed.store( data );
     }
   }
@@ -2119,10 +2164,16 @@ public class RemoteConfiguration
     i = 0;
     for ( ProtocolUpgrade upgrade : requiredProtocols.values() )
     {
-      prOffsets[ i++ ] = offset;
       Hex hex = upgrade.getCode();
-      Hex.put( hex, data, offset );
-      offset += hex.length();
+      // Check that there is protocol code for this processor - manual settings,
+      // if care is not taken, can create a protocol for the wrong processor and
+      // so lead to hex being null.
+      if ( hex != null )
+      {
+        prOffsets[ i++ ] = offset;      
+        Hex.put( hex, data, offset );
+        offset += hex.length();
+      }
     }
 
     int protUpgradesEnd = offset + remote.getBaseAddress();

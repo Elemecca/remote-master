@@ -299,26 +299,40 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
                 r.load();
                 for ( FixedData fixedData : r.getFixedData() )
                 {
-                  maxEepromSize = Math.max( maxEepromSize, fixedData.getAddress() + fixedData.getData().length - 1 );
+                  maxEepromSize = Math.max( maxEepromSize, fixedData.getAddress() + fixedData.getData().length );
                 }
               }
 
               short[] buffer = new short[ maxEepromSize ];
               io.readRemote( remotes.get( 0 ).getBaseAddress(), buffer );
 
-              Remote[] choices = new Remote[ remotes.size() ];
-              choices = remotes.toArray( choices );
-              String message = "Please pick the best match to your remote from the following list:";
-              Object rc = JOptionPane.showInputDialog( null, message, "Ambiguous Remote", JOptionPane.ERROR_MESSAGE,
-                  null, choices, choices[ 0 ] );
-              if ( rc == null )
+//              Remote[] choices = new Remote[ remotes.size() ];
+//              choices = remotes.toArray( choices );
+              
+              Remote[] choices = FixedData.filter( remotes, buffer );
+              if ( choices.length == 0 )
               {
-                io.closeRemote();
-                return;
+                // None of the remotes match on fixed data, so offer whole list
+                choices = remotes.toArray( choices );
+              }
+              if ( choices.length == 1 )
+              {
+                remote = remotes.get( 0 );
               }
               else
               {
-                remote = ( Remote )rc;
+                String message = "Please pick the best match to your remote from the following list:";
+                Object rc = JOptionPane.showInputDialog( null, message, "Ambiguous Remote", JOptionPane.ERROR_MESSAGE,
+                    null, choices, choices[ 0 ] );
+                if ( rc == null )
+                {
+                  io.closeRemote();
+                  return;
+                }
+                else
+                {
+                  remote = ( Remote )rc;
+                }
               }
             }
           }
