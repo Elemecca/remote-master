@@ -71,6 +71,7 @@ Changes for v2.00
 - Check EEPROM size against RDF when importing .ir file (Graham)
 - Use Fixed Data as a matching criterion when downloading or importing a .ir file (Graham)
 - Ask whether to replace fixed data when there is a mismatch with RDF (Graham) 
+- Fix bug that made an empty RDF [FixedData] section cause an exception (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

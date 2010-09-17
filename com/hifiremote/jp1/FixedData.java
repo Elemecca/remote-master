@@ -124,7 +124,10 @@ public class FixedData
     {
       b[ j++ ] = by.shortValue();
     }
-    work.add( new FixedData( address, b ) );
+    if ( address != -1 )
+    {
+      work.add( new FixedData( address, b ) );
+    }
     return work.toArray( new FixedData[ work.size() ] );
   }
 
