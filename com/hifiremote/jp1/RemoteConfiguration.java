@@ -160,6 +160,10 @@ public class RemoteConfiguration
           {
             learned.add( ( LearnedSignal )o );
           }
+          else if ( sectionName.equals( "ManualProtocol" ) )
+          {
+            ProtocolManager.getProtocolManager().add( ( ManualProtocol )o );
+          }
         }
         catch ( Exception e )
         {
@@ -2466,6 +2470,14 @@ public class RemoteConfiguration
     {
       pw.printHeader( "ProtocolUpgrade" );
       protocol.store( pw );
+      ManualProtocol mp = protocol.getManualProtocol( remote );
+      if ( mp != null )
+      {
+        pw.printHeader( "ManualProtocol" );
+        pw.print( "Name", mp.getName() );
+        pw.print( "PID", mp.getID() );
+        mp.store( pw );
+      }
     }
 
     for ( LearnedSignal signal : learned )

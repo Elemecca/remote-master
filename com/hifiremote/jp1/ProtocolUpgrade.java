@@ -52,6 +52,23 @@ public class ProtocolUpgrade
     if ( ( notes != null ) && !notes.equals( "" ) )
       pw.print( "Notes", notes );
   }
+  
+  public ManualProtocol getManualProtocol( Remote remote )
+  {
+    short[] hex = new short[ 2 ];
+    hex[ 0 ] = ( short )( pid / 0x100 );
+    hex[ 1 ] = ( short )( pid % 0x100 );
+
+    Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, new Hex( hex ), true );
+    if ( p != null && ( p instanceof ManualProtocol ) )
+    {
+      return ( ManualProtocol )p;
+    }
+    else
+    {
+      return null;
+    }
+  }
 
   /**
    * Gets the pid.

@@ -46,20 +46,7 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
     }
     else 
     {
-      int pid = baseUpgrade.getPid();
-      short[] hex = new short[ 2 ];
-      hex[ 0 ] = ( short )( pid / 0x100 );
-      hex[ 1 ] = ( short )( pid % 0x100 );
-
-      Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, new Hex( hex ), true );
-      if ( p != null && ( p instanceof ManualProtocol ) )
-      {
-        mp = ( ManualProtocol )p;
-      }
-      else
-      {
-        return null;
-      }
+      mp = baseUpgrade.getManualProtocol( remote );
     }
     
     ManualSettingsDialog d = new ManualSettingsDialog( rm, mp );

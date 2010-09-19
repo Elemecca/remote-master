@@ -41,6 +41,13 @@ public class ManualProtocol extends Protocol
       notes = props.getProperty( "Protocol.notes" );
     }
   }
+  
+  public ManualProtocol( Properties props )
+  {
+    this( null, props );
+    name = props.getProperty( "Name" );
+    id = new Hex( props.getProperty( "PID" ) );
+  }
 
   /**
    * Instantiates a new manual protocol.

@@ -77,6 +77,7 @@ Changes for v2.00
 - Recognise processor type S3F8 in heading of imported manual protocol (Graham)
 - Set PID from heading when importing manual protocol (Graham)
 - Update device parameter label when parameter name is edited (Graham)
+- Save unassigned manual protocols, ie those shown on Protocols tab, in .rmir file (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
