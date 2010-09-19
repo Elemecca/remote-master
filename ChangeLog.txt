@@ -72,6 +72,11 @@ Changes for v2.00
 - Use Fixed Data as a matching criterion when downloading or importing a .ir file (Graham)
 - Ask whether to replace fixed data when there is a mismatch with RDF (Graham) 
 - Fix bug that made an empty RDF [FixedData] section cause an exception (Graham)
+- Treat tab character as white space when parsing hex string (Graham)
+- Prevent NullPointerException if a manual protocol has no code for the processor concerned (Graham)
+- Recognise processor type S3F8 in heading of imported manual protocol (Graham)
+- Set PID from heading when importing manual protocol (Graham)
+- Update device parameter label when parameter name is edited (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

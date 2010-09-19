@@ -38,6 +38,7 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
   public ProtocolUpgrade createRowObject( ProtocolUpgrade baseUpgrade )
   {
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+    Remote remote = remoteConfig.getRemote();
     ManualProtocol mp = null;
     if ( baseUpgrade == null )
     {      
@@ -50,8 +51,7 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
       hex[ 0 ] = ( short )( pid / 0x100 );
       hex[ 1 ] = ( short )( pid % 0x100 );
 
-      Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote(
-          remoteConfig.getRemote(), new Hex( hex ), true );
+      Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, new Hex( hex ), true );
       if ( p != null && ( p instanceof ManualProtocol ) )
       {
         mp = ( ManualProtocol )p;
@@ -65,12 +65,11 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
     ManualSettingsDialog d = new ManualSettingsDialog( rm, mp );
     d.setVisible( true );
     mp = d.getProtocol();
-    if ( mp != null )
+    if ( mp != null && mp.getCode( remote ) != null )
     {
       mp.setName( "Manual Settings: " + mp.getID().toString() );
       ProtocolManager.getProtocolManager().add( mp );
-      ProtocolUpgrade pu = new ProtocolUpgrade( mp.getID().get( 0 ), 
-          mp.getCode( remoteConfig.getRemote() ), null);
+      ProtocolUpgrade pu = new ProtocolUpgrade( mp.getID().get( 0 ), mp.getCode( remote ), null );
       return pu;
     }
 

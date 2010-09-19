@@ -30,11 +30,17 @@ public abstract class DeviceParameter
   public DeviceParameter( String name, DefaultValue defaultValue )
   {
     super( name, defaultValue );
+  }
+  
+  @Override
+  public void setName( String name )
+  {
+    super.setName( name );
     name = getDisplayName();
     if ( name.length() > 0 )
       label = new JLabel( name + ':', SwingConstants.RIGHT );
     else
-      label = new JLabel();
+      label = new JLabel();    
   }
   
   /**

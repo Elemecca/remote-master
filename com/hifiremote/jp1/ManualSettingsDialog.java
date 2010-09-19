@@ -543,6 +543,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     StringTokenizer st = new StringTokenizer( string, "\n" );
     String text = null;
     String processor = null;
+    String pidStr = null;
     while ( st.hasMoreTokens() )
     {
       while ( st.hasMoreTokens() )
@@ -553,12 +554,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           StringTokenizer st2 = new StringTokenizer( text, "()=" );
           st2.nextToken(); // discard everything before the =
-          String pidStr = st2.nextToken().trim();
+          pidStr = st2.nextToken().trim();
           System.err.println( "Imported pid is " + pidStr );
           processor = st2.nextToken().trim();
           System.err.println( "processorName is " + processor );
           if ( processor.startsWith( "S3C8" ) )
             processor = "S3C80";
+          else if ( processor.startsWith( "S3F8" ) )
+            processor = "S3F80";
           if ( st2.hasMoreTokens() )
           {
             String importedName = st2.nextToken().trim();
@@ -580,7 +583,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         System.err.println( "getting processor with name " + processor );
         Processor p = ProcessorManager.getProcessor( processor );
         if ( p != null )
-          processor = p.getFullName();
+        {
+          // processor = p.getFullName();
+          processor = p.getEquivalentName();
+          p = ProcessorManager.getProcessor( processor );
+          pid.setValue( new Hex( pidStr ) );
+        }
         System.err.println( "Adding code for processor " + processor );
         System.err.println( "Code is " + text );
         for ( int i = 0; i < procs.length; i++ )

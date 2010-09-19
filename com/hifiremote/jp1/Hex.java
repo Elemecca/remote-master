@@ -293,7 +293,7 @@ public class Hex implements Cloneable, Comparable< Hex >
     }
     else
     {
-      StringTokenizer st = new StringTokenizer( text, " _.$h\n\r" );
+      StringTokenizer st = new StringTokenizer( text, " _.$h\n\r\t" );
       length = st.countTokens();
       rc = new short[ length ];
       parseHex( text, rc, 0 );
@@ -313,13 +313,13 @@ public class Hex implements Cloneable, Comparable< Hex >
    */
   public static void parseHex( String text, short[] data, int offset )
   {
-    StringTokenizer st = new StringTokenizer( text, " _.$h\n\r", true );
+    StringTokenizer st = new StringTokenizer( text, " _.$h\n\r\t", true );
     short value = 0;
     while ( st.hasMoreTokens() )
     {
       String token = st.nextToken();
       if ( token.equals( " " ) || token.equals( "$" ) || token.equals( "h" ) || token.equals( "\n" )
-          || token.equals( "\r" ) )
+          || token.equals( "\r" ) || token.equals( "\t" ) )
         value = 0;
       else if ( token.equals( "_" ) )
         value = ADD_OFFSET;
