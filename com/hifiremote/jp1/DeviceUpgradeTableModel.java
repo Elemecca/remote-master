@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -142,8 +145,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, String.class, String.class,
-      Protocol.class, String.class
+      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, Protocol.class,
+      Protocol.class, Protocol.class, String.class
   };
 
   /*
@@ -170,11 +173,10 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     {
       return true;
     }
-    else if ( col == 7 )
+    else if ( col == 5 || col == 6 || col == 7 )
     {
       Protocol p = getRow( row ).getProtocol();
       return p instanceof ManualProtocol;
-
     }
     return false;
   }
@@ -200,14 +202,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 4:
         return device.getButtonIndependent();
       case 5:
-        String id = device.getProtocol().getID().toString();
-        if ( device.getProtocol().needsCode( remoteConfig.getRemote() ) )
-        {
-          id += "*";
-        }
-        return id;
       case 6:
-        return device.getProtocol().getVariantName();
       case 7:
         return device.getProtocol();
       case 8:
@@ -235,6 +230,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         device.setButtonIndependent( ( Boolean )value );
         propertyChangeSupport.firePropertyChange( "device", null, null );
         break;
+      case 5:
+      case 6:
       case 7:
         device.setProtocol( ( Protocol )value );
         propertyChangeSupport.firePropertyChange( "device", null, null );
@@ -253,9 +250,38 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
+    col = getEffectiveColumn( col );
     if ( col == 0 )
     {
       return new RowNumberRenderer();
+    }
+    else if ( col == 5 )
+    {
+      return new DefaultTableCellRenderer()
+      {
+        @Override
+        public Component getTableCellRendererComponent( JTable table, Object value, 
+            boolean isSelected, boolean hasFocus,
+            int row, int col )
+        {
+          String starredID = ( ( Protocol )value ).getStarredID( remoteConfig.getRemote() ); 
+          return super.getTableCellRendererComponent( table, starredID, isSelected, false, row, col );
+        }
+      };
+    }
+    else if ( col == 6 )
+    {
+      return new DefaultTableCellRenderer()
+      {
+        @Override
+        public Component getTableCellRendererComponent( JTable table, Object value, 
+            boolean isSelected, boolean hasFocus,
+            int row, int col )
+        {
+          String variant = ( ( Protocol )value ).getVariantName();
+          return super.getTableCellRendererComponent( table, variant, isSelected, false, row, col );
+        }
+      };
     }
     return null;
   }
@@ -263,14 +289,24 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   @Override
   public TableCellEditor getColumnEditor( int col )
   {
-    switch ( getEffectiveColumn( col ) )
+    col = getEffectiveColumn( col );
+    switch ( col )
     {
       case 3:
         DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
+      case 5:
+      case 6:
       case 7:
-        return manualSettingsEditor;
+        if ( remoteConfig != null )
+        {
+          return new ManualSettingsEditor( remoteConfig.getRemote(), col );
+        }
+        else
+        {
+          return null;
+        }
       case 8:
         return descriptionEditor;
     }
@@ -340,8 +376,6 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private RemoteConfiguration remoteConfig = null;
 
   private SelectAllCellEditor descriptionEditor = new SelectAllCellEditor();
-
-  private ManualSettingsEditor manualSettingsEditor = new ManualSettingsEditor();
 
   private JComboBox deviceButtonBox = new JComboBox();
 }

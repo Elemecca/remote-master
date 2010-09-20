@@ -1099,6 +1099,16 @@ public class Protocol
     }
     return alternatePID;
   }
+  
+  public String getStarredID( Remote remote )
+  {
+    String starredID = id.toString();
+    if ( needsCode( remote ) )
+    {
+      starredID += "*";
+    }
+    return starredID;
+  }
 
   /**
    * Gets the variant name.

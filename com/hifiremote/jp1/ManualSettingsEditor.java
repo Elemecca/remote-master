@@ -17,10 +17,12 @@ import javax.swing.table.TableCellEditor;
 public class ManualSettingsEditor extends DefaultCellEditor implements TableCellEditor, ActionListener
 {
 
-  public ManualSettingsEditor()
+  public ManualSettingsEditor( Remote remote, int column )
   {
     super( new JTextField() );
     setClickCountToStart( RMConstants.ClickCountToStart );
+    this.remote = remote;
+    this.column = column;
     button = new JButton();
     button.setBorder( BorderFactory.createEmptyBorder( 1, 1, 1, 1 ) );
     button.setHorizontalAlignment( SwingConstants.LEADING );
@@ -36,10 +38,21 @@ public class ManualSettingsEditor extends DefaultCellEditor implements TableCell
   }
   
   @Override
-  public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int column )
+  public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int col )
   {
     this.value = ( Protocol )value;
-    button.setText( this.value.toString() );
+    switch ( column )
+    {
+      case 5:
+        button.setText( this.value.getStarredID( remote ) );
+        break;
+      case 6:
+        button.setText( this.value.getVariantName() );
+        break;
+      case 7:
+        button.setText( this.value.toString() );
+        break;
+    }
     return button;
   }
   
@@ -73,12 +86,12 @@ public class ManualSettingsEditor extends DefaultCellEditor implements TableCell
         fireEditingCanceled();
       }
     }
-
-
   }
   
   private JButton button = null;
   private Protocol value = null;
+  private int column = 0;
+  private Remote remote = null;
   
   protected static final String EDIT = "edit";
 
