@@ -185,15 +185,6 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     else
     {
       // New, Clone
-      if ( rowNew == null )
-      {
-        model.addRow( newUpgrade );
-        row = model.getRowCount();
-      }
-      else
-      {
-        model.insertRow( rowModel, newUpgrade );
-      }
       if ( remoteConfig.findBoundDeviceButtonIndex( newUpgrade ) == -1 )
       {
         // upgrade isn't bound to a device button.
@@ -219,6 +210,16 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
             JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
           }
         }
+      }
+      
+      if ( rowNew == null )
+      {
+        model.addRow( newUpgrade );
+        row = model.getRowCount();
+      }
+      else
+      {
+        model.insertRow( rowModel, newUpgrade );
       }
 
       if ( select )
