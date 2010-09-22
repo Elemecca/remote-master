@@ -102,7 +102,7 @@ public class DeviceButton
   public int getDeviceGroup( short[] data )
   {
     if ( typeAddress > 0 ) return data[ typeAddress ];
-    else return getDeviceTypeIndex( data );
+    else return -1;
   }
   
   public void setDeviceGroup( short group, short[] data )

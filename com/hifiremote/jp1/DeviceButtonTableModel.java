@@ -365,7 +365,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       
       DeviceLabels labels = remote.getDeviceLabels();
 
-      if ( ( oldIndex == newIndex ) && ( oldGroup == newGroup ) )
+      if ( ( oldIndex == newIndex ) && ( oldGroup == -1 || oldGroup == newGroup ) )
       {
         return;
       }

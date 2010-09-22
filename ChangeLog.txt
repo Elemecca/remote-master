@@ -79,6 +79,7 @@ Changes for v2.00
 - Update device parameter label when parameter name is edited (Graham)
 - Save unassigned manual protocols, ie those shown on Protocols tab, in .rmir file (Graham)
 - Edit a Manual Protocol by double clicking any of PID, Variant or Protocol columns of Devices tab (Graham)
+- Fix bug in handling of entries in RDF [DeviceTypes] section when a DevTypeNum value is given with no high byte (Graham) 
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

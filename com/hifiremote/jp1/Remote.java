@@ -628,8 +628,15 @@ public class Remote implements Comparable< Remote >
 
   public DeviceType getDeviceTypeByIndexAndGroup( int index, int group )
   {
-    int fullType = index | group << 8;
-    return devicesByType.get( fullType );
+    if ( group == -1 )
+    {
+      return getDeviceTypeByIndex( index );
+    }
+    else
+    {
+      int fullType = index | group << 8;
+      return devicesByType.get( fullType );
+    }
   }
 
   /**
