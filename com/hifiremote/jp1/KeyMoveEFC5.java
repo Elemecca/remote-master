@@ -62,7 +62,8 @@ public class KeyMoveEFC5
    */
   public EFC getEFC()
   {
-    return new EFC5( data.get( 0 ));
+//    return new EFC5( data.get( 0 ));
+    return new EFC5( data.get( CMD_INDEX ));
   }
 
   /* (non-Javadoc)
@@ -80,7 +81,8 @@ public class KeyMoveEFC5
    */
   public void setEFC( int efc )
   {
-    data.put( efc, 0 );
+//    data.put( efc, 0 );
+    data.put( efc, CMD_INDEX );
   }
 
   /* (non-Javadoc)
@@ -88,7 +90,8 @@ public class KeyMoveEFC5
    */
   public Hex getCmd()
   {
-    return EFC5.toHex( data.get( 0 ));
+//    return EFC5.toHex( data.get( 0 ));
+    return EFC5.toHex( data.get( CMD_INDEX ));
   }
   
   /* (non-Javadoc)
@@ -96,6 +99,7 @@ public class KeyMoveEFC5
    */
   public void setCmd( Hex hex )
   {
-    data.put( EFC5.parseHex( hex ), 0 );
+//    data.put( EFC5.parseHex( hex ), 0 );
+    data.put( EFC5.parseHex( hex ), CMD_INDEX );
   }
 }
