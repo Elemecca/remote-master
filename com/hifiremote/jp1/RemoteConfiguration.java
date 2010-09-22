@@ -1350,7 +1350,7 @@ public class RemoteConfiguration
    */
   public void updateImage()
   {
-    updateFixedData();
+    updateFixedData( false );
     updateAutoSet();
     updateSettings();
     updateAdvancedCodes();
@@ -1576,8 +1576,9 @@ public class RemoteConfiguration
     }
   }
 
-  private void updateFixedData()
+  private void updateFixedData( boolean replace )
   {
+    boolean mismatch = false;
     FixedData[] fixedData = remote.getFixedData();
     if ( fixedData == null )
     {
@@ -1587,16 +1588,24 @@ public class RemoteConfiguration
     {
       if ( ! fixed.check( data ) )
       {
-        String message = "The fixed data in the RDF does not match the values in the remote.\n"
-          + "Do you want to replace the values in the remote with those from the RDF?";
-        String title = "Fixed data mismatch";
-        if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
-            JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
-        {
-          remote.setFixedData( null );
-          return;
-        }
+        mismatch = true;
+        break;
       }
+    }
+    if ( mismatch && ! replace )  
+    {
+      String message = "The fixed data in the RDF does not match the values in the remote.\n"
+        + "Do you want to replace the values in the remote with those from the RDF?";
+      String title = "Fixed data mismatch";
+      replace = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+          JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION;
+    }
+    if ( ! replace )
+    {
+      remote.setFixedData( null );
+    }
+    else for ( FixedData fixed : fixedData )
+    {
       fixed.store( data );
     }
   }
@@ -2788,7 +2797,10 @@ public class RemoteConfiguration
       {
         data[ setting.getByteAddress() ] = 0;
       }
-    }
+    }    
+    
+    // Set the fixed data without asking for permission
+    updateFixedData( true );
 
     // If remote has segregated Fav key, initialize Fav section
     if ( remote.hasFavKey() && remote.getFavKey().isSegregated() )
