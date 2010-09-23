@@ -169,6 +169,19 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
       pu.setNotes( ( String )value );
     }
   }
+  
+  @Override
+  public void removeRow( int row )
+  {
+    // Protocols in this table are unused, so delete from ProtocolManager
+    ProtocolUpgrade pu = remoteConfig.getProtocolUpgrades().get( row );
+    ManualProtocol mp = pu.getManualProtocol( remoteConfig.getRemote() );
+    if ( mp != null )
+    {
+      ProtocolManager.getProtocolManager().remove( mp );
+    }
+    super.removeRow( row );
+  }
 
   /*
    * (non-Javadoc)

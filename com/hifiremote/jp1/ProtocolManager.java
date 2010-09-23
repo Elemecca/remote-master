@@ -225,6 +225,51 @@ public class ProtocolManager
       v.add( p );
     }
   }
+  
+  public void remove( Protocol p )
+  {
+    String name = p.getName();
+    List< Protocol > vn = byName.get( name );
+    Hex id = p.getID();
+    List< Protocol > vp = byPID.get( id );
+    if ( vn == null || vp == null )
+    {
+      return;
+    }
+    
+    if ( vn.size() == 1 )
+    {
+      names.remove( name );
+      byName.remove( name );
+    }
+    else
+    {
+      vn.remove( p );
+    }
+  
+    if ( vp.size() == 1 )
+    {
+      byPID.remove( id );
+    }
+    else
+    {
+      vp.remove( p );
+    }
+    
+    id = p.getAlternatePID();
+    if ( id != null )
+    {
+      vp = byAlternatePID.get( id );
+      if ( vp != null && vp.size() == 1 )
+      {
+        byAlternatePID.remove( id );
+      }
+      else if ( vp != null )
+      {
+        vp.remove( p );
+      }
+    }    
+  }
 
   /**
    * Gets the names.

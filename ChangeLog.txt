@@ -83,6 +83,7 @@ Changes for v2.00
 - Fix bug that prevented keymoves being updated in buffer when a new device upgrade was assigned to a device button in answer to the prompt (Graham)
 - Fix bug with raw data of keymoves when AdvCodeFormat=EFC (Graham)
 - Prevent multiple fixed data prompts and prevent any appearing when opening a remote with New (Graham)
+- Make deleting a manual protocol from the Protocols tab delete it also from ProtocolManager (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
