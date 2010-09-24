@@ -85,6 +85,7 @@ Changes for v2.00
 - Prevent multiple fixed data prompts and prevent any appearing when opening a remote with New (Graham)
 - Make deleting a manual protocol from the Protocols tab delete it also from ProtocolManager (Graham)
 - Prevent special function key moves being interpreted as EFCs when AdvCodeFormat=EFC (Graham)
+- Enable conversion between old and new S3C80 codes in both directions and ensure it occurs only when necessary (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

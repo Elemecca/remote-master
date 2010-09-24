@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.List;
 import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
@@ -59,15 +60,19 @@ public class ProtocolUpgrade
     hex[ 0 ] = ( short )( pid / 0x100 );
     hex[ 1 ] = ( short )( pid % 0x100 );
 
-    Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, new Hex( hex ), true );
-    if ( p != null && ( p instanceof ManualProtocol ) )
-    {
-      return ( ManualProtocol )p;
-    }
-    else
+    List< Protocol > protocols = ProtocolManager.getProtocolManager().findByPID( new Hex( hex ) );
+    if ( protocols == null )
     {
       return null;
     }
+    for ( Protocol p : protocols )
+    {
+      if ( p.hasCode( remote ) && p instanceof ManualProtocol )
+      {
+        return ( ManualProtocol )p;
+      }
+    }
+    return null;
   }
 
   /**

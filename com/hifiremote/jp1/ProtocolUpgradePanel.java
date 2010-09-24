@@ -56,7 +56,10 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
     {
       mp.setName( "Manual Settings: " + mp.getID().toString() );
       ProtocolManager.getProtocolManager().add( mp );
-      ProtocolUpgrade pu = new ProtocolUpgrade( mp.getID().get( 0 ), mp.getCode( remote ), null );
+      Hex code = mp.getCode( remote );
+      // Translate as required for this remote
+      code = remote.getProcessor().translate( code, remote );
+      ProtocolUpgrade pu = new ProtocolUpgrade( mp.getID().get( 0 ), code, null );
       return pu;
     }
 

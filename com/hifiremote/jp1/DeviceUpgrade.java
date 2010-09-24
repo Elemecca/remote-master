@@ -2859,12 +2859,9 @@ public class DeviceUpgrade
     Hex code = p.getCode( remote );
     if ( code != null )
     {
-      if ( !( p instanceof ManualProtocol ) )
-      {
-        // The assumption is that a manual protocol will have been downloaded from a remote,
-        // or otherwise created, with any such translation already incorporated.
-        code = remote.getProcessor().translate( code, remote );
-      }
+      // The new code for S3C80Processor.translate now ensures that manual protocols
+      // are not translated when they are already correct for the remote concerned.
+      code = remote.getProcessor().translate( code, remote );
       Translate[] xlators = protocol.getCodeTranslators( remote );
       if ( xlators != null )
       {
