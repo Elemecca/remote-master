@@ -1096,6 +1096,10 @@ public class RemoteConfiguration
         SpecialProtocol sp = getSpecialProtocol( keyMove, specialUpgrades );
         if ( sp != null )
         {
+          // Convert specialized keymoves such as KeyMoveEFC5 to plain KeyMove type
+          // when it is data for a special function.
+          keyMove = new KeyMove( keyMove.getKeyCode(), keyMove.getDeviceButtonIndex(),
+              keyMove.getData(), keyMove.getNotes() );          
           SpecialProtocolFunction sf = sp.createFunction( keyMove );
           if ( sf != null )
           {
