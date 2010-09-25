@@ -576,7 +576,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         while ( st.hasMoreTokens() )
         {
           String temp = st.nextToken();
-          if ( temp.equals( "End" ) )
+          if ( temp.trim().equals( "End" ) )
             break;
           text = text + ' ' + temp;
         }
