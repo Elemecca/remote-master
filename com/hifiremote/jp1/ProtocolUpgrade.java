@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -74,6 +75,36 @@ public class ProtocolUpgrade
     }
     return null;
   }
+  
+  public void setManualProtocol( Remote remote )
+  {
+    short[] hex = new short[ 2 ];
+    hex[ 0 ] = ( short )( pid / 0x100 );
+    hex[ 1 ] = ( short )( pid % 0x100 );
+    Hex pidHex = new Hex( hex );
+    Processor proc = remote.getProcessor();
+
+    int fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), code );
+    int cmdLength = Protocol.getCmdLengthFromCode( proc.getEquivalentName(), code );
+    int cmdType = ManualProtocol.ONE_BYTE;
+    if ( cmdLength == 2 )
+    {
+      cmdType = ManualProtocol.AFTER_CMD;
+    }
+    if ( cmdLength > 2 )
+    {
+      cmdType = cmdLength << 4;
+    }
+    ArrayList< Value > parms = new ArrayList< Value >();
+    for ( int i = 0; i < fixedDataLength; i++ )
+    {
+      parms.add( new Value( 0 ) );
+    }
+    ManualProtocol mp = new ManualProtocol( "Manual Settings: " + pidHex, pidHex, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
+    mp.setCode( code, remote.getProcessor() );
+    ProtocolManager.getProtocolManager().add( mp );
+  }
+  
 
   /**
    * Gets the pid.

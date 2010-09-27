@@ -646,6 +646,12 @@ public class RemoteConfiguration
         it.remove();
       }
     }
+    
+    // Add the protocol upgrades still remaining to ProtocolManager as manual protocols
+    for ( ProtocolUpgrade pu : protocols )
+    {
+      pu.setManualProtocol( remote );
+    }
 
     // clean up device upgrades that couldn't be imported
     for ( Iterator< DeviceUpgrade > it = devices.iterator(); it.hasNext(); )
