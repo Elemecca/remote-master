@@ -87,6 +87,7 @@ Changes for v2.00
 - Prevent special function key moves being interpreted as EFCs when AdvCodeFormat=EFC (Graham)
 - Enable conversion between old and new S3C80 codes in both directions and ensure it occurs only when necessary (Graham)
 - In Manual Settings dialog, trim string before testing for "End" token, as trailing spaces were causing NumberFormatException (Graham)
+- Correct the maximum value of the Duration spinner for LDKP Special Protocol, changing it from 255 to 15 (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

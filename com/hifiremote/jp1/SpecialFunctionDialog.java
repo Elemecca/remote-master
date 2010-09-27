@@ -1196,7 +1196,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
   // for Duration
   /** The duration. */
-  private JSpinner duration = new JSpinner( new WrappingSpinnerNumberModel( 0, 0, 255, 1 ) );
+  private JSpinner duration = new JSpinner( new WrappingSpinnerNumberModel( 0, 0, 15, 1 ) );
 
   /**
    * Sets the duration.
