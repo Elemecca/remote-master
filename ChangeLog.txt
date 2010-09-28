@@ -89,6 +89,7 @@ Changes for v2.00
 - In Manual Settings dialog, trim string before testing for "End" token, as trailing spaces were causing NumberFormatException (Graham)
 - Correct the maximum value of the Duration spinner for LDKP Special Protocol, changing it from 255 to 15 (Graham)
 - When importing a .ir file with protocol upgrades not used by device upgrades, add them to ProtocolManager as manual protocols (Graham)
+- Make ProtocolManager.findNearestProtocol check against Old Names as a final search (Graham) 
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

@@ -655,8 +655,19 @@ public class ProtocolManager
     {
       near = protocols.get( 0 );
     }
-    System.err.println( "Found protocol " + near );
-    return near;
+    if ( near != null )
+    {
+      System.err.println( "Found protocol " + near );
+      return near;
+    }
+    near = findProtocolByOldName( remote, name, id );
+    if ( near != null )
+    {
+      System.err.println( "Found protocol " + near );
+      return near;
+    }    
+    System.err.println( "No protocol found" );
+    return null;
   }
 
   /*
