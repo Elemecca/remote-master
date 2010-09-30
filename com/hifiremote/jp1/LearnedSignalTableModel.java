@@ -253,7 +253,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
       case 2:
         l.setKeyCode( ( ( Integer )value ).shortValue() );
         break;
-      case 4:
+      case 3:
         l.setNotes( ( String )value );
     }
     propertyChangeSupport.firePropertyChange( "data", null, null );

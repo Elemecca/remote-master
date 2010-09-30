@@ -91,6 +91,7 @@ Changes for v2.00
 - When importing a .ir file with protocol upgrades not used by device upgrades, add them to ProtocolManager as manual protocols (Graham)
 - Make ProtocolManager.findNearestProtocol check against Old Names as a final search (Graham)
 - Initial support for custom executors for known protocols, when parsing E2 image (Greg)
+- Add editable display of raw signal to Learned Signals Dialog and provide New facility (Graham) 
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

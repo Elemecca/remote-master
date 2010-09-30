@@ -17,16 +17,19 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class LearnedSignalDialog.
  */
-public class LearnedSignalDialog extends JDialog implements ActionListener
+public class LearnedSignalDialog extends JDialog implements ActionListener, DocumentListener
 {
 
   /**
@@ -48,8 +51,16 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
 
     dialog.setRemoteConfiguration( config );
     dialog.setLearnedSignal( learnedSignal );
-
+    
+    // Set preferred size of advanced button to that for the wider 
+    // of the two possible button captions
+    dialog.setAdvancedButtonText( false );
     dialog.pack();
+    dialog.advancedButton.setPreferredSize( dialog.advancedButton.getSize() );
+    dialog.setAdvancedButtonText( dialog.advancedArea.isVisible() );
+    dialog.applyButton.setEnabled( false );
+    dialog.pack();
+    
     dialog.setLocationRelativeTo( locationComp );
     dialog.setVisible( true );
     return dialog.learnedSignal;
@@ -114,26 +125,36 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
     JComponent contentPane = ( JComponent )getContentPane();
     contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
 
+    JPanel topPanel = new JPanel( new BorderLayout() );
+    contentPane.add( topPanel, BorderLayout.PAGE_START );
+    
     // Add the bound device and key controls
     JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ) );
     panel.setAlignmentX( Component.LEFT_ALIGNMENT );
-    contentPane.add( panel, BorderLayout.PAGE_START );
     panel.setBorder( BorderFactory.createTitledBorder( "Bound Key" ) );
-
     panel.add( new JLabel( "Device:" ) );
     panel.add( boundDevice );
-
     panel.add( Box.createHorizontalStrut( 5 ) );
-
     panel.add( new JLabel( "Key:" ) );
     panel.add( boundKey );
-
-    shift.addActionListener( this );
     panel.add( shift );
-
-    xShift.addActionListener( this );
-    panel.add( xShift );
-
+    panel.add( xShift );    
+    topPanel.add( panel, BorderLayout.LINE_START );
+    
+    topPanel.add( advancedButton, BorderLayout.LINE_END );
+    advancedButton.setToolTipText( "Shows or hides the signal timing details" );
+    advancedButton.addActionListener( this );
+        
+    signalTextArea.setEditable( true );
+    signalTextArea.setLineWrap( true );
+    signalTextArea.setWrapStyleWord( true );
+    signalTextArea.getDocument().addDocumentListener( this );
+    signalTextArea.setToolTipText( "Edits to Signal Data do not take effect until you press Apply or OK" );
+    JScrollPane scrollPane = new JScrollPane( signalTextArea );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Signal Data" ), scrollPane
+        .getBorder() ) );
+    topPanel.add( scrollPane, BorderLayout.PAGE_END );
+    
     table = new JP1Table( model );
     table.setCellSelectionEnabled( false );
     table.setRowSelectionAllowed( true );
@@ -142,14 +163,13 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
     d.height = 8 * table.getRowHeight();
     table.setPreferredScrollableViewportSize( d );
     table.initColumns( model );
-    JScrollPane scrollPane = new JScrollPane( table );
+    scrollPane = new JScrollPane( table );
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Decodes" ), scrollPane
         .getBorder() ) );
     contentPane.add( scrollPane, BorderLayout.CENTER );
-
-    Box bottomPanel = Box.createVerticalBox();
-    contentPane.add( bottomPanel, BorderLayout.SOUTH );
-    bottomPanel.setBorder( BorderFactory.createTitledBorder( "Advanced Details" ) );
+    
+    advancedArea = Box.createVerticalBox();
+    advancedArea.setBorder( BorderFactory.createTitledBorder( "Advanced Details" ) );
 
     burstTextArea.setEditable( false );
     burstTextArea.setLineWrap( true );
@@ -157,7 +177,7 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
     scrollPane = new JScrollPane( burstTextArea );
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Bursts" ), scrollPane
         .getBorder() ) );
-    bottomPanel.add( scrollPane );
+    advancedArea.add( scrollPane );
 
     durationTextArea.setEditable( false );
     durationTextArea.setLineWrap( true );
@@ -165,17 +185,34 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
     scrollPane = new JScrollPane( durationTextArea );
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Durations" ),
         scrollPane.getBorder() ) );
-    bottomPanel.add( scrollPane );
+    advancedArea.add( scrollPane );  
 
+//    shift.addActionListener( this );
+//    xShift.addActionListener( this );
+    
+    Box bottomBox = Box.createVerticalBox();
+    contentPane.add( bottomBox, BorderLayout.PAGE_END );
+    bottomBox.add( advancedArea );
+    
     // Add the action buttons
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
-    bottomPanel.add( buttonPanel );
+    bottomBox.add( buttonPanel );
+    
+    applyButton.addActionListener( this );
+    applyButton.setEnabled( false );
+    applyButton.setToolTipText( "Apply edits made in the Signal Data panel without closing dialog" );
+    buttonPanel.add( applyButton );
 
     okButton.addActionListener( this );
+    okButton.setToolTipText( "Apply all edits and exit dialog" );
     buttonPanel.add( okButton );
 
     cancelButton.addActionListener( this );
+    cancelButton.setToolTipText( "Abandon all edits and exit dialog" );
     buttonPanel.add( cancelButton );
+    
+    advancedArea.setVisible( false );
+    setAdvancedButtonText( advancedArea.isVisible() );
   }
 
   /**
@@ -186,15 +223,30 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
    */
   private void setLearnedSignal( LearnedSignal learnedSignal )
   {
+    table.initColumns( model );
+    if ( learnedSignal == null )
+    {
+      this.learnedSignal = new LearnedSignal( 0, 0, new Hex(), null );
+      boundKey.setSelectedIndex( 0 );
+      shift.setSelected( false );
+      xShift.setSelected( false );
+      model.set( this.learnedSignal );
+      signalTextArea.setText( null );
+      burstTextArea.setText( null );
+      durationTextArea.setText( null );     
+      return;
+    }
     this.learnedSignal = learnedSignal;
-
     boundDevice.setSelectedIndex( learnedSignal.getDeviceButtonIndex() );
     setButton( learnedSignal.getKeyCode(), boundKey, shift, xShift );
     model.set( learnedSignal );
-    table.initColumns( model );
+    signalTextArea.setText( learnedSignal.getSignalHex( config.getRemote() ).toString() );
     UnpackLearned ul = learnedSignal.getUnpackLearned();
-    burstTextArea.setText( toString( ul.bursts ) );
-    durationTextArea.setText( toString( ul.durations ) );
+    if ( ul.ok )
+    {
+      burstTextArea.setText( toString( ul.bursts ) );
+      durationTextArea.setText( toString( ul.durations ) );
+    }
   }
 
   private void setRemoteConfiguration( RemoteConfiguration config )
@@ -273,12 +325,33 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
-    if ( source == okButton )
+    UnpackLearned ul = null;
+    
+    if ( source == applyButton || source == okButton )
     {
+      String notes = learnedSignal.getNotes();
       int deviceIndex = boundDevice.getSelectedIndex();
-      learnedSignal.setDeviceButtonIndex( deviceIndex );
       int keyCode = getKeyCode( boundKey, shift, xShift );
-      learnedSignal.setKeyCode( keyCode );
+      short[] data = Hex.parseHex( signalTextArea.getText() );
+      learnedSignal = new LearnedSignal( keyCode, deviceIndex, ( new Hex( data ) ).subHex( 3 ), notes );
+      ul = learnedSignal.getUnpackLearned();
+      if ( ! ul.ok )
+      {
+        String message = "Malformed learned signal: " + ul.error;
+        String title = "Learned Signal Error";
+        JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+      }
+    }
+    
+    if ( source == applyButton && ul.ok )
+    {
+      burstTextArea.setText( toString( ul.bursts ) );
+      durationTextArea.setText( toString( ul.durations ) );
+      model.set( learnedSignal );
+      applyButton.setEnabled( false );
+    }
+    else if ( source == okButton && ul.ok )
+    {
       setVisible( false );
     }
     else if ( source == cancelButton )
@@ -286,8 +359,22 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
       learnedSignal = null;
       setVisible( false );
     }
+    else if ( source == advancedButton )
+    {
+      advancedArea.setVisible( ! advancedArea.isVisible() );
+      setAdvancedButtonText( advancedArea.isVisible() );
+      pack(); 
+    }
   }
-
+  
+  private void setAdvancedButtonText( boolean hide )
+  {
+    String text = "<html><center>";
+    text += hide ? "Hide " : "Show ";
+    text += "Advanced<br>Details</center></html>";
+    advancedButton.setText( text );
+  }
+  
   private int getKeyCode( JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox )
   {
     int keyCode = ( ( Button )comboBox.getSelectedItem() ).getKeyCode();
@@ -300,6 +387,11 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
       keyCode |= config.getRemote().getXShiftMask();
     }
     return keyCode;
+  }
+  
+  private void documentChanged( DocumentEvent e )
+  {
+    applyButton.setEnabled( true );
   }
 
   private RemoteConfiguration config = null;
@@ -320,12 +412,20 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
   private JButton okButton = new JButton( "OK" );
 
   private JButton cancelButton = new JButton( "Cancel" );
+  
+  private JButton applyButton = new JButton( "Apply" );
+  
+  private JButton advancedButton = new JButton();
+  
+  private Box advancedArea = null;
 
   /** The burst text area. */
   private JTextArea burstTextArea = new JTextArea( 4, 70 );
 
   /** The duration text area. */
   private JTextArea durationTextArea = new JTextArea( 8, 70 );
+  
+  private JTextArea signalTextArea = new JTextArea( 4, 70 );
 
   /** The learned signal. */
   private LearnedSignal learnedSignal = null;
@@ -336,4 +436,23 @@ public class LearnedSignalDialog extends JDialog implements ActionListener
 
   /** The dialog. */
   private static LearnedSignalDialog dialog = null;
+
+  @Override
+  public void changedUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
+  }
+
+  @Override
+  public void insertUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
+  }
+
+  @Override
+  public void removeUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
+  }
+
 }

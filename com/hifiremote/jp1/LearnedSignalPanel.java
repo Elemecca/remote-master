@@ -15,10 +15,10 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
   public LearnedSignalPanel()
   {
     super( new LearnedSignalTableModel() );
-    newItem.setEnabled( false );
-    newItem.setVisible( false );
-    newButton.setEnabled( false );
-    newButton.setVisible( false );
+//    newItem.setEnabled( false );
+//    newItem.setVisible( false );
+//    newButton.setEnabled( false );
+//    newButton.setVisible( false );
   }
 
   /**

@@ -93,6 +93,24 @@ public class LearnedSignal
     data = new Hex( properties.getProperty( "Data" ) );
     notes = properties.getProperty( "Notes" );
   }
+  
+  public Hex getSignalHex( Remote remote )
+  {
+    // Get the signal complete with header
+    short[] signal = new short[ getSize() ];
+    Hex.put(data, signal, 3 );
+    signal[ 0 ] = ( short )keyCode;
+    if ( remote.getLearnedDevBtnSwapped() )
+    {
+      signal[ 1 ] = ( short )( 0x20 | deviceButtonIndex );
+    }
+    else
+    {
+      signal[ 1 ] = ( short )( deviceButtonIndex << 4 | 0x02 );
+    }
+    signal[ 2 ] = ( short )data.length();
+    return new Hex( signal );
+  }
 
   public int getSize()
   {
