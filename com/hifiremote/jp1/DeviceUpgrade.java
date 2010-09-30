@@ -912,10 +912,15 @@ public class DeviceUpgrade
       fixedDataLength = p.getFixedDataLength();
       cmdLength = p.getDefaultCmd().length();
       parmValues = tentativeVals;
+      if ( pCode != null && !pCode.equals( getCode( p ) ) )
+      {
+        System.err.println( "Protocol code doesn't match. Setting custom code" );
+        p.addCustomCode( remote.getProcessor(), pCode );
+      }
     }
     else if ( p != null && pCode == null )
     {
-      // Found a matching PID, and there's protocol code,
+      // Found a matching PID, and there's no protocol code,
       // but couldn't recreate the fixed data.
       // Maybe there's some reason to use non-standard fixed data.
 

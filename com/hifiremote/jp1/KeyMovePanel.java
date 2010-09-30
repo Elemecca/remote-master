@@ -207,7 +207,7 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
     public DetachAction()
     {
       super( "Detach" );
-      setToolTipText( "Detach from upgrade" );
+      putValue( SHORT_DESCRIPTION, "Detach from upgrade" );
     }
 
     public void actionPerformed( ActionEvent event )

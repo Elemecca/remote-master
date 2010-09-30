@@ -109,8 +109,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "0000_", "Variant", "Panasonic Mixed Combo__",
-      "A long description"
+      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "0000_", "Variant___",
+      "Panasonic Mixed Combo__", "A long description"
   };
 
   /*
@@ -202,7 +202,27 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 4:
         return device.getButtonIndependent();
       case 5:
+        String id = device.getProtocol().getID().toString();
+        if ( device.getProtocol().needsCode( remoteConfig.getRemote() ) )
+        {
+          id += "*";
+        }
+        return id;
       case 6:
+        Protocol protocol = device.getProtocol();
+        String variantName = protocol.getVariantName();
+        if ( protocol.getCustomCode( remoteConfig.getRemote().getProcessor() ) != null )
+        {
+          if ( variantName.equals( "" ) )
+          {
+            variantName = "Custom";
+          }
+          else
+          {
+            variantName += "-Custom";
+          }
+        }
+        return variantName;
       case 7:
         return device.getProtocol();
       case 8:

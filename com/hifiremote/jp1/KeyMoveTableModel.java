@@ -344,6 +344,9 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   /** The device type box. */
   private JComboBox deviceTypeBox = new JComboBox();
 
+  private static final Color normalColor = Color.black;
+  private static final Color attachedColor = Color.red;
+
   /** The key renderer. */
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer()
   {
@@ -353,7 +356,8 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     {
       int modelRow = sorter.modelIndex( row );
       Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
-      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? Color.BLACK : Color.GRAY );
+      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? normalColor : attachedColor );
+
       return c;
     }
   };
@@ -366,7 +370,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     {
       int modelRow = sorter.modelIndex( row );
       Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
-      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? Color.BLACK : Color.GRAY );
+      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? normalColor : attachedColor );
       return c;
     }
   };

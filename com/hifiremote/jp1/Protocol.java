@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -426,7 +427,17 @@ public class Protocol
    * @param remote
    */
   public void setProperties( Properties props, Remote remote )
-  {}
+  {
+    for ( String key : props.stringPropertyNames() )
+    {
+      if ( key.startsWith( "CustomCode." ) )
+      {
+        String procName = key.substring( 11 );
+        Processor proc = ProcessorManager.getProcessor( procName );
+        addCustomCode( proc, new Hex( props.getProperty( key ) ) );
+      }
+    }
+  }
 
   /**
    * Import upgrade code.
@@ -482,6 +493,21 @@ public class Protocol
     return importedCode;
   }
 
+  public void addCustomCode( Processor processor, Hex code )
+  {
+    customCode.put( processor.getEquivalentName(), code );
+  }
+
+  public Hex getCustomCode( Processor processor )
+  {
+    return customCode.get( processor.getEquivalentName() );
+  }
+
+  public boolean hasCustomCode()
+  {
+    return !customCode.isEmpty();
+  }
+
   /**
    * Gets the panel.
    * 
@@ -517,7 +543,7 @@ public class Protocol
    */
   public boolean needsCode( Remote remote )
   {
-    return !remote.supportsVariant( id, variantName );
+    return getCustomCode( remote.getProcessor() ) != null || !remote.supportsVariant( id, variantName );
   }
 
   /**
@@ -551,8 +577,7 @@ public class Protocol
    */
   public Hex getCode( Remote remote )
   {
-    Processor p = remote.getProcessor();
-    return code.get( p.getEquivalentName() );
+    return getCode( remote.getProcessor() );
   }
 
   /**
@@ -564,7 +589,12 @@ public class Protocol
    */
   public Hex getCode( Processor p )
   {
-    return code.get( p.getEquivalentName() );
+    Hex hex = customCode.get( p.getEquivalentName() );
+    if ( hex == null )
+    {
+      hex = code.get( p.getEquivalentName() );
+    }
+    return hex;
   }
 
   /**
@@ -654,7 +684,7 @@ public class Protocol
     }
     return rc;
   }
-  
+
   public int getOEMParmVariance( Value[] vals )
   {
     int index = 0;
@@ -663,17 +693,16 @@ public class Protocol
       String parmName = devParms[ i ].getName().toUpperCase();
       if ( parmName.startsWith( "OEM" ) || parmName.startsWith( "PARM" ) )
       {
-        
-        if ( ( vals[ i ].getValue() instanceof Integer )
-            && ( devParms[ i ].getDefaultValue().value() instanceof Integer ) )
+
+        if ( vals[ i ].getValue() instanceof Integer && devParms[ i ].getDefaultValue().value() instanceof Integer )
         {
           Integer userValue = ( Integer )vals[ i ].getValue();
           Integer defaultValue = ( Integer )devParms[ i ].getDefaultValue().value();
-          index += Math.abs(  userValue.intValue() - defaultValue.intValue() );
-        } 
-      }          
-    }    
-    return index;    
+          index += Math.abs( userValue.intValue() - defaultValue.intValue() );
+        }
+      }
+    }
+    return index;
   }
 
   /**
@@ -1438,6 +1467,10 @@ public class Protocol
     {
       out.print( "FixedData", fixedData.toString() );
     }
+    for ( Map.Entry< String, Hex > entry : customCode.entrySet() )
+    {
+      out.print( "CustomCode." + entry.getKey(), entry.getValue().toString() );
+    }
   }
 
   /**
@@ -1532,6 +1565,8 @@ public class Protocol
 
   /** The code. */
   protected HashMap< String, Hex > code = new HashMap< String, Hex >( 6 );
+
+  protected HashMap< String, Hex > customCode = new HashMap< String, Hex >( 6 );
 
   /** The code translator. */
   protected HashMap< String, Translate[] > codeTranslator = new HashMap< String, Translate[] >( 6 );

@@ -50,7 +50,7 @@ Changes for v2.00
 - Tentative fix for Setup.vbs on 64-bit Windows 7 (Greg)
 - Disable context menu items for device upgrade keymoves shown on the keymove panel (Greg)
 -- Preview 6 --
-- Enable export as a .ir file
+- Enable export as a .ir file (Graham)
 - Enable Open RDF toolbar button after a download (Graham)
 - Change bar color of Progress Bars to aquamarine, for greater contrast with blue text (Graham)
 - Avoid null pointer exception in Code Selector when a device type has no built-in setup codes (Graham)
@@ -89,7 +89,8 @@ Changes for v2.00
 - In Manual Settings dialog, trim string before testing for "End" token, as trailing spaces were causing NumberFormatException (Graham)
 - Correct the maximum value of the Duration spinner for LDKP Special Protocol, changing it from 255 to 15 (Graham)
 - When importing a .ir file with protocol upgrades not used by device upgrades, add them to ProtocolManager as manual protocols (Graham)
-- Make ProtocolManager.findNearestProtocol check against Old Names as a final search (Graham) 
+- Make ProtocolManager.findNearestProtocol check against Old Names as a final search (Graham)
+- Initial support for custom executors for known protocols, when parsing E2 image (Greg)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

@@ -80,11 +80,13 @@ public class OutputPanel extends KMPanel implements ActionListener
 
     MouseAdapter mh = new MouseAdapter()
     {
+      @Override
       public void mousePressed( MouseEvent e )
       {
         showPopup( e );
       }
 
+      @Override
       public void mouseReleased( MouseEvent e )
       {
         showPopup( e );
@@ -134,6 +136,7 @@ public class OutputPanel extends KMPanel implements ActionListener
    * 
    * @see com.hifiremote.jp1.KMPanel#update()
    */
+  @Override
   public void update()
   {
     Remote r = deviceUpgrade.getRemote();
@@ -183,6 +186,24 @@ public class OutputPanel extends KMPanel implements ActionListener
       buff.append( ")" );
       buff.append( ' ' );
       buff.append( p.getName() );
+      String variantName = p.getVariantName();
+      Hex customCode = p.getCustomCode( processor );
+      if ( !variantName.equals( "" ) || customCode != null )
+      {
+        buff.append( ':' );
+        if ( !variantName.equals( "" ) )
+        {
+          buff.append( variantName );
+          if ( customCode != null )
+          {
+            buff.append( "-Custom" );
+          }
+        }
+        else
+        {
+          buff.append( "Custom" );
+        }
+      }
       buff.append( " (RM " );
       buff.append( RemoteMaster.version );
       buff.append( ')' );
@@ -222,12 +243,18 @@ public class OutputPanel extends KMPanel implements ActionListener
       return;
     }
     if ( source == copyDeviceUpgrade )
+    {
       area = upgradeText;
+    }
     else if ( source == copyProtocolUpgrade )
+    {
       area = protocolText;
+    }
     else
+    {
       // assume copyItem
       area = popover;
+    }
 
     String text = area.getText();
     StringSelection data = new StringSelection( text );
