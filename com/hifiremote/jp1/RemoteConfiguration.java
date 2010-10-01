@@ -223,24 +223,25 @@ public class RemoteConfiguration
     if ( remote == null )
     {
       char[] sig = new char[ 8 ];
+      // Test if first two bytes are checksum
+      int sigStart = ( ( data[ 0 ] + data[ 1 ] ) == 0xFF ) ? 2 : 0;
       for ( int i = 0; i < sig.length; ++i )
       {
-        sig[ i ] = ( char )data[ i + 2 ];
+        sig[ i ] = ( char )data[ sigStart + i ];
       }
-
+      
+      RemoteManager rm = RemoteManager.getRemoteManager();
       String signature = new String( sig );
       String signature2 = null;
-      RemoteManager rm = RemoteManager.getRemoteManager();
-      List< Remote > remotes = rm.findRemoteBySignature( signature );
-      if ( remotes.isEmpty() )
+      List< Remote > remotes = null;
+      for ( int i = 0; i < 5; i++ )
       {
-        for ( int i = 0; i < sig.length; ++i )
-        {
-          sig[ i ] = ( char )data[ i ];
-        }
-        signature2 = new String( sig );
+        signature2 = signature.substring( 0, signature.length() - i );
         remotes = rm.findRemoteBySignature( signature2 );
+        if ( !remotes.isEmpty() ) break;
       }
+      signature = signature2;
+      
       // Filter on matching eeprom size
       for ( Iterator< Remote > it = remotes.iterator(); it.hasNext(); )
       {
@@ -251,7 +252,7 @@ public class RemoteConfiguration
       }        
       if ( remotes == null || remotes.isEmpty() )
       {
-        String message = "No remote found with signature " + signature + " or " + signature2
+        String message = "No remote found with signature starting " + signature
           + " and EEPROM size " + ( eepromSize >> 10 ) + "k";
         JOptionPane.showMessageDialog( null, message, "Unknown remote", JOptionPane.ERROR_MESSAGE );
         throw new IllegalArgumentException();
@@ -262,10 +263,6 @@ public class RemoteConfiguration
       }
       else
       {
-        if ( signature2 != null )
-        {
-          signature = signature2;
-        }
         // Filter on matching fixed data
         Remote[] choices = FixedData.filter( remotes, data );
         if ( choices.length == 0 )

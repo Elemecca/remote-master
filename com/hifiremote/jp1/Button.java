@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import javax.swing.JCheckBox;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class Button.
@@ -454,6 +456,16 @@ public class Button
       return false;
     return ( ( restrictions & XSHIFT_MACRO_BIND ) == 0 );
   }
+  
+  public boolean allowsMacro( int state )
+  {
+    if ( state == SHIFTED_STATE )
+      return allowsShiftedMacro();
+    else if ( state == XSHIFTED_STATE )
+      return allowsXShiftedMacro();
+    else
+      return allowsMacro();
+  }
 
   /**
    * Can assign to macro.
@@ -554,6 +566,68 @@ public class Button
     if ( isShifted || isXShifted )
       return false;
     return ( ( restrictions & XSHIFT_LEARN_BIND ) == 0 );
+  }
+  
+  public boolean allowsLearnedSignal( int state )
+  {
+    if ( state == SHIFTED_STATE )
+      return allowsShiftedLearnedSignal();
+    else if ( state == XSHIFTED_STATE )
+      return allowsXShiftedLearnedSignal();
+    else
+      return allowsLearnedSignal();
+  }
+  
+  public boolean allowed( int type, int state )
+  {
+    if ( type == MOVE_BIND )
+      return allowsKeyMove( state );
+    else if ( type == MACRO_BIND )
+      return allowsMacro( state );
+    else if ( type == LEARN_BIND )
+      return allowsLearnedSignal( state );
+    else return false;
+  }
+  
+  public void setShiftBoxes( int type, JCheckBox shiftBox, JCheckBox xShiftBox )
+  {
+    int stateCount = 0;
+    if ( allowed( type, NORMAL_STATE ) ) stateCount++;
+    if ( allowed( type, SHIFTED_STATE ) ) stateCount++;
+    if ( remote.getXShiftEnabled() && allowed( type, XSHIFTED_STATE ) ) stateCount++;
+    if ( stateCount == 1 )
+    {
+      // If only one allowed state, don't allow shift states to be changed.
+      shiftBox.setEnabled( false );
+      shiftBox.setSelected( allowed( type, SHIFTED_STATE ) );
+      if ( remote.getXShiftEnabled() ) {
+        xShiftBox.setEnabled( false );
+        xShiftBox.setSelected( allowed( type, XSHIFTED_STATE ) );
+      }
+    }
+    else if ( stateCount == 2 && ! allowed( type, NORMAL_STATE ) )
+    {
+      shiftBox.setEnabled( true );      
+      xShiftBox.setEnabled( true );
+      if ( ( !shiftBox.isSelected() ) && ( !xShiftBox.isSelected() ) )
+      {
+        shiftBox.setSelected( true );
+      }
+    }
+    else
+    {
+      shiftBox.setEnabled( allowed( type, SHIFTED_STATE ) );
+      if ( remote.getXShiftEnabled() ) {
+        xShiftBox.setEnabled( allowed( type, XSHIFTED_STATE ) );
+      }
+    }    
+  }
+  
+  public boolean needsShift( int type )
+  {
+    // Returns true when either shifted or xshifted state is required for this type/
+    return remote.getXShiftEnabled() && allowed( type, SHIFTED_STATE ) && 
+      allowed( type, XSHIFTED_STATE ) && ! allowed( type, NORMAL_STATE );
   }
 
   /**

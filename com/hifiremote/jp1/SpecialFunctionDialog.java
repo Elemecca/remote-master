@@ -128,6 +128,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
     panel.add( new JLabel( "Key:" ) );
     panel.add( boundKey );
+    boundKey.addActionListener( this );
 
     shift.addActionListener( this );
     panel.add( shift );
@@ -396,7 +397,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     xShift.setText( remote.getXShiftLabel() );
     xShift.setVisible( remote.getXShiftEnabled() );
     boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
-    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+    boundKey.setModel( new DefaultComboBoxModel( remote.getMacroButtons() ) );
     deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
 
     java.util.List< String > specialFunctionsByUserName = new ArrayList< String >();
@@ -584,6 +585,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
   {
     Object source = event.getSource();
     Remote remote = config.getRemote();
+    Button b = ( Button )boundKey.getSelectedItem();
 
     if ( source == type )
     {
@@ -730,13 +732,32 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     else if ( source == shift )
     {
       if ( shift.isSelected() )
+      {
         xShift.setSelected( false );
+      }
+      else if ( b != null && remote.getXShiftEnabled() )
+      {       
+        xShift.setSelected( b.needsShift( Button.MACRO_BIND ) );
+      }
     }
     else if ( source == xShift )
     {
       if ( xShift.isSelected() )
+      {
         shift.setSelected( false );
-    }
+      }
+      else if ( b != null )
+      {
+        shift.setSelected( b.needsShift( Button.MACRO_BIND ) );
+      }
+    }    
+    else if ( source == boundKey )
+    {
+      if ( b != null )
+      {
+        b.setShiftBoxes( Button.MACRO_BIND, shift, xShift );
+      }
+    } 
     else if ( source == add )
     {
       addKey( 0 );

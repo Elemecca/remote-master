@@ -86,6 +86,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
 
     panel.add( Box.createHorizontalStrut( 5 ) );
 
+    boundKey.addActionListener( this );
     panel.add( new JLabel( "Key:" ) );
     panel.add( boundKey );
 
@@ -135,7 +136,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     this.config = config;
     Remote remote = config.getRemote();
 
-    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+    boundKey.setModel( new DefaultComboBoxModel( remote.getMacroButtons() ) );
 
     shift.setText( remote.getShiftLabel() );
     xShift.setText( remote.getXShiftLabel() );
@@ -277,6 +278,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   {
     Object source = event.getSource();
     Remote remote = config.getRemote();
+    Button b = ( Button )boundKey.getSelectedItem();
     if ( source == okButton )
     {
       if ( boundKey.getSelectedItem() == null )
@@ -307,30 +309,32 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     else if ( source == shift )
     {
       if ( shift.isSelected() )
+      {
         xShift.setSelected( false );
+      }
+      else if ( b != null && remote.getXShiftEnabled() )
+      {       
+        xShift.setSelected( b.needsShift( Button.MACRO_BIND ) );
+      }
     }
     else if ( source == xShift )
     {
       if ( xShift.isSelected() )
+      {
         shift.setSelected( false );
-    }
+      }
+      else if ( b != null )
+      {
+        shift.setSelected( b.needsShift( Button.MACRO_BIND ) );
+      }
+    }    
     else if ( source == boundKey )
     {
-      Button b = ( Button )boundKey.getSelectedItem();
-      if ( b == null )
-        return;
-      shift.setEnabled( b.allowsShiftedKeyMove() );
-      if ( !b.allowsShiftedKeyMove() )
-        shift.setSelected( false );
-      if ( b.getIsShifted() )
-        shift.setSelected( true );
-
-      xShift.setEnabled( remote.getXShiftEnabled() & b.allowsXShiftedKeyMove() );
-      if ( !b.allowsXShiftedKeyMove() )
-        xShift.setSelected( false );
-      if ( b.getIsXShifted() )
-        xShift.setSelected( true );
-    }
+      if ( b != null )
+      {
+        b.setShiftBoxes( Button.MACRO_BIND, shift, xShift );
+      }
+    } 
   }
 
   @Override

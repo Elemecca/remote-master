@@ -35,6 +35,7 @@ public class RawDataDialog extends JDialog implements ActionListener
   public RawDataDialog( RemoteMaster owner )
   {
     super( owner, "Download Raw", true );
+    this.owner = owner;
     setLocationRelativeTo( owner );
 
     ( ( JPanel )getContentPane() ).setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );

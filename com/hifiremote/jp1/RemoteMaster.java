@@ -280,10 +280,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
           if ( currentRemote == null || !currentRemote.getSignature().equals( sig ) )
           {
-            List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
+            List< Remote > remotes = null;
+            String sig2 = null;
+            for ( int i = 0; i < 5; i++ )
+            {
+              sig2 = sig.substring( 0, sig.length() - i );
+              remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig2 );
+              if ( !remotes.isEmpty() ) break;
+            }
+            sig = sig2;
             if ( remotes.isEmpty() )
             {
-              JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature " + sig );
+              JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature starting " + sig );
               io.closeRemote();
               return;
             }
@@ -304,11 +312,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
               }
 
               short[] buffer = new short[ maxEepromSize ];
-              io.readRemote( remotes.get( 0 ).getBaseAddress(), buffer );
-
-//              Remote[] choices = new Remote[ remotes.size() ];
-//              choices = remotes.toArray( choices );
-              
+              io.readRemote( remotes.get( 0 ).getBaseAddress(), buffer );          
               Remote[] choices = FixedData.filter( remotes, buffer );
               if ( choices.length == 0 )
               {

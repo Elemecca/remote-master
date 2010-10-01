@@ -101,6 +101,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
 
     panel.add( new JLabel( "Key:" ) );
     boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+    boundKey.addActionListener( this );
     panel.add( boundKey );
 
     shift.setText( remote.getShiftLabel() );
@@ -506,7 +507,8 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
-
+    Remote remote = config.getRemote();
+    Button b = ( Button )boundKey.getSelectedItem();
     if ( source == okButton )
     {
       int deviceIndex = boundDevice.getSelectedIndex();
@@ -541,7 +543,6 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       int setupId = ( ( Integer )setupCode.getValue() ).intValue();
 
       String notesStr = notes.getText();
-      Remote remote = config.getRemote();
       if ( cmd == null )
       {
         if ( useEFC.isSelected() )
@@ -596,6 +597,10 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       {
         xShift.setSelected( false );
       }
+      else if ( b != null && remote.getXShiftEnabled() )
+      {       
+        xShift.setSelected( b.needsShift( Button.MOVE_BIND ) );
+      }
     }
     else if ( source == xShift )
     {
@@ -603,7 +608,18 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       {
         shift.setSelected( false );
       }
-    }
+      else if ( b != null )
+      {
+        shift.setSelected( b.needsShift( Button.MOVE_BIND ) );
+      }
+    }    
+    else if ( source == boundKey )
+    {
+      if ( b != null )
+      {
+        b.setShiftBoxes( Button.MOVE_BIND, shift, xShift );
+      }
+    }  
     else if ( source == function )
     {
       Function func = ( Function )function.getSelectedItem();

@@ -315,7 +315,9 @@ public class Remote implements Comparable< Remote >
       }
 
       // Now figure out which buttons are bindable
-      java.util.List< Button > bindableButtons = new ArrayList< Button >();
+      java.util.List< Button > keyMoveBindableButtons = new ArrayList< Button >();
+      java.util.List< Button > macroBindableButtons = new ArrayList< Button >();
+      java.util.List< Button > learnBindableButtons = new ArrayList< Button >();
 
       // first copy the bindable buttons from the longest map
       int index = 0;
@@ -324,20 +326,40 @@ public class Remote implements Comparable< Remote >
         Button b = longestMap.get( index++ );
         if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
         {
-          bindableButtons.add( b );
+          keyMoveBindableButtons.add( b );
         }
+        if ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
+        {
+          macroBindableButtons.add( b );
+        }        
+        if ( b.allowsLearnedSignal() || b.allowsShiftedLearnedSignal() || b.allowsXShiftedLearnedSignal() )
+        {
+          learnBindableButtons.add( b );
+        }       
       }
 
       // now copy the rest of the bindable buttons, skipping those already added
       for ( Button b : buttons )
       {
         if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
-            && !bindableButtons.contains( b ) )
+            && !keyMoveBindableButtons.contains( b ) )
         {
-          bindableButtons.add( b );
+          keyMoveBindableButtons.add( b );
+        }
+        if ( ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
+            && !macroBindableButtons.contains( b ) )
+        {
+          macroBindableButtons.add( b );
+        }
+        if ( ( b.allowsLearnedSignal() || b.allowsShiftedLearnedSignal() || b.allowsXShiftedLearnedSignal() )
+            && !learnBindableButtons.contains( b ) )
+        {
+          learnBindableButtons.add( b );
         }
       }
-      upgradeButtons = bindableButtons.toArray( upgradeButtons );
+      upgradeButtons = keyMoveBindableButtons.toArray( upgradeButtons );
+      macroButtons = macroBindableButtons.toArray( macroButtons );
+      learnButtons = learnBindableButtons.toArray( learnButtons );
 
       if ( imageMaps.length > 0 && imageMaps[ mapIndex ] != null )
       {
@@ -716,6 +738,18 @@ public class Remote implements Comparable< Remote >
   {
     load();
     return upgradeButtons;
+  }
+
+  public Button[] getMacroButtons()
+  {
+    load();
+    return macroButtons;
+  }
+
+  public Button[] getLearnButtons()
+  {
+    load();
+    return learnButtons;
   }
 
   /**
@@ -3062,8 +3096,14 @@ public class Remote implements Comparable< Remote >
   /** The buttons by standard name. */
   private Hashtable< String, Button > buttonsByStandardName = new Hashtable< String, Button >();
 
-  /** The upgrade buttons. */
+  /** The upgrade buttons - bindable in key moves. */
   private Button[] upgradeButtons = new Button[ 0 ];
+  
+  /** Buttons bindable in macros. */
+  private Button[] macroButtons = new Button[ 0 ];
+  
+  /** Buttons bindable in learned signals. */
+  private Button[] learnButtons = new Button[ 0 ];
 
   /** The phantom shapes. */
   private java.util.List< ButtonShape > phantomShapes = new ArrayList< ButtonShape >();

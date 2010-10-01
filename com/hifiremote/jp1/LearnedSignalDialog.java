@@ -140,6 +140,9 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     panel.add( shift );
     panel.add( xShift );    
     topPanel.add( panel, BorderLayout.LINE_START );
+    boundKey.addActionListener( this );
+    shift.addActionListener( this );
+    xShift.addActionListener( this );
     
     topPanel.add( advancedButton, BorderLayout.LINE_END );
     advancedButton.setToolTipText( "Shows or hides the signal timing details" );
@@ -186,9 +189,6 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Durations" ),
         scrollPane.getBorder() ) );
     advancedArea.add( scrollPane );  
-
-//    shift.addActionListener( this );
-//    xShift.addActionListener( this );
     
     Box bottomBox = Box.createVerticalBox();
     contentPane.add( bottomBox, BorderLayout.PAGE_END );
@@ -257,7 +257,7 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     xShift.setText( remote.getXShiftLabel() );
     xShift.setVisible( remote.getXShiftEnabled() );
     boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
-    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+    boundKey.setModel( new DefaultComboBoxModel( remote.getLearnButtons() ) );
   }
 
   private void setButton( int code, JComboBox comboBox, JCheckBox shiftBox, JCheckBox xShiftBox )
@@ -325,6 +325,8 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
+    Remote remote = config.getRemote();
+    Button b = ( Button )boundKey.getSelectedItem();
     UnpackLearned ul = null;
     
     if ( source == applyButton || source == okButton )
@@ -365,6 +367,35 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
       setAdvancedButtonText( advancedArea.isVisible() );
       pack(); 
     }
+    else if ( source == shift )
+    {
+      if ( shift.isSelected() )
+      {
+        xShift.setSelected( false );
+      }
+      else if ( b != null && remote.getXShiftEnabled() )
+      {       
+        xShift.setSelected( b.needsShift( Button.LEARN_BIND ) );
+      }
+    }
+    else if ( source == xShift )
+    {
+      if ( xShift.isSelected() )
+      {
+        shift.setSelected( false );
+      }
+      else if ( b != null )
+      {
+        shift.setSelected( b.needsShift( Button.LEARN_BIND ) );
+      }
+    }    
+    else if ( source == boundKey )
+    {
+      if ( b != null )
+      {
+        b.setShiftBoxes( Button.LEARN_BIND, shift, xShift );
+      }
+    } 
   }
   
   private void setAdvancedButtonText( boolean hide )
