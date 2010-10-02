@@ -202,28 +202,9 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 4:
         return device.getButtonIndependent();
       case 5:
-        String id = device.getProtocol().getID().toString();
-        if ( device.getProtocol().needsCode( remoteConfig.getRemote() ) )
-        {
-          id += "*";
-        }
-        return id;
       case 6:
-        Protocol protocol = device.getProtocol();
-        String variantName = protocol.getVariantName();
-        if ( protocol.getCustomCode( remoteConfig.getRemote().getProcessor() ) != null )
-        {
-          if ( variantName.equals( "" ) )
-          {
-            variantName = "Custom";
-          }
-          else
-          {
-            variantName += "-Custom";
-          }
-        }
-        return variantName;
       case 7:
+        // The true values for columns 5 and 6 are created by the renderer
         return device.getProtocol();
       case 8:
         return device.getDescription();
@@ -298,7 +279,19 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
             boolean isSelected, boolean hasFocus,
             int row, int col )
         {
-          String variant = ( ( Protocol )value ).getVariantName();
+          Protocol protocol = ( Protocol )value;
+          String variant = protocol.getVariantName();
+          if ( protocol.getCustomCode( remoteConfig.getRemote().getProcessor() ) != null )
+          {
+            if ( variant.equals( "" ) )
+            {
+              variant = "Custom";
+            }
+            else
+            {
+              variant += "-Custom";
+            }
+          }         
           return super.getTableCellRendererComponent( table, variant, isSelected, false, row, col );
         }
       };
