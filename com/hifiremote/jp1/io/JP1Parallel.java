@@ -57,14 +57,26 @@ public class JP1Parallel extends IO
    * 
    * @see com.hifiremote.jp1.io.IO#getRemoteEepromAddress()
    */
-  public native int getRemoteEepromAddress();
+//  public native int getRemoteEepromAddress();
+  public int getRemoteEepromAddress()
+  {
+    // The native function in JP1Parallel.dll version 0.02 returns the value of an uninitialized
+    // variable, which is not guaranteed to be 0.
+    return 0;
+  }
 
   /*
    * (non-Javadoc)
    * 
    * @see com.hifiremote.jp1.io.IO#getRemoteEepromSize()
    */
-  public native int getRemoteEepromSize();
+//  public native int getRemoteEepromSize();
+  public int getRemoteEepromSize()
+  {
+    // The native function in JP1Parallel.dll version 0.02 returns the value of an uninitialized
+    // variable, which is not guaranteed to be 0 - and -1 is preferable, as in JP1USB.dll.
+    return -1;
+  }
 
   /*
    * (non-Javadoc)

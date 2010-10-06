@@ -95,6 +95,9 @@ Changes for v2.00
 - Correct various matters to do with restrictions on allowed button bindings (Graham)
 - Correct bug that prevented attempts at raw download failing with a null pointer exception (Graham)
 - Handle remotes with a signature of fewer than 8 characters (Graham)
+- Handle special case of data format in remotes with empty upgrade section (Graham)
+- Circumvent a bug in jp1parallel.dll concerning uninitialized variables (Graham)
+
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

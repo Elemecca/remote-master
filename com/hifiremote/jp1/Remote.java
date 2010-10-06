@@ -177,6 +177,7 @@ public class Remote implements Comparable< Remote >
           else if ( line.equals( "FixedData" ) )
           {
             fixedData = FixedData.parse( rdr );
+            rawFixedData = fixedData;
             line = "";
           }
           else if ( line.equals( "AutoSet" ) )
@@ -3064,6 +3065,8 @@ public class Remote implements Comparable< Remote >
 
   /** The fixed data. */
   private FixedData[] fixedData = new FixedData[ 0 ];
+  
+  private FixedData[] rawFixedData = new FixedData[ 0 ];
 
   /** The auto set data */
   private FixedData[] autoSet = new FixedData[ 0 ];
@@ -3300,7 +3303,14 @@ public class Remote implements Comparable< Remote >
 
   public FixedData[] getFixedData()
   {
+    // Note that fixedData can be set to null after being parsed
     return fixedData;
+  }
+  
+  public FixedData[] getRawFixedData()
+  {
+    // This will always return the non-null, original, fixedData
+    return rawFixedData;
   }
 
   public void setFixedData( FixedData[] fixedData )

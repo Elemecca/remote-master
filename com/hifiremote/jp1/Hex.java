@@ -475,6 +475,38 @@ public class Hex implements Cloneable, Comparable< Hex >
     }
     return rc.toString().toUpperCase();
   }
+  
+  public static String getRemoteSignature( short[] data )
+  {
+    // Returns a string of length exactly 8, or null if data is not sufficiently long.
+    // If data is the start of a remote's EEPROM image then the string will be the signature,
+    // or will start with the signature if the signature has fewer than 8 chars.  This
+    // function should be used with io.ReadRemote in preference to io.getRemoteSignature,
+    // as the latter uses JNI's NewStringUTF to convert a C++ UTF-8 string to a Java string.
+    // This will give an error if the char array being converted is not a valid UTF-8 string.
+    // A real example from a CYC1 remote is the char array 43 59 43 31 DC 24 00 CC 00.  This
+    // is valid as ISO 8859-1 but not as UTF-8.
+    
+    int len = data.length;
+    if ( len < 2 )
+    {
+      return null;
+    }
+    
+    // Test if first two bytes are checksum
+    int sigStart = ( ( data[ 0 ] + data[ 1 ] ) == 0xFF ) ? 2 : 0;
+    if ( len < sigStart + 8 )
+    {
+      return null;
+    }
+    
+    char[] sig = new char[ 8 ];
+    for ( int i = 0; i < 8; ++i )
+    {
+      sig[ i ] = ( char )data[ sigStart + i ];
+    }
+    return new String( sig );
+  }
 
   /*
    * (non-Javadoc)

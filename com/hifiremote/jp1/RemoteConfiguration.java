@@ -221,17 +221,11 @@ public class RemoteConfiguration
     }
 
     if ( remote == null )
-    {
-      char[] sig = new char[ 8 ];
-      // Test if first two bytes are checksum
-      int sigStart = ( ( data[ 0 ] + data[ 1 ] ) == 0xFF ) ? 2 : 0;
-      for ( int i = 0; i < sig.length; ++i )
-      {
-        sig[ i ] = ( char )data[ sigStart + i ];
-      }
-      
+    {      
       RemoteManager rm = RemoteManager.getRemoteManager();
-      String signature = new String( sig );
+//      See comment in Hex.getRemoteSignature( short[] ) for why the line below was not safe      
+//      String signature = new String( sig );
+      String signature = Hex.getRemoteSignature( data );
       String signature2 = null;
       List< Remote > remotes = null;
       for ( int i = 0; i < 5; i++ )
@@ -1727,8 +1721,9 @@ public class RemoteConfiguration
     }
 
     // parse the protocol tables
+    // special handling of zero offsets follows that in IR.exe
     int offset = protocolTableOffset;
-    int count = processor.getInt( data, offset ); // get number of entries in upgrade table
+    int count = ( offset == 0 ) ? 0 : processor.getInt( data, offset ); // get number of entries in upgrade table
     offset += 2; // skip to first entry
 
     for ( int i = 0; i < count; ++i )
@@ -1757,7 +1752,7 @@ public class RemoteConfiguration
 
     // now parse the devices in the device-independent upgrade section
     offset = deviceTableOffset;
-    count = processor.getInt( data, offset ); // get number of entries in upgrade table
+    count = ( offset == 0 ) ? 0 : processor.getInt( data, offset ); // get number of entries in upgrade table
     for ( int i = 0; i < count; ++i )
     {
       offset += 2;

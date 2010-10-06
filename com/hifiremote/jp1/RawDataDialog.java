@@ -106,17 +106,26 @@ public class RawDataDialog extends JDialog implements ActionListener
     Object source = event.getSource();
     if ( source == downloadButton )
     {
+      System.err.println( "Starting raw download" );
       IO io = owner.getOpenInterface();
       if ( io == null )
       {
         JOptionPane.showMessageDialog( owner, "No remotes found!" );
         return;
       }
-
-      signature = io.getRemoteSignature();
+      System.err.println( "Interface opened successfully" );
       baseAddress = io.getRemoteEepromAddress();
+      System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
 
+//      signature = io.getRemoteSignature();
+      short[] sigData = new short[ 10 ];
+      int count = io.readRemote( baseAddress, sigData );
+      System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ).toUpperCase() );
+      
+      signature = Hex.getRemoteSignature( sigData );
+      
       int buffSize = io.getRemoteEepromSize();
+      System.err.println( "Initial buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
       if ( buffSize <= 0 )
       {
         if ( buffer == null )
@@ -139,9 +148,12 @@ public class RawDataDialog extends JDialog implements ActionListener
           buffSize = buffer.length;
         }
       }
+      System.err.println( "Final buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
       buffer = new short[ buffSize ];
-      io.readRemote( baseAddress, buffer );
+      count = io.readRemote( baseAddress, buffer );
+      System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
       io.closeRemote();
+      System.err.println( "Ending raw download" );
       model.set( buffer, baseAddress );
       setBaselineButton.setEnabled( true );
       saveButton.setEnabled( true );
@@ -153,7 +165,9 @@ public class RawDataDialog extends JDialog implements ActionListener
     else if ( source == saveButton )
     {
       RMFileChooser chooser = owner.getFileChooser();
-      File rawFile = new File( signature + ".ir" );
+      // Only use 4 chars of signature as remotes with a 4-char signature may not
+      // have the remaining 4 junk chars being valid in a filename.
+      File rawFile = new File( signature.substring( 0, 4 ) + ".ir" );
       chooser.setSelectedFile( rawFile );
       int returnVal = chooser.showSaveDialog( this );
       if ( returnVal == RMFileChooser.APPROVE_OPTION )

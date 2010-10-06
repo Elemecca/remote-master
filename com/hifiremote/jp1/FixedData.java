@@ -133,6 +133,10 @@ public class FixedData
 
   public boolean check( short[] buffer )
   {
+    if ( ( address + data.length ) > buffer.length )
+    {
+      return false;
+    }
     for ( int i = 0; i < data.length; ++i )
     {
       if ( data[ i ] != buffer[ address + i ] )
@@ -149,7 +153,7 @@ public class FixedData
     for ( Remote remote : remotes )
     {
       boolean pass = true;
-      for ( FixedData fixedData : remote.getFixedData() )
+      for ( FixedData fixedData : remote.getRawFixedData() )
       {
         if ( ! fixedData.check( buffer ) )
         {
