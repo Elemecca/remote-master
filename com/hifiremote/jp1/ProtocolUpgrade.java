@@ -57,6 +57,13 @@ public class ProtocolUpgrade
   
   public ManualProtocol getManualProtocol( Remote remote )
   {
+    if ( protocol instanceof ManualProtocol )
+    {
+      return ( ManualProtocol )protocol;
+    }
+    
+    // This point should never be reached, but if it is then check ProtocolManager for
+    // a manual protocol with the pid of this upgrade.
     short[] hex = new short[ 2 ];
     hex[ 0 ] = ( short )( pid / 0x100 );
     hex[ 1 ] = ( short )( pid % 0x100 );
@@ -100,11 +107,21 @@ public class ProtocolUpgrade
     {
       parms.add( new Value( 0 ) );
     }
-    ManualProtocol mp = new ManualProtocol( "Manual Settings: " + pidHex, pidHex, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
+    ManualProtocol mp = new ManualProtocol( ManualProtocol.getDefaultName( pidHex ), pidHex, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
     mp.setCode( code, remote.getProcessor() );
     ProtocolManager.getProtocolManager().add( mp );
+    protocol = mp;
   }
-  
+
+  public Protocol getProtocol()
+  {
+    return protocol;
+  }
+
+  public void setProtocol( Protocol protocol )
+  {
+    this.protocol = protocol;
+  }
 
   /**
    * Gets the pid.
@@ -181,6 +198,8 @@ public class ProtocolUpgrade
 
   /** The notes. */
   private String notes;
+  
+  private Protocol protocol = null;
 
   /** The used. */
   private boolean used = false;

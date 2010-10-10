@@ -212,6 +212,33 @@ public class ProtocolManager
       }
     }
     v.add( p );
+       
+    if ( ( p instanceof ManualProtocol ) && name.startsWith( "Manual Settings" ) )
+    {
+      Integer index = manualSettingsIndex.get( id );
+      if ( index == null )
+      {
+        manualSettingsIndex.put( id, 1 );
+        index = 1;
+      }
+      int begin = name.indexOf( "(" ) + 1;
+      int end = name.indexOf( ")" );
+      if ( begin > 0 && end > begin )
+      {        
+        try
+        {
+          int nameIndex = Integer.parseInt( name.substring( begin, end ) );
+          if ( nameIndex > index )
+          {
+            manualSettingsIndex.put( id, nameIndex );
+          }          
+        }
+        catch ( NumberFormatException e )
+        {
+          e.printStackTrace();
+        }
+      }
+    }   
 
     id = p.getAlternatePID();
     if ( id != null )
@@ -669,6 +696,17 @@ public class ProtocolManager
     System.err.println( "No protocol found" );
     return null;
   }
+  
+  public static int getManualSettingsIndex( Hex pid )
+  {
+    Integer index = manualSettingsIndex.get( pid );
+    return ( index == null ) ? 0 : index;
+  }
+  
+  public static void resetManualSettingsIndex()
+  {
+    manualSettingsIndex.clear();
+  }
 
   /*
    * public ManualProtocol getManualProtocol() { System.err.println( "ProtocolManager.getManualProtocol(): " +
@@ -691,4 +729,10 @@ public class ProtocolManager
 
   /** The by alternate pid. */
   private Hashtable< Hex, List< Protocol >> byAlternatePID = new Hashtable< Hex, List< Protocol >>();
+  
+  /** An index for each manual protocol PID that is maintained by add(Protocol) and
+   *  that can be used to create a unique default name even with multiple such protocols
+   *  with the same PID.
+   */
+  private static Hashtable< Hex, Integer > manualSettingsIndex = new Hashtable< Hex, Integer >();
 }

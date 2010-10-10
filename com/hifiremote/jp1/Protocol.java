@@ -1357,6 +1357,22 @@ public class Protocol
     }
     return true;
   }
+  
+  public ProtocolUpgrade getProtocolUpgrade( Remote remote )
+  {
+    int pid = id.get( 0 );
+    Hex code = getCode( remote );
+    if ( code == null )
+    {
+      return null;
+    }
+    // The new code for S3C80Processor.translate now ensures that manual protocols
+    // are not translated when they are already correct for the remote concerned.
+    code = remote.getProcessor().translate( code, remote );
+    ProtocolUpgrade pu = new ProtocolUpgrade( pid, code, null );
+    pu.setProtocol( this );
+    return pu;
+  }
 
   /**
    * Update functions.

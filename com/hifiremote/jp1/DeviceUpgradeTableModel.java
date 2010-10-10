@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -334,7 +335,35 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   @Override
   public void removeRow( int row )
   {
-    getRow( row ).removePropertyChangeListener( this );
+    DeviceUpgrade du = getRow( row );
+    Protocol p = du.getProtocol();
+    boolean pUsed = false;
+    for ( DeviceUpgrade temp : remoteConfig.getDeviceUpgrades() )
+    {
+      if ( temp != du && temp.getProtocol() == p  )
+      {
+        pUsed = true;
+        break;
+      }
+    }
+    if ( !pUsed )
+    {
+      String title = "Device Upgrade Deletion";
+      String message = "The protocol used by the device upgrade being deleted is a protocol\n"
+                     + "upgrade that is not used by any other device upgrade and so will \n"
+                     + "normally also be deleted.  Do you wish to keep the protocol upgrade?";
+      int ask = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+      if ( ask == JOptionPane.CANCEL_OPTION )
+      {
+        return;
+      }
+      else if ( ask == JOptionPane.YES_OPTION )
+      {
+        // Add to protocol upgrade list
+        remoteConfig.getProtocolUpgrades().add( p.getProtocolUpgrade( remoteConfig.getRemote() ) );
+      }
+    }
+    du.removePropertyChangeListener( this );
     super.removeRow( row );
   }
 

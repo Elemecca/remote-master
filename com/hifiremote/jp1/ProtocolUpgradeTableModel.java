@@ -44,7 +44,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "PID", "Protocol Code", "Notes"
+      "#", "Name", "PID", "Protocol Code", "Notes"
   };
 
   /*
@@ -61,7 +61,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "01CC", "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", "A resonable length note"
+      " 00 ", "Manual Settings: 01CC (2)", "01CC", "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", "A resonable length note"
   };
 
   /*
@@ -83,7 +83,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   @Override
   public boolean isColumnWidthFixed( int col )
   {
-    if ( col < 2 )
+    if ( col == 0 || col == 2 )
     {
       return true;
     }
@@ -93,7 +93,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, Hex.class, String.class
+      Integer.class, String.class, String.class, Hex.class, String.class
   };
 
   /*
@@ -115,7 +115,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( col == 3 )
+    if ( col == 4 )
     {
       return true;
     }
@@ -136,6 +136,16 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
       case 0:
         return new Integer( row + 1 );
       case 1:
+        ManualProtocol mp = pu.getManualProtocol( remoteConfig.getRemote() );
+        if ( mp != null )
+        {
+          return mp.getName();
+        }
+        else
+        {
+          return "<none>";
+        }
+      case 2:
       {
         int pid = pu.getPid();
         StringBuilder buff = new StringBuilder( 4 );
@@ -147,9 +157,9 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
         buff.append( Integer.toHexString( pid ).toUpperCase() );
         return buff.toString();
       }
-      case 2:
-        return pu.getCode();
       case 3:
+        return pu.getCode();
+      case 4:
         return pu.getNotes();
     }
     return null;
@@ -164,7 +174,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   public void setValueAt( Object value, int row, int col )
   {
     ProtocolUpgrade pu = remoteConfig.getProtocolUpgrades().get( row );
-    if ( col == 3 )
+    if ( col == 4 )
     {
       pu.setNotes( ( String )value );
     }
@@ -201,7 +211,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   @Override
   public TableCellEditor getColumnEditor( int col )
   {
-    if ( col == 3 )
+    if ( col == 4 )
     {
       return noteEditor;
     }

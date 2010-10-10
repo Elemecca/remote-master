@@ -100,6 +100,12 @@ Changes for v2.00
 - Key Moves tab: show attached keymoves using background color (light gray, dark gray when selected) (Greg)
 - Raw Data tab: Show modified bytes in bold only (no more red) (Greg)
 - Devices tab: Adjust column widths (Greg)
+-- Preview 9 --
+- Handle multiple protocol upgrades with same pid, which occurs even though the remote can only access the first one (Graham)
+- Because of the possibility of repeated pids, add name column to Protocols tab (Graham)
+- If deleting a device upgrade would delete corresponding protocol upgrade, ask for confirmation (Graham)
+- If changing the protocol of a device upgrade would delete a protocol upgrade, add that upgrade to Protocols tab (Graham)
+- Prevent change of pid when editing protocol upgrade but not when cloning it (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

@@ -16,8 +16,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -121,6 +119,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     mainPanel.add( label, "1, 1" );
     name = new JTextField( protocol.getName() );
     name.setEditable( false );
+    name.setEnabled( false );
     name.getDocument().addDocumentListener( this );
     mainPanel.add( name, "3, 1" );
 
@@ -205,7 +204,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     d.height = deviceTable.getRowHeight() * 4;
     deviceTable.setPreferredScrollableViewportSize( d );
 
-    label = new JLabel( "Raw Fixed Data:", SwingConstants.RIGHT );
+    label = new JLabel( "Default Fixed Data:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 9" );
     rawHexData = new JTextField();
     rawHexData.getDocument().addDocumentListener( this );
@@ -296,19 +295,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
     else if ( source == view )
     {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter( sw );
-      try
-      {
-        pw.println( "[" + protocol.getName() + "]" );
-        pw.println( "PID=" + protocol.getID() );
-        protocol.store( new PropertyWriter( pw ) );
-      }
-      catch ( Exception ex )
-      {
-        ex.printStackTrace( System.err );
-      }
-      JTextArea ta = new JTextArea( sw.toString(), 10, 70 );
+      JTextArea ta = new JTextArea( protocol.getIniString( false ), 10, 70 );
       new TextPopupMenu( ta );
       ta.setEditable( false );
       JOptionPane.showMessageDialog( this, new JScrollPane( ta ), "Protocol.ini entry text", JOptionPane.PLAIN_MESSAGE );
@@ -625,7 +612,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   private JTextField name = null;
 
   /** The pid. */
-  private JFormattedTextField pid = null;
+  public JFormattedTextField pid = null;
 
   /** The raw hex data. */
   private JTextField rawHexData = null;

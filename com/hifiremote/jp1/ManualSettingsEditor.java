@@ -69,9 +69,10 @@ public class ManualSettingsEditor extends DefaultCellEditor implements TableCell
       if ( value.getClass() == ManualProtocol.class )
       {
         mp = ( ManualProtocol )value;
-//          mp = new ManualProtocol(null, null);
       }
       ManualSettingsDialog dialog = new ManualSettingsDialog( ( JFrame )SwingUtilities.getRoot( button ), mp );
+      dialog.pid.setEditable( false );
+      dialog.pid.setEnabled( false );
 
       dialog.setVisible( true );
       Protocol result = dialog.getProtocol();

@@ -40,33 +40,60 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     Remote remote = remoteConfig.getRemote();
     ManualProtocol mp = null;
-    if ( baseUpgrade == null )
-    {      
+    boolean pidEditable = true;
+    if ( ( baseUpgrade == null ) && useNewName )
+    {
+      // New
       mp = new ManualProtocol( null, null );
+    }
+    else if ( useNewName )
+    {
+      // Clone
+      mp = new ManualProtocol( baseUpgrade.getManualProtocol( remote ).getIniSection() );
     }
     else 
     {
+      // Edit
+      pidEditable = false;
       mp = baseUpgrade.getManualProtocol( remote );
     }
     
     ManualSettingsDialog d = new ManualSettingsDialog( rm, mp );
+    d.pid.setEditable( pidEditable );
+    d.pid.setEnabled( pidEditable );
     d.setVisible( true );
     mp = d.getProtocol();
-    if ( mp != null && mp.getCode( remote ) != null )
+    if ( mp != null )
     {
-      mp.setName( "Manual Settings: " + mp.getID().toString() );
-      ProtocolManager.getProtocolManager().add( mp );
-      Hex code = mp.getCode( remote );
-      // Translate as required for this remote
-      code = remote.getProcessor().translate( code, remote );
-      ProtocolUpgrade pu = new ProtocolUpgrade( mp.getID().get( 0 ), code, null );
-      return pu;
+      if ( useNewName )
+      {
+        mp.setName( ManualProtocol.getDefaultName( mp.getID() ) );
+        ProtocolManager.getProtocolManager().add( mp );
+      }
+      return mp.getProtocolUpgrade( remote );
     }
 
     return null;
   }
-
+ 
+  @Override
+  protected void newRowObject( ProtocolUpgrade baseUpgrade, int row, int modelRow, boolean select )
+  {
+    useNewName = true;
+    super.newRowObject( baseUpgrade, row, modelRow, select );
+  }
+  
+  @Override
+  protected void editRowObject( int row )
+  {
+    useNewName = false;
+    super.editRowObject( row );
+  }
+  
   private RemoteConfiguration remoteConfig = null;
+  
+  private boolean useNewName = true;
+
 }
 
 

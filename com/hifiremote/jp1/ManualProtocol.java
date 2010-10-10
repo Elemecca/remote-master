@@ -1,6 +1,10 @@
 package com.hifiremote.jp1;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -572,5 +576,51 @@ public class ManualProtocol extends Protocol
     }
 
     return importedCode;
+  }
+  
+  public String getIniString( boolean addName )
+  {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter( sw );
+    try
+    {     
+      if ( addName )
+      {
+        pw.println( "[" + getName() + "]" );
+        pw.println( "Name=" + getName() );
+      }
+      else
+      {
+        pw.println( "[" + getDefaultName( id ) + "]" );
+      }
+      pw.println( "PID=" + getID() );
+      store( new PropertyWriter( pw ) );
+    }
+    catch ( Exception ex )
+    {
+      ex.printStackTrace( System.err );
+    }
+    return sw.toString();
+  }
+  
+  public IniSection getIniSection()
+  {
+    StringReader sr = new StringReader( getIniString( true ) );
+    BufferedReader in = new BufferedReader( sr );
+    PropertyReader pr = new PropertyReader( in );
+    return pr.nextSection();
+  }
+  
+  
+  public static String getDefaultName( Hex pid )
+  {
+    String name = "Manual Settings: " + pid;
+    int index = ProtocolManager.getManualSettingsIndex( pid );
+    if ( index > 0 )
+    {
+      // There is already at least one manual protocol with this PID
+      name += " (" + ( index + 1 ) + ")";
+    }
+    return name;
   }
 }

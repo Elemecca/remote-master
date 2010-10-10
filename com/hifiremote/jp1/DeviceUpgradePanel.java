@@ -171,6 +171,25 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     {
       // Edit
       model.setRow( sorter.modelIndex( row ), newUpgrade );
+      Protocol pOld = oldUpgrade.getProtocol();
+      Protocol pNew = newUpgrade.getProtocol();
+      if ( pOld != pNew )
+      {
+        boolean pUsed = false;
+        for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+        {
+          if ( du.getProtocol() == pOld )
+          {
+            pUsed = true;
+            break;
+          }
+        }
+        if ( !pUsed )
+        {
+          // Old protocol now unused so add to protocol updates
+          remoteConfig.getProtocolUpgrades().add( pOld.getProtocolUpgrade( remoteConfig.getRemote() ) );
+        }
+      }
 
       RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
       DeviceButtonTableModel deviceModel = rm.getGeneralPanel().getDeviceButtonTableModel();
@@ -233,7 +252,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     ProtocolUpgrade puUsed = null;
     for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
     {
-      if ( pu.getPid() == newUpgrade.getProtocol().getID().get( 0 ) )
+      if ( pu.getProtocol() == newUpgrade.getProtocol() )
       {
         puUsed = pu;
         break;

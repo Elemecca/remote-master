@@ -1280,6 +1280,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( ending ) )
       {
+        if ( name.toLowerCase().endsWith( ".rmir") )
+        {
+          int dot = name.lastIndexOf( '.' );
+          name = name.substring( 0, dot );
+        }
         name = name + ending;
       }
       File newFile = new File( name );

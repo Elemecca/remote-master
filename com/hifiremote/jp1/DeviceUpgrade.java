@@ -968,7 +968,8 @@ public class DeviceUpgrade
       }
       parmValues = parms.toArray( new Value[ fixedDataLength ] );
 
-      mp = new ManualProtocol( "Manual Settings: " + pid, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
+      String pName = ManualProtocol.getDefaultName( pid );
+      mp = new ManualProtocol( pName, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
       mp.setCode( pCode, remote.getProcessor() );
       ProtocolManager.getProtocolManager().add( mp );
       p = mp;
@@ -1789,10 +1790,19 @@ public class DeviceUpgrade
     if ( name.startsWith( "Manual Settings" ) || name.equals( "Manual" )
         || name.equalsIgnoreCase( "PID " + pid.toString() ) )
     {
-      ManualProtocol mp = new ManualProtocol( pid, props );
-      mp.setName( name );
-      protocol = mp;
-      pm.add( protocol );
+      // Check first that we will not be creating a duplicate manual protocol
+      Protocol p = pm.findProtocol( name, pid, variantName );
+      if ( p == null )
+      {
+        ManualProtocol mp = new ManualProtocol( pid, props );
+        mp.setName( name );
+        protocol = mp;
+        pm.add( protocol );
+      }
+      else
+      {
+        protocol = p;
+      }
     }
     else
     {
