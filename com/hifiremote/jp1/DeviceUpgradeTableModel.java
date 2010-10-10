@@ -109,8 +109,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "0000_", "Variant___",
-      "Panasonic Mixed Combo__", "A long description"
+      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "0000_", "Variant_____",
+      "Panasonic Mixed Combo___", "A relatively long description and then some more___"
   };
 
   /*
@@ -145,8 +145,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, Protocol.class,
-      Protocol.class, Protocol.class, String.class
+      Integer.class, String.class, SetupCode.class, String.class, Boolean.class, Protocol.class, Protocol.class,
+      Protocol.class, String.class
   };
 
   /*
@@ -261,11 +261,10 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       return new DefaultTableCellRenderer()
       {
         @Override
-        public Component getTableCellRendererComponent( JTable table, Object value, 
-            boolean isSelected, boolean hasFocus,
-            int row, int col )
+        public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected,
+            boolean hasFocus, int row, int col )
         {
-          String starredID = ( ( Protocol )value ).getStarredID( remoteConfig.getRemote() ); 
+          String starredID = ( ( Protocol )value ).getStarredID( remoteConfig.getRemote() );
           return super.getTableCellRendererComponent( table, starredID, isSelected, false, row, col );
         }
       };
@@ -275,9 +274,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       return new DefaultTableCellRenderer()
       {
         @Override
-        public Component getTableCellRendererComponent( JTable table, Object value, 
-            boolean isSelected, boolean hasFocus,
-            int row, int col )
+        public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected,
+            boolean hasFocus, int row, int col )
         {
           Protocol protocol = ( Protocol )value;
           String variant = protocol.getVariantName();
@@ -291,7 +289,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
             {
               variant += "-Custom";
             }
-          }         
+          }
           return super.getTableCellRendererComponent( table, variant, isSelected, false, row, col );
         }
       };

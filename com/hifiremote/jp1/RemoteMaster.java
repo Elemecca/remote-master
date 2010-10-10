@@ -81,7 +81,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.00-preview7";
+  public final static String version = "v2.00-preview8";
 
   /** The dir. */
   private File dir = null;
@@ -273,15 +273,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
           System.err.println( "Interface opened successfully" );
-          
-//        See comment in Hex.getRemoteSignature( short[] ) for why the line below was not safe           
-//        String sig = io.getRemoteSignature();         
+
+          // See comment in Hex.getRemoteSignature( short[] ) for why the line below was not safe
+          // String sig = io.getRemoteSignature();
           short[] sigData = new short[ 10 ];
           int baseAddress = io.getRemoteEepromAddress();
           System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
           int count = io.readRemote( baseAddress, sigData );
           System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ) );
-          
+
           String sig = Hex.getRemoteSignature( sigData );
 
           Remote currentRemote = null;
@@ -292,20 +292,23 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
           if ( currentRemote == null || !currentRemote.getSignature().equals( sig ) )
           {
-            System.err.println( "Searching for RDF" );            
+            System.err.println( "Searching for RDF" );
             List< Remote > remotes = null;
             String sig2 = null;
             for ( int i = 0; i < 5; i++ )
             {
               sig2 = sig.substring( 0, sig.length() - i );
               remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig2 );
-              if ( !remotes.isEmpty() ) break;
+              if ( !remotes.isEmpty() )
+              {
+                break;
+              }
             }
             sig = sig2;
-            System.err.println( "Final signature sought = " + sig ) ; 
+            System.err.println( "Final signature sought = " + sig );
             if ( remotes.isEmpty() )
             {
-              System.err.println( "No matching RDF found" ) ;
+              System.err.println( "No matching RDF found" );
               JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature starting " + sig );
               io.closeRemote();
               return;
@@ -325,7 +328,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
                   maxFixedData = Math.max( maxFixedData, fixedData.getAddress() + fixedData.getData().length );
                 }
               }
-              
+
               int eepromSize = io.getRemoteEepromSize();
               if ( eepromSize > 0 && maxFixedData > eepromSize )
               {
@@ -371,7 +374,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           remote.load();
           remoteConfig = new RemoteConfiguration( remote );
           count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
-          System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );          
+          System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
           io.closeRemote();
           System.err.println( "Ending normal download" );
           remoteConfig.parseData();
@@ -1337,15 +1340,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   public IO getOpenInterface()
   {
     String interfaceName = properties.getProperty( "Interface" );
-    System.err.println( "Interface Name = " + ( ( interfaceName == null ) ? "NULL" : interfaceName  ) );
+    System.err.println( "Interface Name = " + ( interfaceName == null ? "NULL" : interfaceName ) );
     String portName = properties.getProperty( "Port" );
-    System.err.println( "Port Name = " + ( ( portName == null ) ? "NULL" : portName  ) );
+    System.err.println( "Port Name = " + ( portName == null ? "NULL" : portName ) );
     if ( interfaceName != null )
     {
       for ( IO temp : interfaces )
       {
         String tempName = temp.getInterfaceName();
-        System.err.println( "Testing interface: " + ( ( tempName == null ) ? "NULL" : tempName  ) );
+        System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
         if ( tempName.equals( interfaceName ) )
         {
           System.err.println( "Interface matched.  Trying to open remote." );
@@ -1366,9 +1369,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       for ( IO temp : interfaces )
       {
         String tempName = temp.getInterfaceName();
-        System.err.println( "Testing interface: " + ( ( tempName == null ) ? "NULL" : tempName  ) );
+        System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
         portName = temp.openRemote();
-        System.err.println( "Port Name = " + ( ( portName == null ) ? "NULL" : portName  ) );
+        System.err.println( "Port Name = " + ( portName == null ? "NULL" : portName ) );
         if ( portName != null )
         {
           return temp;

@@ -345,7 +345,12 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private JComboBox deviceTypeBox = new JComboBox();
 
   private static final Color normalColor = Color.black;
-  private static final Color attachedColor = Color.red;
+  private static final Color normalBGColor = Color.white;
+  private static final Color normalSelectedBGColor = Color.blue;
+
+  private static final Color attachedColor = Color.white;
+  private static final Color attachedBGColor = Color.lightGray;
+  private static final Color attachedSelectedBGColor = Color.darkGray;
 
   /** The key renderer. */
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer()
@@ -356,7 +361,14 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     {
       int modelRow = sorter.modelIndex( row );
       Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
-      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? normalColor : attachedColor );
+      boolean isNormal = modelRow < remoteConfig.getKeyMoves().size();
+      // c.setForeground( isNormal ? normalColor : attachedColor );
+      Color bgColor = isNormal ? normalBGColor : attachedBGColor;
+      if ( isSelected )
+      {
+        bgColor = isNormal ? normalSelectedBGColor : attachedSelectedBGColor;
+      }
+      c.setBackground( bgColor );
 
       return c;
     }
@@ -370,7 +382,15 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     {
       int modelRow = sorter.modelIndex( row );
       Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
-      c.setForeground( modelRow < remoteConfig.getKeyMoves().size() ? normalColor : attachedColor );
+      boolean isNormal = modelRow < remoteConfig.getKeyMoves().size();
+      // c.setForeground( isNormal ? normalColor : attachedColor );
+      Color bgColor = isNormal ? normalBGColor : attachedBGColor;
+      if ( isSelected )
+      {
+        bgColor = isNormal ? normalSelectedBGColor : attachedSelectedBGColor;
+      }
+      c.setBackground( bgColor );
+
       return c;
     }
   };

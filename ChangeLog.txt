@@ -97,7 +97,9 @@ Changes for v2.00
 - Handle remotes with a signature of fewer than 8 characters (Graham)
 - Handle special case of data format in remotes with empty upgrade section (Graham)
 - Circumvent a bug in jp1parallel.dll concerning uninitialized variables (Graham)
-
+- Key Moves tab: show attached keymoves using background color (light gray, dark gray when selected) (Greg)
+- Raw Data tab: Show modified bytes in bold only (no more red) (Greg)
+- Devices tab: Adjust column widths (Greg)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)
