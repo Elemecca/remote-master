@@ -52,6 +52,7 @@ public class DeviceCombiner extends Protocol
   @Override
   public void setProperties( Properties props, Remote remote )
   {
+    super.setProperties( props, remote );
     System.err.println( "DeviceCombiner.setProperties()" );
     for ( int i = 0; i < 16; i++ )
     {

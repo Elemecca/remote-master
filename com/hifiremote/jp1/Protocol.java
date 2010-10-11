@@ -1361,7 +1361,17 @@ public class Protocol
   public ProtocolUpgrade getProtocolUpgrade( Remote remote )
   {
     int pid = id.get( 0 );
-    Hex code = getCode( remote );
+    Hex code = null;
+    // Make sure that device combiner override of getCode(remote) is not called when
+    // custom code is present.
+    if ( hasCustomCode() )
+    {
+      code = getCode( remote.getProcessor() );
+    }
+    else
+    {
+      code = getCode( remote );
+    }
     if ( code == null )
     {
       return null;

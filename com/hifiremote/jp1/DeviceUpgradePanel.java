@@ -173,7 +173,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       model.setRow( sorter.modelIndex( row ), newUpgrade );
       Protocol pOld = oldUpgrade.getProtocol();
       Protocol pNew = newUpgrade.getProtocol();
-      if ( pOld != pNew )
+      if ( oldUpgrade.needsProtocolCode() && ( pOld != pNew ) )
       {
         boolean pUsed = false;
         for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )

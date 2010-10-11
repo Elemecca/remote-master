@@ -346,7 +346,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         break;
       }
     }
-    if ( !pUsed )
+    if ( du.needsProtocolCode() && !pUsed )
     {
       String title = "Device Upgrade Deletion";
       String message = "The protocol used by the device upgrade being deleted is a protocol\n"
