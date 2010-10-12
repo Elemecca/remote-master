@@ -261,7 +261,7 @@ public abstract class AdvancedCode
    */
   public void setNotes( String notes )
   {
-    if ( notes != this.notes && !notes.equals( this.notes ) )
+    if ( notes != this.notes && ( notes == null || !notes.equals( this.notes ) ) )
     {
       this.notes = notes;
     }

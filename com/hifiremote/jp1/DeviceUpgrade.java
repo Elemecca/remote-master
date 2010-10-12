@@ -1059,6 +1059,7 @@ public class DeviceUpgrade
       if ( keyMove != null )
       {
         keyMoves.add( keyMove );
+        keyMove.setNotes( f.getNotes() );
       }
 
       f = assignments.getAssignment( button, Button.SHIFTED_STATE );
@@ -1070,6 +1071,7 @@ public class DeviceUpgrade
       if ( keyMove != null )
       {
         keyMoves.add( keyMove );
+        keyMove.setNotes( f.getNotes() );
       }
 
       f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
@@ -1081,6 +1083,7 @@ public class DeviceUpgrade
       if ( keyMove != null )
       {
         keyMoves.add( keyMove );
+        keyMove.setNotes( f.getNotes() );
       }
     }
     return keyMoves;

@@ -106,7 +106,9 @@ Changes for v2.00
 - If deleting a device upgrade would delete corresponding protocol upgrade, ask for confirmation (Graham)
 - If changing the protocol of a device upgrade would delete a protocol upgrade, add that upgrade to Protocols tab (Graham)
 - Prevent change of pid when editing protocol upgrade but not when cloning it (Graham)
-- Fix bug in opening .ir file with device combiner as a protocol upgrade (Graham)
+- Fix bug in opening .ir file that has device combiner as a protocol upgrade (Graham)
+- When downloading or opening a file, clear ProtocolManager of custom code and added protocols specific to previous configuration (Graham)
+- When migrating keymoves, avoid basing function names on keymove notes as notes such as names of other keys can cause errors (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

@@ -72,6 +72,7 @@ public class ProtocolManager
     String name = null;
     Hex id = null;
     String type = null;
+    extra = false;
 
     while ( true )
     {
@@ -147,6 +148,7 @@ public class ProtocolManager
     ManualProtocol manualProtocol = new ManualProtocol( new Hex( "FF FF" ), null );
     manualProtocol.setName( manualProtocol.getName() );
     add( manualProtocol );
+    extra = true;
 
     if ( byName.size() < 2 )
     {
@@ -250,6 +252,11 @@ public class ProtocolManager
         byAlternatePID.put( id, v );
       }
       v.add( p );
+    }
+    
+    if ( extra )
+    {
+      extras.add( p );
     }
   }
   
@@ -703,8 +710,28 @@ public class ProtocolManager
     return ( index == null ) ? 0 : index;
   }
   
-  public static void resetManualSettingsIndex()
+  public void reset()
   {
+    // Remove extra protocols
+    for ( Protocol p : extras )
+    {
+      byName.get( p.getName() ).remove( p );
+      byPID.get( p.getID() ).remove( p );
+      Hex id = p.getAlternatePID();
+      if ( id != null )
+      {
+        byAlternatePID.get( id ).remove( p );
+      }
+    }
+    // Remove all custom code
+    for ( List< Protocol > l : byName.values() )
+    {
+      for ( Protocol p : l )
+      {
+        p.customCode.clear();
+      }
+    }
+    // Reset all manual settings indexes
     manualSettingsIndex.clear();
   }
 
@@ -729,6 +756,10 @@ public class ProtocolManager
 
   /** The by alternate pid. */
   private Hashtable< Hex, List< Protocol >> byAlternatePID = new Hashtable< Hex, List< Protocol >>();
+  
+  private boolean extra = true;
+  
+  private List< Protocol > extras = new ArrayList< Protocol >();
   
   /** An index for each manual protocol PID that is maintained by add(Protocol) and
    *  that can be used to create a unique default name even with multiple such protocols

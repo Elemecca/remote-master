@@ -70,7 +70,7 @@ public class RemoteConfiguration
   public void parse( PropertyReader pr ) throws IOException
   {
     IniSection section = pr.nextSection();
-    ProtocolManager.resetManualSettingsIndex();
+    ProtocolManager.getProtocolManager().reset();
 
     if ( section == null )
     {
@@ -451,7 +451,7 @@ public class RemoteConfiguration
       property = loadBuffer( pr );
     }
 
-    ProtocolManager.resetManualSettingsIndex();
+    ProtocolManager.getProtocolManager().reset();
     decodeSettings();
     decodeUpgrades();
     List< AdvancedCode > advCodes = decodeAdvancedCodes();
@@ -1156,12 +1156,18 @@ public class RemoteConfiguration
         Function f = boundUpgrade.getFunction( cmd );
         if ( f == null )
         {
-          String text = keyMove.getNotes();
-          if ( text == null )
-          {
-            text = remote.getButtonName( keyCode );
-          }
-          f = new Function( text, cmd, null );
+          // Keymove notes that happen to be names of other keys cause problems with the
+          // commented-out old version, as would the same note on more than one keymove.
+
+//          String text = keyMove.getNotes();
+//          if ( text == null )
+//          {
+//            text = remote.getButtonName( keyCode );
+//          }
+//          f = new Function( text, cmd, null );
+          
+          f = new Function( remote.getButtonName( keyCode ), cmd, keyMove.getNotes() );
+          
           boundUpgrade.getFunctions().add( f );
         }
 
