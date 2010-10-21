@@ -20,6 +20,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -247,6 +248,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     {
       Protocol newProtocol = getSelectedProtocol();
       Protocol oldProtocol = deviceUpgrade.getProtocol();
+      RemoteConfiguration remoteConfig = deviceUpgrade.getRemoteConfig();
       if ( newProtocol != oldProtocol )
       {
         if ( deviceUpgrade.setProtocol( newProtocol ) )
@@ -265,6 +267,28 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           protocolList.removeActionListener( this );
           protocolList.setSelectedItem( oldProtocol );
           protocolList.addActionListener( this );
+        }
+      }
+      else if ( !updateInProgress && remoteConfig != null )
+      {
+        // Protocol is unchanged, but if there is more than one custom protocol then cycle
+        // through them
+        String title = "Multiple custom protocols";
+        String message = "You have reselected the existing protocol for this device upgrade\n" +
+        		             "and there is more than one protocol upgrade in this remote that\n" +
+        		             "can act as custom code for it.  Do you want to change to a different\n" +
+        		             "custom code?\n\n" +
+        		             "Repeating this and selecting YES each time will cycle through all\n" +
+        		             "available compatible custom codes.";
+        ProtocolUpgrade pu = oldProtocol.getCustomUpgrade( remoteConfig, false );
+        if ( pu != null && oldProtocol.matched() && ! pu.getCode().equals( deviceUpgrade.getCode() ) 
+            && JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+                JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION ) 
+        {
+          // Save old custom code and install new code
+          String proc = remoteConfig.getRemote().getProcessor().getEquivalentName();
+          oldProtocol.newCustomCode = pu;
+          oldProtocol.customCode.put( proc, pu.getCode() );
         }
       }
     }

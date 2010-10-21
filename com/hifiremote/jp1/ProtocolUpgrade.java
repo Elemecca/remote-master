@@ -85,14 +85,19 @@ public class ProtocolUpgrade
   
   public void setManualProtocol( Remote remote )
   {
+    Processor proc = remote.getProcessor();
+    int fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), code );
+    int cmdLength = Protocol.getCmdLengthFromCode( proc.getEquivalentName(), code );
+    setManualProtocol( remote, fixedDataLength, cmdLength );
+  }
+  
+  public void setManualProtocol( Remote remote, int fixedDataLength, int cmdLength )
+  {
     short[] hex = new short[ 2 ];
     hex[ 0 ] = ( short )( pid / 0x100 );
     hex[ 1 ] = ( short )( pid % 0x100 );
     Hex pidHex = new Hex( hex );
-    Processor proc = remote.getProcessor();
 
-    int fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), code );
-    int cmdLength = Protocol.getCmdLengthFromCode( proc.getEquivalentName(), code );
     int cmdType = ManualProtocol.ONE_BYTE;
     if ( cmdLength == 2 )
     {

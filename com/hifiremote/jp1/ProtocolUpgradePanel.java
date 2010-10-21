@@ -61,6 +61,7 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
     ManualSettingsDialog d = new ManualSettingsDialog( rm, mp );
     d.pid.setEditable( pidEditable );
     d.pid.setEnabled( pidEditable );
+    d.remoteConfig = remoteConfig;
     d.setVisible( true );
     mp = d.getProtocol();
     if ( mp != null )

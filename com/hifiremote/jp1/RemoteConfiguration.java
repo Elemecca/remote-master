@@ -165,7 +165,7 @@ public class RemoteConfiguration
           {
             ManualProtocol mp = ( ManualProtocol )o;
             ProtocolManager.getProtocolManager().add( mp );
-            // Each manusl protocol entry immediately follows a corresponding protocol 
+            // Each manual protocol entry immediately follows a corresponding protocol 
             // upgrade entry by the way these entries are generated in save(File), so
             // attach it to the most recently added protocol upgrade
             protocols.get( protocols.size() - 1 ).setProtocol( mp );
@@ -476,7 +476,10 @@ public class RemoteConfiguration
       if ( property != null )
       {
         IniSection section = pr.nextSection();
-        section.setName( property.name.substring( 1, property.name.length() - 1 ) );
+        if ( section != null )
+        {
+          section.setName( property.name.substring( 1, property.name.length() - 1 ) );
+        }
         while ( section != null )
         {
           String name = section.getName();
@@ -521,15 +524,23 @@ public class RemoteConfiguration
               }
               else if ( flag == 3 )
               {
-                DeviceUpgrade device = devices.get( index );
-                if ( device != null )
+                // Device notes are very complicated.  Play safe and test.
+                if ( index < devices.size() )
                 {
-                  device.setDescription( text );
+                  DeviceUpgrade device = devices.get( index );
+                  if ( device != null )
+                  {
+                    device.setDescription( text );
+                  }
                 }
               }
               else if ( flag == 4 )
               {
-                protocols.get( index ).setNotes( text );
+                // Protocol notes are very complicated.  Play safe and test.
+                if ( index < protocols.size() )
+                {
+                  protocols.get( index ).setNotes( text );
+                }
               }
               else if ( flag == 5 )
               {
@@ -779,49 +790,27 @@ public class RemoteConfiguration
       ++i;
     }
 
-    // Get the protocol upgrades in button-independent device upgrades
-    LinkedHashMap< Integer, ProtocolUpgrade > requiredProtocols = new LinkedHashMap< Integer, ProtocolUpgrade >();
-    for ( DeviceUpgrade dev : devIndependent )
-    {
-      if ( dev.needsProtocolCode() )
-      {
-        Hex pCode = dev.getCode();
-        Protocol p = dev.getProtocol();
-        int pid = p.getID().get( 0 );
-        if ( !requiredProtocols.containsKey( pid ) )
-        {
-          requiredProtocols.put( pid, new ProtocolUpgrade( pid, pCode, p.getName() ) );
-        }
-      }
-    }
-
-    // Add the protocols not used in any upgrade
-    for ( ProtocolUpgrade pu : protocols )
-    {
-      requiredProtocols.put( pu.getPid(), pu );
-    }
-
-    // Finally add the protocol upgrades from button-dependent section
-    // List< ProtocolUpgrade > protDependent = new ArrayList< ProtocolUpgrade >();
-    // // First get them in the order in which they will be stored top-down
+    // Get the protocol upgrades in main upgrade area
+    LinkedHashMap< Protocol, ProtocolUpgrade > outputProtocols = getOutputProtocolUpgrades( false );
+    
+    // Add the protocol upgrades from button-dependent section, reading top downward
     for ( int j = devDependent.size() - 1; j >= 0; j-- )
     {
       DeviceUpgrade dev = devDependent.get( j );
       if ( dev.needsProtocolCode() )
       {
-        Hex pCode = dev.getCode();
         Protocol p = dev.getProtocol();
-        int pid = p.getID().get( 0 );
-        if ( !requiredProtocols.containsKey( pid ) )
+        if ( outputProtocols.get( p ) == null )
         {
-          requiredProtocols.put( pid, new ProtocolUpgrade( pid, pCode, p.getName() ) );
+          int pid = p.getID().get( 0 );
+          outputProtocols.put( p, new ProtocolUpgrade( pid, dev.getCode(), p.getName() ) );
         }
       }
     }
 
     // Now write the protocol notes
     i = 0x4000;
-    for ( ProtocolUpgrade protocol : requiredProtocols.values() )
+    for ( ProtocolUpgrade protocol : outputProtocols.values() )
     {
       String text = protocol.getNotes();
       if ( text != null && !text.trim().isEmpty() )
@@ -1650,7 +1639,7 @@ public class RemoteConfiguration
    *          the pid
    * @return the protocol
    */
-  private ProtocolUpgrade getProtocol( int pid )
+  public ProtocolUpgrade getProtocol( int pid )
   {
     for ( ProtocolUpgrade pu : protocols )
     {
@@ -1803,12 +1792,16 @@ public class RemoteConfiguration
       // upgrade
       int limit = getLimit( offset, bounds );
       Hex deviceHex = Hex.subHex( data, codeOffset, limit - codeOffset );
-      ProtocolUpgrade pu = getProtocol( pid );
+      // Get the first protocol upgrade with matching pid, if there is one, as this is the one that
+      // the remote will access - regardless of whether or not the remote has a built-in protocol
+      // for this pid.
+//      ProtocolUpgrade pu = getProtocol( pid );
+      protocolUpgradeUsed = getProtocol( pid );
       Hex protocolCode = null;
-      if ( pu != null )
+      if ( protocolUpgradeUsed != null )
       {
-        pu.setUsed( true );
-        protocolCode = pu.getCode();
+//        pu.setUsed( true );
+        protocolCode = protocolUpgradeUsed.getCode();
       }
 
       String alias = remote.getDeviceTypeAlias( devType );
@@ -1823,15 +1816,20 @@ public class RemoteConfiguration
       }
 
       short[] pidHex = new short[ 2 ];
-      // pidHex[ 0 ] = ( short )( pid > 0xFF ? 1 : 0 );
-      pidHex[ 0 ] = ( short )( pid >> 8 ); // pids can now be > 0x1FF
+      pidHex[ 0 ] = ( short )( pid >> 8 );
       pidHex[ 1 ] = ( short )( pid & 0xFF );
 
       DeviceUpgrade upgrade = new DeviceUpgrade();
       try
       {
+        upgrade.setRemoteConfig( this );
         upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
         upgrade.setSetupCode( setupCode );
+        if ( protocolUpgradeUsed != null )
+        {
+          // This may have been changed by importRawUpgrade
+          protocolUpgradeUsed.setUsed( true );
+        }
       }
       catch ( java.text.ParseException pe )
       {
@@ -1895,9 +1893,9 @@ public class RemoteConfiguration
           pu.setUsed( true );
           protocolCode = pu.getCode();
         }
-        else
+        else if ( data[ offset + 1 ] > 0 )
         {
-          // Get the in-line protocol, whether it is in this upgrade or another.
+          // In-line protocol exists so get it, whether it is in this upgrade or another.
           codeOffset = bounds[ 1 ];
           while ( bounds[ 0 ] < codeOffset )
           {
@@ -1972,7 +1970,11 @@ public class RemoteConfiguration
       {
         Protocol p = dev.getProtocol();
         ProtocolUpgrade output = p.getProtocolUpgrade( remote );
-        outputProtocols.put( p, output );
+        Hex code = output.getCode();
+        if ( code == null || code.length() == 0 )
+        {
+          continue;
+        }
 
         int pid = output.getPid();
         ProtocolUpgrade first = firstProtocols.get( pid );
@@ -1981,17 +1983,20 @@ public class RemoteConfiguration
           // First device upgrade to use protocol with this pid
           firstProtocols.put( pid, output );
         }
-        else
+        else if ( first.getCode().equals( code ) )
         {
-          // Not first protocol so check code
-          if ( check && !first.getCode().equals( output.getCode() ) )
-          {
-            String message = "The protocol code used by the device upgrade for " + dev.getDeviceTypeAliasName() + '/'
-            + dev.getSetupCode()
-            + " is different from the code already used by another device upgrade, and may not work as intended.";
-            JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
-          }
+          // Don't output a second copy of the same code with the same PID when it
+          // comes from a different device upgrade.
+          continue;
         }
+        else if ( check )
+        {
+          String message = "The protocol code used by the device upgrade for " + dev.getDeviceTypeAliasName() + '/'
+          + dev.getSetupCode()
+          + " is different from the code already used by another device upgrade, and may not work as intended.";
+          JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+        }
+        outputProtocols.put( p, output );
       }
     }
 
@@ -2843,5 +2848,7 @@ public class RemoteConfiguration
   private String[] deviceButtonNotes = null;
 
   private DeviceButton favKeyDevButton = null;
+  
+  public ProtocolUpgrade protocolUpgradeUsed = null;
 
 }

@@ -143,6 +143,11 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
         }
         else
         {
+//          short[] pidHex = new short[ 2 ];
+//          int pid = pu.getPid();
+//          pidHex[ 0 ] = ( short )( pid / 0x100 );
+//          pidHex[ 1 ] = ( short )( pid % 0x100 );
+//          return "Custom code for PID: " + new Hex( pidHex );
           return "<none>";
         }
       case 2:

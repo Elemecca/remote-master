@@ -507,6 +507,12 @@ public class DeviceUpgrade
     return remote.getDeviceTypeByAliasName( devTypeAliasName );
   }
 
+  public boolean setProtocol( Protocol newProtocol )
+  {
+    return setProtocol( newProtocol, true );
+  }
+  
+  
   /**
    * Sets the protocol.
    * 
@@ -514,8 +520,60 @@ public class DeviceUpgrade
    *          the new protocol
    * @return true, if successful
    */
-  public boolean setProtocol( Protocol newProtocol )
+  public boolean setProtocol( Protocol newProtocol, boolean messages )
   {
+    // If called from an existing configuration, test if there is a conflicting protocol upgrade
+    if ( remoteConfig != null )
+    {
+      String title = "Custom protocol code";
+      Hex code = newProtocol.getCustomCode( remote.getProcessor() );
+      ProtocolUpgrade pu = newProtocol.getCustomUpgrade( remoteConfig, true );  
+      if ( messages && code != null )
+      {
+        String message = "This protocol has custom code assigned that will\n"
+                       + "override the standard code for the protocol.\n"
+                       + "Do you wish to continue?";
+        if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+            JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
+        {
+          return false;
+        }     
+      }
+      else if ( messages && pu != null )
+      {
+        Hex puCode = pu.getCode();
+        if ( puCode != null && puCode.length() != 0 )
+        {
+          // Translate fully, as getCode() also translates fully 
+          puCode = remote.getProcessor().translate( puCode, remote ); 
+          translateCode( puCode );
+        }
+        
+        if ( newProtocol.matched() )
+        { 
+          if ( puCode != null && !puCode.equals( getCode( newProtocol ) ) )
+          {
+            String message = "This remote contains a protocol upgrade that is consistent\n"
+              + "with the selected protocol and will override the standard\n"
+              + "code for the protocol.  Do you wish to continue?";
+            if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+                JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
+            {
+              return false;
+            }
+          }
+        }
+        else
+        {
+          String message = "This remote contains a protocol upgrade that is not consistent\n"
+            + "with the selected protocol and would cause it to malfunction.\n"
+            + "Please choose a different protocol.";
+          JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
+          return false;                         
+        }
+      }
+    }
+        
     Protocol oldProtocol = protocol;
     // Convert device parameters to the new protocol
     if ( protocol != null )
@@ -832,10 +890,13 @@ public class DeviceUpgrade
     java.util.List< Protocol > protocols = null;
     if ( pCode == null )
     {
+      // Only get protocol variants built in to the remote
       protocols = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid );
     }
-    else
+    // Allow for possibility of the protocol not being built in but being missing from the remote, 
+    if ( protocols == null || protocols.size() == 0 )
     {
+      // Get all protocol variants, whether or not built in to the remote
       protocols = ProtocolManager.getProtocolManager().findByPID( pid );
     }
     Protocol tentative = null;
@@ -852,6 +913,7 @@ public class DeviceUpgrade
       int tempLength = fixedDataLength;
       if ( pCode == null )
       {
+        // p is built in and there is no protocol upgrade to override it
         tempLength = p.getFixedDataLength();
         fixedData = new short[ tempLength ];
         System.arraycopy( code, fixedDataOffset, fixedData, 0, tempLength );
@@ -859,9 +921,13 @@ public class DeviceUpgrade
       }
       if ( tempLength != p.getFixedDataLength() )
       {
+        // There is a protocol upgrade and p is not compatible with it
         System.err.println( "FixedDataLength doesn't match!" );
         continue;
       }
+      // At this point either:
+      //   (a) there is a protocol upgrade and p is compatible with it, or
+      //   (b) there is no protocol upgrade
       System.err.println( "Imported fixedData is " + fixedDataHex );
       vals = p.importFixedData( fixedDataHex );
       System.err.print( "Imported device parms are:" );
@@ -877,24 +943,43 @@ public class DeviceUpgrade
       Hex maskedImportedData = fixedDataHex.applyMask( mask );
       if ( maskedCalculatedData.equals( maskedImportedData ) )
       {
+        // Either (a) or (b) above and in addition the fixed data of the device upgrade is
+        // compatible with the translators for p
         System.err.println( "It's a match!" );
         Hex tentativeCode = null;
+        Hex oldTentativeCode = null;
+        // Get the code currently used by p, and by current tentative protocol if there is
+        // one, which in both cases will be custom code if that has been set
         if ( pCode != null )
         {
           tentativeCode = getCode( p );
         }
-        if ( tentative == null || tempLength > tentative.getFixedDataLength() || pCode != null
-            && pCode.equals( tentativeCode ) )
+        if ( tentative != null )
         {
+          oldTentativeCode = getCode( tentative );
+        }
+        if ( tentative == null || tempLength > tentative.getFixedDataLength() || pCode != null
+            && pCode.equals( tentativeCode ) && ! tentativeCode.equals( oldTentativeCode ) )
+        {
+          // Replace the tentative protocol since either
+          //   (a) one hasn't yet been set, or
+          //   (b) there is no protocol upgrade, both existing and new tentative protocols
+          //       are built in, but the new one matches on a longer set of fixed data, or
+          //   (c) there is a protocol upgrade and the current code of the new tentative 
+          //       protocol (which may be custom) matches its code exactly but that of the
+          //       old tentative protocol does not.  If more than one protocol matches 
+          //       exactly then selection is made by the criterion below.
           System.err.println( "And it's longer, or the protocol code matches!" );
           tentative = p;
           tentativeVals = vals;
         }
-        if ( tentative != null && pCode != null && getCode( p ).equals( getCode( tentative ) )
-            && p.getOEMParmVariance( vals ) < tentative.getOEMParmVariance( vals ) )
+        else if ( tentative != null && tentativeCode != null && tentativeCode.equals( oldTentativeCode )
+            && p.getOEMParmVariance( vals ) < tentative.getOEMParmVariance( tentativeVals ) )
         {
+          // If a further selection is required because there are two protocols with the same
+          // code then test on values of OEM and Parm parameters from the fixed data.
           System.err.println( String.format( "Protocols are identical but better match on OEM or Parm parameters "
-              + "(variance %d instead of %d)", p.getOEMParmVariance( vals ), tentative.getOEMParmVariance( vals ) ) );
+              + "(variance %d instead of %d)", p.getOEMParmVariance( vals ), tentative.getOEMParmVariance( tentativeVals ) ) );
           tentative = p;
           tentativeVals = vals;
         }
@@ -906,16 +991,69 @@ public class DeviceUpgrade
     if ( tentative != null ) // && (( pCode == null ) || pCode.equals( getCode( tentative ))))
     {
       // Found a match.
-      // Might want to check if the protocol code matches
       p = tentative;
       System.err.println( "Using " + p.getDiagnosticName() );
       fixedDataLength = p.getFixedDataLength();
       cmdLength = p.getDefaultCmd().length();
       parmValues = tentativeVals;
-      if ( pCode != null && !pCode.equals( getCode( p ) ) )
+      ProtocolUpgrade newProtocolUpgrade = null;
+      boolean isBuiltIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid ).contains( p );
+      if ( pCode != null && ( !pCode.equals( getCode( p ) ) || isBuiltIn ) )
       {
-        System.err.println( "Protocol code doesn't match. Setting custom code" );
-        p.addCustomCode( remote.getProcessor(), pCode );
+        // Custom code always generates a protocol upgrade in the binary image, so if a protocol
+        // upgrade is present for a built-in protocol we must always set it as custom code so that
+        // it is generated on output.  For a protocol that is not built in, there will always be
+        // a protocol upgrade output, so then we only need to set custom code if it differs from
+        // the standard code.
+        if ( remoteConfig != null )
+        {
+          // Try to make sense of anomalous situations in which there is more than one protocol
+          // upgrade for the same pid.
+          if ( ! isBuiltIn )
+          {
+            // See if the standard code for the protocol is actually present but is not the
+            // first upgrade with that pid.
+            for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
+            {
+              if ( pu.getPid() == pid.get( 0 ) && pu.getCode().equals( getCode( p ) ) )
+              {
+                newProtocolUpgrade = pu;
+                remoteConfig.protocolUpgradeUsed = pu;
+                break;
+              }
+            }
+          }
+
+          if ( newProtocolUpgrade == null )
+          {
+            // There wasn't, or protocol is built in, so see if there is one that matches on fixed and
+            // command lengths; this will be the present one if that matches, but it may not.  
+            String proc = remote.getProcessor().getEquivalentName();
+            for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
+            {
+              if ( pu.getPid() == pid.get( 0 ) 
+                  && Protocol.getFixedDataLengthFromCode( proc, pu.getCode() ) == p.getFixedDataLength()
+                  && Protocol.getCmdLengthFromCode( proc, pu.getCode() ) == p.getDefaultCmd().length() ) 
+              {
+                remoteConfig.protocolUpgradeUsed = pu;
+                pCode = pu.getCode();
+                break;
+              }
+            }
+          }
+        }
+        if ( newProtocolUpgrade == null )
+        {
+          System.err.println( "Protocol code doesn't match or protocol is built-in. Setting custom code." );
+          p.addCustomCode( remote.getProcessor(), pCode );
+        }
+      }
+      else if ( pCode == null && !isBuiltIn )
+      {
+        // This is an error situation, in that there is no code for the protocol used by this device.
+        // RMIR should not be able to generate it, but if it is found then it should not automatically
+        // add that code.  Use an empty custom code to signify this situation.
+        p.addCustomCode( remote.getProcessor(), new Hex() );
       }
     }
     else if ( p != null && pCode == null )
@@ -2832,6 +2970,14 @@ public class DeviceUpgrade
     return true;
   }
 
+  /**
+   *  A device upgrade needs protocol code if either:
+   *  (a) its protocol needs code as it has custom code or is a variant 
+   *      that is not built in to the remote, or
+   *  (b) the protocol has code translators that modify the protocol in
+   *      accordance with device parameters, and the device parameters are 
+   *      other than their default values.
+   */
   public boolean needsProtocolCode()
   {
     if ( protocol.needsCode( remote ) )
@@ -2856,9 +3002,9 @@ public class DeviceUpgrade
   }
 
   /**
-   * Gets the code.
-   * 
-   * @return the code
+   * Returns the code for this remote and protocol (correctly for the Device 
+   * Combiner when that is the protocol), translated according to the
+   * processor and, where present, any code translators for this device upgrade.
    */
   public Hex getCode()
   {
@@ -2866,11 +3012,9 @@ public class DeviceUpgrade
   }
 
   /**
-   * Gets the code.
-   * 
-   * @param p
-   *          the p
-   * @return the code
+   * Returns the code for this remote and the specified protocol (correctly for
+   * the Device Combiner when that is the protocol), translated according to the
+   * processor and, where present, any code translators for this device upgrade.
    */
   public Hex getCode( Protocol p )
   {
@@ -2879,18 +3023,60 @@ public class DeviceUpgrade
     {
       // The new code for S3C80Processor.translate now ensures that manual protocols
       // are not translated when they are already correct for the remote concerned.
-      code = remote.getProcessor().translate( code, remote );
-      Translate[] xlators = protocol.getCodeTranslators( remote );
-      if ( xlators != null )
+      if ( code.length() != 0 )
       {
-        Value[] values = getParmValues();
-        for ( int i = 0; i < xlators.length; i++ )
-        {
-          xlators[ i ].in( values, code, null, -1 );
-        }
+        code = remote.getProcessor().translate( code, remote );
       }
+      
+      // A code translator for a protocol modifies the protocol hex according to the
+      // value of certain device parameters
+      translateCode( code );
+//      Translate[] xlators = p.getCodeTranslators( remote );
+//      if ( xlators != null )
+//      {
+//        Value[] values = getParmValues();
+//        for ( int i = 0; i < xlators.length; i++ )
+//        {
+//          xlators[ i ].in( values, code, null, -1 );
+//        }
+//      }
     }
     return code;
+  }
+  
+  public String getStarredID()
+  {
+    String starredID = protocol.getID( remote ).toString();
+    if ( needsProtocolCode() )
+    {
+      Hex code = getCode();
+      if ( code != null && code.length() == 0 )
+      {
+        starredID += "-";
+      }
+      else
+      {
+        starredID += "*";
+      }
+    }
+    return starredID;
+  }
+  
+  /**
+   * Translates the code according to the protocol and parameter values of
+   * the device upgrade.  The code provided as parameter is modified.
+   */
+  public void translateCode( Hex code )
+  {
+    Translate[] xlators = protocol.getCodeTranslators( remote );
+    if ( xlators != null )
+    {
+      Value[] values = getParmValues();
+      for ( int i = 0; i < xlators.length; i++ )
+      {
+        xlators[ i ].in( values, code, null, -1 );
+      }
+    }
   }
 
   /** The description. */
@@ -2901,6 +3087,25 @@ public class DeviceUpgrade
 
   /** The remote. */
   private Remote remote = null;
+  
+  // remoteConfig is set only when editing from RMIR, and is used to check
+  // if the configuration contains a protocol upgrade that provides custom code
+  private RemoteConfiguration remoteConfig = null;
+
+  public RemoteConfiguration getRemoteConfig()
+  {
+    return remoteConfig;
+  }
+
+  public void setRemoteConfig( RemoteConfiguration remoteConfig )
+  {
+    this.remoteConfig = remoteConfig;
+  }
+  
+//  public void clearRemoteConfig()
+//  {
+//    remoteConfig = null;
+//  }
 
   /** The dev type alias name. */
   private String devTypeAliasName = null;

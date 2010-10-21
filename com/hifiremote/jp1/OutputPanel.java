@@ -158,8 +158,20 @@ public class OutputPanel extends KMPanel implements ActionListener
     upgradeText.setText( deviceUpgrade.getUpgradeText() );
     Protocol p = deviceUpgrade.getProtocol();
     Hex code = deviceUpgrade.getCode();
+    Hex altCode = null;
+    if ( deviceUpgrade.getRemoteConfig() != null && 
+        deviceUpgrade.getProtocol().getCustomCode( deviceUpgrade.getRemote().getProcessor() ) == null )
+    {
+      ProtocolUpgrade pu = p.getCustomUpgrade( deviceUpgrade.getRemoteConfig(), true );
+      if ( pu != null && p.matched() )
+      {
+        altCode = pu.getCode();
+        deviceUpgrade.translateCode( altCode );
+        code = altCode;
+      }
+    }
 
-    if ( deviceUpgrade.needsProtocolCode() )
+    if ( deviceUpgrade.needsProtocolCode() || altCode != null )
     {
       protocolLabel.setForeground( Color.black );
       protocolLabel.setText( String.format( "Upgrade Protocol Code *** REQUIRED *** (%1$d bytes)", code.length() ) );
@@ -188,13 +200,13 @@ public class OutputPanel extends KMPanel implements ActionListener
       buff.append( p.getName() );
       String variantName = p.getVariantName();
       Hex customCode = p.getCustomCode( processor );
-      if ( !variantName.equals( "" ) || customCode != null )
+      if ( !variantName.equals( "" ) || customCode != null || altCode != null )
       {
         buff.append( ':' );
         if ( !variantName.equals( "" ) )
         {
           buff.append( variantName );
-          if ( customCode != null )
+          if ( customCode != null || altCode != null )
           {
             buff.append( "-Custom" );
           }

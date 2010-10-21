@@ -110,6 +110,12 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     deleteItem.addActionListener( this );
     deleteItem.setEnabled( false );
     popup.add( deleteItem );
+    
+    editProtocolItem = new JMenuItem( "Edit Protocol" );
+    editProtocolItem.addActionListener( this );
+    editProtocolItem.setEnabled( false );
+    editProtocolItem.setVisible( false );
+    popup.add( editProtocolItem );
 
     popup.add( new JSeparator() );
 
@@ -181,6 +187,13 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     downButton.setToolTipText( "Move the selected item down in the list." );
     downButton.setEnabled( false );
     buttonPanel.add( downButton );
+    
+    editProtocolButton = new JButton( "Edit Protocol" );
+    editProtocolButton.addActionListener( this );
+    editProtocolButton.setToolTipText( "Edit the protocol of this device upgrade." );
+    editProtocolButton.setEnabled( false );
+    editProtocolButton.setVisible( false );
+    buttonPanel.add( editProtocolButton );
   }
 
   protected boolean showPopup( MouseEvent e )
@@ -292,6 +305,11 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
       model.setRow( sorter.modelIndex( row ), o );
     }
   }
+  
+  protected void editRowProtocol( int row )
+  {
+    // Only used when overridden
+  }
 
   protected void newRowObject( E baseObject, int row, int modelRow, boolean select )
   {
@@ -362,6 +380,10 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     {
       newRowObject( getRowObject( row ), row, modelRow, select );
     }
+    else if ( source == editProtocolButton || source == editProtocolItem )
+    {
+      editRowProtocol( modelRow );
+    }    
     else if ( source == deleteButton || source == deleteItem )
     {
       if ( !canDelete( model.getRow( sorter.modelIndex( row ) ) ) )
@@ -487,6 +509,14 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         cloneItem.setEnabled( selected );
         deleteButton.setEnabled( selected );
         deleteItem.setEnabled( selected );
+        if ( editProtocolButton.isVisible() )
+        {
+          editProtocolButton.setEnabled( selected );
+        }
+        if ( editProtocolItem.isVisible() )
+        {
+          editProtocolItem.setEnabled( selected );
+        }
 
         boolean deleteAllowed = selected && canDelete( model.getRow( sorter.modelIndex( row ) ) );
         deleteButton.setEnabled( deleteAllowed );
@@ -506,6 +536,14 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         deleteItem.setEnabled( false );
         upButton.setEnabled( false );
         downButton.setEnabled( false );
+        if ( editProtocolButton.isVisible() )
+        {
+          editProtocolButton.setEnabled( false );
+        }
+        if ( editProtocolItem.isVisible() )
+        {
+          editProtocolItem.setEnabled( false );
+        }
       }
       copyItem.setEnabled( table.getSelectedRowCount() > 0 );
     }
@@ -574,6 +612,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
 
   /** The down button. */
   protected JButton downButton = null;
+  
+  protected JButton editProtocolButton = null;
 
   /** The popup row. */
   protected int popupRow = 0;
@@ -592,6 +632,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
 
   /** The delete item. */
   protected JMenuItem deleteItem = null;
+  
+  protected JMenuItem editProtocolItem = null;
 
   private JMenuItem copyItem = null;
 

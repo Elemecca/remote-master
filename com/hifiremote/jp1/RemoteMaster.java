@@ -228,6 +228,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           Remote remote = RMNewDialog.showDialog( RemoteMaster.this );
           remote.load();
+          ProtocolManager.getProtocolManager().reset();
           remoteConfig = new RemoteConfiguration( remote );
           remoteConfig.initializeSetup();
           remoteConfig.updateImage();

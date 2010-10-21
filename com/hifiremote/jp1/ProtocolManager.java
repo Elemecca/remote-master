@@ -215,30 +215,13 @@ public class ProtocolManager
     }
     v.add( p );
        
-    if ( ( p instanceof ManualProtocol ) && name.startsWith( "Manual Settings" ) )
+    if ( p instanceof ManualProtocol )
     {
+      int nameIndex = ( ( ManualProtocol )p ).getNameIndex();
       Integer index = manualSettingsIndex.get( id );
-      if ( index == null )
+      if ( nameIndex > 0 && ( index == null || nameIndex > index) )
       {
-        manualSettingsIndex.put( id, 1 );
-        index = 1;
-      }
-      int begin = name.indexOf( "(" ) + 1;
-      int end = name.indexOf( ")" );
-      if ( begin > 0 && end > begin )
-      {        
-        try
-        {
-          int nameIndex = Integer.parseInt( name.substring( begin, end ) );
-          if ( nameIndex > index )
-          {
-            manualSettingsIndex.put( id, nameIndex );
-          }          
-        }
-        catch ( NumberFormatException e )
-        {
-          e.printStackTrace();
-        }
+        manualSettingsIndex.put( id, nameIndex );
       }
     }   
 
@@ -290,6 +273,41 @@ public class ProtocolManager
       vp.remove( p );
     }
     
+    if ( p instanceof ManualProtocol )
+    {
+      int nameIndex = ( ( ManualProtocol )p ).getNameIndex();
+      Integer index = manualSettingsIndex.get( id );
+      if ( index != null && nameIndex == index )
+      {
+        // Reset manualSettingsIndex to largest index remaining after p deleted
+        vp = byPID.get( id ); // Value after removal of p
+        if ( vp == null )
+        {
+          manualSettingsIndex.remove( id );
+        }
+        else
+        {
+          index = 0;
+          for ( Protocol pp : vp )
+          {
+            if ( pp instanceof ManualProtocol )
+            {
+              nameIndex = ( ( ManualProtocol )pp ).getNameIndex();
+              if ( nameIndex > index ) index = nameIndex;
+            }
+          }
+          if ( index == 0 )
+          {
+            manualSettingsIndex.remove( id );
+          }
+          else
+          {
+            manualSettingsIndex.put( id, index );
+          }
+        }
+      }
+    }   
+
     id = p.getAlternatePID();
     if ( id != null )
     {
@@ -715,13 +733,7 @@ public class ProtocolManager
     // Remove extra protocols
     for ( Protocol p : extras )
     {
-      byName.get( p.getName() ).remove( p );
-      byPID.get( p.getID() ).remove( p );
-      Hex id = p.getAlternatePID();
-      if ( id != null )
-      {
-        byAlternatePID.get( id ).remove( p );
-      }
+      remove( p );
     }
     // Remove all custom code
     for ( List< Protocol > l : byName.values() )
@@ -734,7 +746,7 @@ public class ProtocolManager
     // Reset all manual settings indexes
     manualSettingsIndex.clear();
   }
-
+  
   /*
    * public ManualProtocol getManualProtocol() { System.err.println( "ProtocolManager.getManualProtocol(): " +
    * manualProtocol ); return manualProtocol; }

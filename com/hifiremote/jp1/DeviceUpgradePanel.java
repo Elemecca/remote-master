@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -35,7 +37,9 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         + "as \"Device Button Restricted\"";
     upgradeBugPane.setText( bugText );
     upgradeBugPane.setEditable( false );
-    upgradeBugPane.setVisible( false );
+    upgradeBugPane.setVisible( false );  
+    editProtocolItem.setVisible( true );
+    editProtocolButton.setVisible( true );
   }
 
   /**
@@ -91,13 +95,17 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     else
     {
       upgrade = new DeviceUpgrade( baseUpgrade );
+      processorName = remoteConfig.getRemote().getProcessor().getEquivalentName();
+      Protocol baseProtocol = baseUpgrade.getProtocol();
+      baseProtocol.oldCustomCode = baseProtocol.customCode.get(  processorName );
+      baseProtocol.newCustomCode = null;
     }
     oldUpgrade = baseUpgrade;
 
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, table );
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );
-
+    upgrade.setRemoteConfig( remoteConfig );
     editor = new DeviceUpgradeEditor( rm, upgrade, remotes, rowOut, this );
   }
 
@@ -159,12 +167,33 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     this.select = select;
     createRowObjectA( baseUpgrade );
   }
+  
+  @Override
+  public void editRowProtocol( int row )
+  {
+    model.getRow( row ).getProtocol().editProtocol( remoteConfig.getRemote(), this );
+    model.fireTableDataChanged();
+  }
 
   public void endEdit( DeviceUpgradeEditor editor, Integer row )
   {
     DeviceUpgrade newUpgrade = createRowObjectB( editor );
     if ( newUpgrade == null )
     {
+      if ( oldUpgrade != null )
+      {
+        Protocol baseProtocol = oldUpgrade.getProtocol(); 
+        // Restore custom code in case it has been changed
+        if ( baseProtocol.oldCustomCode == null )
+        {
+          baseProtocol.customCode.remove( processorName );
+        }
+        else
+        {
+          baseProtocol.customCode.put(processorName, baseProtocol.oldCustomCode );
+          remoteConfig.getProtocolUpgrades().remove( baseProtocol.newCustomCode );
+        }
+      }
       return;
     }
     if ( row != null )
@@ -173,12 +202,21 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       model.setRow( sorter.modelIndex( row ), newUpgrade );
       Protocol pOld = oldUpgrade.getProtocol();
       Protocol pNew = newUpgrade.getProtocol();
-      if ( oldUpgrade.needsProtocolCode() && ( pOld != pNew ) )
+      Remote remote = remoteConfig.getRemote();
+      if ( pOld == pNew && pOld.newCustomCode != null && pOld.oldCustomCode != null
+          && ! pOld.newCustomCode.equals( pOld.oldCustomCode ) )
+      {
+        ProtocolManager.getProtocolManager().remove( pOld.newCustomCode.getProtocol() );
+        remoteConfig.getProtocolUpgrades().remove( pOld.newCustomCode );
+        pOld.saveCode( remoteConfig, pOld.oldCustomCode );
+      }
+      if ( oldUpgrade.needsProtocolCode() && pOld != pNew )
       {
         boolean pUsed = false;
         for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
         {
-          if ( du.getProtocol() == pOld )
+          if ( ( ( pOld instanceof ManualProtocol ) && ( du.getProtocol() == pOld ) )
+                || ( du.getProtocol().getID( remote ) ==  pOld.getID( remote ) ) )
           {
             pUsed = true;
             break;
@@ -186,11 +224,13 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         }
         if ( !pUsed )
         {
-          // Old protocol now unused so add to protocol updates
-          remoteConfig.getProtocolUpgrades().add( pOld.getProtocolUpgrade( remoteConfig.getRemote() ) );
+          // Old protocol now unused so save its code
+          pOld.saveCode( remoteConfig, oldUpgrade.getCode() );
+          // If the old protocol had custom code, this would now be in the protocol upgrades
+          pOld.customCode.clear();
         }
       }
-
+           
       RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
       DeviceButtonTableModel deviceModel = rm.getGeneralPanel().getDeviceButtonTableModel();
 
@@ -231,6 +271,26 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         }
       }
       
+      // See if there is custom code waiting to be assigned
+      Remote remote = remoteConfig.getRemote();
+      Processor processor = remote.getProcessor();
+      Protocol p = newUpgrade.getProtocol();
+      ProtocolUpgrade pu = p.getCustomUpgrade( remoteConfig, true );
+      if ( ( p.getCustomCode( processor ) == null ) &&  pu != null && p.matched() )
+      {
+        // There is custom code waiting to be assigned, so assign it
+        // and delete it from the list of unused protocol upgrades
+        // and its manual protocol from ProtocolManager, since it has
+        // served its purpose as custom code in waiting.
+        p.addCustomCode( processor, pu.getCode() );
+        if ( remoteConfig.getProtocolUpgrades().contains( pu ) )
+        {
+          // If custom code comes from another device upgrade rather than a manual protocol,
+          // it will not have been added, so do not try to remove.
+          remoteConfig.getProtocolUpgrades().remove( pu );
+          ProtocolManager.getProtocolManager().remove( pu.getManualProtocol( remote ) );
+        }
+      }
       if ( rowNew == null )
       {
         model.addRow( newUpgrade );
@@ -280,6 +340,8 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig;
+  
+  private String processorName = null;
 
   private JTextPane upgradeBugPane = new JTextPane();
 

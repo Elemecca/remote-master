@@ -110,7 +110,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "CBL/SAT__", "Setup ", "Device Button", "Other Buttons?", "0000_", "Variant_____",
+      " 00 ", "CBL/SAT__", "Setup ", "Device Button__", "Other Buttons?__", "0000__", "Variant_____",
       "Panasonic Mixed Combo___", "A relatively long description and then some more___"
   };
 
@@ -176,8 +176,9 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     }
     else if ( col == 5 || col == 6 || col == 7 )
     {
-      Protocol p = getRow( row ).getProtocol();
-      return p instanceof ManualProtocol;
+//      Protocol p = getRow( row ).getProtocol();
+//      return p instanceof ManualProtocol;
+      return true;
     }
     return false;
   }
@@ -235,8 +236,28 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 5:
       case 6:
       case 7:
-        device.setProtocol( ( Protocol )value );
+        Protocol p = ( Protocol )value;
+        device.setProtocol( p, false );       
+        Remote remote = remoteConfig.getRemote();
+        String proc = remote.getProcessor().getEquivalentName();
+        Hex code = p.customCode.get( proc );
+        if ( code != null )
+        {
+          // Update the custom code of any other device upgrade with same pid
+          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+          {
+            if ( du != device )
+            {
+              Protocol temp = du.getProtocol();
+              if ( temp.getID( remote ).equals( p.getID( remote ) ) )
+              {
+                temp.customCode.put( proc, code );
+              }
+            }
+          }
+        }
         propertyChangeSupport.firePropertyChange( "device", null, null );
+        fireTableDataChanged();
         break;
       case 8:
         device.setDescription( ( String )value );
@@ -265,7 +286,9 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected,
             boolean hasFocus, int row, int col )
         {
-          String starredID = ( ( Protocol )value ).getStarredID( remoteConfig.getRemote() );
+          TableSorter ts = ( TableSorter )table.getModel();
+          row = ts.modelIndex( row );
+          String starredID = getRow( row ).getStarredID();
           return super.getTableCellRendererComponent( table, starredID, isSelected, false, row, col );
         }
       };
@@ -279,18 +302,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
             boolean hasFocus, int row, int col )
         {
           Protocol protocol = ( Protocol )value;
-          String variant = protocol.getVariantName();
-          if ( protocol.getCustomCode( remoteConfig.getRemote().getProcessor() ) != null )
-          {
-            if ( variant.equals( "" ) )
-            {
-              variant = "Custom";
-            }
-            else
-            {
-              variant += "-Custom";
-            }
-          }
+          String variant = protocol.getVariantDisplayName( remoteConfig.getRemote().getProcessor() );
           return super.getTableCellRendererComponent( table, variant, isSelected, false, row, col );
         }
       };
@@ -337,10 +349,13 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   {
     DeviceUpgrade du = getRow( row );
     Protocol p = du.getProtocol();
+    Remote remote = remoteConfig.getRemote();
     boolean pUsed = false;
     for ( DeviceUpgrade temp : remoteConfig.getDeviceUpgrades() )
     {
-      if ( temp != du && temp.getProtocol() == p  )
+      // Test on pid rather than on protocol itself as it is possible for two protocols
+      // to be present with same pid, eg Denon-K and Panasonic Combo.
+      if ( temp != du && temp.getProtocol().getID( remote ).equals( p.getID( remote ) )  )
       {
         pUsed = true;
         break;
@@ -359,8 +374,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       }
       else if ( ask == JOptionPane.YES_OPTION )
       {
-        // Add to protocol upgrade list
-        remoteConfig.getProtocolUpgrades().add( p.getProtocolUpgrade( remoteConfig.getRemote() ) );
+        p.saveCode( remoteConfig, du.getCode() );
+        p.customCode.clear();
       }
     }
     du.removePropertyChangeListener( this );
@@ -390,6 +405,13 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     upgrade.addPropertyChangeListener( this );
     super.addRow( upgrade );
   }
+  
+//  @Override
+//  public void editRowProtocol( int row )
+//  {
+//    getRow( row ).getProtocol().editProtocol( remote, locator )
+//  }
+//  
 
   // PropertyChangeListener
   /*

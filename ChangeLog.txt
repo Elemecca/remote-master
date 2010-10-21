@@ -109,6 +109,11 @@ Changes for v2.00
 - Fix bug in opening .ir file that has device combiner as a protocol upgrade (Graham)
 - When downloading or opening a file, clear ProtocolManager of custom code and added protocols specific to previous configuration (Graham)
 - When migrating keymoves, avoid basing function names on keymove notes as notes such as names of other keys can cause errors (Graham)
+- Add an Edit Protocol button to the Devices tab (Graham)
+- Enable all protocols to be edited, adding/editing/removing custom code as required (Graham)
+- When editing a device upgrade, recognise and use any protocol present that will be treated by the remote as custom code (Graham)
+- Handle the case of device upgrades where the protocol is missing, treating it as a form of custom code but marked with '-' rather than '*' (Graham)
+- Correct two places in protocols.ini where "VariantName" had a space between the two words (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

@@ -245,13 +245,19 @@ public class DeviceCombiner extends Protocol
   @Override
   public Hex getCode( Remote r )
   {
-    short[] header = new short[ devices.size() + 1 ];
-
     Processor processor = r.getProcessor();
+    short[] header = new short[ devices.size() + 1 ];
+    Hex base = getCustomCode( processor );
+    if ( base != null )
+    {
+      return base;
+    }
+    
+    base = null;
     String name = processor.getName();
     String equivalentName = processor.getEquivalentName();
     StringBuilder buff = new StringBuilder();
-    Hex base = null;
+    
     int[] devComb = r.getDevCombAddresses();
     if ( devComb == null )
     {

@@ -55,6 +55,22 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         toFront();
       }
     };
+    
+    // Check consistency of device upgrade
+    Protocol p = deviceUpgrade.getProtocol();
+    Remote remote = deviceUpgrade.getRemote();
+    String proc = remote.getProcessor().getEquivalentName();
+    if ( p.getFixedDataLength() != p.getFixedDataLengthFromCode()
+        || p.getDefaultCmd().length() != Protocol.getCmdLengthFromCode( proc, p.getCode( remote ) ) )
+    {
+      String title = "Device Upgrade Editor";
+      String message = "The code of the protocol for this device upgrade is not consistent\n"
+                     + "with the protocol default parameters, so the device upgrade cannot\n"
+                     + "be edited.  You need to edit the protocol code to correct this, before\n"
+                     + "you can edit the device upgrade";
+      JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+      return;
+    }
 
     owner.addWindowFocusListener( focusWindowAdapter );
 

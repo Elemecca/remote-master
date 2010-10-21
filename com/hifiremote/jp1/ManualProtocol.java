@@ -578,20 +578,17 @@ public class ManualProtocol extends Protocol
     return importedCode;
   }
   
-  public String getIniString( boolean addName )
+  public String getIniString( boolean addName, boolean newName )
   {
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter( sw );
+    String name = newName ? getDefaultName( id ) : getName();
     try
-    {     
+    { 
+      pw.println( "[" + name + "]" );
       if ( addName )
       {
-        pw.println( "[" + getName() + "]" );
-        pw.println( "Name=" + getName() );
-      }
-      else
-      {
-        pw.println( "[" + getDefaultName( id ) + "]" );
+        pw.println( "Name=" + name );
       }
       pw.println( "PID=" + getID() );
       store( new PropertyWriter( pw ) );
@@ -605,12 +602,37 @@ public class ManualProtocol extends Protocol
   
   public IniSection getIniSection()
   {
-    StringReader sr = new StringReader( getIniString( true ) );
+    StringReader sr = new StringReader( getIniString( true, false ) );
     BufferedReader in = new BufferedReader( sr );
     PropertyReader pr = new PropertyReader( in );
     return pr.nextSection();
   }
   
+  public int getNameIndex()
+  {
+    if ( ( name == null ) || ! name.startsWith( "Manual Settings" ) )
+    {
+      return 0;
+    }
+    int begin = name.indexOf( "(" ) + 1;
+    int end = name.indexOf( ")" );
+    if ( begin == 0 || end == begin )
+    {
+      return 1;
+    }
+    else
+    {        
+      try
+      {
+        int nameIndex = Integer.parseInt( name.substring( begin, end ) );
+        return nameIndex;         
+      }
+      catch ( NumberFormatException e )
+      {
+        return 0;
+      }
+    }
+  }
   
   public static String getDefaultName( Hex pid )
   {

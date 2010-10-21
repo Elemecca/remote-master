@@ -7,12 +7,11 @@ import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableModel;
 
 public class ManualSettingsEditor extends DefaultCellEditor implements TableCellEditor, ActionListener
 {
@@ -44,18 +43,20 @@ public class ManualSettingsEditor extends DefaultCellEditor implements TableCell
     switch ( column )
     {
       case 5:
-        button.setText( this.value.getStarredID( remote ) );
+        TableSorter ts = ( TableSorter )table.getModel();
+        DeviceUpgradeTableModel model = ( DeviceUpgradeTableModel )ts.getTableModel();
+        row = ts.modelIndex( row );
+        button.setText( model.getRow( row ).getStarredID() );
         break;
       case 6:
-        button.setText( this.value.getVariantName() );
+        button.setText( this.value.getVariantDisplayName( remote.getProcessor() ) );
         break;
       case 7:
         button.setText( this.value.toString() );
         break;
     }
     return button;
-  }
-  
+  } 
   
   @Override
   public void actionPerformed( ActionEvent e )
@@ -65,19 +66,14 @@ public class ManualSettingsEditor extends DefaultCellEditor implements TableCell
       // The user has clicked the cell, so
       // bring up the dialog.
       
-      ManualProtocol mp = null;
-      if ( value.getClass() == ManualProtocol.class )
+      Protocol result = value.editProtocol( remote, button );
+
+      if ( result != null && value.getClass() != ManualProtocol.class )
       {
-        mp = ( ManualProtocol )value;
+        fireEditingStopped();
       }
-      ManualSettingsDialog dialog = new ManualSettingsDialog( ( JFrame )SwingUtilities.getRoot( button ), mp );
-      dialog.pid.setEditable( false );
-      dialog.pid.setEnabled( false );
-
-      dialog.setVisible( true );
-      Protocol result = dialog.getProtocol();
-
-      if ( result != null )
+      
+      else if ( result != null )
       {
         value = result;
         fireEditingStopped();

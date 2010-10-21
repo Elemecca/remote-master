@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,10 +13,12 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -507,6 +510,100 @@ public class Protocol
   {
     return !customCode.isEmpty();
   }
+  
+  /**
+   * The return value is a protocol upgrade specifying code that is already
+   * present in the upgrade area of the remote and which has the same pid as
+   * the current protocol.  Such code will necessarily be used by the remote
+   * when a protocol with this pid is called.  If there is more than one protocol
+   * code in the upgrade area with that pid, however, then there is freedom to
+   * determine which one is actually called, by placing that one first in the
+   * upgrade area.  There are two possibilities.  
+   * <br><br>
+   * (a)  There is already a device upgrade that uses a protocol with the same pid
+   * and which itself places code in the upgrade area.  In this case there is no
+   * freedom, as that device upgrade will determine which code is placed first.  
+   * The protocol upgrade returned is a new one with this as its code.
+   * <br><br>
+   * (b)  There is no such device upgrade but there is one or more unused protocol
+   * codes in the upgrade area with matching pid. The protocol upgrade returned is
+   * an existing one that matches the protocol on the lengths of fixed and command
+   * data, if there is one, otherwise it is a non-matching one.  If there is more
+   * than one matching then one whose code differs from the present code of the
+   * protocol is chosen, if there is one.
+   * <br><br>
+   * In both cases (a) and (b) a subsequent call to matched() will return a boolean
+   * showing whether the returned protocol upgrade matches the protocol on the
+   * lengths of fixed and command data.
+   * <br><br>
+   * If the argument checkDevices is TRUE then both (a) and (b) are sought, if it
+   * is FALSE then only (b) is sought.
+   */  
+  public ProtocolUpgrade getCustomUpgrade( RemoteConfiguration remoteConfig, boolean checkDevices )
+  {
+    if ( remoteConfig == null ) return null;
+    Remote remote = remoteConfig.getRemote();
+    String proc = remote.getProcessor().getEquivalentName();
+    int pid = getID( remote ).get( 0 );
+    Hex code = null;
+    // If checkDevices true, first check if an existing device upgrade uses a different protocol
+    // with the same PID and has custom code, for in this case the remote will use that custom code.
+    // This can arise when there are two protocols with the same protocol code but
+    // different translators, such as Denon-K and Panasonic Combo.
+    if ( checkDevices )
+    {
+      for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+      {
+        if ( du.needsProtocolCode() )
+        {
+          code = du.getCode();
+        }
+        Protocol p = du.getProtocol();
+        if ( p != this && p.getID( remote ).get( 0 ) == pid && code != null )
+        {
+          match = ( ( Protocol.getFixedDataLengthFromCode( proc, code ) == getFixedDataLength() )
+              && ( Protocol.getCmdLengthFromCode( proc, code ) == getDefaultCmd().length() ) );
+          return new ProtocolUpgrade( pid, code, null );
+        }
+      }
+    }
+    code = getCode( remote );
+    match = false;
+    ProtocolUpgrade first = null;
+    ProtocolUpgrade equalled = null;
+    for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
+    {
+      Hex puCode = pu.getCode();
+      if ( pu.getPid() == pid )
+      {
+        // Record one to return if no full match of conditions is found
+        if ( first == null ) first = pu;
+        if ( ( equalled == null ) && puCode.equals( code ) ) equalled = pu;
+        // Check the matching conditions
+        match = ( ! puCode.equals( code ) ) 
+          && ( Protocol.getFixedDataLengthFromCode( proc, puCode ) == getFixedDataLength() )
+          && ( Protocol.getCmdLengthFromCode( proc, puCode ) == getDefaultCmd().length() );
+        if ( match ) return pu;
+      }
+    }
+    // No full match, so accept equality if that was found
+    if ( equalled != null )
+    {
+      match = true;
+      return equalled;
+    }
+    match = false;
+    return first;
+  }
+  
+  /**
+   * This returns the boolean set by getCustomUpgrade(RemoteConfiguration) that shows if
+   * the upgrade matches in fixed data and command lengths
+   */
+  public boolean matched()
+  {
+    return match;
+  }
 
   /**
    * Gets the panel.
@@ -569,23 +666,21 @@ public class Protocol
   }
 
   /**
-   * Gets the code.
-   * 
-   * @param remote
-   *          the remote
-   * @return the code
+   * Returns the current code for this protocol and specified remote,
+   * which will be custom code when that is set.  This is overridden
+   * by the Device Combiner protocol, which ensures the correct code
+   * when that is the protocol, which again may be custom code.
    */
   public Hex getCode( Remote remote )
   {
+    // Note that DeviceCombiner has an override for this method
     return getCode( remote.getProcessor() );
   }
 
   /**
-   * Gets the code.
-   * 
-   * @param p
-   *          the p
-   * @return the code
+   * Returns the current code for this protocol and specified processor,
+   * which will be custom code when that is set.  This is NOT overridden
+   * by the Device Combiner protocol.
    */
   public Hex getCode( Processor p )
   {
@@ -1050,9 +1145,8 @@ public class Protocol
   }
 
   /**
-   * Gets the iD.
-   * 
-   * @return the iD
+   * Gets the main PID without checking if remote should use the alternate PID
+   * if one exists.  To perform that check, use getID( Remote ).
    */
   public Hex getID()
   {
@@ -1070,11 +1164,9 @@ public class Protocol
   }
 
   /**
-   * Gets the iD.
-   * 
-   * @param remote
-   *          the remote
-   * @return the iD
+   * Gets the PID, returning the alternate PID if there is one and if the remote has
+   * a different variant with the same main PID built in.  To get the main PID
+   * regardless, use getID().
    */
   public Hex getID( Remote remote )
   {
@@ -1083,7 +1175,7 @@ public class Protocol
       return id;
     }
 
-    if ( !needsCode( remote ) )
+    if ( remote.supportsVariant( id, variantName ) )
     {
       return id;
     }
@@ -1093,7 +1185,7 @@ public class Protocol
     // different variant of the main PID built in. If this is not so, use the main PID.
 
     Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, id, false );
-
+    
     if ( p == null )
     {
       return id;
@@ -1129,15 +1221,23 @@ public class Protocol
     return alternatePID;
   }
   
-  public String getStarredID( Remote remote )
-  {
-    String starredID = id.toString();
-    if ( needsCode( remote ) )
-    {
-      starredID += "*";
-    }
-    return starredID;
-  }
+//  public String getStarredID( Remote remote )
+//  {
+//    String starredID = id.toString();
+//    if ( needsCode( remote ) )
+//    {
+//      Hex code = getCustomCode( remote.getProcessor() );
+//      if ( code != null && code.length() == 0 )
+//      {
+//        starredID += "-";
+//      }
+//      else
+//      {
+//        starredID += "*";
+//      }
+//    }
+//    return starredID;
+//  }
 
   /**
    * Gets the variant name.
@@ -1147,6 +1247,23 @@ public class Protocol
   public String getVariantName()
   {
     return variantName;
+  }
+  
+  public String getVariantDisplayName( Processor processor )
+  {
+    String variant = variantName;
+    if ( getCustomCode( processor ) != null )
+    {
+      if ( variant.equals( "" ) )
+      {
+        variant = "Custom";
+      }
+      else
+      {
+        variant += "-Custom";
+      }
+    }
+    return variant;
   }
 
   /**
@@ -1358,30 +1475,53 @@ public class Protocol
     return true;
   }
   
+  /**
+   * Returns a protocol upgrade with pid appropriate to the remote, ie being
+   * the alternate pid when that is needed, and whose code is that for this
+   * protocol, translated for the remote but NOT translated by any code
+   * translators as this translation is dependent on the device upgrade.
+   * Assigns this protocol to the new protocol upgrade.
+   */
   public ProtocolUpgrade getProtocolUpgrade( Remote remote )
   {
-    int pid = id.get( 0 );
-    Hex code = null;
-    // Make sure that device combiner override of getCode(remote) is not called when
-    // custom code is present.
-    if ( hasCustomCode() )
-    {
-      code = getCode( remote.getProcessor() );
-    }
-    else
-    {
-      code = getCode( remote );
-    }
+    int pid = getID( remote ).get(  0  );
+    Hex code = getCode( remote );
     if ( code == null )
     {
       return null;
     }
     // The new code for S3C80Processor.translate now ensures that manual protocols
     // are not translated when they are already correct for the remote concerned.
-    code = remote.getProcessor().translate( code, remote );
+    if ( code.length() != 0 )
+    {
+      code = remote.getProcessor().translate( code, remote );
+    }
     ProtocolUpgrade pu = new ProtocolUpgrade( pid, code, null );
     pu.setProtocol( this );
     return pu;
+  }
+  
+  /**
+   * Adds to the configuration a new Protocol Upgrade whose pid is that of
+   * the protocol and whose code is as specified.  If this protocol is not a
+   * manual one, create a manual protocol from this upgrade and add it to
+   * Protocol Manager.  The protocol assigned to the new Protocol Upgrade
+   * will be this manual protocol if it is created, otherwise it will be
+   * the calling protocol.
+   */
+  public void saveCode( RemoteConfiguration remoteConfig, Hex code )
+  {
+    Remote remote = remoteConfig.getRemote();
+    ProtocolUpgrade pu = getProtocolUpgrade( remote );
+    if ( code != null ) pu.setCode( code );
+    remoteConfig.getProtocolUpgrades().add( pu );
+    if ( ! ( this instanceof ManualProtocol ) )
+    {
+      // If this protocol was not a manual one, create a manual protocol from this code
+      // as we can never be sure of a user's intended use for the code when it is not
+      // assigned to a device upgrade.
+      pu.setManualProtocol( remote );
+    }
   }
 
   /**
@@ -1465,6 +1605,104 @@ public class Protocol
     return result;
   }
 
+  public Protocol editProtocol( Remote remote, Component locator )
+  {
+    ManualProtocol mp = null;
+    Hex codeWhenNull = null;
+    Processor processor = remote.getProcessor();
+    String proc = processor.getEquivalentName();
+    Hex originalCode = code.get( proc );
+    originalCode = processor.translate( originalCode, remote );
+    if ( getClass() == ManualProtocol.class )
+    {
+      mp = ( ManualProtocol )this;
+    }
+    else
+    {
+      ProtocolUpgrade pu = getProtocolUpgrade( remote );
+      int fixedDataLength = getFixedDataLength();
+      int cmdLength = getDefaultCmd().length();
+             
+      pu.setManualProtocol( remote, fixedDataLength, cmdLength );
+      mp = pu.getManualProtocol( remote );
+      // This is just an auxiliary manual protocol so delete it from ProtocolManager
+      ProtocolManager.getProtocolManager().remove( mp );
+      mp.setName( getName() + " (custom)" );
+      if ( ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, mp.getID() ).contains( this )
+          && getCodeTranslators( remote ) == null )
+      {
+        // When built in, code at entry is purely custom code and so may be empty, but if
+        // there are code translators, so that there may be non-custom protocol code for 
+        // a built-in protocol, treat it as not built in.
+        if ( getCustomCode( remote.getProcessor() ) == null )
+        {
+          mp.setCode( new Hex(), remote.getProcessor() );
+        }
+      }
+      else
+      {
+        // When not built in, deleting the code must restore the original code
+        codeWhenNull = originalCode;
+      }  
+    }
+    
+    ManualSettingsDialog dialog = new ManualSettingsDialog( ( JFrame )SwingUtilities.getRoot( locator ), mp );
+    dialog.setForCustomCode();
+    dialog.codeWhenNull = codeWhenNull;
+
+    dialog.setVisible( true );
+    Protocol result = dialog.getProtocol();
+
+    if ( result != null && getClass() != ManualProtocol.class )
+    {
+      Hex returnCode = result.code.get( proc );
+      if ( returnCode != null && returnCode.length() != 0 )
+      {
+        returnCode = processor.translate( returnCode, remote );
+      }
+
+      if ( ( returnCode == null || returnCode.length() == 0 ) )
+      {
+        if ( codeWhenNull != null )
+        {
+          // User has requested to delete code for a protocol that is not built in,
+          // which is signified by an empty custom code
+          customCode.put( proc, new Hex() );
+        }
+        else
+        {
+          customCode.remove( proc );
+        }
+      }
+      else if ( returnCode.equals( originalCode ) )
+      {
+        // Custom code not needed, so delete if it exists
+        customCode.remove( proc );
+      }
+      else
+      {
+        // Check if this is consistent custom code
+        String title = "Custom protocol code";
+        String message = "The custom code you have set is not consistent with the protocol\n"
+          + "concerned.  It differs in the length of either the fixed or command\n"
+          + "data.  Do you wish to cancel this edit?\n\n"
+          + "To apply the edit despite this problem, select NO.";
+        if ( ( ( Protocol.getFixedDataLengthFromCode( proc, returnCode )
+            == Protocol.getFixedDataLengthFromCode( proc, originalCode ) )
+            && ( Protocol.getCmdLengthFromCode( proc, returnCode )
+                == Protocol.getCmdLengthFromCode( proc, originalCode ) ) )
+                ||  ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+                    JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION ) )
+        {
+          customCode.put( proc, returnCode );
+        }
+      }         
+    }
+    return result;
+  }
+  
+  
+  
   /**
    * Store.
    * 
@@ -1611,4 +1849,10 @@ public class Protocol
 
   /** The key moves only. */
   private boolean keyMovesOnly = false;
+  
+  private boolean match = true;
+  
+  // Properties used only during editing
+  public Hex oldCustomCode = null; 
+  public ProtocolUpgrade newCustomCode = null;
 }

@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import info.clearthought.layout.TableLayout;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -264,6 +265,23 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     int y = rect.y - rect.height / 2;
     setLocation( x, y );
   }
+  
+  public void setForCustomCode()
+  {
+    pid.setEditable( false );
+    pid.setEnabled( false );
+    
+    deviceTable.setEnabled( false );
+    deviceTable.setForeground( Color.GRAY );
+
+    commandTable.setEnabled( false );
+    commandTable.setForeground( Color.GRAY );
+
+    rawHexData.setEnabled( false );
+    cmdIndex.setEnabled( false );
+  
+    enableButtons();
+  }
 
   /*
    * (non-Javadoc)
@@ -295,7 +313,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
     else if ( source == view )
     {
-      JTextArea ta = new JTextArea( protocol.getIniString( false ), 10, 70 );
+      JTextArea ta = new JTextArea( protocol.getIniString( false, pid.isEnabled() ), 10, 70 );
       new TextPopupMenu( ta );
       ta.setEditable( false );
       JOptionPane.showMessageDialog( this, new JScrollPane( ta ), "Protocol.ini entry text", JOptionPane.PLAIN_MESSAGE );
@@ -345,6 +363,63 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     if ( source == pid )
     {
       Hex id = ( Hex )pid.getValue();
+      boolean inDeviceUpgrade = false;
+      Protocol p = null;
+      DeviceUpgrade du = null;
+      if ( id != null && id.length() != 0 && remoteConfig != null )
+      {
+        Remote remote = remoteConfig.getRemote();
+        for ( DeviceUpgrade temp : remoteConfig.getDeviceUpgrades() )
+        {
+          du = temp;
+          p = temp.getProtocol();
+          
+          if ( p.getID( remote ).equals( id ) )
+          {
+            inDeviceUpgrade = true;
+            break;
+          }
+        }
+        if ( inDeviceUpgrade )
+        {
+          String title = "Manual Settings";
+          boolean exit = false;
+          String starredID = du.getStarredID();
+          boolean usesProtocolUpgrade = ( starredID.endsWith( "*" ) );
+
+          if ( usesProtocolUpgrade )
+          {
+            String message = "There is a Device Upgrade that is using a protocol upgrade with\n"
+                           + "PID " + id + " Do you want to abort this PID choice and enter\n"
+                           + "a different one?  If so, please press OK.\n\n"
+                           + "If you want to edit that protocol code, also press OK, then exit\n"
+                           + "this dialog, change to the Devices page and edit the protocol of\n"
+                           + "the device upgrade from there.\n\n"
+                           + "To continue, press CANCEL but you will be creating a Manual Protocol\n"
+                           + "that cannot be accessed while that Device Upgrade is present.";
+            exit = ( JOptionPane.showConfirmDialog( null, message, title, 
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.OK_OPTION );
+          }
+          else
+          {
+            String message = "There is a Device Upgrade with protocol with PID " + id + " that\n"
+                           + "is not yet using a protocol upgrade, so you cannot create a new\n"
+                           + "manual protocol with that PID.  If you want to create a manual\n"
+                           + "protocol then please choose a different PID.  If you want to\n"
+                           + "provide code for that device upgrade, please change to the\n"
+                           + "Devices page and edit the protocol from there.";
+            JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+            exit = true;
+          }
+          
+          if ( exit )
+          {
+            pid.setValue( null );
+            enableButtons();
+            return;
+          }         
+        }
+      }
       protocol.setID( id );
     }
     enableButtons();
@@ -352,10 +427,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
   protected void enableButtons()
   {
-    Hex id = ( Hex )pid.getValue();
-    boolean flag = ( id != null ) && protocol.hasAnyCode();
-    ok.setEnabled( flag );
-    view.setEnabled( flag );
+    if ( deviceTable.isEnabled() )
+    {
+      // Normal Manual Settings usage
+      Hex id = ( Hex )pid.getValue();
+      boolean flag = ( id != null ) && ( id.length() != 0 ) && protocol.hasAnyCode();
+      ok.setEnabled( flag );
+      view.setEnabled( flag );
+    }
+    else
+    {
+      // Custom Code usage
+      ok.setEnabled( true );
+      view.setEnabled( false );
+    }
   }
 
   // DocumentListener methods
@@ -512,6 +597,26 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             commandModel.fireTableDataChanged();
           }
         }
+        else if ( codeWhenNull != null )
+        {
+          String title = "Code deletion";
+          String message = "This protocol is not built in to the remote.  Do you want to restore\n"
+                         + "the code to the standard code for this protocol?\n\n"
+                         + "If you select NO then the protocol upgrade for this device upgrade\n"
+                         + "will be deleted.  The device upgrade will not function until you\n"
+                         + "restore the protocol upgrade, which you may do by deleting this\n"
+                         + "null entry and answering this question again.";
+          boolean restore = ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
+              JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION );
+          if ( restore )
+          {
+            value = codeWhenNull;
+          }
+          else
+          {
+            value = new Hex();
+          }
+        }
         protocol.setCode( ( Hex )value, procs[ row ] );
         fireTableRowsUpdated( row, row );
         enableButtons();
@@ -663,5 +768,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
 
   }
+  
+  public Hex codeWhenNull = null;
+  
+  public RemoteConfiguration remoteConfig = null;
 
 }
