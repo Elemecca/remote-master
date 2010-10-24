@@ -60,8 +60,9 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
     String proc = remote.getProcessor().getEquivalentName();
-    if ( p.getFixedDataLength() != p.getFixedDataLengthFromCode()
-        || p.getDefaultCmd().length() != Protocol.getCmdLengthFromCode( proc, p.getCode( remote ) ) )
+    Hex pCode = p.getCode( remote );
+    if ( pCode != null && ( p.getFixedDataLength() != Protocol.getFixedDataLengthFromCode( proc, pCode )
+        || p.getDefaultCmd().length() != Protocol.getCmdLengthFromCode( proc, pCode ) ) )
     {
       String title = "Device Upgrade Editor";
       String message = "The code of the protocol for this device upgrade is not consistent\n"
