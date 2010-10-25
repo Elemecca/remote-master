@@ -372,8 +372,8 @@ public class DeviceUpgrade
         JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "The selected protocol " + p.getDiagnosticName()
             + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
             + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
+        protocol = protocols.get( 0 );
       }
-
     }
     if ( remote != null && remote != newRemote )
     {
