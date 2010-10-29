@@ -173,9 +173,18 @@ public class OutputPanel extends KMPanel implements ActionListener
 
     if ( deviceUpgrade.needsProtocolCode() || altCode != null )
     {
-      protocolLabel.setForeground( Color.black );
-      protocolLabel.setText( String.format( "Upgrade Protocol Code *** REQUIRED *** (%1$d bytes)", code.length() ) );
-      protocolText.setForeground( Color.black );
+      if ( code != null )
+      {
+        protocolLabel.setForeground( Color.black );
+        protocolLabel.setText( String.format( "Upgrade Protocol Code *** REQUIRED *** (%1$d bytes)", code.length() ) );
+        protocolText.setForeground( Color.black );
+      }
+      else
+      {
+        protocolLabel.setForeground( Color.red );
+        protocolLabel.setText( "Upgrade Protocol Code REQUIRED BUT NOT AVAILABLE" );
+        protocolText.setForeground( protocolText.getBackground() );
+      }
     }
     else
     {

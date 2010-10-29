@@ -268,8 +268,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   
   public void setForCustomCode()
   {
-    pid.setEditable( false );
-    pid.setEnabled( false );
+//    pid.setEditable( false );
+//    pid.setEnabled( false );
     
     deviceTable.setEnabled( false );
     deviceTable.setForeground( Color.GRAY );

@@ -1273,44 +1273,55 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     return homeDirectory;
   }
+  
+  public void validateUpgrade()
+  {
+    // Call from the editor panel to avoid duplication of error messages
+    editorPanel.validateUpgrade();
+  }
 
   /**
    * Validate upgrade.
    */
-  public void validateUpgrade()
-  {
-    Remote r = deviceUpgrade.getRemote();
-    Protocol p = deviceUpgrade.getProtocol();
-    java.util.List< Protocol > protocols = protocolManager.getProtocolsForRemote( r );
-    if ( !protocols.contains( p ) && !p.hasCode( r ) )
-    {
-      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName()
-          + "is not compatible with remote " + r.getName() );
-
-      // Find a matching protocol for this remote
-      Protocol match = null;
-      String name = p.getName();
-      for ( Protocol p2 : protocols )
-      {
-        if ( p2.getName().equals( name ) )
-        {
-          match = p2;
-          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName() );
-          break;
-        }
-      }
-      if ( match != null )
-      {
-        deviceUpgrade.setProtocol( match );
-      }
-      else
-      {
-        JOptionPane.showMessageDialog( this, "The selected protocol " + p.getDiagnosticName()
-            + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
-            + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
-      }
-    }
-  }
+//  public void validateUpgrade()
+//  {
+//    Remote r = deviceUpgrade.getRemote();
+//    Protocol p = deviceUpgrade.getProtocol();
+//    
+//    if ( oldRemote == r && oldProtocol == p ) return;
+//    oldRemote = r;
+//    oldProtocol = p;
+//    
+//    java.util.List< Protocol > protocols = protocolManager.getProtocolsForRemote( r );
+//    if ( !protocols.contains( p ) && !p.hasCode( r ) )
+//    {
+//      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName()
+//          + "is not compatible with remote " + r.getName() );
+//
+//      // Find a matching protocol for this remote
+//      Protocol match = null;
+//      String name = p.getName();
+//      for ( Protocol p2 : protocols )
+//      {
+//        if ( p2.getName().equals( name ) )
+//        {
+//          match = p2;
+//          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName() );
+//          break;
+//        }
+//      }
+//      if ( match != null )
+//      {
+//        deviceUpgrade.setProtocol( match );
+//      }
+//      else
+//      {
+//        JOptionPane.showMessageDialog( this, "The selected protocol " + p.getDiagnosticName()
+//            + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
+//            + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
+//      }
+//    }
+//  }
 
   /**
    * Gets the remote.

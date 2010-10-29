@@ -127,16 +127,16 @@ public class S3C80Processor
         int second = data[ ++i ] & 0xFF;
         if ( codeType == CodeType.NEW && second == 0xFF )
         {
-          data[ i ] = ( byte )0x80;
+          data[ i ] = ( short )0x80;
         }
         else if ( codeType == CodeType.OLD && second == 0x80 )
         {
-          data[ i ] = ( byte )0xFF;
+          data[ i ] = ( short )0xFF;
         }
         else if ( second == 0x01 )
         {
           int third = data[ ++i ] & 0xFF;
-          data[ i ] = ( byte )adjust( third, codeType );
+          data[ i ] = ( short )adjust( third, codeType );
         }
       }
     }

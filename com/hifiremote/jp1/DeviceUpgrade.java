@@ -369,10 +369,11 @@ public class DeviceUpgrade
       }
       else
       {
+        System.err.println( "DeviceUpgrade.setRemote(), protocol " + p.getDiagnosticName()
+            + "is not compatible with remote " + newRemote.getName() );
         JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "The selected protocol " + p.getDiagnosticName()
             + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
             + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
-        protocol = protocols.get( 0 );
       }
     }
     if ( remote != null && remote != newRemote )
@@ -1083,9 +1084,24 @@ public class DeviceUpgrade
       cmdLength = p.getDefaultCmd().length();
       parmValues = p.importFixedData( fixedDataHex );
     }
-    else if ( pCode != null )
+    else //if ( pCode != null )
     {
       // Don't have anything we can use, so create a manual protocol
+      if ( pCode == null ) 
+      {
+        // Protocol code is required but absent.  Determine fixed data and command lengths
+        // from device hex alone, on the assumption (which will generally be true) that
+        // the number of mapped buttons is greater than the number of fixed bytes.  (This is
+        // the way that IR.exe always determines these for built-in protocols since it does
+        // not have access to the protocol code). 
+        System.err.println("Protocol code missing, calculating fixed data and command lengths" );
+        int dataLength = hexCode.length() - fixedDataOffset;
+        cmdLength = ( buttons.size() > 0 ) ? ( dataLength / buttons.size() ) : 1;
+        fixedDataLength = dataLength - cmdLength * buttons.size();
+        System.err.println("Calculated: Fixed data length = " + fixedDataLength + ", Command length = " + cmdLength );
+        pCode = new Hex();  // signifies missing code
+      }
+
       System.err.println( "Using a Manual Protocol" );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
@@ -1112,10 +1128,10 @@ public class DeviceUpgrade
       ProtocolManager.getProtocolManager().add( mp );
       p = mp;
     }
-    else
-    {
-      throw new ParseException( "Unable to import device upgrade", index );
-    }
+//    else
+//    {
+//      throw new ParseException( "Unable to import device upgrade", index );
+//    }
 
     if ( digitMapIndex != -1 )
     {
@@ -3050,7 +3066,7 @@ public class DeviceUpgrade
     if ( needsProtocolCode() )
     {
       Hex code = getCode();
-      if ( code != null && code.length() == 0 )
+      if ( code == null || code.length() == 0 )
       {
         starredID += "-";
       }

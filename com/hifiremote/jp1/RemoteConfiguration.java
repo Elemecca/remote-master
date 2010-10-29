@@ -1790,17 +1790,16 @@ public class RemoteConfiguration
         bounds[ 0 ] = processor.getInt( data, offset + 2 * ( count + 1 ) ) - remote.getBaseAddress(); // next device
       }
       // upgrade
-      int limit = getLimit( offset, bounds );
+      int limit = getLimit( codeOffset, bounds );
       Hex deviceHex = Hex.subHex( data, codeOffset, limit - codeOffset );
       // Get the first protocol upgrade with matching pid, if there is one, as this is the one that
       // the remote will access - regardless of whether or not the remote has a built-in protocol
-      // for this pid.
-//      ProtocolUpgrade pu = getProtocol( pid );
+      // for this pid.  It may however be changed by importRawUpgrade() if this one is incompatible
+      // with the device upgrade, eg different command length.
       protocolUpgradeUsed = getProtocol( pid );
       Hex protocolCode = null;
       if ( protocolUpgradeUsed != null )
       {
-//        pu.setUsed( true );
         protocolCode = protocolUpgradeUsed.getCode();
       }
 
@@ -1827,7 +1826,7 @@ public class RemoteConfiguration
         upgrade.setSetupCode( setupCode );
         if ( protocolUpgradeUsed != null )
         {
-          // This may have been changed by importRawUpgrade
+          // This may have been changed by importRawUpgrade, so setUsed cannot be set earlier.
           protocolUpgradeUsed.setUsed( true );
         }
       }
@@ -1970,6 +1969,11 @@ public class RemoteConfiguration
       {
         Protocol p = dev.getProtocol();
         ProtocolUpgrade output = p.getProtocolUpgrade( remote );
+        if ( output == null )
+        {
+          // The protocol code is missing, so nothing to output
+          continue;
+        }
         Hex code = output.getCode();
         if ( code == null || code.length() == 0 )
         {
@@ -2108,8 +2112,16 @@ public class RemoteConfiguration
         {
           // In-line protocol required
           Hex hex = upg.getCode();
-          offset -= hex.length();
-          lastProtAddr = offset;
+          if ( hex != null && hex.length() > 0 )
+          {
+            offset -= hex.length();
+            lastProtAddr = offset;
+          }
+          else
+          {
+            // Protocol code is missing.  Do nothing, treating it as
+            // code not required.
+          }
         }
       }
       // Device upgrade has an additional 5-byte header
@@ -2283,11 +2295,19 @@ public class RemoteConfiguration
         {
           // Store the protocol
           Hex hex = upg.getCode();
-          offset -= hex.length();
-          Hex.put( hex, data, offset );
-          lastProtID = protID;
-          lastProtAddr = offset;
-          protOffset = upgLength + 5;
+          if ( hex != null && hex.length() > 0 )
+          {
+            offset -= hex.length();
+            Hex.put( hex, data, offset );
+            lastProtID = protID;
+            lastProtAddr = offset;
+            protOffset = upgLength + 5;
+          }
+          else
+          {
+            // Protocol code is missing.  Do nothing, treating it as
+            // code not required.
+          }
         }
       }
       // Store the device upgrade

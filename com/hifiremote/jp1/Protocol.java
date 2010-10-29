@@ -1647,7 +1647,12 @@ public class Protocol
     }
     
     ManualSettingsDialog dialog = new ManualSettingsDialog( ( JFrame )SwingUtilities.getRoot( locator ), mp );
-    dialog.setForCustomCode();
+    dialog.pid.setEditable( false );
+    dialog.pid.setEnabled( false );
+    if ( getClass() != ManualProtocol.class )
+    {
+      dialog.setForCustomCode();
+    }    
     dialog.codeWhenNull = codeWhenNull;
 
     dialog.setVisible( true );

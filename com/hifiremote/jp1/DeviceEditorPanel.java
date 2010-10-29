@@ -460,10 +460,16 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
   {
     Remote r = deviceUpgrade.getRemote();
     Protocol p = deviceUpgrade.getProtocol();
+
+    // Prevent repeated displays of same error messages
+    if ( oldRemote == r && oldProtocol == p ) return;
+    oldRemote = r;
+    oldProtocol = p;
+
     java.util.List< Protocol > protocols = ProtocolManager.getProtocolManager().getProtocolsForRemote( r );
     if ( !protocols.contains( p ) && !p.hasCode( r ) )
     {
-      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName()
+      System.err.println( "DeviceEditorPanel.validateUpgrade(), protocol " + p.getDiagnosticName()
           + "is not compatible with remote " + r.getName() );
 
       // Find a matching protocol for this remote
@@ -578,4 +584,7 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
     }
     
   }
+  
+  private Remote oldRemote = null;
+  private Protocol oldProtocol = null;
 }
