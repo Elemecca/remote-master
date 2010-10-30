@@ -160,7 +160,7 @@ public class DeviceUpgrade
       {
         devParms[ i ].setValue( null );
       }
-      setProtocol( protocol );
+      setProtocol( protocol, false );
     }
 
     notes = null;
@@ -524,12 +524,12 @@ public class DeviceUpgrade
   public boolean setProtocol( Protocol newProtocol, boolean messages )
   {
     // If called from an existing configuration, test if there is a conflicting protocol upgrade
-    if ( remoteConfig != null )
+    if ( messages && remoteConfig != null )
     {
       String title = "Custom protocol code";
       Hex code = newProtocol.getCustomCode( remote.getProcessor() );
       ProtocolUpgrade pu = newProtocol.getCustomUpgrade( remoteConfig, true );  
-      if ( messages && code != null )
+      if ( code != null )
       {
         String message = "This protocol has custom code assigned that will\n"
                        + "override the standard code for the protocol.\n"
@@ -540,7 +540,7 @@ public class DeviceUpgrade
           return false;
         }     
       }
-      else if ( messages && pu != null )
+      else if ( pu != null )
       {
         Hex puCode = pu.getCode();
         if ( puCode != null && puCode.length() != 0 )

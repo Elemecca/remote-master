@@ -344,11 +344,9 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   /** The device type box. */
   private JComboBox deviceTypeBox = new JComboBox();
 
-  private static final Color normalColor = Color.black;
   private static final Color normalBGColor = Color.white;
   private static final Color normalSelectedBGColor = Color.blue;
 
-  private static final Color attachedColor = Color.white;
   private static final Color attachedBGColor = Color.lightGray;
   private static final Color attachedSelectedBGColor = Color.darkGray;
 

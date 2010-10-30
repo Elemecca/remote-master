@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -276,7 +274,8 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       Processor processor = remote.getProcessor();
       Protocol p = newUpgrade.getProtocol();
       ProtocolUpgrade pu = p.getCustomUpgrade( remoteConfig, true );
-      if ( ( p.getCustomCode( processor ) == null ) &&  pu != null && p.matched() )
+      if ( ( p.getCustomCode( processor ) == null ) &&  pu != null && p.matched()
+          && !p.getCode( remote ).equals( pu.getCode() ) )
       {
         // There is custom code waiting to be assigned, so assign it
         // and delete it from the list of unused protocol upgrades

@@ -256,6 +256,21 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
             }
           }
         }
+        else
+        {
+          // Remove the custom code of any other device upgrade with same pid
+          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+          {
+            if ( du != device )
+            {
+              Protocol temp = du.getProtocol();
+              if ( temp.getID( remote ).equals( p.getID( remote ) ) )
+              {
+                temp.customCode.remove( proc );
+              }
+            }
+          }
+        }
         propertyChangeSupport.firePropertyChange( "device", null, null );
         fireTableDataChanged();
         break;

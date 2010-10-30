@@ -1,7 +1,6 @@
 package com.hifiremote.jp1;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
