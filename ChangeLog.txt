@@ -113,6 +113,9 @@ Changes for v2.00
 - When editing a device upgrade, recognise and use any protocol present that will be treated by the remote as custom code (Graham)
 - Handle the case of device upgrades where the protocol is missing, treating it as a form of custom code but marked with '-' rather than '*' (Graham)
 - Correct two places in protocols.ini where "VariantName" had a space between the two words (Graham)
+- Correct bug causing Code Selector to malfunction after a change of remote (Graham)
+- Correct handling of derived protocols when loaded from a .rmir file (Graham)
+- Handle an issue with device types that can be caused by a malformed [DeviceTypes] section in RDF (Graham)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

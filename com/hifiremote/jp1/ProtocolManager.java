@@ -682,20 +682,45 @@ public class ProtocolManager
       return null;
     }
     for ( Protocol p : protocols )
-    {
-      if ( p.getName().equals( name ) )
+    {    
+      if ( ( variantName == null || variantName.equals( p.getVariantName() ) )
+          && remote.supportsVariant( id, p.getVariantName() ) )
       {
-        if ( ( variantName == null || variantName.equals( p.getVariantName() ) )
-            && remote.supportsVariant( id, p.getVariantName() ) )
+        if ( p.getName().equals( name ) )
         {
           System.err.println( "Found built-in protocol " + p );
           return p;
         }
-        if ( p.hasCode( remote ) && near == null )
+        else if ( name.equals( "pid: " + id.toString() ) )
         {
-          near = p;
+          System.err.println( "Recreating derived protocol from " + p );
+          Properties props = new Properties();
+          for ( Processor pr : ProcessorManager.getProcessors() )
+          {
+            Hex hCode = p.getCode( pr );
+            if ( hCode != null )
+            {
+              props.put( "Code." + pr.getEquivalentName(), hCode.toString() );
+            }
+          }
+          String variant = p.getVariantName();
+          if ( variant != null && variant.length() > 0 )
+          {
+            props.put( "VariantName", variant );
+          }
+          p = ProtocolFactory.createProtocol( "pid: " + id.toString(), id, "Protocol", props );
+          ProtocolManager.getProtocolManager().add( p );
+          System.err.println( "Using recreated protocol " + name );
+          return p;
         }
       }
+      if ( p.getName().equals( name ) && p.hasCode( remote ) && near == null )
+      {
+        near = p;
+      }
+
+      
+      
     }
     if ( near != null )
     {

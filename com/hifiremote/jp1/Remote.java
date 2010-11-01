@@ -556,11 +556,23 @@ public class Remote implements Comparable< Remote >
    */
   public DeviceType[] getDeviceTypes()
   {
-    DeviceType[] types = new DeviceType[ deviceTypes.size() ];
+    // This construction ensures that the device types returned are those returned
+    // by getDeviceTypeByIndex(), where there is ambiguity (which should not happen,
+    // but can do with a poorly constructed RDF.
+    int maxNum = 0;
+    for ( DeviceType type : deviceTypeList )
+    {
+      maxNum = Math.max( maxNum, type.getNumber() );
+    }
+    DeviceType[] types = new DeviceType[ maxNum + 1 ];
     for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
     {
       DeviceType type = e.nextElement();
-      types[ type.getNumber() ] = type;
+      int num = type.getNumber();
+      if ( types[ num ] == null )
+      {
+        types[ num ] = type;
+      }
     }
     return types;
   }
@@ -638,6 +650,7 @@ public class Remote implements Comparable< Remote >
    */
   public DeviceType getDeviceTypeByIndex( int index )
   {
+    // Why not just return getDeviceTypes()[ index ]?  Is it to cover indexes out of range?
     for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
     {
       DeviceType type = e.nextElement();

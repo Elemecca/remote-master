@@ -96,6 +96,11 @@ public class S3C80Processor
    */
   public Hex translate( Hex hex, Remote remote )
   {
+    if ( hex.length() < 4 )
+    {
+      // Too short to test
+      return hex;
+    }
     CodeType codeType = testCode( hex );
     if ( ! ( ( remote.getRAMAddress() == 0x8000 && codeType == CodeType.NEW )
         || ( remote.getRAMAddress() == 0xFF00 && codeType == CodeType.OLD ) ) )

@@ -154,7 +154,7 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
   
   public static CodeSelectorDialog showDialog( RemoteMaster rm )
   {
-    if ( selector == null )
+    if ( selector == null || selector.remoteConfig != rm.getRemoteConfiguration() )
     {
       selector = new CodeSelectorDialog( rm );
     }
