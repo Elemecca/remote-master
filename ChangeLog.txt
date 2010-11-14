@@ -117,6 +117,10 @@ Changes for v2.00
 - Correct bug causing Code Selector to malfunction after a change of remote (Graham)
 - Correct handling of derived protocols when loaded from a .rmir file (Graham)
 - Handle an issue with device types that can be caused by a malformed [DeviceTypes] section in RDF (Graham)
+-- After preview 8 --
+- Amendment in DeviceUpgrade to allow 4-device imports from KM (3FG)
+- Addition of YamahaStyleImporter as new translator class (3FG)
+- Addition of NEC 4DEV Yamaha Combo to protocols.ini (3FG)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

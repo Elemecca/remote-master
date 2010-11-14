@@ -2363,7 +2363,7 @@ public class DeviceUpgrade
       }
       protocol = p;
 
-      Value[] importParms = new Value[ 6 ];
+      Value[] importParms = new Value[ 8 ];
       for ( int i = 0; i < importParms.length && i + 2 < deviceFields.size(); i++ )
       {
         token = deviceFields.get( 2 + i );
