@@ -121,6 +121,8 @@ Changes for v2.00
 - Amendment in DeviceUpgrade to allow 4-device imports from KM (3FG)
 - Addition of YamahaStyleImporter as new translator class (3FG)
 - Addition of NEC 4DEV Yamaha Combo to protocols.ini (3FG)
+- Update latest DecodeIR v2.41, including Mac OS/X support (alpha)
+- Update to jp12serial interface v0.18, including Mac OS/X support (alpha)
 
 Changes for v1.99b
 - Add support for warnings etc. below table without hiding the buttons, move device upgrade bug warning back down (Graham)

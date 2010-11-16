@@ -61,11 +61,11 @@
             <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows"/>
 			<zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" prefix="Linux-i386" filemode="755"/>
 			<zipfileset src="${src}/par64.zip" includes="libjp1parallel.so" prefix="Linux-amd64" filemode="755"/>
-            <zipfileset src="${src}/jp12serial_0.17_bin.zip" includes="**/*.dll"/>
-			<zipfileset src="${src}/jp12serial_0.17_bin.zip" includes="**/*.so" filemode="755"/>
+            <zipfileset src="${src}/jp12serial018.zip" includes="**/*.dll"/>
+			<zipfileset src="${src}/jp12serial018.zip" includes="**/*.so,**/*.jnilib" filemode="755"/>
             <zipfileset src="${src}/jp1usb003.zip" includes="jp1usb.dll" prefix="Windows"/>
-			<zipfileset src="${src}/DecodeIR.zip" includes="**/*.so" filemode="755"/>
-			<zipfileset src="${src}/DecodeIR.zip" includes="**/*.dll,DecodeIR.html,DecodeIR_ChangeLog.txt"/>
+			<zipfileset src="${src}/DecodeIR241v2.zip" includes="**/*.so,**/*.jnilib" filemode="755"/>
+			<zipfileset src="${src}/DecodeIR241v2.zip" includes="**/*.dll,DecodeIR.html,DecodeIR_ChangeLog.txt,Mac OS X README.txt"/>
             <zipfileset dir="${src}" includes="*.sh" filemode="755" />
             <zipfileset dir="tutorial" includes="**/*" prefix="tutorial" />
           </zip>
