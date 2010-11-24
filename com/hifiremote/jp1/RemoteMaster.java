@@ -81,7 +81,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.00-preview8";
+  public final static String version = "v2.00";
 
   /** The dir. */
   private File dir = null;
@@ -1281,7 +1281,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( ending ) )
       {
-        if ( name.toLowerCase().endsWith( ".rmir") )
+        if ( name.toLowerCase().endsWith( ".rmir" ) )
         {
           int dot = name.lastIndexOf( '.' );
           name = name.substring( 0, dot );
