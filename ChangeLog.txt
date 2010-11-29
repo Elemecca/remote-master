@@ -1,3 +1,6 @@
+Changes for v2.01
+- Fix NullPointerException when editing DeviceCombiner protocol (Graham)
+
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)
 - Split off a new class, MacroDefinitionBox, from MacroDialog to allow its re-use with Timed Macros. (Graham)

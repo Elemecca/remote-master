@@ -1612,7 +1612,10 @@ public class Protocol
     Processor processor = remote.getProcessor();
     String proc = processor.getEquivalentName();
     Hex originalCode = code.get( proc );
-    originalCode = processor.translate( originalCode, remote );
+    if ( originalCode != null )
+    {
+      originalCode = processor.translate( originalCode, remote );
+    }
     if ( getClass() == ManualProtocol.class )
     {
       mp = ( ManualProtocol )this;
