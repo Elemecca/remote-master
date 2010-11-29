@@ -76,6 +76,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 {
   public static final int MAX_RDF_SYNC = 4;
   public static final int MIN_RDF_SYNC = 3;
+  
+  public static final Color AQUAMARINE = new Color( 127, 255, 212 );
 
   /** The frame. */
   private static JP1Frame frame = null;
@@ -250,9 +252,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         else if ( command.equals( "SAVE" ) )
         {
+          boolean validConfiguration = updateUsage();
           if ( !allowSave( Remote.SetupValidation.WARN ) )
           {
             return;
+          }
+          if ( !validConfiguration )
+          {
+            String title = "Invalid Configuration";
+            String message = "This configuration is not valid, but it can be saved and then\n" +
+                             "re-loaded to give again this same invalid configuration.\n\n" +
+                             "Do you wish to continue?";
+            if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, 
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
+            {
+              return;
+            }
           }
           remoteConfig.save( file );
         }
@@ -388,6 +403,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         else if ( command.equals( "UPLOAD" ) )
         {
+          boolean validConfiguration = updateUsage();
+          if ( !validConfiguration )
+          {
+            String title = "Invalid Configuration";
+            String message = "This configuration is not valid.  It cannot be uploaded as it\n" +
+                             "could cause the remote to crash.";
+            JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.WARNING_MESSAGE );
+            return;
+          }
+          
           Remote remote = remoteConfig.getRemote();
           if ( !allowSave( remote.getSetupValidation() ) )
           {
@@ -558,7 +583,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // Set color for text on Progress Bars
     UIManager.put( "ProgressBar.selectionBackground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
     UIManager.put( "ProgressBar.selectionForeground", new javax.swing.plaf.ColorUIResource( Color.BLUE ) );
-    UIManager.put( "ProgressBar.foreground", new javax.swing.plaf.ColorUIResource( new Color( 127, 255, 212 ) ) ); // Aquamarine
+    UIManager.put( "ProgressBar.foreground", new javax.swing.plaf.ColorUIResource( AQUAMARINE ) );
 
     tabbedPane = new JTabbedPane();
     mainPanel.add( tabbedPane, BorderLayout.CENTER );
@@ -1078,12 +1103,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return chooser;
   }
 
-  public RMFileChooser getFileSaveChooser()
+  public RMFileChooser getFileSaveChooser( boolean validConfiguration )
   {
     RMFileChooser chooser = new RMFileChooser( dir );
     chooser.setAcceptAllFileFilterUsed( false );
     EndingFileFilter rmirFilter = new EndingFileFilter( "RM Remote Image (*.rmir)", rmirEndings );
-    chooser.addChoosableFileFilter( new EndingFileFilter( "IR file (*.ir)", irEndings ) );
+    if ( validConfiguration )
+    {
+      chooser.addChoosableFileFilter( new EndingFileFilter( "IR file (*.ir)", irEndings ) );
+    }
     chooser.setFileFilter( rmirFilter );
     return chooser;
   }
@@ -1262,7 +1290,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void saveAs() throws IOException
   {
-    RMFileChooser chooser = getFileSaveChooser();
+    boolean validConfiguration = updateUsage();
+    if ( !validConfiguration )
+    {
+      String title = "Invalid Configuration";
+      String message = "This configuration is not valid.  It can be saved as a .rmir file\n" +
+                       "which can be re-loaded to give again this same invalid configuration,\n" +
+                       "but it cannot be saved as a .ir file as it could cause the remote\n" +
+                       "to crash if it were uploaded to it by another application.";
+      JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.WARNING_MESSAGE );
+    }
+    RMFileChooser chooser = getFileSaveChooser( validConfiguration );
     if ( file != null )
     {
       String name = file.getName().toLowerCase();
@@ -1638,15 +1676,25 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     rawDataPanel.set( remoteConfig );
   }
 
-  private boolean updateUsage( JProgressBar bar, AddressRange range, int used )
+  private boolean updateUsage( JProgressBar bar, AddressRange range )
   {
     if ( range != null )
     {
+      int used = range.getFreeStart() - range.getStart() + range.getEnd() - range.getFreeEnd();
       int available = range.getSize();
       bar.setMinimum( 0 );
       bar.setMaximum( available );
       bar.setValue( used );
       bar.setString( Integer.toString( available - used ) + " free" );
+      if ( range == remoteConfig.getRemote().getDeviceUpgradeAddress() )
+      {
+        // Device Upgrade area is filled from top down, so freeEnd != end in normal use
+        bar.setForeground( AQUAMARINE );
+      }
+      else
+      {
+        bar.setForeground( ( range.getFreeEnd() == range.getEnd() ) ? AQUAMARINE : Color.YELLOW );
+      }
 
       return available >= used;
     }
@@ -1656,13 +1704,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       bar.setMaximum( 0 );
       bar.setValue( 0 );
       bar.setString( "N/A" );
+      bar.setForeground( AQUAMARINE );
 
       return true;
     }
   }
 
-  private void updateUsage()
+  /**
+   * Updates the progress bars and returns a boolean specifying whether the configuration
+   * is valid, i.e. whether all sections fit in their available space.
+   */
+  private boolean updateUsage()
   {
+    boolean valid = true;
     Remote remote = remoteConfig.getRemote();
     Dimension d = advProgressBar.getPreferredSize();
     Font font = advProgressBar.getFont();
@@ -1688,40 +1742,66 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       devUpgradeProgressBar.setVisible( true );
     }
 
-    if ( !updateUsage( advProgressBar, remote.getAdvancedCodeAddress(), remoteConfig.getAdvancedCodeBytesNeeded() ) )
+    String title = "Available Space Exceeded";
+    String message = "";
+    AddressRange range = remote.getAdvancedCodeAddress();
+    if ( !updateUsage( advProgressBar, range ) )
     {
-      JOptionPane
-          .showMessageDialog(
-              this,
-              "The defined advanced codes (keymoves, macros, special functions etc.) use more space than is available.  Please remove some.",
-              "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
+      valid = false;
+      if ( range.getFreeEnd() == range.getEnd() )
+      {
+        message = "The defined advanced codes (keymoves, macros, special functions etc.) use more space than is available.  Please remove some.";
+      }
+      else
+      {
+        message = "There is insufficient space in the advanced codes section for both the defined\n" +
+                  "advanced codes (keymoves, macros, special functions etc.) and the device\n" +
+                  "upgrades that have overflowed from their own section.  Please remove some entries.";
+      }
+      showErrorMessage( message, title );
     }
-    if ( !updateUsage( timedMacroPanel.timedMacroProgressBar, remote.getTimedMacroAddress(), remoteConfig
-        .getTimedMacroBytesNeeded() ) )
+    if ( !updateUsage( timedMacroPanel.timedMacroProgressBar, remote.getTimedMacroAddress() ) )
     {
-      JOptionPane.showMessageDialog( this,
-          "The defined timed macros use more space than is available.  Please remove some.",
-          "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
+      valid = false;
+      message = "The defined timed macros use more space than is available.  Please remove some.";
+      showErrorMessage( message, title );
     }
-    if ( !updateUsage( upgradeProgressBar, remote.getUpgradeAddress(), remoteConfig.getUpgradeCodeBytesNeeded() ) )
+    if ( !updateUsage( upgradeProgressBar, remote.getUpgradeAddress() ) )
     {
-      JOptionPane.showMessageDialog( this,
-          "The defined device upgrades use more space than is available. Please remove some.",
-          "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
+      // Note that this section can only be full if there are no sections that can take overflow from it.
+      // Otherwise, excessive device upgrades cause the overflow section, not this one, to be full.
+      valid = false;
+      message = "The defined device upgrades use more space than is available. Please remove some.";
+      showErrorMessage( message, title );
     }
-    if ( !updateUsage( devUpgradeProgressBar, remote.getDeviceUpgradeAddress(), remoteConfig
-        .getDevUpgradeCodeBytesNeeded() ) )
+    if ( !updateUsage( devUpgradeProgressBar, remote.getDeviceUpgradeAddress() ) )
     {
-      JOptionPane.showMessageDialog( this,
-          "The defined button-dependent device upgrades use more space than is available. Please remove some.",
-          "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
+      valid = false;
+      message = "The defined button-dependent device upgrades use more space than is available. Please remove some.";
+      showErrorMessage( message, title );
     }
-    if ( !updateUsage( learnedProgressBar, remote.getLearnedAddress(), remoteConfig.getLearnedSignalBytesNeeded() ) )
+    range = remote.getLearnedAddress();
+    if ( !updateUsage( learnedProgressBar, range ) )
     {
-      JOptionPane.showMessageDialog( this,
-          "The defined learned signals use more space than is available.  Please remove some.",
-          "Available Space Exceeded", JOptionPane.ERROR_MESSAGE );
+      valid = false;
+      if ( range.getFreeEnd() == range.getEnd() )
+      {
+        message = "The defined learned signals use more space than is available.  Please remove some.";
+      }
+      else
+      {
+        message = "There is insufficient space in the learned signals section for both the defined\n" +
+                  "learned signals and the device upgrades that have overflowed from their own\n" +
+                  "section.  Please remove some entries.";
+      }
+      showErrorMessage( message, title );
     }
+    return valid;
+  }
+  
+  private void showErrorMessage( String message, String title )
+  {
+    JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
   }
 
   /**

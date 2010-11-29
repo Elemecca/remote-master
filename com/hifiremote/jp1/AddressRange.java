@@ -24,6 +24,8 @@ public class AddressRange extends RDFParameter
     StringTokenizer st = new StringTokenizer( text, ".=" );
     start = RDFReader.parseNumber( st.nextToken() );
     end = RDFReader.parseNumber( st.nextToken() );
+    freeStart = start;
+    freeEnd = end;
   }
   
   /**
@@ -56,6 +58,26 @@ public class AddressRange extends RDFParameter
     this.end = end;
   }
 
+  public int getFreeStart()
+  {
+    return freeStart;
+  }
+
+  public void setFreeStart( int freeStart )
+  {
+    this.freeStart = freeStart;
+  }
+
+  public int getFreeEnd()
+  {
+    return freeEnd;
+  }
+
+  public void setFreeEnd( int freeEnd )
+  {
+    this.freeEnd = freeEnd;
+  }
+
   public int getSize()
   {
     return end + 1 - start;
@@ -74,6 +96,22 @@ public class AddressRange extends RDFParameter
   /** The start. */
   private int start;
 
-  /** The end. */
+  /** 
+   * The upper part of an address range may be borrowed for upgrade overflow.  The
+   * end value is the address of the last byte of the range, but the address of the
+   * last available, ie non-borrowed, byte is given by the freeEnd property.
+   */
   private int end;
+  
+  /**
+   * The upper part of an address range may be borrowed for upgrade overflow.  The
+   * freeEnd value is the address of the last byte that is not so borrowed.
+   */
+  private int freeEnd;
+  
+  /**
+   * The upper part of an address range may be borrowed for upgrade overflow.  The
+   * freeStart value is the address of the first byte that can be used for borrowing.
+   */
+  private int freeStart;
 }
