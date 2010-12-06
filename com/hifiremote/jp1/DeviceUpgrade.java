@@ -2318,6 +2318,11 @@ public class DeviceUpgrade
         str = "";
       }
       short[] rawHex = Hex.parseHex( str );
+      
+      // Use the default name for the protocol, which includes the PID, to prevent distinct
+      // manual protocols all being called simply "Manual Protocol" and so getting mis-identified
+      // with one another.
+      protocolName = ManualProtocol.getDefaultName( pid );     
 
       protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
       protocolName = protocol.getName();
@@ -2498,6 +2503,23 @@ public class DeviceUpgrade
           {
             protocol.importUpgradeCode( notes );
           }
+        }
+      }
+    }
+    
+    if ( protocol instanceof ManualProtocol && protocol.hasCode( remote ) )
+    {
+      Hex code = protocol.getCode( remote );
+      java.util.List< Protocol > v = protocolManager.findByPID( pid );
+      for ( Protocol p : v )
+      {
+        Hex pCode = p.getCode( remote );
+        if ( protocol != p && p instanceof ManualProtocol && pCode != null && pCode.equals( code ) )
+        {
+          // We have created a duplicate protocol.  Use the existing one instead.
+          protocolManager.remove( protocol );
+          protocol = p;
+          break;
         }
       }
     }
