@@ -1981,7 +1981,9 @@ public class Remote implements Comparable< Remote >
           }
         }
         Button b = new Button( token, name, keycode, this );
-        b.setRestrictions( restrictions );
+        // The Button constructor sets restrictions itself under certain circumstances, so
+        // we need to make sure we retain these.
+        b.setRestrictions( b.getRestrictions() | restrictions );
         keycode++ ;
         addButton( b );
       }
