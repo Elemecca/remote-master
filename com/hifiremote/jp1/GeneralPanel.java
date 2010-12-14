@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
@@ -21,7 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -42,6 +44,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     deviceButtonPanel.setBorder( BorderFactory.createTitledBorder( "Device Buttons" ) );
 
     deviceButtonTable = new JP1Table( deviceModel );
+    deviceButtonTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     deviceButtonTable.getSelectionModel().addListSelectionListener( this );
     deviceButtonTable.initColumns( deviceModel );
     deviceButtonTable.addMouseListener( new MouseAdapter()
@@ -64,7 +67,18 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         }
       }
     } );
+    
+    deviceButtonTable.addFocusListener( new FocusAdapter()
+    {
+      @Override
+      public void focusGained( FocusEvent e )
+      {
+        activeTable = deviceButtonTable;
+        setHighlightAction( deviceButtonTable );
+      }
+    } );
 
+    activeTable = deviceButtonTable;
     deviceScrollPane = new JScrollPane( deviceButtonTable );
     deviceButtonPanel.add( deviceScrollPane, BorderLayout.CENTER );
     JPanel editPanel = new JPanel();
@@ -79,7 +93,28 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     // now the other settings table
     settingTable = new JP1Table( settingModel );
     settingTable.setCellEditorModel( settingModel );
+    settingTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     settingTable.initColumns( settingModel );
+    settingTable.addFocusListener( new FocusAdapter()
+    {
+      @Override
+      public void focusGained( FocusEvent e )
+      {
+        activeTable = settingTable;
+        setHighlightAction( settingTable );
+      }
+    } );
+    settingTable.getSelectionModel().addListSelectionListener( new ListSelectionListener()
+    {
+      @Override
+      public void valueChanged( ListSelectionEvent e )
+      {
+        if ( !e.getValueIsAdjusting() && !setInProgress )
+        {
+          setHighlightAction( settingTable );
+        }
+      }
+    } );
 
     settingsScrollPane = new JScrollPane( settingTable );
     settingsScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory
@@ -211,13 +246,26 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   {
     if ( !e.getValueIsAdjusting() && !setInProgress )
     {
-      int selectedRow = deviceButtonTable.getSelectedRow();
-      Remote remote = remoteConfig.getRemote();
-      DeviceButton deviceButton = remote.getDeviceButtons()[ selectedRow ];
-      selectedUpgrade = remoteConfig.getAssignedDeviceUpgrade( deviceButton );
+      if ( deviceButtonTable.getSelectedRowCount() == 1 )
+      {
+        int selectedRow = deviceButtonTable.getSelectedRow();
+        Remote remote = remoteConfig.getRemote();
+        DeviceButton deviceButton = remote.getDeviceButtons()[ selectedRow ];
+        selectedUpgrade = remoteConfig.getAssignedDeviceUpgrade( deviceButton );
 
-      editButton.setEnabled( selectedUpgrade != null );
+        editButton.setEnabled( selectedUpgrade != null );
+      }
+      else
+      {
+        editButton.setEnabled( false );
+      }
+      setHighlightAction( deviceButtonTable );
     }
+  }
+  
+  private void setHighlightAction( JP1Table table )
+  {
+    remoteConfig.getOwner().highlightAction.setEnabled( table.getSelectedRowCount() > 0 ); 
   }
 
   /*
@@ -239,10 +287,9 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     }
 
     DeviceUpgrade newUpgrade = new DeviceUpgrade( selectedUpgrade );
-    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );
-    editor = new DeviceUpgradeEditor( rm, newUpgrade, remotes, row, this );
+    editor = new DeviceUpgradeEditor( remoteConfig.getOwner(), newUpgrade, remotes, row, this );
   }
     
   public void endEdit( DeviceUpgradeEditor editor, int row )
@@ -270,8 +317,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         break;
       }
     }
-    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
-    rm.getDeviceUpgradePanel().model.fireTableDataChanged();
+    remoteConfig.getOwner().getDeviceUpgradePanel().model.fireTableDataChanged();
   }
   
   public boolean setWarning()
@@ -291,9 +337,19 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     return deviceButtonTable;
   }
 
+  public JP1Table getSettingTable()
+  {
+    return settingTable;
+  }
+
   public DeviceUpgradeEditor getDeviceUpgradeEditor()
   {
     return editor;
+  }
+
+  public JP1Table getActiveTable()
+  {
+    return activeTable;
   }
 
   private RemoteConfiguration remoteConfig = null;
@@ -315,6 +371,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   /** The setting model. */
   private JP1Table settingTable = null;
   private SettingsTableModel settingModel = new SettingsTableModel();
+  
+  private JP1Table activeTable = null;
 
   /** The notes. */
   private JTextArea notes = null;

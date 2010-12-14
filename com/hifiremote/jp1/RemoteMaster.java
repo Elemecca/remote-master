@@ -7,6 +7,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -31,10 +32,12 @@ import java.util.ListIterator;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -45,6 +48,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -54,6 +58,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkListener;
@@ -83,7 +88,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.00";
+  public final static String version = "v2.01 alpha";
 
   /** The dir. */
   private File dir = null;
@@ -109,6 +114,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private RMAction saveAsAction = null;
 
   private RMAction openRdfAction = null;
+  
+  protected RMAction highlightAction = null;
 
   /** The recent files. */
   private JMenu recentFiles = null;
@@ -202,10 +209,97 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private boolean hasInvalidCodes = false;
 
   private CodeSelectorDialog codeSelectorDialog = null;
+  
+  private JDialog colorDialog = null;
+
+  public JDialog getColorDialog()
+  {
+    return colorDialog;
+  }
+  
+  private JColorChooser colorChooser = null;
+
+  public JColorChooser getColorChooser()
+  {
+    return colorChooser;
+  }
 
   private TextFileViewer rdfViewer = null;
 
-  private class RMAction extends AbstractAction
+  public class Preview extends JPanel
+  {
+    Preview()
+    {
+      super();
+      sample.setPreferredSize( new Dimension(90, 30) );
+      sample.setBorder( BorderFactory.createLineBorder( Color.GRAY ) );
+      JPanel p = new JPanel();
+      p.add(  sample  );
+      add( p );
+      add( Box.createHorizontalStrut( 20 ) );
+      ButtonGroup grp = new ButtonGroup();
+      grp.add( devices );
+      grp.add( protocols );
+      devices.setSelected( true );
+      devices.addActionListener( new ActionListener()
+      {
+        @Override
+        public void actionPerformed( ActionEvent e )
+        {
+          if ( colorCol != 0 )
+          {
+            Color color = getInitialHighlight( devicePanel.table, 0 );
+            colorChooser.setColor( color );
+            sample.setBackground( color );
+            colorCol = 0;
+          }
+        }
+      } );
+      protocols.addActionListener( new ActionListener()
+      {
+        @Override
+        public void actionPerformed( ActionEvent e )
+        {
+          if ( colorCol != 1 )
+          {
+            Color color = getInitialHighlight( devicePanel.table, 1 );
+            colorChooser.setColor( color );
+            sample.setBackground( color );
+            colorCol = 1;
+          }
+        }
+      } );
+      selectors.add( devices );
+      selectors.add( protocols );
+      add( selectors );
+    }
+    
+    public void reset( boolean disableProtocol )
+    {
+      colorCol = 0;
+      devices.setSelected( true );
+      protocols.setEnabled( !disableProtocol );
+    }
+    
+    public Color getColor()
+    {
+      return result;
+    }
+    
+    public JPanel getSelectors()
+    {
+      return selectors;
+    }
+
+    private JPanel sample = new JPanel();
+    private Color result = null;
+    private JPanel selectors = new JPanel( new GridLayout( 2, 1 ) );
+    private int colorCol = 0;
+    private JRadioButton devices = new JRadioButton( "Device" );
+    private JRadioButton protocols = new JRadioButton( "Protocol" );
+  }
+  
+  protected class RMAction extends AbstractAction
   {
     public RMAction( String text, String action, ImageIcon icon, String description, Integer mnemonic )
     {
@@ -231,7 +325,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           Remote remote = RMNewDialog.showDialog( RemoteMaster.this );
           remote.load();
           ProtocolManager.getProtocolManager().reset();
-          remoteConfig = new RemoteConfiguration( remote );
+          remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
           remoteConfig.initializeSetup();
           remoteConfig.updateImage();
           remoteConfig.setDateIndicator();
@@ -388,7 +482,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             remote = currentRemote;
           }
           remote.load();
-          remoteConfig = new RemoteConfiguration( remote );
+          remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
           count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
           System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
           io.closeRemote();
@@ -503,12 +597,131 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           codeSelectorDialog = CodeSelectorDialog.showDialog( RemoteMaster.this );
           codeSelectorDialog.enableAssign( currentPanel == generalPanel );
         }
+        else if ( command == "HIGHLIGHT" )
+        {
+          JP1Table table = null;
+          JP1TableModel< ? > model = null;
+          TableSorter sorter = null;
+          if ( currentPanel instanceof RMTablePanel< ? > )
+          { 
+            RMTablePanel< ? > panel = ( RMTablePanel< ? > )currentPanel;
+            table = panel.table;
+            model = panel.model;
+            sorter = panel.sorter;
+          }
+          else if ( currentPanel == generalPanel )
+          {
+            table = generalPanel.getActiveTable();
+            model = ( JP1TableModel< ? > )table.getModel();
+          }
+          Color color = getInitialHighlight( table, 0 );
+          Preview preview = ( Preview )colorChooser.getPreviewPanel();
+          preview.reset( ( currentPanel == devicePanel ) && ( getInitialHighlight( table, 1 ) == null ) );
+          preview.selectors.setVisible( currentPanel == devicePanel );
+          colorChooser.setColor( color );
+          colorDialog.pack();
+          colorDialog.setVisible( true );
+          color = preview.result;
+          if ( table != null && color != null )
+          {
+            for ( int i : table.getSelectedRows() )
+            {
+              if ( currentPanel == keyMovePanel )
+              {
+                // Special case needed to handle attached keymoves
+                model.setValueAt( color, sorter.modelIndex( i ), 9 );
+              }
+              else if ( currentPanel == devicePanel && preview.colorCol == 1 )
+              {
+                DeviceUpgrade du = devicePanel.getRowObject( i );
+                if ( du.needsProtocolCode() )
+                {
+                  // Special case needed to handle consequential highlights
+                  model.setValueAt( color, sorter.modelIndex( i ), model.getColumnCount() - 1 );
+                }
+              }
+              else
+              {
+                Highlight rowObject = getTableRow( table, i );
+                rowObject.setHighlight( color );
+              }
+            }
+            model.fireTableDataChanged();
+            model.propertyChangeSupport.firePropertyChange( "data", null, null );
+            highlightAction.setEnabled( false );
+          }
+        }
       }
       catch ( Exception ex )
       {
         ex.printStackTrace( System.err );
       }
     }
+  }
+  
+  private Highlight getTableRow( JP1Table table, int row )
+  {
+    Object obj;
+    if ( row == -1 )
+    {
+      return null;
+    }
+    if ( currentPanel instanceof RMTablePanel< ? > )
+    {
+      obj = ( ( RMTablePanel< ? > )currentPanel ).getRowObject( row );
+    }
+    else
+    {
+      obj = ( ( JP1TableModel< ? > )table.getModel() ).getRow( row );
+    }
+    if ( obj instanceof Highlight )
+    {
+      return ( Highlight )obj;
+    }
+    return null;
+  }
+  
+  private Color getInitialHighlight( JP1Table table, int colorCol )
+  {
+    Color color = null;
+    if ( table != null )
+    {
+      int[] rows = table.getSelectedRows();
+      if ( rows.length > 0 &&  getTableRow( table, rows[ 0 ] ) != null )
+      {
+        if ( currentPanel == devicePanel && colorCol == 1 )
+        {
+          for ( int i : rows )
+          {
+            DeviceUpgrade du = devicePanel.getRowObject( i );
+            if ( !du.needsProtocolCode() )
+            {
+              continue;
+            }
+            if ( color == null )
+            {
+              color = du.getProtocolHighlight();
+            }
+            else if ( !du.getProtocolHighlight().equals( color ) )
+            {
+              return Color.WHITE;
+            }
+          }
+        }
+        else
+        {
+          color = getTableRow( table, rows[ 0 ] ).getHighlight();
+          for ( int i : rows )
+          {
+            if ( !getTableRow( table, i ).getHighlight().equals( color ) )
+            {
+              return Color.WHITE;
+            }
+          }
+        }
+      }
+    }
+    return color;
   }
 
   /**
@@ -535,6 +748,41 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     setDefaultCloseOperation( DISPOSE_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
+
+    final Preview preview = new Preview();
+    // If a non-empty border is not set then the preview panel does not appear.  This sets
+    // an invisible but non-empty border.
+    preview.setBorder( BorderFactory.createLineBorder( preview.getBackground() ) );
+    
+    colorChooser = new JColorChooser();
+    colorChooser.setPreviewPanel( preview );
+    colorChooser.getSelectionModel().addChangeListener( new ChangeListener() 
+    {
+      @Override
+      public void stateChanged( ChangeEvent evt ) 
+      {
+        ColorSelectionModel model = ( ColorSelectionModel ) evt.getSource();
+        preview.sample.setBackground( model.getSelectedColor() );
+      }
+    } );
+
+    colorDialog = JColorChooser.createDialog( this, "Highlight Color", true, colorChooser, 
+    new ActionListener() 
+    { // OK button listener
+      @Override
+      public void actionPerformed(ActionEvent event) 
+      {
+        preview.result = colorChooser.getColor();
+      } 
+    },  
+    new ActionListener() 
+    { // Cancel button listener
+      @Override
+      public void actionPerformed(ActionEvent event)
+      {
+        preview.result = null;
+      } 
+    } );
 
     addWindowListener( new WindowAdapter()
     {
@@ -978,6 +1226,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     codesAction.setEnabled( false );
     toolBar.add( codesAction );
 
+    highlightAction = new RMAction( "Highlight...", "HIGHLIGHT", createIcon( "RMHighlight24" ), "Select highlight color", null );
+    highlightAction.setEnabled( false );
+    toolBar.add( highlightAction );
+    
     uploadWavItem = new JMenuItem( "Create WAV", KeyEvent.VK_W );
     uploadWavItem.setEnabled( false );
     uploadWavItem.addActionListener( this );
@@ -1203,7 +1455,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       Remote remote = remotes.get( 0 );
       remote.load();
-      remoteConfig = new RemoteConfiguration( remote );
+      remoteConfig = new RemoteConfiguration( remote, this );
       remoteConfig.initializeSetup();
       remoteConfig.updateImage();
       remoteConfig.setDateIndicator();
@@ -1232,7 +1484,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       openRdfAction.setEnabled( true );
     }
     uploadAction.setEnabled( !interfaces.isEmpty() );
-    remoteConfig = new RemoteConfiguration( file );
+    remoteConfig = new RemoteConfiguration( file, this );
     update();
     setTitleFile( file );
     this.file = file;
@@ -2070,6 +2322,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       newPanel.set( remoteConfig );
       currentPanel = newPanel;
+      highlightAction.setEnabled( false );
     }
     if ( codeSelectorDialog != null )
     {

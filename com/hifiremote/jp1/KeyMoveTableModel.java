@@ -36,6 +36,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
       deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
       keyRenderer.setRemote( remote );
@@ -104,7 +105,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private static String[] colNames =
   {
       "#", "<html>Device<br>Button</html>", "Key", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>",
-      "Raw Data", "Hex", "<html>EFC, Key, or<br>Function Name</html>", "Notes"
+      "Raw Data", "Hex", "<html>EFC, Key, or<br>Function Name</html>", "Notes", "Color"
   };
 
   /*
@@ -122,7 +123,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", "00 (key code)", "FF FF",
-      "xshift-CBL/SAT", "A reasonable length long note"
+      "xshift-CBL/SAT", "A reasonable length long note", "Color"
   };
 
   /*
@@ -139,7 +140,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   /** The col widths. */
   private static boolean[] colWidths =
   {
-      true, true, false, true, true, true, true, false, false
+      true, true, false, true, true, true, true, false, false, true
   };
 
   /*
@@ -157,7 +158,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private static final Class< ? >[] colClasses =
   {
       Integer.class, DeviceButton.class, Integer.class, DeviceType.class, SetupCode.class, Hex.class, Hex.class,
-      String.class, String.class
+      String.class, String.class, Color.class
   };
 
   /*
@@ -179,7 +180,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( row >= remoteConfig.getKeyMoves().size() )
+    if ( row >= remoteConfig.getKeyMoves().size() && col < 9 )
     {
       return false;
     }
@@ -220,6 +221,8 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
         return keyMove.getValueString( remoteConfig );
       case 8:
         return keyMove.getNotes();
+      case 9:
+        return keyMove.getHighlight();
       default:
         return null;
     }
@@ -277,6 +280,18 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     {
       keyMove.setNotes( ( String )value );
     }
+    else if ( col == 9 )
+    {
+      keyMove.setHighlight( ( Color  )value );
+      if ( row >= remoteConfig.getKeyMoves().size() )
+      {
+        // Keymove is attached, so copy color to device upgrade assignment
+        Remote remote = remoteConfig.getRemote();
+        DeviceButton boundDeviceButton = remote.getDeviceButtons()[ keyMove.getDeviceButtonIndex() ];
+        DeviceUpgrade boundUpgrade = remoteConfig.findDeviceUpgrade( boundDeviceButton );
+        boundUpgrade.setAssignmentColor( keyMove.getKeyCode(), ( Color )value );
+      } 
+    }
     else
     {
       return;
@@ -312,6 +327,10 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     {
       return selectAllEditor;
     }
+    else if ( col == 9 )
+    {
+      return colorEditor;
+    }
     return null;
   }
 
@@ -330,6 +349,10 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     else if ( col == 2 )
     {
       return keyRenderer;
+    }
+    else if ( col == 9 )
+    {
+      return colorRenderer;
     }
 
     return kmRenderer;
@@ -357,10 +380,10 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
         int row, int col )
     {
-      int modelRow = sorter.modelIndex( row );
+      TableSorter ts = ( TableSorter )table.getModel();
+      int modelRow = ts.modelIndex( row );
       Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
       boolean isNormal = modelRow < remoteConfig.getKeyMoves().size();
-      // c.setForeground( isNormal ? normalColor : attachedColor );
       Color bgColor = isNormal ? normalBGColor : attachedBGColor;
       if ( isSelected )
       {
@@ -378,10 +401,10 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
         int row, int col )
     {
-      int modelRow = sorter.modelIndex( row );
+      TableSorter ts = ( TableSorter )table.getModel();
+      int modelRow = ts.modelIndex( row );
       Component c = super.getTableCellRendererComponent( table, value, isSelected, false, modelRow, col );
       boolean isNormal = modelRow < remoteConfig.getKeyMoves().size();
-      // c.setForeground( isNormal ? normalColor : attachedColor );
       Color bgColor = isNormal ? normalBGColor : attachedBGColor;
       if ( isSelected )
       {
@@ -413,6 +436,8 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private KeyEditor keyEditor = new KeyEditor();
 
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
-
-  public TableSorter sorter = null;
+  
+  private RMColorEditor colorEditor = null;
+  
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 }

@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -27,6 +29,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
@@ -57,7 +60,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Key", "Macro Keys", "Notes"
+      "#", "Key", "Macro Keys", "Notes", "Color"
   };
 
   /*
@@ -74,7 +77,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, Integer.class, String.class, String.class
+      Integer.class, Integer.class, String.class, String.class, Color.class
   };
 
   /*
@@ -92,7 +95,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "_xShift-VCR/DVD_", "A reasonable length macro with a reasonable number of steps ",
-      "A reasonable length note for a macro"
+      "A reasonable length note for a macro", "Color"
   };
 
   /*
@@ -109,7 +112,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   /** The Constant colWidths. */
   private static final boolean[] colWidths =
   {
-      true, true, false, false
+      true, true, false, false, true
   };
 
   /*
@@ -157,6 +160,8 @@ public class MacroTableModel extends JP1TableModel< Macro >
         return macro.getValueString( remoteConfig );
       case 3:
         return macro.getNotes();
+      case 4:
+        return macro.getHighlight();
       default:
         return null;
     }
@@ -179,6 +184,10 @@ public class MacroTableModel extends JP1TableModel< Macro >
     {
       macro.setNotes( ( String )value );
     }
+    else if ( col == 4 )
+    {
+      macro.setHighlight( ( Color  )value );
+    }
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
 
@@ -198,7 +207,12 @@ public class MacroTableModel extends JP1TableModel< Macro >
     {
       return keyRenderer;
     }
-    return null;
+    else if ( col == 4 )
+    {
+      return colorRenderer;
+    }
+    else
+      return null;
   }
 
   /*
@@ -217,6 +231,10 @@ public class MacroTableModel extends JP1TableModel< Macro >
     {
       return noteEditor;
     }
+    else if ( col == 4 )
+    {
+      return colorEditor;
+    }
     return null;
   }
 
@@ -229,4 +247,6 @@ public class MacroTableModel extends JP1TableModel< Macro >
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
   private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
+  private RMColorEditor colorEditor = null;
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 }

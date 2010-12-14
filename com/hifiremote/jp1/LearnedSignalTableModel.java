@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import javax.swing.DefaultCellEditor;
@@ -34,6 +35,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       deviceComboBox.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceButtons() ) );
       keyRenderer.setRemote( remoteConfig.getRemote() );
       keyEditor.setRemote( remoteConfig.getRemote() );
@@ -45,7 +47,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   private static final String[] colNames =
   {
       "#", "<html>Device<br>Button</html>", "Key", "Notes", "Size", "Freq.", "Protocol", "Device",
-      "<html>Sub<br>Device</html>", "OBC", "Hex Cmd", "Misc"
+      "<html>Sub<br>Device</html>", "OBC", "Hex Cmd", "Misc", "Color"
   };
 
   /*
@@ -73,7 +75,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "__VCR/DVD__", "_xshift-VCR/DVD_", "A longish comment or note", "1024", "99999", "Protocol", "Device",
-      "Device", "OBC", "Hex Cmd", "Miscellaneous"
+      "Device", "OBC", "Hex Cmd", "Miscellaneous", "Color"
   };
 
   /*
@@ -119,8 +121,8 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
       Integer.class, // sub-device
       Integer.class, // OBC
       String.class, // hex cmd
-      String.class
-  // misc
+      String.class, // misc
+      Color.class // color
   };
 
   /*
@@ -142,7 +144,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    return col > 0 && col < 4;
+    return ( col > 0 && col < 4 ) || col == 12;
   }
 
   /*
@@ -223,6 +225,8 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         return Hex.toString( decode.hex );
       case 11:
         return decode.miscMessage;
+      case 12:
+        return l.getHighlight();
     }
     return null;
   }
@@ -255,6 +259,10 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         break;
       case 3:
         l.setNotes( ( String )value );
+        break;
+      case 12:
+        l.setHighlight( ( Color  )value );
+        break;
     }
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
@@ -274,6 +282,10 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     else if ( col == 2 )
     {
       return keyRenderer;
+    }
+    else if ( col == 12 )
+    {
+      return colorRenderer;
     }
     return null;
   }
@@ -300,6 +312,10 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     {
       return noteEditor;
     }
+    else if ( col == 12 )
+    {
+      return colorEditor;
+    }
 
     return null;
   }
@@ -317,4 +333,6 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
   private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
+  private RMColorEditor colorEditor = null;
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 }

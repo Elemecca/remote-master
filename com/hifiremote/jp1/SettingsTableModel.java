@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -32,6 +34,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       setData( remoteConfig.getRemote().getSettings() );
     }
   }
@@ -49,7 +52,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Setting", "Value"
+      "#", "Setting", "Value", "Color"
   };
 
   /*
@@ -66,7 +69,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "A Setting Name", "A Value"
+      " 00 ", "A Setting Name", "A Value", "Color"
   };
 
   /*
@@ -83,7 +86,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, Setting.class
+      Integer.class, String.class, Setting.class, Color.class
   };
 
   /*
@@ -105,7 +108,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    return col > 1 && row < remoteConfig.getRemote().getStartReadOnlySettings() - 1;
+    return ( col == 3 ) || ( col == 2 && row < remoteConfig.getRemote().getStartReadOnlySettings() - 1);
   }
 
   /*
@@ -139,6 +142,8 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
 
         return choices[ val ];
       }
+      case 3:
+        return setting.getHighlight();
     }
     return null;
   }
@@ -151,10 +156,10 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   @Override
   public void setValueAt( Object value, int row, int col )
   {
+    Remote r = remoteConfig.getRemote();
+    Setting setting = r.getSettings()[ row ];
     if ( col == 2 )
     {
-      Remote r = remoteConfig.getRemote();
-      Setting setting = r.getSettings()[ row ];
       Object[] choices = setting.getOptions( r );
       if ( choices == null )
       {
@@ -175,6 +180,11 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
         }
       }
     }
+    else if ( col == 3 )
+    {
+      setting.setHighlight( ( Color )value );
+      propertyChangeSupport.firePropertyChange( "value", null, null );
+    }
   }
 
   /*
@@ -189,6 +199,10 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
     {
       return new RowNumberRenderer();
     }
+    else if ( col == 3 )
+    {
+      return colorRenderer;
+    }
     return null;
   }
 
@@ -199,24 +213,28 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
    */
   public TableCellEditor getCellEditor( int row, int col )
   {
-    if ( col != 2 )
+    if ( col == 2 )
     {
-      return null;
-    }
-    Remote r = remoteConfig.getRemote();
-    Setting setting = remoteConfig.getRemote().getSettings()[ row ];
-    Object[] options = setting.getOptions( r );
-    if ( options == null )
-    {
-      int bits = setting.getNumberOfBits();
-      intEditor.setMin( 0 );
-      intEditor.setMax( ( 1 << bits ) - 1 );
-      return intEditor;
-    }
+      Remote r = remoteConfig.getRemote();
+      Setting setting = remoteConfig.getRemote().getSettings()[ row ];
+      Object[] options = setting.getOptions( r );
+      if ( options == null )
+      {
+        int bits = setting.getNumberOfBits();
+        intEditor.setMin( 0 );
+        intEditor.setMax( ( 1 << bits ) - 1 );
+        return intEditor;
+      }
 
-    JComboBox cb = ( JComboBox )comboEditor.getComponent();
-    cb.setModel( new DefaultComboBoxModel( options ) );
-    return comboEditor;
+      JComboBox cb = ( JComboBox )comboEditor.getComponent();
+      cb.setModel( new DefaultComboBoxModel( options ) );
+      return comboEditor;
+    }
+    else if ( col == 3 )
+    {
+      return colorEditor;
+    }
+    return null;
   }
 
   /** The remote config. */
@@ -227,4 +245,6 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
 
   /** The combo editor. */
   private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox() );
+  private RMColorEditor colorEditor = null;
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 }

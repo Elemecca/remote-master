@@ -9,7 +9,6 @@ import java.util.ListIterator;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -100,11 +99,10 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     }
     oldUpgrade = baseUpgrade;
 
-    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, table );
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );
     upgrade.setRemoteConfig( remoteConfig );
-    editor = new DeviceUpgradeEditor( rm, upgrade, remotes, rowOut, this );
+    editor = new DeviceUpgradeEditor( remoteConfig.getOwner(), upgrade, remotes, rowOut, this );
   }
 
   private DeviceUpgrade createRowObjectB( DeviceUpgradeEditor editor )
@@ -229,8 +227,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         }
       }
            
-      RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
-      DeviceButtonTableModel deviceModel = rm.getGeneralPanel().getDeviceButtonTableModel();
+      DeviceButtonTableModel deviceModel = remoteConfig.getOwner().getGeneralPanel().getDeviceButtonTableModel();
 
       if ( rowBound != null )
       {

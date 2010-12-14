@@ -20,6 +20,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -498,6 +499,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   {
     if ( !e.getValueIsAdjusting() )
     {
+      RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+      rm.highlightAction.setEnabled( table.getSelectedRowCount() > 0 );
       if ( table.getSelectedRowCount() == 1 )
       {
         int row = table.getSelectedRow();

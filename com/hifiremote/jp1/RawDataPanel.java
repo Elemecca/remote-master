@@ -3,7 +3,9 @@ package com.hifiremote.jp1;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -23,7 +25,33 @@ public class RawDataPanel extends RMPanel
   public RawDataPanel()
   {
     model = new RawDataTableModel();
-    JP1Table table = new JP1Table( model );
+    JP1Table table = new JP1Table( model )
+    {
+      @Override
+      public String getToolTipText( MouseEvent e ) 
+      {
+        String tip = null;
+        java.awt.Point p = e.getPoint();
+        int row = rowAtPoint( p );
+        int col = columnAtPoint( p );
+        int offset = 16 * row + col - 1;
+        boolean showTip = false;
+        if ( col != 0 && settingAddresses.containsKey( offset ) ) 
+        { 
+          tip = "Highlighted bits: ";
+          int end = highlight.length - 1;
+          for ( int i = 0; i < 8; i++ )
+          {
+            if ( !highlight[ end - 8 * settingAddresses.get( offset ) - i ].equals( Color.WHITE ) )
+            {
+              tip += i;
+              showTip = true;
+            }
+          }
+        } 
+        return showTip ? tip : null;
+      }
+    };
     table.initColumns( model );
     table.setGridColor( Color.lightGray );
     table.getTableHeader().setResizingAllowed( false );
@@ -61,9 +89,11 @@ public class RawDataPanel extends RMPanel
   {
     if ( remoteConfig != null )
     {
-      model.set( remoteConfig.getData(), remoteConfig.getRemote().getBaseAddress() );
-      byteRenderer.setSavedData( remoteConfig.getSavedData() );
       Remote remote = remoteConfig.getRemote();
+      model.set( remoteConfig.getData(), remote.getBaseAddress() );
+      byteRenderer.setRemoteConfig( remoteConfig );
+      highlight = remoteConfig.getHighlight();
+      settingAddresses = remote.getSettingAddresses();
       signatureLabel.setText( "Signature:  " + remote.getSignature() );
       processorLabel.setText( "Processor:  " + remote.getProcessorDescription() );
       interfaceLabel.setText( "Interface:  " + remote.getInterfaceType() );
@@ -105,5 +135,8 @@ public class RawDataPanel extends RMPanel
   JLabel extenderLabel = new JLabel();
   
   Box infoBox = null; 
+  
+  private Color[] highlight = null;
+  private HashMap< Integer, Integer >settingAddresses = null;
   
 }

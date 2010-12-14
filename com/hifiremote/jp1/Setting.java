@@ -1,10 +1,12 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class Setting.
  */
-public class Setting
+public class Setting implements Highlight
 {
 
   /**
@@ -256,6 +258,27 @@ public class Setting
     pw.print( title, value );
   }
 
+  @Override
+  public Color getHighlight()
+  {
+    return highlight;
+  }
+
+  @Override
+  public void setHighlight( Color highlight )
+  {
+    this.highlight = highlight;
+  }
+  
+  public void doHighlight( Color[] highlight, int index )
+  {
+    int end = highlight.length - 1;
+    for ( int i = 0; i < numberOfBits; i++ )
+    {
+      highlight[ end - 8 * index - bitNumber + i ] = this.highlight;
+    }
+  }
+
   /** The title. */
   private String title;
 
@@ -282,4 +305,6 @@ public class Setting
 
   /** The value. */
   private int value = 0;
+  
+  private Color highlight = Color.WHITE;
 }

@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -30,8 +32,8 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
-
       setData( remoteConfig.getSpecialFunctions() );
       deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
       keyRenderer.setRemote( remote );
@@ -62,7 +64,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   /** The col names. */
   private static String[] colNames =
   {
-      "#", "<html>Device<br>Button</html>", "Key", "Type", "Function", "Hex", "Notes"
+      "#", "<html>Device<br>Button</html>", "Key", "Type", "Function", "Hex", "Notes", "Color"
   };
 
   /*
@@ -80,7 +82,8 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   private static final String[] colPrototypeNames =
   {
       " 00 ", "_VCR/DVD_", "shift-Thumbs_Up", " ToadTog(0,ForceOff) ",
-      "[Short]:DiscreteON;DiscreteON; [Long]:DiscreteOFF;DiscreteOFF", "00 11 22 33", "A reasonable length note"
+      "[Short]:DiscreteON;DiscreteON; [Long]:DiscreteOFF;DiscreteOFF", "00 11 22 33", 
+      "A reasonable length note", "Color"
   };
 
   /*
@@ -97,7 +100,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   /** The col widths. */
   private static boolean[] colWidths =
   {
-      true, true, true, false, false, false, false
+      true, true, true, false, false, false, false, true
   };
 
   /*
@@ -114,7 +117,8 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, DeviceButton.class, Integer.class, String.class, String.class, Hex.class, String.class
+      Integer.class, DeviceButton.class, Integer.class, String.class, String.class, Hex.class, 
+      String.class, Color.class
   };
 
   /*
@@ -165,6 +169,8 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
         return sf.getCmd();
       case 6:
         return sf.getNotes();
+      case 7:
+        return sf.getHighlight();
       default:
         return null;
     }
@@ -200,6 +206,10 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     {
       sf.setNotes( ( String )value );
     }
+    else if ( col == 7 )
+    {
+      sf.setHighlight( ( Color  )value );
+    }
     else
     {
       return;
@@ -229,6 +239,10 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     {
       return noteEditor;
     }
+    else if ( col == 7 )
+    {
+      return colorEditor;
+    }
     return null;
   }
 
@@ -248,6 +262,10 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     {
       return keyRenderer;
     }
+    else if ( col == 7 )
+    {
+      return colorRenderer;
+    }
 
     return null;
   }
@@ -265,4 +283,6 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   private KeyEditor keyEditor = new KeyEditor();
 
   private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
+  private RMColorEditor colorEditor = null;
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 }

@@ -1,9 +1,11 @@
 Changes for v2.01
+-- Alpha --
 - Fix NullPointerException when editing DeviceCombiner protocol (Graham)
 - Implement upgrade overflow into learned signal and advanced code regions (Graham)
 - When loading a KM file with a protocol named "Manual Settings", append the PID to the name to prevent mis-identification if there is a similar subsequent load (Graham)
 - Fix bug causing button restrictions set by the Button class constructor to be overridden, rather than supplemented, by explicitly set restrictions (Graham)
 - Fix bug preventing KeyMove setup code values > 2047 from being correctly imported when loading a .ir file (Graham)
+- Implement highlighting (Graham)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)

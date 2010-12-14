@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -43,8 +44,9 @@ public class RemoteConfiguration
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
-  public RemoteConfiguration( File file ) throws IOException
+  public RemoteConfiguration( File file, RemoteMaster rm ) throws IOException
   {
+    owner = rm;
     BufferedReader in = new BufferedReader( new FileReader( file ) );
     PropertyReader pr = new PropertyReader( in );
     if ( file.getName().toLowerCase().endsWith( ".rmir" ) )
@@ -221,6 +223,7 @@ public class RemoteConfiguration
     }
     
     data = new short[ eepromSize ];
+
     for ( int i = 0; i < offsets.size(); i++ )
     {
       System.arraycopy( values.get( i ), 0, data, offsets.get( i ), values.get( i ).length );
@@ -289,6 +292,11 @@ public class RemoteConfiguration
       }
     }
     remote.load();
+    highlight = new Color[ eepromSize + 8 * remote.getSettingAddresses().size() ];
+    for ( int i = 0; i < highlight.length; i++ )
+    {
+      highlight[ i ] = Color.WHITE;
+    }
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
     System.err.println( "Remote is " + remote );
@@ -853,7 +861,7 @@ public class RemoteConfiguration
    *          the device button
    * @return the device upgrade
    */
-  private DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
+  public DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
   {
     return findDeviceUpgrade( deviceButton.getDeviceTypeIndex( data ), deviceButton.getSetupCode( data ) );
   }
@@ -922,12 +930,19 @@ public class RemoteConfiguration
    * @param remote
    *          the remote
    */
-  public RemoteConfiguration( Remote remote )
+  public RemoteConfiguration( Remote remote, RemoteMaster rm )
   {
+    owner = rm;
     this.remote = remote;
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
-    data = new short[ remote.getEepromSize() ];
+    int eepromSize = remote.getEepromSize();
+    data = new short[ eepromSize ];
+    highlight = new Color[ eepromSize + 8 * remote.getSettingAddresses().size() ];
+    for ( int i = 0; i < highlight.length; i++ )
+    {
+      highlight[ i ] = Color.WHITE;
+    }
     deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
   }
 
@@ -1309,8 +1324,13 @@ public class RemoteConfiguration
   {
     // update upgrades last so that only spare space in other regions can be used for
     // upgrade overflow
+    for ( int i = 0; i < highlight.length; i++ )
+    {
+      highlight[ i ] = Color.WHITE;
+    }
     updateFixedData( false );
     updateAutoSet();
+    updateDeviceButtons();
     updateSettings();
     updateAdvancedCodes();
     if ( remote.hasFavKey() && remote.getFavKey().isSegregated() )
@@ -1355,6 +1375,7 @@ public class RemoteConfiguration
   {
     for ( KeyMove keyMove : moves )
     {
+      updateHighlight( keyMove, offset, keyMove.getSize( remote ) );
       offset = keyMove.store( data, offset, remote );
     }
     return offset;
@@ -1401,6 +1422,7 @@ public class RemoteConfiguration
     FavScan favScan = favScans.get( 0 );
     int buttonIndex = favKeyDevButton == DeviceButton.noButton ? 0 : favKeyDevButton.getButtonIndex();
     data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
+    updateHighlight( favScan, offset, favScan.getSize( remote ) );
     favScan.store( data, offset, remote );
   }
 
@@ -1414,6 +1436,7 @@ public class RemoteConfiguration
     int offset = range.getStart();
     for ( TimedMacro timedMacro : timedMacros )
     {
+      updateHighlight( timedMacro, offset, timedMacro.getSize( remote ) );
       offset = timedMacro.store( data, offset, remote );
     }
     data[ offset++ ] = remote.getSectionTerminator();
@@ -1459,10 +1482,12 @@ public class RemoteConfiguration
           macro.setSequenceNumber( list.size() );
         }
       }
+      updateHighlight( macro, offset, macro.getSize( remote ) );
       offset = macro.store( data, offset, remote );
     }
     for ( Macro macro : specialFunctionMacros )
     {
+      updateHighlight( macro, offset, macro.getSize( remote ) );
       offset = macro.store( data, offset, remote );
     }
     if ( remote.hasFavKey() && !remote.getFavKey().isSegregated() )
@@ -1475,6 +1500,7 @@ public class RemoteConfiguration
           int buttonIndex = favKeyDevButton.getButtonIndex() & 0xFF;
           data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
         }
+        updateHighlight( favScan, offset, favScan.getSize( remote ) );
         offset = favScan.store( data, offset, remote );
       }
     }
@@ -1482,6 +1508,7 @@ public class RemoteConfiguration
     {
       for ( TimedMacro timedMacro : timedMacros )
       {
+        updateHighlight( timedMacro, offset, timedMacro.getSize( remote ) );
         offset = timedMacro.store( data, offset, remote );
       }
       int timedMacroCountAddress = remote.getMacroCodingType().getTimedMacroCountAddress();
@@ -1503,6 +1530,14 @@ public class RemoteConfiguration
       multiMacro.store( data, remote );
     }
   }
+  
+  private void updateHighlight( Highlight item, int offset, int length )
+  {
+    for ( int i = 0; i < length; i++ )
+    {
+      highlight[ offset + i ] = item.getHighlight();
+    }
+  }
 
   /**
    * Update check sums.
@@ -1516,6 +1551,15 @@ public class RemoteConfiguration
     }
   }
 
+  private void updateDeviceButtons()
+  {
+    DeviceButton[] deviceButtons = remote.getDeviceButtons();
+    for ( DeviceButton db : deviceButtons )
+    {
+      db.doHighlight( highlight );
+    }
+  }
+  
   /**
    * Update settings.
    */
@@ -1524,6 +1568,8 @@ public class RemoteConfiguration
     Setting[] settings = remote.getSettings();
     for ( Setting setting : settings )
     {
+      int index = remote.getSettingAddresses().get( setting.getByteAddress() );
+      setting.doHighlight( highlight, index );
       setting.store( data, remote );
     }
   }
@@ -1933,6 +1979,7 @@ public class RemoteConfiguration
           continue;
         }
 
+        output.setHighlight( dev.getProtocolHighlight() );
         int pid = output.getPid();
         ProtocolUpgrade first = firstProtocols.get( pid );
         if ( first == null )
@@ -2131,6 +2178,7 @@ public class RemoteConfiguration
       devOffsets[ i++ ] = Math.max( 0, offset );
       if ( !ul.isFull() )
       {
+        updateHighlight( dev, offset, hex.length() );
         Hex.put( hex, data, offset );
       }
     }
@@ -2154,6 +2202,7 @@ public class RemoteConfiguration
         prOffsets[ i++ ] = Math.max( 0, offset );      
         if ( !ul.isFull() )
         {
+          updateHighlight( upgrade, offset, hex.length() );
           Hex.put( hex, data, offset );
         }
       }
@@ -2173,12 +2222,15 @@ public class RemoteConfiguration
     // store the setup codes
     for ( DeviceUpgrade dev : devIndependent )
     {
+      updateHighlight( dev, offset, 2 );
       processor.putInt( Hex.get( dev.getHexSetupCode(), 0 ), data, offset );
       offset += 2;
     }
     // store the offsets
+    i = 0;
     for ( int devOffset : devOffsets )
     {
+      updateHighlight( devIndependent.get( i++ ), offset, 2 );
       processor.putInt( devOffset + remote.getBaseAddress(), data, offset );
       offset += 2;
     }
@@ -2202,13 +2254,18 @@ public class RemoteConfiguration
     // create the protocol table
     processor.putInt( prCount, data, offset );
     offset += 2;
+    i = 0;
+    Color protocolHighlights[] = new Color[ prCount ];
     for ( ProtocolUpgrade pr : outputProtocols.values() )
     {
+      updateHighlight( pr, offset, 2 );
       processor.putInt( pr.getPid(), data, offset );
       offset += 2;
+      protocolHighlights[ i++ ] = pr.getHighlight();
     }
     for ( i = 0; i < prCount; ++i )
     {
+      highlight[ offset ] = highlight[ offset + 1 ] = protocolHighlights[ i ];
       processor.putInt( prOffsets[ i ] + remote.getBaseAddress(), data, offset );
       offset += 2;
     }
@@ -2268,6 +2325,10 @@ public class RemoteConfiguration
           if ( hex != null && hex.length() > 0 )
           {
             offset -= hex.length();
+            for ( int j = 0; j < hex.length(); j++ )
+            {
+              highlight[ offset + j ] = upg.getProtocolHighlight();
+            }
             Hex.put( hex, data, offset );
             lastProtID = protID;
             lastProtAddr = offset;
@@ -2283,11 +2344,13 @@ public class RemoteConfiguration
       // Store the device upgrade
       Hex hex = upg.getUpgradeHex();
       offset -= upgLength + 5;
+      updateHighlight( upg, offset, hex.length() + 5 );
       Hex.put( hex, data, offset + 5 );
       Hex.put( upg.getHexSetupCode(), data, offset + 3 );
       data[ offset + 2 ] = ( short )buttonIndex;
       data[ offset + 1 ] = ( short )protOffset;
       data[ offset ] = ( short )( lastDevAddr - offset );
+      upg.setDependentOffset( offset );
       lastDevAddr = offset;
       devAddr.setFreeEnd( offset - 1 );
     }
@@ -2331,6 +2394,7 @@ public class RemoteConfiguration
     int offset = addr.getStart();
     for ( LearnedSignal ls : learned )
     {
+      updateHighlight( ls, offset, ls.getSize() );
       offset = ls.store( data, offset, remote );
     }
     data[ offset++ ] = remote.getSectionTerminator();
@@ -2538,6 +2602,11 @@ public class RemoteConfiguration
     return data;
   }
 
+  public Color[] getHighlight()
+  {
+    return highlight;
+  }
+
   /**
    * Gets the saved data.
    * 
@@ -2644,6 +2713,8 @@ public class RemoteConfiguration
 
   /** The data. */
   private short[] data = null;
+  
+  private Color[] highlight = null;
 
   /** The saved data. */
   private short[] savedData = null;
@@ -2821,5 +2892,12 @@ public class RemoteConfiguration
   private DeviceButton favKeyDevButton = null;
   
   public ProtocolUpgrade protocolUpgradeUsed = null;
+  
+  private RemoteMaster owner = null;
+
+  public RemoteMaster getOwner()
+  {
+    return owner;
+  }
 
 }

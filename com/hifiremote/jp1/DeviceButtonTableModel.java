@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -37,6 +39,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
       setData( remote.getDeviceButtons() );
       SoftDevices softDevices = remote.getSoftDevices();
@@ -106,7 +109,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   public int getColumnCount()
   {
-    int count = 5;
+    int count = 6;
 
     if ( remoteConfig != null )
     {
@@ -130,6 +133,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   private int getEffectiveColumn( int col )
   {
+    if ( col == getColumnCount() - 1 )
+    {
+      return 7;
+    }
     if ( remoteConfig != null && remoteConfig.getRemote().getDeviceLabels() == null && col == 5 )
     {
       return 6;
@@ -159,7 +166,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "Note", "Label", "Seq"
+      "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "Note", "Label", "Seq", "Color"
   };
 
   /*
@@ -176,7 +183,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The col prototype names. */
   private static String[] colPrototypeNames =
   {
-      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "A Meaningful, Reasonable Note", "Label", "Seq"
+      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "A Meaningful, Reasonable Note", "Label", "Seq", "Color"
   };
 
   /*
@@ -193,7 +200,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, DeviceType.class, SetupCode.class, String.class, String.class, Integer.class
+      Integer.class, String.class, DeviceType.class, SetupCode.class, String.class, String.class, Integer.class, Color.class
   };
 
   /*
@@ -217,7 +224,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   {
     // If remote uses soft devices, device type must be set before other columns can be edited.
     // If remote uses soft home theater, the setup code is left blank and is not editable.
-    return editable && col > 1 && ( col == 2 || getExtendedTypeIndex( row ) != 0xFF )
+    return editable && col > 1 && ( col == 2 || col == 7 || getExtendedTypeIndex( row ) != 0xFF )
         && ( col != 3 || getValueAt( row, col ) != null );
   }
 
@@ -233,11 +240,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     DeviceButton db = getRow( row );
     int typeIndex = getExtendedTypeIndex( row );
     int group = db.getDeviceGroup( data );
-    if ( typeIndex == 0xFF && column > 1 )
+    column = getEffectiveColumn( column );
+    if ( typeIndex == 0xFF && column > 1 && column < 7 )
     {
       return null;
     }
-    switch ( getEffectiveColumn( column ) )
+    switch ( column )
     {
       case 0:
         return new Integer( row + 1 );
@@ -301,6 +309,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           return seq + 1;
         }
       }
+      case 7:
+      {
+        return db.getHighlight();
+      }
       default:
         return null;
     }
@@ -344,6 +356,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     SoftDevices softDevices = remote.getSoftDevices();
     DeviceType oldDevType = null;
     SetupCode oldSetupCode = null;
+    col = getEffectiveColumn( col );
     if ( col == 2 || col == 3 )
     {
       oldDevType = ( DeviceType )getValueAt( row, 2 );
@@ -454,11 +467,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
 
       remoteConfig.getDeviceButtonNotes()[ row ] = strValue;
     }
-    else if ( getEffectiveColumn( col ) == 5 )
+    else if ( col == 5 )
     {
       remote.getDeviceLabels().setText( ( String )value, row, data );
     }
-    else if ( getEffectiveColumn( col ) == 6 )
+    else if ( col == 6 )
     {
       int rows = getRowCount();
       int newSeq = ( ( Integer )value ).intValue() - 1;
@@ -471,6 +484,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       softDevices.deleteSequenceIndex( row, rows, data );
       softDevices.insertSequenceIndex( row, newSeq, rows, data );
       fireTableDataChanged();
+    }
+    else if ( col == 7 )
+    {
+      db.setHighlight( ( Color )value );
     }
     propertyChangeSupport.firePropertyChange( "value", null, null );
   }
@@ -554,6 +571,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return setupCodeRenderer;
     }
+    else if ( getEffectiveColumn( col ) == 7 )
+    {
+      return colorRenderer;
+    }
     return null;
   }
 
@@ -569,6 +590,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return null;
     }
+    
+    col = getEffectiveColumn( col );
 
     if ( col == 2 )
     {
@@ -582,9 +605,13 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return selectAllEditor;
     }
-    else if ( getEffectiveColumn( col ) == 6 )
+    else if ( col == 6 )
     {
       return sequenceEditor;
+    }
+    else if ( col == 7 )
+    {
+      return colorEditor;
     }
     return null;
   }
@@ -601,6 +628,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   
   private SetupCodeRenderer setupCodeRenderer = null;
   private SetupCodeEditor setupCodeEditor = null;
+  private RMColorEditor colorEditor = null;
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 
   private DefaultCellEditor sequenceEditor = null;
   private JComboBox sequenceBox = new JComboBox();

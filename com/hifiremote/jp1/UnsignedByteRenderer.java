@@ -1,7 +1,11 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.util.HashMap;
 
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
@@ -23,7 +27,7 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
     boldFont = baseFont.deriveFont( Font.BOLD );
     setHorizontalAlignment( SwingConstants.CENTER );
   }
-
+  
   /**
    * Sets the saved data.
    * 
@@ -33,6 +37,14 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
   public void setSavedData( short[] savedData )
   {
     this.savedData = savedData;
+  }
+
+  public void setRemoteConfig( RemoteConfiguration remoteConfig )
+  {
+    Remote remote = remoteConfig.getRemote();
+    savedData = remoteConfig.getSavedData();
+    settingAddresses = remote.getSettingAddresses();
+    highlight = remoteConfig.getHighlight();
   }
 
   /*
@@ -45,26 +57,45 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
   public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
       int row, int col )
   {
-    Component c = super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
-    if ( savedData != null && ( ( UnsignedByte )value ).getValue() != savedData[ 16 * row + col - 1 ] )
+    component = super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
+    offset = 16 * row + col - 1;
+    if ( savedData != null && ( ( UnsignedByte )value ).getValue() != savedData[ offset ] )
     {
-      // if ( isSelected )
-      // c.setForeground( Color.YELLOW );
-      // else
-      // c.setForeground( Color.RED );
-      c.setFont( boldFont );
+      component.setFont( boldFont );
     }
     else
     {
-      // if ( isSelected )
-      // c.setForeground( Color.WHITE );
-      // else
-      // c.setForeground( Color.BLACK );
-      c.setFont( baseFont );
+      component.setFont( baseFont );
     }
-    return c;
+    return component;
   }
 
+  @Override
+  public void paint( Graphics g )
+  {
+    Dimension d = component.getSize();
+    int end = highlight.length - 1;
+    if ( settingAddresses.containsKey( offset ) )
+    {
+      for ( int i = 0; i < 8; i++ )
+      {
+        g.setColor( highlight[ end - 8 * settingAddresses.get( offset ) - i ] );
+        g.fillRect( d.width - 3 * i - 3, 0, 2, d.height );
+      }
+    }
+    else
+    {
+      g.setColor( highlight[ offset ] );
+      g.fillRect( 0, 0, d.width, d.height );
+    }
+    super.paint( g );
+  }
+  
+  private int offset;
+  private Component component = null;
+  private HashMap< Integer, Integer > settingAddresses = null;
+  private Color[] highlight = null;
+ 
   /** The saved data. */
   private short[] savedData = null;
 

@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
@@ -38,7 +39,7 @@ import com.hifiremote.jp1.translate.Translator;
 /**
  * The Class DeviceUpgrade.
  */
-public class DeviceUpgrade
+public class DeviceUpgrade implements Highlight
 {
 
   /**
@@ -59,6 +60,10 @@ public class DeviceUpgrade
   {
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
     initFunctions( defaultNames );
+    for ( int i = 0; i < 256; i++ )
+    {
+      assignmentColors[ i ] = Color.WHITE;
+    }
   }
 
   /**
@@ -77,6 +82,12 @@ public class DeviceUpgrade
     protocol = base.protocol;
     buttonIndependent = base.buttonIndependent;
     buttonRestriction = base.buttonRestriction;
+    
+    // Copy assignment colors
+    for ( int i = 0; i < 256; i++ )
+    {
+      assignmentColors[ i ] = base.assignmentColors[ i ];
+    }
 
     // copy the device parameter values
     protocol.setDeviceParms( base.parmValues );
@@ -1214,6 +1225,7 @@ public class DeviceUpgrade
       {
         keyMoves.add( keyMove );
         keyMove.setNotes( f.getNotes() );
+        keyMove.setHighlight( assignmentColors[ button.getKeyCode( Button.NORMAL_STATE )] );
       }
 
       f = assignments.getAssignment( button, Button.SHIFTED_STATE );
@@ -1226,6 +1238,7 @@ public class DeviceUpgrade
       {
         keyMoves.add( keyMove );
         keyMove.setNotes( f.getNotes() );
+        keyMove.setHighlight( assignmentColors[ button.getKeyCode( Button.SHIFTED_STATE )] );
       }
 
       f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
@@ -1238,6 +1251,7 @@ public class DeviceUpgrade
       {
         keyMoves.add( keyMove );
         keyMove.setNotes( f.getNotes() );
+        keyMove.setHighlight( assignmentColors[ button.getKeyCode( Button.XSHIFTED_STATE )] );
       }
     }
     return keyMoves;
@@ -3167,6 +3181,30 @@ public class DeviceUpgrade
   private File file = null;
 
   private DeviceButton buttonRestriction = DeviceButton.noButton;
+  
+  /**
+   * The offset in raw data to the start of this upgrade in the Device Dependent section,
+   * when applicable.  Value irrelevant if not applicable.
+   */
+  private int dependentOffset = 0;
+
+  /**
+   * Get the offset in raw data to the start of this upgrade in the Device Dependent section,
+   * when applicable.  Value irrelevant if not applicable.
+   */
+  public int getDependentOffset()
+  {
+    return dependentOffset;
+  }
+
+  /**
+   * Set the offset in raw data to the start of this upgrade in the Device Dependent section,
+   * when applicable.  Value irrelevant if not applicable.
+   */
+  public void setDependentOffset( int dependentOffset )
+  {
+    this.dependentOffset = dependentOffset;
+  }
 
   private Boolean buttonIndependent = true;
 
@@ -3244,6 +3282,40 @@ public class DeviceUpgrade
   /** The assignments. */
   private ButtonAssignments assignments = new ButtonAssignments();
 
+  private Color assignmentColors[] = new Color[ 256 ];
+  
+  public void setAssignmentColor( int keyCode, Color color )
+  {
+    assignmentColors[ keyCode ] = color;
+  }
+
+  private Color deviceHighlight = Color.WHITE;
+  private Color protocolHighlight = Color.WHITE;
+  
+  @Override
+  public Color getHighlight()
+  {
+    return deviceHighlight;
+  }
+
+  @Override
+  public void setHighlight( Color color )
+  {
+    deviceHighlight = color;
+    
+  }
+
+  public Color getProtocolHighlight()
+  {
+    return protocolHighlight;
+  }
+  
+  public void setProtocolHighlight( Color color )
+  {
+    protocolHighlight = color;
+    
+  }
+  
   /**
    * Sets the function.
    * 

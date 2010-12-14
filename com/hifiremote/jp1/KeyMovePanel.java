@@ -31,7 +31,6 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
     table.removeMouseListener( openEditor );
     table.getSelectionModel().removeListSelectionListener( this );
     thisPanel = this;
-    ( ( KeyMoveTableModel )this.getModel() ).sorter = sorter;
 
     table.addMouseListener( new MouseAdapter()
     {

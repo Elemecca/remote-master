@@ -1,10 +1,12 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class DeviceButton.
  */
-public class DeviceButton
+public class DeviceButton implements Highlight
 {
   /**
    * Instantiates a new device button.
@@ -190,4 +192,28 @@ public class DeviceButton
   private int defaultSetupCode = 0;
   
   private int buttonIndex = 0;
+
+  private Color highlight = Color.WHITE;
+  
+  @Override
+  public Color getHighlight()
+  {
+    return highlight;
+  }
+
+  @Override
+  public void setHighlight( Color highlight )
+  {
+    this.highlight = highlight;
+  }
+  
+  public void doHighlight( Color[] highlight )
+  {
+    highlight[ highAddress ] = this.highlight;
+    highlight[ lowAddress ] = this.highlight;
+    if ( typeAddress > 0 )
+    {
+      highlight[ typeAddress ] = this.highlight;
+    }
+  }
 }

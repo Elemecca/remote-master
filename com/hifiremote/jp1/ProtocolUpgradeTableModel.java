@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -27,6 +29,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       setData( remoteConfig.getProtocolUpgrades() );
     }
   }
@@ -44,7 +47,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Name", "PID", "Protocol Code", "Notes"
+      "#", "Name", "PID", "Protocol Code", "Notes", "Color"
   };
 
   /*
@@ -61,7 +64,9 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "Manual Settings: 01CC (2)", "01CC", "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", "A resonable length note"
+      " 00 ", "Manual Settings: 01CC (2)", "01CC", 
+      "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", 
+      "A resonable length note", "Color"
   };
 
   /*
@@ -83,7 +88,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   @Override
   public boolean isColumnWidthFixed( int col )
   {
-    if ( col == 0 || col == 2 )
+    if ( col == 0 || col == 2 || col == 5 )
     {
       return true;
     }
@@ -93,7 +98,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, String.class, Hex.class, String.class
+      Integer.class, String.class, String.class, Hex.class, String.class, Color.class
   };
 
   /*
@@ -115,7 +120,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( col == 4 )
+    if ( col > 3 )
     {
       return true;
     }
@@ -166,6 +171,8 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
         return pu.getCode();
       case 4:
         return pu.getNotes();
+      case 5:
+        return pu.getHighlight();
     }
     return null;
   }
@@ -182,6 +189,11 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
     if ( col == 4 )
     {
       pu.setNotes( ( String )value );
+    }
+    else if ( col == 5 )
+    {
+      pu.setHighlight( ( Color )value );
+      propertyChangeSupport.firePropertyChange( "device", null, null );
     }
   }
   
@@ -210,6 +222,10 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
     {
       return new RowNumberRenderer();
     }
+    else if ( col == 5 )
+    {
+      return colorRenderer;
+    }
     return null;
   }
 
@@ -220,10 +236,16 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
     {
       return noteEditor;
     }
+    else if ( col == 5 )
+    {
+      return colorEditor;
+    }
     return null;
   }
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
   private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
+  private RMColorEditor colorEditor = null;
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 }

@@ -1,12 +1,13 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
 import java.util.*;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class SpecialProtocolFunction.
  */
-public abstract class SpecialProtocolFunction
+public abstract class SpecialProtocolFunction implements Highlight
 { 
   private KeyMove keyMove = null;
   private Macro macro = null;
@@ -236,6 +237,32 @@ public abstract class SpecialProtocolFunction
     }
   }
 
+  @Override
+  public Color getHighlight()
+  {
+    if ( keyMove != null )
+    {
+      return keyMove.getHighlight();
+    }
+    else
+    {
+      return macro.getHighlight();
+    }
+  }
+  
+  @Override
+  public void setHighlight( Color color )
+  {
+    if ( keyMove != null )
+    {
+      keyMove.setHighlight( color );
+    }
+    else
+    {
+      macro.setHighlight( color );
+    }
+  }
+  
   private static final String[] unknownFunctions = { "<unknown>", "<unknown>", "<unknown>" };
   
   /**

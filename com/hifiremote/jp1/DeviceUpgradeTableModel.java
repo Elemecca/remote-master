@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -38,6 +39,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       for ( DeviceUpgrade upgrade : remoteConfig.getDeviceUpgrades() )
       {
         upgrade.removePropertyChangeListener( this );
@@ -66,7 +68,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public int getColumnCount()
   {
-    int count = 7;
+    int count = 9;
 
     if ( remoteConfig != null )
     {
@@ -93,7 +95,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private static final String[] colNames =
   {
       "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "<html>Specific to<br>Device Button</html>",
-      "<html>Available on<br>Other Buttons?</html>", "PID", "Variant", "Protocol", "Description"
+      "<html>Available on<br>Other Buttons?</html>", "PID", "Variant", "Protocol", "Description",
+      "<html>Dev.<br>Color</html>", "<html>Prot.<br>Color</html>"
   };
 
   /*
@@ -111,7 +114,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private static final String[] colPrototypeNames =
   {
       " 00 ", "CBL/SAT__", "Setup ", "Device Button__", "Other Buttons?__", "0000__", "Variant_____",
-      "Panasonic Mixed Combo___", "A relatively long description and then some more___"
+      "Panasonic Mixed Combo___", "A relatively long description and then some more___",
+      "Color", "Color"
   };
 
   /*
@@ -133,7 +137,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   @Override
   public boolean isColumnWidthFixed( int col )
   {
-    if ( getEffectiveColumn( col ) < 7 )
+    col = getEffectiveColumn( col );
+    if ( col < 7 || col > 8 )
     {
       return true;
     }
@@ -147,7 +152,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private static final Class< ? >[] colClasses =
   {
       Integer.class, String.class, SetupCode.class, String.class, Boolean.class, Protocol.class, Protocol.class,
-      Protocol.class, String.class
+      Protocol.class, String.class, Color.class, Color.class
   };
 
   /*
@@ -170,14 +175,12 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   public boolean isCellEditable( int row, int col )
   {
     col = getEffectiveColumn( col );
-    if ( col == 3 || col == 4 || col == 8 )
+    if ( col == 10 )
     {
-      return true;
+      return getRow( row ).needsProtocolCode();
     }
-    else if ( col == 5 || col == 6 || col == 7 )
+    else if ( col > 2 )
     {
-//      Protocol p = getRow( row ).getProtocol();
-//      return p instanceof ManualProtocol;
       return true;
     }
     return false;
@@ -210,6 +213,10 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         return device.getProtocol();
       case 8:
         return device.getDescription();
+      case 9:
+        return device.getHighlight();
+      case 10:
+        return device.getProtocolHighlight();
     }
     return null;
   }
@@ -223,6 +230,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   public void setValueAt( Object value, int row, int col )
   {
     DeviceUpgrade device = getRow( row );
+    Remote remote = remoteConfig.getRemote();
     switch ( getEffectiveColumn( col ) )
     {
       case 3:
@@ -238,7 +246,6 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 7:
         Protocol p = ( Protocol )value;
         device.setProtocol( p, false );       
-        Remote remote = remoteConfig.getRemote();
         String proc = remote.getProcessor().getEquivalentName();
         Hex code = p.customCode.get( proc );
         if ( code != null )
@@ -276,6 +283,55 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         break;
       case 8:
         device.setDescription( ( String )value );
+        break;
+      case 9:
+        device.setHighlight( ( Color )value );
+        propertyChangeSupport.firePropertyChange( "device", null, null );
+        break;
+      case 10:
+        device.setProtocolHighlight( ( Color )value );
+        // If any other device upgrade in the device-independent section uses a protocol upgrade with
+        // the same PID and code, so that it will share that code, it should be set to have the same protocol
+        // highlight.
+        boolean updateRequired = false;
+        if ( device.getButtonIndependent() && device.needsProtocolCode() )
+        {
+          Hex pid = device.getProtocol().getID( remote );
+          Hex pCode = device.getCode();
+          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+          {
+            if ( du.getButtonIndependent() && du.needsProtocolCode() &&
+                du.getProtocol().getID( remote ).equals( pid ) && du.getCode().equals( pCode ) )
+            {
+              du.setProtocolHighlight( ( Color )value );
+              updateRequired = true;
+            }
+          }
+        }
+        if ( ( device.getButtonRestriction() != DeviceButton.noButton ) && device.needsProtocolCode() )
+        {
+          short[] data = remoteConfig.getData();
+          int offset = device.getDependentOffset();
+          int protOffset = offset + data[ offset + 1 ];
+          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+          {
+            if ( ( du.getButtonRestriction() != DeviceButton.noButton ) && du.needsProtocolCode() )
+            {
+              int duOffset = du.getDependentOffset();
+              int duProtOffset = duOffset + data[ duOffset + 1 ];
+              if ( duProtOffset == protOffset )
+              {
+                du.setProtocolHighlight( ( Color )value );
+                updateRequired = true;
+              }
+            }
+          }
+        }
+        if ( updateRequired )
+        {
+          fireTableDataChanged();
+        }
+        propertyChangeSupport.firePropertyChange( "device", null, null );
         break;
     }
   }
@@ -322,6 +378,10 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         }
       };
     }
+    else if ( col > 8 )
+    {
+      return colorRenderer;
+    }
     return null;
   }
 
@@ -348,6 +408,9 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         }
       case 8:
         return descriptionEditor;
+      case 9:
+      case 10:
+        return colorEditor;
     }
     return null;
   }
@@ -455,4 +518,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   private SelectAllCellEditor descriptionEditor = new SelectAllCellEditor();
 
   private JComboBox deviceButtonBox = new JComboBox();
+  
+  private RMColorEditor colorEditor = null;
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 }

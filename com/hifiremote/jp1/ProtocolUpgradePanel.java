@@ -1,7 +1,5 @@
 package com.hifiremote.jp1;
 
-import javax.swing.SwingUtilities;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class ProtocolUpgradePanel.
@@ -37,7 +35,6 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
    */
   public ProtocolUpgrade createRowObject( ProtocolUpgrade baseUpgrade )
   {
-    RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
     Remote remote = remoteConfig.getRemote();
     ManualProtocol mp = null;
     boolean pidEditable = true;
@@ -58,7 +55,7 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
       mp = baseUpgrade.getManualProtocol( remote );
     }
     
-    ManualSettingsDialog d = new ManualSettingsDialog( rm, mp );
+    ManualSettingsDialog d = new ManualSettingsDialog( remoteConfig.getOwner(), mp );
     d.pid.setEditable( pidEditable );
     d.pid.setEnabled( pidEditable );
     d.remoteConfig = remoteConfig;

@@ -1507,6 +1507,7 @@ public class Remote implements Comparable< Remote >
   {
     String line;
     java.util.List< Setting > work = new ArrayList< Setting >();
+    int index = 0;
     while ( true )
     {
       line = rdr.readLine();
@@ -1552,6 +1553,10 @@ public class Remote implements Comparable< Remote >
       }
       work.add( new Setting( title, byteAddress, bitNumber, numberOfBits, initialValue, inverted, optionsList,
           sectionName ) );
+      if ( ! settingAddresses.containsKey( byteAddress ) )
+      {
+        settingAddresses.put( byteAddress, index++ );
+      }
     }
     settings = work.toArray( settings );
     return line;
@@ -3077,6 +3082,13 @@ public class Remote implements Comparable< Remote >
 
   /** The settings. */
   private Setting[] settings = new Setting[ 0 ];
+  
+  private HashMap< Integer, Integer > settingAddresses = new HashMap< Integer, Integer >();
+
+  public HashMap< Integer, Integer > getSettingAddresses()
+  {
+    return settingAddresses;
+  }
 
   /** The fixed data. */
   private FixedData[] fixedData = new FixedData[ 0 ];

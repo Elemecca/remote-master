@@ -1,5 +1,8 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 public class FavScanTableModel extends JP1TableModel< FavScan >
@@ -12,22 +15,24 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
 
   public void set( RemoteConfiguration remoteConfig )
   {
-    this.remoteConfig = remoteConfig;
+    this.remoteConfig = remoteConfig; 
     if ( remoteConfig != null )
     {
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       setData( remoteConfig.getFavScans() );
     }
   }
 
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "A reasonable length macro with a reasonable number of steps ", "A reasonable length note for a macro"
+      " 00 ", "A reasonable length macro with a reasonable number of steps ", 
+      "A reasonable length note for a macro", "Color"
   };
 
   /** The Constant colWidths. */
   private static final boolean[] colWidths =
   {
-      true, false, false
+      true, false, false, true
   };
 
   /*
@@ -54,7 +59,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Macro Keys", "Notes"
+      "#", "Macro Keys", "Notes", "Color"
   };
 
   /*
@@ -71,7 +76,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, String.class
+      Integer.class, String.class, String.class, Color.class
   };
 
   /*
@@ -94,7 +99,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public int getColumnCount()
   {
-    return 3;
+    return colNames.length;
   }
 
   @Override
@@ -103,6 +108,20 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     if ( col == 0 )
     {
       return new RowNumberRenderer();
+    }
+    else if ( col == 3 )
+    {
+      return colorRenderer;
+    }
+    return null;
+  }
+  
+  @Override
+  public TableCellEditor getColumnEditor( int col )
+  {
+    if ( col == 3 )
+    {
+      return colorEditor;
     }
     return null;
   }
@@ -119,6 +138,8 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
         return favScan.getValueString( remoteConfig );
       case 2:
         return favScan.getNotes();
+      case 3:
+        return favScan.getHighlight();
       default:
         return null;
     }
@@ -132,6 +153,10 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       favScan.setNotes( ( String )value );
     }
+    else if ( col == 3 )
+    {
+      favScan.setHighlight( ( Color  )value );
+    }
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
 
@@ -141,4 +166,6 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   }
 
   private RemoteConfiguration remoteConfig = null;
+  private RMColorEditor colorEditor = null;
+  private RMColorRenderer colorRenderer = new RMColorRenderer();
 }
