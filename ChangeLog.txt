@@ -6,6 +6,8 @@ Changes for v2.01
 - Fix bug causing button restrictions set by the Button class constructor to be overridden, rather than supplemented, by explicitly set restrictions (Graham)
 - Fix bug preventing KeyMove setup code values > 2047 from being correctly imported when loading a .ir file (Graham)
 - Implement highlighting (Graham)
+-- Alpha 2 --
+- Create File/Set Directory menu and implement entries to change RDF Path and Image Path (Graham)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)

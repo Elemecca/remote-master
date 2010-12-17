@@ -56,7 +56,7 @@ public class RemoteManager
     if ( path == null )
       path = new File( System.getProperty( "user.dir" ), defaultName );
 
-    while ( !path.exists() && !path.isDirectory() )
+    while ( !path.exists() || !path.isDirectory() ) // GD:  was && but it seemed to me that it should be ||
       path = path.getParentFile();
 
     File[] files = new File[ 0 ];

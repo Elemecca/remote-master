@@ -1080,9 +1080,11 @@ public class Remote implements Comparable< Remote >
         StringTokenizer mapTokenizer = new StringTokenizer( mapList, "," );
         int mapCount = mapTokenizer.countTokens();
         imageMaps = new ImageMap[ mapCount ];
+        imageMapNames = new String[ mapCount ];
         for ( int m = 0; m < mapCount; ++m )
         {
-          imageMaps[ m ] = new ImageMap( new File( imageDir, mapTokenizer.nextToken() ) );
+          imageMapNames[ m ] = mapTokenizer.nextToken();
+          imageMaps[ m ] = new ImageMap( new File( imageDir, imageMapNames[ m ] ) );
         }
 
         if ( nameIndex >= mapCount )
@@ -1297,6 +1299,18 @@ public class Remote implements Comparable< Remote >
 
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
+  }
+  
+  public void resetImageMaps( File path ) throws Exception
+  {
+    for ( int m = 0; m < imageMaps.length; ++m )
+    {
+      imageMaps[ m ] = new ImageMap( new File( path, imageMapNames[ m ] ) );
+      if ( imageMaps[ m ] != null )
+      {
+        imageMaps[ m ].parse( this );
+      }
+    }
   }
 
   public AutoClockSet getAutoClockSet()
@@ -3155,6 +3169,8 @@ public class Remote implements Comparable< Remote >
 
   /** The image maps. */
   private ImageMap[] imageMaps = new ImageMap[ 0 ];
+  
+  private String[] imageMapNames = new String[ 0 ];
 
   /** The map index. */
   private int mapIndex = 0;

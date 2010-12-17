@@ -42,7 +42,8 @@
 							<include name="toolbarButtonGraphics/general/Paste.gif"/>
 							<include name="toolbarButtonGraphics/general/New.gif"/>
 						</zipfileset> 
-                        <zipfileset src="${lib.dir}/RMGraphics.jar"/> 
+                        <zipfileset src="${lib.dir}/RMGraphics.jar"/>
+                		<zipfileset src="${lib.dir}/l2fprod-common-directorychooser.jar" includes="**/*.class"/>
                 </jar>
                 <java classpath="${build}" classname="com.hifiremote.jp1.RemoteMaster" outputproperty="rmversion">
                         <arg value="-version" />

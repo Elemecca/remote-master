@@ -68,6 +68,7 @@ import com.hifiremote.jp1.io.IO;
 import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
 import com.hifiremote.jp1.io.JP1USB;
+import com.l2fprod.common.swing.JDirectoryChooser;
 
 /**
  * Description of the Class.
@@ -116,6 +117,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private RMAction openRdfAction = null;
   
   protected RMAction highlightAction = null;
+  
+  private JMenuItem rdfPathItem = null;
+  
+  private JMenuItem mapPathItem = null;
 
   /** The recent files. */
   private JMenu recentFiles = null;
@@ -144,6 +149,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The look and feel items. */
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
+  
+  private JCheckBoxMenuItem highlightItem = null;
 
   // Help menu items
   private JMenuItem readmeItem = null;
@@ -1037,6 +1044,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // menu.add( revertItem );
 
     menu.addSeparator();
+    
+    JMenu menuSetDirectory = new JMenu( "Set Directory" );
+    menuSetDirectory.setMnemonic( KeyEvent.VK_D );
+    menu.add( menuSetDirectory );
+    
+    rdfPathItem = new JMenuItem( "RDF Path..." );
+    rdfPathItem.setMnemonic( KeyEvent.VK_R );
+    rdfPathItem.addActionListener( this );
+    menuSetDirectory.add( rdfPathItem );
+    
+    mapPathItem = new JMenuItem( "Image Path..." );
+    mapPathItem.setMnemonic( KeyEvent.VK_I );
+    mapPathItem.addActionListener( this );
+    menuSetDirectory.add( mapPathItem );
+    
+    menu.addSeparator();
     toolBar.addSeparator();
 
     recentFiles = new JMenu( "Recent" );
@@ -1255,6 +1278,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     JMenu subMenu = new JMenu( "Look and Feel" );
     subMenu.setMnemonic( KeyEvent.VK_L );
     menu.add( subMenu );
+    
+    highlightItem = new JCheckBoxMenuItem( "Highlighting" );
+    highlightItem.setMnemonic( KeyEvent.VK_H );
+    highlightItem.setSelected( Boolean.parseBoolean( properties.getProperty( "highlighting", "false" ) ) );
+    highlightItem.addActionListener( this );
+    menu.add( highlightItem );
 
     ActionListener al = new ActionListener()
     {
@@ -1367,7 +1396,117 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     chooser.setFileFilter( rmirFilter );
     return chooser;
   }
+  
+  private File getRDFPathChoice()
+  {
+    File result = null;
+    File dir = properties.getFileProperty( "RDFPath" );
+    if ( dir == null )
+    {
+      dir = new File( System.getProperty( "user.dir" ), "RDF" );
+    }
+    while ( !dir.exists() || !dir.isDirectory() )
+    {
+      dir = dir.getParentFile();
+    }
+    
+    JDirectoryChooser chooser = new JDirectoryChooser( dir )
+    { 
+      FilenameFilter filter = new FilenameFilter()
+      {
+        @Override
+        public boolean accept( File dir, String name )
+        {
+          int dot = name.lastIndexOf( '.' );
+          if ( dot < 0 )
+          {
+            return false;
+          }
+          return name.substring( dot ).toLowerCase().equals( ".rdf" );
+        }
+      };
+      
+      @Override
+      public void approveSelection() 
+      {
+        File[] files = getSelectedFile().listFiles( filter );
+        if ( files.length == 0 )
+        { 
+          JOptionPane.showMessageDialog( null, 
+              "There are no RDF files in this directory.  Please choose another.",
+              "Error", JOptionPane.ERROR_MESSAGE );
+          return; 
+        } 
+        else
+        {
+          super.approveSelection();
+        }
+      } 
+    }; 
 
+    chooser.setDialogTitle( "Select Directory for RDF Files" );
+    if ( chooser.showDialog( this, "OK" ) == JDirectoryChooser.APPROVE_OPTION )
+    {
+      result = chooser.getSelectedFile();
+    }
+    return result;
+  }
+  
+  private File getMapPathChoice()
+  {
+    File result = null;
+    File dir = properties.getFileProperty( "ImagePath" );
+    if ( dir == null )
+    {
+      dir = new File( System.getProperty( "user.dir" ), "Images" );
+    }
+    while ( !dir.exists() || !dir.isDirectory() )
+    {
+      dir = dir.getParentFile();
+    }
+    
+    JDirectoryChooser chooser = new JDirectoryChooser( dir )
+    { 
+      FilenameFilter filter = new FilenameFilter()
+      {
+        @Override
+        public boolean accept( File dir, String name )
+        {
+          int dot = name.lastIndexOf( '.' );
+          if ( dot < 0 )
+          {
+            return false;
+          }
+          return name.substring( dot ).toLowerCase().equals( ".map" );
+        }
+      };
+      
+      @Override
+      public void approveSelection() 
+      {
+        File[] files = getSelectedFile().listFiles( filter );
+        if ( files.length == 0 )
+        { 
+          JOptionPane.showMessageDialog( null, 
+              "There are no Map and Image files in this directory.  Please choose another.",
+              "Error", JOptionPane.ERROR_MESSAGE );
+          return; 
+        } 
+        else
+        {
+          super.approveSelection();
+        }
+      } 
+    }; 
+
+    chooser.setDialogTitle( "Select Directory for Map Files" );
+    if ( chooser.showDialog( this, "OK" ) == JDirectoryChooser.APPROVE_OPTION )
+    {
+      result = chooser.getSelectedFile();
+    }
+    return result;
+  }
+  
   /**
    * Description of the Method.
    * 
@@ -1700,6 +1839,88 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == verifyUploadItem )
       {
         properties.setProperty( "verifyUpload", Boolean.toString( verifyUploadItem.isSelected() ) );
+      }
+      else if ( source == highlightItem )
+      {
+        properties.setProperty( "highlighting", Boolean.toString( highlightItem.isSelected() ) );
+      }
+      else if ( source == rdfPathItem )
+      {
+        File path = getRDFPathChoice();
+        if ( path == null )
+        {
+          return;
+        }
+        
+        int opt = JOptionPane.NO_OPTION;
+        if ( remoteConfig != null )
+        {
+          String message = "Do you want to apply this directory change immediately?\n\n" +
+          "Yes = the present setup will be reinterpreted with an RDF from the new directory;\n" +
+          "No = the change will take place when you next open a remote, even within this session;\n" +
+          "Cancel = the change will be cancelled.\n\n" +
+          "Note that if you answer Yes, the setup will still have been loaded with the old RDF.\n" +
+          "You can achieve a similar result by answering No, using File/Save As to save the setup\n" +
+          "with the old RDF and then opening the saved file, which will open with the new RDF.\n" +
+          "The best choice between these two methods can depend on how different the RDFs are,\n" +
+          "and what you are trying to achieve.";
+
+          String title = "Change of RDF Directory";
+          opt = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+        }
+        if ( opt == JOptionPane.CANCEL_OPTION )
+        {
+          return;
+        }
+        properties.setProperty( "RDFPath", path );
+        RemoteManager mgr = RemoteManager.getRemoteManager();
+        mgr.reset();
+        mgr.loadRemotes( properties );
+        if ( opt == JOptionPane.NO_OPTION )
+        {
+          return;
+        }
+        String rmTitle = getTitle();
+        remoteConfig.setSavedData();
+        Remote oldRemote = remoteConfig.getRemote();
+        Remote newRemote = RemoteManager.getRemoteManager().findRemoteByName( oldRemote.getName() );
+        remoteConfig.setRemote( newRemote );
+        SetupCode.setMax( newRemote.usesTwoBytePID() ? 4095 : 2047 );
+        remoteConfig.updateImage();
+        RemoteConfiguration.resetDialogs();
+        update();
+        int index = rmTitle.lastIndexOf( oldRemote.getName() );
+        setTitle( rmTitle.substring( 0, index ) + newRemote.getName() );
+      }
+      else if ( source == mapPathItem )
+      {
+        File path = getMapPathChoice();
+        if ( path == null )
+        {
+          return;
+        }
+        int opt = JOptionPane.NO_OPTION;
+        if ( remoteConfig != null )
+        {
+          String message = "Do you want to apply this directory change immediately?\n\n" +
+          "Yes = a map and image from the new directory will be used in the present setup;\n" +
+          "No = the change will take place when you next open a remote, even within this session;\n" +
+          "Cancel = the change will be cancelled.\n\n";
+
+          String title = "Change of Map and Image Directory";
+          opt = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+        }
+        if ( opt == JOptionPane.CANCEL_OPTION )
+        {
+          return;
+        }
+        properties.setProperty( "ImagePath", path );
+        if ( remoteConfig == null )
+        {
+          return;
+        }
+        Remote remote = remoteConfig.getRemote();
+        remote.resetImageMaps( path );
       }
       else if ( source == aboutItem )
       {
