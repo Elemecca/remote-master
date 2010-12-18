@@ -69,11 +69,11 @@ public class RemoteManager
       if ( files.length == 0 )
       {
         JOptionPane.showMessageDialog( null, "No " + type + " files were found!", "Error", JOptionPane.ERROR_MESSAGE );
-        RMFileChooser chooser = new RMFileChooser( dir );
-        chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
+        RMDirectoryChooser chooser = new RMDirectoryChooser( dir, extension, type );
+        chooser.setAccessory( new ChoiceArea( chooser ) );
         chooser.setDialogTitle( "Choose the directory containing the " + type + " files" );
-        int returnVal = chooser.showOpenDialog( null );
-        if ( returnVal != RMFileChooser.APPROVE_OPTION )
+        int returnVal = chooser.showDialog( null, "OK" );
+        if ( returnVal != RMDirectoryChooser.APPROVE_OPTION )
           return properties.getFileProperty( propName );
         else
           dir = chooser.getSelectedFile();

@@ -8,6 +8,7 @@ Changes for v2.01
 - Implement highlighting (Graham)
 -- Alpha 2 --
 - Create File/Set Directory menu and implement entries to change RDF Path and Image Path (Graham)
+- Use JDirectoryChooser instead of JFileChooser when there are no RDF/Map files found on opening RemoteMaster (Graham)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)

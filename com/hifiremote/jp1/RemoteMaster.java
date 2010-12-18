@@ -68,7 +68,6 @@ import com.hifiremote.jp1.io.IO;
 import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
 import com.hifiremote.jp1.io.JP1USB;
-import com.l2fprod.common.swing.JDirectoryChooser;
 
 /**
  * Description of the Class.
@@ -1410,48 +1409,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       dir = dir.getParentFile();
     }
     
-    JDirectoryChooser chooser = new JDirectoryChooser( dir )
-    { 
-      FilenameFilter filter = new FilenameFilter()
-      {
-        @Override
-        public boolean accept( File dir, String name )
-        {
-          int dot = name.lastIndexOf( '.' );
-          if ( dot < 0 )
-          {
-            return false;
-          }
-          return name.substring( dot ).toLowerCase().equals( ".rdf" );
-        }
-      };
-      
-      @Override
-      public void approveSelection() 
-      {
-        File[] files = getSelectedFile().listFiles( filter );
-        if ( files.length == 0 )
-        { 
-          JOptionPane.showMessageDialog( null, 
-              "There are no RDF files in this directory.  Please choose another.",
-              "Error", JOptionPane.ERROR_MESSAGE );
-          return; 
-        } 
-        else
-        {
-          super.approveSelection();
-        }
-      } 
-    }; 
-
-    chooser.setDialogTitle( "Select Directory for RDF Files" );
-    if ( chooser.showDialog( this, "OK" ) == JDirectoryChooser.APPROVE_OPTION )
+    RMDirectoryChooser chooser = new RMDirectoryChooser( dir, ".rdf", "RDF" );
+    chooser.setAccessory( new ChoiceArea( chooser ) );
+    chooser.setDialogTitle( "Select RDF Directory" );
+    if ( chooser.showDialog( this, "OK" ) == RMDirectoryChooser.APPROVE_OPTION )
     {
       result = chooser.getSelectedFile();
     }
     return result;
   }
-  
+
   private File getMapPathChoice()
   {
     File result = null;
@@ -1465,42 +1432,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       dir = dir.getParentFile();
     }
     
-    JDirectoryChooser chooser = new JDirectoryChooser( dir )
-    { 
-      FilenameFilter filter = new FilenameFilter()
-      {
-        @Override
-        public boolean accept( File dir, String name )
-        {
-          int dot = name.lastIndexOf( '.' );
-          if ( dot < 0 )
-          {
-            return false;
-          }
-          return name.substring( dot ).toLowerCase().equals( ".map" );
-        }
-      };
-      
-      @Override
-      public void approveSelection() 
-      {
-        File[] files = getSelectedFile().listFiles( filter );
-        if ( files.length == 0 )
-        { 
-          JOptionPane.showMessageDialog( null, 
-              "There are no Map and Image files in this directory.  Please choose another.",
-              "Error", JOptionPane.ERROR_MESSAGE );
-          return; 
-        } 
-        else
-        {
-          super.approveSelection();
-        }
-      } 
-    }; 
-
-    chooser.setDialogTitle( "Select Directory for Map Files" );
-    if ( chooser.showDialog( this, "OK" ) == JDirectoryChooser.APPROVE_OPTION )
+    RMDirectoryChooser chooser = new RMDirectoryChooser( dir, ".map", "Map and Image" );
+    chooser.setAccessory( new ChoiceArea( chooser ) );
+    chooser.setDialogTitle( "Select Map and Image Directory" );
+    if ( chooser.showDialog( this, "OK" ) == RMDirectoryChooser.APPROVE_OPTION )
     {
       result = chooser.getSelectedFile();
     }
