@@ -88,7 +88,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.01 alpha";
+  public final static String version = "v2.01 alpha 2";
 
   /** The dir. */
   private File dir = null;
@@ -1792,6 +1792,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         Container mainPanel = getContentPane();
         mainPanel.remove( toolBar );
         toolBar = new JToolBar();
+        toolBar.setFloatable( false );
         createToolbar();
         mainPanel.add( toolBar, BorderLayout.PAGE_START );
         mainPanel.validate();
