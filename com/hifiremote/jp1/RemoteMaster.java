@@ -98,6 +98,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
+  
+  private JToolBar toolBar = null;
 
   private RMAction newAction = null;
   private RMAction newUpgradeAction = null;
@@ -149,7 +151,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The look and feel items. */
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
   
-  private JCheckBoxMenuItem highlightItem = null;
+  protected JCheckBoxMenuItem highlightItem = null;
 
   // Help menu items
   private JMenuItem readmeItem = null;
@@ -747,10 +749,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     super( "RM IR", prefs );
     dir = properties.getFileProperty( "IRPath", workDir );
 
-    JToolBar toolBar = new JToolBar();
+    toolBar = new JToolBar();
     toolBar.setFloatable( false );
-
-    createMenus( toolBar );
+    createMenus();
+    createToolbar();
 
     setDefaultCloseOperation( DISPOSE_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
@@ -1000,7 +1002,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /**
    * Description of the Method.
    */
-  private void createMenus( JToolBar toolBar )
+  private void createMenus()
   {
     JMenuBar menuBar = new JMenuBar();
     setJMenuBar( menuBar );
@@ -1015,19 +1017,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     newAction = new RMAction( "Remote Image...", "NEW", createIcon( "RMNew24" ), "Create new file", KeyEvent.VK_R );
     newMenu.add( newAction ).setIcon( null );
-    toolBar.add( newAction );
 
     newUpgradeAction = new RMAction( "Device Upgrade", "NEWDEVICE", null, "Create new Device Upgrade", KeyEvent.VK_D );
     newMenu.add( newUpgradeAction );
 
     openAction = new RMAction( "Open...", "OPEN", createIcon( "RMOpen24" ), "Open a file", KeyEvent.VK_O );
     menu.add( openAction ).setIcon( null );
-    toolBar.add( openAction );
 
     saveAction = new RMAction( "Save", "SAVE", createIcon( "Save24" ), "Save to file", KeyEvent.VK_S );
     saveAction.setEnabled( false );
     menu.add( saveAction ).setIcon( null );
-    toolBar.add( saveAction );
 
     saveAsAction = new RMAction( "Save as...", "SAVEAS", createIcon( "SaveAs24" ), "Save to a different file",
         KeyEvent.VK_A );
@@ -1035,7 +1034,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     JMenuItem menuItem = menu.add( saveAsAction );
     menuItem.setDisplayedMnemonicIndex( 5 );
     menuItem.setIcon( null );
-    toolBar.add( saveAsAction );
 
     // revertItem = new JMenuItem( "Revert to saved" );
     // revertItem.setMnemonic( KeyEvent.VK_R );
@@ -1059,7 +1057,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menuSetDirectory.add( mapPathItem );
     
     menu.addSeparator();
-    toolBar.addSeparator();
 
     recentFiles = new JMenu( "Recent" );
     menu.add( recentFiles );
@@ -1230,27 +1227,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         "Download from the attached remote", KeyEvent.VK_D );
     downloadAction.setEnabled( !interfaces.isEmpty() );
     menu.add( downloadAction ).setIcon( null );
-    toolBar.add( downloadAction );
 
     uploadAction = new RMAction( "Upload to Remote", "UPLOAD", createIcon( "Export24" ),
         "Upload to the attached remote", KeyEvent.VK_U );
     uploadAction.setEnabled( false );
     menu.add( uploadAction ).setIcon( null );
-    toolBar.add( uploadAction );
 
-    toolBar.addSeparator();
     openRdfAction = new RMAction( "Open RDF...", "OPENRDF", createIcon( "RMOpenRDF24" ), "Open RDF to view or edit",
         null );
     openRdfAction.setEnabled( false );
-    toolBar.add( openRdfAction );
 
     codesAction = new RMAction( "Code Selector...", "OPENCODES", createIcon( "RMCodes24" ), "Open Code Selector", null );
     codesAction.setEnabled( false );
-    toolBar.add( codesAction );
 
     highlightAction = new RMAction( "Highlight...", "HIGHLIGHT", createIcon( "RMHighlight24" ), "Select highlight color", null );
     highlightAction.setEnabled( false );
-    toolBar.add( highlightAction );
     
     uploadWavItem = new JMenuItem( "Create WAV", KeyEvent.VK_W );
     uploadWavItem.setEnabled( false );
@@ -1362,6 +1353,24 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     aboutItem.addActionListener( this );
     menu.add( aboutItem );
   }
+  
+  private void createToolbar()
+  {
+    toolBar.add( newAction );
+    toolBar.add( openAction );
+    toolBar.add( saveAction );
+    toolBar.add( saveAsAction );
+    toolBar.addSeparator();
+    toolBar.add( downloadAction );
+    toolBar.add( uploadAction );
+    toolBar.addSeparator();
+    toolBar.add( openRdfAction );
+    toolBar.add( codesAction );
+    if ( highlightItem.isSelected() )
+    {
+      toolBar.add( highlightAction );
+    }
+  }
 
   /**
    * Gets the fileChooser attribute of the RemoteMaster object.
@@ -1400,21 +1409,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     File result = null;
     File dir = properties.getFileProperty( "RDFPath" );
-    if ( dir == null )
-    {
-      dir = new File( System.getProperty( "user.dir" ), "RDF" );
-    }
-    while ( !dir.exists() || !dir.isDirectory() )
-    {
-      dir = dir.getParentFile();
-    }
-    
     RMDirectoryChooser chooser = new RMDirectoryChooser( dir, ".rdf", "RDF" );
     chooser.setAccessory( new ChoiceArea( chooser ) );
     chooser.setDialogTitle( "Select RDF Directory" );
     if ( chooser.showDialog( this, "OK" ) == RMDirectoryChooser.APPROVE_OPTION )
     {
       result = chooser.getSelectedFile();
+      if ( result.equals( dir ) )
+      {
+        result = null;  // Not changed
+      }
     }
     return result;
   }
@@ -1423,21 +1427,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     File result = null;
     File dir = properties.getFileProperty( "ImagePath" );
-    if ( dir == null )
-    {
-      dir = new File( System.getProperty( "user.dir" ), "Images" );
-    }
-    while ( !dir.exists() || !dir.isDirectory() )
-    {
-      dir = dir.getParentFile();
-    }
-    
     RMDirectoryChooser chooser = new RMDirectoryChooser( dir, ".map", "Map and Image" );
     chooser.setAccessory( new ChoiceArea( chooser ) );
     chooser.setDialogTitle( "Select Map and Image Directory" );
     if ( chooser.showDialog( this, "OK" ) == RMDirectoryChooser.APPROVE_OPTION )
     {
       result = chooser.getSelectedFile();
+      if ( result.equals( dir ) )
+      {
+        result = null;  // Not changed
+      }
     }
     return result;
   }
@@ -1778,6 +1777,24 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == highlightItem )
       {
         properties.setProperty( "highlighting", Boolean.toString( highlightItem.isSelected() ) );
+        if ( currentPanel instanceof RMTablePanel< ? > )
+        {
+          RMTablePanel< ? > panel = ( RMTablePanel< ? > )currentPanel;
+          panel.getModel().fireTableStructureChanged();
+        }
+        else if ( currentPanel == generalPanel )
+        {
+          generalPanel.getDeviceButtonTableModel().fireTableStructureChanged();
+          generalPanel.getSettingModel().fireTableStructureChanged();
+        }
+        currentPanel.set( remoteConfig );
+        
+        Container mainPanel = getContentPane();
+        mainPanel.remove( toolBar );
+        toolBar = new JToolBar();
+        createToolbar();
+        mainPanel.add( toolBar, BorderLayout.PAGE_START );
+        mainPanel.validate();
       }
       else if ( source == rdfPathItem )
       {

@@ -68,12 +68,16 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public int getColumnCount()
   {
-    int count = 9;
+    int count = 7;
 
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
       if ( remote.getDeviceUpgradeAddress() != null )
+      {
+        count += 2;
+      }
+      if ( remoteConfig.allowHighlighting() )
       {
         count += 2;
       }

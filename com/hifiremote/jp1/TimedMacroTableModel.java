@@ -72,7 +72,12 @@ public class TimedMacroTableModel extends JP1TableModel< TimedMacro >
   @Override
   public int getColumnCount()
   {
-    return colNames.length;
+    int count = colNames.length - 1;
+    if ( remoteConfig != null && remoteConfig.allowHighlighting() )
+    {
+      ++count;
+    }
+    return count;
   }
   
   public TableCellEditor getColumnEditor( int col )

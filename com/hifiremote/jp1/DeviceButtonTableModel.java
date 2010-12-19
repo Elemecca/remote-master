@@ -109,7 +109,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   public int getColumnCount()
   {
-    int count = 6;
+    int count = 5;
 
     if ( remoteConfig != null )
     {
@@ -123,7 +123,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       {
         ++count;
       }
+      if ( remoteConfig.allowHighlighting() )
+      {
+        ++count;
+      }
     }
+    
     return count;
   }
 
@@ -133,13 +138,18 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   private int getEffectiveColumn( int col )
   {
-    if ( col == getColumnCount() - 1 )
+    if ( remoteConfig != null )
     {
-      return 7;
-    }
-    if ( remoteConfig != null && remoteConfig.getRemote().getDeviceLabels() == null && col == 5 )
-    {
-      return 6;
+      Remote remote = remoteConfig.getRemote();
+      if ( remote.getDeviceLabels() == null && col >= 5 )
+      {
+        col++;
+      }
+      SoftDevices softDevices = remote.getSoftDevices();
+      if ( ( softDevices == null || !softDevices.usesSequence() ) && col >= 6 )
+      {
+        col++;
+      }
     }
     return col;
   }

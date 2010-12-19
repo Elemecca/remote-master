@@ -516,13 +516,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       public void actionPerformed( ActionEvent e )
       {
         String name = e.getActionCommand();
+        String extension = ( name == "RDF" ) ? ".rdf" : ".map";
         File path = properties.getFileProperty( name + "Path" );
-
-        RMFileChooser chooser = new RMFileChooser( path );
-        chooser.setFileSelectionMode( RMFileChooser.DIRECTORIES_ONLY );
+        RMDirectoryChooser chooser = new RMDirectoryChooser( path, extension, name );
+        chooser.setAccessory( new ChoiceArea( chooser ) );
         chooser.setDialogTitle( "Choose the directory containing the " + name + "s" );
-        int returnVal = chooser.showOpenDialog( null );
-        if ( returnVal == RMFileChooser.APPROVE_OPTION )
+        int returnVal = chooser.showDialog( me, "OK" );
+        if ( returnVal == RMDirectoryChooser.APPROVE_OPTION )
         {
           File newPath = chooser.getSelectedFile();
           properties.setProperty( name + "Path", newPath );

@@ -342,6 +342,11 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     return settingTable;
   }
 
+  public SettingsTableModel getSettingModel()
+  {
+    return settingModel;
+  }
+
   public DeviceUpgradeEditor getDeviceUpgradeEditor()
   {
     return editor;

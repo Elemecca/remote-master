@@ -2883,6 +2883,11 @@ public class RemoteConfiguration
     FavScanDialog.reset();
     LearnedSignalDialog.reset();
   }
+  
+  public boolean allowHighlighting()
+  {
+    return owner.highlightItem.isSelected();
+  }
 
   /** The notes. */
   private String notes = null;

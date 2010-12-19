@@ -54,7 +54,12 @@ public class MacroTableModel extends JP1TableModel< Macro >
    */
   public int getColumnCount()
   {
-    return colNames.length;
+    int count = colNames.length - 1;
+    if ( remoteConfig != null && remoteConfig.allowHighlighting() )
+    {
+      ++count;
+    }
+    return count;
   }
 
   /** The Constant colNames. */

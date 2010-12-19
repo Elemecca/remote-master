@@ -99,7 +99,12 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public int getColumnCount()
   {
-    return colNames.length;
+    int count = colNames.length - 1;
+    if ( remoteConfig != null && remoteConfig.allowHighlighting() )
+    {
+      ++count;
+    }
+    return count;
   }
 
   @Override

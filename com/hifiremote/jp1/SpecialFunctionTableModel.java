@@ -58,7 +58,12 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
    */
   public int getColumnCount()
   {
-    return colNames.length;
+    int count = colNames.length - 1;
+    if ( remoteConfig != null && remoteConfig.allowHighlighting() )
+    {
+      ++count;
+    }
+    return count;
   }
 
   /** The col names. */
