@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
@@ -148,11 +149,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The upload wav item. */
   private JMenuItem uploadWavItem = null;
 
+  // Options menu items
   /** The look and feel items. */
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
   
   protected JCheckBoxMenuItem highlightItem = null;
 
+  // Advanced menu items
+  private JMenuItem cleanUpperMemoryItem = null;
+  
+  private JMenuItem initializeTo00Item = null; 
+  
+  private JMenuItem initializeToFFItem = null;
+  
   // Help menu items
   private JMenuItem readmeItem = null;
 
@@ -334,7 +343,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           remote.load();
           ProtocolManager.getProtocolManager().reset();
           remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
-          remoteConfig.initializeSetup();
+          remoteConfig.initializeSetup( 0 );
           remoteConfig.updateImage();
           remoteConfig.setDateIndicator();
           remoteConfig.setSavedData();
@@ -342,6 +351,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
           openRdfAction.setEnabled( true );
+          cleanUpperMemoryItem.setEnabled( true );
+          initializeTo00Item.setEnabled( !interfaces.isEmpty() );
+          initializeToFFItem.setEnabled( !interfaces.isEmpty() );
           uploadAction.setEnabled( !interfaces.isEmpty() );
         }
         else if ( command.equals( "NEWDEVICE" ) )
@@ -500,6 +512,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
           openRdfAction.setEnabled( true );
+          cleanUpperMemoryItem.setEnabled( true );
+          initializeTo00Item.setEnabled( true );
+          initializeToFFItem.setEnabled( true );
           uploadAction.setEnabled( true );
           update();
         }
@@ -520,80 +535,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             return;
           }
-          IO io = getOpenInterface();
-          if ( io == null )
-          {
-            JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
-            return;
-          }
-          String sig = io.getRemoteSignature();
-          if ( !sig.equals( remote.getSignature() ) )
-          {
-            Object[] options =
-            {
-                "Upload to the remote", "Cancel the upload"
-            };
-            int rc = JOptionPane
-                .showOptionDialog(
-                    RemoteMaster.this,
-                    "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
-                        + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
-                        + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
-                        + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
-                        + "safe to upload to a remote when the signatures do not match.\n\n"
-                        + "How would you like to proceed?", "Upload Signature Mismatch", JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
-            if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
-            {
-              io.closeRemote();
-              return;
-            }
-          }
-
-          AutoClockSet autoClockSet = remote.getAutoClockSet();
-          short[] data = remoteConfig.getData();
-          if ( autoClockSet != null )
-          {
-            autoClockSet.saveTimeBytes( data );
-            autoClockSet.setTimeBytes( data );
-            remoteConfig.updateCheckSums();
-          }
-
-          int rc = io.writeRemote( remote.getBaseAddress(), data );
-
-          if ( rc != data.length )
-          {
-            io.closeRemote();
-            JOptionPane.showMessageDialog( RemoteMaster.this, "writeRemote returned " + rc );
-            return;
-          }
-          if ( verifyUploadItem.isSelected() )
-          {
-            short[] readBack = new short[ data.length ];
-            rc = io.readRemote( remote.getBaseAddress(), readBack );
-            io.closeRemote();
-            if ( rc != data.length )
-            {
-              JOptionPane.showMessageDialog( RemoteMaster.this, "Upload verify failed: read back " + rc
-                  + " byte, but expected " + data.length );
-
-            }
-            else if ( !Hex.equals( data, readBack ) )
-            {
-              JOptionPane.showMessageDialog( RemoteMaster.this,
-                  "Upload verify failed: data read back doesn't match data written." );
-            }
-          }
-          else
-          {
-            io.closeRemote();
-            JOptionPane.showMessageDialog( RemoteMaster.this, "Upload complete!" );
-          }
-          if ( autoClockSet != null )
-          {
-            autoClockSet.restoreTimeBytes( data );
-            remoteConfig.updateCheckSums();
-          }
+          
+          uploadToRemote( remoteConfig.getData(), true );
         }
         else if ( command == "OPENRDF" )
         {
@@ -665,6 +608,106 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         ex.printStackTrace( System.err );
       }
     }
+  }
+  
+  public void uploadToRemote( short[] data, boolean allowClockSet )
+  {
+    Remote remote = remoteConfig.getRemote();
+    IO io = getOpenInterface();
+    String sig = null;
+    if ( io != null )
+    {
+      sig = io.getRemoteSignature();
+    }
+    if ( sig == null )
+    {
+      JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
+      return;
+    }
+    
+    if ( !sig.equals( remote.getSignature() ) )
+    {
+      Object[] options =
+      {
+          "Upload to the remote", "Cancel the upload"
+      };
+      int rc = JOptionPane
+          .showOptionDialog(
+              RemoteMaster.this,
+              "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
+                  + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
+                  + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
+                  + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
+                  + "safe to upload to a remote when the signatures do not match.\n\n"
+                  + "How would you like to proceed?", "Upload Signature Mismatch", JOptionPane.DEFAULT_OPTION,
+              JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
+      if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
+      {
+        io.closeRemote();
+        return;
+      }
+    }
+
+    AutoClockSet autoClockSet = remote.getAutoClockSet();
+    if ( allowClockSet && autoClockSet != null )
+    {
+      autoClockSet.saveTimeBytes( data );
+      autoClockSet.setTimeBytes( data );
+      remoteConfig.updateCheckSums();
+    }
+
+    int rc = io.writeRemote( remote.getBaseAddress(), data );
+
+    if ( rc != data.length )
+    {
+      io.closeRemote();
+      JOptionPane.showMessageDialog( RemoteMaster.this, "writeRemote returned " + rc );
+      return;
+    }
+    if ( verifyUploadItem.isSelected() )
+    {
+      short[] readBack = new short[ data.length ];
+      rc = io.readRemote( remote.getBaseAddress(), readBack );
+      io.closeRemote();
+      if ( rc != data.length )
+      {
+        JOptionPane.showMessageDialog( RemoteMaster.this, "Upload verify failed: read back " + rc
+            + " byte, but expected " + data.length );
+
+      }
+      else if ( !Hex.equals( data, readBack ) )
+      {
+        JOptionPane.showMessageDialog( RemoteMaster.this,
+            "Upload verify failed: data read back doesn't match data written." );
+      }
+    }
+    else
+    {
+      io.closeRemote();
+      JOptionPane.showMessageDialog( RemoteMaster.this, "Upload complete!" );
+    }
+    if ( allowClockSet && autoClockSet != null )
+    {
+      autoClockSet.restoreTimeBytes( data );
+      remoteConfig.updateCheckSums();
+    }
+  }
+  
+  public short[] getInitializationData( int value )
+  {
+    short[] data = null;
+    String title = "Initialize EEPROM Area";
+    String message = "This will fill your remote's EEPROM with $" + Hex.asString( value ) + "\n\n" +
+                     "Doing so will likely cause the remote to stop working until you\n" +
+                     "perform a hard reset.  Are you sure you want to do this?\n" +
+                     "(Make sure your current configuration is saved before proceeding.)";
+    if ( JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, 
+        JOptionPane.WARNING_MESSAGE ) == JOptionPane.YES_OPTION )
+    {
+      data = new short[ remoteConfig.getRemote().getEepromSize() ];
+      Arrays.fill( data, 0, data.length, ( short )value );
+    }
+    return data;
   }
   
   private Highlight getTableRow( JP1Table table, int row )
@@ -1313,6 +1356,27 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       item.addActionListener( al );
     }
+    
+    menu = new JMenu( "Advanced");
+    menu.setMnemonic( KeyEvent.VK_A );
+    menuBar.add( menu );
+    
+    cleanUpperMemoryItem = new JMenuItem( "Clean Upper Memory...", KeyEvent.VK_C );
+    cleanUpperMemoryItem.setEnabled( false );
+    cleanUpperMemoryItem.addActionListener( this );
+    menu.add( cleanUpperMemoryItem );
+    
+    menu.addSeparator();
+    
+    initializeTo00Item = new JMenuItem( "Initialize to $00", KeyEvent.VK_0 );
+    initializeTo00Item.setEnabled( false );
+    initializeTo00Item.addActionListener( this );
+    menu.add( initializeTo00Item );
+    
+    initializeToFFItem = new JMenuItem( "Initialize to $FF", KeyEvent.VK_F );
+    initializeToFFItem.setEnabled( false );
+    initializeToFFItem.addActionListener( this );
+    menu.add( initializeToFFItem );
 
     menu = new JMenu( "Help" );
     menu.setMnemonic( KeyEvent.VK_H );
@@ -1506,7 +1570,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( ext.equals( ".rmdu" ) || ext.equals( ".rmir" ) )
     {
       updateRecentFiles( file );
-
     }
 
     if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ) )
@@ -1529,7 +1592,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       Remote remote = remotes.get( 0 );
       remote.load();
       remoteConfig = new RemoteConfiguration( remote, this );
-      remoteConfig.initializeSetup();
+      remoteConfig.initializeSetup( 0 );
       remoteConfig.updateImage();
       remoteConfig.setDateIndicator();
       remoteConfig.setSavedData();
@@ -1540,22 +1603,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       saveAsAction.setEnabled( true );
       uploadAction.setEnabled( !interfaces.isEmpty() );
       openRdfAction.setEnabled( true );
+      cleanUpperMemoryItem.setEnabled( true );
+      initializeTo00Item.setEnabled( !interfaces.isEmpty() );
+      initializeToFFItem.setEnabled( !interfaces.isEmpty() );
       return null;
     }
 
-    if ( ext.equals( ".rmir" ) )
-    {
-      saveAction.setEnabled( true );
-      saveAsAction.setEnabled( true );
-      openRdfAction.setEnabled( true );
-    }
-    else
-    // ext.equals( ".ir" )
-    {
-      saveAction.setEnabled( false );
-      saveAsAction.setEnabled( true );
-      openRdfAction.setEnabled( true );
-    }
+    // ext.equals( ".rmir" ) || ext.equals( ".ir" )
+    saveAction.setEnabled( ext.equals( ".rmir" ) );
+    saveAsAction.setEnabled( true );
+    openRdfAction.setEnabled( true );
+    cleanUpperMemoryItem.setEnabled( true );
+    initializeTo00Item.setEnabled( !interfaces.isEmpty() );
+    initializeToFFItem.setEnabled( !interfaces.isEmpty() );
     uploadAction.setEnabled( !interfaces.isEmpty() );
     remoteConfig = new RemoteConfiguration( file, this );
     update();
@@ -1796,6 +1856,109 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         createToolbar();
         mainPanel.add( toolBar, BorderLayout.PAGE_START );
         mainPanel.validate();
+      }
+      else if ( source == cleanUpperMemoryItem )
+      {
+        String title = "Clean Upper Memory";
+        String message = "Do you want to retain all data in the first $100 (i.e. 256) bytes of memory?\n\n"
+                       + "If you answer No then the memory will be set as if your present setup was\n"
+                       + "installed on a reset state created in accordance with the RDF alone.  This\n"
+                       + "is the cleanest option but most RDFs at present do not create a true factory\n"
+                       + "reset state.\n\n"
+                       + "If you answer Yes then any data in the first $100 bytes not set by the RDF\n"
+                       + "will be retained.  This should include any data set by a factory reset that\n"
+                       + "is missing from the RDF, but it may also include other data that could be\n"
+                       + "usefully cleaned.\n\n"
+                       + "Please also be aware that cleaning the memory will destroy most extenders, as\n"
+                       + "they place at least part of their code in the memory that will be cleared.\n"
+                       + "Press Cancel to exit without cleaning the memory.";   
+        int result = JOptionPane.showConfirmDialog( this, message, title, 
+            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+        if ( result == JOptionPane.CANCEL_OPTION )
+        {
+          return;
+        }
+        
+        // Save the data that is stored only in the remote image
+        Remote remote = remoteConfig.getRemote();
+        DeviceButton[] devBtns = remote.getDeviceButtons();
+        int[] devBtnData = new int[ 2*devBtns.length ];
+        DeviceLabels devLabels = remote.getDeviceLabels();
+        String[] devLabelText = new String[ 2*devBtns.length ];
+        SoftDevices softDevices = remote.getSoftDevices();
+        int[] softSequence = new int[ devBtns.length + 1 ];
+        Setting[] settings = remote.getSettings();
+        int[] settingValues = new int[ settings.length ];
+        short[] data = remoteConfig.getData();
+        for ( int i = 0; i < devBtns.length; i++ )
+        {
+          devBtnData[ 2*i ] = devBtns[ i ].getDeviceSlot( data );
+          devBtnData[ 2*i + 1 ] = devBtns[ i ].getDeviceGroup( data );
+          if ( devLabels != null )
+          {
+            devLabelText[ 2*i ] = devLabels.getText( data, i );
+            devLabelText[ 2*i + 1 ] = devLabels.getDefaultText( data, i );
+          }
+          if ( softDevices != null )
+          {
+            softSequence[ i ] = softDevices.getSequenceIndex( i, data );
+          }            
+        }
+        if ( softDevices != null )
+        {
+          softSequence[ devBtns.length ] = softDevices.getFilledSlotCount( data );
+        }
+        for ( int i = 0; i < settings.length; i++ )
+        {
+          settingValues[ i ] = settings[ i ].getValue();
+        }
+        remote.setFixedData( remote.getRawFixedData() );
+        
+        // Create clean reset state
+        remoteConfig.initializeSetup( result == JOptionPane.YES_OPTION ? 0x100 : 0 );
+        
+        // Restore the data that is stored only in the remote image
+        for ( int i = 0; i < devBtns.length; i++ )
+        {
+          devBtns[ i ].setDeviceSlot( devBtnData[ 2*i ], data );
+          devBtns[ i ].setDeviceGroup( ( short )devBtnData[ 2*i + 1 ], data );
+          if ( devLabels != null )
+          {
+            devLabels.setText( devLabelText[ 2*i ], i, data );
+            devLabels.setDefaultText( devLabelText[ 2*i + 1 ], i, data );
+          }
+          if ( softDevices != null )
+          {
+            softDevices.setSequenceIndex( softSequence[ i ], i, data );
+          } 
+        }
+        if ( softDevices != null )
+        {
+           softDevices.setFilledSlotCount( softSequence[ devBtns.length ], data );
+        }
+        for ( int i = 0; i < settings.length; i++ )
+        {
+          settings[ i ].setValue( settingValues[ i ] );
+        }
+        
+        // Update
+        if ( result == JOptionPane.NO_OPTION )
+        {
+          // The state has now been constructed solely from the RDF, so set date indicator
+          remoteConfig.setDateIndicator();
+        }
+        remoteConfig.updateImage();
+        update();
+      }
+      else if ( source == initializeTo00Item )
+      {
+        short[] data = getInitializationData( 0 );
+        uploadToRemote( data, false );
+      }
+      else if ( source == initializeToFFItem )
+      {
+        short[] data = getInitializationData( 0xFF );
+        uploadToRemote( data, false );
       }
       else if ( source == rdfPathItem )
       {

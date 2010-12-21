@@ -11,6 +11,8 @@ Changes for v2.01
 - Use JDirectoryChooser instead of JFileChooser when there are no RDF/Map files found on opening RemoteMaster (Graham)
 - Use JDirectoryChooser instead of JFileChooser in Options/Folders menu of KeyMapMaster (Graham)
 - Make highlighting an option, defaulting to off (Graham)
+-- Alpha 3 --
+- Create Advanced menu, add items Clean Upper Memory, Initialize to $00 and Initialize to $FF and implement them (Graham)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)

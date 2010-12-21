@@ -2788,10 +2788,10 @@ public class RemoteConfiguration
     }
   }
 
-  public void initializeSetup()
+  public void initializeSetup( int startAddr )
   {
     // Fill buffer with 0xFF
-    Arrays.fill( data, ( short )0xFF );
+    Arrays.fill( data, startAddr, data.length, ( short )0xFF );
 
     // Write signature to buffer
     int start = remote.getInterfaceType().equals( "JP1" ) ? 2 : 0;
@@ -2837,7 +2837,7 @@ public class RemoteConfiguration
     // Zero the settings bytes for non-inverted settings
     for ( Setting setting : remote.getSettings() )
     {
-      if ( !setting.isInverted() )
+      if ( !setting.isInverted() && ( setting.getByteAddress() >= startAddr ) )
       {
         data[ setting.getByteAddress() ] = 0;
       }

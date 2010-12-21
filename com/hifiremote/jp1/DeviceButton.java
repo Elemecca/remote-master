@@ -115,7 +115,6 @@ public class DeviceButton implements Highlight
     }
   }
 
-
   /**
    * Gets the setup code.
    * 
@@ -163,6 +162,12 @@ public class DeviceButton implements Highlight
   public int getDeviceSlot( short[] data )
   {
     return ( data[ highAddress ] << 8 ) | data[ lowAddress ];
+  }
+  
+  public void setDeviceSlot( int value, short[] data )
+  {
+    data[ highAddress ] = ( short )( value >> 8 );
+    data[ lowAddress ] = ( short )( value & 0xFF );
   }
   
   public void zeroDeviceSlot( short[] data )
