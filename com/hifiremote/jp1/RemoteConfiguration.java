@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -55,10 +56,19 @@ public class RemoteConfiguration
     }
     else
     {
-      importIR( pr );
+      importIR( pr, true );
     }
     in.close();
     updateImage();
+  }
+  
+  public RemoteConfiguration( String str, RemoteMaster rm ) throws IOException
+  {
+    owner = rm;
+    BufferedReader in = new BufferedReader( new StringReader( str ) );
+    PropertyReader pr = new PropertyReader( in );
+    importIR( pr, false );
+    in.close();
   }
 
   /**
@@ -231,11 +241,12 @@ public class RemoteConfiguration
 
     if ( remote == null )
     {      
-      RemoteManager rm = RemoteManager.getRemoteManager();
-//      See comment in Hex.getRemoteSignature( short[] ) for why the line below was not safe      
+//      See comment in Hex.getRemoteSignature( short[] ) for why the lines below were not safe      
 //      String signature = new String( sig );
+//      String sig = io.getRemoteSignature();
       String signature = Hex.getRemoteSignature( data );
       String signature2 = null;
+      RemoteManager rm = RemoteManager.getRemoteManager();
       List< Remote > remotes = null;
       for ( int i = 0; i < 5; i++ )
       {
@@ -244,51 +255,10 @@ public class RemoteConfiguration
         if ( !remotes.isEmpty() ) break;
       }
       signature = signature2;
-      
-      // Filter on matching eeprom size
-      for ( Iterator< Remote > it = remotes.iterator(); it.hasNext(); )
+      remote = filterRemotes( remotes, signature, eepromSize, data );
+      if ( remote == null )
       {
-        if ( it.next().getEepromSize() != eepromSize )
-        {
-            it.remove();
-        }
-      }        
-      if ( remotes == null || remotes.isEmpty() )
-      {
-        String message = "No remote found with signature starting " + signature
-          + " and EEPROM size " + ( eepromSize >> 10 ) + "k";
-        JOptionPane.showMessageDialog( null, message, "Unknown remote", JOptionPane.ERROR_MESSAGE );
-        throw new IllegalArgumentException();
-      }
-      else if ( remotes.size() == 1 )
-      {
-        remote = remotes.get( 0 );
-      }
-      else
-      {
-        // Filter on matching fixed data
-        Remote[] choices = FixedData.filter( remotes, data );
-        if ( choices.length == 0 )
-        {
-          // None of the remotes match on fixed data, so offer whole list
-          choices = remotes.toArray( choices );
-        }
-        if ( choices.length == 1 )
-        {
-          remote = choices[ 0 ];
-        }
-        else
-        {
-          String message = "The file you are loading is for a remote with signature \"" + signature
-          + "\".\nThere are multiple remotes with that signature.  Please choose the best match from the list below:";
-
-          remote = ( Remote )JOptionPane.showInputDialog( null, message, "Unknown Remote", JOptionPane.ERROR_MESSAGE,
-              null, choices, choices[ 0 ] );
-          if ( remote == null )
-          {
-            throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
-          }
-        }
+        throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
       }
     }
     remote.load();
@@ -336,6 +306,56 @@ public class RemoteConfiguration
 
     return property;
   }
+  
+  public static Remote filterRemotes( List< Remote > remotes, String signature, int eepromSize, short[] data )
+  {
+    Remote remote = null;
+    
+    // Filter on matching eeprom size
+    for ( Iterator< Remote > it = remotes.iterator(); it.hasNext(); )
+    {
+      if ( it.next().getEepromSize() != eepromSize )
+      {
+          it.remove();
+      }
+    }        
+    if ( remotes == null || remotes.isEmpty() )
+    {
+      String message = "No remote found with signature starting " + signature
+        + " and EEPROM size " + ( eepromSize >> 10 ) + "k";
+      JOptionPane.showMessageDialog( null, message, "Unknown remote", JOptionPane.ERROR_MESSAGE );
+      return null;
+    }
+    else if ( remotes.size() == 1 )
+    {
+      remote = remotes.get( 0 );
+    }
+    else
+    {
+      // Filter on matching fixed data
+      Remote[] choices = new Remote[ 0 ];
+      choices = FixedData.filter( remotes, data );
+      if ( choices.length == 0 )
+      {
+        // Either not filtered on, or none of the remotes match on, fixed data so offer whole list
+        choices = remotes.toArray( choices );
+      }
+      if ( choices.length == 1 )
+      {
+        remote = choices[ 0 ];
+      }
+      else
+      {
+        String message = "The file you are loading is for a remote with signature \"" + signature
+        + "\".\nThere are multiple remotes with that signature.  Please choose the best match from the list below:";
+
+        remote = ( Remote )JOptionPane.showInputDialog( null, message, "Unknown Remote", JOptionPane.ERROR_MESSAGE,
+            null, choices, choices[ 0 ] );
+      }
+    }
+    return remote;
+  }
+  
 
   /**
    * Find key move.
@@ -451,7 +471,7 @@ public class RemoteConfiguration
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
-  private void importIR( PropertyReader pr ) throws IOException
+  private void importIR( PropertyReader pr, boolean deleteUsedProts ) throws IOException
   {
     Property property = null;
     if ( pr != null )
@@ -459,7 +479,10 @@ public class RemoteConfiguration
       property = loadBuffer( pr );
     }
 
-    ProtocolManager.getProtocolManager().reset();
+    if ( deleteUsedProts )
+    {
+      ProtocolManager.getProtocolManager().reset();
+    }
     decodeSettings();
     decodeUpgrades();
     List< AdvancedCode > advCodes = decodeAdvancedCodes();
@@ -655,19 +678,22 @@ public class RemoteConfiguration
     }
     migrateKeyMovesToDeviceUpgrades();
 
-    // remove protocol upgrades that are used by device upgrades
-    for ( Iterator< ProtocolUpgrade > it = protocols.iterator(); it.hasNext(); )
+    if ( deleteUsedProts )
     {
-      if ( it.next().isUsed() )
+      // remove protocol upgrades that are used by device upgrades
+      for ( Iterator< ProtocolUpgrade > it = protocols.iterator(); it.hasNext(); )
       {
-        it.remove();
+        if ( it.next().isUsed() )
+        {
+          it.remove();
+        }
       }
-    }
-    
-    // Add the protocol upgrades still remaining to ProtocolManager as manual protocols
-    for ( ProtocolUpgrade pu : protocols )
-    {
-      pu.setManualProtocol( remote );
+
+      // Add the protocol upgrades still remaining to ProtocolManager as manual protocols
+      for ( ProtocolUpgrade pu : protocols )
+      {
+        pu.setManualProtocol( remote );
+      }
     }
 
     // clean up device upgrades that couldn't be imported
@@ -707,6 +733,20 @@ public class RemoteConfiguration
     }
     return index;
   }
+  
+  public void exportIR( File file ) throws IOException
+  {
+    PrintWriter pw = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
+    exportIR( pw );
+  }
+  
+  public String exportIR() throws IOException
+  {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter( sw );
+    exportIR( pw );
+    return sw.toString();
+  }
 
   /**
    * Export ir.
@@ -716,10 +756,9 @@ public class RemoteConfiguration
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
-  public void exportIR( File file ) throws IOException
+  public void exportIR( PrintWriter out ) throws IOException
   {
     updateImage();
-    PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
 
     Hex.print( out, data, remote.getBaseAddress() );
 
@@ -954,7 +993,7 @@ public class RemoteConfiguration
    */
   public void parseData() throws IOException
   {
-    importIR( null );
+    importIR( null, true );
     /*
      * decodeSettings(); decodeUpgrades();
      * 
@@ -2672,6 +2711,11 @@ public class RemoteConfiguration
   {
     return devices;
   }
+  
+  public void setDeviceUpgrades( List< DeviceUpgrade > devices )
+  {
+    this.devices = devices;
+  }
 
   /**
    * Gets the protocol upgrades.
@@ -2681,6 +2725,11 @@ public class RemoteConfiguration
   public List< ProtocolUpgrade > getProtocolUpgrades()
   {
     return protocols;
+  }
+  
+  public void setProtocolUpgrades( List< ProtocolUpgrade > protocols )
+  {
+    this.protocols = protocols;
   }
 
   /**

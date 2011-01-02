@@ -28,6 +28,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
@@ -65,6 +66,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkListener;
 
 import com.hifiremote.LibraryLoader;
+import com.hifiremote.jp1.extinstall.ExtInstall;
+import com.hifiremote.jp1.extinstall.RMExtInstall;
 import com.hifiremote.jp1.io.IO;
 import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
@@ -89,10 +92,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.01 alpha 2";
+  public final static String version = "v2.01 alpha 3";
 
   /** The dir. */
   private File dir = null;
+  
+  private File mergeDir = null;
 
   /** Description of the Field. */
   public File file = null;
@@ -115,6 +120,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The save as item. */
   private RMAction saveAsAction = null;
+  
+  private JMenuItem installExtenderItem = null;
 
   private RMAction openRdfAction = null;
   
@@ -351,6 +358,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
           openRdfAction.setEnabled( true );
+          installExtenderItem.setEnabled( true );
           cleanUpperMemoryItem.setEnabled( true );
           initializeTo00Item.setEnabled( !interfaces.isEmpty() );
           initializeToFFItem.setEnabled( !interfaces.isEmpty() );
@@ -512,6 +520,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           saveAction.setEnabled( false );
           saveAsAction.setEnabled( true );
           openRdfAction.setEnabled( true );
+          installExtenderItem.setEnabled( true );
           cleanUpperMemoryItem.setEnabled( true );
           initializeTo00Item.setEnabled( true );
           initializeToFFItem.setEnabled( true );
@@ -1085,6 +1094,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     menu.addSeparator();
     
+    installExtenderItem = new JMenuItem( "Install Extender..." );
+    installExtenderItem.setMnemonic( KeyEvent.VK_I );
+    installExtenderItem.addActionListener( this );
+    installExtenderItem.setEnabled( false );
+    menu.add( installExtenderItem );
+    
+    menu.addSeparator();
+    
     JMenu menuSetDirectory = new JMenu( "Set Directory" );
     menuSetDirectory.setMnemonic( KeyEvent.VK_D );
     menu.add( menuSetDirectory );
@@ -1455,6 +1472,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     return chooser;
   }
+  
+  public RMFileChooser getExtenderFileChooser()
+  {
+    RMFileChooser chooser = new RMFileChooser( mergeDir == null ? dir : mergeDir );
+    EndingFileFilter irFilter = new EndingFileFilter( "Extender merge files (*.hex)", extenderEndings );
+    chooser.setDialogTitle( "Select the file to merge" );
+    chooser.addChoosableFileFilter( irFilter );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "Other merge files (*.ir, *.txt)", otherMergeEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "All merge files", allMergeEndings ) );
+    chooser.setFileFilter( irFilter );
+
+    return chooser;
+  }
 
   public RMFileChooser getFileSaveChooser( boolean validConfiguration )
   {
@@ -1603,6 +1633,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       saveAsAction.setEnabled( true );
       uploadAction.setEnabled( !interfaces.isEmpty() );
       openRdfAction.setEnabled( true );
+      installExtenderItem.setEnabled( true );
       cleanUpperMemoryItem.setEnabled( true );
       initializeTo00Item.setEnabled( !interfaces.isEmpty() );
       initializeToFFItem.setEnabled( !interfaces.isEmpty() );
@@ -1613,6 +1644,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     saveAction.setEnabled( ext.equals( ".rmir" ) );
     saveAsAction.setEnabled( true );
     openRdfAction.setEnabled( true );
+    installExtenderItem.setEnabled( true );
     cleanUpperMemoryItem.setEnabled( true );
     initializeTo00Item.setEnabled( !interfaces.isEmpty() );
     initializeToFFItem.setEnabled( !interfaces.isEmpty() );
@@ -1622,6 +1654,182 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     setTitleFile( file );
     this.file = file;
     return file;
+  }
+  
+  private void installExtender() throws Exception
+  {
+    String version = ExtInstall.class.getPackage().getImplementationVersion();
+    System.err.print( "Starting Java ExtInstall" );
+    if ( version != null )
+    {
+      System.err.println( ", version " + version );
+    }
+    else
+    {
+      System.err.println();
+    }
+    
+    File file = null;
+    while ( file == null )
+    {
+      RMFileChooser chooser = getExtenderFileChooser();
+      int returnVal = chooser.showOpenDialog( this );
+      if ( returnVal == RMFileChooser.APPROVE_OPTION )
+      {
+        file = chooser.getSelectedFile();
+
+        if ( !file.exists() )
+        {
+          JOptionPane.showMessageDialog( this, file.getName() + " doesn't exist.", "File doesn't exist.",
+              JOptionPane.ERROR_MESSAGE );
+        }
+        else if ( file.isDirectory() )
+        {
+          JOptionPane.showMessageDialog( this, file.getName() + " is a directory.", "File doesn't exist.",
+              JOptionPane.ERROR_MESSAGE );
+        }
+      }
+      else
+      {
+        System.err.println( "ExtInstall cancelled by user.");
+        return;
+      }
+    }
+
+    System.err.println( "Merge file is " + file.getCanonicalPath() + ", last modified "
+        + DateFormat.getInstance().format( new Date( file.lastModified() ) ) );
+
+    mergeDir = file.getParentFile();
+    String[] oldDevBtnNotes = remoteConfig.getDeviceButtonNotes();
+    List< DeviceUpgrade > oldDevUpgrades = remoteConfig.getDeviceUpgrades();
+    List< ProtocolUpgrade > oldProtUpgrades = remoteConfig.getProtocolUpgrades();
+
+    RMExtInstall installer = new RMExtInstall( file.getAbsolutePath(), remoteConfig );
+    installer.install();
+    if ( RMExtInstall.remoteConfig == null )
+    {
+      return;
+    }
+    remoteConfig = RMExtInstall.remoteConfig;
+    String[] newDevBtnNotes = remoteConfig.getDeviceButtonNotes();
+    Remote newRemote = remoteConfig.getRemote();
+    List< DeviceUpgrade > newDevUpgrades = remoteConfig.getDeviceUpgrades();
+    List< ProtocolUpgrade > newProtUpgrades = remoteConfig.getProtocolUpgrades();
+    // Copy the old device button notes, as the installer deletes them.
+    for ( int i = 0; i < Math.min( oldDevBtnNotes.length, newDevBtnNotes.length ); i++ )
+    {
+      newDevBtnNotes[ i ] = oldDevBtnNotes[ i ];
+    }
+    // Before restoring the old device upgrades, update their "remote" property
+    for ( DeviceUpgrade du : oldDevUpgrades )
+    {
+      du.setNewRemote( newRemote );
+    }
+    
+    System.err.println("Restoring .rmir data lost in conversion to .ir format.");
+
+    // The protocol upgrade list of the new configuration still includes those that are used
+    // by device upgrades.  Remove them from both the upgrade list and the list of PIDs
+    // added by the merge.
+    List< Integer > mergeProtUpgradeIDs = installer.getProtUpgradeIDs();
+    for ( Iterator< ProtocolUpgrade > it = newProtUpgrades.iterator(); it.hasNext(); )
+    {
+      ProtocolUpgrade pu = it.next();
+      if ( pu.isUsed() )
+      {
+        mergeProtUpgradeIDs.remove( Integer.valueOf( pu.getPid() ) );
+        it.remove();
+      }
+    }
+
+    // Add any remaining protocol upgrades from the merge to ProtocolManager as manual protocols.
+    // We only do this for upgrades from the merge since ProtocolManager is not reset on the
+    // import from .ir format, so these are the only ones that will be missing.
+    for ( ProtocolUpgrade pu : newProtUpgrades )
+    {
+      if ( mergeProtUpgradeIDs.contains( Integer.valueOf( pu.getPid() ) ) )
+      {
+        pu.setManualProtocol( newRemote );
+      }
+    }   
+    
+    int devCount = 0;
+    int protCount = 0;
+    if ( installer.isExtenderMerge() )
+    {
+      // An extender merge retains all old device and protocol upgrades and inserts its new ones at
+      // the beginning of the lists.  Replace the imported old ones with those from the original
+      // configuration.
+      int start = installer.getDevUpgradeCodes().size();
+      int end = newDevUpgrades.size();
+      devCount = oldDevUpgrades.size();
+      if ( devCount != end - start )
+      {
+        System.err.println( "Error restoring device upgrades: " + ( end - start ) + " removed, " + devCount + " added." );
+      }
+      newDevUpgrades.subList( start, end ).clear();
+      newDevUpgrades.addAll( oldDevUpgrades );
+      
+      start = installer.getProtUpgradeIDs().size();
+      end = newProtUpgrades.size();
+      protCount = oldProtUpgrades.size();
+      if ( protCount != end - start )
+      {
+        System.err.println( "Error restoring protocol upgrades: " + ( end - start ) + " removed, " + protCount + " added." );
+      }
+      newProtUpgrades.subList( start, end ).clear();
+      newProtUpgrades.addAll( oldProtUpgrades );
+    }
+    else
+    {
+      // A non-extender merge replaces any conflicting device and protocol upgrades and adds
+      // new ones at the end of the lists.  Replace the remaining imported old ones with those
+      // from the original configuration.
+      for ( DeviceUpgrade duOld : oldDevUpgrades )
+      {
+        int code = duOld.getHexSetupCodeValue();
+        if ( !installer.getDevUpgradeCodes().contains( code ) )
+        {
+          // This upgrade was not replaced in the merge, so restore it.
+          for ( DeviceUpgrade duNew : newDevUpgrades )
+          {
+            if ( duNew.getHexSetupCodeValue() == code )
+            {
+              int index = newDevUpgrades.indexOf( duNew );
+              newDevUpgrades.set( index, duOld );
+              devCount++;
+            }
+          }
+        }
+      }
+      for ( ProtocolUpgrade puOld : oldProtUpgrades )
+      {
+        int id = puOld.getPid();
+        if ( !installer.getProtUpgradeIDs().contains( id ) )
+        {
+          // This upgrade was not replaced in the merge, so restore it.
+          for ( ProtocolUpgrade puNew : newProtUpgrades )
+          {
+            if ( puNew.getPid() == id )
+            {
+              int index = newProtUpgrades.indexOf( puNew );
+              newProtUpgrades.set( index, puOld );
+              protCount++;
+            }
+          }
+        }
+      }
+    }
+    System.err.println( devCount + " device upgrades restored." );
+    System.err.println( protCount + " protocol upgrades restored." );
+    remoteConfig.setDeviceUpgrades( newDevUpgrades );
+    remoteConfig.setProtocolUpgrades( newProtUpgrades );
+    remoteConfig.updateImage();
+//    remoteConfig.setDateIndicator();
+//    remoteConfig.setSavedData();
+    update();
+    saveAction.setEnabled( false );
+    System.err.println( "ExtInstall merge completed." );
   }
 
   /**
@@ -1821,7 +2029,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     try
     {
       Object source = e.getSource();
-      if ( source == exitItem )
+      if ( source == installExtenderItem )
+      {
+        installExtender();
+      }
+      else if ( source == exitItem )
       {
         dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ) );
       }
@@ -2649,6 +2861,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private final static String[] allEndings =
   {
       ".rmir", ".ir", ".rmdu", ".txt", ".xml"
+  };
+  
+  private final static String[] allMergeEndings =
+  {
+    ".hex", ".ir", ".txt"
+  };
+  
+  private final static String[] extenderEndings =
+  {
+    ".hex"
+  };
+  
+  private final static String[] otherMergeEndings =
+  {
+    ".ir", ".txt"
   };
 
   @Override

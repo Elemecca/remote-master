@@ -47,6 +47,7 @@
                 			<include name="com/l2fprod/common/**/*.*"/>
                 			<exclude name="com/l2fprod/common/demo/**/*.*"/>
                 		</zipfileset>
+                		<zipfileset src="${lib.dir}/ExtInstall.jar" includes="com/**/*.class"/>
                 </jar>
                 <java classpath="RemoteMaster.jar" classname="com.hifiremote.jp1.RemoteMaster" outputproperty="rmversion">
                         <arg value="-version" />

@@ -138,7 +138,9 @@ public class FixedData
     }
     for ( int i = 0; i < data.length; ++i )
     {
-      if ( data[ i ] != buffer[ address + i ] )
+      // For an extender merge file, a buffer value 0x100 means that the value is absent in
+      // the extender hex, which is deemed to be a match.
+      if ( buffer[ address + i ] < 0x100 && data[ i ] != buffer[ address + i ] )
       {
         return false;
       }

@@ -474,6 +474,11 @@ public class DeviceUpgrade implements Highlight
   {
     return remote;
   }
+  
+  public void setNewRemote( Remote newRemote )
+  {
+    remote = newRemote;
+  }
 
   /**
    * Sets the device type alias name.
@@ -1206,6 +1211,12 @@ public class DeviceUpgrade implements Highlight
     rc[ 0 ] = ( short )( temp >> 8 & 0xFF );
     rc[ 1 ] = ( short )( temp & 0xFF );
     return rc;
+  }
+  
+  public int getHexSetupCodeValue()
+  {
+    short[] hexCode = getHexSetupCode();
+    return ( hexCode[ 0 ] << 8 ) + hexCode[ 1 ];
   }
 
   /**

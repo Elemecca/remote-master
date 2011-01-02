@@ -493,6 +493,11 @@ public class Remote implements Comparable< Remote >
     return signature;
   }
 
+  public int getSigAddress()
+  {
+    return sigAddress;
+  }
+
   /**
    * Gets the name.
    * 
@@ -941,6 +946,10 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "BaseAddr" ) )
       {
         baseAddress = RDFReader.parseNumber( value );
+        if ( baseAddress > 0 )
+        {
+          sigAddress = baseAddress;
+        }
       }
       else if ( parm.equals( "EepromSize" ) )
       {
@@ -2888,6 +2897,8 @@ public class Remote implements Comparable< Remote >
 
   /** The signature. */
   private String signature = null;
+  
+  private int sigAddress = 2;
 
   /** The names. */
   private String[] names = new String[ 1 ];
