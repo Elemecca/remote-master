@@ -2211,8 +2211,24 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         String rmTitle = getTitle();
         remoteConfig.setSavedData();
         Remote oldRemote = remoteConfig.getRemote();
+        // Save the setting values
+        Setting[] oldSettings = oldRemote.getSettings();
+        int[] settingValues = new int[ oldSettings.length ];
+        for ( int i = 0; i < oldSettings.length; i++ )
+        {
+          settingValues[ i ] = oldSettings[ i ].getValue();
+        } 
         Remote newRemote = RemoteManager.getRemoteManager().findRemoteByName( oldRemote.getName() );
         remoteConfig.setRemote( newRemote );
+        for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+        {
+          du.setRemote( newRemote );
+        }
+        Setting[] newSettings = newRemote.getSettings();
+        for ( int i = 0; i < Math.min( oldSettings.length, newSettings.length ); i++ )
+        {
+          newSettings[ i ].setValue( settingValues[ i ] );
+        }
         SetupCode.setMax( newRemote.usesTwoBytePID() ? 4095 : 2047 );
         remoteConfig.updateImage();
         RemoteConfiguration.resetDialogs();

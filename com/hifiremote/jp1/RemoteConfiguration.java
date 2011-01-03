@@ -62,9 +62,10 @@ public class RemoteConfiguration
     updateImage();
   }
   
-  public RemoteConfiguration( String str, RemoteMaster rm ) throws IOException
+  public RemoteConfiguration( String str, RemoteMaster rm, Remote remote ) throws IOException
   {
     owner = rm;
+    this.remote = remote;
     BufferedReader in = new BufferedReader( new StringReader( str ) );
     PropertyReader pr = new PropertyReader( in );
     importIR( pr, false );
@@ -255,7 +256,7 @@ public class RemoteConfiguration
         if ( !remotes.isEmpty() ) break;
       }
       signature = signature2;
-      remote = filterRemotes( remotes, signature, eepromSize, data );
+      remote = filterRemotes( remotes, signature, eepromSize, data, true );
       if ( remote == null )
       {
         throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
@@ -307,7 +308,8 @@ public class RemoteConfiguration
     return property;
   }
   
-  public static Remote filterRemotes( List< Remote > remotes, String signature, int eepromSize, short[] data )
+  public static Remote filterRemotes( List< Remote > remotes, String signature, int eepromSize, 
+      short[] data, boolean allowMismatch )
   {
     Remote remote = null;
     
@@ -326,7 +328,7 @@ public class RemoteConfiguration
       JOptionPane.showMessageDialog( null, message, "Unknown remote", JOptionPane.ERROR_MESSAGE );
       return null;
     }
-    else if ( remotes.size() == 1 )
+    else if ( remotes.size() == 1 && allowMismatch )
     {
       remote = remotes.get( 0 );
     }
@@ -337,8 +339,15 @@ public class RemoteConfiguration
       choices = FixedData.filter( remotes, data );
       if ( choices.length == 0 )
       {
-        // Either not filtered on, or none of the remotes match on, fixed data so offer whole list
-        choices = remotes.toArray( choices );
+        if ( allowMismatch )
+        {
+          // Either not filtered on, or none of the remotes match on, fixed data so offer whole list
+          choices = remotes.toArray( choices );
+        }
+        else
+        {
+          return null;
+        }
       }
       if ( choices.length == 1 )
       {

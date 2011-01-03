@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import com.hifiremote.jp1.Remote;
 import com.hifiremote.jp1.RemoteConfiguration;
 import com.hifiremote.jp1.RemoteManager;
@@ -20,6 +22,8 @@ import com.hifiremote.jp1.extinstall.UpgradeItem.Classification;
 public class RMExtInstall extends ExtInstall
 {
   public static RemoteConfiguration remoteConfig;
+  private static String errorMsg = null;
+  private static Remote extenderRemote = null;
   
   public RMExtInstall( String hexName, RemoteConfiguration remoteConfig )
   {
@@ -44,6 +48,7 @@ public class RMExtInstall extends ExtInstall
       AdvList ExtAdv = new AdvList();
       UpgradeList ExtUpgrade = new UpgradeList();
       Rdf ExtRdf = new Rdf();
+      Remote newRemote = null;
       LoadHex( Erl,
                hexName,
                ExtHex,
@@ -55,7 +60,7 @@ public class RMExtInstall extends ExtInstall
       if ( ExtRdf.m_AdvCodeAddr.end < 0 || ExtRdf.m_UpgradeAddr.end < 0 )
       {
         remoteConfig = null;
-        System.err.println( "ExtInstall aborting due to error in merge data or its RDF." );
+        showError();
         return;
       }
 
@@ -86,7 +91,7 @@ public class RMExtInstall extends ExtInstall
       if ( OldRdf.m_AdvCodeAddr.end < 0 || OldRdf.m_UpgradeAddr.end < 0 )
       {
         remoteConfig = null;
-        System.err.println( "ExtInstall aborting due to error in original data or its RDF." );
+        showError();
         return;
       }
 
@@ -103,6 +108,7 @@ public class RMExtInstall extends ExtInstall
           // being installed into the configuration
         
           extenderMerge = false;
+          newRemote = remoteConfig.getRemote(); // Unchanged by merge
           
           OldAdv.Merge( ExtAdv,
                         EnumSet.of( AdvItem.Flag.eMacroCollideNew,
@@ -128,6 +134,8 @@ public class RMExtInstall extends ExtInstall
           // the extender
 
           extenderMerge = true;
+          newRemote = extenderRemote;
+          
           ExtAdv.Merge( OldAdv,
                         EnumSet.of( AdvItem.Flag.eMacroCollideNew ) );
           ExtUpgrade.Merge( Erl,
@@ -154,7 +162,7 @@ public class RMExtInstall extends ExtInstall
       }
       String out = sw.toString();
       pw.close();
-      remoteConfig = new RemoteConfiguration( out, remoteConfig.getOwner() );
+      remoteConfig = new RemoteConfiguration( out, remoteConfig.getOwner(), newRemote );
   }
   
   public static void LoadHex( ErrorLogger Erl, String arg, IrHexConfig Config, AdvList Adv, UpgradeList Upgrade,
@@ -165,7 +173,7 @@ public class RMExtInstall extends ExtInstall
     if ( arg != null )
     {
       File file = FindFile( arg, ".txt" );
-      System.err.printf( "Loading data from file \n", arg );
+      System.err.println( "Loading data from file." );
       rdr = new BufferedReader( new FileReader( file ) );
     }
     else
@@ -179,7 +187,9 @@ public class RMExtInstall extends ExtInstall
 
     if ( !Config.Load( Erl, rdr ) )
     {
-      System.err.println( "Data loading failed." );
+      errorMsg = "Loading of ";
+      errorMsg += ( arg == null ) ? "main" : "merge";
+      errorMsg += " data failed.";
       return;
     }
 
@@ -190,7 +200,7 @@ public class RMExtInstall extends ExtInstall
       int baseAddr = sigAddr & 0xFFF0;
       if ( Config.size() > baseAddr + eepromSize )
       {
-        System.err.println( "Merge data extends beyond end of EEPROM." );
+        errorMsg = "Merge data extends beyond end of EEPROM.";
         return;
       }
       char[] Sig = new char[ remote.getSignature().length() ];
@@ -209,12 +219,13 @@ public class RMExtInstall extends ExtInstall
       }
       RemoteManager rm = RemoteManager.getRemoteManager();
       List< Remote > remotes = rm.findRemoteBySignature( signature );
-      remote = RemoteConfiguration.filterRemotes( remotes, signature, eepromSize, data );
+      remote = RemoteConfiguration.filterRemotes( remotes, signature, eepromSize, data, false );
       if ( remote == null )
       {
-        System.err.println( "No remote found that matches the merge file." );
+        errorMsg = "No remote found that matches the merge file.";
         return;
       }
+      extenderRemote = remote;
     }
     File rdfFile = remote.getFile();
     try
@@ -223,8 +234,8 @@ public class RMExtInstall extends ExtInstall
     }
     catch ( FileNotFoundException fnfe )
     {
-        Erl.Error( "Can't read %s", rdfFile.getAbsolutePath() );
-        return;
+      errorMsg = "Can't read file " + rdfFile.getAbsolutePath() + ".";
+      return;
     }
     String message = "Loading RDF " + rdfFile.getCanonicalPath();
     message += " for " + ( arg == null ? "main" : "merge" ) + " file";
@@ -233,7 +244,7 @@ public class RMExtInstall extends ExtInstall
 
     if ( rdf.m_AdvCodeAddr.end < 0 || rdf.m_UpgradeAddr.end < 0 )
     {
-      Erl.Error( "RDF file %s not valid", rdfFile );
+      errorMsg = "RDF file " + rdfFile + " not valid.";
       return;
     }
 
@@ -264,6 +275,14 @@ public class RMExtInstall extends ExtInstall
     Config.SetLearnMem( rdf.m_LearnedAddr.begin, rdf.m_LearnedAddr.end );
     Config.FillAdvList( Erl, Adv );
     Config.FillUpgradeList( Erl, Upgrade );
+  }
+  
+  public void showError()
+  {
+    String title = "ExtInstall error";
+    errorMsg += "\nExtInstall terminating.";
+    JOptionPane.showMessageDialog( null, errorMsg, title, JOptionPane.ERROR_MESSAGE );
+    System.err.println( errorMsg );
   }
 
   public List< Integer > getDevUpgradeCodes()
