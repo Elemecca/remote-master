@@ -35,28 +35,24 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ProtocolEditor.
  */
-public class ProtocolEditor
-  extends JDialog
-  implements ActionListener,
-             PropertyChangeListener,
-             DocumentListener,
-             TreeSelectionListener
+public class ProtocolEditor extends JDialog implements ActionListener, PropertyChangeListener, DocumentListener,
+    TreeSelectionListener
 {
-  
+
   /**
    * The main method.
    * 
-   * @param args the arguments
+   * @param args
+   *          the arguments
    */
   public static void main( String[] args )
   {
     try
     {
-      System.setErr( new PrintStream( new FileOutputStream( new File ( "pedit.err" ))));
+      System.setErr( new PrintStream( new FileOutputStream( new File( "pedit.err" ) ) ) );
     }
     catch ( Exception e )
     {
@@ -71,31 +67,33 @@ public class ProtocolEditor
   /**
    * Instantiates a new protocol editor.
    * 
-   * @param owner the owner
+   * @param owner
+   *          the owner
    */
   public ProtocolEditor( JFrame owner )
   {
     super( owner, "Protocol Editor", true );
     createGui( owner );
   }
-    
+
   /**
    * Instantiates a new protocol editor.
    * 
-   * @param owner the owner
+   * @param owner
+   *          the owner
    */
   public ProtocolEditor( JDialog owner )
   {
     super( owner, "Protocol Editor", true );
     createGui( owner );
   }
-    
+
   /**
    * Creates the gui.
    * 
-   * @param owner the owner
+   * @param owner
+   *          the owner
    */
-  @SuppressWarnings("unchecked")
   private void createGui( Component owner )
   {
     setLocationRelativeTo( owner );
@@ -105,7 +103,7 @@ public class ProtocolEditor
     generalNode = new GeneralEditorNode();
     generalNode.addPropertyChangeListener( "Code", this );
     root.add( generalNode );
-    
+
     fixedDataNode = new FixedDataEditorNode( 0 );
     root.add( fixedDataNode );
 
@@ -123,33 +121,33 @@ public class ProtocolEditor
 
     JScrollPane scrollPane = new JScrollPane( tree );
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ),
-                                                              scrollPane.getBorder()));
+        scrollPane.getBorder() ) );
     contentPane.add( scrollPane, BorderLayout.WEST );
 
     cardLayout = new CardLayout( 5, 5 );
     cardPanel = new JPanel( cardLayout );
-    for ( Enumeration e = root.children(); e.hasMoreElements(); )
+    for ( Enumeration< ? > e = root.children(); e.hasMoreElements(); )
     {
       ProtocolEditorNode node = ( ProtocolEditorNode )e.nextElement();
       ProtocolEditorPanel panel = node.getEditingPanel();
-      cardPanel.add( panel, panel.getTitle());
+      cardPanel.add( panel, panel.getTitle() );
     }
 
     ProtocolEditorNode node = new DevParmEditorNode();
     node.addPropertyChangeListener( "Name", this );
     ProtocolEditorPanel panel = node.getEditingPanel();
-    cardPanel.add( panel, panel.getTitle());
+    cardPanel.add( panel, panel.getTitle() );
     node = ( ProtocolEditorNode )node.getFirstChild();
     panel = node.getEditingPanel();
-    cardPanel.add( panel, panel.getTitle());
+    cardPanel.add( panel, panel.getTitle() );
 
     node = new CmdParmEditorNode();
     panel = node.getEditingPanel();
-    cardPanel.add( panel, panel.getTitle());
+    cardPanel.add( panel, panel.getTitle() );
 
     contentPane.add( cardPanel, BorderLayout.CENTER );
 
-    JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.TRAILING, 5, 5 ));
+    JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.TRAILING, 5, 5 ) );
 
     viewButton = new JButton( "View" );
     viewButton.setToolTipText( "View the protocols.ini entry for this protocol." );
@@ -182,10 +180,11 @@ public class ProtocolEditor
   }
 
   // ActionListener methods
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
-  @SuppressWarnings("unchecked")
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
@@ -196,30 +195,30 @@ public class ProtocolEditor
       newNode.addPropertyChangeListener( "Name", this );
       treeModel.insertNodeInto( newNode, selectedNode, children );
       ProtocolEditorPanel newPanel = newNode.getEditingPanel();
-      cardPanel.add( newPanel, newPanel.getTitle());
-      for ( Enumeration en = newNode.children(); en.hasMoreElements(); )
+      cardPanel.add( newPanel, newPanel.getTitle() );
+      for ( Enumeration< ? > en = newNode.children(); en.hasMoreElements(); )
       {
         ProtocolEditorNode child = ( ProtocolEditorNode )en.nextElement();
-        TreePath path = new TreePath( child.getPath());
+        TreePath path = new TreePath( child.getPath() );
         tree.expandPath( path );
         tree.scrollPathToVisible( path );
-//        newPanel = child.getEditingPanel();
-//        cardPanel.add( newPanel, newPanel.getTitle());
+        // newPanel = child.getEditingPanel();
+        // cardPanel.add( newPanel, newPanel.getTitle());
       }
-      TreePath newPath = new TreePath( newNode.getPath());
+      TreePath newPath = new TreePath( newNode.getPath() );
       tree.setSelectionPath( newPath );
     }
     else if ( source == viewButton )
     {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter( sw );
-      for ( Enumeration children = root.children(); children.hasMoreElements(); )
+      for ( Enumeration< ? > children = root.children(); children.hasMoreElements(); )
       {
         ProtocolEditorNode node = ( ProtocolEditorNode )children.nextElement();
         node.print( pw );
       }
       pw.flush();
-      JTextArea ta = new JTextArea( sw.toString());
+      JTextArea ta = new JTextArea( sw.toString() );
       new TextPopupMenu( ta );
       ta.setEditable( false );
       ta.setColumns( 80 );
@@ -235,7 +234,7 @@ public class ProtocolEditor
 
       treeModel.removeNodeFromParent( selectedNode );
       selectedNode.removePropertyChangeListener( "Name", this );
-      tree.getSelectionModel().setSelectionPath( new TreePath( nodeToSelect.getPath()));
+      tree.getSelectionModel().setSelectionPath( new TreePath( nodeToSelect.getPath() ) );
     }
     else if ( source == okButton )
     {
@@ -245,7 +244,9 @@ public class ProtocolEditor
   }
 
   // PropertyChangeListener methods
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
    */
   public void propertyChange( PropertyChangeEvent e )
@@ -253,18 +254,18 @@ public class ProtocolEditor
     ProtocolEditorNode node = ( ProtocolEditorNode )e.getSource();
     String propertyName = e.getPropertyName();
     System.err.println( "PropertyChange for " + propertyName );
-    if ( propertyName.equals( "Hex" ))
+    if ( propertyName.equals( "Hex" ) )
     {
       enableButtons();
     }
-    else if ( propertyName.equals( "Name" ))
+    else if ( propertyName.equals( "Name" ) )
     {
       treeModel.nodeChanged( node );
-      TreePath path = new TreePath( node.getPath());
+      TreePath path = new TreePath( node.getPath() );
       tree.collapsePath( path );
       tree.expandPath( path );
     }
-    else if ( propertyName.equals( "Code" ))
+    else if ( propertyName.equals( "Code" ) )
     {
       Hex newValue = ( Hex )e.getNewValue();
       int sizes = newValue.getData()[ 2 ] & 0x00FF;
@@ -279,13 +280,15 @@ public class ProtocolEditor
   /**
    * Document changed.
    * 
-   * @param e the e
+   * @param e
+   *          the e
    */
   public void documentChanged( DocumentEvent e )
-  {
-  }
+  {}
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
    */
   public void changedUpdate( DocumentEvent e )
@@ -293,7 +296,9 @@ public class ProtocolEditor
     documentChanged( e );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
    */
   public void insertUpdate( DocumentEvent e )
@@ -301,7 +306,9 @@ public class ProtocolEditor
     documentChanged( e );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
    */
   public void removeUpdate( DocumentEvent e )
@@ -314,64 +321,65 @@ public class ProtocolEditor
    */
   public void enableButtons()
   {
-    addButton.setEnabled( selectedNode.canAddChildren());
-    deleteButton.setEnabled( selectedNode.canDelete());
+    addButton.setEnabled( selectedNode.canAddChildren() );
+    deleteButton.setEnabled( selectedNode.canDelete() );
   }
 
   // TreeSelectionListener methods
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
    */
   public void valueChanged( TreeSelectionEvent e )
   {
-    selectedNode =
-      ( ProtocolEditorNode )tree.getLastSelectedPathComponent();
+    selectedNode = ( ProtocolEditorNode )tree.getLastSelectedPathComponent();
     enableButtons();
     editorPanel = selectedNode.getEditingPanel();
     editorPanel.update( selectedNode );
-    cardLayout.show( cardPanel, editorPanel.getTitle());
+    cardLayout.show( cardPanel, editorPanel.getTitle() );
     getContentPane().validate();
   }
 
   /** The card layout. */
   private CardLayout cardLayout;
-  
+
   /** The card panel. */
   private JPanel cardPanel;
-  
+
   /** The editor panel. */
   private ProtocolEditorPanel editorPanel = null;
-  
+
   /** The tree model. */
   private DefaultTreeModel treeModel;
-  
+
   /** The tree. */
   private JTree tree;
-  
+
   /** The selected node. */
   private ProtocolEditorNode selectedNode;
-  
+
   /** The root. */
   private DefaultMutableTreeNode root;
-  
+
   /** The general node. */
   private GeneralEditorNode generalNode = null;
-  
+
   /** The fixed data node. */
   private FixedDataEditorNode fixedDataNode = null;
-  
+
   /** The cmd data node. */
   private CmdEditorNode cmdDataNode = null;
-  
+
   /** The view button. */
   private JButton viewButton;
-  
+
   /** The add button. */
   private JButton addButton;
-  
+
   /** The delete button. */
   private JButton deleteButton;
-  
+
   /** The ok button. */
   private JButton okButton;
 }

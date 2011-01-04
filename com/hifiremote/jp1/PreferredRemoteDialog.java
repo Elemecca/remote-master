@@ -148,7 +148,7 @@ public class PreferredRemoteDialog extends JDialog implements ActionListener, Li
 
     JPanel buttonPanel = new JPanel();
     buttonPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
-    FlowLayout fl = ( FlowLayout ) buttonPanel.getLayout();
+    FlowLayout fl = ( FlowLayout )buttonPanel.getLayout();
     fl.setAlignment( FlowLayout.RIGHT );
 
     ok = new JButton( "OK" );
@@ -203,12 +203,11 @@ public class PreferredRemoteDialog extends JDialog implements ActionListener, Li
    * 
    * @return the preferred remotes
    */
-  @SuppressWarnings( "unchecked" )
   public Collection< Remote > getPreferredRemotes()
   {
     ArrayList< Remote > remotes = new ArrayList< Remote >( preferredListModel.size() );
-    for ( Enumeration e = preferredListModel.elements(); e.hasMoreElements(); )
-      remotes.add( ( Remote ) e.nextElement() );
+    for ( Enumeration< ? > e = preferredListModel.elements(); e.hasMoreElements(); )
+      remotes.add( ( Remote )e.nextElement() );
     return remotes;
   }
 
@@ -232,22 +231,22 @@ public class PreferredRemoteDialog extends JDialog implements ActionListener, Li
    */
   private void transfer( JList fromList, JList toList )
   {
-    DefaultListModel fromModel = ( DefaultListModel ) fromList.getModel();
+    DefaultListModel fromModel = ( DefaultListModel )fromList.getModel();
     int fromIndex = fromList.getMaxSelectionIndex();
     int first = fromList.getMinSelectionIndex();
-    DefaultListModel toModel = ( DefaultListModel ) toList.getModel();
+    DefaultListModel toModel = ( DefaultListModel )toList.getModel();
     int toIndex = toModel.getSize();
 
     while ( fromIndex >= first )
     {
       if ( fromList.isSelectedIndex( fromIndex ) )
       {
-        Remote r = ( Remote ) fromModel.getElementAt( fromIndex );
+        Remote r = ( Remote )fromModel.getElementAt( fromIndex );
         fromModel.removeElementAt( fromIndex );
 
         while ( toIndex > 0 )
         {
-          Remote r2 = ( Remote ) toModel.elementAt( toIndex - 1 );
+          Remote r2 = ( Remote )toModel.elementAt( toIndex - 1 );
           int rc = r2.getName().compareTo( r.getName() );
 
           if ( rc < 0 )

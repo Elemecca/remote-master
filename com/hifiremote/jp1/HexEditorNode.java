@@ -70,13 +70,13 @@ public abstract class HexEditorNode extends ProtocolEditorNode
    * 
    * @see com.hifiremote.jp1.ProtocolEditorNode#print(java.io.PrintWriter)
    */
-  @SuppressWarnings( "unchecked" )
   public void print( PrintWriter pw )
   {
     if ( hex != nullHex )
       pw.println( hexName + hex.toString() );
 
     // Print the parameters
+    @SuppressWarnings( "rawtypes" )
     Enumeration children = children();
     if ( !children.hasMoreElements() )
       return;
@@ -98,6 +98,7 @@ public abstract class HexEditorNode extends ProtocolEditorNode
     while ( children.hasMoreElements() )
     {
       HexParmEditorNode devNode = ( HexParmEditorNode )children.nextElement();
+      @SuppressWarnings( "rawtypes" )
       Enumeration xlators = devNode.children();
       while ( xlators.hasMoreElements() )
       {

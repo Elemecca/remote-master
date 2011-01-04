@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="lib/RMGraphics.jar"/>
 	<classpathentry kind="lib" path="lib/TableLayout.jar"/>
 	<classpathentry kind="lib" path="lib/l2fprod-common-directorychooser.jar"/>
+	<classpathentry kind="lib" path="lib/ExtInstall.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

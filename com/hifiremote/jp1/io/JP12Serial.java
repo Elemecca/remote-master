@@ -91,7 +91,6 @@ public class JP12Serial extends IO
   public native int writeRemote( int address, byte[] buffer, int length );
 
   /** The is loaded. */
-  @SuppressWarnings( "unused" )
   private static boolean isLoaded = false;
 
   /**

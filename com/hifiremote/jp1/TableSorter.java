@@ -1,14 +1,29 @@
 package com.hifiremote.jp1;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -66,7 +81,7 @@ public class TableSorter extends AbstractTableModel
   /** The Constant COMPARABLE_COMAPRATOR. */
   public static final Comparator< Object > COMPARABLE_COMAPRATOR = new Comparator< Object >()
   {
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings( "unchecked" )
     public int compare( Object o1, Object o2 )
     {
       return ( ( Comparable< Object > )o1 ).compareTo( o2 );
@@ -98,8 +113,7 @@ public class TableSorter extends AbstractTableModel
   private TableModelListener tableModelListener;
 
   /** The column comparators. */
-  @SuppressWarnings( "unchecked" )
-  private Map< Class, Comparator<Object> > columnComparators = new HashMap< Class, Comparator<Object> >();
+  private Map< Class< ? >, Comparator< Object > > columnComparators = new HashMap< Class< ? >, Comparator< Object > >();
 
   /** The sorting columns. */
   private List< Directive > sortingColumns = new ArrayList< Directive >();
@@ -330,8 +344,7 @@ public class TableSorter extends AbstractTableModel
    * @param comparator
    *          the comparator
    */
-  @SuppressWarnings( "unchecked" )
-  public void setColumnComparator( Class type, Comparator comparator )
+  public void setColumnComparator( Class< ? > type, Comparator< Object > comparator )
   {
     if ( comparator == null )
     {
@@ -352,7 +365,7 @@ public class TableSorter extends AbstractTableModel
    */
   protected Comparator< Object > getComparator( int column )
   {
-    Class<?> columnType = tableModel.getColumnClass( column );
+    Class< ? > columnType = tableModel.getColumnClass( column );
     Comparator< Object > comparator = columnComparators.get( columnType );
     if ( comparator != null )
     {
@@ -497,7 +510,7 @@ public class TableSorter extends AbstractTableModel
   /**
    * The Class Row.
    */
-  private class Row implements Comparable<Object>
+  private class Row implements Comparable< Object >
   {
 
     /** The model index. */
@@ -591,14 +604,14 @@ public class TableSorter extends AbstractTableModel
 
       // We can map a cell event through to the view without widening
       // when the following conditions apply:
-      // 
+      //
       // a) all the changes are on one row (e.getFirstRow() == e.getLastRow()) and,
       // b) all the changes are in one column (column != TableModelEvent.ALL_COLUMNS) and,
       // c) we are not sorting on that column (getSortingStatus(column) == NOT_SORTED) and,
       // d) a reverse lookup will not trigger a sort (modelToView != null)
       //
       // Note: INSERT and DELETE events fail this test as they have column == ALL_COLUMNS.
-      // 
+      //
       // The last check, for (modelToView != null) is to see if modelToView
       // is already allocated. If we don't do this check; sorting can become
       // a performance bottleneck for applications where cells

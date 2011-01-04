@@ -103,8 +103,7 @@ public class JTableX extends JTable
    * @param columnNames
    *          the column names
    */
-  @SuppressWarnings( "unchecked" )
-  public JTableX( final Vector rowData, final Vector< String > columnNames )
+  public JTableX( @SuppressWarnings( "rawtypes" ) final Vector rowData, final Vector< String > columnNames )
   {
     super( rowData, columnNames );
     cellModel = null;
