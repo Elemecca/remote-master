@@ -12,8 +12,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.io.BufferedReader;
-import java.io.StringReader;
 import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
@@ -37,7 +35,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.JTextComponent;
 
-// TODO: Auto-generated Javadoc
+import com.hifiremote.jp1.clipboard.ClipboardReader;
+import com.hifiremote.jp1.clipboard.ClipboardReaderFactory;
+
 /**
  * The Class TablePanel.
  */
@@ -106,23 +106,19 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
       public boolean importData( JComponent c, Transferable t )
       {
         boolean rc = false;
-        System.err.println( "importData: flavors are" );
-        DataFlavor[] flavors = t.getTransferDataFlavors();
-        for ( int i = 0; i < flavors.length; i++ )
-          System.err.println( "\t" + flavors[ i ].toString() );
         if ( t.isDataFlavorSupported( DataFlavor.stringFlavor ) )
         {
           try
           {
-            String s = ( String )( t.getTransferData( DataFlavor.stringFlavor ) );
-            BufferedReader in = new BufferedReader( new StringReader( s ) );
+            ClipboardReader rdr = ClipboardReaderFactory.getClipboardReader( t );
+
             int colCount = table.getModel().getColumnCount();
             int addedRow = -1;
             int row = table.getSelectedRow();
             int col = table.getSelectedColumn();
-            for ( String line = in.readLine(); line != null; line = in.readLine() )
+            for ( String[] tokens = rdr.readNextLine(); tokens != null; tokens = rdr.readNextLine() )
             {
-              if ( line.trim().length() == 0 )
+              if ( tokens.length == 0 )
               {
                 continue;
               }
@@ -134,10 +130,7 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
                   addedRow = row;
               }
 
-              String[] tokens = line.split( "  |\t", 0 );
               int workCol = col;
-              boolean done = false;
-              String prevToken = null;
               for ( int i = 0; i < tokens.length; ++i )
               {
                 String token = tokens[ i ].trim();
@@ -168,6 +161,7 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
               }
               row++ ;
             }
+            rdr.close();
             if ( addedRow != -1 )
               sorter.fireTableRowsInserted( addedRow, row - 1 );
             sorter.fireTableRowsUpdated( popupRow, row - 1 );
