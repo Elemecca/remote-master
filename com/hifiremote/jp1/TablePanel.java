@@ -15,7 +15,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ListIterator;
-import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -123,6 +122,11 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
             int col = table.getSelectedColumn();
             for ( String line = in.readLine(); line != null; line = in.readLine() )
             {
+              if ( line.trim().length() == 0 )
+              {
+                continue;
+              }
+
               if ( row == model.getRowCount() )
               {
                 model.addRow( createRowObject() );
@@ -130,39 +134,22 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
                   addedRow = row;
               }
 
-              StringTokenizer st = new StringTokenizer( line, "\t", true );
+              String[] tokens = line.split( "  |\t", 0 );
               int workCol = col;
               boolean done = false;
-              String token = null;
               String prevToken = null;
-              while ( !done )
+              for ( int i = 0; i < tokens.length; ++i )
               {
+                String token = tokens[ i ].trim();
+                if ( token.length() == 0 )
+                {
+                  token = null;
+                }
                 if ( workCol == colCount )
                   break;
-                if ( st.hasMoreTokens() )
-                  token = st.nextToken();
-                else
-                  token = null;
 
                 Object value = null;
                 int modelCol = table.convertColumnIndexToModel( workCol );
-                if ( token == null )
-                {
-                  done = true;
-                  if ( prevToken != null )
-                    break;
-                }
-                else if ( token.equals( "\t" ) )
-                {
-                  if ( prevToken == null )
-                    token = null;
-                  else
-                  {
-                    prevToken = null;
-                    continue;
-                  }
-                }
-                prevToken = token;
 
                 Class< ? > aClass = sorter.getColumnClass( modelCol );
                 if ( aClass == String.class )
@@ -242,8 +229,8 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
             Object value = table.getValueAt( selRow, selCol );
             if ( value != null )
             {
-              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn(
-                  selCol ).getCellRenderer();
+              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel()
+                  .getColumn( selCol ).getCellRenderer();
               if ( cellRenderer != null )
               {
                 cellRenderer.getTableCellRendererComponent( table, value, false, false, selRow, convertedCol );
