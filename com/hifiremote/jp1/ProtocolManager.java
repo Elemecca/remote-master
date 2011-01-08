@@ -320,7 +320,12 @@ public class ProtocolManager
       {
         vp.remove( p );
       }
-    }    
+    }
+    
+    if ( extras.contains( p ) )
+    {
+      extras.remove( p );
+    }
   }
 
   /**
@@ -753,10 +758,38 @@ public class ProtocolManager
     return ( index == null ) ? 0 : index;
   }
   
+  /**
+   * A selective reset that only removes protocols whose pid is in the given list.
+   */
+  public void reset( List< Integer > pids )
+  {
+    // Remove extra protocols.  Clone first as extras is modified by remove().
+    List< Protocol > extrasClone = new ArrayList< Protocol >( extras );
+    for ( Protocol p : extrasClone )
+    {
+      if ( pids.contains( p.getID().get( 0 ) ) )
+      {
+        remove( p );
+      }
+    }
+    // Remove custom code
+    for ( List< Protocol > l : byName.values() )
+    {
+      for ( Protocol p : l )
+      {
+        if ( pids.contains( p.getID().get( 0 ) ) )
+        {
+          p.customCode.clear();
+        }
+      }
+    }
+  }
+  
   public void reset()
   {
-    // Remove extra protocols
-    for ( Protocol p : extras )
+    // Remove extra protocols.  Clone first as extras is modified by remove().
+    List< Protocol > extrasClone = new ArrayList< Protocol >( extras );
+    for ( Protocol p : extrasClone )
     {
       remove( p );
     }

@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import com.hifiremote.jp1.ProtocolManager;
 import com.hifiremote.jp1.Remote;
 import com.hifiremote.jp1.RemoteConfiguration;
 import com.hifiremote.jp1.RemoteManager;
@@ -24,6 +25,7 @@ public class RMExtInstall extends ExtInstall
   public static RemoteConfiguration remoteConfig;
   private static String errorMsg = null;
   private static Remote extenderRemote = null;
+  private static boolean extenderMerge = true;
   
   public RMExtInstall( String hexName, RemoteConfiguration remoteConfig )
   {
@@ -35,7 +37,6 @@ public class RMExtInstall extends ExtInstall
 
   private String hexName;
   private int sigAddr;
-  private boolean extenderMerge = true;
   private List< Integer > devUpgradeCodes = new ArrayList< Integer >();
   private List< Integer > protUpgradeIDs = new ArrayList< Integer >();
 
@@ -55,7 +56,7 @@ public class RMExtInstall extends ExtInstall
                ExtAdv,
                ExtUpgrade,
                ExtRdf,
-               sigAddr );
+               0 );
       
       if ( ExtRdf.m_AdvCodeAddr.end < 0 || ExtRdf.m_UpgradeAddr.end < 0 )
       {
@@ -101,13 +102,11 @@ public class RMExtInstall extends ExtInstall
 
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter( sw );
-      int baseAddr = sigAddr & 0xFFF0;
-      if ( ( baseAddr == 0 && ExtHex.IsValid( 0 ) ) || ( baseAddr > 0 && ExtHex.IsValid( baseAddr + 8 ) ) )
+      if ( !extenderMerge )
       {
           // Install anything other than an extender by copying from the thing
           // being installed into the configuration
         
-          extenderMerge = false;
           newRemote = remoteConfig.getRemote(); // Unchanged by merge
           
           OldAdv.Merge( ExtAdv,
@@ -120,12 +119,15 @@ public class RMExtInstall extends ExtInstall
 
           generalComment = OldHex.GetComment( 0x0000 ); // get the general comment from the IR file
           OldHex.RemoveComments(); // remove all comments from the IR configuration
-          OldHex.SetComment( 0x0000, generalComment ); // set the general comment
+          if ( generalComment != null && !generalComment.equals( "" ) )
+          {
+            OldHex.SetComment( 0x0000, generalComment );
+          } // set the general comment
 
           OldHex.PostAdvList( Erl, OldAdv );
           OldHex.PostUpgradeList( Erl, OldUpgrade );
           
-          OldRdf.DoCheckSums( ExtHex );
+          OldRdf.DoCheckSums( OldHex );
           OldHex.Dump( pw );
       }
       else
@@ -133,7 +135,6 @@ public class RMExtInstall extends ExtInstall
           // Install an extender by copying things from the configuration into
           // the extender
 
-          extenderMerge = true;
           newRemote = extenderRemote;
           
           ExtAdv.Merge( OldAdv,
@@ -162,6 +163,7 @@ public class RMExtInstall extends ExtInstall
       }
       String out = sw.toString();
       pw.close();
+      ProtocolManager.getProtocolManager().reset( protUpgradeIDs );
       remoteConfig = new RemoteConfiguration( out, remoteConfig.getOwner(), newRemote );
   }
   
@@ -195,34 +197,63 @@ public class RMExtInstall extends ExtInstall
 
     if ( remote == null )
     {
-      remote = remoteConfig.getRemote();
-      int eepromSize = remote.getEepromSize();
-      int baseAddr = sigAddr & 0xFFF0;
-      if ( Config.size() > baseAddr + eepromSize )
+      int baseAddr = 0;
+      if ( !Config.IsValid( 2 ) ) // If base address is 0 then signature starts at address 2
       {
-        errorMsg = "Merge data extends beyond end of EEPROM.";
+        // If base address > 0 then it is multiple of 0x100 and signature starts at it.
+        for ( ; baseAddr < Config.size() && !Config.IsValid( baseAddr ); baseAddr += 0x100 ){}
+      }
+      if ( baseAddr >= Config.size() )
+      {
+        errorMsg = "Unable to locate a valid signature.";
         return;
       }
-      char[] Sig = new char[ remote.getSignature().length() ];
-
-      for ( int ndx = 0; ndx < Sig.length; ndx++ )
+      sigAddr = ( baseAddr == 0 ) ? 2 : baseAddr;
+      extenderMerge = ( baseAddr == 0 ) ? !Config.IsValid( 0 ) : !Config.IsValid( baseAddr + 8 );
+      int eepromSize = ( extenderMerge ) ? remoteConfig.getRemote().getEepromSize() : Config.size() - baseAddr;
+      if ( Config.size() > baseAddr + eepromSize )
       {
-        Sig[ ndx ] = ( char )Config.Get( ndx + sigAddr );
+        errorMsg = "Extender data extends beyond EEPROM size.";
+        return;
       }
-
-      String signature = new String( Sig );
-
+      if ( extenderMerge && baseAddr != remoteConfig.getRemote().getBaseAddress() )
+      {
+        errorMsg = "EEPROM area is located differently in extended and base remotes";
+        return;
+      }
+      StringBuilder sb = new StringBuilder();
+      for ( int ndx = 0; Config.IsValid( ndx + sigAddr ) && ndx < 8; ndx++ )
+      {
+        sb.append( ( char )Config.Get( ndx + sigAddr ) );
+      }
+      String signature = sb.toString();
+      String signature2 = null;
+      RemoteManager rm = RemoteManager.getRemoteManager();
+      List< Remote > remotes = null;
+      for ( int len = signature.length(); len > 3; len-- )
+      {
+        signature2 = signature.substring( 0, len );
+        remotes = rm.findRemoteBySignature( signature2 );
+        if ( !remotes.isEmpty() ) break;
+      }
+      signature = signature2;
+      
+      
       short[] data = new short[ eepromSize ];
       for ( int i = 0; i < eepromSize; i++ )
       {
-        data[ i ] = ( i < Config.size() - baseAddr && Config.IsValid( i + baseAddr ) ) ? Config.Get( i + baseAddr) : 0x100;
+        data[ i ] = ( ( i < Config.size() - baseAddr ) && Config.IsValid( i + baseAddr ) ) ? Config.Get( i + baseAddr) : 0x100;
       }
-      RemoteManager rm = RemoteManager.getRemoteManager();
-      List< Remote > remotes = rm.findRemoteBySignature( signature );
+      
       remote = RemoteConfiguration.filterRemotes( remotes, signature, eepromSize, data, false );
       if ( remote == null )
       {
         errorMsg = "No remote found that matches the merge file.";
+        return;
+      }
+      if ( baseAddr != remote.getBaseAddress() )
+      {
+        errorMsg = "Merge data and its RDF have conflicting base addresses.";
         return;
       }
       extenderRemote = remote;

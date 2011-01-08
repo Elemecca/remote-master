@@ -20,6 +20,7 @@ Changes for v2.01
 - Enable correct copy'n'paste from IE (Greg)
 -- Alpha 5 --
 - On importing .ir file, treat invalid digit maps index as absent, to prevent RMIR crashing (Graham)
+- Improve use of ExtInstall, to avoid an issue when installing over an existing extender (Graham)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)
