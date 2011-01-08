@@ -872,6 +872,11 @@ public class DeviceUpgrade implements Highlight
     if ( !remote.getOmitDigitMapByte() && index < code.length )
     {
       digitMapIndex = code[ index++ ] - 1;
+      if ( digitMapIndex >= remote.getDigitMaps().length )
+      {
+        // Illegal value so treat as absent
+        digitMapIndex = -1;
+      }
     }
     java.util.List< Button > buttons = null;
     if ( map != null && index < code.length )

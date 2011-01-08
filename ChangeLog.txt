@@ -15,6 +15,11 @@ Changes for v2.01
 - Create Advanced menu, add items Clean Upper Memory, Initialize to $00 and Initialize to $FF and implement them (Graham)
 - Add ExtInstall.jar as a referenced library and update build.xml to include it (Graham)
 - Add Install Extender item to File menu and implement it using procedures from ExtInstall.jar (Graham)
+-- Alpha 4 --
+- Clean up compiler warnings (Greg)
+- Enable correct copy'n'paste from IE (Greg)
+-- Alpha 5 --
+- On importing .ir file, treat invalid digit maps index as absent, to prevent RMIR crashing (Graham)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)
