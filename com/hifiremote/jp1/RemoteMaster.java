@@ -85,18 +85,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 {
   public static final int MAX_RDF_SYNC = 4;
   public static final int MIN_RDF_SYNC = 3;
-  
+
   public static final Color AQUAMARINE = new Color( 127, 255, 212 );
 
   /** The frame. */
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.01 alpha 5";
+  public final static String version = "v2.01 alpha 6";
 
   /** The dir. */
   private File dir = null;
-  
+
   private File mergeDir = null;
 
   /** Description of the Field. */
@@ -104,7 +104,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
-  
+
   private JToolBar toolBar = null;
 
   private RMAction newAction = null;
@@ -120,15 +120,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The save as item. */
   private RMAction saveAsAction = null;
-  
+
   private JMenuItem installExtenderItem = null;
 
   private RMAction openRdfAction = null;
-  
+
   protected RMAction highlightAction = null;
-  
+
   private JMenuItem rdfPathItem = null;
-  
+
   private JMenuItem mapPathItem = null;
 
   /** The recent files. */
@@ -159,16 +159,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   // Options menu items
   /** The look and feel items. */
   private JRadioButtonMenuItem[] lookAndFeelItems = null;
-  
+
   protected JCheckBoxMenuItem highlightItem = null;
 
   // Advanced menu items
   private JMenuItem cleanUpperMemoryItem = null;
-  
-  private JMenuItem initializeTo00Item = null; 
-  
+
+  private JMenuItem initializeTo00Item = null;
+
   private JMenuItem initializeToFFItem = null;
-  
+
   // Help menu items
   private JMenuItem readmeItem = null;
 
@@ -233,14 +233,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private boolean hasInvalidCodes = false;
 
   private CodeSelectorDialog codeSelectorDialog = null;
-  
+
   private JDialog colorDialog = null;
 
   public JDialog getColorDialog()
   {
     return colorDialog;
   }
-  
+
   private JColorChooser colorChooser = null;
 
   public JColorChooser getColorChooser()
@@ -255,7 +255,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     Preview()
     {
       super();
-      sample.setPreferredSize( new Dimension(90, 30) );
+      sample.setPreferredSize( new Dimension( 90, 30 ) );
       sample.setBorder( BorderFactory.createLineBorder( Color.GRAY ) );
       JPanel p = new JPanel();
       p.add( sample );
@@ -297,19 +297,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       selectors.add( protocols );
       add( selectors );
     }
-    
+
     public void reset( boolean disableProtocol )
     {
       colorCol = 0;
       devices.setSelected( true );
       protocols.setEnabled( !disableProtocol );
     }
-    
+
     public Color getColor()
     {
       return result;
     }
-    
+
     public JPanel getSelectors()
     {
       return selectors;
@@ -322,7 +322,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     private JRadioButton devices = new JRadioButton( "Device" );
     private JRadioButton protocols = new JRadioButton( "Protocol" );
   }
-  
+
   protected class RMAction extends AbstractAction
   {
     public RMAction( String text, String action, ImageIcon icon, String description, Integer mnemonic )
@@ -382,11 +382,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           if ( !validConfiguration )
           {
             String title = "Invalid Configuration";
-            String message = "This configuration is not valid, but it can be saved and then\n" +
-                             "re-loaded to give again this same invalid configuration.\n\n" +
-                             "Do you wish to continue?";
-            if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, 
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
+            String message = "This configuration is not valid, but it can be saved and then\n"
+                + "re-loaded to give again this same invalid configuration.\n\n" + "Do you wish to continue?";
+            if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
             {
               return;
             }
@@ -533,18 +532,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           if ( !validConfiguration )
           {
             String title = "Invalid Configuration";
-            String message = "This configuration is not valid.  It cannot be uploaded as it\n" +
-                             "could cause the remote to crash.";
+            String message = "This configuration is not valid.  It cannot be uploaded as it\n"
+                + "could cause the remote to crash.";
             JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.WARNING_MESSAGE );
             return;
           }
-          
+
           Remote remote = remoteConfig.getRemote();
           if ( !allowSave( remote.getSetupValidation() ) )
           {
             return;
           }
-          
+
           uploadToRemote( remoteConfig.getData(), true );
         }
         else if ( command == "OPENRDF" )
@@ -563,7 +562,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           JP1TableModel< ? > model = null;
           TableSorter sorter = null;
           if ( currentPanel instanceof RMTablePanel< ? > )
-          { 
+          {
             RMTablePanel< ? > panel = ( RMTablePanel< ? > )currentPanel;
             table = panel.table;
             model = panel.model;
@@ -618,7 +617,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
     }
   }
-  
+
   public void uploadToRemote( short[] data, boolean allowClockSet )
   {
     Remote remote = remoteConfig.getRemote();
@@ -633,7 +632,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
       return;
     }
-    
+
     if ( !sig.equals( remote.getSignature() ) )
     {
       Object[] options =
@@ -701,24 +700,23 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       remoteConfig.updateCheckSums();
     }
   }
-  
+
   public short[] getInitializationData( int value )
   {
     short[] data = null;
     String title = "Initialize EEPROM Area";
-    String message = "This will fill your remote's EEPROM with $" + Hex.asString( value ) + "\n\n" +
-                     "Doing so will likely cause the remote to stop working until you\n" +
-                     "perform a hard reset.  Are you sure you want to do this?\n" +
-                     "(Make sure your current configuration is saved before proceeding.)";
-    if ( JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, 
-        JOptionPane.WARNING_MESSAGE ) == JOptionPane.YES_OPTION )
+    String message = "This will fill your remote's EEPROM with $" + Hex.asString( value ) + "\n\n"
+        + "Doing so will likely cause the remote to stop working until you\n"
+        + "perform a hard reset.  Are you sure you want to do this?\n"
+        + "(Make sure your current configuration is saved before proceeding.)";
+    if ( JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.YES_OPTION )
     {
       data = new short[ remoteConfig.getRemote().getEepromSize() ];
       Arrays.fill( data, 0, data.length, ( short )value );
     }
     return data;
   }
-  
+
   private Highlight getTableRow( JP1Table table, int row )
   {
     Object obj;
@@ -740,14 +738,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     return null;
   }
-  
+
   private Color getInitialHighlight( JP1Table table, int colorCol )
   {
     Color color = null;
     if ( table != null )
     {
       int[] rows = table.getSelectedRows();
-      if ( rows.length > 0 &&  getTableRow( table, rows[ 0 ] ) != null )
+      if ( rows.length > 0 && getTableRow( table, rows[ 0 ] ) != null )
       {
         if ( currentPanel == devicePanel && colorCol == 1 )
         {
@@ -810,39 +808,37 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     setDefaultLookAndFeelDecorated( true );
 
     final Preview preview = new Preview();
-    // If a non-empty border is not set then the preview panel does not appear.  This sets
+    // If a non-empty border is not set then the preview panel does not appear. This sets
     // an invisible but non-empty border.
     preview.setBorder( BorderFactory.createLineBorder( preview.getBackground() ) );
-    
+
     colorChooser = new JColorChooser();
     colorChooser.setPreviewPanel( preview );
-    colorChooser.getSelectionModel().addChangeListener( new ChangeListener() 
+    colorChooser.getSelectionModel().addChangeListener( new ChangeListener()
     {
       @Override
-      public void stateChanged( ChangeEvent evt ) 
+      public void stateChanged( ChangeEvent evt )
       {
-        ColorSelectionModel model = ( ColorSelectionModel ) evt.getSource();
+        ColorSelectionModel model = ( ColorSelectionModel )evt.getSource();
         preview.sample.setBackground( model.getSelectedColor() );
       }
     } );
 
-    colorDialog = JColorChooser.createDialog( this, "Highlight Color", true, colorChooser, 
-    new ActionListener() 
+    colorDialog = JColorChooser.createDialog( this, "Highlight Color", true, colorChooser, new ActionListener()
     { // OK button listener
-      @Override
-      public void actionPerformed(ActionEvent event) 
-      {
-        preview.result = colorChooser.getColor();
-      } 
-    },  
-    new ActionListener() 
-    { // Cancel button listener
-      @Override
-      public void actionPerformed(ActionEvent event)
-      {
-        preview.result = null;
-      } 
-    } );
+          @Override
+          public void actionPerformed( ActionEvent event )
+          {
+            preview.result = colorChooser.getColor();
+          }
+        }, new ActionListener()
+        { // Cancel button listener
+          @Override
+          public void actionPerformed( ActionEvent event )
+          {
+            preview.result = null;
+          }
+        } );
 
     addWindowListener( new WindowAdapter()
     {
@@ -1093,29 +1089,29 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     // menu.add( revertItem );
 
     menu.addSeparator();
-    
+
     installExtenderItem = new JMenuItem( "Install Extender..." );
     installExtenderItem.setMnemonic( KeyEvent.VK_I );
     installExtenderItem.addActionListener( this );
     installExtenderItem.setEnabled( false );
     menu.add( installExtenderItem );
-    
+
     menu.addSeparator();
-    
+
     JMenu menuSetDirectory = new JMenu( "Set Directory" );
     menuSetDirectory.setMnemonic( KeyEvent.VK_D );
     menu.add( menuSetDirectory );
-    
+
     rdfPathItem = new JMenuItem( "RDF Path..." );
     rdfPathItem.setMnemonic( KeyEvent.VK_R );
     rdfPathItem.addActionListener( this );
     menuSetDirectory.add( rdfPathItem );
-    
+
     mapPathItem = new JMenuItem( "Image Path..." );
     mapPathItem.setMnemonic( KeyEvent.VK_I );
     mapPathItem.addActionListener( this );
     menuSetDirectory.add( mapPathItem );
-    
+
     menu.addSeparator();
 
     recentFiles = new JMenu( "Recent" );
@@ -1300,9 +1296,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     codesAction = new RMAction( "Code Selector...", "OPENCODES", createIcon( "RMCodes24" ), "Open Code Selector", null );
     codesAction.setEnabled( false );
 
-    highlightAction = new RMAction( "Highlight...", "HIGHLIGHT", createIcon( "RMHighlight24" ), "Select highlight color", null );
+    highlightAction = new RMAction( "Highlight...", "HIGHLIGHT", createIcon( "RMHighlight24" ),
+        "Select highlight color", null );
     highlightAction.setEnabled( false );
-    
+
     uploadWavItem = new JMenuItem( "Create WAV", KeyEvent.VK_W );
     uploadWavItem.setEnabled( false );
     uploadWavItem.addActionListener( this );
@@ -1328,7 +1325,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     JMenu subMenu = new JMenu( "Look and Feel" );
     subMenu.setMnemonic( KeyEvent.VK_L );
     menu.add( subMenu );
-    
+
     highlightItem = new JCheckBoxMenuItem( "Highlighting" );
     highlightItem.setMnemonic( KeyEvent.VK_H );
     highlightItem.setSelected( Boolean.parseBoolean( properties.getProperty( "highlighting", "false" ) ) );
@@ -1373,23 +1370,23 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       item.addActionListener( al );
     }
-    
-    menu = new JMenu( "Advanced");
+
+    menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
-    
+
     cleanUpperMemoryItem = new JMenuItem( "Clean Upper Memory...", KeyEvent.VK_C );
     cleanUpperMemoryItem.setEnabled( false );
     cleanUpperMemoryItem.addActionListener( this );
     menu.add( cleanUpperMemoryItem );
-    
+
     menu.addSeparator();
-    
+
     initializeTo00Item = new JMenuItem( "Initialize to $00", KeyEvent.VK_0 );
     initializeTo00Item.setEnabled( false );
     initializeTo00Item.addActionListener( this );
     menu.add( initializeTo00Item );
-    
+
     initializeToFFItem = new JMenuItem( "Initialize to $FF", KeyEvent.VK_F );
     initializeToFFItem.setEnabled( false );
     initializeToFFItem.addActionListener( this );
@@ -1434,7 +1431,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     aboutItem.addActionListener( this );
     menu.add( aboutItem );
   }
-  
+
   private void createToolbar()
   {
     toolBar.add( newAction );
@@ -1472,7 +1469,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     return chooser;
   }
-  
+
   public RMFileChooser getExtenderFileChooser()
   {
     RMFileChooser chooser = new RMFileChooser( mergeDir == null ? dir : mergeDir );
@@ -1498,7 +1495,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     chooser.setFileFilter( rmirFilter );
     return chooser;
   }
-  
+
   private File getRDFPathChoice()
   {
     File result = null;
@@ -1511,7 +1508,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       result = chooser.getSelectedFile();
       if ( result.equals( dir ) )
       {
-        result = null;  // Not changed
+        result = null; // Not changed
       }
     }
     return result;
@@ -1529,12 +1526,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       result = chooser.getSelectedFile();
       if ( result.equals( dir ) )
       {
-        result = null;  // Not changed
+        result = null; // Not changed
       }
     }
     return result;
   }
-  
+
   /**
    * Description of the Method.
    * 
@@ -1655,7 +1652,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     this.file = file;
     return file;
   }
-  
+
   private void installExtender() throws Exception
   {
     String version = ExtInstall.class.getPackage().getImplementationVersion();
@@ -1668,7 +1665,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       System.err.println();
     }
-    
+
     File file = null;
     while ( file == null )
     {
@@ -1691,7 +1688,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else
       {
-        System.err.println( "ExtInstall cancelled by user.");
+        System.err.println( "ExtInstall cancelled by user." );
         return;
       }
     }
@@ -1720,8 +1717,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       newDevBtnNotes[ i ] = oldDevBtnNotes[ i ];
     }
-    
-    System.err.println("Restoring .rmir data lost in conversion to .ir format.");
+
+    System.err.println( "Restoring .rmir data lost in conversion to .ir format." );
 
     int devCount = 0;
     int protCount = 0;
@@ -1733,7 +1730,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         continue;
       }
-      // Upgrade retained in merge, so restore it.  The order is preserved by the merge
+      // Upgrade retained in merge, so restore it. The order is preserved by the merge
       // process but those to be restored may not be consecutive.
       boolean found = false;
       for ( ; index < newDevUpgrades.size(); index++ )
@@ -1744,7 +1741,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           duOld.protocol = duNew.protocol;
           duOld.setNewRemote( newRemote );
           newDevUpgrades.set( index, duOld );
-          devCount++;
+          devCount++ ;
           found = true;
           break;
         }
@@ -1755,7 +1752,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
     }
     System.err.println( "Restored " + devCount + " device upgrades." );
-    
+
     index = installer.isExtenderMerge() ? installer.getProtUpgradeIDs().size() : 0;
     for ( ProtocolUpgrade puOld : oldProtUpgrades )
     {
@@ -1770,12 +1767,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         ProtocolUpgrade puNew = newProtUpgrades.get( index );
         if ( puNew.getPid() == pidOld )
         {
-          // Only restore if not used by device upgrade.  Restoring a used one would remove
+          // Only restore if not used by device upgrade. Restoring a used one would remove
           // the isUsed mark.
           if ( !puNew.isUsed() )
           {
             newProtUpgrades.set( index, puOld );
-            protCount++;
+            protCount++ ;
           }
           found = true;
           break;
@@ -1787,7 +1784,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
     }
     System.err.println( "Restored " + protCount + " protocol upgrades." );
-    
+
     for ( Iterator< ProtocolUpgrade > it = newProtUpgrades.iterator(); it.hasNext(); )
     {
       ProtocolUpgrade pu = it.next();
@@ -1797,7 +1794,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( installer.getProtUpgradeIDs().contains( Integer.valueOf( pu.getPid() ) ) )
       {
-        // Add to ProtocolManager as manual protocol.  It is only those in getProtUpgradeIDs()
+        // Add to ProtocolManager as manual protocol. It is only those in getProtUpgradeIDs()
         // that were removed before the merge, so it is only those that need to be put back and
         // the import process will have handled the ones that are used by device upgrades.
         pu.setManualProtocol( newRemote );
@@ -1867,10 +1864,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( !validConfiguration )
     {
       String title = "Invalid Configuration";
-      String message = "This configuration is not valid.  It can be saved as a .rmir file\n" +
-                       "which can be re-loaded to give again this same invalid configuration,\n" +
-                       "but it cannot be saved as a .ir file as it could cause the remote\n" +
-                       "to crash if it were uploaded to it by another application.";
+      String message = "This configuration is not valid.  It can be saved as a .rmir file\n"
+          + "which can be re-loaded to give again this same invalid configuration,\n"
+          + "but it cannot be saved as a .ir file as it could cause the remote\n"
+          + "to crash if it were uploaded to it by another application.";
       JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.WARNING_MESSAGE );
     }
     RMFileChooser chooser = getFileSaveChooser( validConfiguration );
@@ -2040,7 +2037,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           generalPanel.getSettingModel().fireTableStructureChanged();
         }
         currentPanel.set( remoteConfig );
-        
+
         Container mainPanel = getContentPane();
         mainPanel.remove( toolBar );
         toolBar = new JToolBar();
@@ -2053,30 +2050,28 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         String title = "Clean Upper Memory";
         String message = "Do you want to retain all data in the first $100 (i.e. 256) bytes of memory?\n\n"
-                       + "If you answer No then the memory will be set as if your present setup was\n"
-                       + "installed on a reset state created in accordance with the RDF alone.  This\n"
-                       + "is the cleanest option but most RDFs at present do not create a true factory\n"
-                       + "reset state.\n\n"
-                       + "If you answer Yes then any data in the first $100 bytes not set by the RDF\n"
-                       + "will be retained.  This should include any data set by a factory reset that\n"
-                       + "is missing from the RDF, but it may also include other data that could be\n"
-                       + "usefully cleaned.\n\n"
-                       + "Please also be aware that cleaning the memory will destroy most extenders, as\n"
-                       + "they place at least part of their code in the memory that will be cleared.\n"
-                       + "Press Cancel to exit without cleaning the memory.";   
-        int result = JOptionPane.showConfirmDialog( this, message, title, 
-            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+            + "If you answer No then the memory will be set as if your present setup was\n"
+            + "installed on a reset state created in accordance with the RDF alone.  This\n"
+            + "is the cleanest option but most RDFs at present do not create a true factory\n" + "reset state.\n\n"
+            + "If you answer Yes then any data in the first $100 bytes not set by the RDF\n"
+            + "will be retained.  This should include any data set by a factory reset that\n"
+            + "is missing from the RDF, but it may also include other data that could be\n" + "usefully cleaned.\n\n"
+            + "Please also be aware that cleaning the memory will destroy most extenders, as\n"
+            + "they place at least part of their code in the memory that will be cleared.\n"
+            + "Press Cancel to exit without cleaning the memory.";
+        int result = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
+            JOptionPane.QUESTION_MESSAGE );
         if ( result == JOptionPane.CANCEL_OPTION )
         {
           return;
         }
-        
+
         // Save the data that is stored only in the remote image
         Remote remote = remoteConfig.getRemote();
         DeviceButton[] devBtns = remote.getDeviceButtons();
-        int[] devBtnData = new int[ 2*devBtns.length ];
+        int[] devBtnData = new int[ 2 * devBtns.length ];
         DeviceLabels devLabels = remote.getDeviceLabels();
-        String[] devLabelText = new String[ 2*devBtns.length ];
+        String[] devLabelText = new String[ 2 * devBtns.length ];
         SoftDevices softDevices = remote.getSoftDevices();
         int[] softSequence = new int[ devBtns.length + 1 ];
         Setting[] settings = remote.getSettings();
@@ -2084,17 +2079,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         short[] data = remoteConfig.getData();
         for ( int i = 0; i < devBtns.length; i++ )
         {
-          devBtnData[ 2*i ] = devBtns[ i ].getDeviceSlot( data );
-          devBtnData[ 2*i + 1 ] = devBtns[ i ].getDeviceGroup( data );
+          devBtnData[ 2 * i ] = devBtns[ i ].getDeviceSlot( data );
+          devBtnData[ 2 * i + 1 ] = devBtns[ i ].getDeviceGroup( data );
           if ( devLabels != null )
           {
-            devLabelText[ 2*i ] = devLabels.getText( data, i );
-            devLabelText[ 2*i + 1 ] = devLabels.getDefaultText( data, i );
+            devLabelText[ 2 * i ] = devLabels.getText( data, i );
+            devLabelText[ 2 * i + 1 ] = devLabels.getDefaultText( data, i );
           }
           if ( softDevices != null )
           {
             softSequence[ i ] = softDevices.getSequenceIndex( i, data );
-          }            
+          }
         }
         if ( softDevices != null )
         {
@@ -2105,34 +2100,34 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           settingValues[ i ] = settings[ i ].getValue();
         }
         remote.setFixedData( remote.getRawFixedData() );
-        
+
         // Create clean reset state
         remoteConfig.initializeSetup( result == JOptionPane.YES_OPTION ? 0x100 : 0 );
-        
+
         // Restore the data that is stored only in the remote image
         for ( int i = 0; i < devBtns.length; i++ )
         {
-          devBtns[ i ].setDeviceSlot( devBtnData[ 2*i ], data );
-          devBtns[ i ].setDeviceGroup( ( short )devBtnData[ 2*i + 1 ], data );
+          devBtns[ i ].setDeviceSlot( devBtnData[ 2 * i ], data );
+          devBtns[ i ].setDeviceGroup( ( short )devBtnData[ 2 * i + 1 ], data );
           if ( devLabels != null )
           {
-            devLabels.setText( devLabelText[ 2*i ], i, data );
-            devLabels.setDefaultText( devLabelText[ 2*i + 1 ], i, data );
+            devLabels.setText( devLabelText[ 2 * i ], i, data );
+            devLabels.setDefaultText( devLabelText[ 2 * i + 1 ], i, data );
           }
           if ( softDevices != null )
           {
             softDevices.setSequenceIndex( softSequence[ i ], i, data );
-          } 
+          }
         }
         if ( softDevices != null )
         {
-           softDevices.setFilledSlotCount( softSequence[ devBtns.length ], data );
+          softDevices.setFilledSlotCount( softSequence[ devBtns.length ], data );
         }
         for ( int i = 0; i < settings.length; i++ )
         {
           settings[ i ].setValue( settingValues[ i ] );
         }
-        
+
         // Update
         if ( result == JOptionPane.NO_OPTION )
         {
@@ -2159,22 +2154,23 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           return;
         }
-        
+
         int opt = JOptionPane.NO_OPTION;
         if ( remoteConfig != null )
         {
-          String message = "Do you want to apply this directory change immediately?\n\n" +
-          "Yes = the present setup will be reinterpreted with an RDF from the new directory;\n" +
-          "No = the change will take place when you next open a remote, even within this session;\n" +
-          "Cancel = the change will be cancelled.\n\n" +
-          "Note that if you answer Yes, the setup will still have been loaded with the old RDF.\n" +
-          "You can achieve a similar result by answering No, using File/Save As to save the setup\n" +
-          "with the old RDF and then opening the saved file, which will open with the new RDF.\n" +
-          "The best choice between these two methods can depend on how different the RDFs are,\n" +
-          "and what you are trying to achieve.";
+          String message = "Do you want to apply this directory change immediately?\n\n"
+              + "Yes = the present setup will be reinterpreted with an RDF from the new directory;\n"
+              + "No = the change will take place when you next open a remote, even within this session;\n"
+              + "Cancel = the change will be cancelled.\n\n"
+              + "Note that if you answer Yes, the setup will still have been loaded with the old RDF.\n"
+              + "You can achieve a similar result by answering No, using File/Save As to save the setup\n"
+              + "with the old RDF and then opening the saved file, which will open with the new RDF.\n"
+              + "The best choice between these two methods can depend on how different the RDFs are,\n"
+              + "and what you are trying to achieve.";
 
           String title = "Change of RDF Directory";
-          opt = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+          opt = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
+              JOptionPane.QUESTION_MESSAGE );
         }
         if ( opt == JOptionPane.CANCEL_OPTION )
         {
@@ -2197,7 +2193,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         for ( int i = 0; i < oldSettings.length; i++ )
         {
           settingValues[ i ] = oldSettings[ i ].getValue();
-        } 
+        }
         Remote newRemote = RemoteManager.getRemoteManager().findRemoteByName( oldRemote.getName() );
         remoteConfig.setRemote( newRemote );
         for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
@@ -2226,13 +2222,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         int opt = JOptionPane.NO_OPTION;
         if ( remoteConfig != null )
         {
-          String message = "Do you want to apply this directory change immediately?\n\n" +
-          "Yes = a map and image from the new directory will be used in the present setup;\n" +
-          "No = the change will take place when you next open a remote, even within this session;\n" +
-          "Cancel = the change will be cancelled.\n\n";
+          String message = "Do you want to apply this directory change immediately?\n\n"
+              + "Yes = a map and image from the new directory will be used in the present setup;\n"
+              + "No = the change will take place when you next open a remote, even within this session;\n"
+              + "Cancel = the change will be cancelled.\n\n";
 
           String title = "Change of Map and Image Directory";
-          opt = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+          opt = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
+              JOptionPane.QUESTION_MESSAGE );
         }
         if ( opt == JOptionPane.CANCEL_OPTION )
         {
@@ -2253,11 +2250,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         sb.append( version );
         sb.append( "</b>" );
         sb.append( "<p>Written primarily by <i>Greg Bush</i> (now accepting donations at " );
-        sb
-            .append( "<a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>)</p>" );
+        sb.append( "<a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>)</p>" );
         sb.append( "<p>Other contributors include:<blockquote>" );
-        sb
-            .append( "Graham&nbsp;Dixon, John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, " );
+        sb.append( "Graham&nbsp;Dixon, John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, " );
         sb.append( "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></p>" );
 
         sb.append( "<p>RDFs loaded from <b>" );
@@ -2508,8 +2503,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   }
 
   /**
-   * Updates the progress bars and returns a boolean specifying whether the configuration
-   * is valid, i.e. whether all sections fit in their available space.
+   * Updates the progress bars and returns a boolean specifying whether the configuration is valid, i.e. whether all
+   * sections fit in their available space.
    */
   private boolean updateUsage()
   {
@@ -2551,9 +2546,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else
       {
-        message = "There is insufficient space in the advanced codes section for both the defined\n" +
-                  "advanced codes (keymoves, macros, special functions etc.) and the device\n" +
-                  "upgrades that have overflowed from their own section.  Please remove some entries.";
+        message = "There is insufficient space in the advanced codes section for both the defined\n"
+            + "advanced codes (keymoves, macros, special functions etc.) and the device\n"
+            + "upgrades that have overflowed from their own section.  Please remove some entries.";
       }
       showErrorMessage( message, title );
     }
@@ -2587,15 +2582,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else
       {
-        message = "There is insufficient space in the learned signals section for both the defined\n" +
-                  "learned signals and the device upgrades that have overflowed from their own\n" +
-                  "section.  Please remove some entries.";
+        message = "There is insufficient space in the learned signals section for both the defined\n"
+            + "learned signals and the device upgrades that have overflowed from their own\n"
+            + "section.  Please remove some entries.";
       }
       showErrorMessage( message, title );
     }
     return valid;
   }
-  
+
   private void showErrorMessage( String message, String title )
   {
     JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
@@ -2858,20 +2853,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
       ".rmir", ".ir", ".rmdu", ".txt", ".xml"
   };
-  
+
   private final static String[] allMergeEndings =
   {
-    ".hex", ".ir", ".txt"
+      ".hex", ".ir", ".txt"
   };
-  
+
   private final static String[] extenderEndings =
   {
     ".hex"
   };
-  
+
   private final static String[] otherMergeEndings =
   {
-    ".ir", ".txt"
+      ".ir", ".txt"
   };
 
   @Override

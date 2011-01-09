@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
@@ -110,15 +111,15 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
         {
           try
           {
-            ClipboardReader rdr = ClipboardReaderFactory.getClipboardReader( t );
+            ClipboardReader rdr = ClipboardReaderFactory.getClipboardReader( t, pasteFromIE );
 
             int colCount = table.getModel().getColumnCount();
             int addedRow = -1;
             int row = table.getSelectedRow();
             int col = table.getSelectedColumn();
-            for ( String[] tokens = rdr.readNextLine(); tokens != null; tokens = rdr.readNextLine() )
+            for ( List< String > tokens = rdr.readNextLine(); tokens != null; tokens = rdr.readNextLine() )
             {
-              if ( tokens.length == 0 )
+              if ( tokens.isEmpty() )
               {
                 continue;
               }
@@ -131,9 +132,8 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
               }
 
               int workCol = col;
-              for ( int i = 0; i < tokens.length; ++i )
+              for ( String token : tokens )
               {
-                String token = tokens[ i ].trim();
                 if ( token.length() == 0 )
                 {
                   token = null;
@@ -263,6 +263,14 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
     pasteItem.addActionListener( this );
     popup.add( pasteItem );
 
+    pasteFromIEItem = new JMenuItem( "Paste (IE)" );
+    if ( System.getProperty( "os.name" ).indexOf( "Windows" ) != -1 )
+    {
+      pasteFromIEItem.setToolTipText( "Paste multiple columns from Internet Explorer into the selection." );
+      pasteFromIEItem.addActionListener( this );
+      popup.add( pasteFromIEItem );
+    }
+
     MouseAdapter mh = new MouseAdapter()
     {
       public void mousePressed( MouseEvent e )
@@ -291,9 +299,15 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
 
           Transferable clipData = clipboard.getContents( clipboard );
           if ( ( clipData != null ) && clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) && ( popupCol != 0 ) )
+          {
             pasteItem.setEnabled( true );
+            pasteFromIEItem.setEnabled( true );
+          }
           else
+          {
             pasteItem.setEnabled( false );
+            pasteFromIEItem.setEnabled( false );
+          }
 
           copyItem.setEnabled( table.getSelectedRowCount() > 0 );
           popup.show( table, e.getX(), e.getY() );
@@ -362,6 +376,15 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
     pasteButton.setToolTipText( "Paste" );
     pasteButton.setEnabled( false );
     buttonPanel.add( pasteButton );
+
+    pasteFromIEButton = new JButton( "Paste (IE)" );
+    if ( System.getProperty( "os.name" ).indexOf( "Windows" ) != -1 )
+    {
+      pasteFromIEButton.addActionListener( this );
+      pasteFromIEButton.setToolTipText( "Paste multiple columns from Internet Explorer" );
+      pasteFromIEButton.setEnabled( false );
+      buttonPanel.add( pasteFromIEButton );
+    }
   }
 
   /*
@@ -533,7 +556,21 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
     {
       Transferable clipData = clipboard.getContents( clipboard );
       if ( clipData != null )
+      {
+        pasteFromIE = false;
         table.getTransferHandler().importData( table, clipboard.getContents( clipboard ) );
+      }
+      else
+        kit.beep();
+    }
+    else if ( ( source == pasteFromIEItem ) || ( source == pasteFromIEButton ) )
+    {
+      Transferable clipData = clipboard.getContents( clipboard );
+      if ( clipData != null )
+      {
+        pasteFromIE = true;
+        table.getTransferHandler().importData( table, clipboard.getContents( clipboard ) );
+      }
       else
         kit.beep();
     }
@@ -561,9 +598,15 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
         copyButton.setEnabled( true );
         if ( ( clipData != null ) && clipData.isDataFlavorSupported( DataFlavor.stringFlavor )
             && ( table.convertColumnIndexToModel( table.getSelectedColumn() ) != 0 ) )
+        {
           pasteButton.setEnabled( true );
+          pasteFromIEButton.setEnabled( true );
+        }
         else
+        {
           pasteButton.setEnabled( false );
+          pasteFromIEButton.setEnabled( false );
+        }
       }
       else
       {
@@ -666,6 +709,7 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
 
   /** The paste button. */
   private JButton pasteButton = null;
+  private JButton pasteFromIEButton = null;
 
   /** The popup row. */
   private int popupRow = 0;
@@ -687,6 +731,9 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
 
   /** The paste item. */
   private JMenuItem pasteItem = null;
+  private JMenuItem pasteFromIEItem = null;
+
+  private boolean pasteFromIE = false;
 
   /** The clipboard. */
   private Clipboard clipboard = null;

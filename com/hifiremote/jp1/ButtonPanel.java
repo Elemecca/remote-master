@@ -232,8 +232,8 @@ public class ButtonPanel extends KMPanel implements ActionListener
             Object value = table.getValueAt( selRow, selCol );
             if ( value != null )
             {
-              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel().getColumn(
-                  selCol ).getCellRenderer();
+              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel()
+                  .getColumn( selCol ).getCellRenderer();
               if ( cellRenderer != null )
               {
                 cellRenderer.getTableCellRendererComponent( table, value, false, false, selRow, convertedCol );
@@ -368,9 +368,10 @@ public class ButtonPanel extends KMPanel implements ActionListener
     outerPanel.add( functionPanel, BorderLayout.NORTH );
     panel.add( new JScrollPane( outerPanel ), BorderLayout.CENTER );
 
-    JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, new JScrollPane( table ), new JScrollPane( panel ));
+    JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, new JScrollPane( table ), new JScrollPane(
+        panel ) );
     splitPane.setResizeWeight( 0.3 );
-    
+
     add( splitPane, BorderLayout.CENTER );
     panel = new JPanel();
     autoAssign = new JButton( "Auto assign" );
@@ -664,5 +665,4 @@ public class ButtonPanel extends KMPanel implements ActionListener
 
   /** The paste item. */
   private JMenuItem pasteItem = null;
-
 }

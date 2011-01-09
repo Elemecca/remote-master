@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * @author Greg
  */
-public class HTMLClipboardReader implements ClipboardReader
+public class HTMLClipboardReader extends ClipboardReader
 {
   public HTMLClipboardReader( Reader in )
   {
@@ -66,7 +66,7 @@ public class HTMLClipboardReader implements ClipboardReader
     return buff.toString().trim();
   }
 
-  public String[] readNextLine() throws IOException
+  public List< String > readNextLine() throws IOException
   {
     String token = null;
     List< String > tokens = new ArrayList< String >();
@@ -122,7 +122,7 @@ public class HTMLClipboardReader implements ClipboardReader
     {
       return null;
     }
-    return tokens.toArray( new String[ tokens.size() ] );
+    return tokens;
   }
 
   public void close() throws IOException

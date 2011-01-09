@@ -23,7 +23,7 @@ public class FunctionTableModel extends KMTableModel< Function >
   private final static int nameCol = rowCol + 1;
 
   /** The Constant efcCol. */
-  private final static int efcCol = nameCol + 1;
+  private int efcCol = nameCol + 1;
 
   /** The efc5col. */
   private int efc5col = -1;
@@ -85,10 +85,12 @@ public class FunctionTableModel extends KMTableModel< Function >
   {
     this.protocol = protocol;
     this.remote = remote;
+    efcCol = nameCol + 1;
     colOffset = efcCol + 1;
     if ( ( remote != null ) && ( remote.getEFCDigits() == 5 ) )
     {
-      efc5col = colOffset;
+      efc5col = efcCol;
+      efcCol = colOffset;
       colOffset += 1;
     }
     else
@@ -224,7 +226,7 @@ public class FunctionTableModel extends KMTableModel< Function >
         if ( hex == null )
           hex = protocol.getDefaultCmd();
         if ( value.getClass() == String.class )
-          EFC5.toHex( Short.parseShort( ( String )value ), hex );
+          EFC5.toHex( Integer.parseInt( ( String )value ), hex );
         else
           ( ( EFC5 )value ).toHex( hex );
         function.setHex( hex );

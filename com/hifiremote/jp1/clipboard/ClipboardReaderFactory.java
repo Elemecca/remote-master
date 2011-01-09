@@ -14,8 +14,8 @@ import java.io.Reader;
  */
 public class ClipboardReaderFactory
 {
-  public static ClipboardReader getClipboardReader( Transferable transferable ) throws UnsupportedFlavorException,
-      IOException
+  public static ClipboardReader getClipboardReader( Transferable transferable, boolean fromIE )
+      throws UnsupportedFlavorException, IOException
   {
     DataFlavor[] flavors = transferable.getTransferDataFlavors();
     ClipboardReader reader = null;
@@ -26,7 +26,7 @@ public class ClipboardReaderFactory
         if ( tentative.getRepresentationClass() == Reader.class )
         {
           String subType = tentative.getSubType();
-          if ( subType.equals( "html" ) )
+          if ( fromIE && subType.equals( "html" ) )
           {
             reader = new HTMLClipboardReader( tentative.getReaderForText( transferable ) );
             break;

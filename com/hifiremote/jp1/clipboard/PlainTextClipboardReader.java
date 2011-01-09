@@ -6,8 +6,10 @@ package com.hifiremote.jp1.clipboard;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PlainTextClipboardReader implements ClipboardReader
+public class PlainTextClipboardReader extends ClipboardReader
 {
   public PlainTextClipboardReader( Reader in )
   {
@@ -17,7 +19,7 @@ public class PlainTextClipboardReader implements ClipboardReader
   private BufferedReader rdr = null;
 
   @Override
-  public String[] readNextLine() throws IOException
+  public List< String > readNextLine() throws IOException
   {
     String line = rdr.readLine();
     if ( line == null )
@@ -33,7 +35,13 @@ public class PlainTextClipboardReader implements ClipboardReader
       }
     }
 
-    return line.split( "\t" );
+    String[] tokens = line.split( "\t" );
+    List< String > rc = new ArrayList< String >( tokens.length );
+    for ( String token : tokens )
+    {
+      rc.add( token.trim() );
+    }
+    return rc;
   }
 
   public void close() throws IOException
