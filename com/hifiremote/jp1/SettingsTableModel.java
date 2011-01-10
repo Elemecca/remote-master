@@ -188,7 +188,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
     else if ( col == 3 )
     {
       setting.setHighlight( ( Color )value );
-      propertyChangeSupport.firePropertyChange( "value", null, null );
+      propertyChangeSupport.firePropertyChange( "highlight", null, null );
     }
   }
 

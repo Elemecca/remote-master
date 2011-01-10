@@ -287,10 +287,11 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         break;
       case 8:
         device.setDescription( ( String )value );
+        propertyChangeSupport.firePropertyChange( "device", null, null );
         break;
       case 9:
         device.setHighlight( ( Color )value );
-        propertyChangeSupport.firePropertyChange( "device", null, null );
+        propertyChangeSupport.firePropertyChange( "highlight", null, null );
         break;
       case 10:
         device.setProtocolHighlight( ( Color )value );
@@ -335,7 +336,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         {
           fireTableDataChanged();
         }
-        propertyChangeSupport.firePropertyChange( "device", null, null );
+        propertyChangeSupport.firePropertyChange( "highlight", null, null );
         break;
     }
   }

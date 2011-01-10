@@ -269,7 +269,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         l.setHighlight( ( Color  )value );
         break;
     }
-    propertyChangeSupport.firePropertyChange( "data", null, null );
+    propertyChangeSupport.firePropertyChange( col == 12 ? "highlight" : "data", null, null );
   }
 
   /*

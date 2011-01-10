@@ -167,7 +167,7 @@ public class TimedMacroTableModel extends JP1TableModel< TimedMacro >
     {
       timedMacro.setHighlight( ( Color  )value );
     }
-    propertyChangeSupport.firePropertyChange( "data", null, null );
+    propertyChangeSupport.firePropertyChange( col == 5 ? "highlight" : "data", null, null );
   }
     
   public RemoteConfiguration getRemoteConfig()

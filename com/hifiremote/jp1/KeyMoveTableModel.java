@@ -301,7 +301,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     {
       return;
     }
-    propertyChangeSupport.firePropertyChange( "data", null, null );
+    propertyChangeSupport.firePropertyChange( col == 9 ? "highlight" : "data", null, null );
   }
 
   /*

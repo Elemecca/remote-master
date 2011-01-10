@@ -194,11 +194,12 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
     if ( col == 4 )
     {
       pu.setNotes( ( String )value );
+      propertyChangeSupport.firePropertyChange( "device", null, null );
     }
     else if ( col == 5 )
     {
       pu.setHighlight( ( Color )value );
-      propertyChangeSupport.firePropertyChange( "device", null, null );
+      propertyChangeSupport.firePropertyChange( "highlight", null, null );
     }
   }
   

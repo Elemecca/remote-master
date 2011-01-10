@@ -162,7 +162,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       favScan.setHighlight( ( Color  )value );
     }
-    propertyChangeSupport.firePropertyChange( "data", null, null );
+    propertyChangeSupport.firePropertyChange( col == 3 ? "highlight" : "data", null, null );
   }
 
   public RemoteConfiguration getRemoteConfig()

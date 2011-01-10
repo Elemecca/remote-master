@@ -499,7 +499,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       db.setHighlight( ( Color )value );
     }
-    propertyChangeSupport.firePropertyChange( "value", null, null );
+    propertyChangeSupport.firePropertyChange( col == 7 ? "highlight" : "value", null, null );
   }
   
   private boolean isValidDevice( int row, DeviceType devType, SetupCode setupCode )

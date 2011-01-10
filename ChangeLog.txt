@@ -22,10 +22,12 @@ Changes for v2.01
 - On importing .ir file, treat invalid digit maps index as absent, to prevent RMIR crashing (Graham)
 - Improve use of ExtInstall, to avoid an issue when installing over an existing extender (Graham)
 -- Alpha 6 --
-- Restore old paste code
-- Add "Paste (IE)" for pasting multi-column data from IE (windows only)
-- Fix pasting EFC5s
-- Move EFC5 column before EFC column on Functions tab for remotes that use EFC5. 
+- Restore old paste code (Greg)
+- Add "Paste (IE)" for pasting multi-column data from IE (windows only) (Greg)
+- Fix pasting EFC5s (Greg)
+- Move EFC5 column before EFC column on Functions tab for remotes that use EFC5. (Greg)
+-- Alpha 7 --
+- Prompt to save before exiting, downloading from remote, etc if data has changed (Graham) 
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)

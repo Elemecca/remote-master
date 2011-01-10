@@ -219,7 +219,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     {
       return;
     }
-    propertyChangeSupport.firePropertyChange( "data", null, null );
+    propertyChangeSupport.firePropertyChange( col == 7 ? "highlight" : "data", null, null );
   }
 
   /*
