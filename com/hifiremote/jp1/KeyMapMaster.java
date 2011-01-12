@@ -21,7 +21,6 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.text.DateFormat;
@@ -875,31 +874,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == updateItem )
       {
-        java.net.URL url = new java.net.URL( "http://controlremote.sourceforge.net/version.dat" );
-        BufferedReader in = new BufferedReader( new InputStreamReader( url.openStream() ) );
-        String latestVersion = in.readLine();
-        in.close();
-        String text = null;
-        if ( RemoteMaster.version.compareTo( latestVersion ) >= 0 )
-        {
-          text = "You are using the latest version (" + RemoteMaster.version + ") of RemoteMaster.";
-        }
-        else
-        {
-          text = "<html>Version "
-              + latestVersion
-              + " of RemoteMaster is available, but you are still using version "
-              + RemoteMaster.version
-              + "<p>The new version is available for download from<br><a href=\"http://prdownloads.sourceforge.net/controlremote/RemoteMaster."
-              + latestVersion + ".zip?download\">" + "http://prdownloads.sourceforge.net/controlremote/RemoteMaster."
-              + latestVersion + ".zip?download</a></html>";
-        }
-
-        JEditorPane pane = new JEditorPane( "text/html", text );
-        pane.setEditable( false );
-        pane.setBackground( getContentPane().getBackground() );
-        new TextPopupMenu( pane );
-        JOptionPane.showMessageDialog( this, pane, "RemoteMaster Version Check", JOptionPane.INFORMATION_MESSAGE );
+        UpdateChecker.checkUpdateAvailable( this );
       }
       else if ( source == readmeItem )
       {
@@ -1273,7 +1248,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     return homeDirectory;
   }
-  
+
   public void validateUpgrade()
   {
     // Call from the editor panel to avoid duplication of error messages
@@ -1283,45 +1258,45 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   /**
    * Validate upgrade.
    */
-//  public void validateUpgrade()
-//  {
-//    Remote r = deviceUpgrade.getRemote();
-//    Protocol p = deviceUpgrade.getProtocol();
-//    
-//    if ( oldRemote == r && oldProtocol == p ) return;
-//    oldRemote = r;
-//    oldProtocol = p;
-//    
-//    java.util.List< Protocol > protocols = protocolManager.getProtocolsForRemote( r );
-//    if ( !protocols.contains( p ) && !p.hasCode( r ) )
-//    {
-//      System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName()
-//          + "is not compatible with remote " + r.getName() );
-//
-//      // Find a matching protocol for this remote
-//      Protocol match = null;
-//      String name = p.getName();
-//      for ( Protocol p2 : protocols )
-//      {
-//        if ( p2.getName().equals( name ) )
-//        {
-//          match = p2;
-//          System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName() );
-//          break;
-//        }
-//      }
-//      if ( match != null )
-//      {
-//        deviceUpgrade.setProtocol( match );
-//      }
-//      else
-//      {
-//        JOptionPane.showMessageDialog( this, "The selected protocol " + p.getDiagnosticName()
-//            + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
-//            + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
-//      }
-//    }
-//  }
+  // public void validateUpgrade()
+  // {
+  // Remote r = deviceUpgrade.getRemote();
+  // Protocol p = deviceUpgrade.getProtocol();
+  //
+  // if ( oldRemote == r && oldProtocol == p ) return;
+  // oldRemote = r;
+  // oldProtocol = p;
+  //
+  // java.util.List< Protocol > protocols = protocolManager.getProtocolsForRemote( r );
+  // if ( !protocols.contains( p ) && !p.hasCode( r ) )
+  // {
+  // System.err.println( "KeyMapMaster.validateUpgrade(), protocol " + p.getDiagnosticName()
+  // + "is not compatible with remote " + r.getName() );
+  //
+  // // Find a matching protocol for this remote
+  // Protocol match = null;
+  // String name = p.getName();
+  // for ( Protocol p2 : protocols )
+  // {
+  // if ( p2.getName().equals( name ) )
+  // {
+  // match = p2;
+  // System.err.println( "\tFound one with the same name: " + p2.getDiagnosticName() );
+  // break;
+  // }
+  // }
+  // if ( match != null )
+  // {
+  // deviceUpgrade.setProtocol( match );
+  // }
+  // else
+  // {
+  // JOptionPane.showMessageDialog( this, "The selected protocol " + p.getDiagnosticName()
+  // + "\nis not compatible with the selected remote.\n" + "This upgrade will NOT function correctly.\n"
+  // + "Please choose a different protocol.", "Error", JOptionPane.ERROR_MESSAGE );
+  // }
+  // }
+  // }
 
   /**
    * Gets the remote.

@@ -7,6 +7,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 
 /**
@@ -23,7 +24,8 @@ public class ClipboardReaderFactory
     {
       if ( tentative.getPrimaryType().equals( "text" ) )
       {
-        if ( tentative.getRepresentationClass() == Reader.class )
+        Class< ? > clazz = tentative.getRepresentationClass();
+        if ( clazz == Reader.class || clazz == InputStream.class )
         {
           String subType = tentative.getSubType();
           if ( fromIE && subType.equals( "html" ) )
