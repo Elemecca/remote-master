@@ -252,6 +252,6 @@ public class ToadTogFunction extends SpecialProtocolFunction
   /** Description of the Field. */
   public static String[] offStrings =
   {
-      "Off->On", "Already Off", "Off", "On->Off"
+      "Off->On", "Already Off", "Off", "Off->On"
   };
 }

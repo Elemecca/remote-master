@@ -31,6 +31,8 @@ Changes for v2.01
 - More copy'n'paste fixes (Greg)
 - Refactor check for updates (Greg)
 - Add check for updates to RMIR (Greg)
+-- Alpha 8 --
+- Correct wording of ToadTog ForceOn function:  On->Off corrected to Off->On (Graham)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)
