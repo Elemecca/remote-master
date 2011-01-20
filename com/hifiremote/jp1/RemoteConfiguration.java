@@ -28,8 +28,6 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
-import com.hifiremote.jp1.AdvancedCode.BindFormat;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class RemoteConfiguration.
@@ -189,8 +187,9 @@ public class RemoteConfiguration
           e.printStackTrace( System.err );
           throw new IOException( "Unable to create instance of " + sectionName );
         }
-      }
+      } 
     }
+    convertKeyMoves();
   }
 
   /**

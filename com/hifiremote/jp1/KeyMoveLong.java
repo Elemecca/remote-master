@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.util.Properties;
+
 public class KeyMoveLong extends KeyMove
 {
   public KeyMoveLong( int keyCode, int deviceButtonIndex, Hex data, String notes )
@@ -11,6 +13,11 @@ public class KeyMoveLong extends KeyMove
   public KeyMoveLong( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
     super( keyCode, deviceButtonIndex, deviceType, setupCode, cmd, notes );
+  }
+  
+  public KeyMoveLong( Properties props )
+  {
+    super( props );
   }
 
   @Override
