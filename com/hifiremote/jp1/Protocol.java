@@ -554,10 +554,7 @@ public class Protocol
     {
       for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
       {
-        if ( du.needsProtocolCode() )
-        {
-          code = du.getCode();
-        }
+        code = du.needsProtocolCode() ? du.getCode() : null;
         Protocol p = du.getProtocol();
         if ( p != this && p.getID( remote ).get( 0 ) == pid && code != null )
         {
@@ -1330,6 +1327,32 @@ public class Protocol
    */
   public boolean convertFunctions( java.util.List< Function > funcs, Protocol newProtocol )
   {
+    boolean primaryOBC = JP1Frame.getProperties().getProperty( "Primacy", "OBC" ).equals( "OBC" );
+    if ( !primaryOBC )
+    {
+      // Preserve hex rather than command parameters
+      int oldLength = defaultCmd.length();
+      int newLength = newProtocol.getDefaultCmd().length();
+      if ( newLength == oldLength )
+      {
+        return true;
+      }
+      for ( Function f : funcs )
+      {
+        Hex hex = f.getHex();
+        if ( hex != null )
+        {
+          Hex newHex = new Hex( newLength );
+          for ( int i = 0; i < newLength; i++ )
+          {
+            newHex.getData()[ i ] = ( i < oldLength ) ? hex.getData()[ i ] : 0;
+          }
+          f.setHex( newHex );
+        }
+      }
+      return true;
+    }
+    
     CmdParameter[] newParms = newProtocol.cmdParms;
 
     int max = cmdParms.length;
@@ -1611,14 +1634,25 @@ public class Protocol
     Hex codeWhenNull = null;
     Processor processor = remote.getProcessor();
     String proc = processor.getEquivalentName();
+    ProtocolManager pm = ProtocolManager.getProtocolManager();
     Hex originalCode = code.get( proc );
+    boolean primaryOBC = JP1Frame.getProperties().getProperty( "Primacy", "OBC" ).equals( "OBC" );
     if ( originalCode != null )
     {
       originalCode = processor.translate( originalCode, remote );
     }
     if ( getClass() == ManualProtocol.class )
     {
-      mp = ( ManualProtocol )this;
+      if ( primaryOBC )
+      {
+        pm.remove( this );
+        mp = new ManualProtocol( ( ( ManualProtocol )this ).getIniSection() );  // Clone
+        pm.add( mp );
+      }
+      else
+      {
+        mp = ( ManualProtocol )this;
+      }
     }
     else
     {
@@ -1629,7 +1663,7 @@ public class Protocol
       pu.setManualProtocol( remote, fixedDataLength, cmdLength );
       mp = pu.getManualProtocol( remote );
       // This is just an auxiliary manual protocol so delete it from ProtocolManager
-      ProtocolManager.getProtocolManager().remove( mp );
+      pm.remove( mp );
       mp.setName( getName() + " (custom)" );
       if ( ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, mp.getID() ).contains( this )
           && getCodeTranslators( remote ) == null )
@@ -1705,6 +1739,11 @@ public class Protocol
           customCode.put( proc, returnCode );
         }
       }         
+    }
+    else if ( result == null && getClass() == ManualProtocol.class && primaryOBC )
+    {
+      pm.remove( mp );
+      pm.add( this );
     }
     return result;
   }

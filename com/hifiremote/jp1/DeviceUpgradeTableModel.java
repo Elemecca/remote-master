@@ -282,6 +282,21 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
             }
           }
         }
+        if ( p instanceof ManualProtocol )
+        {
+          // If a manual protocol has been edited, it will have been replaced by a new manual
+          // protocol with the same name, and any other uses of the old protocol also need to
+          // be replaced.
+          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+          {
+            Protocol temp = du.getProtocol();
+            if ( temp instanceof ManualProtocol && temp.getName().equals( p.getName() ) && temp != p )
+            {
+              du.setProtocol( p, false );
+            }
+          }
+        }
+
         propertyChangeSupport.firePropertyChange( "device", null, null );
         fireTableDataChanged();
         break;

@@ -92,7 +92,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.01 alpha 7";
+  public final static String version = "v2.01 alpha 8";
 
   /** The dir. */
   private File dir = null;
@@ -1376,6 +1376,43 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
 
+    boolean primaryOBC = JP1Frame.getProperties().getProperty( "Primacy", "OBC" ).equals( "OBC" );
+    subMenu = new JMenu( "Primacy" );
+    subMenu.setMnemonic( KeyEvent.VK_P );
+    subMenu.setToolTipText( "Specifies whether Device parameters or EFC and Hex values are preserved when a protocol is changed or edited"  );
+    menu.add( subMenu );
+    group = new ButtonGroup();
+    JRadioButtonMenuItem item = new JRadioButtonMenuItem( "OBC" );
+    item.setMnemonic( KeyEvent.VK_O );
+    item.setToolTipText( "Preserve Device parameters such as OBC when a protocol is changed or edited" );
+    item.setSelected( primaryOBC );
+    item.addActionListener( new ActionListener()
+    {
+      @Override
+      public void actionPerformed( ActionEvent e )
+      {
+        properties.setProperty( "Primacy", "OBC" );
+      }
+    } );
+    group.add( item );
+    subMenu.add( item );
+    item = new JRadioButtonMenuItem( "EFC/Hex" );
+    item.setMnemonic( KeyEvent.VK_H );
+    item.setToolTipText( "Preserve EFC and Hex values when a protocol is changed or edited" );
+    item.setSelected( !primaryOBC );
+    item.addActionListener( new ActionListener()
+    {
+      @Override
+      public void actionPerformed( ActionEvent e )
+      {
+        properties.setProperty( "Primacy", "EFC/Hex" );
+      }
+    } );
+    group.add( item );
+    subMenu.add( item );
+    
+    menu.addSeparator();
+    
     cleanUpperMemoryItem = new JMenuItem( "Clean Upper Memory...", KeyEvent.VK_C );
     cleanUpperMemoryItem.setEnabled( false );
     cleanUpperMemoryItem.addActionListener( this );

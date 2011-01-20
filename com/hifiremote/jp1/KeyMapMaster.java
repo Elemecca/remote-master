@@ -82,8 +82,10 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The exit item. */
   private JMenuItem exitItem = null;
 
-  /** The manual item. */
-  private JMenuItem manualItem = null;
+  private JMenuItem editManualItem = null;
+  
+  private JMenuItem newManualItem = null;
+  
   // private JMenuItem editorItem = null;
   /** The raw item. */
   private JMenuItem rawItem = null;
@@ -553,11 +555,56 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
-
-    manualItem = new JMenuItem( "Manual Settings..." );
-    manualItem.setMnemonic( KeyEvent.VK_M );
-    manualItem.addActionListener( this );
-    menu.add( manualItem );
+    
+    boolean primaryOBC = JP1Frame.getProperties().getProperty( "Primacy", "OBC" ).equals( "OBC" );
+    submenu = new JMenu( "Primacy" );
+    submenu.setMnemonic( KeyEvent.VK_P );
+    submenu.setToolTipText( "Specifies whether Device parameters or EFC and Hex values are preserved when a protocol is changed or edited"  );
+    menu.add( submenu );
+    group = new ButtonGroup();
+    item = new JRadioButtonMenuItem( "OBC" );
+    item.setMnemonic( KeyEvent.VK_O );
+    item.setToolTipText( "Preserve Device parameters such as OBC when a protocol is changed or edited" );
+    item.setSelected( primaryOBC );
+    item.addActionListener( new ActionListener()
+    {
+      @Override
+      public void actionPerformed( ActionEvent e )
+      {
+        properties.setProperty( "Primacy", "OBC" );
+      }
+    } );
+    group.add( item );
+    submenu.add( item );
+    item = new JRadioButtonMenuItem( "EFC/Hex" );
+    item.setMnemonic( KeyEvent.VK_H );
+    item.setToolTipText( "Preserve EFC and Hex values when a protocol is changed or edited" );
+    item.setSelected( !primaryOBC );
+    item.addActionListener( new ActionListener()
+    {
+      @Override
+      public void actionPerformed( ActionEvent e )
+      {
+        properties.setProperty( "Primacy", "EFC/Hex" );
+      }
+    } );
+    group.add( item );
+    submenu.add( item );
+    
+    menu.addSeparator();
+    
+    editManualItem = new JMenuItem( "Edit Protocol..." );
+    editManualItem.setMnemonic( KeyEvent.VK_E );
+    editManualItem.addActionListener( this );
+    menu.add( editManualItem );
+    
+    newManualItem = new JMenuItem( "New Manual Protocol..." );
+    newManualItem.setMnemonic( KeyEvent.VK_M );
+    newManualItem.addActionListener( this );
+    menu.add( newManualItem );
+    
+    menu.addSeparator();
+    
     /*
      * editorItem = new JMenuItem( "Protocol Editor..." ); editorItem.setMnemonic( KeyEvent.VK_P );
      * editorItem.addActionListener( this ); menu.add( editorItem );
@@ -640,15 +687,20 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private void editManualSettings()
   {
     Protocol p = deviceUpgrade.getProtocol();
-    ManualProtocol mp = null;
-    if ( p.getClass() == ManualProtocol.class )
+    Protocol edited = p.editProtocol( getRemote(), this );
+    if ( edited == null )
     {
-      mp = ( ManualProtocol )p;
+      return;
     }
-    else
+    if ( p instanceof ManualProtocol && p != edited )
     {
-      mp = new ManualProtocol( null, null );
+      deviceUpgrade.setProtocol( edited );
     }
+  }
+  
+  private void newManualSettings()
+  {
+    ManualProtocol mp = new ManualProtocol( null, null );
     ManualSettingsDialog d = new ManualSettingsDialog( this, mp );
     d.setVisible( true );
     mp = d.getProtocol();
@@ -798,9 +850,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         dispatchEvent( new WindowEvent( this, WindowEvent.WINDOW_CLOSING ) );
       }
-      else if ( source == manualItem )
+      else if ( source == editManualItem )
       {
         editManualSettings();
+      }
+      else if ( source == newManualItem )
+      {
+        newManualSettings();
       }
       /*
        * else if ( source == editorItem ) { ProtocolEditor d = new ProtocolEditor( this ); d.setVisible( true ); }
