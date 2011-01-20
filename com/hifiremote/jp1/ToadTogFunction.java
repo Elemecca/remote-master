@@ -183,7 +183,7 @@ public class ToadTogFunction extends SpecialProtocolFunction
     dlg.setToggle( getToggleNumber() );
     dlg.setCondition( getStyle() );
 
-    short[] keyCodes = getKeyMove().data.getData();
+    short[] keyCodes = getCmd().getData();
 
     int length = getOnLength();
     Integer[] temp = new Integer[ length ];

@@ -34,6 +34,7 @@ Changes for v2.01
 -- Alpha 8 --
 - Correct wording of ToadTog ForceOn function:  On->Off corrected to Off->On (Graham)
 - Resolve various issues concerning device upgrades that both have key moves and are assigned to more than one device button (Graham)
+- Fix ToadTog bug that causes Special Function editor to display incorrect entries (Graham)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)
