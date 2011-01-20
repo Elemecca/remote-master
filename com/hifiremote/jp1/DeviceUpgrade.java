@@ -17,6 +17,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
@@ -60,10 +61,6 @@ public class DeviceUpgrade implements Highlight
   {
     devTypeAliasName = deviceTypeAliasNames[ 0 ];
     initFunctions( defaultNames );
-    for ( int i = 0; i < 256; i++ )
-    {
-      assignmentColors[ i ] = Color.WHITE;
-    }
   }
 
   /**
@@ -84,11 +81,15 @@ public class DeviceUpgrade implements Highlight
     buttonRestriction = base.buttonRestriction;
     
     // Copy assignment colors
-    for ( int i = 0; i < 256; i++ )
+    for ( int index : base.assignmentColors.keySet() )
     {
-      assignmentColors[ i ] = base.assignmentColors[ i ];
+      assignmentColors.put( index, new Color[ 256 ] );
+      for ( int i = 0; i < 256; i++ )
+      {
+        assignmentColors.get( index )[ i ] = base.assignmentColors.get( index )[ i ];
+      }
     }
-
+    
     // copy the device parameter values
     protocol.setDeviceParms( base.parmValues );
     parmValues = protocol.getDeviceParmValues();
@@ -1231,6 +1232,12 @@ public class DeviceUpgrade implements Highlight
    */
   public java.util.List< KeyMove > getKeyMoves()
   {
+    return getKeyMoves( -1 );
+  }
+  
+  
+  public java.util.List< KeyMove > getKeyMoves( int deviceButtonIndex )
+  {
     java.util.List< KeyMove > keyMoves = new ArrayList< KeyMove >();
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     for ( Button button : remote.getUpgradeButtons() )
@@ -1241,7 +1248,10 @@ public class DeviceUpgrade implements Highlight
       {
         keyMoves.add( keyMove );
         keyMove.setNotes( f.getNotes() );
-        keyMove.setHighlight( assignmentColors[ button.getKeyCode( Button.NORMAL_STATE )] );
+        if ( deviceButtonIndex >= 0 )
+        {
+          keyMove.setHighlight( getAssignmentColor( button.getKeyCode( Button.NORMAL_STATE ), deviceButtonIndex ) );
+        }
       }
 
       f = assignments.getAssignment( button, Button.SHIFTED_STATE );
@@ -1254,7 +1264,10 @@ public class DeviceUpgrade implements Highlight
       {
         keyMoves.add( keyMove );
         keyMove.setNotes( f.getNotes() );
-        keyMove.setHighlight( assignmentColors[ button.getKeyCode( Button.SHIFTED_STATE )] );
+        if ( deviceButtonIndex >= 0 )
+        {
+          keyMove.setHighlight( getAssignmentColor( button.getKeyCode( Button.SHIFTED_STATE ), deviceButtonIndex ) );
+        }
       }
 
       f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
@@ -1267,7 +1280,10 @@ public class DeviceUpgrade implements Highlight
       {
         keyMoves.add( keyMove );
         keyMove.setNotes( f.getNotes() );
-        keyMove.setHighlight( assignmentColors[ button.getKeyCode( Button.XSHIFTED_STATE )] );
+        if ( deviceButtonIndex >= 0 )
+        {
+          keyMove.setHighlight( getAssignmentColor( button.getKeyCode( Button.XSHIFTED_STATE ), deviceButtonIndex ) );
+        }
       }
     }
     return keyMoves;
@@ -3298,11 +3314,30 @@ public class DeviceUpgrade implements Highlight
   /** The assignments. */
   private ButtonAssignments assignments = new ButtonAssignments();
 
-  private Color assignmentColors[] = new Color[ 256 ];
-  
-  public void setAssignmentColor( int keyCode, Color color )
+  protected HashMap< Integer, Color[] > assignmentColors = new HashMap< Integer, Color[] >();
+
+  public void setAssignmentColor( int keyCode, int deviceButtonIndex, Color color )
   {
-    assignmentColors[ keyCode ] = color;
+    if ( !assignmentColors.containsKey( deviceButtonIndex ) )
+    {
+      Color[] allWhite = new Color[ 256 ];
+      for ( int i = 0; i < 256; i++ )
+      {
+        allWhite[ i ] = Color.WHITE;
+      }
+      assignmentColors.put( deviceButtonIndex, allWhite );
+    }
+    assignmentColors.get( deviceButtonIndex )[ keyCode ] = color;
+  }
+  
+  public Color getAssignmentColor( int keyCode, int deviceButtonIndex )
+  {
+    Color[] colors = assignmentColors.get( deviceButtonIndex );
+    if ( colors != null )
+    {
+      return colors[ keyCode ];
+    }
+    return Color.WHITE;
   }
 
   private Color deviceHighlight = Color.WHITE;

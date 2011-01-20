@@ -393,7 +393,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         return;
       }
       
-      if ( isUpgradeWithKeymoves( oldDevType, oldSetupCode, true ) )
+      if ( isUpgradeWithKeymoves( row, oldDevType, oldSetupCode, true ) )
       {
         preserveKeyMoves( row, oldDevType, oldSetupCode );
       }
@@ -460,7 +460,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         return;
       }
       
-      if ( isUpgradeWithKeymoves( oldDevType, oldSetupCode, true ) )
+      if ( isUpgradeWithKeymoves( row, oldDevType, oldSetupCode, true ) )
       {
         preserveKeyMoves( row, oldDevType, oldSetupCode );
       }
@@ -508,7 +508,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     DeviceButton db = getRow( row );
     Button button = remote.getButton( db.getName() );
 
-    if ( isUpgradeWithKeymoves( devType, setupCode, false )
+    if ( isUpgradeWithKeymoves( -1, devType, setupCode, false )
         && ( ( button != null && ! button.allowsKeyMove() )// case of real device button
             || ( row > 7 && remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL ) ) ) // case of phantom device button
     {
@@ -522,7 +522,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     return true;
   }
    
-  private boolean isUpgradeWithKeymoves( DeviceType devType, SetupCode setupCode, boolean ask )
+  private boolean isUpgradeWithKeymoves( int devBtnIndex, DeviceType devType, SetupCode setupCode, boolean ask )
   {
     if ( devType != null && setupCode != null )
     {
@@ -535,8 +535,14 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           String message = "The current device " + devType.getName() + " " + setupCode.getValue() + 
           " contains keymoves.  Do you want to preserve them?";
           String title = "Device Change";
-          return JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+          boolean confirmed = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
               JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION;
+          if ( !confirmed )
+          {
+            // User does not want to preserve keymoves, so delete assignment colors
+            du.assignmentColors.remove( devBtnIndex );
+          }
+          return confirmed;
         }
         else
         {
@@ -558,7 +564,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return;
     }    
-    for ( KeyMove keyMove : du.getKeyMoves() )
+    for ( KeyMove keyMove : du.getKeyMoves( devButtonIndex ) )
     {
       keyMove.setDeviceButtonIndex( devButtonIndex );
       remoteConfig.getKeyMoves().add( keyMove );

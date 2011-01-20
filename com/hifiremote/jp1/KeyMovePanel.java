@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -12,6 +13,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -230,16 +232,52 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
 
       List< KeyMove > keymoves = remoteConfig.getKeyMoves();
       List< KeyMove > toDetach = new ArrayList< KeyMove >( rows.length );
-      int firstRow = keymoves.size();
-      int lastRow = firstRow;
+      List< KeyMove > alsoDetach = new ArrayList< KeyMove >();
       for ( int row : rows )
       {
-        if ( row > lastRow )
-        {
-          lastRow = row;
-        }
         KeyMove keyMove = model.getRow( sorter.modelIndex( row ) );
         toDetach.add( keyMove );
+        
+        // Now see if there are other keymoves arising from the same device upgrade keymove as this one.
+        DeviceUpgrade upgrade = remoteConfig.findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
+        for ( int i : remoteConfig.getDeviceButtonIndexList( upgrade ) )
+        {
+          if ( i == keyMove.getDeviceButtonIndex() )
+          {
+            // We have already added this one to the detach list.
+            continue;
+          }
+          for ( int test = keymoves.size(); test < model.getData().size(); test++ )
+          {
+            KeyMove km = model.getData().get( test );
+            if ( km.getDeviceButtonIndex() == i && km.getKeyCode() == keyMove.getKeyCode() )
+            {
+              alsoDetach.add( km );
+              break;
+            }
+          }
+        }
+      }
+      
+      for ( Iterator< KeyMove > it = alsoDetach.iterator(); it.hasNext(); )
+      {
+        // Avoid duplicates by deleting any alsoDetach keymoves that are actually also selected.
+        KeyMove km = it.next();
+        if ( toDetach.contains( km ) )
+        {
+          it.remove();
+        }
+      }
+      
+      if ( !alsoDetach.isEmpty() && JOptionPane.showConfirmDialog( null,
+          "At least one of the device upgrades of the attached key moves selected for\n"
+          + "detachment is assigned to more than one device button.  The corresponding\n"
+          + "key moves of the other device buttons will also be detached.  Are you sure\n"
+          + "that you want to proceed?",
+          "Detach Key Moves from Device Upgrades",
+          JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
+      {
+        return;
       }
 
       for ( KeyMove keyMove : toDetach )
@@ -248,6 +286,8 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
         keymoves.add( keyMove );
         upgrade.setFunction( keyMove.getKeyCode(), null );
       }
+      keymoves.addAll( alsoDetach );
+
       ( ( KeyMoveTableModel )model ).refresh();
       model.fireTableDataChanged();
     }

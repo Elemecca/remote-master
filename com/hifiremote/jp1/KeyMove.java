@@ -121,6 +121,10 @@ public class KeyMove extends AdvancedCode implements Cloneable
    */
   public EFC5 getEFC5()
   {
+    if ( this instanceof KeyMoveLong && cmd.length() == 1 )
+    {
+      return new EFC5( getRawHex( 0, 0, cmd ).subHex( CMD_INDEX ) );
+    }
     return new EFC5( cmd );
   }
 
@@ -153,8 +157,8 @@ public class KeyMove extends AdvancedCode implements Cloneable
         return "\"" + f.getName() + '"';
       }
     }
-
-    if ( cmd.length() == 1 )
+    
+    if ( cmd.length() == 1 && !( this instanceof KeyMoveLong ) )
     {
       return getEFC().toString();
     }

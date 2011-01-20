@@ -685,6 +685,7 @@ public class RemoteConfiguration
         }
       }
     }
+    convertKeyMoves();
     migrateKeyMovesToDeviceUpgrades();
 
     if ( deleteUsedProts )
@@ -1172,16 +1173,43 @@ public class RemoteConfiguration
     }
     return advCodes;
   }
+  
+  private void convertKeyMoves()
+  {
+    for ( ListIterator< KeyMove > it = keymoves.listIterator(); it.hasNext(); )
+    {
+      KeyMove keyMove = it.next();
+
+      // ignore key-style keymoves
+      if ( keyMove instanceof KeyMoveKey )
+      {
+        continue;
+      }
+
+      int keyCode = keyMove.getKeyCode();
+      DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );      
+      Hex cmd = keyMove.getCmd();
+      if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG 
+          && remote.getAdvCodeFormat() == AdvancedCode.Format.HEX && moveUpgrade != null
+          && moveUpgrade.getProtocol().getDefaultCmd().length() == 1 && cmd.length() == 2 )
+      {
+        cmd = cmd.subHex( 0, 1 );
+        keyMove = new KeyMoveLong( keyCode, keyMove.getDeviceButtonIndex(), keyMove.getDeviceType(), keyMove
+            .getSetupCode(), cmd, keyMove.getNotes() );
+        it.set( keyMove );
+      }
+    }
+  }
 
   /**
    * Migrate key moves to device upgrades.
    */
   private void migrateKeyMovesToDeviceUpgrades()
   {
-    for ( ListIterator< KeyMove > it = keymoves.listIterator(); it.hasNext(); )
-    {
-      KeyMove keyMove = it.next();
+    List< KeyMove > kmToRemove = new ArrayList< KeyMove >();
 
+    for ( KeyMove keyMove : keymoves )
+    {
       // ignore key-style keymoves
       if ( keyMove.getClass() == KeyMoveKey.class )
       {
@@ -1197,61 +1225,88 @@ public class RemoteConfiguration
       if ( boundUpgrade != null && boundUpgrade == moveUpgrade )
       {
         Hex cmd = keyMove.getCmd();
-        if ( remote.getAdvCodeBindFormat() == BindFormat.LONG
-            && moveUpgrade.getProtocol().getDefaultCmd().length() == 1 )
+        boolean migrate = true;   // If upgrade is not on any other device button, do migrate.
+        for ( int i : getDeviceButtonIndexList( boundUpgrade ) )
         {
-          cmd = cmd.subHex( 0, 1 );
-          keyMove = new KeyMoveLong( keyCode, keyMove.getDeviceButtonIndex(), keyMove.getDeviceType(), keyMove
-              .getSetupCode(), cmd, keyMove.getNotes() );
-          it.set( keyMove );
-        }
-        Function f = boundUpgrade.getFunction( cmd );
-        if ( f == null )
-        {
-          // Keymove notes that happen to be names of other keys cause problems with the
-          // commented-out old version, as would the same note on more than one keymove.
-
-//          String text = keyMove.getNotes();
-//          if ( text == null )
-//          {
-//            text = remote.getButtonName( keyCode );
-//          }
-//          f = new Function( text, cmd, null );
-          
-          f = new Function( remote.getButtonName( keyCode ), cmd, keyMove.getNotes() );
-          
-          boundUpgrade.getFunctions().add( f );
-        }
-
-        boolean migrate = true;
-        // Don't migrate keymoves on buttons in the button map for the device type
-        Button b = remote.getButton( keyMove.getKeyCode() );
-        if ( b != null )
-        {
-          migrate = !remote.getDeviceTypeByIndex( keyMove.getDeviceType() ).getButtonMap().isPresent( b );
+          if ( i == keyMove.getDeviceButtonIndex() )
+          {
+            // Skip current device button index
+            continue;
+          }
+          // Bound upgrade is also on this device button, so only migrate if this button
+          // has same keymove.
+          migrate = false;  // If no matching keymove on this device button then do not migrate.
+          for ( KeyMove km : keymoves )
+          {
+            // Search through all keymoves
+            if ( km.getDeviceButtonIndex() != i || km.getKeyCode() != keyCode )
+            {
+              // Skip since either wrong device button or wrong keycode
+              continue;
+            }
+            // This keymove has right keycode and is for device button under test.
+            // See if the actual move is the same.
+            migrate = ( km.getDeviceType() == keyMove.getDeviceType() 
+                && km.getSetupCode() == keyMove.getSetupCode() 
+                && km.getCmd().equals( keyMove.getCmd() ) );
+            // No need to search further.
+            break;
+          }
+          if ( !migrate )
+          {
+            // Move was not the same, no need to look further as we know we should not migrate.
+            break;
+          } 
         }
 
         if ( migrate )
         {
+          // Don't migrate keymoves on buttons in the button map for the device type
+          Button b = remote.getButton( keyMove.getKeyCode() );
+          if ( b != null )
+          {
+            migrate = !remote.getDeviceTypeByIndex( keyMove.getDeviceType() ).getButtonMap().isPresent( b );
+          }
+        }
+        
+        if ( migrate )
+        {
+          // Create corresponding function, if it does not already exist.
+          Function f = boundUpgrade.getFunction( cmd );
+          if ( f == null )
+          {
+            // Keymove notes that happen to be names of other keys cause problems with the
+            // commented-out old version, as would the same note on more than one keymove.
+
+//            String text = keyMove.getNotes();
+//            if ( text == null )
+//            {
+//              text = remote.getButtonName( keyCode );
+//            }
+//            f = new Function( text, cmd, null );
+            
+            f = new Function( remote.getButtonName( keyCode ), cmd, keyMove.getNotes() );
+            
+            boundUpgrade.getFunctions().add( f );
+          }
+          // Perform the migration.
           System.err.println( "Moving keymove on " + boundDeviceButton + ':'
               + remote.getButtonName( keyMove.getKeyCode() ) + " to device upgrade " + boundUpgrade.getDeviceType()
               + '/' + boundUpgrade.getSetupCode() );
           boundUpgrade.setFunction( keyCode, f );
-          it.remove();
+          kmToRemove.add( keyMove );
         }
       }
     }
+    for ( KeyMove km : kmToRemove )
+    {
+      keymoves.remove( km );
+    }
   }
 
-  /**
-   * Gets the device button index.
-   * 
-   * @param upgrade
-   *          the upgrade
-   * @return the device button index
-   */
-  public int getDeviceButtonIndex( DeviceUpgrade upgrade )
+  public List<Integer> getDeviceButtonIndexList( DeviceUpgrade upgrade )
   {
+    List<Integer> dbList = new ArrayList< Integer >();
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
     for ( int i = 0; i < deviceButtons.length; ++i )
     {
@@ -1259,10 +1314,10 @@ public class RemoteConfiguration
       if ( button.getDeviceTypeIndex( data ) == upgrade.getDeviceType().getNumber()
           && button.getSetupCode( data ) == upgrade.getSetupCode() )
       {
-        return i;
+        dbList.add( i );
       }
     }
-    return -1;
+    return dbList;
   }
 
   public DeviceUpgrade getAssignedDeviceUpgrade( DeviceButton deviceButton )
@@ -1439,15 +1494,13 @@ public class RemoteConfiguration
     List< KeyMove > rc = new ArrayList< KeyMove >();
     for ( DeviceUpgrade device : devices )
     {
-      int devButtonIndex = getDeviceButtonIndex( device );
-      if ( devButtonIndex == -1 )
+      for ( Integer dbIndex : getDeviceButtonIndexList( device ) )
       {
-        continue;
-      }
-      for ( KeyMove keyMove : device.getKeyMoves() )
-      {
-        keyMove.setDeviceButtonIndex( devButtonIndex );
-        rc.add( keyMove );
+        for ( KeyMove keyMove : device.getKeyMoves( dbIndex ) )
+        {
+          keyMove.setDeviceButtonIndex( dbIndex );
+          rc.add( keyMove );
+        }
       }
     }
     return rc;

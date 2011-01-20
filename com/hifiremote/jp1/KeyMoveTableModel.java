@@ -70,7 +70,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       DeviceUpgrade du = remoteConfig.getAssignedDeviceUpgrade( deviceButtons[ i ] );
       if ( du != null )
       {
-        for ( KeyMove keyMove : du.getKeyMoves() )
+        for ( KeyMove keyMove : du.getKeyMoves( i ) )
         {
           keyMove.setDeviceButtonIndex( i );
           allKeyMoves.add( keyMove );
@@ -294,7 +294,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
         Remote remote = remoteConfig.getRemote();
         DeviceButton boundDeviceButton = remote.getDeviceButtons()[ keyMove.getDeviceButtonIndex() ];
         DeviceUpgrade boundUpgrade = remoteConfig.findDeviceUpgrade( boundDeviceButton );
-        boundUpgrade.setAssignmentColor( keyMove.getKeyCode(), ( Color )value );
+        boundUpgrade.setAssignmentColor( keyMove.getKeyCode(), keyMove.getDeviceButtonIndex(), ( Color )value );
       } 
     }
     else
