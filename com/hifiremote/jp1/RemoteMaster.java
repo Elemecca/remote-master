@@ -92,7 +92,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.01";
+  public final static String version = "v2.02 Alpha";
 
   /** The dir. */
   private File dir = null;
@@ -415,29 +415,44 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ) );
 
           String sig = Hex.getRemoteSignature( sigData );
+          String sig2 = null;
 
-          Remote currentRemote = null;
           Remote remote = null;
-          if ( remoteConfig != null )
+          List< Remote > remotes = null;
+          RemoteManager rm = RemoteManager.getRemoteManager();
+          if ( remoteConfig != null && remoteConfig.getRemote() != null )
           {
-            currentRemote = remoteConfig.getRemote();
-          }
-          if ( currentRemote == null || !currentRemote.getSignature().equals( sig ) )
-          {
-            System.err.println( "Searching for RDF" );
-            List< Remote > remotes = null;
-            String sig2 = null;
-            for ( int i = 0; i < 5; i++ )
+            sig2 = remoteConfig.getRemote().getSignature();
+            if ( sig2.equals( sig.substring( 0, sig2.length() ) ) )
             {
-              sig2 = sig.substring( 0, sig.length() - i );
-              remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig2 );
-              if ( !remotes.isEmpty() )
+              // Current and download remotes have same signature.  Note that if current signature length
+              // is less than 8 then we only test the corresponding substring of download signature.
+              remotes = rm.findRemoteBySignature( sig2 );
+              sig = sig2;
+              if ( remotes.size() == 1 )
               {
-                break;
+                // There is only one remote with current signature so this must be the download remote.
+                remote = remotes.get( 0 );
               }
             }
-            sig = sig2;
-            System.err.println( "Final signature sought = " + sig );
+          }
+          if ( remote == null )
+          {
+            System.err.println( "Searching for RDF" );
+            if ( remotes == null )
+            {
+              for ( int i = 0; i < 5; i++ )
+              {
+                sig2 = sig.substring( 0, sig.length() - i );
+                remotes = rm.findRemoteBySignature( sig2 );
+                if ( !remotes.isEmpty() )
+                {
+                  break;
+                }
+              }
+              sig = sig2;
+              System.err.println( "Final signature sought = " + sig );
+            }
             if ( remotes.isEmpty() )
             {
               System.err.println( "No matching RDF found" );
@@ -479,7 +494,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
               }
               if ( choices.length == 1 )
               {
-                remote = remotes.get( 0 );
+                remote = choices[ 0 ];
               }
               else
               {
@@ -499,10 +514,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             }
             System.err.println( "Remote identified as: " + remote.getName() );
           }
-          else
-          {
-            remote = currentRemote;
-          }
+//          else
+//          {
+//            remote = currentRemote;
+//          }
           remote.load();
           remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
           count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );

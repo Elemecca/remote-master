@@ -164,7 +164,7 @@ public class Protocol
     for ( String pName : ProcessorManager.getProcessorNames() )
     {
       temp = props.getProperty( "Code." + pName );
-      if ( temp != null )
+      if ( temp != null && temp.length() > 0 )
       {
         Hex hex = new Hex( temp );
         int value = hex.getData()[ 2 ];
