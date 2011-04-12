@@ -37,6 +37,8 @@ Changes for v2.01
 - Fix ToadTog bug that causes Special Function editor to display incorrect entries (Graham)
 - Add Advanced menu item Primacy in RM and RMIR to allow choice of whether OBC or EFC/Hex is preserved when a protocol is changed or edited (Graham)
 - Add Advanced menu item Edit Protocol in RM that allows adding and editing of custom code to standard protocols (Graham)
+-- Final --
+- Fix NEC 4DEV Combo entry in protocols.ini (3FG)
 
 Changes for v2.00
 - Fix very minor issue with Fav/Scan, an overlooked difference between Macros and Fav/Scan. (Graham)

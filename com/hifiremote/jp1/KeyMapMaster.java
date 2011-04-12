@@ -83,9 +83,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem exitItem = null;
 
   private JMenuItem editManualItem = null;
-  
+
   private JMenuItem newManualItem = null;
-  
+
   // private JMenuItem editorItem = null;
   /** The raw item. */
   private JMenuItem rawItem = null;
@@ -109,6 +109,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem homePageItem = null;
 
   private JMenuItem forumItem = null;
+
+  private JMenuItem wikiItem = null;
 
   private JMenuItem aboutItem = null;
 
@@ -555,11 +557,12 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
-    
+
     boolean primaryOBC = JP1Frame.getProperties().getProperty( "Primacy", "OBC" ).equals( "OBC" );
     submenu = new JMenu( "Primacy" );
     submenu.setMnemonic( KeyEvent.VK_P );
-    submenu.setToolTipText( "Specifies whether Device parameters or EFC and Hex values are preserved when a protocol is changed or edited"  );
+    submenu
+        .setToolTipText( "Specifies whether Device parameters or EFC and Hex values are preserved when a protocol is changed or edited" );
     menu.add( submenu );
     group = new ButtonGroup();
     item = new JRadioButtonMenuItem( "OBC" );
@@ -590,21 +593,21 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     } );
     group.add( item );
     submenu.add( item );
-    
+
     menu.addSeparator();
-    
+
     editManualItem = new JMenuItem( "Edit Protocol..." );
     editManualItem.setMnemonic( KeyEvent.VK_E );
     editManualItem.addActionListener( this );
     menu.add( editManualItem );
-    
+
     newManualItem = new JMenuItem( "New Manual Protocol..." );
     newManualItem.setMnemonic( KeyEvent.VK_M );
     newManualItem.addActionListener( this );
     menu.add( newManualItem );
-    
+
     menu.addSeparator();
-    
+
     /*
      * editorItem = new JMenuItem( "Protocol Editor..." ); editorItem.setMnemonic( KeyEvent.VK_P );
      * editorItem.addActionListener( this ); menu.add( editorItem );
@@ -650,6 +653,10 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       forumItem = new JMenuItem( "Forums", KeyEvent.VK_F );
       forumItem.addActionListener( this );
       menu.add( forumItem );
+
+      wikiItem = new JMenuItem( "Wiki", KeyEvent.VK_W );
+      wikiItem.addActionListener( this );
+      menu.add( wikiItem );
 
       menu.addSeparator();
     }
@@ -697,7 +704,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       deviceUpgrade.setProtocol( edited );
     }
   }
-  
+
   private void newManualSettings()
   {
     ManualProtocol mp = new ManualProtocol( null, null );
@@ -950,6 +957,11 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == forumItem )
       {
         URL url = new URL( "http://www.hifi-remote.com/forums/" );
+        desktop.browse( url.toURI() );
+      }
+      else if ( source == wikiItem )
+      {
+        URL url = new URL( "http://www.hifi-remote.com/wiki/index.php?title=Main_Page" );
         desktop.browse( url.toURI() );
       }
       else if ( source == aboutItem )

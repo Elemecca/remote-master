@@ -92,7 +92,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.01 alpha 8";
+  public final static String version = "v2.01";
 
   /** The dir. */
   private File dir = null;
@@ -1379,7 +1379,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     boolean primaryOBC = JP1Frame.getProperties().getProperty( "Primacy", "OBC" ).equals( "OBC" );
     subMenu = new JMenu( "Primacy" );
     subMenu.setMnemonic( KeyEvent.VK_P );
-    subMenu.setToolTipText( "Specifies whether Device parameters or EFC and Hex values are preserved when a protocol is changed or edited"  );
+    subMenu
+        .setToolTipText( "Specifies whether Device parameters or EFC and Hex values are preserved when a protocol is changed or edited" );
     menu.add( subMenu );
     group = new ButtonGroup();
     JRadioButtonMenuItem item = new JRadioButtonMenuItem( "OBC" );
@@ -1410,9 +1411,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     } );
     group.add( item );
     subMenu.add( item );
-    
+
     menu.addSeparator();
-    
+
     cleanUpperMemoryItem = new JMenuItem( "Clean Upper Memory...", KeyEvent.VK_C );
     cleanUpperMemoryItem.setEnabled( false );
     cleanUpperMemoryItem.addActionListener( this );
@@ -2429,7 +2430,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == wikiItem )
       {
-        URL url = new URL( "https://sourceforge.net/apps/mediawiki/controlremote/index.php?title=Main_Page" );
+        URL url = new URL( "http://www.hifi-remote.com/wiki/index.php?title=Main_Page" );
         desktop.browse( url.toURI() );
       }
       else if ( source == forumItem )
