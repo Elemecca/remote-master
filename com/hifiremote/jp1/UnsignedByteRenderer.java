@@ -74,7 +74,7 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
   @Override
   public void paint( Graphics g )
   {
-    if ( remoteConfig.allowHighlighting() )
+    if ( remoteConfig != null && remoteConfig.allowHighlighting() )
     {
       Dimension d = component.getSize();
       int end = highlight.length - 1;

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,9 +18,11 @@ import java.io.PrintWriter;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingWorker;
 
 import com.hifiremote.jp1.io.IO;
 
@@ -53,7 +56,15 @@ public class RawDataDialog extends JDialog implements ActionListener
     table.setPreferredScrollableViewportSize( d );
     add( scrollPane, BorderLayout.CENTER );
 
+    JPanel statusPanel = new JPanel( new BorderLayout() );
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.TRAILING ) );
+    statusPanel.add( buttonPanel, BorderLayout.LINE_END );
+    
+    downloadLabel.setText( "DOWNLOADING..." );
+    downloadLabel.setForeground( Color.RED );
+    downloadLabel.setFont( downloadLabel.getFont().deriveFont( Font.BOLD ) );
+    downloadLabel.setVisible( false );
+    statusPanel.add( downloadLabel, BorderLayout.LINE_START );
 
     downloadButton.addActionListener( this );
     buttonPanel.add( downloadButton );
@@ -69,7 +80,7 @@ public class RawDataDialog extends JDialog implements ActionListener
     cancelButton.addActionListener( this );
     buttonPanel.add( cancelButton );
 
-    add( buttonPanel, BorderLayout.PAGE_END );
+    add( statusPanel, BorderLayout.PAGE_END );
 
     pack();
     Rectangle rect = getBounds();
@@ -78,6 +89,63 @@ public class RawDataDialog extends JDialog implements ActionListener
     setLocation( x, y );
   }
 
+  private class RawDownloadTask extends SwingWorker< Void, Void >
+  {
+    @Override
+    protected Void doInBackground() throws Exception
+    {
+      IO io = owner.getOpenInterface();
+      if ( io == null )
+      {
+        JOptionPane.showMessageDialog( owner, "No remotes found!" );
+        return null;
+      }
+      System.err.println( "Interface opened successfully" );
+      baseAddress = io.getRemoteEepromAddress();
+      System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
+      short[] sigData = new short[ 10 ];
+      int count = io.readRemote( baseAddress, sigData );
+      System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ).toUpperCase() );
+      signature = Hex.getRemoteSignature( sigData );
+      
+      int buffSize = io.getRemoteEepromSize();
+      System.err.println( "Initial buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
+      if ( buffSize <= 0 )
+      {
+        if ( buffer == null )
+        {
+          String[] choices =
+          {
+              "1K", "2K", "4K", "8K"
+          };
+          String choice = ( String )JOptionPane.showInputDialog( owner,
+              "Select the number of bytes to download from the remote.", "Raw Download Size",
+              JOptionPane.QUESTION_MESSAGE, null, choices, choices[ 1 ] );
+          if ( choice == null )
+          {
+            return null;
+          }
+          buffSize = Integer.parseInt( choice.substring( 0, 1 ) ) * 1024;
+        }
+        else
+        {
+          buffSize = buffer.length;
+        }
+      }
+      System.err.println( "Final buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
+      buffer = new short[ buffSize ];
+      count = io.readRemote( baseAddress, buffer );
+      System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
+      io.closeRemote();
+      System.err.println( "Ending raw download" );
+      model.set( buffer, baseAddress );
+      setBaselineButton.setEnabled( true );
+      saveButton.setEnabled( true );
+      downloadLabel.setVisible( false );
+      return null;
+    }
+  }
+  
   /*
    * (non-Javadoc)
    * 
@@ -107,56 +175,8 @@ public class RawDataDialog extends JDialog implements ActionListener
     if ( source == downloadButton )
     {
       System.err.println( "Starting raw download" );
-      IO io = owner.getOpenInterface();
-      if ( io == null )
-      {
-        JOptionPane.showMessageDialog( owner, "No remotes found!" );
-        return;
-      }
-      System.err.println( "Interface opened successfully" );
-      baseAddress = io.getRemoteEepromAddress();
-      System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
-
-//      signature = io.getRemoteSignature();
-      short[] sigData = new short[ 10 ];
-      int count = io.readRemote( baseAddress, sigData );
-      System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ).toUpperCase() );
-      
-      signature = Hex.getRemoteSignature( sigData );
-      
-      int buffSize = io.getRemoteEepromSize();
-      System.err.println( "Initial buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
-      if ( buffSize <= 0 )
-      {
-        if ( buffer == null )
-        {
-          String[] choices =
-          {
-              "1K", "2K", "4K", "8K"
-          };
-          String choice = ( String )JOptionPane.showInputDialog( this,
-              "Select the number of bytes to download from the remote.", "Raw Download Size",
-              JOptionPane.QUESTION_MESSAGE, null, choices, choices[ 1 ] );
-          if ( choice == null )
-          {
-            return;
-          }
-          buffSize = Integer.parseInt( choice.substring( 0, 1 ) ) * 1024;
-        }
-        else
-        {
-          buffSize = buffer.length;
-        }
-      }
-      System.err.println( "Final buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
-      buffer = new short[ buffSize ];
-      count = io.readRemote( baseAddress, buffer );
-      System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
-      io.closeRemote();
-      System.err.println( "Ending raw download" );
-      model.set( buffer, baseAddress );
-      setBaselineButton.setEnabled( true );
-      saveButton.setEnabled( true );
+      downloadLabel.setVisible( true );
+      ( new RawDownloadTask() ).execute();
     }
     else if ( source == setBaselineButton )
     {
@@ -211,4 +231,6 @@ public class RawDataDialog extends JDialog implements ActionListener
   private JButton setBaselineButton = new JButton( "Set Baseline" );
   private JButton saveButton = new JButton( "Save" );
   private JButton cancelButton = new JButton( "Cancel" );
+  
+  private JLabel downloadLabel = new JLabel();
 }

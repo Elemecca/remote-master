@@ -2,6 +2,8 @@ Changes for v2.02
 -- Alpha --
 - Fix bug that prevented fixed data being tested on download (Graham)
 - Prevent ArrayIndexOutOfBoundsException when loading a .rmir file containing a device upgrade with missing protocol code (Graham)
+- Fix bug that has prevented raw download from working since highlighting was added (Graham)
+- Show upload/download message in status bar during uploads, normal and raw downloads, and initializations to 00 or FF (Graham)
 
 Changes for v2.01
 -- Alpha --

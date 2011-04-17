@@ -58,6 +58,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.colorchooser.ColorSelectionModel;
@@ -233,6 +234,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The learned progress bar. */
   private JProgressBar learnedProgressBar = null;
 
+  private JPanel memoryStatus = null;
+
+  private JPanel interfaceStatus = null;
+
+  private JLabel interfaceState = new JLabel();
+
+  private JPanel statusBar = null;
+
   private boolean hasInvalidCodes = false;
 
   private CodeSelectorDialog codeSelectorDialog = null;
@@ -326,6 +335,258 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     private JRadioButton protocols = new JRadioButton( "Protocol" );
   }
 
+  private class DownloadTask extends SwingWorker< Void, Void >
+  {
+    @Override
+    protected Void doInBackground() throws Exception
+    {
+      IO io = getOpenInterface();
+      if ( io == null )
+      {
+        JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
+        return null;
+      }
+      System.err.println( "Interface opened successfully" );
+
+      // See comment in Hex.getRemoteSignature( short[] ) for why the line below was not safe
+      // String sig = io.getRemoteSignature();
+      short[] sigData = new short[ 10 ];
+      int baseAddress = io.getRemoteEepromAddress();
+      System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
+      int count = io.readRemote( baseAddress, sigData );
+      System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ) );
+
+      String sig = Hex.getRemoteSignature( sigData );
+      String sig2 = null;
+
+      Remote remote = null;
+      List< Remote > remotes = null;
+      RemoteManager rm = RemoteManager.getRemoteManager();
+      if ( remoteConfig != null && remoteConfig.getRemote() != null )
+      {
+        sig2 = remoteConfig.getRemote().getSignature();
+        if ( sig2.equals( sig.substring( 0, sig2.length() ) ) )
+        {
+          // Current and download remotes have same signature. Note that if current signature length
+          // is less than 8 then we only test the corresponding substring of download signature.
+          remotes = rm.findRemoteBySignature( sig2 );
+          sig = sig2;
+          if ( remotes.size() == 1 )
+          {
+            // There is only one remote with current signature so this must be the download remote.
+            remote = remotes.get( 0 );
+          }
+        }
+      }
+      if ( remote == null )
+      {
+        System.err.println( "Searching for RDF" );
+        if ( remotes == null )
+        {
+          for ( int i = 0; i < 5; i++ )
+          {
+            sig2 = sig.substring( 0, sig.length() - i );
+            remotes = rm.findRemoteBySignature( sig2 );
+            if ( !remotes.isEmpty() )
+            {
+              break;
+            }
+          }
+          sig = sig2;
+          System.err.println( "Final signature sought = " + sig );
+        }
+        if ( remotes.isEmpty() )
+        {
+          System.err.println( "No matching RDF found" );
+          JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature starting " + sig );
+          io.closeRemote();
+          return null;
+        }
+        else if ( remotes.size() == 1 )
+        {
+          remote = remotes.get( 0 );
+        }
+        else
+        {// ( remotes.length > 1 )
+          int maxFixedData = 0;
+          for ( Remote r : remotes )
+          {
+            r.load();
+            for ( FixedData fixedData : r.getRawFixedData() )
+            {
+              maxFixedData = Math.max( maxFixedData, fixedData.getAddress() + fixedData.getData().length );
+            }
+          }
+
+          int eepromSize = io.getRemoteEepromSize();
+          if ( eepromSize > 0 && maxFixedData > eepromSize )
+          {
+            maxFixedData = eepromSize;
+          }
+          short[] buffer = new short[ maxFixedData ];
+          if ( maxFixedData > 0 )
+          {
+            io.readRemote( baseAddress, buffer );
+          }
+          Remote[] choices = FixedData.filter( remotes, buffer );
+          if ( choices.length == 0 )
+          {
+            // None of the remotes match on fixed data, so offer whole list
+            choices = remotes.toArray( choices );
+          }
+          if ( choices.length == 1 )
+          {
+            remote = choices[ 0 ];
+          }
+          else
+          {
+            String message = "Please pick the best match to your remote from the following list:";
+            Object rc = JOptionPane.showInputDialog( null, message, "Ambiguous Remote", JOptionPane.ERROR_MESSAGE,
+                null, choices, choices[ 0 ] );
+            if ( rc == null )
+            {
+              io.closeRemote();
+              return null;
+            }
+            else
+            {
+              remote = ( Remote )rc;
+            }
+          }
+        }
+        System.err.println( "Remote identified as: " + remote.getName() );
+      }
+
+      remote.load();
+      remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
+      count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
+      System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
+      io.closeRemote();
+      System.err.println( "Ending normal download" );
+      try
+      {
+        remoteConfig.parseData();
+      }
+      catch ( IOException e )
+      {
+        e.printStackTrace();
+      }
+      remoteConfig.updateImage();
+      saveAction.setEnabled( false );
+      saveAsAction.setEnabled( true );
+      openRdfAction.setEnabled( true );
+      installExtenderItem.setEnabled( true );
+      cleanUpperMemoryItem.setEnabled( true );
+      initializeTo00Item.setEnabled( true );
+      initializeToFFItem.setEnabled( true );
+      uploadAction.setEnabled( true );
+      update();
+      memoryStatus.setVisible( true );
+      interfaceStatus.setVisible( false );
+      return null;
+    }
+  };
+  
+  private class UploadTask extends SwingWorker< Void, Void >
+  {
+    private short[] data;
+    private boolean allowClockSet;
+
+    private UploadTask( short[] data, boolean allowClockSet )
+    {
+      this.data = data;
+      this.allowClockSet = allowClockSet;
+    }
+
+    @Override
+    protected Void doInBackground() throws Exception
+    {
+      Remote remote = remoteConfig.getRemote();
+      IO io = getOpenInterface();
+      String sig = null;
+      if ( io != null )
+      {
+        sig = io.getRemoteSignature();
+      }
+      if ( sig == null )
+      {
+        JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
+        return null;
+      }
+
+      if ( !sig.equals( remote.getSignature() ) )
+      {
+        Object[] options =
+        {
+            "Upload to the remote", "Cancel the upload"
+        };
+        int rc = JOptionPane
+            .showOptionDialog(
+                RemoteMaster.this,
+                "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
+                    + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
+                    + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
+                    + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
+                    + "safe to upload to a remote when the signatures do not match.\n\n"
+                    + "How would you like to proceed?", "Upload Signature Mismatch", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
+        if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
+        {
+          io.closeRemote();
+          return null;
+        }
+      }
+
+      AutoClockSet autoClockSet = remote.getAutoClockSet();
+      if ( allowClockSet && autoClockSet != null )
+      {
+        autoClockSet.saveTimeBytes( data );
+        autoClockSet.setTimeBytes( data );
+        remoteConfig.updateCheckSums();
+      }
+
+      int rc = io.writeRemote( remote.getBaseAddress(), data );
+
+      if ( rc != data.length )
+      {
+        io.closeRemote();
+        JOptionPane.showMessageDialog( RemoteMaster.this, "writeRemote returned " + rc );
+        return null;
+      }
+      if ( verifyUploadItem.isSelected() )
+      {
+        short[] readBack = new short[ data.length ];
+        rc = io.readRemote( remote.getBaseAddress(), readBack );
+        io.closeRemote();
+        if ( rc != data.length )
+        {
+          JOptionPane.showMessageDialog( RemoteMaster.this, "Upload verify failed: read back " + rc
+              + " byte, but expected " + data.length );
+
+        }
+        else if ( !Hex.equals( data, readBack ) )
+        {
+          JOptionPane.showMessageDialog( RemoteMaster.this,
+              "Upload verify failed: data read back doesn't match data written." );
+        }
+      }
+      else
+      {
+        io.closeRemote();
+        JOptionPane.showMessageDialog( RemoteMaster.this, "Upload complete!" );
+      }
+      if ( allowClockSet && autoClockSet != null )
+      {
+        autoClockSet.restoreTimeBytes( data );
+        remoteConfig.updateCheckSums();
+      }
+      System.err.println( "Ending upload" );
+      memoryStatus.setVisible( true );
+      interfaceStatus.setVisible( false );
+      return null;
+    }
+  }
+
   protected class RMAction extends AbstractAction
   {
     public RMAction( String text, String action, ImageIcon icon, String description, Integer mnemonic )
@@ -398,143 +659,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
           System.err.println( "Starting normal download" );
-          IO io = getOpenInterface();
-          if ( io == null )
-          {
-            JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
-            return;
-          }
-          System.err.println( "Interface opened successfully" );
-
-          // See comment in Hex.getRemoteSignature( short[] ) for why the line below was not safe
-          // String sig = io.getRemoteSignature();
-          short[] sigData = new short[ 10 ];
-          int baseAddress = io.getRemoteEepromAddress();
-          System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
-          int count = io.readRemote( baseAddress, sigData );
-          System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ) );
-
-          String sig = Hex.getRemoteSignature( sigData );
-          String sig2 = null;
-
-          Remote remote = null;
-          List< Remote > remotes = null;
-          RemoteManager rm = RemoteManager.getRemoteManager();
-          if ( remoteConfig != null && remoteConfig.getRemote() != null )
-          {
-            sig2 = remoteConfig.getRemote().getSignature();
-            if ( sig2.equals( sig.substring( 0, sig2.length() ) ) )
-            {
-              // Current and download remotes have same signature.  Note that if current signature length
-              // is less than 8 then we only test the corresponding substring of download signature.
-              remotes = rm.findRemoteBySignature( sig2 );
-              sig = sig2;
-              if ( remotes.size() == 1 )
-              {
-                // There is only one remote with current signature so this must be the download remote.
-                remote = remotes.get( 0 );
-              }
-            }
-          }
-          if ( remote == null )
-          {
-            System.err.println( "Searching for RDF" );
-            if ( remotes == null )
-            {
-              for ( int i = 0; i < 5; i++ )
-              {
-                sig2 = sig.substring( 0, sig.length() - i );
-                remotes = rm.findRemoteBySignature( sig2 );
-                if ( !remotes.isEmpty() )
-                {
-                  break;
-                }
-              }
-              sig = sig2;
-              System.err.println( "Final signature sought = " + sig );
-            }
-            if ( remotes.isEmpty() )
-            {
-              System.err.println( "No matching RDF found" );
-              JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature starting " + sig );
-              io.closeRemote();
-              return;
-            }
-            else if ( remotes.size() == 1 )
-            {
-              remote = remotes.get( 0 );
-            }
-            else
-            {// ( remotes.length > 1 )
-              int maxFixedData = 0;
-              for ( Remote r : remotes )
-              {
-                r.load();
-                for ( FixedData fixedData : r.getRawFixedData() )
-                {
-                  maxFixedData = Math.max( maxFixedData, fixedData.getAddress() + fixedData.getData().length );
-                }
-              }
-
-              int eepromSize = io.getRemoteEepromSize();
-              if ( eepromSize > 0 && maxFixedData > eepromSize )
-              {
-                maxFixedData = eepromSize;
-              }
-              short[] buffer = new short[ maxFixedData ];
-              if ( maxFixedData > 0 )
-              {
-                io.readRemote( baseAddress, buffer );
-              }
-              Remote[] choices = FixedData.filter( remotes, buffer );
-              if ( choices.length == 0 )
-              {
-                // None of the remotes match on fixed data, so offer whole list
-                choices = remotes.toArray( choices );
-              }
-              if ( choices.length == 1 )
-              {
-                remote = choices[ 0 ];
-              }
-              else
-              {
-                String message = "Please pick the best match to your remote from the following list:";
-                Object rc = JOptionPane.showInputDialog( null, message, "Ambiguous Remote", JOptionPane.ERROR_MESSAGE,
-                    null, choices, choices[ 0 ] );
-                if ( rc == null )
-                {
-                  io.closeRemote();
-                  return;
-                }
-                else
-                {
-                  remote = ( Remote )rc;
-                }
-              }
-            }
-            System.err.println( "Remote identified as: " + remote.getName() );
-          }
-//          else
-//          {
-//            remote = currentRemote;
-//          }
-          remote.load();
-          remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
-          count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
-          System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
-          io.closeRemote();
-          System.err.println( "Ending normal download" );
-          remoteConfig.parseData();
-          remoteConfig.updateImage();
-          saveAction.setEnabled( false );
-          saveAsAction.setEnabled( true );
-          openRdfAction.setEnabled( true );
-          installExtenderItem.setEnabled( true );
-          cleanUpperMemoryItem.setEnabled( true );
-          initializeTo00Item.setEnabled( true );
-          initializeToFFItem.setEnabled( true );
-          uploadAction.setEnabled( true );
-          update();
+          memoryStatus.setVisible( false );
+          interfaceState.setText( "DOWNLOADING..." );
+          interfaceStatus.setVisible( true );
+          ( new DownloadTask() ).execute();
         }
         else if ( command.equals( "UPLOAD" ) )
         {
@@ -554,7 +682,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
 
-          uploadToRemote( remoteConfig.getData(), true );
+          System.err.println( "Starting upload" );
+          memoryStatus.setVisible( false );
+          interfaceState.setText( "UPLOADING..." );
+          interfaceStatus.setVisible( true );
+          ( new UploadTask( remoteConfig.getData(), true ) ).execute();
         }
         else if ( command == "OPENRDF" )
         {
@@ -625,89 +757,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         ex.printStackTrace( System.err );
       }
-    }
-  }
-
-  public void uploadToRemote( short[] data, boolean allowClockSet )
-  {
-    Remote remote = remoteConfig.getRemote();
-    IO io = getOpenInterface();
-    String sig = null;
-    if ( io != null )
-    {
-      sig = io.getRemoteSignature();
-    }
-    if ( sig == null )
-    {
-      JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
-      return;
-    }
-
-    if ( !sig.equals( remote.getSignature() ) )
-    {
-      Object[] options =
-      {
-          "Upload to the remote", "Cancel the upload"
-      };
-      int rc = JOptionPane
-          .showOptionDialog(
-              RemoteMaster.this,
-              "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
-                  + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
-                  + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
-                  + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
-                  + "safe to upload to a remote when the signatures do not match.\n\n"
-                  + "How would you like to proceed?", "Upload Signature Mismatch", JOptionPane.DEFAULT_OPTION,
-              JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
-      if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
-      {
-        io.closeRemote();
-        return;
-      }
-    }
-
-    AutoClockSet autoClockSet = remote.getAutoClockSet();
-    if ( allowClockSet && autoClockSet != null )
-    {
-      autoClockSet.saveTimeBytes( data );
-      autoClockSet.setTimeBytes( data );
-      remoteConfig.updateCheckSums();
-    }
-
-    int rc = io.writeRemote( remote.getBaseAddress(), data );
-
-    if ( rc != data.length )
-    {
-      io.closeRemote();
-      JOptionPane.showMessageDialog( RemoteMaster.this, "writeRemote returned " + rc );
-      return;
-    }
-    if ( verifyUploadItem.isSelected() )
-    {
-      short[] readBack = new short[ data.length ];
-      rc = io.readRemote( remote.getBaseAddress(), readBack );
-      io.closeRemote();
-      if ( rc != data.length )
-      {
-        JOptionPane.showMessageDialog( RemoteMaster.this, "Upload verify failed: read back " + rc
-            + " byte, but expected " + data.length );
-
-      }
-      else if ( !Hex.equals( data, readBack ) )
-      {
-        JOptionPane.showMessageDialog( RemoteMaster.this,
-            "Upload verify failed: data read back doesn't match data written." );
-      }
-    }
-    else
-    {
-      io.closeRemote();
-      JOptionPane.showMessageDialog( RemoteMaster.this, "Upload complete!" );
-    }
-    if ( allowClockSet && autoClockSet != null )
-    {
-      autoClockSet.restoreTimeBytes( data );
-      remoteConfig.updateCheckSums();
     }
   }
 
@@ -966,25 +1015,34 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     tabbedPane.addChangeListener( this );
 
-    JPanel statusBar = new JPanel();
-
+    statusBar = new JPanel();
     mainPanel.add( statusBar, BorderLayout.SOUTH );
 
-    statusBar.add( new JLabel( "Move/Macro:" ) );
+    memoryStatus = new JPanel();
+    interfaceStatus = new JPanel();
+    interfaceStatus.add( interfaceState );
+    interfaceState.setForeground( Color.RED );
+    interfaceState.setFont( interfaceState.getFont().deriveFont( Font.BOLD ) );
+    statusBar.add( memoryStatus );
+    statusBar.add( interfaceStatus );
+    interfaceStatus.setVisible( false );
+
+    memoryStatus.add( new JLabel( "Move/Macro:" ) );
 
     advProgressBar = new JProgressBar();
     advProgressBar.setStringPainted( true );
     advProgressBar.setString( "N/A" );
-    statusBar.add( advProgressBar );
+    memoryStatus.add( advProgressBar );
 
-    statusBar.add( Box.createHorizontalStrut( 5 ) );
+    memoryStatus.add( Box.createHorizontalStrut( 5 ) );
     JSeparator sep = new JSeparator( SwingConstants.VERTICAL );
     Dimension d = sep.getPreferredSize();
     d.height = advProgressBar.getPreferredSize().height;
     sep.setPreferredSize( d );
-    statusBar.add( sep );
+    memoryStatus.add( sep );
+    interfaceStatus.add( Box.createVerticalStrut( d.height ) );
 
-    statusBar.add( new JLabel( "Upgrade:" ) );
+    memoryStatus.add( new JLabel( "Upgrade:" ) );
 
     upgradeProgressBar = new JProgressBar();
     upgradeProgressBar.setStringPainted( true );
@@ -1002,19 +1060,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     upgradeProgressPanel.add( upgradeProgressBar, BorderLayout.NORTH );
     upgradeProgressPanel.add( devUpgradeProgressBar, BorderLayout.SOUTH );
 
-    statusBar.add( upgradeProgressPanel );
+    memoryStatus.add( upgradeProgressPanel );
 
-    statusBar.add( Box.createHorizontalStrut( 5 ) );
+    memoryStatus.add( Box.createHorizontalStrut( 5 ) );
     sep = new JSeparator( SwingConstants.VERTICAL );
     sep.setPreferredSize( d );
-    statusBar.add( sep );
+    memoryStatus.add( sep );
 
-    statusBar.add( new JLabel( "Learned:" ) );
+    memoryStatus.add( new JLabel( "Learned:" ) );
 
     learnedProgressBar = new JProgressBar();
     learnedProgressBar.setStringPainted( true );
     learnedProgressBar.setString( "N/A" );
-    statusBar.add( learnedProgressBar );
+    memoryStatus.add( learnedProgressBar );
 
     String temp = properties.getProperty( "RMBounds" );
     if ( temp != null )
@@ -2238,12 +2296,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == initializeTo00Item )
       {
         short[] data = getInitializationData( 0 );
-        uploadToRemote( data, false );
+        System.err.println( "Starting upload to initialize to FF" );
+        memoryStatus.setVisible( false );
+        interfaceState.setText( "INITIALIZING TO 00..." );
+        interfaceStatus.setVisible( true );
+        ( new UploadTask( data, false ) ).execute();
       }
       else if ( source == initializeToFFItem )
       {
         short[] data = getInitializationData( 0xFF );
-        uploadToRemote( data, false );
+        System.err.println( "Starting upload to initialize to FF" );
+        memoryStatus.setVisible( false );
+        interfaceState.setText( "INITIALIZING TO FF..." );
+        interfaceStatus.setVisible( true );
+        ( new UploadTask( data, false ) ).execute();
       }
       else if ( source == rdfPathItem )
       {
