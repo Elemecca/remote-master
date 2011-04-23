@@ -91,12 +91,15 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     {
       for ( int i = 0; i < data.length; i++ )
       {
-        if ( i > 0 && ( i & 1 ) == 0 )
+        // Format changed to allow pasting to IRScope as timing list
+        if ( i > 0 /* && ( i & 1 ) == 0 */ )
         {
           str.append( " " );
         }
         charPos[ i ] = str.length();
-        str.append( ( ( i & 1 ) == 0 ? +1 : -1 ) * data[ i ] );
+        // str.append( ( ( i & 1 ) == 0 ? +1 : -1 ) * data[ i ] ); 
+        str.append( ( i & 1 ) == 0 ? "+" : "-" );
+        str.append( data[ i ] );
       }
       /*
        * for (int i = 0; i < positions.size(); i++) { int[] pos = positions.get(i); System.out.println("pos[] = " +

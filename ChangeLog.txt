@@ -4,6 +4,10 @@ Changes for v2.02
 - Prevent ArrayIndexOutOfBoundsException when loading a .rmir file containing a device upgrade with missing protocol code (Graham)
 - Fix bug that has prevented raw download from working since highlighting was added (Graham)
 - Show upload/download message in status bar during uploads, normal and raw downloads, and initializations to 00 or FF (Graham)
+-- Alpha 2
+- Change format of timing displays in Learned Signal Advanced Details to allow pasting as a timing list into IRScope (Graham)
+- In decoding a learned signal, if a burst index is out of range, treat as zero duration but put error message in Misc column (Graham)
+- Fix bug in recognising keycode key moves when AdvCodeFormat = EFC (Graham)
 
 Changes for v2.01
 -- Alpha --

@@ -45,6 +45,7 @@ public class UnpackLearned
   public UnpackLearned( Hex hex )
   {
     ok = true;
+    error = "";
     if ( hex == null || hex.length() < 5 )
     {
       ok = false;
@@ -188,12 +189,18 @@ public class UnpackLearned
         x = ( ( ( n & 1 ) == 0 ) ? ( x >> 4 ) : ( x & 0xF ) ) * 2;
         if ( x >= bursts.length )
         {
-          ok = false;
+//          ok = false;
+          // Non-fatal error
           error = "burst index out of range";
-          return;
+//          return;
+          durations[ total++ ] = 0;
+          durations[ total++ ] = 0;
         }
-        durations[ total++ ] = bursts[ x ];
-        durations[ total++ ] = bursts[ x + 1 ];
+        else
+        {
+          durations[ total++ ] = bursts[ x ];
+          durations[ total++ ] = bursts[ x + 1 ];
+        }
       }
       ndx += ( count + 1 ) >> 1;
     }

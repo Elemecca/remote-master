@@ -113,7 +113,9 @@ public abstract class AdvancedCode implements Highlight
     else
     {
       KeyMove keyMove = null;
-      if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG && length == 3 )
+      if ( ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG 
+          || remote.getAdvCodeFormat() == AdvancedCode.Format.EFC )
+          && length == 3 )
       {
         keyMove = new KeyMoveKey( keyCode, boundDeviceIndex, hex, null );
       }

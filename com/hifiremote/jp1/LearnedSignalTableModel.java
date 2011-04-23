@@ -184,7 +184,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         }
       }
     }
-    if ( numDecodes != 1 && column > 6 )
+    if ( numDecodes != 1 && ( column > 6 && ( column != 11 || ul.error.isEmpty() ) ) )
     {
       return null;
     }
@@ -229,7 +229,13 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
       case 10:
         return Hex.toString( decode.hex );
       case 11:
-        return decode.miscMessage;
+        String message = ul.error.isEmpty() ? "" : "Malformed signal: " + ul.error;
+        if ( numDecodes == 1 )
+        {
+          message += ul.error.isEmpty() ? "" : "; ";
+          message += decode.miscMessage;
+        }
+        return message;
       case 12:
         return l.getHighlight();
     }
