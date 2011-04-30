@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -93,7 +94,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Alpha 2";
+  public final static String version = "v2.02 Alpha 3";
 
   /** The dir. */
   private File dir = null;
@@ -238,7 +239,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   private JPanel interfaceStatus = null;
 
-  private JLabel interfaceState = new JLabel();
+  private JProgressBar interfaceState = null;
 
   private JPanel statusBar = null;
 
@@ -344,6 +345,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( io == null )
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
+        setInterfaceState( null );
         return null;
       }
       System.err.println( "Interface opened successfully" );
@@ -400,6 +402,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           System.err.println( "No matching RDF found" );
           JOptionPane.showMessageDialog( RemoteMaster.this, "No RDF matches signature starting " + sig );
           io.closeRemote();
+          setInterfaceState( null );
           return null;
         }
         else if ( remotes.size() == 1 )
@@ -446,6 +449,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             if ( rc == null )
             {
               io.closeRemote();
+              setInterfaceState( null );
               return null;
             }
             else
@@ -481,12 +485,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       initializeToFFItem.setEnabled( true );
       uploadAction.setEnabled( true );
       update();
-      memoryStatus.setVisible( true );
-      interfaceStatus.setVisible( false );
+      setInterfaceState( null );
       return null;
     }
   };
-  
+
   private class UploadTask extends SwingWorker< Void, Void >
   {
     private short[] data;
@@ -511,6 +514,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( sig == null )
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
+        setInterfaceState( null );
         return null;
       }
 
@@ -533,6 +537,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
         {
           io.closeRemote();
+          setInterfaceState( null );
           return null;
         }
       }
@@ -551,6 +556,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         io.closeRemote();
         JOptionPane.showMessageDialog( RemoteMaster.this, "writeRemote returned " + rc );
+        setInterfaceState( null );
         return null;
       }
       if ( verifyUploadItem.isSelected() )
@@ -581,8 +587,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         remoteConfig.updateCheckSums();
       }
       System.err.println( "Ending upload" );
-      memoryStatus.setVisible( true );
-      interfaceStatus.setVisible( false );
+      setInterfaceState( null );
       return null;
     }
   }
@@ -659,9 +664,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
           System.err.println( "Starting normal download" );
-          memoryStatus.setVisible( false );
-          interfaceState.setText( "DOWNLOADING..." );
-          interfaceStatus.setVisible( true );
+          setInterfaceState( "DOWNLOADING..." );
           ( new DownloadTask() ).execute();
         }
         else if ( command.equals( "UPLOAD" ) )
@@ -683,9 +686,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
 
           System.err.println( "Starting upload" );
-          memoryStatus.setVisible( false );
-          interfaceState.setText( "UPLOADING..." );
-          interfaceStatus.setVisible( true );
+          setInterfaceState( "UPLOADING..." );
           ( new UploadTask( remoteConfig.getData(), true ) ).execute();
         }
         else if ( command == "OPENRDF" )
@@ -1015,17 +1016,25 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     tabbedPane.addChangeListener( this );
 
-    statusBar = new JPanel();
+    statusBar = new JPanel( new CardLayout() );
     mainPanel.add( statusBar, BorderLayout.SOUTH );
 
     memoryStatus = new JPanel();
     interfaceStatus = new JPanel();
+
+    interfaceState = new JProgressBar();
+
     interfaceStatus.add( interfaceState );
-    interfaceState.setForeground( Color.RED );
-    interfaceState.setFont( interfaceState.getFont().deriveFont( Font.BOLD ) );
-    statusBar.add( memoryStatus );
-    statusBar.add( interfaceStatus );
-    interfaceStatus.setVisible( false );
+    interfaceState.setIndeterminate( true );
+    interfaceState.setStringPainted( true );
+    interfaceState.setString( "" );
+    Dimension d = interfaceState.getPreferredSize();
+    d.width *= 3;
+    interfaceState.setPreferredSize( d );
+
+    statusBar.add( memoryStatus, "MEMORY" );
+    statusBar.add( interfaceStatus, "INTERFACE" );
+    ( ( CardLayout )statusBar.getLayout() ).first( statusBar );
 
     memoryStatus.add( new JLabel( "Move/Macro:" ) );
 
@@ -1036,7 +1045,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     memoryStatus.add( Box.createHorizontalStrut( 5 ) );
     JSeparator sep = new JSeparator( SwingConstants.VERTICAL );
-    Dimension d = sep.getPreferredSize();
+    d = sep.getPreferredSize();
     d.height = advProgressBar.getPreferredSize().height;
     sep.setPreferredSize( d );
     memoryStatus.add( sep );
@@ -2147,6 +2156,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return null;
   }
 
+  private void setInterfaceState( String state )
+  {
+    if ( state != null )
+    {
+      interfaceState.setString( state );
+      ( ( CardLayout )statusBar.getLayout() ).last( statusBar );
+    }
+    else
+    {
+      ( ( CardLayout )statusBar.getLayout() ).first( statusBar );
+    }
+  }
+
   /**
    * Description of the Method.
    * 
@@ -2297,18 +2319,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         short[] data = getInitializationData( 0 );
         System.err.println( "Starting upload to initialize to FF" );
-        memoryStatus.setVisible( false );
-        interfaceState.setText( "INITIALIZING TO 00..." );
-        interfaceStatus.setVisible( true );
+        setInterfaceState( "INITIALIZING TO 00..." );
         ( new UploadTask( data, false ) ).execute();
       }
       else if ( source == initializeToFFItem )
       {
         short[] data = getInitializationData( 0xFF );
         System.err.println( "Starting upload to initialize to FF" );
-        memoryStatus.setVisible( false );
-        interfaceState.setText( "INITIALIZING TO FF..." );
-        interfaceStatus.setVisible( true );
+        setInterfaceState( "INITIALIZING TO FF..." );
         ( new UploadTask( data, false ) ).execute();
       }
       else if ( source == rdfPathItem )
