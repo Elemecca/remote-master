@@ -12,6 +12,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -24,6 +25,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -31,7 +34,7 @@ import javax.swing.event.ListSelectionListener;
 /**
  * The Class GeneralPanel.
  */
-public class GeneralPanel extends RMPanel implements ListSelectionListener, ActionListener
+public class GeneralPanel extends RMPanel implements ListSelectionListener, ActionListener, DocumentListener
 {
 
   /**
@@ -67,7 +70,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         }
       }
     } );
-    
+
     deviceButtonTable.addFocusListener( new FocusAdapter()
     {
       @Override
@@ -117,8 +120,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     } );
 
     settingsScrollPane = new JScrollPane( settingTable );
-    settingsScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory
-        .createTitledBorder( "Other Settings" ), settingsScrollPane.getBorder() ) );
+    settingsScrollPane.setBorder( BorderFactory.createCompoundBorder(
+        BorderFactory.createTitledBorder( "Other Settings" ), settingsScrollPane.getBorder() ) );
     // settingsScrollPane.setPreferredSize( settingTable.getPreferredSize() );
     upperPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, deviceButtonPanel, settingsScrollPane );
     upperPane.setResizeWeight( 0.5 );
@@ -127,22 +130,23 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     new TextPopupMenu( notes );
     notes.setLineWrap( true );
     notes.setWrapStyleWord( true );
+    notes.getDocument().addDocumentListener( this );
     notesScrollPane = new JScrollPane( notes );
     notesScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "General Notes" ),
         notesScrollPane.getBorder() ) );
-    
+
     JPanel lowerPanel = new JPanel( new BorderLayout() );
     warningPanel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
     warningPanel.setBackground( Color.RED );
     warningPanel.setVisible( false );
-    
+
     String warningText = "WARNING:  Setup Codes shown in RED are invalid";
     JLabel warningLabel = new JLabel( warningText );
     Font font = warningLabel.getFont();
     Font font2 = font.deriveFont( Font.BOLD, 12 );
     warningLabel.setFont( font2 );
     warningLabel.setForeground( Color.YELLOW );
-    
+
     warningPanel.add( warningLabel );
     lowerPanel.add( notesScrollPane, BorderLayout.CENTER );
     lowerPanel.add( warningPanel, BorderLayout.PAGE_END );
@@ -205,7 +209,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       }
       notes.setText( text );
       notes.setCaretPosition( 0 );
-      
+
       setWarning();
 
       adjustPreferredViewportSizes();
@@ -214,6 +218,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     }
     setInProgress = false;
   }
+
+  private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
 
   /*
    * (non-Javadoc)
@@ -233,6 +239,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       {
         settingModel.addPropertyChangeListener( listener );
       }
+      propertyChangeSupport.addPropertyChangeListener( listener );
     }
   }
 
@@ -262,10 +269,10 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       setHighlightAction( deviceButtonTable );
     }
   }
-  
+
   private void setHighlightAction( JP1Table table )
   {
-    remoteConfig.getOwner().highlightAction.setEnabled( table.getSelectedRowCount() > 0 ); 
+    remoteConfig.getOwner().highlightAction.setEnabled( table.getSelectedRowCount() > 0 );
   }
 
   /*
@@ -291,7 +298,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     remotes.add( remoteConfig.getRemote() );
     editor = new DeviceUpgradeEditor( remoteConfig.getOwner(), newUpgrade, remotes, row, this );
   }
-    
+
   public void endEdit( DeviceUpgradeEditor editor, int row )
   {
     Remote remote = remoteConfig.getRemote();
@@ -319,14 +326,14 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     }
     remoteConfig.getOwner().getDeviceUpgradePanel().model.fireTableDataChanged();
   }
-  
+
   public boolean setWarning()
   {
     boolean result = deviceModel.hasInvalidCodes();
     warningPanel.setVisible( result );
     return result;
   }
-  
+
   public DeviceButtonTableModel getDeviceButtonTableModel()
   {
     return deviceModel;
@@ -376,7 +383,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   /** The setting model. */
   private JP1Table settingTable = null;
   private SettingsTableModel settingModel = new SettingsTableModel();
-  
+
   private JP1Table activeTable = null;
 
   /** The notes. */
@@ -385,7 +392,49 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   private JButton editButton = null;
   private DeviceUpgrade selectedUpgrade = null;
   private boolean setInProgress = false;
-  
+
   private DeviceUpgradeEditor editor;
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
+   */
+  @Override
+  public void changedUpdate( DocumentEvent event )
+  {
+    documentUpdated( event );
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
+   */
+  @Override
+  public void insertUpdate( DocumentEvent event )
+  {
+    documentUpdated( event );
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
+   */
+  @Override
+  public void removeUpdate( DocumentEvent event )
+  {
+    documentUpdated( event );
+  }
+
+  private void documentUpdated( DocumentEvent event )
+  {
+    if ( !setInProgress )
+    {
+      String text = notes.getText();
+      remoteConfig.setNotes( text );
+      propertyChangeSupport.firePropertyChange( "notes", null, text );
+    }
+  }
 }

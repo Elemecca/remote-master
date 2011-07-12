@@ -12,6 +12,8 @@ Changes for v2.02
 - Enhancements to upload/download/memory initializations status
 - Upgrade to jp1usb.dll v0.031
 - Fix incorrect inclusion of protocol code in exported binary files
+-- Alpha 4 --
+- Save changes to General Notes
 
 Changes for v2.01
 -- Alpha --
