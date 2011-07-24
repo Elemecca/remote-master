@@ -1,6 +1,5 @@
 package com.hifiremote.jp1;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -9,7 +8,7 @@ import java.util.Properties;
 /**
  * The Class ProtocolUpgrade.
  */
-public class ProtocolUpgrade implements Highlight
+public class ProtocolUpgrade extends Highlight
 {
 
   /**
@@ -210,17 +209,4 @@ public class ProtocolUpgrade implements Highlight
   /** The used. */
   private boolean used = false;
 
-  private Color highlight = Color.WHITE;
-  
-  @Override
-  public Color getHighlight()
-  {
-    return highlight;
-  }
-
-  @Override
-  public void setHighlight( Color highlight )
-  {
-    this.highlight = highlight;
-  }
 }

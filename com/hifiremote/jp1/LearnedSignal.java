@@ -1,6 +1,5 @@
 package com.hifiremote.jp1;
 
-import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,7 @@ import com.hifiremote.decodeir.DecodeIRCaller;
 /**
  * The Class LearnedSignal.
  */
-public class LearnedSignal implements Highlight
+public class LearnedSignal extends Highlight
 {
 
   /**
@@ -113,20 +112,6 @@ public class LearnedSignal implements Highlight
     return new Hex( signal );
   }
 
-  private Color highlight = Color.WHITE;
-
-  @Override
-  public Color getHighlight()
-  {
-    return highlight;
-  }
-
-  @Override
-  public void setHighlight( Color highlight )
-  {
-    this.highlight = highlight;
-  }
-  
   public int getSize()
   {
     return data.length() + 3; // keyCode, deviceButtonIndex, length, data

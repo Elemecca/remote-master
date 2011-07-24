@@ -2622,6 +2622,10 @@ public class Remote implements Comparable< Remote >
       // EFCDigits == 5
       keyMove = new KeyMoveEFC5( keyCode, deviceIndex, deviceType, setupCode, EFC5.parseHex( cmd ), notes );
     }
+    if ( keyMove != null )
+    {
+      keyMove.setMemoryUsage( keyMove.getSize( this ) );
+    }
     return keyMove;
   }
 

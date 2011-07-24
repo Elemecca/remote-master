@@ -7,7 +7,7 @@ import java.util.*;
 /**
  * The Class SpecialProtocolFunction.
  */
-public abstract class SpecialProtocolFunction implements Highlight
+public abstract class SpecialProtocolFunction extends Highlight
 { 
   private KeyMove keyMove = null;
   private Macro macro = null;
@@ -260,6 +260,19 @@ public abstract class SpecialProtocolFunction implements Highlight
     else
     {
       macro.setHighlight( color );
+    }
+  }
+  
+  @Override
+  public int getMemoryUsage()
+  {
+    if ( keyMove != null )
+    {
+      return keyMove.getMemoryUsage();
+    }
+    else
+    {
+      return macro.getMemoryUsage();
     }
   }
   

@@ -6,7 +6,7 @@ import java.awt.Color;
 /**
  * The Class DeviceButton.
  */
-public class DeviceButton implements Highlight
+public class DeviceButton extends Highlight
 {
   /**
    * Instantiates a new device button.
@@ -198,27 +198,14 @@ public class DeviceButton implements Highlight
   
   private int buttonIndex = 0;
 
-  private Color highlight = Color.WHITE;
-  
-  @Override
-  public Color getHighlight()
-  {
-    return highlight;
-  }
-
-  @Override
-  public void setHighlight( Color highlight )
-  {
-    this.highlight = highlight;
-  }
-  
   public void doHighlight( Color[] highlight )
   {
-    highlight[ highAddress ] = this.highlight;
-    highlight[ lowAddress ] = this.highlight;
+    highlight[ highAddress ] = getHighlight();
+    highlight[ lowAddress ] = getHighlight();
     if ( typeAddress > 0 )
     {
-      highlight[ typeAddress ] = this.highlight;
+      highlight[ typeAddress ] = getHighlight();
     }
+    setMemoryUsage( ( typeAddress > 0 ) ? 3 : 2 );
   }
 }

@@ -7,6 +7,7 @@ import java.awt.Graphics;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
 
 public class RMColorRenderer extends DefaultTableCellRenderer
 {
@@ -17,17 +18,39 @@ public class RMColorRenderer extends DefaultTableCellRenderer
     component = super.getTableCellRendererComponent( table, value, false, false, row, col );
     this.isSelected = isSelected;
     boolean editable = true;
-    if ( table.getModel() instanceof TableSorter )
+    String usage = "";
+    
+    TableModel model = table.getModel();
+    if ( model instanceof TableSorter )
     {
-      TableSorter sorter = ( TableSorter )table.getModel();
-      if ( sorter.getTableModel() instanceof DeviceUpgradeTableModel )
+      row = ( (  TableSorter )model ).modelIndex( row );
+      model = ( (  TableSorter )model ).getTableModel();
+    }
+    if ( model instanceof JP1TableModel< ? > )
+    {
+      Object item = ( ( JP1TableModel< ? > )model ).getRow( row );
+      if ( item instanceof Highlight )
       {
-        DeviceUpgradeTableModel devModel = ( DeviceUpgradeTableModel )sorter.getTableModel();
-        editable = devModel.isCellEditable( sorter.modelIndex( row ), col );
+        usage = Integer.toString( ( ( Highlight )item ).getMemoryUsage() );
+      }
+
+      if ( model instanceof DeviceUpgradeTableModel )
+      {
+        editable = ( ( DeviceUpgradeTableModel )model ).isCellEditable( row, col );
+        if ( ( ( DeviceUpgradeTableModel )model ).getEffectiveColumn( col ) == 10 )
+        {
+          usage = Integer.toString( ( ( DeviceUpgrade )item ).getProtocolMemoryUsage() );
+        }
+      }
+      else if ( model instanceof SettingsTableModel )
+      {
+        usage += ( ( ( Highlight )item ).getMemoryUsage() == 1 ) ? " bit" : " bits";
       }
     }
+    
     color = editable ? ( Color )value : Color.WHITE;
-    setText( editable ? "" : "n/a" );
+    setText( editable ? usage : "n/a" );
+    setForeground( editable ? Color.BLACK : Color.GRAY );
     return component;
   }
   

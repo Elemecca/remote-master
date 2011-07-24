@@ -14,6 +14,8 @@ Changes for v2.02
 - Fix incorrect inclusion of protocol code in exported binary files
 -- Alpha 4 --
 - Save changes to General Notes
+-- Alpha 5 --
+- When Highlighting is active, show as text in the Color column the number of bytes used by that item (Graham)
 
 Changes for v2.01
 -- Alpha --

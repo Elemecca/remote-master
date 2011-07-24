@@ -1477,6 +1477,7 @@ public class RemoteConfiguration
   {
     for ( KeyMove keyMove : moves )
     {
+      keyMove.clearMemoryUsage();
       updateHighlight( keyMove, offset, keyMove.getSize( remote ) );
       offset = keyMove.store( data, offset, remote );
     }
@@ -1522,6 +1523,7 @@ public class RemoteConfiguration
     FavScan favScan = favScans.get( 0 );
     int buttonIndex = favKeyDevButton == DeviceButton.noButton ? 0 : favKeyDevButton.getButtonIndex();
     data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
+    favScan.clearMemoryUsage();
     updateHighlight( favScan, offset, favScan.getSize( remote ) );
     favScan.store( data, offset, remote );
   }
@@ -1536,6 +1538,7 @@ public class RemoteConfiguration
     int offset = range.getStart();
     for ( TimedMacro timedMacro : timedMacros )
     {
+      timedMacro.clearMemoryUsage();
       updateHighlight( timedMacro, offset, timedMacro.getSize( remote ) );
       offset = timedMacro.store( data, offset, remote );
     }
@@ -1565,6 +1568,7 @@ public class RemoteConfiguration
     HashMap< Button, List< Macro >> multiMacros = new HashMap< Button, List< Macro >>();
     for ( Macro macro : macros )
     {
+      macro.clearMemoryUsage();
       int keyCode = macro.getKeyCode();
       Button button = remote.getButton( keyCode );
       if ( button != null )
@@ -1587,6 +1591,7 @@ public class RemoteConfiguration
     }
     for ( Macro macro : specialFunctionMacros )
     {
+      macro.clearMemoryUsage();
       updateHighlight( macro, offset, macro.getSize( remote ) );
       offset = macro.store( data, offset, remote );
     }
@@ -1600,6 +1605,7 @@ public class RemoteConfiguration
           int buttonIndex = favKeyDevButton.getButtonIndex() & 0xFF;
           data[ remote.getFavKey().getDeviceButtonAddress() ] = ( short )buttonIndex;
         }
+        favScan.clearMemoryUsage();
         updateHighlight( favScan, offset, favScan.getSize( remote ) );
         offset = favScan.store( data, offset, remote );
       }
@@ -1608,6 +1614,7 @@ public class RemoteConfiguration
     {
       for ( TimedMacro timedMacro : timedMacros )
       {
+        timedMacro.clearMemoryUsage();
         updateHighlight( timedMacro, offset, timedMacro.getSize( remote ) );
         offset = timedMacro.store( data, offset, remote );
       }
@@ -1637,6 +1644,7 @@ public class RemoteConfiguration
     {
       highlight[ offset + i ] = item.getHighlight();
     }
+    item.addMemoryUsage( length );
   }
 
   /**
@@ -2223,9 +2231,15 @@ public class RemoteConfiguration
     List< DeviceUpgrade > devDependent = new ArrayList< DeviceUpgrade >();
     for ( DeviceUpgrade dev : devices )
     {
+      dev.clearMemoryUsage();
+      dev.clearProtocolMemoryUsage();
       if ( dev.getButtonIndependent() )
       {
         devIndependent.add( dev );
+        if ( dev.needsProtocolCode() && dev.getCode() != null )
+        {
+          dev.addProtocolMemoryUsage( dev.getCode().length() + 4 );
+        }
       }
       if ( dev.getButtonRestriction() != DeviceButton.noButton )
       {
@@ -2290,6 +2304,7 @@ public class RemoteConfiguration
     i = 0;
     for ( ProtocolUpgrade upgrade : outputProtocols.values() )
     {
+      upgrade.clearMemoryUsage();
       Hex hex = upgrade.getCode();
       // Check that there is protocol code for this processor - manual settings,
       // if care is not taken, can create a protocol for the wrong processor and
@@ -2362,6 +2377,8 @@ public class RemoteConfiguration
       processor.putInt( pr.getPid(), data, offset );
       offset += 2;
       protocolHighlights[ i++ ] = pr.getHighlight();
+      // Since memory usage not updated by next loop, do it here instead
+      pr.addMemoryUsage( 2 );
     }
     for ( i = 0; i < prCount; ++i )
     {
@@ -2429,6 +2446,7 @@ public class RemoteConfiguration
             {
               highlight[ offset + j ] = upg.getProtocolHighlight();
             }
+            upg.addProtocolMemoryUsage( hex.length() );
             Hex.put( hex, data, offset );
             lastProtID = protID;
             lastProtAddr = offset;
@@ -2494,6 +2512,7 @@ public class RemoteConfiguration
     int offset = addr.getStart();
     for ( LearnedSignal ls : learned )
     {
+      ls.clearMemoryUsage();
       updateHighlight( ls, offset, ls.getSize() );
       offset = ls.store( data, offset, remote );
     }

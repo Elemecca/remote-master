@@ -40,7 +40,7 @@ import com.hifiremote.jp1.translate.Translator;
 /**
  * The Class DeviceUpgrade.
  */
-public class DeviceUpgrade implements Highlight
+public class DeviceUpgrade extends Highlight
 {
 
   /**
@@ -3340,22 +3340,9 @@ public class DeviceUpgrade implements Highlight
     return Color.WHITE;
   }
 
-  private Color deviceHighlight = Color.WHITE;
   private Color protocolHighlight = Color.WHITE;
+  private int protocolMemoryUsage = 0;
   
-  @Override
-  public Color getHighlight()
-  {
-    return deviceHighlight;
-  }
-
-  @Override
-  public void setHighlight( Color color )
-  {
-    deviceHighlight = color;
-    
-  }
-
   public Color getProtocolHighlight()
   {
     return protocolHighlight;
@@ -3364,7 +3351,21 @@ public class DeviceUpgrade implements Highlight
   public void setProtocolHighlight( Color color )
   {
     protocolHighlight = color;
-    
+  }
+  
+  public int getProtocolMemoryUsage()
+  {
+    return protocolMemoryUsage;
+  }
+
+  public void clearProtocolMemoryUsage()
+  {
+    protocolMemoryUsage = 0;
+  }
+  
+  public void addProtocolMemoryUsage( int protocolMemoryUsage )
+  {
+    this.protocolMemoryUsage += protocolMemoryUsage;
   }
   
   /**

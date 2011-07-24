@@ -6,7 +6,7 @@ import java.awt.Color;
 /**
  * The Class Setting.
  */
-public class Setting implements Highlight
+public class Setting extends Highlight
 {
 
   /**
@@ -257,26 +257,15 @@ public class Setting implements Highlight
   {
     pw.print( title, value );
   }
-
-  @Override
-  public Color getHighlight()
-  {
-    return highlight;
-  }
-
-  @Override
-  public void setHighlight( Color highlight )
-  {
-    this.highlight = highlight;
-  }
   
   public void doHighlight( Color[] highlight, int index )
   {
     int end = highlight.length - 1;
     for ( int i = 0; i < numberOfBits; i++ )
     {
-      highlight[ end - 8 * index - bitNumber + i ] = this.highlight;
+      highlight[ end - 8 * index - bitNumber + i ] = getHighlight();
     }
+    setMemoryUsage( numberOfBits );
   }
 
   /** The title. */
@@ -305,6 +294,5 @@ public class Setting implements Highlight
 
   /** The value. */
   private int value = 0;
-  
-  private Color highlight = Color.WHITE;
+ 
 }

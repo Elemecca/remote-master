@@ -1,13 +1,12 @@
 package com.hifiremote.jp1;
 
-import java.awt.Color;
 import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class AdvancedCode.
  */
-public abstract class AdvancedCode implements Highlight
+public abstract class AdvancedCode extends Highlight
 {
   /** The Constant NORMAL. */
   public enum BindFormat
@@ -198,20 +197,6 @@ public abstract class AdvancedCode implements Highlight
     }
   }
   
-  private Color highlight = Color.WHITE;
-
-  @Override
-  public Color getHighlight()
-  {
-    return highlight;
-  }
-
-  @Override
-  public void setHighlight( Color highlight )
-  {
-    this.highlight = highlight;
-  }
-
   public int getSize( Remote remote )
   {
     int size = data.length() + 2; // for the key code and type/length
