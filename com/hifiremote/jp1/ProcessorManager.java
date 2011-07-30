@@ -2,6 +2,11 @@ package com.hifiremote.jp1;
 
 import java.util.*;
 
+import com.hifiremote.jp1.assembler.HCS08data;
+import com.hifiremote.jp1.assembler.P6805data;
+import com.hifiremote.jp1.assembler.P740data;
+import com.hifiremote.jp1.assembler.S3C80data;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class ProcessorManager.
@@ -15,9 +20,18 @@ public class ProcessorManager
   private ProcessorManager()
   {
     processors = new LinkedHashMap< String, Processor >();
-    add( new S3C80Processor());
+    Processor p = new S3C80Processor();
+    p.setAddressModes( S3C80data.AddressModes );
+    String[][][] S3C80Array = { S3C80data.Instructions };
+    p.setInstructions( S3C80Array );
+    add( p );
+    
+    p = new S3F80Processor();
+    p.setAddressModes( S3C80data.AddressModes );
+    p.setInstructions( S3C80Array );
+    add( p );
 
-    Processor p = new BigEndianProcessor( "6805", "C9" );
+    p = new BigEndianProcessor( "6805", "C9" );
     int[] opcodes = { 0xCC, 0xCD };
     int[] addresses =
     {
@@ -40,6 +54,9 @@ public class ProcessorManager
       0x01B4,
       0x01BC
     };
+    p.setAddressModes( P6805data.AddressModes );
+    String[][][] p6805Array = { P6805data.Instructions };
+    p.setInstructions( p6805Array );
     p.setVectorEditData( opcodes, addresses );
     add( p );
 
@@ -69,11 +86,24 @@ public class ProcessorManager
       0x01C7,
       0x01CA
     };
+    p.setAddressModes( P6805data.AddressModes );
+    p.setInstructions( p6805Array );
     p.setVectorEditData( opcodes, moreAddresses );
     add( p );
-    add( new LittleEndianProcessor( "740" ));
-    add( new BigEndianProcessor( "HCS08" ));
-    add( new S3F80Processor());
+    
+    p = new LittleEndianProcessor( "740" );
+    p.setAddressModes( P740data.AddressModes );
+    String[][][] p740Array = { P740data.Instructions };
+    p.setInstructions( p740Array );
+    add( p );
+    
+    p = new BigEndianProcessor( "HCS08" );
+    p.setAddressModes( HCS08data.AddressModes );
+    String HCS08Array[][][] = { HCS08data.Instructions, HCS08data.Instructions2 };
+    p.setInstructions( HCS08Array );
+    p.setStartOffset( 0 );
+    add( p );
+    
   }
 
 

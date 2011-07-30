@@ -21,6 +21,7 @@ public class LittleEndianProcessor extends Processor
   public LittleEndianProcessor( String name )
   {
     super( name );
+    setRAMAddress( 0x0132 );
   }
 
   /**

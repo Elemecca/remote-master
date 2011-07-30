@@ -14,6 +14,7 @@ public class S3F80Processor
   public S3F80Processor()
   {
     super( "S3F80" );
+    setRAMAddress( newRAMAddress );
   }
 
   /* (non-Javadoc)

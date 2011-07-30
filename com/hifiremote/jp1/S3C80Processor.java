@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import com.hifiremote.jp1.AssemblerTableModel.DisasmState;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class S3C80Processor.
@@ -7,10 +9,12 @@ package com.hifiremote.jp1;
 public class S3C80Processor
   extends BigEndianProcessor
 {
-  private enum CodeType
+  public enum CodeType
   {
     OLD, NEW, UNKNOWN
-  } 
+  }
+  
+  public static final int newRAMAddress = 0xFF00; // value for S3C8+ processor
    
   /**
    * Instantiates a new s3 c80 processor.
@@ -28,9 +32,83 @@ public class S3C80Processor
   protected S3C80Processor( String name )
   {
     super( name, null );
+    setRAMAddress( 0x8000 );
   }
   
-  private CodeType testCode( Hex hex )
+  @Override
+  public String getConditionCode( int n )
+  {
+    String ccs[] = { "F", "LT", "LE", "ULE", "OV", "MI",
+    "EQ", "C", "" /*"T"*/, "GE", "GT", "UGT", "NOV", "PL", "NE", "NC" };
+    return ( ccs[ n ] == "" ) ? "" : ccs[ n ] + ", ";
+  }
+
+  @Override
+  public AssemblerOpCode getOpCode( short[] data, DisasmState state )
+  {
+    AssemblerOpCode opCode = getInstructions().get( 0 )[ data[ state.index++ ] ].clone();
+    state.shiftFlag = false;
+    state.shiftPos = 3;
+    state.nMask = 0;
+    state.bMask = 0;
+    switch ( opCode.getIndex() )
+    {
+      case 1:
+        state.shiftFlag = true;
+        if ( ( data[ state.index ] & 1 ) == 1 )
+        {
+          opCode.setMode( getAddressModes().get( opCode.getMode().name + "Z" ) );
+        }
+        if ( opCode.getMode() == null )
+        {
+          opCode.setIndex( -1 );  // Error
+        }
+        break;
+      case 2:
+        state.shiftFlag = true;
+        opCode.setName( opCode.getName() + ( ( ( data [ state.index ] & 1 ) == 0 ) ? "F" : "T" ) );
+        break;
+      case 3:
+        state.shiftFlag = true;
+        opCode.setName( opCode.getName() + ( ( ( data [ state.index ] & 1 ) == 0 ) ? "R" : "S" ) );
+        break;
+      case 4:
+        if ( ( data[ state.index ] & 0x0E ) == 0 )
+        {
+          opCode.setMode( getAddressModes().get( opCode.getMode().name + "Z" ) );
+        }
+        // run through
+      case 5:
+        state.nMask = 0x0E;
+        if ( ( data[ state.index ] & 1 ) == 1 )
+        {
+          opCode.setName( opCode.getName().replaceFirst( "C", "E" ) );
+        }
+        break;
+      case 6:
+        state.bMask = 0xFC;
+        opCode.setName( opCode.getName() + ( ( ( data [ state.index ] & 1 ) == 1 ) ? "1" :
+          ( ( data [ state.index ] & 2 ) == 2 ) ? "0" : "" ) );
+        if ( ( data [ state.index ] & 3 ) == 3 )
+        {
+          opCode.setIndex( -1 );  // Error
+        }
+        break;
+      default:
+        break;
+    }
+    if ( opCode.getIndex() > 0 )
+    {
+      opCode.setIndex( 0 );
+    }
+    if ( opCode.getName() == "*" )
+    {
+      opCode.setIndex( -1 );  // Invalid op code
+    }
+    return opCode;
+  }
+  
+  public CodeType testCode( Hex hex )
   {
     int oldCount = 0;
     int newCount = 0;

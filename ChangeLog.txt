@@ -16,6 +16,8 @@ Changes for v2.02
 - Save changes to General Notes
 -- Alpha 5 --
 - When Highlighting is active, show as text in the Color column the number of bytes used by that item (Graham)
+-- Alpha 6 --
+- Implemented disassembler in Manual Settings dialog (Graham)
 
 Changes for v2.01
 -- Alpha --

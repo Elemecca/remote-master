@@ -33,6 +33,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -41,6 +42,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -52,7 +55,7 @@ import javax.swing.text.Document;
  * The Class ManualSettingsDialog.
  */
 public class ManualSettingsDialog extends JDialog implements ActionListener, PropertyChangeListener, DocumentListener,
-    ChangeListener
+    ChangeListener, ListSelectionListener
 {
 
   /**
@@ -95,6 +98,16 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
+    
+    assemblerTable = new JP1Table( assemblerModel );
+    JPanel rightPanel = new JPanel( new BorderLayout() );
+    rightPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    
+    JScrollPane codePane = new JScrollPane( assemblerTable );
+    codePane.setBorder( BorderFactory.createTitledBorder( "Disassembly" ) );
+    rightPanel.add( codePane, BorderLayout.CENTER );
+    assemblerTable.initColumns( assemblerModel );
+    JPanel leftPanel = new JPanel( new BorderLayout() );
 
     this.protocol = protocol;
     System.err.println( "protocol=" + protocol );
@@ -114,8 +127,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     };
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
-    contentPane.add( mainPanel, BorderLayout.CENTER );
-
+    
+    JSplitPane outerPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel );
+    outerPane.setResizeWeight( 0 );
+    
+    contentPane.add( outerPane, BorderLayout.CENTER );
+    leftPanel.add( mainPanel, BorderLayout.CENTER );
+    
     JLabel label = new JLabel( "Name:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 1" );
     name = new JTextField( protocol.getName() );
@@ -141,7 +159,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     tablePanel.add( new JScrollPane( codeTable ), BorderLayout.CENTER );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )codeTable.getDefaultRenderer( String.class );
     r.setHorizontalAlignment( SwingConstants.CENTER );
-    codeTable.setDefaultEditor( Hex.class, new HexCodeEditor() );
+    codeTable.setDefaultEditor( Hex.class, new HexCodeEditor() );   
+    codeTable.getSelectionModel().addListSelectionListener( this );//new ListSelectionListener()
 
     JLabel l = ( JLabel )codeTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent( codeTable,
         colNames[ 0 ], false, false, 0, 0 );
@@ -253,12 +272,16 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     cancel.addActionListener( this );
     buttonPanel.add( cancel );
 
-    contentPane.add( buttonPanel, BorderLayout.SOUTH );
+    leftPanel.add( buttonPanel, BorderLayout.SOUTH );
 
     Hex id = protocol.getID();
     pid.setValue( id );
     rawHexData.setText( protocol.getFixedData( new Value[ 0 ] ).toString() );
 
+    d = rightPanel.getPreferredSize();
+    d.width = (int)(leftPanel.getPreferredSize().width * 0.75 );
+    rightPanel.setPreferredSize( d );
+    
     pack();
     Rectangle rect = getBounds();
     int x = rect.x - rect.width / 2;
@@ -309,6 +332,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           ex.printStackTrace( System.err );
         }
+      }
+      if ( codeTable.getSelectedRowCount() == 1 )
+      {
+        assemblerModel.disassemble( protocol, procs[ codeTable.getSelectedRow() ] );
       }
     }
     else if ( source == view )
@@ -772,5 +799,19 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public Hex codeWhenNull = null;
   
   public RemoteConfiguration remoteConfig = null;
+  
+  private AssemblerTableModel assemblerModel = new AssemblerTableModel();
+  private JP1Table assemblerTable = null;
 
+  @Override
+  public void valueChanged( ListSelectionEvent e )
+  {
+    if ( !e.getValueIsAdjusting() && codeTable.getSelectedRowCount() == 1 )
+    {
+      assemblerModel.disassemble( protocol, procs[ codeTable.getSelectedRow() ] );
+    }
+  }
+  
 }
+
+

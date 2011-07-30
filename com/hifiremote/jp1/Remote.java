@@ -1284,29 +1284,15 @@ public class Remote implements Comparable< Remote >
       }
 
     }
+    
+    processor = ProcessorManager.getProcessor( processorName, processorVersion );
 
     // Set values for RAMAddr for processors where it does not need to be specified
-    if ( processorName.equals( "S3C80" ) )
+    if ( !processorName.equals( "S3C80" ) ||  RAMAddress != S3C80Processor.newRAMAddress )
     {
-      if ( RAMAddress != 0xFF00 && RAMAddress != 0x8000 )
-      {
-        RAMAddress = 0x8000; // No other values are allowed than 0xFF00 and the default 0x8000
-      }
-    }
-    else if ( processorName.equals( "S3F80" ) )
-    {
-      RAMAddress = 0xFF00;
-    }
-    else if ( processorName.equals( "740" ) )
-    {
-      RAMAddress = 0x0132;
-    }
-    else
-    {
-      RAMAddress = 0x0100;
+      RAMAddress = processor.getRAMAddress();
     }
 
-    processor = ProcessorManager.getProcessor( processorName, processorVersion );
     return line;
   }
   
@@ -3077,7 +3063,7 @@ public class Remote implements Comparable< Remote >
   private Processor processor = null;
   // private String processorVersion = null;
   /** The RAM address. */
-  private int RAMAddress = 0x8000; // Default for the S3C80
+  private int RAMAddress = 0;  // unset
 
   private AutoClockSet autoClockSet = null;
 
