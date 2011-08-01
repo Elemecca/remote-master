@@ -18,6 +18,10 @@ Changes for v2.02
 - When Highlighting is active, show as text in the Color column the number of bytes used by that item (Graham)
 -- Alpha 6 --
 - Implemented disassembler in Manual Settings dialog (Graham)
+-- Alpha 7
+- Made code of built-in protocols visible in Manual Settings dialog, so that all protocols can be disassembled. (Graham)
+- Minor refinements to disassembler to handle certain error situations (Graham)
+- Corrected an error in protocols.ini, in that HCS08 code for NEC1 (pid 005A) had final byte E8 missing. (Graham)
 
 Changes for v2.01
 -- Alpha --

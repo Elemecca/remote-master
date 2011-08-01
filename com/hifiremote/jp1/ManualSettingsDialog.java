@@ -34,6 +34,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -86,6 +87,26 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     createGui( owner, protocol );
   }
 
+  public class CodeCellRenderer extends DefaultTableCellRenderer
+  {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value,
+        boolean isSelected, boolean hasFocus, int row, int col ) 
+    {
+      Component c = super.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, col );
+      CodeTableModel model = ( CodeTableModel )table.getModel();
+      if ( isSelected )
+      {
+        c.setForeground( ( Boolean )model.getValueAt( row, 2 ) ? Color.YELLOW : Color.WHITE );
+      }
+      else
+      {
+        c.setForeground( ( Boolean )model.getValueAt( row, 2 ) ? Color.GRAY : Color.BLACK );
+      }
+      return c;
+    }
+  }
+  
   /**
    * Creates the gui.
    * 
@@ -197,6 +218,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       column.setMaxWidth( width );
       column.setPreferredWidth( width );
     }
+    
+    columnModel.getColumn( 1 ).setCellRenderer( new CodeCellRenderer() );
+    
     codeTable.doLayout();
     codeTable.setPreferredScrollableViewportSize( codeTable.getPreferredSize() );
 
@@ -204,8 +228,18 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     importButton = new JButton( "Import Protocol Upgrade" );
     importButton.addActionListener( this );
     importButton.setToolTipText( "Import Protocol Upgrades(s) from the Clipboard" );
+    importButton.setEnabled( false );
     buttonPanel.add( importButton );
-    tablePanel.add( buttonPanel, BorderLayout.SOUTH );
+    
+    JPanel messagePanel = new JPanel( new FlowLayout( FlowLayout.LEFT) );
+    messagePanel.add( messageLabel );
+    setMessage( 1 );
+    
+    JPanel midPanel = new JPanel( new BorderLayout() );
+    midPanel.add( buttonPanel, BorderLayout.CENTER );
+    midPanel.add( messagePanel, BorderLayout.PAGE_END );
+    tablePanel.add( midPanel, BorderLayout.SOUTH );
+
 
     // Device Parameter Table
     deviceModel = new ParameterTableModel( protocol, ParameterTableModel.Type.DEVICE );
@@ -287,6 +321,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     int x = rect.x - rect.width / 2;
     int y = rect.y - rect.height / 2;
     setLocation( x, y );
+    
+    isEmpty = new boolean[ procs.length ];
+    for ( int i = 0; i < procs.length; i++ )
+    {
+      Hex hex = protocol.getCode( procs[ i ] );
+      isEmpty[ i ] = ( hex == null || hex.length() == 0 );
+    }
   }
   
   public void setForCustomCode()
@@ -575,6 +616,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
      */
     public boolean isCellEditable( int row, int col )
     {
+      if ( displayRemote != null && !procs[ row ].getEquivalentName().equals( displayRemote.getProcessor().getEquivalentName() ) )
+      {
+        return false;
+      }
       return ( col == 1 );
     }
 
@@ -585,10 +630,22 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
      */
     public Object getValueAt( int row, int col )
     {
-      if ( col == 0 )
-        return procs[ row ];
-      else
-        return protocol.getCode( procs[ row ] );
+      Hex hex = protocol.getCode( procs[ row ] );
+      Hex dispHex = ( displayProtocol == null ) ? null : displayProtocol.getCode( procs[ row ] );
+      if ( dispHex == null )
+      {
+        dispHex = new Hex();
+      }
+      switch ( col )
+      {
+        case 0:
+          return procs[ row ];
+        case 1:
+          return ( hex == null || hex.length() == 0 ) ? dispHex : hex;
+        default:
+          // There are no other columns but this value is used by cell renderer
+          return hex == null || hex.length() == 0 || isEmpty[ row ] && hex.equals( dispHex );
+      }
     }
 
     /*
@@ -647,6 +704,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         protocol.setCode( ( Hex )value, procs[ row ] );
         fireTableRowsUpdated( row, row );
         enableButtons();
+        assemblerModel.disassemble( protocol, procs[ row ] );
       }
     }
   }
@@ -721,6 +779,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
   /** The protocol. */
   private ManualProtocol protocol = null;
+  
+  private Protocol displayProtocol = null;
+  
+  private Remote displayRemote = null;
 
   /** The code model. */
   private CodeTableModel codeModel = null;
@@ -802,16 +864,50 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   
   private AssemblerTableModel assemblerModel = new AssemblerTableModel();
   private JP1Table assemblerTable = null;
+  private boolean isEmpty[] = null;
+  private JLabel messageLabel = new JLabel();
 
   @Override
   public void valueChanged( ListSelectionEvent e )
   {
-    if ( !e.getValueIsAdjusting() && codeTable.getSelectedRowCount() == 1 )
+    if ( !e.getValueIsAdjusting() )
     {
-      assemblerModel.disassemble( protocol, procs[ codeTable.getSelectedRow() ] );
+      if ( codeTable.getSelectedRowCount() == 1 )
+      {
+        Hex hex = protocol.getCode( procs[ codeTable.getSelectedRow() ] );
+        Protocol prot = ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) ?
+            displayProtocol : protocol;
+        assemblerModel.disassemble( prot, procs[ codeTable.getSelectedRow() ] );
+        importButton.setEnabled( codeTable.isCellEditable( codeTable.getSelectedRow(), 1 ) );
+      }
+      else
+      {
+        importButton.setEnabled( false );
+      }
     }
   }
+
+  public void setDisplayProtocol( Protocol displayProtocol )
+  {
+    this.displayProtocol = displayProtocol;
+  }
+
+  public void setDisplayRemote( Remote displayRemote )
+  {
+    this.displayRemote = displayRemote;
+  }
   
+  public void setMessage( int n )
+  {
+    String text = "<HTML>";
+    if ( n == 2 )
+    {
+      text += "This is a custom protocol, so only the code for the remote's processor is editable.<BR>";
+    }
+    text += "Code shown in gray is standard code for information only.</HTML>";
+    messageLabel.setText( text );
+  }
+
 }
 
 

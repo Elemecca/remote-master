@@ -57,6 +57,8 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     switch ( column )
     {
       case 0:
+        if ( item.getAddress() == 0 )
+          return "";
         String hexStr = Integer.toHexString( item.getAddress() );
         hexStr = "0000".substring( hexStr.length() ) + hexStr;
         return hexStr.toUpperCase();
@@ -117,10 +119,13 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
           if ( ( mode.relMap & i ) == i )
           {
             int n = mode.nibbleBytes + state.index + i;
-            int newAddr = addr + data[ n - 1 ] + n - ( data[ n - 1 ] > 0x7F ? 0x100 : 0 );
-            if ( !labelAddresses.contains( newAddr ) )
+            if ( n <= data.length )
             {
-              labelAddresses.add( newAddr );
+              int newAddr = addr + data[ n - 1 ] + n - ( data[ n - 1 ] > 0x7F ? 0x100 : 0 );
+              if ( !labelAddresses.contains( newAddr ) )
+              {
+                labelAddresses.add( newAddr );
+              }
             }
           }
         }
@@ -133,6 +138,12 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
 
       }
       Collections.sort(  labelAddresses );
+      
+      boolean used[] = new boolean[ labelAddresses.size() ];
+      for ( int i = 0; i < used.length; i++ )
+      {
+        used[ i ] = false;
+      }
       
       state.index = processor.getStartOffset();
       
@@ -224,6 +235,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
           if ( index >= 0 )
           {
             item.setLabel( "L" + index );
+            used[ index ] = true;
           }
         }
         else
@@ -240,6 +252,21 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
           state.index += data[ processor.getStartOffset() + 1 ];
         }
       }
+      
+      // Create EQU statements for any unidentified labels (which are likely to be errors)
+      for ( int i = 0; i < used.length; i++ )
+      {
+        if ( !used[ i ] )
+        {
+          AssemblerItem item = new AssemblerItem();
+          item.setLabel( "L" + i );
+          item.setOperation( "EQU" );
+          String format = processor.getAddressModes().get( "EQU" ).format;
+          item.setArgumentText( String.format( format, labelAddresses.get( i ) ) );
+          itemList.add( 0, item );
+        }
+      }
+      
     }
 
     fireTableDataChanged();

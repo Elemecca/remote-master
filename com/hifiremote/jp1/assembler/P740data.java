@@ -22,7 +22,8 @@ public class P740data
     { "xA0", "N1", "%d, A" },
     { "xA1", "N1B1", "%d, A, $%04X", "1" },
     { "xZp1", "N1B1", "%d, $%02X" }, 
-    { "xZp2", "N1B2", "%d, $%02X, $%04X", "2" }
+    { "xZp2", "N1B2", "%d, $%02X, $%04X", "2" },
+    { "EQU", "", "$%04X" }
   };
 
   public static final String[][] Instructions = {

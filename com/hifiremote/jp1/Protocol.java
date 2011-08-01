@@ -1689,7 +1689,14 @@ public class Protocol
     if ( getClass() != ManualProtocol.class )
     {
       dialog.setForCustomCode();
-    }    
+      dialog.setDisplayProtocol( this );
+      dialog.setDisplayRemote( remote );
+      dialog.setMessage( 2 );
+    }
+    else
+    {
+      dialog.setMessage( 1 );
+    }
     dialog.codeWhenNull = codeWhenNull;
 
     dialog.setVisible( true );

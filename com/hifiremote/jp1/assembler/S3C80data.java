@@ -50,7 +50,8 @@ public class S3C80data
     { "W2IWW1xLZ", "N4B2", "%3$02X%2$02XH, W%1$X" },
     { "IW2W1RA", "N12B1", "W%2$X, @W%1$X, %3$04XH", "1" }, 
     { "IA1", "B1", "#%02XH" },
-    { "IM", "B1", "#%02XH" }
+    { "IM", "B1", "#%02XH" },
+    { "EQU", "", "%04XH" }
   };
   
   public static final String[][] Instructions = {

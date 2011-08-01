@@ -11,7 +11,8 @@ public class P6805data
     { "Ix2", "B2", "$%02X%02X, X" }, 
     { "Ix", "B0", "X" },
     { "Imm", "B1", "#$%02X" }, 
-    { "Ext", "B2", "$%02X%02X" }
+    { "Ext", "B2", "$%02X%02X" },
+    { "EQU", "", "$%04X" }
   };
 
   public static final String[][] Instructions = {
