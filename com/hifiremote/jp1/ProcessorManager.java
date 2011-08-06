@@ -24,11 +24,17 @@ public class ProcessorManager
     p.setAddressModes( S3C80data.AddressModes );
     String[][][] S3C80Array = { S3C80data.Instructions };
     p.setInstructions( S3C80Array );
+    p.setAbsLabels( S3C80data.absLabels_C80 );
+    p.setZeroLabels( S3C80data.zeroLabels );
+    p.setOscillatorData( S3C80data.oscData );
     add( p );
     
     p = new S3F80Processor();
     p.setAddressModes( S3C80data.AddressModes );
     p.setInstructions( S3C80Array );
+    p.setAbsLabels( S3C80data.absLabels_F80 );
+    p.setZeroLabels( S3C80data.zeroLabels );
+    p.setOscillatorData( S3C80data.oscData );
     add( p );
 
     p = new BigEndianProcessor( "6805", "C9" );
@@ -57,6 +63,9 @@ public class ProcessorManager
     p.setAddressModes( P6805data.AddressModes );
     String[][][] p6805Array = { P6805data.Instructions };
     p.setInstructions( p6805Array );
+    p.setAbsLabels( P6805data.absLabels_C9 );
+    p.setZeroLabels( P6805data.zeroLabels_C9 );
+    p.setOscillatorData( P6805data.oscData_C9 );
     p.setVectorEditData( opcodes, addresses );
     add( p );
 
@@ -88,6 +97,9 @@ public class ProcessorManager
     };
     p.setAddressModes( P6805data.AddressModes );
     p.setInstructions( p6805Array );
+    p.setAbsLabels( P6805data.absLabels_RC16 );
+    p.setZeroLabels( P6805data.zeroLabels_RC16 );
+    p.setOscillatorData( P6805data.oscData_RC16 );
     p.setVectorEditData( opcodes, moreAddresses );
     add( p );
     
@@ -95,12 +107,18 @@ public class ProcessorManager
     p.setAddressModes( P740data.AddressModes );
     String[][][] p740Array = { P740data.Instructions };
     p.setInstructions( p740Array );
+    p.setAbsLabels( P740data.absLabels );
+    p.setZeroLabels( P740data.zeroLabels );
+    p.setOscillatorData( P740data.oscData );
     add( p );
     
     p = new BigEndianProcessor( "HCS08" );
     p.setAddressModes( HCS08data.AddressModes );
     String HCS08Array[][][] = { HCS08data.Instructions, HCS08data.Instructions2 };
     p.setInstructions( HCS08Array );
+    p.setAbsLabels( HCS08data.absLabels );
+    p.setZeroLabels( HCS08data.zeroLabels );
+    p.setOscillatorData( HCS08data.oscData );
     p.setStartOffset( 0 );
     add( p );
     

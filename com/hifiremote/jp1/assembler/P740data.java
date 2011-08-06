@@ -5,25 +5,26 @@ public class P740data
   public static final String[][] AddressModes = {
     { "Nil", "B0", "" },
     { "A", "B0", "A" },
-    { "Abs", "B2", "$%2$02X%1$02X" },
-    { "AbsX", "B2", "$%2$02X%1$02X, X" },
-    { "AbsY", "B2", "$%2$02X%1$02X, Y" },
+    { "Abs", "B2A1", "$%2$02X%1$02X" },
+    { "AbsX", "B2A1", "$%2$02X%1$02X, X" },
+    { "AbsY", "B2A1", "$%2$02X%1$02X, Y" },
     { "Imm", "B1", "#$%02X" },
-    { "Ind", "B2", "($%2$02X%1$02X)" },
-    { "IndX", "B1", "($%02X, X)" },
-    { "IndY", "B1", "($%02X, Y)" },
-    { "Rel", "B1", "$%04X", "1" },
+    { "Ind", "B2A1", "($%2$02X%1$02X)" },
+    { "IndX", "B1Z1", "($%02X, X)" },
+    { "IndY", "B1Z1", "($%02X, Y)" },
+    { "Rel", "B1R1", "$%04X" },
     { "Sp", "B1", "\\$FF%02X" }, 
-    { "Zp", "B1", "$%02X" },
-    { "Zp2", "B2", "#$%02X, $%02X" },
-    { "ZpInd", "B1", "($%02X)" },
-    { "ZpX", "B1", "$%02X, X" },
-    { "ZpY", "B1", "$%02X, Y" }, 
+    { "Zp", "B1Z1", "$%02X" },
+    { "Zp2", "B2Z2", "#$%02X, $%02X" },
+    { "ZpInd", "B1Z1", "($%02X)" },
+    { "ZpX", "B1Z1", "$%02X, X" },
+    { "ZpY", "B1Z1", "$%02X, Y" }, 
     { "xA0", "N1", "%d, A" },
-    { "xA1", "N1B1", "%d, A, $%04X", "1" },
-    { "xZp1", "N1B1", "%d, $%02X" }, 
-    { "xZp2", "N1B2", "%d, $%02X, $%04X", "2" },
-    { "EQU", "", "$%04X" }
+    { "xA1", "N1B1R1", "%d, A, $%04X" },
+    { "xZp1", "N1B1Z1", "%d, $%02X" }, 
+    { "xZp2", "N1B2R2Z1", "%d, $%02X, $%04X" },
+    { "EQU4", "", "$%04X" },
+    { "EQU2", "", "$%02X" }
   };
 
   public static final String[][] Instructions = {
@@ -171,4 +172,19 @@ public class P740data
     { "*", "Nil" },          { "SBC", "AbsX" },
     { "INC", "AbsX" },       { "CLB", "xZp1", "1" }
   };
+  
+  public static final String[][] absLabels = {
+    { "XMITIR", "FF00" } };
+  
+  public static final String[][] zeroLabels = {
+    { "DCBUF", "5D", "DCBUF+", "0A" }, 
+    { "PF0", "7E", "PF", "05" },
+    { "PD00", "6A", "PD", "14" },
+    { "DBYTES", "69" },
+    { "FLAGS", "5A" }
+  };
+  
+  public static final String[] oscData = { "2000000", "16" };
+
+
 }

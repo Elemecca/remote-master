@@ -3,16 +3,17 @@ package com.hifiremote.jp1.assembler;
 public class HCS08data
 {
   public static final String[][] AddressModes = {
-    { "Nil", "", "" },                          { "Dir", "B1", "$%02X" }, 
-    { "Dir2", "B2", "$%02X, $%04X", "2" },      { "Rel", "B1", "$%04X", "1" },
-    { "Ix1", "B1", "$%02X, X" },                { "Ix2", "B2", "$%02X%02X, X", "0"}, 
-    { "Ix", "", ",X" },                         { "Ixp", "B1", "X+, $%04X", "1" }, 
-    { "Ix1p", "B2", "$%02X, X+, $%04X", "2" },  { "Imd", "B2", "#$%02X, $%02X", "0"},
-    { "Imm", "B1", "#$%02X" },                  { "Imm2", "B2", "#$%02X%02X", "0"}, 
-    { "DD", "B2", "$%02X, $%02X" },             { "Ext", "B2", "$%02X%02X", "0"}, 
-    { "DIxp", "B1", "$%02X, X+" },              { "IxpD", "B1", "X+, $%02X" },
-    { "SP1", "B1", "$%02X, SP" },               { "SP1r", "B2", "$%02X, SP, $%04X", "2"}, 
-    { "SP2", "B2", "$%02X%02X, SP" },           { "EQU", "", "$%04X" }
+    { "Nil", "", "" },                          { "Dir", "B1Z1", "$%02X" }, 
+    { "Dir2", "B2R2Z1", "$%02X, $%04X" },       { "Rel", "B1R1", "$%04X" },
+    { "Ix1", "B1Z1", "$%02X, X" },              { "Ix2", "B2A1", "$%02X%02X, X" }, 
+    { "Ix", "", ",X" },                         { "Ixp", "B1R1", "X+, $%04X" }, 
+    { "Ix1p", "B2R2Z1", "$%02X, X+, $%04X" },   { "Imd", "B2Z2", "#$%02X, $%02X" },
+    { "Imm", "B1", "#$%02X" },                  { "Imm2", "B2A1", "#$%02X%02X" }, 
+    { "DD", "B2Z3", "$%02X, $%02X" },           { "Ext", "B2A1", "$%02X%02X" }, 
+    { "DIxp", "B1Z1", "$%02X, X+" },            { "IxpD", "B1Z1", "X+, $%02X" },
+    { "SP1", "B1Z1", "$%02X, SP" },             { "SP1r", "B2R2Z1", "$%02X, SP, $%04X" }, 
+    { "SP2", "B2A1", "$%02X%02X, SP" },         { "EQU4", "", "$%04X" },
+    { "EQU2", "", "$%02X" }
   };
 
 
@@ -306,4 +307,17 @@ public class HCS08data
     { "*", "Nil" },           { "*", "Nil" },
     { "LDHX", "SP1" },        { "STHX", "SP1" } };
 
+  public static final String[][] absLabels = {
+    { "XMITIR", "FF5F" } };
+  
+  public static final String[][] zeroLabels = {
+    { "DCBUF", "60", "DCBUF+", "0A" },
+    { "PF0", "A2", "PF", "05" },
+    { "PD00", "6A", "PD", "20" },
+    { "DBYTES", "A9" },
+    { "CBYTES", "AA" },
+    { "FLAGS", "B3" }  };
+
+  public static final String[] oscData = { "4000000", "0" };
 }
+

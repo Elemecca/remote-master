@@ -321,14 +321,70 @@ public abstract class Processor
   
   public void setAddressModes( String[][] modeArray )
   {
+    addressModes.clear();
     for ( int i = 0; i < modeArray.length; i++ )
     {
       addressModes.put( modeArray[i][0], new AddressMode( modeArray[i] ) );
     }
   }
   
+  public LinkedHashMap< Integer, String > getAbsLabels()
+  {
+    return absLabels;
+  }
+
+  public void setAbsLabels( String[][] labelArray )
+  {
+    absLabels.clear();
+    for ( int i = 0; i < labelArray.length; i++ )
+    {
+      absLabels.put( Integer.parseInt( labelArray[ i ][ 1 ], 16 ), labelArray[ i ][ 0 ] );
+    }
+  }
+  
+  public LinkedHashMap< Integer, String[] > getZeroLabels()
+  {
+    return zeroLabels;
+  }
+
+  public LinkedHashMap< String, Integer > getZeroSizes()
+  {
+    return zeroSizes;
+  }
+
+  public LinkedHashMap< String, Integer > getZeroAddresses()
+  {
+    return zeroAddresses;
+  }
+
+  public void setZeroLabels( String[][] labelArray )
+  {
+    zeroLabels.clear();
+    for ( int i = 0; i < labelArray.length; i++ )
+    {
+      int n = 0;
+      String[] strArray = null;
+      if ( labelArray[ i ].length > 3 )
+      {
+        strArray = new String[ 2 ];
+        strArray[ 1 ] = labelArray[ i ][ 2 ];
+        n = Integer.parseInt( labelArray[ i ][ 3 ], 16 );
+        zeroSizes.put( labelArray[ i ][ 0 ] , n );
+      }
+      else
+      {
+        strArray = new String[ 1 ];
+      }
+      n = Integer.parseInt( labelArray[ i ][ 1 ], 16 );
+      strArray[ 0 ] = labelArray[ i ][ 0 ];
+      zeroLabels.put( n, strArray );
+      zeroAddresses.put( labelArray[ i ][ 0 ] , n );
+    }
+  }
+
   public void setInstructions( String[][][] instArray )
   {
+    instructions.clear();
     for ( int i = 0; i < instArray.length; i++ )
     {
       AssemblerOpCode[] assCodes = new AssemblerOpCode[ instArray[ i ].length ];
@@ -383,6 +439,22 @@ public abstract class Processor
     this.startOffset = startOffset;
   }
 
+  public int getOscillatorFreq()
+  {
+    return oscillatorFreq;
+  }
+
+  public void setOscillatorData( String[] oscData )
+  {
+    oscillatorFreq = Integer.parseInt( oscData[ 0 ] );
+    countOffset = Integer.parseInt( oscData[ 1 ] );
+  }
+
+  public int getCountOffset()
+  {
+    return countOffset;
+  }
+
   /** The name. */
   private String name = null;
 
@@ -407,7 +479,19 @@ public abstract class Processor
   /** Offset of first op code in protocol */
   private int startOffset = 3;
   
+  private int oscillatorFreq = 2000000;
+  
+  private int countOffset = 0;
+  
   private List< AssemblerOpCode[] > instructions = new ArrayList< AssemblerOpCode[] >();
   
   private LinkedHashMap< String, AddressMode > addressModes = new LinkedHashMap< String, AddressMode >();
+  
+  private LinkedHashMap< Integer, String > absLabels = new LinkedHashMap< Integer, String >();
+  
+  private LinkedHashMap< Integer, String[] > zeroLabels = new LinkedHashMap< Integer, String[] >();
+  
+  private LinkedHashMap< String, Integer > zeroAddresses = new LinkedHashMap< String, Integer >();
+  
+  private LinkedHashMap< String, Integer > zeroSizes = new LinkedHashMap< String, Integer >();
 }

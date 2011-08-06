@@ -4,15 +4,16 @@ public class P6805data
 {
   public static final String[][] AddressModes = {
     { "Nil", "B0", "" },
-    { "Dir", "B1", "$%02X" },
-    { "Dir2", "B2", "$%02X, $%04X", "2" }, 
-    { "Rel", "B1", "$%04X", "1" },
-    { "Ix1", "B1", "$%02X, X" },
-    { "Ix2", "B2", "$%02X%02X, X" }, 
+    { "Dir", "B1Z1", "$%02X" },
+    { "Dir2", "B2R2Z1", "$%02X, $%04X" }, 
+    { "Rel", "B1R1", "$%04X" },
+    { "Ix1", "B1Z1", "$%02X, X" },
+    { "Ix2", "B2A1", "$%02X%02X, X" }, 
     { "Ix", "B0", "X" },
     { "Imm", "B1", "#$%02X" }, 
-    { "Ext", "B2", "$%02X%02X" },
-    { "EQU", "", "$%04X" }
+    { "Ext", "B2A1", "$%02X%02X" },
+    { "EQU4", "", "$%04X" },
+    { "EQU2", "", "$%02X" }
   };
 
   public static final String[][] Instructions = {
@@ -160,4 +161,30 @@ public class P6805data
     { "JMP", "Ix" },          { "JSR", "Ix" },
     { "LDX", "Ix" },          { "STX", "Ix" }
   };
+  
+  public static final String[][] absLabels_RC16 = {
+    { "XMITIR", "01AF" } };
+
+
+  public static final String[][] absLabels_C9= {
+    { "XMITIR", "0183" } };
+  
+  public static final String[][] zeroLabels_RC16 = {
+    { "DCBUF", "5A", "DCBUF+", "0A" },
+    { "PF0", "7B", "PF", "05" },
+    { "PD00", "67", "PD", "14" },
+    { "DBYTES", "66" },
+    { "FLAGS", "57" } };
+  
+  public static final String[][] zeroLabels_C9 = {
+    { "DCBUF", "5A", "DCBUF+", "0A" },
+    { "PF0", "7B", "PF", "03" },
+    { "PD00", "67", "PD", "14" },
+    { "DBYTES", "66" },
+    { "FLAGS", "57" } };
+  
+  public static final String[] oscData_C9 = { "2000000", "16" };
+  
+  public static final String[] oscData_RC16 = { "2000000", "0" };
 }
+

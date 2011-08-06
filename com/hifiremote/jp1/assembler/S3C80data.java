@@ -3,55 +3,51 @@ package com.hifiremote.jp1.assembler;
 public class S3C80data
 {
   private String wp = "W";    // Work prefix
-  // Length codes:
-  // 0 = no arg bytes
-  // 1 = 1 arg byte
-  // 2 = 2 arg bytes
-  // Nx = x maps 6 possible nibbles as bits, 000001B = high nibble of op code, 001100B = both nibbles of 1st arg byte etc
-  // NxBy = nibbles followed by y whole bytes
  
   public static final String[][] AddressModes = {
     { "Nil", "", "" },
-    { "R1", "B1", "R%02X" },
-    { "IR1", "B1", "@R%02X" },
+    { "R1", "B1Z1", "R%02X" },
+    { "IR1", "B1Z1", "@R%02X" },
     { "W1W2", "N12", "W%X, W%X" },
     { "W1IW2", "N12", "W%X, @W%X" },
-    { "R2R1", "B2", "R%2$02X, R%1$02X" },
-    { "IR2R1", "B2", "R%2$02X, @R%1$02X" },
-    { "R1IM", "B2", "R%02X, #%02XH" },
-    { "W1R2", "N1B1", "W%X, R%02X" },
-    { "W2R1", "N1B1", "R%2$02X, W%1$X" },
-    { "W1RA", "N1B1", "W%X, %04XH", "1" },
-    { "CCRA", "C1N1B1", "%s%04XH", "1" }, 
+    { "R2R1", "B2Z3", "R%2$02X, R%1$02X" },
+    { "IR2R1", "B2Z3", "R%2$02X, @R%1$02X" },
+    { "R1IM", "B2Z1", "R%02X, #%02XH" },
+    { "W1R2", "N1B1Z1", "W%X, R%02X" },
+    { "W2R1", "N1B1Z1", "R%2$02X, W%1$X" },
+    { "W1RA", "N1B1R1", "W%X, %04XH" },
+    { "CCRA", "C1N1B1R1", "%s%04XH" }, 
     { "W1IM", "N1B1", "W%X, #%02XH" },
-    { "CCDA", "C1N1B2", "%s%02X%02XH" },
+    { "CCDA", "C1N1B2A1", "%s%02X%02XH" },
     { "W1", "N1", "W%X" },
-    { "IR1R2", "B2", "@R%02X, R%02X" },
-    { "DA1", "B2", "%02X%02XH" },
-    { "W0Rb", "N12B1", "W%1$X, R%3$02X.%2$d" },
-    { "W0RbZ", "N12B1", "R%3$02X.%2$d, W%1$X" },
-    { "W1bR2", "N12B1", "W%1$X, R%3$2X.%2$d" },
-    { "W2bRA", "N12B1", "%3$04XH, W%1$X.%2$d", "1" },
+    { "IR1R2", "B2Z3", "@R%02X, R%02X" },
+    { "DA1", "B2A1", "%02X%02XH" },
+    { "W0Rb", "N12B1Z1", "W%1$X, R%3$02X.%2$d" },
+    { "W0RbZ", "N12B1Z1", "R%3$02X.%2$d, W%1$X" },
+    { "W1bR2", "N12B1Z1", "W%1$X, R%3$2X.%2$d" },
+    { "W2bRA", "N12B1R1", "%3$04XH, W%1$X.%2$d" },
     { "W1b", "N12", "W%X.%d" },
-    { "IMRR1", "B2", "R%2$02X, #%1$02XH" },
+    { "IMRR1", "B2Z2", "R%2$02X, #%1$02XH" },
     { "W1xW2", "N12B1", "W%1$X, #%3$02XH[W%2$X]" },
     { "W2xW1", "N12B1", "#%3$02XH[W%2$X], W%1$X" },
-    { "RR1IML", "B3", "R%02X, #%02X%02XH" },
+    { "RR1IML", "B3A2Z1", "R%02X, #%02X%02XH" },
     { "W1IWW2", "N12", "W%X, @W%X" },
     { "W2IWW1", "N12", "@W%2$X, W%1$X" },
-    { "IR1IM", "B2", "@R%02X, #%02XH" },
+    { "IR1IM", "B2Z1", "@R%02X, #%02XH" },
     { "IW1W2", "N12", "@W%X, W%X" },
-    { "R2IR1", "B2", "@R%2$02X, R%1$02X" },
+    { "R2IR1", "B2Z3", "@R%2$02X, R%1$02X" },
     { "W1IWW2xs", "N12B1", "W%1$X, #%3$02XH[W%2$X]" }, 
     { "W2IWW1xs", "N12B1", "#%3$02XH[W%2$X], W%1$X" },
-    { "W1IWW2xL", "N12B2", "W%1$X, #%4$02X%3$02XH[W%2$X]" },
-    { "W1IWW2xLZ", "N4B2", "W%1$X, %3$02X%2$02XH" },
-    { "W2IWW1xL", "N12B2", "#%4$02X%3$02XH[W%2$X], W%1$X" },
-    { "W2IWW1xLZ", "N4B2", "%3$02X%2$02XH, W%1$X" },
-    { "IW2W1RA", "N12B1", "W%2$X, @W%1$X, %3$04XH", "1" }, 
+    { "W1IWW2xL", "N12B2A1", "W%1$X, #%4$02X%3$02XH[W%2$X]" },
+    { "W1IWW2xLZ", "N4B2A1", "W%1$X, %3$02X%2$02XH" },
+    { "W2IWW1xL", "N12B2A1", "#%4$02X%3$02XH[W%2$X], W%1$X" },
+    { "W2IWW1xLZ", "N4B2A1", "%3$02X%2$02XH, W%1$X" },
+    { "IW2W1RA", "N12B1R1", "W%2$X, @W%1$X, %3$04XH" }, 
     { "IA1", "B1", "#%02XH" },
     { "IM", "B1", "#%02XH" },
-    { "EQU", "", "%04XH" }
+    { "EQU4", "", "%04XH" },
+    { "EQU2", "", "%02XH" },
+    { "EQUR", "", "R%02X" }
   };
   
   public static final String[][] Instructions = {
@@ -199,4 +195,23 @@ public class S3C80data
     { "LD", "W1IM" },             { "JP", "CCDA" },
     { "INC", "W1" },              { "NOP", "Nil" }
   };
+  
+  public static final String[][] absLabels_C80 = {
+    { "XMITIR", "0133" } };
+  
+  public static final String[][] absLabels_F80 = {
+    { "XMITIR", "0146" } };
+  
+  public static final String[][] zeroLabels = {
+    { "DCBUF", "03", "DCBUF+", "0A" },
+    { "PF0", "28", "PF", "05" },
+    { "PD00", "12", "PD", "16" },
+    { "DBYTES", "10" },
+    { "CBYTES", "11" },
+    { "FLAGS", "00" }
+  };
+  
+  public static final String[] oscData = { "8000000", "4" };
+
+  
 }

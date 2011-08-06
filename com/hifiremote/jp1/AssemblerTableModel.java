@@ -1,10 +1,12 @@
 package com.hifiremote.jp1;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
+import com.hifiremote.jp1.assembler.S3C80data;
 
 public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
 {
@@ -13,12 +15,12 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   
   private static final String[] colNames =
   {
-      "Addr", "Code", "Label", "Op", "Op Args"
+      "Addr", "Code", "Label", "Op", "Op Args", "Comments"
   };
   
   private static final String[] colPrototypeNames =
   {
-      "0000", "00 00 00 00", "LXX", "AAAAA", "AAA, AAA, AAA, AAA"
+      "0000", "00 00 00 00", "XMITIR_", "AAAAA", "DCBUF+1, DCBUF+2_", "99.999kHz, 99.99%_"
   };
   
   public AssemblerTableModel()
@@ -41,7 +43,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   @Override
   public int getColumnCount()
   {
-    return 5;
+    return 6;
   }
   
   @Override
@@ -70,6 +72,8 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         return item.getOperation();
       case 4:
         return item.getArgumentText();
+      case 5:
+        return item.getComments();
       default:
         return null;
     }
@@ -102,6 +106,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
           && ( ( S3C80Processor )processor ).testCode( hex ) == S3C80Processor.CodeType.NEW )
       {
         addr = S3C80Processor.newRAMAddress;  // S3C8+ code
+        processor.setAbsLabels( S3C80data.absLabels_F80 );
       }
       DisasmState state = new DisasmState();
       
@@ -140,11 +145,10 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       Collections.sort(  labelAddresses );
       
       boolean used[] = new boolean[ labelAddresses.size() ];
-      for ( int i = 0; i < used.length; i++ )
-      {
-        used[ i ] = false;
-      }
-      
+      Arrays.fill( used, false );
+      List< Integer > absUsed = new ArrayList< Integer >();
+      List< Integer > zeroUsed = new ArrayList< Integer >();
+   
       state.index = processor.getStartOffset();
       
       // Disassemble
@@ -169,62 +173,96 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         if ( oc.getIndex() == 0 )
         {
           int nibbleArgs = 0;
-          int j = 0;
+          int argCount = 0;
           item.setOperation( oc.getName() );
           
           // Get format args that are nibble values
-          int n = 0;
-          for ( ; mode.nibbleMap >> n != 0; n++ )
+          for ( int i = 0; mode.nibbleMap >> i != 0; i++ )
           {
-            if ( ( ( mode.nibbleMap >> n ) & 1 ) == 1 )
+            if ( ( ( mode.nibbleMap >> i ) & 1 ) == 1 )
             {
-              int val = data[ start + n / 2 ];
-              val = ( ( n & 1 ) == 0 ) ? val >> 4 : val & 0x0F;
-              obj[ j++ ] = ( state.shiftFlag && n == state.shiftPos ) ? val >> 1 :
-                ( state.nMask != 0 && n == state.shiftPos ) ? val & state.nMask : val;
+              int val = data[ start + i / 2 ];
+              val = ( ( i & 1 ) == 0 ) ? val >> 4 : val & 0x0F;
+              obj[ argCount++ ] = ( state.shiftFlag && i == state.shiftPos ) ? val >> 1 :
+                ( state.nMask != 0 && i == state.shiftPos ) ? val & state.nMask : val;
               nibbleArgs++;
             }
           }
           
           // Get format args that are byte values
-          if ( mode.length > mode.nibbleBytes )
+          for ( int i = 0; i < mode.length - mode.nibbleBytes; i++ )
           {
-            for ( n = 0; n < mode.length - mode.nibbleBytes; n++ )
-            {
-              int val = data[ state.index + mode.nibbleBytes + n ];
-              obj[ j++ ] = ( state.bMask != 0 && n == 0 ) ? val & state.bMask : val;
-            }
+            int val = data[ state.index + mode.nibbleBytes + i ];
+            obj[ argCount++ ] = ( state.bMask != 0 && i == 0 ) ? val & state.bMask : val;
           }
           
           // Replace relative addresses by labels where they exist (which should be in all cases)
-          for ( int i = 1; i < 3; i++ )
+          for ( int i = 0; ( mode.relMap >> i ) != 0; i++ )
           {
-            if ( ( mode.relMap & i ) == i && j > nibbleArgs + i - 1 )
+            if ( ( ( mode.relMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
             {
-              n = ( ( Integer )obj[ nibbleArgs + i - 1 ] );
-              n += addr + state.index + mode.nibbleBytes + i - ( n > 0x7F ? 0x100 : 0 );
-              obj[ nibbleArgs + i - 1 ] = n;
+              int argIndex = nibbleArgs + i;
+              int n = ( ( Integer )obj[ argIndex ] );
+              n += addr + state.index + mode.nibbleBytes + i + 1 - ( n > 0x7F ? 0x100 : 0 );
+              obj[ argIndex ] = n;
               int index = labelAddresses.indexOf( n );
               if ( index >= 0 )
               {
-                format = format.replaceFirst( "\\$%04X", "%s" );
-                format = format.replaceFirst( "04XH", "s" );
-                obj[ nibbleArgs + i - 1 ] = "L" + index;
+                format = formatForLabel( format, argIndex, false );
+                obj[ argIndex ] = "L" + index;
+              }
+            }
+          }
+          
+          // Replace absolute addresses by labels where they exist
+          for ( int i = 0; ( mode.absMap >> i ) != 0; i++ )
+          {
+            if ( ( ( mode.absMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
+            {
+              int argIndex = nibbleArgs + i;
+              int[][] formatStarts = getFormatStarts( format );
+              boolean littleEndian = ( formatStarts[ argIndex ][ 0 ] > formatStarts[ argIndex + 1 ][ 0 ] );
+              int n = ( ( Integer )obj[ argIndex ] ) * ( littleEndian ? 1 : 0x100 );
+              n += ( ( Integer )obj[ argIndex + 1 ] ) * ( littleEndian ? 0x100 : 1 );
+              String label = processor.getAbsLabels().get( n );
+              if ( label != null )
+              {
+                if ( !absUsed.contains( n ) )
+                {
+                  absUsed.add( n );
+                }
+                format = formatForLabel( format, argIndex, true );
+                obj[ argIndex ] = label;
+                obj[ argIndex + 1 ] = "";
+              }
+            }
+          }
+          
+       // Replace zero-page or register addresses by labels where they exist
+          for ( int i = 0; ( mode.zeroMap >> i ) != 0; i++ )
+          {
+            if ( ( ( mode.zeroMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
+            {
+              int argIndex = nibbleArgs + i;
+              int n = ( Integer )obj[ argIndex ];
+              String label = getZeroLabel( processor, n, zeroUsed );
+              if ( label != null )
+              {
+                format = formatForLabel( format, argIndex, false );
+                obj[ argIndex ] = label;
               }
             }
           }
           
           // Replace numeric args by condition codes where required
-          if ( mode.ccMap > 0 )
+          for ( int i = 0; ( mode.ccMap >> i ) != 0; i++ )
           {
-            for ( n = 0; ( mode.ccMap >> n ) != 0; n++ )
+            if ( ( ( mode.ccMap >> i ) & 1 ) == 1 && i < argCount )
             {
-              if ( ( ( mode.ccMap >> n ) & 1 ) == 1 )
-              {
-                obj[ n ] = processor.getConditionCode( ( Integer )obj[ n ] );
-              }
+              obj[ i ] = processor.getConditionCode( ( Integer )obj[ i ] );
             }
           }
+        
           
           // Create the formatted opcode argument
           item.setArgumentText( String.format( format, obj[ 0 ], obj[ 1 ], obj[ 2 ], obj[ 3 ] ) );
@@ -234,7 +272,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
           int index = labelAddresses.indexOf( item.getAddress() );
           if ( index >= 0 )
           {
-            item.setLabel( "L" + index );
+            item.setLabel( "L" + index + ":" );
             used[ index ] = true;
           }
         }
@@ -254,17 +292,47 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       }
       
       // Create EQU statements for any unidentified labels (which are likely to be errors)
-      for ( int i = 0; i < used.length; i++ )
+      for ( int i = used.length - 1; i >= 0; i-- )
       {
         if ( !used[ i ] )
         {
           AssemblerItem item = new AssemblerItem();
-          item.setLabel( "L" + i );
+          item.setLabel( "L" + i + ":" );
           item.setOperation( "EQU" );
           String format = processor.getAddressModes().get( "EQU" ).format;
           item.setArgumentText( String.format( format, labelAddresses.get( i ) ) );
           itemList.add( 0, item );
         }
+      }
+      // Create EQU statements for any used absolute address labels
+      Collections.sort( absUsed );
+      for ( int i = absUsed.size() - 1; i >= 0; i-- )
+      {
+        AssemblerItem item = new AssemblerItem();
+        item.setLabel( processor.getAbsLabels().get( absUsed.get( i ) ) + ":" );
+        item.setOperation( "EQU" );
+        String format = processor.getAddressModes().get( "EQU4" ).format;
+        item.setArgumentText( String.format( format, absUsed.get( i ) ) );
+        itemList.add( 0, item );
+      }
+      // Create EQU statements for any used zero-page or register address labels
+      Collections.sort( zeroUsed );
+      for ( int i = zeroUsed.size() - 1; i >= 0; i-- )
+      {
+        AssemblerItem item = new AssemblerItem();
+        item.setLabel( getZeroLabel( processor, zeroUsed.get( i ), null ) + ":" );
+        item.setOperation( "EQU" );
+        String format = null;
+        if ( processor.getAddressModes().get( "EQUR" ) == null )
+        {
+          format = processor.getAddressModes().get( "EQU2" ).format;
+        }
+        else
+        {
+          format = processor.getAddressModes().get( "EQUR" ).format;
+        }  
+        item.setArgumentText( String.format( format, zeroUsed.get( i ) ) );
+        itemList.add( 0, item );
       }
       
     }
@@ -274,35 +342,213 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
 
   private void dbOut( int start, int end, int ramAddress, Processor p )
   {
+    short[] data = hex.getData();
+    int pfIndex = 5;
+    int pdIndex = 0;
     for ( int i = start; i < end;  )
     {
       AssemblerItem item = new AssemblerItem();
-      int n = Math.min( 4, end - i );
-      String argText = "";
       item.setOperation( "DB" );
+      int n = Math.min( 4, end - i );
+      String comments = null;
+      if ( ( i == 0 && p.getStartOffset() == 3 || i == 2 && p.getStartOffset() == 0 ) && i < end - 1 )
+      {
+        n = 2;
+        comments = getFrequency( p, data[ i ], data[ i + 1 ] );
+        if ( data[ i ] > 0 && data[ i + 1 ] > 0 )
+        {
+          comments += "kHz, " + getDutyCycle( p, data[ i ], data[ i + 1 ] ) + "%";
+        }
+      }
+      else if ( ( i == 2 && p.getStartOffset() == 3 || i == 4 && p.getStartOffset() == 0 ) )
+      {
+        n = 1;
+        comments = "dev " + ( data[ i ] >> 4 ) + ", cmd " + ( data[ i ] & 0x0F ) + " bytes";
+      }
+      else if ( i == pfIndex )
+      {
+        n = 1;
+        comments = "pf" + ( i - 5 );
+        if ( data[ i ] >> 7 == 1 )
+        {
+          pfIndex++;  // Another pf follows
+        }
+        pdIndex = i + 1;
+        if ( pfIndex > p.getZeroSizes().get( "PF0" ) + 4 )
+        {
+          comments = "** Error **";   // Too many pf's
+          pfIndex--;
+        }
+      }
+      else if ( i == pdIndex )
+      {
+        if ( /* pdIndex <= pfIndex + 2 ||*/ pdIndex == pfIndex + p.getZeroSizes().get( "PD00" ) )
+        {
+          n = 1;
+          comments = "pd" + String.format( "%02X", pdIndex - pfIndex - 1 );
+          pdIndex++;
+        }
+        else
+        {
+          n = 2;
+          item.setOperation( "DW" );
+          comments = String.format( "pd%02X/pd%02X", pdIndex - pfIndex - 1, pdIndex - pfIndex );
+          pdIndex += 2;
+        }
+        if ( pdIndex > pfIndex + p.getZeroSizes().get( "PD00" ) )
+        {
+          pdIndex--;
+        }
+      }
+
+      String argText = "";
       item.setAddress( ramAddress + i );
       item.setHex( hex.subHex( i, n ) );
-      for ( int j = 0; j < n; j++ )
+      item.setComments( comments );
+      if ( item.getOperation().equals( "DB" ) )
       {
-        if ( j > 0 )
+        for ( int j = 0; j < n; j++ )
         {
-          argText += ", ";
+          if ( j > 0 )
+          {
+            argText += ", ";
+          }
+          argText += String.format( p.getAddressModes().get( "EQU2" ).format, data[ i + j ] );
         }
-        if ( ! ( p instanceof S3C80Processor ) )
-        {
-          argText += "$";
-        }
-        argText += hex.subHex( i + j, 1 ).toString();
-        if ( p instanceof S3C80Processor )
-        {
-          argText += "H";
-        }
+      }
+      else // DW
+      {
+        argText = String.format( p.getAddressModes().get( "EQU4" ).format, hex.get( i ) );
       }
       item.setArgumentText( argText );
       i += n;
       itemList.add(  item  );
     }
   }
-
   
+  private int[][] getFormatStarts( String format )
+  {
+    int[][] starts = new int[ 4 ][ 2 ];
+    for ( int i = 0, j = 0; i < format.length(); i++ )
+    {
+      if ( format.substring( i, i + 1 ).equals( "%" ) )
+      {
+        int pos = j++;  // implicit arg index
+        int start = i;
+        int k = i + 1;
+        for ( ; k < format.length() && Character.isDigit( format.charAt( k ) ); k++ );
+        {
+          if ( k < format.length() && format.substring( k, k + 1 ).equals( "$" ) )
+          {
+            pos = Integer.parseInt( format.substring( i + 1, k ) ) - 1; // explicit arg index
+            start = k;
+          }
+        }
+        starts[ pos ][ 0 ] = i;
+        starts[ pos ][ 1 ] = start;
+      }
+    }
+    return starts;
+  }
+
+  private String replacePart( String s, int start, int end, String insert )
+  {
+    return s.substring( 0, start ) + insert + s.substring( end );
+  }
+  
+  private String formatForLabel( String format, int argIndex, boolean word )
+  {
+    boolean littleEndian = false;
+    int[][] formatStarts = getFormatStarts( format );
+    if ( word )
+    {
+      littleEndian = ( formatStarts[ argIndex ][ 0 ] > formatStarts[ argIndex + 1 ][ 0 ] );
+    }
+    int fStart0 = formatStarts[ argIndex + ( littleEndian ? 1 : 0 ) ][ 0 ];
+    int fStart1 = formatStarts[ argIndex + ( littleEndian ? 1 : 0 ) ][ 1 ];
+    boolean preSymbol = fStart0 > 0 && ( format.substring( fStart0 - 1, fStart0 ).equals( "$" )
+        || format.substring( fStart0 - 1, fStart0 ).equals( "R" ) );
+    if ( word )
+    {
+      int fStart3 = formatStarts[ argIndex + ( littleEndian ? 0 : 1 ) ][ 1 ];
+      format = replacePart( format, fStart3 + 1, fStart3 + ( preSymbol ? 4 : 5 ), "s" );
+    }
+    format = replacePart( format, fStart1 + 1, fStart1 + ( preSymbol || word ? 4 : 5 ), "s" );
+    if ( preSymbol )
+    {
+      format = replacePart( format, fStart0 - 1, fStart0, "" ); // remove $ or R
+    }
+    return format;
+  }
+  
+  private String getZeroLabel( Processor p, int address, List< Integer > addrList )
+  {
+    for ( String label : p.getZeroSizes().keySet() )
+    {
+      int addr = p.getZeroAddresses().get( label );
+      int size = p.getZeroSizes().get( label );
+      String labelBody = p.getZeroLabels().get( addr )[ 1 ];
+      if ( address > addr && address < addr + size )
+      {
+        if ( labelBody.length() >= label.length() )
+        {
+          if ( addrList != null && !addrList.contains( addr ) )
+          {
+            addrList.add( addr );
+          }
+          return labelBody + ( address - addr );
+        }
+        else
+        {
+          if ( addrList != null && !addrList.contains( address ) )
+          {
+            addrList.add( address );
+          }
+          String format = "%0" + ( label.length() - labelBody.length() ) + "X";
+          return labelBody + String.format( format, address - addr );
+        }
+      }
+    }
+    if ( p.getZeroLabels().get( address ) != null )
+    {
+      if ( addrList != null && !addrList.contains( address ) )
+      {
+        addrList.add( address );
+      }
+      return p.getZeroLabels().get( address )[ 0 ];
+    }
+    return null;
+  }
+  
+  private String getFrequency( Processor p, int on, int off )
+  {
+    if ( on > 0 && off > 0 )
+    {
+      double f = p.getOscillatorFreq()/( on + off + p.getCountOffset() );
+      return String.format( "%.3f", f/1000 );
+    }
+    else if ( on == 0 && off == 0 )
+    {
+      return "No carrier";
+    }
+    else
+    {
+      return "** Error **";
+    }
+  }
+  
+  private String getDutyCycle( Processor p, int on, int off )
+  {
+    int ctOffset = p.getCountOffset();
+    int onOffset = ( ctOffset + 2 ) / 3;
+    if ( on > 0 && off > 0 )
+    {
+      double dc = 100.0 * ( on + onOffset ) / ( on + off + ctOffset );
+      return String.format( "%.2f", dc );
+    }
+    else    // Error case handled by dbOut()
+    {
+      return "";
+    }
+  }
 }

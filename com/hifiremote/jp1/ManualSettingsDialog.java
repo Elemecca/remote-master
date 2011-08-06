@@ -119,6 +119,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
+    double scale = 0.75;  // Added by Graham to reduce width of left-hand panel.
     
     assemblerTable = new JP1Table( assemblerModel );
     JPanel rightPanel = new JPanel( new BorderLayout() );
@@ -221,8 +222,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     
     columnModel.getColumn( 1 ).setCellRenderer( new CodeCellRenderer() );
     
-    codeTable.doLayout();
-    codeTable.setPreferredScrollableViewportSize( codeTable.getPreferredSize() );
+    codeTable.doLayout();    
+    Dimension d = codeTable.getPreferredSize();
+    d.width = (int)(d.width * scale );
+    codeTable.setPreferredScrollableViewportSize( d );
 
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
     importButton = new JButton( "Import Protocol Upgrade" );
@@ -233,7 +236,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     
     JPanel messagePanel = new JPanel( new FlowLayout( FlowLayout.LEFT) );
     messagePanel.add( messageLabel );
-    setMessage( 1 );
+    setMessage( 2 );
     
     JPanel midPanel = new JPanel( new BorderLayout() );
     midPanel.add( buttonPanel, BorderLayout.CENTER );
@@ -254,8 +257,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ) );
     tablePanel.add( scrollPane, BorderLayout.CENTER );
     mainPanel.add( tablePanel, "1, 7, 3, 7" );
-    Dimension d = deviceTable.getPreferredScrollableViewportSize();
+    d = deviceTable.getPreferredScrollableViewportSize();
     d.height = deviceTable.getRowHeight() * 4;
+    d.width = (int)(d.width * scale );
     deviceTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Default Fixed Data:", SwingConstants.RIGHT );
@@ -279,6 +283,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     mainPanel.add( tablePanel, "1, 11, 3, 11" );
     d = commandTable.getPreferredScrollableViewportSize();
     d.height = commandTable.getRowHeight() * 4;
+    d.width = (int)(d.width * scale );
     commandTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Command Index:", SwingConstants.RIGHT );
@@ -313,7 +318,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     rawHexData.setText( protocol.getFixedData( new Value[ 0 ] ).toString() );
 
     d = rightPanel.getPreferredSize();
-    d.width = (int)(leftPanel.getPreferredSize().width * 0.75 );
+    d.width = (int)(leftPanel.getPreferredSize().width * 0.90 / scale );
     rightPanel.setPreferredSize( d );
     
     pack();
@@ -902,7 +907,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     String text = "<HTML>";
     if ( n == 2 )
     {
-      text += "This is a custom protocol, so only the code for the remote's processor is editable.<BR>";
+      text += "This is a custom protocol, so only the code for the remote's <BR>processor is editable.<BR>";
     }
     text += "Code shown in gray is standard code for information only.</HTML>";
     messageLabel.setText( text );

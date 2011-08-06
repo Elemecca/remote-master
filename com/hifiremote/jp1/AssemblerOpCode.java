@@ -1,5 +1,8 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AssemblerOpCode implements Cloneable
 {
   private String name = null;
@@ -29,6 +32,8 @@ public class AssemblerOpCode implements Cloneable
     public int relMap = 0;        // Which arg bytes are relative addresses
     public int nibbleMap = 0;     // Which data nibbles are used as args
     public int ccMap = 0;         // Which data nibbles are mapped to condition codes
+    public int absMap = 0;        // Which data bytes start a 2-byte absolute address
+    public int zeroMap = 0;       // Which data bytes are zero-page or register addresses
     public int nibbleBytes = 0;   // (Calculated) number or arg bytes split into nibbles
     public String format = "";    // Print format
     
@@ -36,37 +41,52 @@ public class AssemblerOpCode implements Cloneable
 
     public AddressMode( String[] parms )
     {
+      List< Integer > keyPositions = new ArrayList< Integer >(); 
       name = parms[ 0 ];
       String s = parms[ 1 ];
-      int posB = s.indexOf( "B" );
-      int posN = s.indexOf( "N" );
-      if ( s.startsWith( "C" ) )
+      for ( int i = 0; i < s.length(); i++ )
       {
-        // N must also be present
-        ccMap = Integer.parseInt( s.substring( 1, posN ) );
-      }
-      if ( posN >= 0 )
-      {
-        nibbleMap = ( posB < 0 ) ? Integer.parseInt( parms[ 1 ].substring( posN + 1 ) ) :
-          Integer.parseInt( parms[ 1 ].substring( posN + 1, posB ) );
-
-        int i = 2;
-        while ( nibbleMap >> i != 0 )
+        if ( !Character.isDigit( s.charAt( i ) ) )
         {
-          nibbleBytes++;
-          i += 2;
+          keyPositions.add( i );
         }
-        length = nibbleBytes;
       }
-      if ( posB >= 0 )
+      keyPositions.add(  s.length() );
+      for ( int i = 0; i < keyPositions.size() - 1; i++ )
       {
-        length += Integer.parseInt( parms[ 1 ].substring( posB + 1 ) );
+        String key = s.substring( keyPositions.get( i ), keyPositions.get( i ) + 1 );
+        String val = s.substring( keyPositions.get( i ) + 1, keyPositions.get( i + 1 ) );
+        if ( key.equals( "C" ) )
+        {
+          ccMap = Integer.parseInt( val );
+        }
+        else if ( key.equals( "N" ) )
+        {
+          nibbleMap = Integer.parseInt( val );
+          for ( int n = 2; nibbleMap >> n != 0; n += 2 )
+          {
+            nibbleBytes++;
+          }
+          length += nibbleBytes;
+        }
+        else if ( key.equals( "B" ) )
+        {
+          length += Integer.parseInt( val );
+        }
+        else if ( key.equals( "R" ) )
+        {
+          relMap = Integer.parseInt( val );
+        }
+        else if ( key.equals( "A" ) )
+        {
+          absMap = Integer.parseInt( val );
+        }
+        else if ( key.equals( "Z" ) )
+        {
+          zeroMap = Integer.parseInt( val );
+        }
       }
       format = parms[ 2 ];
-      if ( parms.length > 3 )
-      {
-        relMap = Integer.parseInt( parms[ 3 ] );
-      }
     }
   }
   
