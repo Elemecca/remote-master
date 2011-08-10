@@ -5,13 +5,21 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
+
 import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
+import com.hifiremote.jp1.assembler.CommonData;
 import com.hifiremote.jp1.assembler.S3C80data;
 
 public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
 {
   private Hex hex = null;
   private List< AssemblerItem > itemList = new ArrayList< AssemblerItem >();
+  private int burstUnit = 0;
+  private int pfCount = 0;
+  private int pdCount = 0;
+  private short[] data = null;
+  private Integer[] pf = new Integer[ 5 ];
   
   private static final String[] colNames =
   {
@@ -51,6 +59,8 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   {
     return col <= 1;
   }
+  
+  public ManualSettingsDialog dialog = null;
   
   @Override
   public Object getValueAt( int row, int column )
@@ -286,7 +296,10 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       
         if ( state.index == processor.getStartOffset() + 2 && ( oc.getName() == "JR" || oc.getName() == "BRA" ) )
         {
-          dbOut( state.index, state.index + data[ processor.getStartOffset() + 1 ], addr, processor);
+          int length = data[ processor.getStartOffset() + 1 ];
+          pfCount = dbOut( state.index, state.index + length, addr, processor);
+          pdCount = length + processor.getStartOffset() - pfCount - 3;
+          interpretPFPD( processor, addr );
           state.index += data[ processor.getStartOffset() + 1 ];
         }
       }
@@ -340,9 +353,9 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     fireTableDataChanged();
   }
 
-  private void dbOut( int start, int end, int ramAddress, Processor p )
+  private int dbOut( int start, int end, int ramAddress, Processor p )
   {
-    short[] data = hex.getData();
+    data = hex.getData();
     int pfIndex = 5;
     int pdIndex = 0;
     for ( int i = start; i < end;  )
@@ -354,16 +367,27 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       if ( ( i == 0 && p.getStartOffset() == 3 || i == 2 && p.getStartOffset() == 0 ) && i < end - 1 )
       {
         n = 2;
-        comments = getFrequency( p, data[ i ], data[ i + 1 ] );
+        String val = getFrequency( p, data[ i ], data[ i + 1 ] );
+        comments = val;
+        dialog.frequency.setText( val );
+        
         if ( data[ i ] > 0 && data[ i + 1 ] > 0 )
         {
-          comments += "kHz, " + getDutyCycle( p, data[ i ], data[ i + 1 ] ) + "%";
+          val = getDutyCycle( p, data[ i ], data[ i + 1 ] );
+          comments += "kHz, " + val + "%";
+          dialog.dutyCycle.setText( val );
+        }
+        else
+        {
+          dialog.dutyCycle.setText( null );
         }
       }
       else if ( ( i == 2 && p.getStartOffset() == 3 || i == 4 && p.getStartOffset() == 0 ) )
       {
         n = 1;
         comments = "dev " + ( data[ i ] >> 4 ) + ", cmd " + ( data[ i ] & 0x0F ) + " bytes";
+        dialog.devBytes.setSelectedIndex( data[ i ] >> 4 );
+        dialog.cmdBytes.setSelectedIndex( data[ i ] & 0x0F );
       }
       else if ( i == pfIndex )
       {
@@ -423,6 +447,204 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       item.setArgumentText( argText );
       i += n;
       itemList.add(  item  );
+    }
+    return pfIndex - 4;   // Count of PF values when processed
+  }
+  
+  private void interpretPFPD( Processor p, int ramAddress )
+  {
+    // DataStyle values:
+    //   0 = S3C80
+    //   1 = HCS08
+    //   2 = 6805-RC16/18
+    //   3 = 6805-C9
+    //   4 = P8/740
+    int dataStyle = p.getDataStyle();
+    int pd = 5 + pfCount;
+    Arrays.fill( pf, null );
+    for ( int i = 0; i < pfCount; i++ )
+    {
+      pf[ i ] = ( int )data[ i + 5 ];
+    }
+    
+    if ( ( (DefaultComboBoxModel )dialog.devBits1.getModel() ).getSize() == 0 )
+    {
+      // Populate those combo boxes whose content is fixed
+      dialog.populateComboBox( dialog.devBits1, CommonData.to8 );
+      dialog.populateComboBox( dialog.cmdBits1, CommonData.to8 );
+      dialog.populateComboBox( dialog.xmit0rev, CommonData.noYes );
+      dialog.populateComboBox( dialog.leadInStyle, CommonData.leadInStyle );
+      dialog.populateComboBox( dialog.offAsTotal, CommonData.noYes );
+      dialog.populateComboBox( dialog.useAltLeadOut, CommonData.noYes );
+    }
+    
+    boolean is2 = dialog.devBytes.getSelectedIndex() == 2;
+    dialog.devBits1lbl.setText( is2 ? "Bits/Dev1" : "Bits/Dev" );
+    dialog.devBits2lbl.setVisible( is2 );
+    dialog.populateComboBox( dialog.devBits2, is2 ? CommonData.to8 : null );
+    dialog.devBits2.setEnabled( is2 );
+
+    is2 = dialog.cmdBytes.getSelectedIndex() == 2 && ( dataStyle < 3 );
+    dialog.cmdBits1lbl.setText( is2 ? "Bits/Cmd1" : "Bits/Cmd" );
+    dialog.cmdBits2lbl.setVisible( is2 );
+    dialog.populateComboBox( dialog.cmdBits2, is2 ? CommonData.to8 : null );
+    dialog.cmdBits2.setEnabled( is2 );
+    
+    dialog.burstMidFrameLbl.setVisible( dataStyle < 3 );
+    dialog.burstMidFrame.setEnabled( dataStyle < 3 );
+    dialog.populateComboBox( dialog.burstMidFrame, ( dataStyle < 3 ) ? CommonData.noYes : null );
+    dialog.afterBitsLbl.setVisible( dataStyle < 3 );
+    dialog.afterBits.setEnabled( dataStyle < 3 );
+    dialog.populateComboBox( dialog.leadOutStyle, ( dataStyle < 3 ) ? CommonData.leadOutStyle012 : CommonData.leadOutStyle34 );
+    dialog.altFreqLbl.setVisible( dataStyle < 3 );
+    dialog.altFreq.setEnabled( dataStyle < 3 );
+    dialog.altDutyLbl.setVisible( dataStyle < 3 );
+    dialog.altDuty.setEnabled( dataStyle < 3 );
+
+    if ( dataStyle < 3 )
+    {
+      dialog.populateComboBox( dialog.sigStruct, CommonData.sigStructs012 );
+      dialog.populateComboBox( dialog.devBitDbl, CommonData.bitDouble012 );
+      dialog.populateComboBox( dialog.cmdBitDbl, CommonData.bitDouble012 );
+      dialog.populateComboBox( dialog.rptType, CommonData.repeatType012 );
+      dialog.populateComboBox( dialog.rptHold, CommonData.repeatHeld012 );
+      
+      dialog.devBits1.setSelectedIndex( ( pdCount > 0 ) ? data[ pd + 0 ] : 0 );
+      dialog.cmdBits1.setSelectedIndex( ( pdCount > 1 ) ? data[ pd + 1 ] : 0 );
+      if ( dialog.devBits2.isEnabled() )
+      {
+        int n = ( dataStyle < 2 ) ? 0x10 : 0x0E;
+        dialog.devBits2.setSelectedIndex( ( pdCount > n ) ? data[ pd + n ] : 0 );
+      }
+      if ( dialog.cmdBits2.isEnabled() )
+      {
+        int n = ( dataStyle < 2 ) ? 0x12 : 0x10;
+        dialog.cmdBits2.setSelectedIndex( ( pdCount > n ) ? data[ pd + n ] : 0 );
+      }
+      dialog.sigStruct.setSelectedIndex( ( pf[ 0 ] >> 4 ) & 0x03 );
+      dialog.devBitDbl.setSelectedIndex( ( pfCount > 2 ) ? pf[ 2 ] & 3 : 0 );
+      dialog.cmdBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pf[ 2 ] >> 2 ) & 3 : 0 );
+      int n = ( dataStyle < 2 ) ? 0x11 : 0x0F;
+      dialog.rptType.setSelectedIndex( ( pfCount > 1 && ( ( pf[ 1 ] & 0x10 ) != 0 ) && pdCount > n && data[ pd + n ] != 0xFF  ) ? 0 : 1 );
+      dialog.rptValue.setText( ( dialog.rptType.getSelectedIndex() == 0 ) ? Integer.toString( data[ pd + n ] ) : "" );
+      dialog.rptHold.setSelectedIndex( ( pfCount > 1 ) ? pf[ 1 ] & 0x03 : 0 );
+      dialog.xmit0rev.setSelectedIndex( ( pfCount > 2 ) ? ( pf[ 2 ] >> 4 ) & 1 : 0 );
+      dialog.leadInStyle.setSelectedIndex( ( pfCount > 1 ) ? ( pf[ 1 ] >> 2 ) & 3 : 0 );
+      n = pd + pdCount; // start of code
+      n = dataStyle + ( ( dataStyle == 0 && ramAddress == 0x8000 ) ? 0 : 1 );
+      Hex setMidFrame1 = new Hex( CommonData.midFrameCode1[ n ] );
+      Hex setMidFrame2 = new Hex( CommonData.midFrameCode2[ n ] );
+      n = pd + pdCount; // start of code
+      boolean b = hex.indexOf( setMidFrame1, n ) >= 0 || hex.indexOf( setMidFrame2, n ) >= 0;
+      dialog.burstMidFrame.setSelectedIndex( b ? 1 : 0 );
+      dialog.afterBits.setText( ( b && pdCount > 0x13 ) ? Integer.toString( data[ pd + 0x13 ] - 1 ) : "" );
+      dialog.leadOutStyle.setSelectedIndex( ( pfCount > 1 ) ? ( pf[ 1 ] >> 5 ) & 3 : 0 );
+      dialog.offAsTotal.setSelectedIndex( ( pf[ 0 ] >> 6 ) & 1 );
+      dialog.useAltLeadOut.setSelectedIndex( ( pfCount > 3 ) ? ( pf[ 3 ] >> 5 ) & 1 : 0 );
+      b = pfCount > 3 && ( pf[ 3 ] & 0x40 ) == 0x40 && pdCount > 0x14 && hex.get( pd + 0x13 ) != 0xFFFF;
+      dialog.altFreq.setText( b ?  getFrequency( p, data[ 0x13 ], data[ 0x14 ] ) : "" );
+      dialog.altDuty.setText( b ? getDutyCycle( p, data[ 0x13 ], data[ 0x14 ] ) : "" );
+      
+      if ( dataStyle < 2 )
+      {
+        dialog.burst1On.setText( ( pdCount > 3 && hex.get( pd + 2 ) > 0 ) ? Integer.toString( hex.get( pd + 2 ) * 2 ) : "" );
+        dialog.burst1Off.setText( ( pdCount > 5 && hex.get( pd + 4 ) > 0 ) ? Integer.toString( hex.get( pd + 4 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        dialog.burst0On.setText( ( pdCount > 7 && hex.get( pd + 6 ) > 0 ) ? Integer.toString( hex.get( pd + 6 ) * 2 ) : "" );
+        dialog.burst0Off.setText( ( pdCount > 9 && hex.get( pd + 8 ) > 0 ) ? Integer.toString( hex.get( pd + 8 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        dialog.leadInOn.setText( ( dialog.leadInStyle.getSelectedIndex() > 0 && pdCount > 0x0D && hex.get( pd + 0x0C ) != 0xFFFF ) ?  Integer.toString( hex.get( pd + 0x0C ) * 2 ) : "" );
+        dialog.leadInOff.setText( ( dialog.leadInStyle.getSelectedIndex() > 0 && pdCount > 0x0F && hex.get( pd + 0x0E ) != 0xFFFF ) ?  Integer.toString( hex.get( pd + 0x0E ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        dialog.leadOutOff.setText( ( pdCount > 0x0B && hex.get( pd + 0x0A ) > 0 ) ?  Integer.toString( hex.get( pd + 0x0A ) * 2 ) : "" );
+        dialog.altLeadOut.setText( ( dialog.useAltLeadOut.getSelectedIndex() == 1 && pdCount > 0x14 && hex.get( pd + 0x13 ) > 0 ) ? Integer.toString( hex.get( pd + 0x13 ) * 2 ) : ""  );
+
+      }
+      else
+      {
+        int t = ( pdCount > 3 ) ? ( data[ pd + 2 ] >> 4 ) * 0x100 + data[ pd + 3 ] : 0;
+        dialog.burst1On.setText( t > 0 ? Integer.toString( 4 * ( t + 1 ) ) : "" );
+        t = ( pdCount > 4 ) ? ( data[ pd + 2 ] & 0x0F ) * 0x100 + data[ pd + 4 ] : 0;
+        dialog.burst1Off.setText( t > 0 ? Integer.toString( 4 * t ) : "" );
+        t = ( pdCount > 6 ) ? ( data[ pd + 5 ] >> 4 ) * 0x100 + data[ pd + 6 ] : 0;
+        dialog.burst0On.setText( t > 0 ? Integer.toString( 4 * ( t + 1 ) ) : "" );
+        t = ( pdCount > 7 ) ? ( data[ pd + 5 ] & 0x0F ) * 0x100 + data[ pd + 7 ] : 0;
+        dialog.burst0Off.setText( t > 0 ? Integer.toString( 4 * t ) : "" );
+        t = ( pdCount > 0x0C ) ? ( data[ pd + 0x0B ] >> 4 ) * 0x100 + data[ pd + 0x0C ] : 0;
+        dialog.leadInOn.setText( dialog.leadInStyle.getSelectedIndex() > 0 && t > 0 ? Integer.toString( 4 * ( t + 1 ) ) : "" );
+        t = ( pdCount > 0x0D ) ? ( data[ pd + 0x0B ] & 0x0F ) * 0x100 + data[ pd + 0x0D ] : 0;
+        dialog.leadInOff.setText( dialog.leadInStyle.getSelectedIndex() > 0 && t > 0 ? Integer.toString( 4 * t ) : "" );
+        t = ( pdCount > 9 ) ? hex.get( pd + 8 )- 10 : 0; 
+        dialog.leadOutOff.setText( t > 0 ? Integer.toString( 4 * t ) : "" );
+        t = ( pdCount > 0x12 ) ? hex.get( pd + 0x11 )- 10 : 0;
+        dialog.altLeadOut.setText( dialog.useAltLeadOut.getSelectedIndex() == 1 && t > 0 ? Integer.toString( 4 * t ) : "" );
+      }
+
+    }
+    else
+    {
+      dialog.populateComboBox( dialog.sigStruct, CommonData.sigStructs34 );
+      dialog.populateComboBox( dialog.devBitDbl, CommonData.bitDouble34 );
+      dialog.populateComboBox( dialog.cmdBitDbl, CommonData.bitDouble34 );
+      dialog.populateComboBox( dialog.rptType, CommonData.repeatType34 );
+      dialog.populateComboBox( dialog.rptHold, CommonData.noYes );
+      if ( ( ( pf[ 0 ] & 0x58 ) == 0x08 ) )
+      {
+        dialog.devBits1.setSelectedIndex( ( pdCount > 0x0D ) ? data[ pd + 0x0D ] : 0 );
+        if ( dialog.devBits2.isEnabled() )
+        {
+          dialog.devBits2.setSelectedIndex( 0 );
+        }
+      }
+      else
+      {
+        dialog.devBits1.setSelectedIndex( ( pdCount > 1 ) ? data[ pd + 1 ] : 0 );
+        if ( dialog.devBits2.isEnabled() )
+        {
+          dialog.devBits2.setSelectedIndex( ( pdCount > 0x0D ) ? data[ pd + 0x0D ] : 0 );
+        }
+      }
+      dialog.cmdBits1.setSelectedIndex( ( pdCount > 2 ) ? data[ pd + 2 ] : 0 );
+      String sig = "";
+      String items[] = { "devs", "dev", "cmd", "!dev", "dev2", "cmd", "!cmd" };
+      int key = ( ( pf[ 0 ] >> 1 ) & 0x3C ) | ( ( pf[ 0 ] >> 2 ) & 1 );
+      if ( ( pf[ 0 ] & 0x41 ) == 0x41 )
+      {
+        key ^= 0x60;  // replace bit for "dev" by that for "devs"
+      }
+      if ( ( pf[ 0 ] & 0x22 ) == 0x22 )
+      {
+        key ^= 0x12;  // replace bit for first "cmd" by that for second one
+      }
+      for ( int i = 0; i < 7; i++ )
+      {
+        if ( ( ( key << i ) & 0x40 ) == 0x40 )
+        {
+          sig += items[ i ] + "-";
+        }
+      }
+      sig = sig.substring( 0, sig.length() - 1 );
+      dialog.sigStruct.setSelectedItem( sig );
+      dialog.devBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pf[ 2 ] >> 1 ) & 1 : 0 );
+      dialog.cmdBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pf[ 2 ] >> 1 ) & 1 : 0 );
+      dialog.rptType.setSelectedIndex( ( pfCount > 1 && ( ( pf[ 1 ] & 0x02 ) != 0 ) ) ? 0 : 1 );
+      dialog.rptValue.setText( "" );
+      dialog.rptHold.setSelectedIndex( ( pfCount > 1 && ( ( pf[ 1 ] & 0x02 ) != 0 ) ) ? 1 : 0 );
+      dialog.burst1On.setText( getONtime34( 0, null ) );
+      dialog.burst0On.setText( ( pfCount > 2  && ( pf[ 2 ] & 0x08 ) == 0x08 ) ? getONtime34( 0x0E, null ) : getONtime34( 0, null ) );
+      dialog.burst1Off.setText( getOFFtime34( 3, CommonData.burstOFFoffsets34, dataStyle ) );
+      dialog.burst0Off.setText( getOFFtime34( 5, CommonData.burstOFFoffsets34, dataStyle ) );
+      dialog.xmit0rev.setSelectedIndex( ( pfCount > 2 && ( pf[ 2 ] & 0x1C ) == 0x04 ) ? 1 : 0 );
+      dialog.leadInStyle.setSelectedIndex( ( pfCount > 1 && (( pf[ 1 ] & 0x10 ) == 0x10 ) ) ? 
+         (  ( pf[ 1 ] & 0x04 ) == 0x04 && pdCount > 0x11 && hex.get( pd + 0x10 ) != hex.get( pd + 0x0A ) ) ? 3 : 1 : 0 );
+      dialog.leadInOn.setText( dialog.leadInStyle.getSelectedIndex() > 0 ? getONtime34( 9, 0x0C ) : "" );
+      dialog.leadInOff.setText( dialog.leadInStyle.getSelectedIndex() > 0 ? getOFFtime34( 0x0A, CommonData.leadinOFFoffsets34, dataStyle ) : "" );
+      dialog.offAsTotal.setSelectedIndex( ( dataStyle == 4 && pfCount > 2 ) ? pf[ 2 ] & 1 : 0 );
+      dialog.leadOutStyle.setSelectedIndex( ( pfCount > 1 ) ? ( dialog.offAsTotal.getSelectedIndex() == 1 ? 2 : ( pf[ 1 ] >> 5 ) & 2 ) + ( ( pf[ 1 ] >> 5 ) & 1 ) : 0 );
+      
+      dialog.leadOutOff.setText( ( dataStyle == 3 ) ? getOFFtime34( 7, CommonData.leadinOFFoffsets34, dataStyle ) : ( pdCount > 8 && hex.get( pd + 7 ) > 0 ) ? Integer.toString( hex.get( pd + 7 ) * 4 - 40 ) : "" );
+      
+      dialog.useAltLeadOut.setSelectedIndex( ( pfCount > 2 && ( pf[ 1 ] & 4 ) == 4 && ( pf[ 2 ] & 8 ) == 0 && pdCount > 0x0F && hex.get( pd + 0x0E ) != hex.get( pd + 0x07 ) ) ? 1 : 0 );
+      dialog.altLeadOut.setText( ( dialog.useAltLeadOut.getSelectedIndex() == 1  ) ? getOFFtime34( 0x0E, CommonData.altLeadoutOffsets34, dataStyle ) : "" );
+
+      
     }
   }
   
@@ -522,9 +744,11 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   
   private String getFrequency( Processor p, int on, int off )
   {
+    burstUnit = 0;
     if ( on > 0 && off > 0 )
     {
-      double f = p.getOscillatorFreq()/( on + off + p.getCountOffset() );
+      double f = p.getOscillatorFreq()/( on + off + p.getCarrierTotalOffset() );
+      burstUnit = ( int )( Math.round( 1000000000 / f ) );
       return String.format( "%.3f", f/1000 );
     }
     else if ( on == 0 && off == 0 )
@@ -539,16 +763,55 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   
   private String getDutyCycle( Processor p, int on, int off )
   {
-    int ctOffset = p.getCountOffset();
-    int onOffset = ( ctOffset + 2 ) / 3;
+    int totOffset = p.getCarrierTotalOffset();
+    int onOffset = p.getCarrierOnOffset();
     if ( on > 0 && off > 0 )
     {
-      double dc = 100.0 * ( on + onOffset ) / ( on + off + ctOffset );
+      double dc = 100.0 * ( on + onOffset ) / ( on + off + totOffset );
       return String.format( "%.2f", dc );
     }
     else    // Error case handled by dbOut()
     {
       return "";
+    }
+  }
+  
+  private String getONtime34( int pdIndex1, Integer pdIndex2 )
+  {
+    int pd = 5 + pfCount;
+    if ( pdCount <= pdIndex1 )
+    {
+      return "";
+    }
+    else if ( pfCount > 2 && ( pf[ 2 ] & 0x7C ) == 0x40 )
+    {
+      int t = ( data[ pd + pdIndex1 ] + 255 ) % 256 + 1;
+      return Integer.toString( 3 * t + 2 );
+    }
+    else
+    {
+      int t = ( data[ pd + pdIndex1 ] + 255 ) % 256 + 1;
+      if ( pdIndex2 != null && pfCount > 1 && ( pf[ 1 ] & 0x08 ) == 0x08 && pdCount > pdIndex2 )
+      {
+        t += ( ( data[ pd + pdIndex2 ] + 255 ) % 256 ) * 256;
+      }
+      return Integer.toString( burstUnit * t / 1000 );
+    }
+  }
+
+  private String getOFFtime34( int pdIndex, int[] offsets, int dataStyle )
+  {
+    int pd = 5 + pfCount;
+    if ( pdCount < pdIndex + 1 )
+    {
+      return "";
+    }
+    else
+    {
+      int t = ( data[ pd + pdIndex + 1 ] + 255 ) % 256;
+      t += ( ( data[ pd + pdIndex ] + 255 ) % 256 ) * ( ( dataStyle == 3 ) ? 257 : 257.5 );
+      t = ( dataStyle == 3 ) ? 3 * t + offsets[ 0 ] : 2 * t + offsets[ 1 ];
+      return Integer.toString( t );
     }
   }
 }

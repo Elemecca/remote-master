@@ -27,6 +27,7 @@ public class ProcessorManager
     p.setAbsLabels( S3C80data.absLabels_C80 );
     p.setZeroLabels( S3C80data.zeroLabels );
     p.setOscillatorData( S3C80data.oscData );
+    p.setDataStyle( 0 );
     add( p );
     
     p = new S3F80Processor();
@@ -35,6 +36,7 @@ public class ProcessorManager
     p.setAbsLabels( S3C80data.absLabels_F80 );
     p.setZeroLabels( S3C80data.zeroLabels );
     p.setOscillatorData( S3C80data.oscData );
+    p.setDataStyle( 0 );
     add( p );
 
     p = new BigEndianProcessor( "6805", "C9" );
@@ -66,6 +68,7 @@ public class ProcessorManager
     p.setAbsLabels( P6805data.absLabels_C9 );
     p.setZeroLabels( P6805data.zeroLabels_C9 );
     p.setOscillatorData( P6805data.oscData_C9 );
+    p.setDataStyle( 3 );
     p.setVectorEditData( opcodes, addresses );
     add( p );
 
@@ -100,6 +103,7 @@ public class ProcessorManager
     p.setAbsLabels( P6805data.absLabels_RC16 );
     p.setZeroLabels( P6805data.zeroLabels_RC16 );
     p.setOscillatorData( P6805data.oscData_RC16 );
+    p.setDataStyle( 2 );
     p.setVectorEditData( opcodes, moreAddresses );
     add( p );
     
@@ -110,6 +114,7 @@ public class ProcessorManager
     p.setAbsLabels( P740data.absLabels );
     p.setZeroLabels( P740data.zeroLabels );
     p.setOscillatorData( P740data.oscData );
+    p.setDataStyle( 4 );
     add( p );
     
     p = new BigEndianProcessor( "HCS08" );
@@ -119,6 +124,7 @@ public class ProcessorManager
     p.setAbsLabels( HCS08data.absLabels );
     p.setZeroLabels( HCS08data.zeroLabels );
     p.setOscillatorData( HCS08data.oscData );
+    p.setDataStyle( 1 );
     p.setStartOffset( 0 );
     add( p );
     

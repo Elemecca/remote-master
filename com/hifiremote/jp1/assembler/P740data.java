@@ -174,7 +174,9 @@ public class P740data
   };
   
   public static final String[][] absLabels = {
-    { "XMITIR", "FF00" } };
+    { "XmitIR", "FF00" },
+    { "Rpt_KeyDownCheck", "FF06" }
+  };
   
   public static final String[][] zeroLabels = {
     { "DCBUF", "5D", "DCBUF+", "0A" }, 
@@ -184,7 +186,7 @@ public class P740data
     { "FLAGS", "5A" }
   };
   
-  public static final String[] oscData = { "2000000", "16" };
+  public static final int[] oscData = { 2000000, 16, 5 };
 
 
 }

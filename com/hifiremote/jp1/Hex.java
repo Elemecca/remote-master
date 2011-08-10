@@ -745,7 +745,7 @@ public class Hex implements Cloneable, Comparable< Hex >
   {
     int index = start;
     int last = data.length - needle.length;
-    while ( index < last )
+    while ( index <= last )
     {
       boolean match = true;
       for ( int i = 0; i < needle.length; i++ )

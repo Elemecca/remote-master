@@ -163,11 +163,26 @@ public class P6805data
   };
   
   public static final String[][] absLabels_RC16 = {
-    { "XMITIR", "01AF" } };
+    { "XmitIR", "01AF" },
+    { "Setup_XmitIR", "01B2" },
+    { "SendMarkSpaceByPtr", "01B5" },
+    { "SendSpaceByRegister", "01C1" },
+    { "MidFrame_XmitIR", "01C4" },
+    { "Rpt_KeyDownCheck", "0189" },
+    { "ChkPowerKey", "019D" },
+    { "ChkRecordKey", "01A1" },
+    { "ChkVolKeys", "01A5" },
+    { "ChkPwrRecVol", "018C" },
+    { "ChkRepeatKeys", "0183" },
+    { "SetupIRCarrier", "01B8" }
+  };
 
 
   public static final String[][] absLabels_C9= {
-    { "XMITIR", "0183" } };
+    { "XmitIR", "0183" },
+    { "ChkVolKeys", "01BC" },
+    { "SetupIRCarrier", "019B" }
+  };
   
   public static final String[][] zeroLabels_RC16 = {
     { "DCBUF", "5A", "DCBUF+", "0A" },
@@ -183,8 +198,8 @@ public class P6805data
     { "DBYTES", "66" },
     { "FLAGS", "57" } };
   
-  public static final String[] oscData_C9 = { "2000000", "16" };
+  public static final int[] oscData_C9 = { 2000000, 15, 5 };
   
-  public static final String[] oscData_RC16 = { "2000000", "0" };
+  public static final int[] oscData_RC16 = { 2000000, 0, 0 };
 }
 

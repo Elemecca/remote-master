@@ -25,6 +25,7 @@ import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -34,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -50,6 +52,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
+
+import com.hifiremote.jp1.assembler.CommonData;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -119,17 +123,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   {
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
-    double scale = 0.75;  // Added by Graham to reduce width of left-hand panel.
+    double scale = 0.75;
     
-    assemblerTable = new JP1Table( assemblerModel );
+    JPanel leftPanel = new JPanel( new BorderLayout() );
     JPanel rightPanel = new JPanel( new BorderLayout() );
     rightPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
-    
-    JScrollPane codePane = new JScrollPane( assemblerTable );
-    codePane.setBorder( BorderFactory.createTitledBorder( "Disassembly" ) );
-    rightPanel.add( codePane, BorderLayout.CENTER );
-    assemblerTable.initColumns( assemblerModel );
-    JPanel leftPanel = new JPanel( new BorderLayout() );
 
     this.protocol = protocol;
     System.err.println( "protocol=" + protocol );
@@ -137,24 +135,46 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     double b = 5; // space between rows and around border
     double c = 10; // space between columns
     double pr = TableLayout.PREFERRED;
-    double size[][] =
+    double pf = TableLayout.FILL;
+    double size1[][] =
     {
         {
-            b, pr, c, pr, b
+            b, pr, c, pf, b
         }, // cols
         {
-            b, pr, b, pr, b, pr, b, pr, b, pr, b, pr, b, pr, b
-        }
-    // rows
+            b, pr, b, pr, b, pr, b
+        }  // rows
     };
-    TableLayout tl = new TableLayout( size );
-    JPanel mainPanel = new JPanel( tl );
+    
+    double size2[][] =
+    {
+        {
+            b, pr, c, pf, b
+        }, // cols
+        {
+            b, pr, b, pr, b, pr, b, pr, b
+        }  // rows
+    };
+    
+    double size3[][] =
+    {
+        {
+            b, pr, c, pf, b, pr, b
+        }, // cols
+        {
+            b, pr, pr, pr, c, pr, pr, pr, pr, c, pr, pr, pr, pr,
+            c, pr, pr, pr, /*c, pr, pr, c, pr, pr, c, pr, pr,*/ c, pr, pr,
+            c, pr, pr, pr, c, pr, pr, pr, pr, pr, c, pr, pr, pr,
+            c, pr, pr, pr, pr, /*c, pr,*/ b      
+        }  // rows
+    };
     
     JSplitPane outerPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel );
     outerPane.setResizeWeight( 0 );
-    
     contentPane.add( outerPane, BorderLayout.CENTER );
-    leftPanel.add( mainPanel, BorderLayout.CENTER );
+    
+    JPanel mainPanel = new JPanel( new TableLayout( size1 ) );
+    leftPanel.add( mainPanel, BorderLayout.PAGE_START );
     
     JLabel label = new JLabel( "Name:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 1" );
@@ -241,12 +261,16 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     JPanel midPanel = new JPanel( new BorderLayout() );
     midPanel.add( buttonPanel, BorderLayout.CENTER );
     midPanel.add( messagePanel, BorderLayout.PAGE_END );
-    tablePanel.add( midPanel, BorderLayout.SOUTH );
-
-
-    // Device Parameter Table
+    tablePanel.add( midPanel, BorderLayout.PAGE_END) ;
+  
+    // Create lower part of left panel as tabbed pane
+    mainPanel = new JPanel( new TableLayout( size2 ) );
+    tabbedPane = new JTabbedPane();
+    tabbedPane.addTab( "Device Data", mainPanel );
+    leftPanel.add( tabbedPane, BorderLayout.CENTER);
+    
+    // Device Parameter Table on Device Data tab
     deviceModel = new ParameterTableModel( protocol, ParameterTableModel.Type.DEVICE );
-
     deviceTable = new JTableX( deviceModel );
     SpinnerCellEditor editor = new SpinnerCellEditor( 0, 8, 1 );
     new TextPopupMenu( ( JTextField )( ( DefaultCellEditor )deviceTable.getDefaultEditor( String.class ) )
@@ -256,20 +280,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     tablePanel = new JPanel( new BorderLayout() );
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Device Parameters" ) );
     tablePanel.add( scrollPane, BorderLayout.CENTER );
-    mainPanel.add( tablePanel, "1, 7, 3, 7" );
+    mainPanel.add( tablePanel, "1, 1, 3, 1" );
     d = deviceTable.getPreferredScrollableViewportSize();
     d.height = deviceTable.getRowHeight() * 4;
     d.width = (int)(d.width * scale );
     deviceTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Default Fixed Data:", SwingConstants.RIGHT );
-    mainPanel.add( label, "1, 9" );
+    mainPanel.add( label, "1, 3" );
     rawHexData = new JTextField();
     rawHexData.getDocument().addDocumentListener( this );
     new TextPopupMenu( rawHexData );
-    mainPanel.add( rawHexData, "3, 9" );
+    mainPanel.add( rawHexData, "3, 3" );
 
-    // Command Parameter table
+    // Command Parameter table on Device Data tab
     commandModel = new ParameterTableModel( protocol, ParameterTableModel.Type.COMMAND );
 
     commandTable = new JTableX( commandModel );
@@ -280,19 +304,59 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     tablePanel = new JPanel( new BorderLayout() );
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ) );
     tablePanel.add( scrollPane, BorderLayout.CENTER );
-    mainPanel.add( tablePanel, "1, 11, 3, 11" );
+    mainPanel.add( tablePanel, "1, 5, 3, 5" );
     d = commandTable.getPreferredScrollableViewportSize();
     d.height = commandTable.getRowHeight() * 4;
     d.width = (int)(d.width * scale );
     commandTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Command Index:", SwingConstants.RIGHT );
-    mainPanel.add( label, "1, 13" );
+    mainPanel.add( label, "1, 7" );
     cmdIndex = new JSpinner( new SpinnerNumberModel( protocol.getCmdIndex(), 0, protocol.getDefaultCmd().length() - 1,
         1 ) );
     cmdIndex.addChangeListener( this );
-    mainPanel.add( cmdIndex, "3, 13" );
+    mainPanel.add( cmdIndex, "3, 7" );
+    
+    // Protocol Data tab of lower left panel
+    mainPanel = new JPanel( new TableLayout( size3 ) );
+    scrollPane = new JScrollPane( mainPanel );
+    scrollPane.setPreferredSize( scrollPane.getPreferredSize() );
+    tabbedPane.addTab( "Protocol Data", scrollPane );
+    
+    for ( int i = 0; i < dataComponents.length; i++ )
+    {
+      if ( dataComponents[ i ][ 0 ] != null )
+      {
+        if ( dataComponents[ i ].length > 1 )
+        {
+          label = ( JLabel )dataComponents[ i ][ 1 ];
+        }
+        else
+        {
+          label = new JLabel();
+        }
+        label.setText( dataLabels[ i ] );
+        mainPanel.add( label, "1, " + i );
+        mainPanel.add( dataComponents[ i ][ 0 ], "3, " + i );
+        if ( i < dataSuffixes.length && dataSuffixes[ i ] != null )
+        {
+          mainPanel.add( new JLabel( dataSuffixes[ i ] ), "5, " + i );
+        }
+      }
+    }
+    
+    populateComboBox( devBytes, CommonData.to15 );
+    populateComboBox( cmdBytes, CommonData.to15 );
 
+    // Disassembly on right pane   
+    assemblerTable = new JP1Table( assemblerModel );
+    assemblerTable.initColumns( assemblerModel );
+    assemblerModel.dialog = this;
+    scrollPane = new JScrollPane( assemblerTable );
+    scrollPane.setBorder( BorderFactory.createTitledBorder( "Disassembly" ) );
+    rightPanel.add( scrollPane, BorderLayout.CENTER );
+    
+    // Button Panel
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
 
     view = new JButton( "View Ini" );
@@ -348,6 +412,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
     rawHexData.setEnabled( false );
     cmdIndex.setEnabled( false );
+    
+    tabbedPane.setSelectedIndex( 1 );
   
     enableButtons();
   }
@@ -829,6 +895,116 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
   /** The cancel. */
   private JButton cancel = null;
+  
+  private JTabbedPane tabbedPane = null;
+  
+  public JTextField frequency = new JTextField();
+  public JTextField dutyCycle = new JTextField();
+  public JComboBox sigStruct = new JComboBox();
+  
+  public JComboBox devBytes = new JComboBox();
+  public JComboBox devBits1 = new JComboBox();
+  public JComboBox devBits2 = new JComboBox();
+  public JComboBox devBitDbl = new JComboBox();
+  
+  public JComboBox cmdBytes = new JComboBox();
+  public JComboBox cmdBits1 = new JComboBox();
+  public JComboBox cmdBits2 = new JComboBox();
+  public JComboBox cmdBitDbl = new JComboBox();
+  
+  public JTextField rptValue = new JTextField();
+  public JComboBox rptType = new JComboBox();
+  public JComboBox rptHold = new JComboBox();
+  
+//  public JComboBox chkByteStyle = new JComboBox();
+//  public JTextField bitsHeld = new JTextField();
+//  
+//  public JComboBox miniCombiner = new JComboBox();
+//  public JComboBox sigStyle = new JComboBox();
+//  
+//  public JTextField vecOffset = new JTextField();
+//  public JTextField dataOffset = new JTextField();
+  
+  public JTextField burst1On = new JTextField();
+  public JTextField burst1Off = new JTextField();
+  
+  public JTextField burst0On = new JTextField();
+  public JTextField burst0Off = new JTextField();
+  public JComboBox xmit0rev = new JComboBox();
+  
+  public JComboBox leadInStyle = new JComboBox();
+  public JComboBox burstMidFrame = new JComboBox();
+  public JTextField afterBits = new JTextField();
+  public JTextField leadInOn = new JTextField();
+  public JTextField leadInOff = new JTextField();
+  
+  public JComboBox leadOutStyle = new JComboBox();
+  public JTextField leadOutOff = new JTextField();
+  public JComboBox offAsTotal = new JComboBox();
+  
+  public JTextField altLeadOut = new JTextField();
+  public JComboBox useAltLeadOut = new JComboBox();
+  public JTextField altFreq = new JTextField();
+  public JTextField altDuty = new JTextField();
+  
+//  public JComboBox toggleBit = new JComboBox();
+  
+  public JLabel devBits1lbl = new JLabel();
+  public JLabel devBits2lbl = new JLabel();
+  public JLabel cmdBits1lbl = new JLabel();
+  public JLabel cmdBits2lbl = new JLabel();
+  public JLabel burstMidFrameLbl = new JLabel();
+  public JLabel afterBitsLbl = new JLabel();
+  public JLabel altFreqLbl = new JLabel();
+  public JLabel altDutyLbl = new JLabel();
+  
+  
+  private Component[][] dataComponents = { { null },
+      { frequency }, { dutyCycle }, { sigStruct }, { null },
+      { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, { null },
+      { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, { null },
+      { rptValue }, { rptType }, { rptHold }, { null },
+//      { chkByteStyle }, { bitsHeld }, { null },
+//      { miniCombiner }, { sigStyle }, { null },
+//      { vecOffset }, { dataOffset }, { null },
+      { burst1On }, { burst1Off }, { null },
+      { burst0On }, { burst0Off }, { xmit0rev }, { null },
+      { leadInStyle }, { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }, { leadInOn }, { leadInOff }, { null },
+      { leadOutStyle }, { leadOutOff }, { offAsTotal }, { null },
+      { altLeadOut }, { useAltLeadOut }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }//, { null },
+//      { toggleBit }
+  };
+  
+  private String[] dataLabels = { null,
+      "Frequency", "Duty Cycle", "Signal Structure", null,
+      "Device Bytes", "Bits/Dev1", "Bits/Dev2", "Dev Bit Doubling", null,
+      "Command Bytes", "Bits/Cmd1", "Bits/Cmd2", "Cmd Bit Doubling", null,
+      "Repeat Value", "Type", "Hold", null,
+//      "Check Byte Style", "# Bytes Checked", null,
+//      "Mini-Combiner", "Signal Style", null,
+//      "Vector Offset", "Data Offset", null,
+      "1 Burst ON", "OFF", null,
+      "0 Burst ON", "OFF", "Xmit 0 Reversed", null,
+      "Lead-In Style", "Burst Mid-Frame", "After # of bits", "Lead-In ON", "OFF", null,
+      "Lead-Out Style", "Lead-Out OFF", "OFF as Total", null,
+      "Alt Lead-Out", "Use Alt Lead-Out", "Alt Freq", "Alt Duty"//, null,
+//      "Toggle Bit"
+  };
+  
+  private String[] dataSuffixes = { null,
+      "kHz", "%", null, null,
+      null, null, null, null, null,
+      null, null, null, null, null,
+      null, null, null, null,
+//      null, null, null,
+//      null, null, null,
+//      "bytes", "bytes", null,
+      "uSec", "uSec", null,
+      "uSec", "uSec", null, null,
+      null, null, null, "uSec", "uSec", null,
+      null, "uSec", null, null,
+      "uSec", null, "kHz", "%"
+  };
 
   /** The user action. */
   private int userAction = JOptionPane.CANCEL_OPTION;
@@ -911,6 +1087,24 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
     text += "Code shown in gray is standard code for information only.</HTML>";
     messageLabel.setText( text );
+  }
+  
+  public void populateComboBox( Component component, Object[] array )
+  {
+    if ( !( component instanceof JComboBox ) )
+    {
+      return;
+    }
+    JComboBox comboBox = ( JComboBox )component;
+    ( (DefaultComboBoxModel )comboBox.getModel() ).removeAllElements();
+    if ( array == null )
+    {
+      return;
+    }
+    for ( int i = 0; i < array.length; i++ )
+    {
+      comboBox.addItem( array[ i ] );
+    }
   }
 
 }

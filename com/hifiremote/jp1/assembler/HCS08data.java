@@ -308,7 +308,21 @@ public class HCS08data
     { "LDHX", "SP1" },        { "STHX", "SP1" } };
 
   public static final String[][] absLabels = {
-    { "XMITIR", "FF5F" } };
+    { "XmitIR", "FF5F" },
+    { "Setup_XmitIR", "FF5C" },
+    { "SendMarkSpaceByPtr", "FF65" },
+    { "SendMarkByPtr", "FF68" },
+    { "SendSpaceByRegister", "FF74" },
+    { "MidFrame_XmitIR", "FF7A" },
+    { "LoadBitBufFromDCBuf", "FF86" },
+    { "Rpt_KeyDownCheck", "FF92" },
+    { "ChkPowerKey", "FF95" },
+    { "ChkRecordKey", "FF98" },
+    { "ChkVolKeys", "FF9B" },
+    { "ChkRepeatKeys", "FF8F" },
+    { "SetupIRCarrier", "FF6E" },
+    { "ChkLowBattery", "FF59" }
+  };
   
   public static final String[][] zeroLabels = {
     { "DCBUF", "60", "DCBUF+", "0A" },
@@ -318,6 +332,6 @@ public class HCS08data
     { "CBYTES", "AA" },
     { "FLAGS", "B3" }  };
 
-  public static final String[] oscData = { "4000000", "0" };
+  public static final int[] oscData = { 4000000, 0, 0 };
 }
 

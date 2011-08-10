@@ -197,10 +197,32 @@ public class S3C80data
   };
   
   public static final String[][] absLabels_C80 = {
-    { "XMITIR", "0133" } };
+    { "XmitIR", "0133" },
+    { "Setup_XmitIR", "0136" },
+    { "SendMarkSpaceByPtr", "0139" },
+    { "SendMarkByPtr", "0151" },
+    { "SendSpaceByRegister", "0145" },
+    { "MidFrame_XmitIR", "014E" },
+    { "LoadBitBufFromDCBuf", "0160" },
+    { "Rpt_KeyDownCheck", "010A" },
+    { "ChkPowerKey", "0119" },
+    { "ChkRecordKey", "0120" },
+    { "SetupIRCarrier", "0142" }
+  };
   
   public static final String[][] absLabels_F80 = {
-    { "XMITIR", "0146" } };
+    { "XmitIR", "0146" },
+    { "Setup_XmitIR", "0149" },
+    { "SendMarkSpaceByPtr", "014C" },
+    { "SendMarkByPtr", "0164" },
+    { "SendSpaceByRegister", "0158" },
+    { "MidFrame_XmitIR", "0161" },
+    { "LoadBitBufFromDCBuf", "0173" },
+    { "Rpt_KeyDownCheck", "010A" },
+    { "ChkPowerKey", "012C" },
+    { "ChkRecordKey", "0133" },
+    { "SetupIRCarrier", "0155" }
+  };
   
   public static final String[][] zeroLabels = {
     { "DCBUF", "03", "DCBUF+", "0A" },
@@ -211,7 +233,7 @@ public class S3C80data
     { "FLAGS", "00" }
   };
   
-  public static final String[] oscData = { "8000000", "4" };
+  public static final int[] oscData = { 8000000, 4, 2 };
 
   
 }

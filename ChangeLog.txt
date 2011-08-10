@@ -25,6 +25,10 @@ Changes for v2.02
 -- Alpha 8
 - Incorporate those predefined constants given in Protocol Builder read-me into the disassembler, using them in place of addresses where applicable (Graham)
 - Add comment column to disassembler and in it show some info about protocol data bytes (Graham)
+-- Alpha 9
+- Add interpretation of data bytes, in style of Protocol Builder, to disassembler in Manual Settings (Graham)
+- Add additional predefined constants, based on data from Mike England (Graham)
+- Fix bug in Hex indexOf routine, it was failing to check last position in file (Graham)
 
 Changes for v2.01
 -- Alpha --

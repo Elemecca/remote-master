@@ -444,15 +444,31 @@ public abstract class Processor
     return oscillatorFreq;
   }
 
-  public void setOscillatorData( String[] oscData )
+  public void setOscillatorData( int[] oscData )
   {
-    oscillatorFreq = Integer.parseInt( oscData[ 0 ] );
-    countOffset = Integer.parseInt( oscData[ 1 ] );
+    oscillatorFreq = oscData[ 0 ];
+    carrierTotalOffset = oscData[ 1 ];
+    carrierOnOffset = oscData[ 2 ];
+  }
+  
+  public int getDataStyle()
+  {
+    return dataStyle;
   }
 
-  public int getCountOffset()
+  public void setDataStyle( int dataStyle )
   {
-    return countOffset;
+    this.dataStyle = dataStyle;
+  }
+
+  public int getCarrierTotalOffset()
+  {
+    return carrierTotalOffset;
+  }
+  
+  public int getCarrierOnOffset()
+  {
+    return carrierOnOffset;
   }
 
   /** The name. */
@@ -481,7 +497,12 @@ public abstract class Processor
   
   private int oscillatorFreq = 2000000;
   
-  private int countOffset = 0;
+  private int carrierTotalOffset = 0;
+  
+  private int carrierOnOffset = 0;
+  
+  /** Index to style of PF and PD data */
+  private int dataStyle = 0;
   
   private List< AssemblerOpCode[] > instructions = new ArrayList< AssemblerOpCode[] >();
   
