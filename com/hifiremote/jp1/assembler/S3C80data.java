@@ -2,8 +2,6 @@ package com.hifiremote.jp1.assembler;
 
 public class S3C80data
 {
-  private String wp = "W";    // Work prefix
- 
   public static final String[][] AddressModes = {
     { "Nil", "", "" },
     { "R1", "B1Z1", "R%02X" },

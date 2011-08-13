@@ -224,42 +224,45 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
             }
           }
           
-          // Replace absolute addresses by labels where they exist
-          for ( int i = 0; ( mode.absMap >> i ) != 0; i++ )
+          if ( dialog.useConstants.isSelected() )
           {
-            if ( ( ( mode.absMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
+            // Replace absolute addresses by labels where they exist
+            for ( int i = 0; ( mode.absMap >> i ) != 0; i++ )
             {
-              int argIndex = nibbleArgs + i;
-              int[][] formatStarts = getFormatStarts( format );
-              boolean littleEndian = ( formatStarts[ argIndex ][ 0 ] > formatStarts[ argIndex + 1 ][ 0 ] );
-              int n = ( ( Integer )obj[ argIndex ] ) * ( littleEndian ? 1 : 0x100 );
-              n += ( ( Integer )obj[ argIndex + 1 ] ) * ( littleEndian ? 0x100 : 1 );
-              String label = processor.getAbsLabels().get( n );
-              if ( label != null )
+              if ( ( ( mode.absMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
               {
-                if ( !absUsed.contains( n ) )
+                int argIndex = nibbleArgs + i;
+                int[][] formatStarts = getFormatStarts( format );
+                boolean littleEndian = ( formatStarts[ argIndex ][ 0 ] > formatStarts[ argIndex + 1 ][ 0 ] );
+                int n = ( ( Integer )obj[ argIndex ] ) * ( littleEndian ? 1 : 0x100 );
+                n += ( ( Integer )obj[ argIndex + 1 ] ) * ( littleEndian ? 0x100 : 1 );
+                String label = processor.getAbsLabels().get( n );
+                if ( label != null )
                 {
-                  absUsed.add( n );
+                  if ( !absUsed.contains( n ) )
+                  {
+                    absUsed.add( n );
+                  }
+                  format = formatForLabel( format, argIndex, true );
+                  obj[ argIndex ] = label;
+                  obj[ argIndex + 1 ] = "";
                 }
-                format = formatForLabel( format, argIndex, true );
-                obj[ argIndex ] = label;
-                obj[ argIndex + 1 ] = "";
               }
             }
-          }
-          
-       // Replace zero-page or register addresses by labels where they exist
-          for ( int i = 0; ( mode.zeroMap >> i ) != 0; i++ )
-          {
-            if ( ( ( mode.zeroMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
+
+            // Replace zero-page or register addresses by labels where they exist
+            for ( int i = 0; ( mode.zeroMap >> i ) != 0; i++ )
             {
-              int argIndex = nibbleArgs + i;
-              int n = ( Integer )obj[ argIndex ];
-              String label = getZeroLabel( processor, n, zeroUsed );
-              if ( label != null )
+              if ( ( ( mode.zeroMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
               {
-                format = formatForLabel( format, argIndex, false );
-                obj[ argIndex ] = label;
+                int argIndex = nibbleArgs + i;
+                int n = ( Integer )obj[ argIndex ];
+                String label = getZeroLabel( processor, n, zeroUsed );
+                if ( label != null )
+                {
+                  format = formatForLabel( format, argIndex, false );
+                  obj[ argIndex ] = label;
+                }
               }
             }
           }
@@ -273,7 +276,35 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
             }
           }
         
-          
+          // Perform switch of Wn to RCn or vice versa for S3C80
+          if ( processor instanceof S3C80Processor )
+          {
+            if ( dialog.rcButton.isSelected() )
+            {
+              for ( int i = 0; i < nibbleArgs; i++ )
+              {
+                if ( obj[ i ] instanceof Integer )
+                {
+                  format = formatWvRC( format, i, obj, false );
+                }
+              }              
+            }
+            else if ( dialog.wButton.isSelected() )
+            {
+              for ( int i = 0; ( mode.zeroMap >> i ) != 0; i++ )
+              {
+                if ( ( ( mode.zeroMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
+                {
+                  int argIndex = nibbleArgs + i;
+                  if ( obj[ argIndex ] instanceof Integer )
+                  {
+                    format = formatWvRC( format, argIndex, obj, true );
+                  }
+                }
+              }
+            }
+          }
+   
           // Create the formatted opcode argument
           item.setArgumentText( String.format( format, obj[ 0 ], obj[ 1 ], obj[ 2 ], obj[ 3 ] ) );
           state.index += mode.length;
@@ -364,6 +395,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       item.setOperation( "DB" );
       int n = Math.min( 4, end - i );
       String comments = null;
+      String rp = p.getRegisterPrefix();
       if ( ( i == 0 && p.getStartOffset() == 3 || i == 2 && p.getStartOffset() == 0 ) && i < end - 1 )
       {
         n = 2;
@@ -392,7 +424,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       else if ( i == pfIndex )
       {
         n = 1;
-        comments = "pf" + ( i - 5 );
+        comments = String.format( "pf%X: %s%02X", i - 5, rp, p.getZeroAddresses().get( "PF0" ) + i - 5 );
         if ( data[ i ] >> 7 == 1 )
         {
           pfIndex++;  // Another pf follows
@@ -406,19 +438,20 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       }
       else if ( i == pdIndex )
       {
-        if ( /* pdIndex <= pfIndex + 2 ||*/ pdIndex == pfIndex + p.getZeroSizes().get( "PD00" ) )
+        int val = i - pfIndex - 1;
+        int za = p.getZeroAddresses().get( "PD00" );
+        if ( /* pdIndex <= pfIndex + 2 ||*/ i == pfIndex + p.getZeroSizes().get( "PD00" ) )
         {
           n = 1;
-          comments = "pd" + String.format( "%02X", pdIndex - pfIndex - 1 );
-          pdIndex++;
+          comments = String.format( "pd%02X: %s%02X", val, rp, za + val );
         }
         else
         {
           n = 2;
           item.setOperation( "DW" );
-          comments = String.format( "pd%02X/pd%02X", pdIndex - pfIndex - 1, pdIndex - pfIndex );
-          pdIndex += 2;
+          comments = String.format( "pd%02X/pd%02X: %s%02X/%s%02X", val, val + 1, rp, za + val, rp, za + val + 1 );
         }
+        pdIndex += n;
         if ( pdIndex > pfIndex + p.getZeroSizes().get( "PD00" ) )
         {
           pdIndex--;
@@ -643,8 +676,6 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       
       dialog.useAltLeadOut.setSelectedIndex( ( pfCount > 2 && ( pf[ 1 ] & 4 ) == 4 && ( pf[ 2 ] & 8 ) == 0 && pdCount > 0x0F && hex.get( pd + 0x0E ) != hex.get( pd + 0x07 ) ) ? 1 : 0 );
       dialog.altLeadOut.setText( ( dialog.useAltLeadOut.getSelectedIndex() == 1  ) ? getOFFtime34( 0x0E, CommonData.altLeadoutOffsets34, dataStyle ) : "" );
-
-      
     }
   }
   
@@ -699,6 +730,29 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     if ( preSymbol )
     {
       format = replacePart( format, fStart0 - 1, fStart0, "" ); // remove $ or R
+    }
+    return format;
+  }
+  
+  private String formatWvRC( String format, int argIndex, Object[] args, boolean toW )
+  {
+    int[][] formatStarts = getFormatStarts( format );
+    int fStart0 = formatStarts[ argIndex ][ 0 ];
+    int fStart1 = formatStarts[ argIndex ][ 1 ];
+    boolean preR = fStart0 > 0 && format.substring( fStart0 - 1, fStart0 ).equals( "R" );
+    boolean preW = fStart0 > 0 && format.substring( fStart0 - 1, fStart0 ).equals( "W" );
+    int arg = ( Integer )args[ argIndex ];
+    if ( preR && toW && ( arg & 0xF0 ) == 0xC0 )
+    {
+      format = replacePart( format, fStart0 - 1, fStart0, "W" );
+      format = replacePart( format, fStart1 + 1, fStart1 + 4, "X" );
+      args[ argIndex ] = arg & 0x0F;
+    }
+    else if ( preW && !toW )
+    {
+      format = replacePart( format, fStart0 - 1, fStart0, "R" );
+      format = replacePart( format, fStart1 + 1, fStart1 + 2, "02X" );
+      args[ argIndex ] = arg | 0xC0;
     }
     return format;
   }

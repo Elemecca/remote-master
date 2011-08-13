@@ -245,5 +245,11 @@ public class S3C80Processor
     }
     return val;
   }
+  
+  @Override
+  public String getRegisterPrefix()
+  {
+    return "R";
+  }
 
 }

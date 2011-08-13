@@ -470,6 +470,12 @@ public abstract class Processor
   {
     return carrierOnOffset;
   }
+  
+  // Overridden for S3C80
+  public String getRegisterPrefix()
+  {
+    return "$";
+  }
 
   /** The name. */
   private String name = null;

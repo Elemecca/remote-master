@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -15,6 +16,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -22,9 +25,12 @@ import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
@@ -32,6 +38,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
@@ -39,6 +46,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
@@ -60,7 +68,7 @@ import com.hifiremote.jp1.assembler.CommonData;
  * The Class ManualSettingsDialog.
  */
 public class ManualSettingsDialog extends JDialog implements ActionListener, PropertyChangeListener, DocumentListener,
-    ChangeListener, ListSelectionListener
+    ChangeListener, ListSelectionListener, ItemListener
 {
 
   /**
@@ -246,6 +254,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     Dimension d = codeTable.getPreferredSize();
     d.width = (int)(d.width * scale );
     codeTable.setPreferredScrollableViewportSize( d );
+    
+    upperPanel = mainPanel;
 
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
     importButton = new JButton( "Import Protocol Upgrade" );
@@ -356,9 +366,43 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     scrollPane.setBorder( BorderFactory.createTitledBorder( "Disassembly" ) );
     rightPanel.add( scrollPane, BorderLayout.CENTER );
     
+    // Disassembly options
+    JPanel optionsPanel = new JPanel();
+    optionsPanel.setLayout( new BoxLayout( optionsPanel, BoxLayout.PAGE_AXIS ) );
+    optionsPanel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Disassembly options" ),
+        BorderFactory.createEmptyBorder( 0, 10, 0, 10 ) ) );
+    rightPanel.add( optionsPanel, BorderLayout.PAGE_END );
+    JPanel optionPanel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
+    useConstants.addItemListener( this );
+    optionPanel.add( useConstants );
+    optionsPanel.add( optionPanel );
+    optionPanel = new JPanel( new GridLayout( 1, 4 ) );
+    asCodeButton.addItemListener( this );
+    rcButton.addItemListener( this );
+    wButton.addItemListener( this );
+    ButtonGroup grp = new ButtonGroup();
+    grp.add( asCodeButton );
+    grp.add( rcButton );
+    grp.add( wButton );
+    setOptionButtons();
+    optionPanel.add(  new JLabel( "S3C80 only:" ) );
+    optionPanel.add( asCodeButton );
+    optionPanel.add( rcButton );
+    optionPanel.add( wButton );
+    optionsPanel.add( optionPanel );
+    
     // Button Panel
-    buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
+    JPanel mainButtonPanel = new JPanel( new BorderLayout() );
+    buttonPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
+    mainButtonPanel.add( buttonPanel, BorderLayout.LINE_START );
 
+    codeButton = new JButton( "Hide upper");
+    codeButton.setToolTipText( "<HTML>Hide/Show the upper panel of codes to give<BR>more/less room for lower tabbed panel</HTML>" );
+    codeButton.addActionListener( this );
+    buttonPanel.add( codeButton, BorderLayout.CENTER );
+    
+    buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
+    mainButtonPanel.add( buttonPanel, BorderLayout.CENTER );
     view = new JButton( "View Ini" );
     view.setToolTipText( "View the protocols.ini entry for this protocol." );
     view.addActionListener( this );
@@ -375,14 +419,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     cancel.addActionListener( this );
     buttonPanel.add( cancel );
 
-    leftPanel.add( buttonPanel, BorderLayout.SOUTH );
+    leftPanel.add( mainButtonPanel, BorderLayout.SOUTH );
 
     Hex id = protocol.getID();
     pid.setValue( id );
     rawHexData.setText( protocol.getFixedData( new Value[ 0 ] ).toString() );
 
     d = rightPanel.getPreferredSize();
-    d.width = (int)(leftPanel.getPreferredSize().width * 0.90 / scale );
+    d.width = (int)(leftPanel.getPreferredSize().width * 0.95 / scale );
     rightPanel.setPreferredSize( d );
     
     pack();
@@ -468,6 +512,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       userAction = JOptionPane.CANCEL_OPTION;
       setVisible( false );
       dispose();
+    }
+    else if ( source == codeButton )
+    {
+      upperPanel.setVisible( !upperPanel.isVisible() );
+      codeButton.setText( upperPanel.isVisible() ? "Hide upper" : "Show upper" );
     }
   }
 
@@ -847,6 +896,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
     }
   }
+  
+  private PropertyFile properties = JP1Frame.getProperties();
 
   /** The protocol. */
   private ManualProtocol protocol = null;
@@ -889,6 +940,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
   /** The view. */
   private JButton view = null;
+  
+  private JButton codeButton = null;
 
   /** The ok. */
   private JButton ok = null;
@@ -896,6 +949,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   /** The cancel. */
   private JButton cancel = null;
   
+  public JCheckBox useConstants = new JCheckBox( "Use predefined constants" );
+  public JRadioButton asCodeButton = new JRadioButton( "As code" );
+  public JRadioButton rcButton = new JRadioButton( "Force RCn" );
+  public JRadioButton wButton = new JRadioButton( "Force Wn" );
+  private JToggleButton[] optionButtons = { useConstants, asCodeButton, rcButton, wButton };
+  
+  private JPanel upperPanel = null;
   private JTabbedPane tabbedPane = null;
   
   public JTextField frequency = new JTextField();
@@ -1104,6 +1164,54 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     for ( int i = 0; i < array.length; i++ )
     {
       comboBox.addItem( array[ i ] );
+    }
+  }
+
+  @Override
+  public void itemStateChanged( ItemEvent e )
+  {
+    saveOptionButtons();
+    if ( codeTable.getSelectedRowCount() == 1 )
+    {
+      Hex hex = protocol.getCode( procs[ codeTable.getSelectedRow() ] );
+      Protocol prot = ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) ?
+          displayProtocol : protocol;
+      assemblerModel.disassemble( prot, procs[ codeTable.getSelectedRow() ] );
+    }
+  }
+  
+  private void saveOptionButtons()
+  {
+    int opt = 0;
+    for ( int i = 0; i < optionButtons.length; i++ )
+    {
+      opt |= optionButtons[ i ].isSelected() ? 1 << i : 0;
+    }
+    if ( opt == 3 )
+    {
+      properties.remove( "AssemblerOptions" );
+    }
+    else
+    {
+      properties.setProperty( "AssemblerOptions", "" + opt );
+    }
+  }
+  
+  private void setOptionButtons()
+  {
+    int opt = 3;
+    try
+    {
+      opt = Integer.parseInt( properties.getProperty( "AssemblerOptions", "3" ) );
+    }
+    catch ( NumberFormatException e )
+    {
+      e.printStackTrace();
+    }
+
+    for ( int i = 0; i < optionButtons.length; i++ )
+    {
+      optionButtons[ i ].setSelected( ( ( opt >> i ) & 1 ) == 1 );
     }
   }
 
