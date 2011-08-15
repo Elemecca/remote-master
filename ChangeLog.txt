@@ -30,11 +30,12 @@ Changes for v2.02
 - Add additional predefined constants, based on data from Mike England (Graham)
 - Fix bug in Hex indexOf routine, it was failing to check last position in file (Graham)
 -- Alpha 10
-- Add checkbox to disassembler to select whether or not to use predefined constants (Graham)
+- Add checkboxes to disassembler to select whether or not to use predefined constants (Graham)
 - Add radio buttons to disassembler to select display format for S3C80 working registers (Graham)
-- Save states of checkbox and radio buttons in properties file between invocations (Graham)
+- Save states of checkboxes and radio buttons in properties file between invocations (Graham)
 - Add button to hide/show upper left panel of Manual Settings, to make more space available for protocol data panel (Graham)
 - Add register addresses to pf and pd annotations in disassembly comments column (Graham)
+- Add a third tab, "PF Details", in Manual Settings to show interpretation of PF bytes bit by bit, for S3C80 and HCS08 only (Graham)
 
 Changes for v2.01
 -- Alpha --

@@ -108,6 +108,8 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     itemList.clear();
     hex = protocol.getCode( processor );
     List< Integer > labelAddresses = new ArrayList< Integer >();
+    Arrays.fill( dialog.getPfValues(), null );
+
     if ( hex != null )
     {
       short[] data = hex.getData();
@@ -224,7 +226,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
             }
           }
           
-          if ( dialog.useConstants.isSelected() )
+          if ( dialog.useAddressConstants.isSelected() )
           {
             // Replace absolute addresses by labels where they exist
             for ( int i = 0; ( mode.absMap >> i ) != 0; i++ )
@@ -249,7 +251,10 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
                 }
               }
             }
-
+          }
+          
+          if ( dialog.useRegisterConstants.isSelected() )
+          {
             // Replace zero-page or register addresses by labels where they exist
             for ( int i = 0; ( mode.zeroMap >> i ) != 0; i++ )
             {
@@ -380,7 +385,6 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       }
       
     }
-
     fireTableDataChanged();
   }
 
@@ -424,6 +428,10 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       else if ( i == pfIndex )
       {
         n = 1;
+        if ( i < dialog.getPfValues().length + 5 )
+        {
+          dialog.getPfValues()[ i - 5 ] = ( int )data[ i ];
+        }
         comments = String.format( "pf%X: %s%02X", i - 5, rp, p.getZeroAddresses().get( "PF0" ) + i - 5 );
         if ( data[ i ] >> 7 == 1 )
         {
@@ -559,7 +567,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       dialog.cmdBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pf[ 2 ] >> 2 ) & 3 : 0 );
       int n = ( dataStyle < 2 ) ? 0x11 : 0x0F;
       dialog.rptType.setSelectedIndex( ( pfCount > 1 && ( ( pf[ 1 ] & 0x10 ) != 0 ) && pdCount > n && data[ pd + n ] != 0xFF  ) ? 0 : 1 );
-      dialog.rptValue.setText( ( dialog.rptType.getSelectedIndex() == 0 ) ? Integer.toString( data[ pd + n ] ) : "" );
+      dialog.rptValue.setText( ( dialog.rptType.getSelectedIndex() == 0 ) ? "" + data[ pd + n ] : "" );
       dialog.rptHold.setSelectedIndex( ( pfCount > 1 ) ? pf[ 1 ] & 0x03 : 0 );
       dialog.xmit0rev.setSelectedIndex( ( pfCount > 2 ) ? ( pf[ 2 ] >> 4 ) & 1 : 0 );
       dialog.leadInStyle.setSelectedIndex( ( pfCount > 1 ) ? ( pf[ 1 ] >> 2 ) & 3 : 0 );
@@ -570,7 +578,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       n = pd + pdCount; // start of code
       boolean b = hex.indexOf( setMidFrame1, n ) >= 0 || hex.indexOf( setMidFrame2, n ) >= 0;
       dialog.burstMidFrame.setSelectedIndex( b ? 1 : 0 );
-      dialog.afterBits.setText( ( b && pdCount > 0x13 ) ? Integer.toString( data[ pd + 0x13 ] - 1 ) : "" );
+      dialog.afterBits.setText( ( b && pdCount > 0x13 ) ? "" + ( data[ pd + 0x13 ] - 1 ) : "" );
       dialog.leadOutStyle.setSelectedIndex( ( pfCount > 1 ) ? ( pf[ 1 ] >> 5 ) & 3 : 0 );
       dialog.offAsTotal.setSelectedIndex( ( pf[ 0 ] >> 6 ) & 1 );
       dialog.useAltLeadOut.setSelectedIndex( ( pfCount > 3 ) ? ( pf[ 3 ] >> 5 ) & 1 : 0 );
@@ -580,34 +588,34 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       
       if ( dataStyle < 2 )
       {
-        dialog.burst1On.setText( ( pdCount > 3 && hex.get( pd + 2 ) > 0 ) ? Integer.toString( hex.get( pd + 2 ) * 2 ) : "" );
-        dialog.burst1Off.setText( ( pdCount > 5 && hex.get( pd + 4 ) > 0 ) ? Integer.toString( hex.get( pd + 4 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
-        dialog.burst0On.setText( ( pdCount > 7 && hex.get( pd + 6 ) > 0 ) ? Integer.toString( hex.get( pd + 6 ) * 2 ) : "" );
-        dialog.burst0Off.setText( ( pdCount > 9 && hex.get( pd + 8 ) > 0 ) ? Integer.toString( hex.get( pd + 8 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
-        dialog.leadInOn.setText( ( dialog.leadInStyle.getSelectedIndex() > 0 && pdCount > 0x0D && hex.get( pd + 0x0C ) != 0xFFFF ) ?  Integer.toString( hex.get( pd + 0x0C ) * 2 ) : "" );
-        dialog.leadInOff.setText( ( dialog.leadInStyle.getSelectedIndex() > 0 && pdCount > 0x0F && hex.get( pd + 0x0E ) != 0xFFFF ) ?  Integer.toString( hex.get( pd + 0x0E ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
-        dialog.leadOutOff.setText( ( pdCount > 0x0B && hex.get( pd + 0x0A ) > 0 ) ?  Integer.toString( hex.get( pd + 0x0A ) * 2 ) : "" );
-        dialog.altLeadOut.setText( ( dialog.useAltLeadOut.getSelectedIndex() == 1 && pdCount > 0x14 && hex.get( pd + 0x13 ) > 0 ) ? Integer.toString( hex.get( pd + 0x13 ) * 2 ) : ""  );
+        dialog.burst1On.setText( ( pdCount > 3 && hex.get( pd + 2 ) > 0 ) ? "" + hex.get( pd + 2 ) * 2 : "" );
+        dialog.burst1Off.setText( ( pdCount > 5 && hex.get( pd + 4 ) > 0 ) ? "" + ( hex.get( pd + 4 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        dialog.burst0On.setText( ( pdCount > 7 && hex.get( pd + 6 ) > 0 ) ? "" + hex.get( pd + 6 ) * 2 : "" );
+        dialog.burst0Off.setText( ( pdCount > 9 && hex.get( pd + 8 ) > 0 ) ? "" + ( hex.get( pd + 8 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        dialog.leadInOn.setText( ( dialog.leadInStyle.getSelectedIndex() > 0 && pdCount > 0x0D && hex.get( pd + 0x0C ) != 0xFFFF ) ?  "" + hex.get( pd + 0x0C ) * 2 : "" );
+        dialog.leadInOff.setText( ( dialog.leadInStyle.getSelectedIndex() > 0 && pdCount > 0x0F && hex.get( pd + 0x0E ) != 0xFFFF ) ?  "" + ( hex.get( pd + 0x0E ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        dialog.leadOutOff.setText( ( pdCount > 0x0B && hex.get( pd + 0x0A ) > 0 ) ?  "" + hex.get( pd + 0x0A ) * 2 : "" );
+        dialog.altLeadOut.setText( ( dialog.useAltLeadOut.getSelectedIndex() == 1 && pdCount > 0x14 && hex.get( pd + 0x13 ) > 0 ) ? "" + hex.get( pd + 0x13 ) * 2 : ""  );
 
       }
       else
       {
         int t = ( pdCount > 3 ) ? ( data[ pd + 2 ] >> 4 ) * 0x100 + data[ pd + 3 ] : 0;
-        dialog.burst1On.setText( t > 0 ? Integer.toString( 4 * ( t + 1 ) ) : "" );
+        dialog.burst1On.setText( t > 0 ? "" + 4 * ( t + 1 ) : "" );
         t = ( pdCount > 4 ) ? ( data[ pd + 2 ] & 0x0F ) * 0x100 + data[ pd + 4 ] : 0;
-        dialog.burst1Off.setText( t > 0 ? Integer.toString( 4 * t ) : "" );
+        dialog.burst1Off.setText( t > 0 ? "" + 4 * t : "" );
         t = ( pdCount > 6 ) ? ( data[ pd + 5 ] >> 4 ) * 0x100 + data[ pd + 6 ] : 0;
-        dialog.burst0On.setText( t > 0 ? Integer.toString( 4 * ( t + 1 ) ) : "" );
+        dialog.burst0On.setText( t > 0 ? "" + 4 * ( t + 1 ) : "" );
         t = ( pdCount > 7 ) ? ( data[ pd + 5 ] & 0x0F ) * 0x100 + data[ pd + 7 ] : 0;
-        dialog.burst0Off.setText( t > 0 ? Integer.toString( 4 * t ) : "" );
+        dialog.burst0Off.setText( t > 0 ? "" + 4 * t : "" );
         t = ( pdCount > 0x0C ) ? ( data[ pd + 0x0B ] >> 4 ) * 0x100 + data[ pd + 0x0C ] : 0;
-        dialog.leadInOn.setText( dialog.leadInStyle.getSelectedIndex() > 0 && t > 0 ? Integer.toString( 4 * ( t + 1 ) ) : "" );
+        dialog.leadInOn.setText( dialog.leadInStyle.getSelectedIndex() > 0 && t > 0 ? "" + 4 * ( t + 1 ) : "" );
         t = ( pdCount > 0x0D ) ? ( data[ pd + 0x0B ] & 0x0F ) * 0x100 + data[ pd + 0x0D ] : 0;
-        dialog.leadInOff.setText( dialog.leadInStyle.getSelectedIndex() > 0 && t > 0 ? Integer.toString( 4 * t ) : "" );
+        dialog.leadInOff.setText( dialog.leadInStyle.getSelectedIndex() > 0 && t > 0 ? "" + 4 * t : "" );
         t = ( pdCount > 9 ) ? hex.get( pd + 8 )- 10 : 0; 
-        dialog.leadOutOff.setText( t > 0 ? Integer.toString( 4 * t ) : "" );
+        dialog.leadOutOff.setText( t > 0 ? "" + 4 * t : "" );
         t = ( pdCount > 0x12 ) ? hex.get( pd + 0x11 )- 10 : 0;
-        dialog.altLeadOut.setText( dialog.useAltLeadOut.getSelectedIndex() == 1 && t > 0 ? Integer.toString( 4 * t ) : "" );
+        dialog.altLeadOut.setText( dialog.useAltLeadOut.getSelectedIndex() == 1 && t > 0 ? "" + 4 * t : "" );
       }
 
     }
@@ -672,7 +680,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       dialog.offAsTotal.setSelectedIndex( ( dataStyle == 4 && pfCount > 2 ) ? pf[ 2 ] & 1 : 0 );
       dialog.leadOutStyle.setSelectedIndex( ( pfCount > 1 ) ? ( dialog.offAsTotal.getSelectedIndex() == 1 ? 2 : ( pf[ 1 ] >> 5 ) & 2 ) + ( ( pf[ 1 ] >> 5 ) & 1 ) : 0 );
       
-      dialog.leadOutOff.setText( ( dataStyle == 3 ) ? getOFFtime34( 7, CommonData.leadinOFFoffsets34, dataStyle ) : ( pdCount > 8 && hex.get( pd + 7 ) > 0 ) ? Integer.toString( hex.get( pd + 7 ) * 4 - 40 ) : "" );
+      dialog.leadOutOff.setText( ( dataStyle == 3 ) ? getOFFtime34( 7, CommonData.leadinOFFoffsets34, dataStyle ) : ( pdCount > 8 && hex.get( pd + 7 ) > 0 ) ? "" + ( hex.get( pd + 7 ) * 4 - 40 ) : "" );
       
       dialog.useAltLeadOut.setSelectedIndex( ( pfCount > 2 && ( pf[ 1 ] & 4 ) == 4 && ( pf[ 2 ] & 8 ) == 0 && pdCount > 0x0F && hex.get( pd + 0x0E ) != hex.get( pd + 0x07 ) ) ? 1 : 0 );
       dialog.altLeadOut.setText( ( dialog.useAltLeadOut.getSelectedIndex() == 1  ) ? getOFFtime34( 0x0E, CommonData.altLeadoutOffsets34, dataStyle ) : "" );
@@ -840,7 +848,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     else if ( pfCount > 2 && ( pf[ 2 ] & 0x7C ) == 0x40 )
     {
       int t = ( data[ pd + pdIndex1 ] + 255 ) % 256 + 1;
-      return Integer.toString( 3 * t + 2 );
+      return "" + ( 3 * t + 2 );
     }
     else
     {
@@ -849,7 +857,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       {
         t += ( ( data[ pd + pdIndex2 ] + 255 ) % 256 ) * 256;
       }
-      return Integer.toString( burstUnit * t / 1000 );
+      return "" + burstUnit * t / 1000;
     }
   }
 
@@ -865,7 +873,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       int t = ( data[ pd + pdIndex + 1 ] + 255 ) % 256;
       t += ( ( data[ pd + pdIndex ] + 255 ) % 256 ) * ( ( dataStyle == 3 ) ? 257 : 257.5 );
       t = ( dataStyle == 3 ) ? 3 * t + offsets[ 0 ] : 2 * t + offsets[ 1 ];
-      return Integer.toString( t );
+      return "" + t;
     }
   }
 }
