@@ -303,7 +303,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
           String line = rdr.readLine();
           rdr.reset();
 
-          if ( line.startsWith( "Upgrade Code" ) )
+          if ( line.toUpperCase().startsWith( "UPGRADE CODE" ) )
           {
             ImportRawUpgradeDialog dialog = new ImportRawUpgradeDialog( this, deviceUpgrade );
             dialog.setRemote( deviceUpgrade.getRemote() );
