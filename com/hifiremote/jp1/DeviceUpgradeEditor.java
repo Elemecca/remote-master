@@ -55,20 +55,22 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         toFront();
       }
     };
-    
+
     // Check consistency of device upgrade
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
     String proc = remote.getProcessor().getEquivalentName();
     Hex pCode = p.getCode( remote );
-    if ( pCode != null && pCode.length() > 4 && ( p.getFixedDataLength() != Protocol.getFixedDataLengthFromCode( proc, pCode )
-        || p.getDefaultCmd().length() != Protocol.getCmdLengthFromCode( proc, pCode ) ) )
+    if ( pCode != null
+        && pCode.length() > 4
+        && ( p.getFixedDataLength() != Protocol.getFixedDataLengthFromCode( proc, pCode ) || p.getDefaultCmd().length() != Protocol
+            .getCmdLengthFromCode( proc, pCode ) ) )
     {
       String title = "Device Upgrade Editor";
       String message = "The code of the protocol for this device upgrade is not consistent\n"
-                     + "with the protocol default parameters, so the device upgrade cannot\n"
-                     + "be edited.  You need to edit the protocol code to correct this, before\n"
-                     + "you can edit the device upgrade";
+          + "with the protocol default parameters, so the device upgrade cannot\n"
+          + "be edited.  You need to edit the protocol code to correct this, before\n"
+          + "you can edit the device upgrade";
       JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
       return;
     }
@@ -115,8 +117,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     buttonBox.add( Box.createHorizontalStrut( 5 ) );
     buttonBox.add( cancelButton );
 
-    loadButton.setToolTipText( "Load a device upgrade from a file." );
-    importButton.setToolTipText( "Load a device upgrade from the clipboard." );
+    loadButton.setToolTipText( "Open a (RM or KM) device upgrade file." );
+    importButton.setToolTipText( "Paste a (RM, KM or IR) device upgrade from the clipboard." );
     saveAsButton.setToolTipText( "Save the device upgrade to a file." );
     okButton.setToolTipText( "Commit any changes and dismiss the dialog." );
     cancelButton.setToolTipText( "Dismiss the dialog without commiting changes." );
@@ -292,12 +294,28 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
         {
           String s = ( String )clipData.getTransferData( DataFlavor.stringFlavor );
-          BufferedReader in = new BufferedReader( new StringReader( s ) );
+          BufferedReader rdr = new BufferedReader( new StringReader( s ) );
           DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
           Remote remote = deviceUpgrade.getRemote();
           deviceUpgrade.reset();
-          deviceUpgrade.load( in );
-          deviceUpgrade.setRemote( remote );
+
+          rdr.mark( 160 );
+          String line = rdr.readLine();
+          rdr.reset();
+
+          if ( line.startsWith( "Upgrade Code" ) )
+          {
+            ImportRawUpgradeDialog dialog = new ImportRawUpgradeDialog( this, deviceUpgrade );
+            dialog.setRemote( deviceUpgrade.getRemote() );
+            dialog.load( rdr );
+            rdr.close();
+            dialog.setVisible( true );
+          }
+          else
+          {
+            deviceUpgrade.load( rdr );
+            deviceUpgrade.setRemote( remote );
+          }
           editorPanel.refresh();
         }
       }
@@ -368,13 +386,13 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
   private DeviceEditorPanel editorPanel = null;
 
   /** The load button. */
-  private JButton loadButton = new JButton( "Load" );
+  private JButton loadButton = new JButton( "Open" );
 
   /** The import button. */
-  private JButton importButton = new JButton( "Import" );
+  private JButton importButton = new JButton( "Paste" );
 
   /** The save as button. */
-  private JButton saveAsButton = new JButton( "Save" );
+  private JButton saveAsButton = new JButton( "Save as..." );
 
   /** The ok button. */
   private JButton okButton = new JButton( "OK" );

@@ -36,6 +36,10 @@ Changes for v2.02
 - Add button to hide/show upper left panel of Manual Settings, to make more space available for protocol data panel (Graham)
 - Add register addresses to pf and pd annotations in disassembly comments column (Graham)
 - Add a third tab, "PF Details", in Manual Settings to show interpretation of PF bytes bit by bit, for S3C80 and HCS08 only (Graham)
+- In the device upgrade editor:
+  - Rename the Load button to Open, changed the mouse-over text to "Open a (RM or KM) device upgrade file."
+  - Rename the Import button to Paste, changed the mouse-over help to "Paste a (RM, KM or IR) device upgrade from the clipboard.", enhanced to accept IR-formatted upgrades containing Device Upgrade and Protocol Upgrade text
+  - Rename the Save button to "Save as..." 
 
 Changes for v2.01
 -- Alpha --

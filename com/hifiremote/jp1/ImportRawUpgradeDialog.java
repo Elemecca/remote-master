@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.text.ParseException;
 import java.util.Collection;
 
@@ -26,16 +27,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ImportRawUpgradeDialog.
  */
-public class ImportRawUpgradeDialog extends JDialog implements ActionListener, DocumentListener,
-    ItemListener
+public class ImportRawUpgradeDialog extends JDialog implements ActionListener, DocumentListener, ItemListener
 {
 
   /**
@@ -84,8 +85,13 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     double pr = TableLayout.PREFERRED;
     double size[][] =
     {
-    { b, pr, c, pr, b }, // cols
-        { b, pr, b, pr, b, pr, b, pr, pr, b, pr, pr, b, pr, b } // rows
+        {
+            b, pr, c, pr, b
+        }, // cols
+        {
+            b, pr, b, pr, b, pr, b, pr, b, pr, pr, b, pr, pr, b, pr, b
+        }
+    // rows
     };
     TableLayout tl = new TableLayout( size );
     JPanel mainPanel = new JPanel( tl );
@@ -98,11 +104,21 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     remoteList = new JComboBox( remotes.toArray() );
     label.setLabelFor( remoteList );
     remoteList.setSelectedItem( deviceUpgrade.getRemote() );
-    remoteList.addActionListener( this );
+    remoteList.addItemListener( this );
     mainPanel.add( remoteList, "3, 1" );
 
-    label = new JLabel( "Device Type:" );
+    label = new JLabel( "Setup code:" );
     mainPanel.add( label, "1, 3" );
+
+    setupCode = new JTextField();
+    label.setLabelFor( setupCode );
+    SetupCodeFilter filter = new SetupCodeFilter( setupCode );
+    ( ( AbstractDocument )setupCode.getDocument() ).setDocumentFilter( filter );
+
+    mainPanel.add( setupCode, "3, 3" );
+
+    label = new JLabel( "Device Type:" );
+    mainPanel.add( label, "1, 5" );
 
     String[] aliasNames = deviceUpgrade.getRemote().getDeviceTypeAliasNames();
     String alias = deviceUpgrade.getDeviceTypeAliasName();
@@ -111,28 +127,28 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     label.setLabelFor( deviceTypeList );
     deviceTypeList.setMaximumRowCount( aliasNames.length );
     deviceTypeList.setSelectedItem( alias );
-    mainPanel.add( deviceTypeList, "3, 3" );
+    mainPanel.add( deviceTypeList, "3, 5" );
 
     protocolGreaterThanFF = new JCheckBox( "Protocol > FF" );
     protocolGreaterThanFF.addItemListener( this );
-    mainPanel.add( protocolGreaterThanFF, "3, 5" );
+    mainPanel.add( protocolGreaterThanFF, "3, 7" );
     protocolGreaterThanFF.setVisible( !deviceUpgrade.getRemote().usesTwoBytePID() );
 
     label = new JLabel( "Upgrade Code:" );
-    mainPanel.add( label, "1, 7, 3, 7" );
+    mainPanel.add( label, "1, 9, 3, 9" );
     upgradeCode = new JTextArea( 10, 40 );
     upgradeCode.getDocument().addDocumentListener( this );
     new TextPopupMenu( upgradeCode );
     label.setLabelFor( upgradeCode );
-    mainPanel.add( new JScrollPane( upgradeCode ), "1, 8, 3, 8" );
+    mainPanel.add( new JScrollPane( upgradeCode ), "1, 10, 3, 10" );
 
     protocolLabel = new JLabel( "Protocol Code:" );
-    mainPanel.add( protocolLabel, "1, 10, 3, 10" );
+    mainPanel.add( protocolLabel, "1, 12, 3, 12" );
     protocolCode = new JTextArea( 10, 40 );
     protocolCode.getDocument().addDocumentListener( this );
     new TextPopupMenu( protocolCode );
     protocolLabel.setLabelFor( protocolCode );
-    mainPanel.add( new JScrollPane( protocolCode ), "1, 11, 3, 11" );
+    mainPanel.add( new JScrollPane( protocolCode ), "1, 13, 3, 13" );
 
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
 
@@ -147,13 +163,74 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     cancel.addActionListener( this );
     buttonPanel.add( cancel );
 
-    mainPanel.add( buttonPanel, "1, 13, 3, 13" );
+    mainPanel.add( buttonPanel, "1, 15, 3, 15" );
 
     pack();
     Rectangle rect = getBounds();
     int x = rect.x - rect.width / 2;
     int y = rect.y - rect.height / 2;
     setLocation( x, y );
+  }
+
+  public void setRemote( Remote remote )
+  {
+    remoteList.setSelectedItem( remote );
+  }
+
+  public void load( BufferedReader rdr )
+  {
+    try
+    {
+      String line = "";
+      while ( line != null && line.equals( "" ) )
+      {
+        line = rdr.readLine();
+      }
+
+      String[] tokens = line.split( "[=(/)]" );
+
+      String deviceTypeName = tokens[ 2 ];
+      deviceTypeList.setSelectedItem( deviceTypeName );
+
+      setupCode.setText( tokens[ 3 ] );
+
+      StringBuilder sb = new StringBuilder();
+      while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
+      {
+        sb.append( line );
+      }
+      upgradeCode.setText( sb.toString() );
+
+      line = rdr.readLine();
+
+      while ( line != null && line.equals( "" ) )
+      {
+        line = rdr.readLine();
+      }
+
+      if ( line != null && line.toUpperCase().startsWith( "UPGRADE PROTOCOL" ) )
+      {
+        tokens = line.split( "[=()]" );
+        Hex pid = new Hex( tokens[ 1 ] );
+        protocolGreaterThanFF.setSelected( pid.get( 0 ) > 255 );
+
+        sb.setLength( 0 );
+        while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
+        {
+          if ( sb.length() > 0 )
+          {
+            sb.append( '\n' );
+          }
+          sb.append( line );
+        }
+        protocolCode.setText( sb.toString() );
+      }
+      validateInput();
+    }
+    catch ( Exception ex )
+    {
+      JOptionPane.showMessageDialog( this, ex.getMessage(), "Error parsing clipboard data", JOptionPane.ERROR_MESSAGE );
+    }
   }
 
   /*
@@ -164,37 +241,28 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
-    if ( source == remoteList )
-    {
-      try
-      {
-        Remote remote = ( Remote ) remoteList.getSelectedItem();
-        remote.load();
-        String[] aliasNames = remote.getDeviceTypeAliasNames();
-        String alias = deviceUpgrade.getDeviceTypeAliasName();
-        deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ) );
-        deviceTypeList.setMaximumRowCount( aliasNames.length );
-        deviceTypeList.setSelectedItem( alias );
-        protocolGreaterThanFF.setVisible( !remote.usesTwoBytePID() );
-        validateInput();
-      }
-      catch ( Exception ex )
-      {
-        ex.printStackTrace( System.err );
-      }
-    }
-    else if ( source == ok )
+    if ( source == ok )
     {
       setVisible( false );
       try
       {
-        deviceUpgrade.importRawUpgrade( uCode, ( Remote ) remoteList.getSelectedItem(),
-            ( String ) deviceTypeList.getSelectedItem(), pid, pCode );
+        deviceUpgrade.importRawUpgrade( uCode, ( Remote )remoteList.getSelectedItem(),
+            ( String )deviceTypeList.getSelectedItem(), pid, pCode );
+        if ( !setupCode.getText().equals( "" ) )
+        {
+          try
+          {
+            deviceUpgrade.setSetupCode( Integer.parseInt( setupCode.getText() ) );
+          }
+          catch ( NumberFormatException ex )
+          {
+
+          }
+        }
       }
       catch ( ParseException pe )
       {
-        JOptionPane.showMessageDialog( this, pe.getMessage(), "Import Error",
-            JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( this, pe.getMessage(), "Import Error", JOptionPane.ERROR_MESSAGE );
       }
       dispose();
     }
@@ -219,7 +287,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
       return;
     }
 
-    Remote remote = ( Remote ) remoteList.getSelectedItem();
+    Remote remote = ( Remote )remoteList.getSelectedItem();
     if ( remote.usesTwoBytePID() )
     {
       pid = new Hex( uCode, 0, 2 );
@@ -227,7 +295,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     else
     {
       short[] temp = new short[ 2 ];
-      temp[ 0 ] = ( short ) ( protocolGreaterThanFF.isSelected() ? 1 : 0 );
+      temp[ 0 ] = ( short )( protocolGreaterThanFF.isSelected() ? 1 : 0 );
       temp[ 1 ] = uCode.getData()[ 0 ];
       pid = new Hex( temp );
     }
@@ -344,7 +412,33 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
    */
   public void itemStateChanged( ItemEvent e )
   {
-    validateInput();
+    if ( e.getSource() == remoteList )
+    {
+      try
+      {
+        if ( e.getStateChange() == ItemEvent.SELECTED )
+        {
+          Remote remote = ( Remote )e.getItem();
+          remote.load();
+          String[] aliasNames = remote.getDeviceTypeAliasNames();
+          String alias = deviceUpgrade.getDeviceTypeAliasName();
+          deviceTypeList.setModel( new DefaultComboBoxModel( aliasNames ) );
+          deviceTypeList.setMaximumRowCount( aliasNames.length );
+          deviceTypeList.setSelectedItem( alias );
+          protocolGreaterThanFF.setVisible( !remote.usesTwoBytePID() );
+          validateInput();
+        }
+      }
+      catch ( Exception ex )
+      {
+        ex.printStackTrace( System.err );
+      }
+
+    }
+    else
+    {
+      validateInput();
+    }
   }
 
   /** The device upgrade. */
@@ -352,6 +446,8 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
 
   /** The remote list. */
   private JComboBox remoteList = null;
+
+  private JTextField setupCode = null;
 
   /** The device type list. */
   private JComboBox deviceTypeList = null;
