@@ -1,18 +1,12 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -118,7 +112,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     buttonBox.add( cancelButton );
 
     loadButton.setToolTipText( "Open a (RM or KM) device upgrade file." );
-    importButton.setToolTipText( "Paste a (RM, KM or IR) device upgrade from the clipboard." );
+    importButton.setToolTipText( "Import a Raw (or IR-formatted) device upgrade from the clipboard." );
     saveAsButton.setToolTipText( "Save the device upgrade to a file." );
     okButton.setToolTipText( "Commit any changes and dismiss the dialog." );
     cancelButton.setToolTipText( "Dismiss the dialog without commiting changes." );
@@ -285,45 +279,10 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
    */
   public void importFromClipboard()
   {
-    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    Transferable clipData = clipboard.getContents( clipboard );
-    if ( clipData != null )
-    {
-      try
-      {
-        if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
-        {
-          String s = ( String )clipData.getTransferData( DataFlavor.stringFlavor );
-          BufferedReader rdr = new BufferedReader( new StringReader( s ) );
-          DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
-          Remote remote = deviceUpgrade.getRemote();
-          deviceUpgrade.reset();
-
-          rdr.mark( 160 );
-          String line = rdr.readLine();
-          rdr.reset();
-
-          if ( line.toUpperCase().startsWith( "UPGRADE CODE" ) )
-          {
-            ImportRawUpgradeDialog dialog = new ImportRawUpgradeDialog( this, deviceUpgrade );
-            dialog.setRemote( deviceUpgrade.getRemote() );
-            dialog.load( rdr );
-            rdr.close();
-            dialog.setVisible( true );
-          }
-          else
-          {
-            deviceUpgrade.load( rdr );
-            deviceUpgrade.setRemote( remote );
-          }
-          editorPanel.refresh();
-        }
-      }
-      catch ( Exception ex )
-      {
-        ex.printStackTrace( System.err );
-      }
-    }
+    DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
+    ImportRawUpgradeDialog dialog = new ImportRawUpgradeDialog( this, deviceUpgrade );
+    dialog.setVisible( true );
+    editorPanel.refresh();
   }
 
   /**
@@ -389,10 +348,10 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
   private JButton loadButton = new JButton( "Open" );
 
   /** The import button. */
-  private JButton importButton = new JButton( "Paste" );
+  private JButton importButton = new JButton( "Import Raw" );
 
   /** The save as button. */
-  private JButton saveAsButton = new JButton( "Save as..." );
+  private JButton saveAsButton = new JButton( "Save as" );
 
   /** The ok button. */
   private JButton okButton = new JButton( "OK" );

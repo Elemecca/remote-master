@@ -7,12 +7,17 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.util.Collection;
 
@@ -28,17 +33,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 /**
  * The Class ImportRawUpgradeDialog.
  */
 public class ImportRawUpgradeDialog extends JDialog implements ActionListener, DocumentListener, ItemListener
 {
-
   /**
    * Instantiates a new import raw upgrade dialog.
    * 
@@ -50,8 +56,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
   public ImportRawUpgradeDialog( JFrame owner, DeviceUpgrade deviceUpgrade )
   {
     super( owner, "Import Raw Upgrade", true );
-    this.deviceUpgrade = deviceUpgrade;
-    createGui( owner );
+    createGui( owner, deviceUpgrade );
   }
 
   /**
@@ -65,8 +70,26 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
   public ImportRawUpgradeDialog( JDialog owner, DeviceUpgrade deviceUpgrade )
   {
     super( owner, "Import Raw Upgrade", true );
-    this.deviceUpgrade = deviceUpgrade;
-    createGui( owner );
+    createGui( owner, deviceUpgrade );
+  }
+
+  private void prefillFromClipboard()
+  {
+    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    Transferable clipData = clipboard.getContents( clipboard );
+    if ( clipData != null && clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
+    {
+      try
+      {
+        String s = ( String )clipData.getTransferData( DataFlavor.stringFlavor );
+        loadUpgrade( s );
+      }
+      catch ( Exception ex )
+      {
+        ex.printStackTrace( System.err );
+      }
+    }
+
   }
 
   /**
@@ -75,8 +98,10 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
    * @param owner
    *          the owner
    */
-  private void createGui( Component owner )
+  private void createGui( Component owner, DeviceUpgrade deviceUpgrade )
   {
+    this.deviceUpgrade = deviceUpgrade;
+
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
 
@@ -170,6 +195,8 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     int x = rect.x - rect.width / 2;
     int y = rect.y - rect.height / 2;
     setLocation( x, y );
+
+    prefillFromClipboard();
   }
 
   public void setRemote( Remote remote )
@@ -177,44 +204,51 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     remoteList.setSelectedItem( remote );
   }
 
-  public void load( BufferedReader rdr )
+  private boolean loadUpgrade( String text )
   {
+    boolean rc = false;
     try
     {
+      BufferedReader rdr = new BufferedReader( new StringReader( text ) );
       String line = "";
       while ( line != null && line.equals( "" ) )
       {
         line = rdr.readLine();
       }
 
-      String[] tokens = line.split( "[=(/)]" );
-
-      String deviceTypeName = tokens[ 2 ];
-      deviceTypeList.setSelectedItem( deviceTypeName );
-
-      setupCode.setText( tokens[ 3 ] );
-
-      StringBuilder sb = new StringBuilder();
-      while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
+      if ( line.toUpperCase().startsWith( "UPGRADE CODE" ) )
       {
-        sb.append( line );
-      }
-      upgradeCode.setText( sb.toString() );
+        rc = true;
+        String[] tokens = line.split( "[=(/)]" );
 
-      line = rdr.readLine();
+        String deviceTypeName = tokens[ 2 ];
+        deviceTypeList.setSelectedItem( deviceTypeName );
 
-      while ( line != null && line.equals( "" ) )
-      {
+        setupCode.setText( tokens[ 3 ] );
+
+        StringBuilder sb = new StringBuilder();
+        while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
+        {
+          sb.append( line );
+        }
+
+        SwingUtilities.invokeLater( new TextUpdater( upgradeCode, sb.toString() ) );
+
         line = rdr.readLine();
+        while ( line != null && line.equals( "" ) )
+        {
+          line = rdr.readLine();
+        }
       }
 
       if ( line != null && line.toUpperCase().startsWith( "UPGRADE PROTOCOL" ) )
       {
-        tokens = line.split( "[=()]" );
+        rc = true;
+        String[] tokens = line.split( "[=()]" );
         Hex pid = new Hex( tokens[ 1 ] );
         protocolGreaterThanFF.setSelected( pid.get( 0 ) > 255 );
 
-        sb.setLength( 0 );
+        StringBuilder sb = new StringBuilder();
         while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
         {
           if ( sb.length() > 0 )
@@ -223,14 +257,16 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
           }
           sb.append( line );
         }
-        protocolCode.setText( sb.toString() );
+        SwingUtilities.invokeLater( new TextUpdater( protocolCode, sb.toString() ) );
       }
-      validateInput();
+
+      return rc;
     }
     catch ( Exception ex )
     {
       JOptionPane.showMessageDialog( this, ex.getMessage(), "Error parsing clipboard data", JOptionPane.ERROR_MESSAGE );
     }
+    return false;
   }
 
   /*
@@ -342,13 +378,16 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
       }
       else
       {
-        try
+        if ( !loadUpgrade( text ) )
         {
-          uCode = new Hex( text );
-        }
-        catch ( Exception ex )
-        {
-          uCode = null;
+          try
+          {
+            uCode = new Hex( text );
+          }
+          catch ( Exception ex )
+          {
+            uCode = null;
+          }
         }
       }
     }
@@ -360,16 +399,21 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
         pCode = null;
       }
       else
-        try
+      {
+        if ( !loadUpgrade( text ) )
         {
-          pCode = new Hex( text );
-          if ( pCode.length() < 3 )
+          try
+          {
+            pCode = new Hex( text );
+            if ( pCode.length() < 3 )
+              pCode = null;
+          }
+          catch ( Exception ex )
+          {
             pCode = null;
+          }
         }
-        catch ( Exception ex )
-        {
-          pCode = null;
-        }
+      }
     }
     validateInput();
   }
@@ -478,4 +522,21 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
 
   /** The cancel. */
   private JButton cancel = null;
+
+  public class TextUpdater implements Runnable
+  {
+    private JTextComponent component;
+    private String text;
+
+    public TextUpdater( JTextComponent component, String text )
+    {
+      this.component = component;
+      this.text = text;
+    }
+
+    public void run()
+    {
+      component.setText( text );
+    }
+  }
 }
