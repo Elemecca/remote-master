@@ -28,7 +28,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   
   private static final String[] colPrototypeNames =
   {
-      "0000", "00 00 00 00", "XMITIR_", "AAAAA", "DCBUF+1, DCBUF+2_", "99.999kHz, 99.99%_"
+      "0000", "00 00 00 00", "XMITIR_", "AAAAA", "DCBUF+1, DCBUF+2_", "Carrier OFF: 99.999 uSec"
   };
   
   public AssemblerTableModel()
@@ -109,6 +109,14 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     hex = protocol.getCode( processor );
     List< Integer > labelAddresses = new ArrayList< Integer >();
     Arrays.fill( dialog.getPfValues(), null );
+    Arrays.fill( dialog.getPdValues(), null );
+    dialog.setDataStyle( processor.getDataStyle() );
+    dialog.setProcessor( processor );
+    
+    List< Integer > absUsed = new ArrayList< Integer >();
+    List< Integer > zeroUsed = new ArrayList< Integer >();
+    dialog.setAbsUsed( absUsed );
+    dialog.setZeroUsed( zeroUsed );
 
     if ( hex != null )
     {
@@ -158,8 +166,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       
       boolean used[] = new boolean[ labelAddresses.size() ];
       Arrays.fill( used, false );
-      List< Integer > absUsed = new ArrayList< Integer >();
-      List< Integer > zeroUsed = new ArrayList< Integer >();
+      
    
       state.index = processor.getStartOffset();
       
@@ -226,25 +233,26 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
             }
           }
           
-          if ( dialog.useAddressConstants.isSelected() )
+
+          // Replace absolute addresses by labels where they exist
+          for ( int i = 0; ( mode.absMap >> i ) != 0; i++ )
           {
-            // Replace absolute addresses by labels where they exist
-            for ( int i = 0; ( mode.absMap >> i ) != 0; i++ )
+            if ( ( ( mode.absMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
             {
-              if ( ( ( mode.absMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
+              int argIndex = nibbleArgs + i;
+              int[][] formatStarts = getFormatStarts( format );
+              boolean littleEndian = ( formatStarts[ argIndex ][ 0 ] > formatStarts[ argIndex + 1 ][ 0 ] );
+              int n = ( ( Integer )obj[ argIndex ] ) * ( littleEndian ? 1 : 0x100 );
+              n += ( ( Integer )obj[ argIndex + 1 ] ) * ( littleEndian ? 0x100 : 1 );
+              String label = processor.getAbsLabels().get( n );
+              if ( label != null )
               {
-                int argIndex = nibbleArgs + i;
-                int[][] formatStarts = getFormatStarts( format );
-                boolean littleEndian = ( formatStarts[ argIndex ][ 0 ] > formatStarts[ argIndex + 1 ][ 0 ] );
-                int n = ( ( Integer )obj[ argIndex ] ) * ( littleEndian ? 1 : 0x100 );
-                n += ( ( Integer )obj[ argIndex + 1 ] ) * ( littleEndian ? 0x100 : 1 );
-                String label = processor.getAbsLabels().get( n );
-                if ( label != null )
+                if ( !absUsed.contains( n ) )
                 {
-                  if ( !absUsed.contains( n ) )
-                  {
-                    absUsed.add( n );
-                  }
+                  absUsed.add( n );
+                }
+                if ( dialog.useFunctionConstants.isSelected() )
+                {
                   format = formatForLabel( format, argIndex, true );
                   obj[ argIndex ] = label;
                   obj[ argIndex + 1 ] = "";
@@ -252,22 +260,19 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
               }
             }
           }
-          
-          if ( dialog.useRegisterConstants.isSelected() )
+
+          // Replace zero-page or register addresses by labels where they exist
+          for ( int i = 0; ( mode.zeroMap >> i ) != 0; i++ )
           {
-            // Replace zero-page or register addresses by labels where they exist
-            for ( int i = 0; ( mode.zeroMap >> i ) != 0; i++ )
+            if ( ( ( mode.zeroMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
             {
-              if ( ( ( mode.zeroMap >> i ) & 1 ) == 1 && nibbleArgs + i < argCount )
+              int argIndex = nibbleArgs + i;
+              int n = ( Integer )obj[ argIndex ];
+              String label = getZeroLabel( processor, n, zeroUsed );
+              if ( label != null && dialog.useRegisterConstants.isSelected() )
               {
-                int argIndex = nibbleArgs + i;
-                int n = ( Integer )obj[ argIndex ];
-                String label = getZeroLabel( processor, n, zeroUsed );
-                if ( label != null )
-                {
-                  format = formatForLabel( format, argIndex, false );
-                  obj[ argIndex ] = label;
-                }
+                format = formatForLabel( format, argIndex, false );
+                obj[ argIndex ] = label;
               }
             }
           }
@@ -355,35 +360,41 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       }
       // Create EQU statements for any used absolute address labels
       Collections.sort( absUsed );
-      for ( int i = absUsed.size() - 1; i >= 0; i-- )
+      if ( dialog.useFunctionConstants.isSelected() )
       {
-        AssemblerItem item = new AssemblerItem();
-        item.setLabel( processor.getAbsLabels().get( absUsed.get( i ) ) + ":" );
-        item.setOperation( "EQU" );
-        String format = processor.getAddressModes().get( "EQU4" ).format;
-        item.setArgumentText( String.format( format, absUsed.get( i ) ) );
-        itemList.add( 0, item );
+        for ( int i = absUsed.size() - 1; i >= 0; i-- )
+        {
+          AssemblerItem item = new AssemblerItem();
+          item.setLabel( processor.getAbsLabels().get( absUsed.get( i ) ) + ":" );
+          item.setOperation( "EQU" );
+          String format = processor.getAddressModes().get( "EQU4" ).format;
+          item.setArgumentText( String.format( format, absUsed.get( i ) ) );
+          itemList.add( 0, item );
+        }
       }
+
       // Create EQU statements for any used zero-page or register address labels
       Collections.sort( zeroUsed );
-      for ( int i = zeroUsed.size() - 1; i >= 0; i-- )
+      if ( dialog.useRegisterConstants.isSelected() )
       {
-        AssemblerItem item = new AssemblerItem();
-        item.setLabel( getZeroLabel( processor, zeroUsed.get( i ), null ) + ":" );
-        item.setOperation( "EQU" );
-        String format = null;
-        if ( processor.getAddressModes().get( "EQUR" ) == null )
+        for ( int i = zeroUsed.size() - 1; i >= 0; i-- )
         {
-          format = processor.getAddressModes().get( "EQU2" ).format;
+          AssemblerItem item = new AssemblerItem();
+          item.setLabel( getZeroLabel( processor, zeroUsed.get( i ), null ) + ":" );
+          item.setOperation( "EQU" );
+          String format = null;
+          if ( processor.getAddressModes().get( "EQUR" ) == null )
+          {
+            format = processor.getAddressModes().get( "EQU2" ).format;
+          }
+          else
+          {
+            format = processor.getAddressModes().get( "EQUR" ).format;
+          }  
+          item.setArgumentText( String.format( format, zeroUsed.get( i ) ) );
+          itemList.add( 0, item );
         }
-        else
-        {
-          format = processor.getAddressModes().get( "EQUR" ).format;
-        }  
-        item.setArgumentText( String.format( format, zeroUsed.get( i ) ) );
-        itemList.add( 0, item );
       }
-      
     }
     fireTableDataChanged();
   }
@@ -400,30 +411,34 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       int n = Math.min( 4, end - i );
       String comments = null;
       String rp = p.getRegisterPrefix();
-      if ( ( i == 0 && p.getStartOffset() == 3 || i == 2 && p.getStartOffset() == 0 ) && i < end - 1 )
-      {
-        n = 2;
-        String val = getFrequency( p, data[ i ], data[ i + 1 ] );
-        comments = val;
-        dialog.frequency.setText( val );
-        
-        if ( data[ i ] > 0 && data[ i + 1 ] > 0 )
-        {
-          val = getDutyCycle( p, data[ i ], data[ i + 1 ] );
-          comments += "kHz, " + val + "%";
-          dialog.dutyCycle.setText( val );
-        }
-        else
-        {
-          dialog.dutyCycle.setText( null );
-        }
-      }
-      else if ( ( i == 2 && p.getStartOffset() == 3 || i == 4 && p.getStartOffset() == 0 ) )
+      if ( i < 5 )
       {
         n = 1;
-        comments = "dev " + ( data[ i ] >> 4 ) + ", cmd " + ( data[ i ] & 0x0F ) + " bytes";
-        dialog.devBytes.setSelectedIndex( data[ i ] >> 4 );
-        dialog.cmdBytes.setSelectedIndex( data[ i ] & 0x0F );
+        double time = 0;
+        switch ( i - ( p.getStartOffset() == 0 ? 2 : 0 ) )
+        {
+          case 0:
+            time = ( data[ i ] + p.getCarrierOnOffset() ) * 1000000.0 / p.getOscillatorFreq();
+            comments = "Carrier ON: " + String.format( "%.3f", time ) + "uSec";
+            if ( i < end - 1 )
+            {
+              dialog.frequency.setText( getFrequency( p, data[ i ], data[ i + 1 ] ) );
+              if ( data[ i ] > 0 && data[ i + 1 ] > 0 )
+              {
+                dialog.dutyCycle.setText( getDutyCycle( p, data[ i ], data[ i + 1 ] ) );
+              }
+            }
+            break;
+          case 1:
+            time = ( data[ i ] + p.getCarrierTotalOffset() - p.getCarrierOnOffset() ) * 1000000.0 / p.getOscillatorFreq();
+            comments = "Carrier OFF: " + String.format( "%.3f", time ) + "uSec";
+            break;
+          case 2:
+            comments = "dev " + ( data[ i ] >> 4 ) + ", cmd " + ( data[ i ] & 0x0F ) + " bytes";
+            dialog.devBytes.setSelectedIndex( data[ i ] >> 4 );
+            dialog.cmdBytes.setSelectedIndex( data[ i ] & 0x0F );
+            break;
+        }
       }
       else if ( i == pfIndex )
       {
@@ -448,7 +463,9 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       {
         int val = i - pfIndex - 1;
         int za = p.getZeroAddresses().get( "PD00" );
-        if ( /* pdIndex <= pfIndex + 2 ||*/ i == pfIndex + p.getZeroSizes().get( "PD00" ) )
+        int pdLimit = dialog.getPdValues().length;
+        if ( val < pdLimit ) dialog.getPdValues()[ val ] = ( int )data[ i ];
+        if ( i == pfIndex + p.getZeroSizes().get( "PD00" ) )
         {
           n = 1;
           comments = String.format( "pd%02X: %s%02X", val, rp, za + val );
@@ -458,6 +475,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
           n = 2;
           item.setOperation( "DW" );
           comments = String.format( "pd%02X/pd%02X: %s%02X/%s%02X", val, val + 1, rp, za + val, rp, za + val + 1 );
+          if ( val < pdLimit - 1 ) dialog.getPdValues()[ val + 1 ] = ( int )data[ i + 1 ];
         }
         pdIndex += n;
         if ( pdIndex > pfIndex + p.getZeroSizes().get( "PD00" ) )
@@ -550,17 +568,17 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       dialog.populateComboBox( dialog.rptType, CommonData.repeatType012 );
       dialog.populateComboBox( dialog.rptHold, CommonData.repeatHeld012 );
       
-      dialog.devBits1.setSelectedIndex( ( pdCount > 0 ) ? data[ pd + 0 ] : 0 );
-      dialog.cmdBits1.setSelectedIndex( ( pdCount > 1 ) ? data[ pd + 1 ] : 0 );
+      dialog.devBits1.setSelectedIndex( ( pdCount > 0 && data[ pd + 0 ] <= 8 ) ? data[ pd + 0 ] : 0 );
+      dialog.cmdBits1.setSelectedIndex( ( pdCount > 1 && data[ pd + 1 ] <= 8 ) ? data[ pd + 1 ] : 0 );
       if ( dialog.devBits2.isEnabled() )
       {
         int n = ( dataStyle < 2 ) ? 0x10 : 0x0E;
-        dialog.devBits2.setSelectedIndex( ( pdCount > n ) ? data[ pd + n ] : 0 );
+        dialog.devBits2.setSelectedIndex( ( pdCount > n && data[ pd + n ] <= 8 ) ? data[ pd + n ] : 0 );
       }
       if ( dialog.cmdBits2.isEnabled() )
       {
         int n = ( dataStyle < 2 ) ? 0x12 : 0x10;
-        dialog.cmdBits2.setSelectedIndex( ( pdCount > n ) ? data[ pd + n ] : 0 );
+        dialog.cmdBits2.setSelectedIndex( ( pdCount > n && data[ pd + n ] <= 8 ) ? data[ pd + n ] : 0 );
       }
       dialog.sigStruct.setSelectedIndex( ( pf[ 0 ] >> 4 ) & 0x03 );
       dialog.devBitDbl.setSelectedIndex( ( pfCount > 2 ) ? pf[ 2 ] & 3 : 0 );

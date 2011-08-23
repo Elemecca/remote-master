@@ -333,12 +333,18 @@ public abstract class Processor
     return absLabels;
   }
 
+  public LinkedHashMap< String, Integer > getAbsAddresses()
+  {
+    return absAddresses;
+  }
+
   public void setAbsLabels( String[][] labelArray )
   {
     absLabels.clear();
     for ( int i = 0; i < labelArray.length; i++ )
     {
       absLabels.put( Integer.parseInt( labelArray[ i ][ 1 ], 16 ), labelArray[ i ][ 0 ] );
+      absAddresses.put( labelArray[ i ][ 0 ], Integer.parseInt( labelArray[ i ][ 1 ], 16 ) );
     }
   }
   
@@ -515,6 +521,8 @@ public abstract class Processor
   private LinkedHashMap< String, AddressMode > addressModes = new LinkedHashMap< String, AddressMode >();
   
   private LinkedHashMap< Integer, String > absLabels = new LinkedHashMap< Integer, String >();
+  
+  private LinkedHashMap< String, Integer > absAddresses = new LinkedHashMap< String, Integer >();
   
   private LinkedHashMap< Integer, String[] > zeroLabels = new LinkedHashMap< Integer, String[] >();
   

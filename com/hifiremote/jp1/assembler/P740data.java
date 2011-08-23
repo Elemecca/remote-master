@@ -175,7 +175,7 @@ public class P740data
   
   public static final String[][] absLabels = {
     { "XmitIR", "FF00" },
-    { "Rpt_KeyDownCheck", "FF06" }
+    { "TestRptReqd", "FF06" }
   };
   
   public static final String[][] zeroLabels = {

@@ -43,6 +43,10 @@ Changes for v2.02
 -- Alpha 10a
 - Change the Paste to simply pop up the Import Raw Upgrade dialog. so change the text to "Import Raw".    
 - The Import Raw Upgrade dialog will prefill its fields if it finds an IR formatted upgrade in the clipboard.  Pasting an IR formatted upgrade into either the device or protocol code fields will parse the upgrade and update the appropriate fields in the dialog.
+-- Alpha 11
+- Add a fourth tab, "PD Details", in Manual Settings to show normal usage of PD bytes, for S3C80 and HCS08 only (Graham)
+- Add a fifth tab, "Functions", in Manual Settings to provide descriptions of register and function addresses specified as predefined constants (Graham)
+- Fix bug in RM (only) preventing Cancel button in Prompt to Save from working correctly (Graham)
 
 Changes for v2.01
 -- Alpha --

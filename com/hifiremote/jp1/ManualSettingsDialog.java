@@ -23,6 +23,8 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -144,7 +146,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     leftPanel.addComponentListener( new ComponentAdapter() {
       public void componentResized(ComponentEvent e)
       { 
-        setPFPanel(); 
+        setPFPanel();
+        setPDPanel();
+        setFunctionPanel();
       } 
     } );
 
@@ -345,7 +349,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     
     for ( int i = 0; i < dataComponents.length; i++ )
     {
-      if ( dataComponents[ i ][ 0 ] != null )
+      if ( dataComponents[ i ] != null )
       {
         if ( dataComponents[ i ].length > 1 )
         {
@@ -355,12 +359,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           label = new JLabel();
         }
-        label.setText( dataLabels[ i ] );
-        mainPanel.add( label, "1, " + i );
-        mainPanel.add( dataComponents[ i ][ 0 ], "3, " + i );
-        if ( i < dataSuffixes.length && dataSuffixes[ i ] != null )
+        label.setText( dataLabels[ i ][ 0 ] );
+        mainPanel.add( label, "1, " + ( i + 1 ) );
+        mainPanel.add( dataComponents[ i ][ 0 ], "3, " + ( i + 1 ) );
+        if ( dataLabels[ i ].length > 1 )
         {
-          mainPanel.add( new JLabel( dataSuffixes[ i ] ), "5, " + i );
+          mainPanel.add( new JLabel( dataLabels[ i ][ 1 ] ), "5, " + ( i + 1 ) );
         }
       }
     }
@@ -373,11 +377,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     pfMainPanel.add( pfScrollPane, BorderLayout.CENTER );
 
     JPanel headerPanel = new JPanel( new BorderLayout() );
+    headerPanel.setBorder( BorderFactory.createLineBorder( Color.GRAY ) );
     JPanel pfChoice = new JPanel( new GridLayout( 1, CommonData.pfData.length ) );
     headerPanel.add( pfChoice, BorderLayout.PAGE_START );
     String text = "Bits per byte, current protocol values starred";
     headerPanel.add( new JLabel( text, SwingConstants.CENTER ), BorderLayout.PAGE_END );
-    headerPanel.setBorder( BorderFactory.createLineBorder( Color.GRAY ) );
     pfMainPanel.add( headerPanel, BorderLayout.PAGE_START );
     ButtonGroup grp = new ButtonGroup();
     pfButtons = new JRadioButton[ CommonData.pfData.length ];
@@ -389,6 +393,31 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       pfChoice.add( pfButtons[ i ] );
       grp.add(  pfButtons[ i ] );
     }
+    
+    // PD Details tab of lower left panel (added to tabbed pane by valueChanged() when a protocol is selected)
+    pdMainPanel = new JPanel( new BorderLayout() );
+    pdPanel = new JPanel();
+    pdScrollPane = new JScrollPane( pdPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+    pdScrollPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    pdMainPanel.add( pdScrollPane, BorderLayout.CENTER );
+    pdHeaderPanel = new JPanel( new BorderLayout() );
+    pdMainPanel.add(  pdHeaderPanel, BorderLayout.PAGE_START );
+    int n = 0;
+    for ( int i = 0; i < CommonData.pdData.length; i++)
+    {
+      n += Integer.parseInt( CommonData.pdData[ i ][ 0 ] );
+    }
+    pdValues = new Integer[ n ];
+    
+    // Function tab of lower left panel (added to tabbed pane by valueChanged() when a protocol is selected)
+    fnMainPanel = new JPanel( new BorderLayout() );
+    fnPanel = new JPanel();
+    fnScrollPane = new JScrollPane( fnPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+    fnScrollPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    fnMainPanel.add( fnScrollPane, BorderLayout.CENTER );
+    fnHeaderPanel = new JPanel( new BorderLayout() );
+    fnMainPanel.add(  fnHeaderPanel, BorderLayout.PAGE_START );
+    tabbedPane.add( "Functions", fnMainPanel );
     
     // Disassembly on right pane   
     assemblerTable = new JP1Table( assemblerModel );
@@ -406,10 +435,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     rightPanel.add( optionsPanel, BorderLayout.PAGE_END );
     JPanel optionPanel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
     useRegisterConstants.addItemListener( this );
-    useAddressConstants.addItemListener( this );
+    useFunctionConstants.addItemListener( this );
     optionPanel.add( new JLabel( "Use predefined constants for: ") );
     optionPanel.add( useRegisterConstants );
-    optionPanel.add( useAddressConstants );
+    optionPanel.add( useFunctionConstants );
     optionsPanel.add( optionPanel );
     optionPanel = new JPanel( new GridLayout( 1, 4 ) );
     asCodeButton.addItemListener( this );
@@ -984,12 +1013,17 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   /** The cancel. */
   private JButton cancel = null;
   
+  private int dataStyle = 0;
+  private Processor processor = null;
+  private List< Integer > absUsed = null;
+  private List< Integer > zeroUsed = null;
+  
   public JCheckBox useRegisterConstants = new JCheckBox( "Registers" );
-  public JCheckBox useAddressConstants = new JCheckBox( "Addresses" );
+  public JCheckBox useFunctionConstants = new JCheckBox( "Functions" );
   public JRadioButton asCodeButton = new JRadioButton( "As code" );
   public JRadioButton rcButton = new JRadioButton( "Force RCn" );
   public JRadioButton wButton = new JRadioButton( "Force Wn" );
-  private JToggleButton[] optionButtons = { useRegisterConstants, useAddressConstants, asCodeButton, rcButton, wButton };
+  private JToggleButton[] optionButtons = { useRegisterConstants, useFunctionConstants, asCodeButton, rcButton, wButton };
   private JRadioButton pfButtons[] = null;
   
   private JPanel upperPanel = null;
@@ -999,6 +1033,17 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   private JPanel pfPanel = null;
   private JScrollPane pfScrollPane = null;
   private Integer[] pfValues = null;
+  
+  private JPanel pdMainPanel = null;
+  private JPanel pdHeaderPanel = null;
+  private JPanel pdPanel = null;
+  private JScrollPane pdScrollPane = null;
+  private Integer[] pdValues = null;
+  
+  private JPanel fnMainPanel = null;
+  private JPanel fnHeaderPanel = null;
+  private JPanel fnPanel = null;
+  private JScrollPane fnScrollPane = null;
   
   public JTextField frequency = new JTextField();
   public JTextField dutyCycle = new JTextField();
@@ -1061,51 +1106,36 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JLabel altDutyLbl = new JLabel();
   
   
-  private Component[][] dataComponents = { { null },
-      { frequency }, { dutyCycle }, { sigStruct }, { null },
-      { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, { null },
-      { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, { null },
-      { rptValue }, { rptType }, { rptHold }, { null },
-//      { chkByteStyle }, { bitsHeld }, { null },
-//      { miniCombiner }, { sigStyle }, { null },
-//      { vecOffset }, { dataOffset }, { null },
-      { burst1On }, { burst1Off }, { null },
-      { burst0On }, { burst0Off }, { xmit0rev }, { null },
-      { leadInStyle }, { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }, { leadInOn }, { leadInOff }, { null },
-      { leadOutStyle }, { leadOutOff }, { offAsTotal }, { null },
-      { altLeadOut }, { useAltLeadOut }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }//, { null },
+  private Component[][] dataComponents = { 
+      { frequency }, { dutyCycle }, { sigStruct }, null,
+      { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, null,
+      { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, null,
+      { rptValue }, { rptType }, { rptHold }, null,
+      { burst1On }, { burst1Off }, null,
+      { burst0On }, { burst0Off }, { xmit0rev }, null,
+      { leadInStyle }, { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }, { leadInOn }, { leadInOff }, null,
+      { leadOutStyle }, { leadOutOff }, { offAsTotal }, null,
+      { altLeadOut }, { useAltLeadOut }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }//, null,
+//      { chkByteStyle }, { bitsHeld }, null,
+//      { miniCombiner }, { sigStyle }, null,
+//      { vecOffset }, { dataOffset }, null,
 //      { toggleBit }
   };
   
-  private String[] dataLabels = { null,
-      "Frequency", "Duty Cycle", "Signal Structure", null,
-      "Device Bytes", "Bits/Dev1", "Bits/Dev2", "Dev Bit Doubling", null,
-      "Command Bytes", "Bits/Cmd1", "Bits/Cmd2", "Cmd Bit Doubling", null,
-      "Repeat Value", "Type", "Hold", null,
-//      "Check Byte Style", "# Bytes Checked", null,
-//      "Mini-Combiner", "Signal Style", null,
-//      "Vector Offset", "Data Offset", null,
-      "1 Burst ON", "OFF", null,
-      "0 Burst ON", "OFF", "Xmit 0 Reversed", null,
-      "Lead-In Style", "Burst Mid-Frame", "After # of bits", "Lead-In ON", "OFF", null,
-      "Lead-Out Style", "Lead-Out OFF", "OFF as Total", null,
-      "Alt Lead-Out", "Use Alt Lead-Out", "Alt Freq", "Alt Duty"//, null,
-//      "Toggle Bit"
-  };
-  
-  private String[] dataSuffixes = { null,
-      "kHz", "%", null, null,
-      null, null, null, null, null,
-      null, null, null, null, null,
-      null, null, null, null,
-//      null, null, null,
-//      null, null, null,
-//      "bytes", "bytes", null,
-      "uSec", "uSec", null,
-      "uSec", "uSec", null, null,
-      null, null, null, "uSec", "uSec", null,
-      null, "uSec", null, null,
-      "uSec", null, "kHz", "%"
+  private String[][] dataLabels = { 
+      { "Frequency", "kHz" }, { "Duty Cycle", "%" }, { "Signal Structure" }, null,
+      { "Device Bytes" }, { "Bits/Dev1" }, { "Bits/Dev2" }, { "Dev Bit Doubling" }, null,
+      { "Command Bytes" }, { "Bits/Cmd1" }, { "Bits/Cmd2" }, { "Cmd Bit Doubling" }, null,
+      { "Repeat Value" }, { "Type" }, { "Hold" }, null,
+      { "1 Burst ON", "uSec" }, { "OFF", "uSec" }, null,
+      { "0 Burst ON", "uSec" }, { "OFF", "uSec" }, { "Xmit 0 Reversed" }, null,
+      { "Lead-In Style" }, { "Burst Mid-Frame" }, { "After # of bits" }, { "Lead-In ON", "uSec" }, { "OFF", "uSec" }, null,
+      { "Lead-Out Style" }, { "Lead-Out OFF", "uSec" }, { "OFF as Total" }, null,
+      { "Alt Lead-Out", "uSec" }, { "Use Alt Lead-Out" }, { "Alt Freq", "kHz" }, { "Alt Duty", "%" }//, null,
+//      { "Check Byte Style" }, { "# Bytes Checked" }, null,
+//      { "Mini-Combiner" }, { "Signal Style" }, null,
+//      { "Vector Offset" }, { "Data Offset" }, null,
+//      { "Toggle Bit }"
   };
 
   /** The user action. */
@@ -1137,6 +1167,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     if ( event.getSource() == tabbedPane )
     {
       setPFPanel();
+      setPDPanel();
+      setFunctionPanel();
     }
     else if ( protocol.setCmdIndex( ( ( Integer )cmdIndex.getValue() ).intValue() ) )
     {
@@ -1144,7 +1176,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
   }
   
-  private void setTableLayout( double[][] size, Object[] data, boolean interleave )
+  private void setTableLayout( double[][] size, String[][] data, boolean interleave )
   {
     double b = 5; // space between rows and around border
     double c = 10; // space between columns
@@ -1152,7 +1184,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     rows.add(  b  );
     for ( int i = 0; i < data.length; i++ )
     {
-      if ( i == 0 && data[ i ] == null ) continue;
+      if ( data[ i ] != null && data[ i ][ 0 ].equals(  "0" ) ) continue;
       rows.add( data[ i ] == null ? c : TableLayout.PREFERRED );
       if ( i == data.length - 1 && data[ i ] != null || interleave ) rows.add( b );
     }
@@ -1185,15 +1217,16 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     pfPanel.setLayout( new TableLayout( size ) );
     
     int bitPos = 0;
-    for ( int i = 0; i < CommonData.pfData[ n ].length; i++ )
+    int row = 1;
+    for ( String[] data : CommonData.pfData[ n ] )
     {
-      JLabel label = new JLabel( CommonData.pfData[ n ][ i ][ 1 ] );
+      JLabel label = new JLabel( data[ 1 ] );
       label.setBorder( BorderFactory.createEmptyBorder( 2, 0, 2, 0 ) );
-      pfPanel.add( label, "0, " + ( 2 * i + 1 ) + ", l, t" );
-      String text = CommonData.pfData[ n ][ i ][ 2 ];
+      pfPanel.add( label, "0, " + row + ", l, t" );
+      String text = data[ 2 ];
       if ( pfValues[ n ] != null )
       {
-        int len = Integer.parseInt( CommonData.pfData[ n ][ i ][ 0 ] );
+        int len = Integer.parseInt( data[ 0 ] );
         int val = ( pfValues[ n ] >> bitPos ) & ( ( 1 << len ) - 1 );
         bitPos += len;
         int ndx = text.indexOf( "\n" + val + " =" ) + 1;
@@ -1214,7 +1247,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       area.setBackground( label.getBackground() );
       area.setEditable( false );
       areas.add(  area );
-      pfPanel.add( area, "1, " + ( 2 * i + 1) );
+      pfPanel.add( area, "1, " + row );
+      row += 2;
     }
     pfPanel.validate();
     for ( JTextArea area : areas )
@@ -1228,6 +1262,264 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       public void run() 
       {
         pfScrollPane.getVerticalScrollBar().setValue(0);
+      }
+    } );
+  }
+  
+  public void setPDPanel()
+  {
+    if ( tabbedPane.getSelectedComponent() != pdMainPanel )
+    {
+      return;
+    }
+    List< JTextArea > areas = new ArrayList< JTextArea >();
+    double size[][] = { { getWidth( "PD00/PD00__" ), TableLayout.FILL }, null };
+    setTableLayout( size, CommonData.pdData, true );
+    pdPanel.setLayout( new TableLayout( size ) );
+    
+    int pdNum = 0;
+    int row = 1;
+    for ( String[] data : CommonData.pdData )
+    {
+      int n = Integer.parseInt( data[ 0 ] );
+      String text = "";
+      for ( int i = 0; i < n; i++ )
+      {
+        if ( i > 0 )
+        {
+          text += "/";
+        }
+        text += String.format( "PD%02X", pdNum + i );
+      }
+      JLabel label = new JLabel( text );
+      
+      text = data[ 1 ];
+      JTextArea area = new JTextArea();
+      area.setLineWrap( true );
+      area.setWrapStyleWord( true );
+      area.setFont( label.getFont() );
+      area.setBackground( label.getBackground() );
+      area.setEditable( false );
+      areas.add(  area );
+      
+      if ( n > 0 )
+      {
+        label.setBorder( BorderFactory.createEmptyBorder( 2, 0, 2, 0 ) );
+        pdPanel.add( label, "0, " + row + ", l, t" );
+        pdPanel.add( area, "1, " + row );
+        int val = 0;
+        int time = 0;
+        if ( pdValues[ pdNum ] != null )
+        {
+          switch ( pdNum )
+          {
+            case 0x00:
+            case 0x01:
+            case 0x10:
+            case 0x12:
+              text += String.format( "\n$%02X -> %<d bits", pdValues[ pdNum ] );
+              break;
+            case 0x11:
+              text += String.format( "\n$%02X -> %<d repeats", pdValues[ pdNum ] );
+              break;
+            case 0x04:
+            case 0x08:
+            case 0x0E:
+              time += ( dataStyle == 0 ) ? 40 : 0;
+              // run through  
+            case 0x02:
+            case 0x06:
+            case 0x0A:
+            case 0x0C:
+              if ( pdValues[ pdNum + 1 ] != null )
+              {
+                val = pdValues[ pdNum ] * 0x100 + pdValues[ pdNum + 1 ];
+                time += 2 * val;
+                text += String.format( "\n$%04X -> %d uSec", val, time );
+              }
+              break;
+            case 0x13:
+              int pos1 = text.indexOf( "\n" );
+              pos1 = text.indexOf( "\n", pos1 + 1 );
+              int pos2 = text.indexOf( "\n", pos1 + 1 );
+              text += String.format( "\n    $%02X -> %<d bits", pdValues[ pdNum ] );
+              if ( pdValues[ pdNum + 1 ] != null )
+              {
+                double onTime = pdValues[ pdNum ];
+                double offTime = pdValues[ pdNum + 1 ];
+                if ( dataStyle == 0 )
+                {
+                  onTime = ( onTime + 2 )/ 8.0;
+                  offTime = ( offTime + 2 )/ 8.0;
+                }
+                else
+                {
+                  onTime /= 4.0;
+                  offTime /= 4.0;
+                }
+                val = pdValues[ pdNum ] * 0x100 + pdValues[ pdNum + 1 ];
+                text = text.substring( 0, pos1 + 1 )
+                + String.format( "    $%04X -> %d uSec\n", val, 2 * val )
+                + text.substring( pos1 + 1, pos2 + 1 )
+                + String.format( "    $%04X -> ON %.3f uSec, OFF %.3f uSec\n", val, onTime, offTime )
+                + text.substring( pos2 + 1 );
+              }
+              break;
+          }
+        }
+        row += 2;
+        pdNum += n;
+      }
+      else
+      {
+        pdHeaderPanel.removeAll();
+        pdHeaderPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+        pdHeaderPanel.add( area, BorderLayout.CENTER );
+      }
+      area.setText( text );
+    }
+    pdMainPanel.validate();
+    for ( JTextArea area : areas )
+    {
+      Dimension d = area.getPreferredSize();
+      d.width = 100;
+      area.setPreferredSize( d );
+      area.setMinimumSize( new Dimension( 10, 10 ) );
+    }
+    javax.swing.SwingUtilities.invokeLater( new Runnable()
+    {
+      public void run() 
+      {
+        pdScrollPane.getVerticalScrollBar().setValue(0);
+      }
+    } );
+  }
+  
+  public void setFunctionPanel()
+  {
+    if ( tabbedPane.getSelectedComponent() != fnMainPanel )
+    {
+      return;
+    }
+    List< JTextArea > areas = new ArrayList< JTextArea >();
+    int n = 0;
+    for ( String[] data : CommonData.fnData )
+    {
+      if ( processor.getZeroAddresses().keySet().contains( data[ 0 ] )
+          || processor.getAbsAddresses().keySet().contains( data[ 0 ] )
+          || data[ 0 ].equals( "" ) )
+      {
+        n++;
+      }
+    }
+    String functions[][] = new String[ n ][ 3 ];
+    n = 0;
+    for ( String[] data : CommonData.fnData )
+    {
+      Integer address = processor.getZeroAddresses().get( data[ 0 ] );
+      if ( data[ 0 ].equals( "" ) )
+      {
+        functions[ n ][ 0 ] = "0";
+      }
+      else if ( address != null )
+      {
+        functions[ n ][ 0 ] = String.format( "%02X    ", address );
+      }
+      else
+      {
+        address = processor.getAbsAddresses().get( data[ 0 ] );
+        if ( address != null )
+        {
+          functions[ n ][ 0 ] = String.format( "%04X", address );
+        }
+        else continue;
+      }
+      functions[ n ][ 1 ] = data[ 0 ];
+      functions[ n++ ][ 2 ] = data[ 1 ];
+    }
+    
+    Arrays.sort( functions, new Comparator< String[] >()
+    {
+      @Override
+      public int compare( String[] o1, String[] o2 )
+      {
+        int n1 = Integer.parseInt( o1[ 0 ].trim(), 16 );
+        int n2 = Integer.parseInt( o2[ 0 ].trim(), 16 );
+        if ( ( zeroUsed.contains( n1 ) || absUsed.contains( n1 ) )
+            && !( zeroUsed.contains( n2 ) || absUsed.contains( n2 ) ) )
+        {
+          return - 1;
+        }
+        else if ( !( zeroUsed.contains( n1 ) || absUsed.contains( n1 ) )
+            && ( zeroUsed.contains( n2 ) || absUsed.contains( n2 ) ) )
+        {    
+          return 1;
+        }
+        else return n1 - n2;
+      }
+    } );
+
+    double size[][] = { { getWidth( "$FFFF_*_" ), TableLayout.FILL }, null };
+    setTableLayout( size, functions, true );
+    fnPanel.setLayout( new TableLayout( size ) );
+    
+    int row = 1;
+    for ( String[] fn : functions )
+    {
+      String text = fn[ 0 ];
+      n = Integer.parseInt( fn[ 0 ].trim(), 16 );
+      if ( dataStyle > 0 || n < 0x100 )
+      {
+        text = ( dataStyle == 0 ? "R" : "$" ) + text;
+      }
+      else
+      {
+        text += "H";
+      }
+      
+      if ( zeroUsed.contains( n ) || absUsed.contains( n ) )
+      {
+        text += " * ";
+      }
+
+      JLabel label = new JLabel( text );
+      label.setBorder( BorderFactory.createEmptyBorder( 2, 0, 2, 0 ) );
+
+      text = fn[ 1 ] + ( fn[ 1 ].equals( "" ) ? "" : "\n" ) + fn[ 2 ];
+      JTextArea area = new JTextArea( text );
+      area.setLineWrap( true );
+      area.setWrapStyleWord( true );
+      area.setFont( label.getFont() );
+      area.setBackground( label.getBackground() );
+      area.setEditable( false );
+      areas.add(  area );
+      if ( fn[ 1 ].equals( "" ) )
+      {
+        fnHeaderPanel.removeAll();
+        fnHeaderPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+        fnHeaderPanel.add( area, BorderLayout.CENTER );
+      }
+      else
+      {
+        fnPanel.add( label, "0, " + row + ", l, t" );
+        fnPanel.add( area, "1, " + row );
+        row += 2;
+      }
+    }
+    
+    fnMainPanel.validate();
+    for ( JTextArea area : areas )
+    {
+      Dimension d = area.getPreferredSize();
+      d.width = 100;
+      area.setPreferredSize( d );
+      area.setMinimumSize( new Dimension( 10, 10 ) );
+    }
+    javax.swing.SwingUtilities.invokeLater( new Runnable()
+    {
+      public void run() 
+      {
+        fnScrollPane.getVerticalScrollBar().setValue(0);
       }
     } );
   }
@@ -1254,18 +1546,21 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             displayProtocol : protocol;
         assemblerModel.disassemble( prot, procs[ codeTable.getSelectedRow() ] );
         setPFPanel();
+        setPDPanel();
+        setFunctionPanel();
         importButton.setEnabled( codeTable.isCellEditable( codeTable.getSelectedRow(), 1 ) );
         int tabCount = tabbedPane.getTabCount();
         if ( row != 0 && row != 4 && tabCount > 2 )
         {
-          for ( int i = 2; i < tabCount; i++ )
+          for ( int i = 3; i < tabCount; i++ )
           {
-            tabbedPane.remove( i );
+            tabbedPane.remove( 3 );
           }
         }
-        else if ( ( row == 0 || row == 4 ) && tabCount == 2 )
+        else if ( ( row == 0 || row == 4 ) && tabCount == 3 )
         {
           tabbedPane.add( "PF Details", pfMainPanel );
+          tabbedPane.add( "PD Details", pdMainPanel );
         }
       }
       else
@@ -1378,11 +1673,37 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     return ( new JLabel( text ) ).getPreferredSize().width + 4;
   }
 
+  public Integer[] getPdValues()
+  {
+    return pdValues;
+  }
+
   public Integer[] getPfValues()
   {
     return pfValues;
   }
 
+  public void setDataStyle( int dataStyle )
+  {
+    this.dataStyle = dataStyle;
+  }
+
+  public void setProcessor( Processor processor )
+  {
+    this.processor = processor;
+  }
+
+  public void setAbsUsed( List< Integer > absUsed )
+  {
+    this.absUsed = absUsed;
+  }
+
+  public void setZeroUsed( List< Integer > zeroUsed )
+  {
+    this.zeroUsed = zeroUsed;
+  }
+  
+  
 }
 
 

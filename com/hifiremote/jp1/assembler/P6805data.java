@@ -164,24 +164,24 @@ public class P6805data
   
   public static final String[][] absLabels_RC16 = {
     { "XmitIR", "01AF" },
-    { "Setup_XmitIR", "01B2" },
-    { "SendMarkSpaceByPtr", "01B5" },
-    { "SendSpaceByRegister", "01C1" },
-    { "MidFrame_XmitIR", "01C4" },
-    { "Rpt_KeyDownCheck", "0189" },
+    { "SetupXmitIR", "01B2" },
+    { "IRMarkSpaceByPtr", "01B5" },
+    { "IRSpaceByReg", "01C1" },
+    { "XmitSplitIR", "01C4" },
+    { "TestRptReqd", "0189" },
     { "ChkPowerKey", "019D" },
     { "ChkRecordKey", "01A1" },
     { "ChkVolKeys", "01A5" },
     { "ChkPwrRecVol", "018C" },
-    { "ChkRepeatKeys", "0183" },
-    { "SetupIRCarrier", "01B8" }
+    { "ChkVolChFFKeys", "0183" },
+    { "SetCarrier", "01B8" }
   };
 
 
   public static final String[][] absLabels_C9= {
     { "XmitIR", "0183" },
     { "ChkVolKeys", "01BC" },
-    { "SetupIRCarrier", "019B" }
+    { "SetCarrier", "019B" }
   };
   
   public static final String[][] zeroLabels_RC16 = {

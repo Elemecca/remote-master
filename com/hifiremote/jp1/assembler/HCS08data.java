@@ -309,28 +309,32 @@ public class HCS08data
 
   public static final String[][] absLabels = {
     { "XmitIR", "FF5F" },
-    { "Setup_XmitIR", "FF5C" },
-    { "SendMarkSpaceByPtr", "FF65" },
-    { "SendMarkByPtr", "FF68" },
-    { "SendSpaceByRegister", "FF74" },
-    { "MidFrame_XmitIR", "FF7A" },
-    { "LoadBitBufFromDCBuf", "FF86" },
-    { "Rpt_KeyDownCheck", "FF92" },
+    { "SetupXmitIR", "FF5C" },
+    { "XmitIRNoEncode", "FF62" },
+    { "IRMarkSpaceByPtr", "FF65" },
+    { "IRMarkByPtr", "FF68" },
+    { "IRSpaceByReg", "FF74" },
+    { "XmitSplitIR", "FF7A" },
+    { "EncodeDCBuf", "FF86" },
+    { "TestRptReqd", "FF92" },
     { "ChkPowerKey", "FF95" },
     { "ChkRecordKey", "FF98" },
     { "ChkVolKeys", "FF9B" },
-    { "ChkRepeatKeys", "FF8F" },
-    { "SetupIRCarrier", "FF6E" },
+    { "ChkVolChFFKeys", "FF8F" },
+    { "SetCarrier", "FF6E" },
     { "ChkLowBattery", "FF59" }
   };
   
   public static final String[][] zeroLabels = {
     { "DCBUF", "60", "DCBUF+", "0A" },
     { "PF0", "A2", "PF", "05" },
-    { "PD00", "6A", "PD", "20" },
+    { "PD00", "6A", "PD", "16" },
+    { "DCNDX", "AC" },
     { "DBYTES", "A9" },
     { "CBYTES", "AA" },
-    { "FLAGS", "B3" }  };
+    { "FLAGS", "B3" },
+    { "CARRIER", "A7", "CARRIER+", "02" }
+  };
 
   public static final int[] oscData = { 4000000, 0, 0 };
 }

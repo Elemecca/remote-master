@@ -196,39 +196,43 @@ public class S3C80data
   
   public static final String[][] absLabels_C80 = {
     { "XmitIR", "0133" },
-    { "Setup_XmitIR", "0136" },
-    { "SendMarkSpaceByPtr", "0139" },
-    { "SendMarkByPtr", "0151" },
-    { "SendSpaceByRegister", "0145" },
-    { "MidFrame_XmitIR", "014E" },
-    { "LoadBitBufFromDCBuf", "0160" },
-    { "Rpt_KeyDownCheck", "010A" },
+    { "SetupXmitIR", "0136" },
+    { "XmitIRNoEncode", "015D" },
+    { "IRMarkSpaceByPtr", "0139" },
+    { "IRdMarkByPtr", "0151" },
+    { "IRSpaceByReg", "0145" },
+    { "XmitSplitIR", "014E" },
+    { "EncodeDCBuf", "0160" },
+    { "TestRptReqd", "010A" },
     { "ChkPowerKey", "0119" },
     { "ChkRecordKey", "0120" },
-    { "SetupIRCarrier", "0142" }
+    { "SetCarrier", "0142" }
   };
   
   public static final String[][] absLabels_F80 = {
     { "XmitIR", "0146" },
-    { "Setup_XmitIR", "0149" },
-    { "SendMarkSpaceByPtr", "014C" },
-    { "SendMarkByPtr", "0164" },
-    { "SendSpaceByRegister", "0158" },
-    { "MidFrame_XmitIR", "0161" },
-    { "LoadBitBufFromDCBuf", "0173" },
-    { "Rpt_KeyDownCheck", "010A" },
+    { "SetupXmitIR", "0149" },
+    { "XmitIRNoEncode", "0170" },
+    { "IRMarkSpaceByPtr", "014C" },
+    { "IRMarkByPtr", "0164" },
+    { "IRSpaceByReg", "0158" },
+    { "XmitSplitIR", "0161" },
+    { "EncodeDCBuf", "0173" },
+    { "TestRptReqd", "010A" },
     { "ChkPowerKey", "012C" },
     { "ChkRecordKey", "0133" },
-    { "SetupIRCarrier", "0155" }
+    { "SetCarrier", "0155" }
   };
   
   public static final String[][] zeroLabels = {
     { "DCBUF", "03", "DCBUF+", "0A" },
     { "PF0", "28", "PF", "05" },
     { "PD00", "12", "PD", "16" },
+    { "DCNDX", "01" },
     { "DBYTES", "10" },
     { "CBYTES", "11" },
-    { "FLAGS", "00" }
+    { "FLAGS", "00" },
+    { "CARRIER", "0E", "CARRIER+", "02" }
   };
   
   public static final int[] oscData = { 8000000, 4, 2 };

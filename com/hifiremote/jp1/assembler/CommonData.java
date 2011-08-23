@@ -253,4 +253,115 @@ public class CommonData
         },
       }      
    };
+  
+  public static String[][] pdData = {
+    { "0", "Many data values translate to times in microseconds (uSec).  For S3C80 and HCS08 " +
+      "a 2-byte burst value N translates to 2*N uSec except for the OFF time of an ON/OFF " +
+      "burst pair for S3C80, which is (2*N+40) uSec.  A 1-byte carrier value N translates " +
+      "to (N+2)/8 uSec for S3C80, N/4 uSec for HCS08.  Individual PD values as used by the IR " +
+      "engine are described below, but be aware that protocol code may use PD values in other ways."
+    },
+    { "1", "number of bits to be used from each device byte (but see PD10)" },
+    { "1", "number of bits to be used from each command byte (but see PD12)" },
+    { "2", "ON time for logical ONE burst pair" },
+    { "2", "OFF time for logical ONE burst pair" },
+    { "2", "ON time for logical ZERO burst pair" },
+    { "2", "OFF time for logical ZERO burst pair" },
+    { "2", "LEAD-OUT time (or TOTAL TIME if PF1.6 set" },
+    { "2", "ON time for lead-in burst pair" },
+    { "2", "OFF time for lead-in burst pair" },
+    { "1", "number of bits to be used from 2nd device byte [only when exactly 2 device bytes]" },
+    { "1", "minimum times to repeat the signal [only when PF1.4 is set]" },
+    { "1", "number of bits to be used from 2nd command byte [only when exactly 2 command bytes]" },
+    { "2", "variable significance:\n" +
+      "if PF3.5 set, alternate LEAD-OUT time\n" +
+      "if PF3.6 set, alternate carrier ON/OFF times\n" + 
+      "if alternate entry point used for IR engine, mid-frame burst sent after PD13 bits"
+    }
+  };
+  
+  public static String[][] fnData = {
+    { "",
+      "The predefined constants for register (1 byte) and function addresses (2 bytes) are listed below, " +
+      "together with a brief description.  Those used in the protocol head the list and are starred, " +
+      "even if use of predefined constants is deselected in the disassembly."
+    },
+    { "XmitIR",
+      "Generate IR signal for data in 10-byte buffer DCBUF according to parameters in PFn and PDnn " +
+      "(= EncodeDCBuf + XmitIRNoEncode)."
+    },
+    { "TestRptReqd",
+      "Test if repeat required due either to repeat count or key held, return with Carry bit set " +
+      "if yes, clear if no."
+    },
+    { "EncodeDCBuf",
+      "Translate data in 10-byte buffer DCBUF into bit sequence according to parameters in PFn and PDnn."
+    },
+    { "XmitIRNoEncode",
+      "Generate IR signal from bit sequence already created."
+    },
+    { "SetupXmitIR",
+      "Set carrier and burst timings from protocol data then call XmitIR." 
+    },
+    { "IRMarkByPtr",
+      "Send IR Mark (ON burst) for time pointed at by register HX (HCS08) or W1 (S3C80)."     
+    },
+    { "IRMarkSpaceByPtr",
+      "Send ON/OFF burst pair for times pointed at by register HX (HCS08) or W1 (S3C80)."
+    },
+    { "IRSpaceByReg",
+      "Send IR Space (OFF burst) for time contained in register HX (HCS80) or RF8/RF8 (S3C80)."
+    },
+    { "XmitSplitIR",
+      "As XmitIR but split after PD13 bits by a mid-frame burst with ON-time that of a 1-burst " +
+      "and OFF-time that of a Lead-In burst."
+    },
+    { "ChkPowerKey",
+      "Test if pressed key is Power, return with Carry bit set if yes, clear if no."
+    },
+    { "ChkRecordKey",
+      "Test if pressed key is Record, return with Carry bit set if yes, clear if no."
+    },
+    { "ChkVolKeys",
+      "Test if pressed key is Vol+/-, return with Carry bit set if yes, clear if no."
+    },
+    { "ChkPwrRecVol",
+      "Test if pressed key is Power, Record or Vol+/-, return with Carry bit set if yes, clear if no."
+    },
+    { "ChkVolChFFKeys",
+      "Test if pressed key is one of Vol+/-, Ch+/-, FF, Rew, return with Carry bit set if yes, clear if no."
+    },
+    { "SetCarrier",
+      "Set carrier generator timing from $A7/$A8 (HCS08) or R0E/R0F (S3C80), initialized from protocol data."
+    },
+    { "ChkLowBattery",
+      "Test if battery low, return with Carry bit set if yes, clear if no."
+    },
+    {
+      "DCBUF",
+      "Start of a 10-byte buffer that holds the device and command bytes constructed from the fixed and "+
+      "variable data in accordance with bits 4-5 of PF0."
+    },
+    {
+      "DCNDX",
+      "An index into DCBUF, initialized to zero, that points to the first device byte to be encoded."
+    },
+    { "DBYTES",
+      "The number of device bytes to be encoded, starting from DCBUF, initialized from the protocol data."
+    },
+    { "CBYTES",
+      "The number of command bytes to be encoded, starting from the last device byte, initialized " +
+      "from the protocol data."
+    },
+    { "FLAGS",
+      "The upper bits are flags used during processing, the lower bits (5 for the HCS08) are a counter " +
+      "that is incremented on each keypress.  So in particular, bit 0 alternates on each keypress and " +
+      "may be used to implement a protocol toggle."
+    },
+    {
+      "CARRIER",
+      "The first byte of two timing values that are written to the carrier generator, initialized " +
+      "from protocol data."
+    }
+  };
 }
