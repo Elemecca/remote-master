@@ -50,6 +50,8 @@ Changes for v2.02
 -- Alpha 12
 - Change the button texts "Hide Upper" and "Show Upper" to "Expand" and "Collapse" (Graham)
 - Block the ability to select a protocol when the remote has a different variant of the same protocol built in and there is no Alternate PID (Graham)
+- Change the display of PFn Details to use drop-down boxes instead of plain text (Graham)
+- When editing a protocol, enter Manual Settings with the code for processor of current remote selected (Graham)
 
 Changes for v2.01
 -- Alpha --

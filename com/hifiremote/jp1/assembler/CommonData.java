@@ -73,168 +73,171 @@ public class CommonData
   public static String[][][] pfData = {
       { // PF0
         { "2", "0-1",
-          "Words to send in device code portion of IR signal\n" + 
+          "Words to send in device code portion of IR signal",
           "0 = nothing\n" + 
           "1 = single word of PD00 bits\n" +  
           "2 = word of PD00 bits followed by word of PD10 bits\n" +  
-          "3 = all protocol's fixed parameters (PD00 bits each)\n" +
+          "3 = all protocol's fixed parameters (PD00 bits each)",
           "First byte is the R01-th (S3C80) / $AC-th (HCS08) in all cases" 
         },
         { "2", "2-3",
-          "Words to send in command code portion of IR signal\n" +  
+          "Words to send in command code portion of IR signal",
           "0 = nothing\n" +  
           "1 = single word of PD01 bits\n" +  
           "2 = word of PD01 bits followed by word of PD12 bits\n" +  
           "3 = all protocol's variable parameters (PD01 bits each)"
         },
         { "2", "4-5",
-          "How to compose the signal (! = complement)\n" +
+          "How to compose the signal (! = complement)",
           "0 = device - command\n" +  
           "1 = device - command - !device - !command\n" +  
           "2 = device - !device - command - !command\n" +  
           "3 = command - device"
         },
         { "1", "6",
-          "Is Lead Out gap adjusted for total frame length (Off is Total)\n" +
+          "Is Lead Out gap adjusted for total frame length (Off is Total)",
           "0 = no\n" +
           "1 = yes"
         },
         { "1", "7",
-          "Is PF1 present?\n" + 
+          "Is PF1 present?",
           "0 = no\n" +
           "1 = yes"
         }
       },
       { // PF1
         { "2", "0-1",
-          "Does the signal repeat while button is held down?\n" +  
+          "Does the signal repeat while button is held down?",
           "0 = no\n" + 
           "1 = yes\n" + 
           "2 = Ch+/-, Vol+/-, FF, Rew\n" + 
           "3 = no data bits in repeat"
         },
         { "2", "2-3",
-          "How to send lead-in burst pair\n" +
+          "How to send lead-in burst pair",
           "0 = nothing\n" + 
           "1 = always PD0A/PD0D\n" + 
           "2 = PD0A/PD0D the first time only, nothing afterwards\n" + 
-          "3 = PD0A/PD0D the first time, OFF-time halved for repeats and with no data"
+          "3 = PD0A/PD0D the first time, no data in repeats",
+          "In case 3, in repeat lead-ins the OFF-time is halved."
         },
         { "1", "4",
-          "Is number of repeats taken from PD11?\n" +
+          "Is number of repeats taken from PD11?",
           "0 = no\n" +
           "1 = yes" 
         },
         { "2", "5-6",
-          "Lead Out On style\n" +
+          "Lead Out On style",
           "0 = [-LO]\n" +
           "1 = [LI], [-LO]\n" +
           "2 = [One On, -LO]\n" +
           "3 = [LI], [One On, -LO]"
         },
         { "1", "7",
-          "Is PF2 present?\n" + 
+          "Is PF2 present?",
           "0 = no\n" +
           "1 = yes"
         }
       },
       { // PF2
         { "2", "0-1",
-          "How to send data for device bytes\n" + 
+          "How to send data for device bytes",
           "0 = send data as-is\n" + 
           "1 = send 0 after every bit\n" + 
           "2 = send 1 after every bit\n" + 
           "3 = send every bit twice"
         },
         { "2", "2-3",
-          "How to send data for command bytes\n" + 
+          "How to send data for command bytes",
           "0 = send data as-is\n" + 
           "1 = send 0 after every bit\n" + 
           "2 = send 1 after every bit\n" + 
           "3 = send every bit twice"
         },
         { "1", "4",
-          "Send zero backwards? (bi-phase)\n" +
+          "Send zero backwards? (bi-phase)",
           "0 = no\n" +
           "1 = yes"
         },
         { "1", "5",
           "For 0-bit that is in even position (2nd, 4th bits sent etc) " +
-          "send burst pair PD06/(PD02+PD04+PD08) instead of PD06/PD08?\n" + 
+          "send burst pair PD06/(PD02+PD04+PD08) instead of PD06/PD08?",
           "0 = no\n" +
           "1 = yes"
         },
         { "1", "6",
-          "Use Extended Lead-Out OFF time, adding 0xFFFF to value in PD0A/PD0B?\n" +
+          "Use Extended Lead-Out OFF time, adding 0xFFFF to value in PD0A/PD0B?",
           "0 = no\n" +
           "1 = yes"
         },
         { "1", "7",
-          "Is PF3 present?\n" + 
+          "Is PF3 present?",
           "0 = no\n" +
           "1 = yes"
         }
       },
       { // PF3
         { "3", "0-2",
-          "Determines encoding scheme (translation from data bytes to bit sequence)\n" +
-          "Except for following special values, each bit of a data byte is sent as itself, "+
-          "starting at most significant bit, unless bit 6 of PF4 is set (see PF4).\n" +
-          "1 = as above but value sent is device byte XORed with #$78 (used only for one device byte, " +
-          "e.g. in Protocol 002A)\n" +
-          "3 = use four bits to send two bits (1000 = 0, 0100 = 1, 0010 = 2, 0001 = 3)\n" +
-          "4 + use variable number of bits to send two bits (1 = 0, 10 = 1, 100 = 2, 1000 = 3)\n" +
-          "other = normal bitwise encoding, see above\n" +
-          "In cases 3 and 4, if an odd number of bits send msb as itself"
+          "Determines encoding scheme (translation from data bytes to bit sequence).  " +
+          "Except for the cases specified, each bit of a data byte is sent as itself, " +
+          "starting at most significant bit, unless bit 6 of PF4 is set (see PF4).",
+          "1 = value sent is device byte XORed with #$78\n" +
+          "3 = use four bits to send two bits\n" +
+          "4 + use variable number of bits to send two bits\n" +
+          "other = normal bitwise encoding, see above",
+          "Case 3 encoding is 1000 = 0, 0100 = 1, 0010 = 2, 0001 = 3\n" +
+          "Case 4 encoding is 1 = 0, 10 = 1, 100 = 2, 1000 = 3\n" +
+          "In cases 3 and 4, if an odd number of bits send msb as itself.  Case 1 is used only " +
+          "for one device byte, e.g. in Protocol 002A."
         },
         { "1", "3",
           "For first Tx use 2nd set of device and command bytes following first in buffer, " +
-          "created by protocol executor (repeat Tx always uses first set)?\n" +
+          "created by protocol executor (repeat Tx always uses first set)?",
           "0 = no\n" +
           "1 = yes"
         },
         { "1", "4",
-          "After all repeats, send one Tx of 2nd set of device and command bytes?\n" +
+          "After all repeats, send one Tx of 2nd set of device and command bytes?",
           "0 = no\n" +
           "1 = yes"
         },
         {
           "1", "5",
-          "Use alt leadout from PD13/PD14 instead of PD0A/PD0B?\n" +
+          "Use alt leadout from PD13/PD14 instead of PD0A/PD0B?",
           "0 = no\n" +
           "1 = yes"
         },
         {
           "1", "6",
-          "Send 0-bursts with alt frequency and duty cycle from PD13/PD14?\n" +
+          "Send 0-bursts with alt frequency and duty cycle from PD13/PD14?",
           "0 = no\n" +
           "1 = yes"
         },
         { "1", "7",
-          "Is PF4 present?\n" + 
+          "Is PF4 present?",
           "0 = no\n" +
           "1 = yes"
         }
       },
-      {
+      { // PF4
         { "1", "0",
-          "Immediate repeat for held keypress, skipping minimum hold time?\n" +
+          "Immediate repeat for held keypress, skipping minimum hold time?",
           "0 = no\n" +
           "1 = yes"
         },
         { "1", "1",
-          "Immediate action on change of keypress, skipping full keypad scan?\n" +
+          "Immediate action on change of keypress, skipping full keypad scan?",
           "0 = no\n" +
           "1 = yes"
         },
         { "2", "2-3",
-          "Number of stop bits (0-bits) for asynchronous encoding (see bit 6)\n" +
+          "Number of stop bits (0-bits) for asynchronous encoding (see bit 6)",
           "0 = No stop bits\n" +
           "1 = One stop bit\n" +
           "other = Two stop bits"
         },
         { "2", "4-5",
-          "Parity bit for asynchronous encoding (see bit 6)\n" +
+          "Parity bit for asynchronous encoding (see bit 6)",
           "0 = no parity bit\n" +
           "1 = one parity bit, odd parity\n" +
           "other = one parity bit, even parity"
@@ -242,12 +245,12 @@ public class CommonData
         { "1", "6",
           "When bits 0-2 of PF3 are other than 3 or 4, use asynchronous encoding: " +
           "prepend data bits with one start bit (1-bit), optionally append parity and " +
-          "stop bits according to bits 2-5 above?\n" +
+          "stop bits according to bits 2-5 above?",
           "0 = no\n" +
           "1 = yes"
         },
         { "1", "7",
-          "Must be 0\n" +
+          "Must be 0",
           "0 = required\n" +
           "1 = error"
         },

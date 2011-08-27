@@ -1698,6 +1698,10 @@ public class Protocol
       dialog.setMessage( 1 );
     }
     dialog.codeWhenNull = codeWhenNull;
+    if ( remote != null )
+    {
+      dialog.setSelectedCode( remote.getProcessor() );
+    }
 
     dialog.setVisible( true );
     Protocol result = dialog.getProtocol();

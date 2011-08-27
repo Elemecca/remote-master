@@ -125,6 +125,21 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
   }
   
+  private class DisplayArea extends JTextArea
+  {
+    public DisplayArea( String text, List< JTextArea > areas )
+    {
+      super( text );
+      JLabel label = new JLabel();
+      setLineWrap( true );
+      setWrapStyleWord( true );
+      setFont( label.getFont() );
+      setBackground( label.getBackground() );
+      setEditable( false );
+      areas.add( this );
+    }
+  }
+  
   /**
    * Creates the gui.
    * 
@@ -380,7 +395,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     headerPanel.setBorder( BorderFactory.createLineBorder( Color.GRAY ) );
     JPanel pfChoice = new JPanel( new GridLayout( 1, CommonData.pfData.length ) );
     headerPanel.add( pfChoice, BorderLayout.PAGE_START );
-    String text = "Bits per byte, current protocol values starred";
+    String text = "Bits per byte, current protocol values selected";
     headerPanel.add( new JLabel( text, SwingConstants.CENTER ), BorderLayout.PAGE_END );
     pfMainPanel.add( headerPanel, BorderLayout.PAGE_START );
     ButtonGroup grp = new ButtonGroup();
@@ -1185,7 +1200,15 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     for ( int i = 0; i < data.length; i++ )
     {
       if ( data[ i ] != null && data[ i ][ 0 ].equals(  "0" ) ) continue;
-      rows.add( data[ i ] == null ? c : TableLayout.PREFERRED );
+      if ( interleave )
+      {
+        for ( int j = 2; j < Math.max( data[ i ].length, 3 ); j++ )
+          rows.add( TableLayout.PREFERRED );
+      }
+      else
+      {
+        rows.add( data[ i ] == null ? c : TableLayout.PREFERRED );
+      }
       if ( i == data.length - 1 && data[ i ] != null || interleave ) rows.add( b );
     }
     size[ 1 ] = new double[ rows.size() ];
@@ -1201,12 +1224,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     {
       return;
     }
-    int n = 0;
-    for ( ; n < pfButtons.length; n++ )
+    int n = -1;
+    for (int i = 0 ; i < pfButtons.length; i++ )
     {
-      if ( pfButtons[ n ].isSelected() ) break;
+      pfButtons[ i ].setEnabled( pfValues[ i ] != null );
+      if ( pfButtons[ i ].isSelected() ) n = i;
     }
-    if ( n == pfButtons.length )
+    if ( n < 0 )
     {
       n = 0;
       pfButtons[ 0 ].setSelected( true );
@@ -1220,35 +1244,52 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     int row = 1;
     for ( String[] data : CommonData.pfData[ n ] )
     {
-      JLabel label = new JLabel( data[ 1 ] );
-      label.setBorder( BorderFactory.createEmptyBorder( 2, 0, 2, 0 ) );
+      DisplayArea label = new DisplayArea( data[ 1 ], areas );
       pfPanel.add( label, "0, " + row + ", l, t" );
-      String text = data[ 2 ];
+      
+      DisplayArea area = new DisplayArea( data[ 2 ], areas );
+      pfPanel.add( area, "1, " + row++ );
+
+      JComboBox combo = new JComboBox();
+      String text = data[ 3 ];
+      while ( true )
+      {
+        int pos = text.indexOf( "\n" );
+        if ( pos >= 0 )
+        {
+          combo.addItem( text.substring( 0, pos ) );
+          text = text.substring( pos + 1 );
+        }
+        else
+        {
+          combo.addItem( text.substring( 0 ) );
+          break;
+        }
+      };
+      
+      pfPanel.add( combo, "1, " + row++ );
+      if ( data.length > 4 )
+      {
+        area = new DisplayArea( data[ 4 ], areas );
+        pfPanel.add( area, "1, " + row++ );
+      }
+      
       if ( pfValues[ n ] != null )
       {
         int len = Integer.parseInt( data[ 0 ] );
         int val = ( pfValues[ n ] >> bitPos ) & ( ( 1 << len ) - 1 );
         bitPos += len;
-        int ndx = text.indexOf( "\n" + val + " =" ) + 1;
-        if ( ndx == 0 )
+        for ( int i = 0; ; i++ )
         {
-          ndx = text.indexOf( "\nother =" ) + 1;
-        }
-        if ( ndx > 0 )
-        {
-          text = text.substring( 0, ndx ) + "* " + text.substring( ndx  );
+          text = ( String )combo.getModel().getElementAt( i );
+          if ( text.startsWith( "" + val + " =" ) || i == combo.getModel().getSize() - 1 /* other */ )
+          {
+            combo.setSelectedIndex( i );
+            break;
+          }
         }
       }
-      
-      JTextArea area = new JTextArea( text );
-      area.setLineWrap( true );
-      area.setWrapStyleWord( true );
-      area.setFont( label.getFont() );
-      area.setBackground( label.getBackground() );
-      area.setEditable( false );
-      areas.add(  area );
-      pfPanel.add( area, "1, " + row );
-      row += 2;
+      row++;
     }
     pfPanel.validate();
     for ( JTextArea area : areas )
@@ -1291,20 +1332,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         text += String.format( "PD%02X", pdNum + i );
       }
-      JLabel label = new JLabel( text );
+      DisplayArea label = new DisplayArea( text, areas );
       
       text = data[ 1 ];
-      JTextArea area = new JTextArea();
-      area.setLineWrap( true );
-      area.setWrapStyleWord( true );
-      area.setFont( label.getFont() );
-      area.setBackground( label.getBackground() );
-      area.setEditable( false );
-      areas.add(  area );
+      DisplayArea area = new DisplayArea( "", areas );
       
       if ( n > 0 )
       {
-        label.setBorder( BorderFactory.createEmptyBorder( 2, 0, 2, 0 ) );
         pdPanel.add( label, "0, " + row + ", l, t" );
         pdPanel.add( area, "1, " + row );
         int val = 0;
@@ -1482,17 +1516,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         text += " * ";
       }
 
-      JLabel label = new JLabel( text );
-      label.setBorder( BorderFactory.createEmptyBorder( 2, 0, 2, 0 ) );
+      DisplayArea label = new DisplayArea( text, areas );
 
       text = fn[ 1 ] + ( fn[ 1 ].equals( "" ) ? "" : "\n" ) + fn[ 2 ];
-      JTextArea area = new JTextArea( text );
-      area.setLineWrap( true );
-      area.setWrapStyleWord( true );
-      area.setFont( label.getFont() );
-      area.setBackground( label.getBackground() );
-      area.setEditable( false );
-      areas.add(  area );
+      DisplayArea area = new DisplayArea( text, areas );
       if ( fn[ 1 ].equals( "" ) )
       {
         fnHeaderPanel.removeAll();
@@ -1665,6 +1692,18 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     for ( int i = 0; i < optionButtons.length; i++ )
     {
       optionButtons[ i ].setSelected( ( ( opt >> i ) & 1 ) == 1 );
+    }
+  }
+  
+  public void setSelectedCode( Processor proc )
+  {
+    for ( int i = 0; i < procs.length; i++ )
+    {
+      if ( procs[ i ].getEquivalentName().equals( proc.getEquivalentName() ) )
+      {
+        codeTable.getSelectionModel().setSelectionInterval( i, i );
+        break;
+      }
     }
   }
   
