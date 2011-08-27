@@ -540,12 +540,25 @@ public class DeviceUpgrade extends Highlight
    */
   public boolean setProtocol( Protocol newProtocol, boolean messages )
   {
+    if ( remote != null )
+    {
+      List< Protocol > builtIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, newProtocol.getID( remote ) );
+      if ( !builtIn.isEmpty() && !builtIn.contains( newProtocol ) )
+      {
+        String title = "Protocol conflict";
+        String message = "This remote contains a built-in protocol with the same PID "
+          + "and the chosen protocol has no available alternate PID.\n"
+          + "Please choose a different protocol.";
+        JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
+        return false;
+      }
+    }
     // If called from an existing configuration, test if there is a conflicting protocol upgrade
     if ( messages && remoteConfig != null )
     {
       String title = "Custom protocol code";
       Hex code = newProtocol.getCustomCode( remote.getProcessor() );
-      ProtocolUpgrade pu = newProtocol.getCustomUpgrade( remoteConfig, true );  
+      ProtocolUpgrade pu = newProtocol.getCustomUpgrade( remoteConfig, true );
       if ( code != null )
       {
         String message = "This protocol has custom code assigned that will\n"

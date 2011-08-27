@@ -47,6 +47,9 @@ Changes for v2.02
 - Add a fourth tab, "PD Details", in Manual Settings to show normal usage of PD bytes, for S3C80 and HCS08 only (Graham)
 - Add a fifth tab, "Functions", in Manual Settings to provide descriptions of register and function addresses specified as predefined constants (Graham)
 - Fix bug in RM (only) preventing Cancel button in Prompt to Save from working correctly (Graham)
+-- Alpha 12
+- Change the button texts "Hide Upper" and "Show Upper" to "Expand" and "Collapse" (Graham)
+- Block the ability to select a protocol when the remote has a different variant of the same protocol built in and there is no Alternate PID (Graham)
 
 Changes for v2.01
 -- Alpha --

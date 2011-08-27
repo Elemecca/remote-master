@@ -460,8 +460,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
     mainButtonPanel.add( buttonPanel, BorderLayout.LINE_START );
 
-    codeButton = new JButton( "Hide upper");
-    codeButton.setToolTipText( "<HTML>Hide/Show the upper panel of codes to give<BR>more/less room for lower tabbed panel</HTML>" );
+    codeButton = new JButton( "Expand" );
+    codeButton.setToolTipText( "<HTML>Expand/Collapse the lower tabbed panel.  When expanded<BR>it hides the upper panel of protocol codes.</HTML>" );
     codeButton.addActionListener( this );
     buttonPanel.add( codeButton, BorderLayout.CENTER );
     
@@ -580,7 +580,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     else if ( source == codeButton )
     {
       upperPanel.setVisible( !upperPanel.isVisible() );
-      codeButton.setText( upperPanel.isVisible() ? "Hide upper" : "Show upper" );
+      codeButton.setText( upperPanel.isVisible() ? "Expand" : "Collapse" );
     }
   }
 
