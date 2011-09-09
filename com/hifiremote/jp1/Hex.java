@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 // TODO: Auto-generated Javadoc
@@ -93,7 +94,8 @@ public class Hex implements Cloneable, Comparable< Hex >
   public Hex( Hex h, int offset, int length )
   {
     data = new short[ length ];
-    System.arraycopy( h.data, 0, data, 0, length );
+    System.arraycopy( h.data, offset, data, 0, Math.min( length, h.length() - offset ) );
+    if ( h.length() - offset < length ) Arrays.fill( data, h.length() - offset, length, (short)0 );
   }
 
   /**

@@ -114,7 +114,7 @@ public class HCS08data
     { "LDA", "Imm" },         { "AIS", "Imm" },
     { "EOR", "Imm" },         { "ADC", "Imm" },
     { "ORA", "Imm" },         { "ADD", "Imm" },
-    { "*", "Nil" },      { "BSR", "Rel" },
+    { "*", "Nil" },           { "BSR", "Rel" },
     { "LDX", "Imm" },         { "AIX", "Imm" },
 
     { "SUB", "Dir" },         { "CMP", "Dir" },

@@ -1,6 +1,12 @@
 package com.hifiremote.jp1;
 
-import com.hifiremote.jp1.AssemblerTableModel.DisasmState;
+import java.util.Arrays;
+import java.util.List;
+
+import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
+import com.hifiremote.jp1.AssemblerOpCode.OpArg;
+import com.hifiremote.jp1.AssemblerOpCode.Token;
+import com.hifiremote.jp1.AssemblerOpCode.TokenType;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -35,75 +41,225 @@ public class S3C80Processor
     setRAMAddress( 0x8000 );
   }
   
+  private static String conditionCodes[] = { "F", "LT", "LE", "ULE", "OV", "MI",
+      "EQ", "C", "" /*"T"*/, "GE", "GT", "UGT", "NOV", "PL", "NE", "NC" };
+  
   @Override
   public String getConditionCode( int n )
   {
-    String ccs[] = { "F", "LT", "LE", "ULE", "OV", "MI",
-    "EQ", "C", "" /*"T"*/, "GE", "GT", "UGT", "NOV", "PL", "NE", "NC" };
-    return ( ccs[ n ] == "" ) ? "" : ccs[ n ] + ", ";
+    return ( conditionCodes[ n ] == "" ) ? "" : conditionCodes[ n ] + ", ";
+  }
+  
+  @Override
+  public int getConditionIndex( String cc )
+  {
+    if ( cc.equals( "T" ) ) cc = "";
+    return Arrays.asList( conditionCodes ).indexOf( cc );
+  }
+  
+  @Override
+  public void disasmModify( AddressMode mode, Object[] obj )
+  {
+    int modifier = mode.modifier;
+    switch ( modifier )
+    {
+      case 1:
+        obj[ 1 ] = ( Integer )obj[ 1 ] >> 1;
+        break;
+      case 2:
+      case 3:
+      case 8:
+        obj[ 1 ] = ( Integer )obj[ 1 ] & 0x0E;
+        if ( modifier == 8 )
+        {
+          Integer val = ( Integer )obj[ 2 ];
+          if ( val != null && val > 127 ) obj[ 2 ] = val - 256;
+        }
+        break;
+      case 4:
+        obj[ 0 ] = ( Integer )obj[ 0 ] & 0xFC;
+        break;
+      case 5:
+        int n = mode.argMap[ 0 ] - 1;
+        if ( ( ( ( Integer )obj[ n ] ) & 1 ) == 1 ) 
+        {
+          obj[ 0 ] = "*";   // Invalid args
+        }
+        break;
+      case 6:
+        if ( ( ( ( Integer )obj[ 0 ] ) & 1 ) == 1 || ( ( ( Integer )obj[ 1 ] ) & 1 ) == 1 ) 
+        {
+          obj[ 0 ] = "*";   // Invalid args
+        }
+        break;
+    }
+  }
+  
+  @Override
+  public void asmModify( int modifier, int[] obj )
+  {
+    switch ( modifier )
+    {
+      case 1:
+        obj[ 1 ] = obj[ 1 ] << 1;
+        break;
+    }
+  }
+  
+  @Override
+  public boolean checkModifier( AddressMode mode, OpArg args )
+  {
+    for ( int i = 0; i < args.size(); i++ )
+    {
+      Token t = args.get( i );
+      // If numeric, check against limits
+      if ( t.type == TokenType.NUMBER )
+      {
+        int val = t.value;
+        if ( mode.modifier == 8 && ( val < -128 || val > 127 ) ) return false;
+        if ( mode.modifier != 8 && ( val < 0 || val > mode.argLimits[ i ] ) ) return false;
+      }
+    }
+    switch ( mode.modifier )
+    {
+      case 2:
+      case 3:
+      case 8:
+        int n = Arrays.asList( mode.argMap ).indexOf( 2 ); // argMap values based at 1
+        if ( n < 0 ) return false;
+        Integer val = args.get( n ).value;
+        return val != null && ( val & 1 ) == 0 && ( mode.modifier != 2 || val != 0 );
+      case 4:
+        val = args.get( 0 ).value;
+        return val != null && ( val & 3 ) == 0;
+      case 5:
+        val = args.get( 0 ).value;
+        return val != null && ( val & 1 ) == 0;
+      case 6:
+        val = args.get( 0 ).value;
+        Integer val2 = args.get( 1 ).value;
+        return val != null && val2 != null && ( val & 1 ) == 0 && ( val2 & 1 ) == 0;
+      default:
+        return true;
+    }
+  }
+  
+  @Override
+  public void addToMap( AssemblerOpCode op )
+  {
+    AssemblerOpCode op1 = op.clone();
+    int index = op.getIndex();
+    switch ( index )
+    {
+      case 1:
+        op1.setHex( new Hex( op1.getHex(), 0, 2 ) );
+        op1.getHex().set( (short)1, 1 );
+        // run through
+      case 4:
+        op1.setMode( getAddressModes().get( op.getMode().name + "Z" ) );
+        super.addToMap( op1 );
+        // run through
+      case 0:
+      case 5:
+        super.addToMap( op );
+        if ( index < 2 ) break;
+        AssemblerOpCode op2 = op.clone();
+        op2.setName( op2.getName().replaceFirst( "C", "E" ) );
+        op2.setHex( new Hex( op2.getHex(), 0, 2 ) );
+        op2.getHex().set( (short)1, 1 );
+        super.addToMap( op2 );
+        if ( index == 5 ) break;
+        op2 = op1.clone();
+        op2.setName( op2.getName().replaceFirst( "C", "E" ) );
+        op2.setHex( new Hex( op2.getHex(), 0, 2 ) );
+        op2.getHex().set( (short)1, 1 );
+        super.addToMap( op2 );
+        break;
+      case 2:
+      case 3:
+        op1.setName( op.getName() + ( ( index == 2 ) ? "F" : "R" ) );
+        super.addToMap( op1 );
+        op1 = op.clone();
+        op1.setName( op.getName() + ( ( index == 2 ) ? "T" : "S" ) );
+        op1.setHex( new Hex( op1.getHex(), 0, 2 ) );
+        op1.getHex().set( (short)1, 1 );
+        super.addToMap( op1 );
+        break;
+      case 6:
+        super.addToMap( op );
+        op1.setName( op.getName() + "0" );
+        op1.setHex( new Hex( op1.getHex(), 0, 2 ) );
+        op1.getHex().set( (short)2, 1 );
+        super.addToMap( op1 );
+        op1 = op.clone();
+        op1.setName( op.getName() + "1" );
+        op1.setHex( new Hex( op1.getHex(), 0, 2 ) );
+        op1.getHex().set( ( short )1, 1 );
+        super.addToMap( op1 );
+        break;  
+    }
+    if ( op.getMode().modifier == 7 )
+    {
+      op1 = op.clone();
+      op1.setMode( getAddressModes().get( op.getMode().name + "Z" ) );
+      op1.getHex().set( ( short )( op1.getHex().getData()[ 0 ] | ( getConditionIndex( "T" ) << 4 ) ), 0 );
+      super.addToMap( op1 );
+    }
   }
 
   @Override
-  public AssemblerOpCode getOpCode( short[] data, DisasmState state )
+  public AssemblerOpCode getOpCode( Hex hex )
   {
-    AssemblerOpCode opCode = getInstructions().get( 0 )[ data[ state.index++ ] ].clone();
-    state.shiftFlag = false;
-    state.shiftPos = 3;
-    state.nMask = 0;
-    state.bMask = 0;
-    switch ( opCode.getIndex() )
+    if ( hex == null || hex.length() == 0 ) return null;
+    AssemblerOpCode opCode = getInstructions().get( 0 )[ hex.getData()[ 0 ] ].clone();
+    int index = opCode.getIndex();
+    if ( index > 0 && hex.length() == 1 ) return new AssemblerOpCode();
+    short byte2 = ( index > 0 ) ? hex.getData()[ 1 ] : 0;
+    switch ( index )
     {
       case 1:
-        state.shiftFlag = true;
-        if ( ( data[ state.index ] & 1 ) == 1 )
+        if ( ( byte2 & 1 ) == 1 )
         {
           opCode.setMode( getAddressModes().get( opCode.getMode().name + "Z" ) );
         }
-        if ( opCode.getMode() == null )
-        {
-          opCode.setIndex( -1 );  // Error
-        }
         break;
       case 2:
-        state.shiftFlag = true;
-        opCode.setName( opCode.getName() + ( ( ( data [ state.index ] & 1 ) == 0 ) ? "F" : "T" ) );
+        opCode.setName( opCode.getName() + ( ( ( byte2 & 1 ) == 0 ) ? "F" : "T" ) );
         break;
       case 3:
-        state.shiftFlag = true;
-        opCode.setName( opCode.getName() + ( ( ( data [ state.index ] & 1 ) == 0 ) ? "R" : "S" ) );
+        opCode.setName( opCode.getName() + ( ( ( byte2 & 1 ) == 0 ) ? "R" : "S" ) );
         break;
       case 4:
-        if ( ( data[ state.index ] & 0x0E ) == 0 )
+        if ( ( byte2 & 0x0E ) == 0 )
         {
           opCode.setMode( getAddressModes().get( opCode.getMode().name + "Z" ) );
         }
         // run through
       case 5:
-        state.nMask = 0x0E;
-        if ( ( data[ state.index ] & 1 ) == 1 )
+        if ( ( byte2 & 1 ) == 1 )
         {
           opCode.setName( opCode.getName().replaceFirst( "C", "E" ) );
         }
         break;
       case 6:
-        state.bMask = 0xFC;
-        opCode.setName( opCode.getName() + ( ( ( data [ state.index ] & 1 ) == 1 ) ? "1" :
-          ( ( data [ state.index ] & 2 ) == 2 ) ? "0" : "" ) );
-        if ( ( data [ state.index ] & 3 ) == 3 )
+        opCode.setName( opCode.getName() + ( ( ( byte2 & 3 ) == 1 ) ? "1" :
+          ( ( byte2 & 3 ) == 2 ) ? "0" : "" ) );
+        if ( ( byte2 & 3 ) == 3 )
         {
-          opCode.setIndex( -1 );  // Error
+          opCode = new AssemblerOpCode();  // Error
+          opCode.getMode().length = 1;
         }
         break;
       default:
         break;
     }
+    if ( opCode.getMode() == null )
+    {
+      opCode.setMode( new AddressMode() ) ; // Error
+    }
     if ( opCode.getIndex() > 0 )
     {
       opCode.setIndex( 0 );
-    }
-    if ( opCode.getName() == "*" )
-    {
-      opCode.setIndex( -1 );  // Invalid op code
     }
     return opCode;
   }
@@ -250,6 +406,14 @@ public class S3C80Processor
   public String getRegisterPrefix()
   {
     return "R";
+  }
+  
+  @Override
+  public List< String > getHexPrefixes()
+  {
+    List< String > list = super.getHexPrefixes();
+    list.addAll( Arrays.asList( "R", "W" ) );
+    return list;
   }
 
 }

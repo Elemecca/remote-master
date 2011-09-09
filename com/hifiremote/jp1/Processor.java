@@ -1,10 +1,15 @@
 package com.hifiremote.jp1;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
+import com.hifiremote.jp1.AssemblerOpCode.OpArg;
+import com.hifiremote.jp1.AssemblerOpCode.Token;
+import com.hifiremote.jp1.AssemblerOpCode.TokenType;
 import com.hifiremote.jp1.AssemblerTableModel.DisasmState;
 
 // TODO: Auto-generated Javadoc
@@ -322,9 +327,21 @@ public abstract class Processor
   public void setAddressModes( String[][] modeArray )
   {
     addressModes.clear();
+    modesByOutline.clear();
     for ( int i = 0; i < modeArray.length; i++ )
     {
-      addressModes.put( modeArray[i][0], new AddressMode( modeArray[i] ) );
+      AddressMode mode = new AddressMode( modeArray[i] );
+      addressModes.put( modeArray[i][0], mode );
+      if ( modesByOutline.containsKey( mode.outline ) )
+      {
+        modesByOutline.get( mode.outline ).add( mode.name );
+      }
+      else
+      {
+        List< String > list = new ArrayList< String >();
+        list.add( mode.name );
+        modesByOutline.put(  mode.outline, list );
+      }
     }
   }
   
@@ -387,52 +404,255 @@ public abstract class Processor
       zeroAddresses.put( labelArray[ i ][ 0 ] , n );
     }
   }
+  
+  public LinkedHashMap< String, String > getAsmLabels()
+  {
+    LinkedHashMap< String, String > labels = new LinkedHashMap< String, String >();
+    String formatAddr = null;
+    if ( getAddressModes().get( "EQUR" ) == null )
+    {
+      formatAddr = getAddressModes().get( "EQU2" ).format;
+    }
+    else
+    {
+      formatAddr = getAddressModes().get( "EQUR" ).format;
+    }  
+
+    for ( String text : getZeroSizes().keySet() )
+    {
+      int addr = getZeroAddresses().get( text );
+      int size = getZeroSizes().get( text );
+      String labelBody = getZeroLabels().get( addr )[ 1 ];
+
+      if ( labelBody.length() >= text.length() )
+      {
+        labels.put( text.toUpperCase(), String.format( formatAddr, addr) );
+      }
+      else for ( int i = 0; i < size; i++ )
+      {
+        String formatLbl = labelBody + "%0" + ( text.length() - labelBody.length() ) + "X";
+        labels.put( String.format( formatLbl, i ).toUpperCase(), String.format( formatAddr, addr + i ) );
+      }
+    };
+
+    for ( String text : getZeroAddresses().keySet() )
+    {
+      int addr = getZeroAddresses().get( text );
+      if ( getZeroSizes().keySet().contains( text ) ) continue;
+      labels.put( text.toUpperCase(), String.format( formatAddr, addr) );
+    }
+    
+    formatAddr = getAddressModes().get( "EQU4" ).format;
+    for ( String text : getAbsAddresses().keySet() )
+    {
+      int addr = getAbsAddresses().get( text );
+      labels.put( text.toUpperCase(), String.format( formatAddr, addr) );
+    }
+    
+    return labels;
+  }
 
   public void setInstructions( String[][][] instArray )
   {
     instructions.clear();
+    HashMap< Integer, Integer > firstBytes = new HashMap< Integer, Integer >();
     for ( int i = 0; i < instArray.length; i++ )
     {
-      AssemblerOpCode[] assCodes = new AssemblerOpCode[ instArray[ i ].length ];
+      AssemblerOpCode[] opCodes = new AssemblerOpCode[ instArray[ i ].length ];
       for ( int j = 0; j < instArray[ i ].length; j++ )
       {
-        assCodes[ j ] = new AssemblerOpCode( this, instArray[ i ][ j ] );
+        Hex hex = new Hex( new short[]{ ( short)j } );
+        AssemblerOpCode op = new AssemblerOpCode( this, instArray[ i ][ j ] );
+        if ( op.getName().equals( "*" ) && op.getIndex() > 0 )
+        {
+          firstBytes.put( op.getIndex(), j );
+        }
+        else if ( i > 0 && firstBytes.get( i ) != null )
+        {
+          hex = new Hex( 2 );
+          hex.set( firstBytes.get( i ).shortValue(), 0 );
+          hex.set( ( short )j, 1 );
+        }
+        op.setHex( hex );
+        op.setLength( hex.length() );
+        opCodes[ j ] = op;
       }
-      instructions.add( assCodes );
+      instructions.add( opCodes );
+    }
+    for ( int i = 0; i < instructions.size(); i++ )
+    {
+      for ( int j = 0; j < instructions.get( i ).length; j++ )
+      {
+        addToMap( instructions.get( i )[ j ] );
+      }
     }
   }
   
-  public AssemblerOpCode getOpCode( short[] data, DisasmState state )
+  public void addToMap( AssemblerOpCode op )
   {
     // This code handles 6805, 740 and HCS08 processors.  S3C80Processor class has an override.
-    AssemblerOpCode opCode = instructions.get( 0 )[ data[ state.index++ ] ].clone();
-    state.shiftFlag = false;
-    state.shiftPos = 0;
-    state.nMask = 0;
-    state.bMask = 0;
-    if ( opCode.getIndex() > 0 )
+    String name = op.getName();
+    if ( op.getMode() == null ) return;
+    String modeName = op.getMode().name;
+    LinkedHashMap< String, AssemblerOpCode > map = null;
+    if ( opMap.containsKey( name ) )
     {
-      if ( opCode.getIndex() < instructions.size() )
+      map = opMap.get( name );
+    }
+    else
+    {
+      map = new LinkedHashMap< String, AssemblerOpCode >();
+      opMap.put(  name, map );
+    }
+    if ( !map.containsKey( modeName ) )
+    {
+      map.put(  modeName, op );
+    }
+  }
+  
+  public void disasmModify( AddressMode mode, Object[] obj )
+  {
+    // This code handles 6805, 740 and HCS08 processors.  S3C80Processor class has an override.
+    switch ( mode.modifier )
+    {
+      case 1:
+        obj[ 0 ] = ( Integer )obj[ 0 ] >> 1;
+        break;
+      case 2:
+        obj[ 0 ] = ( Integer )obj[ 0 ] + 0xFF00;
+        break;
+    }
+  }
+  
+  public void asmModify( int modifier, int[] obj )
+  {
+    // This code handles 6805, 740 and HCS08 processors.  S3C80Processor class has an override.
+    switch ( modifier )
+    {
+      case 1:
+        obj[ 0 ] = obj[ 0 ] << 1;
+        break;
+      case 2:
+        obj[ 0 ] = obj[ 0 ] & 0xFF;
+    }
+  }
+  
+  public boolean checkModifier( AddressMode mode, OpArg args )
+  {
+    // This code handles 6805, 740 and HCS08 processors.  S3C80Processor class has an override.
+    for ( int i = 0; i < args.size(); i++ )
+    {
+      Token t = args.get( i );
+      if ( t.type == TokenType.NUMBER )
       {
-        opCode = instructions.get( opCode.getIndex() )[ data[ state.index++ ] ];
-      }
-      else
-      {
-        state.shiftFlag = true;
-        opCode.setIndex( 0 );
+        int val = t.value;
+        if ( val < 0 || val > mode.argLimits[ i ] ) return false;
       }
     }
-    if ( opCode.getName() == "*" )
+    switch ( mode.modifier )
     {
-      opCode.setIndex( -1 );  // Invalid op code
+      case 2:
+        Integer val = args.get( 0 ).value;
+        return val != null && val >= 0xFF00;
+      default:
+        return true;
+    }
+  }
+  
+  public AssemblerOpCode getOpCode( Hex hex )
+  {
+    // This code handles 6805, 740 and HCS08 processors.  S3C80Processor class has an override.
+    if ( hex == null || hex.length() == 0 ) return null;
+    AssemblerOpCode opCode = instructions.get( 0 )[ hex.getData()[ 0 ] ].clone();
+    if ( opCode.getIndex() > 0 && hex.length() > 1 )
+    {
+        opCode = instructions.get( opCode.getIndex() )[ hex.getData()[ 1 ] ].clone();
     }
     return opCode;
   }
   
+  public OpArg getArgs ( String argText, LinkedHashMap< String, String > labels  )
+  {
+    OpArg args = new OpArg();
+    argText = argText.toUpperCase() + ",";
+    while ( argText.length() > 1 )
+    {
+      int pos = argText.indexOf( ',' );
+      OpArg arg = new OpArg( argText.substring( 0, pos++ ), this, labels );
+      args.addAll( arg );
+      args.outline += arg.outline + ", ";
+      argText = argText.substring( pos );
+    }
+    args.outline = args.outline.substring( 0, Math.max( args.outline.length() - 2, 0 ) );
+    return args;
+  }
+  
+  public List< String > getAddressModes( OpArg args  )
+  {
+    List< String > modes = new ArrayList< String >();
+    if ( modesByOutline.get( args.outline ) == null ) return modes;
+    for ( String mode : modesByOutline.get( args.outline ) ) modes.add( mode );
+    Iterator< String > it = modes.iterator();
+    while ( it.hasNext() )
+    {
+      AddressMode mode = addressModes.get( it.next() );
+      
+      if ( !checkModifier( mode, args ) )
+      {
+        it.remove();
+        continue;
+      }
+      
+      // Do checks independent of modifier
+      for ( int i = 0; i < args.size(); i++ )
+      {
+        Token t = args.get( i );
+        // If offset, check value and whether a valid position for an offset
+        if ( t.type == TokenType.OFFSET )
+        {
+          int n = mode.argMap[ i ] - mode.nibbleArgs - 1;
+          if ( t.value < -128 || t.value > 127 || n < 0 || ( ( mode.relMap >> n ) & 1 ) == 0 )
+          {
+            it.remove();
+            continue;
+          }
+        }
+        // If condition code, check if valid position
+        else if ( t.type == TokenType.CONDITION_CODE )
+        {
+          int n = mode.argMap[ i ] - 1;
+          if ( ( ( mode.ccMap >> n ) & 1 ) == 0 )
+          {
+            it.remove();
+            continue;
+          }
+        }
+        // If error, always remove
+        else if ( t.type == TokenType.ERROR )
+        {
+          it.remove();
+          continue;
+        }
+      }
+    }
+    return modes;
+  }
+  
+  public List< String > getHexPrefixes()
+  {
+    List< String > list = new ArrayList< String >();
+    list.add( "$" );
+    return list;
+  }
   
   public String getConditionCode( int n )
   {
     return null;
+  }
+  
+  public int getConditionIndex( String cc )
+  {
+    return -1;
   }
 
   public int getStartOffset()
@@ -482,6 +702,12 @@ public abstract class Processor
   {
     return "$";
   }
+  
+  public LinkedHashMap< String, LinkedHashMap< String, AssemblerOpCode >> getOpMap()
+  {
+    return opMap;
+  }
+
 
   /** The name. */
   private String name = null;
@@ -518,7 +744,11 @@ public abstract class Processor
   
   private List< AssemblerOpCode[] > instructions = new ArrayList< AssemblerOpCode[] >();
   
+  protected LinkedHashMap< String, LinkedHashMap< String, AssemblerOpCode > > opMap = new LinkedHashMap< String, LinkedHashMap< String, AssemblerOpCode > >();
+  
   private LinkedHashMap< String, AddressMode > addressModes = new LinkedHashMap< String, AddressMode >();
+  
+  private LinkedHashMap< String, List< String > > modesByOutline = new LinkedHashMap< String, List< String > >();
   
   private LinkedHashMap< Integer, String > absLabels = new LinkedHashMap< Integer, String >();
   
