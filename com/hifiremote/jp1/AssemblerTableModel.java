@@ -7,8 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.table.TableCellEditor;
 
 import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
+import com.hifiremote.jp1.AssemblerOpCode.OpArg;
+import com.hifiremote.jp1.AssemblerOpCode.Token;
 import com.hifiremote.jp1.assembler.CommonData;
 import com.hifiremote.jp1.assembler.S3C80data;
 
@@ -61,6 +64,18 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     return col <= 1;
   }
   
+  @Override
+  public boolean isCellEditable( int row, int col )
+  {
+    return ( row > 0 && col > 0 );
+  }
+  
+  @Override
+  public TableCellEditor getColumnEditor( int col )
+  {
+    return selectAllEditor;
+  }
+  
   public ManualSettingsDialog dialog = null;
   
   @Override
@@ -84,9 +99,37 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       case 4:
         return item.getArgumentText();
       case 5:
-        return item.getComments();
+        int n = item.getErrorCode();
+        return n > 0 ? AssemblerItem.getError( n ) : item.getComments();
       default:
         return null;
+    }
+  }
+  
+  @Override
+  public void setValueAt( Object value, int row, int column )
+  {
+    AssemblerItem item = getRow( row );
+    String text = ( String )value;
+    switch ( column )
+    {
+      case 1:
+        item.setHex( new Hex( text ) );
+        return;
+      case 2:
+        item.setLabel( text );
+        return;
+      case 3:
+        item.setOperation( text );
+        return;
+      case 4:
+        item.setArgumentText( text );
+        return;
+      case 5:
+        item.setComments( text );
+        return;
+      default:
+        return;
     }
   }
 
@@ -105,11 +148,113 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     public boolean toRC = false;
     public boolean toW = false;
   }
+  
+  public Hex assemble( Processor processor )
+  {
+    Hex hexA = new Hex();
+//    LinkedHashMap< String, String > asmLabels = processor.getAsmLabels();
+    LinkedHashMap< String, String > asmLabels = new LinkedHashMap< String, String >();
+    
+    // Locate all labels
+    for ( AssemblerItem item : itemList )
+    {
+      if ( !item.getLabel().isEmpty() )
+      {
+        String lbl = item.getLabel().trim().toUpperCase();
+        String txt = null;
+        if ( lbl.endsWith( ":" )) lbl = lbl.substring( 0, lbl.length() - 1 );
+        if ( item.getOperation().equals( "EQU" ) )
+        {
+          txt = item.getArgumentText().toUpperCase();
+          AssemblerOpCode opCode = new AssemblerOpCode();
+          opCode.setName( "EQU" );
+          opCode.setLength( 0 );
+          item.setOpCode( opCode );
+        }
+        else
+        {
+          // Set dummy value where final value not yet known
+          txt = "FFFFH";
+        }
+        asmLabels.put( lbl, txt );
+      }
+    }
+    
+    // Main assembly loop handles all items not involving relative addresses
+    int addr = processor.getRAMAddress();
+    for ( AssemblerItem item : itemList )
+    {
+      String op = item.getOperation();
+      if ( Arrays.asList( "DB", "DW", "ORG" ).contains( op ) )
+      {
+        item.setErrorCode( 0 );
+        OpArg args = OpArg.getArgs( item.getArgumentText(), null, asmLabels );
+        AssemblerOpCode opCode = new AssemblerOpCode();
+        opCode.setName( op );
+        opCode.setLength( 0 );
+        AddressMode mode = opCode.getMode();
+        mode.length = op.equals( "ORG" ) ? 0 : op.equals( "DB" ) ? args.size() : 2 * args.size();
+        for ( int i = 0; i < args.size() - 1; i++ ) mode.outline += "%X, ";
+        if ( args.size() > 0 ) mode.outline += "%X";
+        if ( !args.outline.equals( mode.outline ) || op.equals( "ORG" ) && args.size() > 1 ) item.setErrorCode( 2 );
+        Hex hx = new Hex( mode.length );
+        
+        for ( Token t : args )
+        {
+          if ( t.value < 0 || t.value > ( op.equals( "DB" ) ? 0xFF : 0xFFFF ) ) item.setErrorCode( 5 );
+        }
+        
+        int n = 0;
+        if ( item.getErrorCode() == 0 ) for ( Token t : args )
+        {
+          if ( op.equals( "ORG" ) )
+          {
+            addr = t.value;
+          }
+          else if ( op.equals( "DB" ) )
+          {
+            hx.set( ( short )( int )t.value, n++ );
+          }
+          else // "DW"
+          {
+            hx.put( t.value, n );
+            n += 2;
+          }
+        }
+        item.setHex( hx );
+        item.setOpCode( opCode );
+        if ( !op.equals( "ORG" ) ) item.setAddress( addr );
+      }
+      else if ( !op.equals( "EQU" ) )
+      {
+        item.setAddress( addr );
+        item.assemble( processor, asmLabels, false );
+        // Replace dummy label values with final ones
+        if ( !item.getLabel().isEmpty() )
+        {
+          String txt = item.getLabel();
+          if ( txt.endsWith( ":" )) txt = txt.substring( 0, txt.length() - 1 );
+          asmLabels.put( txt, Integer.toString( addr ) );
+        }
+      }
+      addr += item.getLength();
+    }
+    
+    // Assemble those items that do involve relative addresses
+    for ( AssemblerItem item : itemList )
+    {
+      if ( item.getOpCode().getMode().relMap != 0 )
+      {
+        item.assemble( processor, asmLabels, true );
+      }
+    }
+    return hexA;
+  }
 
-  public void disassemble( Protocol protocol, Processor processor )
+  public void disassemble( Hex hexD, Processor processor )
   {
     itemList.clear();
-    hex = protocol.getCode( processor );
+    this.hex = new Hex( hexD );
     List< Integer > labelAddresses = new ArrayList< Integer >();
     Arrays.fill( dialog.getPfValues(), null );
     Arrays.fill( dialog.getPdValues(), null );
@@ -268,6 +413,9 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         }
       }
     }
+    // TESTING
+//    assemble( processor );
+    // END
     fireTableDataChanged();
   }
 
@@ -660,4 +808,12 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       return "" + t;
     }
   }
+
+  public List< AssemblerItem > getItemList()
+  {
+    return itemList;
+  }
+  
+  private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
+  
 }

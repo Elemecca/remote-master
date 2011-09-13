@@ -52,6 +52,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
@@ -437,6 +438,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     // Disassembly on right pane   
     assemblerTable = new JP1Table( assemblerModel );
     assemblerTable.initColumns( assemblerModel );
+    assemblerTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     assemblerModel.dialog = this;
     scrollPane = new JScrollPane( assemblerTable );
     scrollPane.setBorder( BorderFactory.createTitledBorder( "Disassembly" ) );
@@ -448,7 +450,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     optionsPanel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Disassembly options" ),
         BorderFactory.createEmptyBorder( 0, 10, 0, 10 ) ) );
     rightPanel.add( optionsPanel, BorderLayout.PAGE_END );
-    JPanel optionPanel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
+    JPanel optionPanel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
     useRegisterConstants.addItemListener( this );
     useFunctionConstants.addItemListener( this );
     optionPanel.add( new JLabel( "Use predefined constants for: ") );
@@ -469,6 +471,27 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     optionPanel.add( rcButton );
     optionPanel.add( wButton );
     optionsPanel.add( optionPanel );
+    optionPanel = new JPanel( new GridLayout( 2, 5 ) );
+    optionPanel.add( moveUp );
+    optionPanel.add( insert );
+    optionPanel.add( cut);
+    optionPanel.add( new JLabel() );
+    optionPanel.add( assemble );
+    optionPanel.add( moveDown );
+    optionPanel.add( delete );
+    optionPanel.add( paste );
+    optionPanel.add( new JLabel() );
+    optionPanel.add( new JLabel() );
+    moveUp.addActionListener( this );
+    moveDown.addActionListener( this );
+    insert.addActionListener( this );
+    delete.addActionListener( this );
+    cut.addActionListener( this );
+    paste.addActionListener( this );
+    assemble.addActionListener( this );
+    
+//  Next line commented out as implementation not yet complete
+//    optionsPanel.add( optionPanel );
     
     // Button Panel
     JPanel mainButtonPanel = new JPanel( new BorderLayout() );
@@ -570,7 +593,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
       if ( codeTable.getSelectedRowCount() == 1 )
       {
-        assemblerModel.disassemble( protocol, procs[ codeTable.getSelectedRow() ] );
+        Processor proc = procs[ codeTable.getSelectedRow() ];
+        assemblerModel.disassemble( protocol.getCode( proc ), proc );
       }
     }
     else if ( source == view )
@@ -596,6 +620,50 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     {
       upperPanel.setVisible( !upperPanel.isVisible() );
       codeButton.setText( upperPanel.isVisible() ? "Expand" : "Collapse" );
+    }
+    else if ( source == insert || source == delete || source == moveUp || source == moveDown )
+    {
+      List< AssemblerItem > itemList = assemblerModel.getItemList();
+      int row = assemblerTable.getSelectedRow();
+      int col = assemblerTable.getSelectedColumn();
+      int rowCount = assemblerTable.getSelectedRowCount();
+      int colCount = assemblerTable.getSelectedColumnCount();
+      if ( source == insert )
+      {
+        for ( int i = 0; i < rowCount; i++ ) itemList.add( row, new AssemblerItem() );
+        assemblerModel.fireTableDataChanged();
+      }
+      else if ( source == delete )
+      {
+        for ( int i = 0; i < rowCount; i++ ) itemList.remove( row );
+        assemblerModel.fireTableDataChanged();
+      }
+      else if ( source == moveUp && row > 0 )
+      {
+        AssemblerItem item = itemList.get( row - 1 );
+        itemList.remove( row - 1 );
+        itemList.add( row + rowCount - 1, item );
+        assemblerModel.fireTableDataChanged();
+//        assemblerTable.getSelectionModel().setSelectionInterval( row - 1, row + rowCount - 2 );
+        assemblerTable.changeSelection( row - 1, col, false, false );
+        assemblerTable.changeSelection(row + rowCount - 2, col + colCount - 1, false, true );
+      }
+      else if ( source == moveDown && row < itemList.size() - 1 )
+      {
+        AssemblerItem item = itemList.get( row + rowCount );
+        itemList.remove( row + rowCount );
+        itemList.add( row, item );
+        assemblerModel.fireTableDataChanged();
+//        assemblerTable.getSelectionModel().setSelectionInterval( row + 1, row + rowCount );
+        assemblerTable.changeSelection( row + 1, col, false, false );
+        assemblerTable.changeSelection(row + rowCount, col + colCount - 1, false, true );
+      }
+    }
+    else if ( source == assemble )
+    {
+      Processor proc = procs[ codeTable.getSelectedRow() ];
+      assemblerModel.assemble( proc );
+      assemblerModel.fireTableDataChanged();
     }
   }
 
@@ -893,17 +961,17 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
               JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION );
           if ( restore )
           {
-            value = codeWhenNull;
+            newCode = codeWhenNull;
           }
           else
           {
-            value = new Hex();
+            newCode = new Hex();
           }
         }
-        protocol.setCode( ( Hex )value, procs[ row ] );
+        protocol.setCode( newCode, procs[ row ] );
         fireTableRowsUpdated( row, row );
         enableButtons();
-        assemblerModel.disassemble( protocol, procs[ row ] );
+        assemblerModel.disassemble( newCode, procs[ row ] );
       }
     }
   }
@@ -1040,6 +1108,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JRadioButton wButton = new JRadioButton( "Force Wn" );
   private JToggleButton[] optionButtons = { useRegisterConstants, useFunctionConstants, asCodeButton, rcButton, wButton };
   private JRadioButton pfButtons[] = null;
+  
+  public JButton moveUp = new JButton( "Up" );
+  public JButton moveDown = new JButton( "Down" );
+  public JButton insert = new JButton( "Insert" );
+  public JButton delete = new JButton( "Delete" );
+  public JButton cut = new JButton( "Cut" );
+  public JButton paste = new JButton( "Paste" );
+  public JButton assemble = new JButton( "Assemble" );
   
   private JPanel upperPanel = null;
   private JTabbedPane tabbedPane = null;
@@ -1565,13 +1641,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   {
     if ( !e.getValueIsAdjusting() )
     {
+      assemble.setEnabled( codeTable.getSelectedRowCount() == 1 );
       if ( codeTable.getSelectedRowCount() == 1 )
       {
+        Processor proc = procs[ codeTable.getSelectedRow() ];
         int row = codeTable.getSelectedRow();
         Hex hex = protocol.getCode( procs[ row ] );
-        Protocol prot = ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) ?
-            displayProtocol : protocol;
-        assemblerModel.disassemble( prot, procs[ codeTable.getSelectedRow() ] );
+        if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) hex = displayProtocol.getCode( proc );
+        assemblerModel.disassemble( hex, proc );
         setPFPanel();
         setPDPanel();
         setFunctionPanel();
@@ -1653,10 +1730,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     saveOptionButtons();
     if ( codeTable.getSelectedRowCount() == 1 )
     {
-      Hex hex = protocol.getCode( procs[ codeTable.getSelectedRow() ] );
-      Protocol prot = ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) ?
-          displayProtocol : protocol;
-      assemblerModel.disassemble( prot, procs[ codeTable.getSelectedRow() ] );
+      Processor proc = procs[ codeTable.getSelectedRow() ];
+      Hex hex = protocol.getCode( proc );
+      if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) hex = displayProtocol.getCode( proc );
+      assemblerModel.disassemble( hex, proc );
     }
   }
   

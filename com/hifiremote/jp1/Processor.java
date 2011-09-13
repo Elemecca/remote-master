@@ -10,7 +10,6 @@ import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
 import com.hifiremote.jp1.AssemblerOpCode.OpArg;
 import com.hifiremote.jp1.AssemblerOpCode.Token;
 import com.hifiremote.jp1.AssemblerOpCode.TokenType;
-import com.hifiremote.jp1.AssemblerTableModel.DisasmState;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -573,20 +572,9 @@ public abstract class Processor
   
   public OpArg getArgs ( String argText, LinkedHashMap< String, String > labels  )
   {
-    OpArg args = new OpArg();
-    argText = argText.toUpperCase() + ",";
-    while ( argText.length() > 1 )
-    {
-      int pos = argText.indexOf( ',' );
-      OpArg arg = new OpArg( argText.substring( 0, pos++ ), this, labels );
-      args.addAll( arg );
-      args.outline += arg.outline + ", ";
-      argText = argText.substring( pos );
-    }
-    args.outline = args.outline.substring( 0, Math.max( args.outline.length() - 2, 0 ) );
-    return args;
+    return OpArg.getArgs ( argText, this, labels );
   }
-  
+    
   public List< String > getAddressModes( OpArg args  )
   {
     List< String > modes = new ArrayList< String >();
@@ -607,11 +595,11 @@ public abstract class Processor
       for ( int i = 0; i < args.size(); i++ )
       {
         Token t = args.get( i );
-        // If offset, check value and whether a valid position for an offset
+        // If offset, check if valid position
         if ( t.type == TokenType.OFFSET )
         {
           int n = mode.argMap[ i ] - mode.nibbleArgs - 1;
-          if ( t.value < -128 || t.value > 127 || n < 0 || ( ( mode.relMap >> n ) & 1 ) == 0 )
+          if ( n < 0 || ( ( mode.relMap >> n ) & 1 ) == 0 )
           {
             it.remove();
             continue;
@@ -640,9 +628,7 @@ public abstract class Processor
   
   public List< String > getHexPrefixes()
   {
-    List< String > list = new ArrayList< String >();
-    list.add( "$" );
-    return list;
+    return new ArrayList< String >();
   }
   
   public String getConditionCode( int n )

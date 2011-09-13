@@ -20,6 +20,7 @@ public class AssemblerItem
   private String argumentText = "";
   private String comments = "";
   private AssemblerOpCode opCode = null;
+  private int errorCode = 0;
   
   public AssemblerItem(){};
   
@@ -205,9 +206,17 @@ public class AssemblerItem
 
   }
   
-  public void assemble( Processor p, LinkedHashMap< String, String > labels )
+  public void assemble( Processor p, LinkedHashMap< String, String > labels, boolean checkOffset )
   {
+    hex = null;
+    opCode = new AssemblerOpCode();
+    errorCode = 0;
     LinkedHashMap< String, AssemblerOpCode > opMap = p.getOpMap().get( operation );
+    if ( opMap == null )
+    {
+      errorCode = 1;
+      return;
+    }
     Set< String > opModes = opMap.keySet();
     OpArg args = p.getArgs( argumentText, labels );
     List< String > argModes = p.getAddressModes( args );
@@ -217,9 +226,15 @@ public class AssemblerItem
       if ( !opModes.contains( it.next() ) ) it.remove();
     }
     
-    if ( argModes.size() == 0 ) return;
+    if ( argModes.size() == 0 )
+    {
+      errorCode = 2;
+      return;
+    }
     // If size > 1, precedence is determined by order in AddressModes data for processor
     opCode = opMap.get( argModes.get( 0 ) );
+    if ( opCode.getMode().relMap != 0 && !checkOffset ) return;
+    
     AddressMode mode = opCode.getMode();
     Integer[] argMap = mode.argMap;
     int[] obj = { 0, 0, 0, 0 };
@@ -234,17 +249,21 @@ public class AssemblerItem
         {
           t.type = TokenType.OFFSET;
           t.value -= address + opCode.getLength() + mode.length;
-          if ( t.value < -128 || t.value > 127 ) return;
         }
-        else if ( nArg >= 0 && ( ( mode.relMap >> nArg ) & 1 ) == 0 && t.type == TokenType.OFFSET )
+        if ( t.type == TokenType.OFFSET && ( t.value < -128 || t.value > 127 ) )
         {
+          errorCode = 3;
           return;
         }
         obj[ n ] = ( t.type == TokenType.CONDITION_CODE ) ? p.getConditionIndex( t.text ) : t.value;
       }
       else if ( argMap[ i ] > 0x10 )
       {
-        if ( t.type != TokenType.NUMBER ) return;
+        if ( t.type != TokenType.NUMBER ) 
+        {
+          errorCode = 4;  // This error should not occur
+          return;
+        }
         obj[ ( argMap[ i ] >> 4 ) - 1 ] = t.value >> 8;
         obj[ ( argMap[ i ] & 0xF ) - 1 ] = t.value & 0xFF;
       }
@@ -361,6 +380,10 @@ public class AssemblerItem
     return false;
   }
 
+  public int getLength()
+  {
+    return opCode.getLength() + opCode.getMode().length;
+  }
   
   public int getAddress()
   {
@@ -410,5 +433,45 @@ public class AssemblerItem
   {
     this.comments = comments;
   }
+
+  public AssemblerOpCode getOpCode()
+  {
+    return opCode;
+  }
+
+  public void setOpCode( AssemblerOpCode opCode )
+  {
+    this.opCode = opCode;
+  }
+
+  public int getErrorCode()
+  {
+    return errorCode;
+  }
+
+  public void setErrorCode( int errorCode )
+  {
+    this.errorCode = errorCode;
+  }
   
+  public static String getError( int errorCode )
+  {
+    switch ( errorCode )
+    {
+      case 0:
+        return "";
+      case 1:
+        return "Bad op code";
+      case 2:
+        return "Bad argument";
+      case 3:
+        return "Out of range";
+      case 4:
+        return "Assembler error";
+      case 5:
+        return "Bad value";
+      default:
+        return "Unknown error";
+    }
+  }
 }

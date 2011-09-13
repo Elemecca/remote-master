@@ -14,7 +14,7 @@ public class AssemblerOpCode implements Cloneable
   private Hex hex = new Hex( 0 );
   private int length = 1;
   
-  public enum TokenType { SYMBOL, PREFIX, LABEL, NUMBER, OFFSET, CONDITION_CODE, ERROR };
+  public enum TokenType { SYMBOL, PREFIX, LABEL, NUMBER, OFFSET, CONDITION_CODE, NULL, ERROR };
   
   public AssemblerOpCode(){};
   
@@ -42,7 +42,6 @@ public class AssemblerOpCode implements Cloneable
     private String source = null;
     private Processor proc = null;
     private int ndx = 0;
-    private int base = 10;
     
     public Token(){};
     
@@ -63,7 +62,7 @@ public class AssemblerOpCode implements Cloneable
       {
         ch = nextChar();
         if ( ch == null ) break;
-        if ( !Character.isLetterOrDigit( ch ) && ch != '$' ) break;
+        if ( !Character.isLetterOrDigit( ch ) ) break;
         s += ch;
       }
       if ( ch == null && s.isEmpty() )
@@ -79,18 +78,32 @@ public class AssemblerOpCode implements Cloneable
       else 
       {
         if ( ch != null ) ndx--;  // Point to ch as next token
-        if ( s.equals( "$" ) )
+        if ( type == TokenType.SYMBOL && symbol == '$' )
         {
-          t.value = 0;     // $ without a following number is zero offset
-          t.type = TokenType.OFFSET;
+          Integer val = getValue( s, 16 );
+          if ( val == null )
+          {
+            value = 0;
+            type = TokenType.OFFSET;
+          }
+          else
+          {
+            type = TokenType.NULL;
+            t.value = val;
+            t.type = TokenType.NUMBER;
+          }
         }
-        else for ( String px : proc.getHexPrefixes() )
+        else if ( type == TokenType.PREFIX )
+        {
+          t.value = getValue( s, 16 );
+          t.type = TokenType.NUMBER;
+        }
+        else if ( proc != null ) for ( String px : proc.getHexPrefixes() )
         {
           if ( s.startsWith( px ) && getValue( s.substring( px.length() ), 16 ) != null )
           {
             t.text = px;
             t.type = TokenType.PREFIX;
-            t.base = 16;
             ndx = startNdx;
             // Set ndx so that only prefix has been read
             for ( int i = 0; i < px.length(); i++ ) nextChar();
@@ -100,12 +113,12 @@ public class AssemblerOpCode implements Cloneable
       
       if ( t.type == null )
       {
-        t.value = getValue( s, base );
+        t.value = getValue( s, 10 );
         if ( t.value != null )
         {
           t.type = TokenType.NUMBER;
         }
-        else if ( proc.getConditionIndex( s ) >= 0 )
+        else if ( proc != null && proc.getConditionIndex( s ) >= 0 )
         {
           t.text = s;
           t.type = TokenType.CONDITION_CODE;
@@ -131,11 +144,6 @@ public class AssemblerOpCode implements Cloneable
     
     private Integer getValue( String s, int base )
     {
-      if ( base == 10 && s.startsWith( "$" ) )
-      {
-        base = 16;
-        s = s.substring( 1 );
-      }
       if ( base == 10 && s.endsWith( "H" ) ) 
       {
         base = 16;
@@ -157,7 +165,6 @@ public class AssemblerOpCode implements Cloneable
     {
       source = null;
       ndx = 0;
-      base = 10;
     }
   }
   
@@ -294,8 +301,8 @@ public class AssemblerOpCode implements Cloneable
         gap = ( format.substring( i ).startsWith( "s" ) ) ? true : false;
         
       }
-      outline = outline.replaceAll( "%XH", "%X" );
-      outline = outline.replaceAll( "$%X", "%X" );
+      outline = outline.replace( "%XH", "%X" );
+      outline = outline.replace( "$%X", "%X" );
     }
   }
   
@@ -313,7 +320,7 @@ public class AssemblerOpCode implements Cloneable
       {
         t = t.nextToken();
         if ( t == null ) break;
-        if ( t.type == TokenType.LABEL && labels.containsKey( t.text ) )
+        if ( t.type == TokenType.LABEL && labels != null && labels.containsKey( t.text ) )
         {
           t = new Token( labels.get( t.text ) + t.source.substring( t.ndx ), proc );
           continue;
@@ -335,17 +342,35 @@ public class AssemblerOpCode implements Cloneable
           case PREFIX:
           case LABEL:
             outline += t.text;
+          case NULL:
             it.remove();
             break;
+          case OFFSET:
           case NUMBER:
-          case OFFSET:  
             outline += "%X";
             break;
           case CONDITION_CODE:
             outline += "%s";
             break;
         }
+
       }
+    }
+    
+    public static OpArg getArgs ( String argText, Processor processor, LinkedHashMap< String, String > labels  )
+    {
+      OpArg args = new OpArg();
+      argText = argText.toUpperCase() + ",";
+      while ( argText.length() > 1 )
+      {
+        int pos = argText.indexOf( ',' );
+        OpArg arg = new OpArg( argText.substring( 0, pos++ ), processor, labels );
+        args.addAll( arg );
+        args.outline += arg.outline + ", ";
+        argText = argText.substring( pos );
+      }
+      args.outline = args.outline.substring( 0, Math.max( args.outline.length() - 2, 0 ) );
+      return args;
     }
     
     private void doGroup( List< Character > brackets )
@@ -464,7 +489,6 @@ public class AssemblerOpCode implements Cloneable
     opCode.hex = new Hex( this.hex );
     return opCode;
   }
-  
   
   public String getName()
   {
