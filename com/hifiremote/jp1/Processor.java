@@ -602,7 +602,7 @@ public abstract class Processor
           if ( n < 0 || ( ( mode.relMap >> n ) & 1 ) == 0 )
           {
             it.remove();
-            continue;
+            break;
           }
         }
         // If condition code, check if valid position
@@ -612,14 +612,14 @@ public abstract class Processor
           if ( ( ( mode.ccMap >> n ) & 1 ) == 0 )
           {
             it.remove();
-            continue;
+            break;
           }
         }
         // If error, always remove
         else if ( t.type == TokenType.ERROR )
         {
           it.remove();
-          continue;
+          break;
         }
       }
     }

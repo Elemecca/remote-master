@@ -258,29 +258,28 @@ public class CommonData
    };
   
   public static String[][] pdData = {
-    { "0", "Many data values translate to times in microseconds (uSec).  For S3C80 and HCS08 " +
+    { "0", "0", "Many data values translate to times in microseconds (uSec).  For S3C80 and HCS08 " +
       "a 2-byte burst value N translates to 2*N uSec except for the OFF time of an ON/OFF " +
       "burst pair for S3C80, which is (2*N+40) uSec.  A 1-byte carrier value N translates " +
       "to (N+2)/8 uSec for S3C80, N/4 uSec for HCS08.  Individual PD values as used by the IR " +
       "engine are described below, but be aware that protocol code may use PD values in other ways."
     },
-    { "1", "number of bits to be used from each device byte (but see PD10)" },
-    { "1", "number of bits to be used from each command byte (but see PD12)" },
-    { "2", "ON time for logical ONE burst pair" },
-    { "2", "OFF time for logical ONE burst pair" },
-    { "2", "ON time for logical ZERO burst pair" },
-    { "2", "OFF time for logical ZERO burst pair" },
-    { "2", "LEAD-OUT time (or TOTAL TIME if PF1.6 set" },
-    { "2", "ON time for lead-in burst pair" },
-    { "2", "OFF time for lead-in burst pair" },
-    { "1", "number of bits to be used from 2nd device byte [only when exactly 2 device bytes]" },
-    { "1", "minimum times to repeat the signal [only when PF1.4 is set]" },
-    { "1", "number of bits to be used from 2nd command byte [only when exactly 2 command bytes]" },
-    { "2", "variable significance:\n" +
-      "if PF3.5 set, alternate LEAD-OUT time\n" +
-      "if PF3.6 set, alternate carrier ON/OFF times\n" + 
-      "if alternate entry point used for IR engine, mid-frame burst sent after PD13 bits"
-    }
+    { "1", "1", "number of bits to be used from each device byte (but see PD10)", "bits" },
+    { "1", "1", "number of bits to be used from each command byte (but see PD12)", "bits" },
+    { "2", "2", "ON time for logical ONE burst pair", "uSec" },
+    { "2", "3", "OFF time for logical ONE burst pair", "uSec" },
+    { "2", "2", "ON time for logical ZERO burst pair", "uSec" },
+    { "2", "3", "OFF time for logical ZERO burst pair", "uSec" },
+    { "2", "2", "LEAD-OUT time (or TOTAL TIME if PF1.6 set", "uSec" },
+    { "2", "2", "ON time for lead-in burst pair", "uSec" },
+    { "2", "3", "OFF time for lead-in burst pair", "uSec" },
+    { "1", "1", "number of bits to be used from 2nd device byte [only when exactly 2 device bytes]", "bits" },
+    { "1", "1", "minimum times to repeat the signal [only when PF1.4 is set]", "repeats" },
+    { "1", "1", "number of bits to be used from 2nd command byte [only when exactly 2 command bytes]", "bits" },
+    { "2", "2", "variable significance:\n" +
+      "if PF3.5 set, alternate LEAD-OUT time", "uSec;" }, 
+    { null, "4", "if PF3.6 set, alternate carrier ON/OFF times", "uSec ON", "uSec OFF;" },
+    { null, "1", "if alternate entry point used for IR engine, mid-frame burst sent after PD13 bits", "bits" }
   };
   
   public static String[][] fnData = {

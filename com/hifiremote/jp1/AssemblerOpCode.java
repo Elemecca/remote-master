@@ -65,13 +65,18 @@ public class AssemblerOpCode implements Cloneable
         if ( !Character.isLetterOrDigit( ch ) ) break;
         s += ch;
       }
-      if ( ch == null && s.isEmpty() )
-      {
-        clean();
-        return null;
-      }
       if ( s.isEmpty() )
       {
+        if ( type == TokenType.SYMBOL && symbol == '$' )
+        {
+          type = TokenType.OFFSET;
+          value = 0;
+        }
+        if ( ch == null )
+        {
+          clean();
+          return null;
+        }
         t.symbol = ch;
         t.type = TokenType.SYMBOL;
       }
@@ -81,16 +86,12 @@ public class AssemblerOpCode implements Cloneable
         if ( type == TokenType.SYMBOL && symbol == '$' )
         {
           Integer val = getValue( s, 16 );
-          if ( val == null )
+          if ( val != null )
           {
-            value = 0;
-            type = TokenType.OFFSET;
-          }
-          else
-          {
-            type = TokenType.NULL;
-            t.value = val;
-            t.type = TokenType.NUMBER;
+            type = TokenType.NUMBER;
+            symbol = null;
+            value = val;
+            t.type = TokenType.NULL;
           }
         }
         else if ( type == TokenType.PREFIX )
@@ -320,6 +321,7 @@ public class AssemblerOpCode implements Cloneable
       {
         t = t.nextToken();
         if ( t == null ) break;
+        if ( t.type == TokenType.NULL ) continue;
         if ( t.type == TokenType.LABEL && labels != null && labels.containsKey( t.text ) )
         {
           t = new Token( labels.get( t.text ) + t.source.substring( t.ndx ), proc );
@@ -342,7 +344,6 @@ public class AssemblerOpCode implements Cloneable
           case PREFIX:
           case LABEL:
             outline += t.text;
-          case NULL:
             it.remove();
             break;
           case OFFSET:

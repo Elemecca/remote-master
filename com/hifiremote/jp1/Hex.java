@@ -282,8 +282,9 @@ public class Hex implements Cloneable, Comparable< Hex >
     short[] rc = null;
     int length = 0;
     int space = text.indexOf( ' ' );
-    if ( ( space == -1 ) && ( text.length() > 3 ) )
+    if ( ( space == -1 ) && ( text.length() > 2 ) )//3 ) )
     {
+      if ( ( text.length() & 1 ) == 1 ) text = "0" + text;
       length = text.length() / 2;
       rc = new short[ length ];
       for ( int i = 0; i < length; i++ )

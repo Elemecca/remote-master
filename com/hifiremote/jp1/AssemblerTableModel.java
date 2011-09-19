@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,7 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
 import com.hifiremote.jp1.AssemblerOpCode.OpArg;
@@ -74,6 +79,12 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   public TableCellEditor getColumnEditor( int col )
   {
     return selectAllEditor;
+  }
+  
+  @Override
+  public TableCellRenderer getColumnRenderer( int col )
+  {
+    return assemblerCellRenderer;
   }
   
   public ManualSettingsDialog dialog = null;
@@ -151,7 +162,8 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   
   public Hex assemble( Processor processor )
   {
-    Hex hexA = new Hex();
+    pfCount = 0;
+    pdCount = 0;
 //    LinkedHashMap< String, String > asmLabels = processor.getAsmLabels();
     LinkedHashMap< String, String > asmLabels = new LinkedHashMap< String, String >();
     
@@ -182,6 +194,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     
     // Main assembly loop handles all items not involving relative addresses
     int addr = processor.getRAMAddress();
+    int length = 0;
     for ( AssemblerItem item : itemList )
     {
       String op = item.getOperation();
@@ -238,17 +251,47 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         }
       }
       addr += item.getLength();
+      length += item.getLength();
     }
     
     // Assemble those items that do involve relative addresses
+    boolean valid = true;
+    Hex hexOut = new Hex( length );
+    int n = 0;
     for ( AssemblerItem item : itemList )
     {
       if ( item.getOpCode().getMode().relMap != 0 )
       {
         item.assemble( processor, asmLabels, true );
       }
+      valid = valid && ( item.getErrorCode() == 0 );
+      if ( valid && item.getHex() != null ) 
+      {
+        hexOut.put( item.getHex(), n );
+        String op = item.getOperation();
+        if ( n == processor.getStartOffset() && ( op.equals( "JR" ) || op.equals( "BRA" ) ) )
+        {
+          pdCount = item.getHex().getData()[ 1 ] + processor.getStartOffset() - 3;
+        }
+      }
+      n += item.getLength();
     }
-    return hexA;
+    if ( valid )
+    {
+      if ( pdCount > 0 )
+      {
+        pfCount = 1;
+        for ( ; pfCount < pdCount && pfCount < processor.getZeroSizes().get( "PF0" ) && hexOut.getData()[ pfCount + 4 ] >> 7 == 1; pfCount++ );
+        pdCount -= pfCount;
+      }
+      data = hexOut.getData();
+      return hexOut;
+    }
+    else
+    { 
+      pdCount = 0;
+      return null;
+    }
   }
 
   public void disassemble( Hex hexD, Processor processor )
@@ -277,6 +320,15 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       state.toW = dialog.wButton.isSelected();
       dialog.setAbsUsed( state.absUsed );
       dialog.setZeroUsed( state.zeroUsed );
+      pfCount = 0;
+      pdCount = 0;
+      
+      // Add ORG statement
+      AssemblerItem item = new AssemblerItem();
+      item.setOperation( "ORG" );
+      String format = processor.getAddressModes().get( "EQU4" ).format;
+      item.setArgumentText( String.format( format, addr ) );
+      itemList.add( item );
 
       dbOut( 0, processor.getStartOffset(), addr, processor );
       Hex pHex = hex.subHex( processor.getStartOffset() );
@@ -319,20 +371,11 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         labels.put( labelAddresses.get( i ), "L" + i );
       }
       
-      // FOR TESTING PURPOSES ONLY
-//      LinkedHashMap< String, String > asmLabels = processor.getAsmLabels();
-//      String formatAddr = processor.getAddressModes().get( "EQU4" ).format;
-//      for ( Integer address : labels.keySet() )
-//      {
-//        asmLabels.put( labels.get( address ), String.format( formatAddr, address ) );
-//      }
-      // END TESTING
-      
       // Disassemble
       index = 0;
       while ( index < pHex.length() )
       {
-        AssemblerItem item = new AssemblerItem( addr + index, pHex.subHex( index ) );
+        item = new AssemblerItem( addr + index, pHex.subHex( index ) );
         int opLength = item.disassemble( processor, labels, state );
         
         if ( opLength == 0 )
@@ -352,12 +395,6 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
           index += data[ 1 ];
         }
         index += opLength;
-        
-        // FOR TESTING PURPOSES ONLY
-//        AssemblerItem item2 = new AssemblerItem( item.getAddress(), item.getOperation(), item.getArgumentText() );
-//        item2.assemble( processor, asmLabels );
-//        if ( item2.getHex() != null ) item.setComments( item2.getHex().toString() );
-        // END TESTING
       }
       
       // Create EQU statements for any unidentified labels (which are likely to be errors)
@@ -365,10 +402,10 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       for ( Integer address : labels.keySet() )
       {
         if ( state.relUsed.contains( address ) ) continue;
-        AssemblerItem item = new AssemblerItem();
+        item = new AssemblerItem();
         item.setLabel( labels.get( address) + ":" );
         item.setOperation( "EQU" );
-        String format = processor.getAddressModes().get( "EQU4" ).format;
+        format = processor.getAddressModes().get( "EQU4" ).format;
         item.setArgumentText( String.format( format, address ) );
         itemList.add( n++, item );
 
@@ -380,10 +417,10 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       {
         for ( int address : state.absUsed )
         {
-          AssemblerItem item = new AssemblerItem();
+          item = new AssemblerItem();
           item.setLabel( processor.getAbsLabels().get( address ) + ":" );
           item.setOperation( "EQU" );
-          String format = processor.getAddressModes().get( "EQU4" ).format;
+          format = processor.getAddressModes().get( "EQU4" ).format;
           item.setArgumentText( String.format( format, address ) );
           itemList.add( n++, item );
         }
@@ -396,10 +433,10 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       {
         for ( int address : state.zeroUsed )
         {
-          AssemblerItem item = new AssemblerItem();
+          item = new AssemblerItem();
           item.setZeroLabel( processor, address, null, ":" );
           item.setOperation( "EQU" );
-          String format = null;
+          format = null;
           if ( processor.getAddressModes().get( "EQUR" ) == null )
           {
             format = processor.getAddressModes().get( "EQU2" ).format;
@@ -413,9 +450,6 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         }
       }
     }
-    // TESTING
-//    assemble( processor );
-    // END
     fireTableDataChanged();
   }
 
@@ -471,7 +505,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         n = 1;
         if ( i < dialog.getPfValues().length + 5 )
         {
-          dialog.getPfValues()[ i - 5 ] = ( int )data[ i ];
+          dialog.getPfValues()[ i - 5 ] = data[ i ];
         }
         comments = String.format( "pf%X: %s%02X", i - 5, rp, p.getZeroAddresses().get( "PF0" ) + i - 5 );
         if ( data[ i ] >> 7 == 1 )
@@ -491,7 +525,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         int za = p.getZeroAddresses().get( "PD00" );
         int pdLimit = dialog.getPdValues().length;
         int pdSize = p.getZeroSizes().get( "PD00" );
-        if ( val < pdLimit ) dialog.getPdValues()[ val ] = ( int )data[ i ];
+        if ( val < pdLimit ) dialog.getPdValues()[ val ] = data[ i ];
         if ( val == pdSize - 1 || i == end - 1 )
         {
           n = 1;
@@ -502,7 +536,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
           n = 2;
           item.setOperation( "DW" );
           if ( val < pdSize - 1 ) comments = String.format( "pd%02X/pd%02X: %s%02X/%s%02X", val, val + 1, rp, za + val, rp, za + val + 1 );
-          if ( val < pdLimit - 1 ) dialog.getPdValues()[ val + 1 ] = ( int )data[ i + 1 ];
+          if ( val < pdLimit - 1 ) dialog.getPdValues()[ val + 1 ] = data[ i + 1 ];
         }
         pdIndex += n;
         if ( pdIndex > pfIndex + p.getZeroSizes().get( "PD00" ) )
@@ -537,7 +571,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     return pfIndex - 4;   // Count of PF values when processed
   }
   
-  private void interpretPFPD( Processor p, int ramAddress )
+  public void interpretPFPD( Processor p, int ramAddress )
   {
     // DataStyle values:
     //   0 = S3C80
@@ -808,12 +842,36 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       return "" + t;
     }
   }
+  
+  public int getPfCount()
+  {
+    return pfCount;
+  }
 
+  public int getPdCount()
+  {
+    return pdCount;
+  }
+
+  private class AssemblerCellRenderer extends DefaultTableCellRenderer
+  {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value,
+        boolean isSelected, boolean hasFocus, int row, int col ) 
+    {
+      Component c = super.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, col );
+      AssemblerTableModel model = ( AssemblerTableModel )table.getModel();
+      c.setForeground( model.getRow( row ).getErrorCode() == 0 ? Color.BLACK : Color.RED );
+      return c;
+    }
+  }
+  
   public List< AssemblerItem > getItemList()
   {
     return itemList;
   }
   
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
+  private AssemblerCellRenderer assemblerCellRenderer = new AssemblerCellRenderer();
   
 }
