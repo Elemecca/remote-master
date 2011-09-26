@@ -38,10 +38,10 @@ public class CommonData
     "None", "Bit Double On" };
 
   public static final String[] repeatType012 = {
-    "Minimum", "Forced" };
+    "Forced", "Minimum" };
   
   public static final String[] repeatType34 = {
-    "Minimum", "" };
+    "", "Minimum" };
   
   public static final String[] repeatHeld012 = {
     "No", "Yes", "Ch+/-, Vol+/-, FF, Rew", "No data bits in repeat" };

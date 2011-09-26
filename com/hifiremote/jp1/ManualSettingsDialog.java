@@ -29,6 +29,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -74,6 +76,8 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.Document;
 import javax.swing.text.NumberFormatter;
 
+import com.hifiremote.jp1.AssemblerOpCode.OpArg;
+import com.hifiremote.jp1.AssemblerOpCode.Token;
 import com.hifiremote.jp1.assembler.CommonData;
 
 // TODO: Auto-generated Javadoc
@@ -168,6 +172,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     leftPanel.addComponentListener( new ComponentAdapter() {
       public void componentResized(ComponentEvent e)
       { 
+        interpretPFPD();
         setPFPanel();
         setPDPanel();
         setFunctionPanel();
@@ -363,31 +368,61 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     // Protocol Data tab of lower left panel
     setTableLayout( size3, dataLabels, false );
     mainPanel = new JPanel( new TableLayout( size3 ) );
-    scrollPane = new JScrollPane( mainPanel );
-    scrollPane.setPreferredSize( scrollPane.getPreferredSize() ); // needed to limit height of pane
-    tabbedPane.addTab( "Protocol Data", scrollPane );
-    populateComboBox( devBytes, CommonData.to15 );
-    populateComboBox( cmdBytes, CommonData.to15 );
+    protDataScrollPane = new JScrollPane( mainPanel );
+    protDataScrollPane.setPreferredSize( protDataScrollPane.getPreferredSize() ); // needed to limit height of pane
+    tabbedPane.addTab( "Protocol Data", protDataScrollPane );
+    basicValues = new Short[ 3 ];
+    NumberFormat nf = NumberFormat.getInstance();
+    nf.setGroupingUsed( false );
+    frequency = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    dutyCycle = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    nf.setParseIntegerOnly( true );
+    rptValue = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    burst1On = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    burst1Off = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    burst0On = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    burst0Off = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    afterBits = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    leadInOn = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    leadInOff = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    leadOutOff = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    altLeadOut = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    altFreq = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    altDuty = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
+    
+    dataComponents = new Component[][]{ 
+        { frequency }, { dutyCycle }, { sigStruct }, null,
+        { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, null,
+        { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, null,
+        { rptType }, { rptHold }, { rptValue, rptValueLbl }, null,
+        { burst1On }, { burst1Off }, null,
+        { burst0On }, { burst0Off }, { xmit0rev }, null,
+        { leadInStyle }, { leadInOn, leadInOnLbl }, { leadInOff, leadInOffLbl }, { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }, null,
+        { leadOutStyle }, { leadOutOff }, { offAsTotal }, null,
+        { altLeadOut }, { useAltLeadOut }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }//, null,
+//        { chkByteStyle }, { bitsHeld }, null,
+//        { miniCombiner }, { sigStyle }, null,
+//        { vecOffset }, { dataOffset }, null,
+//        { toggleBit }
+    };
     
     for ( int i = 0; i < dataComponents.length; i++ )
     {
-      if ( dataComponents[ i ] != null )
+      if ( dataComponents[ i ] == null ) continue;
+      if ( dataComponents[ i ].length > 1 )
       {
-        if ( dataComponents[ i ].length > 1 )
-        {
-          label = ( JLabel )dataComponents[ i ][ 1 ];
-        }
-        else
-        {
-          label = new JLabel();
-        }
-        label.setText( dataLabels[ i ][ 0 ] );
-        mainPanel.add( label, "1, " + ( i + 1 ) );
-        mainPanel.add( dataComponents[ i ][ 0 ], "3, " + ( i + 1 ) );
-        if ( dataLabels[ i ].length > 1 )
-        {
-          mainPanel.add( new JLabel( dataLabels[ i ][ 1 ] ), "5, " + ( i + 1 ) );
-        }
+        label = ( JLabel )dataComponents[ i ][ 1 ];
+      }
+      else
+      {
+        label = new JLabel();
+      }
+      label.setText( dataLabels[ i ][ 0 ] );
+      mainPanel.add( label, "1, " + ( i + 1 ) );
+      mainPanel.add( dataComponents[ i ][ 0 ], "3, " + ( i + 1 ) );
+      if ( dataLabels[ i ].length > 1 )
+      {
+        mainPanel.add( new JLabel( dataLabels[ i ][ 1 ] ), "5, " + ( i + 1 ) );
       }
     }
     
@@ -492,7 +527,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     optionPanel.add( delete );
     optionPanel.add( paste );
     optionPanel.add( new JLabel() );
-    optionPanel.add( new JLabel() );
+    optionPanel.add( getData );
     moveUp.addActionListener( this );
     moveDown.addActionListener( this );
     insert.addActionListener( this );
@@ -500,6 +535,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     cut.addActionListener( this );
     paste.addActionListener( this );
     assemble.addActionListener( this );
+    getData.addActionListener( this );
     
 //  Next line commented out as implementation not yet complete
 //    optionsPanel.add( optionPanel );
@@ -685,6 +721,126 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         assembled = false;
       }
     }
+    else if ( source == getData )
+    {
+      int i = 0;
+      AssemblerItem startItem = null;
+      AssemblerItem endItem = null;
+      List< AssemblerItem > newItemList = new ArrayList< AssemblerItem >();
+
+      Short fill = null;
+      for ( i = pdValues.length - 1 ; i >= 0; i-- )
+      {
+        if ( fill == null && pdValues[ i ] != null )
+        {
+          fill = 0;
+          assemblerModel.setPdCount( i + 1 );
+        }
+        if ( pdValues[ i ] == null ) pdValues[ i ] = fill;
+      }
+      
+//      Hex hex = assemblerModel.getHex();
+      Hex hex = new Hex( assemblerModel.getPdCount() + 10 );
+      assemblerModel.setHex( hex );
+      for ( i = 0; i < processor.getStartOffset(); i++ ) hex.set( basicValues[ i ], i );
+      for ( i = processor.getStartOffset(); i < 3; i++ ) hex.set( basicValues[ i ], i + 2 );
+      for ( i = 0; i < pfValues.length && pfValues[ i ] != null; i++ ) hex.set( pfValues[ i ], i + 5 );
+      for ( int j = 0; j < assemblerModel.getPdCount(); j++ ) hex.set( pdValues[ j ], i + j + 5 );
+      assemblerModel.setPfCount( i );
+      
+      int length = 0;
+      int start = 0;
+      int end = 2;  // length of JR / BRA instruction
+      i = 0;
+      for ( i = 0; i < assemblerModel.getItemList().size(); i++ )
+      {   
+        AssemblerItem item = assemblerModel.getItemList().get( i );
+        if ( item.getOperation().equals( "ORG" ) )
+        {
+          for ( Token t : OpArg.getArgs( item.getArgumentText(), null, null ) ) ramAddress = t.value;
+        }
+        if ( processor instanceof S3C80Processor )
+        {
+          processor = ProcessorManager.getProcessor( ( ramAddress & 0xC000  ) == 0xC000 ? "S3F80" : "S3C80" );
+        }
+        if ( length == processor.getStartOffset() )
+        {
+          String op = item.getOperation();
+          if ( op.equals( "JR" ) || op.equals( "BRA" ) )
+          {
+            start = 0;
+            end += length;
+            startItem = item;
+            int j = i + 1;
+            for ( ; j < assemblerModel.getItemList().size(); j++ )
+            {
+              // search for JR / BRA destination label
+              AssemblerItem item2 = assemblerModel.getItemList().get( j );
+              if ( Arrays.asList( item.getArgumentText(), item.getArgumentText() + ":" ).contains( item2.getLabel() ) ) break;
+              end += item2.getLength();
+            }
+            if ( j == assemblerModel.getItemList().size() )
+            {
+              // label not found, so base end on hex data
+              end += item.getHex().getData()[ 1 ];
+            }
+          }
+        }
+        length += item.getLength();
+        start += item.getLength();
+        if ( length == 0 && item.getOpCode() != null ) newItemList.add( item );
+        if ( length >= 5 ) break;
+      }
+      if ( startItem == null )
+      {
+        if ( length > processor.getStartOffset() ) return;
+        else
+        {
+          String op = ( processor instanceof S3C80Processor ) ? "JR" : "BRA";
+          startItem = new AssemblerItem( ramAddress + processor.getStartOffset(), op, "L0" );
+          op = ( processor instanceof S3C80Processor ) ? "JP" : "JMP";
+          endItem = new AssemblerItem( 0, op, "XmitIR" );
+          endItem.setLabel( "L0:" );
+        }
+      }
+
+      i = assemblerModel.getPfCount() + assemblerModel.getPdCount();
+      List< AssemblerItem > oldItemList = assemblerModel.getData();
+      assemblerModel.setItemList( newItemList );
+      assemblerModel.dbOut( 0, processor.getStartOffset(), ramAddress, 0, processor );
+      newItemList.add( startItem );     
+      assemblerModel.dbOut( processor.getStartOffset() + 2, i + 5, ramAddress, 0, processor );
+      if ( endItem == null )
+      {
+        startItem.getHex().set( ( short )( i + 3 - processor.getStartOffset() ), 1 );
+        length = 0;
+        i += ramAddress + 5;
+        for ( AssemblerItem item : oldItemList )
+        {
+          if ( length >= end && item.getOpCode() != null )
+          {
+            item.setAddress( i );
+            newItemList.add( item );
+            i += item.getLength();
+          }
+          length += item.getLength();
+        }
+      }
+      else  
+      {
+        endItem.setAddress( ramAddress + i + 5 );
+        newItemList.add( endItem );
+        LinkedHashMap< String, String > labels = processor.getAsmLabels();
+        labels.put( "L0", String.format( "%04XH", endItem.getAddress() ) );
+        startItem.assemble( processor, labels, true );
+        endItem.assemble( processor, labels, true );
+      }
+      newItemList.add( new AssemblerItem() );
+      assemblerModel.getData().clear();
+      assemblerModel.getData().addAll( newItemList );
+      assemblerModel.setItemList( assemblerModel.getData() );
+      assemblerModel.fireTableDataChanged();
+    }
     else if ( tabbedPane.getSelectedComponent() == pfMainPanel )
     {
       int m = -1;
@@ -729,91 +885,89 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
       }
     }
-  else if ( tabbedPane.getSelectedComponent() == pdMainPanel )
-  {
-    int n = pdFields.indexOf( source );
-    if ( n >= 0 )
+    else if ( tabbedPane.getSelectedComponent() == pdMainPanel )
     {
-      int index = pdSizes.get( n )[ 0 ];
-      if ( pdSizes.get( n )[ 1 ] >> 4 == 0 )
+      int n = pdFields.indexOf( source );
+      if ( n >= 0 )
       {
-        Hex hex = ( Hex )pdFields.get( n ).getValue();
-        Arrays.fill( pdValues, index, index + pdSizes.get( n )[ 1 ], null );
-        for ( int i = 0; i < hex.length(); i++ ) pdValues[ index + i ] = hex.getData()[ i ];
+        int index = pdSizes.get( n )[ 0 ];
+        if ( pdSizes.get( n )[ 1 ] >> 4 == 0 )
+        {
+          Hex hex = ( Hex )pdFields.get( n ).getValue();
+          Arrays.fill( pdValues, index, index + pdSizes.get( n )[ 1 ], null );
+          for ( int i = 0; i < hex.length(); i++ ) pdValues[ index + i ] = hex.getData()[ i ];
 
-        int p = 0;
-        for ( ; pdSizes.get( p )[ 0 ] != index; p++ );
-        for ( ; p < pdSizes.size() && pdSizes.get( p )[ 0 ] == index; p++ ) if ( pdSizes.get( p )[ 1 ] >> 4 == 0 )
-        {
-          Short val1 = pdValues[ index ];
-          Short val2 = pdValues[ index + 1 ];
-          int type = pdSizes.get( p )[ 1 ];
-          if ( p != n ) pdFields.get( p ).setValue( ( type == 2 && val2 != null ) ?
-               String.format( "%04X", val1 * 0x100 + val2 ) : ( val1 != null ) ?
-                 String.format(  "%02X", val1 ) : "" );
-          
-          hex = ( Hex )pdFields.get( p ).getValue();
-          type = pdSizes.get( p + 1 )[ 1 ] & 0xF;
-          if ( type == 1 && hex.length() == 1 )
+          int p = 0;
+          for ( ; pdSizes.get( p )[ 0 ] != index; p++ );
+          for ( ; p < pdSizes.size() && pdSizes.get( p )[ 0 ] == index; p++ ) if ( pdSizes.get( p )[ 1 ] >> 4 == 0 )
           {
-            pdFields.get( p + 1 ).setValue( "" + hex.getData()[ 0 ] );
+            Short val1 = pdValues[ index ];
+            Short val2 = pdValues[ index + 1 ];
+            int type = pdSizes.get( p )[ 1 ];
+            if ( p != n ) pdFields.get( p ).setValue( ( type == 2 && val2 != null ) ?
+                String.format( "%04X", val1 * 0x100 + val2 ) : ( val1 != null ) ?
+                    String.format(  "%02X", val1 ) : "" );
+            hex = ( Hex )pdFields.get( p ).getValue();
+            type = pdSizes.get( p + 1 )[ 1 ] & 0xF;
+            if ( type == 1 && hex.length() == 1 )
+            {
+              pdFields.get( p + 1 ).setValue( "" + hex.getData()[ 0 ] );
+            }
+            else if ( type == 4 && hex.length() >= 1 )
+            {
+              double m = ( dataStyle == 0 ) ? 2.0 : 0.0;
+              double d = ( dataStyle == 0 ) ? 8.0 : 4.0;
+              pdFields.get( p + 1 ).setValue( "" + ( hex.getData()[ 0 ] + m ) / d );
+              if ( hex.length() > 1 ) pdFields.get( p + 2 ).setValue( "" + ( hex.getData()[ 1 ] + m ) / d );
+            }
+            else if ( hex.length() == 2 )
+            {
+              int time = 2 * hex.get( 0 ) + ( ( type == 3 && dataStyle == 0 ) ? 40 : 0 );
+              pdFields.get( p + 1 ).setValue( "" + time );
+            }
+            else for ( int i = 1; p + i < pdSizes.size() && pdSizes.get( p + i )[ 1 ] >> 4 == i; i++ )
+            {
+              pdFields.get( p + i ).setValue( "" );
+            }
           }
-          else if ( type == 4 && hex.length() >= 1 )
-          {
-            double m = ( dataStyle == 0 ) ? 2.0 : 0.0;
-            double d = ( dataStyle == 0 ) ? 8.0 : 4.0;
-            pdFields.get( p + 1 ).setValue( "" + ( hex.getData()[ 0 ] + m ) / d );
-            if ( hex.length() > 1 ) pdFields.get( p + 2 ).setValue( "" + ( hex.getData()[ 1 ] + m ) / d );
-          }
-          else if ( hex.length() == 2 )
-          {
-            int time = 2 * hex.get( 0 ) + ( ( type == 3 && dataStyle == 0 ) ? 40 : 0 );
-            pdFields.get( p + 1 ).setValue( "" + time );
-          }
-          else
-          {
-            pdFields.get( p + 1 ).setValue( "" );
-            if ( p < pdSizes.size() - 2 && pdSizes.get( p + 2 )[ 1 ] >> 4 == 2 ) pdFields.get( p + 2 ).setValue( "" );
-          }
-        }
-      }
-      else
-      {
-        if ( pdFields.get( n ).getText().equals( pdFields.get( n ).getLastText()) ) return;
-        int type = pdSizes.get( n )[ 1 ] & 0xF;
-        int pos = pdSizes.get( n )[ 1 ] >> 4;
-        Object obj = pdFields.get( n ).getValue();
-        RMFormattedTextField pdField = pdFields.get( n - pos );
-        if ( obj == null )
-        {
-            Hex hex = ( Hex )pdField.getValue();
-            pdField.setValue( hex.subHex( 0, Math.min( hex.length(), pos - 1 ) ).toString() );
-        }
-        else if ( type == 1 )
-        {
-          pdField.setValue( String.format(  "%02X", ( Long )obj & 0xFF ) );
-        }
-        else if ( type == 4 )
-        {
-          Hex hex = ( Hex )pdFields.get( n - pos ).getValue();
-          double val = ( obj instanceof Long ) ? ( Long )obj : ( Double )obj;
-          val *= ( dataStyle == 0 ) ? 8.0 : 4.0;
-          val -= ( dataStyle == 0 ) ? 2.0 : 0.0;
-          hex = new Hex( hex, 0, Math.max( hex.length(), pos ) );
-          hex.set( ( short )( ( int )( val + 0.5 ) & 0xFF ), pos - 1 );
-          pdField.setValue( hex.toString() );
         }
         else
         {
-          long val = ( Long )obj;
-          val -= ( type == 3 && dataStyle == 0 ) ? 40 : 0;
-          val /= 2;
-          pdField.setValue( String.format( "%04X", val & 0xFFFF ) );
+//          if ( pdFields.get( n ).getText().equals( pdFields.get( n ).getLastText()) ) return;
+          int type = pdSizes.get( n )[ 1 ] & 0xF;
+          int pos = pdSizes.get( n )[ 1 ] >> 4;
+          Object obj = pdFields.get( n ).getValue();
+          RMFormattedTextField pdField = pdFields.get( n - pos );
+          if ( obj == null )
+          {
+            Hex hex = ( Hex )pdField.getValue();
+            pdField.setValue( hex.subHex( 0, Math.min( hex.length(), pos - 1 ) ).toString() );
+          }
+          else if ( type == 1 )
+          {
+            pdField.setValue( String.format(  "%02X", ( Long )obj & 0xFF ) );
+          }
+          else if ( type == 4 )
+          {
+            Hex hex = ( Hex )pdFields.get( n - pos ).getValue();
+            double val = ( obj instanceof Long ) ? ( Long )obj : ( Double )obj;
+            val *= ( dataStyle == 0 ) ? 8.0 : 4.0;
+            val -= ( dataStyle == 0 ) ? 2.0 : 0.0;
+            hex = new Hex( hex, 0, Math.max( hex.length(), pos ) );
+            hex.set( ( short )( ( int )( val + 0.5 ) & 0xFF ), pos - 1 );
+            pdField.setValue( hex.toString() );
+          }
+          else // types 2, 3
+          {
+            long val = ( Long )obj;
+            val -= ( type == 3 && dataStyle == 0 ) ? 40 : 0;
+            val /= 2;
+            pdField.setValue( String.format( "%04X", val & 0xFFFF ) );
+          }
+          pdField.update();  
         }
-        pdField.update();  
       }
     }
-  }
   }
 
   /**
@@ -1142,14 +1296,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           assemblerModel.disassemble( newCode, proc );
         }
-
-        int addr = proc.getRAMAddress();      
+  
         if ( proc instanceof S3C80Processor 
             && ( ( S3C80Processor )proc ).testCode( newCode ) == S3C80Processor.CodeType.NEW )
         {
-          addr = S3C80Processor.newRAMAddress;  // S3C8+ code
+          proc = ProcessorManager.getProcessor( "S3F80" );  // S3C8+ code
         }
-        assemblerModel.interpretPFPD( proc, addr );
+//        int addr = proc.getRAMAddress();   
+        interpretPFPD();
         setPFPanel();
         setPDPanel();
         setFunctionPanel();
@@ -1279,6 +1433,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   
   private int dataStyle = 0;
   private Processor processor = null;
+  private int ramAddress = 0;
   private List< Integer > absUsed = null;
   private List< Integer > zeroUsed = null;
   
@@ -1296,6 +1451,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JButton cut = new JButton( "Cut" );
   public JButton paste = new JButton( "Paste" );
   public JButton assemble = new JButton( "Assemble" );
+  public JButton getData = new JButton( "Get Data");
   
   private boolean assembled = false;
   
@@ -1323,8 +1479,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   private JPanel fnPanel = null;
   private JScrollPane fnScrollPane = null;
   
-  public JTextField frequency = new JTextField();
-  public JTextField dutyCycle = new JTextField();
+  private JScrollPane protDataScrollPane = null;
+  private Short[] basicValues = null;
+  
+  public RMFormattedTextField frequency = null;
+  public RMFormattedTextField dutyCycle = null;
   public JComboBox sigStruct = new JComboBox();
   
   public JComboBox devBytes = new JComboBox();
@@ -1337,42 +1496,41 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JComboBox cmdBits2 = new JComboBox();
   public JComboBox cmdBitDbl = new JComboBox();
   
-  public JTextField rptValue = new JTextField();
+  public RMFormattedTextField rptValue = null;
   public JComboBox rptType = new JComboBox();
   public JComboBox rptHold = new JComboBox();
+
+  public RMFormattedTextField burst1On = null;
+  public RMFormattedTextField burst1Off = null;
   
-//  public JComboBox chkByteStyle = new JComboBox();
-//  public JTextField bitsHeld = new JTextField();
-//  
-//  public JComboBox miniCombiner = new JComboBox();
-//  public JComboBox sigStyle = new JComboBox();
-//  
-//  public JTextField vecOffset = new JTextField();
-//  public JTextField dataOffset = new JTextField();
-  
-  public JTextField burst1On = new JTextField();
-  public JTextField burst1Off = new JTextField();
-  
-  public JTextField burst0On = new JTextField();
-  public JTextField burst0Off = new JTextField();
+  public RMFormattedTextField burst0On = null;
+  public RMFormattedTextField burst0Off = null;
   public JComboBox xmit0rev = new JComboBox();
   
   public JComboBox leadInStyle = new JComboBox();
   public JComboBox burstMidFrame = new JComboBox();
-  public JTextField afterBits = new JTextField();
-  public JTextField leadInOn = new JTextField();
-  public JTextField leadInOff = new JTextField();
+  public RMFormattedTextField afterBits = null;
+  public RMFormattedTextField leadInOn = null;
+  public RMFormattedTextField leadInOff = null;
   
   public JComboBox leadOutStyle = new JComboBox();
-  public JTextField leadOutOff = new JTextField();
+  public RMFormattedTextField leadOutOff = null;
   public JComboBox offAsTotal = new JComboBox();
   
-  public JTextField altLeadOut = new JTextField();
+  public RMFormattedTextField altLeadOut = null;
   public JComboBox useAltLeadOut = new JComboBox();
-  public JTextField altFreq = new JTextField();
-  public JTextField altDuty = new JTextField();
+  public RMFormattedTextField altFreq = null;
+  public RMFormattedTextField altDuty = null;
   
-//  public JComboBox toggleBit = new JComboBox();
+//public JComboBox toggleBit = new JComboBox();
+//public JComboBox chkByteStyle = new JComboBox();
+//public JTextField bitsHeld = new JTextField();
+//
+//public JComboBox miniCombiner = new JComboBox();
+//public JComboBox sigStyle = new JComboBox();
+//
+//public JTextField vecOffset = new JTextField();
+//public JTextField dataOffset = new JTextField();
   
   public JLabel devBits1lbl = new JLabel();
   public JLabel devBits2lbl = new JLabel();
@@ -1382,18 +1540,21 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JLabel afterBitsLbl = new JLabel();
   public JLabel altFreqLbl = new JLabel();
   public JLabel altDutyLbl = new JLabel();
-  
-  
-  private Component[][] dataComponents = { 
-      { frequency }, { dutyCycle }, { sigStruct }, null,
-      { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, null,
-      { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, null,
-      { rptValue }, { rptType }, { rptHold }, null,
-      { burst1On }, { burst1Off }, null,
-      { burst0On }, { burst0Off }, { xmit0rev }, null,
-      { leadInStyle }, { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }, { leadInOn }, { leadInOff }, null,
-      { leadOutStyle }, { leadOutOff }, { offAsTotal }, null,
-      { altLeadOut }, { useAltLeadOut }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }//, null,
+  public JLabel rptValueLbl = new JLabel();
+  public JLabel leadInOnLbl = new JLabel();
+  public JLabel leadInOffLbl = new JLabel();
+
+  private Component[][] dataComponents = null;
+  { 
+//      { frequency }, { dutyCycle }, { sigStruct }, null,
+//      { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, null,
+//      { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, null,
+//      { rptType }, { rptHold }, { rptValue, rptValueLbl }, null,
+//      { burst1On }, { burst1Off }, null,
+//      { burst0On }, { burst0Off }, { xmit0rev }, null,
+//      { leadInStyle }, { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }, { leadInOn, leadInOnLbl }, { leadInOff, leadInOffLbl }, null,
+//      { leadOutStyle }, { leadOutOff }, { offAsTotal }, null,
+//      { altLeadOut }, { useAltLeadOut }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }//, null,
 //      { chkByteStyle }, { bitsHeld }, null,
 //      { miniCombiner }, { sigStyle }, null,
 //      { vecOffset }, { dataOffset }, null,
@@ -1404,10 +1565,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       { "Frequency", "kHz" }, { "Duty Cycle", "%" }, { "Signal Structure" }, null,
       { "Device Bytes" }, { "Bits/Dev1" }, { "Bits/Dev2" }, { "Dev Bit Doubling" }, null,
       { "Command Bytes" }, { "Bits/Cmd1" }, { "Bits/Cmd2" }, { "Cmd Bit Doubling" }, null,
-      { "Repeat Value" }, { "Type" }, { "Hold" }, null,
+      { "Repeat Type" }, { "Hold" }, { "Count" }, null,
       { "1 Burst ON", "uSec" }, { "OFF", "uSec" }, null,
       { "0 Burst ON", "uSec" }, { "OFF", "uSec" }, { "Xmit 0 Reversed" }, null,
-      { "Lead-In Style" }, { "Burst Mid-Frame" }, { "After # of bits" }, { "Lead-In ON", "uSec" }, { "OFF", "uSec" }, null,
+      { "Lead-In Style" }, { "Lead-In ON", "uSec" }, { "OFF", "uSec" }, { "Burst Mid-Frame" }, { "After # of bits" }, null,
       { "Lead-Out Style" }, { "Lead-Out OFF", "uSec" }, { "OFF as Total" }, null,
       { "Alt Lead-Out", "uSec" }, { "Use Alt Lead-Out" }, { "Alt Freq", "kHz" }, { "Alt Duty", "%" }//, null,
 //      { "Check Byte Style" }, { "# Bytes Checked" }, null,
@@ -1444,6 +1605,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   {
     if ( event.getSource() == tabbedPane )
     {
+      interpretPFPD();
       setPFPanel();
       setPDPanel();
       setFunctionPanel();
@@ -1623,7 +1785,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         pdPanel.add( area, "1, " + row + ", 5, " + row );
         pdPanel.add( new JLabel( "$" ), "1, " + ++row );
         
-        tf = new RMFormattedTextField( new HexFormat( - 1, type == 1 ? 1 : 2 ) );
+        tf = new RMFormattedTextField( new HexFormat( - 1, type == 1 ? 1 : 2 ), this );
         pdFields.add( tf );
         pdPanel.add( tf, "2, " + row );
         for ( int i = 3; i < data.length; i++ )
@@ -1632,7 +1794,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           NumberFormat nf = NumberFormat.getInstance();
           nf.setGroupingUsed( false );
           nf.setParseIntegerOnly( type != 4 );
-          tf = new RMFormattedTextField( new RMNumberFormatter( nf ) );
+          tf = new RMFormattedTextField( new RMNumberFormatter( nf ), this );
           pdFields.add( tf );
           pdPanel.add( tf, "4, " + row );
           pdPanel.add( new JLabel( "  " + data[ i ] ), "5, " + row++ );
@@ -1825,6 +1987,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     if ( !e.getValueIsAdjusting() )
     {
       assemble.setEnabled( codeTable.getSelectedRowCount() == 1 );
+      getData.setEnabled( codeTable.getSelectedRowCount() == 1 );
       if ( codeTable.getSelectedRowCount() == 1 )
       {
         Processor proc = procs[ codeTable.getSelectedRow() ];
@@ -1832,6 +1995,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         Hex hex = protocol.getCode( procs[ row ] );
         if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) hex = displayProtocol.getCode( proc );
         assemblerModel.disassemble( hex, proc );
+        interpretPFPD();
         setPFPanel();
         setPDPanel();
         setFunctionPanel();
@@ -1884,16 +2048,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     {
       return;
     }
+    isSettingPF = true;
     JComboBox comboBox = ( JComboBox )component;
     ( (DefaultComboBoxModel )comboBox.getModel() ).removeAllElements();
     if ( array == null )
     {
+      isSettingPF = false;
       return;
     }
     for ( int i = 0; i < array.length; i++ )
     {
       comboBox.addItem( array[ i ] );
     }
+    comboBox.addActionListener( pfpdListener );
+    isSettingPF = false;
   }
 
   @Override
@@ -1970,18 +2138,21 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     private Format fmt;
     private DefaultFormatter ff;
     private String lastText = "";
+    private ActionListener al = null;
     
-    public RMFormattedTextField( Format fmt )
+    public RMFormattedTextField( Format fmt, ActionListener al )
     {
       super( fmt );
       this.fmt = fmt;
+      this.al = al;
       setFocusLostBehavior( JFormattedTextField.COMMIT );
     }
     
-    public RMFormattedTextField( DefaultFormatter ff )
+    public RMFormattedTextField( DefaultFormatter ff, ActionListener al )
     {
       super( ff );
       this.ff = ff;
+      this.al = al;
       setFocusLostBehavior( JFormattedTextField.COMMIT );
     }
     
@@ -2008,8 +2179,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           ex.printStackTrace();
         }
-        update();
-        lastText = getText();
+        if ( !getText().equals( lastText ) )
+        {
+          lastText = getText();
+          update();   
+        }
       }
     }
 
@@ -2028,14 +2202,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
     }
     
-    public String getLastText()
-    {
-      return lastText;
-    }
+//    public String getLastText()
+//    {
+//      return lastText;
+//    }
 
     protected void update()
     {
-      actionPerformed( new ActionEvent( this, ActionEvent.ACTION_FIRST, "" ) );
+      al.actionPerformed( new ActionEvent( this, ActionEvent.ACTION_PERFORMED, "" ) );
     }
     
     private void showWarning( String message )
@@ -2088,14 +2262,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     return pfValues;
   }
 
+  public Short[] getBasicValues()
+  {
+    return basicValues;
+  }
+
   public void setDataStyle( int dataStyle )
   {
     this.dataStyle = dataStyle;
   }
 
-  public void setProcessor( Processor processor )
+  public void setProcessor( Processor processor, int ramAddress )
   {
     this.processor = processor;
+    this.ramAddress = ramAddress;
   }
 
   public void setAbsUsed( List< Integer > absUsed )
@@ -2108,7 +2288,771 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     this.zeroUsed = zeroUsed;
   }
   
+  public void interpretPFPD()
+  {
+    // DataStyle values:
+    //   0 = S3C80
+    //   1 = HCS08
+    //   2 = 6805-RC16/18
+    //   3 = 6805-C9
+    //   4 = P8/740
+    
+    if ( processor == null || tabbedPane.getSelectedComponent() != protDataScrollPane )
+    {
+      return;
+    }
+    
+    int dataStyle = processor.getDataStyle();
+    int pfCount = assemblerModel.getPfCount();
+    int pdCount = assemblerModel.getPdCount();
+    Hex hex = assemblerModel.getHex();
+    
+    if ( ( (DefaultComboBoxModel )devBits1.getModel() ).getSize() == 0 )
+    {
+      // Populate those combo boxes whose content is fixed
+      populateComboBox( devBytes, CommonData.to15 );
+      populateComboBox( cmdBytes, CommonData.to15 );
+      populateComboBox( devBits1, CommonData.to8 );
+      populateComboBox( cmdBits1, CommonData.to8 );
+      populateComboBox( xmit0rev, CommonData.noYes );
+      populateComboBox( leadInStyle, CommonData.leadInStyle );
+      populateComboBox( offAsTotal, CommonData.noYes );
+      populateComboBox( useAltLeadOut, CommonData.noYes );
+    }
+    
+    Integer valI = Hex.get( basicValues, 0 );
+    frequency.setValue( valI == null ? "" : getFrequency( valI ) );
+    dutyCycle.setValue( valI == null ? "" : getDutyCycle( valI ) );
+    Short valS = basicValues[ 2 ];
+    devBytes.setSelectedIndex( valS == null ? -1 : valS >> 4 );
+    cmdBytes.setSelectedIndex( valS == null ? -1 : valS & 0x0F );
   
+    burstMidFrameLbl.setVisible( dataStyle < 3 );
+    burstMidFrame.setEnabled( dataStyle < 3 );
+    populateComboBox( burstMidFrame, dataStyle < 3 ? CommonData.noYes : null );
+    afterBitsLbl.setVisible( dataStyle < 3 );
+    afterBits.setEnabled( dataStyle < 3 );
+    populateComboBox( leadOutStyle, dataStyle < 3 ? CommonData.leadOutStyle012 : CommonData.leadOutStyle34 );
+    altFreqLbl.setVisible( dataStyle < 3 );
+    altFreq.setEnabled( dataStyle < 3 );
+    altDutyLbl.setVisible( dataStyle < 3 );
+    altDuty.setEnabled( dataStyle < 3 );
+
+    populateComboBox( sigStruct, dataStyle < 3 ? CommonData.sigStructs012 : CommonData.sigStructs34);
+    populateComboBox( devBitDbl, dataStyle < 3 ? CommonData.bitDouble012 : CommonData.bitDouble34);
+    populateComboBox( cmdBitDbl, dataStyle < 3 ? CommonData.bitDouble012 : CommonData.bitDouble34);
+    populateComboBox( rptType, dataStyle < 3 ? CommonData.repeatType012 : CommonData.repeatType34);
+    populateComboBox( rptHold, dataStyle < 3 ? CommonData.repeatHeld012 : CommonData.noYes );
+
+    isSettingPF = true;
+    if ( dataStyle < 3 )
+    { 
+      devBits1.setSelectedIndex( ( pdCount > 0 && pdValues[ 0 ] <= 8 ) ? pdValues[ 0 ] : -1 );
+      cmdBits1.setSelectedIndex( ( pdCount > 1 && pdValues[ 1 ] <= 8 ) ? pdValues[ 1 ] : -1 );
+      if ( devBits2.isEnabled() )
+      {
+        int n = ( dataStyle < 2 ) ? 0x10 : 0x0E;
+        devBits2.setSelectedIndex( ( pdCount > n && pdValues[ n ] <= 8 ) ? pdValues[ n ] : -1 );
+      }
+      if ( cmdBits2.isEnabled() )
+      {
+        int n = ( dataStyle < 2 ) ? 0x12 : 0x10;
+        cmdBits2.setSelectedIndex( ( pdCount > n && pdValues[ n ] <= 8 ) ? pdValues[ n ] : -1 );
+      }
+      sigStruct.setSelectedIndex( ( pfCount > 0 ) ? ( pfValues[ 0 ] >> 4 ) & 0x03 : -1 );
+      devBitDbl.setSelectedIndex( ( pfCount > 2 ) ? pfValues[ 2 ] & 3 : 0 );
+      cmdBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pfValues[ 2 ] >> 2 ) & 3 : 0 );
+      int n = ( dataStyle < 2 ) ? 0x11 : 0x0F;
+      rptType.setSelectedIndex( ( pfCount > 1 && ( ( pfValues[ 1 ] & 0x10 ) != 0 ) && pdValues[ n ] != null && pdValues[ n ] != 0xFF  ) ? 1 : 0 );
+      rptValue.setValue( ( rptType.getSelectedIndex() == 1 ) ? "" + pdValues[ n ] : "" );
+      rptHold.setSelectedIndex( ( pfCount > 1 ) ? pfValues[ 1 ] & 0x03 : 0 );
+      xmit0rev.setSelectedIndex( ( pfCount > 2 ) ? ( pfValues[ 2 ] >> 4 ) & 1 : 0 );
+      leadInStyle.setSelectedIndex( ( pfCount > 1 ) ? ( pfValues[ 1 ] >> 2 ) & 3 : 0 );
+      n = dataStyle + ( ( dataStyle == 0 && !( processor instanceof S3F80Processor ) ) ? 0 : 1 );
+      Hex setMidFrame1 = new Hex( CommonData.midFrameCode1[ n ] );
+      Hex setMidFrame2 = new Hex( CommonData.midFrameCode2[ n ] );
+      boolean b;
+      if ( burstMidFrame.isEnabled() )
+      {
+        n = 5 + pfCount + pdCount; // start of code
+        b = n < hex.length() ? hex.indexOf( setMidFrame1, n ) >= 0 || hex.indexOf( setMidFrame2, n ) >= 0 : false;
+        burstMidFrame.setSelectedIndex( b ? 1 : 0 );
+        afterBits.setValue( ( b && pdCount > 0x13 ) ? "" + ( pdValues[ 0x13 ] - 1 ) : "" );
+      }
+      else
+      {
+        burstMidFrame.setSelectedIndex( -1 );
+      }
+      leadOutStyle.setSelectedIndex( ( pfCount > 1 ) ? ( pfValues[ 1 ] >> 5 ) & 3 : 0 );
+      offAsTotal.setSelectedIndex( pfCount > 0 ? ( pfValues[ 0 ] >> 6 ) & 1 : 0 );
+      useAltLeadOut.setSelectedIndex( ( pfCount > 3 ) ? ( pfValues[ 3 ] >> 5 ) & 1 : 0 );
+      b = pfCount > 3 && ( pfValues[ 3 ] & 0x40 ) == 0x40 && pdCount > 0x14 && Hex.get( pdValues, 0x13 ) != 0xFFFF;
+      altFreq.setValue( b ?  getFrequency( hex.get( 0x13 ) ) : "" );
+      altDuty.setValue( b ? getDutyCycle( hex.get( 0x13 ) ) : "" );
+      
+      if ( dataStyle < 2 )
+      {
+        burst1On.setValue( ( pdCount > 3 && Hex.get( pdValues, 2 ) > 0 ) ? "" + Hex.get( pdValues, 2 ) * 2 : "" );
+        burst1Off.setValue( ( pdCount > 5 && Hex.get( pdValues, 4 ) > 0 ) ? "" + ( Hex.get( pdValues, 4 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        burst0On.setValue( ( pdCount > 7 && Hex.get( pdValues, 6 ) > 0 ) ? "" + Hex.get( pdValues, 6 ) * 2 : "" );
+        burst0Off.setValue( ( pdCount > 9 && Hex.get( pdValues, 8 ) > 0 ) ? "" + ( Hex.get( pdValues, 8 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        leadInOn.setValue( ( leadInStyle.getSelectedIndex() > 0 && pdCount > 0x0D && Hex.get( pdValues, 0x0C ) != 0xFFFF ) ?  "" + Hex.get( pdValues, 0x0C ) * 2 : "" );
+        leadInOff.setValue( ( leadInStyle.getSelectedIndex() > 0 && pdCount > 0x0F && Hex.get( pdValues, 0x0E ) != 0xFFFF ) ?  "" + ( Hex.get( pdValues, 0x0E ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
+        leadOutOff.setValue( ( pdCount > 0x0B && Hex.get( pdValues, 0x0A ) > 0 ) ?  "" + Hex.get( pdValues, 0x0A ) * 2 : "" );
+        altLeadOut.setValue( ( useAltLeadOut.getSelectedIndex() == 1 && pdCount > 0x14 && Hex.get( pdValues, 0x13 ) > 0 ) ? "" + Hex.get( pdValues, 0x13 ) * 2 : ""  );
+
+      }
+      else
+      {
+        int t = ( pdCount > 3 ) ? ( pdValues[ 2 ] >> 4 ) * 0x100 + pdValues[ 3 ] : 0;
+        burst1On.setValue( t > 0 ? "" + 4 * ( t + 1 ) : "" );
+        t = ( pdCount > 4 ) ? ( pdValues[ 2 ] & 0x0F ) * 0x100 + pdValues[ 4 ] : 0;
+        burst1Off.setValue( t > 0 ? "" + 4 * t : "" );
+        t = ( pdCount > 6 ) ? ( pdValues[ 5 ] >> 4 ) * 0x100 + pdValues[ 6 ] : 0;
+        burst0On.setValue( t > 0 ? "" + 4 * ( t + 1 ) : "" );
+        t = ( pdCount > 7 ) ? ( pdValues[ 5 ] & 0x0F ) * 0x100 + pdValues[ 7 ] : 0;
+        burst0Off.setValue( t > 0 ? "" + 4 * t : "" );
+        t = ( pdCount > 0x0C ) ? ( pdValues[ 0x0B ] >> 4 ) * 0x100 + pdValues[ 0x0C ] : 0;
+        leadInOn.setValue( leadInStyle.getSelectedIndex() > 0 && t > 0 ? "" + 4 * ( t + 1 ) : "" );
+        t = ( pdCount > 0x0D ) ? ( pdValues[ 0x0B ] & 0x0F ) * 0x100 + pdValues[ 0x0D ] : 0;
+        leadInOff.setValue( leadInStyle.getSelectedIndex() > 0 && t > 0 ? "" + 4 * t : "" );
+        t = ( pdCount > 9 ) ? Hex.get( pdValues, 8 )- 10 : 0; 
+        leadOutOff.setValue( t > 0 ? "" + 4 * t : "" );
+        t = ( pdCount > 0x12 ) ? Hex.get( pdValues, 0x11 )- 10 : 0;
+        altLeadOut.setValue( useAltLeadOut.getSelectedIndex() == 1 && t > 0 ? "" + 4 * t : "" );
+      }
+
+    }
+    else
+    {
+      
+      if ( pfCount > 0 && ( ( pfValues[ 0 ] & 0x58 ) == 0x08 ) )
+      {
+        devBits1.setSelectedIndex( ( pdCount > 0x0D ) ? pdValues[ 0x0D ] : 0 );
+        if ( devBits2.isEnabled() )
+        {
+          devBits2.setSelectedIndex( 0 );
+        }
+      }
+      else
+      {
+        devBits1.setSelectedIndex( ( pdCount > 1 ) ? pdValues[ 1 ] : 0 );
+        if ( devBits2.isEnabled() )
+        {
+          devBits2.setSelectedIndex( ( pdCount > 0x0D ) ? pdValues[ 0x0D ] : 0 );
+        }
+      }
+      cmdBits1.setSelectedIndex( ( pdCount > 2 ) ? pdValues[ 2 ] : 0 );
+      String sig = "";
+      String items[] = { "devs", "dev", "cmd", "!dev", "dev2", "cmd", "!cmd" };
+      if ( pfCount > 0 )
+      {
+        int key = ( ( pfValues[ 0 ] >> 1 ) & 0x3C ) | ( ( pfValues[ 0 ] >> 2 ) & 1 );
+        if ( ( pfValues[ 0 ] & 0x41 ) == 0x41 )
+        {
+          key ^= 0x60;  // replace bit for "dev" by that for "devs"
+        }
+        if ( ( pfValues[ 0 ] & 0x22 ) == 0x22 )
+        {
+          key ^= 0x12;  // replace bit for first "cmd" by that for second one
+        }
+        for ( int i = 0; i < 7; i++ )
+        {
+          if ( ( ( key << i ) & 0x40 ) == 0x40 )
+          {
+            sig += items[ i ] + "-";
+          }
+        }
+        sig = sig.substring( 0, sig.length() - 1 );
+        sigStruct.setSelectedItem( sig );
+      }
+      else
+      {
+        sigStruct.setSelectedIndex( -1 );
+      }
+      sigStruct.setSelectedItem( pfCount == 0 ? -1 : sig );
+      devBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pfValues[ 2 ] >> 1 ) & 1 : 0 );
+      cmdBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pfValues[ 2 ] >> 1 ) & 1 : 0 );
+      rptType.setSelectedIndex( ( pfCount > 1 && ( ( pfValues[ 1 ] & 0x02 ) != 0 ) ) ? 1 : 0 );
+      rptValue.setValue( "" );
+      rptHold.setSelectedIndex( ( pfCount > 1 && ( ( pfValues[ 1 ] & 0x02 ) != 0 ) ) ? 1 : 0 );
+      burst1On.setValue( getONtime34( 0, null ) );
+      burst0On.setValue( ( pfCount > 2  && ( pfValues[ 2 ] & 0x08 ) == 0x08 ) ? getONtime34( 0x0E, null ) : getONtime34( 0, null ) );
+      burst1Off.setValue( getOFFtime34( 3, CommonData.burstOFFoffsets34, dataStyle ) );
+      burst0Off.setValue( getOFFtime34( 5, CommonData.burstOFFoffsets34, dataStyle ) );
+      xmit0rev.setSelectedIndex( ( pfCount > 2 && ( pfValues[ 2 ] & 0x1C ) == 0x04 ) ? 1 : 0 );
+      leadInStyle.setSelectedIndex( ( pfCount > 1 && (( pfValues[ 1 ] & 0x10 ) == 0x10 ) ) ? 
+         (  ( pfValues[ 1 ] & 0x04 ) == 0x04 && pdCount > 0x11 && Hex.get( pdValues, 0x10 ) != Hex.get( pdValues, 0x0A ) ) ? 3 : 1 : 0 );
+      leadInOn.setValue( leadInStyle.getSelectedIndex() > 0 ? getONtime34( 9, 0x0C ) : "" );
+      leadInOff.setValue( leadInStyle.getSelectedIndex() > 0 ? getOFFtime34( 0x0A, CommonData.leadinOFFoffsets34, dataStyle ) : "" );
+      offAsTotal.setSelectedIndex( ( dataStyle == 4 && pfCount > 2 ) ? pfValues[ 2 ] & 1 : 0 );
+      leadOutStyle.setSelectedIndex( ( pfCount > 1 ) ? ( offAsTotal.getSelectedIndex() == 1 ? 2 : ( pfValues[ 1 ] >> 5 ) & 2 ) + ( ( pfValues[ 1 ] >> 5 ) & 1 ) : 0 );
+      
+      leadOutOff.setValue( ( dataStyle == 3 ) ? getOFFtime34( 7, CommonData.leadinOFFoffsets34, dataStyle ) : ( pdCount > 8 && Hex.get( pdValues, 7 ) > 0 ) ? "" + ( Hex.get( pdValues, 7 ) * 4 - 40 ) : "" );
+      
+      useAltLeadOut.setSelectedIndex( ( pfCount > 2 && ( pfValues[ 1 ] & 4 ) == 4 && ( pfValues[ 2 ] & 8 ) == 0 && pdCount > 0x0F && Hex.get( pdValues, 0x0E ) != Hex.get( pdValues, 0x07 ) ) ? 1 : 0 );
+      altLeadOut.setValue( ( useAltLeadOut.getSelectedIndex() == 1  ) ? ( dataStyle == 3 ) ? getOFFtime34( 0x0E, CommonData.leadinOFFoffsets34, dataStyle ) : ( pdCount > 8 && Hex.get( pdValues, 7 ) > 0 ) ? "" + ( Hex.get( pdValues, 0x0E ) * 4 - 40 ) : "" : "" );
+    }
+    isSettingPF = false;
+  }
+
+  private String getONtime34( int pdIndex1, Integer pdIndex2 )
+  {
+    int pfCount = assemblerModel.getPfCount();
+    int pdCount = assemblerModel.getPdCount();
+    if ( pdCount <= pdIndex1 || pfCount < 3 )
+    {
+      return "";
+    }
+    else if ( pfCount > 2 && ( pfValues[ 2 ] & 0x7C ) == 0x40 )
+    {
+      int t = ( pdValues[ pdIndex1 ] + 255 ) % 256 + 1;
+      return "" + ( 3 * t + 2 );
+    }
+    else
+    {
+      int t = ( pdValues[ pdIndex1 ] + 255 ) % 256 + 1;
+      if ( pdIndex2 != null && pfCount > 1 && ( pfValues[ 1 ] & 0x08 ) == 0x08 && pdCount > pdIndex2 )
+      {
+        t += ( ( pdValues[ pdIndex2 ] + 255 ) % 256 ) * 256;
+      }
+      return "" + burstUnit * t / 1000;
+    }
+  }
+  
+  private void setONtime34( Long time, int pdIndex1, Integer pdIndex2 )
+  {
+    if ( time == null )
+    {
+      pdValues[ pdIndex1 ] = null;
+      if ( pdIndex2 != null ) pdValues[ pdIndex2 ] = null;
+    }
+    else if ( pfValues[ 2 ] != null && ( pfValues[ 2 ] & 0x7C ) == 0x40 )
+    {
+      time = Math.max( ( time - 2 ) / 3, 0 );
+      pdValues[ pdIndex1 ] = ( short )( time % 256 );
+    }
+    else
+    {
+      time = ( time * 1000 + burstUnit/2 ) / burstUnit;
+      time = ( time + 0xFFFF ) % 0x10000;
+      int tHigh = ( (int)(long)time / 256 + 1 ) % 256;
+      int tLow = ( (int)(long)time + 1 ) % 256;
+      pdValues[ pdIndex1 ] = ( short )tLow;
+      if ( pdIndex2 != null && ( tHigh > 0 || pfValues[ 1 ] != null && ( pfValues[ 1 ] & 0x08 ) == 0x08 ) )
+      {
+        pdValues[ pdIndex2 ] = ( short )tHigh;
+        setPFbits( 1, 1, 3, 1 );
+      }
+    }
+  }
+
+  private String getOFFtime34( int pdIndex, int[] offsets, int dataStyle )
+  {
+    if ( assemblerModel.getPdCount() < pdIndex + 1 )
+    {
+      return "";
+    }
+    else
+    {
+      int t = ( pdValues[ pdIndex + 1 ] + 255 ) % 256;
+      t += ( ( pdValues[ pdIndex ] + 255 ) % 256 ) * ( ( dataStyle == 3 ) ? 257 : 257.5 );
+      t = ( dataStyle == 3 ) ? 3 * t + offsets[ 0 ] : 2 * t + offsets[ 1 ];
+      return "" + t;
+    }
+  }
+  
+  private void setOFFtime34( Long time, int pdIndex, int[] offsets, int dataStyle )
+  {
+    if ( time == null )
+    {
+      pdValues[ pdIndex ] = null;
+      pdValues[ pdIndex + 1 ] = null;
+    }
+    else
+    {
+      double d = ( dataStyle == 3 ) ? 257 : 257.5;
+      time = ( dataStyle == 3 ) ? ( time - offsets[ 0 ] ) / 3 : ( time - offsets[ 1 ] ) / 2;
+      int tHigh = ( int )( time / d );
+      int tLow = ( int )( time - ( tHigh * d ) );
+      tHigh = ( tHigh + 1 ) % 256;
+      tLow = ( tLow + 1 ) % 256;
+      pdValues[ pdIndex ] = ( short )tHigh;
+      pdValues[ pdIndex + 1 ] = ( short )tLow;
+    }
+  }
+  
+  public String getFrequency( int times )
+  {
+    burstUnit = 0;
+    int on = times >> 8;
+    int off = times & 0xFF;
+    if ( on > 0 && off > 0 )
+    {
+      double f = processor.getOscillatorFreq()/( on + off + processor.getCarrierTotalOffset() );
+      burstUnit = ( int )( Math.round( 1000000000 / f ) );
+      return String.format( "%.3f", f/1000 );
+    }
+    else if ( on == 0 && off == 0 )
+    {
+      return "0";
+    }
+    else
+    {
+      return "** Error **";
+    }
+  }
+  
+  public String getDutyCycle( int times )
+  {
+    int on = times >> 8;
+    int off = times & 0xFF;
+    int totOffset = processor.getCarrierTotalOffset();
+    int onOffset = processor.getCarrierOnOffset();
+    if ( on > 0 && off > 0 )
+    {
+      double dc = 100.0 * ( on + onOffset ) / ( on + off + totOffset );
+      return String.format( "%.2f", dc );
+    }
+    else if ( on == 0 && off == 0 )
+    {
+      return "";
+    }
+    else
+    {
+      return "** Error **";
+    }
+  }
+  
+  private Integer getCarrierData( Object freq, Object duty )
+  {
+    if ( freq == null ) return null;
+    double f = ( freq instanceof Double ) ? ( Double )freq : ( Long )freq;
+    if ( f == 0 || duty == null ) return 0;
+    double dc = ( duty instanceof Double ) ? ( Double )duty : ( Long )duty;
+    burstUnit = ( int )( Math.round( 1000000 / f ) );
+    int tot = ( int )( processor.getOscillatorFreq() / ( f * 1000 ) + 0.5 );
+    int on = ( int )( dc * tot / 100 + 0.5 ) - processor.getCarrierOnOffset();
+    return on * 0xFF + tot - processor.getCarrierTotalOffset();
+  }
+  
+  private ActionListener pfpdListener = new ActionListener()
+  {
+    @Override
+    public void actionPerformed( ActionEvent e )
+    {
+      Object source = e.getSource();
+      if ( source == frequency || source == dutyCycle )
+      {
+        Hex.put( getCarrierData( frequency.getValue(), dutyCycle.getValue() ), basicValues, 0 );
+        if ( dataStyle > 2 && source == frequency )
+        {
+          actionPerformed( new ActionEvent( burst1On, ActionEvent.ACTION_PERFORMED, "Internal" ) );
+          actionPerformed( new ActionEvent( burst0On, ActionEvent.ACTION_PERFORMED, "Internal" ) );
+          actionPerformed( new ActionEvent( leadInOn, ActionEvent.ACTION_PERFORMED, "Internal" ) );
+        }
+      }  
+      else if ( source == devBytes )
+      {
+        boolean is2 = devBytes.getSelectedIndex() == 2;
+        if ( dataStyle > 2 ) is2 = is2 && ( ( pfValues[ 0 ] & 0x58 ) != 0x08 );
+        devBits1lbl.setText( is2 ? "Bits/Dev1" : "Bits/Dev" );
+        devBits2lbl.setVisible( is2 );
+        populateComboBox( devBits2, is2 ? CommonData.to8 : null );
+        devBits2.setEnabled( is2 );
+        if ( !isSettingPF )
+        {
+//          if ( basicValues[ 2 ] == null ) basicValues[ 2 ] = 0;
+          basicValues[ 2 ] = ( short )( ( basicValues[ 2 ] & 0x0F ) | ( devBytes.getSelectedIndex() << 4 ) );
+          if ( !is2 ) pdValues[ dataStyle < 2 ? 0x10 : dataStyle < 3 ? 0x0E : 0x0D ] = null;
+        }
+      }
+      else if ( source == cmdBytes )
+      {
+        boolean is2 = cmdBytes.getSelectedIndex() == 2 && ( dataStyle < 3 );
+        cmdBits1lbl.setText( is2 ? "Bits/Cmd1" : "Bits/Cmd" );
+        cmdBits2lbl.setVisible( is2 );
+        populateComboBox( cmdBits2, is2 ? CommonData.to8 : null );
+        cmdBits2.setEnabled( is2 );
+        if ( !isSettingPF )
+        {
+          if ( basicValues[ 2 ] == null ) basicValues[ 2 ] = 0;
+          basicValues[ 2 ] = ( short )( ( basicValues[ 2 ] & 0xF0 ) | cmdBytes.getSelectedIndex() );
+        }
+      }
+      else if ( source == rptType )
+      {
+        int val = rptType.getSelectedIndex();
+        if ( !isSettingPF ) setPFbits( 1, val, dataStyle < 3 ? 4 : 1, 1 );
+        if ( dataStyle < 3 )
+        {
+          int n = ( dataStyle < 2 ) ? 0x11 : 0x0F;
+          pdValues[ n ] = ( val == 0 ) ? null : ( pdValues[ n ] == null || pdValues[ n ] == 0xFF ) ? 0 : pdValues[ n ];
+          rptValue.setEnabled( val == 1 );
+          rptValueLbl.setVisible( val == 1 );
+        }
+        else if ( !isSettingPF )
+        {
+          isSettingPF = true;
+          rptHold.setSelectedIndex( val );
+          isSettingPF = false;
+        }
+
+      }
+      else if ( source == rptValue )
+      {
+        int n = ( dataStyle < 2 ) ? 0x11 : 0x0F;
+        pdValues[ n ] = ( short )( long )( Long )rptValue.getValue();
+//        rptValue.setText( "" );
+      }
+      else if ( source == leadInStyle )
+      {
+        int index = leadInStyle.getSelectedIndex();
+        leadInOn.setEnabled( index > 0 );
+        leadInOff.setEnabled( index > 0 );
+        leadInOnLbl.setVisible( index > 0 );
+        leadInOffLbl.setVisible( index > 0 );
+        if ( dataStyle < 3 )
+        {
+          burstMidFrame.setEnabled( index > 0 );
+          afterBits.setEnabled( index > 0 );
+          burstMidFrameLbl.setVisible( index > 0 );
+          afterBitsLbl.setVisible( index > 0 );
+        }
+        if ( isSettingPF ) return;
+        if ( index == 0 )
+        {
+          burstMidFrame.setSelectedIndex( -1 );
+        }
+        else if ( burstMidFrame.getSelectedIndex() == -1 )
+        {
+          burstMidFrame.setSelectedIndex( 0 );
+        }
+        if ( dataStyle < 3 ) 
+        {
+          setPFbits( 1, index, 2, 2 );
+          if ( index == 0 )
+          {
+            burstMidFrame.setSelectedIndex( -1 );
+          }
+          else if ( burstMidFrame.getSelectedIndex() == -1 )
+          {
+            burstMidFrame.setSelectedIndex( 0 );
+          }
+        }
+        else
+        {
+          setPFbits( 1, index == 3 ? 1 : 0, 2, 1 );
+          setPFbits( 1, index > 0 ? 1 : 0, 4, 1 );
+          if ( index == 3 && pfValues[ 2 ] != null && ( pfValues[ 2 ] & 0x08 ) == 0x08 )
+          {
+            // Not allowed
+          }
+          else if ( index == 3 )
+          {
+            if ( pdValues[ 0x0A ] != null )
+            {
+              // set pd10 to half the off-time given by pd0A
+              String tStr = getOFFtime34( 0x0A, CommonData.burstOFFoffsets34, dataStyle );
+              if ( !tStr.isEmpty() )
+              {
+                int t = Integer.parseInt( tStr );
+                setOFFtime34( ( long )( t / 2 ), 0x10, CommonData.burstOFFoffsets34, dataStyle );
+              }
+            }
+          }
+        }
+      }
+ 
+      else if ( !isSettingPF )
+      {
+        if ( source == devBits1 )
+        {
+          short val = ( short )devBits1.getSelectedIndex();
+          if ( dataStyle < 3 ) pdValues[ 0 ] = val;
+          else if ( ( pfValues[ 0 ] & 0x58 ) != 0x08 ) pdValues[ 1 ] = val;
+          else
+          {
+            pdValues[ 0x0D ] = val;
+            pdValues[ 1 ] = 0;
+          }
+//          if ( ( pfValues[ 0 ] & 0x58 ) == 0x08 )
+//          {
+//            pdValues[ 0x0D ] = ( short )devBits1.getSelectedIndex();
+//          }
+//          
+//          
+//          pdValues[ 0 ] = ( short )devBits1.getSelectedIndex();
+//          if ( ( ( pfValues[ 0 ] & 0x58 ) == 0x08 ) )
+//          {
+//            devBits1.setSelectedIndex( ( pdCount > 0x0D ) ? pdValues[ 0x0D ] : 0 );
+//            if ( devBits2.isEnabled() )
+//            {
+//              devBits2.setSelectedIndex( 0 );
+//            }
+//          }
+//          else
+//          {
+//            devBits1.setSelectedIndex( ( pdCount > 1 ) ? pdValues[ 1 ] : 0 );
+//            if ( devBits2.isEnabled() )
+//            {
+//              devBits2.setSelectedIndex( ( pdCount > 0x0D ) ? pdValues[ 0x0D ] : 0 );
+//            }
+//          }
+        }
+        else if ( source == cmdBits1 )
+        {
+          if ( dataStyle < 3 ) pdValues[ 1 ] = ( short )cmdBits1.getSelectedIndex();
+          else pdValues[ 2 ] = ( short )cmdBits1.getSelectedIndex();
+        }
+        else if ( source == devBits2 )
+        {
+          // code can generate this action, see source = sigStruct, hence need for test of isEnabled
+          short val = ( short )devBits2.getSelectedIndex();
+          if ( dataStyle < 3 ) pdValues[ dataStyle < 2 ? 0x10 : 0x0E ] = val;
+          else if ( devBits2.isEnabled() ) pdValues[ 0x0D ] = val;
+          else if ( ( pfValues[ 0 ] & 0x58 ) != 0x08 ) pdValues[ 0x0D ] = null;
+//          else pdValues[ 0x0D ] = ( ( pfValues[ 0 ] & 0x58 ) == 0x08 ) ? ( short )devBits1.getSelectedIndex() : null;
+        }
+        else if ( source == cmdBits2 )
+        {
+          pdValues[ dataStyle < 2 ? 0x12 : 0x10 ] = ( short )devBits2.getSelectedIndex();
+          // Disabled when dataStyle >= 3
+        }
+        else if ( source == sigStruct )
+        {
+          if ( dataStyle < 3 ) setPFbits( 0, sigStruct.getSelectedIndex(), 4, 2 );
+          else
+          {
+            String sig = ( String )sigStruct.getSelectedItem() + "-";
+            String items[] = { "devs", "dev", "cmd", "!dev", "dev2", "cmd", "!cmd" };
+            int key = 0;
+            int p = 0;
+            while ( true )
+            {
+              int n = sig.indexOf( '-' );
+              if ( n < 0 ) break;
+              String item = sig.substring( 0, n );
+              for ( ; p < items.length && !items[ p ].equals( item ); p++ );
+              if ( p == items.length ) break; // Should not occur
+              key |= 1 << ( 6 - p );
+              sig = sig.substring( n + 1 );
+            }
+            int val = 0;
+            if ( ( key & 2 ) == 2 )
+            {
+              val |= 0x02;
+              key ^= 0x12;
+            }
+            if ( ( key & 0x40 )  == 0x40 )
+            {
+              val |= 0x01;
+              key ^= 0x60;
+            }
+            val |= ( ( key & 0x3C ) << 1 ) | ( key & 1 ) << 2;
+            setPFbits( 0, val, 0, 7 );
+            actionPerformed( new ActionEvent( devBytes, ActionEvent.ACTION_PERFORMED, "Internal" ) );
+            actionPerformed( new ActionEvent( devBits1, ActionEvent.ACTION_PERFORMED, "Internal" ) );
+            actionPerformed( new ActionEvent( devBits2, ActionEvent.ACTION_PERFORMED, "Internal" ) );
+          }
+        }
+        else if ( source == devBitDbl )
+        {
+          if ( dataStyle < 3 ) setPFbits( 2, devBitDbl.getSelectedIndex(), 0, 2 );
+          else 
+          {
+            setPFbits( 2, devBitDbl.getSelectedIndex(), 1, 1 );
+            isSettingPF = true;
+            cmdBitDbl.setSelectedIndex( devBitDbl.getSelectedIndex() );
+            isSettingPF = false;
+          }
+        }
+        else if ( source == cmdBitDbl )
+        {
+          if ( dataStyle < 3 ) setPFbits( 2, cmdBitDbl.getSelectedIndex(), 2, 2 );
+          else 
+          {
+            setPFbits( 2, devBitDbl.getSelectedIndex(), 1, 1 );  // same as devBitDbl
+            isSettingPF = true;
+            devBitDbl.setSelectedIndex( cmdBitDbl.getSelectedIndex() );
+            isSettingPF = false;  
+          }
+        }
+        else if ( source == rptHold )
+        {
+          if ( dataStyle < 3 ) setPFbits( 1, rptHold.getSelectedIndex(), 0, 2 );
+          else 
+          {
+            setPFbits( 1, rptHold.getSelectedIndex(), 1, 1 );
+            isSettingPF = true;
+            rptType.setSelectedIndex( rptHold.getSelectedIndex() );
+            isSettingPF = false;
+          }
+        }
+        else if ( source == xmit0rev )
+        {
+          if ( dataStyle < 3 ) setPFbits( 2, xmit0rev.getSelectedIndex(), 4, 1 );
+          else setPFbits( 2, xmit0rev.getSelectedIndex(), 2, 3 );
+        }
+        
+        else if ( source == leadOutStyle )
+        {
+          if ( dataStyle < 3 ) setPFbits( 1, leadOutStyle.getSelectedIndex(), 5, 2 );
+          else 
+          {
+            setPFbits( 1, leadOutStyle.getSelectedIndex() >> 1, 5, 1 );
+//            if ( dataStyle == 4 ...)
+          }
+//          leadOutStyle.setSelectedIndex( ( pfCount > 1 ) ? ( offAsTotal.getSelectedIndex() == 1 ? 2 : ( pfValues[ 1 ] >> 5 ) & 2 ) + ( ( pfValues[ 1 ] >> 5 ) & 1 ) : 0 );
+        }
+        else if ( source == offAsTotal )
+        {
+          if ( dataStyle < 3 ) setPFbits( 0, offAsTotal.getSelectedIndex(), 6, 1 );
+          if ( dataStyle == 4 ) 
+          {
+            setPFbits( 1, offAsTotal.getSelectedIndex(), 6, 1 );
+            setPFbits( 2, offAsTotal.getSelectedIndex(), 0, 1 );
+          }
+          // apparently not an option for dataStyle 3
+        }
+        else if ( source == useAltLeadOut )
+        {
+          if ( dataStyle < 3 ) setPFbits( 3, useAltLeadOut.getSelectedIndex(), 5, 1 );
+          // else no effect on pf bytes?
+          
+//          useAltLeadOut.setSelectedIndex( ( pfCount > 2 && ( pfValues[ 1 ] & 4 ) == 4 && ( pfValues[ 2 ] & 8 ) == 0 && pdCount > 0x0F && Hex.get( pdValues, 0x0E ) != Hex.get( pdValues, 0x07 ) ) ? 1 : 0 );
+        }
+        else if ( source == burst1On )
+        {
+          Long t = ( Long )burst1On.getValue();
+          if ( dataStyle < 2 ) Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 2 );
+          if ( dataStyle == 2 ) Hex.semiPut( t == null ? null : ( int )(( t / 4 + 255 ) % 256 ), pdValues, 2, 0 );
+          if ( dataStyle > 2 ) 
+          {
+            Short old = pdValues[ 0 ];
+            setONtime34( t, 0, null );
+            if ( ( pfValues[ 2 ] == null || ( pfValues[ 2 ] & 0x08 ) == 0 ) && ( old == null || pdValues[ 0 ] == null || old != pdValues[ 0 ] ) && ( old != null || pdValues[ 0 ] != null ) )
+            {
+              pdValues[ 0x0E ] = old;
+              setPFbits( 2, 1, 3, 1 );
+            }
+            if ( pfValues[ 2 ] != null && ( pfValues[ 2 ] & 0x08 ) == 0x08 && !( ( pdValues[ 0x0E ] == null || pdValues[ 0 ] == null || pdValues[ 0x0E ] != pdValues[ 0 ] ) && ( pdValues[ 0x0E ] != null || pdValues[ 0 ] != null ) ) )
+            {
+              pdValues[ 0x0E ] = null;
+              setPFbits( 2, 0, 3, 1 );
+            }
+          }
+        }
+        else if ( source == burst1Off )
+        {
+          Long t = ( Long )burst1Off.getValue();
+          if ( dataStyle < 2 )
+          {
+            if ( t != null ) t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ) , 0 );
+            Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 4 );
+          }
+          if ( dataStyle == 2 ) Hex.semiPut( t == null ? null : ( int )( t / 4 ), pdValues, 2, 1 );
+          if ( dataStyle > 2 ) setOFFtime34( t, 3, CommonData.burstOFFoffsets34, dataStyle );
+        }
+        else if ( source == burst0On )
+        {
+          Long t = ( Long )burst0On.getValue();
+          if ( dataStyle < 2 ) Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 6 );
+          if ( dataStyle == 2 ) Hex.semiPut( t == null ? null : ( int )(( t / 4 + 255 ) % 256 ), pdValues, 5, 0 );
+          if ( dataStyle > 2 ) 
+          {
+            Short old = pdValues[ 0 ];
+            setONtime34( t, 0, null );
+            if ( ( old == null || pdValues[ 0 ] == null || old != pdValues[ 0 ] ) && ( old != null || pdValues[ 0 ] != null ) )
+            {
+              pdValues[ 0x0E ] = pdValues[ 0 ];
+              pdValues[ 0 ] = old;
+              setPFbits( 2, 1, 3, 1 );
+            }
+            else
+            {
+              pdValues[ 0x0E ] = null;
+              setPFbits( 2, 0, 3, 1 );
+            }
+          }
+        }
+        else if ( source == burst0Off )
+        {
+          Long t = ( Long )burst0Off.getValue();
+          if ( dataStyle < 2 )
+          {
+            if ( t != null ) t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ) , 0 );
+            Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 8 );
+          }
+          if ( dataStyle == 2 ) Hex.semiPut( t == null ? null : ( int )( t / 4 ), pdValues, 5, 1 );
+          if ( dataStyle > 2 ) setOFFtime34( t, 5, CommonData.burstOFFoffsets34, dataStyle );
+        }
+        else if ( source == leadInOn )
+        {
+          Long t = ( Long )leadInOn.getValue();
+          if ( dataStyle < 2 ) Hex.put( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( t / 2 ), pdValues, 0x0C );
+          if ( dataStyle == 2 ) Hex.semiPut( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )(( t / 4 + 255 ) % 256 ), pdValues, 0x0B, 0 );
+          if ( dataStyle > 2 ) setONtime34( leadInStyle.getSelectedIndex() == 0 ? null : t, 9, 0x0C );
+
+        }
+        else if ( source == leadInOff )
+        {
+          Long t = ( Long )leadInOff.getValue();
+          if ( dataStyle < 2 )
+          {
+            if ( t != null ) t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ) , 0 );
+            Hex.put( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( t / 2 ), pdValues, 0x0E );
+          }
+          if ( dataStyle == 2 ) Hex.semiPut( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( t / 4 ), pdValues, 0x0B, 1 );
+          if ( dataStyle > 2 ) 
+          {
+            setOFFtime34( leadInStyle.getSelectedIndex() == 0 ? null : t, 0x0A, CommonData.leadinOFFoffsets34, dataStyle );
+            actionPerformed( new ActionEvent( leadInStyle, ActionEvent.ACTION_PERFORMED, "Internal" ) );
+          }
+        }
+        else if ( source == leadOutOff )
+        {
+          Long t = ( Long )leadOutOff.getValue();
+          if ( dataStyle < 2 ) Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 0x0A );
+          if ( dataStyle == 2 ) Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 8 );
+          if ( dataStyle == 3 ) setOFFtime34( t, 7, CommonData.leadinOFFoffsets34, dataStyle );
+          if ( dataStyle == 4 ) Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 7 );
+        }
+        else if ( source == altLeadOut )
+        {
+          Long t = ( Long )altLeadOut.getValue();
+          if ( dataStyle < 2 ) Hex.put( t == null || useAltLeadOut.getSelectedIndex() == 0 ? null : ( int )( t / 2 ), pdValues, 0x0A );
+          if ( dataStyle == 2 ) Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 0x11 );
+          if ( dataStyle == 3 ) setOFFtime34( t, 0x0E, CommonData.leadinOFFoffsets34, dataStyle );
+          if ( dataStyle == 4 ) Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 0x0E );
+        }
+      }
+    }
+  };
+  
+  private void putPFbits( int index, int value, int bitStart, int bitCount )
+  {
+    int mask = ( ( 1 << bitCount ) - 1 ) << bitStart;
+    pfValues[ index ] = ( short )( ( pfValues[ index ] & ~mask ) | ( ( value << bitStart ) & mask ) );
+  }
+  
+  private void setPFbits( int index, int value, int bitStart, int bitCount )
+  {
+    for ( int i = -1; i < index; i++ ) if ( pfValues[ i + 1 ] == null )
+    {
+      if ( i >= 0 ) pfValues[ i ] = ( short )( pfValues[ i ] | 0x80 );
+      pfValues[ i + 1 ] = 0;
+    }
+    putPFbits( index, value, bitStart, bitCount );
+    for ( int i = index; i > 0; i-- ) if ( pfValues[ i ] == 0 )
+    {
+      pfValues[ i ] = null;
+      pfValues[ i - 1 ] = ( short )( pfValues[ i - 1 ] & 0x7F );
+    }
+  }
+  
+  
+  private int burstUnit = 0;
 }
 
 

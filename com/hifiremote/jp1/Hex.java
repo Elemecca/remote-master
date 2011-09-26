@@ -165,6 +165,15 @@ public class Hex implements Cloneable, Comparable< Hex >
   {
     return ( data[ offset ] << 8 ) | data[ offset + 1 ];
   }
+  
+  public static Integer get( Short[] data, int offset )
+  {
+    if ( data[ offset ] == null || data[ offset + 1 ] == null )
+    {
+      return null;
+    }
+    return ( data[ offset ] << 8 ) | data[ offset + 1 ];
+  }
 
   /**
    * Put.
@@ -193,6 +202,35 @@ public class Hex implements Cloneable, Comparable< Hex >
   {
     data[ offset ] = ( short )( ( value >> 8 ) & 0xFF );
     data[ offset + 1 ] = ( short )( value & 0xFF );
+  }
+  
+  public static void put( Integer value, Short[] data, int offset )
+  {
+    if ( value == null )
+    {
+      data[ offset ] = null;
+      data[ offset + 1 ] = null;
+    }
+    else
+    {
+      data[ offset ] = ( short )( ( value >> 8 ) & 0xFF );
+      data[ offset + 1 ] = ( short )( value & 0xFF );
+    }
+  }
+  
+  public static void semiPut( Integer value, Short[] data, int offset, int half )
+  {
+    if ( value == null )
+    {
+      data[ offset + 1 + half ] = null;
+      if ( data[ offset + 2 - half ] == null ) data[ offset ] = null;
+    }
+    else
+    {
+      int shift = 4 * half;
+      data[ offset ] = ( short )( ( data[ offset ] & 0x0F << shift ) | ( ( value & 0xF00 ) >> shift + 4 ) );
+      data[ offset + 1 + half ] = ( short )( value & 0xFF );
+    }
   }
 
   public void set( short value, int offset )

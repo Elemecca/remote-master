@@ -382,6 +382,7 @@ public class AssemblerItem
 
   public int getLength()
   {
+    if ( opCode == null ) return 0;
     return opCode.getLength() + opCode.getMode().length;
   }
   
