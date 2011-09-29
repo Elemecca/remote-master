@@ -239,7 +239,8 @@ public class S3C80data
     { "DBYTES", "10" },
     { "CBYTES", "11" },
     { "FLAGS", "00" },
-    { "CARRIER", "0E", "CARRIER+", "02" }
+    { "CARRIER", "0E", "CARRIER+", "02" },
+    { "RPT", "0D" }
   };
   
   public static final int[] oscData = { 8000000, 4, 2 };

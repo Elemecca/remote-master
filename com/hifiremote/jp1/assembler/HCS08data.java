@@ -333,7 +333,8 @@ public class HCS08data
     { "DBYTES", "A9" },
     { "CBYTES", "AA" },
     { "FLAGS", "B3" },
-    { "CARRIER", "A7", "CARRIER+", "02" }
+    { "CARRIER", "A7", "CARRIER+", "02" },
+    { "RPT", "B2" }
   };
 
   public static final int[] oscData = { 4000000, 0, 0 };

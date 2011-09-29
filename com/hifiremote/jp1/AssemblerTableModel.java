@@ -924,6 +924,20 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
 //    setData( itemList );
 //    fireTableDataChanged();
   }
+  
+  public boolean testBuildMode( Processor processor )
+  {
+    int length = 0;
+    for ( AssemblerItem item : itemList )
+    {
+      length += item.getLength();
+      if ( length > processor.getStartOffset() )
+      {
+        return false;
+      }
+    }
+    return true;
+  }
 
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
   private AssemblerCellRenderer assemblerCellRenderer = new AssemblerCellRenderer();

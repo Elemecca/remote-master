@@ -1,5 +1,7 @@
 package com.hifiremote.jp1.assembler;
 
+import com.hifiremote.jp1.Hex;
+
 public class CommonData
 {
   public static final Integer[] to15 = {
@@ -37,11 +39,8 @@ public class CommonData
   public static final String[] bitDouble34 = {
     "None", "Bit Double On" };
 
-  public static final String[] repeatType012 = {
+  public static final String[] repeatType = {
     "Forced", "Minimum" };
-  
-  public static final String[] repeatType34 = {
-    "", "Minimum" };
   
   public static final String[] repeatHeld012 = {
     "No", "Yes", "Ch+/-, Vol+/-, FF, Rew", "No data bits in repeat" };
@@ -52,12 +51,9 @@ public class CommonData
   public static final String[] leadInStyle = {
     "None", "Same every frame", "1st frame only", "Half-size after 1st" };
   
-  public static final String[] leadOutStyle012 = {
+  public static final String[] leadOutStyle = {
     "0 = [-LO]", "1 = [LI], [-LO]", "2 = [OneOn, -LO]", "3 = [LI], [OneOn, -LO]" };
 
-  public static final String[] leadOutStyle34 = {
-    "", "[OneOn]", "0 = [-LO]", "2 = [OneOn, -LO]" };
-  
   public static final String[] midFrameCode1 = {
     "8D 01 4E", "8D 01 61", "CC FF 7A", "CC 01 C4" };
     
@@ -273,13 +269,29 @@ public class CommonData
     { "2", "2", "LEAD-OUT time (or TOTAL TIME if PF1.6 set", "uSec" },
     { "2", "2", "ON time for lead-in burst pair", "uSec" },
     { "2", "3", "OFF time for lead-in burst pair", "uSec" },
-    { "1", "1", "number of bits to be used from 2nd device byte [only when exactly 2 device bytes]", "bits" },
+    { "1", "1", "number of bits to be used from 2nd device byte [only when exactly 2 device bytes, value 255 means disabled]", "bits" },
     { "1", "1", "minimum times to repeat the signal [only when PF1.4 is set]", "repeats" },
-    { "1", "1", "number of bits to be used from 2nd command byte [only when exactly 2 command bytes]", "bits" },
+    { "1", "1", "number of bits to be used from 2nd command byte [only when exactly 2 command bytes, value 255 means disabled]", "bits" },
     { "2", "2", "variable significance:\n" +
       "if PF3.5 set, alternate LEAD-OUT time", "uSec;" }, 
     { null, "4", "if PF3.6 set, alternate carrier ON/OFF times", "uSec ON", "uSec OFF;" },
     { null, "1", "if alternate entry point used for IR engine, mid-frame burst sent after PD13 bits", "bits" }
+  };
+  
+  public static final short[][] pdDefaults = {
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 255, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 255, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0 },
+    { 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 1, 1, 1, 1, 0, 10, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  };
+  
+  public static final Hex[] forcedRptCode = { 
+    new Hex( new short[]{ 0xE6, 0x0D, 0 } ),
+    new Hex( new short[]{ 0x6E, 0, 0xB2 } ),
+    new Hex( new short[]{ 0xA6, 0, 0xB7, 0x80 } ),
+    new Hex( new short[]{ 0xAD, 0 } ),
+    new Hex( new short[]{ 0x3C, 0, 0x83 } ),
   };
   
   public static String[][] fnData = {

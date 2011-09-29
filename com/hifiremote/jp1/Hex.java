@@ -228,8 +228,22 @@ public class Hex implements Cloneable, Comparable< Hex >
     else
     {
       int shift = 4 * half;
+      if ( data[ offset ] == null ) data[ offset ] = 0;
       data[ offset ] = ( short )( ( data[ offset ] & 0x0F << shift ) | ( ( value & 0xF00 ) >> shift + 4 ) );
       data[ offset + 1 + half ] = ( short )( value & 0xFF );
+    }
+  }
+  
+  public static Integer semiGet( Short[] data, int offset, int half )
+  {
+    if ( data[ offset ] == null || data[ offset + 1 + half ] == null )
+    {
+      return null;
+    }
+    else
+    {
+      int shift = 4 * half;
+      return ( data[ offset ] << shift + 4  & 0xF00 ) | data[ offset + 1 + half ];
     }
   }
 

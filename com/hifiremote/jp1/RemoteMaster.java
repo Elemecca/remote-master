@@ -3029,7 +3029,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   };
 
   /** The Constant txtEndings. */
-  private final static String[] txtEndings =
+  public final static String[] txtEndings =
   {
     ".txt"
   };

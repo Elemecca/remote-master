@@ -183,7 +183,8 @@ public class P740data
     { "PF0", "7E", "PF", "05" },
     { "PD00", "6A", "PD", "14" },
     { "DBYTES", "69" },
-    { "FLAGS", "5A" }
+    { "FLAGS", "5A" },
+    { "RPT", "83" }
   };
   
   public static final int[] oscData = { 2000000, 16, 5 };

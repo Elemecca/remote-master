@@ -189,7 +189,10 @@ public class P6805data
     { "PF0", "7B", "PF", "05" },
     { "PD00", "67", "PD", "14" },
     { "DBYTES", "66" },
-    { "FLAGS", "57" } };
+    { "FLAGS", "57" },
+    { "RPT", "80" }
+  };
+
   
   public static final String[][] zeroLabels_C9 = {
     { "DCBUF", "5A", "DCBUF+", "0A" },
