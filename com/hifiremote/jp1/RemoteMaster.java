@@ -94,7 +94,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Alpha 11";
+  public final static String version = "v2.02 Alpha 12";
 
   /** The dir. */
   private File dir = null;
@@ -916,6 +916,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             JMenuItem item = recentFiles.getItem( i );
             properties.setProperty( "RecentIRs." + i, item.getActionCommand() );
+            properties.remove( "Primacy" );
           }
           int state = getExtendedState();
           if ( state != Frame.NORMAL )
@@ -1270,6 +1271,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       System.err.println( "Unable to create JP1USB object: " + le.getMessage() );
     }
 
+    /*
+     * try { JP2Serial jp2Serial = new JP2Serial( userDir ); interfaces.add( jp2Serial ); System.err.println(
+     * "    JP12Serial version " + jp2Serial.getInterfaceVersion() ); } catch ( LinkageError le ) { System.err.println(
+     * "Unable to create JP12Serial object: " + le.getMessage() ); }
+     */
+
     ActionListener interfaceListener = new ActionListener()
     {
       public void actionPerformed( ActionEvent event )
@@ -1457,44 +1464,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
-
-    boolean primaryOBC = JP1Frame.getProperties().getProperty( "Primacy", "OBC" ).equals( "OBC" );
-    subMenu = new JMenu( "Primacy" );
-    subMenu.setMnemonic( KeyEvent.VK_P );
-    subMenu
-        .setToolTipText( "Specifies whether Device parameters or EFC and Hex values are preserved when a protocol is changed or edited" );
-    menu.add( subMenu );
-    group = new ButtonGroup();
-    JRadioButtonMenuItem item = new JRadioButtonMenuItem( "OBC" );
-    item.setMnemonic( KeyEvent.VK_O );
-    item.setToolTipText( "Preserve Device parameters such as OBC when a protocol is changed or edited" );
-    item.setSelected( primaryOBC );
-    item.addActionListener( new ActionListener()
-    {
-      @Override
-      public void actionPerformed( ActionEvent e )
-      {
-        properties.setProperty( "Primacy", "OBC" );
-      }
-    } );
-    group.add( item );
-    subMenu.add( item );
-    item = new JRadioButtonMenuItem( "EFC/Hex" );
-    item.setMnemonic( KeyEvent.VK_H );
-    item.setToolTipText( "Preserve EFC and Hex values when a protocol is changed or edited" );
-    item.setSelected( !primaryOBC );
-    item.addActionListener( new ActionListener()
-    {
-      @Override
-      public void actionPerformed( ActionEvent e )
-      {
-        properties.setProperty( "Primacy", "EFC/Hex" );
-      }
-    } );
-    group.add( item );
-    subMenu.add( item );
-
-    menu.addSeparator();
 
     cleanUpperMemoryItem = new JMenuItem( "Clean Upper Memory...", KeyEvent.VK_C );
     cleanUpperMemoryItem.setEnabled( false );
@@ -2514,8 +2483,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == tutorialItem )
       {
-        File file = new File( "tutorial/tutorial.html" );
-        desktop.browse( file.toURI() );
+        URL url = new URL(
+            "http://www.hifi-remote.com/wiki/index.php?title=JP1_-_Just_How_Easy_Is_It%3F_-_RM-IR_Version" );
+        desktop.browse( url.toURI() );
       }
       else if ( source == learnedSignalItem )
       {

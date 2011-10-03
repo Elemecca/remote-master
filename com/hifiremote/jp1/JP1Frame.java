@@ -24,7 +24,7 @@ public class JP1Frame extends JFrame implements HyperlinkListener
 {
 
   /**
-   * Instantiates a new j p1 frame.
+   * Instantiates a new jp1 frame.
    * 
    * @param title
    *          the title

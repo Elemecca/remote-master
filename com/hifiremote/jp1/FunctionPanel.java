@@ -1,5 +1,10 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.hifiremote.jp1.Function.User;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class FunctionPanel.
@@ -56,26 +61,12 @@ public class FunctionPanel extends TablePanel< Function >
     return new Function();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.hifiremote.jp1.TablePanel#canDelete(java.lang.Object)
-   */
-  protected boolean canDelete( Object o )
+  protected void delete( Function f )
   {
-    Function f = ( Function )o;
-    return !f.assigned();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.hifiremote.jp1.TablePanel#doNotDelete(java.lang.Object)
-   */
-  protected void doNotDelete( Object o )
-  {
-    String message = "Function is assigned to a button, it can not be deleted.";
-    JP1Frame.showMessage( message, this );
-    throw new IllegalArgumentException( message );
+    List< User > users = new ArrayList< User >( f.getUsers() );
+    for ( User user : users )
+    {
+      deviceUpgrade.setFunction( user.button, null, user.state );
+    }
   }
 }

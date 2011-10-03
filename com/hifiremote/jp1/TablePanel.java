@@ -436,10 +436,13 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
    *          the o
    * @return true, if successful
    */
-  protected boolean canDelete( Object o )
+  protected boolean canDelete( E o )
   {
     return true;
   }
+
+  protected void delete( E o )
+  {}
 
   /**
    * Do not delete.
@@ -447,7 +450,7 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
    * @param o
    *          the o
    */
-  protected void doNotDelete( Object o )
+  protected void doNotDelete( E o )
   {}
 
   // Interface ActionListener
@@ -495,13 +498,15 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
     }
     else if ( ( source == deleteButton ) || ( source == deleteItem ) )
     {
-      if ( !canDelete( model.getRow( sorter.modelIndex( row ) ) ) )
+      E rowObject = model.getRow( sorter.modelIndex( row ) );
+      if ( !canDelete( rowObject ) )
       {
         deleteButton.setEnabled( false );
-        doNotDelete( model.getRow( sorter.modelIndex( row ) ) );
+        doNotDelete( rowObject );
       }
       else
       {
+        delete( rowObject );
         model.removeRow( sorter.modelIndex( row ) );
         model.fireTableRowsDeleted( sorter.modelIndex( row ), sorter.modelIndex( row ) );
         if ( row == model.getRowCount() )

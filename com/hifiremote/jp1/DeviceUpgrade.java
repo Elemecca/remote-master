@@ -79,7 +79,7 @@ public class DeviceUpgrade extends Highlight
     protocol = base.protocol;
     buttonIndependent = base.buttonIndependent;
     buttonRestriction = base.buttonRestriction;
-    
+
     // Copy assignment colors
     for ( int index : base.assignmentColors.keySet() )
     {
@@ -89,7 +89,7 @@ public class DeviceUpgrade extends Highlight
         assignmentColors.get( index )[ i ] = base.assignmentColors.get( index )[ i ];
       }
     }
-    
+
     // copy the device parameter values
     protocol.setDeviceParms( base.parmValues );
     parmValues = protocol.getDeviceParmValues();
@@ -360,7 +360,7 @@ public class DeviceUpgrade extends Highlight
             newp.setDeviceParms( vals );
             System.err.println();
             System.err.println( "Protocol " + newp.getDiagnosticName() + " will be used." );
-            p.convertFunctions( functions, newp );
+            p.convertFunctions( functions, newp, preserveOBC );
             protocol = newp;
             parmValues = vals;
           }
@@ -475,7 +475,7 @@ public class DeviceUpgrade extends Highlight
   {
     return remote;
   }
-  
+
   public void setNewRemote( Remote newRemote )
   {
     remote = newRemote;
@@ -529,8 +529,7 @@ public class DeviceUpgrade extends Highlight
   {
     return setProtocol( newProtocol, true );
   }
-  
-  
+
   /**
    * Sets the protocol.
    * 
@@ -542,13 +541,13 @@ public class DeviceUpgrade extends Highlight
   {
     if ( remote != null )
     {
-      List< Protocol > builtIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, newProtocol.getID( remote ) );
+      List< Protocol > builtIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote,
+          newProtocol.getID( remote ) );
       if ( !builtIn.isEmpty() && !builtIn.contains( newProtocol ) )
       {
         String title = "Protocol conflict";
         String message = "This remote contains a built-in protocol with the same PID "
-          + "and the chosen protocol has no available alternate PID.\n"
-          + "Please choose a different protocol.";
+            + "and the chosen protocol has no available alternate PID.\n" + "Please choose a different protocol.";
         JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
         return false;
       }
@@ -562,32 +561,31 @@ public class DeviceUpgrade extends Highlight
       if ( code != null )
       {
         String message = "This protocol has custom code assigned that will\n"
-                       + "override the standard code for the protocol.\n"
-                       + "Do you wish to continue?";
-        if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+            + "override the standard code for the protocol.\n" + "Do you wish to continue?";
+        if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
             JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
         {
           return false;
-        }     
+        }
       }
       else if ( pu != null )
       {
         Hex puCode = pu.getCode();
         if ( puCode != null && puCode.length() != 0 )
         {
-          // Translate fully, as getCode() also translates fully 
-          puCode = remote.getProcessor().translate( puCode, remote ); 
+          // Translate fully, as getCode() also translates fully
+          puCode = remote.getProcessor().translate( puCode, remote );
           translateCode( puCode );
         }
-        
+
         if ( newProtocol.matched() )
-        { 
+        {
           if ( puCode != null && !puCode.equals( getCode( newProtocol ) ) )
           {
             String message = "This remote contains a protocol upgrade that is consistent\n"
-              + "with the selected protocol and will override the standard\n"
-              + "code for the protocol.  Do you wish to continue?";
-            if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+                + "with the selected protocol and will override the standard\n"
+                + "code for the protocol.  Do you wish to continue?";
+            if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
             {
               return false;
@@ -597,14 +595,14 @@ public class DeviceUpgrade extends Highlight
         else
         {
           String message = "This remote contains a protocol upgrade that is not consistent\n"
-            + "with the selected protocol and would cause it to malfunction.\n"
-            + "Please choose a different protocol.";
+              + "with the selected protocol and would cause it to malfunction.\n"
+              + "Please choose a different protocol.";
           JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
-          return false;                         
+          return false;
         }
       }
     }
-        
+
     Protocol oldProtocol = protocol;
     // Convert device parameters to the new protocol
     if ( protocol != null )
@@ -665,7 +663,7 @@ public class DeviceUpgrade extends Highlight
       }
 
       // convert the functions to the new protocol
-      if ( !protocol.convertFunctions( functions, newProtocol ) )
+      if ( !protocol.convertFunctions( functions, newProtocol, preserveOBC ) )
       {
         propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, oldProtocol );
         return false;
@@ -929,7 +927,7 @@ public class DeviceUpgrade extends Highlight
       // Only get protocol variants built in to the remote
       protocols = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid );
     }
-    // Allow for possibility of the protocol not being built in but being missing from the remote, 
+    // Allow for possibility of the protocol not being built in but being missing from the remote,
     if ( protocols == null || protocols.size() == 0 )
     {
       // Get all protocol variants, whether or not built in to the remote
@@ -962,8 +960,8 @@ public class DeviceUpgrade extends Highlight
         continue;
       }
       // At this point either:
-      //   (a) there is a protocol upgrade and p is compatible with it, or
-      //   (b) there is no protocol upgrade
+      // (a) there is a protocol upgrade and p is compatible with it, or
+      // (b) there is no protocol upgrade
       System.err.println( "Imported fixedData is " + fixedDataHex );
       vals = p.importFixedData( fixedDataHex );
       System.err.print( "Imported device parms are:" );
@@ -995,16 +993,16 @@ public class DeviceUpgrade extends Highlight
           oldTentativeCode = getCode( tentative );
         }
         if ( tentative == null || tempLength > tentative.getFixedDataLength() || pCode != null
-            && pCode.equals( tentativeCode ) && ! tentativeCode.equals( oldTentativeCode ) )
+            && pCode.equals( tentativeCode ) && !tentativeCode.equals( oldTentativeCode ) )
         {
           // Replace the tentative protocol since either
-          //   (a) one hasn't yet been set, or
-          //   (b) there is no protocol upgrade, both existing and new tentative protocols
-          //       are built in, but the new one matches on a longer set of fixed data, or
-          //   (c) there is a protocol upgrade and the current code of the new tentative 
-          //       protocol (which may be custom) matches its code exactly but that of the
-          //       old tentative protocol does not.  If more than one protocol matches 
-          //       exactly then selection is made by the criterion below.
+          // (a) one hasn't yet been set, or
+          // (b) there is no protocol upgrade, both existing and new tentative protocols
+          // are built in, but the new one matches on a longer set of fixed data, or
+          // (c) there is a protocol upgrade and the current code of the new tentative
+          // protocol (which may be custom) matches its code exactly but that of the
+          // old tentative protocol does not. If more than one protocol matches
+          // exactly then selection is made by the criterion below.
           System.err.println( "And it's longer, or the protocol code matches!" );
           tentative = p;
           tentativeVals = vals;
@@ -1015,7 +1013,8 @@ public class DeviceUpgrade extends Highlight
           // If a further selection is required because there are two protocols with the same
           // code then test on values of OEM and Parm parameters from the fixed data.
           System.err.println( String.format( "Protocols are identical but better match on OEM or Parm parameters "
-              + "(variance %d instead of %d)", p.getOEMParmVariance( vals ), tentative.getOEMParmVariance( tentativeVals ) ) );
+              + "(variance %d instead of %d)", p.getOEMParmVariance( vals ),
+              tentative.getOEMParmVariance( tentativeVals ) ) );
           tentative = p;
           tentativeVals = vals;
         }
@@ -1038,14 +1037,14 @@ public class DeviceUpgrade extends Highlight
       {
         // Custom code always generates a protocol upgrade in the binary image, so if a protocol
         // upgrade is present for a built-in protocol we must always set it as custom code so that
-        // it is generated on output.  For a protocol that is not built in, there will always be
+        // it is generated on output. For a protocol that is not built in, there will always be
         // a protocol upgrade output, so then we only need to set custom code if it differs from
         // the standard code.
         if ( remoteConfig != null )
         {
           // Try to make sense of anomalous situations in which there is more than one protocol
           // upgrade for the same pid.
-          if ( ! isBuiltIn )
+          if ( !isBuiltIn )
           {
             // See if the standard code for the protocol is actually present but is not the
             // first upgrade with that pid.
@@ -1063,13 +1062,13 @@ public class DeviceUpgrade extends Highlight
           if ( newProtocolUpgrade == null )
           {
             // There wasn't, or protocol is built in, so see if there is one that matches on fixed and
-            // command lengths; this will be the present one if that matches, but it may not.  
+            // command lengths; this will be the present one if that matches, but it may not.
             String proc = remote.getProcessor().getEquivalentName();
             for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
             {
-              if ( pu.getPid() == pid.get( 0 ) 
+              if ( pu.getPid() == pid.get( 0 )
                   && Protocol.getFixedDataLengthFromCode( proc, pu.getCode() ) == p.getFixedDataLength()
-                  && Protocol.getCmdLengthFromCode( proc, pu.getCode() ) == p.getDefaultCmd().length() ) 
+                  && Protocol.getCmdLengthFromCode( proc, pu.getCode() ) == p.getDefaultCmd().length() )
               {
                 remoteConfig.protocolUpgradeUsed = pu;
                 pCode = pu.getCode();
@@ -1088,7 +1087,7 @@ public class DeviceUpgrade extends Highlight
       {
         // This is an error situation, in that there is no code for the protocol used by this device.
         // RMIR should not be able to generate it, but if it is found then it should not automatically
-        // add that code.  Use an empty custom code to signify this situation.
+        // add that code. Use an empty custom code to signify this situation.
         p.addCustomCode( remote.getProcessor(), new Hex() );
       }
     }
@@ -1119,22 +1118,23 @@ public class DeviceUpgrade extends Highlight
       cmdLength = p.getDefaultCmd().length();
       parmValues = p.importFixedData( fixedDataHex );
     }
-    else //if ( pCode != null )
+    else
+    // if ( pCode != null )
     {
       // Don't have anything we can use, so create a manual protocol
-      if ( pCode == null ) 
+      if ( pCode == null )
       {
-        // Protocol code is required but absent.  Determine fixed data and command lengths
+        // Protocol code is required but absent. Determine fixed data and command lengths
         // from device hex alone, on the assumption (which will generally be true) that
-        // the number of mapped buttons is greater than the number of fixed bytes.  (This is
+        // the number of mapped buttons is greater than the number of fixed bytes. (This is
         // the way that IR.exe always determines these for built-in protocols since it does
-        // not have access to the protocol code). 
-        System.err.println("Protocol code missing, calculating fixed data and command lengths" );
+        // not have access to the protocol code).
+        System.err.println( "Protocol code missing, calculating fixed data and command lengths" );
         int dataLength = hexCode.length() - fixedDataOffset;
         cmdLength = ( buttons.size() > 0 ) ? ( dataLength / buttons.size() ) : 1;
         fixedDataLength = dataLength - cmdLength * buttons.size();
-        System.err.println("Calculated: Fixed data length = " + fixedDataLength + ", Command length = " + cmdLength );
-        pCode = new Hex();  // signifies missing code
+        System.err.println( "Calculated: Fixed data length = " + fixedDataLength + ", Command length = " + cmdLength );
+        pCode = new Hex(); // signifies missing code
       }
 
       System.err.println( "Using a Manual Protocol" );
@@ -1163,10 +1163,10 @@ public class DeviceUpgrade extends Highlight
       ProtocolManager.getProtocolManager().add( mp );
       p = mp;
     }
-//    else
-//    {
-//      throw new ParseException( "Unable to import device upgrade", index );
-//    }
+    // else
+    // {
+    // throw new ParseException( "Unable to import device upgrade", index );
+    // }
 
     if ( digitMapIndex != -1 )
     {
@@ -1231,7 +1231,7 @@ public class DeviceUpgrade extends Highlight
     rc[ 1 ] = ( short )( temp & 0xFF );
     return rc;
   }
-  
+
   public int getHexSetupCodeValue()
   {
     short[] hexCode = getHexSetupCode();
@@ -1247,8 +1247,7 @@ public class DeviceUpgrade extends Highlight
   {
     return getKeyMoves( -1 );
   }
-  
-  
+
   public java.util.List< KeyMove > getKeyMoves( int deviceButtonIndex )
   {
     java.util.List< KeyMove > keyMoves = new ArrayList< KeyMove >();
@@ -1403,15 +1402,17 @@ public class DeviceUpgrade extends Highlight
         {
           f = null;
         }
-        first = appendKeyMove( buff, button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote, protocol
-            .getKeyMovesOnly() ), f, first );
+        first = appendKeyMove( buff,
+            button.getKeyMove( f, remote.getShiftMask(), deviceCode, devType, remote, protocol.getKeyMovesOnly() ), f,
+            first );
         f = assignments.getAssignment( button, Button.XSHIFTED_STATE );
         if ( button.getXShiftedButton() != null )
         {
           f = null;
         }
-        first = appendKeyMove( buff, button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote,
-            protocol.getKeyMovesOnly() ), f, first );
+        first = appendKeyMove( buff,
+            button.getKeyMove( f, remote.getXShiftMask(), deviceCode, devType, remote, protocol.getKeyMovesOnly() ), f,
+            first );
       }
     }
 
@@ -2263,16 +2264,24 @@ public class DeviceUpgrade extends Highlight
       if ( equals != -1 && line.substring( 0, equals ).toLowerCase().startsWith( "upgrade code" ) )
       {
         short[] id = new short[ 2 ];
-        short temp = Short.parseShort( line.substring( equals + 2, equals + 4 ), 16 );
-        if ( ( temp & 8 ) != 0 )
+        if ( !remote.usesTwoBytePID() )
         {
-          id[ 0 ] = 1;
-        }
+          short temp = Short.parseShort( line.substring( equals + 2, equals + 4 ), 16 );
+          if ( ( temp & 8 ) != 0 )
+          {
+            id[ 0 ] = 1;
+          }
 
-        line = in.readLine();
-        temp = Short.parseShort( line.substring( 0, 2 ), 16 );
-        id[ 1 ] = temp;
-        pid = new Hex( id );
+          line = in.readLine();
+          temp = Short.parseShort( line.substring( 0, 2 ), 16 );
+          id[ 1 ] = temp;
+          pid = new Hex( id );
+        }
+        else
+        {
+          line = in.readLine();
+          pid = new Hex( line.substring( 0, 5 ) );
+        }
         break;
       }
     }
@@ -2377,11 +2386,11 @@ public class DeviceUpgrade extends Highlight
         str = "";
       }
       short[] rawHex = Hex.parseHex( str );
-      
+
       // Use the default name for the protocol, which includes the PID, to prevent distinct
       // manual protocols all being called simply "Manual Protocol" and so getting mis-identified
       // with one another.
-      protocolName = ManualProtocol.getDefaultName( pid );     
+      protocolName = ManualProtocol.getDefaultName( pid );
 
       protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
       protocolName = protocol.getName();
@@ -2565,7 +2574,7 @@ public class DeviceUpgrade extends Highlight
         }
       }
     }
-    
+
     if ( protocol instanceof ManualProtocol && protocol.hasCode( remote ) )
     {
       Hex code = protocol.getCode( remote );
@@ -2575,7 +2584,7 @@ public class DeviceUpgrade extends Highlight
         Hex pCode = p.getCode( remote );
         if ( protocol != p && p instanceof ManualProtocol && pCode != null && pCode.equals( code ) )
         {
-          // We have created a duplicate protocol.  Use the existing one instead.
+          // We have created a duplicate protocol. Use the existing one instead.
           protocolManager.remove( protocol );
           protocol = p;
           break;
@@ -3068,12 +3077,9 @@ public class DeviceUpgrade extends Highlight
   }
 
   /**
-   *  A device upgrade needs protocol code if either:
-   *  (a) its protocol needs code as it has custom code or is a variant 
-   *      that is not built in to the remote, or
-   *  (b) the protocol has code translators that modify the protocol in
-   *      accordance with device parameters, and the device parameters are 
-   *      other than their default values.
+   * A device upgrade needs protocol code if either: (a) its protocol needs code as it has custom code or is a variant
+   * that is not built in to the remote, or (b) the protocol has code translators that modify the protocol in accordance
+   * with device parameters, and the device parameters are other than their default values.
    */
   public boolean needsProtocolCode()
   {
@@ -3099,9 +3105,8 @@ public class DeviceUpgrade extends Highlight
   }
 
   /**
-   * Returns the code for this remote and protocol (correctly for the Device 
-   * Combiner when that is the protocol), translated according to the
-   * processor and, where present, any code translators for this device upgrade.
+   * Returns the code for this remote and protocol (correctly for the Device Combiner when that is the protocol),
+   * translated according to the processor and, where present, any code translators for this device upgrade.
    */
   public Hex getCode()
   {
@@ -3109,9 +3114,8 @@ public class DeviceUpgrade extends Highlight
   }
 
   /**
-   * Returns the code for this remote and the specified protocol (correctly for
-   * the Device Combiner when that is the protocol), translated according to the
-   * processor and, where present, any code translators for this device upgrade.
+   * Returns the code for this remote and the specified protocol (correctly for the Device Combiner when that is the
+   * protocol), translated according to the processor and, where present, any code translators for this device upgrade.
    */
   public Hex getCode( Protocol p )
   {
@@ -3124,23 +3128,23 @@ public class DeviceUpgrade extends Highlight
       {
         code = remote.getProcessor().translate( code, remote );
       }
-      
+
       // A code translator for a protocol modifies the protocol hex according to the
       // value of certain device parameters
       translateCode( code );
-//      Translate[] xlators = p.getCodeTranslators( remote );
-//      if ( xlators != null )
-//      {
-//        Value[] values = getParmValues();
-//        for ( int i = 0; i < xlators.length; i++ )
-//        {
-//          xlators[ i ].in( values, code, null, -1 );
-//        }
-//      }
+      // Translate[] xlators = p.getCodeTranslators( remote );
+      // if ( xlators != null )
+      // {
+      // Value[] values = getParmValues();
+      // for ( int i = 0; i < xlators.length; i++ )
+      // {
+      // xlators[ i ].in( values, code, null, -1 );
+      // }
+      // }
     }
     return code;
   }
-  
+
   public String getStarredID()
   {
     String starredID = protocol.getID( remote ).toString();
@@ -3158,10 +3162,10 @@ public class DeviceUpgrade extends Highlight
     }
     return starredID;
   }
-  
+
   /**
-   * Translates the code according to the protocol and parameter values of
-   * the device upgrade.  The code provided as parameter is modified.
+   * Translates the code according to the protocol and parameter values of the device upgrade. The code provided as
+   * parameter is modified.
    */
   public void translateCode( Hex code )
   {
@@ -3184,7 +3188,7 @@ public class DeviceUpgrade extends Highlight
 
   /** The remote. */
   private Remote remote = null;
-  
+
   // remoteConfig is set only when editing from RMIR, and is used to check
   // if the configuration contains a protocol upgrade that provides custom code
   private RemoteConfiguration remoteConfig = null;
@@ -3198,11 +3202,11 @@ public class DeviceUpgrade extends Highlight
   {
     this.remoteConfig = remoteConfig;
   }
-  
-//  public void clearRemoteConfig()
-//  {
-//    remoteConfig = null;
-//  }
+
+  // public void clearRemoteConfig()
+  // {
+  // remoteConfig = null;
+  // }
 
   /** The dev type alias name. */
   private String devTypeAliasName = null;
@@ -3226,16 +3230,16 @@ public class DeviceUpgrade extends Highlight
   private File file = null;
 
   private DeviceButton buttonRestriction = DeviceButton.noButton;
-  
+
   /**
-   * The offset in raw data to the start of this upgrade in the Device Dependent section,
-   * when applicable.  Value irrelevant if not applicable.
+   * The offset in raw data to the start of this upgrade in the Device Dependent section, when applicable. Value
+   * irrelevant if not applicable.
    */
   private int dependentOffset = 0;
 
   /**
-   * Get the offset in raw data to the start of this upgrade in the Device Dependent section,
-   * when applicable.  Value irrelevant if not applicable.
+   * Get the offset in raw data to the start of this upgrade in the Device Dependent section, when applicable. Value
+   * irrelevant if not applicable.
    */
   public int getDependentOffset()
   {
@@ -3243,8 +3247,8 @@ public class DeviceUpgrade extends Highlight
   }
 
   /**
-   * Set the offset in raw data to the start of this upgrade in the Device Dependent section,
-   * when applicable.  Value irrelevant if not applicable.
+   * Set the offset in raw data to the start of this upgrade in the Device Dependent section, when applicable. Value
+   * irrelevant if not applicable.
    */
   public void setDependentOffset( int dependentOffset )
   {
@@ -3342,7 +3346,7 @@ public class DeviceUpgrade extends Highlight
     }
     assignmentColors.get( deviceButtonIndex )[ keyCode ] = color;
   }
-  
+
   public Color getAssignmentColor( int keyCode, int deviceButtonIndex )
   {
     Color[] colors = assignmentColors.get( deviceButtonIndex );
@@ -3355,17 +3359,17 @@ public class DeviceUpgrade extends Highlight
 
   private Color protocolHighlight = Color.WHITE;
   private int protocolMemoryUsage = 0;
-  
+
   public Color getProtocolHighlight()
   {
     return protocolHighlight;
   }
-  
+
   public void setProtocolHighlight( Color color )
   {
     protocolHighlight = color;
   }
-  
+
   public int getProtocolMemoryUsage()
   {
     return protocolMemoryUsage;
@@ -3375,12 +3379,12 @@ public class DeviceUpgrade extends Highlight
   {
     protocolMemoryUsage = 0;
   }
-  
+
   public void addProtocolMemoryUsage( int protocolMemoryUsage )
   {
     this.protocolMemoryUsage += protocolMemoryUsage;
   }
-  
+
   /**
    * Sets the function.
    * 
@@ -3517,4 +3521,15 @@ public class DeviceUpgrade extends Highlight
   // "button134", "button135", "button136"
   };
 
+  private boolean preserveOBC = true;
+
+  public void setPreserveOBC( boolean flag )
+  {
+    preserveOBC = flag;
+  }
+
+  public boolean getPreserveOBC()
+  {
+    return preserveOBC;
+  }
 }

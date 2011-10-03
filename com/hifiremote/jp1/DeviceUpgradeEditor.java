@@ -280,7 +280,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
   public void importFromClipboard()
   {
     DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
-    ImportRawUpgradeDialog dialog = new ImportRawUpgradeDialog( this, deviceUpgrade );
+    ImportRawUpgradeDialog dialog = new ImportRawUpgradeDialog( this, deviceUpgrade, true );
     dialog.setVisible( true );
     editorPanel.refresh();
   }

@@ -53,10 +53,10 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
    * @param deviceUpgrade
    *          the device upgrade
    */
-  public ImportRawUpgradeDialog( JFrame owner, DeviceUpgrade deviceUpgrade )
+  public ImportRawUpgradeDialog( JFrame owner, DeviceUpgrade deviceUpgrade, boolean restrictRemote )
   {
     super( owner, "Import Raw Upgrade", true );
-    createGui( owner, deviceUpgrade );
+    createGui( owner, deviceUpgrade, restrictRemote );
   }
 
   /**
@@ -67,10 +67,10 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
    * @param deviceUpgrade
    *          the device upgrade
    */
-  public ImportRawUpgradeDialog( JDialog owner, DeviceUpgrade deviceUpgrade )
+  public ImportRawUpgradeDialog( JDialog owner, DeviceUpgrade deviceUpgrade, boolean restrictRemote )
   {
     super( owner, "Import Raw Upgrade", true );
-    createGui( owner, deviceUpgrade );
+    createGui( owner, deviceUpgrade, restrictRemote );
   }
 
   private void prefillFromClipboard()
@@ -89,7 +89,6 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
         ex.printStackTrace( System.err );
       }
     }
-
   }
 
   /**
@@ -98,7 +97,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
    * @param owner
    *          the owner
    */
-  private void createGui( Component owner, DeviceUpgrade deviceUpgrade )
+  private void createGui( Component owner, DeviceUpgrade deviceUpgrade, boolean restrictRemote )
   {
     this.deviceUpgrade = deviceUpgrade;
 
@@ -125,8 +124,19 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     JLabel label = new JLabel( "Remote:" );
     mainPanel.add( label, "1, 1" );
 
-    Collection< Remote > remotes = RemoteManager.getRemoteManager().getRemotes();
-    remoteList = new JComboBox( remotes.toArray() );
+    Remote[] remotes = null;
+    if ( restrictRemote )
+    {
+      remotes = new Remote[ 1 ];
+      remotes[ 0 ] = deviceUpgrade.getRemote();
+    }
+    else
+    {
+      Collection< Remote > allRemotes = RemoteManager.getRemoteManager().getRemotes();
+      remotes = new Remote[ allRemotes.size() ];
+      remotes = allRemotes.toArray( remotes );
+    }
+    remoteList = new JComboBox( remotes );
     label.setLabelFor( remoteList );
     remoteList.setSelectedItem( deviceUpgrade.getRemote() );
     remoteList.addItemListener( this );
@@ -161,7 +171,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
 
     label = new JLabel( "Upgrade Code:" );
     mainPanel.add( label, "1, 9, 3, 9" );
-    upgradeCode = new JTextArea( 10, 40 );
+    upgradeCode = new JTextArea( 10, 50 );
     upgradeCode.getDocument().addDocumentListener( this );
     new TextPopupMenu( upgradeCode );
     label.setLabelFor( upgradeCode );
@@ -169,7 +179,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
 
     protocolLabel = new JLabel( "Protocol Code:" );
     mainPanel.add( protocolLabel, "1, 12, 3, 12" );
-    protocolCode = new JTextArea( 10, 40 );
+    protocolCode = new JTextArea( 10, 50 );
     protocolCode.getDocument().addDocumentListener( this );
     new TextPopupMenu( protocolCode );
     protocolLabel.setLabelFor( protocolCode );
@@ -182,6 +192,11 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     ok.setMnemonic( KeyEvent.VK_O );
     ok.addActionListener( this );
     buttonPanel.add( ok );
+
+    reset = new JButton( "Reset" );
+    reset.setMnemonic( KeyEvent.VK_R );
+    reset.addActionListener( this );
+    buttonPanel.add( reset );
 
     cancel = new JButton( "Cancel" );
     cancel.setMnemonic( KeyEvent.VK_C );
@@ -306,6 +321,16 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     {
       setVisible( false );
       dispose();
+    }
+    else if ( source == reset )
+    {
+      remoteList.setSelectedItem( deviceUpgrade.getRemote() );
+      setupCode.setText( "" );
+      protocolGreaterThanFF.setSelected( false );
+      upgradeCode.setText( "" );
+      protocolCode.setText( "" );
+      validateInput();
+
     }
   }
 
@@ -519,6 +544,8 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
 
   /** The ok. */
   private JButton ok = null;
+
+  private JButton reset = null;
 
   /** The cancel. */
   private JButton cancel = null;

@@ -291,6 +291,7 @@ public class FunctionTableModel extends KMTableModel< Function >
       rc = "Notes";
     else
       rc = protocol.getColumnName( col - colOffset );
+
     return rc;
   }
 
@@ -313,7 +314,7 @@ public class FunctionTableModel extends KMTableModel< Function >
     else if ( col == hexCol )
       rc = "CC CC";
     else if ( col == notesCol )
-      rc = "A reasonable length comment";
+      rc = "A reasonable length function comment";
     else
       rc = protocol.getColumnName( col - colOffset );
     return rc;

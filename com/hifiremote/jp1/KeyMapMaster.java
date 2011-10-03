@@ -559,56 +559,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
 
-    boolean primaryOBC = JP1Frame.getProperties().getProperty( "Primacy", "OBC" ).equals( "OBC" );
-    submenu = new JMenu( "Primacy" );
-    submenu.setMnemonic( KeyEvent.VK_P );
-    submenu
-        .setToolTipText( "Specifies whether Device parameters or EFC and Hex values are preserved when a protocol is changed or edited" );
-    menu.add( submenu );
-    group = new ButtonGroup();
-    item = new JRadioButtonMenuItem( "OBC" );
-    item.setMnemonic( KeyEvent.VK_O );
-    item.setToolTipText( "Preserve Device parameters such as OBC when a protocol is changed or edited" );
-    item.setSelected( primaryOBC );
-    item.addActionListener( new ActionListener()
-    {
-      @Override
-      public void actionPerformed( ActionEvent e )
-      {
-        properties.setProperty( "Primacy", "OBC" );
-      }
-    } );
-    group.add( item );
-    submenu.add( item );
-    item = new JRadioButtonMenuItem( "EFC/Hex" );
-    item.setMnemonic( KeyEvent.VK_H );
-    item.setToolTipText( "Preserve EFC and Hex values when a protocol is changed or edited" );
-    item.setSelected( !primaryOBC );
-    item.addActionListener( new ActionListener()
-    {
-      @Override
-      public void actionPerformed( ActionEvent e )
-      {
-        properties.setProperty( "Primacy", "EFC/Hex" );
-      }
-    } );
-    group.add( item );
-    submenu.add( item );
-
-    menu.addSeparator();
-
-    editManualItem = new JMenuItem( "Edit Protocol..." );
-    editManualItem.setMnemonic( KeyEvent.VK_E );
-    editManualItem.addActionListener( this );
-    menu.add( editManualItem );
-
-    newManualItem = new JMenuItem( "New Manual Protocol..." );
-    newManualItem.setMnemonic( KeyEvent.VK_M );
-    newManualItem.addActionListener( this );
-    menu.add( newManualItem );
-
-    menu.addSeparator();
-
     /*
      * editorItem = new JMenuItem( "Protocol Editor..." ); editorItem.setMnemonic( KeyEvent.VK_P );
      * editorItem.addActionListener( this ); menu.add( editorItem );
@@ -871,7 +821,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
        */
       else if ( source == rawItem )
       {
-        ImportRawUpgradeDialog d = new ImportRawUpgradeDialog( this, deviceUpgrade );
+        ImportRawUpgradeDialog d = new ImportRawUpgradeDialog( this, deviceUpgrade, false );
         d.setVisible( true );
       }
       else if ( source == binaryItem )
@@ -947,8 +897,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == tutorialItem )
       {
-        File file = new File( "tutorial/tutorial.html" );
-        desktop.browse( file.toURI() );
+        URL url = new URL(
+            "http://www.hifi-remote.com/wiki/index.php?title=JP1_-_Just_How_Easy_Is_It%3F_-_RM-IR_Version" );
+        desktop.browse( url.toURI() );
       }
       else if ( source == homePageItem )
       {

@@ -10,18 +10,22 @@ import java.util.Properties;
  */
 public class Function
 {
-  
+
   /**
    * Instantiates a new function.
    */
-  public Function(){}
+  public Function()
+  {}
 
   /**
    * Instantiates a new function.
    * 
-   * @param name the name
-   * @param hex the hex
-   * @param notes the notes
+   * @param name
+   *          the name
+   * @param hex
+   *          the hex
+   * @param notes
+   *          the notes
    */
   public Function( String name, Hex hex, String notes )
   {
@@ -33,17 +37,19 @@ public class Function
   /**
    * Instantiates a new function.
    * 
-   * @param name the name
+   * @param name
+   *          the name
    */
   public Function( String name )
   {
     this.name = name;
   }
-  
+
   /**
    * Instantiates a new function.
    * 
-   * @param base the base
+   * @param base
+   *          the base
    */
   public Function( Function base )
   {
@@ -58,7 +64,10 @@ public class Function
    * 
    * @return true, if is external
    */
-  public boolean isExternal(){ return false; }
+  public boolean isExternal()
+  {
+    return false;
+  }
 
   /**
    * Checks if is empty.
@@ -73,18 +82,20 @@ public class Function
   /**
    * Store.
    * 
-   * @param props the props
-   * @param prefix the prefix
+   * @param props
+   *          the props
+   * @param prefix
+   *          the prefix
    */
   public void store( Properties props, String prefix )
   {
-    if ( isEmpty())
+    if ( isEmpty() )
       props.setProperty( prefix + ".name", "" );
 
     if ( name != null )
       props.setProperty( prefix + ".name", name );
     if ( hex != null )
-      props.setProperty( prefix + ".hex", hex.toString());
+      props.setProperty( prefix + ".hex", hex.toString() );
     if ( notes != null )
       props.setProperty( prefix + ".notes", notes );
   }
@@ -92,18 +103,20 @@ public class Function
   /**
    * Store.
    * 
-   * @param out the out
-   * @param prefix the prefix
+   * @param out
+   *          the out
+   * @param prefix
+   *          the prefix
    */
   public void store( PropertyWriter out, String prefix )
   {
-    if ( isEmpty())
+    if ( isEmpty() )
       out.print( prefix + ".name", "" );
 
     if ( name != null )
       out.print( prefix + ".name", name );
     if ( hex != null )
-      out.print( prefix + ".hex", hex.toString());
+      out.print( prefix + ".hex", hex.toString() );
     if ( notes != null )
       out.print( prefix + ".notes", notes );
   }
@@ -111,8 +124,10 @@ public class Function
   /**
    * Load.
    * 
-   * @param props the props
-   * @param prefix the prefix
+   * @param props
+   *          the props
+   * @param prefix
+   *          the prefix
    */
   public void load( Properties props, String prefix )
   {
@@ -121,7 +136,7 @@ public class Function
       setName( str );
     str = props.getProperty( prefix + ".hex" );
     if ( str != null )
-      setHex( new Hex( str ));
+      setHex( new Hex( str ) );
     str = props.getProperty( prefix + ".notes" );
     if ( str != null )
       setNotes( str );
@@ -130,8 +145,8 @@ public class Function
   /**
    * Sets the name.
    * 
-   * @param name the name
-   * 
+   * @param name
+   *          the name
    * @return the function
    */
   public Function setName( String name )
@@ -150,8 +165,8 @@ public class Function
   /**
    * Sets the notes.
    * 
-   * @param notes the notes
-   * 
+   * @param notes
+   *          the notes
    * @return the function
    */
   public Function setNotes( String notes )
@@ -167,8 +182,8 @@ public class Function
   /**
    * Sets the hex.
    * 
-   * @param hex the hex
-   * 
+   * @param hex
+   *          the hex
    * @return the function
    */
   public Function setHex( Hex hex )
@@ -177,34 +192,45 @@ public class Function
     return this;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   public String toString()
   {
     return name;
   }
-  
+
   /**
    * Gets the name.
    * 
    * @return the name
    */
-  public String getName(){ return name; }
-  
+  public String getName()
+  {
+    return name;
+  }
+
   /**
    * Gets the notes.
    * 
    * @return the notes
    */
-  public String getNotes(){ return notes; }
-  
+  public String getNotes()
+  {
+    return notes;
+  }
+
   /**
    * Gets the hex.
    * 
    * @return the hex
    */
-  public Hex getHex(){ return hex; }
+  public Hex getHex()
+  {
+    return hex;
+  }
 
   /**
    * Gets the label.
@@ -217,7 +243,7 @@ public class Function
     {
       label = new FunctionLabel( this );
       label.updateToolTipText();
-      if ( assigned())
+      if ( assigned() )
         label.showAssigned();
     }
     return label;
@@ -238,12 +264,14 @@ public class Function
   /**
    * Adds the reference.
    * 
-   * @param b the b
-   * @param state the state
+   * @param b
+   *          the b
+   * @param state
+   *          the state
    */
   public void addReference( Button b, int state )
   {
-    users.add( new User( b, state ));
+    users.add( new User( b, state ) );
     if ( label != null )
     {
       label.showAssigned();
@@ -254,16 +282,28 @@ public class Function
   /**
    * Removes the reference.
    * 
-   * @param b the b
-   * @param state the state
+   * @param b
+   *          the b
+   * @param state
+   *          the state
    */
   public void removeReference( Button b, int state )
   {
-    users.remove( new User( b, state ));
+    users.remove( new User( b, state ) );
     if ( label != null )
     {
-      if ( users.isEmpty())
+      if ( users.isEmpty() )
         label.showUnassigned();
+      label.updateToolTipText();
+    }
+  }
+
+  public void removeReferences()
+  {
+    users.clear();
+    if ( label != null )
+    {
+      label.showUnassigned();
       label.updateToolTipText();
     }
   }
@@ -293,12 +333,14 @@ public class Function
    */
   public class User
   {
-    
+
     /**
      * Instantiates a new user.
      * 
-     * @param b the b
-     * @param state the state
+     * @param b
+     *          the b
+     * @param state
+     *          the state
      */
     public User( Button b, int state )
     {
@@ -306,7 +348,9 @@ public class Function
       this.state = state;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     public boolean equals( Object o )
@@ -318,29 +362,29 @@ public class Function
         return false;
       return true;
     }
-    
+
     /** The button. */
     public Button button;
-    
+
     /** The state. */
-    public int state; 
+    public int state;
   }
 
   /** The name. */
   protected String name = null;
-  
+
   /** The notes. */
   protected String notes = null;
-  
+
   /** The hex. */
   protected Hex hex = null;
-  
+
   /** The label. */
   private FunctionLabel label = null;
-  
+
   /** The item. */
   private FunctionItem item = null;
-  
+
   /** The users. */
   private List< User > users = new ArrayList< User >();
 }

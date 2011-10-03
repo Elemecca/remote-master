@@ -1,28 +1,33 @@
 package com.hifiremote.jp1;
 
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.table.AbstractTableModel;
+
+import com.hifiremote.jp1.Function.User;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class ExternalFunctionPanel.
  */
-public class ExternalFunctionPanel
-  extends TablePanel< ExternalFunction >
+public class ExternalFunctionPanel extends TablePanel< ExternalFunction >
 {
-  
+
   /**
    * Instantiates a new external function panel.
    * 
-   * @param devUpgrade the dev upgrade
+   * @param devUpgrade
+   *          the dev upgrade
    */
   public ExternalFunctionPanel( DeviceUpgrade devUpgrade )
   {
-    super( "External Functions", devUpgrade,
-           new ExternalFunctionTableModel( devUpgrade ));
+    super( "External Functions", devUpgrade, new ExternalFunctionTableModel( devUpgrade ) );
 
     importItem = new JMenuItem( "Import" );
     importItem.setToolTipText( "Import function(s) from an existing device upgrade." );
@@ -37,13 +42,15 @@ public class ExternalFunctionPanel
     initColumns();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#actionPerformed(java.awt.event.ActionEvent)
    */
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
-    if (( source == importItem ) || ( source == importButton ))
+    if ( ( source == importItem ) || ( source == importButton ) )
     {
       File file = KeyMapMaster.promptForUpgradeFile( null );
       DeviceUpgrade importedUpgrade = new DeviceUpgrade();
@@ -58,54 +65,55 @@ public class ExternalFunctionPanel
           if ( importedFunctions.size() > 0 )
           {
             List< ExternalFunction > externalFunctions = deviceUpgrade.getExternalFunctions();
-            int firstRow =  externalFunctions.size();
+            int firstRow = externalFunctions.size();
             for ( Function f : importedFunctions )
             {
               ExternalFunction ef = null;
-              if ( f.isExternal())
+              if ( f.isExternal() )
                 ef = ( ExternalFunction )f;
               else
               {
                 ef = new ExternalFunction();
-                ef.setName( f.getName());
-                Hex hex = f.getHex(); 
+                ef.setName( f.getName() );
+                Hex hex = f.getHex();
                 ef.setHex( hex );
                 if ( hex.length() == 1 )
                   ef.setType( ExternalFunction.EFCType );
                 else
                   ef.setType( ExternalFunction.HexType );
-                ef.setSetupCode( importedUpgrade.getSetupCode());
-                ef.setDeviceTypeAliasName( importedUpgrade.getDeviceTypeAliasName());
-                ef.setNotes( f.getNotes());
+                ef.setSetupCode( importedUpgrade.getSetupCode() );
+                ef.setDeviceTypeAliasName( importedUpgrade.getDeviceTypeAliasName() );
+                ef.setNotes( f.getNotes() );
               }
               externalFunctions.add( ef );
             }
-            (( AbstractTableModel )table.getModel()).fireTableRowsInserted( firstRow, externalFunctions.size() - 1 );
+            ( ( AbstractTableModel )table.getModel() ).fireTableRowsInserted( firstRow, externalFunctions.size() - 1 );
           }
         }
       }
       catch ( Exception ex )
       {
-        JOptionPane.showMessageDialog( null,
-                                       "An error occurred loading the device upgrade from " +
-                                       file.getName() + ".  Please see rmaster.err for more details.",
-                                       "Device Upgrade Load Error",
-                                       JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( null, "An error occurred loading the device upgrade from " + file.getName()
+            + ".  Please see rmaster.err for more details.", "Device Upgrade Load Error", JOptionPane.ERROR_MESSAGE );
       }
     }
     super.actionPerformed( event );
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#update()
    */
   public void update()
   {
-    (( ExternalFunctionTableModel ) model ).update();
+    ( ( ExternalFunctionTableModel )model ).update();
     super.update();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#createRowObject()
    */
   protected ExternalFunction createRowObject()
@@ -113,27 +121,28 @@ public class ExternalFunctionPanel
     return new ExternalFunction();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.hifiremote.jp1.TablePanel#canDelete(java.lang.Object)
    */
-  protected boolean canDelete( Object o )
+  protected boolean canDelete( ExternalFunction f )
   {
-    return !(( Function ) o).assigned();
+    return !f.assigned();
   }
 
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.TablePanel#doNotDelete(java.lang.Object)
-   */
-  protected void doNotDelete( Object o )
+  protected void delete( ExternalFunction f )
   {
-    String message = "Function is assigned to a button, it can not be deleted.";
-    JP1Frame.showMessage( message, this );
-    throw new IllegalArgumentException( message );
+    List< User > users = new ArrayList< User >( f.getUsers() );
+    for ( User user : users )
+    {
+      deviceUpgrade.setFunction( user.button, null, user.state );
+    }
   }
 
   /** The import item. */
   private JMenuItem importItem = null;
-  
+
   /** The import button. */
   private JButton importButton = null;
 }

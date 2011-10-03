@@ -37,12 +37,12 @@ Changes for v2.02
 - Add register addresses to pf and pd annotations in disassembly comments column (Graham)
 - Add a third tab, "PF Details", in Manual Settings to show interpretation of PF bytes bit by bit, for S3C80 and HCS08 only (Graham)
 - In the device upgrade editor:
-  - Rename the Load button to Open, changed the mouse-over text to "Open a (RM or KM) device upgrade file."
-  - Rename the Import button to Paste, changed the mouse-over help to "Paste a (RM, KM or IR) device upgrade from the clipboard.", enhanced to accept IR-formatted upgrades containing Device Upgrade and Protocol Upgrade text
-  - Rename the Save button to "Save as..."
+  - Rename the Load button to Open, changed the mouse-over text to "Open a (RM or KM) device upgrade file." (Greg)
+  - Rename the Import button to Paste, changed the mouse-over help to "Paste a (RM, KM or IR) device upgrade from the clipboard.", enhanced to accept IR-formatted upgrades containing Device Upgrade and Protocol Upgrade text (Greg)
+  - Rename the Save button to "Save as..." (Greg)
 -- Alpha 10a
-- Change the Paste to simply pop up the Import Raw Upgrade dialog. so change the text to "Import Raw".    
-- The Import Raw Upgrade dialog will prefill its fields if it finds an IR formatted upgrade in the clipboard.  Pasting an IR formatted upgrade into either the device or protocol code fields will parse the upgrade and update the appropriate fields in the dialog.
+- Change the Paste to simply pop up the Import Raw Upgrade dialog. so change the text to "Import Raw" (Greg)    
+- The Import Raw Upgrade dialog will prefill its fields if it finds an IR formatted upgrade in the clipboard.  Pasting an IR formatted upgrade into either the device or protocol code fields will parse the upgrade and update the appropriate fields in the dialog. (Greg)
 -- Alpha 11
 - Add a fourth tab, "PD Details", in Manual Settings to show normal usage of PD bytes, for S3C80 and HCS08 only (Graham)
 - Add a fifth tab, "Functions", in Manual Settings to provide descriptions of register and function addresses specified as predefined constants (Graham)
@@ -54,6 +54,13 @@ Changes for v2.02
 - When editing a protocol, enter Manual Settings with the code for processor of current remote selected (Graham)
 - Restructure the disassembler code (Graham)
 - Add code for the main body of the assembler, though not yet linked to user interface (Graham)
+- Remove Primacy advanced menu item, move to Setup panel of Device  Upgrade Editor (Greg)
+- In a device upgrade, you can now delete a function that is assigned to a button; all those assignments are removed as well (Greg)
+- Change Help -> Tutorial to point to JP Wiki page "JP1 - Just How Easy Is It? - RM-IR Version" (Greg)
+- Upgrade to DecodeIR 2.43 (Greg)
+  - Added NibbleSumChk translator class
+  - Incorporated protocols.ini updates
+- Fix loading KM upgrades with Manual Protocols for remotes that use 2-byte pids. (Greg)
 
 Changes for v2.01
 -- Alpha --

@@ -73,15 +73,17 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
             b, bl, p, b, p, br, c, f, b
         }, // cols
         {
-            b, p, v, p, i, p, v, bt, p, bb, f, b
+            b, p, v, p, i, p, i, p, v, bt, p, bb, f, b
         }
     // rows
     };
     tl = new TableLayout( size );
     setLayout( tl );
 
+    int row = 1;
+
     JLabel label = new JLabel( "Setup Code:", SwingConstants.RIGHT );
-    add( label, "2, 1" );
+    add( label, "2, " + row );
     setupCode = new JTextField();
     SetupCodeFilter filter = new SetupCodeFilter( setupCode );
     ( ( AbstractDocument )setupCode.getDocument() ).setDocumentFilter( filter );
@@ -92,34 +94,59 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     setupCode.setToolTipText( "Enter the desired setup code (between 0 and " + SetupCode.getMax()
         + ") for the device upgrade." );
 
-    add( setupCode, "4, 1" );
+    add( setupCode, "4, " + row );
+
+    row += 2;
 
     label = new JLabel( "Protocol:", SwingConstants.RIGHT );
-    add( label, "2, 3" );
+    add( label, "2, " + row );
 
     protocolList = new JComboBox();
     protocolList.addActionListener( this );
     label.setLabelFor( protocolList );
     protocolList.setMaximumRowCount( 25 );
     protocolList.setToolTipText( "Select the protocol to be used for this device upgrade from the drop-down list." );
-    add( protocolList, "4, 3" );
+    add( protocolList, "4, " + row );
+
+    row += 2;
 
     label = new JLabel( "Protocol ID:", SwingConstants.RIGHT );
-    add( label, "2, 5" );
+    add( label, "2, " + row );
 
     protocolID = new JTextField();
     label.setLabelFor( protocolID );
     protocolID.setEditable( false );
     protocolID.setToolTipText( "This is the protocol ID that corresponds to the selected protocol." );
-    add( protocolID, "4, 5" );
+    add( protocolID, "4, " + row );
 
-    add( protocolHolder, "1, 7, 5, 9" );
+    row += 2;
+
+    String[] choices =
+    {
+        "Preserve OBC", "Preserve EFC"
+    };
+
+    preserveBox = new JComboBox( choices );
+    preserveBox.setToolTipText( "Select the function parameters to preserve when changing protocols" );
+    add( preserveBox, "4, " + row );
+    preserveBox.setSelectedIndex( 0 );
+
+    preserveBox.addActionListener( this );
+
+    row += 2;
+
+    add( protocolHolder, "1, " + row + ", 5, " + ( row + 2 ) );
+
+    row++ ;
+
     label = new JLabel( "Fixed Data:", SwingConstants.RIGHT );
-    add( label, "2, 8" );
+    add( label, "2, " + row );
 
     fixedData = new JTextField();
     fixedData.setEditable( false );
-    add( fixedData, "4, 8" );
+    add( fixedData, "4, " + row );
+
+    row++ ;
 
     notes = new JTextArea( 5, 50 );
     notes.setToolTipText( "Enter any notes about this device upgrade." );
@@ -130,7 +157,9 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         scrollPane.getBorder() ) );
     notes.getDocument().addDocumentListener( this );
     new TextPopupMenu( notes );
-    add( scrollPane, "7, 1, 7, 9" );
+    add( scrollPane, "7, 1, 7, " + row );
+
+    row++ ;
 
     protocolNotes = new JEditorPane();
     protocolNotes.setBackground( label.getBackground() );
@@ -142,7 +171,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     scrollPane = new JScrollPane( protocolNotes );
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Protocol Notes" ),
         scrollPane.getBorder() ) );
-    add( scrollPane, "1, 10, 7, 10" );
+    add( scrollPane, "1, " + row + ", 7, " + row );
   } // SetupPanel
 
   /*
@@ -206,7 +235,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       parameters = newParameters;
       if ( parameters != null )
       {
-        int row = 8;
+        int row = 10;
         for ( int i = 0; i < parameters.length; i++ )
         {
           parameters[ i ].addListener( this );
@@ -274,16 +303,17 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         // Protocol is unchanged, but if there is more than one custom protocol then cycle
         // through them
         String title = "Multiple custom protocols";
-        String message = "You have reselected the existing protocol for this device upgrade\n" +
-        		             "and there is more than one protocol upgrade in this remote that\n" +
-        		             "can act as custom code for it.  Do you want to change to a different\n" +
-        		             "custom code?\n\n" +
-        		             "Repeating this and selecting YES each time will cycle through all\n" +
-        		             "available compatible custom codes.";
+        String message = "You have reselected the existing protocol for this device upgrade\n"
+            + "and there is more than one protocol upgrade in this remote that\n"
+            + "can act as custom code for it.  Do you want to change to a different\n" + "custom code?\n\n"
+            + "Repeating this and selecting YES each time will cycle through all\n"
+            + "available compatible custom codes.";
         ProtocolUpgrade pu = oldProtocol.getCustomUpgrade( remoteConfig, false );
-        if ( pu != null && oldProtocol.matched() && ! pu.getCode().equals( deviceUpgrade.getCode() ) 
-            && JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
-                JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION ) 
+        if ( pu != null
+            && oldProtocol.matched()
+            && !pu.getCode().equals( deviceUpgrade.getCode() )
+            && JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION )
         {
           // Save old custom code and install new code
           String proc = remoteConfig.getRemote().getProcessor().getEquivalentName();
@@ -292,9 +322,15 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         }
       }
     }
+    else if ( source == preserveBox )
+    {
+      deviceUpgrade.setPreserveOBC( preserveBox.getSelectedIndex() == 0 );
+    }
     else
+    {
       // must be a protocol parameter
       updateFixedData();
+    }
   } // actionPerformed
 
   protected void updateProtocolNotes( String text )
@@ -363,6 +399,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       parameters[ i ].removeListener( this );
     }
   }
+
   /**
    * Doc changed.
    * 
@@ -480,6 +517,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
   /** The protocol id. */
   private JTextField protocolID = null;
+
+  private JComboBox preserveBox = null;
 
   /** The notes. */
   private JTextArea notes = null;
