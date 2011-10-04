@@ -61,6 +61,7 @@ Changes for v2.02
   - Added NibbleSumChk translator class
   - Incorporated protocols.ini updates
 - Fix loading KM upgrades with Manual Protocols for remotes that use 2-byte pids. (Greg)
+- Show a dialog for entering PB-/KM-/IR- formatted protocol upgrades when the "Import Protocol Upgrade" button is pressed, instead of reading directly from the clipboard. (Greg) 
 
 Changes for v2.01
 -- Alpha --

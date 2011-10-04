@@ -306,7 +306,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     importButton = new JButton( "Import Protocol Upgrade" );
     importButton.addActionListener( this );
     importButton.setToolTipText( "Import Protocol Upgrades(s) from the Clipboard" );
-    importButton.setEnabled( false );
+    // importButton.setEnabled( false );
     buttonPanel.add( importButton );
 
     JPanel messagePanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
@@ -741,13 +741,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     Object source = e.getSource();
     if ( source == importButton )
     {
-      JTextArea textArea = new JTextArea( 8, 50 );
+      JPanel panel = new JPanel( new BorderLayout() );
+      JLabel message = new JLabel( "Enter one or more PB-/KM-/IR-formatted protocol upgrades below." );
+      message.setBorder( BorderFactory.createEmptyBorder( 5, 5, 10, 5 ) );
+      panel.add( message, BorderLayout.NORTH );
+
+      JTextArea textArea = new JTextArea( 10, 60 );
       new TextPopupMenu( textArea );
+
       JScrollPane scrollPane = new JScrollPane( textArea );
-      scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Upgrade Notes" ),
-          scrollPane.getBorder() ) );
-      int rc = JOptionPane.showConfirmDialog( this, scrollPane, "Import Protocol Upgrade",
-          JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null );
+      scrollPane.setBorder( BorderFactory.createCompoundBorder(
+          BorderFactory.createTitledBorder( "Protocol Upgrade Code" ), scrollPane.getBorder() ) );
+      panel.add( scrollPane, BorderLayout.CENTER );
+      int rc = JOptionPane.showConfirmDialog( this, panel, "Import Protocol Upgrade", JOptionPane.OK_CANCEL_OPTION,
+          JOptionPane.PLAIN_MESSAGE, null );
 
       if ( rc == JOptionPane.OK_OPTION )
       {
@@ -1626,11 +1633,6 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             for ( int i = 0; i < fixedDataLength; ++i )
               devParms.add( zero );
             int cmdLength = Protocol.getCmdLengthFromCode( procs[ row ].getEquivalentName(), newCode );
-            DefaultComboBoxModel comboModel = new DefaultComboBoxModel();
-            for ( int i = 0; i < cmdLength; ++i )
-            {
-              comboModel.addElement( importButton );
-            }
             SpinnerNumberModel spinnerModel = ( SpinnerNumberModel )cmdIndex.getModel();
             spinnerModel.setMaximum( cmdLength - 1 );
             protocol.createDefaultParmsAndTranslators( cmdLength << 4, false, false, 8, devParms, new short[ 0 ], 8 );
@@ -2529,7 +2531,6 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         setFunctionPanel();
         load.setEnabled( true );
         setGetData();
-        importButton.setEnabled( codeTable.isCellEditable( codeTable.getSelectedRow(), 1 ) );
         int tabCount = tabbedPane.getTabCount();
         if ( row != 0 && row != 4 && tabCount > 2 )
         {
@@ -2546,7 +2547,6 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
       else
       {
-        importButton.setEnabled( false );
         load.setEnabled( false );
       }
     }
