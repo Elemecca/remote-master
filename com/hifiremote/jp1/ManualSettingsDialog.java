@@ -10,10 +10,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -127,8 +123,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public class CodeCellRenderer extends DefaultTableCellRenderer
   {
     @Override
-    public Component getTableCellRendererComponent(JTable table, Object value,
-        boolean isSelected, boolean hasFocus, int row, int col ) 
+    public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
+        int row, int col )
     {
       Component c = super.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, col );
       CodeTableModel model = ( CodeTableModel )table.getModel();
@@ -143,7 +139,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       return c;
     }
   }
-  
+
   private class DisplayArea extends JTextArea
   {
     public DisplayArea( String text, List< JTextArea > areas )
@@ -158,7 +154,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       areas.add( this );
     }
   }
-  
+
   /**
    * Creates the gui.
    * 
@@ -172,19 +168,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     setLocationRelativeTo( owner );
     Container contentPane = getContentPane();
     double scale = 0.75;
-    
+
     JPanel leftPanel = new JPanel( new BorderLayout() );
     JPanel rightPanel = new JPanel( new BorderLayout() );
     rightPanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
 
-    leftPanel.addComponentListener( new ComponentAdapter() {
-      public void componentResized(ComponentEvent e)
-      { 
+    leftPanel.addComponentListener( new ComponentAdapter()
+    {
+      public void componentResized( ComponentEvent e )
+      {
         interpretPFPD();
         setPFPanel();
         setPDPanel();
         setFunctionPanel();
-      } 
+      }
     } );
 
     this.protocol = protocol;
@@ -201,9 +198,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }, // cols
         {
             b, pr, b, pr, b, pr, b
-        }  // rows
+        }
+    // rows
     };
-    
+
     double size2[][] =
     {
         {
@@ -211,24 +209,26 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }, // cols
         {
             b, pr, b, pr, b, pr, b, pr, b
-        }  // rows
+        }
+    // rows
     };
-    
+
     double size3[][] =
     {
         {
             b, pr, c, pf, b, pr, b
-        },    // cols
-        null  // rows set later
+        }, // cols
+        null
+    // rows set later
     };
-    
+
     outerPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel );
     outerPane.setResizeWeight( 0 );
     contentPane.add( outerPane, BorderLayout.CENTER );
-    
+
     JPanel mainPanel = new JPanel( new TableLayout( size1 ) );
     leftPanel.add( mainPanel, BorderLayout.PAGE_START );
-    
+
     JLabel label = new JLabel( "Name:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 1" );
     name = new JTextField( protocol.getName() );
@@ -254,11 +254,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     tablePanel.add( new JScrollPane( codeTable ), BorderLayout.CENTER );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )codeTable.getDefaultRenderer( String.class );
     r.setHorizontalAlignment( SwingConstants.CENTER );
-    codeTable.setDefaultEditor( Hex.class, new HexCodeEditor() );   
-    codeTable.getSelectionModel().addListSelectionListener( this );//new ListSelectionListener()
+    codeTable.setDefaultEditor( Hex.class, new HexCodeEditor() );
+    codeTable.getSelectionModel().addListSelectionListener( this );// new ListSelectionListener()
 
-    JLabel l = ( JLabel )codeTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent( codeTable,
-        colNames[ 0 ], false, false, 0, 0 );
+    JLabel l = ( JLabel )codeTable.getTableHeader().getDefaultRenderer()
+        .getTableCellRendererComponent( codeTable, colNames[ 0 ], false, false, 0, 0 );
 
     TableColumnModel columnModel = codeTable.getColumnModel();
     TableColumn column = columnModel.getColumn( 0 );
@@ -292,14 +292,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       column.setMaxWidth( width );
       column.setPreferredWidth( width );
     }
-    
+
     columnModel.getColumn( 1 ).setCellRenderer( new CodeCellRenderer() );
-    
-    codeTable.doLayout();    
+
+    codeTable.doLayout();
     Dimension d = codeTable.getPreferredSize();
-    d.width = (int)(d.width * scale );
+    d.width = ( int )( d.width * scale );
     codeTable.setPreferredScrollableViewportSize( d );
-    
+
     upperPanel = mainPanel;
 
     JPanel buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
@@ -308,29 +308,29 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     importButton.setToolTipText( "Import Protocol Upgrades(s) from the Clipboard" );
     importButton.setEnabled( false );
     buttonPanel.add( importButton );
-    
-    JPanel messagePanel = new JPanel( new FlowLayout( FlowLayout.LEFT) );
+
+    JPanel messagePanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
     messagePanel.add( messageLabel );
     setMessage( 2 );
-    
+
     JPanel midPanel = new JPanel( new BorderLayout() );
     midPanel.add( buttonPanel, BorderLayout.CENTER );
     midPanel.add( messagePanel, BorderLayout.PAGE_END );
-    tablePanel.add( midPanel, BorderLayout.PAGE_END) ;
-  
+    tablePanel.add( midPanel, BorderLayout.PAGE_END );
+
     // Create lower part of left panel as tabbed pane
     mainPanel = new JPanel( new TableLayout( size2 ) );
     tabbedPane = new JTabbedPane();
     tabbedPane.addTab( "Device Data", mainPanel );
     tabbedPane.addChangeListener( this );
-    leftPanel.add( tabbedPane, BorderLayout.CENTER);
-    
+    leftPanel.add( tabbedPane, BorderLayout.CENTER );
+
     // Device Parameter Table on Device Data tab
     deviceModel = new ParameterTableModel( protocol, ParameterTableModel.Type.DEVICE );
     deviceTable = new JTableX( deviceModel );
     SpinnerCellEditor editor = new SpinnerCellEditor( 0, 8, 1 );
-    new TextPopupMenu( ( JTextField )( ( DefaultCellEditor )deviceTable.getDefaultEditor( String.class ) )
-        .getComponent() );
+    new TextPopupMenu(
+        ( JTextField )( ( DefaultCellEditor )deviceTable.getDefaultEditor( String.class ) ).getComponent() );
     deviceTable.setDefaultEditor( Integer.class, editor );
     JScrollPane scrollPane = new JScrollPane( deviceTable );
     tablePanel = new JPanel( new BorderLayout() );
@@ -339,7 +339,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     mainPanel.add( tablePanel, "1, 1, 3, 1" );
     d = deviceTable.getPreferredScrollableViewportSize();
     d.height = deviceTable.getRowHeight() * 4;
-    d.width = (int)(d.width * scale );
+    d.width = ( int )( d.width * scale );
     deviceTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Default Fixed Data:", SwingConstants.RIGHT );
@@ -354,8 +354,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
     commandTable = new JTableX( commandModel );
     commandTable.setDefaultEditor( Integer.class, editor );
-    new TextPopupMenu( ( JTextField )( ( DefaultCellEditor )commandTable.getDefaultEditor( String.class ) )
-        .getComponent() );
+    new TextPopupMenu(
+        ( JTextField )( ( DefaultCellEditor )commandTable.getDefaultEditor( String.class ) ).getComponent() );
     scrollPane = new JScrollPane( commandTable );
     tablePanel = new JPanel( new BorderLayout() );
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Command Parameters" ) );
@@ -363,7 +363,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     mainPanel.add( tablePanel, "1, 5, 3, 5" );
     d = commandTable.getPreferredScrollableViewportSize();
     d.height = commandTable.getRowHeight() * 4;
-    d.width = (int)(d.width * scale );
+    d.width = ( int )( d.width * scale );
     commandTable.setPreferredScrollableViewportSize( d );
 
     label = new JLabel( "Command Index:", SwingConstants.RIGHT );
@@ -372,7 +372,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         1 ) );
     cmdIndex.addChangeListener( this );
     mainPanel.add( cmdIndex, "3, 7" );
-    
+
     // Protocol Data tab of lower left panel
     setTableLayout( size3, dataLabels, false );
     mainPanel = new JPanel( new TableLayout( size3 ) );
@@ -398,30 +398,117 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     leadInOff = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
     leadOutOff = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
     altLeadOut = new RMFormattedTextField( new RMNumberFormatter( ( NumberFormat )nf.clone() ), pfpdListener );
-    
-    dataComponents = new Component[][]{ 
-        { frequency }, { dutyCycle }, { sigStruct }, null,
-        { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, null,
-        { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, null,
-        { rptType }, { rptHold }, { rptValue, rptValueLbl }, null,
-        { burst1On }, { burst1Off }, null,
-        { burst0On }, { burst0Off }, { xmit0rev }, null,
-        { leadInStyle }, { leadInOn, leadInOnLbl }, { leadInOff, leadInOffLbl }, null,
-        { leadOutStyle }, { leadOutOff }, { offAsTotal, offAsTotalLbl }, null,
-        { useAltLeadOut }, { altLeadOut, altLeadOutLbl }, null,
-        { useAltFreq }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }, null, null, null,
-        { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }
-//        { chkByteStyle }, { bitsHeld }, null,
-//        { miniCombiner }, { sigStyle }, null,
-//        { vecOffset }, { dataOffset }, null,
-//        { toggleBit }
+
+    dataComponents = new Component[][]
+    {
+        {
+          frequency
+        },
+        {
+          dutyCycle
+        },
+        {
+          sigStruct
+        }, null,
+        {
+          devBytes
+        },
+        {
+            devBits1, devBits1lbl
+        },
+        {
+            devBits2, devBits2lbl
+        },
+        {
+          devBitDbl
+        }, null,
+        {
+          cmdBytes
+        },
+        {
+            cmdBits1, cmdBits1lbl
+        },
+        {
+            cmdBits2, cmdBits2lbl
+        },
+        {
+          cmdBitDbl
+        }, null,
+        {
+          rptType
+        },
+        {
+          rptHold
+        },
+        {
+            rptValue, rptValueLbl
+        }, null,
+        {
+          burst1On
+        },
+        {
+          burst1Off
+        }, null,
+        {
+          burst0On
+        },
+        {
+          burst0Off
+        },
+        {
+          xmit0rev
+        }, null,
+        {
+          leadInStyle
+        },
+        {
+            leadInOn, leadInOnLbl
+        },
+        {
+            leadInOff, leadInOffLbl
+        }, null,
+        {
+          leadOutStyle
+        },
+        {
+          leadOutOff
+        },
+        {
+            offAsTotal, offAsTotalLbl
+        }, null,
+        {
+          useAltLeadOut
+        },
+        {
+            altLeadOut, altLeadOutLbl
+        }, null,
+        {
+          useAltFreq
+        },
+        {
+            altFreq, altFreqLbl
+        },
+        {
+            altDuty, altDutyLbl
+        }, null, null, null,
+        {
+            burstMidFrame, burstMidFrameLbl
+        },
+        {
+            afterBits, afterBitsLbl
+        }
+    // { chkByteStyle }, { bitsHeld }, null,
+    // { miniCombiner }, { sigStyle }, null,
+    // { vecOffset }, { dataOffset }, null,
+    // { toggleBit }
     };
-    
+
     for ( int i = 0; i < dataComponents.length; i++ )
     {
       if ( dataComponents[ i ] == null )
       {
-        if ( dataLabels[ i ] == null ) continue;
+        if ( dataLabels[ i ] == null )
+          continue;
         label = new JLabel( dataLabels[ i ][ 0 ], SwingConstants.CENTER );
         label.setFocusable( false );
         mainPanel.add( label, "1, " + ( i + 1 ) + ", 5, " + ( i + 1 ) );
@@ -446,11 +533,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         mainPanel.add( label, "5, " + ( i + 1 ) );
       }
     }
-    
+
     // PF Details tab of lower left panel (added to tabbed pane by valueChanged() when a protocol is selected)
     pfMainPanel = new JPanel( new BorderLayout() );
     pfPanel = new JPanel();
-    pfScrollPane = new JScrollPane( pfPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+    pfScrollPane = new JScrollPane( pfPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
     pfScrollPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
     pfMainPanel.add( pfScrollPane, BorderLayout.CENTER );
 
@@ -470,18 +558,19 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       pfButtons[ i ] = new JRadioButton( "PF" + i, false );
       pfButtons[ i ].addItemListener( this );
       pfChoice.add( pfButtons[ i ] );
-      grp.add(  pfButtons[ i ] );
+      grp.add( pfButtons[ i ] );
       pfBoxes[ i ] = new JComboBox[ CommonData.pfData[ i ].length ];
     }
-    
+
     // PD Details tab of lower left panel (added to tabbed pane by valueChanged() when a protocol is selected)
     pdMainPanel = new JPanel( new BorderLayout() );
     pdPanel = new JPanel();
-    pdScrollPane = new JScrollPane( pdPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+    pdScrollPane = new JScrollPane( pdPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
     pdScrollPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
     pdMainPanel.add( pdScrollPane, BorderLayout.CENTER );
     pdHeaderPanel = new JPanel( new BorderLayout() );
-    pdMainPanel.add(  pdHeaderPanel, BorderLayout.PAGE_START );
+    pdMainPanel.add( pdHeaderPanel, BorderLayout.PAGE_START );
     int n = 0;
     for ( int i = 0; i < CommonData.pdData.length; i++ )
     {
@@ -491,18 +580,19 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     pdValues = new Short[ n ];
     pdFields = new ArrayList< RMFormattedTextField >();
     pdSizes = new ArrayList< int[] >();
-    
+
     // Function tab of lower left panel (added to tabbed pane by valueChanged() when a protocol is selected)
     fnMainPanel = new JPanel( new BorderLayout() );
     fnPanel = new JPanel();
-    fnScrollPane = new JScrollPane( fnPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+    fnScrollPane = new JScrollPane( fnPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
     fnScrollPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
     fnMainPanel.add( fnScrollPane, BorderLayout.CENTER );
     fnHeaderPanel = new JPanel( new BorderLayout() );
-    fnMainPanel.add(  fnHeaderPanel, BorderLayout.PAGE_START );
+    fnMainPanel.add( fnHeaderPanel, BorderLayout.PAGE_START );
     tabbedPane.add( "Functions", fnMainPanel );
-    
-    // Disassembly on right pane   
+
+    // Disassembly on right pane
     assemblerTable = new JP1Table( assemblerModel );
     assemblerTable.initColumns( assemblerModel );
     assemblerTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
@@ -510,20 +600,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     scrollPane = new JScrollPane( assemblerTable );
     scrollPane.setBorder( BorderFactory.createTitledBorder( "Disassembly" ) );
     rightPanel.add( scrollPane, BorderLayout.CENTER );
-    
+
     // Disassembly options
     JPanel lowerRightPanel = new JPanel();
     lowerRightPanel.setLayout( new BoxLayout( lowerRightPanel, BoxLayout.PAGE_AXIS ) );
     JPanel optionsPanel = new JPanel();
     optionsPanel.setLayout( new BoxLayout( optionsPanel, BoxLayout.PAGE_AXIS ) );
-    optionsPanel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Disassembly options" ),
-        BorderFactory.createEmptyBorder( 0, 10, 0, 10 ) ) );
+    optionsPanel.setBorder( BorderFactory.createCompoundBorder(
+        BorderFactory.createTitledBorder( "Disassembly options" ), BorderFactory.createEmptyBorder( 0, 10, 0, 10 ) ) );
     lowerRightPanel.add( optionsPanel );
     rightPanel.add( lowerRightPanel, BorderLayout.PAGE_END );
     JPanel optionPanel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
     useRegisterConstants.addItemListener( this );
     useFunctionConstants.addItemListener( this );
-    optionPanel.add( new JLabel( "Use predefined constants for: ") );
+    optionPanel.add( new JLabel( "Use predefined constants for: " ) );
     optionPanel.add( useRegisterConstants );
     optionPanel.add( useFunctionConstants );
     optionsPanel.add( optionPanel );
@@ -536,16 +626,16 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     grp.add( rcButton );
     grp.add( wButton );
     setOptionButtons();
-    optionPanel.add(  new JLabel( "S3C80 only:" ) );
+    optionPanel.add( new JLabel( "S3C80 only:" ) );
     optionPanel.add( asCodeButton );
     optionPanel.add( rcButton );
     optionPanel.add( wButton );
     optionsPanel.add( optionPanel );
-    
+
     // Editing/Assembling buttons
     optionPanel = new JPanel( new GridLayout( 2, 5 ) );
     optionPanel.add( insert );
-    optionPanel.add( cut);
+    optionPanel.add( cut );
     optionPanel.add( new JLabel() );
     optionPanel.add( load );
     optionPanel.add( assemble );
@@ -568,17 +658,18 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     getData.addActionListener( this );
     cutItems = new ArrayList< AssemblerItem >();
     lowerRightPanel.add( optionPanel );
-    
+
     // Button Panel
     JPanel mainButtonPanel = new JPanel( new BorderLayout() );
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
     mainButtonPanel.add( buttonPanel, BorderLayout.LINE_START );
 
     codeButton = new JButton( "Expand" );
-    codeButton.setToolTipText( "<HTML>Expand/Collapse the lower tabbed panel.  When expanded<BR>it hides the upper panel of protocol codes.</HTML>" );
+    codeButton
+        .setToolTipText( "<HTML>Expand/Collapse the lower tabbed panel.  When expanded<BR>it hides the upper panel of protocol codes.</HTML>" );
     codeButton.addActionListener( this );
     buttonPanel.add( codeButton, BorderLayout.CENTER );
-    
+
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
     mainButtonPanel.add( buttonPanel, BorderLayout.CENTER );
     view = new JButton( "View Ini" );
@@ -604,15 +695,15 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     rawHexData.setText( protocol.getFixedData( new Value[ 0 ] ).toString() );
 
     d = rightPanel.getPreferredSize();
-    d.width = (int)(leftPanel.getPreferredSize().width * 0.95 / scale );
+    d.width = ( int )( leftPanel.getPreferredSize().width * 0.95 / scale );
     rightPanel.setPreferredSize( d );
-    
+
     pack();
     Rectangle rect = getBounds();
     int x = rect.x - rect.width / 2;
     int y = rect.y - rect.height / 2;
     setLocation( x, y );
-    
+
     isEmpty = new boolean[ procs.length ];
     for ( int i = 0; i < procs.length; i++ )
     {
@@ -620,12 +711,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       isEmpty[ i ] = ( hex == null || hex.length() == 0 );
     }
   }
-  
+
   public void setForCustomCode()
   {
-//    pid.setEditable( false );
-//    pid.setEnabled( false );
-    
+    // pid.setEditable( false );
+    // pid.setEnabled( false );
+
     deviceTable.setEnabled( false );
     deviceTable.setForeground( Color.GRAY );
 
@@ -634,9 +725,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
     rawHexData.setEnabled( false );
     cmdIndex.setEnabled( false );
-    
+
     tabbedPane.setSelectedIndex( 1 );
-  
+
     enableButtons();
   }
 
@@ -650,23 +741,19 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     Object source = e.getSource();
     if ( source == importButton )
     {
-      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-      Transferable clipData = clipboard.getContents( clipboard );
-      if ( clipData != null )
+      JTextArea textArea = new JTextArea( 8, 50 );
+      new TextPopupMenu( textArea );
+      JScrollPane scrollPane = new JScrollPane( textArea );
+      scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Upgrade Notes" ),
+          scrollPane.getBorder() ) );
+      int rc = JOptionPane.showConfirmDialog( this, scrollPane, "Import Protocol Upgrade",
+          JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null );
+
+      if ( rc == JOptionPane.OK_OPTION )
       {
-        try
-        {
-          if ( clipData.isDataFlavorSupported( DataFlavor.stringFlavor ) )
-          {
-            String s = ( String )( clipData.getTransferData( DataFlavor.stringFlavor ) );
-            importProtocolCode( s );
-          }
-        }
-        catch ( Exception ex )
-        {
-          ex.printStackTrace( System.err );
-        }
+        importProtocolCode( textArea.getText() );
       }
+
       if ( codeTable.getSelectedRowCount() == 1 )
       {
         Processor proc = procs[ codeTable.getSelectedRow() ];
@@ -698,9 +785,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       codeButton.setText( upperPanel.isVisible() ? "Expand" : "Collapse" );
     }
     else if ( Arrays.asList( insert, delete, moveUp, moveDown, cut, paste ).contains( source ) )
-        
-//        source == insert || source == delete || source == moveUp || source == moveDown
-//        || source)
+
+    // source == insert || source == delete || source == moveUp || source == moveDown
+    // || source)
     {
       List< AssemblerItem > itemList = assemblerModel.getItemList();
       int row = assemblerTable.getSelectedRow();
@@ -709,7 +796,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       int colCount = assemblerTable.getSelectedColumnCount();
       if ( source == insert )
       {
-        for ( int i = 0; i < rowCount; i++ ) itemList.add( row, new AssemblerItem() );
+        for ( int i = 0; i < rowCount; i++ )
+          itemList.add( row, new AssemblerItem() );
         assemblerModel.fireTableDataChanged();
       }
       else if ( source == paste )
@@ -724,7 +812,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           cutItems.addAll( itemList.subList( row, row + rowCount ) );
           paste.setEnabled( true );
         }
-        for ( int i = 0; i < rowCount; i++ ) itemList.remove( row );
+        for ( int i = 0; i < rowCount; i++ )
+          itemList.remove( row );
         assemblerModel.fireTableDataChanged();
       }
       else if ( source == moveUp && row > 0 )
@@ -734,7 +823,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         itemList.add( row + rowCount - 1, item );
         assemblerModel.fireTableDataChanged();
         assemblerTable.changeSelection( row - 1, col, false, false );
-        assemblerTable.changeSelection(row + rowCount - 2, col + colCount - 1, false, true );
+        assemblerTable.changeSelection( row + rowCount - 2, col + colCount - 1, false, true );
       }
       else if ( source == moveDown && row < itemList.size() - 1 )
       {
@@ -743,7 +832,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         itemList.add( row, item );
         assemblerModel.fireTableDataChanged();
         assemblerTable.changeSelection( row + 1, col, false, false );
-        assemblerTable.changeSelection(row + rowCount, col + colCount - 1, false, true );
+        assemblerTable.changeSelection( row + rowCount, col + colCount - 1, false, true );
       }
       setGetData();
     }
@@ -752,7 +841,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       PropertyFile properties = JP1Frame.getProperties();
       RMFileChooser chooser = new RMFileChooser( properties.getProperty( "IRPath" ) );
       EndingFileFilter txtFilter = new EndingFileFilter( "Text files (*.txt)", RemoteMaster.txtEndings );
-      chooser.setFileFilter( txtFilter ); 
+      chooser.setFileFilter( txtFilter );
 
       if ( file != null )
       {
@@ -789,25 +878,28 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             String line = "";
             String str = item.getLabel();
             line += str;
-            if ( !str.isEmpty() && !str.endsWith( ":" ) ) line += ":";
+            if ( !str.isEmpty() && !str.endsWith( ":" ) )
+              line += ":";
             line += "\t" + item.getOperation() + "\t" + item.getArgumentText();
             str = item.getComments();
             if ( !str.isEmpty() )
             {
               line += "\t";
-              if ( !str.startsWith( ";" ) ) line += ";";
+              if ( !str.startsWith( ";" ) )
+                line += ";";
               line += str;
             }
             line += "\n";
             int j = 0;
-            while ( j < line.length() && Character.isWhitespace( line.charAt( j ) ) ) j++;
+            while ( j < line.length() && Character.isWhitespace( line.charAt( j ) ) )
+              j++ ;
             if ( j < line.length() || i < assemblerModel.getItemList().size() - 1 )
             {
               pw.print( line );
             }
           }
           pw.close();
-        } 
+        }
         catch ( IOException ex )
         {
           ex.printStackTrace( System.err );
@@ -858,23 +950,27 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           AssemblerItem item = new AssemblerItem();
           line = line.trim();
           int j = 0;
-          while ( j < line.length() && !Character.isWhitespace( line.charAt( j ) ) ) j++;
-          if ( j == 0 ) continue;
+          while ( j < line.length() && !Character.isWhitespace( line.charAt( j ) ) )
+            j++ ;
+          if ( j == 0 )
+            continue;
           if ( line.charAt( j - 1 ) == ':' )
           {
             item.setLabel( line.substring( 0, j ) );
             line = line.substring( j ).trim();
             j = 0;
-            while ( j < line.length() && !Character.isWhitespace( line.charAt( j ) ) ) j++;
+            while ( j < line.length() && !Character.isWhitespace( line.charAt( j ) ) )
+              j++ ;
           }
-          if ( j == 0 ) continue;
+          if ( j == 0 )
+            continue;
           item.setOperation( line.substring( 0, j ) );
           line = line.substring( j ).trim();
           int ndx = line.indexOf( ';' );
           if ( ndx > 0 )
           {
             item.setArgumentText( line.substring( 0, ndx ).trim() );
-            item.setComments( line.substring( ndx + 1  ) );
+            item.setComments( line.substring( ndx + 1 ) );
           }
           else
           {
@@ -883,7 +979,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           itemList.add( item );
         }
         in.close();
-        itemList.add(  new AssemblerItem() );
+        itemList.add( new AssemblerItem() );
         assemblerModel.fireTableDataChanged();
       }
       catch ( Exception ex )
@@ -891,12 +987,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         ex.printStackTrace( System.err );
       }
     }
-    
+
     else if ( source == assemble )
     {
       int row = codeTable.getSelectedRow();
       Processor proc = procs[ row ];
-      if (assemblerTable.getCellEditor() != null)
+      if ( assemblerTable.getCellEditor() != null )
       {
         assemblerTable.getCellEditor().stopCellEditing();
       }
@@ -915,9 +1011,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       AssemblerItem startItem = null;
       AssemblerItem endItem = null;
       List< AssemblerItem > newItemList = new ArrayList< AssemblerItem >();
-      
-      if ( pfValues[ 0 ] == null ) pfValues[ 0 ] = 0;
-      for ( i = 0; i < pfValues.length && pfValues[ i ] != null; i++ );
+
+      if ( pfValues[ 0 ] == null )
+        pfValues[ 0 ] = 0;
+      for ( i = 0; i < pfValues.length && pfValues[ i ] != null; i++ )
+        ;
       assemblerModel.setPfCount( i );
       // Refresh pd values that could be null
       if ( !Arrays.asList( pfMainPanel, pdMainPanel ).contains( tabbedPane.getSelectedComponent() ) )
@@ -933,40 +1031,46 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
       boolean fill = false;
       short[] fillValues = CommonData.pdDefaults[ dataStyle ];
-      for ( i = pdValues.length - 1 ; i >= 0; i-- )
+      for ( i = pdValues.length - 1; i >= 0; i-- )
       {
         if ( fill == false && pdValues[ i ] != null )
         {
           fill = true;
           assemblerModel.setPdCount( i + 1 );
         }
-        if ( pdValues[ i ] == null && fill ) pdValues[ i ] = i < fillValues.length ? fillValues[ i ] : 0;
+        if ( pdValues[ i ] == null && fill )
+          pdValues[ i ] = i < fillValues.length ? fillValues[ i ] : 0;
       }
-      
+
       interpretPFPD( false );
       setPFPanel();
       setPDPanel();
-      
+
       Hex hex = new Hex( assemblerModel.getPdCount() + 10 );
       assemblerModel.setHex( hex );
-      for ( i = 0; i < processor.getStartOffset(); i++ ) hex.set( basicValues[ i ], i );
-      for ( i = processor.getStartOffset(); i < 3; i++ ) hex.set( basicValues[ i ], i + 2 );
-      for ( i = 0; i < pfValues.length && pfValues[ i ] != null; i++ ) hex.set( pfValues[ i ], i + 5 );
-      for ( int j = 0; j < assemblerModel.getPdCount(); j++ ) hex.set( pdValues[ j ], i + j + 5 );
-      
+      for ( i = 0; i < processor.getStartOffset(); i++ )
+        hex.set( basicValues[ i ], i );
+      for ( i = processor.getStartOffset(); i < 3; i++ )
+        hex.set( basicValues[ i ], i + 2 );
+      for ( i = 0; i < pfValues.length && pfValues[ i ] != null; i++ )
+        hex.set( pfValues[ i ], i + 5 );
+      for ( int j = 0; j < assemblerModel.getPdCount(); j++ )
+        hex.set( pdValues[ j ], i + j + 5 );
+
       int length = 0;
       int start = 0;
-      int end = 2;  // length of JR / BRA instruction
+      int end = 2; // length of JR / BRA instruction
       i = 0;
       for ( i = 0; i < assemblerModel.getItemList().size(); i++ )
-      {   
+      {
         AssemblerItem item = assemblerModel.getItemList().get( i );
         if ( item.getOperation().equals( "ORG" ) )
         {
-          for ( Token t : OpArg.getArgs( item.getArgumentText(), null, null ) ) ramAddress = t.value;
+          for ( Token t : OpArg.getArgs( item.getArgumentText(), null, null ) )
+            ramAddress = t.value;
           if ( processor instanceof S3C80Processor )
           {
-            processor = ProcessorManager.getProcessor( ( ramAddress & 0xC000  ) == 0xC000 ? "S3F80" : "S3C80" );
+            processor = ProcessorManager.getProcessor( ( ramAddress & 0xC000 ) == 0xC000 ? "S3F80" : "S3C80" );
           }
         }
         if ( length == processor.getStartOffset() )
@@ -982,7 +1086,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             {
               // search for JR / BRA destination label
               AssemblerItem item2 = assemblerModel.getItemList().get( j );
-              if ( Arrays.asList( item.getArgumentText(), item.getArgumentText() + ":" ).contains( item2.getLabel() ) ) break;
+              if ( Arrays.asList( item.getArgumentText(), item.getArgumentText() + ":" ).contains( item2.getLabel() ) )
+                break;
               end += item2.getLength();
             }
             if ( j == assemblerModel.getItemList().size() )
@@ -994,8 +1099,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         length += item.getLength();
         start += item.getLength();
-        if ( length == 0 && !( item.getOperation().trim().isEmpty() && item.getArgumentText().trim().isEmpty() && item.getComments().trim().isEmpty() ) ) newItemList.add( item );
-        if ( length >= 5 ) break;
+        if ( length == 0
+            && !( item.getOperation().trim().isEmpty() && item.getArgumentText().trim().isEmpty() && item.getComments()
+                .trim().isEmpty() ) )
+          newItemList.add( item );
+        if ( length >= 5 )
+          break;
       }
       if ( startItem == null )
       {
@@ -1012,7 +1121,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           startItem = new AssemblerItem( ramAddress + processor.getStartOffset(), op, "L0" );
           op = ( processor instanceof S3C80Processor ) ? "JP" : "JMP";
           endItem = new AssemblerItem( 0, op, "XmitIR" );
-//          endItem.setLabel( "L0:" );
+          // endItem.setLabel( "L0:" );
         }
       }
 
@@ -1020,7 +1129,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       List< AssemblerItem > oldItemList = assemblerModel.getData();
       assemblerModel.setItemList( newItemList );
       assemblerModel.dbOut( 0, processor.getStartOffset(), ramAddress, 0, processor );
-      newItemList.add( startItem );     
+      newItemList.add( startItem );
       assemblerModel.dbOut( processor.getStartOffset() + 2, i + 5, ramAddress, 0, processor );
       if ( endItem == null )
       {
@@ -1039,7 +1148,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           length += item.getLength();
         }
       }
-      else  
+      else
       {
         // Build mode
         DisasmState state = new DisasmState();
@@ -1063,24 +1172,25 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
               break;
             case 3:
               int op = hx.getData()[ 0 ] * 0x100;
-              hx = new Hex( 2 * ( rpt - 1) );
+              hx = new Hex( 2 * ( rpt - 1 ) );
               for ( int j = 0; j < rpt - 1; j++ )
               {
-                hx.put( op +  + 2 * ( rpt - j - 2 ), 2 * j );
+                hx.put( op + +2 * ( rpt - j - 2 ), 2 * j );
               }
               labels.put( "L1", String.format( "%04XH", ramAddress + i + 5 + hx.length() ) );
               rptLabels.put( ramAddress + i + 5 + hx.length(), "L1" );
               break;
             case 4:
               hx.set( ( short )( rpt - 1 ), 1 );
-              break;  
+              break;
           }
           while ( hx.length() > 0 )
           {
             AssemblerItem item = new AssemblerItem( ramAddress + i + 5, hx );
             int opLen = item.disassemble( processor, rptLabels, state );
             String lbl = rptLabels.get( item.getAddress() );
-            if ( lbl != null ) item.setLabel( lbl + ":" );
+            if ( lbl != null )
+              item.setLabel( lbl + ":" );
             newItemList.add( item );
             hx = hx.subHex( opLen );
             i += opLen;
@@ -1088,10 +1198,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         endItem.setAddress( ramAddress + i + 5 );
         String lbl = rptLabels.get( endItem.getAddress() );
-        if ( lbl != null ) endItem.setLabel( lbl + ":" );
-        if ( burstMidFrame.getSelectedIndex() == 1 ) endItem.setArgumentText( "XmitSplitIR" );
+        if ( lbl != null )
+          endItem.setLabel( lbl + ":" );
+        if ( burstMidFrame.getSelectedIndex() == 1 )
+          endItem.setArgumentText( "XmitSplitIR" );
         newItemList.add( endItem );
-        
+
         startItem.assemble( processor, labels, true );
         endItem.assemble( processor, labels, true );
       }
@@ -1106,8 +1218,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     {
       int m = -1;
       int n = 0;
-      for ( ; n < pfButtons.length; n++ ) if ( pfButtons[ n ].isSelected() ) break;
-      if ( n < pfButtons.length ) m = Arrays.asList( pfBoxes[ n ] ).indexOf( e.getSource() );
+      for ( ; n < pfButtons.length; n++ )
+        if ( pfButtons[ n ].isSelected() )
+          break;
+      if ( n < pfButtons.length )
+        m = Arrays.asList( pfBoxes[ n ] ).indexOf( e.getSource() );
       if ( m >= 0 && !isSettingPF )
       {
         int bitStart = Integer.parseInt( CommonData.pfData[ n ][ m ][ 1 ].substring( 0, 1 ) );
@@ -1120,23 +1235,26 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           val = Integer.parseInt( text.substring( 0, 1 ) );
         }
-        else  // Handle "other"
+        else
+        // Handle "other"
         {
           for ( ; val < combo.getItemCount() - 1; val++ )
           {
             text = ( String )combo.getModel().getElementAt( val );
-            if ( val != Integer.parseInt( text.substring( 0, 1 ) ) ) break;
+            if ( val != Integer.parseInt( text.substring( 0, 1 ) ) )
+              break;
           }
         }
         pfValues[ n ] = ( short )( ( pfValues[ n ] & mask ) | ( val << bitStart ) );
         if ( bitStart == 7 )
         {
           isSettingPF = true;
-          if ( val == 0 ) for ( int i = n + 1; i < pfButtons.length; i++ )
-          {
-            pfButtons[ i ].setEnabled( false );
-            pfValues[ i ] = null;
-          }
+          if ( val == 0 )
+            for ( int i = n + 1; i < pfButtons.length; i++ )
+            {
+              pfButtons[ i ].setEnabled( false );
+              pfValues[ i ] = null;
+            }
           else
           {
             pfButtons[ n + 1 ].setEnabled( true );
@@ -1156,45 +1274,51 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           Hex hex = ( Hex )pdFields.get( n ).getValue();
           Arrays.fill( pdValues, index, index + pdSizes.get( n )[ 1 ], null );
-          for ( int i = 0; i < hex.length(); i++ ) pdValues[ index + i ] = hex.getData()[ i ];
+          for ( int i = 0; i < hex.length(); i++ )
+            pdValues[ index + i ] = hex.getData()[ i ];
 
           int p = 0;
-          for ( ; pdSizes.get( p )[ 0 ] != index; p++ );
-          for ( ; p < pdSizes.size() && pdSizes.get( p )[ 0 ] == index; p++ ) if ( pdSizes.get( p )[ 1 ] >> 4 == 0 )
-          {
-            Short val1 = pdValues[ index ];
-            Short val2 = pdValues[ index + 1 ];
-            int type = pdSizes.get( p )[ 1 ];
-            if ( p != n ) pdFields.get( p ).setValue( ( type == 2 && val2 != null ) ?
-                String.format( "%04X", val1 * 0x100 + val2 ) : ( val1 != null ) ?
-                    String.format(  "%02X", val1 ) : "" );
-            hex = ( Hex )pdFields.get( p ).getValue();
-            type = pdSizes.get( p + 1 )[ 1 ] & 0xF;
-            if ( type == 1 && hex.length() == 1 )
+          for ( ; pdSizes.get( p )[ 0 ] != index; p++ )
+            ;
+          for ( ; p < pdSizes.size() && pdSizes.get( p )[ 0 ] == index; p++ )
+            if ( pdSizes.get( p )[ 1 ] >> 4 == 0 )
             {
-              pdFields.get( p + 1 ).setValue( "" + hex.getData()[ 0 ] );
+              Short val1 = pdValues[ index ];
+              Short val2 = pdValues[ index + 1 ];
+              int type = pdSizes.get( p )[ 1 ];
+              if ( p != n )
+                pdFields.get( p ).setValue(
+                    ( type == 2 && val2 != null ) ? String.format( "%04X", val1 * 0x100 + val2 )
+                        : ( val1 != null ) ? String.format( "%02X", val1 ) : "" );
+              hex = ( Hex )pdFields.get( p ).getValue();
+              type = pdSizes.get( p + 1 )[ 1 ] & 0xF;
+              if ( type == 1 && hex.length() == 1 )
+              {
+                pdFields.get( p + 1 ).setValue( "" + hex.getData()[ 0 ] );
+              }
+              else if ( type == 4 && hex.length() >= 1 )
+              {
+                double m = ( dataStyle == 0 ) ? 2.0 : 0.0;
+                double d = ( dataStyle == 0 ) ? 8.0 : 4.0;
+                pdFields.get( p + 1 ).setValue( "" + ( hex.getData()[ 0 ] + m ) / d );
+                if ( hex.length() > 1 )
+                  pdFields.get( p + 2 ).setValue( "" + ( hex.getData()[ 1 ] + m ) / d );
+              }
+              else if ( hex.length() == 2 )
+              {
+                int time = 2 * hex.get( 0 ) + ( ( type == 3 && dataStyle == 0 ) ? 40 : 0 );
+                pdFields.get( p + 1 ).setValue( "" + time );
+              }
+              else
+                for ( int i = 1; p + i < pdSizes.size() && pdSizes.get( p + i )[ 1 ] >> 4 == i; i++ )
+                {
+                  pdFields.get( p + i ).setValue( "" );
+                }
             }
-            else if ( type == 4 && hex.length() >= 1 )
-            {
-              double m = ( dataStyle == 0 ) ? 2.0 : 0.0;
-              double d = ( dataStyle == 0 ) ? 8.0 : 4.0;
-              pdFields.get( p + 1 ).setValue( "" + ( hex.getData()[ 0 ] + m ) / d );
-              if ( hex.length() > 1 ) pdFields.get( p + 2 ).setValue( "" + ( hex.getData()[ 1 ] + m ) / d );
-            }
-            else if ( hex.length() == 2 )
-            {
-              int time = 2 * hex.get( 0 ) + ( ( type == 3 && dataStyle == 0 ) ? 40 : 0 );
-              pdFields.get( p + 1 ).setValue( "" + time );
-            }
-            else for ( int i = 1; p + i < pdSizes.size() && pdSizes.get( p + i )[ 1 ] >> 4 == i; i++ )
-            {
-              pdFields.get( p + i ).setValue( "" );
-            }
-          }
         }
         else
         {
-//          if ( pdFields.get( n ).getText().equals( pdFields.get( n ).getLastText()) ) return;
+          // if ( pdFields.get( n ).getText().equals( pdFields.get( n ).getLastText()) ) return;
           int type = pdSizes.get( n )[ 1 ] & 0xF;
           int pos = pdSizes.get( n )[ 1 ] >> 4;
           Object obj = pdFields.get( n ).getValue();
@@ -1206,7 +1330,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           }
           else if ( type == 1 )
           {
-            pdField.setValue( String.format(  "%02X", ( Long )obj & 0xFF ) );
+            pdField.setValue( String.format( "%02X", ( Long )obj & 0xFF ) );
           }
           else if ( type == 4 )
           {
@@ -1218,14 +1342,15 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             hex.set( ( short )( ( int )( val + 0.5 ) & 0xFF ), pos - 1 );
             pdField.setValue( hex.toString() );
           }
-          else // types 2, 3
+          else
+          // types 2, 3
           {
             long val = ( Long )obj;
             val -= ( type == 3 && dataStyle == 0 ) ? 40 : 0;
             val /= 2;
             pdField.setValue( String.format( "%04X", val & 0xFFFF ) );
           }
-          pdField.update();  
+          pdField.update();
         }
       }
     }
@@ -1272,7 +1397,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           du = temp;
           p = temp.getProtocol();
-          
+
           if ( p.getID( remote ).equals( id ) )
           {
             inDeviceUpgrade = true;
@@ -1288,35 +1413,34 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
           if ( usesProtocolUpgrade )
           {
-            String message = "There is a Device Upgrade that is using a protocol upgrade with\n"
-                           + "PID " + id + " Do you want to abort this PID choice and enter\n"
-                           + "a different one?  If so, please press OK.\n\n"
-                           + "If you want to edit that protocol code, also press OK, then exit\n"
-                           + "this dialog, change to the Devices page and edit the protocol of\n"
-                           + "the device upgrade from there.\n\n"
-                           + "To continue, press CANCEL but you will be creating a Manual Protocol\n"
-                           + "that cannot be accessed while that Device Upgrade is present.";
-            exit = ( JOptionPane.showConfirmDialog( null, message, title, 
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.OK_OPTION );
+            String message = "There is a Device Upgrade that is using a protocol upgrade with\n" + "PID " + id
+                + " Do you want to abort this PID choice and enter\n" + "a different one?  If so, please press OK.\n\n"
+                + "If you want to edit that protocol code, also press OK, then exit\n"
+                + "this dialog, change to the Devices page and edit the protocol of\n"
+                + "the device upgrade from there.\n\n"
+                + "To continue, press CANCEL but you will be creating a Manual Protocol\n"
+                + "that cannot be accessed while that Device Upgrade is present.";
+            exit = ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE ) == JOptionPane.OK_OPTION );
           }
           else
           {
             String message = "There is a Device Upgrade with protocol with PID " + id + " that\n"
-                           + "is not yet using a protocol upgrade, so you cannot create a new\n"
-                           + "manual protocol with that PID.  If you want to create a manual\n"
-                           + "protocol then please choose a different PID.  If you want to\n"
-                           + "provide code for that device upgrade, please change to the\n"
-                           + "Devices page and edit the protocol from there.";
+                + "is not yet using a protocol upgrade, so you cannot create a new\n"
+                + "manual protocol with that PID.  If you want to create a manual\n"
+                + "protocol then please choose a different PID.  If you want to\n"
+                + "provide code for that device upgrade, please change to the\n"
+                + "Devices page and edit the protocol from there.";
             JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
             exit = true;
           }
-          
+
           if ( exit )
           {
             pid.setValue( null );
             enableButtons();
             return;
-          }         
+          }
         }
       }
       protocol.setID( id );
@@ -1448,7 +1572,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
      */
     public boolean isCellEditable( int row, int col )
     {
-      if ( displayRemote != null && !procs[ row ].getEquivalentName().equals( displayRemote.getProcessor().getEquivalentName() ) )
+      if ( displayRemote != null
+          && !procs[ row ].getEquivalentName().equals( displayRemote.getProcessor().getEquivalentName() ) )
       {
         return false;
       }
@@ -1517,11 +1642,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           String title = "Code deletion";
           String message = "This protocol is not built in to the remote.  Do you want to restore\n"
-                         + "the code to the standard code for this protocol?\n\n"
-                         + "If you select NO then the protocol upgrade for this device upgrade\n"
-                         + "will be deleted.  The device upgrade will not function until you\n"
-                         + "restore the protocol upgrade, which you may do by deleting this\n"
-                         + "null entry and answering this question again.";
+              + "the code to the standard code for this protocol?\n\n"
+              + "If you select NO then the protocol upgrade for this device upgrade\n"
+              + "will be deleted.  The device upgrade will not function until you\n"
+              + "restore the protocol upgrade, which you may do by deleting this\n"
+              + "null entry and answering this question again.";
           boolean restore = ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
               JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION );
           if ( restore )
@@ -1533,7 +1658,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             newCode = new Hex();
           }
         }
-        
+
         Processor proc = procs[ row ];
         protocol.setCode( newCode, proc );
         fireTableRowsUpdated( row, row );
@@ -1557,13 +1682,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           assemblerModel.disassemble( newCode, proc );
         }
-  
-        if ( proc instanceof S3C80Processor 
+
+        if ( proc instanceof S3C80Processor
             && ( ( S3C80Processor )proc ).testCode( newCode ) == S3C80Processor.CodeType.NEW )
         {
-          proc = ProcessorManager.getProcessor( "S3F80" );  // S3C8+ code
+          proc = ProcessorManager.getProcessor( "S3F80" ); // S3C8+ code
         }
-//        int addr = proc.getRAMAddress();   
+        // int addr = proc.getRAMAddress();
         interpretPFPD();
         setPFPanel();
         setPDPanel();
@@ -1639,14 +1764,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
     }
   }
-  
+
   private PropertyFile properties = JP1Frame.getProperties();
 
   /** The protocol. */
   private ManualProtocol protocol = null;
-  
+
   private Protocol displayProtocol = null;
-  
+
   private Remote displayRemote = null;
 
   /** The code model. */
@@ -1683,7 +1808,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
   /** The view. */
   private JButton view = null;
-  
+
   private JButton codeButton = null;
 
   /** The ok. */
@@ -1691,20 +1816,23 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
   /** The cancel. */
   private JButton cancel = null;
-  
+
   private int dataStyle = 0;
   private Processor processor = null;
   private int ramAddress = 0;
   private List< Integer > absUsed = null;
   private List< Integer > zeroUsed = null;
-  
+
   public JCheckBox useRegisterConstants = new JCheckBox( "Registers" );
   public JCheckBox useFunctionConstants = new JCheckBox( "Functions" );
   public JRadioButton asCodeButton = new JRadioButton( "As code" );
   public JRadioButton rcButton = new JRadioButton( "Force RCn" );
   public JRadioButton wButton = new JRadioButton( "Force Wn" );
-  private JToggleButton[] optionButtons = { useRegisterConstants, useFunctionConstants, asCodeButton, rcButton, wButton };
-  
+  private JToggleButton[] optionButtons =
+  {
+      useRegisterConstants, useFunctionConstants, asCodeButton, rcButton, wButton
+  };
+
   public JButton moveUp = new JButton( "Up" );
   public JButton moveDown = new JButton( "Down" );
   public JButton insert = new JButton( "Insert" );
@@ -1714,12 +1842,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JButton load = new JButton( "Load" );
   public JButton save = new JButton( "Save" );
   public JButton assemble = new JButton( "Assemble" );
-  public JButton getData = new JButton( "Get Data");
-  
+  public JButton getData = new JButton( "Get Data" );
+
   private File file = null;
   private List< AssemblerItem > cutItems = null;
   private boolean assembled = false;
-  
+
   private JPanel upperPanel = null;
   private JTabbedPane tabbedPane = null;
   private JSplitPane outerPane = null;
@@ -1730,7 +1858,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   private JRadioButton[] pfButtons = null;
   private JComboBox[][] pfBoxes = null;
   private boolean isSettingPF = false;
-  
+
   private JPanel pdMainPanel = null;
   private JPanel pdHeaderPanel = null;
   private JPanel pdPanel = null;
@@ -1738,67 +1866,67 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   private Short[] pdValues = null;
   private List< RMFormattedTextField > pdFields = null;
   private List< int[] > pdSizes = null;
-  
+
   private JPanel fnMainPanel = null;
   private JPanel fnHeaderPanel = null;
   private JPanel fnPanel = null;
   private JScrollPane fnScrollPane = null;
-  
+
   private JScrollPane protDataScrollPane = null;
   private Short[] basicValues = null;
-  
+
   public RMFormattedTextField frequency = null;
   public RMFormattedTextField dutyCycle = null;
   public JComboBox sigStruct = new JComboBox();
-  
+
   public JComboBox devBytes = new JComboBox();
   public JComboBox devBits1 = new JComboBox();
   public JComboBox devBits2 = new JComboBox();
   public JComboBox devBitDbl = new JComboBox();
-  
+
   public JComboBox cmdBytes = new JComboBox();
   public JComboBox cmdBits1 = new JComboBox();
   public JComboBox cmdBits2 = new JComboBox();
   public JComboBox cmdBitDbl = new JComboBox();
-  
+
   public RMFormattedTextField rptValue = null;
   public JComboBox rptType = new JComboBox();
   public JComboBox rptHold = new JComboBox();
 
   public RMFormattedTextField burst1On = null;
   public RMFormattedTextField burst1Off = null;
-  
+
   public RMFormattedTextField burst0On = null;
   public RMFormattedTextField burst0Off = null;
   public JComboBox xmit0rev = new JComboBox();
-  
+
   public JComboBox leadInStyle = new JComboBox();
   public JComboBox burstMidFrame = new JComboBox();
   public RMFormattedTextField afterBits = null;
   public RMFormattedTextField leadInOn = null;
   public RMFormattedTextField leadInOff = null;
-  
+
   public JComboBox leadOutStyle = new JComboBox();
   public RMFormattedTextField leadOutOff = null;
   public JComboBox offAsTotal = new JComboBox();
-  
+
   public JComboBox useAltLeadOut = new JComboBox();
   public RMFormattedTextField altLeadOut = null;
- 
+
   public JComboBox useAltFreq = new JComboBox();
   public RMFormattedTextField altFreq = null;
   public RMFormattedTextField altDuty = null;
-  
-//public JComboBox toggleBit = new JComboBox();
-//public JComboBox chkByteStyle = new JComboBox();
-//public JTextField bitsHeld = new JTextField();
-//
-//public JComboBox miniCombiner = new JComboBox();
-//public JComboBox sigStyle = new JComboBox();
-//
-//public JTextField vecOffset = new JTextField();
-//public JTextField dataOffset = new JTextField();
-  
+
+  // public JComboBox toggleBit = new JComboBox();
+  // public JComboBox chkByteStyle = new JComboBox();
+  // public JTextField bitsHeld = new JTextField();
+  //
+  // public JComboBox miniCombiner = new JComboBox();
+  // public JComboBox sigStyle = new JComboBox();
+  //
+  // public JTextField vecOffset = new JTextField();
+  // public JTextField dataOffset = new JTextField();
+
   public JLabel devBits1lbl = new JLabel();
   public JLabel devBits2lbl = new JLabel();
   public JLabel cmdBits1lbl = new JLabel();
@@ -1814,39 +1942,128 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JLabel altLeadOutLbl = new JLabel();
 
   private Component[][] dataComponents = null;
-  { 
-//      { frequency }, { dutyCycle }, { sigStruct }, null,
-//      { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, null,
-//      { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, null,
-//      { rptType }, { rptHold }, { rptValue, rptValueLbl }, null,
-//      { burst1On }, { burst1Off }, null,
-//      { burst0On }, { burst0Off }, { xmit0rev }, null,
-//      { leadInStyle }, { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }, { leadInOn, leadInOnLbl }, { leadInOff, leadInOffLbl }, null,
-//      { leadOutStyle }, { leadOutOff }, { offAsTotal }, null,
-//      { altLeadOut }, { useAltLeadOut }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }//, null,
-//      { chkByteStyle }, { bitsHeld }, null,
-//      { miniCombiner }, { sigStyle }, null,
-//      { vecOffset }, { dataOffset }, null,
-//      { toggleBit }
+  {
+    // { frequency }, { dutyCycle }, { sigStruct }, null,
+    // { devBytes }, { devBits1, devBits1lbl }, { devBits2, devBits2lbl }, { devBitDbl }, null,
+    // { cmdBytes }, { cmdBits1, cmdBits1lbl }, { cmdBits2, cmdBits2lbl }, { cmdBitDbl }, null,
+    // { rptType }, { rptHold }, { rptValue, rptValueLbl }, null,
+    // { burst1On }, { burst1Off }, null,
+    // { burst0On }, { burst0Off }, { xmit0rev }, null,
+    // { leadInStyle }, { burstMidFrame, burstMidFrameLbl }, { afterBits, afterBitsLbl }, { leadInOn, leadInOnLbl }, {
+    // leadInOff, leadInOffLbl }, null,
+    // { leadOutStyle }, { leadOutOff }, { offAsTotal }, null,
+    // { altLeadOut }, { useAltLeadOut }, { altFreq, altFreqLbl }, { altDuty, altDutyLbl }//, null,
+    // { chkByteStyle }, { bitsHeld }, null,
+    // { miniCombiner }, { sigStyle }, null,
+    // { vecOffset }, { dataOffset }, null,
+    // { toggleBit }
   };
-  
-  private String[][] dataLabels = { 
-      { "Frequency", "kHz" }, { "Duty Cycle", "%" }, { "Signal Structure" }, null,
-      { "Device Bytes" }, { "Bits/Dev1" }, { "Bits/Dev2" }, { "Dev Bit Doubling" }, null,
-      { "Command Bytes" }, { "Bits/Cmd1" }, { "Bits/Cmd2" }, { "Cmd Bit Doubling" }, null,
-      { "Repeat Type" }, { "Hold" }, { "Count" }, null,
-      { "1 Burst ON", "uSec" }, { "OFF", "uSec" }, null,
-      { "0 Burst ON", "uSec" }, { "OFF", "uSec" }, { "Xmit 0 Reversed" }, null,
-      { "Lead-In Style" }, { "Lead-In ON", "uSec" }, { "OFF", "uSec" }, null,
-      { "Lead-Out Style" }, { "Lead-Out OFF", "uSec" }, { "OFF as Total" }, null,
-      { "Use Alt Lead-Out" }, { "Alt Lead-Out", "uSec" }, null,
-      { "Use Alt Freq" }, { "Alt Freq", "kHz" }, { "Alt Duty", "%" }, null,
-      { "*****    Active in Build mode only    *****" }, null,
-      { "Burst Mid-Frame" }, { "After # of bits" },
-//      { "Check Byte Style" }, { "# Bytes Checked" }, null,
-//      { "Mini-Combiner" }, { "Signal Style" }, null,
-//      { "Vector Offset" }, { "Data Offset" }, null,
-//      { "Toggle Bit }"
+
+  private String[][] dataLabels =
+  {
+      {
+          "Frequency", "kHz"
+      },
+      {
+          "Duty Cycle", "%"
+      },
+      {
+        "Signal Structure"
+      }, null,
+      {
+        "Device Bytes"
+      },
+      {
+        "Bits/Dev1"
+      },
+      {
+        "Bits/Dev2"
+      },
+      {
+        "Dev Bit Doubling"
+      }, null,
+      {
+        "Command Bytes"
+      },
+      {
+        "Bits/Cmd1"
+      },
+      {
+        "Bits/Cmd2"
+      },
+      {
+        "Cmd Bit Doubling"
+      }, null,
+      {
+        "Repeat Type"
+      },
+      {
+        "Hold"
+      },
+      {
+        "Count"
+      }, null,
+      {
+          "1 Burst ON", "uSec"
+      },
+      {
+          "OFF", "uSec"
+      }, null,
+      {
+          "0 Burst ON", "uSec"
+      },
+      {
+          "OFF", "uSec"
+      },
+      {
+        "Xmit 0 Reversed"
+      }, null,
+      {
+        "Lead-In Style"
+      },
+      {
+          "Lead-In ON", "uSec"
+      },
+      {
+          "OFF", "uSec"
+      }, null,
+      {
+        "Lead-Out Style"
+      },
+      {
+          "Lead-Out OFF", "uSec"
+      },
+      {
+        "OFF as Total"
+      }, null,
+      {
+        "Use Alt Lead-Out"
+      },
+      {
+          "Alt Lead-Out", "uSec"
+      }, null,
+      {
+        "Use Alt Freq"
+      },
+      {
+          "Alt Freq", "kHz"
+      },
+      {
+          "Alt Duty", "%"
+      }, null,
+      {
+        "*****    Active in Build mode only    *****"
+      }, null,
+      {
+        "Burst Mid-Frame"
+      },
+      {
+        "After # of bits"
+      },
+  // { "Check Byte Style" }, { "# Bytes Checked" }, null,
+  // { "Mini-Combiner" }, { "Signal Style" }, null,
+  // { "Vector Offset" }, { "Data Offset" }, null,
+  // { "Toggle Bit }"
   };
 
   /** The user action. */
@@ -1887,16 +2104,17 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       commandModel.fireTableDataChanged();
     }
   }
-  
+
   private void setTableLayout( double[][] size, String[][] data, boolean interleave )
   {
     double b = 5; // space between rows and around border
     double c = 10; // space between columns
     List< Double > rows = new ArrayList< Double >();
-    rows.add(  b  );
+    rows.add( b );
     for ( int i = 0; i < data.length; i++ )
     {
-      if ( data[ i ] != null && data[ i ][ 0 ] != null && data[ i ][ 0 ].equals( "0" ) ) continue;
+      if ( data[ i ] != null && data[ i ][ 0 ] != null && data[ i ][ 0 ].equals( "0" ) )
+        continue;
       if ( interleave )
       {
         for ( int j = 2; j < Math.max( data[ i ].length, 3 ); j++ )
@@ -1906,7 +2124,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       {
         rows.add( data[ i ] == null ? c : TableLayout.PREFERRED );
       }
-      if ( i == data.length - 1 && data[ i ] != null || interleave ) rows.add( b );
+      if ( i == data.length - 1 && data[ i ] != null || interleave )
+        rows.add( b );
     }
     size[ 1 ] = new double[ rows.size() ];
     for ( int i = 0; i < rows.size(); i++ )
@@ -1914,7 +2133,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       size[ 1 ][ i ] = rows.get( i );
     }
   }
-  
+
   public void setPFPanel()
   {
     if ( tabbedPane.getSelectedComponent() != pfMainPanel )
@@ -1922,10 +2141,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       return;
     }
     int n = -1;
-    for (int i = 0 ; i < pfButtons.length; i++ )
+    for ( int i = 0; i < pfButtons.length; i++ )
     {
       pfButtons[ i ].setEnabled( pfValues[ i ] != null );
-      if ( pfButtons[ i ].isSelected() ) n = i;
+      if ( pfButtons[ i ].isSelected() )
+        n = i;
     }
     if ( n < 0 )
     {
@@ -1933,10 +2153,15 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       pfButtons[ 0 ].setSelected( true );
     }
     List< JTextArea > areas = new ArrayList< JTextArea >();
-    double size[][] = { { getWidth( "0-0__" ), TableLayout.FILL }, null };
+    double size[][] =
+    {
+        {
+            getWidth( "0-0__" ), TableLayout.FILL
+        }, null
+    };
     setTableLayout( size, CommonData.pfData[ n ], true );
     pfPanel.setLayout( new TableLayout( size ) );
-    
+
     int bitPos = 0;
     int row = 1;
     int m = 0;
@@ -1946,7 +2171,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       DisplayArea label = new DisplayArea( data[ 1 ], areas );
       label.setFocusable( false );
       pfPanel.add( label, "0, " + row + ", l, t" );
-      
+
       DisplayArea area = new DisplayArea( data[ 2 ], areas );
       area.setFocusable( false );
       pfPanel.add( area, "1, " + row++ );
@@ -1968,8 +2193,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           combo.addItem( text.substring( 0 ) );
           break;
         }
-      };
-      
+      }
+      ;
+
       pfPanel.add( combo, "1, " + row++ );
       if ( data.length > 4 )
       {
@@ -1977,23 +2203,23 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         area.setFocusable( false );
         pfPanel.add( area, "1, " + row++ );
       }
-      
+
       if ( pfValues[ n ] != null )
       {
         int len = Integer.parseInt( data[ 0 ] );
         int val = ( pfValues[ n ] >> bitPos ) & ( ( 1 << len ) - 1 );
         bitPos += len;
-        for ( int i = 0; ; i++ )
+        for ( int i = 0;; i++ )
         {
           text = ( String )combo.getModel().getElementAt( i );
-          if ( text.startsWith( "" + val + " =" ) || i == combo.getModel().getSize() - 1 /* other */ )
+          if ( text.startsWith( "" + val + " =" ) || i == combo.getModel().getSize() - 1 /* other */)
           {
             combo.setSelectedIndex( i );
             break;
           }
         }
       }
-      row++;
+      row++ ;
     }
     isSettingPF = false;
     pfPanel.validate();
@@ -2005,13 +2231,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
     javax.swing.SwingUtilities.invokeLater( new Runnable()
     {
-      public void run() 
+      public void run()
       {
-        pfScrollPane.getVerticalScrollBar().setValue(0);
+        pfScrollPane.getVerticalScrollBar().setValue( 0 );
       }
     } );
   }
-  
+
   public void setPDPanel()
   {
     if ( tabbedPane.getSelectedComponent() != pdMainPanel )
@@ -2019,19 +2245,19 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       return;
     }
     List< JTextArea > areas = new ArrayList< JTextArea >();
-    double size[][] = { { 
-      getWidth( "PD00/PD00__" ),
-      getWidth( "$" ),
-      getWidth( "FF_FF_" ),
-      getWidth( " -> "),
-      getWidth( "999999_"),
-      TableLayout.FILL }, null };
+    double size[][] =
+    {
+        {
+            getWidth( "PD00/PD00__" ), getWidth( "$" ), getWidth( "FF_FF_" ), getWidth( " -> " ),
+            getWidth( "999999_" ), TableLayout.FILL
+        }, null
+    };
     setTableLayout( size, CommonData.pdData, true );
     pdPanel.setLayout( new TableLayout( size ) );
     RMFormattedTextField tf = null;
     pdFields.clear();
     pdSizes.clear();
-    
+
     int pdNum = 0;
     int pdLastNum = 0;
     int row = 1;
@@ -2044,10 +2270,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       String text = "";
       for ( int i = 0; i < n; i++ )
       {
-        if ( i > 0 ) text += "/";
+        if ( i > 0 )
+          text += "/";
         text += String.format( "PD%02X", pdNum + i );
       }
-      
+
       if ( n > 0 )
       {
         DisplayArea label = new DisplayArea( text, areas );
@@ -2063,8 +2290,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         JLabel label = new JLabel( "$" );
         label.setFocusable( false );
         pdPanel.add( new JLabel( "$" ), "1, " + ++row );
-        
-        tf = new RMFormattedTextField( new HexFormat( - 1, type == 1 ? 1 : 2 ), this );
+
+        tf = new RMFormattedTextField( new HexFormat( -1, type == 1 ? 1 : 2 ), this );
         pdFields.add( tf );
         pdPanel.add( tf, "2, " + row );
         for ( int i = 3; i < data.length; i++ )
@@ -2085,15 +2312,25 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
         int val = 0;
         int index = pdSizes.size();
-        pdSizes.add( new int[]{ pdNdx, type == 1 ? 1 : 2 } );
-        pdSizes.add( new int[]{ pdNdx, 0x10 + type } );
-        if ( type == 4 ) pdSizes.add( new int[]{ pdNdx, 0x24 } );
+        pdSizes.add( new int[]
+        {
+            pdNdx, type == 1 ? 1 : 2
+        } );
+        pdSizes.add( new int[]
+        {
+            pdNdx, 0x10 + type
+        } );
+        if ( type == 4 )
+          pdSizes.add( new int[]
+          {
+              pdNdx, 0x24
+          } );
         if ( pdValues[ pdNdx ] != null )
         {
           if ( type > 1 && pdValues[ pdNdx + 1 ] != null )
           {
             val = pdValues[ pdNdx ] * 0x100 + pdValues[ pdNdx + 1 ];
-            pdFields.get( index ).setValue( String.format( "%04X", val ) );       
+            pdFields.get( index ).setValue( String.format( "%04X", val ) );
           }
           else
           {
@@ -2105,8 +2342,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           pdFields.get( index ).setValue( "" );
         }
-        row++;
-        if ( n > 0 ) pdLastNum = pdNum;
+        row++ ;
+        if ( n > 0 )
+          pdLastNum = pdNum;
         pdNum += n;
       }
       else
@@ -2126,13 +2364,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
     javax.swing.SwingUtilities.invokeLater( new Runnable()
     {
-      public void run() 
+      public void run()
       {
-        pdScrollPane.getVerticalScrollBar().setValue(0);
+        pdScrollPane.getVerticalScrollBar().setValue( 0 );
       }
     } );
   }
-  
+
   public void setFunctionPanel()
   {
     if ( tabbedPane.getSelectedComponent() != fnMainPanel )
@@ -2144,10 +2382,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     for ( String[] data : CommonData.fnData )
     {
       if ( processor.getZeroAddresses().keySet().contains( data[ 0 ] )
-          || processor.getAbsAddresses().keySet().contains( data[ 0 ] )
-          || data[ 0 ].equals( "" ) )
+          || processor.getAbsAddresses().keySet().contains( data[ 0 ] ) || data[ 0 ].equals( "" ) )
       {
-        n++;
+        n++ ;
       }
     }
     String functions[][] = new String[ n ][ 3 ];
@@ -2170,12 +2407,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           functions[ n ][ 0 ] = String.format( "%04X", address );
         }
-        else continue;
+        else
+          continue;
       }
       functions[ n ][ 1 ] = data[ 0 ];
       functions[ n++ ][ 2 ] = data[ 1 ];
     }
-    
+
     Arrays.sort( functions, new Comparator< String[] >()
     {
       @Override
@@ -2186,21 +2424,27 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         if ( ( zeroUsed.contains( n1 ) || absUsed.contains( n1 ) )
             && !( zeroUsed.contains( n2 ) || absUsed.contains( n2 ) ) )
         {
-          return - 1;
+          return -1;
         }
         else if ( !( zeroUsed.contains( n1 ) || absUsed.contains( n1 ) )
             && ( zeroUsed.contains( n2 ) || absUsed.contains( n2 ) ) )
-        {    
+        {
           return 1;
         }
-        else return n1 - n2;
+        else
+          return n1 - n2;
       }
     } );
 
-    double size[][] = { { getWidth( "$FFFF_*_" ), TableLayout.FILL }, null };
+    double size[][] =
+    {
+        {
+            getWidth( "$FFFF_*_" ), TableLayout.FILL
+        }, null
+    };
     setTableLayout( size, functions, true );
     fnPanel.setLayout( new TableLayout( size ) );
-    
+
     int row = 1;
     for ( String[] fn : functions )
     {
@@ -2214,7 +2458,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       {
         text += "H";
       }
-      
+
       if ( zeroUsed.contains( n ) || absUsed.contains( n ) )
       {
         text += " * ";
@@ -2237,7 +2481,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         row += 2;
       }
     }
-    
+
     fnMainPanel.validate();
     for ( JTextArea area : areas )
     {
@@ -2248,17 +2492,17 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
     javax.swing.SwingUtilities.invokeLater( new Runnable()
     {
-      public void run() 
+      public void run()
       {
-        fnScrollPane.getVerticalScrollBar().setValue(0);
+        fnScrollPane.getVerticalScrollBar().setValue( 0 );
       }
     } );
   }
-  
+
   public Hex codeWhenNull = null;
-  
+
   public RemoteConfiguration remoteConfig = null;
-  
+
   private AssemblerTableModel assemblerModel = new AssemblerTableModel();
   private JP1Table assemblerTable = null;
   private boolean isEmpty[] = null;
@@ -2276,7 +2520,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         Processor proc = procs[ codeTable.getSelectedRow() ];
         int row = codeTable.getSelectedRow();
         Hex hex = protocol.getCode( procs[ row ] );
-        if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) hex = displayProtocol.getCode( proc );
+        if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null )
+          hex = displayProtocol.getCode( proc );
         assemblerModel.disassemble( hex, proc );
         interpretPFPD();
         setPFPanel();
@@ -2316,7 +2561,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   {
     this.displayRemote = displayRemote;
   }
-  
+
   public void setMessage( int n )
   {
     String text = "<HTML>";
@@ -2327,7 +2572,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     text += "Code shown in gray is standard code for information only.</HTML>";
     messageLabel.setText( text );
   }
-  
+
   public void populateComboBox( Component component, Object[] array )
   {
     if ( !( component instanceof JComboBox ) )
@@ -2336,7 +2581,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
     isSettingPF = true;
     JComboBox comboBox = ( JComboBox )component;
-    ( (DefaultComboBoxModel )comboBox.getModel() ).removeAllElements();
+    ( ( DefaultComboBoxModel )comboBox.getModel() ).removeAllElements();
     if ( array == null )
     {
       isSettingPF = false;
@@ -2356,22 +2601,25 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     int n = Arrays.asList( pfButtons ).indexOf( e.getSource() );
     if ( n >= 0 )
     {
-      if ( pfButtons[ n ].isSelected() ) setPFPanel();
+      if ( pfButtons[ n ].isSelected() )
+        setPFPanel();
       return;
     }
-    else  // Disassembler options changed
+    else
+    // Disassembler options changed
     {
       saveOptionButtons();
       if ( codeTable.getSelectedRowCount() == 1 )
       {
         Processor proc = procs[ codeTable.getSelectedRow() ];
         Hex hex = protocol.getCode( proc );
-        if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null ) hex = displayProtocol.getCode( proc );
+        if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null )
+          hex = displayProtocol.getCode( proc );
         assemblerModel.disassemble( hex, proc );
       }
     }
   }
-  
+
   private void saveOptionButtons()
   {
     int opt = 0;
@@ -2388,7 +2636,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       properties.setProperty( "AssemblerOptions", "" + opt );
     }
   }
-  
+
   private void setOptionButtons()
   {
     int opt = 7;
@@ -2406,7 +2654,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       optionButtons[ i ].setSelected( ( ( opt >> i ) & 1 ) == 1 );
     }
   }
-  
+
   public void setSelectedCode( Processor proc )
   {
     for ( int i = 0; i < procs.length; i++ )
@@ -2418,14 +2666,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
     }
   }
-  
+
   private class RMFormattedTextField extends JFormattedTextField
   {
     private Format fmt;
     private DefaultFormatter ff;
     private String lastText = "";
     private ActionListener al = null;
-    
+
     public RMFormattedTextField( Format fmt, ActionListener al )
     {
       super( fmt );
@@ -2433,7 +2681,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       this.al = al;
       setFocusLostBehavior( JFormattedTextField.COMMIT );
     }
-    
+
     public RMFormattedTextField( DefaultFormatter ff, ActionListener al )
     {
       super( ff );
@@ -2441,13 +2689,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       this.al = al;
       setFocusLostBehavior( JFormattedTextField.COMMIT );
     }
-    
+
     @Override
-    protected void processFocusEvent( FocusEvent e ) 
+    protected void processFocusEvent( FocusEvent e )
     {
-      super.processFocusEvent(e);
+      super.processFocusEvent( e );
       if ( e.getID() == FocusEvent.FOCUS_GAINED )
-      {  
+      {
         selectAll();
       }
       else if ( e.getID() == FocusEvent.FOCUS_LOST )
@@ -2457,18 +2705,19 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           showWarning( getText() + " : Invalid value" );
           setText( getValue() == null ? "" : getValue().toString() );
         }
-        else try
-        {
-          commitEdit();
-        }
-        catch ( ParseException ex )
-        {
-          ex.printStackTrace();
-        }
+        else
+          try
+          {
+            commitEdit();
+          }
+          catch ( ParseException ex )
+          {
+            ex.printStackTrace();
+          }
         if ( !getText().equals( lastText ) )
         {
           lastText = getText();
-          update();   
+          update();
         }
       }
     }
@@ -2481,30 +2730,31 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         lastText = obj == null ? "" : obj.toString();
         setText( lastText );
         commitEdit();
-        if ( al == pfpdListener ) update();
+        if ( al == pfpdListener )
+          update();
       }
       catch ( ParseException e1 )
       {
         e1.printStackTrace();
       }
     }
-    
-//    public String getLastText()
-//    {
-//      return lastText;
-//    }
+
+    // public String getLastText()
+    // {
+    // return lastText;
+    // }
 
     protected void update()
     {
-        al.actionPerformed( new ActionEvent( this, ActionEvent.ACTION_PERFORMED, "" ) );
+      al.actionPerformed( new ActionEvent( this, ActionEvent.ACTION_PERFORMED, "" ) );
     }
-    
+
     private void showWarning( String message )
     {
       JOptionPane.showMessageDialog( this, message, "Invalid Value", JOptionPane.ERROR_MESSAGE );
     }
   }
-  
+
   /**
    * A subclass of NumberFormatter that allows values to be null.
    */
@@ -2514,26 +2764,29 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     {
       super( nf );
     }
-    
+
     @Override
-    public Object stringToValue(String string) throws ParseException
+    public Object stringToValue( String string ) throws ParseException
     {
       if ( string == null || string.isEmpty() )
       {
         setEditValid( true );
         return null;
       }
-      else return super.stringToValue( string );
+      else
+        return super.stringToValue( string );
     }
-    
+
     @Override
-    public String valueToString(Object value) throws ParseException
+    public String valueToString( Object value ) throws ParseException
     {
-      if ( value == null ) return "";
-      else return super.valueToString( value );
+      if ( value == null )
+        return "";
+      else
+        return super.valueToString( value );
     }
   }
-  
+
   private int getWidth( String text )
   {
     return ( new JLabel( text ) ).getPreferredSize().width + 4;
@@ -2574,34 +2827,34 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   {
     this.zeroUsed = zeroUsed;
   }
-  
+
   public void interpretPFPD()
   {
     interpretPFPD( false );
   }
-  
+
   public void interpretPFPD( boolean force )
   {
     // DataStyle values:
-    //   0 = S3C80
-    //   1 = HCS08
-    //   2 = 6805-RC16/18
-    //   3 = 6805-C9
-    //   4 = P8/740
-    
+    // 0 = S3C80
+    // 1 = HCS08
+    // 2 = 6805-RC16/18
+    // 3 = 6805-C9
+    // 4 = P8/740
+
     if ( processor == null || !force && tabbedPane.getSelectedComponent() != protDataScrollPane )
     {
       return;
     }
-    
+
     int ni = ns.isEmpty() ? -1 : 0;
-    
+
     int dataStyle = processor.getDataStyle();
     int pfCount = assemblerModel.getPfCount();
     int pdCount = assemblerModel.getPdCount();
     Hex hex = assemblerModel.getHex();
-    
-    if ( ( (DefaultComboBoxModel )devBits1.getModel() ).getSize() == 0 )
+
+    if ( ( ( DefaultComboBoxModel )devBits1.getModel() ).getSize() == 0 )
     {
       // Populate those combo boxes whose content is fixed
       populateComboBox( devBytes, CommonData.to15 );
@@ -2619,10 +2872,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       populateComboBox( rptType, CommonData.repeatType );
       populateComboBox( burstMidFrame, CommonData.noYes );
     }
-    
-    populateComboBox( sigStruct, dataStyle < 3 ? CommonData.sigStructs012 : CommonData.sigStructs34);
-    populateComboBox( devBitDbl, dataStyle < 3 ? CommonData.bitDouble012 : CommonData.bitDouble34);
-    populateComboBox( cmdBitDbl, dataStyle < 3 ? CommonData.bitDouble012 : CommonData.bitDouble34);
+
+    populateComboBox( sigStruct, dataStyle < 3 ? CommonData.sigStructs012 : CommonData.sigStructs34 );
+    populateComboBox( devBitDbl, dataStyle < 3 ? CommonData.bitDouble012 : CommonData.bitDouble34 );
+    populateComboBox( cmdBitDbl, dataStyle < 3 ? CommonData.bitDouble012 : CommonData.bitDouble34 );
     populateComboBox( rptHold, dataStyle < 3 ? CommonData.repeatHeld012 : CommonData.noYes );
 
     isSettingPF = !force;
@@ -2633,10 +2886,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     Short valS = basicValues[ 2 ];
     devBytes.setSelectedIndex( valS == null ? -1 : valS >> 4 );
     cmdBytes.setSelectedIndex( valS == null ? -1 : valS & 0x0F );
-  
+
     burstMidFrameLbl.setEnabled( dataStyle < 3 );
     burstMidFrame.setEnabled( dataStyle < 3 );
-    if ( dataStyle < 3 ) burstMidFrame.setSelectedIndex( -1 );
+    if ( dataStyle < 3 )
+      burstMidFrame.setSelectedIndex( -1 );
     afterBitsLbl.setEnabled( dataStyle < 3 );
     afterBits.setEnabled( dataStyle < 3 );
     useAltFreq.setEnabled( dataStyle < 3 );
@@ -2646,15 +2900,15 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     altDuty.setEnabled( dataStyle < 3 );
 
     if ( dataStyle < 3 )
-    { 
+    {
       devBits1.setSelectedIndex( ( pdValues[ 0 ] != null && pdValues[ 0 ] <= 8 ) ? pdValues[ 0 ] : ni );
       cmdBits1.setSelectedIndex( ( pdValues[ 1 ] != null && pdValues[ 1 ] <= 8 ) ? pdValues[ 1 ] : ni );
-//      if ( devBits2.isEnabled() )
+      // if ( devBits2.isEnabled() )
       {
         int n = ( dataStyle < 2 ) ? 0x10 : 0x0E;
         devBits2.setSelectedIndex( ( pdValues[ n ] != null && pdValues[ n ] <= 8 ) ? pdValues[ n ] : -1 );
       }
-//      if ( cmdBits2.isEnabled() )
+      // if ( cmdBits2.isEnabled() )
       {
         int n = ( dataStyle < 2 ) ? 0x12 : 0x10;
         cmdBits2.setSelectedIndex( ( pdValues[ n ] != null && pdValues[ n ] <= 8 ) ? pdValues[ n ] : -1 );
@@ -2663,8 +2917,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       devBitDbl.setSelectedIndex( ( pfCount > 2 ) ? pfValues[ 2 ] & 3 : 0 );
       cmdBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pfValues[ 2 ] >> 2 ) & 3 : 0 );
       int n = ( dataStyle < 2 ) ? 0x11 : 0x0F;
-      rptType.setSelectedIndex( ( pfCount > 1 && ( ( pfValues[ 1 ] & 0x10 ) != 0 ) && pdValues[ n ] != null && pdValues[ n ] != 0xFF  ) ? 1 : 0 );
-      if ( rptType.getSelectedIndex() == 1 ) rptValue.setValue( pdValues[ n ] != null ? "" + pdValues[ n ] : "" );
+      rptType
+          .setSelectedIndex( ( pfCount > 1 && ( ( pfValues[ 1 ] & 0x10 ) != 0 ) && pdValues[ n ] != null && pdValues[ n ] != 0xFF ) ? 1
+              : 0 );
+      if ( rptType.getSelectedIndex() == 1 )
+        rptValue.setValue( pdValues[ n ] != null ? "" + pdValues[ n ] : "" );
       rptHold.setSelectedIndex( ( pfCount > 1 ) ? pfValues[ 1 ] & 0x03 : 0 );
       xmit0rev.setSelectedIndex( ( pfCount > 2 ) ? ( pfValues[ 2 ] >> 4 ) & 1 : 0 );
       leadInStyle.setSelectedIndex( ( pfCount > 1 ) ? ( pfValues[ 1 ] >> 2 ) & 3 : 0 );
@@ -2676,7 +2933,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       {
         n = 5 + pfCount + pdCount; // start of code
         b = n < hex.length() ? hex.indexOf( setMidFrame1, n ) >= 0 || hex.indexOf( setMidFrame2, n ) >= 0 : false;
-        burstMidFrame.setSelectedIndex( b ? 1 : 0 );   
+        burstMidFrame.setSelectedIndex( b ? 1 : 0 );
         afterBits.setValue( ( b && pdValues[ 0x13 ] != null ) ? "" + ( pdValues[ 0x13 ] - 1 ) : "" );
         afterBits.setEnabled( b );
         afterBitsLbl.setEnabled( b );
@@ -2695,17 +2952,30 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       b = useAltFreq.getSelectedIndex() > 0 && Hex.get( pdValues, ndx ) != null && Hex.get( pdValues, ndx ) != 0xFFFF;
       altFreq.setValue( b ? getFrequency( Hex.get( pdValues, ndx ) ) : "" );
       altDuty.setValue( b ? getDutyCycle( Hex.get( pdValues, ndx ) ) : "" );
-      
+
       if ( dataStyle < 2 )
       {
-        burst1On.setValue( ( Hex.get( pdValues, 2 ) != null /*&& Hex.get( pdValues, 2 ) > 0 */) ? "" + Hex.get( pdValues, 2 ) * 2 : ns );
-        burst1Off.setValue( ( Hex.get( pdValues, 4 ) != null /*&& Hex.get( pdValues, 4 ) > 0 */) ? "" + ( Hex.get( pdValues, 4 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : ns );
-        burst0On.setValue( ( Hex.get( pdValues, 6 ) != null /*&& Hex.get( pdValues, 6 ) > 0 */) ? "" + Hex.get( pdValues, 6 ) * 2 : ns );
-        burst0Off.setValue( ( Hex.get( pdValues, 8 ) != null /*&& Hex.get( pdValues, 8 ) > 0 */) ? "" + ( Hex.get( pdValues, 8 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : ns );
-        leadInOn.setValue( ( leadInStyle.getSelectedIndex() > 0 && Hex.get( pdValues, 0x0C ) != null && Hex.get( pdValues, 0x0C ) != 0xFFFF ) ?  "" + Hex.get( pdValues, 0x0C ) * 2 : "" );
-        leadInOff.setValue( ( leadInStyle.getSelectedIndex() > 0 && Hex.get( pdValues, 0x0E ) != null && Hex.get( pdValues, 0x0E ) != 0xFFFF ) ?  "" + ( Hex.get( pdValues, 0x0E ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : "" );
-        leadOutOff.setValue( ( Hex.get( pdValues, 0x0A ) != null /*&& Hex.get( pdValues, 0x0A ) > 0 */) ?  "" + Hex.get( pdValues, 0x0A ) * 2 : ns );
-        altLeadOut.setValue( ( useAltLeadOut.getSelectedIndex() == 1 && Hex.get( pdValues, 0x13 ) != null /*&& Hex.get( pdValues, 0x13 ) > 0 */) ? "" + Hex.get( pdValues, 0x13 ) * 2 : ""  );
+        burst1On.setValue( ( Hex.get( pdValues, 2 ) != null /* && Hex.get( pdValues, 2 ) > 0 */) ? ""
+            + Hex.get( pdValues, 2 ) * 2 : ns );
+        burst1Off.setValue( ( Hex.get( pdValues, 4 ) != null /* && Hex.get( pdValues, 4 ) > 0 */) ? ""
+            + ( Hex.get( pdValues, 4 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : ns );
+        burst0On.setValue( ( Hex.get( pdValues, 6 ) != null /* && Hex.get( pdValues, 6 ) > 0 */) ? ""
+            + Hex.get( pdValues, 6 ) * 2 : ns );
+        burst0Off.setValue( ( Hex.get( pdValues, 8 ) != null /* && Hex.get( pdValues, 8 ) > 0 */) ? ""
+            + ( Hex.get( pdValues, 8 ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) ) : ns );
+        leadInOn.setValue( ( leadInStyle.getSelectedIndex() > 0 && Hex.get( pdValues, 0x0C ) != null && Hex.get(
+            pdValues, 0x0C ) != 0xFFFF ) ? "" + Hex.get( pdValues, 0x0C ) * 2 : "" );
+        leadInOff.setValue( ( leadInStyle.getSelectedIndex() > 0 && Hex.get( pdValues, 0x0E ) != null && Hex.get(
+            pdValues, 0x0E ) != 0xFFFF ) ? "" + ( Hex.get( pdValues, 0x0E ) * 2 + ( ( dataStyle == 0 ) ? 40 : 0 ) )
+            : "" );
+        leadOutOff.setValue( ( Hex.get( pdValues, 0x0A ) != null /* && Hex.get( pdValues, 0x0A ) > 0 */) ? ""
+            + Hex.get( pdValues, 0x0A ) * 2 : ns );
+        altLeadOut.setValue( ( useAltLeadOut.getSelectedIndex() == 1 && Hex.get( pdValues, 0x13 ) != null /*
+                                                                                                           * && Hex.get(
+                                                                                                           * pdValues,
+                                                                                                           * 0x13 ) > 0
+                                                                                                           */) ? ""
+            + Hex.get( pdValues, 0x13 ) * 2 : "" );
       }
       else
       {
@@ -2721,9 +2991,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         leadInOn.setValue( leadInStyle.getSelectedIndex() > 0 && t >= 0 ? "" + 4 * ( t + 1 ) : "" );
         t = ( Hex.semiGet( pdValues, 0x0B, 1 ) != null ) ? Hex.semiGet( pdValues, 0x0B, 1 ) : -1;
         leadInOff.setValue( leadInStyle.getSelectedIndex() > 0 && t >= 0 ? "" + 4 * t : "" );
-        t = ( Hex.get( pdValues, 8 ) != null ) ? Hex.get( pdValues, 8 )- 10 : -1; 
+        t = ( Hex.get( pdValues, 8 ) != null ) ? Hex.get( pdValues, 8 ) - 10 : -1;
         leadOutOff.setValue( t >= 0 ? "" + 4 * t : ns );
-        t = ( Hex.get( pdValues, 0x11 ) != null ) ? Hex.get( pdValues, 0x11 )- 10 : -1;
+        t = ( Hex.get( pdValues, 0x11 ) != null ) ? Hex.get( pdValues, 0x11 ) - 10 : -1;
         altLeadOut.setValue( useAltLeadOut.getSelectedIndex() == 1 && t >= 0 ? "" + 4 * t : "" );
       }
     }
@@ -2738,10 +3008,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       if ( pfCount > 0 && ( ( pfValues[ 0 ] & 0x58 ) == 0x08 ) )
       {
         devBits1.setSelectedIndex( ( pdValues[ 0x0D ] != null ) ? pdValues[ 0x0D ] : ni );
-//        if ( devBits2.isEnabled() )
-//        {
-//          devBits2.setSelectedIndex( ni );
-//        }
+        // if ( devBits2.isEnabled() )
+        // {
+        // devBits2.setSelectedIndex( ni );
+        // }
       }
       else
       {
@@ -2753,17 +3023,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
       cmdBits1.setSelectedIndex( ( pdValues[ 2 ] != null ) ? pdValues[ 2 ] : ni );
       String sig = "";
-      String items[] = { "devs", "dev", "cmd", "!dev", "dev2", "cmd", "!cmd" };
+      String items[] =
+      {
+          "devs", "dev", "cmd", "!dev", "dev2", "cmd", "!cmd"
+      };
       if ( pfCount > 0 )
       {
         int key = ( ( pfValues[ 0 ] >> 1 ) & 0x3C ) | ( ( pfValues[ 0 ] >> 2 ) & 1 );
         if ( ( pfValues[ 0 ] & 0x41 ) == 0x41 )
         {
-          key ^= 0x60;  // replace bit for "dev" by that for "devs"
+          key ^= 0x60; // replace bit for "dev" by that for "devs"
         }
         if ( ( pfValues[ 0 ] & 0x22 ) == 0x22 )
         {
-          key ^= 0x12;  // replace bit for first "cmd" by that for second one
+          key ^= 0x12; // replace bit for first "cmd" by that for second one
         }
         for ( int i = 0; i < 7; i++ )
         {
@@ -2783,24 +3056,35 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       devBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pfValues[ 2 ] >> 1 ) & 1 : 0 );
       cmdBitDbl.setSelectedIndex( ( pfCount > 2 ) ? ( pfValues[ 2 ] >> 1 ) & 1 : 0 );
       rptType.setSelectedIndex( ( pfCount > 1 && ( ( pfValues[ 1 ] & 0x02 ) != 0 ) ) ? 1 : 0 );
-      if ( rptType.getSelectedIndex() == 1 ) rptValue.setValue( "" );
+      if ( rptType.getSelectedIndex() == 1 )
+        rptValue.setValue( "" );
       rptHold.setSelectedIndex( ( pfCount > 1 && ( ( pfValues[ 1 ] & 0x02 ) != 0 ) ) ? 1 : 0 );
       burst1On.setValue( getONtime34( 0, null ) );
-      burst0On.setValue( ( pfCount > 2  && ( pfValues[ 2 ] & 0x08 ) == 0x08 ) ? getONtime34( 0x0E, null ) : getONtime34( 0, null ) );
+      burst0On.setValue( ( pfCount > 2 && ( pfValues[ 2 ] & 0x08 ) == 0x08 ) ? getONtime34( 0x0E, null ) : getONtime34(
+          0, null ) );
       burst1Off.setValue( getOFFtime34( 3, CommonData.burstOFFoffsets34, dataStyle ) );
       burst0Off.setValue( getOFFtime34( 5, CommonData.burstOFFoffsets34, dataStyle ) );
       xmit0rev.setSelectedIndex( ( pfCount > 2 && ( pfValues[ 2 ] & 0x1C ) == 0x04 ) ? 1 : 0 );
-      leadInStyle.setSelectedIndex( ( pfCount > 1 && (( pfValues[ 1 ] & 0x10 ) == 0x10 ) ) ? 
-         (  ( pfValues[ 1 ] & 0x04 ) == 0x04 && Hex.get( pdValues, 0x10 ) != null && Hex.get( pdValues, 0x10 ) != Hex.get( pdValues, 0x0A ) ) ? 3 : 1 : 0 );
+      leadInStyle
+          .setSelectedIndex( ( pfCount > 1 && ( ( pfValues[ 1 ] & 0x10 ) == 0x10 ) ) ? ( ( pfValues[ 1 ] & 0x04 ) == 0x04
+              && Hex.get( pdValues, 0x10 ) != null && Hex.get( pdValues, 0x10 ) != Hex.get( pdValues, 0x0A ) ) ? 3 : 1
+              : 0 );
       leadInOn.setValue( leadInStyle.getSelectedIndex() > 0 ? getONtime34( 9, 0x0C ) : "" );
-      leadInOff.setValue( leadInStyle.getSelectedIndex() > 0 ? getOFFtime34( 0x0A, CommonData.leadinOFFoffsets34, dataStyle ) : "" );
+      leadInOff.setValue( leadInStyle.getSelectedIndex() > 0 ? getOFFtime34( 0x0A, CommonData.leadinOFFoffsets34,
+          dataStyle ) : "" );
       offAsTotal.setSelectedIndex( ( dataStyle == 4 && pfCount > 2 ) ? pfValues[ 2 ] & 1 : 0 );
-      leadOutStyle.setSelectedIndex( pfCount > 1 ? offAsTotal.getSelectedIndex() == 1 ? 0 : ( pfValues[ 1 ] >> 6 & 1 ) == 0 ? -1 : ( pfValues[ 1 ] >> 4 & 2 ) : -1 );
-      
-      leadOutOff.setValue( ( dataStyle == 3 ) ? getOFFtime34( 7, CommonData.leadinOFFoffsets34, dataStyle ) : ( Hex.get( pdValues, 7 ) != null && Hex.get( pdValues, 7 ) > 0 ) ? "" + ( Hex.get( pdValues, 7 ) * 4 - 40 ) : "" );
-      
-      useAltLeadOut.setSelectedIndex( ( pfCount > 2 && ( pfValues[ 1 ] & 4 ) == 4 && ( pfValues[ 2 ] & 8 ) == 0 && Hex.get( pdValues, 0x0E ) != null && Hex.get( pdValues, 0x0E ) != Hex.get( pdValues, 0x07 ) ) ? 1 : 0 );
-      altLeadOut.setValue( ( useAltLeadOut.getSelectedIndex() == 1  ) ? ( dataStyle == 3 ) ? getOFFtime34( 0x0E, CommonData.leadinOFFoffsets34, dataStyle ) : ( Hex.get( pdValues, 0x0E ) != null && Hex.get( pdValues, 0x0E ) > 0 ) ? "" + ( Hex.get( pdValues, 0x0E ) * 4 - 40 ) : "" : "" );
+      leadOutStyle.setSelectedIndex( pfCount > 1 ? offAsTotal.getSelectedIndex() == 1 ? 0
+          : ( pfValues[ 1 ] >> 6 & 1 ) == 0 ? -1 : ( pfValues[ 1 ] >> 4 & 2 ) : -1 );
+
+      leadOutOff.setValue( ( dataStyle == 3 ) ? getOFFtime34( 7, CommonData.leadinOFFoffsets34, dataStyle ) : ( Hex
+          .get( pdValues, 7 ) != null && Hex.get( pdValues, 7 ) > 0 ) ? "" + ( Hex.get( pdValues, 7 ) * 4 - 40 ) : "" );
+
+      useAltLeadOut.setSelectedIndex( ( pfCount > 2 && ( pfValues[ 1 ] & 4 ) == 4 && ( pfValues[ 2 ] & 8 ) == 0
+          && Hex.get( pdValues, 0x0E ) != null && Hex.get( pdValues, 0x0E ) != Hex.get( pdValues, 0x07 ) ) ? 1 : 0 );
+      altLeadOut.setValue( ( useAltLeadOut.getSelectedIndex() == 1 ) ? ( dataStyle == 3 ) ? getOFFtime34( 0x0E,
+          CommonData.leadinOFFoffsets34, dataStyle )
+          : ( Hex.get( pdValues, 0x0E ) != null && Hex.get( pdValues, 0x0E ) > 0 ) ? ""
+              + ( Hex.get( pdValues, 0x0E ) * 4 - 40 ) : "" : "" );
     }
     isSettingPF = false;
   }
@@ -2828,13 +3112,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       return "" + burstUnit * t / 1000;
     }
   }
-  
+
   private void setONtime34( Long time, int pdIndex1, Integer pdIndex2 )
   {
     if ( time == null )
     {
       pdValues[ pdIndex1 ] = ns.isEmpty() ? null : ( short )1;
-      if ( pdIndex2 != null ) pdValues[ pdIndex2 ] = ns.isEmpty() ? null : ( short )1;
+      if ( pdIndex2 != null )
+        pdValues[ pdIndex2 ] = ns.isEmpty() ? null : ( short )1;
     }
     else if ( pfValues[ 2 ] != null && ( pfValues[ 2 ] & 0x7C ) == 0x40 )
     {
@@ -2843,10 +3128,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
     else if ( burstUnit > 0 )
     {
-      time = ( time * 1000 + burstUnit/2 ) / burstUnit;
+      time = ( time * 1000 + burstUnit / 2 ) / burstUnit;
       time = ( time + 0xFFFF ) % 0x10000;
-      int tHigh = ( (int)(long)time / 256 + 1 ) % 256;
-      int tLow = ( (int)(long)time + 1 ) % 256;
+      int tHigh = ( ( int )( long )time / 256 + 1 ) % 256;
+      int tLow = ( ( int )( long )time + 1 ) % 256;
       pdValues[ pdIndex1 ] = ( short )tLow;
       if ( pdIndex2 != null && ( tHigh > 0 || pfValues[ 1 ] != null && ( pfValues[ 1 ] & 0x08 ) == 0x08 ) )
       {
@@ -2857,7 +3142,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     else
     {
       pdValues[ pdIndex1 ] = null;
-      if ( pdIndex2 != null ) pdValues[ pdIndex2 ] = null;
+      if ( pdIndex2 != null )
+        pdValues[ pdIndex2 ] = null;
     }
   }
 
@@ -2875,19 +3161,22 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       return "" + t;
     }
   }
-  
+
   private void setOFFtime34( Long time, int pdIndex, int[] offsets, int dataStyle )
   {
     if ( time == null )
     {
-      pdValues[ pdIndex ] = ns.isEmpty() ? null : ( short )1;;
-      pdValues[ pdIndex + 1 ] = ns.isEmpty() ? null : ( short )1;;
+      pdValues[ pdIndex ] = ns.isEmpty() ? null : ( short )1;
+      ;
+      pdValues[ pdIndex + 1 ] = ns.isEmpty() ? null : ( short )1;
+      ;
     }
     else
     {
       double d = ( dataStyle == 3 ) ? 257 : 257.5;
       time = ( dataStyle == 3 ) ? ( time - offsets[ 0 ] ) / 3 : ( time - offsets[ 1 ] ) / 2;
-      if ( time < 0 ) time = ( long )0;
+      if ( time < 0 )
+        time = ( long )0;
       int tHigh = ( int )( time / d );
       int tLow = ( int )( time - ( tHigh * d ) );
       tHigh = ( tHigh + 1 ) % 256;
@@ -2896,7 +3185,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       pdValues[ pdIndex + 1 ] = ( short )tLow;
     }
   }
-  
+
   public String getFrequency( int times )
   {
     burstUnit = 0;
@@ -2904,9 +3193,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     int off = times & 0xFF;
     if ( on > 0 && off > 0 )
     {
-      double f = processor.getOscillatorFreq()/( on + off + processor.getCarrierTotalOffset() );
+      double f = processor.getOscillatorFreq() / ( on + off + processor.getCarrierTotalOffset() );
       burstUnit = ( int )( Math.round( 1000000000 / f ) );
-      return String.format( "%.3f", f/1000 );
+      return String.format( "%.3f", f / 1000 );
     }
     else if ( on == 0 && off == 0 )
     {
@@ -2917,7 +3206,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       return "** Error **";
     }
   }
-  
+
   public String getDutyCycle( int times )
   {
     int on = times >> 8;
@@ -2938,19 +3227,21 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       return "** Error **";
     }
   }
-  
+
   private Integer getCarrierData( Object freq, Object duty )
   {
-    if ( freq == null ) return null;
+    if ( freq == null )
+      return null;
     double f = ( freq instanceof Double ) ? ( Double )freq : ( Long )freq;
-    if ( f == 0 || duty == null ) return 0;
+    if ( f == 0 || duty == null )
+      return 0;
     double dc = ( duty instanceof Double ) ? ( Double )duty : ( Long )duty;
     burstUnit = ( int )( Math.round( 1000000 / f ) );
     int tot = ( int )( processor.getOscillatorFreq() / ( f * 1000 ) + 0.5 );
     int on = ( int )( dc * tot / 100 + 0.5 ) - processor.getCarrierOnOffset();
     return on * 0xFF + tot - processor.getCarrierTotalOffset();
   }
-  
+
   private ActionListener pfpdListener = new ActionListener()
   {
     @Override
@@ -2966,21 +3257,25 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           actionPerformed( new ActionEvent( burst0On, ActionEvent.ACTION_PERFORMED, "Internal" ) );
           actionPerformed( new ActionEvent( leadInOn, ActionEvent.ACTION_PERFORMED, "Internal" ) );
         }
-      }  
+      }
       else if ( source == devBytes )
       {
         int val = devBytes.getSelectedIndex();
         boolean is2 = val == 2;
-        if ( dataStyle > 2 ) is2 = is2 && ( ( pfValues[ 0 ] & 0x58 ) != 0x08 );
+        if ( dataStyle > 2 )
+          is2 = is2 && ( ( pfValues[ 0 ] & 0x58 ) != 0x08 );
         devBits1lbl.setText( is2 ? "Bits/Dev1" : "Bits/Dev" );
         devBits2lbl.setVisible( is2 );
-        if ( !is2 ) devBits2.setSelectedIndex( -1 );
+        if ( !is2 )
+          devBits2.setSelectedIndex( -1 );
         devBits2.setEnabled( is2 );
         if ( !isSettingPF )
         {
-          if ( dataStyle < 3 ) setPFbits( 0, Math.min( val, 3 ), 0, 2 );
+          if ( dataStyle < 3 )
+            setPFbits( 0, Math.min( val, 3 ), 0, 2 );
           basicValues[ 2 ] = ( short )( ( basicValues[ 2 ] & 0x0F ) | ( devBytes.getSelectedIndex() << 4 ) );
-          if ( !is2 ) pdValues[ dataStyle < 2 ? 0x10 : dataStyle < 3 ? 0x0E : 0x0D ] = null;
+          if ( !is2 )
+            pdValues[ dataStyle < 2 ? 0x10 : dataStyle < 3 ? 0x0E : 0x0D ] = null;
         }
       }
       else if ( source == cmdBytes )
@@ -2989,28 +3284,33 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         boolean is2 = val == 2 && ( dataStyle < 3 );
         cmdBits1lbl.setText( is2 ? "Bits/Cmd1" : "Bits/Cmd" );
         cmdBits2lbl.setVisible( is2 );
-        if ( !is2 ) cmdBits2.setSelectedIndex( -1 );
+        if ( !is2 )
+          cmdBits2.setSelectedIndex( -1 );
         cmdBits2.setEnabled( is2 );
         if ( !isSettingPF )
         {
-          if ( dataStyle < 3 ) setPFbits( 0, Math.min( val, 3 ), 2, 2 );
-          if ( basicValues[ 2 ] == null ) basicValues[ 2 ] = 0;
+          if ( dataStyle < 3 )
+            setPFbits( 0, Math.min( val, 3 ), 2, 2 );
+          if ( basicValues[ 2 ] == null )
+            basicValues[ 2 ] = 0;
           basicValues[ 2 ] = ( short )( ( basicValues[ 2 ] & 0xF0 ) | cmdBytes.getSelectedIndex() );
-          if ( !is2 ) pdValues[ dataStyle < 2 ? 0x12 : 0x10 ] = null;
+          if ( !is2 )
+            pdValues[ dataStyle < 2 ? 0x12 : 0x10 ] = null;
         }
       }
       else if ( source == rptType )
       {
         int val = rptType.getSelectedIndex();
-        if ( !isSettingPF ) setPFbits( 1, val, dataStyle < 3 ? 4 : 1, 1 );
+        if ( !isSettingPF )
+          setPFbits( 1, val, dataStyle < 3 ? 4 : 1, 1 );
         if ( dataStyle < 3 )
         {
           int n = ( dataStyle < 2 ) ? 0x11 : 0x0F;
           pdValues[ n ] = ( val == 0 ) ? null : ( pdValues[ n ] == null || pdValues[ n ] == 0xFF ) ? 0 : pdValues[ n ];
-//          rptValue.setEnabled( val == 1 );
-//          rptValueLbl.setEnabled( val == 1 );
-//          if ( val == 0 ) rptValue.setValue( "" );
-//          else if ( rptValue.getValue() == null ) rptValue.setValue( "0" );
+          // rptValue.setEnabled( val == 1 );
+          // rptValueLbl.setEnabled( val == 1 );
+          // if ( val == 0 ) rptValue.setValue( "" );
+          // else if ( rptValue.getValue() == null ) rptValue.setValue( "0" );
         }
         else if ( !isSettingPF )
         {
@@ -3036,12 +3336,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         if ( dataStyle < 3 )
         {
           burstMidFrame.setEnabled( index > 0 );
-//          afterBits.setEnabled( index > 0 );
+          // afterBits.setEnabled( index > 0 );
           burstMidFrameLbl.setEnabled( index > 0 );
-//          afterBitsLbl.setEnabled( index > 0 );
+          // afterBitsLbl.setEnabled( index > 0 );
         }
-        if ( isSettingPF ) return;
-        
+        if ( isSettingPF )
+          return;
+
         if ( index == 0 )
         {
           burstMidFrame.setSelectedIndex( -1 );
@@ -3050,11 +3351,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         else
         {
-          if ( leadInOn.getValue() == null ) leadInOn.setValue( dataStyle == 2 ? "4" : "0" );
-          if ( leadInOff.getValue() == null ) leadInOff.setValue( "0" );
-          if ( burstMidFrame.getSelectedIndex() == -1 ) burstMidFrame.setSelectedIndex( 0 );
+          if ( leadInOn.getValue() == null )
+            leadInOn.setValue( dataStyle == 2 ? "4" : "0" );
+          if ( leadInOff.getValue() == null )
+            leadInOff.setValue( "0" );
+          if ( burstMidFrame.getSelectedIndex() == -1 )
+            burstMidFrame.setSelectedIndex( 0 );
         }
-        if ( dataStyle < 3 ) 
+        if ( dataStyle < 3 )
         {
           setPFbits( 1, index, 2, 2 );
           if ( index == 0 )
@@ -3093,10 +3397,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       {
         altLeadOut.setEnabled( useAltLeadOut.getSelectedIndex() > 0 );
         altLeadOutLbl.setEnabled( useAltLeadOut.getSelectedIndex() > 0 );
-        if ( isSettingPF ) return;
-        if ( dataStyle < 3 ) setPFbits( 3, useAltLeadOut.getSelectedIndex(), 5, 1 );
-        if ( useAltLeadOut.getSelectedIndex() <= 0 ) altLeadOut.setValue( "" );
-        if ( useAltLeadOut.getSelectedIndex() == 1 && altLeadOut.getValue() == null ) altLeadOut.setValue( "0" );
+        if ( isSettingPF )
+          return;
+        if ( dataStyle < 3 )
+          setPFbits( 3, useAltLeadOut.getSelectedIndex(), 5, 1 );
+        if ( useAltLeadOut.getSelectedIndex() <= 0 )
+          altLeadOut.setValue( "" );
+        if ( useAltLeadOut.getSelectedIndex() == 1 && altLeadOut.getValue() == null )
+          altLeadOut.setValue( "0" );
         // else no effect on pf bytes?
       }
       else if ( source == useAltFreq )
@@ -3105,24 +3413,29 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         altFreqLbl.setEnabled( useAltFreq.getSelectedIndex() > 0 );
         altDuty.setEnabled( useAltFreq.getSelectedIndex() > 0 );
         altDutyLbl.setEnabled( useAltFreq.getSelectedIndex() > 0 );
-        if ( isSettingPF ) return;
-        if ( dataStyle < 3 ) setPFbits( 3, useAltFreq.getSelectedIndex(), 6, 1 );
+        if ( isSettingPF )
+          return;
+        if ( dataStyle < 3 )
+          setPFbits( 3, useAltFreq.getSelectedIndex(), 6, 1 );
         if ( useAltFreq.getSelectedIndex() <= 0 )
         {
           altFreq.setValue( "" );
           altDuty.setValue( "" );
         }
-        if ( useAltFreq.getSelectedIndex() ==1 && altFreq.getValue() == null ) altFreq.setValue( "0" );
+        if ( useAltFreq.getSelectedIndex() == 1 && altFreq.getValue() == null )
+          altFreq.setValue( "0" );
       }
- 
+
       else if ( !isSettingPF )
       {
         if ( source == devBits1 )
         {
           short val = ( short )devBits1.getSelectedIndex();
           Short pdval = val == -1 ? null : val;
-          if ( dataStyle < 3 ) pdValues[ 0 ] = pdval;
-          else if ( ( pfValues[ 0 ] & 0x58 ) != 0x08 ) pdValues[ 1 ] = pdval;
+          if ( dataStyle < 3 )
+            pdValues[ 0 ] = pdval;
+          else if ( ( pfValues[ 0 ] & 0x58 ) != 0x08 )
+            pdValues[ 1 ] = pdval;
           else
           {
             pdValues[ 0x0D ] = pdval;
@@ -3133,17 +3446,22 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         {
           short val = ( short )cmdBits1.getSelectedIndex();
           Short pdval = val == -1 ? null : val;
-          if ( dataStyle < 3 ) pdValues[ 1 ] = pdval;
-          else pdValues[ 2 ] = pdval;
+          if ( dataStyle < 3 )
+            pdValues[ 1 ] = pdval;
+          else
+            pdValues[ 2 ] = pdval;
         }
         else if ( source == devBits2 )
         {
           // code can generate this action, see source = sigStruct, hence need for test of isEnabled
           short val = ( short )devBits2.getSelectedIndex();
-          if ( dataStyle < 3 ) pdValues[ dataStyle < 2 ? 0x10 : 0x0E ] = val == -1 ? null : val;
-          else if ( devBits2.isEnabled() ) pdValues[ 0x0D ] = val == -1 ? null : val;
-          else if ( ( pfValues[ 0 ] & 0x58 ) != 0x08 ) pdValues[ 0x0D ] = null;
-//          else pdValues[ 0x0D ] = ( ( pfValues[ 0 ] & 0x58 ) == 0x08 ) ? ( short )devBits1.getSelectedIndex() : null;
+          if ( dataStyle < 3 )
+            pdValues[ dataStyle < 2 ? 0x10 : 0x0E ] = val == -1 ? null : val;
+          else if ( devBits2.isEnabled() )
+            pdValues[ 0x0D ] = val == -1 ? null : val;
+          else if ( ( pfValues[ 0 ] & 0x58 ) != 0x08 )
+            pdValues[ 0x0D ] = null;
+          // else pdValues[ 0x0D ] = ( ( pfValues[ 0 ] & 0x58 ) == 0x08 ) ? ( short )devBits1.getSelectedIndex() : null;
         }
         else if ( source == cmdBits2 )
         {
@@ -3153,20 +3471,27 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         else if ( source == sigStruct )
         {
-          if ( dataStyle < 3 ) setPFbits( 0, sigStruct.getSelectedIndex(), 4, 2 );
+          if ( dataStyle < 3 )
+            setPFbits( 0, sigStruct.getSelectedIndex(), 4, 2 );
           else
           {
             String sig = ( String )sigStruct.getSelectedItem() + "-";
-            String items[] = { "devs", "dev", "cmd", "!dev", "dev2", "cmd", "!cmd" };
+            String items[] =
+            {
+                "devs", "dev", "cmd", "!dev", "dev2", "cmd", "!cmd"
+            };
             int key = 0;
             int p = 0;
             while ( true )
             {
               int n = sig.indexOf( '-' );
-              if ( n < 0 ) break;
+              if ( n < 0 )
+                break;
               String item = sig.substring( 0, n );
-              for ( ; p < items.length && !items[ p ].equals( item ); p++ );
-              if ( p == items.length ) break; // Should not occur
+              for ( ; p < items.length && !items[ p ].equals( item ); p++ )
+                ;
+              if ( p == items.length )
+                break; // Should not occur
               key |= 1 << ( 6 - p );
               sig = sig.substring( n + 1 );
             }
@@ -3176,7 +3501,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
               val |= 0x02;
               key ^= 0x12;
             }
-            if ( ( key & 0x40 )  == 0x40 )
+            if ( ( key & 0x40 ) == 0x40 )
             {
               val |= 0x01;
               key ^= 0x60;
@@ -3190,8 +3515,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         else if ( source == devBitDbl )
         {
-          if ( dataStyle < 3 ) setPFbits( 2, devBitDbl.getSelectedIndex(), 0, 2 );
-          else 
+          if ( dataStyle < 3 )
+            setPFbits( 2, devBitDbl.getSelectedIndex(), 0, 2 );
+          else
           {
             setPFbits( 2, devBitDbl.getSelectedIndex(), 1, 1 );
             isSettingPF = true;
@@ -3201,19 +3527,21 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         else if ( source == cmdBitDbl )
         {
-          if ( dataStyle < 3 ) setPFbits( 2, cmdBitDbl.getSelectedIndex(), 2, 2 );
-          else 
+          if ( dataStyle < 3 )
+            setPFbits( 2, cmdBitDbl.getSelectedIndex(), 2, 2 );
+          else
           {
-            setPFbits( 2, devBitDbl.getSelectedIndex(), 1, 1 );  // same as devBitDbl
+            setPFbits( 2, devBitDbl.getSelectedIndex(), 1, 1 ); // same as devBitDbl
             isSettingPF = true;
             devBitDbl.setSelectedIndex( cmdBitDbl.getSelectedIndex() );
-            isSettingPF = false;  
+            isSettingPF = false;
           }
         }
         else if ( source == rptHold )
         {
-          if ( dataStyle < 3 ) setPFbits( 1, rptHold.getSelectedIndex(), 0, 2 );
-          else 
+          if ( dataStyle < 3 )
+            setPFbits( 1, rptHold.getSelectedIndex(), 0, 2 );
+          else
           {
             setPFbits( 1, rptHold.getSelectedIndex(), 1, 1 );
             isSettingPF = true;
@@ -3223,14 +3551,17 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         else if ( source == xmit0rev )
         {
-          if ( dataStyle < 3 ) setPFbits( 2, xmit0rev.getSelectedIndex(), 4, 1 );
-          else setPFbits( 2, xmit0rev.getSelectedIndex(), 2, 3 );
+          if ( dataStyle < 3 )
+            setPFbits( 2, xmit0rev.getSelectedIndex(), 4, 1 );
+          else
+            setPFbits( 2, xmit0rev.getSelectedIndex(), 2, 3 );
         }
-        
+
         else if ( source == leadOutStyle )
         {
-          if ( dataStyle < 3 ) setPFbits( 1, leadOutStyle.getSelectedIndex(), 5, 2 );
-          else 
+          if ( dataStyle < 3 )
+            setPFbits( 1, leadOutStyle.getSelectedIndex(), 5, 2 );
+          else
           {
             if ( offAsTotal.getSelectedIndex() == 1 || leadOutStyle.getSelectedIndex() >= 0 )
             {
@@ -3240,8 +3571,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         else if ( source == offAsTotal )
         {
-          if ( dataStyle < 3 ) setPFbits( 0, offAsTotal.getSelectedIndex(), 6, 1 );
-          if ( dataStyle == 4 ) 
+          if ( dataStyle < 3 )
+            setPFbits( 0, offAsTotal.getSelectedIndex(), 6, 1 );
+          if ( dataStyle == 4 )
           {
             setPFbits( 1, offAsTotal.getSelectedIndex(), 6, 1 );
             setPFbits( 2, offAsTotal.getSelectedIndex(), 0, 1 );
@@ -3254,7 +3586,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           {
             afterBits.setEnabled( burstMidFrame.getSelectedIndex() > 0 );
             afterBitsLbl.setEnabled( burstMidFrame.getSelectedIndex() > 0 );
-            if ( burstMidFrame.getSelectedIndex() <= 0 ) 
+            if ( burstMidFrame.getSelectedIndex() <= 0 )
             {
               afterBits.setValue( "" );
             }
@@ -3267,18 +3599,24 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         else if ( source == burst1On )
         {
           Long t = ( Long )burst1On.getValue();
-          if ( dataStyle < 2 ) Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 2 );
-          if ( dataStyle == 2 ) Hex.semiPut( t == null ? null : ( int )(( t / 4 + 255 ) % 256 ), pdValues, 2, 0 );
-          if ( dataStyle > 2 ) 
+          if ( dataStyle < 2 )
+            Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 2 );
+          if ( dataStyle == 2 )
+            Hex.semiPut( t == null ? null : ( int )( ( t / 4 + 255 ) % 256 ), pdValues, 2, 0 );
+          if ( dataStyle > 2 )
           {
             Short old = pdValues[ 0 ];
             setONtime34( t, 0, null );
-            if ( ( pfValues[ 2 ] == null || ( pfValues[ 2 ] & 0x08 ) == 0 ) && ( old == null || pdValues[ 0 ] == null || old != pdValues[ 0 ] ) && ( old != null || pdValues[ 0 ] != null ) )
+            if ( ( pfValues[ 2 ] == null || ( pfValues[ 2 ] & 0x08 ) == 0 )
+                && ( old == null || pdValues[ 0 ] == null || old != pdValues[ 0 ] )
+                && ( old != null || pdValues[ 0 ] != null ) )
             {
               pdValues[ 0x0E ] = old;
               setPFbits( 2, 1, 3, 1 );
             }
-            if ( pfValues[ 2 ] != null && ( pfValues[ 2 ] & 0x08 ) == 0x08 && !( ( pdValues[ 0x0E ] == null || pdValues[ 0 ] == null || pdValues[ 0x0E ] != pdValues[ 0 ] ) && ( pdValues[ 0x0E ] != null || pdValues[ 0 ] != null ) ) )
+            if ( pfValues[ 2 ] != null
+                && ( pfValues[ 2 ] & 0x08 ) == 0x08
+                && !( ( pdValues[ 0x0E ] == null || pdValues[ 0 ] == null || pdValues[ 0x0E ] != pdValues[ 0 ] ) && ( pdValues[ 0x0E ] != null || pdValues[ 0 ] != null ) ) )
             {
               pdValues[ 0x0E ] = null;
               setPFbits( 2, 0, 3, 1 );
@@ -3290,22 +3628,28 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           Long t = ( Long )burst1Off.getValue();
           if ( dataStyle < 2 )
           {
-            if ( t != null ) t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ) , 0 );
+            if ( t != null )
+              t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ), 0 );
             Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 4 );
           }
-          if ( dataStyle == 2 ) Hex.semiPut( t == null ? null : ( int )( t / 4 ), pdValues, 2, 1 );
-          if ( dataStyle > 2 ) setOFFtime34( t, 3, CommonData.burstOFFoffsets34, dataStyle );
+          if ( dataStyle == 2 )
+            Hex.semiPut( t == null ? null : ( int )( t / 4 ), pdValues, 2, 1 );
+          if ( dataStyle > 2 )
+            setOFFtime34( t, 3, CommonData.burstOFFoffsets34, dataStyle );
         }
         else if ( source == burst0On )
         {
           Long t = ( Long )burst0On.getValue();
-          if ( dataStyle < 2 ) Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 6 );
-          if ( dataStyle == 2 ) Hex.semiPut( t == null ? null : ( int )(( t / 4 + 255 ) % 256 ), pdValues, 5, 0 );
-          if ( dataStyle > 2 ) 
+          if ( dataStyle < 2 )
+            Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 6 );
+          if ( dataStyle == 2 )
+            Hex.semiPut( t == null ? null : ( int )( ( t / 4 + 255 ) % 256 ), pdValues, 5, 0 );
+          if ( dataStyle > 2 )
           {
             Short old = pdValues[ 0 ];
             setONtime34( t, 0, null );
-            if ( ( old == null || pdValues[ 0 ] == null || old != pdValues[ 0 ] ) && ( old != null || pdValues[ 0 ] != null ) )
+            if ( ( old == null || pdValues[ 0 ] == null || old != pdValues[ 0 ] )
+                && ( old != null || pdValues[ 0 ] != null ) )
             {
               pdValues[ 0x0E ] = pdValues[ 0 ];
               pdValues[ 0 ] = old;
@@ -3323,18 +3667,25 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           Long t = ( Long )burst0Off.getValue();
           if ( dataStyle < 2 )
           {
-            if ( t != null ) t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ) , 0 );
+            if ( t != null )
+              t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ), 0 );
             Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 8 );
           }
-          if ( dataStyle == 2 ) Hex.semiPut( t == null ? null : ( int )( t / 4 ), pdValues, 5, 1 );
-          if ( dataStyle > 2 ) setOFFtime34( t, 5, CommonData.burstOFFoffsets34, dataStyle );
+          if ( dataStyle == 2 )
+            Hex.semiPut( t == null ? null : ( int )( t / 4 ), pdValues, 5, 1 );
+          if ( dataStyle > 2 )
+            setOFFtime34( t, 5, CommonData.burstOFFoffsets34, dataStyle );
         }
         else if ( source == leadInOn )
         {
           Long t = ( Long )leadInOn.getValue();
-          if ( dataStyle < 2 ) Hex.put( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( t / 2 ), pdValues, 0x0C );
-          if ( dataStyle == 2 ) Hex.semiPut( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )(( t / 4 + 255 ) % 256 ), pdValues, 0x0B, 0 );
-          if ( dataStyle > 2 ) setONtime34( leadInStyle.getSelectedIndex() == 0 ? null : t, 9, 0x0C );
+          if ( dataStyle < 2 )
+            Hex.put( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( t / 2 ), pdValues, 0x0C );
+          if ( dataStyle == 2 )
+            Hex.semiPut( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( ( t / 4 + 255 ) % 256 ),
+                pdValues, 0x0B, 0 );
+          if ( dataStyle > 2 )
+            setONtime34( leadInStyle.getSelectedIndex() == 0 ? null : t, 9, 0x0C );
 
         }
         else if ( source == leadInOff )
@@ -3342,14 +3693,17 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           Long t = ( Long )leadInOff.getValue();
           if ( dataStyle < 2 )
           {
-            if ( t != null ) t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ) , 0 );
+            if ( t != null )
+              t = Math.max( t - ( ( dataStyle == 0 ) ? 40 : 0 ), 0 );
             Hex.put( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( t / 2 ), pdValues, 0x0E );
           }
-          if ( dataStyle == 2 ) Hex.semiPut( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( t / 4 ), pdValues, 0x0B, 1 );
-          if ( dataStyle > 2 ) 
+          if ( dataStyle == 2 )
+            Hex.semiPut( t == null || leadInStyle.getSelectedIndex() == 0 ? null : ( int )( t / 4 ), pdValues, 0x0B, 1 );
+          if ( dataStyle > 2 )
           {
             isSettingPF = true;
-            setOFFtime34( leadInStyle.getSelectedIndex() == 0 ? null : t, 0x0A, CommonData.leadinOFFoffsets34, dataStyle );
+            setOFFtime34( leadInStyle.getSelectedIndex() == 0 ? null : t, 0x0A, CommonData.leadinOFFoffsets34,
+                dataStyle );
             actionPerformed( new ActionEvent( leadInStyle, ActionEvent.ACTION_PERFORMED, "Internal" ) );
             isSettingPF = false;
           }
@@ -3357,29 +3711,40 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         else if ( source == leadOutOff )
         {
           Long t = ( Long )leadOutOff.getValue();
-          if ( dataStyle < 2 ) Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 0x0A );
-          if ( dataStyle == 2 ) Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 8 );
-          if ( dataStyle == 3 ) setOFFtime34( t, 7, CommonData.leadinOFFoffsets34, dataStyle );
-          if ( dataStyle == 4 ) Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 7 );
+          if ( dataStyle < 2 )
+            Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 0x0A );
+          if ( dataStyle == 2 )
+            Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 8 );
+          if ( dataStyle == 3 )
+            setOFFtime34( t, 7, CommonData.leadinOFFoffsets34, dataStyle );
+          if ( dataStyle == 4 )
+            Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 7 );
         }
         else if ( source == altLeadOut )
         {
-          if ( useAltLeadOut.getSelectedIndex() == 1 || useAltLeadOut.getSelectedIndex() < 1 && useAltFreq.getSelectedIndex() < 1 && burstMidFrame.getSelectedIndex() < 1 )
+          if ( useAltLeadOut.getSelectedIndex() == 1 || useAltLeadOut.getSelectedIndex() < 1
+              && useAltFreq.getSelectedIndex() < 1 && burstMidFrame.getSelectedIndex() < 1 )
           {
-            Long t = useAltLeadOut.getSelectedIndex() < 1 ? null : ( Long )altLeadOut.getValue();     
-            if ( dataStyle < 2 ) Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 0x13 );
-            if ( dataStyle == 2 ) Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 0x11 );
-            if ( dataStyle == 3 ) setOFFtime34( t, 0x0E, CommonData.leadinOFFoffsets34, dataStyle );
-            if ( dataStyle == 4 ) Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 0x0E );
+            Long t = useAltLeadOut.getSelectedIndex() < 1 ? null : ( Long )altLeadOut.getValue();
+            if ( dataStyle < 2 )
+              Hex.put( t == null ? null : ( int )( t / 2 ), pdValues, 0x13 );
+            if ( dataStyle == 2 )
+              Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 0x11 );
+            if ( dataStyle == 3 )
+              setOFFtime34( t, 0x0E, CommonData.leadinOFFoffsets34, dataStyle );
+            if ( dataStyle == 4 )
+              Hex.put( t == null ? null : ( int )( t / 4 + 10 ), pdValues, 0x0E );
           }
 
         }
         else if ( source == altFreq || source == altDuty )
         {
-          if ( useAltFreq.getSelectedIndex() == 1 || useAltLeadOut.getSelectedIndex() < 1 && useAltFreq.getSelectedIndex() < 1 && burstMidFrame.getSelectedIndex() < 1 )
+          if ( useAltFreq.getSelectedIndex() == 1 || useAltLeadOut.getSelectedIndex() < 1
+              && useAltFreq.getSelectedIndex() < 1 && burstMidFrame.getSelectedIndex() < 1 )
           {
             int ndx = dataStyle < 2 ? 0x13 : 0x11;
-            Integer cd = useAltFreq.getSelectedIndex() < 1 ? null : useAltFreq.getSelectedIndex() <= 0 ? null : getCarrierData( altFreq.getValue(), altDuty.getValue() );
+            Integer cd = useAltFreq.getSelectedIndex() < 1 ? null : useAltFreq.getSelectedIndex() <= 0 ? null
+                : getCarrierData( altFreq.getValue(), altDuty.getValue() );
             if ( cd == null || cd == 0xFFFF )
             {
               pdValues[ ndx ] = null;
@@ -3402,36 +3767,37 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
     }
   };
-  
+
   private void putPFbits( int index, int value, int bitStart, int bitCount )
   {
     int mask = ( ( 1 << bitCount ) - 1 ) << bitStart;
     pfValues[ index ] = ( short )( ( pfValues[ index ] & ~mask ) | ( ( value << bitStart ) & mask ) );
   }
-  
+
   private void setPFbits( int index, int value, int bitStart, int bitCount )
   {
-    for ( int i = -1; i < index; i++ ) if ( pfValues[ i + 1 ] == null )
-    {
-      if ( i >= 0 ) pfValues[ i ] = ( short )( pfValues[ i ] | 0x80 );
-      pfValues[ i + 1 ] = 0;
-    }
+    for ( int i = -1; i < index; i++ )
+      if ( pfValues[ i + 1 ] == null )
+      {
+        if ( i >= 0 )
+          pfValues[ i ] = ( short )( pfValues[ i ] | 0x80 );
+        pfValues[ i + 1 ] = 0;
+      }
     putPFbits( index, value, bitStart, bitCount );
-    for ( int i = index; i > 0; i-- ) if ( pfValues[ i ] == 0 )
-    {
-      pfValues[ i ] = null;
-      pfValues[ i - 1 ] = ( short )( pfValues[ i - 1 ] & 0x7F );
-    }
+    for ( int i = index; i > 0; i-- )
+      if ( pfValues[ i ] == 0 )
+      {
+        pfValues[ i ] = null;
+        pfValues[ i - 1 ] = ( short )( pfValues[ i - 1 ] & 0x7F );
+      }
   }
-  
+
   private void setGetData()
   {
     getData.setText( assemblerModel.testBuildMode( processor ) ? "Build" : "Get Data" );
   }
 
   private int burstUnit = 0;
-  
+
   private static String ns = "";
 }
-
-
