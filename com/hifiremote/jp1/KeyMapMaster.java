@@ -559,6 +559,17 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
 
+    editManualItem = new JMenuItem( "Edit Protocol..." );
+    editManualItem.setMnemonic( KeyEvent.VK_E );
+    editManualItem.addActionListener( this );
+    menu.add( editManualItem );
+
+    newManualItem = new JMenuItem( "New Manual Protocol..." );
+    newManualItem.setMnemonic( KeyEvent.VK_M );
+    newManualItem.addActionListener( this );
+    menu.add( newManualItem );
+
+    menu.addSeparator();
     /*
      * editorItem = new JMenuItem( "Protocol Editor..." ); editorItem.setMnemonic( KeyEvent.VK_P );
      * editorItem.addActionListener( this ); menu.add( editorItem );
@@ -660,6 +671,12 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     ManualProtocol mp = new ManualProtocol( null, null );
     ManualSettingsDialog d = new ManualSettingsDialog( this, mp );
+    Remote remote = getRemote();
+    if ( remote != null )
+    {
+      d.setSelectedCode( remote.getProcessor() );
+      d.setMessage( 0 );
+    }
     d.setVisible( true );
     mp = d.getProtocol();
     if ( mp != null )

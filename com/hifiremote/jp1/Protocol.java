@@ -1668,23 +1668,19 @@ public class Protocol
     ManualSettingsDialog dialog = new ManualSettingsDialog( ( JFrame )SwingUtilities.getRoot( locator ), mp );
     dialog.pid.setEditable( false );
     dialog.pid.setEnabled( false );
+    
     if ( getClass() != ManualProtocol.class )
     {
       dialog.setForCustomCode();
       dialog.setDisplayProtocol( this );
       dialog.setDisplayRemote( remote );
-      dialog.setMessage( 2 );
     }
-    else
-    {
-      dialog.setMessage( 1 );
-    }
-    dialog.codeWhenNull = codeWhenNull;
     if ( remote != null )
     {
       dialog.setSelectedCode( remote.getProcessor() );
     }
-
+    dialog.setMessage( this instanceof ManualProtocol ? 1 : 2 );
+    dialog.codeWhenNull = codeWhenNull;
     dialog.setVisible( true );
     Protocol result = dialog.getProtocol();
 

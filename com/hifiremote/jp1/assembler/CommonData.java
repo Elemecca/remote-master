@@ -54,12 +54,6 @@ public class CommonData
   public static final String[] leadOutStyle = {
     "0 = [-LO]", "1 = [LI], [-LO]", "2 = [OneOn, -LO]", "3 = [LI], [OneOn, -LO]" };
 
-  public static final String[] midFrameCode1 = {
-    "8D 01 4E", "8D 01 61", "CC FF 7A", "CC 01 C4" };
-    
-  public static final String[] midFrameCode2 = {
-    "F6 01 4E", "F6 01 61", "CD FF 7A", "CD 01 C4" };
-
   public static final int[] burstOFFoffsets34 = { 52, 57 };
   
   public static final int[] leadinOFFoffsets34 = { 45, 45 };
@@ -279,8 +273,8 @@ public class CommonData
   };
   
   public static final short[][] pdDefaults = {
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 255, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 255, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 0, 0 },
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0 },
     { 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     { 0, 0, 0, 1, 1, 1, 1, 0, 10, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -376,6 +370,11 @@ public class CommonData
       "CARRIER",
       "The first byte of two timing values that are written to the carrier generator, initialized " +
       "from protocol data."
+    },
+    {
+      "RPT",
+      "Number of repeats required."
     }
+    
   };
 }

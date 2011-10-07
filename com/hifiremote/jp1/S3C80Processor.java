@@ -266,6 +266,7 @@ public class S3C80Processor
   
   public CodeType testCode( Hex hex )
   {
+    if ( hex.length() < 5 ) return CodeType.UNKNOWN;  
     int oldCount = 0;
     int newCount = 0;
     int bothCount = 0;

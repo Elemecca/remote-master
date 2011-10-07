@@ -59,6 +59,11 @@ public class ProtocolUpgradePanel extends RMTablePanel< ProtocolUpgrade >
     d.pid.setEditable( pidEditable );
     d.pid.setEnabled( pidEditable );
     d.remoteConfig = remoteConfig;
+    if ( remote != null )
+    {
+      d.setSelectedCode( remote.getProcessor() );
+      d.setMessage( 0 );
+    }
     d.setVisible( true );
     mp = d.getProtocol();
     if ( mp != null )
