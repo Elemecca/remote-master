@@ -382,8 +382,13 @@ public class AssemblerItem
 
   public int getLength()
   {
-    if ( opCode == null ) return 0;
+    if ( opCode == null || isCommentedOut() ) return 0;
     return opCode.getLength() + opCode.getMode().length;
+  }
+  
+  public boolean isCommentedOut()
+  {
+    return label.startsWith( ";" );
   }
   
   public int getAddress()

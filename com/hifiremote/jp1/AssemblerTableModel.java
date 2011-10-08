@@ -181,6 +181,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     // Get start address and check S3C80 versus S3F80
     for ( AssemblerItem item : itemList )
     {
+      if ( item.isCommentedOut() ) continue;
       if ( item.getOperation().equals( "ORG" ) )
       {
         for ( Token t : OpArg.getArgs( item.getArgumentText(), null, null ) ) addr = t.value;
@@ -197,6 +198,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     // Locate all labels
     for ( AssemblerItem item : itemList )
     {
+      if ( item.isCommentedOut() ) continue;
       if ( !item.getLabel().isEmpty() )
       {
         String lbl = item.getLabel().trim().toUpperCase();
@@ -223,6 +225,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     int length = 0;
     for ( AssemblerItem item : itemList )
     {
+      if ( item.isCommentedOut() ) continue;
       String op = item.getOperation();
       if ( op.isEmpty() )
       {
@@ -290,6 +293,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     int n = 0;
     for ( AssemblerItem item : itemList )
     {
+      if ( item.isCommentedOut() ) continue;
       if ( item.getOpCode() == null ) continue;
       if ( item.getOpCode().getMode().relMap != 0 )
       {
@@ -416,7 +420,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         
         if ( opLength == 0 )  // Instruction incomplete due to hex ending prematurely
         {
-          dbOut( index, hex.length(), addr, processor.getStartOffset(), processor );
+          dbOut( index, pHex.length(), addr, processor.getStartOffset(), processor );
           break;
         }
 
@@ -516,7 +520,8 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     for ( int index = codeIndex; index < itemList.size(); index++ )
     {
       AssemblerItem item = itemList.get( index );
-      if ( Arrays.asList( "JP", "JR", "JMP", "JSR" ).contains( item.getOperation() ) 
+      if ( item.isCommentedOut() ) continue;
+      if ( Arrays.asList( "JP", "CALL", "JMP", "JSR" ).contains( item.getOperation() ) 
           && p.getAbsAddresses().get( "XmitSplitIR") != null 
           && p.getAbsAddresses().get( "XmitSplitIR") == item.getHex().get( 1 ) )
       {
@@ -533,7 +538,8 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     for ( int index = codeIndex; index < itemList.size(); index++ )
     {
       AssemblerItem item = itemList.get( index );
-      if ( item == null || item.getHex() == null ) continue;
+      if ( item.isCommentedOut() ) continue;
+      if ( item.getHex() == null ) continue;
       short[] opData = item.getHex().getData();
       switch ( rptData.length )
       {
@@ -765,6 +771,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     int length = 0;
     for ( AssemblerItem item : itemList )
     {
+      if ( item.isCommentedOut() ) continue;
       length += item.getLength();
       if ( length > processor.getStartOffset() )
       {

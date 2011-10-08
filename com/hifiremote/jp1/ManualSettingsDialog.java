@@ -800,9 +800,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           {
             AssemblerItem item = assemblerModel.getItemList().get( i );
             String line = "";
-            String str = item.getLabel();
+            String str = item.getLabel().trim();
             line += str;
-            if ( !str.isEmpty() && !str.endsWith( ":" ) )
+            if ( !str.isEmpty() && !str.equals( ";" ) && !str.endsWith( ":" ) )
               line += ":";
             line += "\t" + item.getOperation() + "\t" + item.getArgumentText();
             str = item.getComments();
@@ -872,13 +872,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         while ( ( line = br.readLine() ) != null )
         {
           AssemblerItem item = new AssemblerItem();
+          char firstChar = line.charAt( 0 );
           line = line.trim();
           int j = 0;
           while ( j < line.length() && !Character.isWhitespace( line.charAt( j ) ) )
             j++ ;
-          if ( j == 0 )
-            continue;
-          if ( line.charAt( j - 1 ) == ':' )
+          if ( j == 0 ) continue;
+          if ( line.charAt( j - 1 ) == ':' || j == 1 && firstChar == ';' )
           {
             item.setLabel( line.substring( 0, j ) );
             line = line.substring( j ).trim();
@@ -886,19 +886,25 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             while ( j < line.length() && !Character.isWhitespace( line.charAt( j ) ) )
               j++ ;
           }
-          if ( j == 0 )
-            continue;
-          item.setOperation( line.substring( 0, j ) );
-          line = line.substring( j ).trim();
+          if ( j == 0 ) continue;
+          if ( line.charAt( 0 ) != ';' )
+          {
+            item.setOperation( line.substring( 0, j ) );
+            line = line.substring( j ).trim();
+          }
           int ndx = line.indexOf( ';' );
           if ( ndx > 0 )
           {
             item.setArgumentText( line.substring( 0, ndx ).trim() );
             item.setComments( line.substring( ndx + 1 ) );
           }
-          else
+          else if ( ndx < 0 )
           {
             item.setArgumentText( line );
+          }
+          else
+          {
+            item.setComments( line.substring( 1 ) );
           }
           itemList.add( item );
         }
@@ -1017,6 +1023,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       for ( i = 0; i < assemblerModel.getItemList().size(); i++ )
       {
         AssemblerItem item = assemblerModel.getItemList().get( i );
+        if ( item.isCommentedOut() ) continue;
         if ( item.getOperation().equals( "ORG" ) )
         {
           hasOrg = true;
@@ -1039,6 +1046,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
             {
               // search for JR / BRA destination label
               AssemblerItem item2 = assemblerModel.getItemList().get( j );
+              if ( item2.isCommentedOut() ) continue;
               if ( Arrays.asList( item.getArgumentText(), item.getArgumentText() + ":" ).contains( item2.getLabel() ) )
                 break;
               end += item2.getLength();
@@ -2526,6 +2534,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     {
       if ( procs[ i ].getEquivalentName().equals( proc.getEquivalentName() ) )
       {
+        int n = codeTable.getModel().getRowCount();
         codeTable.getSelectionModel().setSelectionInterval( i, i );
         break;
       }
