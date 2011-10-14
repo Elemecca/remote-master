@@ -17,6 +17,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -33,6 +35,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -65,6 +68,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -130,11 +134,11 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       CodeTableModel model = ( CodeTableModel )table.getModel();
       if ( isSelected )
       {
-        c.setForeground( ( Boolean )model.getValueAt( row, 2 ) ? Color.YELLOW : Color.WHITE );
+        c.setForeground( ( Boolean )model.getValueAt( row, 4 ) ? Color.YELLOW : Color.WHITE );
       }
       else
       {
-        c.setForeground( ( Boolean )model.getValueAt( row, 2 ) ? Color.GRAY : Color.BLACK );
+        c.setForeground( ( Boolean )model.getValueAt( row, 4 ) ? Color.GRAY : Color.BLACK );
       }
       return c;
     }
@@ -163,6 +167,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
    * @param protocol
    *          the protocol
    */
+  @SuppressWarnings( "unchecked" )
   private void createGui( Component owner, ManualProtocol protocol )
   {
     setLocationRelativeTo( owner );
@@ -251,6 +256,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     tablePanel.setBorder( BorderFactory.createTitledBorder( "Protocol code" ) );
     codeModel = new CodeTableModel();
     codeTable = new JTableX( codeModel );
+    codeTable.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     tablePanel.add( new JScrollPane( codeTable ), BorderLayout.CENTER );
     DefaultTableCellRenderer r = ( DefaultTableCellRenderer )codeTable.getDefaultRenderer( String.class );
     r.setHorizontalAlignment( SwingConstants.CENTER );
@@ -280,10 +286,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         uProcs[ count++ ] = proc;
     }
     procs = uProcs;
+    itemLists = new List[ procs.length ];
     for ( int i = 0; i < procs.length; i++ )
     {
       l.setText( procs[ i ].getFullName() );
       width = Math.max( width, l.getPreferredSize().width );
+      itemLists[ i ] = new ArrayList< AssemblerItem >();
+      itemLists[ i ].add( new AssemblerItem() );
     }
     for ( int i = 0; i < procs.length; i++ )
     {
@@ -511,8 +520,21 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     assemblerTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     assemblerModel.dialog = this;
     scrollPane = new JScrollPane( assemblerTable );
-    scrollPane.setBorder( BorderFactory.createTitledBorder( "Disassembly" ) );
+    asmBorder = BorderFactory.createTitledBorder( "" ); // Title added by setAssemblerButtons()
+    scrollPane.setBorder( asmBorder );
     rightPanel.add( scrollPane, BorderLayout.CENTER );
+    JPanel optionPanel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
+    optionPanel.add( new JLabel( "Show: " ) );
+    optionPanel.add( disasmButton );
+    optionPanel.add( asmButton );
+    optionPanel.setMinimumSize( new Dimension( 10, 10 ) );
+    disasmButton.addItemListener( this );
+    asmButton.addItemListener( this );
+    grp = new ButtonGroup();
+    grp.add( disasmButton );
+    grp.add( asmButton );
+    disasmButton.setSelected( true );
+    rightPanel.add( optionPanel, BorderLayout.PAGE_START );
 
     // Disassembly options
     JPanel lowerRightPanel = new JPanel();
@@ -523,7 +545,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         BorderFactory.createTitledBorder( "Disassembly options" ), BorderFactory.createEmptyBorder( 0, 10, 0, 10 ) ) );
     lowerRightPanel.add( optionsPanel );
     rightPanel.add( lowerRightPanel, BorderLayout.PAGE_END );
-    JPanel optionPanel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
+    optionPanel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
     useRegisterConstants.addItemListener( this );
     useFunctionConstants.addItemListener( this );
     optionPanel.add( new JLabel( "Use predefined constants for: " ) );
@@ -546,16 +568,21 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     optionsPanel.add( optionPanel );
 
     // Editing/Assembling buttons
-    optionPanel = new JPanel( new GridLayout( 2, 5 ) );
+    optionPanel = new JPanel( new GridLayout( 3, 5 ) );
     optionPanel.add( insert );
-    optionPanel.add( cut );
+    optionPanel.add( copy );
     optionPanel.add( new JLabel() );
     optionPanel.add( load );
     optionPanel.add( assemble );
     optionPanel.add( delete );
-    optionPanel.add( paste );
+    optionPanel.add( cut );
     optionPanel.add( new JLabel() );
     optionPanel.add( save );
+    optionPanel.add( build );
+    optionPanel.add( selectAll );
+    optionPanel.add( paste );
+    optionPanel.add( new JLabel() );
+    optionPanel.add( disassemble );
     optionPanel.add( getData );
     moveUp.addActionListener( this );
     moveDown.addActionListener( this );
@@ -569,8 +596,17 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     save.addActionListener( this );
     assemble.addActionListener( this );
     getData.addActionListener( this );
-    cutItems = new ArrayList< AssemblerItem >();
+    selectAll.addActionListener( this );
+    disassemble.addActionListener( this );
+    build.addActionListener( this );
+    copy.addActionListener( this );
+    optionPanel.setMinimumSize( new Dimension( 10, 10 ) );
     lowerRightPanel.add( optionPanel );
+    setAssemblerButtons( true );
+
+    JP1Frame frame = RemoteMaster.getFrame();
+    cutItems = ( frame instanceof RemoteMaster ) ? ( ( RemoteMaster )frame ).getClipBoardItems() : 
+      ( frame instanceof KeyMapMaster ) ? ( ( KeyMapMaster )frame ).getClipBoardItems() : new ArrayList< AssemblerItem >();
 
     // Button Panel
     JPanel mainButtonPanel = new JPanel( new BorderLayout() );
@@ -706,7 +742,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       upperPanel.setVisible( !upperPanel.isVisible() );
       codeButton.setText( upperPanel.isVisible() ? "Expand" : "Collapse" );
     }
-    else if ( Arrays.asList( insert, delete, moveUp, moveDown, cut, paste ).contains( source ) )
+    else if ( Arrays.asList( insert, delete, moveUp, moveDown, copy, cut, paste ).contains( source ) )
     {
       if ( assemblerTable.getCellEditor() != null )
       {
@@ -722,43 +758,71 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         for ( int i = 0; i < rowCount; i++ )
           itemList.add( row, new AssemblerItem() );
         assemblerModel.fireTableDataChanged();
+        assemblerTable.changeSelection( row + rowCount, col, false, false );
+        assemblerTable.changeSelection( row + 2 * rowCount - 1, col + colCount - 1, false, true );
       }
       else if ( source == paste )
       {
         itemList.addAll( row, cutItems );
         assemblerModel.fireTableDataChanged();
+        assemblerTable.changeSelection( row, col, false, false );
+        assemblerTable.changeSelection( row + cutItems.size() - 1, col + colCount - 1, false, true );
       }
-      else if ( source == delete || source == cut )
+      else if ( source == delete || source == cut || source == copy )
       {
-        if ( source == cut )
+        if ( source == cut || source == copy )
         {
+          cutItems.clear();
           cutItems.addAll( itemList.subList( row, row + rowCount ) );
           paste.setEnabled( true );
         }
-        for ( int i = 0; i < rowCount; i++ )
-          itemList.remove( row );
-        if ( itemList.size() == 0 ) itemList.add( new AssemblerItem() );
-        assemblerModel.fireTableDataChanged();
+        if ( source == delete || source == cut )
+        {
+          for ( int i = 0; i < rowCount; i++ )
+            itemList.remove( row );
+          if ( itemList.size() == 0 ) itemList.add( new AssemblerItem() );
+          assemblerModel.fireTableDataChanged();
+          assemblerTable.changeSelection( row, col, false, false );
+          assemblerTable.changeSelection( row, col + colCount - 1, false, true );
+        }
       }
-      else if ( source == moveUp && row > 0 )
+//      else if ( source == moveUp && row > 0 )
+//      {
+//        AssemblerItem item = itemList.get( row - 1 );
+//        itemList.remove( row - 1 );
+//        itemList.add( row + rowCount - 1, item );
+//        assemblerModel.fireTableDataChanged();
+//        assemblerTable.changeSelection( row - 1, col, false, false );
+//        assemblerTable.changeSelection( row + rowCount - 2, col + colCount - 1, false, true );
+//      }
+//      else if ( source == moveDown && row < itemList.size() - 1 )
+//      {
+//        AssemblerItem item = itemList.get( row + rowCount );
+//        itemList.remove( row + rowCount );
+//        itemList.add( row, item );
+//        assemblerModel.fireTableDataChanged();
+//        assemblerTable.changeSelection( row + 1, col, false, false );
+//        assemblerTable.changeSelection( row + rowCount, col + colCount - 1, false, true );
+//      }
+      setAssemblerButtons( false );
+    }
+    else if ( source == selectAll )
+    {
+      assemblerTable.changeSelection( 0, 0, false, false );
+      assemblerTable.changeSelection( assemblerModel.getItemList().size() - 2, assemblerTable.getColumnCount() - 1, false, true );
+    }
+    else if ( source == disassemble )
+    {
+      if ( codeTable.getSelectedRowCount() == 1 )
       {
-        AssemblerItem item = itemList.get( row - 1 );
-        itemList.remove( row - 1 );
-        itemList.add( row + rowCount - 1, item );
-        assemblerModel.fireTableDataChanged();
-        assemblerTable.changeSelection( row - 1, col, false, false );
-        assemblerTable.changeSelection( row + rowCount - 2, col + colCount - 1, false, true );
+        int row = codeTable.getSelectedRow();
+        Processor proc = procs[ row ];
+        Hex hex = protocol.getCode( procs[ row ] );
+        if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null )
+          hex = displayProtocol.getCode( proc );
+        assemblerModel.disassemble( hex, proc );
+        setAssemblerButtons( false );
       }
-      else if ( source == moveDown && row < itemList.size() - 1 )
-      {
-        AssemblerItem item = itemList.get( row + rowCount );
-        itemList.remove( row + rowCount );
-        itemList.add( row, item );
-        assemblerModel.fireTableDataChanged();
-        assemblerTable.changeSelection( row + 1, col, false, false );
-        assemblerTable.changeSelection( row + rowCount, col + colCount - 1, false, true );
-      }
-      setGetData();
     }
     else if ( source == save )
     {
@@ -793,33 +857,49 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         file = newFile;
         properties.setProperty( "IRPath", file.getParentFile() );
+        if ( asmButton.isSelected() && codeTable.getSelectedRowCount() == 1 )
+        {
+          int row = codeTable.getSelectedRow();
+          itemLists[ row ].clear();
+          itemLists[ row ].addAll( assemblerModel.getItemList() );
+        }
         try
         {
           PrintWriter pw = new PrintWriter( new FileWriter( file ) );
-          for ( int i = 0; i < assemblerModel.getItemList().size(); i++ )
+          boolean first = true;
+          for ( int row = 0; row < itemLists.length; row++ )
           {
-            AssemblerItem item = assemblerModel.getItemList().get( i );
-            String line = "";
-            String str = item.getLabel().trim();
-            line += str;
-            if ( !str.isEmpty() && !str.equals( ";" ) && !str.endsWith( ":" ) )
-              line += ":";
-            line += "\t" + item.getOperation() + "\t" + item.getArgumentText();
-            str = item.getComments();
-            if ( !str.isEmpty() )
+            List< AssemblerItem > list = itemLists[ row ];
+            if ( list.size() <= 1 ) continue;
+            if ( !first ) pw.print( "\n" );
+            first = false;
+            String line = "\tPROC\t" + procs[ row ].getEquivalentName() + "\n"; 
+            pw.print( line );
+            for ( int i = 0; i < itemLists[ row ].size(); i++ )
             {
-              line += "\t";
-              if ( !str.startsWith( ";" ) )
-                line += ";";
+              AssemblerItem item = itemLists[ row ].get( i );
+              line = "";
+              String str = item.getLabel().trim();
               line += str;
-            }
-            line += "\n";
-            int j = 0;
-            while ( j < line.length() && Character.isWhitespace( line.charAt( j ) ) )
-              j++ ;
-            if ( j < line.length() || i < assemblerModel.getItemList().size() - 1 )
-            {
-              pw.print( line );
+              if ( !str.isEmpty() && !str.equals( ";" ) && !str.endsWith( ":" ) )
+                line += ":";
+              line += "\t" + item.getOperation() + "\t" + item.getArgumentText();
+              str = item.getComments();
+              if ( !str.isEmpty() )
+              {
+                line += "\t";
+                if ( !str.startsWith( ";" ) )
+                  line += ";";
+                line += str;
+              }
+              line += "\n";
+              int j = 0;
+              while ( j < line.length() && Character.isWhitespace( line.charAt( j ) ) )
+                j++ ;
+              if ( j < line.length() || i < assemblerModel.getItemList().size() - 1 )
+              {
+                pw.print( line );
+              }
             }
           }
           pw.close();
@@ -867,10 +947,18 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         DataInputStream in = new DataInputStream( new FileInputStream( file ) );
         BufferedReader br = new BufferedReader( new InputStreamReader( in ) );
         String line = null;
-        List< AssemblerItem > itemList = assemblerModel.getItemList();
-        itemList.clear();
+        List< AssemblerItem > list = null;
+        if ( codeTable.getSelectedRowCount() == 1 )
+        {
+          list = itemLists[ codeTable.getSelectedRow() ];
+        }
+        boolean hasItems = false;
+        
+//        List< AssemblerItem > itemList = assemblerModel.getItemList();
+//        itemList.clear();
         while ( ( line = br.readLine() ) != null )
         {
+          if ( line.isEmpty() ) continue;
           AssemblerItem item = new AssemblerItem();
           char firstChar = line.charAt( 0 );
           line = line.trim();
@@ -906,11 +994,34 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           {
             item.setComments( line.substring( 1 ) );
           }
-          itemList.add( item );
+          if ( item.getOperation().equals( "PROC" ) )
+          {
+            if ( hasItems ) list.add( new AssemblerItem() );
+            for ( int k = 0; k < procs.length; k++ )
+            {
+              if ( procs[ k ].getEquivalentName().equals( item.getArgumentText() ) )
+              {
+                list = itemLists[ k ];
+                hasItems = false;
+                break;
+              }
+            }
+            continue;
+          }
+          if ( !hasItems ) list.clear();
+          list.add( item );
+          hasItems = true;
         }
         in.close();
-        itemList.add( new AssemblerItem() );
-        assemblerModel.fireTableDataChanged();
+        list.add( new AssemblerItem() );
+        asmButton.setSelected( true );
+        if ( codeTable.getSelectedRowCount() == 1 )
+        {
+          assemblerModel.getData().clear();
+          assemblerModel.getData().addAll( itemLists[ codeTable.getSelectedRow() ] );
+          assemblerModel.setItemList( assemblerModel.getData() );
+          assemblerModel.fireTableDataChanged();
+        }
       }
       catch ( Exception ex )
       {
@@ -947,11 +1058,19 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
       }
     }
-    else if ( source == getData )
+    else if ( source == getData || source == build )
     {
       if ( assemblerTable.getCellEditor() != null )
       {
         assemblerTable.getCellEditor().stopCellEditing();
+      }
+      if ( source == build )
+      {
+        Iterator< AssemblerItem > it = assemblerModel.getItemList().iterator();
+        while ( it.hasNext() )
+        {
+          if ( !it.next().getOperation().equals( "ORG" ) ) it.remove();
+        }
       }
       if ( processor instanceof S3C80Processor && assemblerModel.testBuildMode( processor ) )
       {
@@ -999,10 +1118,6 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         if ( pdValues[ i ] == null && fill )
           pdValues[ i ] = i < fillValues.length ? fillValues[ i ] : 0;
       }
-
-//      interpretPFPD( false );
-//      setPFPanel();
-//      setPDPanel();
 
       Hex hex = new Hex( assemblerModel.getPdCount() + 10 );
       assemblerModel.setHex( hex );
@@ -1071,8 +1186,20 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       {
         if ( length > processor.getStartOffset() )
         {
-          String message = "Cannot get data as code is not a valid protocol format.";
-          String title = "Get Data";
+          String message = "Cannot get data as code is not a valid protocol format.\n\n"
+            + "Get Data will only get data from the Protocol Data etc tabs into a protocol that is\n"
+            + "already properly structured, so if you enter code into the listing grid, assemble it and\n"
+            + "THEN try to get the data bytes into it, it won't work. Begin with a basic Build. You can\n"
+            + "press Build right at the start. You don't need to put the proper, or even any, values\n"
+            + "into the Protocol Data tab, it will work with just the defaults and you can change the\n"
+            + "data later. The basic build will give you only one assembler instruction following the\n"
+            + "data block, JP XmitIR or the equivalent for other processors. Replace this with whatever\n"
+            + "code you want.\n\n"
+            + "If you forget to do the initial build and have already entered assembler code, use Cut and\n"
+            + "Paste. Select it all, Cut, then press Build with the empty assembler grid that results, and\n"
+            + "finally Paste the cut data at the end of the build. After that, you can change the data and\n"
+            + "use Get Data as required.";
+          String title = "Update Data";
           JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
           return;
         }
@@ -1168,14 +1295,14 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
 
         startItem.assemble( processor, labels, true );
         endItem.assemble( processor, labels, true );
-        if ( !hasOrg ) assemblerModel.insertORG( endDirectives, ramAddress, processor );
         assemblerModel.insertEQU( endDirectives, processor, state );
+        if ( !hasOrg ) assemblerModel.insertORG( endDirectives, ramAddress, processor );
       }
       newItemList.add( new AssemblerItem() );
       assemblerModel.getData().clear();
       assemblerModel.getData().addAll( newItemList );
       assemblerModel.setItemList( assemblerModel.getData() );
-      setGetData();
+      setAssemblerButtons( false );
       
       interpretPFPD( false );
       setPFPanel();
@@ -1287,7 +1414,6 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         }
         else
         {
-          // if ( pdFields.get( n ).getText().equals( pdFields.get( n ).getLastText()) ) return;
           int type = pdSizes.get( n )[ 1 ] & 0xF;
           int pos = pdSizes.get( n )[ 1 ] >> 4;
           Object obj = pdFields.get( n ).getValue();
@@ -1568,8 +1694,10 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           return procs[ row ];
         case 1:
           return ( hex == null || hex.length() == 0 ) ? dispHex : hex;
+        case 2:
+          return itemLists[ row ];
         default:
-          // There are no other columns but this value is used by cell renderer
+          // There are no other columns but value 4 is used by cell renderer
           return hex == null || hex.length() == 0 || isEmpty[ row ] && hex.equals( dispHex );
       }
     }
@@ -1579,84 +1707,90 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
      * 
      * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
      */
+    @SuppressWarnings( "unchecked" )
     public void setValueAt( Object value, int row, int col )
     {
-      if ( col == 1 )
+      switch ( col )
       {
-        Hex newCode = ( Hex )value;
-        if ( ( newCode != null ) && ( newCode.length() != 0 ) )
-        {
-          if ( !protocol.hasAnyCode() )
+        case 1:
+          Hex newCode = ( Hex )value;
+          if ( ( newCode != null ) && ( newCode.length() != 0 ) )
           {
-            int fixedDataLength = Protocol.getFixedDataLengthFromCode( procs[ row ].getEquivalentName(), newCode );
-            rawHexData.setText( Hex.toString( new short[ fixedDataLength ] ) );
-            ArrayList< Value > devParms = new ArrayList< Value >();
-            Value zero = new Value( 0 );
-            for ( int i = 0; i < fixedDataLength; ++i )
-              devParms.add( zero );
-            int cmdLength = Protocol.getCmdLengthFromCode( procs[ row ].getEquivalentName(), newCode );
-            SpinnerNumberModel spinnerModel = ( SpinnerNumberModel )cmdIndex.getModel();
-            spinnerModel.setMaximum( cmdLength - 1 );
-            protocol.createDefaultParmsAndTranslators( cmdLength << 4, false, false, 8, devParms, new short[ 0 ], 8 );
-            deviceModel.fireTableDataChanged();
-            commandModel.fireTableDataChanged();
+            if ( !protocol.hasAnyCode() )
+            {
+              int fixedDataLength = Protocol.getFixedDataLengthFromCode( procs[ row ].getEquivalentName(), newCode );
+              rawHexData.setText( Hex.toString( new short[ fixedDataLength ] ) );
+              ArrayList< Value > devParms = new ArrayList< Value >();
+              Value zero = new Value( 0 );
+              for ( int i = 0; i < fixedDataLength; ++i )
+                devParms.add( zero );
+              int cmdLength = Protocol.getCmdLengthFromCode( procs[ row ].getEquivalentName(), newCode );
+              SpinnerNumberModel spinnerModel = ( SpinnerNumberModel )cmdIndex.getModel();
+              spinnerModel.setMaximum( cmdLength - 1 );
+              protocol.createDefaultParmsAndTranslators( cmdLength << 4, false, false, 8, devParms, new short[ 0 ], 8 );
+              deviceModel.fireTableDataChanged();
+              commandModel.fireTableDataChanged();
+            }
           }
-        }
-        else if ( codeWhenNull != null )
-        {
-          String title = "Code deletion";
-          String message = "This protocol is not built in to the remote.  Do you want to restore\n"
+          else if ( codeWhenNull != null )
+          {
+            String title = "Code deletion";
+            String message = "This protocol is not built in to the remote.  Do you want to restore\n"
               + "the code to the standard code for this protocol?\n\n"
               + "If you select NO then the protocol upgrade for this device upgrade\n"
               + "will be deleted.  The device upgrade will not function until you\n"
               + "restore the protocol upgrade, which you may do by deleting this\n"
               + "null entry and answering this question again.";
-          boolean restore = ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
-              JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION );
-          if ( restore )
+            boolean restore = ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION );
+            if ( restore )
+            {
+              newCode = codeWhenNull;
+            }
+            else
+            {
+              newCode = new Hex();
+            }
+          }
+
+          Processor proc = procs[ row ];
+          protocol.setCode( newCode, proc );
+          fireTableRowsUpdated( row, row );
+          enableButtons();
+          int pfCount = assemblerModel.getPfCount();
+          if ( assembled )
           {
-            newCode = codeWhenNull;
+            short[] data = newCode.getData();
+            Arrays.fill( pfValues, null );
+            Arrays.fill( pdValues, null );
+            for ( int i = 0; i < pfCount; i++ )
+            {
+              pfValues[ i ] = data[ 5 + i ];
+            }
+            for ( int i = 0; i < assemblerModel.getPdCount(); i++ )
+            {
+              pdValues[ i ] = data[ 5 + pfCount + i ];
+            }
           }
           else
           {
-            newCode = new Hex();
+            assemblerModel.disassemble( newCode, proc );
           }
-        }
 
-        Processor proc = procs[ row ];
-        protocol.setCode( newCode, proc );
-        fireTableRowsUpdated( row, row );
-        enableButtons();
-        int pfCount = assemblerModel.getPfCount();
-        if ( assembled )
-        {
-          short[] data = newCode.getData();
-          Arrays.fill( pfValues, null );
-          Arrays.fill( pdValues, null );
-          for ( int i = 0; i < pfCount; i++ )
+          if ( proc instanceof S3C80Processor
+              && ( ( S3C80Processor )proc ).testCode( newCode ) == S3C80Processor.CodeType.NEW )
           {
-            pfValues[ i ] = data[ 5 + i ];
+            proc = ProcessorManager.getProcessor( "S3F80" ); // S3C8+ code
           }
-          for ( int i = 0; i < assemblerModel.getPdCount(); i++ )
-          {
-            pdValues[ i ] = data[ 5 + pfCount + i ];
-          }
-        }
-        else
-        {
-          assemblerModel.disassemble( newCode, proc );
-        }
-
-        if ( proc instanceof S3C80Processor
-            && ( ( S3C80Processor )proc ).testCode( newCode ) == S3C80Processor.CodeType.NEW )
-        {
-          proc = ProcessorManager.getProcessor( "S3F80" ); // S3C8+ code
-        }
-        // int addr = proc.getRAMAddress();
-        interpretPFPD();
-        setPFPanel();
-        setPDPanel();
-        setFunctionPanel();
+          // int addr = proc.getRAMAddress();
+          interpretPFPD();
+          setPFPanel();
+          setPDPanel();
+          setFunctionPanel();
+          break;
+        case 2:
+          itemLists[ row ] = ( List< AssemblerItem > )value;
+          break;
       }
     }
   }
@@ -1792,6 +1926,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JRadioButton asCodeButton = new JRadioButton( "As code" );
   public JRadioButton rcButton = new JRadioButton( "Force RCn" );
   public JRadioButton wButton = new JRadioButton( "Force Wn" );
+  public JRadioButton asmButton = new JRadioButton( "Assembly" );
+  public JRadioButton disasmButton = new JRadioButton( "Disassembly" );
   private JToggleButton[] optionButtons =
   {
       useRegisterConstants, useFunctionConstants, asCodeButton, rcButton, wButton
@@ -1801,12 +1937,16 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   public JButton moveDown = new JButton( "Down" );
   public JButton insert = new JButton( "Insert" );
   public JButton delete = new JButton( "Delete" );
+  public JButton selectAll = new JButton( "Select All" );
+  public JButton copy = new JButton( "Copy" );
   public JButton cut = new JButton( "Cut" );
   public JButton paste = new JButton( "Paste" );
   public JButton load = new JButton( "Load" );
   public JButton save = new JButton( "Save" );
   public JButton assemble = new JButton( "Assemble" );
-  public JButton getData = new JButton( "Get Data" );
+  public JButton disassemble = new JButton( "Disassemble" );
+  public JButton getData = new JButton( "Update" );
+  public JButton build = new JButton( "Build" );
 
   private File file = null;
   private List< AssemblerItem > cutItems = null;
@@ -1831,6 +1971,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   private Short[] pdValues = null;
   private List< RMFormattedTextField > pdFields = null;
   private List< int[] > pdSizes = null;
+  
+  private TitledBorder asmBorder = null;
 
   private JPanel fnMainPanel = null;
   private JPanel fnHeaderPanel = null;
@@ -1908,6 +2050,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   
   private int errorNumber = -1;
 
+  private Object[] interpretations = null;
+  
   private Component[][] dataComponents = null;
 
   private String[][] dataLabels = { 
@@ -1941,11 +2085,13 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   /** The Constant classes. */
   private final static Class< ? >[] classes =
   {
-      Processor.class, Hex.class
+      Processor.class, Hex.class, List.class
   };
 
   /** The procs. */
   private static Processor[] procs = new Processor[ 0 ];
+  
+  private static List< AssemblerItem >[] itemLists = new List[ 0 ];
 
   /*
    * (non-Javadoc)
@@ -2385,13 +2531,80 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         Hex hex = protocol.getCode( procs[ row ] );
         if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null )
           hex = displayProtocol.getCode( proc );
+        
+        Hex oldHex = null;
+        if ( processor != null )
+        {
+          if ( asmButton.isSelected() ) for ( int i = 0; i < procs.length; i++ )
+          {
+            if ( procs[ i ].getEquivalentName().equals( processor.getEquivalentName() ) )
+            {
+              if ( assemblerTable.getCellEditor() != null )
+              {
+                assemblerTable.getCellEditor().stopCellEditing();
+              }
+              itemLists[ i ].clear();
+              itemLists[ i ].addAll( assemblerModel.getItemList() );
+              break;
+            }
+          }
+          oldHex = protocol.getCode( processor );
+          if ( oldHex == null )  oldHex = ( displayProtocol == null ) ? null : displayProtocol.getCode( processor );
+        }
+        // If new processor has no code but old one does, then preserve the Protocol Data fields.
+        if ( oldHex != null && ( hex == null || hex.length() == 0 ) )
+        {
+          // Ensure values all in sync before saving the Protocol Data fields
+//          actionPerformed( new ActionEvent( getData, ActionEvent.ACTION_PERFORMED, "Internal" ) );
+          interpretations = new Object[ dataComponents.length ];
+          for ( int i = 0; i < dataComponents.length; i++ )
+          {
+            if ( dataComponents[ i ] == null ) continue;
+            Component cpt = dataComponents[ i ][ 0 ];
+            if ( cpt instanceof JComboBox )
+            {
+              interpretations[ i ] = ((JComboBox)cpt).getSelectedItem();
+            }
+            else if ( cpt instanceof RMFormattedTextField )
+            {
+              interpretations[ i ] = ( ( RMFormattedTextField )cpt ).getText();
+            }
+          }
+        }
         assemblerModel.disassemble( hex, proc );
+        if ( interpretations != null && ( hex == null || hex.length() == 0 ) )
+        {
+          interpretPFPD( true );
+          for ( int i = 0; i < dataComponents.length; i++ )
+          {
+            if ( dataComponents[ i ] == null ) continue;
+            Component cpt = dataComponents[ i ][ 0 ];
+            if ( !cpt.isEnabled() ) continue;
+            if ( cpt instanceof JComboBox )
+            {
+              ((JComboBox)cpt).setSelectedItem( interpretations[ i ] );
+            }
+            else if ( cpt instanceof RMFormattedTextField )
+            {
+              ( ( RMFormattedTextField )cpt ).setValue ( ( String )interpretations[ i ] );
+            }
+          }
+        }
         interpretPFPD();
         setPFPanel();
         setPDPanel();
         setFunctionPanel();
+        
+        if ( asmButton.isSelected() )
+        {
+            assemblerModel.getData().clear();
+            assemblerModel.getData().addAll( itemLists[ codeTable.getSelectedRow() ] );
+            assemblerModel.setItemList( assemblerModel.getData() );
+            assemblerModel.fireTableDataChanged();
+        }
+        
         load.setEnabled( true );
-        setGetData();
+        setAssemblerButtons( false );
         int tabCount = tabbedPane.getTabCount();
         if ( row != 0 && row != 4 && tabCount > 2 )
         {
@@ -2471,12 +2684,44 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   @Override
   public void itemStateChanged( ItemEvent e )
   {
-    int n = Arrays.asList( pfButtons ).indexOf( e.getSource() );
-    if ( n >= 0 )
+    Object source = e.getSource();
+    int n = 0;
+    if ( ( n = Arrays.asList( pfButtons ).indexOf( source ) ) >= 0 )
     {
       if ( pfButtons[ n ].isSelected() )
         setPFPanel();
       return;
+    }
+    else if ( source == disasmButton )
+    {
+      if (  disasmButton.isSelected() && codeTable.getSelectedRowCount() == 1 )
+      {
+        if ( assemblerTable.getCellEditor() != null )
+        {
+          assemblerTable.getCellEditor().stopCellEditing();
+        }
+        int row = codeTable.getSelectedRow();
+        itemLists[ row ].clear();
+        itemLists[ row ].addAll( assemblerModel.getItemList() );
+        
+        Processor proc = procs[ row ];
+        Hex hex = protocol.getCode( proc );
+        if ( ( hex == null || hex.length() == 0 ) && displayProtocol != null )
+          hex = displayProtocol.getCode( proc );
+        assemblerModel.disassemble( hex, proc );
+        setAssemblerButtons( true );
+      }
+    }
+    else if ( source == asmButton )
+    {
+      if ( asmButton.isSelected() && codeTable.getSelectedRowCount() == 1 )
+      {
+        assemblerModel.getData().clear();
+        assemblerModel.getData().addAll( itemLists[ codeTable.getSelectedRow() ] );
+        assemblerModel.setItemList( assemblerModel.getData() );
+        assemblerModel.fireTableDataChanged();
+        setAssemblerButtons( true );
+      }
     }
     else
     // Disassembler options changed
@@ -2541,7 +2786,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     }
   }
 
-  private class RMFormattedTextField extends JFormattedTextField
+  private class RMFormattedTextField extends JFormattedTextField implements KeyListener
   {
     private Format fmt;
     private DefaultFormatter ff;
@@ -2553,6 +2798,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       super( fmt );
       this.fmt = fmt;
       this.al = al;
+      addKeyListener( this );
       setFocusLostBehavior( JFormattedTextField.COMMIT );
     }
 
@@ -2561,6 +2807,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       super( ff );
       this.ff = ff;
       this.al = al;
+      addKeyListener( this );
       setFocusLostBehavior( JFormattedTextField.COMMIT );
     }
 
@@ -2574,25 +2821,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       }
       else if ( e.getID() == FocusEvent.FOCUS_LOST )
       {
-        if ( !isEditValid() )
-        {
-          showWarning( getText() + " : Invalid value" );
-          setText( getValue() == null ? "" : getValue().toString() );
-        }
-        else
-          try
-          {
-            commitEdit();
-          }
-          catch ( ParseException ex )
-          {
-            ex.printStackTrace();
-          }
-        if ( !getText().equals( lastText ) )
-        {
-          lastText = getText();
-          update();
-        }
+        endEdit();
       }
     }
 
@@ -2622,11 +2851,51 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     {
       al.actionPerformed( new ActionEvent( this, ActionEvent.ACTION_PERFORMED, "" ) );
     }
+    
+    private void endEdit()
+    {
+      if ( !isEditValid() )
+      {
+        showWarning( getText() + " : Invalid value" );
+        setText( getValue() == null ? "" : getValue().toString() );
+      }
+      else
+        try
+        {
+          commitEdit();
+        }
+        catch ( ParseException ex )
+        {
+          ex.printStackTrace();
+        }
+      if ( !getText().equals( lastText ) )
+      {
+        lastText = getText();
+        update();
+      }
+    }
 
     private void showWarning( String message )
     {
       JOptionPane.showMessageDialog( this, message, "Invalid Value", JOptionPane.ERROR_MESSAGE );
     }
+
+    @Override
+    public void keyPressed( KeyEvent e )
+    {
+      int key = e.getKeyCode();
+      if ( key == KeyEvent.VK_ENTER ) 
+      {
+        endEdit();
+      }
+    }
+
+    @Override
+    public void keyReleased( KeyEvent e ){}
+
+    @Override
+    public void keyTyped( KeyEvent e ){}
+    
   }
 
   /**
@@ -2753,6 +3022,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     Integer valI = Hex.get( basicValues, 0 );
     frequency.setValue( valI == null ? "35" : getFrequency( valI ) );
     dutyCycle.setValue( valI == null ? "30" : getDutyCycle( valI ) );
+    if ( valI == null )
+    {
+      valI = Hex.get( basicValues, 0 );
+      frequency.setValue( getFrequency( valI ) );
+      dutyCycle.setValue( getDutyCycle( valI ) );
+    }
     Short valS = basicValues[ 2 ];
 
     devBytes.setSelectedIndex( valS == null ? 0 : valS >> 4 );
@@ -2981,6 +3256,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     else if ( burstUnit > 0 )
     {
       time = ( time * 1000 + burstUnit / 2 ) / burstUnit;
+      if ( time == 0 ) time = 1L;
       time = ( time + 0xFFFF ) % 0x10000;
       int tHigh = ( ( int )( long )time / 256 + 1 ) % 256;
       int tLow = ( ( int )( long )time + 1 ) % 256;
@@ -3712,16 +3988,35 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
           default:
             message = "Unknown error";
         }
-        JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
         errorNumber = -1;
       }
     } );
   }
   
-  private void setGetData()
+  private void setAssemblerButtons( boolean retitle )
   {
-    getData.setText( assemblerModel.testBuildMode( processor ) ? "Build" : "Get Data" );
+    boolean asm = asmButton.isSelected();
+    assemble.setEnabled( asm );
+    disassemble.setEnabled( asm );
+    insert.setEnabled( asm );
+    delete.setEnabled( asm );
+    build.setEnabled( asm );
+    getData.setEnabled( asm && !assemblerModel.testBuildMode( processor ) );
+    cut.setEnabled( asm );
+    paste.setEnabled( asm && cutItems.size() > 0 );
+    if ( retitle )
+    {
+      String title = asm ? "Assembler listing (editable)" : "Disassembler listing (not editable)";
+      asmBorder.setTitle( title );
+      repaint();
+    }
   }
+  
+//  private void setGetData()
+//  {
+//    getData.setText( assemblerModel.testBuildMode( processor ) ? "Build" : "Get Data" );
+//  }
 
   private int burstUnit = 0;
 

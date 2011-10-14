@@ -24,9 +24,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -134,6 +136,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The upgrade extension. */
   private static String upgradeExtension = ".rmdu";
+  
+  private List< AssemblerItem > clipBoardItems = new ArrayList< AssemblerItem >();
 
   /** The Constant ACTION_EXIT. */
   public final static int ACTION_EXIT = 1;
@@ -1501,6 +1505,11 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   public void propertyChange( PropertyChangeEvent evt )
   {
     refresh();
+  }
+
+  public List< AssemblerItem > getClipBoardItems()
+  {
+    return clipBoardItems;
   }
 
   /** The look and feel items. */

@@ -300,8 +300,13 @@ public class AssemblerItem
     }
     int fStart0 = formatStarts[ argIndex + ( littleEndian ? 1 : 0 ) ][ 0 ];
     int fStart1 = formatStarts[ argIndex + ( littleEndian ? 1 : 0 ) ][ 1 ];
+    int preLength = 1;
     boolean preSymbol = fStart0 > 0 && ( format.substring( fStart0 - 1, fStart0 ).equals( "$" )
         || format.substring( fStart0 - 1, fStart0 ).equals( "R" ) );
+    if ( fStart0 > 1 && format.substring( fStart0 - 2, fStart0 ).equals( "RR" ) )
+    {
+      preLength = 2;
+    }
     if ( word )
     {
       int fStart3 = formatStarts[ argIndex + ( littleEndian ? 0 : 1 ) ][ 1 ];
@@ -310,7 +315,7 @@ public class AssemblerItem
     format = replacePart( format, fStart1 + 1, fStart1 + ( preSymbol || word ? 4 : 5 ), "s" );
     if ( preSymbol )
     {
-      format = replacePart( format, fStart0 - 1, fStart0, "" ); // remove $ or R
+      format = replacePart( format, fStart0 - preLength, fStart0, "" ); // remove $, R or RR
     }
     return format;
   }
@@ -322,12 +327,26 @@ public class AssemblerItem
     int fStart1 = formatStarts[ argIndex ][ 1 ];
     boolean preR = fStart0 > 0 && format.substring( fStart0 - 1, fStart0 ).equals( "R" );
     boolean preW = fStart0 > 0 && format.substring( fStart0 - 1, fStart0 ).equals( "W" );
+    boolean preRR = fStart0 > 1 && format.substring( fStart0 - 2, fStart0 ).equals( "RR" );
+    boolean preWW = fStart0 > 1 && format.substring( fStart0 - 2, fStart0 ).equals( "WW" );
     int arg = ( Integer )args[ argIndex ];
-    if ( preR && toW && ( arg & 0xF0 ) == 0xC0 )
+    if ( preRR && toW && ( arg & 0xF0 ) == 0xC0 )
+    {
+      format = replacePart( format, fStart0 - 2, fStart0, "WW" );
+      format = replacePart( format, fStart1 + 1, fStart1 + 4, "X" );
+      args[ argIndex ] = arg & 0x0F;
+    }
+    else if ( preR && toW && ( arg & 0xF0 ) == 0xC0 )
     {
       format = replacePart( format, fStart0 - 1, fStart0, "W" );
       format = replacePart( format, fStart1 + 1, fStart1 + 4, "X" );
       args[ argIndex ] = arg & 0x0F;
+    }
+    else if ( preWW && !toW )
+    {
+      format = replacePart( format, fStart0 - 2, fStart0, "RR" );
+      format = replacePart( format, fStart1 + 1, fStart1 + 2, "02X" );
+      args[ argIndex ] = arg | 0xC0;
     }
     else if ( preW && !toW )
     {
@@ -476,6 +495,8 @@ public class AssemblerItem
         return "Assembler error";
       case 5:
         return "Bad value";
+      case 6:
+        return "ERRORS ARE PRESENT";
       default:
         return "Unknown error";
     }

@@ -66,6 +66,11 @@ Changes for v2.02
 -- Alpha 12a
 - Fix two bugs preventing some protocols from loading or disassembling (Graham)
 - Enable an assembler line to be commented out by putting a semicolon at start of label field (Graham)
+-- Alpha 12b
+- Minor corrections to assembler/disassembler syntax for S3C80 and HCS08 (Graham)
+- Create separate displays for disassembly and assembly, switchable with radio buttons (Graham)
+- Add additional editing buttons for assembler (Graham)
+- Preserve the assembler copy/cut clipboard during changes of protocol and/or remote (Graham)
 
 Changes for v2.01
 -- Alpha --

@@ -120,6 +120,28 @@ public class S3C80Processor
         if ( mode.modifier != 8 && ( val < 0 || val > mode.argLimits[ i ] ) ) return false;
       }
     }
+    String simpleOutline = null;
+    switch ( mode.modifier )
+    {
+      case 2:
+      case 8:
+        simpleOutline = args.outline.replace( "WW", "W" );
+        break;
+      case 5:
+        // Only allow replacement in the first argument
+        simpleOutline = args.outline + ",";
+        int index = simpleOutline.indexOf( "," );
+        String start = simpleOutline.substring( 0, index );
+        String end = simpleOutline.substring( index, simpleOutline.length() - 1 );
+        simpleOutline = start.replace( "RR", "R" ) + end;
+        break;
+      case 6:
+        simpleOutline = args.outline.replace( "RR", "R" );
+        break;
+      default:
+        simpleOutline = args.outline;  
+    }
+    if ( !mode.outline.equals( simpleOutline ) ) return false;
     switch ( mode.modifier )
     {
       case 2:
@@ -413,8 +435,16 @@ public class S3C80Processor
   public List< String > getHexPrefixes()
   {
     List< String > list = super.getHexPrefixes();
-    list.addAll( Arrays.asList( "R", "W" ) );
+    list.addAll( Arrays.asList( "R", "RR", "W", "WW" ) );
     return list;
+  }
+  
+  @Override
+  public String simplifyOutline( String outline )
+  {
+    outline = outline.replace( "RR%", "R%" );
+    outline = outline.replace( "WW%", "W%" );
+    return outline;
   }
 
 }

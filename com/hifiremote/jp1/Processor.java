@@ -330,6 +330,7 @@ public abstract class Processor
     for ( int i = 0; i < modeArray.length; i++ )
     {
       AddressMode mode = new AddressMode( modeArray[i] );
+      mode.outline = simplifyOutline( mode.outline );
       addressModes.put( modeArray[i][0], mode );
       if ( modesByOutline.containsKey( mode.outline ) )
       {
@@ -578,8 +579,9 @@ public abstract class Processor
   public List< String > getAddressModes( OpArg args  )
   {
     List< String > modes = new ArrayList< String >();
-    if ( modesByOutline.get( args.outline ) == null ) return modes;
-    for ( String mode : modesByOutline.get( args.outline ) ) modes.add( mode );
+    String simpleOutline = simplifyOutline( args.outline );
+    if ( modesByOutline.get( simpleOutline ) == null ) return modes;
+    for ( String mode : modesByOutline.get( simpleOutline ) ) modes.add( mode );
     Iterator< String > it = modes.iterator();
     while ( it.hasNext() )
     {
@@ -628,7 +630,14 @@ public abstract class Processor
   
   public List< String > getHexPrefixes()
   {
+    // This code handles 6805, 740 and HCS08 processors.  S3C80Processor class has an override.
     return new ArrayList< String >();
+  }
+  
+  public String simplifyOutline( String outline )
+  {
+    // This code handles 6805, 740 and HCS08 processors.  S3C80Processor class has an override.
+    return outline;
   }
   
   public String getConditionCode( int n )

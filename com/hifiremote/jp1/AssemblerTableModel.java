@@ -37,12 +37,13 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   
   private static final String[] colPrototypeNames =
   {
-      "0000", "00 00 00 00", "XMITIR_", "AAAAA", "DCBUF+1, DCBUF+2_", "Carrier OFF: 99.999 uSec"
+      "0000", "00 00 00 00_", "XMITIR_", "AAAAA", "DCBUF+1, DCBUF+2_", "Carrier OFF: 99.999 uSec"
   };
   
   public AssemblerTableModel()
   {
     setData( itemList );
+    selectAllEditor.setClickCountToStart( 1 );
   }
 
   @Override
@@ -72,7 +73,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    return ( col > 0 );
+    return ( col > 1 && dialog.asmButton.isSelected() );
   }
   
   @Override
@@ -223,9 +224,15 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     
     // Main assembly loop handles all items not involving relative addresses
     int length = 0;
+    AssemblerItem orgItem = null;
     for ( AssemblerItem item : itemList )
     {
-      if ( item.isCommentedOut() ) continue;
+      if ( item.isCommentedOut() )
+      {
+        item.setAddress( 0 );
+        item.setHex( new Hex() );
+        continue;
+      }
       String op = item.getOperation();
       if ( op.isEmpty() )
       {
@@ -234,6 +241,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       else if ( Arrays.asList( "DB", "DW", "ORG" ).contains( op ) )
       {
         item.setErrorCode( 0 );
+        if ( op.equals( "ORG" ) && orgItem == null ) orgItem = item;
         OpArg args = OpArg.getArgs( item.getArgumentText(), null, asmLabels );
         AssemblerOpCode opCode = new AssemblerOpCode();
         opCode.setName( op );
@@ -321,12 +329,17 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         pdCount -= pfCount;
       }
       data = hexOut.getData();
+      if ( orgItem != null ) orgItem.setComments( "Byte count = " + hexOut.length() );
       midFrameIndex = seekBurstMidFrame( processor );
       forcedRptCount = seekForcedRepeat( processor );
       return hexOut;
     }
     else
     { 
+      if ( orgItem != null )
+      {
+        orgItem.setErrorCode( 6 );
+      }
       pdCount = 0;
       return null;
     }
@@ -337,7 +350,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     itemList.clear();
     this.hex = ( hexD == null ) ? new Hex( 0 ) : new Hex( hexD );
     List< Integer > labelAddresses = new ArrayList< Integer >();
-    Arrays.fill( dialog.getBasicValues(), null );//( short )0 );
+    Arrays.fill( dialog.getBasicValues(), null );
     Arrays.fill( dialog.getPfValues(), null );
     Arrays.fill( dialog.getPdValues(), null );
     pfCount = 0;
@@ -358,7 +371,6 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
 
     if ( hex != null && hex.length() > 0 )
     {
-           
       if ( processor instanceof S3C80Processor 
           && ( ( S3C80Processor )processor ).testCode( hex ) == S3C80Processor.CodeType.NEW )
       {
@@ -367,9 +379,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         dialog.setProcessor( processor, addr );
       }
       
-      
-      // Add ORG statement
-      insertORG( 0, addr, processor );
+//      // Add ORG statement
       dbOut( 0, processor.getStartOffset(), addr, 0, processor );
       Hex pHex = hex.subHex( processor.getStartOffset() );
       short[] data = pHex.getData();
@@ -450,8 +460,13 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
         item.setArgumentText( String.format( format, address ) );
         itemList.add( n++, item );
       }
+      
       // Insert EQU statements for any used zero-page, register or absolute address labels
       codeIndex += insertEQU( 0, processor, state ) + n;
+      
+      // Insert ORG statement
+      insertORG( 0, processor.getRAMAddress(), processor );
+      itemList.get( 0 ).setComments( "Byte count = " + hex.length() );
     }
     itemList.add( new AssemblerItem() );  // Adds blank line at end
     midFrameIndex = seekBurstMidFrame( processor );

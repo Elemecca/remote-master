@@ -94,7 +94,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Alpha 12a";
+  public final static String version = "v2.02 Alpha 12b";
 
   /** The dir. */
   private File dir = null;
@@ -262,6 +262,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   }
 
   private TextFileViewer rdfViewer = null;
+  
+  private List< AssemblerItem > clipBoardItems = new ArrayList< AssemblerItem >();
 
   public class Preview extends JPanel
   {
@@ -2942,6 +2944,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       System.exit( 0 );
     }
     System.err.flush();
+  }
+
+  public List< AssemblerItem > getClipBoardItems()
+  {
+    return clipBoardItems;
   }
 
   /**
