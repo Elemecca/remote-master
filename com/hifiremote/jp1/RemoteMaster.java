@@ -164,6 +164,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   protected JCheckBoxMenuItem highlightItem = null;
 
+  private JCheckBoxMenuItem enablePreserveSelection = null;
+
   // Advanced menu items
   private JMenuItem cleanUpperMemoryItem = null;
 
@@ -262,7 +264,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   }
 
   private TextFileViewer rdfViewer = null;
-  
+
   private List< AssemblerItem > clipBoardItems = new ArrayList< AssemblerItem >();
 
   public class Preview extends JPanel
@@ -1424,6 +1426,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     highlightItem.addActionListener( this );
     menu.add( highlightItem );
 
+    enablePreserveSelection = new JCheckBoxMenuItem( "Allow Preserve Control" );
+    enablePreserveSelection.setMnemonic( KeyEvent.VK_A );
+    enablePreserveSelection.setSelected( Boolean.parseBoolean( properties.getProperty( "enablePreserveSelection",
+        "false" ) ) );
+    enablePreserveSelection.addActionListener( this );
+    enablePreserveSelection
+        .setToolTipText( "<html>Allow control of which function data is preserved when changing the protocol used in a device upgrade.<br>Do not use this unless you know what you are doing and why.</html>" );
+    menu.add( enablePreserveSelection );
+
     ActionListener al = new ActionListener()
     {
       public void actionPerformed( ActionEvent e )
@@ -2194,6 +2205,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         createToolbar();
         mainPanel.add( toolBar, BorderLayout.PAGE_START );
         mainPanel.validate();
+      }
+      else if ( source == enablePreserveSelection )
+      {
+        properties.setProperty( "enablePreserveSelection", Boolean.toString( enablePreserveSelection.isSelected() ) );
       }
       else if ( source == cleanUpperMemoryItem )
       {

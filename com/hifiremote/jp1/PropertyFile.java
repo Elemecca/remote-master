@@ -1,30 +1,36 @@
 package com.hifiremote.jp1;
 
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class PropertyFile.
  */
-public class PropertyFile
-  extends Properties
+public class PropertyFile extends Properties
 {
-  
+
   /**
    * Instantiates a new property file.
    * 
-   * @param file the file
-   * 
-   * @throws IOException Signals that an I/O exception has occurred.
+   * @param file
+   *          the file
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
    */
-  public PropertyFile( File file )
-    throws IOException
+  public PropertyFile( File file ) throws IOException
   {
     this.file = file;
-    if ( file.canRead())
+    if ( file.canRead() )
     {
       FileInputStream in = new FileInputStream( file );
       load( in );
@@ -37,15 +43,17 @@ public class PropertyFile
   /**
    * Update property names.
    * 
-   * @param oldBase the old base
-   * @param newBase the new base
+   * @param oldBase
+   *          the old base
+   * @param newBase
+   *          the new base
    */
   private void updatePropertyNames( String oldBase, String newBase )
   {
     int i = 0;
     String value;
     String propertyName;
-    if ( oldBase.endsWith( "." ))
+    if ( oldBase.endsWith( "." ) )
     {
       do
       {
@@ -57,7 +65,8 @@ public class PropertyFile
           setProperty( newBase + i, value );
         }
         ++i;
-      } while ( value != null );
+      }
+      while ( value != null );
     }
     else
     {
@@ -73,32 +82,41 @@ public class PropertyFile
   /**
    * Save.
    * 
-   * @throws IOException Signals that an I/O exception has occurred.
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
    */
-  public void save()
-    throws IOException
+  public void save() throws IOException
   {
     FileOutputStream out = new FileOutputStream( file );
     store( out, null );
     out.close();
   }
 
+  public String setProperty( String name, String value )
+  {
+    String oldValue = ( String )super.setProperty( name, value );
+    propertyChangeSupport.firePropertyChange( name, oldValue, value );
+    return oldValue;
+  }
+
   /**
    * Sets the property.
    * 
-   * @param name the name
-   * @param file the file
+   * @param name
+   *          the name
+   * @param file
+   *          the file
    */
   public void setProperty( String name, File file )
   {
-    setProperty( name, file.getAbsolutePath());
+    setProperty( name, file.getAbsolutePath() );
   }
 
   /**
    * Gets the file property.
    * 
-   * @param name the name
-   * 
+   * @param name
+   *          the name
    * @return the file property
    */
   public File getFileProperty( String name )
@@ -112,9 +130,10 @@ public class PropertyFile
   /**
    * Gets the file property.
    * 
-   * @param name the name
-   * @param defaultFile the default file
-   * 
+   * @param name
+   *          the name
+   * @param defaultFile
+   *          the default file
    * @return the file property
    */
   public File getFileProperty( String name, File defaultFile )
@@ -131,9 +150,12 @@ public class PropertyFile
   /**
    * Populate file menu.
    * 
-   * @param menu the menu
-   * @param prefix the prefix
-   * @param l the l
+   * @param menu
+   *          the menu
+   * @param prefix
+   *          the prefix
+   * @param l
+   *          the l
    */
   public void populateFileMenu( JMenu menu, String prefix, ActionListener l )
   {
@@ -141,20 +163,21 @@ public class PropertyFile
     int i = 0;
     do
     {
-      String name = prefix + i++;
+      String name = prefix + i++ ;
       f = getFileProperty( name );
       if ( f != null )
       {
         if ( f.canRead() )
         {
-          JMenuItem item = new JMenuItem( f.getAbsolutePath());
+          JMenuItem item = new JMenuItem( f.getAbsolutePath() );
           menu.add( item );
           item.addActionListener( l );
         }
         else
           remove( name );
       }
-    } while ( f != null );
+    }
+    while ( f != null );
     menu.setEnabled( menu.getItemCount() > 0 );
   }
 
@@ -163,8 +186,23 @@ public class PropertyFile
    * 
    * @return the file
    */
-  public File getFile(){ return file; }
+  public File getFile()
+  {
+    return file;
+  }
 
   /** The file. */
   private File file = null;
+
+  private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
+
+  public void addPropertyChangeListener( String propertyName, PropertyChangeListener listener )
+  {
+    propertyChangeSupport.addPropertyChangeListener( propertyName, listener );
+  }
+
+  public void removePropertyChangeListener( String propertyName, PropertyChangeListener listener )
+  {
+    propertyChangeSupport.removePropertyChangeListener( propertyName, listener );
+  }
 }

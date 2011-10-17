@@ -69,9 +69,8 @@
             <zipfileset src="${src}/jp12serial018.zip" includes="**/*.dll"/>
 			<zipfileset src="${src}/jp12serial018.zip" includes="**/*.so,**/*.jnilib" filemode="755"/>
             <zipfileset src="${src}/jp1usb_dll_031.zip" includes="jp1usb.dll" prefix="Windows"/>
-			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/*.so" filemode="755"/>
-			<zipfileset src="${src}/DecodeIR_243.zip" includes="Mac/**/*.jnilib" filemode="755" prefix="" />
-			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/*.dll,DecodeIR.html,Docs/*.txt"/>
+			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/libDecodeIR.so,**/libDecodeIR.jnilib" filemode="755"/>
+			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/DecodeIR.dll,DecodeIR.html,Docs/*.txt"/>
             <zipfileset dir="${src}" includes="*.sh" filemode="755" />
           	<zipfileset dir="${src}" includes="tutorial.htm" />
             <zipfileset dir="tutorial_files" includes="**/*" prefix="tutorial_files" />

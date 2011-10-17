@@ -84,6 +84,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The exit item. */
   private JMenuItem exitItem = null;
 
+  private JCheckBoxMenuItem enablePreserveSelection = null;
+
   private JMenuItem editManualItem = null;
 
   private JMenuItem newManualItem = null;
@@ -136,7 +138,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The upgrade extension. */
   private static String upgradeExtension = ".rmdu";
-  
+
   private List< AssemblerItem > clipBoardItems = new ArrayList< AssemblerItem >();
 
   /** The Constant ACTION_EXIT. */
@@ -174,6 +176,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           }
           preferences.setLastRemoteName( getRemote().getName() );
           preferences.setLastRemoteSignature( getRemote().getSignature() );
+          properties.removePropertyChangeListener( "enablePreserveSelection", me );
           savePreferences();
           me = null;
           System.exit( 0 );
@@ -559,6 +562,15 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
     submenu.add( menuItem );
 
+    enablePreserveSelection = new JCheckBoxMenuItem( "Allow Preserve Control" );
+    enablePreserveSelection.setMnemonic( KeyEvent.VK_A );
+    enablePreserveSelection.setSelected( Boolean.parseBoolean( properties.getProperty( "enablePreserveSelection",
+        "false" ) ) );
+    enablePreserveSelection.addActionListener( this );
+    enablePreserveSelection
+        .setToolTipText( "<html>Allow control of which function data is preserved when changing the protocol used in a device upgrade.<br>Do not use this unless you know what you are doing and why.</html>" );
+    menu.add( enablePreserveSelection );
+
     menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
@@ -898,6 +910,10 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
             deviceUpgrade.setSetupCode( reader.getSetupCode() );
           }
         }
+      }
+      else if ( source == enablePreserveSelection )
+      {
+        properties.setProperty( "enablePreserveSelection", Boolean.toString( enablePreserveSelection.isSelected() ) );
       }
       else if ( source == writeBinaryItem )
       {
@@ -1502,7 +1518,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
    */
-  public void propertyChange( PropertyChangeEvent evt )
+  public void propertyChange( PropertyChangeEvent event )
   {
     refresh();
   }

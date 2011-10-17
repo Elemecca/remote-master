@@ -35,7 +35,6 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class SetupPanel.
  */
@@ -98,6 +97,27 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
     row += 2;
 
+    preserveLabel = new JLabel( "Preserve:", SwingConstants.RIGHT );
+    String[] choices =
+    {
+        "OBC and function parameters", "EFC and function hex"
+    };
+
+    preserveBox = new JComboBox( choices );
+    preserveLabel.setLabelFor( preserveBox );
+    preserveRow = row;
+    preserveBox.setToolTipText( "Select what to preserve when changing protocols" );
+    preserveBox.setSelectedIndex( 0 );
+
+    preserveBox.addActionListener( this );
+    if ( Boolean.parseBoolean( JP1Frame.getProperties().getProperty( "enablePreserveSelection", "false" ) ) )
+    {
+      add( preserveLabel, "2, " + preserveRow );
+      add( preserveBox, "4, " + preserveRow );
+    }
+
+    row += 2;
+
     label = new JLabel( "Protocol:", SwingConstants.RIGHT );
     add( label, "2, " + row );
 
@@ -118,20 +138,6 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     protocolID.setEditable( false );
     protocolID.setToolTipText( "This is the protocol ID that corresponds to the selected protocol." );
     add( protocolID, "4, " + row );
-
-    row += 2;
-
-    String[] choices =
-    {
-        "Preserve OBC", "Preserve EFC"
-    };
-
-    preserveBox = new JComboBox( choices );
-    preserveBox.setToolTipText( "Select the function parameters to preserve when changing protocols" );
-    add( preserveBox, "4, " + row );
-    preserveBox.setSelectedIndex( 0 );
-
-    preserveBox.addActionListener( this );
 
     row += 2;
 
@@ -172,6 +178,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Protocol Notes" ),
         scrollPane.getBorder() ) );
     add( scrollPane, "1, " + row + ", 7, " + row );
+
+    JP1Frame.getProperties().addPropertyChangeListener( "enablePreserveSelection", this );
   } // SetupPanel
 
   /*
@@ -490,9 +498,24 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
    * 
    * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
    */
-  public void propertyChange( PropertyChangeEvent e )
+  public void propertyChange( PropertyChangeEvent event )
   {
-    if ( !updateInProgress )
+    if ( event.getPropertyName().equals( "enablePreserveSelection" ) )
+    {
+      boolean oldValue = Boolean.parseBoolean( ( String )event.getOldValue() );
+      boolean newValue = Boolean.parseBoolean( ( String )event.getNewValue() );
+      if ( oldValue && !newValue )
+      {
+        remove( preserveLabel );
+        remove( preserveBox );
+      }
+      else
+      {
+        add( preserveLabel, "2, " + preserveRow );
+        add( preserveBox, "4, " + preserveRow );
+      }
+    }
+    else if ( !updateInProgress )
     {
       updateSetupCode();
     }
@@ -518,7 +541,9 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   /** The protocol id. */
   private JTextField protocolID = null;
 
+  private JLabel preserveLabel = null;
   private JComboBox preserveBox = null;
+  private int preserveRow = 0;
 
   /** The notes. */
   private JTextArea notes = null;
