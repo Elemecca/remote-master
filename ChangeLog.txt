@@ -72,6 +72,7 @@ Changes for v2.02
 - Add additional editing buttons for assembler (Graham)
 - Preserve the assembler copy/cut clipboard during changes of protocol and/or remote (Graham)
 - Add "Allow Preserve Control" to Options menu, that shows/hide the drop-down that controls whether OBC or EFC/Hex are preserved when changing protocols (Greg)
+- Updates to the About panels to give Graham more credit for the work he has done (Greg)
 
 Changes for v2.01
 -- Alpha --
