@@ -4,6 +4,8 @@ import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstraints;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,18 +16,23 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -41,6 +48,67 @@ import javax.swing.text.JTextComponent;
 public class SetupPanel extends KMPanel implements ActionListener, ItemListener, PropertyChangeListener,
     DocumentListener, FocusListener
 {
+  public static class AltPIDStatus
+  {
+    public boolean visible = true;
+    public boolean required = false;
+    public boolean editable = true;
+    public boolean hasValue = false;
+    public int value = 0;
+    public int msgIndex = 0;
+  }
+  
+  public static String getAltPIDReason( int index )
+  {
+    String reason = "";
+    if ( index == 0 )
+    {
+      return reason;
+    }
+    switch ( index & 0xFF )
+    {
+      case 1:
+        reason = "Protocol ID exceeds 01FF, not valid for this remote.  An Alternate PID "
+          + "is required.";
+        break;
+      case 2:
+        reason = "Protocol is a manual protocol.  Its PID may be changed by giving an Alternate PID.";
+        break;
+      case 3:
+        reason = "Protocol ID conflicts with a built-in protocol.  To use both this and the built-in "
+          + "protocol in device upgrades, this one needs to be given an Alternate PID.";
+        break;
+      case 4:
+        reason = "Protocol ID conflicts with existing upgrade.  To use this built-in protocol, edit "
+          + "the conflicting upgrade to give it an Alternate PID.";
+        break;
+    }
+    if ( ( index & 0x800 ) == 0x800 )
+    {
+      if ( !reason.isEmpty() ) reason += "\n";
+      reason += "Protocol has custom code.";
+    }
+    switch ( index & 0xF00 )
+    {
+      case 0x100:
+        reason += "\nProtocol already used in another device upgrade, so the Alternate PID "
+          + "has been taken from that upgrade and cannot be changed.";
+        break;
+      case 0x200:
+        reason += "\nProtocol ID already used in another device upgrade by a different protocol. "
+          + " An Alternate PID is required.";
+        break;
+      case 0x300:
+        reason += "\nProtocol ID clashes with that of an unused protocol upgrade.  To keep that upgrade "
+          + "accessible, this protocol needs an Alternate PID.";
+      case 0x400:
+        reason += "\nProtocol already used by another device upgrade without an Alternate PID, "
+          + "so an alternate cannot be given for this upgrade.";
+        break;
+    }
+    return reason;
+  }
+  
   /**
    * Instantiates a new setup panel.
    * 
@@ -72,7 +140,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
             b, bl, p, b, p, br, c, f, b
         }, // cols
         {
-            b, p, v, p, i, p, i, p, v, bt, p, bb, f, b
+            b, p, v, 0, 0, p, i, p, 0, 0, 0, v, bt, p, bb, f, p, b
         }
     // rows
     };
@@ -114,6 +182,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     {
       add( preserveLabel, "2, " + preserveRow );
       add( preserveBox, "4, " + preserveRow );
+      tl.setRow( preserveRow, p );
+      tl.setRow( preserveRow + 1, i );
     }
 
     row += 2;
@@ -136,10 +206,34 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     protocolID = new JTextField();
     label.setLabelFor( protocolID );
     protocolID.setEditable( false );
-    protocolID.setToolTipText( "This is the protocol ID that corresponds to the selected protocol." );
+    protocolID.setToolTipText( "This is the protocol ID (PID) that corresponds to the selected protocol." );
     add( protocolID, "4, " + row );
-
+    
     row += 2;
+
+    altPIDRow = row;
+    altPIDLabel = new JLabel( "Alternate PID:", SwingConstants.RIGHT );
+    add( altPIDLabel, "2, " + row );
+    altPID = new JFormattedTextField( new HexFormat( 0, 2 ) );
+    altPID.addPropertyChangeListener( "value", this );
+    altPIDLabel.setLabelFor( altPID );
+    altPID.setVisible( false );
+    altPIDLabel.setVisible( false );
+    altPID.setToolTipText( "An alternate PID to be used instead of the main PID." );
+    add( altPID, "4, " + row );
+    
+    row++;
+    
+    altPIDMessage = new JLabel( "Prototype message" );
+    altPIDMessage.setForeground( Color.RED );
+    tl.setRow( row, altPIDMessage.getPreferredSize().height );
+    add( altPIDMessage, "4, " + row );
+    
+    row++;
+    tl.setRow( row, v - altPIDMessage.getPreferredSize().height );
+    altPIDMessage.setText( "" );
+
+    row ++;
 
     add( protocolHolder, "1, " + row + ", 5, " + ( row + 2 ) );
 
@@ -178,9 +272,53 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Protocol Notes" ),
         scrollPane.getBorder() ) );
     add( scrollPane, "1, " + row + ", 7, " + row );
+    
+    row++;
+    
+    altPIDReason = new JTextPane();
+    Font font = altPIDReason.getFont();
+    Font font2 = font.deriveFont( Font.BOLD, 12 );
+    altPIDReason.setFont( font2 );
+    int height = altPIDReason.getPreferredSize().height;
+    altPIDReason.setBorder( BorderFactory.createEmptyBorder( 0, 5, -height, 5 ) );
+    altPIDReason.setVisible( false );
 
+    add( altPIDReason, "1, " + row + ", 7, " + row );
     JP1Frame.getProperties().addPropertyChangeListener( "enablePreserveSelection", this );
   } // SetupPanel
+  
+  private void showAltPID()
+  {
+    status = deviceUpgrade.testAltPID();
+    altPIDLabel.setVisible( status.visible );
+    altPID.setVisible( status.visible );
+//    altPIDMessage.setVisible( status.visible );
+    tl.setRow( altPIDRow - 1, status.visible ? 5 : 0 );
+    tl.setRow( altPIDRow, status.visible ? TableLayout.PREFERRED : 0 );
+    altPID.setEditable( status.editable );
+    if ( status.hasValue )
+    {
+      Hex hx = ( new Hex( 2 ) );
+      hx.put(  status.value, 0 );
+      altPID.setValue( hx );
+    }
+    if ( status.visible && status.required )
+    {
+      protocolID.setText( protocolID.getText() + " : ALT PID REQUIRED" );
+    }
+    altPIDReason.setBorder( BorderFactory.createEmptyBorder( 0, 5, 0, 5 ) );
+    altPIDReason.setText( getAltPIDReason( status.msgIndex ) );
+    altPIDReason.setVisible( status.msgIndex > 0 );
+    int height = altPIDReason.getPreferredSize().height;
+    // It doesn't seem to work to use tl.setRow() on the altPIDReason row, but juggling with the
+    // border size has the same effect, of making the row have zero height when reason not showing.
+    altPIDReason.setBorder( BorderFactory.createEmptyBorder( 0, 5, status.msgIndex > 0 ? 0 : -height, 5 ) );
+  }
+  
+//  protected boolean isPIDValid()
+//  {
+//    return altPIDMessage.getText().equals( "" ) && ( !status.required || ( ( Hex )altPID.getValue() ).length() > 0 );
+//  }
 
   /*
    * (non-Javadoc)
@@ -212,11 +350,15 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     updateParameters();
     protocolList.setModel( new DefaultComboBoxModel( protocols.toArray() ) );
     protocolList.setSelectedItem( p );
-    protocolID.setText( p.getID( remote ).toString() );
+    protocolID.setText( p.getID( remote, false ).toString() );
     notes.setText( deviceUpgrade.getNotes() );
     fixedData.setText( p.getFixedData( vals ).toString() );
 
     updateProtocolNotes( p.getNotes() );
+    
+    showAltPID();
+    altPID.setValue( p.getRemoteAltPID().get( remote.getSignature() ) );
+    setAltPIDMessage();
 
     updateInProgress = false;
   }
@@ -236,14 +378,14 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           parameters[ i ].removeListener( this );
           remove( parameters[ i ].getLabel() );
           remove( parameters[ i ].getComponent() );
-          tl.deleteRow( 8 );
-          tl.deleteRow( 8 );
+          tl.deleteRow( 13 );
+          tl.deleteRow( 13 );
         }
       }
       parameters = newParameters;
       if ( parameters != null )
       {
-        int row = 10;
+        int row = 13;
         for ( int i = 0; i < parameters.length; i++ )
         {
           parameters[ i ].addListener( this );
@@ -283,6 +425,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
     if ( source == protocolList )
     {
+      protocolList.hidePopup();
       Protocol newProtocol = getSelectedProtocol();
       Protocol oldProtocol = deviceUpgrade.getProtocol();
       RemoteConfiguration remoteConfig = deviceUpgrade.getRemoteConfig();
@@ -290,7 +433,11 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       {
         if ( deviceUpgrade.setProtocol( newProtocol ) )
         {
-          protocolID.setText( newProtocol.getID( deviceUpgrade.getRemote() ).toString() );
+          Remote remote = deviceUpgrade.getRemote();
+          protocolID.setText( newProtocol.getID( remote, false ).toString() );
+          altPID.setValue( newProtocol.getRemoteAltPID().get( remote.getSignature() ) );
+          showAltPID();
+          setAltPIDMessage();
           updateParameters();
           fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues() ).toString() );
           updateProtocolNotes( newProtocol.getNotes() );
@@ -508,17 +655,114 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       {
         remove( preserveLabel );
         remove( preserveBox );
+        tl.setRow( preserveRow, 0 );
+        tl.setRow( preserveRow + 1, 0 );
       }
       else
       {
         add( preserveLabel, "2, " + preserveRow );
         add( preserveBox, "4, " + preserveRow );
+        tl.setRow( preserveRow, TableLayout.PREFERRED );
+        tl.setRow( preserveRow + 1, 5 );
       }
+    }
+    else if ( event.getSource() == altPID )
+    {
+      Hex pid = ( Hex )altPID.getValue();
+      if ( pid == null ) return;
+      if ( pid.length() == 1 )
+      {
+        short val = pid.getData()[ 0 ];
+        pid = new Hex( 2 );
+        pid.getData()[ 1 ] = val;
+        altPID.setValue( pid );
+        return;
+      }
+      
+      deviceUpgrade.getProtocol().setAltPID( deviceUpgrade.getRemote(), pid );
+      setAltPIDMessage();
     }
     else if ( !updateInProgress )
     {
       updateSetupCode();
     }
+  }
+  
+  private boolean setAltPIDMessage()
+  {
+    boolean valid = true;
+    if ( status.visible )
+    {
+      Hex pid = ( Hex )altPID.getValue();
+      if ( pid == null ) pid = new Hex( 0 );
+      Remote remote = deviceUpgrade.getRemote();
+      RemoteConfiguration remoteConfig = deviceUpgrade.getRemoteConfig();
+      List< Protocol > builtIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid );
+      if ( !builtIn.isEmpty() )
+      {
+        altPIDMessage.setText( "Conflicts with built-in protocol" );
+        altPID.setForeground( Color.RED );
+        valid = false;
+      }
+      else if ( status != null && status.required && pid.length() == 0 )
+      {
+        altPIDMessage.setText( "Alternate PID cannot be null" );
+        altPID.setForeground( Color.RED );
+        valid = false;
+      }
+      else
+      {
+        if ( remoteConfig != null )
+        {
+          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+          {
+            if ( du == deviceUpgrade.getBaseUpgrade() || du.getProtocol() == deviceUpgrade.getProtocol() )
+            {
+              continue;
+            }
+            if ( du.getProtocol().getID( remote ).equals( deviceUpgrade.getProtocol().getID( remote ) ) )
+            {
+              // A different protocol with same PID is already used by a device upgrade.  Alternate
+              // required.
+              altPIDMessage.setText( "Conflicts with existing upgrade" );
+              altPID.setForeground( Color.RED );
+              valid = false;
+              break;
+            }
+          }
+        }
+      }
+      if ( valid == true )
+      {
+        altPIDMessage.setText( "" );
+        altPID.setForeground( Color.BLACK );
+        if ( deviceUpgrade.getProtocol().getCustomUpgrade( remoteConfig, false ) != null )
+        {
+          altPIDMessage.setText( "Conflicts with protocol upgrade" );
+        }
+      }
+    }
+    else if ( status.required )
+    {
+      valid = false;
+      altPIDMessage.setText( "Protocol selection not valid" );
+    }
+    DeviceEditorPanel ePanel = (DeviceEditorPanel)SwingUtilities.getAncestorOfClass( DeviceEditorPanel.class, this );
+    ePanel.tabbedPane.setEnabled( valid );
+    JFrame frame = ePanel.getOwner();
+    if ( frame instanceof DeviceUpgradeEditor )
+    {
+      DeviceUpgradeEditor editor = ( DeviceUpgradeEditor )frame;
+      editor.okButton.setEnabled( valid );
+      editor.saveAsButton.setEnabled( valid );
+    }
+    else if ( frame instanceof KeyMapMaster )
+    {
+      KeyMapMaster km = ( KeyMapMaster )frame;
+      km.saveItem.setEnabled( valid && deviceUpgrade.getFile() != null );
+      km.saveAsItem.setEnabled( valid );
+    }
+    return valid;
   }
 
   /*
@@ -540,6 +784,12 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
   /** The protocol id. */
   private JTextField protocolID = null;
+  private JFormattedTextField altPID = null;
+  private JLabel altPIDLabel = null;
+  private JLabel altPIDMessage = null;
+  private JTextPane altPIDReason = null;
+  private int altPIDRow = 0;
+  private AltPIDStatus status = null;
 
   private JLabel preserveLabel = null;
   private JComboBox preserveBox = null;

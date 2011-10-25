@@ -94,7 +94,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         DeviceUpgradeEditor.this.owner.removeWindowFocusListener( focusWindowAdapter );
       }
     } );
-    editorPanel = new DeviceEditorPanel( deviceUpgrade, remotes );
+    editorPanel = new DeviceEditorPanel( this, deviceUpgrade, remotes );
     add( editorPanel, BorderLayout.CENTER );
 
     Box buttonBox = Box.createHorizontalBox();
@@ -351,10 +351,10 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
   private JButton importButton = new JButton( "Import Raw" );
 
   /** The save as button. */
-  private JButton saveAsButton = new JButton( "Save as" );
+  protected JButton saveAsButton = new JButton( "Save as" );
 
   /** The ok button. */
-  private JButton okButton = new JButton( "OK" );
+  protected JButton okButton = new JButton( "OK" );
 
   /** The cancel button. */
   private JButton cancelButton = new JButton( "Cancel" );

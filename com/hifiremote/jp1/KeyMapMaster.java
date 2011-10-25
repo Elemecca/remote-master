@@ -70,10 +70,10 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem openItem = null;
 
   /** The save item. */
-  private JMenuItem saveItem = null;
+  protected JMenuItem saveItem = null;
 
   /** The save as item. */
-  private JMenuItem saveAsItem = null;
+  protected JMenuItem saveAsItem = null;
   // private JMenuItem importItem = null;
   /** The import from clipboard item. */
   private JMenuItem importFromClipboardItem = null;
@@ -162,6 +162,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
     preferences = new Preferences( prefs );
     homeDirectory = prefs.getFile().getParentFile();
+    
+    ProtocolManager.getProtocolManager().loadAltPIDRemoteProperties( properties );
 
     addWindowListener( new WindowAdapter()
     {
@@ -174,6 +176,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             return;
           }
+          ProtocolManager.getProtocolManager().setAltPIDRemoteProperties( properties );
           preferences.setLastRemoteName( getRemote().getName() );
           preferences.setLastRemoteSignature( getRemote().getSignature() );
           properties.removePropertyChangeListener( "enablePreserveSelection", me );
@@ -211,7 +214,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     deviceUpgrade.setRemote( r );
     deviceUpgrade.setBaseline();
 
-    editorPanel = new DeviceEditorPanel( deviceUpgrade, getRemotes() );
+    editorPanel = new DeviceEditorPanel( this, deviceUpgrade, getRemotes() );
     add( editorPanel, BorderLayout.CENTER );
     editorPanel.addPropertyChangeListener( this, "remote" );
     editorPanel.setShowRemoteSignature( preferences.getShowRemoteSignature() );
@@ -793,6 +796,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           return;
         }
+        ProtocolManager.getProtocolManager().reset();
         deviceUpgrade.reset( getCustomNames() );
       }
       else if ( source == saveItem )
@@ -972,7 +976,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
             + "</b></p>"
             + "<p>Written primarily by <i>Greg Bush</i> (and now accepting donations "
             + "at <a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>), "
-            + "with substantial additions and help from Graham&nbsp;Dixon</p>"
+            + "<br>with substantial additions and help from Graham&nbsp;Dixon</p>"
             + "<p>Other contributors include:<blockquote>"
             + "John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, "
             + "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></html>";

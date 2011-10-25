@@ -6,7 +6,9 @@ import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -431,6 +433,7 @@ public class Protocol
    */
   public void setProperties( Properties props, Remote remote )
   {
+    customCode.clear();
     for ( String key : props.stringPropertyNames() )
     {
       if ( key.startsWith( "CustomCode." ) )
@@ -1154,14 +1157,117 @@ public class Protocol
   {
     return alternatePID;
   }
-
+  
+  public Hex getAlternatePID( Remote remote, boolean allowUserPID )
+  {
+    Hex id1 = getAlternatePID();
+    Hex id2 = remoteAltPID.get( remote.getSignature() );
+    return ( !allowUserPID || id2 == null ) ? id1 : id2;
+  }
+  
+  public void saveAltPID( Remote remote )
+  {
+    if ( this instanceof ManualProtocol )
+    {
+      return;
+    }
+    Hex id = remoteAltPID.get( remote.getSignature() );
+    if ( id != null && id.length() > 0 )
+    {
+      putAlternatePID( remote, id );
+    }
+  }
+  
   /**
-   * Gets the PID, returning the alternate PID if there is one and if the remote has a different variant with the same
-   * main PID built in. To get the main PID regardless, use getID().
+   * Adds a new alternate PID for this protocol in this remote, or moves
+   * it to the end of the list if it was already present.  Returns
+   * true if it was really new, ie not already present, otherwise false.
+   */
+  public boolean putAlternatePID( Remote remote, Hex id )
+  {
+    boolean isNew = true;
+    String sig = remote.getSignature();
+    List< Hex > pids = remoteAltPIDs.get( sig );
+    if ( pids == null )
+    {
+      pids = new ArrayList< Hex >();
+      pids.add( id );
+      remoteAltPIDs.put( sig, pids );
+    }
+    else
+    {
+      // Add id, or move it to end if already present
+      isNew = !pids.contains( id );
+      if ( !isNew ) pids.remove( id );
+      pids.add( id );
+    }
+    ProtocolManager.getProtocolManager().putAltPIDRemote( id, remote, this );
+    return isNew;
+  }
+  
+//  public void removeAlternatePID( Remote remote, Hex id )
+//  {
+//    String sig = remote.getSignature();
+//    List< Hex > pids = remoteAltPIDs.get( sig );
+//    if ( pids != null )
+//    {
+//      pids.remove( id );
+//      if ( pids.isEmpty() )
+//      {
+//        remoteAltPIDs.remove( sig );
+//      }
+//    }
+//  }
+  
+  public void setAltPID( Remote remote, Hex id )
+  {
+    if ( this instanceof ManualProtocol )
+    {
+      ProtocolManager pm = ProtocolManager.getProtocolManager();
+      pm.remove( this );
+      String pidStr1 = this.id.toString();
+      String pidStr2 = id.toString();
+      if ( name.contains( pidStr1 ) )
+      {
+        name = name.replace( pidStr1, pidStr2 );
+      }
+      else
+      {
+        pidStr1 = pidStr1.replace( " ", "" );
+        pidStr2 = pidStr2.replace( " ", "" );
+        if ( name.contains( pidStr1 ) )
+        {
+          name = name.replace( pidStr1, pidStr2 );
+        }
+      }
+      this.id.put( id );
+      pm.add( this );
+      return;
+    }
+    if ( id == null || id.length() == 0 )
+    {
+      remoteAltPID.remove( remote.getSignature() );
+    }
+    else
+    {
+      remoteAltPID.put( remote.getSignature(), id );
+    }
+  }
+  
+  /**
+   * Gets the PID, returning the alternate PID (possibly user-specified) if there is one 
+   * and if the remote has a different variant with the same main PID built in. 
+   * To get the main PID regardless, use getID().
+   * To exclude user-specified alternates, use getID( remote, false ).
    */
   public Hex getID( Remote remote )
   {
-    if ( alternatePID == null )
+    return getID( remote, true);
+  }
+
+  public Hex getID( Remote remote, boolean allowUserPID )
+  {
+    if ( getAlternatePID( remote, allowUserPID ) == null )
     {
       return id;
     }
@@ -1173,11 +1279,12 @@ public class Protocol
 
     // At this point we know that this protocol variant is not built-in, and that there is
     // an alternate PID. But we should only use the alternate PID if the remote has a
-    // different variant of the main PID built in. If this is not so, use the main PID.
+    // different variant of the main PID built in, or main PID is not valid for the remote.
+    // If this is not so, use the main PID.
 
     Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, id, false );
 
-    if ( p == null )
+    if ( p == null && ( remote.usesTwoBytePID() || id.get( 0 ) < 0x200 ) )
     {
       return id;
     }
@@ -1188,7 +1295,7 @@ public class Protocol
     if ( altPIDOverrideList.isEmpty() )
     {
       // There is no override list, so use the alternate PID.
-      return alternatePID;
+      return getAlternatePID( remote, allowUserPID );
     }
 
     // There is an override list, so check if the built-in variant is included. If it is,
@@ -1209,26 +1316,19 @@ public class Protocol
         return id;
       }
     }
-    return alternatePID;
+    return getAlternatePID( remote, allowUserPID );
   }
 
-  // public String getStarredID( Remote remote )
-  // {
-  // String starredID = id.toString();
-  // if ( needsCode( remote ) )
-  // {
-  // Hex code = getCustomCode( remote.getProcessor() );
-  // if ( code != null && code.length() == 0 )
-  // {
-  // starredID += "-";
-  // }
-  // else
-  // {
-  // starredID += "*";
-  // }
-  // }
-  // return starredID;
-  // }
+  public Hashtable< String, List< Hex >> getRemoteAltPIDs()
+  {
+    return remoteAltPIDs;
+  }
+  
+
+  public Hashtable< String, Hex > getRemoteAltPID()
+  {
+    return remoteAltPID;
+  }
 
   /**
    * Gets the variant name.
@@ -1745,9 +1845,9 @@ public class Protocol
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
-  public void store( PropertyWriter out, Value[] parms ) throws IOException
+  public void store( PropertyWriter out, Value[] parms, Remote remote ) throws IOException
   {
-    out.print( "Protocol", id.toString() );
+    out.print( "Protocol", getID( remote ).toString() );
     out.print( "Protocol.name", getName() );
     if ( variantName.length() > 0 )
     {
@@ -1822,6 +1922,12 @@ public class Protocol
 
   /** The alternate pid. */
   private Hex alternatePID = null;
+  
+  /** Remote-specific alternate PIDs keyed by signature */
+  private Hashtable< String, List< Hex > > remoteAltPIDs = new Hashtable< String, List< Hex > >();
+  
+  /** Remote-specific current alternate PID keyed by signature */
+  private Hashtable< String, Hex > remoteAltPID = new Hashtable< String, Hex >();
 
   /** The variant name. */
   protected String variantName = null;

@@ -33,6 +33,7 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import com.hifiremote.jp1.SetupPanel.AltPIDStatus;
 import com.hifiremote.jp1.translate.Translate;
 import com.hifiremote.jp1.translate.Translator;
 
@@ -71,6 +72,7 @@ public class DeviceUpgrade extends Highlight
    */
   public DeviceUpgrade( DeviceUpgrade base )
   {
+    this.baseUpgrade = base;
     description = base.description;
     setupCode = base.setupCode;
     devTypeAliasName = base.devTypeAliasName;
@@ -529,6 +531,111 @@ public class DeviceUpgrade extends Highlight
   {
     return setProtocol( newProtocol, true );
   }
+  
+  public AltPIDStatus testAltPID( )
+  {
+    AltPIDStatus status = new AltPIDStatus();
+    int officialPID = protocol.getID( remote, false ).get( 0 );
+    if ( remoteConfig != null )
+    {
+      for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+      {
+        if ( du == baseUpgrade ) continue;
+        if ( du.getProtocol() == protocol )
+        {
+          // Selected protocol is already used by a device upgrade.  Must use same alternate
+          status.value = du.getProtocol().getID( remote ).get( 0 );
+          status.hasValue = true;
+          status.editable = false;
+          status.msgIndex = 0x100;
+          break;
+        }
+        else if ( du.getProtocol().getID( remote ).equals( protocol.getID( remote ) ) )
+        {
+          // A different protocol with same PID is already used by a device upgrade.  Alternate
+          // required.
+          status.required = true;
+          status.msgIndex = 0x200;
+          break;
+        }
+      }
+    }
+ 
+    ProtocolUpgrade pu = protocol.getCustomUpgrade( remoteConfig, false );
+    // If pu not null, there is an existing configuration, pu is an unused protocol upgrade present in it
+    // that has the same pid as is returned by protocol.getID(remote), which finds an alternate
+    // PID if one is specified.
+    Hex puCode = null;
+    List< Protocol > builtIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote,
+        protocol.getID( remote, false ) );
+    
+    if ( pu != null && ( puCode = pu.getCode() ) != null && puCode.length() != 0 )
+    {
+      // Translate fully, as getCode() also translates fully
+      puCode = remote.getProcessor().translate( puCode, remote );
+      translateCode( puCode );
+    }
+    
+    if ( status.msgIndex == 0 && puCode != null && !puCode.equals( getCode() ) )
+    {
+      status.msgIndex = 0x300;
+    }
+
+    if ( officialPID > 0x1FF && !remote.usesTwoBytePID() )
+    {
+      // The standard PID cannot be used for this remote so an alternate PID is required.
+      // If already present in configuration then current PID is required.
+      status.required = true;
+      status.msgIndex |= 1;
+    }
+
+    else if ( protocol instanceof ManualProtocol )
+    {
+      status.msgIndex |= 2;
+      if ( status.hasValue && status.value == officialPID )
+      {
+        status.msgIndex = 0x402;
+        status.hasValue = false;
+        status.visible = false;
+      }
+    }
+    else if ( !builtIn.isEmpty() && !builtIn.contains( protocol ) )
+    {
+      // This is a standard protocol that is not built in but whose standard PID clashes with
+      // a built-in protocol, so it will override that protocol in a device upgrade.
+      // Allow an alternate PID.
+      status.msgIndex |= 3;
+      if ( status.hasValue && status.value == officialPID )
+      {
+        status.msgIndex = 0x403;
+        status.hasValue = false;
+        status.visible = false;
+      }
+    }
+    else
+    {
+      status.visible = false;
+    }
+
+    if ( protocol.getCustomCode( remote.getProcessor() ) != null )
+    {
+      // If it has custom code. notify this
+      status.msgIndex |= 0x800;
+    }
+    
+    if ( !status.visible )
+    {
+      if ( status.required )
+      {
+        status.msgIndex = 4;
+      }
+      else if ( ( status.msgIndex & 0x800 ) == 0 )
+      {
+        status.msgIndex = 0;
+      }
+    }
+    return status;
+  }
 
   /**
    * Sets the protocol.
@@ -538,71 +645,7 @@ public class DeviceUpgrade extends Highlight
    * @return true, if successful
    */
   public boolean setProtocol( Protocol newProtocol, boolean messages )
-  {
-    if ( remote != null )
-    {
-      List< Protocol > builtIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote,
-          newProtocol.getID( remote ) );
-      if ( !builtIn.isEmpty() && !builtIn.contains( newProtocol ) )
-      {
-        String title = "Protocol conflict";
-        String message = "This remote contains a built-in protocol with the same PID "
-            + "and the chosen protocol has no available alternate PID.\n" + "Please choose a different protocol.";
-        JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
-        return false;
-      }
-    }
-    // If called from an existing configuration, test if there is a conflicting protocol upgrade
-    if ( messages && remoteConfig != null )
-    {
-      String title = "Custom protocol code";
-      Hex code = newProtocol.getCustomCode( remote.getProcessor() );
-      ProtocolUpgrade pu = newProtocol.getCustomUpgrade( remoteConfig, true );
-      if ( code != null )
-      {
-        String message = "This protocol has custom code assigned that will\n"
-            + "override the standard code for the protocol.\n" + "Do you wish to continue?";
-        if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
-        {
-          return false;
-        }
-      }
-      else if ( pu != null )
-      {
-        Hex puCode = pu.getCode();
-        if ( puCode != null && puCode.length() != 0 )
-        {
-          // Translate fully, as getCode() also translates fully
-          puCode = remote.getProcessor().translate( puCode, remote );
-          translateCode( puCode );
-        }
-
-        if ( newProtocol.matched() )
-        {
-          if ( puCode != null && !puCode.equals( getCode( newProtocol ) ) )
-          {
-            String message = "This remote contains a protocol upgrade that is consistent\n"
-                + "with the selected protocol and will override the standard\n"
-                + "code for the protocol.  Do you wish to continue?";
-            if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
-            {
-              return false;
-            }
-          }
-        }
-        else
-        {
-          String message = "This remote contains a protocol upgrade that is not consistent\n"
-              + "with the selected protocol and would cause it to malfunction.\n"
-              + "Please choose a different protocol.";
-          JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
-          return false;
-        }
-      }
-    }
-
+  { 
     Protocol oldProtocol = protocol;
     // Convert device parameters to the new protocol
     if ( protocol != null )
@@ -932,6 +975,9 @@ public class DeviceUpgrade extends Highlight
     {
       // Get all protocol variants, whether or not built in to the remote
       protocols = ProtocolManager.getProtocolManager().findByPID( pid );
+      // Add to this a list by AlternatePID
+      List< Protocol > pList = ProtocolManager.getProtocolManager().findByAlternatePID( remote, pid );
+      if ( pList != null ) protocols.addAll( pList );
     }
     Protocol tentative = null;
     Value[] tentativeVals = null;
@@ -947,7 +993,7 @@ public class DeviceUpgrade extends Highlight
       int tempLength = fixedDataLength;
       if ( pCode == null )
       {
-        // p is built in and there is no protocol upgrade to override it
+        // p is built in (or missing) and there is no protocol upgrade to override it
         tempLength = p.getFixedDataLength();
         fixedData = new short[ tempLength ];
         System.arraycopy( code, fixedDataOffset, fixedData, 0, tempLength );
@@ -1033,6 +1079,13 @@ public class DeviceUpgrade extends Highlight
       parmValues = tentativeVals;
       ProtocolUpgrade newProtocolUpgrade = null;
       boolean isBuiltIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid ).contains( p );
+      
+      if ( !isBuiltIn && !p.getID( remote, false ).equals( pid ) )
+      {
+        // PID must be in remote-specific list of alternate pids, so set as current alternate
+        p.setAltPID( remote, pid );
+      }
+      
       if ( pCode != null && ( !pCode.equals( getCode( p ) ) || isBuiltIn ) )
       {
         // Custom code always generates a protocol upgrade in the binary image, so if a protocol
@@ -1712,7 +1765,7 @@ public class DeviceUpgrade extends Highlight
       out.print( "ButtonIndex", buttonRestriction.getButtonIndex() );
     }
     // protocol.setDeviceParms( parmValues );
-    protocol.store( out, parmValues );
+    protocol.store( out, parmValues, remote );
     if ( notes != null )
     {
       out.print( "Notes", notes );
@@ -2045,6 +2098,11 @@ public class DeviceUpgrade extends Highlight
     }
 
     protocol.setProperties( props, remote );
+  
+    if ( !protocol.getID( remote, false ).equals( pid ) )
+    {
+      protocol.setAltPID( remote, pid );
+    }
 
     notes = props.getProperty( "Notes" );
 
@@ -2435,6 +2493,11 @@ public class DeviceUpgrade extends Highlight
         }
       }
       protocol = p;
+
+      if ( !p.getID( remote, false ).equals( pid ) )
+      {
+        p.setAltPID( remote, pid );
+      }
 
       Value[] importParms = new Value[ 8 ];
       for ( int i = 0; i < importParms.length && i + 2 < deviceFields.size(); i++ )
@@ -3192,6 +3255,9 @@ public class DeviceUpgrade extends Highlight
   // remoteConfig is set only when editing from RMIR, and is used to check
   // if the configuration contains a protocol upgrade that provides custom code
   private RemoteConfiguration remoteConfig = null;
+  
+  // Only set when editing, specifies the upgrade being edited.
+  private DeviceUpgrade baseUpgrade = null;
 
   public RemoteConfiguration getRemoteConfig()
   {
@@ -3532,4 +3598,10 @@ public class DeviceUpgrade extends Highlight
   {
     return preserveOBC;
   }
+
+  public DeviceUpgrade getBaseUpgrade()
+  {
+    return baseUpgrade;
+  }
+  
 }

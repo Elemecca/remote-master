@@ -5,9 +5,12 @@ import java.io.FileReader;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
@@ -322,6 +325,26 @@ public class ProtocolManager
       }
     }
     
+    Hashtable< String, List< Hex >> rp = p.getRemoteAltPIDs();
+    for ( String sig : rp.keySet() )
+    {
+      for ( Hex hex : rp.get( sig ) )
+      {
+        if ( byAltPIDRemote.get( sig ) != null && byAltPIDRemote.get( sig ).get( hex ) != null )
+        {
+          byAltPIDRemote.get( sig ).get( hex ).remove( p );
+          if ( byAltPIDRemote.get( sig ).get( hex ).size() == 0 )
+          {
+            byAltPIDRemote.get( sig ).remove( hex );
+          }
+          if ( byAltPIDRemote.get( sig ).size() == 0 )
+          {
+            byAltPIDRemote.remove( sig );
+          }
+        }
+      }
+    }
+    
     if ( extras.contains( p ) )
     {
       extras.remove( p );
@@ -436,9 +459,134 @@ public class ProtocolManager
    *          the id
    * @return the list< protocol>
    */
-  public List< Protocol > findByAlternatePID( Hex id )
+  public List< Protocol > findByAlternatePID( Remote remote, Hex id )
   {
-    return byAlternatePID.get( id );
+    List< Protocol > list = new ArrayList< Protocol >();
+    List< Protocol > l = byAlternatePID.get( id );
+    if ( l != null ) list.addAll( l );
+    if ( byAltPIDRemote.get( remote.getSignature() ) != null )
+    {
+      l = byAltPIDRemote.get( remote.getSignature() ).get( id );
+      if ( l != null ) list.addAll( l );
+    }
+    return list.size() == 0 ? null : list;
+  }
+  
+  public void putAltPIDRemote( Hex id, Remote remote, Protocol p )
+  {
+    Hashtable< Hex, List<Protocol> > table = byAltPIDRemote.get( remote.getSignature() );
+    if ( table == null )
+    {
+      table = new Hashtable< Hex, List<Protocol> >();
+      byAltPIDRemote.put( remote.getSignature(), table );
+    }
+    List< Protocol > list = table.get( id );
+    if ( list == null )
+    {
+      list = new ArrayList< Protocol >();
+      table.put( id, list );
+    }
+    if ( !list.contains( p ) )
+    {
+      list.add( p );
+    }
+  }
+  
+  public int countAltPIDRemoteEntries()
+  {
+    int n = 0;
+    for ( String sig : byAltPIDRemote.keySet() )
+    {
+      Hashtable< Hex, List<Protocol> > table = byAltPIDRemote.get( sig );
+      for ( Hex h : table.keySet() )
+      {
+        n += table.get( h ).size();
+      }
+    }
+    return n;
+  }
+  
+  public void clearAltPIDRemoteEntries()
+  {
+    for ( Hex h : byPID.keySet() )
+    {
+      for ( Protocol p : byPID.get( h ) )
+      {
+        p.getRemoteAltPIDs().clear();
+      }
+    }
+    byAltPIDRemote.clear();
+  }
+  
+  public void setAltPIDRemoteProperties( PropertyFile properties )
+  {
+    for ( String key : properties.stringPropertyNames() )
+    {
+      if ( key.startsWith( "RemoteAltPID" ) )
+      {
+        properties.remove( key );
+      }
+    }
+    int n = 1;
+    for ( String sig : byAltPIDRemote.keySet() )
+    {
+      Set< Protocol > prots = new HashSet< Protocol >();
+      for ( Hex id : byAltPIDRemote.get( sig ).keySet() )
+      {
+        for ( Protocol p : byAltPIDRemote.get( sig ).get( id ) )
+        {
+          prots.add( p );
+        }
+      }
+
+      for ( Protocol p : prots )
+      {
+        String key = "RemoteAltPID." + n++;
+        String val = sig + " [" + p.getName() + "] ";
+        for ( Hex id : p.getRemoteAltPIDs().get( sig ) )
+        {
+          val += id.toString() + " ";
+        }
+        val = val.substring( 0, val.length() - 1 );
+        properties.setProperty( key, val );
+      }
+    }
+  }
+  
+  public void loadAltPIDRemoteProperties( PropertyFile properties )
+  {
+    int n = 1;
+    String value = null;
+    while ( ( value = properties.getProperty( "RemoteAltPID." + n++ )) != null )
+    {
+      int pos = value.indexOf( " [" );
+      if ( pos < 0 ) continue;    // should not occur
+      String sig = value.substring( 0, pos ).trim();
+      value = value.substring( pos + 2 );
+      pos = value.indexOf( "] " );
+      if ( pos < 0 ) continue;    // should not occur
+      String pName = value.substring( 0, pos ).trim();
+      value = value.substring( pos + 2 );
+      List< Protocol > pList = byName.get( pName );
+      if ( pList == null ) continue;
+      Hex hex = new Hex( value );
+      List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( sig );
+      if ( remotes.size() == 0 ) continue;
+      // Assume all remotes with same signature have same processor
+      Remote remote = remotes.get( 0 );
+      Iterator< Protocol > it = pList.iterator();
+      while ( it.hasNext() )
+      {
+        if ( !it.next().hasCode( remote ) ) it.remove();
+      }
+      for ( Protocol p : pList )
+      {
+        for ( int i = 0; i < hex.length()/2; i++ )
+        {
+          p.putAlternatePID( remote, hex.subHex( 2 * i, 2 ) );
+        }
+      }
+    }
   }
 
   /**
@@ -562,7 +710,7 @@ public class ProtocolManager
     List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
     {
-      protocols = findByAlternatePID( id );
+      protocols = findByAlternatePID( remote, id );
     }
 
     if ( protocols == null )
@@ -679,7 +827,7 @@ public class ProtocolManager
     List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
     {
-      protocols = findByAlternatePID( id );
+      protocols = findByAlternatePID( remote, id );
     }
     if ( protocols == null )
     {
@@ -827,6 +975,9 @@ public class ProtocolManager
   /** The by alternate pid. */
   private Hashtable< Hex, List< Protocol >> byAlternatePID = new Hashtable< Hex, List< Protocol >>();
   
+  /** By remote-specific alt PID, remote keyed by signature */
+  private Hashtable< String, Hashtable< Hex, List< Protocol > > > byAltPIDRemote = new Hashtable< String, Hashtable< Hex, List<Protocol > > >();
+
   private boolean extra = true;
   
   private List< Protocol > extras = new ArrayList< Protocol >();

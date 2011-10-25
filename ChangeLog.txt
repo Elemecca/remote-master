@@ -66,13 +66,17 @@ Changes for v2.02
 -- Alpha 12a
 - Fix two bugs preventing some protocols from loading or disassembling (Graham)
 - Enable an assembler line to be commented out by putting a semicolon at start of label field (Graham)
--- Alpha 12b
+-- Beta
 - Minor corrections to assembler/disassembler syntax for S3C80 and HCS08 (Graham)
 - Create separate displays for disassembly and assembly, switchable with radio buttons (Graham)
 - Add additional editing buttons for assembler (Graham)
 - Preserve the assembler copy/cut clipboard during changes of protocol and/or remote (Graham)
 - Add "Allow Preserve Control" to Options menu, that shows/hide the drop-down that controls whether OBC or EFC/Hex are preserved when changing protocols (Greg)
 - Updates to the About panels to give Graham more credit for the work he has done (Greg)
+- Create facility for user to specify an Alternate PID when there would otherwise be a conflict (Graham)
+- Maintain in Properties file a history of such Alternate PIDs used in uploads, or in copying protocol from output tab (Graham)
+- Use the Alternate PID history to help recognise protocols in downloads from remote or in importing .ir files (Graham)
+- Add item to Advanced menu of RMIR to clear Alternate PID history, which in its dialog also reports the number of entries in this history (Graham)
 
 Changes for v2.01
 -- Alpha --

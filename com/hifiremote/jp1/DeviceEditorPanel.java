@@ -13,6 +13,7 @@ import java.util.Collection;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -32,6 +33,8 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
     PropertyChangeListener
 {
 
+  private JFrame owner = null;
+  
   /** The description. */
   private JTextField description = null;
 
@@ -43,7 +46,7 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
   private JComboBox deviceTypeList = null;
 
   /** The tabbed pane. */
-  private JTabbedPane tabbedPane = null;
+  protected JTabbedPane tabbedPane = null;
 
   /** The setup panel. */
   private SetupPanel setupPanel = null;
@@ -86,9 +89,10 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
    * @param remotes
    *          the remotes
    */
-  public DeviceEditorPanel( DeviceUpgrade upgrade, Collection< Remote > remotes )
+  public DeviceEditorPanel( JFrame owner, DeviceUpgrade upgrade, Collection< Remote > remotes )
   {
     super( new BorderLayout() );
+    this.owner = owner;
     propertyChangeSupport = new SwingPropertyChangeSupport( this );
 
     deviceUpgrade = upgrade;
@@ -585,6 +589,11 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
     
   }
   
+  public JFrame getOwner()
+  {
+    return owner;
+  }
+
   private Remote oldRemote = null;
   private Protocol oldProtocol = null;
 }

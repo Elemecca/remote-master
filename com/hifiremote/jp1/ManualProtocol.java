@@ -414,10 +414,10 @@ public class ManualProtocol extends Protocol
    * @see com.hifiremote.jp1.Protocol#store(com.hifiremote.jp1.PropertyWriter, com.hifiremote.jp1.Value[])
    */
   @Override
-  public void store( PropertyWriter out, Value[] vals ) throws IOException
+  public void store( PropertyWriter out, Value[] vals, Remote remote ) throws IOException
   {
     System.err.println( "ManualProtocol.store" );
-    super.store( out, vals );
+    super.store( out, vals, remote );
     store( out );
   }
 

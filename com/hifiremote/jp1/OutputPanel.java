@@ -270,6 +270,7 @@ public class OutputPanel extends KMPanel implements ActionListener
     else if ( source == copyProtocolUpgrade )
     {
       area = protocolText;
+      deviceUpgrade.getProtocol().saveAltPID( deviceUpgrade.getRemote() );
     }
     else
     {

@@ -92,6 +92,7 @@ import com.hifiremote.jp1.assembler.CommonData;
 /**
  * The Class ManualSettingsDialog.
  */
+@SuppressWarnings( "unchecked" )
 public class ManualSettingsDialog extends JDialog implements ActionListener, PropertyChangeListener, DocumentListener,
     ChangeListener, ListSelectionListener, ItemListener
 {
@@ -167,7 +168,6 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
    * @param protocol
    *          the protocol
    */
-  @SuppressWarnings( "unchecked" )
   private void createGui( Component owner, ManualProtocol protocol )
   {
     setLocationRelativeTo( owner );
@@ -600,6 +600,18 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     disassemble.addActionListener( this );
     build.addActionListener( this );
     copy.addActionListener( this );
+    insert.setToolTipText( "Inserts above selection a number of rows equal to the number selected." );
+    delete.setToolTipText( "Deletes the rows containing selected cells." );
+    copy.setToolTipText( "Copies to clipboard the rows containing selected cells." );
+    cut.setToolTipText( "Copies to clipboard the rows containing selected cells, then deletes these rows." );
+    paste.setToolTipText( "Inserts rows from clipboard above current selection." );
+    load.setToolTipText( "Opens dialog to select an assembler listing text file for loading." );
+    save.setToolTipText( "Opens dialog to save assembler listing as text file." );
+    build.setToolTipText( "Builds complete assembler listing for a protocol from data in Protocol Data tab." );
+    getData.setToolTipText( "Updates the data section of an assembler listing from Protocol Data tab." );
+    assemble.setToolTipText( "Assembles binary code from assembler listing and updates protocol code with result." );
+    disassemble.setToolTipText( "Replaces assembler listing with a disassembly of current protocol code." );
+    selectAll.setToolTipText( "Selects all the rows of the currently selected listing." );
     optionPanel.setMinimumSize( new Dimension( 10, 10 ) );
     lowerRightPanel.add( optionPanel );
     setAssemblerButtons( true );
@@ -1683,7 +1695,8 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     public Object getValueAt( int row, int col )
     {
       Hex hex = protocol.getCode( procs[ row ] );
-      Hex dispHex = ( displayProtocol == null ) ? null : displayProtocol.getCode( procs[ row ] );
+      // We want dispHex to be the official code, not custom code when that is present.
+      Hex dispHex = ( displayProtocol == null ) ? null : displayProtocol.code.get( procs[ row ].getEquivalentName() );
       if ( dispHex == null )
       {
         dispHex = new Hex();
@@ -1707,7 +1720,6 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
      * 
      * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
      */
-    @SuppressWarnings( "unchecked" )
     public void setValueAt( Object value, int row, int col )
     {
       switch ( col )
@@ -2779,7 +2791,6 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     {
       if ( procs[ i ].getEquivalentName().equals( proc.getEquivalentName() ) )
       {
-        int n = codeTable.getModel().getRowCount();
         codeTable.getSelectionModel().setSelectionInterval( i, i );
         break;
       }
@@ -2833,7 +2844,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
         lastText = obj == null ? "" : obj.toString();
         setText( lastText );
         commitEdit();
-        if ( al == pfpdListener )
+        if ( al != null && al == pfpdListener )
           update();
       }
       catch ( ParseException e1 )

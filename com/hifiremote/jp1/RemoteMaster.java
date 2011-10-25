@@ -94,7 +94,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Alpha 12b";
+  public final static String version = "v2.02 Beta";
 
   /** The dir. */
   private File dir = null;
@@ -168,6 +168,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   // Advanced menu items
   private JMenuItem cleanUpperMemoryItem = null;
+  
+  private JMenuItem clearAltPIDHistory = null;
 
   private JMenuItem initializeTo00Item = null;
 
@@ -688,7 +690,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             return;
           }
-
+          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+          {
+            du.getProtocol().saveAltPID( remote );
+          }
+          for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
+          {
+            if ( pu.getProtocol() != null )
+            {
+              pu.getProtocol().saveAltPID( remote );
+            }
+          }
           System.err.println( "Starting upload" );
           setInterfaceState( "UPLOADING..." );
           ( new UploadTask( remoteConfig.getData(), true ) ).execute();
@@ -870,6 +882,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     setDefaultCloseOperation( DISPOSE_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
+    
+    ProtocolManager.getProtocolManager().loadAltPIDRemoteProperties( properties );
 
     final Preview preview = new Preview();
     // If a non-empty border is not set then the preview panel does not appear. This sets
@@ -920,8 +934,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             JMenuItem item = recentFiles.getItem( i );
             properties.setProperty( "RecentIRs." + i, item.getActionCommand() );
-            properties.remove( "Primacy" );
           }
+          properties.remove( "Primacy" );
+          ProtocolManager.getProtocolManager().setAltPIDRemoteProperties( properties );
           int state = getExtendedState();
           if ( state != Frame.NORMAL )
           {
@@ -1482,6 +1497,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     cleanUpperMemoryItem.setEnabled( false );
     cleanUpperMemoryItem.addActionListener( this );
     menu.add( cleanUpperMemoryItem );
+    
+    clearAltPIDHistory = new JMenuItem( "Clear Alt PID History...", KeyEvent.VK_H );
+    clearAltPIDHistory.addActionListener( this );
+    menu.add( clearAltPIDHistory );
 
     menu.addSeparator();
 
@@ -2301,6 +2320,26 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         remoteConfig.updateImage();
         update();
       }
+      else if ( source == clearAltPIDHistory )
+      {
+        ProtocolManager pm = ProtocolManager.getProtocolManager();
+        int count = pm.countAltPIDRemoteEntries();
+        String title = "Clear Alt PID History";
+        String message = "The Alt PID History is used only to enable a protocol to be recognised in a download\n"
+                       + "from a remote when it has been uploaded with an Alternate PID instead of the standard\n"
+                       + "one for that protocol.  There is seldom any need to clear this history unless its size\n"
+                       + "is becoming excessive.\n\n"
+                       + "It currently has " + count;
+        message += count == 1 ? " entry." : " entries.";
+        message += "\n\nAre you sure you want to clear this history?";
+        int ans = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE );
+        if ( ans == JOptionPane.YES_OPTION )
+        {
+          pm.clearAltPIDRemoteEntries();
+          message = "Cleared!";
+          JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
+        }
+      }
       else if ( source == initializeTo00Item )
       {
         short[] data = getInitializationData( 0 );
@@ -2423,7 +2462,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         sb.append( "</b>" );
         sb.append( "<p>Written primarily by <i>Greg Bush</i> (now accepting donations at " );
         sb.append( "<a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>)," );
-        sb.append( " with substantial additions and help from Graham&nbsp;Dixon</p>" );
+        sb.append( "<br>with substantial additions and help from Graham&nbsp;Dixon</p>" );
         sb.append( "<p>Additional help was provided by:<blockquote>" );
         sb.append( "John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, " );
         sb.append( "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></p>" );
