@@ -1158,13 +1158,6 @@ public class Protocol
     return alternatePID;
   }
   
-  public Hex getAlternatePID( Remote remote, boolean allowUserPID )
-  {
-    Hex id1 = getAlternatePID();
-    Hex id2 = remoteAltPID.get( remote.getSignature() );
-    return ( !allowUserPID || id2 == null ) ? id1 : id2;
-  }
-  
   public void saveAltPID( Remote remote )
   {
     if ( this instanceof ManualProtocol )
@@ -1205,19 +1198,10 @@ public class Protocol
     return isNew;
   }
   
-//  public void removeAlternatePID( Remote remote, Hex id )
-//  {
-//    String sig = remote.getSignature();
-//    List< Hex > pids = remoteAltPIDs.get( sig );
-//    if ( pids != null )
-//    {
-//      pids.remove( id );
-//      if ( pids.isEmpty() )
-//      {
-//        remoteAltPIDs.remove( sig );
-//      }
-//    }
-//  }
+  public void removeAlternatePID( Remote remote )
+  {
+    remoteAltPID.remove( remote.getSignature() );
+  }
   
   public void setAltPID( Remote remote, Hex id )
   {
@@ -1267,18 +1251,27 @@ public class Protocol
 
   public Hex getID( Remote remote, boolean allowUserPID )
   {
-    if ( getAlternatePID( remote, allowUserPID ) == null )
-    {
-      return id;
-    }
-
     if ( remote.supportsVariant( id, variantName ) )
     {
       return id;
     }
+    
+    Hex altPID = remoteAltPID.get( remote.getSignature() );
+    
+    // This variant is not built-in.  If there is a user alternate PID and it is allowed then use it.
+    if ( allowUserPID && altPID != null )
+    {
+      return altPID;
+    }
+    
+    // There is no user alternate PID.  If there is also no official one, return main PID.
+    if ( alternatePID == null )
+    {
+      return id;
+    }
 
-    // At this point we know that this protocol variant is not built-in, and that there is
-    // an alternate PID. But we should only use the alternate PID if the remote has a
+    // At this point we know that this protocol variant is not built-in, has no user alternate
+    // PID but does have an official one. But we should only use this if the remote has a
     // different variant of the main PID built in, or main PID is not valid for the remote.
     // If this is not so, use the main PID.
 
@@ -1295,7 +1288,7 @@ public class Protocol
     if ( altPIDOverrideList.isEmpty() )
     {
       // There is no override list, so use the alternate PID.
-      return getAlternatePID( remote, allowUserPID );
+      return alternatePID;
     }
 
     // There is an override list, so check if the built-in variant is included. If it is,
@@ -1316,7 +1309,7 @@ public class Protocol
         return id;
       }
     }
-    return getAlternatePID( remote, allowUserPID );
+    return alternatePID;
   }
 
   public Hashtable< String, List< Hex >> getRemoteAltPIDs()

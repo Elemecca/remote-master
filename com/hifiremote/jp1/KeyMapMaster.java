@@ -182,7 +182,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           properties.removePropertyChangeListener( "enablePreserveSelection", me );
           savePreferences();
           me = null;
-          System.exit( 0 );
+          dispose();
         }
         catch ( Exception e )
         {
@@ -226,6 +226,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     adjustFontSize( fontSizeAdjustment );
 
     pack();
+    editorPanel.setAltPIDReason();
     Rectangle bounds = preferences.getBounds();
     if ( bounds != null )
     {

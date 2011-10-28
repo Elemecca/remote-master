@@ -956,12 +956,29 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             devicePanel.getDeviceUpgradeEditor().dispose();
           }
-          System.exit( 0 );
-
+          dispose();
         }
         catch ( Exception exc )
         {
           exc.printStackTrace( System.err );
+        }
+      }
+    } );
+    
+    addWindowStateListener( new WindowAdapter()
+    {
+      @Override
+      public void windowStateChanged( WindowEvent e )
+      {
+        DeviceUpgradeEditor editor = devicePanel.getDeviceUpgradeEditor();
+        if ( e.getNewState() == JFrame.NORMAL && editor != null && editor.getState() == JFrame.ICONIFIED )
+        {
+          editor.setExtendedState( NORMAL );
+          editor.toFront();
+        }
+        else if ( e.getNewState() == JFrame.ICONIFIED && editor != null )
+        {
+          editor.setExtendedState( ICONIFIED );
         }
       }
     } );

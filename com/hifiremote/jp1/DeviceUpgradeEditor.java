@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -78,8 +79,11 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
       {
         if ( e.getNewState() == JFrame.ICONIFIED )
         {
-          setExtendedState( NORMAL );
-          toFront();
+          if ( DeviceUpgradeEditor.this.owner.getState() != Frame.ICONIFIED )
+          {
+            setExtendedState( NORMAL );
+            toFront();
+          }
         }
       }
     } );
@@ -123,6 +127,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     okButton.addActionListener( this );
     cancelButton.addActionListener( this );
     pack();
+    editorPanel.setAltPIDReason();
     setLocationRelativeTo( owner );
     setVisible( true );
   }

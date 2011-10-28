@@ -77,6 +77,10 @@ Changes for v2.02
 - Maintain in Properties file a history of such Alternate PIDs used in uploads, or in copying protocol from output tab (Graham)
 - Use the Alternate PID history to help recognise protocols in downloads from remote or in importing .ir files (Graham)
 - Add item to Advanced menu of RMIR to clear Alternate PID history, which in its dialog also reports the number of entries in this history (Graham)
+- When RMIR minimized while Device Editor is open, automatically minimize Device Editor as well; also restore RMIR if Device Editor restored (Graham)
+- Correct bug introduced in Alpha 11 that caused RMIR to close if an RM opened from it by File/New/Device Upgrade was closed (Graham)
+- If more than about six entries in Protocol Parameters panel of Device Editor screen, make them scroll to limit maximum height of editor (Graham)
+
 
 Changes for v2.01
 -- Alpha --

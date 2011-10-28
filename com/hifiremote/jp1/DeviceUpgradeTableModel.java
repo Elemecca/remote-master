@@ -448,18 +448,24 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     DeviceUpgrade du = getRow( row );
     Protocol p = du.getProtocol();
     Remote remote = remoteConfig.getRemote();
+    boolean pidUsed = false;
     boolean pUsed = false;
     for ( DeviceUpgrade temp : remoteConfig.getDeviceUpgrades() )
     {
-      // Test on pid rather than on protocol itself as it is possible for two protocols
+      // Test separately on pid and on protocol itself as it is possible for two protocols
       // to be present with same pid, eg Denon-K and Panasonic Combo.
-      if ( temp != du && temp.getProtocol().getID( remote ).equals( p.getID( remote ) )  )
+      if ( temp != du && temp.getProtocol() == p )
       {
         pUsed = true;
+        pidUsed = true;
         break;
       }
+      else if ( temp != du && temp.getProtocol().getID( remote ).equals( p.getID( remote ) )  )
+      {
+        pidUsed = true;
+      }
     }
-    if ( du.needsProtocolCode() && !pUsed )
+    if ( du.needsProtocolCode() && !pidUsed )
     {
       String title = "Device Upgrade Deletion";
       String message = "The protocol used by the device upgrade being deleted is a protocol\n"
@@ -475,6 +481,10 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         p.saveCode( remoteConfig, du.getCode() );
         p.customCode.clear();
       }
+    }
+    if ( !pUsed )
+    {
+      p.removeAlternatePID( remote );
     }
     du.removePropertyChangeListener( this );
     super.removeRow( row );

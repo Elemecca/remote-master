@@ -149,8 +149,8 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
     panel.add( deviceTypeList, "7, 3" );
 
     add( panel, BorderLayout.NORTH );
-
-    setupPanel = new SetupPanel( deviceUpgrade );
+    
+    setupPanel = new SetupPanel( this, deviceUpgrade );
     setupPanel.setToolTipText( "Enter general information about the upgrade." );
     currPanel = setupPanel;
     addPanel( setupPanel );
@@ -187,6 +187,11 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
 
     refresh();
   }
+  
+  public void setAltPIDReason()
+  {
+    setupPanel.setAltPIDReason();
+  }
 
   /**
    * Sets the device upgrade.
@@ -194,20 +199,20 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
    * @param upgrade
    *          the new device upgrade
    */
-  public void setDeviceUpgrade( DeviceUpgrade upgrade )
-  {
-    if ( deviceUpgrade != null )
-      deviceUpgrade.removePropertyChangeListener( "protocol", this );
-    deviceUpgrade = upgrade;
-    deviceUpgrade.addPropertyChangeListener( "protocol", this );
-    for ( int i = 0; i < tabbedPane.getTabCount(); ++i )
-    {
-      KMPanel panel = ( KMPanel )tabbedPane.getComponentAt( i );
-      panel.setDeviceUpgrade( upgrade );
-    }
-
-    refresh();
-  }
+//  public void setDeviceUpgrade( DeviceUpgrade upgrade )
+//  {
+//    if ( deviceUpgrade != null )
+//      deviceUpgrade.removePropertyChangeListener( "protocol", this );
+//    deviceUpgrade = upgrade;
+//    deviceUpgrade.addPropertyChangeListener( "protocol", this );
+//    for ( int i = 0; i < tabbedPane.getTabCount(); ++i )
+//    {
+//      KMPanel panel = ( KMPanel )tabbedPane.getComponentAt( i );
+//      panel.setDeviceUpgrade( upgrade );
+//    }
+//
+//    refresh();
+//  }
 
   /**
    * Sets the remotes.

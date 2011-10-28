@@ -588,7 +588,6 @@ public class DeviceUpgrade extends Highlight
       status.required = true;
       status.msgIndex |= 1;
     }
-
     else if ( protocol instanceof ManualProtocol )
     {
       status.msgIndex |= 2;
@@ -612,8 +611,22 @@ public class DeviceUpgrade extends Highlight
         status.visible = false;
       }
     }
-    else
+    // We now know that this is a standard protocol that is either (a) built in or 
+    // (b) is not built in and does not clash with a built-in protocol.  In case (a)
+    // we cannot allow an alternate PID, in case (b) it is not necessary, so we do not
+    // offer it, unless there is a clash with an existing upgrade. If there is such
+    // a clash then by now, status.msgIndex != 0.
+    else if ( builtIn.contains( protocol ) || status.msgIndex == 0 )
     {
+      status.visible = false;
+    }
+    // At this point it is not built in but does clash with an existing upgrade.
+    // If status.hasValue = true and value is official value then we cannot have an
+    // alternate
+    else if ( status.hasValue && status.value == officialPID )
+    {
+      status.msgIndex = 0x400;
+      status.hasValue = false;
       status.visible = false;
     }
 
@@ -629,9 +642,9 @@ public class DeviceUpgrade extends Highlight
       {
         status.msgIndex = 4;
       }
-      else if ( ( status.msgIndex & 0x800 ) == 0 )
+      else //if ( ( status.msgIndex & 0x800 ) == 0 )
       {
-        status.msgIndex = 0;
+        status.msgIndex &= 0xC00;
       }
     }
     return status;
