@@ -1198,7 +1198,7 @@ public class Protocol
     return isNew;
   }
   
-  public void removeAlternatePID( Remote remote )
+  public void removeAltPID( Remote remote )
   {
     remoteAltPID.remove( remote.getSignature() );
   }
@@ -1840,7 +1840,13 @@ public class Protocol
    */
   public void store( PropertyWriter out, Value[] parms, Remote remote ) throws IOException
   {
-    out.print( "Protocol", getID( remote ).toString() );
+    out.print( "Protocol", getID( remote, false ).toString() );
+    Hex altPID = remoteAltPID.get( remote.getSignature() );
+    if ( !( this instanceof ManualProtocol ) && altPID != null && altPID.length() > 0 )
+    {
+      // Manual protocol should never have an alt PID
+      out.print( "Protocol.altPID", altPID.toString() );
+    }
     out.print( "Protocol.name", getName() );
     if ( variantName.length() > 0 )
     {

@@ -72,6 +72,13 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     DeviceUpgrade upgrade = null;
     if ( baseUpgrade == null )
     {
+      if ( remoteConfig == null )
+      {
+        String msg = "Cannot create upgrade: No remote selected.";
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), msg, "Upgrade error",
+            JOptionPane.ERROR_MESSAGE );
+        return;
+      }
       upgrade = new DeviceUpgrade();
       Remote remote = remoteConfig.getRemote();
       upgrade.setRemote( remote );

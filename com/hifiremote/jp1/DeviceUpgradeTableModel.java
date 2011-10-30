@@ -484,7 +484,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     }
     if ( !pUsed )
     {
-      p.removeAlternatePID( remote );
+      p.removeAltPID( remote );
     }
     du.removePropertyChangeListener( this );
     super.removeRow( row );

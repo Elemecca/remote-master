@@ -2,7 +2,6 @@ package com.hifiremote.jp1;
 
 import info.clearthought.layout.TableLayout;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -82,14 +81,18 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         reason = "Protocol ID conflicts with existing upgrade.  To use this built-in protocol, edit "
           + "the conflicting upgrade to give it an Alternate PID.";
         break;
+      case 5:
+        reason = "Protocol has already been given an Alternate PID but it is not, or no longer, "
+          + "needed.";
+        break;
     }
     if ( ( index & 0x800 ) == 0x800 )
     {
       if ( !reason.isEmpty() ) reason += "\n";
       reason += "Protocol has custom code.";
     }
-    if ( !reason.isEmpty() ) reason += "\n";
-    switch ( index & 0xF00 )
+    if ( ( index & 0x700 ) > 0 && !reason.isEmpty() ) reason += "\n";
+    switch ( index & 0x700 )
     {
       case 0x100:
         reason += "Protocol already used in another device upgrade, so the Alternate PID "
@@ -121,11 +124,12 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     super( "Setup", deviceUpgrade );
 
     this.editor = editor;
-    protocolHolder = new JPanel( new BorderLayout() );
     Border border = BorderFactory.createTitledBorder( "Protocol Parameters" );
-    protocolHolder.setBorder( border );
+    pScrollPane = new JScrollPane();
+    pScrollPane.setBorder( border );
+    pScrollPane.setHorizontalScrollBarPolicy( ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
 
-    Insets insets = border.getBorderInsets( protocolHolder );
+    Insets insets = border.getBorderInsets( pScrollPane );
     double bl = insets.left + 10;
     double br = insets.right;
     double b = 10; // space around border
@@ -140,7 +144,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
             b, bl, p, b, p, br, c, f, b
         }, // cols
         {
-            b, p, v, 0, 0, p, i, p, 0, 0, 0, v, p, b, f, p, b
+            b, p, v, 0, 0, p, i, p, 0, 0, 0, v, p, b, f, 0, b
         }
     // rows
     };
@@ -153,7 +157,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           b, p, b, f
         },
         {
-          p, b
+          p
         }
     };
     tlPH = new TableLayout( sizePH );
@@ -246,18 +250,15 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
     row++;
     
-    pParamPanel = new JPanel( tlPH );
-    pScrollPane = new JScrollPane( pParamPanel );
-    pScrollPane.setBorder( BorderFactory.createEmptyBorder() );
-    pScrollPane.setHorizontalScrollBarPolicy( ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
-    protocolHolder.add(  pScrollPane, BorderLayout.CENTER );
-    add( protocolHolder, "1, " + row + ", 5, " + row );
+    protocolHolder = new JPanel( tlPH );
+    pScrollPane.setViewportView( protocolHolder );
+    add( pScrollPane, "1, " + row + ", 5, " + row );
     
     label = new JLabel( "Fixed Data:", SwingConstants.RIGHT );
     fixedData = new JTextField();
     fixedData.setEditable( false );
-    pParamPanel.add( label, "1, 0" );
-    pParamPanel.add( fixedData, "3, 0" );
+    protocolHolder.add( label, "1, 0" );
+    protocolHolder.add( fixedData, "3, 0" );
 
     notes = new JTextArea( 5, 50 );
     notes.setToolTipText( "Enter any notes about this device upgrade." );
@@ -291,11 +292,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     Font font = altPIDReason.getFont();
     Font font2 = font.deriveFont( Font.BOLD, 12 );
     altPIDReason.setFont( font2 );
-    int height = altPIDReason.getPreferredSize().height;
-    altPIDReason.setBorder( BorderFactory.createEmptyBorder( 0, 5, -height, 5 ) );
-    altPIDReason.setVisible( false );
-
-    add( altPIDReason, "1, " + row + ", 7, " + row );
+    altPIDReason.setBorder( BorderFactory.createEmptyBorder( 0, 5, 0, 5 ) );
+    altPIDReasonRow = row;
     JP1Frame.getProperties().addPropertyChangeListener( "enablePreserveSelection", this );
   } // SetupPanel
   
@@ -319,18 +317,25 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     }
     if ( editor.getOwner().isVisible() )
     {
+      // In the constructors that use the editor, setAltPIDReason() is called after pack()
+      // and is excluded here, as presence of altPIDReason causes the windows to have
+      // excessive size.
       setAltPIDReason();
     }
-    altPIDReason.setBorder( BorderFactory.createEmptyBorder( 0, 5, 0, 5 ) );
-    altPIDReason.setVisible( status.msgIndex > 0 );
-    int height = altPIDReason.getPreferredSize().height;
-    // It doesn't seem to work to use tl.setRow() on the altPIDReason row, but juggling with the
-    // border size has the same effect, of making the row have zero height when reason not showing.
-    altPIDReason.setBorder( BorderFactory.createEmptyBorder( 0, 5, status.msgIndex > 0 ? 0 : -height, 5 ) );
   }
   
   public void setAltPIDReason()
   {
+    if ( status.msgIndex == 0 && tl.getRow( altPIDReasonRow ) != 0 )
+    {
+      remove( altPIDReason );
+      tl.setRow( altPIDReasonRow, 0 );
+    }
+    else if (status.msgIndex > 0 && tl.getRow( altPIDReasonRow ) == 0)
+    {
+      add( altPIDReason, "1, " + altPIDReasonRow + ", 7, " + altPIDReasonRow );
+      tl.setRow( altPIDReasonRow, TableLayout.PREFERRED );
+    }
     altPIDReason.setText( getAltPIDReason( status.msgIndex ) );
   }
 
@@ -383,7 +388,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   public void updateParameters()
   {
     DeviceParameter[] newParameters = deviceUpgrade.getProtocol().getDeviceParameters();
-    int maxWidth = altPIDLabel.getPreferredSize().width;
+    int maxWidth = altPIDLabel.getPreferredSize().width;  // Widest fixed label
     int offset = pScrollPane.getVerticalScrollBar().getPreferredSize().width + 5;
     if ( parameters != newParameters )
     {
@@ -392,8 +397,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         for ( int i = 0; i < parameters.length; i++ )
         {
           parameters[ i ].removeListener( this );
-          pParamPanel.remove( parameters[ i ].getLabel() );
-          pParamPanel.remove( parameters[ i ].getComponent() );
+          protocolHolder.remove( parameters[ i ].getLabel() );
+          protocolHolder.remove( parameters[ i ].getComponent() );
           tlPH.deleteRow( 0 );
           tlPH.deleteRow( 0 );
         }
@@ -408,8 +413,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           tlPH.insertRow( row, TableLayout.PREFERRED );
           JLabel label = parameters[ i ].getLabel();
           maxWidth = Math.max( maxWidth, label.getPreferredSize().width );
-          pParamPanel.add( label, "1, " + row );
-          pParamPanel.add( parameters[ i ].getComponent(), "3, " + row );
+          protocolHolder.add( label, "1, " + row );
+          protocolHolder.add( parameters[ i ].getComponent(), "3, " + row );
           row++ ;
           tlPH.insertRow( row++ , 5 );
         }
@@ -424,11 +429,14 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           // Preserve Selection box is added/removed rather than made visible or invisible.
           maxRows--;
         }
-        // Reset the preferred size to null, so that getting it calls the layout manager rather than
-        // returning the size set on the previous call to this routine.
+        int maxHeight = maxRows * ( fixedData.getPreferredSize().height + 5 );
+        Insets insets = pScrollPane.getBorder().getBorderInsets( pScrollPane );
+        maxHeight += insets.top + insets.bottom;
+        
+        // Reset the scrollpane preferred size to null, so that getting it calls the layout manager
+        // rather than returning the size set on the previous call to this routine.
         pScrollPane.setPreferredSize( null );
         Dimension d = pScrollPane.getPreferredSize();
-        int maxHeight = maxRows * ( fixedData.getPreferredSize().height + 5 );
         if ( d.height > maxHeight )
         {
           // This allows space for scrollbar without truncating the text fields.
@@ -787,6 +795,10 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       valid = false;
       altPIDMessage.setText( "Protocol selection not valid" );
     }
+    else
+    {
+      altPIDMessage.setText( "" );
+    }
     editor.tabbedPane.setEnabled( valid );
     JFrame frame = editor.getOwner();
     if ( frame instanceof DeviceUpgradeEditor )
@@ -828,6 +840,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   private JLabel altPIDMessage = null;
   private JTextPane altPIDReason = null;
   private int altPIDRow = 0;
+  private int altPIDReasonRow = 0;
   private AltPIDStatus status = null;
 
   private JLabel preserveLabel = null;
@@ -839,15 +852,13 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
   /** The protocol holder. */
   private JPanel protocolHolder = null;
+  private JScrollPane pScrollPane = null;
 
   /** The fixed data. */
   private JTextField fixedData = null;
 
   /** The protocol notes. */
   private JEditorPane protocolNotes = null;
-  
-  private JScrollPane pScrollPane = null;
-  private JPanel pParamPanel = null;
 
   /** The parameters. */
   private DeviceParameter[] parameters = null;

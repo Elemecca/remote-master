@@ -532,6 +532,19 @@ public class DeviceUpgrade extends Highlight
     return setProtocol( newProtocol, true );
   }
   
+  private boolean protocolInUse()
+  {
+    if ( remoteConfig != null )
+    {
+      for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+      {
+        if ( du == this ) continue;
+        if ( du.getProtocol() == protocol ) return true;
+      }
+    }
+    return false;
+  }
+  
   public AltPIDStatus testAltPID( )
   {
     AltPIDStatus status = new AltPIDStatus();
@@ -550,15 +563,21 @@ public class DeviceUpgrade extends Highlight
           status.msgIndex = 0x100;
           break;
         }
-        else if ( du.getProtocol().getID( remote ).equals( protocol.getID( remote ) ) )
+        else if ( du.getProtocol().getID( remote ).equals( protocol.getID( remote, false ) ) )
         {
           // A different protocol with same PID is already used by a device upgrade.  Alternate
           // required.
           status.required = true;
           status.msgIndex = 0x200;
-          break;
+          // Do not break as we must still look for identical protocol
         }
       }
+    }
+    Hex currentAltPID = protocol.getRemoteAltPID().get( remote.getSignature() );
+    if ( !status.hasValue && currentAltPID != null && currentAltPID.length() > 0 )
+    {
+      status.hasValue = true;
+      status.value = currentAltPID.get( 0 );
     }
  
     ProtocolUpgrade pu = protocol.getCustomUpgrade( remoteConfig, false );
@@ -616,11 +635,12 @@ public class DeviceUpgrade extends Highlight
     // we cannot allow an alternate PID, in case (b) it is not necessary, so we do not
     // offer it, unless there is a clash with an existing upgrade. If there is such
     // a clash then by now, status.msgIndex != 0.
-    else if ( builtIn.contains( protocol ) || status.msgIndex == 0 )
+    else if ( builtIn.contains( protocol ) || status.msgIndex == 0 && !status.hasValue )
     {
       status.visible = false;
     }
-    // At this point it is not built in but does clash with an existing upgrade.
+    // At this point it is not built in but either does clash with an existing upgrade
+    // or already has been given a value.
     // If status.hasValue = true and value is official value then we cannot have an
     // alternate
     else if ( status.hasValue && status.value == officialPID )
@@ -628,6 +648,10 @@ public class DeviceUpgrade extends Highlight
       status.msgIndex = 0x400;
       status.hasValue = false;
       status.visible = false;
+    }
+    else if ( status.msgIndex == 0 && status.hasValue )
+    {
+      status.msgIndex = 5;
     }
 
     if ( protocol.getCustomCode( remote.getProcessor() ) != null )
@@ -2092,13 +2116,17 @@ public class DeviceUpgrade extends Highlight
       // Need to consider all protocol attributes, to handle things like "Acer Keyboard (01 11)" and
       // "TiVo (01 11)"
       protocol = pm.findNearestProtocol( remote, name, pid, variantName );
-
       if ( protocol == null )
       {
         JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "No protocol found with name=\"" + name + "\", ID="
             + pid.toString() + ", and variantName=\"" + variantName + "\"", "File Load Error",
             JOptionPane.ERROR_MESSAGE );
         return;
+      }
+      if ( !protocolInUse() )
+      {
+        Hex altPID = new Hex( props.getProperty( "Protocol.altPID", "" ) );
+        protocol.setAltPID( remote, altPID );
       }
     }
 
@@ -2112,7 +2140,7 @@ public class DeviceUpgrade extends Highlight
 
     protocol.setProperties( props, remote );
   
-    if ( !protocol.getID( remote, false ).equals( pid ) )
+    if ( !protocolInUse() && !protocol.getID( remote, false ).equals( pid ) )
     {
       protocol.setAltPID( remote, pid );
     }
