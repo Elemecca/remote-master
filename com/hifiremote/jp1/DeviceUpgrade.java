@@ -563,10 +563,24 @@ public class DeviceUpgrade extends Highlight
           status.msgIndex = 0x100;
           break;
         }
-        else if ( du.getProtocol().getID( remote ).equals( protocol.getID( remote, false ) ) )
+        else if ( !du.getProtocol().getID( remote ).equals( protocol.getID( remote, false ) ) )
         {
-          // A different protocol with same PID is already used by a device upgrade.  Alternate
-          // required.
+          continue;
+        }
+        if ( du.getCode().equals( getCode() ) )
+        {
+          // A different protocol with same PID and same code is already used by a device upgrade.
+          // Must use same alternate
+          status.value = du.getProtocol().getID( remote ).get( 0 );
+          status.hasValue = true;
+          status.editable = false;
+          status.msgIndex = 0x400;
+          break;
+        }
+        else
+        {
+          // A different protocol with same PID but different code is already used by a device upgrade. 
+          //  Alternate required.
           status.required = true;
           status.msgIndex = 0x200;
           // Do not break as we must still look for identical protocol
@@ -610,12 +624,6 @@ public class DeviceUpgrade extends Highlight
     else if ( protocol instanceof ManualProtocol )
     {
       status.msgIndex |= 2;
-      if ( status.hasValue && status.value == officialPID )
-      {
-        status.msgIndex = 0x402;
-        status.hasValue = false;
-        status.visible = false;
-      }
     }
     else if ( !builtIn.isEmpty() && !builtIn.contains( protocol ) )
     {
@@ -623,41 +631,42 @@ public class DeviceUpgrade extends Highlight
       // a built-in protocol, so it will override that protocol in a device upgrade.
       // Allow an alternate PID.
       status.msgIndex |= 3;
-      if ( status.hasValue && status.value == officialPID )
-      {
-        status.msgIndex = 0x403;
-        status.hasValue = false;
-        status.visible = false;
-      }
     }
     // We now know that this is a standard protocol that is either (a) built in or 
     // (b) is not built in and does not clash with a built-in protocol.  In case (a)
     // we cannot allow an alternate PID, in case (b) it is not necessary, so we do not
-    // offer it, unless there is a clash with an existing upgrade. If there is such
-    // a clash then by now, status.msgIndex != 0.
+    // offer it, unless there is a clash with an existing upgrade or it already has
+    // an alternate. If there is a clash then by now, status.msgIndex != 0.
     else if ( builtIn.contains( protocol ) || status.msgIndex == 0 && !status.hasValue )
     {
       status.visible = false;
     }
-    // At this point it is not built in but either does clash with an existing upgrade
-    // or already has been given a value.
-    // If status.hasValue = true and value is official value then we cannot have an
-    // alternate
-    else if ( status.hasValue && status.value == officialPID )
-    {
-      status.msgIndex = 0x400;
-      status.hasValue = false;
-      status.visible = false;
-    }
-    else if ( status.msgIndex == 0 && status.hasValue )
+    // Now a standard protocol, not built in, either clashes with existing upgrade or
+    // already has a value.
+    else if ( status.msgIndex == 0 && status.hasValue && status.value != officialPID )
     {
       status.msgIndex = 5;
     }
-
+    // else nothing.  This is for standard protocol, not built in, clashes with
+    // existing upgrade (msgIndex = 0x200) and/or has value assigned that is official PID.
+    
+    // If status.hasValue = true and value is official value then we cannot have an
+    // alternate
+    if ( status.hasValue && status.value == officialPID )
+    {
+      if ( status.visible )
+      {
+        // Explain why alternate not available
+        status.msgIndex |= 0x800;
+      }
+      status.hasValue = false;
+      status.visible = false;
+    }
+    
     if ( protocol.getCustomCode( remote.getProcessor() ) != null )
     {
       // If it has custom code. notify this
-      status.msgIndex |= 0x800;
+      status.msgIndex |= 0x1000;
     }
     
     if ( !status.visible )
@@ -666,9 +675,9 @@ public class DeviceUpgrade extends Highlight
       {
         status.msgIndex = 4;
       }
-      else //if ( ( status.msgIndex & 0x800 ) == 0 )
+      else
       {
-        status.msgIndex &= 0xC00;
+        status.msgIndex &= 0x1000 | ( ( ( status.msgIndex & 0x800 ) > 0 ) ? 0xF00 : 0 );
       }
     }
     return status;

@@ -86,29 +86,52 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           + "needed.";
         break;
     }
-    if ( ( index & 0x800 ) == 0x800 )
+    if ( ( index & 0x1000 ) == 0x1000 )
     {
       if ( !reason.isEmpty() ) reason += "\n";
       reason += "Protocol has custom code.";
     }
-    if ( ( index & 0x700 ) > 0 && !reason.isEmpty() ) reason += "\n";
-    switch ( index & 0x700 )
+    String addendum = "";
+    switch ( index & 0xF00 )
     {
       case 0x100:
-        reason += "Protocol already used in another device upgrade, so the Alternate PID "
+        addendum = "Protocol already used in another device upgrade, so the Alternate PID "
           + "has been taken from that upgrade and cannot be changed.";
         break;
       case 0x200:
-        reason += "Protocol ID already used in another device upgrade by a different protocol. "
+        addendum = "Protocol ID already used in another device upgrade by a different protocol. "
           + " An Alternate PID is required.";
         break;
       case 0x300:
-        reason += "Protocol ID clashes with that of an unused protocol upgrade.  To keep that upgrade "
+        addendum = "Protocol ID clashes with that of an unused protocol upgrade.  To keep that upgrade "
           + "accessible, this protocol needs an Alternate PID.";
+        break;
       case 0x400:
-        reason += "Protocol already used by another device upgrade without an Alternate PID, "
+        addendum = "Another protocol with same PID and code is already used in another device upgrade, "
+          + "so the Alternate PID has been taken from that upgrade and cannot be changed.";
+        break;
+      case 0x800:
+        // No message in this case.  Probably should not occur.
+        break;
+      case 0x900:
+        addendum = "Protocol already used by another device upgrade without an Alternate PID, "
           + "so an alternate cannot be given for this upgrade.";
         break;
+      case 0xA00:
+        addendum = "This case should not occur!";
+        break;
+      case 0xB00:
+        // No message in this case.  Protocol ID clashes with that of an unused protocol upgrade
+        // but an existing upgrade prevents an alternate being given.
+        break;
+      case 0xC00:
+        addendum = "Another protocol with same PID and code is already used in another device upgrade "
+          + "without an Alternate PID, so an alternate cannot be given for this upgrade.";
+        break;
+    }
+    if ( !addendum.isEmpty() )
+    {
+      reason += ( reason.isEmpty() ) ? addendum : "\n" + addendum;
     }
     return reason;
   }
@@ -793,7 +816,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     else if ( status.required )
     {
       valid = false;
-      altPIDMessage.setText( "Protocol selection not valid" );
+      altPIDMessage.setText( "PID in use, Alt PID not available" );
     }
     else
     {
