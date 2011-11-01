@@ -714,6 +714,21 @@ public class RemoteConfiguration
       }
     }
   }
+  
+  public void saveAltPIDs()
+  {
+    for ( DeviceUpgrade du : devices )
+    {
+      du.getProtocol().saveAltPID( remote );
+    }
+    for ( ProtocolUpgrade pu : protocols )
+    {
+      if ( pu.getProtocol() != null )
+      {
+        pu.getProtocol().saveAltPID( remote );
+      }
+    }
+  }
 
   /**
    * Export advanced code notes.

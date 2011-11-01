@@ -690,17 +690,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             return;
           }
-          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
-          {
-            du.getProtocol().saveAltPID( remote );
-          }
-          for ( ProtocolUpgrade pu : remoteConfig.getProtocolUpgrades() )
-          {
-            if ( pu.getProtocol() != null )
-            {
-              pu.getProtocol().saveAltPID( remote );
-            }
-          }
+          remoteConfig.saveAltPIDs();
           System.err.println( "Starting upload" );
           setInterfaceState( "UPLOADING..." );
           ( new UploadTask( remoteConfig.getData(), true ) ).execute();
@@ -712,6 +702,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         else if ( command == "OPENCODES" )
         {
+          JP1Table deviceButtonTable = generalPanel.getDeviceButtonTable();
+          if ( deviceButtonTable.getCellEditor() != null )
+          {
+            deviceButtonTable.getCellEditor().stopCellEditing();
+          }
           codeSelectorDialog = CodeSelectorDialog.showDialog( RemoteMaster.this );
           codeSelectorDialog.enableAssign( currentPanel == generalPanel );
         }
@@ -2093,6 +2088,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       file = newFile;
       if ( ending == irEndings[ 0 ] )
       {
+        remoteConfig.saveAltPIDs();
         remoteConfig.exportIR( file );
       }
       else
@@ -2342,10 +2338,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         ProtocolManager pm = ProtocolManager.getProtocolManager();
         int count = pm.countAltPIDRemoteEntries();
         String title = "Clear Alt PID History";
-        String message = "The Alt PID History is used only to enable a protocol to be recognised in a download\n"
-                       + "from a remote when it has been uploaded with an Alternate PID instead of the standard\n"
-                       + "one for that protocol.  There is seldom any need to clear this history unless its size\n"
-                       + "is becoming excessive.\n\n"
+        String message = "The Alt PID History is used only to help a protocol to be recognised when other means\n"
+                       + "fail, such as in a download from a remote when it has been uploaded with an Alternate\n"
+                       + "PID instead of the standard one for that protocol.  There is seldom any need to clear\n"
+                       + "this history unless its size is becoming excessive.\n\n"
                        + "It currently has " + count;
         message += count == 1 ? " entry." : " entries.";
         message += "\n\nAre you sure you want to clear this history?";

@@ -461,10 +461,16 @@ public class ProtocolManager
    */
   public List< Protocol > findByAlternatePID( Remote remote, Hex id )
   {
+    return findByAlternatePID( remote, id, false );
+  }
+  
+  
+  public List< Protocol > findByAlternatePID( Remote remote, Hex id, boolean checkUserAltPIDs )
+  {
     List< Protocol > list = new ArrayList< Protocol >();
     List< Protocol > l = byAlternatePID.get( id );
     if ( l != null ) list.addAll( l );
-    if ( byAltPIDRemote.get( remote.getSignature() ) != null )
+    if ( checkUserAltPIDs && byAltPIDRemote.get( remote.getSignature() ) != null )
     {
       l = byAltPIDRemote.get( remote.getSignature() ).get( id );
       if ( l != null ) list.addAll( l );

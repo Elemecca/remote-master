@@ -311,6 +311,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     row++;
     
     altPIDReason = new JTextPane();
+    altPIDReason.setEditable( false );
     altPIDReason.setBackground( label.getBackground() );
     Font font = altPIDReason.getFont();
     Font font2 = font.deriveFont( Font.BOLD, 12 );
@@ -354,7 +355,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       remove( altPIDReason );
       tl.setRow( altPIDReasonRow, 0 );
     }
-    else if (status.msgIndex > 0 && tl.getRow( altPIDReasonRow ) == 0)
+    else if ( status.msgIndex > 0 && tl.getRow( altPIDReasonRow ) == 0 )
     {
       add( altPIDReason, "1, " + altPIDReasonRow + ", 7, " + altPIDReasonRow );
       tl.setRow( altPIDReasonRow, TableLayout.PREFERRED );

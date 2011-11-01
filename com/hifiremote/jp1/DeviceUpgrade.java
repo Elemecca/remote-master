@@ -1021,8 +1021,8 @@ public class DeviceUpgrade extends Highlight
     {
       // Get all protocol variants, whether or not built in to the remote
       protocols = ProtocolManager.getProtocolManager().findByPID( pid );
-      // Add to this a list by AlternatePID
-      List< Protocol > pList = ProtocolManager.getProtocolManager().findByAlternatePID( remote, pid );
+      // Add to this a list by Alternate PID, including user alternates
+      List< Protocol > pList = ProtocolManager.getProtocolManager().findByAlternatePID( remote, pid, true );
       if ( pList != null ) protocols.addAll( pList );
     }
     Protocol tentative = null;
