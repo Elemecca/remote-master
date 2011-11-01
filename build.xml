@@ -10,11 +10,10 @@
         <pathelement location="${build}"/>
     </path>
 
-    <available file="num-master.txt" property="nummaster.exists" />
     <available file="${build}/info" type="dir" property="info.exists" />
-    <available file="UpgradeDigitMaps.java" type="dir" property="udm.exists" />
-
-        <target name="init">
+    <available file="UpdateDigitMapsBin.java" property="udm.exists" />
+	
+	    <target name="init">
                 <mkdir dir="${build}" />
         </target>
 
@@ -70,7 +69,7 @@
 			<zipfileset src="${src}/jp12serial018.zip" includes="**/*.so,**/*.jnilib" filemode="755"/>
             <zipfileset src="${src}/jp1usb_dll_031.zip" includes="jp1usb.dll" prefix="Windows"/>
 			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/libDecodeIR.so,**/libDecodeIR.jnilib" filemode="755"/>
-			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/DecodeIR.dll,DecodeIR.html,Docs/*.txt"/>
+			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/DecodeIR.dll,DecodeIR.html,Docs/*.txt" filemode="555"/>
             <zipfileset dir="${src}" includes="*.sh" filemode="755" />
           	<zipfileset dir="${src}" includes="tutorial.htm" />
             <zipfileset dir="tutorial_files" includes="**/*" prefix="tutorial_files" />

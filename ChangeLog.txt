@@ -80,7 +80,9 @@ Changes for v2.02
 - When RMIR minimized while Device Editor is open, automatically minimize Device Editor as well; also restore RMIR if Device Editor restored (Graham)
 - Correct bug introduced in Alpha 11 that caused RMIR to close if an RM opened from it by File/New/Device Upgrade was closed (Graham)
 - If more than about six entries in Protocol Parameters panel of Device Editor screen, make them scroll to limit maximum height of editor (Graham)
-
+- Fix permissions for DecodeIR.html and DecodeIR_ChangeLog.txt (Greg)
+- Make JP1 Parallel the last available interface (Greg)
+- Update Digit Maps through 520 (Greg)
 
 Changes for v2.01
 -- Alpha --

@@ -168,7 +168,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   // Advanced menu items
   private JMenuItem cleanUpperMemoryItem = null;
-  
+
   private JMenuItem clearAltPIDHistory = null;
 
   private JMenuItem initializeTo00Item = null;
@@ -877,7 +877,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     setDefaultCloseOperation( DISPOSE_ON_CLOSE );
     setDefaultLookAndFeelDecorated( true );
-    
+
     ProtocolManager.getProtocolManager().loadAltPIDRemoteProperties( properties );
 
     final Preview preview = new Preview();
@@ -959,7 +959,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
       }
     } );
-    
+
     addWindowStateListener( new WindowAdapter()
     {
       @Override
@@ -1267,19 +1267,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     File userDir = new File( System.getProperty( "user.dir" ) );
     try
     {
-      JP1Parallel jp1Parallel = new JP1Parallel( userDir );
-      interfaces.add( jp1Parallel );
-      System.err.println( "    JP1Parallel version " + jp1Parallel.getInterfaceVersion() );
-      System.err.println( "    EEPROM size returns " + jp1Parallel.getRemoteEepromSize() );
-      System.err.println( "    EEPROM address returns " + jp1Parallel.getRemoteEepromAddress() );
-    }
-    catch ( LinkageError le )
-    {
-      System.err.println( "Unable to create JP1Parallel object: " + le.getMessage() );
-    }
-
-    try
-    {
       JP12Serial jp12Serial = new JP12Serial( userDir );
       interfaces.add( jp12Serial );
       System.err.println( "    JP12Serial version " + jp12Serial.getInterfaceVersion() );
@@ -1300,6 +1287,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     catch ( LinkageError le )
     {
       System.err.println( "Unable to create JP1USB object: " + le.getMessage() );
+    }
+
+    try
+    {
+      JP1Parallel jp1Parallel = new JP1Parallel( userDir );
+      interfaces.add( jp1Parallel );
+      System.err.println( "    JP1Parallel version " + jp1Parallel.getInterfaceVersion() );
+      System.err.println( "    EEPROM size returns " + jp1Parallel.getRemoteEepromSize() );
+      System.err.println( "    EEPROM address returns " + jp1Parallel.getRemoteEepromAddress() );
+    }
+    catch ( LinkageError le )
+    {
+      System.err.println( "Unable to create JP1Parallel object: " + le.getMessage() );
     }
 
     /*
@@ -1509,7 +1509,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     cleanUpperMemoryItem.setEnabled( false );
     cleanUpperMemoryItem.addActionListener( this );
     menu.add( cleanUpperMemoryItem );
-    
+
     clearAltPIDHistory = new JMenuItem( "Clear Alt PID History...", KeyEvent.VK_H );
     clearAltPIDHistory.addActionListener( this );
     menu.add( clearAltPIDHistory );
@@ -2339,13 +2339,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         int count = pm.countAltPIDRemoteEntries();
         String title = "Clear Alt PID History";
         String message = "The Alt PID History is used only to help a protocol to be recognised when other means\n"
-                       + "fail, such as in a download from a remote when it has been uploaded with an Alternate\n"
-                       + "PID instead of the standard one for that protocol.  There is seldom any need to clear\n"
-                       + "this history unless its size is becoming excessive.\n\n"
-                       + "It currently has " + count;
+            + "fail, such as in a download from a remote when it has been uploaded with an Alternate\n"
+            + "PID instead of the standard one for that protocol.  There is seldom any need to clear\n"
+            + "this history unless its size is becoming excessive.\n\n" + "It currently has " + count;
         message += count == 1 ? " entry." : " entries.";
         message += "\n\nAre you sure you want to clear this history?";
-        int ans = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE );
+        int ans = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE );
         if ( ans == JOptionPane.YES_OPTION )
         {
           pm.clearAltPIDRemoteEntries();
