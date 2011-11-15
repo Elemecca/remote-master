@@ -951,11 +951,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             devicePanel.getDeviceUpgradeEditor().dispose();
           }
-          dispose();
         }
         catch ( Exception exc )
         {
           exc.printStackTrace( System.err );
+        }
+        finally
+        {
+          dispose();
         }
       }
     } );
