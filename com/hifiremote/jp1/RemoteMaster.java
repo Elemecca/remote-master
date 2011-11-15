@@ -2915,7 +2915,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       try
       {
-        System.setErr( new PrintStream( new FileOutputStream( new File( workDir, "rmaster.err" ) ) ) );
+          System.setErr( new PrintStream( new FileOutputStream( new File( System.getProperty("java.io.tmpdir"), "rmaster.err" ) ) ) );
       }
       catch ( Exception e )
       {
@@ -2968,9 +2968,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             {
               dir.mkdirs();
             }
+            propertiesFile = new File( dir, "RemoteMaster.properties" );
           }
-
-          propertiesFile = new File( dir, "RemoteMaster.properties" );
+          else // not Windows
+          {
+            String baseFolderName = System.getProperty( "user.home" );
+            if (baseFolderName != null && !baseFolderName.isEmpty())
+              dir = new File( baseFolderName );
+            propertiesFile = new File( dir, ".RemoteMaster.properties" );
+          }
         }
       }
       PropertyFile properties = new PropertyFile( propertiesFile );
