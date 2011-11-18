@@ -1032,7 +1032,10 @@ public class DeviceUpgrade extends Highlight
     {
       p = tryit;
       System.err.println( "Checking protocol " + p.getDiagnosticName() );
-      if ( !remote.supportsVariant( pid, p.getVariantName() ) && !p.hasCode( remote ) )
+      // The following change only affects the error situation where an RDF lists a variant as supported 
+      // but protocols.ini has no code for that variant and the processor concerned.  This is treated as
+      // if that entry in the RDF was absent.
+      if ( /* !remote.supportsVariant( pid, p.getVariantName() ) && */ !p.hasCode( remote ) )
       {
         continue;
       }
