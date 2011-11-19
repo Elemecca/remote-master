@@ -444,7 +444,7 @@ public class ProtocolManager
     List< Protocol > results = new ArrayList< Protocol >();
     for ( Protocol protocol : findByPID( pid ) )
     {
-      if ( remote.supportsVariant( pid, protocol.getVariantName() ) && protocol.hasCode( remote ) )
+      if ( remote.supportsVariant( pid, protocol.getVariantName() ) )
       {
         results.add( protocol );
       }
@@ -632,9 +632,7 @@ public class ProtocolManager
     }
     for ( Protocol p : protocols )
     {
-      // The second condition is only to handle error conditions in which an RDF specifies support for
-      // a variant when protocols.ini has no code for the processor concerned.
-      if ( remote.supportsVariant( p.getID(), p.getVariantName() ) && p.hasCode( remote ) )
+      if ( remote.supportsVariant( p.getID(), p.getVariantName() ) )
       {
         protocol = p;
         break;
@@ -672,9 +670,7 @@ public class ProtocolManager
     List< Protocol > protocols = protocolManager.findByPID( id );
     for ( Protocol p : protocols )
     {
-      // The second condition is only to handle error conditions in which an RDF specifies support for
-      // a variant when protocols.ini has no code for the processor concerned.
-      if ( !remote.supportsVariant( id, p.getVariantName() ) || !p.hasCode( remote ) )
+      if ( !remote.supportsVariant( id, p.getVariantName() ) )
       {
         continue;
       }
@@ -730,9 +726,7 @@ public class ProtocolManager
 
     for ( Protocol p : protocols )
     {
-      // The second condition is only to handle error conditions in which an RDF specifies support for
-      // a variant when protocols.ini has no code for the processor concerned.
-      if ( remote.supportsVariant( id, p.getVariantName() ) && p.hasCode( remote ) )
+      if ( remote.supportsVariant( id, p.getVariantName() ) )
       {
         protocol = p;
         break;
@@ -849,7 +843,7 @@ public class ProtocolManager
     for ( Protocol p : protocols )
     {    
       if ( ( variantName == null || variantName.equals( p.getVariantName() ) )
-          && remote.supportsVariant( id, p.getVariantName() ) && p.hasCode( remote ) )
+          && remote.supportsVariant( id, p.getVariantName() ) )
       {
         if ( p.getName().equals( name ) )
         {

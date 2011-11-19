@@ -1723,6 +1723,10 @@ public class Protocol
     {
       originalCode = processor.translate( originalCode, remote );
     }
+    else
+    {
+      originalCode = new Hex( 0 );
+    }
     if ( getClass() == ManualProtocol.class )
     {
       pm.remove( this );
@@ -1732,6 +1736,10 @@ public class Protocol
     else
     {
       ProtocolUpgrade pu = getProtocolUpgrade( remote );
+      if ( pu == null )
+      {
+        pu = new ProtocolUpgrade( getID( remote ).get( 0 ), new Hex( 0 ), null );
+      }
       int fixedDataLength = getFixedDataLength();
       int cmdLength = getDefaultCmd().length();
 
@@ -1805,12 +1813,12 @@ public class Protocol
       }
       else
       {
-        // Check if this is consistent custom code
+        // Check if this is consistent custom code.  If original code missing or too short, treat custom code as always valid.
         String title = "Custom protocol code";
         String message = "The custom code you have set is not consistent with the protocol\n"
             + "concerned.  It differs in the length of either the fixed or command\n"
             + "data.  Do you wish to cancel this edit?\n\n" + "To apply the edit despite this problem, select NO.";
-        if ( ( ( Protocol.getFixedDataLengthFromCode( proc, returnCode ) == Protocol.getFixedDataLengthFromCode( proc,
+        if ( originalCode.length() < 5 || ( ( Protocol.getFixedDataLengthFromCode( proc, returnCode ) == Protocol.getFixedDataLengthFromCode( proc,
             originalCode ) ) && ( Protocol.getCmdLengthFromCode( proc, returnCode ) == Protocol.getCmdLengthFromCode(
             proc, originalCode ) ) )
             || ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION,

@@ -85,7 +85,7 @@ Changes for v2.02
 - Update Digit Maps through 520 (Greg)
 -- Beta 2
 - Made installation directory read-only by putting rmaster.err in java.io.tmpdir, and (on non-Windows, Windows already had similar fix) putting resource file in home directory. (Bengt)
-- If RDF [Protocols] section contains an entry for a variant that has no code for the processor concerned, ignore that entry. (Graham)
+- Allow editing of a built-in protocol with code missing from protocols.ini, to permit custom code to be entered (Graham)
 
 Changes for v2.01
 -- Alpha --
