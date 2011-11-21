@@ -20,9 +20,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
@@ -1508,7 +1510,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_A );
     menuBar.add( menu );
 
-    cleanUpperMemoryItem = new JMenuItem( "Clean Upper Memory...", KeyEvent.VK_C );
+    cleanUpperMemoryItem = new JMenuItem( "Blast Upper Memory...", KeyEvent.VK_B );
     cleanUpperMemoryItem.setEnabled( false );
     cleanUpperMemoryItem.addActionListener( this );
     menu.add( cleanUpperMemoryItem );
@@ -2870,6 +2872,60 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return false;
   }
 
+  private static File getWritableFile( File workDir, String fileName )
+  {
+    File dir = workDir;
+    File file = new File( dir, fileName );
+    boolean canWrite = true;
+    if ( !file.exists() )
+    {
+      try
+      {
+        PrintWriter pw = new PrintWriter( new FileWriter( file ) );
+        pw.println( "Write Test" );
+        pw.flush();
+        pw.close();
+        file.delete();
+      }
+      catch ( IOException ioe )
+      {
+        canWrite = false;
+      }
+    }
+    else
+    {
+      canWrite = file.canWrite();
+    }
+
+    if ( !canWrite )
+    {
+      String baseFolderName = null;
+
+      if ( System.getProperty( "os.name" ).startsWith( "Windows" )
+          && Float.parseFloat( System.getProperty( "os.version" ) ) >= 6.0f )
+      {
+        baseFolderName = System.getenv( "APPDATA" );
+      }
+      if ( baseFolderName == null || "".equals( baseFolderName ) )
+      {
+        baseFolderName = System.getProperty( "user.home" );
+      }
+
+      dir = new File( baseFolderName, "RemoteMaster" );
+      if ( !dir.exists() )
+      {
+        dir = new File( baseFolderName, ".RemoteMaster" );
+        if ( !dir.exists() )
+        {
+          dir.mkdirs();
+        }
+      }
+      file = new File( dir, fileName );
+    }
+
+    return file;
+  }
+
   /**
    * Description of the Method.
    * 
@@ -2916,7 +2972,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       try
       {
-          System.setErr( new PrintStream( new FileOutputStream( new File( System.getProperty("java.io.tmpdir"), "rmaster.err" ) ) ) );
+        System.setErr( new PrintStream( new FileOutputStream( getWritableFile( workDir, "rmaster.err" ) ) ) );
       }
       catch ( Exception e )
       {
@@ -2951,34 +3007,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       if ( propertiesFile == null )
       {
-        File dir = workDir;
-        propertiesFile = new File( dir, "RemoteMaster.properties" );
-        if ( !propertiesFile.exists() )
-        {
-          if ( System.getProperty( "os.name" ).startsWith( "Windows" )
-              && Float.parseFloat( System.getProperty( "os.version" ) ) >= 6.0f )
-          {
-            String baseFolderName = System.getenv( "APPDATA" );
-            if ( baseFolderName == null || "".equals( baseFolderName ) )
-            {
-              baseFolderName = System.getProperty( "user.home" );
-            }
-
-            dir = new File( baseFolderName, "RemoteMaster" );
-            if ( !dir.exists() )
-            {
-              dir.mkdirs();
-            }
-            propertiesFile = new File( dir, "RemoteMaster.properties" );
-          }
-          else // not Windows
-          {
-            String baseFolderName = System.getProperty( "user.home" );
-            if (baseFolderName != null && !baseFolderName.isEmpty())
-              dir = new File( baseFolderName );
-            propertiesFile = new File( dir, ".RemoteMaster.properties" );
-          }
-        }
+        propertiesFile = getWritableFile( workDir, "RemoteMaster.properties" );
       }
       PropertyFile properties = new PropertyFile( propertiesFile );
 

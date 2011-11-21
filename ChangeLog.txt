@@ -84,6 +84,9 @@ Changes for v2.02
 - Make JP1 Parallel the last available interface (Greg)
 - Update Digit Maps through 520 (Greg)
 -- Beta 2
+- Rename "Clean Upper Memory..." to "Blast Upper Memory..." (Greg)
+- Fix preventing program to exit if properties could not be written (Barf)
+- Change how RM locates the properties file at startup, when not specified on the command-line (Barf and Greg)
 - Made installation directory read-only by putting rmaster.err in java.io.tmpdir, and (on non-Windows, Windows already had similar fix) putting resource file in home directory. (Bengt)
 - Allow editing of a built-in protocol with code missing from protocols.ini, to permit custom code to be entered (Graham)
 - When autodetecting interface, if returned port name is an empty string, treat at null, which solves issue of jp12serial port being found even when not connected (Graham)
