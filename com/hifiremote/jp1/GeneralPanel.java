@@ -318,6 +318,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       if ( upgrade == oldUpgrade )
       {
         upgrades.set( newUpgrade );
+        selectedUpgrade = newUpgrade;
         deviceModel.setValueAt( newUpgrade.getDeviceType(), row, 2 );
         deviceModel.setValueAt( new SetupCode( newUpgrade.getSetupCode() ), row, 3 );
         deviceModel.fireTableRowsUpdated( row, row );

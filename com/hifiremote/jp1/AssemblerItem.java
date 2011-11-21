@@ -99,7 +99,7 @@ public class AssemblerItem
       // Replace absolute addresses by labels where they exist
       for ( int i = 0; ( mode.absMap >> i ) != 0; i++ )
       {
-        if ( ( ( mode.absMap >> i ) & 1 ) == 1 && mode.nibbleArgs + i < argCount )
+        if ( ( ( mode.absMap >> i ) & 1 ) == 1 && mode.nibbleArgs + i < argCount - 1 )
         {
           int argIndex = mode.nibbleArgs + i;
           int[][] formatStarts = AssemblerOpCode.getFormatStarts( format );
@@ -115,6 +115,16 @@ public class AssemblerItem
               state.absUsed.add( n );
             }
             if ( state.useFunctionConstants )
+            {
+              format = formatForLabel( format, argIndex, twoByte );
+              obj[ argIndex ] = label;
+              if ( twoByte ) obj[ argIndex + 1 ] = "";
+            }
+          }
+          else
+          {
+            label = labels.get( n );
+            if ( label != null )
             {
               format = formatForLabel( format, argIndex, twoByte );
               obj[ argIndex ] = label;

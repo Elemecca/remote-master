@@ -86,6 +86,9 @@ Changes for v2.02
 -- Beta 2
 - Made installation directory read-only by putting rmaster.err in java.io.tmpdir, and (on non-Windows, Windows already had similar fix) putting resource file in home directory. (Bengt)
 - Allow editing of a built-in protocol with code missing from protocols.ini, to permit custom code to be entered (Graham)
+- When autodetecting interface, if returned port name is an empty string, treat at null, which solves issue of jp12serial port being found even when not connected (Graham)
+- Fix bug that repeated use of Edit Device button on General panel was not recognising changes made in earlier edit (Graham)
+- For S3C80 disassembly, label absolute addresses within the protocol code as well as relative ones, since CALL only takes absolute addresses and upgrades are executed from a standard location (Graham)
 
 Changes for v2.01
 -- Alpha --

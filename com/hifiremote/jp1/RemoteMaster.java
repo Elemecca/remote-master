@@ -2163,8 +2163,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         String tempName = temp.getInterfaceName();
         System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
         portName = temp.openRemote();
-        System.err.println( "Port Name = " + ( portName == null ? "NULL" : portName ) );
-        if ( portName != null )
+        if ( portName == null ) portName = "";
+        System.err.println( "Port Name = " + ( portName.isEmpty() ? "NULL" : portName ) );
+        if ( !portName.isEmpty() )
         {
           return temp;
         }

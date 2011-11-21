@@ -303,7 +303,7 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
     {
       if ( item.isCommentedOut() ) continue;
       if ( item.getOpCode() == null ) continue;
-      if ( item.getOpCode().getMode().relMap != 0 )
+      if ( item.getOpCode().getMode().relMap != 0 || item.getOpCode().getMode().absMap != 0  )
       {
         item.assemble( processor, asmLabels, true );
       }
@@ -385,7 +385,8 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
       short[] data = pHex.getData();
       addr += processor.getStartOffset();
 
-      // Find addresses that need labelling, from all relative addressing modes
+      // Find addresses that need labelling, from all relative addressing modes,
+      // and for S3C80, because of the CALL instructions, also modes with absolute addresses
       int index = 0;
       while ( index < pHex.length() )
       {
@@ -403,6 +404,24 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
               if ( !labelAddresses.contains( newAddr ) )
               {
                 labelAddresses.add( newAddr );
+              }
+            }
+          }
+        }
+        if ( processor instanceof S3C80Processor )
+        {
+          for ( int i = 0; ( mode.absMap >> i ) != 0; i++ )
+          {
+            if ( ( ( mode.absMap >> i ) & 1 ) == 1 )
+            {
+              int n = index + oc.getLength() + mode.nibbleBytes + i;
+              if ( n < data.length - 1 )
+              {
+                int newAddr = ( data[ n ] << 8 ) + data[ n + 1 ];
+                if ( newAddr >= addr && newAddr < addr + pHex.length() && !labelAddresses.contains( newAddr ) )
+                {
+                  labelAddresses.add( newAddr );
+                }
               }
             }
           }
