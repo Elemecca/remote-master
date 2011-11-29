@@ -859,6 +859,10 @@ public class DeviceUpgrade extends Highlight
     }
     for ( Function f : functions )
     {
+      if ( f.getHex() == null )
+      {
+        continue;
+      }
       if ( hex.equals( f.getHex() ) )
       {
         return f;

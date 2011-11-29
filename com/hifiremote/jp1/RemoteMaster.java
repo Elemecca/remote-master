@@ -96,7 +96,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Beta";
+  public final static String version = "v2.02 Beta 1.5";
 
   /** The dir. */
   private File dir = null;
@@ -647,6 +647,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         else if ( command.equals( "NEWDEVICE" ) )
         {
+          System.err.println( "RMIR opening new RM instance" );
           new KeyMapMaster( properties );
         }
         else if ( command.equals( "OPEN" ) )
@@ -923,10 +924,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         try
         {
+          System.err.println( "RemoteMaster.windowClosing() entered" );
           if ( !promptToSave() )
           {
             return;
           }
+          downloadAction = null;
+          uploadAction = null;
           for ( int i = 0; i < recentFiles.getItemCount(); ++i )
           {
             JMenuItem item = recentFiles.getItem( i );

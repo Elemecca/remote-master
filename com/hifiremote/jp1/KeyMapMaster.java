@@ -156,6 +156,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   public KeyMapMaster( PropertyFile prefs )
   {
     super( "RemoteMaster", prefs );
+    System.err.println( "KeyMapMaster opening" );
     me = this;
 
     setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
@@ -172,22 +173,31 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         try
         {
+          System.err.println( "KeyMapMaster.windowClosing() entered" );
           if ( !promptToSaveUpgrade( ACTION_EXIT ) )
           {
             return;
           }
+          System.err.println( "KeyMapMaster.windowClosing() continuing" );
           ProtocolManager.getProtocolManager().setAltPIDRemoteProperties( properties );
-          preferences.setLastRemoteName( getRemote().getName() );
-          preferences.setLastRemoteSignature( getRemote().getSignature() );
+          Remote remote = getRemote();
+          if ( remote != null )
+          {
+            preferences.setLastRemoteName( remote.getName() );
+            preferences.setLastRemoteSignature( remote.getSignature() );
+          }
           properties.removePropertyChangeListener( "enablePreserveSelection", me );
           savePreferences();
           me = null;
-          dispose();
         }
         catch ( Exception e )
         {
           System.err.println( "KeyMapMaster.windowClosing() caught an exception!" );
-          e.printStackTrace( System.out );
+          e.printStackTrace( System.err );
+        }
+        finally
+        {
+          dispose();
         }
       }
     } );

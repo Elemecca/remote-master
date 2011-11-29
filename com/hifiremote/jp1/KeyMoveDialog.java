@@ -378,6 +378,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     setupCode.removeActionListener( this );
     setupCode.setValue( new Integer( keyMove.getSetupCode() ) );
     setupCode.addActionListener( this );
+    initialNotes = keyMove.getNotes();
     notes.setText( keyMove.getNotes() );
 
     checkForUpgrade();
@@ -622,25 +623,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     }  
     else if ( source == function )
     {
-      Function func = ( Function )function.getSelectedItem();
-      if ( func == null )
-      {
-        return;
-      }
-      cmd = func.getHex();
-      String text = notes.getText();
-      if ( text == null || text.trim().equals( "" ) )
-      {
-        if ( func != null )
-        {
-          text = func.getNotes();
-          if ( text == null || text.trim().equals( "" ) )
-          {
-            text = func.getName();
-          }
-          notes.setText( text );
-        }
-      }
+      setFunction();
     }
     else if ( source == movedKey )
     {
@@ -715,6 +698,28 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       popup.show( chooseUpgrade, 0, chooseUpgrade.getHeight() );
     }
   }
+  
+  private void setFunction()
+  {
+    Function func = ( Function )function.getSelectedItem();
+    if ( func == null )
+    {
+      return;
+    }
+    cmd = func.getHex();
+    if ( initialNotes == null || initialNotes.trim().equals( "" ) )
+    {
+      if ( func != null )
+      {
+        String text = func.getNotes();
+        if ( text == null || text.trim().equals( "" ) )
+        {
+          text = func.getName();
+        }
+        notes.setText( text );
+      }
+    }
+  }
 
   /** The bound device. */
   private JComboBox boundDevice = new JComboBox();
@@ -781,6 +786,8 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
 
   /** The notes. */
   private JTextArea notes = new JTextArea( 2, 10 );
+  
+  private String initialNotes = null;
 
   /** The config. */
   private RemoteConfiguration config = null;
@@ -899,6 +906,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     else if ( source == useFunction )
     {
       function.setVisible( isSelect );
+      setFunction();
     }
     else if ( source == useKey )
     {

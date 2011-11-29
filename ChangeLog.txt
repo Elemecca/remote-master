@@ -92,6 +92,9 @@ Changes for v2.02
 - When autodetecting interface, if returned port name is an empty string, treat at null, which solves issue of jp12serial port being found even when not connected (Graham)
 - Fix bug that repeated use of Edit Device button on General panel was not recognising changes made in earlier edit (Graham)
 - For S3C80 disassembly, label absolute addresses within the protocol code as well as relative ones, since CALL only takes absolute addresses and upgrades are executed from a standard location (Graham)
+- Skip blank lines when looping through Functions table of device editor (Graham)
+- When creating new key move with Function selected, correct bug that made default selection not be recognised (Graham)
+- Make RM windowClosing() be failsafe by adding a "finally dispose()"; already done for RMIR by Barf (Graham)
 
 Changes for v2.01
 -- Alpha --
