@@ -33,6 +33,11 @@ public abstract class IO
    * @return the interface version
    */
   public abstract String getInterfaceVersion();
+  
+  public int getInterfaceType()
+  {
+    return 0;
+  }
 
   /**
    * Gets the port names.

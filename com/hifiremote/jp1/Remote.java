@@ -293,7 +293,7 @@ public class Remote implements Comparable< Remote >
           deviceTypeAliases.put( typeName, type );
           v.add( typeName );
         }
-        if ( !hasPVRalias )
+        if ( !hasPVRalias && vcrType != null )
         {
           v.add( "PVR" );
           deviceTypeAliases.put( "PVR", vcrType );
@@ -770,6 +770,12 @@ public class Remote implements Comparable< Remote >
     load();
     return learnButtons;
   }
+  
+  public short[] getSegmentTypes()
+  {
+    load();
+    return segmentTypes;
+  }
 
   /**
    * Gets the phantom shapes.
@@ -1013,6 +1019,21 @@ public class Remote implements Comparable< Remote >
       {
         learnedAddress = new AddressRange( value, this );
         check( learnedAddress, "LearnedAddr" );
+      }
+      else if ( parm.equalsIgnoreCase( "SegmentTypes" ) )
+      {
+        StringTokenizer st = new StringTokenizer( value, ", " );
+        List< Integer > types = new ArrayList< Integer >();
+        while ( st.hasMoreTokens() )
+        {
+          types.add( RDFReader.parseNumber( st.nextToken().trim() ) );
+        }
+        segmentTypes = new short[ types.size() ];
+        int i = 0;
+        for ( Integer val : types )
+        {
+          segmentTypes[ i++ ] = val.shortValue();
+        }
       }
       else if ( parm.equals( "Processor" ) )
       {
@@ -1637,6 +1658,11 @@ public class Remote implements Comparable< Remote >
 
       int hiAddr = RDFReader.parseNumber( st.nextToken() );
       int lowAddr = RDFReader.parseNumber( st.nextToken() );
+      if ( segmentTypes != null )
+      {
+        hiAddr = 0;
+        lowAddr = 0;
+      }
       int typeAddr = 0;
       if ( st.hasMoreTokens() )
       {
@@ -2668,11 +2694,15 @@ public class Remote implements Comparable< Remote >
     }
     else if ( name.equals( "S3F80" ) )
     {
-      return "JP1.3";
+      return ( segmentTypes == null ) ? "JP1.3" : "JP1.4";
     }
     else if ( name.equals( "SST" ) )
     {
       return "JP1.1";
+    }
+    else if ( name.equals(  "MAXQ610" ) )
+    {
+      return "JP2";
     }
     else
     {
@@ -2720,6 +2750,10 @@ public class Remote implements Comparable< Remote >
     else if ( name.equals( "740" ) )
     {
       return "Mitsubishi P8/740";
+    }
+    else if ( name.equals( "MAXQ610" ) )
+    {
+      return "Maxim MAXQ610";
     }
     else
     {
@@ -3155,6 +3189,8 @@ public class Remote implements Comparable< Remote >
 
   /** The digit maps. */
   private short[] digitMaps = new short[ 0 ];
+  
+  private short[] segmentTypes = null;
 
   /** The button maps. */
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];

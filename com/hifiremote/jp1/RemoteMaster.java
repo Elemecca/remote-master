@@ -96,7 +96,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Beta 1.5";
+  public final static String version = "v2.02 Beta 1.5d";
 
   /** The dir. */
   private File dir = null;
@@ -360,22 +360,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       // See comment in Hex.getRemoteSignature( short[] ) for why the line below was not safe
       // String sig = io.getRemoteSignature();
-      short[] sigData = new short[ 10 ];
       int baseAddress = io.getRemoteEepromAddress();
       System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
-      int count = io.readRemote( baseAddress, sigData );
-      System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ) );
-
-      String sig = Hex.getRemoteSignature( sigData );
+      String sig = getIOsignature( io, baseAddress );
       String sig2 = null;
-
       Remote remote = null;
       List< Remote > remotes = null;
       RemoteManager rm = RemoteManager.getRemoteManager();
       if ( remoteConfig != null && remoteConfig.getRemote() != null )
       {
         sig2 = remoteConfig.getRemote().getSignature();
-        if ( sig2.equals( sig.substring( 0, sig2.length() ) ) )
+        if ( sig2.length() <= sig.length() && sig2.equals( sig.substring( 0, sig2.length() ) ) )
         {
           // Current and download remotes have same signature. Note that if current signature length
           // is less than 8 then we only test the corresponding substring of download signature.
@@ -393,9 +388,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         System.err.println( "Searching for RDF" );
         if ( remotes == null )
         {
-          for ( int i = 0; i < 5; i++ )
+          for ( int i = sig.length(); i >= 4; i-- )
           {
-            sig2 = sig.substring( 0, sig.length() - i );
+            sig2 = sig.substring( 0, i );
             remotes = rm.findRemoteBySignature( sig2 );
             if ( !remotes.isEmpty() )
             {
@@ -471,7 +466,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       remote.load();
       remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
-      count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
+      int count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
       System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
       io.closeRemote();
       System.err.println( "Ending normal download" );
@@ -514,19 +509,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       Remote remote = remoteConfig.getRemote();
       IO io = getOpenInterface();
-      String sig = null;
-      if ( io != null )
-      {
-        sig = io.getRemoteSignature();
-      }
-      if ( sig == null )
+      if ( io == null )  
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
         setInterfaceState( null );
         return null;
       }
-
-      if ( !sig.equals( remote.getSignature() ) )
+      System.err.println( "Interface opened successfully" );
+      int baseAddress = io.getRemoteEepromAddress();
+      System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
+      String sig = getIOsignature( io, baseAddress );
+      String rSig = remote.getSignature();
+      if ( sig.length() < rSig.length() || !rSig.equals( sig.substring( 0, rSig.length() ) ) )
       {
         Object[] options =
         {
@@ -2150,7 +2144,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( tempName.equals( interfaceName ) )
         {
           System.err.println( "Interface matched.  Trying to open remote." );
-          if ( temp.openRemote( portName ) != null )
+          portName = temp.openRemote( portName );
+          if ( portName != null && !portName.isEmpty() )
           {
             System.err.println( "Opened" );
             return temp;
@@ -2193,6 +2188,30 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
   }
 
+  public static String getIOsignature( IO io, int baseAddress )
+  {
+    String sig = null;
+    if ( io.getInterfaceType() > 0 ) // JP12Serial versions later than 0.18a
+    {
+      sig = io.getRemoteSignature();
+    }
+    else // Other interfaces and earlier JP12Serial versions
+    {
+      short[] sigData = new short[ 10 ];
+      int count = io.readRemote( baseAddress, sigData );
+      System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ) );
+      sig = Hex.getRemoteSignature( sigData );
+    }
+    if ( sig != null )
+    {
+      while ( sig.endsWith( "_" ) )
+      {
+        sig = sig.substring( 0, sig.length() - 1 );
+      }
+    }
+    return sig;
+  }
+  
   /**
    * Description of the Method.
    * 

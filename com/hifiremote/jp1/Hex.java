@@ -540,7 +540,9 @@ public class Hex implements Cloneable, Comparable< Hex >
     // as the latter uses JNI's NewStringUTF to convert a C++ UTF-8 string to a Java string.
     // This will give an error if the char array being converted is not a valid UTF-8 string.
     // A real example from a CYC1 remote is the char array 43 59 43 31 DC 24 00 CC 00.  This
-    // is valid as ISO 8859-1 but not as UTF-8.
+    // is valid as ISO 8859-1 but not as UTF-8. NOTE: In jp12serial.dll versions later than
+    // 0.18a, return value is truncated at first non-ASCII character and padded to 8 characters
+    // with underscores to avoid this issue.
     
     int len = data.length;
     if ( len < 2 )
@@ -556,9 +558,15 @@ public class Hex implements Cloneable, Comparable< Hex >
     }
     
     char[] sig = new char[ 8 ];
-    for ( int i = 0; i < 8; ++i )
+    short val;
+    int i = 0;
+    for ( ; i < 8 && ( ( val = data[ sigStart + i ] ) >= 0x20 && val < 0x80 ); ++i )
     {
-      sig[ i ] = ( char )data[ sigStart + i ];
+      sig[ i ] = ( char )val;
+    }
+    for ( ; i < 8; ++i )
+    {
+      sig[ i ] = '_';
     }
     return new String( sig );
   }

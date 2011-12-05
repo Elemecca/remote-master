@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -158,7 +159,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   {
     // This extends the range of values of the device type index beyond 0x0F to use a distinctive
     // value, 0xFF, to signify an empty device slot in a remote that uses soft devices.
-    short[] data = remoteConfig.getData();
+    short[] data = getData( row );
     Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
     if ( remote.getSoftDevices() == null || db.getDeviceSlot( data ) != 0xFFFF )
@@ -237,6 +238,31 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     return editable && col > 1 && ( col == 2 || col == 7 || getExtendedTypeIndex( row ) != 0xFF )
         && ( col != 3 || getValueAt( row, col ) != null );
   }
+  
+  private short[] getData( int row )
+  {
+    DeviceButton db = getRow( row );
+    short[] data = null;
+    if ( remoteConfig.hasSegments() )
+    {
+      List< Hex > setupList = remoteConfig.getSegments().get( ( short) 0 );
+      int index = db.getButtonIndex();
+      
+      for ( Hex hex : setupList )
+      {
+        if ( hex.getData()[ 0 ] == 0xFF && hex.getData()[ 1 ] == index + 1 )
+        {
+          data = hex.getData();
+          break;
+        }
+      }
+    }
+    else
+    {
+      data = remoteConfig.getData();
+    }
+    return data;
+  }
 
   /*
    * (non-Javadoc)
@@ -245,9 +271,33 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
    */
   public Object getValueAt( int row, int column )
   {
-    short[] data = remoteConfig.getData();
     Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
+    short[] data = getData( row );
+//    short[] data = null;
+//    if ( remoteConfig.hasSegments() )
+//    {
+//      List< Hex > setupList = remoteConfig.getSegments().get( ( short) 0 );
+//      int index = db.getButtonIndex();
+//      
+//      for ( Hex hex : setupList )
+//      {
+//        if ( hex.getData()[ 0 ] == 0xFF && hex.getData()[ 1 ] == index + 1 )
+//        {
+//          data = hex.getData();
+//          break;
+//        }
+//      }
+//    }
+//    else
+//    {
+//      data = remoteConfig.getData();
+//    }
+//    if ( data == null )
+//    {
+//      return null;
+//    }
+    
     int typeIndex = getExtendedTypeIndex( row );
     int group = db.getDeviceGroup( data );
     column = getEffectiveColumn( column );
@@ -360,7 +410,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   @Override
   public void setValueAt( Object value, int row, int col )
   {
-    short[] data = remoteConfig.getData();
+    short[] data = getData( row );
     Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
     SoftDevices softDevices = remote.getSoftDevices();

@@ -203,8 +203,42 @@ public class RemoteConfiguration
    */
   private Property loadBuffer( PropertyReader pr ) throws IOException
   {
+    String signature = null;
+    List< short[] > values = new ArrayList< short[] >();
     Property property = pr.nextProperty();
+    
+    if ( property.name.equals( "[Signature]" ) )
+    {
+      // This reads the signature section for JP1.4/JP2.  The value of sigData
+      // is not used at present but is constructed with a view to later use.
+      int sigLen = 0;
+      do
+      {
+        property = pr.nextProperty();
+        short[] data = Hex.parseHex( property.value );
+        sigLen += data.length;
+        values.add( data );
+      } 
+      while ( ( property != null ) && ( property.name.length() > 0 ) );
+      
+      short[] sigData = new short[ sigLen ];
+      sigLen = 0;
+      for ( short[] data : values )
+      {
+        System.arraycopy( data, 0, sigData, sigLen, data.length );
+        sigLen += data.length;
+      }
+      char[] sig = new char[ 6 ];
+      for ( int i = 0; i < 6; i++ )
+      {
+        sig[ i ] = ( char )sigData[ i ];
+      }
+      signature = new String( sig );
 
+      while ( ( property != null ) && ( property.name.length() == 0 ) )
+        property = pr.nextProperty();
+    }
+    
     if ( property.name.equals( "[Buffer]" ) || property.name.equals( "" ) )
     {
       property = pr.nextProperty();
@@ -213,7 +247,7 @@ public class RemoteConfiguration
     int baseAddr = Integer.parseInt( property.name, 16 );
     
     List< Integer > offsets = new ArrayList< Integer >();    
-    List< short[] > values = new ArrayList< short[] >();
+    values.clear();
     
     while ( property != null )
     {
@@ -244,13 +278,16 @@ public class RemoteConfiguration
 //      See comment in Hex.getRemoteSignature( short[] ) for why the lines below were not safe      
 //      String signature = new String( sig );
 //      String sig = io.getRemoteSignature();
-      String signature = Hex.getRemoteSignature( data );
+      if ( signature == null )
+      {
+        signature = Hex.getRemoteSignature( data );
+      }
       String signature2 = null;
       RemoteManager rm = RemoteManager.getRemoteManager();
       List< Remote > remotes = null;
-      for ( int i = 0; i < 5; i++ )
+      for ( int i = signature.length(); i >= 4; i-- )
       {
-        signature2 = signature.substring( 0, signature.length() - i );
+        signature2 = signature.substring( 0, i );
         remotes = rm.findRemoteBySignature( signature2 );
         if ( !remotes.isEmpty() ) break;
       }
@@ -305,6 +342,46 @@ public class RemoteConfiguration
     setSavedData();
 
     return property;
+  }
+  
+  public boolean hasSegments()
+  {
+    return remote.getSegmentTypes() != null;
+  }
+  
+  public LinkedHashMap< Short, List< Hex >> getSegments()
+  {
+    return segments;
+  }
+
+  private void loadSegments()
+  {
+    int pos = 2;  // first two bytes are checksum
+    int segLength = 0;
+    while ( pos < remote.getEepromSize() && ( segLength = Hex.get( data, pos ) ) <= remote.getEepromSize() - pos  )
+    {
+      short segType = data[ pos + 2 ];
+      Hex segData = new Hex( data, pos + 3, segLength - 3 );
+      pos += segLength;
+      List< Hex > list = segments.get( segType );
+      if ( list == null )
+      {
+        list = new ArrayList< Hex >();
+      }
+      list.add( segData );
+      segments.put( segType, list );
+    }
+    List< Hex > macroList = segments.get( ( short )1 );
+    if ( macroList != null )
+    {
+      for ( Hex hex : macroList )
+      {
+        int keyCode = hex.getData()[ 2 ];
+        Hex keyCodes = hex.subHex( 4, hex.getData()[ 3 ] );
+        macros.add( new Macro( keyCode, keyCodes, null ) );
+      }
+    }
+    pos = 0;
   }
   
   public static Remote filterRemotes( List< Remote > remotes, String signature, int eepromSize, 
@@ -491,6 +568,12 @@ public class RemoteConfiguration
     {
       ProtocolManager.getProtocolManager().reset();
     }
+    
+    if ( remote.getSegmentTypes() != null )
+    {
+      loadSegments();
+    }
+    
     decodeSettings();
     decodeUpgrades();
     List< AdvancedCode > advCodes = decodeAdvancedCodes();
@@ -1017,7 +1100,9 @@ public class RemoteConfiguration
    */
   public void parseData() throws IOException
   {
+    System.err.println( "Data parsing started" );
     importIR( null, true );
+    System.err.println( "Data parsing ended" );
     /*
      * decodeSettings(); decodeUpgrades();
      * 
@@ -1033,6 +1118,7 @@ public class RemoteConfiguration
    */
   public void decodeSettings()
   {
+    System.err.println( "Decoding settings" );
     Setting[] settings = remote.getSettings();
     for ( Setting setting : settings )
     {
@@ -1096,6 +1182,7 @@ public class RemoteConfiguration
    */
   private List< AdvancedCode > decodeAdvancedCodes()
   {
+    System.err.println( "Decoding advanced codes" );
     // Determine which upgrades are special protocol upgrades
     List< DeviceUpgrade > specialUpgrades = new ArrayList< DeviceUpgrade >();
     List< SpecialProtocol > specialProtocols = remote.getSpecialProtocols();
@@ -1116,6 +1203,10 @@ public class RemoteConfiguration
     }
 
     List< AdvancedCode > advCodes = new ArrayList< AdvancedCode >();
+    if ( remote.getAdvancedCodeAddress() == null )
+    {
+      return advCodes;
+    }
     HexReader reader = new HexReader( data, remote.getAdvancedCodeAddress() );
     AdvancedCode advCode = null;
     while ( ( advCode = AdvancedCode.read( reader, remote ) ) != null )
@@ -1796,12 +1887,17 @@ public class RemoteConfiguration
    */
   private void decodeUpgrades()
   {
+    System.err.println( "Decoding upgrades" );
     AddressRange addr = remote.getUpgradeAddress();
     // Also get address range for device specific upgrades, which will be null
     // if these are not used by the remote.
     AddressRange devAddr = remote.getDeviceUpgradeAddress();
 
     Processor processor = remote.getProcessor();
+    if ( addr == null || processor == null )
+    {
+      return;
+    }
     // get the offsets to the device and protocol tables
     int deviceTableOffset = processor.getInt( data, addr.getStart() ) - remote.getBaseAddress(); // get offset of device
     // table
@@ -2862,6 +2958,8 @@ public class RemoteConfiguration
 
   /** The saved data. */
   private short[] savedData = null;
+  
+  private LinkedHashMap< Short, List<Hex> > segments = new LinkedHashMap< Short, List<Hex> >();
 
   /** The keymoves. */
   private List< KeyMove > keymoves = new ArrayList< KeyMove >();

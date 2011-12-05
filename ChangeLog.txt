@@ -95,6 +95,7 @@ Changes for v2.02
 - Skip blank lines when looping through Functions table of device editor (Graham)
 - When creating new key move with Function selected, correct bug that made default selection not be recognised (Graham)
 - Make RM windowClosing() be failsafe by adding a "finally dispose()"; already done for RMIR by Barf (Graham)
+- First steps towards handling JP1.4 and JP2 remotes (Graham)
 
 Changes for v2.01
 -- Alpha --

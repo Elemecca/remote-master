@@ -103,11 +103,8 @@ public class RawDataDialog extends JDialog implements ActionListener
       System.err.println( "Interface opened successfully" );
       baseAddress = io.getRemoteEepromAddress();
       System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
-      short[] sigData = new short[ 10 ];
-      int count = io.readRemote( baseAddress, sigData );
-      System.err.println( "Read first " + count + " bytes: " + Hex.toString( sigData ).toUpperCase() );
-      signature = Hex.getRemoteSignature( sigData );
       
+      signature = RemoteMaster.getIOsignature( io, baseAddress );
       int buffSize = io.getRemoteEepromSize();
       System.err.println( "Initial buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
       if ( buffSize <= 0 )
@@ -134,7 +131,7 @@ public class RawDataDialog extends JDialog implements ActionListener
       }
       System.err.println( "Final buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
       buffer = new short[ buffSize ];
-      count = io.readRemote( baseAddress, buffer );
+      int count = io.readRemote( baseAddress, buffer );
       System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
       io.closeRemote();
       System.err.println( "Ending raw download" );

@@ -25,6 +25,20 @@ public class JP12Serial extends IO
    */
   @Override
   public native String getInterfaceVersion();
+  
+  private native int getJP12InterfaceType();
+  
+  @Override
+  public int getInterfaceType()
+  {
+    int type = 0;
+    if ( getInterfaceVersion().compareTo( "0.18a" ) > 0 )
+    {
+      type = getJP12InterfaceType();
+      System.err.println( "Interface type = " + type );
+    }
+    return type;
+  }
 
   /*
    * (non-Javadoc)

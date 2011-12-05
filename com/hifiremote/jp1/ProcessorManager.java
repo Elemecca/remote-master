@@ -128,6 +128,9 @@ public class ProcessorManager
     p.setStartOffset( 0 );
     add( p );
     
+    p = new MAXQProcessor( "MAXQ610" );
+    add( p );
+    
   }
 
 
