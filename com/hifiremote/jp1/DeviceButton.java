@@ -88,16 +88,23 @@ public class DeviceButton extends Highlight
    */
   public void setDeviceTypeIndex( short index, short[] data )
   {
-    if ( index == 0xFF )
+    if ( highAddress > 0 )
     {
-      data[ highAddress ] = 0xFF;
-      data[ lowAddress ] = 0xFF;
+      if ( index == 0xFF )
+      {
+        data[ highAddress ] = 0xFF;
+        data[ lowAddress ] = 0xFF;
+      }
+      else
+      {
+        data[ highAddress ] &= 0x0F;
+        index <<= 4;
+        data[ highAddress ] |= index;
+      }
     }
     else
     {
-      data[ highAddress ] &= 0x0F;
-      index <<= 4;
-      data[ highAddress ] |= index;
+      data[ 3 ] = index;
     }
   }
   
@@ -148,15 +155,21 @@ public class DeviceButton extends Highlight
     {
       throw new NumberFormatException( "Setup codes must be between 0 and " + SetupCode.getMax() );
     }
-    short temp = setupCode;
-    temp >>= 8;
-    int mask = 0xF8;
-    if ( SetupCode.getMax() > 2047 )
-      mask = 0xF0;
-    data[ highAddress ] &= mask;
-    data[ highAddress ] |= temp;
-
-    data[ lowAddress ] = ( short )( setupCode & 0xFF );
+    if ( highAddress > 0 )
+    {
+      short temp = setupCode;
+      temp >>= 8;
+      int mask = 0xF8;
+      if ( SetupCode.getMax() > 2047 )
+        mask = 0xF0;
+      data[ highAddress ] &= mask;
+      data[ highAddress ] |= temp;
+      data[ lowAddress ] = ( short )( setupCode & 0xFF );
+    }
+    else
+    {
+      Hex.put( ( int )setupCode, data, 4 );
+    }
   }
   
   public int getDeviceSlot( short[] data )

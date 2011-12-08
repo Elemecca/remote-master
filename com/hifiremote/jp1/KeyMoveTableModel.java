@@ -127,7 +127,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", "00 (key code)", "FF FF",
+      " 00 ", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", "00 (key code)___", "FF FF",
       "xshift-CBL/SAT", "A reasonable length long note", "Color"
   };
 

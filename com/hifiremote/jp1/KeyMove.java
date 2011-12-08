@@ -50,7 +50,13 @@ public class KeyMove extends AdvancedCode implements Cloneable
   public KeyMove( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, Hex cmd, String notes )
   {
     super( keyCode, null, notes );
-    setData( getRawHex( deviceType, setupCode, cmd ) );
+    Hex cmdHex = cmd;
+    if ( cmdIndex == 3 )
+    {
+      cmdHex = new Hex( 3 );
+      cmdHex.put( cmd, 1 );
+    }
+    setData( getRawHex( deviceType, setupCode, cmdHex ) );
     this.cmd = cmd;
     setDeviceButtonIndex( deviceButtonIndex );
     this.deviceType = deviceType;
@@ -74,7 +80,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
   public KeyMove( Properties props )
   {
     super( props );
-    cmd = data.subHex( cmdIndex );
+    cmd = data.subHex( cmdIndex == 2 ? 2 : 4 );
     deviceButtonIndex = Integer.parseInt( props.getProperty( "DeviceButtonIndex" ) );
     setDeviceType( Integer.parseInt( props.getProperty( "DeviceType" ) ) );
     setSetupCode( Integer.parseInt( props.getProperty( "SetupCode" ) ) );
@@ -125,7 +131,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
     {
       return new EFC5( getRawHex( 0, 0, cmd ).subHex( cmdIndex == 2 ? 2 : 4 ) );
     }
-    return new EFC5( cmdIndex == 2 ? cmd : cmd.subHex( 1 ) );
+    return new EFC5( cmd );
   }
 
   /**
@@ -261,7 +267,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
     update();
   }
 
-  protected Hex cmd = null;
+  private Hex cmd = null;
 
   public Hex getCmd()
   {
@@ -312,25 +318,37 @@ public class KeyMove extends AdvancedCode implements Cloneable
   @Override
   public int store( short[] buffer, int offset, Remote remote )
   {
-    buffer[ offset++ ] = ( short )keyCode;
-    int lengthOffset;
-    if ( remote.getAdvCodeBindFormat() == BindFormat.NORMAL )
+    int hexLength;
+    if ( cmdIndex == 2 )  // remotes without segments
     {
-      int temp = deviceButtonIndex << 5;
-      buffer[ offset ] = ( short )temp;
-      lengthOffset = offset++ ;
+      buffer[ offset++ ] = ( short )keyCode;
+      int lengthOffset;
+
+      if ( remote.getAdvCodeBindFormat() == BindFormat.NORMAL )
+      {
+        int temp = deviceButtonIndex << 5;
+        buffer[ offset ] = ( short )temp;
+        lengthOffset = offset++ ;
+      }
+      else
+        // LONG Format
+      {
+        buffer[ offset++ ] = ( short )( 0x10 | deviceButtonIndex );
+        lengthOffset = offset++ ;
+        buffer[ lengthOffset ] = 0;
+      }
+      hexLength = data.length();
+      Hex.put( data, buffer, offset );
+      buffer[ lengthOffset ] |= ( short )hexLength;
     }
     else
-    // LONG Format
     {
-      buffer[ offset++ ] = ( short )( 0x10 | deviceButtonIndex );
-      lengthOffset = offset++ ;
-      buffer[ lengthOffset ] = 0;
+      buffer[ offset++ ] = 0xFF;
+      buffer[ offset++ ] = ( short )deviceButtonIndex;
+      buffer[ offset++ ] = ( short )keyCode;
+      hexLength = data.length();
+      Hex.put( data, buffer, offset );
     }
-    int hexLength = data.length();
-    Hex.put( data, buffer, offset );
-    buffer[ lengthOffset ] |= ( short )hexLength;
-
     return offset + hexLength;
   }
 }

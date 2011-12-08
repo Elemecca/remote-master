@@ -14,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -363,9 +364,8 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     }
 
     cmd = new Hex( keyMove.getCmd() );
-
-    boundDevice.setSelectedIndex( keyMove.getDeviceButtonIndex() );
-
+    DeviceButton devBtn = config.getRemote().getDeviceButton( keyMove.getDeviceButtonIndex() );
+    boundDevice.setSelectedItem( devBtn );
     shift.removeActionListener( this );
     xShift.removeActionListener( this );
     setButton( keyMove.getKeyCode(), boundKey, shift, xShift );
@@ -512,12 +512,11 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     Button b = ( Button )boundKey.getSelectedItem();
     if ( source == okButton )
     {
-      int deviceIndex = boundDevice.getSelectedIndex();
+      int deviceIndex = ( ( DeviceButton )boundDevice.getSelectedItem() ).getButtonIndex();
       if ( deviceIndex == -1 )
       {
         showWarning( "You must select a device for the bound key." );
         return;
-
       }
       if ( boundKey.getSelectedItem() == null )
       {

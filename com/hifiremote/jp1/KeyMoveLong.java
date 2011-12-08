@@ -23,11 +23,16 @@ public class KeyMoveLong extends KeyMove
   @Override
   public Hex getRawHex( int deviceType, int setupCode, Hex cmd )
   {
-    Hex hex = new Hex( getCmdIndex() + 2 );
+    Hex hex = new Hex( getCmdIndex() == 2 ? 4 : 6 );
     short[] hexData = hex.getData();
     short[] cmdData = cmd.getData();
     hexData[ getCmdIndex() ] = cmdData[ 0 ];
-    if ( cmdData.length == 2 )
+    if ( getCmdIndex() == 3 && cmdData.length == 3 )
+    {
+      hexData[ getCmdIndex() + 1 ] = cmdData[ 1 ];
+      hexData[ getCmdIndex() + 2 ] = cmdData[ 2 ];
+    }
+    else if ( cmdData.length == 2 )
     {
       hexData[ getCmdIndex() + 1 ] = cmdData[ 1 ];
     }

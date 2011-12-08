@@ -35,7 +35,7 @@ public class KeyMoveEFC5
    */
   public KeyMoveEFC5( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, int efc, String notes )
   {
-    super( keyCode, deviceButtonIndex, deviceType, setupCode, new Hex( getCmdIndex() == 2 ? 2 : 3 ), notes );
+    super( keyCode, deviceButtonIndex, deviceType, setupCode, new Hex( 2 ), notes );
     setEFC( efc );
   }
   

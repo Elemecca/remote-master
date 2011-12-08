@@ -274,30 +274,6 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
     short[] data = getData( row );
-//    short[] data = null;
-//    if ( remoteConfig.hasSegments() )
-//    {
-//      List< Hex > setupList = remoteConfig.getSegments().get( ( short) 0 );
-//      int index = db.getButtonIndex();
-//      
-//      for ( Hex hex : setupList )
-//      {
-//        if ( hex.getData()[ 0 ] == 0xFF && hex.getData()[ 1 ] == index + 1 )
-//        {
-//          data = hex.getData();
-//          break;
-//        }
-//      }
-//    }
-//    else
-//    {
-//      data = remoteConfig.getData();
-//    }
-//    if ( data == null )
-//    {
-//      return null;
-//    }
-    
     int typeIndex = getExtendedTypeIndex( row );
     int group = db.getDeviceGroup( data );
     column = getEffectiveColumn( column );

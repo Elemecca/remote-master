@@ -358,9 +358,17 @@ public class RemoteConfiguration
   {
     int pos = 2;  // first two bytes are checksum
     int segLength = 0;
+    for ( short type : remote.getSegmentTypes() )
+    {
+      segmentLoadOrder.add( ( int )type );
+    }
     while ( pos < remote.getEepromSize() && ( segLength = Hex.get( data, pos ) ) <= remote.getEepromSize() - pos  )
     {
       int segType = data[ pos + 2 ];
+      if ( !segmentLoadOrder.contains( segType ) )
+      {
+        segmentLoadOrder.add( segType );
+      }
       Hex segData = new Hex( data, pos + 3, segLength - 3 );
       pos += segLength;
       List< Hex > list = segments.get( segType );
@@ -413,8 +421,16 @@ public class RemoteConfiguration
     {
       for ( Hex hex : keyMoveEFCList )
       {
-        KeyMove keyMove = new KeyMoveEFC5( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.getData()[ 3 ], hex.get( 4 ), hex.get( 7 ), null );
-        keymoves.add( keyMove );
+        if ( remote.getAdvCodeFormat() == AdvancedCode.Format.EFC )
+        {
+          KeyMove keyMove = new KeyMoveEFC5( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.getData()[ 3 ], hex.get( 4 ), hex.get( 7 ), null );
+          keymoves.add( keyMove );
+        }
+        else
+        {
+          KeyMove keyMove = new KeyMove( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.getData()[ 3 ], hex.get( 4 ), hex.subHex( 7, 2 ), null );
+          keymoves.add( keyMove );
+        }
       }
     }
     List< Hex > upgradeList = segments.get( 0x10 );
@@ -1633,8 +1649,26 @@ public class RemoteConfiguration
     }
     updateLearnedSignals();
     updateUpgrades();
+    
+    if ( remote.getSegmentTypes() != null )
+    {
+      int pos = 2;
+      for ( int type : segmentLoadOrder )
+      {
+        List< Hex > list = segments.get( type );
+        if ( list != null )
+        {
+          for ( Hex hex : list )
+          {
+            Hex.put( hex.length() + 3, data, pos );
+            data[ pos + 2 ] = ( short )type;
+            Hex.put( hex, data, pos + 3 );
+            pos += hex.length() + 3;
+          }
+        }
+      }
+    }
     updateCheckSums();
-
     checkImageForByteOverflows();
   }
 
@@ -1667,7 +1701,21 @@ public class RemoteConfiguration
     {
       keyMove.clearMemoryUsage();
       updateHighlight( keyMove, offset, keyMove.getSize( remote ) );
-      offset = keyMove.store( data, offset, remote );
+      if ( remote.getSegmentTypes() == null )
+      {
+        offset = keyMove.store( data, offset, remote );
+      }
+      else
+      {
+        int type = ( keyMove instanceof KeyMoveKey ) ? 7 : 8;
+        Hex segData = new Hex( type == 7 ? 7 : 9 );
+        if ( segments.get( type ) == null )
+        {
+          segments.put(  type, new ArrayList< Hex >() );
+        }
+        keyMove.store( segData.getData(), offset, remote );
+        segments.get( type ).add( segData );
+      }
     }
     return offset;
   }
@@ -1741,19 +1789,32 @@ public class RemoteConfiguration
    */
   private void updateAdvancedCodes()
   {
+    int offset = 0;
     AddressRange range = remote.getAdvancedCodeAddress();
-    if ( range == null )
+    if ( remote.getSegmentTypes() != null )
+    {
+      segments.remove( 1 );
+      segments.remove( 2 );
+      segments.remove( 7 );
+      segments.remove( 8 );
+      updateKeyMoves( keymoves, 0 );
+    }
+    else if ( range != null )
+    {
+      offset = range.getStart();
+      updateSpecialFunctionSublists();
+      offset = updateKeyMoves( keymoves, offset );
+      upgradeKeyMoves = getUpgradeKeyMoves();
+      offset = updateKeyMoves( upgradeKeyMoves, offset );
+      offset = updateKeyMoves( specialFunctionKeyMoves, offset );
+    }
+    else
     {
       return;
     }
-    int offset = range.getStart();
-    updateSpecialFunctionSublists();
-    offset = updateKeyMoves( keymoves, offset );
-    upgradeKeyMoves = getUpgradeKeyMoves();
-    offset = updateKeyMoves( upgradeKeyMoves, offset );
-    offset = updateKeyMoves( specialFunctionKeyMoves, offset );
+    
 
-    HashMap< Button, List< Macro >> multiMacros = new HashMap< Button, List< Macro >>();
+    HashMap< Button, List< Macro >> multiMacros = new LinkedHashMap< Button, List< Macro >>();
     for ( Macro macro : macros )
     {
       macro.clearMemoryUsage();
@@ -1774,9 +1835,68 @@ public class RemoteConfiguration
           macro.setSequenceNumber( list.size() );
         }
       }
-      updateHighlight( macro, offset, macro.getSize( remote ) );
-      offset = macro.store( data, offset, remote );
     }
+    for ( Macro macro : macros )
+    {
+      updateHighlight( macro, offset, macro.getSize( remote ) );
+      
+      if ( remote.getSegmentTypes() == null )
+      {
+        offset = macro.store( data, offset, remote );
+      }
+      else
+      {
+        int keyCode = macro.getKeyCode();
+        Button button = remote.getButton( keyCode );
+        MultiMacro multiMacro = ( button != null ) ? button.getMultiMacro() : null;
+        if ( multiMacro == null )
+        {
+          int size = macro.getData().length();
+          Hex segData = new Hex( size + ( ( size & 1 ) == 1 ? 4 : 5 ) );
+          segData.put( 0xFF00, 0 );
+          segData.getData()[ 2 ] = ( short )keyCode;
+          segData.getData()[ 3 ] = ( short )size;
+          segData.put( macro.getData(), 4 );
+          if ( segments.get( 1 ) == null )
+          {
+            segments.put( 1, new ArrayList< Hex >() );
+          }
+          segments.get( 1 ).add( segData );
+        }
+      }
+    }
+    if ( remote.getSegmentTypes() != null )
+    {
+      for ( Button btn : multiMacros.keySet() )
+      {
+        int keyCode = btn.getKeyCode();
+        List< Macro > list = multiMacros.get(  btn );
+        int size = 0;
+        for ( Macro macro : list )
+        {
+          size += macro.getData().length() + 1;
+        }
+        Hex segData = new Hex( size + ( ( size & 1 ) == 1 ? 4 : 5 ) );
+        segData.put( 0xFF00, 0 );
+        segData.getData()[ 2 ] = ( short )keyCode;
+        segData.getData()[ 3 ] = ( short )list.size();
+        int pos = 4;
+        for ( Macro macro : list )
+        {
+          size = macro.getData().length();
+          segData.getData()[ pos ] = ( short )size;
+          segData.put( macro.getData(), pos + 1 );
+          pos += size + 1;
+        }
+        if ( segments.get( 2 ) == null )
+        {
+          segments.put( 2, new ArrayList< Hex >() );
+        }
+        segments.get( 2 ).add( segData );
+      }
+      return;
+    }
+    
     for ( Macro macro : specialFunctionMacros )
     {
       macro.clearMemoryUsage();
@@ -3042,6 +3162,8 @@ public class RemoteConfiguration
   private short[] savedData = null;
   
   private LinkedHashMap< Integer, List<Hex> > segments = new LinkedHashMap< Integer, List<Hex> >();
+  
+  private List< Integer > segmentLoadOrder = new ArrayList< Integer >();
 
   /** The keymoves. */
   private List< KeyMove > keymoves = new ArrayList< KeyMove >();
