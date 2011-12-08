@@ -35,7 +35,7 @@ public class KeyMoveEFC5
    */
   public KeyMoveEFC5( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, int efc, String notes )
   {
-    super( keyCode, deviceButtonIndex, deviceType, setupCode, new Hex( 2 ), notes );
+    super( keyCode, deviceButtonIndex, deviceType, setupCode, new Hex( getCmdIndex() == 2 ? 2 : 3 ), notes );
     setEFC( efc );
   }
   
@@ -54,16 +54,14 @@ public class KeyMoveEFC5
    */
   public Object clone()
   {
-    return new KeyMoveEFC5( getKeyCode(), getDeviceButtonIndex(), getDeviceType(), getSetupCode(), getEFC().getValue(), getNotes());
+    return new KeyMoveEFC5( getKeyCode(), getDeviceButtonIndex(), getDeviceType(), getSetupCode(), getEFC5().getValue(), getNotes());
   }
   
-  /* (non-Javadoc)
-   * @see com.hifiremote.jp1.KeyMove#getEFC()
-   */
-  public EFC getEFC()
+  @Override
+  public EFC5 getEFC5()
   {
-//    return new EFC5( data.get( 0 ));
-    return new EFC5( data.get( CMD_INDEX ));
+    // If cmdIndex = 3 then remote has segments, in which case efc index is 4
+    return new EFC5( data.get( getCmdIndex() == 2 ? 2 : 4 ) );
   }
 
   /* (non-Javadoc)
@@ -82,7 +80,7 @@ public class KeyMoveEFC5
   public void setEFC( int efc )
   {
 //    data.put( efc, 0 );
-    data.put( efc, CMD_INDEX );
+    data.put( efc, getCmdIndex() == 2 ? 2 : 4 );
   }
 
   /* (non-Javadoc)
@@ -91,7 +89,7 @@ public class KeyMoveEFC5
   public Hex getCmd()
   {
 //    return EFC5.toHex( data.get( 0 ));
-    return EFC5.toHex( data.get( CMD_INDEX ));
+    return EFC5.toHex( data.get( getCmdIndex() == 2 ? 2 : 4 ));
   }
   
   /* (non-Javadoc)
@@ -100,6 +98,6 @@ public class KeyMoveEFC5
   public void setCmd( Hex hex )
   {
 //    data.put( EFC5.parseHex( hex ), 0 );
-    data.put( EFC5.parseHex( hex ), CMD_INDEX );
+    data.put( EFC5.parseHex( hex ), getCmdIndex() == 2 ? 2 : 4 );
   }
 }

@@ -78,7 +78,7 @@ public class KeyMoveEFC extends KeyMove
   public EFC getEFC()
   {
 //    return new EFC( ( short )data.get( 0 ) );
-    return new EFC( ( short )data.get( CMD_INDEX ) );
+    return new EFC( ( short )data.get( getCmdIndex() ) );
   }
 
   /*
@@ -89,7 +89,7 @@ public class KeyMoveEFC extends KeyMove
   public void setEFC( EFC value )
   {
 //    data.put( value.getValue(), 0 );
-    data.put( value.getValue(), CMD_INDEX );
+    data.put( value.getValue(), getCmdIndex() );
   }
 
   /*
@@ -100,7 +100,7 @@ public class KeyMoveEFC extends KeyMove
   public Hex getCmd()
   {
 //    return EFC.toHex( data.get( 0 ) );
-    return EFC.toHex( data.get( CMD_INDEX ) );
+    return EFC.toHex( data.get( getCmdIndex() ) );
   }
 
   /*
@@ -111,6 +111,6 @@ public class KeyMoveEFC extends KeyMove
   public void setCmd( Hex hex )
   {
 //    data.put( EFC.parseHex( hex ), 0 );
-    data.put( EFC.parseHex( hex ), CMD_INDEX );
+    data.put( EFC.parseHex( hex ), getCmdIndex() );
   }
 }

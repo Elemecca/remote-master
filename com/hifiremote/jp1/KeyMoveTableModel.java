@@ -211,7 +211,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       case 0:
         return new Integer( row + 1 );
       case 1:
-        return r.getDeviceButtons()[ keyMove.getDeviceButtonIndex() ];
+        return r.getDeviceButton( keyMove.getDeviceButtonIndex() );
       case 2:
         return new Integer( keyMove.getKeyCode() );
       case 3:

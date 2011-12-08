@@ -141,6 +141,8 @@ public class Remote implements Comparable< Remote >
       if ( loaded )
       {
         SetupCode.setMax( usesTwoBytePID() ? 4095 : 2047 );
+        KeyMove.setSetupCodeIndex( segmentTypes == null ? 0 : 1 );
+        KeyMove.setCmdIndex( segmentTypes == null ? 2 : 3 );
         return;
       }
       loaded = true;
@@ -735,6 +737,19 @@ public class Remote implements Comparable< Remote >
   {
     load();
     return deviceButtons;
+  }
+  
+  public DeviceButton getDeviceButton( int index )
+  {
+    load();
+    for ( DeviceButton devBtn : deviceButtons )
+    {
+      if ( devBtn.getButtonIndex() == index )
+      {
+        return devBtn;
+      }
+    }
+    return null;
   }
 
   /**
@@ -1656,17 +1671,21 @@ public class Remote implements Comparable< Remote >
       st = new StringTokenizer( line, "= \t" );
       String name = st.nextToken();
 
-      int hiAddr = RDFReader.parseNumber( st.nextToken() );
-      int lowAddr = RDFReader.parseNumber( st.nextToken() );
-      if ( segmentTypes != null )
-      {
-        hiAddr = 0;
-        lowAddr = 0;
-      }
+      int hiAddr = 0;
+      int lowAddr = 0;
       int typeAddr = 0;
-      if ( st.hasMoreTokens() )
+      if ( segmentTypes == null )
       {
-        typeAddr = RDFReader.parseNumber( st.nextToken() );
+        hiAddr = RDFReader.parseNumber( st.nextToken() );
+        lowAddr = RDFReader.parseNumber( st.nextToken() );
+        if ( st.hasMoreTokens() )
+        {
+          typeAddr = RDFReader.parseNumber( st.nextToken() );
+        }
+      }
+      else
+      {
+        index = RDFReader.parseNumber( st.nextToken() );
       }
       work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode, index ) );
       index++ ;

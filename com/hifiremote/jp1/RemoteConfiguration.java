@@ -349,7 +349,7 @@ public class RemoteConfiguration
     return remote.getSegmentTypes() != null;
   }
   
-  public LinkedHashMap< Short, List< Hex >> getSegments()
+  public LinkedHashMap< Integer, List< Hex >> getSegments()
   {
     return segments;
   }
@@ -360,7 +360,7 @@ public class RemoteConfiguration
     int segLength = 0;
     while ( pos < remote.getEepromSize() && ( segLength = Hex.get( data, pos ) ) <= remote.getEepromSize() - pos  )
     {
-      short segType = data[ pos + 2 ];
+      int segType = data[ pos + 2 ];
       Hex segData = new Hex( data, pos + 3, segLength - 3 );
       pos += segLength;
       List< Hex > list = segments.get( segType );
@@ -371,14 +371,96 @@ public class RemoteConfiguration
       list.add( segData );
       segments.put( segType, list );
     }
-    List< Hex > macroList = segments.get( ( short )1 );
+    List< Hex > macroList = segments.get( 1 );
     if ( macroList != null )
     {
       for ( Hex hex : macroList )
       {
         int keyCode = hex.getData()[ 2 ];
-        Hex keyCodes = hex.subHex( 4, hex.getData()[ 3 ] );
-        macros.add( new Macro( keyCode, keyCodes, null ) );
+        Hex keyCodes = hex.subHex( 4, Math.min( hex.getData()[ 3 ], hex.length() - 4 ) );
+        // Use device type index of 0xFF to mean unset, as 0x0F (JP1.3 and earlier) no longer safe
+        macros.add( new Macro( keyCode, keyCodes, 0xFF, 0, null ) );
+      }
+    }
+    List< Hex > multiMacroList = segments.get( 2 );
+    if ( multiMacroList != null )
+    {
+      for ( Hex hex : multiMacroList )
+      {
+        int keyCode = hex.getData()[ 2 ];
+        pos = 4;
+        for ( int i = 0; pos < hex.length() && i < hex.getData()[ 3 ]; i++ )
+        {
+          int length = hex.getData()[ pos ];
+          Hex keyCodes = hex.subHex( pos + 1, Math.min( length, hex.length() - pos - 1 ) );
+          // Use device type index of 0xFF to mean unset, as 0x0F (JP1.3 and earlier) no longer safe
+          macros.add( new Macro( keyCode, keyCodes, 0xFF, i + 1, null ) );
+          pos += length + 1;
+        }
+      }
+    }
+    List< Hex > keyMoveKeyList = segments.get( 7 );
+    if ( keyMoveKeyList != null )
+    {
+      for ( Hex hex : keyMoveKeyList )
+      {
+        KeyMove keyMove = new KeyMoveKey( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.getData()[ 3 ], hex.get( 4 ), hex.getData()[ 6 ], null );
+        keymoves.add( keyMove );
+      }
+    }
+    List< Hex > keyMoveEFCList = segments.get( 8 );
+    if ( keyMoveEFCList != null )
+    {
+      for ( Hex hex : keyMoveEFCList )
+      {
+        KeyMove keyMove = new KeyMoveEFC5( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.getData()[ 3 ], hex.get( 4 ), hex.get( 7 ), null );
+        keymoves.add( keyMove );
+      }
+    }
+    List< Hex > upgradeList = segments.get( 0x10 );
+    if ( upgradeList != null )
+    {
+      for ( Hex hex : upgradeList )
+      {
+        int protocolOffset = hex.get( 3 );
+        DeviceType devType = remote.getDeviceTypeByIndex( hex.getData()[ 5 ] );
+        int setupCode = hex.get( 6 );
+        Hex pidHex = hex.subHex( 10, 2 );
+        int limit = protocolOffset == 0 ? hex.length() : Math.min( hex.length(), protocolOffset + 3 );
+        Hex deviceHex = hex.subHex( 10, limit - 10 );
+        Hex protocolCode = null;
+        if ( protocolOffset > 0 && protocolOffset < hex.length() - 3 )
+        {
+          protocolCode = hex.subHex( protocolOffset + 3 );
+        }
+        String alias = remote.getDeviceTypeAlias( devType );
+        if ( alias == null )
+        {
+          String message = String
+              .format(
+                  "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be imported and was discarded.",
+                  devType, setupCode );
+          JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+          continue;
+        }
+        DeviceUpgrade upgrade = new DeviceUpgrade();
+        try
+        {
+          upgrade.setRemoteConfig( this );
+          upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
+          upgrade.setSetupCode( setupCode );
+//          if ( protocolUpgradeUsed != null )
+//          {
+//            // This may have been changed by importRawUpgrade, so setUsed cannot be set earlier.
+//            protocolUpgradeUsed.setUsed( true );
+//          }
+        }
+        catch ( java.text.ParseException pe )
+        {
+          pe.printStackTrace( System.err );
+          upgrade = null;
+        }
+        devices.add( upgrade );
       }
     }
     pos = 0;
@@ -1324,7 +1406,7 @@ public class RemoteConfiguration
       int keyCode = keyMove.getKeyCode();
 
       // check if the keymove comes from a device upgrade
-      DeviceButton boundDeviceButton = remote.getDeviceButtons()[ keyMove.getDeviceButtonIndex() ];
+      DeviceButton boundDeviceButton = remote.getDeviceButton(keyMove.getDeviceButtonIndex() );
       DeviceUpgrade boundUpgrade = findDeviceUpgrade( boundDeviceButton );
       DeviceUpgrade moveUpgrade = findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
       if ( boundUpgrade != null && boundUpgrade == moveUpgrade )
@@ -2959,7 +3041,7 @@ public class RemoteConfiguration
   /** The saved data. */
   private short[] savedData = null;
   
-  private LinkedHashMap< Short, List<Hex> > segments = new LinkedHashMap< Short, List<Hex> >();
+  private LinkedHashMap< Integer, List<Hex> > segments = new LinkedHashMap< Integer, List<Hex> >();
 
   /** The keymoves. */
   private List< KeyMove > keymoves = new ArrayList< KeyMove >();

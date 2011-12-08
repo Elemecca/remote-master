@@ -24,11 +24,11 @@ public class KeyMove extends AdvancedCode implements Cloneable
   public KeyMove( int keyCode, int deviceButtonIndex, Hex data, String notes )
   {
     super( keyCode, data, notes );
-    cmd = data.subHex( CMD_INDEX );
+    cmd = data.subHex( cmdIndex );
     this.deviceButtonIndex = deviceButtonIndex;
     short[] hex = data.getData();
-    deviceType = hex[ DEVICE_TYPE_INDEX ] >> 4;
-    setupCode = Hex.get( hex, SETUP_CODE_INDEX ) & SetupCode.getMax();
+    deviceType = hex[ DEVICE_TYPE_INDEX ] >> ( setupCodeIndex == DEVICE_TYPE_INDEX ? 4 : 0 );
+    setupCode = Hex.get( hex, setupCodeIndex ) & SetupCode.getMax();
   }
 
   /**
@@ -59,9 +59,9 @@ public class KeyMove extends AdvancedCode implements Cloneable
 
   public Hex getRawHex( int deviceType, int setupCode, Hex cmd )
   {
-    Hex hex = new Hex( CMD_INDEX + cmd.length() );
+    Hex hex = new Hex( cmdIndex + cmd.length() );
     update( deviceType, setupCode, hex );
-    hex.put( cmd, CMD_INDEX );
+    hex.put( cmd, cmdIndex );
     return hex;
   }
 
@@ -74,7 +74,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
   public KeyMove( Properties props )
   {
     super( props );
-    cmd = data.subHex( CMD_INDEX );
+    cmd = data.subHex( cmdIndex );
     deviceButtonIndex = Integer.parseInt( props.getProperty( "DeviceButtonIndex" ) );
     setDeviceType( Integer.parseInt( props.getProperty( "DeviceType" ) ) );
     setSetupCode( Integer.parseInt( props.getProperty( "SetupCode" ) ) );
@@ -123,9 +123,9 @@ public class KeyMove extends AdvancedCode implements Cloneable
   {
     if ( this instanceof KeyMoveLong && cmd.length() == 1 )
     {
-      return new EFC5( getRawHex( 0, 0, cmd ).subHex( CMD_INDEX ) );
+      return new EFC5( getRawHex( 0, 0, cmd ).subHex( cmdIndex == 2 ? 2 : 4 ) );
     }
-    return new EFC5( cmd );
+    return new EFC5( cmdIndex == 2 ? cmd : cmd.subHex( 1 ) );
   }
 
   /**
@@ -224,8 +224,16 @@ public class KeyMove extends AdvancedCode implements Cloneable
 
   protected static void update( int deviceType, int setupCode, Hex data )
   {
-    int temp = deviceType << 12 | setupCode;
-    data.put( temp, SETUP_CODE_INDEX );
+    if ( setupCodeIndex == DEVICE_TYPE_INDEX )
+    {
+      int temp = deviceType << 12 | setupCode;
+      data.put( temp, setupCodeIndex );
+    }
+    else
+    {
+      data.set( ( short)deviceType, DEVICE_TYPE_INDEX );
+      data.put( setupCode, setupCodeIndex );
+    }
   }
 
   /** The setup code. */
@@ -253,7 +261,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
     update();
   }
 
-  private Hex cmd = null;
+  protected Hex cmd = null;
 
   public Hex getCmd()
   {
@@ -277,11 +285,24 @@ public class KeyMove extends AdvancedCode implements Cloneable
   /** The Constant DEVICE_TYPE_INDEX. */
   protected final static int DEVICE_TYPE_INDEX = 0;
 
-  /** The Constant SETUP_CODE_INDEX. */
-  protected final static int SETUP_CODE_INDEX = 0;
+  private static int setupCodeIndex = 0;
 
-  /** The Constant CMD_INDEX. */
-  protected final static int CMD_INDEX = 2;
+  public static void setSetupCodeIndex( int setupCodeIndex )
+  {
+    KeyMove.setupCodeIndex = setupCodeIndex;
+  }
+
+  private static int cmdIndex = 2;
+
+  public static int getCmdIndex()
+  {
+    return cmdIndex;
+  }
+
+  public static void setCmdIndex( int cmdIndex )
+  {
+    KeyMove.cmdIndex = cmdIndex;
+  }
 
   /*
    * (non-Javadoc)
