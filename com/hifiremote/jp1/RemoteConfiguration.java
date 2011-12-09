@@ -94,12 +94,27 @@ public class RemoteConfiguration
     }
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( section.getProperty( "Remote.name" ) );
+    String prop = section.getProperty( "Remote.sigAddress" );
+    if ( prop != null )
+    {
+      sigAddress = Integer.parseInt( prop, 16 );
+    }
+    prop = section.getProperty( "Remote.sigString" );
+    if ( prop != null )
+    {
+      setSigData( prop );
+    }
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
     notes = section.getProperty( "Notes" );
 
     deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
 
     loadBuffer( pr );
+    
+    if ( remote.getSegmentTypes() != null )
+    {
+      loadSegments( false );
+    }
 
     while ( ( section = pr.nextSection() ) != null )
     {
@@ -209,23 +224,30 @@ public class RemoteConfiguration
     
     if ( property.name.equals( "[Signature]" ) )
     {
-      // This reads the signature section for JP1.4/JP2.  The value of sigData
-      // is not used at present but is constructed with a view to later use.
       int sigLen = 0;
+      sigAddress = -1;
       do
       {
         property = pr.nextProperty();
+        if ( sigAddress == -1 )
+        {
+          sigAddress = Integer.parseInt( property.name, 16 );
+        }
         short[] data = Hex.parseHex( property.value );
         sigLen += data.length;
         values.add( data );
       } 
       while ( ( property != null ) && ( property.name.length() > 0 ) );
       
-      short[] sigData = new short[ sigLen ];
+      sigData = new short[ Math.min( sigLen, 26 ) ];
       sigLen = 0;
       for ( short[] data : values )
       {
-        System.arraycopy( data, 0, sigData, sigLen, data.length );
+        if ( sigLen > sigData.length )
+        {
+          break;
+        }
+        System.arraycopy( data, 0, sigData, sigLen, Math.min( data.length, sigData.length - sigLen ) );
         sigLen += data.length;
       }
       char[] sig = new char[ 6 ];
@@ -234,6 +256,12 @@ public class RemoteConfiguration
         sig[ i ] = ( char )sigData[ i ];
       }
       signature = new String( sig );
+      if ( sigLen < 8 )
+      {
+        // Not the full signature block so reset to defaults
+        sigData = null;
+        sigAddress = 0;
+      }
 
       while ( ( property != null ) && ( property.name.length() == 0 ) )
         property = pr.nextProperty();
@@ -354,7 +382,7 @@ public class RemoteConfiguration
     return segments;
   }
 
-  private void loadSegments()
+  private void loadSegments( boolean decode )
   {
     int pos = 2;  // first two bytes are checksum
     int segLength = 0;
@@ -379,6 +407,8 @@ public class RemoteConfiguration
       list.add( segData );
       segments.put( segType, list );
     }
+    if ( !decode )
+      return;
     List< Hex > macroList = segments.get( 1 );
     if ( macroList != null )
     {
@@ -669,7 +699,7 @@ public class RemoteConfiguration
     
     if ( remote.getSegmentTypes() != null )
     {
-      loadSegments();
+      loadSegments( true );
     }
     
     decodeSettings();
@@ -964,6 +994,23 @@ public class RemoteConfiguration
   public void exportIR( PrintWriter out ) throws IOException
   {
     updateImage();
+    
+    if ( remote.getSegmentTypes() != null )
+    {
+      out.println( "[Signature]" );
+      if ( sigData == null )
+      {
+        sigData = new short[ 6 ];
+        String sig = remote.getSignature();
+        for ( int i = 0; i < 6; i++ )
+        {
+          sigData[ i ] = ( short )sig.charAt( i );
+        }
+      }
+      Hex.print( out, sigData, sigAddress );
+      out.println();
+      out.println( "[Buffer]" );
+    }
 
     Hex.print( out, data, remote.getBaseAddress() );
 
@@ -1667,6 +1714,7 @@ public class RemoteConfiguration
           }
         }
       }
+      Arrays.fill( data, pos, remote.getEepromSize(), ( short )0xFF );
     }
     updateCheckSums();
     checkImageForByteOverflows();
@@ -2849,6 +2897,11 @@ public class RemoteConfiguration
     pw.printHeader( "General" );
     pw.print( "Remote.name", remote.getName() );
     pw.print( "Remote.signature", remote.getSignature() );
+    if ( remote.getSegmentTypes() != null && sigData != null )
+    {
+      pw.print( "Remote.sigAddress", Integer.toString( sigAddress, 16 ) );
+      pw.print( "Remote.sigString", getSigString() );
+    }
     pw.print( "Notes", notes );
 
     pw.printHeader( "Buffer" );
@@ -3033,6 +3086,34 @@ public class RemoteConfiguration
   {
     return data;
   }
+  
+  public void setSigData( String sigString )
+  {
+    sigData = new short[ sigString.length() ];
+    for ( int i = 0; i < sigString.length(); i++ )
+    {
+      sigData[ i ] = ( short )sigString.charAt( i );
+    };
+  }
+  
+  public String getSigString()
+  {
+    if ( sigData == null )
+    {
+      return null;
+    }
+    char[] sig = new char[ sigData.length ];
+    for ( int i = 0; i < sigData.length; i++ )
+    {
+      sig[ i ] = ( char )sigData[ i ];
+    }
+    return String.valueOf( sig );
+  }
+
+  public void setSigAddress( int sigAddress )
+  {
+    this.sigAddress = sigAddress;
+  }
 
   public Color[] getHighlight()
   {
@@ -3155,6 +3236,10 @@ public class RemoteConfiguration
 
   /** The data. */
   private short[] data = null;
+  
+  private short[] sigData = null;
+  
+  private int sigAddress = 0;
   
   private Color[] highlight = null;
 

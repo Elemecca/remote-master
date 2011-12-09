@@ -96,7 +96,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Beta 1.5e";
+  public final static String version = "v2.02 Beta 1.5f";
 
   /** The dir. */
   private File dir = null;
@@ -362,11 +362,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       // String sig = io.getRemoteSignature();
       int baseAddress = io.getRemoteEepromAddress();
       System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
-      String sig = getIOsignature( io, baseAddress );
+      String sigData = getIOsignature( io, baseAddress );
+      String sig = null;
       String sig2 = null;
       Remote remote = null;
       List< Remote > remotes = null;
       RemoteManager rm = RemoteManager.getRemoteManager();
+      if ( sigData.length() > 8 ) // JP1.4/JP2 full signature block with address prefixed
+      {
+        sig = sigData.substring( 4, 10 );
+      }
+      else
+      {
+        sig = sigData;
+      }
       if ( remoteConfig != null && remoteConfig.getRemote() != null )
       {
         sig2 = remoteConfig.getRemote().getSignature();
@@ -478,6 +487,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         e.printStackTrace();
       }
+      if ( sigData.length() > 8 )
+      {
+        remoteConfig.setSigAddress( Integer.parseInt( sigData.substring( 0, 4 ) ) );
+        remoteConfig.setSigData( sigData.substring( 4 ) );
+      }
       remoteConfig.updateImage();
       saveAction.setEnabled( false );
       saveAsAction.setEnabled( true );
@@ -519,6 +533,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       int baseAddress = io.getRemoteEepromAddress();
       System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
       String sig = getIOsignature( io, baseAddress );
+      if ( sig.length() > 8 ) // JP1.4/JP2 full signature with address prefix
+      {
+        sig = sig.substring( 4, 10 );
+      }
       String rSig = remote.getSignature();
       if ( sig.length() < rSig.length() || !rSig.equals( sig.substring( 0, rSig.length() ) ) )
       {

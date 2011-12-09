@@ -94,7 +94,12 @@ public class RawDataPanel extends RMPanel
       byteRenderer.setRemoteConfig( remoteConfig );
       highlight = remoteConfig.getHighlight();
       settingAddresses = remote.getSettingAddresses();
-      signatureLabel.setText( "Signature:  " + remote.getSignature() );
+      String sig = remoteConfig.getSigString();
+      if ( sig == null )
+      {
+        sig = remote.getSignature();
+      }
+      signatureLabel.setText( "Signature:  " + sig );
       processorLabel.setText( "Processor:  " + remote.getProcessorDescription() );
       interfaceLabel.setText( "Interface:  " + remote.getInterfaceType() );
       if ( remote.getExtenderVersionParm() != null )

@@ -643,7 +643,7 @@ public class Hex implements Cloneable, Comparable< Hex >
     for ( int i = 0; i < data.length; i += 16 )
     {
       pw.printf( "%04X:", i + base );
-      for ( int j = 0; j < 16; ++j )
+      for ( int j = 0; j < 16 && ( i + j ) < data.length; ++j )
         pw.printf( "  %02X", data[ i + j ] & 0xFF );
       pw.println();
     }

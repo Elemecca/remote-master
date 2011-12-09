@@ -80,7 +80,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
   public KeyMove( Properties props )
   {
     super( props );
-    cmd = data.subHex( cmdIndex == 2 ? 2 : 4 );
+    cmd = data.subHex( cmdIndex == 2 ? 2 : ( this instanceof KeyMoveKey ) ? 3 : 4 );
     deviceButtonIndex = Integer.parseInt( props.getProperty( "DeviceButtonIndex" ) );
     setDeviceType( Integer.parseInt( props.getProperty( "DeviceType" ) ) );
     setSetupCode( Integer.parseInt( props.getProperty( "SetupCode" ) ) );

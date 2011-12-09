@@ -105,6 +105,10 @@ public class RawDataDialog extends JDialog implements ActionListener
       System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
       
       signature = RemoteMaster.getIOsignature( io, baseAddress );
+      if ( signature.length() > 8 ) // JP1.4/JP2 full signature block with address prefixed
+      {
+        signature = signature.substring( 4, 10 ); // 6-character numeric signature
+      }
       int buffSize = io.getRemoteEepromSize();
       System.err.println( "Initial buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
       if ( buffSize <= 0 )
