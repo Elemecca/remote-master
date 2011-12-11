@@ -39,6 +39,9 @@ public class JP12Serial extends IO
     }
     return type;
   }
+  
+  @Override
+  public native boolean getJP2info( byte[] buffer, int length );
 
   /*
    * (non-Javadoc)

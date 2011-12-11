@@ -96,7 +96,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Beta 1.5f";
+  public final static String version = "v2.02 Beta 1.5g";
 
   /** The dir. */
   private File dir = null;
@@ -362,19 +362,25 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       // String sig = io.getRemoteSignature();
       int baseAddress = io.getRemoteEepromAddress();
       System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
-      String sigData = getIOsignature( io, baseAddress );
+      String sigString = getIOsignature( io, baseAddress );
       String sig = null;
       String sig2 = null;
       Remote remote = null;
       List< Remote > remotes = null;
       RemoteManager rm = RemoteManager.getRemoteManager();
-      if ( sigData.length() > 8 ) // JP1.4/JP2 full signature block with address prefixed
+      byte[] jp2info = null;
+      if ( sigString.length() > 8 ) // JP1.4/JP2 full signature block
       {
-        sig = sigData.substring( 4, 10 );
+        sig = sigString.substring( 0, 6 );
+        jp2info = new byte[ 18 ];
+        if ( !io.getJP2info( jp2info, 18 ) )
+        {
+          jp2info = null;
+        }
       }
       else
       {
-        sig = sigData;
+        sig = sigString;
       }
       if ( remoteConfig != null && remoteConfig.getRemote() != null )
       {
@@ -487,10 +493,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         e.printStackTrace();
       }
-      if ( sigData.length() > 8 )
+      if ( sigString.length() > 8 )
       {
-        remoteConfig.setSigAddress( Integer.parseInt( sigData.substring( 0, 4 ) ) );
-        remoteConfig.setSigData( sigData.substring( 4 ) );
+        short[] sigData = new short[ sigString.length() ];
+        int index = 0;
+        for ( int i = 0; i < sigString.length(); i++ )
+        {
+          sigData[ index++ ] = ( short )sigString.charAt( i );
+        };
+        if ( jp2info != null )
+        {
+          for ( int i = 0; i < jp2info.length; i++ )
+          {
+            sigData[ index++ ] = ( short )jp2info[ i ];
+          }
+        }
       }
       remoteConfig.updateImage();
       saveAction.setEnabled( false );
@@ -533,9 +550,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       int baseAddress = io.getRemoteEepromAddress();
       System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
       String sig = getIOsignature( io, baseAddress );
-      if ( sig.length() > 8 ) // JP1.4/JP2 full signature with address prefix
+      if ( sig.length() > 8 ) // JP1.4/JP2 full signature
       {
-        sig = sig.substring( 4, 10 );
+        sig = sig.substring( 0, 6 );
       }
       String rSig = remote.getSignature();
       if ( sig.length() < rSig.length() || !rSig.equals( sig.substring( 0, rSig.length() ) ) )
@@ -2656,55 +2673,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
 
     Remote remote = remoteConfig.getRemote();
-
+    
+    int index = checkTabbedPane( "Key Moves", keyMovePanel, remote.hasKeyMoveSupport(), 1 );
+    index = checkTabbedPane( "Macros", macroPanel, remote.hasMacroSupport(), index );
+    index = checkTabbedPane( "Special Functions", specialFunctionPanel, !remote.getSpecialProtocols().isEmpty(), index );
+    index = checkTabbedPane( "Timed Macros", timedMacroPanel, remote.hasTimedMacroSupport(), index );
+    index = checkTabbedPane( "Fav/Scan", favScanPanel, remote.hasFavKey(), index );
+    index++;  // Devices tab
+    index = checkTabbedPane( "Protocols", protocolPanel, remote.hasFreeProtocols(), index );
+    index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
+    
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
     macroPanel.set( remoteConfig );
-
-    int index = getTabIndex( specialFunctionPanel );
-    if ( remote.getSpecialProtocols().isEmpty() )
-    {
-      if ( index >= 0 )
-      {
-        tabbedPane.remove( index );
-      }
-    }
-    else if ( index < 0 )
-    {
-      tabbedPane.insertTab( "Special Functions", null, specialFunctionPanel, null, getTabIndex( macroPanel ) + 1 );
-    }
-
-    index = getTabIndex( timedMacroPanel );
-    if ( remote.hasTimedMacroSupport() )
-    {
-      if ( index < 0 )
-      {
-        index = getTabIndex( specialFunctionPanel );
-        if ( index < 0 )
-        {
-          index = getTabIndex( macroPanel );
-        }
-        tabbedPane.insertTab( "Timed Macros", null, timedMacroPanel, null, index + 1 );
-      }
-    }
-    else if ( index > 0 )
-    {
-      tabbedPane.remove( index );
-    }
-
-    index = getTabIndex( favScanPanel );
-    if ( remote.hasFavKey() )
-    {
-      if ( index < 0 )
-      {
-        tabbedPane.insertTab( "Fav/Scan", null, favScanPanel, null, getTabIndex( devicePanel ) );
-      }
-    }
-    else if ( index >= 0 )
-    {
-      tabbedPane.remove( index );
-    }
-
     specialFunctionPanel.set( remoteConfig );
     timedMacroPanel.set( remoteConfig );
     favScanPanel.set( remoteConfig );
@@ -2739,6 +2720,28 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     updateUsage();
 
     rawDataPanel.set( remoteConfig );
+  }
+  
+  private int checkTabbedPane( String name, Component c, boolean test, int index )
+  {
+    if ( c == null )
+    {
+      return index;
+    }
+    int tabIndex = getTabIndex( c );
+    if ( test )
+    {
+      if ( tabIndex < 0 )
+      {
+        tabbedPane.insertTab( name, null, c, null, index );
+      }
+      index++;
+    }
+    else if ( tabIndex > 0 )
+    {
+      tabbedPane.remove( index );
+    }
+    return index;
   }
 
   private boolean updateUsage( JProgressBar bar, AddressRange range )

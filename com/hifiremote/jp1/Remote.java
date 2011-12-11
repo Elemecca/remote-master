@@ -786,7 +786,7 @@ public class Remote implements Comparable< Remote >
     return learnButtons;
   }
   
-  public short[] getSegmentTypes()
+  public List< Integer > getSegmentTypes()
   {
     load();
     return segmentTypes;
@@ -1038,16 +1038,10 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equalsIgnoreCase( "SegmentTypes" ) )
       {
         StringTokenizer st = new StringTokenizer( value, ", " );
-        List< Integer > types = new ArrayList< Integer >();
+        segmentTypes = new ArrayList< Integer >();
         while ( st.hasMoreTokens() )
         {
-          types.add( RDFReader.parseNumber( st.nextToken().trim() ) );
-        }
-        segmentTypes = new short[ types.size() ];
-        int i = 0;
-        for ( Integer val : types )
-        {
-          segmentTypes[ i++ ] = val.shortValue();
+          segmentTypes.add( RDFReader.parseNumber( st.nextToken().trim() ) );
         }
       }
       else if ( parm.equals( "Processor" ) )
@@ -1319,6 +1313,11 @@ public class Remote implements Comparable< Remote >
         timedMacroAddress = null;
       }
 
+    }
+    if ( segmentTypes != null )
+    {
+      macroSupport = ( segmentTypes.contains( 1 ) || segmentTypes.contains( 2 ) );
+      keyMoveSupport = ( segmentTypes.contains( 7 ) || segmentTypes.contains( 8 ) );
     }
     
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
@@ -2994,6 +2993,16 @@ public class Remote implements Comparable< Remote >
   {
     return timedMacroAddress != null || macroCodingType.hasTimedMacros();
   }
+  
+  public boolean hasLearnedSupport()
+  {
+    return learnedAddress != null || ( segmentTypes != null && segmentTypes.contains( 9 ) );
+  }
+  
+  public boolean hasFreeProtocols()
+  {
+    return segmentTypes == null;
+  }
 
   /** The oem device. */
   private OEMDevice oemDevice = null;
@@ -3209,7 +3218,7 @@ public class Remote implements Comparable< Remote >
   /** The digit maps. */
   private short[] digitMaps = new short[ 0 ];
   
-  private short[] segmentTypes = null;
+  private List< Integer > segmentTypes = null;
 
   /** The button maps. */
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];

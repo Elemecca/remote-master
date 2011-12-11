@@ -38,6 +38,11 @@ public abstract class IO
   {
     return 0;
   }
+  
+  public boolean getJP2info( byte[] buffer, int length )
+  {
+    return false;
+  }
 
   /**
    * Gets the port names.

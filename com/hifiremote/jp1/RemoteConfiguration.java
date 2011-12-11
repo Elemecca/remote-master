@@ -94,15 +94,10 @@ public class RemoteConfiguration
     }
 
     remote = RemoteManager.getRemoteManager().findRemoteByName( section.getProperty( "Remote.name" ) );
-    String prop = section.getProperty( "Remote.sigAddress" );
+    String prop = section.getProperty( "Remote.sigData" );
     if ( prop != null )
     {
-      sigAddress = Integer.parseInt( prop, 16 );
-    }
-    prop = section.getProperty( "Remote.sigString" );
-    if ( prop != null )
-    {
-      setSigData( prop );
+      sigData = Hex.parseHex( prop );
     }
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
     notes = section.getProperty( "Notes" );
@@ -111,7 +106,7 @@ public class RemoteConfiguration
 
     loadBuffer( pr );
     
-    if ( remote.getSegmentTypes() != null )
+    if ( hasSegments() )
     {
       loadSegments( false );
     }
@@ -144,6 +139,12 @@ public class RemoteConfiguration
       {
         DeviceUpgrade upgrade = new DeviceUpgrade();
         upgrade.load( section, true, remote );
+        if ( hasSegments() )
+        {
+          Protocol protocol = upgrade.getProtocol();
+          upgrade.setSizeCmdBytes( protocol.getDefaultCmd().length() );
+          upgrade.setSizeDevBytes( protocol.getFixedDataLength() );
+        }
         devices.add( upgrade );
       }
       else
@@ -225,21 +226,16 @@ public class RemoteConfiguration
     if ( property.name.equals( "[Signature]" ) )
     {
       int sigLen = 0;
-      sigAddress = -1;
       do
       {
         property = pr.nextProperty();
-        if ( sigAddress == -1 )
-        {
-          sigAddress = Integer.parseInt( property.name, 16 );
-        }
         short[] data = Hex.parseHex( property.value );
         sigLen += data.length;
         values.add( data );
       } 
       while ( ( property != null ) && ( property.name.length() > 0 ) );
       
-      sigData = new short[ Math.min( sigLen, 26 ) ];
+      sigData = new short[ Math.min( sigLen, 44 ) ];
       sigLen = 0;
       for ( short[] data : values )
       {
@@ -260,7 +256,6 @@ public class RemoteConfiguration
       {
         // Not the full signature block so reset to defaults
         sigData = null;
-        sigAddress = 0;
       }
 
       while ( ( property != null ) && ( property.name.length() == 0 ) )
@@ -386,10 +381,7 @@ public class RemoteConfiguration
   {
     int pos = 2;  // first two bytes are checksum
     int segLength = 0;
-    for ( short type : remote.getSegmentTypes() )
-    {
-      segmentLoadOrder.add( ( int )type );
-    }
+    segmentLoadOrder.addAll( remote.getSegmentTypes() );
     while ( pos < remote.getEepromSize() && ( segLength = Hex.get( data, pos ) ) <= remote.getEepromSize() - pos  )
     {
       int segType = data[ pos + 2 ];
@@ -495,11 +487,20 @@ public class RemoteConfiguration
           upgrade.setRemoteConfig( this );
           upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
           upgrade.setSetupCode( setupCode );
-//          if ( protocolUpgradeUsed != null )
-//          {
-//            // This may have been changed by importRawUpgrade, so setUsed cannot be set earlier.
-//            protocolUpgradeUsed.setUsed( true );
-//          }
+          upgrade.setSizeCmdBytes( hex.getData()[ 8 ] );
+          upgrade.setSizeDevBytes( hex.getData()[ 9 ] );
+          Protocol protocol = upgrade.getProtocol();
+          if ( upgrade.getSizeCmdBytes() != protocol.getDefaultCmd().length()
+              || upgrade.getSizeDevBytes() != protocol.getFixedDataLength() )
+          {
+            String title = "Protocol Variant Error";
+            String message = "Error in RDF.  Wrong variant specified for PID = " + 
+              protocol.getID().toString() + ".  Number of fixed/command bytes\n" +
+              "should be " + upgrade.getSizeDevBytes() + "/" + upgrade.getSizeCmdBytes() +
+              ", for specified variant it is " + protocol.getDefaultCmd().length() +
+              "/" + protocol.getFixedDataLength() + ".";
+            JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+          }
         }
         catch ( java.text.ParseException pe )
         {
@@ -697,7 +698,7 @@ public class RemoteConfiguration
       ProtocolManager.getProtocolManager().reset();
     }
     
-    if ( remote.getSegmentTypes() != null )
+    if ( hasSegments() )
     {
       loadSegments( true );
     }
@@ -995,19 +996,20 @@ public class RemoteConfiguration
   {
     updateImage();
     
-    if ( remote.getSegmentTypes() != null )
+    if ( hasSegments() )
     {
       out.println( "[Signature]" );
-      if ( sigData == null )
+      short[] sd = sigData;
+      if ( sd == null )
       {
-        sigData = new short[ 6 ];
+        sd = new short[ 6 ];
         String sig = remote.getSignature();
         for ( int i = 0; i < 6; i++ )
         {
-          sigData[ i ] = ( short )sig.charAt( i );
+          sd[ i ] = ( short )sig.charAt( i );
         }
       }
-      Hex.print( out, sigData, sigAddress );
+      Hex.print( out, sd, getSigAddress() );
       out.println();
       out.println( "[Buffer]" );
     }
@@ -1749,7 +1751,7 @@ public class RemoteConfiguration
     {
       keyMove.clearMemoryUsage();
       updateHighlight( keyMove, offset, keyMove.getSize( remote ) );
-      if ( remote.getSegmentTypes() == null )
+      if ( !hasSegments() )
       {
         offset = keyMove.store( data, offset, remote );
       }
@@ -1757,6 +1759,10 @@ public class RemoteConfiguration
       {
         int type = ( keyMove instanceof KeyMoveKey ) ? 7 : 8;
         Hex segData = new Hex( type == 7 ? 7 : 9 );
+        if ( !remote.getSegmentTypes().contains( type ) )
+        {
+          continue;
+        }
         if ( segments.get( type ) == null )
         {
           segments.put(  type, new ArrayList< Hex >() );
@@ -1839,7 +1845,7 @@ public class RemoteConfiguration
   {
     int offset = 0;
     AddressRange range = remote.getAdvancedCodeAddress();
-    if ( remote.getSegmentTypes() != null )
+    if ( hasSegments() )
     {
       segments.remove( 1 );
       segments.remove( 2 );
@@ -1861,86 +1867,74 @@ public class RemoteConfiguration
       return;
     }
     
-
-    HashMap< Button, List< Macro >> multiMacros = new LinkedHashMap< Button, List< Macro >>();
+    LinkedHashMap< Button, List< Macro >> multiMacros = new LinkedHashMap< Button, List< Macro >>();
+    LinkedHashMap< Integer, List< Macro >> macroLists = new LinkedHashMap< Integer, List< Macro >>();
     for ( Macro macro : macros )
     {
       macro.clearMemoryUsage();
       int keyCode = macro.getKeyCode();
       Button button = remote.getButton( keyCode );
-      if ( button != null )
+      MultiMacro multiMacro = button != null ? button.getMultiMacro() : null;
+      if ( multiMacro != null )
       {
-        MultiMacro multiMacro = button.getMultiMacro();
-        if ( multiMacro != null )
+        List< Macro > list = multiMacros.get( button );
+        if ( list == null )
         {
-          List< Macro > list = multiMacros.get( button );
-          if ( list == null )
-          {
-            list = new ArrayList< Macro >();
-            multiMacros.put( button, list );
-          }
-          list.add( macro );
-          macro.setSequenceNumber( list.size() );
+          list = new ArrayList< Macro >();
+          multiMacros.put( button, list );
         }
+        list.add( macro );
+        macro.setSequenceNumber( list.size() );
       }
-    }
-    for ( Macro macro : macros )
-    {
-      updateHighlight( macro, offset, macro.getSize( remote ) );
-      
-      if ( remote.getSegmentTypes() == null )
+      else if ( hasSegments() )
       {
+        List< Macro > list = macroLists.get( keyCode );
+        if ( list == null )
+        {
+          list = new ArrayList< Macro >();
+          macroLists.put( keyCode, list );
+        }
+        list.add( macro );
+        macro.setSequenceNumber( list.size() );
+      }
+      if ( !hasSegments() )
+      {
+        updateHighlight( macro, offset, macro.getSize( remote ) );
         offset = macro.store( data, offset, remote );
       }
-      else
+    }
+
+    if ( hasSegments() )
+    {
+      List< Integer > segmentTypes = remote.getSegmentTypes();
+      for ( int keyCode : macroLists.keySet() )
       {
-        int keyCode = macro.getKeyCode();
-        Button button = remote.getButton( keyCode );
-        MultiMacro multiMacro = ( button != null ) ? button.getMultiMacro() : null;
-        if ( multiMacro == null )
+        List< Macro > list = macroLists.get(  keyCode );
+        if ( list.size() > 1 && !segmentTypes.contains( 2 ) )
         {
-          int size = macro.getData().length();
-          Hex segData = new Hex( size + ( ( size & 1 ) == 1 ? 4 : 5 ) );
-          segData.put( 0xFF00, 0 );
-          segData.getData()[ 2 ] = ( short )keyCode;
-          segData.getData()[ 3 ] = ( short )size;
-          segData.put( macro.getData(), 4 );
-          if ( segments.get( 1 ) == null )
-          {
-            segments.put( 1, new ArrayList< Hex >() );
-          }
-          segments.get( 1 ).add( segData );
+          // Retain only first macro
+          Macro macro = list.get( 0 );
+          list.clear();
+          list.add(  macro );
+        }
+        if ( segmentTypes.contains( 1 ) && list.size() == 1 )
+        {
+          updateMacroSegments( keyCode, list, 1 );
+        }
+        else if ( segmentTypes.contains( 2 ) )
+        {
+          updateMacroSegments( keyCode, list, 2 );
         }
       }
-    }
-    if ( remote.getSegmentTypes() != null )
-    {
-      for ( Button btn : multiMacros.keySet() )
+
+      if ( segmentTypes.contains( 2 ) )
       {
-        int keyCode = btn.getKeyCode();
-        List< Macro > list = multiMacros.get(  btn );
-        int size = 0;
-        for ( Macro macro : list )
+        for ( Button btn : multiMacros.keySet() )
         {
-          size += macro.getData().length() + 1;
+          int keyCode = btn.getKeyCode();
+          List< Macro > list = multiMacros.get(  btn );
+          updateMacroSegments( keyCode, list, 2 );
         }
-        Hex segData = new Hex( size + ( ( size & 1 ) == 1 ? 4 : 5 ) );
-        segData.put( 0xFF00, 0 );
-        segData.getData()[ 2 ] = ( short )keyCode;
-        segData.getData()[ 3 ] = ( short )list.size();
-        int pos = 4;
-        for ( Macro macro : list )
-        {
-          size = macro.getData().length();
-          segData.getData()[ pos ] = ( short )size;
-          segData.put( macro.getData(), pos + 1 );
-          pos += size + 1;
-        }
-        if ( segments.get( 2 ) == null )
-        {
-          segments.put( 2, new ArrayList< Hex >() );
-        }
-        segments.get( 2 ).add( segData );
       }
       return;
     }
@@ -1992,6 +1986,39 @@ public class RemoteConfiguration
       multiMacro.setCount( macros.size() );
       multiMacro.store( data, remote );
     }
+  }
+  
+  private void updateMacroSegments( int keyCode, List< Macro > list, int type )
+  {
+    if ( type < 1 || type > 2 || type == 1 && list.size() > 1 )
+    {
+      return;
+    }
+    int size = 0;
+    for ( Macro macro : list )
+    {
+      size += macro.getData().length() + type - 1;
+    }
+    Hex segData = new Hex( size + ( ( size & 1 ) == 1 ? 4 : 5 ) );
+    segData.put( 0xFF00, 0 );
+    int pos = 2;
+    segData.set( ( short )keyCode, pos++ );
+    if ( type == 2 )
+    {
+      segData.set( ( short )list.size(), pos++ );
+    }
+    for ( Macro macro : list )
+    {
+      size = macro.getData().length();
+      segData.set( ( short )size, pos++ );
+      segData.put( macro.getData(), pos );
+      pos += size;
+    }
+    if ( segments.get( type ) == null )
+    {
+      segments.put( type, new ArrayList< Hex >() );
+    }
+    segments.get( type ).add( segData );
   }
   
   private void updateHighlight( Highlight item, int offset, int length )
@@ -2608,16 +2635,49 @@ public class RemoteConfiguration
       }
     }
     
-    // Get the protocols for the device-independent section
-    LinkedHashMap< Protocol, ProtocolUpgrade > outputProtocols = getOutputProtocolUpgrades( false );
-
     // Get the address ranges
     AddressRange addr = remote.getUpgradeAddress();
     AddressRange devAddr = remote.getDeviceUpgradeAddress();
+    if ( hasSegments() )
+    {
+      segments.remove( 0x10 );
+      for ( DeviceUpgrade dev : devIndependent )
+      {
+        Hex hex = dev.getUpgradeHex();
+        Hex code = dev.getCode();
+        int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
+        size += ( ( size & 1 ) == 1 ) ? 10 : 11;
+        Hex segData = new Hex( size );
+        segData.set( ( short )0xFF, 0 );
+        Arrays.fill( segData.getData(), 1, 5, ( short )0 );
+        if ( code != null )
+        {
+          segData.put( hex.length() + 7, 3 );
+        }
+        segData.set( ( short )dev.getDeviceType().getNumber(), 5 );
+        segData.put( dev.getSetupCode(), 6 );
+        segData.set( ( short )dev.getSizeCmdBytes(), 8 );
+        segData.set( ( short )dev.getSizeDevBytes(), 9 );
+        segData.put( hex, 10 );
+        if ( code != null )
+        {
+          segData.put( code, hex.length() + 10 );
+        }
+        if ( segments.get( 0x10 ) == null )
+        {
+          segments.put( 0x10, new ArrayList< Hex >() );
+        }
+        segments.get( 0x10 ).add( segData );
+      }
+      return;
+    }
     if ( addr == null && devAddr == null )
     {
       return;
     }
+    
+    // Get the protocols for the device-independent section
+    LinkedHashMap< Protocol, ProtocolUpgrade > outputProtocols = getOutputProtocolUpgrades( false );
     
     // Get the processor
     Processor processor = remote.getProcessor();
@@ -2897,10 +2957,9 @@ public class RemoteConfiguration
     pw.printHeader( "General" );
     pw.print( "Remote.name", remote.getName() );
     pw.print( "Remote.signature", remote.getSignature() );
-    if ( remote.getSegmentTypes() != null && sigData != null )
+    if ( hasSegments() && sigData != null )
     {
-      pw.print( "Remote.sigAddress", Integer.toString( sigAddress, 16 ) );
-      pw.print( "Remote.sigString", getSigString() );
+      pw.print( "Remote.sigData", Hex.toString( sigData ) );
     }
     pw.print( "Notes", notes );
 
@@ -3087,32 +3146,23 @@ public class RemoteConfiguration
     return data;
   }
   
-  public void setSigData( String sigString )
-  {
-    sigData = new short[ sigString.length() ];
-    for ( int i = 0; i < sigString.length(); i++ )
-    {
-      sigData[ i ] = ( short )sigString.charAt( i );
-    };
-  }
-  
   public String getSigString()
   {
     if ( sigData == null )
     {
       return null;
     }
-    char[] sig = new char[ sigData.length ];
-    for ( int i = 0; i < sigData.length; i++ )
+    char[] sig = new char[ 26 ];
+    for ( int i = 0; i < Math.min( sigData.length, 26 ); i++ )
     {
       sig[ i ] = ( char )sigData[ i ];
     }
     return String.valueOf( sig );
   }
 
-  public void setSigAddress( int sigAddress )
+  private int getSigAddress()
   {
-    this.sigAddress = sigAddress;
+    return ( sigData != null && sigData.length > 30 ) ? Hex.get( sigData, 30 ) : 0;
   }
 
   public Color[] getHighlight()
@@ -3238,8 +3288,6 @@ public class RemoteConfiguration
   private short[] data = null;
   
   private short[] sigData = null;
-  
-  private int sigAddress = 0;
   
   private Color[] highlight = null;
 

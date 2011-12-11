@@ -249,6 +249,26 @@ public class DeviceUpgrade extends Highlight
     return setupCode;
   }
 
+  public int getSizeDevBytes()
+  {
+    return sizeDevBytes;
+  }
+
+  public void setSizeDevBytes( int sizeDevBytes )
+  {
+    this.sizeDevBytes = sizeDevBytes;
+  }
+
+  public int getSizeCmdBytes()
+  {
+    return sizeCmdBytes;
+  }
+
+  public void setSizeCmdBytes( int sizeCmdBytes )
+  {
+    this.sizeCmdBytes = sizeCmdBytes;
+  }
+
   /**
    * Checks for defined functions.
    * 
@@ -3333,6 +3353,10 @@ public class DeviceUpgrade extends Highlight
 
   /** The protocol. */
   protected Protocol protocol = null;
+  
+  private int sizeDevBytes = 0; // only used for JP1.4/JP2 remotes
+  
+  private int sizeCmdBytes = 0; // only used for JP1.4/JP2 remotes
 
   /** The parm values. */
   private Value[] parmValues = new Value[ 0 ];
