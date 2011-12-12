@@ -96,7 +96,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Beta 1.5g";
+  public final static String version = "v2.02 Beta 1.5h";
 
   /** The dir. */
   private File dir = null;
@@ -368,7 +368,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       Remote remote = null;
       List< Remote > remotes = null;
       RemoteManager rm = RemoteManager.getRemoteManager();
-      byte[] jp2info = null;
+      byte[] jp2info = new byte[ 0 ];
       if ( sigString.length() > 8 ) // JP1.4/JP2 full signature block
       {
         sig = sigString.substring( 0, 6 );
@@ -495,19 +495,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       if ( sigString.length() > 8 )
       {
-        short[] sigData = new short[ sigString.length() ];
+        short[] sigData = new short[ sigString.length() + jp2info.length ];
         int index = 0;
         for ( int i = 0; i < sigString.length(); i++ )
         {
           sigData[ index++ ] = ( short )sigString.charAt( i );
         };
-        if ( jp2info != null )
+        for ( int i = 0; i < jp2info.length; i++ )
         {
-          for ( int i = 0; i < jp2info.length; i++ )
-          {
-            sigData[ index++ ] = ( short )jp2info[ i ];
-          }
+          sigData[ index++ ] = ( short )jp2info[ i ];
         }
+
       }
       remoteConfig.updateImage();
       saveAction.setEnabled( false );

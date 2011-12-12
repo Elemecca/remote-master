@@ -116,6 +116,12 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   {
     this.editor = null;
     DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
+    if ( remoteConfig.hasSegments() )
+    {
+      Protocol p = newUpgrade.getProtocol();
+      newUpgrade.setSizeCmdBytes( p.getDefaultCmd().length() );
+      newUpgrade.setSizeDevBytes( p.getFixedDataLength() );
+    }
     if ( newUpgrade == null || oldUpgrade == null )
     {
       return newUpgrade;
