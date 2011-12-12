@@ -8,6 +8,10 @@ public class Highlight
   
   private Color highlight = Color.WHITE;
   
+  private Segment segment = null;
+  
+  private int index = 0;
+  
   public Color getHighlight()
   {
     return highlight;
@@ -37,4 +41,26 @@ public class Highlight
   {
     this.memoryUsage += memoryUsage;
   }
+
+  public Segment getSegment()
+  {
+    return segment;
+  }
+
+  public void setSegment( Segment segment )
+  {
+    this.segment = segment;
+  }
+  
+  public void setSegment( Segment segment, int index )
+  {
+    this.segment = segment;
+    this.index = index;
+  }
+
+  public int getIndex()
+  {
+    return index;
+  }
+  
 }

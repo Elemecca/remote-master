@@ -213,12 +213,24 @@ public class DeviceButton extends Highlight
 
   public void doHighlight( Color[] highlight )
   {
-    highlight[ highAddress ] = getHighlight();
-    highlight[ lowAddress ] = getHighlight();
-    if ( typeAddress > 0 )
+    if ( highAddress > 0 )
     {
-      highlight[ typeAddress ] = getHighlight();
+      highlight[ highAddress ] = getHighlight();
+      highlight[ lowAddress ] = getHighlight();
+      if ( typeAddress > 0 )
+      {
+        highlight[ typeAddress ] = getHighlight();
+      }
+      setMemoryUsage( ( typeAddress > 0 ) ? 3 : 2 );
     }
-    setMemoryUsage( ( typeAddress > 0 ) ? 3 : 2 );
+    else
+    {
+      int address = getSegment().getAddress();
+      for ( int i = 3; i < 16; i++ )
+      {
+        highlight[ address + i ] = getHighlight();
+      }
+      setMemoryUsage( 13 );
+    }
   }
 }

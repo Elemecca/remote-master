@@ -241,21 +241,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   
   private short[] getData( int row )
   {
-    DeviceButton db = getRow( row );
     short[] data = null;
     if ( remoteConfig.hasSegments() )
     {
-      List< Hex > setupList = remoteConfig.getSegments().get( 0 );
-      int index = db.getButtonIndex();
-      
-      for ( Hex hex : setupList )
-      {
-        if ( hex.getData()[ 0 ] == 0xFF && hex.getData()[ 1 ] == index  )
-        {
-          data = hex.getData();
-          break;
-        }
-      }
+      DeviceButton db = getRow( row );
+      data = db.getSegment().getHex().getData();
     }
     else
     {

@@ -372,7 +372,7 @@ public class RemoteConfiguration
     return remote.getSegmentTypes() != null;
   }
   
-  public LinkedHashMap< Integer, List< Hex >> getSegments()
+  public LinkedHashMap< Integer, List< Segment >> getSegments()
   {
     return segments;
   }
@@ -391,32 +391,52 @@ public class RemoteConfiguration
       }
       Hex segData = new Hex( data, pos + 3, segLength - 3 );
       pos += segLength;
-      List< Hex > list = segments.get( segType );
+      List< Segment > list = segments.get( segType );
       if ( list == null )
       {
-        list = new ArrayList< Hex >();
+        list = new ArrayList< Segment >();
       }
-      list.add( segData );
+      list.add( new Segment( segType, segData ) );
       segments.put( segType, list );
+    }
+    List< Segment > dbList = segments.get( 0 );
+    if ( dbList != null )
+    {
+      for ( Segment segment : dbList )
+      {
+        Hex hex = segment.getHex();
+        if ( hex.getData()[ 0 ] == 0xFF )
+        {
+          DeviceButton db = remote.getDeviceButton( hex.getData()[ 1 ] );
+          if ( db != null )
+          {
+            segment.setObject( db );
+          }
+        }
+      }
     }
     if ( !decode )
       return;
-    List< Hex > macroList = segments.get( 1 );
+    List< Segment > macroList = segments.get( 1 );
     if ( macroList != null )
     {
-      for ( Hex hex : macroList )
+      for ( Segment segment : macroList )
       {
+        Hex hex = segment.getHex();
         int keyCode = hex.getData()[ 2 ];
         Hex keyCodes = hex.subHex( 4, Math.min( hex.getData()[ 3 ], hex.length() - 4 ) );
         // Use device type index of 0xFF to mean unset, as 0x0F (JP1.3 and earlier) no longer safe
-        macros.add( new Macro( keyCode, keyCodes, 0xFF, 0, null ) );
+        Macro macro = new Macro( keyCode, keyCodes, 0xFF, 0, null );
+        segment.setObject( macro );
+        macros.add( macro );
       }
     }
-    List< Hex > multiMacroList = segments.get( 2 );
+    List< Segment > multiMacroList = segments.get( 2 );
     if ( multiMacroList != null )
     {
-      for ( Hex hex : multiMacroList )
+      for ( Segment segment : multiMacroList )
       {
+        Hex hex = segment.getHex();
         int keyCode = hex.getData()[ 2 ];
         pos = 4;
         for ( int i = 0; pos < hex.length() && i < hex.getData()[ 3 ]; i++ )
@@ -424,42 +444,50 @@ public class RemoteConfiguration
           int length = hex.getData()[ pos ];
           Hex keyCodes = hex.subHex( pos + 1, Math.min( length, hex.length() - pos - 1 ) );
           // Use device type index of 0xFF to mean unset, as 0x0F (JP1.3 and earlier) no longer safe
-          macros.add( new Macro( keyCode, keyCodes, 0xFF, i + 1, null ) );
+          Macro macro = new Macro( keyCode, keyCodes, 0xFF, i + 1, null );
+          segment.setObject( macro );
+          macros.add( macro );
           pos += length + 1;
         }
       }
     }
-    List< Hex > keyMoveKeyList = segments.get( 7 );
+    List< Segment > keyMoveKeyList = segments.get( 7 );
     if ( keyMoveKeyList != null )
     {
-      for ( Hex hex : keyMoveKeyList )
+      for ( Segment segment : keyMoveKeyList )
       {
+        Hex hex = segment.getHex();
         KeyMove keyMove = new KeyMoveKey( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.getData()[ 3 ], hex.get( 4 ), hex.getData()[ 6 ], null );
+        segment.setObject( keyMove );
         keymoves.add( keyMove );
       }
     }
-    List< Hex > keyMoveEFCList = segments.get( 8 );
+    List< Segment > keyMoveEFCList = segments.get( 8 );
     if ( keyMoveEFCList != null )
     {
-      for ( Hex hex : keyMoveEFCList )
+      for ( Segment segment : keyMoveEFCList )
       {
+        Hex hex = segment.getHex();
         if ( remote.getAdvCodeFormat() == AdvancedCode.Format.EFC )
         {
           KeyMove keyMove = new KeyMoveEFC5( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.getData()[ 3 ], hex.get( 4 ), hex.get( 7 ), null );
+          segment.setObject( keyMove );
           keymoves.add( keyMove );
         }
         else
         {
           KeyMove keyMove = new KeyMove( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.getData()[ 3 ], hex.get( 4 ), hex.subHex( 7, 2 ), null );
+          segment.setObject( keyMove );
           keymoves.add( keyMove );
         }
       }
     }
-    List< Hex > upgradeList = segments.get( 0x10 );
+    List< Segment > upgradeList = segments.get( 0x10 );
     if ( upgradeList != null )
     {
-      for ( Hex hex : upgradeList )
+      for ( Segment segment : upgradeList )
       {
+        Hex hex = segment.getHex();
         int protocolOffset = hex.get( 3 );
         DeviceType devType = remote.getDeviceTypeByIndex( hex.getData()[ 5 ] );
         int setupCode = hex.get( 6 );
@@ -507,6 +535,7 @@ public class RemoteConfiguration
           pe.printStackTrace( System.err );
           upgrade = null;
         }
+        segment.setObject( upgrade );
         devices.add( upgrade );
       }
     }
@@ -1699,29 +1728,89 @@ public class RemoteConfiguration
     updateLearnedSignals();
     updateUpgrades();
     
-    if ( remote.getSegmentTypes() != null )
+    if ( hasSegments() )
     {
       int pos = 2;
       for ( int type : segmentLoadOrder )
       {
-        List< Hex > list = segments.get( type );
+        List< Segment > list = segments.get( type );
         if ( list != null )
         {
-          for ( Hex hex : list )
+          for ( Segment segment : list )
           {
+            Hex hex = segment.getHex();
             Hex.put( hex.length() + 3, data, pos );
             data[ pos + 2 ] = ( short )type;
             Hex.put( hex, data, pos + 3 );
+            segment.setAddress( pos );
             pos += hex.length() + 3;
           }
         }
       }
       Arrays.fill( data, pos, remote.getEepromSize(), ( short )0xFF );
+      updateKeyMoveHighlights();
+      updateMacroHighlights();
+      updateUpgradeHighlights();
     }
     updateCheckSums();
     checkImageForByteOverflows();
   }
 
+  private void updateKeyMoveHighlights()
+  {
+    for ( KeyMove keyMove : keymoves )
+    {
+      Segment segment = keyMove.getSegment();
+      int segType = segment.getType();
+      int address = keyMove.getSegment().getAddress();
+      updateHighlight( keyMove, address + 3, segType == 7 ? 7 : 9 );
+    }
+  }
+  
+  private void updateMacroHighlights()
+  {
+    for ( Macro macro : macros )
+    {
+      Segment segment = macro.getSegment();
+      int index = macro.getIndex();
+      int segType = segment.getType();
+      int address = segment.getAddress();
+      short[] segData = segment.getHex().getData();
+      if ( segType == 1 )
+      {
+        updateHighlight( macro, address + 6, segData[ 3 ] + 1 );
+      }
+      else // segType == 2
+      {
+        int pos = 4;
+        for ( int i = 0; i < index; i++ )
+        {
+          pos += segData[ pos ] + 1;
+        }
+        updateHighlight( macro, address + pos + 3, segData[ pos ] + 1 );
+      }
+    }
+  }
+  
+  private void updateUpgradeHighlights()
+  {
+    for ( DeviceUpgrade dev : devices )
+    {
+      Segment segment = dev.getSegment();
+      int address = segment.getAddress();
+      int protOffset = segment.getHex().get( 3 );
+      int segSize = segment.getHex().length();
+      int devSize = ( protOffset == 0 ) ? segSize - 5 : protOffset - 2;
+      int protSize = ( protOffset == 0 ) ? 0 : segSize - protOffset - 3;
+      updateHighlight( dev, address + 8, devSize );
+      for ( int i = 0; i < protSize; i++ )
+      {
+        highlight[ address + protOffset + 3 ] = dev.getProtocolHighlight();
+      }
+      
+    }
+  }
+  
   private void checkImageForByteOverflows()
   {
     for ( int i = 0; i < data.length; i++ )
@@ -1750,9 +1839,10 @@ public class RemoteConfiguration
     for ( KeyMove keyMove : moves )
     {
       keyMove.clearMemoryUsage();
-      updateHighlight( keyMove, offset, keyMove.getSize( remote ) );
+      
       if ( !hasSegments() )
       {
+        updateHighlight( keyMove, offset, keyMove.getSize( remote ) );
         offset = keyMove.store( data, offset, remote );
       }
       else
@@ -1765,10 +1855,10 @@ public class RemoteConfiguration
         }
         if ( segments.get( type ) == null )
         {
-          segments.put(  type, new ArrayList< Hex >() );
+          segments.put(  type, new ArrayList< Segment >() );
         }
         keyMove.store( segData.getData(), offset, remote );
-        segments.get( type ).add( segData );
+        segments.get( type ).add( new Segment( type, segData, keyMove ) );
       }
     }
     return offset;
@@ -2016,9 +2106,9 @@ public class RemoteConfiguration
     }
     if ( segments.get( type ) == null )
     {
-      segments.put( type, new ArrayList< Hex >() );
+      segments.put( type, new ArrayList< Segment >() );
     }
-    segments.get( type ).add( segData );
+    segments.get( type ).add( new Segment( type, segData, list ) );
   }
   
   private void updateHighlight( Highlight item, int offset, int length )
@@ -2665,9 +2755,9 @@ public class RemoteConfiguration
         }
         if ( segments.get( 0x10 ) == null )
         {
-          segments.put( 0x10, new ArrayList< Hex >() );
+          segments.put( 0x10, new ArrayList< Segment >() );
         }
-        segments.get( 0x10 ).add( segData );
+        segments.get( 0x10 ).add( new Segment( 0x10, segData, dev ) );
       }
       return;
     }
@@ -3294,7 +3384,7 @@ public class RemoteConfiguration
   /** The saved data. */
   private short[] savedData = null;
   
-  private LinkedHashMap< Integer, List<Hex> > segments = new LinkedHashMap< Integer, List<Hex> >();
+  private LinkedHashMap< Integer, List<Segment> > segments = new LinkedHashMap< Integer, List<Segment> >();
   
   private List< Integer > segmentLoadOrder = new ArrayList< Integer >();
 
