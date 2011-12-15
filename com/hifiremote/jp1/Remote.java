@@ -1011,6 +1011,10 @@ public class Remote implements Comparable< Remote >
       {
         macroSupport = RDFReader.parseFlag( value );
       }
+      else if ( parm.equals( "ForceEvenStarts" ) )
+      {
+        forceEvenStarts = RDFReader.parseFlag( value );
+      }
       else if ( parm.equals( "UpgradeAddr" ) )
       {
         upgradeAddress = new AddressRange( value, this );
@@ -3407,6 +3411,13 @@ public class Remote implements Comparable< Remote >
   public boolean supportWaveUpgrade()
   {
     return waveUpgrade;
+  }
+  
+  private boolean forceEvenStarts = false;
+
+  public boolean doForceEvenStarts()
+  {
+    return forceEvenStarts;
   }
 
   public FixedData[] getFixedData()

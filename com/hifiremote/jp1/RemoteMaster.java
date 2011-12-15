@@ -503,9 +503,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         };
         for ( int i = 0; i < jp2info.length; i++ )
         {
-          sigData[ index++ ] = ( short )jp2info[ i ];
+          sigData[ index++ ] = ( short )( jp2info[ i ] & 0xFF );
         }
-
+        remoteConfig.setSigData( sigData );
       }
       remoteConfig.updateImage();
       saveAction.setEnabled( false );

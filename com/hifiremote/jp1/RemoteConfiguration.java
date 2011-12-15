@@ -482,6 +482,16 @@ public class RemoteConfiguration
         }
       }
     }
+    List< Segment > learnedList = segments.get( 9 );
+    if ( learnedList != null )
+    {
+      for ( Segment segment : learnedList )
+      {
+        Hex hex = segment.getHex();
+        LearnedSignal ls = new LearnedSignal( hex.getData()[ 2 ], hex.getData()[ 1 ], hex.subHex( 3 ), null );
+        learned.add( ls );
+      }
+    }
     List< Segment > upgradeList = segments.get( 0x10 );
     if ( upgradeList != null )
     {
@@ -1751,6 +1761,7 @@ public class RemoteConfiguration
       updateKeyMoveHighlights();
       updateMacroHighlights();
       updateUpgradeHighlights();
+      updateLearnedHighlights();
     }
     updateCheckSums();
     checkImageForByteOverflows();
@@ -1761,8 +1772,12 @@ public class RemoteConfiguration
     for ( KeyMove keyMove : keymoves )
     {
       Segment segment = keyMove.getSegment();
+      if ( segment == null )
+      {
+        return;
+      }
       int segType = segment.getType();
-      int address = keyMove.getSegment().getAddress();
+      int address = segment.getAddress();
       updateHighlight( keyMove, address + 3, segType == 7 ? 7 : 9 );
     }
   }
@@ -1772,13 +1787,17 @@ public class RemoteConfiguration
     for ( Macro macro : macros )
     {
       Segment segment = macro.getSegment();
+      if ( segment == null )
+      {
+        return;
+      }
       int index = macro.getIndex();
       int segType = segment.getType();
       int address = segment.getAddress();
       short[] segData = segment.getHex().getData();
       if ( segType == 1 )
       {
-        updateHighlight( macro, address + 6, segData[ 3 ] + 1 );
+        updateHighlight( macro, address + 5, segData[ 3 ] + 2 );
       }
       else // segType == 2
       {
@@ -1788,6 +1807,10 @@ public class RemoteConfiguration
           pos += segData[ pos ] + 1;
         }
         updateHighlight( macro, address + pos + 3, segData[ pos ] + 1 );
+        if ( index == 0 )
+        {
+          updateHighlight( macro, address + pos + 1, 1 );
+        }
       }
     }
   }
@@ -1797,6 +1820,10 @@ public class RemoteConfiguration
     for ( DeviceUpgrade dev : devices )
     {
       Segment segment = dev.getSegment();
+      if ( segment == null )
+      {
+        return;
+      }
       int address = segment.getAddress();
       int protOffset = segment.getHex().get( 3 );
       int segSize = segment.getHex().length();
@@ -1808,6 +1835,21 @@ public class RemoteConfiguration
         highlight[ address + protOffset + 3 ] = dev.getProtocolHighlight();
       }
       
+    }
+  }
+  
+  private void updateLearnedHighlights()
+  {
+    for ( LearnedSignal ls : learned )
+    {
+      Segment segment = ls.getSegment();
+      if ( segment == null )
+      {
+        return;
+      }
+      int address = segment.getAddress();
+      int segSize = segment.getHex().length();
+      updateHighlight( ls, address + 3, segSize );  
     }
   }
   
@@ -1937,10 +1979,11 @@ public class RemoteConfiguration
     AddressRange range = remote.getAdvancedCodeAddress();
     if ( hasSegments() )
     {
-      segments.remove( 1 );
-      segments.remove( 2 );
-      segments.remove( 7 );
-      segments.remove( 8 );
+      List< Integer > types = remote.getSegmentTypes();
+      if ( types.contains( 1 ) ) segments.remove( 1 );
+      if ( types.contains( 2 ) ) segments.remove( 2 );
+      if ( types.contains( 7 ) ) segments.remove( 7 );
+      if ( types.contains( 8 ) ) segments.remove( 8 );
       updateKeyMoves( keymoves, 0 );
     }
     else if ( range != null )
@@ -2089,7 +2132,7 @@ public class RemoteConfiguration
     {
       size += macro.getData().length() + type - 1;
     }
-    Hex segData = new Hex( size + ( ( size & 1 ) == 1 ? 4 : 5 ) );
+    Hex segData = new Hex( size + ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ? 5 : 4 ) );
     segData.put( 0xFF00, 0 );
     int pos = 2;
     segData.set( ( short )keyCode, pos++ );
@@ -2730,13 +2773,17 @@ public class RemoteConfiguration
     AddressRange devAddr = remote.getDeviceUpgradeAddress();
     if ( hasSegments() )
     {
+      if ( !remote.getSegmentTypes().contains( 0x10 ) )
+      {
+        return;
+      }
       segments.remove( 0x10 );
       for ( DeviceUpgrade dev : devIndependent )
       {
         Hex hex = dev.getUpgradeHex();
         Hex code = dev.getCode();
         int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
-        size += ( ( size & 1 ) == 1 ) ? 10 : 11;
+        size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 11 : 10;
         Hex segData = new Hex( size );
         segData.set( ( short )0xFF, 0 );
         Arrays.fill( segData.getData(), 1, 5, ( short )0 );
@@ -3014,6 +3061,33 @@ public class RemoteConfiguration
    */
   private void updateLearnedSignals()
   {
+    if ( hasSegments() )
+    {
+      if ( !remote.getSegmentTypes().contains( 9 ) )
+      {
+        return;
+      }
+      segments.remove( 9 );
+      for ( LearnedSignal ls : learned )
+      {
+        ls.clearMemoryUsage();
+        Hex hex = ls.getData();
+        int size = hex.length();
+        size += ( remote.doForceEvenStarts() && ( size & 1 ) == 1 ) ? 4 : 3;
+        Hex segData = new Hex( size );
+        segData.set( ( short )0xFF, 0 );
+        segData.set( ( short )ls.getDeviceButtonIndex(), 1 );
+        segData.set( ( short )ls.getKeyCode(), 2 );
+        segData.put( hex, 3 );
+        if ( segments.get( 9 ) == null )
+        {
+          segments.put( 9, new ArrayList< Segment >() );
+        }
+        segments.get( 9 ).add( new Segment( 9, segData, ls ) );
+      }
+      return;
+    }
+    
     AddressRange addr = remote.getLearnedAddress();
     if ( addr == null )
     {
@@ -3252,7 +3326,7 @@ public class RemoteConfiguration
 
   private int getSigAddress()
   {
-    return ( sigData != null && sigData.length > 30 ) ? Hex.get( sigData, 30 ) : 0;
+    return ( sigData != null && sigData.length > 32 ) ? Hex.get( sigData, 30 ) : 0;
   }
 
   public Color[] getHighlight()
@@ -3364,6 +3438,11 @@ public class RemoteConfiguration
   public List< SpecialProtocolFunction > getSpecialFunctions()
   {
     return specialFunctions;
+  }
+
+  public void setSigData( short[] sigData )
+  {
+    this.sigData = sigData;
   }
 
   /** The remote. */

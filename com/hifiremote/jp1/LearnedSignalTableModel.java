@@ -197,7 +197,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
       case 0: // row number
         return new Integer( row + 1 );
       case 1: // deviceButton
-        return remoteConfig.getRemote().getDeviceButtons()[ l.getDeviceButtonIndex() ];
+        return remoteConfig.getRemote().getDeviceButton( l.getDeviceButtonIndex() );
       case 2: // key
         return new Integer( l.getKeyCode() );
       case 3: // notes
