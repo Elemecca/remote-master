@@ -1822,6 +1822,10 @@ public class DeviceUpgrade extends Highlight
     }
     out.print( "Remote.name", remote.getName() );
     out.print( "Remote.signature", remote.getSignature() );
+    if ( segmentFlags > 0 )
+    {
+      out.print( "SegmentFlags", segmentFlags );
+    }
     out.print( "DeviceType", devTypeAliasName );
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     out.print( "DeviceIndex", Integer.toHexString( devType.getNumber() ) );
@@ -2096,6 +2100,9 @@ public class DeviceUpgrade extends Highlight
       remote = theRemote;
     }
     remote.load();
+    // SegmentFlags is omitted if it is 0 (which it is for JP1.3 and earlier as it is not used by them )
+    str = props.getProperty( "SegmentFlags" );
+    segmentFlags = str == null ? 0 : Integer.parseInt( str );
     str = props.getProperty( "DeviceIndex" );
     if ( str != null )
     {}
@@ -2176,6 +2183,11 @@ public class DeviceUpgrade extends Highlight
     if ( !protocolInUse() && !protocol.getID( remote, false ).equals( pid ) )
     {
       protocol.setAltPID( remote, pid );
+    }
+    if ( remote.getSegmentTypes() != null )
+    {
+      sizeCmdBytes = protocol.getDefaultCmd().length();
+      sizeDevBytes = protocol.getFixedDataLength();
     }
 
     notes = props.getProperty( "Notes" );
@@ -3420,7 +3432,7 @@ public class DeviceUpgrade extends Highlight
   {
     this.buttonIndependent = buttonIndependent;
   }
-
+  
   /** The property change support. */
   private SwingPropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport( this );
 

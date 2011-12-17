@@ -5,6 +5,8 @@ import java.util.List;
 public class Segment extends Highlight
 {
   private int type = 0;
+  private int flags = 0xFF;
+  private int activity = 0;
   private Hex hex = null;
   private int address = 0;
 //  private Highlight object = null;
@@ -16,22 +18,23 @@ public class Segment extends Highlight
 //    this.type = type;
 //  }
   
-  public Segment( int type, Hex hex )
+  public Segment( int type, int flags, Hex hex )
   {
     setMemoryUsage( hex.length() + 3 );
     this.hex = hex;
     this.type = type;
+    this.flags = flags;
   }
   
-  public Segment( int type, Hex hex, Highlight object )
+  public Segment( int type, int flags, Hex hex, Highlight object )
   {
-    this( type, hex );
+    this( type, flags, hex );
     object.setSegment( this );
   }
   
-  public Segment( int type, Hex hex, List< ? extends Highlight > list )
+  public Segment( int type, int flags, Hex hex, List< ? extends Highlight > list )
   {
-    this( type, hex );
+    this( type, flags, hex );
     int index = 0;
     for ( Highlight object : list )
     {
@@ -42,6 +45,11 @@ public class Segment extends Highlight
   public int getType()
   {
     return type;
+  }
+
+  public int getFlags()
+  {
+    return flags;
   }
 
   public Hex getHex()

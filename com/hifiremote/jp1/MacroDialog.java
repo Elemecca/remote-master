@@ -299,6 +299,12 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       String notesStr = notes.getText();
 
       macro = new Macro( keyCode, data, notesStr );
+      if ( config.hasSegments() )
+      {
+        // set default values
+        macro.setDeviceIndex( 0 );
+        macro.setSegmentFlags( 0xFF );
+      }
       setVisible( false );
     }
     else if ( source == cancelButton )

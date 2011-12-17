@@ -1621,6 +1621,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( highlightItem.isSelected() )
     {
       toolBar.add( highlightAction );
+      highlightAction.setEnabled( true );
     }
   }
 
@@ -3193,7 +3194,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       newPanel.set( remoteConfig );
       currentPanel = newPanel;
-      highlightAction.setEnabled( false );
+//      highlightAction.setEnabled( false );
     }
     if ( codeSelectorDialog != null )
     {

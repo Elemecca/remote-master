@@ -121,6 +121,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       Protocol p = newUpgrade.getProtocol();
       newUpgrade.setSizeCmdBytes( p.getDefaultCmd().length() );
       newUpgrade.setSizeDevBytes( p.getFixedDataLength() );
+      newUpgrade.setSegmentFlags( 0xFF );   // Default value
     }
     if ( newUpgrade == null || oldUpgrade == null )
     {

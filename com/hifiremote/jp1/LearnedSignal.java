@@ -88,6 +88,9 @@ public class LearnedSignal extends Highlight
    */
   public LearnedSignal( Properties properties )
   {
+    // SegmentFlags is omitted if it is 0 (which it is for JP1.3 and earlier as it is not used by them )
+    String temp = properties.getProperty( "SegmentFlags" );
+    segmentFlags = temp == null ? 0 : Integer.parseInt( temp );
     keyCode = Integer.parseInt( properties.getProperty( "KeyCode" ) );
     deviceButtonIndex = Integer.parseInt( properties.getProperty( "DeviceButtonIndex" ) );
     data = new Hex( properties.getProperty( "Data" ) );
@@ -125,6 +128,10 @@ public class LearnedSignal extends Highlight
    */
   public void store( PropertyWriter pw )
   {
+    if ( segmentFlags > 0 )
+    {
+      pw.print( "SegmentFlags", segmentFlags );
+    }
     pw.print( "KeyCode", keyCode );
     pw.print( "DeviceButtonIndex", deviceButtonIndex );
     pw.print( "Data", data );
@@ -157,7 +164,7 @@ public class LearnedSignal extends Highlight
   {
     keyCode = code;
   }
-
+  
   /** The device button index. */
   private int deviceButtonIndex;
 

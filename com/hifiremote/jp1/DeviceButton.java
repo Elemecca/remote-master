@@ -75,7 +75,7 @@ public class DeviceButton extends Highlight
    */
   public int getDeviceTypeIndex( short[] data )
   {
-    return highAddress > 0 ? data[ highAddress ] >> 4 : data[ 3 ];
+    return highAddress > 0 ? data[ highAddress ] >> 4 : data[ 2 ];
   }
   
   /**
@@ -104,7 +104,7 @@ public class DeviceButton extends Highlight
     }
     else
     {
-      data[ 3 ] = index;
+      data[ 2 ] = index;
     }
   }
   
@@ -131,13 +131,13 @@ public class DeviceButton extends Highlight
    */
   public short getSetupCode( short[] data )
   {
-    short setupCode = highAddress > 0 ? data[ highAddress ] : data[ 4 ];
+    short setupCode = highAddress > 0 ? data[ highAddress ] : data[ 3 ];
     int mask = 0x07;
     if ( SetupCode.getMax() > 2048 )
       mask = 0x0F;
     setupCode &= mask;
     setupCode <<= 8;
-    setupCode |= lowAddress > 0 ? data[ lowAddress ] : data[ 5 ];
+    setupCode |= lowAddress > 0 ? data[ lowAddress ] : data[ 4 ];
     return setupCode;
   }
 
@@ -168,7 +168,7 @@ public class DeviceButton extends Highlight
     }
     else
     {
-      Hex.put( ( int )setupCode, data, 4 );
+      Hex.put( ( int )setupCode, data, 3 );
     }
   }
   

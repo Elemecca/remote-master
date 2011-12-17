@@ -584,6 +584,11 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       {
         keyMove = remote.createKeyMove( keyCode, deviceIndex, deviceTypeIndex, setupId, cmd, notesStr );
       }
+      if ( config.hasSegments() )
+      {
+        // set default value
+        keyMove.setSegmentFlags( 0xFF );
+      }
       setVisible( false );
     }
     else if ( source == cancelButton )

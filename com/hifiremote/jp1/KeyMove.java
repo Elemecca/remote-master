@@ -343,7 +343,6 @@ public class KeyMove extends AdvancedCode implements Cloneable
     }
     else
     {
-      buffer[ offset++ ] = 0xFF;
       buffer[ offset++ ] = ( short )deviceButtonIndex;
       buffer[ offset++ ] = ( short )keyCode;
       hexLength = data.length();

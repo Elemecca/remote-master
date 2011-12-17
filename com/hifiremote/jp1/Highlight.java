@@ -10,6 +10,8 @@ public class Highlight
   
   private Segment segment = null;
   
+  protected int segmentFlags = 0;
+  
   private int index = 0;
   
   public Color getHighlight()
@@ -62,5 +64,15 @@ public class Highlight
   {
     return index;
   }
-  
+
+  public int getSegmentFlags()
+  {
+    return segmentFlags;
+  }
+
+  public void setSegmentFlags( int segmentFlags )
+  {
+    this.segmentFlags = segmentFlags;
+  }
+
 }

@@ -240,7 +240,8 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
       return;
     }
     this.learnedSignal = learnedSignal;
-    boundDevice.setSelectedIndex( learnedSignal.getDeviceButtonIndex() );
+    Remote remote = config.getRemote();
+    boundDevice.setSelectedItem( remote.getDeviceButton( learnedSignal.getDeviceButtonIndex() ) );
     setButton( learnedSignal.getKeyCode(), boundKey, shift, xShift );
     model.set( learnedSignal );
     signalTextArea.setText( learnedSignal.getSignalHex( config.getRemote() ).toString() );
@@ -340,6 +341,11 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
       short[] data = Hex.parseHex( signalTextArea.getText() );
       learnedSignal = new LearnedSignal( keyCode, deviceIndex, ( new Hex( data ) ).subHex( 3 ), notes );
       ul = learnedSignal.getUnpackLearned();
+      if ( config.hasSegments() )
+      {
+        // set default value
+        learnedSignal.setSegmentFlags( 0xFF );
+      }
       if ( ! ul.ok )
       {
         String message = "Malformed learned signal: " + ul.error;
