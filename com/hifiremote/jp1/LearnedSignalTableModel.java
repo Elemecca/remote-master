@@ -184,11 +184,11 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         }
       }
     }
-    if ( numDecodes != 1 && ( column > 6 && ( column != 11 || ul.error.isEmpty() ) ) )
+    if ( numDecodes != 1 && ( column > 6 && column < 12 && ( column != 11 || ul.error.isEmpty() ) ) )
     {
       return null;
     }
-    if ( numDecodes == 1 && column > 5 )
+    if ( numDecodes == 1 && column > 5 && column < 12 )
     {
       decode = da.get( decodeIndex );
     }
@@ -255,14 +255,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     {
       case 1:
       {
-        DeviceButton[] deviceButtons = remoteConfig.getRemote().getDeviceButtons();
-        for ( short i = 0; i < deviceButtons.length; ++i )
-        {
-          if ( deviceButtons[ i ] == value )
-          {
-            l.setDeviceButtonIndex( i );
-          }
-        }
+        l.setDeviceButtonIndex( ( ( DeviceButton )value ).getButtonIndex() );
         break;
       }
       case 2:

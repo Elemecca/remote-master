@@ -96,7 +96,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Beta 1.5i";
+  public final static String version = "v2.02 Beta 1.5j";
 
   /** The dir. */
   private File dir = null;
@@ -949,11 +949,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       @Override
       public void windowClosing( WindowEvent event )
       {
+        boolean doDispose = true;
         try
         {
           System.err.println( "RemoteMaster.windowClosing() entered" );
           if ( !promptToSave() )
           {
+            doDispose = false;
             return;
           }
           downloadAction = null;
@@ -991,7 +993,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         finally
         {
-          dispose();
+          if ( doDispose )
+          {
+            dispose();
+          }
         }
       }
     } );

@@ -336,7 +336,7 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     if ( source == applyButton || source == okButton )
     {
       String notes = learnedSignal.getNotes();
-      int deviceIndex = boundDevice.getSelectedIndex();
+      int deviceIndex = ( ( DeviceButton )boundDevice.getSelectedItem() ).getButtonIndex();
       int keyCode = getKeyCode( boundKey, shift, xShift );
       short[] data = Hex.parseHex( signalTextArea.getText() );
       learnedSignal = new LearnedSignal( keyCode, deviceIndex, ( new Hex( data ) ).subHex( 3 ), notes );

@@ -171,11 +171,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       @Override
       public void windowClosing( WindowEvent event )
       {
+        boolean doDispose = true;
         try
         {
           System.err.println( "KeyMapMaster.windowClosing() entered" );
           if ( !promptToSaveUpgrade( ACTION_EXIT ) )
           {
+            doDispose = false;
             return;
           }
           System.err.println( "KeyMapMaster.windowClosing() continuing" );
@@ -197,7 +199,10 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         finally
         {
-          dispose();
+          if ( doDispose )
+          {
+            dispose();
+          }
         }
       }
     } );

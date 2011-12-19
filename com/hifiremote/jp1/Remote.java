@@ -940,6 +940,7 @@ public class Remote implements Comparable< Remote >
     String line = null;
     String parm = null;
     String value = null;
+    boolean hasForceEvenStartsEntry = false;
     while ( true )
     {
       line = rdr.readLine();
@@ -1014,6 +1015,7 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "ForceEvenStarts" ) )
       {
         forceEvenStarts = RDFReader.parseFlag( value );
+        hasForceEvenStartsEntry = true;
       }
       else if ( parm.equals( "UpgradeAddr" ) )
       {
@@ -1330,6 +1332,10 @@ public class Remote implements Comparable< Remote >
     if ( !processorName.equals( "S3C80" ) ||  RAMAddress != S3C80Processor.newRAMAddress )
     {
       RAMAddress = processor.getRAMAddress();
+    }
+    if ( processorName.equals( "MAXQ610" ) && !hasForceEvenStartsEntry )
+    {
+      forceEvenStarts = true;
     }
 
     return line;
