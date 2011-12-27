@@ -13,6 +13,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -763,6 +764,16 @@ public class Remote implements Comparable< Remote >
     return buttons;
   }
 
+  public LinkedHashMap< String, List< Button >> getButtonGroups()
+  {
+    return buttonGroups;
+  }
+
+  public Button[][] getActivityButtonGroups()
+  {
+    return activityButtonGroups;
+  }
+
   /**
    * Gets the upgrade buttons.
    * 
@@ -1143,7 +1154,7 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "DefaultRestrictions" ) )
       {
-        defaultRestrictions = parseRestrictions( value );
+        defaultRestrictions = parseRestrictions( value, null );
       }
       else if ( parm.equals( "Shift" ) )
       {
@@ -1376,7 +1387,7 @@ public class Remote implements Comparable< Remote >
    *          the str
    * @return the int
    */
-  private int parseRestrictions( String str )
+  private int parseRestrictions( String str, List< String > groupNames )
   {
     int rc = 0;
     if ( restrictionTable == null )
@@ -1430,6 +1441,10 @@ public class Remote implements Comparable< Remote >
       else if ( token.equals( "-" ) )
       {
         isAdd = false;
+      }
+      else if ( isAdd && token.toUpperCase().startsWith( "GROUP" ) )
+      {
+        groupNames.add( token.substring( 5 ) );
       }
       else
       {
@@ -1514,10 +1529,16 @@ public class Remote implements Comparable< Remote >
       {
         break;
       }
-
-      char ch = line.charAt( 0 );
-
-      line = line.substring( 1 );
+      
+      int pos = 0;
+      boolean comp = false;
+      char ch = line.charAt( pos++ );
+      if ( ch == '~' )
+      {
+        comp = true;
+        ch = line.charAt( pos++ );
+      }
+      line = line.substring( pos );
       StringTokenizer st = new StringTokenizer( line, ":" );
       int addr = RDFReader.parseNumber( st.nextToken() );
       AddressRange range = new AddressRange();
@@ -1526,11 +1547,11 @@ public class Remote implements Comparable< Remote >
       CheckSum sum = null;
       if ( ch == '+' )
       {
-        sum = new AddCheckSum( addr, range );
+        sum = new AddCheckSum( addr, range, comp );
       }
       else
       {
-        sum = new XorCheckSum( addr, range );
+        sum = new XorCheckSum( addr, range, comp );
       }
       work.add( sum );
     }
@@ -1995,6 +2016,7 @@ public class Remote implements Comparable< Remote >
     String line;
     short keycode = 1;
     int restrictions = defaultRestrictions;
+    List< String > groupNames = new ArrayList< String >();
     while ( true )
     {
       line = rdr.readLine();
@@ -2013,13 +2035,14 @@ public class Remote implements Comparable< Remote >
         int equal = token.indexOf( '=' );
         if ( equal != -1 )
         {
+          groupNames = new ArrayList< String >();
           String keycodeStr = token.substring( equal + 1 );
           token = token.substring( 0, equal );
           int pos = keycodeStr.indexOf( ':' );
           if ( pos != -1 )
           {
             String restrictStr = keycodeStr.substring( pos + 1 );
-            restrictions = parseRestrictions( restrictStr );
+            restrictions = parseRestrictions( restrictStr, groupNames );
             keycodeStr = keycodeStr.substring( 0, pos );
           }
           else
@@ -2052,8 +2075,44 @@ public class Remote implements Comparable< Remote >
         // The Button constructor sets restrictions itself under certain circumstances, so
         // we need to make sure we retain these.
         b.setRestrictions( b.getRestrictions() | restrictions );
+        if ( groupNames.size() > 0 )
+        {
+          if ( buttonGroups == null )
+          {
+            buttonGroups = new LinkedHashMap< String, List<Button> >();
+          }
+          for ( String groupName : groupNames )
+          {
+            List< Button > group = buttonGroups.get( groupName );
+            if ( group == null )
+            {
+              group = new ArrayList< Button >();
+              buttonGroups.put( groupName, group );
+            }
+            group.add( b );
+          }
+        }
         keycode++ ;
         addButton( b );
+      }
+    }
+    if ( buttonGroups != null )
+    {
+      int i = 0;
+      List< Button[] > groupList = new ArrayList< Button[] >();
+      while ( true )
+      {
+        List< Button > list = buttonGroups.get( "" + i++ );
+        if ( list == null )
+        {
+          break;
+        }
+        groupList.add( list.toArray( new Button[ 0 ] ) );
+      }
+      activityButtonGroups = new Button[ groupList.size()][];
+      for ( i = 0; i < groupList.size(); i++ )
+      {
+        activityButtonGroups[ i ] = groupList.get( i );
       }
     }
 
@@ -3013,6 +3072,11 @@ public class Remote implements Comparable< Remote >
   {
     return segmentTypes == null;
   }
+  
+  public boolean hasActivitySupport()
+  {
+    return segmentTypes != null && segmentTypes.contains( 0xDB );
+  }
 
   /** The oem device. */
   private OEMDevice oemDevice = null;
@@ -3232,6 +3296,10 @@ public class Remote implements Comparable< Remote >
 
   /** The button maps. */
   private ButtonMap[] buttonMaps = new ButtonMap[ 0 ];
+  
+  private LinkedHashMap< String, List< Button > > buttonGroups = null;
+  
+  private Button[][] activityButtonGroups = null;
 
   /** The omit digit map byte. */
   private boolean omitDigitMapByte = false;

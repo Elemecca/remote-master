@@ -15,9 +15,9 @@ public class AddCheckSum extends CheckSum
    * @param range
    *          the range
    */
-  public AddCheckSum( int addr, AddressRange range )
+  public AddCheckSum( int addr, AddressRange range, boolean comp )
   {
-    super( addr, range );
+    super( addr, range, comp );
   }
 
   /*

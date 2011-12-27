@@ -69,6 +69,25 @@ public class RemoteConfiguration
     importIR( pr, false );
     in.close();
   }
+  
+  private void createActivities()
+  {
+    LinkedHashMap< String, List< Button > > buttonGroups = remote.getButtonGroups();
+    List< Button > activityBtns = null;
+    if ( buttonGroups != null )
+    {
+      activityBtns = buttonGroups.get(  "Activity" );
+    }
+    if ( activityBtns == null )
+    {
+      return;
+    }
+    activities = new LinkedHashMap< Button, Activity >();
+    for ( Button btn : activityBtns )
+    {
+      activities.put( btn, new Activity( btn, remote ) );
+    }
+  }
 
   /**
    * Parses an RMIR file.
@@ -316,6 +335,7 @@ public class RemoteConfiguration
       }
     }
     remote.load();
+    createActivities();
     highlight = new Color[ eepromSize + 8 * remote.getSettingAddresses().size() ];
     for ( int i = 0; i < highlight.length; i++ )
     {
@@ -369,6 +389,11 @@ public class RemoteConfiguration
   public LinkedHashMap< Integer, List< Segment >> getSegments()
   {
     return segments;
+  }
+
+  public HashMap< Button, Activity > getActivities()
+  {
+    return activities;
   }
 
   private void loadSegments( boolean decode )
@@ -549,6 +574,23 @@ public class RemoteConfiguration
         }
         segment.setObject( upgrade );
         devices.add( upgrade );
+      }
+    }
+    List< Segment > activityAssignments = segments.get( 0xDB );
+    if ( activityAssignments != null )
+    {
+      for ( Segment segment : activityAssignments )
+      {
+        Hex hex = segment.getHex();
+        Button btn = remote.getButton( hex.getData()[ 1 ] );
+        Activity activity = activities.get( btn );
+        activity.setSegmentFlags( segment.getFlags() );
+        ActivityGroup[] groups = activity.getActivityGroups();
+        for ( int i = 0; i < Math.min( groups.length, hex.length() - 2 ); i++ )
+        {
+          groups[ i ].setDevice( remote.getDeviceButton( hex.getData()[ i + 2 ] ) );
+        }
+        segment.setObject( activity );
       }
     }
     pos = 0;
@@ -1268,6 +1310,7 @@ public class RemoteConfiguration
   {
     owner = rm;
     this.remote = remote;
+    createActivities();
     SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
 
     int eepromSize = remote.getEepromSize();
@@ -1742,6 +1785,7 @@ public class RemoteConfiguration
     
     if ( hasSegments() )
     {
+      updateActivities();
       int pos = 2;
       for ( int type : segmentLoadOrder )
       {
@@ -1765,6 +1809,7 @@ public class RemoteConfiguration
       updateMacroHighlights();
       updateUpgradeHighlights();
       updateLearnedHighlights();
+      updateActivityHighlights();
     }
     updateCheckSums();
     checkImageForByteOverflows();
@@ -1856,6 +1901,22 @@ public class RemoteConfiguration
     }
   }
   
+  private void updateActivityHighlights()
+  {
+    for ( Activity activity : activities.values() )
+    {
+      Segment segment = activity.getSegment();
+      ActivityGroup[] groups = activity.getActivityGroups();
+      int address = segment.getAddress();
+      int pos = 0;
+      for ( ActivityGroup group : groups )
+      {
+        group.clearMemoryUsage();
+        updateHighlight( group, address + 6 + pos++, 1 );
+      }
+    }
+  }
+  
   private void checkImageForByteOverflows()
   {
     for ( int i = 0; i < data.length; i++ )
@@ -1908,6 +1969,33 @@ public class RemoteConfiguration
       }
     }
     return offset;
+  }
+  
+  private void updateActivities()
+  {
+    if ( activities == null )
+    {
+      return;
+    }
+    segments.remove( 0xDB );
+    for ( Activity activity : activities.values() )
+    {
+      ActivityGroup[] groups = activity.getActivityGroups();
+      Hex segData = new Hex( groups.length + 2 );
+      segData.set( ( short )0, 0 );
+      segData.set( ( short )activity.getButton().getKeyCode(), 1 );
+      int pos = 2;
+      for ( ActivityGroup group : groups )
+      {
+        segData.set( ( short )group.getDevice().getButtonIndex(), pos++ );
+      }
+      int flags = activity.getSegmentFlags();
+      if ( segments.get( 0xDB ) == null )
+      {
+        segments.put(  0xDB, new ArrayList< Segment >() );
+      }
+      segments.get( 0xDB ).add( new Segment( 0xDB, flags, segData, activity ) );
+    }
   }
 
   /**
@@ -3484,6 +3572,8 @@ public class RemoteConfiguration
   private short[] savedData = null;
   
   private LinkedHashMap< Integer, List<Segment> > segments = new LinkedHashMap< Integer, List<Segment> >();
+  
+  private LinkedHashMap< Button, Activity > activities = null;
   
   private List< Integer > segmentLoadOrder = new ArrayList< Integer >();
 

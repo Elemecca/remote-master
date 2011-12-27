@@ -87,7 +87,7 @@ import com.hifiremote.jp1.io.JP1USB;
 public class RemoteMaster extends JP1Frame implements ActionListener, PropertyChangeListener, HyperlinkListener,
     ChangeListener
 {
-  public static final int MAX_RDF_SYNC = 4;
+  public static final int MAX_RDF_SYNC = 5;
   public static final int MIN_RDF_SYNC = 3;
 
   public static final Color AQUAMARINE = new Color( 127, 255, 212 );
@@ -222,6 +222,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The protocol panel. */
   private ProtocolUpgradePanel protocolPanel = null;
+  
+  private ActivityPanel activityPanel = null;
 
   /** The learned panel. */
   private LearnedSignalPanel learnedPanel = null;
@@ -1062,6 +1064,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     protocolPanel = new ProtocolUpgradePanel();
     tabbedPane.addTab( "Protocols", protocolPanel );
     protocolPanel.addPropertyChangeListener( this );
+    
+    activityPanel = new ActivityPanel();
+    activityPanel.addPropertyChangeListener( this );
 
     try
     {
@@ -2685,6 +2690,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     index = checkTabbedPane( "Fav/Scan", favScanPanel, remote.hasFavKey(), index );
     index++;  // Devices tab
     index = checkTabbedPane( "Protocols", protocolPanel, remote.hasFreeProtocols(), index );
+    index = checkTabbedPane( "Activities", activityPanel, remote.hasActivitySupport(), index );
     index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
     
     generalPanel.set( remoteConfig );
@@ -2696,6 +2702,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     devicePanel.set( remoteConfig );
     protocolPanel.set( remoteConfig );
+    activityPanel.set( remoteConfig );
 
     if ( learnedPanel != null )
     {

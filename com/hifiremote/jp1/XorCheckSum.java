@@ -15,9 +15,9 @@ public class XorCheckSum extends CheckSum
    * @param range
    *          the range
    */
-  public XorCheckSum( int addr, AddressRange range )
+  public XorCheckSum( int addr, AddressRange range, boolean comp )
   {
-    super( addr, range );
+    super( addr, range, comp );
   }
 
   /*

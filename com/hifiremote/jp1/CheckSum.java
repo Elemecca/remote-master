@@ -35,10 +35,11 @@ public abstract class CheckSum
    * @param addrRange
    *          the addr range
    */
-  public CheckSum( int sumAddr, AddressRange addrRange )
+  public CheckSum( int sumAddr, AddressRange addrRange, boolean comp )
   {
     checkSumAddress = sumAddr;
     addressRange = addrRange;
+    complement = comp;
   }
 
   /**
@@ -63,6 +64,10 @@ public abstract class CheckSum
   public void setCheckSum( short[] data )
   {
     short sum = calculateCheckSum( data, addressRange.getStart(), addressRange.getEnd() );
+    if ( complement )
+    {
+      sum = ( short )( ~sum & 0xFF );
+    }
     data[ checkSumAddress ] = sum;
     data[ checkSumAddress + 1 ] = ( short )( ~sum & 0xFF );
   }
@@ -82,4 +87,6 @@ public abstract class CheckSum
 
   /** The address range. */
   private AddressRange addressRange;
+  
+  private boolean complement = false;
 }
