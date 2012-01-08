@@ -444,12 +444,20 @@ public class RemoteConfiguration
       {
         Hex hex = segment.getHex();
         int deviceIndex = hex.getData()[ 0 ]; // Known values are 0 (not device specific) or an activity button number
+        Button btn = remote.getButton( deviceIndex );
         int keyCode = hex.getData()[ 1 ];
         Hex keyCodes = hex.subHex( 3, Math.min( hex.getData()[ 2 ], hex.length() - 3 ) );
         Macro macro = new Macro( keyCode, keyCodes, deviceIndex, 0, null );
         macro.setSegmentFlags( segment.getFlags() );
         segment.setObject( macro );
-        macros.add( macro );
+        if ( btn != null && activities.get( btn ) != null )
+        {
+          activities.get( btn ).setMacro( macro );
+        }
+        else
+        {
+          macros.add( macro );
+        }
       }
     }
     List< Segment > multiMacroList = segments.get( 2 );
@@ -591,6 +599,20 @@ public class RemoteConfiguration
           groups[ i ].setDevice( remote.getDeviceButton( hex.getData()[ i + 2 ] ) );
         }
         segment.setObject( activity );
+      }
+    }
+    List< Segment > activitySettings = segments.get( 0xDC );
+    if ( activitySettings != null )
+    {
+      for ( Segment segment : activitySettings )
+      {
+        Hex hex = segment.getHex();
+        Button btn = remote.getButton( hex.getData()[ 1 ] );
+        Activity activity = activities.get( btn );
+        activity.setHelpSegmentFlags( segment.getFlags() );
+        activity.setAudioHelp( hex.getData()[ 2 ] & 1 );
+        activity.setVideoHelp( hex.getData()[ 3 ] & 1 );
+        activity.setHelpSegment( segment );
       }
     }
     pos = 0;
@@ -1832,7 +1854,7 @@ public class RemoteConfiguration
   
   private void updateMacroHighlights()
   {
-    for ( Macro macro : macros )
+    for ( Macro macro : getAllMacros() )
     {
       Segment segment = macro.getSegment();
       if ( segment == null )
@@ -1845,7 +1867,7 @@ public class RemoteConfiguration
       short[] segData = segment.getHex().getData();
       if ( segType == 1 )
       {
-        updateHighlight( macro, address + 5, segData[ 2 ] + 2 );
+        updateHighlight( macro, address + 4, segData[ 2 ] + 3 );
       }
       else // segType == 2
       {
@@ -1857,7 +1879,7 @@ public class RemoteConfiguration
         updateHighlight( macro, address + pos + 4, segData[ pos ] + 1 );
         if ( index == 0 )
         {
-          updateHighlight( macro, address + pos + 2, 1 );
+          updateHighlight( macro, address + pos + 1, 2 );
         }
       }
     }
@@ -1914,6 +1936,11 @@ public class RemoteConfiguration
         group.clearMemoryUsage();
         updateHighlight( group, address + 6 + pos++, 1 );
       }
+      segment = activity.getHelpSegment();
+      address = segment.getAddress();
+      activity.clearMemoryUsage();
+      updateHighlight( activity, address + 4, 4 );
+      activity.addMemoryUsage( activity.getMacro().getMemoryUsage() );
     }
   }
   
@@ -1978,6 +2005,7 @@ public class RemoteConfiguration
       return;
     }
     segments.remove( 0xDB );
+    segments.remove( 0xDC );
     for ( Activity activity : activities.values() )
     {
       ActivityGroup[] groups = activity.getActivityGroups();
@@ -1995,6 +2023,19 @@ public class RemoteConfiguration
         segments.put(  0xDB, new ArrayList< Segment >() );
       }
       segments.get( 0xDB ).add( new Segment( 0xDB, flags, segData, activity ) );
+      segData = new Hex( 4 );
+      segData.set( ( short )0, 0 );
+      segData.set( ( short )activity.getButton().getKeyCode(), 1 );
+      segData.set( ( short )activity.getAudioHelp(), 2 );
+      segData.set( ( short )activity.getVideoHelp(), 3 );
+      flags = activity.getHelpSegmentFlags();
+      if ( segments.get( 0xDC ) == null )
+      {
+        segments.put(  0xDC, new ArrayList< Segment >() );
+      }
+      Segment segment = new Segment( 0xDC, flags, segData );
+      activity.setHelpSegment( segment );
+      segments.get( 0xDC ).add( segment );
     }
   }
 
@@ -2094,7 +2135,7 @@ public class RemoteConfiguration
     
     LinkedHashMap< Button, List< Macro >> multiMacros = new LinkedHashMap< Button, List< Macro >>();
     LinkedHashMap< Integer, List< Macro >> macroLists = new LinkedHashMap< Integer, List< Macro >>();
-    for ( Macro macro : macros )
+    for ( Macro macro : getAllMacros() )
     {
       macro.clearMemoryUsage();
       int keyCode = macro.getKeyCode();
@@ -2199,6 +2240,24 @@ public class RemoteConfiguration
       multiMacro.setCount( macros.size() );
       multiMacro.store( data, remote );
     }
+  }
+  
+  private List< Macro > getAllMacros()
+  {
+    List< Macro > allMacros = new ArrayList< Macro >();
+    if ( hasSegments() && activities != null )
+    {
+      for ( Activity activity : activities.values() )
+      {
+        Macro macro = activity.getMacro();
+        if ( macro != null )
+        {
+          allMacros.add( macro );
+        }
+      }
+    }
+    allMacros.addAll( macros );
+    return allMacros;
   }
   
   private void updateMacroSegments( int keyCode, List< Macro > list, int type )

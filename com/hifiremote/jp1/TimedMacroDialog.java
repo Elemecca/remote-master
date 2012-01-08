@@ -65,7 +65,8 @@ public class TimedMacroDialog extends JDialog implements ActionListener, ButtonE
     settingsBox.add( timePanel );
 
     // Add the Macro definition controls
-    macroBox = new MacroDefinitionBox( this );
+    macroBox = new MacroDefinitionBox();
+    macroBox.setButtonEnabler( this );
     contentPane.add( macroBox, BorderLayout.CENTER );
 
     JPanel bottomPanel = new JPanel( new BorderLayout() );
@@ -112,14 +113,14 @@ public class TimedMacroDialog extends JDialog implements ActionListener, ButtonE
       }
       dayScheduleBox.setValue( defaultDaySchedule );
       timePanel.setValue( new RMTime() );
-      macroBox.setData( null );
+      macroBox.setValue( null );
       notes.setText( null );
     }
     else
     {  
       dayScheduleBox.setValue( timedMacro.getDaySchedule() );
       timePanel.setValue( timedMacro.getTime() );
-      macroBox.setData( timedMacro.getData() );
+      macroBox.setValue( timedMacro.getData() );
       notes.setText( timedMacro.getNotes() );
     }  
 
@@ -127,7 +128,7 @@ public class TimedMacroDialog extends JDialog implements ActionListener, ButtonE
   }
   
   @Override
-  public void enableButtons( Button b )
+  public void enableButtons( Button b, MacroDefinitionBox macroBox )
   {
     int limit = 15;
     if ( config.getRemote().getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
@@ -165,7 +166,7 @@ public class TimedMacroDialog extends JDialog implements ActionListener, ButtonE
       
       DaySchedule daySchedule = dayScheduleBox.getValue();
       RMTime time = timePanel.getValue();
-      Hex data = macroBox.getData();
+      Hex data = macroBox.getValue();
       String notesStr = notes.getText();
       
       if ( time != null )

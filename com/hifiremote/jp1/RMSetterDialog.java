@@ -20,13 +20,12 @@ public class RMSetterDialog< T > extends JDialog
 {
   
   public < C extends JComponent & RMSetter< T > > 
-  T showDialog( Component locationComp, Remote remote, Class< C > panelClass, T value )
+  T showDialog( Component locationComp, RemoteConfiguration remoteConfig, Class< C > panelClass, T value )
   {
-    if ( dialog == null || remote != dialog.getRemote() )
+    if ( dialog == null || remoteConfig != dialog.getRemoteConfig() )
     {  
-      dialog = new SetterDialog< C >( locationComp, panelClass );
+      dialog = new SetterDialog< C >( locationComp, panelClass, remoteConfig );
     }
-    dialog.setRemote( remote );
     dialog.setValue( value );
     dialog.pack();
     dialog.setLocationRelativeTo( locationComp );
@@ -39,11 +38,12 @@ public class RMSetterDialog< T > extends JDialog
   extends JDialog implements ActionListener
   {
 
-    private SetterDialog( Component c, Class< C > panelClass ) 
+    private SetterDialog( Component c, Class< C > panelClass, RemoteConfiguration remoteConfig ) 
     {
       super(( JFrame )SwingUtilities.getRoot( c ));
       setTitle( title );
       setModal( true );
+      this.remoteConfig = remoteConfig;
 
       JButton cancelButton = new JButton( "Cancel" );
       cancelButton.addActionListener( this );
@@ -66,6 +66,12 @@ public class RMSetterDialog< T > extends JDialog
       try
       {
         mainPanel = panelClass.newInstance();
+        if ( mainPanel instanceof MacroDefinitionBox )
+        {
+          MacroDefinitionBox macroBox = ( MacroDefinitionBox )mainPanel;
+          macroBox.setButtonEnabler( buttonEnabler );
+          macroBox.setRemoteConfiguration( remoteConfig );
+        }
       }
       catch ( Exception e )
       {
@@ -79,14 +85,9 @@ public class RMSetterDialog< T > extends JDialog
 
     }
 
-    public Remote getRemote()
+    public RemoteConfiguration getRemoteConfig()
     {
-      return remote;
-    }
-
-    public void setRemote( Remote remote )
-    {
-      this.remote = remote;
+      return remoteConfig;
     }
 
     @Override
@@ -110,11 +111,16 @@ public class RMSetterDialog< T > extends JDialog
 
     public void setValue( T value )
     { 
-      mainPanel.setValue( value ); 
+      mainPanel.setValue( value );
+      if ( mainPanel instanceof MacroDefinitionBox )
+      {
+        MacroDefinitionBox macroBox = ( MacroDefinitionBox )mainPanel;
+        macroBox.enableButtons();
+      }
     }
 
     private C mainPanel;
-    private Remote remote;
+    private RemoteConfiguration remoteConfig;
 
   }
 
@@ -123,7 +129,13 @@ public class RMSetterDialog< T > extends JDialog
     this.title = title;
   }
   
+  public void setButtonEnabler( ButtonEnabler buttonEnabler )
+  {
+    this.buttonEnabler = buttonEnabler;
+  }
+
   private String title = null;
-  private  T value = null;
-  private  SetterDialog< ? > dialog = null;
+  private T value = null;
+  private SetterDialog< ? > dialog = null;
+  private ButtonEnabler buttonEnabler = null;
 }

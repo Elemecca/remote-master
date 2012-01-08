@@ -18,12 +18,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener
+public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener,
+RMSetter< Hex >
 {
-  public MacroDefinitionBox( ButtonEnabler buttonEnabler )
+  public MacroDefinitionBox()
   {
     super( BoxLayout.X_AXIS );
-    this.buttonEnabler = buttonEnabler;
     macroButtons.setModel( macroButtonModel );
     setBorder( BorderFactory.createTitledBorder( "Macro Definition" ) );
 
@@ -74,7 +74,12 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
     clear.addActionListener( this );
     buttonBox.add( clear );
   }
-  
+
+  public void setButtonEnabler( ButtonEnabler buttonEnabler )
+  {
+    this.buttonEnabler = buttonEnabler;
+  }
+
   public void setRemoteConfiguration( RemoteConfiguration config )
   {
     this.config = config;
@@ -214,7 +219,8 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
     return macroButtonModel.getSize() == 0;
   }
   
-  public Hex getData()
+  @Override
+  public Hex getValue()
   {
     int length = macroButtonModel.getSize();
     short[] keyCodes = new short[ length ];
@@ -238,7 +244,8 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
     enableButtons();
   }
   
-  public void setData( Hex hex )
+  @Override
+  public void setValue( Hex hex )
   {
     availableButtons.setSelectedIndex( -1 );
     macroButtonModel.clear();
@@ -264,7 +271,7 @@ public class MacroDefinitionBox extends Box implements ActionListener, ListSelec
     clear.setEnabled( macroButtonModel.getSize() > 0 );
     
     Button baseButton = ( Button )availableButtons.getSelectedValue();
-    buttonEnabler.enableButtons( baseButton );
+    buttonEnabler.enableButtons( baseButton, this );
   }
 
   

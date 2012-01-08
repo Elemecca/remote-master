@@ -6,7 +6,6 @@ public class Segment extends Highlight
 {
   private int type = 0;
   private int flags = 0xFF;
-  private int activity = 0;
   private Hex hex = null;
   private int address = 0;
 //  private Highlight object = null;

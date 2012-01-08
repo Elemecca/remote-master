@@ -16,9 +16,9 @@ public class TimedMacroTableModel extends JP1TableModel< TimedMacro >
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
       setData( remoteConfig.getTimedMacros() );
-      dayScheduleEditor.setRemote( remote );
+      dayScheduleEditor.setRemoteConfiguration( remoteConfig );
       dayScheduleEditor.setTitle( "Day Schedule Setter" );
-      timeEditor.setRemote( remote );
+      timeEditor.setRemoteConfiguration( remoteConfig );
       timeEditor.setTitle( "Time Setter" );
     }
   }

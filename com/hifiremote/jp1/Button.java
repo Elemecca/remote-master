@@ -534,6 +534,25 @@ public class Button
     return ( ( restrictions & XSHIFT_TMACRO_DATA ) == 0 );
   }
   
+  public boolean canAssignToPowerMacro()
+  {
+    return ( ( restrictions & PWRMACRO_DATA ) == 0 );
+  }
+
+  public boolean canAssignShiftedToPowerMacro()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return ( ( restrictions & SHIFT_PWRMACRO_DATA ) == 0 );
+  }
+
+  public boolean canAssignXShiftedToPowerMacro()
+  {
+    if ( isShifted || isXShifted )
+      return false;
+    return ( ( restrictions & XSHIFT_PWRMACRO_DATA ) == 0 );
+  }
+  
   /**
    * Allows learned signal.
    * 
@@ -949,6 +968,18 @@ public class Button
 
   /** The AL l_ fa v_ data. */
   public static int ALL_FAV_DATA = FAV_DATA | SHIFT_FAV_DATA | XSHIFT_FAV_DATA;
+  
+  public static int PWRMACRO_DATA = 0x40000;
+
+  public static int SHIFT_PWRMACRO_DATA = 0x80000;
+
+  public static int XSHIFT_PWRMACRO_DATA = 0x100000;
+
+  public static int ALL_PWRMACRO_DATA = PWRMACRO_DATA | SHIFT_PWRMACRO_DATA | XSHIFT_PWRMACRO_DATA;
+  
+  
+  
+  
 
   /** The BIND. */
   public static int BIND = MOVE_BIND | MACRO_BIND | LEARN_BIND;
@@ -963,16 +994,16 @@ public class Button
   public static int ALL_BIND = ALL_MOVE_BIND | ALL_MACRO_BIND | ALL_LEARN_BIND;
 
   /** The DATA. */
-  public static int DATA = MACRO_DATA | TMACRO_DATA | FAV_DATA;
+  public static int DATA = MACRO_DATA | TMACRO_DATA | FAV_DATA | PWRMACRO_DATA;
 
   /** The SHIF t_ data. */
-  public static int SHIFT_DATA = SHIFT_MACRO_DATA | SHIFT_TMACRO_DATA | SHIFT_FAV_DATA;
+  public static int SHIFT_DATA = SHIFT_MACRO_DATA | SHIFT_TMACRO_DATA | SHIFT_FAV_DATA | SHIFT_PWRMACRO_DATA;
 
   /** The XSHIF t_ data. */
-  public static int XSHIFT_DATA = XSHIFT_MACRO_DATA | XSHIFT_TMACRO_DATA | XSHIFT_FAV_DATA;
+  public static int XSHIFT_DATA = XSHIFT_MACRO_DATA | XSHIFT_TMACRO_DATA | XSHIFT_FAV_DATA | XSHIFT_PWRMACRO_DATA;
 
   /** The AL l_ data. */
-  public static int ALL_DATA = ALL_MACRO_DATA | ALL_TMACRO_DATA | ALL_FAV_DATA;
+  public static int ALL_DATA = ALL_MACRO_DATA | ALL_TMACRO_DATA | ALL_FAV_DATA | ALL_PWRMACRO_DATA;
 
   /** The SHIFT. */
   public static int SHIFT = SHIFT_BIND | SHIFT_DATA;

@@ -176,7 +176,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       rows = Math.min( 12, remoteConfig.getRemote().getSettings().length );
     }
     d = settingTable.getPreferredSize();
-    d.height = 12 * settingTable.getRowHeight();
+    d.height = rows * settingTable.getRowHeight();
     settingTable.setPreferredScrollableViewportSize( d );
 
     upperPane.resetToPreferredSizes();

@@ -29,9 +29,9 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
     button.setBorderPainted( false );
   }
   
-  public void setRemote( Remote remote )
+  public void setRemoteConfiguration( RemoteConfiguration remoteConfig )
   {
-    this.remote = remote;
+    this.remoteConfig = remoteConfig;
   }
   
   @Override
@@ -45,7 +45,14 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int column )
   {
     this.value = ( T )value;
-    button.setText( this.value.toString() );
+    if ( panelClass == MacroDefinitionBox.class )
+    {
+      button.setText( Macro.getValueString( ( Hex )value , remoteConfig ) );
+    }
+    else
+    {
+      button.setText( this.value.toString() );
+    }
     return button;
   }
 
@@ -59,7 +66,8 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
       
       RMSetterDialog<T> dialog = new RMSetterDialog<T>();
       dialog.setTitle( title );
-      T result = dialog.showDialog(button, remote, panelClass, value);
+      dialog.setButtonEnabler( buttonEnabler );
+      T result = dialog.showDialog(button, remoteConfig, panelClass, value);
       if ( ( result != null ) && ! result.toString().equals( value.toString() ))
       {
         value = result;
@@ -78,12 +86,18 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
     this.title = title;
   }
 
+  public void setButtonEnabler( ButtonEnabler buttonEnabler )
+  {
+    this.buttonEnabler = buttonEnabler;
+  }
+
   private JButton button = null;
-  private Remote remote = null;
+  private RemoteConfiguration remoteConfig = null;
   private String title = null;
   
   private T value = null;
   private Class< C > panelClass = null;
+  private ButtonEnabler buttonEnabler = null;
   
   protected static final String EDIT = "edit";
 

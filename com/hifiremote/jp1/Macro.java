@@ -86,11 +86,17 @@ public class Macro extends AdvancedCode
    * 
    * @see com.hifiremote.jp1.AdvancedCode#getValueString(com.hifiremote.jp1.RemoteConfiguration)
    */
+  @Override
   public String getValueString( RemoteConfiguration remoteConfig )
+  {
+    return getValueString( data, remoteConfig );
+  }
+  
+  public static String getValueString( Hex hex, RemoteConfiguration remoteConfig )
   {
     Remote remote = remoteConfig.getRemote();
     StringBuilder buff = new StringBuilder();
-    short[] keys = data.getData();
+    short[] keys = hex.getData();
     for ( int i = 0; i < keys.length; ++i )
     {
       if ( i != 0 )

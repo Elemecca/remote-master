@@ -97,7 +97,8 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     panel.add( xShift );
 
     // Add the Macro definition controls
-    macroBox = new MacroDefinitionBox( this );
+    macroBox = new MacroDefinitionBox();
+    macroBox.setButtonEnabler( this );
     contentPane.add( macroBox, BorderLayout.CENTER );
 
     JPanel bottomPanel = new JPanel( new BorderLayout() );
@@ -160,16 +161,16 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       boundKey.setSelectedIndex( -1 );
       shift.setSelected( false );
       xShift.setSelected( false );
-      macroBox.setData( null );
+      macroBox.setValue( null );
       notes.setText( null );
     }
     else
     {
-    setButton( macro.getKeyCode(), boundKey, shift, xShift );
-    macroBox.setData( macro.getData() );
-    notes.setText( macro.getNotes() );
+      setButton( macro.getKeyCode(), boundKey, shift, xShift );
+      macroBox.setValue( macro.getData() );
+      notes.setText( macro.getNotes() );
     }
-    
+
     macroBox.enableButtons();
   }
 
@@ -294,7 +295,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
         return;
       }
       
-      Hex data = macroBox.getData();
+      Hex data = macroBox.getValue();
 
       String notesStr = notes.getText();
 
@@ -344,7 +345,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   }
 
   @Override
-  public void enableButtons( Button b )
+  public void enableButtons( Button b, MacroDefinitionBox macroBox )
   {
     int limit = 15;
     if ( config.getRemote().getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )

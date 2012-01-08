@@ -1,14 +1,18 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
-import java.awt.event.MouseAdapter;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.TextArea;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -17,33 +21,58 @@ public class ActivityPanel extends RMPanel implements ChangeListener
 {
   public ActivityPanel()
   {
-    activityGroupPanel = new JPanel( new BorderLayout() );
-    activityGroupPanel.setBorder( BorderFactory.createTitledBorder( "Activity Group Assignments" ) );
+    tabPanel = new JPanel( new BorderLayout() );
+    JPanel panel = new JPanel( new BorderLayout() );
+    panel.setBorder( BorderFactory.createTitledBorder( "Activity Functions" ) );
+    activityFunctionTable = new JP1Table( activityFunctionModel );
+    activityFunctionTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
+    JScrollPane scrollPane = new JScrollPane( activityFunctionTable );
+    JPanel upper = new JPanel( new BorderLayout() );
+    upper.add( scrollPane, BorderLayout.CENTER );
+    String message = "Note:  When the activity has been set with the remote, \"Key\" is "
+      + "the number key pressed to select the desired combination for the activity.  The "
+      + "\"Key\" value has no significance when the activity is set with RMIR.";
+    JTextArea area = new JTextArea( message );
+    JLabel label = new JLabel();
+    Font font = label.getFont();
+    area.setFont( font );
+    area.setBackground( label.getBackground() );
+    area.setLineWrap( true );
+    area.setWrapStyleWord( true );
+    area.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    upper.add( area, BorderLayout.PAGE_END );
+    panel.add( upper, BorderLayout.CENTER );
+    tabPanel.add( panel, BorderLayout.PAGE_START );
+    panel = new JPanel( new BorderLayout() );
+    panel.setBorder( BorderFactory.createTitledBorder( "Activity Group Assignments" ) );
     activityGroupTable = new JP1Table( activityGroupModel );
     activityGroupTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
-    activityGroupTable.initColumns( activityGroupModel );
+    scrollPane = new JScrollPane( activityGroupTable );
+    panel.add( scrollPane, BorderLayout.CENTER );
+    tabPanel.add( panel, BorderLayout.CENTER );
     tabbedPane = new JTabbedPane();
-    tabbedPane.addChangeListener( this );
-    JScrollPane activityScrollPane = new JScrollPane( activityGroupTable );
-    activityGroupPanel.add( activityScrollPane, BorderLayout.CENTER );
+    tabbedPane.addChangeListener( this );    
     add( tabbedPane, BorderLayout.CENTER );
+    Dimension d = activityFunctionTable.getPreferredSize();
+    d.height = 2 * activityFunctionTable.getRowHeight();
+    activityFunctionTable.setPreferredScrollableViewportSize( d );
   }
 
   @Override
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
-    
-      if ( listener != null )
+    if ( listener != null )
+    {
+      if ( activityGroupModel != null )
       {
-        if ( activityGroupModel != null )
-        {
-          activityGroupModel.addPropertyChangeListener( listener );
-        }
-
-        propertyChangeSupport.addPropertyChangeListener( listener );
+        activityGroupModel.addPropertyChangeListener( listener );
       }
-
-
+      if ( activityFunctionModel != null )
+      {
+        activityFunctionModel.addPropertyChangeListener( listener );
+      }
+      propertyChangeSupport.addPropertyChangeListener( listener );
+    }
   }
   
   private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
@@ -61,9 +90,11 @@ public class ActivityPanel extends RMPanel implements ChangeListener
     }
   }
 
-  private JPanel activityGroupPanel = null;
   private JP1Table activityGroupTable = null;
   private ActivityGroupTableModel activityGroupModel = new ActivityGroupTableModel();
+  private JP1Table activityFunctionTable = null;
+  private ActivityFunctionTableModel activityFunctionModel = new ActivityFunctionTableModel();
+  private JPanel tabPanel = null;
   private JTabbedPane tabbedPane = null;
   private RemoteConfiguration remoteConfig = null;
   private int lastIndex = 0;
@@ -83,10 +114,12 @@ public class ActivityPanel extends RMPanel implements ChangeListener
 
       if ( tabbedPane.getComponentAt( index ) == null )
       {
-        tabbedPane.setComponentAt( index, activityGroupPanel );
+        tabbedPane.setComponentAt( index, tabPanel );
         lastIndex = index;
       }
       Button btn = remoteConfig.getRemote().getButtonGroups().get( "Activity" ).get( index );
+      activityFunctionModel.set( btn, remoteConfig );
+      activityFunctionTable.initColumns( activityFunctionModel );
       activityGroupModel.set( btn, remoteConfig );
       activityGroupTable.initColumns( activityGroupModel );
     }
