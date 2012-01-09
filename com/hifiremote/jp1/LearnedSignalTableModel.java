@@ -47,7 +47,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   private static final String[] colNames =
   {
       "#", "<html>Device<br>Button</html>", "Key", "Notes", "Size", "Freq.", "Protocol", "Device",
-      "<html>Sub<br>Device</html>", "OBC", "Hex Cmd", "Misc", "Color"
+      "<html>Sub<br>Device</html>", "OBC", "Hex Cmd", "Misc", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -80,7 +80,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "__VCR/DVD__", "_xshift-VCR/DVD_", "A longish comment or note", "1024", "99999", "Protocol", "Device",
-      "Device", "OBC", "Hex Cmd", "Miscellaneous", "Color"
+      "Device", "OBC", "Hex Cmd", "Miscellaneous", "Color_"
   };
 
   /*

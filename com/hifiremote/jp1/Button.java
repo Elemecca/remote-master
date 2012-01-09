@@ -976,10 +976,6 @@ public class Button
   public static int XSHIFT_PWRMACRO_DATA = 0x100000;
 
   public static int ALL_PWRMACRO_DATA = PWRMACRO_DATA | SHIFT_PWRMACRO_DATA | XSHIFT_PWRMACRO_DATA;
-  
-  
-  
-  
 
   /** The BIND. */
   public static int BIND = MOVE_BIND | MACRO_BIND | LEARN_BIND;

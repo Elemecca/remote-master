@@ -100,7 +100,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   {
       "#", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>", "<html>Specific to<br>Device Button</html>",
       "<html>Available on<br>Other Buttons?</html>", "PID", "Variant", "Protocol", "Description",
-      "<html>Dev.<br>Color</html>", "<html>Prot.<br>Color</html>"
+      "<html>Dev.<br>Size &amp<br>Color</html>", "<html>Prot.<br>Size &amp<br>Color</html>"
   };
 
   /*
@@ -119,7 +119,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   {
       " 00 ", "CBL/SAT__", "Setup ", "Device Button__", "Other Buttons?__", "0000__", "Variant_____",
       "Panasonic Mixed Combo___", "A relatively long description and then some more___",
-      "Color", "Color"
+      "Color_", "Color_"
   };
 
   /*

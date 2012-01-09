@@ -438,4 +438,16 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       propertyChangeSupport.firePropertyChange( "notes", null, text );
     }
   }
+  
+  public void finishEditing()
+  {
+    if ( deviceButtonTable.getCellEditor() != null )
+    {
+      deviceButtonTable.getCellEditor().stopCellEditing();
+    }
+    if ( settingTable.getCellEditor() != null )
+    {
+      settingTable.getCellEditor().stopCellEditing();
+    }
+  }
 }

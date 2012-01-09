@@ -2,9 +2,21 @@ package com.hifiremote.jp1;
 
 public class ActivityGroup extends Highlight
 {
+  public ActivityGroup( int index, int deviceIndex )
+  {
+    this.index = index;
+    this.deviceIndex = deviceIndex;
+  }
+  
   public ActivityGroup( int index, Remote remote )
   {
     this.index = index;
+    buttonGroup = remote.getActivityButtonGroups()[ index ];
+  }
+  
+  public void set( Remote remote )
+  {
+    device = remote.getDeviceButton( deviceIndex );
     buttonGroup = remote.getActivityButtonGroups()[ index ];
   }
   
@@ -22,8 +34,21 @@ public class ActivityGroup extends Highlight
     return str;
   }
   
-  
-  
+  public void setButtonGroup( Button[] buttonGroup )
+  {
+    this.buttonGroup = buttonGroup;
+  }
+
+  public int getIndex()
+  {
+    return index;
+  }
+
+  public void setIndex( int index )
+  {
+    this.index = index;
+  }
+
   public DeviceButton getDevice()
   {
     return device;
@@ -32,6 +57,7 @@ public class ActivityGroup extends Highlight
   public void setDevice( DeviceButton device )
   {
     this.device = device;
+    deviceIndex = device.getButtonIndex();
   }
 
   public String getNotes()
@@ -48,4 +74,6 @@ public class ActivityGroup extends Highlight
   private Button[] buttonGroup = null;
   private DeviceButton device = null;
   private String notes = null;
+  private int deviceIndex = 0;
+  
 }

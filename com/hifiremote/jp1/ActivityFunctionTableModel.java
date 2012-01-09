@@ -56,17 +56,18 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
 
   private static final String[] colNames =
   {
-      "#", "Key", "Power Macro", "Audio Action", "Video Action", "Color"
+      "#", "Key", "Power Macro", "Audio Action", "Video Action", "Notes", "<html>Size &amp<br>Color</html>"
   };
   
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "Key__", "A power macro with a lot of keys_________", "Audio Action__", "Video Action__", "Color"
+      " 00 ", "Key__", "A power macro with a lot of keys_________", "Audio Action__", "Video Action__",
+      "A reasonable length note", "Color_"
   };
   
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, Integer.class, Hex.class, String.class, Color.class
+      Integer.class, Integer.class, Hex.class, String.class, String.class, Color.class
   };
 
   @Override
@@ -106,7 +107,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public boolean isColumnWidthFixed( int col )
   {
-    return col != 2;
+    return col != 2 && col != 5;
   }
   
   @Override
@@ -124,6 +125,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
       case 5:
+        return selectAllEditor;
+      case 6:
         return colorEditor;
       default:
         return null;
@@ -157,7 +160,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         }
       };
     }
-    else if ( col == 5 )
+    else if ( col == 6 )
     {
       return colorRenderer;
     }
@@ -183,6 +186,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       case 4:
         return helpSetting[ 1 - activity.getVideoHelp() ];
       case 5:
+        return activity.getNotes();
+      case 6:
         return activity.getHighlight();
       default:
         return null;
@@ -212,6 +217,10 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     }
     else if ( col == 5 )
     {
+      activity.setNotes( ( String )value );
+    }
+    else if ( col == 6 )
+    {
       activity.setHighlight( ( Color )value );
     }
     propertyChangeSupport.firePropertyChange( col == 5 ? "highlight" : "data", null, null );
@@ -222,6 +231,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   private RMColorEditor colorEditor = null;
   private RMSetterEditor< Hex, MacroDefinitionBox > macroEditor = 
     new RMSetterEditor< Hex, MacroDefinitionBox >( MacroDefinitionBox.class );
+  private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
   private RMColorRenderer colorRenderer = new RMColorRenderer();
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
   private JComboBox helpSettingBox = new JComboBox();

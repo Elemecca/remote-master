@@ -1,16 +1,26 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.util.Properties;
 
 public class Highlight
 {
+  public Highlight() {};
+  
+  public Highlight( Properties props )
+  {
+    // SegmentFlags is omitted if it is 0 (which it is for JP1.3 and earlier as it is not used by them )
+    String temp = props.getProperty( "SegmentFlags" );
+    segmentFlags = temp == null ? 0 : Integer.parseInt( temp );
+  }
+  
   private int memoryUsage = 0;
   
   private Color highlight = Color.WHITE;
   
   private Segment segment = null;
   
-  protected int segmentFlags = 0;
+  private int segmentFlags = 0;
   
   private int index = 0;
   
@@ -73,6 +83,14 @@ public class Highlight
   public void setSegmentFlags( int segmentFlags )
   {
     this.segmentFlags = segmentFlags;
+  }
+  
+  public void store( PropertyWriter pw )
+  {
+    if ( segmentFlags > 0 )
+    {
+      pw.print( "SegmentFlags", segmentFlags );
+    }
   }
 
 }

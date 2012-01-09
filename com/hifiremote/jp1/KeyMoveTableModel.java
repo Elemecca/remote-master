@@ -110,7 +110,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private static String[] colNames =
   {
       "#", "<html>Device<br>Button</html>", "Key", "<html>Device<br>Type</html>", "<html>Setup<br>Code</html>",
-      "Raw Data", "Hex", "<html>EFC, Key, or<br>Function Name</html>", "Notes", "Color"
+      "Raw Data", "Hex", "<html>EFC, Key, or<br>Function Name</html>", "Notes", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -128,7 +128,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "__VCR/DVD__", "_xshift-Thumbs_Down_", "__VCR/DVD__", "Setup", "00 (key code)___", "FF FF",
-      "xshift-CBL/SAT", "A reasonable length long note", "Color"
+      "xshift-CBL/SAT", "A reasonable length long note", "Color_"
   };
 
   /*

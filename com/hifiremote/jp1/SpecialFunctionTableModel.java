@@ -69,7 +69,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   /** The col names. */
   private static String[] colNames =
   {
-      "#", "<html>Device<br>Button</html>", "Key", "Type", "Function", "Hex", "Notes", "Color"
+      "#", "<html>Device<br>Button</html>", "Key", "Type", "Function", "Hex", "Notes", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -88,7 +88,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
   {
       " 00 ", "_VCR/DVD_", "shift-Thumbs_Up", " ToadTog(0,ForceOff) ",
       "[Short]:DiscreteON;DiscreteON; [Long]:DiscreteOFF;DiscreteOFF", "00 11 22 33", 
-      "A reasonable length note", "Color"
+      "A reasonable length note", "Color_"
   };
 
   /*

@@ -1814,7 +1814,7 @@ public class DeviceUpgrade extends Highlight
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
-  public void store( PropertyWriter out ) throws IOException
+  public void store( PropertyWriter out )
   {
     if ( description != null )
     {
@@ -1822,10 +1822,7 @@ public class DeviceUpgrade extends Highlight
     }
     out.print( "Remote.name", remote.getName() );
     out.print( "Remote.signature", remote.getSignature() );
-    if ( segmentFlags > 0 )
-    {
-      out.print( "SegmentFlags", segmentFlags );
-    }
+    super.store( out );
     out.print( "DeviceType", devTypeAliasName );
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     out.print( "DeviceIndex", Integer.toHexString( devType.getNumber() ) );
@@ -1839,7 +1836,14 @@ public class DeviceUpgrade extends Highlight
       out.print( "ButtonIndex", buttonRestriction.getButtonIndex() );
     }
     // protocol.setDeviceParms( parmValues );
-    protocol.store( out, parmValues, remote );
+    try
+    {
+      protocol.store( out, parmValues, remote );
+    }
+    catch ( IOException e )
+    {
+      e.printStackTrace();
+    }
     if ( notes != null )
     {
       out.print( "Notes", notes );
@@ -1901,23 +1905,23 @@ public class DeviceUpgrade extends Highlight
       }
 
     }
-    out.flush();
+    try
+    {
+      out.flush();
+    }
+    catch ( IOException e )
+    {
+      e.printStackTrace();
+    }
   }
 
   private String baseline = "";
 
   public void setBaseline()
   {
-    try
-    {
-      StringWriter sw = new StringWriter();
-      store( new PropertyWriter( new PrintWriter( sw ) ) );
-      baseline = sw.toString();
-    }
-    catch ( IOException ioe )
-    {
-      ioe.printStackTrace( System.err );
-    }
+    StringWriter sw = new StringWriter();
+    store( new PropertyWriter( new PrintWriter( sw ) ) );
+    baseline = sw.toString();
   }
 
   /**
@@ -2102,7 +2106,7 @@ public class DeviceUpgrade extends Highlight
     remote.load();
     // SegmentFlags is omitted if it is 0 (which it is for JP1.3 and earlier as it is not used by them )
     str = props.getProperty( "SegmentFlags" );
-    segmentFlags = str == null ? 0 : Integer.parseInt( str );
+    setSegmentFlags( str == null ? 0 : Integer.parseInt( str ) );
     str = props.getProperty( "DeviceIndex" );
     if ( str != null )
     {}

@@ -52,7 +52,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Name", "PID", "Protocol Code", "Notes", "Color"
+      "#", "Name", "PID", "Protocol Code", "Notes", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -71,7 +71,7 @@ public class ProtocolUpgradeTableModel extends JP1TableModel< ProtocolUpgrade >
   {
       " 00 ", "Manual Settings: 01CC (2)", "01CC", 
       "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F", 
-      "A resonable length note", "Color"
+      "A resonable length note", "Color_"
   };
 
   /*

@@ -1416,7 +1416,11 @@ public class Remote implements Comparable< Remote >
       restrictionTable.put( "FavData", new Integer( Button.FAV_DATA ) );
       restrictionTable.put( "ShiftFavData", new Integer( Button.SHIFT_FAV_DATA ) );
       restrictionTable.put( "XShiftFavData", new Integer( Button.XSHIFT_FAV_DATA ) );
-      restrictionTable.put( "AllFavData", new Integer( Button.ALL_FAV_DATA ) );
+      restrictionTable.put( "AllFavData", new Integer( Button.ALL_FAV_DATA ) );      
+      restrictionTable.put( "PwrMacroData", new Integer( Button.PWRMACRO_DATA ) );
+      restrictionTable.put( "ShiftPwrMacroData", new Integer( Button.SHIFT_PWRMACRO_DATA ) );
+      restrictionTable.put( "XShiftPwrMacroData", new Integer( Button.XSHIFT_PWRMACRO_DATA ) );
+      restrictionTable.put( "AllPwrMacroData", new Integer( Button.ALL_PWRMACRO_DATA ) );
       restrictionTable.put( "Bind", new Integer( Button.BIND ) );
       restrictionTable.put( "ShiftBind", new Integer( Button.SHIFT_BIND ) );
       restrictionTable.put( "XShiftBind", new Integer( Button.XSHIFT_BIND ) );

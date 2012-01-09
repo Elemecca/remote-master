@@ -14,7 +14,6 @@ public class TimedMacroTableModel extends JP1TableModel< TimedMacro >
     if ( remoteConfig != null )
     {
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
-      Remote remote = remoteConfig.getRemote();
       setData( remoteConfig.getTimedMacros() );
       dayScheduleEditor.setRemoteConfiguration( remoteConfig );
       dayScheduleEditor.setTitle( "Day Schedule Setter" );
@@ -27,7 +26,7 @@ public class TimedMacroTableModel extends JP1TableModel< TimedMacro >
   {
       " 00 ", "Every Mon;Tue;Wed;Thu;Fri", "00:00_", 
       "A reasonable length macro with a reasonable number of steps ", 
-      "A reasonable length note for a macro", "Color"
+      "A reasonable length note for a macro", "Color_"
   };
   
   private static final Class< ? >[] colClasses =
@@ -42,7 +41,7 @@ public class TimedMacroTableModel extends JP1TableModel< TimedMacro >
   
   private static final String[] colNames =
   {
-      "#", "Days", "Time", "Macro Keys", "Notes", "Color"
+      "#", "Days", "Time", "Macro Keys", "Notes", "<html>Size &amp<br>Color</html>"
   };
   
   @Override

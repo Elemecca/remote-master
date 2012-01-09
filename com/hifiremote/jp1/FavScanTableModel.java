@@ -26,7 +26,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "A reasonable length macro with a reasonable number of steps ", 
-      "A reasonable length note for a macro", "Color"
+      "A reasonable length note for a macro", "Color_"
   };
 
   /** The Constant colWidths. */
@@ -59,7 +59,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Macro Keys", "Notes", "Color"
+      "#", "Macro Keys", "Notes", "<html>Size &amp<br>Color</html>"
   };
 
   /*

@@ -57,7 +57,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Setting", "Value", "Color"
+      "#", "Setting", "Value", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -74,7 +74,7 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "A Setting Name", "A Value", "Color"
+      " 00 ", "A Setting Name", "A Value", "Color_"
   };
 
   /*

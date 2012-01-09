@@ -129,6 +129,12 @@ public class RemoteConfiguration
     {
       loadSegments( false );
     }
+    
+    HashMap< Button, Macro > activityMacros = null;
+    if ( remote.hasActivitySupport() )
+    {
+      activityMacros = new HashMap< Button, Macro >();
+    }
 
     while ( ( section = pr.nextSection() ) != null )
     {
@@ -177,7 +183,16 @@ public class RemoteConfiguration
           }
           else if ( sectionName.equals( "Macro" ) )
           {
-            macros.add( ( Macro )o );
+            Macro macro = ( Macro )o;
+            Button button = remote.getButton( macro.getDeviceIndex() );
+            if ( activityMacros != null && remote.getButtonGroups().get( "Activity" ).contains( button ) )
+            {
+              activityMacros.put( button, macro );
+            }
+            else
+            {
+              macros.add( ( Macro )o );
+            }
           }
           else if ( sectionName.equals( "TimedMacro" ) )
           {
@@ -196,6 +211,16 @@ public class RemoteConfiguration
           else if ( sectionName.equals( "ProtocolUpgrade" ) )
           {
             protocols.add( ( ProtocolUpgrade )o );
+          }
+          else if ( sectionName.equals( "Activity" ) )
+          {
+            Activity activity = ( Activity )o;
+            activity.set( remote );
+            if ( activities == null )
+            {
+              activities = new LinkedHashMap< Button, Activity >();
+            }
+            activities.put( activity.getButton(), activity );
           }
           else if ( sectionName.equals( "LearnedSignal" ) )
           {
@@ -217,6 +242,10 @@ public class RemoteConfiguration
           throw new IOException( "Unable to create instance of " + sectionName );
         }
       } 
+    }
+    for ( Button btn : activityMacros.keySet() )
+    {
+      activities.get( btn ).setMacro( activityMacros.get( btn ) );
     }
     convertKeyMoves();
   }
@@ -405,12 +434,17 @@ public class RemoteConfiguration
     {
       int segType = data[ pos + 2 ];
       int segFlags = data[ pos + 3 ];
+      Hex segData = new Hex( data, pos + 4, segLength - 4 );
+      pos += segLength;
+      if ( ( segFlags & 0x80 ) == 0 )
+      {
+        // Do not load segments flagged for deletion by having flag bit 7 clear
+        continue;
+      }
       if ( !segmentLoadOrder.contains( segType ) )
       {
         segmentLoadOrder.add( segType );
       }
-      Hex segData = new Hex( data, pos + 4, segLength - 4 );
-      pos += segLength;
       List< Segment > list = segments.get( segType );
       if ( list == null )
       {
@@ -3340,7 +3374,7 @@ public class RemoteConfiguration
       keyMove.store( pw );
     }
 
-    for ( Macro macro : macros )
+    for ( Macro macro : getAllMacros() )
     {
       pw.printHeader( "Macro" );
       macro.store( pw );
@@ -3398,6 +3432,15 @@ public class RemoteConfiguration
         pw.print( "Name", mp.getName() );
         pw.print( "PID", mp.getID() );
         mp.store( pw );
+      }
+    }
+    
+    if ( activities != null )
+    {
+      for ( Activity activity : activities.values() )
+      {
+        pw.printHeader( "Activity" );
+        activity.store( pw );
       }
     }
 

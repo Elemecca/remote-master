@@ -1,7 +1,6 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
-import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -177,7 +176,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "Note", "Label", "Seq", "Color"
+      "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "Note", "Label", "Seq", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -194,7 +193,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   /** The col prototype names. */
   private static String[] colPrototypeNames =
   {
-      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "A Meaningful, Reasonable Note", "Label", "Seq", "Color"
+      " 00 ", "Device Button", "__VCR/DVD__", "Setup", "A Meaningful, Reasonable Note", "Label", "Seq", "Color_"
   };
 
   /*

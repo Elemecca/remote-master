@@ -25,13 +25,13 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
   
   private static final String[] colNames =
   {
-      "#", "Button Group", "Device", "Notes", "Color"
+      "#", "Button Group", "Device", "Notes", "<html>Size &amp<br>Color</html>"
   };
   
   private static final String[] colPrototypeNames =
   {
       " 00 ", "A long list of button names______________________________", "Device Button",
-      "A short note_______", "Color"
+      "A short note_______", "Color_"
   };
   
   private static final Class< ? >[] colClasses =

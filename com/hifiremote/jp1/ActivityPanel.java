@@ -2,8 +2,8 @@ package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.TextArea;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -34,11 +34,11 @@ public class ActivityPanel extends RMPanel implements ChangeListener
       + "\"Key\" value has no significance when the activity is set with RMIR.";
     JTextArea area = new JTextArea( message );
     JLabel label = new JLabel();
-    Font font = label.getFont();
-    area.setFont( font );
+    area.setFont( label.getFont() );
     area.setBackground( label.getBackground() );
     area.setLineWrap( true );
     area.setWrapStyleWord( true );
+    area.setEditable( false );
     area.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
     upper.add( area, BorderLayout.PAGE_END );
     panel.add( upper, BorderLayout.CENTER );
@@ -56,8 +56,37 @@ public class ActivityPanel extends RMPanel implements ChangeListener
     Dimension d = activityFunctionTable.getPreferredSize();
     d.height = 2 * activityFunctionTable.getRowHeight();
     activityFunctionTable.setPreferredScrollableViewportSize( d );
+    activityFunctionTable.addFocusListener( new FocusAdapter()
+    {
+      @Override
+      public void focusGained( FocusEvent e )
+      {
+        activeTable = activityFunctionTable;
+        setHighlightAction( activityFunctionTable );
+      }
+    } );
+    activityGroupTable.addFocusListener( new FocusAdapter()
+    {
+      @Override
+      public void focusGained( FocusEvent e )
+      {
+        activeTable = activityGroupTable;
+        setHighlightAction( activityGroupTable );
+      }
+    } );
+    activeTable = activityFunctionTable;
   }
-
+  
+  private void setHighlightAction( JP1Table table )
+  {
+    remoteConfig.getOwner().highlightAction.setEnabled( table.getSelectedRowCount() > 0 );
+  }
+  
+  public JP1Table getActiveTable()
+  {
+    return activeTable;
+  }
+  
   @Override
   public void addPropertyChangeListener( PropertyChangeListener listener )
   {
@@ -98,6 +127,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener
   private JTabbedPane tabbedPane = null;
   private RemoteConfiguration remoteConfig = null;
   private int lastIndex = 0;
+  private JP1Table activeTable = null;
 
   @Override
   public void stateChanged( ChangeEvent e )
@@ -118,10 +148,23 @@ public class ActivityPanel extends RMPanel implements ChangeListener
         lastIndex = index;
       }
       Button btn = remoteConfig.getRemote().getButtonGroups().get( "Activity" ).get( index );
+      finishEditing();
       activityFunctionModel.set( btn, remoteConfig );
       activityFunctionTable.initColumns( activityFunctionModel );
       activityGroupModel.set( btn, remoteConfig );
       activityGroupTable.initColumns( activityGroupModel );
+    }
+  }
+  
+  public void finishEditing()
+  {
+    if ( activityFunctionTable.getCellEditor() != null )
+    {
+      activityFunctionTable.getCellEditor().stopCellEditing();
+    }
+    if ( activityGroupTable.getCellEditor() != null )
+    {
+      activityGroupTable.getCellEditor().stopCellEditing();
     }
   }
   

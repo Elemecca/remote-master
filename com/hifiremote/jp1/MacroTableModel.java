@@ -65,7 +65,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Key", "Macro Keys", "Notes", "Color"
+      "#", "Key", "Macro Keys", "Notes", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -100,7 +100,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "_xShift-VCR/DVD_", "A reasonable length macro with a reasonable number of steps ",
-      "A reasonable length note for a macro", "Color"
+      "A reasonable length note for a macro", "Color_"
   };
 
   /*

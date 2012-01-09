@@ -163,12 +163,10 @@ public abstract class AdvancedCode extends Highlight
    */
   public AdvancedCode( Properties props )
   {
+    super( props );
     // Allow for missing "KeyCode" entry, as it is not used by Timed Macros
     String temp = props.getProperty( "KeyCode" );
     keyCode = temp == null ? 0 : Integer.parseInt( temp );
-    // SegmentFlags is omitted if it is 0 (which it is for JP1.3 and earlier as it is not used by them )
-    temp = props.getProperty( "SegmentFlags" );
-    segmentFlags = temp == null ? 0 : Integer.parseInt( temp );
     data = new Hex( props.getProperty( "Data" ) );
     notes = props.getProperty( "Notes" );
   }
@@ -280,10 +278,7 @@ public abstract class AdvancedCode extends Highlight
    */
   public void store( PropertyWriter pw )
   {
-    if ( segmentFlags > 0 )
-    {
-      pw.print( "SegmentFlags", segmentFlags );
-    }
+    super.store( pw );
     pw.print( "KeyCode", keyCode );
     pw.print( "Data", data );
     if ( notes != null && notes.length() > 0 )

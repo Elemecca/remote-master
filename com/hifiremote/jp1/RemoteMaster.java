@@ -647,6 +647,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     @Override
     public void actionPerformed( ActionEvent event )
     {
+      finishEditing();
       try
       {
         String command = event.getActionCommand();
@@ -757,6 +758,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           else if ( currentPanel == generalPanel )
           {
             table = generalPanel.getActiveTable();
+            model = ( JP1TableModel< ? > )table.getModel();
+          }
+          else if ( currentPanel == activityPanel )
+          {
+            table = activityPanel.getActiveTable();
             model = ( JP1TableModel< ? > )table.getModel();
           }
           Color color = getInitialHighlight( table, 0 );
@@ -1038,31 +1044,31 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     generalPanel.addPropertyChangeListener( this );
 
     keyMovePanel = new KeyMovePanel();
-    tabbedPane.addTab( "Key Moves", keyMovePanel );
+//    tabbedPane.addTab( "Key Moves", keyMovePanel );
     keyMovePanel.addPropertyChangeListener( this );
 
     macroPanel = new MacroPanel();
-    tabbedPane.addTab( "Macros", macroPanel );
+//    tabbedPane.addTab( "Macros", macroPanel );
     macroPanel.addPropertyChangeListener( this );
 
     specialFunctionPanel = new SpecialFunctionPanel();
-    tabbedPane.add( "Special Functions", specialFunctionPanel );
+//    tabbedPane.add( "Special Functions", specialFunctionPanel );
     specialFunctionPanel.addPropertyChangeListener( this );
 
     timedMacroPanel = new TimedMacroPanel();
-    tabbedPane.add( "Timed Macros", timedMacroPanel );
+//    tabbedPane.add( "Timed Macros", timedMacroPanel );
     timedMacroPanel.addPropertyChangeListener( this );
 
     favScanPanel = new FavScanPanel();
-    tabbedPane.addTab( "Fav/Scan", favScanPanel );
+//    tabbedPane.addTab( "Fav/Scan", favScanPanel );
     favScanPanel.addPropertyChangeListener( this );
 
     devicePanel = new DeviceUpgradePanel();
-    tabbedPane.addTab( "Devices", devicePanel );
+//    tabbedPane.addTab( "Devices", devicePanel );
     devicePanel.addPropertyChangeListener( this );
 
     protocolPanel = new ProtocolUpgradePanel();
-    tabbedPane.addTab( "Protocols", protocolPanel );
+//    tabbedPane.addTab( "Protocols", protocolPanel );
     protocolPanel.addPropertyChangeListener( this );
     
     activityPanel = new ActivityPanel();
@@ -1072,7 +1078,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       LearnedSignal.getDecodeIR();
       learnedPanel = new LearnedSignalPanel();
-      tabbedPane.addTab( "Learned Signals", learnedPanel );
+//      tabbedPane.addTab( "Learned Signals", learnedPanel );
       learnedPanel.addPropertyChangeListener( this );
     }
     catch ( NoClassDefFoundError ncdfe )
@@ -1631,7 +1637,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( highlightItem.isSelected() )
     {
       toolBar.add( highlightAction );
-      highlightAction.setEnabled( true );
+//      highlightAction.setEnabled( true );
     }
   }
 
@@ -2264,6 +2270,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void actionPerformed( ActionEvent e )
   {
+    finishEditing();
     try
     {
       Object source = e.getSource();
@@ -2688,7 +2695,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     index = checkTabbedPane( "Special Functions", specialFunctionPanel, !remote.getSpecialProtocols().isEmpty(), index );
     index = checkTabbedPane( "Timed Macros", timedMacroPanel, remote.hasTimedMacroSupport(), index );
     index = checkTabbedPane( "Fav/Scan", favScanPanel, remote.hasFavKey(), index );
-    index++;  // Devices tab
+//    index++;  // Devices tab
+    index = checkTabbedPane( "Devices", devicePanel, true, index );
     index = checkTabbedPane( "Protocols", protocolPanel, remote.hasFreeProtocols(), index );
     index = checkTabbedPane( "Activities", activityPanel, remote.hasActivitySupport(), index );
     index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
@@ -3201,12 +3209,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   @Override
   public void stateChanged( ChangeEvent event )
   {
+    finishEditing();
     RMPanel newPanel = ( RMPanel )tabbedPane.getSelectedComponent();
     if ( newPanel != currentPanel )
     {
       newPanel.set( remoteConfig );
       currentPanel = newPanel;
-//      highlightAction.setEnabled( false );
+      highlightAction.setEnabled( false );
     }
     if ( codeSelectorDialog != null )
     {
@@ -3271,5 +3280,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     save();
     return true;
+  }
+  
+  private void finishEditing()
+  {
+    if ( currentPanel instanceof RMTablePanel< ? > )
+    {
+      RMTablePanel< ? > panel = ( RMTablePanel< ? > )currentPanel;
+      panel.finishEditing();
+    }
+    else if ( currentPanel == generalPanel )
+    {
+      generalPanel.finishEditing();
+    }
+    else if ( currentPanel == activityPanel )
+    {
+      activityPanel.finishEditing();
+    }
   }
 }
