@@ -1975,6 +1975,10 @@ public class RemoteConfiguration
   
   private void updateActivityHighlights()
   {
+    if ( activities == null )
+    {
+      return;
+    }
     for ( Activity activity : activities.values() )
     {
       Segment segment = activity.getSegment();
