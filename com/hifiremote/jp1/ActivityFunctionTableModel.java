@@ -178,9 +178,9 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       case 0:
         return new Integer( row + 1 );
       case 1:
-        return new Integer( macro.getKeyCode() );
+        return macro == null ? null : new Integer( macro.getKeyCode() );
       case 2:
-        return macro.getData();
+        return macro == null ? null : macro.getData();
       case 3:
         return helpSetting[ 1 - activity.getAudioHelp() ];
       case 4:
@@ -201,7 +201,16 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     Macro macro = activity.getMacro();
     if ( col == 1 )
     {
-      macro.setKeyCode( ( Integer )value );
+      if ( macro == null )
+      {
+        macro = new Macro( ( Integer )value, new Hex( 0 ), activity.getButton().getKeyCode(), 0, null );
+        macro.setSegmentFlags( 0xFF );
+        activity.setMacro( macro );
+      }
+      else
+      {
+        macro.setKeyCode( ( Integer )value );
+      }
     }
     else if ( col == 2 )
     {

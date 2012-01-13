@@ -118,7 +118,7 @@ public class RemoteConfiguration
     {
       sigData = Hex.parseHex( prop );
     }
-    SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
+    SetupCode.setMax( remote.getSegmentTypes() == null ? remote.usesTwoBytePID() ? 4095 : 2047 : 0x7FFF );
     notes = section.getProperty( "Notes" );
 
     deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
@@ -243,9 +243,12 @@ public class RemoteConfiguration
         }
       } 
     }
-    for ( Button btn : activityMacros.keySet() )
+    if ( activityMacros != null )
     {
-      activities.get( btn ).setMacro( activityMacros.get( btn ) );
+      for ( Button btn : activityMacros.keySet() )
+      {
+        activities.get( btn ).setMacro( activityMacros.get( btn ) );
+      }
     }
     convertKeyMoves();
   }
@@ -370,7 +373,7 @@ public class RemoteConfiguration
     {
       highlight[ i ] = Color.WHITE;
     }
-    SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
+    SetupCode.setMax( remote.getSegmentTypes() == null ? remote.usesTwoBytePID() ? 4095 : 2047 : 0x7FFF );
 
     System.err.println( "Remote is " + remote );
 
@@ -464,6 +467,9 @@ public class RemoteConfiguration
           DeviceButton db = remote.getDeviceButton( hex.getData()[ 0 ] );
           if ( db != null )
           {
+            db.setVolumePT( getPTButton( hex.getData()[ 6 ] ) );
+            db.setTransportPT( getPTButton( hex.getData()[ 7 ] ) );
+            db.setChannelPT( getPTButton( hex.getData()[ 8 ] ) );
             segment.setObject( db );
           }
         }
@@ -630,7 +636,8 @@ public class RemoteConfiguration
         ActivityGroup[] groups = activity.getActivityGroups();
         for ( int i = 0; i < Math.min( groups.length, hex.length() - 2 ); i++ )
         {
-          groups[ i ].setDevice( remote.getDeviceButton( hex.getData()[ i + 2 ] ) );
+          int index = hex.getData()[ i + 2 ];
+          groups[ i ].setDevice( index == 0xFF ? null : remote.getDeviceButton( hex.getData()[ i + 2 ] ) );
         }
         segment.setObject( activity );
       }
@@ -650,6 +657,12 @@ public class RemoteConfiguration
       }
     }
     pos = 0;
+  }
+  
+  private DeviceButton getPTButton( int deviceIndex )
+  {
+    DeviceButton devBtn = remote.getDeviceButton( deviceIndex );
+    return devBtn == null ? DeviceButton.noButton : devBtn; 
   }
   
   public static Remote filterRemotes( List< Remote > remotes, String signature, int eepromSize, 
@@ -1367,7 +1380,7 @@ public class RemoteConfiguration
     owner = rm;
     this.remote = remote;
     createActivities();
-    SetupCode.setMax( remote.usesTwoBytePID() ? 4095 : 2047 );
+    SetupCode.setMax( remote.getSegmentTypes() == null ? remote.usesTwoBytePID() ? 4095 : 2047 : 0x7FFF );
 
     int eepromSize = remote.getEepromSize();
     data = new short[ eepromSize ];
@@ -1860,12 +1873,15 @@ public class RemoteConfiguration
           }
         }
       }
-      Arrays.fill( data, pos, remote.getEepromSize(), ( short )0xFF );
+//      Arrays.fill( data, pos, remote.getEepromSize(), ( short )0xFF );
+      Hex.put( 0xFFFF, data, pos );
+      
       updateKeyMoveHighlights();
       updateMacroHighlights();
       updateUpgradeHighlights();
       updateLearnedHighlights();
       updateActivityHighlights();
+      remote.getCheckSums()[ 0 ].getAddressRange().setEnd( pos - 1 );
     }
     updateCheckSums();
     checkImageForByteOverflows();
@@ -1974,7 +1990,11 @@ public class RemoteConfiguration
       address = segment.getAddress();
       activity.clearMemoryUsage();
       updateHighlight( activity, address + 4, 4 );
-      activity.addMemoryUsage( activity.getMacro().getMemoryUsage() );
+      Macro macro = activity.getMacro();
+      if ( macro != null )
+      {
+        activity.addMemoryUsage( activity.getMacro().getMemoryUsage() );
+      }
     }
   }
   
@@ -2049,7 +2069,7 @@ public class RemoteConfiguration
       int pos = 2;
       for ( ActivityGroup group : groups )
       {
-        segData.set( ( short )group.getDevice().getButtonIndex(), pos++ );
+        segData.set( ( short )group.getDeviceIndex(), pos++ );
       }
       int flags = activity.getSegmentFlags();
       if ( segments.get( 0xDB ) == null )
@@ -2381,6 +2401,7 @@ public class RemoteConfiguration
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
     for ( DeviceButton db : deviceButtons )
     {
+      db.store( remote );
       db.doHighlight( highlight );
     }
   }
@@ -3752,37 +3773,52 @@ public class RemoteConfiguration
   {
     // Fill buffer with 0xFF
     Arrays.fill( data, startAddr, data.length, ( short )0xFF );
-
-    // Write signature to buffer
-    int start = remote.getInterfaceType().equals( "JP1" ) ? 2 : 0;
-    byte[] sigBytes = new byte[ 0 ];
-    try
+    if ( hasSegments() )
     {
-      sigBytes = remote.getSignature().getBytes( "UTF-8" );
+      initializeSegments();
     }
-    catch ( UnsupportedEncodingException e )
+    else
     {
-      e.printStackTrace();
-    }
-    for ( int i = 0; i < sigBytes.length; i++ )
-    {
-      data[ start + i ] = ( short )( sigBytes[ i ] & 0xFF );
+      // Write signature to buffer
+      int start = remote.getInterfaceType().equals( "JP1" ) ? 2 : 0;
+      byte[] sigBytes = new byte[ 0 ];
+      try
+      {
+        sigBytes = remote.getSignature().getBytes( "UTF-8" );
+      }
+      catch ( UnsupportedEncodingException e )
+      {
+        e.printStackTrace();
+      }
+      for ( int i = 0; i < sigBytes.length; i++ )
+      {
+        data[ start + i ] = ( short )( sigBytes[ i ] & 0xFF );
+      }
     }
 
     // Unless remote uses soft devices, set default device types and setup codes in buffer
-    if ( remote.getSoftDevices() == null || !remote.getSoftDevices().inUse() )
+    SoftDevices softDevices = remote.getSoftDevices();
+    if ( softDevices == null || !softDevices.inUse() || softDevices.isSetupCodesOnly() )
     {
       DeviceButton[] devBtns = remote.getDeviceButtons();
       java.util.List< DeviceType > devTypeList = remote.getDeviceTypeList();
+      short[] data = this.data;
       int j = 0;
       for ( int i = 0; i < devBtns.length; i++ )
       {
         DeviceType dt = devTypeList.get( j );
         DeviceButton db = devBtns[ i ];
+        if ( hasSegments() )
+        {
+          data = db.getSegment().getHex().getData();
+        }
         db.zeroDeviceSlot( data );
         db.setDeviceTypeIndex( ( short )dt.getNumber(), data );
         db.setDeviceGroup( ( short )dt.getGroup(), data );
-        db.setSetupCode( ( short )db.getDefaultSetupCode(), data );
+        if ( softDevices == null || !softDevices.inUse() )
+        {
+          db.setSetupCode( ( short )db.getDefaultSetupCode(), data );
+        }
         if ( j < devTypeList.size() - 1 )
         {
           j++ ;
@@ -3833,6 +3869,54 @@ public class RemoteConfiguration
     data[ offset++ ] = ( short )( month / 10 << 4 | month % 10 );
     data[ offset++ ] = ( short )( date / 10 << 4 | date % 10 );
     updateCheckSums();
+  }
+  
+  public void initializeSegments()
+  {
+    List< Integer > segmentTypes = remote.getSegmentTypes();
+    segmentLoadOrder.addAll( segmentTypes );
+    if ( hasSegments() )
+    {
+      List< Segment > list = new ArrayList< Segment >();
+      for ( DeviceButton db : remote.getDeviceButtons() )
+      {
+        Hex hex = new Hex( 12 );
+        short[] data = hex.getData();
+        Arrays.fill( data, ( short )0xFF );
+        data[ 0 ] = ( short )db.getButtonIndex();
+        data[ 1 ] = ( short )0;
+        list.add( new Segment( 0, 0xFF, hex, db ) );
+      }
+      segments.put( 0, list );
+      if ( segmentTypes.contains( 0xDA ) )
+      {
+        list = new ArrayList< Segment >();
+        Hex hex = new Hex( remote.getDeviceButtons().length + 2 );
+        short[] data = hex.getData();
+        Arrays.fill( data, ( short )0xFF );
+        int i = 0;
+        data[ i++ ] = ( short )0;
+        data[ i++ ] = ( short )0;
+        for ( DeviceButton db : remote.getDeviceButtons() )
+        {
+          data[ i++ ] = ( short )db.getButtonIndex();
+        }
+        list.add( new Segment( 0xDA, 0xFF, hex ) );
+      }
+      segments.put( 0xDA, list );
+      if ( segmentTypes.contains( 0x1A ) )
+      {
+        list = new ArrayList< Segment >();
+        Hex hex = new Hex( 3 );
+        short[] data = hex.getData();
+        data[ 0 ] = ( short )0;
+        data[ 1 ] = ( short )0;
+        data[ 2 ] = ( short )0x40;
+        list.add( new Segment( 0x1A, 0xFF, hex ) );
+      }
+      segments.put( 0x1A, list );
+    }
+    
   }
 
   public static void resetDialogs()

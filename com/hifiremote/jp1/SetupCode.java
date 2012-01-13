@@ -28,12 +28,19 @@ public class SetupCode
    * @param s
    *          the s
    */
-  public SetupCode( String s )
+  public SetupCode( String s, boolean allowEmpty )
   {
-    this( Integer.parseInt( s ) );
-    if ( value < 0 || value > max )
+    if ( allowEmpty && s.trim().isEmpty() )
     {
-      throw new IllegalArgumentException();
+      value = 0xFFFF;
+    }
+    else
+    {
+      value = Integer.parseInt( s );
+      if ( value < 0 || value > max )
+      {
+        throw new IllegalArgumentException();
+      }
     }
   }
 

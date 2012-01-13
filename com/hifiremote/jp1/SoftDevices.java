@@ -12,6 +12,7 @@ public class SoftDevices extends RDFParameter
 {
   private boolean use = true;
   private boolean allowEmptyButtonSettings = false;
+  private boolean setupCodesOnly = false;
   private int countAddress = 0;
   private int sequenceAddress = 0;
 
@@ -19,8 +20,16 @@ public class SoftDevices extends RDFParameter
   {
     // SoftDev=Use[, [AllowEmptyBtnSettings][, [CountAddr][, [SeqAddr]]]]
     List< String > settings = ParameterTokenizer.getTokens( text );
-    use = RDFReader.parseFlag( settings.get( 0 ) );
-    if ( use )
+    String useStr = settings.get( 0 );
+    if ( useStr.equalsIgnoreCase( "SetupCodesOnly" ) )
+    {
+      setupCodesOnly = true;
+    }
+    else
+    {
+      use = RDFReader.parseFlag( settings.get( 0 ) );
+    }
+    if ( use && settings.size() > 1 )
     {
       allowEmptyButtonSettings = RDFReader.parseFlag( settings.get( 1 ) );
       if ( settings.size() > 2 )
@@ -33,6 +42,11 @@ public class SoftDevices extends RDFParameter
   public boolean inUse()
   {
     return use;
+  }
+
+  public boolean isSetupCodesOnly()
+  {
+    return setupCodesOnly;
   }
 
   public boolean getAllowEmptyButtonSettings()

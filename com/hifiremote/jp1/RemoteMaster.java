@@ -490,6 +490,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       try
       {
         remoteConfig.parseData();
+        remoteConfig.setSavedData();
       }
       catch ( IOException e )
       {
@@ -2325,24 +2326,45 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == cleanUpperMemoryItem )
       {
         String title = "Clean Upper Memory";
-        String message = "Do you want to retain all data in the first $100 (i.e. 256) bytes of memory?\n\n"
+        String message = "";
+        if ( remoteConfig.hasSegments() )
+        {
+          message += "Please ";
+        }
+        else
+        {
+          message += "Do you want to retain all data in the first $100 (i.e. 256) bytes of memory?\n\n"
             + "If you answer No then the memory will be set as if your present setup was\n"
             + "installed on a reset state created in accordance with the RDF alone.  This\n"
             + "is the cleanest option but most RDFs at present do not create a true factory\n" + "reset state.\n\n"
             + "If you answer Yes then any data in the first $100 bytes not set by the RDF\n"
             + "will be retained.  This should include any data set by a factory reset that\n"
             + "is missing from the RDF, but it may also include other data that could be\n" + "usefully cleaned.\n\n"
-            + "Please also be aware that cleaning the memory will destroy most extenders, as\n"
+            + "Please also ";
+        }
+        message += "be aware that blasting the memory will destroy most extenders, as\n"
             + "they place at least part of their code in the memory that will be cleared.\n"
-            + "Press Cancel to exit without cleaning the memory.";
-        int result = JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
+            + "Press Cancel to exit without blasting the memory.";
+        int result = JOptionPane.showConfirmDialog( this, message, title, 
+            remoteConfig.hasSegments() ? JOptionPane.OK_CANCEL_OPTION : JOptionPane.YES_NO_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE );
         if ( result == JOptionPane.CANCEL_OPTION )
         {
           return;
         }
-
-        // Save the data that is stored only in the remote image
+        
+        if ( result == JOptionPane.OK_OPTION )
+        {
+          // Remote has segments
+          short[] data = remoteConfig.getData();
+          int startAddr = remoteConfig.getRemote().getCheckSums()[ 0 ].getAddressRange().getEnd() + 1;
+          Arrays.fill( data, startAddr, data.length, ( short )0xFF );
+          update();
+          return;
+        }
+        
+        // Continue for remotes without segments.
+        // Save the data that is stored only in the remote image.
         Remote remote = remoteConfig.getRemote();
         DeviceButton[] devBtns = remote.getDeviceButtons();
         int[] devBtnData = new int[ 2 * devBtns.length ];
@@ -2505,7 +2527,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           newSettings[ i ].setValue( settingValues[ i ] );
         }
-        SetupCode.setMax( newRemote.usesTwoBytePID() ? 4095 : 2047 );
+        SetupCode.setMax( newRemote.getSegmentTypes() == null ? newRemote.usesTwoBytePID() ? 4095 : 2047: 0x7FFF );
         remoteConfig.updateImage();
         RemoteConfiguration.resetDialogs();
         update();

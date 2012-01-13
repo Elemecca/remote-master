@@ -268,7 +268,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       SetupCode setupCode = null;
       if ( value.getClass() == String.class )
       {
-        setupCode = new SetupCode( ( String )value );
+        setupCode = new SetupCode( ( String )value, false );
       }
       else
       {

@@ -132,10 +132,12 @@ public class DeviceButton extends Highlight
   public short getSetupCode( short[] data )
   {
     short setupCode = highAddress > 0 ? data[ highAddress ] : data[ 3 ];
-    int mask = 0x07;
-    if ( SetupCode.getMax() > 2048 )
-      mask = 0x0F;
-    setupCode &= mask;
+    int mask = SetupCode.getMax() >> 8;
+    if ( ( mask & 0xF0 ) == 0 )
+    {
+      // Don't apply mask if setup code allows highest nibble to be nonzero (remotes with segments)
+      setupCode &= mask;
+    }
     setupCode <<= 8;
     setupCode |= lowAddress > 0 ? data[ lowAddress ] : data[ 4 ];
     return setupCode;
@@ -185,13 +187,46 @@ public class DeviceButton extends Highlight
   
   public void zeroDeviceSlot( short[] data )
   {
-    data[ highAddress ] = 0;
-    data[ lowAddress ] = 0;
+    if ( highAddress > 0 )
+    {
+      data[ highAddress ] = 0;
+      data[ lowAddress ] = 0;
+    }
   }
   
   public int getButtonIndex()
   {
     return buttonIndex;
+  }
+
+  public DeviceButton getVolumePT()
+  {
+    return volumePT;
+  }
+
+  public void setVolumePT( DeviceButton volumePT )
+  {
+    this.volumePT = volumePT;
+  }
+
+  public DeviceButton getTransportPT()
+  {
+    return transportPT;
+  }
+
+  public void setTransportPT( DeviceButton transportPT )
+  {
+    this.transportPT = transportPT;
+  }
+
+  public DeviceButton getChannelPT()
+  {
+    return channelPT;
+  }
+
+  public void setChannelPT( DeviceButton channelPT )
+  {
+    this.channelPT = channelPT;
   }
 
   /** The name. */
@@ -210,6 +245,9 @@ public class DeviceButton extends Highlight
   private int defaultSetupCode = 0;
   
   private int buttonIndex = 0;
+  private DeviceButton volumePT = noButton;
+  private DeviceButton transportPT = noButton;
+  private DeviceButton channelPT = noButton;
 
   public void doHighlight( Color[] highlight )
   {
@@ -231,6 +269,17 @@ public class DeviceButton extends Highlight
         highlight[ address + i ] = getHighlight();
       }
       setMemoryUsage( 13 );
+    }
+  }
+  
+  public void store( Remote remote )
+  {
+    if ( getSegment() != null )
+    {
+      Hex hex = getSegment().getHex();
+      hex.set( ( short )Math.max( volumePT.getButtonIndex(), 0 ), 6 );
+      hex.set( ( short )Math.max( transportPT.getButtonIndex(), 0 ), 7 );
+      hex.set( ( short )Math.max( channelPT.getButtonIndex(), 0 ), 8 );
     }
   }
 }

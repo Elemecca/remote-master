@@ -2,12 +2,15 @@ package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -17,7 +20,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-public class ActivityPanel extends RMPanel implements ChangeListener
+public class ActivityPanel extends RMPanel implements ChangeListener, ActionListener
 {
   public ActivityPanel()
   {
@@ -30,8 +33,10 @@ public class ActivityPanel extends RMPanel implements ChangeListener
     JPanel upper = new JPanel( new BorderLayout() );
     upper.add( scrollPane, BorderLayout.CENTER );
     String message = "Note:  When the activity has been set with the remote, \"Key\" is "
-      + "the number key pressed to select the desired combination for the activity.  The "
-      + "\"Key\" value has no significance when the activity is set with RMIR.";
+      + "the number key pressed to select the desired combination for the activity.  If "
+      + "\"Key\" is blank, the activity has not been set.  The \"Key\" value has no "
+      + "significance when the activity is set with RMIR, but some value has to be set "
+      + "for it before a Power Macro can be entered.";
     JTextArea area = new JTextArea( message );
     JLabel label = new JLabel();
     area.setFont( label.getFont() );
@@ -39,7 +44,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener
     area.setLineWrap( true );
     area.setWrapStyleWord( true );
     area.setEditable( false );
-    area.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    area.setBorder( BorderFactory.createEmptyBorder( 5, 5, 10, 5 ) );
     upper.add( area, BorderLayout.PAGE_END );
     panel.add( upper, BorderLayout.CENTER );
     tabPanel.add( panel, BorderLayout.PAGE_START );
@@ -50,6 +55,11 @@ public class ActivityPanel extends RMPanel implements ChangeListener
     scrollPane = new JScrollPane( activityGroupTable );
     panel.add( scrollPane, BorderLayout.CENTER );
     tabPanel.add( panel, BorderLayout.CENTER );
+    panel = new JPanel();
+    clearActivity = new JButton( "Clear Activity" );
+    clearActivity.addActionListener( this );
+    panel.add( clearActivity );
+    tabPanel.add( panel, BorderLayout.PAGE_END );
     tabbedPane = new JTabbedPane();
     tabbedPane.addChangeListener( this );    
     add( tabbedPane, BorderLayout.CENTER );
@@ -128,6 +138,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener
   private RemoteConfiguration remoteConfig = null;
   private int lastIndex = 0;
   private JP1Table activeTable = null;
+  private JButton clearActivity = null;
 
   @Override
   public void stateChanged( ChangeEvent e )
@@ -166,6 +177,28 @@ public class ActivityPanel extends RMPanel implements ChangeListener
     {
       activityGroupTable.getCellEditor().stopCellEditing();
     }
+  }
+
+  @Override
+  public void actionPerformed( ActionEvent e )
+  {
+    finishEditing();
+    Object source = e.getSource();
+    if ( source == clearActivity )
+    {
+      Activity activity = activityFunctionModel.getRow( 0 );
+      activity.setMacro( null );
+      activity.setAudioHelp( 1 );
+      activity.setVideoHelp( 1 );
+      for ( ActivityGroup group : activity.getActivityGroups() )
+      {
+        group.setDevice( DeviceButton.noButton );
+      }
+    }
+    activityFunctionModel.fireTableDataChanged();
+    activityGroupModel.fireTableDataChanged();
+    propertyChangeSupport.firePropertyChange( "data", null, null );
+    
   }
   
 }

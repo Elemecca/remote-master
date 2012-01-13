@@ -9,6 +9,7 @@ public class Activity extends Highlight
   {
     this.button = button;
     name = button.getName();
+    setSegmentFlags( 0xFF );
     activityGroups = new ActivityGroup[ remote.getActivityButtonGroups().length ];
     for ( int i = 0; i < activityGroups.length; i++ )
     {
@@ -155,7 +156,7 @@ public class Activity extends Highlight
       hex = new Hex( activityGroups.length );
       for ( ActivityGroup group : activityGroups )
       {
-        hex.set( ( short )group.getDevice().getButtonIndex(), group.getIndex() );
+        hex.set( ( short )group.getDeviceIndex(), group.getIndex() );
         String notes = group.getNotes();
         if ( notes != null && !notes.trim().isEmpty() )
         {
@@ -173,6 +174,6 @@ public class Activity extends Highlight
   private String notes = null;
   private int audioHelp = 1;
   private int videoHelp = 1;
-  private int helpSegmentFlags = 0;
+  private int helpSegmentFlags = 0xFF;
   private Segment helpSegment = null;
 }

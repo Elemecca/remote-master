@@ -141,7 +141,7 @@ public class Remote implements Comparable< Remote >
     {
       if ( loaded )
       {
-        SetupCode.setMax( usesTwoBytePID() ? 4095 : 2047 );
+        SetupCode.setMax( segmentTypes == null ? usesTwoBytePID() ? 4095 : 2047 : 0x7FFF );
         KeyMove.setSetupCodeIndex( segmentTypes == null ? 0 : 1 );
         KeyMove.setCmdIndex( segmentTypes == null ? 2 : 3 );
         return;
@@ -1329,12 +1329,14 @@ public class Remote implements Comparable< Remote >
       {
         timedMacroAddress = null;
       }
-
     }
     if ( segmentTypes != null )
     {
       macroSupport = ( segmentTypes.contains( 1 ) || segmentTypes.contains( 2 ) );
       keyMoveSupport = ( segmentTypes.contains( 7 ) || segmentTypes.contains( 8 ) );
+      twoBytePID = true;
+      advCodeBindFormat = AdvancedCode.BindFormat.LONG;
+      efcDigits = 5;
     }
     
     processor = ProcessorManager.getProcessor( processorName, processorVersion );

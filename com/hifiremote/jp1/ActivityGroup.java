@@ -16,7 +16,7 @@ public class ActivityGroup extends Highlight
   
   public void set( Remote remote )
   {
-    device = remote.getDeviceButton( deviceIndex );
+    device = deviceIndex == 0xFF ? DeviceButton.noButton : remote.getDeviceButton( deviceIndex );
     buttonGroup = remote.getActivityButtonGroups()[ index ];
   }
   
@@ -54,10 +54,15 @@ public class ActivityGroup extends Highlight
     return device;
   }
 
+  public int getDeviceIndex()
+  {
+    return deviceIndex;
+  }
+
   public void setDevice( DeviceButton device )
   {
     this.device = device;
-    deviceIndex = device.getButtonIndex();
+    deviceIndex = device == null ? 0xFF : device.getButtonIndex() & 0xFF;
   }
 
   public String getNotes()
@@ -72,8 +77,8 @@ public class ActivityGroup extends Highlight
 
   private int index = 0;
   private Button[] buttonGroup = null;
-  private DeviceButton device = null;
+  private DeviceButton device = DeviceButton.noButton;
   private String notes = null;
-  private int deviceIndex = 0;
+  private int deviceIndex = 0xFF;
   
 }

@@ -105,6 +105,10 @@ public class KeyEditor extends DefaultCellEditor implements TableCellEditor, Act
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int column )
   {
     keyCode = ( Integer )value;
+    if ( keyCode == null )
+    {
+      keyCode = ( int )remote.getButtons().get( 0 ).getKeyCode();
+    }
     button.setText( remote.getButtonName( keyCode.intValue() ) );
     return button;
   }

@@ -197,8 +197,16 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     deviceModel.set( remoteConfig );
     deviceButtonTable.initColumns( deviceModel );
 
-    settingModel.set( remoteConfig );
-    settingTable.initColumns( settingModel );
+    if ( remoteConfig == null || !remoteConfig.hasSegments() )
+    {
+      settingModel.set( remoteConfig );
+      settingTable.initColumns( settingModel );
+      settingsScrollPane.setVisible( true );
+    }
+    else
+    {
+      settingsScrollPane.setVisible( false );
+    }
 
     if ( remoteConfig != null )
     {

@@ -19,7 +19,9 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
       Remote remote = remoteConfig.getRemote();
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       setData( remoteConfig.getActivities().get( btn ).getActivityGroups() );
-      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
+      comboModel.insertElementAt( DeviceButton.noButton, 0 );
+      deviceButtonBox.setModel( comboModel );
     }
   }
   

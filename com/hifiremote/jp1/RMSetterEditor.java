@@ -44,6 +44,10 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
   @Override
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int column )
   {
+    if ( value == null )
+    {
+      return null;
+    }
     this.value = ( T )value;
     if ( panelClass == MacroDefinitionBox.class )
     {
