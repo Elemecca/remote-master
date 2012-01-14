@@ -62,22 +62,10 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
 
   public void refresh()
   {
+    remoteConfig.setUpgradeKeyMoves();
     allKeyMoves = new ArrayList< KeyMove >( remoteConfig.getKeyMoves() );
-    DeviceButton[] deviceButtons = remoteConfig.getRemote().getDeviceButtons();
-    upgradeKeyMoveCount = 0;
-    for ( int i = 0; i < deviceButtons.length; i++ )
-    {
-      DeviceUpgrade du = remoteConfig.getAssignedDeviceUpgrade( deviceButtons[ i ] );
-      if ( du != null )
-      {
-        for ( KeyMove keyMove : du.getKeyMoves( i ) )
-        {
-          keyMove.setDeviceButtonIndex( i );
-          allKeyMoves.add( keyMove );
-          upgradeKeyMoveCount++ ;
-        }
-      }
-    }
+    allKeyMoves.addAll( remoteConfig.getUpgradeKeyMoves() );
+    upgradeKeyMoveCount = remoteConfig.getUpgradeKeyMoves().size();
     data = allKeyMoves;
   }
 
@@ -292,7 +280,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       {
         // Keymove is attached, so copy color to device upgrade assignment
         Remote remote = remoteConfig.getRemote();
-        DeviceButton boundDeviceButton = remote.getDeviceButtons()[ keyMove.getDeviceButtonIndex() ];
+        DeviceButton boundDeviceButton = remote.getDeviceButton( keyMove.getDeviceButtonIndex() );
         DeviceUpgrade boundUpgrade = remoteConfig.findDeviceUpgrade( boundDeviceButton );
         boundUpgrade.setAssignmentColor( keyMove.getKeyCode(), keyMove.getDeviceButtonIndex(), ( Color )value );
       } 

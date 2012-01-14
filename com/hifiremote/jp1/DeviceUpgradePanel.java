@@ -266,6 +266,10 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         if ( devButton != null )
         {
           short[] data = remoteConfig.getData();
+          if ( remoteConfig.hasSegments() )
+          {
+            data = devButton.getSegment().getHex().getData();
+          }
           DeviceType devType = remote.getDeviceTypeByAliasName( newUpgrade.getDeviceTypeAliasName() );
           devButton.setSetupCode( ( short )newUpgrade.getSetupCode(), data );
           devButton.setDeviceTypeIndex( ( short )devType.getNumber(), data );

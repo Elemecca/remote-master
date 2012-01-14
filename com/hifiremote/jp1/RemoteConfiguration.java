@@ -1308,6 +1308,7 @@ public class RemoteConfiguration
    */
   public DeviceUpgrade findDeviceUpgrade( DeviceButton deviceButton )
   {
+    short[] data = hasSegments() ? deviceButton.getSegment().getHex().getData() : this.data;
     return findDeviceUpgrade( deviceButton.getDeviceTypeIndex( data ), deviceButton.getSetupCode( data ) );
   }
 
@@ -1713,13 +1714,18 @@ public class RemoteConfiguration
   {
     List<Integer> dbList = new ArrayList< Integer >();
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
+    short[] data = this.data;
     for ( int i = 0; i < deviceButtons.length; ++i )
     {
       DeviceButton button = deviceButtons[ i ];
+      if ( hasSegments() )
+      {
+        data = button.getSegment().getHex().getData();
+      }
       if ( button.getDeviceTypeIndex( data ) == upgrade.getDeviceType().getNumber()
           && button.getSetupCode( data ) == upgrade.getSetupCode() )
       {
-        dbList.add( i );
+        dbList.add( button.getButtonIndex() );
       }
     }
     return dbList;
@@ -1727,6 +1733,11 @@ public class RemoteConfiguration
 
   public DeviceUpgrade getAssignedDeviceUpgrade( DeviceButton deviceButton )
   {
+    short[] data = this.data;
+    if ( hasSegments() )
+    {
+      data = deviceButton.getSegment().getHex().getData();
+    }
     DeviceType deviceType = remote.getDeviceTypeByIndex( deviceButton.getDeviceTypeIndex( data ) );
     int setupCode = deviceButton.getSetupCode( data );
     DeviceUpgrade upgrade = null;
@@ -1873,10 +1884,10 @@ public class RemoteConfiguration
           }
         }
       }
-//      Arrays.fill( data, pos, remote.getEepromSize(), ( short )0xFF );
       Hex.put( 0xFFFF, data, pos );
       
-      updateKeyMoveHighlights();
+      updateKeyMoveHighlights( keymoves );
+      updateKeyMoveHighlights( upgradeKeyMoves );
       updateMacroHighlights();
       updateUpgradeHighlights();
       updateLearnedHighlights();
@@ -1887,9 +1898,9 @@ public class RemoteConfiguration
     checkImageForByteOverflows();
   }
 
-  private void updateKeyMoveHighlights()
+  private void updateKeyMoveHighlights( List< KeyMove > keyMoves )
   {
-    for ( KeyMove keyMove : keymoves )
+    for ( KeyMove keyMove : keyMoves )
     {
       Segment segment = keyMove.getSegment();
       if ( segment == null )
@@ -1952,7 +1963,7 @@ public class RemoteConfiguration
       updateHighlight( dev, address + 8, devSize );
       for ( int i = 0; i < protSize; i++ )
       {
-        highlight[ address + protOffset + 3 ] = dev.getProtocolHighlight();
+        highlight[ address + protOffset + 6 + i ] = dev.getProtocolHighlight();
       }
       
     }
@@ -2097,14 +2108,14 @@ public class RemoteConfiguration
     }
   }
 
-  /**
-   * Gets the upgrade key moves.
-   * 
-   * @return the upgrade key moves
-   */
   public List< KeyMove > getUpgradeKeyMoves()
   {
-    List< KeyMove > rc = new ArrayList< KeyMove >();
+    return upgradeKeyMoves;
+  }
+
+  public void setUpgradeKeyMoves()
+  {
+    upgradeKeyMoves.clear();
     for ( DeviceUpgrade device : devices )
     {
       for ( Integer dbIndex : getDeviceButtonIndexList( device ) )
@@ -2112,11 +2123,10 @@ public class RemoteConfiguration
         for ( KeyMove keyMove : device.getKeyMoves( dbIndex ) )
         {
           keyMove.setDeviceButtonIndex( dbIndex );
-          rc.add( keyMove );
+          upgradeKeyMoves.add( keyMove );
         }
       }
     }
-    return rc;
   }
 
   private void updateFavScans()
@@ -2175,14 +2185,16 @@ public class RemoteConfiguration
       if ( types.contains( 2 ) ) segments.remove( 2 );
       if ( types.contains( 7 ) ) segments.remove( 7 );
       if ( types.contains( 8 ) ) segments.remove( 8 );
+      setUpgradeKeyMoves();
       updateKeyMoves( keymoves, 0 );
+      updateKeyMoves( upgradeKeyMoves, 0 );
     }
     else if ( range != null )
     {
       offset = range.getStart();
       updateSpecialFunctionSublists();
       offset = updateKeyMoves( keymoves, offset );
-      upgradeKeyMoves = getUpgradeKeyMoves();
+      setUpgradeKeyMoves();
       offset = updateKeyMoves( upgradeKeyMoves, offset );
       offset = updateKeyMoves( specialFunctionKeyMoves, offset );
     }
@@ -3015,7 +3027,7 @@ public class RemoteConfiguration
         Arrays.fill( segData.getData(), 0, 4, ( short )0 );
         if ( code != null )
         {
-          segData.put( hex.length() + 8, 3 );
+          segData.put( hex.length() + 7, 2 );
         }
         segData.set( ( short )dev.getDeviceType().getNumber(), 4 );
         segData.put( dev.getSetupCode(), 5 );
