@@ -628,7 +628,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }    
     for ( KeyMove keyMove : du.getKeyMoves( devButtonIndex ) )
     {
-      keyMove.setDeviceButtonIndex( devButtonIndex );
+      DeviceButton db = remoteConfig.getRemote().getDeviceButtons()[ devButtonIndex ];
+      keyMove.setDeviceButtonIndex( db.getButtonIndex() );
       remoteConfig.getKeyMoves().add( keyMove );
     }
   }

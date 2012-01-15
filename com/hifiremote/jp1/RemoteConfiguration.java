@@ -1379,10 +1379,15 @@ public class RemoteConfiguration
 
   public int findBoundDeviceButtonIndex( int deviceTypeIndex, int setupCode )
   {
+    short[] data = this.data;
     DeviceButton[] deviceButtons = remote.getDeviceButtons();
     for ( int i = 0; i < deviceButtons.length; ++i )
     {
       DeviceButton deviceButton = deviceButtons[ i ];
+      if ( hasSegments() )
+      {
+        data = deviceButton.getSegment().getHex().getData();
+      }
       if ( deviceButton.getDeviceTypeIndex( data ) == deviceTypeIndex && deviceButton.getSetupCode( data ) == setupCode )
       {
         return i;
