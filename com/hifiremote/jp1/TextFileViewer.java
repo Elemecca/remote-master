@@ -10,6 +10,9 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -23,10 +26,11 @@ import javax.swing.SwingUtilities;
 
 public class TextFileViewer extends JDialog implements ActionListener, KeyListener
 {
-  private TextFileViewer( Component c, File file, String title, boolean Editable )
+  private TextFileViewer( Component c, Remote remote, String title, boolean Editable )
   {
     super( ( c instanceof JDialog ) ? (JDialog)c : ( JFrame )SwingUtilities.getRoot( c ) );
-    this.file = file;
+    this.file = remote.getFile();
+    this.remote = remote;
     openedFromToolBar = ( c instanceof RemoteMaster );
     
     setDefaultCloseOperation( DISPOSE_ON_CLOSE );
@@ -73,9 +77,9 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
     }
   }
   
-  public static TextFileViewer showFile( Component locationComp, File file, String title, boolean editable )
+  public static TextFileViewer showFile( Component locationComp, Remote remote, String title, boolean editable )
   {
-    TextFileViewer viewer = new TextFileViewer( locationComp, file, title, editable );
+    TextFileViewer viewer = new TextFileViewer( locationComp, remote, title, editable );
     viewer.pack();
     viewer.setLocationRelativeTo( locationComp );
     viewer.setVisible( true ); 
@@ -126,20 +130,46 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
         e.printStackTrace();
       }
       saveButton.setEnabled( false );
-      if ( response == JOptionPane.YES_OPTION )
+      if ( openedFromToolBar && response == JOptionPane.YES_OPTION )
       {
         String rmTitle = remoteMaster.getTitle();
         RemoteConfiguration remoteConfig = remoteMaster.getRemoteConfiguration();
         remoteConfig.setSavedData();
-        Remote oldRemote = remoteConfig.getRemote();
-        Remote newRemote = new Remote( oldRemote, oldRemote.getNameIndex() );
-        newRemote.load();
-        remoteConfig.setRemote( newRemote );
-        SetupCode.setMax( newRemote.getSegmentTypes() == null ? newRemote.usesTwoBytePID() ? 4095 : 2047: 0x7FFF );
+        Remote newRemote = new Remote( remote, remote.getNameIndex() );
+        RemoteManager.getRemoteManager().replaceRemote( remote, newRemote );
+        remote = newRemote;
+        remote.load();
+        remoteConfig.setRemote( remote );
+        if ( remoteConfig.hasSegments() )
+        {
+          remoteConfig.setDeviceButtonSegments();
+          List< Activity > list = new ArrayList< Activity >();
+          LinkedHashMap< Button, Activity > activities = remoteConfig.getActivities();
+          if ( activities != null )
+          {
+            for ( Activity activity : remoteConfig.getActivities().values() )
+            {
+              activity.set( remote );
+              list.add( activity );
+            }
+            activities.clear();
+            for ( Activity activity : list )
+            {
+              activities.put( activity.getButton(), activity );
+            }
+          }
+        }     
+        SetupCode.setMax( remote.getSegmentTypes() == null ? remote.usesTwoBytePID() ? 4095 : 2047: 0x7FFF );
         remoteConfig.updateImage();
         RemoteConfiguration.resetDialogs();
         remoteMaster.update();
         remoteMaster.setTitle( rmTitle );
+      }
+      else if ( response == JOptionPane.OK_OPTION )
+      {
+        Remote newRemote = new Remote( remote, remote.getNameIndex() );
+        RemoteManager.getRemoteManager().replaceRemote( remote, newRemote );
+        remote = newRemote;
       }
     }
   }
@@ -160,6 +190,7 @@ public class TextFileViewer extends JDialog implements ActionListener, KeyListen
   private JTextArea textArea = null;
   private boolean openedFromToolBar = false;
   private RemoteMaster remoteMaster = null;
+  private Remote remote = null;
   
   private JButton saveButton = new JButton( "Save" );
   private JButton closeButton = new JButton( "Close" );

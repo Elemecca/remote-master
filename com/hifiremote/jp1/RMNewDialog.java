@@ -134,8 +134,7 @@ public class RMNewDialog extends JDialog implements ActionListener, ListSelectio
   
   public static Remote showDialog( RemoteMaster owner )
   {
-    if ( dialog == null )
-      dialog = new RMNewDialog( owner );
+    dialog = new RMNewDialog( owner );
     dialog.pack();
     dialog.setLocationRelativeTo( owner );
     dialog.setVisible( true );
@@ -232,10 +231,15 @@ public class RMNewDialog extends JDialog implements ActionListener, ListSelectio
     }
     else if ( source == rdfButton )
     {
-      Remote rm = ( Remote )remotesList.getSelectedValue();
-      rm.load();
+      Remote remote = ( Remote )remotesList.getSelectedValue();
+      remote.load();
       String title = "RDF of Selected Remote";
-      TextFileViewer.showFile( this, rm.getFile(), title, false );
+      TextFileViewer.showFile( this, remote, title, false );
+      // If RDF file has been edited, the remotes in RemoteManager will have changed
+      Collection< Remote > rm = RemoteManager.getRemoteManager().getRemotes();
+      remotesArray.clear();
+      remotesArray.addAll( rm );
+      sortRemotes( descriptionButton.isSelected() ? DESCRIPTION : SIGNATURE );
     }
   }
   

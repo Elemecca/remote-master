@@ -25,7 +25,29 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       macroEditor.setButtonEnabler( this );
       macroEditor.setRemoteConfiguration( remoteConfig );
       setData( new Activity[] { remoteConfig.getActivities().get( btn ) } );
-      helpSettingBox.setModel( new DefaultComboBoxModel( helpSetting ) );
+      setHelpSetting( "AudioHelp" );
+      audioHelpSettingBox.setModel( new DefaultComboBoxModel( helpSetting ) );
+      setHelpSetting( "VideoHelp" );
+      videoHelpSettingBox.setModel( new DefaultComboBoxModel( helpSetting ) );
+    }
+  }
+  
+  private void setHelpSetting( String title )
+  {
+    Remote remote = remoteConfig.getRemote();
+    Setting setting = remote.getSetting( title );
+    if ( setting != null )
+    {
+      Object[] options = setting.getOptions( remote );
+      helpSetting = new String[ options.length ];
+      for ( int i = 0; i < options.length; i++ )
+      {
+        helpSetting[ i ] = ( String )options[ i ];
+      }
+    }
+    else
+    {
+      helpSetting = new String[] { "Off", "On" };
     }
   }
   
@@ -53,6 +75,19 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     || b.canAssignShiftedToPowerMacro() 
     || b.canAssignXShiftedToPowerMacro();
   }
+  
+  private int getEffectiveColumn( int col )
+  {
+    if ( remoteConfig != null )
+    {
+      Remote remote = remoteConfig.getRemote();
+      if ( !remote.hasMasterPowerSupport() && col > 0 )
+      {
+        col += 2;
+      }
+    }
+    return col;
+  }
 
   private static final String[] colNames =
   {
@@ -73,27 +108,34 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public Class< ? > getColumnClass( int col )
   {
-    return colClasses[ col ];
+    return colClasses[ getEffectiveColumn( col ) ];
   }
   
   @Override
   public String getColumnName( int col )
   {
-    return colNames[ col ];
+    return colNames[ getEffectiveColumn( col ) ];
   }
   @Override
   public String getColumnPrototypeName( int col )
   {
-    return colPrototypeNames[ col ];
+    return colPrototypeNames[ getEffectiveColumn( col ) ];
   }
 
   @Override
   public int getColumnCount()
   {
-    int count = colNames.length - 1;
-    if ( remoteConfig != null && remoteConfig.allowHighlighting() )
+    int count = colNames.length - 3;
+    if ( remoteConfig != null )
     {
-      ++count;
+      if ( remoteConfig.getRemote().hasMasterPowerSupport() )
+      {
+        count += 2;
+      }
+      if ( remoteConfig != null && remoteConfig.allowHighlighting() )
+      {
+        ++count;
+      }
     }
     return count;
   }
@@ -107,21 +149,26 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public boolean isColumnWidthFixed( int col )
   {
+    col = getEffectiveColumn( col );
     return col != 2 && col != 5;
   }
   
   @Override
   public TableCellEditor getColumnEditor( int col )
   {
-    switch ( col )
+    DefaultCellEditor editor = null;
+    switch ( getEffectiveColumn( col ) )
     {
       case 1:
         return keyEditor;
       case 2:
         return macroEditor;
       case 3:
+        editor = new DefaultCellEditor( audioHelpSettingBox );
+        editor.setClickCountToStart( RMConstants.ClickCountToStart );
+        return editor;
       case 4:
-        DefaultCellEditor editor = new DefaultCellEditor( helpSettingBox );
+        editor = new DefaultCellEditor( videoHelpSettingBox );
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
       case 5:
@@ -136,6 +183,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
+    col = getEffectiveColumn( col );
     if ( col == 0 )
     {
       return new RowNumberRenderer();
@@ -169,11 +217,11 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   }
   
   @Override
-  public Object getValueAt( int row, int column)
+  public Object getValueAt( int row, int col)
   {
     Activity activity = getRow( row );
     Macro macro = activity.getMacro();
-    switch ( column )
+    switch ( getEffectiveColumn( col ) )
     {
       case 0:
         return new Integer( row + 1 );
@@ -182,9 +230,9 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       case 2:
         return macro == null ? null : macro.getData();
       case 3:
-        return helpSetting[ 1 - activity.getAudioHelp() ];
+        return audioHelpSettingBox.getModel().getElementAt( activity.getAudioHelp() );
       case 4:
-        return helpSetting[ 1 - activity.getVideoHelp() ];
+        return videoHelpSettingBox.getModel().getElementAt( activity.getVideoHelp() );
       case 5:
         return activity.getNotes();
       case 6:
@@ -197,6 +245,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public void setValueAt( Object value, int row, int col )
   {
+    col = getEffectiveColumn( col );
     Activity activity = getRow( row );
     Macro macro = activity.getMacro();
     if ( col == 1 )
@@ -218,11 +267,11 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     }
     else if ( col == 3 )
     {
-      activity.setAudioHelp( 1 - Arrays.asList( helpSetting ).indexOf( ( String )value ) );
+      activity.setAudioHelp( audioHelpSettingBox.getSelectedIndex() );
     }
     else if ( col == 4 )
     {
-      activity.setVideoHelp( 1 - Arrays.asList( helpSetting ).indexOf( ( String )value ) );
+      activity.setVideoHelp( videoHelpSettingBox.getSelectedIndex() );
     }
     else if ( col == 5 )
     {
@@ -243,7 +292,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
   private RMColorRenderer colorRenderer = new RMColorRenderer();
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
-  private JComboBox helpSettingBox = new JComboBox();
-  private String[] helpSetting = new String[] { "Regular", "Custom" };
+  private JComboBox audioHelpSettingBox = new JComboBox();
+  private JComboBox videoHelpSettingBox = new JComboBox();
+  private String[] helpSetting = null;
 
 }

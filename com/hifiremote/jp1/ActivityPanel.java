@@ -37,15 +37,15 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       + "\"Key\" is blank, the activity has not been set.  The \"Key\" value has no "
       + "significance when the activity is set with RMIR, but some value has to be set "
       + "for it before a Power Macro can be entered.";
-    JTextArea area = new JTextArea( message );
+    messageArea = new JTextArea( message );
     JLabel label = new JLabel();
-    area.setFont( label.getFont() );
-    area.setBackground( label.getBackground() );
-    area.setLineWrap( true );
-    area.setWrapStyleWord( true );
-    area.setEditable( false );
-    area.setBorder( BorderFactory.createEmptyBorder( 5, 5, 10, 5 ) );
-    upper.add( area, BorderLayout.PAGE_END );
+    messageArea.setFont( label.getFont() );
+    messageArea.setBackground( label.getBackground() );
+    messageArea.setLineWrap( true );
+    messageArea.setWrapStyleWord( true );
+    messageArea.setEditable( false );
+    messageArea.setBorder( BorderFactory.createEmptyBorder( 5, 5, 10, 5 ) );
+    upper.add( messageArea, BorderLayout.PAGE_END );
     panel.add( upper, BorderLayout.CENTER );
     tabPanel.add( panel, BorderLayout.PAGE_START );
     panel = new JPanel( new BorderLayout() );
@@ -121,6 +121,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
   {
     this.remoteConfig = remoteConfig;
     Remote remote = remoteConfig.getRemote();
+    messageArea.setVisible( remote.hasMasterPowerSupport() );
     tabbedPane.removeAll();
     lastIndex = 0;
     for ( Button btn : remote.getButtonGroups().get( "Activity" ) )
@@ -139,6 +140,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
   private int lastIndex = 0;
   private JP1Table activeTable = null;
   private JButton clearActivity = null;
+  private JTextArea messageArea = null;
 
   @Override
   public void stateChanged( ChangeEvent e )

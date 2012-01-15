@@ -732,7 +732,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         else if ( command == "OPENRDF" )
         {
           String title = "View/Edit RDF";
-          rdfViewer = TextFileViewer.showFile( RemoteMaster.this, remoteConfig.getRemote().getFile(), title, false );
+          rdfViewer = TextFileViewer.showFile( RemoteMaster.this, remoteConfig.getRemote(), title, false );
         }
         else if ( command == "OPENCODES" )
         {

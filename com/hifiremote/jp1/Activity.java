@@ -172,8 +172,8 @@ public class Activity extends Highlight
   private String name = null;
   private Macro macro = null;
   private String notes = null;
-  private int audioHelp = 1;
-  private int videoHelp = 1;
+  private int audioHelp = 0;
+  private int videoHelp = 0;
   private int helpSegmentFlags = 0xFF;
   private Segment helpSegment = null;
 }

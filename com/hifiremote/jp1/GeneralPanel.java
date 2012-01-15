@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -84,10 +86,28 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     activeTable = deviceButtonTable;
     deviceScrollPane = new JScrollPane( deviceButtonTable );
     deviceButtonPanel.add( deviceScrollPane, BorderLayout.CENTER );
+    
+    String message = "Note:  Devices on this remote are selected by scrolling through a fixed list and a device with an "
+      + "unset setup code is skipped.  A blank entry in the setup column denotes an unset setup code.";
+    messageArea = new JTextArea( message );
+    JLabel label = new JLabel();
+    messageArea.setFont( label.getFont() );
+    messageArea.setBackground( label.getBackground() );
+    messageArea.setLineWrap( true );
+    messageArea.setWrapStyleWord( true );
+    messageArea.setEditable( false );
+    messageArea.setBorder( BorderFactory.createEmptyBorder( 5, 5, 10, 5 ) );
+    messageArea.setVisible( false );
+    
     JPanel editPanel = new JPanel();
+    editPanel.setLayout( new BoxLayout( editPanel, BoxLayout.PAGE_AXIS ) );
+    editPanel.add( messageArea );
+    editPanel.add( Box.createVerticalStrut( 5 ) );
     editButton = new JButton( "Edit Device" );
     editButton.setEnabled( false );
+    editButton.setAlignmentX( CENTER_ALIGNMENT );
     editPanel.add( editButton );
+    editPanel.add( Box.createVerticalStrut( 5 ) );
     editButton.addActionListener( this );
     deviceButtonPanel.add( editPanel, BorderLayout.PAGE_END );
 
@@ -202,10 +222,13 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       settingModel.set( remoteConfig );
       settingTable.initColumns( settingModel );
       settingsScrollPane.setVisible( true );
+      messageArea.setVisible( false );
     }
     else
     {
       settingsScrollPane.setVisible( false );
+      SoftDevices softDevices = remoteConfig.getRemote().getSoftDevices();
+      messageArea.setVisible( softDevices == null ? false : softDevices.isSetupCodesOnly() );
     }
 
     if ( remoteConfig != null )
@@ -380,6 +403,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
 
   private JPanel deviceButtonPanel = null;
   private JPanel warningPanel = null;
+  private JTextArea messageArea = null;
 
   private JScrollPane deviceScrollPane = null;
   private JScrollPane settingsScrollPane = null;

@@ -128,6 +128,16 @@ public class RemoteManager
       list.add( dupRemote );
     }
   }
+  
+  public void replaceRemote( Remote oldRemote, Remote newRemote )
+  {
+    List< Remote > list = remotesBySignature.get( oldRemote.getSignature() );
+    if ( list != null )
+    {
+      list.remove( oldRemote );
+    }
+    addRemote( newRemote );
+  }
 
   /**
    * Gets the remotes.

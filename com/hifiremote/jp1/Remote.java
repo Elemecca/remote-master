@@ -1023,10 +1023,14 @@ public class Remote implements Comparable< Remote >
       {
         macroSupport = RDFReader.parseFlag( value );
       }
-      else if ( parm.equals( "ForceEvenStarts" ) )
+      else if ( parm.equalsIgnoreCase( "ForceEvenStarts" ) )
       {
         forceEvenStarts = RDFReader.parseFlag( value );
         hasForceEvenStartsEntry = true;
+      }
+      else if ( parm.equalsIgnoreCase( "MasterPowerSupport" ) )
+      {
+        masterPowerSupport = RDFReader.parseFlag( value );
       }
       else if ( parm.equals( "UpgradeAddr" ) )
       {
@@ -1651,6 +1655,18 @@ public class Remote implements Comparable< Remote >
   public Setting[] getSettings()
   {
     return settings;
+  }
+  
+  public Setting getSetting( String title )
+  {
+    for ( Setting setting : settings )
+    {
+      if ( setting.getTitle().equals( title ) )
+      {
+        return setting;
+      }
+    }
+    return null;  
   }
 
   /**
@@ -3500,6 +3516,13 @@ public class Remote implements Comparable< Remote >
     return forceEvenStarts;
   }
 
+  private boolean masterPowerSupport = false;
+
+  public boolean hasMasterPowerSupport()
+  {
+    return masterPowerSupport;
+  }
+  
   public FixedData[] getFixedData()
   {
     // Note that fixedData can be set to null after being parsed

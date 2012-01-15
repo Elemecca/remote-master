@@ -85,7 +85,18 @@ public class RemoteConfiguration
     activities = new LinkedHashMap< Button, Activity >();
     for ( Button btn : activityBtns )
     {
-      activities.put( btn, new Activity( btn, remote ) );
+      Activity activity = new Activity( btn, remote );
+      Setting setting = remote.getSetting( "AudioHelp" );
+      if ( setting != null )
+      {
+        activity.setAudioHelp( setting.getInitialValue() );
+      }
+      setting = remote.getSetting( "VideoHelp" );
+      if ( setting != null )
+      {
+        activity.setVideoHelp( setting.getInitialValue() );
+      }
+      activities.put( btn, activity );
     }
   }
 
@@ -157,7 +168,11 @@ public class RemoteConfiguration
       {
         for ( Setting setting : remote.getSettings() )
         {
-          setting.setValue( Integer.parseInt( section.getProperty( setting.getTitle() ) ) );
+          String s = section.getProperty( setting.getTitle() );
+          if ( s != null )
+          {
+            setting.setValue( Integer.parseInt( s ) );
+          }
         }
       }
       else if ( sectionName.equals( "DeviceUpgrade" ) )
@@ -423,7 +438,7 @@ public class RemoteConfiguration
     return segments;
   }
 
-  public HashMap< Button, Activity > getActivities()
+  public LinkedHashMap< Button, Activity > getActivities()
   {
     return activities;
   }
@@ -456,25 +471,8 @@ public class RemoteConfiguration
       list.add( new Segment( segType, segFlags, segData ) );
       segments.put( segType, list );
     }
-    List< Segment > dbList = segments.get( 0 );
-    if ( dbList != null )
-    {
-      for ( Segment segment : dbList )
-      {
-        Hex hex = segment.getHex();
-        if ( segment.getFlags() == 0xFF )
-        {
-          DeviceButton db = remote.getDeviceButton( hex.getData()[ 0 ] );
-          if ( db != null )
-          {
-            db.setVolumePT( getPTButton( hex.getData()[ 6 ] ) );
-            db.setTransportPT( getPTButton( hex.getData()[ 7 ] ) );
-            db.setChannelPT( getPTButton( hex.getData()[ 8 ] ) );
-            segment.setObject( db );
-          }
-        }
-      }
-    }
+
+    setDeviceButtonSegments();
     if ( !decode )
       return;
     List< Segment > macroList = segments.get( 1 );
@@ -657,6 +655,29 @@ public class RemoteConfiguration
       }
     }
     pos = 0;
+  }
+  
+  public void setDeviceButtonSegments()
+  {
+    List< Segment > dbList = segments.get( 0 );
+    if ( dbList != null )
+    {
+      for ( Segment segment : dbList )
+      {
+        Hex hex = segment.getHex();
+        if ( segment.getFlags() == 0xFF )
+        {
+          DeviceButton db = remote.getDeviceButton( hex.getData()[ 0 ] );
+          if ( db != null )
+          {
+            db.setVolumePT( getPTButton( hex.getData()[ 6 ] ) );
+            db.setTransportPT( getPTButton( hex.getData()[ 7 ] ) );
+            db.setChannelPT( getPTButton( hex.getData()[ 8 ] ) );
+            segment.setObject( db );
+          }
+        }
+      }
+    }
   }
   
   private DeviceButton getPTButton( int deviceIndex )
@@ -2427,6 +2448,10 @@ public class RemoteConfiguration
    */
   private void updateSettings()
   {
+    if ( hasSegments() )
+    {
+      return;
+    }
     Setting[] settings = remote.getSettings();
     for ( Setting setting : settings )
     {
