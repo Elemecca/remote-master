@@ -120,13 +120,16 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
   public void set( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
-    Remote remote = remoteConfig.getRemote();
-    messageArea.setVisible( remote.hasMasterPowerSupport() );
-    tabbedPane.removeAll();
-    lastIndex = 0;
-    for ( Button btn : remote.getButtonGroups().get( "Activity" ) )
+    Remote remote = null;
+    if ( remoteConfig != null && ( remote = remoteConfig.getRemote() ).getButtonGroups() != null )
     {
-      tabbedPane.addTab( btn.getName(), null );
+      messageArea.setVisible( remote.hasMasterPowerSupport() );
+      tabbedPane.removeAll();
+      lastIndex = 0;
+      for ( Button btn : remote.getButtonGroups().get( "Activity" ) )
+      {
+        tabbedPane.addTab( btn.getName(), null );
+      }
     }
   }
 
