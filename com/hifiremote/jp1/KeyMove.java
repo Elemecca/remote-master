@@ -81,6 +81,12 @@ public class KeyMove extends AdvancedCode implements Cloneable
   {
     super( props );
     cmd = data.subHex( cmdIndex == 2 ? 2 : ( this instanceof KeyMoveKey ) ? 3 : 4 );
+    if ( this instanceof KeyMoveLong )
+    {
+      // KeyMoveLong should only be used for 1-byte commands when bind format is LONG
+      // so extract the 1-byte command from the 2-byte hex.
+      cmd = cmd.subHex( 0, 1 );
+    }
     deviceButtonIndex = Integer.parseInt( props.getProperty( "DeviceButtonIndex" ) );
     setDeviceType( Integer.parseInt( props.getProperty( "DeviceType" ) ) );
     setSetupCode( Integer.parseInt( props.getProperty( "SetupCode" ) ) );
@@ -127,7 +133,10 @@ public class KeyMove extends AdvancedCode implements Cloneable
    */
   public EFC5 getEFC5()
   {
-    if ( this instanceof KeyMoveLong && cmd.length() == 1 )
+    // 26/01/12 Added test of cmdIndex here so that JP1.4/JP2 remotes get efc for KeyMoveLong 
+    // based on 1-byte command, not the 2-byte value in the hex data.  Not sure why earlier
+    // remotes need efc of the 2-byte value.
+    if ( this instanceof KeyMoveLong && cmd.length() == 1 && cmdIndex == 2 )
     {
       return new EFC5( getRawHex( 0, 0, cmd ).subHex( cmdIndex == 2 ? 2 : 4 ) );
     }

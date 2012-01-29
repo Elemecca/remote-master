@@ -726,6 +726,10 @@ public class Button
         rc = remote.createKeyMove( keyCode | mask, 0x0F, devType.getNumber(), setupCode, hex, sb.toString() );
       }
     }
+    if ( rc != null && remote.getSegmentTypes() != null )
+    {
+      rc.setSegmentFlags( 0xFF );
+    }
     return rc;
   }
 

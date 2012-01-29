@@ -574,12 +574,12 @@ public class RemoteConfiguration
         DeviceType devType = remote.getDeviceTypeByIndex( hex.getData()[ 4 ] );
         int setupCode = hex.get( 5 );
         Hex pidHex = hex.subHex( 9, 2 );
-        int limit = protocolOffset == 0 ? hex.length() : Math.min( hex.length(), protocolOffset + 2 );
+        int limit = protocolOffset == 0 ? hex.length() : Math.min( hex.length(), protocolOffset + 4 );
         Hex deviceHex = hex.subHex( 9, limit - 9 );
         Hex protocolCode = null;
-        if ( protocolOffset > 0 && protocolOffset < hex.length() - 2 )
+        if ( protocolOffset > 0 && protocolOffset < hex.length() - 4 )
         {
-          protocolCode = hex.subHex( protocolOffset + 2 );
+          protocolCode = hex.subHex( protocolOffset + 4 );
         }
         String alias = remote.getDeviceTypeAlias( devType );
         if ( alias == null )
@@ -1984,12 +1984,12 @@ public class RemoteConfiguration
       int address = segment.getAddress();
       int protOffset = segment.getHex().get( 2 );
       int segSize = segment.getHex().length();
-      int devSize = ( protOffset == 0 ) ? segSize - 4 : protOffset - 2;
-      int protSize = ( protOffset == 0 ) ? 0 : segSize - protOffset - 2;
+      int devSize = ( protOffset == 0 ) ? segSize - 4 : protOffset;
+      int protSize = ( protOffset == 0 ) ? 0 : segSize - protOffset - 4;
       updateHighlight( dev, address + 8, devSize );
       for ( int i = 0; i < protSize; i++ )
       {
-        highlight[ address + protOffset + 6 + i ] = dev.getProtocolHighlight();
+        highlight[ address + protOffset + 8 + i ] = dev.getProtocolHighlight();
       }
       
     }
@@ -3049,7 +3049,7 @@ public class RemoteConfiguration
       for ( DeviceUpgrade dev : devIndependent )
       {
         Hex hex = dev.getUpgradeHex();
-        Hex code = dev.getCode();
+        Hex code = dev.needsProtocolCode() ? dev.getCode() : null;
         int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
         size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
         Hex segData = new Hex( size );
@@ -3057,7 +3057,7 @@ public class RemoteConfiguration
         Arrays.fill( segData.getData(), 0, 4, ( short )0 );
         if ( code != null )
         {
-          segData.put( hex.length() + 7, 2 );
+          segData.put( hex.length() + 5, 2 );
         }
         segData.set( ( short )dev.getDeviceType().getNumber(), 4 );
         segData.put( dev.getSetupCode(), 5 );
@@ -3603,7 +3603,11 @@ public class RemoteConfiguration
 
   private int getSigAddress()
   {
-    return ( sigData != null && sigData.length > 32 ) ? Hex.get( sigData, 30 ) : 0;
+    // The assumption is that the signature block always immediately follows the block
+    // of word based flash.  In the JP1.4 and JP2 remotes seen so far, this is also the
+    // start of byte based flash but in JP2.1 the signature block seems to be a distinct
+    // block sitting between the word based and byte based flash.
+    return ( sigData != null && sigData.length > 30 ) ? Hex.get( sigData, 28 ) + 1 : 0;
   }
 
   public Color[] getHighlight()

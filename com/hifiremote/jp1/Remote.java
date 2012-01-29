@@ -2725,7 +2725,9 @@ public class Remote implements Comparable< Remote >
     KeyMove keyMove = null;
     if ( advCodeFormat == AdvancedCode.Format.HEX )
     {
-      if ( advCodeBindFormat == AdvancedCode.BindFormat.LONG )
+      // KeyMoveLong should only be used for 1-byte commands when bind format is LONG
+      // so added test of cmd length.
+      if ( advCodeBindFormat == AdvancedCode.BindFormat.LONG && cmd.length() == 1 )
       {
         keyMove = new KeyMoveLong( keyCode, deviceIndex, deviceType, setupCode, cmd, notes );
       }

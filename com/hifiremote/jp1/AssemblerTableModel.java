@@ -347,6 +347,10 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
 
   public void disassemble( Hex hexD, Processor processor )
   {
+    if ( processor instanceof MAXQProcessor )
+    {
+      return;
+    }
     itemList.clear();
     this.hex = ( hexD == null ) ? new Hex( 0 ) : new Hex( hexD );
     List< Integer > labelAddresses = new ArrayList< Integer >();
