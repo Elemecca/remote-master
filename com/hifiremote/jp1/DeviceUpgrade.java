@@ -81,6 +81,10 @@ public class DeviceUpgrade extends Highlight
     protocol = base.protocol;
     buttonIndependent = base.buttonIndependent;
     buttonRestriction = base.buttonRestriction;
+    protocolHighlight = base.protocolHighlight;
+    sizeCmdBytes = base.sizeCmdBytes;
+    sizeDevBytes = base.sizeDevBytes;
+    setHighlight( base );
 
     // Copy assignment colors
     for ( int index : base.assignmentColors.keySet() )

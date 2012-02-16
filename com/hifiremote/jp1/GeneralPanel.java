@@ -353,6 +353,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         deviceModel.setValueAt( newUpgrade.getDeviceType(), row, 2 );
         deviceModel.setValueAt( new SetupCode( newUpgrade.getSetupCode() ), row, 3 );
         deviceModel.fireTableRowsUpdated( row, row );
+        propertyChangeSupport.firePropertyChange( "device", null, null );
         break;
       }
     }

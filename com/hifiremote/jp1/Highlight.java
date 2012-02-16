@@ -34,6 +34,12 @@ public class Highlight
     this.highlight = highlight;
   }
   
+  public void setHighlight( Highlight hl )
+  {
+    this.highlight = hl.highlight;
+    this.segmentFlags = hl.segmentFlags;
+  }
+  
   public int getMemoryUsage()
   {
     return memoryUsage;
