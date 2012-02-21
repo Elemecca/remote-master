@@ -84,7 +84,7 @@ public class EFC implements Comparable< EFC >
    *          the hex
    * @return the short
    */
-  public static short parseHex( Hex hex )
+  public static int parseHex( Hex hex )
   {
     return parseHex( hex, 0 );
   }
@@ -98,12 +98,12 @@ public class EFC implements Comparable< EFC >
    *          the index
    * @return the short
    */
-  public static short parseHex( Hex hex, int index )
+  public static int parseHex( Hex hex, int index )
   {
     return parseHex( hex.getData()[ index ] );
   }
 
-  public static short parseHex( short hex )
+  public static int parseHex( short hex )
   {
     short rc = ( short )( hex & 0xFF );
     rc = ( short )( rc << 3 | rc >> 5 );

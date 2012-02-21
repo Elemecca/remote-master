@@ -35,7 +35,7 @@ public class KeyMoveEFC5
    */
   public KeyMoveEFC5( int keyCode, int deviceButtonIndex, int deviceType, int setupCode, int efc, String notes )
   {
-    super( keyCode, deviceButtonIndex, deviceType, setupCode, new Hex( 2 ), notes );
+    super( keyCode, deviceButtonIndex, deviceType, setupCode, new Hex( 3 ), notes );
     setEFC( efc );
   }
   
@@ -60,8 +60,12 @@ public class KeyMoveEFC5
   @Override
   public EFC5 getEFC5()
   {
-    // If cmdIndex = 3 then remote has segments, in which case efc index is 4
-    return new EFC5( data.get( getCmdIndex() == 2 ? 2 : 4 ) );
+    int efc = data.get( getCmdIndex() == 2 ? 2 : 4 );
+    if ( getCmdIndex() == 3 )
+    {
+      efc += data.getData()[ 3 ] << 16;
+    }
+    return new EFC5( efc );
   }
 
   /* (non-Javadoc)
@@ -69,7 +73,7 @@ public class KeyMoveEFC5
    */
   public void setEFC( EFC efc )
   {
-    setEFC((( EFC5 )efc ).getValue());
+    setEFC( ( ( EFC5 )efc ).getValue() );
   }
   
   /**
@@ -79,8 +83,13 @@ public class KeyMoveEFC5
    */
   public void setEFC( int efc )
   {
-//    data.put( efc, 0 );
-    data.put( efc, getCmdIndex() == 2 ? 2 : 4 );
+    // If remote does not have segments, EFC values > 0xFFFF must be stored modulo 0x10000,
+    // but for remotes with segments that store EFC values, three bytes are available.
+    if ( getCmdIndex() == 3 )
+    {
+      data.getData()[ 3 ] = ( short )( ( efc >> 16 ) & 0xFF );
+    }
+    data.put( efc & 0xFFFF, getCmdIndex() == 2 ? 2 : 4 );
   }
 
   /* (non-Javadoc)
@@ -88,8 +97,7 @@ public class KeyMoveEFC5
    */
   public Hex getCmd()
   {
-//    return EFC5.toHex( data.get( 0 ));
-    return EFC5.toHex( data.get( getCmdIndex() == 2 ? 2 : 4 ));
+    return EFC5.toHex( getEFC5().getValue() );
   }
   
   /* (non-Javadoc)
@@ -97,7 +105,6 @@ public class KeyMoveEFC5
    */
   public void setCmd( Hex hex )
   {
-//    data.put( EFC5.parseHex( hex ), 0 );
-    data.put( EFC5.parseHex( hex ), getCmdIndex() == 2 ? 2 : 4 );
+    setEFC( EFC5.parseHex( hex ) );
   }
 }

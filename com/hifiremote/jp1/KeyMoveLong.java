@@ -38,7 +38,7 @@ public class KeyMoveLong extends KeyMove
     }
     else
     {
-      hexData[ getCmdIndex() + 1 ] = EFC.parseHex( cmd );
+      hexData[ getCmdIndex() + 1 ] = ( short )( EFC.parseHex( cmd ) & 0xFF ) ;
     }
     update( deviceType, setupCode, hex );
     return hex;

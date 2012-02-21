@@ -150,7 +150,7 @@ public class PauseFunction extends SpecialProtocolFunction
         // In both cases make hex[ 1 ] be the EFC of hex[ 0 ]
         if ( params.getOffset() == 0 )
         {
-          hex[ 1 ] = EFC.parseHex( hex[ 0 ] );
+          hex[ 1 ] = ( short )( EFC.parseHex( hex[ 0 ] ) & 0xFF );
         }
         else
         {

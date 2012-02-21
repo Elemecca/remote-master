@@ -51,7 +51,7 @@ public class KeyMove extends AdvancedCode implements Cloneable
   {
     super( keyCode, null, notes );
     Hex cmdHex = cmd;
-    if ( cmdIndex == 3 )
+    if ( cmdIndex == 3 && cmd.length() < 3 )
     {
       cmdHex = new Hex( 3 );
       cmdHex.put( cmd, 1 );
@@ -347,7 +347,15 @@ public class KeyMove extends AdvancedCode implements Cloneable
         buffer[ lengthOffset ] = 0;
       }
       hexLength = data.length();
-      Hex.put( data, buffer, offset );
+      if ( hexLength == 5 && this instanceof KeyMoveEFC5 )
+      {
+        hexLength = 4;
+        Hex.put( data.subHex( 0, 4 ), buffer, offset );
+      }
+      else
+      {
+        Hex.put( data, buffer, offset );
+      }
       buffer[ lengthOffset ] |= ( short )hexLength;
     }
     else

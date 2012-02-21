@@ -201,9 +201,16 @@ public abstract class AdvancedCode extends Highlight
   public int getSize( Remote remote )
   {
     int size = data.length() + 2; // for the key code and type/length
-    if ( remote.getAdvCodeBindFormat() == BindFormat.LONG )
+    if ( remote.getSegmentTypes() == null )
     {
-      size++ ; // length is stored in it's own byte, not with the type;
+      if ( remote.getAdvCodeBindFormat() == BindFormat.LONG )
+      {
+        size++ ; // length is stored in its own byte, not with the type;
+      }
+      if ( this instanceof KeyMoveEFC5 )
+      {
+        size--; // only 2 bytes of 3-byte data is stored
+      }
     }
     return size;
   }

@@ -207,7 +207,12 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       case 4:
         return new SetupCode( keyMove.getSetupCode() );
       case 5:
-        return keyMove.getData();
+        Hex data = keyMove.getData();
+        if ( r.getSegmentTypes() == null && keyMove instanceof KeyMoveEFC5 )
+        {
+          return data.subHex( 0, data.length() - 1 );
+        }
+        return data;
       case 6:
         return keyMove.getCmd();
       case 7:

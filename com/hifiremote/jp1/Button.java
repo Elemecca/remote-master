@@ -776,16 +776,17 @@ public class Button
         {
           short[] data = new short[ 2 ];
           data[ 0 ] = 0;
-          data[ 1 ] = EFC.parseHex( hex, 0 );
+          data[ 1 ] = ( short )( EFC.parseHex( hex, 0 ) & 0xFF ) ;
           hex = new Hex( data );
         }
         else
         {
-          short[] data = new short[ 2 ];
-          short value = EFC5.parseHex( hex );
+          short[] data = new short[ 3 ];
+          int value = EFC5.parseHex( hex );
 
-          data[ 0 ] = ( short )( value >> 8 );
-          data[ 1 ] = ( short )( value & 0xFF );
+          data[ 0 ] = ( short )( ( value >> 16 ) & 0xFF );
+          data[ 1 ] = ( short )( (value >> 8 ) & 0xFF );
+          data[ 2 ] = ( short )( value & 0xFF );
 
           hex = new Hex( data );
         }
@@ -796,7 +797,7 @@ public class Button
         short efc = hex.getData()[ 0 ];
         newData[ 0 ] = efc;
         hex = new Hex( newData );
-        newData[ 1 ] = EFC.parseHex( efc );
+        newData[ 1 ] = ( short )( EFC.parseHex( efc ) & 0xFF );
       }
 
       if ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )

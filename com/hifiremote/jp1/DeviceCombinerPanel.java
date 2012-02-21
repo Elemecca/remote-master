@@ -200,7 +200,7 @@ public class DeviceCombinerPanel extends KMPanel implements ListSelectionListene
                   Function newF = new Function();
                   Hex hex = combiner.getDefaultCmd();
                   combiner.setValueAt( 0, hex, indexInt );
-                  short efc = EFC.parseHex( f.getHex(), importedProtocol.getCmdIndex() );
+                  short efc = ( short )( EFC.parseHex( f.getHex(), importedProtocol.getCmdIndex() ) & 0xFF );
                   EFC.toHex( efc, hex, combiner.getCmdIndex() );
                   newF.setHex( hex );
                   newF.setName( f.getName() );

@@ -16,7 +16,7 @@ public class EFC5 extends EFC
   public EFC5( String text )
   {
     super( ( short )0 );
-    value = Integer.parseInt( text ) & 0x0FFFF;
+    value = Integer.parseInt( text ) & 0x1FFFF;
   }
 
   /**
@@ -28,7 +28,7 @@ public class EFC5 extends EFC
   public EFC5( int value )
   {
     super( ( short )value );
-    this.value = value & 0x0FFFF;
+    this.value = value & 0x1FFFF;
   }
 
   /**
@@ -56,7 +56,7 @@ public class EFC5 extends EFC
   @Override
   public int getValue()
   {
-    return value & 0xFFFF;
+    return value & 0x1FFFF;
   }
 
   /*
@@ -67,7 +67,7 @@ public class EFC5 extends EFC
   @Override
   public String toString()
   {
-    return String.format( "%1$05d", value & 0xFFFF );
+    return String.format( "%1$05d", value & 0x1FFFF );
   }
 
   /*
@@ -149,7 +149,7 @@ public class EFC5 extends EFC
   @Override
   public void fromHex( Hex hex )
   {
-    value = parseHex( hex ) & 0x0FFFF;
+    value = parseHex( hex ) & 0x1FFFF;
   }
 
   /**
@@ -159,12 +159,12 @@ public class EFC5 extends EFC
    *          the hex
    * @return the short
    */
-  public static short parseHex( Hex hex )
+  public static int parseHex( Hex hex )
   {
     return parseHex( hex, 0 );
   }
 
-  public static short parseHex( Hex hex, int offset )
+  public static int parseHex( Hex hex, int offset )
   {
     short[] data = hex.getData();
     if ( data.length == offset + 2 )
@@ -176,12 +176,12 @@ public class EFC5 extends EFC
 
       short byte2 = ( short )( data[ offset + 1 ] & 0xFF ^ 0xC5 );
 
-      short rc = ( short )( ( byte1 << 8 ) + byte2 );
+      int rc = ( byte1 << 8 ) + byte2;
       if ( rc < 1000 )
       {
         rc += 65536;
       }
-      return ( short )( rc & 0xFFFF );
+      return rc;
     }
     else
     {

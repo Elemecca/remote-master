@@ -539,7 +539,7 @@ public class RemoteConfiguration
         Hex hex = segment.getHex();
         if ( remote.getAdvCodeFormat() == AdvancedCode.Format.EFC )
         {
-          KeyMove keyMove = new KeyMoveEFC5( hex.getData()[ 1 ], hex.getData()[ 0 ], hex.getData()[ 2 ], hex.get( 3 ), hex.get( 6 ), null );
+          KeyMove keyMove = new KeyMoveEFC5( hex.getData()[ 1 ], hex.getData()[ 0 ], hex.getData()[ 2 ], hex.get( 3 ), ( hex.getData()[ 5 ] << 16 ) + hex.get( 6 ), null );
           keyMove.setSegmentFlags( segment.getFlags() );
           segment.setObject( keyMove );
           keymoves.add( keyMove );
