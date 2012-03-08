@@ -873,14 +873,14 @@ public class ProtocolManager
           return p;
         }
       }
-      if ( p.getName().equals( name ) && p.hasCode( remote ) && near == null )
+      if ( p.getName().equals( name ) && p.hasCode( remote ) 
+          && ( near == null || !near.getVariantName().equals( variantName )
+              && p.getVariantName().equals( variantName ) ) )
       {
         near = p;
-      }
-
-      
-      
+      }      
     }
+    
     if ( near != null )
     {
       System.err.println( "Found protocol " + near );
