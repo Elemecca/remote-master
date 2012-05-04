@@ -1559,7 +1559,7 @@ public class Analyzer {
                             sectstart = i + 1;
                         }
                     }
-                    dbg_str = String.format("i=%d evenOK=%d oddOK=%d eventot=%d finaltot=%d", i, evenOK, oddOK, eventot, finaltot);
+                    dbg_str = String.format("i=%d evenOK=%b oddOK=%b eventot=%d finaltot=%d", i, evenOK, oddOK, eventot, finaltot);
                     OutputDebugString(dbg_str);
 
                 } // for (i=0; i<sngl_count+rpt_count; i++) 
