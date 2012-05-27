@@ -49,7 +49,7 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
       return null;
     }
     this.value = ( T )value;
-    if ( panelClass == MacroDefinitionBox.class )
+    if ( panelClass == ( Class<?> )MacroDefinitionBox.class )
     {
       button.setText( Macro.getValueString( ( Hex )value , remoteConfig ) );
     }
