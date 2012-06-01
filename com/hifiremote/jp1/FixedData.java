@@ -10,19 +10,18 @@ import java.util.StringTokenizer;
  */
 public class FixedData
 {
+  
+  public enum Location
+  {
+    // SIGBLK refers to the separate Signature block of JP1.4/JP2 remotes
+    E2, SIGBLK
+  };
 
-  /**
-   * Instantiates a new fixed data.
-   * 
-   * @param addr
-   *          the addr
-   * @param bytes
-   *          the bytes
-   */
-  public FixedData( int addr, short[] data )
+  public FixedData( int addr, short[] data, Location location )
   {
     address = addr;
     this.data = data;
+    this.location = location;
   }
 
   /**
@@ -44,6 +43,11 @@ public class FixedData
   {
     return data;
   }
+  
+  public Location getLocation()
+  {
+    return location;
+  }
 
   /**
    * Parses the fixed data.
@@ -61,6 +65,8 @@ public class FixedData
     String line;
     int address = -1;
     int value = -1;
+    Location location = Location.E2;
+    Location newLocation = Location.E2;
 
     while ( true )
     {
@@ -73,7 +79,15 @@ public class FixedData
       String token = st.nextToken();
       while ( true )
       {
-        if ( token.charAt( 0 ) == '=' ) // the last token was an address
+        if ( token.equals( "E2" ) )
+        {
+          newLocation = Location.E2;
+        }
+        else if ( token.equals( "SIG" ) )
+        {
+          newLocation = Location.SIGBLK;
+        } 
+        else if ( token.charAt( 0 ) == '=' ) // the last token was an address
         {
           token = token.substring( 1 );
           if ( address != -1 ) // we've seen some bytes
@@ -84,10 +98,11 @@ public class FixedData
             {
               b[ i++ ] = val.shortValue();
             }
-            work.add( new FixedData( address, b ) );
+            work.add( new FixedData( address, b, location ) );
             temp.clear();
           }
           address = value;
+          location = newLocation;
           value = -1;
           if ( token.length() != 0 )
             continue;
@@ -125,7 +140,7 @@ public class FixedData
     }
     if ( address != -1 )
     {
-      work.add( new FixedData( address, b ) );
+      work.add( new FixedData( address, b, location ) );
     }
     return work.toArray( new FixedData[ work.size() ] );
   }
@@ -148,7 +163,7 @@ public class FixedData
     return true;
   }
   
-  public static Remote[] filter( List< Remote > remotes, short[] buffer )
+  public static Remote[] filter( List< Remote > remotes, short[] buffer, short[] sigData )
   {
     List< Remote > passed = new ArrayList< Remote >();
     for ( Remote remote : remotes )
@@ -156,10 +171,21 @@ public class FixedData
       boolean pass = true;
       for ( FixedData fixedData : remote.getRawFixedData() )
       {
-        if ( ! fixedData.check( buffer ) )
+        if ( fixedData.location == Location.E2 )
         {
-          pass = false;
-          break;
+          if ( ! fixedData.check( buffer ) )
+          {
+            pass = false;
+            break;
+          }
+        }
+        else if ( sigData != null ) // location = Location.SIGBLK
+        {
+          if ( ! fixedData.check( sigData ) )
+          {
+            pass = false;
+            break;
+          }
         }
       }
       if ( pass )
@@ -203,4 +229,7 @@ public class FixedData
 
   /** The data. */
   private short[] data;
+  
+  private Location location = Location.E2;
+  
 }

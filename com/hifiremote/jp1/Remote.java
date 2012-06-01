@@ -177,7 +177,8 @@ public class Remote implements Comparable< Remote >
           {
             line = parseSettings( rdr );
           }
-          else if ( line.equals( "FixedData" ) )
+          else if ( ( line.equals( "FixedData" ) || line.equals( "FixedData+" ) )
+              && fixedData.length == 0 )
           {
             fixedData = FixedData.parse( rdr );
             rawFixedData = fixedData;
@@ -1307,7 +1308,8 @@ public class Remote implements Comparable< Remote >
       {
         parseAdvCodeTypes( value, rdr );
       }
-      else if ( parm.equalsIgnoreCase( "ExtenderVersionAddr" ) )
+      else if ( ( parm.equalsIgnoreCase( "ExtenderVersionAddr" ) || parm.equalsIgnoreCase( "ExtenderVersionAddr+" ) )
+          && extenderVersionParm == null )
       {
         extenderVersionParm = new ExtenderVersionParm();
         extenderVersionParm.parse( value, this );

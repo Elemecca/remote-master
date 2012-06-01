@@ -28,6 +28,8 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
+import com.hifiremote.jp1.FixedData.Location;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class RemoteConfiguration.
@@ -375,7 +377,7 @@ public class RemoteConfiguration
         if ( !remotes.isEmpty() ) break;
       }
       signature = signature2;
-      remote = filterRemotes( remotes, signature, eepromSize, data, true );
+      remote = filterRemotes( remotes, signature, eepromSize, data, sigData, true );
       if ( remote == null )
       {
         throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
@@ -687,7 +689,7 @@ public class RemoteConfiguration
   }
   
   public static Remote filterRemotes( List< Remote > remotes, String signature, int eepromSize, 
-      short[] data, boolean allowMismatch )
+      short[] data, short[] sigData, boolean allowMismatch )
   {
     Remote remote = null;
     
@@ -714,7 +716,7 @@ public class RemoteConfiguration
     {
       // Filter on matching fixed data
       Remote[] choices = new Remote[ 0 ];
-      choices = FixedData.filter( remotes, data );
+      choices = FixedData.filter( remotes, data, sigData );
       if ( choices.length == 0 )
       {
         if ( allowMismatch )
@@ -1625,9 +1627,11 @@ public class RemoteConfiguration
           && remote.getAdvCodeFormat() == AdvancedCode.Format.HEX && moveUpgrade != null
           && moveUpgrade.getProtocol().getDefaultCmd().length() == 1 && cmd.length() == 2 )
       {
+        int segFlags = keyMove.getSegmentFlags();
         cmd = cmd.subHex( 0, 1 );
         keyMove = new KeyMoveLong( keyCode, keyMove.getDeviceButtonIndex(), keyMove.getDeviceType(), keyMove
             .getSetupCode(), cmd, keyMove.getNotes() );
+        keyMove.setSegmentFlags( segFlags );
         it.set( keyMove );
       }
     }
@@ -2476,7 +2480,7 @@ public class RemoteConfiguration
     }
     for ( FixedData fixed : fixedData )
     {
-      if ( ! fixed.check( data ) )
+      if ( fixed.getLocation() == Location.E2 && ! fixed.check( data ) )
       {
         mismatch = true;
         break;
@@ -2496,7 +2500,10 @@ public class RemoteConfiguration
     }
     else for ( FixedData fixed : fixedData )
     {
-      fixed.store( data );
+      if ( fixed.getLocation() == Location.E2 )
+      {
+        fixed.store( data );
+      }
     }
   }
 
@@ -2509,7 +2516,10 @@ public class RemoteConfiguration
     }
     for ( FixedData auto : autoSet )
     {
-      auto.store( data );
+      if ( auto.getLocation() == Location.E2 )
+      {
+        auto.store( data );
+      }
     }
 
     int rdfVersionAddress = remote.getRdfVersionAddress();
@@ -3719,6 +3729,11 @@ public class RemoteConfiguration
   public List< SpecialProtocolFunction > getSpecialFunctions()
   {
     return specialFunctions;
+  }
+
+  public short[] getSigData()
+  {
+    return sigData;
   }
 
   public void setSigData( short[] sigData )

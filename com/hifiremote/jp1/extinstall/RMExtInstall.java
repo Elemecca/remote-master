@@ -245,7 +245,7 @@ public class RMExtInstall extends ExtInstall
         data[ i ] = ( ( i < Config.size() - baseAddr ) && Config.IsValid( i + baseAddr ) ) ? Config.Get( i + baseAddr) : 0x100;
       }
       
-      remote = RemoteConfiguration.filterRemotes( remotes, signature, eepromSize, data, false );
+      remote = RemoteConfiguration.filterRemotes( remotes, signature, eepromSize, data, null, false );
       if ( remote == null )
       {
         errorMsg = "No remote found that matches the merge file.";

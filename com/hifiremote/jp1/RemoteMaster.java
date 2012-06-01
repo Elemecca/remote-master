@@ -70,6 +70,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkListener;
 
 import com.hifiremote.LibraryLoader;
+import com.hifiremote.jp1.FixedData.Location;
 import com.hifiremote.jp1.extinstall.ExtInstall;
 import com.hifiremote.jp1.extinstall.RMExtInstall;
 import com.hifiremote.jp1.io.IO;
@@ -96,7 +97,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Beta 1.5r";
+  public final static String version = "v2.02 Beta 1.5s";
 
   /** The dir. */
   private File dir = null;
@@ -367,6 +368,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       String sigString = getIOsignature( io, baseAddress );
       String sig = null;
       String sig2 = null;
+      short[] sigData = null;
       Remote remote = null;
       List< Remote > remotes = null;
       RemoteManager rm = RemoteManager.getRemoteManager();
@@ -378,6 +380,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( !io.getJP2info( jp2info, 18 ) )
         {
           jp2info = null;
+        }
+
+        sigData = new short[ sigString.length() + ( jp2info != null ? jp2info.length : 0 ) ];
+        int index = 0;
+        for ( int i = 0; i < sigString.length(); i++ )
+        {
+          sigData[ index++ ] = ( short )sigString.charAt( i );
+        };
+        if ( jp2info != null )
+        {
+          for ( int i = 0; i < jp2info.length; i++ )
+          {
+            sigData[ index++ ] = ( short )( jp2info[ i ] & 0xFF );
+          }
         }
       }
       else
@@ -437,7 +453,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             r.load();
             for ( FixedData fixedData : r.getRawFixedData() )
             {
-              maxFixedData = Math.max( maxFixedData, fixedData.getAddress() + fixedData.getData().length );
+              if ( fixedData.getLocation() == Location.E2 )
+              {
+                maxFixedData = Math.max( maxFixedData, fixedData.getAddress() + fixedData.getData().length );
+              }
             }
           }
 
@@ -451,7 +470,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             io.readRemote( baseAddress, buffer );
           }
-          Remote[] choices = FixedData.filter( remotes, buffer );
+          Remote[] choices = FixedData.filter( remotes, buffer, sigData );
           if ( choices.length == 0 )
           {
             // None of the remotes match on fixed data, so offer whole list
@@ -496,18 +515,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         e.printStackTrace();
       }
-      if ( sigString.length() > 8 )
+      if ( sigData != null )
       {
-        short[] sigData = new short[ sigString.length() + jp2info.length ];
-        int index = 0;
-        for ( int i = 0; i < sigString.length(); i++ )
-        {
-          sigData[ index++ ] = ( short )sigString.charAt( i );
-        };
-        for ( int i = 0; i < jp2info.length; i++ )
-        {
-          sigData[ index++ ] = ( short )( jp2info[ i ] & 0xFF );
-        }
         remoteConfig.setSigData( sigData );
       }
       remoteConfig.updateImage();
