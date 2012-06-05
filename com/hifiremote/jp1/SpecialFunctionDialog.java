@@ -450,12 +450,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       boundKey.setSelectedIndex( -1 );
       shift.setSelected( false );
       xShift.setSelected( false );
-      if ( type.getItemCount() > 0 )
-      {
-        type.setSelectedIndex( 0 );
-      }
-      notes.setText( "" );
-
+      
       // Clear out all optional fields
       setupCode.setValue( null );
       setDuration( 0 );
@@ -465,7 +460,14 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       setToggle( 0 );
       setCondition( 0 );
       ( ( DefaultListModel )firstMacroButtons.getModel() ).clear();
-      ( ( DefaultListModel )secondMacroButtons.getModel() ).clear();
+      ( ( DefaultListModel )secondMacroButtons.getModel() ).clear();     
+      
+      if ( type.getItemCount() > 0 )
+      {
+        type.setSelectedIndex( 0 );
+      }
+      notes.setText( "" );
+
       return;
     }
 
@@ -604,6 +606,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         enableMacros( true, false );
         setTarget( firstMacroButtons );
         firstMacroLabel.setText( "Keys:" );
+        secondMacroLabel.setText( "<unused>" );
       }
       else if ( typeStr.equals( "LKP" ) )
       {
@@ -653,7 +656,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     }
     else if ( source == okButton )
     {
-      int deviceIndex = boundDevice.getSelectedIndex();
+      int deviceIndex = ( ( DeviceButton )boundDevice.getSelectedItem() ).getButtonIndex();
       if ( deviceIndex == -1 )
       {
         showWarning( "You must select a device for the bound key." );
@@ -699,6 +702,10 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         Macro macro = new Macro( keyCode, hex, notes.getText() );
         macro.setSequenceNumber( protocol.getInternalSerial() );
         macro.setDeviceIndex( deviceIndex );
+        if ( config.hasSegments() )
+        {
+          macro.setSegmentFlags( 0xFF );
+        }
         function = protocol.createFunction( macro );
       }
       else
@@ -717,6 +724,10 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
           setupCode = deviceUpgrade.getSetupCode();
         }
         KeyMove km = new KeyMove( keyCode, deviceIndex, devType.getNumber(), setupCode, hex, notes.getText() );
+        if ( config.hasSegments() )
+        {
+          km.setSegmentFlags( 0xFF );
+        }
         function = protocol.createFunction( km );
       }  
       if ( function == null )

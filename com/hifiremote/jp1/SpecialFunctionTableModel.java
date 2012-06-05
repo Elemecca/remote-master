@@ -163,7 +163,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
         return new Integer( row + 1 );
       case 1:
         int index = sf.getDeviceButtonIndex();
-        return r.getDeviceButtons()[ index ];
+        return r.getDeviceButton( index );
       case 2:
         return new Integer( sf.getKeyCode() );
       case 3:
@@ -198,7 +198,7 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
       {
         if ( deviceButtons[ i ] == value )
         {
-          sf.setDeviceButtonIndex( i );
+          sf.setDeviceButtonIndex( deviceButtons[ i ].getButtonIndex() );
           break;
         }
       }

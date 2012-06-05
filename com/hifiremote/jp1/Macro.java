@@ -12,6 +12,7 @@ public class Macro extends AdvancedCode
   public Macro( Macro macro )
   {
     this(macro.keyCode, macro.data, macro.deviceIndex, macro.sequenceNumber, macro.notes );
+    this.setSegmentFlags( macro.getSegmentFlags() );
   }
 
   /**

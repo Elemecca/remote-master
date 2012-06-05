@@ -243,7 +243,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       {
         if ( deviceButtons[ i ] == value )
         {
-          keyMove.setDeviceButtonIndex( i );
+          keyMove.setDeviceButtonIndex( deviceButtons[ i ].getButtonIndex() );
           break;
         }
       }
