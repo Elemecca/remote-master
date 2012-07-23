@@ -656,6 +656,9 @@ public class Hex implements Cloneable, Comparable< Hex >
    */
   public boolean equals( Object obj )
   {
+    if ( obj == null )
+      return false;
+    
     Hex aHex = ( Hex )obj;
     if ( this == aHex )
       return true;
@@ -676,7 +679,11 @@ public class Hex implements Cloneable, Comparable< Hex >
 
   public static boolean equals( short[] a, short[] b )
   {
-    if ( a.length != b.length )
+    if ( a == null && b == null )
+    {
+      return true;
+    }
+    if ( a == null || b == null || a.length != b.length )
     {
       return false;
     }

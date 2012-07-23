@@ -1099,18 +1099,12 @@ public class DeviceUpgrade extends Highlight
         // Either (a) or (b) above and in addition the fixed data of the device upgrade is
         // compatible with the translators for p
         System.err.println( "It's a match!" );
-        Hex tentativeCode = null;
-        Hex oldTentativeCode = null;
+
         // Get the code currently used by p, and by current tentative protocol if there is
         // one, which in both cases will be custom code if that has been set
-        if ( pCode != null )
-        {
-          tentativeCode = getCode( p );
-        }
-        if ( tentative != null )
-        {
-          oldTentativeCode = getCode( tentative );
-        }
+        Hex tentativeCode = getCode( p );
+        Hex oldTentativeCode = ( tentative == null ) ? null : getCode( tentative );
+
         if ( tentative == null || tempLength > tentative.getFixedDataLength() || pCode != null
             && pCode.equals( tentativeCode ) && !tentativeCode.equals( oldTentativeCode ) )
         {
