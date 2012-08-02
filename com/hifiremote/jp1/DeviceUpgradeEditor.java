@@ -163,6 +163,30 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         {
           cancelled = true;
         }
+        else if ( panel instanceof DeviceUpgradePanel )
+        {
+          DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;
+          RemoteConfiguration remoteConfig = dup.getRemoteConfig();
+          DeviceUpgrade upgrade = editorPanel.getDeviceUpgrade();
+          for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+          {
+            if ( du == dup.getOldUpgrade() )
+            {
+              continue;
+            }
+            DeviceType type = upgrade.getDeviceType();
+            int code = upgrade.getSetupCode();
+            if ( du.getDeviceType() == type && du.getSetupCode() == code )
+            {
+              String title = "Setup Code Conflict";
+              String message = "Setup code " + new SetupCode( code ) + " has already been used in another upgrade for device type "
+                    + type.getName() + ".\nPlease change it to a unique value.";
+              JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+              return;
+            }
+          }
+        }
+        
         setVisible( false );
         dispose();
         editorPanel.releasePanels();

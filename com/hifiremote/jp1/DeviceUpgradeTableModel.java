@@ -479,8 +479,15 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       else if ( ask == JOptionPane.YES_OPTION )
       {
         p.saveCode( remoteConfig, du.getCode() );
-        p.customCode.clear();
       }
+      else if ( p instanceof ManualProtocol )
+      {
+        // If not to be kept and it is a Manual Protocol, complete its removal by deleting
+        // it from ProtocolManager
+        ProtocolManager.getProtocolManager().remove( p );
+      }
+      // In all cases other than Cancel, any custom code is no longer required
+      p.customCode.clear();
     }
     if ( !pUsed )
     {

@@ -639,6 +639,45 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
   }
 
+  public static File getJreExecutable()
+  { 
+    String jreDirectory = System.getProperty( "java.home" ); 
+    File javaExe = null; 
+    if ( System.getProperty( "os.name" ).startsWith( "Windows" ) )
+    { 
+      javaExe = new File( jreDirectory, "bin/javaw.exe" ); 
+    }
+    else 
+    { 
+      javaExe = new File( jreDirectory, "bin/javaw" ); 
+    } 
+    if ( !javaExe.exists() )
+    { 
+      return null; 
+    } 
+    return javaExe;
+  } 
+  
+  private static void runKM( String filename )
+  {
+    File javaExe = getJreExecutable();
+    if ( javaExe == null )
+    {
+      System.err.println( "Unable to find java executable" );
+      return;
+    }
+    try
+    {
+      Runtime r = Runtime.getRuntime();
+      String classPath = System.getProperty( "java.class.path" );
+      r.exec( new String[] { javaExe.getCanonicalPath(), "-cp", classPath, "com.hifiremote.jp1.RemoteMaster", "-rm", filename } );
+    }
+    catch ( IOException e )
+    {
+      e.printStackTrace();
+    }
+  }
+
   protected class RMAction extends AbstractAction
   {
     public RMAction( String text, String action, ImageIcon icon, String description, Integer mnemonic )
@@ -688,7 +727,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         else if ( command.equals( "NEWDEVICE" ) )
         {
           System.err.println( "RMIR opening new RM instance" );
-          new KeyMapMaster( properties );
+          
+          // Opening KM as a new instance of KeyMapMaster makes it share the same
+          // ProtocolManager as RM, which results in crosstalk when one edits the protocol
+          // used by the other.  Replaced now by opening KM as a new application.
+          
+//          new KeyMapMaster( properties );
+          runKM( "" );
         }
         else if ( command.equals( "OPEN" ) )
         {
@@ -1806,8 +1851,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     if ( ext.equals( ".rmdu" ) || ext.equals( ".txt" ) )
     {
-      KeyMapMaster km = new KeyMapMaster( properties );
-      km.loadUpgrade( file );
+      // Opening KM as a new instance of KeyMapMaster makes it share the same
+      // ProtocolManager as RM, which results in crosstalk when one edits the protocol
+      // used by the other.  Replaced now by opening KM as a new application.
+      
+//    KeyMapMaster km = new KeyMapMaster( properties );
+//    km.loadUpgrade( file );
+      
+      runKM( file.getCanonicalPath() );
       return null;
     }
 
@@ -3030,7 +3081,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     try
     {
-      File workDir = new File( System.getProperty( "user.dir" ) );
+      workDir = new File( System.getProperty( "user.dir" ) );
       File propertiesFile = null;
       File fileToOpen = null;
       boolean launchRM = true;
@@ -3076,7 +3127,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       System.err.println( "RemoteMaster " + RemoteMaster.version );
       String[] propertyNames =
       {
-          "java.version", "java.vendor", "os.name", "os.arch"
+          "java.version", "java.vendor", "os.name", "os.arch", "java.home", "java.class.path"
       };
 
       System.err.println( "System Properties:" );
@@ -3187,6 +3238,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The parms. */
   private static ArrayList< String > parms = new ArrayList< String >();
+  
+  private static File workDir = null;
 
   /** The Constant rmirEndings. */
   private final static String[] rmirEndings =
@@ -3328,5 +3381,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       activityPanel.finishEditing();
     }
+  }
+  
+  // Not currently used; part of a plan to handle multiple copies of a standard protocol with different custom codes
+  public static ProtocolManager getAuxProtocolManager()
+  {
+    ProtocolManager pm = new ProtocolManager();
+    try
+    {
+      System.err.println( "Loading auxiliary protocol manager" );
+      pm.load( new File( workDir, "protocols.ini" ) );
+    }
+    catch ( Exception e )
+    {
+      System.err.println( "Loading of auxiliary protocol manager failed" );
+      return null;
+    }
+    return pm;
   }
 }

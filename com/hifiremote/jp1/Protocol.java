@@ -1051,10 +1051,15 @@ public class Protocol
     {
       EFC.toHex( Short.parseShort( text ), hex, cmdIndex );
     }
-    else
+    else if ( useOBC )
     {
       // if ( useOBC )
       setValueAt( obcIndex, hex, new Short( text ) );
+    }
+    else
+    {
+      // assume EFC5
+      EFC5.toHex( Integer.parseInt( text ), hex );
     }
   }
 
@@ -1855,11 +1860,31 @@ public class Protocol
       // Manual protocol should never have an alt PID
       out.print( "Protocol.altPID", altPID.toString() );
     }
-    out.print( "Protocol.name", getName() );
-    if ( variantName.length() > 0 )
-    {
-      out.print( "Protocol.variantName", variantName );
-    }
+
+    //  This commented-out code is part of an incomplete attempt to handle multiple copies of same
+    //  standard protocol but with different custom codes (including none)
+    
+//    int pos1 = name.indexOf( "-copy" );
+//    int pos2 = variantName.indexOf( "copy" );
+//    if ( pos1 >= 0 && pos2 >= 0 )
+//    {
+//      String baseName = name.substring( 0, pos1 );
+//      String baseVarName = variantName.substring( 0, pos2 > 0 ? pos2 - 1 : pos2 );
+//      out.print( "Protocol.name", baseName );
+//      if ( baseVarName.length() > 0 )
+//      {
+//        out.print( "Protocol.variantName", baseVarName );
+//      }
+//    }
+//    else
+//    {
+      out.print( "Protocol.name", getName() );
+      if ( variantName.length() > 0 )
+      {
+        out.print( "Protocol.variantName", variantName );
+      }
+//    }
+    
     // Value[] parms = getDeviceParmValues();
     if ( parms != null && parms.length != 0 )
     {

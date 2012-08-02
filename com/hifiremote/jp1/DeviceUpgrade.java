@@ -2139,14 +2139,70 @@ public class DeviceUpgrade extends Highlight
         || name.equalsIgnoreCase( "PID " + pid.toString() ) )
     {
       // Check first that we will not be creating a duplicate manual protocol
+      
+      // Commented-out changes were an unsuccessful fix, some of which may still be needed later
+//      boolean found = false;
+//      ManualProtocol mp = new ManualProtocol( pid, props );
+//      mp.setName( name );
+//      for ( Protocol p : pm.getProtocolsForRemote( remote ) )
+//      {
+//        if ( !( p instanceof ManualProtocol ) )
+//        {
+//          continue;
+//        }
+//        if ( p.getCode( remote ).equals( mp.getCode( remote ) ) )
+//        {
+//          // p is manual protocol with same code, so use it even if name or PID differs
+//          protocol = p;
+//          found = true;
+//          break;
+//        }
+//        else if ( p.getName().equals( name ) )
+//        {
+//          // p is manual protocol with same name but different code,
+//          // so we must change its name
+//          mp.setName( ManualProtocol.getDefaultName( pid ) );
+//        }
+//      }
+//      if ( !found )
+//      {
+//        protocol = mp;
+//        pm.add( protocol );
+//      }
+
+      
       Protocol p = pm.findProtocol( name, pid, variantName );
+//      ManualProtocol mp = new ManualProtocol( pid, props );
       if ( p == null )
       {
+//        boolean found = false;
+//        for ( Protocol p : pm.findByPID( pid ) )
+//        {
+//          if ( !( p instanceof ManualProtocol ) )
+//          {
+//            continue;
+//          }
+//          if ( mp.getCode( remote ).equals( p.getCode( remote ) ) )
+//          {
+//            protocol = test;
+//            found = true;
+//            break;
+//          }
+//        }
+//        if ( !found )
+//        {
         ManualProtocol mp = new ManualProtocol( pid, props );
         mp.setName( name );
         protocol = mp;
         pm.add( protocol );
+//        }
       }
+//      else if ( !mp.getCode( remote ).equals( p.getCode( remote ) ) )
+//      {
+//        mp.setName( ManualProtocol.getDefaultName( pid ) );
+//        protocol = mp;
+//        pm.add( protocol );
+//      }
       else
       {
         protocol = p;
@@ -2164,6 +2220,44 @@ public class DeviceUpgrade extends Highlight
             JOptionPane.ERROR_MESSAGE );
         return;
       }
+//      Processor processor = remote.getProcessor();
+//      Hex pCustomCode = protocol.getCustomCode( processor );
+//      String codeString = props.getProperty( "CustomCode." + processor.getEquivalentName() );
+//      Hex uCustomCode = ( codeString == null ) ? null : new Hex( codeString );
+//      if ( protocolInUse() && ( pCustomCode != null && uCustomCode == null 
+//          || pCustomCode == null && uCustomCode != null
+//          || pCustomCode != null && uCustomCode != null && !pCustomCode.equals( uCustomCode ) ) )
+//      {
+//        // The protocol has been identified but custom code differs, so need to create
+//        // a distinct copy of the protocol
+//        int i = 1;
+//        for ( Protocol pr : pm.getProtocolsForRemote( remote ) ) 
+//        {
+//          if ( pr.getName().startsWith( protocol.name + "-copy" ) )
+//          {
+//            Hex prCustomCode = pr.getCustomCode( processor );
+//            if ( prCustomCode == null && uCustomCode == null
+//                || prCustomCode != null && uCustomCode != null && prCustomCode.equals( uCustomCode ) )
+//            {
+//              protocol = pr;
+//              i = 0;
+//              break;
+//            }
+//          }
+//        }
+//        if ( i > 0 )
+//        {
+//          ProtocolManager auxPM = RemoteMaster.getAuxProtocolManager();
+//          protocol = auxPM.findNearestProtocol( remote, name, pid, variantName );
+//          while ( pm.findProtocolForRemote( remote, protocol.name + "-copy" + i ) != null )
+//          {
+//            i++;
+//          }
+//          protocol.name += "-copy" + i;
+//          protocol.variantName += ( protocol.variantName.equals( "" ) ) ? "copy" + i : "-copy" + i;
+//          pm.add( protocol );
+//        }  
+//      }
       if ( !protocolInUse() )
       {
         Hex altPID = new Hex( props.getProperty( "Protocol.altPID", "" ) );

@@ -344,6 +344,16 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     return editor;
   }
 
+  public RemoteConfiguration getRemoteConfig()
+  {
+    return remoteConfig;
+  }
+
+  public DeviceUpgrade getOldUpgrade()
+  {
+    return oldUpgrade;
+  }
+
   private Integer rowOut = null;
   private Integer rowBound = null;
   private Integer rowNew = null;

@@ -180,6 +180,7 @@ public class RemoteConfiguration
       else if ( sectionName.equals( "DeviceUpgrade" ) )
       {
         DeviceUpgrade upgrade = new DeviceUpgrade();
+        upgrade.setRemoteConfig( this );
         upgrade.load( section, true, remote );
         devices.add( upgrade );
       }
