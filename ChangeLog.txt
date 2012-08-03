@@ -100,6 +100,7 @@ Changes for v2.02
 - When RM is opened from RMIR, open it as a new application rather than as a window within RM, to prevent protocol crosstalk issues caused by RMIR and RM sharing same instance of ProtocolManager (Graham)
 - When an upgrade containing a Manual Protocol is deleted and that protocol is not used elsewhere, delete it also from ProtocolManager (Graham)
 - When adding a device upgrade, require the setup code not to clash with an existing upgrade (Graham)
+- Handle import of manual protocol when there is an existing manual protocol with same name and PID but different code (Graham)
 
 Changes for v2.01
 -- Alpha --

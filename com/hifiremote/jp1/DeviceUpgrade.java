@@ -2141,40 +2141,80 @@ public class DeviceUpgrade extends Highlight
       // Check first that we will not be creating a duplicate manual protocol
       
       // Commented-out changes were an unsuccessful fix, some of which may still be needed later
-//      boolean found = false;
-//      ManualProtocol mp = new ManualProtocol( pid, props );
-//      mp.setName( name );
-//      for ( Protocol p : pm.getProtocolsForRemote( remote ) )
-//      {
-//        if ( !( p instanceof ManualProtocol ) )
-//        {
-//          continue;
-//        }
-//        if ( p.getCode( remote ).equals( mp.getCode( remote ) ) )
-//        {
-//          // p is manual protocol with same code, so use it even if name or PID differs
-//          protocol = p;
-//          found = true;
-//          break;
-//        }
-//        else if ( p.getName().equals( name ) )
-//        {
-//          // p is manual protocol with same name but different code,
-//          // so we must change its name
-//          mp.setName( ManualProtocol.getDefaultName( pid ) );
-//        }
-//      }
-//      if ( !found )
-//      {
-//        protocol = mp;
-//        pm.add( protocol );
-//      }
-
-      
-      Protocol p = pm.findProtocol( name, pid, variantName );
-//      ManualProtocol mp = new ManualProtocol( pid, props );
-      if ( p == null )
+      boolean found = false;
+      ManualProtocol mp = new ManualProtocol( pid, props );
+      mp.setName( name );
+      for ( Protocol p : pm.getProtocolsForRemote( remote ) )
       {
+        if ( !( p instanceof ManualProtocol ) )
+        {
+          continue;
+        }
+        if ( p.getCode( remote ).equals( mp.getCode( remote ) ) 
+            && p.getName().equals( name ) && p.getID().equals( pid ) )
+        {
+          protocol = p;
+          found = true;
+          break;
+        }
+      }
+      
+      if ( !found )
+      {
+        for ( Protocol p : pm.getProtocolsForRemote( remote ) )
+        {
+          if ( !( p instanceof ManualProtocol ) )
+          {
+            continue;
+          }
+          if ( p.getCode( remote ).equals( mp.getCode( remote ) ) )
+          {
+            // p is manual protocol with same code but name or PID must differ
+            String title = "Protocol Identification";
+            String message = "The manual protocol being imported, with name \"" + name + "\" and PID = " + pid
+            + "\nhas same binary code as the existing protocol with name " + p.getName() + " and PID = " + p.getID()
+            + ".\n\nDo you want to use the existing protocol?  Unless there are special reasons not to do so,"
+            + "\nyou should answer Yes.";
+            if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE )
+                == JOptionPane.YES_OPTION )
+            {
+              protocol = p;
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+ 
+      if ( !found )
+      {
+        for ( Protocol p : pm.getProtocolsForRemote( remote ) )
+        {
+          if ( !( p instanceof ManualProtocol ) )
+          {
+            continue;
+          }
+          if ( p.getName().equals( name ) )
+          {
+            // p is manual protocol with same name but different code,
+            // so we must change its name
+            String newName = ManualProtocol.getDefaultName( pid );
+            String title = "Protocol Identification";
+            String message = "There is already a manual protocol with name \"" + name + "\" but with"
+            + "\ndifferent binary code, so the protocol being imported is being renamed as\n"
+            + "\"" + newName + "\"";
+            JOptionPane.showMessageDialog( null, message, title, JOptionPane.INFORMATION_MESSAGE );
+            mp.setName( newName );
+          }
+        }
+        protocol = mp;
+        pm.add( protocol );
+      }
+
+//      Protocol p = pm.findProtocol( name, pid, variantName );
+//      ManualProtocol mp = new ManualProtocol( pid, props );
+//      if ( p == null )
+//      {
 //        boolean found = false;
 //        for ( Protocol p : pm.findByPID( pid ) )
 //        {
@@ -2191,22 +2231,22 @@ public class DeviceUpgrade extends Highlight
 //        }
 //        if ( !found )
 //        {
-        ManualProtocol mp = new ManualProtocol( pid, props );
-        mp.setName( name );
-        protocol = mp;
-        pm.add( protocol );
+
+//        mp.setName( name );
+//        protocol = mp;
+//        pm.add( protocol );
 //        }
-      }
+//      }
 //      else if ( !mp.getCode( remote ).equals( p.getCode( remote ) ) )
 //      {
 //        mp.setName( ManualProtocol.getDefaultName( pid ) );
 //        protocol = mp;
 //        pm.add( protocol );
 //      }
-      else
-      {
-        protocol = p;
-      }
+//      else
+//      {
+//        protocol = p;
+//      }
     }
     else
     {
