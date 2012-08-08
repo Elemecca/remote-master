@@ -2872,23 +2872,6 @@ public class DeviceUpgrade extends Highlight
       }
     }
 
-    if ( protocol instanceof ManualProtocol && protocol.hasCode( remote ) )
-    {
-      Hex code = protocol.getCode( remote );
-      java.util.List< Protocol > v = protocolManager.findByPID( pid );
-      for ( Protocol p : v )
-      {
-        Hex pCode = p.getCode( remote );
-        if ( protocol != p && p instanceof ManualProtocol && pCode != null && pCode.equals( code ) )
-        {
-          // We have created a duplicate protocol. Use the existing one instead.
-          protocolManager.remove( protocol );
-          protocol = p;
-          break;
-        }
-      }
-    }
-
     // Parse the function definitions
     ArrayList< ArrayList< String >> unassigned = new ArrayList< ArrayList< String >>();
     for ( int i = 0; i < 128; i++ )
@@ -3248,6 +3231,27 @@ public class DeviceUpgrade extends Highlight
         }
       }
     }
+    
+    // Check now to see if we have created a duplicate protocol, and if so, delete it and use
+    // existing one.  We cannot do this before creating the duplicate as it may actually have
+    // different ImportCmdTranslators.  Safe now as these have been used for last time.
+    if ( protocol instanceof ManualProtocol && protocol.hasCode( remote ) )
+    {
+      Hex code = protocol.getCode( remote );
+      java.util.List< Protocol > v = protocolManager.findByPID( pid );
+      for ( Protocol p : v )
+      {
+        Hex pCode = p.getCode( remote );
+        if ( protocol != p && p instanceof ManualProtocol && pCode != null && pCode.equals( code ) )
+        {
+          // We have created a duplicate protocol. Use the existing one instead.
+          protocolManager.remove( protocol );
+          protocol = p;
+          break;
+        }
+      }
+    }
+    
     System.err.println( "Done!" );
   }
 
