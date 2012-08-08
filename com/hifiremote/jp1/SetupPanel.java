@@ -110,6 +110,10 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         addendum = "Another protocol with same PID and code is already used in another device upgrade, "
           + "so the Alternate PID has been taken from that upgrade and cannot be changed.";
         break;
+      case 0x500:
+        addendum = "At least one other upgrade uses this manual protocol, so any alternate PID will "
+          + "also affect those upgrades.";
+        break;
       case 0x800:
         // No message in this case.  Probably should not occur.
         break;
@@ -752,6 +756,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       }
       
       deviceUpgrade.getProtocol().setAltPID( deviceUpgrade.getRemote(), pid );
+      editor.refresh();
       setAltPIDMessage();
     }
     else if ( !updateInProgress )

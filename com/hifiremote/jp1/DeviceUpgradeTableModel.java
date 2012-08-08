@@ -536,17 +536,9 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
    */
   public void propertyChange( PropertyChangeEvent e )
   {
-    Object source = e.getSource();
-    List< DeviceUpgrade > upgrades = remoteConfig.getDeviceUpgrades();
-    for ( int i = 0; i < upgrades.size(); ++i )
-    {
-      DeviceUpgrade upgrade = upgrades.get( i );
-      if ( upgrade == source )
-      {
-        fireTableRowsUpdated( i, i );
-        return;
-      }
-    }
+    // Change of PID of manual protocol may affect other rows sharing same protocol, so
+    // cannot just update the source row.
+    fireTableDataChanged();
   }
 
   /** The remote config. */

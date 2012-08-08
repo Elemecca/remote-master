@@ -101,6 +101,8 @@ Changes for v2.02
 - When an upgrade containing a Manual Protocol is deleted and that protocol is not used elsewhere, delete it also from ProtocolManager (Graham)
 - When adding a device upgrade, require the setup code not to clash with an existing upgrade (Graham)
 - Handle import of manual protocol when there is an existing manual protocol with same name and PID but different code (Graham)
+- Fix bug with import of KM file when OBC column is after, rather than before, the other column of hex (Graham)
+- Support change of PID of Manual Protocol when it is in use by more than device upgrade (already supported when used by only one such upgrade) (Graham)
 
 Changes for v2.01
 -- Alpha --

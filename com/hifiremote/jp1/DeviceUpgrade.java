@@ -673,17 +673,30 @@ public class DeviceUpgrade extends Highlight
     // else nothing.  This is for standard protocol, not built in, clashes with
     // existing upgrade (msgIndex = 0x200) and/or has value assigned that is official PID.
     
-    // If status.hasValue = true and value is official value then we cannot have an
-    // alternate
+    // If status.hasValue = true and value is official value and protocol is not a manual one 
+    // then we cannot have an alternate, but if it is a manual protocol then we can change the
+    // PID and it will apply to the other upgrades that share this protocol
     if ( status.hasValue && status.value == officialPID )
     {
-      if ( status.visible )
+      if ( ( status.msgIndex & 0xFF ) != 2 )
       {
-        // Explain why alternate not available
-        status.msgIndex |= 0x800;
+        // not a manual protocol
+        if ( status.visible )
+        {
+          // Explain why alternate not available
+          status.msgIndex |= 0x800;
+        }
+        status.hasValue = false;
+        status.visible = false;
       }
-      status.hasValue = false;
-      status.visible = false;
+      else
+      {
+        status.editable = true;
+        if ( ( status.msgIndex & 0xF00 ) == 0x100 )
+        {
+          status.msgIndex |= 0x400;
+        }
+      }
     }
     
     if ( protocol.getCustomCode( remote.getProcessor() ) != null )
