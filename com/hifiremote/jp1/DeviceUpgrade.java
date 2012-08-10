@@ -2151,115 +2151,13 @@ public class DeviceUpgrade extends Highlight
     if ( name.startsWith( "Manual Settings" ) || name.equals( "Manual" )
         || name.equalsIgnoreCase( "PID " + pid.toString() ) )
     {
-      // Check first that we will not be creating a duplicate manual protocol
-      
-      // Commented-out changes were an unsuccessful fix, some of which may still be needed later
-      boolean found = false;
       ManualProtocol mp = new ManualProtocol( pid, props );
       mp.setName( name );
-      for ( Protocol p : pm.getProtocolsForRemote( remote ) )
+      protocol = checkProtocol( mp );
+      if ( protocol == mp )
       {
-        if ( !( p instanceof ManualProtocol ) )
-        {
-          continue;
-        }
-        if ( p.getCode( remote ).equals( mp.getCode( remote ) ) 
-            && p.getName().equals( name ) && p.getID().equals( pid ) )
-        {
-          protocol = p;
-          found = true;
-          break;
-        }
-      }
-      
-      if ( !found )
-      {
-        for ( Protocol p : pm.getProtocolsForRemote( remote ) )
-        {
-          if ( !( p instanceof ManualProtocol ) )
-          {
-            continue;
-          }
-          if ( p.getCode( remote ).equals( mp.getCode( remote ) ) )
-          {
-            // p is manual protocol with same code but name or PID must differ
-            String title = "Protocol Identification";
-            String message = "The manual protocol being imported, with name \"" + name + "\" and PID = " + pid
-            + "\nhas same binary code as the existing protocol with name " + p.getName() + " and PID = " + p.getID()
-            + ".\n\nDo you want to use the existing protocol?  Unless there are special reasons not to do so,"
-            + "\nyou should answer Yes.";
-            if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE )
-                == JOptionPane.YES_OPTION )
-            {
-              protocol = p;
-              found = true;
-              break;
-            }
-          }
-        }
-      }
- 
-      if ( !found )
-      {
-        for ( Protocol p : pm.getProtocolsForRemote( remote ) )
-        {
-          if ( !( p instanceof ManualProtocol ) )
-          {
-            continue;
-          }
-          if ( p.getName().equals( name ) )
-          {
-            // p is manual protocol with same name but different code,
-            // so we must change its name
-            String newName = ManualProtocol.getDefaultName( pid );
-            String title = "Protocol Identification";
-            String message = "There is already a manual protocol with name \"" + name + "\" but with"
-            + "\ndifferent binary code, so the protocol being imported is being renamed as\n"
-            + "\"" + newName + "\"";
-            JOptionPane.showMessageDialog( null, message, title, JOptionPane.INFORMATION_MESSAGE );
-            mp.setName( newName );
-          }
-        }
-        protocol = mp;
         pm.add( protocol );
       }
-
-//      Protocol p = pm.findProtocol( name, pid, variantName );
-//      ManualProtocol mp = new ManualProtocol( pid, props );
-//      if ( p == null )
-//      {
-//        boolean found = false;
-//        for ( Protocol p : pm.findByPID( pid ) )
-//        {
-//          if ( !( p instanceof ManualProtocol ) )
-//          {
-//            continue;
-//          }
-//          if ( mp.getCode( remote ).equals( p.getCode( remote ) ) )
-//          {
-//            protocol = test;
-//            found = true;
-//            break;
-//          }
-//        }
-//        if ( !found )
-//        {
-
-//        mp.setName( name );
-//        protocol = mp;
-//        pm.add( protocol );
-//        }
-//      }
-//      else if ( !mp.getCode( remote ).equals( p.getCode( remote ) ) )
-//      {
-//        mp.setName( ManualProtocol.getDefaultName( pid ) );
-//        protocol = mp;
-//        pm.add( protocol );
-//      }
-//      else
-//      {
-//        protocol = p;
-//      }
     }
     else
     {
@@ -2273,44 +2171,7 @@ public class DeviceUpgrade extends Highlight
             JOptionPane.ERROR_MESSAGE );
         return;
       }
-//      Processor processor = remote.getProcessor();
-//      Hex pCustomCode = protocol.getCustomCode( processor );
-//      String codeString = props.getProperty( "CustomCode." + processor.getEquivalentName() );
-//      Hex uCustomCode = ( codeString == null ) ? null : new Hex( codeString );
-//      if ( protocolInUse() && ( pCustomCode != null && uCustomCode == null 
-//          || pCustomCode == null && uCustomCode != null
-//          || pCustomCode != null && uCustomCode != null && !pCustomCode.equals( uCustomCode ) ) )
-//      {
-//        // The protocol has been identified but custom code differs, so need to create
-//        // a distinct copy of the protocol
-//        int i = 1;
-//        for ( Protocol pr : pm.getProtocolsForRemote( remote ) ) 
-//        {
-//          if ( pr.getName().startsWith( protocol.name + "-copy" ) )
-//          {
-//            Hex prCustomCode = pr.getCustomCode( processor );
-//            if ( prCustomCode == null && uCustomCode == null
-//                || prCustomCode != null && uCustomCode != null && prCustomCode.equals( uCustomCode ) )
-//            {
-//              protocol = pr;
-//              i = 0;
-//              break;
-//            }
-//          }
-//        }
-//        if ( i > 0 )
-//        {
-//          ProtocolManager auxPM = RemoteMaster.getAuxProtocolManager();
-//          protocol = auxPM.findNearestProtocol( remote, name, pid, variantName );
-//          while ( pm.findProtocolForRemote( remote, protocol.name + "-copy" + i ) != null )
-//          {
-//            i++;
-//          }
-//          protocol.name += "-copy" + i;
-//          protocol.variantName += ( protocol.variantName.equals( "" ) ) ? "copy" + i : "-copy" + i;
-//          pm.add( protocol );
-//        }  
-//      }
+
       if ( !protocolInUse() )
       {
         Hex altPID = new Hex( props.getProperty( "Protocol.altPID", "" ) );
@@ -2421,7 +2282,68 @@ public class DeviceUpgrade extends Highlight
   {
     importUpgrade( in, true );
   }
+  
+  private boolean useEquivalent( Protocol pNew, Protocol pOld )
+  {
+    String title = "Protocol Identification";
+    String message = "The manual protocol being imported, with name \"" + pNew.getName() + "\" and PID = " + pNew.getID()
+    + "\nhas same binary code and translators as the existing protocol with name " + pOld.getName() + "\nand PID = " + pOld.getID()
+    + ".\n\nDo you want to use the existing protocol?  Unless there are special reasons not to do so,"
+    + "\nyou should answer Yes.";
+    return JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE )
+        == JOptionPane.YES_OPTION;
+  }
+  
+  private Protocol checkProtocol( ManualProtocol mp )
+  {
+    ProtocolManager pm = ProtocolManager.getProtocolManager();
+    Protocol equiv = null;
+    boolean nameInUse = false;
+    Hex pid = mp.getID();
+    String name = mp.getName();
+    for ( Protocol p : pm.getProtocolsForRemote( remote ) )
+    {
+      if ( !( p instanceof ManualProtocol ) )
+      {
+        continue;
+      }
+      if ( ( ( ManualProtocol )p ).equivalentForRemoteTo( mp, remote ) )
+      {
+        if ( p.getName().equals( name ) && p.getID().equals( pid ) )
+        {
+          return p;
+        }
+        else if ( equiv == null )
+        {
+          equiv = p;
+        }
+      }
+      if ( p.getName().equals( name ) )
+      {
+        nameInUse = true;
+      }
+    }
 
+    if ( equiv != null && useEquivalent( mp, equiv ) )
+    {
+      return equiv;
+    }
+
+    if ( nameInUse )
+    {
+      String newName = ManualProtocol.getDefaultName( pid );
+      String title = "Protocol Identification";
+      String message = "There is already a manual protocol with name \"" + name + "\" but with"
+      + "\ndifferent binary code or translators, so the protocol being imported\nis being renamed as "
+      + "\"" + newName + "\"";
+      JOptionPane.showMessageDialog( null, message, title, JOptionPane.INFORMATION_MESSAGE );
+      mp.setName( newName );
+    }
+
+    return mp;
+  }
+  
+  
   /**
    * Parses the int.
    * 
@@ -2679,13 +2601,12 @@ public class DeviceUpgrade extends Highlight
       }
       short[] rawHex = Hex.parseHex( str );
 
-      // Use the default name for the protocol, which includes the PID, to prevent distinct
-      // manual protocols all being called simply "Manual Protocol" and so getting mis-identified
-      // with one another.
-      protocolName = ManualProtocol.getDefaultName( pid );
-
+//      // Use the default name for the protocol, which includes the PID, to prevent distinct
+//      // manual protocols all being called simply "Manual Protocol" and so getting mis-identified
+//      // with one another.
+//      protocolName = ManualProtocol.getDefaultName( pid );
+      
       protocol = new ManualProtocol( protocolName, pid, byte2, signalStyle, devBits, values, rawHex, cmdBits );
-      protocolName = protocol.getName();
       setParmValues( protocol.getDeviceParmValues() );
       protocolManager.add( protocol );
       java.util.List< Protocol > v = protocolManager.findByPID( pid );
@@ -3237,19 +3158,10 @@ public class DeviceUpgrade extends Highlight
     // different ImportCmdTranslators.  Safe now as these have been used for last time.
     if ( protocol instanceof ManualProtocol && protocol.hasCode( remote ) )
     {
-      Hex code = protocol.getCode( remote );
-      java.util.List< Protocol > v = protocolManager.findByPID( pid );
-      for ( Protocol p : v )
-      {
-        Hex pCode = p.getCode( remote );
-        if ( protocol != p && p instanceof ManualProtocol && pCode != null && pCode.equals( code ) )
-        {
-          // We have created a duplicate protocol. Use the existing one instead.
-          protocolManager.remove( protocol );
-          protocol = p;
-          break;
-        }
-      }
+      protocolManager.remove( protocol );
+      ManualProtocol mp = ( ManualProtocol )protocol;
+      protocol = checkProtocol( mp );
+      protocolManager.add( protocol );
     }
     
     System.err.println( "Done!" );

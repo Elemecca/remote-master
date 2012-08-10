@@ -87,6 +87,17 @@ public class Translator extends Translate
     this.bits = bits;
     this.bitOffset = bitOffset;
   }
+  
+  @Override
+  public boolean equals( Object obj )
+  {
+    if ( obj == null || !( obj instanceof Translator ) )
+    {
+      return false;
+    }
+    Translator t = ( Translator )obj;
+    return ( lsb == t.lsb && comp == t.comp && index == t.index && bits == t.bits && bitOffset == t.bitOffset );
+  }
 
   /**
    * Adjust style and bits.

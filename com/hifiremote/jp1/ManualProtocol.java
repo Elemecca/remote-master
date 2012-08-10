@@ -115,6 +115,36 @@ public class ManualProtocol extends Protocol
 
     createDefaultParmsAndTranslators( cmdType, lsb, comp, devBits, parms, rawHex, cmdBits );
   }
+  
+  public boolean equivalentForRemoteTo( ManualProtocol mp, Remote remote )
+  {
+    if ( getCode( remote ) == null || !getCode( remote ).equals( mp.getCode( remote ) )
+        || deviceTranslators.length != mp.getDeviceTranslators().length
+        || cmdTranslators.length != mp.cmdTranslators.length )
+    {
+      return false;
+    }
+    Translate t1, t2;
+    for ( int i = 0; i < deviceTranslators.length; i++ )
+    {
+      if ( ( t1 = deviceTranslators[ i ] ) == null || !( t1  instanceof Translator )
+          || ( t2 = mp.deviceTranslators[ i ] ) == null || !( t2 instanceof Translator )
+          || !( ( ( Translator )t1 ).equals( ( Translator )t2 ) ) )
+      {
+        return false;
+      }
+    }
+    for ( int i = 0; i < cmdTranslators.length; i++ )
+    {
+      if ( ( t1 = cmdTranslators[ i ] ) == null || !( t1  instanceof Translator )
+          || ( t2 = mp.cmdTranslators[ i ] ) == null || !( t2 instanceof Translator )
+          || !( ( ( Translator )t1 ).equals( ( Translator )t2 ) ) )
+      {
+        return false;
+      }
+    }
+    return true;
+  }
 
   /**
    * Creates the default parms and translators.
@@ -611,7 +641,7 @@ public class ManualProtocol extends Protocol
   
   public int getNameIndex()
   {
-    if ( ( name == null ) || ! name.startsWith( "Manual Settings" ) )
+    if ( ( name == null ) || name.equals( "Manual Settings" ) || ! name.startsWith( "Manual Settings" ) )
     {
       return 0;
     }

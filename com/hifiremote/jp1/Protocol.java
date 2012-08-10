@@ -1216,9 +1216,11 @@ public class Protocol
       pm.remove( this );
       String pidStr1 = this.id.toString();
       String pidStr2 = id.toString();
+      String newName = null;
+      String defaultName = null;
       if ( name.contains( pidStr1 ) )
       {
-        name = name.replace( pidStr1, pidStr2 );
+        newName = name.replace( pidStr1, pidStr2 );
       }
       else
       {
@@ -1226,8 +1228,30 @@ public class Protocol
         pidStr2 = pidStr2.replace( " ", "" );
         if ( name.contains( pidStr1 ) )
         {
-          name = name.replace( pidStr1, pidStr2 );
+          newName = name.replace( pidStr1, pidStr2 );
         }
+      }
+      if ( newName != null && pm.findProtocolForRemote( remote, newName ) != null )
+      {
+        defaultName = ManualProtocol.getDefaultName( id );
+        String title = "Change of PID for Manual Protocol";
+        String message = "Changing the PID of this protocol from " + this.id + " to " + id + " would normally "
+          + "also change its name\nfrom \"" + name + "\" to \"" + newName + "\", but there is already "
+          + "a protocol\nwith that name so it will instead be re-named as \"" + defaultName + "\".\n\n"
+          + "Is this OK?  Answering NO will cancel the change and allow you to choose a different PID.";
+        if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE )
+              == JOptionPane.YES_OPTION )
+        {
+          newName = defaultName;
+        }
+        else
+        {
+          return;
+        }
+      }
+      if ( newName != null )
+      {
+        name = newName;
       }
       this.id.put( id );
       pm.add( this );

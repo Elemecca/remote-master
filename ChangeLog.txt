@@ -104,6 +104,8 @@ Changes for v2.02
 - Fix bug with import of KM file when OBC column is after, rather than before, the other column of hex (Graham)
 - Support change of PID of Manual Protocol when it is in use by more than device upgrade (already supported when used by only one such upgrade) (Graham)
 - Fix bug causing successive imports of KM files that use same protocol to interfere with one another (Graham)
+- Improve handling of pid change for Manual Protocol (Graham)
+- Bugfix: When an import or load of manual protocol checks it against those in ProtocolManager, test for same translators as well as same code (Graham)
 
 Changes for v2.01
 -- Alpha --
