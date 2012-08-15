@@ -14,11 +14,13 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFormattedTextField;
@@ -71,7 +73,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           + "is required.";
         break;
       case 2:
-        reason = "Protocol is a manual protocol.  Its PID may be changed by giving an Alternate PID.";
+        reason = "Protocol is a manual protocol.  Its PID may be changed by setting an Alternate PID.";
         break;
       case 3:
         reason = "Protocol ID conflicts with a built-in protocol.  To use both this and the built-in "
@@ -89,7 +91,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     if ( ( index & 0x1000 ) == 0x1000 )
     {
       if ( !reason.isEmpty() ) reason += "\n";
-      reason += "Protocol has custom code.";
+      reason += "Protocol has custom code.  To change its PID, first convert it to Manual Settings.";
     }
     String addendum = "";
     switch ( index & 0xF00 )
@@ -171,7 +173,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
             b, bl, p, b, p, br, c, f, b
         }, // cols
         {
-            b, p, v, 0, 0, p, i, p, 0, 0, 0, v, p, b, f, 0, b
+            b, p, v, 0, 0, p, i, p, 0, 0, 0, 0, 0, v, p, b, f, 0, b
         }
     // rows
     };
@@ -253,6 +255,15 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     
     row += 2;
 
+    toManualRow = row;
+    toManual = new JButton( "Convert to Manual" );
+    toManual.setToolTipText( "Convert custom code to Manual Settings protocol" );
+    toManual.addActionListener( this );
+    toManual.setVisible( false );
+    add( toManual, "4, " + row );
+    
+    row += 2;
+    
     altPIDRow = row;
     altPIDLabel = new JLabel( "Alternate PID:", SwingConstants.RIGHT );
     add( altPIDLabel, "2, " + row );
@@ -324,6 +335,14 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     altPIDReasonRow = row;
     JP1Frame.getProperties().addPropertyChangeListener( "enablePreserveSelection", this );
   } // SetupPanel
+  
+  private void showToManual()
+  {
+    boolean isCustom = deviceUpgrade.isCustom();
+    toManual.setVisible( isCustom );
+    tl.setRow( toManualRow - 1, isCustom ? 5 : 0 );
+    tl.setRow( toManualRow, isCustom ? TableLayout.PREFERRED : 0 );
+  }
   
   private void showAltPID()
   {
@@ -404,6 +423,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     updateProtocolNotes( p.getNotes() );
     
     showAltPID();
+    showToManual();
     altPID.setValue( p.getRemoteAltPID().get( remote.getSignature() ) );
     setAltPIDMessage();
 
@@ -513,6 +533,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           protocolID.setText( newProtocol.getID( remote, false ).toString() );
           altPID.setValue( newProtocol.getRemoteAltPID().get( remote.getSignature() ) );
           showAltPID();
+          showToManual();
           setAltPIDMessage();
           updateParameters();
           fixedData.setText( newProtocol.getFixedData( newProtocol.getDeviceParmValues() ).toString() );
@@ -557,12 +578,99 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     {
       deviceUpgrade.setPreserveOBC( preserveBox.getSelectedIndex() == 0 );
     }
+    else if ( source == toManual )
+    {
+      JFrame frame = editor.getOwner();
+      if ( frame instanceof DeviceUpgradeEditor )
+      {
+        String title = "Convert Custom Code to Manual Settings";
+        String message = 
+          "Do you want to save this device upgrade as a separate .rmdu file before the\n" +
+          "protocol is converted to Manual Settings?\n\n" +
+          "In the conversion, you lose the device parameters of the original protocol, which\n" +
+          "makes the device upgrade more difficult to edit.  By saving it, you preserve these\n" +
+          "parameters in a file that can be edited with RM and then loaded into RMIR.";
+        int ans = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE );
+        if ( ans == JOptionPane.CANCEL_OPTION )
+        {
+          return;
+        }
+        else if ( ans == JOptionPane.YES_OPTION )
+        {
+          try
+          {
+            ( ( DeviceUpgradeEditor )frame ).save();
+          }
+          catch ( IOException e1 )
+          {
+            e1.printStackTrace();
+          }
+        }
+      }
+
+      Remote remote = deviceUpgrade.getRemote();
+      originalProtocol = deviceUpgrade.getProtocol();
+      Hex pid = originalProtocol.getID( remote );
+      Hex code = originalProtocol.getCustomCode( remote.getProcessor() );
+      int cmdLen = originalProtocol.getDefaultCmd().length();
+      int cmdType = ( cmdLen == 1 ) ? 0 : 1;
+      
+      String newName = ManualProtocol.getDefaultName( pid );
+      short[] fixedData = originalProtocol.getFixedData( deviceUpgrade.getParmValues() ).getData();
+      List< Value > parms = new ArrayList< Value >();
+      for ( int i = 0; i < fixedData.length; i++ )
+      {
+        parms.add( new Value( fixedData[ i ] ) );
+      }
+
+      try
+      {
+        convertedProtocol = new ManualProtocol( newName, ( Hex )pid.clone(), cmdType, "", 8, parms, new short[ 0 ], 8 );
+      }
+      catch ( CloneNotSupportedException ex )
+      {
+        ex.printStackTrace();
+      }
+      convertedProtocol.setCode( code, remote.getProcessor() );
+      ProtocolManager.getProtocolManager().add( convertedProtocol );
+      convertUpgrade( deviceUpgrade );      
+      update();
+    }
     else
     {
       // must be a protocol parameter
       updateFixedData();
     }
   } // actionPerformed
+  
+  public void convertUpgrade( DeviceUpgrade du )
+  {
+    if ( originalProtocol == null || du.getProtocol() != originalProtocol )
+    {
+      return;
+    }
+    short[] fixedData = originalProtocol.getFixedData( du.getParmValues() ).getData();
+    boolean preserve = du.getPreserveOBC();
+    du.setPreserveOBC( false );
+    du.setProtocol( convertedProtocol );
+    du.setPreserveOBC( preserve );
+    List< Value > parms = new ArrayList< Value >();
+    for ( int i = 0; i < fixedData.length; i++ )
+    {
+      parms.add( new Value( fixedData[ i ] ) );
+    }
+    du.setParmValues( parms.toArray( new Value[0] ) );
+  } 
+
+  public Protocol getOriginalProtocol()
+  {
+    return originalProtocol;
+  }
+
+  public ManualProtocol getConvertedProtocol()
+  {
+    return convertedProtocol;
+  }
 
   protected void updateProtocolNotes( String text )
   {
@@ -755,9 +863,20 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         return;
       }
       
+      if ( originalProtocol == null && deviceUpgrade.getProtocol() instanceof ManualProtocol )
+      {
+        originalProtocol = deviceUpgrade.getProtocol();
+      }
+      if ( originalProtocol != null && convertedProtocol == null )
+      {
+        // Clone the protocol
+        convertedProtocol = new ManualProtocol( ( ( ManualProtocol )originalProtocol ).getIniSection() );
+        deviceUpgrade.setProtocol( convertedProtocol );
+      }
+      
       deviceUpgrade.getProtocol().setAltPID( deviceUpgrade.getRemote(), pid );
-      editor.refresh();
       setAltPIDMessage();
+      update();
     }
     else if ( !updateInProgress )
     {
@@ -793,7 +912,9 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         {
           for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
           {
-            if ( du == deviceUpgrade.getBaseUpgrade() || du.getProtocol() == deviceUpgrade.getProtocol() )
+            if ( du == deviceUpgrade.getBaseUpgrade() 
+                || du.getProtocol() == deviceUpgrade.getProtocol()
+                || du.getProtocol() == originalProtocol )
             {
               continue;
             }
@@ -864,6 +985,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
   /** The protocol id. */
   private JTextField protocolID = null;
+  private JButton toManual = null;
+  private int toManualRow = 0;
   private JFormattedTextField altPID = null;
   private JLabel altPIDLabel = null;
   private JLabel altPIDMessage = null;
@@ -871,6 +994,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   private int altPIDRow = 0;
   private int altPIDReasonRow = 0;
   private AltPIDStatus status = null;
+  private Protocol originalProtocol = null;
+  private ManualProtocol convertedProtocol = null;
 
   private JLabel preserveLabel = null;
   private JComboBox preserveBox = null;

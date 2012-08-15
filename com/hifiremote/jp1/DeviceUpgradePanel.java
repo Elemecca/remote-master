@@ -247,7 +247,8 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       {
         deviceModel.setValueAt( newUpgrade.getDeviceType(), rowBound, 2 );
         deviceModel.setValueAt( new SetupCode( newUpgrade.getSetupCode() ), rowBound, 3 );
-        deviceModel.fireTableRowsUpdated( rowBound, rowBound );
+//        deviceModel.fireTableRowsUpdated( rowBound, rowBound );
+        deviceModel.fireTableDataChanged();
       }
     }
     else

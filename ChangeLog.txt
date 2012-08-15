@@ -106,6 +106,8 @@ Changes for v2.02
 - Fix bug causing successive imports of KM files that use same protocol to interfere with one another (Graham)
 - Improve handling of pid change for Manual Protocol (Graham)
 - Bugfix: When an import or load of manual protocol checks it against those in ProtocolManager, test for same translators as well as same code (Graham)
+- Reset ProtocolManager before loading .rmir file, to prevent protocol crosstalk (Graham)
+- Provide facility in Device Upgrade Editor to convert custom code to a Manual Settings protocol (Graham)
 
 Changes for v2.01
 -- Alpha --

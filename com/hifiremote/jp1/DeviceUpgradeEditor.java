@@ -159,9 +159,21 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
       Object source = e.getSource();
       if ( source == okButton || source == cancelButton )
       {
+        SetupPanel setupPanel = editorPanel.getSetupPanel();
+        
         if ( source == cancelButton )
         {
           cancelled = true;
+          Protocol p = setupPanel.getConvertedProtocol();
+          if ( p != null )
+          {
+            ProtocolManager.getProtocolManager().remove( p );
+          }
+          p = setupPanel.getOriginalProtocol();
+          if ( p instanceof ManualProtocol )
+          {
+            ProtocolManager.getProtocolManager().add( p );
+          }
         }
         else if ( panel instanceof DeviceUpgradePanel )
         {
@@ -196,6 +208,20 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         }
         else if ( panel instanceof DeviceUpgradePanel )
         {
+          if ( !cancelled )
+          {
+            DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;
+            RemoteConfiguration remoteConfig = dup.getRemoteConfig();
+            for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+            {
+              setupPanel.convertUpgrade( du );
+            }
+            Protocol p = setupPanel.getOriginalProtocol();
+            if ( p != null && !( p instanceof ManualProtocol ) )
+            {
+              p.customCode.remove( remoteConfig.getRemote().getProcessor().getEquivalentName() );
+            }
+          }
           ( ( DeviceUpgradePanel )panel ).endEdit( this, row );
         }
       }

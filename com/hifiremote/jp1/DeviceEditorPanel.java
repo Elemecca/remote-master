@@ -599,6 +599,11 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
     return owner;
   }
 
+  public SetupPanel getSetupPanel()
+  {
+    return setupPanel;
+  }
+
   private Remote oldRemote = null;
   private Protocol oldProtocol = null;
 }

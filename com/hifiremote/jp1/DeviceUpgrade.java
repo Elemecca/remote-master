@@ -576,7 +576,7 @@ public class DeviceUpgrade extends Highlight
     {
       for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
       {
-        if ( du == baseUpgrade ) continue;
+        if ( du == baseUpgrade || baseUpgrade != null && du.getProtocol() == baseUpgrade.getProtocol() ) continue;
         if ( du.getProtocol() == protocol )
         {
           // Selected protocol is already used by a device upgrade.  Must use same alternate
@@ -719,6 +719,11 @@ public class DeviceUpgrade extends Highlight
     return status;
   }
 
+  public boolean isCustom()
+  {
+    return protocol.getCustomCode( remote.getProcessor() ) != null;
+  }
+  
   /**
    * Sets the protocol.
    * 

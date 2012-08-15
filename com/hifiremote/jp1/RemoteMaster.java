@@ -1894,6 +1894,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
 
     // ext.equals( ".rmir" ) || ext.equals( ".ir" )
+    ProtocolManager.getProtocolManager().reset();
     saveAction.setEnabled( ext.equals( ".rmir" ) );
     saveAsAction.setEnabled( true );
     openRdfAction.setEnabled( true );
