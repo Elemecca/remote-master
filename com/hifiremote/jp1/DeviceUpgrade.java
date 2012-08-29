@@ -555,17 +555,17 @@ public class DeviceUpgrade extends Highlight
     return setProtocol( newProtocol, true );
   }
   
-  private boolean protocolInUse()
+  private DeviceUpgrade protocolInUse()
   {
     if ( remoteConfig != null )
     {
       for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
       {
         if ( du == this ) continue;
-        if ( du.getProtocol() == protocol ) return true;
+        if ( du.getProtocol() == protocol ) return du;
       }
     }
-    return false;
+    return null;
   }
   
   public AltPIDStatus testAltPID( )
@@ -1301,10 +1301,6 @@ public class DeviceUpgrade extends Highlight
       ProtocolManager.getProtocolManager().add( mp );
       p = mp;
     }
-    // else
-    // {
-    // throw new ParseException( "Unable to import device upgrade", index );
-    // }
 
     if ( digitMapIndex != -1 )
     {
@@ -2158,7 +2154,7 @@ public class DeviceUpgrade extends Highlight
     {
       ManualProtocol mp = new ManualProtocol( pid, props );
       mp.setName( name );
-      protocol = checkProtocol( mp );
+      protocol = testManualProtocol( mp );
       if ( protocol == mp )
       {
         pm.add( protocol );
@@ -2177,24 +2173,35 @@ public class DeviceUpgrade extends Highlight
         return;
       }
 
-      if ( !protocolInUse() )
+      str = props.getProperty( "ProtocolParms" );
+      System.err.println( "ProtocolParms='" + str + "'" );
+      if ( str != null && str.length() != 0 )
+      {
+        protocol.setDeviceParms( stringToValueArray( str ) );
+        parmValues = protocol.getDeviceParmValues();
+      }
+
+      if ( protocolInUse() == null )
       {
         Hex altPID = new Hex( props.getProperty( "Protocol.altPID", "" ) );
         protocol.setAltPID( remote, altPID );
+        protocol.setProperties( props, remote );
+      }
+      else
+      {
+        Protocol p = testStandardProtocol( protocol, props );
+        if ( p != null )
+        {
+          protocol = p;
+        }
+        else
+        {
+          return;
+        }
       }
     }
 
-    str = props.getProperty( "ProtocolParms" );
-    System.err.println( "ProtocolParms='" + str + "'" );
-    if ( str != null && str.length() != 0 )
-    {
-      protocol.setDeviceParms( stringToValueArray( str ) );
-      parmValues = protocol.getDeviceParmValues();
-    }
-
-    protocol.setProperties( props, remote );
-  
-    if ( !protocolInUse() && !protocol.getID( remote, false ).equals( pid ) )
+    if ( protocolInUse() == null && !protocol.getID( remote, false ).equals( pid ) )
     {
       protocol.setAltPID( remote, pid );
     }
@@ -2299,7 +2306,49 @@ public class DeviceUpgrade extends Highlight
         == JOptionPane.YES_OPTION;
   }
   
-  private Protocol checkProtocol( ManualProtocol mp )
+  private Protocol testStandardProtocol( Protocol protocol, Properties props )
+  {
+    Processor processor = remote.getProcessor();
+    String str = ( props == null ) ? null : props.getProperty( "CustomCode." + processor.getEquivalentName() );
+    Hex newCustomCode = ( str == null ) ? null : new Hex( str );
+    Hex oldCustomCode = protocol.getCustomCode( processor );
+    String title = "Custom Code";
+    if ( newCustomCode == null && oldCustomCode != null )
+    {
+      String message = "The protocol of this upgrade is already in use with custom code\n"
+                     + "by an existing upgrade, but this upgrade uses the standard version.\n\n"
+                     + "To load this upgrade you must first convert the protocol of that\n"
+                     + "upgrade to a Manual Protocol and then change its PID.  If you open\n"
+                     + "that upgrade you will find a button that performs this conversion.";
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
+      reset();
+      return null;
+    }
+    else if ( newCustomCode != null && !newCustomCode.equals( oldCustomCode ) )
+    {
+      String message = "The protocol of this upgrade has custom code and is already in use\n"
+                     + "by an existing upgrade with either no or different custom code.\n\n"
+                     + "If you load this upgrade, the protocol will be loaded as an\n"
+                     + "equivalent Manual Protocol.  Do you want to proceed?";
+      if ( JOptionPane.showConfirmDialog( RemoteMaster.getFrame(), message, title, 
+          JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION )
+      {
+        originalProtocol = Protocol.blank;  // Actual original protocol is never imported, so this placeholder is used instead
+        convertedProtocol = protocol.convertToManual( remote, parmValues, newCustomCode );
+        protocol = convertedProtocol;
+        ProtocolManager.getProtocolManager().add( protocol );
+        parmValues = protocol.getDeviceParmValues();
+      }
+      else
+      {
+        reset();
+        return null;
+      }
+    }
+    return protocol;
+  }
+  
+  private Protocol testManualProtocol( ManualProtocol mp )
   {
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     Protocol equiv = null;
@@ -2652,12 +2701,16 @@ public class DeviceUpgrade extends Highlight
           return;
         }
       }
-      protocol = p;
-
-      if ( !p.getID( remote, false ).equals( pid ) )
+      else
       {
-        p.setAltPID( remote, pid );
+        p = testStandardProtocol( p, null );
+        if ( p == null )
+        {
+          reset();
+          return;
+        } 
       }
+      protocol = p;
 
       Value[] importParms = new Value[ 8 ];
       for ( int i = 0; i < importParms.length && i + 2 < deviceFields.size(); i++ )
@@ -2687,7 +2740,12 @@ public class DeviceUpgrade extends Highlight
         importParms[ i ] = new Value( val );
       }
       protocol.importDeviceParms( importParms );
-      parmValues = protocol.getDeviceParmValues();
+      parmValues = protocol.getDeviceParmValues();     
+      
+      if ( !protocol.getID( remote, false ).equals( pid ) )
+      {
+        protocol.setAltPID( remote, pid );
+      }
     }
 
     // compute cmdIndex
@@ -3165,10 +3223,10 @@ public class DeviceUpgrade extends Highlight
     {
       protocolManager.remove( protocol );
       ManualProtocol mp = ( ManualProtocol )protocol;
-      protocol = checkProtocol( mp );
+      protocol = testManualProtocol( mp );
       protocolManager.add( protocol );
     }
-    
+
     System.err.println( "Done!" );
   }
 
@@ -3397,6 +3455,25 @@ public class DeviceUpgrade extends Highlight
       }
     }
   }
+  
+  public void changeProtocol( Protocol oldProtocol, ManualProtocol newProtocol )
+  {
+    if ( oldProtocol == null || getProtocol() != oldProtocol )
+    {
+      return;
+    }
+    short[] fixedData = oldProtocol.getFixedData( getParmValues() ).getData();
+    boolean preserve = preserveOBC;
+    preserveOBC = false;
+    setProtocol( newProtocol );
+    preserveOBC = preserve;
+    List< Value > parms = new ArrayList< Value >();
+    for ( int i = 0; i < fixedData.length; i++ )
+    {
+      parms.add( new Value( fixedData[ i ] ) );
+    }
+    setParmValues( parms.toArray( new Value[0] ) );
+  }
 
   /** The description. */
   private String description = null;
@@ -3424,16 +3501,15 @@ public class DeviceUpgrade extends Highlight
     this.remoteConfig = remoteConfig;
   }
 
-  // public void clearRemoteConfig()
-  // {
-  // remoteConfig = null;
-  // }
-
   /** The dev type alias name. */
   private String devTypeAliasName = null;
 
   /** The protocol. */
   protected Protocol protocol = null;
+  
+  protected Protocol originalProtocol = null;
+  
+  protected ManualProtocol convertedProtocol = null;
   
   private int sizeDevBytes = 0; // only used for JP1.4/JP2 remotes
   

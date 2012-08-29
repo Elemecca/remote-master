@@ -829,6 +829,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           return;
         }
+        ProtocolManager.getProtocolManager().reset();
         File file = getUpgradeFile( preferences.getUpgradePath() );
         loadUpgrade( file );
       }

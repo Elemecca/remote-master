@@ -1430,6 +1430,33 @@ public class Protocol
   {
     return defaultFixedData.length();
   }
+  
+  public ManualProtocol convertToManual( Remote remote, Value[] parmValues, Hex customCode )
+  {
+    int cmdLen = getDefaultCmd().length();
+    int cmdType = ( cmdLen == 1 ) ? 0 : 1;
+    Hex pid = null;
+    try
+    {
+      pid = ( Hex )getID( remote ).clone();
+    }
+    catch ( CloneNotSupportedException e1 )
+    {
+      e1.printStackTrace();
+    }
+    
+    String newName = ManualProtocol.getDefaultName( pid );
+    short[] fixedData = getFixedData( parmValues ).getData();
+    List< Value > parms = new ArrayList< Value >();
+    for ( int i = 0; i < fixedData.length; i++ )
+    {
+      parms.add( new Value( fixedData[ i ] ) );
+    }
+
+    ManualProtocol convertedProtocol = new ManualProtocol( newName, pid, cmdType, "", 8, parms, new short[ 0 ], 8 );
+    convertedProtocol.setCode( customCode, remote.getProcessor() );
+    return convertedProtocol;
+  }
 
   //
   /**
@@ -1885,29 +1912,12 @@ public class Protocol
       out.print( "Protocol.altPID", altPID.toString() );
     }
 
-    //  This commented-out code is part of an incomplete attempt to handle multiple copies of same
-    //  standard protocol but with different custom codes (including none)
-    
-//    int pos1 = name.indexOf( "-copy" );
-//    int pos2 = variantName.indexOf( "copy" );
-//    if ( pos1 >= 0 && pos2 >= 0 )
-//    {
-//      String baseName = name.substring( 0, pos1 );
-//      String baseVarName = variantName.substring( 0, pos2 > 0 ? pos2 - 1 : pos2 );
-//      out.print( "Protocol.name", baseName );
-//      if ( baseVarName.length() > 0 )
-//      {
-//        out.print( "Protocol.variantName", baseVarName );
-//      }
-//    }
-//    else
-//    {
-      out.print( "Protocol.name", getName() );
-      if ( variantName.length() > 0 )
-      {
-        out.print( "Protocol.variantName", variantName );
-      }
-//    }
+    out.print( "Protocol.name", getName() );
+    if ( variantName.length() > 0 )
+    {
+      out.print( "Protocol.variantName", variantName );
+    }
+
     
     // Value[] parms = getDeviceParmValues();
     if ( parms != null && parms.length != 0 )
@@ -2049,4 +2059,9 @@ public class Protocol
   // Properties used only during editing
   public Hex oldCustomCode = null;
   public ProtocolUpgrade newCustomCode = null;
+  
+  /*
+   * A non-null protocol placeholder
+   */
+  public static final Protocol blank = new Protocol( "Blank", new Hex( "FF FF"), null );
 }

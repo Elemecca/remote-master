@@ -159,17 +159,18 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
       Object source = e.getSource();
       if ( source == okButton || source == cancelButton )
       {
-        SetupPanel setupPanel = editorPanel.getSetupPanel();
+//        SetupPanel setupPanel = editorPanel.getSetupPanel();
+        DeviceUpgrade upgrade = editorPanel.getDeviceUpgrade();
         
         if ( source == cancelButton )
         {
           cancelled = true;
-          Protocol p = setupPanel.getConvertedProtocol();
+          Protocol p = upgrade.convertedProtocol;
           if ( p != null )
           {
             ProtocolManager.getProtocolManager().remove( p );
           }
-          p = setupPanel.getOriginalProtocol();
+          p = upgrade.originalProtocol;
           if ( p instanceof ManualProtocol )
           {
             ProtocolManager.getProtocolManager().add( p );
@@ -179,7 +180,6 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         {
           DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;
           RemoteConfiguration remoteConfig = dup.getRemoteConfig();
-          DeviceUpgrade upgrade = editorPanel.getDeviceUpgrade();
           for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
           {
             if ( du == dup.getOldUpgrade() )
@@ -208,21 +208,23 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         }
         else if ( panel instanceof DeviceUpgradePanel )
         {
+          DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;
           if ( !cancelled )
           {
-            DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;
             RemoteConfiguration remoteConfig = dup.getRemoteConfig();
+            Protocol pOrig = upgrade.originalProtocol;
+            ManualProtocol pConv = upgrade.convertedProtocol;
             for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
             {
-              setupPanel.convertUpgrade( du );
+              du.changeProtocol( pOrig, pConv );
             }
-            Protocol p = setupPanel.getOriginalProtocol();
-            if ( p != null && !( p instanceof ManualProtocol ) )
+            
+            if ( pOrig != null && !( pOrig instanceof ManualProtocol ) )
             {
-              p.customCode.remove( remoteConfig.getRemote().getProcessor().getEquivalentName() );
+              pOrig.customCode.remove( remoteConfig.getRemote().getProcessor().getEquivalentName() );
             }
           }
-          ( ( DeviceUpgradePanel )panel ).endEdit( this, row );
+          dup.endEdit( this, row );
         }
       }
       else if ( source == loadButton )

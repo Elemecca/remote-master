@@ -108,6 +108,7 @@ Changes for v2.02
 - Bugfix: When an import or load of manual protocol checks it against those in ProtocolManager, test for same translators as well as same code (Graham)
 - Reset ProtocolManager before loading .rmir file, to prevent protocol crosstalk (Graham)
 - Provide facility in Device Upgrade Editor to convert custom code to a Manual Settings protocol (Graham)
+- Handle load and import in RMIR of an upgrade with same protocol but different custom code from existing upgrade (Graham)
 
 Changes for v2.01
 -- Alpha --

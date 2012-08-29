@@ -609,31 +609,19 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       }
 
       Remote remote = deviceUpgrade.getRemote();
-      originalProtocol = deviceUpgrade.getProtocol();
-      Hex pid = originalProtocol.getID( remote );
-      Hex code = originalProtocol.getCustomCode( remote.getProcessor() );
-      int cmdLen = originalProtocol.getDefaultCmd().length();
-      int cmdType = ( cmdLen == 1 ) ? 0 : 1;
-      
-      String newName = ManualProtocol.getDefaultName( pid );
-      short[] fixedData = originalProtocol.getFixedData( deviceUpgrade.getParmValues() ).getData();
-      List< Value > parms = new ArrayList< Value >();
-      for ( int i = 0; i < fixedData.length; i++ )
-      {
-        parms.add( new Value( fixedData[ i ] ) );
-      }
-
+      deviceUpgrade.originalProtocol = deviceUpgrade.protocol;
+      Hex code = null;
       try
       {
-        convertedProtocol = new ManualProtocol( newName, ( Hex )pid.clone(), cmdType, "", 8, parms, new short[ 0 ], 8 );
+        code = ( Hex )deviceUpgrade.originalProtocol.getCustomCode( remote.getProcessor() ).clone();
       }
-      catch ( CloneNotSupportedException ex )
+      catch ( CloneNotSupportedException e1 )
       {
-        ex.printStackTrace();
+        e1.printStackTrace();
       }
-      convertedProtocol.setCode( code, remote.getProcessor() );
-      ProtocolManager.getProtocolManager().add( convertedProtocol );
-      convertUpgrade( deviceUpgrade );      
+      deviceUpgrade.convertedProtocol = deviceUpgrade.originalProtocol.convertToManual( remote, deviceUpgrade.getParmValues(), code );
+      ProtocolManager.getProtocolManager().add( deviceUpgrade.convertedProtocol );
+      deviceUpgrade.changeProtocol( deviceUpgrade.originalProtocol, deviceUpgrade.convertedProtocol );    
       update();
     }
     else
@@ -642,35 +630,6 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       updateFixedData();
     }
   } // actionPerformed
-  
-  public void convertUpgrade( DeviceUpgrade du )
-  {
-    if ( originalProtocol == null || du.getProtocol() != originalProtocol )
-    {
-      return;
-    }
-    short[] fixedData = originalProtocol.getFixedData( du.getParmValues() ).getData();
-    boolean preserve = du.getPreserveOBC();
-    du.setPreserveOBC( false );
-    du.setProtocol( convertedProtocol );
-    du.setPreserveOBC( preserve );
-    List< Value > parms = new ArrayList< Value >();
-    for ( int i = 0; i < fixedData.length; i++ )
-    {
-      parms.add( new Value( fixedData[ i ] ) );
-    }
-    du.setParmValues( parms.toArray( new Value[0] ) );
-  } 
-
-  public Protocol getOriginalProtocol()
-  {
-    return originalProtocol;
-  }
-
-  public ManualProtocol getConvertedProtocol()
-  {
-    return convertedProtocol;
-  }
 
   protected void updateProtocolNotes( String text )
   {
@@ -863,15 +822,15 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         return;
       }
       
-      if ( originalProtocol == null && deviceUpgrade.getProtocol() instanceof ManualProtocol )
+      if ( deviceUpgrade.originalProtocol == null && deviceUpgrade.protocol instanceof ManualProtocol )
       {
-        originalProtocol = deviceUpgrade.getProtocol();
+        deviceUpgrade.originalProtocol = deviceUpgrade.protocol;
       }
-      if ( originalProtocol != null && convertedProtocol == null )
+      if ( deviceUpgrade.originalProtocol != null && deviceUpgrade.convertedProtocol == null )
       {
         // Clone the protocol
-        convertedProtocol = new ManualProtocol( ( ( ManualProtocol )originalProtocol ).getIniSection() );
-        deviceUpgrade.setProtocol( convertedProtocol );
+        deviceUpgrade.convertedProtocol = new ManualProtocol( ( ( ManualProtocol )deviceUpgrade.originalProtocol ).getIniSection() );
+        deviceUpgrade.setProtocol( deviceUpgrade.convertedProtocol );
       }
       
       deviceUpgrade.getProtocol().setAltPID( deviceUpgrade.getRemote(), pid );
@@ -913,8 +872,8 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
           {
             if ( du == deviceUpgrade.getBaseUpgrade() 
-                || du.getProtocol() == deviceUpgrade.getProtocol()
-                || du.getProtocol() == originalProtocol )
+                || du.getProtocol() == deviceUpgrade.protocol
+                || du.getProtocol() == deviceUpgrade.originalProtocol )
             {
               continue;
             }
@@ -994,8 +953,6 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
   private int altPIDRow = 0;
   private int altPIDReasonRow = 0;
   private AltPIDStatus status = null;
-  private Protocol originalProtocol = null;
-  private ManualProtocol convertedProtocol = null;
 
   private JLabel preserveLabel = null;
   private JComboBox preserveBox = null;

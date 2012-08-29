@@ -3384,20 +3384,4 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
   }
   
-  // Not currently used; part of a plan to handle multiple copies of a standard protocol with different custom codes
-  public static ProtocolManager getAuxProtocolManager()
-  {
-    ProtocolManager pm = new ProtocolManager();
-    try
-    {
-      System.err.println( "Loading auxiliary protocol manager" );
-      pm.load( new File( workDir, "protocols.ini" ) );
-    }
-    catch ( Exception e )
-    {
-      System.err.println( "Loading of auxiliary protocol manager failed" );
-      return null;
-    }
-    return pm;
-  }
 }
