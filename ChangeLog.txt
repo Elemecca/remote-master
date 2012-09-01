@@ -109,6 +109,9 @@ Changes for v2.02
 - Reset ProtocolManager before loading .rmir file, to prevent protocol crosstalk (Graham)
 - Provide facility in Device Upgrade Editor to convert custom code to a Manual Settings protocol (Graham)
 - Handle load and import in RMIR of an upgrade with same protocol but different custom code from existing upgrade (Graham)
+- Added translators BitExpander and GI3 (3FG)
+- Updated protocols.ini (3FG)
+- Added MAXQ610 code to protocols.ini where available (Graham)
 
 Changes for v2.01
 -- Alpha --
