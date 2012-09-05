@@ -347,11 +347,12 @@ public class AssemblerTableModel extends JP1TableModel< AssemblerItem >
 
   public void disassemble( Hex hexD, Processor processor )
   {
+    itemList.clear();
     if ( processor instanceof MAXQProcessor )
     {
+      fireTableDataChanged();
       return;
     }
-    itemList.clear();
     this.hex = ( hexD == null ) ? new Hex( 0 ) : new Hex( hexD );
     List< Integer > labelAddresses = new ArrayList< Integer >();
     Arrays.fill( dialog.getBasicValues(), null );

@@ -424,7 +424,15 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     
     showAltPID();
     showToManual();
-    altPID.setValue( p.getRemoteAltPID().get( remote.getSignature() ) );
+    if ( p instanceof ManualProtocol && p.getAlternatePID() != null )
+    {
+      // This keeps displayed an invalid alt pid (see protocol.setAltPID())
+      altPID.setValue( p.getAlternatePID() );
+    }
+    else
+    {
+      altPID.setValue( p.getRemoteAltPID().get( remote.getSignature() ) );
+    }
     setAltPIDMessage();
 
     updateInProgress = false;
@@ -853,7 +861,13 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       Remote remote = deviceUpgrade.getRemote();
       RemoteConfiguration remoteConfig = deviceUpgrade.getRemoteConfig();
       List< Protocol > builtIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid );
-      if ( !builtIn.isEmpty() )
+      if ( pid.get( 0 ) > 0x1FF && !remote.usesTwoBytePID() )
+      {
+        altPIDMessage.setText( "PID > 01FF not supported" );
+        altPID.setForeground( Color.RED );
+        valid = false;
+      }
+      else if ( !builtIn.isEmpty() )
       {
         altPIDMessage.setText( "Conflicts with built-in protocol" );
         altPID.setForeground( Color.RED );

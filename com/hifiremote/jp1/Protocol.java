@@ -1212,6 +1212,13 @@ public class Protocol
   {
     if ( this instanceof ManualProtocol )
     {
+      if ( id.get( 0 ) > 0x1FF && !remote.usesTwoBytePID() )
+      {
+        // For error display purposes only; a Manual Protocol can never have a real alt pid
+        alternatePID = new Hex( id );
+        return;
+      }
+      alternatePID = null;
       ProtocolManager pm = ProtocolManager.getProtocolManager();
       pm.remove( this );
       String pidStr1 = this.id.toString();

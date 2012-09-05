@@ -830,6 +830,7 @@ public class ProtocolManager
     System.err
         .println( "ProtocolManager.findNearestProtocol( " + remote + ", " + name + ", " + id + ", " + variantName );
     Protocol near = null;
+    Protocol derived = null;
     List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
     {
@@ -840,6 +841,7 @@ public class ProtocolManager
       System.err.println( "No protocol found" );
       return null;
     }
+    
     for ( Protocol p : protocols )
     {    
       if ( ( variantName == null || variantName.equals( p.getVariantName() ) )
@@ -850,8 +852,10 @@ public class ProtocolManager
           System.err.println( "Found built-in protocol " + p );
           return p;
         }
-        else if ( name.equals( "pid: " + id.toString() ) )
+        else if ( derived == null && name.equals( "pid: " + id.toString() ) )
         {
+          // Since protocols.ini contains protocols with this name form, continue to look for
+          // name match and only use derived protocol if no match found
           System.err.println( "Recreating derived protocol from " + p );
           Properties props = new Properties();
           for ( Processor pr : ProcessorManager.getProcessors() )
@@ -867,12 +871,10 @@ public class ProtocolManager
           {
             props.put( "VariantName", variant );
           }
-          p = ProtocolFactory.createProtocol( "pid: " + id.toString(), id, "Protocol", props );
-          ProtocolManager.getProtocolManager().add( p );
-          System.err.println( "Using recreated protocol " + name );
-          return p;
+          derived = ProtocolFactory.createProtocol( "pid: " + id.toString(), id, "Protocol", props );
         }
       }
+      
       if ( p.getName().equals( name ) && p.hasCode( remote ) 
           && ( near == null || !near.getVariantName().equals( variantName )
               && p.getVariantName().equals( variantName ) ) )
@@ -881,6 +883,13 @@ public class ProtocolManager
       }      
     }
     
+    if ( derived != null )
+    {
+      // No name match found, so use derived protocol
+      ProtocolManager.getProtocolManager().add( derived );
+      System.err.println( "Using recreated protocol " + derived );
+      return derived;
+    }
     if ( near != null )
     {
       System.err.println( "Found protocol " + near );

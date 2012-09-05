@@ -112,6 +112,10 @@ Changes for v2.02
 - Added translators BitExpander and GI3 (3FG)
 - Updated protocols.ini (3FG)
 - Added MAXQ610 code to protocols.ini where available (Graham)
+- Prevent entry of (user) alternate PIDs > 0x01FF when remote does not use 2-byte PIDs (Graham)
+- When closing RMIR from the window "close box (x)", make Prompt to Save open SaveAs() rather than Save() when filetype does not support Save action (Graham)
+- Improve the enabling/disabling of assembler buttons in Manual Settings dialog (Graham)
+- Fix bug causing RMIR to lock up if an upgrade is loaded that has a protocol which cannot be found (Graham)
 
 Changes for v2.01
 -- Alpha --

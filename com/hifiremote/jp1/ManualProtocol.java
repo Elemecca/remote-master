@@ -234,7 +234,8 @@ public class ManualProtocol extends Protocol
       {
         System.err.println( "Creating Byte " + ( i + 1 ) + " parm & translators for index " + i + " at bit " + i * 8 );
         cmdParms[ i ] = new NumberCmdParm( "Byte " + ( i + 1 ), defaultValue, cmdBits );
-        cmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );
+//        cmdTranslators[ i ] = new Translator( false, false, i, 8, i * 8 );
+        cmdTranslators[ i ] = new Translator( lsb, comp, i, 8, i * 8 );
         int j = ( i < cmdIndex ) ? i : i - 1;
         importCmdTranslators[ j ] = new Translator( false, false, j, 8, i * 8 );
       }

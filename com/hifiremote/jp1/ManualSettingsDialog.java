@@ -518,6 +518,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     assemblerTable = new JP1Table( assemblerModel );
     assemblerTable.initColumns( assemblerModel );
     assemblerTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
+    assemblerTable.getSelectionModel().addListSelectionListener( this );
     assemblerModel.dialog = this;
     scrollPane = new JScrollPane( assemblerTable );
     asmBorder = BorderFactory.createTitledBorder( "" ); // Title added by setAssemblerButtons()
@@ -2532,6 +2533,12 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   @Override
   public void valueChanged( ListSelectionEvent e )
   {
+    if ( e.getSource() == assemblerTable.getSelectionModel() )
+    {
+      setAssemblerButtons( false );
+      return;
+    }
+    // else ( e.getSource() == codeTable.getSelectionModel() ) 
     if ( !e.getValueIsAdjusting() )
     {
       assemble.setEnabled( codeTable.getSelectedRowCount() == 1 );
@@ -4007,15 +4014,22 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
   
   private void setAssemblerButtons( boolean retitle )
   {
-    boolean asm = asmButton.isSelected();
+    boolean valid = ( codeTable.getSelectedRowCount() == 1 ) 
+        && ! ( procs[ codeTable.getSelectedRow() ] instanceof MAXQProcessor );
+    boolean asm = valid && asmButton.isSelected();
+    boolean sel = valid && assemblerTable.getSelectedRowCount() > 0;
     assemble.setEnabled( asm );
     disassemble.setEnabled( asm );
-    insert.setEnabled( asm );
-    delete.setEnabled( asm );
+    insert.setEnabled( asm && sel );
+    delete.setEnabled( asm && sel );
     build.setEnabled( asm );
     getData.setEnabled( asm && !assemblerModel.testBuildMode( processor ) );
-    cut.setEnabled( asm );
-    paste.setEnabled( asm && cutItems.size() > 0 );
+    cut.setEnabled( asm && sel );
+    paste.setEnabled( asm && sel && cutItems.size() > 0 );
+    copy.setEnabled( sel );
+    load.setEnabled( valid );
+    save.setEnabled( valid );
+    selectAll.setEnabled( valid );
     if ( retitle )
     {
       String title = asm ? "Assembler listing (editable)" : "Disassembler listing (not editable)";
