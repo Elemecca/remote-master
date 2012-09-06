@@ -15,6 +15,12 @@ public class MAXQProcessor extends LittleEndianProcessor
     setRAMAddress( 0x0100 );
   }
   
+  @Override
+  public String getEquivalentName()
+  {
+    return "MAXQ610";
+  }
+  
 //  @Override
 //  public AssemblerOpCode getOpCode( Hex hex )
 //  {

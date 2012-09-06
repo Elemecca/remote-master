@@ -1352,7 +1352,7 @@ public class Remote implements Comparable< Remote >
     {
       RAMAddress = processor.getRAMAddress();
     }
-    if ( processorName.equals( "MAXQ610" ) && !hasForceEvenStartsEntry )
+    if ( processor.getEquivalentName().equals( "MAXQ610" ) && !hasForceEvenStartsEntry )
     {
       forceEvenStarts = true;
     }
@@ -2813,9 +2813,13 @@ public class Remote implements Comparable< Remote >
     {
       return "JP1.1";
     }
-    else if ( name.equals(  "MAXQ610" ) )
+    else if ( name.equals( "MAXQ610" ) )
     {
       return "JP2";
+    }
+    else if ( name.equals( "MAXQ612" ) )
+    {
+      return "JP3";
     }
     else
     {
@@ -2867,6 +2871,10 @@ public class Remote implements Comparable< Remote >
     else if ( name.equals( "MAXQ610" ) )
     {
       return "Maxim MAXQ610";
+    }
+    else if ( name.equals( "MAXQ612" ) )
+    {
+      return "Maxim MAXQ612";
     }
     else
     {

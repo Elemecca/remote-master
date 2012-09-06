@@ -132,6 +132,9 @@ public class ProcessorManager
 //    p.setAddressModes( MAXQ610data.AddressModes );
     add( p );
     
+    p = new MAXQProcessor( "MAXQ612" );
+    add( p );
+    
   }
 
 

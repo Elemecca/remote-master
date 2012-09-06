@@ -861,7 +861,7 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       Remote remote = deviceUpgrade.getRemote();
       RemoteConfiguration remoteConfig = deviceUpgrade.getRemoteConfig();
       List< Protocol > builtIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid );
-      if ( pid.get( 0 ) > 0x1FF && !remote.usesTwoBytePID() )
+      if ( pid.length() > 1 && pid.get( 0 ) > 0x1FF && !remote.usesTwoBytePID() )
       {
         altPIDMessage.setText( "PID > 01FF not supported" );
         altPID.setForeground( Color.RED );

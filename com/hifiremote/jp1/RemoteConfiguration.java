@@ -2139,7 +2139,12 @@ public class RemoteConfiguration
     for ( Activity activity : activities.values() )
     {
       ActivityGroup[] groups = activity.getActivityGroups();
-      Hex segData = new Hex( groups.length + 2 );
+      int dataLen = groups.length + 2;
+      if ( remote.doForceEvenStarts() && ( dataLen & 1 ) == 1 )
+      {
+        dataLen++;
+      }
+      Hex segData = new Hex( dataLen );
       segData.set( ( short )0, 0 );
       segData.set( ( short )activity.getButton().getKeyCode(), 1 );
       int pos = 2;

@@ -116,6 +116,7 @@ Changes for v2.02
 - When closing RMIR from the window "close box (x)", make Prompt to Save open SaveAs() rather than Save() when filetype does not support Save action (Graham)
 - Improve the enabling/disabling of assembler buttons in Manual Settings dialog (Graham)
 - Fix bug causing RMIR to lock up if an upgrade is loaded that has a protocol which cannot be found (Graham)
+- Added support for MAXQ612 processor (Graham)
 
 Changes for v2.01
 -- Alpha --

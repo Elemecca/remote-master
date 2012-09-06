@@ -3363,7 +3363,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       return true;
     }
-    save();
+    if ( saveAction.isEnabled() )
+    {
+      save();
+    }
+    else
+    {
+      saveAs();
+    }
     return true;
   }
   
