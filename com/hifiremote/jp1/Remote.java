@@ -233,6 +233,10 @@ public class Remote implements Comparable< Remote >
           {
             line = parseSetupCodes( rdr );
           }
+          else if ( line.equals( "ActivityControl" ) )
+          {
+            line = parseActivityControl( rdr );
+          }
           else
           {
             line = rdr.readLine();
@@ -405,6 +409,87 @@ public class Remote implements Comparable< Remote >
           JOptionPane.ERROR_MESSAGE );
       System.err.println( sw.toString() );
     }
+  }
+
+  private String parseActivityControl( RDFReader rdr ) throws Exception
+  {
+    String line;
+    List< Button > activityBtns = buttonGroups.get( "Activity" );
+    List< DeviceButton > ctrlBtns = new ArrayList< DeviceButton >();;
+    String control = null;
+    int activityIndex = -1;
+    int groupIndex = -1;
+    if ( activityBtns == null || activityButtonGroups == null )
+    {
+      return "";
+    }
+    while ( true )
+    {
+      line = rdr.readLine();
+      if ( line == null || line.length() == 0 || line.charAt( 0 ) == '[' )
+      {
+        break;
+      }
+
+      StringTokenizer st = new StringTokenizer( line, "," );
+      while ( st.hasMoreTokens() )
+      {
+        String token = st.nextToken();
+        ctrlBtns.clear();
+        int pos = token.indexOf( '=' );
+        if ( pos != -1 )
+        {
+          if ( activityControl == null )
+          {
+            activityControl = new DeviceButton[ activityBtns.size() ][ activityButtonGroups.length][] ;
+          }
+          control = token.substring( pos + 1 );
+          token = token.substring( 0, pos ).trim();          
+          activityIndex = activityBtns.indexOf( getButton( token ) );
+        }
+        else
+        {
+          control = token;
+        }
+        
+        pos = control.indexOf( ":" );
+        if ( pos != -1 )
+        {
+          String group = control.substring( 0, pos ).trim();
+          control = control.substring( pos + 1 );
+          
+          if ( ! group.toLowerCase().startsWith( "group" ) )
+          {
+            activityControl = null;
+            return line;
+          }
+          groupIndex = Integer.parseInt( group.substring( 5 ) );
+          StringTokenizer st2 = new StringTokenizer( control, "+" );
+          while ( st2.hasMoreTokens() )
+          {
+            token = st2.nextToken().trim();
+            Button btn = getButton( token );
+            if ( btn != null )
+            {
+              DeviceButton dev = getDeviceButton( btn.getKeyCode() );
+              ctrlBtns.add( dev );
+            }
+          }
+          activityControl[ activityIndex ][ groupIndex ] = new DeviceButton[ ctrlBtns.size() ];
+          for ( int i = 0; i < ctrlBtns.size(); i++ )
+          {
+            activityControl[ activityIndex ][ groupIndex ][ i ] = ctrlBtns.get( i ); 
+          }
+          
+        }
+        else
+        {
+          activityControl = null;
+          return line;
+        }
+      }
+    }
+    return line;
   }
 
   /**
@@ -802,6 +887,11 @@ public class Remote implements Comparable< Remote >
   {
     load();
     return segmentTypes;
+  }
+
+  public DeviceButton[][][] getActivityControl()
+  {
+    return activityControl;
   }
 
   /**
@@ -3217,6 +3307,11 @@ public class Remote implements Comparable< Remote >
   {
     return timedMacroWarning;
   }
+  
+  public boolean hasActivityControl()
+  {
+    return activityControl != null;
+  }
 
   public ImageIcon getImage()
   {
@@ -3334,6 +3429,8 @@ public class Remote implements Comparable< Remote >
   private LinkedHashMap< String, List< Button > > buttonGroups = null;
   
   private Button[][] activityButtonGroups = null;
+  
+  private DeviceButton[][][] activityControl = null;
 
   /** The omit digit map byte. */
   private boolean omitDigitMapByte = false;

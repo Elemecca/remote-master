@@ -1,7 +1,6 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
-import java.util.Arrays;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -83,7 +82,14 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       Remote remote = remoteConfig.getRemote();
       if ( !remote.hasMasterPowerSupport() && col > 0 )
       {
-        col += 2;
+        if ( remote.hasActivityControl() && col > 1 )
+        {
+          ++col;
+        }
+        else if ( !remote.hasActivityControl() )
+        {
+          col += 2;
+        }
       }
     }
     return col;
@@ -128,9 +134,14 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     int count = colNames.length - 3;
     if ( remoteConfig != null )
     {
-      if ( remoteConfig.getRemote().hasMasterPowerSupport() )
+      Remote remote = remoteConfig.getRemote();
+      if ( remote.hasMasterPowerSupport() )
       {
         count += 2;
+      }
+      else if ( remote.hasActivityControl() )
+      {
+        ++count;
       }
       if ( remoteConfig != null && remoteConfig.allowHighlighting() )
       {
@@ -226,7 +237,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       case 0:
         return new Integer( row + 1 );
       case 1:
-        return macro == null ? null : new Integer( macro.getKeyCode() );
+        Button selector = activity.getSelector();
+        return selector == null ? null : new Integer( activity.getSelector().getKeyCode() );
       case 2:
         return macro == null ? null : macro.getData();
       case 3:
@@ -248,17 +260,34 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     col = getEffectiveColumn( col );
     Activity activity = getRow( row );
     Macro macro = activity.getMacro();
+    Remote remote = remoteConfig.getRemote();
     if ( col == 1 )
     {
-      if ( macro == null )
+      activity.setSelector( remote.getButton( ( Integer )value ) );
+      if ( remote.hasMasterPowerSupport() )
       {
-        macro = new Macro( ( Integer )value, new Hex( 0 ), activity.getButton().getKeyCode(), 0, null );
-        macro.setSegmentFlags( 0xFF );
-        activity.setMacro( macro );
+        if ( macro == null )
+        {
+          macro = new Macro( ( Integer )value, new Hex( 0 ), activity.getButton().getKeyCode(), 0, null );
+          macro.setSegmentFlags( 0xFF );
+          activity.setMacro( macro );
+        }
+        else
+        {
+          macro.setKeyCode( ( Integer )value );
+        }
       }
-      else
+      if ( remote.hasActivityControl() )
       {
-        macro.setKeyCode( ( Integer )value );
+        int tabIndex = remote.getButtonGroups().get( "Activity" ).indexOf( activity.getButton() );
+        for ( ActivityGroup group : activity.getActivityGroups() )
+        {
+          if ( group.getDevice() == null || group.getDevice() == DeviceButton.noButton )
+          {
+            group.setDevice( remote.getActivityControl()[ tabIndex ][ group.getIndex()][ 0 ] );
+          }
+        }
+        activityGroupModel.fireTableDataChanged();
       }
     }
     else if ( col == 2 )
@@ -283,7 +312,12 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     }
     propertyChangeSupport.firePropertyChange( col == 5 ? "highlight" : "data", null, null );
   }
-  
+
+  public void setActivityGroupModel( ActivityGroupTableModel activityGroupModel )
+  {
+    this.activityGroupModel = activityGroupModel;
+  }
+
   private RemoteConfiguration remoteConfig = null;
   private KeyEditor keyEditor = new KeyEditor();
   private RMColorEditor colorEditor = null;
@@ -295,5 +329,6 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   private JComboBox audioHelpSettingBox = new JComboBox();
   private JComboBox videoHelpSettingBox = new JComboBox();
   private String[] helpSetting = null;
+  private ActivityGroupTableModel activityGroupModel = null;
 
 }

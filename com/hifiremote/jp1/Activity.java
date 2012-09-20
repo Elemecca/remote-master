@@ -26,6 +26,7 @@ public class Activity extends Highlight
     audioHelp = hex.getData()[ 0 ];
     videoHelp = hex.getData()[ 1 ];
     notes = props.getProperty( "Notes" );
+    selectorName = props.getProperty( "Selector" );
     String temp = props.getProperty( "GroupSettings" );
     if ( temp != null )
     {
@@ -42,6 +43,10 @@ public class Activity extends Highlight
   public void set( Remote remote )
   {
     button = remote.getButton( name );
+    if ( selectorName != null )
+    {
+      selector = remote.getButton( selectorName );
+    }
     for ( ActivityGroup group : activityGroups )
     {
       group.set( remote );
@@ -138,6 +143,17 @@ public class Activity extends Highlight
     return name;
   }
 
+  public Button getSelector()
+  {
+    return selector;
+  }
+
+  public void setSelector( Button selector )
+  {
+    this.selector = selector;
+    selectorName = ( selector == null ) ? null : selector.getName();
+  }
+
   public void store( PropertyWriter pw )
   {
     pw.print( "Name", button.getName() );
@@ -149,6 +165,10 @@ public class Activity extends Highlight
     if ( notes != null && !notes.trim().isEmpty() )
     {
       pw.print( "Notes", notes );
+    }
+    if ( selector != null )
+    {
+      pw.print(  "Selector", selector.getName() );
     }
     if ( activityGroups != null )
     {
@@ -169,7 +189,9 @@ public class Activity extends Highlight
   
   private ActivityGroup[] activityGroups = null;
   private Button button = null;
+  private Button selector = null;
   private String name = null;
+  private String selectorName = null;
   private Macro macro = null;
   private String notes = null;
   private int audioHelp = 0;

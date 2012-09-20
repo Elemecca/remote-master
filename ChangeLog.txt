@@ -117,6 +117,7 @@ Changes for v2.02
 - Improve the enabling/disabling of assembler buttons in Manual Settings dialog (Graham)
 - Fix bug causing RMIR to lock up if an upgrade is loaded that has a protocol which cannot be found (Graham)
 - Added support for MAXQ612 processor (Graham)
+- Added support for the new format for type 0xDB segments used in URC-7962 (Graham)
 
 Changes for v2.01
 -- Alpha --

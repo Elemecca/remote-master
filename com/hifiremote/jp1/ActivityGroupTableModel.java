@@ -1,14 +1,17 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.awt.Component;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
+public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > implements CellEditorModel
 {
   
   public void set( Button btn, RemoteConfiguration remoteConfig )
@@ -18,10 +21,9 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
     {
       Remote remote = remoteConfig.getRemote();
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
-      setData( remoteConfig.getActivities().get( btn ).getActivityGroups() );
-      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
-      comboModel.insertElementAt( DeviceButton.noButton, 0 );
-      deviceButtonBox.setModel( comboModel );
+      activity = remoteConfig.getActivities().get( btn );
+      setData( activity.getActivityGroups() );
+      tabIndex = remote.getButtonGroups().get( "Activity" ).indexOf( btn );
     }
   }
   
@@ -73,7 +75,19 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    return col > 1;
+    Remote remote = remoteConfig.getRemote();
+    DeviceButton[][][] activityControl = remote.getActivityControl();
+    if ( activityControl != null )
+    {
+      ActivityGroup group = getRow( row );
+      return col > 2 || ( col == 2  && group.getDevice() != null 
+          && group.getDevice() != DeviceButton.noButton 
+          && activityControl[ tabIndex ][ row ].length > 1 );
+    }
+    else
+    {
+      return col > 1;
+    }
   }
   
   @Override
@@ -83,13 +97,22 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
   }
   
   @Override
-  public TableCellEditor getColumnEditor( int col )
+  public TableCellEditor getCellEditor( int row, int col )
   {
     if ( col == 2 )
     {
-      DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
-      editor.setClickCountToStart( RMConstants.ClickCountToStart );
-      return editor;
+      JComboBox cb = ( JComboBox )comboEditor.getComponent();
+      Remote remote = remoteConfig.getRemote();
+      if ( remote.getActivityControl() != null )
+      {
+        cb.setModel( new DefaultComboBoxModel( remote.getActivityControl()[ tabIndex ][ row ] ) );
+      }
+      else
+      {
+        cb.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceButtons() ) );
+      }
+      comboEditor.setClickCountToStart( RMConstants.ClickCountToStart );
+      return comboEditor;
     }
     else if ( col == 3 )
     {
@@ -101,6 +124,7 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
     }
     return null;
   }
+
   
   @Override
   public TableCellRenderer getColumnRenderer( int col )
@@ -114,8 +138,21 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
       return colorRenderer;
     }
     else
-      return null;
+      return agRenderer;
   }
+  
+  private DefaultTableCellRenderer agRenderer = new DefaultTableCellRenderer()
+  {
+    @Override
+    public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
+        int row, int col )
+    {
+      Component c = super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
+      Color bgColor = ( col != 2 || isCellEditable( row, col ) ) ? Color.BLACK : Color.GRAY;
+      c.setForeground( bgColor );
+      return c;
+    }
+  };
 
   @Override
   public Object getValueAt( int row, int column )
@@ -152,7 +189,17 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
     }
     else if ( col == 4 )
     {
-      group.setHighlight( ( Color )value );
+      if ( remoteConfig.getRemote().hasActivityControl() )
+      {
+        for ( ActivityGroup g : activity.getActivityGroups() )
+        {
+          g.setHighlight( ( Color )value );
+        }
+      }
+      else
+      {
+        group.setHighlight( ( Color )value );
+      }
     }
     propertyChangeSupport.firePropertyChange( col == 4 ? "highlight" : "data", null, null );
   }
@@ -160,7 +207,8 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup >
   private RemoteConfiguration remoteConfig = null;
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
-  private JComboBox deviceButtonBox = new JComboBox();
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
-
+  private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox() );
+  private Activity activity = null;
+  private int tabIndex = -1;
 }

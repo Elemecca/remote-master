@@ -32,12 +32,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     JScrollPane scrollPane = new JScrollPane( activityFunctionTable );
     JPanel upper = new JPanel( new BorderLayout() );
     upper.add( scrollPane, BorderLayout.CENTER );
-    String message = "Note:  When the activity has been set with the remote, \"Key\" is "
-      + "the number key pressed to select the desired combination for the activity.  If "
-      + "\"Key\" is blank, the activity has not been set.  The \"Key\" value has no "
-      + "significance when the activity is set with RMIR, but some value has to be set "
-      + "for it before a Power Macro can be entered.";
-    messageArea = new JTextArea( message );
+    messageArea = new JTextArea();
     JLabel label = new JLabel();
     messageArea.setFont( label.getFont() );
     messageArea.setBackground( label.getBackground() );
@@ -51,7 +46,9 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     panel = new JPanel( new BorderLayout() );
     panel.setBorder( BorderFactory.createTitledBorder( "Activity Group Assignments" ) );
     activityGroupTable = new JP1Table( activityGroupModel );
+    activityGroupTable.setCellEditorModel( activityGroupModel );
     activityGroupTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
+    activityFunctionModel.setActivityGroupModel( activityGroupModel );
     scrollPane = new JScrollPane( activityGroupTable );
     panel.add( scrollPane, BorderLayout.CENTER );
     tabPanel.add( panel, BorderLayout.CENTER );
@@ -124,7 +121,20 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     if ( remoteConfig != null && ( remote = remoteConfig.getRemote() ).getButtonGroups() != null
         && remote.getButtonGroups().keySet().contains( "Activity" ) )
     {
-      messageArea.setVisible( remote.hasMasterPowerSupport() );
+      String startMessage = "Note:  When the activity has been set with the remote, \"Key\" is "
+        + "the number key pressed to select the desired combination for the activity.  If "
+        + "\"Key\" is blank, the activity has not been set.  The \"Key\" value has no "
+        + "significance when the activity is set with RMIR, but some value has to be set "
+        + "for it before ";
+      if ( remote.hasMasterPowerSupport() )
+      {
+        messageArea.setText( startMessage + "a Power Macro can be entered." );
+      }
+      else if ( remote.hasActivityControl() )
+      {
+        messageArea.setText( startMessage + "Activity Group Assignments can be edited." );
+      }
+      messageArea.setVisible( remote.hasMasterPowerSupport() || remote.hasActivityControl() );
       tabbedPane.removeAll();
       lastIndex = 0;
       for ( Button btn : remote.getButtonGroups().get( "Activity" ) )
@@ -193,6 +203,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     if ( source == clearActivity )
     {
       Activity activity = activityFunctionModel.getRow( 0 );
+      activity.setSelector( null );
       activity.setMacro( null );
       activity.setAudioHelp( 1 );
       activity.setVideoHelp( 1 );
