@@ -647,7 +647,7 @@ public class RemoteConfiguration
             activity.setSelector( null );
             for ( ActivityGroup group : groups )
             {
-              group.setDevice( null );
+              group.setDevice( DeviceButton.noButton );
             }
           }
           else
@@ -678,7 +678,7 @@ public class RemoteConfiguration
           for ( int i = 0; i < Math.min( groups.length, hex.length() - 2 ); i++ )
           {
             int index = hex.getData()[ i + 2 ];
-            groups[ i ].setDevice( index == 0xFF ? null : remote.getDeviceButton( hex.getData()[ i + 2 ] ) );
+            groups[ i ].setDevice( index == 0xFF ? DeviceButton.noButton : remote.getDeviceButton( hex.getData()[ i + 2 ] ) );
           }
         }
         segment.setObject( activity );

@@ -24,6 +24,8 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
       activity = remoteConfig.getActivities().get( btn );
       setData( activity.getActivityGroups() );
       tabIndex = remote.getButtonGroups().get( "Activity" ).indexOf( btn );
+      comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
+      comboModel.insertElementAt( DeviceButton.noButton, 0 );
     }
   }
   
@@ -77,7 +79,7 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
   {
     Remote remote = remoteConfig.getRemote();
     DeviceButton[][][] activityControl = remote.getActivityControl();
-    if ( activityControl != null )
+    if ( activityControl != null && activityControl.length > 0 )
     {
       ActivityGroup group = getRow( row );
       return col > 2 || ( col == 2  && group.getDevice() != null 
@@ -103,13 +105,13 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
     {
       JComboBox cb = ( JComboBox )comboEditor.getComponent();
       Remote remote = remoteConfig.getRemote();
-      if ( remote.getActivityControl() != null )
+      if ( remote.getActivityControl() != null && remote.getActivityControl().length > 0 )
       {
         cb.setModel( new DefaultComboBoxModel( remote.getActivityControl()[ tabIndex ][ row ] ) );
       }
       else
       {
-        cb.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceButtons() ) );
+        cb.setModel( comboModel );
       }
       comboEditor.setClickCountToStart( RMConstants.ClickCountToStart );
       return comboEditor;
@@ -209,6 +211,7 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
   private RMColorRenderer colorRenderer = new RMColorRenderer();
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
   private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox() );
+  private DefaultComboBoxModel comboModel = null;
   private Activity activity = null;
   private int tabIndex = -1;
 }

@@ -180,6 +180,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       activityFunctionTable.initColumns( activityFunctionModel );
       activityGroupModel.set( btn, remoteConfig );
       activityGroupTable.initColumns( activityGroupModel );
+      repaint();
     }
   }
   

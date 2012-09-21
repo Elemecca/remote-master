@@ -439,7 +439,7 @@ public class Remote implements Comparable< Remote >
         int pos = token.indexOf( '=' );
         if ( pos != -1 )
         {
-          if ( activityControl == null )
+          if ( activityControl == null || activityControl.length == 0 )
           {
             activityControl = new DeviceButton[ activityBtns.size() ][ activityButtonGroups.length][] ;
           }
@@ -460,7 +460,7 @@ public class Remote implements Comparable< Remote >
           
           if ( ! group.toLowerCase().startsWith( "group" ) )
           {
-            activityControl = null;
+            activityControl = new DeviceButton[ 0 ][ 0 ][ 0 ];
             return line;
           }
           groupIndex = Integer.parseInt( group.substring( 5 ) );
@@ -484,7 +484,7 @@ public class Remote implements Comparable< Remote >
         }
         else
         {
-          activityControl = null;
+          activityControl = new DeviceButton[ 0 ][ 0 ][ 0 ];
           return line;
         }
       }
@@ -3310,7 +3310,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean hasActivityControl()
   {
-    return activityControl != null;
+    return activityControl != null && activityControl.length > 0;
   }
 
   public ImageIcon getImage()
@@ -3430,7 +3430,7 @@ public class Remote implements Comparable< Remote >
   
   private Button[][] activityButtonGroups = null;
   
-  private DeviceButton[][][] activityControl = null;
+  private DeviceButton[][][] activityControl = new DeviceButton[ 0 ][ 0 ][ 0 ];
 
   /** The omit digit map byte. */
   private boolean omitDigitMapByte = false;
