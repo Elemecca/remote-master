@@ -146,6 +146,16 @@ public abstract class Processor
     return getFullName();
   }
 
+  public int getAddressLength()
+  {
+    return addressLength;
+  }
+
+  public void setAddressLength( int addressLength )
+  {
+    this.addressLength = addressLength;
+  }
+
   /**
    * Translate.
    * 
@@ -733,6 +743,9 @@ public abstract class Processor
   private int carrierTotalOffset = 0;
   
   private int carrierOnOffset = 0;
+  
+  /** Whether processor uses 2-byte or 4-byte addresses */
+  private int addressLength = 2;
   
   /** Index to style of PF and PD data */
   private int dataStyle = 0;

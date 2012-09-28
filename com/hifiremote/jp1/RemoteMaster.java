@@ -97,7 +97,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02 Beta 1.5v";
+  public final static String version = "v2.02 Beta 1.5w";
 
   /** The dir. */
   private File dir = null;
@@ -376,25 +376,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( sigString.length() > 8 ) // JP1.4/JP2 full signature block
       {
         sig = sigString.substring( 0, 6 );
-        jp2info = new byte[ 18 ];
-        if ( !io.getJP2info( jp2info, 18 ) )
-        {
-          jp2info = null;
-        }
-
-        sigData = new short[ sigString.length() + ( jp2info != null ? jp2info.length : 0 ) ];
-        int index = 0;
-        for ( int i = 0; i < sigString.length(); i++ )
-        {
-          sigData[ index++ ] = ( short )sigString.charAt( i );
-        };
-        if ( jp2info != null )
-        {
-          for ( int i = 0; i < jp2info.length; i++ )
-          {
-            sigData[ index++ ] = ( short )( jp2info[ i ] & 0xFF );
-          }
-        }
       }
       else
       {
@@ -501,6 +482,30 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
 
       remote.load();
+      
+      if ( sigString.length() > 8 ) // JP1.4/JP2 full signature block
+      {
+        int infoLen = 6 + 6 * remote.getProcessor().getAddressLength();
+        jp2info = new byte[ infoLen ];
+        if ( !io.getJP2info( jp2info, infoLen ) )
+        {
+          jp2info = null;
+        }
+
+        sigData = new short[ sigString.length() + ( jp2info != null ? jp2info.length : 0 ) ];
+        int index = 0;
+        for ( int i = 0; i < sigString.length(); i++ )
+        {
+          sigData[ index++ ] = ( short )sigString.charAt( i );
+        };
+        if ( jp2info != null )
+        {
+          for ( int i = 0; i < jp2info.length; i++ )
+          {
+            sigData[ index++ ] = ( short )( jp2info[ i ] & 0xFF );
+          }
+        }
+      }
       remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
       int count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
       System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );

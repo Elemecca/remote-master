@@ -103,7 +103,7 @@ public class SlingLearnParser
                 isTested = "true".equals( value ) || "1".equals( value );
               }
             }
-            LearnedSignal signal = new LearnedSignal( keyCode, deviceType, new Hex( command ), name
+            LearnedSignal signal = new LearnedSignal( keyCode, deviceType, 0, new Hex( command ), name
                 + ( isTested ? "" : " (untested)" ) );
             learnedSignals.add( signal );
           }

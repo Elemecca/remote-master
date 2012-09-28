@@ -229,7 +229,7 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     table.initColumns( model );
     if ( learnedSignal == null )
     {
-      this.learnedSignal = new LearnedSignal( 0, 0, new Hex(), null );
+      this.learnedSignal = new LearnedSignal( 0, 0, 0, new Hex(), null );
       boundKey.setSelectedIndex( 0 );
       shift.setSelected( false );
       xShift.setSelected( false );
@@ -335,11 +335,12 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     
     if ( source == applyButton || source == okButton )
     {
+      // Assumes data is in original format (format=0)
       String notes = learnedSignal.getNotes();
       int deviceIndex = ( ( DeviceButton )boundDevice.getSelectedItem() ).getButtonIndex();
       int keyCode = getKeyCode( boundKey, shift, xShift );
       short[] data = Hex.parseHex( signalTextArea.getText() );
-      learnedSignal = new LearnedSignal( keyCode, deviceIndex, ( new Hex( data ) ).subHex( 3 ), notes );
+      learnedSignal = new LearnedSignal( keyCode, deviceIndex, 0, ( new Hex( data ) ).subHex( 3 ), notes );
       ul = learnedSignal.getUnpackLearned();
       if ( config.hasSegments() )
       {

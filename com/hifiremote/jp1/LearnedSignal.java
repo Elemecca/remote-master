@@ -26,10 +26,11 @@ public class LearnedSignal extends Highlight
    * @param notes
    *          the notes
    */
-  public LearnedSignal( int keyCode, int deviceButtonIndex, Hex data, String notes )
+  public LearnedSignal( int keyCode, int deviceButtonIndex, int format, Hex data, String notes )
   {
     this.keyCode = keyCode;
     this.deviceButtonIndex = deviceButtonIndex;
+    this.format = format;
     this.data = data;
     this.notes = notes;
   }
@@ -38,6 +39,7 @@ public class LearnedSignal extends Highlight
   {
     keyCode = signal.keyCode;
     deviceButtonIndex = signal.deviceButtonIndex;
+    format = signal.format;
     data = new Hex( signal.data );
     notes = signal.notes;
 
@@ -55,6 +57,7 @@ public class LearnedSignal extends Highlight
 
   public static LearnedSignal read( HexReader reader, Remote remote )
   {
+    // Only used with format=0
     if ( reader.peek() == remote.getSectionTerminator() )
     {
       return null;
@@ -77,7 +80,7 @@ public class LearnedSignal extends Highlight
     int length = reader.read();
     short[] data = reader.read( length );
 
-    return new LearnedSignal( keyCode, deviceButtonIndex, new Hex( data ), null );
+    return new LearnedSignal( keyCode, deviceButtonIndex, 0, new Hex( data ), null );
   }
 
   /**
@@ -91,12 +94,18 @@ public class LearnedSignal extends Highlight
     super( properties );
     keyCode = Integer.parseInt( properties.getProperty( "KeyCode" ) );
     deviceButtonIndex = Integer.parseInt( properties.getProperty( "DeviceButtonIndex" ) );
+    format = Integer.parseInt( properties.getProperty( "Format", "0" ) );
     data = new Hex( properties.getProperty( "Data" ) );
     notes = properties.getProperty( "Notes" );
   }
   
   public Hex getSignalHex( Remote remote )
   {
+    if ( format == 1 )
+    {
+      // Just get the data, without any header
+      return new Hex( data );
+    }
     // Get the signal complete with header
     short[] signal = new short[ getSize() ];
     Hex.put(data, signal, 3 );
@@ -129,6 +138,10 @@ public class LearnedSignal extends Highlight
     super.store( pw );
     pw.print( "KeyCode", keyCode );
     pw.print( "DeviceButtonIndex", deviceButtonIndex );
+    if ( format > 0 )
+    {
+      pw.print( "Format", format);
+    }
     pw.print( "Data", data );
     if ( notes != null && !notes.equals( "" ) )
     {
@@ -208,6 +221,12 @@ public class LearnedSignal extends Highlight
     data = hex;
   }
 
+  /**
+   * Format is 0 for original learned signal format,
+   * 1 for the new format used by remotes with Maxim processors
+   */
+  private int format = 0;
+  
   /** The notes. */
   private String notes = null;
 
@@ -234,6 +253,7 @@ public class LearnedSignal extends Highlight
 
   public int store( short[] buffer, int offset, Remote remote )
   {
+    // Only used when remote does not have segments
     buffer[ offset++ ] = ( short )keyCode;
     if ( remote.getLearnedDevBtnSwapped() )
     {
@@ -263,7 +283,7 @@ public class LearnedSignal extends Highlight
   {
     if ( unpackLearned == null )
     {
-      unpackLearned = new UnpackLearned( data );
+      unpackLearned = new UnpackLearned( data, format );
     }
     return unpackLearned;
   }

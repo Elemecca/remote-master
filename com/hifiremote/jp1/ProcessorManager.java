@@ -133,6 +133,7 @@ public class ProcessorManager
     add( p );
     
     p = new MAXQProcessor( "MAXQ612" );
+    p.setAddressLength( 4 );
     add( p );
     
   }

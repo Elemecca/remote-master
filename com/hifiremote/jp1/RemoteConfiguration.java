@@ -304,7 +304,7 @@ public class RemoteConfiguration
       } 
       while ( ( property != null ) && ( property.name.length() > 0 ) );
       
-      sigData = new short[ Math.min( sigLen, 44 ) ];
+      sigData = new short[ Math.min( sigLen, 56 ) ];
       sigLen = 0;
       for ( short[] data : values )
       {
@@ -565,7 +565,16 @@ public class RemoteConfiguration
       for ( Segment segment : learnedList )
       {
         Hex hex = segment.getHex();
-        LearnedSignal ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], hex.subHex( 2 ), null );
+        LearnedSignal ls = null;
+        if ( remote.getProcessor().getEquivalentName().equals( "MAXQ610" ) )
+        {
+          // hex.getData[ 3 ] seems always to be 0 and is not stored in the learned signal
+          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
+        }
+        else
+        {
+          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 0, hex.subHex( 2 ), null );
+        }
         ls.setSegmentFlags( segment.getFlags() );
         learned.add( ls );
       }
@@ -3470,15 +3479,34 @@ public class RemoteConfiguration
       segments.remove( 9 );
       for ( LearnedSignal ls : learned )
       {
+        boolean isMAXQ = remote.getProcessor().getEquivalentName().equals( "MAXQ610" );
         ls.clearMemoryUsage();
         Hex hex = ls.getData();
         int size = hex.length();
-        size += ( remote.doForceEvenStarts() && ( size & 1 ) == 1 ) ? 3 : 2;
-        Hex segData = new Hex( size );
+        int segSize = size + ( ( remote.doForceEvenStarts() && ( size & 1 ) == 1 ) ? 3 : 2 )
+          + ( isMAXQ ? 2 : 0 );   
+        Hex segData = new Hex( segSize );
         int flags = ls.getSegmentFlags();
         segData.set( ( short )ls.getDeviceButtonIndex(), 0 );
         segData.set( ( short )ls.getKeyCode(), 1 );
-        segData.put( hex, 2 );
+        if ( isMAXQ )
+        {
+          // It is not clear whether the 0 at offset 3 is high byte of 2-byte little-endian
+          // length value or is a set of flags that have not yet been seen.  The fact that
+          // the length value counts this byte suggests the latter.
+          segData.set( ( short )( size + 1 ), 2 );
+          segData.set( ( short )0, 3 );
+          segData.put( hex, 4 );
+          if ( ( size & 1 ) == 1 )
+          {
+            // set padding byte to 0xFF
+            segData.set( ( short )0xFF, segSize - 1 );
+          }
+        }
+        else
+        {
+          segData.put( hex, 2 );
+        }
         if ( segments.get( 9 ) == null )
         {
           segments.put( 9, new ArrayList< Segment >() );
@@ -3739,7 +3767,19 @@ public class RemoteConfiguration
     // of word based flash.  In the JP1.4 and JP2 remotes seen so far, this is also the
     // start of byte based flash but in JP2.1 the signature block seems to be a distinct
     // block sitting between the word based and byte based flash.
-    return ( sigData != null && sigData.length > 30 ) ? Hex.get( sigData, 28 ) + 1 : 0;
+    int addrLen = remote.getProcessor().getAddressLength();
+    if ( sigData == null || sigData.length < 26 + 2 * addrLen )
+    {
+      return 0;
+    }
+    if ( addrLen == 2 )
+    {
+      return Hex.get( sigData, 28 ) + 1;
+    }
+    else
+    {
+      return Hex.get( sigData, 30 ) * 0x10000 + Hex.get( sigData, 32 ) + 1;
+    }
   }
 
   public Color[] getHighlight()
