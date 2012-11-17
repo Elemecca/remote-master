@@ -23,7 +23,7 @@ public class LibraryLoader
       }
       else
       {
-        folderName = osName + '-' + System.getProperty( "os.arch" );
+        folderName = osName + '-' + System.getProperty( "os.arch" ).toLowerCase();
       }
       libraryFolder = new File( folder, folderName );
       System.err.println( "libraryFolder=" + libraryFolder.getAbsolutePath() );

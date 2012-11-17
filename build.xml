@@ -18,7 +18,7 @@
         </target>
 
         <target name="compile" description="Compile the source" depends="init">
-                <javac target="1.5" debug="on" srcdir="${src}" destdir="${build}">
+                <javac target="1.5" debug="on" srcdir="${src}" destdir="${build}" includeantruntime="false">
                         <classpath refid="project.classpath"/>
                 </javac>
         </target>
@@ -65,14 +65,16 @@
             <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows"/>
 			<zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" prefix="Linux-i386" filemode="755"/>
 			<zipfileset src="${src}/par64.zip" includes="libjp1parallel.so" prefix="Linux-amd64" filemode="755"/>
-            <zipfileset src="${src}/jp12serial018.zip" includes="**/*.dll"/>
-			<zipfileset src="${src}/jp12serial018.zip" includes="**/*.so,**/*.jnilib" filemode="755"/>
+            <zipfileset src="${src}/jp12serial019.zip" includes="**/*.dll"/>
+			<zipfileset src="${src}/jp12serial019.zip" includes="**/*.so,**/*.jnilib" filemode="755"/>
             <zipfileset src="${src}/jp1usb_dll_031.zip" includes="jp1usb.dll" prefix="Windows"/>
-			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/libDecodeIR.so,**/libDecodeIR.jnilib" filemode="755"/>
-			<zipfileset src="${src}/DecodeIR_243.zip" includes="**/DecodeIR.dll,DecodeIR.html,Docs/*.txt" filemode="555"/>
+			<zipfileset src="${src}/DecodeIR_244.zip" includes="**/libDecodeIR.so,**/libDecodeIR.jnilib" filemode="755"/>
+			<zipfileset src="${src}/DecodeIR_244.zip" includes="**/DecodeIR.dll,DecodeIR.html,Docs/*.txt" filemode="555"/>
             <zipfileset dir="${src}" includes="*.sh" filemode="755" />
+			<!-- Tutorial is now on the wiki
           	<zipfileset dir="${src}" includes="tutorial.htm" />
             <zipfileset dir="tutorial_files" includes="**/*" prefix="tutorial_files" />
+			-->
           </zip>
         </target>
 
