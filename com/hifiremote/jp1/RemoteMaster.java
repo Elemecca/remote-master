@@ -97,7 +97,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.02";
+  public final static String version = "v2.02a";
 
   /** The dir. */
   private File dir = null;
@@ -223,7 +223,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The protocol panel. */
   private ProtocolUpgradePanel protocolPanel = null;
-  
+
   private ActivityPanel activityPanel = null;
 
   /** The learned panel. */
@@ -482,7 +482,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
 
       remote.load();
-      
+
       if ( sigString.length() > 8 ) // JP1.4/JP2 full signature block
       {
         int infoLen = 6 + 6 * remote.getProcessor().getAddressLength();
@@ -497,7 +497,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         for ( int i = 0; i < sigString.length(); i++ )
         {
           sigData[ index++ ] = ( short )sigString.charAt( i );
-        };
+        }
+        ;
         if ( jp2info != null )
         {
           for ( int i = 0; i < jp2info.length; i++ )
@@ -555,7 +556,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       Remote remote = remoteConfig.getRemote();
       IO io = getOpenInterface();
-      if ( io == null )  
+      if ( io == null )
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
         setInterfaceState( null );
@@ -645,24 +646,24 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   }
 
   public static File getJreExecutable()
-  { 
-    String jreDirectory = System.getProperty( "java.home" ); 
-    File javaExe = null; 
+  {
+    String jreDirectory = System.getProperty( "java.home" );
+    File javaExe = null;
     if ( System.getProperty( "os.name" ).startsWith( "Windows" ) )
-    { 
-      javaExe = new File( jreDirectory, "bin/javaw.exe" ); 
+    {
+      javaExe = new File( jreDirectory, "bin/javaw.exe" );
     }
-    else 
-    { 
-      javaExe = new File( jreDirectory, "bin/javaw" ); 
-    } 
+    else
+    {
+      javaExe = new File( jreDirectory, "bin/javaw" );
+    }
     if ( !javaExe.exists() )
-    { 
-      return null; 
-    } 
+    {
+      return null;
+    }
     return javaExe;
-  } 
-  
+  }
+
   private static void runKM( String filename )
   {
     File javaExe = getJreExecutable();
@@ -675,7 +676,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       Runtime r = Runtime.getRuntime();
       String classPath = System.getProperty( "java.class.path" );
-      r.exec( new String[] { javaExe.getCanonicalPath(), "-cp", classPath, "com.hifiremote.jp1.RemoteMaster", "-rm", filename } );
+      r.exec( new String[]
+      {
+          javaExe.getCanonicalPath(), "-cp", classPath, "com.hifiremote.jp1.RemoteMaster", "-rm", filename
+      } );
     }
     catch ( IOException e )
     {
@@ -732,12 +736,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         else if ( command.equals( "NEWDEVICE" ) )
         {
           System.err.println( "RMIR opening new RM instance" );
-          
+
           // Opening KM as a new instance of KeyMapMaster makes it share the same
           // ProtocolManager as RM, which results in crosstalk when one edits the protocol
-          // used by the other.  Replaced now by opening KM as a new application.
-          
-//          new KeyMapMaster( properties );
+          // used by the other. Replaced now by opening KM as a new application.
+
+          // new KeyMapMaster( properties );
           runKM( "" );
         }
         else if ( command.equals( "OPEN" ) )
@@ -1104,33 +1108,33 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     generalPanel.addPropertyChangeListener( this );
 
     keyMovePanel = new KeyMovePanel();
-//    tabbedPane.addTab( "Key Moves", keyMovePanel );
+    // tabbedPane.addTab( "Key Moves", keyMovePanel );
     keyMovePanel.addPropertyChangeListener( this );
 
     macroPanel = new MacroPanel();
-//    tabbedPane.addTab( "Macros", macroPanel );
+    // tabbedPane.addTab( "Macros", macroPanel );
     macroPanel.addPropertyChangeListener( this );
 
     specialFunctionPanel = new SpecialFunctionPanel();
-//    tabbedPane.add( "Special Functions", specialFunctionPanel );
+    // tabbedPane.add( "Special Functions", specialFunctionPanel );
     specialFunctionPanel.addPropertyChangeListener( this );
 
     timedMacroPanel = new TimedMacroPanel();
-//    tabbedPane.add( "Timed Macros", timedMacroPanel );
+    // tabbedPane.add( "Timed Macros", timedMacroPanel );
     timedMacroPanel.addPropertyChangeListener( this );
 
     favScanPanel = new FavScanPanel();
-//    tabbedPane.addTab( "Fav/Scan", favScanPanel );
+    // tabbedPane.addTab( "Fav/Scan", favScanPanel );
     favScanPanel.addPropertyChangeListener( this );
 
     devicePanel = new DeviceUpgradePanel();
-//    tabbedPane.addTab( "Devices", devicePanel );
+    // tabbedPane.addTab( "Devices", devicePanel );
     devicePanel.addPropertyChangeListener( this );
 
     protocolPanel = new ProtocolUpgradePanel();
-//    tabbedPane.addTab( "Protocols", protocolPanel );
+    // tabbedPane.addTab( "Protocols", protocolPanel );
     protocolPanel.addPropertyChangeListener( this );
-    
+
     activityPanel = new ActivityPanel();
     activityPanel.addPropertyChangeListener( this );
 
@@ -1138,7 +1142,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       LearnedSignal.getDecodeIR();
       learnedPanel = new LearnedSignalPanel();
-//      tabbedPane.addTab( "Learned Signals", learnedPanel );
+      // tabbedPane.addTab( "Learned Signals", learnedPanel );
       learnedPanel.addPropertyChangeListener( this );
     }
     catch ( NoClassDefFoundError ncdfe )
@@ -1697,7 +1701,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( highlightItem.isSelected() )
     {
       toolBar.add( highlightAction );
-//      highlightAction.setEnabled( true );
+      // highlightAction.setEnabled( true );
     }
   }
 
@@ -1858,11 +1862,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       // Opening KM as a new instance of KeyMapMaster makes it share the same
       // ProtocolManager as RM, which results in crosstalk when one edits the protocol
-      // used by the other.  Replaced now by opening KM as a new application.
-      
-//    KeyMapMaster km = new KeyMapMaster( properties );
-//    km.loadUpgrade( file );
-      
+      // used by the other. Replaced now by opening KM as a new application.
+
+      // KeyMapMaster km = new KeyMapMaster( properties );
+      // km.loadUpgrade( file );
+
       runKM( file.getCanonicalPath() );
       return null;
     }
@@ -2281,7 +2285,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         String tempName = temp.getInterfaceName();
         System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
         portName = temp.openRemote();
-        if ( portName == null ) portName = "";
+        if ( portName == null )
+          portName = "";
         System.err.println( "Port Name = " + ( portName.isEmpty() ? "NULL" : portName ) );
         if ( !portName.isEmpty() )
         {
@@ -2312,7 +2317,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       sig = io.getRemoteSignature();
     }
-    else // Other interfaces and earlier JP12Serial versions
+    else
+    // Other interfaces and earlier JP12Serial versions
     {
       short[] sigData = new short[ 10 ];
       int count = io.readRemote( baseAddress, sigData );
@@ -2328,7 +2334,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     return sig;
   }
-  
+
   /**
    * Description of the Method.
    * 
@@ -2400,25 +2406,25 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         else
         {
           message += "Do you want to retain all data in the first $100 (i.e. 256) bytes of memory?\n\n"
-            + "If you answer No then the memory will be set as if your present setup was\n"
-            + "installed on a reset state created in accordance with the RDF alone.  This\n"
-            + "is the cleanest option but most RDFs at present do not create a true factory\n" + "reset state.\n\n"
-            + "If you answer Yes then any data in the first $100 bytes not set by the RDF\n"
-            + "will be retained.  This should include any data set by a factory reset that\n"
-            + "is missing from the RDF, but it may also include other data that could be\n" + "usefully cleaned.\n\n"
-            + "Please also ";
+              + "If you answer No then the memory will be set as if your present setup was\n"
+              + "installed on a reset state created in accordance with the RDF alone.  This\n"
+              + "is the cleanest option but most RDFs at present do not create a true factory\n" + "reset state.\n\n"
+              + "If you answer Yes then any data in the first $100 bytes not set by the RDF\n"
+              + "will be retained.  This should include any data set by a factory reset that\n"
+              + "is missing from the RDF, but it may also include other data that could be\n" + "usefully cleaned.\n\n"
+              + "Please also ";
         }
         message += "be aware that blasting the memory will destroy most extenders, as\n"
             + "they place at least part of their code in the memory that will be cleared.\n"
             + "Press Cancel to exit without blasting the memory.";
-        int result = JOptionPane.showConfirmDialog( this, message, title, 
+        int result = JOptionPane.showConfirmDialog( this, message, title,
             remoteConfig.hasSegments() ? JOptionPane.OK_CANCEL_OPTION : JOptionPane.YES_NO_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE );
         if ( result == JOptionPane.CANCEL_OPTION )
         {
           return;
         }
-        
+
         if ( result == JOptionPane.OK_OPTION )
         {
           // Remote has segments
@@ -2428,7 +2434,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           update();
           return;
         }
-        
+
         // Continue for remotes without segments.
         // Save the data that is stored only in the remote image.
         Remote remote = remoteConfig.getRemote();
@@ -2593,7 +2599,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           newSettings[ i ].setValue( settingValues[ i ] );
         }
-        SetupCode.setMax( newRemote.getSegmentTypes() == null ? newRemote.usesTwoBytePID() ? 4095 : 2047: 0x7FFF );
+        SetupCode.setMax( newRemote.getSegmentTypes() == null ? newRemote.usesTwoBytePID() ? 4095 : 2047 : 0x7FFF );
         remoteConfig.updateImage();
         RemoteConfiguration.resetDialogs();
         update();
@@ -2777,18 +2783,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
 
     Remote remote = remoteConfig.getRemote();
-    
+
     int index = checkTabbedPane( "Key Moves", keyMovePanel, remote.hasKeyMoveSupport(), 1 );
     index = checkTabbedPane( "Macros", macroPanel, remote.hasMacroSupport(), index );
     index = checkTabbedPane( "Special Functions", specialFunctionPanel, !remote.getSpecialProtocols().isEmpty(), index );
     index = checkTabbedPane( "Timed Macros", timedMacroPanel, remote.hasTimedMacroSupport(), index );
     index = checkTabbedPane( "Fav/Scan", favScanPanel, remote.hasFavKey(), index );
-//    index++;  // Devices tab
+    // index++; // Devices tab
     index = checkTabbedPane( "Devices", devicePanel, true, index );
     index = checkTabbedPane( "Protocols", protocolPanel, remote.hasFreeProtocols(), index );
     index = checkTabbedPane( "Activities", activityPanel, remote.hasActivitySupport(), index );
     index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
-    
+
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
     macroPanel.set( remoteConfig );
@@ -2828,7 +2834,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     rawDataPanel.set( remoteConfig );
   }
-  
+
   private int checkTabbedPane( String name, Component c, boolean test, int index )
   {
     if ( c == null )
@@ -2842,7 +2848,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         tabbedPane.insertTab( name, null, c, null, index );
       }
-      index++;
+      index++ ;
     }
     else if ( tabIndex > 0 )
     {
@@ -3244,7 +3250,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** The parms. */
   private static ArrayList< String > parms = new ArrayList< String >();
-  
+
   private static File workDir = null;
 
   /** The Constant rmirEndings. */
@@ -3378,7 +3384,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     return true;
   }
-  
+
   private void finishEditing()
   {
     if ( currentPanel instanceof RMTablePanel< ? > )
@@ -3395,5 +3401,5 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       activityPanel.finishEditing();
     }
   }
-  
+
 }
