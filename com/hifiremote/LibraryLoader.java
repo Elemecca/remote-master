@@ -15,16 +15,12 @@ public class LibraryLoader
   {
     if ( libraryFolder == null )
     {
-      String folderName = "";
       String osName = System.getProperty( "os.name" );
       if ( osName.startsWith( "Windows" ) )
       {
-        folderName = "Windows";
+        osName = "Windows";
       }
-      else
-      {
-        folderName = osName + '-' + System.getProperty( "os.arch" ).toLowerCase();
-      }
+      String folderName = osName + '-' + System.getProperty( "os.arch" ).toLowerCase();
       libraryFolder = new File( folder, folderName );
       System.err.println( "libraryFolder=" + libraryFolder.getAbsolutePath() );
     }

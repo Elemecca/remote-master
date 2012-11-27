@@ -119,6 +119,9 @@ Changes for v2.02
 - Added support for MAXQ612 processor (Graham)
 - Added support for the new format for type 0xDB segments used in URC-7962 (Graham)
 - Added support for the new learned signal format used in the URC-7962 (Graham)
+-- Final Release
+- Upgrade to DecodeIR 2.44
+- Upgrade to JP12Serial 0.19
 
 Changes for v2.01
 -- Alpha --
