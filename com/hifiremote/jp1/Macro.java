@@ -46,29 +46,32 @@ public class Macro extends AdvancedCode
   public Macro( Properties props )
   {
     super( props );
-    String temp = props.getProperty( "SequenceNumber" );
+    String temp = props.getProperty( "Name" );
     if ( temp != null )
     {
-      try
+      name = temp;
+    }
+    try
+    {
+      temp = props.getProperty( "SequenceNumber" );
+      if ( temp != null )
       {
         sequenceNumber = Integer.parseInt( temp );
       }
-      catch ( NumberFormatException nfe )
-      {
-        nfe.printStackTrace( System.err );
-      }
-    }
-    temp = props.getProperty( "DeviceIndex" );
-    if ( temp != null )
-    {
-      try
+      temp = props.getProperty( "DeviceIndex" );
+      if ( temp != null )
       {
         deviceIndex = Integer.parseInt( temp );
       }
-      catch ( NumberFormatException nfe )
+      temp = props.getProperty( "Serial" );
+      if ( temp != null )
       {
-        nfe.printStackTrace( System.err );
+        serial = Integer.parseInt( temp );
       }
+    }
+    catch ( NumberFormatException nfe )
+    {
+      nfe.printStackTrace( System.err );
     }
   }
 
@@ -97,12 +100,24 @@ public class Macro extends AdvancedCode
   {
     Remote remote = remoteConfig.getRemote();
     StringBuilder buff = new StringBuilder();
-    short[] keys = hex.getData();
-    for ( int i = 0; i < keys.length; ++i )
+//    int keyCount = hex.length() / ( remote.usesEZRC() ? 2 : 1 );
+//    int keyCount = hex.length();
+    short[] data = hex.getData();
+
+//    short[] keys = hex.subHex( 0, keyCount ).getData();
+//    short[] durations = hex.subHex( keyCount, keyCount ).getData(); // gives null if no durations
+    for ( int i = 0; i < hex.length(); ++i )
     {
       if ( i != 0 )
+      {
         buff.append( ';' );
-        buff.append( remote.getButtonName( keys[ i ] ) );
+      }
+      buff.append( remote.getButtonName( data[ i ] & 0xFF ) );
+      int duration = data[ i ] >> 8;
+      if ( duration > 0 )
+      {
+        buff.append( "(" +  duration / 10 + "." + duration % 10 + ")" );
+      }
     }
     return buff.toString();
   }
@@ -149,6 +164,33 @@ public class Macro extends AdvancedCode
 
   public void store( PropertyWriter pw )
   {
+    if ( getSegment().getType() == 3 || getSegment().getType() == 0x1E )
+    {
+      int segmentFlags = getSegmentFlags();
+      if ( segmentFlags > 0 )
+      {
+        pw.print( "SegmentFlags", segmentFlags );
+      }
+      int dataLen = data.length();
+      Hex hex = new Hex( 2 * dataLen );
+      for ( int i = 0; i < dataLen; i++ )
+      {
+        int val = data.getData()[ i ];
+        hex.set( ( short )( val & 0xFF ), i );
+        hex.set( ( short )( ( val >> 8 ) & 0xFF ), dataLen + i );
+      }
+      pw.print( "Name", name );
+      pw.print( "DeviceIndex", deviceIndex );
+      pw.print( "KeyCode", keyCode );
+      pw.print( "Data", hex );
+      pw.print( "Serial", serial );
+      if ( notes != null && notes.length() > 0 )
+      {
+        pw.print( "Notes", notes );
+      }
+      return;
+    }
+    
     super.store( pw );
     if ( sequenceNumber != 0 )
     {
@@ -178,10 +220,51 @@ public class Macro extends AdvancedCode
   {
     return deviceIndex;
   }
+  
+  public DeviceButton getDeviceButton( RemoteConfiguration config )
+  {
+    return config.getRemote().getDeviceButton( deviceIndex );
+  }
 
   public void setDeviceIndex( int deviceIndex )
   {
     this.deviceIndex = deviceIndex;
+  }
+  
+  private int serial = 0;
+  
+  public int getSerial()
+  {
+    return serial;
+  }
+
+  public void setSerial( int serial )
+  {
+    this.serial = serial;
+  }
+
+  private String name = null;
+
+  public String getName()
+  {
+    return name;
+  }
+
+  public void setName( String name )
+  {
+    this.name = name;
+  }
+  
+  private short[] durations = null;
+
+  public short[] getDurations()
+  {
+    return durations;
+  }
+
+  public void setDurations( short[] durations )
+  {
+    this.durations = durations;
   }
 
   protected static MacroCodingType macroCodingType = null;

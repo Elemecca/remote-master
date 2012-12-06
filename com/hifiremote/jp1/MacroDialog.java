@@ -140,6 +140,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     boundKey.setModel( new DefaultComboBoxModel( remote.getMacroButtons() ) );
 
     shift.setText( remote.getShiftLabel() );
+    shift.setEnabled( remote.getShiftEnabled() );
     xShift.setText( remote.getXShiftLabel() );
     xShift.setEnabled( remote.getXShiftEnabled() );
 
@@ -154,7 +155,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
    */
   private void setMacro( Macro macro )
   {
-    this.macro = null;
+    this.macro = macro;
 
     if ( macro == null )
     {
@@ -199,16 +200,16 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       if ( base != 0 )
       {
         b = remote.getButton( base );
-        if ( ( base | remote.getShiftMask() ) == code )
+        if ( remote.getShiftEnabled() &&( ( base | remote.getShiftMask() ) == code ) )
         {
-          shiftBox.setEnabled( b.allowsShiftedMacro() );
+          shiftBox.setEnabled( remote.getShiftEnabled() && b.allowsShiftedMacro() );
           shiftBox.setSelected( true );
           comboBox.setSelectedItem( b );
           return;
         }
         if ( remote.getXShiftEnabled() && ( ( base | remote.getXShiftMask() ) == code ) )
         {
-          xShiftBox.setEnabled( remote.getXShiftEnabled() & b.allowsXShiftedMacro() );
+          xShiftBox.setEnabled( remote.getXShiftEnabled() && b.allowsXShiftedMacro() );
           xShiftBox.setSelected( true );
           comboBox.setSelectedItem( b );
           return;
@@ -225,12 +226,12 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       }
     }
 
-    shiftBox.setEnabled( b.allowsShiftedMacro() );
-    xShiftBox.setEnabled( remote.getXShiftEnabled() & b.allowsXShiftedMacro() );
+    shiftBox.setEnabled( remote.getShiftEnabled() && b.allowsShiftedMacro() );
+    xShiftBox.setEnabled( remote.getXShiftEnabled() && b.allowsXShiftedMacro() );
 
-    if ( b.getIsXShifted() )
+    if ( remote.getXShiftEnabled() && b.getIsXShifted() )
       xShiftBox.setSelected( true );
-    else if ( b.getIsShifted() )
+    else if ( remote.getShiftEnabled() && b.getIsShifted() )
       shiftBox.setSelected( true );
 
     comboBox.removeActionListener( this );
@@ -298,13 +299,30 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       Hex data = macroBox.getValue();
 
       String notesStr = notes.getText();
-
-      macro = new Macro( keyCode, data, notesStr );
+      
+      Macro newMacro = new Macro( keyCode, data, notesStr );
       if ( config.hasSegments() )
       {
         // set default values
-        macro.setDeviceIndex( 0 );
-        macro.setSegmentFlags( 0xFF );
+        if ( macro == null && remote.usesEZRC() )
+        {
+          newMacro.setDeviceIndex( remote.getDeviceButtons()[ 0 ].getButtonIndex() );
+          newMacro.setSegmentFlags( 0xFF );
+          newMacro.setName( "New macro" );
+        }
+        else if ( macro == null )
+        {
+          newMacro.setDeviceIndex( 0 );
+          newMacro.setSegmentFlags( 0xFF );
+        }
+        else
+        {
+          newMacro.setName( macro.getName() );
+          newMacro.setSegmentFlags( macro.getSegmentFlags() );
+          newMacro.setDeviceIndex( macro.getDeviceIndex() );
+          newMacro.setSerial( macro.getSerial() );
+        }
+        macro = newMacro;
       }
       setVisible( false );
     }
@@ -354,8 +372,9 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
 
     macroBox.add.setEnabled( canAdd && b.canAssignToMacro() );
     macroBox.insert.setEnabled( canAdd && b.canAssignToMacro() );
-    macroBox.addShift.setEnabled( canAdd && b.canAssignShiftedToMacro() );
-    macroBox.insertShift.setEnabled( canAdd && b.canAssignShiftedToMacro() );
+    boolean shiftEnabled = config.getRemote().getShiftEnabled();
+    macroBox.addShift.setEnabled( shiftEnabled && canAdd && b.canAssignShiftedToMacro() );
+    macroBox.insertShift.setEnabled( shiftEnabled && canAdd && b.canAssignShiftedToMacro() );
     boolean xShiftEnabled = config.getRemote().getXShiftEnabled();
     macroBox.addXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );
     macroBox.insertXShift.setEnabled( xShiftEnabled && canAdd && b.canAssignXShiftedToMacro() );

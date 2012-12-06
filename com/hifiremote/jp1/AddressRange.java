@@ -19,6 +19,14 @@ public class AddressRange extends RDFParameter
     parse( text, remote );
   }
   
+  public AddressRange( int start, int end )
+  {
+    this.start = start;
+    this.end = end;
+    freeStart = start;
+    freeEnd = end;
+  }
+  
   public void parse( String text, Remote remote ) throws Exception
   {
     StringTokenizer st = new StringTokenizer( text, ".=" );

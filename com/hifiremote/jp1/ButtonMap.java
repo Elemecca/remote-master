@@ -19,6 +19,14 @@ public class ButtonMap
   {
     number = num;
     keyCodeList = keyCodes;
+    keyCodeSingleList = new ArrayList< Short >();
+    for ( int i = 0; i < keyCodes.length; i++ )
+    {
+      for ( int j = 0; j < keyCodes[ i ].length; j++ )
+      {
+        keyCodeSingleList.add( keyCodes[ i ][ j ]  );
+      }
+    }
   }
 
   /**
@@ -44,6 +52,8 @@ public class ButtonMap
    */
   public ButtonMap setButtons( Remote remote )
   {
+    this.remote = remote;
+    
     size = 0;
 
     buttons = new Button[ keyCodeList.length ][];
@@ -245,6 +255,7 @@ public class ButtonMap
     int count = 0;
     int funcLen = 0;
     boolean[] flags = new boolean[ buttons.length ];
+    List< Button > btns = new ArrayList< Button >();
     for ( int i = 0; i < buttons.length; i++ )
     {
       Button[] inner = buttons[ i ];
@@ -268,6 +279,8 @@ public class ButtonMap
       }
     }
     short[] rc = new short[ count ];
+    indexList = new short[ funcLen == 0 ? 0 : 2 * count / funcLen ];
+    Arrays.fill( indexList, ( short )0 );
     short[] zeros = new short[ funcLen ];
     int index = 0;
     for ( int i = 0; i < buttons.length; i++ )
@@ -278,6 +291,7 @@ public class ButtonMap
         for ( int j = 0; j < inner.length; j++ )
         {
           short[] hex = null;
+          btns.add( inner[ j ] );
           Function func = assignments.getAssignment( inner[ j ], Button.NORMAL_STATE );
           if ( digitMapUsed && ( i == 0 ))
             func = null;
@@ -288,14 +302,61 @@ public class ButtonMap
               ( func.getHex() == null ))
             hex = zeros;
           else
+          {
             hex = func.getHex().getData();
+            if ( funcLen > 0 )
+            {
+              Integer funcIndex = func.getIndex() == null ? Function.defaultIndex : func.getIndex();
+              int k = 2 * index / funcLen;
+              indexList[ k ] = ( short )( ( funcIndex >> 8 ) & 0xFF );
+              indexList[ k + 1 ] = ( short )( funcIndex & 0xFF );
+            }
+          }         
           System.arraycopy( hex, 0, rc, index, funcLen );
           index += funcLen;
         }
       }
     }
+    Collections.sort( btns, new Comparator< Button >()
+    {
+      @Override
+      public int compare( Button b1, Button b2 )
+      {
+        return ( new Short( b1.getKeyCode() ).compareTo( new Short( b2.getKeyCode()) ) );
+      }    
+    } );
+    buttonList = btns.toArray( new Button[ 0 ] );
     return rc;
   }
+
+  public short[] getIndexList()
+  {
+    return indexList;
+  }
+
+  public Button[] getButtonList()
+  {
+    return buttonList;
+  }
+
+  public Comparator< Button > mapSort = new Comparator< Button >()
+  {
+    @Override
+    public int compare( Button b1, Button b2 )
+    {
+      // Sort groupHold buttons before others by giving them a sort value of -1, and
+      // buttons not in keyCodeSingleList after others by giving them a sort value of 0x100
+//      List< Button > holdList = null;
+      LinkedHashMap< String, List< Button >> groups = remote.getButtonGroups();
+      List< Button > holdList = groups != null ? groups.get( "Hold" ) : null;
+      int index = 0;
+      Integer i1 = holdList != null && holdList.contains( b1 ) ?
+          -1 : ( index = keyCodeSingleList.indexOf( b1.getKeyCode() ) ) == -1 ? 0x100 : index;
+      Integer i2 = holdList != null && holdList.contains( b2 ) ?
+          -1 : ( index = keyCodeSingleList.indexOf( b2.getKeyCode() ) ) == -1 ? 0x100 : index;
+      return i1.compareTo( i2 );
+    }    
+  };
 
   /** The number. */
   private int number;
@@ -308,4 +369,12 @@ public class ButtonMap
   
   /** The buttons. */
   private Button[][] buttons;
+  
+  private Remote remote = null;
+  
+  private short[] indexList = null;
+  
+  private Button[] buttonList = null;
+  
+  private List< Short > keyCodeSingleList;
 }

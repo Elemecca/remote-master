@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -320,6 +321,19 @@ public class Remote implements Comparable< Remote >
         if ( longestMap == null || longestMap.size() < thisMap.size() )
         {
           longestMap = thisMap;
+        }
+      }
+      
+      // Sort the buttons lists into same order used for bindable buttons
+      Collections.sort( buttons, longestMap.mapSort );
+      if ( activityButtonGroups != null )
+      {
+        for ( int i = 0; i < activityButtonGroups.length; i++ )
+        {
+          if ( activityButtonGroups[ i ] != null )
+          {
+            Arrays.sort( activityButtonGroups[ i ], longestMap.mapSort );
+          }
         }
       }
 
@@ -1078,6 +1092,7 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "EepromSize" ) )
       {
         eepromSize = RDFReader.parseNumber( value );
+        usageRange = new AddressRange( 0, eepromSize - 1 );
       }
       else if ( parm.equals( "DevCodeOffset" ) )
       {
@@ -1255,6 +1270,7 @@ public class Remote implements Comparable< Remote >
       {
         StringTokenizer st = new StringTokenizer( value, "=," );
         shiftMask = RDFReader.parseNumber( st.nextToken() );
+        shiftEnabled = shiftMask != 0;
         if ( st.hasMoreTokens() )
         {
           shiftLabel = st.nextToken().trim();
@@ -1262,9 +1278,9 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equals( "XShift" ) )
       {
-        xShiftEnabled = true;
         StringTokenizer st = new StringTokenizer( value, "=," );
         xShiftMask = RDFReader.parseNumber( st.nextToken() );
+        xShiftEnabled = xShiftMask != 0;
         if ( st.hasMoreTokens() )
         {
           xShiftLabel = st.nextToken().trim();
@@ -1428,7 +1444,7 @@ public class Remote implements Comparable< Remote >
     }
     if ( segmentTypes != null )
     {
-      macroSupport = ( segmentTypes.contains( 1 ) || segmentTypes.contains( 2 ) );
+      macroSupport = ( segmentTypes.contains( 1 ) || segmentTypes.contains( 2 ) || segmentTypes.contains( 3 ) );
       keyMoveSupport = ( segmentTypes.contains( 7 ) || segmentTypes.contains( 8 ) );
       twoBytePID = true;
       advCodeBindFormat = AdvancedCode.BindFormat.LONG;
@@ -2229,6 +2245,12 @@ public class Remote implements Comparable< Remote >
         activityButtonGroups[ i ] = groupList.get( i );
       }
     }
+    
+    Button favBtn = getButtonByStandardName( "Favorites" );
+    if ( favKey == null && favBtn != null )
+    {
+      favKey = new FavKey( favBtn.getKeyCode() );
+    }
 
     return line;
   }
@@ -2326,6 +2348,12 @@ public class Remote implements Comparable< Remote >
   {
     load();
     return buttonsByName.get( name.toLowerCase() );
+  }
+  
+  public Button getButtonByStandardName( String name )
+  {
+    load();
+    return buttonsByStandardName.get( name.toLowerCase() );
   }
 
   /**
@@ -2911,6 +2939,10 @@ public class Remote implements Comparable< Remote >
     {
       return "JP3";
     }
+    else if ( name.equals( "MAXQ622" ) )
+    {
+      return "JPUSB";
+    }
     else
     {
       return "JP1";
@@ -2965,6 +2997,10 @@ public class Remote implements Comparable< Remote >
     else if ( name.equals( "MAXQ612" ) )
     {
       return "Maxim MAXQ612";
+    }
+    else if ( name.equals( "MAXQ622" ) )
+    {
+      return "Maxim MAXQ622";
     }
     else
     {
@@ -3021,6 +3057,11 @@ public class Remote implements Comparable< Remote >
   public int getShiftMask()
   {
     return shiftMask;
+  }
+
+  public boolean getShiftEnabled()
+  {
+    return shiftEnabled;
   }
 
   /**
@@ -3171,6 +3212,11 @@ public class Remote implements Comparable< Remote >
       return favKey.getDeviceButtonAddress() == 0;
     }
   }
+  
+  public boolean hasFavorites()
+  {
+    return segmentTypes != null && segmentTypes.contains( 0x1D );
+  }
 
   /**
    * Gets the fav key.
@@ -3199,7 +3245,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean hasActivitySupport()
   {
-    return segmentTypes != null && segmentTypes.contains( 0xDB );
+    return segmentTypes != null && ( segmentTypes.contains( 0xDB ) || segmentTypes.contains( 0x1E ) );
   }
 
   /** The oem device. */
@@ -3219,7 +3265,7 @@ public class Remote implements Comparable< Remote >
 
   /** The advanced code address. */
   private AddressRange advancedCodeAddress = null;
-
+  private AddressRange usageRange = null;
   /**
    * Gets the advanced code address.
    * 
@@ -3228,6 +3274,11 @@ public class Remote implements Comparable< Remote >
   public AddressRange getAdvancedCodeAddress()
   {
     return advancedCodeAddress;
+  }
+  
+  public AddressRange getUsageRange()
+  {
+    return usageRange;
   }
 
   // Only used with remotes that have FavScan area segregated.
@@ -3274,6 +3325,18 @@ public class Remote implements Comparable< Remote >
   public AddressRange getDeviceUpgradeAddress()
   {
     return deviceUpgradeAddress;
+  }
+  
+  /** Returns:
+   *  0 if only device independent upgrades,
+   *  1 if only dependent upgrades (JPUSB remotes),
+   *  2 if both dependent and independent upgrades.
+   *  
+   *  This value is the number of additional columns required in device upgrade panel.
+   */
+  public int hasDeviceDependentUpgrades()
+  {
+    return deviceUpgradeAddress != null ? 2 : usesEZRC() ? 1 : 0;
   }
 
   /** The device upgrade address. */
@@ -3451,6 +3514,8 @@ public class Remote implements Comparable< Remote >
 
   /** The shift mask. */
   private int shiftMask = 0x80;
+  
+  private boolean shiftEnabled = true;;
 
   /** The x shift mask. */
   private int xShiftMask = 0xC0;
@@ -3545,6 +3610,11 @@ public class Remote implements Comparable< Remote >
   {
     return twoBytePID;
   }
+  
+  public boolean usesEZRC()
+  {
+    return processor.getE2FormatOffset() >= 0;
+  }
 
   /** The learned dev btn swapped. */
   private boolean learnedDevBtnSwapped = false;
@@ -3623,6 +3693,12 @@ public class Remote implements Comparable< Remote >
   public boolean doForceEvenStarts()
   {
     return forceEvenStarts;
+  }
+  
+  public boolean isSoftButton( Button btn )
+  {
+    return buttonGroups.get( "Soft" ) != null && buttonGroups.get( "Soft" ).contains( btn )
+      || buttonGroups.get( "User" ) != null && buttonGroups.get( "User" ).contains( btn );
   }
 
   private boolean masterPowerSupport = false;

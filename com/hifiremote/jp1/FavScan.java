@@ -4,6 +4,7 @@ import java.util.Properties;
 
 public class FavScan extends AdvancedCode
 {
+  private String name = null;
   private DeviceButton deviceButton = null;
 
   public FavScan( int keyCode, Hex data, String notes )
@@ -15,6 +16,7 @@ public class FavScan extends AdvancedCode
   public FavScan( Properties props )
   {
     super( props );
+    name = props.getProperty( "Name" );
     String temp = props.getProperty( "DeviceIndex" );
     if ( temp != null )
     {
@@ -27,6 +29,13 @@ public class FavScan extends AdvancedCode
         nfe.printStackTrace( System.err );
       }
     }
+  }
+  
+  public FavScan( FavScan favScan )
+  {
+    super( favScan.getKeyCode(), new Hex( favScan.getData() ), favScan.getNotes() );
+    deviceButton = favScan.getDeviceButton();
+    name = favScan.getName();
   }
 
   public static FavScan read( HexReader reader, Remote remote )
@@ -64,7 +73,7 @@ public class FavScan extends AdvancedCode
       {
         buff.append( remote.getButtonName( keys[ i ] ) );
       }
-      if ( keys[ i ] == 0 || ( ( i + 1 ) % entrySize ) == 0 )
+      if ( entrySize >= 0 && ( keys[ i ] == 0 || ( ( i + 1 ) % entrySize ) == 0 ) )
       {
         while ( ( i < keys.length ) &&  ( ( keys[ i ] == 0 ) || ( i % entrySize ) != 0 ) )
         {  
@@ -109,14 +118,28 @@ public class FavScan extends AdvancedCode
   
   public void store( PropertyWriter pw, RemoteConfiguration remoteConfig )
   {
+    if ( name != null )
+    {
+      pw.print( "Name", name );
+    }
     super.store( pw );
     Remote remote = remoteConfig.getRemote();
-    DeviceButton devBtn = ( remote.getAdvCodeBindFormat() ==  AdvancedCode.BindFormat.NORMAL ) ? 
-        remoteConfig.getFavKeyDevButton() : this.getDeviceButton();
+    DeviceButton devBtn = ( remote.getAdvCodeBindFormat() ==  AdvancedCode.BindFormat.NORMAL 
+        || remoteConfig.hasSegments() ) ? remoteConfig.getFavKeyDevButton() : this.getDeviceButton();
     if ( devBtn != DeviceButton.noButton )
     {
       pw.print( "DeviceIndex", devBtn.getButtonIndex() );
     }
+  }
+
+  public String getName()
+  {
+    return name;
+  }
+
+  public void setName( String name )
+  {
+    this.name = name;
   }
 
   public DeviceButton getDeviceButton()
@@ -141,6 +164,6 @@ public class FavScan extends AdvancedCode
     if ( deviceIndex == 0x0F )
       return DeviceButton.noButton;
     else
-      return remote.getDeviceButtons()[ deviceIndex ];
+      return remote.getDeviceButton( deviceIndex );
   }
 }

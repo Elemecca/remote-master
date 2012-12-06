@@ -16,12 +16,14 @@ public class DeviceLabels extends RDFParameter
   private int length = 0;
   private short fill = 0x20;
   private int defaultsAddr = 0;
+  public static String columnName = "Label";
 
   public void parse( String text, Remote remote ) throws Exception
   {
     List< String > settings = ParameterTokenizer.getTokens( text );
     addr = RDFReader.parseNumber( settings.get( 0 ) );
     length = RDFReader.parseNumber( settings.get( 1 ) );
+    columnName = "Label";
     if ( settings.size() > 2 )
     {
       String token = settings.get( 2 );
@@ -36,6 +38,14 @@ public class DeviceLabels extends RDFParameter
       if ( token != null )
       {
         defaultsAddr = RDFReader.parseNumber( token );
+      }
+    }
+    if ( settings.size() > 4 )
+    {
+      String token = settings.get( 4 );
+      if ( token != null )
+      {
+        columnName = token;
       }
     }
   }
@@ -123,7 +133,19 @@ public class DeviceLabels extends RDFParameter
 
   public String getText( short[] data, int index )
   {
+    if ( addr == 0 || addr >= data.length )
+    {
+      return "";
+    }
+    int length = this.length;
     int offset = addr + length * index;
+    if ( length == 0 )
+    {
+      // length is given as first byte of label data
+      length = data[ addr - 1 ];
+//      offset++;
+    }
+    
     char[] text = new char[ length ];
 
     // copy from data
@@ -148,7 +170,20 @@ public class DeviceLabels extends RDFParameter
     {
       text = getDefaultText( data, index );
     }
-    text = text.trim().toUpperCase();
+    text = text.trim();
+    
+    int length = this.length;
+    
+    if ( length == 0 && addr <= data.length )
+    {
+      // length is given as first byte of label data
+      length = data[ addr - 1 ];
+    }
+    else
+    {
+      // remotes with fixed label length only use upper case
+      text = text.toUpperCase();
+    }
 
     int offset = addr + length * index;
     int i = 0, j = 0;

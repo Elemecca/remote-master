@@ -858,6 +858,16 @@ public class Hex implements Cloneable, Comparable< Hex >
   {
     return subHex( data, index, len );
   }
+  
+  public String subString( int index, int len )
+  {
+    char[] c = new char[ len ];
+    for ( int i = 0; i < Math.min( len, length() - index ); i++ )
+    {
+      c[ i ] = ( char )data[ index + i ];
+    }
+    return new String( c );
+  }
 
   /**
    * Sub hex.
@@ -872,6 +882,10 @@ public class Hex implements Cloneable, Comparable< Hex >
    */
   public static Hex subHex( short[] src, int index, int len )
   {
+    if ( index + len > src.length )
+    {
+      return null;
+    }
     short[] dest = new short[ len ];
     System.arraycopy( src, index, dest, 0, len );
     return new Hex( dest );
@@ -909,7 +923,9 @@ public class Hex implements Cloneable, Comparable< Hex >
     return rc;
   }
 
-  /** The data. */
+  /** The values in the data array are normally single byte values, but in the data
+   *  of macros from type 3 segments they are two-byte values, to hold both the
+   *  keycode and the duration of each step.  */
   private short[] data = null;
 
   /** The N o_ match. */

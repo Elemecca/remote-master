@@ -87,13 +87,20 @@ public class ButtonTableModel
    */
   public int getColumnCount()
   {
-    if ( deviceUpgrade == null )
-      return 3;
-    Remote remote = deviceUpgrade.getRemote();
-    if (( remote != null ) && remote.getXShiftEnabled())
-      return 4;
-    else
-      return 3;
+    int count = 3;
+    if ( deviceUpgrade != null )
+    {
+      Remote remote = deviceUpgrade.getRemote();
+      if (( remote != null ) && remote.getXShiftEnabled())
+      {
+        count++;
+      }
+      if (( remote != null ) && !remote.getShiftEnabled())
+      {
+        count--;
+      }
+    }
+    return count;
   }
   
   /* (non-Javadoc)

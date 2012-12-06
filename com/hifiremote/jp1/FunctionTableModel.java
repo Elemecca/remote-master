@@ -21,6 +21,8 @@ public class FunctionTableModel extends KMTableModel< Function >
 
   /** The Constant nameCol. */
   private final static int nameCol = rowCol + 1;
+  
+  private int indexCol = -1;
 
   /** The Constant efcCol. */
   private int efcCol = nameCol + 1;
@@ -85,7 +87,16 @@ public class FunctionTableModel extends KMTableModel< Function >
   {
     this.protocol = protocol;
     this.remote = remote;
-    efcCol = nameCol + 1;
+    if ( remote.usesEZRC() )
+    {
+      indexCol = nameCol + 1;
+      efcCol = indexCol + 1;
+    }
+    else
+    {
+      indexCol = -1;
+      efcCol = nameCol + 1;
+    }
     colOffset = efcCol + 1;
     if ( ( remote != null ) && ( remote.getEFCDigits() == 5 ) )
     {
@@ -112,6 +123,8 @@ public class FunctionTableModel extends KMTableModel< Function >
     int rc = 5;
     if ( ( remote != null ) && ( remote.getEFCDigits() == 5 ) )
       rc += 1;
+    if ( remote.usesEZRC() )
+      rc += 1;
     if ( protocol != null )
       rc += protocol.getColumnCount();
     return rc;
@@ -132,6 +145,8 @@ public class FunctionTableModel extends KMTableModel< Function >
       rc = new Integer( row + 1 );
     else if ( col == nameCol )
       rc = function.getName();
+    else if ( col == indexCol )
+      rc = String.format( "%4X", function.getIndex() );
     else if ( col == efcCol )
     {
       if ( hex == null )
@@ -197,6 +212,11 @@ public class FunctionTableModel extends KMTableModel< Function >
         text = null;
       checkFunctionAssigned( function, text );
       function.setName( text );
+    }
+    else if ( col == indexCol )
+    {
+      int ndx = Integer.parseInt( ( String )value, 16 );
+      function.setIndex( ndx );
     }
     else if ( col == efcCol )
     {
@@ -281,6 +301,8 @@ public class FunctionTableModel extends KMTableModel< Function >
       rc = "#";
     else if ( col == nameCol )
       rc = "Name";
+    else if ( col == indexCol )
+      rc = "Index";
     else if ( col == efcCol )
       rc = "EFC";
     else if ( col == efc5col )
@@ -307,6 +329,8 @@ public class FunctionTableModel extends KMTableModel< Function >
       rc = "199";
     else if ( col == nameCol )
       rc = "Function Name";
+    else if ( col == indexCol )
+      rc = "00000";
     else if ( col == efcCol )
       rc = "CCC";
     else if ( col == efc5col )
@@ -328,7 +352,7 @@ public class FunctionTableModel extends KMTableModel< Function >
   public Class< ? > getColumnClass( int col )
   {
     Class< ? > rc = null;
-    if ( ( col == nameCol ) || ( col == notesCol ) )
+    if ( ( col == nameCol ) || ( col == notesCol ) || ( col == indexCol ) )
       rc = String.class;
     else if ( col == rowCol )
       rc = Integer.class;
@@ -369,7 +393,7 @@ public class FunctionTableModel extends KMTableModel< Function >
    */
   public TableCellEditor getColumnEditor( int col )
   {
-    if ( ( remote == null ) || ( protocol == null ) || ( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) )
+    if ( ( remote == null ) || ( protocol == null ) || ( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == indexCol ) )
       return null;
     if ( col == efcCol )
       return new EFCEditor( 3 );
@@ -391,7 +415,7 @@ public class FunctionTableModel extends KMTableModel< Function >
     TableCellRenderer rc = null;
     if ( col == rowCol )
       rc = new RowNumberRenderer();
-    else if ( ( col == nameCol ) || ( col == notesCol ) )
+    else if ( ( col == nameCol ) || ( col == notesCol ) || ( col == indexCol ) )
       rc = null;
     else if ( col == efcCol )
       rc = new EFCRenderer();
@@ -414,6 +438,8 @@ public class FunctionTableModel extends KMTableModel< Function >
     if ( ( col == rowCol ) || ( col == nameCol ) || ( col == notesCol ) || ( col == efcCol ) || ( col == efc5col )
         || ( col == hexCol ) )
       return super.isColumnWidthFixed( col );
+    else if ( col == indexCol )
+      return true;
     else
       return protocol.isColumnWidthFixed( col - colOffset );
   }

@@ -28,9 +28,9 @@ public class Button
     keyCode = code;
     remote = r;
     int maskedCode = code & 0xC0;
-    if ( maskedCode == r.getShiftMask() )
+    if ( maskedCode == r.getShiftMask() && r.getShiftMask() != 0 )
       setIsShifted( true );
-    else if ( maskedCode == r.getXShiftMask() )
+    else if ( maskedCode == r.getXShiftMask() && r.getXShiftMask() != 0 )
       setIsXShifted( true );
     else if ( maskedCode != 0 )
       restrictions |= ( SHIFT | XSHIFT );
@@ -389,7 +389,7 @@ public class Button
    */
   public boolean allowsShiftedKeyMove()
   {
-    if ( isShifted || isXShifted )
+    if ( isShifted || isXShifted || !remote.getShiftEnabled() )
       return false;
     return ( ( restrictions & SHIFT_MOVE_BIND ) == 0 );
   }
@@ -401,7 +401,7 @@ public class Button
    */
   public boolean allowsXShiftedKeyMove()
   {
-    if ( isShifted || isXShifted )
+    if ( isShifted || isXShifted || !remote.getXShiftEnabled() )
       return false;
     return ( ( restrictions & XSHIFT_MOVE_BIND ) == 0 );
   }
@@ -612,13 +612,15 @@ public class Button
   {
     int stateCount = 0;
     if ( allowed( type, NORMAL_STATE ) ) stateCount++;
-    if ( allowed( type, SHIFTED_STATE ) ) stateCount++;
+    if ( remote.getShiftEnabled() && allowed( type, SHIFTED_STATE ) ) stateCount++;
     if ( remote.getXShiftEnabled() && allowed( type, XSHIFTED_STATE ) ) stateCount++;
     if ( stateCount == 1 )
     {
       // If only one allowed state, don't allow shift states to be changed.
-      shiftBox.setEnabled( false );
-      shiftBox.setSelected( allowed( type, SHIFTED_STATE ) );
+      if ( remote.getShiftEnabled() ) {
+        shiftBox.setEnabled( false );
+        shiftBox.setSelected( allowed( type, SHIFTED_STATE ) );
+      }
       if ( remote.getXShiftEnabled() ) {
         xShiftBox.setEnabled( false );
         xShiftBox.setSelected( allowed( type, XSHIFTED_STATE ) );
@@ -635,7 +637,9 @@ public class Button
     }
     else
     {
-      shiftBox.setEnabled( allowed( type, SHIFTED_STATE ) );
+      if ( remote.getShiftEnabled() ) {
+        shiftBox.setEnabled( allowed( type, SHIFTED_STATE ) );
+      }
       if ( remote.getXShiftEnabled() ) {
         xShiftBox.setEnabled( allowed( type, XSHIFTED_STATE ) );
       }

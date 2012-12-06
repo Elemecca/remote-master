@@ -125,8 +125,9 @@ public class KeyChooser
     this.remote = remote;
     buttonBox.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons()));
     shiftBox.setText( remote.getShiftLabel());
+    shiftBox.setVisible( remote.getShiftEnabled() );
     xShiftBox.setText( remote.getXShiftLabel());
-    xShiftBox.setVisible( remote.getXShiftEnabled());
+    xShiftBox.setVisible( remote.getXShiftEnabled() );
     pack();
   }
 

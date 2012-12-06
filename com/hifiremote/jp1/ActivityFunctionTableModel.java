@@ -1,6 +1,8 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -79,16 +81,25 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   {
     if ( remoteConfig != null )
     {
+      // Assume that using EZRC also implies has Master Power Support
       Remote remote = remoteConfig.getRemote();
+      if ( !remote.usesEZRC() && col > 0 )
+      {
+        ++col;  // skip Name
+      }
+      else if ( remote.usesEZRC() && col > 3 )
+      {
+        col += 2;  // skip Audio and Video Actions
+      }
       if ( !remote.hasMasterPowerSupport() && col > 0 )
       {
-        if ( remote.hasActivityControl() && col > 1 )
+        if ( remote.hasActivityControl() && col > 2 )
         {
-          ++col;
+          ++col;  // skip Power Macro
         }
         else if ( !remote.hasActivityControl() )
         {
-          col += 2;
+          col += 2;  // skip Key, Power Macro
         }
       }
     }
@@ -97,18 +108,18 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
 
   private static final String[] colNames =
   {
-      "#", "Key", "Power Macro", "Audio Action", "Video Action", "Notes", "<html>Size &amp<br>Color</html>"
+      "#", "Name", "Key", "Power Macro", "Audio Action", "Video Action", "Notes", "<html>Size &amp<br>Color</html>"
   };
   
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "Key__", "A power macro with a lot of keys_________", "Audio Action__", "Video Action__",
+      " 00 ", "Activity Name ___", "Key__", "A power macro with a lot of keys_________", "Audio Action__", "Video Action__",
       "A reasonable length note", "Color_"
   };
   
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, Integer.class, Hex.class, String.class, String.class, Color.class
+      Integer.class, String.class, Integer.class, Hex.class, String.class, String.class, String.class, Color.class
   };
 
   @Override
@@ -125,27 +136,35 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public String getColumnPrototypeName( int col )
   {
+    if ( remoteConfig.getRemote().usesEZRC() && col == 2 )
+    {
+      return "Activity 0__";
+    }
     return colPrototypeNames[ getEffectiveColumn( col ) ];
   }
 
   @Override
   public int getColumnCount()
   {
-    int count = colNames.length - 3;
+    int count = colNames.length - 4;  // omit Name, Key, Macro, Color
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
       if ( remote.hasMasterPowerSupport() )
       {
-        count += 2;
+        count += 2;  // add back Key, Macro
       }
       else if ( remote.hasActivityControl() )
       {
-        ++count;
+        ++count;  // add back Key
       }
-      if ( remoteConfig != null && remoteConfig.allowHighlighting() )
+      if ( remoteConfig.allowHighlighting() )
       {
-        ++count;
+        ++count;  // add back Color;
+      }
+      if ( remote.usesEZRC() )
+      {
+        --count;  // add Name but omit Audio Action, Video Action
       }
     }
     return count;
@@ -161,7 +180,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   public boolean isColumnWidthFixed( int col )
   {
     col = getEffectiveColumn( col );
-    return col != 2 && col != 5;
+    return col != 1 && col != 3 && col != 6;
   }
   
   @Override
@@ -171,20 +190,41 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     switch ( getEffectiveColumn( col ) )
     {
       case 1:
-        return keyEditor;
+      case 6:
+        return selectAllEditor;
       case 2:
-        return macroEditor;
+        Remote remote = remoteConfig.getRemote();
+        if ( remote.usesEZRC() && remote.getButtonGroups() != null
+            && remote.getButtonGroups().keySet().contains( "Activity" ) )
+        {
+          JComboBox cb = ( JComboBox )comboEditor.getComponent();
+          List< Button > freeBtns = new ArrayList< Button >( remote.getButtonGroups().get( "Activity" ) );
+          for ( Activity a : remoteConfig.getActivities().values() )
+          {
+            if ( a != getRow( 0 ) && a.isActive() )
+            {
+              freeBtns.remove( a.getSelector() );
+            }
+          }
+          cb.setModel( new DefaultComboBoxModel( freeBtns.toArray( new Button[ 0 ] ) ) );
+          comboEditor.setClickCountToStart( RMConstants.ClickCountToStart );
+          return comboEditor;
+        }
+        else
+        {
+          return keyEditor;
+        }
       case 3:
+        return macroEditor;
+      case 4:
         editor = new DefaultCellEditor( audioHelpSettingBox );
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
-      case 4:
+      case 5:
         editor = new DefaultCellEditor( videoHelpSettingBox );
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
-      case 5:
-        return selectAllEditor;
-      case 6:
+      case 7:
         return colorEditor;
       default:
         return null;
@@ -199,11 +239,11 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     {
       return new RowNumberRenderer();
     }
-    else if ( col == 1 )
+    else if ( col == 2 )
     {
       return keyRenderer;
     }
-    else if ( col == 2 )
+    else if ( col == 3 )
     {
       return new DefaultTableCellRenderer()
       {
@@ -219,7 +259,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         }
       };
     }
-    else if ( col == 6 )
+    else if ( col == 7 )
     {
       return colorRenderer;
     }
@@ -237,17 +277,19 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       case 0:
         return new Integer( row + 1 );
       case 1:
+        return activity.getName();
+      case 2:
         Button selector = activity.getSelector();
         return selector == null ? null : new Integer( activity.getSelector().getKeyCode() );
-      case 2:
-        return macro == null ? null : macro.getData();
       case 3:
-        return audioHelpSettingBox.getModel().getElementAt( activity.getAudioHelp() );
+        return macro == null ? null : macro.getData();
       case 4:
-        return videoHelpSettingBox.getModel().getElementAt( activity.getVideoHelp() );
+        return audioHelpSettingBox.getModel().getElementAt( activity.getAudioHelp() );
       case 5:
-        return activity.getNotes();
+        return videoHelpSettingBox.getModel().getElementAt( activity.getVideoHelp() );
       case 6:
+        return activity.getNotes();
+      case 7:
         return activity.getHighlight();
       default:
         return null;
@@ -263,18 +305,36 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     Remote remote = remoteConfig.getRemote();
     if ( col == 1 )
     {
-      activity.setSelector( remote.getButton( ( Integer )value ) );
+      String name = ( String )value;
+      activity.setName( name );
+      panel.setTabTitle( name );
+    }
+    if ( col == 2 )
+    {
+      int keyCode;
+      Button btn;
+      if ( remote.usesEZRC() )
+      {
+        btn = ( Button )value;
+        keyCode = btn.getKeyCode();
+      }
+      else
+      {
+        keyCode = ( Integer )value;
+        btn = remote.getButton( keyCode );
+      }
+      activity.setSelector( btn );
       if ( remote.hasMasterPowerSupport() )
       {
         if ( macro == null )
         {
-          macro = new Macro( ( Integer )value, new Hex( 0 ), activity.getButton().getKeyCode(), 0, null );
+          macro = new Macro( keyCode, new Hex( 0 ), activity.getButton().getKeyCode(), 0, null );
           macro.setSegmentFlags( 0xFF );
           activity.setMacro( macro );
         }
         else
         {
-          macro.setKeyCode( ( Integer )value );
+          macro.setKeyCode( keyCode );
         }
       }
       if ( remote.hasActivityControl() )
@@ -290,32 +350,37 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         activityGroupModel.fireTableDataChanged();
       }
     }
-    else if ( col == 2 )
+    else if ( col == 3 )
     {
       macro.setData( ( Hex )value );
     }
-    else if ( col == 3 )
+    else if ( col == 4 )
     {
       activity.setAudioHelp( audioHelpSettingBox.getSelectedIndex() );
     }
-    else if ( col == 4 )
+    else if ( col == 5 )
     {
       activity.setVideoHelp( videoHelpSettingBox.getSelectedIndex() );
     }
-    else if ( col == 5 )
+    else if ( col == 6 )
     {
       activity.setNotes( ( String )value );
     }
-    else if ( col == 6 )
+    else if ( col == 7 )
     {
       activity.setHighlight( ( Color )value );
     }
-    propertyChangeSupport.firePropertyChange( col == 5 ? "highlight" : "data", null, null );
+    propertyChangeSupport.firePropertyChange( col == 7 ? "highlight" : "data", null, null );
   }
 
   public void setActivityGroupModel( ActivityGroupTableModel activityGroupModel )
   {
     this.activityGroupModel = activityGroupModel;
+  }
+
+  public void setPanel( ActivityPanel panel )
+  {
+    this.panel = panel;
   }
 
   private RemoteConfiguration remoteConfig = null;
@@ -324,11 +389,13 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   private RMSetterEditor< Hex, MacroDefinitionBox > macroEditor = 
     new RMSetterEditor< Hex, MacroDefinitionBox >( MacroDefinitionBox.class );
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
+  private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox() );
   private RMColorRenderer colorRenderer = new RMColorRenderer();
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
   private JComboBox audioHelpSettingBox = new JComboBox();
   private JComboBox videoHelpSettingBox = new JComboBox();
   private String[] helpSetting = null;
   private ActivityGroupTableModel activityGroupModel = null;
+  private ActivityPanel panel = null;
 
 }

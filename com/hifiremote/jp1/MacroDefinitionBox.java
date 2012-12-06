@@ -1,22 +1,32 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.text.DecimalFormat;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.NumberFormatter;
 
 public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener,
 RMSetter< Hex >
@@ -61,10 +71,15 @@ RMSetter< Hex >
     macroButtons.addListSelectionListener( this );
     macroButtons.setFixedCellWidth( 100 );
     keysBox.add( new JScrollPane( macroButtons ), BorderLayout.CENTER );
-
-    JPanel buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
-    buttonBox.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
-    keysBox.add( buttonBox, BorderLayout.SOUTH );
+    
+    JPanel buttonPanel = new JPanel( new BorderLayout() );
+    keysBox.add( buttonPanel, BorderLayout.SOUTH );
+    
+    JPanel buttonBox = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
+    buttonPanel.add(  buttonBox, BorderLayout.PAGE_START );
+    buttonPanel.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
+    buttonPanel.add(  Box.createVerticalStrut( ( new JTextField() ).getPreferredSize().height + 4 ), BorderLayout.LINE_START );
+    
     moveUp.addActionListener( this );
     buttonBox.add( moveUp );
     moveDown.addActionListener( this );
@@ -73,6 +88,38 @@ RMSetter< Hex >
     buttonBox.add( remove );
     clear.addActionListener( this );
     buttonBox.add( clear );
+    
+    NumberFormatter formatter = new NumberFormatter( new DecimalFormat( "0.0" ) );
+    formatter.setValueClass( Float.class );
+    duration = new JFormattedTextField( formatter ){
+      @Override
+      protected void processFocusEvent( FocusEvent e ) 
+      {
+        super.processFocusEvent( e );
+        if ( e.getID() == FocusEvent.FOCUS_GAINED )
+        {  
+          selectAll();
+        }  
+      }
+    };
+    duration.setFocusLostBehavior( JFormattedTextField.PERSIST );
+    duration.setColumns( 4 );
+    duration.addActionListener( this );
+    duration.setToolTipText( "<HTML>To edit the pause after any key, select it, enter the duration (minimum 0.1 sec) and press Return.<br>"
+        + "To emulate holding a key, precede it with the special Hold key and add the<br>hold duration to it in the same way.</HTML>" );
+    
+    FontMetrics fm = durationLabel.getFontMetrics( durationLabel.getFont() );
+    int width = fm.stringWidth( "Pause after for:  " );
+    durationLabel.setPreferredSize( new Dimension( width, durationLabel.getHeight() ) );
+    durationLabel.setLabelFor( duration );
+    durationLabel.setHorizontalAlignment( SwingConstants.RIGHT );
+    
+    durationPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 1, 0 ) );
+    durationPanel.add( durationLabel, BorderLayout.LINE_START );
+    durationPanel.add( duration, BorderLayout.CENTER );
+    durationPanel.add( durationSuffix, BorderLayout.LINE_END );
+
+    buttonPanel.add( durationPanel, BorderLayout.CENTER );
   }
 
   public void setButtonEnabler( ButtonEnabler buttonEnabler )
@@ -85,6 +132,7 @@ RMSetter< Hex >
     this.config = config;
     Remote remote = config.getRemote();
     macroButtonRenderer.setRemote( remote );
+    durationPanel.setVisible( remote.usesEZRC() );
     
     java.util.List< Button > buttons = remote.getButtons();
     for ( Button b : buttons )
@@ -148,6 +196,18 @@ RMSetter< Hex >
     {
       macroButtonModel.clear();
     }
+    else if ( source == duration )
+    {
+      // minimum duration is 0 for hold buttons but 0.1 for others
+      float f = ( Float )duration.getValue();
+      int selected = macroButtons.getSelectedIndex();
+      int val = ( ( Number )macroButtonModel.elementAt( selected ) ).intValue();
+      val &= 0xFF;
+      Button btn = remote.getButton( val );
+      int pdVal = Math.max( ( int )( 10.0 * f + 0.5 ), isHold( btn ) ? 0 : 1 );
+      val |= pdVal << 8;
+      macroButtonModel.set( selected, val ); 
+    }
     enableButtons();
   }
   
@@ -159,6 +219,13 @@ RMSetter< Hex >
    */
   private void addKey( int mask )
   {
+    Remote remote = config.getRemote();
+    if ( remote.usesEZRC() )
+    {
+      // minimum duration is 0 for hold buttons but 0.1 for others
+      Button btn = ( Button )availableButtons.getSelectedValue();
+      mask |= isHold( btn ) ? 0 : 0x100;
+    }
     Integer value = new Integer( getSelectedKeyCode() | mask );
     macroButtonModel.addElement( value );
   }
@@ -219,6 +286,18 @@ RMSetter< Hex >
     return macroButtonModel.getSize() == 0;
   }
   
+  private boolean isHold( Button btn )
+  {
+    Remote remote = config.getRemote();
+    if ( remote.usesEZRC() )
+    {
+      LinkedHashMap< String, List< Button >> groups = remote.getButtonGroups();
+      List< Button > holdList = groups != null ? groups.get( "Hold" ) : null;
+      return holdList != null && holdList.contains( btn );
+    }
+    return false;
+  }
+  
   @Override
   public Hex getValue()
   {
@@ -264,17 +343,39 @@ RMSetter< Hex >
    */
   public void enableButtons()
   {
+    Remote remote = config.getRemote();
     int selected = macroButtons.getSelectedIndex();
     moveUp.setEnabled( selected > 0 );
     moveDown.setEnabled( ( selected != -1 ) && ( selected < ( macroButtonModel.getSize() - 1 ) ) );
     remove.setEnabled( selected != -1 );
     clear.setEnabled( macroButtonModel.getSize() > 0 );
-    
+    if ( durationPanel.isVisible() )
+    {
+      List< Button > holdButtons = remote.getButtonGroups() != null ? 
+          remote.getButtonGroups().get( "Hold" ) : null;
+      duration.setEnabled( selected != -1 );
+      durationLabel.setEnabled( selected != -1 );
+      durationSuffix.setEnabled( selected != -1 );
+
+      if ( selected >= 0 )
+      {
+        int val = getValue().getData()[ selected ];
+        Button btn = remote.getButton( val & 0xFF );
+        duration.setValue( new Float( ( ( val >> 8 ) & 0xFF ) / 10.0 ) );
+        durationLabel.setText( holdButtons != null && holdButtons.contains( btn ) ? 
+            "Hold next for:  " : "Pause after for:  " );
+      }
+      else
+      {
+        durationLabel.setText( "Duration:  " );
+        duration.setText( null );
+      }
+    }
+
     Button baseButton = ( Button )availableButtons.getSelectedValue();
     buttonEnabler.enableButtons( baseButton, this );
   }
 
-  
   /** The add. */
   protected JButton add = new JButton( "Add" );
 
@@ -303,6 +404,14 @@ RMSetter< Hex >
 
   /** The clear. */
   private JButton clear = new JButton( "Clear" );
+  
+  private JPanel durationPanel = new JPanel( new BorderLayout() );
+  
+  private JLabel durationLabel = new JLabel( "Duration:  " );
+  
+  private JLabel durationSuffix = new JLabel( " secs" );
+  
+  private JFormattedTextField duration = null;
 
   /** The config. */
   private RemoteConfiguration config = null;

@@ -22,17 +22,26 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
       setData( remoteConfig.getFavScans() );
     }
   }
+  
+  private int getEffectiveColumn( int col )
+  {
+    if ( remoteConfig != null && !remoteConfig.getRemote().usesEZRC() && col > 0 )
+    {
+      col++;
+    }
+    return col;
+  }
 
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "A reasonable length macro with a reasonable number of steps ", 
+      " 00 ", "Name of a favorite ", "A reasonable length macro with a reasonable number of steps ", 
       "A reasonable length note for a macro", "Color_"
   };
 
   /** The Constant colWidths. */
   private static final boolean[] colWidths =
   {
-      true, false, false, true
+      true, false, false, false, true
   };
 
   /*
@@ -43,13 +52,14 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public boolean isColumnWidthFixed( int col )
   {
-    return colWidths[ col ];
+    return colWidths[ getEffectiveColumn( col ) ];
   }
 
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( col < 2 )
+    col = getEffectiveColumn( col );
+    if ( col != 1 && col < 3 )
     {
       return false;
     }
@@ -59,7 +69,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Macro Keys", "Notes", "<html>Size &amp<br>Color</html>"
+      "#", "Name", "Macro Keys", "Notes", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -70,13 +80,13 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public String getColumnName( int col )
   {
-    return colNames[ col ];
+    return colNames[ getEffectiveColumn( col ) ];
   }
 
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, String.class, Color.class
+      Integer.class, String.class, String.class, String.class, Color.class
   };
 
   /*
@@ -87,19 +97,23 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public Class< ? > getColumnClass( int col )
   {
-    return colClasses[ col ];
+    return colClasses[ getEffectiveColumn( col ) ];
   }
 
   @Override
   public String getColumnPrototypeName( int col )
   {
-    return colPrototypeNames[ col ];
+    return colPrototypeNames[ getEffectiveColumn( col ) ];
   }
 
   @Override
   public int getColumnCount()
   {
-    int count = colNames.length - 1;
+    int count = colNames.length - 2;
+    if ( remoteConfig != null && remoteConfig.getRemote().usesEZRC() )
+    {
+      ++count;
+    }
     if ( remoteConfig != null && remoteConfig.allowHighlighting() )
     {
       ++count;
@@ -110,11 +124,12 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
+    col = getEffectiveColumn( col );
     if ( col == 0 )
     {
       return new RowNumberRenderer();
     }
-    else if ( col == 3 )
+    else if ( col == 4 )
     {
       return colorRenderer;
     }
@@ -124,7 +139,12 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public TableCellEditor getColumnEditor( int col )
   {
-    if ( col == 3 )
+    col = getEffectiveColumn( col );
+    if ( col == 1 )
+    {
+      return selectAllEditor;
+    }
+    if ( col == 4 )
     {
       return colorEditor;
     }
@@ -135,15 +155,18 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   public Object getValueAt( int row, int column )
   {
     FavScan favScan = remoteConfig.getFavScans().get( row );
+    column = getEffectiveColumn( column );
     switch ( column )
     {
       case 0:
         return new Integer( row + 1 );
       case 1:
-        return favScan.getValueString( remoteConfig );
+        return favScan.getName();
       case 2:
-        return favScan.getNotes();
+        return favScan.getValueString( remoteConfig );
       case 3:
+        return favScan.getNotes();
+      case 4:
         return favScan.getHighlight();
       default:
         return null;
@@ -154,11 +177,16 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   public void setValueAt( Object value, int row, int col )
   {
     FavScan favScan = getRow( row );
-    if ( col == 2 )
+    col = getEffectiveColumn( col );
+    if ( col == 1 )
+    {
+      favScan.setName( ( String )value );
+    }
+    if ( col == 3 )
     {
       favScan.setNotes( ( String )value );
     }
-    else if ( col == 3 )
+    else if ( col == 4 )
     {
       favScan.setHighlight( ( Color  )value );
     }
@@ -173,4 +201,5 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   private RemoteConfiguration remoteConfig = null;
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
+  private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
 }

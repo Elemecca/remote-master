@@ -1,6 +1,8 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.util.Arrays;
+import java.util.HashMap;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -27,6 +29,7 @@ public class DeviceButton extends Highlight
   public DeviceButton( String name, int hiAddr, int lowAddr, int typeAddr, int setupCode, int index  )
   {
     this.name = name;
+    defaultName = name;
     highAddress = hiAddr;
     lowAddress = lowAddr;
     typeAddress = typeAddr;
@@ -44,6 +47,16 @@ public class DeviceButton extends Highlight
   public String getName()
   {
     return name;
+  }
+
+  public void setName( String name )
+  {
+    this.name = name;
+  }
+
+  public void setDefaultName()
+  {
+    name = defaultName;
   }
 
   /**
@@ -105,6 +118,15 @@ public class DeviceButton extends Highlight
     else
     {
       data[ 2 ] = index;
+      if ( index == 0xFF )
+      {
+        data[ 3 ] = 0xFF;  // setup code high
+        data[ 4 ] = 0xFF;  // setup code low
+        data[ 5 ] = 0xFF;  // setup code lock OFF
+        volumePT = noButton;
+        transportPT = noButton;
+        channelPT = noButton;
+      }
     }
   }
   
@@ -176,7 +198,17 @@ public class DeviceButton extends Highlight
   
   public int getDeviceSlot( short[] data )
   {
-    return ( data[ highAddress ] << 8 ) | data[ lowAddress ];
+    if ( highAddress == 0 )
+    {
+      // this returns the device type in its high byte and the high byte of the setup code
+      // in its low byte, which will return 0xFFFF only if both the device type and setup
+      // code are unset
+      return ( data[ 2 ] << 8 ) | data[ 3 ];
+    }
+    else
+    {
+      return ( data[ highAddress ] << 8 ) | data[ lowAddress ];
+    }
   }
   
   public void setDeviceSlot( int value, short[] data )
@@ -191,6 +223,11 @@ public class DeviceButton extends Highlight
     {
       data[ highAddress ] = 0;
       data[ lowAddress ] = 0;
+    }
+    else
+    {
+      data[ 3 ] = 0;
+      data[ 4 ] = 0;
     }
   }
   
@@ -231,6 +268,8 @@ public class DeviceButton extends Highlight
 
   /** The name. */
   private String name;
+  
+  private String defaultName = null;
 
   /** The high address. */
   private int highAddress = 0;
@@ -248,6 +287,45 @@ public class DeviceButton extends Highlight
   private DeviceButton volumePT = noButton;
   private DeviceButton transportPT = noButton;
   private DeviceButton channelPT = noButton;
+  
+  private HashMap< Button, String > softButtonNames = null;
+  private HashMap< Button, String > softFunctionNames = null;
+  
+  /** 
+   *   Used only for XSight remotes, where there is a direct correspondence between device
+   *   buttons and device upgrades even for built-in setup codes
+   */
+  private DeviceUpgrade upgrade = null;
+
+  public DeviceUpgrade getUpgrade()
+  {
+    return upgrade;
+  }
+
+  public void setUpgrade( DeviceUpgrade upgrade )
+  {
+    this.upgrade = upgrade;
+  }
+
+  public HashMap< Button, String > getSoftButtonNames()
+  {
+    return softButtonNames;
+  }
+
+  public void setSoftButtonNames( HashMap< Button, String > softButtonNames )
+  {
+    this.softButtonNames = softButtonNames;
+  }
+
+  public HashMap< Button, String > getSoftFunctionNames()
+  {
+    return softFunctionNames;
+  }
+
+  public void setSoftFunctionNames( HashMap< Button, String > softFunctionNames )
+  {
+    this.softFunctionNames = softFunctionNames;
+  }
 
   public void doHighlight( Color[] highlight )
   {
@@ -261,14 +339,15 @@ public class DeviceButton extends Highlight
       }
       setMemoryUsage( ( typeAddress > 0 ) ? 3 : 2 );
     }
-    else
+    else if ( getSegment() != null )
     {
       int address = getSegment().getAddress();
-      for ( int i = 3; i < 16; i++ )
+      int size = getSegment().getHex().length() + 4;
+      for ( int i = 3; i < size; i++ )
       {
         highlight[ address + i ] = getHighlight();
       }
-      setMemoryUsage( 13 );
+      setMemoryUsage( size - 3 );
     }
   }
   
@@ -277,9 +356,18 @@ public class DeviceButton extends Highlight
     if ( getSegment() != null )
     {
       Hex hex = getSegment().getHex();
-      hex.set( ( short )Math.max( volumePT.getButtonIndex(), 0 ), 6 );
-      hex.set( ( short )Math.max( transportPT.getButtonIndex(), 0 ), 7 );
-      hex.set( ( short )Math.max( channelPT.getButtonIndex(), 0 ), 8 );
+      // If device type is 0xFF, ie slot is empty, the PT values are all 0xFF
+      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( volumePT.getButtonIndex(), 0 ) ), 6 );
+      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( transportPT.getButtonIndex(), 0 ) ), 7 );
+      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( channelPT.getButtonIndex(), 0 ) ), 8 );
+    }
+    else if ( remote.getSegmentTypes() != null )
+    {
+      Hex hex = new Hex( 12 );
+      Arrays.fill( hex.getData(), ( short )0xFF );
+      hex.set( ( short )buttonIndex, 0 );
+      hex.set( ( short )0, 1 );
+      setSegment( new Segment( 0, 0xFF, hex ) );
     }
   }
 }

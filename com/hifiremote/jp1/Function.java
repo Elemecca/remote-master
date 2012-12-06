@@ -54,6 +54,7 @@ public class Function
   public Function( Function base )
   {
     name = base.name;
+    index = base.index;
     if ( base.hex != null )
       hex = new Hex( base.hex );
     notes = base.notes;
@@ -115,6 +116,8 @@ public class Function
 
     if ( name != null )
       out.print( prefix + ".name", name );
+    if ( index != null && index != defaultIndex )
+      out.print( prefix + ".index", Integer.toString( index ) );
     if ( hex != null )
       out.print( prefix + ".hex", hex.toString() );
     if ( notes != null )
@@ -134,6 +137,9 @@ public class Function
     String str = props.getProperty( prefix + ".name" );
     if ( str != null )
       setName( str );
+    str = props.getProperty( prefix + ".index" );
+    if ( str != null )
+      setIndex( Integer.parseInt( str ) );
     str = props.getProperty( prefix + ".hex" );
     if ( str != null )
       setHex( new Hex( str ) );
@@ -160,6 +166,16 @@ public class Function
     if ( item != null )
       item.setText( name );
     return this;
+  }
+
+  public Integer getIndex()
+  {
+    return index;
+  }
+
+  public void setIndex( Integer index )
+  {
+    this.index = index;
   }
 
   /**
@@ -372,6 +388,9 @@ public class Function
 
   /** The name. */
   protected String name = null;
+  
+  /** The EZ-RC index value corresponding to this function name */
+  protected Integer index = null;
 
   /** The notes. */
   protected String notes = null;
@@ -387,4 +406,7 @@ public class Function
 
   /** The users. */
   private List< User > users = new ArrayList< User >();
+  
+  /** Default value used in upgrade when index==null */
+  public static final int defaultIndex = 0;
 }

@@ -87,9 +87,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     deviceScrollPane = new JScrollPane( deviceButtonTable );
     deviceButtonPanel.add( deviceScrollPane, BorderLayout.CENTER );
     
-    String message = "Note:  Devices on this remote are selected by scrolling through a fixed list and a device with an "
-      + "unset setup code is skipped.  A blank entry in the setup column denotes an unset setup code.";
-    messageArea = new JTextArea( message );
+    messageArea = new JTextArea();
     JLabel label = new JLabel();
     messageArea.setFont( label.getFont() );
     messageArea.setBackground( label.getBackground() );
@@ -160,8 +158,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     warningPanel.setBackground( Color.RED );
     warningPanel.setVisible( false );
 
-    String warningText = "WARNING:  Setup Codes shown in RED are invalid";
-    JLabel warningLabel = new JLabel( warningText );
+    warningLabel = new JLabel();
     Font font = warningLabel.getFont();
     Font font2 = font.deriveFont( Font.BOLD, 12 );
     warningLabel.setFont( font2 );
@@ -216,24 +213,37 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     this.remoteConfig = remoteConfig;
     deviceModel.set( remoteConfig );
     deviceButtonTable.initColumns( deviceModel );
+    SoftDevices softDevices = remoteConfig.getRemote().getSoftDevices();
+    Remote remote = remoteConfig.getRemote();
+    
+    String message1 = "Devices on this remote are selected by scrolling through a fixed list and a device with an "
+      + "unset setup code is skipped.  A blank entry in the setup column denotes an unset setup code.";
+    String message2 = "Devices on this remote are selected by scrolling through a list of those devices that have been "
+      + "set up.  To set up an unset device, you must first set a value in the Type column.  To delete a set "
+      + "device, edit the Type value and select the blank entry at the bottom of the list.";
+    String message3 = "Note 1:  All devices in this remote require a corresponding device upgrade unless they consist "
+      + "only of learned signals.  Use the remote itself to set up a built-in setup code, as this automatically creates "
+      + "the necessary device upgrade.  You can then download it to RMIR and edit the upgrade as required.\n\nNote2:  "
+      + message2;
+    String text = remote.usesEZRC() ? message3 : softDevices != null && softDevices.isSetupCodesOnly() ? 
+        "Note:  " + message1 : "Note:  " + message2;
+    messageArea.setText( text );
+    messageArea.setVisible( softDevices != null );
 
     if ( remoteConfig == null || !remoteConfig.hasSegments() )
     {
       settingModel.set( remoteConfig );
       settingTable.initColumns( settingModel );
       settingsScrollPane.setVisible( true );
-      messageArea.setVisible( false );
     }
     else
     {
-      settingsScrollPane.setVisible( false );
-      SoftDevices softDevices = remoteConfig.getRemote().getSoftDevices();
-      messageArea.setVisible( softDevices == null ? false : softDevices.isSetupCodesOnly() );
+      settingsScrollPane.setVisible( false ); 
     }
 
     if ( remoteConfig != null )
     {
-      String text = remoteConfig.getNotes();
+      text = remoteConfig.getNotes();
       if ( text == null )
       {
         text = "";
@@ -325,6 +335,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     }
 
     DeviceUpgrade newUpgrade = new DeviceUpgrade( selectedUpgrade );
+    newUpgrade.setRemoteConfig( remoteConfig );
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );
     editor = new DeviceUpgradeEditor( remoteConfig.getOwner(), newUpgrade, remotes, row, this );
@@ -362,7 +373,17 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
 
   public boolean setWarning()
   {
-    boolean result = deviceModel.hasInvalidCodes();
+    boolean result = deviceModel.hasInvalidCodes() || deviceModel.hasMissingUpgrades();
+    String warningText = "WARNING:";
+    if ( deviceModel.hasInvalidCodes() )
+    {
+      warningText += "  Setup Codes shown in RED are invalid.";
+    }
+    if ( deviceModel.hasMissingUpgrades() )
+    {
+      warningText += "  Names shown in RED have no assigned upgrade.";
+    }
+    warningLabel.setText( warningText );
     warningPanel.setVisible( result );
     return result;
   }
@@ -404,6 +425,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
 
   private JPanel deviceButtonPanel = null;
   private JPanel warningPanel = null;
+  private JLabel warningLabel = null;
   private JTextArea messageArea = null;
 
   private JScrollPane deviceScrollPane = null;

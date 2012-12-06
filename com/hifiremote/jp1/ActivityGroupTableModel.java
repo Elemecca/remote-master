@@ -25,7 +25,10 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
       setData( activity.getActivityGroups() );
       tabIndex = remote.getButtonGroups().get( "Activity" ).indexOf( btn );
       comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
-      comboModel.insertElementAt( DeviceButton.noButton, 0 );
+      if ( !remote.usesEZRC() )
+      {
+        comboModel.insertElementAt( DeviceButton.noButton, 0 );
+      }
     }
   }
   

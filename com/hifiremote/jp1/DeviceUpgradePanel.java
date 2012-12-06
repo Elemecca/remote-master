@@ -82,16 +82,28 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       upgrade = new DeviceUpgrade();
       Remote remote = remoteConfig.getRemote();
       upgrade.setRemote( remote );
-      if ( remote.getDeviceUpgradeAddress() != null )
+      if ( remote.hasDeviceDependentUpgrades() > 0 )
       {
+        DeviceButton defaultDev = remote.hasDeviceDependentUpgrades() == 2 || remote.getDeviceButtons().length == 0 ?
+            DeviceButton.noButton : remote.getDeviceButtons()[ 0 ];
         upgrade.setButtonIndependent( false );
-        upgrade.setButtonRestriction( DeviceButton.noButton );
-        String msg = "<html>This remote has device upgrades that are available on<br>"
+        upgrade.setButtonRestriction( defaultDev );
+        String msg;
+        if ( remote.hasDeviceDependentUpgrades() == 2 )
+        {
+          msg =  "<html>This remote has device upgrades that are available on<br>"
             + "all device buttons and ones that are only available on a<br>"
             + "specified button.  The same upgrade can even be in both<br>"
             + "categories.  This new upgrade will be created as being in<br>"
             + "neither category.  After pressing OK, edit the new table<br>"
             + "entry to set the availability as required.</html>";
+        }
+        else
+        {
+          msg = "<html>This remote requires there to be exactly one device upgrade<br>"
+            + "assigned to each active device button.  After pressing OK, edit<br>"
+            + "the new table entry to assign this upgrade appropriately.";
+        }
         JOptionPane.showMessageDialog( RemoteMaster.getFrame(), msg, "Creating a new device upgrade",
             JOptionPane.PLAIN_MESSAGE );
       }
@@ -116,7 +128,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   {
     this.editor = null;
     DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
-    if ( remoteConfig.hasSegments() )
+    if ( remoteConfig.hasSegments() && newUpgrade != null )
     {
       Protocol p = newUpgrade.getProtocol();
       newUpgrade.setSizeCmdBytes( p.getDefaultCmd().length() );
@@ -188,6 +200,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   public void endEdit( DeviceUpgradeEditor editor, Integer row )
   {
     DeviceUpgrade newUpgrade = createRowObjectB( editor );
+    Remote remote = remoteConfig.getRemote();
     if ( newUpgrade == null )
     {
       if ( oldUpgrade != null )
@@ -206,13 +219,16 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       }
       return;
     }
+    if ( remote.usesEZRC() && newUpgrade.getButtonRestriction() != DeviceButton.noButton )
+    {
+      newUpgrade.getButtonRestriction().setUpgrade( newUpgrade );
+    }
     if ( row != null )
     {
       // Edit
       model.setRow( sorter.modelIndex( row ), newUpgrade );
       Protocol pOld = oldUpgrade.getProtocol();
       Protocol pNew = newUpgrade.getProtocol();
-      Remote remote = remoteConfig.getRemote();
       if ( pOld == pNew && pOld.newCustomCode != null && pOld.oldCustomCode != null
           && ! pOld.newCustomCode.equals( pOld.oldCustomCode ) )
       {
@@ -257,7 +273,6 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       if ( remoteConfig.findBoundDeviceButtonIndex( newUpgrade ) == -1 )
       {
         // upgrade isn't bound to a device button.
-        Remote remote = remoteConfig.getRemote();
         DeviceButton[] devButtons = remote.getDeviceButtons();
         DeviceButton devButton = ( DeviceButton )JOptionPane.showInputDialog( RemoteMaster.getFrame(),
             "The device upgrade \"" + newUpgrade.toString()
@@ -275,18 +290,18 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
           devButton.setSetupCode( ( short )newUpgrade.getSetupCode(), data );
           devButton.setDeviceTypeIndex( ( short )devType.getNumber(), data );
           devButton.setDeviceGroup( ( short )devType.getGroup(), data );
-          if ( remote.getDeviceUpgradeAddress() != null )
+          if ( remote.hasDeviceDependentUpgrades() == 2 )
           {
             String message = "Remember to set the button-dependent and/or button-independent\n"
                 + " settings in a manner consistent with your choice of button\n" + " assignment.";
             String title = "Creating a new device upgrade";
             JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
           }
+          
         }
       }
       
       // See if there is custom code waiting to be assigned
-      Remote remote = remoteConfig.getRemote();
       Processor processor = remote.getProcessor();
       Protocol p = newUpgrade.getProtocol();
       ProtocolUpgrade pu = p.getCustomUpgrade( remoteConfig, true );
@@ -337,7 +352,10 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     {
       remoteConfig.getProtocolUpgrades().remove( puUsed );
     }
-
+//    if ( remoteConfig.getRemote().usesEZRC() )
+//    {
+//      remoteConfig.assignUpgrades();
+//    }
   }
 
   public DeviceUpgradeEditor getDeviceUpgradeEditor()

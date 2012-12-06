@@ -74,7 +74,9 @@ public class RawDataPanel extends RMPanel
     infoBox.add( Box.createVerticalStrut( 5 ) );
     infoBox.add( interfaceLabel );
     infoBox.add( Box.createVerticalStrut( 5 ) );
-    infoBox.add( extenderLabel );
+    infoBox.add( versionLabel1 );
+    infoBox.add( Box.createVerticalStrut( 5 ) );
+    infoBox.add( versionLabel2 );
     infoBox.add( Box.createVerticalGlue());
   }
 
@@ -90,7 +92,7 @@ public class RawDataPanel extends RMPanel
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      model.set( remoteConfig.getData(), remote.getBaseAddress() );
+      model.set( RemoteMaster.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData(), remote.getBaseAddress() );
       byteRenderer.setRemoteConfig( remoteConfig );
       highlight = remoteConfig.getHighlight();
       settingAddresses = remote.getSettingAddresses();
@@ -102,14 +104,22 @@ public class RawDataPanel extends RMPanel
       signatureLabel.setText( "Signature:  " + sig );
       processorLabel.setText( "Processor:  " + remote.getProcessorDescription() );
       interfaceLabel.setText( "Interface:  " + remote.getInterfaceType() );
+      int n = 1;
       if ( remote.getExtenderVersionParm() != null )
       {
-        extenderLabel.setText( "Extender version:  " + 
+        versionLabel1.setText( "Extender version:  " + 
             remote.getExtenderVersionParm().getExtenderVersion( remoteConfig ) );
+        n++;
       }
-      else
+//      else
+//      {
+//        extenderLabel.setText( "" );
+//      }
+      String text = remoteConfig.getEepromFormatVersion();
+      if ( text != null )
       {
-        extenderLabel.setText( "" );
+        JLabel lbl = ( n == 1 ) ? versionLabel1 : versionLabel2;
+        lbl.setText( "E2 format version: " + text );
       }
     }
   }
@@ -137,7 +147,8 @@ public class RawDataPanel extends RMPanel
   JLabel signatureLabel = new JLabel();  
   JLabel processorLabel = new JLabel();  
   JLabel interfaceLabel = new JLabel();  
-  JLabel extenderLabel = new JLabel();
+  JLabel versionLabel1 = new JLabel( "" );
+  JLabel versionLabel2 = new JLabel( "" );
   
   Box infoBox = null; 
   

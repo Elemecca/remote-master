@@ -19,7 +19,7 @@ public class Segment extends Highlight
   
   public Segment( int type, int flags, Hex hex )
   {
-    setMemoryUsage( hex.length() + 3 );
+//    setMemoryUsage( hex.length() + 3 );
     this.hex = hex;
     this.type = type;
     this.flags = flags;
@@ -75,6 +75,11 @@ public class Segment extends Highlight
   public void setAddress( int address )
   {
     this.address = address;
+  }
+
+  public void setHex( Hex hex )
+  {
+    this.hex = hex;
   }
   
 }

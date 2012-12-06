@@ -1,11 +1,15 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.util.Arrays;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -204,7 +208,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   @Override
   public String getColumnName( int col )
   {
-    return colNames[ getEffectiveColumn( col ) ];
+    col = getEffectiveColumn( col );
+    if ( col == 8 && DeviceLabels.columnName != null )
+    {
+      return DeviceLabels.columnName;
+    }
+    return colNames[ col ];
   }
 
   /** The col prototype names. */
@@ -222,7 +231,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   @Override
   public String getColumnPrototypeName( int col )
   {
-    return colPrototypeNames[ getEffectiveColumn( col ) ];
+    col = getEffectiveColumn( col );
+    if ( col == 8 && remoteConfig.getRemote().usesEZRC() )
+    {
+      return "Long Label___";
+    }
+    return colPrototypeNames[ col ];
   }
 
   /** The Constant colClasses. */
@@ -254,7 +268,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     // If remote uses soft devices, device type must be set before other columns can be edited.
     // If remote uses soft home theater, the setup code is left blank and is not editable.
     SoftDevices softDevices = remoteConfig.getRemote().getSoftDevices();
-    return editable && col > 1 && ( col == 2 || col == 7 || getExtendedTypeIndex( row ) != 0xFF )
+    return editable && col > 0 && ( col > 1 || remoteConfig.getRemote().usesEZRC() ) && ( col == 2 || col == 7 || getExtendedTypeIndex( row ) != 0xFF )
         && ( col != 3 || ( softDevices != null && softDevices.isSetupCodesOnly() ) || getValueAt( row, col ) != null );
   }
   
@@ -399,6 +413,25 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     return result;
   }
+  
+  public boolean hasMissingUpgrades()
+  {
+    Remote remote = remoteConfig.getRemote();
+    if ( !remote.usesEZRC() )
+    {
+      return false;
+    }
+    for ( int i = 0; i < remote.getDeviceButtons().length; i++ )
+    {
+      DeviceButton deviceButton = remote.getDeviceButtons()[ i ];
+      DeviceType deviceType = ( DeviceType )getValueAt( i, 2 );
+      if ( deviceType != null && deviceButton.getUpgrade() == null )
+      {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /*
    * (non-Javadoc)
@@ -415,13 +448,17 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     DeviceType oldDevType = null;
     SetupCode oldSetupCode = null;
     col = getEffectiveColumn( col );
+
     if ( col == 2 || col == 3 )
     {
       oldDevType = ( DeviceType )getValueAt( row, 2 );
       oldSetupCode = ( SetupCode )getValueAt( row, 3  );
     }
-    
-    if ( col == 2 )
+    if ( col == 1 )
+    {
+      db.setName( ( String )value );
+    }
+    else if ( col == 2 )
     {
       DeviceType newDevType = ( DeviceType )value;
       if ( ! isValidDevice( row, newDevType, oldSetupCode ) )
@@ -458,17 +495,42 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         {
           db.zeroDeviceSlot( data );
         }
+        if ( remoteConfig.hasSegments() )
+        {
+          if ( newIndex == 0xFF )
+          {
+            // Only applies so far to XSight remotes
+            db.setDefaultName();
+          }
+          // XSight remotes use 0 as a fill value if device slot not empty; other remotes always use 0xFF
+          int fillValue = remote.usesEZRC() && newIndex != 0xFF ? 0 : 0xFF;
+          Arrays.fill( db.getSegment().getHex().getData(), 9, 12, ( short )fillValue );
+        }
         db.setDeviceTypeIndex( ( short )newIndex, data );
         db.setDeviceGroup( ( short )newGroup, data );
       }
 
       if ( labels != null )
       {
-        String name = newIndex == 0xFF ? "" : remote.getDeviceTypeByIndex( newIndex ).getName();
-        labels.setText( name, row, data );
-        if ( labels.usesDefaultLabels() )
+        if ( remoteConfig.hasSegments() )
         {
-          labels.setDefaultText( name, row, data );
+          if ( newIndex == 0xFF )
+          {
+            Hex hex = new Hex( db.getSegment().getHex(), 0, 12 );
+            data = hex.getData();
+            db.getSegment().setHex( hex );
+            remote.getDeviceLabels().setText( "", 0, data );
+          }
+        }
+        else
+        {
+          String name = newIndex == 0xFF ? "" : remote.getDeviceTypeByIndex( newIndex ).getName();
+          labels.setText( name, row, data );
+          
+          if ( labels.usesDefaultLabels() )
+          {
+            labels.setDefaultText( name, row, data );
+          }
         }
       }
 
@@ -541,7 +603,23 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     else if ( col == 8 )
     {
-      remote.getDeviceLabels().setText( ( String )value, row, data );
+      String text = ( String )value;
+      if ( remoteConfig.hasSegments() )
+      {
+        int hexLen = 14 + text.length();
+        hexLen += ( hexLen & 1 ) == 1 ? 1 : 0;
+        Hex hex = new Hex( db.getSegment().getHex(), 0, hexLen );
+        hex.getData()[ 12 ] = ( short )text.length();
+        hex.getData()[ hexLen - 1 ] = ( short )0;
+        hex.getData()[ 13 + text.length() ] = ( short )0;
+        data = hex.getData();
+        db.getSegment().setHex( hex );
+        remote.getDeviceLabels().setText( text, 0, data );
+      }
+      else
+      {
+        remote.getDeviceLabels().setText( text, row, data );
+      }
     }
     else if ( col == 9 )
     {
@@ -561,7 +639,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       db.setHighlight( ( Color )value );
     }
-    propertyChangeSupport.firePropertyChange( col == 7 ? "highlight" : "value", null, null );
+    propertyChangeSupport.firePropertyChange( col == 10 ? "highlight" : "value", null, null );
   }
   
   private boolean isValidDevice( int row, DeviceType devType, SetupCode setupCode )
@@ -642,9 +720,14 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
+    Remote remote = remoteConfig == null ? null : remoteConfig.getRemote();
     if ( col == 0 )
     {
       return new RowNumberRenderer();
+    }
+    else if ( col == 1 )
+    {
+      return ( remote != null && remote.usesEZRC() ) ? nameRenderer : null;
     }
     else if ( col == 3 )
     {
@@ -691,6 +774,35 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         return null;
     }
   }
+  
+  private class DeviceNameRenderer extends DefaultTableCellRenderer
+  {
+    DeviceType deviceType = null;
+    
+    @Override
+    public Component getTableCellRendererComponent( JTable table, Object value, 
+        boolean isSelected, boolean hasFocus,
+        int row, int col )
+    {
+      Component c = super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
+      deviceType = ( DeviceType )getValueAt( row, 2 );
+      DeviceButton db = getRow( row );
+      c.setForeground( getTextColor( db, isSelected ) );
+      return c;
+    }
+    
+    public Color getTextColor( DeviceButton db, boolean isSelected )
+    {
+      if ( deviceType == null || db.getUpgrade() != null )
+      {
+        return isSelected ? Color.WHITE : Color.BLACK;
+      }
+      else
+      {
+        return isSelected ? Color.YELLOW : Color.RED;
+      }    
+    }
+  }
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
@@ -709,6 +821,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   private SetupCodeEditor setupCodeEditor = null;
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
+  private DeviceNameRenderer nameRenderer = new DeviceNameRenderer();
 
   private DefaultCellEditor sequenceEditor = null;
   private JComboBox sequenceBox = new JComboBox();

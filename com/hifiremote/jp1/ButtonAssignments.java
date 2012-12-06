@@ -93,6 +93,12 @@ public class ButtonAssignments
       return null;
     return assignedFunctions[ b.getKeyCode( state )];
   }
+  
+//  public Button getAssignment( Function f, Remote remote )
+//  {
+//    int keyCode = Arrays.asList( assignedFunctions ).indexOf( f );
+//    return keyCode == -1 ? null : remote.getButton( keyCode );
+//  }
 
   /**
    * Checks if is empty.

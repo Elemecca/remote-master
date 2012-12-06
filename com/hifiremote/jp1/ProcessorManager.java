@@ -136,6 +136,11 @@ public class ProcessorManager
     p.setAddressLength( 4 );
     add( p );
     
+    p = new MAXQProcessor( "MAXQ622" );
+    p.setAddressLength( 4 );
+    p.setE2FormatOffset( 6 );
+    add( p );
+    
   }
 
 

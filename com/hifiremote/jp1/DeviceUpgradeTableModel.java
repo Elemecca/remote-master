@@ -51,10 +51,13 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       setData( remoteConfig.getDeviceUpgrades() );
 
       Remote remote = remoteConfig.getRemote();
-      if ( remote.getDeviceUpgradeAddress() != null )
+      if ( remote.hasDeviceDependentUpgrades() > 0 )
       {
         DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
-        comboModel.insertElementAt( DeviceButton.noButton, 0 );
+        if ( remote.hasDeviceDependentUpgrades() == 2 || remote.getDeviceButtons().length == 0 )
+        {
+          comboModel.insertElementAt( DeviceButton.noButton, 0 );
+        }
         deviceButtonBox.setModel( comboModel );
       }
     }
@@ -72,10 +75,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      if ( remote.getDeviceUpgradeAddress() != null )
-      {
-        count += 2;
-      }
+      count += remote.hasDeviceDependentUpgrades();
       if ( remoteConfig.allowHighlighting() )
       {
         count += 2;
@@ -86,10 +86,14 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
 
   public int getEffectiveColumn( int col )
   {
-    if ( ( remoteConfig == null || remoteConfig != null && remoteConfig.getRemote().getDeviceUpgradeAddress() == null )
-        && col >= 3 )
+    if ( ( remoteConfig == null || remoteConfig.getRemote().hasDeviceDependentUpgrades() == 0 )
+        && col > 2 )
     {
       return col + 2;
+    }
+    else if ( remoteConfig != null && remoteConfig.getRemote().hasDeviceDependentUpgrades() == 1  && col > 3 )
+    {
+      return col + 1;
     }
     return col;
   }
@@ -237,7 +241,12 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     switch ( getEffectiveColumn( col ) )
     {
       case 3:
-        device.setButtonRestriction( ( ( DeviceButton )value ) );
+        DeviceButton devBtn = ( DeviceButton )value;
+        device.setButtonRestriction( devBtn );
+        if ( devBtn != DeviceButton.noButton )
+        {
+          devBtn.setUpgrade( device );
+        }
         propertyChangeSupport.firePropertyChange( "device", null, null );
         break;
       case 4:
@@ -445,6 +454,11 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   public void removeRow( int row )
   {
     DeviceUpgrade du = getRow( row );
+    DeviceButton db = du.getButtonRestriction();
+    if ( db != null && db != DeviceButton.noButton )
+    {
+      db.setUpgrade( null );
+    }
     Protocol p = du.getProtocol();
     Remote remote = remoteConfig.getRemote();
     boolean pidUsed = false;

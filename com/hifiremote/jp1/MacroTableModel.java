@@ -2,6 +2,9 @@ package com.hifiremote.jp1;
 
 import java.awt.Color;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -29,8 +32,9 @@ public class MacroTableModel extends JP1TableModel< Macro >
     this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
-      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
+      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+      colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
       setData( remoteConfig.getMacros() );
@@ -54,7 +58,11 @@ public class MacroTableModel extends JP1TableModel< Macro >
    */
   public int getColumnCount()
   {
-    int count = colNames.length - 1;
+    int count = colNames.length - 4;
+    if ( remoteConfig != null && remoteConfig.getRemote().usesEZRC() )
+    {
+      count += 3;
+    }
     if ( remoteConfig != null && remoteConfig.allowHighlighting() )
     {
       ++count;
@@ -65,7 +73,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Key", "Macro Keys", "Notes", "<html>Size &amp<br>Color</html>"
+      "#", "Name", "Device", "Key", "Macro Keys", "Serial", "Notes", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -76,14 +84,23 @@ public class MacroTableModel extends JP1TableModel< Macro >
   @Override
   public String getColumnName( int col )
   {
-    return colNames[ col ];
+    return colNames[ getEffectiveColumn( col ) ];
   }
 
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, Integer.class, String.class, String.class, Color.class
+      Integer.class, String.class, DeviceButton.class, Integer.class, String.class, Integer.class, String.class, Color.class
   };
+  
+  private int getEffectiveColumn( int col )
+  {
+    if ( remoteConfig == null || !remoteConfig.getRemote().usesEZRC() )
+    {
+      col += col > 2 ? 3 : col > 0 ? 2 : 0;
+    }
+    return col;
+  }
 
   /*
    * (non-Javadoc)
@@ -93,14 +110,14 @@ public class MacroTableModel extends JP1TableModel< Macro >
   @Override
   public Class< ? > getColumnClass( int col )
   {
-    return colClasses[ col ];
+    return colClasses[ getEffectiveColumn( col ) ];
   }
 
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "_xShift-VCR/DVD_", "A reasonable length macro with a reasonable number of steps ",
-      "A reasonable length note for a macro", "Color_"
+      " 00 ", "MacroName_____", "DeviceName", "_xShift-VCR/DVD_", "A reasonable length macro with a reasonable number of steps ",
+      "0000_", "A reasonable length note for a macro", "Color_"
   };
 
   /*
@@ -111,13 +128,13 @@ public class MacroTableModel extends JP1TableModel< Macro >
   @Override
   public String getColumnPrototypeName( int col )
   {
-    return colPrototypeNames[ col ];
+    return colPrototypeNames[ getEffectiveColumn( col ) ];
   }
 
   /** The Constant colWidths. */
   private static final boolean[] colWidths =
   {
-      true, true, false, false, true
+      true, false, false, true, false, true, false, true
   };
 
   /*
@@ -128,7 +145,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   @Override
   public boolean isColumnWidthFixed( int col )
   {
-    return colWidths[ col ];
+    return colWidths[ getEffectiveColumn( col ) ];
   }
 
   /*
@@ -139,7 +156,8 @@ public class MacroTableModel extends JP1TableModel< Macro >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    if ( col == 0 || col == 2 )
+    col = getEffectiveColumn( col );
+    if ( col == 0 || col == 4 )
     {
       return false;
     }
@@ -154,18 +172,25 @@ public class MacroTableModel extends JP1TableModel< Macro >
    */
   public Object getValueAt( int row, int column )
   {
+    column = getEffectiveColumn( column );
     Macro macro = remoteConfig.getMacros().get( row );
     switch ( column )
     {
       case 0:
         return new Integer( row + 1 );
       case 1:
-        return new Integer( macro.getKeyCode() );
+        return macro.getName();
       case 2:
-        return macro.getValueString( remoteConfig );
+        return macro.getDeviceButton( remoteConfig );
       case 3:
-        return macro.getNotes();
+        return new Integer( macro.getKeyCode() );
       case 4:
+        return macro.getValueString( remoteConfig );
+      case 5:
+        return macro.getSerial();
+      case 6:
+        return macro.getNotes();
+      case 7:
         return macro.getHighlight();
       default:
         return null;
@@ -180,16 +205,29 @@ public class MacroTableModel extends JP1TableModel< Macro >
   @Override
   public void setValueAt( Object value, int row, int col )
   {
+    col = getEffectiveColumn( col );
     Macro macro = getRow( row );
     if ( col == 1 )
     {
-      macro.setKeyCode( ( ( Integer )value ).intValue() );
+      macro.setName( ( String )value );
+    }
+    else if ( col == 2 )
+    {
+      macro.setDeviceIndex( ( ( DeviceButton )value ).getButtonIndex() );
     }
     else if ( col == 3 )
     {
+      macro.setKeyCode( ( ( Integer )value ).intValue() );
+    }
+    else if ( col == 5 )
+    {
+      macro.setSerial( ( ( Integer )value ).intValue() );
+    }
+    else if ( col == 6 )
+    {
       macro.setNotes( ( String )value );
     }
-    else if ( col == 4 )
+    else if ( col == 7 )
     {
       macro.setHighlight( ( Color  )value );
     }
@@ -204,15 +242,16 @@ public class MacroTableModel extends JP1TableModel< Macro >
   @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
+    col = getEffectiveColumn( col );
     if ( col == 0 )
     {
       return new RowNumberRenderer();
     }
-    else if ( col == 1 )
+    else if ( col == 3 )
     {
       return keyRenderer;
     }
-    else if ( col == 4 )
+    else if ( col == 7 )
     {
       return colorRenderer;
     }
@@ -228,15 +267,22 @@ public class MacroTableModel extends JP1TableModel< Macro >
   @Override
   public TableCellEditor getColumnEditor( int col )
   {
-    if ( col == 1 )
+    col = getEffectiveColumn( col );
+    if ( col == 1 || col == 6 )
+    {
+      return selectAllEditor;
+    }
+    else if ( col == 2 )
+    {
+      DefaultCellEditor editor = new DefaultCellEditor( deviceButtonBox );
+      editor.setClickCountToStart( RMConstants.ClickCountToStart );
+      return editor;
+    }
+    if ( col == 3 )
     {
       return keyEditor;
     }
-    else if ( col == 3 )
-    {
-      return noteEditor;
-    }
-    else if ( col == 4 )
+    else if ( col == 7 )
     {
       return colorEditor;
     }
@@ -245,13 +291,14 @@ public class MacroTableModel extends JP1TableModel< Macro >
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;
+  private JComboBox deviceButtonBox = new JComboBox();
 
   /** The key renderer. */
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
 
   /** The key editor. */
   private KeyEditor keyEditor = new KeyEditor();
-  private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
+  private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
 }

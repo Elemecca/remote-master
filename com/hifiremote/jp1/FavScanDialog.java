@@ -21,6 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
@@ -39,11 +40,15 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     JComponent contentPane = ( JComponent )getContentPane();
     contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
 
-    JPanel panel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
+    topPanel = new JPanel( new FlowLayout( FlowLayout.LEFT) );
+    topPanel.add( new JLabel( "Name: " ) );
+    nameField = new JTextField( 30 );
+    topPanel.add( nameField );
+    contentPane.add( topPanel, BorderLayout.PAGE_START );
 
     // Add the Fav/Scan definition controls
     Box macroBox = Box.createHorizontalBox();
-    macroBox.setBorder( BorderFactory.createTitledBorder( "Fav/Scan Definition" ) );
+    macroBox.setBorder( BorderFactory.createTitledBorder( "Definition" ) );
     contentPane.add( macroBox, BorderLayout.CENTER );
 
     JPanel availableBox = new JPanel( new BorderLayout() );
@@ -54,31 +59,35 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     availableButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     availableButtons.addListSelectionListener( this );
 
-    panel = new JPanel( new GridLayout( 4, 2, 2, 2 ) );
+    grid1 = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
+    grid2 = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
+    JPanel panel = new JPanel( new BorderLayout() );
     panel.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
+    panel.add( grid1, BorderLayout.PAGE_START );
+    panel.add( grid2, BorderLayout.PAGE_END );
     availableBox.add( panel, BorderLayout.SOUTH );
     add.addActionListener( this );
-    panel.add( add );
+    grid1.add( add );
     insert.addActionListener( this );
-    panel.add( insert );
+    grid1.add( insert );
     addShift.addActionListener( this );
-    panel.add( addShift );
+    grid1.add( addShift );
     insertShift.addActionListener( this );
-    panel.add( insertShift );
+    grid1.add( insertShift );
     addXShift.addActionListener( this );
-    panel.add( addXShift );
+    grid2.add( addXShift );
     insertXShift.addActionListener( this );
-    panel.add( insertXShift );
+    grid2.add( insertXShift );
     addPause.addActionListener( this );
-    panel.add( addPause );
+    grid2.add( addPause );
     insertPause.addActionListener( this );
-    panel.add( insertPause );
+    grid2.add( insertPause );
 
     macroBox.add( Box.createHorizontalStrut( 20 ) );
 
     JPanel keysBox = new JPanel( new BorderLayout() );
     macroBox.add( keysBox );
-    keysBox.add( new JLabel( "Fav/Scan Keys:" ), BorderLayout.NORTH );
+    keysBox.add( keysBoxLabel, BorderLayout.NORTH );
     macroButtons.setFixedCellWidth( 100 );
     keysBox.add( new JScrollPane( macroButtons ), BorderLayout.CENTER );
     macroButtons.setModel( macroButtonModel );
@@ -86,18 +95,24 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     macroButtons.setCellRenderer( favScanButtonRenderer );
     macroButtons.addListSelectionListener( this );
 
-    JPanel buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
+    grid3 = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
+    grid4 = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
+    JPanel buttonBox = new JPanel( new BorderLayout() );
     buttonBox.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
+    buttonBox.add( grid3, BorderLayout.PAGE_START );
+    buttonBox.add( grid4, BorderLayout.PAGE_END );
     keysBox.add( buttonBox, BorderLayout.SOUTH );
     moveUp.addActionListener( this );
-    buttonBox.add( moveUp );
+    grid3.add( moveUp );
     moveDown.addActionListener( this );
-    buttonBox.add( moveDown );
+    grid3.add( moveDown );
     remove.addActionListener( this );
-    buttonBox.add( remove );
+    grid3.add( remove );
     clear.addActionListener( this );
-    buttonBox.add( clear );
-
+    grid3.add( clear );
+    int h = ( int )( moveDown.getPreferredSize().getHeight() + 0.5 );
+    grid4.add( Box.createVerticalStrut( h ) );
+    
     JPanel bottomPanel = new JPanel( new BorderLayout() );
     contentPane.add( bottomPanel, BorderLayout.SOUTH );
     // Add the notes
@@ -133,6 +148,12 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
         return;
       }
       
+      String text = nameField.getText().trim();
+      if ( !text.isEmpty() )
+      {
+        name = text;
+      }
+      
       int keyCode = remote.getFavKey().getKeyCode();
 
       java.util.List< Short > keyList = new ArrayList< Short >();
@@ -163,6 +184,7 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
 
       favScan = new FavScan( keyCode, new Hex( keyCodes ), notesStr );
       favScan.setDeviceButton( deviceButton );
+      favScan.setName( name );
       setVisible( false );
     }
     else if ( source == cancelButton )
@@ -285,7 +307,6 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
    */
   private void insertKey( int keyCode, int mask )
   {
-//    Integer value = new Integer( getSelectedKeyCode() | mask );
     keyCode |= mask;
     Integer value = new Integer( keyCode );
     int index = macroButtons.getSelectedIndex();
@@ -417,22 +438,27 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     if ( favScan == null )
     {
       deviceButton = config.getFavKeyDevButton();
+      name = "New Favorite";
+      nameField.setText( name );
       notes.setText( null );
       enableButtons();
       return;
     }
 
     deviceButton = favScan.getDeviceButton();
+    name = favScan.getName();
+    nameField.setText( name );
     
+    Remote remote = config.getRemote();
     short[] data = favScan.getData().getData();
-    int entrySize = favKey.getEntrySize();
+    int entrySize = remote.getFavKey().getEntrySize();
     for ( int i = 0; i < data.length; ++i )
     {
       if ( data[ i ] != 0 )
       {
         macroButtonModel.addElement( new Integer( data[ i ] ) );
       }
-      if ( data[ i ] == 0 || ( ( i + 1 ) % entrySize ) == 0 )
+      if ( entrySize >= 0 && ( data[ i ] == 0 || ( ( i + 1 ) % entrySize ) == 0 ) )
       {
         while ( ( i < data.length ) &&  ( ( data[ i ] == 0 ) || ( i % entrySize ) != 0 ) )
         {  
@@ -470,6 +496,14 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
 
     favScanButtonRenderer.setRemote( remote );
     
+    boolean showAll = !remote.usesEZRC();
+    grid2.setVisible( showAll );
+    grid4.setVisible( showAll );
+    addShift.setVisible( showAll );
+    insertShift.setVisible( showAll );
+    topPanel.setVisible( !showAll );
+    keysBoxLabel.setText( showAll ? "Fav/Scan Keys:" : "Macro Keys:" );
+    setTitle( showAll ? "Fav/Scan" : "Favorite" );
   }
 
   public void setFavKey( FavKey favKey )
@@ -544,6 +578,8 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
   
   private JButton insertPause = new JButton( "Ins Pause" );
   
+  private JLabel keysBoxLabel = new JLabel();
+  
   private FavScanButtonRenderer favScanButtonRenderer = new FavScanButtonRenderer();
   
   /** The macro button model. */
@@ -560,6 +596,14 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
   private FavScan favScan;
   
   private DeviceButton deviceButton;
+  
+  private String name = null;
 
-
+  private JPanel topPanel = null;
+  private JPanel grid1 = null;
+  private JPanel grid2 = null;
+  private JPanel grid3 = null;
+  private JPanel grid4 = null;
+  private JTextField nameField = null;
+  
 }
