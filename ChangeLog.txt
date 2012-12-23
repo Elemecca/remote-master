@@ -3,7 +3,8 @@ Changes for v2.03
 - Add support for XSight Lite and ARRX12G, remotes that have a direct USB interface.
 - Note that Alphas prior to Alpha 8 were not uploaded to the SVN and were early stages in this development.
 - An updated version of jp12serial, not yet publicly released, is needed to access this new support.  
-
+-- Alpha 9 --
+- Fix bug in Alpha 8 that caused downloading to hang if no Favorites are set.
 
 Changes for v2.02
 -- Alpha --

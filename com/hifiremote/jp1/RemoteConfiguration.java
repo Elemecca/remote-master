@@ -2582,7 +2582,7 @@ public class RemoteConfiguration
     }
     for ( Activity activity : activities.values() )
     {
-      if ( !activity.isActive() && ( remote.getFavKey() == null 
+      if ( !activity.isActive() && ( favScans.size() == 0 || remote.getFavKey() == null 
           || activity.getButton().getKeyCode() != remote.getFavKey().getKeyCode() ) )
       {
         continue;
