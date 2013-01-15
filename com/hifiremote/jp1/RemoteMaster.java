@@ -74,6 +74,7 @@ import com.hifiremote.LibraryLoader;
 import com.hifiremote.jp1.FixedData.Location;
 import com.hifiremote.jp1.extinstall.ExtInstall;
 import com.hifiremote.jp1.extinstall.RMExtInstall;
+import com.hifiremote.jp1.io.CommHID;
 import com.hifiremote.jp1.io.IO;
 import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
@@ -98,7 +99,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 9";
+  public final static String version = "v2.03 Alpha 10";
 
   /** The dir. */
   private File dir = null;
@@ -1409,6 +1410,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       System.err.println( "Unable to create JP12Serial object: " + le.getMessage() );
     }
 
+    try
+    {
+      CommHID commHID = new CommHID( userDir );
+      interfaces.add( commHID );
+      System.err.println( "    CommHID version " + commHID.getInterfaceVersion() );
+    }
+    catch ( LinkageError le )
+    {
+      System.err.println( "Unable to create CommHID object: " + le.getMessage() );
+    }
+    
     try
     {
       JP1USB jp1usb = new JP1USB( userDir );
@@ -2812,7 +2824,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     index = checkTabbedPane( "Macros", macroPanel, remote.hasMacroSupport(), index );
     index = checkTabbedPane( "Special Functions", specialFunctionPanel, !remote.getSpecialProtocols().isEmpty(), index );
     index = checkTabbedPane( "Timed Macros", timedMacroPanel, remote.hasTimedMacroSupport(), index );
-    index = checkTabbedPane( "Fav/Scan", favScanPanel, remote.hasFavKey() && !remote.hasFavorites(), index );
+    index = checkTabbedPane( "Fav/Scan", favScanPanel, remote.hasFavKey() && !remote.hasFavorites() && !remote.isSSD(), index );
     index = checkTabbedPane( "Favorites", favoritesPanel, remote.hasFavorites(), index );
     index = checkTabbedPane( "Devices", devicePanel, true, index );
     index = checkTabbedPane( "Protocols", protocolPanel, remote.hasFreeProtocols(), index );

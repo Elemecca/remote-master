@@ -517,6 +517,222 @@ public class RemoteConfiguration
   {
     return activities;
   }
+  
+  private void loadFiles( boolean decode )
+  {
+    int pos = 4;
+    int index = -1;
+    int status = data[ 0 ] + ( data[ 1 ] << 8 );
+    int end = data[ 2 ] + ( data[ 3 ] << 8 );
+    Items items = new Items();
+    while ( pos < end )
+    {
+      while ( index < 16 && ( status & ( 1 << ++index ) ) == 0 ) {};
+      if ( index == 16 )
+      {
+        break;
+      }
+      String name = Remote.userFilenames[ index ];
+      if ( name.endsWith( ".xcf" ) )
+      {
+        int itemsLength = data[ pos + 14 ] + 0x100 * data[ pos + 15 ];
+//        int itemCount = data[ pos + 16 ];
+        pos += 17 + itemsLength;
+        int start = pos;
+        pos = parseFile( items, index, start, decode );
+        Hex hex = new Hex( data, start, pos - start );
+        ssdFiles.put( name, hex );
+      }
+      else
+      {
+        //Applies only to usericons.pkg, the last file
+        Hex hex = new Hex( data, pos, end - pos );
+        ssdFiles.put( name, hex );
+      }
+    }
+  }
+  
+  private void decodeItem( Items items, int fileIndex, int tag, int pos )
+  {
+    if ( fileIndex != 2 )
+    {
+      return;
+    }
+    switch ( tag )
+    {
+      case 1:
+        int len = data[ pos++ ] / 2;
+        char[] ch = new char[ len ];
+        for ( int i = 0; i < len; i++ )
+        {
+          ch[ i ] = ( char )data[ pos + 2*i + 1 ];
+        }
+        String name = new String( ch );
+        items.db = remote.getDeviceButton( items.dev );
+        items.db.setName( name );
+        new Segment( 0, 0xFF, new Hex( 12 ), items.db );
+        items.dev++;
+        break;
+      case 2:
+        len = data[ pos ];
+        Segment seg = items.db.getSegment();
+        Hex hex = new Hex( seg.getHex(), 0, 13 + len );
+        for ( int i = 0; i < len + 1; i++ )
+        {
+          hex.getData()[ 12 + i ] = ( short )( data[ pos++ ] & 0xFF );
+        }
+        seg.setHex( hex );
+        break;
+      case 5:
+        len = data[ pos++ ];
+        short[] segData = items.db.getSegment().getHex().getData();
+        int typeIndex = data[ pos++ ];
+        items.db.setDeviceTypeIndex( ( short )typeIndex, segData );
+        ch = new char[ len - 1 ];
+        for ( int i = 0; i < len - 1; i++ )
+        {
+          ch[ i ] = ( char )data[ pos++ ];
+        }
+        items.setupCode = Integer.parseInt( new String( ch ) );
+        items.db.setSetupCode( ( short )items.setupCode, segData );
+        items.upgrade = new DeviceUpgrade();
+        items.upgrade.setRemoteConfig( this );
+        items.upgrade.setRemote( remote );
+        items.upgrade.setButtonIndependent( false );
+        items.upgrade.setButtonRestriction( items.db );
+        items.db.setUpgrade( items.upgrade );
+        items.alias = remote.getDeviceTypeAlias( remote.getDeviceTypeByIndex( typeIndex ) );        
+        devices.add( items.upgrade );
+        items.keys = new ArrayList< Key >();
+        break;
+      case 6:
+        len = data[ pos++ ];
+        items.fixedData = new Hex( len );
+        items.upgrade.setSizeDevBytes( len );
+        System.arraycopy( data, pos, items.fixedData.getData(), 0, len );
+        break;
+      case 7:
+        len = data[ pos++ ];
+        items.pid = new Hex( 2 );
+        if ( len == 2 )
+        {
+          items.pid.set( data[ pos++ ], 1 );
+          items.pid.set( data[ pos++ ], 0 );
+        }
+        break;
+      case 8:
+        items.key = new Key();
+        items.keys.add( items.key );
+        len = data[ pos++ ];
+        items.key.btn = remote.getButton( data[ pos++ ] );
+        break;
+      case 9:
+        len = data[ pos++ ];
+        if ( len == 2 )
+        {
+          items.key.keygid = data[ pos ] + 0x100 * data[ pos + 1 ];
+        }
+        break;
+      case 0x0A:
+        len = data[ pos++ ];
+        items.key.keyflags = data[ pos++ ];
+        break;
+      case 0x0B:
+        len = data[ pos++ ];
+        items.key.irdata = new Hex( len );
+        System.arraycopy( data, pos, items.key.irdata.getData(), 0, len );
+        items.upgrade.setSizeCmdBytes( len );
+        break;
+      case 0x0C:
+        len = data[ pos++ ];
+        ch = new char[ len ];
+        for ( int i = 0; i < len; i++ )
+        {
+          ch[ i ] = ( char )data[ pos++ ];
+        }
+        items.key.fname = new String( ch );
+        break;
+      case 0x0F:
+        len = data[ pos++ ];
+        items.pCode = new Hex( len );
+        System.arraycopy( data, pos, items.pCode.getData(), 0, len );
+        break;
+      case 0x81:
+        items.db = null;
+        break;
+      case 0x85:
+        hex = new Hex( items.pid, 0, items.fixedData.length() + 4 );
+        hex.put( items.fixedData, 4 );
+        hex.set( ( short )0x01, 3 );
+        try
+        {
+          items.upgrade.importRawUpgrade( hex, remote, items.alias, items.pid, items.pCode );
+          items.upgrade.setSetupCode( items.setupCode );
+          for ( Key key : items.keys )
+          {
+            name = key.fname;
+            if ( name == null )
+            {
+              name = "__missing" + items.missingIndex++;
+            }
+            Function f = new Function( name );
+            items.upgrade.getFunctions().add( f );
+            f.setHex( key.irdata );
+            f.setIndex( key.keygid );
+            items.upgrade.getAssignments().assign( key.btn, f );
+          }
+        }
+        catch ( java.text.ParseException pe )
+        {
+          pe.printStackTrace( System.err );
+        }
+        items.missingIndex = 0;
+        items.upgrade = null;
+        items.keys = null;
+        items.pCode = null;
+        break;
+      case 0x88:
+        items.key = null;
+        break;
+    }
+  }
+  private int parseFile( Items items, int fileIndex, int fileStart, boolean decode )
+  {
+    int pos = fileStart;
+    List< Integer > tags = new ArrayList< Integer >();
+    while ( true )
+    {
+      int tag = data[ pos++ ];
+      if ( ( tag & 0x80 ) == 0 )
+      {
+        tags.add( 0, tag );
+        if ( decode )
+        {
+          decodeItem( items, fileIndex, tag, pos );
+        }
+        int len = data[ pos++ ];
+        pos += len;
+      }
+      else
+      {
+        int last = tags.remove( 0 );
+        if ( tag != ( last | 0x80  ) )
+        {
+          System.err.println( "XCF file nesting error at " + Integer.toHexString( pos - 1 ) );
+          break;
+        }
+        if ( decode )
+        {
+          decodeItem( items, fileIndex, tag, pos );
+        }
+        if ( tags.isEmpty() )
+        {
+          break;
+        }
+      }  
+    }
+    return pos;
+  }
 
   private void loadSegments( boolean decode )
   {
@@ -1344,8 +1560,13 @@ public class RemoteConfiguration
       }
       eepromFormatVersion = new String( val );               
     }
-
-    if ( hasSegments() )
+    
+    if ( remote.isSSD() )
+    {
+      loadFiles( true );
+      return;
+    }
+    else if ( hasSegments() )
     {
       loadSegments( true );
     }
@@ -2369,7 +2590,7 @@ public class RemoteConfiguration
     updateLearnedSignals();
     updateUpgrades();
     
-    if ( hasSegments() )
+    if ( hasSegments() && !remote.isSSD() )
     {
       updateActivities();
       updateFavorites();
@@ -3450,7 +3671,7 @@ public class RemoteConfiguration
       db.store( remote );
       db.doHighlight( highlight );
     }
-    if ( !hasSegments() )
+    if ( !hasSegments() || remote.isSSD() )
     {
       return;
     }
@@ -4953,6 +5174,8 @@ public class RemoteConfiguration
   
   private LinkedHashMap< Integer, List<Segment> > segments = new LinkedHashMap< Integer, List<Segment> >();
   
+  private LinkedHashMap< String, Hex > ssdFiles = new LinkedHashMap< String, Hex >();
+  
   private LinkedHashMap< Button, Activity > activities = null;
   
   private List< Integer > segmentLoadOrder = new ArrayList< Integer >();
@@ -5238,5 +5461,29 @@ public class RemoteConfiguration
   {
     return owner;
   }
-
+  
+  private class Items
+  {
+    DeviceButton db = null;
+    DeviceUpgrade upgrade = null;
+    int dev = 0x50;
+    Hex fixedData = null;
+    Hex pCode = null;
+    Hex pid = null;
+    int setupCode = 0;
+    String alias = null;
+    List< Key > keys = null;
+    Key key = null;
+    int missingIndex = 0;
+  }
+  
+  private class Key
+  {
+    Button btn = null;
+    int keyflags = 0;
+    Integer keygid = null;
+    Hex irdata = null;
+    String fname = null;
+  }
+  
 }

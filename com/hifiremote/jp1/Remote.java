@@ -595,6 +595,11 @@ public class Remote implements Comparable< Remote >
   {
     return signature;
   }
+  
+  public boolean isSSD()
+  {
+    return signature.startsWith( "USB" ) && processor.getName().equals( "S3F80" );
+  }
 
   public int getSigAddress()
   {
@@ -1966,7 +1971,15 @@ public class Remote implements Comparable< Remote >
         map = RDFReader.parseNumber( st.nextToken() );
         if ( st.hasMoreTokens() )
         {
-          type = RDFReader.parseNumber( st.nextToken() );
+          String token = st.nextToken();
+          try
+          {
+            type = RDFReader.parseNumber( token );
+          }
+          catch ( Exception e )
+          {
+            type = token.charAt( 0 );
+          }
         }
       }
       DeviceType devType = new DeviceType( name, map, type );
@@ -2925,7 +2938,7 @@ public class Remote implements Comparable< Remote >
     }
     else if ( name.equals( "S3F80" ) )
     {
-      return ( segmentTypes == null ) ? "JP1.3" : "JP1.4";
+      return  isSSD() ? "JPUSB" : segmentTypes == null ? "JP1.3" : "JP1.4";
     }
     else if ( name.equals( "SST" ) )
     {
@@ -3613,7 +3626,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean usesEZRC()
   {
-    return processor.getE2FormatOffset() >= 0;
+    return signature.startsWith( "USB" );
   }
 
   /** The learned dev btn swapped. */
@@ -3841,5 +3854,10 @@ public class Remote implements Comparable< Remote >
       macroSupport = false;
     }
   }
+  
+  public final static String[] userFilenames = {
+    "home.xcf", "system.xcf", "devices.xcf", "activities.xcf", "profiles.xcf",
+    "favorites.xcf", "macros.xcf", "snstest.xcf", "usericons.pkg" 
+  };
 
 }

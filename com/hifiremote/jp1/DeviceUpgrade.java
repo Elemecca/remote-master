@@ -1048,9 +1048,19 @@ public class DeviceUpgrade extends Highlight
     Hex fixedDataHex = null;
     if ( pCode != null && pCode.length() > 2 )
     {
-      Processor proc = newRemote.getProcessor();
-      fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), pCode );
-      cmdLength = Protocol.getCmdLengthFromCode( proc.getEquivalentName(), pCode );
+      Processor proc = newRemote.getProcessor(); 
+      if ( remoteConfig.hasSegments() )
+      {
+        // This allows an import even when the protocol code has a non-standard
+        // format, as with the XSight Touch
+        fixedDataLength = sizeDevBytes;
+        cmdLength = sizeCmdBytes;
+      }
+      else
+      {
+        fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), pCode );
+        cmdLength = Protocol.getCmdLengthFromCode( proc.getEquivalentName(), pCode );
+      }
       System.err.println( "fixedDataLength=" + fixedDataLength + " and cmdLength=" + cmdLength );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
@@ -1081,6 +1091,7 @@ public class DeviceUpgrade extends Highlight
       System.err.println( "Checking protocol " + p.getDiagnosticName() );
       if ( !remote.supportsVariant( pid, p.getVariantName() ) && !p.hasCode( remote ) )
       {
+        p = null;
         continue;
       }
       int tempLength = fixedDataLength;
@@ -1328,10 +1339,18 @@ public class DeviceUpgrade extends Highlight
           fixedDataLength = dataLength - cmdLength * buttons.size();
           System.err.println( "Calculated: Fixed data length = " + fixedDataLength + ", Command length = " + cmdLength );  
         }
-        if ( !remote.supportsVariant( pid, p.getVariantName() ) )
+        if ( p == null || !remote.supportsVariant( pid, p.getVariantName() ) )
         {
           pCode = new Hex(); // signifies missing code
         }
+      }
+      
+      if ( remoteConfig.hasSegments() )
+      {
+        // This allows an import even when the protocol code has a non-standard
+        // format, as with the XSight Touch
+        fixedDataLength = sizeDevBytes;
+        cmdLength = sizeCmdBytes;
       }
 
       System.err.println( "Using a Manual Protocol" );
