@@ -2606,7 +2606,7 @@ public class RemoteConfiguration
         }
         for ( int i = 0; i < 6; i++ )
         {
-          data[ pos++ ] = ( short )eepromFormatVersion.charAt( i );
+          data[ pos++ ] = ( short )( eepromFormatVersion == null ? '-' : eepromFormatVersion.charAt( i ) );
         }
         pos = 20;
       }
@@ -5343,6 +5343,9 @@ public class RemoteConfiguration
       data[ offset++ ] = 0;
       data[ offset++ ] = 0;
     }
+    
+    // Clear the dialogs of data from any previous setup
+    resetDialogs();
   }
 
   public void setDateIndicator()

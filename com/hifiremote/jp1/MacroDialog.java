@@ -322,8 +322,8 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
           newMacro.setDeviceIndex( macro.getDeviceIndex() );
           newMacro.setSerial( macro.getSerial() );
         }
-        macro = newMacro;
       }
+      macro = newMacro;
       setVisible( false );
     }
     else if ( source == cancelButton )

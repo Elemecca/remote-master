@@ -9,6 +9,8 @@ Changes for v2.03
 - Change reading of USB port for XSight remotes to use javahidapi rather than modified jp12serial (3FG)
 - Change form of signature for XSight remotes to be "USB" + PID value returned by HID interface (Graham)
 - Begin support for XSight Touch, displaying data in General, Device and Raw Data tabs (Graham)
+-- Alpha 11 --
+- A few minor bugfixes (Graham)
 
 Changes for v2.02
 -- Alpha --
