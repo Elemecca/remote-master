@@ -134,6 +134,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       {
         count += 3;
       }
+      if ( remote.usesIcons() )
+      {
+        count += 1;
+      }
       if ( remoteConfig.allowHighlighting() )
       {
         ++count;
@@ -160,8 +164,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       {
         col++;
       }
+      if ( !remote.usesIcons() && col >= 9 )
+      {
+        col++;
+      }
       SoftDevices softDevices = remote.getSoftDevices();
-      if ( ( softDevices == null || !softDevices.usesSequence() ) && col >= 9 )
+      if ( ( softDevices == null || !softDevices.usesSequence() ) && col >= 10 )
       {
         col++;
       }
@@ -197,7 +205,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   private static final String[] colNames =
   {
       "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "<html>Volume<br>PunchThrough</html>", 
-      "<html>Transport<br>PunchThrough</html>", "<html>Channel<br>PunchThrough</html>", "Note", "Label", "Seq", "<html>Size &amp<br>Color</html>"
+      "<html>Transport<br>PunchThrough</html>", "<html>Channel<br>PunchThrough</html>", "Note", "Label", "IconRef", "Seq", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -220,7 +228,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   private static String[] colPrototypeNames =
   {
       " 00 ", "Device Button", "__VCR/DVD__", "Setup", "PunchThrough_", "PunchThrough_", 
-      "PunchThrough_", "A Meaningful, Reasonable Note", "Label", "Seq", "Color_"
+      "PunchThrough_", "A Meaningful, Reasonable Note", "Label", "IconRef", "Seq", "Color_"
   };
 
   /*
@@ -243,7 +251,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   private static final Class< ? >[] colClasses =
   {
       Integer.class, String.class, DeviceType.class, SetupCode.class, DeviceButton.class, 
-      DeviceButton.class, DeviceButton.class, String.class, String.class, Integer.class, Color.class
+      DeviceButton.class, DeviceButton.class, String.class, String.class, Integer.class, Integer.class, Color.class
   };
 
   /*
@@ -370,6 +378,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       case 9:
       {
+        return db.getIconRef();
+      }
+      case 10:
+      {
         SoftDevices softDevices = remote.getSoftDevices();
         int seq = softDevices.getSequencePosition( row, getRowCount(), data );
         if ( seq == -1 )
@@ -381,7 +393,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           return seq + 1;
         }
       }
-      case 10:
+      case 11:
       {
         return db.getHighlight();
       }
@@ -623,6 +635,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     else if ( col == 9 )
     {
+      db.setIconRef( ( ( Integer )value ).intValue() );
+    }
+    else if ( col == 10 )
+    {
       int rows = getRowCount();
       int newSeq = ( ( Integer )value ).intValue() - 1;
       int oldSeq = softDevices.getSequencePosition( row, rows, data );
@@ -635,7 +651,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       softDevices.insertSequenceIndex( row, newSeq, rows, data );
       fireTableDataChanged();
     }
-    else if ( col == 10 )
+    else if ( col == 11 )
     {
       db.setHighlight( ( Color )value );
     }
@@ -733,7 +749,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return setupCodeRenderer;
     }
-    else if ( getEffectiveColumn( col ) == 10 )
+    else if ( getEffectiveColumn( col ) == 11 )
     {
       return colorRenderer;
     }
@@ -765,10 +781,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         return punchThroughEditor;
       case 7:
       case 8:
-        return selectAllEditor;
       case 9:
-        return sequenceEditor;
+        return selectAllEditor;
       case 10:
+        return sequenceEditor;
+      case 11:
         return colorEditor;
       default:
         return null;

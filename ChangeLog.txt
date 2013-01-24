@@ -11,6 +11,8 @@ Changes for v2.03
 - Begin support for XSight Touch, displaying data in General, Device and Raw Data tabs (Graham)
 -- Alpha 11 --
 - A few minor bugfixes (Graham)
+-- Alpha 12 --
+- More prototype support for XSight Touch.  Will now display macro data, will upload to the remote but only edits to device data get through to the upload (Graham)
 
 Changes for v2.02
 -- Alpha --

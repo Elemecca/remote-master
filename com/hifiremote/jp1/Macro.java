@@ -164,7 +164,8 @@ public class Macro extends AdvancedCode
 
   public void store( PropertyWriter pw )
   {
-    if ( getSegment().getType() == 3 || getSegment().getType() == 0x1E )
+//    if ( getSegment().getType() == 3 || getSegment().getType() == 0x1E )
+    if ( name != null )  // XSight remotes
     {
       int segmentFlags = getSegmentFlags();
       if ( segmentFlags > 0 )

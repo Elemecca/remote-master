@@ -97,6 +97,33 @@ public class Hex implements Cloneable, Comparable< Hex >
     System.arraycopy( h.data, offset, data, 0, Math.min( length, h.length() - offset ) );
     if ( h.length() - offset < length ) Arrays.fill( data, h.length() - offset, length, (short)0 );
   }
+  
+  public Hex( String s, int size )
+  {
+    char[] ch = s.toCharArray();
+    if ( size == 8 )
+    {
+      data = new short[ ch.length ];
+      for ( int i = 0; i < ch.length; i++ )
+      {
+        data[ i ] = ( short )ch[ i ];
+      }
+    }
+    else if ( size == 16 )
+    {
+      // Note that this puts data in little-endian form
+      data = new short[ 2 * ch.length ];
+      for ( int i = 0; i < ch.length; i++ )
+      {
+        data[ 2 * i ] = ( short )( ch[ i ] & 0xFF );
+        data[ 2 * i + 1 ] = ( short )( ( ch[ i ] >> 8 ) & 0xFF );
+      }
+    }
+    else
+    {
+      data = new short[ 0 ];
+    }
+  }
 
   /**
    * Length.

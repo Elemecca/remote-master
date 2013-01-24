@@ -2,8 +2,10 @@ package com.hifiremote.jp1.io;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import com.codeminders.hidapi.HIDManager;
 import com.codeminders.hidapi.ClassPathLibraryLoader;
@@ -289,6 +291,106 @@ public class CommHID extends IO
     return bytesRead;
 	}
 	
+	private int getEndBXML( int fileStart, byte[] buffer )
+  {
+	  int pos = fileStart;
+	  int itemsLength = ( buffer[ pos + 14 ] & 0xFF ) |  ( ( buffer[ pos + 15 ] & 0xFF ) << 8 );
+	  pos += 17 + itemsLength;
+	  List< Integer > tags = new ArrayList< Integer >();
+	  while ( true )
+	  {
+	    int tag = buffer[ pos++ ] & 0xFF;
+	    if ( ( tag & 0x80 ) == 0 )
+	    {
+	      tags.add( 0, tag );
+	      pos += ( buffer[ pos ] & 0xFF ) + 1;
+	    }
+	    else
+	    {
+	      int last = tags.remove( 0 );
+	      if ( tag != ( last | 0x80  ) )
+	      {
+	        System.err.println( "XCF file nesting error at " + Integer.toHexString( pos - 1 ) );
+	        break;
+	      }
+	      if ( tags.isEmpty() )
+	      {
+	        break;
+	      }
+	    }  
+	  }
+	  return pos;
+  }
+	
+	private boolean ssdInOK()
+	{
+	  boolean res = ssdIn[ 0 ] == 1;
+	  for ( int i = 1; i < 62; i++ )
+	  {
+	    res &= ssdIn[ i ] == 0;
+	  }
+	  if ( !res )
+	  {
+	    System.err.println( "Input packet failure: " + ssdIn[ 0 ] + "" + ssdIn[ 1 ] + "" + ssdIn[ 2 ] + "" + ssdIn[ 3 ] + "" + ssdIn[ 4 ] + "" + ssdIn[ 5 ]);
+	  }
+	  return res;
+	}
+	
+	int writeTouch( byte[] buffer )
+	{
+	  int status = ( buffer[ 0 ] & 0xFF ) | ( ( buffer[ 1 ] & 0xFF ) << 8 );
+	  int dataEnd = ( buffer[ 2 ] & 0xFF ) | ( ( buffer[ 3 ] & 0xFF ) << 8 );
+    int pos = 4;
+    int index = -1;
+	  while ( pos < dataEnd )
+    {
+      while ( index < 16 && ( status & ( 1 << ++index ) ) == 0 ) {};
+      if ( index == 16 )
+      {
+        break;
+      }
+      String name = Remote.userFilenames[ index ];
+      System.err.println( "Sending file " + name );
+      int count = 0;
+      int end = name.endsWith( ".xcf" ) ? getEndBXML( pos, buffer ) : dataEnd;
+      System.err.println( "File start: " + Integer.toHexString( pos ) + ", end: " + Integer.toHexString( end ) );
+      int len = end - pos;
+      Arrays.fill( ssdOut, ( byte )0 );
+      ssdOut[ 0 ] = 0x13;
+      ssdOut[ 2 ] = ( byte )( len & 0xFF );
+      ssdOut[ 3 ] = ( byte )( ( len >> 8 ) & 0xFF );
+      ssdOut[ 6 ] = ( byte )name.length();
+      for ( int i = 0; i < name.length(); i++ )
+      {
+        ssdOut[ 7 + i ] = ( byte )name.charAt( i );
+      }
+      writeTouchUSBReport( ssdOut, 62 );
+      System.err.println( "Header packet sent" );
+      readTouchUSBReport(ssdIn);
+
+      while ( pos < end )
+      {
+        if ( !ssdInOK() )
+        {
+          System.err.println( "Error: terminating at position " + Integer.toHexString( pos ) );
+          return pos;
+        }
+        int size = Math.min( end - pos, 56 );
+        Arrays.fill( ssdOut, ( byte )0 );
+        ssdOut[ 0 ] = 0x14;
+        ssdOut[ 2 ] = ( byte )count;
+        ssdOut[ 4 ] = ( byte )size;
+        System.arraycopy( buffer, pos, ssdOut, 6, size );
+        pos += size;
+        writeTouchUSBReport( ssdOut, 62 );
+        count++;
+        System.err.println( "Packet " + count + " sent" );
+        readTouchUSBReport(ssdIn);
+      }
+    }
+	  return buffer.length;
+	}
+	
 	int readTouch( byte[] buffer )
 	{
 	  int status = 0;
@@ -297,6 +399,7 @@ public class CommHID extends IO
     writeTouchUSBReport( new byte[]{4}, 1 );
     readTouchUSBReport(ssdIn);
     firmwareFileCount = ssdIn[ 3 ];
+    System.err.println( "Firmware file version data:" );
     for ( int i = 0; i < firmwareFileCount; i++ )
     {
       readTouchUSBReport(ssdIn);
@@ -304,6 +407,7 @@ public class CommHID extends IO
       o[1] = ssdIn[ 1 ];
       writeTouchUSBReport( o, 2 );
     }
+    System.err.println( "User file length data:" );
     for ( String name : Remote.userFilenames )
     {
       Arrays.fill( ssdOut, ( byte )0 );
@@ -320,7 +424,7 @@ public class CommHID extends IO
       {
         hex.set( ( short )ssdIn[ i ], i );
       }
-      System.err.println( name + " : " + hex );
+      System.err.println( "  " + name + " : " + hex );
     }
     int ndx = 4;
     for ( int n = 0; n < Remote.userFilenames.length; n++ )
@@ -382,7 +486,7 @@ public class CommHID extends IO
 	  }
 	  String name = sb.toString();
 	  firmwareFileVersions.put( name, hex );
-	  System.err.println( name + " : " + hex.toString() );
+	  System.err.println( "  " + name + " : " + hex.toString() );
 	}
 	
 	public int writeRemote( int address, byte[] buffer, int length ) {  //if Touch, must be 62 bytes or less
@@ -390,8 +494,9 @@ public class CommHID extends IO
 		if (thisPID == 0x8008 || thisPID == 0x8011)
 			bytesWritten = writeMAXQ_Lite(address, buffer, length);
 		else if (thisPID == 0x8001)
-			if (length <= 62) 
-				writeTouchUSBReport(buffer, length );
+		  bytesWritten = writeTouch( buffer );
+//			if (length <= 62) 
+//				writeTouchUSBReport(buffer, length );
 		return bytesWritten;
 	}
 	

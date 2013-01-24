@@ -1447,17 +1447,18 @@ public class Remote implements Comparable< Remote >
         timedMacroAddress = null;
       }
     }
+    
+    processor = ProcessorManager.getProcessor( processorName, processorVersion );
+    
     if ( segmentTypes != null )
     {
-      macroSupport = ( segmentTypes.contains( 1 ) || segmentTypes.contains( 2 ) || segmentTypes.contains( 3 ) );
+      macroSupport = ( segmentTypes.contains( 1 ) || segmentTypes.contains( 2 ) || segmentTypes.contains( 3 ) || isSSD() );
       keyMoveSupport = ( segmentTypes.contains( 7 ) || segmentTypes.contains( 8 ) );
       twoBytePID = true;
       advCodeBindFormat = AdvancedCode.BindFormat.LONG;
       efcDigits = 5;
     }
     
-    processor = ProcessorManager.getProcessor( processorName, processorVersion );
-
     // Set values for RAMAddr for processors where it does not need to be specified
     if ( !processorName.equals( "S3C80" ) ||  RAMAddress != S3C80Processor.newRAMAddress )
     {
@@ -2290,6 +2291,12 @@ public class Remote implements Comparable< Remote >
    */
   public String getButtonName( int keyCode )
   {
+    DeviceButton db = getDeviceButton( keyCode );
+    if ( db != null )
+    {
+      return db.getName();
+    }
+
     Button b = getButton( keyCode );
 
     if ( b == null )
@@ -3627,6 +3634,11 @@ public class Remote implements Comparable< Remote >
   public boolean usesEZRC()
   {
     return signature.startsWith( "USB" );
+  }
+  
+  public boolean usesIcons()
+  {
+    return isSSD();
   }
 
   /** The learned dev btn swapped. */

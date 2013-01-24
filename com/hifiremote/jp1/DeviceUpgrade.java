@@ -1049,7 +1049,7 @@ public class DeviceUpgrade extends Highlight
     if ( pCode != null && pCode.length() > 2 )
     {
       Processor proc = newRemote.getProcessor(); 
-      if ( remoteConfig.hasSegments() )
+      if ( remote.getSegmentTypes() != null )
       {
         // This allows an import even when the protocol code has a non-standard
         // format, as with the XSight Touch
@@ -1263,7 +1263,7 @@ public class DeviceUpgrade extends Highlight
         }
         Hex tempCode = new Hex( pid, 0, 3 );
         // See below for comments on determining fixed data and command lengths
-        if ( remoteConfig.hasSegments() )
+        if ( remote.getSegmentTypes() != null )
         {
           fixedDataLength = sizeDevBytes;
           cmdLength = sizeCmdBytes;
@@ -1326,7 +1326,7 @@ public class DeviceUpgrade extends Highlight
         // the number of mapped buttons is greater than the number of fixed bytes. (This is
         // the way that IR.exe always determines these for built-in protocols since it does
         // not have access to the protocol code).
-        if ( remoteConfig.hasSegments() )
+        if ( remote.getSegmentTypes() != null )
         {
           fixedDataLength = sizeDevBytes;
           cmdLength = sizeCmdBytes;
@@ -1345,7 +1345,7 @@ public class DeviceUpgrade extends Highlight
         }
       }
       
-      if ( remoteConfig.hasSegments() )
+      if ( remote.getSegmentTypes() != null )
       {
         // This allows an import even when the protocol code has a non-standard
         // format, as with the XSight Touch
@@ -4080,7 +4080,7 @@ public class DeviceUpgrade extends Highlight
     this.softFunctionSegment = softFunctionSegment;
   }
 
-  private Comparator< Button > ButtonSorter = new Comparator< Button >()
+  public static Comparator< Button > ButtonSorter = new Comparator< Button >()
   {
     @Override
     public int compare( Button b1, Button b2 )
