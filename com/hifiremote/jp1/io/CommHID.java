@@ -495,8 +495,6 @@ public class CommHID extends IO
 			bytesWritten = writeMAXQ_Lite(address, buffer, length);
 		else if (thisPID == 0x8001)
 		  bytesWritten = writeTouch( buffer );
-//			if (length <= 62) 
-//				writeTouchUSBReport(buffer, length );
 		return bytesWritten;
 	}
 	
@@ -519,7 +517,7 @@ public class CommHID extends IO
 			return -1;
 		int crc =  CalcCRCofReport(outReport);
 		int bytesWritten = -1;
-		outReport[0] = (byte)0; //(buffer[0]== 1 ? 3 : 0);
+		outReport[0] = (byte)0;
 		outReport[63] = (byte) (crc & 0xFF);
 		outReport[64] = (byte) (crc >> 8);
 		try {

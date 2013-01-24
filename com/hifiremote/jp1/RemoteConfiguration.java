@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -771,6 +772,17 @@ public class RemoteConfiguration
         // keycode for that device
         items.macroKeys.add( ( int )data[ pos++ ] );
       }
+      else if ( tag.equals( "duration" ) )
+      {
+        pos++;
+        int duration = ( data[ pos ] + 0x100 * data[ pos + 1 ] ) / 100;
+        List< Button > holdGroup = remote.getButtonGroups().get( "Hold" );
+        if ( duration > 0 && holdGroup != null && !holdGroup.isEmpty() )
+        {
+          int keycode = holdGroup.get( 0 ).getKeyCode() | ( duration << 8 );
+          items.macroKeys.add( items.macroKeys.size() - 1 , keycode );
+        }
+      }
       else if ( tag.equals(  "delay" ) )
       {
         pos++;
@@ -840,6 +852,10 @@ public class RemoteConfiguration
         items.macro.setData( hex );
         items.macroKeys = null;
         items.macro = null;
+      }
+      else if ( tag.equals( "macros" ) )
+      {
+        Collections.sort( macros, MacroSorter );
       }
     }
   }
@@ -2715,6 +2731,7 @@ public class RemoteConfiguration
     {
       // XSight remotes
       ssdFiles.put( "devices.xcf", makeDevicesXCF() );
+      ssdFiles.put( "macros.xcf", makeMacrosXCF() );
       
       int pos = 4;
       int status = 0;
@@ -5759,6 +5776,62 @@ public class RemoteConfiguration
     return hex;
   }
   
+  private SSDFile makeMacrosXCF()
+  {
+    tagList = new ArrayList< String >();
+    List< Hex > work = new ArrayList< Hex >();
+    work.add( makeItem( "macros", new Hex( "macros.xcf", 8 ), false ) );
+    for ( Macro macro : macros )
+    {
+      work.add( makeItem( "macro", getLittleEndian( macro.getSerial() ), false ) );
+      work.add( makeItem( "name16", new Hex( macro.getName(), 16 ), true ) );
+      short[] keys = macro.getData().getData();
+      boolean isSysMacro = false;
+      int count = 0;
+      for ( int i = 0; i < keys.length - 1; i++ )
+      {
+        DeviceButton db = remote.getDeviceButton( keys[ i ] );
+        if ( db == null )
+        {
+          // malformed macro
+          continue;
+        }
+        short dev = ( short )( keys[ i++ ] - 0x50 );
+        short keycode = ( short )( keys[ i ] & 0xFF );
+        short duration = 0;
+        List< Button > holds = remote.getButtonGroups().get( "Hold" );
+        if ( holds != null && !holds.isEmpty() && keycode == holds.get( 0 ).getKeyCode() )
+        {
+          duration = ( short )( ( keys[ i ] >> 8 ) & 0xFF );
+          i++;
+          keycode = ( short )( keys[ i ] & 0xFF );
+        }
+        short delay = ( short )( ( keys[ i ] >> 8 ) & 0xFF );
+        work.add( makeItem( "sendhardkey", new Hex( new short[]{ dev, keycode } ), false ) );
+        isSysMacro = ( count == 0 && i == keys.length - 1 );
+        count++;
+        if ( isSysMacro || duration > 0 )
+        {
+          // explicit zero duration for sysMacro          
+          work.add( makeItem( "duration", new Hex( new Hex( getLittleEndian( duration * 100 ), 0, 4 ) ), true ) );
+        }
+        work.add( endTag( "sendhardkey" ) );
+        work.add( makeItem( "delay", new Hex( new short[]{ delay } ), true ) );
+        if ( isSysMacro )
+        {
+          work.add( makeItem( "issystemmacro", new Hex( new short[]{ 1 } ), true ) );
+        }
+      }
+      // set null assistant, as we don't know what it is
+      work.add( makeItem( "assistant", new Hex( new short[ 0 ] ), true ) );
+      work.add( endTag( "macro" ) );
+    }
+    work.add( endTag( "macros" ) );
+    SSDFile file = new SSDFile( tagList, work );
+    tagList = null;
+    return file;
+  }
+  
   private SSDFile makeDevicesXCF()
   {
     tagList = new ArrayList< String >();
@@ -5794,7 +5867,7 @@ public class RemoteConfiguration
         work.add( makeItem( "objcode", code, true ) );
       }
       work.add( endTag( "executor" ) );
-      List< Button > buttons = new ArrayList< Button >( remote.getButtons() );
+      List< Button > buttons = new ArrayList< Button >( Arrays.asList( remote.getUpgradeButtons() ) );
       Collections.sort( buttons, DeviceUpgrade.ButtonSorter );
       for ( int i = 0; i < 2; i++ )
       {
@@ -5846,7 +5919,7 @@ public class RemoteConfiguration
       work.add( endTag( "device" ) );
     }
     work.add( endTag( "devices" ) );
-    getTag( "learnedkey" );  // tag always present even if unused
+//    getTag( "learnedkey" );  // tag always present even if unused
     SSDFile file = new SSDFile( tagList, work );
     tagList = null;
     return file;
@@ -5866,5 +5939,14 @@ public class RemoteConfiguration
   {
     return new Hex( new short[]{ ( short )( n & 0xFF), ( short )( ( n >> 8 ) & 0xFF ) } );
   }
+  
+  public static Comparator< Macro > MacroSorter = new Comparator< Macro >()
+  {
+    @Override
+    public int compare( Macro m1, Macro m2 )
+    {
+      return ( new Integer( m1.getSerial()) ).compareTo( new Integer( m2.getSerial()) );
+    }    
+  };
   
 }

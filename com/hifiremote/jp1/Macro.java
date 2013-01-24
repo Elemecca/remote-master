@@ -113,7 +113,7 @@ public class Macro extends AdvancedCode
         buff.append( ';' );
       }
       buff.append( remote.getButtonName( data[ i ] & 0xFF ) );
-      int duration = data[ i ] >> 8;
+      int duration = ( data[ i ] >> 8 ) & 0xFF;
       if ( duration > 0 )
       {
         buff.append( "(" +  duration / 10 + "." + duration % 10 + ")" );
