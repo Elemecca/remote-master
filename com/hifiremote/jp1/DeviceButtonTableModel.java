@@ -186,6 +186,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     // This extends the range of values of the device type index beyond 0x0F to use a distinctive
     // value, 0xFF, to signify an empty device slot in a remote that uses soft devices.
     short[] data = getData( row );
+    if ( data == null )
+    {
+      return 0xFF;
+    }
     Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
     SoftDevices softDevices = remote.getSoftDevices();
@@ -285,8 +289,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     short[] data = null;
     if ( remoteConfig.hasSegments() )
     {
-      DeviceButton db = getRow( row );
-      data = db.getSegment().getHex().getData();
+      Segment seg = getRow( row ).getSegment();
+      data = seg != null ? seg.getHex().getData() : null;
     }
     else
     {
@@ -304,14 +308,14 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   {
     Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
-    short[] data = getData( row );
     int typeIndex = getExtendedTypeIndex( row );
-    int group = db.getDeviceGroup( data );
     column = getEffectiveColumn( column );
-    if ( typeIndex == 0xFF && column > 1 && column < 7 )
+    if ( typeIndex == 0xFF && column > 1 && ( column < 7 || remote.isSSD() ) )
     {
       return null;
     }
+    short[] data = getData( row );
+    int group = db.getDeviceGroup( data );
     switch ( column )
     {
       case 0:

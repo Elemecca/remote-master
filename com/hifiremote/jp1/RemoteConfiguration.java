@@ -531,6 +531,7 @@ public class RemoteConfiguration
     int status = data[ 0 ] + ( data[ 1 ] << 8 );
     int end = data[ 2 ] + ( data[ 3 ] << 8 );
     ssdFiles.clear();
+    
     Items items = new Items();
     while ( pos < end )
     {
@@ -5702,7 +5703,7 @@ public class RemoteConfiguration
       }
       this.tagNames = tagNames;
       this.hex = new Hex( data );
-      System.err.println( "Constructed hex = " + hex );
+//      System.err.println( "Constructed hex = " + hex );
     }
 
     List< String > tagNames = null;
