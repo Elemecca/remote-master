@@ -19,11 +19,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -31,8 +35,10 @@ import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
@@ -181,6 +187,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem initializeToFFItem = null;
   
   private static JCheckBoxMenuItem useSavedDataItem = null;
+  
+  private static JCheckBoxMenuItem getSystemFilesItem = null;
+  
+  private static JMenuItem putSystemFileItem = null;
+  
+  private static JMenuItem parseIRDBItem = null;
 
   // Help menu items
   /** The update item. */
@@ -1277,6 +1289,84 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     return useSavedDataItem.isSelected();
   }
+  
+  public static boolean getSystemFiles()
+  {
+    return getSystemFilesItem.isSelected();
+  }
+  
+  public static void setSystemFilesItems( boolean active )
+  {
+    getSystemFilesItem.setVisible( active );
+    putSystemFileItem.setVisible( active );
+    parseIRDBItem.setVisible( active );
+    if ( active )
+    {
+      File file = new File( new File( workDir, "XSight" ), "irdb.bin" );
+      parseIRDBItem.setEnabled( file.exists() && file.isFile() );
+    }
+    else
+    {
+      getSystemFilesItem.setSelected( false );
+    }
+  }
+  
+  public static byte[] readBinary( File file )
+  {
+    int totalBytesRead = 0;
+    byte[] data = null;
+    try
+    {
+      int length = ( int )file.length();
+      if ( length == 0 )
+      {
+        System.err.println( "File " + file.getAbsolutePath() + " empty or not found" );
+        return null;
+      }
+      data = new byte[ length ];
+      InputStream input = null;
+      try 
+      {
+        input = new BufferedInputStream(new FileInputStream( file ) );
+        while( totalBytesRead < data.length )
+        {
+          int bytesRemaining = data.length - totalBytesRead;
+          //input.read() returns -1, 0, or more :
+          int bytesRead = input.read( data, totalBytesRead, bytesRemaining ); 
+          if ( bytesRead > 0 )
+          {
+            totalBytesRead = totalBytesRead + bytesRead;
+          }
+        }
+        /*
+             the while loop usually has a single iteration only.
+         */
+        if ( totalBytesRead != length )
+        {
+          System.err.println( "File read error: file length = " + length + ", bytes read = " + totalBytesRead );
+          return null;
+        }
+        System.err.println( "Bytes read from file: " + totalBytesRead );
+      }
+      catch (FileNotFoundException ex) {
+        System.err.println( "File not found" );
+        return null;
+      }
+      finally 
+      {
+        if ( input != null )
+        {
+          System.err.println("Closing input stream.");
+          input.close();
+        }
+      }
+    }
+    catch (IOException ex) {
+      System.err.println( ex );
+      return null;
+    }
+    return data;
+  }
 
   public static ImageIcon createIcon( String imageName )
   {
@@ -1678,6 +1768,31 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     useSavedDataItem.addActionListener( this );
     menu.add( useSavedDataItem );
 
+    getSystemFilesItem = new JCheckBoxMenuItem( "Get system files" );
+    getSystemFilesItem.setToolTipText( "<html>When checked, a download from the remote also copies<br>"
+        + "the system files of the remote to the XSight subfolder<br>"
+        + "of the installation folder, creating it if it does not<br>"
+        + "exist.</html>" );
+    getSystemFilesItem.setVisible( false );
+    getSystemFilesItem.setSelected( false );
+    menu.add( getSystemFilesItem );
+
+    putSystemFileItem = new JMenuItem( "Put system file..." );
+    putSystemFileItem.setToolTipText( "<html>Uploads a system file to the remote, selected from<br>"
+        + "the XSight subfolder of the installation folder.</html>" );
+    putSystemFileItem.setVisible( false );
+    putSystemFileItem.addActionListener( this );
+    menu.add( putSystemFileItem );
+
+    parseIRDBItem = new JMenuItem( "Extract from irdb.bin" );
+    parseIRDBItem.setToolTipText( "<html>Extracts data for an RDF from the copy of the irdb.bin<br>"
+        + "system file in the XSight subfolder of the installation<br>"
+        + "folder.  You must first use \"Get system files\" to copy<br>"
+        + "this and other system files from the remote to this folder.</html>" );
+    parseIRDBItem.setVisible( false );
+    parseIRDBItem.addActionListener( this );
+    menu.add( parseIRDBItem );
+
     menu = new JMenu( "Help" );
     menu.setMnemonic( KeyEvent.VK_H );
     menuBar.add( menu );
@@ -1818,6 +1933,44 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( result.equals( dir ) )
       {
         result = null; // Not changed
+      }
+    }
+    return result;
+  }
+  
+  public File getSystemFileChoice()
+  {
+    // Selects an XSight system file for uploading
+    File result = null;
+    File dir = new File( workDir, "XSight" );
+    if ( !dir.exists() )
+    {
+      System.err.println( "Folder " + dir.getAbsolutePath() + " not found" );
+      return null;
+    }
+    
+    while ( result == null )
+    {
+      RMFileChooser chooser = new RMFileChooser( dir );
+      int returnVal = chooser.showOpenDialog( this );
+      if ( returnVal == RMFileChooser.APPROVE_OPTION )
+      {
+        result = chooser.getSelectedFile();
+
+        if ( !result.exists() )
+        {
+          JOptionPane.showMessageDialog( this, result.getName() + " doesn't exist.", "File doesn't exist.",
+              JOptionPane.ERROR_MESSAGE );
+        }
+        else if ( result.isDirectory() )
+        {
+          JOptionPane.showMessageDialog( this, result.getName() + " is a directory.", "File doesn't exist.",
+              JOptionPane.ERROR_MESSAGE );
+        }
+      }
+      else
+      {
+        return null;
       }
     }
     return result;
@@ -2577,6 +2730,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         setInterfaceState( "INITIALIZING TO FF..." );
         ( new UploadTask( data, false ) ).execute();
       }
+      else if ( source == putSystemFileItem )
+      {
+        File file = getSystemFileChoice();
+        IO io = getOpenInterface();
+        if ( io instanceof CommHID )
+        {
+          ( ( CommHID )io ).writeSystemFile( file );
+        }
+      }
+      else if ( source == parseIRDBItem )
+      {
+        extractIrdb();
+        setSystemFilesItems( true );
+      }
       else if ( source == rdfPathItem )
       {
         File path = getRDFPathChoice();
@@ -3308,6 +3475,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   
   private static File workDir = null;
 
+  public static File getWorkDir()
+  {
+    return workDir;
+  }
+
   /** The Constant rmirEndings. */
   private final static String[] rmirEndings =
   {
@@ -3457,4 +3629,216 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
   }
   
+  private void extractIrdb()
+  {
+    int pos = 0;
+    File file = new File( new File( workDir, "XSight" ), "irdb.bin" );
+    byte[] data = RemoteMaster.readBinary( file );
+    int end = data.length;
+    LinkedHashMap< Integer, List< Integer > > setups = new LinkedHashMap< Integer, List<Integer> >();
+    LinkedHashMap< Integer, Integer > pidLenBytes = new LinkedHashMap< Integer, Integer >();
+    List< Integer > prots = new ArrayList< Integer >();
+    List< Integer > distinctTags = new ArrayList< Integer >();
+    String name = file.getName();
+    List< String > tagNames = new ArrayList< String >();
+    System.err.println( name + " tags:" );
+    int itemsLength = ( data[ pos + 14 ] & 0xFF ) + 0x100 * ( data[ pos + 15 ] & 0xFF );
+    pos += 16;
+    int itemCount = data[ pos++ ] & 0xFF;
+    int itemsEnd = pos + itemsLength;
+    char ch;
+    for ( int i = 0; i < itemCount; i++ )
+    {
+      StringBuilder sb = new StringBuilder();
+      while ( ( ch = ( char )( data[ pos++ ] & 0xFF ) ) != 0 )
+      {
+        sb.append( ch );
+      }
+      String tag = Integer.toHexString( i );
+      if ( tag.length() == 1 )
+      {
+        tag = "0" + tag;
+      }
+      String tagName = sb.toString();
+      tagNames.add( tagName );
+      System.err.println( "  " + tag + "  " + tagName );
+    }
+    if ( pos != itemsEnd )
+    {
+      System.err.println( "Parsing error in " + name );
+      return;
+    }
+
+    List< Integer > tags = new ArrayList< Integer >();
+    int devLen = 0;
+    int cmdLen = 0;
+    int pid = -1;
+    while ( true )
+    {
+      int tag = data[ pos++ ] & 0xFF;
+      if ( ( tag & 0x80 ) == 0 )
+      {
+        tags.add( 0, tag );
+        if ( !distinctTags.contains( tag ) )
+        {
+          distinctTags.add( tag );
+        }
+        if ( tag == 0x0B )
+        {
+          int type = data[ pos + 1 ];
+          char[] chs = new char[ 4 ];
+          for ( int i = 2; i < 6; i++ )
+          {
+            chs[ i - 2 ] = ( char )data[ pos + i ];
+          }
+          int val = Integer.parseInt( new String( chs ) );
+          List< Integer > list = setups.get( type );
+          if ( list == null )
+          {
+            list = new ArrayList< Integer >();
+            setups.put( type, list );
+          }
+          if ( !list.contains( val ) )
+          {
+            list.add( val );
+          }
+        }
+        else if ( tag == 0x0D )
+        {
+          devLen = data[ pos ];
+        }
+        else if ( tag == 0x11 )
+        {
+          pid = ( data[ pos + 1 ] & 0xFF ) + 0x100 * ( data[ pos + 2 ] & 0xFF );
+          if ( !prots.contains( pid ) )
+          {
+            prots.add( pid );
+          }
+        }
+        else if ( tag == 0x10 )
+        {
+          if ( cmdLen == 0 )
+          {
+            cmdLen = data[ pos ] - 1;
+          }
+          else if ( cmdLen != data[ pos ] - 1 )
+          {
+            System.err.println( "Inconsistent cmdLen in pid = " + Integer.toHexString( pid ) );
+          }
+        }
+        int len = data[ pos++ ] & 0xFF;
+        pos += len;
+      }
+      else
+      {
+        int last = tags.remove( 0 );
+        if ( tag != ( last | 0x80  ) )
+        {
+          System.err.println( "XCF file nesting error at " + Integer.toHexString( pos - 1 ) );
+          return;
+        }
+        else if ( tag == 0x8B )
+        {
+          int val = 0xFFFF;
+          if ( devLen < 16 && cmdLen < 16 )
+          {
+            val = cmdLen | ( devLen << 4 );
+          }
+          Integer oldVal = pidLenBytes.get( pid );
+          if ( oldVal == null )
+          {
+            pidLenBytes.put( pid, val );
+          }
+          else if ( oldVal != val )
+          {
+            System.err.println( "Inconsistent occurrences of pid " + Integer.toHexString( pid ) );
+          }
+          devLen = 0;
+          cmdLen = 0;
+          pid = -1;
+        }
+
+        if ( tags.isEmpty() )
+        {
+          System.err.println( "irdb parsing terminating at position " + Integer.toHexString( pos ) );
+          break;
+        }
+      }  
+    }
+
+    Collections.sort( prots );
+    Collections.sort( distinctTags );
+    System.err.println();
+    System.err.print( "Distinct tags: " );
+    for ( int tag : distinctTags )
+    {
+      System.err.print( String.format( "%02X ", tag ) );
+    }
+    System.err.println();
+    System.err.println();
+    System.err.println( "[SetupCodes]");
+    for ( int type : setups.keySet() )
+    {
+      List< Integer > list = setups.get( type );
+      System.err.print( ( char )type );
+      System.err.print( " = " );
+      int i = -1;
+      for ( int val : list )
+      {
+        if ( ++i > 0 )
+        {
+          System.err.print( ", " );
+
+          if ( ( i % 10 ) == 0 )
+          {
+            System.err.println();
+            System.err.print( "    " );
+          }
+        }
+        System.err.print( new SetupCode( val ) );
+      }
+      System.err.println();
+    }
+
+    System.err.println();
+    System.err.println( "[Protocols]" );
+    int i = -1;
+    for ( int p : prots )
+    {
+      if ( ++i > 0 )
+      {
+        System.err.print( ", " );
+
+        if ( ( i % 10 ) == 0 )
+        {
+          System.err.println();
+        }
+      }
+      System.err.print( String.format( "%04X", p ) );
+    }
+    System.err.println();
+    System.err.println();
+    i = -1;
+    System.err.println( "Dev/Cmd lengths by protocol");
+    for ( int p : prots )
+    {
+      if ( ++i > 0 )
+      {
+        System.err.print( "; " );
+
+        if ( ( i % 8 ) == 0 )
+        {
+          System.err.println();
+        }
+      }
+      System.err.print( String.format( "%04X %02X", p, pidLenBytes.get( p ) ) );
+    }
+    System.err.println();
+    System.err.println();
+    String title = "Extract irdb.bin";
+    String message = 
+        "Extract data, including [Protocols] and [SetupCodes] sections\n"
+        + "for the RDF, have been output to rmaster.err"; 
+    JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
+  } 
 }

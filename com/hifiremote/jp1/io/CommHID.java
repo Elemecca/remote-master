@@ -1,6 +1,14 @@
 package com.hifiremote.jp1.io;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +23,7 @@ import com.codeminders.hidapi.HIDDeviceInfo;
 //import com.codeminders.hidapi.HIDDeviceNotFoundException;
 import com.hifiremote.jp1.Hex;
 import com.hifiremote.jp1.Remote;
+import com.hifiremote.jp1.RemoteMaster;
  
 public class CommHID extends IO 
 {
@@ -391,18 +400,74 @@ public class CommHID extends IO
 	  return buffer.length;
 	}
 	
+	public void writeSystemFile( File file )
+	{
+	  String name = file.getName();
+	  byte[] data = RemoteMaster.readBinary( file );
+	  if ( data == null )
+	  {
+	    System.err.println( "Write System File aborting.  Unable to read data file" );
+	    return;
+	  }
+
+	  int len = data.length;
+	  int pos = 0;
+	  int count = 0;
+	  Arrays.fill( ssdOut, ( byte )0 );
+	  ssdOut[ 0 ] = 0x13;
+	  ssdOut[ 2 ] = ( byte )( len & 0xFF );
+	  ssdOut[ 3 ] = ( byte )( ( len >> 8 ) & 0xFF );
+	  ssdOut[ 4 ] = ( byte )( ( len >> 16 ) & 0xFF );
+	  ssdOut[ 6 ] = ( byte )name.length();
+	  for ( int i = 0; i < name.length(); i++ )
+	  {
+	    ssdOut[ 7 + i ] = ( byte )name.charAt( i );
+	  }
+	  writeTouchUSBReport( ssdOut, 62 );
+	  System.err.println( "Header packet sent" );
+	  readTouchUSBReport(ssdIn);
+
+	  while ( pos < len )
+	  {
+	    if ( !ssdInOK() )
+	    {
+	      System.err.println( "Error: terminating at position " + Integer.toHexString( pos ) );
+	      return;
+	    }
+	    int size = Math.min( len - pos, 56 );
+	    Arrays.fill( ssdOut, ( byte )0 );
+	    ssdOut[ 0 ] = 0x14;
+	    ssdOut[ 2 ] = ( byte )( count & 0xFF );
+	    ssdOut[ 3 ] = ( byte )( ( count >> 8 ) & 0xFF );
+	    ssdOut[ 4 ] = ( byte )size;
+	    System.arraycopy( data, pos, ssdOut, 6, size );
+	    pos += size;
+	    writeTouchUSBReport( ssdOut, 62 );
+	    count++;
+	    System.err.println( "Packet " + count + " sent" );
+	    readTouchUSBReport(ssdIn);
+	  }
+	  System.err.println( "Bytes written to " + name + ": " + pos );
+	}
+	
 	int readTouch( byte[] buffer )
 	{
 	  int status = 0;
 	  byte[] o = new byte[2];
     o[0]=1;
     writeTouchUSBReport( new byte[]{4}, 1 );
-    readTouchUSBReport(ssdIn);
+    if ( readTouchUSBReport( ssdIn ) < 0 )
+    {
+      return 0;
+    }
     firmwareFileCount = ssdIn[ 3 ];
     System.err.println( "Firmware file version data:" );
     for ( int i = 0; i < firmwareFileCount; i++ )
     {
-      readTouchUSBReport(ssdIn);
+      if ( readTouchUSBReport( ssdIn ) < 0 )
+      {
+        return 0;
+      }
       saveVersionData();
       o[1] = ssdIn[ 1 ];
       writeTouchUSBReport( o, 2 );
@@ -418,7 +483,10 @@ public class CommHID extends IO
         ssdOut[ 4 + i ] = ( byte )name.charAt( i );
       }
       writeTouchUSBReport( ssdOut, 62 );
-      readTouchUSBReport( ssdIn );
+      if ( readTouchUSBReport( ssdIn ) < 0 )
+      {
+        return 0;
+      }
       Hex hex = new Hex( 8 );
       for ( int i = 0; i < 8; i++ )
       {
@@ -438,20 +506,26 @@ public class CommHID extends IO
         ssdOut[ 3 + i ] = ( byte )name.charAt( i );
       }
       writeTouchUSBReport( ssdOut, 62 );
-      readTouchUSBReport( ssdIn );
+      if ( readTouchUSBReport( ssdIn ) < 0 )
+      {
+        return 0;
+      }
       if ( ( ssdIn[ 2 ] & 0x10 ) == 0x10 )
       {
         System.err.println( "File " + name + " is absent" );
         continue;
       }
-      int count = ( ssdIn[ 3 ] & 0xFF ) + 0x100 * ( ssdIn[ 4 ] & 0xFF );
+      int count = ( ssdIn[ 3 ] & 0xFF ) + 0x100 * ( ssdIn[ 4 ] & 0xFF )+ 0x10000 * ( ssdIn[ 5 ] & 0xFF );
       int total = 0;
       ssdOut[ 0 ] = 1;
       ssdOut[ 2 ] = 0;
       status |= 1 << n;
       while ( total < count )
       {
-        readTouchUSBReport( ssdIn );
+        if ( readTouchUSBReport( ssdIn ) < 0 )
+        {
+          return ndx;
+        }
         int len = ssdIn[ 4 ];
         total += len;
         System.arraycopy( ssdIn, 6, buffer, ndx, len );
@@ -467,10 +541,80 @@ public class CommHID extends IO
     buffer[ 1 ] = ( byte )( ( status >> 8 ) & 0xFF );
     buffer[ 2 ] = ( byte )( ndx & 0xFF );
     buffer[ 3 ] = ( byte )( ( ndx >> 8 ) & 0xFF );
+    
+    if ( RemoteMaster.getSystemFiles() )
+    {
+      readSystemFiles();
+    }
+
     // Need to return the buffer length rather than bytesRead for
     // consistency with normal remotes, which do read the entire buffer
     return buffer.length;
 	}
+	
+	private void readSystemFiles()
+	{
+	  for ( String name : firmwareFileVersions.keySet() )
+    {
+      if ( name.indexOf( "." ) > 0 )
+      try
+      {
+        OutputStream output = null;
+        File outputDir = new File( RemoteMaster.getWorkDir(), "XSight" );
+        if ( !outputDir.exists() )
+        {
+          outputDir.mkdirs();
+        }
+        try 
+        {
+          output = new BufferedOutputStream(new FileOutputStream( new File( outputDir, name  ), false ) );
+          Arrays.fill( ssdOut, ( byte )0 );
+          ssdOut[ 0 ] = 0x12;
+          ssdOut[ 2 ] = ( byte )name.length();
+          for ( int i = 0; i < name.length(); i++ )
+          {
+            ssdOut[ 3 + i ] = ( byte )name.charAt( i );
+          }
+          writeTouchUSBReport( ssdOut, 62 );
+          if ( readTouchUSBReport( ssdIn ) < 0 )
+          {
+            System.err.println( "Unable to read system file " + name );
+            return;
+          }
+          int count = ( ssdIn[ 3 ] & 0xFF ) + 0x100 * ( ssdIn[ 4 ] & 0xFF ) + 0x10000 * ( ssdIn[ 5 ] & 0xFF );
+          int total = 0;
+          ssdOut[ 0 ] = 1;
+          ssdOut[ 2 ] = 0;
+          while ( total < count )
+          {
+            if ( readTouchUSBReport( ssdIn ) < 0 )
+            {
+              break;
+            }
+            int len = ssdIn[ 4 ];
+            total += len;
+            output.write( ssdIn, 6, len );
+            ssdOut[ 1 ] = ssdIn[ 1 ];
+            writeTouchUSBReport( ssdOut, 62 );
+          }
+          System.err.println( "File " + name + " has reported length " + count + ", actual length " + total );
+        }
+        catch(FileNotFoundException ex){
+          System.err.println( "Unable to open file " + name );
+        }
+        finally
+        {
+          if ( output != null )
+          {
+            output.close();
+          }
+        }
+      }
+      catch(IOException ex){
+        ex.printStackTrace( System.err );
+      }
+    }
+  }
 
   void saveVersionData()
 	{
@@ -501,10 +645,15 @@ public class CommHID extends IO
 	int readTouchUSBReport(byte[] buffer) { 
 	  int bytesRead = -1;
 		try {
+		  Arrays.fill( inReport, ( byte )0xFF );
 		  bytesRead = devHID.readTimeout(inReport, 3000);
+		  if ( inReport[ 0 ] == ( byte )0xFF )
+		  {
+		    return -2;  // signifies timed out as 0xFF is not a known packet type
+		  }
 			System.arraycopy(inReport,0, buffer, 0, 62);
 		} catch (Exception e) {
-			return -1;
+			return -1;    // signifies error
 		}
 		return bytesRead;
 	}

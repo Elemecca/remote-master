@@ -62,6 +62,7 @@ public class RemoteConfiguration
     }
     in.close();
     updateImage();
+    RemoteMaster.setSystemFilesItems( remote.isSSD() );
   }
   
   public RemoteConfiguration( String str, RemoteMaster rm, Remote remote ) throws IOException
@@ -72,6 +73,7 @@ public class RemoteConfiguration
     PropertyReader pr = new PropertyReader( in );
     importIR( pr, false );
     in.close();
+    RemoteMaster.setSystemFilesItems( remote.isSSD() );
   }
   
   private void createActivities()
@@ -531,6 +533,10 @@ public class RemoteConfiguration
     int status = data[ 0 ] + ( data[ 1 ] << 8 );
     int end = data[ 2 ] + ( data[ 3 ] << 8 );
     ssdFiles.clear();
+    for ( DeviceButton db : remote.getDeviceButtons() )
+    {
+      db.setSegment( null );
+    }
     
     Items items = new Items();
     while ( pos < end )
@@ -804,9 +810,9 @@ public class RemoteConfiguration
       }
       if ( tag.equals( "codeset" ) )
       {
-        Hex hex = new Hex( items.pid, 0, items.fixedData.length() + 4 );
-        hex.put( items.fixedData, 4 );
-        hex.set( ( short )0x01, 3 );
+        Hex hex = new Hex( items.pid, 0, items.fixedData.length() + 3 );
+        hex.put( items.fixedData, 3 );
+        hex.set( ( short )0x01, 2 );
         try
         {
           items.upgrade.importRawUpgrade( hex, remote, items.alias, items.pid, items.pCode );
@@ -1724,6 +1730,7 @@ public class RemoteConfiguration
     if ( remote.isSSD() )
     {
       loadFiles( true );
+//      parseSystemFiles();
       return;
     }
     else if ( hasSegments() )
@@ -2272,6 +2279,7 @@ public class RemoteConfiguration
       highlight[ i ] = Color.WHITE;
     }
     deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
+    RemoteMaster.setSystemFilesItems( remote.isSSD() );
   }
 
   /**
@@ -5459,7 +5467,11 @@ public class RemoteConfiguration
   {
     // Fill buffer with 0xFF
     Arrays.fill( data, startAddr, data.length, ( short )0xFF );
-    if ( hasSegments() )
+    if ( remote.isSSD() )
+    {
+      
+    }
+    else if ( hasSegments() )
     {
       initializeSegments();
     }

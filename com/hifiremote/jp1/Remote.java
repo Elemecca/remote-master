@@ -678,16 +678,17 @@ public class Remote implements Comparable< Remote >
       maxNum = Math.max( maxNum, type.getNumber() );
     }
     DeviceType[] types = new DeviceType[ maxNum + 1 ];
-    for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
+    List< DeviceType > list = new ArrayList< DeviceType >();
+    for ( DeviceType type : deviceTypeList )
     {
-      DeviceType type = e.nextElement();
       int num = type.getNumber();
       if ( types[ num ] == null )
       {
         types[ num ] = type;
+        list.add( type );
       }
     }
-    return types;
+    return list.toArray( new DeviceType[ 0 ] ); 
   }
 
   public DeviceType[] getAllDeviceTypes()
@@ -2763,7 +2764,16 @@ public class Remote implements Comparable< Remote >
       if ( pos != -1 )
       {
         StringTokenizer st = new StringTokenizer( line, "=" );
-        int devTypeIndex = Integer.parseInt( st.nextToken().trim() );
+        String token = st.nextToken().trim();
+        int devTypeIndex = 0;
+        try
+        {
+          devTypeIndex = Integer.parseInt( token );
+        }
+        catch ( Exception e )
+        {
+          devTypeIndex = token.charAt( 0 );
+        }
         map = setupCodes.get( devTypeIndex );
         if ( map == null )
         {
