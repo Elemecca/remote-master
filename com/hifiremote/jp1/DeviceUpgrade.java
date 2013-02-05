@@ -957,7 +957,7 @@ public class DeviceUpgrade extends Highlight
   private short findDigitMapIndex()
   {
     short[] digitMaps = remote.getDigitMaps();
-    if ( digitMaps == null || remote.usesEZRC() )
+    if ( digitMaps == null || digitMaps.length == 0 )
     {
       return -1;
     }

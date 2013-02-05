@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.activation.FileTypeMap;
 import javax.swing.JOptionPane;
 
 import com.hifiremote.jp1.Activity.Assister;
@@ -598,7 +599,7 @@ public class RemoteConfiguration
   
   private void decodeItem( Items items, int fileIndex, String tag, int pos, boolean start, boolean dbOnly )
   {
-    if ( fileIndex != 2 && fileIndex != 6 )
+    if ( fileIndex != 2 && fileIndex != 3 && fileIndex != 6 )
     {
       return;
     }
@@ -620,6 +621,26 @@ public class RemoteConfiguration
         items.db.setName( name );
         new Segment( 0, 0xFF, new Hex( 12 ), items.db );
       }
+      else if ( tag.equals( "activity" ) )
+      {
+        int len = data[ pos++ ];
+        // Convert activity serial into a keycode by adding 0xF0
+        int keyCode = 0xF0 + data[ pos++ ];
+        char[] ch = new char[ len / 2 ];
+        for ( int i = 0; i < len - 1; i += 2 )
+        {
+          ch[ i / 2 ] = ( char )( data[ pos + i ] + 0x100 * data[ pos + i + 1 ] );
+        }
+        String name = new String( ch );
+        Button btn = remote.getButton( keyCode );
+        items.key = new Key();
+        items.key.btn = btn;
+        items.key.keycode = keyCode;
+        items.activity = activities.get( btn );
+        items.activity.setActive( true );
+        items.activity.setSelector( btn );
+        items.activity.setName( name );
+      }
       else if ( tag.equals( "brand" ) )
       {
         int len = data[ pos ];
@@ -634,7 +655,14 @@ public class RemoteConfiguration
       else if ( tag.equals(  "iconref" ) )
       {
         pos++;
-        items.db.setIconRef( data[ pos++ ] );
+        if ( fileIndex == 2 )
+        {
+          items.db.setIconRef( data[ pos++ ] );
+        }
+        else if ( fileIndex == 3 )
+        {
+          items.activity.setIconRef( data[ pos++ ] );
+        }
       }
       else if ( tag.equals( "codeset" ) )
       {
@@ -730,14 +758,36 @@ public class RemoteConfiguration
         pos += 2;
         Macro macro = new Macro( items.key.keycode, null, null );
         macro.setSerial( ref );
-        macro.setDeviceIndex( items.db.getButtonIndex() );
-        macros.add( macro );
+        if ( items.db != null )
+        {
+          macro.setDeviceIndex( items.db.getButtonIndex() );
+          macros.add( macro );
+        }
+        else if ( items.activity != null )
+        {
+          items.activity.setMacro( macro );
+        }
       }
       else if ( tag.equals( "objcode" ) )
       {
         int len = data[ pos++ ];
         items.pCode = new Hex( len );
         System.arraycopy( data, pos, items.pCode.getData(), 0, len );
+        decryptObjcode( items.pCode );
+      }
+      else if ( tag.equals( "irdef" ) )
+      {
+        items.key = new Key();
+        items.keys.add( items.key );
+        pos++;
+        // Convert irdef serial into a keycode by adding 0x80
+        items.key.keycode = data[ pos++ ] | 0x80;  // CHANGE LATER TO ALLOW FOR 2-BYTE IRDEF SERIAL
+        remote.getButtonName( items.key.keycode ); // for its side-effect of creating button
+        items.key.btn = remote.getButton( items.key.keycode );
+      }
+      else if ( tag.equals( "model" ) )
+      {
+        int len = data[ pos++ ];
       }
       else if ( tag.equals( "macro" ) )
       {
@@ -749,6 +799,21 @@ public class RemoteConfiguration
           {
             items.macro = macro;
             break;
+          }
+        }
+        if ( items.macro == null )
+        {
+          for ( Activity activity : activities.values() )
+          {
+            if ( !activity.isActive() )
+            {
+              continue;
+            }
+            if ( activity.getMacro() != null &&  activity.getMacro().getSerial() == ref )
+            {
+              items.activity = activity;
+              items.macro = activity.getMacro();
+            }
           }
         }
         if ( items.macro == null )
@@ -779,6 +844,14 @@ public class RemoteConfiguration
         // keycode for that device
         items.macroKeys.add( ( int )data[ pos++ ] );
       }
+      else if ( tag.equals(  "sendir" ) )
+      {
+        pos++;
+        // device serial converted to keycode
+        items.macroKeys.add( 0x50 + data[ pos++ ] );
+        // constructed keycode for the function
+        items.macroKeys.add( 0x80 + data[ pos++ ] );
+      }
       else if ( tag.equals( "duration" ) )
       {
         pos++;
@@ -796,6 +869,65 @@ public class RemoteConfiguration
         int keycode = items.macroKeys.remove( items.macroKeys.size() - 1 );
         keycode |= data[ pos++ ] << 8;
         items.macroKeys.add( keycode );
+      }
+      else if ( tag.equals(  "pictureinputs" ) )
+      {
+        items.assisters = items.activity.getAssists().get( 0 );
+      }
+      else if ( tag.equals(  "audioinputs" ) )
+      {
+        items.assisters = items.activity.getAssists().get( 1 );
+      }
+      else if ( tag.equals(  "powerkeys" ) )
+      {
+        items.assisters = items.activity.getAssists().get( 2 );
+      }
+      else if ( tag.equals( "hardkey" ) )
+      {
+        pos++;
+        // device serial converted to keycode
+        DeviceButton dev = remote.getDeviceButton( 0x50 + data[ pos++ ] );
+        // keycode for that device
+        Button btn = remote.getButton( ( int )data[ pos++ ] );
+        if ( dev != null && btn != null )
+        {
+          items.assisters.add(  new Assister( dev, btn ) );
+        }
+      }
+      else if ( tag.equals(  "irref" ) )
+      {
+        pos++;
+        // device serial converted to keycode
+        DeviceButton dev = remote.getDeviceButton( 0x50 + data[ pos++ ] );
+        // constructed keycode for the function
+        Button btn = remote.getButton( 0x80 + data[ pos++ ] );
+        if ( dev != null && btn != null )
+        {
+          items.assisters.add(  new Assister( dev, btn ) );
+        }
+      }
+      else if ( tag.equals(  "punchthrumap" ) )
+      {
+        items.map = new LinkedHashMap< Button, KeySpec >();
+      }
+      else if ( tag.equals(  "punchthruspec" ) )
+      {
+        if ( items.softPageIndex == null )
+        {
+          pos++;
+          DeviceButton dev = remote.getDeviceButton( data[ pos++ ] | 0x50 );
+          Button target = remote.getButton( data[ pos++ ] );
+          Button source = remote.getButton( data[ pos++ ] );
+          if ( dev != null && target != null && source != null )
+          {
+            items.map.put( source, new KeySpec( dev, target ) );
+          }
+        }
+      }
+      else if ( tag.equals(  "softpage" ) )
+      {
+        pos++;
+        items.softPageIndex = ( int )data[ pos++ ];
       }
     }
     else // tag end
@@ -832,7 +964,10 @@ public class RemoteConfiguration
             items.upgrade.getFunctions().add( f );
             f.setHex( key.irdata );
             f.setIndex( key.keygid );
-            items.upgrade.getAssignments().assign( key.btn, f );
+            if ( key.btn != null )
+            {
+              items.upgrade.getAssignments().assign( key.btn, f );
+            }
           }
         }
         catch ( java.text.ParseException pe )
@@ -859,10 +994,30 @@ public class RemoteConfiguration
         items.macro.setData( hex );
         items.macroKeys = null;
         items.macro = null;
+        items.activity = null;
+        items.assisters = null;
       }
       else if ( tag.equals( "macros" ) )
       {
         Collections.sort( macros, MacroSorter );
+      }
+      else if ( tag.equals(  "punchthrumap" ) )
+      {
+        ActivityGroup[] groups = items.activity.getActivityGroups();
+        for ( ActivityGroup group : groups )
+        {
+          Button[] buttonGroup = group.getButtonGroup();
+          if ( buttonGroup != null && buttonGroup.length > 0 )
+          {
+            Button btn = buttonGroup[ 0 ];
+            group.setDevice( items.map.get( btn ).dev );
+          }
+        }
+        items.map = null;
+      }
+      else if ( tag.equals(  "softpage" ) )
+      {
+        items.softPageIndex = null;
       }
     }
   }
@@ -897,6 +1052,24 @@ public class RemoteConfiguration
       }  
     }
     return pos;
+  }
+  
+  private void decryptObjcode( Hex code )
+  {
+    for (  int i = 0; i < code.length(); i++ )
+    {
+      code.getData()[ i ] ^= ( short )encryptionKey[ i % 54 ];
+    }
+  }
+  
+  private Hex encryptObjcode( Hex code )
+  {
+    Hex hex = new Hex( code );
+    for (  int i = 0; i < hex.length(); i++ )
+    {
+      hex.getData()[ i ] ^= ( short )encryptionKey[ i % 54 ];
+    }
+    return hex;
   }
 
   private void loadSegments( boolean decode )
@@ -2049,7 +2222,8 @@ public class RemoteConfiguration
       out.println( "[Buffer]" );
     }
 
-    Hex.print( out, data, remote.getBaseAddress() );
+    short[] dataToSave = RemoteMaster.useSavedData() ? savedData : data;
+    Hex.print( out, dataToSave, remote.getBaseAddress() );
 
     out.println();
     out.println( "[Notes]" );
@@ -5669,6 +5843,18 @@ public class RemoteConfiguration
     return owner;
   }
   
+  private class KeySpec
+  {
+    DeviceButton dev;
+    Button btn;
+    
+    public KeySpec( DeviceButton dev, Button btn )
+    {
+      this.dev = dev;
+      this.btn = btn;
+    }
+  }
+  
   private class Items
   {
     DeviceButton db = null;
@@ -5683,6 +5869,10 @@ public class RemoteConfiguration
     int missingIndex = 0;
     Macro macro = null;
     List< Integer > macroKeys = null;
+    Activity activity = null;
+    List< Assister > assisters = null;
+    LinkedHashMap< Button, KeySpec > map = null;
+    Integer softPageIndex = null;
   }
   
   private class Key
@@ -5877,7 +6067,7 @@ public class RemoteConfiguration
       Hex code = upg.getCode();
       if ( upg.needsProtocolCode() && code != null && code.length() != 0 )
       {
-        work.add( makeItem( "objcode", code, true ) );
+        work.add( makeItem( "objcode", encryptObjcode( code ), true ) );
       }
       work.add( endTag( "executor" ) );
       List< Button > buttons = new ArrayList< Button >( Arrays.asList( remote.getUpgradeButtons() ) );
@@ -5961,5 +6151,11 @@ public class RemoteConfiguration
       return ( new Integer( m1.getSerial()) ).compareTo( new Integer( m2.getSerial()) );
     }    
   };
+  
+  public static final int[] encryptionKey = { 0x35, 0x34, 0x6E, 0x64, 0x73, 0x66, 
+    0x6A, 0x6B, 0x68, 0x61, 0x6B, 0x6C, 0x66, 0x64, 0x6A, 0x6B, 0x6C, 0x34, 0x65, 
+    0x37, 0x39, 0x38, 0x09, 0x34, 0x20, 0x2E, 0x22, 0x7E, 0x6C, 0x66, 0x0A, 0x6A, 
+    0x68, 0x66, 0x6B, 0x68, 0x67, 0x38, 0x37, 0x34, 0x39, 0x38, 0x68, 0x74, 0x51, 
+    0x51, 0x34, 0x32, 0x32, 0x39, 0x33, 0x01, 0x37, 0x39 };
   
 }

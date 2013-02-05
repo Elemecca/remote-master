@@ -2300,7 +2300,7 @@ public class Remote implements Comparable< Remote >
 
     Button b = getButton( keyCode );
 
-    if ( b == null )
+    if ( b == null && ( keyCode & getFunctionMask() ) == 0 )
     {
       int baseCode = keyCode & 0x3F;
       if ( baseCode != 0 )
@@ -3114,6 +3114,11 @@ public class Remote implements Comparable< Remote >
     return xShiftEnabled;
   }
 
+  public int getFunctionMask()
+  {
+    return isSSD() ? 0x80 : 0;
+  }
+
   /**
    * Sets the x shift enabled.
    * 
@@ -3275,7 +3280,8 @@ public class Remote implements Comparable< Remote >
   
   public boolean hasActivitySupport()
   {
-    return segmentTypes != null && ( segmentTypes.contains( 0xDB ) || segmentTypes.contains( 0x1E ) );
+    return segmentTypes != null && ( segmentTypes.contains( 0xDB ) 
+        || segmentTypes.contains( 0x1E ) || isSSD() );
   }
 
   /** The oem device. */
@@ -3543,7 +3549,7 @@ public class Remote implements Comparable< Remote >
   private int mapIndex = 0;
 
   /** The shift mask. */
-  private int shiftMask = 0x80;
+  private int shiftMask = 0x80; 
   
   private boolean shiftEnabled = true;;
 

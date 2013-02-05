@@ -380,6 +380,16 @@ public class Activity extends Highlight
     return assists;
   }
   
+  public int getIconRef()
+  {
+    return iconRef;
+  }
+
+  public void setIconRef( int iconRef )
+  {
+    this.iconRef = iconRef;
+  }
+
   public static Comparator< Activity > activitySort = new Comparator< Activity >()
   {
     @Override
@@ -409,5 +419,5 @@ public class Activity extends Highlight
   private Segment helpSegment = null;
   private boolean active = false;
   private boolean isNew = false;
-
+  private int iconRef = 0;
 }

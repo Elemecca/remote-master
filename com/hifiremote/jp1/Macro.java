@@ -100,6 +100,7 @@ public class Macro extends AdvancedCode
   {
     Remote remote = remoteConfig.getRemote();
     StringBuilder buff = new StringBuilder();
+    DeviceButton db = null;
 //    int keyCount = hex.length() / ( remote.usesEZRC() ? 2 : 1 );
 //    int keyCount = hex.length();
     short[] data = hex.getData();
@@ -112,7 +113,24 @@ public class Macro extends AdvancedCode
       {
         buff.append( ';' );
       }
-      buff.append( remote.getButtonName( data[ i ] & 0xFF ) );
+      int keyCode = data[ i ] & 0xFF;
+      DeviceButton temp = remote.getDeviceButton( keyCode );
+      if ( temp != null )
+      {
+        db = temp;
+      }
+      String name = null;
+      if ( ( keyCode & remote.getFunctionMask() ) != 0 && keyCode < 0xF0 && db != null && db.getUpgrade() != null )
+      {
+        DeviceUpgrade upg = db.getUpgrade();
+        Function f = upg.getFunction( data[ i ] & 0xFF );
+        name = "Fn(" + f.getName() + ")";
+      }
+      else
+      {
+        name = remote.getButtonName( data[ i ] & 0xFF );
+      }
+      buff.append( name );
       int duration = ( data[ i ] >> 8 ) & 0xFF;
       if ( duration > 0 )
       {
