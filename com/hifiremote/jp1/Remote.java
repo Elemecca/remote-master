@@ -903,6 +903,11 @@ public class Remote implements Comparable< Remote >
     return learnButtons;
   }
   
+  public List< Button > getFunctionButtons()
+  {
+    return functionButtons;
+  }
+  
   public List< Integer > getSegmentTypes()
   {
     load();
@@ -2449,6 +2454,10 @@ public class Remote implements Comparable< Remote >
     buttonsByName.put( b.getName().toLowerCase(), b );
     buttonsByStandardName.put( b.getStandardName().toLowerCase(), b );
     buttonsByKeyCode.put( new Integer( keycode ), b );
+    if ( isFunctionButton( b ) )
+    {
+      functionButtons.add( b );
+    }
   }
 
   /**
@@ -3118,6 +3127,12 @@ public class Remote implements Comparable< Remote >
   {
     return isSSD() ? 0x80 : 0;
   }
+  
+  public boolean isFunctionButton( Button b )
+  {
+    int keyCode = b.getKeyCode();
+    return ( keyCode & getFunctionMask() ) != 0 && keyCode < 0xF0;
+  }
 
   /**
    * Sets the x shift enabled.
@@ -3513,6 +3528,9 @@ public class Remote implements Comparable< Remote >
   
   /** Buttons bindable in learned signals. */
   private Button[] learnButtons = new Button[ 0 ];
+  
+  /** Buttons created for XSight Touch to represent functions unassigned to a button */
+  private List< Button > functionButtons = new ArrayList< Button >();
 
   /** The phantom shapes. */
   private java.util.List< ButtonShape > phantomShapes = new ArrayList< ButtonShape >();

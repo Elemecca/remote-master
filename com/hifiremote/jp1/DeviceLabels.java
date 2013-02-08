@@ -163,6 +163,24 @@ public class DeviceLabels extends RDFParameter
 
     return new String( text, 0, pos );
   }
+  
+  //* Name of model for XSight Touch follows label which is brand name */
+  public String getText2( short[] data )
+  {
+    int length = data[ addr - 1 ];
+    int offset = addr + length + 1;
+    if ( offset > data.length )
+    {
+      return null;
+    }
+    int length2 = data[ offset - 1 ];
+    char[] text = new char[ length2 ];
+    for ( int i = 0; i < length2; i++ )
+    {
+      text[ i ] = ( char )data[ offset + i ];
+    }
+    return new String( text );
+  }
 
   public void setText( String text, int index, short[] data )
   {
