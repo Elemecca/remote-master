@@ -20,26 +20,37 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Document;
 import javax.swing.text.NumberFormatter;
 
-public class FavoritesPanel extends RMPanel implements ActionListener, ListSelectionListener
+public class FavoritesPanel extends RMPanel implements ActionListener, 
+  ListSelectionListener, DocumentListener
 {
   public FavoritesPanel()
   {
     super();
-    deviceBoxPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
+    favModel = new FavScanTableModel();
+    favModel.setPanel( this );
+    deviceBoxPanel = new JPanel( new WrapLayout( FlowLayout.LEFT ) );
     deviceButtonBox = new JComboBox();
     deviceButtonBox.addActionListener( this );
     Dimension d = deviceButtonBox.getPreferredSize();
@@ -85,7 +96,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener, ListSelec
     
     
     JPanel panel = new JPanel( new BorderLayout() );
-    panel.setBorder( BorderFactory.createTitledBorder( "Favorites Macros" ) );
+    panel.setBorder( BorderFactory.createTitledBorder( " Favorites Macros " ) );
     panel.add( deviceBoxPanel, BorderLayout.PAGE_START );
     favTable = new JP1Table( favModel );
     favTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
@@ -130,16 +141,49 @@ public class FavoritesPanel extends RMPanel implements ActionListener, ListSelec
     buttonPanel.add( downButton );
 
     panel.add( buttonPanel, BorderLayout.PAGE_END );
-    add( panel, BorderLayout.PAGE_START ); 
+    
+    
+    profilesPanel = new JPanel( new BorderLayout() );
+    profilesPanel.setBorder( BorderFactory.createTitledBorder( " Profiles " ) );
+    
+    JPanel optionsPanel = new JPanel( new WrapLayout() );
+    optionsPanel.add( allButton );
+    optionsPanel.add( profileButton);
+    optionsPanel.setSize( new Dimension( 40, 1 ) );
+    ButtonGroup grp = new ButtonGroup();
+    grp.add( allButton );
+    grp.add( profileButton );
+    allButton.addActionListener( this );
+    profileButton.addActionListener( this );
+    allButton.setSelected( true );
+    profilesPanel.add( optionsPanel, BorderLayout.PAGE_START );
+
+    profilesPanel.add( new JScrollPane( profiles ), BorderLayout.CENTER );
+    profiles.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+    profiles.addListSelectionListener( this );
+
+    upperPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, profilesPanel, panel);
+    upperPane.setResizeWeight( 0.5 );
     
     panel = new JPanel( new BorderLayout() );
-    panel.setBorder( BorderFactory.createTitledBorder( "Favorites Group Assignments" ) );
+    JPanel p = new JPanel( new FlowLayout() );
+    profileField = new JTextField( 15 );
+    profileField.getDocument().addDocumentListener( this );
+    p.add( new JLabel( "Selected: " ) );
+    p.add( profileField );
+    panel.add( p, BorderLayout.PAGE_START );
+    profilesPanel.add( panel, BorderLayout.PAGE_END );
+
+    add( upperPane, BorderLayout.PAGE_START ); 
+    
+    groupPanel = new JPanel( new BorderLayout() );
+    groupPanel.setBorder( BorderFactory.createTitledBorder( " Favorites Group Assignments " ) );
     activityGroupTable = new JP1Table( activityGroupModel );
     activityGroupTable.setCellEditorModel( activityGroupModel );
     activityGroupTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
     scrollPane = new JScrollPane( activityGroupTable );
-    panel.add( scrollPane, BorderLayout.CENTER );
-    add( panel, BorderLayout.CENTER );
+    groupPanel.add( scrollPane, BorderLayout.CENTER );
+    add( groupPanel, BorderLayout.CENTER );
     
     d = favTable.getPreferredSize();
     d.height = 12 * favTable.getRowHeight();
@@ -264,12 +308,18 @@ public class FavoritesPanel extends RMPanel implements ActionListener, ListSelec
     favModel.set( remoteConfig );
     favTable.initColumns( favModel );
     activityGroupTable.setVisible( false );
+    profilesPanel.setVisible( remote.hasProfiles() );
     favBtn = remote.getButtonByStandardName( "Favorites" );
     newButton.setEnabled( favBtn != null );
     duration.setValue( new Float( remoteConfig.getFavPause() / 10.0 ) );
     if ( favBtn != null )
     {
-      activityGroupModel.set( favBtn, remoteConfig );
+      profileButton.setEnabled( profilesModel.size() > 0 );
+      if ( profilesModel.size() == 0 )
+      {
+        allButton.setSelected( true );
+      }
+      activityGroupModel.set( favBtn, remoteConfig, getActivity() );
       activityGroupTable.initColumns( activityGroupModel );
       deviceButtonBox.setModel( comboModel );
       deviceButtonBox.setSelectedItem( remoteConfig.getFavKeyDevButton() ); 
@@ -287,6 +337,16 @@ public class FavoritesPanel extends RMPanel implements ActionListener, ListSelec
     {
       finalKey.setText( remote.getUpgradeButtons()[ 0 ].getName() );
     }
+    if ( remote.hasProfiles() )
+    {
+      profilesModel.clear();
+      for ( Activity activity : remote.getFavKey().getProfiles() )
+      {
+        profilesModel.addElement( activity );
+      }
+      profiles.setModel( profilesModel );
+    }
+    upperPane.resetToPreferredSizes();
   }
   
   public void finishEditing()
@@ -380,32 +440,84 @@ public class FavoritesPanel extends RMPanel implements ActionListener, ListSelec
     {
       editRowObject( row );
     }
+    else if ( source == allButton )
+    {
+      favModel.fireTableStructureChanged();
+      favTable.initColumns( favModel );
+      groupPanel.setBorder( BorderFactory.createTitledBorder( " Favorites Group Assignments " ) );
+      repaint();
+    }
+    else if ( source == profileButton )
+    {
+      if ( profilesModel.size() > 0 && profiles.getSelectedIndex() < 0 )
+      {
+        profiles.setSelectedIndex( 0 );
+      }
+      favModel.fireTableStructureChanged();
+      favTable.initColumns( favModel );
+      groupPanel.setBorder( BorderFactory.createTitledBorder( " Profile Group Assignments " ) );
+      repaint();
+    }
     activityGroupTable.setVisible( favTable.getModel().getRowCount() > 0 );
   }
   
   @Override
   public void valueChanged( ListSelectionEvent e )
   {
-    if ( !e.getValueIsAdjusting() )
+    Object source = e.getSource();
+    if ( source == favTable.getSelectionModel() )
     {
-      if ( favTable.getSelectedRowCount() == 1 )
+      if ( !e.getValueIsAdjusting() )
       {
-        int row = favTable.getSelectedRow();
-        boolean selected = row != -1;
-        upButton.setEnabled( row > 0 );
-        downButton.setEnabled( selected && row < favTable.getRowCount() - 1 );
-        cloneButton.setEnabled( true );
-        editButton.setEnabled( true );
+        if ( favTable.getSelectedRowCount() == 1 )
+        {
+          int row = favTable.getSelectedRow();
+          boolean selected = row != -1;
+          upButton.setEnabled( row > 0 );
+          downButton.setEnabled( selected && row < favTable.getRowCount() - 1 );
+          cloneButton.setEnabled( true );
+          editButton.setEnabled( true );
+        }
+        else
+        {
+          upButton.setEnabled( false );
+          downButton.setEnabled( false );
+          cloneButton.setEnabled( false );
+          editButton.setEnabled( false );
+        }
+        deleteButton.setEnabled( favTable.getSelectedRowCount() > 0 );
       }
-      else
-      {
-        upButton.setEnabled( false );
-        downButton.setEnabled( false );
-        cloneButton.setEnabled( false );
-        editButton.setEnabled( false );
-      }
-      deleteButton.setEnabled( favTable.getSelectedRowCount() > 0 );
     }
+    else if ( source == profiles )
+    {
+      Activity a = ( Activity )profiles.getSelectedValue();
+      if ( a != null )
+      {
+        profileField.setText( a.getName() );
+      }
+      if ( profileButton.isSelected() )
+      {
+        repaint();
+      }
+    }
+  }
+  
+  public Activity getActivity()
+  {
+    if ( profileButton.isSelected() )
+    {
+      return ( Activity )profiles.getSelectedValue();
+    }
+    else
+    {
+      Remote remote = remoteConfig.getRemote();
+      return remoteConfig.getActivities().get( remote.getButtonByStandardName( "Favorites"  ) );
+    }
+  }
+  
+  public boolean showProfile()
+  {
+    return profileButton.isSelected();
   }
   
   private void editRowObject( int row )
@@ -418,6 +530,34 @@ public class FavoritesPanel extends RMPanel implements ActionListener, ListSelec
       favModel.fireTableRowsUpdated( row, row );
       propertyChangeSupport.firePropertyChange( "data", null, null );
     }
+  }
+  
+  private void documentChanged( DocumentEvent e )
+  {
+    Document doc = e.getDocument();
+    if ( doc == profileField.getDocument() )
+    {
+      Activity activity = ( Activity )profiles.getSelectedValue();
+      activity.setName( profileField.getText() );
+    }
+  }
+  
+  @Override
+  public void changedUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
+  }
+  
+  @Override
+  public void insertUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
+  }
+
+  @Override
+  public void removeUpdate( DocumentEvent e )
+  {
+    documentChanged( e );
   }
   
   private void newRowObject()
@@ -439,12 +579,17 @@ public class FavoritesPanel extends RMPanel implements ActionListener, ListSelec
     }
   }
   
+  public JList getProfiles()
+  {
+    return profiles;
+  }
+
   private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
   private RemoteConfiguration remoteConfig = null;
   public MouseListener openEditor = null;
   private JP1Table favTable = null;
   private JP1Table activeTable = null;
-  private FavScanTableModel favModel = new FavScanTableModel();
+  private FavScanTableModel favModel = null;
   private JP1Table activityGroupTable = null;
   private ActivityGroupTableModel activityGroupModel = new ActivityGroupTableModel();
   private Button favBtn = null;
@@ -460,4 +605,12 @@ public class FavoritesPanel extends RMPanel implements ActionListener, ListSelec
   private JCheckBox addFinal = null;
   private JTextField finalKey = null;
   private JLabel finalKeyLabel = null;
+  private JPanel profilesPanel = null;
+  private JPanel groupPanel = null;
+  private JList profiles = new JList();
+  private DefaultListModel profilesModel = new DefaultListModel();
+  private JSplitPane upperPane = null;
+  private JRadioButton allButton = new JRadioButton( "Show all favorites" );
+  private JRadioButton profileButton = new JRadioButton( "Show selected profile" );
+  private JTextField profileField = null; 
 }

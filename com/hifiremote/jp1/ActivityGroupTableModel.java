@@ -14,14 +14,18 @@ import javax.swing.table.TableCellRenderer;
 public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > implements CellEditorModel
 {
   
-  public void set( Button btn, RemoteConfiguration remoteConfig )
+  public void set( Button btn, RemoteConfiguration remoteConfig, Activity activity )
   {
     this.remoteConfig = remoteConfig; 
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
-      activity = remoteConfig.getActivities().get( btn );
+      if ( activity == null )
+      {
+        activity = remoteConfig.getActivities().get( btn );
+      }
+      this.activity = activity;
       setData( activity.getActivityGroups() );
       tabIndex = remote.getButtonGroups().get( "Activity" ).indexOf( btn );
       comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );

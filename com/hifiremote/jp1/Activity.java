@@ -80,10 +80,20 @@ public class Activity extends Highlight
     this.button = button;
     name = button.getName();
     setSegmentFlags( 0xFF );
-    activityGroups = new ActivityGroup[ remote.getActivityButtonGroups().length ];
+    boolean onlyHardButtons = !remote.getButtonGroups().get( "Activity" ).contains( button );
+    List< Integer > indices = new ArrayList< Integer >();
+    for ( int i = 0; i < remote.getActivityButtonGroups().length; i++)
+    {
+      Button[] btns = remote.getActivityButtonGroups()[ i ];
+      if ( btns.length > 0 && !( onlyHardButtons && remote.isSoftButton( btns[ 0 ] ) ) )
+      {
+        indices.add( i );
+      }
+    }
+    activityGroups = new ActivityGroup[ indices.size() ];
     for ( int i = 0; i < activityGroups.length; i++ )
     {
-      activityGroups[ i ] = new ActivityGroup( i, remote );
+      activityGroups[ i ] = new ActivityGroup( indices.get( i ), remote );
     }
     if ( remote.usesEZRC() )
     {
@@ -390,6 +400,16 @@ public class Activity extends Highlight
     this.iconRef = iconRef;
   }
 
+  public int getProfileIndex()
+  {
+    return profileIndex;
+  }
+
+  public void setProfileIndex( int profileIndex )
+  {
+    this.profileIndex = profileIndex;
+  }
+
   public static Comparator< Activity > activitySort = new Comparator< Activity >()
   {
     @Override
@@ -404,6 +424,12 @@ public class Activity extends Highlight
       return ( ( Short )b1.getKeyCode() ).compareTo( ( Short )b2.getKeyCode() );
     }    
   };
+  
+  @Override
+  public String toString()
+  {
+    return name;
+  }
 
   private ActivityGroup[] activityGroups = null;
   private Button button = null;
@@ -420,4 +446,5 @@ public class Activity extends Highlight
   private boolean active = false;
   private boolean isNew = false;
   private int iconRef = 0;
+  private int profileIndex = -1;
 }

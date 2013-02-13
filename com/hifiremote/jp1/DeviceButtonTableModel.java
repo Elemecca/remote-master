@@ -123,7 +123,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       Remote remote = remoteConfig.getRemote();
       if ( remote.getDeviceLabels() != null )
       {
-        ++count;
+        count += DeviceLabels.columnName2 != null ? 2 : 1;
       }
       SoftDevices softDevices = remote.getSoftDevices();
       if ( softDevices != null && softDevices.usesSequence() )
@@ -162,14 +162,18 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       if ( remote.getDeviceLabels() == null && col >= 8 )
       {
+        col += 2;
+      }
+      if ( remote.getDeviceLabels() != null && DeviceLabels.columnName2 == null && col >= 9 )
+      {
         col++;
       }
-      if ( !remote.usesIcons() && col >= 9 )
+      if ( !remote.usesIcons() && col >= 10 )
       {
         col++;
       }
       SoftDevices softDevices = remote.getSoftDevices();
-      if ( ( softDevices == null || !softDevices.usesSequence() ) && col >= 10 )
+      if ( ( softDevices == null || !softDevices.usesSequence() ) && col >= 11 )
       {
         col++;
       }
@@ -209,7 +213,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   private static final String[] colNames =
   {
       "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "<html>Volume<br>PunchThrough</html>", 
-      "<html>Transport<br>PunchThrough</html>", "<html>Channel<br>PunchThrough</html>", "Note", "Label", "IconRef", "Seq", "<html>Size &amp<br>Color</html>"
+      "<html>Transport<br>PunchThrough</html>", "<html>Channel<br>PunchThrough</html>", "Note", 
+      "Label", "", "IconRef", "Seq", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -225,6 +230,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return DeviceLabels.columnName;
     }
+    else if ( col == 9 && DeviceLabels.columnName2 != null )
+    {
+      return DeviceLabels.columnName2;
+    }
     return colNames[ col ];
   }
 
@@ -232,7 +241,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   private static String[] colPrototypeNames =
   {
       " 00 ", "Device Button", "__VCR/DVD__", "Setup", "PunchThrough_", "PunchThrough_", 
-      "PunchThrough_", "A Meaningful, Reasonable Note", "Label", "IconRef", "Seq", "Color_"
+      "PunchThrough_", "A Meaningful, Reasonable Note", "Label", "Model", 
+      "IconRef", "Seq", "Color_"
   };
 
   /*
@@ -244,7 +254,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   public String getColumnPrototypeName( int col )
   {
     col = getEffectiveColumn( col );
-    if ( col == 8 && remoteConfig.getRemote().usesEZRC() )
+    if ( ( col == 8 || col == 9 ) && remoteConfig.getRemote().usesEZRC() )
     {
       return "Long Label___";
     }
@@ -255,7 +265,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   private static final Class< ? >[] colClasses =
   {
       Integer.class, String.class, DeviceType.class, SetupCode.class, DeviceButton.class, 
-      DeviceButton.class, DeviceButton.class, String.class, String.class, Integer.class, Integer.class, Color.class
+      DeviceButton.class, DeviceButton.class, String.class, String.class, String.class, 
+      Integer.class, Integer.class, Color.class
   };
 
   /*
@@ -382,9 +393,14 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       case 9:
       {
-        return db.getIconRef();
+        DeviceLabels labels = remote.getDeviceLabels();
+        return labels.getText2( data );
       }
       case 10:
+      {
+        return db.getIconRef();
+      }
+      case 11:
       {
         SoftDevices softDevices = remote.getSoftDevices();
         int seq = softDevices.getSequencePosition( row, getRowCount(), data );
@@ -397,7 +413,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           return seq + 1;
         }
       }
-      case 11:
+      case 12:
       {
         return db.getHighlight();
       }
@@ -622,15 +638,21 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       String text = ( String )value;
       if ( remoteConfig.hasSegments() )
       {
-        int hexLen = 14 + text.length();
+        Hex hex = db.getSegment().getHex();
+        String text2 = remote.getDeviceLabels().getText2( hex.getData() );
+        int hexLen = 14 + text.length() + ( text2 != null ? text2.length() : 0 );
         hexLen += ( hexLen & 1 ) == 1 ? 1 : 0;
-        Hex hex = new Hex( db.getSegment().getHex(), 0, hexLen );
-        hex.getData()[ 12 ] = ( short )text.length();
-        hex.getData()[ hexLen - 1 ] = ( short )0;
-        hex.getData()[ 13 + text.length() ] = ( short )0;
+        hex = new Hex( db.getSegment().getHex().subHex( 0, 12 ), 0, hexLen );
         data = hex.getData();
+        data[ 12 ] = ( short )text.length();
+        data[ hexLen - 1 ] = ( short )0;
+        data[ 13 + text.length() ] = ( short )( text2 != null ? text2.length() : 0 ); 
         db.getSegment().setHex( hex );
         remote.getDeviceLabels().setText( text, 0, data );
+        if ( text2 != null )
+        {
+          remote.getDeviceLabels().setText2( text2, data );
+        }
       }
       else
       {
@@ -639,9 +661,25 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     else if ( col == 9 )
     {
-      db.setIconRef( ( ( Integer )value ).intValue() );
+      Hex hex = db.getSegment().getHex();
+      String text = remote.getDeviceLabels().getText( hex.getData(), 0 );
+      String text2 = ( String )value;
+      int hexLen = 14 + text.length() + text2.length();
+      hexLen += ( hexLen & 1 ) == 1 ? 1 : 0;
+      hex = new Hex( db.getSegment().getHex().subHex( 0, 12 ), 0, hexLen );
+      data = hex.getData();
+      data[ 12 ] = ( short )text.length();
+      data[ hexLen - 1 ] = ( short )0;
+      data[ 13 + text.length() ] = ( short )text2.length();
+      db.getSegment().setHex( hex );
+      remote.getDeviceLabels().setText( text, 0, data );
+      remote.getDeviceLabels().setText2( text2, data );
     }
     else if ( col == 10 )
+    {
+      db.setIconRef( ( ( Integer )value ).intValue() );
+    }
+    else if ( col == 11 )
     {
       int rows = getRowCount();
       int newSeq = ( ( Integer )value ).intValue() - 1;
@@ -655,7 +693,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       softDevices.insertSequenceIndex( row, newSeq, rows, data );
       fireTableDataChanged();
     }
-    else if ( col == 11 )
+    else if ( col == 12 )
     {
       db.setHighlight( ( Color )value );
     }
@@ -753,7 +791,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return setupCodeRenderer;
     }
-    else if ( getEffectiveColumn( col ) == 11 )
+    else if ( getEffectiveColumn( col ) == 12 )
     {
       return colorRenderer;
     }
@@ -786,10 +824,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       case 7:
       case 8:
       case 9:
-        return selectAllEditor;
       case 10:
-        return sequenceEditor;
+        return selectAllEditor;
       case 11:
+        return sequenceEditor;
+      case 12:
         return colorEditor;
       default:
         return null;

@@ -21,6 +21,7 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
   public FavScanPanel()
   {
     super( new FavScanTableModel() );
+    ( ( FavScanTableModel )getModel() ).setPanel( this );
     headerPanel = new JPanel( new BorderLayout() );
     deviceBoxPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
     deviceBoxPanel.setBorder( BorderFactory.createLineBorder( Color.GRAY ) );
@@ -105,6 +106,7 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
   private JPanel deviceBoxPanel = null;
   private JPanel headerPanel = null;
   private JPanel macroLabelPanel = null;
+  private FavScanTableModel favModel = null;
   protected JComboBox deviceButtonBox = null;
 
 }

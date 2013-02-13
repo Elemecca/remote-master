@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.List;
 import java.util.StringTokenizer;
 
 // TODO: Auto-generated Javadoc
@@ -104,6 +105,26 @@ public class FavKey extends RDFParameter
 
   }
 
+  public List< Activity > getProfiles()
+  {
+    return profiles;
+  }
+
+  public void setProfiles( List< Activity > profiles )
+  {
+    this.profiles = profiles;
+  }
+  
+  public Activity createProfile( String name, int profileIndex, Remote remote )
+  {
+    Button btn = remote.getButton( keyCode );
+    Activity activity = new Activity( btn, remote );
+    activity.setName( name );
+    activity.setProfileIndex( profileIndex );
+    profiles.add( activity );
+    return activity;
+  }
+
   /** The key code. */
   private int keyCode = 0;
 
@@ -118,4 +139,6 @@ public class FavKey extends RDFParameter
 
   /** The segregated. */
   private boolean segregated = false;
+  
+  private List< Activity > profiles = null;
 }

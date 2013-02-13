@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.List;
 import java.util.Properties;
 
 public class FavScan extends AdvancedCode
@@ -166,4 +167,42 @@ public class FavScan extends AdvancedCode
     else
       return remote.getDeviceButton( deviceIndex );
   }
+  
+  private List< Integer > profileIndices = null;
+
+  public List< Integer > getProfileIndices()
+  {
+    return profileIndices;
+  }
+
+  public void setProfileIndices( List< Integer > profileIndices )
+  {
+    this.profileIndices = profileIndices;
+  }
+  
+  private int serial = 0;
+
+  public int getSerial()
+  {
+    return serial;
+  }
+
+  public void setSerial( int serial )
+  {
+    this.serial = serial;
+  }
+  
+  private int iconRef = 0;
+
+  public int getIconRef()
+  {
+    return iconRef;
+  }
+
+  public void setIconRef( int iconRef )
+  {
+    this.iconRef = iconRef;
+  }
+  
+
 }

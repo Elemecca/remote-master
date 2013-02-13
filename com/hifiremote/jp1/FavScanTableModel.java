@@ -29,19 +29,24 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       col++;
     }
+    if ( remoteConfig != null && !( remoteConfig.getRemote().hasProfiles() 
+        && panel instanceof FavoritesPanel && ( ( FavoritesPanel )panel ).showProfile() ) && col > 3 )
+    {
+      col++;
+    }
     return col;
   }
 
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "Name of a favorite ", "A reasonable length macro with a reasonable number of steps ", 
-      "A reasonable length note for a macro", "Color_"
+      " 00 ", "Name of a favorite ", "A reasonable length macro with several steps ", 
+      "A reasonable length note", "Profile?_", "Color_"
   };
 
   /** The Constant colWidths. */
   private static final boolean[] colWidths =
   {
-      true, false, false, false, true
+      true, false, false, false, true, true
   };
 
   /*
@@ -69,7 +74,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Name", "Macro Keys", "Notes", "<html>Size &amp<br>Color</html>"
+      "#", "Name", "Macro Keys", "Notes", "<html>In<br>profile&#63;</html>", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -86,7 +91,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, String.class, String.class, Color.class
+      Integer.class, String.class, String.class, String.class, Boolean.class, Color.class
   };
 
   /*
@@ -109,8 +114,13 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public int getColumnCount()
   {
-    int count = colNames.length - 2;
+    int count = colNames.length - 3;
     if ( remoteConfig != null && remoteConfig.getRemote().usesEZRC() )
+    {
+      ++count;
+    }
+    if ( remoteConfig != null && remoteConfig.getRemote().hasProfiles()
+        && panel instanceof FavoritesPanel && ( ( FavoritesPanel )panel ).showProfile() )
     {
       ++count;
     }
@@ -129,7 +139,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       return new RowNumberRenderer();
     }
-    else if ( col == 4 )
+    else if ( col == 5 )
     {
       return colorRenderer;
     }
@@ -144,7 +154,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       return selectAllEditor;
     }
-    if ( col == 4 )
+    if ( col == 5 )
     {
       return colorEditor;
     }
@@ -167,6 +177,16 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
       case 3:
         return favScan.getNotes();
       case 4:
+        if ( panel instanceof FavoritesPanel )
+        {
+          Activity activity = ( Activity )( ( FavoritesPanel )panel ).getActivity();
+          return activity != null && favScan.getProfileIndices().contains( activity.getProfileIndex() );
+        }
+        else
+        {
+          return false;
+        }
+      case 5:
         return favScan.getHighlight();
       default:
         return null;
@@ -186,7 +206,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       favScan.setNotes( ( String )value );
     }
-    else if ( col == 4 )
+    else if ( col == 5 )
     {
       favScan.setHighlight( ( Color  )value );
     }
@@ -198,8 +218,14 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     return remoteConfig;
   }
 
+  public void setPanel( RMPanel panel )
+  {
+    this.panel = panel;
+  }
+  
   private RemoteConfiguration remoteConfig = null;
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
+  private RMPanel panel = null;
 }

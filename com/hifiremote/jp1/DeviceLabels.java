@@ -17,6 +17,7 @@ public class DeviceLabels extends RDFParameter
   private short fill = 0x20;
   private int defaultsAddr = 0;
   public static String columnName = "Label";
+  public static String columnName2 = null;
 
   public void parse( String text, Remote remote ) throws Exception
   {
@@ -46,6 +47,14 @@ public class DeviceLabels extends RDFParameter
       if ( token != null )
       {
         columnName = token;
+      }
+    }
+    if ( settings.size() > 5 )
+    {
+      String token = settings.get( 5 );
+      if ( token != null )
+      {
+        columnName2 = token;
       }
     }
   }
@@ -169,11 +178,11 @@ public class DeviceLabels extends RDFParameter
   {
     int length = data[ addr - 1 ];
     int offset = addr + length + 1;
-    if ( offset > data.length )
+    if ( offset > data.length || data[ offset - 1 ] == 0 )
     {
       return null;
     }
-    int length2 = data[ offset - 1 ];
+    int length2 = Math.min( data[ offset - 1 ], data.length - offset );
     char[] text = new char[ length2 ];
     for ( int i = 0; i < length2; i++ )
     {
@@ -191,11 +200,13 @@ public class DeviceLabels extends RDFParameter
     text = text.trim();
     
     int length = this.length;
+    boolean allowInvalidChars = false;
     
     if ( length == 0 && addr <= data.length )
     {
       // length is given as first byte of label data
       length = data[ addr - 1 ];
+      allowInvalidChars = true;
     }
     else
     {
@@ -212,7 +223,7 @@ public class DeviceLabels extends RDFParameter
     {
       Character ch = text.charAt( i );
       // Skip invalid characters
-      if ( Character.isLetterOrDigit(ch) || ch.equals( ' ' ) || ch.equals( '.' ) )
+      if ( allowInvalidChars || Character.isLetterOrDigit(ch) || ch.equals( ' ' ) || ch.equals( '.' ) )
       {
         data[ offset + j++ ] = ( short )text.charAt( i );
       }
@@ -236,5 +247,10 @@ public class DeviceLabels extends RDFParameter
         + "letters, digits, space and full stop.";
       JOptionPane.showMessageDialog( null, message );
     }  
+  }
+
+  public void setText2( String text, short[] data )
+  {
+    Hex.put( new Hex( text.trim(), 8 ).getData(), data, 14 + data[ 12 ] );
   }
 }

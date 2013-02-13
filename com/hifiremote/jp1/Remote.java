@@ -600,6 +600,11 @@ public class Remote implements Comparable< Remote >
   {
     return signature.startsWith( "USB" ) && processor.getName().equals( "S3F80" );
   }
+  
+  public boolean hasProfiles()
+  {
+    return isSSD();
+  }
 
   public int getSigAddress()
   {
@@ -2272,6 +2277,11 @@ public class Remote implements Comparable< Remote >
       favKey = new FavKey( favBtn.getKeyCode() );
     }
 
+    if ( isSSD() && favKey != null )
+    {
+      favKey.setProfiles( new ArrayList< Activity >() );
+    }
+    
     return line;
   }
 
@@ -3265,7 +3275,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean hasFavorites()
   {
-    return segmentTypes != null && segmentTypes.contains( 0x1D );
+    return segmentTypes != null && segmentTypes.contains( 0x1D ) || isSSD();
   }
 
   /**

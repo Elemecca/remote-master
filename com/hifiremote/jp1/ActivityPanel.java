@@ -295,7 +295,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       {
         grid.setVisible( false );
       }
-      activityGroupModel.set( btn, remoteConfig );
+      activityGroupModel.set( btn, remoteConfig, null );
       activityGroupTable.initColumns( activityGroupModel );
       repaint();
     }

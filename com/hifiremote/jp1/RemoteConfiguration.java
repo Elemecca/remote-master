@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.activation.FileTypeMap;
 import javax.swing.JOptionPane;
 
 import com.hifiremote.jp1.Activity.Assister;
@@ -599,13 +598,17 @@ public class RemoteConfiguration
   
   private void decodeItem( Items items, int fileIndex, String tag, int pos, boolean start, boolean dbOnly )
   {
-    if ( fileIndex != 2 && fileIndex != 3 && fileIndex != 6 )
+    if ( fileIndex < 2 || fileIndex > 6 )
     {
       return;
     }
     if ( start )
     {
-      if ( tag.equals( "device" ) )
+      if ( tag.equals( "favorites" ) )
+      {
+        items.activity = activities.get( remote.getButtonByStandardName( "Favorites" ) );
+      }
+      else if ( tag.equals( "device" ) )
       {
         int len = data[ pos++ ];
         // Convert device serial into a keycode by adding 0x50, to take it
@@ -642,6 +645,34 @@ public class RemoteConfiguration
         items.activity.setSelector( btn );
         items.activity.setName( name );
       }
+      else if ( tag.equals( "profile" ) )
+      {
+        int len = data[ pos++ ];
+        int profileIndex = data[ pos++ ];
+        char[] ch = new char[ len / 2 ];
+        for ( int i = 0; i < len - 1; i += 2 )
+        {
+          ch[ i / 2 ] = ( char )( data[ pos + i ] + 0x100 * data[ pos + i + 1 ] );
+        }
+        String name = new String( ch );
+        items.activity = remote.getFavKey().createProfile( name, profileIndex, remote );
+      }
+      else if ( tag.equals( "favorite" ) )
+      {
+        int len = data[ pos++ ];
+        int serial = data[ pos++ ];
+        char[] ch = new char[ len / 2 ];
+        for ( int i = 0; i < len - 1; i += 2 )
+        {
+          ch[ i / 2 ] = ( char )( data[ pos + i ] + 0x100 * data[ pos + i + 1 ] );
+        }
+        String name = new String( ch );
+        items.fav = new FavScan( remote.getFavKey().getKeyCode(), null, null );
+        items.fav.setSerial( serial );
+        items.fav.setName( name );
+        items.fav.setProfileIndices( new ArrayList< Integer >() );
+        favScans.add( items.fav );
+      }
       else if ( tag.equals( "brand" ) )
       {
         int len = data[ pos ];
@@ -666,6 +697,16 @@ public class RemoteConfiguration
         }
         seg.setHex( hex );
       }
+      else if ( tag.equals( "profileindex" ) )
+      {
+        pos++;
+        items.fav.getProfileIndices().add( ( int )data[ pos++ ] );
+      }
+      else if ( tag.equals( "deviceid" ) )
+      {
+        pos++;
+        favKeyDevButton = remote.getDeviceButton( data[ pos++ ] + 0x50 );
+      }
       else if ( tag.equals(  "iconref" ) )
       {
         pos++;
@@ -673,10 +714,45 @@ public class RemoteConfiguration
         {
           items.db.setIconRef( data[ pos++ ] );
         }
-        else if ( fileIndex == 3 )
+        else if ( fileIndex == 3 || fileIndex == 4 )
         {
           items.activity.setIconRef( data[ pos++ ] );
         }
+        else if ( fileIndex == 5 )
+        {
+          items.fav.setIconRef( data[ pos++ ] );
+        }
+      }
+      else if ( tag.equals(  "channelnumber" ) )
+      {
+        pos++;
+        List< Integer > digits = new ArrayList< Integer >();
+        digits.add( data[ pos + 1 ] >> 4 );
+        digits.add( data[ pos + 1 ] & 0x0F );
+        digits.add( data[ pos ] >> 4 );
+        digits.add( data[ pos ] & 0x0F );
+        for ( int i = 0; i < 4 - favKeyDevButton.getFavoriteWidth(); i++ )
+        {
+          digits.remove( 0 );
+        }
+        Hex hex = new Hex( digits.size() );
+        for ( int i = 0; i < digits.size(); i++ )
+        {
+          String s = new String( new char[]{ ( char )( digits.get( i ) + 0x30 ) } );
+          Button b = remote.getButtonByStandardName( s );
+          hex.set( b == null ? 0 : b.getKeyCode(), i );
+        }
+        items.fav.setData( hex );
+      }
+      else if ( tag.equals(  "favoritewidth" ) )
+      {
+        pos++;
+        items.db.setFavoritewidth( data[ pos++ ] );
+      }
+      else if ( tag.equals(  "enterkey" ) )
+      {
+        pos++;
+        favFinalKey = remote.getButton( data[ pos++ ] );
       }
       else if ( tag.equals( "codeset" ) )
       {
@@ -880,9 +956,16 @@ public class RemoteConfiguration
       else if ( tag.equals(  "delay" ) )
       {
         pos++;
-        int keycode = items.macroKeys.remove( items.macroKeys.size() - 1 );
-        keycode |= data[ pos++ ] << 8;
-        items.macroKeys.add( keycode );
+        if ( fileIndex == 5 )
+        {
+          favPause = data[ pos++ ];
+        }
+        else
+        {
+          int keycode = items.macroKeys.remove( items.macroKeys.size() - 1 );
+          keycode |= data[ pos++ ] << 8;
+          items.macroKeys.add( keycode );
+        }
       }
       else if ( tag.equals(  "pictureinputs" ) )
       {
@@ -960,9 +1043,17 @@ public class RemoteConfiguration
           remote.getDeviceButtons()[ i ] = items.dbList.get( i );
         }
       }
-      if ( tag.equals( "device" ) )
+      else if ( tag.equals( "favorites" ) )
+      {
+        items.activity = null;
+      }
+      else if ( tag.equals( "device" ) )
       {
         items.db = null;
+      }
+      else if ( tag.equals( "favorite" ) )
+      {
+        items.fav = null;
       }
       if ( dbOnly )
       {
@@ -1038,7 +1129,8 @@ public class RemoteConfiguration
           if ( buttonGroup != null && buttonGroup.length > 0 )
           {
             Button btn = buttonGroup[ 0 ];
-            group.setDevice( items.map.get( btn ).dev );
+            KeySpec ks = items.map.get( btn );
+            group.setDevice( ks != null ? ks.dev : null );
           }
         }
         items.map = null;
@@ -2941,9 +3033,39 @@ public class RemoteConfiguration
     if ( remote.isSSD() )
     {
       // XSight remotes
-      ssdFiles.put( "devices.xcf", makeDevicesXCF() );
-      ssdFiles.put( "activities.xcf", makeActivitiesXCF() );
-      ssdFiles.put( "macros.xcf", makeMacrosXCF() );
+      ssdFiles.remove( "home.xcf" );
+      ssdFiles.remove( "devices.xcf" );
+      ssdFiles.remove( "activities.xcf" );
+      ssdFiles.remove( "profiles.xcf" );
+      ssdFiles.remove( "favorites.xcf" );
+      ssdFiles.remove( "macros.xcf" );
+      SSDFile file = makeDevicesXCF();
+      if ( file != null )
+      {
+        ssdFiles.put( "devices.xcf", file );
+      }
+      file = makeActivitiesXCF();
+      if ( file != null )
+      {
+        ssdFiles.put( "activities.xcf", file );
+      }
+      file = makeProfilesXCF();
+      if ( file != null )
+      {
+        ssdFiles.put( "profiles.xcf", file );
+      }
+      file = makeFavoritesXCF();
+      if ( file != null )
+      {
+        ssdFiles.put( "favorites.xcf", file );
+      }
+      file = makeMacrosXCF();
+      if ( file != null )
+      {
+        ssdFiles.put( "macros.xcf", file );
+      }
+      file = makeHomeXCF();
+      ssdFiles.put( "home.xcf", file );
       
       int pos = 4;
       int status = 0;
@@ -2951,7 +3073,7 @@ public class RemoteConfiguration
       for ( int n = 0; n < Remote.userFilenames.length; n++ )
       {
         String name = Remote.userFilenames[ n ];
-        SSDFile file = ssdFiles.get( name );
+        file = ssdFiles.get( name );
         if ( file == null )
         {
           continue;
@@ -5912,6 +6034,7 @@ public class RemoteConfiguration
     List< Assister > assisters = null;
     LinkedHashMap< Button, KeySpec > map = null;
     Integer softPageIndex = null;
+    FavScan fav = null;
   }
   
   private class Key
@@ -6081,7 +6204,7 @@ public class RemoteConfiguration
           work.add( makeItem( "issystemmacro", new Hex( new short[]{ 1 } ), true ) );
         }
       }
-      work.add( makeItem( "assistant", new Hex( new short[ 0 ] ), false ) );
+      work.add( makeItem( "assistant", new Hex( 0 ), false ) );
       if ( activity != null )
       {
         LinkedHashMap< Integer, List< Assister > > assists = activity.getAssists();
@@ -6096,7 +6219,7 @@ public class RemoteConfiguration
           List< Assister > assisters = assists.get(  2 - i );
           if ( assisters.size() > 0 )
           {
-            work.add( makeItem( tagNames[ i ], new Hex( new short[ 0 ] ), false ) );
+            work.add( makeItem( tagNames[ i ], new Hex( 0 ), false ) );
             for ( Assister assister : assists.get(  2 - i ) )
             {
               short dev = ( short )( assister.device.getButtonIndex() - 0x50 );
@@ -6114,6 +6237,10 @@ public class RemoteConfiguration
       work.add( endTag( "macro" ) );
     }
     work.add( endTag( "macros" ) );
+    if ( tagList.size() == 1 )
+    {
+      return null;
+    }
     SSDFile file = new SSDFile( tagList, work );
     tagList = null;
     return file;
@@ -6141,7 +6268,7 @@ public class RemoteConfiguration
         work.add( makeItem( "model", new Hex( model, 8 ), true ) );
       }
       work.add( makeItem( "iconref", new Hex( new short[]{ ( short )db.getIconRef() } ), true ) );
-      work.add( makeItem( "favoritewidth", new Hex( new short[]{ 0 } ), true ) );
+      work.add( makeItem( "favoritewidth", new Hex( new short[]{ ( short )db.getFavoriteWidth() } ), true ) );
       String s = new String( new char[]{ ( char )db.getDeviceTypeIndex( segData ) } );
       s += new SetupCode( db.getSetupCode( segData ) ).toString();
       work.add( makeItem( "codeset", new Hex( s, 8 ), false ) );
@@ -6188,7 +6315,7 @@ public class RemoteConfiguration
         {
           if ( !irUsed )
           {
-            work.add( makeItem( "irdefs", new Hex( new short[ 0 ] ), false ) );
+            work.add( makeItem( "irdefs", new Hex( 0 ), false ) );
           }
           btnTag = "irdef";
           btnHex = new Hex( new short[]{ ( short )( b.getKeyCode() & 0x7F ), 0 } );
@@ -6229,12 +6356,158 @@ public class RemoteConfiguration
       work.add( endTag( "device" ) );
     }
     work.add( endTag( "devices" ) );
+    if ( tagList.size() == 1 )
+    {
+      return null;
+    }
 //    if ( ( tagList.size() & 1 ) == 1 )  
     {
       // This tag sometimes is included when it is not used, but can't figure out
       // just when that is.  It doesn't seem to matter if it is included or not, but
       // it makes checking easier to have it correct.
       getTag( "learnedkey" );  // tag always present even if unused
+    }
+    SSDFile file = new SSDFile( tagList, work );
+    tagList = null;
+    return file;
+  }
+  
+  private SSDFile makeHomeXCF()
+  {
+    tagList = new ArrayList< String >();
+    List< Hex > work = new ArrayList< Hex >();
+    work.add( makeItem( "root", new Hex( 0 ), false ) );
+    work.add( makeItem( "home", new Hex( 0 ), false ) );
+    for ( String name : new String[]{"devices", "profiles", "favorites", "macros", "activities" } )
+    {
+      String fileName = name + ".xcf";
+      SSDFile file = ssdFiles.get( fileName );
+      work.add( makeItem( name, ( file == null ) ? new Hex( 0 ) : new Hex( fileName, 8 ), true ) );
+    }
+    work.add( endTag( "home" ) );
+    work.add( endTag( "root" ) );
+    SSDFile file = new SSDFile( tagList, work );
+    tagList = null;
+    return file;
+  }
+  
+  private SSDFile makeProfilesXCF()
+  {
+    tagList = new ArrayList< String >();
+    List< Hex > work = new ArrayList< Hex >();
+    LinkedHashMap< Button, KeySpec > map = new LinkedHashMap< Button, KeySpec >();
+    work.add( makeItem( "profiles", new Hex( "profiles.xcf", 8 ), false ) );
+    for ( Activity activity : remote.getFavKey().getProfiles() )
+    {
+      work.add( makeItem( "profile", new Hex( "" + new Hex( new short[]{ ( short )activity.getProfileIndex() } ) + " " + new Hex( activity.getName(), 16 ) ), false ) );
+      work.add( makeItem( "iconref", new Hex( new short[]{ ( short )activity.getIconRef() } ), true ) );
+      work.add( makeItem( "punchthrumap", new Hex( 0 ), false ) );
+      ActivityGroup[] groups = activity.getActivityGroups();
+      for ( ActivityGroup group : groups )
+      {
+        DeviceButton db = group.getDevice();
+        if ( db == null )
+        {
+          continue;
+        }
+        for ( Button b : group.getButtonGroup() )
+        {
+          map.put( b, new KeySpec( db, b ) );
+        }
+      }
+      for ( int code : activityOrder )
+      {
+        Button b = remote.getButton( code );
+        if ( b == null )
+        {
+          continue;
+        }
+        KeySpec ks = map.get( b );
+        if ( ks == null )
+        {
+          continue;
+        }
+        short serial = ( short )( ks.dev.getButtonIndex() - 0x50 );
+        work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )code, ( short )code } ), true ) );
+      }
+      work.add( endTag( "punchthrumap" ) );
+      work.add( endTag( "profile" ) );
+    }
+    work.add( endTag( "profiles" ) );
+    if ( tagList.size() == 1 )
+    {
+      return null;
+    }
+    SSDFile file = new SSDFile( tagList, work );
+    tagList = null;
+    return file;
+  }
+  
+  private SSDFile makeFavoritesXCF()
+  {
+    tagList = new ArrayList< String >();
+    Activity activity = activities.get( remote.getButtonByStandardName( "Favorites" ) );
+    List< Hex > work = new ArrayList< Hex >();
+    LinkedHashMap< Button, KeySpec > map = new LinkedHashMap< Button, KeySpec >();
+    work.add( makeItem( "favorites", new Hex( "favorites.xcf", 8 ), false ) );
+    work.add( makeItem( "delay", new Hex( new short[]{ ( short )favPause } ), true ) );
+    for ( FavScan favScan : favScans )
+    {
+      work.add( makeItem( "favorite", new Hex( "" + new Hex( new short[]{ ( short )favScan.getSerial() } ) + " " + new Hex( favScan.getName(), 16 ) ), false ) );
+      for ( int index : favScan.getProfileIndices() )
+      {
+        work.add( makeItem( "profileindex", new Hex( new short[]{ ( short )index } ), true ) );
+      }
+      work.add( makeItem( "deviceid", new Hex( new short[]{ ( short )( favKeyDevButton.getButtonIndex() - 0x50 ) } ), true ) );
+      work.add( makeItem( "iconref", new Hex( new short[]{ ( short )favScan.getIconRef() } ), true ) );
+      short[] data = favScan.getData().getData();
+      int val = 0;
+      for ( int i = 0; i < data.length; i++ )
+      {
+        Button b = remote.getButton( data[ data.length - i - 1 ] );
+        int digit = b.getName().charAt( 0 ) & 0x0F;
+        val |= digit << ( 4 * i );
+      }
+      Hex hex = new Hex( 4 );
+      hex.set( ( short  )( val & 0xFF ), 0 );
+      hex.set( ( short  )( ( val >> 8 ) & 0xFF ), 1 );
+      work.add( makeItem( "channelnumber", hex, true ) );
+      work.add( endTag( "favorite" ) );
+    }
+    work.add( makeItem( "punchthrumap", new Hex( 0 ), false ) );
+    ActivityGroup[] groups = activity.getActivityGroups();
+    for ( ActivityGroup group : groups )
+    {
+      DeviceButton db = group.getDevice();
+      if ( db == null )
+      {
+        continue;
+      }
+      for ( Button b : group.getButtonGroup() )
+      {
+        map.put( b, new KeySpec( db, b ) );
+      }
+    }
+    for ( int code : activityOrder )
+    {
+      Button b = remote.getButton( code );
+      if ( b == null )
+      {
+        continue;
+      }
+      KeySpec ks = map.get( b );
+      if ( ks == null )
+      {
+        continue;
+      }
+      short serial = ( short )( ks.dev.getButtonIndex() - 0x50 );
+      work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )code, ( short )code } ), true ) );
+    }
+    work.add( endTag( "punchthrumap" ) );
+    work.add( endTag( "favorites" ) );
+    if ( tagList.size() == 1 )
+    {
+      return null;
     }
     SSDFile file = new SSDFile( tagList, work );
     tagList = null;
@@ -6259,7 +6532,7 @@ public class RemoteConfiguration
       work.add( makeItem( "activity", new Hex( "" + new Hex( new short[]{ serial } ) + " " + new Hex( activity.getName(), 16 ) ), false ) );
       work.add( makeItem( "iconref", new Hex( new short[]{ ( short )activity.getIconRef() } ), true ) );
       work.add( makeItem( "macroref", new Hex( new short[]{ ( short )activity.getMacro().getSerial(), 0 } ), true ) );
-      work.add( makeItem( "punchthrumap", new Hex( new short[ 0 ] ), false ) );
+      work.add( makeItem( "punchthrumap", new Hex( 0 ), false ) );
       ActivityGroup[] groups = activity.getActivityGroups();
       for ( ActivityGroup group : groups )
       {
@@ -6291,8 +6564,6 @@ public class RemoteConfiguration
         KeySpec ks = map.get( b );
         DeviceButton db = ks.dev;
         serial = ( short )( db.getButtonIndex() - 0x50 );
-        DeviceUpgrade upg = db.getUpgrade();
-        Function f = upg.getAssignments().getAssignment( b );
         if ( ( ++count % 6 ) == 0 )
         {
           if ( count > 0 )
@@ -6303,7 +6574,9 @@ public class RemoteConfiguration
         }
         int code = b.getKeyCode() - 6 * softIndex;
         work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )code, ( short )code } ), false ) );
-        if ( f != null )
+        DeviceUpgrade upg = db.getUpgrade();
+        Function f = null;
+        if ( upg != null && ( f = upg.getAssignments().getAssignment( b ) ) != null )
         {
           work.add( makeItem( "name8", new Hex( f.getName(), 8 ), true ) );
         }
@@ -6315,7 +6588,11 @@ public class RemoteConfiguration
       }
       work.add( endTag( "punchthrumap" ) );
       work.add( endTag( "activity" ) );
-      work.add( endTag( "activities" ) );
+    }
+    work.add( endTag( "activities" ) );
+    if ( tagList.size() == 1 )
+    {
+      return null;
     }
     SSDFile file = new SSDFile( tagList, work );
     tagList = null;
