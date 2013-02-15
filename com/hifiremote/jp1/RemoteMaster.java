@@ -500,7 +500,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         System.err.println( "Remote identified as: " + remote.getName() );
       }
-
+      Remote newRemote = new Remote( remote, remote.getNameIndex() );
+      RemoteManager.getRemoteManager().replaceRemote( remote, newRemote );
+      remote = newRemote;
       remote.load();
       
       if ( sigString.length() > 8 ) // JP1.4/JP2 full signature block

@@ -206,6 +206,21 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       favScan.setNotes( ( String )value );
     }
+    else if ( col == 4 )
+    {
+      int index = ( ( Activity )( ( FavoritesPanel )panel ).getActivity() ).getProfileIndex();
+      if ( ( Boolean )value )
+      {
+        if ( !favScan.getProfileIndices().contains( index ) )
+        {
+          favScan.getProfileIndices().add( index );
+        }
+      }
+      else
+      {
+        favScan.getProfileIndices().remove( ( Integer )index );
+      }
+    }
     else if ( col == 5 )
     {
       favScan.setHighlight( ( Color  )value );

@@ -15,7 +15,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -445,6 +447,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       favModel.fireTableStructureChanged();
       favTable.initColumns( favModel );
       groupPanel.setBorder( BorderFactory.createTitledBorder( " Favorites Group Assignments " ) );
+      activityGroupModel.set( favBtn, remoteConfig, getActivity() );
+      activityGroupTable.initColumns( activityGroupModel );
       repaint();
     }
     else if ( source == profileButton )
@@ -455,6 +459,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       }
       favModel.fireTableStructureChanged();
       favTable.initColumns( favModel );
+      activityGroupModel.set( favBtn, remoteConfig, getActivity() );
+      activityGroupTable.initColumns( activityGroupModel );
       groupPanel.setBorder( BorderFactory.createTitledBorder( " Profile Group Assignments " ) );
       repaint();
     }
@@ -497,6 +503,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       }
       if ( profileButton.isSelected() )
       {
+        activityGroupModel.set( favBtn, remoteConfig, a );
+        activityGroupTable.initColumns( activityGroupModel );
         repaint();
       }
     }
@@ -566,6 +574,27 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     FavScan favScan = FavScanDialog.showDialog( this, null, remoteConfig );
     if ( favScan != null )
     {
+      if ( remoteConfig.getRemote().isSSD() )
+      {
+        List< Integer > serials = new ArrayList< Integer >();
+        for ( FavScan fs : favScans )
+        {
+          if ( !serials.contains( fs.getSerial() ) )
+          {
+            serials.add( fs.getSerial() );
+          }
+        }
+        Collections.sort( serials );
+        for ( int i = 0; ; i++ )
+        {
+          if ( !serials.contains( i ) )
+          {
+            favScan.setSerial( i );
+            break;
+          }
+        }
+        favScan.setProfileIndices( new ArrayList< Integer >() );
+      }
       favScan.setSegmentFlags( 0xFF );
       favScans.add( favScan );
       int row = favScans.size() - 1;

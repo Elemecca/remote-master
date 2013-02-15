@@ -23,6 +23,7 @@ import com.codeminders.hidapi.HIDDeviceInfo;
 //import com.codeminders.hidapi.HIDDeviceNotFoundException;
 import com.hifiremote.jp1.Hex;
 import com.hifiremote.jp1.Remote;
+import com.hifiremote.jp1.RemoteManager;
 import com.hifiremote.jp1.RemoteMaster;
  
 public class CommHID extends IO 
@@ -39,6 +40,7 @@ public class CommHID extends IO
 	byte dataRead[] = new byte[0x420];
 	byte ssdIn[] = new byte[62];
 	byte ssdOut[] = new byte[62];
+	int interfaceType = -1;
 	int firmwareFileCount = 0;
 	LinkedHashMap< String, Hex > firmwareFileVersions = new LinkedHashMap< String, Hex >();
 	
@@ -200,7 +202,14 @@ public class CommHID extends IO
 			getPIDofAttachedRemote();
 			devHID = hid_mgr.openById(0x06E7, thisPID, null);
 			devHID.enableBlocking();
-			if (thisPID == 0x8008 || thisPID == 0x8011)
+			List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( getRemoteSignature() );
+			if ( remotes.size() > 0 )
+			{
+			  Remote remote = remotes.get( 0 );
+			  remote.load();
+			  interfaceType = remote.isSSD() ? 0x201 : 0x106;
+			}
+			if ( interfaceType == 0x106 )
 				MAXQ_USB_getInfoAndSig();
     	}  catch (Exception e) {
     		return "";
@@ -230,11 +239,7 @@ public class CommHID extends IO
 	}
 	
 	public int getInterfaceType() {
-	  if (thisPID == 0x8008 || thisPID == 0x8011)
-      return 0x106;
-    else if (thisPID == 0x8001)
-      return 0x201; 
-    else return -1;
+	  return interfaceType;
 	}
 	
 	int readMAXQ_Lite( int address, byte[] buffer, int length ) {  //MAXQ
@@ -289,11 +294,11 @@ public class CommHID extends IO
 	public int readRemote( int address, byte[] buffer, int length ) 
 	{
 		int bytesRead = -1;
-		if (thisPID == 0x8008 || thisPID == 0x8011)
+		if ( interfaceType == 0x106 )
 		{
 			bytesRead = readMAXQ_Lite(address,buffer, length);
 		}
-		else if (thisPID == 0x8001)
+		else if ( interfaceType == 0x201 )
 		{
 		  bytesRead = readTouch( buffer );
 		}
@@ -387,7 +392,8 @@ public class CommHID extends IO
         int size = Math.min( end - pos, 56 );
         Arrays.fill( ssdOut, ( byte )0 );
         ssdOut[ 0 ] = 0x14;
-        ssdOut[ 2 ] = ( byte )count;
+        ssdOut[ 2 ] = ( byte )( count & 0xFF );
+        ssdOut[ 3 ] = ( byte )( ( count >> 8 ) & 0xFF );
         ssdOut[ 4 ] = ( byte )size;
         System.arraycopy( buffer, pos, ssdOut, 6, size );
         pos += size;
@@ -635,9 +641,9 @@ public class CommHID extends IO
 	
 	public int writeRemote( int address, byte[] buffer, int length ) {  //if Touch, must be 62 bytes or less
 		int bytesWritten = -1;
-		if (thisPID == 0x8008 || thisPID == 0x8011)
+		if ( interfaceType == 0x106 )
 			bytesWritten = writeMAXQ_Lite(address, buffer, length);
-		else if (thisPID == 0x8001)
+		else if ( interfaceType == 0x201 )
 		  bytesWritten = writeTouch( buffer );
 		return bytesWritten;
 	}

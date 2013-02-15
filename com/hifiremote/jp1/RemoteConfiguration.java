@@ -1826,7 +1826,7 @@ public class RemoteConfiguration
   
   public static Remote filterRemotes( List< Remote > remotes, String signature, int eepromSize, 
       short[] data, short[] sigData, boolean allowMismatch )
-  {
+  { 
     Remote remote = null;
     
     // Filter on matching eeprom size
@@ -1878,7 +1878,10 @@ public class RemoteConfiguration
             null, choices, choices[ 0 ] );
       }
     }
-    return remote;
+    // Ensure any properties of the remote left from previous configuration are removed
+    Remote newRemote = new Remote( remote, remote.getNameIndex() );
+    RemoteManager.getRemoteManager().replaceRemote( remote, newRemote );
+    return newRemote;
   }
   
 
@@ -5875,11 +5878,15 @@ public class RemoteConfiguration
     updateFixedData( true );
 
     // If remote has segregated Fav key, initialize Fav section
-    if ( remote.hasFavKey() && remote.getFavKey().isSegregated() )
+    if ( remote.hasFavKey() )
     {
-      int offset = remote.getFavScanAddress().getStart();
-      data[ offset++ ] = 0;
-      data[ offset++ ] = 0;
+      remote.getFavKey().setProfiles( null );
+      if ( remote.getFavKey().isSegregated() )
+      {
+        int offset = remote.getFavScanAddress().getStart();
+        data[ offset++ ] = 0;
+        data[ offset++ ] = 0;
+      }
     }
     
     // Clear the dialogs of data from any previous setup
@@ -6268,6 +6275,10 @@ public class RemoteConfiguration
         work.add( makeItem( "model", new Hex( model, 8 ), true ) );
       }
       work.add( makeItem( "iconref", new Hex( new short[]{ ( short )db.getIconRef() } ), true ) );
+      if ( favKeyDevButton == db && favFinalKey != null )
+      {
+        work.add( makeItem( "enterkey", new Hex( new short[]{ ( short )favFinalKey.getKeyCode() } ), true ) );
+      }
       work.add( makeItem( "favoritewidth", new Hex( new short[]{ ( short )db.getFavoriteWidth() } ), true ) );
       String s = new String( new char[]{ ( char )db.getDeviceTypeIndex( segData ) } );
       s += new SetupCode( db.getSetupCode( segData ) ).toString();
