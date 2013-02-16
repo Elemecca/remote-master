@@ -598,6 +598,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean isSSD()
   {
+    load();
     return signature.startsWith( "USB" ) && processor.getName().equals( "S3F80" );
   }
   

@@ -29,8 +29,12 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       col++;
     }
+    if ( remoteConfig != null && !remoteConfig.getRemote().isSSD() && col > 3 )
+    {
+      col++;
+    }
     if ( remoteConfig != null && !( remoteConfig.getRemote().hasProfiles() 
-        && panel instanceof FavoritesPanel && ( ( FavoritesPanel )panel ).showProfile() ) && col > 3 )
+        && panel instanceof FavoritesPanel && ( ( FavoritesPanel )panel ).showProfile() ) && col > 4 )
     {
       col++;
     }
@@ -40,13 +44,13 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "Name of a favorite ", "A reasonable length macro with several steps ", 
-      "A reasonable length note", "Profile?_", "Color_"
+      "A reasonable length note", "IconRef_", "Profile?_", "Color_"
   };
 
   /** The Constant colWidths. */
   private static final boolean[] colWidths =
   {
-      true, false, false, false, true, true
+      true, false, false, false, true, true, true
   };
 
   /*
@@ -74,7 +78,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Name", "Macro Keys", "Notes", "<html>In<br>profile&#63;</html>", "<html>Size &amp<br>Color</html>"
+      "#", "Name", "Macro Keys", "Notes", "IconRef", "<html>In<br>profile&#63;</html>", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -91,7 +95,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, String.class, String.class, Boolean.class, Color.class
+      Integer.class, String.class, String.class, String.class, Integer.class, Boolean.class, Color.class
   };
 
   /*
@@ -114,8 +118,12 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   @Override
   public int getColumnCount()
   {
-    int count = colNames.length - 3;
+    int count = colNames.length - 4;
     if ( remoteConfig != null && remoteConfig.getRemote().usesEZRC() )
+    {
+      ++count;
+    }
+    if ( remoteConfig != null && remoteConfig.getRemote().isSSD() )
     {
       ++count;
     }
@@ -139,7 +147,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       return new RowNumberRenderer();
     }
-    else if ( col == 5 )
+    else if ( col == 6 )
     {
       return colorRenderer;
     }
@@ -154,7 +162,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       return selectAllEditor;
     }
-    if ( col == 5 )
+    if ( col == 6 )
     {
       return colorEditor;
     }
@@ -177,6 +185,8 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
       case 3:
         return favScan.getNotes();
       case 4:
+        return favScan.getIconRef();
+      case 5:
         if ( panel instanceof FavoritesPanel )
         {
           Activity activity = ( Activity )( ( FavoritesPanel )panel ).getActivity();
@@ -186,7 +196,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
         {
           return false;
         }
-      case 5:
+      case 6:
         return favScan.getHighlight();
       default:
         return null;
@@ -202,11 +212,15 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       favScan.setName( ( String )value );
     }
-    if ( col == 3 )
+    else if ( col == 3 )
     {
       favScan.setNotes( ( String )value );
     }
     else if ( col == 4 )
+    {
+      favScan.setIconRef( ( Integer )value );
+    }
+    else if ( col == 5 )
     {
       int index = ( ( Activity )( ( FavoritesPanel )panel ).getActivity() ).getProfileIndex();
       if ( ( Boolean )value )
@@ -221,7 +235,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
         favScan.getProfileIndices().remove( ( Integer )index );
       }
     }
-    else if ( col == 5 )
+    else if ( col == 6 )
     {
       favScan.setHighlight( ( Color  )value );
     }

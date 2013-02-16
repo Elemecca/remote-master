@@ -463,6 +463,12 @@ public class RemoteConfiguration
         throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
       }
     }
+    if ( remote.isSSD() && eepromSize < remote.getEepromSize() )
+    {
+      data = Arrays.copyOf( data, remote.getEepromSize() );
+      Arrays.fill( data, eepromSize, remote.getEepromSize(), ( short )0xFF );
+      eepromSize = remote.getEepromSize();
+    }
     remote.setFixedData( remote.getRawFixedData() );
     remote.load();
     createActivities();
@@ -530,8 +536,8 @@ public class RemoteConfiguration
   {
     int pos = 4;
     int index = -1;
-    int status = data[ 0 ] + ( data[ 1 ] << 8 );
-    int end = data[ 2 ] + ( data[ 3 ] << 8 );
+    int status = data[ 0 ] + ( ( data[ 1 ] & 0x0F ) << 8 );
+    int end = data[ 2 ] + ( data[ 3 ] << 8 ) + ( ( data[ 1 ] & 0xF0 ) << 12 );
     ssdFiles.clear();
     for ( DeviceButton db : remote.getDeviceButtons() )
     {
@@ -1832,7 +1838,9 @@ public class RemoteConfiguration
     // Filter on matching eeprom size
     for ( Iterator< Remote > it = remotes.iterator(); it.hasNext(); )
     {
-      if ( it.next().getEepromSize() != eepromSize )
+      Remote r = it.next();
+      if ( !( r.getEepromSize() == eepromSize
+          || r.isSSD() && r.getEepromSize() > eepromSize ) )
       {
           it.remove();
       }
@@ -2346,7 +2354,7 @@ public class RemoteConfiguration
     }
 
     short[] dataToSave = RemoteMaster.useSavedData() ? savedData : data;
-    Hex.print( out, dataToSave, remote.getBaseAddress() );
+    Hex.print( out, Arrays.copyOf( dataToSave, getDataEnd( dataToSave ) ), remote.getBaseAddress() );
 
     out.println();
     out.println( "[Notes]" );
@@ -3086,10 +3094,10 @@ public class RemoteConfiguration
         System.arraycopy( hex.getData(), 0, data, pos, hex.length() );
         pos += hex.length();      
       }
-      data[ 0 ] = ( byte )( status & 0xFF );
-      data[ 1 ] = ( byte )( ( status >> 8 ) & 0xFF );
-      data[ 2 ] = ( byte )( pos & 0xFF );
-      data[ 3 ] = ( byte )( ( pos >> 8 ) & 0xFF );
+      data[ 0 ] = ( short )( status & 0xFF );
+      data[ 1 ] = ( short )( ( ( status >> 8 ) & 0x0F ) | ( ( pos >> 12 ) & 0xF0 ) );
+      data[ 2 ] = ( short )( pos & 0xFF );
+      data[ 3 ] = ( short )( ( pos >> 8 ) & 0xFF );
       return;
     }
     
@@ -5298,6 +5306,21 @@ public class RemoteConfiguration
     data[ offset++ ] = remote.getSectionTerminator();
     addr.setFreeStart( offset );
   }
+  
+  public int getDataEnd( short[] data )
+  {
+    if ( remote.isSSD() )
+    {
+      // get end of actual data from its format bytes
+      int end = data[ 2 ] + ( data[ 3 ] << 8 ) + ( ( data[ 1 ] & 0xF0 ) << 12 );
+      // round up to nearest 1kB
+      return ( end + 0x3FF ) & ~0x3FF;
+    }
+    else
+    {
+      return data.length;
+    }
+  }
 
   /**
    * Save.
@@ -5324,7 +5347,7 @@ public class RemoteConfiguration
 
     pw.printHeader( "Buffer" );
     int base = remote.getBaseAddress();
-    for ( int i = 0; i < dataToSave.length; i += 16 )
+    for ( int i = 0; i < getDataEnd( dataToSave ); i += 16 )
     {
       pw.print( String.format( "%04X", i + base ), Hex.toString( dataToSave, i, 16 ) );
     }

@@ -96,7 +96,6 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     deviceBoxPanel.add( finalKeyLabel );
     deviceBoxPanel.add( finalKey );
     
-    
     JPanel panel = new JPanel( new BorderLayout() );
     panel.setBorder( BorderFactory.createTitledBorder( " Favorites Macros " ) );
     panel.add( deviceBoxPanel, BorderLayout.PAGE_START );
@@ -144,37 +143,61 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
 
     panel.add( buttonPanel, BorderLayout.PAGE_END );
     
-    
     profilesPanel = new JPanel( new BorderLayout() );
     profilesPanel.setBorder( BorderFactory.createTitledBorder( " Profiles " ) );
+    profilesPanel.add( new JScrollPane( profiles ), BorderLayout.CENTER );
+    profiles.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+    profiles.addListSelectionListener( this );
+    upperPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, profilesPanel, panel);
+    upperPane.setResizeWeight( 0.5 );
     
-    JPanel optionsPanel = new JPanel( new WrapLayout() );
-    optionsPanel.add( allButton );
-    optionsPanel.add( profileButton);
-    optionsPanel.setSize( new Dimension( 40, 1 ) );
+    panel = new JPanel( new WrapLayout() );
+    panel.add( allButton );
+    panel.add( profileButton);
+    panel.setSize( new Dimension( 40, 1 ) );
     ButtonGroup grp = new ButtonGroup();
     grp.add( allButton );
     grp.add( profileButton );
     allButton.addActionListener( this );
     profileButton.addActionListener( this );
     allButton.setSelected( true );
-    profilesPanel.add( optionsPanel, BorderLayout.PAGE_START );
+    profilesPanel.add( panel, BorderLayout.PAGE_START );
 
-    profilesPanel.add( new JScrollPane( profiles ), BorderLayout.CENTER );
-    profiles.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
-    profiles.addListSelectionListener( this );
-
-    upperPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, profilesPanel, panel);
-    upperPane.setResizeWeight( 0.5 );
-    
     panel = new JPanel( new BorderLayout() );
+    profilesPanel.add( panel, BorderLayout.PAGE_END );
+    
     JPanel p = new JPanel( new FlowLayout() );
     profileField = new JTextField( 15 );
     profileField.getDocument().addDocumentListener( this );
+    profileField.setToolTipText( "Edit this value to rename selected profile" );
     p.add( new JLabel( "Selected: " ) );
     p.add( profileField );
     panel.add( p, BorderLayout.PAGE_START );
-    profilesPanel.add( panel, BorderLayout.PAGE_END );
+
+    buttonPanel = new JPanel( new WrapLayout() );
+    panel.add( buttonPanel, BorderLayout.PAGE_END );
+    newProfile = new JButton( "New" );
+    newProfile.addActionListener( this );
+    newProfile.setToolTipText( "Add a new profile." );
+    buttonPanel.add( newProfile );
+
+    deleteProfile = new JButton( "Delete" );
+    deleteProfile.addActionListener( this );
+    deleteProfile.setToolTipText( "Delete the selected profile." );
+    deleteProfile.setEnabled( false );
+    buttonPanel.add( deleteProfile );
+
+    upProfile = new JButton( "Up" );
+    upProfile.addActionListener( this );
+    upProfile.setToolTipText( "Move the selected profile up in the list." );
+    upProfile.setEnabled( false );
+    buttonPanel.add( upProfile );
+
+    downProfile = new JButton( "Down" );
+    downProfile.addActionListener( this );
+    downProfile.setToolTipText( "Move the selected profile down in the list." );
+    downProfile.setEnabled( false );
+    buttonPanel.add( downProfile );
 
     add( upperPane, BorderLayout.PAGE_START ); 
     
@@ -464,6 +487,58 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       groupPanel.setBorder( BorderFactory.createTitledBorder( " Profile Group Assignments " ) );
       repaint();
     }
+    else if ( source == newProfile )
+    {
+      List< Integer > indices = new ArrayList< Integer >();
+      for ( Activity a: remote.getFavKey().getProfiles() )
+      {
+        if ( !indices.contains( a.getProfileIndex() ) );
+        {
+          indices.add( a.getProfileIndex() );
+        }
+      }
+      Collections.sort( indices );
+      for ( int i = 0; ; i++ )
+      {
+        if ( !indices.contains( i ) )
+        {
+          Activity activity = remote.getFavKey().createProfile( "New profile", i, remote );
+          profilesModel.addElement( activity );
+          profiles.setModel( profilesModel );
+          profiles.setSelectedValue( activity, true );
+          break;
+        }
+      }
+    }
+    else if ( source == deleteProfile )
+    {
+      Activity activity = ( Activity )profiles.getSelectedValue();
+      int i = profiles.getSelectedIndex();
+      int index = activity.getProfileIndex();
+      for ( FavScan favScan : remoteConfig.getFavScans() )
+      {
+        favScan.getProfileIndices().remove( ( Integer )index );
+      }
+      remote.getFavKey().getProfiles().remove( activity );
+      profilesModel.removeElement( activity );
+      profiles.setModel( profilesModel );
+      if ( !profilesModel.isEmpty() )
+      {
+        profiles.setSelectedIndex( i < profilesModel.size() ? i : i - 1 );
+      }
+    }
+    else if ( source == upProfile || source == downProfile )
+    {
+      Activity activity = ( Activity )profiles.getSelectedValue();
+      int i = profiles.getSelectedIndex();
+      profilesModel.remove( i );
+      remote.getFavKey().getProfiles().remove( i );
+      int toRow = ( source == upProfile ) ? i - 1 : i + 1;
+      profilesModel.add( toRow, activity );
+      remote.getFavKey().getProfiles().add( toRow, activity );
+      profiles.setModel( profilesModel );
+      profiles.setSelectedIndex( toRow );
+    }
     activityGroupTable.setVisible( favTable.getModel().getRowCount() > 0 );
   }
   
@@ -497,9 +572,20 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     else if ( source == profiles )
     {
       Activity a = ( Activity )profiles.getSelectedValue();
+      int index = profiles.getSelectedIndex();
       if ( a != null )
       {
         profileField.setText( a.getName() );
+        upProfile.setEnabled( index > 0 );
+        downProfile.setEnabled( index < profilesModel.getSize() - 1 );
+        deleteProfile.setEnabled( true );
+      }
+      else
+      {
+        profileField.setText( "" );
+        upProfile.setEnabled( false );
+        downProfile.setEnabled( false );
+        deleteProfile.setEnabled( false );
       }
       if ( profileButton.isSelected() )
       {
@@ -546,7 +632,10 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     if ( doc == profileField.getDocument() )
     {
       Activity activity = ( Activity )profiles.getSelectedValue();
-      activity.setName( profileField.getText() );
+      if ( activity != null )
+      {
+        activity.setName( profileField.getText() );
+      }
     }
   }
   
@@ -631,6 +720,10 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   private JButton deleteButton = null;
   private JButton upButton = null;
   private JButton downButton = null;
+  private JButton newProfile = null;
+  private JButton deleteProfile = null;
+  private JButton upProfile = null;
+  private JButton downProfile = null;
   private JCheckBox addFinal = null;
   private JTextField finalKey = null;
   private JLabel finalKeyLabel = null;

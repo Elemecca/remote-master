@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import javax.swing.BorderFactory;
@@ -92,7 +93,9 @@ public class RawDataPanel extends RMPanel
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      model.set( RemoteMaster.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData(), remote.getBaseAddress() );
+      short[] dataToShow = RemoteMaster.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData();
+      dataToShow = Arrays.copyOf( dataToShow, remoteConfig.getDataEnd( dataToShow ) );
+      model.set( dataToShow, remote.getBaseAddress() );
       byteRenderer.setRemoteConfig( remoteConfig );
       highlight = remoteConfig.getHighlight();
       settingAddresses = remote.getSettingAddresses();
