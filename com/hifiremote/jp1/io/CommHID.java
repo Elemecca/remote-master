@@ -30,6 +30,7 @@ public class CommHID extends IO
 {
 	HIDManager hid_mgr;
 	HIDDevice devHID;
+	Remote remote = null;
 	int thisPID;
 	String signature;
 	int E2address;
@@ -171,7 +172,7 @@ public class CommHID extends IO
 		return true;
 	}
 	
-	 boolean MAXQ_USB_getInfoAndSig()  {
+	boolean MAXQ_USB_getInfoAndSig()  {
 		byte[] cmdBuff = {(byte)0x00, (byte)0x02, (byte)0x50, (byte)0x52};
 		int sigAdr, E2StartPtr, E2EndPtr, temp;
 		if (!writeMAXQcmdReport(cmdBuff))
@@ -197,47 +198,68 @@ public class CommHID extends IO
 		return true;
 	}
 	
-	 public String openRemote(String notUsed) {
-		try  {
-			getPIDofAttachedRemote();
-			devHID = hid_mgr.openById(0x06E7, thisPID, null);
-			devHID.enableBlocking();
-			List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( getRemoteSignature() );
-			if ( remotes.size() > 0 )
-			{
-			  Remote remote = remotes.get( 0 );
-			  remote.load();
-			  interfaceType = remote.isSSD() ? 0x201 : 0x106;
-			}
-			if ( interfaceType == 0x106 )
-				MAXQ_USB_getInfoAndSig();
-    	}  catch (Exception e) {
-    		return "";
-    	}
-		return "HID";
+	@Override
+	public String openRemote(String notUsed) {
+	  try  
+	  {
+	    getPIDofAttachedRemote();
+	    devHID = hid_mgr.openById(0x06E7, thisPID, null);
+	    devHID.enableBlocking();
+	    List< Remote > remotes = RemoteManager.getRemoteManager().findRemoteBySignature( getRemoteSignature() );
+	    if ( remotes.size() > 0 )
+	    {
+	      remote = remotes.get( 0 );
+	      remote.load();
+	      interfaceType = remote.isSSD() ? 0x201 : 0x106;
+	    }
+	    if ( interfaceType == 0x106 )
+	    {
+	      MAXQ_USB_getInfoAndSig();
+	    }
+	    else
+	    {
+	      E2address = remote.getBaseAddress();
+	      E2size = remote.getEepromSize();
+	    }
+	  }  
+	  catch (Exception e) 
+	  {
+	    return "";
+	  }
+	  return "HID";
 	}
-	
+
+	@Override
 	public void closeRemote() {
-		try  {
-			devHID.close();
-		} catch (Exception e) {
-    		
-    	}	
+	  try  {
+	    devHID.close();
+	  } catch (Exception e) {
+
+	  }	
 	}
-	
+
 	@Override
 	public String getRemoteSignature() {
 	  return "USB" + Integer.toHexString( thisPID ).toUpperCase();
 	}
-	
-	public int getRemoteEepromAddress() {   //MAXQ
-		return E2address;
+
+	@Override
+	public int getRemoteEepromAddress() {
+	  return E2address;
+	}
+
+	@Override
+	public int getRemoteEepromSize() {
+	  return E2size;
 	}
 	
-	public int getRemoteEepromSize() {   //MAXQ
-		return E2size;
+	@Override
+	public boolean remoteUsesSSD()
+	{
+	  return ( remote != null ) && remote.isSSD();
 	}
 	
+	@Override
 	public int getInterfaceType() {
 	  return interfaceType;
 	}
@@ -544,7 +566,7 @@ public class CommHID extends IO
     }
     Arrays.fill( buffer, ndx, buffer.length, ( byte )0xFF );
     buffer[ 0 ] = ( byte )( status & 0xFF );
-    buffer[ 1 ] = ( byte )( ( status >> 8 ) & 0xFF );
+    buffer[ 1 ] = ( byte )( ( ( status >> 8 ) & 0x0F ) | ( ( ndx >> 12 ) & 0xF0 ) );
     buffer[ 2 ] = ( byte )( ndx & 0xFF );
     buffer[ 3 ] = ( byte )( ( ndx >> 8 ) & 0xFF );
     

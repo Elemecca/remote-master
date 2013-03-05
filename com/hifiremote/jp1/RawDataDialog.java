@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -139,11 +140,28 @@ public class RawDataDialog extends JDialog implements ActionListener
       System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
       io.closeRemote();
       System.err.println( "Ending raw download" );
+      buffer = getDataToShow( buffer, io );
       model.set( buffer, baseAddress );
       setBaselineButton.setEnabled( true );
       saveButton.setEnabled( true );
       downloadLabel.setVisible( false );
       return null;
+    }
+  }
+  
+  public short[] getDataToShow( short[] data, IO io )
+  {
+    if ( io.remoteUsesSSD() )
+    {
+      // get end of actual data from its format bytes
+      int end = data[ 2 ] + ( data[ 3 ] << 8 ) + ( ( data[ 1 ] & 0xF0 ) << 12 );
+      // round up to nearest 1kB
+      end = ( end + 0x3FF ) & ~0x3FF;
+      return Arrays.copyOf( data, end );
+    }
+    else
+    {
+      return data;
     }
   }
   
@@ -188,7 +206,8 @@ public class RawDataDialog extends JDialog implements ActionListener
       RMFileChooser chooser = owner.getFileChooser();
       // Only use 4 chars of signature as remotes with a 4-char signature may not
       // have the remaining 4 junk chars being valid in a filename.
-      File rawFile = new File( signature.substring( 0, 4 ) + ".ir" );
+      int start = signature.startsWith( "USB" ) ? 3 : 0;
+      File rawFile = new File( signature.substring( start, start + 4 ) + ".ir" );
       chooser.setSelectedFile( rawFile );
       int returnVal = chooser.showSaveDialog( this );
       if ( returnVal == RMFileChooser.APPROVE_OPTION )

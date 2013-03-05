@@ -85,6 +85,11 @@ public abstract class IO
    * @return the remote eeprom size
    */
   public abstract int getRemoteEepromSize();
+  
+  public boolean remoteUsesSSD()
+  {
+    return false;
+  }
 
   /**
    * Open remote.
