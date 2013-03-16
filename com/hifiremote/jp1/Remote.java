@@ -1465,7 +1465,7 @@ public class Remote implements Comparable< Remote >
     if ( segmentTypes != null )
     {
       macroSupport = ( segmentTypes.contains( 1 ) || segmentTypes.contains( 2 ) || segmentTypes.contains( 3 ) || isSSD() );
-      keyMoveSupport = ( segmentTypes.contains( 7 ) || segmentTypes.contains( 8 ) );
+      keyMoveSupport = ( segmentTypes.contains( 7 ) || segmentTypes.contains( 8 ) || isSSD() );
       twoBytePID = true;
       advCodeBindFormat = AdvancedCode.BindFormat.LONG;
       efcDigits = 5;
@@ -3296,7 +3296,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean hasLearnedSupport()
   {
-    return learnedAddress != null || ( segmentTypes != null && segmentTypes.contains( 9 ) );
+    return learnedAddress != null || ( segmentTypes != null && segmentTypes.contains( 9 ) ) || isSSD();
   }
   
   public boolean hasFreeProtocols()

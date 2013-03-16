@@ -192,14 +192,14 @@ public class FavScan extends AdvancedCode
     this.serial = serial;
   }
   
-  private int iconRef = 0;
+  private Integer iconRef = null;
 
-  public int getIconRef()
+  public Integer getIconRef()
   {
     return iconRef;
   }
 
-  public void setIconRef( int iconRef )
+  public void setIconRef( Integer iconRef )
   {
     this.iconRef = iconRef;
   }

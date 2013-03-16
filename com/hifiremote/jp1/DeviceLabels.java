@@ -18,6 +18,7 @@ public class DeviceLabels extends RDFParameter
   private int defaultsAddr = 0;
   public static String columnName = "Label";
   public static String columnName2 = null;
+  public static String columnName3 = null;
 
   public void parse( String text, Remote remote ) throws Exception
   {
@@ -25,6 +26,8 @@ public class DeviceLabels extends RDFParameter
     addr = RDFReader.parseNumber( settings.get( 0 ) );
     length = RDFReader.parseNumber( settings.get( 1 ) );
     columnName = "Label";
+    columnName2 = null;
+    columnName3 = null;
     if ( settings.size() > 2 )
     {
       String token = settings.get( 2 );
@@ -55,6 +58,14 @@ public class DeviceLabels extends RDFParameter
       if ( token != null )
       {
         columnName2 = token;
+      }
+    }
+    if ( settings.size() > 6 )
+    {
+      String token = settings.get( 6 );
+      if ( token != null )
+      {
+        columnName3 = token;
       }
     }
   }
@@ -173,26 +184,25 @@ public class DeviceLabels extends RDFParameter
     return new String( text, 0, pos );
   }
   
-  //* Name of model for XSight Touch follows label which is brand name */
-  public String getText2( short[] data )
+  public String getText2( short[] data, int n )
   {
-    if ( addr == 0 || addr >= data.length )
+    int offset = addr - 1;
+    int length = 0;
+    for ( int i = 0; i < n; i++ )
     {
-      return "";
+      offset += length + 1;
+      if ( offset == 0 || offset >= data.length )
+      {
+        return null;
+      }
+      length = Math.min( data[ offset - 1 ], data.length - offset );
     }
-    int length = data[ addr - 1 ];
-    int offset = addr + length + 1;
-    if ( offset > data.length || data[ offset - 1 ] == 0 )
-    {
-      return null;
-    }
-    int length2 = Math.min( data[ offset - 1 ], data.length - offset );
-    char[] text = new char[ length2 ];
-    for ( int i = 0; i < length2; i++ )
+    char[] text = new char[ length ];
+    for ( int i = 0; i < length; i++ )
     {
       text[ i ] = ( char )data[ offset + i ];
     }
-    return new String( text );
+    return length == 0 ? null : new String( text );
   }
 
   public void setText( String text, int index, short[] data )
@@ -253,8 +263,21 @@ public class DeviceLabels extends RDFParameter
     }  
   }
 
-  public void setText2( String text, short[] data )
+  public void setText2( String text, short[] data, int n )
   {
-    Hex.put( new Hex( text.trim(), 8 ).getData(), data, 14 + data[ 12 ] );
+    int offset = addr - 1;
+    int length = 0;
+    for ( int i = 0; i < n; i++ )
+    {
+      offset += length + 1;
+      if ( offset == 0 || offset > data.length )
+      {
+        return;
+      }
+      length = Math.min( data[ offset - 1 ], data.length - offset );
+    }
+    text = text.trim();
+    data[ offset - 1 ] = ( short )text.length();
+    Hex.put( new Hex( text, 8 ).getData(), data, offset );
   }
 }

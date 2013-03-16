@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.List;
 import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
@@ -284,6 +285,40 @@ public class Macro extends AdvancedCode
   public void setDurations( short[] durations )
   {
     this.durations = durations;
+  }
+  
+  private boolean systemMacro = false;
+  
+//  public boolean isSystemMacro( Remote remote )
+//  {
+////    if ( !remote.isSSD() )
+//    {
+//      return false;
+//    }
+////    if ( data == null )
+////    {
+////      return true;
+////    }
+////    short[] vals = data.getData();
+////    int i = 1;
+////    int keyCode = vals[ i++ ] & 0xFF;
+////    List< Button > holds = remote.getButtonGroups() == null ? null : remote.getButtonGroups().get( "Hold" );
+////    Button btn = remote.getButton( keyCode );
+////    if ( holds != null && btn != null && holds.contains( btn ) )
+////    {
+////      i++;
+////    }
+////    return data.length() == i;
+//  }
+
+  public boolean isSystemMacro()
+  {
+    return systemMacro;
+  }
+
+  public void setSystemMacro( boolean systemMacro )
+  {
+    this.systemMacro = systemMacro;
   }
 
   protected static MacroCodingType macroCodingType = null;

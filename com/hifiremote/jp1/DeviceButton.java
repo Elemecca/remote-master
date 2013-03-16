@@ -289,10 +289,22 @@ public class DeviceButton extends Highlight
   private DeviceButton channelPT = noButton;
   private int iconRef = 0;
   private int favoriteWidth = 0;
+  private int vpt = 0;
+  private boolean constructed = false;
   
   private HashMap< Button, String > softButtonNames = null;
   private HashMap< Button, String > softFunctionNames = null;
   
+  public boolean isConstructed()
+  {
+    return constructed;
+  }
+
+  public void setConstructed( boolean constructed )
+  {
+    this.constructed = constructed;
+  }
+
   /** 
    *   Used only for XSight remotes, where there is a direct correspondence between device
    *   buttons and device upgrades even for built-in setup codes
@@ -347,6 +359,18 @@ public class DeviceButton extends Highlight
   public void setFavoritewidth( int favoriteWidth )
   {
     this.favoriteWidth = favoriteWidth;
+  }
+  
+  /** 0 = Off, 1 = On, 2 = Master */
+  public int getVpt()
+  {
+    return vpt;
+  }
+
+  /** 0 = Off, 1 = On, 2 = Master */
+  public void setVpt( int vpt )
+  {
+    this.vpt = vpt;
   }
 
   public void doHighlight( Color[] highlight )

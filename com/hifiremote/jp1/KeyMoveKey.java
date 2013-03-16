@@ -89,7 +89,7 @@ public class KeyMoveKey extends KeyMove
   @Override
   public String getValueString( RemoteConfiguration remoteConfig )
   {
-    return "key: " + remoteConfig.getRemote().getButtonName( getMovedKeyCode() );
+    return "key: " + ( name != null ? name : remoteConfig.getRemote().getButtonName( getMovedKeyCode() ) );
   }
 
   /**

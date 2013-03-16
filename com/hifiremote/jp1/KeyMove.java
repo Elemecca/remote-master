@@ -232,6 +232,19 @@ public class KeyMove extends AdvancedCode implements Cloneable
     update();
   }
 
+  private DeviceButton targetDevice = null;
+  
+  
+  public DeviceButton getTargetDevice()
+  {
+    return targetDevice;
+  }
+
+  public void setTargetDevice( DeviceButton targetDevice )
+  {
+    this.targetDevice = targetDevice;
+  }
+
   private void update()
   {
     update( deviceType, setupCode, data );
@@ -317,6 +330,42 @@ public class KeyMove extends AdvancedCode implements Cloneable
   public static void setCmdIndex( int cmdIndex )
   {
     KeyMove.cmdIndex = cmdIndex;
+  }
+  
+  protected String name = null;
+
+  public String getName()
+  {
+    return name;
+  }
+
+  public void setName( String name )
+  {
+    this.name = name;
+  }
+  
+  private int serial = 0;
+
+  public int getSerial()
+  {
+    return serial;
+  }
+
+  public void setSerial( int serial )
+  {
+    this.serial = serial;
+  }
+
+  private Integer irSerial = null;
+  
+  public Integer getIrSerial()
+  {
+    return irSerial;
+  }
+
+  public void setIrSerial( Integer irSerial )
+  {
+    this.irSerial = irSerial;
   }
 
   /*

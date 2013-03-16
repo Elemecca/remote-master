@@ -324,6 +324,36 @@ public class Function
     }
   }
 
+  public Integer getIconref()
+  {
+    return iconref;
+  }
+
+  public void setIconref( Integer iconref )
+  {
+    this.iconref = iconref;
+  }
+
+  public Integer getMacroref()
+  {
+    return macroref;
+  }
+
+  public void setMacroref( Integer macroref )
+  {
+    this.macroref = macroref;
+  }
+
+  public Integer getKeyflags()
+  {
+    return keyflags;
+  }
+
+  public void setKeyflags( Integer keyflags )
+  {
+    this.keyflags = keyflags;
+  }
+
   /**
    * Assigned.
    * 
@@ -403,6 +433,12 @@ public class Function
 
   /** The item. */
   private FunctionItem item = null;
+  
+  private Integer iconref = null;
+  
+  private Integer macroref = null;
+  
+  private Integer keyflags = null;
 
   /** The users. */
   private List< User > users = new ArrayList< User >();

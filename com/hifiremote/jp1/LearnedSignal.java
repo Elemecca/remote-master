@@ -220,6 +220,18 @@ public class LearnedSignal extends Highlight
   {
     data = hex;
   }
+  
+  private String name = null;
+
+  public String getName()
+  {
+    return name;
+  }
+
+  public void setName( String name )
+  {
+    this.name = name;
+  }
 
   /**
    * Format is 0 for original learned signal format,
