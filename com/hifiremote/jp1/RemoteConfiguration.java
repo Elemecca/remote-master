@@ -704,6 +704,7 @@ public class RemoteConfiguration
         items.activity.setActive( true );
         items.activity.setSelector( btn );
         items.activity.setName( name );
+        items.activity.getAssists().clear();
         items.activities.add( items.activity );
       }
       else if ( tag.equals( "profile" ) )
@@ -923,11 +924,14 @@ public class RemoteConfiguration
       else if ( tag.equals(  "learnedkey" ) )
       {
         // 1st byte is usual length but next 8 bytes not yet understood
-        System.err.println( Hex.subHex( data, pos, data[ pos ] ) );
-        pos += 9; 
+        pos += 2;
+        Hex header = Hex.subHex( data, pos, 7 );
+        System.err.println( "Learned header: " + items.db.getName() + "/" + items.key.fname + ": " + header );
+        pos += 7; 
         int len = data[ pos++ ];  // length of learned signal
         Hex hex = Hex.subHex( data, pos, len );
         LearnedSignal ls = new LearnedSignal( items.key.keycode, items.db.getButtonIndex(), 0, hex, null );
+        ls.setHeader( header );
         items.key.ls = ls;
         learned.add( ls );
       }
@@ -1088,7 +1092,14 @@ public class RemoteConfiguration
       }
       else if ( tag.equals(  "assistant" ) )
       {
-        if ( items.activity == null && items.sf != null )
+        if ( items.activity != null && items.activity.getAssists().isEmpty() )
+        {
+          for ( int i = 0; i < 3; i++ )
+          {
+            items.activity.getAssists().put( i, new ArrayList< Assister >() );
+          }
+        }
+        else if ( items.sf != null )
         {
           for ( int i = 0; i < 3; i++ )
           {
@@ -2650,6 +2661,12 @@ public class RemoteConfiguration
       out.println( "$0000=" + exportNotes( notes ) );
     }
 
+    if ( remote.isSSD() )
+    {
+      out.close();
+      return;
+    }
+    
     // Do the advanced codes
     int i = 0x1000;
     updateSpecialFunctionSublists();
@@ -6495,7 +6512,6 @@ public class RemoteConfiguration
     
     work.add( makeItem( "macros", new Hex( "macros.xcf", 8 ), false ) );
     for ( SpecialProtocolFunction sf : specialFunctions )
-//    for ( Macro macro : getAllMacros( true ) )
     {
       Activity activity = null;
       if ( sf.getMacro() != null )
@@ -6597,39 +6613,25 @@ public class RemoteConfiguration
         work.add( makeItem( "issystemmacro", new Hex( new short[]{ 1 } ), true ) );
       }
       boolean assistantDone = false;
-      if ( isSysMacro || activity == null && !sf.getAssists().isEmpty() )
+      if ( isSysMacro || activity != null && !activity.getAssists().isEmpty() 
+          || activity == null && !sf.getAssists().isEmpty() )
       {
         assistantDone = true;
         work.add( makeItem( "assistant", new Hex( 0 ), false ) );
       }
-//      work.add( makeItem( "assistant", new Hex( 0 ), false ) );
-      if ( activity != null || !sf.getAssists().isEmpty() )
+      if ( activity != null && !activity.getAssists().isEmpty() 
+          || activity == null && !sf.getAssists().isEmpty() )
       {
-//        work.add( makeItem( "assistant", new Hex( 0 ), false ) );
         LinkedHashMap< Integer, List< Assister > > assists = 
             activity != null ? activity.getAssists() : sf.getAssists();
-//        String[] tagNames = { "powerkeys", "audioinputs", "pictureinputs" };
-//        for ( String tagName : tagNames )
-//        {
-//          // create the tags, whether they are used or not
-//          getTag( tagName );
-//        }
         String[] tagNames = null;
-        boolean assist = false;
         for ( int i = 0; i < 3; i++ )
         {
           List< Assister > assisters = assists.get(  2 - i );
           if ( assisters.size() > 0 )
           {
-            assist = true;
             if ( tagNames == null )
             {
-              if ( !assistantDone )
-              {
-                assistantDone = true;
-                work.add( makeItem( "assistant", new Hex( 0 ), false ) );
-              }
-//              LinkedHashMap< Integer, List< Assister > > assists = activity.getAssists();
               tagNames = new String[]{ "powerkeys", "audioinputs", "pictureinputs" };
               for ( String tagName : tagNames )
               {
@@ -6793,8 +6795,10 @@ public class RemoteConfiguration
         if ( ls != null )
         {
           int len = ls.getData().length();
-          Hex hex = new Hex( new short[]{ ( short )( len + 8 ), 0x10, 0, 0, 0x18, 0x20, 0, 0, ( short )len } );
-          hex = new Hex( hex, 0, len + 9 );
+          Hex hex = new Hex( len + 9 );
+          hex.set( ( short )( len + 8 ), 0 );
+          hex.put( ls.getHeader(), 1 );
+          hex.set( ( short )len, 8 );
           System.arraycopy( ls.getData().getData(), 0, hex.getData(), 9, len );
           work.add( makeItem( "learnedkey", hex, true ) );
           name = ls.getName();;
@@ -6826,17 +6830,6 @@ public class RemoteConfiguration
             name = f != null ? f.getName() : km.getName();
           }
         }
-//        else if ( f != null )
-//        {
-//          work.add( makeItem( "keygid", getLittleEndian( f.getIndex() ), true ) );
-//          work.add( makeItem( "keyflags", new Hex( new short[]{ 0 } ), true ) );
-//          work.add( makeItem( "irdata", f.getHex(), true ) );
-//          if ( f.getIconref() != null )
-//          {
-//            work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )f.getIconref() } ), true ) );
-//          }
-//          name = f.getName();
-//        }
         work.add( makeItem( "name8", new Hex( name, 8 ), true ) );
         work.add( endTag( btnTag ) );
       }

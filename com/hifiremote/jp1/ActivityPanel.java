@@ -287,7 +287,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
           activityAssistTables[ i ].initColumns( activityAssistModels[ i ] );
           if ( i < 2 )
           {
-            newAssist[ i ].setEnabled( activityList.get( index ).getAssists().get( i ).isEmpty() );
+            Activity a = activityList.get( index );
+            newAssist[ i ].setEnabled( a.getAssists().size() <= i || a.getAssists().get( i ).isEmpty() );
           }
         }
       }
@@ -344,7 +345,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       {
         group.setDevice( DeviceButton.noButton );
       }
-      for ( int i = 0; i < 3; i++ )
+      for ( int i = 0; i < activity.getAssists().size(); i++ )
       {
         activity.getAssists().get( i ).clear();
       }
@@ -389,6 +390,14 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     else if ( ( index = Arrays.asList( newAssist ).indexOf( source ) ) >= 0 )
     {
       Activity activity = activityFunctionModel.getRow( 0 );
+      if ( activity.getAssists().isEmpty() )
+      {
+        for ( int i = 0; i < 3; i++ )
+        {
+          activity.getAssists().put( i, new ArrayList< Assister >() );
+        }
+        tabChange = true;
+      }
       List< Assister > assists = activity.getAssists().get( index );
       DeviceButton dev = remote.getDeviceButtons()[ 0 ];
       Button btn = remote.getUpgradeButtons()[ 0 ];

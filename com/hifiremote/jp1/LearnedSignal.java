@@ -196,6 +196,21 @@ public class LearnedSignal extends Highlight
   {
     deviceButtonIndex = newIndex;
   }
+  
+  /** The 7-byte header of an XSight Touch learned signal,
+   * not yet understood.
+   */
+  private Hex header = null;
+
+  public Hex getHeader()
+  {
+    return header;
+  }
+
+  public void setHeader( Hex header )
+  {
+    this.header = header;
+  }
 
   /** The data. */
   private Hex data = null;
