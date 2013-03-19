@@ -374,8 +374,8 @@ public class CommHID extends IO
 	
 	int writeTouch( byte[] buffer )
 	{
-	  int status = ( buffer[ 0 ] & 0xFF ) | ( ( buffer[ 1 ] & 0xFF ) << 8 );
-	  int dataEnd = ( buffer[ 2 ] & 0xFF ) | ( ( buffer[ 3 ] & 0xFF ) << 8 );
+	  int status = ( buffer[ 0 ] & 0xFF ) | ( ( buffer[ 1 ] & 0x0F ) << 8 );
+	  int dataEnd = ( buffer[ 2 ] & 0xFF ) | ( ( buffer[ 3 ] & 0xFF ) << 8 ) | ( ( buffer[ 1 ] & 0xF0 ) << 12 );
     int pos = 4;
     int index = -1;
 	  while ( pos < dataEnd )

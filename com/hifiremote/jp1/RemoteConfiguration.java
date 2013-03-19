@@ -6223,7 +6223,6 @@ public class RemoteConfiguration
     // If remote has segregated Fav key, initialize Fav section
     if ( remote.hasFavKey() )
     {
-      remote.getFavKey().setProfiles( null );
       if ( remote.getFavKey().isSegregated() )
       {
         int offset = remote.getFavScanAddress().getStart();
