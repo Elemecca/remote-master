@@ -226,43 +226,6 @@ public abstract class AdvancedCode extends Highlight
    */
   public abstract String getValueString( RemoteConfiguration remoteConfig );
 
-  /** The data. */
-  protected Hex data;
-
-  /**
-   * Gets the data.
-   * 
-   * @return the data
-   */
-  public Hex getData()
-  {
-    return data;
-  }
-
-  /**
-   * Sets the data.
-   * 
-   * @param hex
-   *          the new data
-   */
-  public void setData( Hex hex )
-  {
-    data = hex;
-  }
-
-  /** The notes. */
-  protected String notes = null;
-
-  /**
-   * Gets the notes.
-   * 
-   * @return the notes
-   */
-  public String getNotes()
-  {
-    return notes;
-  }
-
   /**
    * Sets the notes.
    * 
@@ -276,6 +239,24 @@ public abstract class AdvancedCode extends Highlight
       this.notes = notes;
     }
   }
+  
+  public void setName( String name )
+  {
+    this.name = name;
+  }
+  
+  protected int serial = 0;
+  
+  public int getSerial()
+  {
+    return serial;
+  }
+
+  public void setSerial( int serial )
+  {
+    this.serial = serial;
+  }
+
 
   /**
    * Store.
@@ -293,4 +274,5 @@ public abstract class AdvancedCode extends Highlight
       pw.print( "Notes", notes );
     }
   }
+
 }

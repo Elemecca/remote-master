@@ -1,6 +1,5 @@
 package com.hifiremote.jp1;
 
-import java.util.List;
 import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
@@ -251,30 +250,6 @@ public class Macro extends AdvancedCode
     this.deviceIndex = deviceIndex;
   }
   
-  private int serial = 0;
-  
-  public int getSerial()
-  {
-    return serial;
-  }
-
-  public void setSerial( int serial )
-  {
-    this.serial = serial;
-  }
-
-  private String name = null;
-
-  public String getName()
-  {
-    return name;
-  }
-
-  public void setName( String name )
-  {
-    this.name = name;
-  }
-  
   private short[] durations = null;
 
   public short[] getDurations()
@@ -288,28 +263,6 @@ public class Macro extends AdvancedCode
   }
   
   private boolean systemMacro = false;
-  
-//  public boolean isSystemMacro( Remote remote )
-//  {
-////    if ( !remote.isSSD() )
-//    {
-//      return false;
-//    }
-////    if ( data == null )
-////    {
-////      return true;
-////    }
-////    short[] vals = data.getData();
-////    int i = 1;
-////    int keyCode = vals[ i++ ] & 0xFF;
-////    List< Button > holds = remote.getButtonGroups() == null ? null : remote.getButtonGroups().get( "Hold" );
-////    Button btn = remote.getButton( keyCode );
-////    if ( holds != null && btn != null && holds.contains( btn ) )
-////    {
-////      i++;
-////    }
-////    return data.length() == i;
-//  }
 
   public boolean isSystemMacro()
   {

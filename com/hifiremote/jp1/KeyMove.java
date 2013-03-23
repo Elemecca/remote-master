@@ -331,30 +331,6 @@ public class KeyMove extends AdvancedCode implements Cloneable
   {
     KeyMove.cmdIndex = cmdIndex;
   }
-  
-  protected String name = null;
-
-  public String getName()
-  {
-    return name;
-  }
-
-  public void setName( String name )
-  {
-    this.name = name;
-  }
-  
-  private int serial = 0;
-
-  public int getSerial()
-  {
-    return serial;
-  }
-
-  public void setSerial( int serial )
-  {
-    this.serial = serial;
-  }
 
   private Integer irSerial = null;
   
@@ -416,4 +392,5 @@ public class KeyMove extends AdvancedCode implements Cloneable
     }
     return offset + hexLength;
   }
+  
 }

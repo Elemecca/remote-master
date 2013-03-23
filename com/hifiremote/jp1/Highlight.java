@@ -3,7 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.Color;
 import java.util.Properties;
 
-public class Highlight
+public class Highlight extends GeneralFunction
 {
   public Highlight() {};
   

@@ -237,9 +237,9 @@ public class ExternalFunction extends Function
   public EFC getEFC()
   {
     EFC rc = null;
-    if ( hex != null )
+    if ( data != null )
     {
-      rc = new EFC( hex, 0 );
+      rc = new EFC( data, 0 );
     }
     return rc;
   }
@@ -254,11 +254,11 @@ public class ExternalFunction extends Function
   {
     if ( efc != null )
     {
-      efc.toHex( hex, 0 );
+      efc.toHex( data, 0 );
     }
     else
     {
-      hex = null;
+      data = null;
     }
   }
 

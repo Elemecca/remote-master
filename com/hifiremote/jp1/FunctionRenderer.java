@@ -50,9 +50,17 @@ public class FunctionRenderer
     ButtonMap map = devType.getButtonMap();
     if ( col == 0 )
     {
-      if (( deviceUpgrade.getFunction( b, Button.NORMAL_STATE ) == null ) && 
+      boolean unassigned = ( deviceUpgrade.getFunction( b, Button.NORMAL_STATE ) == null ) && 
           ( deviceUpgrade.getFunction( b, Button.SHIFTED_STATE ) == null ) && 
-          ( deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE ) == null ))
+          ( deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE ) == null );
+      if ( deviceUpgrade.getRemote().isSSD() )
+      {
+        int keyCode = b.getKeyCode();
+        unassigned = unassigned && deviceUpgrade.getKmMap().get( keyCode ) == null
+            && deviceUpgrade.getMacroMap().get( keyCode ) == null
+            && deviceUpgrade.getLearnedMap().get( keyCode ) == null;
+      }
+      if ( unassigned )
         setForeground( Color.red );
       else
         setForeground( Color.black );

@@ -934,6 +934,8 @@ public class RemoteConfiguration
         ls.setHeader( header );
         items.key.ls = ls;
         learned.add( ls );
+//        ls.addReference( items.key.btn );
+        items.upgrade.getLearnedMap().put( items.key.keycode, ls );
       }
       else if ( tag.equals( "name8" ) )
       {
@@ -1323,8 +1325,15 @@ public class RemoteConfiguration
         for ( Iterator< Macro > it = macros.iterator(); it.hasNext(); )
         {
           Macro macro = it.next();
+          int sourceKey = macro.getKeyCode();
+          DeviceButton sourceDev = macro.getDeviceButton( this );
+          DeviceUpgrade du = sourceDev.getUpgrade();
+          LinkedHashMap< Integer, Macro > macroMap = du.getMacroMap();
+          LinkedHashMap< Integer, KeyMove > kmMap = du.getKmMap();   
           if ( !macro.isSystemMacro() )
           {
+            macroMap.put( sourceKey, macro );
+//            macro.addReference( remote.getButton( sourceKey ) );
             continue;
           }
           SpecialProtocolFunction sf = null;
@@ -1338,8 +1347,6 @@ public class RemoteConfiguration
             }
           }
           KeyMove keyMove = null;
-          int sourceKey = macro.getKeyCode();
-          DeviceButton sourceDev = macro.getDeviceButton( this );
           short[] keys = macro.getData().getData();
           DeviceButton targetDev = remote.getDeviceButton( keys[ 0 ] );
           short[] targetData = targetDev.getSegment().getHex().getData();
@@ -1354,8 +1361,8 @@ public class RemoteConfiguration
           }
           else if ( targetKey >= 0x80 )
           {
-            DeviceUpgrade du = targetDev.getUpgrade();
-            Function f = du.getFunction( targetKey );
+            DeviceUpgrade tdu = targetDev.getUpgrade();
+            Function f = tdu.getFunction( targetKey );
             keyMove = new KeyMove( sourceKey, sourceDev.getButtonIndex(), targetDev.getDeviceTypeIndex( targetData ), targetDev.getSetupCode( targetData ), f.getHex(), null );
             keyMove.setIrSerial( targetKey - 0x80 );
           }
@@ -1364,6 +1371,8 @@ public class RemoteConfiguration
             keyMove.setName( macro.getName() );
             keyMove.setSerial( macro.getSerial() );
             keyMove.setTargetDevice( targetDev );
+//            keyMove.addReference( remote.getButton( sourceKey ) );
+            kmMap.put( sourceKey, keyMove );
             it.remove();
             keymoves.add( keyMove );
             if ( sf != null )

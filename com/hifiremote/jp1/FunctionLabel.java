@@ -27,7 +27,7 @@ public class FunctionLabel
    * 
    * @param function the function
    */
-  public FunctionLabel( Function function )
+  public FunctionLabel( GeneralFunction function )
   {
     if ( function == null )
       setText( "- none -" );
@@ -92,7 +92,7 @@ public class FunctionLabel
    * 
    * @return the function
    */
-  public Function getFunction(){ return function; }
+  public GeneralFunction getFunction(){ return function; }
 
   /**
    * Update tool tip text.
@@ -162,7 +162,7 @@ public class FunctionLabel
   }
 
   /** The function. */
-  private Function function = null;
+  private GeneralFunction function = null;
   
   /** The ml. */
   private static MouseMotionAdapter ml = null;

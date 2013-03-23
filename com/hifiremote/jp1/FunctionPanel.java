@@ -3,7 +3,7 @@ package com.hifiremote.jp1;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hifiremote.jp1.Function.User;
+import com.hifiremote.jp1.GeneralFunction.User;
 
 // TODO: Auto-generated Javadoc
 /**

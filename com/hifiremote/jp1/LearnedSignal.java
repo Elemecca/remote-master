@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.hifiremote.decodeir.DecodeIRCaller;
+import com.hifiremote.decodeir.DecodeIRCaller;;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -173,6 +173,19 @@ public class LearnedSignal extends Highlight
     keyCode = code;
   }
   
+  public void setName( String name )
+  {
+    this.name = name;
+  }
+  
+  public void setNotes( String notes )
+  {
+    if ( notes != this.notes && ( notes == null || !notes.equals( this.notes ) ) )
+    {
+      this.notes = notes;
+    }
+  }
+  
   /** The device button index. */
   private int deviceButtonIndex;
 
@@ -236,47 +249,11 @@ public class LearnedSignal extends Highlight
     data = hex;
   }
   
-  private String name = null;
-
-  public String getName()
-  {
-    return name;
-  }
-
-  public void setName( String name )
-  {
-    this.name = name;
-  }
-
   /**
    * Format is 0 for original learned signal format,
    * 1 for the new format used by remotes with Maxim processors
    */
   private int format = 0;
-  
-  /** The notes. */
-  private String notes = null;
-
-  /**
-   * Gets the notes.
-   * 
-   * @return the notes
-   */
-  public String getNotes()
-  {
-    return notes;
-  }
-
-  /**
-   * Sets the notes.
-   * 
-   * @param text
-   *          the new notes
-   */
-  public void setNotes( String text )
-  {
-    notes = text;
-  }
 
   public int store( short[] buffer, int offset, Remote remote )
   {
@@ -362,4 +339,5 @@ public class LearnedSignal extends Highlight
 
   /** The decode ir. */
   private static DecodeIRCaller decodeIR = null;
+  
 }

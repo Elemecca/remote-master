@@ -10,7 +10,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 
-import com.hifiremote.jp1.Function.User;
+import com.hifiremote.jp1.GeneralFunction.User;
 
 // TODO: Auto-generated Javadoc
 /**

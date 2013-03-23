@@ -34,7 +34,7 @@ public class ButtonTableModel
   
   /** The Constant columnClasses. */
   private static final Class<?>[] columnClasses =
-  { Button.class, Function.class, Function.class, Function.class };
+  { Button.class, GeneralFunction.class, Function.class, Function.class };
 
   /**
    * Instantiates a new button table model.
@@ -140,11 +140,30 @@ public class ButtonTableModel
     if ( row < 0 )
       return null;
     Button button = buttons[ row ];
+    Remote remote = deviceUpgrade.getRemote();
     switch ( col )
     {
       case buttonCol:
         return button;
       case functionCol:
+        if ( remote.isSSD() )
+        {
+          LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )button.getKeyCode() );
+          if ( ls != null )
+          {
+            return ls;
+          }
+          Macro macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
+          if ( macro != null )
+          {
+            return macro;
+          }
+          KeyMove km = deviceUpgrade.getKmMap().get( ( int )button.getKeyCode() );
+          if ( km != null )
+          {
+            return km;
+          }
+        }
         return deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
       case shiftedCol:
         return deviceUpgrade.getFunction( button, Button.SHIFTED_STATE );
@@ -166,7 +185,74 @@ public class ButtonTableModel
       case buttonCol:
         break;
       case functionCol:
-        deviceUpgrade.setFunction( button, ( Function )value, Button.NORMAL_STATE );
+        GeneralFunction gf = ( GeneralFunction )value;
+        Object current = getValueAt( row, col );
+
+        // A new value always becomes active so delete the reference to the
+        // current value, but delete the current value itself only if the new
+        // value is not a learned signal, as a learned signal sits on top of
+        // the current value, hiding it but gets reinstated if the learned
+        // signal is deleted
+
+        if ( current instanceof Function )
+        {
+          if ( !( gf instanceof LearnedSignal ) )
+          {
+            deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
+          }
+          ( ( Function )current ).removeReference( button );
+        }
+        else if ( current instanceof Macro )
+        {
+          if ( !( gf instanceof LearnedSignal ) )
+          {
+            deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
+          }
+          ( ( Macro )current ).removeReference( button );
+        }
+        else if ( current instanceof KeyMove )
+        {
+          if ( !( gf instanceof LearnedSignal ) )
+          {
+            deviceUpgrade.getKmMap().remove( ( int )button.getKeyCode() );
+          }
+          ( ( KeyMove )current ).removeReference( button );
+        }
+        else if ( current instanceof LearnedSignal )
+        {
+          deviceUpgrade.getLearnedMap().remove( ( int )button.getKeyCode() );
+          ( ( LearnedSignal )current ).removeReference( button );
+          // Deleting a learned signal reinstates the value underneath it,
+          // whose reference will have been deleted, so reset it
+          if ( gf == null )
+          {
+            gf = ( GeneralFunction )getValueAt( row, col );
+          }
+        }
+
+        if ( gf instanceof Function )
+        {
+          Function f = ( Function )gf;
+          deviceUpgrade.setFunction( button, f, Button.NORMAL_STATE );
+        }
+        else if ( gf instanceof Macro )
+        {
+          Macro macro = ( Macro )gf;
+          deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
+          macro.addReference( button );
+        }
+        else if ( gf instanceof KeyMove )
+        {
+          KeyMove km = ( KeyMove )gf;
+          deviceUpgrade.getKmMap().put( ( int )button.getKeyCode(), km );
+          km.addReference( button );
+        }
+        else if ( gf instanceof LearnedSignal )
+        {
+          LearnedSignal ls = ( LearnedSignal )gf;
+          deviceUpgrade.getLearnedMap().put( ( int )button.getKeyCode(), ls );
+          ls.addReference( button );
+        }
         relatedButton = button.getBaseButton();
         break;
       case shiftedCol:

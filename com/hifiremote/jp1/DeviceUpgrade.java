@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
@@ -79,6 +80,7 @@ public class DeviceUpgrade extends Highlight
     setupCode = base.setupCode;
     devTypeAliasName = base.devTypeAliasName;
     remote = base.remote;
+    remoteConfig = base.remoteConfig;
     notes = base.notes;
     protocol = base.protocol;
     buttonIndependent = base.buttonIndependent;
@@ -121,6 +123,65 @@ public class DeviceUpgrade extends Highlight
       for ( Function.User user : f.getUsers() )
       {
         assignments.assign( user.button, f2, user.state );
+      }
+    }
+    if ( remote.isSSD() )
+    {
+      if ( base.getMacroMap() != null )
+      {
+        macroMap = new LinkedHashMap< Integer, Macro >();
+        macroMap.putAll( base.getMacroMap() );
+      }
+      if ( base.getKmMap() != null )
+      {
+        kmMap = new LinkedHashMap< Integer, KeyMove >();
+        kmMap.putAll( base.getKmMap() );
+      }
+      if ( base.getLearnedMap() != null )
+      {
+        learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
+        learnedMap.putAll( base.getLearnedMap() );
+      }
+      for ( Macro macro : remoteConfig.getMacros() )
+      {
+        macro.removeReferences();
+      }
+      for ( KeyMove km : remoteConfig.getKeyMoves() )
+      {
+        km.removeReferences();
+      }
+      for ( LearnedSignal ls : remoteConfig.getLearnedSignals() )
+      {
+        ls.removeReferences();
+      }
+      
+      for ( int keyCode : macroMap.keySet() )
+      {
+        // A learned function hides an underlying macro
+        if ( learnedMap.get( keyCode ) == null )
+        {
+          macroMap.get( keyCode ).addReference( remote.getButton( keyCode ) );
+        }
+      }
+      for ( int keyCode : kmMap.keySet() )
+      {
+        // A learned function hides an underlying keymove
+        if ( learnedMap.get( keyCode ) == null )
+        {
+          kmMap.get( keyCode ).addReference( remote.getButton( keyCode ) );
+        }
+      }
+      for ( int keyCode : learnedMap.keySet() )
+      {
+        Button button = remote.getButton( keyCode );
+        learnedMap.get( keyCode ).addReference( button );
+        // A learned function hides an underlying function, but its reference
+        // will have been added already, so remove it
+        Function f = getFunction( keyCode );
+        if ( f != null )
+        {
+          f.removeReference( button );
+        }
       }
     }
   }
@@ -491,6 +552,12 @@ public class DeviceUpgrade extends Highlight
       assignments = newAssignments;
     }
     remote = newRemote;
+    if ( remote.isSSD() && macroMap == null )
+    {
+      macroMap = new LinkedHashMap< Integer, Macro >();
+      kmMap = new LinkedHashMap< Integer, KeyMove >();
+      learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
+    }
   }
 
   /**
@@ -3743,6 +3810,25 @@ public class DeviceUpgrade extends Highlight
     }
     Collections.sort( softButtons, ButtonSorter );
     Collections.sort( hardButtons, ButtonSorter );
+  }
+  
+  private LinkedHashMap< Integer, Macro > macroMap = null;
+  private LinkedHashMap< Integer, KeyMove > kmMap = null;
+  private LinkedHashMap< Integer, LearnedSignal > learnedMap = null;
+
+  public LinkedHashMap< Integer, Macro > getMacroMap()
+  {
+    return macroMap;
+  }
+
+  public LinkedHashMap< Integer, KeyMove > getKmMap()
+  {
+    return kmMap;
+  }
+
+  public LinkedHashMap< Integer, LearnedSignal > getLearnedMap()
+  {
+    return learnedMap;
   }
 
   /**

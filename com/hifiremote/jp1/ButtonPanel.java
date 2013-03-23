@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -23,12 +24,14 @@ import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -88,6 +91,32 @@ public class ButtonPanel extends KMPanel implements ActionListener
 
     renderer = new FunctionRenderer( deviceUpgrade );
     table.setDefaultRenderer( Button.class, renderer );
+    table.setDefaultRenderer( GeneralFunction.class, 
+        new DefaultTableCellRenderer()
+    {
+      @Override
+      public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected,
+          boolean hasFocus, int row, int col )
+      {
+        GeneralFunction gf = ( GeneralFunction )value;
+        String name = "";
+        if ( gf instanceof Macro )
+        {
+          name = "Macro: ";
+        }
+        else if ( gf instanceof KeyMove )
+        {
+          name = "KM: ";
+        }
+        else if ( gf instanceof LearnedSignal )
+        {
+          name = "Learn: ";
+        }
+        name += gf != null ? gf.getName() : "";
+        return super.getTableCellRendererComponent( table, name, isSelected, false, row, col );
+      }
+    }
+        );
     table.getTableHeader().setReorderingAllowed( false );
 
     ListSelectionListener lsl = new ListSelectionListener()
@@ -196,7 +225,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
           {
             try
             {
-              Function f = ( Function )t.getTransferData( LocalObjectTransferable.getFlavor() );
+              GeneralFunction f = ( GeneralFunction )t.getTransferData( LocalObjectTransferable.getFlavor() );
               setFunctionAt( f, row, col );
             }
             catch ( Exception e )
@@ -357,10 +386,13 @@ public class ButtonPanel extends KMPanel implements ActionListener
     };
     table.addMouseMotionListener( mmh );
 
+    JPanel selectionPanel = new JPanel( new BorderLayout() );
+    
     JPanel panel = new JPanel( new BorderLayout() );
     JLabel label = new JLabel( "Available Functions:" );
     label.setBorder( BorderFactory.createEmptyBorder( 2, 2, 3, 2 ) );
-    panel.add( label, BorderLayout.NORTH );
+    selectionPanel.add( label, BorderLayout.PAGE_END);
+    panel.add( selectionPanel, BorderLayout.NORTH );
     add( panel, BorderLayout.EAST );
 
     JPanel outerPanel = new JPanel( new BorderLayout() );
@@ -372,6 +404,28 @@ public class ButtonPanel extends KMPanel implements ActionListener
         panel ) );
     splitPane.setResizeWeight( 0.3 );
 
+    Remote remote = devUpgrade.getRemote();
+    if ( remote.isSSD() )
+    {
+      panel = new JPanel( new GridLayout( 2, 2 ) );
+      panel.setBorder( BorderFactory.createTitledBorder( " Select items to show: " ) );
+      panel.add( functionButton );
+      panel.add( learnedButton );
+      panel.add( keyMoveButton );
+      panel.add( macroButton );
+      ButtonGroup grp = new ButtonGroup();
+      grp.add( functionButton );
+      grp.add( learnedButton );
+      grp.add( keyMoveButton );
+      grp.add( macroButton );
+      functionButton.setSelected( true );
+      functionButton.addActionListener( this );
+      learnedButton.addActionListener( this );
+      keyMoveButton.addActionListener( this );
+      macroButton.addActionListener( this );
+      selectionPanel.add( panel, BorderLayout.CENTER );
+    }
+    
     add( splitPane, BorderLayout.CENTER );
     panel = new JPanel();
     autoAssign = new JButton( "Auto assign" );
@@ -398,20 +452,26 @@ public class ButtonPanel extends KMPanel implements ActionListener
     {
       int row = rows[ r ];
       Button b = ( Button )model.getValueAt( row, 0 );
+      int keyCode = b.getKeyCode();
       for ( int c = 0; ( c < cols.length ) && !enableDelete; c++ )
       {
         int col = cols[ c ];
         if ( col > 0 )
         {
-          Function f = null;
           if ( col == 1 )
-            f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+          {
+            enableDelete = deviceUpgrade.getFunction( b, Button.NORMAL_STATE ) != null;
+            if ( deviceUpgrade.getRemote().isSSD() )
+            {
+              enableDelete = enableDelete || deviceUpgrade.getMacroMap().get( keyCode ) != null
+                || deviceUpgrade.getKmMap().get( keyCode ) != null
+                || deviceUpgrade.getLearnedMap().get( keyCode ) != null;
+            }
+          }
           else if ( col == 2 )
-            f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
+            enableDelete = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE ) != null;
           else if ( col == 3 )
-            f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
-          if ( f != null )
-            enableDelete = true;
+            enableDelete = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE ) != null; 
         }
       }
     }
@@ -452,9 +512,9 @@ public class ButtonPanel extends KMPanel implements ActionListener
    * @param f
    *          the f
    */
-  private void addFunction( Function f )
+  private void addFunction( GeneralFunction f )
   {
-    if ( ( f == null ) || ( ( f.getHex() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
+    if ( ( f == null ) || ( ( f.getData() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
     {
       FunctionLabel l;
       if ( f == null )
@@ -477,11 +537,35 @@ public class ButtonPanel extends KMPanel implements ActionListener
 
     functionPanel.removeAll();
 
-    for ( Function function : deviceUpgrade.getFunctions() )
-      addFunction( function );
+    if ( functionButton.isSelected() )
+    {
+      for ( Function function : deviceUpgrade.getFunctions() )
+        addFunction( function );
 
-    for ( ExternalFunction function : deviceUpgrade.getExternalFunctions() )
-      addFunction( function );
+      for ( ExternalFunction function : deviceUpgrade.getExternalFunctions() )
+        addFunction( function );
+    }
+    else if ( keyMoveButton.isSelected() )
+    {
+      for ( KeyMove km : deviceUpgrade.getRemoteConfig().getKeyMoves() )
+      {
+        addFunction( km );
+      }
+    }
+    else if ( macroButton.isSelected() )
+    {
+      for ( Macro macro : deviceUpgrade.getRemoteConfig().getMacros() )
+      {
+        addFunction( macro );
+      }
+    }
+    else if ( learnedButton.isSelected() )
+    {
+      for ( LearnedSignal ls : deviceUpgrade.getRemoteConfig().getLearnedSignals() )
+      {
+        addFunction( ls );
+      }
+    }
 
     functionPanel.doLayout();
   }
@@ -514,6 +598,11 @@ public class ButtonPanel extends KMPanel implements ActionListener
       else
         Toolkit.getDefaultToolkit().beep();
     }
+    else if ( source instanceof JRadioButton )
+    {
+      setFunctions();
+      functionPanel.revalidate();
+    }
     deviceUpgrade.checkSize();
   }
 
@@ -541,7 +630,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
    * @param col
    *          the col
    */
-  private void setFunctionAt( Function function, int row, int col )
+  private void setFunctionAt( GeneralFunction function, int row, int col )
   {
     int[] rows = null;
     int[] cols = null;
@@ -665,4 +754,10 @@ public class ButtonPanel extends KMPanel implements ActionListener
 
   /** The paste item. */
   private JMenuItem pasteItem = null;
+  
+  private JRadioButton functionButton = new JRadioButton( "Functions" );
+  private JRadioButton keyMoveButton = new JRadioButton( "Key Moves" );
+  private JRadioButton macroButton = new JRadioButton( "Macros" );
+  private JRadioButton learnedButton = new JRadioButton( "Learned" );
+  
 }
