@@ -32,6 +32,7 @@ import javax.swing.JOptionPane;
 
 import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.FixedData.Location;
+import com.hifiremote.jp1.GeneralFunction.User;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -934,7 +935,7 @@ public class RemoteConfiguration
         ls.setHeader( header );
         items.key.ls = ls;
         learned.add( ls );
-//        ls.addReference( items.key.btn );
+        ls.addReference( items.db, items.key.btn );
         items.upgrade.getLearnedMap().put( items.key.keycode, ls );
       }
       else if ( tag.equals( "name8" ) )
@@ -953,16 +954,32 @@ public class RemoteConfiguration
         int ref = data[ pos ] + 0x100 * data[ pos + 1 ];
         pos += 2;
         items.key.macroref = ref;
-        Macro macro = new Macro( items.key.keycode, null, null );
-        macro.setSerial( ref );
-        if ( items.db != null )
+        Macro macro = null;
+        for ( Macro m : macros )
         {
-          macro.setDeviceIndex( items.db.getButtonIndex() );
-          macros.add( macro );
+          if ( m.getSerial() == ref )
+          {
+            macro = m;
+            macro.addReference( items.db, remote.getButton( items.key.keycode ) );
+//            items.db.getUpgrade().getMacroMap().put( items.key.keycode, macro );
+            break;
+          }
         }
-        else if ( items.activity != null )
+        if ( macro == null )
         {
-          items.activity.setMacro( macro );
+          macro = new Macro( items.key.keycode, null, null );
+          macro.setSerial( ref );
+          if ( items.db != null )
+          {
+            macro.setDeviceIndex( items.db.getButtonIndex() );
+            macro.addReference( items.db, remote.getButton( items.key.keycode ) );
+            macros.add( macro );
+//            items.db.getUpgrade().getMacroMap().put( items.key.keycode, macro );
+          }
+          else if ( items.activity != null )
+          {
+            items.activity.setMacro( macro );
+          }
         }
       }
       else if ( tag.equals( "objcode" ) )
@@ -1303,17 +1320,7 @@ public class RemoteConfiguration
         {
           hex.set( ( short )( int )items.macroKeys.get( i ) , i );
         }
-        items.macro.setData( hex );
-        for ( Macro macro : macros )
-        {
-          if ( macro == items.macro || macro.getSerial() != items.macro.getSerial() )
-          {
-            continue;
-          }
-          macro.setName( items.macro.getName() );
-          macro.setData( new Hex( items.macro.getData() ) );
-          macro.setSystemMacro( items.macro.isSystemMacro() );
-        }        
+        items.macro.setData( hex );       
         items.macroKeys = null;
         items.macro = null;
         items.sf = null;
@@ -1327,13 +1334,14 @@ public class RemoteConfiguration
           Macro macro = it.next();
           int sourceKey = macro.getKeyCode();
           DeviceButton sourceDev = macro.getDeviceButton( this );
-          DeviceUpgrade du = sourceDev.getUpgrade();
-          LinkedHashMap< Integer, Macro > macroMap = du.getMacroMap();
-          LinkedHashMap< Integer, KeyMove > kmMap = du.getKmMap();   
+          DeviceUpgrade du = sourceDev.getUpgrade();   
           if ( !macro.isSystemMacro() )
           {
-            macroMap.put( sourceKey, macro );
-//            macro.addReference( remote.getButton( sourceKey ) );
+            for ( User u : macro.getUsers() )
+            {
+              u.db.getUpgrade().getMacroMap().put( ( int )u.button.getKeyCode(), macro );
+            }
+//            macro.removeReferences();
             continue;
           }
           SpecialProtocolFunction sf = null;
@@ -1371,8 +1379,13 @@ public class RemoteConfiguration
             keyMove.setName( macro.getName() );
             keyMove.setSerial( macro.getSerial() );
             keyMove.setTargetDevice( targetDev );
+            for ( User u : macro.getUsers() )
+            {
+              u.db.getUpgrade().getKmMap().put( ( int )u.button.getKeyCode(), keyMove );
+              keyMove.addReference( u.db, u.button );
+            }
 //            keyMove.addReference( remote.getButton( sourceKey ) );
-            kmMap.put( sourceKey, keyMove );
+//            kmMap.put( sourceKey, keyMove );
             it.remove();
             keymoves.add( keyMove );
             if ( sf != null )
@@ -6756,8 +6769,10 @@ public class RemoteConfiguration
       for ( Button b : buttons )
       {
         Function f = upg.getAssignments().getAssignment( b );
-        Macro macro = getMacro( db, b );
-        KeyMove km = getKeyMove( db, b );
+        Macro macro = db.getUpgrade().getMacroMap().get( ( int )b.getKeyCode() );
+        KeyMove km = db.getUpgrade().getKmMap().get( ( int )b.getKeyCode() );
+//        Macro macro = getMacro( db, b );
+//        KeyMove km = getKeyMove( db, b );
         LearnedSignal ls = findLearnedSignal( db, b );
         String btnTag = "keydef";
         String name = null;

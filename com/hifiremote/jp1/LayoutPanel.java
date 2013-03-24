@@ -250,9 +250,9 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
    * @param f
    *          the f
    */
-  private void addFunction( Function f )
+  private void addFunction( GeneralFunction f )
   {
-    if ( ( f == null ) || ( ( f.getHex() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
+    if ( ( f == null ) || ( ( f.getData() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
     {
       FunctionLabel l;
       if ( f == null )
@@ -260,6 +260,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       else
         l = f.getLabel();
       l.addMouseListener( doubleClickListener );
+      l.showAssigned( deviceUpgrade.getButtonRestriction() );
       functionPanel.add( l );
 
       FunctionItem item;
@@ -371,6 +372,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
    */
   private void setButtonText( ButtonShape buttonShape, Button b )
   {
+    Remote remote = deviceUpgrade.getRemote();
     if ( ( buttonShape != null ) && ( b != null ) )
     {
       String name = buttonShape.getName();
@@ -384,15 +386,32 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
           name = b.getXShiftedName();
       }
       buttonName.setText( name );
-      Function f = null;
+      GeneralFunction f = null;
       if ( normalMode.isSelected() )
-        f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+      {
+        if ( remote.isSSD() )
+        {
+          f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
+          if ( f == null )
+          {
+            f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+          }
+          if ( f == null )
+          {
+            f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
+          }
+        }
+        if ( f == null )
+        {
+          f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+        }
+      }
       else if ( shiftMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
       else if ( xShiftMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
       if ( f != null )
-        function.setText( f.getName() );
+        function.setText( f.getDisplayName() );
       else
         function.setText( "" );
       deleteAction.setEnabled( f != null );
@@ -513,18 +532,23 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
    * @param f
    *          the f
    */
-  private void setFunction( ButtonShape shape, Function f )
+  private void setFunction( ButtonShape shape, GeneralFunction gf )
   {
     Button b = getButtonForShape( shape );
     if ( b != null )
     {
-      if ( normalMode.isSelected() )
-        deviceUpgrade.setFunction( b, f, Button.NORMAL_STATE );
-      else if ( shiftMode.isSelected() )
-        deviceUpgrade.setFunction( b, f, Button.SHIFTED_STATE );
-      else if ( xShiftMode.isSelected() )
-        deviceUpgrade.setFunction( b, f, Button.XSHIFTED_STATE );
-      setButtonText( currentShape, b );
+      if ( gf instanceof Function )
+      {
+        Function f = ( Function )gf;
+        if ( normalMode.isSelected() )
+          deviceUpgrade.setFunction( b, f, Button.NORMAL_STATE );
+        else if ( shiftMode.isSelected() )
+          deviceUpgrade.setFunction( b, f, Button.SHIFTED_STATE );
+        else if ( xShiftMode.isSelected() )
+          deviceUpgrade.setFunction( b, f, Button.XSHIFTED_STATE );
+        setButtonText( currentShape, b );
+      }
+      
       deviceUpgrade.checkSize();
     }
   }
@@ -728,9 +752,27 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
         Shape s = buttonShape.getShape();
 
-        Function f = null;
+        GeneralFunction f = null;
+        Remote remote = deviceUpgrade.getRemote();
         if ( normalMode.isSelected() )
-          f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+        {
+          if ( remote.isSSD() )
+          {
+            f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
+            if ( f == null )
+            {
+              f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+            }
+            if ( f == null )
+            {
+              f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
+            }
+          }
+          if ( f == null )
+          {
+            f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+          }
+        }
         else if ( shiftMode.isSelected() )
           f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
         else if ( xShiftMode.isSelected() )
@@ -787,9 +829,27 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         else if ( xShiftMode.isSelected() )
           name = b.getXShiftedName();
       }
-      Function f = null;
+      Remote remote = deviceUpgrade.getRemote();
+      GeneralFunction f = null;
       if ( normalMode.isSelected() )
-        f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+      {
+        if ( remote.isSSD() )
+        {
+          f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
+          if ( f == null )
+          {
+            f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+          }
+          if ( f == null )
+          {
+            f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
+          }
+        }
+        if ( f == null )
+        {
+          f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+        }
+      }
       else if ( shiftMode.isSelected() )
         f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
       else if ( xShiftMode.isSelected() )
@@ -797,7 +857,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
       String text = name;
       if ( f != null )
-        text = name + " = " + f.getName();
+        text = name + " = " + f.getDisplayName();
 
       return text;
     }

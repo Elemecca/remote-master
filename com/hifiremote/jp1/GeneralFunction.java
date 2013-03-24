@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public abstract class GeneralFunction
@@ -11,18 +12,18 @@ public abstract class GeneralFunction
   public static class User
   {
 
-    /**
-     * Instantiates a new user.
-     * 
-     * @param b
-     *          the b
-     * @param state
-     *          the state
-     */
     public User( Button b, int state )
     {
       button = b;
       this.state = state;
+      db = null;
+    }
+    
+    public User( DeviceButton db, Button button )
+    {
+      this.db = db;
+      this.button = button;
+      this.state = Button.NORMAL_STATE;
     }
 
     /*
@@ -33,6 +34,8 @@ public abstract class GeneralFunction
     public boolean equals( Object o )
     {
       User u = ( User )o;
+      if ( db != u.db )
+        return false;
       if ( button != u.button )
         return false;
       if ( state != u.state )
@@ -40,11 +43,9 @@ public abstract class GeneralFunction
       return true;
     }
 
-    /** The button. */
     public Button button;
-
-    /** The state. */
     public int state;
+    public DeviceButton db;
   }
   
   public Hex getData()
@@ -67,9 +68,43 @@ public abstract class GeneralFunction
     return name;
   }
   
+  public String getDisplayName()
+  {
+    String s = "";
+    if ( this instanceof Macro )
+    {
+      s = "Macro: ";
+    }
+    else if ( this instanceof KeyMove )
+    {
+      s = "KM: ";
+    }
+    else if ( this instanceof LearnedSignal )
+    {
+      s = "Learn: ";
+    }
+    return s += name;
+  }
+  
   public boolean assigned()
   {
     return ( !users.isEmpty() );
+  }
+  
+  public boolean assigned( DeviceButton db )
+  {
+    // A learned signal hides anything underneath, so treat as unassigned
+    // if all assignments are hidden
+    for ( User u : users )
+    {
+      LinkedHashMap< Integer, LearnedSignal > learnedMap = db.getUpgrade().getLearnedMap();
+      if ( ( this instanceof Function || u.db == db )
+          && ( this instanceof LearnedSignal || learnedMap.get( ( int )u.button.getKeyCode()) == null ) )
+      {
+        return true;
+      }
+    }
+    return false;
   }
 
 
@@ -79,9 +114,9 @@ public abstract class GeneralFunction
   }
   
 
-  public void addReference( Button b )
+  public void addReference( DeviceButton db, Button b )
   {
-    users.add( new User( b, Button.NORMAL_STATE ) );
+    users.add( new User( db, b ) );
     if ( label != null )
     {
       label.showAssigned();
@@ -90,13 +125,12 @@ public abstract class GeneralFunction
   }
   
 
-  public void removeReference( Button b )
+  public void removeReference( DeviceButton db, Button b )
   {
-    users.remove( new User( b, Button.NORMAL_STATE ) );
+    users.remove( new User( db, b ) );
     if ( label != null )
     {
-      if ( users.isEmpty() )
-        label.showUnassigned();
+      label.showAssigned( db );
       label.updateToolTipText();
     }
   }
@@ -124,10 +158,18 @@ public abstract class GeneralFunction
     return label;
   }
   
+  public FunctionItem getItem()
+  {
+    if ( item == null )
+      item = new FunctionItem( this );
+    return item;
+  }
+  
   protected Hex data;
   protected String name;
   protected String notes = null;
   protected List< User > users = new ArrayList< User >();
   protected FunctionLabel label = null;
+  protected FunctionItem item = null;
 
 }

@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -99,20 +100,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
           boolean hasFocus, int row, int col )
       {
         GeneralFunction gf = ( GeneralFunction )value;
-        String name = "";
-        if ( gf instanceof Macro )
-        {
-          name = "Macro: ";
-        }
-        else if ( gf instanceof KeyMove )
-        {
-          name = "KM: ";
-        }
-        else if ( gf instanceof LearnedSignal )
-        {
-          name = "Learn: ";
-        }
-        name += gf != null ? gf.getName() : "";
+        String name = gf != null ? gf.getDisplayName() : "";
         return super.getTableCellRendererComponent( table, name, isSelected, false, row, col );
       }
     }
@@ -400,8 +388,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
     outerPanel.add( functionPanel, BorderLayout.NORTH );
     panel.add( new JScrollPane( outerPanel ), BorderLayout.CENTER );
 
-    JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, new JScrollPane( table ), new JScrollPane(
-        panel ) );
+    JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, new JScrollPane( table ), panel );
     splitPane.setResizeWeight( 0.3 );
 
     Remote remote = devUpgrade.getRemote();
@@ -522,6 +509,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
       else
         l = f.getLabel();
       l.addMouseListener( doubleClickListener );
+      l.showAssigned( deviceUpgrade.getButtonRestriction() );
       functionPanel.add( l );
 
       popupEditor.addObject( f );

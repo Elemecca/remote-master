@@ -178,6 +178,7 @@ public class ButtonTableModel
    */
   public void setValueAt( Object value, int row, int col )
   {
+    DeviceButton db = deviceUpgrade.getButtonRestriction();
     Button button = buttons[ row ];
     Button relatedButton = null;
     switch ( col )
@@ -200,7 +201,7 @@ public class ButtonTableModel
           {
             deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
           }
-          ( ( Function )current ).removeReference( button );
+          ( ( Function )current ).removeReference( db, button );
         }
         else if ( current instanceof Macro )
         {
@@ -208,7 +209,7 @@ public class ButtonTableModel
           {
             deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
           }
-          ( ( Macro )current ).removeReference( button );
+          ( ( Macro )current ).removeReference( db, button );
         }
         else if ( current instanceof KeyMove )
         {
@@ -216,12 +217,12 @@ public class ButtonTableModel
           {
             deviceUpgrade.getKmMap().remove( ( int )button.getKeyCode() );
           }
-          ( ( KeyMove )current ).removeReference( button );
+          ( ( KeyMove )current ).removeReference( db, button );
         }
         else if ( current instanceof LearnedSignal )
         {
           deviceUpgrade.getLearnedMap().remove( ( int )button.getKeyCode() );
-          ( ( LearnedSignal )current ).removeReference( button );
+          ( ( LearnedSignal )current ).removeReference( db, button );
           // Deleting a learned signal reinstates the value underneath it,
           // whose reference will have been deleted, so reset it
           if ( gf == null )
@@ -239,19 +240,19 @@ public class ButtonTableModel
         {
           Macro macro = ( Macro )gf;
           deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
-          macro.addReference( button );
+          macro.addReference( db, button );
         }
         else if ( gf instanceof KeyMove )
         {
           KeyMove km = ( KeyMove )gf;
           deviceUpgrade.getKmMap().put( ( int )button.getKeyCode(), km );
-          km.addReference( button );
+          km.addReference( db, button );
         }
         else if ( gf instanceof LearnedSignal )
         {
           LearnedSignal ls = ( LearnedSignal )gf;
           deviceUpgrade.getLearnedMap().put( ( int )button.getKeyCode(), ls );
-          ls.addReference( button );
+          ls.addReference( db, button );
         }
         relatedButton = button.getBaseButton();
         break;

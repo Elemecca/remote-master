@@ -220,18 +220,6 @@ public class Function extends GeneralFunction
   }
 
   /**
-   * Gets the item.
-   * 
-   * @return the item
-   */
-  public FunctionItem getItem()
-  {
-    if ( item == null )
-      item = new FunctionItem( this );
-    return item;
-  }
-
-  /**
    * Adds the reference.
    * 
    * @param b
@@ -300,9 +288,6 @@ public class Function extends GeneralFunction
 
   /** The EZ-RC index value corresponding to this function name */
   protected Integer index = null;
-
-  /** The item. */
-  private FunctionItem item = null;
   
   private Integer iconref = null;
   

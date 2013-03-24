@@ -149,6 +149,18 @@ public class FunctionLabel
   {
     setForeground( Color.red );
   }
+  
+  public void showAssigned( DeviceButton db )
+  {
+    if ( function.assigned( db ) )
+    {
+      showAssigned();
+    }
+    else
+    {
+      showUnassigned();
+    }
+  }
 
   /* (non-Javadoc)
    * @see javax.swing.JComponent#getPreferredSize()

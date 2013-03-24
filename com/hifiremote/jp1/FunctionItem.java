@@ -15,7 +15,7 @@ public class FunctionItem
    * 
    * @param function the function
    */
-  public FunctionItem( Function function )
+  public FunctionItem( GeneralFunction function )
   {
     this.function = function;
     if ( function == null )
@@ -32,9 +32,9 @@ public class FunctionItem
    * 
    * @return the function
    */
-  public Function getFunction(){ return function; }
+  public GeneralFunction getFunction(){ return function; }
   
   /** The function. */
-  private Function function = null;
+  private GeneralFunction function = null;
 }
 
