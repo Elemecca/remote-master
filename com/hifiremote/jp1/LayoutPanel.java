@@ -45,6 +45,8 @@ import javax.swing.KeyStroke;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
+import com.hifiremote.jp1.ButtonPanel.SelectionPanel;
+
 /**
  * The Class LayoutPanel.
  */
@@ -126,26 +128,37 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
     splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, remotePanel, rightPanel );
     add( splitPane, BorderLayout.CENTER );
-
-    JPanel modePanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
-    modePanel.setBorder( BorderFactory.createTitledBorder( "Mode" ) );
-
-    ButtonGroup group = new ButtonGroup();
-
+    
+    Box box = Box.createVerticalBox();
     normalMode = new JRadioButton( "Normal", true );
-    normalMode.addActionListener( this );
-    group.add( normalMode );
-    modePanel.add( normalMode );
-
     shiftMode = new JRadioButton( "Shift" );
-    shiftMode.addActionListener( this );
-    group.add( shiftMode );
-    modePanel.add( shiftMode );
-
     xShiftMode = new JRadioButton( "XShift" );
-    xShiftMode.addActionListener( this );
-    group.add( xShiftMode );
-    modePanel.add( xShiftMode );
+
+    if ( devUpgrade.getRemote().isSSD() )
+    {
+      selector = new SelectionPanel( this, this );
+      box.add( selector );
+    }
+    else
+    {
+      JPanel modePanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
+      modePanel.setBorder( BorderFactory.createTitledBorder( "Mode" ) );
+
+      ButtonGroup group = new ButtonGroup();
+
+      normalMode.addActionListener( this );
+      group.add( normalMode );
+      modePanel.add( normalMode );
+
+      shiftMode.addActionListener( this );
+      group.add( shiftMode );
+      modePanel.add( shiftMode );
+      
+      xShiftMode.addActionListener( this );
+      group.add( xShiftMode );
+      modePanel.add( xShiftMode );
+      box.add( modePanel );
+    }
 
     JPanel infoPanel = new JPanel( new GridLayout( 2, 2 ) );
 
@@ -161,8 +174,8 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     function.setEditable( false );
     infoPanel.add( function );
 
-    Box box = Box.createVerticalBox();
-    box.add( modePanel );
+
+    
     box.add( infoPanel );
 
     rightPanel.add( box, BorderLayout.NORTH );
@@ -244,13 +257,48 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     imagePanel.addMouseListener( ml );
   }
 
+  private GeneralFunction getFunction( Button b )
+  {
+    Remote remote = deviceUpgrade.getRemote();
+    GeneralFunction f = null;
+    if ( normalMode.isSelected() )
+    {
+      if ( remote.isSSD() )
+      {
+        f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
+        if ( f == null )
+        {
+          f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+        }
+        if ( f == null )
+        {
+          f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
+        }
+      }
+      if ( f == null )
+      {
+        f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+      }
+    }
+    else if ( shiftMode.isSelected() )
+    {
+      f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
+    }
+    else if ( xShiftMode.isSelected() )
+    {
+      f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
+    }
+    return f;
+  }
+  
   /**
    * Adds the function.
    * 
    * @param f
    *          the f
    */
-  private void addFunction( GeneralFunction f )
+  @Override
+  public void addFunction( GeneralFunction f )
   {
     if ( ( f == null ) || ( ( f.getData() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
     {
@@ -281,12 +329,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     popup = new JPopupMenu();
     popup.setLayout( new GridLayout( 0, 3 ) );
     functionPanel.removeAll();
-
-    for ( Function function : deviceUpgrade.getFunctions() )
-      addFunction( function );
-
-    for ( Function function : deviceUpgrade.getExternalFunctions() )
-      addFunction( function );
+    selector.addFunctions();
   }
 
   /**
@@ -341,15 +384,27 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
     setFunctions();
 
-    shiftMode.setText( r.getShiftLabel() );
-    xShiftMode.setText( r.getXShiftLabel() );
-    if ( r.getXShiftEnabled() )
-      xShiftMode.setEnabled( true );
-    else
+    if ( !r.isSSD() )
     {
-      xShiftMode.setEnabled( false );
-      if ( xShiftMode.isSelected() )
-        normalMode.setSelected( true );
+      shiftMode.setText( r.getShiftLabel() );
+      if ( r.getShiftEnabled() )
+        shiftMode.setEnabled( true );
+      else
+      {
+        shiftMode.setEnabled( false );
+        if ( shiftMode.isSelected() )
+          normalMode.setSelected( true );
+      }
+
+      xShiftMode.setText( r.getXShiftLabel() );
+      if ( r.getXShiftEnabled() )
+        xShiftMode.setEnabled( true );
+      else
+      {
+        xShiftMode.setEnabled( false );
+        if ( xShiftMode.isSelected() )
+          normalMode.setSelected( true );
+      }
     }
     doRepaint();
   }
@@ -372,7 +427,6 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
    */
   private void setButtonText( ButtonShape buttonShape, Button b )
   {
-    Remote remote = deviceUpgrade.getRemote();
     if ( ( buttonShape != null ) && ( b != null ) )
     {
       String name = buttonShape.getName();
@@ -386,30 +440,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
           name = b.getXShiftedName();
       }
       buttonName.setText( name );
-      GeneralFunction f = null;
-      if ( normalMode.isSelected() )
-      {
-        if ( remote.isSSD() )
-        {
-          f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
-          if ( f == null )
-          {
-            f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
-          }
-          if ( f == null )
-          {
-            f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
-          }
-        }
-        if ( f == null )
-        {
-          f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
-        }
-      }
-      else if ( shiftMode.isSelected() )
-        f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
-      else if ( xShiftMode.isSelected() )
-        f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
+      GeneralFunction f = getFunction( b );
       if ( f != null )
         function.setText( f.getDisplayName() );
       else
@@ -537,18 +568,14 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     Button b = getButtonForShape( shape );
     if ( b != null )
     {
-      if ( gf instanceof Function )
+      GeneralFunction current = getFunction( b );
+      ButtonTableModel.setFunction( deviceUpgrade, b, current, gf );
+      if ( current instanceof LearnedSignal && gf == null )
       {
-        Function f = ( Function )gf;
-        if ( normalMode.isSelected() )
-          deviceUpgrade.setFunction( b, f, Button.NORMAL_STATE );
-        else if ( shiftMode.isSelected() )
-          deviceUpgrade.setFunction( b, f, Button.SHIFTED_STATE );
-        else if ( xShiftMode.isSelected() )
-          deviceUpgrade.setFunction( b, f, Button.XSHIFTED_STATE );
-        setButtonText( currentShape, b );
+        gf = getFunction( b );
+        ButtonTableModel.setFunction( deviceUpgrade, b, null, gf );
       }
-      
+      setButtonText( shape, b );
       deviceUpgrade.checkSize();
     }
   }
@@ -589,6 +616,11 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         currentShape = null;
       setButtonText( currentShape, b );
       doRepaint();
+    }
+    else if ( source instanceof JRadioButton )
+    {
+      setFunctions();
+      functionPanel.revalidate();
     }
     else
     {
@@ -680,7 +712,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         Transferable tf = dtde.getTransferable();
         try
         {
-          Function f = ( Function )tf.getTransferData( LocalObjectTransferable.getFlavor() );
+          GeneralFunction f = ( GeneralFunction )tf.getTransferData( LocalObjectTransferable.getFlavor() );
           setFunction( currentShape, f );
         }
         catch ( Exception e )
@@ -752,32 +784,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
         Shape s = buttonShape.getShape();
 
-        GeneralFunction f = null;
-        Remote remote = deviceUpgrade.getRemote();
-        if ( normalMode.isSelected() )
-        {
-          if ( remote.isSSD() )
-          {
-            f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
-            if ( f == null )
-            {
-              f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
-            }
-            if ( f == null )
-            {
-              f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
-            }
-          }
-          if ( f == null )
-          {
-            f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
-          }
-        }
-        else if ( shiftMode.isSelected() )
-          f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
-        else if ( xShiftMode.isSelected() )
-          f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
-
+        GeneralFunction f = getFunction( b );
         if ( f != null )
         {
           g2.setPaint( Color.yellow );
@@ -829,32 +836,8 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         else if ( xShiftMode.isSelected() )
           name = b.getXShiftedName();
       }
-      Remote remote = deviceUpgrade.getRemote();
-      GeneralFunction f = null;
-      if ( normalMode.isSelected() )
-      {
-        if ( remote.isSSD() )
-        {
-          f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
-          if ( f == null )
-          {
-            f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
-          }
-          if ( f == null )
-          {
-            f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
-          }
-        }
-        if ( f == null )
-        {
-          f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
-        }
-      }
-      else if ( shiftMode.isSelected() )
-        f = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE );
-      else if ( xShiftMode.isSelected() )
-        f = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE );
 
+      GeneralFunction f = getFunction( b );
       String text = name;
       if ( f != null )
         text = name + " = " + f.getDisplayName();
@@ -965,7 +948,9 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
   private AffineTransform transform = null;
 
-  JPanel remotePanel = null;
+  private JPanel remotePanel = null;
+  
+  private SelectionPanel selector = null;
 
   @Override
   public void run()

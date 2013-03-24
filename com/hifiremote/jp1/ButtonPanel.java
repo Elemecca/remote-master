@@ -394,23 +394,8 @@ public class ButtonPanel extends KMPanel implements ActionListener
     Remote remote = devUpgrade.getRemote();
     if ( remote.isSSD() )
     {
-      panel = new JPanel( new GridLayout( 2, 2 ) );
-      panel.setBorder( BorderFactory.createTitledBorder( " Select items to show: " ) );
-      panel.add( functionButton );
-      panel.add( learnedButton );
-      panel.add( keyMoveButton );
-      panel.add( macroButton );
-      ButtonGroup grp = new ButtonGroup();
-      grp.add( functionButton );
-      grp.add( learnedButton );
-      grp.add( keyMoveButton );
-      grp.add( macroButton );
-      functionButton.setSelected( true );
-      functionButton.addActionListener( this );
-      learnedButton.addActionListener( this );
-      keyMoveButton.addActionListener( this );
-      macroButton.addActionListener( this );
-      selectionPanel.add( panel, BorderLayout.CENTER );
+      selector = new SelectionPanel( this, this );
+      selectionPanel.add( selector, BorderLayout.CENTER );
     }
     
     add( splitPane, BorderLayout.CENTER );
@@ -425,6 +410,70 @@ public class ButtonPanel extends KMPanel implements ActionListener
     panel.add( button );
 
     add( panel, BorderLayout.SOUTH );
+  }
+  
+  public static class SelectionPanel extends JPanel
+  {
+    protected JRadioButton functionButton = new JRadioButton( "Functions" );
+    protected JRadioButton keyMoveButton = new JRadioButton( "Key Moves" );
+    protected JRadioButton macroButton = new JRadioButton( "Macros" );
+    protected JRadioButton learnedButton = new JRadioButton( "Learned" );
+    private KMPanel panel = null;
+    
+    public SelectionPanel( KMPanel panel, ActionListener al )
+    {
+      super();
+      this.panel = panel;
+      setLayout( new GridLayout( 2, 2 ) );
+      setBorder( BorderFactory.createTitledBorder( " Select items to show: " ) );
+      add( functionButton );
+      add( learnedButton );
+      add( keyMoveButton );
+      add( macroButton );
+      ButtonGroup grp = new ButtonGroup();
+      grp.add( functionButton );
+      grp.add( learnedButton );
+      grp.add( keyMoveButton );
+      grp.add( macroButton );
+      functionButton.setSelected( true );
+      functionButton.addActionListener( al );
+      learnedButton.addActionListener( al );
+      keyMoveButton.addActionListener( al );
+      macroButton.addActionListener( al );
+    }
+    
+    protected void addFunctions()
+    {
+      if ( functionButton.isSelected() )
+      {
+        for ( Function function : panel.deviceUpgrade.getFunctions() )
+          panel.addFunction( function );
+
+        for ( ExternalFunction function : panel.deviceUpgrade.getExternalFunctions() )
+          panel.addFunction( function );
+      }
+      else if ( keyMoveButton.isSelected() )
+      {
+        for ( KeyMove km : panel.deviceUpgrade.getRemoteConfig().getKeyMoves() )
+        {
+          panel.addFunction( km );
+        }
+      }
+      else if ( macroButton.isSelected() )
+      {
+        for ( Macro macro : panel.deviceUpgrade.getRemoteConfig().getMacros() )
+        {
+          panel.addFunction( macro );
+        }
+      }
+      else if ( learnedButton.isSelected() )
+      {
+        for ( LearnedSignal ls : panel.deviceUpgrade.getRemoteConfig().getLearnedSignals() )
+        {
+          panel.addFunction( ls );
+        }
+      }
+    }
   }
 
   /**
@@ -499,7 +548,8 @@ public class ButtonPanel extends KMPanel implements ActionListener
    * @param f
    *          the f
    */
-  private void addFunction( GeneralFunction f )
+  @Override
+  public void addFunction( GeneralFunction f )
   {
     if ( ( f == null ) || ( ( f.getData() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
     {
@@ -522,39 +572,8 @@ public class ButtonPanel extends KMPanel implements ActionListener
   private void setFunctions()
   {
     popupEditor.removeAll();
-
     functionPanel.removeAll();
-
-    if ( functionButton.isSelected() )
-    {
-      for ( Function function : deviceUpgrade.getFunctions() )
-        addFunction( function );
-
-      for ( ExternalFunction function : deviceUpgrade.getExternalFunctions() )
-        addFunction( function );
-    }
-    else if ( keyMoveButton.isSelected() )
-    {
-      for ( KeyMove km : deviceUpgrade.getRemoteConfig().getKeyMoves() )
-      {
-        addFunction( km );
-      }
-    }
-    else if ( macroButton.isSelected() )
-    {
-      for ( Macro macro : deviceUpgrade.getRemoteConfig().getMacros() )
-      {
-        addFunction( macro );
-      }
-    }
-    else if ( learnedButton.isSelected() )
-    {
-      for ( LearnedSignal ls : deviceUpgrade.getRemoteConfig().getLearnedSignals() )
-      {
-        addFunction( ls );
-      }
-    }
-
+    selector.addFunctions();
     functionPanel.doLayout();
   }
 
@@ -743,9 +762,6 @@ public class ButtonPanel extends KMPanel implements ActionListener
   /** The paste item. */
   private JMenuItem pasteItem = null;
   
-  private JRadioButton functionButton = new JRadioButton( "Functions" );
-  private JRadioButton keyMoveButton = new JRadioButton( "Key Moves" );
-  private JRadioButton macroButton = new JRadioButton( "Macros" );
-  private JRadioButton learnedButton = new JRadioButton( "Learned" );
+  private SelectionPanel selector = null;
   
 }

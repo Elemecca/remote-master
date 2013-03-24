@@ -187,72 +187,12 @@ public class ButtonTableModel
         break;
       case functionCol:
         GeneralFunction gf = ( GeneralFunction )value;
-        Object current = getValueAt( row, col );
-
-        // A new value always becomes active so delete the reference to the
-        // current value, but delete the current value itself only if the new
-        // value is not a learned signal, as a learned signal sits on top of
-        // the current value, hiding it but gets reinstated if the learned
-        // signal is deleted
-
-        if ( current instanceof Function )
+        GeneralFunction current = ( GeneralFunction )getValueAt( row, col );
+        setFunction( deviceUpgrade, button, current, gf );
+        if ( current instanceof LearnedSignal && gf == null )
         {
-          if ( !( gf instanceof LearnedSignal ) )
-          {
-            deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
-          }
-          ( ( Function )current ).removeReference( db, button );
-        }
-        else if ( current instanceof Macro )
-        {
-          if ( !( gf instanceof LearnedSignal ) )
-          {
-            deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
-          }
-          ( ( Macro )current ).removeReference( db, button );
-        }
-        else if ( current instanceof KeyMove )
-        {
-          if ( !( gf instanceof LearnedSignal ) )
-          {
-            deviceUpgrade.getKmMap().remove( ( int )button.getKeyCode() );
-          }
-          ( ( KeyMove )current ).removeReference( db, button );
-        }
-        else if ( current instanceof LearnedSignal )
-        {
-          deviceUpgrade.getLearnedMap().remove( ( int )button.getKeyCode() );
-          ( ( LearnedSignal )current ).removeReference( db, button );
-          // Deleting a learned signal reinstates the value underneath it,
-          // whose reference will have been deleted, so reset it
-          if ( gf == null )
-          {
-            gf = ( GeneralFunction )getValueAt( row, col );
-          }
-        }
-
-        if ( gf instanceof Function )
-        {
-          Function f = ( Function )gf;
-          deviceUpgrade.setFunction( button, f, Button.NORMAL_STATE );
-        }
-        else if ( gf instanceof Macro )
-        {
-          Macro macro = ( Macro )gf;
-          deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
-          macro.addReference( db, button );
-        }
-        else if ( gf instanceof KeyMove )
-        {
-          KeyMove km = ( KeyMove )gf;
-          deviceUpgrade.getKmMap().put( ( int )button.getKeyCode(), km );
-          km.addReference( db, button );
-        }
-        else if ( gf instanceof LearnedSignal )
-        {
-          LearnedSignal ls = ( LearnedSignal )gf;
-          deviceUpgrade.getLearnedMap().put( ( int )button.getKeyCode(), ls );
-          ls.addReference( db, button );
+          gf = ( GeneralFunction )getValueAt( row, col );
+          setFunction( deviceUpgrade, button, null, gf );
         }
         relatedButton = button.getBaseButton();
         break;
@@ -298,6 +238,76 @@ public class ButtonTableModel
   public Class<?> getColumnClass( int col )
   {
     return columnClasses[ col ];
+  }
+  
+  public static void setFunction( DeviceUpgrade deviceUpgrade, Button button, GeneralFunction old, GeneralFunction gf )
+  {
+    // A new value always becomes active so delete the reference to the
+    // current value, but delete the current value itself only if the new
+    // value is not a learned signal, as a learned signal sits on top of
+    // the current value, hiding it but gets reinstated if the learned
+    // signal is deleted
+
+    DeviceButton db = deviceUpgrade.getButtonRestriction();
+    if ( old instanceof Function )
+    {
+      if ( !( gf instanceof LearnedSignal ) )
+      {
+        deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
+      }
+      ( ( Function )old ).removeReference( db, button );
+    }
+    else if ( old instanceof Macro )
+    {
+      if ( !( gf instanceof LearnedSignal ) )
+      {
+        deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
+      }
+      ( ( Macro )old ).removeReference( db, button );
+    }
+    else if ( old instanceof KeyMove )
+    {
+      if ( !( gf instanceof LearnedSignal ) )
+      {
+        deviceUpgrade.getKmMap().remove( ( int )button.getKeyCode() );
+      }
+      ( ( KeyMove )old ).removeReference( db, button );
+    }
+    else if ( old instanceof LearnedSignal )
+    {
+      deviceUpgrade.getLearnedMap().remove( ( int )button.getKeyCode() );
+      ( ( LearnedSignal )old ).removeReference( db, button );
+      // Deleting a learned signal reinstates the value underneath it,
+      // whose reference will have been deleted, so reset it
+//      if ( gf == null )
+//      {
+//        gf = ( GeneralFunction )getValueAt( row, col );
+//      }
+    }
+
+    if ( gf instanceof Function )
+    {
+      Function f = ( Function )gf;
+      deviceUpgrade.setFunction( button, f, Button.NORMAL_STATE );
+    }
+    else if ( gf instanceof Macro )
+    {
+      Macro macro = ( Macro )gf;
+      deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
+      macro.addReference( db, button );
+    }
+    else if ( gf instanceof KeyMove )
+    {
+      KeyMove km = ( KeyMove )gf;
+      deviceUpgrade.getKmMap().put( ( int )button.getKeyCode(), km );
+      km.addReference( db, button );
+    }
+    else if ( gf instanceof LearnedSignal )
+    {
+      LearnedSignal ls = ( LearnedSignal )gf;
+      deviceUpgrade.getLearnedMap().put( ( int )button.getKeyCode(), ls );
+      ls.addReference( db, button );
+    }
   }
 }
 
