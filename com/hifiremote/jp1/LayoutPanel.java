@@ -133,10 +133,10 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     normalMode = new JRadioButton( "Normal", true );
     shiftMode = new JRadioButton( "Shift" );
     xShiftMode = new JRadioButton( "XShift" );
+    selector = new SelectionPanel( this, this );
 
     if ( devUpgrade.getRemote().isSSD() )
     {
-      selector = new SelectionPanel( this, this );
       box.add( selector );
     }
     else

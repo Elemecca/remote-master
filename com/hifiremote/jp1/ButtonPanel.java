@@ -392,9 +392,9 @@ public class ButtonPanel extends KMPanel implements ActionListener
     splitPane.setResizeWeight( 0.3 );
 
     Remote remote = devUpgrade.getRemote();
+    selector = new SelectionPanel( this, this );
     if ( remote.isSSD() )
     {
-      selector = new SelectionPanel( this, this );
       selectionPanel.add( selector, BorderLayout.CENTER );
     }
     

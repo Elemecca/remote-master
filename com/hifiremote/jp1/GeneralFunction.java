@@ -95,16 +95,23 @@ public abstract class GeneralFunction
   {
     // A learned signal hides anything underneath, so treat as unassigned
     // if all assignments are hidden
-    for ( User u : users )
+    if ( db != null && db.getUpgrade() != null && db.getUpgrade().getRemote().isSSD() )
     {
-      LinkedHashMap< Integer, LearnedSignal > learnedMap = db.getUpgrade().getLearnedMap();
-      if ( ( this instanceof Function || u.db == db )
-          && ( this instanceof LearnedSignal || learnedMap.get( ( int )u.button.getKeyCode()) == null ) )
+      for ( User u : users )
       {
-        return true;
+        LinkedHashMap< Integer, LearnedSignal > learnedMap = db.getUpgrade().getLearnedMap();
+        if ( ( this instanceof Function || u.db == db )
+            && ( this instanceof LearnedSignal || learnedMap.get( ( int )u.button.getKeyCode()) == null ) )
+        {
+          return true;
+        }
       }
+      return false;
     }
-    return false;
+    else
+    {
+      return assigned();
+    }
   }
 
 

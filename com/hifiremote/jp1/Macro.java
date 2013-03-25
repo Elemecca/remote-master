@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
@@ -285,4 +287,6 @@ public class Macro extends AdvancedCode
   {
     return macroCodingType;
   }
+  
+  private List< Object > items = new ArrayList< Object >();
 }

@@ -1333,8 +1333,7 @@ public class RemoteConfiguration
         {
           Macro macro = it.next();
           int sourceKey = macro.getKeyCode();
-          DeviceButton sourceDev = macro.getDeviceButton( this );
-          DeviceUpgrade du = sourceDev.getUpgrade();   
+          DeviceButton sourceDev = macro.getDeviceButton( this );;   
           if ( !macro.isSystemMacro() )
           {
             for ( User u : macro.getUsers() )
@@ -1399,7 +1398,6 @@ public class RemoteConfiguration
       }
       else if ( tag.equals( "activities" ) )
       {
-        int i = 0;
         for ( Activity a : activities.values() )
         {
           if ( !items.activities.contains( a ) )
@@ -6771,8 +6769,6 @@ public class RemoteConfiguration
         Function f = upg.getAssignments().getAssignment( b );
         Macro macro = db.getUpgrade().getMacroMap().get( ( int )b.getKeyCode() );
         KeyMove km = db.getUpgrade().getKmMap().get( ( int )b.getKeyCode() );
-//        Macro macro = getMacro( db, b );
-//        KeyMove km = getKeyMove( db, b );
         LearnedSignal ls = findLearnedSignal( db, b );
         String btnTag = "keydef";
         String name = null;
@@ -7123,26 +7119,6 @@ public class RemoteConfiguration
     SSDFile file = new SSDFile( tagList, work );
     tagList = null;
     return file;
-  }
-  
-  private Macro getMacro( DeviceButton devBtn, Button btn )
-  {
-    for ( Macro macro : macros )
-    {
-      if ( macro.getDeviceButton( this ) == devBtn && macro.getKeyCode() == btn.getKeyCode() )
-      return macro;
-    }
-    return null;
-  }
-  
-  private KeyMove getKeyMove( DeviceButton devBtn, Button btn )
-  {
-    for ( KeyMove km : keymoves )
-    {
-      if ( km.getDeviceButtonIndex() == devBtn.getButtonIndex() && km.getKeyCode() == btn.getKeyCode() )
-      return km;
-    }
-    return null;
   }
   
   private Hex getLittleEndian( int n )

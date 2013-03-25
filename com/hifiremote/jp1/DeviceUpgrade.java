@@ -142,47 +142,6 @@ public class DeviceUpgrade extends Highlight
         learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
         learnedMap.putAll( base.getLearnedMap() );
       }
-//      for ( Macro macro : remoteConfig.getMacros() )
-//      {
-//        macro.removeReferences();
-//      }
-//      for ( KeyMove km : remoteConfig.getKeyMoves() )
-//      {
-//        km.removeReferences();
-//      }
-//      for ( LearnedSignal ls : remoteConfig.getLearnedSignals() )
-//      {
-//        ls.removeReferences();
-//      }
-//      
-//      for ( int keyCode : macroMap.keySet() )
-//      {
-//        // A learned function hides an underlying macro
-//        if ( learnedMap.get( keyCode ) == null )
-//        {
-//          macroMap.get( keyCode ).addReference( buttonRestriction, remote.getButton( keyCode ) );
-//        }
-//      }
-//      for ( int keyCode : kmMap.keySet() )
-//      {
-//        // A learned function hides an underlying keymove
-//        if ( learnedMap.get( keyCode ) == null )
-//        {
-//          kmMap.get( keyCode ).addReference( buttonRestriction, remote.getButton( keyCode ) );
-//        }
-//      }
-//      for ( int keyCode : learnedMap.keySet() )
-//      {
-//        Button button = remote.getButton( keyCode );
-//        learnedMap.get( keyCode ).addReference( buttonRestriction, button );
-//        // A learned function hides an underlying function, but its reference
-//        // will have been added already, so remove it
-//        Function f = getFunction( keyCode );
-//        if ( f != null )
-//        {
-//          f.removeReference( null, button );
-//        }
-//      }
     }
   }
 
