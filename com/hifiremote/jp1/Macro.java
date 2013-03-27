@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class Macro.
@@ -95,7 +97,46 @@ public class Macro extends AdvancedCode
   @Override
   public String getValueString( RemoteConfiguration remoteConfig )
   {
-    return getValueString( data, remoteConfig );
+    if ( items != null )
+    {
+      return getValueString( items );
+    }
+    else
+    {
+      return getValueString( data, remoteConfig );
+    }
+  }
+  
+  public static String getValueString( List< KeySpec > items )
+  {
+    StringBuilder buff = new StringBuilder();
+    for ( int i = 0; i < items.size(); ++i )
+    {
+      if ( i != 0 )
+      {
+        buff.append( ';' );
+      }
+      KeySpec ks = items.get( i );
+      buff.append( ks.db.getName() + ";" );
+      if ( ks.duration >= 0 )
+      {
+        buff.append( "Hold(" +  ks.duration / 10 + "." + ks.duration % 10 + ");" );
+      }
+      Button btn = ks.fn == null ? ks.btn : ks.fn.getUsers().isEmpty() ? null : ks.fn.getUsers().get( 0 ).button;
+      if ( btn != null )
+      {
+        buff.append( btn.getName() );
+      }
+      else if ( ks.fn != null )
+      {
+        buff.append( "Fn(" + ks.fn.getName() + ")" );
+      }
+      if ( ks.delay != 0 )
+      {
+        buff.append( "(" +  ks.delay / 10 + "." + ks.delay % 10 + ")" );
+      }
+    }
+    return buff.toString();
   }
   
   public static String getValueString( Hex hex, RemoteConfiguration remoteConfig )
@@ -103,12 +144,8 @@ public class Macro extends AdvancedCode
     Remote remote = remoteConfig.getRemote();
     StringBuilder buff = new StringBuilder();
     DeviceButton db = null;
-//    int keyCount = hex.length() / ( remote.usesEZRC() ? 2 : 1 );
-//    int keyCount = hex.length();
     short[] data = hex.getData();
 
-//    short[] keys = hex.subHex( 0, keyCount ).getData();
-//    short[] durations = hex.subHex( keyCount, keyCount ).getData(); // gives null if no durations
     for ( int i = 0; i < hex.length(); ++i )
     {
       if ( i != 0 )
@@ -121,21 +158,15 @@ public class Macro extends AdvancedCode
       {
         db = temp;
       }
-      String name = null;
-      if ( ( keyCode & remote.getFunctionMask() ) != 0 && keyCode < 0xF0 && db != null && db.getUpgrade() != null )
-      {
-        DeviceUpgrade upg = db.getUpgrade();
-        Function f = upg.getFunction( data[ i ] & 0xFF );
-        name = "Fn(" + f.getName() + ")";
-      }
-      else
-      {
-        name = remote.getButtonName( data[ i ] & 0xFF );
-      }
+      String name = remote.getButtonName( data[ i ] & 0xFF );
       buff.append( name );
       int duration = ( data[ i ] >> 8 ) & 0xFF;
       if ( duration > 0 )
       {
+        if ( duration == 0xFF )
+        {
+          duration = 0;
+        }
         buff.append( "(" +  duration / 10 + "." + duration % 10 + ")" );
       }
     }
@@ -288,5 +319,4 @@ public class Macro extends AdvancedCode
     return macroCodingType;
   }
   
-  private List< Object > items = new ArrayList< Object >();
 }

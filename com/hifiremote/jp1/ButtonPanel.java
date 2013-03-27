@@ -551,7 +551,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
   @Override
   public void addFunction( GeneralFunction f )
   {
-    if ( ( f == null ) || ( ( f.getData() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
+    if ( ( f == null ) || ( ( f.hasData() ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
     {
       FunctionLabel l;
       if ( f == null )

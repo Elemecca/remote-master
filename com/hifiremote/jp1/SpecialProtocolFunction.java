@@ -3,8 +3,6 @@ package com.hifiremote.jp1;
 import java.awt.Color;
 import java.util.*;
 
-import com.hifiremote.jp1.Activity.Assister;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class SpecialProtocolFunction.
@@ -13,7 +11,6 @@ public abstract class SpecialProtocolFunction extends Highlight
 { 
   private KeyMove keyMove = null;
   private Macro macro = null;
-  private LinkedHashMap< Integer, List< Assister > > assists = new LinkedHashMap< Integer, List<Assister> >();
   
   /**
    * Instantiates a new special protocol function.
@@ -28,12 +25,6 @@ public abstract class SpecialProtocolFunction extends Highlight
   public SpecialProtocolFunction( Macro macro )
   {
     this.macro = new Macro( macro );
-  }
-  
-  public SpecialProtocolFunction( Macro macro, KeyMove keyMove )
-  {
-    this.macro = macro;
-    this.keyMove = keyMove;
   }
 
   /**
@@ -245,30 +236,6 @@ public abstract class SpecialProtocolFunction extends Highlight
       macro.setNotes( notes );
     }
   }
-  
-  public String getName()
-  {
-    if ( keyMove != null )
-    {
-      return keyMove.getName();
-    }
-    else
-    {
-      return macro.getName();
-    }
-  }
-  
-  public int getSerial()
-  {
-    if ( keyMove != null )
-    {
-      return keyMove.getSerial();
-    }
-    else
-    {
-      return macro.getSerial();
-    }
-  }
 
   @Override
   public Color getHighlight()
@@ -309,26 +276,6 @@ public abstract class SpecialProtocolFunction extends Highlight
     }
   }
   
-  public void setKeyMove( KeyMove keyMove )
-  {
-    this.keyMove = keyMove;
-  }
-
-  public void setMacro( Macro macro )
-  {
-    this.macro = macro;
-  }
-
-  public LinkedHashMap< Integer, List< Assister >> getAssists()
-  {
-    return assists;
-  }
-
-  public void setAssists( LinkedHashMap< Integer, List< Assister >> assists )
-  {
-    this.assists = assists;
-  }
-
   private static final String[] unknownFunctions = { "<unknown>", "<unknown>", "<unknown>" };
   
   /**

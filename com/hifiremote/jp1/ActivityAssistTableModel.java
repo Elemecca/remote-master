@@ -117,9 +117,13 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
       case 1:
         return assister.device;
       case 2:
+        if ( assister.button == null )
+        {
+          return null;
+        }
         return new Integer( assister.button.getKeyCode() );
       case 3:
-        return assister.device.getUpgrade().getAssignments().getAssignment( assister.button );
+        return assister.function;
       default:
         return null;
     }

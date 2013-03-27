@@ -24,11 +24,6 @@ public class DSMFunction extends SpecialProtocolFunction
   {
     super( macro );
   }
-  
-  public DSMFunction( Macro macro, KeyMove keyMove )
-  {
-    super( macro, keyMove );
-  }
 
   /**
    * Instantiates a new dSM function.

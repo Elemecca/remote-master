@@ -2316,7 +2316,7 @@ public class Remote implements Comparable< Remote >
 
     Button b = getButton( keyCode );
 
-    if ( b == null && ( keyCode & getFunctionMask() ) == 0 )
+    if ( b == null )
     {
       int baseCode = keyCode & 0x3F;
       if ( baseCode != 0 )
@@ -2465,10 +2465,6 @@ public class Remote implements Comparable< Remote >
     buttonsByName.put( b.getName().toLowerCase(), b );
     buttonsByStandardName.put( b.getStandardName().toLowerCase(), b );
     buttonsByKeyCode.put( new Integer( keycode ), b );
-    if ( isFunctionButton( b ) )
-    {
-      functionButtons.add( b );
-    }
   }
 
   /**
@@ -3132,17 +3128,6 @@ public class Remote implements Comparable< Remote >
   public boolean getXShiftEnabled()
   {
     return xShiftEnabled;
-  }
-
-  public int getFunctionMask()
-  {
-    return isSSD() ? 0x80 : 0;
-  }
-  
-  public boolean isFunctionButton( Button b )
-  {
-    int keyCode = b.getKeyCode();
-    return ( keyCode & getFunctionMask() ) != 0 && keyCode < 0xF0;
   }
 
   /**

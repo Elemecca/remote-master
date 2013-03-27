@@ -16,6 +16,7 @@ public class Activity extends Highlight
   {
     public DeviceButton device = null;
     public Button button = null;
+    public GeneralFunction function = null;
     private String deviceName = null;
     private int buttonCode = 0;
     
@@ -25,6 +26,19 @@ public class Activity extends Highlight
       this.button = button;
       deviceName = device.getName();
       buttonCode = button.getKeyCode();
+      function = device.getUpgrade().getAssignments().getAssignment( button );
+    }
+    
+    public Assister( DeviceButton device, GeneralFunction function )
+    {
+      this.device = device;
+      this.function = function;
+      deviceName = device.getName();
+      if ( !function.getUsers().isEmpty() )
+      {
+        button = function.getUsers().get( 0 ).button;
+        buttonCode = button.getKeyCode();
+      }
     }
     
     public Assister( String str )
@@ -55,6 +69,7 @@ public class Activity extends Highlight
         }
       }
       button = remote.getButton( buttonCode );
+      function = device.getUpgrade().getAssignments().getAssignment( button );
     }
 
     public String getDeviceName()

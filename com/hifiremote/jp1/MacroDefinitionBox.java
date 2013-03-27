@@ -1,6 +1,9 @@
 package com.hifiremote.jp1;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.GridLayout;
@@ -16,11 +19,13 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -37,13 +42,52 @@ RMSetter< Hex >
     macroButtons.setModel( macroButtonModel );
     setBorder( BorderFactory.createTitledBorder( "Macro Definition" ) );
 
+    creationPanel = new JPanel( new CardLayout() );
+    add( creationPanel );
+    
     JPanel availableBox = new JPanel( new BorderLayout() );
-    add( availableBox );
+//    add( availableBox );
     availableBox.add( new JLabel( "Available keys:" ), BorderLayout.NORTH );
     availableButtons.setFixedCellWidth( 100 );
     availableBox.add( new JScrollPane( availableButtons ), BorderLayout.CENTER );
     availableButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     availableButtons.addListSelectionListener( this );
+        
+    double b = 5; // space between rows and around border
+    double c = 10; // space between columns
+    double pr = TableLayout.PREFERRED;
+    double pf = TableLayout.FILL;
+    double size[][] =
+    {
+        {
+            b, pr, c, pf, b
+        }, // cols
+        {
+            b, pr, b, pr, b, pr, b
+        }  // rows
+    };
+
+
+    JPanel ssdPanel = new JPanel( new BorderLayout() );
+    ssdPanel.add( new JLabel( "Specify macro item:"), BorderLayout.PAGE_START );
+    JPanel itemPanel = new JPanel( new TableLayout( size ) );
+    ssdPanel.add( itemPanel, BorderLayout.CENTER );
+    itemPanel.add( new JLabel( "Device:"), "1, 1" );
+    itemPanel.add( new JComboBox( new String[]{ "aaa", "bbb" } ), "3, 1"  );
+    itemPanel.add( new JLabel( "Function:"), "1, 3" );
+    itemPanel.add( new JComboBox( new String[]{ "ccc", "bbb" } ), "3, 3"  );
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    creationPanel.add( availableBox, "Normal");
+    creationPanel.add( ssdPanel, "SSD");
     
     panel = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
     panel.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
@@ -143,6 +187,9 @@ RMSetter< Hex >
       }
     }
     availableButtons.setModel( availableButtonModel );
+    CardLayout cl = ( CardLayout)creationPanel.getLayout();
+    cl.show( creationPanel, "SSD" );
+    
   }  
   
   public void actionPerformed( ActionEvent event )
@@ -406,6 +453,8 @@ RMSetter< Hex >
   private JButton clear = new JButton( "Clear" );
   
   private JPanel durationPanel = new JPanel( new BorderLayout() );
+  
+  private JPanel creationPanel = null;
   
   private JLabel durationLabel = new JLabel( "Duration:  " );
   

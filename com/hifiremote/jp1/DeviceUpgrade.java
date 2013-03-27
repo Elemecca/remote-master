@@ -142,6 +142,11 @@ public class DeviceUpgrade extends Highlight
         learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
         learnedMap.putAll( base.getLearnedMap() );
       }
+      if ( base.getFunctionMap() != null )
+      {
+        functionMap = new LinkedHashMap< Integer, Function >();
+        functionMap.putAll( base.getFunctionMap() );
+      }
     }
   }
 
@@ -516,6 +521,7 @@ public class DeviceUpgrade extends Highlight
       macroMap = new LinkedHashMap< Integer, Macro >();
       kmMap = new LinkedHashMap< Integer, KeyMove >();
       learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
+      functionMap = new LinkedHashMap< Integer, Function >();
     }
   }
 
@@ -3771,9 +3777,15 @@ public class DeviceUpgrade extends Highlight
     Collections.sort( hardButtons, ButtonSorter );
   }
   
+  private LinkedHashMap< Integer, Function > functionMap = null;
   private LinkedHashMap< Integer, Macro > macroMap = null;
   private LinkedHashMap< Integer, KeyMove > kmMap = null;
   private LinkedHashMap< Integer, LearnedSignal > learnedMap = null;
+
+  public LinkedHashMap< Integer, Function > getFunctionMap()
+  {
+    return functionMap;
+  }
 
   public LinkedHashMap< Integer, Macro > getMacroMap()
   {

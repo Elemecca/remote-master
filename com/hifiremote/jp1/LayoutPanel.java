@@ -315,7 +315,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       if ( f == null )
         item = new FunctionItem( null );
       else
-        item = f.getItem();
+        item = f.getFunctionItem();
       item.addActionListener( this );
       popup.add( item );
     }

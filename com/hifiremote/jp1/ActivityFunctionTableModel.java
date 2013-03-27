@@ -11,6 +11,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
+
 public class ActivityFunctionTableModel extends JP1TableModel< Activity > implements ButtonEnabler
 {
   public void set( Button btn, RemoteConfiguration remoteConfig )
@@ -119,7 +121,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, Integer.class, Hex.class, String.class, String.class, String.class, Color.class
+      Integer.class, String.class, Integer.class, List.class, String.class, String.class, String.class, Color.class
   };
 
   @Override
@@ -247,6 +249,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     {
       return new DefaultTableCellRenderer()
       {
+        @SuppressWarnings( "unchecked" )
         @Override
         protected void setValue( Object value )
         {
@@ -254,7 +257,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
             super.setValue( null );
           else
           {
-            super.setValue( Macro.getValueString( ( Hex )value , remoteConfig ) );
+//            super.setValue( Macro.getValueString( ( Hex )value , remoteConfig ) );
+            super.setValue( Macro.getValueString( ( List< KeySpec > )value ) );
           }
         }
       };
@@ -282,7 +286,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         Button selector = activity.getSelector();
         return selector == null ? null : new Integer( activity.getSelector().getKeyCode() );
       case 3:
-        return macro == null ? null : macro.getData();
+        return macro == null ? null : macro.getItems();
       case 4:
         return audioHelpSettingBox.getModel().getElementAt( activity.getAudioHelp() );
       case 5:

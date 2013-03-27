@@ -180,18 +180,6 @@ public class FavScan extends AdvancedCode
     this.profileIndices = profileIndices;
   }
   
-  private int serial = 0;
-
-  public int getSerial()
-  {
-    return serial;
-  }
-
-  public void setSerial( int serial )
-  {
-    this.serial = serial;
-  }
-  
   private Integer iconRef = null;
 
   public Integer getIconRef()

@@ -225,30 +225,6 @@ public class LearnedSignal extends Highlight
     this.header = header;
   }
 
-  /** The data. */
-  private Hex data = null;
-
-  /**
-   * Gets the data.
-   * 
-   * @return the data
-   */
-  public Hex getData()
-  {
-    return data;
-  }
-
-  /**
-   * Sets the data.
-   * 
-   * @param hex
-   *          the new data
-   */
-  public void setData( Hex hex )
-  {
-    data = hex;
-  }
-  
   /**
    * Format is 0 for original learned signal format,
    * 1 for the new format used by remotes with Maxim processors

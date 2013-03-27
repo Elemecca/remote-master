@@ -165,15 +165,44 @@ public abstract class GeneralFunction
     return label;
   }
   
-  public FunctionItem getItem()
+  public FunctionItem getFunctionItem()
   {
     if ( item == null )
       item = new FunctionItem( this );
     return item;
   }
   
+  public boolean hasData()
+  {
+    if ( data != null )
+    {
+      return true;
+    }
+    else if ( !(this instanceof AdvancedCode ) )
+    {
+      return false;
+    }
+    else
+    {
+      AdvancedCode a = ( AdvancedCode )this;
+      return a.getItems() != null;
+    }
+  }
+  
+  public int getSerial()
+  {
+    return serial;
+  }
+
+  public void setSerial( int serial )
+  {
+    this.serial = serial;
+  }
+
+  
   protected Hex data;
   protected String name;
+  protected int serial = -1;   // signifies unset
   protected String notes = null;
   protected List< User > users = new ArrayList< User >();
   protected FunctionLabel label = null;

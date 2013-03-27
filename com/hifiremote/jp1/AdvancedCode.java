@@ -1,6 +1,11 @@
 package com.hifiremote.jp1;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Properties;
+
+import com.hifiremote.jp1.Activity.Assister;
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -245,18 +250,30 @@ public abstract class AdvancedCode extends Highlight
     this.name = name;
   }
   
-  protected int serial = 0;
+  protected List< KeySpec > items = null;
+
+  public List< KeySpec > getItems()
+  {
+    return items;
+  }
+
+  public void setItems( List< KeySpec > items )
+  {
+    this.items = items;
+  }
   
-  public int getSerial()
+  protected LinkedHashMap< Integer, List< Assister > > assists = new LinkedHashMap< Integer, List<Assister> >();
+  
+  public LinkedHashMap< Integer, List< Assister >> getAssists()
   {
-    return serial;
+    return assists;
   }
 
-  public void setSerial( int serial )
+  public void setAssists( LinkedHashMap< Integer, List< Assister >> assists )
   {
-    this.serial = serial;
+    this.assists = assists;
   }
-
+  
 
   /**
    * Store.
