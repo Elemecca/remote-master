@@ -177,7 +177,7 @@ public abstract class SpecialProtocolFunction extends Highlight
     }
     else
     {
-      return macro.getDeviceIndex();
+      return macro.getDeviceButtonIndex();
     }
   }
 
@@ -189,7 +189,7 @@ public abstract class SpecialProtocolFunction extends Highlight
     }
     else
     {
-      macro.setDeviceIndex( index );
+      macro.setDeviceButtonIndex( index );
     }
   }
   

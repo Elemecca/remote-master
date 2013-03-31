@@ -47,6 +47,16 @@ public abstract class GeneralFunction
     public int state;
     public DeviceButton db;
   }
+
+  public int getDeviceButtonIndex()
+  {
+    return deviceButtonIndex;
+  }
+  
+  public void setDeviceButtonIndex( int deviceButtonIndex )
+  {
+    this.deviceButtonIndex = deviceButtonIndex;
+  }
   
   public Hex getData()
   {
@@ -71,14 +81,14 @@ public abstract class GeneralFunction
   public String getDisplayName()
   {
     String s = "";
-    if ( this instanceof Macro )
+    if ( this instanceof Macro && !( ( ( Macro )this).isSystemMacro() ) )
     {
       s = "Macro: ";
     }
-    else if ( this instanceof KeyMove )
-    {
-      s = "KM: ";
-    }
+//    else if ( this instanceof KeyMove )
+//    {
+//      s = "KM: ";
+//    }
     else if ( this instanceof LearnedSignal )
     {
       s = "Learn: ";
@@ -200,12 +210,61 @@ public abstract class GeneralFunction
   }
 
   
+  public DeviceUpgrade getUpgrade( Remote remote )
+  {
+    if ( this instanceof Function )
+    {
+      return upgrade;
+    }
+    DeviceButton db = remote.getDeviceButton( deviceButtonIndex );
+    if ( db == null )
+    {
+      return null;
+    }
+    return db.getUpgrade();
+  }
+
+  public void setUpgrade( DeviceUpgrade upgrade )
+  {
+    this.upgrade = upgrade;
+  }
+  
+  public boolean accept()
+  {
+    if ( this instanceof Function )
+    {
+      Function f = ( Function )this;
+      return f.accept();
+    }
+    else if ( this instanceof Macro )
+    {
+      Macro m = ( Macro )this;
+      return !m.isSystemMacro() && m.getActivity() == null;
+    }
+    else return true;
+    
+  }
+
+  public Integer getIconref()
+  {
+    return iconref;
+  }
+
+  public void setIconref( Integer iconref )
+  {
+    this.iconref = iconref;
+  }
+
+
   protected Hex data;
-  protected String name;
+  protected String name = null;
+  protected int deviceButtonIndex = 0;
   protected int serial = -1;   // signifies unset
   protected String notes = null;
   protected List< User > users = new ArrayList< User >();
   protected FunctionLabel label = null;
   protected FunctionItem item = null;
+  protected DeviceUpgrade upgrade = null;
+  protected Integer iconref = null;
 
 }

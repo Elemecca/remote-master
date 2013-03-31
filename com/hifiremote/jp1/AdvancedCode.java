@@ -100,7 +100,7 @@ public abstract class AdvancedCode extends Highlight
     {
       Macro macro = new Macro( keyCode, hex, null );
       macro.setSequenceNumber( sequenceNumber );
-      macro.setDeviceIndex( boundDeviceIndex );
+      macro.setDeviceButtonIndex( boundDeviceIndex );
       return macro;
     }
     else if ( isFav )

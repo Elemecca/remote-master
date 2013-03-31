@@ -306,20 +306,20 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
         // set default values
         if ( macro == null && remote.usesEZRC() )
         {
-          newMacro.setDeviceIndex( remote.getDeviceButtons()[ 0 ].getButtonIndex() );
+          newMacro.setDeviceButtonIndex( remote.getDeviceButtons()[ 0 ].getButtonIndex() );
           newMacro.setSegmentFlags( 0xFF );
           newMacro.setName( "New macro" );
         }
         else if ( macro == null )
         {
-          newMacro.setDeviceIndex( 0 );
+          newMacro.setDeviceButtonIndex( 0 );
           newMacro.setSegmentFlags( 0xFF );
         }
         else
         {
           newMacro.setName( macro.getName() );
           newMacro.setSegmentFlags( macro.getSegmentFlags() );
-          newMacro.setDeviceIndex( macro.getDeviceIndex() );
+          newMacro.setDeviceButtonIndex( macro.getDeviceButtonIndex() );
           newMacro.setSerial( macro.getSerial() );
         }
       }

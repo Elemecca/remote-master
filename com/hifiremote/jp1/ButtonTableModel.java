@@ -18,23 +18,20 @@ public class ButtonTableModel
   
   /** The Constant buttonCol. */
   private static final int buttonCol = 0;
-  
-  /** The Constant functionCol. */
-  private static final int functionCol = 1;
-  
-  /** The Constant shiftedCol. */
-  private static final int shiftedCol = 2;
-  
-  /** The Constant xShiftedCol. */
-  private static final int xShiftedCol = 3;
+  private static final int deviceCol = 1;
+  private static final int functionCol = 2;
+  private static final int shiftedCol = 3;
+  private static final int xShiftedCol = 4;
+  private static final int aliasCol = 5;
 
   /** The column names. */
   private static String[] columnNames =
-  { "Button", "Function", "", "" };
+  { "Button", "Device", "Function", "", "", "Alias" };
   
   /** The Constant columnClasses. */
   private static final Class<?>[] columnClasses =
-  { Button.class, GeneralFunction.class, Function.class, Function.class };
+  { Button.class, DeviceButton.class, GeneralFunction.class, Function.class, 
+    Function.class, Macro.class };
 
   /**
    * Instantiates a new button table model.
@@ -99,8 +96,26 @@ public class ButtonTableModel
       {
         count--;
       }
+      if ( remote.isSSD() )
+      {
+        count += 2;   // Adds device and alias columns
+      }
     }
     return count;
+  }
+  
+  public int getEffectiveColumn( int col )
+  {
+    Remote remote = deviceUpgrade.getRemote();
+    if ( !remote.isSSD() && col > 0 )
+    {
+      col++;
+    }
+    else if ( remote.isSSD() && col > 2 )
+    {
+      col += 2;
+    }
+    return col;
   }
   
   /* (non-Javadoc)
@@ -114,7 +129,8 @@ public class ButtonTableModel
     if ( row < 0 )
       return false;
     
-    if ( col == buttonCol )
+    col = getEffectiveColumn( col );
+    if ( col == buttonCol || col == deviceCol )
       return false;
     
     Button b = buttons[ row ];
@@ -123,12 +139,14 @@ public class ButtonTableModel
 
     if ( b == null )
       return false;
-    if ( col == 1 )
+    if ( col == functionCol )
       return ( b.allowsKeyMove() || map.isPresent( b ));
-    else if ( col == 2 )
+    else if ( col == shiftedCol )
       return b.allowsShiftedKeyMove();
-    else if ( col == 3 )
+    else if ( col == xShiftedCol )
       return b.allowsXShiftedKeyMove();
+    else if ( col == aliasCol )
+      return getValueAt( row, 3 ) != null;
     return false;
   }
 
@@ -141,34 +159,53 @@ public class ButtonTableModel
       return null;
     Button button = buttons[ row ];
     Remote remote = deviceUpgrade.getRemote();
+    Macro macro = null;
+    col = getEffectiveColumn( col );
+    GeneralFunction gf = null;
+    if ( remote.isSSD() )
+    {
+      LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )button.getKeyCode() );
+      if ( ls != null )
+      {
+        gf = ls;
+      }
+      macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
+      if ( gf == null && macro != null )
+      {
+        gf = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
+        if ( !macro.isSystemMacro() )
+        {
+          macro = null;
+        }
+      }
+    }
+    if ( gf == null )
+    {
+      gf = deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
+    }
+    
     switch ( col )
     {
       case buttonCol:
         return button;
-      case functionCol:
-        if ( remote.isSSD() )
+      case deviceCol:
+        if ( gf == null )
         {
-          LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )button.getKeyCode() );
-          if ( ls != null )
-          {
-            return ls;
-          }
-          Macro macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
-          if ( macro != null )
-          {
-            return macro;
-          }
-          KeyMove km = deviceUpgrade.getKmMap().get( ( int )button.getKeyCode() );
-          if ( km != null )
-          {
-            return km;
-          }
+          return null;
         }
-        return deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
+        else if ( macro != null )
+        {
+          return macro.getItems().get( 0 ).db;
+        }
+        return gf == null ? null : gf.getUpgrade( remote ).getButtonRestriction();
+      case functionCol:
+        return gf;
       case shiftedCol:
         return deviceUpgrade.getFunction( button, Button.SHIFTED_STATE );
       case xShiftedCol:
         return deviceUpgrade.getFunction( button, Button.XSHIFTED_STATE );
+      case aliasCol:
+        return macro;// == null ? null : macro.getName();
     }
    return null;
   }
@@ -181,6 +218,7 @@ public class ButtonTableModel
     DeviceButton db = deviceUpgrade.getButtonRestriction();
     Button button = buttons[ row ];
     Button relatedButton = null;
+    col = getEffectiveColumn( col );
     switch ( col )
     {
       case buttonCol:
@@ -203,6 +241,11 @@ public class ButtonTableModel
       case xShiftedCol:
         deviceUpgrade.setFunction( button, ( Function )value, Button.XSHIFTED_STATE );
         relatedButton = button.getXShiftedButton();
+        break;
+      case aliasCol:
+        Macro macro = ( Macro )getValueAt( row, 3 );
+        macro.setName( ( String )value );
+        break;
       default:
         break;
     }
@@ -229,7 +272,7 @@ public class ButtonTableModel
    */
   public String getColumnName( int col )
   {
-    return columnNames[ col ];
+    return columnNames[ getEffectiveColumn( col ) ];
   }
 
   /* (non-Javadoc)
@@ -237,7 +280,7 @@ public class ButtonTableModel
    */
   public Class<?> getColumnClass( int col )
   {
-    return columnClasses[ col ];
+    return columnClasses[ getEffectiveColumn( col ) ];
   }
   
   public static void setFunction( DeviceUpgrade deviceUpgrade, Button button, GeneralFunction old, GeneralFunction gf )
@@ -249,31 +292,20 @@ public class ButtonTableModel
     // signal is deleted
 
     DeviceButton db = deviceUpgrade.getButtonRestriction();
-    if ( old instanceof Function )
+    if ( old instanceof Function && gf == null )
     {
-      if ( !( gf instanceof LearnedSignal ) )
-      {
-        deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
-      }
-      ( ( Function )old ).removeReference( db, button );
+      // Deletion of old reference is performed by setFunction()
+      deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
     }
-    else if ( old instanceof Macro )
+    else if ( old instanceof Macro && gf == null )
     {
-      if ( !( gf instanceof LearnedSignal ) )
-      {
+//      if ( !( gf instanceof LearnedSignal ) )
+//      {
         deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
-      }
+//      }
       ( ( Macro )old ).removeReference( db, button );
     }
-    else if ( old instanceof KeyMove )
-    {
-      if ( !( gf instanceof LearnedSignal ) )
-      {
-        deviceUpgrade.getKmMap().remove( ( int )button.getKeyCode() );
-      }
-      ( ( KeyMove )old ).removeReference( db, button );
-    }
-    else if ( old instanceof LearnedSignal )
+    else if ( old instanceof LearnedSignal && gf == null )
     {
       deviceUpgrade.getLearnedMap().remove( ( int )button.getKeyCode() );
       ( ( LearnedSignal )old ).removeReference( db, button );
@@ -295,12 +327,6 @@ public class ButtonTableModel
       Macro macro = ( Macro )gf;
       deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
       macro.addReference( db, button );
-    }
-    else if ( gf instanceof KeyMove )
-    {
-      KeyMove km = ( KeyMove )gf;
-      deviceUpgrade.getKmMap().put( ( int )button.getKeyCode(), km );
-      km.addReference( db, button );
     }
     else if ( gf instanceof LearnedSignal )
     {

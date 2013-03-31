@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.List;
 import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
@@ -52,10 +53,16 @@ public class Function extends GeneralFunction
   public Function( Function base )
   {
     name = base.name;
-    index = base.index;
+    gid = base.gid;
     if ( base.data != null )
       data = new Hex( base.data );
     notes = base.notes;
+    upgrade = base.upgrade;
+    alternate = base.alternate;
+    serial = base.serial;
+    macroref = base.macroref;
+    iconref = base.iconref;
+    keyflags = base.keyflags;
   }
 
   /**
@@ -114,8 +121,8 @@ public class Function extends GeneralFunction
 
     if ( name != null )
       out.print( prefix + ".name", name );
-    if ( index != null && index != defaultIndex )
-      out.print( prefix + ".index", Integer.toString( index ) );
+    if ( gid != null && gid != defaultIndex )
+      out.print( prefix + ".index", Integer.toString( gid ) );
     if ( data != null )
       out.print( prefix + ".hex", data.toString() );
     if ( notes != null )
@@ -137,7 +144,7 @@ public class Function extends GeneralFunction
       setName( str );
     str = props.getProperty( prefix + ".index" );
     if ( str != null )
-      setIndex( Integer.parseInt( str ) );
+      setGid( Integer.parseInt( str ) );
     str = props.getProperty( prefix + ".hex" );
     if ( str != null )
       setHex( new Hex( str ) );
@@ -159,14 +166,14 @@ public class Function extends GeneralFunction
     return this;
   }
 
-  public Integer getIndex()
+  public Integer getGid()
   {
-    return index;
+    return gid;
   }
 
-  public void setIndex( Integer index )
+  public void setGid( Integer gid )
   {
-    this.index = index;
+    this.gid = gid;
   }
 
   /**
@@ -255,17 +262,7 @@ public class Function extends GeneralFunction
       label.updateToolTipText();
     }
   }
-
-  public Integer getIconref()
-  {
-    return iconref;
-  }
-
-  public void setIconref( Integer iconref )
-  {
-    this.iconref = iconref;
-  }
-
+  
   public Integer getMacroref()
   {
     return macroref;
@@ -285,15 +282,52 @@ public class Function extends GeneralFunction
   {
     this.keyflags = keyflags;
   }
-
-  /** The EZ-RC index value corresponding to this function name */
-  protected Integer index = null;
   
-  private Integer iconref = null;
+  public boolean isEquivalent( Function f )
+  {
+    return name.equals( f.name )
+        && upgrade == f.upgrade
+        && data.equals( f.data );
+  }
+  
+  public Function getEquivalent( List< Function > list )
+  {
+    for ( Function f : list )
+    {
+      if ( this.isEquivalent( f ) )
+      {
+        return f;
+      }
+    }
+    return null;
+  }
+  
+  public boolean accept()
+  {
+    return serial < 0 || alternate == null;
+  }
+
+  public Function getAlternate()
+  {
+    return alternate;
+  }
+
+  public void setAlternate( Function alternate )
+  {
+    this.alternate = alternate;
+  }
+
+  /** The EZ-RC GID value corresponding to this function name */
+  protected Integer gid = null;
   
   private Integer macroref = null;
   
   private Integer keyflags = null;
+  
+  /** Gives the equivalent ir form (serial >= 0)
+   *  for an assigned form (serial == -1), and vice versa
+   */
+  private Function alternate = null;
   
   /** Default value used in upgrade when index==null */
   public static final int defaultIndex = 0;

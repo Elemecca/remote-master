@@ -1,6 +1,8 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -37,7 +39,15 @@ public class MacroTableModel extends JP1TableModel< Macro >
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
-      setData( remoteConfig.getMacros() );
+      List< Macro > list = new ArrayList< Macro >();
+      for ( Macro macro : remoteConfig.getMacros() )
+      {
+        if ( macro.accept() )
+        {
+          list.add( macro );
+        }
+      }
+      setData( list );
     }
   }
 
@@ -173,7 +183,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
   public Object getValueAt( int row, int column )
   {
     column = getEffectiveColumn( column );
-    Macro macro = remoteConfig.getMacros().get( row );
+    Macro macro = getRow( row );
     switch ( column )
     {
       case 0:
@@ -213,7 +223,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
     }
     else if ( col == 2 )
     {
-      macro.setDeviceIndex( ( ( DeviceButton )value ).getButtonIndex() );
+      macro.setDeviceButtonIndex( ( ( DeviceButton )value ).getButtonIndex() );
     }
     else if ( col == 3 )
     {

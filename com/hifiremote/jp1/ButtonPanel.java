@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -21,12 +22,16 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -74,6 +79,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
     table.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_DELETE, 0 ), "delete" );
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     table.setDefaultEditor( Function.class, popupEditor );
+    table.setDefaultEditor( Macro.class, new SelectAllCellEditor() );
 
     deleteAction = new AbstractAction( "Remove" )
     {
@@ -92,6 +98,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
 
     renderer = new FunctionRenderer( deviceUpgrade );
     table.setDefaultRenderer( Button.class, renderer );
+    table.setDefaultRenderer( DeviceButton.class, new DefaultTableCellRenderer() );
     table.setDefaultRenderer( GeneralFunction.class, 
         new DefaultTableCellRenderer()
     {
@@ -418,18 +425,41 @@ public class ButtonPanel extends KMPanel implements ActionListener
     protected JRadioButton keyMoveButton = new JRadioButton( "Key Moves" );
     protected JRadioButton macroButton = new JRadioButton( "Macros" );
     protected JRadioButton learnedButton = new JRadioButton( "Learned" );
+    protected JComboBox deviceBox = new JComboBox();
     private KMPanel panel = null;
     
     public SelectionPanel( KMPanel panel, ActionListener al )
     {
       super();
       this.panel = panel;
-      setLayout( new GridLayout( 2, 2 ) );
+      setLayout( new BorderLayout() );
+      JPanel inner = new JPanel( new GridLayout( 1, 3 ) );
       setBorder( BorderFactory.createTitledBorder( " Select items to show: " ) );
-      add( functionButton );
-      add( learnedButton );
-      add( keyMoveButton );
-      add( macroButton );
+      inner.add( functionButton );
+      inner.add( macroButton );
+      inner.add( learnedButton );
+//      add( keyMoveButton );
+      add( inner, BorderLayout.PAGE_START );
+      Remote remote = panel.deviceUpgrade.getRemote();
+      DeviceButton[] allDB = remote.getDeviceButtons();
+      List< DeviceButton > dbList = new ArrayList< DeviceButton >();
+      for ( DeviceButton db : allDB )
+      {
+        if ( db.getUpgrade() != null )
+        {
+          dbList.add( db );
+        }
+      }
+      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( dbList.toArray() );
+      deviceBox.setModel( comboModel );
+      Dimension d = deviceBox.getPreferredSize();
+      d.width = 100;
+      deviceBox.setPreferredSize( d );
+      deviceBox.addActionListener( al );
+      inner = new JPanel();
+      inner.add( new JLabel( "of device button:") );
+      inner.add( deviceBox );
+      add( inner, BorderLayout.PAGE_END );
       ButtonGroup grp = new ButtonGroup();
       grp.add( functionButton );
       grp.add( learnedButton );
@@ -446,10 +476,19 @@ public class ButtonPanel extends KMPanel implements ActionListener
     {
       if ( functionButton.isSelected() )
       {
-        for ( Function function : panel.deviceUpgrade.getFunctions() )
+        DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
+        DeviceUpgrade du = db.getUpgrade();
+        if ( du.getButtonRestriction() == panel.deviceUpgrade.getButtonRestriction() )
+        {
+          du = panel.deviceUpgrade;
+        }
+        for ( Function function : du.getFunctions() )
+        {
+          if ( function.hasData() )
           panel.addFunction( function );
+        }
 
-        for ( ExternalFunction function : panel.deviceUpgrade.getExternalFunctions() )
+        for ( ExternalFunction function : db.getUpgrade().getExternalFunctions() )
           panel.addFunction( function );
       }
       else if ( keyMoveButton.isSelected() )
@@ -491,10 +530,10 @@ public class ButtonPanel extends KMPanel implements ActionListener
       int keyCode = b.getKeyCode();
       for ( int c = 0; ( c < cols.length ) && !enableDelete; c++ )
       {
-        int col = cols[ c ];
+        int col = model.getEffectiveColumn( cols[ c ] );
         if ( col > 0 )
         {
-          if ( col == 1 )
+          if ( col == 2 )
           {
             enableDelete = deviceUpgrade.getFunction( b, Button.NORMAL_STATE ) != null;
             if ( deviceUpgrade.getRemote().isSSD() )
@@ -504,9 +543,9 @@ public class ButtonPanel extends KMPanel implements ActionListener
                 || deviceUpgrade.getLearnedMap().get( keyCode ) != null;
             }
           }
-          else if ( col == 2 )
-            enableDelete = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE ) != null;
           else if ( col == 3 )
+            enableDelete = deviceUpgrade.getFunction( b, Button.SHIFTED_STATE ) != null;
+          else if ( col == 4 )
             enableDelete = deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE ) != null; 
         }
       }
@@ -553,6 +592,10 @@ public class ButtonPanel extends KMPanel implements ActionListener
   {
     if ( ( f == null ) || ( ( f.hasData() ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
     {
+      if ( f != null && !f.accept() )
+      {
+        return;
+      }
       FunctionLabel l;
       if ( f == null )
         l = new FunctionLabel( null );
@@ -605,7 +648,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
       else
         Toolkit.getDefaultToolkit().beep();
     }
-    else if ( source instanceof JRadioButton )
+    else if ( source == selector.deviceBox || source instanceof JRadioButton )
     {
       setFunctions();
       functionPanel.revalidate();

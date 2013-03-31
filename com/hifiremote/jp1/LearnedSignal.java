@@ -186,30 +186,6 @@ public class LearnedSignal extends Highlight
     }
   }
   
-  /** The device button index. */
-  private int deviceButtonIndex;
-
-  /**
-   * Gets the device button index.
-   * 
-   * @return the device button index
-   */
-  public int getDeviceButtonIndex()
-  {
-    return deviceButtonIndex;
-  }
-
-  /**
-   * Sets the device button index.
-   * 
-   * @param newIndex
-   *          the new device button index
-   */
-  public void setDeviceButtonIndex( int newIndex )
-  {
-    deviceButtonIndex = newIndex;
-  }
-  
   /** The 7-byte header of an XSight Touch learned signal,
    * not yet understood.
    */

@@ -306,7 +306,7 @@ public class ButtonMap
             hex = func.getHex().getData();
             if ( funcLen > 0 )
             {
-              Integer funcIndex = func.getIndex() == null ? Function.defaultIndex : func.getIndex();
+              Integer funcIndex = func.getGid() == null ? Function.defaultIndex : func.getGid();
               int k = 2 * index / funcLen;
               indexList[ k ] = ( short )( ( funcIndex >> 8 ) & 0xFF );
               indexList[ k + 1 ] = ( short )( funcIndex & 0xFF );

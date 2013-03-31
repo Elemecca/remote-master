@@ -58,7 +58,9 @@ public class FunctionPanel extends TablePanel< Function >
    */
   protected Function createRowObject()
   {
-    return new Function();
+    Function f = new Function();
+    f.setUpgrade( deviceUpgrade );
+    return f;
   }
 
   protected void delete( Function f )

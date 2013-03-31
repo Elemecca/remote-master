@@ -1,6 +1,5 @@
 package com.hifiremote.jp1;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -15,7 +14,7 @@ public class Macro extends AdvancedCode
   
   public Macro( Macro macro )
   {
-    this(macro.keyCode, macro.data, macro.deviceIndex, macro.sequenceNumber, macro.notes );
+    this( macro.keyCode, macro.data, macro.deviceButtonIndex, macro.sequenceNumber, macro.notes );
     this.setSegmentFlags( macro.getSegmentFlags() );
   }
 
@@ -32,12 +31,13 @@ public class Macro extends AdvancedCode
   public Macro( int keyCode, Hex keyCodes, String notes )
   {
     super( keyCode, keyCodes, notes );
+    deviceButtonIndex = 0x0F;
   }
 
-  public Macro( int keyCode, Hex keyCodes, int deviceIndex, int sequenceNumber, String notes )
+  public Macro( int keyCode, Hex keyCodes, int deviceButtonIndex, int sequenceNumber, String notes )
   {
     super( keyCode, keyCodes, notes );
-    this.deviceIndex = deviceIndex;
+    this.deviceButtonIndex = deviceButtonIndex;
     this.sequenceNumber = sequenceNumber;
   }
   
@@ -65,7 +65,11 @@ public class Macro extends AdvancedCode
       temp = props.getProperty( "DeviceIndex" );
       if ( temp != null )
       {
-        deviceIndex = Integer.parseInt( temp );
+        deviceButtonIndex = Integer.parseInt( temp );
+      }
+      else
+      {
+        deviceButtonIndex = 0x0F;
       }
       temp = props.getProperty( "Serial" );
       if ( temp != null )
@@ -196,14 +200,14 @@ public class Macro extends AdvancedCode
       // With deviceIndex $F this allows for MultiMacro types $4, $5, $6, $7 (value in high
       // nibble) for type 2 coding even though no remote yet implements them.  With deviceIndex
       // other than $F these represent internal special protocols.
-      buffer[ offset ] = ( short )( ( 0x30 + ( sequenceNumber << 4 ) + deviceIndex ) & 0xFF );
+      buffer[ offset ] = ( short )( ( 0x30 + ( sequenceNumber << 4 ) + deviceButtonIndex ) & 0xFF );
       buffer[ ++offset ] = 0;
     }
     else
     {
       // High nibbles $9, $A, $B, $C, $D correspond to MultiMacros if deviceIndex is $F,
       // for other values of deviceIndex they correspond to internal special protocols.
-      buffer[ offset ] = ( short )( ( 0x80 | ( sequenceNumber << 4 ) | deviceIndex ) & 0xFF );
+      buffer[ offset ] = ( short )( ( 0x80 | ( sequenceNumber << 4 ) | deviceButtonIndex ) & 0xFF );
       buffer[ ++offset ] = 0;
     }
     int dataLength = data.length();
@@ -232,7 +236,7 @@ public class Macro extends AdvancedCode
         hex.set( ( short )( ( val >> 8 ) & 0xFF ), dataLen + i );
       }
       pw.print( "Name", name );
-      pw.print( "DeviceIndex", deviceIndex );
+      pw.print( "DeviceIndex", deviceButtonIndex );
       pw.print( "KeyCode", keyCode );
       pw.print( "Data", hex );
       pw.print( "Serial", serial );
@@ -248,9 +252,9 @@ public class Macro extends AdvancedCode
     {
       pw.print( "SequenceNumber", sequenceNumber );
     }
-    if ( deviceIndex != 0x0F )
+    if ( deviceButtonIndex != 0x0F )
     {
-      pw.print( "DeviceIndex", deviceIndex );
+      pw.print( "DeviceIndex", deviceButtonIndex );
     }
   }
 
@@ -266,23 +270,11 @@ public class Macro extends AdvancedCode
     this.sequenceNumber = sequenceNumber;
   }
 
-  private int deviceIndex = 0x0F;
-
-  public int getDeviceIndex()
-  {
-    return deviceIndex;
-  }
-  
   public DeviceButton getDeviceButton( RemoteConfiguration config )
   {
-    return config.getRemote().getDeviceButton( deviceIndex );
+    return config.getRemote().getDeviceButton( deviceButtonIndex );
   }
 
-  public void setDeviceIndex( int deviceIndex )
-  {
-    this.deviceIndex = deviceIndex;
-  }
-  
   private short[] durations = null;
 
   public short[] getDurations()
@@ -301,12 +293,29 @@ public class Macro extends AdvancedCode
   {
     return systemMacro;
   }
-
+  
   public void setSystemMacro( boolean systemMacro )
   {
     this.systemMacro = systemMacro;
   }
+  
+  private Activity activity = null;
+  
+  public Activity getActivity()
+  {
+    return activity;
+  }
 
+  public void setActivity( Activity activity )
+  {
+    this.activity = activity;
+  }
+
+  public String toString()
+  {
+    return name != null && !name.isEmpty() ? name : super.toString();  
+  }
+  
   protected static MacroCodingType macroCodingType = null;
 
   public static void setMacroCodingType( MacroCodingType aMacroCodingType )

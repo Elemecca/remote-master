@@ -62,7 +62,17 @@ public class ButtonAssignments
 
     assignedFunctions[ keyCode ] = f;
     if ( f != null )
-      f.addReference( b, state );
+    {
+      DeviceButton db = f.upgrade == null ? null : f.upgrade.getButtonRestriction();
+      if ( db == null )
+      {
+        f.addReference( b, state );
+      }
+      else
+      {
+        f.addReference( db, b );
+      }
+    }
   }
 
   /**

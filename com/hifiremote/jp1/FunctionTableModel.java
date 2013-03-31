@@ -1,5 +1,8 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -62,7 +65,15 @@ public class FunctionTableModel extends KMTableModel< Function >
   {
     if ( deviceUpgrade == null )
       return;
-    setData( deviceUpgrade.getFunctions() );
+    List< Function > list = new ArrayList< Function >();
+    for ( Function f : deviceUpgrade.getFunctions() )
+    {
+      if ( f.accept() )
+      {
+        list.add( f );
+      }
+    }
+    setData( list );
     setProtocol( deviceUpgrade.getProtocol(), deviceUpgrade.getRemote() );
     functionsUpdated();
   }
@@ -146,7 +157,7 @@ public class FunctionTableModel extends KMTableModel< Function >
     else if ( col == nameCol )
       rc = function.getName();
     else if ( col == gidCol )
-      rc = String.format( "%4X", function.getIndex() );
+      rc = String.format( "%4X", function.getGid() );
     else if ( col == efcCol )
     {
       if ( hex == null )
@@ -205,6 +216,7 @@ public class FunctionTableModel extends KMTableModel< Function >
   public void setValueAt( Object value, int row, int col )
   {
     Function function = data.get( row );
+    Function alternate = function.getAlternate() != null ? function.getAlternate() : new Function();
     if ( col == nameCol )
     {
       String text = ( String )value;
@@ -212,17 +224,22 @@ public class FunctionTableModel extends KMTableModel< Function >
         text = null;
       checkFunctionAssigned( function, text );
       function.setName( text );
+      alternate.setName( text );
     }
     else if ( col == gidCol )
     {
       int ndx = Integer.parseInt( ( String )value, 16 );
-      function.setIndex( ndx );
+      function.setGid( ndx );
+      alternate.setGid( ndx );
     }
     else if ( col == efcCol )
     {
       checkFunctionAssigned( function, value );
       if ( value == null )
+      {
         function.setHex( null );
+        alternate.setHex( null );
+      }
       else
       {
         Hex hex = function.getHex();
@@ -233,13 +250,17 @@ public class FunctionTableModel extends KMTableModel< Function >
         else
           ( ( EFC )value ).toHex( hex, protocol.getCmdIndex() );
         function.setHex( hex );
+        alternate.setHex( new Hex( hex ) );
       }
     }
     else if ( col == efc5col )
     {
       checkFunctionAssigned( function, value );
       if ( value == null )
+      {
         function.setHex( null );
+        alternate.setHex( null );
+      }
       else
       {
         Hex hex = function.getHex();
@@ -250,6 +271,7 @@ public class FunctionTableModel extends KMTableModel< Function >
         else
           ( ( EFC5 )value ).toHex( hex );
         function.setHex( hex );
+        alternate.setHex( new Hex( hex ) );
       }
     }
     else if ( col == hexCol )
@@ -257,10 +279,15 @@ public class FunctionTableModel extends KMTableModel< Function >
       checkFunctionAssigned( function, value );
       if ( ( value != null ) && ( value.getClass() == String.class ) )
         value = new Hex( ( String )value );
-      function.setHex( ( Hex )value );
+      Hex hex = ( Hex )value;
+      function.setHex( hex );
+      alternate.setHex( new Hex( hex ) );
     }
     else if ( col == notesCol )
+    {
       function.setNotes( ( String )value );
+      alternate.setNotes( ( String )value );
+    }
     else
     {
       CmdParameter[] cmdParms = protocol.getCommandParameters();
@@ -274,7 +301,10 @@ public class FunctionTableModel extends KMTableModel< Function >
       System.err.println( "FunctionTableModel.setValueAt(): value is " + value );
 
       if ( ( value == null ) && !cmdParms[ parmIndex ].isOptional() )
+      {
         function.setHex( null );
+        alternate.setHex( null );
+      }
       else
       {
         Hex hex = function.getHex();
@@ -282,6 +312,7 @@ public class FunctionTableModel extends KMTableModel< Function >
         {
           hex = protocol.getDefaultCmd();
           function.setHex( hex );
+          alternate.setHex( new Hex( hex ) );
         }
         protocol.setValueAt( parmIndex, hex, value );
       }

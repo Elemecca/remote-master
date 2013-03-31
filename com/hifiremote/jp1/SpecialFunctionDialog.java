@@ -701,7 +701,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       {
         Macro macro = new Macro( keyCode, hex, notes.getText() );
         macro.setSequenceNumber( protocol.getInternalSerial() );
-        macro.setDeviceIndex( deviceIndex );
+        macro.setDeviceButtonIndex( deviceIndex );
         if ( config.hasSegments() )
         {
           macro.setSegmentFlags( 0xFF );
