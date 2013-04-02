@@ -159,8 +159,8 @@ public class ButtonTableModel
       return null;
     Button button = buttons[ row ];
     Remote remote = deviceUpgrade.getRemote();
-    Macro macro = null;
     col = getEffectiveColumn( col );
+    Macro macro = null;
     GeneralFunction gf = null;
     if ( remote.isSSD() )
     {

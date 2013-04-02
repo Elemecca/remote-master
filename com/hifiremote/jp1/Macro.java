@@ -90,6 +90,10 @@ public class Macro extends AdvancedCode
    */
   public Object getValue()
   {
+    if ( items != null )
+    {
+      return items;
+    }
     return getData();
   }
 
@@ -120,25 +124,26 @@ public class Macro extends AdvancedCode
       {
         buff.append( ';' );
       }
-      KeySpec ks = items.get( i );
-      buff.append( ks.db.getName() + ";" );
-      if ( ks.duration >= 0 )
-      {
-        buff.append( "Hold(" +  ks.duration / 10 + "." + ks.duration % 10 + ");" );
-      }
-      Button btn = ks.fn == null ? ks.btn : ks.fn.getUsers().isEmpty() ? null : ks.fn.getUsers().get( 0 ).button;
-      if ( btn != null )
-      {
-        buff.append( btn.getName() );
-      }
-      else if ( ks.fn != null )
-      {
-        buff.append( "Fn(" + ks.fn.getName() + ")" );
-      }
-      if ( ks.delay != 0 )
-      {
-        buff.append( "(" +  ks.delay / 10 + "." + ks.delay % 10 + ")" );
-      }
+      buff.append( items.get( i ) );
+//      KeySpec ks = items.get( i );
+//      buff.append( ks.db.getName() + ";" );
+//      if ( ks.duration >= 0 )
+//      {
+//        buff.append( "Hold(" +  ks.duration / 10 + "." + ks.duration % 10 + ");" );
+//      }
+//      Button btn = ks.fn == null ? ks.btn : ks.fn.getUsers().isEmpty() ? null : ks.fn.getUsers().get( 0 ).button;
+//      if ( btn != null )
+//      {
+//        buff.append( btn.getName() );
+//      }
+//      else if ( ks.fn != null )
+//      {
+//        buff.append( "Fn(" + ks.fn.getName() + ")" );
+//      }
+//      if ( ks.delay != 0 )
+//      {
+//        buff.append( "(" +  ks.delay / 10 + "." + ks.delay % 10 + ")" );
+//      }
     }
     return buff.toString();
   }
@@ -183,9 +188,17 @@ public class Macro extends AdvancedCode
    * @param value
    *          the new value
    */
+  @SuppressWarnings( "unchecked" )
   public void setValue( Object value )
   {
-    setData( ( Hex )value );
+    if ( value instanceof Hex )
+    {
+      setData( ( Hex )value );
+    }
+    else if ( value instanceof List< ? >)
+    {
+      setItems( ( List< KeySpec > )value );
+    }
   }
 
   public int store( short[] buffer, int offset, Remote remote )

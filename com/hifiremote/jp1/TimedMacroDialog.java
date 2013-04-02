@@ -113,7 +113,7 @@ public class TimedMacroDialog extends JDialog implements ActionListener, ButtonE
       }
       dayScheduleBox.setValue( defaultDaySchedule );
       timePanel.setValue( new RMTime() );
-      macroBox.setValue( null );
+      macroBox.setValue( ( Hex )null );
       notes.setText( null );
     }
     else

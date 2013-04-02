@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -28,6 +29,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -421,8 +423,8 @@ public class ButtonPanel extends KMPanel implements ActionListener
   
   public static class SelectionPanel extends JPanel
   {
-    protected JRadioButton functionButton = new JRadioButton( "Functions" );
-    protected JRadioButton keyMoveButton = new JRadioButton( "Key Moves" );
+    protected JRadioButton functionButton = new JRadioButton( "Functions for device:" );
+//    protected JRadioButton keyMoveButton = new JRadioButton( "Key Moves" );
     protected JRadioButton macroButton = new JRadioButton( "Macros" );
     protected JRadioButton learnedButton = new JRadioButton( "Learned" );
     protected JComboBox deviceBox = new JComboBox();
@@ -433,11 +435,12 @@ public class ButtonPanel extends KMPanel implements ActionListener
       super();
       this.panel = panel;
       setLayout( new BorderLayout() );
-      JPanel inner = new JPanel( new GridLayout( 1, 3 ) );
+//      JPanel inner = new JPanel( new GridLayout( 1, 3 ) );
+      JPanel inner = new JPanel( new WrapLayout( FlowLayout.LEFT ) );
       setBorder( BorderFactory.createTitledBorder( " Select items to show: " ) );
       inner.add( functionButton );
-      inner.add( macroButton );
-      inner.add( learnedButton );
+//      inner.add( macroButton );
+//      inner.add( learnedButton );
 //      add( keyMoveButton );
       add( inner, BorderLayout.PAGE_START );
       Remote remote = panel.deviceUpgrade.getRemote();
@@ -456,19 +459,19 @@ public class ButtonPanel extends KMPanel implements ActionListener
       d.width = 100;
       deviceBox.setPreferredSize( d );
       deviceBox.addActionListener( al );
-      inner = new JPanel();
-      inner.add( new JLabel( "of device button:") );
+//      inner = new JPanel();
+//      inner.add( new JLabel( "of device button:") );
       inner.add( deviceBox );
-      add( inner, BorderLayout.PAGE_END );
+      inner.add( Box.createHorizontalStrut( 20 ) );
+      inner.add( macroButton );
+//      add( inner, BorderLayout.PAGE_END );
       ButtonGroup grp = new ButtonGroup();
       grp.add( functionButton );
       grp.add( learnedButton );
-      grp.add( keyMoveButton );
       grp.add( macroButton );
       functionButton.setSelected( true );
       functionButton.addActionListener( al );
       learnedButton.addActionListener( al );
-      keyMoveButton.addActionListener( al );
       macroButton.addActionListener( al );
     }
     
@@ -482,21 +485,13 @@ public class ButtonPanel extends KMPanel implements ActionListener
         {
           du = panel.deviceUpgrade;
         }
-        for ( Function function : du.getFunctions() )
+        for ( Function function : du.getFunctionList() )
         {
-          if ( function.hasData() )
           panel.addFunction( function );
         }
 
         for ( ExternalFunction function : db.getUpgrade().getExternalFunctions() )
           panel.addFunction( function );
-      }
-      else if ( keyMoveButton.isSelected() )
-      {
-        for ( KeyMove km : panel.deviceUpgrade.getRemoteConfig().getKeyMoves() )
-        {
-          panel.addFunction( km );
-        }
       }
       else if ( macroButton.isSelected() )
       {

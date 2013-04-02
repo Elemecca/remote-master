@@ -554,6 +554,10 @@ public class Remote implements Comparable< Remote >
     for ( int i = 0; i < upgradeButtons.length; i++ )
     {
       Button b = upgradeButtons[ i ];
+      if ( isSSD() && isSoftButton( b ) && b.getKeyCode() > 0x36 )
+      {
+        continue;
+      }
       if ( !b.getHasShape() && !b.getIsShifted() && !b.getIsXShifted() )
       {
         if ( x + diameter + gap > width )
@@ -1465,7 +1469,7 @@ public class Remote implements Comparable< Remote >
     if ( segmentTypes != null )
     {
       macroSupport = ( segmentTypes.contains( 1 ) || segmentTypes.contains( 2 ) || segmentTypes.contains( 3 ) || isSSD() );
-      keyMoveSupport = ( segmentTypes.contains( 7 ) || segmentTypes.contains( 8 ) || isSSD() );
+      keyMoveSupport = ( segmentTypes.contains( 7 ) || segmentTypes.contains( 8 ) );
       twoBytePID = true;
       advCodeBindFormat = AdvancedCode.BindFormat.LONG;
       efcDigits = 5;

@@ -4017,18 +4017,28 @@ public class DeviceUpgrade extends Highlight
     }
     if ( bf == null )
     {
-      bf = new Function( f.getName() );
-      bf.setUpgrade( this );
+      if ( f.getUsers().isEmpty() )
+      {
+        bf = f;
+      }
+      else
+      {
+        bf = new Function( f.getName() );
+        bf.setUpgrade( this );
+        functions.add( bf );
+      }
       assignments.assign( b, bf );
-      functions.add( bf );
     }
     DeviceUpgrade fnUpg = f.upgrade;
     if ( fnUpg == this )
     {
-      bf.setName( f.getName() );
-      bf.setData( new Hex( f.getData() ) );
-      bf.setGid( f.getGid() );
-      bf.setKeyflags( f.getKeyflags() );
+      if ( bf != f )
+      {
+        bf.setName( f.getName() );
+        bf.setData( new Hex( f.getData() ) );
+        bf.setGid( f.getGid() );
+        bf.setKeyflags( f.getKeyflags() );
+      }
     }
     else
     {
@@ -4067,7 +4077,10 @@ public class DeviceUpgrade extends Highlight
       int serial = getNewMacroSerial();
       macro.setSerial( serial );
       List< KeySpec > items = new ArrayList< KeySpec >();
-      items.add( new KeySpec( fnUpg.buttonRestriction, irFn ) );
+      KeySpec ks = new KeySpec( fnUpg.buttonRestriction, irFn );
+      ks.duration = 0;
+      ks.delay = 3;
+      items.add( ks );
       macro.setItems( items );
       macroMap.put( keyCode, macro );
       bf.setMacroref( serial );
@@ -4209,6 +4222,20 @@ public class DeviceUpgrade extends Highlight
       gf = getFunction( button, Button.NORMAL_STATE );
     }
     return gf;
+  }
+  
+  public List< Function > getFunctionList()
+  {
+    List< Function > list = new ArrayList< Function >();
+    for ( Function function : functions )
+    {
+      if ( function.accept() )
+      {
+        list.add( function );
+        list = Function.filter( list );
+      }
+    }
+    return list;
   }
 
   public String toString()

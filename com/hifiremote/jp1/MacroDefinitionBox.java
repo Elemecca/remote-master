@@ -10,15 +10,21 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -33,8 +39,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.NumberFormatter;
 
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
+
 public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener,
-RMSetter< Hex >
+PropertyChangeListener, RMSetter< Hex >
 {
   public MacroDefinitionBox()
   {
@@ -43,16 +51,20 @@ RMSetter< Hex >
     setBorder( BorderFactory.createTitledBorder( "Macro Definition" ) );
 
     creationPanel = new JPanel( new CardLayout() );
-    add( creationPanel );
+//    add( creationPanel );
     
     JPanel availableBox = new JPanel( new BorderLayout() );
-//    add( availableBox );
-    availableBox.add( new JLabel( "Available keys:" ), BorderLayout.NORTH );
+    add( availableBox );
+    availableBox.add(  creationPanel, BorderLayout.CENTER );
+    JPanel availablePanel = new JPanel( new BorderLayout() );
+    availablePanel.add( new JLabel( "Available keys:" ), BorderLayout.NORTH );
     availableButtons.setFixedCellWidth( 100 );
-    availableBox.add( new JScrollPane( availableButtons ), BorderLayout.CENTER );
+    
+    availablePanel.add( new JScrollPane( availableButtons ), BorderLayout.CENTER );
+
     availableButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     availableButtons.addListSelectionListener( this );
-        
+       
     double b = 5; // space between rows and around border
     double c = 10; // space between columns
     double pr = TableLayout.PREFERRED;
@@ -63,30 +75,24 @@ RMSetter< Hex >
             b, pr, c, pf, b
         }, // cols
         {
-            b, pr, b, pr, b, pr, b
+            b, pr, b, pr, b, pr, b, pr, pr, b
         }  // rows
     };
 
 
     JPanel ssdPanel = new JPanel( new BorderLayout() );
     ssdPanel.add( new JLabel( "Specify macro item:"), BorderLayout.PAGE_START );
-    JPanel itemPanel = new JPanel( new TableLayout( size ) );
+    itemPanel = new JPanel( new TableLayout( size ) );
     ssdPanel.add( itemPanel, BorderLayout.CENTER );
     itemPanel.add( new JLabel( "Device:"), "1, 1" );
-    itemPanel.add( new JComboBox( new String[]{ "aaa", "bbb" } ), "3, 1"  );
+    deviceBox = new JComboBox();
+    deviceBox.addActionListener( this );
+    itemPanel.add( deviceBox, "3, 1"  );
     itemPanel.add( new JLabel( "Function:"), "1, 3" );
-    itemPanel.add( new JComboBox( new String[]{ "ccc", "bbb" } ), "3, 3"  );
-        
-        
-        
-        
-        
-        
-        
-        
+    functionBox = new JComboBox();
+    itemPanel.add( functionBox, "3, 3"  );
     
-    
-    creationPanel.add( availableBox, "Normal");
+    creationPanel.add( availablePanel, "Normal");
     creationPanel.add( ssdPanel, "SSD");
     
     panel = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
@@ -133,37 +139,52 @@ RMSetter< Hex >
     clear.addActionListener( this );
     buttonBox.add( clear );
     
-    NumberFormatter formatter = new NumberFormatter( new DecimalFormat( "0.0" ) );
+    formatter = new NumberFormatter( new DecimalFormat( "0.0" ) );
     formatter.setValueClass( Float.class );
-    duration = new JFormattedTextField( formatter ){
-      @Override
-      protected void processFocusEvent( FocusEvent e ) 
-      {
-        super.processFocusEvent( e );
-        if ( e.getID() == FocusEvent.FOCUS_GAINED )
-        {  
-          selectAll();
-        }  
-      }
-    };
-    duration.setFocusLostBehavior( JFormattedTextField.PERSIST );
+    duration = new XFormattedTextField( formatter );
+//    {
+//      @Override
+//      protected void processFocusEvent( FocusEvent e ) 
+//      {
+//        super.processFocusEvent( e );
+//        if ( e.getID() == FocusEvent.FOCUS_GAINED )
+//        {  
+//          selectAll();
+//        }  
+//      }
+//    };
     duration.setColumns( 4 );
     duration.addActionListener( this );
     duration.setToolTipText( "<HTML>To edit the pause after any key, select it, enter the duration (minimum 0.1 sec) and press Return.<br>"
         + "To emulate holding a key, precede it with the special Hold key and add the<br>hold duration to it in the same way.</HTML>" );
     
-    FontMetrics fm = durationLabel.getFontMetrics( durationLabel.getFont() );
-    int width = fm.stringWidth( "Pause after for:  " );
-    durationLabel.setPreferredSize( new Dimension( width, durationLabel.getHeight() ) );
-    durationLabel.setLabelFor( duration );
-    durationLabel.setHorizontalAlignment( SwingConstants.RIGHT );
     
-    durationPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 1, 0 ) );
-    durationPanel.add( durationLabel, BorderLayout.LINE_START );
-    durationPanel.add( duration, BorderLayout.CENTER );
-    durationPanel.add( durationSuffix, BorderLayout.LINE_END );
+    
+//    durationPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 1, 0 ) );
+//    durationPanel.add( durationLabel, BorderLayout.LINE_START );
+//    durationPanel.add( duration, BorderLayout.CENTER );
+//    durationPanel.add( durationSuffix, BorderLayout.LINE_END );
 
     buttonPanel.add( durationPanel, BorderLayout.CENTER );
+  }
+
+  private class XFormattedTextField extends JFormattedTextField
+  {
+    XFormattedTextField( NumberFormatter formatter )
+    {
+      super( formatter );
+      setFocusLostBehavior( JFormattedTextField.COMMIT_OR_REVERT );
+    }
+    
+    @Override
+    protected void processFocusEvent( FocusEvent e ) 
+    {
+      super.processFocusEvent( e );
+      if ( e.getID() == FocusEvent.FOCUS_GAINED )
+      {  
+        selectAll();
+      }  
+    }
   }
 
   public void setButtonEnabler( ButtonEnabler buttonEnabler )
@@ -176,7 +197,7 @@ RMSetter< Hex >
     this.config = config;
     Remote remote = config.getRemote();
     macroButtonRenderer.setRemote( remote );
-    durationPanel.setVisible( remote.usesEZRC() );
+    durationPanel.setVisible( false );
     
     java.util.List< Button > buttons = remote.getButtons();
     for ( Button b : buttons )
@@ -189,6 +210,53 @@ RMSetter< Hex >
     availableButtons.setModel( availableButtonModel );
     CardLayout cl = ( CardLayout)creationPanel.getLayout();
     cl.show( creationPanel, "SSD" );
+    if ( remote.isSSD() )
+    {
+      DeviceButton[] allDB = remote.getDeviceButtons();
+      List< DeviceButton > dbList = new ArrayList< DeviceButton >();
+      for ( DeviceButton db : allDB )
+      {
+        if ( db.getUpgrade() != null )
+        {
+          dbList.add( db );
+        }
+      }
+      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( dbList.toArray() );
+      deviceBox.setModel( comboModel );
+      if ( dbList.size() > 0 )
+      {
+        deviceBox.setSelectedIndex( 0 );
+      }
+      holdCheck = new JCheckBox( "Hold?" );
+      holdCheck.addActionListener( this );
+      delay = new XFormattedTextField( formatter );
+      delay.addPropertyChangeListener( "value", this );
+      itemPanel.add( new JLabel( "Pause after (secs):" ), "1, 5" );
+      itemPanel.add( delay, "3, 5" );
+      delay.setValue( 0.3f );
+      itemPanel.add( holdCheck, "1, 7" );
+      durationLabel.setText( "Hold for (secs):" );
+      itemPanel.add( durationLabel, "1, 8" );
+      itemPanel.add( duration, "3, 8" );
+      duration.setValue( 0.0f );
+      duration.setEnabled( false );
+      durationLabel.setEnabled( false );
+//      duration.setFocusLostBehavior( JFormattedTextField.COMMIT_OR_REVERT );
+    }
+    else if ( remote.usesEZRC() )
+    {
+      FontMetrics fm = durationLabel.getFontMetrics( durationLabel.getFont() );
+      int width = fm.stringWidth( "Pause after for:  " );
+      durationLabel.setPreferredSize( new Dimension( width, durationLabel.getHeight() ) );
+      durationLabel.setLabelFor( duration );
+      durationLabel.setHorizontalAlignment( SwingConstants.RIGHT );
+      duration.setFocusLostBehavior( JFormattedTextField.PERSIST );
+      durationPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 1, 0 ) );
+      durationPanel.add( durationLabel, BorderLayout.LINE_START );
+      durationPanel.add( duration, BorderLayout.CENTER );
+      durationPanel.add( durationSuffix, BorderLayout.LINE_END );
+      durationPanel.setVisible( true );
+    }
     
   }  
   
@@ -247,15 +315,48 @@ RMSetter< Hex >
     {
       // minimum duration is 0 for hold buttons but 0.1 for others
       float f = ( Float )duration.getValue();
-      int selected = macroButtons.getSelectedIndex();
-      int val = ( ( Number )macroButtonModel.elementAt( selected ) ).intValue();
-      val &= 0xFF;
-      Button btn = remote.getButton( val );
-      int pdVal = Math.max( ( int )( 10.0 * f + 0.5 ), isHold( btn ) ? 0 : 1 );
-      val |= pdVal << 8;
-      macroButtonModel.set( selected, val ); 
+      if ( !remote.isSSD() )
+      {
+        int selected = macroButtons.getSelectedIndex();
+        int val = ( ( Number )macroButtonModel.elementAt( selected ) ).intValue();
+        val &= 0xFF;
+        Button btn = remote.getButton( val );
+        int pdVal = Math.max( ( int )( 10.0 * f + 0.5 ), isHold( btn ) ? 0 : 1 );
+        val |= pdVal << 8;
+        macroButtonModel.set( selected, val ); 
+      }
+    }
+    else if ( source == deviceBox )
+    {
+      DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
+      DefaultComboBoxModel model = new DefaultComboBoxModel( db.getUpgrade().getFunctionList().toArray() );
+      functionBox.setModel( model );
+    }
+    else if ( source == holdCheck )
+    {
+      duration.setEnabled( holdCheck.isSelected() );
+      durationLabel.setEnabled( holdCheck.isSelected() );
     }
     enableButtons();
+  }
+  
+  private KeySpec getKeySpec()
+  {
+    DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
+    Function f = ( Function )functionBox.getSelectedItem();
+    KeySpec ks = new KeySpec( db, f );
+    Float fv = ( Float )delay.getValue();
+    ks.delay = fv == null ? 0 : ( int )( 10.0 * fv + 0.5 );
+    if ( holdCheck.isSelected() )
+    {
+      fv = ( Float )duration.getValue();
+      ks.duration = fv == null ? 0 : ( int )( 10.0 * fv + 0.5 );
+    }
+    else
+    {
+      ks.duration = -1;
+    }
+    return ks;
   }
   
   /**
@@ -267,6 +368,10 @@ RMSetter< Hex >
   private void addKey( int mask )
   {
     Remote remote = config.getRemote();
+    if ( remote.isSSD() )
+    {
+      macroButtonModel.addElement( getKeySpec() );
+    }
     if ( remote.usesEZRC() )
     {
       // minimum duration is 0 for hold buttons but 0.1 for others
@@ -285,12 +390,20 @@ RMSetter< Hex >
    */
   private void insertKey( int mask )
   {
-    Integer value = new Integer( getSelectedKeyCode() | mask );
     int index = macroButtons.getSelectedIndex();
-    if ( index == -1 )
-      macroButtonModel.add( 0, value );
-    else
+    if ( config.getRemote().isSSD() )
+    {
+      KeySpec value = getKeySpec();
       macroButtonModel.add( index, value );
+    }
+    else
+    {
+      Integer value = new Integer( getSelectedKeyCode() | mask );
+      if ( index == -1 )
+        macroButtonModel.add( 0, value );
+      else
+        macroButtonModel.add( index, value );
+    }
     macroButtons.setSelectedIndex( index + 1 );
     macroButtons.ensureIndexIsVisible( index + 1 );
   }
@@ -373,8 +486,8 @@ RMSetter< Hex >
   @Override
   public void setValue( Hex hex )
   {
-    availableButtons.setSelectedIndex( -1 );
     macroButtonModel.clear();
+    availableButtons.setSelectedIndex( -1 );
     if ( hex == null )
     {
       return;
@@ -383,6 +496,15 @@ RMSetter< Hex >
     for ( int i = 0; i < data.length; ++i )
       macroButtonModel.addElement( new Integer( data[ i ] ) );
     macroButtons.setSelectedIndex( -1 );
+  }
+  
+  public void setValue( List< KeySpec > list )
+  {
+    macroButtonModel.clear();
+    for ( KeySpec ks : list )
+    {
+      macroButtonModel.addElement( ks );
+    }
   }
   
   /**
@@ -452,15 +574,22 @@ RMSetter< Hex >
   /** The clear. */
   private JButton clear = new JButton( "Clear" );
   
+  private JComboBox deviceBox = null;
+  private JComboBox functionBox = null;
+  
   private JPanel durationPanel = new JPanel( new BorderLayout() );
   
   private JPanel creationPanel = null;
+  private JPanel itemPanel = null;
   
   private JLabel durationLabel = new JLabel( "Duration:  " );
   
   private JLabel durationSuffix = new JLabel( " secs" );
   
-  private JFormattedTextField duration = null;
+  private XFormattedTextField duration = null;
+  private XFormattedTextField delay = null;
+  private NumberFormatter formatter = null;
+  private JCheckBox holdCheck = null;
 
   /** The config. */
   private RemoteConfiguration config = null;
@@ -482,4 +611,18 @@ RMSetter< Hex >
   
   /** The macro button renderer. */
   private MacroButtonRenderer macroButtonRenderer = new MacroButtonRenderer();
+
+  @Override
+  public void propertyChange( PropertyChangeEvent e )
+  {
+    Object source = e.getSource();
+    if ( source == delay ) 
+    {
+      Float f = ( Float )delay.getValue();
+      if ( f < 0.1 )
+      {
+        delay.setValue( 0.1f );
+      }
+    }
+  }
 }

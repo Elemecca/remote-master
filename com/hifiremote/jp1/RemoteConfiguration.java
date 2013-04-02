@@ -6402,6 +6402,31 @@ public class RemoteConfiguration
       }
       return null;
     }
+    
+    @Override
+    public String toString()
+    {
+      StringBuilder buff = new StringBuilder();
+      buff.append( db.getName() + ";" );
+      if ( duration >= 0 )
+      {
+        buff.append( "Hold(" +  duration / 10 + "." + duration % 10 + ");" );
+      }
+      Button b = fn == null ? btn : fn.getUsers().isEmpty() ? null : fn.getUsers().get( 0 ).button;
+      if ( b != null )
+      {
+        buff.append( b.getName() );
+      }
+      else if ( fn != null )
+      {
+        buff.append( "Fn(" + fn.getName() + ")" );
+      }
+      if ( delay != 0 )
+      {
+        buff.append( "(" +  delay / 10 + "." + delay % 10 + ")" );
+      }
+      return buff.toString();
+    }
   }
   
   private class Items

@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -78,8 +80,28 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     };
 
     imagePanel.getActionMap().put( "delete", deleteAction );
-
     remotePanel = new JPanel( new BorderLayout() );
+    
+    Remote remote = devUpgrade.getRemote();
+    if ( remote.isSSD() )
+    {
+      pagePanel = new JPanel( new GridLayout( 2, 2 ) );
+      pagePanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+      pageDown = new JRadioButton( "Page-" );
+      pageUp = new JRadioButton( "Page+" );
+      pageDown.addActionListener( this );
+      pageUp.addActionListener( this );
+      pageNumber = new JTextField();
+      pageNumber.setText( Integer.toString( page ) );
+      pageNumber.setEditable( false );
+      pageNumber.setEnabled( false );
+      pagePanel.add( pageDown );
+      pagePanel.add( pageUp );
+      pagePanel.add( new JLabel( "Page:" ) );
+      pagePanel.add( pageNumber );
+      remotePanel.add( pagePanel, BorderLayout.PAGE_START );
+    }
+
     scrollPanel = Box.createHorizontalBox();
     remotePanel.add( scrollPanel, BorderLayout.SOUTH );
     scrollLeft = new JButton( "<" );
@@ -160,19 +182,45 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       box.add( modePanel );
     }
 
-    JPanel infoPanel = new JPanel( new GridLayout( 2, 2 ) );
-
+    double b = 5; // space between rows and around border
+    double c = 10; // space between columns
+    double pr = TableLayout.PREFERRED;
+    double pf = TableLayout.FILL;
+    double size[][] =
+    {
+        {
+            b, pr, c, pf, b
+        },  // cols
+        {}  // rows added later
+    };
+    double rowSize[] = remote.isSSD() ? new double[]{  b, pr, b, pr, b, pr, b, pr, b } :  new double[]{ b, pr, b, pr, b };
+    size[ 1 ] = rowSize;
+//    JPanel infoPanel = new JPanel( new GridLayout( 2, 2 ) );
+    JPanel infoPanel = new JPanel( new TableLayout( size ) );
     JLabel label = new JLabel( "Button:" );
     label.setToolTipText( "button label" );
-    infoPanel.add( label );
+    infoPanel.add( label, "1, 1" );
     buttonName = new JTextField();
     buttonName.setEditable( false );
-    infoPanel.add( buttonName );
-
-    infoPanel.add( new JLabel( "Function:" ) );
+    infoPanel.add( buttonName, "3, 1" );
+    String sRow = "3";
+    if ( remote.isSSD() )
+    {
+      infoPanel.add( new JLabel( "Device:" ), "1, " + sRow );
+      device = new JTextField();
+      device.setEditable( false );
+      infoPanel.add( device, "3, " + sRow );
+      sRow = "7";
+      infoPanel.add( new JLabel( "Alias:" ), "1, " + sRow );
+      alias = new JTextField();
+      alias.setEditable( true );
+      infoPanel.add( alias, "3, " + sRow );
+      sRow = "5";
+    }
+    infoPanel.add( new JLabel( "Function:" ), "1, " + sRow );
     function = new JTextField();
     function.setEditable( false );
-    infoPanel.add( function );
+    infoPanel.add( function,"3, " + sRow );
 
 
     
@@ -263,22 +311,44 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     GeneralFunction f = null;
     if ( normalMode.isSelected() )
     {
+      Macro macro = null;
       if ( remote.isSSD() )
       {
-        f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
-        if ( f == null )
+        LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
+        if ( ls != null )
         {
-          f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+          f = ls;
         }
-        if ( f == null )
+        macro = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+        if ( f == null && macro != null )
         {
-          f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
+          f = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
+//          if ( !macro.isSystemMacro() )
+//          {
+//            macro = null;
+//          }
         }
       }
       if ( f == null )
       {
         f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
       }
+//      if ( remote.isSSD() )
+//      {
+//        f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
+//        if ( f == null )
+//        {
+//          f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+//        }
+//        if ( f == null )
+//        {
+//          f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
+//        }
+//      }
+//      if ( f == null )
+//      {
+//        f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+//      }
     }
     else if ( shiftMode.isSelected() )
     {
@@ -300,7 +370,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
   @Override
   public void addFunction( GeneralFunction f )
   {
-    if ( ( f == null ) || ( ( f.getData() != null ) && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
+    if ( ( f == null ) || ( f.hasData() && ( f.getName() != null ) && ( f.getName().length() > 0 ) ) )
     {
       FunctionLabel l;
       if ( f == null )
@@ -427,6 +497,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
    */
   private void setButtonText( ButtonShape buttonShape, Button b )
   {
+    Remote remote = deviceUpgrade.getRemote();
     if ( ( buttonShape != null ) && ( b != null ) )
     {
       String name = buttonShape.getName();
@@ -445,12 +516,36 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         function.setText( f.getDisplayName() );
       else
         function.setText( "" );
+      if ( remote.isSSD() )
+      {
+        Macro macro = null;
+        device.setText( "" );
+        alias.setText( "" );
+        if ( f instanceof Function )
+        {
+          macro = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+          if ( macro != null && !macro.isSystemMacro() )
+          {
+            macro = null;
+          }
+        }
+        DeviceButton db = ( macro != null ) ? macro.getItems().get( 0 ).db
+            : f != null ? f.getUpgrade( remote ).getButtonRestriction() : null;
+        device.setText( db == null ? "" : db.getName() );
+        alias.setText( macro == null ? "" : macro.getName() );
+        alias.setEnabled( macro != null );
+      }
       deleteAction.setEnabled( f != null );
     }
     else
     {
       buttonName.setText( "" );
       function.setText( "" );
+      if ( remote.isSSD() )
+      {
+        device.setText( "" );
+        alias.setText( "" );
+      }
       deleteAction.setEnabled( false );
     }
   }
@@ -500,7 +595,20 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     if ( buttonShape == null )
       return null;
 
+    Remote remote = deviceUpgrade.getRemote();
     Button b = buttonShape.getButton();
+    if ( remote.isSSD() )
+    {
+      if ( remote.isSoftButton( b ) )
+      {
+        int keyCode = b.getKeyCode();
+        if ( keyCode < 0x37 )
+        {
+          keyCode += 6 * ( page - 1 );
+          b = remote.getButton( keyCode );
+        }
+      }
+    }
     ButtonMap buttonMap = deviceUpgrade.getDeviceType().getButtonMap();
 
     if ( !b.getIsNormal() && !normalMode.isSelected() )
@@ -568,6 +676,29 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     Button b = getButtonForShape( shape );
     if ( b != null )
     {
+//      Macro macro = null;
+//      GeneralFunction gf = null;
+//      if ( remote.isSSD() )
+//      {
+//        LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )button.getKeyCode() );
+//        if ( ls != null )
+//        {
+//          gf = ls;
+//        }
+//        macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
+//        if ( gf == null && macro != null )
+//        {
+//          gf = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
+//          if ( !macro.isSystemMacro() )
+//          {
+//            macro = null;
+//          }
+//        }
+//      }
+//      if ( gf == null )
+//      {
+//        gf = deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
+//      }
       GeneralFunction current = getFunction( b );
       ButtonTableModel.setFunction( deviceUpgrade, b, current, gf );
       if ( current instanceof LearnedSignal && gf == null )
@@ -575,6 +706,15 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         gf = getFunction( b );
         ButtonTableModel.setFunction( deviceUpgrade, b, null, gf );
       }
+//      macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
+//      if ( gf == null && macro != null )
+//      {
+//        gf = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
+//        if ( !macro.isSystemMacro() )
+//        {
+//          macro = null;
+//        }
+//      }
       setButtonText( shape, b );
       deviceUpgrade.checkSize();
     }
@@ -589,6 +729,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
   public void actionPerformed( ActionEvent e )
   {
     Object source = e.getSource();
+    Remote remote = deviceUpgrade.getRemote();
     if ( source == scrollLeft )
     {
       map = maps[ --screenIndex ];
@@ -617,7 +758,37 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       setButtonText( currentShape, b );
       doRepaint();
     }
-    else if ( source instanceof JRadioButton )
+    else if ( source == pageUp )
+    {
+      page++;
+      pageUp.setSelected( false );
+      pageUp.setEnabled( page < 5 );
+      pageDown.setEnabled( true );
+      pageNumber.setText( Integer.toString( page ) );
+      Button b = getButtonForShape( currentShape );
+      if ( remote.isSoftButton( b ) )
+      {
+        currentShape = null;
+        setButtonText( null, b );
+      }
+      doRepaint();
+    }
+    else if ( source == pageDown )
+    {
+      page--;
+      pageDown.setSelected( false );
+      pageUp.setEnabled( true );
+      pageDown.setEnabled( page > 1 );
+      pageNumber.setText( Integer.toString( page ) );
+      Button b = getButtonForShape( currentShape );
+      if ( remote.isSoftButton( b ) )
+      {
+        currentShape = null;
+        setButtonText( null, b );
+      }
+      doRepaint();
+    }
+    else if ( source == selector.deviceBox || source instanceof JRadioButton )
     {
       setFunctions();
       functionPanel.revalidate();
@@ -818,6 +989,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
      */
     public String getToolTipText( MouseEvent e )
     {
+      Remote remote = deviceUpgrade.getRemote();
       ButtonShape buttonShape = getShapeAtPoint( e.getPoint() );
       if ( buttonShape == null )
         return null;
@@ -838,11 +1010,36 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       }
 
       GeneralFunction f = getFunction( b );
-      String text = name;
+      String text = "<html>" + name;
       if ( f != null )
-        text = name + " = " + f.getDisplayName();
-
-      return text;
+      {
+        if ( remote.isSSD() )
+        {
+          Macro macro = null;
+          if ( f instanceof Function )
+          {
+            macro = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+            if ( macro != null && !macro.isSystemMacro() )
+            {
+              macro = null;
+            }
+          }
+          DeviceButton db = ( macro != null ) ? macro.getItems().get( 0 ).db
+              : f.getUpgrade( remote ).getButtonRestriction();
+          text = "<html>" + "Button: " + name;
+          text += "<br>" + "Device: " + db.getName();
+          text += "<br>" + "Function: " + f.getDisplayName();
+          if ( macro != null )
+          {
+            text += "<br>" + "Alias: " + macro.getName();
+          }
+        }
+        else
+        {
+          text = "<html>" + name + " = " + f.getDisplayName();
+        }
+      }
+      return text + "</html>";
     }
 
     @Override
@@ -908,6 +1105,12 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
   /** The image panel. */
   private ImagePanel imagePanel = null;
+  
+  private JPanel pagePanel = null;
+  private JRadioButton pageUp = null;
+  private JRadioButton pageDown = null;
+  private JTextField pageNumber = null;
+  private int page = 1;
 
   /** The normal mode. */
   private JRadioButton normalMode = null;
@@ -923,6 +1126,10 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
   /** The function. */
   private JTextField function = null;
+  
+  private JTextField device = null;
+  private JTextField alias = null;
+  
 
   /** The auto assign. */
   private JButton autoAssign = null;

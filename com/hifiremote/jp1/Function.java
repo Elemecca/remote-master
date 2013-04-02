@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -305,6 +306,19 @@ public class Function extends GeneralFunction
   public boolean accept()
   {
     return serial < 0 || alternate == null;
+  }
+  
+  public static List< Function > filter( List< Function > in )
+  {
+    List< Function > out = new ArrayList< Function >();
+    for ( Function f : in )
+    {
+      if ( f.getEquivalent( out ) == null )
+      {
+        out.add( f );
+      }
+    }
+    return out;
   }
 
   public Function getAlternate()

@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -22,6 +23,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -162,13 +165,23 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       boundKey.setSelectedIndex( -1 );
       shift.setSelected( false );
       xShift.setSelected( false );
-      macroBox.setValue( null );
+      macroBox.setValue( ( Hex )null );
+      macroBox.setValue( ( List< KeySpec > )null );
       notes.setText( null );
     }
     else
     {
       setButton( macro.getKeyCode(), boundKey, shift, xShift );
-      macroBox.setValue( macro.getData() );
+//      macroBox.setValue( macro.getData() );
+      Object val = macro.getValue();
+      if ( val instanceof Hex )
+      {
+        macroBox.setValue( ( Hex )val );
+      }
+      else if ( val instanceof List< ? > )
+      {
+        macroBox.setValue( ( List< KeySpec > )val );
+      }
       notes.setText( macro.getNotes() );
     }
 
@@ -365,6 +378,11 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   @Override
   public void enableButtons( Button b, MacroDefinitionBox macroBox )
   {
+    if ( config.getRemote().isSSD() )
+    {
+      macroBox.add.setEnabled( true );
+      return;
+    }
     int limit = 15;
     if ( config.getRemote().getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
       limit = 255;

@@ -60,6 +60,7 @@ public class FunctionPanel extends TablePanel< Function >
   {
     Function f = new Function();
     f.setUpgrade( deviceUpgrade );
+    deviceUpgrade.getFunctions().add( f );
     return f;
   }
 
@@ -70,5 +71,6 @@ public class FunctionPanel extends TablePanel< Function >
     {
       deviceUpgrade.setFunction( user.button, null, user.state );
     }
+    deviceUpgrade.getFunctions().remove( f );
   }
 }
