@@ -42,7 +42,7 @@ import javax.swing.text.NumberFormatter;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener,
-PropertyChangeListener, RMSetter< Hex >
+PropertyChangeListener, RMSetter< Object >
 {
   public MacroDefinitionBox()
   {
@@ -371,6 +371,7 @@ PropertyChangeListener, RMSetter< Hex >
     if ( remote.isSSD() )
     {
       macroButtonModel.addElement( getKeySpec() );
+      return;
     }
     if ( remote.usesEZRC() )
     {
@@ -459,15 +460,27 @@ PropertyChangeListener, RMSetter< Hex >
   }
   
   @Override
-  public Hex getValue()
+  public Object getValue()
   {
     int length = macroButtonModel.getSize();
-    short[] keyCodes = new short[ length ];
-    for ( int i = 0; i < length; ++i )
-    {  
-      keyCodes[ i ] = ( ( Number )macroButtonModel.elementAt( i ) ).shortValue();
-    }  
-    return new Hex( keyCodes );
+    if ( config.getRemote().isSSD() )
+    {
+      List< KeySpec > items = new ArrayList< KeySpec >();
+      for ( int i = 0; i < length; ++i )
+      {  
+        items.add( ( ( KeySpec )macroButtonModel.elementAt( i ) ) );
+      }  
+      return items;
+    }
+    else
+    {
+      short[] keyCodes = new short[ length ];
+      for ( int i = 0; i < length; ++i )
+      {  
+        keyCodes[ i ] = ( ( Number )macroButtonModel.elementAt( i ) ).shortValue();
+      }  
+      return new Hex( keyCodes );
+    }
   }
   
   /*
@@ -484,29 +497,33 @@ PropertyChangeListener, RMSetter< Hex >
   }
   
   @Override
-  public void setValue( Hex hex )
+  public void setValue( Object value )
   {
     macroButtonModel.clear();
-    availableButtons.setSelectedIndex( -1 );
-    if ( hex == null )
+    if ( value == null )
     {
       return;
     }
-    short[] data = hex.getData();
-    for ( int i = 0; i < data.length; ++i )
-      macroButtonModel.addElement( new Integer( data[ i ] ) );
-    macroButtons.setSelectedIndex( -1 );
-  }
-  
-  public void setValue( List< KeySpec > list )
-  {
-    macroButtonModel.clear();
-    for ( KeySpec ks : list )
+    if ( config.getRemote().isSSD() )
     {
-      macroButtonModel.addElement( ks );
+      @SuppressWarnings( "unchecked" )
+      List< KeySpec > list = ( List< KeySpec > )value;
+      for ( KeySpec ks : list )
+      {
+        macroButtonModel.addElement( ks );
+      }
+    }
+    else
+    {
+      Hex hex = ( Hex )value;
+      availableButtons.setSelectedIndex( -1 );
+      short[] data = hex.getData();
+      for ( int i = 0; i < data.length; ++i )
+        macroButtonModel.addElement( new Integer( data[ i ] ) );
+      macroButtons.setSelectedIndex( -1 );
     }
   }
-  
+
   /**
    * Enable buttons.
    */
@@ -528,7 +545,7 @@ PropertyChangeListener, RMSetter< Hex >
 
       if ( selected >= 0 )
       {
-        int val = getValue().getData()[ selected ];
+        int val = ( ( Hex )getValue() ).getData()[ selected ];
         Button btn = remote.getButton( val & 0xFF );
         duration.setValue( new Float( ( ( val >> 8 ) & 0xFF ) / 10.0 ) );
         durationLabel.setText( holdButtons != null && holdButtons.contains( btn ) ? 

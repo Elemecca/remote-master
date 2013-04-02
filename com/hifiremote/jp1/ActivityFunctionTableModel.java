@@ -390,8 +390,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   private RemoteConfiguration remoteConfig = null;
   private KeyEditor keyEditor = new KeyEditor();
   private RMColorEditor colorEditor = null;
-  private RMSetterEditor< Hex, MacroDefinitionBox > macroEditor = 
-    new RMSetterEditor< Hex, MacroDefinitionBox >( MacroDefinitionBox.class );
+  private RMSetterEditor< Object, MacroDefinitionBox > macroEditor = 
+    new RMSetterEditor< Object, MacroDefinitionBox >( MacroDefinitionBox.class );
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
   private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox() );
   private RMColorRenderer colorRenderer = new RMColorRenderer();

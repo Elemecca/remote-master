@@ -305,7 +305,7 @@ public class Function extends GeneralFunction
   
   public boolean accept()
   {
-    return serial < 0 || alternate == null;
+    return data != null && ( serial < 0 || alternate == null );
   }
   
   public static List< Function > filter( List< Function > in )

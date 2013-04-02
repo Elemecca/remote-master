@@ -7175,6 +7175,22 @@ public class RemoteConfiguration
     return new Hex( new short[]{ ( short )( n & 0xFF), ( short )( ( n >> 8 ) & 0xFF ) } );
   }
   
+  public int getNewMacroSerial()
+  {
+    List< Integer > list = new ArrayList< Integer >();
+    for ( Macro macro : macros )
+    {
+      list.add( macro.getSerial() );
+    }
+    for ( int serial = 1; ; serial++ )
+    {
+      if ( !list.contains( serial ) )
+      {
+        return serial;
+      }
+    }
+  }
+  
   public static Comparator< Macro > MacroSorter = new Comparator< Macro >()
   {
     @Override

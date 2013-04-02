@@ -165,7 +165,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       boundKey.setSelectedIndex( -1 );
       shift.setSelected( false );
       xShift.setSelected( false );
-      macroBox.setValue( ( Hex )null );
+      macroBox.setValue( null );
       macroBox.setValue( ( List< KeySpec > )null );
       notes.setText( null );
     }
@@ -308,12 +308,24 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
         showWarning( "You haven't included any keys in your macro!" );
         return;
       }
-      
-      Hex data = macroBox.getValue();
 
       String notesStr = notes.getText();
+      Object value = macroBox.getValue();
+      Macro newMacro = new Macro( keyCode, null, notesStr );
+      if ( remote.isSSD() )
+      {
+        @SuppressWarnings( "unchecked" )
+        List< KeySpec >items = ( List< KeySpec > )value;
+        newMacro.setItems( items );
+//        DeviceUpgrade du = macro.getUpgrade( remote );
+//        du.setFunction( b, newMacro, Button.NORMAL_STATE );
+      }
+      else
+      {
+        Hex data = ( Hex )value;
+        newMacro.setData( data );
+      }
       
-      Macro newMacro = new Macro( keyCode, data, notesStr );
       if ( config.hasSegments() )
       {
         // set default values
@@ -322,6 +334,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
           newMacro.setDeviceButtonIndex( remote.getDeviceButtons()[ 0 ].getButtonIndex() );
           newMacro.setSegmentFlags( 0xFF );
           newMacro.setName( "New macro" );
+          newMacro.setSerial( config.getNewMacroSerial() );
         }
         else if ( macro == null )
         {
@@ -335,6 +348,11 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
           newMacro.setDeviceButtonIndex( macro.getDeviceButtonIndex() );
           newMacro.setSerial( macro.getSerial() );
         }
+      }
+      if ( remote.isSSD() )
+      {
+        DeviceUpgrade du = newMacro.getUpgrade( remote );
+        du.setFunction( b, newMacro, Button.NORMAL_STATE );
       }
       macro = newMacro;
       setVisible( false );

@@ -3986,11 +3986,11 @@ public class DeviceUpgrade extends Highlight
    * @param state
    *          the state
    */
-  public void setFunction( Button b, Function f, int state )
+  public void setFunction( Button b, GeneralFunction f, int state )
   {
-    if ( !remote.isSSD() )
+    if ( !remote.isSSD() && f instanceof Function )
     {
-      assignments.assign( b, f, state );
+      assignments.assign( b, ( Function )f, state );
       return;
     }
     int keyCode = b.getKeyCode();
@@ -4017,9 +4017,9 @@ public class DeviceUpgrade extends Highlight
     }
     if ( bf == null )
     {
-      if ( f.getUsers().isEmpty() )
+      if ( f instanceof Function && f.getUsers().isEmpty() )
       {
-        bf = f;
+        bf = ( Function )f;
       }
       else
       {
@@ -4029,36 +4029,58 @@ public class DeviceUpgrade extends Highlight
       }
       assignments.assign( b, bf );
     }
-    DeviceUpgrade fnUpg = f.upgrade;
+    DeviceUpgrade fnUpg = f.getUpgrade( remote );
     if ( fnUpg == this )
     {
       if ( bf != f )
       {
         bf.setName( f.getName() );
-        bf.setData( new Hex( f.getData() ) );
-        bf.setGid( f.getGid() );
-        bf.setKeyflags( f.getKeyflags() );
+        if ( f instanceof Function )
+        {
+          Function fn = ( Function )f;
+          bf.setData( new Hex( fn.getData() ) );
+          bf.setGid( fn.getGid() );
+          bf.setKeyflags( fn.getKeyflags() );
+        }
+        else if ( f instanceof Macro )
+        {
+          Macro macro = macroMap.get( keyCode );
+          if ( macro != null )
+          {
+            macro.removeReference( buttonRestriction, b );
+            if ( macro.getUsers().isEmpty() )
+            {
+              remoteConfig.getMacros().remove( macro );
+            }
+          }  
+          macro = ( Macro )f;
+          bf.setMacroref( macro.getSerial() );
+          macroMap.put( keyCode, macro );
+          macro.addReference( buttonRestriction, b );
+          remoteConfig.getMacros().add( macro );
+        }
       }
     }
-    else
+    else if ( f instanceof Function )
     {
+      Function fn = ( Function )f;
       Function irFn = null;
-      if ( f.getSerial() >= 0 )
+      if ( fn.getSerial() >= 0 )
       {
-        irFn = f;
+        irFn = fn;
       }
-      else if ( f.getAlternate() != null )
+      else if ( fn.getAlternate() != null )
       {
-        irFn = f.getAlternate();
+        irFn = fn.getAlternate();
       }
       else
       {
-        irFn = new Function( f );
+        irFn = new Function( fn );
         int serial = getNewFunctionSerial();
         irFn.setSerial( serial );
         fnUpg.getFunctionMap().put( serial, irFn );
-        f.setAlternate( irFn );
-        irFn.setAlternate( f );
+        fn.setAlternate( irFn );
+        irFn.setAlternate( fn );
         fnUpg.functions.add( irFn );
       }
       Macro macro = macroMap.get( keyCode );
@@ -4074,7 +4096,7 @@ public class DeviceUpgrade extends Highlight
       remoteConfig.getMacros().add( macro );
       macro.setName( irFn.getName() );
       macro.setSystemMacro( true );
-      int serial = getNewMacroSerial();
+      int serial = remoteConfig.getNewMacroSerial();
       macro.setSerial( serial );
       List< KeySpec > items = new ArrayList< KeySpec >();
       KeySpec ks = new KeySpec( fnUpg.buttonRestriction, irFn );
@@ -4098,22 +4120,6 @@ public class DeviceUpgrade extends Highlight
       }
     }
     for ( int serial = 24; ; serial++ )
-    {
-      if ( !list.contains( serial ) )
-      {
-        return serial;
-      }
-    }
-  }
-  
-  public int getNewMacroSerial()
-  {
-    List< Integer > list = new ArrayList< Integer >();
-    for ( Macro macro : remoteConfig.getMacros() )
-    {
-      list.add( macro.getSerial() );
-    }
-    for ( int serial = 1; ; serial++ )
     {
       if ( !list.contains( serial ) )
       {
