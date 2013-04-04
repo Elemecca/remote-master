@@ -169,7 +169,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       if ( remote.getDeviceLabels() == null && col >= 9 )
       {
-        col += 2;
+        col += 3;
       }
       if ( remote.getDeviceLabels() != null && DeviceLabels.columnName2 == null && col >= 10 )
       {

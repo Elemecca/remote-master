@@ -217,17 +217,44 @@ public class MacroTableModel extends JP1TableModel< Macro >
   {
     col = getEffectiveColumn( col );
     Macro macro = getRow( row );
+    Remote remote = remoteConfig.getRemote();
     if ( col == 1 )
     {
       macro.setName( ( String )value );
     }
     else if ( col == 2 )
     {
-      macro.setDeviceButtonIndex( ( ( DeviceButton )value ).getButtonIndex() );
+      if ( remote.isSSD() )
+      {
+        Button b = remote.getButton( macro.getKeyCode() );
+        DeviceUpgrade du = macro.getUpgrade( remote );
+        du.setFunction( b, null, Button.NORMAL_STATE );
+        DeviceButton db = ( DeviceButton )value;
+        macro.setDeviceButtonIndex( db.getButtonIndex() );
+        du = db.getUpgrade();
+        du.setFunction( b, macro, Button.NORMAL_STATE );
+      }
+      else
+      {
+        macro.setDeviceButtonIndex( ( ( DeviceButton )value ).getButtonIndex() );
+      }
     }
     else if ( col == 3 )
     {
-      macro.setKeyCode( ( ( Integer )value ).intValue() );
+      if ( remote.isSSD() )
+      {
+        Button b = remote.getButton( macro.getKeyCode() );
+        DeviceUpgrade du = macro.getUpgrade( remote );
+        du.setFunction( b, null, Button.NORMAL_STATE );
+        int keyCode = ( Integer )value;
+        b = remote.getButton( keyCode );
+        macro.setKeyCode( keyCode );
+        du.setFunction( b, macro, Button.NORMAL_STATE );
+      }
+      else
+      {
+        macro.setKeyCode( ( ( Integer )value ).intValue() );
+      }
     }
     else if ( col == 5 )
     {

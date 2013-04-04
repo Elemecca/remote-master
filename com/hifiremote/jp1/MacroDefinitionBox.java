@@ -209,24 +209,10 @@ PropertyChangeListener, RMSetter< Object >
     }
     availableButtons.setModel( availableButtonModel );
     CardLayout cl = ( CardLayout)creationPanel.getLayout();
-    cl.show( creationPanel, "SSD" );
+    cl.show( creationPanel, remote.isSSD() ? "SSD" : "Normal" );
     if ( remote.isSSD() )
     {
-      DeviceButton[] allDB = remote.getDeviceButtons();
-      List< DeviceButton > dbList = new ArrayList< DeviceButton >();
-      for ( DeviceButton db : allDB )
-      {
-        if ( db.getUpgrade() != null )
-        {
-          dbList.add( db );
-        }
-      }
-      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( dbList.toArray() );
-      deviceBox.setModel( comboModel );
-      if ( dbList.size() > 0 )
-      {
-        deviceBox.setSelectedIndex( 0 );
-      }
+      remote.setDeviceComboBox( deviceBox );
       holdCheck = new JCheckBox( "Hold?" );
       holdCheck.addActionListener( this );
       delay = new XFormattedTextField( formatter );
@@ -336,6 +322,10 @@ PropertyChangeListener, RMSetter< Object >
     {
       duration.setEnabled( holdCheck.isSelected() );
       durationLabel.setEnabled( holdCheck.isSelected() );
+      if ( !holdCheck.isSelected() )
+      {
+        duration.setValue( 0.0f );
+      }
     }
     enableButtons();
   }
@@ -494,6 +484,31 @@ PropertyChangeListener, RMSetter< Object >
       return;
 
     enableButtons();
+    if ( config.getRemote().isSSD() )
+    {
+      KeySpec ks = ( KeySpec)macroButtons.getSelectedValue();
+      if ( ks == null )
+      {
+        return;
+      }
+      deviceBox.setSelectedItem( ks.db );
+      Function f = null;
+      if ( ks.btn != null )
+      {
+        f = ks.db.getUpgrade().getFunction( ks.btn, Button.NORMAL_STATE );
+      }
+      else if ( ks.fn instanceof Function )
+      {
+        f = ( Function )ks.fn;
+      }
+      functionBox.setSelectedItem( f );
+      delay.setValue( ks.delay / 10.0f );
+      boolean showDuration = ks.duration >= 0;
+      holdCheck.setSelected( showDuration );
+      duration.setEnabled( showDuration );
+      durationLabel.setEnabled( showDuration );
+      duration.setValue( showDuration ? ks.duration/ 10.0f : 0f );
+    }
   }
   
   @Override

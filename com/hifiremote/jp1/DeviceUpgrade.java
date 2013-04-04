@@ -3976,21 +3976,39 @@ public class DeviceUpgrade extends Highlight
     this.protocolMemoryUsage += protocolMemoryUsage;
   }
 
-  /**
-   * Sets the function.
-   * 
-   * @param b
-   *          the b
-   * @param f
-   *          the f
-   * @param state
-   *          the state
-   */
+//  public void removeMacro( Button b )
+//  {
+//    int keyCode = b.getKeyCode();
+//    Function bf = getFunction( keyCode );
+//    Macro macro = macroMap.get( keyCode );
+//    if ( macro != null )
+//    {
+//      macroMap.remove( keyCode );
+//      macro.removeReference( buttonRestriction, b );
+//      if ( macro.getUsers().isEmpty() )
+//      {
+//        remoteConfig.getMacros().remove( macro );
+//      }
+//      if ( bf != null )
+//      {
+//        bf.setMacroref( null );
+//      }
+//      if ( bf.getData() == null )
+//      {
+//        functions.remove( bf );
+//        assignments.assign( b, null );
+//      }
+//    }
+//  }
+  
   public void setFunction( Button b, GeneralFunction f, int state )
   {
-    if ( !remote.isSSD() && f instanceof Function )
+    if ( !remote.isSSD() )
     {
-      assignments.assign( b, ( Function )f, state );
+      if ( f instanceof Function )
+      {
+        assignments.assign( b, ( Function )f, state );
+      }
       return;
     }
     int keyCode = b.getKeyCode();
@@ -4012,6 +4030,7 @@ public class DeviceUpgrade extends Highlight
           return;
         }
       }
+      functions.remove( bf );
       assignments.assign( b, null );
       return;
     }

@@ -6415,11 +6415,14 @@ public class RemoteConfiguration
       Button b = fn == null ? btn : fn.getUsers().isEmpty() ? null : fn.getUsers().get( 0 ).button;
       if ( b != null )
       {
-        buff.append( b.getName() );
+//        buff.append( b.getName() );
+        GeneralFunction f = db.getUpgrade().getGeneralFunction(b.getKeyCode() );
+        buff.append( f.getName() );
       }
       else if ( fn != null )
       {
-        buff.append( "Fn(" + fn.getName() + ")" );
+//        buff.append( "Fn(" + fn.getName() + ")" );
+        buff.append( fn.getName() );
       }
       if ( delay != 0 )
       {

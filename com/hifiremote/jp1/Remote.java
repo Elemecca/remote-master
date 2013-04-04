@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 
 // TODO: Auto-generated Javadoc
@@ -2312,10 +2314,13 @@ public class Remote implements Comparable< Remote >
    */
   public String getButtonName( int keyCode )
   {
-    DeviceButton db = getDeviceButton( keyCode );
-    if ( db != null )
+    if ( usesEZRC() )
     {
-      return db.getName();
+      DeviceButton db = getDeviceButton( keyCode );
+      if ( db != null )
+      {
+        return db.getName();
+      }
     }
 
     Button b = getButton( keyCode );
@@ -3898,6 +3903,25 @@ public class Remote implements Comparable< Remote >
     else
     {
       macroSupport = false;
+    }
+  }
+  
+  public void setDeviceComboBox( JComboBox deviceBox )
+  {
+    DeviceButton[] allDB = getDeviceButtons();
+    List< DeviceButton > dbList = new ArrayList< DeviceButton >();
+    for ( DeviceButton db : allDB )
+    {
+      if ( db.getUpgrade() != null )
+      {
+        dbList.add( db );
+      }
+    }
+    DefaultComboBoxModel comboModel = new DefaultComboBoxModel( dbList.toArray() );
+    deviceBox.setModel( comboModel );
+    if ( dbList.size() > 0 )
+    {
+      deviceBox.setSelectedIndex( 0 );
     }
   }
   
