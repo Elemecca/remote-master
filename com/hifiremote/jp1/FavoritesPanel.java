@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -11,6 +12,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.DecimalFormat;
@@ -43,6 +45,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import javax.swing.text.NumberFormatter;
+
+import com.hifiremote.jp1.RemoteConfiguration.Icon;
+import com.hifiremote.jp1.RemoteConfiguration.SSDFile;
 
 public class FavoritesPanel extends RMPanel implements ActionListener, 
   ListSelectionListener, DocumentListener
@@ -104,7 +109,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     JScrollPane scrollPane = new JScrollPane( favTable );
     panel.add( scrollPane, BorderLayout.CENTER );
     
-    JPanel buttonPanel = new JPanel();
+    JPanel buttonPanel = new JPanel( new WrapLayout( FlowLayout.CENTER, 5, 0 ) );
+    buttonPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 0, 0 ) );
 
     editButton = new JButton( "Edit" );
     editButton.addActionListener( this );
@@ -140,6 +146,10 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     downButton.setToolTipText( "Move the selected item down in the list." );
     downButton.setEnabled( false );
     buttonPanel.add( downButton );
+    
+    iconImage = new IconImage();
+    buttonPanel.add( Box.createHorizontalStrut( 10 ) );
+    buttonPanel.add( iconImage );
 
     panel.add( buttonPanel, BorderLayout.PAGE_END );
     
@@ -372,6 +382,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       profiles.setModel( profilesModel );
     }
     upperPane.resetToPreferredSizes();
+    image = null;
   }
   
   public void finishEditing()
@@ -558,6 +569,17 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           downButton.setEnabled( selected && row < favTable.getRowCount() - 1 );
           cloneButton.setEnabled( true );
           editButton.setEnabled( true );
+          Integer iconRef = remoteConfig.getFavScans().get( row ).getIconRef();
+          if ( iconRef != null && iconRef >= 127 )
+          {
+            SSDFile file = remoteConfig.getSsdFiles().get( "usericons.pkg" );
+            Icon icon = file.userIcons.get( iconRef );
+            image = icon != null ? icon.image : null;
+          }
+          else
+          {
+            image = null;
+          }
         }
         else
         {
@@ -565,7 +587,9 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           downButton.setEnabled( false );
           cloneButton.setEnabled( false );
           editButton.setEnabled( false );
+          image = null;
         }
+        repaint();
         deleteButton.setEnabled( favTable.getSelectedRowCount() > 0 );
       }
     }
@@ -701,6 +725,20 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   {
     return profiles;
   }
+  
+  public class IconImage extends Component
+  {               
+    public void paint( Graphics g ) 
+    {
+      int y = image == null ? 0 : ( 40 - image.getHeight() ) / 2;
+      g.drawImage( image, 0, Math.max( 0, y ), null ); 
+    }     
+
+    public Dimension getPreferredSize() 
+    {                     
+      return new Dimension( 100, 40 );        
+    }
+  }
 
   private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
   private RemoteConfiguration remoteConfig = null;
@@ -734,5 +772,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   private JSplitPane upperPane = null;
   private JRadioButton allButton = new JRadioButton( "Show all favorites" );
   private JRadioButton profileButton = new JRadioButton( "Show selected profile" );
-  private JTextField profileField = null; 
+  private JTextField profileField = null;
+  private IconImage iconImage = null;
+  private BufferedImage image = null;
 }

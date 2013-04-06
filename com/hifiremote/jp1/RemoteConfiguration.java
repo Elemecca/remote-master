@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
 import com.hifiremote.jp1.Activity.Assister;
@@ -606,9 +608,9 @@ public class RemoteConfiguration
         int numIcons = data[ pos + 12 ] + 0x100 * data[ pos + 13 ];
         int numEntries = data[ pos + 14 ] + 0x100 * data[ pos + 15 ];
         int fileStart = pos;
-        int fileEnd = pos;
         pos += 16;
         int startIndex = pos + 28 * numIcons;
+        int iconEnd = 16 + 28 * numIcons + numEntries;
         for ( int i = 0; i < numEntries; i++ )
         {
           int j = data[ startIndex + i ];
@@ -618,41 +620,110 @@ public class RemoteConfiguration
           }
           int k = pos + 28 * ( j - 1 );
           Icon icon = new Icon();
-          icon.height = data[ k + 8 ] + 0x100 * data[ k + 9 ];
-          icon.width = data[ k + 10 ] + 0x100 * data[ k + 11 ];
+          icon.intro = new Hex( data, pos, 8 );
+          icon.width = data[ k + 8 ] + 0x100 * data[ k + 9 ];
+          icon.height = data[ k + 10 ] + 0x100 * data[ k + 11 ];
+          icon.type = data[ k + 15 ];
           int start = data[ k + 16 ] + 0x100 * data[ k + 17 ] + 0x10000 * data[ k + 18 ];
+          if ( start != iconEnd )
+          {
+            System.err.println( "Icon at index " + ( j - 1 ) + " has inconsistent start" );
+          }
           int size = data[ k + 24 ] + 0x100 * data[ k + 25 ] - 0x200;
-          icon.hex1 = new Hex( data, start, size );
+          icon.hex1 = new Hex( data, fileStart + start, size );
           start += size;
           if ( start == data[ k + 20 ] + 0x100 * data[ k + 21 ] + 0x10000 * data[ k + 22 ] )
           {
             size = icon.height * icon.width;
-            icon.hex2 = new Hex( data, start, size );
+            icon.hex2 = new Hex( data, fileStart + start, size );
+            iconEnd = start + size;
           }
           else
           {
             System.err.println( "Icon at index " + ( j - 1 ) + " has inconsistent data" );
           }
           file.userIcons.put( i, icon );
-          fileEnd = Math.max( fileEnd, start + size );
         }
-//        if ( fileEnd != end )
-//        {
-//          System.err.println( "Data error: reported end = " + Integer.toHexString( end ) + ", calculated end = " + Integer.toHexString( fileEnd ) );
-//        }
+        if ( end != fileStart + iconEnd )
+        {
+          System.err.println( "Data error: reported end = " + Integer.toHexString( end ) + ", calculated end = " + Integer.toHexString( fileStart + iconEnd ) );
+        }
         Hex hex = new Hex( data, fileStart, end - fileStart );
         file.hex = hex;
         ssdFiles.put( name, file );
-        System.err.println( name + " hex = " + hex );
+        System.err.println();
+        System.err.println( name + ":" );
+        System.err.println();
+        System.err.println( "Number of icons: " + numIcons );
+        System.err.println();
+        for ( int i : file.userIcons.keySet() )
+        {
+          Icon icon = file.userIcons.get( i );
+          BufferedImage image = new BufferedImage( icon.width, icon.height, BufferedImage.TYPE_INT_ARGB );
+          System.err.println( "Icon " + i + ": size " + icon.height + "x" + icon.width );
+          System.err.println( "Intro: " + icon.intro );
+          int lineWidth = icon.hex1.length() / icon.height;
+          int byteWidth = lineWidth / icon.width;
+          System.err.println( "Dataset 1: " + byteWidth + "-byte values");
+          for ( int j = 0; j < icon.hex1.length(); j += lineWidth )
+          {
+            for ( int k = j; k < j + lineWidth; k += byteWidth )
+            {
+              int val = 0;
+              for ( int m = 0; m < byteWidth; m++ )
+              {
+                val += icon.hex1.getData()[ k + m ] << ( 8 * m );
+              }
+              int alpha = icon.hex2.getData()[ k / byteWidth ];
+              int row = j / lineWidth;
+              int col = ( k - j ) / byteWidth;
+              int rgb = 0;
+              if ( byteWidth == 2 )
+              {
+                float rf = ( val >> 11 ) / 32.0f;
+                float gf = ( ( val >> 5 ) & 0x3F ) / 64.0f;
+                float bf = ( val & 0x1F ) / 32.0f;
+                int r = ( int )( rf * 255.0f );
+                int g = ( int )( gf * 255.0f );
+                int b = ( int )( bf * 255.0f );
+                rgb = ( alpha << 24 ) | ( r << 16 ) | ( g << 8 ) | b;
+              }
+              else if ( byteWidth == 1 )
+              {
+                rgb = ( alpha << 24 ) | ( val << 16 ) | ( val << 8 ) | val;
+              }
+              image.setRGB( col, row, rgb );
+              String s = Integer.toHexString( val );
+              s = ( "0000".substring( s.length() ) ) + s + " ";
+              System.err.print( s.toUpperCase() );
+            }
+            System.err.println();
+          }
+          icon.image = image;
+          System.err.println();
+          System.err.println( "Dataset 2: " + "1-byte values");
+          for ( int j = 0; j < icon.height; j++ )
+          {
+            System.err.println( icon.hex2.subHex( j * icon.width, icon.width ) );
+          }
+          System.err.println();
+        }
       }
-//      else
-//      {
-//        //Applies only to usericons.pkg, the last file
-//        Hex hex = new Hex( data, pos, end - pos );
-//        file.hex = hex;
-//        ssdFiles.put( name, file );
-//      }
     }
+//    SSDFile file = ssdFiles.get( "usericons.pkg" );
+//    Icon icon = file.userIcons.get( 128 );
+//    BufferedImage image = icon.image;
+//    File f = new File( "testicon.png" );
+//    try
+//    {
+//      ImageIO.write(image, "PNG", f );
+//    }
+//    catch ( IOException e )
+//    {
+//      // TODO Auto-generated catch block
+//      e.printStackTrace();
+//    }
+    
   }
   
   private void decodeItem( Items items, int fileIndex, String tag, int pos, boolean start, boolean dbOnly )
@@ -6066,6 +6137,11 @@ public class RemoteConfiguration
   
   private LinkedHashMap< String, SSDFile > ssdFiles = new LinkedHashMap< String, SSDFile >();
   
+  public LinkedHashMap< String, SSDFile > getSsdFiles()
+  {
+    return ssdFiles;
+  }
+
   private LinkedHashMap< Button, Activity > activities = null;
   
   private List< Integer > segmentLoadOrder = new ArrayList< Integer >();
@@ -6471,15 +6547,18 @@ public class RemoteConfiguration
     Integer macroref = null;
   }
   
-  private class Icon
+  public class Icon
   {
     int height = 0;
     int width = 0;
+    int type = 0;
+    Hex intro = null;
     Hex hex1 = null;
     Hex hex2 = null;
+    BufferedImage image = null;
   }
   
-  private class SSDFile
+ public class SSDFile
   {
     public SSDFile() {};
     
