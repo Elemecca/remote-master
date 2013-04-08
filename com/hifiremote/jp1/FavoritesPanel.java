@@ -570,10 +570,9 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           cloneButton.setEnabled( true );
           editButton.setEnabled( true );
           Integer iconRef = remoteConfig.getFavScans().get( row ).getIconRef();
-          if ( iconRef != null && iconRef >= 127 )
+          if ( remoteConfig.getUserIcons() != null && iconRef != null && iconRef >= 127 )
           {
-            SSDFile file = remoteConfig.getSsdFiles().get( "usericons.pkg" );
-            Icon icon = file.userIcons.get( iconRef );
+            Icon icon = remoteConfig.getUserIcons().get( iconRef );
             image = icon != null ? icon.image : null;
           }
           else

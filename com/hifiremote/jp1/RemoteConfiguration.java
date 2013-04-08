@@ -548,6 +548,7 @@ public class RemoteConfiguration
     int status = data[ 0 ] + ( ( data[ 1 ] & 0x0F ) << 8 );
     int end = data[ 2 ] + ( data[ 3 ] << 8 ) + ( ( data[ 1 ] & 0xF0 ) << 12 );
     ssdFiles.clear();
+    userIcons = new LinkedHashMap< Integer, Icon >();
     for ( DeviceButton db : remote.getDeviceButtons() )
     {
       db.setSegment( null );
@@ -604,9 +605,16 @@ public class RemoteConfiguration
       else if ( name.endsWith( ".pkg" ) )
       {
         // icons file
-        file.userIcons = new LinkedHashMap< Integer, Icon >();
+
         int numIcons = data[ pos + 12 ] + 0x100 * data[ pos + 13 ];
         int numEntries = data[ pos + 14 ] + 0x100 * data[ pos + 15 ];
+        
+//        System.err.println();
+//        System.err.println( name + ":" );
+//        System.err.println();
+//        System.err.println( "Number of icons: " + numIcons );
+//        System.err.println();
+        
         int fileStart = pos;
         pos += 16;
         int startIndex = pos + 28 * numIcons;
@@ -628,64 +636,52 @@ public class RemoteConfiguration
           if ( start != iconEnd )
           {
             System.err.println( "Icon at index " + ( j - 1 ) + " has inconsistent start" );
+            continue;
           }
           int size = data[ k + 24 ] + 0x100 * data[ k + 25 ] - 0x200;
-          icon.hex1 = new Hex( data, fileStart + start, size );
+          int lineWidth = size / icon.height;
+          int byteWidth = lineWidth / icon.width;
+          Hex hex1 = new Hex( data, fileStart + start, size );
+          Hex hex2 = null;
           start += size;
           if ( start == data[ k + 20 ] + 0x100 * data[ k + 21 ] + 0x10000 * data[ k + 22 ] )
           {
             size = icon.height * icon.width;
-            icon.hex2 = new Hex( data, fileStart + start, size );
+            hex2 = new Hex( data, fileStart + start, size );
             iconEnd = start + size;
           }
           else
           {
             System.err.println( "Icon at index " + ( j - 1 ) + " has inconsistent data" );
+            continue;
           }
-          file.userIcons.put( i, icon );
-        }
-        if ( end != fileStart + iconEnd )
-        {
-          System.err.println( "Data error: reported end = " + Integer.toHexString( end ) + ", calculated end = " + Integer.toHexString( fileStart + iconEnd ) );
-        }
-        Hex hex = new Hex( data, fileStart, end - fileStart );
-        file.hex = hex;
-        ssdFiles.put( name, file );
-        System.err.println();
-        System.err.println( name + ":" );
-        System.err.println();
-        System.err.println( "Number of icons: " + numIcons );
-        System.err.println();
-        for ( int i : file.userIcons.keySet() )
-        {
-          Icon icon = file.userIcons.get( i );
+          
           BufferedImage image = new BufferedImage( icon.width, icon.height, BufferedImage.TYPE_INT_ARGB );
-          System.err.println( "Icon " + i + ": size " + icon.height + "x" + icon.width );
-          System.err.println( "Intro: " + icon.intro );
-          int lineWidth = icon.hex1.length() / icon.height;
-          int byteWidth = lineWidth / icon.width;
-          System.err.println( "Dataset 1: " + byteWidth + "-byte values");
-          for ( int j = 0; j < icon.hex1.length(); j += lineWidth )
+//          System.err.println( "Icon " + i + ": size " + icon.height + "x" + icon.width );
+//          System.err.println( "Intro: " + icon.intro );
+//          System.err.println( "Dataset 1: " + byteWidth + "-byte values");
+          
+          for ( int m = 0; m < hex1.length(); m += lineWidth )
           {
-            for ( int k = j; k < j + lineWidth; k += byteWidth )
+            for ( int n = m; n < m + lineWidth; n += byteWidth )
             {
               int val = 0;
-              for ( int m = 0; m < byteWidth; m++ )
+              for ( int p = 0; p < byteWidth; p++ )
               {
-                val += icon.hex1.getData()[ k + m ] << ( 8 * m );
+                val += hex1.getData()[ n + p ] << ( 8 * p );
               }
-              int alpha = icon.hex2.getData()[ k / byteWidth ];
-              int row = j / lineWidth;
-              int col = ( k - j ) / byteWidth;
+              int alpha = hex2.getData()[ n / byteWidth ];
+              int row = m / lineWidth;
+              int col = ( n - m ) / byteWidth;
               int rgb = 0;
               if ( byteWidth == 2 )
               {
-                float rf = ( val >> 11 ) / 32.0f;
-                float gf = ( ( val >> 5 ) & 0x3F ) / 64.0f;
-                float bf = ( val & 0x1F ) / 32.0f;
-                int r = ( int )( rf * 255.0f );
-                int g = ( int )( gf * 255.0f );
-                int b = ( int )( bf * 255.0f );
+                double rf = ( val >> 11 ) / 31.0;
+                double gf = ( ( val >> 5 ) & 0x3F ) / 63.0;
+                double bf = ( val & 0x1F ) / 31.0;
+                int r = ( int )( rf * 255.0 + 0.5 );
+                int g = ( int )( gf * 255.0 + 0.5 );
+                int b = ( int )( bf * 255.0 + 0.5 );
                 rgb = ( alpha << 24 ) | ( r << 16 ) | ( g << 8 ) | b;
               }
               else if ( byteWidth == 1 )
@@ -693,21 +689,27 @@ public class RemoteConfiguration
                 rgb = ( alpha << 24 ) | ( val << 16 ) | ( val << 8 ) | val;
               }
               image.setRGB( col, row, rgb );
-              String s = Integer.toHexString( val );
-              s = ( "0000".substring( s.length() ) ) + s + " ";
-              System.err.print( s.toUpperCase() );
+//              String s = Integer.toHexString( val );
+//              s = ( "0000".substring( s.length() ) ) + s + " ";
+//              System.err.print( s.toUpperCase() );
             }
-            System.err.println();
+//            System.err.println();
           }
           icon.image = image;
-          System.err.println();
-          System.err.println( "Dataset 2: " + "1-byte values");
-          for ( int j = 0; j < icon.height; j++ )
-          {
-            System.err.println( icon.hex2.subHex( j * icon.width, icon.width ) );
-          }
-          System.err.println();
+//          System.err.println();
+//          System.err.println( "Dataset 2: " + "1-byte values");
+//          for ( int m = 0; m < icon.height; m++ )
+//          {
+//            System.err.println( hex2.subHex( m * icon.width, icon.width ) );
+//          }
+//          System.err.println();
+
+          userIcons.put( i, icon );
         }
+//        Hex hex = new Hex( data, fileStart, end - fileStart );
+//        file.hex = hex;
+//        ssdFiles.put( name, file );
+        pos = fileStart + iconEnd;
       }
     }
 //    SSDFile file = ssdFiles.get( "usericons.pkg" );
@@ -2373,7 +2375,6 @@ public class RemoteConfiguration
         return ls;
       }
     }
-    System.err.println( "No learned signal found matching " + db.getName() + ':' + btn.getName() );
     return null;
   }
 
@@ -3465,16 +3466,26 @@ public class RemoteConfiguration
       int pos = 4;
       int status = 0;
       Arrays.fill( data, ( short )0xFF );
+      Hex hex = null;
       for ( int n = 0; n < Remote.userFilenames.length; n++ )
       {
         String name = Remote.userFilenames[ n ];
-        file = ssdFiles.get( name );
-        if ( file == null )
+        if ( name.equals( "usericons.pkg" ) )
+        {
+          hex = makeUserIconsPKG();
+        }
+        else
+        {
+          file = ssdFiles.get( name );
+          hex = makeBXMLFile( file );
+        }
+        
+        if ( hex == null )
         {
           continue;
         }
+        
         status |= 1 << n;
-        Hex hex = name.endsWith( ".xcf" ) ? makeBXMLFile( file ) : file.hex;
         System.arraycopy( hex.getData(), 0, data, pos, hex.length() );
         pos += hex.length();      
       }
@@ -6432,6 +6443,13 @@ public class RemoteConfiguration
   public ProtocolUpgrade protocolUpgradeUsed = null;
   
   private RemoteMaster owner = null;
+  
+  private LinkedHashMap< Integer, Icon > userIcons = null;
+
+  public LinkedHashMap< Integer, Icon > getUserIcons()
+  {
+    return userIcons;
+  }
 
   public RemoteMaster getOwner()
   {
@@ -6553,8 +6571,6 @@ public class RemoteConfiguration
     int width = 0;
     int type = 0;
     Hex intro = null;
-    Hex hex1 = null;
-    Hex hex2 = null;
     BufferedImage image = null;
   }
   
@@ -6583,13 +6599,17 @@ public class RemoteConfiguration
 
     List< String > tagNames = null;
     Hex hex = null;
-    LinkedHashMap< Integer, Icon > userIcons = null;
+    
   }
   
   private List< String > tagList = null;
   
   private Hex makeBXMLFile( SSDFile file )
   {
+    if ( file == null )
+    {
+      return null;
+    }
     int tagSize = 0;
     short tagCount = 0;
     for ( String s : file.tagNames )
@@ -7252,9 +7272,86 @@ public class RemoteConfiguration
     return file;
   }
   
+  private Hex makeUserIconsPKG()
+  {
+    List< Hex > work = new ArrayList< Hex >();
+    List< Integer > refs = new ArrayList< Integer >( userIcons.keySet() );
+    Collections.sort( refs );
+    work.add( new Hex( new short[]{ 0,0,0,0,0,0,0,0,0,0,0,0 } ) );
+    int iconCount = refs.size();
+    work.add( getLittleEndian( iconCount ) );
+    int indexSize = 0;
+    for ( int n : refs )
+    {
+      indexSize = Math.max( indexSize, n + 1 );
+    }
+    work.add( getLittleEndian( indexSize ) );
+    int pos = 16 + 28 * iconCount + indexSize;
+    for ( int i : refs )
+    {
+      Icon icon = userIcons.get( i );
+      BufferedImage image = icon.image;
+      int width = image.getWidth();
+      int height = image.getHeight();
+      int size = width * height;
+      work.add( icon.intro );
+      work.add( getLittleEndian( width ) );
+      work.add( getLittleEndian( height ) );
+      work.add( new Hex( new short[]{ 0,0,0,( short )icon.type } ) );
+      work.add( getLittleEndianWord( pos ) );
+      pos += 2 * size;
+      work.add( getLittleEndianWord( pos ) );
+      work.add( getLittleEndianWord( 2 * size + 0x200 ) );
+      pos += size;
+    }
+    int n = 1;
+    for ( int i = 0; i < indexSize; i++ )
+    {
+      work.add( new Hex( new short[]{ ( short )( refs.contains( i ) ? n++ : 0 ) } ) );
+    }
+    for ( int i : refs )
+    {
+      Icon icon = userIcons.get( i );
+      BufferedImage image = icon.image;
+      int width = image.getWidth();
+      int height = image.getHeight();
+      int size = width * height;
+      Hex hex1 = new Hex( 2 * size );
+      Hex hex2 = new Hex( size );
+      pos = 0;
+      for ( int k = 0; k < height; k++ )
+      {
+        for ( int j = 0; j < width; j++ )
+        {
+          int rgb = image.getRGB( j, k );
+          int alpha = rgb >> 24;
+          double rf = ( ( rgb >> 16 ) & 0xFF )/ 255.0;
+          double gf = ( ( rgb >> 8 ) & 0xFF ) / 255.0;
+          double bf = ( rgb & 0xFF ) / 255.0;
+          int r = ( int )( rf * 31.0 + 0.5 );
+          int g = ( int )( gf * 63.0 + 0.5 );
+          int b = ( int )( bf * 31.0 + 0.5 );
+          int val = ( r << 11 ) | ( g << 5 ) | b;
+          hex1.set( ( short )( val & 0xFF ), 2 * pos );
+          hex1.set( ( short )( ( val >> 8 ) & 0xFF ), 2 * pos + 1 );
+          hex2.set( ( short )alpha, pos++ );
+        }
+      }
+      work.add( hex1 );
+      work.add( hex2 );
+    }
+    SSDFile file = new SSDFile( null, work );
+    return  file.hex;
+  }
+  
   private Hex getLittleEndian( int n )
   {
     return new Hex( new short[]{ ( short )( n & 0xFF), ( short )( ( n >> 8 ) & 0xFF ) } );
+  }
+  
+  private Hex getLittleEndianWord( int n )
+  {
+    return new Hex( new short[]{ ( short )( n & 0xFF), ( short )( ( n >> 8 ) & 0xFF ), ( short )( ( n >> 16 ) & 0xFF ), ( short )( ( n >> 24 ) & 0xFF ) } );
   }
   
   public int getNewMacroSerial()
