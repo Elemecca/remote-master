@@ -629,8 +629,8 @@ public class RemoteConfiguration
           int k = pos + 28 * ( j - 1 );
           Icon icon = new Icon();
           icon.intro = new Hex( data, pos, 8 );
-          icon.width = data[ k + 8 ] + 0x100 * data[ k + 9 ];
-          icon.height = data[ k + 10 ] + 0x100 * data[ k + 11 ];
+          int width = data[ k + 8 ] + 0x100 * data[ k + 9 ];
+          int height = data[ k + 10 ] + 0x100 * data[ k + 11 ];
           icon.type = data[ k + 15 ];
           int start = data[ k + 16 ] + 0x100 * data[ k + 17 ] + 0x10000 * data[ k + 18 ];
           if ( start != iconEnd )
@@ -639,14 +639,14 @@ public class RemoteConfiguration
             continue;
           }
           int size = data[ k + 24 ] + 0x100 * data[ k + 25 ] - 0x200;
-          int lineWidth = size / icon.height;
-          int byteWidth = lineWidth / icon.width;
+          int lineWidth = size / height;
+          int byteWidth = lineWidth / width;
           Hex hex1 = new Hex( data, fileStart + start, size );
           Hex hex2 = null;
           start += size;
           if ( start == data[ k + 20 ] + 0x100 * data[ k + 21 ] + 0x10000 * data[ k + 22 ] )
           {
-            size = icon.height * icon.width;
+            size = height * width;
             hex2 = new Hex( data, fileStart + start, size );
             iconEnd = start + size;
           }
@@ -656,8 +656,8 @@ public class RemoteConfiguration
             continue;
           }
           
-          BufferedImage image = new BufferedImage( icon.width, icon.height, BufferedImage.TYPE_INT_ARGB );
-//          System.err.println( "Icon " + i + ": size " + icon.height + "x" + icon.width );
+          BufferedImage image = new BufferedImage( width, height, BufferedImage.TYPE_INT_ARGB );
+//          System.err.println( "Icon " + i + ": size " + height + "x" + width );
 //          System.err.println( "Intro: " + icon.intro );
 //          System.err.println( "Dataset 1: " + byteWidth + "-byte values");
           
@@ -700,7 +700,7 @@ public class RemoteConfiguration
 //          System.err.println( "Dataset 2: " + "1-byte values");
 //          for ( int m = 0; m < icon.height; m++ )
 //          {
-//            System.err.println( hex2.subHex( m * icon.width, icon.width ) );
+//            System.err.println( hex2.subHex( m * width, width ) );
 //          }
 //          System.err.println();
 
@@ -1068,20 +1068,16 @@ public class RemoteConfiguration
         pos++;
         int ref = data[ pos ] + 0x100 * data[ pos + 1 ];
         items.macro = items.macroMap.get( ref );
-
-        if ( items.macro == null )
+        for ( Activity activity : activities.values() )
         {
-          for ( Activity activity : activities.values() )
+          if ( !activity.isActive() )
           {
-            if ( !activity.isActive() )
-            {
-              continue;
-            }
-            if ( activity.getMacro() != null &&  activity.getMacro().getSerial() == ref )
-            {
-              items.activity = activity;
-              items.macro = activity.getMacro();
-            }
+            continue;
+          }
+          if ( activity.getMacro() != null &&  activity.getMacro().getSerial() == ref )
+          {
+            items.activity = activity;
+            items.macro = activity.getMacro();
           }
         }
         if ( items.macro == null )
@@ -6567,8 +6563,6 @@ public class RemoteConfiguration
   
   public class Icon
   {
-    int height = 0;
-    int width = 0;
     int type = 0;
     Hex intro = null;
     BufferedImage image = null;
@@ -7280,7 +7274,7 @@ public class RemoteConfiguration
     work.add( new Hex( new short[]{ 0,0,0,0,0,0,0,0,0,0,0,0 } ) );
     int iconCount = refs.size();
     work.add( getLittleEndian( iconCount ) );
-    int indexSize = 0;
+    int indexSize = 0x7F;
     for ( int n : refs )
     {
       indexSize = Math.max( indexSize, n + 1 );
