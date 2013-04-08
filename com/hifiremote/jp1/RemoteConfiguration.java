@@ -6563,6 +6563,17 @@ public class RemoteConfiguration
   
   public class Icon
   {
+    /* Icon types appear to be as follows:
+     * 05 = System icon (monochrome)
+     * 06 = Favorites icons (for a particular channel)
+     * 08 = Profiles icons (nine standard ones, numbered 1-9, for standard
+     *      profile names Custom, Mom, Dad, Kids, Guest, Movies, Newes, 
+     *      Sports, Comedy
+     * 09 = Soft button icons
+     * 
+     * Types 08 and 09 seem to have a standard reference in the intro field,
+     * as the actual icon numbers vary.
+     */
     int type = 0;
     Hex intro = null;
     BufferedImage image = null;
