@@ -11,6 +11,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -31,6 +32,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.hifiremote.jp1.RemoteConfiguration.Icon;
+import com.hifiremote.jp1.RemoteMaster.IconImage;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -100,12 +104,15 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     JPanel editPanel = new JPanel();
     editPanel.setLayout( new BoxLayout( editPanel, BoxLayout.PAGE_AXIS ) );
     editPanel.add( messageArea );
-    editPanel.add( Box.createVerticalStrut( 5 ) );
+    
+    buttonPanel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
     editButton = new JButton( "Edit Device" );
     editButton.setEnabled( false );
-    editButton.setAlignmentX( CENTER_ALIGNMENT );
-    editPanel.add( editButton );
-    editPanel.add( Box.createVerticalStrut( 5 ) );
+    
+    iconImage = new IconImage();
+    buttonPanel.add( editButton );
+    buttonPanel.add( Box.createVerticalStrut( iconImage.getPreferredSize().height ) );
+    editPanel.add( buttonPanel );
     editButton.addActionListener( this );
     deviceButtonPanel.add( editPanel, BorderLayout.PAGE_END );
 
@@ -230,7 +237,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     messageArea.setText( text );
     messageArea.setVisible( softDevices != null );
 
-    if ( remoteConfig == null || !remoteConfig.hasSegments() )
+    if ( !remoteConfig.hasSegments() )
     {
       settingModel.set( remoteConfig );
       settingTable.initColumns( settingModel );
@@ -240,23 +247,32 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     {
       settingsScrollPane.setVisible( false ); 
     }
-
-    if ( remoteConfig != null )
+    
+    buttonPanel.removeAll();
+    buttonPanel.add( editButton );
+    buttonPanel.add( Box.createVerticalStrut( iconImage.getPreferredSize().height ) );
+    
+    if ( remote.isSSD() )
     {
-      text = remoteConfig.getNotes();
-      if ( text == null )
-      {
-        text = "";
-      }
-      notes.setText( text );
-      notes.setCaretPosition( 0 );
-
-      setWarning();
-
-      adjustPreferredViewportSizes();
-
-      validate();
+      buttonPanel.add( Box.createHorizontalStrut( 10 ) );
+      buttonPanel.add( iconImage );
     }
+
+    text = remoteConfig.getNotes();
+    if ( text == null )
+    {
+      text = "";
+    }
+    notes.setText( text );
+    notes.setCaretPosition( 0 );
+
+    setWarning();
+
+    adjustPreferredViewportSizes();
+
+    validate();
+
+    iconImage.setImage( null );
     setInProgress = false;
   }
 
@@ -300,13 +316,23 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         Remote remote = remoteConfig.getRemote();
         DeviceButton deviceButton = remote.getDeviceButtons()[ selectedRow ];
         selectedUpgrade = remoteConfig.getAssignedDeviceUpgrade( deviceButton );
-
         editButton.setEnabled( selectedUpgrade != null );
+        
+        BufferedImage image = null;
+        int iconRef = deviceButton.getIconRef();
+        if ( remoteConfig.getSysIcons() != null && iconRef < 127 )
+        {
+          Icon icon = remoteConfig.getSysIcons().get( iconRef );
+          image = icon != null ? icon.image : null;
+        }
+        iconImage.setImage( image );
       }
       else
       {
         editButton.setEnabled( false );
+        iconImage.setImage( null );
       }
+      deviceButtonPanel.repaint();
       setHighlightAction( deviceButtonTable );
     }
   }
@@ -446,9 +472,10 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   private JTextArea notes = null;
 
   private JButton editButton = null;
+  private JPanel buttonPanel = null;
   private DeviceUpgrade selectedUpgrade = null;
   private boolean setInProgress = false;
-
+  private IconImage iconImage = null;
   private DeviceUpgradeEditor editor;
 
   /*

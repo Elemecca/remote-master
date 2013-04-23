@@ -13,7 +13,6 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,7 +30,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -39,6 +37,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.NumberFormatter;
 
+import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener,
@@ -315,7 +314,7 @@ PropertyChangeListener, RMSetter< Object >
     else if ( source == deviceBox )
     {
       DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
-      DefaultComboBoxModel model = new DefaultComboBoxModel( db.getUpgrade().getFunctionList().toArray() );
+      DefaultComboBoxModel model = new DefaultComboBoxModel( db.getUpgrade().getGeneralFunctionList().toArray() );
       functionBox.setModel( model );
     }
     else if ( source == holdCheck )
@@ -333,8 +332,18 @@ PropertyChangeListener, RMSetter< Object >
   private KeySpec getKeySpec()
   {
     DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
-    Function f = ( Function )functionBox.getSelectedItem();
-    KeySpec ks = new KeySpec( db, f );
+    GeneralFunction f = ( GeneralFunction )functionBox.getSelectedItem();
+    KeySpec ks = null;
+    if ( f instanceof Function )
+    {
+      ks = new KeySpec( db, f );
+    }
+    else if ( !f.getUsers().isEmpty() )
+    {
+      // Learns and Selector keys (Home etc)
+      User u = f.getUsers().get( 0 );
+      ks = new KeySpec( u.db, u.button );
+    }
     Float fv = ( Float )delay.getValue();
     ks.delay = fv == null ? 0 : ( int )( 10.0 * fv + 0.5 );
     if ( holdCheck.isSelected() )
@@ -492,16 +501,34 @@ PropertyChangeListener, RMSetter< Object >
         return;
       }
       deviceBox.setSelectedItem( ks.db );
-      Function f = null;
-      if ( ks.btn != null )
+      
+      Button b = ks.fn == null ? ks.btn : ks.fn.getUsers().isEmpty() ? null : ks.fn.getUsers().get( 0 ).button;
+      GeneralFunction gf = null;
+      if ( b != null )
       {
-        f = ks.db.getUpgrade().getFunction( ks.btn, Button.NORMAL_STATE );
+        gf = ks.db.getUpgrade().getGeneralFunction( b.getKeyCode() );
       }
-      else if ( ks.fn instanceof Function )
+      else if ( ks.fn != null )
       {
-        f = ( Function )ks.fn;
+        gf = ks.fn;
       }
-      functionBox.setSelectedItem( f );
+      Function f = ( gf instanceof Function ) ? ( Function )gf : null;
+      if ( f != null && !ks.db.getUpgrade().getFunctionList().contains( f ) && f.getAlternate() != null )
+      {
+        gf = f.getAlternate();
+      }
+      functionBox.getModel().setSelectedItem( null );
+      
+//      Function f = null;
+//      if ( ks.btn != null )
+//      {
+//        f = ks.db.getUpgrade().getFunction( ks.btn, Button.NORMAL_STATE );
+//      }
+//      else if ( ks.fn instanceof Function )
+//      {
+//        f = ( Function )ks.fn;
+//      }
+      functionBox.setSelectedItem( gf );
       delay.setValue( ks.delay / 10.0f );
       boolean showDuration = ks.duration >= 0;
       holdCheck.setSelected( showDuration );

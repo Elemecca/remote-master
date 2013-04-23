@@ -549,6 +549,7 @@ public class RemoteConfiguration
     int end = data[ 2 ] + ( data[ 3 ] << 8 ) + ( ( data[ 1 ] & 0xF0 ) << 12 );
     ssdFiles.clear();
     userIcons = new LinkedHashMap< Integer, Icon >();
+    sysIcons = new LinkedHashMap< Integer, Icon >();
     for ( DeviceButton db : remote.getDeviceButtons() )
     {
       db.setSegment( null );
@@ -557,8 +558,8 @@ public class RemoteConfiguration
     Items items = new Items();
     while ( pos < end )
     {
-      while ( index < 16 && ( status & ( 1 << ++index ) ) == 0 ) {};
-      if ( index == 16 )
+      while ( index < 12 && ( status & ( 1 << ++index ) ) == 0 ) {};
+      if ( index == 12 )
       {
         break;
       }
@@ -703,12 +704,22 @@ public class RemoteConfiguration
 //            System.err.println( hex2.subHex( m * width, width ) );
 //          }
 //          System.err.println();
-
-          userIcons.put( i, icon );
+          if ( index == 8 )
+          {
+            userIcons.put( i, icon );
+          }
+          else if ( index == 9 )
+          {
+            sysIcons.put( i, icon );
+          }
         }
-//        Hex hex = new Hex( data, fileStart, end - fileStart );
-//        file.hex = hex;
-//        ssdFiles.put( name, file );
+        if ( index == 9 )
+        {
+          // Save the sysicons.pkg file in full
+          Hex hex = new Hex( data, fileStart, iconEnd );
+          file.hex = hex;
+          ssdFiles.put( name, file );
+        }
         pos = fileStart + iconEnd;
       }
     }
@@ -936,11 +947,11 @@ public class RemoteConfiguration
       {
         short[] segData = items.db.getSegment().getHex().getData();
         int typeIndex = items.db.getDeviceTypeIndex( segData );
-        items.upgrade = new DeviceUpgrade();
-        items.upgrade.setRemoteConfig( this );
+        items.upgrade = new DeviceUpgrade();        
         items.upgrade.setRemote( remote );
         items.upgrade.setButtonIndependent( false );
         items.upgrade.setButtonRestriction( items.db );
+        items.upgrade.setRemoteConfig( this );
         items.db.setUpgrade( items.upgrade );
         items.alias = remote.getDeviceTypeAlias( remote.getDeviceTypeByIndex( typeIndex ) );        
         devices.add( items.upgrade );
@@ -3470,7 +3481,12 @@ public class RemoteConfiguration
         {
           hex = makeUserIconsPKG();
         }
-        else
+        else if ( name.equals( "sysicons.pkg" ) )
+        {
+          file = ssdFiles.get( name );
+          hex = file != null ? file.hex : null;
+        }
+        else if ( name.endsWith( ".xcf" ) )
         {
           file = ssdFiles.get( name );
           hex = makeBXMLFile( file );
@@ -6441,10 +6457,16 @@ public class RemoteConfiguration
   private RemoteMaster owner = null;
   
   private LinkedHashMap< Integer, Icon > userIcons = null;
+  private LinkedHashMap< Integer, Icon > sysIcons = null;
 
   public LinkedHashMap< Integer, Icon > getUserIcons()
   {
     return userIcons;
+  }
+
+  public LinkedHashMap< Integer, Icon > getSysIcons()
+  {
+    return sysIcons;
   }
 
   public RemoteMaster getOwner()
@@ -6507,7 +6529,7 @@ public class RemoteConfiguration
       {
 //        buff.append( b.getName() );
         GeneralFunction f = db.getUpgrade().getGeneralFunction(b.getKeyCode() );
-        buff.append( f.getName() );
+        buff.append( f != null ? f.getName() : b.getName() );
       }
       else if ( fn != null )
       {
@@ -6687,21 +6709,6 @@ public class RemoteConfiguration
     for ( Macro macro : macros )
     {
       Activity activity = macro.getActivity();
-//      if ( ac instanceof Macro )
-//      {
-//        Macro macro = ( Macro )ac;
-//        if ( activities != null )
-//        {
-//          for ( Activity a : activities.values() )
-//          {
-//            if ( a.getMacro() == macro )
-//            {
-//              activity = a;
-//              break;
-//            }
-//          }
-//        }
-//      }
       work.add( makeItem( "macro", getLittleEndian( macro.getSerial() ), false ) );
       if ( macro.getName() == null )
       {
@@ -6709,34 +6716,12 @@ public class RemoteConfiguration
       }
       work.add( makeItem( "name16", new Hex( macro.getName(), 16 ), true ) );
 
-      short[] keys = new short[ 0 ];
       String btnTag = null;
       Hex btnHex = null;
       boolean isSysMacro = false;
       List< KeySpec > items = null;
-//      if ( ac instanceof Macro )
-//      {
-        items = macro.getItems();
-        isSysMacro = macro.isSystemMacro();
-//      }
-//      else if ( ac instanceof KeyMoveKey )
-//      {
-//        KeyMoveKey km = ( KeyMoveKey )ac;
-//        keys = new short[ 2 ];
-//        keys[ 0 ] = ( short )km.getTargetDevice().getButtonIndex();
-//        keys[ 1 ] = km.getMovedKeyCode();
-//        items = km.getItems();
-//        isSysMacro = true;
-//      }
-//      else
-//      {
-//        KeyMove km = ( KeyMove )ac;
-//        keys = new short[ 2 ];
-//        keys[ 0 ] = ( short )km.getTargetDevice().getButtonIndex();
-//        keys[ 1 ] = ( short )( km.getIrSerial() + 0x80 );
-//        items = km.getItems();
-//        isSysMacro = true;
-//      }
+      items = macro.getItems();
+      isSysMacro = macro.isSystemMacro();
 
       for ( KeySpec item : items )
       {

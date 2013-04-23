@@ -155,6 +155,11 @@ public class DeviceUpgrade extends Highlight
         functionMap = new LinkedHashMap< Integer, Function >();
         functionMap.putAll( base.getFunctionMap() );
       }
+      if ( base.getSelectorMap() != null )
+      {
+        selectorMap = new LinkedHashMap< Integer, GeneralFunction >();
+        selectorMap.putAll( base.getSelectorMap() );
+      }
     }
   }
 
@@ -532,6 +537,7 @@ public class DeviceUpgrade extends Highlight
       kmMap = new LinkedHashMap< Integer, KeyMove >();
       learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
       functionMap = new LinkedHashMap< Integer, Function >();
+      selectorMap = new LinkedHashMap< Integer, GeneralFunction >();
     }
   }
 
@@ -3699,6 +3705,19 @@ public class DeviceUpgrade extends Highlight
   public void setRemoteConfig( RemoteConfiguration remoteConfig )
   {
     this.remoteConfig = remoteConfig;
+    if ( remote != null && remote.isSSD() )
+    {
+      List< Button > selectors = null;
+      if ( remote.getButtonGroups() != null && ( selectors = remote.getButtonGroups().get( "Selector" ) ) != null )
+      {
+        for ( Button b : selectors )
+        {
+          GeneralFunction gf = new GeneralFunction( b.getName() );
+          gf.addReference( buttonRestriction, b );
+          selectorMap.put( ( int )b.getKeyCode(), gf );
+        }
+      }
+    }
   }
 
   /** The dev type alias name. */
@@ -3796,6 +3815,7 @@ public class DeviceUpgrade extends Highlight
   private LinkedHashMap< Integer, Macro > macroMap = null;
   private LinkedHashMap< Integer, KeyMove > kmMap = null;
   private LinkedHashMap< Integer, LearnedSignal > learnedMap = null;
+  private LinkedHashMap< Integer, GeneralFunction > selectorMap = null;
 
   public LinkedHashMap< Integer, Function > getFunctionMap()
   {
@@ -3815,6 +3835,11 @@ public class DeviceUpgrade extends Highlight
   public LinkedHashMap< Integer, LearnedSignal > getLearnedMap()
   {
     return learnedMap;
+  }
+
+  public LinkedHashMap< Integer, GeneralFunction > getSelectorMap()
+  {
+    return selectorMap;
   }
 
   /**
@@ -4223,14 +4248,14 @@ public class DeviceUpgrade extends Highlight
   
   public GeneralFunction getGeneralFunction( int keyCode )
   {
-    GeneralFunction gf = null;
     Button button = remote.getButton( keyCode );
+    GeneralFunction gf = null;
     if ( remote.isSSD() )
     {
-      LearnedSignal ls = learnedMap.get( keyCode );
-      if ( ls != null )
+      gf = selectorMap.get( keyCode );
+      if ( gf == null )
       {
-        gf = ls;
+        gf = learnedMap.get( keyCode );
       }
 //      Macro macro = macroMap.get( keyCode );
 //      if ( gf == null && macro != null )
@@ -4257,9 +4282,18 @@ public class DeviceUpgrade extends Highlight
       if ( function.accept() )
       {
         list.add( function );
-        list = Function.filter( list );
+//        list = Function.filter( list );
       }
     }
+    list = Function.filter( list );
+    return list;
+  }
+  
+  public List< GeneralFunction > getGeneralFunctionList()
+  {
+    List< GeneralFunction > list = new ArrayList< GeneralFunction >( getFunctionList() );
+    list.addAll( learnedMap.values() );
+    list.addAll( selectorMap.values() );
     return list;
   }
 

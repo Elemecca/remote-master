@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -17,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -294,6 +296,27 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   private List< AssemblerItem > clipBoardItems = new ArrayList< AssemblerItem >();
 
+  public static class IconImage extends Component
+  {               
+    private BufferedImage image = null;
+
+    public void setImage( BufferedImage image )
+    {
+      this.image = image;
+    }
+
+    public void paint( Graphics g ) 
+    {
+      int y = image == null ? 0 : ( 40 - image.getHeight() ) / 2;
+      g.drawImage( image, 0, Math.max( 0, y ), null ); 
+    }     
+
+    public Dimension getPreferredSize() 
+    {                     
+      return new Dimension( 100, 40 );        
+    }
+  }
+  
   public class Preview extends JPanel
   {
     Preview()

@@ -1,5 +1,6 @@
 package com.hifiremote.jp1.io;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,6 +26,7 @@ import com.hifiremote.jp1.Hex;
 import com.hifiremote.jp1.Remote;
 import com.hifiremote.jp1.RemoteManager;
 import com.hifiremote.jp1.RemoteMaster;
+import com.hifiremote.jp1.RemoteConfiguration.Icon;
  
 public class CommHID extends IO 
 {
@@ -327,6 +329,33 @@ public class CommHID extends IO
     return bytesRead;
 	}
 	
+	private int getEndPKG( int fileStart, byte[] buffer )
+	{
+	  int pos = fileStart;
+	  int numIcons = ( buffer[ pos + 12 ] & 0xFF ) + 0x100 * ( buffer[ pos + 13 ] & 0xFF );
+    int numEntries = ( buffer[ pos + 14 ] & 0xFF ) + 0x100 * ( buffer[ pos + 15 ] & 0xFF );
+    pos += 16;
+    int startIndex = pos + 28 * numIcons;
+    int iconEnd = 16 + 28 * numIcons + numEntries;
+    for ( int i = 0; i < numEntries; i++ )
+    {
+      int j = buffer[ startIndex + i ] & 0xFF ;
+      if ( j == 0 )
+      {
+        continue;
+      }
+      int k = pos + 28 * ( j - 1 );
+      int width = ( buffer[ k + 8 ] & 0xFF ) + 0x100 * ( buffer[ k + 9 ] & 0xFF );
+      int height = ( buffer[ k + 10 ] & 0xFF ) + 0x100 * ( buffer[ k + 11 ] & 0xFF );
+      int start = ( buffer[ k + 16 ] & 0xFF ) + 0x100 * ( buffer[ k + 17 ] & 0xFF ) + 0x10000 * ( buffer[ k + 18 ] & 0xFF );
+      int size = ( buffer[ k + 24 ] & 0xFF ) + 0x100 * ( buffer[ k + 25 ] & 0xFF ) - 0x200;
+      start += size;
+      size = height * width;
+      iconEnd = start + size;
+    }
+    return fileStart + iconEnd;
+	}
+	
 	private int getEndBXML( int fileStart, byte[] buffer )
   {
 	  int pos = fileStart;
@@ -374,21 +403,22 @@ public class CommHID extends IO
 	
 	int writeTouch( byte[] buffer )
 	{
-	  int status = ( buffer[ 0 ] & 0xFF ) | ( ( buffer[ 1 ] & 0x0F ) << 8 );
+	  // don't send sysicons.pkg
+	  int status = ( buffer[ 0 ] & 0xFF ) | ( ( buffer[ 1 ] & 0x0D ) << 8 );  
 	  int dataEnd = ( buffer[ 2 ] & 0xFF ) | ( ( buffer[ 3 ] & 0xFF ) << 8 ) | ( ( buffer[ 1 ] & 0xF0 ) << 12 );
     int pos = 4;
     int index = -1;
 	  while ( pos < dataEnd )
     {
-      while ( index < 16 && ( status & ( 1 << ++index ) ) == 0 ) {};
-      if ( index == 16 )
+      while ( index < 12 && ( status & ( 1 << ++index ) ) == 0 ) {};
+      if ( index == 12 )
       {
         break;
       }
       String name = Remote.userFilenames[ index ];
       System.err.println( "Sending file " + name );
       int count = 0;
-      int end = name.endsWith( ".xcf" ) ? getEndBXML( pos, buffer ) : dataEnd;
+      int end = name.endsWith( ".xcf" ) ? getEndBXML( pos, buffer ) : getEndPKG( pos, buffer );
       System.err.println( "File start: " + Integer.toHexString( pos ) + ", end: " + Integer.toHexString( end ) );
       int len = end - pos;
       Arrays.fill( ssdOut, ( byte )0 );

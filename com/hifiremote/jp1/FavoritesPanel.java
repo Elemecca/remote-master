@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -46,8 +45,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import javax.swing.text.NumberFormatter;
 
+import com.hifiremote.jp1.RemoteMaster.IconImage;
 import com.hifiremote.jp1.RemoteConfiguration.Icon;
-import com.hifiremote.jp1.RemoteConfiguration.SSDFile;
 
 public class FavoritesPanel extends RMPanel implements ActionListener, 
   ListSelectionListener, DocumentListener
@@ -176,12 +175,15 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     panel = new JPanel( new BorderLayout() );
     profilesPanel.add( panel, BorderLayout.PAGE_END );
     
-    JPanel p = new JPanel( new FlowLayout() );
-    profileField = new JTextField( 15 );
+    JPanel p = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ) );
+    profileField = new JTextField( 10 );
     profileField.getDocument().addDocumentListener( this );
     profileField.setToolTipText( "Edit this value to rename selected profile" );
     p.add( new JLabel( "Selected: " ) );
     p.add( profileField );
+    profileIcon = new IconImage();
+    p.add(  Box.createHorizontalStrut( 10 ) );
+    p.add( profileIcon );
     panel.add( p, BorderLayout.PAGE_START );
 
     buttonPanel = new JPanel( new WrapLayout() );
@@ -382,7 +384,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       profiles.setModel( profilesModel );
     }
     upperPane.resetToPreferredSizes();
-    image = null;
+    iconImage.setImage( null );
   }
   
   public void finishEditing()
@@ -570,15 +572,13 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           cloneButton.setEnabled( true );
           editButton.setEnabled( true );
           Integer iconRef = remoteConfig.getFavScans().get( row ).getIconRef();
+          BufferedImage image = null;
           if ( remoteConfig.getUserIcons() != null && iconRef != null && iconRef >= 127 )
           {
             Icon icon = remoteConfig.getUserIcons().get( iconRef );
             image = icon != null ? icon.image : null;
           }
-          else
-          {
-            image = null;
-          }
+          iconImage.setImage( image );
         }
         else
         {
@@ -586,7 +586,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           downButton.setEnabled( false );
           cloneButton.setEnabled( false );
           editButton.setEnabled( false );
-          image = null;
+          iconImage.setImage( null );
         }
         repaint();
         deleteButton.setEnabled( favTable.getSelectedRowCount() > 0 );
@@ -602,6 +602,14 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         upProfile.setEnabled( index > 0 );
         downProfile.setEnabled( index < profilesModel.getSize() - 1 );
         deleteProfile.setEnabled( true );
+        int iconRef = a.getIconRef();
+        BufferedImage image = null;
+        if ( remoteConfig.getUserIcons() != null && iconRef >= 127 )
+        {
+          Icon icon = remoteConfig.getUserIcons().get( iconRef );
+          image = icon != null ? icon.image : null;
+        }
+        profileIcon.setImage( image );
       }
       else
       {
@@ -609,13 +617,14 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         upProfile.setEnabled( false );
         downProfile.setEnabled( false );
         deleteProfile.setEnabled( false );
+        profileIcon.setImage( null );
       }
       if ( profileButton.isSelected() )
       {
         activityGroupModel.set( favBtn, remoteConfig, a );
         activityGroupTable.initColumns( activityGroupModel );
-        repaint();
       }
+      repaint();
     }
   }
   
@@ -725,19 +734,26 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     return profiles;
   }
   
-  public class IconImage extends Component
-  {               
-    public void paint( Graphics g ) 
-    {
-      int y = image == null ? 0 : ( 40 - image.getHeight() ) / 2;
-      g.drawImage( image, 0, Math.max( 0, y ), null ); 
-    }     
-
-    public Dimension getPreferredSize() 
-    {                     
-      return new Dimension( 100, 40 );        
-    }
-  }
+//  public class IconImage extends Component
+//  {               
+//    private BufferedImage image = null;
+//
+//    public void setImage( BufferedImage image )
+//    {
+//      this.image = image;
+//    }
+//
+//    public void paint( Graphics g ) 
+//    {
+//      int y = image == null ? 0 : ( 40 - image.getHeight() ) / 2;
+//      g.drawImage( image, 0, Math.max( 0, y ), null ); 
+//    }     
+//
+//    public Dimension getPreferredSize() 
+//    {                     
+//      return new Dimension( 100, 40 );        
+//    }
+//  }
 
   private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
   private RemoteConfiguration remoteConfig = null;
@@ -773,5 +789,5 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   private JRadioButton profileButton = new JRadioButton( "Show selected profile" );
   private JTextField profileField = null;
   private IconImage iconImage = null;
-  private BufferedImage image = null;
+  private IconImage profileIcon = null;
 }

@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,6 +30,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.hifiremote.jp1.Activity.Assister;
+import com.hifiremote.jp1.RemoteConfiguration.Icon;
+import com.hifiremote.jp1.RemoteMaster.IconImage;
 
 public class ActivityPanel extends RMPanel implements ChangeListener, ActionListener, ListSelectionListener
 {
@@ -97,7 +101,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     inner.add( panel, BorderLayout.CENTER);
     
     tabPanel.add( inner, BorderLayout.CENTER );
-    panel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
+    panel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
     clearActivity = new JButton( "Clear Activity" );
     clearActivity.addActionListener( this );
     panel.add( clearActivity );
@@ -107,6 +111,10 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     newActivity = new JButton( "New Activity" );
     newActivity.addActionListener( this );
     panel.add( newActivity );
+    
+    iconImage = new IconImage();
+    panel.add( Box.createHorizontalStrut( 10 ) );
+    panel.add( iconImage );
     add( panel, BorderLayout.PAGE_END );
     tabbedPane = new JTabbedPane();
     tabbedPane.addChangeListener( this );    
@@ -255,6 +263,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
   private JButton[] newAssist = new JButton[ 3 ];
   private JButton[] deleteAssist = new JButton[ 3 ];
   private JTextArea messageArea = null;
+  private IconImage iconImage = null;
 
   @Override
   public void stateChanged( ChangeEvent e )
@@ -274,7 +283,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
         tabbedPane.setComponentAt( index, tabPanel );
         lastIndex = index;
       }
-      Button btn = activityList.get( index ).getButton();
+      Activity activity = activityList.get( index );
+      Button btn = activity.getButton();
       finishEditing();
       activityFunctionModel.set( btn, remoteConfig );
       activityFunctionTable.initColumns( activityFunctionModel );
@@ -291,6 +301,15 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
             newAssist[ i ].setEnabled( a.getAssists().size() <= i || a.getAssists().get( i ).isEmpty() );
           }
         }
+        
+        BufferedImage image = null;
+        int iconRef = activity.getIconRef();
+        if ( remoteConfig.getSysIcons() != null && iconRef < 127 )
+        {
+          Icon icon = remoteConfig.getSysIcons().get( iconRef );
+          image = icon != null ? icon.image : null;
+        }
+        iconImage.setImage( image );
       }
       else
       {

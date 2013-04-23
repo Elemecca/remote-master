@@ -16,18 +16,13 @@ public class DeviceLabels extends RDFParameter
   private int length = 0;
   private short fill = 0x20;
   private int defaultsAddr = 0;
-  public static String columnName = "Label";
-  public static String columnName2 = null;
-  public static String columnName3 = null;
+  public String[] columnNames = { "Label", null, null };
 
   public void parse( String text, Remote remote ) throws Exception
   {
     List< String > settings = ParameterTokenizer.getTokens( text );
     addr = RDFReader.parseNumber( settings.get( 0 ) );
     length = RDFReader.parseNumber( settings.get( 1 ) );
-    columnName = "Label";
-    columnName2 = null;
-    columnName3 = null;
     if ( settings.size() > 2 )
     {
       String token = settings.get( 2 );
@@ -44,28 +39,12 @@ public class DeviceLabels extends RDFParameter
         defaultsAddr = RDFReader.parseNumber( token );
       }
     }
-    if ( settings.size() > 4 )
+    for ( int i = 4; i < Math.min( settings.size(), 7 ); i++ )
     {
-      String token = settings.get( 4 );
+      String token = settings.get( i );
       if ( token != null )
       {
-        columnName = token;
-      }
-    }
-    if ( settings.size() > 5 )
-    {
-      String token = settings.get( 5 );
-      if ( token != null )
-      {
-        columnName2 = token;
-      }
-    }
-    if ( settings.size() > 6 )
-    {
-      String token = settings.get( 6 );
-      if ( token != null )
-      {
-        columnName3 = token;
+        columnNames[ i - 4 ] = token;
       }
     }
   }

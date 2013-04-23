@@ -3927,7 +3927,7 @@ public class Remote implements Comparable< Remote >
   
   public final static String[] userFilenames = {
     "home.xcf", "system.xcf", "devices.xcf", "activities.xcf", "profiles.xcf",
-    "favorites.xcf", "macros.xcf", "snstest.xcf", "usericons.pkg" 
+    "favorites.xcf", "macros.xcf", "snstest.xcf", "usericons.pkg", "sysicons.pkg" 
   };
 
 }

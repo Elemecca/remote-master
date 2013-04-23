@@ -57,6 +57,16 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public void enableButtons( Button b, MacroDefinitionBox macroBox )
   {
+    if ( remoteConfig.getRemote().isSSD() )
+    {
+      macroBox.add.setEnabled( true );
+      macroBox.insert.setEnabled( true );
+      macroBox.addShift.setVisible( false );
+      macroBox.addXShift.setVisible( false );
+      macroBox.insertShift.setVisible( false );
+      macroBox.insertXShift.setVisible( false );
+      return;
+    }
     int limit = 15;
     if ( remoteConfig.getRemote().getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
       limit = 255;

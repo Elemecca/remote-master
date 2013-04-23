@@ -123,10 +123,13 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      if ( remote.getDeviceLabels() != null )
+      DeviceLabels labels = remote.getDeviceLabels();
+      if ( labels != null )
       {
-        count += DeviceLabels.columnName2 != null ? 
-            DeviceLabels.columnName3 != null ? 3 : 2 : 1;
+        for ( int i = 0; i < 3; i++ )
+        {
+          count += labels.columnNames[ i ] != null ? 1 : 0;
+        }
       }
       SoftDevices softDevices = remote.getSoftDevices();
       if ( softDevices != null && softDevices.usesSequence() )
@@ -159,39 +162,37 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
+      DeviceLabels labels = remote.getDeviceLabels();
       if ( ( remote.isSSD() || !remoteConfig.hasSegments() ) && col > 3 )
       {
+        // Skip the punchthrough columns
         col += 3;
       }
       if ( !remote.isSSD() && col > 6 )
       {
+        // Skip the Volume Lock column
         col++;
       }
-      if ( remote.getDeviceLabels() == null && col >= 9 )
+      for ( int i = 0; i < 3; i++ )
       {
-        col += 3;
-      }
-      if ( remote.getDeviceLabels() != null && DeviceLabels.columnName2 == null && col >= 10 )
-      {
-        col++;
-      }
-      if ( remote.getDeviceLabels() != null && DeviceLabels.columnName3 == null && col >= 11 )
-      {
-        col++;
+        // Skip unused labels columns
+        col += col >= i + 9 && ( labels == null || labels.columnNames[ i ] == null ) ? 1 : 0;
       }
       if ( !remote.usesIcons() && col >= 12 )
       {
+        // Skip IconRef column
         col++;
       }
       SoftDevices softDevices = remote.getSoftDevices();
       if ( ( softDevices == null || !softDevices.usesSequence() ) && col >= 13 )
       {
+        // Skip the Sequence Number column
         col++;
       }
     }
     else if ( col > 3 )
     {
-      col += 3;
+      col += 4;
     }
     return col;
   }
@@ -225,7 +226,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   {
       "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "<html>Volume<br>PunchThrough</html>", 
       "<html>Transport<br>PunchThrough</html>", "<html>Channel<br>PunchThrough</html>", "<html>Volume<br>Lock</html>", "Note", 
-      "Label", "", "", "IconRef", "Seq", "<html>Size &amp<br>Color</html>"
+      "", "", "", "IconRef", "Seq", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -236,18 +237,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   @Override
   public String getColumnName( int col )
   {
+    DeviceLabels labels = remoteConfig != null ? remoteConfig.getRemote().getDeviceLabels() : null;
     col = getEffectiveColumn( col );
-    if ( col == 9 && DeviceLabels.columnName != null )
+    if ( col >= 9 && col <= 11 )
     {
-      return DeviceLabels.columnName;
-    }
-    else if ( col == 10 && DeviceLabels.columnName2 != null )
-    {
-      return DeviceLabels.columnName2;
-    }
-    else if ( col == 11 && DeviceLabels.columnName3 != null )
-    {
-      return DeviceLabels.columnName3;
+      return labels.columnNames[ col - 9 ];
     }
     return colNames[ col ];
   }
@@ -411,14 +405,10 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         return labels.getText( data, row );
       }
       case 10:
-      {
-        DeviceLabels labels = remote.getDeviceLabels();
-        return labels.getText2( data, 2 );
-      }
       case 11:
       {
         DeviceLabels labels = remote.getDeviceLabels();
-        return labels.getText2( data, 3 );
+        return labels.getText2( data, column - 8 );
       }
       case 12:
       {

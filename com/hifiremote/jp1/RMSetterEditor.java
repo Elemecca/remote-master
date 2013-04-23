@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
@@ -12,6 +13,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
+
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 public class RMSetterEditor< T, C extends JComponent & RMSetter< T > > 
 extends DefaultCellEditor implements TableCellEditor, ActionListener
@@ -51,7 +54,14 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
     this.value = ( T )value;
     if ( panelClass == ( Class<?> )MacroDefinitionBox.class )
     {
-      button.setText( Macro.getValueString( ( Hex )value , remoteConfig ) );
+      if ( value instanceof Hex )
+      {
+        button.setText( Macro.getValueString( ( Hex )value , remoteConfig ) );
+      }
+      else
+      {
+        button.setText( Macro.getValueString( ( List< KeySpec > )value ) );
+      }
     }
     else
     {

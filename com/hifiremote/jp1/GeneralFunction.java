@@ -4,8 +4,15 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public abstract class GeneralFunction
+public class GeneralFunction
 {
+  public GeneralFunction() {};
+  
+  public GeneralFunction( String name )
+  {
+    this.name = name;
+  }
+  
   /**
    * The Class User.
    */
@@ -253,6 +260,28 @@ public abstract class GeneralFunction
   public void setIconref( Integer iconref )
   {
     this.iconref = iconref;
+  }
+  
+  @Override
+  public String toString()
+  {
+    if ( this instanceof Function )
+    {
+      return name;
+    }
+    else if ( this instanceof Macro )
+    {
+      return "Macro: " + name;
+    }
+    else if ( this instanceof LearnedSignal )
+    {
+      return "Learn: " + name;
+    }
+    else
+    {
+      // GeneralFunctions for Selector buttons have no subtype
+      return "Button: " + name;
+    }
   }
 
 
