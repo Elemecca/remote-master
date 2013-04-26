@@ -53,7 +53,7 @@ public class FunctionRenderer
       boolean unassigned = ( deviceUpgrade.getFunction( b, Button.NORMAL_STATE ) == null ) && 
           ( deviceUpgrade.getFunction( b, Button.SHIFTED_STATE ) == null ) && 
           ( deviceUpgrade.getFunction( b, Button.XSHIFTED_STATE ) == null );
-      if ( deviceUpgrade.getRemote().isSSD() )
+      if ( deviceUpgrade.getRemote().usesEZRC() )
       {
         int keyCode = b.getKeyCode();
         unassigned = unassigned && deviceUpgrade.getKmMap().get( keyCode ) == null

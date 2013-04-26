@@ -95,7 +95,7 @@ public class Activity extends Highlight
     this.button = button;
     name = button.getName();
     setSegmentFlags( 0xFF );
-    boolean onlyHardButtons = !remote.getButtonGroups().get( "Activity" ).contains( button );
+    boolean onlyHardButtons = remote.isSSD() && !remote.getButtonGroups().get( "Activity" ).contains( button );
     List< Integer > indices = new ArrayList< Integer >();
     for ( int i = 0; i < remote.getActivityButtonGroups().length; i++)
     {

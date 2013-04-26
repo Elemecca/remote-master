@@ -1451,6 +1451,10 @@ public class Remote implements Comparable< Remote >
       {
         rdfVersionAddress = RDFReader.parseNumber( value );
       }
+      else if ( parm.equalsIgnoreCase( "ActivityMapIndex" ) )
+      {
+        activityMapIndex = RDFReader.parseNumber( value );
+      }
 
       // A SoftHT entry should be ignored unless SoftDevices is used.
       if ( softDevices == null )
@@ -3626,6 +3630,8 @@ public class Remote implements Comparable< Remote >
 
   /** The section terminator. */
   private short sectionTerminator = 0;
+  
+  private int activityMapIndex = 0;
 
   private int rdfVersionAddress = 0;
 
@@ -3923,6 +3929,11 @@ public class Remote implements Comparable< Remote >
     {
       deviceBox.setSelectedIndex( 0 );
     }
+  }
+  
+  public List< Short > getActivityOrder()
+  {
+    return buttonMaps[ activityMapIndex ].getKeyCodeSingleList();
   }
   
   public final static String[] userFilenames = {

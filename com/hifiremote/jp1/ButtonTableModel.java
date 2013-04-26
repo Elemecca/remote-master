@@ -2,6 +2,8 @@ package com.hifiremote.jp1;
 
 import javax.swing.table.AbstractTableModel;
 
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class ButtonTableModel.
@@ -96,7 +98,7 @@ public class ButtonTableModel
       {
         count--;
       }
-      if ( remote.isSSD() )
+      if ( remote.usesEZRC() )
       {
         count += 2;   // Adds device and alias columns
       }
@@ -107,11 +109,11 @@ public class ButtonTableModel
   public int getEffectiveColumn( int col )
   {
     Remote remote = deviceUpgrade.getRemote();
-    if ( !remote.isSSD() && col > 0 )
+    if ( !remote.usesEZRC() && col > 0 )
     {
       col++;
     }
-    else if ( remote.isSSD() && col > 2 )
+    else if ( remote.usesEZRC() && col > 2 )
     {
       col += 2;
     }
@@ -162,7 +164,7 @@ public class ButtonTableModel
     col = getEffectiveColumn( col );
     Macro macro = null;
     GeneralFunction gf = null;
-    if ( remote.isSSD() )
+    if ( remote.usesEZRC() )
     {
       LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )button.getKeyCode() );
       if ( ls != null )
@@ -172,7 +174,22 @@ public class ButtonTableModel
       macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
       if ( gf == null && macro != null )
       {
-        gf = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
+        if ( macro.isSystemMacro() )
+        {
+          KeySpec ks = macro.getItems().get( 0 );
+          if ( remote.isSSD() )
+          {
+            gf = ks.fn;
+          }
+          else
+          {
+            gf = ks.db.getUpgrade().getFunction( ks.btn.getKeyCode() );
+          }
+        }
+        else
+        {
+          gf = macro;
+        }
         if ( !macro.isSystemMacro() )
         {
           macro = null;

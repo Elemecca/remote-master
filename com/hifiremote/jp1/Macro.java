@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -200,7 +201,87 @@ public class Macro extends AdvancedCode
       setItems( ( List< KeySpec > )value );
     }
   }
-
+  public int dataLength()
+  {
+    if ( items != null )
+    {
+      int length = 0;
+      DeviceButton db = null;
+      for ( KeySpec ks : items )
+      {
+        length += ks.db != db ? 1 : 0;
+        length += ks.duration >= 0 ? 2 : 1;
+        db = ks.db;
+      }
+      return length;
+    }
+    if ( data != null )
+    {
+      return data.length();
+    }
+    return 0;
+  }
+  
+  public Hex getItemData()
+  {
+    if ( items == null )
+    {
+      return new Hex( 0 );
+    }
+    int size = dataLength();
+    short[] vals = new short[ 2 * size ];
+    DeviceButton db = null;
+    int pos = 0;
+    for ( KeySpec ks : items )
+    {
+      if ( ks.db != db )
+      {
+        vals[ pos + size ] = 0;
+        vals[ pos++ ] = ( short )( ks.db.getButtonIndex() );
+        db = ks.db;
+      }
+      if ( ks.duration >= 0 )
+      {
+        vals[ pos + size ] =  ( short )ks.duration;
+        vals[ pos++ ] = 0xFE;
+      }
+      vals[ pos + size ] = ( short )ks.delay;
+      vals[ pos++ ] = ks.btn.getKeyCode();
+    }
+    return new Hex( vals );
+  }
+  
+  public void setItems( Hex hex, Remote remote )
+  {
+    int count = hex.length() / 2;
+    DeviceButton db = remote.getDeviceButtons()[ 0 ]; // default, only used for ill-formed macro
+    //      short[] durations = hex.subHex( count, count ).getData();
+    int duration = -1;
+    items = new ArrayList< KeySpec >();
+    for ( int i = 0; i < count; i++ )
+    {
+      int keyCode = hex.getData()[ i ];
+      DeviceButton db2 = remote.getDeviceButton( keyCode );
+      Button btn = remote.getButton( keyCode );
+      if ( db2 != null )
+      {
+        db = db2;
+      }
+      else if ( keyCode == 0xFE )
+      {
+        duration = hex.getData()[ i + count ];
+      }
+      else if ( btn != null )
+      {
+        KeySpec ks = new KeySpec( db, btn );
+        ks.delay = hex.getData()[ i + count ];
+        ks.duration = duration;
+        items.add( ks );
+        duration = -1; 
+      }
+    }
+  }
+  
   public int store( short[] buffer, int offset, Remote remote )
   {
     buffer[ offset++ ] = ( short )getKeyCode();
@@ -240,13 +321,21 @@ public class Macro extends AdvancedCode
       {
         pw.print( "SegmentFlags", segmentFlags );
       }
-      int dataLen = data.length();
-      Hex hex = new Hex( 2 * dataLen );
-      for ( int i = 0; i < dataLen; i++ )
+      Hex hex = null;
+      if ( items != null )
       {
-        int val = data.getData()[ i ];
-        hex.set( ( short )( val & 0xFF ), i );
-        hex.set( ( short )( ( val >> 8 ) & 0xFF ), dataLen + i );
+        hex = getItemData();
+      }
+      else
+      {
+        int dataLen = dataLength();
+        hex = new Hex( 2 * dataLen );
+        for ( int i = 0; i < dataLen; i++ )
+        {
+          int val = data.getData()[ i ];
+          hex.set( ( short )( val & 0xFF ), i );
+          hex.set( ( short )( ( val >> 8 ) & 0xFF ), dataLen + i );
+        }
       }
       pw.print( "Name", name );
       pw.print( "DeviceIndex", deviceButtonIndex );

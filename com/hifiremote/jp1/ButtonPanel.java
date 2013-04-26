@@ -402,7 +402,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
 
     Remote remote = devUpgrade.getRemote();
     selector = new SelectionPanel( this, this );
-    if ( remote.isSSD() )
+    if ( remote.usesEZRC() )
     {
       selectionPanel.add( selector, BorderLayout.CENTER );
     }
@@ -473,6 +473,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
       functionButton.addActionListener( al );
       learnedButton.addActionListener( al );
       macroButton.addActionListener( al );
+      macroButton.setEnabled( remote.isSSD() );
     }
     
     protected void addFunctions()

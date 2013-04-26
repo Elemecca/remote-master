@@ -133,7 +133,7 @@ public class DeviceUpgrade extends Highlight
         assignments.assign( user.button, f2, user.state );
       }
     }
-    if ( remote.isSSD() )
+    if ( remote.usesEZRC() )
     {
       if ( base.getMacroMap() != null )
       {
@@ -531,7 +531,7 @@ public class DeviceUpgrade extends Highlight
       assignments = newAssignments;
     }
     remote = newRemote;
-    if ( remote.isSSD() && macroMap == null )
+    if ( remote.usesEZRC() && macroMap == null )
     {
       macroMap = new LinkedHashMap< Integer, Macro >();
       kmMap = new LinkedHashMap< Integer, KeyMove >();
@@ -1005,7 +1005,7 @@ public class DeviceUpgrade extends Highlight
   private short findDigitMapIndex()
   {
     short[] digitMaps = remote.getDigitMaps();
-    if ( digitMaps == null || digitMaps.length == 0 )
+    if ( digitMaps == null || digitMaps.length == 0 || remote.usesEZRC() )
     {
       return -1;
     }
@@ -4028,7 +4028,7 @@ public class DeviceUpgrade extends Highlight
   
   public void setFunction( Button b, GeneralFunction f, int state )
   {
-    if ( !remote.isSSD() )
+    if ( !remote.usesEZRC() )
     {
       if ( f instanceof Function )
       {
@@ -4037,9 +4037,11 @@ public class DeviceUpgrade extends Highlight
       return;
     }
     int keyCode = b.getKeyCode();
-    Function bf = getFunction( keyCode );
-    if ( f == null && bf != null )
+    Function bf = getFunction( keyCode );  // function currently on b
+    if ( f == null )
     {
+      // Delete current assignment to b.  If assignment is a macro,
+      // leave the underlying function, if any.
       Macro macro = macroMap.get( keyCode );
       if ( macro != null )
       {
@@ -4049,39 +4051,51 @@ public class DeviceUpgrade extends Highlight
         {
           remoteConfig.getMacros().remove( macro );
         }
-        bf.setMacroref( null );
-        if ( bf.data != null )
+        if ( bf != null )
         {
-          return;
+          bf.setMacroref( null );
+          if ( bf.data != null )
+          {
+            return;
+          }
         }
       }
-      functions.remove( bf );
-      assignments.assign( b, null );
+      if ( bf != null )
+      {
+        // If assignment was a macro with no underlying function data, or if
+        // assignment was a function, remove the function
+        functions.remove( bf );
+        assignments.assign( b, null );
+      }
       return;
     }
+    DeviceUpgrade fnUpg = f.getUpgrade( remote );
     if ( bf == null )
     {
-      if ( f instanceof Function && f.getUsers().isEmpty() )
+      if ( fnUpg == this && f instanceof Function 
+          && ( f.getUsers().isEmpty() || !remote.isSSD() ) )
       {
         bf = ( Function )f;
+        assignments.assign( b, bf );
       }
-      else
+      else if ( remote.isSSD() )
       {
         bf = new Function( f.getName() );
         bf.setUpgrade( this );
         functions.add( bf );
+        assignments.assign( b, bf );
       }
-      assignments.assign( b, bf );
     }
-    DeviceUpgrade fnUpg = f.getUpgrade( remote );
+    
     if ( fnUpg == this )
     {
-      if ( bf != f )
+      if ( f != bf )
       {
-        bf.setName( f.getName() );
         if ( f instanceof Function )
         {
+          // will only apply if remote is SSD, in which case bf != null
           Function fn = ( Function )f;
+          bf.setName( f.getName() );
           bf.setData( new Hex( fn.getData() ) );
           bf.setGid( fn.getGid() );
           bf.setKeyflags( fn.getKeyflags() );
@@ -4098,10 +4112,14 @@ public class DeviceUpgrade extends Highlight
             }
           }  
           macro = ( Macro )f;
-          bf.setMacroref( macro.getSerial() );
           macroMap.put( keyCode, macro );
           macro.addReference( buttonRestriction, b );
           remoteConfig.getMacros().add( macro );
+          if ( remote.isSSD() )
+          {
+            bf.setName( f.getName() );
+            bf.setMacroref( macro.getSerial() );
+          }
         }
       }
     }
@@ -4109,23 +4127,26 @@ public class DeviceUpgrade extends Highlight
     {
       Function fn = ( Function )f;
       Function irFn = null;
-      if ( fn.getSerial() >= 0 )
+      if ( remote.isSSD() )
       {
-        irFn = fn;
-      }
-      else if ( fn.getAlternate() != null )
-      {
-        irFn = fn.getAlternate();
-      }
-      else
-      {
-        irFn = new Function( fn );
-        int serial = getNewFunctionSerial();
-        irFn.setSerial( serial );
-        fnUpg.getFunctionMap().put( serial, irFn );
-        fn.setAlternate( irFn );
-        irFn.setAlternate( fn );
-        fnUpg.functions.add( irFn );
+        if ( fn.getSerial() >= 0 )
+        {
+          irFn = fn;
+        }
+        else if ( fn.getAlternate() != null )
+        {
+          irFn = fn.getAlternate();
+        }
+        else
+        {
+          irFn = new Function( fn );
+          int serial = getNewFunctionSerial();
+          irFn.setSerial( serial );
+          fnUpg.getFunctionMap().put( serial, irFn );
+          fn.setAlternate( irFn );
+          irFn.setAlternate( fn );
+          fnUpg.functions.add( irFn );
+        }
       }
       Macro macro = macroMap.get( keyCode );
       if ( macro != null )
@@ -4138,18 +4159,30 @@ public class DeviceUpgrade extends Highlight
       }   
       macro = new Macro( b.getKeyCode(), null, null );
       remoteConfig.getMacros().add( macro );
-      macro.setName( irFn.getName() );
+      macro.setName( fn.getName() );  // changed irFn to fn, don't think it makes a difference
       macro.setSystemMacro( true );
       int serial = remoteConfig.getNewMacroSerial();
       macro.setSerial( serial );
       List< KeySpec > items = new ArrayList< KeySpec >();
-      KeySpec ks = new KeySpec( fnUpg.buttonRestriction, irFn );
+      KeySpec ks = null;
+      if ( remote.isSSD() )
+      {
+        ks = new KeySpec( fnUpg.buttonRestriction, irFn );
+        bf.setMacroref( serial );
+      }
+      else if ( !f.getUsers().isEmpty() )
+      {
+        User u = f.getUsers().get( 0 );
+        ks = new KeySpec( u.db, u.button );
+        macro.setDeviceButtonIndex( buttonRestriction.getButtonIndex() );
+        macro.addReference( buttonRestriction, b );
+        macro.setSegmentFlags( 0xFF );
+      }
       ks.duration = 0;
       ks.delay = 3;
       items.add( ks );
       macro.setItems( items );
       macroMap.put( keyCode, macro );
-      bf.setMacroref( serial );
     }
   }
   
@@ -4292,8 +4325,11 @@ public class DeviceUpgrade extends Highlight
   public List< GeneralFunction > getGeneralFunctionList()
   {
     List< GeneralFunction > list = new ArrayList< GeneralFunction >( getFunctionList() );
-    list.addAll( learnedMap.values() );
-    list.addAll( selectorMap.values() );
+    if ( remote.isSSD() )
+    {
+      list.addAll( learnedMap.values() );
+      list.addAll( selectorMap.values() );
+    }
     return list;
   }
 

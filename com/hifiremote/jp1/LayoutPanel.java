@@ -48,6 +48,7 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
 import com.hifiremote.jp1.ButtonPanel.SelectionPanel;
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 /**
  * The Class LayoutPanel.
@@ -157,7 +158,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     xShiftMode = new JRadioButton( "XShift" );
     selector = new SelectionPanel( this, this );
 
-    if ( devUpgrade.getRemote().isSSD() )
+    if ( devUpgrade.getRemote().usesEZRC() )
     {
       box.add( selector );
     }
@@ -193,7 +194,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         },  // cols
         {}  // rows added later
     };
-    double rowSize[] = remote.isSSD() ? new double[]{  b, pr, b, pr, b, pr, b, pr, b } :  new double[]{ b, pr, b, pr, b };
+    double rowSize[] = remote.usesEZRC() ? new double[]{  b, pr, b, pr, b, pr, b, pr, b } :  new double[]{ b, pr, b, pr, b };
     size[ 1 ] = rowSize;
 //    JPanel infoPanel = new JPanel( new GridLayout( 2, 2 ) );
     JPanel infoPanel = new JPanel( new TableLayout( size ) );
@@ -204,7 +205,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     buttonName.setEditable( false );
     infoPanel.add( buttonName, "3, 1" );
     String sRow = "3";
-    if ( remote.isSSD() )
+    if ( remote.usesEZRC() )
     {
       infoPanel.add( new JLabel( "Device:" ), "1, " + sRow );
       device = new JTextField();
@@ -312,7 +313,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     if ( normalMode.isSelected() )
     {
       Macro macro = null;
-      if ( remote.isSSD() )
+      if ( remote.usesEZRC() )
       {
         LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
         if ( ls != null )
@@ -322,33 +323,28 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         macro = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
         if ( f == null && macro != null )
         {
-          f = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
-//          if ( !macro.isSystemMacro() )
-//          {
-//            macro = null;
-//          }
+          if ( macro.isSystemMacro() )
+          {
+            KeySpec ks = macro.getItems().get( 0 );
+            if ( remote.isSSD() )
+            {
+              f = ks.fn;
+            }
+            else
+            {
+              f = ks.db.getUpgrade().getFunction( ks.btn.getKeyCode() );
+            }
+          }
+          else
+          {
+            f = macro;
+          }
         }
       }
       if ( f == null )
       {
         f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
       }
-//      if ( remote.isSSD() )
-//      {
-//        f = deviceUpgrade.getLearnedMap().get( ( int )b.getKeyCode() );
-//        if ( f == null )
-//        {
-//          f = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
-//        }
-//        if ( f == null )
-//        {
-//          f = deviceUpgrade.getKmMap().get( ( int )b.getKeyCode() );
-//        }
-//      }
-//      if ( f == null )
-//      {
-//        f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
-//      }
     }
     else if ( shiftMode.isSelected() )
     {
@@ -454,7 +450,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
     setFunctions();
 
-    if ( !r.isSSD() )
+    if ( !r.usesEZRC() )
     {
       shiftMode.setText( r.getShiftLabel() );
       if ( r.getShiftEnabled() )
@@ -516,7 +512,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         function.setText( f.getDisplayName() );
       else
         function.setText( "" );
-      if ( remote.isSSD() )
+      if ( remote.usesEZRC() )
       {
         Macro macro = null;
         device.setText( "" );
@@ -541,7 +537,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     {
       buttonName.setText( "" );
       function.setText( "" );
-      if ( remote.isSSD() )
+      if ( remote.usesEZRC() )
       {
         device.setText( "" );
         alias.setText( "" );
@@ -1013,7 +1009,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       String text = "<html>" + name;
       if ( f != null )
       {
-        if ( remote.isSSD() )
+        if ( remote.usesEZRC() )
         {
           Macro macro = null;
           if ( f instanceof Function )

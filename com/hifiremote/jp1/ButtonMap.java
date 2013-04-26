@@ -29,6 +29,11 @@ public class ButtonMap
     }
   }
 
+  public List< Short > getKeyCodeSingleList()
+  {
+    return keyCodeSingleList;
+  }
+
   /**
    * Gets the number.
    * 
@@ -376,5 +381,5 @@ public class ButtonMap
   
   private Button[] buttonList = null;
   
-  private List< Short > keyCodeSingleList;
+  public List< Short > keyCodeSingleList;
 }

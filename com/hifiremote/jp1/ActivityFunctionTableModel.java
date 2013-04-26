@@ -57,7 +57,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public void enableButtons( Button b, MacroDefinitionBox macroBox )
   {
-    if ( remoteConfig.getRemote().isSSD() )
+    if ( remoteConfig.getRemote().usesEZRC() )
     {
       macroBox.add.setEnabled( true );
       macroBox.insert.setEnabled( true );

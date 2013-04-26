@@ -139,7 +139,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       boundKey.setSelectedIndex( 0 );
     }
     
-    if ( remote.isSSD() )
+    if ( remote.usesEZRC() )
     {
       nameField = new JTextField( 20 );
       JPanel panel = new JPanel( new WrapLayout() );
@@ -205,7 +205,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       {
         macroBox.setValue( ( List< KeySpec > )val );
       }
-      if ( config.getRemote().isSSD() )
+      if ( config.getRemote().usesEZRC() )
       {
         boundDevice.setSelectedItem( macro.getDeviceButton( config ) );
         nameField.setText( macro.getName() );
@@ -451,7 +451,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   @Override
   public void enableButtons( Button b, MacroDefinitionBox macroBox )
   {
-    if ( config.getRemote().isSSD() )
+    if ( config.getRemote().usesEZRC() )
     {
       macroBox.add.setEnabled( true );
       macroBox.insert.setEnabled( true );

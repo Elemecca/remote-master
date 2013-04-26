@@ -208,8 +208,8 @@ PropertyChangeListener, RMSetter< Object >
     }
     availableButtons.setModel( availableButtonModel );
     CardLayout cl = ( CardLayout)creationPanel.getLayout();
-    cl.show( creationPanel, remote.isSSD() ? "SSD" : "Normal" );
-    if ( remote.isSSD() )
+    cl.show( creationPanel, remote.usesEZRC() ? "SSD" : "Normal" );
+    if ( remote.usesEZRC() )
     {
       remote.setDeviceComboBox( deviceBox );
       holdCheck = new JCheckBox( "Hold?" );
@@ -228,20 +228,20 @@ PropertyChangeListener, RMSetter< Object >
       durationLabel.setEnabled( false );
 //      duration.setFocusLostBehavior( JFormattedTextField.COMMIT_OR_REVERT );
     }
-    else if ( remote.usesEZRC() )
-    {
-      FontMetrics fm = durationLabel.getFontMetrics( durationLabel.getFont() );
-      int width = fm.stringWidth( "Pause after for:  " );
-      durationLabel.setPreferredSize( new Dimension( width, durationLabel.getHeight() ) );
-      durationLabel.setLabelFor( duration );
-      durationLabel.setHorizontalAlignment( SwingConstants.RIGHT );
-      duration.setFocusLostBehavior( JFormattedTextField.PERSIST );
-      durationPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 1, 0 ) );
-      durationPanel.add( durationLabel, BorderLayout.LINE_START );
-      durationPanel.add( duration, BorderLayout.CENTER );
-      durationPanel.add( durationSuffix, BorderLayout.LINE_END );
-      durationPanel.setVisible( true );
-    }
+//    else if ( remote.usesEZRC() )
+//    {
+//      FontMetrics fm = durationLabel.getFontMetrics( durationLabel.getFont() );
+//      int width = fm.stringWidth( "Pause after for:  " );
+//      durationLabel.setPreferredSize( new Dimension( width, durationLabel.getHeight() ) );
+//      durationLabel.setLabelFor( duration );
+//      durationLabel.setHorizontalAlignment( SwingConstants.RIGHT );
+//      duration.setFocusLostBehavior( JFormattedTextField.PERSIST );
+//      durationPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 1, 0 ) );
+//      durationPanel.add( durationLabel, BorderLayout.LINE_START );
+//      durationPanel.add( duration, BorderLayout.CENTER );
+//      durationPanel.add( durationSuffix, BorderLayout.LINE_END );
+//      durationPanel.setVisible( true );
+//    }
     
   }  
   
@@ -300,7 +300,7 @@ PropertyChangeListener, RMSetter< Object >
     {
       // minimum duration is 0 for hold buttons but 0.1 for others
       float f = ( Float )duration.getValue();
-      if ( !remote.isSSD() )
+      if ( !remote.usesEZRC() )
       {
         int selected = macroButtons.getSelectedIndex();
         int val = ( ( Number )macroButtonModel.elementAt( selected ) ).intValue();
@@ -367,17 +367,17 @@ PropertyChangeListener, RMSetter< Object >
   private void addKey( int mask )
   {
     Remote remote = config.getRemote();
-    if ( remote.isSSD() )
+    if ( remote.usesEZRC() )
     {
       macroButtonModel.addElement( getKeySpec() );
       return;
     }
-    if ( remote.usesEZRC() )
-    {
-      // minimum duration is 0 for hold buttons but 0.1 for others
-      Button btn = ( Button )availableButtons.getSelectedValue();
-      mask |= isHold( btn ) ? 0 : 0x100;
-    }
+//    if ( remote.usesEZRC() )
+//    {
+//      // minimum duration is 0 for hold buttons but 0.1 for others
+//      Button btn = ( Button )availableButtons.getSelectedValue();
+//      mask |= isHold( btn ) ? 0 : 0x100;
+//    }
     Integer value = new Integer( getSelectedKeyCode() | mask );
     macroButtonModel.addElement( value );
   }
@@ -391,7 +391,7 @@ PropertyChangeListener, RMSetter< Object >
   private void insertKey( int mask )
   {
     int index = macroButtons.getSelectedIndex();
-    if ( config.getRemote().isSSD() )
+    if ( config.getRemote().usesEZRC() )
     {
       KeySpec value = getKeySpec();
       macroButtonModel.add( index, value );
@@ -462,7 +462,7 @@ PropertyChangeListener, RMSetter< Object >
   public Object getValue()
   {
     int length = macroButtonModel.getSize();
-    if ( config.getRemote().isSSD() )
+    if ( config.getRemote().usesEZRC() )
     {
       List< KeySpec > items = new ArrayList< KeySpec >();
       for ( int i = 0; i < length; ++i )
@@ -493,7 +493,7 @@ PropertyChangeListener, RMSetter< Object >
       return;
 
     enableButtons();
-    if ( config.getRemote().isSSD() )
+    if ( config.getRemote().usesEZRC() )
     {
       KeySpec ks = ( KeySpec)macroButtons.getSelectedValue();
       if ( ks == null )
@@ -546,7 +546,7 @@ PropertyChangeListener, RMSetter< Object >
     {
       return;
     }
-    if ( config.getRemote().isSSD() )
+    if ( config.getRemote().usesEZRC() )
     {
       @SuppressWarnings( "unchecked" )
       List< KeySpec > list = ( List< KeySpec > )value;
