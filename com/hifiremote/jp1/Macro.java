@@ -1,9 +1,11 @@
 package com.hifiremote.jp1;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 
+import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 // TODO: Auto-generated Javadoc
@@ -56,6 +58,11 @@ public class Macro extends AdvancedCode
     {
       name = temp;
     }
+    temp = props.getProperty( "SystemMacro" );
+    if ( temp != null )
+    {
+      systemMacro = true;
+    }
     try
     {
       temp = props.getProperty( "SequenceNumber" );
@@ -76,6 +83,15 @@ public class Macro extends AdvancedCode
       if ( temp != null )
       {
         serial = Integer.parseInt( temp );
+      }
+      assists = Assister.load( props );
+      if ( assists == null && props.getProperty( "Assistant" ) != null )
+      {
+        assists = new LinkedHashMap< Integer, List<Assister> >();
+        for ( int j = 0; j < 3; j++ )
+        {
+          assists.put( j , new ArrayList< Assister >() );
+        }
       }
     }
     catch ( NumberFormatException nfe )
@@ -210,7 +226,8 @@ public class Macro extends AdvancedCode
       for ( KeySpec ks : items )
       {
         length += ks.db != db ? 1 : 0;
-        length += ks.duration >= 0 ? 2 : 1;
+        length += ks.duration >= 0 ? 1 : 0;
+        length += ks.btn != null ? 1 : ks.fn != null ? 2 : 0;
         db = ks.db;
       }
       return length;
@@ -245,8 +262,21 @@ public class Macro extends AdvancedCode
         vals[ pos + size ] =  ( short )ks.duration;
         vals[ pos++ ] = 0xFE;
       }
-      vals[ pos + size ] = ( short )ks.delay;
-      vals[ pos++ ] = ks.btn.getKeyCode();
+      Button btn = ks.getButton();
+      if ( btn != null )
+      {
+        vals[ pos + size ] = ( short )ks.delay;
+        vals[ pos++ ] = btn.getKeyCode();
+      }
+      else if ( ks.fn != null )
+      {
+        // Only used in remotes with SSD; use duration value 0xFF as indicator
+        int serial = ks.fn.getSerial();
+        vals[ pos + size ] = ( short )0xFF;
+        vals[ pos++ ] = ( short )( serial & 0xFF );
+        vals[ pos + size ] = ( short )ks.delay;
+        vals[ pos++ ] = ( short )( serial >> 8 );
+      }
     }
     return new Hex( vals );
   }
@@ -270,6 +300,18 @@ public class Macro extends AdvancedCode
       else if ( keyCode == 0xFE )
       {
         duration = hex.getData()[ i + count ];
+      }
+      else if ( hex.getData()[ i + count ] == 0xFF )
+      {
+        // first byte of ir serial
+        int irSerial = hex.getData()[ i++ ];
+        irSerial += hex.getData()[ i ] << 8;
+        // irSerial is converted to a function after loading of device upgrades
+        KeySpec ks = new KeySpec( db, irSerial );
+        ks.delay = hex.getData()[ i + count ];
+        ks.duration = duration;
+        items.add( ks );
+        duration = -1; 
       }
       else if ( btn != null )
       {
@@ -340,8 +382,17 @@ public class Macro extends AdvancedCode
       pw.print( "Name", name );
       pw.print( "DeviceIndex", deviceButtonIndex );
       pw.print( "KeyCode", keyCode );
+      if ( systemMacro )
+      {
+        pw.print( "SystemMacro", 1 );
+      }
       pw.print( "Data", hex );
       pw.print( "Serial", serial );
+      if ( assists != null && !assists.isEmpty() )
+      {
+        pw.print(  "Assistant", 1 );
+        Assister.store( assists, pw );
+      }
       if ( notes != null && notes.length() > 0 )
       {
         pw.print( "Notes", notes );
@@ -377,17 +428,17 @@ public class Macro extends AdvancedCode
     return config.getRemote().getDeviceButton( deviceButtonIndex );
   }
 
-  private short[] durations = null;
-
-  public short[] getDurations()
-  {
-    return durations;
-  }
-
-  public void setDurations( short[] durations )
-  {
-    this.durations = durations;
-  }
+//  private short[] durations = null;
+//
+//  public short[] getDurations()
+//  {
+//    return durations;
+//  }
+//
+//  public void setDurations( short[] durations )
+//  {
+//    this.durations = durations;
+//  }
   
   private boolean systemMacro = false;
 
@@ -411,6 +462,18 @@ public class Macro extends AdvancedCode
   public void setActivity( Activity activity )
   {
     this.activity = activity;
+  }
+  
+  private LinkedHashMap< Integer, List< Assister > > assists = null;
+  
+  public LinkedHashMap< Integer, List< Assister >> getAssists()
+  {
+    return assists;
+  }
+  
+  public void setAssists( LinkedHashMap< Integer, List< Assister >> assists )
+  {
+    this.assists = assists;
   }
 
   public String toString()

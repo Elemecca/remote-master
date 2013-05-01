@@ -345,6 +345,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
           macro = new Macro( keyCode, new Hex( 0 ), activity.getButton().getKeyCode(), 0, null );
           macro.setSegmentFlags( 0xFF );
           activity.setMacro( macro );
+          macro.setActivity( activity );
         }
         else
         {

@@ -95,6 +95,12 @@ public class LearnedSignal extends Highlight
     keyCode = Integer.parseInt( properties.getProperty( "KeyCode" ) );
     deviceButtonIndex = Integer.parseInt( properties.getProperty( "DeviceButtonIndex" ) );
     format = Integer.parseInt( properties.getProperty( "Format", "0" ) );
+    String temp = properties.getProperty( "Header" );
+    if ( temp != null )
+    {
+      header = new Hex( temp );
+    }
+    name = properties.getProperty( "Name" );
     data = new Hex( properties.getProperty( "Data" ) );
     notes = properties.getProperty( "Notes" );
   }
@@ -141,6 +147,14 @@ public class LearnedSignal extends Highlight
     if ( format > 0 )
     {
       pw.print( "Format", format);
+    }
+    if ( header != null )
+    {
+      pw.print( "Header", header );
+    }
+    if ( name != null )
+    {
+      pw.print( "Name", name );
     }
     pw.print( "Data", data );
     if ( notes != null && !notes.equals( "" ) )

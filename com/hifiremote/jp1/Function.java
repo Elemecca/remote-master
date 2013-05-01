@@ -94,18 +94,18 @@ public class Function extends GeneralFunction
    * @param prefix
    *          the prefix
    */
-  public void store( Properties props, String prefix )
-  {
-    if ( isEmpty() )
-      props.setProperty( prefix + ".name", "" );
-
-    if ( name != null )
-      props.setProperty( prefix + ".name", name );
-    if ( data != null )
-      props.setProperty( prefix + ".hex", data.toString() );
-    if ( notes != null )
-      props.setProperty( prefix + ".notes", notes );
-  }
+//  public void store( Properties props, String prefix )
+//  {
+//    if ( isEmpty() )
+//      props.setProperty( prefix + ".name", "" );
+//
+//    if ( name != null )
+//      props.setProperty( prefix + ".name", name );
+//    if ( data != null )
+//      props.setProperty( prefix + ".hex", data.toString() );
+//    if ( notes != null )
+//      props.setProperty( prefix + ".notes", notes );
+//  }
 
   /**
    * Store.
@@ -124,12 +124,24 @@ public class Function extends GeneralFunction
       out.print( prefix + ".name", name );
     if ( gid != null && gid != defaultIndex )
       out.print( prefix + ".index", Integer.toString( gid ) );
+    if ( keyflags != null )
+      out.print( prefix + ".keyflags", Integer.toString( keyflags ) );
+    if ( serial >= 0 )
+      out.print( prefix + ".serial", Integer.toString( serial ) );
     if ( data != null )
       out.print( prefix + ".hex", data.toString() );
+    if ( macroref != null )
+    {
+      out.print( prefix + ".macroref", Integer.toString( macroref ) );
+    }
+    if ( iconref != null )
+    {
+      out.print( prefix + ".iconref", Integer.toString( iconref ) );
+    }
     if ( notes != null )
       out.print( prefix + ".notes", notes );
   }
-
+  
   /**
    * Load.
    * 
@@ -146,9 +158,21 @@ public class Function extends GeneralFunction
     str = props.getProperty( prefix + ".index" );
     if ( str != null )
       setGid( Integer.parseInt( str ) );
+    str = props.getProperty( prefix + ".keyflags" );
+    if ( str != null )
+      setKeyflags( Integer.parseInt( str ) );
+    str = props.getProperty( prefix + ".serial" );
+    if ( str != null )
+      setSerial( Integer.parseInt( str ) );
     str = props.getProperty( prefix + ".hex" );
     if ( str != null )
       setHex( new Hex( str ) );
+    str = props.getProperty( prefix + ".macroref" );
+    if ( str != null )
+      setMacroref( Integer.parseInt( str ) );
+    str = props.getProperty( prefix + ".iconref" );
+    if ( str != null )
+      setIconref( Integer.parseInt( str ) );
     str = props.getProperty( prefix + ".notes" );
     if ( str != null )
       setNotes( str );
@@ -286,9 +310,13 @@ public class Function extends GeneralFunction
   
   public boolean isEquivalent( Function f )
   {
+    // There appear to be functions that differ only in the keygid
+    // but as the keygid seems not to be used by the remote, they are
+    // treated here as equivalent
     return name.equals( f.name )
         && upgrade == f.upgrade
         && data.equals( f.data );
+//        && gid.equals(  f.gid );
   }
   
   public Function getEquivalent( List< Function > list )
@@ -331,12 +359,24 @@ public class Function extends GeneralFunction
     this.alternate = alternate;
   }
 
+  public int getRmirIndex()
+  {
+    return rmirIndex;
+  }
+
+  public void setRmirIndex( int rmirIndex )
+  {
+    this.rmirIndex = rmirIndex;
+  }
+
   /** The EZ-RC GID value corresponding to this function name */
   protected Integer gid = null;
   
   private Integer macroref = null;
   
   private Integer keyflags = null;
+  
+  private int rmirIndex = -1;
   
   /** Gives the equivalent ir form (serial >= 0)
    *  for an assigned form (serial == -1), and vice versa

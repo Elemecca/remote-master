@@ -15,14 +15,28 @@ public class ActivityGroup extends Highlight
       pw.print( "GroupSegmentFlags", groups[ 0 ].getSegmentFlags() );
     }
     Hex hex = new Hex( groups.length );
-    for ( ActivityGroup group : groups )
+    Hex indices = new Hex( groups.length );
+    boolean printIndices = false;
+    for ( int i = 0; i < groups.length; i++ )
+//    for ( ActivityGroup group : groups )
     {
-      hex.set( ( short )group.getDeviceIndex(), group.getIndex() );
+      ActivityGroup group = groups[ i ];
+//      hex.set( ( short )group.getDeviceIndex(), group.getIndex() );
+      hex.set( ( short )group.getDeviceIndex(), i );
+      indices.set( ( short )group.getIndex(), i );
+      if ( group.getIndex() != i )
+      {
+        printIndices = true;
+      }
       String notes = group.getNotes();
       if ( notes != null && !notes.trim().isEmpty() )
       {
-        pw.print( "GroupNotes" + group.getIndex(), notes );
+        pw.print( "GroupNotes" + i, notes );
       }
+    }
+    if ( printIndices )
+    {
+      pw.print( "GroupIndices", indices.toString() );
     }
     pw.print( "GroupSettings", hex.toString() );
   }
@@ -40,12 +54,26 @@ public class ActivityGroup extends Highlight
     if ( temp != null )
     {
       Hex hex = new Hex( temp );
-      ActivityGroup[] activityGroups = new ActivityGroup[ hex.length() ];
-      for ( int index = 0; index < hex.length(); index++ )
+      Hex indices = null;
+      temp = props.getProperty( "GroupIndices" );
+      if ( temp != null )
       {
-        activityGroups[ index ] = new ActivityGroup( index, hex.getData()[ index ] );
-        activityGroups[ index ].setNotes( props.getProperty( "GroupNotes" + index ) );
-        activityGroups[ index ].setSegmentFlags( groupSegmentFlags );
+        indices = new Hex( temp );
+      }
+      else
+      {
+        indices = new Hex( hex.length() );
+        for ( int i = 0; i < indices.length(); i++ )
+        {
+          indices.set( ( short )i, i );
+        }
+      }
+      ActivityGroup[] activityGroups = new ActivityGroup[ hex.length() ];
+      for ( int i = 0; i < hex.length(); i++ )
+      {
+        activityGroups[ i ] = new ActivityGroup( indices.getData()[ i ], hex.getData()[ i ] );
+        activityGroups[ i ].setNotes( props.getProperty( "GroupNotes" + i ) );
+        activityGroups[ i ].setSegmentFlags( groupSegmentFlags );
       }
       activity.setActivityGroups( activityGroups );
     }

@@ -185,7 +185,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
       case 3:
         return favScan.getNotes();
       case 4:
-        return favScan.getIconRef();
+        return favScan.getIconref();
       case 5:
         if ( panel instanceof FavoritesPanel )
         {
@@ -218,7 +218,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     }
     else if ( col == 4 )
     {
-      favScan.setIconRef( ( Integer )value );
+      favScan.setIconref( ( Integer )value );
     }
     else if ( col == 5 )
     {

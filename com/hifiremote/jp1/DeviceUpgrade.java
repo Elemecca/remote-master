@@ -934,6 +934,18 @@ public class DeviceUpgrade extends Highlight
     }
     return null;
   }
+  
+  private Function getFunctionByRmirIndex( int rmirIndex )
+  {
+    for ( Function f : functions )
+    {
+      if ( f.getRmirIndex() == rmirIndex )
+      {
+        return f;
+      }
+    }
+    return null;
+  }
 
   /**
    * Gets the function.
@@ -2049,6 +2061,7 @@ public class DeviceUpgrade extends Highlight
     int i = 0;
     for ( Function func : functions )
     {
+      func.setRmirIndex( i );
       func.store( out, "Function." + i++ );
     }
 
@@ -2070,6 +2083,10 @@ public class DeviceUpgrade extends Highlight
       if ( f == null )
       {
         fstr = "null";
+      }
+      else if ( remote.usesEZRC() )
+      {
+        fstr = "Fn" + f.getRmirIndex();
       }
       else
       {
@@ -2427,6 +2444,7 @@ public class DeviceUpgrade extends Highlight
       {
         System.err.println( "Warning:  multiple functions with name " + f.getName() );
       }
+      f.setRmirIndex( i );
       f.setUpgrade( this );
       functions.add( f );
       i++ ;
@@ -2464,7 +2482,15 @@ public class DeviceUpgrade extends Highlight
         Function func = null;
         if ( !str.equals( "null" ) )
         {
-          func = getFunction( str.replaceAll( regex, replace ) );
+          if ( remote.usesEZRC() && str.startsWith( "Fn" ) )
+          {
+            int rmirIndex = Integer.parseInt( str.substring( 2 ) );
+            func = getFunctionByRmirIndex( rmirIndex );
+          }
+          else
+          {
+            func = getFunction( str.replaceAll( regex, replace ) );
+          }
           assignments.assign( b, func, Button.NORMAL_STATE );
         }
         str = st.nextToken();

@@ -250,7 +250,8 @@ public class RemoteConfiguration
       {
         try
         {
-          Class< ? > c = Class.forName( "com.hifiremote.jp1." + sectionName );
+          String className = sectionName.equals( "Profile" ) ? "Activity" : sectionName;
+          Class< ? > c = Class.forName( "com.hifiremote.jp1." + className );
           Constructor< ? > ct = c.getConstructor( Properties.class );
           Object o = ct.newInstance( section );
           if ( o instanceof SpecialProtocolFunction )
@@ -278,6 +279,10 @@ public class RemoteConfiguration
             if ( activityMacros != null && remote.getButtonGroups().get( "Activity" ).contains( button ) )
             {
               activityMacros.put( button, macro );
+              if ( remote.isSSD() )
+              {
+                macros.add( macro );
+              }
             }
             else
             {
@@ -311,6 +316,16 @@ public class RemoteConfiguration
               activities = new LinkedHashMap< Button, Activity >();
             }
             activities.put( activity.getButton(), activity );
+          }
+          else if ( sectionName.equals( "Profile" ) && remote.getFavKey() != null )
+          {
+            Activity activity = ( Activity )o;
+            activity.set( remote );
+            if ( remote.getFavKey().getProfiles() == null )
+            {
+              remote.getFavKey().setProfiles( new ArrayList< Activity >() );
+            }
+            remote.getFavKey().getProfiles().add( activity );
           }
           else if ( sectionName.equals( "LearnedSignal" ) )
           {
@@ -351,6 +366,7 @@ public class RemoteConfiguration
         Activity activity = activities.get( btn );
         Macro macro = activityMacros.get( btn );
         activity.setMacro( macro );
+        macro.setActivity( activity );
         if ( activity.getSelector() == null )
         {
           activity.setSelector( remote.getButton( macro.getKeyCode() ) );
@@ -744,18 +760,14 @@ public class RemoteConfiguration
   
   private void decodeItem( Items items, int fileIndex, String tag, int pos, boolean start, boolean dbOnly )
   {
-    if ( fileIndex < 2 || fileIndex > 6 )
+    if ( fileIndex < 2 || fileIndex > 6 || fileIndex > 2 && dbOnly )
     {
       return;
     }
     int ndx = 0;
     if ( start )
     {
-      if ( tag.equals( "favorites" ) )
-      {
-        items.activity = activities.get( remote.getButtonByStandardName( "Favorites" ) );
-      }
-      else if ( tag.equals( "device" ) )
+      if ( tag.equals( "device" ) )
       {
         int len = data[ pos++ ];
         // Convert device serial into a keycode by adding 0x50, to take it
@@ -772,6 +784,109 @@ public class RemoteConfiguration
         items.db.setName( name );
         items.db.setSerial( dev - 0x50 );
         new Segment( 0, 0xFF, new Hex( 15 ), items.db );
+      }
+      else if ( ( ndx = Arrays.asList( "brand", "model", "remotemodel" ).indexOf( tag ) ) >= 0 )
+      {
+        int len = data[ pos ];
+        Segment seg = items.db.getSegment();
+        int oldLen = seg.getHex().length();
+        Hex hex = new Hex( seg.getHex(), 0, oldLen + len );
+        for ( int i = 0; i < len + 1; i++ )
+        {
+          hex.getData()[ oldLen - 3 + ndx + i ] = ( short )( data[ pos++ ] & 0xFF );
+        }
+        seg.setHex( hex );
+      }
+      else if ( tag.equals( "volumemaster" ) )
+      {
+        items.db.setVpt( 2 );
+      }
+      else if ( tag.equals( "volumelock" ) )
+      {
+        if ( items.db.getVpt() != 2 )
+        {
+          items.db.setVpt( 1 );
+        }
+      }
+      else if ( tag.equals(  "iconref" ) )
+      {
+        pos++;
+        if ( fileIndex == 2 )
+        {
+          if ( items.key != null )
+          {
+            items.key.iconref = ( int )data[ pos++ ];
+          }
+          else
+          {
+            items.db.setIconRef( data[ pos++ ] );
+          }
+        }
+        else if ( fileIndex == 3 || fileIndex == 4 )
+        {
+          if ( items.key != null && items.activity.getButton() != items.key.btn )
+          {
+            items.key.iconref = ( int )data[ pos++ ];
+          }
+          else
+          {
+            items.activity.setIconRef( data[ pos++ ] );
+          }
+        }
+        else if ( fileIndex == 5 )
+        {
+          items.fav.setIconref( ( int )data[ pos++ ] );
+        }
+      }
+      else if ( tag.equals(  "favoritewidth" ) )
+      {
+        pos++;
+        items.db.setFavoritewidth( data[ pos++ ] );
+      }
+      else if ( tag.equals(  "enterkey" ) )
+      {
+        pos++;
+        favFinalKey = remote.getButton( data[ pos++ ] );
+      }
+      else if ( tag.equals( "codeset" ) )
+      {
+        int len = data[ pos++ ];
+        short[] segData = items.db.getSegment().getHex().getData();
+        int typeIndex = data[ pos++ ];
+        items.db.setDeviceTypeIndex( ( short )typeIndex, segData );
+        char[] ch = new char[ len - 1 ];
+        for ( int i = 0; i < len - 1; i++ )
+        {
+          ch[ i ] = ( char )data[ pos++ ];
+        }
+        String str = new String( ch );
+        int code = 0;
+        try
+        {
+          code = Integer.parseInt( str );
+        }
+        catch ( NumberFormatException e )
+        {
+          items.db.setConstructed( true );
+          System.err.println( "Malformed setup code " + str + " at " + Integer.toHexString( pos - 4 ) );
+        }
+        items.setupCode = code;
+        items.db.setSetupCode( ( short )items.setupCode, segData );
+      }
+      else if ( tag.equals( "keydef" ) || tag.equals( "irdef" ) )
+      {
+        // Needed here for processing of iconref
+        items.key = new Key();
+      }
+      
+      if ( dbOnly )
+      {
+        return;
+      }
+ 
+      if ( tag.equals( "favorites" ) )
+      {
+        items.activity = activities.get( remote.getButtonByStandardName( "Favorites" ) );
       }
       else if ( tag.equals( "activity" ) )
       {
@@ -823,29 +938,6 @@ public class RemoteConfiguration
         items.fav.setProfileIndices( new ArrayList< Integer >() );
         favScans.add( items.fav );
       }
-      else if ( ( ndx = Arrays.asList( "brand", "model", "remotemodel" ).indexOf( tag ) ) >= 0 )
-      {
-        int len = data[ pos ];
-        Segment seg = items.db.getSegment();
-        int oldLen = seg.getHex().length();
-        Hex hex = new Hex( seg.getHex(), 0, oldLen + len );
-        for ( int i = 0; i < len + 1; i++ )
-        {
-          hex.getData()[ oldLen - 3 + ndx + i ] = ( short )( data[ pos++ ] & 0xFF );
-        }
-        seg.setHex( hex );
-      }
-      else if ( tag.equals( "volumemaster" ) )
-      {
-        items.db.setVpt( 2 );
-      }
-      else if ( tag.equals( "volumelock" ) )
-      {
-        if ( items.db.getVpt() != 2 )
-        {
-          items.db.setVpt( 1 );
-        }
-      }
       else if ( tag.equals( "profileindex" ) )
       {
         pos++;
@@ -855,36 +947,6 @@ public class RemoteConfiguration
       {
         pos++;
         favKeyDevButton = remote.getDeviceButton( data[ pos++ ] + 0x50 );
-      }
-      else if ( tag.equals(  "iconref" ) )
-      {
-        pos++;
-        if ( fileIndex == 2 )
-        {
-          if ( items.key != null )
-          {
-            items.key.iconref = ( int )data[ pos++ ];
-          }
-          else
-          {
-            items.db.setIconRef( data[ pos++ ] );
-          }
-        }
-        else if ( fileIndex == 3 || fileIndex == 4 )
-        {
-          if ( items.key != null && items.activity.getButton() != items.key.btn )
-          {
-            items.key.iconref = ( int )data[ pos++ ];
-          }
-          else
-          {
-            items.activity.setIconRef( data[ pos++ ] );
-          }
-        }
-        else if ( fileIndex == 5 )
-        {
-          items.fav.setIconRef( ( int )data[ pos++ ] );
-        }
       }
       else if ( tag.equals(  "channelnumber" ) )
       {
@@ -907,46 +969,7 @@ public class RemoteConfiguration
         }
         items.fav.setData( hex );
       }
-      else if ( tag.equals(  "favoritewidth" ) )
-      {
-        pos++;
-        items.db.setFavoritewidth( data[ pos++ ] );
-      }
-      else if ( tag.equals(  "enterkey" ) )
-      {
-        pos++;
-        favFinalKey = remote.getButton( data[ pos++ ] );
-      }
       else if ( tag.equals( "codeset" ) )
-      {
-        int len = data[ pos++ ];
-        short[] segData = items.db.getSegment().getHex().getData();
-        int typeIndex = data[ pos++ ];
-        items.db.setDeviceTypeIndex( ( short )typeIndex, segData );
-        char[] ch = new char[ len - 1 ];
-        for ( int i = 0; i < len - 1; i++ )
-        {
-          ch[ i ] = ( char )data[ pos++ ];
-        }
-        String str = new String( ch );
-        int code = 0;
-        try
-        {
-          code = Integer.parseInt( str );
-        }
-        catch ( NumberFormatException e )
-        {
-          items.db.setConstructed( true );
-          System.err.println( "Malformed setup code " + str + " at " + Integer.toHexString( pos - 4 ) );
-        }
-        items.setupCode = code;
-        items.db.setSetupCode( ( short )items.setupCode, segData );
-      }
-      if ( dbOnly )
-      {
-        return;
-      }
-      if ( tag.equals( "codeset" ) )
       {
         short[] segData = items.db.getSegment().getHex().getData();
         int typeIndex = items.db.getDeviceTypeIndex( segData );
@@ -979,7 +1002,6 @@ public class RemoteConfiguration
       }
       else if ( tag.equals( "keydef" ) )
       {
-        items.key = new Key();
         items.keys.add( items.key );
         pos++;
         items.key.keycode = data[ pos++ ];
@@ -1072,7 +1094,6 @@ public class RemoteConfiguration
       }
       else if ( tag.equals( "irdef" ) )
       {
-        items.key = new Key();
         items.keys.add( items.key );
         pos++;
         items.key.irserial = data[ pos ] + 0x100 * data[ pos + 1 ];
@@ -1201,6 +1222,7 @@ public class RemoteConfiguration
         }
         else if ( items.macro != null )
         {
+          items.macro.setAssists( new LinkedHashMap< Integer, List<Assister> >() );
           for ( int i = 0; i < 3; i++ )
           {
             items.macro.getAssists().put( i, new ArrayList< Assister >() );
@@ -2068,10 +2090,27 @@ public class RemoteConfiguration
   
   private void updateReferences()
   {
-    for ( Macro macro :macros )
+    for ( DeviceUpgrade upgrade : devices )
+    {
+      for ( Function fn : upgrade.getFunctions() )
+      {
+        if ( fn.getSerial() >= 0 )
+        {
+          upgrade.getFunctionMap().put( fn.getSerial(), fn );
+        }
+      }
+    }
+    for ( Macro macro : macros )
     {
       DeviceButton db = remote.getDeviceButton( macro.getDeviceButtonIndex() );
       Button btn = remote.getButton( macro.getKeyCode() );
+      for ( KeySpec ks : macro.getItems() )
+      {
+        if ( ks.irSerial >= 0 )
+        {
+          ks.fn = ks.db.getUpgrade().getFunctionMap().get( ks.irSerial );
+        }
+      }
       if ( db != null && db.getUpgrade() != null && btn != null )
       {
         db.getUpgrade().getMacroMap().put( macro.getKeyCode(), macro );
@@ -2079,6 +2118,32 @@ public class RemoteConfiguration
         KeySpec ks = null;
         macro.setSystemMacro( macro.getItems() != null && macro.getItems().size() == 1
             && ( ks = macro.getItems().get( 0 ) ).duration == 0 && ks.delay == 3 );
+      }
+    }
+    for ( DeviceUpgrade upgrade : devices )
+    {
+      for ( Function fn : upgrade.getFunctions() )
+      {
+//        if ( fn.getSerial() >= 0 )
+//        {
+//          upgrade.getFunctionMap().put( fn.getSerial(), fn );
+//        }
+        if ( fn.getMacroref() != null )
+        {
+          // Experimental!!!
+          for ( Macro macro : macros )
+          {
+            if ( macro.getSerial() == fn.getMacroref() )
+            {
+              for ( User u : fn.getUsers() )
+              {
+                macro.addReference( u.db, u.button );
+                u.db.getUpgrade().getMacroMap().put( ( int )u.button.getKeyCode(), macro );
+              }
+              break;
+            }
+          }
+        }
       }
     }
     for ( LearnedSignal ls : learned )
@@ -2089,7 +2154,30 @@ public class RemoteConfiguration
       {
         db.getUpgrade().getLearnedMap().put( ( int )ls.getKeyCode(), ls );
         ls.addReference( db, btn );
-        ls.setName( btn.getName() );
+      }
+    }
+    Button favBtn = remote.getButton( remote.getFavKey().getKeyCode() );
+    Activity activity = null;
+    if ( favBtn != null && ( activity = activities.get( favBtn )) != null )
+    {
+      Assister.setFunctions( activity.getAssists(), remote );
+    }
+    for ( Activity a : activities.values() )
+    {
+      Assister.setFunctions( a.getAssists(), remote  );
+    }
+    if ( remote.getFavKey() != null && remote.getFavKey().getProfiles() != null )
+    {
+      for ( Activity a : remote.getFavKey().getProfiles() )
+      {
+        Assister.setFunctions( a.getAssists(), remote  );
+      }
+    }
+    for ( Macro macro : macros )
+    {
+      if ( macro.getAssists() != null )
+      {
+        Assister.setFunctions( macro.getAssists(), remote  );
       }
     }
   }
@@ -4528,7 +4616,7 @@ public class RemoteConfiguration
     {
       allMacros.addAll( macros );
     }
-    if ( hasSegments() && ( forSaving || !remote.usesEZRC() ) && activities != null )
+    if ( hasSegments() && ( forSaving && !remote.isSSD() || !remote.usesEZRC() ) && activities != null )
     {
       for ( Activity activity : activities.values() )
       {
@@ -5932,6 +6020,15 @@ public class RemoteConfiguration
         }
       }
     }
+    
+    if ( remote.getFavKey() != null && remote.getFavKey().getProfiles() != null )
+    {
+      for ( Activity activity : remote.getFavKey().getProfiles() )
+      {
+        pw.printHeader( "Profile" );
+        activity.store( pw );
+      }
+    }
 
     for ( LearnedSignal signal : learned )
     {
@@ -6534,6 +6631,7 @@ public class RemoteConfiguration
     DeviceButton db = null;
     Button btn = null;
     GeneralFunction fn = null;
+    int irSerial = -1;  // unset; only used temporarily during file load
     int duration = -1;  // unset
     int delay = 0;
     
@@ -6547,6 +6645,12 @@ public class RemoteConfiguration
     {
       this.db = db;
       this.fn = fn;
+    }
+    
+    public KeySpec( DeviceButton db, int irSerial )
+    {
+      this.db = db;
+      this.irSerial = irSerial;
     }
     
     public Button getButton()
@@ -6808,14 +6912,13 @@ public class RemoteConfiguration
         work.add( makeItem( "issystemmacro", new Hex( new short[]{ 1 } ), true ) );
       }
       boolean assistantDone = false;
-      if ( isSysMacro || activity != null && !activity.getAssists().isEmpty() 
-          || activity == null && !macro.getAssists().isEmpty() )
+      if ( isSysMacro || macro.getAssists() != null && !macro.getAssists().isEmpty() )
       {
         assistantDone = true;
         work.add( makeItem( "assistant", new Hex( 0 ), false ) );
       }
       if ( activity != null && !activity.getAssists().isEmpty() 
-          || activity == null && !macro.getAssists().isEmpty() )
+          || activity == null && macro.getAssists() != null && !macro.getAssists().isEmpty() )
       {
         LinkedHashMap< Integer, List< Assister > > assists = 
             activity != null ? activity.getAssists() : macro.getAssists();
@@ -6980,7 +7083,7 @@ public class RemoteConfiguration
           hex.set( ( short )len, 8 );
           System.arraycopy( ls.getData().getData(), 0, hex.getData(), 9, len );
           work.add( makeItem( "learnedkey", hex, true ) );
-          name = ls.getName();;
+          name = ls.getName();
         }
         
         if ( f != null && f.getHex() != null )
@@ -7110,7 +7213,7 @@ public class RemoteConfiguration
       for ( ActivityGroup group : groups )
       {
         DeviceButton db = group.getDevice();
-        if ( db == null )
+        if ( db == null || db == DeviceButton.noButton )
         {
           continue;
         }
@@ -7162,14 +7265,17 @@ public class RemoteConfiguration
     for ( FavScan favScan : favScans )
     {
       work.add( makeItem( "favorite", new Hex( "" + new Hex( new short[]{ ( short )favScan.getSerial() } ) + " " + new Hex( favScan.getName(), 16 ) ), false ) );
-      for ( int index : favScan.getProfileIndices() )
+      if ( favScan.getProfileIndices() != null )
       {
-        work.add( makeItem( "profileindex", new Hex( new short[]{ ( short )index } ), true ) );
+        for ( int index : favScan.getProfileIndices() )
+        {
+          work.add( makeItem( "profileindex", new Hex( new short[]{ ( short )index } ), true ) );
+        }
       }
       work.add( makeItem( "deviceid", new Hex( new short[]{ ( short )( favKeyDevButton.getButtonIndex() - 0x50 ) } ), true ) );
-      if ( favScan.getIconRef() != null )
+      if ( favScan.getIconref() != null )
       {
-        work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )favScan.getIconRef() } ), true ) );
+        work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )favScan.getIconref() } ), true ) );
       }
       short[] data = favScan.getData().getData();
       int val = 0;
@@ -7260,7 +7366,7 @@ public class RemoteConfiguration
           continue;
         }
         KeySpec ks = map.get( b );
-        if ( ks == null || ks.db == null )
+        if ( ks == null || ks.db == null || ks.db == DeviceButton.noButton )
         {
           continue;
         }
@@ -7272,7 +7378,7 @@ public class RemoteConfiguration
       for ( Button b : remote.getButtonGroups().get( "Soft" ) )
       {
         KeySpec ks = map.get( b );
-        if ( ks == null || ks.db == null )
+        if ( ks == null || ks.db == null || ks.db == DeviceButton.noButton )
         {
           continue;
         }

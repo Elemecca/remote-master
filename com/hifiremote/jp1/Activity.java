@@ -18,7 +18,77 @@ public class Activity extends Highlight
     public Button button = null;
     public GeneralFunction function = null;
     private String deviceName = null;
-    private int buttonCode = 0;
+    private int buttonCode = -1;
+    private int irSerial = -1;
+    
+    public static void store( LinkedHashMap< Integer, List<Assister> > assists, PropertyWriter pw )
+    {
+      if ( assists == null )
+      {
+        return;
+      }
+      for ( int i = 0; i < assists.size(); i++ )
+      {
+        List< Assister > a = assists.get( i );
+        if ( a.size() > 0 )
+        {
+          String aStr = "";
+          for ( int j = 0; j < a.size(); j++ )
+          {
+            if ( j > 0 )
+            {
+              aStr += ", ";
+            }
+            aStr += a.get( j );
+          }
+          pw.print( "Assist." + assistType[ i ], aStr );
+        }
+      }
+    }
+    
+    public static LinkedHashMap< Integer, List< Assister > > load( Properties props )
+    {
+      LinkedHashMap< Integer, List< Assister > > assists = null;
+      for ( int i = 0; i < 3; i++ )
+      {
+        String temp = props.getProperty( "Assist." + assistType[ i ] );
+        if ( temp != null )
+        {
+          if ( assists == null || assists.isEmpty() )
+          {
+            assists = new LinkedHashMap< Integer, List<Assister> >();
+            for ( int j = 0; j < 3; j++ )
+            {
+              assists.put( j , new ArrayList< Assister >() );
+            }
+          }
+          temp = temp.trim();
+          List< Assister > aList = assists.get( i );
+          StringTokenizer st = new StringTokenizer( temp, "," );
+          while ( st.hasMoreTokens() )
+          {
+            aList.add( new Assister( st.nextToken() ) );
+          }
+        }
+      }
+      return assists;
+    }
+    
+    public static void setFunctions( LinkedHashMap< Integer, List< Assister > > assists, Remote remote )
+    {
+      if ( assists == null )
+      {
+        return;
+      }
+      for ( int i = 0; i < assists.size(); i++ )
+      {
+        List< Assister > aList = assists.get( i );
+        for ( Assister a : aList )
+        {
+          a.set( remote );
+        }
+      }
+    }
     
     public Assister( DeviceButton device, Button button )
     {
@@ -48,14 +118,28 @@ public class Activity extends Highlight
       if ( pos != -1 )
       {
         deviceName = str.substring( 1, pos - 1 );  // omit quotes
-        buttonCode = Integer.parseInt( str.substring( pos + 1 ) );
+        if ( str.charAt( pos + 1 ) == '/' )
+        {
+          irSerial = Integer.parseInt( str.substring( pos + 2 ) );
+        }
+        else
+        {
+          buttonCode = Integer.parseInt( str.substring( pos + 1 ) );
+        }
       }
     }
     
     @Override
     public String toString()
     {
-      return "\"" + device.getName() + "\"/" + button.getKeyCode();
+      if ( button != null )
+      {
+        return "\"" + device.getName() + "\"/" + button.getKeyCode();
+      }
+      else
+      {
+        return "\"" + device.getName() + "\"//" + function.serial;
+      }
     }
     
     public void set( Remote remote )
@@ -68,8 +152,18 @@ public class Activity extends Highlight
           break;
         }
       }
-      button = remote.getButton( buttonCode );
-      function = device.getUpgrade().getAssignments().getAssignment( button );
+      if ( buttonCode >= 0 )
+      {
+        button = remote.getButton( buttonCode );
+        if ( button != null )
+        {
+          function = device.getUpgrade().getAssignments().getAssignment( button );
+        }
+      }
+      if ( irSerial >= 0 )
+      {
+        function = device.getUpgrade().getFunctionMap().get( irSerial );
+      }
     }
 
     public String getDeviceName()
@@ -115,6 +209,7 @@ public class Activity extends Highlight
       int keyCode = button.getKeyCode();
       macro = new Macro( keyCode, new Hex( 0 ), keyCode, 0, null );
       macro.setSegmentFlags( 0xFF );
+      assists = new LinkedHashMap< Integer, List<Assister> >();
       for ( int i = 0; i < 3; i++ )
       {
         assists.put( i, new ArrayList< Assister >() );
@@ -141,49 +236,18 @@ public class Activity extends Highlight
       videoHelp = hex.getData()[ 1 ];
     }
     
-    for ( int i = 0; i < 3; i++ )
-    {
-      temp = props.getProperty( "Assist." + assistType[ i ] );
-      if ( temp != null )
-      {
-        temp = temp.trim();
-        List< Assister > aList = new ArrayList< Assister >();
-        StringTokenizer st = new StringTokenizer( temp, "," );
-        while ( st.hasMoreTokens() )
-        {
-          aList.add( new Assister( st.nextToken() ) );
-        }
-        assists.put( i, aList );
-      }
-      else
-      {
-        assists.put(  i, new ArrayList< Assister >() );
-      }
-    }
+    assists = Assister.load( props );
 
     notes = props.getProperty( "Notes" );
     selectorName = props.getProperty( "Selector" );
+    temp = props.getProperty( "ProfileIndex" );
+    if ( temp != null )
+    {
+      profileIndex = Integer.parseInt( temp );
+    }
     
     ActivityGroup.parse( props, this );
-//    int groupSegmentFlags = 0;
-//    temp = props.getProperty( "GroupSegmentFlags" );
-//    if ( temp != null )
-//    {
-//      groupSegmentFlags = Integer.parseInt( temp );
-//    }
-//    
-//    temp = props.getProperty( "GroupSettings" );
-//    if ( temp != null )
-//    {
-//      Hex hex = new Hex( temp );
-//      activityGroups = new ActivityGroup[ hex.length() ];
-//      for ( int index = 0; index < hex.length(); index++ )
-//      {
-//        activityGroups[ index ] = new ActivityGroup( index, hex.getData()[ index ] );
-//        activityGroups[ index ].setNotes( props.getProperty( "GroupNotes" + index ) );
-//        activityGroups[ index ].setSegmentFlags( groupSegmentFlags );
-//      }
-//    }
+
   }
   
   public void set( Remote remote )
@@ -201,11 +265,20 @@ public class Activity extends Highlight
         group.set( remote );
       }
     }
-    if ( remote.usesEZRC() )
+    if ( remote.usesEZRC() && profileIndex < 0 )
     {
+      if ( assists == null || assists.isEmpty() )
+      {
+        assists = new LinkedHashMap< Integer, List<Assister> >();
+        for ( int i = 0; i < 3; i++ )
+        {
+          assists.put( i , new ArrayList< Assister >() );
+        }
+      }
       int keyCode = button.getKeyCode();
       macro = new Macro( keyCode, new Hex( 0 ), keyCode, 0, null );
       macro.setSegmentFlags( 0xFF );
+      
       for ( int i = 0; i < 3; i++ )
       {
         List< Assister > a = assists.get( i );
@@ -217,7 +290,7 @@ public class Activity extends Highlight
     }
     else
     {
-      assists.clear();
+      assists = null;
     }
   }
 
@@ -354,7 +427,7 @@ public class Activity extends Highlight
 
   public void store( PropertyWriter pw )
   {
-    if ( !active )
+    if ( !active && profileIndex < 0 )
     {
       return;
     }
@@ -370,23 +443,7 @@ public class Activity extends Highlight
       pw.print( "HelpSettings", hex.toString() );
     }
     
-    for ( int i = 0; i < assists.size(); i++ )
-    {
-      List< Assister > a = assists.get( i );
-      if ( a.size() > 0 )
-      {
-        String aStr = "";
-        for ( int j = 0; j < a.size(); j++ )
-        {
-          if ( j > 0 )
-          {
-            aStr += ", ";
-          }
-          aStr += a.get( j );
-        }
-        pw.print( "Assist." + assistType[ i ], aStr );
-      }
-    }
+    Assister.store( assists, pw );
     
     if ( notes != null && !notes.trim().isEmpty() )
     {
@@ -395,6 +452,10 @@ public class Activity extends Highlight
     if ( selector != null )
     {
       pw.print(  "Selector", selector.getName() );
+    }
+    if ( profileIndex >= 0 )
+    {
+      pw.print(  "ProfileIndex", profileIndex );
     }
     
     ActivityGroup.store( pw, activityGroups );
@@ -455,7 +516,7 @@ public class Activity extends Highlight
   private String notes = null;
   private int audioHelp = 0;
   private int videoHelp = 0;
-  private LinkedHashMap< Integer, List< Assister > > assists = new LinkedHashMap< Integer, List<Assister> >();
+  private LinkedHashMap< Integer, List< Assister > > assists = null; // new LinkedHashMap< Integer, List<Assister> >();
   private int helpSegmentFlags = 0xFF;
   private Segment helpSegment = null;
   private boolean active = false;

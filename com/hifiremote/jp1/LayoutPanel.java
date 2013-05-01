@@ -211,11 +211,14 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       device = new JTextField();
       device.setEditable( false );
       infoPanel.add( device, "3, " + sRow );
-      sRow = "7";
-      infoPanel.add( new JLabel( "Alias:" ), "1, " + sRow );
-      alias = new JTextField();
-      alias.setEditable( true );
-      infoPanel.add( alias, "3, " + sRow );
+      if ( remote.isSSD() )
+      {
+        sRow = "7";
+        infoPanel.add( new JLabel( "Alias:" ), "1, " + sRow );
+        alias = new JTextField();
+        alias.setEditable( true );
+        infoPanel.add( alias, "3, " + sRow );
+      }
       sRow = "5";
     }
     infoPanel.add( new JLabel( "Function:" ), "1, " + sRow );
@@ -515,8 +518,8 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       if ( remote.usesEZRC() )
       {
         Macro macro = null;
-        device.setText( "" );
-        alias.setText( "" );
+//        device.setText( "" );
+//        alias.setText( "" );
         if ( f instanceof Function )
         {
           macro = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
@@ -528,8 +531,11 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         DeviceButton db = ( macro != null ) ? macro.getItems().get( 0 ).db
             : f != null ? f.getUpgrade( remote ).getButtonRestriction() : null;
         device.setText( db == null ? "" : db.getName() );
-        alias.setText( macro == null ? "" : macro.getName() );
-        alias.setEnabled( macro != null );
+        if ( alias != null )
+        {
+          alias.setText( macro == null ? "" : macro.getName() );
+          alias.setEnabled( macro != null );
+        }
       }
       deleteAction.setEnabled( f != null );
     }
@@ -540,7 +546,10 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       if ( remote.usesEZRC() )
       {
         device.setText( "" );
-        alias.setText( "" );
+        if ( alias != null )
+        {
+          alias.setText( "" );
+        }
       }
       deleteAction.setEnabled( false );
     }

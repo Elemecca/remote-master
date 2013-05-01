@@ -261,19 +261,6 @@ public abstract class AdvancedCode extends Highlight
   {
     this.items = items;
   }
-  
-  protected LinkedHashMap< Integer, List< Assister > > assists = new LinkedHashMap< Integer, List<Assister> >();
-  
-  public LinkedHashMap< Integer, List< Assister >> getAssists()
-  {
-    return assists;
-  }
-
-  public void setAssists( LinkedHashMap< Integer, List< Assister >> assists )
-  {
-    this.assists = assists;
-  }
-  
 
   /**
    * Store.

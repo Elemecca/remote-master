@@ -100,7 +100,11 @@ public class ButtonTableModel
       }
       if ( remote.usesEZRC() )
       {
-        count += 2;   // Adds device and alias columns
+        count ++;   // Adds device column
+      }
+      if ( remote.isSSD() )
+      {
+        count ++;   // Adds alias column
       }
     }
     return count;

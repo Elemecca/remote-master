@@ -1,7 +1,9 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 public class FavScan extends AdvancedCode
 {
@@ -21,14 +23,35 @@ public class FavScan extends AdvancedCode
     String temp = props.getProperty( "DeviceIndex" );
     if ( temp != null )
     {
-      try
-      {
+//      try
+//      {
         deviceIndex = Integer.parseInt( temp );
-      }
-      catch ( NumberFormatException nfe )
+//      }
+//      catch ( NumberFormatException nfe )
+//      {
+//        nfe.printStackTrace( System.err );
+//      }
+    }
+    temp = props.getProperty( "Serial" );
+    if ( temp != null )
+    {
+      serial = Integer.parseInt( temp );
+    }
+    temp = props.getProperty( "ProfileIndices" );
+    if ( temp != null )
+    {
+      StringTokenizer st = new StringTokenizer( temp, " " );
+      profileIndices = new ArrayList< Integer >();
+      while ( st.hasMoreTokens() )
       {
-        nfe.printStackTrace( System.err );
+        String token = st.nextToken();
+        profileIndices.add( Integer.parseInt( token, 16 ) );
       }
+    }
+    temp = props.getProperty( "Iconref" );
+    if ( temp != null )
+    {
+      iconref = Integer.parseInt( temp );
     }
   }
   
@@ -131,6 +154,27 @@ public class FavScan extends AdvancedCode
     {
       pw.print( "DeviceIndex", devBtn.getButtonIndex() );
     }
+    if ( serial >= 0 )
+    {
+      pw.print( "Serial", serial );
+    }
+    if ( profileIndices != null )
+    {
+      String str = "";
+      for ( int i = 0; i < profileIndices.size(); i++ )
+      {
+        if ( i > 0 )
+        {
+          str += " ";
+        }
+        str += profileIndices.get( i );
+      }
+      pw.print( "ProfileIndices", str );
+    }
+    if ( iconref != null )
+    {
+      pw.print( "Iconref", iconref );
+    }
   }
 
   public String getName()
@@ -180,17 +224,17 @@ public class FavScan extends AdvancedCode
     this.profileIndices = profileIndices;
   }
   
-  private Integer iconRef = null;
-
-  public Integer getIconRef()
-  {
-    return iconRef;
-  }
-
-  public void setIconRef( Integer iconRef )
-  {
-    this.iconRef = iconRef;
-  }
+//  private Integer iconRef = null;
+//
+//  public Integer getIconRef()
+//  {
+//    return iconRef;
+//  }
+//
+//  public void setIconRef( Integer iconRef )
+//  {
+//    this.iconRef = iconRef;
+//  }
   
 
 }

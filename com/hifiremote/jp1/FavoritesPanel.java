@@ -571,7 +571,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           downButton.setEnabled( selected && row < favTable.getRowCount() - 1 );
           cloneButton.setEnabled( true );
           editButton.setEnabled( true );
-          Integer iconRef = remoteConfig.getFavScans().get( row ).getIconRef();
+          Integer iconRef = remoteConfig.getFavScans().get( row ).getIconref();
           BufferedImage image = null;
           if ( remoteConfig.getUserIcons() != null && iconRef != null && iconRef >= 127 )
           {
