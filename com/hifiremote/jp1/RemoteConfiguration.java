@@ -951,23 +951,13 @@ public class RemoteConfiguration
       else if ( tag.equals(  "channelnumber" ) )
       {
         pos++;
-        List< Integer > digits = new ArrayList< Integer >();
-        digits.add( data[ pos + 1 ] >> 4 );
-        digits.add( data[ pos + 1 ] & 0x0F );
-        digits.add( data[ pos ] >> 4 );
-        digits.add( data[ pos ] & 0x0F );
-        for ( int i = 0; i < 4 - favKeyDevButton.getFavoriteWidth(); i++ )
+        String channel = "";
+        for ( int i = 0; i < favKeyDevButton.getFavoriteWidth(); i++ )
         {
-          digits.remove( 0 );
+          int n = data[ pos + i / 2 ] >> ( i % 2 << 2 ) & 0x0F;
+          channel = ( char )( n + 0x30 ) + channel;
         }
-        Hex hex = new Hex( digits.size() );
-        for ( int i = 0; i < digits.size(); i++ )
-        {
-          String s = new String( new char[]{ ( char )( digits.get( i ) + 0x30 ) } );
-          Button b = remote.getButtonByStandardName( s );
-          hex.set( b == null ? 0 : b.getKeyCode(), i );
-        }
-        items.fav.setData( hex );
+        items.fav.setChannel( channel );
       }
       else if ( tag.equals( "codeset" ) )
       {
@@ -1877,14 +1867,25 @@ public class RemoteConfiguration
       int j = 0; 
       DeviceButton btn = remote.getDeviceButton( deviceIndex );
       favKeyDevButton = ( btn != null ) ? btn : null;
+      if ( favKeyDevButton != null )
+      {
+        favKeyDevButton.setFavoritewidth( hex.getData()[ 2 ] );
+      }
       for ( int i = 0; i < numFavs; i++ )
       {
         int count = hex.getData()[ 7 + j ];
-        Hex data = hex.subHex( 8 + j, count - skip );
+        short[] data = hex.subHex( 8 + j, count - skip ).getData();
         j += 1 + count;
-        FavScan favScan = new FavScan( keyCode, data, null );
+        String val = "";
+        for ( int k = 0; k < data.length; k++ )
+        {
+          Button b = remote.getButton( data[ data.length - k - 1 ] );
+          val += b.getName().substring( 0, 1 );
+        }
+        FavScan favScan = new FavScan( keyCode, null, null );
+        favScan.setChannel( val );
         favScan.setSegmentFlags( favDefinitions.getFlags() );
-        favScans.add( favScan ); 
+        favScans.add( favScan );
       }
       j++;
       for ( int i = 0; i < numFavs; i++ )
@@ -4037,7 +4038,7 @@ public class RemoteConfiguration
     int maxSize = 0;
     for ( FavScan fav : favScans )
     {
-      int size = fav.getData().length();
+      int size = fav.getChannel().length();
       if ( size > maxSize )
       {
         maxSize = size;
@@ -4050,7 +4051,6 @@ public class RemoteConfiguration
     {
       k += count;
       dataLen += count;
-//      maxSize -= 1;
     }
     dataLen += remote.doForceEvenStarts() && ( dataLen & 1 ) == 1 ? 1 : 0;
     Hex segData = new Hex( dataLen );
@@ -4073,8 +4073,14 @@ public class RemoteConfiguration
     int i = 7;
     for ( FavScan fav : favScans )
     {
-      int len = fav.getData().length();
-      segData.put( fav.getData().getData(), i + 1 );
+      String channel = fav.getChannel();
+      int len = channel.length();
+      for ( int j = 0; j < len; j++ )
+      {
+        Button b = remote.getButton( channel.substring( j, j + 1 ) );
+        short keyCode = b != null ? b.getKeyCode() : 0;
+        segData.set( keyCode, i + j + 1 );
+      }
       if ( favFinalKey != null )
       {
         len++;
@@ -7286,18 +7292,14 @@ public class RemoteConfiguration
       {
         work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )favScan.getIconref() } ), true ) );
       }
-      short[] data = favScan.getData().getData();
-      int val = 0;
-      for ( int i = 0; i < data.length; i++ )
+      String channel = favScan.getChannel();
+      short[] data = { 0, 0, 0, 0 };
+      for ( int i = 0; i < channel.length(); i++ )
       {
-        Button b = remote.getButton( data[ data.length - i - 1 ] );
-        int digit = b.getName().charAt( 0 ) & 0x0F;
-        val |= digit << ( 4 * i );
+        int digit = channel.charAt( channel.length() - i - 1 ) & 0x0F;
+        data[ i / 2 ] |= digit << ( i % 2 << 2 );
       }
-      Hex hex = new Hex( 4 );
-      hex.set( ( short  )( val & 0xFF ), 0 );
-      hex.set( ( short  )( ( val >> 8 ) & 0xFF ), 1 );
-      work.add( makeItem( "channelnumber", hex, true ) );
+      work.add( makeItem( "channelnumber", new Hex( data ), true ) );
       work.add( endTag( "favorite" ) );
     }
     work.add( makeItem( "punchthrumap", new Hex( 0 ), false ) );

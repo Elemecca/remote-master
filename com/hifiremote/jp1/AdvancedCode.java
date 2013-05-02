@@ -1,10 +1,8 @@
 package com.hifiremote.jp1;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 
-import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 // TODO: Auto-generated Javadoc

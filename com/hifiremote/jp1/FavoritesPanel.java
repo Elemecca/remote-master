@@ -86,6 +86,15 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     deviceBoxPanel.add( duration );
     deviceBoxPanel.add( new JLabel( " secs") );
     
+    favWidth = new JComboBox( new Integer[]{ 1,2,3,4,5,6,7,8 } );
+    favWidth.setToolTipText( "The number of digits in a channel number" );
+    favWidth.addActionListener( this );
+    JLabel label = new JLabel( "Digits: ");
+    label.setLabelFor( favWidth );
+    deviceBoxPanel.add( Box.createHorizontalStrut( 20 ) );
+    deviceBoxPanel.add( label );
+    deviceBoxPanel.add(  favWidth );
+    
     addFinal = new JCheckBox( "Send final key?" );
     addFinal.addActionListener( this );
     addFinal.setToolTipText( "Send a key such as Enter or OK after each macro?" );
@@ -99,6 +108,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     deviceBoxPanel.add( Box.createHorizontalStrut( 5 ) );
     deviceBoxPanel.add( finalKeyLabel );
     deviceBoxPanel.add( finalKey );
+    finalKeyLabel.setLabelFor( finalKey );
     
     JPanel panel = new JPanel( new BorderLayout() );
     panel.setBorder( BorderFactory.createTitledBorder( " Favorites Macros " ) );
@@ -363,6 +373,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     }
     Button favFinalKey = remoteConfig.getFavFinalKey();
     boolean showFinal = favFinalKey != null;
+    favWidth.setSelectedIndex( remoteConfig.getFavKeyDevButton().getFavoriteWidth() - 1 );
     addFinal.setSelected( showFinal );
     finalKey.setVisible( showFinal );
     finalKeyLabel.setVisible( showFinal );
@@ -427,9 +438,11 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       DeviceButton deviceButton = ( DeviceButton )deviceButtonBox.getSelectedItem();
       if ( deviceButton != remoteConfig.getFavKeyDevButton() )
       {
+        deviceButton.setFavoritewidth( remoteConfig.getFavKeyDevButton().getFavoriteWidth() );
+        remoteConfig.getFavKeyDevButton().setFavoritewidth( 0 );
         remoteConfig.setFavKeyDevButton( deviceButton );
       }
-      propertyChangeSupport.firePropertyChange( "data", null, null );
+//      propertyChangeSupport.firePropertyChange( "data", null, null );
     }
     else if ( source == addFinal )
     {
@@ -438,7 +451,17 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       finalKeyLabel.setVisible( checked );
       Button btn = checked ? remote.getButton( finalKey.getText() ) : null;
       remoteConfig.setFavFinalKey( btn );
+//      propertyChangeSupport.firePropertyChange( "data", null, null );
+    }
+    else if ( source == favWidth )
+    {
+      remoteConfig.getFavKeyDevButton().setFavoritewidth( favWidth.getSelectedIndex() + 1 );
+      for ( FavScan fav : remoteConfig.getFavScans() )
+      {
+        fav.setChannel( favModel.resizeChannel( fav.getChannel() ) );
+      }
       propertyChangeSupport.firePropertyChange( "data", null, null );
+      favTable.repaint();
     }
     else if ( source == upButton || source == downButton )
     {
@@ -553,6 +576,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       profiles.setSelectedIndex( toRow );
     }
     activityGroupTable.setVisible( favTable.getModel().getRowCount() > 0 );
+    propertyChangeSupport.firePropertyChange( "data", null, null );
   }
   
   @Override
@@ -778,6 +802,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   private JButton upProfile = null;
   private JButton downProfile = null;
   private JCheckBox addFinal = null;
+  private JComboBox favWidth = null;
   private JTextField finalKey = null;
   private JLabel finalKeyLabel = null;
   private JPanel profilesPanel = null;

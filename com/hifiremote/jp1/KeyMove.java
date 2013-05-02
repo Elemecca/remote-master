@@ -2,8 +2,6 @@ package com.hifiremote.jp1;
 
 import java.util.Properties;
 
-import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class KeyMove.

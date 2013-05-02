@@ -3659,7 +3659,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     int pos = 0;
     File file = new File( new File( workDir, "XSight" ), "irdb.bin" );
     byte[] data = RemoteMaster.readBinary( file );
-    int end = data.length;
     LinkedHashMap< Integer, List< Integer > > setups = new LinkedHashMap< Integer, List<Integer> >();
     LinkedHashMap< Integer, Integer > pidLenBytes = new LinkedHashMap< Integer, Integer >();
     List< Integer > prots = new ArrayList< Integer >();

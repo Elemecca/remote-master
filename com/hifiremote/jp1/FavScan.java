@@ -224,6 +224,18 @@ public class FavScan extends AdvancedCode
     this.profileIndices = profileIndices;
   }
   
+  private String channel = "";
+
+  public String getChannel()
+  {
+    return channel;
+  }
+
+  public void setChannel( String channel )
+  {
+    this.channel = channel;
+  }
+  
 //  private Integer iconRef = null;
 //
 //  public Integer getIconRef()
