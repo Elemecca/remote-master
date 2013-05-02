@@ -471,7 +471,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       DeviceButton deviceButton = remote.getDeviceButtons()[ i ];
       DeviceType deviceType = ( DeviceType )getValueAt( i, 2 );
-      if ( deviceType != null && deviceButton.getUpgrade() == null )
+      if ( deviceType != null && !deviceButton.isConstructed() && deviceButton.getUpgrade() == null )
       {
         return true;
       }
@@ -874,7 +874,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     
     public Color getTextColor( DeviceButton db, boolean isSelected )
     {
-      if ( deviceType == null || db.getUpgrade() != null )
+      if ( deviceType == null || db.isConstructed() || db.getUpgrade() != null )
       {
         return isSelected ? Color.WHITE : Color.BLACK;
       }

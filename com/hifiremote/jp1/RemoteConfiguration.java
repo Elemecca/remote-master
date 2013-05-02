@@ -830,7 +830,7 @@ public class RemoteConfiguration
           }
           else
           {
-            items.activity.setIconRef( data[ pos++ ] );
+            items.activity.setIconref( ( int )data[ pos++ ] );
           }
         }
         else if ( fileIndex == 5 )
@@ -860,7 +860,7 @@ public class RemoteConfiguration
           ch[ i ] = ( char )data[ pos++ ];
         }
         String str = new String( ch );
-        int code = 0;
+        int code = -1;
         try
         {
           code = Integer.parseInt( str );
@@ -2276,6 +2276,8 @@ public class RemoteConfiguration
             db.setTransportPT( getPTButton( hex.getData()[ 7 ] ) );
             db.setChannelPT( getPTButton( hex.getData()[ 8 ] ) );
             segment.setObject( db );
+            int setupCode = db.getSetupCode( hex.getData() );
+            db.setConstructed( setupCode == -1 );
           }
         }
       }
@@ -5984,7 +5986,10 @@ public class RemoteConfiguration
       {
         pw.printHeader( "FavData" );
         pw.print( "Pause", favPause );
-        pw.print( "FinalKey", favFinalKey.getKeyCode() );
+        if ( favFinalKey != null )
+        {
+          pw.print( "FinalKey", favFinalKey.getKeyCode() );
+        }
         ActivityGroup.store( pw, activity.getActivityGroups() );
       }
     }
@@ -7207,7 +7212,11 @@ public class RemoteConfiguration
     for ( Activity activity : remote.getFavKey().getProfiles() )
     {
       work.add( makeItem( "profile", new Hex( "" + new Hex( new short[]{ ( short )activity.getProfileIndex() } ) + " " + new Hex( activity.getName(), 16 ) ), false ) );
-      work.add( makeItem( "iconref", new Hex( new short[]{ ( short )activity.getIconRef() } ), true ) );
+      Integer iconref = activity.getIconref();
+      if ( iconref != null )
+      {
+        work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )iconref } ), true ) );
+      }
       work.add( makeItem( "punchthrumap", new Hex( 0 ), false ) );
       ActivityGroup[] groups = activity.getActivityGroups();
       for ( ActivityGroup group : groups )
@@ -7346,7 +7355,11 @@ public class RemoteConfiguration
       }
       short serial = ( short )( btn.getKeyCode() & 0x0F );
       work.add( makeItem( "activity", new Hex( "" + new Hex( new short[]{ serial } ) + " " + new Hex( activity.getName(), 16 ) ), false ) );
-      work.add( makeItem( "iconref", new Hex( new short[]{ ( short )activity.getIconRef() } ), true ) );
+      Integer iconref = activity.getIconref();
+      if ( iconref != null )
+      {
+        work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )iconref } ), true ) );
+      }
       work.add( makeItem( "macroref", new Hex( new short[]{ ( short )activity.getMacro().getSerial(), 0 } ), true ) );
       work.add( makeItem( "punchthrumap", new Hex( 0 ), false ) );
       ActivityGroup[] groups = activity.getActivityGroups();

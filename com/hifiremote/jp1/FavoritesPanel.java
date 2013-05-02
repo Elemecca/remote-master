@@ -602,11 +602,11 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         upProfile.setEnabled( index > 0 );
         downProfile.setEnabled( index < profilesModel.getSize() - 1 );
         deleteProfile.setEnabled( true );
-        int iconRef = a.getIconRef();
+        Integer iconref = a.getIconref();
         BufferedImage image = null;
-        if ( remoteConfig.getUserIcons() != null && iconRef >= 127 )
+        if ( iconref != null && remoteConfig.getUserIcons() != null && iconref >= 127 )
         {
-          Icon icon = remoteConfig.getUserIcons().get( iconRef );
+          Icon icon = remoteConfig.getUserIcons().get( iconref );
           image = icon != null ? icon.image : null;
         }
         profileIcon.setImage( image );

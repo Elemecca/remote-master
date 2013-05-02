@@ -215,6 +215,10 @@ public class Activity extends Highlight
         assists.put( i, new ArrayList< Assister >() );
       }
     }
+    if ( remote.isSSD() )
+    {
+      iconref = 0;
+    }
   }
 
   public Activity( Properties props )
@@ -244,6 +248,11 @@ public class Activity extends Highlight
     if ( temp != null )
     {
       profileIndex = Integer.parseInt( temp );
+    }
+    temp = props.getProperty( "Iconref" );
+    if ( temp != null )
+    {
+      iconref = Integer.parseInt( temp );
     }
     
     ActivityGroup.parse( props, this );
@@ -291,6 +300,10 @@ public class Activity extends Highlight
     else
     {
       assists = null;
+    }
+    if ( remote.isSSD() && iconref == null )
+    {
+      iconref = 0;
     }
   }
 
@@ -457,6 +470,10 @@ public class Activity extends Highlight
     {
       pw.print(  "ProfileIndex", profileIndex );
     }
+    if ( iconref != null )
+    {
+      pw.print(  "Iconref", iconref );
+    }
     
     ActivityGroup.store( pw, activityGroups );
   }
@@ -466,16 +483,6 @@ public class Activity extends Highlight
     return assists;
   }
   
-  public int getIconRef()
-  {
-    return iconRef;
-  }
-
-  public void setIconRef( int iconRef )
-  {
-    this.iconRef = iconRef;
-  }
-
   public int getProfileIndex()
   {
     return profileIndex;
@@ -521,6 +528,6 @@ public class Activity extends Highlight
   private Segment helpSegment = null;
   private boolean active = false;
   private boolean isNew = false;
-  private int iconRef = 0;
+//  private int iconRef = 0;
   private int profileIndex = -1;
 }

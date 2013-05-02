@@ -303,10 +303,10 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
         }
         
         BufferedImage image = null;
-        int iconRef = activity.getIconRef();
-        if ( remoteConfig.getSysIcons() != null && iconRef < 127 )
+        Integer iconref = activity.getIconref();
+        if ( iconref != null && remoteConfig.getSysIcons() != null && iconref < 127 )
         {
-          Icon icon = remoteConfig.getSysIcons().get( iconRef );
+          Icon icon = remoteConfig.getSysIcons().get( iconref );
           image = icon != null ? icon.image : null;
         }
         iconImage.setImage( image );

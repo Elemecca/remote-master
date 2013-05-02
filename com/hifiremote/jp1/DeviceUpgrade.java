@@ -2086,7 +2086,7 @@ public class DeviceUpgrade extends Highlight
       }
       else if ( remote.usesEZRC() )
       {
-        fstr = "Fn" + f.getRmirIndex();
+        fstr = "Function." + f.getRmirIndex();
       }
       else
       {
@@ -2482,9 +2482,9 @@ public class DeviceUpgrade extends Highlight
         Function func = null;
         if ( !str.equals( "null" ) )
         {
-          if ( remote.usesEZRC() && str.startsWith( "Fn" ) )
+          if ( remote.usesEZRC() && str.startsWith( "Function." ) )
           {
-            int rmirIndex = Integer.parseInt( str.substring( 2 ) );
+            int rmirIndex = Integer.parseInt( str.substring( 9 ) );
             func = getFunctionByRmirIndex( rmirIndex );
           }
           else
