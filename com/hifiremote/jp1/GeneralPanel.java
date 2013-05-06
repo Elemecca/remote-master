@@ -11,7 +11,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -28,13 +27,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.hifiremote.jp1.RemoteConfiguration.Icon;
-import com.hifiremote.jp1.RemoteMaster.IconImage;
+import com.hifiremote.jp1.GeneralFunction.IconPanel;
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -108,12 +108,18 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
     editButton = new JButton( "Edit Device" );
     editButton.setEnabled( false );
+//    iconButton = new JButton( "Icon" );
+    iconLabel = new JLabel( "   " );
+    iconLabel.setPreferredSize( new Dimension( 100, 40 ) );
+    iconLabel.setHorizontalTextPosition( SwingConstants.LEADING );
+    iconLabel.setVisible( false );
     
-    iconImage = new IconImage();
     buttonPanel.add( editButton );
-    buttonPanel.add( Box.createVerticalStrut( iconImage.getPreferredSize().height ) );
+    buttonPanel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
+    buttonPanel.add( iconLabel );
     editPanel.add( buttonPanel );
     editButton.addActionListener( this );
+//    iconButton.addActionListener( this );
     deviceButtonPanel.add( editPanel, BorderLayout.PAGE_END );
 
     // deviceScrollPane.setPreferredSize( deviceButtonPanel.getPreferredSize() );
@@ -248,15 +254,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       settingsScrollPane.setVisible( false ); 
     }
     
-    buttonPanel.removeAll();
-    buttonPanel.add( editButton );
-    buttonPanel.add( Box.createVerticalStrut( iconImage.getPreferredSize().height ) );
-    
-    if ( remote.isSSD() )
-    {
-      buttonPanel.add( Box.createHorizontalStrut( 10 ) );
-      buttonPanel.add( iconImage );
-    }
+    iconLabel.setVisible( remote.isSSD() );
+    iconLabel.setIcon( null );
 
     text = remoteConfig.getNotes();
     if ( text == null )
@@ -267,12 +266,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     notes.setCaretPosition( 0 );
 
     setWarning();
-
     adjustPreferredViewportSizes();
-
     validate();
-
-    iconImage.setImage( null );
     setInProgress = false;
   }
 
@@ -317,20 +312,13 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         DeviceButton deviceButton = remote.getDeviceButtons()[ selectedRow ];
         selectedUpgrade = remoteConfig.getAssignedDeviceUpgrade( deviceButton );
         editButton.setEnabled( selectedUpgrade != null );
-        
-        BufferedImage image = null;
-        int iconRef = deviceButton.getIconRef();
-        if ( remoteConfig.getSysIcons() != null && iconRef < 127 )
-        {
-          Icon icon = remoteConfig.getSysIcons().get( iconRef );
-          image = icon != null ? icon.image : null;
-        }
-        iconImage.setImage( image );
+        RMIcon icon = deviceButton.icon;
+        iconLabel.setIcon( icon == null ? null : icon.image );
       }
       else
       {
         editButton.setEnabled( false );
-        iconImage.setImage( null );
+        iconLabel.setIcon( null );
       }
       deviceButtonPanel.repaint();
       setHighlightAction( deviceButtonTable );
@@ -348,9 +336,26 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
    */
   @Override
-  public void actionPerformed( ActionEvent arg0 )
+  public void actionPerformed( ActionEvent event )
   {
-    editUpgradeInRow( deviceButtonTable.getSelectedRow() );
+    Object source = event.getSource();
+    if ( source == editButton )
+    {
+      editUpgradeInRow( deviceButtonTable.getSelectedRow() );
+    }
+//    else if ( source == iconButton )
+//    {
+//      RMSetterDialog< RMIcon > dialog = new RMSetterDialog< RMIcon >();
+//      RMIcon result = dialog.showDialog( this, remoteConfig, IconPanel.class, null );
+//      int row = deviceButtonTable.getSelectedRow();
+//      if ( row >= 0 )
+//      {
+//        DeviceButton db = deviceModel.getRow( row );
+//        db.icon = result;
+//        deviceModel.fireTableRowsUpdated( row, row );
+//        iconLabel.setIcon( result.image );
+//      }
+//    }
   }
 
   public void editUpgradeInRow( int row )
@@ -472,10 +477,11 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   private JTextArea notes = null;
 
   private JButton editButton = null;
+//  private JButton iconButton = null;
   private JPanel buttonPanel = null;
   private DeviceUpgrade selectedUpgrade = null;
   private boolean setInProgress = false;
-  private IconImage iconImage = null;
+  private JLabel iconLabel = null;
   private DeviceUpgradeEditor editor;
 
   /*

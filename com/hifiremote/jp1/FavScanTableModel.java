@@ -2,8 +2,15 @@ package com.hifiremote.jp1;
 
 import java.awt.Color;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+
+import com.hifiremote.jp1.GeneralFunction.IconPanel;
+import com.hifiremote.jp1.GeneralFunction.IconRenderer;
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
 
 public class FavScanTableModel extends JP1TableModel< FavScan >
 {
@@ -20,6 +27,12 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       setData( remoteConfig.getFavScans() );
+    }
+    if ( remoteConfig.getRemote().isSSD() )
+    {
+      iconEditor = new RMSetterEditor< RMIcon, IconPanel >( IconPanel.class );
+      iconEditor.setRemoteConfiguration( remoteConfig );
+      iconRenderer = new IconRenderer();
     }
   }
   
@@ -52,7 +65,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   private static final String[] colPrototypeNames =
   {
       " 00 ", "Name of a favorite ", "A reasonable length macro with several steps ", 
-      "Channel Number_", "A reasonable length note", "IconRef_", "Profile?_", "Color_"
+      "Channel Number_", "A reasonable length note", "Icon?_", "Profile?_", "Color_"
   };
 
   /** The Constant colWidths. */
@@ -86,7 +99,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "Name", "Macro Keys", "Channel Number", "Notes", "IconRef", "<html>In<br>profile&#63;</html>", "<html>Size &amp<br>Color</html>"
+      "#", "Name", "Macro Keys", "Channel Number", "Notes", "Icon?", "<html>In<br>profile&#63;</html>", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -103,7 +116,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   /** The Constant colClasses. */
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, String.class, String.class, String.class, Integer.class, Boolean.class, Color.class
+      Integer.class, String.class, String.class, String.class, String.class, RMIcon.class, Boolean.class, Color.class
   };
 
   /*
@@ -155,6 +168,10 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       return new RowNumberRenderer();
     }
+    else if ( col == 5 )
+    {
+      return iconRenderer;
+    }
     else if ( col == 7 )
     {
       return colorRenderer;
@@ -169,6 +186,18 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     if ( col == 1 || col == 3 )
     {
       return selectAllEditor;
+    }
+    if ( col == 5 )
+    {
+      return iconEditor;
+    }
+    if ( col == 6 )
+    {
+      JCheckBox check =  new JCheckBox();
+      check.setHorizontalAlignment( SwingConstants.CENTER );
+      DefaultCellEditor e = new DefaultCellEditor( check );
+      e.setClickCountToStart( 2 );
+      return e;
     }
     if ( col == 7 )
     {
@@ -195,7 +224,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
       case 4:
         return favScan.getNotes();
       case 5:
-        return favScan.getIconref();
+        return favScan.icon;
       case 6:
         if ( panel instanceof FavoritesPanel )
         {
@@ -241,7 +270,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     }
     else if ( col == 5 )
     {
-      favScan.setIconref( ( Integer )value );
+      favScan.icon = ( RMIcon )value;
     }
     else if ( col == 6 )
     {
@@ -296,5 +325,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
+  private RMSetterEditor< RMIcon, IconPanel > iconEditor = null;
+  private IconRenderer iconRenderer = null;
   private RMPanel panel = null;
 }

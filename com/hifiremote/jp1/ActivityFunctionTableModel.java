@@ -11,7 +11,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import com.hifiremote.jp1.GeneralFunction.IconPanel;
+import com.hifiremote.jp1.GeneralFunction.IconRenderer;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
 
 public class ActivityFunctionTableModel extends JP1TableModel< Activity > implements ButtonEnabler
 {
@@ -32,6 +35,12 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       audioHelpSettingBox.setModel( new DefaultComboBoxModel( helpSetting ) );
       setHelpSetting( "VideoHelp" );
       videoHelpSettingBox.setModel( new DefaultComboBoxModel( helpSetting ) );
+      if ( remote.isSSD() )
+      {
+        iconEditor = new RMSetterEditor< RMIcon, IconPanel >( IconPanel.class );
+        iconEditor.setRemoteConfiguration( remoteConfig );
+        iconRenderer = new IconRenderer();
+      }
     }
   }
   
@@ -114,24 +123,28 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
           col += 2;  // skip Key, Power Macro
         }
       }
+      if ( !remote.isSSD() && col > 5 )
+      {
+        ++col;       // skip Icon
+      }
     }
     return col;
   }
 
   private static final String[] colNames =
   {
-      "#", "Name", "Key", "Power Macro", "Audio Action", "Video Action", "Notes", "<html>Size &amp<br>Color</html>"
+      "#", "Name", "Key", "Power Macro", "Audio Action", "Video Action", "Icon?", "Notes", "<html>Size &amp<br>Color</html>"
   };
   
   private static final String[] colPrototypeNames =
   {
       " 00 ", "Activity Name ___", "Key__", "A power macro with a lot of keys_________", "Audio Action__", "Video Action__",
-      "A reasonable length note", "Color_"
+      "Icon?_", "A reasonable length note", "Color_"
   };
   
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, Integer.class, List.class, String.class, String.class, String.class, Color.class
+      Integer.class, String.class, Integer.class, List.class, String.class, String.class, RMIcon.class, String.class, Color.class
   };
 
   @Override
@@ -158,7 +171,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public int getColumnCount()
   {
-    int count = colNames.length - 4;  // omit Name, Key, Macro, Color
+    int count = colNames.length - 5;  // omit Name, Key, Macro, Icon, Color
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
@@ -172,11 +185,15 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       }
       if ( remoteConfig.allowHighlighting() )
       {
-        ++count;  // add back Color;
+        ++count;  // add back Color
       }
       if ( remote.usesEZRC() )
       {
         --count;  // add Name but omit Audio Action, Video Action
+      }
+      if ( remote.isSSD() )
+      {
+        ++count;  // add back Icon
       }
     }
     return count;
@@ -192,7 +209,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   public boolean isColumnWidthFixed( int col )
   {
     col = getEffectiveColumn( col );
-    return col != 1 && col != 3 && col != 6;
+    return col != 1 && col != 3 && col != 7;
   }
   
   @Override
@@ -202,7 +219,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     switch ( getEffectiveColumn( col ) )
     {
       case 1:
-      case 6:
+      case 7:
         return selectAllEditor;
       case 2:
         Remote remote = remoteConfig.getRemote();
@@ -236,7 +253,9 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         editor = new DefaultCellEditor( videoHelpSettingBox );
         editor.setClickCountToStart( RMConstants.ClickCountToStart );
         return editor;
-      case 7:
+      case 6:
+        return iconEditor;
+      case 8:
         return colorEditor;
       default:
         return null;
@@ -273,7 +292,11 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         }
       };
     }
-    else if ( col == 7 )
+    else if ( col == 6 )
+    {
+      return iconRenderer;
+    }
+    else if ( col == 8 )
     {
       return colorRenderer;
     }
@@ -302,8 +325,10 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       case 5:
         return videoHelpSettingBox.getModel().getElementAt( activity.getVideoHelp() );
       case 6:
-        return activity.getNotes();
+        return activity.icon;
       case 7:
+        return activity.getNotes();
+      case 8:
         return activity.getHighlight();
       default:
         return null;
@@ -379,9 +404,13 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     }
     else if ( col == 6 )
     {
-      activity.setNotes( ( String )value );
+      activity.icon = ( RMIcon )value;
     }
     else if ( col == 7 )
+    {
+      activity.setNotes( ( String )value );
+    }
+    else if ( col == 8 )
     {
       activity.setHighlight( ( Color )value );
     }
@@ -405,6 +434,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     new RMSetterEditor< Object, MacroDefinitionBox >( MacroDefinitionBox.class );
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
   private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox() );
+  private RMSetterEditor< RMIcon, IconPanel > iconEditor = null;
+  private IconRenderer iconRenderer = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
   private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
   private JComboBox audioHelpSettingBox = new JComboBox();

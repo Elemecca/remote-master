@@ -24,14 +24,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.hifiremote.jp1.Activity.Assister;
-import com.hifiremote.jp1.RemoteConfiguration.Icon;
-import com.hifiremote.jp1.RemoteMaster.IconImage;
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
 
 public class ActivityPanel extends RMPanel implements ChangeListener, ActionListener, ListSelectionListener
 {
@@ -112,9 +112,12 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     newActivity.addActionListener( this );
     panel.add( newActivity );
     
-    iconImage = new IconImage();
-    panel.add( Box.createHorizontalStrut( 10 ) );
-    panel.add( iconImage );
+    iconLabel = new JLabel( "   " );
+    iconLabel.setPreferredSize( new Dimension( 100, 40 ) );
+    iconLabel.setHorizontalTextPosition( SwingConstants.LEADING );
+    iconLabel.setVisible( false );
+    panel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
+    panel.add( iconLabel );
     add( panel, BorderLayout.PAGE_END );
     tabbedPane = new JTabbedPane();
     tabbedPane.addChangeListener( this );    
@@ -190,6 +193,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       newActivity.setVisible( remote.usesEZRC() );
       deleteActivity.setVisible( remote.usesEZRC() );
       clearActivity.setVisible( !remote.usesEZRC() );
+      iconLabel.setVisible( remote.isSSD() );
+      iconLabel.setIcon( null );
       String startMessage = "Note:  When the activity has been set with the remote, \"Key\" is "
         + "the number key pressed to select the desired combination for the activity.  If "
         + "\"Key\" is blank, the activity has not been set.  The \"Key\" value has no "
@@ -263,7 +268,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
   private JButton[] newAssist = new JButton[ 3 ];
   private JButton[] deleteAssist = new JButton[ 3 ];
   private JTextArea messageArea = null;
-  private IconImage iconImage = null;
+  private JLabel iconLabel = null;
 
   @Override
   public void stateChanged( ChangeEvent e )
@@ -301,19 +306,13 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
             newAssist[ i ].setEnabled( a.getAssists().size() <= i || a.getAssists().get( i ).isEmpty() );
           }
         }
-        
-        BufferedImage image = null;
-        Integer iconref = activity.getIconref();
-        if ( iconref != null && remoteConfig.getSysIcons() != null && iconref < 127 )
-        {
-          Icon icon = remoteConfig.getSysIcons().get( iconref );
-          image = icon != null ? icon.image : null;
-        }
-        iconImage.setImage( image );
+        RMIcon icon = activity.icon;
+        iconLabel.setIcon( icon == null ? null : icon.image );
       }
       else
       {
         grid.setVisible( false );
+        iconLabel.setIcon( null );
       }
       activityGroupModel.set( btn, remoteConfig, null );
       activityGroupTable.initColumns( activityGroupModel );

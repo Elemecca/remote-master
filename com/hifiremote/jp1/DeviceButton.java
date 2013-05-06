@@ -287,7 +287,6 @@ public class DeviceButton extends Highlight
   private DeviceButton volumePT = noButton;
   private DeviceButton transportPT = noButton;
   private DeviceButton channelPT = noButton;
-  private int iconRef = 0;
   private int favoriteWidth = 0;
   private int vpt = 0;
   private boolean constructed = false;
@@ -339,16 +338,6 @@ public class DeviceButton extends Highlight
   public void setSoftFunctionNames( HashMap< Button, String > softFunctionNames )
   {
     this.softFunctionNames = softFunctionNames;
-  }
-
-  public int getIconRef()
-  {
-    return iconRef;
-  }
-
-  public void setIconRef( int iconRef )
-  {
-    this.iconRef = iconRef;
   }
 
   public int getFavoriteWidth()

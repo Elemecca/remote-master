@@ -66,11 +66,11 @@ public class RMSetterDialog< T > extends JDialog
       try
       {
         mainPanel = panelClass.newInstance();
+        mainPanel.setRemoteConfiguration( remoteConfig );
         if ( mainPanel instanceof MacroDefinitionBox )
         {
           MacroDefinitionBox macroBox = ( MacroDefinitionBox )mainPanel;
           macroBox.setButtonEnabler( buttonEnabler );
-          macroBox.setRemoteConfiguration( remoteConfig );
         }
       }
       catch ( Exception e )

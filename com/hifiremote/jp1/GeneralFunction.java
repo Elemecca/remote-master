@@ -1,8 +1,32 @@
 package com.hifiremote.jp1;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
 
 public class GeneralFunction
 {
@@ -53,6 +77,132 @@ public class GeneralFunction
     public Button button;
     public int state;
     public DeviceButton db;
+  }
+ 
+  public static class IconRenderer extends DefaultTableCellRenderer
+  {
+    private static final JLabel label = new JLabel();
+    private static final JCheckBox check = new JCheckBox();
+    
+    @Override
+    public Component getTableCellRendererComponent( JTable table, Object value, 
+        boolean isSelected, boolean hasFocus,
+        int row, int col )
+    {
+      Color color = UIManager.getColor("Table.selectionBackground");
+      check.setBackground( isSelected ? color : Color.WHITE );
+      check.setHorizontalAlignment( SwingConstants.CENTER );
+      RMIcon icon = ( RMIcon )value;
+      check.setSelected( icon != null && icon.image != null );
+      return icon != null ? check : label;
+    }
+  }
+  
+  
+  public static class IconPanel extends JPanel implements ActionListener, RMSetter< RMIcon >
+  {
+    public IconPanel()
+    {
+      super();
+      setLayout( new BorderLayout() );
+      iconPanel = new JPanel( new GridLayout( 0, 5, -1, -1 ) );
+      selected = new JLabel();
+      add( iconPanel, BorderLayout.CENTER );
+      JPanel panel = new JPanel();
+      panel.add( Box.createVerticalStrut( 40 ) );
+      panel.add( new JLabel( "Selected: ") );
+      panel.add( selected );
+      add( panel, BorderLayout.PAGE_END );
+      setBorder( BorderFactory.createTitledBorder( " Icon selector: " ) );
+      map = new LinkedHashMap< ImageIcon, RMIcon >();
+    }
+    
+    @Override
+    public RMIcon getValue()
+    {
+      return value;
+    }
+
+    @Override
+    public void setValue( RMIcon value )
+    {
+      this.value = value;
+      List< RMIcon > list = new ArrayList< RMIcon >();
+      nullIcon = new RMIcon( value );
+      nullIcon.image = null;
+      nullIcon.ref = 0;
+      list.add( nullIcon );
+      for ( RMIcon icon : config.getSysIcons().values() )
+      {
+        if ( icon.type == value.type )
+        {
+          list.add( icon );
+          map.put( icon.image, icon );
+        }
+      }
+      for ( RMIcon icon : config.getUserIcons().values() )
+      {
+        if ( icon.type == value.type )
+        {
+          list.add( icon );
+          map.put( icon.image, icon );
+        }
+      }
+      JButton b = null;
+      for ( RMIcon icon : list )
+      {
+        JButton button = new JButton( icon.image );
+        if ( icon.ref == value.ref )
+        {
+          b = button;
+        }
+        button.setContentAreaFilled(false);   
+        button.setOpaque(false);
+        button.setBorder( BorderFactory.createLineBorder( Color.BLACK ) );
+        button.addActionListener( this );
+        iconPanel.add( button );
+      }
+      selected.setIcon( value.image );
+      selected.setText( value.image == null ? "<none>" : null );
+      if ( b != null )
+      {
+        b.requestFocusInWindow();
+      }
+    }
+    
+    @Override
+    public void setRemoteConfiguration( RemoteConfiguration config )
+    {
+      this.config = config;
+    }
+    
+    @Override
+    public void actionPerformed( ActionEvent e )
+    {
+      JButton b = ( JButton )e.getSource();
+      ImageIcon image = ( ImageIcon )b.getIcon();
+      RMIcon icon = null;
+      if ( image == null )
+      {
+        selected.setIcon( null );
+        selected.setText( "<none>" );
+        icon = nullIcon;
+      }
+      else
+      {
+        selected.setIcon( image );
+        selected.setText( null );
+        icon = map.get( image );
+      }
+      value = new RMIcon( icon );
+    }
+    
+    private RemoteConfiguration config = null;
+    private RMIcon value = null;
+    private JPanel iconPanel = null;
+    private JLabel selected = null;
+    private LinkedHashMap< ImageIcon, RMIcon > map = null;
+    private RMIcon nullIcon = null;
   }
 
   public int getDeviceButtonIndex()
@@ -254,7 +404,15 @@ public class GeneralFunction
 
   public Integer getIconref()
   {
-    return iconref;
+    // This works, but the equivalent conditional expression does not
+    if ( icon == null )
+    {
+      return iconref;
+    }
+    else
+    {
+      return icon.ref;
+    }
   }
 
   public void setIconref( Integer iconref )
@@ -284,7 +442,6 @@ public class GeneralFunction
     }
   }
 
-
   protected Hex data;
   protected String name = null;
   protected int deviceButtonIndex = 0;
@@ -295,5 +452,6 @@ public class GeneralFunction
   protected FunctionItem item = null;
   protected DeviceUpgrade upgrade = null;
   protected Integer iconref = null;
+  protected RMIcon icon = null;
 
 }

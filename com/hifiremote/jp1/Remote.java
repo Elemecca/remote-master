@@ -24,6 +24,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class Remote.
@@ -1875,7 +1877,13 @@ public class Remote implements Comparable< Remote >
       {
         index = RDFReader.parseNumber( st.nextToken() );
       }
-      work.add( new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode, index ) );
+      DeviceButton db = new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode, index );
+      if ( isSSD() )
+      {
+        // System icons seem to have type 5
+        db.icon = new RMIcon( 5 );
+      }
+      work.add( db );
       index++ ;
     }
     deviceButtons = work.toArray( deviceButtons );

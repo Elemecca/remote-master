@@ -3,6 +3,8 @@ package com.hifiremote.jp1;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class FavKey.
@@ -121,6 +123,7 @@ public class FavKey extends RDFParameter
     Activity activity = new Activity( btn, remote );
     activity.setName( name );
     activity.setProfileIndex( profileIndex );
+    activity.icon = new RMIcon( 8 );
     profiles.add( activity );
     return activity;
   }

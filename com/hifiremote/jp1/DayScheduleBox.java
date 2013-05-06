@@ -159,6 +159,9 @@ public class DayScheduleBox extends Box implements ItemListener, RMSetter<DaySch
     sun.setEnabled( b );
   }
   
+  @Override
+  public void setRemoteConfiguration( RemoteConfiguration config ){};
+  
   private JToggleButton mon = null;  
   private JToggleButton tue = null;
   private JToggleButton wed = null;

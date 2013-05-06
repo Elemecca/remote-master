@@ -23,14 +23,7 @@ public class FavScan extends AdvancedCode
     String temp = props.getProperty( "DeviceIndex" );
     if ( temp != null )
     {
-//      try
-//      {
-        deviceIndex = Integer.parseInt( temp );
-//      }
-//      catch ( NumberFormatException nfe )
-//      {
-//        nfe.printStackTrace( System.err );
-//      }
+      deviceIndex = Integer.parseInt( temp );
     }
     temp = props.getProperty( "Serial" );
     if ( temp != null )

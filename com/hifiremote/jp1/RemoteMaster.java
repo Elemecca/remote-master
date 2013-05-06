@@ -295,27 +295,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private TextFileViewer rdfViewer = null;
 
   private List< AssemblerItem > clipBoardItems = new ArrayList< AssemblerItem >();
-
-  public static class IconImage extends Component
-  {               
-    private BufferedImage image = null;
-
-    public void setImage( BufferedImage image )
-    {
-      this.image = image;
-    }
-
-    public void paint( Graphics g ) 
-    {
-      int y = image == null ? 0 : ( 40 - image.getHeight() ) / 2;
-      g.drawImage( image, 0, Math.max( 0, y ), null ); 
-    }     
-
-    public Dimension getPreferredSize() 
-    {                     
-      return new Dimension( 100, 40 );        
-    }
-  }
   
   public class Preview extends JPanel
   {

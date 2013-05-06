@@ -188,6 +188,7 @@ PropertyChangeListener, RMSetter< Object >
     this.buttonEnabler = buttonEnabler;
   }
 
+  @Override
   public void setRemoteConfiguration( RemoteConfiguration config )
   {
     this.config = config;

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 import com.hifiremote.jp1.Activity.Assister;
@@ -567,14 +568,15 @@ public class RemoteConfiguration
     int status = data[ 0 ] + ( ( data[ 1 ] & 0x0F ) << 8 );
     int end = data[ 2 ] + ( data[ 3 ] << 8 ) + ( ( data[ 1 ] & 0xF0 ) << 12 );
     ssdFiles.clear();
-    userIcons = new LinkedHashMap< Integer, Icon >();
-    sysIcons = new LinkedHashMap< Integer, Icon >();
+    userIcons = new LinkedHashMap< Integer, RMIcon >();
+    sysIcons = new LinkedHashMap< Integer, RMIcon >();
     for ( DeviceButton db : remote.getDeviceButtons() )
     {
       db.setSegment( null );
     }
     
     Items items = new Items();
+    iconrefMap = new LinkedHashMap< GeneralFunction, Integer >();
     while ( pos < end )
     {
       while ( index < 12 && ( status & ( 1 << ++index ) ) == 0 ) {};
@@ -647,7 +649,8 @@ public class RemoteConfiguration
             continue;
           }
           int k = pos + 28 * ( j - 1 );
-          Icon icon = new Icon();
+          RMIcon icon = new RMIcon();
+          icon.ref = i;
           icon.intro = new Hex( data, pos, 8 );
           int width = data[ k + 8 ] + 0x100 * data[ k + 9 ];
           int height = data[ k + 10 ] + 0x100 * data[ k + 11 ];
@@ -715,7 +718,7 @@ public class RemoteConfiguration
             }
 //            System.err.println();
           }
-          icon.image = image;
+          icon.image = new ImageIcon( image );
 //          System.err.println();
 //          System.err.println( "Dataset 2: " + "1-byte values");
 //          for ( int m = 0; m < icon.height; m++ )
@@ -740,6 +743,25 @@ public class RemoteConfiguration
           ssdFiles.put( name, file );
         }
         pos = fileStart + iconEnd;
+      }
+    }
+    for ( GeneralFunction gf : iconrefMap.keySet() )
+    {
+      Integer iconref = iconrefMap.get( gf );
+      RMIcon icon = sysIcons.get( iconref );
+      if ( icon == null )
+      {
+        icon = userIcons.get( iconref );
+      }
+      if ( icon != null )
+      {
+        gf.icon = new RMIcon( icon );
+      }
+      else if ( gf.icon != null )
+      {
+        // handles the case, possibly non-existent in real use, in which a
+        // non-existent system icon is referenced
+        gf.icon.ref = iconref;
       }
     }
 //    SSDFile file = ssdFiles.get( "usericons.pkg" );
@@ -819,7 +841,7 @@ public class RemoteConfiguration
           }
           else
           {
-            items.db.setIconRef( data[ pos++ ] );
+            iconrefMap.put( items.db, ( int )data[ pos++ ] );
           }
         }
         else if ( fileIndex == 3 || fileIndex == 4 )
@@ -830,12 +852,12 @@ public class RemoteConfiguration
           }
           else
           {
-            items.activity.setIconref( ( int )data[ pos++ ] );
+            iconrefMap.put( items.activity, ( int )data[ pos++ ] );
           }
         }
         else if ( fileIndex == 5 )
         {
-          items.fav.setIconref( ( int )data[ pos++ ] );
+          iconrefMap.put( items.fav, ( int )data[ pos++ ] );
         }
       }
       else if ( tag.equals(  "favoritewidth" ) )
@@ -908,6 +930,7 @@ public class RemoteConfiguration
         items.activity.setSelector( btn );
         items.activity.setName( name );
         items.activity.getAssists().clear();
+        items.activity.icon = new RMIcon( 5 );  // Type = System icon
         items.activities.add( items.activity );
       }
       else if ( tag.equals( "profile" ) )
@@ -933,6 +956,7 @@ public class RemoteConfiguration
         }
         String name = new String( ch );
         items.fav = new FavScan( remote.getFavKey().getKeyCode(), null, null );
+        items.fav.icon = new RMIcon( 6 );
         items.fav.setSerial( serial );
         items.fav.setName( name );
         items.fav.setProfileIndices( new ArrayList< Integer >() );
@@ -1373,12 +1397,16 @@ public class RemoteConfiguration
             {
               Function f = new Function( name );
               f.setUpgrade( items.upgrade );
+              f.icon = new RMIcon( 9 );
               items.upgrade.getFunctions().add( f );
               if ( key.keygid != null )
               {
                 f.setHex( key.irdata );
                 f.setGid( key.keygid );
-                f.setIconref( key.iconref );
+                if ( key.iconref != null )
+                {
+                  iconrefMap.put( f, key.iconref );
+                }
                 f.setKeyflags( key.keyflags );
               }
               if ( key.macroref != null )
@@ -1481,7 +1509,10 @@ public class RemoteConfiguration
         }
         if ( f != null )
         {
-          f.setIconref( items.key.iconref );
+          if ( items.key.iconref != null )
+          {
+            iconrefMap.put(  f, items.key.iconref );
+          }
         }
       }
       else if ( tag.equals(  "softpage" ) )
@@ -6619,17 +6650,24 @@ public class RemoteConfiguration
   
   private RemoteMaster owner = null;
   
-  private LinkedHashMap< Integer, Icon > userIcons = null;
-  private LinkedHashMap< Integer, Icon > sysIcons = null;
+  private LinkedHashMap< Integer, RMIcon > userIcons = null;
+  private LinkedHashMap< Integer, RMIcon > sysIcons = null;
 
-  public LinkedHashMap< Integer, Icon > getUserIcons()
+  public LinkedHashMap< Integer, RMIcon > getUserIcons()
   {
     return userIcons;
   }
 
-  public LinkedHashMap< Integer, Icon > getSysIcons()
+  public LinkedHashMap< Integer, RMIcon > getSysIcons()
   {
     return sysIcons;
+  }
+  
+  private LinkedHashMap< GeneralFunction, Integer > iconrefMap = null;
+  
+  public LinkedHashMap< GeneralFunction, Integer > getIconrefMap()
+  {
+    return iconrefMap;
   }
 
   public RemoteMaster getOwner()
@@ -6735,8 +6773,6 @@ public class RemoteConfiguration
     LinkedHashMap< Integer, Macro > macroMap = new LinkedHashMap< Integer, Macro >();
     Integer softPageIndex = null;
     FavScan fav = null;
-//    SpecialProtocolFunction sf = null;
-//    AdvancedCode advCode = null;
   }
   
   private class Key
@@ -6753,10 +6789,10 @@ public class RemoteConfiguration
     Integer macroref = null;
   }
   
-  public class Icon
+  public static class RMIcon
   {
     /* Icon types appear to be as follows:
-     * 05 = System icon (monochrome)
+     * 05 = System icons (monochrome), used for Devices and Activities
      * 06 = Favorites icons (for a particular channel)
      * 08 = Profiles icons (nine standard ones, numbered 1-9, for standard
      *      profile names Custom, Mom, Dad, Kids, Guest, Movies, Newes, 
@@ -6768,7 +6804,33 @@ public class RemoteConfiguration
      */
     int type = 0;
     Hex intro = null;
-    BufferedImage image = null;
+    ImageIcon image = null;
+    int ref = 0;
+    
+    public RMIcon(){};
+    
+    public RMIcon( int type )
+    {
+      this.type = type;
+    }
+    
+    public RMIcon( RMIcon icon )
+    {
+      copy( icon );
+    }
+    
+    public void copy( RMIcon icon )
+    {
+      type = icon.type;
+      intro = icon.intro == null ? null : new Hex( icon.intro );
+      image = icon.image;
+      ref = icon.ref;
+    }
+    
+    public String toString()
+    {
+      return Integer.toString( ref );
+    }
   }
   
  public class SSDFile
@@ -7015,7 +7077,8 @@ public class RemoteConfiguration
       {
         work.add( makeItem( "remotemodel", new Hex( model, 8 ), true ) );
       }
-      work.add( makeItem( "iconref", new Hex( new short[]{ ( short )db.getIconRef() } ), true ) );
+      int iconref = db.getIconref() != null ? db.getIconref() : 0;
+      work.add( makeItem( "iconref", new Hex( new short[]{ ( short )iconref } ), true ) );
       if ( favKeyDevButton == db && favFinalKey != null )
       {
         work.add( makeItem( "enterkey", new Hex( new short[]{ ( short )favFinalKey.getKeyCode() } ), true ) );
@@ -7102,7 +7165,7 @@ public class RemoteConfiguration
           work.add( makeItem( "keygid", getLittleEndian( f.getGid() ), true ) );
           work.add( makeItem( "keyflags", new Hex( new short[]{ ( short )( f.getKeyflags() == null ? 0 : f.getKeyflags() ) } ), true ) );
           work.add( makeItem( "irdata", f.getHex(), true ) );
-          if ( f.getIconref() != null )
+          if ( f.getIconref() != null && f.getIconref() > 0 )
           {
             work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )f.getIconref() } ), true ) );
           }
@@ -7155,7 +7218,7 @@ public class RemoteConfiguration
           work.add( makeItem( "keygid", getLittleEndian( f.getGid() ), true ) );
           work.add( makeItem( "keyflags", new Hex( new short[]{ ( short )( f.getKeyflags() == null ? 0 : f.getKeyflags() ) } ), true ) );
           work.add( makeItem( "irdata", f.getHex(), true ) );
-          if ( f.getIconref() != null )
+          if ( f.getIconref() != null && f.getIconref() > 0 )
           {
             work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )f.getIconref() } ), true ) );
           }
@@ -7219,7 +7282,7 @@ public class RemoteConfiguration
     {
       work.add( makeItem( "profile", new Hex( "" + new Hex( new short[]{ ( short )activity.getProfileIndex() } ) + " " + new Hex( activity.getName(), 16 ) ), false ) );
       Integer iconref = activity.getIconref();
-      if ( iconref != null )
+      if ( iconref != null && iconref > 0 )
       {
         work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )iconref } ), true ) );
       }
@@ -7288,7 +7351,7 @@ public class RemoteConfiguration
         }
       }
       work.add( makeItem( "deviceid", new Hex( new short[]{ ( short )( favKeyDevButton.getButtonIndex() - 0x50 ) } ), true ) );
-      if ( favScan.getIconref() != null )
+      if ( favScan.getIconref() != null && favScan.getIconref() > 0 )
       {
         work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )favScan.getIconref() } ), true ) );
       }
@@ -7358,7 +7421,7 @@ public class RemoteConfiguration
       short serial = ( short )( btn.getKeyCode() & 0x0F );
       work.add( makeItem( "activity", new Hex( "" + new Hex( new short[]{ serial } ) + " " + new Hex( activity.getName(), 16 ) ), false ) );
       Integer iconref = activity.getIconref();
-      if ( iconref != null )
+      if ( iconref != null && iconref > 0 )
       {
         work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )iconref } ), true ) );
       }
@@ -7413,7 +7476,7 @@ public class RemoteConfiguration
         GeneralFunction f = null;
         if ( upg != null && ( f = upg.getGeneralFunction( b.getKeyCode() ) ) != null )
         {
-          if ( f.getIconref() != null )
+          if ( f.getIconref() != null && f.getIconref() > 0 )
           {
             work.add( makeItem( "iconref", new Hex( new short[]{ ( short )( int )f.getIconref() } ), true ) );
           }
@@ -7455,8 +7518,8 @@ public class RemoteConfiguration
     int pos = 16 + 28 * iconCount + indexSize;
     for ( int i : refs )
     {
-      Icon icon = userIcons.get( i );
-      BufferedImage image = icon.image;
+      RMIcon icon = userIcons.get( i );
+      BufferedImage image = ( BufferedImage )icon.image.getImage();
       int width = image.getWidth();
       int height = image.getHeight();
       int size = width * height;
@@ -7477,8 +7540,8 @@ public class RemoteConfiguration
     }
     for ( int i : refs )
     {
-      Icon icon = userIcons.get( i );
-      BufferedImage image = icon.image;
+      RMIcon icon = userIcons.get( i );
+      BufferedImage image = ( BufferedImage )icon.image.getImage();
       int width = image.getWidth();
       int height = image.getHeight();
       int size = width * height;

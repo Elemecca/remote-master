@@ -46,6 +46,9 @@ public class RMTimePanel extends JPanel implements RMSetter< RMTime >
     return new RMTime( (Date)timeField.getValue() );
   }
   
+  @Override
+  public void setRemoteConfiguration( RemoteConfiguration config ){};
+  
   private void showWarning( String message )
   {
     JOptionPane.showMessageDialog( this, message, "Invalid Format", JOptionPane.ERROR_MESSAGE );

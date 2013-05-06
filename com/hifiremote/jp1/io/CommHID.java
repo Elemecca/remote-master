@@ -26,7 +26,6 @@ import com.hifiremote.jp1.Hex;
 import com.hifiremote.jp1.Remote;
 import com.hifiremote.jp1.RemoteManager;
 import com.hifiremote.jp1.RemoteMaster;
-import com.hifiremote.jp1.RemoteConfiguration.Icon;
  
 public class CommHID extends IO 
 {

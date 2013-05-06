@@ -38,6 +38,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -45,8 +46,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import javax.swing.text.NumberFormatter;
 
-import com.hifiremote.jp1.RemoteMaster.IconImage;
-import com.hifiremote.jp1.RemoteConfiguration.Icon;
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
 
 public class FavoritesPanel extends RMPanel implements ActionListener, 
   ListSelectionListener, DocumentListener
@@ -156,9 +156,12 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     downButton.setEnabled( false );
     buttonPanel.add( downButton );
     
-    iconImage = new IconImage();
-    buttonPanel.add( Box.createHorizontalStrut( 10 ) );
-    buttonPanel.add( iconImage );
+    iconLabel = new JLabel( "   " );
+    iconLabel.setPreferredSize( new Dimension( 100, 40 ) );
+    iconLabel.setHorizontalTextPosition( SwingConstants.LEADING );
+    iconLabel.setVisible( false );
+    buttonPanel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
+    buttonPanel.add( iconLabel );
 
     panel.add( buttonPanel, BorderLayout.PAGE_END );
     
@@ -191,9 +194,10 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     profileField.setToolTipText( "Edit this value to rename selected profile" );
     p.add( new JLabel( "Selected: " ) );
     p.add( profileField );
-    profileIcon = new IconImage();
-    p.add(  Box.createHorizontalStrut( 10 ) );
-    p.add( profileIcon );
+    profileIconLabel = new JLabel( "   " );
+    profileIconLabel.setPreferredSize( new Dimension( 100, 40 ) );
+    profileIconLabel.setHorizontalTextPosition( SwingConstants.LEADING );
+    p.add( profileIconLabel );
     panel.add( p, BorderLayout.PAGE_START );
 
     buttonPanel = new JPanel( new WrapLayout() );
@@ -356,6 +360,9 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     favTable.initColumns( favModel );
     activityGroupTable.setVisible( false );
     profilesPanel.setVisible( remote.hasProfiles() );
+    iconLabel.setVisible( remote.isSSD() );
+    iconLabel.setIcon( null );
+    profileIconLabel.setIcon( null );
     favBtn = remote.getButtonByStandardName( "Favorites" );
     newButton.setEnabled( favBtn != null );
     duration.setValue( new Float( remoteConfig.getFavPause() / 10.0 ) );
@@ -395,7 +402,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       profiles.setModel( profilesModel );
     }
     upperPane.resetToPreferredSizes();
-    iconImage.setImage( null );
+    iconLabel.setVisible( remote.isSSD() );
+    iconLabel.setIcon( null );
   }
   
   public void finishEditing()
@@ -460,7 +468,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       {
         fav.setChannel( favModel.resizeChannel( fav.getChannel() ) );
       }
-      propertyChangeSupport.firePropertyChange( "data", null, null );
+//      propertyChangeSupport.firePropertyChange( "data", null, null );
       favTable.repaint();
     }
     else if ( source == upButton || source == downButton )
@@ -595,14 +603,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           downButton.setEnabled( selected && row < favTable.getRowCount() - 1 );
           cloneButton.setEnabled( true );
           editButton.setEnabled( true );
-          Integer iconRef = remoteConfig.getFavScans().get( row ).getIconref();
-          BufferedImage image = null;
-          if ( remoteConfig.getUserIcons() != null && iconRef != null && iconRef >= 127 )
-          {
-            Icon icon = remoteConfig.getUserIcons().get( iconRef );
-            image = icon != null ? icon.image : null;
-          }
-          iconImage.setImage( image );
+          RMIcon icon = remoteConfig.getFavScans().get( row ).icon;
+          iconLabel.setIcon( icon == null ? null : icon.image );
         }
         else
         {
@@ -610,7 +612,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           downButton.setEnabled( false );
           cloneButton.setEnabled( false );
           editButton.setEnabled( false );
-          iconImage.setImage( null );
+          iconLabel.setIcon( null );
         }
         repaint();
         deleteButton.setEnabled( favTable.getSelectedRowCount() > 0 );
@@ -626,14 +628,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         upProfile.setEnabled( index > 0 );
         downProfile.setEnabled( index < profilesModel.getSize() - 1 );
         deleteProfile.setEnabled( true );
-        Integer iconref = a.getIconref();
-        BufferedImage image = null;
-        if ( iconref != null && remoteConfig.getUserIcons() != null && iconref >= 127 )
-        {
-          Icon icon = remoteConfig.getUserIcons().get( iconref );
-          image = icon != null ? icon.image : null;
-        }
-        profileIcon.setImage( image );
+        RMIcon icon = a.icon;
+        profileIconLabel.setIcon( icon == null ? null : icon.image );
       }
       else
       {
@@ -641,7 +637,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         upProfile.setEnabled( false );
         downProfile.setEnabled( false );
         deleteProfile.setEnabled( false );
-        profileIcon.setImage( null );
+        profileIconLabel.setIcon( null );
       }
       if ( profileButton.isSelected() )
       {
@@ -813,6 +809,6 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   private JRadioButton allButton = new JRadioButton( "Show all favorites" );
   private JRadioButton profileButton = new JRadioButton( "Show selected profile" );
   private JTextField profileField = null;
-  private IconImage iconImage = null;
-  private IconImage profileIcon = null;
+  private JLabel iconLabel = null;
+  private JLabel profileIconLabel = null;
 }

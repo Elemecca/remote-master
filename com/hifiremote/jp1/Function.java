@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class Function.
@@ -64,6 +66,8 @@ public class Function extends GeneralFunction
     macroref = base.macroref;
     iconref = base.iconref;
     keyflags = base.keyflags;
+    if ( base.icon != null )
+      icon = new RMIcon( base.icon );
   }
 
   /**

@@ -12,6 +12,8 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
 
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
@@ -52,6 +54,7 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
       return null;
     }
     this.value = ( T )value;
+    this.table = table;
     if ( panelClass == ( Class<?> )MacroDefinitionBox.class )
     {
       if ( value instanceof Hex )
@@ -86,13 +89,21 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
       {
         value = result;
         fireEditingStopped();
+        // Fire any list selection listeners by clearing and reselecting cell
+        int row = table.getSelectedRow();
+        int col = table.getSelectedColumn();
+        if ( row >= 0 && col >= 0 )
+        {
+          table.clearSelection();
+          table.setRowSelectionInterval( row, row );
+          table.setColumnSelectionInterval( col, col );
+        }
       }
       else
       {
         fireEditingCanceled();
       }
     }
-
   }
   
   public void setTitle( String title )
@@ -112,6 +123,7 @@ extends DefaultCellEditor implements TableCellEditor, ActionListener
   private T value = null;
   private Class< C > panelClass = null;
   private ButtonEnabler buttonEnabler = null;
+  private JTable table = null;
   
   protected static final String EDIT = "edit";
 

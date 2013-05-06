@@ -13,6 +13,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import com.hifiremote.jp1.GeneralFunction.IconPanel;
+import com.hifiremote.jp1.GeneralFunction.IconRenderer;
+import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class DeviceButtonTableModel.
@@ -73,6 +77,12 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       setupCodeRenderer = new SetupCodeRenderer( remoteConfig );
       setupCodeEditor = new SetupCodeEditor( setupCodeRenderer );
+      if ( remote.isSSD() )
+      {
+        iconEditor = new RMSetterEditor< RMIcon, IconPanel >( IconPanel.class );
+        iconEditor.setRemoteConfiguration( remoteConfig );
+        iconRenderer = new IconRenderer();
+      }
     }
   }
 
@@ -226,7 +236,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   {
       "#", "Device Button", "Type", "<html>Setup<br>Code</html>", "<html>Volume<br>PunchThrough</html>", 
       "<html>Transport<br>PunchThrough</html>", "<html>Channel<br>PunchThrough</html>", "<html>Volume<br>Lock</html>", "Note", 
-      "", "", "", "IconRef", "Seq", "<html>Size &amp<br>Color</html>"
+      "", "", "", "Icon?", "Seq", "<html>Size &amp<br>Color</html>"
   };
 
   /*
@@ -251,7 +261,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   {
       " 00 ", "Device Button", "__VCR/DVD__", "Setup", "PunchThrough_", "PunchThrough_", 
       "PunchThrough_", "Master_", "A Meaningful, Reasonable Note", "Label", "Model", "Remote", 
-      "IconRef", "Seq", "Color_"
+      "Icon?_", "Seq", "Color_"
   };
 
   /*
@@ -275,7 +285,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   {
       Integer.class, String.class, DeviceType.class, SetupCode.class, DeviceButton.class, 
       DeviceButton.class, DeviceButton.class, String.class, String.class, String.class, String.class, 
-      String.class, Integer.class, Integer.class, Color.class
+      String.class, Integer.class, RMIcon.class, Color.class
   };
 
   /*
@@ -412,7 +422,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       case 12:
       {
-        return db.getIconRef();
+        return db.icon;
       }
       case 13:
       {
@@ -695,7 +705,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     else if ( col == 12 )
     {
-      db.setIconRef( ( ( Integer )value ).intValue() );
+      db.icon = ( RMIcon )value;
     }
     else if ( col == 13 )
     {
@@ -796,6 +806,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
+    col = getEffectiveColumn( col );
     Remote remote = remoteConfig == null ? null : remoteConfig.getRemote();
     if ( col == 0 )
     {
@@ -809,7 +820,11 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return setupCodeRenderer;
     }
-    else if ( getEffectiveColumn( col ) == 14 )
+    else if ( col == 12 )
+    {
+      return iconRenderer;
+    }
+    else if ( col == 14 )
     {
       return colorRenderer;
     }
@@ -845,8 +860,9 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       case 9:
       case 10:
       case 11:
-      case 12:
         return selectAllEditor;
+      case 12:
+        return iconEditor;
       case 13:
         return sequenceEditor;
       case 14:
@@ -901,12 +917,14 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   
   /** The setup code editor */
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
+  private RMSetterEditor< RMIcon, IconPanel > iconEditor = null;
   
   private SetupCodeRenderer setupCodeRenderer = null;
   private SetupCodeEditor setupCodeEditor = null;
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
   private DeviceNameRenderer nameRenderer = new DeviceNameRenderer();
+  private IconRenderer iconRenderer = null;
 
   private DefaultCellEditor sequenceEditor = null;
   private JComboBox sequenceBox = new JComboBox();
