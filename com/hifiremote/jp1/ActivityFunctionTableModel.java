@@ -11,10 +11,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import com.hifiremote.jp1.GeneralFunction.RMIcon;
 import com.hifiremote.jp1.GeneralFunction.IconPanel;
 import com.hifiremote.jp1.GeneralFunction.IconRenderer;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
-import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
 
 public class ActivityFunctionTableModel extends JP1TableModel< Activity > implements ButtonEnabler
 {

@@ -33,8 +33,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.hifiremote.jp1.GeneralFunction.IconPanel;
-import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+import com.hifiremote.jp1.GeneralFunction.RMIcon;
 
 // TODO: Auto-generated Javadoc
 /**

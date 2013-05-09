@@ -8,7 +8,7 @@ import javax.swing.table.TableCellRenderer;
 
 import com.hifiremote.jp1.GeneralFunction.IconPanel;
 import com.hifiremote.jp1.GeneralFunction.IconRenderer;
-import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+import com.hifiremote.jp1.GeneralFunction.RMIcon;
 
 // TODO: Auto-generated Javadoc
 /**

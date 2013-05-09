@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class Function.
@@ -64,10 +62,10 @@ public class Function extends GeneralFunction
     alternate = base.alternate;
     serial = base.serial;
     macroref = base.macroref;
-    iconref = base.iconref;
     keyflags = base.keyflags;
     if ( base.icon != null )
-      icon = new RMIcon( base.icon );
+//      icon = new RMIcon( base.icon );
+      icon = base.icon;  // *** not sure why it needed to be copied
   }
 
   /**
@@ -138,9 +136,9 @@ public class Function extends GeneralFunction
     {
       out.print( prefix + ".macroref", Integer.toString( macroref ) );
     }
-    if ( iconref != null )
+    if ( icon != null && icon.ref > 0 )
     {
-      out.print( prefix + ".iconref", Integer.toString( iconref ) );
+      out.print( prefix + ".iconref", Integer.toString( icon.ref ) );
     }
     if ( notes != null )
       out.print( prefix + ".notes", notes );
@@ -176,7 +174,7 @@ public class Function extends GeneralFunction
       setMacroref( Integer.parseInt( str ) );
     str = props.getProperty( prefix + ".iconref" );
     if ( str != null )
-      setIconref( Integer.parseInt( str ) );
+      icon.ref = ( Integer.parseInt( str ) );
     str = props.getProperty( prefix + ".notes" );
     if ( str != null )
       setNotes( str );

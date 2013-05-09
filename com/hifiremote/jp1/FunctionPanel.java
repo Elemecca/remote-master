@@ -10,7 +10,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 
 import com.hifiremote.jp1.GeneralFunction.User;
-import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+import com.hifiremote.jp1.GeneralFunction.RMIcon;
 
 // TODO: Auto-generated Javadoc
 /**

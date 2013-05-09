@@ -78,7 +78,7 @@ public class RMSetterDialog< T > extends JDialog
         e.printStackTrace();
       }
 
-      contentPane.add( mainPanel, BorderLayout.PAGE_START );
+      contentPane.add( mainPanel, BorderLayout.CENTER );
       contentPane.add( buttonPanel, BorderLayout.PAGE_END );
 
       pack();

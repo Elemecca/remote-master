@@ -215,10 +215,6 @@ public class Activity extends Highlight
         assists.put( i, new ArrayList< Assister >() );
       }
     }
-    if ( remote.isSSD() )
-    {
-      iconref = 0;
-    }
   }
 
   public Activity( Properties props )
@@ -252,7 +248,7 @@ public class Activity extends Highlight
     temp = props.getProperty( "Iconref" );
     if ( temp != null )
     {
-      iconref = Integer.parseInt( temp );
+//      iconref = Integer.parseInt( temp );
     }
     
     ActivityGroup.parse( props, this );
@@ -300,10 +296,6 @@ public class Activity extends Highlight
     else
     {
       assists = null;
-    }
-    if ( remote.isSSD() && iconref == null )
-    {
-      iconref = 0;
     }
   }
 
@@ -470,9 +462,9 @@ public class Activity extends Highlight
     {
       pw.print(  "ProfileIndex", profileIndex );
     }
-    if ( iconref != null )
+    if ( icon != null && icon.ref > 0 )
     {
-      pw.print(  "Iconref", iconref );
+      pw.print(  "Iconref", icon.ref );
     }
     
     ActivityGroup.store( pw, activityGroups );

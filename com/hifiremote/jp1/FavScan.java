@@ -42,10 +42,10 @@ public class FavScan extends AdvancedCode
       }
     }
     temp = props.getProperty( "Iconref" );
-    if ( temp != null )
-    {
-      iconref = Integer.parseInt( temp );
-    }
+//    if ( temp != null )
+//    {
+//      iconref = Integer.parseInt( temp );
+//    }
   }
   
   public FavScan( FavScan favScan )
@@ -164,9 +164,9 @@ public class FavScan extends AdvancedCode
       }
       pw.print( "ProfileIndices", str );
     }
-    if ( iconref != null )
+    if ( icon != null && icon.ref > 0 )
     {
-      pw.print( "Iconref", iconref );
+      pw.print( "Iconref", icon.ref );
     }
   }
 

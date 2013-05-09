@@ -46,7 +46,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import javax.swing.text.NumberFormatter;
 
-import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+import com.hifiremote.jp1.GeneralFunction.IconPanel;
+import com.hifiremote.jp1.GeneralFunction.RMIcon;
 
 public class FavoritesPanel extends RMPanel implements ActionListener, 
   ListSelectionListener, DocumentListener
@@ -194,8 +195,12 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     profileField.setToolTipText( "Edit this value to rename selected profile" );
     p.add( new JLabel( "Selected: " ) );
     p.add( profileField );
-    profileIconLabel = new JLabel( "   " );
-    profileIconLabel.setPreferredSize( new Dimension( 100, 40 ) );
+    iconButton= new JButton( "Icon:" );
+    iconButton.setToolTipText( "Click to change icon for selected profile" );
+    iconButton.addActionListener( this );
+    p.add( iconButton );
+    profileIconLabel = new JLabel();
+    profileIconLabel.setPreferredSize( new Dimension( 50, 40 ) );
     profileIconLabel.setHorizontalTextPosition( SwingConstants.LEADING );
     p.add( profileIconLabel );
     panel.add( p, BorderLayout.PAGE_START );
@@ -583,6 +588,21 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       profiles.setModel( profilesModel );
       profiles.setSelectedIndex( toRow );
     }
+    else if ( source == iconButton )
+    {      
+      Activity activity = ( Activity )profiles.getSelectedValue();
+      RMIcon icon = activity.icon;
+      iconButton.setPreferredSize( iconButton.getSize() );
+      iconButton.setText( icon.toString() );
+      RMSetterDialog< RMIcon > dialog = new RMSetterDialog< RMIcon >();
+      RMIcon result = dialog.showDialog( this, remoteConfig, IconPanel.class, icon );
+      if ( result != null )
+      {
+        activity.icon = result;
+        profileIconLabel.setIcon( result.image );
+      }
+      iconButton.setText( "Icon:" );   
+    }
     activityGroupTable.setVisible( favTable.getModel().getRowCount() > 0 );
     propertyChangeSupport.firePropertyChange( "data", null, null );
   }
@@ -810,5 +830,6 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   private JRadioButton profileButton = new JRadioButton( "Show selected profile" );
   private JTextField profileField = null;
   private JLabel iconLabel = null;
+  private JButton iconButton = null;
   private JLabel profileIconLabel = null;
 }

@@ -3,7 +3,7 @@ package com.hifiremote.jp1;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import com.hifiremote.jp1.RemoteConfiguration.RMIcon;
+import com.hifiremote.jp1.GeneralFunction.RMIcon;
 
 // TODO: Auto-generated Javadoc
 /**
