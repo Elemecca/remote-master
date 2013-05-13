@@ -39,16 +39,6 @@ public class DeviceButton extends Highlight
   
   public static final DeviceButton noButton = new DeviceButton( "<none>", 0, 0, 0, 0, -1 );
 
-  /**
-   * Gets the name.
-   * 
-   * @return the name
-   */
-  public String getName()
-  {
-    return name;
-  }
-
   public void setName( String name )
   {
     this.name = name;
@@ -265,9 +255,6 @@ public class DeviceButton extends Highlight
   {
     this.channelPT = channelPT;
   }
-
-  /** The name. */
-  private String name;
   
   private String defaultName = null;
 

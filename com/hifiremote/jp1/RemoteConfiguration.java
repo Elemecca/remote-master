@@ -174,9 +174,12 @@ public class RemoteConfiguration
       eepromFormatVersion = new String( val );               
     }
     
+    LinkedHashMap< GeneralFunction, Integer > iconrefMap = null;
+    
     if ( remote.isSSD() )
     {
       loadFiles( false );
+      iconrefMap = new LinkedHashMap< GeneralFunction, Integer >();
     }
     else if ( hasSegments() )
     {
@@ -189,6 +192,7 @@ public class RemoteConfiguration
       activityMacros = new HashMap< Button, Macro >();
     }
 
+    int favWidth = 0;
     while ( ( section = pr.nextSection() ) != null )
     {
       String sectionName = section.getName();
@@ -221,7 +225,7 @@ public class RemoteConfiguration
       {
         DeviceUpgrade upgrade = new DeviceUpgrade();
         upgrade.setRemoteConfig( this );
-        upgrade.load( section, true, remote );
+        upgrade.load( section, true, remote, iconrefMap );
         devices.add( upgrade );
         if ( remote.usesEZRC() )
         {
@@ -241,6 +245,11 @@ public class RemoteConfiguration
         if ( temp != null )
         {
           favPause = Integer.parseInt( temp );
+        }
+        temp = section.getProperty( "FavWidth" );
+        if ( temp != null )
+        {
+          favWidth = Integer.parseInt( temp );
         }
         temp = section.getProperty( "FinalKey" );
         if ( temp != null )
@@ -303,6 +312,10 @@ public class RemoteConfiguration
             {
               favScan.setDeviceButton( favKeyDevButton );
             }
+            if ( remote.isSSD() )
+            {
+              favScan.icon = new RMIcon( 6 );
+            }
             favScans.add( favScan );
           }
           else if ( sectionName.equals( "ProtocolUpgrade" ) )
@@ -342,6 +355,13 @@ public class RemoteConfiguration
             // attach it to the most recently added protocol upgrade
             protocols.get( protocols.size() - 1 ).setProtocol( mp );
           }
+          
+          String temp = null;
+          if ( iconrefMap != null && o instanceof GeneralFunction 
+              && ( temp = section.getProperty( "Iconref" ) ) != null )
+          {
+            iconrefMap.put(  ( GeneralFunction )o, Integer.parseInt( temp ) );
+          }
         }
         catch ( Exception e )
         {
@@ -350,6 +370,11 @@ public class RemoteConfiguration
         }
       } 
     }
+    if ( iconrefMap != null )
+    {
+      setIcons( iconrefMap );
+    }
+    
     if ( remote.usesEZRC() )
     {
       for ( DeviceButton db : remote.getDeviceButtons() )
@@ -359,8 +384,13 @@ public class RemoteConfiguration
           db.getUpgrade().setRemote( remote );
         }
       }
+      if ( favWidth > 0 )
+      {
+        favKeyDevButton.setFavoritewidth( favWidth );
+      }
       updateReferences();
     }
+    
     if ( activityMacros != null )
     {
       for ( Button btn : activityMacros.keySet() )
@@ -745,9 +775,14 @@ public class RemoteConfiguration
         pos = fileStart + iconEnd;
       }
     }
-    for ( GeneralFunction gf : items.iconrefMap.keySet() )
+    setIcons( items.iconrefMap );
+  }
+  
+  private void setIcons( LinkedHashMap< GeneralFunction, Integer > iconrefMap )
+  {
+    for ( GeneralFunction gf : iconrefMap.keySet() )
     {
-      Integer iconref = items.iconrefMap.get( gf );
+      Integer iconref = iconrefMap.get( gf );
       RMIcon icon = sysIcons.get( iconref );
       if ( icon == null )
       {
@@ -1897,7 +1932,7 @@ public class RemoteConfiguration
         String val = "";
         for ( int k = 0; k < data.length; k++ )
         {
-          Button b = remote.getButton( data[ data.length - k - 1 ] );
+          Button b = remote.getButton( data[ k ] );
           val += b.getName().substring( 0, 1 );
         }
         FavScan favScan = new FavScan( keyCode, null, null );
@@ -4105,14 +4140,9 @@ public class RemoteConfiguration
     int dataLen = 8;
     int k = 7;
     int flags = 0;
-    int maxSize = 0;
     for ( FavScan fav : favScans )
     {
       int size = fav.getChannel().length();
-      if ( size > maxSize )
-      {
-        maxSize = size;
-      }
       k += size + 1;
       dataLen += size + fav.getName().length() + 2;
       flags = fav.getSegmentFlags();
@@ -4134,7 +4164,7 @@ public class RemoteConfiguration
 
     segData.set( ( short )favKeyDevButton.getButtonIndex(), 0 );
     segData.set( ( short )remote.getFavKey().getKeyCode(), 1 );
-    segData.set( ( short )maxSize, 2 );
+    segData.set( ( short )favKeyDevButton.getFavoriteWidth(), 2 );
     segData.set( ( short )favPause, 3 );
     segData.set( ( short )( favFinalKey == null ? 0xFF : favFinalKey.getKeyCode() ), 4 );
     segData.set( ( short )0xFF, 5 );
@@ -6062,6 +6092,10 @@ public class RemoteConfiguration
       {
         pw.printHeader( "FavData" );
         pw.print( "Pause", favPause );
+        if ( !remote.isSSD() )
+        {
+          pw.print( "FavWidth", favKeyDevButton.getFavoriteWidth() );
+        }
         if ( favFinalKey != null )
         {
           pw.print( "FinalKey", favFinalKey.getKeyCode() );

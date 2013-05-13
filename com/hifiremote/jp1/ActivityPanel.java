@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -44,6 +43,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     panel.setBorder( BorderFactory.createTitledBorder( "Activity Functions" ) );
     activityFunctionTable = new JP1Table( activityFunctionModel );
     activityFunctionTable.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
+    activityFunctionTable.getSelectionModel().addListSelectionListener( this );
     activityFunctionModel.setPanel( this );
     JScrollPane scrollPane = new JScrollPane( activityFunctionTable );
     JPanel upper = new JPanel( new BorderLayout() );
@@ -382,9 +382,10 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     {
       Activity activity = null;
       List< Button > freeBtns = new ArrayList< Button >( remote.getButtonGroups().get( "Activity" ) );
+      Button favBtn = remote.getButtonByStandardName( "Favorites" );
       for ( Activity a : remoteConfig.getActivities().values() )
       {
-        if ( a.isActive() )
+        if ( a.isActive() || a.getButton() == favBtn )
         {
           freeBtns.remove( a.getSelector() );
         }
@@ -453,6 +454,18 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     }
     
     Object source = e.getSource();
+    if ( source == activityFunctionTable.getSelectionModel() )
+    {
+      int index = tabbedPane.getSelectedIndex();
+      if ( index < 0 )
+      {
+        return;
+      }
+      Activity activity = activityList.get( index );
+      RMIcon icon = activity.icon;
+      iconLabel.setIcon( icon == null ? null : icon.image );
+      return;
+    }
     int i;
     for ( i = 0; i < 3; i++ )
     {

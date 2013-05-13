@@ -18,16 +18,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Properties;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
@@ -45,9 +48,18 @@ public class GeneralFunction
     this.name = name;
   }
   
-  /**
-   * The Class User.
-   */
+  public GeneralFunction( Properties props )
+  {
+    name = props.getProperty( "Name" );
+    notes = props.getProperty( "Notes" );
+    String temp = props.getProperty( "Data" );
+    if ( temp != null )
+    {
+      data = new Hex( temp );
+      notes = props.getProperty( "Notes" );
+    }
+  }
+  
   public static class User
   {
 
@@ -159,9 +171,13 @@ public class GeneralFunction
     {
       super();
       setLayout( new BorderLayout() );
-      showAllButton = new JButton( "Show all icons" );
-      showUnusedButton = new JButton( "Show unused icons" );
+      showAllButton = new JRadioButton( "Show all" );
+      showUnusedButton = new JRadioButton( "Show unused" );
+      ButtonGroup grp = new ButtonGroup();
+      grp.add( showAllButton );
+      grp.add( showUnusedButton );
       showAllButton.addActionListener( this );
+      showAllButton.setSelected( true );
       showUnusedButton.addActionListener( this );
       showAllButton.setFocusable( false );
       showUnusedButton.setFocusable( false );
@@ -170,6 +186,7 @@ public class GeneralFunction
       panel.add( showAllButton );
       panel.add( showUnusedButton );
       panel.add( Box.createVerticalStrut( 40 ) );
+      panel.add( Box.createHorizontalStrut( 10 ) );
       panel.add( new JLabel( "Selected: ") );
       panel.add( selected );
       add( panel, BorderLayout.PAGE_START );
@@ -228,7 +245,17 @@ public class GeneralFunction
       nullIcon.type = value.type;
       list.add( nullIcon );
       map.clear();
-      setUsedImages();
+      if ( value.type == 5 )
+      {
+        showUnusedButton.setEnabled( false );
+        showAllButton.setSelected( true );
+        usedImages.clear();
+      }
+      else
+      {
+        showUnusedButton.setEnabled( true );
+        setUsedImages();
+      }
       for ( RMIcon icon : config.getSysIcons().values() )
       {
         if ( icon.type == value.type && ( showAll || !usedImages.contains( icon.image ) ) )
@@ -311,26 +338,30 @@ public class GeneralFunction
     @Override
     public void actionPerformed( ActionEvent e )
     {
+      Object source = e.getSource();
+      if ( source instanceof JRadioButton )
+      {
+//        if ( source == showAllButton || sour) //&& showAllButton.isSelected() )
+//        {
+          showAll = showAllButton.isSelected();
+//        }
+//        else if ( source == showUnusedButton && showUnusedButton.isSelected() )
+//        {
+//          showAll = false;
+//          //        ImageIcon imageIcon = ( ImageIcon )selectedButton.getIcon();
+//          RMIcon icon = value;
+//          setValue( icon );
+//          validate();
+//          repaint();
+//        }
+        RMIcon icon = value;
+        setValue( icon );
+        validate();
+        repaint();
+        return;
+      }
       JButton b = ( JButton )e.getSource();
-      if ( b == showAllButton )
-      {
-        showAll = true;
-//        ImageIcon imageIcon = ( ImageIcon )selectedButton.getIcon();
-        RMIcon icon = value;
-        setValue( icon );
-        validate();
-        repaint();
-      }
-      else if ( b == showUnusedButton )
-      {
-        showAll = false;
-//        ImageIcon imageIcon = ( ImageIcon )selectedButton.getIcon();
-        RMIcon icon = value;
-        setValue( icon );
-        validate();
-        repaint();
-      }
-      else if ( b == importButton )
+      if ( b == importButton )
       {
         load();
       }
@@ -512,8 +543,8 @@ public class GeneralFunction
     private JButton importButton = null;
     private JButton exportButton = null;
     private JButton deleteButton = null;
-    private JButton showAllButton = null;
-    private JButton showUnusedButton = null;
+    private JRadioButton showAllButton = null;
+    private JRadioButton showUnusedButton = null;
     private List< ImageIcon > usedImages = null;
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
   }
@@ -737,7 +768,27 @@ public class GeneralFunction
     }
   }
 
-  protected Hex data;
+  public void store( PropertyWriter pw )
+  {
+    if ( name != null )
+    {
+      pw.print( "Name", name );
+    }
+    if ( data != null )
+    {
+      pw.print( "Data", data );
+    }
+    if ( notes != null && !notes.trim().isEmpty() )
+    {
+      pw.print( "Notes", notes );
+    }
+    if ( icon != null && icon.ref > 0 )
+    {
+      pw.print(  "Iconref", icon.ref );
+    }
+  }
+  
+  protected Hex data = null;
   protected String name = null;
   protected int deviceButtonIndex = 0;
   protected int serial = -1;   // signifies unset

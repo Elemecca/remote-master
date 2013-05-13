@@ -38,7 +38,6 @@ public class ProtocolUpgrade extends Highlight
   {
     pid = Integer.parseInt( props.getProperty( "PID" ) );
     code = new Hex( props.getProperty( "Code" ) );
-    notes = props.getProperty( "Notes" );
   }
 
   /**
@@ -51,8 +50,6 @@ public class ProtocolUpgrade extends Highlight
   {
     pw.print( "PID", Integer.toString( pid ) );
     pw.print( "Code", code.toString() );
-    if ( ( notes != null ) && !notes.equals( "" ) )
-      pw.print( "Notes", notes );
   }
   
   public ManualProtocol getManualProtocol( Remote remote )
@@ -154,16 +151,6 @@ public class ProtocolUpgrade extends Highlight
   }
 
   /**
-   * Gets the notes.
-   * 
-   * @return the notes
-   */
-  public String getNotes()
-  {
-    return notes;
-  }
-
-  /**
    * Sets the notes.
    * 
    * @param text
@@ -200,9 +187,6 @@ public class ProtocolUpgrade extends Highlight
 
   /** The code. */
   private Hex code;
-
-  /** The notes. */
-  private String notes;
   
   private Protocol protocol = null;
 

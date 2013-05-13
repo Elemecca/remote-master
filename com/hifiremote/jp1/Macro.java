@@ -53,12 +53,7 @@ public class Macro extends AdvancedCode
   public Macro( Properties props )
   {
     super( props );
-    String temp = props.getProperty( "Name" );
-    if ( temp != null )
-    {
-      name = temp;
-    }
-    temp = props.getProperty( "SystemMacro" );
+    String temp = props.getProperty( "SystemMacro" );
     if ( temp != null )
     {
       systemMacro = true;
@@ -198,6 +193,23 @@ public class Macro extends AdvancedCode
     }
     return buff.toString();
   }
+  
+//  public static boolean isEmpty( Object value )
+//  {
+//    if ( value == null )
+//    {
+//      return true;
+//    }
+//    else if ( value instanceof Hex )
+//    {
+//      return ( ( ( Hex )value).length() == 0 );
+//    }
+//    else if ( value instanceof List< ? >)
+//    {
+//      return ( ( ( List< ? > )value).size() == 0 );
+//    }
+//    return true;
+//  }
 
   /**
    * Sets the value.

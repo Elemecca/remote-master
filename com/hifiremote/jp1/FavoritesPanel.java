@@ -122,22 +122,22 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     JPanel buttonPanel = new JPanel( new WrapLayout( FlowLayout.CENTER, 5, 0 ) );
     buttonPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 0, 0 ) );
 
-    editButton = new JButton( "Edit" );
-    editButton.addActionListener( this );
-    editButton.setToolTipText( "Edit the selected item." );
-    editButton.setEnabled( false );
-    buttonPanel.add( editButton );
+//    editButton = new JButton( "Edit" );
+//    editButton.addActionListener( this );
+//    editButton.setToolTipText( "Edit the selected item." );
+//    editButton.setEnabled( false );
+//    buttonPanel.add( editButton );
 
     newButton = new JButton( "New" );
     newButton.addActionListener( this );
     newButton.setToolTipText( "Add a new item." );
     buttonPanel.add( newButton );
 
-    cloneButton = new JButton( "Clone" );
-    cloneButton.addActionListener( this );
-    cloneButton.setToolTipText( "Add a copy of the selected item." );
-    cloneButton.setEnabled( false );
-    buttonPanel.add( cloneButton );
+//    cloneButton = new JButton( "Clone" );
+//    cloneButton.addActionListener( this );
+//    cloneButton.setToolTipText( "Add a copy of the selected item." );
+//    cloneButton.setEnabled( false );
+//    buttonPanel.add( cloneButton );
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
@@ -326,10 +326,10 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         {
           return;
         }
-        if ( !favTable.isCellEditable( row, favTable.columnAtPoint( e.getPoint() ) ) )
-        {
-          editRowObject( row );
-        }
+//        if ( !favTable.isCellEditable( row, favTable.columnAtPoint( e.getPoint() ) ) )
+//        {
+//          editRowObject( row );
+//        }
       }
     };
     favTable.addMouseListener( openEditor );
@@ -497,23 +497,64 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     }
     else if ( source == newButton )
     {
-      newRowObject();
-
-    }
-    else if ( source == cloneButton )
-    {
-      FavScan orig = favScans.get( row );
-      FavScan favScan = new FavScan( orig );
-      favScan.setSegmentFlags( orig.getSegmentFlags() );
+      FavScan favScan = new FavScan( remote.getFavKey().getKeyCode(), null, null );
+      favScan.setName( "New favorite" );
+      if ( remote.isSSD() )
+      {
+        favScan.icon = new RMIcon( 6 );
+        favScan.setProfileIndices( new ArrayList< Integer >() );
+        List< Integer > serials = new ArrayList< Integer >();
+        for ( FavScan fs : favScans )
+        {
+          if ( !serials.contains( fs.getSerial() ) )
+          {
+            serials.add( fs.getSerial() );
+          }
+        }
+        Collections.sort( serials );
+        for ( int i = 0; ; i++ )
+        {
+          if ( !serials.contains( i ) )
+          {
+            favScan.setSerial( i );
+            break;
+          }
+        }
+      }
+      favScan.setSegmentFlags( 0xFF );
+      favScan.setChannel( "00000000".substring( 0, favWidth.getSelectedIndex() + 1 ) );
       favScans.add( favScan );
       row = favScans.size() - 1;
+      if ( favTable.getSelectedRowCount() == 0 )
+      {
+        favTable.setColumnSelectionInterval( 1, 1 );
+      }
       favModel.fireTableRowsInserted( row, row );
       favTable.setRowSelectionInterval( row, row );
+      favTable.requestFocusInWindow();
     }
-    else if ( source == editButton )
-    {
-      editRowObject( row );
-    }
+        
+ 
+
+//    else if ( source == newButton )
+//    {
+//      newRowObject();
+//
+//    }
+//    else if ( source == cloneButton )
+//    {
+//      FavScan orig = favScans.get( row );
+//      FavScan favScan = new FavScan( orig );
+//      favScan.setSegmentFlags( orig.getSegmentFlags() );
+//      favScans.add( favScan );
+//      row = favScans.size() - 1;
+//      favModel.fireTableRowsInserted( row, row );
+//      favTable.setRowSelectionInterval( row, row );
+//    }
+//    else if ( source == editButton )
+//    {
+//      editRowObject( row );
+//    }
     else if ( source == allButton )
     {
       favModel.fireTableStructureChanged();
@@ -621,8 +662,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           boolean selected = row != -1;
           upButton.setEnabled( row > 0 );
           downButton.setEnabled( selected && row < favTable.getRowCount() - 1 );
-          cloneButton.setEnabled( true );
-          editButton.setEnabled( true );
+//          cloneButton.setEnabled( true );
+//          editButton.setEnabled( true );
           RMIcon icon = remoteConfig.getFavScans().get( row ).icon;
           iconLabel.setIcon( icon == null ? null : icon.image );
         }
@@ -630,8 +671,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         {
           upButton.setEnabled( false );
           downButton.setEnabled( false );
-          cloneButton.setEnabled( false );
-          editButton.setEnabled( false );
+//          cloneButton.setEnabled( false );
+//          editButton.setEnabled( false );
           iconLabel.setIcon( null );
         }
         repaint();
@@ -686,17 +727,17 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     return profileButton.isSelected();
   }
   
-  private void editRowObject( int row )
-  {
-    List< FavScan > favScans = remoteConfig.getFavScans();
-    FavScan favScan = FavScanDialog.showDialog( this, favScans.get( row ), remoteConfig );
-    if ( favScan != null )
-    {
-      favScans.set( row, favScan );
-      favModel.fireTableRowsUpdated( row, row );
-      propertyChangeSupport.firePropertyChange( "data", null, null );
-    }
-  }
+//  private void editRowObject( int row )
+//  {
+//    List< FavScan > favScans = remoteConfig.getFavScans();
+//    FavScan favScan = FavScanDialog.showDialog( this, favScans.get( row ), remoteConfig );
+//    if ( favScan != null )
+//    {
+//      favScans.set( row, favScan );
+//      favModel.fireTableRowsUpdated( row, row );
+//      propertyChangeSupport.firePropertyChange( "data", null, null );
+//    }
+//  }
   
   private void documentChanged( DocumentEvent e )
   {
@@ -729,45 +770,46 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     documentChanged( e );
   }
   
-  private void newRowObject()
-  {
-    List< FavScan > favScans = remoteConfig.getFavScans();
-    FavScan favScan = FavScanDialog.showDialog( this, null, remoteConfig );
-    if ( favScan != null )
-    {
-      if ( remoteConfig.getRemote().isSSD() )
-      {
-        List< Integer > serials = new ArrayList< Integer >();
-        for ( FavScan fs : favScans )
-        {
-          if ( !serials.contains( fs.getSerial() ) )
-          {
-            serials.add( fs.getSerial() );
-          }
-        }
-        Collections.sort( serials );
-        for ( int i = 0; ; i++ )
-        {
-          if ( !serials.contains( i ) )
-          {
-            favScan.setSerial( i );
-            break;
-          }
-        }
-        favScan.setProfileIndices( new ArrayList< Integer >() );
-      }
-      favScan.setSegmentFlags( 0xFF );
-      favScans.add( favScan );
-      int row = favScans.size() - 1;
-      if ( favTable.getSelectedRowCount() == 0 )
-      {
-        favTable.setColumnSelectionInterval( 1, 1 );
-      }
-      favModel.fireTableRowsInserted( row, row );
-      favTable.setRowSelectionInterval( row, row );
-      favTable.requestFocusInWindow();
-    }
-  }
+//  private void newRowObject()
+//  {
+//    List< FavScan > favScans = remoteConfig.getFavScans();
+//    FavScan favScan = FavScanDialog.showDialog( this, null, remoteConfig );
+//    if ( favScan != null )
+//    {
+//      if ( remoteConfig.getRemote().isSSD() )
+//      {
+//        List< Integer > serials = new ArrayList< Integer >();
+//        for ( FavScan fs : favScans )
+//        {
+//          if ( !serials.contains( fs.getSerial() ) )
+//          {
+//            serials.add( fs.getSerial() );
+//          }
+//        }
+//        Collections.sort( serials );
+//        for ( int i = 0; ; i++ )
+//        {
+//          if ( !serials.contains( i ) )
+//          {
+//            favScan.setSerial( i );
+//            break;
+//          }
+//        }
+//        favScan.setProfileIndices( new ArrayList< Integer >() );
+//        favScan.icon = new RMIcon( 6 );
+//      }
+//      favScan.setSegmentFlags( 0xFF );
+//      favScans.add( favScan );
+//      int row = favScans.size() - 1;
+//      if ( favTable.getSelectedRowCount() == 0 )
+//      {
+//        favTable.setColumnSelectionInterval( 1, 1 );
+//      }
+//      favModel.fireTableRowsInserted( row, row );
+//      favTable.setRowSelectionInterval( row, row );
+//      favTable.requestFocusInWindow();
+//    }
+//  }
   
   public JList getProfiles()
   {
@@ -807,9 +849,9 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   private JPanel deviceBoxPanel = null;
   private JFormattedTextField duration = null;
   private JComboBox deviceButtonBox = null;
-  private JButton editButton = null;
+//  private JButton editButton = null;
   private JButton newButton = null;
-  private JButton cloneButton = null;
+//  private JButton cloneButton = null;
   private JButton deleteButton = null;
   private JButton upButton = null;
   private JButton downButton = null;

@@ -877,16 +877,6 @@ public class DeviceUpgrade extends Highlight
   }
 
   /**
-   * Gets the notes.
-   * 
-   * @return the notes
-   */
-  public String getNotes()
-  {
-    return notes;
-  }
-
-  /**
    * Gets the functions.
    * 
    * @return the functions
@@ -2278,7 +2268,7 @@ public class DeviceUpgrade extends Highlight
    */
   public void load( Properties props, boolean loadButtons )
   {
-    load( props, true, null );
+    load( props, true, null, null );
   }
 
   /**
@@ -2289,7 +2279,7 @@ public class DeviceUpgrade extends Highlight
    * @param loadButtons
    *          the load buttons
    */
-  public void load( Properties props, boolean loadButtons, Remote theRemote )
+  public void load( Properties props, boolean loadButtons, Remote theRemote, LinkedHashMap< GeneralFunction, Integer > iconrefMap )
   {
     reset();
     String str = props.getProperty( "Description" );
@@ -2435,7 +2425,16 @@ public class DeviceUpgrade extends Highlight
     while ( true )
     {
       Function f = new Function();
+      if ( remote.isSSD() )
+      {
+        f.icon = new RMIcon( 9 );
+      }
       f.load( props, "Function." + i );
+      String temp = null;
+      if ( iconrefMap != null && ( temp = props.getProperty( "Function." + i + ".iconref" ) ) != null )
+      {
+        iconrefMap.put( f, Integer.parseInt( temp ) );
+      }
       if ( f.isEmpty() )
       {
         break;
@@ -3762,9 +3761,6 @@ public class DeviceUpgrade extends Highlight
 
   /** The parm values. */
   private Value[] parmValues = new Value[ 0 ];
-
-  /** The notes. */
-  private String notes = null;
 
   /** The functions. */
   private java.util.List< Function > functions = new ArrayList< Function >();

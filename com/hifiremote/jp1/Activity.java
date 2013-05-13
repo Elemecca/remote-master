@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
+
 public class Activity extends Highlight
 {
   public static final String[] assistType = { "Picture", "Sound", "Power" };
@@ -207,7 +209,8 @@ public class Activity extends Highlight
     if ( remote.usesEZRC() )
     {
       int keyCode = button.getKeyCode();
-      macro = new Macro( keyCode, new Hex( 0 ), keyCode, 0, null );
+      macro = new Macro( keyCode, null, keyCode, 0, null );
+      macro.setItems( new ArrayList< KeySpec >() );
       macro.setSegmentFlags( 0xFF );
       assists = new LinkedHashMap< Integer, List<Assister> >();
       for ( int i = 0; i < 3; i++ )
@@ -215,13 +218,16 @@ public class Activity extends Highlight
         assists.put( i, new ArrayList< Assister >() );
       }
     }
+    if ( remote.isSSD() )
+    {
+      icon = new RMIcon( 5 );
+    }
   }
 
   public Activity( Properties props )
   {
     super( props );
     active = true;
-    name = props.getProperty( "Name" );
     String temp = props.getProperty( "HelpSegmentFlags" );
     if ( temp != null )
     {
@@ -238,17 +244,11 @@ public class Activity extends Highlight
     
     assists = Assister.load( props );
 
-    notes = props.getProperty( "Notes" );
     selectorName = props.getProperty( "Selector" );
     temp = props.getProperty( "ProfileIndex" );
     if ( temp != null )
     {
       profileIndex = Integer.parseInt( temp );
-    }
-    temp = props.getProperty( "Iconref" );
-    if ( temp != null )
-    {
-//      iconref = Integer.parseInt( temp );
     }
     
     ActivityGroup.parse( props, this );
@@ -296,6 +296,10 @@ public class Activity extends Highlight
     else
     {
       assists = null;
+    }
+    if ( remote.isSSD() )
+    {
+      icon = new RMIcon( profileIndex < 0 ? 5 : 8 );
     }
   }
 
@@ -379,11 +383,6 @@ public class Activity extends Highlight
     this.helpSegmentFlags = helpSegmentFlags;
   }
 
-  public String getNotes()
-  {
-    return notes;
-  }
-
   public void setNotes( String notes )
   {
     this.notes = notes;
@@ -392,11 +391,6 @@ public class Activity extends Highlight
   public void setName( String name )
   {
     this.name = name;
-  }
-
-  public String getName()
-  {
-    return name;
   }
 
   public Button getSelector()
@@ -437,7 +431,6 @@ public class Activity extends Highlight
       return;
     }
     super.store( pw );
-    pw.print( "Name", name );
     pw.print( "HelpSegmentFlags", helpSegmentFlags );
     
     if ( helpSegment != null && assists.isEmpty() )
@@ -449,11 +442,7 @@ public class Activity extends Highlight
     }
     
     Assister.store( assists, pw );
-    
-    if ( notes != null && !notes.trim().isEmpty() )
-    {
-      pw.print( "Notes", notes );
-    }
+
     if ( selector != null )
     {
       pw.print(  "Selector", selector.getName() );
@@ -461,10 +450,6 @@ public class Activity extends Highlight
     if ( profileIndex >= 0 )
     {
       pw.print(  "ProfileIndex", profileIndex );
-    }
-    if ( icon != null && icon.ref > 0 )
-    {
-      pw.print(  "Iconref", icon.ref );
     }
     
     ActivityGroup.store( pw, activityGroups );
@@ -509,10 +494,8 @@ public class Activity extends Highlight
   private ActivityGroup[] activityGroups = null;
   private Button button = null;
   private Button selector = null;
-  private String name = null;
   private String selectorName = null;
   private Macro macro = null;
-  private String notes = null;
   private int audioHelp = 0;
   private int videoHelp = 0;
   private LinkedHashMap< Integer, List< Assister > > assists = null; // new LinkedHashMap< Integer, List<Assister> >();
@@ -520,6 +503,5 @@ public class Activity extends Highlight
   private Segment helpSegment = null;
   private boolean active = false;
   private boolean isNew = false;
-//  private int iconRef = 0;
   private int profileIndex = -1;
 }

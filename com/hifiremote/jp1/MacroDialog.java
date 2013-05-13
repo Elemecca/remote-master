@@ -189,7 +189,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       shift.setSelected( false );
       xShift.setSelected( false );
       macroBox.setValue( null );
-      macroBox.setValue( ( List< KeySpec > )null );
+//      macroBox.setValue( ( List< KeySpec > )null );
       notes.setText( null );
     }
     else

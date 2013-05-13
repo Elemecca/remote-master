@@ -7,20 +7,22 @@ import java.util.StringTokenizer;
 
 public class FavScan extends AdvancedCode
 {
-  private String name = null;
   private DeviceButton deviceButton = null;
 
   public FavScan( int keyCode, Hex data, String notes )
   {
     super( keyCode, data, notes );
-    // TODO Auto-generated constructor stub
   }
 
   public FavScan( Properties props )
   {
     super( props );
-    name = props.getProperty( "Name" );
-    String temp = props.getProperty( "DeviceIndex" );
+    String temp = props.getProperty( "Channel" );
+    if ( temp != null )
+    {
+      channel = temp;
+    }
+    temp = props.getProperty( "DeviceIndex" );
     if ( temp != null )
     {
       deviceIndex = Integer.parseInt( temp );
@@ -41,11 +43,6 @@ public class FavScan extends AdvancedCode
         profileIndices.add( Integer.parseInt( token, 16 ) );
       }
     }
-    temp = props.getProperty( "Iconref" );
-//    if ( temp != null )
-//    {
-//      iconref = Integer.parseInt( temp );
-//    }
   }
   
   public FavScan( FavScan favScan )
@@ -53,6 +50,8 @@ public class FavScan extends AdvancedCode
     super( favScan.getKeyCode(), new Hex( favScan.getData() ), favScan.getNotes() );
     deviceButton = favScan.getDeviceButton();
     name = favScan.getName();
+    icon = favScan.icon;
+    channel = favScan.channel;
   }
 
   public static FavScan read( HexReader reader, Remote remote )
@@ -135,11 +134,11 @@ public class FavScan extends AdvancedCode
   
   public void store( PropertyWriter pw, RemoteConfiguration remoteConfig )
   {
-    if ( name != null )
-    {
-      pw.print( "Name", name );
-    }
     super.store( pw );
+    if ( channel != null && channel.length() > 0 )
+    {
+      pw.print( "Channel", channel );
+    }
     Remote remote = remoteConfig.getRemote();
     DeviceButton devBtn = ( remote.getAdvCodeBindFormat() ==  AdvancedCode.BindFormat.NORMAL 
         || remoteConfig.hasSegments() ) ? remoteConfig.getFavKeyDevButton() : this.getDeviceButton();
@@ -164,15 +163,6 @@ public class FavScan extends AdvancedCode
       }
       pw.print( "ProfileIndices", str );
     }
-    if ( icon != null && icon.ref > 0 )
-    {
-      pw.print( "Iconref", icon.ref );
-    }
-  }
-
-  public String getName()
-  {
-    return name;
   }
 
   public void setName( String name )
@@ -228,18 +218,5 @@ public class FavScan extends AdvancedCode
   {
     this.channel = channel;
   }
-  
-//  private Integer iconRef = null;
-//
-//  public Integer getIconRef()
-//  {
-//    return iconRef;
-//  }
-//
-//  public void setIconRef( Integer iconRef )
-//  {
-//    this.iconRef = iconRef;
-//  }
-  
 
 }

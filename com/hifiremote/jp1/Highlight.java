@@ -9,6 +9,7 @@ public class Highlight extends GeneralFunction
   
   public Highlight( Properties props )
   {
+    super( props );
     // SegmentFlags is omitted if it is 0 (which it is for JP1.3 and earlier as it is not used by them )
     String temp = props.getProperty( "SegmentFlags" );
     segmentFlags = temp == null ? 0 : Integer.parseInt( temp );
@@ -93,6 +94,7 @@ public class Highlight extends GeneralFunction
   
   public void store( PropertyWriter pw )
   {
+    super.store( pw );
     if ( segmentFlags > 0 )
     {
       pw.print( "SegmentFlags", segmentFlags );

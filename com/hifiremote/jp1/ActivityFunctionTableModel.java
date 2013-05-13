@@ -319,6 +319,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         Button selector = activity.getSelector();
         return selector == null ? null : new Integer( activity.getSelector().getKeyCode() );
       case 3:
+//        return macro == null ? remoteConfig.getRemote().usesEZRC() ?
+//            new ArrayList< KeySpec >() : new Hex( 0 ) : macro.getItems();
         return macro == null ? null : macro.getItems();
       case 4:
         return audioHelpSettingBox.getModel().getElementAt( activity.getAudioHelp() );
@@ -392,7 +394,14 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     }
     else if ( col == 3 )
     {
-      macro.setData( ( Hex )value );
+//      if ( Macro.isEmpty( value ) )
+//      {
+//        macro = null;
+//      }
+//      else
+//      {
+        macro.setValue( value );
+//      }
     }
     else if ( col == 4 )
     {
@@ -414,7 +423,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     {
       activity.setHighlight( ( Color )value );
     }
-    propertyChangeSupport.firePropertyChange( col == 7 ? "highlight" : "data", null, null );
+    propertyChangeSupport.firePropertyChange(  col == 7 ? "highlight" : "data", null, null );
   }
 
   public void setActivityGroupModel( ActivityGroupTableModel activityGroupModel )

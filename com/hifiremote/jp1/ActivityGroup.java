@@ -149,11 +149,6 @@ public class ActivityGroup extends Highlight
     deviceIndex = device == null ? 0xFF : device.getButtonIndex() & 0xFF;
   }
 
-  public String getNotes()
-  {
-    return notes;
-  }
-
   public void setNotes( String notes )
   {
     this.notes = notes;
@@ -172,7 +167,6 @@ public class ActivityGroup extends Highlight
   private int index = 0;
   private Button[] buttonGroup = null;
   private DeviceButton device = DeviceButton.noButton;
-  private String notes = null;
   private int deviceIndex = 0xFF;
   private Segment softNamesSegment = null;
 }

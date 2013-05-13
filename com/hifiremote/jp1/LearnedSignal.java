@@ -100,9 +100,6 @@ public class LearnedSignal extends Highlight
     {
       header = new Hex( temp );
     }
-    name = properties.getProperty( "Name" );
-    data = new Hex( properties.getProperty( "Data" ) );
-    notes = properties.getProperty( "Notes" );
   }
   
   public Hex getSignalHex( Remote remote )
@@ -151,15 +148,6 @@ public class LearnedSignal extends Highlight
     if ( header != null )
     {
       pw.print( "Header", header );
-    }
-    if ( name != null )
-    {
-      pw.print( "Name", name );
-    }
-    pw.print( "Data", data );
-    if ( notes != null && !notes.equals( "" ) )
-    {
-      pw.print( "Notes", notes );
     }
   }
 

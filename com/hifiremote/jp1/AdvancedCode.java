@@ -170,8 +170,6 @@ public abstract class AdvancedCode extends Highlight
     // Allow for missing "KeyCode" entry, as it is not used by Timed Macros
     String temp = props.getProperty( "KeyCode" );
     keyCode = temp == null ? 0 : Integer.parseInt( temp );
-    data = new Hex( props.getProperty( "Data" ) );
-    notes = props.getProperty( "Notes" );
   }
 
   /** The key code. */
@@ -270,11 +268,6 @@ public abstract class AdvancedCode extends Highlight
   {
     super.store( pw );
     pw.print( "KeyCode", keyCode );
-    pw.print( "Data", data );
-    if ( notes != null && notes.length() > 0 )
-    {
-      pw.print( "Notes", notes );
-    }
   }
 
 }

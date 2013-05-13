@@ -91,27 +91,6 @@ public class Function extends GeneralFunction
   /**
    * Store.
    * 
-   * @param props
-   *          the props
-   * @param prefix
-   *          the prefix
-   */
-//  public void store( Properties props, String prefix )
-//  {
-//    if ( isEmpty() )
-//      props.setProperty( prefix + ".name", "" );
-//
-//    if ( name != null )
-//      props.setProperty( prefix + ".name", name );
-//    if ( data != null )
-//      props.setProperty( prefix + ".hex", data.toString() );
-//    if ( notes != null )
-//      props.setProperty( prefix + ".notes", notes );
-//  }
-
-  /**
-   * Store.
-   * 
    * @param out
    *          the out
    * @param prefix
@@ -172,9 +151,6 @@ public class Function extends GeneralFunction
     str = props.getProperty( prefix + ".macroref" );
     if ( str != null )
       setMacroref( Integer.parseInt( str ) );
-    str = props.getProperty( prefix + ".iconref" );
-    if ( str != null )
-      icon.ref = ( Integer.parseInt( str ) );
     str = props.getProperty( prefix + ".notes" );
     if ( str != null )
       setNotes( str );
