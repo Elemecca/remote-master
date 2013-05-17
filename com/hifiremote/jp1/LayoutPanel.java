@@ -389,6 +389,12 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       popup.add( item );
     }
   }
+  
+  @Override
+  public void revalidateFunctions()
+  {
+    functionPanel.revalidate();
+  }
 
   /**
    * Sets the functions.
@@ -705,11 +711,11 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 //        gf = deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
 //      }
       GeneralFunction current = getFunction( b );
-      ButtonTableModel.setFunction( deviceUpgrade, b, current, gf );
+      ButtonTableModel.setFunction( deviceUpgrade, b, current, gf, this );
       if ( current instanceof LearnedSignal && gf == null )
       {
         gf = getFunction( b );
-        ButtonTableModel.setFunction( deviceUpgrade, b, null, gf );
+        ButtonTableModel.setFunction( deviceUpgrade, b, null, gf, this );
       }
 //      macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
 //      if ( gf == null && macro != null )

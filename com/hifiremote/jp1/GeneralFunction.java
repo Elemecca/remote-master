@@ -606,15 +606,30 @@ public class GeneralFunction
   {
     // A learned signal hides anything underneath, so treat as unassigned
     // if all assignments are hidden
-    if ( db != null && db.getUpgrade() != null && db.getUpgrade().getRemote().isSSD() )
+    if ( db != null && db.getUpgrade() != null && db.getUpgrade().getRemote().usesEZRC() )
     {
       for ( User u : users )
       {
         LinkedHashMap< Integer, LearnedSignal > learnedMap = db.getUpgrade().getLearnedMap();
-        if ( ( this instanceof Function || u.db == db )
+        if ( ( /* this instanceof Function || */ u.db == db )
             && ( this instanceof LearnedSignal || learnedMap.get( ( int )u.button.getKeyCode()) == null ) )
         {
           return true;
+        }
+      }
+      if ( this instanceof Function )
+      {
+        Function f = ( Function )this;
+        f = f.getAlternate();
+        if ( f != null )
+        {
+          for ( User u : f.getUsers() )
+          {
+            if ( u.db == db )
+            {
+              return true;
+            }
+          }
         }
       }
       return false;
@@ -637,8 +652,18 @@ public class GeneralFunction
     users.add( new User( db, b ) );
     if ( label != null )
     {
-      label.showAssigned();
+      label.showAssigned( db );
       label.updateToolTipText();
+    }
+    else if ( this instanceof Function )
+    {
+      Function f = ( Function )this;
+      f = f.getAlternate();
+      if ( f != null && f.getLabel() != null )
+      {
+        f.getLabel().showAssigned( db );
+        f.getLabel().updateToolTipText();
+      }
     }
   }
   
@@ -650,6 +675,16 @@ public class GeneralFunction
     {
       label.showAssigned( db );
       label.updateToolTipText();
+    }
+    else if ( this instanceof Function )
+    {
+      Function f = ( Function )this;
+      f = f.getAlternate();
+      if ( f != null && f.getLabel() != null )
+      {
+        f.getLabel().showAssigned( db );
+        f.getLabel().updateToolTipText();
+      }
     }
   }
   

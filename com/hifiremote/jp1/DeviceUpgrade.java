@@ -36,6 +36,7 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 import com.hifiremote.jp1.SetupPanel.AltPIDStatus;
 import com.hifiremote.jp1.translate.Translate;
@@ -4048,19 +4049,25 @@ public class DeviceUpgrade extends Highlight
 //    }
 //  }
   
-  public void setFunction( Button b, GeneralFunction f, int state )
+  public Function setFunction( Button b, GeneralFunction f, int state )
   {
+    // The return value is null unless f is cloned, in which case the
+    // clone is returned
+    Function result = null;
     if ( !remote.usesEZRC() )
     {
       if ( f instanceof Function )
       {
         assignments.assign( b, ( Function )f, state );
       }
-      return;
+      return null;
     }
     int keyCode = b.getKeyCode();
     Function bf = getFunction( keyCode );  // function currently on b
-    if ( f == null )
+    // On a soft button for an SSD remote, the function is replaced completely
+    // so delete existing function
+    boolean removeBf = remote.isSSD() && remote.isSoftButton( b ) && bf != null;
+    if ( f == null || removeBf )
     {
       // Delete current assignment to b.  If assignment is a macro,
       // leave the underlying function, if any.
@@ -4069,6 +4076,11 @@ public class DeviceUpgrade extends Highlight
       {
         macroMap.remove( keyCode );
         macro.removeReference( buttonRestriction, b );
+        if ( macro.isSystemMacro() )
+        {
+          KeySpec ks = macro.getItems().get( 0 );
+          ks.fn.removeReference( buttonRestriction, b );
+        }
         if ( macro.getUsers().isEmpty() )
         {
           remoteConfig.getMacros().remove( macro );
@@ -4078,19 +4090,24 @@ public class DeviceUpgrade extends Highlight
           bf.setMacroref( null );
           if ( bf.data != null )
           {
-            return;
+            return null;
           }
         }
       }
-      if ( bf != null )
+      if ( bf != null || removeBf )
       {
         // If assignment was a macro with no underlying function data, or if
         // assignment was a function, remove the function
         functions.remove( bf );
         assignments.assign( b, null );
+        bf = null;
       }
-      return;
+      if ( f == null )
+      {
+        return null;
+      }
     }
+
     DeviceUpgrade fnUpg = f.getUpgrade( remote );
     if ( bf == null )
     {
@@ -4102,10 +4119,16 @@ public class DeviceUpgrade extends Highlight
       }
       else if ( remote.isSSD() )
       {
+        // EZ-RC seems to clone a function when it is put on to a second
+        // button, rather than using the same function.  This seems necessary
+        // in case, say, one occurrence then has a macro put on it, as the
+        // macro reference is part of the underlying function.
         bf = new Function( f.getName() );
+        bf.icon = new RMIcon( 9 );
         bf.setUpgrade( this );
         functions.add( bf );
         assignments.assign( b, bf );
+        result = bf;
       }
     }
     
@@ -4115,14 +4138,16 @@ public class DeviceUpgrade extends Highlight
       {
         if ( f instanceof Function )
         {
-          // will only apply if remote is SSD, in which case bf != null
+          // This is cloning a function, and will only apply 
+          // if remote is SSD, in which case bf != null.
           Function fn = ( Function )f;
           bf.setName( f.getName() );
           bf.setData( new Hex( fn.getData() ) );
           bf.setGid( fn.getGid() );
           bf.setKeyflags( fn.getKeyflags() );
+          bf.icon = fn.icon;
         }
-        else if ( f instanceof Macro )
+        else if ( f instanceof Macro )  // At present, the only other possibility
         {
           Macro macro = macroMap.get( keyCode );
           if ( macro != null )
@@ -4139,6 +4164,11 @@ public class DeviceUpgrade extends Highlight
           remoteConfig.getMacros().add( macro );
           if ( remote.isSSD() )
           {
+            // The remote seems to require the function and macro to have the
+            // same name.  In a test with function name "TV Test" and macro
+            // name "TV  Vol Min", the remote displayed "TV Test Min", apparently
+            // overwriting the macro name with the function name.  So for safety
+            // it is better not to allow the names to differ.
             bf.setName( f.getName() );
             bf.setMacroref( macro.getSerial() );
           }
@@ -4168,12 +4198,18 @@ public class DeviceUpgrade extends Highlight
           fn.setAlternate( irFn );
           irFn.setAlternate( fn );
           fnUpg.functions.add( irFn );
+          irFn.addReference( buttonRestriction, b );
         }
       }
       Macro macro = macroMap.get( keyCode );
       if ( macro != null )
       {
         macro.removeReference( buttonRestriction, b );
+        if ( macro.isSystemMacro() )
+        {
+          KeySpec ks = macro.getItems().get( 0 );
+          ks.fn.removeReference( buttonRestriction, b );
+        }
         if ( macro.getUsers().isEmpty() )
         {
           remoteConfig.getMacros().remove( macro );
@@ -4189,6 +4225,12 @@ public class DeviceUpgrade extends Highlight
       KeySpec ks = null;
       if ( remote.isSSD() )
       {
+        LinkedHashMap< Integer, List<Assister> > assists = new LinkedHashMap< Integer, List<Assister> >();
+        for ( int j = 0; j < 3; j++ )
+        {
+          assists.put( j , new ArrayList< Assister >() );
+        }
+        macro.setAssists( assists );  
         ks = new KeySpec( fnUpg.buttonRestriction, irFn );
         bf.setMacroref( serial );
       }
@@ -4206,6 +4248,7 @@ public class DeviceUpgrade extends Highlight
       macro.setItems( items );
       macroMap.put( keyCode, macro );
     }
+    return result;
   }
   
   public int getNewFunctionSerial()
@@ -4337,10 +4380,10 @@ public class DeviceUpgrade extends Highlight
       if ( function.accept() )
       {
         list.add( function );
-//        list = Function.filter( list );
       }
     }
-    list = Function.filter( list );
+    // Seems no longer to need filter
+//    list = Function.filter( list );
     return list;
   }
   

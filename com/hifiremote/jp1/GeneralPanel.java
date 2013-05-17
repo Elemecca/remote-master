@@ -382,7 +382,12 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     {
       return;
     }
-
+    
+    if ( remote.usesEZRC() && newUpgrade.getButtonRestriction() != DeviceButton.noButton )
+    {
+      newUpgrade.getButtonRestriction().setUpgrade( newUpgrade );
+    }
+    
     ListIterator< DeviceUpgrade > upgrades = remoteConfig.getDeviceUpgrades().listIterator();
     while ( upgrades.hasNext() )
     {

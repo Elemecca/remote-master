@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -46,6 +47,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -69,9 +71,35 @@ public class ButtonPanel extends KMPanel implements ActionListener
     super( "Buttons", devUpgrade );
     setLayout( new BorderLayout() );
 
-    table = new JTableX();
     model = new ButtonTableModel( devUpgrade );
-    table.setModel( model );
+    model.setPanel( this );
+    table = new JTableX( model )
+    {
+      @Override
+      public String getToolTipText( MouseEvent e ) 
+      {
+        Remote remote = model.getDeviceUpgrade().getRemote();
+        if ( !remote.usesEZRC() )
+        {
+          return null;
+        }
+        String tip = null;
+        java.awt.Point p = e.getPoint();
+        int row = rowAtPoint( p );
+        int rawCol = columnAtPoint( p );
+        boolean editable = model.isCellEditable( row, rawCol );
+        int col = model.getEffectiveColumn( rawCol );
+        if ( col == ButtonTableModel.functionCol && !editable )
+        {
+          GeneralFunction gf = ( GeneralFunction )getValueAt( row, rawCol );
+          String tab = gf instanceof Macro ? "Macros" : "Learned Signals";
+          tip = "<html>To change this assignment, first delete the corresponding<br>"
+              + "assignment on the " + tab + " tab.";
+        }
+        return tip;
+      }
+    };
+    
     table.setRowSelectionAllowed( false );
     table.setColumnSelectionAllowed( false );
     table.setCellSelectionEnabled( true );
@@ -103,16 +131,33 @@ public class ButtonPanel extends KMPanel implements ActionListener
     table.setDefaultRenderer( GeneralFunction.class, 
         new DefaultTableCellRenderer()
     {
+      Font baseFont = getFont();
+      Font boldFont = baseFont.deriveFont( Font.BOLD );
+      
       @Override
       public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected,
           boolean hasFocus, int row, int col )
       {
         GeneralFunction gf = ( GeneralFunction )value;
         String name = gf != null ? gf.getDisplayName() : "";
-        return super.getTableCellRendererComponent( table, name, isSelected, false, row, col );
+        Component component = super.getTableCellRendererComponent( table, name, isSelected, false, row, col );
+        component.setFont( table.isCellEditable( row, col ) ? baseFont : boldFont );
+        return component;
       }
-    }
-        );
+    } );
+    table.setDefaultRenderer( Macro.class, new DefaultTableCellRenderer() {
+      @Override
+      public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
+          int row, int col )
+      {     
+        Component component = super.getTableCellRendererComponent( table, value, value == null ? false : isSelected, false, row, col );
+        Color color = value == null ? Color.LIGHT_GRAY
+            : isSelected ? UIManager.getColor( "Table.selectionBackground" ) : Color.WHITE;
+        setBackground( color );
+        return component;
+      } 
+    } );
+    
     table.getTableHeader().setReorderingAllowed( false );
 
     ListSelectionListener lsl = new ListSelectionListener()
@@ -404,6 +449,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
     if ( remote.usesEZRC() )
     {
       selectionPanel.add( selector, BorderLayout.CENTER );
+      selector.deviceBox.setSelectedItem( deviceUpgrade.getButtonRestriction() );
     }
     
     add( splitPane, BorderLayout.CENTER );
@@ -474,7 +520,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
       macroButton.addActionListener( al );
       macroButton.setEnabled( remote.isSSD() );
     }
-    
+
     protected void addFunctions()
     {
       if ( functionButton.isSelected() )
@@ -756,6 +802,12 @@ public class ButtonPanel extends KMPanel implements ActionListener
     if ( ( aFont == null ) || ( table == null ) )
       return;
     table.setRowHeight( aFont.getSize() + 2 );
+  }
+  
+  @Override
+  public void revalidateFunctions()
+  {
+    functionPanel.revalidate();
   }
 
   /** The table. */

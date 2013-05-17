@@ -120,7 +120,9 @@ public class FunctionLabel
           else
             buff.append( ", " );
           Button b = user.button;
+          DeviceButton db = user.db;
           int state = user.state;
+          buff.append( db.getName() + "/" );
           if ( state == Button.NORMAL_STATE )
             buff.append( b.getName());
           else if ( state == Button.SHIFTED_STATE )

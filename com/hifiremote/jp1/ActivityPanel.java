@@ -111,6 +111,12 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     newActivity = new JButton( "New Activity" );
     newActivity.addActionListener( this );
     panel.add( newActivity );
+    moveLeft = new JButton( "Move Left" );
+    moveLeft.addActionListener( this );
+    panel.add( moveLeft );
+    moveRight = new JButton( "Move Right" );
+    moveRight.addActionListener( this );
+    panel.add( moveRight );
     
     iconLabel = new JLabel( "   " );
     iconLabel.setPreferredSize( new Dimension( 100, 40 ) );
@@ -192,6 +198,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     {
       newActivity.setVisible( remote.usesEZRC() );
       deleteActivity.setVisible( remote.usesEZRC() );
+      moveRight.setVisible( remote.usesEZRC() );
+      moveLeft.setVisible( remote.usesEZRC() );
       clearActivity.setVisible( !remote.usesEZRC() );
       iconLabel.setVisible( remote.isSSD() );
       iconLabel.setIcon( null );
@@ -246,6 +254,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       }
       newActivity.setEnabled( allowNew );
       deleteActivity.setEnabled( allowDelete );
+      moveRight.setEnabled( activityList.size() > 1 );
+      moveLeft.setEnabled( false );
     }
   }
 
@@ -265,6 +275,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
   private JButton clearActivity = null;
   private JButton newActivity = null;
   private JButton deleteActivity = null;
+  private JButton moveRight = null;
+  private JButton moveLeft = null;
   private JButton[] newAssist = new JButton[ 3 ];
   private JButton[] deleteAssist = new JButton[ 3 ];
   private JTextArea messageArea = null;
@@ -308,6 +320,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
         }
         RMIcon icon = activity.icon;
         iconLabel.setIcon( icon == null ? null : icon.image );
+        moveRight.setEnabled( index < activityList.size() - 1 );
+        moveLeft.setEnabled( index > 0 );
       }
       else
       {
@@ -351,7 +365,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     Remote remote = remoteConfig.getRemote();
     Object source = e.getSource();
     boolean tabChange = false;
-    int index = 0;
+    int index = -1;
+    int toIndex = -1;
     if ( source == clearActivity || source == deleteActivity )
     {
       Activity activity = activityFunctionModel.getRow( 0 );
@@ -406,6 +421,23 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       activity.setName( "New Activity" );
       tabChange = true;
     }
+    else if ( source == moveLeft || source == moveRight )
+    {
+      index = tabbedPane.getSelectedIndex();
+      toIndex = ( source == moveLeft ) ? index - 1 : index + 1;
+      Activity activity1 = activityList.get( index );
+      Activity activity2 = activityList.get( toIndex );
+      Button b1 = activity1.getButton();
+      Button b2 = activity2.getButton();
+      activity1.setButton( b2 );
+      activity1.setSelector( b2 );
+      activity2.setButton( b1 );
+      activity2.setSelector( b1 );
+      remoteConfig.getActivities().put( b1, activity2 );
+      remoteConfig.getActivities().put( b2, activity1 );
+      tabbedPane.setSelectedIndex( toIndex );
+      tabChange = true;
+    }
     else if ( ( index = Arrays.asList( newAssist ).indexOf( source ) ) >= 0 )
     {
       Activity activity = activityFunctionModel.getRow( 0 );
@@ -442,7 +474,11 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     {
       activityAssistModels[ i ].fireTableDataChanged();
     }
-    propertyChangeSupport.firePropertyChange( tabChange ? "tabs" : "data", null, null );  
+    propertyChangeSupport.firePropertyChange( tabChange ? "tabs" : "data", null, null );
+    if ( toIndex >= 0 )
+    {
+      tabbedPane.setSelectedIndex( toIndex );
+    }
   }
 
   @Override

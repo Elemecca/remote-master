@@ -80,9 +80,8 @@ public class FunctionTableModel extends KMTableModel< Function >
       {
         list.add( f );
       }
-//      list = Function.filter( list );
     }
-    list = Function.filter( list );
+//    list = Function.filter( list );
     setData( list );
     remoteConfig = deviceUpgrade.getRemoteConfig();
     setProtocol( deviceUpgrade.getProtocol(), deviceUpgrade.getRemote() );

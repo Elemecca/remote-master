@@ -63,9 +63,7 @@ public class FunctionPanel extends TablePanel< Function >
       return;
     Protocol p = deviceUpgrade.getProtocol();
     p.initializeParms();
-    Remote r = deviceUpgrade.getRemote();
-    ( ( FunctionTableModel )model ).setRemoteConfig( deviceUpgrade.getRemoteConfig() );
-    ( ( FunctionTableModel )model ).setProtocol( p, r );
+    ( ( FunctionTableModel )model ).setDeviceUpgrade( deviceUpgrade );
     initColumns();
     super.update();
   }
@@ -80,6 +78,14 @@ public class FunctionPanel extends TablePanel< Function >
     Function f = new Function();
     f.setUpgrade( deviceUpgrade );
     deviceUpgrade.getFunctions().add( f );
+    if ( deviceUpgrade.getRemote().usesEZRC() )
+    {
+      f.setGid( Function.defaultGID );
+    }
+    if ( deviceUpgrade.getRemote().isSSD() )
+    {
+      f.icon = new RMIcon( 9 );
+    }
     return f;
   }
 

@@ -103,7 +103,7 @@ public class Function extends GeneralFunction
 
     if ( name != null )
       out.print( prefix + ".name", name );
-    if ( gid != null && gid != defaultIndex )
+    if ( gid != null && gid != defaultGID )
       out.print( prefix + ".index", Integer.toString( gid ) );
     if ( keyflags != null )
       out.print( prefix + ".keyflags", Integer.toString( keyflags ) );
@@ -138,7 +138,9 @@ public class Function extends GeneralFunction
       setName( str );
     str = props.getProperty( prefix + ".index" );
     if ( str != null )
+    {
       setGid( Integer.parseInt( str ) );
+    }
     str = props.getProperty( prefix + ".keyflags" );
     if ( str != null )
       setKeyflags( Integer.parseInt( str ) );
@@ -362,6 +364,6 @@ public class Function extends GeneralFunction
   private Function alternate = null;
   
   /** Default value used in upgrade when index==null */
-  public static final int defaultIndex = 0;
+  public static final int defaultGID = 0;
 
 }

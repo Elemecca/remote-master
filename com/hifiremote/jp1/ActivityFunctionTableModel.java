@@ -106,11 +106,15 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       Remote remote = remoteConfig.getRemote();
       if ( !remote.usesEZRC() && col > 0 )
       {
-        ++col;  // skip Name
+        ++col;       // skip Name
       }
-      else if ( remote.usesEZRC() && col > 3 )
+      else if ( remote.usesEZRC() && col > 1 )
       {
-        col += 2;  // skip Audio and Video Actions
+        col++;       // skip key
+        if ( col > 3 )
+        {
+          col += 2;  // skip Audio and Video Actions
+        }
       }
       if ( !remote.hasMasterPowerSupport() && col > 0 )
       {
@@ -175,7 +179,11 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      if ( remote.hasMasterPowerSupport() )
+      if ( remote.usesEZRC() )
+      {
+        ++count;     // add back Macro
+      }
+      else if ( remote.hasMasterPowerSupport() )
       {
         count += 2;  // add back Key, Macro
       }

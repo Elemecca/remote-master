@@ -51,5 +51,7 @@ public class KMPanel
   public void release(){}
   
   public void addFunction( GeneralFunction f ){}
+  
+  public void revalidateFunctions(){}
 }
 

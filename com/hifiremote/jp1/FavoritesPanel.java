@@ -11,7 +11,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.DecimalFormat;
@@ -360,6 +359,10 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   {
     this.remoteConfig = remoteConfig;
     Remote remote = remoteConfig.getRemote();
+    if ( !remote.hasFavorites() )
+    {
+      return;
+    }
     DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
     favModel.set( remoteConfig );
     favTable.initColumns( favModel );

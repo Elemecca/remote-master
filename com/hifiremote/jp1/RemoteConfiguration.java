@@ -1485,6 +1485,12 @@ public class RemoteConfiguration
           {
             u.db.getUpgrade().getMacroMap().put( ( int )u.button.getKeyCode(), macro );
           }
+          if ( macro.isSystemMacro() )
+          {
+            KeySpec ks = macro.getItems().get( 0 );
+            GeneralFunction gf = ks.fn;
+            gf.getUsers().addAll( macro.getUsers() );
+          }
         }
 //        Collections.sort( macros, MacroSorter );
       }
@@ -2150,6 +2156,12 @@ public class RemoteConfiguration
       {
         if ( fn.getSerial() >= 0 )
         {
+          Function ff = fn.getEquivalent( upgrade.getFunctions() );
+          if ( ff != null && ff.getSerial() == -1 )
+          {
+            fn.setAlternate( ff );
+            ff.setAlternate( fn );
+          }
           upgrade.getFunctionMap().put( fn.getSerial(), fn );
         }
       }
@@ -2178,10 +2190,6 @@ public class RemoteConfiguration
     {
       for ( Function fn : upgrade.getFunctions() )
       {
-//        if ( fn.getSerial() >= 0 )
-//        {
-//          upgrade.getFunctionMap().put( fn.getSerial(), fn );
-//        }
         if ( fn.getMacroref() != null )
         {
           // Experimental!!!
@@ -6774,11 +6782,12 @@ public class RemoteConfiguration
       {
         return btn;
       }
-      else if ( fn.getUsers().isEmpty() )
+//      else if ( fn.getUsers().isEmpty() )
+      else if ( fn.getSerial() >= 0 )
       {
         return null;
       }
-      else
+      else if ( !fn.getUsers().isEmpty() )
       {
         Button b = fn.getUsers().get( 0 ).button;
         if ( ( b.getKeyCode() & 0x80 ) == 0 )
@@ -7186,7 +7195,7 @@ public class RemoteConfiguration
         
         if ( f != null && f.getHex() != null )
         {
-          work.add( makeItem( "keygid", getLittleEndian( f.getGid() ), true ) );
+          work.add( makeItem( "keygid", getLittleEndian( f.getGid() == null ? Function.defaultGID : f.getGid() ), true ) );
           work.add( makeItem( "keyflags", new Hex( new short[]{ ( short )( f.getKeyflags() == null ? 0 : f.getKeyflags() ) } ), true ) );
           work.add( makeItem( "irdata", f.getHex(), true ) );
           if ( f.icon != null && f.icon.ref > 0 )
@@ -7226,10 +7235,10 @@ public class RemoteConfiguration
       for ( int fnkey : fnkeys )
       {
         Function f = upg.getFunctionMap().get( fnkey );
-        if ( !f.getUsers().isEmpty() )
-        {
-          continue;
-        }
+//        if ( !f.getUsers().isEmpty() )
+//        {
+//          continue;
+//        }
         if ( !irUsed )
         {
           work.add( makeItem( "irdefs", new Hex( 0 ), false ) );
@@ -7239,7 +7248,7 @@ public class RemoteConfiguration
         work.add( makeItem( "irdef", btnHex, false ) );
         if ( f != null && f.getHex() != null )
         {
-          work.add( makeItem( "keygid", getLittleEndian( f.getGid() ), true ) );
+          work.add( makeItem( "keygid", getLittleEndian( f.getGid() == null ? Function.defaultGID : f.getGid() ), true ) );
           work.add( makeItem( "keyflags", new Hex( new short[]{ ( short )( f.getKeyflags() == null ? 0 : f.getKeyflags() ) } ), true ) );
           work.add( makeItem( "irdata", f.getHex(), true ) );
           if ( f.icon != null && f.icon.ref > 0 )

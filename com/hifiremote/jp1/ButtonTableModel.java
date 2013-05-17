@@ -18,13 +18,21 @@ public class ButtonTableModel
   /** The device upgrade. */
   private DeviceUpgrade deviceUpgrade = null;
   
+  private KMPanel panel = null;
+  
   /** The Constant buttonCol. */
   private static final int buttonCol = 0;
   private static final int deviceCol = 1;
-  private static final int functionCol = 2;
+  public static final int functionCol = 2;
   private static final int shiftedCol = 3;
   private static final int xShiftedCol = 4;
   private static final int aliasCol = 5;
+
+  
+  public void setPanel( KMPanel panel )
+  {
+    this.panel = panel;
+  }
 
   /** The column names. */
   private static String[] columnNames =
@@ -54,6 +62,11 @@ public class ButtonTableModel
   {
     this.deviceUpgrade = deviceUpgrade;
     fireTableDataChanged();
+  }
+
+  public DeviceUpgrade getDeviceUpgrade()
+  {
+    return deviceUpgrade;
   }
 
   /**
@@ -135,10 +148,12 @@ public class ButtonTableModel
     if ( row < 0 )
       return false;
     
+    int rawCol = col;
     col = getEffectiveColumn( col );
     if ( col == buttonCol || col == deviceCol )
       return false;
     
+    Remote remote = deviceUpgrade.getRemote();
     Button b = buttons[ row ];
     DeviceType devType = deviceUpgrade.getDeviceType();
     ButtonMap map = devType.getButtonMap();
@@ -146,7 +161,23 @@ public class ButtonTableModel
     if ( b == null )
       return false;
     if ( col == functionCol )
+    {
+      if ( remote.usesEZRC() )
+      {
+        GeneralFunction gf = ( GeneralFunction )getValueAt( row, rawCol );
+        if ( gf instanceof LearnedSignal )
+        {
+          LearnedSignal ls = ( LearnedSignal )gf;
+          return ls.getKeyCode() != b.getKeyCode();
+        }
+        else if ( gf instanceof Macro )
+        {
+          Macro macro = ( Macro )gf;
+          return macro.getKeyCode() != b.getKeyCode();
+        }
+      }
       return ( b.allowsKeyMove() || map.isPresent( b ));
+    }
     else if ( col == shiftedCol )
       return b.allowsShiftedKeyMove();
     else if ( col == xShiftedCol )
@@ -226,7 +257,7 @@ public class ButtonTableModel
       case xShiftedCol:
         return deviceUpgrade.getFunction( button, Button.XSHIFTED_STATE );
       case aliasCol:
-        return macro;// == null ? null : macro.getName();
+        return macro;
     }
    return null;
   }
@@ -238,6 +269,7 @@ public class ButtonTableModel
   {
     DeviceButton db = deviceUpgrade.getButtonRestriction();
     Button button = buttons[ row ];
+    Remote remote = deviceUpgrade.getRemote();
     Button relatedButton = null;
     col = getEffectiveColumn( col );
     switch ( col )
@@ -247,11 +279,11 @@ public class ButtonTableModel
       case functionCol:
         GeneralFunction gf = ( GeneralFunction )value;
         GeneralFunction current = ( GeneralFunction )getValueAt( row, col );
-        setFunction( deviceUpgrade, button, current, gf );
+        setFunction( deviceUpgrade, button, current, gf, panel );
         if ( current instanceof LearnedSignal && gf == null )
         {
           gf = ( GeneralFunction )getValueAt( row, col );
-          setFunction( deviceUpgrade, button, null, gf );
+          setFunction( deviceUpgrade, button, null, gf, panel );
         }
         relatedButton = button.getBaseButton();
         break;
@@ -266,6 +298,11 @@ public class ButtonTableModel
       case aliasCol:
         Macro macro = ( Macro )getValueAt( row, 3 );
         macro.setName( ( String )value );
+        if ( remote.isSoftButton( button ) )
+        {
+          Function f = deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
+          f.setName( ( String )value );
+        }
         break;
       default:
         break;
@@ -304,7 +341,8 @@ public class ButtonTableModel
     return columnClasses[ getEffectiveColumn( col ) ];
   }
   
-  public static void setFunction( DeviceUpgrade deviceUpgrade, Button button, GeneralFunction old, GeneralFunction gf )
+  public static void setFunction( DeviceUpgrade deviceUpgrade, Button button, GeneralFunction old, 
+      GeneralFunction gf, KMPanel panel )
   {
     // A new value always becomes active so delete the reference to the
     // current value, but delete the current value itself only if the new
@@ -341,7 +379,12 @@ public class ButtonTableModel
     if ( gf instanceof Function )
     {
       Function f = ( Function )gf;
-      deviceUpgrade.setFunction( button, f, Button.NORMAL_STATE );
+      Function result = deviceUpgrade.setFunction( button, f, Button.NORMAL_STATE );
+      if ( result != null )
+      {
+        panel.addFunction( result );
+        panel.revalidateFunctions();
+      }
     }
     else if ( gf instanceof Macro )
     {
