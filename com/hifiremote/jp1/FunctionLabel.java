@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -13,6 +15,8 @@ import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
+
+import com.hifiremote.jp1.GeneralFunction.User;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -108,28 +112,17 @@ public class FunctionLabel
       buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;set the function performed by a button." );
       if ( function.getNotes() != null )
         buff.append( "<br><hr>&nbsp;" + function.getNotes());
-      java.util.List< Function.User > users = function.getUsers();
+      List< User > users = new ArrayList< User >();
+      users.addAll( function.getUsers() );
+      Function alternate = null;
+      if ( function instanceof Function && ( alternate = ( ( ( Function )function ).getAlternate() ) ) != null )
+      {
+        users.addAll( alternate.getUsers() );
+      }
       if ( !users.isEmpty())
       {
         buff.append( "<br><hr>&nbsp;" + function.getName() + " is assigned to: " );
-        boolean first = true;
-        for ( Function.User user : users )
-        {
-          if ( first )
-            first = false;
-          else
-            buff.append( ", " );
-          Button b = user.button;
-          DeviceButton db = user.db;
-          int state = user.state;
-          buff.append( db.getName() + "/" );
-          if ( state == Button.NORMAL_STATE )
-            buff.append( b.getName());
-          else if ( state == Button.SHIFTED_STATE )
-            buff.append( b.getShiftedName());
-          else if ( state == Button.XSHIFTED_STATE )
-            buff.append( b.getXShiftedName());
-        }
+        buff.append( User.getUserNames( users ) );
       }
     }
     buff.append( "</html>" );

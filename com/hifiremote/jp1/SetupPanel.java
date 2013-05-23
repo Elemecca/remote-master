@@ -398,11 +398,12 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
     updateInProgress = true;
     Protocol p = deviceUpgrade.getProtocol();
     Remote remote = deviceUpgrade.getRemote();
-    setupCode.setText( SetupCode.toString( deviceUpgrade.getSetupCode() ) );
+    int val = deviceUpgrade.getSetupCode();
+    setupCode.setText( val < 0 ? null : SetupCode.toString( val ) );
     setupCode.setToolTipText( "Enter the desired setup code (between 0 and " + SetupCode.getMax()
         + ") for the device upgrade." );
     java.util.List< Protocol > protocols = ProtocolManager.getProtocolManager().getProtocolsForRemote( remote );
-    if ( !protocols.contains( p ) )
+    if ( p != null && !protocols.contains( p ) )
     {
       // ??? There should be a better way to handle this (the current protocol is
       // incompatible with the current remote), but this way is at least better than
@@ -411,10 +412,18 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
       protocols.add( p );
     }
 
+    protocolList.setModel( new DefaultComboBoxModel( protocols.toArray() ) );
+    
+    if ( p == null )
+    {
+      protocolList.setSelectedIndex( -1 );
+      return;
+    }
+    
     Value[] vals = deviceUpgrade.getParmValues();
     p.setDeviceParms( vals );
     updateParameters();
-    protocolList.setModel( new DefaultComboBoxModel( protocols.toArray() ) );
+    
     protocolList.setSelectedItem( p );
     protocolID.setText( p.getID( remote, false ).toString() );
     notes.setText( deviceUpgrade.getNotes() );
@@ -671,7 +680,10 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
    */
   public void commit()
   {
-    deviceUpgrade.getProtocol().updateFunctions( deviceUpgrade.getFunctions() );
+    if ( deviceUpgrade.getProtocol() != null )
+    {
+      deviceUpgrade.getProtocol().updateFunctions( deviceUpgrade.getFunctions() );
+    }
   }
 
   /**
@@ -700,6 +712,10 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
   public void release()
   {
+    if ( parameters == null )
+    {
+      return;
+    }
     for ( int i = 0; i < parameters.length; i++ )
     {
       parameters[ i ].removeListener( this );

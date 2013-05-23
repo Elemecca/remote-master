@@ -26,7 +26,7 @@ public class ButtonTableModel
   public static final int functionCol = 2;
   private static final int shiftedCol = 3;
   private static final int xShiftedCol = 4;
-  private static final int aliasCol = 5;
+  public static final int aliasCol = 5;
 
   
   public void setPanel( KMPanel panel )
@@ -380,8 +380,8 @@ public class ButtonTableModel
     {
       Function f = ( Function )gf;
       Function result = deviceUpgrade.setFunction( button, f, Button.NORMAL_STATE );
-      if ( result != null )
-      {
+      if ( result != null && result.accept() )
+      {    
         panel.addFunction( result );
         panel.revalidateFunctions();
       }

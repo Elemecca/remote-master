@@ -214,9 +214,12 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       if ( remote.isSSD() )
       {
         sRow = "7";
-        infoPanel.add( new JLabel( "Alias:" ), "1, " + sRow );
+        aliasLabel = new JLabel( "Alias:" );
+        aliasLabel.setEnabled( false );
+        infoPanel.add( aliasLabel, "1, " + sRow );
         alias = new JTextField();
         alias.setEditable( true );
+        alias.setEnabled( false );
         infoPanel.add( alias, "3, " + sRow );
       }
       sRow = "5";
@@ -226,8 +229,6 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     function.setEditable( false );
     infoPanel.add( function,"3, " + sRow );
 
-
-    
     box.add( infoPanel );
 
     rightPanel.add( box, BorderLayout.NORTH );
@@ -263,7 +264,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
     DropTarget dropTarget = new LayoutDropTarget();
     dropTarget.setComponent( imagePanel );
-
+    
     MouseListener ml = new MouseAdapter()
     {
       public void mousePressed( MouseEvent e )
@@ -457,10 +458,9 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
     setButtonText( currentShape, getButtonForShape( currentShape ) );
 
-    setFunctions();
-
     if ( !r.usesEZRC() )
     {
+      setFunctions();
       shiftMode.setText( r.getShiftLabel() );
       if ( r.getShiftEnabled() )
         shiftMode.setEnabled( true );
@@ -480,6 +480,10 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         if ( xShiftMode.isSelected() )
           normalMode.setSelected( true );
       }
+    }
+    else
+    {
+      selector.deviceBox.setSelectedItem( deviceUpgrade.getButtonRestriction() );
     }
     doRepaint();
   }
@@ -541,6 +545,12 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         {
           alias.setText( macro == null ? "" : macro.getName() );
           alias.setEnabled( macro != null );
+          aliasLabel.setEnabled( macro != null );
+          String tip = "<html>An alias is a display name for a function from a different device<br>"
+              + "that may differ from its name for its home device.<br><br>";
+          tip += macro != null ? "Edit this value to change the alias.</html>"
+              : "This assignment does not permit an alias.</html>";
+          alias.setToolTipText( tip );
         }
       }
       deleteAction.setEnabled( f != null );
@@ -1140,6 +1150,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
   
   private JTextField device = null;
   private JTextField alias = null;
+  private JLabel aliasLabel = null;
   
 
   /** The auto assign. */

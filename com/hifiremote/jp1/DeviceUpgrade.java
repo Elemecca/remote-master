@@ -103,8 +103,11 @@ public class DeviceUpgrade extends Highlight
     }
 
     // copy the device parameter values
-    protocol.setDeviceParms( base.parmValues );
-    parmValues = protocol.getDeviceParmValues();
+    if ( base.protocol != null )
+    {
+      protocol.setDeviceParms( base.parmValues );
+      parmValues = protocol.getDeviceParmValues();
+    }
 
     // Copy the functions and their assignments
     LinkedHashMap< Function, Function > corr = new LinkedHashMap< Function, Function >();
@@ -116,7 +119,14 @@ public class DeviceUpgrade extends Highlight
       functions.add( f2 );
       for ( Function.User user : f.getUsers() )
       {
-        assignments.assign( user.button, f2, user.state );
+        if ( f.serial < 0 )
+        {
+          assignments.assign( user.button, f2, user.state );
+        }
+        else
+        {
+          f2.addReference( user.db, user.button );
+        }
       }
     }
     for ( Function f : functions )
@@ -154,7 +164,7 @@ public class DeviceUpgrade extends Highlight
       if ( base.getFunctionMap() != null )
       {
         functionMap = new LinkedHashMap< Integer, Function >();
-        functionMap.putAll( base.getFunctionMap() );
+        functionMap.putAll( base.getFunctionMap() );  // should these be mapped with corr?
       }
       if ( base.getSelectorMap() != null )
       {
@@ -200,16 +210,23 @@ public class DeviceUpgrade extends Highlight
     {
       protocol.reset();
     }
-    ProtocolManager pm = ProtocolManager.getProtocolManager();
-    java.util.List< String > names = pm.getNames();
-    for ( String protocolName : names )
+    if ( !remote.usesEZRC() )
     {
-      Protocol p = pm.findProtocolForRemote( remote, protocolName );
-      if ( p != null )
+      ProtocolManager pm = ProtocolManager.getProtocolManager();
+      java.util.List< String > names = pm.getNames();
+      for ( String protocolName : names )
       {
-        protocol = p;
-        break;
+        Protocol p = pm.findProtocolForRemote( remote, protocolName );
+        if ( p != null )
+        {
+          protocol = p;
+          break;
+        }
       }
+    }
+    else
+    {
+      protocol = null;
     }
 
     if ( protocol != null )
@@ -353,7 +370,7 @@ public class DeviceUpgrade extends Highlight
     java.util.List< Protocol > protocols = pm.getProtocolsForRemote( newRemote, false );
     if ( p == null )
     {
-      protocol = protocols.get( 0 );
+//      protocol = protocols.get( 0 ); // *********** TAKEN OUT FOR TESTING
     }
     else if ( !protocols.contains( p ) )
     {
@@ -622,12 +639,16 @@ public class DeviceUpgrade extends Highlight
   public AltPIDStatus testAltPID( )
   {
     AltPIDStatus status = new AltPIDStatus();
+    if ( protocol == null )
+    {
+      return status;
+    }
     int officialPID = protocol.getID( remote, false ).get( 0 );
     if ( remoteConfig != null )
     {
       for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
       {
-        if ( du == baseUpgrade || baseUpgrade != null && du.getProtocol() == baseUpgrade.getProtocol() ) continue;
+        if ( du == baseUpgrade || du.getProtocol() == null || baseUpgrade != null && du.getProtocol() == baseUpgrade.getProtocol() ) continue;
         if ( du.getProtocol() == protocol )
         {
           // Selected protocol is already used by a device upgrade.  Must use same alternate
@@ -851,8 +872,11 @@ public class DeviceUpgrade extends Highlight
       }
     }
     protocol = newProtocol;
-    parmValues = protocol.getDeviceParmValues();
-    propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, protocol );
+    if ( protocol != null )
+    {
+      parmValues = protocol.getDeviceParmValues();
+      propertyChangeSupport.firePropertyChange( "protocol", oldProtocol, protocol );
+    }
     return true;
   }
 
@@ -1566,6 +1590,10 @@ public class DeviceUpgrade extends Highlight
   public java.util.List< KeyMove > getKeyMoves( int deviceButtonIndex )
   {
     java.util.List< KeyMove > keyMoves = new ArrayList< KeyMove >();
+    if ( protocol == null )
+    {
+      return keyMoves;
+    }
     DeviceType devType = remote.getDeviceTypeByAliasName( devTypeAliasName );
     for ( Button button : remote.getUpgradeButtons() )
     {
@@ -2039,7 +2067,10 @@ public class DeviceUpgrade extends Highlight
     // protocol.setDeviceParms( parmValues );
     try
     {
-      protocol.store( out, parmValues, remote );
+      if ( protocol != null )
+      {
+        protocol.store( out, parmValues, remote );
+      }
     }
     catch ( IOException e )
     {
@@ -2342,79 +2373,82 @@ public class DeviceUpgrade extends Highlight
       }
     }
 
-    Hex pid = new Hex( props.getProperty( "Protocol", "0200" ) );
-    String name = props.getProperty( "Protocol.name", "" );
-    String variantName = props.getProperty( "Protocol.variantName", "" );
-
-    ProtocolManager pm = ProtocolManager.getProtocolManager();
-    if ( name.startsWith( "Manual Settings" ) || name.equals( "Manual" )
-        || name.equalsIgnoreCase( "PID " + pid.toString() ) )
+    if ( props.getProperty( "Protocol" ) != null || !remote.usesEZRC() )
     {
-      ManualProtocol mp = new ManualProtocol( pid, props );
-      mp.setName( name );
-      protocol = testManualProtocol( mp );
-      if ( protocol == mp )
-      {
-        pm.add( protocol );
-      }
-      str = props.getProperty( "ProtocolParms" );
-      System.err.println( "ProtocolParms='" + str + "'" );
-      if ( str != null && str.length() != 0 )
-      {
-        protocol.setDeviceParms( stringToValueArray( str ) );
-        parmValues = protocol.getDeviceParmValues();
-      }
-    }
-    else
-    {
-      // Need to consider all protocol attributes, to handle things like "Acer Keyboard (01 11)" and
-      // "TiVo (01 11)"
-      protocol = pm.findNearestProtocol( remote, name, pid, variantName );
-      if ( protocol == null )
-      {
-        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "No protocol found with name=\"" + name + "\", ID="
-            + pid.toString() + ", and variantName=\"" + variantName + "\"", "File Load Error",
-            JOptionPane.ERROR_MESSAGE );
-        reset();
-        return;
-      }
+      Hex pid = new Hex( props.getProperty( "Protocol", "0200" ) );
+      String name = props.getProperty( "Protocol.name", "" );
+      String variantName = props.getProperty( "Protocol.variantName", "" );
 
-      str = props.getProperty( "ProtocolParms" );
-      System.err.println( "ProtocolParms='" + str + "'" );
-      if ( str != null && str.length() != 0 )
+      ProtocolManager pm = ProtocolManager.getProtocolManager();
+      if ( name.startsWith( "Manual Settings" ) || name.equals( "Manual" )
+          || name.equalsIgnoreCase( "PID " + pid.toString() ) )
       {
-        protocol.setDeviceParms( stringToValueArray( str ) );
-        parmValues = protocol.getDeviceParmValues();
-      }
-
-      if ( protocolInUse() == null )
-      {
-        Hex altPID = new Hex( props.getProperty( "Protocol.altPID", "" ) );
-        protocol.setAltPID( remote, altPID );
-        protocol.setProperties( props, remote );
+        ManualProtocol mp = new ManualProtocol( pid, props );
+        mp.setName( name );
+        protocol = testManualProtocol( mp );
+        if ( protocol == mp )
+        {
+          pm.add( protocol );
+        }
+        str = props.getProperty( "ProtocolParms" );
+        System.err.println( "ProtocolParms='" + str + "'" );
+        if ( str != null && str.length() != 0 )
+        {
+          protocol.setDeviceParms( stringToValueArray( str ) );
+          parmValues = protocol.getDeviceParmValues();
+        }
       }
       else
       {
-        Protocol p = testStandardProtocol( protocol, props );
-        if ( p != null )
+        // Need to consider all protocol attributes, to handle things like "Acer Keyboard (01 11)" and
+        // "TiVo (01 11)"
+        protocol = pm.findNearestProtocol( remote, name, pid, variantName );
+        if ( protocol == null )
         {
-          protocol = p;
+          JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "No protocol found with name=\"" + name + "\", ID="
+              + pid.toString() + ", and variantName=\"" + variantName + "\"", "File Load Error",
+              JOptionPane.ERROR_MESSAGE );
+          reset();
+          return;
+        }
+
+        str = props.getProperty( "ProtocolParms" );
+        System.err.println( "ProtocolParms='" + str + "'" );
+        if ( str != null && str.length() != 0 )
+        {
+          protocol.setDeviceParms( stringToValueArray( str ) );
+          parmValues = protocol.getDeviceParmValues();
+        }
+
+        if ( protocolInUse() == null )
+        {
+          Hex altPID = new Hex( props.getProperty( "Protocol.altPID", "" ) );
+          protocol.setAltPID( remote, altPID );
+          protocol.setProperties( props, remote );
         }
         else
         {
-          return;
+          Protocol p = testStandardProtocol( protocol, props );
+          if ( p != null )
+          {
+            protocol = p;
+          }
+          else
+          {
+            return;
+          }
         }
       }
-    }
 
-    if ( protocolInUse() == null && !protocol.getID( remote, false ).equals( pid ) )
-    {
-      protocol.setAltPID( remote, pid );
-    }
-    if ( remote.getSegmentTypes() != null )
-    {
-      sizeCmdBytes = protocol.getDefaultCmd().length();
-      sizeDevBytes = protocol.getFixedDataLength();
+      if ( protocolInUse() == null && !protocol.getID( remote, false ).equals( pid ) )
+      {
+        protocol.setAltPID( remote, pid );
+      }
+      if ( remote.getSegmentTypes() != null )
+      {
+        sizeCmdBytes = protocol.getDefaultCmd().length();
+        sizeDevBytes = protocol.getFixedDataLength();
+      }
     }
 
     notes = props.getProperty( "Notes" );
@@ -2431,6 +2465,10 @@ public class DeviceUpgrade extends Highlight
         f.icon = new RMIcon( 9 );
       }
       f.load( props, "Function." + i );
+      if ( remote.usesEZRC() && f.getGid() == null && f.getData() != null )
+      {
+        f.setGid( Function.defaultGID );
+      }
       String temp = null;
       if ( iconrefMap != null && ( temp = props.getProperty( "Function." + i + ".iconref" ) ) != null )
       {
@@ -3591,6 +3629,10 @@ public class DeviceUpgrade extends Highlight
    */
   public boolean needsProtocolCode()
   {
+    if ( protocol == null )
+    {
+      return false;
+    }
     if ( protocol.needsCode( remote ) )
     {
       return true;
@@ -3655,6 +3697,10 @@ public class DeviceUpgrade extends Highlight
 
   public String getStarredID()
   {
+    if ( protocol == null )
+    {
+      return null;
+    }
     String starredID = protocol.getID( remote ).toString();
     if ( needsProtocolCode() )
     {
@@ -3677,6 +3723,10 @@ public class DeviceUpgrade extends Highlight
    */
   public void translateCode( Hex code )
   {
+    if ( protocol == null )
+    {
+      return;
+    }
     Translate[] xlators = protocol.getCodeTranslators( remote );
     if ( xlators != null )
     {
@@ -3864,6 +3914,29 @@ public class DeviceUpgrade extends Highlight
   {
     return selectorMap;
   }
+  
+  private LinkedHashMap< GeneralFunction, List< User > > restoreOnCancelReferences = null;
+//  private LinkedHashMap< GeneralFunction, List< User > > deleteOnOKReferences = null;
+
+  public LinkedHashMap< GeneralFunction, List< User >> getRestoreOnCancelReferences()
+  {
+    return restoreOnCancelReferences;
+  }
+
+  public void setRestoreOnCancelReferences( LinkedHashMap< GeneralFunction, List< User >> deleteOnCancelReferences )
+  {
+    this.restoreOnCancelReferences = deleteOnCancelReferences;
+  }
+
+//  public LinkedHashMap< GeneralFunction, List< User >> getDeleteOnOKReferences()
+//  {
+//    return deleteOnOKReferences;
+//  }
+//
+//  public void setDeleteOnOKReferences( LinkedHashMap< GeneralFunction, List< User >> deleteOnOKReferences )
+//  {
+//    this.deleteOnOKReferences = deleteOnOKReferences;
+//  }
 
   /**
    * The offset in raw data to the start of this upgrade in the Device Dependent section, when applicable. Value
@@ -4063,7 +4136,7 @@ public class DeviceUpgrade extends Highlight
       return null;
     }
     int keyCode = b.getKeyCode();
-    Function bf = getFunction( keyCode );  // function currently on b
+    Function bf = getFunction( keyCode );  // (cloned) function currently on b
     // On a soft button for an SSD remote, the function is replaced completely
     // so delete existing function
     boolean removeBf = remote.isSSD() && remote.isSoftButton( b ) && bf != null;
@@ -4075,10 +4148,12 @@ public class DeviceUpgrade extends Highlight
       if ( macro != null )
       {
         macroMap.remove( keyCode );
+        backupReferences( macro );
         macro.removeReference( buttonRestriction, b );
         if ( macro.isSystemMacro() )
         {
           KeySpec ks = macro.getItems().get( 0 );
+          backupReferences( ks.fn );
           ks.fn.removeReference( buttonRestriction, b );
         }
         if ( macro.getUsers().isEmpty() )
@@ -4152,6 +4227,7 @@ public class DeviceUpgrade extends Highlight
           Macro macro = macroMap.get( keyCode );
           if ( macro != null )
           {
+            backupReferences( macro );
             macro.removeReference( buttonRestriction, b );
             if ( macro.getUsers().isEmpty() )
             {
@@ -4160,8 +4236,12 @@ public class DeviceUpgrade extends Highlight
           }  
           macro = ( Macro )f;
           macroMap.put( keyCode, macro );
+          backupReferences( macro );
           macro.addReference( buttonRestriction, b );
-          remoteConfig.getMacros().add( macro );
+          if ( !remoteConfig.getMacros().contains( macro ) )
+          {
+            remoteConfig.getMacros().add( macro );
+          }
           if ( remote.isSSD() )
           {
             // The remote seems to require the function and macro to have the
@@ -4198,16 +4278,19 @@ public class DeviceUpgrade extends Highlight
           fn.setAlternate( irFn );
           irFn.setAlternate( fn );
           fnUpg.functions.add( irFn );
-          irFn.addReference( buttonRestriction, b );
         }
+        backupReferences( irFn );
+        irFn.addReference( buttonRestriction, b );
       }
       Macro macro = macroMap.get( keyCode );
       if ( macro != null )
       {
+        backupReferences( macro );
         macro.removeReference( buttonRestriction, b );
         if ( macro.isSystemMacro() )
         {
           KeySpec ks = macro.getItems().get( 0 );
+          backupReferences( ks.fn );
           ks.fn.removeReference( buttonRestriction, b );
         }
         if ( macro.getUsers().isEmpty() )
@@ -4216,6 +4299,7 @@ public class DeviceUpgrade extends Highlight
         }
       }   
       macro = new Macro( b.getKeyCode(), null, null );
+      backupReferences( macro );
       remoteConfig.getMacros().add( macro );
       macro.setName( fn.getName() );  // changed irFn to fn, don't think it makes a difference
       macro.setSystemMacro( true );
@@ -4233,6 +4317,7 @@ public class DeviceUpgrade extends Highlight
         macro.setAssists( assists );  
         ks = new KeySpec( fnUpg.buttonRestriction, irFn );
         bf.setMacroref( serial );
+//      why no macro.addReference, or macro.setDeviceButtonIndex ???
       }
       else if ( !f.getUsers().isEmpty() )
       {
@@ -4250,6 +4335,20 @@ public class DeviceUpgrade extends Highlight
     }
     return result;
   }
+  
+  private void backupReferences( GeneralFunction gf )
+  {
+    if ( gf instanceof Function && gf.getUpgrade( remote ) == this )
+    {
+      return;
+    }
+    
+    if ( restoreOnCancelReferences != null && restoreOnCancelReferences.get( gf ) == null )
+    {
+      restoreOnCancelReferences.put( gf, new ArrayList< User >(  gf.getUsers() ) );
+    }
+  }
+  
   
   public int getNewFunctionSerial()
   {

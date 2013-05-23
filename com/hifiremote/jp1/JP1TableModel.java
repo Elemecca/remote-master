@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
@@ -224,6 +225,11 @@ public abstract class JP1TableModel< E > extends AbstractTableModel
    * @return the column renderer
    */
   public TableCellRenderer getColumnRenderer( int col )
+  {
+    return null;
+  }
+  
+  public String getToolTipText( int row, int col )
   {
     return null;
   }

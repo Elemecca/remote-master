@@ -157,7 +157,10 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
 
     functionPanel = new FunctionPanel( deviceUpgrade );
     functionPanel.setToolTipText( "Define function names and parameters." );
-    addPanel( functionPanel );
+    if ( deviceUpgrade.getProtocol() != null )
+    {
+      addPanel( functionPanel );
+    }
 
     externalFunctionPanel = new ExternalFunctionPanel( deviceUpgrade );
     externalFunctionPanel.setToolTipText( "Define functions from other device codes." );
@@ -429,9 +432,25 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
     }
     deviceTypeList.setSelectedItem( savedTypeName );
     addListeners();
-    KMPanel protocolPanel = deviceUpgrade.getProtocol().getPanel( deviceUpgrade );
+    Protocol p = deviceUpgrade.getProtocol();
     KMPanel tabPanel = ( KMPanel )tabbedPane.getComponentAt( 1 );
-    if ( ( protocolPanel == null ) && ( tabPanel != functionPanel ) )
+    if ( p == null && ( tabPanel != functionPanel ) && ( tabPanel != externalFunctionPanel ) )
+    {
+      removePanel( tabPanel );
+    }
+    tabPanel = ( KMPanel )tabbedPane.getComponentAt( 1 );
+    if ( p == null && ( tabPanel == functionPanel ) )
+    {
+      removePanel( tabPanel );
+    }
+    if ( p != null && ( tabPanel == externalFunctionPanel ) )
+    {
+      addPanel( functionPanel, 1 );
+    }
+    tabPanel = ( KMPanel )tabbedPane.getComponentAt( 1 );
+    KMPanel protocolPanel = deviceUpgrade.getProtocol() == null ? null : deviceUpgrade.getProtocol().getPanel( deviceUpgrade );
+    
+    if ( ( protocolPanel == null ) && ( tabPanel != functionPanel ) && ( tabPanel != externalFunctionPanel ) )
       removePanel( protocolPanel );
     if ( ( protocolPanel != null ) && ( tabPanel != protocolPanel ) )
       addPanel( protocolPanel, 1 );
@@ -470,8 +489,9 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
     Remote r = deviceUpgrade.getRemote();
     Protocol p = deviceUpgrade.getProtocol();
 
+    // Treat null protocol as valid.  
     // Prevent repeated displays of same error messages
-    if ( oldRemote == r && oldProtocol == p ) return;
+    if ( p == null || oldRemote == r && oldProtocol == p ) return;
     oldRemote = r;
     oldProtocol = p;
 
@@ -561,16 +581,29 @@ public class DeviceEditorPanel extends JPanel implements ActionListener, ChangeL
   public void propertyChange( PropertyChangeEvent evt )
   {
     Protocol protocol = ( Protocol )evt.getOldValue();
-    System.err.print( "DeviceEditorPanel.propertyChange( " + protocol.getDiagnosticName() + ", " );
-    KMPanel panel = protocol.getPanel( deviceUpgrade );
-    protocol = ( Protocol )evt.getNewValue();
-    System.err.println( protocol.getDiagnosticName() );
-
+    String name = protocol == null ? "NULL" : protocol.getDiagnosticName();
+    System.err.print( "DeviceEditorPanel.propertyChange( " + name + ", " );
+    KMPanel panel = protocol == null ? null : protocol.getPanel( deviceUpgrade );
     if ( panel != null )
     {
       removePanel( panel );
     }
-    panel = protocol.getPanel( deviceUpgrade );
+    
+    protocol = ( Protocol )evt.getNewValue();
+    name = protocol == null ? "NULL" : protocol.getDiagnosticName();
+    System.err.println( name );
+
+    KMPanel tabPanel = ( KMPanel )tabbedPane.getComponentAt( 1 );
+
+    if ( protocol == null && ( tabPanel == functionPanel ) )
+    {
+      removePanel( tabPanel );
+    }
+    if ( protocol != null && ( tabPanel == externalFunctionPanel ) )
+    {
+      addPanel( functionPanel, 1 );
+    }
+    panel = protocol == null ? null : protocol.getPanel( deviceUpgrade );
     if ( panel != null )
     {
       addPanel( panel, 1 );

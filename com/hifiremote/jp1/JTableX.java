@@ -208,6 +208,20 @@ public class JTableX extends JTable
     int row = rowAtPoint( p );
     int col = columnAtPoint( p );
     col = convertColumnIndexToModel( col );
+    TableModel tm = null;
+    TableSorter sorter = null;
+    // Check for tooltip overwrite by table model of an RMTablePanel
+    if ( dataModel != null && dataModel instanceof TableSorter
+        && ( tm = ( ( sorter = ( TableSorter )dataModel ) ).getTableModel() ) != null
+        && tm instanceof JP1TableModel< ? > )
+    {
+      JP1TableModel< ? > model = ( JP1TableModel< ? > )tm;
+      String rc = model.getToolTipText( sorter.modelIndex( row ), col );
+      if ( rc != null )
+      {
+        return rc;
+      }
+    }
     if ( isTruncated( row, col ) )
     {
       DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
@@ -228,13 +242,13 @@ public class JTableX extends JTable
     int row = rowAtPoint( event.getPoint() );
     int col = columnAtPoint( event.getPoint() );
     col = convertColumnIndexToModel( col );
-    if ( isTruncated( row, col ) )
-    {
+//    if ( isTruncated( row, col ) )
+//    {
       Point rc = getCellRect( row, col, true ).getLocation();
       rc.translate( -1, -1 );
       return rc;
-    }
-    return null;
+//    }
+//    return null;
   }
 
   /*

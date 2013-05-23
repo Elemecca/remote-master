@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -25,6 +26,7 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
+import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 // TODO: Auto-generated Javadoc
@@ -400,15 +402,24 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       }
       if ( remote.isSSD() )
       {
+        List< User > extraUsers = new ArrayList< User >();
         if ( macro != null )
         {
           Button currb = remote.getButton( macro.getKeyCode() );
           DeviceUpgrade currdb = macro.getUpgrade( remote );
           currdb.setFunction( currb, null, Button.NORMAL_STATE );
+          extraUsers.addAll( macro.getUsers() );
         }
         DeviceUpgrade du = newMacro.getUpgrade( remote );
         du.setFunction( b, newMacro, Button.NORMAL_STATE );
+        for ( User user : extraUsers )
+        {
+          du = user.db.getUpgrade();
+          du.getMacroMap().put( ( int )user.button.getKeyCode(), newMacro );
+          newMacro.addReference( user.db, user.button );
+        }
       }
+      config.getMacros().remove( macro );
       macro = newMacro;
       setVisible( false );
     }

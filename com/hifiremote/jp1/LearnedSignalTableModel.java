@@ -251,14 +251,43 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   public void setValueAt( Object value, int row, int col )
   {
     LearnedSignal l = getRow( row );
+    Remote remote = null;
+    DeviceButton db = null;
+    DeviceUpgrade upg = null;
+    if ( remoteConfig != null && ( remote = remoteConfig.getRemote() ).usesEZRC() )
+    {
+      db = remote.getDeviceButton( l.getDeviceButtonIndex() );
+      upg = db.getUpgrade();
+    }
     switch ( col )
     {
       case 1:
       {
-        l.setDeviceButtonIndex( ( ( DeviceButton )value ).getButtonIndex() );
+        if ( upg != null )
+        {
+          upg.getLearnedMap().remove( l.getKeyCode() );
+          Button b = remote.getButton( l.getKeyCode() );
+          l.removeReference( db, b );
+          db = ( DeviceButton )value;
+          upg = db.getUpgrade();
+          upg.getLearnedMap().put( l.getKeyCode(), l );
+          l.addReference( db, b );
+        }
+        db = ( DeviceButton )value;
+        l.setDeviceButtonIndex( db.getButtonIndex() );
         break;
       }
       case 2:
+        if ( upg != null )
+        {
+          upg.getLearnedMap().remove( l.getKeyCode() );
+          Button b = remote.getButton( l.getKeyCode() );
+          l.removeReference( db, b );
+          int keyCode = ( Integer )value;
+          upg.getLearnedMap().put( keyCode, l );
+          b = remote.getButton( keyCode );
+          l.addReference( db, b );
+        }       
         l.setKeyCode( ( ( Integer )value ).shortValue() );
         break;
       case 3:
@@ -322,6 +351,20 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     }
 
     return null;
+  }
+  
+  @Override
+  public void removeRow( int row )
+  {
+    Remote remote = null;
+    if ( remoteConfig != null && ( remote = remoteConfig.getRemote() ).usesEZRC() )
+    {
+      LearnedSignal ls = getRow( row );
+      DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
+      DeviceUpgrade upg = db.getUpgrade();
+      upg.getLearnedMap().remove( ls.getKeyCode() );
+    }
+    super.removeRow( row );
   }
 
   /** The remote config. */

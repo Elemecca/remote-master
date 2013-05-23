@@ -1398,7 +1398,14 @@ public class RemoteConfiguration
         hex.set( ( short )0x01, 2 );
         try
         { 
-          items.upgrade.importRawUpgrade( hex, remote, items.alias, items.pid, items.pCode );
+          if ( !items.db.isConstructed() )
+          {
+            items.upgrade.importRawUpgrade( hex, remote, items.alias, items.pid, items.pCode );
+          }
+          else
+          {
+            items.upgrade.protocol = null;
+          }
           items.upgrade.setSetupCode( items.setupCode );
           for ( Key key : items.keys )
           {
@@ -2825,7 +2832,10 @@ public class RemoteConfiguration
   {
     for ( DeviceUpgrade du : devices )
     {
-      du.getProtocol().saveAltPID( remote );
+      if ( du.getProtocol() != null )
+      {
+        du.getProtocol().saveAltPID( remote );
+      }
     }
     for ( ProtocolUpgrade pu : protocols )
     {
@@ -3102,7 +3112,20 @@ public class RemoteConfiguration
   {
     int deviceTypeIndex = upgrade.getDeviceType().getNumber();
     int setupCode = upgrade.getSetupCode();
-    return findBoundDeviceButtonIndex( deviceTypeIndex, setupCode );
+    if ( !remote.usesEZRC() )
+    {
+      return findBoundDeviceButtonIndex( deviceTypeIndex, setupCode );
+    }
+    DeviceButton[] deviceButtons = remote.getDeviceButtons();
+    DeviceButton devBtn = upgrade.getButtonRestriction();
+    for ( int i = 0; i < deviceButtons.length; ++i )
+    {
+      if ( devBtn == deviceButtons[ i ] )
+      {
+        return i;
+      }
+    }
+    return -1;
   }
 
   public int findBoundDeviceButtonIndex( int deviceTypeIndex, int setupCode )
@@ -3114,6 +3137,10 @@ public class RemoteConfiguration
       DeviceButton deviceButton = deviceButtons[ i ];
       if ( hasSegments() )
       {
+        if ( deviceButton.getSegment() == null )
+        {
+          continue;
+        }
         data = deviceButton.getSegment().getHex().getData();
       }
       if ( deviceButton.getDeviceTypeIndex( data ) == deviceTypeIndex && deviceButton.getSetupCode( data ) == setupCode )

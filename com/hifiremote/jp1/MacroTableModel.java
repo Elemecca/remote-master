@@ -10,6 +10,8 @@ import javax.swing.JComboBox;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import com.hifiremote.jp1.GeneralFunction.User;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class MacroTableModel.
@@ -207,6 +209,14 @@ public class MacroTableModel extends JP1TableModel< Macro >
     }
   }
 
+//  @Override
+//  public void setRow( int row, Macro macro )
+//  {
+//    super.setRow( row, macro );
+//  }
+  
+  
+  
   /*
    * (non-Javadoc)
    * 
@@ -218,18 +228,37 @@ public class MacroTableModel extends JP1TableModel< Macro >
     col = getEffectiveColumn( col );
     Macro macro = getRow( row );
     Remote remote = remoteConfig.getRemote();
+    
+    DeviceButton db = null;
+    DeviceUpgrade du = null;
+    if ( remote.usesEZRC() )
+    {
+      db = remote.getDeviceButton( macro.getDeviceButtonIndex() );
+      du = db.getUpgrade();
+    }
+    
     if ( col == 1 )
     {
       macro.setName( ( String )value );
     }
     else if ( col == 2 )
     {
+      if ( remote.usesEZRC() )
+      {
+        du.getMacroMap().remove( macro.getKeyCode() );
+        Button b = remote.getButton( macro.getKeyCode() );
+        macro.removeReference( db, b );
+        db = ( DeviceButton )value;
+        du = db.getUpgrade();
+        du.getMacroMap().put( macro.getKeyCode(), macro );
+        macro.addReference( db, b );
+      }
       if ( remote.isSSD() )
       {
         Button b = remote.getButton( macro.getKeyCode() );
-        DeviceUpgrade du = macro.getUpgrade( remote );
+        du = macro.getUpgrade( remote );
         du.setFunction( b, null, Button.NORMAL_STATE );
-        DeviceButton db = ( DeviceButton )value;
+        db = ( DeviceButton )value;
         macro.setDeviceButtonIndex( db.getButtonIndex() );
         du = db.getUpgrade();
         du.setFunction( b, macro, Button.NORMAL_STATE );
@@ -241,10 +270,20 @@ public class MacroTableModel extends JP1TableModel< Macro >
     }
     else if ( col == 3 )
     {
+      if ( remote.usesEZRC() )
+      {
+        du.getMacroMap().remove( macro.getKeyCode() );
+        Button b = remote.getButton( macro.getKeyCode() );
+        macro.removeReference( db, b );
+        int keyCode = ( Integer )value;
+        du.getMacroMap().put( keyCode, macro );
+        b = remote.getButton( keyCode );
+        macro.addReference( db, b );
+      }        
       if ( remote.isSSD() )
       {
         Button b = remote.getButton( macro.getKeyCode() );
-        DeviceUpgrade du = macro.getUpgrade( remote );
+        du = macro.getUpgrade( remote );
         du.setFunction( b, null, Button.NORMAL_STATE );
         int keyCode = ( Integer )value;
         b = remote.getButton( keyCode );
@@ -324,6 +363,26 @@ public class MacroTableModel extends JP1TableModel< Macro >
       return colorEditor;
     }
     return null;
+  }
+  
+  @Override
+  /** ToolTip text to override that provided by JTableX */
+  public String getToolTipText( int row, int col )
+  {
+    if ( remoteConfig == null || !remoteConfig.getRemote().usesEZRC() )
+    {
+      return null;
+    }
+    col = getEffectiveColumn( col );
+    if ( col == 0 || col > 3 )
+    {
+      return null;
+    }
+    Macro macro = getRow( row );
+    String str = "<html>Edit the Device Upgrade to put this macro on additional<br>"
+        + "devices or buttons.  Currently assigned to:<br><br>";
+    str += User.getUserNames( macro.getUsers() ) + "</html>";
+    return str;
   }
 
   /** The remote config. */

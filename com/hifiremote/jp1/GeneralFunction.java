@@ -93,6 +93,37 @@ public class GeneralFunction
         return false;
       return true;
     }
+    
+    public static String getUserNames( List< User > users )
+    {
+      boolean first = true;
+      if ( users.isEmpty() )
+      {
+        return "<none>";
+      }
+      StringBuilder buff = new StringBuilder();
+      for ( User user : users )
+      {
+        if ( first )
+          first = false;
+        else
+          buff.append( ", " );
+        Button b = user.button;
+        DeviceButton db = user.db;
+        int state = user.state;
+        if ( db != null )
+        {
+          buff.append( db.getName() + "/" );
+        }
+        if ( state == Button.NORMAL_STATE )
+          buff.append( b.getName());
+        else if ( state == Button.SHIFTED_STATE )
+          buff.append( b.getShiftedName());
+        else if ( state == Button.XSHIFTED_STATE )
+          buff.append( b.getXShiftedName());
+      }
+      return buff.toString();
+    }
 
     public Button button;
     public int state;

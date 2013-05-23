@@ -113,8 +113,11 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       upgrade = new DeviceUpgrade( baseUpgrade );
       processorName = remoteConfig.getRemote().getProcessor().getEquivalentName();
       Protocol baseProtocol = baseUpgrade.getProtocol();
-      baseProtocol.oldCustomCode = baseProtocol.customCode.get(  processorName );
-      baseProtocol.newCustomCode = null;
+      if ( baseProtocol != null )
+      {
+        baseProtocol.oldCustomCode = baseProtocol.customCode.get(  processorName );
+        baseProtocol.newCustomCode = null;
+      }
     }
     oldUpgrade = baseUpgrade;
 
@@ -128,7 +131,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   {
     this.editor = null;
     DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
-    if ( remoteConfig.hasSegments() && newUpgrade != null )
+    if ( remoteConfig.hasSegments() && newUpgrade != null && newUpgrade.getProtocol() != null )
     {
       Protocol p = newUpgrade.getProtocol();
       newUpgrade.setSizeCmdBytes( p.getDefaultCmd().length() );
@@ -203,7 +206,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     Remote remote = remoteConfig.getRemote();
     if ( newUpgrade == null )
     {
-      if ( oldUpgrade != null )
+      if ( oldUpgrade != null && oldUpgrade.getProtocol() != null )
       {
         Protocol baseProtocol = oldUpgrade.getProtocol(); 
         // Restore custom code in case it has been changed
@@ -229,7 +232,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       model.setRow( sorter.modelIndex( row ), newUpgrade );
       Protocol pOld = oldUpgrade.getProtocol();
       Protocol pNew = newUpgrade.getProtocol();
-      if ( pOld == pNew && pOld.newCustomCode != null && pOld.oldCustomCode != null
+      if ( pOld != null && pOld == pNew && pOld.newCustomCode != null && pOld.oldCustomCode != null
           && ! pOld.newCustomCode.equals( pOld.oldCustomCode ) )
       {
         ProtocolManager.getProtocolManager().remove( pOld.newCustomCode.getProtocol() );

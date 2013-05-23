@@ -71,7 +71,7 @@ public class FunctionTableModel extends KMTableModel< Function >
    */
   public void setDeviceUpgrade( DeviceUpgrade deviceUpgrade )
   {
-    if ( deviceUpgrade == null )
+    if ( deviceUpgrade == null || deviceUpgrade.getProtocol() == null )
       return;
     List< Function > list = new ArrayList< Function >();
     for ( Function f : deviceUpgrade.getFunctions() )
@@ -152,6 +152,10 @@ public class FunctionTableModel extends KMTableModel< Function >
    */
   public int getColumnCount()
   {
+    if ( protocol == null )
+    {
+      return 0;
+    }
     int rc = 5;
     if ( ( remote != null ) && ( remote.getEFCDigits() == 5 ) )
       rc += 1;

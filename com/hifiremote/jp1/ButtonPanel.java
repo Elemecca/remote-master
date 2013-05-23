@@ -96,6 +96,19 @@ public class ButtonPanel extends KMPanel implements ActionListener
           tip = "<html>To change this assignment, first delete the corresponding<br>"
               + "assignment on the " + tab + " tab.";
         }
+        else if ( col == ButtonTableModel.aliasCol )
+        {
+          tip = "<html>An alias is a display name for a function from a different device<br>"
+              + "that may differ from its name for its home device.<br><br>";
+          if ( editable )
+          {
+            tip += "Edit this value to change the alias.</html>";
+          }
+          else
+          {
+            tip += "This assignment does not permit an alias.</html>";
+          }
+        }
         return tip;
       }
     };

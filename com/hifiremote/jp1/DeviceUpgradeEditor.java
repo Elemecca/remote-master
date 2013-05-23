@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -18,6 +20,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+
+import com.hifiremote.jp1.GeneralFunction.User;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -42,6 +46,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     this.owner = owner;
     this.row = row;
     this.panel = panel;
+    deviceUpgrade.setRestoreOnCancelReferences( new LinkedHashMap< GeneralFunction, List< User > >() );
     focusWindowAdapter = new WindowAdapter()
     {
       @Override
@@ -53,21 +58,24 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
 
     // Check consistency of device upgrade
     Protocol p = deviceUpgrade.getProtocol();
-    Remote remote = deviceUpgrade.getRemote();
-    String proc = remote.getProcessor().getEquivalentName();
-    Hex pCode = p.getCode( remote );
-    if ( pCode != null
-        && pCode.length() > 4
-        && ( p.getFixedDataLength() != Protocol.getFixedDataLengthFromCode( proc, pCode ) || p.getDefaultCmd().length() != Protocol
-            .getCmdLengthFromCode( proc, pCode ) ) )
+    if ( p != null )
     {
-      String title = "Device Upgrade Editor";
-      String message = "The code of the protocol for this device upgrade is not consistent\n"
-          + "with the protocol default parameters, so the device upgrade cannot\n"
-          + "be edited.  You need to edit the protocol code to correct this, before\n"
-          + "you can edit the device upgrade";
-      JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
-      return;
+      Remote remote = deviceUpgrade.getRemote();
+      String proc = remote.getProcessor().getEquivalentName();
+      Hex pCode = p.getCode( remote );
+      if ( pCode != null
+          && pCode.length() > 4
+          && ( p.getFixedDataLength() != Protocol.getFixedDataLengthFromCode( proc, pCode ) || p.getDefaultCmd().length() != Protocol
+          .getCmdLengthFromCode( proc, pCode ) ) )
+      {
+        String title = "Device Upgrade Editor";
+        String message = "The code of the protocol for this device upgrade is not consistent\n"
+            + "with the protocol default parameters, so the device upgrade cannot\n"
+            + "be edited.  You need to edit the protocol code to correct this, before\n"
+            + "you can edit the device upgrade";
+        JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+        return;
+      }
     }
 
     owner.addWindowFocusListener( focusWindowAdapter );
@@ -127,7 +135,10 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     okButton.addActionListener( this );
     cancelButton.addActionListener( this );
     pack();
-    editorPanel.setAltPIDReason();
+    if ( p != null )
+    {
+      editorPanel.setAltPIDReason();
+    }
     setLocationRelativeTo( owner );
 //    DeviceButton devBtn = deviceUpgrade.getButtonRestriction();
 //    HashMap< Button, String > softButtonNames = null;
@@ -185,8 +196,30 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
           {
             ProtocolManager.getProtocolManager().add( p );
           }
+          for ( GeneralFunction gf : upgrade.getRestoreOnCancelReferences().keySet() )
+          {
+            gf.removeReferences();
+            for ( User user : upgrade.getRestoreOnCancelReferences().get( gf ) )
+            {
+              gf.addReference( user.db, user.button );
+            }
+            if ( gf instanceof Macro )
+            {
+              Macro macro = ( Macro )gf;
+              List< Macro > macros = upgrade.getRemoteConfig().getMacros();
+              if ( macro.getUsers().isEmpty() )
+              {
+                macros.remove( macro );
+              }
+              else if ( !macros.contains( macro ) )
+              {
+                macros.add( macro );
+              }
+            }
+          }
+          upgrade.setRestoreOnCancelReferences( null );
         }
-        else if ( panel instanceof DeviceUpgradePanel )
+        else if ( panel instanceof DeviceUpgradePanel && upgrade.getSetupCode() >= 0 )
         {
           DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;
 //          RemoteConfiguration remoteConfig = dup.getRemoteConfig();
@@ -213,6 +246,10 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         if ( !cancelled && remoteConfig.getRemote().usesEZRC() )
         {
           upgrade.classifyButtons();
+          if ( upgrade.getButtonRestriction() != null )
+          {
+            upgrade.getButtonRestriction().setConstructed( upgrade.getSetupCode() < 0 );
+          }
 //          remoteConfig.assignUpgrades();
         }
         

@@ -208,7 +208,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 1:
         return device.getDeviceTypeAliasName();
       case 2:
-        return new SetupCode( device.getSetupCode() );
+        int value = device.getSetupCode();
+        return value < 0 ? null : new SetupCode( device.getSetupCode() );
       case 3:
         return device.getButtonRestriction().getName();
       case 4:
@@ -401,7 +402,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
             boolean hasFocus, int row, int col )
         {
           Protocol protocol = ( Protocol )value;
-          String variant = protocol.getVariantDisplayName( remoteConfig.getRemote().getProcessor() );
+          String variant = protocol == null ? null : protocol.getVariantDisplayName( remoteConfig.getRemote().getProcessor() );
           return super.getTableCellRendererComponent( table, variant, isSelected, false, row, col );
         }
       };
