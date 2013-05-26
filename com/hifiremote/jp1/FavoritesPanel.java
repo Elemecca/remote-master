@@ -639,6 +639,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       iconButton.setPreferredSize( iconButton.getSize() );
       iconButton.setText( icon.toString() );
       RMSetterDialog< RMIcon > dialog = new RMSetterDialog< RMIcon >();
+      dialog.setTitle( "Icon Editor" );
       RMIcon result = dialog.showDialog( this, remoteConfig, IconPanel.class, icon );
       if ( result != null )
       {

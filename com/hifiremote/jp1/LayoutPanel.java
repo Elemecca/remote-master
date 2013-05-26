@@ -522,7 +522,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       buttonName.setText( name );
       GeneralFunction f = getFunction( b );
       if ( f != null )
-        function.setText( f.getDisplayName() );
+        function.setText( f.getDisplayName( deviceUpgrade.getRemote() ) );
       else
         function.setText( "" );
       if ( remote.usesEZRC() )
@@ -1049,7 +1049,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
               : f.getUpgrade( remote ).getButtonRestriction();
           text = "<html>" + "Button: " + name;
           text += "<br>" + "Device: " + db.getName();
-          text += "<br>" + "Function: " + f.getDisplayName();
+          text += "<br>" + "Function: " + f.getDisplayName( remote );
           if ( macro != null )
           {
             text += "<br>" + "Alias: " + macro.getName();
@@ -1057,7 +1057,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         }
         else
         {
-          text = "<html>" + name + " = " + f.getDisplayName();
+          text = "<html>" + name + " = " + f.getDisplayName( remote );
         }
       }
       return text + "</html>";

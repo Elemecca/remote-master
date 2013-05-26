@@ -443,6 +443,28 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   {
     this.panel = panel;
   }
+  
+  @Override
+  public String getToolTipText( int row, int col )
+  {
+    col = getEffectiveColumn( col );
+    // For reasons unknown, the tooltip repeats if not checked in this way.
+    // It seems that it may be something to do with the cell being a check box.
+    int thisCell = row + col * 0x100;
+    if ( thisCell == lastCell )
+    {
+      return null;
+    }
+    lastCell = thisCell;
+    if ( col == 6 )
+    {
+      return "<html>Double click this column to open Icon Editor to set or<br>"
+          + "remove a system icon from this activity.</html>";
+    }
+    return null;
+  }
+  
+  private int lastCell = 0;
 
   private RemoteConfiguration remoteConfig = null;
   private KeyEditor keyEditor = new KeyEditor();

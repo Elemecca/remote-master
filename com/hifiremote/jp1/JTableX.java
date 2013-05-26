@@ -222,6 +222,15 @@ public class JTableX extends JTable
         return rc;
       }
     }
+    else if ( dataModel != null && dataModel instanceof JP1TableModel< ? > )
+    {
+      JP1TableModel< ? > model = ( JP1TableModel< ? > )dataModel;
+      String rc = model.getToolTipText( row, col );
+      if ( rc != null )
+      {
+        return rc;
+      }
+    }
     if ( isTruncated( row, col ) )
     {
       DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );

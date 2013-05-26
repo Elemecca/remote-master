@@ -81,7 +81,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
         Remote remote = model.getDeviceUpgrade().getRemote();
         if ( !remote.usesEZRC() )
         {
-          return null;
+          return super.getToolTipText( e );
         }
         String tip = null;
         java.awt.Point p = e.getPoint();
@@ -93,13 +93,17 @@ public class ButtonPanel extends KMPanel implements ActionListener
         {
           GeneralFunction gf = ( GeneralFunction )getValueAt( row, rawCol );
           String tab = gf instanceof Macro ? "Macros" : "Learned Signals";
-          tip = "<html>To change this assignment, first delete the corresponding<br>"
-              + "assignment on the " + tab + " tab.";
+          tip = "<html>" + gf.getDisplayName( remote )
+              + "<br>To change this assignment, first delete the corresponding<br>"
+              + "assignment on the " + tab + " tab.</html>";
         }
         else if ( col == ButtonTableModel.aliasCol )
         {
-          tip = "<html>An alias is a display name for a function from a different device<br>"
-              + "that may differ from its name for its home device.<br><br>";
+          Macro macro = ( Macro )getValueAt( row, rawCol );
+          tip = "<html>";
+          tip += macro != null ? macro.toString() + "<br>" : "";
+          tip += "An alias is a display name for a function from a different device<br>"
+              + "that may differ from its name for its home device.<br>";
           if ( editable )
           {
             tip += "Edit this value to change the alias.</html>";
@@ -109,7 +113,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
             tip += "This assignment does not permit an alias.</html>";
           }
         }
-        return tip;
+        return tip == null ? super.getToolTipText( e ) : tip;
       }
     };
     
@@ -152,7 +156,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
           boolean hasFocus, int row, int col )
       {
         GeneralFunction gf = ( GeneralFunction )value;
-        String name = gf != null ? gf.getDisplayName() : "";
+        String name = gf != null ? gf.getDisplayName( deviceUpgrade.getRemote() ) : "";
         Component component = super.getTableCellRendererComponent( table, name, isSelected, false, row, col );
         component.setFont( table.isCellEditable( row, col ) ? baseFont : boldFont );
         return component;

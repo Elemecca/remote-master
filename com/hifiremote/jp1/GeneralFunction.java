@@ -610,12 +610,11 @@ public class GeneralFunction
     return name;
   }
   
-  public String getDisplayName()
+  public String getDisplayName( Remote remote )
   {
-    String s = "";
     if ( this instanceof Macro && !( ( ( Macro )this).isSystemMacro() ) )
     {
-      s = "Macro: ";
+      return "Macro: " + name;
     }
 //    else if ( this instanceof KeyMove )
 //    {
@@ -623,9 +622,17 @@ public class GeneralFunction
 //    }
     else if ( this instanceof LearnedSignal )
     {
-      s = "Learn: ";
+      if ( name != null )
+      {
+        return "Learn: " + name;
+      }
+      else
+      {
+        Button btn = remote.getButton( ( ( LearnedSignal )this ).getKeyCode() );
+        return "Learn: " + btn.getName();
+      }
     }
-    return s += name;
+    return name;
   }
   
   public boolean assigned()

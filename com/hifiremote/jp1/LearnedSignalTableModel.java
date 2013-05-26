@@ -40,13 +40,17 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
       keyRenderer.setRemote( remoteConfig.getRemote() );
       keyEditor.setRemote( remoteConfig.getRemote() );
       setData( remoteConfig.getLearnedSignals() );
+      if ( remoteConfig.getRemote().usesEZRC() )
+      {
+        selectAllEditor = new SelectAllCellEditor();
+      }
     }
   }
 
   /** The Constant colNames. */
   private static final String[] colNames =
   {
-      "#", "<html>Device<br>Button</html>", "Key", "Notes", "Size", "Freq.", "Protocol", "Device",
+      "#", "Name", "<html>Device<br>Button</html>", "Key", "Notes", "Size", "Freq.", "Protocol", "Device",
       "<html>Sub<br>Device</html>", "OBC", "Hex Cmd", "Misc", "<html>Size &amp<br>Color</html>"
   };
 
@@ -57,12 +61,25 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    */
   public int getColumnCount()
   {
-    int count = colNames.length - 1;
+    int count = colNames.length - 2;
     if ( remoteConfig != null && remoteConfig.allowHighlighting() )
     {
       ++count;
     }
+    if ( remoteConfig != null && remoteConfig.getRemote().usesEZRC() )
+    {
+      ++count;
+    }
     return count;
+  }
+  
+  private int getEffectiveColumn( int col )
+  {
+    if ( col > 0 && ( remoteConfig == null || !remoteConfig.getRemote().usesEZRC() ) )
+    {
+      col++;   // Skip name column
+    }
+    return col;
   }
 
   /*
@@ -73,13 +90,14 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public String getColumnName( int col )
   {
+    col = getEffectiveColumn( col );
     return colNames[ col ];
   }
 
   /** The Constant colPrototypeNames. */
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "__VCR/DVD__", "_xshift-VCR/DVD_", "A longish comment or note", "1024", "99999", "Protocol", "Device",
+      " 00 ", "Name______", "__VCR/DVD__", "_xshift-VCR/DVD_", "A longish comment or note", "1024", "99999", "Protocol", "Device",
       "Device", "OBC", "Hex Cmd", "Miscellaneous", "Color_"
   };
 
@@ -91,6 +109,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public String getColumnPrototypeName( int col )
   {
+    col = getEffectiveColumn( col );
     return colPrototypeNames[ col ];
   }
 
@@ -102,7 +121,8 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public boolean isColumnWidthFixed( int col )
   {
-    if ( col == 3 || col == 6 || col == 11 )
+    col = getEffectiveColumn( col );
+    if ( col == 1 || col == 4 || col == 7 || col == 12 )
     {
       return false;
     }
@@ -116,6 +136,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   private static final Class< ? >[] colClasses =
   {
       Integer.class, // row
+      String.class,  // name
       DeviceButton.class, // DeviceButton
       Integer.class, // keycode
       String.class, // notes
@@ -138,6 +159,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public Class< ? > getColumnClass( int col )
   {
+    col = getEffectiveColumn( col );
     return colClasses[ col ];
   }
 
@@ -149,7 +171,8 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    return ( col > 0 && col < 4 ) || col == 12;
+    col = getEffectiveColumn( col );
+    return ( col > 0 && col < 5 ) || col == 13;
   }
 
   /*
@@ -159,6 +182,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
    */
   public Object getValueAt( int row, int column )
   {
+    column = getEffectiveColumn( column );
     LearnedSignal l = getRow( row );
     UnpackLearned ul = l.getUnpackLearned();
     ArrayList< LearnedSignalDecode > da = l.getDecodes();
@@ -184,11 +208,11 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         }
       }
     }
-    if ( numDecodes != 1 && ( column > 6 && column < 12 && ( column != 11 || ul.error.isEmpty() ) ) )
+    if ( numDecodes != 1 && ( column > 7 && column < 13 && ( column != 12 || ul.error.isEmpty() ) ) )
     {
       return null;
     }
-    if ( numDecodes == 1 && column > 5 && column < 12 )
+    if ( numDecodes == 1 && column > 6 && column < 13 )
     {
       decode = da.get( decodeIndex );
     }
@@ -196,17 +220,19 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     {
       case 0: // row number
         return new Integer( row + 1 );
-      case 1: // deviceButton
+      case 1:
+        return l.getName();
+      case 2: // deviceButton
         return remoteConfig.getRemote().getDeviceButton( l.getDeviceButtonIndex() );
-      case 2: // key
+      case 3: // key
         return new Integer( l.getKeyCode() );
-      case 3: // notes
+      case 4: // notes
         return l.getNotes();
-      case 4: // size
+      case 5: // size
         return l.getData().length();
-      case 5: // frequency
+      case 6: // frequency
         return new Integer( ul.frequency );
-      case 6: // protocol
+      case 7: // protocol
         if ( numDecodes == 0 )
         {
           return "** None **";
@@ -216,19 +242,19 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
           return "** Multiple **";
         }
         return decode.protocolName;
-      case 7: // device
+      case 8: // device
         return new Integer( decode.device );
-      case 8: // subDevice
+      case 9: // subDevice
         if ( decode.subDevice == -1 )
         {
           return null;
         }
         return new Integer( decode.subDevice );
-      case 9: // obc
+      case 10: // obc
         return new Integer( decode.obc );
-      case 10:
-        return Hex.toString( decode.hex );
       case 11:
+        return Hex.toString( decode.hex );
+      case 12:
         String message = ul.error.isEmpty() ? "" : "Malformed signal: " + ul.error;
         if ( numDecodes == 1 )
         {
@@ -236,7 +262,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
           message += decode.miscMessage;
         }
         return message;
-      case 12:
+      case 13:
         return l.getHighlight();
     }
     return null;
@@ -250,6 +276,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public void setValueAt( Object value, int row, int col )
   {
+    col = getEffectiveColumn( col );
     LearnedSignal l = getRow( row );
     Remote remote = null;
     DeviceButton db = null;
@@ -262,6 +289,17 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     switch ( col )
     {
       case 1:
+        l.setName( ( String )value );
+        if ( upg != null )
+        {
+          Function fn = upg.getFunction( l.getKeyCode() );
+          if ( fn != null )
+          {
+            fn.setName( ( String )value );
+          }
+        }
+        break;
+      case 2:
       {
         if ( upg != null )
         {
@@ -277,7 +315,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         l.setDeviceButtonIndex( db.getButtonIndex() );
         break;
       }
-      case 2:
+      case 3:
         if ( upg != null )
         {
           upg.getLearnedMap().remove( l.getKeyCode() );
@@ -290,10 +328,10 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
         }       
         l.setKeyCode( ( ( Integer )value ).shortValue() );
         break;
-      case 3:
+      case 4:
         l.setNotes( ( String )value );
         break;
-      case 12:
+      case 13:
         l.setHighlight( ( Color  )value );
         break;
     }
@@ -308,15 +346,16 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public TableCellRenderer getColumnRenderer( int col )
   {
+    col = getEffectiveColumn( col );
     if ( col == 0 )
     {
       return new RowNumberRenderer();
     }
-    else if ( col == 2 )
+    else if ( col == 3 )
     {
       return keyRenderer;
     }
-    else if ( col == 12 )
+    else if ( col == 13 )
     {
       return colorRenderer;
     }
@@ -331,21 +370,26 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   @Override
   public TableCellEditor getColumnEditor( int col )
   {
+    col = getEffectiveColumn( col );
     if ( col == 1 )
+    {
+      return selectAllEditor;
+    }
+    else if ( col == 2 )
     {
       DefaultCellEditor e = new DefaultCellEditor( deviceComboBox );
       e.setClickCountToStart( RMConstants.ClickCountToStart );
       return e;
     }
-    else if ( col == 2 )
+    else if ( col == 3 )
     {
       return keyEditor;
     }
-    else if ( col == 3 )
+    else if ( col == 4 )
     {
       return noteEditor;
     }
-    else if ( col == 12 )
+    else if ( col == 13 )
     {
       return colorEditor;
     }
@@ -382,4 +426,5 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
   private SelectAllCellEditor noteEditor = new SelectAllCellEditor();
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
+  private SelectAllCellEditor selectAllEditor = null;
 }

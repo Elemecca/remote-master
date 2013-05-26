@@ -81,6 +81,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       {
         iconEditor = new RMSetterEditor< RMIcon, IconPanel >( IconPanel.class );
         iconEditor.setRemoteConfiguration( remoteConfig );
+        iconEditor.setTitle( "Icon Editor" );
         iconRenderer = new IconRenderer();
       }
     }
@@ -900,6 +901,28 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }    
     }
   }
+  
+  @Override
+  public String getToolTipText( int row, int col )
+  {
+    col = getEffectiveColumn( col );
+    // For reasons unknown, the tooltip repeats if not checked in this way.
+    // It seems that it may be something to do with the cell being a check box.
+    int thisCell = row + col * 0x100;
+    if ( thisCell == lastCell )
+    {
+      return null;
+    }
+    lastCell = thisCell;
+    if ( col == 12 )
+    {
+      return "<html>Double click this column to open Icon Editor to set or<br>"
+          + "remove a system icon from this device.</html>";
+    }
+    return null;
+  }
+  
+  private int lastCell = 0;
 
   /** The remote config. */
   private RemoteConfiguration remoteConfig = null;

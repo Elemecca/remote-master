@@ -370,7 +370,10 @@ public class DeviceUpgrade extends Highlight
     java.util.List< Protocol > protocols = pm.getProtocolsForRemote( newRemote, false );
     if ( p == null )
     {
-//      protocol = protocols.get( 0 ); // *********** TAKEN OUT FOR TESTING
+      if ( !newRemote.usesEZRC() ) 
+      {
+        protocol = protocols.get( 0 );
+      }
     }
     else if ( !protocols.contains( p ) )
     {
@@ -1531,7 +1534,7 @@ public class DeviceUpgrade extends Highlight
     }
   }
   
-  private String getFunctionName( Button btn )
+  public String getFunctionName( Button btn )
   {
     String name = null;
     if ( buttonRestriction != null && buttonRestriction.getSoftButtonNames() != null
@@ -2026,7 +2029,8 @@ public class DeviceUpgrade extends Highlight
     this.file = file;
     StringWriter sw = new StringWriter();
     PropertyWriter pw = new PropertyWriter( new PrintWriter( sw ) );
-    store( pw );
+    // For XSight remotes, do not store functions with no hex data
+    store( pw, remote.usesEZRC() );
     pw.close();
     baseline = sw.toString();
     FileWriter fw = new FileWriter( file );
@@ -2035,15 +2039,12 @@ public class DeviceUpgrade extends Highlight
     fw.close();
   }
 
-  /**
-   * Store.
-   * 
-   * @param out
-   *          the out
-   * @throws IOException
-   *           Signals that an I/O exception has occurred.
-   */
   public void store( PropertyWriter out )
+  {
+    store( out, false );
+  }
+
+  public void store( PropertyWriter out, boolean dataOnly )
   {
     if ( description != null )
     {
@@ -2083,6 +2084,10 @@ public class DeviceUpgrade extends Highlight
     int i = 0;
     for ( Function func : functions )
     {
+      if ( dataOnly && ( func.getData() == null || func.getSerial() >= 0 ||  func.getMacroref() != null ) )
+      {
+        continue;
+      }
       func.setRmirIndex( i );
       func.store( out, "Function." + i++ );
     }

@@ -32,6 +32,7 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     {
       iconEditor = new RMSetterEditor< RMIcon, IconPanel >( IconPanel.class );
       iconEditor.setRemoteConfiguration( remoteConfig );
+      iconEditor.setTitle( "Icon Editor" );
       iconRenderer = new IconRenderer();
     }
   }
@@ -321,6 +322,31 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     return channel;
   }
   
+  @Override
+  public String getToolTipText( int row, int col )
+  {
+    col = getEffectiveColumn( col );
+    int thisCell = row + col * 0x100;
+    if ( thisCell == lastCell )
+    {
+      return null;
+    }
+    lastCell = thisCell;
+    if ( col == 5 )
+    {
+      return "<html>Double click this column to open Icon Editor to set or<br>"
+          + "remove a user icon from this favorite and/or import an<br>"
+          + "icon from a file or export one to a file.</html>";
+    }
+    else if ( col == 6 )
+    {
+      return "<html>Double click this column to add or remove a favorite<br>"
+          + "from the selected profile.</html>";
+    }
+    return null;
+  }
+  
+  private int lastCell = 0;
   private RemoteConfiguration remoteConfig = null;
   private RMColorEditor colorEditor = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();

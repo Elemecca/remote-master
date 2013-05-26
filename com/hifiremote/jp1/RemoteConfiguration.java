@@ -1009,7 +1009,7 @@ public class RemoteConfiguration
       {
         short[] segData = items.db.getSegment().getHex().getData();
         int typeIndex = items.db.getDeviceTypeIndex( segData );
-        items.upgrade = new DeviceUpgrade();        
+        items.upgrade = new DeviceUpgrade( new String[ 0 ] );        
         items.upgrade.setRemote( remote );
         items.upgrade.setButtonIndependent( false );
         items.upgrade.setButtonRestriction( items.db );
@@ -1766,26 +1766,6 @@ public class RemoteConfiguration
         }
       }
     }
-    List< Segment > learnedList = segments.get( 9 );
-    if ( learnedList != null )
-    {
-      for ( Segment segment : learnedList )
-      {
-        Hex hex = segment.getHex();
-        LearnedSignal ls = null;
-        if ( remote.getProcessor().getEquivalentName().equals( "MAXQ610" ) )
-        {
-          // hex.getData[ 3 ] seems always to be 0 and is not stored in the learned signal
-          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
-        }
-        else
-        {
-          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 0, hex.subHex( 2 ), null );
-        }
-        ls.setSegmentFlags( segment.getFlags() );
-        learned.add( ls );
-      }
-    } 
     
     List< Segment > softNamesList = segments.get( 0x0A );
     if ( softNamesList != null )
@@ -1812,6 +1792,30 @@ public class RemoteConfiguration
           }        
         }
         devBtn.setSoftButtonNames( softButtonNames );
+      }
+    }
+    
+    List< Segment > learnedList = segments.get( 9 );
+    if ( learnedList != null )
+    {
+      for ( Segment segment : learnedList )
+      {
+        Hex hex = segment.getHex();
+        LearnedSignal ls = null;
+        if ( remote.getProcessor().getEquivalentName().equals( "MAXQ610" ) )
+        {
+          // hex.getData[ 3 ] seems always to be 0 and is not stored in the learned signal
+          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
+        }
+        else
+        {
+          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 0, hex.subHex( 2 ), null );
+        }
+        ls.setSegmentFlags( segment.getFlags() );
+        Button btn = remote.getButton( ls.getKeyCode() );
+        DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
+        ls.setName( db.getSoftButtonNames().get( btn ) );
+        learned.add( ls );
       }
     } 
     
@@ -2150,6 +2154,25 @@ public class RemoteConfiguration
     }
     if ( remote.usesEZRC() )
     {
+      if ( !remote.isSSD() )
+      {
+        for ( DeviceButton db : remote.getDeviceButtons() )
+        {
+          if ( db.isConstructed() )
+          {
+            DeviceUpgrade du = new DeviceUpgrade( new String[ 0 ] );
+            db.setUpgrade( du );
+            du.setButtonIndependent( false );
+            du.setButtonRestriction( db );
+            du.setSetupCode( -1 );
+            du.setRemoteConfig( this );
+            du.setRemote( remote );
+            du.classifyButtons();
+            devices.add( du );
+          }
+        }
+      }
+      
       updateReferences();
     }
     pos = 0;
@@ -2978,7 +3001,10 @@ public class RemoteConfiguration
       }
     }
     // Sort button-dependent ones into order in which they are stored in buffer.
-    Collections.sort( devDependent, new DependentUpgradeComparator() );
+    if ( !remote.usesEZRC() )
+    {
+      Collections.sort( devDependent, new DependentUpgradeComparator() );
+    }
 
     // First do the upgrades in the button-independent area
     for ( DeviceUpgrade device : devIndependent )
@@ -3522,6 +3548,10 @@ public class RemoteConfiguration
   public DeviceUpgrade getAssignedDeviceUpgrade( DeviceButton deviceButton )
   {
     short[] data = this.data;
+    if ( deviceButton.getUpgrade() != null )
+    {
+      return deviceButton.getUpgrade();
+    }
     if ( hasSegments() )
     {
       data = deviceButton.getSegment().getHex().getData();
@@ -5562,6 +5592,10 @@ public class RemoteConfiguration
       segments.remove( 0x10 );
       for ( DeviceUpgrade dev : devices )
       {
+        if ( dev.getProtocol() == null )
+        {
+          continue;
+        }
         dev.setSoftButtonSegment( null );
         dev.setSoftFunctionSegment( null );
         Hex hex = dev.getUpgradeHex();

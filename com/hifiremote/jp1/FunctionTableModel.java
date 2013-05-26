@@ -135,6 +135,7 @@ public class FunctionTableModel extends KMTableModel< Function >
       notesCol = iconCol + 1;
       iconEditor = new RMSetterEditor< RMIcon, IconPanel >( IconPanel.class );
       iconEditor.setRemoteConfiguration( remoteConfig );
+      iconEditor.setTitle( "Icon Editor" );
     }
     else
     {
@@ -520,4 +521,24 @@ public class FunctionTableModel extends KMTableModel< Function >
     else
       return protocol.isColumnWidthFixed( col - colOffset );
   }
+  
+  @Override
+  public String getToolTipText( int row, int col )
+  {
+    int thisCell = row + col * 0x100;
+    if ( thisCell == lastCell )
+    {
+      return null;
+    }
+    lastCell = thisCell;
+    if ( col == iconCol )
+    {
+      return "<html>Double click this column to open Icon Editor to set or<br>"
+          + "remove a user icon from this function and/or import an<br>"
+          + "icon from a file or export one to a file.</html>";
+    }
+    return null;
+  }
+  
+  private int lastCell = 0;
 }
