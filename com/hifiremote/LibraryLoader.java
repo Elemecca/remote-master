@@ -35,12 +35,22 @@ public class LibraryLoader
 
     if ( libraries.get( libraryName ) == null )
     {
+      System.err.println( "LibraryLoader: Java version '" + System.getProperty( "java.version" ) + "' from '" + System.getProperty( "java.home" ) + "' running on '" + System.getProperty( "os.name" ) + "' (" + System.getProperty( "os.arch" ) + ")" );
       String mappedName = System.mapLibraryName( libraryName );
       File libraryFile = new File( libraryFolder, mappedName );
-      System.err.println( "Loading " + libraryFile.getAbsolutePath() );
-      System.load( libraryFile.getAbsolutePath() );
-      System.err.println( "Loaded " + libraryFile.getAbsolutePath() );
-      libraries.put( libraryName, mappedName );
+      System.err.println( "LibraryLoader: Attempting to load '" + libraryName + "' from '" + libraryFile.getAbsolutePath() + "'..." );
+      try
+      {
+        System.load( libraryFile.getAbsolutePath() );
+        System.err.println( "LibraryLoader: Loaded '" + libraryName + "' successfully from '" + libraryFile.getAbsolutePath() + "'" );
+        libraries.put( libraryName, mappedName );
+      }
+      catch ( UnsatisfiedLinkError ule )
+      {
+        System.err.println( "LibraryLoader: Failed to load '" + libraryName + "' from '" + libraryFile.getAbsolutePath() + "'" );
+        // second try just from standard library locations
+        loadLibrary( libraryName );
+      }
     }
   }
 
@@ -48,9 +58,11 @@ public class LibraryLoader
   {
     if ( libraries.get( libraryName ) == null )
     {
-      System.err.println( "Loading " + libraryName );
+      System.err.println( "LibraryLoader: Java version '" + System.getProperty( "java.version" ) + "' from '" + System.getProperty( "java.home" ) + "' running on '" + System.getProperty( "os.name" ) + "' (" + System.getProperty( "os.arch" ) + ")" );
+      System.err.println( "LibraryLoader: Attempting to load '" + libraryName + "' from java library path..." );
+      System.err.println( "LibraryLoader: Java library path is '" + System.getProperty( "java.library.path" ) + "'" );
       System.loadLibrary( libraryName );
-      System.err.println( "Loaded " + libraryName );
+      System.err.println( "LibraryLoader: Loaded '" + libraryName + "' successfully from somewhere in java library path.");
       libraries.put( libraryName, libraryName );
     }
   }

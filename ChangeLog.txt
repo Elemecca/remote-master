@@ -139,7 +139,6 @@ Changes for v2.02
 - Upgrade to DecodeIR 2.44 (with suppport for 64-bit Java on 64-bit Windows)
 - Upgrade to JP12Serial 0.19 (with support for 64-bit Java on 64-bit Windows)
 
-
 Changes for v2.01
 -- Alpha --
 - Fix NullPointerException when editing DeviceCombiner protocol (Graham)

@@ -22,6 +22,10 @@ public abstract class RMPanel extends JPanel
   
   public abstract void set( RemoteConfiguration remoteConfig );
 
+  protected void refresh()
+  {
+  }
+
   /*
    * (non-Javadoc)
    * 

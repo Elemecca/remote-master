@@ -114,6 +114,7 @@ public class DecodeIRCaller
    */
   public DecodeIRCaller( File folder ) throws UnsatisfiedLinkError
   {
+    System.err.println( "DecodeIR: Looking in '" + folder.getAbsolutePath() + "'." );
     LibraryLoader.loadLibrary( folder, libraryName );
   }
 

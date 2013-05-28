@@ -83,8 +83,8 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
             editItem.setEnabled( false );
             cloneButton.setEnabled( false );
             cloneItem.setEnabled( false );
-            deleteButton.setEnabled( false );
-            deleteItem.setEnabled( false );
+            //deleteButton.setEnabled( false );
+            //deleteItem.setEnabled( false );
             upButton.setEnabled( false );
             downButton.setEnabled( false );
           }
@@ -98,6 +98,30 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
           }
         }
         detach.setEnabled( enableDetach );
+
+        // if detach enabled, then check if all from a single upgrade
+        if ( enableDetach )
+        {
+          editUpgrade.setEnabled( true );
+
+          int type = -1;
+          int code = -1;
+          for ( int tableRow : rows )
+          {
+            KeyMove km = getRowObject( tableRow );
+            if ( type == -1 )
+            {
+              type = km.getDeviceType();
+              code = km.getSetupCode();
+            }
+            else if ( type != km.getDeviceType() || code != km.getSetupCode() )
+            {
+              // difference device upgrades...can't edit more than 1, so disable
+              editUpgrade.setEnabled( false );
+              break;
+            }
+          }
+        }
       }
     } );
 
@@ -105,6 +129,11 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
     buttonPanel.add( new JButton( detach ) );
     detach.setEnabled( false );
     popup.add( detach );
+
+    editUpgrade = new EditUpgradeAction();
+    buttonPanel.add( new JButton( editUpgrade ) );
+    editUpgrade.setEnabled( false );
+    popup.add( editUpgrade );
   }
 
   @Override
@@ -128,11 +157,57 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
           }
         }
         detach.setEnabled( canDetach );
+
+        // if detach enabled, then check if all from a single upgrade
+        if ( canDetach )
+        {
+          editUpgrade.setEnabled( true );
+
+          int type = -1;
+          int code = -1;
+          for ( int tableRow : table.getSelectedRows() )
+          {
+            KeyMove km = getRowObject( tableRow );
+            if ( type == -1 )
+            {
+              type = km.getDeviceType();
+              code = km.getSetupCode();
+            }
+            else if ( type != km.getDeviceType() || code != km.getSetupCode() )
+            {
+              // difference device upgrades...can't edit more than 1, so disable
+              editUpgrade.setEnabled( false );
+              break;
+            }
+          }
+        }
       }
       else
       {
         int row = sorter.modelIndex( popupRow );
         detach.setEnabled( row >= limit );
+
+        // if detach enabled, then check if all from a single upgrade
+        if ( detach.isEnabled() )
+        {
+          editUpgrade.setEnabled( true );
+
+          int type = -1;
+          int code = -1;
+
+          KeyMove km = getRowObject( popupRow );
+          if ( type == -1 )
+          {
+            type = km.getDeviceType();
+            code = km.getSetupCode();
+          }
+          else if ( type != km.getDeviceType() || code != km.getSetupCode() )
+          {
+            // difference device upgrades...can't edit more than 1, so disable
+            editUpgrade.setEnabled( false );
+          }
+        }
+
       }
       popup.show( table, e.getX(), e.getY() );
       return true;
@@ -203,6 +278,99 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
     }
   }
 
+  @Override
+  protected void deleteRow( int row, boolean select )
+  {
+    int limit = remoteConfig.getKeyMoves().size();
+    if ( row >= limit  )
+    {
+      KeyMove keyMove = model.getRow( sorter.modelIndex( row ) );
+
+      if ( RMConfirmationDialog.show( "Delete Key Move from Device Upgrade", DELETE_ATTACHED_CONFIRM, JOptionPane.YES_OPTION, "SuppressKeyMovePrompts" ) )
+      {
+        if ( !DetachKeyMoves( new int[] { row } ) )
+          return;
+      }
+      else
+      {
+        return;
+      }
+
+      ( ( KeyMoveTableModel )model ).refresh();
+      model.fireTableDataChanged();
+
+      for ( int i = 0; i < model.getRowCount(); i++ )
+        if ( model.getRow( i ).equals( keyMove ) )
+        {
+          super.deleteRow( i, select );
+          break;
+        }
+    }
+    else
+    {
+      super.deleteRow( row, select );
+    }
+
+    ( ( KeyMoveTableModel )model ).refresh();
+    model.fireTableDataChanged();
+  }
+
+  private boolean DetachKeyMoves( int[] rows )
+  {
+    List< KeyMove > keymoves = remoteConfig.getKeyMoves();
+    List< KeyMove > toDetach = new ArrayList< KeyMove >( rows.length );
+    List< KeyMove > alsoDetach = new ArrayList< KeyMove >();
+    for ( int row : rows )
+    {
+      KeyMove keyMove = model.getRow( sorter.modelIndex( row ) );
+      toDetach.add( keyMove );
+
+      // Now see if there are other keymoves arising from the same device upgrade keymove as this one.
+      DeviceUpgrade upgrade = remoteConfig.findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
+      for ( int i : remoteConfig.getDeviceButtonIndexList( upgrade ) )
+      {
+        if ( i == keyMove.getDeviceButtonIndex() )
+        {
+          // We have already added this one to the detach list.
+          continue;
+        }
+        for ( int test = keymoves.size(); test < model.getData().size(); test++ )
+        {
+          KeyMove km = model.getData().get( test );
+          if ( km.getDeviceButtonIndex() == i && km.getKeyCode() == keyMove.getKeyCode() )
+          {
+            alsoDetach.add( km );
+            break;
+          }
+        }
+      }
+    }
+
+    for ( Iterator< KeyMove > it = alsoDetach.iterator(); it.hasNext(); )
+    {
+      // Avoid duplicates by deleting any alsoDetach keymoves that are actually also selected.
+      KeyMove km = it.next();
+      if ( toDetach.contains( km ) )
+      {
+        it.remove();
+      }
+    }
+
+    if ( !alsoDetach.isEmpty() && RMConfirmationDialog.show( "Detach Key Moves from Device Upgrades", MULTI_DEVICE_DETACH_CONFIRM, JOptionPane.NO_OPTION, "SuppressKeyMovePrompts" ) )
+    {
+      return false;
+    }
+
+    for ( KeyMove keyMove : toDetach )
+    {
+      DeviceUpgrade upgrade = remoteConfig.findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
+      keymoves.add( keyMove );
+      upgrade.setFunction( keyMove.getKeyCode(), null );
+    }
+    keymoves.addAll( alsoDetach );
+    return true;
+  }
+
   protected class DetachAction extends AbstractAction
   {
     public DetachAction()
@@ -229,67 +397,53 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
           rows = table.getSelectedRows();
         }
       }
-
-      List< KeyMove > keymoves = remoteConfig.getKeyMoves();
-      List< KeyMove > toDetach = new ArrayList< KeyMove >( rows.length );
-      List< KeyMove > alsoDetach = new ArrayList< KeyMove >();
-      for ( int row : rows )
-      {
-        KeyMove keyMove = model.getRow( sorter.modelIndex( row ) );
-        toDetach.add( keyMove );
-        
-        // Now see if there are other keymoves arising from the same device upgrade keymove as this one.
-        DeviceUpgrade upgrade = remoteConfig.findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
-        for ( int i : remoteConfig.getDeviceButtonIndexList( upgrade ) )
-        {
-          if ( i == keyMove.getDeviceButtonIndex() )
-          {
-            // We have already added this one to the detach list.
-            continue;
-          }
-          for ( int test = keymoves.size(); test < model.getData().size(); test++ )
-          {
-            KeyMove km = model.getData().get( test );
-            if ( km.getDeviceButtonIndex() == i && km.getKeyCode() == keyMove.getKeyCode() )
-            {
-              alsoDetach.add( km );
-              break;
-            }
-          }
-        }
-      }
       
-      for ( Iterator< KeyMove > it = alsoDetach.iterator(); it.hasNext(); )
-      {
-        // Avoid duplicates by deleting any alsoDetach keymoves that are actually also selected.
-        KeyMove km = it.next();
-        if ( toDetach.contains( km ) )
-        {
-          it.remove();
-        }
-      }
-      
-      if ( !alsoDetach.isEmpty() && JOptionPane.showConfirmDialog( null,
-          "At least one of the device upgrades of the attached key moves selected for\n"
-          + "detachment is assigned to more than one device button.  The corresponding\n"
-          + "key moves of the other device buttons will also be detached.  Are you sure\n"
-          + "that you want to proceed?",
-          "Detach Key Moves from Device Upgrades",
-          JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.NO_OPTION )
-      {
-        return;
-      }
-
-      for ( KeyMove keyMove : toDetach )
-      {
-        DeviceUpgrade upgrade = remoteConfig.findDeviceUpgrade( keyMove.getDeviceType(), keyMove.getSetupCode() );
-        keymoves.add( keyMove );
-        upgrade.setFunction( keyMove.getKeyCode(), null );
-      }
-      keymoves.addAll( alsoDetach );
+      DetachKeyMoves( rows );
 
       ( ( KeyMoveTableModel )model ).refresh();
       model.fireTableDataChanged();
+    }
+  }
+
+  public void endEditUpgrade()
+  {
+    editUpgrade.setEnabled( false );
+    ( ( KeyMoveTableModel )model ).refresh();
+    model.fireTableDataChanged();
+    remoteConfig.getOwner().getDeviceUpgradePanel().model.fireTableDataChanged();
+  }
+
+  protected class EditUpgradeAction extends AbstractAction
+  {
+    public EditUpgradeAction()
+    {
+      super( "Edit Upgrade" );
+      putValue( SHORT_DESCRIPTION, "Edit attached upgrade" );
+    }
+
+    public void actionPerformed( ActionEvent event )
+    {
+      AbstractButton source = ( AbstractButton )event.getSource();
+      int[] rows = { popupRow };
+      if ( source instanceof JButton )
+        rows = table.getSelectedRows();
+      else if ( source instanceof JMenuItem )
+        if ( table.isRowSelected( popupRow ) )
+          rows = table.getSelectedRows();
+
+      if ( rows.length == 0 ) return;
+
+      KeyMove km = getRowObject( rows[0] );
+      for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+      {
+        if ( du.getDeviceType().getType() == km.getDeviceType() && du.getSetupCode() == km.getSetupCode() )
+        {
+          List< Remote > remotes = new ArrayList< Remote >( 1 );
+          remotes.add( remoteConfig.getRemote() );
+          thisPanel.upgradeEditor = new DeviceUpgradeEditor( remoteConfig.getOwner(), du, remotes, 0, thisPanel );
+          break;
+        }
+      }
     }
   }
 
@@ -298,4 +452,21 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
   private RemoteConfiguration remoteConfig = null;
 
   protected Action detach = null;
+  protected Action editUpgrade = null;
+
+  private DeviceUpgradeEditor upgradeEditor = null;
+  public DeviceUpgradeEditor getDeviceUpgradeEditor()
+  {
+    return upgradeEditor;
+  }
+
+  private final String MULTI_DEVICE_DETACH_CONFIRM = "At least one of the device upgrades of the attached key moves selected for\n"
+  + "detachment is assigned to more than one device button.  The corresponding\n"
+  + "key moves of the other device buttons will also be detached.  Are you sure\n"
+  + "that you want to proceed?";
+
+  private final String DELETE_ATTACHED_CONFIRM = "The key move you are attempting to delete is attached to a device upgrade.\n"
+      + "If you delete it, it will first be detached and this can potentially leave\n"
+      + "the function not bound to any key. Are you sure that you want to proceed?";
+
 }

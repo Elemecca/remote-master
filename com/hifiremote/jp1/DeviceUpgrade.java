@@ -71,7 +71,7 @@ public class DeviceUpgrade extends Highlight
 
   /**
    * Instantiates a new device upgrade.
-   * 
+   *
    * @param base
    *          the base
    */
@@ -171,6 +171,88 @@ public class DeviceUpgrade extends Highlight
         selectorMap = new LinkedHashMap< Integer, GeneralFunction >();
         selectorMap.putAll( base.getSelectorMap() );
       }
+    }
+  }
+
+  /**
+   * Instantiates a new device upgrade.
+   *
+   * @param base
+   *          the base
+   */
+  public DeviceUpgrade( LearnedSignal[] signals, RemoteConfiguration remoteConfig )
+  {
+    LearnedSignalDecode d = signals[0].getDecodes().get(0);
+    String protocolName = d.protocolName;
+    if ( protocolName.startsWith( "48-NEC" ) )
+      protocolName = protocolName.substring( 3 );
+    int device = d.device;
+    int subDevice = d.subDevice;
+
+    description = "Learned Signal Upgrade";
+    notes =  "Device Upgrade automatically created by RemoteMaster from " + signals.length + " Learned Signals all with protocol " + protocolName + ", device " + device + ", subdevice " + subDevice + ".";
+    setupCode = 2000;
+    List<DeviceUpgrade> upgrades = remoteConfig.getDeviceUpgrades();
+    boolean setupCodeNotAvail = true;
+    while ( setupCodeNotAvail )
+    {
+      setupCodeNotAvail = false;
+      for ( DeviceUpgrade u: upgrades )
+      {
+        if ( u.getDeviceTypeAliasName().equals( "Cable" ) && u.getSetupCode() == setupCode )
+        {
+          setupCode++;
+          setupCodeNotAvail = true;
+          break;
+        }
+      }
+    }
+    devTypeAliasName = "Cable";
+
+    protocol = ProtocolManager.getProtocolManager().findByName( protocolName ).get( 0 );
+    this.remote = remoteConfig.getRemote();
+    this.remoteConfig = remoteConfig;
+
+    sizeCmdBytes = protocol.getDefaultCmd().length();
+    sizeDevBytes = protocol.getFixedDataLength();
+
+    // copy the device parameter values
+    DeviceParameter[] protocolDevParms = protocol.getDeviceParameters();
+    parmValues = new Value[protocolDevParms.length];
+    for ( int i = 0; i < parmValues.length; i++ )
+    {
+      if ( protocolDevParms.length > i )
+      {
+        if ( protocolDevParms[i].getName().startsWith("Device") )
+          parmValues[i] = new Value( d.device );
+        else if ( protocolDevParms[i].getName().startsWith("Sub Device") )
+        {
+          System.err.println("New upgrade's subdevice is " + d.subDevice);
+          parmValues[i] = new Value( d.subDevice );
+        }
+        else
+          parmValues[i] = new Value( protocolDevParms[i].getValueOrDefault() );
+      }
+    }
+
+    // Copy the functions and their assignments
+    for ( LearnedSignal s : signals )
+    {
+      d = s.getDecodes().get( 0 );
+      String name = s.getNotes();
+      Button b = remote.getButton( s.getKeyCode() );
+      if ( name == null || name.isEmpty() )
+        name = b.getName();
+
+      short[] hex = new short[d.hex.length];
+      for ( int i=0; i < d.hex.length; i++ )
+        hex[i] = (short)d.hex[i];
+
+      Function f = new Function( name, new Hex( hex ), s.getNotes() );
+
+      functions.add( f );
+
+      assignments.assign( b, f );
     }
   }
 

@@ -1084,6 +1084,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             generalPanel.getDeviceUpgradeEditor().dispose();
           }
+          if ( keyMovePanel.getDeviceUpgradeEditor() != null )
+          {
+            keyMovePanel.getDeviceUpgradeEditor().dispose();
+          }
           if ( devicePanel.getDeviceUpgradeEditor() != null )
           {
             devicePanel.getDeviceUpgradeEditor().dispose();
@@ -1164,25 +1168,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     activityPanel = new ActivityPanel();
     activityPanel.addPropertyChangeListener( this );
 
-    try
-    {
-      LearnedSignal.getDecodeIR();
-      learnedPanel = new LearnedSignalPanel();
-//      tabbedPane.addTab( "Learned Signals", learnedPanel );
+    learnedPanel = new LearnedSignalPanel();
+    if ( LearnedSignal.hasDecodeIR() )
       learnedPanel.addPropertyChangeListener( this );
-    }
-    catch ( NoClassDefFoundError ncdfe )
-    {
-      System.err.println( "DecodeIR class not found!" );
-    }
-    catch ( NoSuchMethodError nsme )
-    {
-      System.err.println( "DecodeIR class is wrong version!" );
-    }
-    catch ( UnsatisfiedLinkError ule )
-    {
-      System.err.println( "DecodeIR JNI interface not found!" );
-    }
 
     rawDataPanel = new RawDataPanel();
     tabbedPane.addTab( "Raw Data", rawDataPanel );
@@ -1694,12 +1682,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     enablePreserveSelection = new JCheckBoxMenuItem( "Allow Preserve Control" );
     enablePreserveSelection.setMnemonic( KeyEvent.VK_A );
-    enablePreserveSelection.setSelected( Boolean.parseBoolean( properties.getProperty( "enablePreserveSelection",
-        "false" ) ) );
+    enablePreserveSelection.setSelected( Boolean.parseBoolean( properties.getProperty( "enablePreserveSelection", "false" ) ) );
     enablePreserveSelection.addActionListener( this );
-    enablePreserveSelection
-        .setToolTipText( "<html>Allow control of which function data is preserved when changing the protocol used in a device upgrade.<br>Do not use this unless you know what you are doing and why.</html>" );
+    enablePreserveSelection.setToolTipText( "<html>Allow control of which function data is preserved when changing the protocol used in a device upgrade.<br>Do not use this unless you know what you are doing and why.</html>" );
     menu.add( enablePreserveSelection );
+
+    appendAdvancedOptions( menu );
 
     ActionListener al = new ActionListener()
     {
@@ -1839,6 +1827,56 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     aboutItem = new JMenuItem( "About...", KeyEvent.VK_A );
     aboutItem.addActionListener( this );
     menu.add( aboutItem );
+  }
+
+  private void appendAdvancedOptions( JMenu menu )
+  {
+    ActionListener listener = new ActionListener()
+    {
+      public void actionPerformed( ActionEvent e )
+      {
+        try
+        {
+          JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+          properties.setProperty( item.getActionCommand(), Boolean.toString( item.isSelected() ) );
+          refreshTabbedPanes();
+        }
+        catch ( Exception x )
+        {
+          x.printStackTrace( System.err );
+        }
+      }
+    };
+
+    // Advanced sub menu
+    JMenu advancedSubMenu = new JMenu( "Advanced" );
+    advancedSubMenu.setMnemonic( KeyEvent.VK_D );
+    menu.addSeparator();
+    menu.add( advancedSubMenu );
+    JCheckBoxMenuItem item;
+
+    item = new JCheckBoxMenuItem( "Learned Signal Timing Analysis" );
+    item.setActionCommand( "LearnedSignalTimingAnalysis" );
+    item.setSelected( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ) );
+    item.addActionListener( listener );
+    advancedSubMenu.add( item );
+
+    item = new JCheckBoxMenuItem( "Learn to Upgrade Conversion" );
+    item.setActionCommand( "LearnUpgradeConversion" );
+    item.setSelected( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ) );
+    item.addActionListener( listener );
+    advancedSubMenu.add( item );
+
+    // Suppress Messages sub menu
+    JMenu suppressSubMenu = new JMenu( "Suppress Messages" );
+    suppressSubMenu.setMnemonic( KeyEvent.VK_S );
+    menu.add( suppressSubMenu );
+
+    item = new JCheckBoxMenuItem( "Key Move Detach/Delete" );
+    item.setActionCommand( "SuppressKeyMovePrompts" );
+    item.setSelected( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ) );
+    item.addActionListener( listener );
+    suppressSubMenu.add( item );
   }
 
   private void createToolbar()
@@ -2868,14 +2906,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         sb.append( "</p><p>Images and Maps loaded from <b>" );
         sb.append( properties.getProperty( "ImagePath" ) );
         sb.append( "</b></p>" );
-        try
+        if ( LearnedSignal.hasDecodeIR() )
         {
-          String v = LearnedSignal.getDecodeIR().getVersion();
           sb.append( "<p>DecodeIR version " );
-          sb.append( v );
+          sb.append( LearnedSignal.getDecodeIRVersion() );
           sb.append( "</p>" );
         }
-        catch ( LinkageError le )
+        else
         {
           sb.append( "<p><b>DecodeIR is not available!</b></p>" );
         }
@@ -3000,7 +3037,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     index = checkTabbedPane( "Devices", devicePanel, true, index );
     index = checkTabbedPane( "Protocols", protocolPanel, remote.hasFreeProtocols(), index );
     index = checkTabbedPane( "Activities", activityPanel, remote.hasActivitySupport(), index );
-    index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
+    if ( LearnedSignal.hasDecodeIR() )
+      index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
+    else
+      index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index, "Learned Signals tab disabled due to DecodeIR not being found.", false );
     
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
@@ -3013,7 +3053,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     protocolPanel.set( remoteConfig );
     activityPanel.set( remoteConfig );
 
-    if ( learnedPanel != null )
+    if ( LearnedSignal.hasDecodeIR() )
     {
       learnedPanel.set( remoteConfig );
     }
@@ -3042,7 +3082,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     rawDataPanel.set( remoteConfig );
   }
   
+  protected void refreshTabbedPanes()
+  {
+    for ( int i = 0; i < tabbedPane.getTabCount(); i++ )
+      ((RMPanel) tabbedPane.getComponentAt( i )).refresh();
+  }
   private int checkTabbedPane( String name, Component c, boolean test, int index )
+  {
+    return checkTabbedPane( name, c, test, index, null, true );
+  }
+  private int checkTabbedPane( String name, Component c, boolean test, int index, String tooltip, boolean enabled )
   {
     if ( c == null )
     {
@@ -3053,7 +3102,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       if ( tabIndex < 0 )
       {
-        tabbedPane.insertTab( name, null, c, null, index );
+        tabbedPane.insertTab( name, null, c, tooltip, index );
+        tabbedPane.setEnabledAt( index, enabled );
       }
       index++;
     }

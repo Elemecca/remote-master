@@ -260,6 +260,10 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         {
           ( ( GeneralPanel )panel ).endEdit( this, row );
         }
+        else if ( panel instanceof KeyMovePanel )
+        {
+          ( ( KeyMovePanel )panel ).endEditUpgrade( );
+        }
         else if ( panel instanceof DeviceUpgradePanel )
         {
           DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;

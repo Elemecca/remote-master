@@ -335,6 +335,40 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     }
   }
 
+  protected void deleteRow( int row, boolean select )
+  {
+    int modelRow = -1;
+    if ( row != -1 )
+    {
+      modelRow = sorter.modelIndex( row );
+    }
+
+    if ( !canDelete( model.getRow( sorter.modelIndex( row ) ) ) )
+    {
+      deleteButton.setEnabled( false );
+      deleteItem.setEnabled( false );
+      doNotDelete( model.getRow( modelRow ) );
+    }
+    else
+    {
+      int rowToSelect = row;
+      if ( rowToSelect == sorter.getRowCount() - 1 )
+      {
+        --rowToSelect;
+      }
+      else
+      {
+        ++rowToSelect;
+      }
+      if ( select && rowToSelect > -1 )
+      {
+        table.setRowSelectionInterval( rowToSelect, rowToSelect );
+      }
+
+      model.removeRow( modelRow );
+    }
+  }
+
   // Interface ActionListener
   /*
    * (non-Javadoc)
@@ -387,30 +421,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     }    
     else if ( source == deleteButton || source == deleteItem )
     {
-      if ( !canDelete( model.getRow( sorter.modelIndex( row ) ) ) )
-      {
-        deleteButton.setEnabled( false );
-        deleteItem.setEnabled( false );
-        doNotDelete( model.getRow( modelRow ) );
-      }
-      else
-      {
-        int rowToSelect = row;
-        if ( rowToSelect == sorter.getRowCount() - 1 )
-        {
-          --rowToSelect;
-        }
-        else
-        {
-          ++rowToSelect;
-        }
-        if ( select && rowToSelect > -1 )
-        {
-          table.setRowSelectionInterval( rowToSelect, rowToSelect );
-        }
-
-        model.removeRow( modelRow );
-      }
+      deleteRow( row, select );
     }
     else if ( source == upButton || source == downButton )
     {

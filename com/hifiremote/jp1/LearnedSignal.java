@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.hifiremote.decodeir.DecodeIRCaller;;
+import com.hifiremote.decodeir.DecodeIRCaller;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -53,6 +53,8 @@ public class LearnedSignal extends Highlight
         decodes.add( new LearnedSignalDecode( decode ) );
       }
     }
+
+    timingAnalyzer = signal.getTimingAnalyzer();
   }
 
   public static LearnedSignal read( HexReader reader, Remote remote )
@@ -276,16 +278,48 @@ public class LearnedSignal extends Highlight
     return decodes;
   }
 
+  private LearnedSignalTimingAnalyzer timingAnalyzer = null;
+  public LearnedSignalTimingAnalyzer getTimingAnalyzer()
+  {
+    if ( timingAnalyzer == null )
+      timingAnalyzer = new LearnedSignalTimingAnalyzer( getUnpackLearned() );
+    return timingAnalyzer;
+  }
+  public void clearTimingAnalyzer()
+  {
+    timingAnalyzer = null;
+  }
+
+  public static boolean hasDecodeIR()
+  {
+    if ( hasDecodeIR == 0 )
+      getDecodeIR();
+    return ( hasDecodeIR == 2 );
+  }
+  public static String getDecodeIRVersion()
+  {
+    return ( hasDecodeIR() ? getDecodeIR().getVersion() : null );
+  }
+
   /**
    * Gets the decode ir.
    * 
    * @return the decode ir
    */
-  public static DecodeIRCaller getDecodeIR()
+  private static DecodeIRCaller getDecodeIR()
   {
     if ( decodeIR == null )
     {
-      decodeIR = new DecodeIRCaller( new File( System.getProperty( "user.dir" ) ) );
+      try
+      {
+        decodeIR = new DecodeIRCaller( new File( System.getProperty( "user.dir" ) ) );
+        hasDecodeIR = 2; // yes
+      }
+      catch ( UnsatisfiedLinkError ule )
+      {
+        System.err.println( "Failed to load DecodeIR JNI interface!" );
+        hasDecodeIR = 1; // no
+      }
     }
 
     return decodeIR;
@@ -293,5 +327,5 @@ public class LearnedSignal extends Highlight
 
   /** The decode ir. */
   private static DecodeIRCaller decodeIR = null;
-  
+  private static int hasDecodeIR = 0;
 }

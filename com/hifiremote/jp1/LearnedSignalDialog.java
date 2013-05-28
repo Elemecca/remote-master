@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -21,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -60,7 +63,7 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     dialog.setAdvancedButtonText( dialog.advancedArea.isVisible() );
     dialog.applyButton.setEnabled( false );
     dialog.pack();
-    
+
     dialog.setLocationRelativeTo( locationComp );
     dialog.setVisible( true );
     return dialog.learnedSignal;
@@ -73,44 +76,6 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
       dialog.dispose();
       dialog = null;
     }
-  }
-
-  /**
-   * To string.
-   * 
-   * @param data
-   *          the data
-   * @return the string
-   */
-  private static String toString( int[] data )
-  {
-    int[] charPos = new int[ data.length ];
-
-    StringBuilder str = new StringBuilder();
-    if ( data != null && data.length != 0 )
-    {
-      for ( int i = 0; i < data.length; i++ )
-      {
-        // Format changed to allow pasting to IRScope as timing list
-        if ( i > 0 /* && ( i & 1 ) == 0 */ )
-        {
-          str.append( " " );
-        }
-        charPos[ i ] = str.length();
-        // str.append( ( ( i & 1 ) == 0 ? +1 : -1 ) * data[ i ] ); 
-        str.append( ( i & 1 ) == 0 ? "+" : "-" );
-        str.append( data[ i ] );
-      }
-      /*
-       * for (int i = 0; i < positions.size(); i++) { int[] pos = positions.get(i); System.out.println("pos[] = " +
-       * pos[0] + ", " + pos[1] ); pos[2] = charPos[ 2 pos[0] ]; pos[3] = charPos[ 2 pos[1] - 1 ] - 1; }
-       */
-    }
-    if ( str.length() == 0 )
-    {
-      return "** No signal **";
-    }
-    return str.toString();
   }
 
   /**
@@ -154,11 +119,20 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     signalTextArea.setEditable( true );
     signalTextArea.setLineWrap( true );
     signalTextArea.setWrapStyleWord( true );
-    signalTextArea.getDocument().addDocumentListener( this );
+    signalTextArea.getDocument().addDocumentListener(new DocumentListener() {
+      public void changedUpdate(DocumentEvent e) {
+          signalTextChanged();
+      }
+      public void removeUpdate(DocumentEvent e) {
+          signalTextChanged();
+      }
+      public void insertUpdate(DocumentEvent e) {
+          signalTextChanged();
+      }
+    });
     signalTextArea.setToolTipText( "Edits to Signal Data do not take effect until you press Apply or OK" );
     JScrollPane scrollPane = new JScrollPane( signalTextArea );
-    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Signal Data" ), scrollPane
-        .getBorder() ) );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Signal Data" ), scrollPane.getBorder() ) );
     topPanel.add( scrollPane, BorderLayout.PAGE_END );
     
     table = new JP1Table( model );
@@ -166,33 +140,87 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     table.setRowSelectionAllowed( true );
     Dimension d = table.getPreferredScrollableViewportSize();
     d.width = table.getPreferredSize().width;
-    d.height = 8 * table.getRowHeight();
+    d.height = 3 * table.getRowHeight();
     table.setPreferredScrollableViewportSize( d );
     table.initColumns( model );
     scrollPane = new JScrollPane( table );
-    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Decodes" ), scrollPane
-        .getBorder() ) );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Decodes" ), scrollPane.getBorder() ) );
     contentPane.add( scrollPane, BorderLayout.CENTER );
     
     advancedArea = Box.createVerticalBox();
     advancedArea.setBorder( BorderFactory.createTitledBorder( "Advanced Details" ) );
 
+    // add panel with rounding/analysis controls
+    advancedAreaControls = new JPanel( new FlowLayout( FlowLayout.LEFT, 1, 1 ) );
+    advancedAreaControls.add( new JLabel( " Round To: " ) );
+    advancedAreaControls.add( burstRoundBox );
+    advancedAreaControls.add( new JLabel( "  Anaylzer: ") );
+    advancedAreaControls.add( analyzerBox );
+    advancedAreaControls.add( new JLabel( "  Analysis: ") );
+    advancedAreaControls.add( analysisBox );
+    advancedAreaControls.add( new JLabel( "  ") );
+    advancedAreaControls.add( analysisMessageLabel );
+    advancedArea.add( advancedAreaControls );
+
+    // setup analyzer/analysis boxes and message label
+    analysisMessageLabel.setText( null );
+    ItemListener i = new ItemListener() {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          if ( e.getStateChange() == ItemEvent.SELECTED )
+            onAnalysisChange();
+        }
+    };
+    analyzerBox.addItemListener( i );
+    analysisBox.addItemListener( i );
+
+    // setup round to box
+    burstRoundBox.setColumns( 4 );
+    burstRoundBox.getDocument().addDocumentListener(new DocumentListener() {
+      public void changedUpdate(DocumentEvent e) {
+        applyButton.setEnabled( true );
+        setAdvancedAreaTextFields();
+      }
+      public void removeUpdate(DocumentEvent e) {
+        applyButton.setEnabled( true );
+        setAdvancedAreaTextFields();
+      }
+      public void insertUpdate(DocumentEvent e) {
+        applyButton.setEnabled( true );
+        setAdvancedAreaTextFields();
+      }
+    });
+
     burstTextArea.setEditable( false );
     burstTextArea.setLineWrap( true );
     burstTextArea.setWrapStyleWord( true );
     scrollPane = new JScrollPane( burstTextArea );
-    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Bursts" ), scrollPane
-        .getBorder() ) );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Bursts" ), scrollPane.getBorder() ) );
+    advancedArea.add( scrollPane );
+    // temporarily hiding bursts...may remove entirely
+    burstTextArea.getParent().getParent().setVisible( false );
+
+    onceDurationTextArea.setEditable( false );
+    onceDurationTextArea.setLineWrap( true );
+    onceDurationTextArea.setWrapStyleWord( true );
+    scrollPane = new JScrollPane( onceDurationTextArea );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Sent Once" ), scrollPane.getBorder() ) );
     advancedArea.add( scrollPane );
 
-    durationTextArea.setEditable( false );
-    durationTextArea.setLineWrap( true );
-    durationTextArea.setWrapStyleWord( true );
-    scrollPane = new JScrollPane( durationTextArea );
-    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Durations" ),
-        scrollPane.getBorder() ) );
-    advancedArea.add( scrollPane );  
-    
+    repeatDurationTextArea.setEditable( false );
+    repeatDurationTextArea.setLineWrap( true );
+    repeatDurationTextArea.setWrapStyleWord( true );
+    scrollPane = new JScrollPane( repeatDurationTextArea );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Sent Repeatedly" ), scrollPane.getBorder() ) );
+    advancedArea.add( scrollPane );
+
+    extraDurationTextArea.setEditable( false );
+    extraDurationTextArea.setLineWrap( true );
+    extraDurationTextArea.setWrapStyleWord( true );
+    scrollPane = new JScrollPane( extraDurationTextArea );
+    scrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Sent on Release" ), scrollPane.getBorder() ) );
+    advancedArea.add( scrollPane );
+
     Box bottomBox = Box.createVerticalBox();
     contentPane.add( bottomBox, BorderLayout.PAGE_END );
     bottomBox.add( advancedArea );
@@ -235,8 +263,13 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
       xShift.setSelected( false );
       model.set( this.learnedSignal );
       signalTextArea.setText( null );
+      burstRoundBox.setText( null );
       burstTextArea.setText( null );
-      durationTextArea.setText( null );     
+      onceDurationTextArea.setText( null );
+      repeatDurationTextArea.setText( null );
+      extraDurationTextArea.setText( null );
+      analyzerBox.setModel( new DefaultComboBoxModel( new String[] { "..." } ) );
+      analysisBox.setModel( new DefaultComboBoxModel( new String[] { "..." } ) );
       return;
     }
     this.learnedSignal = learnedSignal;
@@ -244,13 +277,135 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     boundDevice.setSelectedItem( remote.getDeviceButton( learnedSignal.getDeviceButtonIndex() ) );
     setButton( learnedSignal.getKeyCode(), boundKey, shift, xShift );
     model.set( learnedSignal );
+    signalTextLock = true;
     signalTextArea.setText( learnedSignal.getSignalHex( config.getRemote() ).toString() );
-    UnpackLearned ul = learnedSignal.getUnpackLearned();
-    if ( ul.ok )
+    signalTextLock = false;
+
+    LearnedSignalTimingAnalyzer timingAnalyzer = this.learnedSignal.getTimingAnalyzer();
+    if ( !timingAnalyzer.getIsValid() )
     {
-      burstTextArea.setText( toString( ul.bursts ) );
-      durationTextArea.setText( toString( ul.durations ) );
+      burstRoundBox.setText( null );
+      analysisMessageLabel.setText( null );
+      burstTextArea.setText( "Unable to unpack learned signal data...analysis not possible." );
+      onceDurationTextArea.setText( null );
+      repeatDurationTextArea.setText( null );
+      extraDurationTextArea.setText( null );
+      burstTextArea.setRows( 1 );
+      onceDurationTextArea.setRows( 1 );
+      repeatDurationTextArea.setRows( 1 );
+      extraDurationTextArea.setRows( 1 );
+      onceDurationTextArea.getParent().getParent().setVisible( false );
+      repeatDurationTextArea.getParent().getParent().setVisible( false );
+      extraDurationTextArea.getParent().getParent().setVisible( false );
+      analyzerBox.setModel( new DefaultComboBoxModel( new String[] { "..." } ) );
+      analysisBox.setModel( new DefaultComboBoxModel( new String[] { "..." } ) );
+      pack();
     }
+    else
+    {
+      analysisUpdating = true;
+      advancedAreaUpdating = true;
+
+      analyzerBox.setModel( new DefaultComboBoxModel( timingAnalyzer.getAnalyzerNames() ) );
+      analyzerBox.setSelectedItem( timingAnalyzer.getSelectedAnalyzer().getName() );
+      analysisBox.setModel( new DefaultComboBoxModel( timingAnalyzer.getSelectedAnalyzer().getAnalysisNames() ) );
+      analysisBox.setSelectedItem( timingAnalyzer.getSelectedAnalysisName() );
+      analysisMessageLabel.setText( timingAnalyzer.getSelectedAnalysis().getMessage() );
+      burstRoundBox.setText( Integer.toString( timingAnalyzer.getSelectedAnalyzer().getRoundTo() ) );
+
+      // the accesses above will have initialized the timing analyzer to last selcted or preferred analyzer/analysis, so we save the state
+      timingAnalyzer.saveState();
+      // we'll back out any changes with restoreState if the user clicks cancel
+
+      advancedAreaUpdating = false;
+      analysisUpdating = false;
+
+      setAdvancedAreaTextFields();
+    }
+  }
+
+  private void onAnalysisChange()
+  {
+    if ( analysisUpdating )
+      return;
+    analysisUpdating = true;
+
+    applyButton.setEnabled( true );
+
+    LearnedSignalTimingAnalyzer timingAnalyzer = this.learnedSignal.getTimingAnalyzer();
+    if ( !timingAnalyzer.getSelectedAnalyzer().getName().equals( analyzerBox.getSelectedItem().toString() ) )
+    {
+      timingAnalyzer.setSelectedAnalyzer( analyzerBox.getSelectedItem().toString() ); // will auto select preferred analysis
+      analysisBox.setModel( new DefaultComboBoxModel( timingAnalyzer.getSelectedAnalyzer().getAnalysisNames() ) );
+      analysisBox.setSelectedItem( timingAnalyzer.getSelectedAnalysisName() );
+      burstRoundBox.setText( Integer.toString( timingAnalyzer.getSelectedAnalyzer().getRoundTo() ) );
+      // setting burst text will trigger this so not called here
+      //setAdvancedAreaTextFields();
+    }
+    else
+    {
+      timingAnalyzer.setSelectedAnalysisName( analysisBox.getSelectedItem().toString() );
+      setAdvancedAreaTextFields();
+    }
+    analysisUpdating = false;
+  }
+
+  private void setAdvancedAreaTextFields()
+  {
+    if ( advancedAreaUpdating )
+      return;
+    advancedAreaUpdating = true;
+
+    LearnedSignalTimingAnalysis analysis;
+
+    if ( Boolean.parseBoolean( RemoteMaster.getProperties().getProperty( "LearnedSignalTimingAnalysis", "false" ) ) )
+    {
+      advancedAreaControls.setVisible( true );
+
+      int r = 1;
+      String roundText = burstRoundBox.getText();
+      if ( roundText != null && !roundText.isEmpty() )
+        try { r = Integer.parseInt( roundText ); }
+        catch (NumberFormatException e) { r = 1; }
+
+      LearnedSignalTimingAnalyzerBase analyzer = this.learnedSignal.getTimingAnalyzer().getSelectedAnalyzer();
+      if ( r != analyzer.getRoundTo() )
+      {
+        analyzer.unlockRounding();
+        analyzer.setRoundTo( r );
+        analyzer.lockRounding();
+      }
+
+      analysis = this.learnedSignal.getTimingAnalyzer().getSelectedAnalysis();
+      analysisMessageLabel.setText( analysis.getMessage() );
+    }
+    else
+    {
+      advancedAreaControls.setVisible( false );
+      analysis = this.learnedSignal.getTimingAnalyzer().getAnalyzer( "Raw Data" ).getAnalysis( "Even" );
+    }
+
+    String temp = analysis.getBurstString();
+    burstTextArea.setText( temp );
+    burstTextArea.setRows( (int)Math.ceil( (double)temp.length() / 75.0 ) );
+
+    temp = analysis.getOneTimeDurationString();
+    onceDurationTextArea.setText( temp );
+    onceDurationTextArea.setRows( (int)Math.ceil( (double)temp.length() / 75.0 ) );
+    onceDurationTextArea.getParent().getParent().setVisible( !temp.equals( "** No signal **" ) );
+
+    temp = analysis.getRepeatDurationString();
+    repeatDurationTextArea.setText( temp );
+    repeatDurationTextArea.setRows( (int)Math.ceil( (double)temp.length() / 75.0 ) );
+    repeatDurationTextArea.getParent().getParent().setVisible( !temp.equals( "** No signal **" ) );
+
+    temp = analysis.getExtraDurationString();
+    extraDurationTextArea.setText( temp );
+    extraDurationTextArea.setRows( (int)Math.ceil( (double)temp.length() / 75.0 ) );
+    extraDurationTextArea.getParent().getParent().setVisible( !temp.equals( "** No signal **" ) );
+
+    pack();
+    advancedAreaUpdating = false;
   }
 
   private void setRemoteConfiguration( RemoteConfiguration config )
@@ -331,7 +486,7 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     Object source = event.getSource();
     Remote remote = config.getRemote();
     Button b = ( Button )boundKey.getSelectedItem();
-    UnpackLearned ul = null;
+    boolean ok = true;
     
     if ( source == applyButton || source == okButton )
     {
@@ -339,35 +494,51 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
       String notes = learnedSignal.getNotes();
       int deviceIndex = ( ( DeviceButton )boundDevice.getSelectedItem() ).getButtonIndex();
       int keyCode = getKeyCode( boundKey, shift, xShift );
-      short[] data = Hex.parseHex( signalTextArea.getText() );
-      learnedSignal = new LearnedSignal( keyCode, deviceIndex, 0, ( new Hex( data ) ).subHex( 3 ), notes );
-      ul = learnedSignal.getUnpackLearned();
-      if ( config.hasSegments() )
+      learnedSignal.setDeviceButtonIndex( deviceIndex );
+      learnedSignal.setKeyCode( keyCode );
+
+      if ( signalTextHasChanged )
       {
-        // set default value
-        learnedSignal.setSegmentFlags( 0xFF );
+        Hex data = ( new Hex( Hex.parseHex( signalTextArea.getText() ) ) ).subHex( 3 );
+        learnedSignal.setData( data );
+        learnedSignal.clearTimingAnalyzer();
+
+        UnpackLearned ul = learnedSignal.getUnpackLearned();
+        if ( config.hasSegments() )
+        {
+          // set default value
+          learnedSignal.setSegmentFlags( 0xFF );
+        }
+        if ( ! ul.ok )
+        {
+          ok = false;
+          String message = "Malformed learned signal: " + ul.error;
+          String title = "Learned Signal Error";
+          JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+        }
       }
-      if ( ! ul.ok )
+      else
       {
-        String message = "Malformed learned signal: " + ul.error;
-        String title = "Learned Signal Error";
-        JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+        // re-save any changes on apply or ok...in this else
+        // since signal data changes clears out the analyzer anyway
+        learnedSignal.getTimingAnalyzer().saveState();
       }
     }
     
-    if ( source == applyButton && ul.ok )
+    if ( source == applyButton && ok )
     {
-      burstTextArea.setText( toString( ul.bursts ) );
-      durationTextArea.setText( toString( ul.durations ) );
+      setAdvancedAreaTextFields();
       model.set( learnedSignal );
       applyButton.setEnabled( false );
     }
-    else if ( source == okButton && ul.ok )
+    else if ( source == okButton && ok )
     {
       setVisible( false );
     }
     else if ( source == cancelButton )
     {
+      // back out any timing analysis changes
+      learnedSignal.getTimingAnalyzer().restoreState();
       learnedSignal = null;
       setVisible( false );
     }
@@ -405,7 +576,7 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
       {
         b.setShiftBoxes( Button.LEARN_BIND, shift, xShift );
       }
-    } 
+    }
   }
   
   private void setAdvancedButtonText( boolean hide )
@@ -430,6 +601,16 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
     return keyCode;
   }
   
+  private boolean signalTextHasChanged = false;
+  private boolean signalTextLock = false;
+  private void signalTextChanged()
+  {
+    if ( signalTextLock )
+      return;
+    signalTextHasChanged = true;
+    applyButton.setEnabled( true );
+  }
+
   private void documentChanged( DocumentEvent e )
   {
     applyButton.setEnabled( true );
@@ -460,13 +641,36 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
   
   private Box advancedArea = null;
 
+  private boolean advancedAreaUpdating = false;
+  private boolean analysisUpdating = false;
+
+  // panel holding advanced area controls
+  private JPanel advancedAreaControls = new JPanel();
+  // text box to enter rounding of times
+  private JTextField burstRoundBox = new JTextField();
+  // drop down to pick timing analyzer
+  private JComboBox analyzerBox = new JComboBox();
+  // drop down to pick timing analysis
+  private JComboBox analysisBox = new JComboBox();
+  // label to hold analysis result message
+  private JLabel analysisMessageLabel = new JLabel();
+
   /** The burst text area. */
   private JTextArea burstTextArea = new JTextArea( 4, 70 );
 
   /** The duration text area. */
-  private JTextArea durationTextArea = new JTextArea( 8, 70 );
+  private JTextArea onceDurationTextArea = new JTextArea( 8, 70 );
+
+  /** The duration text area. */
+  private JTextArea repeatDurationTextArea = new JTextArea( 8, 70 );
+
+  /** The duration text area. */
+  private JTextArea extraDurationTextArea = new JTextArea( 8, 70 );
+
+  /** The duration text area. */
+  //private JTextArea durationTextArea = new JTextArea( 8, 70 );
   
-  private JTextArea signalTextArea = new JTextArea( 4, 70 );
+  private JTextArea signalTextArea = new JTextArea( 3, 70 );
 
   /** The learned signal. */
   private LearnedSignal learnedSignal = null;
