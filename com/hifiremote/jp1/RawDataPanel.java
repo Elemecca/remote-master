@@ -12,6 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -93,7 +94,8 @@ public class RawDataPanel extends RMPanel
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      short[] dataToShow = RemoteMaster.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData();
+      RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
+      short[] dataToShow = rm.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData();
       dataToShow = Arrays.copyOf( dataToShow, remoteConfig.getDataEnd( dataToShow ) );
       model.set( dataToShow, remote.getBaseAddress() );
       byteRenderer.setRemoteConfig( remoteConfig );

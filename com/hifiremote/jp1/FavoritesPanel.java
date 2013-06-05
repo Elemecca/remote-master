@@ -363,6 +363,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     {
       return;
     }
+    DeviceButton favDb = null;
     DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
     favModel.set( remoteConfig );
     favTable.initColumns( favModel );
@@ -384,11 +385,19 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       activityGroupModel.set( favBtn, remoteConfig, getActivity() );
       activityGroupTable.initColumns( activityGroupModel );
       deviceButtonBox.setModel( comboModel );
-      deviceButtonBox.setSelectedItem( remoteConfig.getFavKeyDevButton() ); 
+      favDb = remoteConfig.getFavKeyDevButton();
+      if ( favDb != null )
+      {
+        deviceButtonBox.setSelectedItem( favDb );
+      }
+      else
+      {
+        deviceButtonBox.setSelectedIndex( 0 );
+      }
     }
     Button favFinalKey = remoteConfig.getFavFinalKey();
     boolean showFinal = favFinalKey != null;
-    favWidth.setSelectedIndex( remoteConfig.getFavKeyDevButton().getFavoriteWidth() - 1 );
+    favWidth.setSelectedIndex( favDb != null ? favDb.getFavoriteWidth() - 1 : 0 );
     addFinal.setSelected( showFinal );
     finalKey.setVisible( showFinal );
     finalKeyLabel.setVisible( showFinal );
@@ -454,8 +463,11 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       DeviceButton deviceButton = ( DeviceButton )deviceButtonBox.getSelectedItem();
       if ( deviceButton != remoteConfig.getFavKeyDevButton() )
       {
-        deviceButton.setFavoritewidth( remoteConfig.getFavKeyDevButton().getFavoriteWidth() );
-        remoteConfig.getFavKeyDevButton().setFavoritewidth( 0 );
+        deviceButton.setFavoritewidth( favWidth.getSelectedIndex() + 1 );
+        if ( remoteConfig.getFavKeyDevButton() != null )
+        {
+          remoteConfig.getFavKeyDevButton().setFavoritewidth( 0 );
+        }
         remoteConfig.setFavKeyDevButton( deviceButton );
       }
 //      propertyChangeSupport.firePropertyChange( "data", null, null );
@@ -471,6 +483,10 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     }
     else if ( source == favWidth )
     {
+      if ( remoteConfig.getFavKeyDevButton() == null )
+      {
+        remoteConfig.setFavKeyDevButton( ( DeviceButton )deviceButtonBox.getSelectedItem() );
+      }
       remoteConfig.getFavKeyDevButton().setFavoritewidth( favWidth.getSelectedIndex() + 1 );
       for ( FavScan fav : remoteConfig.getFavScans() )
       {
@@ -496,12 +512,25 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       {
         favScans.remove( rows[ i ] );
       }
+      if ( favScans.size() == 0 )
+      {
+        if ( remoteConfig.getFavKeyDevButton() != null )
+        {
+          remoteConfig.getFavKeyDevButton().setFavoritewidth( 0 );
+        }
+        remoteConfig.setFavKeyDevButton( null );
+      }
       favModel.fireTableRowsDeleted( rows[ 0 ], rows[ rows.length - 1 ] );
     }
     else if ( source == newButton )
     {
       FavScan favScan = new FavScan( remote.getFavKey().getKeyCode(), null, null );
       favScan.setName( "New favorite" );
+      if ( remoteConfig.getFavKeyDevButton() == null )
+      {
+        remoteConfig.setFavKeyDevButton( ( DeviceButton )deviceButtonBox.getSelectedItem() );
+        remoteConfig.getFavKeyDevButton().setFavoritewidth( favWidth.getSelectedIndex() + 1 );
+      }
       if ( remote.isSSD() )
       {
         favScan.icon = new RMIcon( 6 );

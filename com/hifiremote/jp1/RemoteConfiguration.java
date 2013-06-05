@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import javax.swing.ImageIcon;
@@ -35,6 +36,7 @@ import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.FixedData.Location;
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
 import com.hifiremote.jp1.GeneralFunction.User;
+import com.hifiremote.jp1.io.IO;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -566,7 +568,7 @@ public class RemoteConfiguration
           favKeyDevButton = remote.getDeviceButtons()[ buttonIndex ];
         }
       }
-      else
+      else if ( !remote.usesEZRC() )
       {
         favKeyDevButton = DeviceButton.noButton;
       }
@@ -1865,6 +1867,10 @@ public class RemoteConfiguration
         if ( protocolOffset > 0 && protocolOffset < hex.length() - 4 )
         {
           protocolCode = hex.subHex( protocolOffset + 4 );
+          if ( remote.usesEZRC() )
+          {
+            decryptObjcode( protocolCode );
+          }
         }
         String alias = remote.getDeviceTypeAlias( devType );
         if ( alias == null )
@@ -2156,6 +2162,8 @@ public class RemoteConfiguration
     {
       if ( !remote.isSSD() )
       {
+        List< DeviceButton > missing = new ArrayList< DeviceButton >();
+        List< Integer > missingCodes = new ArrayList< Integer >();
         for ( DeviceButton db : remote.getDeviceButtons() )
         {
           if ( db.isConstructed() )
@@ -2170,14 +2178,213 @@ public class RemoteConfiguration
             du.classifyButtons();
             devices.add( du );
           }
+          else if ( db.getUpgrade() == null && db.getSegment() != null )
+          {
+            short[] dbData = db.getSegment().getHex().getData();
+            int setupCode = db.getDeviceTypeIndex( dbData ) << 12 | db.getSetupCode( dbData );
+            if ( setupCode != -1 && !missingCodes.contains( setupCode ) )
+            {
+              missing.add( db );
+              missingCodes.add( setupCode );
+            }
+          }
         }
-      }
-      
+        if ( missing.size() > 0 )
+        {
+          IO hid = null;
+          for ( IO temp : owner.getInterfaces() )
+          {
+            String tempName = temp.getInterfaceName();
+            if ( tempName.equals( "CommHID" ) )
+            {
+              hid = temp.openRemote( "UPG" ).equals( "UPG" ) ? temp : null;
+              if ( hid == null )
+              {
+                break;
+              }
+              short[] buffer = new short[ 0x20 ];
+              if ( hid.readRemote( 0x020000, buffer, 0x20 ) != 0x20 )
+              {
+                break;
+              }
+              // Get address of IR database
+              int address = buffer[ 24 ] << 24 | buffer[ 25 ] << 16 | buffer[ 26 ] << 8 | buffer[ 27 ];
+              if ( hid.readRemote( address + 20, buffer, 18 ) != 18 )
+              {
+                break;
+              }
+              int setupLookupOffset = buffer[ 2 ] << 8 | buffer[ 3 ];
+              int setupIndexOffset = ( buffer[ 4 ] << 8 | buffer[ 5 ] ) - setupLookupOffset;
+              int protLookupOffset = ( buffer[ 8 ] << 8 | buffer[ 9 ] ) - setupLookupOffset;
+              int protIndexOffset = ( buffer[ 10 ] << 8 | buffer[ 11 ] ) - setupLookupOffset;
+              int size = 2 * protIndexOffset - protLookupOffset - 2;
+              buffer = new short[ size ];
+              if ( hid.readRemote( address + setupLookupOffset, buffer, size ) != size )
+              {
+                break;
+              }
+              int setupCount = buffer[ 0 ] | buffer[ 1 ] << 8;
+              int protCount = buffer[ protLookupOffset ] | buffer[ protLookupOffset + 1 ] << 8;
+              for ( int i = 0; i < setupCount; i++ )
+              {
+                int setupCode = buffer[ 2 * i + 2 ] | buffer[ 2 * i + 3 ] << 8;
+                if ( missingCodes.contains( setupCode ) )
+                {
+                  int setupAddress = buffer[ setupIndexOffset + 2 * i ] | buffer[ setupIndexOffset + 2 * i + 1 ] << 8;
+                  int numFixed = -1;
+                  int numVar = -1;
+                  short[] buf = new short[ 0x0200 ];
+                  if ( hid.readRemote( ( address + setupAddress ) & 0xFFFFFE, buf, 0x200 ) != 0x200 )
+                  {
+                    continue;
+                  }
+                  int setupOdd = setupAddress & 1;
+                  for ( int j = 0; j < protCount; j++ )
+                  {
+                    if ( buf[ setupOdd ] == buffer[ protLookupOffset + 2 * j + 3 ]
+                        && buf[ setupOdd + 1 ] == buffer[ protLookupOffset + 2 * j + 2 ] )
+                    {
+                      int protAddress = buffer[ protIndexOffset + 2 * j ] | buffer[ protIndexOffset + 2 * j + 1 ] << 8;
+                      int protOdd = protAddress & 1;
+                      short[] buf2 = new short[ 2 ];
+                      if ( hid.readRemote( ( address + protAddress + 2 ) & 0xFFFFFE, buf2, 2 ) != 2 )
+                      {
+                        break;
+                      }
+                      numFixed = buf2[ protOdd ] >> 4;
+                      numVar = buf2[ protOdd ] & 0x0F;
+                      break;
+                    }
+                  }
+                  if ( numFixed < 0 )
+                  {
+                    continue;
+                  }
+                  int setupLength = 3 + numFixed;  // PID + numbertable
+                  int mapbyte = buf[ 3 ];
+                  setupLength += ( 10 * ( ( mapbyte >> 7 ) & 1 ) + 3 * ( ( mapbyte >> 6 ) & 1 ) + 2 * ( ( mapbyte >> 5 ) & 1 ) ) * numVar; 
+                  mapbyte &= 0x1F;
+                  for ( int j = 0; j < 32; mapbyte = buf[ 3 + (++j) ] )
+                  {
+                    setupLength++;
+                    for ( int k = 1; k < 8; k++ )
+                    {
+                      setupLength += ( ( mapbyte >> k ) & 1 ) * numVar;
+                    }
+                    if ( ( mapbyte & 1 ) == 1 )
+                    {
+                      break;
+                    }
+                  }
+                  Hex setupHex = new Hex( buf, setupOdd, setupLength );
+                  Hex pidHex = new Hex( buf, setupOdd, 2 );
+                  for ( DeviceButton db : missing )
+                  {
+                    short[] dbData = db.getSegment().getHex().getData();
+                    int sc = db.getDeviceTypeIndex( dbData ) << 12 | db.getSetupCode( dbData );
+                    if ( sc == setupCode )
+                    {
+                      DeviceType devType = remote.getDeviceTypeByIndex( dbData[ 2 ] );
+                      String alias = remote.getDeviceTypeAlias( devType );
+                      if ( alias == null )
+                      {
+                        String message = String.format(
+                                "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be imported and was discarded.",
+                                devType, setupCode );
+                        JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+                        continue;
+                      }
+//                      size = setupLength; 
+//                      size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
+//                      Hex segData = new Hex( size );
+//                      Arrays.fill( segData.getData(), 0, 4, ( short )0 );
+//                      segData.getData()[ segData.length() - 1 ] = ( short )0xFF;
+//                      segData.getData()[ 0 ] = ( short )db.getButtonIndex();
+//                      segData.getData()[ 4 ] = dbData[ 2 ];
+//                      segData.getData()[ 5 ] = dbData[ 3 ];
+//                      segData.getData()[ 6 ] = dbData[ 4 ];
+//                      segData.getData()[ 7 ] = ( short )numVar;
+//                      segData.getData()[ 8 ] = ( short )numFixed;
+//                      segData.put( setupHex, 9 );
+                      DeviceUpgrade du = new DeviceUpgrade( new String[ 0 ] );
+                      try
+                      {
+//                        if ( segments.get( 0x10 ) == null )
+//                        {
+//                          segments.put( 0x10, new ArrayList< Segment >() );
+//                        }
+//                        segments.get( 0x10 ).add( new Segment( 0x10, 0xFF, segData, du ) );
+                        du.setButtonIndependent( false );
+                        du.setButtonRestriction( db );
+                        du.setRemoteConfig( this );
+                        du.setSizeCmdBytes( numVar );
+                        du.setSizeDevBytes( numFixed );
+                        du.importRawUpgrade( setupHex, remote, alias, new Hex( pidHex ), null );
+                        du.setSetupCode( setupCode & 0x0FFF );  
+                        du.setSegmentFlags( 0xFF );
+                        du.setRemote( remote );
+                        Random random = new Random();
+                        for ( Button b : remote.getButtons() )
+                        {
+                          Function f = du.getAssignments().getAssignment( b );
+                          if ( f != null )
+                          {
+                            Integer gid = null;
+                            if ( !remote.isSoftButton( b ) )
+                            {
+                              String name = b.getUeiName() != null ? b.getUeiName() : b.getName();
+                              f.setName( name );
+                              gid = remote.getGidMap().get( name );
+                            }
+                            if ( gid == null )
+                            {
+                              gid = 0x7400 + random.nextInt( 0x500 );
+                            }
+                            f.setGid( gid );
+                          }
+                        }
+                        du.classifyButtons();
+                        Protocol protocol = du.getProtocol();
+                        if ( protocol.getDefaultCmd().length() != numVar
+                            || protocol.getFixedDataLength() != numFixed )
+                        {
+                          String title = "Protocol Variant Error";
+                          String message = "Error in RDF.  Wrong variant specified for PID = " + 
+                              protocol.getID().toString() + ".  Number of fixed/command bytes\n" +
+                              "should be " + numFixed + "/" + numVar +
+                              ", for specified variant it is " + protocol.getDefaultCmd().length() +
+                              "/" + protocol.getFixedDataLength() + ".";
+                          JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+                        }
+                      }
+                      catch ( java.text.ParseException pe )
+                      {
+                        pe.printStackTrace( System.err );
+                        du = null;
+                      }
+                      if ( du != null )
+                      {
+                        db.setUpgrade( du );
+                        devices.add( du );
+                      }
+                    }
+                  }
+                }
+              }
+              break;
+            }
+          }
+          if ( hid != null )
+          {
+            hid.closeRemote();
+          }
+        }
+      }  
       updateReferences();
     }
     pos = 0;
   }
-  
+
   private void updateReferences()
   {
     for ( DeviceUpgrade upgrade : devices )
@@ -2369,7 +2576,8 @@ public class RemoteConfiguration
             db.setChannelPT( getPTButton( hex.getData()[ 8 ] ) );
             segment.setObject( db );
             int setupCode = db.getSetupCode( hex.getData() );
-            db.setConstructed( setupCode == -1 );
+            int devType = db.getDeviceTypeIndex( hex.getData() );
+            db.setConstructed( setupCode == -1 && devType != 0xFF );
           }
         }
       }
@@ -2941,7 +3149,7 @@ public class RemoteConfiguration
       out.println( "[Buffer]" );
     }
 
-    short[] dataToSave = RemoteMaster.useSavedData() ? savedData : data;
+    short[] dataToSave = owner.useSavedData() ? savedData : data;
     Hex.print( out, Arrays.copyOf( dataToSave, getDataEnd( dataToSave ) ), remote.getBaseAddress() );
 
     out.println();
@@ -3699,27 +3907,35 @@ public class RemoteConfiguration
       }
       userIcons.clear();
       int ref = 8 * 16 - 1;
-      Collections.sort( map.get( 6 ), sortUp );
-      for ( RMIcon icon : map.get( 6 ) )
+      if ( map.get( 6 ) != null )
       {
-        icon.ref = ref++;
-        userIcons.put( icon.ref, icon );
+        Collections.sort( map.get( 6 ), sortUp );
+        for ( RMIcon icon : map.get( 6 ) )
+        {
+          icon.ref = ref++;
+          userIcons.put( icon.ref, icon );
+        }
       }
       ref = 13 * 16 - 2;
-      Collections.sort( map.get( 9 ), sortDown );
-      for ( RMIcon icon : map.get( 9 ) )
+      if ( map.get( 9 ) != null )
       {
-        icon.ref = ref--;
-        userIcons.put( icon.ref, icon );
+        Collections.sort( map.get( 9 ), sortDown );
+        for ( RMIcon icon : map.get( 9 ) )
+        {
+          icon.ref = ref--;
+          userIcons.put( icon.ref, icon );
+        }
       }
-      Collections.sort( map.get( 8 ), sortDown );
-      for ( RMIcon icon : map.get( 8 ) )
+      if ( map.get( 8 ) != null )
       {
-        icon.ref = ref--;
-        userIcons.put( icon.ref, icon );
+        Collections.sort( map.get( 8 ), sortDown );
+        for ( RMIcon icon : map.get( 8 ) )
+        {
+          icon.ref = ref--;
+          userIcons.put( icon.ref, icon );
+        }
       }
-      
-      
+
       SSDFile file = makeDevicesXCF();
       if ( file != null )
       {
@@ -4361,6 +4577,10 @@ public class RemoteConfiguration
         {
           activeActivities.add( activity );
         }
+      }
+      if ( activeActivities.isEmpty() )
+      {
+        return;
       }
       Collections.sort( activeActivities, Activity.activitySort );
       for ( Activity activity : activeActivities )
@@ -5577,6 +5797,16 @@ public class RemoteConfiguration
       if ( dev.getButtonRestriction() != DeviceButton.noButton )
       {
         devDependent.add( dev );
+        if ( hasSegments() && dev.getSegment() != null )
+        {
+          Segment segment = dev.getSegment();
+          int segSize = segment.getHex().length();
+          int protOffset = segment.getHex().get( 2 );
+          if ( protOffset > 0 )
+          {
+            dev.addProtocolMemoryUsage( segSize - protOffset - 4 );
+          }
+        }
       }
     }
     
@@ -5600,6 +5830,10 @@ public class RemoteConfiguration
         dev.setSoftFunctionSegment( null );
         Hex hex = dev.getUpgradeHex();
         Hex code = dev.needsProtocolCode() ? dev.getCode() : null;
+        if ( code != null && remote.usesEZRC() )
+        {
+          code = encryptObjcode( code );
+        }
         int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
         size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
         Hex segData = new Hex( size );
@@ -6061,7 +6295,7 @@ public class RemoteConfiguration
   {
     PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
     PropertyWriter pw = new PropertyWriter( out );
-    short[] dataToSave = RemoteMaster.useSavedData() ? savedData : data;
+    short[] dataToSave = owner.useSavedData() ? savedData : data;
 
     pw.printHeader( "General" );
     pw.print( "Remote.name", remote.getName() );
@@ -7079,7 +7313,8 @@ public class RemoteConfiguration
         work.add( makeItem( "issystemmacro", new Hex( new short[]{ 1 } ), true ) );
       }
       boolean assistantDone = false;
-      if ( isSysMacro || macro.getAssists() != null && !macro.getAssists().isEmpty() )
+      if ( isSysMacro || macro.getAssists() != null && !macro.getAssists().isEmpty() 
+          || activity != null && !activity.getAssists().isEmpty() )
       {
         assistantDone = true;
         work.add( makeItem( "assistant", new Hex( 0 ), false ) );

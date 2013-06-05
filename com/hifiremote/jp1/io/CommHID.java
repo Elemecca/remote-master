@@ -173,6 +173,20 @@ public class CommHID extends IO
 		return true;
 	}
 	
+	boolean MAXQ_ReopenRemote()
+	{
+	  byte[] cmdBuff = {(byte)0x00, (byte)0x02, (byte)0x51, (byte)0x53 };
+	  if ( !writeMAXQcmdReport(cmdBuff) )
+	  {
+	    return false;
+	  }
+	  if ( !readMAXQreport() || dataRead[0] != 0 )
+	  {
+	    return false;
+	  }
+	  return true;
+	}
+	
 	boolean MAXQ_USB_getInfoAndSig()  {
 		byte[] cmdBuff = {(byte)0x00, (byte)0x02, (byte)0x50, (byte)0x52};
 		int sigAdr, E2StartPtr, E2EndPtr, temp;
@@ -200,7 +214,7 @@ public class CommHID extends IO
 	}
 	
 	@Override
-	public String openRemote(String notUsed) {
+	public String openRemote(String portName) {
 	  try  
 	  {
 	    getPIDofAttachedRemote();
@@ -215,6 +229,10 @@ public class CommHID extends IO
 	    }
 	    if ( interfaceType == 0x106 )
 	    {
+	      if ( portName != null && portName.equals( "UPG" ) )
+	      {
+	        return MAXQ_ReopenRemote() ? "UPG" : "";
+	      }
 	      MAXQ_USB_getInfoAndSig();
 	    }
 	    else

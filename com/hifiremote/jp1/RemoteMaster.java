@@ -107,7 +107,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 18";
+  public final static String version = "v2.03 Alpha 21";
 
   /** The dir. */
   private File dir = null;
@@ -188,7 +188,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   private JMenuItem initializeToFFItem = null;
   
-  private static JCheckBoxMenuItem useSavedDataItem = null;
+  private JCheckBoxMenuItem useSavedDataItem = null;
   
   private static JCheckBoxMenuItem getSystemFilesItem = null;
   
@@ -815,7 +815,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           remoteConfig.saveAltPIDs();
           System.err.println( "Starting upload" );
           setInterfaceState( "UPLOADING..." );
-          ( new UploadTask( RemoteMaster.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData(), true ) ).execute();
+          ( new UploadTask( RemoteMaster.this.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData(), true ) ).execute();
         }
         else if ( command == "OPENRDF" )
         {
@@ -1277,7 +1277,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return frame;
   }
   
-  public static boolean useSavedData()
+  public boolean useSavedData()
   {
     return useSavedDataItem.isSelected();
   }
@@ -2476,6 +2476,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
   }
 
+  public ArrayList< IO > getInterfaces()
+  {
+    return interfaces;
+  }
+  
   /**
    * Gets the open interface.
    * 
@@ -2771,6 +2776,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         System.err.println( "Starting upload to initialize to FF" );
         setInterfaceState( "INITIALIZING TO FF..." );
         ( new UploadTask( data, false ) ).execute();
+      }
+      else if ( source == useSavedDataItem )
+      {
+        if ( currentPanel == rawDataPanel )
+        {
+          rawDataPanel.set( remoteConfig );
+        }
       }
       else if ( source == putSystemFileItem )
       {

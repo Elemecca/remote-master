@@ -427,6 +427,14 @@ public class Remote implements Comparable< Remote >
           JOptionPane.ERROR_MESSAGE );
       System.err.println( sw.toString() );
     }
+    if ( usesEZRC() )
+    {
+      gidMap = new LinkedHashMap< String, Integer >();
+      for ( int i = 0; i < ueiNames.length; i++ )
+      {
+        gidMap.put(  ueiNames[ i ], ueiGids[ i ] );
+      }
+    }
   }
 
   private String parseActivityControl( RDFReader rdr ) throws Exception
@@ -2226,6 +2234,20 @@ public class Remote implements Comparable< Remote >
           keycode = ( short )RDFReader.parseNumber( keycodeStr );
         }
 
+        String ueiName = null;
+        int doubleColon = token.indexOf( "::" );
+        if ( doubleColon != -1 )
+        {
+          ueiName = token.substring( 0, doubleColon );
+          char ch = ueiName.charAt( 0 );
+          if ( ch == '\'' || ch == '"' )
+          {
+            int end = ueiName.lastIndexOf( ch );
+            ueiName = ueiName.substring( 1, end );
+          }
+          token = token.substring( doubleColon + 2 );
+        }
+        
         int colon = token.indexOf( ':' );
         String name = token;
         if ( colon != -1 )
@@ -2246,6 +2268,10 @@ public class Remote implements Comparable< Remote >
           }
         }
         Button b = new Button( token, name, keycode, this );
+        if ( ueiName != null )
+        {
+          b.setUeiName( ueiName );
+        }
         // The Button constructor sets restrictions itself under certain circumstances, so
         // we need to make sure we retain these.
         b.setRestrictions( b.getRestrictions() | restrictions );
@@ -3947,6 +3973,34 @@ public class Remote implements Comparable< Remote >
   public final static String[] userFilenames = {
     "home.xcf", "system.xcf", "devices.xcf", "activities.xcf", "profiles.xcf",
     "favorites.xcf", "macros.xcf", "snstest.xcf", "usericons.pkg", "sysicons.pkg" 
+  };
+  
+  private LinkedHashMap< String, Integer > gidMap = null;
+  
+  public LinkedHashMap< String, Integer > getGidMap()
+  {
+    return gidMap;
+  }
+
+  public final static String[] ueiNames = {
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    "Volume Up", "Volume Down", "Mute", "Channel Up", "Channel Down",
+    "Menu", "Menu Up", "Menu Down", "Menu Left", "Menu Right",
+    "Guide", "Exit", "OK", "Power", "i", "Input", "Enter",
+    "Red", "Green", "Yellow", "Blue", "Play", "Pause", "Stop",
+    "Search Reverse", "Search Forward", "Record", "Last Channel",
+    "Skip Reverse", "Skip Forward", "List"
+
+  };
+  
+  public final static Integer[] ueiGids = {
+    0x7050, 0x7051, 0x7052, 0x7053, 0x7054, 0x7055, 0x7056, 0x7057, 0x7058, 0x7059,
+    0x709C, 0x709B, 0x707C, 0x7061, 0x7060,
+    0x707B, 0x7096, 0x7069, 0x7079, 0x708C,
+    0x722F, 0x706C, 0x708E, 0x7086, 0x7A0D, 0x727B, 0x7227,
+    0x7070, 0x706F, 0x7071, 0x7324, 0x7085, 0x707D, 0x7092,
+    0x708B, 0x706D, 0x708A, 0x72FB,
+    0x7391, 0x7390, 0x707A
   };
 
 }

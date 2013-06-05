@@ -71,7 +71,7 @@ public class DeviceUpgrade extends Highlight
 
   /**
    * Instantiates a new device upgrade.
-   *
+   * 
    * @param base
    *          the base
    */
@@ -255,7 +255,7 @@ public class DeviceUpgrade extends Highlight
       assignments.assign( b, f );
     }
   }
-
+  
   /**
    * Reset.
    */
@@ -1342,6 +1342,17 @@ public class DeviceUpgrade extends Highlight
       {
         // PID must be in remote-specific list of alternate pids, so set as current alternate
         p.setAltPID( remote, pid );
+      }
+      
+      if ( pCode != null && remote.doForceEvenStarts() )
+      {
+        // check for possibility that last byte of pCode is spurious
+        int pLen = pCode.length();
+        if ( pLen == getCode( p ).length() + 1 
+            && pCode.subHex( 0, pLen - 1 ).equals( getCode( p ) ) )
+        {
+          pCode = pCode.subHex( 0, pLen - 1 );
+        }
       }
       
       if ( pCode != null && ( !pCode.equals( getCode( p ) ) || isBuiltIn ) )

@@ -135,6 +135,16 @@ public class Button
     standardName = name.toLowerCase();
   }
 
+  public String getUeiName()
+  {
+    return ueiName;
+  }
+
+  public void setUeiName( String ueiName )
+  {
+    this.ueiName = ueiName;
+  }
+
   /**
    * Gets the key code.
    * 
@@ -861,6 +871,7 @@ public class Button
 
   /** The standard name. */
   private String standardName;
+  private String ueiName = null;
 
   /** The key code. */
   private short keyCode;
