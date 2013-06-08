@@ -1206,21 +1206,22 @@ public class DeviceUpgrade extends Highlight
     int cmdLength = 0;
     short[] fixedData = null;
     Hex fixedDataHex = null;
-    if ( pCode != null && pCode.length() > 2 )
+    // Determine the fixed and variable data lengths and fixed data bytes where the
+    // raw upgrade on its own provides enough info to do so.
+    if ( remote.getSegmentTypes() != null )
+    {
+      fixedDataLength = sizeDevBytes;
+      cmdLength = sizeCmdBytes;
+    }
+    else if ( pCode != null && pCode.length() > 2 )
     {
       Processor proc = newRemote.getProcessor(); 
-      if ( remote.getSegmentTypes() != null )
-      {
-        // This allows an import even when the protocol code has a non-standard
-        // format, as with the XSight Touch
-        fixedDataLength = sizeDevBytes;
-        cmdLength = sizeCmdBytes;
-      }
-      else
-      {
-        fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), pCode );
-        cmdLength = Protocol.getCmdLengthFromCode( proc.getEquivalentName(), pCode );
-      }
+      fixedDataLength = Protocol.getFixedDataLengthFromCode( proc.getEquivalentName(), pCode );
+      cmdLength = Protocol.getCmdLengthFromCode( proc.getEquivalentName(), pCode );
+    }
+    
+    if ( cmdLength > 0 )
+    {
       System.err.println( "fixedDataLength=" + fixedDataLength + " and cmdLength=" + cmdLength );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
@@ -1228,50 +1229,83 @@ public class DeviceUpgrade extends Highlight
     }
     Value[] vals = parmValues;
     java.util.List< Protocol > protocols = null;
+    boolean isBuiltIn = true;
     if ( pCode == null )
     {
-      // Only get protocol variants built in to the remote
+      // Only get protocol variants in protocols.ini that are built in to the remote.
       protocols = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid );
     }
-    // Allow for possibility of the protocol not being built in but being missing from the remote,
-    if ( protocols == null || protocols.size() == 0 )
+    
+    // When pCode is null, this list can still be empty because either
+    //   (a) there is no built-in protocol with this pid, or
+    //   (b) there is a built-in protocol with this pid but either the protocol itself,
+    //       or at least the built-in variant, is not in protocols.ini
+    // These are both problem situations, but (a) is a problem with the remote and
+    // (b) a problem with protocols.ini.
+    //
+    // These cases can be distinguished by testing if the remote supports any protocol
+    // variant with this pid.  In case (a) the remote should have a protocol upgrade
+    // with this pid but it is missing.  We treat this in the same way as when the protocol
+    // upgrade is present, by testing all protocols with this pid that are in protocols.ini.
+    // In case (b) we will need to create a new entry for ProtocolManager.
+    if ( pCode != null || remote.getSupportedVariantNames( pid ) == null )
     {
-      // Get all protocol variants, whether or not built in to the remote
+      // Get all protocol variants, whether or not built in to the remote.
+      isBuiltIn = false;
       protocols = ProtocolManager.getProtocolManager().findByPID( pid );
       // Add to this a list by Alternate PID, including user alternates
       List< Protocol > pList = ProtocolManager.getProtocolManager().findByAlternatePID( remote, pid, true );
       if ( pList != null ) protocols.addAll( pList );
     }
+    
     Protocol tentative = null;
     Value[] tentativeVals = null;
     Protocol p = null;
     for ( Protocol tryit : protocols )
     {
+      Protocol pOld = p;
       p = tryit;
       System.err.println( "Checking protocol " + p.getDiagnosticName() );
       if ( !remote.supportsVariant( pid, p.getVariantName() ) && !p.hasCode( remote ) )
       {
-        p = null;
+        // p is not built in but protools.ini has no code appropriate
+        // for this remote, so skip it.
+        p = pOld;
         continue;
       }
       int tempLength = fixedDataLength;
-      if ( pCode == null )
+      if ( cmdLength == 0 )
       {
-        // p is built in (or missing) and there is no protocol upgrade to override it
+        // Fixed data length not determined by raw upgrade so set it
+        // from protocol under test.  Cmd length not needed here.
         tempLength = p.getFixedDataLength();
         fixedData = new short[ tempLength ];
         System.arraycopy( code, fixedDataOffset, fixedData, 0, tempLength );
         fixedDataHex = new Hex( fixedData );
       }
-      if ( tempLength != p.getFixedDataLength() )
+      else if ( cmdLength != p.getDefaultCmd().length() || fixedDataLength != p.getFixedDataLength() )
       {
-        // There is a protocol upgrade and p is not compatible with it
-        System.err.println( "FixedDataLength doesn't match!" );
+        // This can only happen when length is determined by raw upgrade.
+        if ( isBuiltIn )
+        {
+          // Possible only for segmented and XSight remotes
+          String title = "Protocol Variant Error";
+          String message = "Error in RDF.  Wrong variant specified for PID = " + 
+              pid + ".  Number of fixed/command bytes\n" +
+              "should be " + fixedDataLength + "/" + cmdLength +
+              ", for specified variant it is " + p.getFixedDataLength() +
+              "/" + p.getDefaultCmd().length() + ".";
+          JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+        }
+        System.err.println( "Command or fixed data length doesn't match!" );
+        p = pOld;
         continue;
       }
+      
       // At this point either:
-      // (a) there is a protocol upgrade and p is compatible with it, or
-      // (b) there is no protocol upgrade
+      // (a) fixed and variable data lengths are determined by raw upgrade and p is
+      //     compatible with them, or
+      // (b) they are not so determined, and instead have been determined from p.
       System.err.println( "Imported fixedData is " + fixedDataHex );
       vals = p.importFixedData( fixedDataHex );
       System.err.print( "Imported device parms are:" );
@@ -1307,7 +1341,18 @@ public class DeviceUpgrade extends Highlight
           // protocol (which may be custom) matches its code exactly but that of the
           // old tentative protocol does not. If more than one protocol matches
           // exactly then selection is made by the criterion below.
-          System.err.println( "And it's longer, or the protocol code matches!" );
+          if ( tentative != null )
+          {
+            if ( tempLength > tentative.getFixedDataLength() )
+            {
+              System.err.println( "And it matches on a longer set of fixed data!" );
+            }
+
+            else
+            {
+              System.err.println( "And its code matches the protocol upgrade code!" );
+            }
+          }
           tentative = p;
           tentativeVals = vals;
         }
@@ -1316,7 +1361,7 @@ public class DeviceUpgrade extends Highlight
         {
           // If a further selection is required because there are two protocols with the same
           // code then test on values of OEM and Parm parameters from the fixed data.
-          System.err.println( String.format( "Protocols are identical but better match on OEM or Parm parameters "
+          System.err.println( String.format( "And protocol code is identical but better match on OEM or Parm parameters "
               + "(variance %d instead of %d)", p.getOEMParmVariance( vals ),
               tentative.getOEMParmVariance( tentativeVals ) ) );
           tentative = p;
@@ -1325,6 +1370,20 @@ public class DeviceUpgrade extends Highlight
       }
     }
 
+    if ( cmdLength == 0 )
+    {
+      // Fixed and variable data lengths not determined by raw upgrade alone, so set
+      // defaults from device hex alone, on the assumption (which will generally be true) that
+      // the number of mapped buttons is greater than the number of fixed bytes. (This is
+      // the way that IR.exe always determines these for built-in protocols since it does
+      // not have access to the protocol code).  These defaults will be overridden if
+      // protocol is located in protocols.ini.
+      System.err.println( "Calculating default fixed data and command lengths" );
+      int dataLength = hexCode.length() - fixedDataOffset;
+      cmdLength = ( buttons.size() > 0 ) ? ( dataLength / buttons.size() ) : 1;
+      fixedDataLength = dataLength - cmdLength * buttons.size();
+      System.err.println( "Calculated: Fixed data length = " + fixedDataLength + ", Command length = " + cmdLength );  
+    }
     ManualProtocol mp = null;
 
     if ( tentative != null ) // && (( pCode == null ) || pCode.equals( getCode( tentative ))))
@@ -1336,7 +1395,7 @@ public class DeviceUpgrade extends Highlight
       cmdLength = p.getDefaultCmd().length();
       parmValues = tentativeVals;
       ProtocolUpgrade newProtocolUpgrade = null;
-      boolean isBuiltIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid ).contains( p );
+      isBuiltIn = ProtocolManager.getProtocolManager().getBuiltinProtocolsForRemote( remote, pid ).contains( p );
       
       if ( !isBuiltIn && !p.getID( remote, false ).equals( pid ) )
       {
@@ -1415,113 +1474,95 @@ public class DeviceUpgrade extends Highlight
     }
     else if ( p != null && pCode == null )
     {
-      // Found a matching PID, and there's no protocol code,
-      // but either
-      // (a) built-in variant is not in protocols.ini or
-      // (b) couldn't recreate the fixed data. 
-      // In case (b), maybe there's some reason to use non-standard fixed data, so we
-      // create a derived protocol.
-      if ( !remote.supportsVariant( pid, p.getVariantName() ) )
+      // Found a matching PID, there's no protocol code, but couldn't
+      // recreate the fixed data. Maybe there's some reason to use
+      // non-standard fixed data, so we create a derived protocol.
+      System.err.println( "Creating a derived protocol" );
+      Properties props = new Properties();
+      for ( Processor pr : ProcessorManager.getProcessors() )
       {
-        // case (a)
-        System.err.println( "Built-in variant missing from protocols.ini" );
-        Properties props = new Properties();
-        String name = p.getName();
-        String variant = remote.getSupportedVariantNames( pid ).get( 0 );
-        if ( variant != null && variant.length() > 0 )
+        Hex hCode = p.getCode( pr );
+        if ( hCode != null )
         {
-          props.put( "VariantName", variant );
+          props.put( "Code." + pr.getEquivalentName(), hCode.toString() );
         }
-        Hex tempCode = new Hex( pid, 0, 3 );
-        // See below for comments on determining fixed data and command lengths
-        if ( remote.getSegmentTypes() != null )
-        {
-          fixedDataLength = sizeDevBytes;
-          cmdLength = sizeCmdBytes;
-        }
-        else
-        {
-          System.err.println( "Protocol code missing, calculating fixed data and command lengths" );
-          int dataLength = hexCode.length() - fixedDataOffset;
-          cmdLength = ( buttons.size() > 0 ) ? ( dataLength / buttons.size() ) : 1;
-          fixedDataLength = dataLength - cmdLength * buttons.size();
-          System.err.println( "Calculated: Fixed data length = " + fixedDataLength + ", Command length = " + cmdLength );  
-        } 
-        tempCode.getData()[ 2 ] = ( short )( ( fixedDataLength << 4 ) | cmdLength );
-        props.put( "Code.MAXQ610", tempCode.toString() );
-        String notes = "This variant is missing from protocols.ini so although hex values "
-          + "for fixed data and function commands is correct, device parameters and OBC "
-          + "data are unreliable.";
-        props.put(  "Notes", notes );
-        p = ProtocolFactory.createProtocol( name, pid, "Protocol", props );
-        p.code.clear();
-        ProtocolManager.getProtocolManager().add( p );
-        fixedData = new short[ fixedDataLength ];
-        System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
-        fixedDataHex = new Hex( fixedData );
-        parmValues = p.importFixedData( fixedDataHex );
+      }
+      String variant = p.getVariantName();
+      if ( variant != null && variant.length() > 0 )
+      {
+        props.put( "VariantName", variant );
+      }
+      p = ProtocolFactory.createProtocol( "pid: " + pid.toString(), pid, "Protocol", props );
+      ProtocolManager.getProtocolManager().add( p );
+      fixedDataLength = p.getFixedDataLength();
+      cmdLength = p.getDefaultCmd().length();
+      parmValues = p.importFixedData( fixedDataHex );
+    }
+    else if ( isBuiltIn )
+    {
+      // Protocol, or at least its supported variant, missing from protocols.ini
+      // or there is a fixed/cmd length conflict with entry in protocols.ini.
+      String name = null;
+      List< String > variants = remote.getSupportedVariantNames( pid );
+      String variant = variants.get( 0 );
+      if ( !protocols.isEmpty() )
+      {
+        // Protocol variant is in protocols.ini but doesn't match on fixed/variable
+        // data lengths.  Treat as RDF error and mark variant as unknown.
+        name = protocols.get( 0 ).getName();
+        variants.remove( variant );
+        variant = "???";
+        variants.add( variant );
       }
       else
       {
-        // case (b)
-        System.err.println( "Creating a derived protocol" );
-        Properties props = new Properties();
-        for ( Processor pr : ProcessorManager.getProcessors() )
+        protocols = ProtocolManager.getProtocolManager().findByPID( pid );
+        if ( !protocols.isEmpty() )
         {
-          Hex hCode = p.getCode( pr );
-          if ( hCode != null )
-          {
-            props.put( "Code." + pr.getEquivalentName(), hCode.toString() );
-          }
+          // A protocol with this pid is in protocols.ini, but not with this variant
+          // name.  Treat as new variant of this protocol.
+          name = protocols.get( 0 ).getName();
         }
-        String variant = p.getVariantName();
-        if ( variant != null && variant.length() > 0 )
+        else
         {
-          props.put( "VariantName", variant );
+          // There is no protocol with this pid in protocols.ini, so use the name format
+          // that protocols.ini uses for protocols with code that are otherwise unidentified.
+          name = "pid: " + pid;
         }
-        p = ProtocolFactory.createProtocol( "pid: " + pid.toString(), pid, "Protocol", props );
-        ProtocolManager.getProtocolManager().add( p );
-        fixedDataLength = p.getFixedDataLength();
-        cmdLength = p.getDefaultCmd().length();
-        parmValues = p.importFixedData( fixedDataHex );
       }
+      
+      System.err.println( "Creating Protocol Manager entry for missing built-in protocol" );
+      Properties props = new Properties();
+      if ( variant.length() > 0 )
+      {
+        props.put( "VariantName", variant );
+      }
+      
+      // Create a single temporary code entry just to enable ProtocolFactory to extract
+      // fixed and variable data lengths.
+      Hex tempCode = new Hex( 3 );
+      tempCode.getData()[ 2 ] = ( short )( ( fixedDataLength << 4 ) | cmdLength );
+      props.put( "Code.MAXQ610", tempCode.toString() );
+      String notes = "This built-in protocol is missing from protocols.ini so although hex values "
+          + "for fixed data and function commands is correct, device parameters and OBC "
+          + "data are unreliable.";
+      props.put(  "Notes", notes );
+      p = ProtocolFactory.createProtocol( name, pid, "Protocol", props );
+      // Delete the MAXQ610 code that ProtocolFactory will have created.
+      p.code.clear();
+      ProtocolManager.getProtocolManager().add( p );
+      fixedData = new short[ fixedDataLength ];
+      System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
+      fixedDataHex = new Hex( fixedData );
+      parmValues = p.importFixedData( fixedDataHex );
     }
     else
     {
       // Don't have anything we can use, so create a manual protocol
       if ( pCode == null )
       {
-        // Protocol code is required but absent. If remote has segments, device upgrade
-        // includes fixed data and command lengths.  Otherwise determine these
-        // from device hex alone, on the assumption (which will generally be true) that
-        // the number of mapped buttons is greater than the number of fixed bytes. (This is
-        // the way that IR.exe always determines these for built-in protocols since it does
-        // not have access to the protocol code).
-        if ( remote.getSegmentTypes() != null )
-        {
-          fixedDataLength = sizeDevBytes;
-          cmdLength = sizeCmdBytes;
-        }
-        else
-        {
-          System.err.println( "Protocol code missing, calculating fixed data and command lengths" );
-          int dataLength = hexCode.length() - fixedDataOffset;
-          cmdLength = ( buttons.size() > 0 ) ? ( dataLength / buttons.size() ) : 1;
-          fixedDataLength = dataLength - cmdLength * buttons.size();
-          System.err.println( "Calculated: Fixed data length = " + fixedDataLength + ", Command length = " + cmdLength );  
-        }
-        if ( p == null || !remote.supportsVariant( pid, p.getVariantName() ) )
-        {
-          pCode = new Hex(); // signifies missing code
-        }
-      }
-      
-      if ( remote.getSegmentTypes() != null )
-      {
-        // This allows an import even when the protocol code has a non-standard
-        // format, as with the XSight Touch
-        fixedDataLength = sizeDevBytes;
-        cmdLength = sizeCmdBytes;
+        // Protocol code is required but absent.
+        pCode = new Hex(); // signifies missing code
       }
 
       System.err.println( "Using a Manual Protocol" );
@@ -1547,12 +1588,6 @@ public class DeviceUpgrade extends Highlight
       String pName = ManualProtocol.getDefaultName( pid );
       mp = new ManualProtocol( pName, pid, cmdType, "MSB", 8, parms, new short[ 0 ], 8 );
       mp.setCode( pCode, remote.getProcessor() );
-      if ( pCode == null )
-      {
-        mp.notes = "This built-in protocol is missing from protocols.ini so although hex values "
-          + "for fixed data and function commands is correct, device parameters and OBC "
-          + "data are unreliable.";
-      }
       ProtocolManager.getProtocolManager().add( mp );
       p = mp;
     }

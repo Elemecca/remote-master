@@ -1903,17 +1903,6 @@ public class RemoteConfiguration
           
           upgrade.setSegmentFlags( segment.getFlags() );
           Protocol protocol = upgrade.getProtocol();
-          if ( upgrade.getSizeCmdBytes() != protocol.getDefaultCmd().length()
-              || upgrade.getSizeDevBytes() != protocol.getFixedDataLength() )
-          {
-            String title = "Protocol Variant Error";
-            String message = "Error in RDF.  Wrong variant specified for PID = " + 
-              protocol.getID().toString() + ".  Number of fixed/command bytes\n" +
-              "should be " + upgrade.getSizeDevBytes() + "/" + upgrade.getSizeCmdBytes() +
-              ", for specified variant it is " + protocol.getDefaultCmd().length() +
-              "/" + protocol.getFixedDataLength() + ".";
-            JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
-          }
         }
         catch ( java.text.ParseException pe )
         {

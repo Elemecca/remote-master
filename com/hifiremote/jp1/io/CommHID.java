@@ -1,14 +1,10 @@
 package com.hifiremote.jp1.io;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -70,7 +66,7 @@ public class CommHID extends IO
 	}
 	
 	 public String getInterfaceVersion() {
-		 return "0.1";
+		 return "0.2";
 	 }
 	 
 	 public String[] getPortNames() {
