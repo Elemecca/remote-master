@@ -100,6 +100,9 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
     actionBox.add( buttonBox );
     actionBox.add( Box.createVerticalGlue() );
     actionBox.add( selectedPanel );
+    int width = assignButton.getPreferredSize().width;
+    width += refreshButton.getPreferredSize().width;
+    actionBox.add( Box.createHorizontalStrut( width ) );
 
     JPanel actionPanel = new JPanel( new BorderLayout() );
     actionPanel.add( devicePanel, BorderLayout.LINE_START );
@@ -172,6 +175,9 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
               b, pr, b, pr, b, pr, b, pr, b
           }  // rows
       };
+      assignButton.setVisible( false );
+      refreshButton.setVisible( false );
+      upgradeBox.setVisible( false );
       bottomPanel = new JPanel( new CardLayout() );
       locationPanel = new JPanel( new TableLayout( size ) );
       locationPanel.setBorder( BorderFactory.createTitledBorder
@@ -191,7 +197,8 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
       locationArea.setWrapStyleWord( true );
       locationArea.setEditable( false );
       String message = "\nUse this location information to add the selected setup code "
-          + "using the Settings facility of the remote.";
+          + "using the Settings facility of the remote.  You may use RMIR afterwards to "
+          + "change the brand name if this is unsuitable.";
       locationArea.setText( message );
       locationPanel.add( new JLabel( "Category:" ), "1, 1" );
       locationPanel.add( category, "3, 1" );

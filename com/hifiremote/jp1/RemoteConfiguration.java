@@ -927,7 +927,7 @@ public class RemoteConfiguration
         int len = items.codes.size();
         for ( int i = 0; i < len; i++ )
         {
-          int location = items.category << 24 | items.brandIndex << 16 | i << 8 | len;
+          int location = items.category << 24 | items.brandIndex << 16 | ( i + 1 ) << 8 | len;
           codeLocations.put( items.codes.get( i ), location );
         }
         items.codes.clear();
@@ -2596,7 +2596,7 @@ public class RemoteConfiguration
           code = ( code & 0x0FFF ) | ( type << 16 );
           if ( !codeLocations.keySet().contains( code ) )
           {
-            int location = i << 24 | j << 16 | k << 8 | len;
+            int location = i << 24 | j << 16 | ( k + 1 ) << 8 | len;
             codeLocations.put( code, location );
           }
         }
