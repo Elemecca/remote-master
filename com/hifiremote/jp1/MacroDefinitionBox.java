@@ -332,13 +332,14 @@ PropertyChangeListener, RMSetter< Object >
     DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
     GeneralFunction f = ( GeneralFunction )functionBox.getSelectedItem();
     KeySpec ks = null;
-    if ( f instanceof Function )
+    if ( config.getRemote().isSSD() && f instanceof Function )
     {
+      // Only XSight Touch
       ks = new KeySpec( db, f );
     }
     else if ( !f.getUsers().isEmpty() )
     {
-      // Learns and Selector keys (Home etc)
+      // For XSight Touch, this is only learns and Selector keys (Home etc)
       User u = f.getUsers().get( 0 );
       ks = new KeySpec( u.db, u.button );
     }

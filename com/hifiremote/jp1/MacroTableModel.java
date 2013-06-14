@@ -366,6 +366,24 @@ public class MacroTableModel extends JP1TableModel< Macro >
   }
   
   @Override
+  public void removeRow( int row )
+  {
+    Remote remote = null;
+    if ( remoteConfig != null && ( remote = remoteConfig.getRemote() ).usesEZRC() )
+    {
+      Macro macro = getRow( row );
+      for ( User user : macro.getUsers() )
+      {
+        DeviceButton db = user.db;
+        DeviceUpgrade upg = db.getUpgrade();
+        upg.getMacroMap().remove( user.button.getKeyCode() );
+      }
+      remoteConfig.getMacros().remove( macro );
+    }
+    super.removeRow( row );
+  }
+  
+  @Override
   /** ToolTip text to override that provided by JTableX */
   public String getToolTipText( int row, int col )
   {

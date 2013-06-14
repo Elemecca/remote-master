@@ -2545,7 +2545,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       ( ( CardLayout )statusBar.getLayout() ).first( statusBar );
     }
   }
-
+  
   public static String getIOsignature( IO io, int baseAddress )
   {
     String sig = null;

@@ -1,9 +1,13 @@
 package com.hifiremote.jp1;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -24,8 +29,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingWorker;
 import javax.swing.text.BadLocationException;
+
+import com.hifiremote.jp1.io.IO;
 
 public class CodeSelectorDialog extends JDialog implements ActionListener
 {
@@ -33,6 +42,7 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
   {
     super( rm );
 
+    owner = rm;
     remoteConfig = rm.getRemoteConfiguration();
     remote = remoteConfig.getRemote();
     setTitle( "Code Selector" );
@@ -146,6 +156,95 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
     contentPane.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
     contentPane.add( actionPanel, BorderLayout.PAGE_START) ;
     contentPane.add( codesPanel, BorderLayout.CENTER );
+    
+    if ( remote.usesEZRC() )
+    {
+      double b = 5; // space between rows and around border
+      double c = 10; // space between columns
+      double pr = TableLayout.PREFERRED;
+      double pf = TableLayout.FILL;
+      double size[][] =
+      {
+          {
+              b, pr, c, pf, b
+          }, // cols
+          {
+              b, pr, b, pr, b, pr, b, pr, b
+          }  // rows
+      };
+      bottomPanel = new JPanel( new CardLayout() );
+      locationPanel = new JPanel( new TableLayout( size ) );
+      locationPanel.setBorder( BorderFactory.createTitledBorder
+          ( BorderFactory.createCompoundBorder
+              ( BorderFactory.createLineBorder( Color.GRAY ), 
+                  BorderFactory.createEmptyBorder( 0, 5, 0, 5 ))," Location: " ) );
+      bottomPanel.add( locationPanel, "ON" );
+      contentPane.add( bottomPanel, BorderLayout.PAGE_END );
+      category = new JTextField();
+      brand = new JTextField();
+      position = new JTextField();
+      JTextArea locationArea = new JTextArea();
+      JLabel label = new JLabel();
+      locationArea.setFont( label.getFont() );
+      locationArea.setBackground( label.getBackground() );
+      locationArea.setLineWrap( true );
+      locationArea.setWrapStyleWord( true );
+      locationArea.setEditable( false );
+      String message = "\nUse this location information to add the selected setup code "
+          + "using the Settings facility of the remote.";
+      locationArea.setText( message );
+      locationPanel.add( new JLabel( "Category:" ), "1, 1" );
+      locationPanel.add( category, "3, 1" );
+      locationPanel.add( new JLabel( "Brand:" ), "1, 3" );
+      locationPanel.add( brand, "3, 3" );
+      locationPanel.add( new JLabel( "Position:" ), "1, 5" );
+      locationPanel.add( position, "3, 5" );
+      locationPanel.add( locationArea, "1, 7, 3, 7" );
+      connectionPanel = new JPanel( new BorderLayout() );
+      JTextArea messageArea = new JTextArea();
+      messageArea.setFont( label.getFont() );
+      messageArea.setBackground( label.getBackground() );
+      messageArea.setLineWrap( true );
+      messageArea.setWrapStyleWord( true );
+      messageArea.setEditable( false );
+      message = "\nTo add a new internal setup code, please use the Settings facility "
+          + "of the remote.  If you know the code for your device, this Code Selector can "
+          + "tell you the brand to select and which setup within that brand to use.  To "
+          + "enable this capability, please connect your remote to the PC and press the "
+          + "Connect button below.  Once the Location panel appears, you may disconnect "
+          + "the remote.\n\nTo add a new setup with a device upgrade, use the Device "
+          + "Upgrade tab to add the upgrade.  This will automatically add the upgrade "
+          + "as a new Device.";
+      messageArea.setText( message );
+      connectionPanel.add( messageArea, BorderLayout.CENTER );
+      buttonPanel = new JPanel( new CardLayout() );
+      connectButton = new JButton( "Connect" );
+      connectButton.addActionListener( this );
+      JPanel panel = new JPanel();
+      panel.add( connectButton );
+      buttonPanel.add( panel, "OFF" );
+      panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 5 ) );
+      label = new JLabel( "READING DATA...   " );
+      Font font = label.getFont();
+      Font boldfont = font.deriveFont( Font.BOLD );
+      label.setFont( boldfont );
+      panel.add( label );
+      label = new JLabel( "This may take up to a minute" );
+      panel.add( label );
+      buttonPanel.add( panel, "ON" );
+      label = new JLabel( "CONNECTION FAILED" );
+      label.setFont( boldfont );
+      label.setForeground( Color.RED );
+      panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 0, 5 ) );
+      panel.add( label );
+      buttonPanel.add( panel, "FAIL" );
+      CardLayout cl = ( CardLayout )buttonPanel.getLayout();
+      cl.show( buttonPanel, "OFF" );
+      connectionPanel.add( buttonPanel, BorderLayout.PAGE_END );
+      bottomPanel.add(  connectionPanel, "OFF" );
+      cl = ( CardLayout )bottomPanel.getLayout();
+      cl.show( bottomPanel, remoteConfig.getDeviceCategories() == null ? "OFF" : "ON" );
+    }
 
     setSelectedCode( "" );
     setupCodes = remote.getSetupCodes();
@@ -164,6 +263,66 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
     selector.setVisible( true );
     selector.refreshButton.doClick();
     return selector;
+  }
+
+  
+  private class ConnectTask extends SwingWorker< Void, Void >
+  {
+    @Override
+    protected Void doInBackground() throws Exception
+    {
+      boolean done = false;
+      if ( remote.isSSD() )
+      {
+        done = remoteConfig.setDeviceCategories();
+      }
+      else
+      {
+        IO hid = null;
+        for ( IO temp : owner.getInterfaces() )
+        {
+          String tempName = temp.getInterfaceName();
+          if ( tempName.equals( "CommHID" ) )
+          {
+            hid = temp.openRemote( "UPG" ).equals( "UPG" ) ? temp : null;
+            if ( hid == null )
+            {
+              break;
+            }
+            short[] buffer = new short[ 0x30 ];
+            if ( hid.readRemote( 0x020000, buffer, 0x30 ) != 0x30 )
+            {
+              break;
+            }
+            // Get address of IR database
+            int irAddress = buffer[ 0x18 ] << 24 | buffer[ 0x19 ] << 16 | buffer[ 0x1A ] << 8 | buffer[ 0x1B ];
+            // Get address of Text database
+            int textAddress = buffer[ 0x24 ] << 24 | buffer[ 0x25 ] << 16 | buffer[ 0x26 ] << 8 | buffer[ 0x27 ];
+            if ( hid.readRemote( irAddress + 20, buffer, 0x30 ) != 0x30 )
+            {
+              break;
+            }
+            int categoryAddress = ( buffer[ 16 ] << 8 | buffer[ 17 ] ) + irAddress; 
+            remoteConfig.setDeviceCategories( hid, textAddress, categoryAddress );
+            done = true;
+            break;
+          }
+        }
+        if ( hid != null )
+        {
+          hid.closeRemote();
+        }
+      }
+      if ( done )
+      {
+        ( ( CardLayout )bottomPanel.getLayout() ).show( bottomPanel, "ON" );
+      }
+      else
+      {
+        ( ( CardLayout )buttonPanel.getLayout() ).show( buttonPanel, "FAIL" );
+      }
+      return null;
+    }
   }
 
   @Override
@@ -188,7 +347,7 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
         if ( deviceType.getNumber() == devUpgrade.getDeviceType().getNumber()
             && ( devUpgrade.getButtonIndependent() 
                 || ( row >= 0 && remote.getDeviceButtons()[ row ].getButtonIndex() == 
-                  devUpgrade.getButtonRestriction().getButtonIndex() ) ) )
+                devUpgrade.getButtonRestriction().getButtonIndex() ) ) )
         {
           codes.add( devUpgrade.getSetupCode() );
         }
@@ -224,6 +383,11 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
       }
       setSelectedCode( "" );
     }
+    else if ( source == connectButton )
+    {
+      ( ( CardLayout ) buttonPanel.getLayout() ).show( buttonPanel, "ON" );
+      ( new ConnectTask() ).execute();
+    }
   }
     
   private void setSelectedCode( String code )
@@ -235,6 +399,37 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
     }
     selectedLabel.setText( "Selected code:  " + selectedCode );
     assignButton.setEnabled( canAssign && !selectedCode.isEmpty() );
+    if ( category != null && remoteConfig.getDeviceCategories() != null )
+    {
+      if ( code == null || code.isEmpty() )
+      {
+        category.setText( "" );
+        brand.setText( "" );
+        position.setText( "" );
+        return;
+      }
+      DeviceType deviceType = ( DeviceType )deviceComboBox.getSelectedItem();
+      int type = deviceType.getNumber();
+      int setupCode = type << 16 | Integer.parseInt( code );
+      Integer location = remoteConfig.getCodeLocations().get( setupCode );
+      if ( location == null )
+      {
+        category.setText( "Not available in " + remoteConfig.getRegion() );
+        brand.setText( null );
+        position.setText( null );
+        return;
+      }
+      int categoryIndex = location >> 24;
+      int brandIndex = ( location >> 16 ) & 0xFF;
+      int positionIndex = ( location >> 8) & 0xFF;
+      int length = location & 0xFF;
+      String categoryValue = remoteConfig.getDeviceCategories().get( categoryIndex );
+      String brandValue = remoteConfig.getCategoryBrands().get( categoryIndex ).get( brandIndex );
+      String positionValue = String.format( "%02d/%02d", positionIndex, length );
+      category.setText( categoryValue );
+      brand.setText( brandValue );
+      position.setText( positionValue );   
+    }
   }
   
   private String getCodeText( ArrayList< Integer > codes)
@@ -264,6 +459,7 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
   private JTextArea internalArea = null;
   private JTextArea upgradeArea = null;
   private String selectedCode = "";
+  private RemoteMaster owner = null;
   private RemoteConfiguration remoteConfig = null;
   private Remote remote = null;
   private boolean canAssign = true;
@@ -271,8 +467,16 @@ public class CodeSelectorDialog extends JDialog implements ActionListener
   private JLabel selectedLabel = new JLabel();
   private JButton assignButton = new JButton( "Assign" );
   private JButton refreshButton = new JButton( "Refresh" );
+  private JButton connectButton = null;
   
   private static JP1Table  deviceButtonTable = null;
   private static CodeSelectorDialog selector = null;
-
+  
+  private JTextField category = null;
+  private JTextField brand = null;
+  private JTextField position = null;
+  private JPanel locationPanel = null;
+  private JPanel connectionPanel = null;
+  private JPanel buttonPanel = null;
+  private JPanel bottomPanel = null;
 }

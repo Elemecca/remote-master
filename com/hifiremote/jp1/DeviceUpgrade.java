@@ -3999,8 +3999,9 @@ public class DeviceUpgrade extends Highlight
     
     for ( Button b : remote.getButtons() )
     {
-      Function f = assignments.getAssignment( b );
-      if ( f == null || f.getName().startsWith( "__" ) )
+//      Function f = assignments.getAssignment( b );
+      GeneralFunction f = getGeneralFunction( b.getKeyCode() );
+      if ( f == null || f.getName() == null || f.getName().startsWith( "__" ) )
       {
         continue;
       }
@@ -4580,7 +4581,7 @@ public class DeviceUpgrade extends Highlight
   {
     Button button = remote.getButton( keyCode );
     GeneralFunction gf = null;
-    if ( remote.isSSD() )
+    if ( remote.usesEZRC() )
     {
       gf = selectorMap.get( keyCode );
       if ( gf == null )
@@ -4622,7 +4623,7 @@ public class DeviceUpgrade extends Highlight
   public List< GeneralFunction > getGeneralFunctionList()
   {
     List< GeneralFunction > list = new ArrayList< GeneralFunction >( getFunctionList() );
-    if ( remote.isSSD() )
+    if ( remote.usesEZRC() )
     {
       list.addAll( learnedMap.values() );
       list.addAll( selectorMap.values() );

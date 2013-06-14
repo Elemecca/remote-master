@@ -41,6 +41,7 @@ public class CommHID extends IO
 	int interfaceType = -1;
 	int firmwareFileCount = 0;
 	LinkedHashMap< String, Hex > firmwareFileVersions = new LinkedHashMap< String, Hex >();
+	private int runningTotal = 0;
 	
 	public static void LoadHIDLibrary()  {
 		ClassPathLibraryLoader.loadNativeHIDLibrary();
@@ -235,6 +236,10 @@ public class CommHID extends IO
 	    {
 	      E2address = remote.getBaseAddress();
 	      E2size = remote.getEepromSize();
+	    }
+	    if ( interfaceType == 0x201 && portName != null && portName.equals( "UPG" ) )
+	    {
+	      return "UPG";
 	    }
 	  }  
 	  catch (Exception e) 
@@ -529,6 +534,7 @@ public class CommHID extends IO
     writeTouchUSBReport( new byte[]{4}, 1 );
     if ( readTouchUSBReport( ssdIn ) < 0 )
     {
+      System.err.println( "Read initialization failed" );
       return 0;
     }
     firmwareFileCount = ssdIn[ 3 ];
@@ -566,46 +572,31 @@ public class CommHID extends IO
       System.err.println( "  " + name + " : " + hex );
     }
     int ndx = 4;
+    runningTotal = ndx;
     for ( int n = 0; n < Remote.userFilenames.length; n++ )
     {
       String name = Remote.userFilenames[ n ];
-      Arrays.fill( ssdOut, ( byte )0 );
-      ssdOut[ 0 ] = 0x12;
-      ssdOut[ 2 ] = ( byte )name.length();
-      for ( int i = 0; i < name.length(); i++ )
+      byte[] data = readTouchFileBytes( name );
+      if ( data == null )
       {
-        ssdOut[ 3 + i ] = ( byte )name.charAt( i );
+        return ndx - 4;
       }
-      writeTouchUSBReport( ssdOut, 62 );
-      if ( readTouchUSBReport( ssdIn ) < 0 )
+      int len = data.length;
+      if ( len == 0 )
       {
-        return 0;
-      }
-      if ( ( ssdIn[ 2 ] & 0x10 ) == 0x10 )
-      {
-        System.err.println( "File " + name + " is absent" );
         continue;
       }
-      int count = ( ssdIn[ 3 ] & 0xFF ) + 0x100 * ( ssdIn[ 4 ] & 0xFF )+ 0x10000 * ( ssdIn[ 5 ] & 0xFF );
-      int total = 0;
-      ssdOut[ 0 ] = 1;
-      ssdOut[ 2 ] = 0;
-      status |= 1 << n;
-      while ( total < count )
+      else if ( ndx + len < buffer.length )
       {
-        if ( readTouchUSBReport( ssdIn ) < 0 )
-        {
-          return ndx;
-        }
-        int len = ssdIn[ 4 ];
-        total += len;
-        System.arraycopy( ssdIn, 6, buffer, ndx, len );
+        status |= 1 << n;
+        System.arraycopy( data, 0, buffer, ndx, len );
         ndx += len;
-        ssdOut[ 1 ] = ssdIn[ 1 ];
-        writeTouchUSBReport( ssdOut, 62 );
       }
-      System.err.println( "File " + name + " has reported length " + count + ", actual length " + total );
-      System.err.println( "  Start = " + Integer.toHexString( ndx - total ) + ", end = " + Integer.toHexString( ndx - 1 ) );
+      else
+      {
+        System.err.println( "RDF EEPROM size not large enough to hold the data of this remote" );
+        return ndx - 4;
+      }
     }
     Arrays.fill( buffer, ndx, buffer.length, ( byte )0xFF );
     buffer[ 0 ] = ( byte )( status & 0xFF );
@@ -623,69 +614,112 @@ public class CommHID extends IO
     return buffer.length;
 	}
 	
+	public short[] readTouchFile( String name )
+	{
+	  runningTotal = 0;
+	  byte[] bBuffer = readTouchFileBytes( name );
+	  if ( bBuffer == null )
+	  {
+	    return null;
+	  }
+	  short[] sBuffer = new short[ bBuffer.length ];
+	  for ( int i = 0; i < bBuffer.length; i++ )
+	  {
+      sBuffer[ i ] = ( short )( bBuffer[ i ] & 0xFF );
+	  }
+	  return sBuffer;
+	}
+	
+	private byte[] readTouchFileBytes( String name )
+	{
+    Arrays.fill( ssdOut, ( byte )0 );
+    ssdOut[ 0 ] = 0x12;
+    ssdOut[ 2 ] = ( byte )name.length();
+    for ( int i = 0; i < name.length(); i++ )
+    {
+      ssdOut[ 3 + i ] = ( byte )name.charAt( i );
+    }
+    writeTouchUSBReport( ssdOut, 62 );
+    if ( readTouchUSBReport( ssdIn ) < 0 )
+    {
+      System.err.println( "Unable to read file \"" + name + "\"" );
+      return null;
+    }
+    if ( ( ssdIn[ 2 ] & 0x10 ) == 0x10 )
+    {
+      System.err.println( "File " + name + " is absent" );
+      return new byte[ 0 ];
+    }
+    int count = ( ssdIn[ 3 ] & 0xFF ) + 0x100 * ( ssdIn[ 4 ] & 0xFF )+ 0x10000 * ( ssdIn[ 5 ] & 0xFF );
+    int total = 0;
+    ssdOut[ 0 ] = 1;
+    ssdOut[ 2 ] = 0;
+    int ndx = 0;
+    byte[] buffer = new byte[ count ];
+    while ( total < count )
+    {
+      if ( readTouchUSBReport( ssdIn ) < 0 )
+      {
+        System.err.println( "Read error before end of file \"" + name + "\"" );
+        return null;
+      }
+      int len = ssdIn[ 4 ];
+      total += len;
+      System.arraycopy( ssdIn, 6, buffer, ndx, len );
+      ndx += len;
+      ssdOut[ 1 ] = ssdIn[ 1 ];
+      writeTouchUSBReport( ssdOut, 62 );
+    }
+    if ( runningTotal >= 0 )
+    {
+      System.err.println( "File " + name + " has reported length " + count + ", actual length " + total );
+      System.err.println( "  Start = " + Integer.toHexString( runningTotal ) + ", end = " + Integer.toHexString( runningTotal + total - 1 ) );
+      runningTotal += total;
+    }
+    return buffer;
+	}
+	
 	private void readSystemFiles()
 	{
 	  for ( String name : firmwareFileVersions.keySet() )
-    {
-      if ( name.indexOf( "." ) > 0 )
-      try
-      {
-        OutputStream output = null;
-        File outputDir = new File( RemoteMaster.getWorkDir(), "XSight" );
-        if ( !outputDir.exists() )
-        {
-          outputDir.mkdirs();
-        }
-        try 
-        {
-          output = new BufferedOutputStream(new FileOutputStream( new File( outputDir, name  ), false ) );
-          Arrays.fill( ssdOut, ( byte )0 );
-          ssdOut[ 0 ] = 0x12;
-          ssdOut[ 2 ] = ( byte )name.length();
-          for ( int i = 0; i < name.length(); i++ )
-          {
-            ssdOut[ 3 + i ] = ( byte )name.charAt( i );
-          }
-          writeTouchUSBReport( ssdOut, 62 );
-          if ( readTouchUSBReport( ssdIn ) < 0 )
-          {
-            System.err.println( "Unable to read system file " + name );
-            return;
-          }
-          int count = ( ssdIn[ 3 ] & 0xFF ) + 0x100 * ( ssdIn[ 4 ] & 0xFF ) + 0x10000 * ( ssdIn[ 5 ] & 0xFF );
-          int total = 0;
-          ssdOut[ 0 ] = 1;
-          ssdOut[ 2 ] = 0;
-          while ( total < count )
-          {
-            if ( readTouchUSBReport( ssdIn ) < 0 )
-            {
-              break;
-            }
-            int len = ssdIn[ 4 ];
-            total += len;
-            output.write( ssdIn, 6, len );
-            ssdOut[ 1 ] = ssdIn[ 1 ];
-            writeTouchUSBReport( ssdOut, 62 );
-          }
-          System.err.println( "File " + name + " has reported length " + count + ", actual length " + total );
-        }
-        catch(FileNotFoundException ex){
-          System.err.println( "Unable to open file " + name );
-        }
-        finally
-        {
-          if ( output != null )
-          {
-            output.close();
-          }
-        }
-      }
-      catch(IOException ex){
-        ex.printStackTrace( System.err );
-      }
-    }
-  }
+	  {
+	    if ( name.indexOf( "." ) > 0 )
+	    {
+	      byte[] filedata = readTouchFileBytes( name );
+	      if ( filedata == null || filedata.length == 0 )
+	      {
+	        continue;
+	      }
+	      try
+	      {
+	        OutputStream output = null;
+	        File outputDir = new File( RemoteMaster.getWorkDir(), "XSight" );
+	        if ( !outputDir.exists() )
+	        {
+	          outputDir.mkdirs();
+	        }
+	        try 
+	        {
+	          output = new FileOutputStream( new File( outputDir, name  ), false );
+	          output.write( filedata );
+	        }
+	        catch(FileNotFoundException ex){
+	          System.err.println( "Unable to open file " + name );
+	        }
+	        finally
+	        {
+	          if ( output != null )
+	          {
+	            output.close();
+	          }
+	        }
+	      }
+	      catch(IOException ex){
+	        ex.printStackTrace( System.err );
+	      }
+	    }
+	  }
+	}
 
   void saveVersionData()
 	{

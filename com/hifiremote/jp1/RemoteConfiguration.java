@@ -36,6 +36,7 @@ import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.FixedData.Location;
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
 import com.hifiremote.jp1.GeneralFunction.User;
+import com.hifiremote.jp1.io.CommHID;
 import com.hifiremote.jp1.io.IO;
 
 // TODO: Auto-generated Javadoc
@@ -44,7 +45,7 @@ import com.hifiremote.jp1.io.IO;
  */
 public class RemoteConfiguration
 {
-
+  public static final int Vect00Address = 0x020000;
   /**
    * Instantiates a new remote configuration.
    * 
@@ -231,6 +232,10 @@ public class RemoteConfiguration
         devices.add( upgrade );
         if ( remote.usesEZRC() )
         {
+          if ( upgrade.getSelectorMap() == null )
+          {
+            upgrade.setRemote( remote );
+          }
           upgrade.classifyButtons();
         }
       }
@@ -594,6 +599,39 @@ public class RemoteConfiguration
     return activities;
   }
   
+  private List< String > getBXMLtagnames( String name, short[] data, int pos )
+  {
+    List< String > tagNames = new ArrayList< String >();
+    System.err.println( name + " tags:" );
+    int itemsLength = data[ pos + 14 ] + 0x100 * data[ pos + 15 ];
+    pos += 16;
+    int itemCount = data[ pos++ ];
+    int itemsEnd = pos + itemsLength;
+    char ch;
+    for ( int i = 0; i < itemCount; i++ )
+    {
+      StringBuilder sb = new StringBuilder();
+      while ( ( ch = ( char )data[ pos++ ] ) != 0 )
+      {
+        sb.append( ch );
+      }
+      String tag = Integer.toHexString( i );
+      if ( tag.length() == 1 )
+      {
+        tag = "0" + tag;
+      }
+      String tagName = sb.toString();
+      tagNames.add( tagName );
+      System.err.println( "  " + tag + "  " + tagName );
+    }
+    if ( pos != itemsEnd )
+    {
+      System.err.println( "Parsing error in " + name );
+      return null;
+    }
+    return tagNames;
+  }
+  
   private void loadFiles( boolean decode )
   {
     int pos = 4;
@@ -620,37 +658,15 @@ public class RemoteConfiguration
       SSDFile file = new SSDFile();
       if ( name.endsWith( ".xcf" ) )
       {
-        List< String > tagNames = new ArrayList< String >();
-        file.tagNames = tagNames;
-        System.err.println( name + " tags:" );
-        int itemsLength = data[ pos + 14 ] + 0x100 * data[ pos + 15 ];
-        pos += 16;
-        int itemCount = data[ pos++ ];
-        int itemsEnd = pos + itemsLength;
-        char ch;
-        for ( int i = 0; i < itemCount; i++ )
+        List< String > tagNames = getBXMLtagnames( name, data, pos );
+        if ( tagNames == null )
         {
-          StringBuilder sb = new StringBuilder();
-          while ( ( ch = ( char )data[ pos++ ] ) != 0 )
-          {
-            sb.append( ch );
-          }
-          String tag = Integer.toHexString( i );
-          if ( tag.length() == 1 )
-          {
-            tag = "0" + tag;
-          }
-          String tagName = sb.toString();
-          tagNames.add( tagName );
-          System.err.println( "  " + tag + "  " + tagName );
-        }
-        if ( pos != itemsEnd )
-        {
-          System.err.println( "Parsing error in " + name );
           break;
         }
-        int start = pos;
-        pos = parseXCFFile( items, index, start, tagNames, decode );
+        file.tagNames = tagNames;
+        int itemsLength = data[ pos + 14 ] + 0x100 * data[ pos + 15 ];
+        int start = pos + itemsLength + 17;
+        pos = parseXCFFile( items, index, data, start, tagNames, decode );
         Hex hex = new Hex( data, start, pos - start );
         file.hex = hex;
         ssdFiles.put( name, file );
@@ -778,6 +794,43 @@ public class RemoteConfiguration
       }
     }
     setIcons( items.iconrefMap );
+//    CommHID hid = null;
+//    for ( IO temp : owner.getInterfaces() )
+//    {
+//      String tempName = temp.getInterfaceName();
+//      if ( tempName.equals( "CommHID" ) )
+//      {
+//        hid = ( CommHID )( temp.openRemote( "UPG" ).equals( "UPG" ) ? temp : null );
+//        if ( hid == null )
+//        {
+//          break;
+//        }
+//       
+//        
+//        categoryBrands = new LinkedHashMap< Integer, List<String> >();
+//        codeLocations = new LinkedHashMap< Integer, Integer >();
+//        items = new Items();
+//        items.codes = new ArrayList< Integer >();
+//        items.irdb = hid.readTouchFile( "irdb.bin" );
+//        List< String > tagNames = getBXMLtagnames( "irdb.bin", items.irdb, 0 );
+//        if ( tagNames == null )
+//        {
+//          break;
+//        }
+//        int start = items.irdb[ 14 ] + 0x100 * items.irdb[ 15 ] + 17;
+//        parseXCFFile( items, -1, items.irdb, start, tagNames, true );
+//        
+//        short[] regionFile = hid.readTouchFile( regionFilename );
+//        tagNames = getBXMLtagnames( regionFilename, regionFile, 0 );
+//        if ( tagNames == null )
+//        {
+//          break;
+//        }
+//        start = regionFile[ 14 ] + 0x100 * regionFile[ 15 ] + 17;
+//        parseXCFFile( items, -2, regionFile, start, tagNames, true );
+//        break;
+//      }    
+//    }
   }
   
   private void setIcons( LinkedHashMap< GeneralFunction, Integer > iconrefMap )
@@ -804,11 +857,96 @@ public class RemoteConfiguration
     }
   }
   
-  private void decodeItem( Items items, int fileIndex, String tag, int pos, boolean start, boolean dbOnly )
+  private String getString8( short[] data, int pos )
   {
-    if ( fileIndex < 2 || fileIndex > 6 || fileIndex > 2 && dbOnly )
+    int len = data[ pos++ ];
+    char[] ch = new char[ len ];
+    for ( int i = 0; i < len; i++ )
     {
-      return;
+      ch[ i ] = ( char )data[ pos++ ];
+    }
+    return new String( ch );
+  }
+  
+  private boolean decodeRegion( Items items, String tag, short[] data, int pos, boolean start )
+  {
+    if ( start )
+    {
+      if ( tag.equals( "device" ) )
+      {
+        pos++;
+        items.category = data[ pos++ ];
+      }
+      else if ( tag.equals(  "region" ) )
+      {
+        region = getString8( data, pos );
+      }
+      else if ( tag.equals( "brand" ) )
+      {
+        String brand = getString8( data, pos );
+        List< String > brands = categoryBrands.get( items.category );
+        if ( brands == null )
+        {
+          brands = new ArrayList< String >();
+          categoryBrands.put( items.category, brands );
+        }
+        items.brandIndex = brands.size();
+        brands.add( brand );
+      }
+      else if ( tag.equals( "codesets" ) )
+      {
+        items.codeset_base = pos - 1;
+        return false;
+      }
+      else if ( tag.equals( "codeset_offset" ) )
+      {
+        int len = data[ pos++ ];
+        int address = 0;
+        for ( int i = 0; i < len; i++ )
+        {
+          address <<= 8;
+          address |= data[ pos++ ];
+        }
+        address += items.codeset_base + 1;  // the +1 skips the codeset tag
+        len = items.irdb[ address++ ];
+        int type = items.irdb[ address++ ]; // ascii code for a type letter
+        int code = 0;
+        for ( int i = 0; i < len - 1; i++ )
+        {
+          code *= 10;
+          code += items.irdb[ address++ ] & 0x0F;
+        }
+        code |= type << 16;
+        items.codes.add(  code );
+      }
+    }
+    else // end tags
+    {
+      if ( tag.equals( "brand" ) )
+      {
+        int len = items.codes.size();
+        for ( int i = 0; i < len; i++ )
+        {
+          int location = items.category << 24 | items.brandIndex << 16 | i << 8 | len;
+          codeLocations.put( items.codes.get( i ), location );
+        }
+        items.codes.clear();
+      }
+    }
+    return true;
+  }
+  
+  
+  private boolean decodeItem( Items items, int fileIndex, String tag, short[] data, int pos, boolean start, boolean dbOnly )
+  {
+    if ( fileIndex < 0 )
+    {
+      return decodeRegion( items, tag, data, pos, start );
+    }
+    
+    if ( fileIndex < 1 || fileIndex > 6 || fileIndex > 2 && dbOnly )
+    {
+      return true;
     }
     int ndx = 0;
     if ( start )
@@ -927,10 +1065,33 @@ public class RemoteConfiguration
       
       if ( dbOnly )
       {
-        return;
+        return true;
       }
  
-      if ( tag.equals( "favorites" ) )
+      if ( tag.equals( "language") )
+      {
+        items.lastTag = "language";
+        language = getString8( data, pos );
+      }
+      else if ( tag.equals( "region") )
+      {
+        items.lastTag = "region";
+        region = getString8( data, pos );
+      }
+      else if ( tag.equals( "filename") )
+      {
+        String name = getString8( data, pos );
+        if ( items.lastTag.equals( "language" ) )
+        {
+          languageFilename = name;
+        }
+        else if ( items.lastTag.equals( "region" ) )
+        {
+          regionFilename = name;
+        }
+        items.lastTag = null;
+      }
+      else if ( tag.equals( "favorites" ) )
       {
         items.activity = activities.get( remote.getButtonByStandardName( "Favorites" ) );
       }
@@ -1087,13 +1248,7 @@ public class RemoteConfiguration
       }
       else if ( tag.equals( "name8" ) )
       {
-        int len = data[ pos++ ];
-        char[] ch = new char[ len ];
-        for ( int i = 0; i < len; i++ )
-        {
-          ch[ i ] = ( char )data[ pos++ ];
-        }
-        items.key.fname = new String( ch );
+        items.key.fname = getString8( data, pos );
       }
       else if ( tag.equals( "macroref" ) )
       {
@@ -1160,6 +1315,7 @@ public class RemoteConfiguration
           macro.setSerial( ref );
           items.macroMap.put( ref, macro );
           items.macro = macro;
+          items.unreferencedMacros.add(  macro );
         }
         macros.add( items.macro );
         items.macro.setItems( new ArrayList< KeySpec >() );
@@ -1343,10 +1499,15 @@ public class RemoteConfiguration
           items.map.put( source, new KeySpec( dev, target ) );
         }
       }
-      else if ( tag.equals(  "softpage" ) )
+      else if ( tag.equals( "softpage" ) )
       {
         pos++;
         items.softPageIndex = ( int )data[ pos++ ];
+      }
+      else if ( tag.equals( "directv_rf" ) )
+      {
+        int len = data[ pos++ ];
+        directv_rf = new Hex( data, pos, len );
       }
     }
     else // tag end
@@ -1391,7 +1552,7 @@ public class RemoteConfiguration
       }
       if ( dbOnly )
       {
-        return;
+        return true;
       }
       if ( tag.equals( "codeset" ) )
       {
@@ -1487,9 +1648,15 @@ public class RemoteConfiguration
       }
       else if ( tag.equals( "macros" ) )
       {
-        for ( int i = 0; i < macros.size(); i++ )
+        Iterator< Macro > it = macros.iterator();
+        while ( it.hasNext() )
         {
-          Macro macro = ( Macro )macros.get( i );
+          Macro macro = it.next();
+          if ( items.unreferencedMacros.contains( macro ) )
+          {
+            it.remove();
+            continue;
+          }
           for ( User u : macro.getUsers() )
           {
             u.db.getUpgrade().getMacroMap().put( ( int )u.button.getKeyCode(), macro );
@@ -1557,19 +1724,21 @@ public class RemoteConfiguration
         items.softPageIndex = null;
       }
     }
+    return true;
   }
   
-  private int parseXCFFile( Items items, int fileIndex, int fileStart, List< String > tagNames, boolean decode )
+  private int parseXCFFile( Items items, int fileIndex, short[] data, int fileStart, List< String > tagNames, boolean decode )
   {
     int pos = fileStart;
     List< Integer > tags = new ArrayList< Integer >();
-    while ( true )
+    boolean more = true;
+    while ( more )
     {
       int tag = data[ pos++ ];
       if ( ( tag & 0x80 ) == 0 )
       {
         tags.add( 0, tag );
-        decodeItem( items, fileIndex, tagNames.get( tag ), pos, true, !decode );
+        more = decodeItem( items, fileIndex, tagNames.get( tag ), data, pos, true, !decode );
         int len = data[ pos++ ];
         pos += len;
       }
@@ -1581,7 +1750,7 @@ public class RemoteConfiguration
           System.err.println( "XCF file nesting error at " + Integer.toHexString( pos - 1 ) );
           break;
         }
-        decodeItem( items, fileIndex, tagNames.get( tag & 0x7F ), pos, false, !decode );
+        more = decodeItem( items, fileIndex, tagNames.get( tag & 0x7F ), data, pos, false, !decode );
         if ( tags.isEmpty() )
         {
           break;
@@ -2178,202 +2347,370 @@ public class RemoteConfiguration
             }
           }
         }
-        if ( missing.size() > 0 )
+        IO hid = null;
+        for ( IO temp : owner.getInterfaces() )
         {
-          IO hid = null;
-          for ( IO temp : owner.getInterfaces() )
+          String tempName = temp.getInterfaceName();
+          if ( tempName.equals( "CommHID" ) )
           {
-            String tempName = temp.getInterfaceName();
-            if ( tempName.equals( "CommHID" ) )
+            hid = temp.openRemote( "UPG" ).equals( "UPG" ) ? temp : null;
+            if ( hid == null )
             {
-              hid = temp.openRemote( "UPG" ).equals( "UPG" ) ? temp : null;
-              if ( hid == null )
+              break;
+            }
+            short[] buffer = new short[ 0x30 ];
+            if ( hid.readRemote( Vect00Address, buffer, 0x30 ) != 0x30 )
+            {
+              break;
+            }
+
+            // Get address of IR database
+            int irAddress = buffer[ 0x18 ] << 24 | buffer[ 0x19 ] << 16 | buffer[ 0x1A ] << 8 | buffer[ 0x1B ];
+            // Get address of Text database
+            int textAddress = buffer[ 0x24 ] << 24 | buffer[ 0x25 ] << 16 | buffer[ 0x26 ] << 8 | buffer[ 0x27 ];
+            if ( hid.readRemote( irAddress + 20, buffer, 0x30 ) != 0x30 )
+            {
+              break;
+            }
+            int setupLookupOffset = buffer[ 2 ] << 8 | buffer[ 3 ];
+            int setupIndexOffset = ( buffer[ 4 ] << 8 | buffer[ 5 ] ) - setupLookupOffset;
+            int protLookupOffset = ( buffer[ 8 ] << 8 | buffer[ 9 ] ) - setupLookupOffset;
+            int protIndexOffset = ( buffer[ 10 ] << 8 | buffer[ 11 ] ) - setupLookupOffset;
+            int categoryAddress = ( buffer[ 16 ] << 8 | buffer[ 17 ] ) + irAddress;
+
+            setDeviceCategories( hid, textAddress, categoryAddress );
+
+            int size = 2 * protIndexOffset - protLookupOffset - 2;
+            buffer = new short[ size ];
+            if ( hid.readRemote( irAddress + setupLookupOffset, buffer, size ) != size )
+            {
+              break;
+            }
+            int setupCount = buffer[ 0 ] | buffer[ 1 ] << 8;
+            int protCount = buffer[ protLookupOffset ] | buffer[ protLookupOffset + 1 ] << 8;
+            for ( int i = 0; i < setupCount; i++ )
+            {
+              int setupCode = buffer[ 2 * i + 2 ] | buffer[ 2 * i + 3 ] << 8;
+              if ( missingCodes.contains( setupCode ) )
               {
-                break;
-              }
-              short[] buffer = new short[ 0x20 ];
-              if ( hid.readRemote( 0x020000, buffer, 0x20 ) != 0x20 )
-              {
-                break;
-              }
-              // Get address of IR database
-              int address = buffer[ 24 ] << 24 | buffer[ 25 ] << 16 | buffer[ 26 ] << 8 | buffer[ 27 ];
-              if ( hid.readRemote( address + 20, buffer, 18 ) != 18 )
-              {
-                break;
-              }
-              int setupLookupOffset = buffer[ 2 ] << 8 | buffer[ 3 ];
-              int setupIndexOffset = ( buffer[ 4 ] << 8 | buffer[ 5 ] ) - setupLookupOffset;
-              int protLookupOffset = ( buffer[ 8 ] << 8 | buffer[ 9 ] ) - setupLookupOffset;
-              int protIndexOffset = ( buffer[ 10 ] << 8 | buffer[ 11 ] ) - setupLookupOffset;
-              int size = 2 * protIndexOffset - protLookupOffset - 2;
-              buffer = new short[ size ];
-              if ( hid.readRemote( address + setupLookupOffset, buffer, size ) != size )
-              {
-                break;
-              }
-              int setupCount = buffer[ 0 ] | buffer[ 1 ] << 8;
-              int protCount = buffer[ protLookupOffset ] | buffer[ protLookupOffset + 1 ] << 8;
-              for ( int i = 0; i < setupCount; i++ )
-              {
-                int setupCode = buffer[ 2 * i + 2 ] | buffer[ 2 * i + 3 ] << 8;
-                if ( missingCodes.contains( setupCode ) )
+                int setupAddress = buffer[ setupIndexOffset + 2 * i ] | buffer[ setupIndexOffset + 2 * i + 1 ] << 8;
+                int numFixed = -1;
+                int numVar = -1;
+                short[] buf = new short[ 0x0200 ];
+                if ( hid.readRemote( ( irAddress + setupAddress ) & 0xFFFFFE, buf, 0x200 ) != 0x200 )
                 {
-                  int setupAddress = buffer[ setupIndexOffset + 2 * i ] | buffer[ setupIndexOffset + 2 * i + 1 ] << 8;
-                  int numFixed = -1;
-                  int numVar = -1;
-                  short[] buf = new short[ 0x0200 ];
-                  if ( hid.readRemote( ( address + setupAddress ) & 0xFFFFFE, buf, 0x200 ) != 0x200 )
+                  continue;
+                }
+                int setupOdd = setupAddress & 1;
+                for ( int j = 0; j < protCount; j++ )
+                {
+                  if ( buf[ setupOdd ] == buffer[ protLookupOffset + 2 * j + 3 ]
+                      && buf[ setupOdd + 1 ] == buffer[ protLookupOffset + 2 * j + 2 ] )
                   {
-                    continue;
-                  }
-                  int setupOdd = setupAddress & 1;
-                  for ( int j = 0; j < protCount; j++ )
-                  {
-                    if ( buf[ setupOdd ] == buffer[ protLookupOffset + 2 * j + 3 ]
-                        && buf[ setupOdd + 1 ] == buffer[ protLookupOffset + 2 * j + 2 ] )
-                    {
-                      int protAddress = buffer[ protIndexOffset + 2 * j ] | buffer[ protIndexOffset + 2 * j + 1 ] << 8;
-                      int protOdd = protAddress & 1;
-                      short[] buf2 = new short[ 2 ];
-                      if ( hid.readRemote( ( address + protAddress + 2 ) & 0xFFFFFE, buf2, 2 ) != 2 )
-                      {
-                        break;
-                      }
-                      numFixed = buf2[ protOdd ] >> 4;
-                      numVar = buf2[ protOdd ] & 0x0F;
-                      break;
-                    }
-                  }
-                  if ( numFixed < 0 )
-                  {
-                    continue;
-                  }
-                  int setupLength = 3 + numFixed;  // PID + numbertable
-                  int mapbyte = buf[ 3 ];
-                  setupLength += ( 10 * ( ( mapbyte >> 7 ) & 1 ) + 3 * ( ( mapbyte >> 6 ) & 1 ) + 2 * ( ( mapbyte >> 5 ) & 1 ) ) * numVar; 
-                  mapbyte &= 0x1F;
-                  for ( int j = 0; j < 32; mapbyte = buf[ 3 + (++j) ] )
-                  {
-                    setupLength++;
-                    for ( int k = 1; k < 8; k++ )
-                    {
-                      setupLength += ( ( mapbyte >> k ) & 1 ) * numVar;
-                    }
-                    if ( ( mapbyte & 1 ) == 1 )
+                    int protAddress = buffer[ protIndexOffset + 2 * j ] | buffer[ protIndexOffset + 2 * j + 1 ] << 8;
+                    int protOdd = protAddress & 1;
+                    short[] buf2 = new short[ 2 ];
+                    if ( hid.readRemote( ( irAddress + protAddress + 2 ) & 0xFFFFFE, buf2, 2 ) != 2 )
                     {
                       break;
                     }
+                    numFixed = buf2[ protOdd ] >> 4;
+                    numVar = buf2[ protOdd ] & 0x0F;
+                    break;
                   }
-                  Hex setupHex = new Hex( buf, setupOdd, setupLength );
-                  Hex pidHex = new Hex( buf, setupOdd, 2 );
-                  for ( DeviceButton db : missing )
+                }
+                if ( numFixed < 0 )
+                {
+                  continue;
+                }
+                int setupLength = 3 + numFixed;  // PID + numbertable
+                int mapbyte = buf[ 3 ];
+                setupLength += ( 10 * ( ( mapbyte >> 7 ) & 1 ) + 3 * ( ( mapbyte >> 6 ) & 1 ) + 2 * ( ( mapbyte >> 5 ) & 1 ) ) * numVar; 
+                mapbyte &= 0x1F;
+                for ( int j = 0; j < 32; mapbyte = buf[ 3 + (++j) ] )
+                {
+                  setupLength++;
+                  for ( int k = 1; k < 8; k++ )
                   {
-                    short[] dbData = db.getSegment().getHex().getData();
-                    int sc = db.getDeviceTypeIndex( dbData ) << 12 | db.getSetupCode( dbData );
-                    if ( sc == setupCode )
+                    setupLength += ( ( mapbyte >> k ) & 1 ) * numVar;
+                  }
+                  if ( ( mapbyte & 1 ) == 1 )
+                  {
+                    break;
+                  }
+                }
+                Hex setupHex = new Hex( buf, setupOdd, setupLength );
+                Hex pidHex = new Hex( buf, setupOdd, 2 );
+                for ( DeviceButton db : missing )
+                {
+                  short[] dbData = db.getSegment().getHex().getData();
+                  int sc = db.getDeviceTypeIndex( dbData ) << 12 | db.getSetupCode( dbData );
+                  if ( sc == setupCode )
+                  {
+                    DeviceType devType = remote.getDeviceTypeByIndex( dbData[ 2 ] );
+                    String alias = remote.getDeviceTypeAlias( devType );
+                    if ( alias == null )
                     {
-                      DeviceType devType = remote.getDeviceTypeByIndex( dbData[ 2 ] );
-                      String alias = remote.getDeviceTypeAlias( devType );
-                      if ( alias == null )
+                      String message = String.format(
+                          "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be imported and was discarded.",
+                          devType, setupCode );
+                      JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+                      continue;
+                    }
+                    DeviceUpgrade du = new DeviceUpgrade( new String[ 0 ] );
+                    try
+                    {
+                      du.setButtonIndependent( false );
+                      du.setButtonRestriction( db );
+                      du.setRemoteConfig( this );
+                      du.setSizeCmdBytes( numVar );
+                      du.setSizeDevBytes( numFixed );
+                      du.importRawUpgrade( setupHex, remote, alias, new Hex( pidHex ), null );
+                      du.setSetupCode( setupCode & 0x0FFF );  
+                      du.setSegmentFlags( 0xFF );
+                      du.setRemote( remote );
+                      Random random = new Random();
+                      for ( Button b : remote.getButtons() )
                       {
-                        String message = String.format(
-                                "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be imported and was discarded.",
-                                devType, setupCode );
-                        JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
-                        continue;
-                      }
-//                      size = setupLength; 
-//                      size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
-//                      Hex segData = new Hex( size );
-//                      Arrays.fill( segData.getData(), 0, 4, ( short )0 );
-//                      segData.getData()[ segData.length() - 1 ] = ( short )0xFF;
-//                      segData.getData()[ 0 ] = ( short )db.getButtonIndex();
-//                      segData.getData()[ 4 ] = dbData[ 2 ];
-//                      segData.getData()[ 5 ] = dbData[ 3 ];
-//                      segData.getData()[ 6 ] = dbData[ 4 ];
-//                      segData.getData()[ 7 ] = ( short )numVar;
-//                      segData.getData()[ 8 ] = ( short )numFixed;
-//                      segData.put( setupHex, 9 );
-                      DeviceUpgrade du = new DeviceUpgrade( new String[ 0 ] );
-                      try
-                      {
-//                        if ( segments.get( 0x10 ) == null )
-//                        {
-//                          segments.put( 0x10, new ArrayList< Segment >() );
-//                        }
-//                        segments.get( 0x10 ).add( new Segment( 0x10, 0xFF, segData, du ) );
-                        du.setButtonIndependent( false );
-                        du.setButtonRestriction( db );
-                        du.setRemoteConfig( this );
-                        du.setSizeCmdBytes( numVar );
-                        du.setSizeDevBytes( numFixed );
-                        du.importRawUpgrade( setupHex, remote, alias, new Hex( pidHex ), null );
-                        du.setSetupCode( setupCode & 0x0FFF );  
-                        du.setSegmentFlags( 0xFF );
-                        du.setRemote( remote );
-                        Random random = new Random();
-                        for ( Button b : remote.getButtons() )
+                        Function f = du.getAssignments().getAssignment( b );
+                        if ( f != null )
                         {
-                          Function f = du.getAssignments().getAssignment( b );
-                          if ( f != null )
+                          Integer gid = null;
+                          if ( !remote.isSoftButton( b ) )
                           {
-                            Integer gid = null;
-                            if ( !remote.isSoftButton( b ) )
-                            {
-                              String name = b.getUeiName() != null ? b.getUeiName() : b.getName();
-                              f.setName( name );
-                              gid = remote.getGidMap().get( name );
-                            }
-                            if ( gid == null )
-                            {
-                              gid = 0x7400 + random.nextInt( 0x500 );
-                            }
-                            f.setGid( gid );
+                            String name = b.getUeiName() != null ? b.getUeiName() : b.getName();
+                            f.setName( name );
+                            gid = remote.getGidMap().get( name );
                           }
-                        }
-                        du.classifyButtons();
-                        Protocol protocol = du.getProtocol();
-                        if ( protocol.getDefaultCmd().length() != numVar
-                            || protocol.getFixedDataLength() != numFixed )
-                        {
-                          String title = "Protocol Variant Error";
-                          String message = "Error in RDF.  Wrong variant specified for PID = " + 
-                              protocol.getID().toString() + ".  Number of fixed/command bytes\n" +
-                              "should be " + numFixed + "/" + numVar +
-                              ", for specified variant it is " + protocol.getDefaultCmd().length() +
-                              "/" + protocol.getFixedDataLength() + ".";
-                          JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+                          if ( gid == null )
+                          {
+                            gid = 0x7400 + random.nextInt( 0x500 );
+                          }
+                          f.setGid( gid );
                         }
                       }
-                      catch ( java.text.ParseException pe )
+                      du.classifyButtons();
+                      Protocol protocol = du.getProtocol();
+                      if ( protocol.getDefaultCmd().length() != numVar
+                          || protocol.getFixedDataLength() != numFixed )
                       {
-                        pe.printStackTrace( System.err );
-                        du = null;
+                        String title = "Protocol Variant Error";
+                        String message = "Error in RDF.  Wrong variant specified for PID = " + 
+                            protocol.getID().toString() + ".  Number of fixed/command bytes\n" +
+                            "should be " + numFixed + "/" + numVar +
+                            ", for specified variant it is " + protocol.getDefaultCmd().length() +
+                            "/" + protocol.getFixedDataLength() + ".";
+                        JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
                       }
-                      if ( du != null )
-                      {
-                        db.setUpgrade( du );
-                        devices.add( du );
-                      }
+                    }
+                    catch ( java.text.ParseException pe )
+                    {
+                      pe.printStackTrace( System.err );
+                      du = null;
+                    }
+                    if ( du != null )
+                    {
+                      db.setUpgrade( du );
+                      devices.add( du );
                     }
                   }
                 }
               }
-              break;
             }
+            break;
           }
-          if ( hid != null )
-          {
-            hid.closeRemote();
-          }
+        }
+        if ( hid != null )
+        {
+          hid.closeRemote();
         }
       }  
       updateReferences();
+      for ( DeviceButton db : remote.getDeviceButtons() )
+      {
+        if ( db.getUpgrade() != null )
+        {
+          db.getUpgrade().classifyButtons();
+        }
+      }
     }
     pos = 0;
   }
 
+  public int getLanguageIndex()
+  {
+    List< Segment > setupSegs = segments.get( 0x12 );
+    if ( setupSegs != null )
+    {
+      return setupSegs.get( 0 ).getHex().getData()[ 4 ];
+    }
+    return 0;
+  }
+  
+  public void setDeviceCategories( IO hid, int textAddress, int categoryAddress )
+  {
+    short[] buffer = new short[ 0x400 ];
+    if ( hid.readRemote( categoryAddress, buffer, 0x30 ) != 0x30 )
+    {
+     return;
+    }
+    int categoryCount = buffer[ 0 ] | buffer[ 1 ] << 8;
+    int brandStart = 2 * ( buffer[ 2 ] | buffer[ 3 ] << 8 );
+    int codeStart = 2 * ( buffer[ 2*categoryCount + 2 ] | buffer[ 2*categoryCount + 3 ] << 8 );
+    int size = codeStart - brandStart;
+    short[] bBuffer = new short[ size ];
+    if ( hid.readRemote( Vect00Address + brandStart, bBuffer, size ) != size )
+    {
+     return;
+    }
+    size = categoryAddress - Vect00Address - codeStart;
+    short[] cBuffer = new short[ size ];
+    if ( hid.readRemote( Vect00Address + codeStart, cBuffer, size ) != size )
+    {
+     return;
+    }
+    categoryBrands = new LinkedHashMap< Integer, List<String> >();
+    codeLocations = new LinkedHashMap< Integer, Integer >();
+    for ( int i = 0; i < categoryCount; i++ )
+    {
+      int catOffset = 2 * ( buffer[ 2 * i + 2 ] | buffer[ 2 * i + 3 ] << 8 ) - brandStart;
+      int catSize = bBuffer[ catOffset ] | bBuffer[ catOffset + 1 ] << 8;
+      int start = catOffset + 2 * catSize + 2;
+      List< String > names = new ArrayList< String >();
+      for ( int j = 0; j < catSize; j++ )
+      {
+        int len = bBuffer[ start ];
+        char[] name = new char[ len ];
+        for ( int k = 0; k < len; k++ )
+        {
+          name[ k ] = ( char )bBuffer[ start + k + 1 ];  
+        }
+        start += len + 1;
+        names.add( new String( name ) );
+        int codeOffset = 2 * ( bBuffer[ catOffset + 2*j + 2 ] | bBuffer[ catOffset + 2*j + 3 ] << 8 ) - codeStart;
+        len = cBuffer[ codeOffset ] | cBuffer[ codeOffset + 1 ] << 8;
+        for ( int k = 0; k < len; k++ )
+        {
+          int code = cBuffer[ codeOffset + 2*k + 2 ] | cBuffer[ codeOffset + 2*k + 3 ] << 8;
+          int type = code >> 12;
+          code = ( code & 0x0FFF ) | ( type << 16 );
+          if ( !codeLocations.keySet().contains( code ) )
+          {
+            int location = i << 24 | j << 16 | k << 8 | len;
+            codeLocations.put( code, location );
+          }
+        }
+      }
+      categoryBrands.put( i, names );
+    }
+    
+    // After initial 20 bytes, Text database starts with a table of 14 bytes for
+    // each of 5 languages.
+    
+    if ( hid.readRemote( textAddress + 20, buffer, 70 ) != 70 )
+    {
+      return;
+    }
+    
+    int pos = 14 * getLanguageIndex();
+    int tableOffset = buffer[ pos + 2 ] << 8 | buffer[ pos + 3 ];
+    int indexOffset = buffer[ pos + 4 ] << 8 | buffer[ pos + 5 ];
+    if ( hid.readRemote( textAddress + indexOffset, buffer, 0x400 ) != 0x400 )
+    {
+      return;
+    }
+    int categoryStart = buffer[ 0x84 ] << 8 | buffer[ 0x85 ];
+    if ( hid.readRemote( textAddress + tableOffset + categoryStart, buffer, 0x200 ) != 0x200 )
+    {
+      return;
+    }
+    
+    pos = 0;
+    deviceCategories = new ArrayList< String >();
+    System.err.println();
+    System.err.println( "Device Categories:" );
+    for ( int i = 0; i < categoryCount; i++ )
+    {
+      int len = buffer[ pos ];
+      char[] text = new char[ len ];
+      for ( int j = 0; j < len; j++ )
+      {
+        text[ j ] = ( char )buffer[ pos + j + 1 ];
+      }
+      pos += len + 1;
+      String category = new String( text );
+      System.err.println( "   " + category );
+      deviceCategories.add( category );
+    }
+  }
+  
+  public boolean setDeviceCategories()
+  {
+    CommHID hid = null;
+    boolean result = false;
+    for ( IO temp : owner.getInterfaces() )
+    {
+      String tempName = temp.getInterfaceName();
+      if ( tempName.equals( "CommHID" ) )
+      {
+        hid = ( CommHID )( temp.openRemote( "UPG" ).equals( "UPG" ) ? temp : null );
+        if ( hid == null )
+        {
+          break;
+        }
+        categoryBrands = new LinkedHashMap< Integer, List<String> >();
+        codeLocations = new LinkedHashMap< Integer, Integer >();
+        Items items = new Items();
+        items.codes = new ArrayList< Integer >();
+        items.irdb = hid.readTouchFile( "irdb.bin" );
+        List< String > tagNames = getBXMLtagnames( "irdb.bin", items.irdb, 0 );
+        if ( tagNames == null )
+        {
+          break;
+        }
+        int start = items.irdb[ 14 ] + 0x100 * items.irdb[ 15 ] + 17;
+        parseXCFFile( items, -1, items.irdb, start, tagNames, true );
+        
+        short[] filedata = hid.readTouchFile( regionFilename );
+        tagNames = getBXMLtagnames( regionFilename, filedata, 0 );
+        if ( tagNames == null )
+        {
+          break;
+        }
+        start = filedata[ 14 ] + 0x100 * filedata[ 15 ] + 17;
+        parseXCFFile( items, -2, filedata, start, tagNames, true );
+        
+        deviceCategories = new ArrayList< String >();
+        int count = 0;
+        for ( int n : categoryBrands.keySet() )
+        {
+          count = Math.max( count, n + 1 );
+        }
+        filedata = hid.readTouchFile( languageFilename );
+        start = 0x4E;
+        int addr1 = 0;
+        int addr2 = 0;
+        for ( int i = 0; i < count + 1; i++ )
+        {
+          addr1 = addr2;
+          addr2 = filedata[ start + 2*i ] | filedata[ start + 2*i + 1 ] << 8;
+          if ( i > 0 )
+          {
+            char[] ch = new char[ addr2 - addr1 ];
+            for ( int j = 0; j < ch.length; j++ )
+            {
+              ch[ j ] = ( char )filedata[ addr1 + j ];
+            }
+            deviceCategories.add(  new String( ch ) );
+          }
+        }
+        result = true;
+        break;
+      }    
+    }
+    return result;
+  }
+  
   private void updateReferences()
   {
     for ( DeviceUpgrade upgrade : devices )
@@ -4716,7 +5053,7 @@ public class RemoteConfiguration
         {
           continue;
         }
-        map2.put( btn, du.getFunction( btn.getKeyCode() ).getName() );
+        map2.put( btn, du.getGeneralFunction( btn.getKeyCode() ).getName() );
       }
       group.setSoftNamesSegment( segment );
     }
@@ -5811,48 +6148,45 @@ public class RemoteConfiguration
       segments.remove( 0x10 );
       for ( DeviceUpgrade dev : devices )
       {
-        if ( dev.getProtocol() == null )
+        if ( dev.getProtocol() != null )
         {
-          continue;
+          Hex hex = dev.getUpgradeHex();
+          Hex code = dev.needsProtocolCode() ? dev.getCode() : null;
+          if ( code != null && remote.usesEZRC() )
+          {
+            code = encryptObjcode( code );
+          }
+          int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
+          size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
+          Hex segData = new Hex( size );
+          int flags = dev.getSegmentFlags();
+          Arrays.fill( segData.getData(), 0, 4, ( short )0 );
+          segData.getData()[ segData.length() - 1 ] = ( short )( remote.usesEZRC() ? 0xFF : 0 );
+          if ( !dev.getButtonIndependent() )
+          {
+            segData.getData()[ 0 ] = ( short )dev.getButtonRestriction().getButtonIndex();
+          }
+          if ( code != null )
+          {
+            segData.put( hex.length() + 5, 2 );
+          }
+          segData.set( ( short )dev.getDeviceType().getNumber(), 4 );
+          segData.put( dev.getSetupCode(), 5 );
+          segData.set( ( short )dev.getSizeCmdBytes(), 7 );
+          segData.set( ( short )dev.getSizeDevBytes(), 8 );
+          segData.put( hex, 9 );
+          if ( code != null )
+          {
+            segData.put( code, hex.length() + 9 );
+          }
+          if ( segments.get( 0x10 ) == null )
+          {
+            segments.put( 0x10, new ArrayList< Segment >() );
+          }
+          segments.get( 0x10 ).add( new Segment( 0x10, flags, segData, dev ) );
         }
-        dev.setSoftButtonSegment( null );
-        dev.setSoftFunctionSegment( null );
-        Hex hex = dev.getUpgradeHex();
-        Hex code = dev.needsProtocolCode() ? dev.getCode() : null;
-        if ( code != null && remote.usesEZRC() )
-        {
-          code = encryptObjcode( code );
-        }
-        int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
-        size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
-        Hex segData = new Hex( size );
-        int flags = dev.getSegmentFlags();
-        Arrays.fill( segData.getData(), 0, 4, ( short )0 );
-        segData.getData()[ segData.length() - 1 ] = ( short )( remote.usesEZRC() ? 0xFF : 0 );
-        if ( !dev.getButtonIndependent() )
-        {
-          segData.getData()[ 0 ] = ( short )dev.getButtonRestriction().getButtonIndex();
-        }
-        if ( code != null )
-        {
-          segData.put( hex.length() + 5, 2 );
-        }
-        segData.set( ( short )dev.getDeviceType().getNumber(), 4 );
-        segData.put( dev.getSetupCode(), 5 );
-        segData.set( ( short )dev.getSizeCmdBytes(), 7 );
-        segData.set( ( short )dev.getSizeDevBytes(), 8 );
-        segData.put( hex, 9 );
-        if ( code != null )
-        {
-          segData.put( code, hex.length() + 9 );
-        }
-        if ( segments.get( 0x10 ) == null )
-        {
-          segments.put( 0x10, new ArrayList< Segment >() );
-        }
-        segments.get( 0x10 ).add( new Segment( 0x10, flags, segData, dev ) );
       }
-      
+
       if ( remote.getSegmentTypes().contains( 0x0A ) || remote.getSegmentTypes().contains( 0x20 ) )
       {
         if ( remote.getSegmentTypes().contains( 0x0A ) )
@@ -5882,7 +6216,7 @@ public class RemoteConfiguration
             {
               for ( Button b : du.getSoftButtons() )
               {
-                map.put( b, du.getFunction( b.getKeyCode() ).getName() );
+                map.put( b, du.getGeneralFunction( b.getKeyCode() ).getName() );
               }
             }
             Hex hex = createNameHex( map );
@@ -6723,6 +7057,10 @@ public class RemoteConfiguration
   {
     return ssdFiles;
   }
+  
+  private List< String > deviceCategories = null;
+  private LinkedHashMap< Integer, List< String > > categoryBrands = null;
+  private LinkedHashMap< Integer, Integer > codeLocations = null;
 
   private LinkedHashMap< Button, Activity > activities = null;
   
@@ -6754,6 +7092,32 @@ public class RemoteConfiguration
   private List< SpecialProtocolFunction > specialFunctions = new ArrayList< SpecialProtocolFunction >();
   private List< KeyMove > specialFunctionKeyMoves = new ArrayList< KeyMove >();
   private List< Macro > specialFunctionMacros = new ArrayList< Macro >();
+
+  private String language = null;
+  private String languageFilename = null;
+  private String region = null;
+  private String regionFilename = null;
+  private Hex directv_rf = null;
+  
+  public String getRegion()
+  {
+    return region == null ? "this region" : region;
+  }
+
+  public List< String > getDeviceCategories()
+  {
+    return deviceCategories;
+  }
+
+  public LinkedHashMap< Integer, List< String >> getCategoryBrands()
+  {
+    return categoryBrands;
+  }
+
+  public LinkedHashMap< Integer, Integer > getCodeLocations()
+  {
+    return codeLocations;
+  }
 
   private void updateSpecialFunctionSublists()
   {
@@ -7133,6 +7497,13 @@ public class RemoteConfiguration
     LinkedHashMap< GeneralFunction, Integer > iconrefMap = new LinkedHashMap< GeneralFunction, Integer >();
     Integer softPageIndex = null;
     FavScan fav = null;
+    String lastTag = null;
+    int category = 0;
+    int brandIndex = 0;
+    int codeset_base = -1;
+    short[] irdb = null;
+    List< Integer > codes = null;
+    List< Macro > unreferencedMacros = new ArrayList< Macro >();
   }
   
   private class Key
@@ -7276,6 +7647,11 @@ public class RemoteConfiguration
       {
         Button b = item.getButton();
         boolean ir = b == null;
+        if ( ir && item.fn == null )
+        {
+          // Error situation, macro referencing nonexistent function
+          continue;
+        }
         boolean softKey = !ir && remote.isSoftButton( b );
         boolean hardKey = !ir && !softKey;
         btnTag = softKey ? "sendsoftkey" : hardKey ? "sendhardkey" : "sendir" ;
