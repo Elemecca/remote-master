@@ -1514,17 +1514,19 @@ public class RemoteConfiguration
     {
       if ( tag.equals( "devices" ) )
       {
-        for ( DeviceButton db : remote.getDeviceButtons() )
-        {
-          if ( !items.dbList.contains( db ) )
-          {
-            items.dbList.add( db );
-          }
-        }
-        for ( int i = 0; i < items.dbList.size(); i++ )
-        {
-          remote.getDeviceButtons()[ i ] = items.dbList.get( i );
-        }
+        deviceButtonList = new ArrayList< DeviceButton >();
+        deviceButtonList.addAll( items.dbList );
+//        for ( DeviceButton db : remote.getDeviceButtons() )
+//        {
+//          if ( !items.dbList.contains( db ) )
+//          {
+//            items.dbList.add( db );
+//          }
+//        }
+//        for ( int i = 0; i < items.dbList.size(); i++ )
+//        {
+//          remote.getDeviceButtons()[ i ] = items.dbList.get( i );
+//        }
       }
       else if ( tag.equals( "favorites" ) )
       {
@@ -2912,6 +2914,7 @@ public class RemoteConfiguration
     List< Segment >devNamesList = segments.get( 0x15 );
     if ( devNamesList != null )
     {
+      deviceButtonList = new ArrayList< DeviceButton >();
       for ( Segment segment : devNamesList )
       {
         LinkedHashMap< Integer, String > nameMap = parseNameSegment( segment );
@@ -2920,10 +2923,22 @@ public class RemoteConfiguration
           DeviceButton devBtn = remote.getDeviceButton( key );
           if ( devBtn != null )
           {
+            deviceButtonList.add( devBtn );
             devBtn.setName( nameMap.get( key ) );
           }
         }
       }
+//      for ( DeviceButton db : remote.getDeviceButtons() )
+//      {
+//        if ( !devBtns.contains( db ) )
+//        {
+//          devBtns.add( db );
+//        }
+//      }
+//      for ( int i = 0; i < devBtns.size(); i++ )
+//      {
+//        remote.getDeviceButtons()[ i ] = devBtns.get( i );
+//      }
     }
   }
   
@@ -4476,7 +4491,7 @@ public class RemoteConfiguration
       Segment segment = dev.getSegment();
       if ( segment == null )
       {
-        return;
+        continue;
       }
       int address = segment.getAddress();
       int protOffset = segment.getHex().get( 2 );
@@ -5493,14 +5508,19 @@ public class RemoteConfiguration
     if ( remote.getSegmentTypes().contains( 0x15 ) || remote.getSegmentTypes().contains( 0x11 ) )
     {
       LinkedHashMap< Button, String > map = new LinkedHashMap< Button, String >();
-      List< DeviceButton > list = new ArrayList< DeviceButton >();
-      for ( DeviceButton db : deviceButtons )
+//      List< DeviceButton > list = new ArrayList< DeviceButton >();
+//      for ( DeviceButton db : deviceButtons )
+//      {
+//        if ( db.getSegment() != null && db.getDeviceTypeIndex( db.getSegment().getHex().getData() ) != 0xFF )
+//        {
+//          map.put( remote.getButton( db.getButtonIndex() ), db.getName() );
+//          list.add( db );
+//        }
+//      }
+      
+      for ( DeviceButton db : deviceButtonList )
       {
-        if ( db.getSegment() != null && db.getDeviceTypeIndex( db.getSegment().getHex().getData() ) != 0xFF )
-        {
-          map.put( remote.getButton( db.getButtonIndex() ), db.getName() );
-          list.add( db );
-        }
+        map.put( remote.getButton( db.getButtonIndex() ), db.getName() );
       }
       
       if ( remote.getSegmentTypes().contains( 0x15 ) )
@@ -5511,19 +5531,22 @@ public class RemoteConfiguration
       }
       if ( remote.getSegmentTypes().contains( 0x11 ) )
       {
-        int size = 4 + 3 * list.size();
+        int size = 4 + 3 * deviceButtonList.size();
         size += ( size & 1 ) == 1 ? 1 : 0;
         Hex hex = new Hex( size );
         hex.put( 0xFFFF, size - 2 );
         hex.put( 0, 0 );
-        hex.set( ( short )list.size(), 2 );
+        hex.set( ( short )deviceButtonList.size(), 2 );
         int i = 3;
-        for ( DeviceButton db : list )
+        for ( DeviceButton db : remote.getDeviceButtons() )
         {
-          short[] data = db.getSegment().getHex().getData();
-          hex.set( ( short )db.getDeviceTypeIndex( data ), i );
-          hex.put(  db.getSetupCode( data ), i + 1 );
-          i += 3;
+          if ( deviceButtonList.contains( db ) )
+          {
+            short[] data = db.getSegment().getHex().getData();
+            hex.set( ( short )db.getDeviceTypeIndex( data ), i );
+            hex.put(  db.getSetupCode( data ), i + 1 );
+            i += 3;
+          }
         }
         segments.put( 0x11, new ArrayList< Segment >() );
         segments.get( 0x11 ).add( new Segment( 0x11, 0xFF, hex ) );
@@ -6961,6 +6984,11 @@ public class RemoteConfiguration
     return timedMacros;
   }
 
+  public List< DeviceButton > getDeviceButtonList()
+  {
+    return deviceButtonList;
+  }
+
   /**
    * Gets the device upgrades.
    * 
@@ -7081,6 +7109,7 @@ public class RemoteConfiguration
 
   /** The devices. */
   private List< DeviceUpgrade > devices = new ArrayList< DeviceUpgrade >();
+  private List< DeviceButton > deviceButtonList = null;
 
   /** The protocols. */
   private List< ProtocolUpgrade > protocols = new ArrayList< ProtocolUpgrade >();
@@ -7346,7 +7375,7 @@ public class RemoteConfiguration
   
   public boolean allowHighlighting()
   {
-    return owner.highlightItem.isSelected();
+    return owner.highlightItem.isSelected() && !remote.isSSD();
   }
 
   public Button getFavFinalKey()
@@ -7745,8 +7774,9 @@ public class RemoteConfiguration
   {
     tagList = new ArrayList< String >();
     List< Hex > work = new ArrayList< Hex >();
-    work.add( makeItem( "devices", new Hex( "devices.xcf", 8 ), false ) );    
-    for ( DeviceButton db : remote.getDeviceButtons() )
+    work.add( makeItem( "devices", new Hex( "devices.xcf", 8 ), false ) );
+    for ( DeviceButton db : deviceButtonList )
+//    for ( DeviceButton db : remote.getDeviceButtons() )
     {
       Segment seg  = db.getSegment();
       if ( seg == null )

@@ -2,7 +2,9 @@ package com.hifiremote.jp1;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -53,7 +55,23 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
-      setData( remote.getDeviceButtons() );
+      if ( remote.usesEZRC() )
+      {
+        setData( remoteConfig.getDeviceButtonList() );
+//        List< DeviceButton > list = new ArrayList< DeviceButton >();
+//        for ( DeviceButton db : remote.getDeviceButtons() )
+//        {
+//          if ( db.getSegment() != null && db.getDeviceSlot( db.getSegment().getHex().getData() ) != 0xFFFF )
+//          {
+//            list.add( db );
+//          }
+//        }
+//        setData( list );
+      }
+      else
+      {
+        setData( remote.getDeviceButtons() );
+      }
       SoftDevices softDevices = remote.getSoftDevices();
       if ( remote.getSoftHomeTheaterType() >= 0 )
       {
@@ -311,7 +329,9 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     // If remote uses soft devices, device type must be set before other columns can be edited.
     // If remote uses soft home theater, the setup code is left blank and is not editable.
     SoftDevices softDevices = remoteConfig.getRemote().getSoftDevices();
-    return editable && col > 0 && ( col > 1 || remoteConfig.getRemote().usesEZRC() ) && ( col == 2 || col == 7 || getExtendedTypeIndex( row ) != 0xFF )
+    boolean ezrc = remoteConfig.getRemote().usesEZRC();
+    return editable && col > 0 && ( col > 1 || ezrc ) && ( col < 2 || col > 3 || !ezrc )
+        && ( col == 2 || col == 7 || getExtendedTypeIndex( row ) != 0xFF )
         && ( col != 3 || ( softDevices != null && softDevices.isSetupCodesOnly() ) || getValueAt( row, col ) != null );
   }
   
@@ -456,9 +476,9 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     }
     
     boolean result = false;    
-    for ( int i = 0; i < remote.getDeviceButtons().length; i++ )
+    for ( int i = 0; i < getRowCount(); i++ )
     {
-      DeviceButton deviceButton = remote.getDeviceButtons()[ i ];
+      DeviceButton deviceButton = getRow( i );
       DeviceType deviceType = ( DeviceType )getValueAt( i, 2 );
       SetupCode setupCode = ( SetupCode )getValueAt( i, 3 );
       if ( deviceType != null && setupCode != null )
@@ -478,9 +498,9 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       return false;
     }
-    for ( int i = 0; i < remote.getDeviceButtons().length; i++ )
+    for ( int i = 0; i < getRowCount(); i++ )
     {
-      DeviceButton deviceButton = remote.getDeviceButtons()[ i ];
+      DeviceButton deviceButton = getRow( i );
       DeviceType deviceType = ( DeviceType )getValueAt( i, 2 );
       if ( deviceType != null && !deviceButton.isConstructed() && deviceButton.getUpgrade() == null )
       {

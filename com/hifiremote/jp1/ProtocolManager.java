@@ -813,6 +813,44 @@ public class ProtocolManager
     }
     return null;
   }
+  
+  public Protocol createMissingProtocol( Hex pid, String variant, int fixedDataLength, int cmdLength )
+  {
+    System.err.println( "Creating Protocol Manager entry for missing built-in protocol" );
+    List< Protocol > prots = findByPID( pid );
+    String name = null;
+    if ( !prots.isEmpty() )
+    {
+      // A protocol with this pid is in protocols.ini.  Treat as new variant of this protocol.
+      name = prots.get( 0 ).getName();
+    }
+    else
+    {
+      // There is no protocol with this pid in protocols.ini, so use the name format
+      // that protocols.ini uses for protocols with code that are otherwise unidentified.
+      name = "pid: " + pid;
+    }
+    Properties props = new Properties();
+    if ( variant.length() > 0 )
+    {
+      props.put( "VariantName", variant );
+    }
+    
+    // Create a single temporary code entry just to enable ProtocolFactory to extract
+    // fixed and variable data lengths.
+    Hex tempCode = new Hex( 3 );
+    tempCode.getData()[ 2 ] = ( short )( ( fixedDataLength << 4 ) | cmdLength );
+    props.put( "Code.MAXQ610", tempCode.toString() );
+    String notes = "This built-in protocol is missing from protocols.ini so although hex values "
+        + "for fixed data and function commands is correct, device parameters and OBC "
+        + "data are unreliable.";
+    props.put(  "Notes", notes );
+    Protocol p = ProtocolFactory.createProtocol( name, pid, "Protocol", props );
+    // Delete the MAXQ610 code that ProtocolFactory will have created.
+    p.code.clear();
+    add( p );
+    return p;
+  }
 
   /**
    * Find nearest protocol.
@@ -881,6 +919,13 @@ public class ProtocolManager
       {
         near = p;
       }      
+    }
+    
+    if ( remote.supportsVariant( id, variantName ) )
+    {
+      // Built-in protocol missing from protocols.ini
+      System.err.println( "Protocol is built-in but missing from protocols.ini" );
+      return null;
     }
     
     if ( derived != null )

@@ -68,42 +68,59 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
 
   private void createRowObjectA( DeviceUpgrade baseUpgrade )
   {
-    System.err.println( "DeviceUpgradePanel.createRowObject()" );
-    DeviceUpgrade upgrade = null;
-    if ( baseUpgrade == null )
+    System.err.println( "DeviceUpgradePanel.createRowObject()" );  
+    if ( remoteConfig == null )
     {
-      if ( remoteConfig == null )
+      String msg = "Cannot create upgrade: No remote selected.";
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), msg, "Upgrade error",
+          JOptionPane.ERROR_MESSAGE );
+      return;
+    }
+    Remote remote = remoteConfig.getRemote();
+    DeviceButton defaultDev = null;
+    DeviceUpgrade upgrade = null;
+    if ( rowOut == null && remote.hasDeviceDependentUpgrades() == 1 )
+    {
+      for ( DeviceButton db : remote.getDeviceButtons() )
       {
-        String msg = "Cannot create upgrade: No remote selected.";
-        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), msg, "Upgrade error",
-            JOptionPane.ERROR_MESSAGE );
+        if ( db.getSegment() == null || db.getDeviceSlot( db.getSegment().getHex().getData() ) == 0xFFFF )
+        {
+          defaultDev = db;
+          if ( db.getSegment() == null )
+          {
+            db.setSegment( new Segment( 0, 0xFF, new Hex( 15 ) ) );
+          }
+          String message = "The new upgrade being created will be assigned automatically\n" +
+          		             "to an unassigned device.  What name do you want to give to\n" +
+                           "this device?";
+          String name = JOptionPane.showInputDialog( RemoteMaster.getFrame(), message, "New device" );
+          defaultDev.setName( name );
+          break;
+        }
+      }
+      if ( defaultDev == null )
+      {
+        String msg = "You already have the maximum number of assigned devices.  You\n" +
+        		         "cannot add a new upgrade as there is no device to which it can\n" +
+                     "be assigned.";
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), msg, "New device", JOptionPane.WARNING_MESSAGE );
         return;
       }
-      upgrade = new DeviceUpgrade();
-      Remote remote = remoteConfig.getRemote();
+    }
+    
+    if ( baseUpgrade == null )
+    {
+      upgrade = new DeviceUpgrade();;
       upgrade.setRemote( remote );
-      if ( remote.hasDeviceDependentUpgrades() > 0 )
+      if ( remote.hasDeviceDependentUpgrades() == 2 )
       {
-        DeviceButton defaultDev = remote.hasDeviceDependentUpgrades() == 2 || remote.getDeviceButtons().length == 0 ?
-            DeviceButton.noButton : remote.getDeviceButtons()[ 0 ];
-        upgrade.setButtonIndependent( false );
-        upgrade.setButtonRestriction( defaultDev );
-        String msg;
-        if ( remote.hasDeviceDependentUpgrades() == 2 )
-        {
-          msg =  "<html>This remote has device upgrades that are available on<br>"
+        defaultDev = DeviceButton.noButton;
+        String msg =  "<html>This remote has device upgrades that are available on<br>"
             + "all device buttons and ones that are only available on a<br>"
             + "specified button.  The same upgrade can even be in both<br>"
             + "categories.  This new upgrade will be created as being in<br>"
             + "neither category.  After pressing OK, edit the new table<br>"
             + "entry to set the availability as required.</html>";
-        }
-        else
-        {
-          msg = "<html>This remote requires there to be exactly one device upgrade<br>"
-            + "assigned to each active device button.  After pressing OK, edit<br>"
-            + "the new table entry to assign this upgrade appropriately.";
-        }
         JOptionPane.showMessageDialog( RemoteMaster.getFrame(), msg, "Creating a new device upgrade",
             JOptionPane.PLAIN_MESSAGE );
       }
@@ -120,6 +137,19 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       }
     }
     oldUpgrade = baseUpgrade;
+    if ( defaultDev != null )
+    {
+      upgrade.setButtonIndependent( false );
+      upgrade.setButtonRestriction( defaultDev );
+      if ( upgrade.getSetupCode() < 0 )
+      {
+        upgrade.setSetupCode( 0 );
+      }
+      if ( defaultDev != DeviceButton.noButton )
+      {
+        defaultDev.setUpgrade( upgrade );
+      }
+    }
 
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );
@@ -273,15 +303,26 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     else
     {
       // New, Clone
-      if ( remoteConfig.findBoundDeviceButtonIndex( newUpgrade ) == -1 )
+      int dbi = 0;
+      if ( ( dbi = remoteConfig.findBoundDeviceButtonIndex( newUpgrade ) ) == -1
+          || remote.hasDeviceDependentUpgrades() == 1 )
       {
-        // upgrade isn't bound to a device button.
-        DeviceButton[] devButtons = remote.getDeviceButtons();
-        DeviceButton devButton = ( DeviceButton )JOptionPane.showInputDialog( RemoteMaster.getFrame(),
-            "The device upgrade \"" + newUpgrade.toString()
-                + "\" is not assigned to a device button.\nDo you want to assign it now?\n"
-                + "To do so, select the desired device button and press OK.\n" + "Otherwise please press Cancel.\n",
-            "Unassigned Device Upgrade", JOptionPane.QUESTION_MESSAGE, null, devButtons, null );
+        DeviceButton devButton = null;
+        if ( dbi == -1 )
+        {
+          // upgrade isn't bound to a device button.
+          DeviceButton[] devButtons = remote.getDeviceButtons();
+          devButton = ( DeviceButton )JOptionPane.showInputDialog( RemoteMaster.getFrame(),
+              "The device upgrade \"" + newUpgrade.toString()
+              + "\" is not assigned to a device button.\nDo you want to assign it now?\n"
+              + "To do so, select the desired device button and press OK.\n" + "Otherwise please press Cancel.\n",
+              "Unassigned Device Upgrade", JOptionPane.QUESTION_MESSAGE, null, devButtons, null );
+        }
+        else
+        {
+          // upgrade is assigned to a device button via a button restriction
+          devButton = newUpgrade.getButtonRestriction();
+        }
         if ( devButton != null )
         {
           short[] data = remoteConfig.getData();
@@ -299,8 +340,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
                 + " settings in a manner consistent with your choice of button\n" + " assignment.";
             String title = "Creating a new device upgrade";
             JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
-          }
-          
+          }    
         }
       }
       

@@ -1502,55 +1502,17 @@ public class DeviceUpgrade extends Highlight
     {
       // Protocol, or at least its supported variant, missing from protocols.ini
       // or there is a fixed/cmd length conflict with entry in protocols.ini.
-      String name = null;
       List< String > variants = remote.getSupportedVariantNames( pid );
       String variant = variants.get( 0 );
       if ( !protocols.isEmpty() )
       {
         // Protocol variant is in protocols.ini but doesn't match on fixed/variable
         // data lengths.  Treat as RDF error and mark variant as unknown.
-        name = protocols.get( 0 ).getName();
         variants.remove( variant );
         variant = "???";
         variants.add( variant );
       }
-      else
-      {
-        protocols = ProtocolManager.getProtocolManager().findByPID( pid );
-        if ( !protocols.isEmpty() )
-        {
-          // A protocol with this pid is in protocols.ini, but not with this variant
-          // name.  Treat as new variant of this protocol.
-          name = protocols.get( 0 ).getName();
-        }
-        else
-        {
-          // There is no protocol with this pid in protocols.ini, so use the name format
-          // that protocols.ini uses for protocols with code that are otherwise unidentified.
-          name = "pid: " + pid;
-        }
-      }
-      
-      System.err.println( "Creating Protocol Manager entry for missing built-in protocol" );
-      Properties props = new Properties();
-      if ( variant.length() > 0 )
-      {
-        props.put( "VariantName", variant );
-      }
-      
-      // Create a single temporary code entry just to enable ProtocolFactory to extract
-      // fixed and variable data lengths.
-      Hex tempCode = new Hex( 3 );
-      tempCode.getData()[ 2 ] = ( short )( ( fixedDataLength << 4 ) | cmdLength );
-      props.put( "Code.MAXQ610", tempCode.toString() );
-      String notes = "This built-in protocol is missing from protocols.ini so although hex values "
-          + "for fixed data and function commands is correct, device parameters and OBC "
-          + "data are unreliable.";
-      props.put(  "Notes", notes );
-      p = ProtocolFactory.createProtocol( name, pid, "Protocol", props );
-      // Delete the MAXQ610 code that ProtocolFactory will have created.
-      p.code.clear();
-      ProtocolManager.getProtocolManager().add( p );
+      p = ProtocolManager.getProtocolManager().createMissingProtocol( pid, variant, fixedDataLength, cmdLength );
       fixedData = new short[ fixedDataLength ];
       System.arraycopy( code, fixedDataOffset, fixedData, 0, fixedDataLength );
       fixedDataHex = new Hex( fixedData );
@@ -2538,6 +2500,29 @@ public class DeviceUpgrade extends Highlight
         protocol = pm.findNearestProtocol( remote, name, pid, variantName );
         if ( protocol == null )
         {
+          if ( remote.supportsVariant( pid, variantName ) )
+          {
+            // Protocol missing from protocols.ini so add to protocol manager
+            int cmdLength = 0;
+            int fixedDataLength = 0;
+            String temp = props.getProperty( "Function.0.hex" );
+            if ( temp != null )
+            {
+              cmdLength = ( new Hex( temp ) ).length();
+            }
+            temp = props.getProperty( "ProtocolParms" );
+            if ( temp != null )
+            {
+              fixedDataLength = stringToValueArray( temp ).length;
+            }
+            if ( cmdLength > 0 )
+            {
+              protocol = pm.createMissingProtocol( pid, variantName, fixedDataLength, cmdLength );
+            }
+          }
+        }
+        if ( protocol == null )
+        { 
           JOptionPane.showMessageDialog( RemoteMaster.getFrame(), "No protocol found with name=\"" + name + "\", ID="
               + pid.toString() + ", and variantName=\"" + variantName + "\"", "File Load Error",
               JOptionPane.ERROR_MESSAGE );

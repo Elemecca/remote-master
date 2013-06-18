@@ -107,18 +107,23 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     buttonPanel = new JPanel( new FlowLayout( FlowLayout.CENTER, 5, 0 ) );
     editButton = new JButton( "Edit Device" );
     editButton.setEnabled( false );
-//    iconButton = new JButton( "Icon" );
+    moveUpButton = new JButton( "Move Up" );
+    moveUpButton.setVisible( false );
+    moveDownButton = new JButton( "Move Down" );
+    moveDownButton.setVisible( false );
     iconLabel = new JLabel( "   " );
     iconLabel.setPreferredSize( new Dimension( 100, 40 ) );
     iconLabel.setHorizontalTextPosition( SwingConstants.LEADING );
     iconLabel.setVisible( false );
     
     buttonPanel.add( editButton );
+    buttonPanel.add( moveUpButton );
+    buttonPanel.add( moveDownButton );
     buttonPanel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
     buttonPanel.add( iconLabel );
     editPanel.add( buttonPanel );
-    editButton.addActionListener( this );
-//    iconButton.addActionListener( this );
+    moveUpButton.addActionListener( this );
+    moveDownButton.addActionListener( this );
     deviceButtonPanel.add( editPanel, BorderLayout.PAGE_END );
 
     // deviceScrollPane.setPreferredSize( deviceButtonPanel.getPreferredSize() );
@@ -233,10 +238,12 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     String message2 = "Devices on this remote are selected by scrolling through a list of those devices that have been "
       + "set up.  To set up an unset device, you must first set a value in the Type column.  To delete a set "
       + "device, edit the Type value and select the blank entry at the bottom of the list.";
-    String message3 = "Note 1:  All devices in this remote require a corresponding device upgrade unless they consist "
-      + "only of learned signals.  Use the remote itself to set up a built-in setup code, as this automatically creates "
-      + "the necessary device upgrade.  You can then download it to RMIR and edit the upgrade as required.\n\nNote2:  "
-      + message2;
+    String message3 = "Note 1:  All devices in this remote have a corresponding device upgrade.  To add a new built-in "
+      + "device, use the Settings facility of the remote as this also creates the required upgrade.  To load or create "
+      + "an upgrade for a new device, use the New button on the Device Upgrades tab.  Creating the upgrade will "
+      + "automatically assign it as a new device.  To delete a device, use the Device Upgrades tab to delete the "
+      + "corresponding device upgrade, which will also delete the device.\n\n"
+      + "Note 2:  Use this Device Buttons table to edit device names, brands etc, to reorder devices or set locks.";
     String text = remote.usesEZRC() ? message3 : softDevices != null && softDevices.isSetupCodesOnly() ? 
         "Note:  " + message1 : "Note:  " + message2;
     messageArea.setText( text );
@@ -253,8 +260,13 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       settingsScrollPane.setVisible( false ); 
     }
     
+    editButton.setEnabled( false );
     iconLabel.setVisible( remote.isSSD() );
     iconLabel.setIcon( null );
+    moveUpButton.setVisible( remote.usesEZRC() );
+    moveDownButton.setVisible( remote.usesEZRC() );
+    moveUpButton.setEnabled( false );
+    moveDownButton.setEnabled( false );
 
     text = remoteConfig.getNotes();
     if ( text == null )
@@ -313,10 +325,14 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         editButton.setEnabled( selectedUpgrade != null );
         RMIcon icon = deviceButton.icon;
         iconLabel.setIcon( icon == null ? null : icon.image );
+        moveUpButton.setEnabled( remote.usesEZRC() && selectedRow > 0 );
+        moveDownButton.setEnabled( remote.usesEZRC() && selectedRow < deviceButtonTable.getRowCount() - 1 );
       }
       else
       {
         editButton.setEnabled( false );
+        moveUpButton.setEnabled( false );
+        moveDownButton.setEnabled( false );
         iconLabel.setIcon( null );
       }
       deviceButtonPanel.repaint();
@@ -338,23 +354,21 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   public void actionPerformed( ActionEvent event )
   {
     Object source = event.getSource();
+    int row = deviceButtonTable.getSelectedRow();
     if ( source == editButton )
     {
-      editUpgradeInRow( deviceButtonTable.getSelectedRow() );
+      editUpgradeInRow( row );
     }
-//    else if ( source == iconButton )
-//    {
-//      RMSetterDialog< RMIcon > dialog = new RMSetterDialog< RMIcon >();
-//      RMIcon result = dialog.showDialog( this, remoteConfig, IconPanel.class, null );
-//      int row = deviceButtonTable.getSelectedRow();
-//      if ( row >= 0 )
-//      {
-//        DeviceButton db = deviceModel.getRow( row );
-//        db.icon = result;
-//        deviceModel.fireTableRowsUpdated( row, row );
-//        iconLabel.setIcon( result.image );
-//      }
-//    }
+    else if ( source == moveUpButton )
+    {
+      deviceModel.moveRow( row - 1, row );
+      deviceButtonTable.setRowSelectionInterval( row - 1, row - 1 );
+    }
+    else if ( source == moveDownButton )
+    {
+      deviceModel.moveRow( row, row + 1 );
+      deviceButtonTable.setRowSelectionInterval( row + 1, row + 1 );
+    }
   }
 
   public void editUpgradeInRow( int row )
@@ -481,7 +495,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   private JTextArea notes = null;
 
   private JButton editButton = null;
-//  private JButton iconButton = null;
+  private JButton moveUpButton = null;
+  private JButton moveDownButton = null;
   private JPanel buttonPanel = null;
   private DeviceUpgrade selectedUpgrade = null;
   private boolean setInProgress = false;

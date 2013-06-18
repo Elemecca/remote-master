@@ -186,6 +186,20 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         if ( source == cancelButton )
         {
           cancelled = true;
+          Remote remote = remoteConfig.getRemote();
+          if ( remote.usesEZRC() && row == null )
+          {
+            DeviceButton db = upgrade.getButtonRestriction();
+            if ( db != null && db != DeviceButton.noButton )
+            {
+              db.setUpgrade( null );
+              db.setDefaultName();
+            }
+            if ( db != null && remote.isSSD() )
+            {
+              db.setSegment( null );
+            }
+          }
           Protocol p = upgrade.convertedProtocol;
           if ( p != null )
           {
@@ -379,6 +393,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     DeviceUpgrade deviceUpgrade = editorPanel.getDeviceUpgrade();
 
     Remote remote = deviceUpgrade.getRemote();
+    boolean btnInd = deviceUpgrade.getButtonIndependent();
+    DeviceButton btnRes = deviceUpgrade.getButtonRestriction();
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
     JP1Frame.getProperties().put( "UpgradePath", file.getParent() );
@@ -386,6 +402,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     {
       deviceUpgrade.setRemote( remote );
     }
+    deviceUpgrade.setButtonIndependent( btnInd );
+    deviceUpgrade.setButtonRestriction( btnRes );
     editorPanel.refresh();
   }
 

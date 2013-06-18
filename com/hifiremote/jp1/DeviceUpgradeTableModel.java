@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -460,52 +461,77 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     {
       db.setUpgrade( null );
     }
-    Protocol p = du.getProtocol();
     Remote remote = remoteConfig.getRemote();
-    boolean pidUsed = false;
-    boolean pUsed = false;
-    for ( DeviceUpgrade temp : remoteConfig.getDeviceUpgrades() )
+    if ( remote.usesEZRC() )
     {
-      // Test separately on pid and on protocol itself as it is possible for two protocols
-      // to be present with same pid, eg Denon-K and Panasonic Combo.
-      if ( temp != du && temp.getProtocol() == p )
+      // Delete the device that is linked to this upgrade
+      db.setDefaultName();
+      Hex hex = new Hex( 12 );
+      short[] data = hex.getData();
+      Arrays.fill( data, ( short )0xFF );
+      data[ 0 ] = ( short )db.getButtonIndex();
+      data[ 1 ] = ( short )0;
+      if ( remote.isSSD() )
       {
-        pUsed = true;
-        pidUsed = true;
-        break;
+        db.setSegment( null );
       }
-      else if ( temp != du && temp.getProtocol().getID( remote ).equals( p.getID( remote ) )  )
+      else
       {
-        pidUsed = true;
+        db.setSegment( new Segment( 0, 0xFF, hex  ) );
       }
     }
-    if ( du.needsProtocolCode() && !pidUsed && !remoteConfig.hasSegments() )
+    Protocol p = du.getProtocol();
+    if ( p != null )
     {
-      String title = "Device Upgrade Deletion";
-      String message = "The protocol used by the device upgrade being deleted is a protocol\n"
-                     + "upgrade that is not used by any other device upgrade and so will \n"
-                     + "normally also be deleted.  Do you wish to keep the protocol upgrade?";
-      int ask = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
-      if ( ask == JOptionPane.CANCEL_OPTION )
+      boolean pidUsed = false;
+      boolean pUsed = false;
+      for ( DeviceUpgrade temp : remoteConfig.getDeviceUpgrades() )
       {
-        return;
+        // Test separately on pid and on protocol itself as it is possible for two protocols
+        // to be present with same pid, eg Denon-K and Panasonic Combo.
+        if ( temp.getProtocol() == null )
+        {
+          continue;
+        }
+        if ( temp != du && p == temp.getProtocol() )
+        {
+          pUsed = true;
+          pidUsed = true;
+          break;
+        }
+        else if ( temp != du && temp.getProtocol().getID( remote ).equals( p.getID( remote ) )  )
+        {
+          pidUsed = true;
+        }
       }
-      else if ( ask == JOptionPane.YES_OPTION )
+      if ( du.needsProtocolCode() && !pidUsed && !remoteConfig.hasSegments() )
       {
-        p.saveCode( remoteConfig, du.getCode() );
+        String title = "Device Upgrade Deletion";
+        String message = "The protocol used by the device upgrade being deleted is a protocol\n"
+            + "upgrade that is not used by any other device upgrade and so will \n"
+            + "normally also be deleted.  Do you wish to keep the protocol upgrade?";
+        int ask = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+        if ( ask == JOptionPane.CANCEL_OPTION )
+        {
+          return;
+        }
+        else if ( ask == JOptionPane.YES_OPTION )
+        {
+          p.saveCode( remoteConfig, du.getCode() );
+        }
+        else if ( p instanceof ManualProtocol )
+        {
+          // If not to be kept and it is a Manual Protocol, complete its removal by deleting
+          // it from ProtocolManager
+          ProtocolManager.getProtocolManager().remove( p );
+        }
+        // In all cases other than Cancel, any custom code is no longer required
+        p.customCode.clear();
       }
-      else if ( p instanceof ManualProtocol )
+      if ( !pUsed )
       {
-        // If not to be kept and it is a Manual Protocol, complete its removal by deleting
-        // it from ProtocolManager
-        ProtocolManager.getProtocolManager().remove( p );
+        p.removeAltPID( remote );
       }
-      // In all cases other than Cancel, any custom code is no longer required
-      p.customCode.clear();
-    }
-    if ( !pUsed )
-    {
-      p.removeAltPID( remote );
     }
     du.removePropertyChangeListener( this );
     super.removeRow( row );

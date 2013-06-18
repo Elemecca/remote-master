@@ -531,6 +531,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
       }
       remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
+      recreateToolbar();
       int count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
       System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
       io.closeRemote();
@@ -744,6 +745,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           remote.load();
           ProtocolManager.getProtocolManager().reset();
           remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
+          recreateToolbar();
           remoteConfig.initializeSetup( 0 );
           remoteConfig.updateImage();
           remoteConfig.setDateIndicator();
@@ -1891,11 +1893,23 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     toolBar.addSeparator();
     toolBar.add( openRdfAction );
     toolBar.add( codesAction );
-    if ( highlightItem.isSelected() )
+    if ( remoteConfig != null && remoteConfig.allowHighlighting() )
     {
       toolBar.add( highlightAction );
 //      highlightAction.setEnabled( true );
     }
+  }
+  
+  public void recreateToolbar()
+  {
+    highlightItem.setEnabled( remoteConfig != null && !remoteConfig.getRemote().isSSD() );
+    Container mainPanel = getContentPane();
+    mainPanel.remove( toolBar );
+    toolBar = new JToolBar();
+    toolBar.setFloatable( false );
+    createToolbar();
+    mainPanel.add( toolBar, BorderLayout.PAGE_START );
+    mainPanel.validate();
   }
 
   /**
@@ -2115,6 +2129,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       Remote remote = remotes.get( 0 );
       remote.load();
       remoteConfig = new RemoteConfiguration( remote, this );
+      recreateToolbar();
       remoteConfig.initializeSetup( 0 );
       remoteConfig.updateImage();
       remoteConfig.setDateIndicator();
@@ -2144,6 +2159,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     initializeToFFItem.setEnabled( !interfaces.isEmpty() );
     uploadAction.setEnabled( !interfaces.isEmpty() );
     remoteConfig = new RemoteConfiguration( file, this );
+    recreateToolbar();
     update();
     setTitleFile( file );
     this.file = file;
@@ -2209,6 +2225,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       return;
     }
     remoteConfig = RMExtInstall.remoteConfig;
+    recreateToolbar();
     String[] newDevBtnNotes = remoteConfig.getDeviceButtonNotes();
     Remote newRemote = remoteConfig.getRemote();
     List< DeviceUpgrade > newDevUpgrades = remoteConfig.getDeviceUpgrades();
@@ -2617,14 +2634,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           generalPanel.getSettingModel().fireTableStructureChanged();
         }
         currentPanel.set( remoteConfig );
-
-        Container mainPanel = getContentPane();
-        mainPanel.remove( toolBar );
-        toolBar = new JToolBar();
-        toolBar.setFloatable( false );
-        createToolbar();
-        mainPanel.add( toolBar, BorderLayout.PAGE_START );
-        mainPanel.validate();
+        recreateToolbar();
       }
       else if ( source == enablePreserveSelection )
       {

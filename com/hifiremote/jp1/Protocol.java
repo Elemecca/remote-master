@@ -553,6 +553,10 @@ public class Protocol
       {
         code = du.needsProtocolCode() ? du.getCode() : null;
         Protocol p = du.getProtocol();
+        if ( p == null )
+        {
+          continue;
+        }
         if ( p != this && p.getID( remote ).get( 0 ) == pid && code != null )
         {
           match = ( ( Protocol.getFixedDataLengthFromCode( proc, code ) == getFixedDataLength() ) && ( Protocol
