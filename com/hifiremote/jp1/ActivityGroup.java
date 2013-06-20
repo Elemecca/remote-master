@@ -83,6 +83,7 @@ public class ActivityGroup extends Highlight
   {
     this.index = index;
     this.deviceIndex = deviceIndex;
+    setSegmentFlags( 0xFF );  // default
   }
   
   public ActivityGroup( int index, Remote remote )
@@ -91,6 +92,7 @@ public class ActivityGroup extends Highlight
     device = remote.usesEZRC() ? remote.getDeviceButtons()[ 0 ] : DeviceButton.noButton;
     deviceIndex = device.getButtonIndex() & 0xFF;
     buttonGroup = remote.getActivityButtonGroups()[ index ];
+    setSegmentFlags( 0xFF );  // default
   }
   
   public void set( Remote remote )

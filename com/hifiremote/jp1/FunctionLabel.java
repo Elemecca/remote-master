@@ -114,6 +114,9 @@ public class FunctionLabel
         buff.append( "<br><hr>&nbsp;" + function.getNotes());
       List< User > users = new ArrayList< User >();
       users.addAll( function.getUsers() );
+      List< User > moreUsers = function.getIndirectReferences();
+      if ( !moreUsers.isEmpty())
+      users.addAll( function.getIndirectReferences() );
       Function alternate = null;
       if ( function instanceof Function && ( alternate = ( ( ( Function )function ).getAlternate() ) ) != null )
       {

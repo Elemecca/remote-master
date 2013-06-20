@@ -353,8 +353,28 @@ public class ButtonTableModel
     DeviceButton db = deviceUpgrade.getButtonRestriction();
     if ( old instanceof Function && gf == null )
     {
-      // Deletion of old reference is performed by setFunction()
-      deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
+//      // Deletion of old reference is performed by setFunction()
+//      deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
+      Function fnOld = ( ( Function )old );
+      DeviceUpgrade du = fnOld.getUpgrade( null );
+      if ( deviceUpgrade != du )
+      {
+        // Assigned through a system macro
+        Macro macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
+        deviceUpgrade.getRemoteConfig().getMacros().remove( macro );
+        deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
+        FunctionLabel label = fnOld.getLabel();
+        if ( label != null )
+        {
+          label.showAssigned( db );
+          label.updateToolTipText();
+        }
+      }
+      else
+      {
+        deviceUpgrade.getAssignments().assign( button, null );
+        fnOld.removeReference( db, button );
+      }
     }
     else if ( old instanceof Macro && gf == null )
     {
@@ -385,8 +405,19 @@ public class ButtonTableModel
         panel.addFunction( result );
         panel.revalidateFunctions();
       }
+      Remote remote = deviceUpgrade.getRemote();
+      if ( remote.usesEZRC() && !remote.isSSD() && deviceUpgrade != gf.getUpgrade( remote ) )
+      {
+        gf = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
+        FunctionLabel label = f.getLabel();
+        if ( label != null )
+        {
+          label.showAssigned( db );
+          label.updateToolTipText();
+        }
+      }
     }
-    else if ( gf instanceof Macro )
+    if ( gf instanceof Macro )
     {
       Macro macro = ( Macro )gf;
       deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );

@@ -465,6 +465,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
     if ( remote.usesEZRC() )
     {
       // Delete the device that is linked to this upgrade
+      remoteConfig.getDeviceButtonList().remove( db );
       db.setDefaultName();
       Hex hex = new Hex( 12 );
       short[] data = hex.getData();

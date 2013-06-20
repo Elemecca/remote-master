@@ -868,14 +868,25 @@ public class RemoteConfiguration
     return new String( ch );
   }
   
+  private String getString16( short[] data, int pos, int len )
+  {
+    char[] ch = new char[ len / 2 ];
+    for ( int i = 0; i < len; i += 2 )
+    {
+      ch[ i / 2 ] = ( char )( data[ pos + i ] + 0x100 * data[ pos + i + 1 ] );
+    }
+    return new String( ch );
+  }
+  
   private boolean decodeRegion( Items items, String tag, short[] data, int pos, boolean start )
   {
     if ( start )
     {
       if ( tag.equals( "device" ) )
       {
-        pos++;
+        int len = data[ pos++ ] - 1;
         items.category = data[ pos++ ];
+        deviceCategories.put( items.category, getString16( data, pos, len ) );
       }
       else if ( tag.equals(  "region" ) )
       {
@@ -1739,6 +1750,15 @@ public class RemoteConfiguration
       int tag = data[ pos++ ];
       if ( ( tag & 0x80 ) == 0 )
       {
+        // Handle apparent syntax error in home.xcf when there are no devices
+        if ( fileIndex == 0 && tag > 1 )
+        {
+          if ( tags.size() == 3 )
+          {
+            // missing end tag
+            tags.remove( 0 );
+          }
+        }
         tags.add( 0, tag );
         more = decodeItem( items, fileIndex, tagNames.get( tag ), data, pos, true, !decode );
         int len = data[ pos++ ];
@@ -2426,10 +2446,10 @@ public class RemoteConfiguration
                   continue;
                 }
                 int setupLength = 3 + numFixed;  // PID + numbertable
-                int mapbyte = buf[ 3 ];
+                int mapbyte = buf[ setupOdd + 3 ];
                 setupLength += ( 10 * ( ( mapbyte >> 7 ) & 1 ) + 3 * ( ( mapbyte >> 6 ) & 1 ) + 2 * ( ( mapbyte >> 5 ) & 1 ) ) * numVar; 
                 mapbyte &= 0x1F;
-                for ( int j = 0; j < 32; mapbyte = buf[ 3 + (++j) ] )
+                for ( int j = 0; j < 32; mapbyte = buf[ setupOdd + 3 + (++j) ] )
                 {
                   setupLength++;
                   for ( int k = 1; k < 8; k++ )
@@ -2628,9 +2648,9 @@ public class RemoteConfiguration
     }
     
     pos = 0;
-    deviceCategories = new ArrayList< String >();
     System.err.println();
     System.err.println( "Device Categories:" );
+    deviceCategories = new LinkedHashMap< Integer, String >();
     for ( int i = 0; i < categoryCount; i++ )
     {
       int len = buffer[ pos ];
@@ -2642,7 +2662,7 @@ public class RemoteConfiguration
       pos += len + 1;
       String category = new String( text );
       System.err.println( "   " + category );
-      deviceCategories.add( category );
+      deviceCategories.put( i, category );
     }
   }
   
@@ -2662,6 +2682,7 @@ public class RemoteConfiguration
         }
         categoryBrands = new LinkedHashMap< Integer, List<String> >();
         codeLocations = new LinkedHashMap< Integer, Integer >();
+        deviceCategories = new LinkedHashMap< Integer, String >();
         Items items = new Items();
         items.codes = new ArrayList< Integer >();
         items.irdb = hid.readTouchFile( "irdb.bin" );
@@ -2682,30 +2703,30 @@ public class RemoteConfiguration
         start = filedata[ 14 ] + 0x100 * filedata[ 15 ] + 17;
         parseXCFFile( items, -2, filedata, start, tagNames, true );
         
-        deviceCategories = new ArrayList< String >();
-        int count = 0;
-        for ( int n : categoryBrands.keySet() )
-        {
-          count = Math.max( count, n + 1 );
-        }
-        filedata = hid.readTouchFile( languageFilename );
-        start = 0x4E;
-        int addr1 = 0;
-        int addr2 = 0;
-        for ( int i = 0; i < count + 1; i++ )
-        {
-          addr1 = addr2;
-          addr2 = filedata[ start + 2*i ] | filedata[ start + 2*i + 1 ] << 8;
-          if ( i > 0 )
-          {
-            char[] ch = new char[ addr2 - addr1 ];
-            for ( int j = 0; j < ch.length; j++ )
-            {
-              ch[ j ] = ( char )filedata[ addr1 + j ];
-            }
-            deviceCategories.add(  new String( ch ) );
-          }
-        }
+//        deviceCategories = new ArrayList< String >();
+//        int count = 0;
+//        for ( int n : categoryBrands.keySet() )
+//        {
+//          count = Math.max( count, n + 1 );
+//        }
+//        filedata = hid.readTouchFile( languageFilename );
+//        start = 0x4E;
+//        int addr1 = 0;
+//        int addr2 = 0;
+//        for ( int i = 0; i < count + 1; i++ )
+//        {
+//          addr1 = addr2;
+//          addr2 = filedata[ start + 2*i ] | filedata[ start + 2*i + 1 ] << 8;
+//          if ( i > 0 )
+//          {
+//            char[] ch = new char[ addr2 - addr1 ];
+//            for ( int j = 0; j < ch.length; j++ )
+//            {
+//              ch[ j ] = ( char )filedata[ addr1 + j ];
+//            }
+//            deviceCategories.add(  new String( ch ) );
+//          }
+//        }
         result = true;
         break;
       }    
@@ -7086,7 +7107,7 @@ public class RemoteConfiguration
     return ssdFiles;
   }
   
-  private List< String > deviceCategories = null;
+  private LinkedHashMap< Integer, String > deviceCategories = null;
   private LinkedHashMap< Integer, List< String > > categoryBrands = null;
   private LinkedHashMap< Integer, Integer > codeLocations = null;
 
@@ -7133,7 +7154,7 @@ public class RemoteConfiguration
     return region == null ? "this region" : region;
   }
 
-  public List< String > getDeviceCategories()
+  public LinkedHashMap< Integer, String > getDeviceCategories()
   {
     return deviceCategories;
   }
@@ -7772,6 +7793,10 @@ public class RemoteConfiguration
   
   private SSDFile makeDevicesXCF()
   {
+    if ( deviceButtonList == null )
+    {
+      return null;
+    }
     tagList = new ArrayList< String >();
     List< Hex > work = new ArrayList< Hex >();
     work.add( makeItem( "devices", new Hex( "devices.xcf", 8 ), false ) );

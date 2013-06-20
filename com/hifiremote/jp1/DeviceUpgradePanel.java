@@ -127,7 +127,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     }
     else
     {
-      upgrade = new DeviceUpgrade( baseUpgrade );
+      upgrade = new DeviceUpgrade( baseUpgrade, defaultDev );
       processorName = remoteConfig.getRemote().getProcessor().getEquivalentName();
       Protocol baseProtocol = baseUpgrade.getProtocol();
       if ( baseProtocol != null )
@@ -139,8 +139,6 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     oldUpgrade = baseUpgrade;
     if ( defaultDev != null )
     {
-      upgrade.setButtonIndependent( false );
-      upgrade.setButtonRestriction( defaultDev );
       if ( upgrade.getSetupCode() < 0 )
       {
         upgrade.setSetupCode( 0 );
@@ -334,7 +332,11 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
           devButton.setSetupCode( ( short )newUpgrade.getSetupCode(), data );
           devButton.setDeviceTypeIndex( ( short )devType.getNumber(), data );
           devButton.setDeviceGroup( ( short )devType.getGroup(), data );
-          if ( remote.hasDeviceDependentUpgrades() == 2 )
+          if ( remote.hasDeviceDependentUpgrades() == 1 )
+          {
+            remoteConfig.getDeviceButtonList().add( devButton );
+          }          
+          else if ( remote.hasDeviceDependentUpgrades() == 2 )
           {
             String message = "Remember to set the button-dependent and/or button-independent\n"
                 + " settings in a manner consistent with your choice of button\n" + " assignment.";

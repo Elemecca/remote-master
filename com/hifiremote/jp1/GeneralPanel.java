@@ -122,6 +122,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     buttonPanel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
     buttonPanel.add( iconLabel );
     editPanel.add( buttonPanel );
+    editButton.addActionListener( this );
     moveUpButton.addActionListener( this );
     moveDownButton.addActionListener( this );
     deviceButtonPanel.add( editPanel, BorderLayout.PAGE_END );
@@ -378,7 +379,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       return;
     }
 
-    DeviceUpgrade newUpgrade = new DeviceUpgrade( selectedUpgrade );
+    DeviceUpgrade newUpgrade = new DeviceUpgrade( selectedUpgrade, null );
     newUpgrade.setRemoteConfig( remoteConfig );
     List< Remote > remotes = new ArrayList< Remote >( 1 );
     remotes.add( remoteConfig.getRemote() );

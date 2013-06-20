@@ -594,7 +594,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
           if ( col == 2 )
           {
             enableDelete = deviceUpgrade.getFunction( b, Button.NORMAL_STATE ) != null;
-            if ( deviceUpgrade.getRemote().isSSD() )
+            if ( deviceUpgrade.getRemote().usesEZRC() )
             {
               enableDelete = enableDelete || deviceUpgrade.getMacroMap().get( keyCode ) != null
                 || deviceUpgrade.getKmMap().get( keyCode ) != null
@@ -710,6 +710,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
     {
       setFunctions();
       functionPanel.revalidate();
+      functionPanel.repaint();
     }
     deviceUpgrade.checkSize();
   }

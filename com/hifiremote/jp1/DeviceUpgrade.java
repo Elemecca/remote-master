@@ -75,7 +75,7 @@ public class DeviceUpgrade extends Highlight
    * @param base
    *          the base
    */
-  public DeviceUpgrade( DeviceUpgrade base )
+  public DeviceUpgrade( DeviceUpgrade base, DeviceButton newRestriction )
   {
     this.baseUpgrade = base;
     description = base.description;
@@ -85,8 +85,16 @@ public class DeviceUpgrade extends Highlight
     remoteConfig = base.remoteConfig;
     notes = base.notes;
     protocol = base.protocol;
-    buttonIndependent = base.buttonIndependent;
-    buttonRestriction = base.buttonRestriction;
+    if ( newRestriction == null )
+    {
+      buttonIndependent = base.buttonIndependent;
+      buttonRestriction = base.buttonRestriction;
+    }
+    else
+    {
+      buttonIndependent = false;
+      buttonRestriction = newRestriction;
+    }
     protocolHighlight = base.protocolHighlight;
     sizeCmdBytes = base.sizeCmdBytes;
     sizeDevBytes = base.sizeDevBytes;
@@ -4573,15 +4581,10 @@ public class DeviceUpgrade extends Highlight
       {
         gf = learnedMap.get( keyCode );
       }
-//      Macro macro = macroMap.get( keyCode );
-//      if ( gf == null && macro != null )
-//      {
-//        gf = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
-////        if ( !macro.isSystemMacro() )
-////        {
-////          macro = null;
-////        }
-//      }
+      if ( gf == null && !remote.isSSD() )
+      {
+        gf = macroMap.get( keyCode );
+      }
     }
     if ( gf == null )
     {

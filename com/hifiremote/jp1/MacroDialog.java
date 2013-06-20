@@ -329,7 +329,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     {
       String name = null;
       DeviceButton db = null;
-      if ( remote.isSSD() )
+      if ( remote.usesEZRC() )
       {
         name = nameField.getText();
         if ( name == null || name.isEmpty() )
@@ -360,14 +360,21 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       String notesStr = notes.getText();
       Object value = macroBox.getValue();
       Macro newMacro = new Macro( keyCode, null, notesStr );
-      if ( remote.isSSD() )
+      if ( remote.usesEZRC() )
       {
         @SuppressWarnings( "unchecked" )
         List< KeySpec >items = ( List< KeySpec > )value;
         newMacro.setItems( items );
         newMacro.setName( name );
         newMacro.setDeviceButtonIndex( db.getButtonIndex() );
-        newMacro.setSerial( config.getNewMacroSerial() );
+        if ( remote.isSSD() )
+        {
+          newMacro.setSerial( config.getNewMacroSerial() );
+        }
+        else
+        {
+          newMacro.setSegmentFlags( macro == null ? 0xFF : macro.getSegmentFlags() );
+        }
 //        DeviceUpgrade du = macro.getUpgrade( remote );
 //        du.setFunction( b, newMacro, Button.NORMAL_STATE );
       }
@@ -377,17 +384,20 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
         newMacro.setData( data );
       }
       
-      if ( config.hasSegments() && !remote.isSSD() )
+      
+      
+      if ( config.hasSegments() && !remote.usesEZRC() )
       {
-        // set default values
-        if ( macro == null && remote.usesEZRC() )
-        {
-          newMacro.setDeviceButtonIndex( remote.getDeviceButtons()[ 0 ].getButtonIndex() );
-          newMacro.setSegmentFlags( 0xFF );
-          newMacro.setName( "New macro" );
-          newMacro.setSerial( config.getNewMacroSerial() );
-        }
-        else if ( macro == null )
+//        // set default values
+//        if ( macro == null && remote.usesEZRC() )
+//        {
+//          newMacro.setDeviceButtonIndex( remote.getDeviceButtons()[ 0 ].getButtonIndex() );
+//          newMacro.setSegmentFlags( 0xFF );
+//          newMacro.setName( "New macro" );
+//          newMacro.setSerial( config.getNewMacroSerial() );
+//        }
+//        else 
+        if ( macro == null )
         {
           newMacro.setDeviceButtonIndex( 0 );
           newMacro.setSegmentFlags( 0xFF );
@@ -400,7 +410,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
           newMacro.setSerial( macro.getSerial() );
         }
       }
-      if ( remote.isSSD() )
+      if ( remote.usesEZRC() )
       {
         List< User > extraUsers = new ArrayList< User >();
         if ( macro != null )

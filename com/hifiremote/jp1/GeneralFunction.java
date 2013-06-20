@@ -39,6 +39,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
+
 public class GeneralFunction
 {
   public GeneralFunction() {};
@@ -644,7 +646,9 @@ public class GeneralFunction
   {
     // A learned signal hides anything underneath, so treat as unassigned
     // if all assignments are hidden
-    if ( db != null && db.getUpgrade() != null && db.getUpgrade().getRemote().usesEZRC() )
+    Remote remote = null;
+    DeviceUpgrade upg = null;
+    if ( db != null && ( upg = db.getUpgrade() ) != null && ( remote = upg.getRemote() ).usesEZRC() )
     {
       for ( User u : users )
       {
@@ -655,6 +659,14 @@ public class GeneralFunction
           return true;
         }
       }
+      for ( User u : getIndirectReferences() )
+      {
+        if ( db == u.db )
+        {
+          return true;
+        }
+      }
+
       if ( this instanceof Function )
       {
         Function f = ( Function )this;
@@ -668,7 +680,7 @@ public class GeneralFunction
               return true;
             }
           }
-        }
+        } 
       }
       return false;
     }
@@ -684,6 +696,37 @@ public class GeneralFunction
     return users;
   }
   
+  public List< User > getIndirectReferences()
+  {
+    List< User > indirect = new ArrayList< User >();
+    Function f = null;
+    DeviceButton db = null;
+    if ( !( this instanceof Function ) || ( f = ( Function )this ).getUsers().isEmpty()
+        || ( db = f.getUsers().get( 0 ).db ) == null )
+    {
+      return indirect;
+    }
+    DeviceUpgrade upg = db.getUpgrade();
+    RemoteConfiguration config = upg.getRemoteConfig();
+    Remote remote = config.getRemote();
+    if ( !remote.usesEZRC() || remote.isSSD() )
+    {
+      return indirect;
+    }
+    for ( Macro macro : config.getMacros() )
+    {
+      if ( !macro.isSystemMacro() )
+      {
+        continue;
+      }
+      KeySpec ks = macro.getItems().get( 0 );
+      if ( f == ks.db.getUpgrade().getFunction( ks.btn.getKeyCode() ) )
+      {
+        indirect.addAll( macro.getUsers() );
+      }
+    }
+    return indirect;
+  }
 
   public void addReference( DeviceButton db, Button b )
   {
