@@ -4256,7 +4256,7 @@ public class DeviceUpgrade extends Highlight
     Function result = null;
     if ( !remote.usesEZRC() )
     {
-      if ( f instanceof Function )
+      if ( f == null || f instanceof Function )
       {
         assignments.assign( b, ( Function )f, state );
       }
@@ -4280,8 +4280,11 @@ public class DeviceUpgrade extends Highlight
         if ( macro.isSystemMacro() )
         {
           KeySpec ks = macro.getItems().get( 0 );
-          backupReferences( ks.fn );
-          ks.fn.removeReference( buttonRestriction, b );
+          if ( ks.fn != null )
+          {
+            backupReferences( ks.fn );
+            ks.fn.removeReference( buttonRestriction, b );
+          }
         }
         if ( macro.getUsers().isEmpty() )
         {
@@ -4294,15 +4297,20 @@ public class DeviceUpgrade extends Highlight
           {
             return null;
           }
+          else
+          {
+            // If assignment was a macro with no underlying function data,
+            // remove the function
+            assignments.assign( b, null );
+            functions.remove( bf );
+            bf = null;
+          }
         }
       }
-      if ( bf != null || removeBf )
+      else if ( bf != null )
       {
-        // If assignment was a macro with no underlying function data, or if
-        // assignment was a function, remove the function
-        functions.remove( bf );
         assignments.assign( b, null );
-        bf = null;
+        bf.removeReference( buttonRestriction, b );
       }
       if ( f == null )
       {

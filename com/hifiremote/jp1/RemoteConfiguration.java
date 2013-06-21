@@ -2756,13 +2756,6 @@ public class RemoteConfiguration
     {
       DeviceButton db = remote.getDeviceButton( macro.getDeviceButtonIndex() );
       Button btn = remote.getButton( macro.getKeyCode() );
-      for ( KeySpec ks : macro.getItems() )
-      {
-        if ( ks.irSerial >= 0 )
-        {
-          ks.fn = ks.db.getUpgrade().getFunctionMap().get( ks.irSerial );
-        }
-      }
       if ( db != null && db.getUpgrade() != null && btn != null )
       {
         db.getUpgrade().getMacroMap().put( macro.getKeyCode(), macro );
@@ -2770,6 +2763,13 @@ public class RemoteConfiguration
         KeySpec ks = null;
         macro.setSystemMacro( macro.getItems() != null && macro.getItems().size() == 1
             && ( ks = macro.getItems().get( 0 ) ).duration == 0 && ks.delay == 3 );
+      }
+      for ( KeySpec ks : macro.getItems() )
+      {
+        if ( ks.irSerial >= 0 )
+        {
+          ks.fn = ks.db.getUpgrade().getFunctionMap().get( ks.irSerial );
+        }
       }
     }
     for ( DeviceUpgrade upgrade : devices )
@@ -2787,6 +2787,14 @@ public class RemoteConfiguration
               {
                 macro.addReference( u.db, u.button );
                 u.db.getUpgrade().getMacroMap().put( ( int )u.button.getKeyCode(), macro );
+              }
+              if ( macro.isSystemMacro() )
+              {
+                KeySpec ks = macro.getItems().get( 0 );
+                if ( ks.fn != null )
+                {
+                  ks.fn.getUsers().addAll( macro.getUsers() );
+                }
               }
               break;
             }

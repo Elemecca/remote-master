@@ -354,27 +354,27 @@ public class ButtonTableModel
     if ( old instanceof Function && gf == null )
     {
 //      // Deletion of old reference is performed by setFunction()
-//      deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
-      Function fnOld = ( ( Function )old );
-      DeviceUpgrade du = fnOld.getUpgrade( null );
-      if ( deviceUpgrade != du )
-      {
-        // Assigned through a system macro
-        Macro macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
-        deviceUpgrade.getRemoteConfig().getMacros().remove( macro );
-        deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
-        FunctionLabel label = fnOld.getLabel();
+      deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
+//      Function fnOld = ( ( Function )old );
+//      DeviceUpgrade du = old.getUpgrade( null );
+//      if ( deviceUpgrade != du )
+//      {
+//        // Assigned through a system macro
+//        Macro macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
+//        deviceUpgrade.getRemoteConfig().getMacros().remove( macro );
+//        deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
+        FunctionLabel label = old.getLabel();
         if ( label != null )
         {
           label.showAssigned( db );
           label.updateToolTipText();
         }
-      }
-      else
-      {
-        deviceUpgrade.getAssignments().assign( button, null );
-        fnOld.removeReference( db, button );
-      }
+//      }
+//      else
+//      {
+//        deviceUpgrade.getAssignments().assign( button, null );
+//        fnOld.removeReference( db, button );
+//      }
     }
     else if ( old instanceof Macro && gf == null )
     {
@@ -405,19 +405,19 @@ public class ButtonTableModel
         panel.addFunction( result );
         panel.revalidateFunctions();
       }
-      Remote remote = deviceUpgrade.getRemote();
-      if ( remote.usesEZRC() && !remote.isSSD() && deviceUpgrade != gf.getUpgrade( remote ) )
-      {
-        gf = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
-        FunctionLabel label = f.getLabel();
-        if ( label != null )
-        {
-          label.showAssigned( db );
-          label.updateToolTipText();
-        }
-      }
+//      Remote remote = deviceUpgrade.getRemote();
+//      if ( remote.usesEZRC() && !remote.isSSD() && deviceUpgrade != gf.getUpgrade( remote ) )
+//      {
+////        gf = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
+//        FunctionLabel label = f.getLabel();
+//        if ( label != null )
+//        {
+//          label.showAssigned( db );
+//          label.updateToolTipText();
+//        }
+//      }
     }
-    if ( gf instanceof Macro )
+    else if ( gf instanceof Macro )
     {
       Macro macro = ( Macro )gf;
       deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
@@ -428,6 +428,12 @@ public class ButtonTableModel
       LearnedSignal ls = ( LearnedSignal )gf;
       deviceUpgrade.getLearnedMap().put( ( int )button.getKeyCode(), ls );
       ls.addReference( db, button );
+    }
+    FunctionLabel label = null;
+    if ( gf != null && ( label = gf.getLabel() ) != null )
+    {
+      label.showAssigned( db );
+      label.updateToolTipText();
     }
   }
 }

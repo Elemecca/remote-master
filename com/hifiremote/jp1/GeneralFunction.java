@@ -720,7 +720,7 @@ public class GeneralFunction
         continue;
       }
       KeySpec ks = macro.getItems().get( 0 );
-      if ( f == ks.db.getUpgrade().getFunction( ks.btn.getKeyCode() ) )
+      if ( ks.btn != null && f == ks.db.getUpgrade().getFunction( ks.btn.getKeyCode() ) )
       {
         indirect.addAll( macro.getUsers() );
       }
