@@ -176,7 +176,21 @@ public class P6805data
     { "ChkVolChFFKeys", "0183" },
     { "SetCarrier", "01B8" }
   };
-
+  
+  public static final String[][] absLabels_SST = {
+    { "XmitIR", "C02F" },
+    { "SetupXmitIR", "C032" },
+    { "IRMarkSpaceByPtr", "C035" },
+    { "IRSpaceByReg", "C041" },
+    { "XmitSplitIR", "C044" },
+    { "TestRptReqd", "C009" },
+    { "ChkPowerKey", "C01D" },
+    { "ChkRecordKey", "C021" },
+    { "ChkVolKeys", "C025" },
+    { "ChkPwrRecVol", "C00C" },
+    { "ChkVolChFFKeys", "C003" },
+    { "SetCarrier", "C038" }
+  };
 
   public static final String[][] absLabels_C9= {
     { "XmitIR", "0183" },

@@ -188,6 +188,13 @@ public class Protocol
         }
         code.put( pName, hex );
       }
+      if ( code.get( "SST") == null && code.get( "6805-RC16/18" ) != null )
+      {
+        Hex hex = new Hex( code.get( "6805-RC16/18" ) );
+        Processor p = ProcessorManager.getProcessor( "6805", "RC16/18" );
+        p.doVectorEdit( hex, 0xBE80 );
+        code.put(  "SST", hex );
+      }
       temp = props.getProperty( "CodeTranslator." + pName );
       if ( temp != null )
       {
@@ -2043,12 +2050,12 @@ public class Protocol
   protected Importer[] devImporters = null;
 
   /** The code. */
-  protected HashMap< String, Hex > code = new HashMap< String, Hex >( 6 );
+  protected HashMap< String, Hex > code = new HashMap< String, Hex >( 7 );
 
-  protected HashMap< String, Hex > customCode = new HashMap< String, Hex >( 6 );
+  protected HashMap< String, Hex > customCode = new HashMap< String, Hex >( 7 );
 
   /** The code translator. */
-  protected HashMap< String, Translate[] > codeTranslator = new HashMap< String, Translate[] >( 6 );
+  protected HashMap< String, Translate[] > codeTranslator = new HashMap< String, Translate[] >( 7 );
 
   /** The cmd parm init. */
   protected Initializer[] cmdParmInit = null;

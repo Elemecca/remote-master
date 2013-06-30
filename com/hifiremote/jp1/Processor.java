@@ -246,7 +246,7 @@ public abstract class Processor
    * @param vectorOffset
    *          the vector offset
    */
-  private void doVectorEdit( Hex hex, int vectorOffset )
+  protected void doVectorEdit( Hex hex, int vectorOffset )
   {
     short[] data = hex.getData();
     for ( int i = 0; i < data.length; i++ )

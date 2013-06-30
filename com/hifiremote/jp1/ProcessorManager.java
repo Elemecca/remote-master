@@ -106,6 +106,15 @@ public class ProcessorManager
     p.setDataStyle( 2 );
     p.setVectorEditData( opcodes, moreAddresses );
     add( p );
+
+    p = new BigEndianProcessor( "SST" );
+    p.setAddressModes( P6805data.AddressModes );
+    p.setInstructions( p6805Array );
+    p.setAbsLabels( P6805data.absLabels_SST );
+    p.setZeroLabels( P6805data.zeroLabels_RC16 );
+    p.setOscillatorData( P6805data.oscData_RC16 );
+    p.setDataStyle( 2 );
+    add( p );
     
     p = new LittleEndianProcessor( "740" );
     p.setAddressModes( P740data.AddressModes );
