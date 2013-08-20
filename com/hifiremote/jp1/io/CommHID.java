@@ -53,7 +53,11 @@ public class CommHID extends IO
 			HIDinfo = hid_mgr.listDevices();
 			for (int i = 0; i<HIDinfo.length; i++)  
 				if (HIDinfo[i].getVendor_id() == 0x06E7) {
-					thisPID = HIDinfo[i].getProduct_id();
+				  String manString = HIDinfo[i].getManufacturer_string();
+				  String prodString = HIDinfo[i].getProduct_string();
+				  thisPID = HIDinfo[i].getProduct_id();
+				  System.err.println( "Remote found: Manufacturer = " + manString + ", Product = " + prodString  
+				      + ", Product ID = " + Integer.toHexString( thisPID ).toUpperCase() );	
 					return thisPID;
 				}
 		}  catch (Exception e) {
@@ -223,6 +227,10 @@ public class CommHID extends IO
 	      remote = remotes.get( 0 );
 	      remote.load();
 	      interfaceType = remote.isSSD() ? 0x201 : 0x106;
+	    }
+	    else
+	    {
+	      return null;
 	    }
 	    if ( interfaceType == 0x106 )
 	    {

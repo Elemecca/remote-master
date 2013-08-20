@@ -107,7 +107,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 21a";
+  public final static String version = "v2.03 Alpha 21e";
 
   /** The dir. */
   private File dir = null;
@@ -377,8 +377,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       IO io = getOpenInterface();
       if ( io == null )
       {
-        JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
         setInterfaceState( null );
+        JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
         return null;
       }
       System.err.println( "Interface opened successfully" );

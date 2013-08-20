@@ -23,6 +23,7 @@ public class FunctionTableModel extends KMTableModel< Function >
   /** The remote. */
   private Remote remote = null;
   private RemoteConfiguration remoteConfig = null;
+  private DeviceUpgrade deviceUpgrade = null;
 
   /** The Constant rowCol. */
   private final static int rowCol = 0;
@@ -76,13 +77,14 @@ public class FunctionTableModel extends KMTableModel< Function >
     List< Function > list = new ArrayList< Function >();
     for ( Function f : deviceUpgrade.getFunctions() )
     {
-      if ( f.accept() )
+      if ( f.getSerial() < 0 || f.getAlternate() == null )
       {
         list.add( f );
       }
     }
 //    list = Function.filter( list );
     setData( list );
+    this.deviceUpgrade = deviceUpgrade;
     remoteConfig = deviceUpgrade.getRemoteConfig();
     setProtocol( deviceUpgrade.getProtocol(), deviceUpgrade.getRemote() );
     functionsUpdated();
@@ -538,6 +540,19 @@ public class FunctionTableModel extends KMTableModel< Function >
           + "icon from a file or export one to a file.</html>";
     }
     return null;
+  }
+  
+  @Override
+  public void moveRow( int from, int to )
+  {
+    Function fn1 = data.get( from );
+    Function fn2 = data.get( to );
+    List< Function > functions = deviceUpgrade.getFunctions();
+    int ndx1 = functions.indexOf( fn1 );
+    int ndx2 = functions.indexOf( fn2 );
+    functions.remove( ndx1 );
+    functions.add( ndx2, fn1 );
+    super.moveRow( from, to );
   }
   
   private int lastCell = 0;

@@ -111,13 +111,13 @@ public class ButtonTableModel
       {
         count--;
       }
-      if ( remote.usesEZRC() )
+      if ( remote.usesEZRC() && deviceUpgrade.getRemoteConfig() != null )
       {
         count ++;   // Adds device column
-      }
-      if ( remote.isSSD() )
-      {
-        count ++;   // Adds alias column
+        if ( remote.isSSD() )
+        {
+          count ++;   // Adds alias column
+        }
       }
     }
     return count;
@@ -126,8 +126,9 @@ public class ButtonTableModel
   public int getEffectiveColumn( int col )
   {
     Remote remote = deviceUpgrade.getRemote();
-    if ( !remote.usesEZRC() && col > 0 )
+    if ( !( remote.usesEZRC() && deviceUpgrade.getRemoteConfig() != null ) && col > 0 )
     {
+      // skip Device column
       col++;
     }
     else if ( remote.usesEZRC() && col > 2 )
@@ -267,12 +268,10 @@ public class ButtonTableModel
    */
   public void setValueAt( Object value, int row, int col )
   {
-    DeviceButton db = deviceUpgrade.getButtonRestriction();
     Button button = buttons[ row ];
     Remote remote = deviceUpgrade.getRemote();
     Button relatedButton = null;
-    col = getEffectiveColumn( col );
-    switch ( col )
+    switch ( getEffectiveColumn( col ) )
     {
       case buttonCol:
         break;

@@ -28,6 +28,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
+import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -84,24 +85,21 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     remotePanel = new JPanel( new BorderLayout() );
     
     Remote remote = devUpgrade.getRemote();
-    if ( remote.isSSD() )
-    {
-      pagePanel = new JPanel( new GridLayout( 2, 2 ) );
-      pagePanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
-      pageDown = new JRadioButton( "Page-" );
-      pageUp = new JRadioButton( "Page+" );
-      pageDown.addActionListener( this );
-      pageUp.addActionListener( this );
-      pageNumber = new JTextField();
-      pageNumber.setText( Integer.toString( page ) );
-      pageNumber.setEditable( false );
-      pageNumber.setEnabled( false );
-      pagePanel.add( pageDown );
-      pagePanel.add( pageUp );
-      pagePanel.add( new JLabel( "Page:" ) );
-      pagePanel.add( pageNumber );
-      remotePanel.add( pagePanel, BorderLayout.PAGE_START );
-    }
+
+    pagePanel = new JPanel( new GridLayout( 2, 2 ) );
+    pagePanel.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    pageDown = new JRadioButton( "Page-" );
+    pageUp = new JRadioButton( "Page+" );
+    pageDown.addActionListener( this );
+    pageUp.addActionListener( this );
+    pageNumber = new JTextField();
+    pageNumber.setText( Integer.toString( page ) );
+    pageNumber.setEditable( false );
+    pageNumber.setEnabled( false );
+    pagePanel.add( pageDown );
+    pagePanel.add( pageUp );
+    pagePanel.add( new JLabel( "Page:" ) );
+    pagePanel.add( pageNumber );
 
     scrollPanel = Box.createHorizontalBox();
     remotePanel.add( scrollPanel, BorderLayout.SOUTH );
@@ -158,7 +156,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     xShiftMode = new JRadioButton( "XShift" );
     selector = new SelectionPanel( this, this );
 
-    if ( devUpgrade.getRemote().usesEZRC() )
+    if ( devUpgrade.getRemoteConfig() != null && devUpgrade.getRemote().usesEZRC() )
     {
       box.add( selector );
     }
@@ -458,7 +456,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 
     setButtonText( currentShape, getButtonForShape( currentShape ) );
 
-    if ( !r.usesEZRC() )
+    if ( !r.usesEZRC() || deviceUpgrade.getRemoteConfig() == null )
     {
       setFunctions();
       shiftMode.setText( r.getShiftLabel() );
@@ -484,6 +482,18 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     else
     {
       selector.deviceBox.setSelectedItem( deviceUpgrade.getButtonRestriction() );
+    }
+    
+    boolean hasPagePanel = Arrays.asList( remotePanel.getComponents() ).contains( pagePanel );
+    if ( r.isSSD() && !hasPagePanel )
+    {
+      remotePanel.add( pagePanel, BorderLayout.PAGE_START );
+      remotePanel.revalidate();
+    }
+    else if ( !r.isSSD() && hasPagePanel )
+    {
+      remotePanel.remove( pagePanel );
+      remotePanel.revalidate();
     }
     doRepaint();
   }

@@ -2455,25 +2455,35 @@ public class DeviceUpgrade extends Highlight
     setDeviceTypeAliasName( props.getProperty( "DeviceType" ) );
     setupCode = Integer.parseInt( props.getProperty( "SetupCode" ) );
 
-    str = props.getProperty( "ButtonIndependent" );
-    if ( str != null )
+    // Restriction of an upgrade to a particular device button is a property
+    // of a configuration, not of the upgrade itself.
+    if ( remoteConfig != null )
     {
-      buttonIndependent = Boolean.parseBoolean( str );
-    }
+      str = props.getProperty( "ButtonIndependent" );
+      if ( str != null )
+      {
+        buttonIndependent = Boolean.parseBoolean( str );
+      }
 
-    str = props.getProperty( "ButtonIndex" );
-    if ( str != null )
+      str = props.getProperty( "ButtonIndex" );
+      if ( str != null )
+      {
+        try
+        {
+          int index = Integer.parseInt( str );
+          buttonRestriction = remote.getDeviceButton( index );
+          buttonRestriction.setUpgrade( this );
+        }
+        catch ( NumberFormatException nfe )
+        {
+          nfe.printStackTrace( System.err );
+        }
+      }
+    }
+    else
     {
-      try
-      {
-        int index = Integer.parseInt( str );
-        buttonRestriction = remote.getDeviceButton( index );
-        buttonRestriction.setUpgrade( this );
-      }
-      catch ( NumberFormatException nfe )
-      {
-        nfe.printStackTrace( System.err );
-      }
+      buttonIndependent = false;
+      buttonRestriction = DeviceButton.noButton;
     }
 
     if ( props.getProperty( "Protocol" ) != null || !remote.usesEZRC() )

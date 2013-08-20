@@ -463,7 +463,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
 
     Remote remote = devUpgrade.getRemote();
     selector = new SelectionPanel( this, this );
-    if ( remote.usesEZRC() )
+    if ( deviceUpgrade.getRemoteConfig() != null && remote.usesEZRC() )
     {
       selectionPanel.add( selector, BorderLayout.CENTER );
       selector.deviceBox.setSelectedItem( deviceUpgrade.getButtonRestriction() );
@@ -543,8 +543,8 @@ public class ButtonPanel extends KMPanel implements ActionListener
       if ( functionButton.isSelected() )
       {
         DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
-        DeviceUpgrade du = db.getUpgrade();
-        if ( du.getButtonRestriction() == panel.deviceUpgrade.getButtonRestriction() )
+        DeviceUpgrade du = db == null ? null : db.getUpgrade();
+        if ( du == null || du.getButtonRestriction() == panel.deviceUpgrade.getButtonRestriction() )
         {
           du = panel.deviceUpgrade;
         }
@@ -553,7 +553,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
           panel.addFunction( function );
         }
 
-        for ( ExternalFunction function : db.getUpgrade().getExternalFunctions() )
+        for ( ExternalFunction function : du.getExternalFunctions() )
           panel.addFunction( function );
       }
       else if ( macroButton.isSelected() )

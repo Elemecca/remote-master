@@ -69,12 +69,12 @@ public class GeneralFunction
     {
       button = b;
       this.state = state;
-      db = null;
+      db = DeviceButton.noButton;
     }
     
     public User( DeviceButton db, Button button )
     {
-      this.db = db;
+      this.db = db != null ? db : DeviceButton.noButton;
       this.button = button;
       this.state = Button.NORMAL_STATE;
     }
@@ -113,9 +113,10 @@ public class GeneralFunction
         Button b = user.button;
         DeviceButton db = user.db;
         int state = user.state;
-        if ( db != null )
+        String name = null;
+        if ( db != null && db != DeviceButton.noButton && !( name = db.getName().trim() ).isEmpty() )
         {
-          buff.append( db.getName() + "/" );
+          buff.append( name + "/" );
         }
         if ( state == Button.NORMAL_STATE )
           buff.append( b.getName());
@@ -646,9 +647,8 @@ public class GeneralFunction
   {
     // A learned signal hides anything underneath, so treat as unassigned
     // if all assignments are hidden
-    Remote remote = null;
     DeviceUpgrade upg = null;
-    if ( db != null && ( upg = db.getUpgrade() ) != null && ( remote = upg.getRemote() ).usesEZRC() )
+    if ( db != null && db != DeviceButton.noButton && ( upg = db.getUpgrade() ) != null && upg.getRemote().usesEZRC() )
     {
       for ( User u : users )
       {
@@ -701,13 +701,14 @@ public class GeneralFunction
     List< User > indirect = new ArrayList< User >();
     Function f = null;
     DeviceButton db = null;
+    DeviceUpgrade upg = null;
+    RemoteConfiguration config = null;
     if ( !( this instanceof Function ) || ( f = ( Function )this ).getUsers().isEmpty()
-        || ( db = f.getUsers().get( 0 ).db ) == null )
+        || ( db = f.getUsers().get( 0 ).db ) == null || ( upg = db.getUpgrade() ) == null 
+        || ( config = upg.getRemoteConfig() ) == null )
     {
       return indirect;
     }
-    DeviceUpgrade upg = db.getUpgrade();
-    RemoteConfiguration config = upg.getRemoteConfig();
     Remote remote = config.getRemote();
     if ( !remote.usesEZRC() || remote.isSSD() )
     {

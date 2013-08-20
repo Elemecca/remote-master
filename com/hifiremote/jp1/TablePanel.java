@@ -520,9 +520,13 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
       java.util.List< E > functions = model.getData();
       for ( ListIterator< E > i = functions.listIterator(); i.hasNext(); )
       {
-        Function f = ( Function )i.next();
+        E efn = i.next();
+        Function f = ( Function )efn;
         if ( ( f.getHex() == null ) || ( f.getHex().length() == 0 ) )
+        {
           i.remove();
+          delete( efn );
+        }
       }
       model.fireTableDataChanged();
     }

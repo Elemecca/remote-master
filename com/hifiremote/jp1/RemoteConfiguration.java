@@ -4264,6 +4264,10 @@ public class RemoteConfiguration
         } 
       };
       
+      if ( userIcons == null )
+      {
+        userIcons = new LinkedHashMap< Integer, GeneralFunction.RMIcon >();
+      }
       for ( RMIcon icon : userIcons.values() )
       {
         int type = icon.type;
@@ -5085,6 +5089,10 @@ public class RemoteConfiguration
     for ( ActivityGroup group : groups )
     {
       DeviceButton db = group.getDevice();
+      if ( db == null )
+      {
+        continue;
+      }
       DeviceUpgrade du = db.getUpgrade();
       if ( du == null || du.getSoftButtons() == null || du.getSoftButtons().isEmpty() 
           || !remote.isSoftButton( group.getButtonGroup()[ 0 ] ) )
@@ -5546,6 +5554,10 @@ public class RemoteConfiguration
 //          list.add( db );
 //        }
 //      }
+      if ( deviceButtonList == null )
+      {
+        deviceButtonList = new ArrayList< DeviceButton >();
+      }
       
       for ( DeviceButton db : deviceButtonList )
       {
