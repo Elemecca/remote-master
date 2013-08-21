@@ -120,9 +120,9 @@ public class ULDKPFunction extends SpecialProtocolFunction
   /*
    * (non-Javadoc)
    * 
-   * @see com.hifiremote.jp1.SpecialProtocolFunction#getType()
+   * @see com.hifiremote.jp1.SpecialProtocolFunction#get_Type()
    */
-  public String getType( RemoteConfiguration remoteConfig )
+  public String get_Type( RemoteConfiguration remoteConfig )
   {
     return getUserFunctions( remoteConfig )[ getStyle() ];
 //    return typeStrings[ getStyle() ];
@@ -183,7 +183,7 @@ public class ULDKPFunction extends SpecialProtocolFunction
    */
   public static Hex createHex( SpecialFunctionDialog dlg )
   {
-    String type = dlg.getType();
+    String type = dlg.get_Type();
     int style = DSM;
     for ( int i = 0; i < styleStrings.length; ++i )
     {

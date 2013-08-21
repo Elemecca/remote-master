@@ -182,7 +182,7 @@ public class HexParmEditorPanel extends ProtocolEditorPanel implements ChangeLis
     removeListeners();
 
     name.setText( node.getName() );
-    int type = node.getType();
+    int type = node.get_Type();
     buttons[ type ].setSelected( true );
     ( ( CardLayout )card.getLayout() ).show( card, Integer.toString( type ) );
     if ( numberButton.isSelected() )

@@ -95,7 +95,7 @@ public class LDKPFunction extends SpecialProtocolFunction
    * 
    * @return The type value
    */
-  public String getType( RemoteConfiguration remoteConfig )
+  public String get_Type( RemoteConfiguration remoteConfig )
   {
     return getUserFunctions( remoteConfig )[ getStyle() ];
 //    return styleStrings[ getStyle() ];
@@ -192,7 +192,7 @@ public class LDKPFunction extends SpecialProtocolFunction
    */
   public static Hex createHex( SpecialFunctionDialog dlg )
   {
-    String type = dlg.getType();
+    String type = dlg.get_Type();
     int style = LKP;
     for ( int i = 0; i < styleStrings.length; ++i )
       if ( styleStrings[ i ].equals( type ) )

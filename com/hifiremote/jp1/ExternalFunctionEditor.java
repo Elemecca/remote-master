@@ -35,7 +35,7 @@ public class ExternalFunctionEditor extends SelectAllCellEditor
     JTextField tf = ( JTextField )super.getTableCellEditorComponent( table, value, isSelected, row, col );
 
     f = ( ExternalFunction )value;
-    if ( f.getType() == ExternalFunction.EFCType )
+    if ( f.get_Type() == ExternalFunction.EFCType )
     {
       EFC efc = f.getEFC();
       if ( efc != null )
@@ -69,7 +69,7 @@ public class ExternalFunctionEditor extends SelectAllCellEditor
     String str = tf.getText().trim();
     if ( ( str != null ) && ( str.length() != 0 ) )
     {
-      if ( f.getType() == ExternalFunction.EFCType )
+      if ( f.get_Type() == ExternalFunction.EFCType )
       {
         short temp = Short.parseShort( str );
         if ( ( temp < min ) || ( temp > max ) )

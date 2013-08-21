@@ -127,7 +127,7 @@ public abstract class HexParmEditorNode
    * 
    * @return the type
    */
-  public int getType(){ return type; }
+  public int get_Type(){ return type; }
 
   /** The format. */
   private int format = DECIMAL;

@@ -436,7 +436,7 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
       KeyMove km = getRowObject( rows[0] );
       for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
       {
-        if ( du.getDeviceType().getType() == km.getDeviceType() && du.getSetupCode() == km.getSetupCode() )
+        if ( du.getDeviceType().get_Type() == km.getDeviceType() && du.getSetupCode() == km.getSetupCode() )
         {
           List< Remote > remotes = new ArrayList< Remote >( 1 );
           remotes.add( remoteConfig.getRemote() );

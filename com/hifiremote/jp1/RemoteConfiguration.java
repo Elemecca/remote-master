@@ -3212,7 +3212,7 @@ public class RemoteConfiguration
     {
       decodeFavScans();
     }
-    if ( remote.hasTimedMacroSupport() && remote.getMacroCodingType().getType() == 1 )
+    if ( remote.hasTimedMacroSupport() && remote.getMacroCodingType().get_Type() == 1 )
     {
       decodeTimedMacros();
     }
@@ -3850,7 +3850,7 @@ public class RemoteConfiguration
 
   private void decodeTimedMacros()
   {
-    if ( remote.getMacroCodingType().getType() == 2 || !remote.hasTimedMacroSupport() )
+    if ( remote.getMacroCodingType().get_Type() == 2 || !remote.hasTimedMacroSupport() )
     {
       return;
     }
@@ -4469,7 +4469,7 @@ public class RemoteConfiguration
       {
         return;
       }
-      int segType = segment.getType();
+      int segType = segment.get_Type();
       int address = segment.getAddress();
       updateHighlight( keyMove, address + 4, segType == 7 ? 6 : 8 );
     }
@@ -4488,7 +4488,7 @@ public class RemoteConfiguration
         return;
       }
       int index = macro.getIndex();
-      int segType = segment.getType();
+      int segType = segment.get_Type();
       int address = segment.getAddress();
       short[] segData = segment.getHex().getData();
       if ( segType == 1 )

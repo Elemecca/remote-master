@@ -98,7 +98,7 @@ public class ToadTogFunction extends SpecialProtocolFunction
    * 
    * @return The type value
    */
-  public String getType( RemoteConfiguration remoteConfig )
+  public String get_Type( RemoteConfiguration remoteConfig )
   {
     return getUserFunctions( remoteConfig )[ 0 ];
   }

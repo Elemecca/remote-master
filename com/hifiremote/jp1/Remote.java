@@ -721,7 +721,7 @@ public class Remote implements Comparable< Remote >
     {
       // Ensure that duplicate entries in the list are described by the same
       // DeviceType, so that the "contains" works as desired.
-      d = devicesByType.get( deviceType.getType() );
+      d = devicesByType.get( deviceType.get_Type() );
       if ( !tempList.contains( d ) )
       {
         tempList.add( d );

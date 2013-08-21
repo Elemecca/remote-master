@@ -82,7 +82,7 @@ public class ExternalFunctionTableModel
         rc = new Integer( function.getSetupCode());
         break;
       case typeCol:
-        rc = choices[ function.getType() ];
+        rc = choices[ function.get_Type() ];
         break;
       case hexCol:
         rc = function;
@@ -153,7 +153,7 @@ public class ExternalFunctionTableModel
         if ( value.getClass() == String.class )
         {
           String str = ( String )value;
-          if ( function.getType() == ExternalFunction.EFCType )
+          if ( function.get_Type() == ExternalFunction.EFCType )
             function.setEFC( new EFC( str ));
           else
             function.setHex( new Hex( str ));

@@ -41,7 +41,7 @@ public class Segment extends Highlight
     }
   }
 
-  public int getType()
+  public int get_Type()
   {
     return type;
   }

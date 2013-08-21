@@ -70,9 +70,9 @@ public class UDSMFunction extends SpecialProtocolFunction
   /*
    * (non-Javadoc)
    * 
-   * @see com.hifiremote.jp1.SpecialProtocolFunction#getType()
+   * @see com.hifiremote.jp1.SpecialProtocolFunction#get_Type()
    */
-  public String getType( RemoteConfiguration remoteConfig )
+  public String get_Type( RemoteConfiguration remoteConfig )
   {
     return getUserFunctions( remoteConfig )[ 0 ];
   }

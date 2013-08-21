@@ -62,7 +62,7 @@ public abstract class AdvancedCode extends Highlight
       length = reader.read();
       boundDeviceIndex = type & 0x0F;
       type >>= 4;
-      if ( remote.getMacroCodingType().getType() == 2 )
+      if ( remote.getMacroCodingType().get_Type() == 2 )
       {
         if ( type >= 3 )
         {

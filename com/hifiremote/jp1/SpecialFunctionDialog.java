@@ -479,7 +479,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     xShift.setSelected( false );
     setButton( function.getKeyCode(), boundKey, shift, xShift );
 
-    type.setSelectedItem( function.getType( config ) );
+    type.setSelectedItem( function.get_Type( config ) );
     function.update( this );
 
     notes.setText( function.getNotes() );
@@ -1143,7 +1143,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
    * 
    * @return the type
    */
-  public String getType()
+  public String get_Type()
   {
     return specialFunctionsByRDFName.get( type.getSelectedIndex() );
   }

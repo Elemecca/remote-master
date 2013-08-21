@@ -77,7 +77,7 @@ public class DeviceType
    * 
    * @return the type
    */
-  public int getType()
+  public int get_Type()
   {
     return type;
   }

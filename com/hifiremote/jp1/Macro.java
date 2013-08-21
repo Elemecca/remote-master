@@ -343,7 +343,7 @@ public class Macro extends AdvancedCode
     {
       buffer[ offset ] = 0x10;
     }
-    else if ( remote.getMacroCodingType().getType() == 2 )
+    else if ( remote.getMacroCodingType().get_Type() == 2 )
     {
       // With deviceIndex $F this allows for MultiMacro types $4, $5, $6, $7 (value in high
       // nibble) for type 2 coding even though no remote yet implements them.  With deviceIndex
@@ -367,7 +367,7 @@ public class Macro extends AdvancedCode
 
   public void store( PropertyWriter pw )
   {
-//    if ( getSegment().getType() == 3 || getSegment().getType() == 0x1E )
+//    if ( getSegment().get_Type() == 3 || getSegment().get_Type() == 0x1E )
     if ( name != null )  // XSight remotes
     {
       int segmentFlags = getSegmentFlags();

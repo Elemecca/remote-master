@@ -290,7 +290,7 @@ public abstract class SpecialProtocolFunction extends Highlight
    * 
    * @return the type
    */
-  public abstract String getType( RemoteConfiguration remoteConfig );
+  public abstract String get_Type( RemoteConfiguration remoteConfig );
   
   /**
    * Gets the display type.
