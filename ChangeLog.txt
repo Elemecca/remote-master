@@ -13,6 +13,12 @@ Changes for v2.03
 - A few minor bugfixes (Graham)
 -- Alpha 12 --
 - More prototype support for XSight Touch.  Will now display macro data, will upload to the remote but only edits to device data get through to the upload (Graham)
+-- Alphas 13-21
+- Further development work for XSight Touch.
+-- Alpha 22
+- Uploads to XSight Touch now delete user files not present in the upload (Graham)
+- Fixed issue with editing and cloning macros of non-XSight remotes, caused by the XSight development (Graham)
+- Uploading of system files to XSight Touch now shows the Uploading progress bar, as for other uploads (Graham)
 
 Changes for v2.02
 -- Alpha --

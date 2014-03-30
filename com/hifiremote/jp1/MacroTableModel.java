@@ -41,15 +41,22 @@ public class MacroTableModel extends JP1TableModel< Macro >
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
-      List< Macro > list = new ArrayList< Macro >();
-      for ( Macro macro : remoteConfig.getMacros() )
+      if ( remoteConfig != null && remoteConfig.getRemote().usesEZRC() )
       {
-        if ( macro.accept() )
+        List< Macro > list = new ArrayList< Macro >();
+        for ( Macro macro : remoteConfig.getMacros() )
         {
-          list.add( macro );
+          if ( macro.accept() )
+          {
+            list.add( macro );
+          }
         }
+        setData( list );
       }
-      setData( list );
+      else
+      {
+        setData( remoteConfig.getMacros() );
+      }
     }
   }
 

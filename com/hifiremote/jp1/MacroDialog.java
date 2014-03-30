@@ -429,7 +429,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
           newMacro.addReference( user.db, user.button );
         }
       }
-      config.getMacros().remove( macro );
+//      config.getMacros().remove( macro );
       macro = newMacro;
       setVisible( false );
     }

@@ -1,6 +1,5 @@
 package com.hifiremote.jp1.io;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -70,21 +69,21 @@ public class CommHID extends IO
 		return "CommHID";
 	}
 	
-	 public String getInterfaceVersion() {
-		 return "0.2";
-	 }
-	 
-	 public String[] getPortNames() {
-		 String[] portNames  = {"HID"};
-		 return portNames;
-	 }
-	 
-	 int getRemotePID() {
-			return thisPID;
-		}
-	
+	public String getInterfaceVersion() {
+	  return "0.3";
+	}
+
+	public String[] getPortNames() {
+	  String[] portNames  = {"HID"};
+	  return portNames;
+	}
+
+	int getRemotePID() {
+	  return thisPID;
+	}
+
 	byte jp12ComputeCheckSum( byte[] data, int start, int length ) {
-		int sum = 0;
+	  int sum = 0;
 		int end = start + length;
 		for (int i = start; i < end; i++)  {
 			sum ^= (int)data[i] & 0xFF;
@@ -413,30 +412,60 @@ public class CommHID extends IO
 	  return pos;
   }
 	
-	private boolean ssdInOK()
+	private int ssdInCheck()
 	{
-	  boolean res = ssdIn[ 0 ] == 1;
-	  for ( int i = 1; i < 62; i++ )
+	  boolean res = ( ssdIn[ 0 ] == 1 ) && ( ssdIn[ 1 ] == 0 );
+	  for ( int i = 3; i < 62; i++ )
 	  {
 	    res &= ssdIn[ i ] == 0;
 	  }
 	  if ( !res )
 	  {
 	    System.err.println( "Input packet failure: " + ssdIn[ 0 ] + "" + ssdIn[ 1 ] + "" + ssdIn[ 2 ] + "" + ssdIn[ 3 ] + "" + ssdIn[ 4 ] + "" + ssdIn[ 5 ]);
+	    return -1;
 	  }
-	  return res;
+	  return ssdIn[ 2 ];
 	}
 	
 	int writeTouch( byte[] buffer )
 	{
-	  // don't send sysicons.pkg
-	  int status = ( buffer[ 0 ] & 0xFF ) | ( ( buffer[ 1 ] & 0x0D ) << 8 );  
+	  int mask = 0xFFF;
+	  for ( int index = 0; index < Remote.userFilenames.length; index++ )
+	  {
+	    String name = Remote.userFilenames[ index ];
+	    if ( name.equals( "sysicons.pkg" ) )
+	    {
+	      // don't delete, or send, sysicons.pkg
+	      mask ^= ( 1 << index );
+	      continue;
+	    }
+	    System.err.println( "Deleting file " + name );
+	    Arrays.fill( ssdOut, ( byte )0 );
+      ssdOut[ 0 ] = 0x15;
+      ssdOut[ 2 ] = ( byte )name.length();
+      for ( int i = 0; i < name.length(); i++ )
+      {
+        ssdOut[ 4 + i ] = ( byte )name.charAt( i );
+      }
+      writeTouchUSBReport( ssdOut, 62 );
+      int check = -1;
+      if ( readTouchUSBReport( ssdIn ) < 0 || ( check = ssdInCheck() ) < 0 
+          || ( check & 0xEF ) != 0 )
+      {
+        // Only valid values for check are 0x00 and 0x10
+        System.err.println( "Deletion failed.  Aborting upload" );
+        return 0;
+      }
+      System.err.println( check == 0 ? "  File present and deleted" : "  File absent");
+	  }
+	  
+	  int status = ( ( buffer[ 0 ] & 0xFF ) | ( ( buffer[ 1 ] & 0x0F ) << 8 ) ) & mask;
 	  int dataEnd = ( buffer[ 2 ] & 0xFF ) | ( ( buffer[ 3 ] & 0xFF ) << 8 ) | ( ( buffer[ 1 ] & 0xF0 ) << 12 );
     int pos = 4;
     int index = -1;
 	  while ( pos < dataEnd )
     {
-      while ( index < 12 && ( status & ( 1 << ++index ) ) == 0 ) {};
+      while ( index < 12 && ( status & ( 1 << ++index ) ) == 0 ) {}
       if ( index == 12 )
       {
         break;
@@ -462,7 +491,7 @@ public class CommHID extends IO
 
       while ( pos < end )
       {
-        if ( !ssdInOK() )
+        if ( ssdInCheck() < 0 )
         {
           System.err.println( "Error: terminating at position " + Integer.toHexString( pos ) );
           return pos;
@@ -493,6 +522,25 @@ public class CommHID extends IO
 	    System.err.println( "Write System File aborting.  Unable to read data file" );
 	    return;
 	  }
+	  
+	  System.err.println( "Deleting existing file" );
+    Arrays.fill( ssdOut, ( byte )0 );
+    ssdOut[ 0 ] = 0x15;
+    ssdOut[ 2 ] = ( byte )name.length();
+    for ( int i = 0; i < name.length(); i++ )
+    {
+      ssdOut[ 4 + i ] = ( byte )name.charAt( i );
+    }
+    writeTouchUSBReport( ssdOut, 62 );
+    int check = -1;
+    if ( readTouchUSBReport( ssdIn ) < 0 || ( check = ssdInCheck() ) < 0 
+        || ( check & 0xEF ) != 0 )
+    {
+      // Only valid values for check are 0x00 and 0x10
+      System.err.println( "  Deletion failed.  Aborting upload" );
+      return;
+    }
+    System.err.println( check == 0 ? "  File present and deleted" : "  File absent");
 
 	  int len = data.length;
 	  int pos = 0;
@@ -513,7 +561,7 @@ public class CommHID extends IO
 
 	  while ( pos < len )
 	  {
-	    if ( !ssdInOK() )
+	    if ( ssdInCheck() < 0 )
 	    {
 	      System.err.println( "Error: terminating at position " + Integer.toHexString( pos ) );
 	      return;
@@ -687,8 +735,17 @@ public class CommHID extends IO
     return buffer;
 	}
 	
+	public byte[] readSystemFile( String name )
+	{
+	  runningTotal = -1;
+	  return readTouchFileBytes( name );
+	}
+	
 	private void readSystemFiles()
 	{
+	  runningTotal = -1;
+	  System.err.println();
+	  System.err.println( "Saving system files to XSight subfolder of installation folder:" );
 	  for ( String name : firmwareFileVersions.keySet() )
 	  {
 	    if ( name.indexOf( "." ) > 0 )
@@ -700,6 +757,7 @@ public class CommHID extends IO
 	      }
 	      try
 	      {
+	        System.err.println( "  Saving " + name );
 	        OutputStream output = null;
 	        File outputDir = new File( RemoteMaster.getWorkDir(), "XSight" );
 	        if ( !outputDir.exists() )

@@ -1717,12 +1717,20 @@ public class RemoteConfiguration
       {
         KeySpec ks = items.map.get( items.key.btn );
         DeviceUpgrade upg = ks.db.getUpgrade();
-        Function f = upg.getAssignments().getAssignment( items.key.btn );
-        if ( f == null && items.key.fname != null )
+        Function f = null;
+        if ( upg == null )
         {
-          f = new Function( items.key.fname );
-          f.setUpgrade( upg );
-          upg.getAssignments().assign( items.key.btn, f );
+          System.err.println( "Malformed punchthruspec" );
+        }
+        else
+        {
+          f = upg.getAssignments().getAssignment( items.key.btn );
+          if ( f == null && items.key.fname != null )
+          {
+            f = new Function( items.key.fname );
+            f.setUpgrade( upg );
+            upg.getAssignments().assign( items.key.btn, f );
+          }
         }
         if ( f != null )
         {
@@ -7743,17 +7751,20 @@ public class RemoteConfiguration
         work.add( endTag( btnTag ) );
         work.add( makeItem( "delay", new Hex( new short[]{ delay } ), true ) );
       }
+      boolean assistantDone = false;
       if ( isSysMacro )
       {
         work.add( makeItem( "issystemmacro", new Hex( new short[]{ 1 } ), true ) );
-      }
-      boolean assistantDone = false;
-      if ( isSysMacro || macro.getAssists() != null && !macro.getAssists().isEmpty() 
-          || activity != null && !activity.getAssists().isEmpty() )
-      {
         assistantDone = true;
         work.add( makeItem( "assistant", new Hex( 0 ), false ) );
       }
+
+//      if ( isSysMacro || macro.getAssists() != null && !macro.getAssists().isEmpty() 
+//          || activity != null && !activity.getAssists().isEmpty() )
+//      {
+//        assistantDone = true;
+//        work.add( makeItem( "assistant", new Hex( 0 ), false ) );
+//      }
       if ( activity != null && !activity.getAssists().isEmpty() 
           || activity == null && macro.getAssists() != null && !macro.getAssists().isEmpty() )
       {
@@ -7765,6 +7776,11 @@ public class RemoteConfiguration
           List< Assister > assisters = assists.get(  2 - i );
           if ( assisters.size() > 0 )
           {
+            if ( assistantDone == false )
+            {
+              assistantDone = true;
+              work.add( makeItem( "assistant", new Hex( 0 ), false ) );
+            }
             if ( tagNames == null )
             {
               tagNames = new String[]{ "powerkeys", "audioinputs", "pictureinputs" };

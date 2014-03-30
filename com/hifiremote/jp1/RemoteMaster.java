@@ -9,7 +9,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -18,7 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -107,7 +105,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 21e";
+  public final static String version = "v2.03 Alpha 22";
 
   /** The dir. */
   private File dir = null;
@@ -564,6 +562,71 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
   };
 
+  private class UploadSystemFile extends SwingWorker< Void, Void >
+  {
+    private File file = null;
+    
+    private UploadSystemFile( File file )
+    {
+      this.file = file;
+    }
+    
+    @Override
+    protected Void doInBackground() throws Exception
+    {
+      IO io = getOpenInterface();
+      if ( io == null )  
+      {
+        JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
+        setInterfaceState( null );
+        return null;
+      }
+      System.err.println( "Interface opened successfully" );
+      if ( !( io instanceof CommHID ) )
+      {
+        JOptionPane.showMessageDialog( RemoteMaster.this, "Not an XSight remote!" );
+        setInterfaceState( null );
+        return null;
+      }
+
+      System.err.println( "Uploading system file " + file.getName() );
+      ( ( CommHID )io ).writeSystemFile( file );
+      if ( verifyUploadItem.isSelected() )
+      {
+        System.err.println( "Verifying upload." );
+        byte[] readBytes = ( ( CommHID )io ).readSystemFile( file.getName() );
+        io.closeRemote();
+        byte[] fileBytes = RemoteMaster.readBinary( file );
+
+        if ( readBytes.length != fileBytes.length )
+        {
+          System.err.println( "Upload verify failed: read back " + readBytes.length
+              + " bytes, but expected " + fileBytes.length + "." );
+          JOptionPane.showMessageDialog( RemoteMaster.this, "Upload verify failed: read back " + readBytes.length
+              + " bytes, but expected " + fileBytes.length );
+        }
+        else if ( !Arrays.equals( readBytes, fileBytes ) )
+        {
+          System.err.println( "Upload verify failed: data read back doesn't match data written." );
+          JOptionPane.showMessageDialog( RemoteMaster.this,
+              "Upload verify failed: data read back doesn't match data written." );
+        }
+        else
+        {
+          System.err.println( "Upload verification succeeded." );
+        }
+      }
+      else
+      {
+        io.closeRemote();
+        JOptionPane.showMessageDialog( RemoteMaster.this, "Upload complete!" );
+      }
+      System.err.println( "Ending upload" );
+      setInterfaceState( null );
+      return null;
+    }
+  }
+  
   private class UploadTask extends SwingWorker< Void, Void >
   {
     private short[] data;
@@ -632,12 +695,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( rc != data.length )
       {
         io.closeRemote();
+        System.err.println( "Data writing phase failed, bytes written = " + rc + "instead of " + data.length + "." );
         JOptionPane.showMessageDialog( RemoteMaster.this, "writeRemote returned " + rc );
         setInterfaceState( null );
         return null;
       }
+      else
+      {
+        System.err.println( "Data writing phase succeeded, bytes written = " + rc + "." );
+      }
       if ( verifyUploadItem.isSelected() )
       {
+        System.err.println( "Upload verification phase starting." );
         if ( io.getInterfaceType() == 0x106 )
         {
           io.closeRemote();
@@ -648,14 +717,21 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         io.closeRemote();
         if ( rc != data.length )
         {
+          System.err.println( "Upload verify failed: read back " + rc
+              + " bytes, but expected " + data.length + "." );
           JOptionPane.showMessageDialog( RemoteMaster.this, "Upload verify failed: read back " + rc
-              + " byte, but expected " + data.length );
+              + " bytes, but expected " + data.length );
 
         }
         else if ( !Hex.equals( data, readBack ) )
         {
+          System.err.println( "Upload verify failed: data read back doesn't match data written." );
           JOptionPane.showMessageDialog( RemoteMaster.this,
               "Upload verify failed: data read back doesn't match data written." );
+        }
+        else
+        {
+          System.err.println( "Upload verification succeeded." );
         }
       }
       else
@@ -2797,11 +2873,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == putSystemFileItem )
       {
         File file = getSystemFileChoice();
-        IO io = getOpenInterface();
-        if ( io instanceof CommHID )
+        if ( file == null )
         {
-          ( ( CommHID )io ).writeSystemFile( file );
+          return;
         }
+        setInterfaceState( "UPLOADING " + file.getName().toUpperCase() + "..." );
+        ( new UploadSystemFile( file ) ).execute();
       }
       else if ( source == parseIRDBItem )
       {

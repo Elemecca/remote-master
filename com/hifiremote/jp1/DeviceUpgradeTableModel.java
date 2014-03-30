@@ -219,7 +219,7 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       case 6:
       case 7:
         // The true values for columns 5 and 6 are created by the renderer
-        return device.getProtocol();
+        return device.getSetupCode() < 0 ? null : device.getProtocol();
       case 8:
         return device.getDescription();
       case 9:
@@ -389,7 +389,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         {
           TableSorter ts = ( TableSorter )table.getModel();
           row = ts.modelIndex( row );
-          String starredID = getRow( row ).getStarredID();
+          DeviceUpgrade du = getRow( row );
+          String starredID = du.getSetupCode() < 0 ? null : du.getStarredID();
           return super.getTableCellRendererComponent( table, starredID, isSelected, false, row, col );
         }
       };
@@ -402,7 +403,10 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected,
             boolean hasFocus, int row, int col )
         {
-          Protocol protocol = ( Protocol )value;
+          TableSorter ts = ( TableSorter )table.getModel();
+          row = ts.modelIndex( row );
+          DeviceUpgrade du = getRow( row );
+          Protocol protocol = du.getSetupCode() < 0 ? null : ( Protocol )value;
           String variant = protocol == null ? null : protocol.getVariantDisplayName( remoteConfig.getRemote().getProcessor() );
           return super.getTableCellRendererComponent( table, variant, isSelected, false, row, col );
         }
