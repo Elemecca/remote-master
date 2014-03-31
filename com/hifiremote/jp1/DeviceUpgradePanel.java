@@ -85,15 +85,19 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       {
         if ( db.getSegment() == null || db.getDeviceSlot( db.getSegment().getHex().getData() ) == 0xFFFF )
         {
+          String message = "The new upgrade being created will be assigned automatically\n" +
+          		             "to an unassigned device.  What name do you want to give to\n" +
+                           "this device?";
+          String name = JOptionPane.showInputDialog( RemoteMaster.getFrame(), message, "New device" );
+          if ( name == null )
+          {
+            return;
+          }
           defaultDev = db;
           if ( db.getSegment() == null )
           {
             db.setSegment( new Segment( 0, 0xFF, new Hex( 15 ) ) );
           }
-          String message = "The new upgrade being created will be assigned automatically\n" +
-          		             "to an unassigned device.  What name do you want to give to\n" +
-                           "this device?";
-          String name = JOptionPane.showInputDialog( RemoteMaster.getFrame(), message, "New device" );
           defaultDev.setName( name );
           break;
         }
@@ -146,6 +150,8 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       if ( defaultDev != DeviceButton.noButton )
       {
         defaultDev.setUpgrade( upgrade );
+        upgrade.setButtonRestriction( defaultDev );
+        upgrade.setButtonIndependent( false );
       }
     }
 

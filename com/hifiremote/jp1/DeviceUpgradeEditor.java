@@ -404,6 +404,19 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     }
     deviceUpgrade.setButtonIndependent( btnInd );
     deviceUpgrade.setButtonRestriction( btnRes );
+    if ( btnRes != null && btnRes != DeviceButton.noButton )
+    {
+      for ( Function f : deviceUpgrade.getFunctions() )
+      {
+        for ( User u : f.getUsers() )
+        {
+          if ( u.db == DeviceButton.noButton )
+          {
+            u.db = btnRes;
+          }
+        }
+      }
+    }
     editorPanel.refresh();
   }
 

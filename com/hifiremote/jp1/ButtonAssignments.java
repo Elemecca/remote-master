@@ -64,7 +64,7 @@ public class ButtonAssignments
     if ( f != null )
     {
       DeviceButton db = f.upgrade == null ? null : f.upgrade.getButtonRestriction();
-      if ( db == null )
+      if ( db == null || db == DeviceButton.noButton )
       {
         f.addReference( b, state );
       }

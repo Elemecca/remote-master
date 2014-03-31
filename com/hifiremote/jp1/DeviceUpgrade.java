@@ -2460,10 +2460,8 @@ public class DeviceUpgrade extends Highlight
     if ( remoteConfig != null )
     {
       str = props.getProperty( "ButtonIndependent" );
-      if ( str != null )
-      {
-        buttonIndependent = Boolean.parseBoolean( str );
-      }
+      buttonIndependent = str != null ? Boolean.parseBoolean( str ) : true;
+      buttonRestriction = DeviceButton.noButton;
 
       str = props.getProperty( "ButtonIndex" );
       if ( str != null )
@@ -2482,7 +2480,7 @@ public class DeviceUpgrade extends Highlight
     }
     else
     {
-      buttonIndependent = false;
+      buttonIndependent = true;
       buttonRestriction = DeviceButton.noButton;
     }
 

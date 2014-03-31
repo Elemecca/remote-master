@@ -19,6 +19,7 @@ Changes for v2.03
 - Uploads to XSight Touch now delete user files not present in the upload (Graham)
 - Fixed issue with editing and cloning macros of non-XSight remotes, caused by the XSight development (Graham)
 - Uploading of system files to XSight Touch now shows the Uploading progress bar, as for other uploads (Graham)
+- Fixed issues arising when importing upgrades for non-XSight remotes into XSight ones (Graham)
 
 Changes for v2.02
 -- Alpha --
