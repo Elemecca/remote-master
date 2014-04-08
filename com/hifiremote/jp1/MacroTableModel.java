@@ -41,7 +41,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
-      if ( remoteConfig != null && remoteConfig.getRemote().usesEZRC() )
+      if ( remoteConfig != null /* && remoteConfig.getRemote().usesEZRC()*/ )
       {
         List< Macro > list = new ArrayList< Macro >();
         for ( Macro macro : remoteConfig.getMacros() )
@@ -53,10 +53,10 @@ public class MacroTableModel extends JP1TableModel< Macro >
         }
         setData( list );
       }
-      else
-      {
-        setData( remoteConfig.getMacros() );
-      }
+//      else
+//      {
+//        setData( remoteConfig.getMacros() );
+//      }
     }
   }
 
@@ -373,17 +373,59 @@ public class MacroTableModel extends JP1TableModel< Macro >
   }
   
   @Override
+  public void moveRow( int from, int to )
+  {
+    if ( remoteConfig != null )
+    {
+      Macro m1 = data.get( from );
+      Macro m2 = data.get( to );
+      List< Macro > macros = remoteConfig.getMacros();
+      int ndx1 = macros.indexOf( m1 );
+      int ndx2 = macros.indexOf( m2 );
+      macros.remove( ndx1 );
+      macros.add( ndx2, m1 );
+    }
+    super.moveRow( from, to );
+  }
+
+  @Override
+  public void insertRow( int row, Macro value )
+  {
+    if ( remoteConfig != null )
+    {
+      Macro macro = data.get( row );
+      List< Macro > macros = remoteConfig.getMacros();
+      int ndx = macros.indexOf( macro );
+      macros.add( ndx, value );
+    }
+    super.insertRow( row, value );
+  }
+  
+  @Override
+  public void addRow( Macro value )
+  {
+    if ( remoteConfig != null )
+    {
+      List< Macro > macros = remoteConfig.getMacros();
+      macros.add( value );
+    }
+    super.addRow( value );
+  }
+  
+  @Override
   public void removeRow( int row )
   {
-    Remote remote = null;
-    if ( remoteConfig != null && ( remote = remoteConfig.getRemote() ).usesEZRC() )
+    if ( remoteConfig != null )
     {
       Macro macro = getRow( row );
       for ( User user : macro.getUsers() )
       {
         DeviceButton db = user.db;
         DeviceUpgrade upg = db.getUpgrade();
-        upg.getMacroMap().remove( user.button.getKeyCode() );
+        if ( upg != null && upg.getMacroMap() != null )
+        {
+          upg.getMacroMap().remove( ( int )user.button.getKeyCode() );
+        }
       }
       remoteConfig.getMacros().remove( macro );
     }

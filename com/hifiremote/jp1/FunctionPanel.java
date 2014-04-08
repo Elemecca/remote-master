@@ -77,7 +77,7 @@ public class FunctionPanel extends TablePanel< Function >
   {
     Function f = new Function();
     f.setUpgrade( deviceUpgrade );
-    deviceUpgrade.getFunctions().add( f );
+//    deviceUpgrade.getFunctions().add( f );
     if ( deviceUpgrade.getRemote().usesEZRC() )
     {
       f.setGid( Function.defaultGID );
@@ -96,7 +96,7 @@ public class FunctionPanel extends TablePanel< Function >
     {
       deviceUpgrade.setFunction( user.button, null, user.state );
     }
-    deviceUpgrade.getFunctions().remove( f );
+//    deviceUpgrade.getFunctions().remove( f );
   }
   
   @Override

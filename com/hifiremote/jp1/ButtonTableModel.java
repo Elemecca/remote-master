@@ -354,26 +354,12 @@ public class ButtonTableModel
     {
 //      // Deletion of old reference is performed by setFunction()
       deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
-//      Function fnOld = ( ( Function )old );
-//      DeviceUpgrade du = old.getUpgrade( null );
-//      if ( deviceUpgrade != du )
-//      {
-//        // Assigned through a system macro
-//        Macro macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
-//        deviceUpgrade.getRemoteConfig().getMacros().remove( macro );
-//        deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
-        FunctionLabel label = old.getLabel();
-        if ( label != null )
-        {
-          label.showAssigned( db );
-          label.updateToolTipText();
-        }
-//      }
-//      else
-//      {
-//        deviceUpgrade.getAssignments().assign( button, null );
-//        fnOld.removeReference( db, button );
-//      }
+      FunctionLabel label = old.getLabel();
+      if ( label != null )
+      {
+        label.showAssigned( db );
+        label.updateToolTipText();
+      }
     }
     else if ( old instanceof Macro && gf == null )
     {

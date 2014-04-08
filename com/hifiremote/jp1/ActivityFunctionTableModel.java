@@ -356,6 +356,10 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     {
       String name = ( String )value;
       activity.setName( name );
+      if ( activity.getMacro() != null )
+      {
+        activity.getMacro().setName( name );
+      }
       panel.setTabTitle( name );
     }
     if ( col == 2 )

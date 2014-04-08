@@ -2793,7 +2793,10 @@ public class RemoteConfiguration
             {
               for ( User u : fn.getUsers() )
               {
-                macro.addReference( u.db, u.button );
+                if ( !macro.getUsers().contains( u ) )
+                {
+                  macro.addReference( u.db, u.button );
+                }
                 u.db.getUpgrade().getMacroMap().put( ( int )u.button.getKeyCode(), macro );
               }
               if ( macro.isSystemMacro() )
@@ -3728,11 +3731,11 @@ public class RemoteConfiguration
     {
       return findBoundDeviceButtonIndex( deviceTypeIndex, setupCode );
     }
-    DeviceButton[] deviceButtons = remote.getDeviceButtons();
+    List< DeviceButton > deviceButtons = deviceButtonList;//remote.getDeviceButtons();
     DeviceButton devBtn = upgrade.getButtonRestriction();
-    for ( int i = 0; i < deviceButtons.length; ++i )
+    for ( int i = 0; i < deviceButtons.size(); ++i )
     {
-      if ( devBtn == deviceButtons[ i ] )
+      if ( devBtn == deviceButtons.get( i ) )
       {
         return i;
       }

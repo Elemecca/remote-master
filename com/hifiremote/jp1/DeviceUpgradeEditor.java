@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -13,6 +14,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -89,7 +91,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         {
           if ( DeviceUpgradeEditor.this.owner.getState() != Frame.ICONIFIED )
           {
-            setExtendedState( NORMAL );
+            DeviceUpgradeEditor.this.owner.setState( Frame.ICONIFIED );
+//            setExtendedState( NORMAL );
             toFront();
           }
         }
@@ -134,7 +137,22 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     saveAsButton.addActionListener( this );
     okButton.addActionListener( this );
     cancelButton.addActionListener( this );
-    pack();
+    
+    String temp = JP1Frame.getProperties().getProperty( "DUEditorBounds" );
+    if ( temp != null )
+    {
+      Rectangle bounds = new Rectangle();
+      StringTokenizer st = new StringTokenizer( temp, "," );
+      bounds.x = Integer.parseInt( st.nextToken() );
+      bounds.y = Integer.parseInt( st.nextToken() );
+      bounds.width = Integer.parseInt( st.nextToken() );
+      bounds.height = Integer.parseInt( st.nextToken() );
+      setBounds( bounds );
+    }
+    else
+    {
+      pack();
+    }
     if ( p != null )
     {
       editorPanel.setAltPIDReason();
@@ -179,59 +197,21 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
       Object source = e.getSource();
       if ( source == okButton || source == cancelButton )
       {
-//        SetupPanel setupPanel = editorPanel.getSetupPanel();
+        int state = getExtendedState();
+        if ( state != Frame.NORMAL )
+        {
+          setExtendedState( Frame.NORMAL );
+        }
+        Rectangle bounds = getBounds();
+        JP1Frame.getProperties().setProperty( "DUEditorBounds", 
+            "" + bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height );
         DeviceUpgrade upgrade = editorPanel.getDeviceUpgrade();
         RemoteConfiguration remoteConfig = upgrade.getRemoteConfig();
         
         if ( source == cancelButton )
         {
           cancelled = true;
-          Remote remote = remoteConfig.getRemote();
-          if ( remote.usesEZRC() && row == null )
-          {
-            DeviceButton db = upgrade.getButtonRestriction();
-            if ( db != null && db != DeviceButton.noButton )
-            {
-              db.setUpgrade( null );
-              db.setDefaultName();
-            }
-            if ( db != null && remote.isSSD() )
-            {
-              db.setSegment( null );
-            }
-          }
-          Protocol p = upgrade.convertedProtocol;
-          if ( p != null )
-          {
-            ProtocolManager.getProtocolManager().remove( p );
-          }
-          p = upgrade.originalProtocol;
-          if ( p instanceof ManualProtocol )
-          {
-            ProtocolManager.getProtocolManager().add( p );
-          }
-          for ( GeneralFunction gf : upgrade.getRestoreOnCancelReferences().keySet() )
-          {
-            gf.removeReferences();
-            for ( User user : upgrade.getRestoreOnCancelReferences().get( gf ) )
-            {
-              gf.addReference( user.db, user.button );
-            }
-            if ( gf instanceof Macro )
-            {
-              Macro macro = ( Macro )gf;
-              List< Macro > macros = upgrade.getRemoteConfig().getMacros();
-              if ( macro.getUsers().isEmpty() )
-              {
-                macros.remove( macro );
-              }
-              else if ( !macros.contains( macro ) )
-              {
-                macros.add( macro );
-              }
-            }
-          }
-          upgrade.setRestoreOnCancelReferences( null );
+          upgrade.doCancel( row == null );
         }
         else if ( panel instanceof DeviceUpgradePanel && upgrade.getSetupCode() >= 0 )
         {
@@ -260,9 +240,10 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         if ( !cancelled && remoteConfig.getRemote().usesEZRC() )
         {
           upgrade.classifyButtons();
-          if ( upgrade.getButtonRestriction() != null )
+          if ( upgrade.getButtonRestriction() != null && upgrade.getButtonRestriction() != DeviceButton.noButton )
           {
             upgrade.getButtonRestriction().setConstructed( upgrade.getSetupCode() < 0 );
+            remoteConfig.getDeviceButtonList().add( upgrade.getButtonRestriction() );
           }
 //          remoteConfig.assignUpgrades();
         }
@@ -471,6 +452,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         name = name + ".rmdu";
       }
       File file = new File( name );
+      JP1Frame.getProperties().put( "UpgradePath", file.getParent() );
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists() )
       {

@@ -210,8 +210,8 @@ public class Activity extends Highlight
     {
       int keyCode = button.getKeyCode();
       macro = new Macro( keyCode, null, keyCode, 0, null );
+      macro.setActivity( this );
       macro.setItems( new ArrayList< KeySpec >() );
-      macro.setSegmentFlags( 0xFF );
       assists = new LinkedHashMap< Integer, List<Assister> >();
       for ( int i = 0; i < 3; i++ )
       {
@@ -221,6 +221,10 @@ public class Activity extends Highlight
     if ( remote.isSSD() )
     {
       icon = new RMIcon( 5 );
+    }
+    else
+    {
+      macro.setSegmentFlags( 0xFF );
     }
   }
 

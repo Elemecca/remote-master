@@ -338,17 +338,19 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
           devButton.setSetupCode( ( short )newUpgrade.getSetupCode(), data );
           devButton.setDeviceTypeIndex( ( short )devType.getNumber(), data );
           devButton.setDeviceGroup( ( short )devType.getGroup(), data );
-          if ( remote.hasDeviceDependentUpgrades() == 1 )
-          {
-            remoteConfig.getDeviceButtonList().add( devButton );
-          }          
-          else if ( remote.hasDeviceDependentUpgrades() == 2 )
+          if ( remote.hasDeviceDependentUpgrades() == 2 )
           {
             String message = "Remember to set the button-dependent and/or button-independent\n"
                 + " settings in a manner consistent with your choice of button\n" + " assignment.";
             String title = "Creating a new device upgrade";
             JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
           }    
+        }
+        else if ( remote.usesEZRC() )
+        {
+          // This case, which only concerns XSight remotes, should not occur.
+          newUpgrade.doCancel( true );
+          return;
         }
       }
       

@@ -12,6 +12,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -31,6 +32,7 @@ import javax.swing.event.ListSelectionListener;
 
 import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 public class ActivityPanel extends RMPanel implements ChangeListener, ActionListener, ListSelectionListener
 {
@@ -382,13 +384,23 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       {
         activity.getAssists().get( i ).clear();
       }
+      activity.getMacro().setValue( remote.usesEZRC() ? new ArrayList< KeySpec >() : new Hex( 0 )  );
+      
+      if ( remote.isSSD() )
+      {
+        activity.icon = new RMIcon( 5 );
+      }
+      
       if ( source == deleteActivity )
       {
-        activity.getMacro().setData( new Hex( 0 ) );
         activity.setActive( false );
+        if ( activity.getMacro() != null )
+        {
+          remoteConfig.getMacros().remove( activity.getMacro() );
+        }
         tabChange = true;
       }
-      else
+      else if ( !remote.usesEZRC() )
       {
         activity.setMacro( null );
       }
@@ -412,6 +424,15 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       activity.setActive( true );
       activity.setNew( true );
       activity.setSelector( freeBtns.get( 0 ) );
+      List< Macro > macros = remoteConfig.getMacros();
+      if ( !macros.contains( activity.getMacro() ) )
+      {
+        macros.add( activity.getMacro() );
+        if ( remote.isSSD() )
+        {
+          activity.getMacro().setSerial( remoteConfig.getNewMacroSerial() );
+        }
+      }
       
 //      Macro macro = new Macro( activity.getButton().getKeyCode(), new Hex( 0 ), activity.getSelector().getKeyCode(), 0, null );
 //      macro.setSegmentFlags( 0xFF );
@@ -419,6 +440,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       
 
       activity.setName( "New Activity" );
+      activity.getMacro().setName( activity.getName() );
       tabChange = true;
     }
     else if ( source == moveLeft || source == moveRight )

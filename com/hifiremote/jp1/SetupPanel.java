@@ -34,6 +34,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -42,6 +43,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.html.HTMLDocument;
 
 /**
  * The Class SetupPanel.
@@ -650,14 +652,20 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
 
   protected void updateProtocolNotes( String text )
   {
-    String contentType = "text/plain";
-    if ( text != null && text.startsWith( "<" ) )
+    String contentType = "text/html";
+    if ( text != null && !text.startsWith( "<" ) )
     {
-      contentType = "text/html";
+      text = text.replaceAll( "\\n", "<br>" );
     }
     EditorKit kit = protocolNotes.getEditorKitForContentType( contentType );
     protocolNotes.setEditorKit( kit );
     protocolNotes.setText( text );
+    
+    Font font = UIManager.getFont( "Label.font" );
+    String bodyRule = "body { font-family: " + font.getFamily() + "; " +
+            "font-size: " + font.getSize() + "pt; }";
+    ( ( HTMLDocument )protocolNotes.getDocument() ).getStyleSheet().addRule( bodyRule );
+
     protocolNotes.setCaretPosition( 0 );
     protocolNotes.revalidate();
   }

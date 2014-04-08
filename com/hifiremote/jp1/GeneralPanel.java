@@ -321,7 +321,15 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       {
         int selectedRow = deviceButtonTable.getSelectedRow();
         Remote remote = remoteConfig.getRemote();
-        DeviceButton deviceButton = remote.getDeviceButtons()[ selectedRow ];
+        DeviceButton deviceButton = null;
+        if ( remote.usesEZRC() )
+        {
+          deviceButton = remoteConfig.getDeviceButtonList().get( selectedRow );
+        }
+        else
+        {
+          deviceButton = remote.getDeviceButtons()[ selectedRow ];
+        }
         selectedUpgrade = remoteConfig.getAssignedDeviceUpgrade( deviceButton );
         editButton.setEnabled( selectedUpgrade != null );
         RMIcon icon = deviceButton.icon;

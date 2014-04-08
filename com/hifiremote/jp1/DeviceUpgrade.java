@@ -37,6 +37,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import com.hifiremote.jp1.Activity.Assister;
+import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 import com.hifiremote.jp1.SetupPanel.AltPIDStatus;
 import com.hifiremote.jp1.translate.Translate;
@@ -377,6 +378,11 @@ public class DeviceUpgrade extends Highlight
    */
   public String getDescription()
   {
+    if ( ( description == null || description.trim().isEmpty() ) 
+        && !( buttonRestriction == null  || buttonRestriction == DeviceButton.noButton ) )
+    {
+      return buttonRestriction.getName();
+    }
     return description;
   }
 
@@ -4270,11 +4276,17 @@ public class DeviceUpgrade extends Highlight
       }
       return null;
     }
+    
+    // From here on, code is only for XSight remotes
+    
     int keyCode = b.getKeyCode();
-    Function bf = getFunction( keyCode );  // (cloned) function currently on b
-    // On a soft button for an SSD remote, the function is replaced completely
-    // so delete existing function
-    boolean removeBf = remote.isSSD() && remote.isSoftButton( b ) && bf != null;
+    Function bf = getFunction( keyCode );  // function currently on b
+//    //     On a soft button for an SSD remote, the function is replaced completely
+//    //     so delete existing function
+    // 8 Apr 2014:  Do not understand the above comment.  Surely whether soft button
+    // or not, references to existing assignment are removed and references for new
+    // assignment added.
+    boolean removeBf = remote.isSSD() /*&& remote.isSoftButton( b )*/ && bf != null;
     if ( f == null || removeBf )
     {
       // Delete current assignment to b.  If assignment is a macro,
@@ -4294,16 +4306,12 @@ public class DeviceUpgrade extends Highlight
             ks.fn.removeReference( buttonRestriction, b );
           }
         }
-        if ( macro.getUsers().isEmpty() )
-        {
-          remoteConfig.getMacros().remove( macro );
-        }
         if ( bf != null )
         {
           bf.setMacroref( null );
           if ( bf.data != null )
           {
-            return null;
+            bf = null;;
           }
           else
           {
@@ -4319,36 +4327,50 @@ public class DeviceUpgrade extends Highlight
       {
         assignments.assign( b, null );
         bf.removeReference( buttonRestriction, b );
+        
+        bf = null;  // 8 Apr 2014
       }
       if ( f == null )
       {
         return null;
       }
     }
+    
+    // At this point, f is not null.
+    // Create a base function bf for current upgrade to hold the function data
 
     DeviceUpgrade fnUpg = f.getUpgrade( remote );
-    if ( bf == null )
+    if ( bf == null )  // Always true, as currently written
     {
       if ( fnUpg == this && f instanceof Function 
           && ( f.getUsers().isEmpty() || !remote.isSSD() ) )
       {
+        // f is a Function for current upgrade, so bf can be set to f
+        // UNLESS remote is SSD and f is already assigned to some button.
+        // In this case EZ-RC seems to clone f when it is put on to a second
+        // button, rather than using the same function.  This seems necessary
+        // in case, say, one occurrence then has a macro put on it, as the
+        // macro reference is part of the underlying function.
         bf = ( Function )f;
         assignments.assign( b, bf );
       }
       else if ( remote.isSSD() )
       {
-        // EZ-RC seems to clone a function when it is put on to a second
-        // button, rather than using the same function.  This seems necessary
-        // in case, say, one occurrence then has a macro put on it, as the
-        // macro reference is part of the underlying function.
+        // Create new empty bf
         bf = new Function( f.getName() );
         bf.icon = new RMIcon( 9 );
         bf.setUpgrade( this );
         functions.add( bf );
         assignments.assign( b, bf );
-        result = bf;
+        result = bf;  // Should this be part of cloning process???
       }
     }
+    
+    // If remote is not SSD, bf will be null unless f is Function for
+    // current upgrade, when it will equal f.
+    
+    // If remote is SSD, bf will always be non-null and will differ from
+    // f unless f is an unassigned Function for current upgrade
     
     if ( fnUpg == this )
     {
@@ -4372,19 +4394,11 @@ public class DeviceUpgrade extends Highlight
           {
             backupReferences( macro );
             macro.removeReference( buttonRestriction, b );
-            if ( macro.getUsers().isEmpty() )
-            {
-              remoteConfig.getMacros().remove( macro );
-            }
           }  
           macro = ( Macro )f;
           macroMap.put( keyCode, macro );
           backupReferences( macro );
           macro.addReference( buttonRestriction, b );
-          if ( !remoteConfig.getMacros().contains( macro ) )
-          {
-            remoteConfig.getMacros().add( macro );
-          }
           if ( remote.isSSD() )
           {
             // The remote seems to require the function and macro to have the
@@ -4397,13 +4411,16 @@ public class DeviceUpgrade extends Highlight
           }
         }
       }
+      // else ( f == bf ), in which case assignment already done
     }
-    else if ( f instanceof Function )
+    else // fnUpg != this
+    if ( f instanceof Function )  
     {
       Function fn = ( Function )f;
       Function irFn = null;
       if ( remote.isSSD() )
       {
+        // Locate or create an ir function, with serial >= 0
         if ( fn.getSerial() >= 0 )
         {
           irFn = fn;
@@ -4425,6 +4442,7 @@ public class DeviceUpgrade extends Highlight
         backupReferences( irFn );
         irFn.addReference( buttonRestriction, b );
       }
+      // Create a system macro to hold the ir function, removing current macro if present
       Macro macro = macroMap.get( keyCode );
       if ( macro != null )
       {
@@ -4436,13 +4454,9 @@ public class DeviceUpgrade extends Highlight
           backupReferences( ks.fn );
           ks.fn.removeReference( buttonRestriction, b );
         }
-        if ( macro.getUsers().isEmpty() )
-        {
-          remoteConfig.getMacros().remove( macro );
-        }
       }   
       macro = new Macro( b.getKeyCode(), null, null );
-      backupReferences( macro );
+      backupReferences( macro );      // enables macro to be removed if edit cancelled
       remoteConfig.getMacros().add( macro );
       macro.setName( fn.getName() );  // changed irFn to fn, don't think it makes a difference
       macro.setSystemMacro( true );
@@ -4459,7 +4473,7 @@ public class DeviceUpgrade extends Highlight
         }
         macro.setAssists( assists );  
         ks = new KeySpec( fnUpg.buttonRestriction, irFn );
-        bf.setMacroref( serial );
+        bf.setMacroref( serial );  // Assign macro to the base function
 //      why no macro.addReference, or macro.setDeviceButtonIndex ???
       }
       else if ( !f.getUsers().isEmpty() )
@@ -4633,6 +4647,57 @@ public class DeviceUpgrade extends Highlight
       list.addAll( selectorMap.values() );
     }
     return list;
+  }
+  
+  public void doCancel( boolean isNewUpgrade )
+  {
+    Remote remote = remoteConfig.getRemote();
+    if ( remote.usesEZRC() && isNewUpgrade )
+    {
+      DeviceButton db = buttonRestriction;
+      if ( db != null && db != DeviceButton.noButton )
+      {
+        db.setUpgrade( null );
+        db.setDefaultName();
+        db.setConstructed( false );
+      }
+      if ( db != null && remote.isSSD() )
+      {
+        db.setSegment( null );
+      }
+    }
+    Protocol p = convertedProtocol;
+    if ( p != null )
+    {
+      ProtocolManager.getProtocolManager().remove( p );
+    }
+    p = originalProtocol;
+    if ( p instanceof ManualProtocol )
+    {
+      ProtocolManager.getProtocolManager().add( p );
+    }
+    for ( GeneralFunction gf : restoreOnCancelReferences.keySet() )
+    {
+      gf.removeReferences();
+      for ( User user : restoreOnCancelReferences.get( gf ) )
+      {
+        gf.addReference( user.db, user.button );
+      }
+      if ( gf instanceof Macro )
+      {
+        Macro macro = ( Macro )gf;
+        List< Macro > macros = remoteConfig.getMacros();
+        if ( macro.getUsers().isEmpty() )
+        {
+          macros.remove( macro );
+        }
+        else if ( !macros.contains( macro ) )
+        {
+          macros.add( macro );
+        }
+      }
+    }
+    restoreOnCancelReferences = null;
   }
 
   public String toString()

@@ -555,5 +555,33 @@ public class FunctionTableModel extends KMTableModel< Function >
     super.moveRow( from, to );
   }
   
+  @Override
+  public void insertRow( int row, Function value )
+  {
+    Function fn = data.get( row );
+    List< Function > functions = deviceUpgrade.getFunctions();
+    int ndx = functions.indexOf( fn );
+    functions.add( ndx, value );
+    super.insertRow( row, value );
+  }
+  
+  @Override
+  public void addRow( Function value )
+  {
+    List< Function > functions = deviceUpgrade.getFunctions();
+    functions.add( value );
+    super.addRow( value );
+  }
+  
+  @Override
+  public void removeRow( int row )
+  {
+    Function fn = data.get( row );
+    List< Function > functions = deviceUpgrade.getFunctions();
+    int ndx = functions.indexOf( fn );
+    functions.remove( ndx );
+    super.removeRow( row );
+  }
+  
   private int lastCell = 0;
 }

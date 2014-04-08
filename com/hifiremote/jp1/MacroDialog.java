@@ -49,8 +49,7 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
    */
   public static Macro showDialog( Component locationComp, Macro macro, RemoteConfiguration config )
   {
-    if ( dialog == null )
-      dialog = new MacroDialog( locationComp );
+    dialog = new MacroDialog( locationComp );
 
     dialog.setRemoteConfiguration( config );
     dialog.setMacro( macro );
@@ -376,7 +375,8 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
           newMacro.setSegmentFlags( macro == null ? 0xFF : macro.getSegmentFlags() );
         }
 //        DeviceUpgrade du = macro.getUpgrade( remote );
-//        du.setFunction( b, newMacro, Button.NORMAL_STATE );
+        DeviceUpgrade du = db.getUpgrade();
+        du.setFunction( b, newMacro, Button.NORMAL_STATE );
       }
       else
       {
@@ -384,19 +384,8 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
         newMacro.setData( data );
       }
       
-      
-      
       if ( config.hasSegments() && !remote.usesEZRC() )
       {
-//        // set default values
-//        if ( macro == null && remote.usesEZRC() )
-//        {
-//          newMacro.setDeviceButtonIndex( remote.getDeviceButtons()[ 0 ].getButtonIndex() );
-//          newMacro.setSegmentFlags( 0xFF );
-//          newMacro.setName( "New macro" );
-//          newMacro.setSerial( config.getNewMacroSerial() );
-//        }
-//        else 
         if ( macro == null )
         {
           newMacro.setDeviceButtonIndex( 0 );
@@ -410,26 +399,6 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
           newMacro.setSerial( macro.getSerial() );
         }
       }
-      if ( remote.usesEZRC() )
-      {
-        List< User > extraUsers = new ArrayList< User >();
-        if ( macro != null )
-        {
-          Button currb = remote.getButton( macro.getKeyCode() );
-          DeviceUpgrade currdb = macro.getUpgrade( remote );
-          currdb.setFunction( currb, null, Button.NORMAL_STATE );
-          extraUsers.addAll( macro.getUsers() );
-        }
-        DeviceUpgrade du = newMacro.getUpgrade( remote );
-        du.setFunction( b, newMacro, Button.NORMAL_STATE );
-        for ( User user : extraUsers )
-        {
-          du = user.db.getUpgrade();
-          du.getMacroMap().put( ( int )user.button.getKeyCode(), newMacro );
-          newMacro.addReference( user.db, user.button );
-        }
-      }
-//      config.getMacros().remove( macro );
       macro = newMacro;
       setVisible( false );
     }

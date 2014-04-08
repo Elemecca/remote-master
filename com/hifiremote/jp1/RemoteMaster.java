@@ -105,7 +105,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 22";
+  public final static String version = "v2.03 Alpha 22 Test 2";
 
   /** The dir. */
   private File dir = null;
@@ -277,6 +277,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private CodeSelectorDialog codeSelectorDialog = null;
 
   private JDialog colorDialog = null;
+  
+  private ActionEvent lfEvent = null;
 
   public JDialog getColorDialog()
   {
@@ -1771,19 +1773,26 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       public void actionPerformed( ActionEvent e )
       {
-        try
+        lfEvent = e;       
+        SwingUtilities.invokeLater( new Runnable()
         {
-          JRadioButtonMenuItem item = ( JRadioButtonMenuItem )e.getSource();
-          String lf = item.getActionCommand();
-          UIManager.setLookAndFeel( lf );
-          SwingUtilities.updateComponentTreeUI( RemoteMaster.this );
-          RemoteMaster.this.pack();
-          properties.setProperty( "LookAndFeel", lf );
-        }
-        catch ( Exception x )
-        {
-          x.printStackTrace( System.err );
-        }
+          public void run()
+          {
+            try
+            {
+              JRadioButtonMenuItem item = ( JRadioButtonMenuItem )lfEvent.getSource();
+              String lf = item.getActionCommand();
+              UIManager.setLookAndFeel( lf );
+              SwingUtilities.updateComponentTreeUI( RemoteMaster.this );
+              RemoteMaster.this.pack();
+              properties.setProperty( "LookAndFeel", lf );
+            }
+            catch ( Exception x )
+            {
+              x.printStackTrace( System.err );
+            }
+          }
+        } );
       }
     };
 
