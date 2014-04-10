@@ -240,10 +240,14 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         if ( !cancelled && remoteConfig.getRemote().usesEZRC() )
         {
           upgrade.classifyButtons();
-          if ( upgrade.getButtonRestriction() != null && upgrade.getButtonRestriction() != DeviceButton.noButton )
+          DeviceButton db = null;
+          if ( ( db = upgrade.getButtonRestriction() ) != null && db != DeviceButton.noButton )
           {
-            upgrade.getButtonRestriction().setConstructed( upgrade.getSetupCode() < 0 );
-            remoteConfig.getDeviceButtonList().add( upgrade.getButtonRestriction() );
+            db.setConstructed( upgrade.getSetupCode() < 0 );
+            if ( !remoteConfig.getDeviceButtonList().contains( db ) )
+            {
+              remoteConfig.getDeviceButtonList().add( db );
+            }
           }
 //          remoteConfig.assignUpgrades();
         }

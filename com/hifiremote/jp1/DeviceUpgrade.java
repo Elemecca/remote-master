@@ -86,7 +86,7 @@ public class DeviceUpgrade extends Highlight
     remoteConfig = base.remoteConfig;
     notes = base.notes;
     protocol = base.protocol;
-    if ( newRestriction == null )
+    if ( newRestriction == null || newRestriction == DeviceButton.noButton )
     {
       buttonIndependent = base.buttonIndependent;
       buttonRestriction = base.buttonRestriction;
@@ -2465,8 +2465,15 @@ public class DeviceUpgrade extends Highlight
     // of a configuration, not of the upgrade itself.
     if ( remoteConfig != null )
     {
-      str = props.getProperty( "ButtonIndependent" );
-      buttonIndependent = str != null ? Boolean.parseBoolean( str ) : true;
+      if ( remote.hasDeviceDependentUpgrades() > 0 )
+      {
+        str = props.getProperty( "ButtonIndependent" );
+        buttonIndependent = str != null ? Boolean.parseBoolean( str ) : true;
+      }
+      else
+      {
+        buttonIndependent = true;
+      }
       buttonRestriction = DeviceButton.noButton;
 
       str = props.getProperty( "ButtonIndex" );
@@ -4420,25 +4427,7 @@ public class DeviceUpgrade extends Highlight
       Function irFn = null;
       if ( remote.isSSD() )
       {
-        // Locate or create an ir function, with serial >= 0
-        if ( fn.getSerial() >= 0 )
-        {
-          irFn = fn;
-        }
-        else if ( fn.getAlternate() != null )
-        {
-          irFn = fn.getAlternate();
-        }
-        else
-        {
-          irFn = new Function( fn );
-          int serial = getNewFunctionSerial();
-          irFn.setSerial( serial );
-          fnUpg.getFunctionMap().put( serial, irFn );
-          fn.setAlternate( irFn );
-          irFn.setAlternate( fn );
-          fnUpg.functions.add( irFn );
-        }
+        irFn = fn.getIRfunction( fnUpg );
         backupReferences( irFn );
         irFn.addReference( buttonRestriction, b );
       }
@@ -4640,7 +4629,24 @@ public class DeviceUpgrade extends Highlight
   
   public List< GeneralFunction > getGeneralFunctionList()
   {
-    List< GeneralFunction > list = new ArrayList< GeneralFunction >( getFunctionList() );
+    List< GeneralFunction > list = new ArrayList< GeneralFunction >();
+    if ( remote.usesEZRC() && !remote.isSSD() )
+    {
+      // XSight Light/Plus can only put functions in mactos if they are already
+      // on a button.
+      for ( Function f : getFunctionList() )
+      {
+        if ( !f.getUsers().isEmpty() )
+        {
+          list.add( f );
+        }
+      }
+    }
+    else
+    {
+      list.addAll( getFunctionList() );
+    }
+    
     if ( remote.usesEZRC() )
     {
       list.addAll( learnedMap.values() );

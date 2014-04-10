@@ -241,7 +241,11 @@ public class Function extends GeneralFunction
    */
   public void addReference( Button b, int state )
   {
-    users.add( new User( b, state ) );
+    User user = new User( b, state );
+    if ( !users.contains( user ) )
+    {
+      users.add( user );
+    }
     if ( label != null )
     {
       label.showAssigned();
@@ -327,6 +331,30 @@ public class Function extends GeneralFunction
       }
     }
     return out;
+  }
+  
+  public Function getIRfunction( DeviceUpgrade du )
+  {
+    Function irFn = null;
+    if ( serial >= 0 )
+    {
+      return this;
+    }
+    else if ( alternate != null )
+    {
+      return alternate;
+    }
+    else
+    {
+      irFn = new Function( this );
+      int serial = du.getNewFunctionSerial();
+      irFn.setSerial( serial );
+      du.getFunctionMap().put( serial, irFn );
+      alternate = irFn;
+      irFn.setAlternate( this );
+      du.getFunctions().add( irFn );
+      return irFn;
+    }
   }
 
   public Function getAlternate()

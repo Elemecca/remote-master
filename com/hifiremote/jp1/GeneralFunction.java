@@ -731,7 +731,11 @@ public class GeneralFunction
 
   public void addReference( DeviceButton db, Button b )
   {
-    users.add( new User( db, b ) );
+    User user = new User( db, b );
+    if ( !users.contains( user ) )
+    {
+      users.add( user );
+    }
     if ( label != null )
     {
       label.showAssigned( db );

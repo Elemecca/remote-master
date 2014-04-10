@@ -7798,6 +7798,10 @@ public class RemoteConfiguration
             {
               short dev = ( short )( assister.device.getSerial() );
               GeneralFunction f = assister.function;
+              if ( f == null )
+              {
+                continue;
+              }
               Button b = f.getUsers().isEmpty() ? null : f.getUsers().get( 0 ).button;
               boolean ir = b == null;
               boolean softKey = !ir && remote.isSoftButton( b );

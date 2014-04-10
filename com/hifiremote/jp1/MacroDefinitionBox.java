@@ -338,14 +338,7 @@ PropertyChangeListener, RMSetter< Object >
       // Only XSight Touch
       if ( f.getUsers().isEmpty() )
       {
-        Function irFn = new Function( ( Function )f );
-        DeviceUpgrade du = db.getUpgrade();
-        int serial = du.getNewFunctionSerial();
-        irFn.setSerial( serial );
-        du.getFunctionMap().put( serial, irFn );
-        ( ( Function )f ).setAlternate( irFn );
-        irFn.setAlternate( ( Function )f );
-        du.getFunctions().add( irFn );
+        Function irFn = ( ( Function )f ).getIRfunction( db.getUpgrade() );
         ks = new KeySpec( db, irFn );
       }
       else

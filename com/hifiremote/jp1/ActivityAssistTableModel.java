@@ -13,11 +13,12 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
   
   public void set( Button btn, int type, RemoteConfiguration remoteConfig )
   {
-    this.remoteConfig = remoteConfig; 
+    this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.usesEZRC() ? 
+          remoteConfig.getDeviceButtonList().toArray( new DeviceButton[0] ) : remote.getDeviceButtons() ) );
       activity = remoteConfig.getActivities().get( btn );
       setData( activity.getAssists().get( type ) );
       keyRenderer.setRemote( remote );
@@ -133,15 +134,17 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
   public void setValueAt( Object value, int row, int col )
   {
     Assister assister = getRow( row );
+    Remote remote = remoteConfig.getRemote();
     if ( col == 1 )
     {
       assister.setDevice( ( DeviceButton )value );
     }
     else if ( col == 2 )
     {
-      assister.setButton( remoteConfig.getRemote().getButton( ( ( Integer )value ).intValue() ) );
+      assister.setButton( remote.getButton( ( ( Integer )value ).intValue() ) );
     }
-    propertyChangeSupport.firePropertyChange( "data", null, null );
+    assister.set( remote );
+    fireTableDataChanged();
   }
   
   private RemoteConfiguration remoteConfig = null;
