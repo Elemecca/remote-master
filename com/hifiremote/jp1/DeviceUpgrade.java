@@ -3569,15 +3569,6 @@ public class DeviceUpgrade extends Highlight
       }
     }
 
-    /*
-     * if ( !unassigned.isEmpty()) { System.err.println( "Removing undefined functions from usedFunctions" ); for(
-     * ListIterator< ArrayList< String >> i = unassigned.listIterator(); i.hasNext(); ) { java.util.List< String > temp
-     * = i.next(); String funcName = ( String )temp.get( 0 ); System.err.println( "Checking '" + funcName + "'" );
-     * Function f = getFunction( funcName, usedFunctions ); if (( f != null ) && (( f.getHex() == null ) || (
-     * f.getHex().length() == 0 ))) { System.err.println( "Removing function " + f + ", which has name '" + funcName +
-     * "'" ); i.remove(); } } }
-     */
-
     if ( !unassigned.isEmpty() )
     {
       String message = Integer.toString( unassigned.size() ) + " functions defined in the imported device upgrade "
@@ -3829,15 +3820,6 @@ public class DeviceUpgrade extends Highlight
       // A code translator for a protocol modifies the protocol hex according to the
       // value of certain device parameters
       translateCode( code );
-      // Translate[] xlators = p.getCodeTranslators( remote );
-      // if ( xlators != null )
-      // {
-      // Value[] values = getParmValues();
-      // for ( int i = 0; i < xlators.length; i++ )
-      // {
-      // xlators[ i ].in( values, code, null, -1 );
-      // }
-      // }
     }
     return code;
   }
@@ -3913,8 +3895,6 @@ public class DeviceUpgrade extends Highlight
   /** The remote. */
   private Remote remote = null;
 
-  // remoteConfig is set only when editing from RMIR, and is used to check
-  // if the configuration contains a protocol upgrade that provides custom code
   private RemoteConfiguration remoteConfig = null;
   
   // Only set when editing, specifies the upgrade being edited.
@@ -4064,27 +4044,6 @@ public class DeviceUpgrade extends Highlight
   }
   
   private LinkedHashMap< GeneralFunction, List< User > > restoreOnCancelReferences = null;
-//  private LinkedHashMap< GeneralFunction, List< User > > deleteOnOKReferences = null;
-
-  public LinkedHashMap< GeneralFunction, List< User >> getRestoreOnCancelReferences()
-  {
-    return restoreOnCancelReferences;
-  }
-
-  public void setRestoreOnCancelReferences( LinkedHashMap< GeneralFunction, List< User >> deleteOnCancelReferences )
-  {
-    this.restoreOnCancelReferences = deleteOnCancelReferences;
-  }
-
-//  public LinkedHashMap< GeneralFunction, List< User >> getDeleteOnOKReferences()
-//  {
-//    return deleteOnOKReferences;
-//  }
-//
-//  public void setDeleteOnOKReferences( LinkedHashMap< GeneralFunction, List< User >> deleteOnOKReferences )
-//  {
-//    this.deleteOnOKReferences = deleteOnOKReferences;
-//  }
 
   /**
    * The offset in raw data to the start of this upgrade in the Device Dependent section, when applicable. Value
@@ -4244,31 +4203,6 @@ public class DeviceUpgrade extends Highlight
   {
     this.protocolMemoryUsage += protocolMemoryUsage;
   }
-
-//  public void removeMacro( Button b )
-//  {
-//    int keyCode = b.getKeyCode();
-//    Function bf = getFunction( keyCode );
-//    Macro macro = macroMap.get( keyCode );
-//    if ( macro != null )
-//    {
-//      macroMap.remove( keyCode );
-//      macro.removeReference( buttonRestriction, b );
-//      if ( macro.getUsers().isEmpty() )
-//      {
-//        remoteConfig.getMacros().remove( macro );
-//      }
-//      if ( bf != null )
-//      {
-//        bf.setMacroref( null );
-//      }
-//      if ( bf.getData() == null )
-//      {
-//        functions.remove( bf );
-//        assignments.assign( b, null );
-//      }
-//    }
-//  }
   
   public Function setFunction( Button b, GeneralFunction f, int state )
   {
@@ -4287,14 +4221,9 @@ public class DeviceUpgrade extends Highlight
     // From here on, code is only for XSight remotes
     
     int keyCode = b.getKeyCode();
+    DeviceUpgrade fnUpg = f == null ? null : f.getUpgrade( remote );
     Function bf = getFunction( keyCode );  // function currently on b
-//    //     On a soft button for an SSD remote, the function is replaced completely
-//    //     so delete existing function
-    // 8 Apr 2014:  Do not understand the above comment.  Surely whether soft button
-    // or not, references to existing assignment are removed and references for new
-    // assignment added.
-    boolean removeBf = remote.isSSD() /*&& remote.isSoftButton( b )*/ && bf != null;
-    if ( f == null || removeBf )
+    if ( f == null || remote.isSSD() && bf != null )
     {
       // Delete current assignment to b.  If assignment is a macro,
       // leave the underlying function, if any.
@@ -4316,11 +4245,7 @@ public class DeviceUpgrade extends Highlight
         if ( bf != null )
         {
           bf.setMacroref( null );
-          if ( bf.data != null )
-          {
-            bf = null;;
-          }
-          else
+          if ( bf.data == null )
           {
             // If assignment was a macro with no underlying function data,
             // remove the function
@@ -4328,15 +4253,29 @@ public class DeviceUpgrade extends Highlight
             functions.remove( bf );
             bf = null;
           }
+          else if ( f instanceof Function && fnUpg == this || remote.isSoftButton( b ) )
+          {
+            // Underlying function has data and either
+            // (a) new value is a function for this upgrade, or
+            // (b) button is a soft button and new value is a Macro.
+            // Both cases require a new base function, in (a) so as not to overwrite it
+            // and in (b) since the base function must be given same name as the macro.
+            bf = null;;
+          }
+          // else underlying function has data, new value is a macro, button is not
+          // a soft one, so base function need not be renamed and macro can be
+          // placed on it.
         }
       }
-      else if ( bf != null )
+      else if ( bf != null && ( f instanceof Function  && fnUpg == this || remote.isSoftButton( b ) ) )
       {
+        // new function will replace base function
         assignments.assign( b, null );
         bf.removeReference( buttonRestriction, b );
-        
-        bf = null;  // 8 Apr 2014
+        bf = null;
       }
+      // else base is null or is a Function with new value being a Macro to go on a
+      // hard button, in which case base can be used to hold the macro
       if ( f == null )
       {
         return null;
@@ -4346,8 +4285,7 @@ public class DeviceUpgrade extends Highlight
     // At this point, f is not null.
     // Create a base function bf for current upgrade to hold the function data
 
-    DeviceUpgrade fnUpg = f.getUpgrade( remote );
-    if ( bf == null )  // Always true, as currently written
+    if ( bf == null )
     {
       if ( fnUpg == this && f instanceof Function 
           && ( f.getUsers().isEmpty() || !remote.isSSD() ) )
@@ -4360,6 +4298,7 @@ public class DeviceUpgrade extends Highlight
         // macro reference is part of the underlying function.
         bf = ( Function )f;
         assignments.assign( b, bf );
+        return null;
       }
       else if ( remote.isSSD() )
       {
@@ -4369,7 +4308,6 @@ public class DeviceUpgrade extends Highlight
         bf.setUpgrade( this );
         functions.add( bf );
         assignments.assign( b, bf );
-        result = bf;  // Should this be part of cloning process???
       }
     }
     
@@ -4379,49 +4317,45 @@ public class DeviceUpgrade extends Highlight
     // If remote is SSD, bf will always be non-null and will differ from
     // f unless f is an unassigned Function for current upgrade
     
-    if ( fnUpg == this )
+    if ( fnUpg == this || f instanceof Macro )
     {
-      if ( f != bf )
+      if ( f instanceof Function )
       {
-        if ( f instanceof Function )
+        // This is cloning a function, and will only apply 
+        // if remote is SSD, in which case bf != null.
+        Function fn = ( Function )f;
+        bf.setName( f.getName() );
+        bf.setData( new Hex( fn.getData() ) );
+        bf.setGid( fn.getGid() );
+        bf.setKeyflags( fn.getKeyflags() );
+        bf.icon = fn.icon;
+        result = bf;
+      }
+      else if ( f instanceof Macro )  // At present, the only other possibility
+      {
+        Macro macro = macroMap.get( keyCode );
+        if ( macro != null )
         {
-          // This is cloning a function, and will only apply 
-          // if remote is SSD, in which case bf != null.
-          Function fn = ( Function )f;
-          bf.setName( f.getName() );
-          bf.setData( new Hex( fn.getData() ) );
-          bf.setGid( fn.getGid() );
-          bf.setKeyflags( fn.getKeyflags() );
-          bf.icon = fn.icon;
-        }
-        else if ( f instanceof Macro )  // At present, the only other possibility
-        {
-          Macro macro = macroMap.get( keyCode );
-          if ( macro != null )
-          {
-            backupReferences( macro );
-            macro.removeReference( buttonRestriction, b );
-          }  
-          macro = ( Macro )f;
-          macroMap.put( keyCode, macro );
           backupReferences( macro );
-          macro.addReference( buttonRestriction, b );
-          if ( remote.isSSD() )
+          macro.removeReference( buttonRestriction, b );
+        }  
+        macro = ( Macro )f;
+        macroMap.put( keyCode, macro );
+        backupReferences( macro );
+        macro.addReference( buttonRestriction, b );
+        if ( remote.isSSD() )
+        {
+          // For a macro on a soft button, the base function needs same name
+          // as macro.
+          if ( remote.isSoftButton( b ) )
           {
-            // The remote seems to require the function and macro to have the
-            // same name.  In a test with function name "TV Test" and macro
-            // name "TV  Vol Min", the remote displayed "TV Test Min", apparently
-            // overwriting the macro name with the function name.  So for safety
-            // it is better not to allow the names to differ.
             bf.setName( f.getName() );
-            bf.setMacroref( macro.getSerial() );
           }
+          bf.setMacroref( macro.getSerial() );
         }
       }
-      // else ( f == bf ), in which case assignment already done
     }
-    else // fnUpg != this
-    if ( f instanceof Function )  
+    else // fnUpg != this and f is a Function 
     {
       Function fn = ( Function )f;
       Function irFn = null;
@@ -4463,7 +4397,9 @@ public class DeviceUpgrade extends Highlight
         macro.setAssists( assists );  
         ks = new KeySpec( fnUpg.buttonRestriction, irFn );
         bf.setMacroref( serial );  // Assign macro to the base function
-//      why no macro.addReference, or macro.setDeviceButtonIndex ???
+//      why no macro.addReference, or macro.setDeviceButtonIndex ???  Added for testing
+        macro.setDeviceButtonIndex( buttonRestriction.getButtonIndex() );
+        macro.addReference( buttonRestriction, b );
       }
       else if ( !f.getUsers().isEmpty() )
       {
@@ -4480,6 +4416,11 @@ public class DeviceUpgrade extends Highlight
       macroMap.put( keyCode, macro );
     }
     return result;
+  }
+  
+  public void clearBackupReferences()
+  {
+    restoreOnCancelReferences = new LinkedHashMap< GeneralFunction, List< User > >();
   }
   
   private void backupReferences( GeneralFunction gf )

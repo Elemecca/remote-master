@@ -100,6 +100,12 @@ public class FunctionPanel extends TablePanel< Function >
   }
   
   @Override
+  protected boolean canDelete( Function f )
+  {
+    return !f.assigned();
+  }
+  
+  @Override
   public void valueChanged( ListSelectionEvent e )
   {
     super.valueChanged( e );

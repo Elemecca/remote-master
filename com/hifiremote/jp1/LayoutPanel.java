@@ -531,6 +531,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       }
       buttonName.setText( name );
       GeneralFunction f = getFunction( b );
+      boolean doEnable = f != null;
       if ( f != null )
         function.setText( f.getDisplayName( deviceUpgrade.getRemote() ) );
       else
@@ -562,8 +563,16 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
               : "This assignment does not permit an alias.</html>";
           alias.setToolTipText( tip );
         }
+        if ( doEnable && f instanceof LearnedSignal )
+        {
+          doEnable = ( ( LearnedSignal )f ).getKeyCode() != b.getKeyCode();
+        }
+        else if ( doEnable && f instanceof Macro )
+        {
+          doEnable = ( ( Macro )f ).getKeyCode() != b.getKeyCode();
+        }
       }
-      deleteAction.setEnabled( f != null );
+      deleteAction.setEnabled( doEnable );
     }
     else
     {
@@ -707,44 +716,13 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     Button b = getButtonForShape( shape );
     if ( b != null )
     {
-//      Macro macro = null;
-//      GeneralFunction gf = null;
-//      if ( remote.isSSD() )
-//      {
-//        LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )button.getKeyCode() );
-//        if ( ls != null )
-//        {
-//          gf = ls;
-//        }
-//        macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
-//        if ( gf == null && macro != null )
-//        {
-//          gf = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
-//          if ( !macro.isSystemMacro() )
-//          {
-//            macro = null;
-//          }
-//        }
-//      }
-//      if ( gf == null )
-//      {
-//        gf = deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
-//      }
       GeneralFunction current = getFunction( b );
       ButtonTableModel.setFunction( deviceUpgrade, b, current, gf, this );
-      if ( current instanceof LearnedSignal && gf == null )
-      {
-        gf = getFunction( b );
-        ButtonTableModel.setFunction( deviceUpgrade, b, null, gf, this );
-      }
-//      macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
-//      if ( gf == null && macro != null )
+//      // Commented out as learned signals cannot be deleted in layout panel
+//      if ( current instanceof LearnedSignal && gf == null )
 //      {
-//        gf = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
-//        if ( !macro.isSystemMacro() )
-//        {
-//          macro = null;
-//        }
+//        gf = getFunction( b );
+//        ButtonTableModel.setFunction( deviceUpgrade, b, null, gf, this );
 //      }
       setButtonText( shape, b );
       deviceUpgrade.checkSize();

@@ -343,78 +343,42 @@ public class ButtonTableModel
   public static void setFunction( DeviceUpgrade deviceUpgrade, Button button, GeneralFunction old, 
       GeneralFunction gf, KMPanel panel )
   {
-    // A new value always becomes active so delete the reference to the
-    // current value, but delete the current value itself only if the new
-    // value is not a learned signal, as a learned signal sits on top of
-    // the current value, hiding it but gets reinstated if the learned
-    // signal is deleted
-
     DeviceButton db = deviceUpgrade.getButtonRestriction();
-    if ( old instanceof Function && gf == null )
+    FunctionLabel label = null;
+    if ( gf == null )
     {
-//      // Deletion of old reference is performed by setFunction()
       deviceUpgrade.setFunction( button, null, Button.NORMAL_STATE );
-      FunctionLabel label = old.getLabel();
-      if ( label != null )
+      if ( old != null && ( label = old.getLabel() ) != null )
       {
         label.showAssigned( db );
         label.updateToolTipText();
       }
     }
-    else if ( old instanceof Macro && gf == null )
+    else if ( gf instanceof Function || gf instanceof Macro )
     {
-//      if ( !( gf instanceof LearnedSignal ) )
-//      {
-        deviceUpgrade.getMacroMap().remove( ( int )button.getKeyCode() );
-//      }
-      ( ( Macro )old ).removeReference( db, button );
-    }
-    else if ( old instanceof LearnedSignal && gf == null )
-    {
-      deviceUpgrade.getLearnedMap().remove( ( int )button.getKeyCode() );
-      ( ( LearnedSignal )old ).removeReference( db, button );
-      // Deleting a learned signal reinstates the value underneath it,
-      // whose reference will have been deleted, so reset it
-//      if ( gf == null )
-//      {
-//        gf = ( GeneralFunction )getValueAt( row, col );
-//      }
-    }
-
-    if ( gf instanceof Function )
-    {
-      Function f = ( Function )gf;
-      Function result = deviceUpgrade.setFunction( button, f, Button.NORMAL_STATE );
+//      Function f = ( Function )gf;
+      Function result = deviceUpgrade.setFunction( button, gf, Button.NORMAL_STATE );
       if ( result != null && result.accept() )
       {    
         panel.addFunction( result );
         panel.revalidateFunctions();
       }
-//      Remote remote = deviceUpgrade.getRemote();
-//      if ( remote.usesEZRC() && !remote.isSSD() && deviceUpgrade != gf.getUpgrade( remote ) )
-//      {
-////        gf = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
-//        FunctionLabel label = f.getLabel();
-//        if ( label != null )
-//        {
-//          label.showAssigned( db );
-//          label.updateToolTipText();
-//        }
-//      }
     }
-    else if ( gf instanceof Macro )
-    {
-      Macro macro = ( Macro )gf;
-      deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
-      macro.addReference( db, button );
-    }
+//    else if ( gf instanceof Macro )
+//    {
+//      Macro macro = ( Macro )gf;
+//      deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
+//      macro.addReference( db, button );
+//    }
     else if ( gf instanceof LearnedSignal )
     {
+      // This case should not occur, as learned signals cannot be assigned through the
+      // button and layout panels.
       LearnedSignal ls = ( LearnedSignal )gf;
       deviceUpgrade.getLearnedMap().put( ( int )button.getKeyCode(), ls );
       ls.addReference( db, button );
     }
-    FunctionLabel label = null;
+    
     if ( gf != null && ( label = gf.getLabel() ) != null )
     {
       label.showAssigned( db );

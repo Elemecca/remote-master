@@ -4248,6 +4248,7 @@ public class RemoteConfiguration
    */
   public void updateImage()
   {
+    cleanMacros();
     if ( remote.isSSD() )
     {
       // XSight remotes
@@ -8385,6 +8386,22 @@ public class RemoteConfiguration
       if ( !list.contains( serial ) )
       {
         return serial;
+      }
+    }
+  }
+  /** 
+   * Removes system macros with no users
+   */
+  public void cleanMacros()
+  {
+    ListIterator< Macro > li = macros.listIterator();
+    while ( li.hasNext() )
+    {
+      Macro m = li.next();
+      if ( m.isSystemMacro() && m.getUsers().isEmpty() )
+      {
+        li.remove();
+        continue;
       }
     }
   }

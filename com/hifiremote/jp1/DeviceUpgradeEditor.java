@@ -48,7 +48,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     this.owner = owner;
     this.row = row;
     this.panel = panel;
-    deviceUpgrade.setRestoreOnCancelReferences( new LinkedHashMap< GeneralFunction, List< User > >() );
+    deviceUpgrade.clearBackupReferences();
     focusWindowAdapter = new WindowAdapter()
     {
       @Override
