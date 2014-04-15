@@ -4267,7 +4267,7 @@ public class DeviceUpgrade extends Highlight
           // placed on it.
         }
       }
-      else if ( bf != null && ( f instanceof Function  && fnUpg == this || remote.isSoftButton( b ) ) )
+      else if ( bf != null && ( f == null || f instanceof Function && fnUpg == this || remote.isSoftButton( b ) ) )
       {
         // new function will replace base function
         assignments.assign( b, null );
