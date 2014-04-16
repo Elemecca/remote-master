@@ -112,16 +112,7 @@ public class FunctionLabel
       buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;set the function performed by a button." );
       if ( function.getNotes() != null )
         buff.append( "<br><hr>&nbsp;" + function.getNotes());
-      List< User > users = new ArrayList< User >();
-      users.addAll( function.getUsers() );
-      List< User > moreUsers = function.getIndirectReferences();
-      if ( !moreUsers.isEmpty())
-      users.addAll( function.getIndirectReferences() );
-      Function alternate = null;
-      if ( function instanceof Function && ( alternate = ( ( ( Function )function ).getAlternate() ) ) != null )
-      {
-        users.addAll( alternate.getUsers() );
-      }
+      List< User > users = function.getAllUsers();
       if ( !users.isEmpty())
       {
         buff.append( "<br><hr>&nbsp;" + function.getName() + " is assigned to: " );

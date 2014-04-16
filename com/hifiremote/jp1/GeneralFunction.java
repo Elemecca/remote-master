@@ -640,12 +640,12 @@ public class GeneralFunction
   
   public boolean assigned()
   {
-    return ( !users.isEmpty() );
+    return ( !getAllUsers().isEmpty() );
   }
   
   public boolean assigned( DeviceButton db )
   {
-    // A learned signal hides anything underneath, so treat as unassigned
+    // A learned signal hides anything underneath, so show as unassigned
     // if all assignments are hidden
     DeviceUpgrade upg = null;
     if ( db != null && db != DeviceButton.noButton && ( upg = db.getUpgrade() ) != null && upg.getRemote().usesEZRC() )
@@ -694,6 +694,19 @@ public class GeneralFunction
   public List< User > getUsers()
   {
     return users;
+  }
+  
+  public List< User > getAllUsers()
+  {
+    List< User > allUsers = new ArrayList< User >();
+    allUsers.addAll( users );
+    allUsers.addAll( getIndirectReferences() );
+    Function alternate = null;
+    if ( this instanceof Function && ( alternate = ( ( ( Function )this ).getAlternate() ) ) != null )
+    {
+      allUsers.addAll( alternate.getUsers() );
+    }
+    return allUsers;
   }
   
   public List< User > getIndirectReferences()

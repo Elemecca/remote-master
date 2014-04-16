@@ -202,13 +202,14 @@ public class ButtonTableModel
     GeneralFunction gf = null;
     if ( remote.usesEZRC() )
     {
+      macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
       LearnedSignal ls = deviceUpgrade.getLearnedMap().get( ( int )button.getKeyCode() );
       if ( ls != null )
       {
         gf = ls;
+        macro = null;
       }
-      macro = deviceUpgrade.getMacroMap().get( ( int )button.getKeyCode() );
-      if ( gf == null && macro != null )
+      else if ( macro != null )
       {
         if ( macro.isSystemMacro() )
         {
@@ -225,9 +226,6 @@ public class ButtonTableModel
         else
         {
           gf = macro;
-        }
-        if ( !macro.isSystemMacro() )
-        {
           macro = null;
         }
       }

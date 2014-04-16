@@ -343,7 +343,8 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
-    deleteButton.setToolTipText( "Delete a function." );
+    deleteButton.setToolTipText( "<html>Delete an unassigned function.<br>"
+        + "To delete a function assigned to a button,<br>first delete the assignment.</html>" );
     deleteButton.setEnabled( false );
     buttonPanel.add( deleteButton );
 
