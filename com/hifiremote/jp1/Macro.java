@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
@@ -73,6 +74,18 @@ public class Macro extends AdvancedCode
       else
       {
         deviceButtonIndex = 0x0F;
+      }
+      temp = props.getProperty( "Users" );
+      if ( temp != null )
+      {
+        userItems = new ArrayList< Integer >();
+        StringTokenizer st = new StringTokenizer( temp, ",/" );
+        if ( st.hasMoreTokens() )
+        {
+          int val = Integer.parseInt( st.nextToken() ) << 16;
+          val |= Integer.parseInt( st.nextToken() );
+          userItems.add( val );
+        }
       }
       temp = props.getProperty( "Serial" );
       if ( temp != null )
@@ -394,6 +407,20 @@ public class Macro extends AdvancedCode
       pw.print( "Name", name );
       pw.print( "DeviceIndex", deviceButtonIndex );
       pw.print( "KeyCode", keyCode );
+      String userStr = "";
+      for ( User u : users )
+      {
+        int dbi = u.db.getButtonIndex();
+        int kc = u.button.getKeyCode();
+        if ( dbi != deviceButtonIndex && kc != keyCode )
+        {
+          userStr += ( userStr.isEmpty() ? "" : "," ) + Integer.toString( dbi ) + "/" + Integer.toString( kc );
+        }
+      }
+      if ( !userStr.isEmpty() )
+      {
+        pw.print( "Users", userStr );
+      }
       if ( systemMacro )
       {
         pw.print( "SystemMacro", 1 );
@@ -440,18 +467,18 @@ public class Macro extends AdvancedCode
     return config.getRemote().getDeviceButton( deviceButtonIndex );
   }
 
-//  private short[] durations = null;
-//
-//  public short[] getDurations()
-//  {
-//    return durations;
-//  }
-//
-//  public void setDurations( short[] durations )
-//  {
-//    this.durations = durations;
-//  }
+  private List< Integer > userItems = null;
   
+  public List< Integer > getUserItems()
+  {
+    return userItems;
+  }
+
+  public void setUserItems( List< Integer > userItems )
+  {
+    this.userItems = userItems;
+  }
+
   private boolean systemMacro = false;
 
   public boolean isSystemMacro()

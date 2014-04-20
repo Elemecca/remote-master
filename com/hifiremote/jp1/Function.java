@@ -61,7 +61,6 @@ public class Function extends GeneralFunction
     upgrade = base.upgrade;
     alternate = base.alternate;
     serial = base.serial;
-    macroref = base.macroref;
     keyflags = base.keyflags;
     if ( base.icon != null )
 //      icon = new RMIcon( base.icon );
@@ -111,10 +110,6 @@ public class Function extends GeneralFunction
       out.print( prefix + ".serial", Integer.toString( serial ) );
     if ( data != null )
       out.print( prefix + ".hex", data.toString() );
-    if ( macroref != null )
-    {
-      out.print( prefix + ".macroref", Integer.toString( macroref ) );
-    }
     if ( icon != null && icon.ref > 0 )
     {
       out.print( prefix + ".iconref", Integer.toString( icon.ref ) );
@@ -124,15 +119,13 @@ public class Function extends GeneralFunction
   }
   
   /**
-   * Load.
-   * 
-   * @param props
-   *          the props
-   * @param prefix
-   *          the prefix
+   * Return value is the function macroref, now no longer kept as
+   * a function property or written by store() but retained for backward
+   * compatibility with earlier .rmir files and used by DeviceUpgrade.load.
    */
-  public void load( Properties props, String prefix )
+  public Integer load( Properties props, String prefix )
   {
+    Integer macroref = null;
     String str = props.getProperty( prefix + ".name" );
     if ( str != null )
       setName( str );
@@ -152,10 +145,11 @@ public class Function extends GeneralFunction
       setHex( new Hex( str ) );
     str = props.getProperty( prefix + ".macroref" );
     if ( str != null )
-      setMacroref( Integer.parseInt( str ) );
+      macroref = Integer.parseInt( str );
     str = props.getProperty( prefix + ".notes" );
     if ( str != null )
       setNotes( str );
+    return macroref;
   }
 
   public Function setName( String name )
@@ -272,14 +266,46 @@ public class Function extends GeneralFunction
     }
   }
   
-  public Integer getMacroref()
+  /**
+   * Returns true if the function has no other assignment than as the base
+   * for a macro
+   */
+  public boolean isMacroBase()
   {
-    return macroref;
-  }
-
-  public void setMacroref( Integer macroref )
-  {
-    this.macroref = macroref;
+    if ( data != null )
+    {
+      return false;
+    }
+    for ( User u : users )
+    {
+      RemoteConfiguration config = null;
+      boolean hasMacro = false;
+      if ( u.db == null || u.db == DeviceButton.noButton || u.db.getUpgrade() == null 
+          || ( config = u.db.getUpgrade().getRemoteConfig() ) == null )
+      {
+        return false;
+      }
+      for ( Macro macro : config.getMacros() )
+      {
+        for( User mu : macro.getUsers() )
+        {
+          if ( mu.equals( u ) )
+          {
+            hasMacro = true;
+            break;
+          }
+        }
+        if ( hasMacro )
+        {
+          break;
+        }
+      }
+      if ( !hasMacro )
+      {
+        return false;
+      }
+    }
+    return true;
   }
 
   public Integer getKeyflags()
@@ -292,7 +318,7 @@ public class Function extends GeneralFunction
     this.keyflags = keyflags;
   }
   
-  public boolean isEquivalent( Function f )
+  private boolean isEquivalent( Function f )
   {
     // There appear to be functions that differ only in the keygid
     // but as the keygid seems not to be used by the remote, they are
@@ -300,7 +326,6 @@ public class Function extends GeneralFunction
     return name.equals( f.name )
         && upgrade == f.upgrade
         && data.equals( f.data );
-//        && gid.equals(  f.gid );
   }
   
   public Function getEquivalent( List< Function > list )
@@ -318,19 +343,6 @@ public class Function extends GeneralFunction
   public boolean accept()
   {
     return data != null && ( serial < 0 || alternate == null );
-  }
-  
-  public static List< Function > filter( List< Function > in )
-  {
-    List< Function > out = new ArrayList< Function >();
-    for ( Function f : in )
-    {
-      if ( f.getEquivalent( out ) == null )
-      {
-        out.add( f );
-      }
-    }
-    return out;
   }
   
   public Function getIRfunction( DeviceUpgrade du )
@@ -379,8 +391,6 @@ public class Function extends GeneralFunction
 
   /** The EZ-RC GID value corresponding to this function name */
   protected Integer gid = null;
-  
-  private Integer macroref = null;
   
   private Integer keyflags = null;
   

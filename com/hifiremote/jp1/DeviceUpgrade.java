@@ -2188,7 +2188,7 @@ public class DeviceUpgrade extends Highlight
     int i = 0;
     for ( Function func : functions )
     {
-      if ( dataOnly && ( func.getData() == null || func.getSerial() >= 0 ||  func.getMacroref() != null ) )
+      if ( dataOnly && ( func.getData() == null || func.getSerial() >= 0 ) )
       {
         continue;
       }
@@ -2603,6 +2603,7 @@ public class DeviceUpgrade extends Highlight
     System.err.println( "Loading functions for device upgrade "
         + devTypeAliasName + "/" + ( new SetupCode( setupCode ).toString() ) );
     functions.clear();
+    LinkedHashMap< Integer, Integer > macroXRef = new LinkedHashMap< Integer, Integer >();
     int i = 0;
     while ( true )
     {
@@ -2611,7 +2612,11 @@ public class DeviceUpgrade extends Highlight
       {
         f.icon = new RMIcon( 9 );
       }
-      f.load( props, "Function." + i );
+      Integer macroref = f.load( props, "Function." + i );
+      if ( macroref != null )
+      {
+        macroXRef.put( i, macroref );
+      }
       if ( remote.usesEZRC() && f.getGid() == null && f.getData() != null )
       {
         f.setGid( Function.defaultGID );
@@ -2671,6 +2676,24 @@ public class DeviceUpgrade extends Highlight
           {
             int rmirIndex = Integer.parseInt( str.substring( 9 ) );
             func = getFunctionByRmirIndex( rmirIndex );
+            Integer macroref = macroXRef.get( rmirIndex );
+            if ( macroref != null )
+            {
+              for ( Macro macro : remoteConfig.getMacros() )
+              {
+                if ( macro.getSerial() == macroref )
+                {
+                  if ( macro.getUserItems() == null )
+                  {
+                    macro.setUserItems( new ArrayList< Integer >() );
+                  }
+                  int dbi = buttonRestriction.getButtonIndex();
+                  int keyCode = b.getKeyCode();
+                  macro.getUserItems().add( ( dbi << 16  ) | keyCode );
+                  break;
+                }
+              }
+            }
           }
           else
           {
@@ -4244,7 +4267,6 @@ public class DeviceUpgrade extends Highlight
         }
         if ( bf != null )
         {
-          bf.setMacroref( null );
           if ( bf.data == null )
           {
             // If assignment was a macro with no underlying function data,
@@ -4343,15 +4365,11 @@ public class DeviceUpgrade extends Highlight
         macroMap.put( keyCode, macro );
         backupReferences( macro );
         macro.addReference( buttonRestriction, b );
-        if ( remote.isSSD() )
+        if ( remote.isSSD() && remote.isSoftButton( b ) )
         {
           // For a macro on a soft button, the base function needs same name
           // as macro.
-          if ( remote.isSoftButton( b ) )
-          {
-            bf.setName( f.getName() );
-          }
-          bf.setMacroref( macro.getSerial() );
+          bf.setName( f.getName() );
         }
       }
     }
@@ -4396,8 +4414,6 @@ public class DeviceUpgrade extends Highlight
         }
         macro.setAssists( assists );  
         ks = new KeySpec( fnUpg.buttonRestriction, irFn );
-        bf.setMacroref( serial );  // Assign macro to the base function
-//      why no macro.addReference, or macro.setDeviceButtonIndex ???  Added for testing
         macro.setDeviceButtonIndex( buttonRestriction.getButtonIndex() );
         macro.addReference( buttonRestriction, b );
       }

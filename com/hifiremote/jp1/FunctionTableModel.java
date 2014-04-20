@@ -77,12 +77,11 @@ public class FunctionTableModel extends KMTableModel< Function >
     List< Function > list = new ArrayList< Function >();
     for ( Function f : deviceUpgrade.getFunctions() )
     {
-      if ( f.getSerial() < 0 || f.getAlternate() == null )
+      if ( f.getSerial() < 0 && !f.isMacroBase() || f.getSerial() >= 0 && f.getAlternate() == null )
       {
         list.add( f );
       }
     }
-//    list = Function.filter( list );
     setData( list );
     this.deviceUpgrade = deviceUpgrade;
     remoteConfig = deviceUpgrade.getRemoteConfig();
