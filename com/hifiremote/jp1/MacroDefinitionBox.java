@@ -522,10 +522,10 @@ PropertyChangeListener, RMSetter< Object >
         gf = ks.fn;
       }
       Function f = ( gf instanceof Function ) ? ( Function )gf : null;
-      if ( f != null && !ks.db.getUpgrade().getFunctionList().contains( f ) && f.getAlternate() != null )
-      {
-        gf = f.getAlternate();
-      }
+//      if ( f != null && !ks.db.getUpgrade().getFunctionList().contains( f ) && f.getAlternate() != null )
+//      {
+//        gf = f.getAlternate();
+//      }
       functionBox.getModel().setSelectedItem( null );
       
 //      Function f = null;

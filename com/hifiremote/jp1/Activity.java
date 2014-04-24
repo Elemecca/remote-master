@@ -16,12 +16,9 @@ public class Activity extends Highlight
   
   public static class Assister
   {
-    public DeviceButton device = null;
-    public Button button = null;
-    public GeneralFunction function = null;
+    KeySpec ks = null;
     private String deviceName = null;
     private int buttonCode = -1;
-    private int irSerial = -1;
     
     public static void store( LinkedHashMap< Integer, List<Assister> > assists, PropertyWriter pw )
     {
@@ -94,27 +91,26 @@ public class Activity extends Highlight
     
     public Assister( DeviceButton device, Button button )
     {
-      this.device = device;
-      this.button = button;
+      ks = new KeySpec( device, button );
       deviceName = device.getName();
       buttonCode = button.getKeyCode();
-      function = device.getUpgrade().getAssignments().getAssignment( button );
+      ks.fn = device.getUpgrade().getAssignments().getAssignment( button );
     }
     
     public Assister( DeviceButton device, GeneralFunction function )
     {
-      this.device = device;
-      this.function = function;
+      ks = new KeySpec( device, function );
       deviceName = device.getName();
       if ( !function.getUsers().isEmpty() )
       {
-        button = function.getUsers().get( 0 ).button;
-        buttonCode = button.getKeyCode();
+        ks.btn = function.getUsers().get( 0 ).button;
+        buttonCode = ks.btn.getKeyCode();
       }
     }
     
     public Assister( String str )
     {
+      ks = new KeySpec();
       str = str.trim();
       int pos = str.indexOf( '/' );
       if ( pos != -1 )
@@ -122,7 +118,7 @@ public class Activity extends Highlight
         deviceName = str.substring( 1, pos - 1 );  // omit quotes
         if ( str.charAt( pos + 1 ) == '/' )
         {
-          irSerial = Integer.parseInt( str.substring( pos + 2 ) );
+          ks.irSerial = Integer.parseInt( str.substring( pos + 2 ) );
         }
         else
         {
@@ -134,13 +130,14 @@ public class Activity extends Highlight
     @Override
     public String toString()
     {
-      if ( button != null )
+      Button b = ks.getButton();
+      if ( b != null )
       {
-        return "\"" + device.getName() + "\"/" + button.getKeyCode();
+        return "\"" + ks.db.getName() + "\"/" + b.getKeyCode();
       }
       else
       {
-        return "\"" + device.getName() + "\"//" + function.serial;
+        return "\"" + ks.db.getName() + "\"//" + ks.fn.serial;
       }
     }
     
@@ -150,21 +147,21 @@ public class Activity extends Highlight
       {
         if ( device.getName().trim().equalsIgnoreCase( deviceName ) )
         {
-          this.device = device;
+          ks.db = device;
           break;
         }
       }
       if ( buttonCode >= 0 )
       {
-        button = remote.getButton( buttonCode );
-        if ( button != null )
+        ks.btn = remote.getButton( buttonCode );
+        if ( ks.btn != null && ks.fn == null )
         {
-          function = device.getUpgrade().getAssignments().getAssignment( button );
+          ks.fn = ks.db.getUpgrade().getAssignments().getAssignment( ks.btn );
         }
       }
-      if ( irSerial >= 0 )
+      if ( ks.irSerial >= 0 )
       {
-        function = device.getUpgrade().getFunctionMap().get( irSerial );
+        ks.fn = ks.db.getUpgrade().getFunctionMap().get( ks.irSerial );
       }
     }
 
@@ -175,14 +172,14 @@ public class Activity extends Highlight
     
     public void setDevice( DeviceButton device )
     {
-      this.device = device;
+      ks.db = device;
       deviceName = device.getName();
     }
     
     public void setButton( Button button )
     {
-      this.button = button;
-      buttonCode = button.getKeyCode();
+      ks.btn = button;
+      buttonCode = button == null ? -1 : button.getKeyCode();
     }
   }
   

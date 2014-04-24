@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -119,16 +120,17 @@ public class DeviceUpgrade extends Highlight
     }
 
     // Copy the functions and their assignments
-    LinkedHashMap< Function, Function > corr = new LinkedHashMap< Function, Function >();
+    swapList = new LinkedHashMap< Function, Function >();
     for ( Function f : base.functions )
     {
       Function f2 = new Function( f );
       f2.setUpgrade( this );
-      corr.put( f, f2 );
+      swapList.put( f, f2 );
       functions.add( f2 );
       for ( Function.User user : f.getUsers() )
       {
-        if ( f.serial < 0 )
+//        if ( f.serial < 0 )
+        if ( user.db.getUpgrade() == base )
         {
           assignments.assign( user.button, f2, user.state );
         }
@@ -138,10 +140,10 @@ public class DeviceUpgrade extends Highlight
         }
       }
     }
-    for ( Function f : functions )
-    {
-      f.setAlternate( corr.get( f.getAlternate() ) );
-    }
+//    for ( Function f : functions )
+//    {
+//      f.setAlternate( corr.get( f.getAlternate() ) );
+//    }
 
     // Copy the external functions and their assignments
     for ( ExternalFunction f : base.extFunctions )
@@ -4309,8 +4311,8 @@ public class DeviceUpgrade extends Highlight
 
     if ( bf == null )
     {
-      if ( fnUpg == this && f instanceof Function 
-          && ( f.getUsers().isEmpty() || !remote.isSSD() ) )
+      if ( fnUpg == this && f instanceof Function )
+//          && ( f.getUsers().isEmpty() || !remote.isSSD() ) )
       {
         // f is a Function for current upgrade, so bf can be set to f
         // UNLESS remote is SSD and f is already assigned to some button.
@@ -4322,15 +4324,15 @@ public class DeviceUpgrade extends Highlight
         assignments.assign( b, bf );
         return null;
       }
-      else if ( remote.isSSD() )
-      {
-        // Create new empty bf
-        bf = new Function( f.getName() );
-        bf.icon = new RMIcon( 9 );
-        bf.setUpgrade( this );
-        functions.add( bf );
-        assignments.assign( b, bf );
-      }
+//      else if ( remote.isSSD() )
+//      {
+//        // Create new empty bf
+//        bf = new Function( f.getName() );
+//        bf.icon = new RMIcon( 9 );
+//        bf.setUpgrade( this );
+//        functions.add( bf );
+//        assignments.assign( b, bf );
+//      }
     }
     
     // If remote is not SSD, bf will be null unless f is Function for
@@ -4432,6 +4434,52 @@ public class DeviceUpgrade extends Highlight
       macroMap.put( keyCode, macro );
     }
     return result;
+  }
+  
+  public LinkedHashMap< Function, Function > combineFunctions()
+  {
+    LinkedHashMap< Function, Function > map = new LinkedHashMap< Function, Function >();
+    for ( int i = 0; ; i++ )
+    {
+      if ( i >= functions.size() - 1 )
+      {
+        break;
+      }
+      Function f1 = functions.get( i );
+      for ( int j = i + 1; ; j++ )
+      {
+        if ( j >= functions.size() )
+        {
+          break;
+        }
+        Function f2 = functions.get( j );
+        if ( !f2.isEquivalent( f1 ) )
+        {
+          continue;
+        }
+        if ( f2.getSerial() >= 0 && f1.getSerial() < 0 )
+        {
+          f1.setSerial( f2.getSerial() );
+        }
+        map.put( f2, f1 );
+        functions.remove( f2 );
+        i -= 1;
+      }
+    }
+    for ( Button b : remote.getButtons() )
+    {
+      Function f1 = assignments.getAssignment( b );
+      if ( f1 != null )
+      {
+        Function f2 = map.get( f1 );
+        if ( f2 != null )
+        {
+          assignments.assign( b, f2 );
+          f2.addReference( buttonRestriction, b );
+        }
+      }
+    }
+    return map;
   }
   
   public void clearBackupReferences()
@@ -4662,6 +4710,48 @@ public class DeviceUpgrade extends Highlight
     }
     restoreOnCancelReferences = null;
   }
+  
+  /**
+   * For SSD remotes only, removes from functionMap those irSerial values that are not
+   * used in a macro or in an activity or macro assist
+   */
+  public void filterFunctionMap()
+  {
+    if ( !remote.isSSD() )
+    {
+      return;
+    }
+    
+    List< Integer > fnkeys = new ArrayList< Integer >();
+    int fnky = 0;
+            
+    for ( KeySpec ks : remoteConfig.getAllKeySpecs() )
+    {
+      if ( ks.fn != null && ks.fn instanceof Function && ks.getFnUsers().isEmpty() 
+          && ks.fn.getSerial() < 0 && ks.db.getUpgrade() == this )
+      {
+        int serial = getNewFunctionSerial();
+        ks.fn.setSerial( serial );
+        functionMap.put( serial, ( Function )ks.fn );
+      }
+      if ( ks.getButton() == null && ks.fn != null 
+          && ( fnky = ks.fn.getSerial() ) >= 0 
+          && ks.fn == functionMap.get( fnky ) 
+          && !fnkeys.contains( fnky ) )
+        fnkeys.add( fnky );
+    }
+    
+    Iterator< Integer > it = functionMap.keySet().iterator();
+    while ( it.hasNext() )
+    {
+      int key = it.next();
+      if ( !fnkeys.contains( key ) )
+      {
+        functionMap.get( key ).setSerial( -1 );
+        it.remove();
+      }
+    }
+  }
 
   public String toString()
   {
@@ -4748,6 +4838,18 @@ public class DeviceUpgrade extends Highlight
   public void setSoftFunctionSegment( Segment softFunctionSegment )
   {
     this.softFunctionSegment = softFunctionSegment;
+  }
+  
+  private LinkedHashMap< Function, Function > swapList = null;
+
+  public LinkedHashMap< Function, Function > getSwapList()
+  {
+    return swapList;
+  }
+
+  public void setSwapList( LinkedHashMap< Function, Function > swapList )
+  {
+    this.swapList = swapList;
   }
 
   public static Comparator< Button > ButtonSorter = new Comparator< Button >()

@@ -396,6 +396,7 @@ public class RemoteConfiguration
         favKeyDevButton.setFavoritewidth( favWidth );
       }
       updateReferences();
+      swapFunctions( null );
     }
     
     if ( activityMacros != null )
@@ -1607,12 +1608,12 @@ public class RemoteConfiguration
               if ( key.irserial >= 0 )
               {
                 f.setSerial( key.irserial );
-                Function ff = f.getEquivalent( items.upgrade.getFunctions() );
-                if ( ff != null && ff.getSerial() == -1 )
-                {
-                  f.setAlternate( ff );
-                  ff.setAlternate( f );
-                }
+//                Function ff = f.getEquivalent( items.upgrade.getFunctions() );
+//                if ( ff != null && ff.getSerial() == -1 )
+//                {
+//                  f.setAlternate( ff );
+//                  ff.setAlternate( f );
+//                }
                 items.upgrade.getFunctionMap().put( key.irserial, f );
               }
               if ( key.btn != null )
@@ -2677,12 +2678,12 @@ public class RemoteConfiguration
       {
         if ( fn.getSerial() >= 0 )
         {
-          Function ff = fn.getEquivalent( upgrade.getFunctions() );
-          if ( ff != null && ff.getSerial() == -1 )
-          {
-            fn.setAlternate( ff );
-            ff.setAlternate( fn );
-          }
+//          Function ff = fn.getEquivalent( upgrade.getFunctions() );
+//          if ( ff != null && ff.getSerial() == -1 )
+//          {
+//            fn.setAlternate( ff );
+//            ff.setAlternate( fn );
+//          }
           upgrade.getFunctionMap().put( fn.getSerial(), fn );
         }
       }
@@ -3121,6 +3122,7 @@ public class RemoteConfiguration
     if ( remote.isSSD() )
     {
       loadFiles( true );
+      swapFunctions( null );
 //      parseSystemFiles();
       return;
     }
@@ -5075,13 +5077,13 @@ public class RemoteConfiguration
         int namePos = pos + 2 * aLen + 1;
         for ( int j = 0; j < aLen; j++ )
         {
-          segData.set( a.get( j ).button.getKeyCode(), pos + j );
-          segData.set( ( short )a.get( j ).device.getButtonIndex(), pos + j + aLen );
-          int nameLen = a.get( j ).device.getName().length();
+          segData.set( a.get( j ).ks.btn.getKeyCode(), pos + j );
+          segData.set( ( short )a.get( j ).ks.db.getButtonIndex(), pos + j + aLen );
+          int nameLen = a.get( j ).ks.db.getName().length();
           segData.set( ( short )nameLen, namePos++ );
           for ( int k = 0; k < nameLen; k++ )
           {
-            segData.set( ( short )a.get( j ).device.getName().charAt( k ), namePos++ );
+            segData.set( ( short )a.get( j ).ks.db.getName().charAt( k ), namePos++ );
           }
         }
         pos = namePos;
@@ -7394,12 +7396,17 @@ public class RemoteConfiguration
   
   public static class KeySpec
   {
+    // For SSD remotes both db/btn and db/fn combinations are used, the latter
+    // always for unassigned functions and sometimes also for assigned ones.
+    // For other remotes only the db/btn combination is used.
     DeviceButton db = null;
     Button btn = null;
     GeneralFunction fn = null;
     int irSerial = -1;  // unset; only used temporarily during file load
     int duration = -1;  // unset
     int delay = 0;
+    
+    public KeySpec(){};
     
     public KeySpec( DeviceButton db, Button btn )
     {
@@ -7425,20 +7432,34 @@ public class RemoteConfiguration
       {
         return btn;
       }
-//      else if ( fn.getUsers().isEmpty() )
-      else if ( fn.getSerial() >= 0 )
+      else
       {
-        return null;
-      }
-      else if ( !fn.getUsers().isEmpty() )
-      {
-        Button b = fn.getUsers().get( 0 ).button;
-        if ( ( b.getKeyCode() & 0x80 ) == 0 )
+        for ( User u : fn.getUsers() )
         {
-          return b;
+          if ( u.db == db && u.button != null && ( u.button.getKeyCode() & 0x80 ) == 0 )
+          {
+            return u.button;
+          }
         }
       }
+//      else if ( fn.getSerial() >= 0 )
+//      {
+//        return null;
+//      }     
       return null;
+    }
+    
+    public List< User > getFnUsers()
+    {
+      List< User > uList = new ArrayList< User >();
+      for ( User u : fn.getUsers() )
+      {
+        if ( u.db == db )
+        {
+          uList.add( u );
+        }
+      }
+      return uList;
     }
     
     @Override
@@ -7633,15 +7654,14 @@ public class RemoteConfiguration
 
       String btnTag = null;
       Hex btnHex = null;
-      boolean isSysMacro = false;
-      List< KeySpec > items = null;
-      items = macro.getItems();
-      isSysMacro = macro.isSystemMacro();
+      boolean isSysMacro =  macro.isSystemMacro();
 
-      for ( KeySpec item : items )
+      for ( KeySpec item : macro.getItems() )
       {
         Button b = item.getButton();
-        boolean ir = b == null;
+        // System macros should use irSerial rather than button as reference so that
+        // a change of button assignment does not affect them
+        boolean ir = ( b == null || isSysMacro ) && item.fn != null && item.fn.getSerial() >= 0;
         if ( ir && item.fn == null )
         {
           // Error situation, macro referencing nonexistent function
@@ -7710,8 +7730,8 @@ public class RemoteConfiguration
             work.add( makeItem( tagNames[ i ], new Hex( 0 ), false ) );
             for ( Assister assister : assists.get(  2 - i ) )
             {
-              short dev = ( short )( assister.device.getSerial() );
-              GeneralFunction f = assister.function;
+              short dev = ( short )( assister.ks.db.getSerial() );
+              GeneralFunction f = assister.ks.fn;
               if ( f == null )
               {
                 continue;
@@ -7822,11 +7842,11 @@ public class RemoteConfiguration
       Collections.sort( buttons, DeviceUpgrade.ButtonSorter );
       Integer softpage = null;
       boolean irUsed = false;
+      upg.filterFunctionMap();
       for ( Button b : buttons )
       {
         Function f = upg.getAssignments().getAssignment( b );
         Macro macro = db.getUpgrade().getMacroMap().get( ( int )b.getKeyCode() );
-//        KeyMove km = db.getUpgrade().getKmMap().get( ( int )b.getKeyCode() );
         LearnedSignal ls = findLearnedSignal( db, b );
         String btnTag = "keydef";
         String name = null;
@@ -7882,15 +7902,6 @@ public class RemoteConfiguration
           work.add( makeItem( "macroref", getLittleEndian( macro.getSerial() ), true ) );
           name = f != null ? f.getName() : macro.getName();
         }
-        
-//        if ( km != null )
-//        {
-//          work.add( makeItem( "macroref", getLittleEndian( km.getSerial() ), true ) );
-//          if ( name == null )
-//          {
-//            name = f != null ? f.getName() : km.getName();
-//          }
-//        }
         if ( name == null )
         {
           System.err.println( "Null name at " + db + " : " + b );
@@ -7902,15 +7913,12 @@ public class RemoteConfiguration
       {
         work.add( endTag( "softpage" ) );
       }
+      
       List< Integer > fnkeys = new ArrayList< Integer >( upg.getFunctionMap().keySet() );
       Collections.sort( fnkeys );
       for ( int fnkey : fnkeys )
       {
         Function f = upg.getFunctionMap().get( fnkey );
-//        if ( !f.getUsers().isEmpty() )
-//        {
-//          continue;
-//        }
         if ( !irUsed )
         {
           work.add( makeItem( "irdefs", new Hex( 0 ), false ) );
@@ -8314,6 +8322,67 @@ public class RemoteConfiguration
       {
         li.remove();
         continue;
+      }
+    }
+  }
+  
+  public List< KeySpec > getAllKeySpecs()
+  {
+    List< KeySpec > ksl = new ArrayList< KeySpec >();
+    for ( Macro m : getAllMacros( true ) )
+    {
+      ksl.addAll( m.getItems() );
+      if ( m.getAssists() != null )
+        for ( List< Assister > asl : m.getAssists().values() )
+          for ( Assister as : asl )
+            ksl.add(  as.ks );
+    }
+    
+    if ( activities != null )
+      for ( Activity a : activities.values() )
+        if ( a.isActive() && a.getAssists() != null )
+          for ( List< Assister > asl : a.getAssists().values() )
+            for ( Assister as : asl )
+              ksl.add(  as.ks );
+    
+    return ksl;
+  }
+  
+  public void swapFunctions( DeviceUpgrade du )
+  {
+    LinkedHashMap< Function, Function > map = null;
+    if ( du != null )
+    {
+      map = du.getSwapList();
+      for ( int key : du.getFunctionMap().keySet() )
+      {
+        Function f = map.get( du.getFunctionMap().get( key ) );
+        if ( f != null )
+        {
+          du.getFunctionMap().put(  key, f );
+        }
+      }
+    }
+    else
+    {
+      map = new LinkedHashMap< Function, Function >();
+      for ( DeviceButton db : deviceButtonList )
+      {
+        map.putAll( db.getUpgrade().combineFunctions() );
+      }
+    }
+
+    Function f = null;
+    for ( KeySpec ks : getAllKeySpecs() )  
+    {
+      if ( ks.btn != null && ( f = ks.db.getUpgrade().getAssignments().getAssignment( ks.btn ) ) != null )
+      {
+        ks.fn = f;
+      }
+
+      if ( ks.fn instanceof Function && ( f = map.get( ( Function )ks.fn ) ) != null )
+      {
+        ks.fn = f;
       }
     }
   }

@@ -259,7 +259,9 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     if ( remote.usesEZRC() && newUpgrade.getButtonRestriction() != DeviceButton.noButton )
     {
       newUpgrade.getButtonRestriction().setUpgrade( newUpgrade );
+      remoteConfig.swapFunctions( newUpgrade );
     }
+    newUpgrade.setSwapList( null );
     if ( row != null )
     {
       // Edit

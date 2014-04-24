@@ -77,7 +77,8 @@ public class FunctionTableModel extends KMTableModel< Function >
     List< Function > list = new ArrayList< Function >();
     for ( Function f : deviceUpgrade.getFunctions() )
     {
-      if ( f.getSerial() < 0 && !f.isMacroBase() || f.getSerial() >= 0 && f.getAlternate() == null )
+//      if ( f.getSerial() < 0 && !f.isMacroBase() || f.getSerial() >= 0 && f.getAlternate() == null )
+      if ( !f.isMacroBase() )
       {
         list.add( f );
       }
@@ -247,7 +248,7 @@ public class FunctionTableModel extends KMTableModel< Function >
   public void setValueAt( Object value, int row, int col )
   {
     Function function = data.get( row );
-    Function alternate = function.getAlternate() != null ? function.getAlternate() : new Function();
+//    Function alternate = function.getAlternate() != null ? function.getAlternate() : new Function();
     if ( col == nameCol )
     {
       String text = ( String )value;
@@ -255,13 +256,13 @@ public class FunctionTableModel extends KMTableModel< Function >
         text = null;
       checkFunctionAssigned( function, text );
       function.setName( text );
-      alternate.setName( text );
+//      alternate.setName( text );
     }
     else if ( col == gidCol )
     {
       int ndx = Integer.parseInt( ( String )value, 16 );
       function.setGid( ndx );
-      alternate.setGid( ndx );
+//      alternate.setGid( ndx );
     }
     else if ( col == efcCol )
     {
@@ -269,7 +270,7 @@ public class FunctionTableModel extends KMTableModel< Function >
       if ( value == null )
       {
         function.setHex( null );
-        alternate.setHex( null );
+//        alternate.setHex( null );
       }
       else
       {
@@ -281,7 +282,7 @@ public class FunctionTableModel extends KMTableModel< Function >
         else
           ( ( EFC )value ).toHex( hex, protocol.getCmdIndex() );
         function.setHex( hex );
-        alternate.setHex( new Hex( hex ) );
+//        alternate.setHex( new Hex( hex ) );
       }
     }
     else if ( col == efc5col )
@@ -290,7 +291,7 @@ public class FunctionTableModel extends KMTableModel< Function >
       if ( value == null )
       {
         function.setHex( null );
-        alternate.setHex( null );
+//        alternate.setHex( null );
       }
       else
       {
@@ -302,7 +303,7 @@ public class FunctionTableModel extends KMTableModel< Function >
         else
           ( ( EFC5 )value ).toHex( hex );
         function.setHex( hex );
-        alternate.setHex( new Hex( hex ) );
+//        alternate.setHex( new Hex( hex ) );
       }
     }
     else if ( col == hexCol )
@@ -312,14 +313,14 @@ public class FunctionTableModel extends KMTableModel< Function >
         value = new Hex( ( String )value );
       Hex hex = ( Hex )value;
       function.setHex( hex );
-      alternate.setHex( new Hex( hex ) );
+//      alternate.setHex( new Hex( hex ) );
     }
     else if ( col == iconCol )
       function.icon = ( RMIcon )value;
     else if ( col == notesCol )
     {
       function.setNotes( ( String )value );
-      alternate.setNotes( ( String )value );
+//      alternate.setNotes( ( String )value );
     }
     else
     {
@@ -336,7 +337,7 @@ public class FunctionTableModel extends KMTableModel< Function >
       if ( ( value == null ) && !cmdParms[ parmIndex ].isOptional() )
       {
         function.setHex( null );
-        alternate.setHex( null );
+//        alternate.setHex( null );
       }
       else
       {
@@ -345,7 +346,7 @@ public class FunctionTableModel extends KMTableModel< Function >
         {
           hex = protocol.getDefaultCmd();
           function.setHex( hex );
-          alternate.setHex( new Hex( hex ) );
+//          alternate.setHex( new Hex( hex ) );
         }
         protocol.setValueAt( parmIndex, hex, value );
       }

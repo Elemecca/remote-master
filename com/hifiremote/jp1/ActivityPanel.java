@@ -70,6 +70,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       panel.setBorder( BorderFactory.createTitledBorder( Activity.assistType[ i ] + " Assist" ) );
       activityAssistModels[ i ] = new ActivityAssistTableModel();
       activityAssistTables[ i ] = new JP1Table( activityAssistModels[ i ] );
+      activityAssistTables[ i ].setCellEditorModel( activityAssistModels[ i ] );
       activityAssistTables[ i ].setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
       activityAssistTables[ i ].getSelectionModel().addListSelectionListener( this );
       scrollPane = new JScrollPane( activityAssistTables[ i ] );

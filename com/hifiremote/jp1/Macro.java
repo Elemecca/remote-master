@@ -150,25 +150,6 @@ public class Macro extends AdvancedCode
         buff.append( ';' );
       }
       buff.append( items.get( i ) );
-//      KeySpec ks = items.get( i );
-//      buff.append( ks.db.getName() + ";" );
-//      if ( ks.duration >= 0 )
-//      {
-//        buff.append( "Hold(" +  ks.duration / 10 + "." + ks.duration % 10 + ");" );
-//      }
-//      Button btn = ks.fn == null ? ks.btn : ks.fn.getUsers().isEmpty() ? null : ks.fn.getUsers().get( 0 ).button;
-//      if ( btn != null )
-//      {
-//        buff.append( btn.getName() );
-//      }
-//      else if ( ks.fn != null )
-//      {
-//        buff.append( "Fn(" + ks.fn.getName() + ")" );
-//      }
-//      if ( ks.delay != 0 )
-//      {
-//        buff.append( "(" +  ks.delay / 10 + "." + ks.delay % 10 + ")" );
-//      }
     }
     return buff.toString();
   }
@@ -206,23 +187,6 @@ public class Macro extends AdvancedCode
     }
     return buff.toString();
   }
-  
-//  public static boolean isEmpty( Object value )
-//  {
-//    if ( value == null )
-//    {
-//      return true;
-//    }
-//    else if ( value instanceof Hex )
-//    {
-//      return ( ( ( Hex )value).length() == 0 );
-//    }
-//    else if ( value instanceof List< ? >)
-//    {
-//      return ( ( ( List< ? > )value).size() == 0 );
-//    }
-//    return true;
-//  }
 
   /**
    * Sets the value.
@@ -242,6 +206,7 @@ public class Macro extends AdvancedCode
       setItems( ( List< KeySpec > )value );
     }
   }
+  
   public int dataLength()
   {
     if ( items != null )
@@ -252,7 +217,7 @@ public class Macro extends AdvancedCode
       {
         length += ks.db != db ? 1 : 0;
         length += ks.duration >= 0 ? 1 : 0;
-        length += ks.btn != null ? 1 : ks.fn != null ? 2 : 0;
+        length += ks.getButton() != null ? 1 : ks.fn != null ? 2 : 0;
         db = ks.db;
       }
       return length;
@@ -295,7 +260,7 @@ public class Macro extends AdvancedCode
       }
       else if ( ks.fn != null )
       {
-        // Only used in remotes with SSD; use duration value 0xFF as indicator
+        // Only used in remotes with SSD; use delay value 0xFF as indicator
         int serial = ks.fn.getSerial();
         vals[ pos + size ] = ( short )0xFF;
         vals[ pos++ ] = ( short )( serial & 0xFF );
@@ -310,7 +275,6 @@ public class Macro extends AdvancedCode
   {
     int count = hex.length() / 2;
     DeviceButton db = remote.getDeviceButtons()[ 0 ]; // default, only used for ill-formed macro
-    //      short[] durations = hex.subHex( count, count ).getData();
     int duration = -1;
     items = new ArrayList< KeySpec >();
     for ( int i = 0; i < count; i++ )

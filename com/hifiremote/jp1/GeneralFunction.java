@@ -667,21 +667,21 @@ public class GeneralFunction
         }
       }
 
-      if ( this instanceof Function )
-      {
-        Function f = ( Function )this;
-        f = f.getAlternate();
-        if ( f != null )
-        {
-          for ( User u : f.getUsers() )
-          {
-            if ( u.db == db )
-            {
-              return true;
-            }
-          }
-        } 
-      }
+//      if ( this instanceof Function )
+//      {
+//        Function f = ( Function )this;
+//        f = f.getAlternate();
+//        if ( f != null )
+//        {
+//          for ( User u : f.getUsers() )
+//          {
+//            if ( u.db == db )
+//            {
+//              return true;
+//            }
+//          }
+//        } 
+//      }
       return false;
     }
     else
@@ -701,11 +701,11 @@ public class GeneralFunction
     List< User > allUsers = new ArrayList< User >();
     allUsers.addAll( users );
     allUsers.addAll( getIndirectReferences() );
-    Function alternate = null;
-    if ( this instanceof Function && ( alternate = ( ( ( Function )this ).getAlternate() ) ) != null )
-    {
-      allUsers.addAll( alternate.getUsers() );
-    }
+//    Function alternate = null;
+//    if ( this instanceof Function && ( alternate = ( ( ( Function )this ).getAlternate() ) ) != null )
+//    {
+//      allUsers.addAll( alternate.getUsers() );
+//    }
     return allUsers;
   }
   
@@ -754,16 +754,16 @@ public class GeneralFunction
       label.showAssigned( db );
       label.updateToolTipText();
     }
-    else if ( this instanceof Function )
-    {
-      Function f = ( Function )this;
-      f = f.getAlternate();
-      if ( f != null && f.getLabel() != null )
-      {
-        f.getLabel().showAssigned( db );
-        f.getLabel().updateToolTipText();
-      }
-    }
+//    else if ( this instanceof Function )
+//    {
+//      Function f = ( Function )this;
+//      f = f.getAlternate();
+//      if ( f != null && f.getLabel() != null )
+//      {
+//        f.getLabel().showAssigned( db );
+//        f.getLabel().updateToolTipText();
+//      }
+//    }
   }
   
 
@@ -775,16 +775,16 @@ public class GeneralFunction
       label.showAssigned( db );
       label.updateToolTipText();
     }
-    else if ( this instanceof Function )
-    {
-      Function f = ( Function )this;
-      f = f.getAlternate();
-      if ( f != null && f.getLabel() != null )
-      {
-        f.getLabel().showAssigned( db );
-        f.getLabel().updateToolTipText();
-      }
-    }
+//    else if ( this instanceof Function )
+//    {
+//      Function f = ( Function )this;
+//      f = f.getAlternate();
+//      if ( f != null && f.getLabel() != null )
+//      {
+//        f.getLabel().showAssigned( db );
+//        f.getLabel().updateToolTipText();
+//      }
+//    }
   }
   
 

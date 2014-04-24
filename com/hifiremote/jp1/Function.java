@@ -59,7 +59,7 @@ public class Function extends GeneralFunction
       data = new Hex( base.data );
     notes = base.notes;
     upgrade = base.upgrade;
-    alternate = base.alternate;
+//    alternate = base.alternate;
     serial = base.serial;
     keyflags = base.keyflags;
     if ( base.icon != null )
@@ -318,11 +318,15 @@ public class Function extends GeneralFunction
     this.keyflags = keyflags;
   }
   
-  private boolean isEquivalent( Function f )
+  public boolean isEquivalent( Function f )
   {
     // There appear to be functions that differ only in the keygid
     // but as the keygid seems not to be used by the remote, they are
     // treated here as equivalent
+    if ( data == null || f.data == null )
+    {
+      return false;
+    }
     return name.equals( f.name )
         && upgrade == f.upgrade
         && data.equals( f.data );
@@ -342,42 +346,48 @@ public class Function extends GeneralFunction
   
   public boolean accept()
   {
-    return data != null && ( serial < 0 || alternate == null );
+    return data != null; // && ( serial < 0 || alternate == null );
   }
   
   public Function getIRfunction( DeviceUpgrade du )
   {
-    Function irFn = null;
-    if ( serial >= 0 )
+    if ( serial < 0 )
     {
-      return this;
+      serial = du.getNewFunctionSerial();
+      du.getFunctionMap().put( serial, this );
     }
-    else if ( alternate != null )
-    {
-      return alternate;
-    }
-    else
-    {
-      irFn = new Function( this );
-      int serial = du.getNewFunctionSerial();
-      irFn.setSerial( serial );
-      du.getFunctionMap().put( serial, irFn );
-      alternate = irFn;
-      irFn.setAlternate( this );
-      du.getFunctions().add( irFn );
-      return irFn;
-    }
+    return this;
+//    Function irFn = null;
+//    if ( serial >= 0 )
+//    {
+//      return this;
+//    }
+//    else if ( alternate != null )
+//    {
+//      return alternate;
+//    }
+//    else
+//    {
+//      irFn = new Function( this );
+//      int serial = du.getNewFunctionSerial();
+//      irFn.setSerial( serial );
+//      du.getFunctionMap().put( serial, irFn );
+//      alternate = irFn;
+//      irFn.setAlternate( this );
+//      du.getFunctions().add( irFn );
+//      return irFn;
+//    }
   }
 
-  public Function getAlternate()
-  {
-    return alternate;
-  }
-
-  public void setAlternate( Function alternate )
-  {
-    this.alternate = alternate;
-  }
+//  public Function getAlternate()
+//  {
+//    return alternate;
+//  }
+//
+//  public void setAlternate( Function alternate )
+//  {
+//    this.alternate = alternate;
+//  }
 
   public int getRmirIndex()
   {

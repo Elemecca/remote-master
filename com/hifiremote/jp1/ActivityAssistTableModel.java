@@ -7,8 +7,9 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import com.hifiremote.jp1.Activity.Assister;
+import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
-public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
+public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister > implements CellEditorModel
 {
   
   public void set( Button btn, int type, RemoteConfiguration remoteConfig )
@@ -21,24 +22,24 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
           remoteConfig.getDeviceButtonList().toArray( new DeviceButton[0] ) : remote.getDeviceButtons() ) );
       activity = remoteConfig.getActivities().get( btn );
       setData( activity.getAssists().get( type ) );
-      keyRenderer.setRemote( remote );
-      keyEditor.setRemote( remote );
+//      keyRenderer.setRemote( remote );
+//      keyEditor.setRemote( remote );
     }
   }
   
   private static final String[] colNames =
   {
-      "#", "Device", "Button", "Function"
+      "#", "Device", "Function"
   };
   
   private static final String[] colPrototypeNames =
   {
-      " 00 ", "Device Button", "Button Name", "Function"
+      " 00 ", "Device Button", "Function Name"
   };
   
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, DeviceButton.class, Integer.class, Function.class
+      Integer.class, DeviceButton.class, Function.class
   };
 
   @Override
@@ -61,13 +62,13 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
   @Override
   public int getColumnCount()
   {
-    return 4;
+    return 3;
   }
   
   @Override
   public boolean isCellEditable( int row, int col )
   {
-    return col > 0 && col != 3;
+    return col > 0;
   }
   
   @Override
@@ -83,16 +84,16 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
     {
       return new RowNumberRenderer();
     }
-    else if ( col == 2 )
-    {
-      return keyRenderer;
-    }
+//    else if ( col == 2 )
+//    {
+//      return keyRenderer;
+//    }
     else
       return null;
   }
   
   @Override
-  public TableCellEditor getColumnEditor( int col )
+  public TableCellEditor getCellEditor( int row, int col )
   {
     if ( col == 1 )
     {
@@ -102,8 +103,18 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
     }
     else if ( col == 2 )
     {
-      return keyEditor;
+      KeySpec ks = getRow( row ).ks;
+      DefaultComboBoxModel model = new DefaultComboBoxModel( ks.db.getUpgrade().getGeneralFunctionList().toArray() );
+      functionBox.setModel( model );
+//      model.setSelectedItem( ks.fn );
+      DefaultCellEditor editor = new DefaultCellEditor( functionBox );
+      editor.setClickCountToStart( RMConstants.ClickCountToStart );
+      return editor;
     }
+//    else if ( col == 2 )
+//    {
+//      return keyEditor;
+//    }
     return null;
   }
 
@@ -116,15 +127,15 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
       case 0:
         return new Integer( row + 1 );
       case 1:
-        return assister.device;
+        return assister.ks.db;
+//      case 2:
+//        if ( assister.ks.btn == null )
+//        {
+//          return null;
+//        }
+//        return new Integer( assister.ks.btn.getKeyCode() );
       case 2:
-        if ( assister.button == null )
-        {
-          return null;
-        }
-        return new Integer( assister.button.getKeyCode() );
-      case 3:
-        return assister.function;
+        return assister.ks.fn;
       default:
         return null;
     }
@@ -138,19 +149,26 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
     if ( col == 1 )
     {
       assister.setDevice( ( DeviceButton )value );
+      assister.ks.fn = null;
+      assister.setButton( null );
     }
     else if ( col == 2 )
     {
-      assister.setButton( remote.getButton( ( ( Integer )value ).intValue() ) );
+      assister.ks.fn = ( Function )value;
     }
+//    else if ( col == 2 )
+//    {
+//      assister.setButton( remote.getButton( ( ( Integer )value ).intValue() ) );
+//    }
     assister.set( remote );
     fireTableDataChanged();
   }
   
   private RemoteConfiguration remoteConfig = null;
   private Activity activity = null;
-  private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
-  private KeyEditor keyEditor = new KeyEditor();
+//  private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
+//  private KeyEditor keyEditor = new KeyEditor();
   private JComboBox deviceButtonBox = new JComboBox();
+  private JComboBox functionBox = new JComboBox();
 
 }
