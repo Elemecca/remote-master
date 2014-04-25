@@ -463,6 +463,10 @@ public class DeviceUpgrade extends Highlight
    */
   public void setRemote( Remote newRemote )
   {
+    if ( newRemote == remote )
+    {
+      return;
+    }
     Protocol p = protocol;
     ProtocolManager pm = ProtocolManager.getProtocolManager();
     java.util.List< Protocol > protocols = pm.getProtocolsForRemote( newRemote, false );
@@ -3932,6 +3936,15 @@ public class DeviceUpgrade extends Highlight
 
   public void setRemoteConfig( RemoteConfiguration remoteConfig )
   {
+    if ( remoteConfig == null )
+    {
+      return;
+    }
+    Remote remote = remoteConfig.getRemote();
+    if ( remote != this.remote )
+    {
+      setRemote( remote );
+    }
     this.remoteConfig = remoteConfig;
     if ( remote != null && remote.isSSD() )
     {

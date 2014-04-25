@@ -5077,7 +5077,7 @@ public class RemoteConfiguration
         int namePos = pos + 2 * aLen + 1;
         for ( int j = 0; j < aLen; j++ )
         {
-          segData.set( a.get( j ).ks.btn.getKeyCode(), pos + j );
+          segData.set( a.get( j ).ks.getButton().getKeyCode(), pos + j );
           segData.set( ( short )a.get( j ).ks.db.getButtonIndex(), pos + j + aLen );
           int nameLen = a.get( j ).ks.db.getName().length();
           segData.set( ( short )nameLen, namePos++ );
@@ -6139,6 +6139,7 @@ public class RemoteConfiguration
       segments.remove( 0x10 );
       for ( DeviceUpgrade dev : devices )
       {
+        dev.classifyButtons();
         if ( dev.getProtocol() != null )
         {
           Hex hex = dev.getUpgradeHex();
@@ -7436,7 +7437,8 @@ public class RemoteConfiguration
       {
         for ( User u : fn.getUsers() )
         {
-          if ( u.db == db && u.button != null && ( u.button.getKeyCode() & 0x80 ) == 0 )
+          // Don't understand the need for high bit to be zero, so take out for testing
+          if ( u.db == db && u.button != null /* && ( u.button.getKeyCode() & 0x80 ) == 0 */ )
           {
             return u.button;
           }
@@ -7659,8 +7661,6 @@ public class RemoteConfiguration
       for ( KeySpec item : macro.getItems() )
       {
         Button b = item.getButton();
-        // System macros should use irSerial rather than button as reference so that
-        // a change of button assignment does not affect them
         boolean ir = ( b == null || isSysMacro ) && item.fn != null && item.fn.getSerial() >= 0;
         if ( ir && item.fn == null )
         {
@@ -8331,7 +8331,10 @@ public class RemoteConfiguration
     List< KeySpec > ksl = new ArrayList< KeySpec >();
     for ( Macro m : getAllMacros( true ) )
     {
-      ksl.addAll( m.getItems() );
+      if ( m.getItems() != null )
+      {
+        ksl.addAll( m.getItems() );
+      }
       if ( m.getAssists() != null )
         for ( List< Assister > asl : m.getAssists().values() )
           for ( Assister as : asl )

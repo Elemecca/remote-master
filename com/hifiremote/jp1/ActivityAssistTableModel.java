@@ -162,6 +162,7 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
 //    }
     assister.set( remote );
     fireTableDataChanged();
+    propertyChangeSupport.firePropertyChange( "data", null, null );
   }
   
   private RemoteConfiguration remoteConfig = null;
