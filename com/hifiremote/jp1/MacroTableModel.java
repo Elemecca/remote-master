@@ -314,7 +314,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
     {
       macro.setHighlight( ( Color  )value );
     }
-    propertyChangeSupport.firePropertyChange( col == 4 ? "highlight" : "data", null, null );
+    propertyChangeSupport.firePropertyChange( col == 7 ? "highlight" : "data", null, null );
   }
 
   /*

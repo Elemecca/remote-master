@@ -4311,6 +4311,26 @@ public class RemoteConfiguration
     {
       highlight[ i ] = Color.WHITE;
     }
+    if ( remote.usesEZRC() )
+    {
+      List< Button > sysBtns = remote.getButtonGroups().get(  "System" );
+      for ( DeviceButton db : deviceButtonList )
+      {
+        DeviceUpgrade du = db.getUpgrade();
+        for ( Button b : sysBtns )
+        {
+          du.getAssignments().assign( b, null );
+        }
+        db.getUpgrade().filterFunctionMap();
+        for ( int serial : du.getFunctionMap().keySet() )
+        {
+          Button b = remote.getButton( serial & 0xFF );
+          Function f = du.getFunctionMap().get( serial );
+          du.getAssignments().assign( b, f );
+          f.getUsers().remove( new User( db, b ) );
+        }
+      }
+    }
     updateFixedData( false );
     updateAutoSet();
     updateDeviceButtons();
@@ -5077,6 +5097,10 @@ public class RemoteConfiguration
         int namePos = pos + 2 * aLen + 1;
         for ( int j = 0; j < aLen; j++ )
         {
+          if ( a.get( j ).ks.getButton() == null )
+          {
+            continue;
+          }
           segData.set( a.get( j ).ks.getButton().getKeyCode(), pos + j );
           segData.set( ( short )a.get( j ).ks.db.getButtonIndex(), pos + j + aLen );
           int nameLen = a.get( j ).ks.db.getName().length();
@@ -7427,6 +7451,11 @@ public class RemoteConfiguration
       this.irSerial = irSerial;
     }
     
+    /**
+     * Returns the button whose pressing sends the KeySpec function, taking into
+     * account that within a macro, a macro on the button does not override an
+     * underlying function but a learned signal does do so.
+     */
     public Button getButton()
     {
       if ( fn == null )
@@ -7438,16 +7467,14 @@ public class RemoteConfiguration
         for ( User u : fn.getUsers() )
         {
           // Don't understand the need for high bit to be zero, so take out for testing
-          if ( u.db == db && u.button != null /* && ( u.button.getKeyCode() & 0x80 ) == 0 */ )
+          if ( u.db == db && u.button != null
+              && db.getUpgrade().getLearnedMap().get( u.button ) == null
+              /* && ( u.button.getKeyCode() & 0x80 ) == 0 */ )
           {
             return u.button;
           }
         }
-      }
-//      else if ( fn.getSerial() >= 0 )
-//      {
-//        return null;
-//      }     
+      }     
       return null;
     }
     

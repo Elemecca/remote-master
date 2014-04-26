@@ -331,19 +331,15 @@ PropertyChangeListener, RMSetter< Object >
   {
     DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
     GeneralFunction f = ( GeneralFunction )functionBox.getSelectedItem();
-    KeySpec ks = null;
+    KeySpec ks = new KeySpec( db, f );
+    List< User > users= ks.getFnUsers();
     
-    if ( config.getRemote().isSSD() && f instanceof Function )
+    if ( f instanceof Function )
     {
-      // Only XSight Touch
-      if ( f.getUsers().isEmpty() )
+      if ( users.isEmpty() )
       {
         Function irFn = ( ( Function )f ).getIRfunction( db.getUpgrade() );
         ks = new KeySpec( db, irFn );
-      }
-      else
-      {
-        ks = new KeySpec( db, f );
       }
     }
     else if ( !f.getUsers().isEmpty() )
@@ -351,6 +347,11 @@ PropertyChangeListener, RMSetter< Object >
       // For XSight Touch, this is only learns and Selector keys (Home etc)
       User u = f.getUsers().get( 0 );
       ks = new KeySpec( u.db, u.button );
+    }
+    else
+    {
+      // This case should not occur
+      return null;
     }
     
     Float fv = ( Float )delay.getValue();

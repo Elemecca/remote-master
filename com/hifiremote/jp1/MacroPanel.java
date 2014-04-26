@@ -55,8 +55,6 @@ public class MacroPanel extends RMTablePanel< Macro >
     if ( newMacro != null )
     {
       baseUser.db.getUpgrade().getAssignments().assign( baseUser.button, null );
-      
-      model.setRow( sorter.modelIndex( row ), newMacro );
       macros.remove( ndx );
       macros.add( ndx, newMacro );
       LinkedHashMap< Integer, Macro > macroMap = null;
@@ -73,6 +71,7 @@ public class MacroPanel extends RMTablePanel< Macro >
           }
         }
       }
+      model.setRow( sorter.modelIndex( row ), newMacro );
     }
   }
 

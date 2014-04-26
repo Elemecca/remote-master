@@ -4261,7 +4261,7 @@ public class DeviceUpgrade extends Highlight
     int keyCode = b.getKeyCode();
     DeviceUpgrade fnUpg = f == null ? null : f.getUpgrade( remote );
     Function bf = getFunction( keyCode );  // function currently on b
-    if ( f == null || remote.isSSD() && bf != null )
+    if ( f == null || remote.usesEZRC() && bf != null )
     {
       // Delete current assignment to b.  If assignment is a macro,
       // leave the underlying function, if any.
@@ -4517,20 +4517,47 @@ public class DeviceUpgrade extends Highlight
   public int getNewFunctionSerial()
   {
     List< Integer > list = new ArrayList< Integer >();
-    for ( DeviceUpgrade upg : remoteConfig.getDeviceUpgrades() )
+    if ( remote.isSSD() )
     {
-      for ( Function f : upg.getFunctions() )
+      for ( DeviceUpgrade upg : remoteConfig.getDeviceUpgrades() )
       {
-        list.add( f.getSerial() );
+        for ( Function f : upg.getFunctions() )
+        {
+          if ( f.getSerial() >= 0 )
+          {
+            list.add( f.getSerial() );
+          }
+        }
+      }
+      for ( int serial = 24; ; serial++ )
+      {
+        if ( !list.contains( serial ) )
+        {
+          return serial;
+        }
       }
     }
-    for ( int serial = 24; ; serial++ )
+    // XSight Lite/Plus
+    List< Button > sysBtns = remote.getButtonGroups().get( "System" );
+    if ( sysBtns == null )
     {
-      if ( !list.contains( serial ) )
+      return -1;
+    }
+    for ( Function f : functions )
+    {
+      if ( f.getSerial() >= 0 )
       {
-        return serial;
+        list.add( f.getSerial() & 0xFF );
       }
     }
+    for ( Button b : sysBtns )
+    {
+      if ( !list.contains( ( int )b.getKeyCode() ) )
+      {
+        return ( buttonRestriction.getButtonIndex() << 8 ) + b.getKeyCode();
+      }
+    }
+    return -1;
   }
 
   private class ButtonState
@@ -4648,10 +4675,10 @@ public class DeviceUpgrade extends Highlight
   public List< GeneralFunction > getGeneralFunctionList()
   {
     List< GeneralFunction > list = new ArrayList< GeneralFunction >();
-    if ( remote.usesEZRC() && !remote.isSSD() )
+    if ( remote.usesEZRC() && !remote.isSSD() && getNewFunctionSerial() < 0 )
     {
       // XSight Light/Plus can only put functions in mactos if they are already
-      // on a button.
+      // on a button or if there is an available system button.
       for ( Function f : getFunctionList() )
       {
         if ( !f.getUsers().isEmpty() )
@@ -4730,7 +4757,7 @@ public class DeviceUpgrade extends Highlight
    */
   public void filterFunctionMap()
   {
-    if ( !remote.isSSD() )
+    if ( !remote.usesEZRC() )
     {
       return;
     }

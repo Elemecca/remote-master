@@ -217,7 +217,8 @@ public class Macro extends AdvancedCode
       {
         length += ks.db != db ? 1 : 0;
         length += ks.duration >= 0 ? 1 : 0;
-        length += ks.getButton() != null ? 1 : ks.fn != null ? 2 : 0;
+        length += ks.getButton() != null ? 1 : ks.fn != null ? 
+            ks.db.getUpgrade().getRemote().isSSD() ? 2 : 1 : 0;
         db = ks.db;
       }
       return length;
@@ -262,10 +263,20 @@ public class Macro extends AdvancedCode
       {
         // Only used in remotes with SSD; use delay value 0xFF as indicator
         int serial = ks.fn.getSerial();
-        vals[ pos + size ] = ( short )0xFF;
-        vals[ pos++ ] = ( short )( serial & 0xFF );
-        vals[ pos + size ] = ( short )ks.delay;
-        vals[ pos++ ] = ( short )( serial >> 8 );
+        Remote remote = ks.db.getUpgrade().getRemote();
+        if ( remote.isSSD() )
+        {
+          vals[ pos + size ] = ( short )0xFF;
+          vals[ pos++ ] = ( short )( serial & 0xFF );
+          vals[ pos + size ] = ( short )ks.delay;
+          vals[ pos++ ] = ( short )( serial >> 8 );
+        }
+        else
+        {
+          DeviceButton sysdb = remote.getDeviceButton( serial >> 8 );
+          vals[ pos + size ] = ( short )ks.delay;
+          vals[ pos++ ] = ( short )( db == sysdb ? serial & 0xFF : 0 );
+        }
       }
     }
     return new Hex( vals );

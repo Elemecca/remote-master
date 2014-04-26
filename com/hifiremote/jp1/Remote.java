@@ -2253,19 +2253,19 @@ public class Remote implements Comparable< Remote >
         if ( colon != -1 )
         {
           name = token.substring( colon + 1 );
-          char ch = name.charAt( 0 );
-          if ( ch == '\'' || ch == '"' )
-          {
-            int end = name.lastIndexOf( ch );
-            name = name.substring( 1, end );
-          }
           token = token.substring( 0, colon );
-          ch = token.charAt( 0 );
+          char ch = token.charAt( 0 );
           if ( ch == '\'' || ch == '"' )
           {
             int end = token.lastIndexOf( ch );
             token = token.substring( 1, end );
           }
+        }
+        char ch = name.charAt( 0 );
+        if ( ch == '\'' || ch == '"' )
+        {
+          int end = name.lastIndexOf( ch );
+          name = name.substring( 1, end );
         }
         Button b = new Button( token, name, keycode, this );
         if ( ueiName != null )
