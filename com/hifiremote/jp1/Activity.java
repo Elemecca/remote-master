@@ -219,7 +219,7 @@ public class Activity extends Highlight
     {
       icon = new RMIcon( 5 );
     }
-    else
+    else if ( macro != null )
     {
       macro.setSegmentFlags( 0xFF );
     }

@@ -202,7 +202,8 @@ public class Remote implements Comparable< Remote >
           {
             line = parseDigitMaps( rdr );
           }
-          else if ( line.equals( "DeviceTypes" ) )
+          else if ( ( line.equals( "DeviceTypes" ) || line.equals( "DeviceTypes+" ) )
+              && deviceTypeList.isEmpty() )
           {
             line = parseDeviceTypes( rdr );
           }
@@ -234,7 +235,7 @@ public class Remote implements Comparable< Remote >
           {
             line = parseProtocols( rdr );
           }
-          else if ( line.equals( "SetupCodes" ) )
+          else if ( line.equals( "SetupCodes" ) || line.equals( "SetupCodes+" ) )
           {
             line = parseSetupCodes( rdr );
           }
@@ -1204,7 +1205,7 @@ public class Remote implements Comparable< Remote >
           segmentTypes.add( RDFReader.parseNumber( st.nextToken().trim() ) );
         }
       }
-      else if ( parm.equals( "Processor" ) )
+      else if ( parm.equals( "Processor" ) || parm.equals( "Processor+" ) )
       {
         processorName = value;
         if ( processorName.equals( "6805" ) && processorVersion == null )

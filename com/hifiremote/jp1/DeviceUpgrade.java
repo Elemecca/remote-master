@@ -4011,6 +4011,11 @@ public class DeviceUpgrade extends Highlight
 
   public void classifyButtons()
   {
+    if ( remote.getButtonGroups() == null )
+    {
+      return;
+    }
+    
     if ( softButtons == null )
     {
       softButtons = new ArrayList< Button >();
