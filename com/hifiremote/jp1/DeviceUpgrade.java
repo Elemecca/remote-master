@@ -130,7 +130,7 @@ public class DeviceUpgrade extends Highlight
       for ( Function.User user : f.getUsers() )
       {
 //        if ( f.serial < 0 )
-        if ( user.db.getUpgrade() == base )
+        if ( user.db == null || user.db == DeviceButton.noButton || user.db.getUpgrade() == base )
         {
           assignments.assign( user.button, f2, user.state );
         }
