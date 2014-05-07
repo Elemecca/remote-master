@@ -664,6 +664,7 @@ public class RemoteConfiguration
         {
           break;
         }
+        file.prefix = Hex.subHex( data, pos, 8 );
         file.tagNames = tagNames;
         int itemsLength = data[ pos + 14 ] + 0x100 * data[ pos + 15 ];
         int start = pos + itemsLength + 17;
@@ -7587,11 +7588,14 @@ public class RemoteConfiguration
       }
       this.tagNames = tagNames;
       this.hex = new Hex( data );
+      this.prefix = new Hex ( "ezrc    ", 8 );
 //      System.err.println( "Constructed hex = " + hex );
     }
 
     List< String > tagNames = null;
     Hex hex = null;
+    Hex prefix = null;  // usually "ezrc    ", but differs for system.xcf after factory reset
+                        // when it appears to be the MCUFirmware version bytes
   }
   
   private List< String > tagList = null;
@@ -7611,7 +7615,8 @@ public class RemoteConfiguration
     }
     int hexSize = 17 + tagSize + file.hex.length();
     Hex fileHex = new Hex( hexSize );
-    fileHex.put( new Hex( "ezrc    bxml10", 8 ), 0 );
+    fileHex.put( file.prefix, 0 );
+    fileHex.put( new Hex( "bxml10", 8 ), 8 );
     fileHex.put( getLittleEndian( tagSize ), 14 );
     fileHex.set( tagCount, 16 );
     int pos = 17;
@@ -7999,11 +8004,13 @@ public class RemoteConfiguration
     List< Hex > work = new ArrayList< Hex >();
     work.add( makeItem( "root", new Hex( 0 ), false ) );
     work.add( makeItem( "home", new Hex( 0 ), false ) );
-    for ( String name : new String[]{"devices", "profiles", "favorites", "macros", "activities" } )
+    String[] names = new String[]{"devices", "profiles", "favorites", "macros", "activities" };
+    for ( int i = 0; i < names.length; i++ )
     {
+      String name = names[ i ];
       String fileName = name + ".xcf";
       SSDFile file = ssdFiles.get( fileName );
-      work.add( makeItem( name, ( file == null ) ? new Hex( 0 ) : new Hex( fileName, 8 ), true ) );
+      work.add( makeItem( name, ( file == null && ( i == 1 || i == 2 ) ) ? new Hex( 0 ) : new Hex( fileName, 8 ), true ) );
     }
     work.add( endTag( "home" ) );
     work.add( endTag( "root" ) );
@@ -8396,9 +8403,12 @@ public class RemoteConfiguration
     else
     {
       map = new LinkedHashMap< Function, Function >();
-      for ( DeviceButton db : deviceButtonList )
+      if ( deviceButtonList != null )
       {
-        map.putAll( db.getUpgrade().combineFunctions() );
+        for ( DeviceButton db : deviceButtonList )
+        {
+          map.putAll( db.getUpgrade().combineFunctions() );
+        }
       }
     }
 
