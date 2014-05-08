@@ -38,6 +38,7 @@ import com.hifiremote.jp1.GeneralFunction.RMIcon;
 import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.io.CommHID;
 import com.hifiremote.jp1.io.IO;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.TagName;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -1774,6 +1775,49 @@ public class RemoteConfiguration
       }  
     }
     return pos;
+  }
+  
+  /**
+   * Removes unused tags from an XCF file.  Used on system.xcf after a factory reset, as
+   * this reset puts a list of all 72 possible tags in that file, only 5 of which are used.
+   * Any use of EZ-RC removes this redundancy so it seems reasonable for RMIR also to do so.
+   */
+  private void simplifyXCFFile( SSDFile file )
+  {
+    int pos = 0;
+    List< Integer > tags = new ArrayList< Integer >();
+    short[] filedata = file.hex.getData();
+    tagList = new ArrayList< String >();
+    while ( pos < filedata.length )
+    {
+      int tag = filedata[ pos++ ];
+      if ( ( tag & 0x80 ) == 0 )
+      {
+        tags.add( 0, tag );
+        String tagName = file.tagNames.get( tag );
+        filedata[ pos - 1 ] = getTag( tagName );
+        pos += pos < filedata.length ? filedata[ pos ] + 1 : 0;
+      }
+      else
+      {
+        int last = tags.remove( 0 );
+        if ( tag != ( last | 0x80  ) )
+        {
+          System.err.println( "XCF file nesting error at " + Integer.toHexString( pos - 1 ) );
+          break;
+        }
+        String tagName = file.tagNames.get( tag & 0x7F );
+        filedata[ pos - 1 ] = ( short )( getTag( tagName ) | 0x80 );
+        if ( tags.isEmpty() )
+        {
+          break;
+        }
+      }  
+    }
+    file.tagNames.clear();
+    file.tagNames.addAll( tagList );
+    file.prefix = new Hex( "ezrc    ", 8 );
+    return;
   }
   
   private void decryptObjcode( Hex code )
@@ -4265,6 +4309,11 @@ public class RemoteConfiguration
       }
       file = makeHomeXCF();
       ssdFiles.put( "home.xcf", file );
+      file = ssdFiles.get( "system.xcf" );
+      if ( !file.prefix.equals( new Hex( "ezrc    ", 8 ) ) )
+      {
+        simplifyXCFFile( file );
+      }
       
       int pos = 4;
       int status = 0;

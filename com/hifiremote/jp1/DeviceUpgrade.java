@@ -2458,6 +2458,14 @@ public class DeviceUpgrade extends Highlight
       remote = theRemote;
     }
     remote.load();
+    if ( remote.usesEZRC() && macroMap == null )
+    {
+      macroMap = new LinkedHashMap< Integer, Macro >();
+      kmMap = new LinkedHashMap< Integer, KeyMove >();
+      learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
+      functionMap = new LinkedHashMap< Integer, Function >();
+      selectorMap = new LinkedHashMap< Integer, GeneralFunction >();
+    }
     // SegmentFlags is omitted if it is 0 (which it is for JP1.3 and earlier as it is not used by them )
     str = props.getProperty( "SegmentFlags" );
     setSegmentFlags( str == null ? 0 : Integer.parseInt( str ) );
