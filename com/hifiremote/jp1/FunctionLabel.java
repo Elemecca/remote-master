@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;

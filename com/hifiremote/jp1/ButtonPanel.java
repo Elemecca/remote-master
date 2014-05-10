@@ -597,7 +597,6 @@ public class ButtonPanel extends KMPanel implements ActionListener
             if ( deviceUpgrade.getRemote().usesEZRC() )
             {
               enableDelete = enableDelete || deviceUpgrade.getMacroMap().get( keyCode ) != null
-                || deviceUpgrade.getKmMap().get( keyCode ) != null
                 || deviceUpgrade.getLearnedMap().get( keyCode ) != null;
               enableDelete = enableDelete && model.isCellEditable( row, cols[ c ] );
             }

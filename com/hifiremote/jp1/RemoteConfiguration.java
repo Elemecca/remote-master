@@ -38,7 +38,6 @@ import com.hifiremote.jp1.GeneralFunction.RMIcon;
 import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.io.CommHID;
 import com.hifiremote.jp1.io.IO;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.TagName;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -797,43 +796,10 @@ public class RemoteConfiguration
       }
     }
     setIcons( items.iconrefMap );
-//    CommHID hid = null;
-//    for ( IO temp : owner.getInterfaces() )
-//    {
-//      String tempName = temp.getInterfaceName();
-//      if ( tempName.equals( "CommHID" ) )
-//      {
-//        hid = ( CommHID )( temp.openRemote( "UPG" ).equals( "UPG" ) ? temp : null );
-//        if ( hid == null )
-//        {
-//          break;
-//        }
-//       
-//        
-//        categoryBrands = new LinkedHashMap< Integer, List<String> >();
-//        codeLocations = new LinkedHashMap< Integer, Integer >();
-//        items = new Items();
-//        items.codes = new ArrayList< Integer >();
-//        items.irdb = hid.readTouchFile( "irdb.bin" );
-//        List< String > tagNames = getBXMLtagnames( "irdb.bin", items.irdb, 0 );
-//        if ( tagNames == null )
-//        {
-//          break;
-//        }
-//        int start = items.irdb[ 14 ] + 0x100 * items.irdb[ 15 ] + 17;
-//        parseXCFFile( items, -1, items.irdb, start, tagNames, true );
-//        
-//        short[] regionFile = hid.readTouchFile( regionFilename );
-//        tagNames = getBXMLtagnames( regionFilename, regionFile, 0 );
-//        if ( tagNames == null )
-//        {
-//          break;
-//        }
-//        start = regionFile[ 14 ] + 0x100 * regionFile[ 15 ] + 17;
-//        parseXCFFile( items, -2, regionFile, start, tagNames, true );
-//        break;
-//      }    
-//    }
+    if ( deviceButtonList == null )
+    {
+      deviceButtonList = new ArrayList< DeviceButton >();
+    }
   }
   
   private void setIcons( LinkedHashMap< GeneralFunction, Integer > iconrefMap )
@@ -2029,7 +1995,6 @@ public class RemoteConfiguration
         {
           continue;
         }
-//        devBtn.setSoftFunctionSegment( segment );
         HashMap< Button, String > softFunctionNames = devBtn.getSoftFunctionNames();
         if ( softFunctionNames == null )
         {
@@ -2096,10 +2061,8 @@ public class RemoteConfiguration
           upgrade.setSizeCmdBytes( hex.getData()[ 7 ] );
           upgrade.setSizeDevBytes( hex.getData()[ 8 ] );
           upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
-          upgrade.setSetupCode( setupCode );
-          
+          upgrade.setSetupCode( setupCode );    
           upgrade.setSegmentFlags( segment.getFlags() );
-          Protocol protocol = upgrade.getProtocol();
         }
         catch ( java.text.ParseException pe )
         {
@@ -2690,6 +2653,13 @@ public class RemoteConfiguration
         codeLocations = new LinkedHashMap< Integer, Integer >();
         deviceCategories = new LinkedHashMap< Integer, String >();
         Items items = new Items();
+        if ( regionFilename == null )
+        {
+          short[] filedata = hid.readTouchFile( "system.xcf" );
+          List< String > tagNames = getBXMLtagnames( "system.xcf", filedata, 0 );
+          int start = filedata[ 14 ] + 0x100 * filedata[ 15 ] + 17;
+          parseXCFFile( items, 1, filedata, start, tagNames, true );
+        }
         items.codes = new ArrayList< Integer >();
         items.irdb = hid.readTouchFile( "irdb.bin" );
         List< String > tagNames = getBXMLtagnames( "irdb.bin", items.irdb, 0 );
@@ -2710,7 +2680,11 @@ public class RemoteConfiguration
         parseXCFFile( items, -2, filedata, start, tagNames, true );
         result = true;
         break;
-      }    
+      }
+    }
+    if ( hid != null )
+    {
+      hid.closeRemote();
     }
     return result;
   }
@@ -2723,12 +2697,6 @@ public class RemoteConfiguration
       {
         if ( fn.getSerial() >= 0 )
         {
-//          Function ff = fn.getEquivalent( upgrade.getFunctions() );
-//          if ( ff != null && ff.getSerial() == -1 )
-//          {
-//            fn.setAlternate( ff );
-//            ff.setAlternate( fn );
-//          }
           upgrade.getFunctionMap().put( fn.getSerial(), fn );
         }
       }
@@ -3691,11 +3659,10 @@ public class RemoteConfiguration
     {
       return findBoundDeviceButtonIndex( deviceTypeIndex, setupCode );
     }
-    List< DeviceButton > deviceButtons = deviceButtonList;//remote.getDeviceButtons();
     DeviceButton devBtn = upgrade.getButtonRestriction();
-    for ( int i = 0; i < deviceButtons.size(); ++i )
+    for ( int i = 0; i < deviceButtonList.size(); ++i )
     {
-      if ( devBtn == deviceButtons.get( i ) )
+      if ( devBtn == deviceButtonList.get( i ) )
       {
         return i;
       }
@@ -5030,18 +4997,6 @@ public class RemoteConfiguration
         map.put( b, new KeySpec( db, b ) );
       }
     }
-//    for ( int code : activityOrder )
-//    {
-//      Button b = remote.getButton( code );
-//      if ( b == null )
-//      {
-//        continue;
-//      }
-//      KeySpec ks = map.get( b );
-//      if ( ks == null || ks.db == null )
-//      {
-//        continue;
-//      }
     
     Segment segment = new Segment( 0x0B, groups[ 0 ].getSegmentFlags(), segData );
     int pos = 0;
@@ -5537,24 +5492,11 @@ public class RemoteConfiguration
     segments.get( 0 ).clear();
     for ( DeviceButton db : deviceButtons )
     {
-//      if ( remote.usesEZRC() && db.getUpgrade() == null )
-//      {
-//        continue;
-//      }
       segments.get( 0 ).add(  db.getSegment() );
     }
     if ( remote.getSegmentTypes().contains( 0x15 ) || remote.getSegmentTypes().contains( 0x11 ) )
     {
       LinkedHashMap< Button, String > map = new LinkedHashMap< Button, String >();
-//      List< DeviceButton > list = new ArrayList< DeviceButton >();
-//      for ( DeviceButton db : deviceButtons )
-//      {
-//        if ( db.getSegment() != null && db.getDeviceTypeIndex( db.getSegment().getHex().getData() ) != 0xFF )
-//        {
-//          map.put( remote.getButton( db.getButtonIndex() ), db.getName() );
-//          list.add( db );
-//        }
-//      }
       if ( deviceButtonList == null )
       {
         deviceButtonList = new ArrayList< DeviceButton >();
@@ -6266,10 +6208,6 @@ public class RemoteConfiguration
         for ( DeviceButton db : remote.getDeviceButtons() )
         {
           DeviceUpgrade du = db.getUpgrade();
-//          if ( du == null && remote.usesEZRC() )
-//          {
-//            continue;
-//          }
           LinkedHashMap< Button, String > map = new LinkedHashMap< Button, String >();
 
           if ( remote.getSegmentTypes().contains( 0x0A ) )
@@ -6542,31 +6480,6 @@ public class RemoteConfiguration
     processor.putInt( lastDevAddr - offset, data, offset );
     devAddr.setFreeStart( offset + 2 );
   }
-  
-//  public void assignUpgrades()
-//  {
-//    if ( !remote.usesEZRC() )
-//    {
-//      return;
-//    }
-//    
-//    for ( DeviceButton db : remote.getDeviceButtons() )
-//    {
-//      DeviceUpgrade du = null;
-//      if ( db.getDeviceTypeIndex( db.getSegment().getHex().getData() ) != 0xFF )
-//      {
-//        for ( DeviceUpgrade test : devices )
-//        {
-//          if ( !test.getButtonIndependent() && test.getButtonRestriction() == db )
-//          {
-//            du = test;
-//            break;
-//          }
-//        }
-//      }
-//      db.setUpgrade( du );
-//    }
-//  }
 
   /**
    * Decode learned signals.
@@ -6999,23 +6912,6 @@ public class RemoteConfiguration
   {
     return macros;
   }
-
-//  public List< Macro > getTableMacros()
-//  {
-//    if ( !remote.isSSD() )
-//    {
-//      return getMacros();
-//    }
-//    List< Macro > list = new ArrayList< Macro >();
-//    for ( Macro macro : getMacros() )
-//    {
-////      if ( !macro.isSystemMacro() )
-//      {
-//        list.add( macro );
-//      }
-//    }
-//    return list;
-//  }
   
   public List< FavScan > getFavScans()
   {
@@ -7165,10 +7061,13 @@ public class RemoteConfiguration
   private List< KeyMove > specialFunctionKeyMoves = new ArrayList< KeyMove >();
   private List< Macro > specialFunctionMacros = new ArrayList< Macro >();
 
+  @SuppressWarnings( "unused" )
   private String language = null;
+  @SuppressWarnings( "unused" )
   private String languageFilename = null;
   private String region = null;
   private String regionFilename = null;
+  @SuppressWarnings( "unused" )
   private Hex directv_rf = null;
   
   public String getRegion()
@@ -7333,6 +7232,10 @@ public class RemoteConfiguration
         data[ offset++ ] = 0;
         data[ offset++ ] = 0;
       }
+    }
+    if ( remote.usesEZRC() )
+    {
+      deviceButtonList = new ArrayList< DeviceButton >();
     }
     
     // Clear the dialogs of data from any previous setup
@@ -7777,12 +7680,6 @@ public class RemoteConfiguration
         work.add( makeItem( "assistant", new Hex( 0 ), false ) );
       }
 
-//      if ( isSysMacro || macro.getAssists() != null && !macro.getAssists().isEmpty() 
-//          || activity != null && !activity.getAssists().isEmpty() )
-//      {
-//        assistantDone = true;
-//        work.add( makeItem( "assistant", new Hex( 0 ), false ) );
-//      }
       if ( activity != null && !activity.getAssists().isEmpty() 
           || activity == null && macro.getAssists() != null && !macro.getAssists().isEmpty() )
       {

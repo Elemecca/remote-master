@@ -80,7 +80,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
     int count = colNames.length - 4;
     if ( remoteConfig != null && remoteConfig.getRemote().usesEZRC() )
     {
-      count += 3;
+      count += RemoteMaster.admin ? 3 : 2;
     }
     if ( remoteConfig != null && remoteConfig.allowHighlighting() )
     {
@@ -117,6 +117,10 @@ public class MacroTableModel extends JP1TableModel< Macro >
     if ( remoteConfig == null || !remoteConfig.getRemote().usesEZRC() )
     {
       col += col > 2 ? 3 : col > 0 ? 2 : 0;
+    }
+    else if ( !RemoteMaster.admin && col >=5 )
+    {
+      col++;
     }
     return col;
   }

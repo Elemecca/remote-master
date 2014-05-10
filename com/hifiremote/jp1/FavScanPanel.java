@@ -106,7 +106,6 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
   private JPanel deviceBoxPanel = null;
   private JPanel headerPanel = null;
   private JPanel macroLabelPanel = null;
-  private FavScanTableModel favModel = null;
   protected JComboBox deviceButtonBox = null;
 
 }

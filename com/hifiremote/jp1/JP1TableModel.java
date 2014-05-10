@@ -1,6 +1,5 @@
 package com.hifiremote.jp1;
 
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 

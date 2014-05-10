@@ -138,29 +138,10 @@ PropertyChangeListener, RMSetter< Object >
     formatter = new NumberFormatter( new DecimalFormat( "0.0" ) );
     formatter.setValueClass( Float.class );
     duration = new XFormattedTextField( formatter );
-//    {
-//      @Override
-//      protected void processFocusEvent( FocusEvent e ) 
-//      {
-//        super.processFocusEvent( e );
-//        if ( e.getID() == FocusEvent.FOCUS_GAINED )
-//        {  
-//          selectAll();
-//        }  
-//      }
-//    };
     duration.setColumns( 4 );
     duration.addActionListener( this );
     duration.setToolTipText( "<HTML>To edit the pause after any key, select it, enter the duration (minimum 0.1 sec) and press Return.<br>"
         + "To emulate holding a key, precede it with the special Hold key and add the<br>hold duration to it in the same way.</HTML>" );
-    
-    
-    
-//    durationPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 1, 0 ) );
-//    durationPanel.add( durationLabel, BorderLayout.LINE_START );
-//    durationPanel.add( duration, BorderLayout.CENTER );
-//    durationPanel.add( durationSuffix, BorderLayout.LINE_END );
-
     buttonPanel.add( durationPanel, BorderLayout.CENTER );
   }
 
@@ -522,22 +503,7 @@ PropertyChangeListener, RMSetter< Object >
       {
         gf = ks.fn;
       }
-      Function f = ( gf instanceof Function ) ? ( Function )gf : null;
-//      if ( f != null && !ks.db.getUpgrade().getFunctionList().contains( f ) && f.getAlternate() != null )
-//      {
-//        gf = f.getAlternate();
-//      }
       functionBox.getModel().setSelectedItem( null );
-      
-//      Function f = null;
-//      if ( ks.btn != null )
-//      {
-//        f = ks.db.getUpgrade().getFunction( ks.btn, Button.NORMAL_STATE );
-//      }
-//      else if ( ks.fn instanceof Function )
-//      {
-//        f = ( Function )ks.fn;
-//      }
       functionBox.setSelectedItem( gf );
       delay.setValue( ks.delay / 10.0f );
       boolean showDuration = ks.duration >= 0;

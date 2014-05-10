@@ -101,11 +101,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   public static final Color AQUAMARINE = new Color( 127, 255, 212 );
 
+  public static boolean admin = false;
+  
   /** The frame. */
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 22 Test 9";
+  public final static String version = "v2.03 Alpha 22 Test 10";
 
   /** The dir. */
   private File dir = null;
@@ -825,6 +827,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             return;
           }
           remote.load();
+          if ( remote.isSSD() )
+          {
+            String title = "New Remote Image";
+            String message = "RMIR cannot create a new remote image for this remote.";
+            JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.INFORMATION_MESSAGE );
+            return;
+          }
+
           ProtocolManager.getProtocolManager().reset();
           remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
           recreateToolbar();
@@ -1373,6 +1383,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   
   public static void setSystemFilesItems( boolean active )
   {
+    active = active && admin;
     getSystemFilesItem.setVisible( active );
     putSystemFileItem.setVisible( active );
     parseIRDBItem.setVisible( active );
@@ -3495,6 +3506,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         else if ( parm.equalsIgnoreCase( "-rm" ) )
         {
           launchRM = false;
+        }
+        else if ( parm.equalsIgnoreCase( "-admin" ) )
+        {
+          admin = true;
         }
         else if ( "-home".startsWith( parm ) )
         {

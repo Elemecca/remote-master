@@ -275,6 +275,7 @@ public class RemoteManager
           String newName = line.substring( equals + 1 );
           oldRemoteNames.put( oldName, newName );
         }
+        rdr.close();
       }
     }
     catch ( Exception ex )

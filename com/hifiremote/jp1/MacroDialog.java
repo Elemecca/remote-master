@@ -5,7 +5,6 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -26,7 +25,6 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
-import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 // TODO: Auto-generated Javadoc
@@ -190,13 +188,11 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
       shift.setSelected( false );
       xShift.setSelected( false );
       macroBox.setValue( null );
-//      macroBox.setValue( ( List< KeySpec > )null );
       notes.setText( null );
     }
     else
     {
       setButton( macro.getKeyCode(), boundKey, shift, xShift );
-//      macroBox.setValue( macro.getData() );
       Object val = macro.getValue();
       if ( val instanceof Hex )
       {
@@ -374,7 +370,6 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
         {
           newMacro.setSegmentFlags( macro == null ? 0xFF : macro.getSegmentFlags() );
         }
-//        DeviceUpgrade du = macro.getUpgrade( remote );
         DeviceUpgrade du = db.getUpgrade();
         du.setFunction( b, newMacro, Button.NORMAL_STATE );
       }

@@ -375,19 +375,7 @@ public class GeneralFunction
       Object source = e.getSource();
       if ( source instanceof JRadioButton )
       {
-//        if ( source == showAllButton || sour) //&& showAllButton.isSelected() )
-//        {
-          showAll = showAllButton.isSelected();
-//        }
-//        else if ( source == showUnusedButton && showUnusedButton.isSelected() )
-//        {
-//          showAll = false;
-//          //        ImageIcon imageIcon = ( ImageIcon )selectedButton.getIcon();
-//          RMIcon icon = value;
-//          setValue( icon );
-//          validate();
-//          repaint();
-//        }
+        showAll = showAllButton.isSelected();
         RMIcon icon = value;
         setValue( icon );
         validate();
@@ -619,10 +607,6 @@ public class GeneralFunction
     {
       return "Macro: " + name;
     }
-//    else if ( this instanceof KeyMove )
-//    {
-//      s = "KM: ";
-//    }
     else if ( this instanceof LearnedSignal )
     {
       if ( name != null )
@@ -666,22 +650,6 @@ public class GeneralFunction
           return true;
         }
       }
-
-//      if ( this instanceof Function )
-//      {
-//        Function f = ( Function )this;
-//        f = f.getAlternate();
-//        if ( f != null )
-//        {
-//          for ( User u : f.getUsers() )
-//          {
-//            if ( u.db == db )
-//            {
-//              return true;
-//            }
-//          }
-//        } 
-//      }
       return false;
     }
     else
@@ -701,11 +669,6 @@ public class GeneralFunction
     List< User > allUsers = new ArrayList< User >();
     allUsers.addAll( users );
     allUsers.addAll( getIndirectReferences() );
-//    Function alternate = null;
-//    if ( this instanceof Function && ( alternate = ( ( ( Function )this ).getAlternate() ) ) != null )
-//    {
-//      allUsers.addAll( alternate.getUsers() );
-//    }
     return allUsers;
   }
   
@@ -754,16 +717,6 @@ public class GeneralFunction
       label.showAssigned( db );
       label.updateToolTipText();
     }
-//    else if ( this instanceof Function )
-//    {
-//      Function f = ( Function )this;
-//      f = f.getAlternate();
-//      if ( f != null && f.getLabel() != null )
-//      {
-//        f.getLabel().showAssigned( db );
-//        f.getLabel().updateToolTipText();
-//      }
-//    }
   }
   
 
@@ -775,16 +728,6 @@ public class GeneralFunction
       label.showAssigned( db );
       label.updateToolTipText();
     }
-//    else if ( this instanceof Function )
-//    {
-//      Function f = ( Function )this;
-//      f = f.getAlternate();
-//      if ( f != null && f.getLabel() != null )
-//      {
-//        f.getLabel().showAssigned( db );
-//        f.getLabel().updateToolTipText();
-//      }
-//    }
   }
   
 

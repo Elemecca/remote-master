@@ -1,6 +1,5 @@
 package com.hifiremote.jp1;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -59,7 +58,6 @@ public class Function extends GeneralFunction
       data = new Hex( base.data );
     notes = base.notes;
     upgrade = base.upgrade;
-//    alternate = base.alternate;
     serial = base.serial;
     keyflags = base.keyflags;
     if ( base.icon != null )
@@ -346,7 +344,7 @@ public class Function extends GeneralFunction
   
   public boolean accept()
   {
-    return data != null; // && ( serial < 0 || alternate == null );
+    return data != null;
   }
   
   public Function getIRfunction( DeviceUpgrade du )
@@ -357,37 +355,7 @@ public class Function extends GeneralFunction
       du.getFunctionMap().put( serial, this );
     }
     return this;
-//    Function irFn = null;
-//    if ( serial >= 0 )
-//    {
-//      return this;
-//    }
-//    else if ( alternate != null )
-//    {
-//      return alternate;
-//    }
-//    else
-//    {
-//      irFn = new Function( this );
-//      int serial = du.getNewFunctionSerial();
-//      irFn.setSerial( serial );
-//      du.getFunctionMap().put( serial, irFn );
-//      alternate = irFn;
-//      irFn.setAlternate( this );
-//      du.getFunctions().add( irFn );
-//      return irFn;
-//    }
   }
-
-//  public Function getAlternate()
-//  {
-//    return alternate;
-//  }
-//
-//  public void setAlternate( Function alternate )
-//  {
-//    this.alternate = alternate;
-//  }
 
   public int getRmirIndex()
   {
@@ -405,11 +373,6 @@ public class Function extends GeneralFunction
   private Integer keyflags = null;
   
   private int rmirIndex = -1;
-  
-  /** Gives the equivalent ir form (serial >= 0)
-   *  for an assigned form (serial == -1), and vice versa
-   */
-  private Function alternate = null;
   
   /** Default value used in upgrade when index==null */
   public static final int defaultGID = 0;

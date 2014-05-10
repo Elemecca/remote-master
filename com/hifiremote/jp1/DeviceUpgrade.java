@@ -38,7 +38,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import com.hifiremote.jp1.Activity.Assister;
-import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 import com.hifiremote.jp1.SetupPanel.AltPIDStatus;
 import com.hifiremote.jp1.translate.Translate;
@@ -129,7 +128,6 @@ public class DeviceUpgrade extends Highlight
       functions.add( f2 );
       for ( Function.User user : f.getUsers() )
       {
-//        if ( f.serial < 0 )
         if ( user.db == null || user.db == DeviceButton.noButton || user.db.getUpgrade() == base )
         {
           assignments.assign( user.button, f2, user.state );
@@ -140,10 +138,6 @@ public class DeviceUpgrade extends Highlight
         }
       }
     }
-//    for ( Function f : functions )
-//    {
-//      f.setAlternate( corr.get( f.getAlternate() ) );
-//    }
 
     // Copy the external functions and their assignments
     for ( ExternalFunction f : base.extFunctions )
@@ -161,11 +155,6 @@ public class DeviceUpgrade extends Highlight
       {
         macroMap = new LinkedHashMap< Integer, Macro >();
         macroMap.putAll( base.getMacroMap() );
-      }
-      if ( base.getKmMap() != null )
-      {
-        kmMap = new LinkedHashMap< Integer, KeyMove >();
-        kmMap.putAll( base.getKmMap() );
       }
       if ( base.getLearnedMap() != null )
       {
@@ -621,8 +610,6 @@ public class DeviceUpgrade extends Highlight
             + "corresponding button names from the original remote are listed below."
             + "<br><br>Use the Button or Layout panel to assign those functions properly.</html>";
 
-        // JOptionPane.showM
-        // JFrame frame = new JFrame( "Lost Function Assignments" );
         JPanel panel = new JPanel( new BorderLayout() );
 
         JLabel text = new JLabel( message );
@@ -657,7 +644,6 @@ public class DeviceUpgrade extends Highlight
     if ( remote.usesEZRC() && macroMap == null )
     {
       macroMap = new LinkedHashMap< Integer, Macro >();
-      kmMap = new LinkedHashMap< Integer, KeyMove >();
       learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
       functionMap = new LinkedHashMap< Integer, Function >();
       selectorMap = new LinkedHashMap< Integer, GeneralFunction >();
@@ -2461,7 +2447,6 @@ public class DeviceUpgrade extends Highlight
     if ( remote.usesEZRC() && macroMap == null )
     {
       macroMap = new LinkedHashMap< Integer, Macro >();
-      kmMap = new LinkedHashMap< Integer, KeyMove >();
       learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
       functionMap = new LinkedHashMap< Integer, Function >();
       selectorMap = new LinkedHashMap< Integer, GeneralFunction >();
@@ -4065,7 +4050,6 @@ public class DeviceUpgrade extends Highlight
   
   private LinkedHashMap< Integer, Function > functionMap = null;
   private LinkedHashMap< Integer, Macro > macroMap = null;
-  private LinkedHashMap< Integer, KeyMove > kmMap = null;
   private LinkedHashMap< Integer, LearnedSignal > learnedMap = null;
   private LinkedHashMap< Integer, GeneralFunction > selectorMap = null;
 
@@ -4077,11 +4061,6 @@ public class DeviceUpgrade extends Highlight
   public LinkedHashMap< Integer, Macro > getMacroMap()
   {
     return macroMap;
-  }
-
-  public LinkedHashMap< Integer, KeyMove > getKmMap()
-  {
-    return kmMap;
   }
 
   public LinkedHashMap< Integer, LearnedSignal > getLearnedMap()

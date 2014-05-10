@@ -56,8 +56,7 @@ public class FunctionRenderer
       if ( deviceUpgrade.getRemote().usesEZRC() )
       {
         int keyCode = b.getKeyCode();
-        unassigned = unassigned && deviceUpgrade.getKmMap().get( keyCode ) == null
-            && deviceUpgrade.getMacroMap().get( keyCode ) == null
+        unassigned = unassigned && deviceUpgrade.getMacroMap().get( keyCode ) == null
             && deviceUpgrade.getLearnedMap().get( keyCode ) == null;
       }
       if ( unassigned )
