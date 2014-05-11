@@ -4234,18 +4234,15 @@ public class DeviceUpgrade extends Highlight
     this.protocolMemoryUsage += protocolMemoryUsage;
   }
   
-  public Function setFunction( Button b, GeneralFunction f, int state )
+  public void setFunction( Button b, GeneralFunction f, int state )
   {
-    // The return value is null unless f is cloned, in which case the
-    // clone is returned
-    Function result = null;
     if ( !remote.usesEZRC() )
     {
       if ( f == null || f instanceof Function )
       {
         assignments.assign( b, ( Function )f, state );
       }
-      return null;
+      return;
     }
     
     // From here on, code is only for XSight remotes
@@ -4253,7 +4250,7 @@ public class DeviceUpgrade extends Highlight
     int keyCode = b.getKeyCode();
     DeviceUpgrade fnUpg = f == null ? null : f.getUpgrade( remote );
     Function bf = getFunction( keyCode );  // function currently on b
-    if ( f == null || remote.usesEZRC() && bf != null )
+    if ( f == null || bf != null )
     {
       // Delete current assignment to b.  If assignment is a macro,
       // leave the underlying function, if any.
@@ -4307,77 +4304,52 @@ public class DeviceUpgrade extends Highlight
       // hard button, in which case base can be used to hold the macro
       if ( f == null )
       {
-        return null;
+        return;
       }
     }
     
-    // At this point, f is not null.
-    // Create a base function bf for current upgrade to hold the function data
+    // At this point, f is not null.  Also bf is null unless b is a hard button and
+    // either f is not a Function or fnUpg != this, so that a macro will get assigned to b.
 
-    if ( bf == null )
+    if ( fnUpg == this && f instanceof Function )
     {
-      if ( fnUpg == this && f instanceof Function )
-//          && ( f.getUsers().isEmpty() || !remote.isSSD() ) )
-      {
-        // f is a Function for current upgrade, so bf can be set to f
-        // UNLESS remote is SSD and f is already assigned to some button.
-        // In this case EZ-RC seems to clone f when it is put on to a second
-        // button, rather than using the same function.  This seems necessary
-        // in case, say, one occurrence then has a macro put on it, as the
-        // macro reference is part of the underlying function.
-        bf = ( Function )f;
-        assignments.assign( b, bf );
-        return null;
-      }
-//      else if ( remote.isSSD() )
-//      {
-//        // Create new empty bf
-//        bf = new Function( f.getName() );
-//        bf.icon = new RMIcon( 9 );
-//        bf.setUpgrade( this );
-//        functions.add( bf );
-//        assignments.assign( b, bf );
-//      }
+      // bf is necessarily null, f is a Function for current upgrade, so assign it
+      // and return
+      assignments.assign( b, ( Function )f );
+      return;
     }
     
-    // If remote is not SSD, bf will be null unless f is Function for
-    // current upgrade, when it will equal f.
+    // Now bf is null if b is a soft button, but it may not be so otherwise.
+    // Also either f is a macro or a function that must be assigned as a macro
     
-    // If remote is SSD, bf will always be non-null and will differ from
-    // f unless f is an unassigned Function for current upgrade
-    
-    if ( fnUpg == this || f instanceof Macro )
+    if ( bf == null && remote.isSSD() && remote.isSoftButton( b ) )
     {
-      if ( f instanceof Function )
+      // Create new empty bf to hold the macro.  Non-SSD remotes do not use a base
+      // function to hold macros
+      bf = new Function( f.getName() );
+      bf.icon = new RMIcon( 9 );
+      bf.setUpgrade( this );
+      functions.add( bf );
+      assignments.assign( b, bf );
+    }
+    
+    if ( f instanceof Macro )
+    {
+      Macro macro = macroMap.get( keyCode );
+      if ( macro != null )
       {
-        // This is cloning a function, and will only apply 
-        // if remote is SSD, in which case bf != null.
-        Function fn = ( Function )f;
-        bf.setName( f.getName() );
-        bf.setData( new Hex( fn.getData() ) );
-        bf.setGid( fn.getGid() );
-        bf.setKeyflags( fn.getKeyflags() );
-        bf.icon = fn.icon;
-        result = bf;
-      }
-      else if ( f instanceof Macro )  // At present, the only other possibility
-      {
-        Macro macro = macroMap.get( keyCode );
-        if ( macro != null )
-        {
-          backupReferences( macro );
-          macro.removeReference( buttonRestriction, b );
-        }  
-        macro = ( Macro )f;
-        macroMap.put( keyCode, macro );
         backupReferences( macro );
-        macro.addReference( buttonRestriction, b );
-        if ( remote.isSSD() && remote.isSoftButton( b ) )
-        {
-          // For a macro on a soft button, the base function needs same name
-          // as macro.
-          bf.setName( f.getName() );
-        }
+        macro.removeReference( buttonRestriction, b );
+      }  
+      macro = ( Macro )f;
+      macroMap.put( keyCode, macro );
+      backupReferences( macro );
+      macro.addReference( buttonRestriction, b );
+      if ( remote.isSSD() && remote.isSoftButton( b ) )
+      {
+        // For a macro on a soft button, the base function needs same name
+        // as macro.
+        bf.setName( f.getName() );
       }
     }
     else // fnUpg != this and f is a Function 
@@ -4406,7 +4378,7 @@ public class DeviceUpgrade extends Highlight
       macro = new Macro( b.getKeyCode(), null, null );
       backupReferences( macro );      // enables macro to be removed if edit cancelled
       remoteConfig.getMacros().add( macro );
-      macro.setName( fn.getName() );  // changed irFn to fn, don't think it makes a difference
+      macro.setName( fn.getName() );
       macro.setSystemMacro( true );
       int serial = remoteConfig.getNewMacroSerial();
       macro.setSerial( serial );
@@ -4438,7 +4410,7 @@ public class DeviceUpgrade extends Highlight
       macro.setItems( items );
       macroMap.put( keyCode, macro );
     }
-    return result;
+    return;
   }
   
   public LinkedHashMap< Function, Function > combineFunctions()

@@ -354,20 +354,8 @@ public class ButtonTableModel
     }
     else if ( gf instanceof Function || gf instanceof Macro )
     {
-//      Function f = ( Function )gf;
-      Function result = deviceUpgrade.setFunction( button, gf, Button.NORMAL_STATE );
-      if ( result != null && result.accept() )
-      {    
-        panel.addFunction( result );
-        panel.revalidateFunctions();
-      }
+      deviceUpgrade.setFunction( button, gf, Button.NORMAL_STATE );
     }
-//    else if ( gf instanceof Macro )
-//    {
-//      Macro macro = ( Macro )gf;
-//      deviceUpgrade.getMacroMap().put( ( int )button.getKeyCode(), macro );
-//      macro.addReference( db, button );
-//    }
     else if ( gf instanceof LearnedSignal )
     {
       // This case should not occur, as learned signals cannot be assigned through the
