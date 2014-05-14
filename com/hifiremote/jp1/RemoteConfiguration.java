@@ -262,6 +262,10 @@ public class RemoteConfiguration
         if ( temp != null )
         {
           favFinalKey = remote.getButton( Integer.parseInt( temp ) );
+          if ( favFinalKey != null && favFinalKey.getKeyCode() == 0xFF )
+          {
+            favFinalKey = null;
+          }
         }
       }
       else
@@ -946,7 +950,6 @@ public class RemoteConfiguration
         items.db = remote.getDeviceButton( dev );
         items.dbList.add( items.db );
         items.db.setName( name );
-        items.db.setSerial( dev - 0x50 );
         new Segment( 0, 0xFF, new Hex( 15 ), items.db );
       }
       else if ( ( ndx = Arrays.asList( "brand", "model", "remotemodel" ).indexOf( tag ) ) >= 0 )
@@ -1011,6 +1014,10 @@ public class RemoteConfiguration
       {
         pos++;
         favFinalKey = remote.getButton( data[ pos++ ] );
+        if ( favFinalKey != null && favFinalKey.getKeyCode() == 0xFF )
+        {
+          favFinalKey = null;
+        }
       }
       else if ( tag.equals( "codeset" ) )
       {
@@ -1576,12 +1583,6 @@ public class RemoteConfiguration
               if ( key.irserial >= 0 )
               {
                 f.setSerial( key.irserial );
-//                Function ff = f.getEquivalent( items.upgrade.getFunctions() );
-//                if ( ff != null && ff.getSerial() == -1 )
-//                {
-//                  f.setAlternate( ff );
-//                  ff.setAlternate( f );
-//                }
                 items.upgrade.getFunctionMap().put( key.irserial, f );
               }
               if ( key.btn != null )
@@ -2087,6 +2088,10 @@ public class RemoteConfiguration
       int keyCode = hex.getData()[ 1 ];
       favPause = hex.getData()[ 3 ];
       favFinalKey = remote.getButton( hex.getData()[ 4 ] );
+      if ( favFinalKey != null && favFinalKey.getKeyCode() == 0xFF )
+      {
+        favFinalKey = null;
+      }
       int skip = ( favFinalKey == null ) ? 0 : 1;
       int numFavs = hex.getData()[ 6 ];
       int j = 0; 
@@ -2701,6 +2706,16 @@ public class RemoteConfiguration
         }
       }
     }
+    for ( LearnedSignal ls : learned )
+    {
+      DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
+      Button btn = remote.getButton( ls.getKeyCode() );
+      if ( db != null && db.getUpgrade() != null && btn != null )
+      {
+        db.getUpgrade().getLearnedMap().put( ( int )ls.getKeyCode(), ls );
+        ls.addReference( db, btn );
+      }
+    }
     for ( Macro macro : macros )
     {
       DeviceButton db = remote.getDeviceButton( macro.getDeviceButtonIndex() );
@@ -2714,12 +2729,19 @@ public class RemoteConfiguration
       }
       for ( KeySpec ks : macro.getItems() )
       {
-        if ( ks.irSerial >= 0 )
+        if ( ks.btn != null )
+        {
+          ks.fn = ks.db.getUpgrade().getLearnedMap().get( ( int )ks.btn.getKeyCode() );
+          if ( ks.fn == null )
+          {
+            ks.fn = ks.db.getUpgrade().getAssignments().getAssignment( ks.btn );
+          }
+        }  
+        else if ( ks.irSerial >= 0 )
         {
           ks.fn = ks.db.getUpgrade().getFunctionMap().get( ks.irSerial );
         }
       }
-
       if ( macro.getUserItems() != null )
       {
         for ( Integer i : macro.getUserItems() )
@@ -2740,16 +2762,7 @@ public class RemoteConfiguration
         }
       }
     }
-    for ( LearnedSignal ls : learned )
-    {
-      DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
-      Button btn = remote.getButton( ls.getKeyCode() );
-      if ( db != null && db.getUpgrade() != null && btn != null )
-      {
-        db.getUpgrade().getLearnedMap().put( ( int )ls.getKeyCode(), ls );
-        ls.addReference( db, btn );
-      }
-    }
+    
     Button favBtn = remote.getButton( remote.getFavKey().getKeyCode() );
     Activity activity = null;
     if ( favBtn != null && ( activity = activities.get( favBtn )) != null )
@@ -2895,17 +2908,6 @@ public class RemoteConfiguration
           }
         }
       }
-//      for ( DeviceButton db : remote.getDeviceButtons() )
-//      {
-//        if ( !devBtns.contains( db ) )
-//        {
-//          devBtns.add( db );
-//        }
-//      }
-//      for ( int i = 0; i < devBtns.size(); i++ )
-//      {
-//        remote.getDeviceButtons()[ i ] = devBtns.get( i );
-//      }
     }
   }
   
@@ -3135,8 +3137,7 @@ public class RemoteConfiguration
     if ( remote.isSSD() )
     {
       loadFiles( true );
-      swapFunctions( null );
-//      parseSystemFiles();
+      swapFunctions( null );;
       return;
     }
     else if ( hasSegments() )
@@ -6242,7 +6243,7 @@ public class RemoteConfiguration
             }
             for ( Button b : du.getHardButtons() )
             {
-              map.put( b, du.getFunction( b.getKeyCode() ).getName() );
+              map.put( b, du.getGeneralFunction( b.getKeyCode() ).getName() );
             }
             Hex hex = createNameHex( map );
             hex.set( ( short )db.getButtonIndex(), 0 );
@@ -7421,7 +7422,7 @@ public class RemoteConfiguration
         {
           // Don't understand the need for high bit to be zero, so take out for testing
           if ( u.db == db && u.button != null
-              && db.getUpgrade().getLearnedMap().get( u.button ) == null
+              /* && db.getUpgrade().getLearnedMap().get( ( int )u.button.getKeyCode() ) == null */
               /* && ( u.button.getKeyCode() & 0x80 ) == 0 */ )
           {
             return u.button;
@@ -7646,9 +7647,9 @@ public class RemoteConfiguration
       {
         Button b = item.getButton();
         boolean ir = ( b == null || isSysMacro ) && item.fn != null && item.fn.getSerial() >= 0;
-        if ( ir && item.fn == null )
+        if ( b == null && !ir )
         {
-          // Error situation, macro referencing nonexistent function
+          // Error situation, ir function without a valid serial
           continue;
         }
         boolean softKey = !ir && remote.isSoftButton( b );
@@ -8337,6 +8338,10 @@ public class RemoteConfiguration
     if ( du != null )
     {
       map = du.getSwapList();
+      if ( map == null )
+      {
+        return;
+      }
       for ( int key : du.getFunctionMap().keySet() )
       {
         Function f = map.get( du.getFunctionMap().get( key ) );
@@ -8365,8 +8370,7 @@ public class RemoteConfiguration
       {
         ks.fn = f;
       }
-
-      if ( ks.fn instanceof Function && ( f = map.get( ( Function )ks.fn ) ) != null )
+      if ( ks.fn != null && ks.fn instanceof Function && ( f = map.get( ( Function )ks.fn ) ) != null )
       {
         ks.fn = f;
       }

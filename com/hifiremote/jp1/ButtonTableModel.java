@@ -213,15 +213,7 @@ public class ButtonTableModel
       {
         if ( macro.isSystemMacro() )
         {
-          KeySpec ks = macro.getItems().get( 0 );
-          if ( remote.isSSD() )
-          {
-            gf = ks.fn;
-          }
-          else
-          {
-            gf = ks.db.getUpgrade().getFunction( ks.btn.getKeyCode() );
-          }
+          gf = macro.getItems().get( 0 ).fn;
         }
         else
         {

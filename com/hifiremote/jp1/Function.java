@@ -347,15 +347,24 @@ public class Function extends GeneralFunction
     return data != null;
   }
   
-  public Function getIRfunction( DeviceUpgrade du )
-  {
-    if ( serial < 0 )
-    {
-      serial = du.getNewFunctionSerial();
-      du.getFunctionMap().put( serial, this );
-    }
-    return this;
-  }
+//  public void assignSerial()
+//  {
+//    if ( serial < 0 )
+//    {
+//      serial = upgrade.getNewFunctionSerial();
+//      upgrade.getFunctionMap().put( serial, this );
+//    }
+//  }
+  
+//  public Function getIRfunction( DeviceUpgrade du )
+//  {
+//    if ( serial < 0 )
+//    {
+//      serial = du.getNewFunctionSerial();
+//      du.getFunctionMap().put( serial, this );
+//    }
+//    return this;
+//  }
 
   public int getRmirIndex()
   {

@@ -4029,7 +4029,6 @@ public class DeviceUpgrade extends Highlight
     
     for ( Button b : remote.getButtons() )
     {
-//      Function f = assignments.getAssignment( b );
       GeneralFunction f = getGeneralFunction( b.getKeyCode() );
       if ( f == null || f.getName() == null || f.getName().startsWith( "__" ) )
       {
@@ -4322,7 +4321,7 @@ public class DeviceUpgrade extends Highlight
     // Now bf is null if b is a soft button, but it may not be so otherwise.
     // Also either f is a macro or a function that must be assigned as a macro
     
-    if ( bf == null && remote.isSSD() && remote.isSoftButton( b ) )
+    if ( bf == null && remote.isSSD() )
     {
       // Create new empty bf to hold the macro.  Non-SSD remotes do not use a base
       // function to hold macros
@@ -4355,12 +4354,10 @@ public class DeviceUpgrade extends Highlight
     else // fnUpg != this and f is a Function 
     {
       Function fn = ( Function )f;
-      Function irFn = null;
       if ( remote.isSSD() )
       {
-        irFn = fn.getIRfunction( fnUpg );
-        backupReferences( irFn );
-        irFn.addReference( buttonRestriction, b );
+        backupReferences( fn );
+        fn.addReference( buttonRestriction, b );
       }
       // Create a system macro to hold the ir function, removing current macro if present
       Macro macro = macroMap.get( keyCode );
@@ -4391,19 +4388,12 @@ public class DeviceUpgrade extends Highlight
         {
           assists.put( j , new ArrayList< Assister >() );
         }
-        macro.setAssists( assists );  
-        ks = new KeySpec( fnUpg.buttonRestriction, irFn );
-        macro.setDeviceButtonIndex( buttonRestriction.getButtonIndex() );
-        macro.addReference( buttonRestriction, b );
+        macro.setAssists( assists );
       }
-      else if ( !f.getUsers().isEmpty() )
-      {
-        User u = f.getUsers().get( 0 );
-        ks = new KeySpec( u.db, u.button );
-        macro.setDeviceButtonIndex( buttonRestriction.getButtonIndex() );
-        macro.addReference( buttonRestriction, b );
-        macro.setSegmentFlags( 0xFF );
-      }
+      ks = new KeySpec( fnUpg.buttonRestriction, fn );
+      macro.setDeviceButtonIndex( buttonRestriction.getButtonIndex() );
+      macro.addReference( buttonRestriction, b );
+      macro.setSegmentFlags( 0xFF );
       ks.duration = 0;
       ks.delay = 3;
       items.add( ks );
@@ -4736,7 +4726,10 @@ public class DeviceUpgrade extends Highlight
       {
         int serial = getNewFunctionSerial();
         ks.fn.setSerial( serial );
-        functionMap.put( serial, ( Function )ks.fn );
+        if ( serial >= 0 )
+        {
+          functionMap.put( serial, ( Function )ks.fn );
+        }
       }
       if ( ks.getButton() == null && ks.fn != null 
           && ( fnky = ks.fn.getSerial() ) >= 0 

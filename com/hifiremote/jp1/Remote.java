@@ -1891,6 +1891,7 @@ public class Remote implements Comparable< Remote >
       {
         // System icons seem to have type 5
         db.icon = new RMIcon( 5 );
+        db.setSerial( index - 0x50 );
       }
       work.add( db );
       index++ ;

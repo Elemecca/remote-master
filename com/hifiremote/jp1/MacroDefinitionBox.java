@@ -312,16 +312,11 @@ PropertyChangeListener, RMSetter< Object >
   {
     DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
     GeneralFunction f = ( GeneralFunction )functionBox.getSelectedItem();
-    KeySpec ks = new KeySpec( db, f );
-    List< User > users= ks.getFnUsers();
+    KeySpec ks = null;
     
     if ( f instanceof Function )
     {
-      if ( users.isEmpty() )
-      {
-        Function irFn = ( ( Function )f ).getIRfunction( db.getUpgrade() );
-        ks = new KeySpec( db, irFn );
-      }
+      ks = new KeySpec( db, f );
     }
     else if ( !f.getUsers().isEmpty() )
     {

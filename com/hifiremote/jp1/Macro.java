@@ -306,8 +306,8 @@ public class Macro extends AdvancedCode
         // first byte of ir serial
         int irSerial = hex.getData()[ i++ ];
         irSerial += hex.getData()[ i ] << 8;
-        // irSerial is converted to a function after loading of device upgrades
         KeySpec ks = new KeySpec( db, irSerial );
+        // irSerial is converted to a function after loading of device upgrades
         ks.delay = hex.getData()[ i + count ];
         ks.duration = duration;
         items.add( ks );
@@ -316,6 +316,7 @@ public class Macro extends AdvancedCode
       else if ( btn != null )
       {
         KeySpec ks = new KeySpec( db, btn );
+        // button is converted to a function after loading of device upgrades
         ks.delay = hex.getData()[ i + count ];
         ks.duration = duration;
         items.add( ks );
