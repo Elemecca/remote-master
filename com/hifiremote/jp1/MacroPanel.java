@@ -54,7 +54,6 @@ public class MacroPanel extends RMTablePanel< Macro >
     Macro newMacro = createRowObject( baseMacro );
     if ( newMacro != null )
     {
-      baseUser.db.getUpgrade().getAssignments().assign( baseUser.button, null );
       macros.remove( ndx );
       macros.add( ndx, newMacro );
       LinkedHashMap< Integer, Macro > macroMap = null;

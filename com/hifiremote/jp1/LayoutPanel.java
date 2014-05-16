@@ -325,22 +325,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
         macro = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
         if ( f == null && macro != null )
         {
-          if ( macro.isSystemMacro() )
-          {
-            KeySpec ks = macro.getItems().get( 0 );
-            if ( remote.isSSD() )
-            {
-              f = ks.fn;
-            }
-            else
-            {
-              f = ks.db.getUpgrade().getFunction( ks.btn.getKeyCode() );
-            }
-          }
-          else
-          {
-            f = macro;
-          }
+          f = macro.isSystemMacro() ? macro.getItems().get( 0 ).fn : macro;
         }
       }
       if ( f == null )

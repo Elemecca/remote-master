@@ -207,21 +207,6 @@ PropertyChangeListener, RMSetter< Object >
       durationLabel.setEnabled( false );
 //      duration.setFocusLostBehavior( JFormattedTextField.COMMIT_OR_REVERT );
     }
-//    else if ( remote.usesEZRC() )
-//    {
-//      FontMetrics fm = durationLabel.getFontMetrics( durationLabel.getFont() );
-//      int width = fm.stringWidth( "Pause after for:  " );
-//      durationLabel.setPreferredSize( new Dimension( width, durationLabel.getHeight() ) );
-//      durationLabel.setLabelFor( duration );
-//      durationLabel.setHorizontalAlignment( SwingConstants.RIGHT );
-//      duration.setFocusLostBehavior( JFormattedTextField.PERSIST );
-//      durationPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 1, 0 ) );
-//      durationPanel.add( durationLabel, BorderLayout.LINE_START );
-//      durationPanel.add( duration, BorderLayout.CENTER );
-//      durationPanel.add( durationSuffix, BorderLayout.LINE_END );
-//      durationPanel.setVisible( true );
-//    }
-    
   }  
   
   public void actionPerformed( ActionEvent event )
@@ -312,24 +297,7 @@ PropertyChangeListener, RMSetter< Object >
   {
     DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
     GeneralFunction f = ( GeneralFunction )functionBox.getSelectedItem();
-    KeySpec ks = null;
-    
-    if ( f instanceof Function )
-    {
-      ks = new KeySpec( db, f );
-    }
-    else if ( !f.getUsers().isEmpty() )
-    {
-      // For XSight Touch, this is only learns and Selector keys (Home etc)
-      User u = f.getUsers().get( 0 );
-      ks = new KeySpec( u.db, u.button );
-    }
-    else
-    {
-      // This case should not occur
-      return null;
-    }
-    
+    KeySpec ks = new KeySpec( db, f );;
     Float fv = ( Float )delay.getValue();
     ks.delay = fv == null ? 0 : ( int )( 10.0 * fv + 0.5 );
     if ( holdCheck.isSelected() )
@@ -487,17 +455,7 @@ PropertyChangeListener, RMSetter< Object >
         return;
       }
       deviceBox.setSelectedItem( ks.db );
-      
-      Button b = ks.fn == null ? ks.btn : ks.fn.getUsers().isEmpty() ? null : ks.fn.getUsers().get( 0 ).button;
-      GeneralFunction gf = null;
-      if ( b != null )
-      {
-        gf = ks.db.getUpgrade().getGeneralFunction( b.getKeyCode() );
-      }
-      else if ( ks.fn != null )
-      {
-        gf = ks.fn;
-      }
+      GeneralFunction gf = ks.fn; 
       functionBox.getModel().setSelectedItem( null );
       functionBox.setSelectedItem( gf );
       delay.setValue( ks.delay / 10.0f );

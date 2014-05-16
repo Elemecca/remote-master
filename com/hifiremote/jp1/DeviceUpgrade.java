@@ -4354,11 +4354,8 @@ public class DeviceUpgrade extends Highlight
     else // fnUpg != this and f is a Function 
     {
       Function fn = ( Function )f;
-      if ( remote.isSSD() )
-      {
-        backupReferences( fn );
-        fn.addReference( buttonRestriction, b );
-      }
+      backupReferences( fn );
+      fn.addReference( buttonRestriction, b );
       // Create a system macro to hold the ir function, removing current macro if present
       Macro macro = macroMap.get( keyCode );
       if ( macro != null )
@@ -4599,10 +4596,10 @@ public class DeviceUpgrade extends Highlight
       {
         gf = learnedMap.get( keyCode );
       }
-      if ( gf == null && !remote.isSSD() )
-      {
-        gf = macroMap.get( keyCode );
-      }
+//      if ( gf == null && !remote.isSSD() )
+//      {
+//        gf = macroMap.get( keyCode );
+//      }
     }
     if ( gf == null )
     {
@@ -4621,8 +4618,6 @@ public class DeviceUpgrade extends Highlight
         list.add( function );
       }
     }
-    // Seems no longer to need filter
-//    list = Function.filter( list );
     return list;
   }
   
@@ -4631,7 +4626,7 @@ public class DeviceUpgrade extends Highlight
     List< GeneralFunction > list = new ArrayList< GeneralFunction >();
     if ( remote.usesEZRC() && !remote.isSSD() && getNewFunctionSerial() < 0 )
     {
-      // XSight Light/Plus can only put functions in mactos if they are already
+      // XSight Light/Plus can only put functions in macros if they are already
       // on a button or if there is an available system button.
       for ( Function f : getFunctionList() )
       {
@@ -4721,7 +4716,7 @@ public class DeviceUpgrade extends Highlight
             
     for ( KeySpec ks : remoteConfig.getAllKeySpecs() )
     {
-      if ( ks.fn != null && ks.fn instanceof Function && ks.getFnUsers().isEmpty() 
+      if ( ks.fn != null && ks.fn instanceof Function && ks.getButton() == null 
           && ks.fn.getSerial() < 0 && ks.db.getUpgrade() == this )
       {
         int serial = getNewFunctionSerial();

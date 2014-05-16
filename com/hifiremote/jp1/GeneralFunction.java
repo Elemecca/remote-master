@@ -624,7 +624,7 @@ public class GeneralFunction
   
   public boolean assigned()
   {
-    return ( !getAllUsers().isEmpty() );
+    return ( !getUsers().isEmpty() );
   }
   
   public boolean assigned( DeviceButton db )
@@ -643,13 +643,6 @@ public class GeneralFunction
           return true;
         }
       }
-      for ( User u : getIndirectReferences() )
-      {
-        if ( db == u.db )
-        {
-          return true;
-        }
-      }
       return false;
     }
     else
@@ -662,47 +655,6 @@ public class GeneralFunction
   public List< User > getUsers()
   {
     return users;
-  }
-  
-  public List< User > getAllUsers()
-  {
-    List< User > allUsers = new ArrayList< User >();
-    allUsers.addAll( users );
-    allUsers.addAll( getIndirectReferences() );
-    return allUsers;
-  }
-  
-  public List< User > getIndirectReferences()
-  {
-    List< User > indirect = new ArrayList< User >();
-    Function f = null;
-    DeviceButton db = null;
-    DeviceUpgrade upg = null;
-    RemoteConfiguration config = null;
-    if ( !( this instanceof Function ) || ( f = ( Function )this ).getUsers().isEmpty()
-        || ( db = f.getUsers().get( 0 ).db ) == null || ( upg = db.getUpgrade() ) == null 
-        || ( config = upg.getRemoteConfig() ) == null )
-    {
-      return indirect;
-    }
-    Remote remote = config.getRemote();
-    if ( !remote.usesEZRC() || remote.isSSD() )
-    {
-      return indirect;
-    }
-    for ( Macro macro : config.getMacros() )
-    {
-      if ( !macro.isSystemMacro() )
-      {
-        continue;
-      }
-      KeySpec ks = macro.getItems().get( 0 );
-      if ( ks.getButton() != null && f == ks.db.getUpgrade().getGeneralFunction( ks.getButton().getKeyCode() ) )
-      {
-        indirect.addAll( macro.getUsers() );
-      }
-    }
-    return indirect;
   }
 
   public void addReference( DeviceButton db, Button b )

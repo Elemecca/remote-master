@@ -37,7 +37,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.usesEZRC() ? remoteConfig.getDeviceButtonList().toArray() : remote.getDeviceButtons() ) );
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
@@ -219,14 +219,6 @@ public class MacroTableModel extends JP1TableModel< Macro >
         return null;
     }
   }
-
-//  @Override
-//  public void setRow( int row, Macro macro )
-//  {
-//    super.setRow( row, macro );
-//  }
-  
-  
   
   /*
    * (non-Javadoc)
@@ -238,15 +230,8 @@ public class MacroTableModel extends JP1TableModel< Macro >
   {
     col = getEffectiveColumn( col );
     Macro macro = getRow( row );
-    Remote remote = remoteConfig.getRemote();
-    
-    DeviceButton db = null;
-    DeviceUpgrade du = null;
-    if ( remote.usesEZRC() )
-    {
-      db = remote.getDeviceButton( macro.getDeviceButtonIndex() );
-      du = db.getUpgrade();
-    }
+    Remote remote = remoteConfig.getRemote();  
+    DeviceUpgrade du = remote.usesEZRC() ? macro.getUpgrade( remote ) : null;
     
     if ( col == 1 )
     {
@@ -254,56 +239,34 @@ public class MacroTableModel extends JP1TableModel< Macro >
     }
     else if ( col == 2 )
     {
+      DeviceButton db = ( DeviceButton )value;
       if ( remote.usesEZRC() )
-      {
-        du.getMacroMap().remove( macro.getKeyCode() );
-        Button b = remote.getButton( macro.getKeyCode() );
-        macro.removeReference( db, b );
-        db = ( DeviceButton )value;
+      {   
+        Button b = remote.getButton( macro.getKeyCode() );       
+        du.setFunction( b, null, Button.NORMAL_STATE );     
         du = db.getUpgrade();
-        du.getMacroMap().put( macro.getKeyCode(), macro );
-        macro.addReference( db, b );
-      }
-      if ( remote.isSSD() )
-      {
-        Button b = remote.getButton( macro.getKeyCode() );
-        du = macro.getUpgrade( remote );
-        du.setFunction( b, null, Button.NORMAL_STATE );
-        db = ( DeviceButton )value;
         macro.setDeviceButtonIndex( db.getButtonIndex() );
-        du = db.getUpgrade();
         du.setFunction( b, macro, Button.NORMAL_STATE );
       }
       else
       {
-        macro.setDeviceButtonIndex( ( ( DeviceButton )value ).getButtonIndex() );
+        macro.setDeviceButtonIndex( db.getButtonIndex() );
       }
     }
     else if ( col == 3 )
     {
+      int keyCode = ( Integer )value;
       if ( remote.usesEZRC() )
       {
-        du.getMacroMap().remove( macro.getKeyCode() );
         Button b = remote.getButton( macro.getKeyCode() );
-        macro.removeReference( db, b );
-        int keyCode = ( Integer )value;
-        du.getMacroMap().put( keyCode, macro );
-        b = remote.getButton( keyCode );
-        macro.addReference( db, b );
-      }        
-      if ( remote.isSSD() )
-      {
-        Button b = remote.getButton( macro.getKeyCode() );
-        du = macro.getUpgrade( remote );
-        du.setFunction( b, null, Button.NORMAL_STATE );
-        int keyCode = ( Integer )value;
-        b = remote.getButton( keyCode );
+        du.setFunction( b, null, Button.NORMAL_STATE );      
         macro.setKeyCode( keyCode );
+        b = remote.getButton( keyCode );
         du.setFunction( b, macro, Button.NORMAL_STATE );
       }
       else
       {
-        macro.setKeyCode( ( ( Integer )value ).intValue() );
+        macro.setKeyCode( keyCode );
       }
     }
     else if ( col == 5 )

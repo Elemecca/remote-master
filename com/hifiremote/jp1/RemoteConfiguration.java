@@ -2736,6 +2736,10 @@ public class RemoteConfiguration
           {
             ks.fn = ks.db.getUpgrade().getAssignments().getAssignment( ks.btn );
           }
+          if ( ks.fn == null )
+          {
+            ks.fn = ks.db.getUpgrade().getSelectorMap().get( ( int )ks.btn.getKeyCode() );
+          }
         }  
         else if ( ks.irSerial >= 0 )
         {
@@ -3137,6 +3141,7 @@ public class RemoteConfiguration
     if ( remote.isSSD() )
     {
       loadFiles( true );
+      updateReferences();
       swapFunctions( null );;
       return;
     }
@@ -3366,6 +3371,11 @@ public class RemoteConfiguration
       {
         it.remove();
       }
+    }
+    if ( remote.usesEZRC() )
+    {
+      updateReferences();
+      swapFunctions( null );
     }
   }
   
@@ -7416,33 +7426,32 @@ public class RemoteConfiguration
       {
         return btn;
       }
+      else if ( !( fn instanceof Function ) && !( fn instanceof LearnedSignal) )
+      {
+        DeviceUpgrade du = db.getUpgrade();
+        for ( int keyCode : du.getSelectorMap().keySet() )
+        {
+          if ( du.getSelectorMap().get( keyCode ) == fn )
+          {
+            return du.getRemote().getButton( keyCode );
+          }
+        }
+      }
       else
       {
         for ( User u : fn.getUsers() )
         {
-          // Don't understand the need for high bit to be zero, so take out for testing
+          // The learned map test is needed as a LearnedSignal takes precedence over 
+          // underlying Function on the same button.
           if ( u.db == db && u.button != null
-              /* && db.getUpgrade().getLearnedMap().get( ( int )u.button.getKeyCode() ) == null */
-              /* && ( u.button.getKeyCode() & 0x80 ) == 0 */ )
+              && ( fn instanceof LearnedSignal
+                   || db.getUpgrade().getLearnedMap().get( ( int )u.button.getKeyCode() ) == null ) )
           {
             return u.button;
           }
         }
       }     
       return null;
-    }
-    
-    public List< User > getFnUsers()
-    {
-      List< User > uList = new ArrayList< User >();
-      for ( User u : fn.getUsers() )
-      {
-        if ( u.db == db )
-        {
-          uList.add( u );
-        }
-      }
-      return uList;
     }
     
     @Override
@@ -7453,18 +7462,10 @@ public class RemoteConfiguration
       if ( duration >= 0 )
       {
         buff.append( "Hold(" +  duration / 10 + "." + duration % 10 + ");" );
-      }
-      Button b = fn == null ? btn : fn.getUsers().isEmpty() ? null : fn.getUsers().get( 0 ).button;
-      if ( b != null )
+      } 
+      if ( fn != null )
       {
-//        buff.append( b.getName() );
-        GeneralFunction f = db.getUpgrade().getGeneralFunction(b.getKeyCode() );
-        buff.append( f != null ? f.getName() : b.getName() );
-      }
-      else if ( fn != null )
-      {
-//        buff.append( "Fn(" + fn.getName() + ")" );
-        buff.append( fn.getName() );
+        buff.append( fn );
       }
       if ( delay != 0 )
       {
@@ -8366,6 +8367,10 @@ public class RemoteConfiguration
     Function f = null;
     for ( KeySpec ks : getAllKeySpecs() )  
     {
+      if ( ks.fn != null && !( ks.fn instanceof Function ) )
+      {
+        continue;
+      }
       if ( ks.btn != null && ( f = ks.db.getUpgrade().getAssignments().getAssignment( ks.btn ) ) != null )
       {
         ks.fn = f;

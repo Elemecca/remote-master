@@ -388,7 +388,7 @@ public class Macro extends AdvancedCode
       {
         int dbi = u.db.getButtonIndex();
         int kc = u.button.getKeyCode();
-        if ( dbi != deviceButtonIndex && kc != keyCode )
+        if ( dbi != deviceButtonIndex || kc != keyCode )
         {
           userStr += ( userStr.isEmpty() ? "" : "," ) + Integer.toString( dbi ) + "/" + Integer.toString( kc );
         }

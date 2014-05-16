@@ -111,7 +111,7 @@ public class FunctionLabel
       buff.append( "&nbsp;Drag or double-click this function to<br>&nbsp;set the function performed by a button." );
       if ( function.getNotes() != null )
         buff.append( "<br><hr>&nbsp;" + function.getNotes());
-      List< User > users = function.getAllUsers();
+      List< User > users = function.getUsers();
       if ( !users.isEmpty())
       {
         buff.append( "<br><hr>&nbsp;" + function.getName() + " is assigned to: " );
