@@ -156,10 +156,6 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
     {
       assister.ks.fn = ( Function )value;
     }
-//    else if ( col == 2 )
-//    {
-//      assister.setButton( remote.getButton( ( ( Integer )value ).intValue() ) );
-//    }
     assister.set( remote );
     fireTableDataChanged();
     propertyChangeSupport.firePropertyChange( "data", null, null );

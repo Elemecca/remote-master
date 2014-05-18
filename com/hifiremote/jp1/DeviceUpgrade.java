@@ -16,6 +16,7 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,6 +121,7 @@ public class DeviceUpgrade extends Highlight
 
     // Copy the functions and their assignments
     swapList = new LinkedHashMap< Function, Function >();
+    
     for ( Function f : base.functions )
     {
       Function f2 = new Function( f );
@@ -128,14 +130,23 @@ public class DeviceUpgrade extends Highlight
       functions.add( f2 );
       for ( Function.User user : f.getUsers() )
       {
-        if ( user.db == null || user.db == DeviceButton.noButton || user.db.getUpgrade() == base )
+        if ( user.db == null || user.db == DeviceButton.noButton )
         {
-          assignments.assign( user.button, f2, user.state );
+//          assignments.assign( user.button, f2, user.state );
+          f2.addReference( user.button, user.state );
         }
-        else
+        else if ( user.db.getUpgrade() == base )
         {
           f2.addReference( user.db, user.button );
         }
+      }
+    }
+    for ( int i = 0; i < base.getAssignments().getAssignedFunctions().length; i++ )
+    {
+      Function f = null;
+      if ( ( f = base.getAssignments().getAssignedFunctions()[ i ] ) != null )
+      {
+        assignments.getAssignedFunctions()[ i ] = swapList.get( f );
       }
     }
 
@@ -2194,12 +2205,21 @@ public class DeviceUpgrade extends Highlight
       func.store( out, "ExtFunction." + i++ );
     }
 
-    Button[] buttons = remote.getUpgradeButtons();
+    List< Button>  buttons = new ArrayList< Button >( Arrays.asList( remote.getUpgradeButtons() ) );
+    if ( remote.usesEZRC() )
+    {
+      List< Button> sysBtns = remote.getButtonGroups().get( "System" );
+      if ( sysBtns != null )
+      {
+        buttons.addAll( sysBtns );
+      }
+    }
+    
     String regex = "\\|";
     String replace = "\\\\u007c";
-    for ( i = 0; i < buttons.length; i++ )
+    for ( i = 0; i < buttons.size(); i++ )
     {
-      Button b = buttons[ i ];
+      Button b = buttons.get( i );
       Function f = assignments.getAssignment( b, Button.NORMAL_STATE );
 
       String fstr;
@@ -2655,12 +2675,22 @@ public class DeviceUpgrade extends Highlight
 
     if ( loadButtons )
     {
-      Button[] buttons = remote.getUpgradeButtons();
+      List< Button>  buttons = new ArrayList< Button >( Arrays.asList( remote.getUpgradeButtons() ) );
+      List< Button> sysBtns = null;
+      if ( remote.usesEZRC() )
+      {
+        sysBtns = remote.getButtonGroups().get( "System" );
+        if ( sysBtns != null )
+        {
+          buttons.addAll( sysBtns );
+        }
+      }
+      
       String regex = "\\\\u007c";
       String replace = "|";
-      for ( i = 0; i < buttons.length; i++ )
+      for ( i = 0; i < buttons.size(); i++ )
       {
-        Button b = buttons[ i ];
+        Button b = buttons.get( i );
         str = props.getProperty( "Button." + Integer.toHexString( b.getKeyCode() ) );
         if ( str == null )
         {
@@ -2699,6 +2729,10 @@ public class DeviceUpgrade extends Highlight
             func = getFunction( str.replaceAll( regex, replace ) );
           }
           assignments.assign( b, func, Button.NORMAL_STATE );
+          if ( sysBtns != null && sysBtns.contains( b ) )
+          {
+            func.removeReference( buttonRestriction, b );
+          }
         }
         str = st.nextToken();
         if ( !str.equals( "null" ) && remote.getShiftEnabled() )
@@ -4465,7 +4499,7 @@ public class DeviceUpgrade extends Highlight
   }
   
   
-  public int getNewFunctionSerial()
+  private int getNewFunctionSerial( Function fn )
   {
     List< Integer > list = new ArrayList< Integer >();
     if ( remote.isSSD() )
@@ -4488,12 +4522,8 @@ public class DeviceUpgrade extends Highlight
         }
       }
     }
+    
     // XSight Lite/Plus
-    List< Button > sysBtns = remote.getButtonGroups().get( "System" );
-    if ( sysBtns == null )
-    {
-      return -1;
-    }
     for ( Function f : functions )
     {
       if ( f.getSerial() >= 0 )
@@ -4501,13 +4531,41 @@ public class DeviceUpgrade extends Highlight
         list.add( f.getSerial() & 0xFF );
       }
     }
-    for ( Button b : sysBtns )
+    
+    List< Button > btnList = remote.getButtonGroups().get( "System" );
+    if ( btnList != null )
     {
-      if ( !list.contains( ( int )b.getKeyCode() ) )
+      for ( Button b : btnList )
       {
-        return ( buttonRestriction.getButtonIndex() << 8 ) + b.getKeyCode();
+        if ( !list.contains( ( int )b.getKeyCode() ) )
+        {
+          return ( buttonRestriction.getButtonIndex() << 8 ) + b.getKeyCode();
+        }
       }
     }
+
+    btnList = remote.getButtonGroups().get( "Soft" );
+    String title = "Assignment of function to button";
+    String message = "Functions used in macros or assists must also be assigned to a button.\n"
+            + "Function \"" + fn + "\" is so used and is not currently so assigned.\n";
+    for ( Button b : btnList )
+    {
+      if ( getGeneralFunction( b.getKeyCode() ) == null && macroMap.get( ( int )b.getKeyCode() ) == null )
+      {
+        message += "There is no hidden system button available so it will be assigned to\n"
+                + "the soft button \"" + b + "\".  The Device Upgrade Editor may be used\n"
+                + "to change this assignment if required.";
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
+        assignments.assign( b, fn );
+        fn.addReference( buttonRestriction, b );
+        return -1;
+      }
+    }
+    message += "There is no unassigned system button or soft button available so this\n"
+        + "function will not send an IR signal.  To correct this, use the Device\n"
+        + "Upgrade Editor either to manually assign this function or free up a\n"
+        + "soft button by deleting its current assignment.";
+    JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.WARNING_MESSAGE );
     return -1;
   }
 
@@ -4623,24 +4681,7 @@ public class DeviceUpgrade extends Highlight
   
   public List< GeneralFunction > getGeneralFunctionList()
   {
-    List< GeneralFunction > list = new ArrayList< GeneralFunction >();
-    if ( remote.usesEZRC() && !remote.isSSD() && getNewFunctionSerial() < 0 )
-    {
-      // XSight Light/Plus can only put functions in macros if they are already
-      // on a button or if there is an available system button.
-      for ( Function f : getFunctionList() )
-      {
-        if ( !f.getUsers().isEmpty() )
-        {
-          list.add( f );
-        }
-      }
-    }
-    else
-    {
-      list.addAll( getFunctionList() );
-    }
-    
+    List< GeneralFunction > list = new ArrayList< GeneralFunction >( getFunctionList() );
     if ( remote.usesEZRC() )
     {
       list.addAll( learnedMap.values() );
@@ -4719,7 +4760,7 @@ public class DeviceUpgrade extends Highlight
       if ( ks.fn != null && ks.fn instanceof Function && ks.getButton() == null 
           && ks.fn.getSerial() < 0 && ks.db.getUpgrade() == this )
       {
-        int serial = getNewFunctionSerial();
+        int serial = getNewFunctionSerial( ( Function )ks.fn );
         ks.fn.setSerial( serial );
         if ( serial >= 0 )
         {

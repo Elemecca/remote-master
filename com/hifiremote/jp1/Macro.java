@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.swing.JOptionPane;
+
 import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
@@ -215,6 +217,10 @@ public class Macro extends AdvancedCode
       DeviceButton db = null;
       for ( KeySpec ks : items )
       {
+        if ( !ks.isValid() )
+        {
+          continue;
+        }
         length += ks.db != db ? 1 : 0;
         length += ks.duration >= 0 ? 1 : 0;
         length += ks.getButton() != null ? 1 : ks.fn != null ? 
@@ -242,6 +248,12 @@ public class Macro extends AdvancedCode
     int pos = 0;
     for ( KeySpec ks : items )
     {
+      if ( !ks.isValid() )
+      {
+        System.err.println( "Invalid keySpec for upgrade \"" + ks.db 
+            + "\", function \"" + ks.fn + "\" in macro " + this );
+        continue;
+      }
       if ( ks.db != db )
       {
         vals[ pos + size ] = 0;
@@ -261,11 +273,11 @@ public class Macro extends AdvancedCode
       }
       else if ( ks.fn != null )
       {
-        // Only used in remotes with SSD; use delay value 0xFF as indicator
         int serial = ks.fn.getSerial();
         Remote remote = ks.db.getUpgrade().getRemote();
         if ( remote.isSSD() )
         {
+          // Delay value 0xFF acts as indicator in SSD remotes
           vals[ pos + size ] = ( short )0xFF;
           vals[ pos++ ] = ( short )( serial & 0xFF );
           vals[ pos + size ] = ( short )ks.delay;
@@ -273,6 +285,8 @@ public class Macro extends AdvancedCode
         }
         else
         {
+          // In non-SSD XSights the serial value encodes a system button to which
+          // the function gets assigned if there is no other assignment.
           DeviceButton sysdb = remote.getDeviceButton( serial >> 8 );
           vals[ pos + size ] = ( short )ks.delay;
           vals[ pos++ ] = ( short )( db == sysdb ? serial & 0xFF : 0 );

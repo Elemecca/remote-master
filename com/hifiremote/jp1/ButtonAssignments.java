@@ -124,6 +124,12 @@ public class ButtonAssignments
     }
     return true;
   }
+  
+
+  public Function[] getAssignedFunctions()
+  {
+    return assignedFunctions;
+  }
 
   /** The assigned functions. */
   private Function[] assignedFunctions = new Function[ 256 ];

@@ -399,8 +399,6 @@ public class RemoteConfiguration
       {
         favKeyDevButton.setFavoritewidth( favWidth );
       }
-      updateReferences();
-      swapFunctions( null );
     }
     
     if ( activityMacros != null )
@@ -416,6 +414,11 @@ public class RemoteConfiguration
           activity.setSelector( remote.getButton( macro.getKeyCode() ) );
         }
       }
+    }
+    if ( remote.usesEZRC() )
+    {
+      updateReferences();
+      swapFunctions( null );
     }
     convertKeyMoves();
   }
@@ -1961,30 +1964,6 @@ public class RemoteConfiguration
       }
     }
     
-    List< Segment > learnedList = segments.get( 9 );
-    if ( learnedList != null )
-    {
-      for ( Segment segment : learnedList )
-      {
-        Hex hex = segment.getHex();
-        LearnedSignal ls = null;
-        if ( remote.getProcessor().getEquivalentName().equals( "MAXQ610" ) )
-        {
-          // hex.getData[ 3 ] seems always to be 0 and is not stored in the learned signal
-          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
-        }
-        else
-        {
-          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 0, hex.subHex( 2 ), null );
-        }
-        ls.setSegmentFlags( segment.getFlags() );
-        Button btn = remote.getButton( ls.getKeyCode() );
-        DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
-        ls.setName( db.getSoftButtonNames().get( btn ) );
-        learned.add( ls );
-      }
-    } 
-    
     softNamesList = segments.get( 0x20 );
     if ( softNamesList != null )
     {
@@ -2012,6 +1991,35 @@ public class RemoteConfiguration
         devBtn.setSoftFunctionNames( softFunctionNames );
       }
     }  
+    
+    List< Segment > learnedList = segments.get( 9 );
+    if ( learnedList != null )
+    {
+      for ( Segment segment : learnedList )
+      {
+        Hex hex = segment.getHex();
+        LearnedSignal ls = null;
+        if ( remote.getProcessor().getEquivalentName().equals( "MAXQ610" ) )
+        {
+          // hex.getData[ 3 ] seems always to be 0 and is not stored in the learned signal
+          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
+        }
+        else
+        {
+          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 0, hex.subHex( 2 ), null );
+        }
+        ls.setSegmentFlags( segment.getFlags() );
+        Button btn = remote.getButton( ls.getKeyCode() );
+        DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
+        String name = db.getSoftButtonNames().get( btn );
+        if ( name == null )
+        {
+          name = db.getSoftFunctionNames().get(  btn );
+        }
+        ls.setName( name );
+        learned.add( ls );
+      }
+    } 
     
     List< Segment > upgradeList = segments.get( 0x10 );
     if ( upgradeList != null )
@@ -2705,6 +2713,21 @@ public class RemoteConfiguration
           upgrade.getFunctionMap().put( fn.getSerial(), fn );
         }
       }
+      if ( remote.getButtonGroups().get( "System" ) != null )
+      {
+        for ( Button b : remote.getButtonGroups().get( "System" ) )
+        {
+          Function fn = null;
+          if ( ( fn = upgrade.getAssignments().getAssignment( b ) ) != null )
+          {
+            DeviceButton db = upgrade.getButtonRestriction();
+            int serial = ( db.getButtonIndex() << 8) + b.getKeyCode();
+            fn.setSerial( serial );
+            upgrade.getFunctionMap().put( fn.getSerial(), fn );
+            fn.removeReference( db, b );
+          }
+        }
+      }
     }
     for ( LearnedSignal ls : learned )
     {
@@ -2715,8 +2738,13 @@ public class RemoteConfiguration
         db.getUpgrade().getLearnedMap().put( ( int )ls.getKeyCode(), ls );
         ls.addReference( db, btn );
       }
+      Function fn = db.getUpgrade().getAssignments().getAssignment( btn );
+      if ( fn != null )
+      {
+        fn.removeReference( db, btn );
+      }
     }
-    for ( Macro macro : macros )
+    for ( Macro macro : getAllMacros( true ) )
     {
       DeviceButton db = remote.getDeviceButton( macro.getDeviceButtonIndex() );
       Button btn = remote.getButton( macro.getKeyCode() );
@@ -4341,13 +4369,16 @@ public class RemoteConfiguration
     }
     if ( remote.usesEZRC() )
     {
-      List< Button > sysBtns = remote.getButtonGroups().get(  "System" );
+      List< Button > sysBtns = remote.getButtonGroups().get( "System" );
       for ( DeviceButton db : deviceButtonList )
       {
         DeviceUpgrade du = db.getUpgrade();
-        for ( Button b : sysBtns )
+        if ( sysBtns != null )
         {
-          du.getAssignments().assign( b, null );
+          for ( Button b : sysBtns )
+          {
+            du.getAssignments().assign( b, null );
+          }
         }
         db.getUpgrade().filterFunctionMap();
         for ( int serial : du.getFunctionMap().keySet() )
@@ -5078,17 +5109,19 @@ public class RemoteConfiguration
     
     // Finally do Activity Assists, segment type 0x1F
     dataLen = 5;
+    int[] sizes = new int[]{ 0, 0, 0 };
     for ( int i = 0; i < 3; i++ )
     {
       List< Assister > a = activity.getAssists().get( i );
-      if ( a.size() > 0 )
+      for ( Assister assist : a )
       {
-        dataLen += 3 * a.size() + 1;
-        for ( Assister assist : a )
+        if ( assist.ks.isValid() )
         {
-          dataLen += assist.getDeviceName().length();
+          sizes[ i ] += 1;
+          dataLen += assist.getDeviceName().length() + 3;
         }
       }
+      dataLen += sizes[ i ] > 0 ? 1 : 0;
     }
     dataLen += remote.doForceEvenStarts() && ( dataLen & 1 ) == 1 ? 1 : 0;
     segData = new Hex( dataLen );
@@ -5105,20 +5138,29 @@ public class RemoteConfiguration
     for ( int i = 0; i < 3; i++ )
     {
       List< Assister > a = activity.getAssists().get( i );
-      int aLen = a.size();
+      int aLen = sizes[ i ];
       segData.set( ( short )aLen, pos++ );
       if ( aLen > 0 )
       {
         segData.set( ( short )0, pos + 2 * aLen );
         int namePos = pos + 2 * aLen + 1;
-        for ( int j = 0; j < aLen; j++ )
+        int n = 0;
+        for ( int j = 0; j < a.size(); j++ )
         {
-          if ( a.get( j ).ks.getButton() == null )
+          if ( !a.get( j ).ks.isValid() )
           {
             continue;
           }
-          segData.set( a.get( j ).ks.getButton().getKeyCode(), pos + j );
-          segData.set( ( short )a.get( j ).ks.db.getButtonIndex(), pos + j + aLen );
+          if ( a.get( j ).ks.getButton() != null )
+          {
+            segData.set( a.get( j ).ks.getButton().getKeyCode(), pos + n );
+            segData.set( ( short )a.get( j ).ks.db.getButtonIndex(), pos + n + aLen );
+          }
+          else
+          {
+            segData.set( ( short )( a.get( j ).ks.fn.getSerial() & 0xFF ), pos + n );
+            segData.set( ( short )a.get( j ).ks.db.getButtonIndex(), pos + n + aLen );
+          }
           int nameLen = a.get( j ).ks.db.getName().length();
           segData.set( ( short )nameLen, namePos++ );
           for ( int k = 0; k < nameLen; k++ )
@@ -5127,6 +5169,7 @@ public class RemoteConfiguration
           }
         }
         pos = namePos;
+        n++;
       }
     }
     activity.setHelpSegment( segment );
@@ -7454,6 +7497,18 @@ public class RemoteConfiguration
       return null;
     }
     
+    public boolean isValid()
+    {
+      int serial = fn.getSerial();
+      Remote remote = db.getUpgrade().getRemote();
+      if ( getButton() == null && serial < 0 
+          || !remote.isSSD() && serial >= 0 && db != remote.getDeviceButton( serial >> 8 ) )
+      {
+        return false;
+      }
+      return true;
+    }
+    
     @Override
     public String toString()
     {
@@ -7646,13 +7701,12 @@ public class RemoteConfiguration
 
       for ( KeySpec item : macro.getItems() )
       {
+        if ( !item.isValid() )
+        {
+          continue;
+        }       
         Button b = item.getButton();
         boolean ir = ( b == null || isSysMacro ) && item.fn != null && item.fn.getSerial() >= 0;
-        if ( b == null && !ir )
-        {
-          // Error situation, ir function without a valid serial
-          continue;
-        }
         boolean softKey = !ir && remote.isSoftButton( b );
         boolean hardKey = !ir && !softKey;
         btnTag = softKey ? "sendsoftkey" : hardKey ? "sendhardkey" : "sendir" ;
@@ -7710,13 +7764,13 @@ public class RemoteConfiguration
             work.add( makeItem( tagNames[ i ], new Hex( 0 ), false ) );
             for ( Assister assister : assists.get(  2 - i ) )
             {
-              short dev = ( short )( assister.ks.db.getSerial() );
-              GeneralFunction f = assister.ks.fn;
-              if ( f == null )
+              if ( !assister.ks.isValid() )
               {
                 continue;
               }
-              Button b = f.getUsers().isEmpty() ? null : f.getUsers().get( 0 ).button;
+              short dev = ( short )( assister.ks.db.getSerial() );
+              GeneralFunction f = assister.ks.fn;
+              Button b = assister.ks.getButton();
               boolean ir = b == null;
               boolean softKey = !ir && remote.isSoftButton( b );
               boolean hardKey = !ir && !softKey;

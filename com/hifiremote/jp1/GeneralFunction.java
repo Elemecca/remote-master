@@ -669,6 +669,11 @@ public class GeneralFunction
       label.showAssigned( db );
       label.updateToolTipText();
     }
+    Function f = null;
+    if ( this instanceof LearnedSignal && ( f = db.getUpgrade().getAssignments().getAssignment( b ) ) != null )
+    {
+      f.removeReference( db, b );
+    }
   }
   
 
@@ -680,8 +685,12 @@ public class GeneralFunction
       label.showAssigned( db );
       label.updateToolTipText();
     }
+    Function f = null;
+    if ( this instanceof LearnedSignal && ( f = db.getUpgrade().getAssignments().getAssignment( b ) ) != null )
+    {
+      f.addReference( db, b );
+    }
   }
-  
 
   public void removeReferences()
   {
