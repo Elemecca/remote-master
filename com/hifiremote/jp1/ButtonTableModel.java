@@ -2,8 +2,6 @@ package com.hifiremote.jp1;
 
 import javax.swing.table.AbstractTableModel;
 
-import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class ButtonTableModel.
@@ -113,11 +111,7 @@ public class ButtonTableModel
       }
       if ( remote.usesEZRC() && deviceUpgrade.getRemoteConfig() != null )
       {
-        count ++;   // Adds device column
-        if ( remote.isSSD() )
-        {
-          count ++;   // Adds alias column
-        }
+        count += 2;   // Adds device and alias columns
       }
     }
     return count;

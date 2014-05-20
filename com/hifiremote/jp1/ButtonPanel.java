@@ -610,6 +610,23 @@ public class ButtonPanel extends KMPanel implements ActionListener
     }
     deleteAction.setEnabled( enableDelete );
   }
+  
+  private void finishEditing()
+  {
+    int editRow = table.getEditingRow();
+    if ( editRow != -1 )
+    {
+      TableCellEditor editor = table.getCellEditor( editRow, table.getEditingColumn() );
+      if ( !editor.stopCellEditing() )
+        editor.cancelCellEditing();
+    }
+  }
+  
+  @Override
+  public void commit()
+  {
+    finishEditing();
+  }
 
   /*
    * (non-Javadoc)

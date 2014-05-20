@@ -2725,6 +2725,7 @@ public class RemoteConfiguration
             fn.setSerial( serial );
             upgrade.getFunctionMap().put( fn.getSerial(), fn );
             fn.removeReference( db, b );
+            int x = 0;
           }
         }
       }
@@ -2733,15 +2734,25 @@ public class RemoteConfiguration
     {
       DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
       Button btn = remote.getButton( ls.getKeyCode() );
-      if ( db != null && db.getUpgrade() != null && btn != null )
+      DeviceUpgrade du = null;
+      if ( db != null && ( du = db.getUpgrade() ) != null && btn != null )
       {
-        db.getUpgrade().getLearnedMap().put( ( int )ls.getKeyCode(), ls );
+        du.getLearnedMap().put( ( int )ls.getKeyCode(), ls );
         ls.addReference( db, btn );
-      }
-      Function fn = db.getUpgrade().getAssignments().getAssignment( btn );
-      if ( fn != null )
-      {
-        fn.removeReference( db, btn );
+
+        Function fn = du.getAssignments().getAssignment( btn );
+        if ( fn != null )
+        {
+          if ( fn.getData() == null || fn.getData().length() == 0 )
+          {
+            du.getAssignments().assign( btn, null );
+            du.getFunctions().remove( fn );
+          }
+          else
+          {
+            fn.removeReference( db, btn );
+          }
+        }
       }
     }
     for ( Macro macro : getAllMacros( true ) )
@@ -3573,10 +3584,12 @@ public class RemoteConfiguration
       ++i;
     }
 
-    // Process button-dependent upgrades in reverse order as they are stored from top downwards
+    // Process button-dependent upgrades in reverse order as they are stored from top downwards,
+    // except for remotes with segments
     for ( int j = devDependent.size() - 1; j >= 0; j-- )
     {
-      String text = devDependent.get( j ).getDescription();
+      int k = hasSegments() ? devDependent.size() - j - 1 : j;
+      String text = devDependent.get( k ).getDescription();
       if ( text != null && !text.trim().isEmpty() )
       {
         out.printf( "$%4X=%s\n", i, exportNotes( text ) );
@@ -4334,6 +4347,7 @@ public class RemoteConfiguration
         }
         else if ( name.equals( "sysicons.pkg" ) )
         {
+          remote.getUsageRange().setFreeStart( pos );
           file = ssdFiles.get( name );
           hex = file != null ? file.hex : null;
         }
@@ -6296,7 +6310,9 @@ public class RemoteConfiguration
             }
             for ( Button b : du.getHardButtons() )
             {
-              map.put( b, du.getGeneralFunction( b.getKeyCode() ).getName() );
+              int keyCode = b.getKeyCode();
+              GeneralFunction gf = du.getFunction( keyCode ) != null ? du.getFunction( keyCode ) : du.getGeneralFunction( keyCode );
+              map.put( b, gf.getName() );
             }
             Hex hex = createNameHex( map );
             hex.set( ( short )db.getButtonIndex(), 0 );

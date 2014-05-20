@@ -4473,7 +4473,11 @@ public class DeviceUpgrade extends Highlight
         if ( f2 != null )
         {
           assignments.assign( b, f2 );
-          f2.addReference( buttonRestriction, b );
+          f2.removeReference( buttonRestriction, b );
+          for ( User u : f1.getUsers() )
+          {
+            f2.addReference( u.db, u.button );
+          }
         }
       }
     }

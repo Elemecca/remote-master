@@ -213,6 +213,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         }
         else if ( panel instanceof DeviceUpgradePanel && upgrade.getSetupCode() >= 0 )
         {
+          editorPanel.commit();
           DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;
 //          RemoteConfiguration remoteConfig = dup.getRemoteConfig();
 
