@@ -56,15 +56,6 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       if ( remote.usesEZRC() )
       {
         setData( remoteConfig.getDeviceButtonList() );
-//        List< DeviceButton > list = new ArrayList< DeviceButton >();
-//        for ( DeviceButton db : remote.getDeviceButtons() )
-//        {
-//          if ( db.getSegment() != null && db.getDeviceSlot( db.getSegment().getHex().getData() ) != 0xFFFF )
-//          {
-//            list.add( db );
-//          }
-//        }
-//        setData( list );
       }
       else
       {

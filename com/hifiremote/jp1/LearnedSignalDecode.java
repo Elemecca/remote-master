@@ -1,5 +1,10 @@
 package com.hifiremote.jp1;
 
+import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
 import com.hifiremote.decodeir.DecodeIRCaller;
 
 // TODO: Auto-generated Javadoc
@@ -43,6 +48,75 @@ public class LearnedSignalDecode
     miscMessage = decode.miscMessage;
     errorMessage = decode.errorMessage;
     ignore = decode.ignore;
+  }
+  
+  /**
+   * Returns the hex value for this learned signal in the specified protocol,
+   * preserving the OBC of the signal.
+   */
+  public Hex getProtocolHex( Protocol protocol, List< String > error )
+  {
+    Value[] values = new Value[ protocol.cmdParms.length ];
+    for ( int i = 0; i < values.length; i++ )
+    {
+      values[ i ] = new Value( null, protocol.cmdParms[ i ].getDefaultValue() );
+    }
+
+    Hex pHex = new Hex( protocol.getDefaultCmd().length() );
+    CmdParameter[] parms = protocol.cmdParms;
+    for ( int i = 0; i < parms.length; i++ )
+    {
+      if ( parms[ i ].getName().toUpperCase().startsWith( "OBC" ) )
+      {
+        values[ i ] = new Value( obc );
+        break;
+      }
+    }
+
+    try
+    {
+      for ( int i = 0; i < protocol.cmdTranslators.length; i++ )
+      {
+        protocol.cmdTranslators[ i ].in( values, pHex, protocol.devParms, -1 );
+      }
+    }
+    catch ( IllegalArgumentException ex )
+    {
+      pHex = null;
+      error.add( "" );
+      error.add( ex.getMessage() );
+    }
+    return pHex;
+  }
+  
+  public Hex getSignalHex()
+  {
+    if ( hex == null )
+    {
+      return null;
+    }
+    Hex sHex = new Hex( hex.length );
+    for ( int i = 0; i < hex.length; i++ )
+    {
+      sHex.set( ( short )hex[ i ], i );
+    }
+    return sHex;
+  }
+  
+  public static boolean displayErrors( String protocolName, List< List< String > > failedToConvert )
+  {
+    String message = "<html>The following learned signals could not be converted for use with the " + protocolName
+        + " protocol.<p>If you need help figuring out what to do about this, please post<br>"
+        + "a question in the JP1 Forums at http://www.hifi-remote.com/forums</html>";
+
+    JPanel panel = Protocol.getErrorPanel( message, failedToConvert );
+    String[] buttonText =
+      {
+        "Continue conversion", "Abort conversion"
+      };
+    int rc = JOptionPane.showOptionDialog( null, panel, "Protocol Conversion Error", JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE, null, buttonText, buttonText[ 0 ] );
+    return rc == JOptionPane.YES_OPTION;
   }
 
   /** The protocol name. */

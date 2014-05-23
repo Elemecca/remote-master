@@ -1599,45 +1599,7 @@ public class Protocol
           + " protocol.<p>If you need help figuring out what to do about this, please post<br>"
           + "a question in the JP1 Forums at http://www.hifi-remote.com/forums</html>";
 
-      JPanel panel = new JPanel( new BorderLayout() );
-
-      JLabel text = new JLabel( message );
-      text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
-      panel.add( text, BorderLayout.NORTH );
-
-      java.util.List< String > titles = new ArrayList< String >();
-      titles.add( "Function" );
-      titles.add( "Reason" );
-      String[][] failedToConvertArray = new String[ failedToConvert.size() ][];
-      int i = 0;
-      for ( java.util.List< String > l : failedToConvert )
-      {
-        failedToConvertArray[ i++ ] = l.toArray( new String[ 2 ] );
-      }
-      JTableX table = new JTableX( failedToConvertArray, titles.toArray() );
-      Dimension d = table.getPreferredScrollableViewportSize();
-      int showRows = Math.min( 14, failedToConvert.size() );
-      // d.height = ( table.getRowHeight() + table.getIntercellSpacing().height ) * showRows;
-      d.height = table.getRowHeight() * showRows;
-      int nameWidth = 0;
-      int warningWidth = 0;
-      TableColumnModel cm = table.getColumnModel();
-      JTableHeader th = table.getTableHeader();
-      DefaultTableCellRenderer cr = ( DefaultTableCellRenderer )th.getDefaultRenderer();
-      for ( int j = 0; j < failedToConvertArray.length; ++j )
-      {
-        String[] vals = failedToConvertArray[ j ];
-        cr.setText( vals[ 0 ] );
-        nameWidth = Math.max( nameWidth, cr.getPreferredSize().width );
-        cr.setText( vals[ 1 ] );
-        warningWidth = Math.max( warningWidth, cr.getPreferredSize().width );
-      }
-      cm.getColumn( 0 ).setPreferredWidth( nameWidth );
-      cm.getColumn( 1 ).setPreferredWidth( warningWidth );
-      d.width = nameWidth + table.getIntercellSpacing().width + warningWidth + 10;
-      table.setPreferredScrollableViewportSize( d );
-      panel.add( new JScrollPane( table ), BorderLayout.CENTER );
-
+      JPanel panel = Protocol.getErrorPanel( message, failedToConvert );
       String[] buttonText =
       {
           "Use " + newProtocol + " anyway", "Revert to " + this
@@ -1656,6 +1618,49 @@ public class Protocol
       f.setHex( convertedHex[ index++ ] );
     }
     return true;
+  }
+  
+  public static JPanel getErrorPanel( String message, List< List< String > > failedToConvert )
+  {
+    JPanel panel = new JPanel( new BorderLayout() );
+
+    JLabel text = new JLabel( message );
+    text.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+    panel.add( text, BorderLayout.NORTH );
+
+    java.util.List< String > titles = new ArrayList< String >();
+    titles.add( "Function" );
+    titles.add( "Reason" );
+    String[][] failedToConvertArray = new String[ failedToConvert.size() ][];
+    int i = 0;
+    for ( java.util.List< String > l : failedToConvert )
+    {
+      failedToConvertArray[ i++ ] = l.toArray( new String[ 2 ] );
+    }
+    JTableX table = new JTableX( failedToConvertArray, titles.toArray() );
+    Dimension d = table.getPreferredScrollableViewportSize();
+    int showRows = Math.min( 14, failedToConvert.size() );
+    // d.height = ( table.getRowHeight() + table.getIntercellSpacing().height ) * showRows;
+    d.height = table.getRowHeight() * showRows;
+    int nameWidth = 0;
+    int warningWidth = 0;
+    TableColumnModel cm = table.getColumnModel();
+    JTableHeader th = table.getTableHeader();
+    DefaultTableCellRenderer cr = ( DefaultTableCellRenderer )th.getDefaultRenderer();
+    for ( int j = 0; j < failedToConvertArray.length; ++j )
+    {
+      String[] vals = failedToConvertArray[ j ];
+      cr.setText( vals[ 0 ] );
+      nameWidth = Math.max( nameWidth, cr.getPreferredSize().width );
+      cr.setText( vals[ 1 ] );
+      warningWidth = Math.max( warningWidth, cr.getPreferredSize().width );
+    }
+    cm.getColumn( 0 ).setPreferredWidth( nameWidth );
+    cm.getColumn( 1 ).setPreferredWidth( warningWidth );
+    d.width = nameWidth + table.getIntercellSpacing().width + warningWidth + 10;
+    table.setPreferredScrollableViewportSize( d );
+    panel.add( new JScrollPane( table ), BorderLayout.CENTER );
+    return panel;
   }
 
   /**

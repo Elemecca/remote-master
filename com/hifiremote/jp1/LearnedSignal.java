@@ -190,6 +190,12 @@ public class LearnedSignal extends Highlight
     }
   }
   
+  public String getSignalName( Remote remote )
+  {
+    String sName = name == null || name.isEmpty() ? notes : name;
+    return sName == null || sName.isEmpty() ? remote.getButton( keyCode ).getName() : sName;
+  }
+  
   /** The 7-byte header of an XSight Touch learned signal,
    * not yet understood.
    */

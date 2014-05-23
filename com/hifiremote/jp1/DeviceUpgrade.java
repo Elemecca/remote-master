@@ -37,6 +37,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 
 import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
@@ -191,17 +194,25 @@ public class DeviceUpgrade extends Highlight
    * @param base
    *          the base
    */
-  public DeviceUpgrade( LearnedSignal[] signals, RemoteConfiguration remoteConfig )
+  public DeviceUpgrade( LearnedSignal[] signals, RemoteConfiguration remoteConfig, Protocol protocol, boolean convert )
   {
+    Remote remote = remoteConfig.getRemote();
     LearnedSignalDecode d = signals[0].getDecodes().get(0);
-    String protocolName = d.protocolName;
-    if ( protocolName.startsWith( "48-NEC" ) )
-      protocolName = protocolName.substring( 3 );
     int device = d.device;
     int subDevice = d.subDevice;
 
     description = "Learned Signal Upgrade";
-    notes =  "Device Upgrade automatically created by RemoteMaster from " + signals.length + " Learned Signals all with protocol " + protocolName + ", device " + device + ", subdevice " + subDevice + ".";
+    notes =  "Device Upgrade automatically created by RemoteMaster from " + signals.length + " Learned Signals all with protocol " + d.protocolName;
+    if ( device >= 0 )
+    {
+      notes += ", device " + device;
+    }
+    if ( subDevice >= 0 )
+    {
+      notes += ", subdevice " + subDevice;
+    }
+    notes += ".";
+    this.protocol = protocol;
     setupCode = 2000;
     List<DeviceUpgrade> upgrades = remoteConfig.getDeviceUpgrades();
     boolean setupCodeNotAvail = true;
@@ -220,12 +231,18 @@ public class DeviceUpgrade extends Highlight
     }
     devTypeAliasName = "Cable";
 
-    protocol = ProtocolManager.getProtocolManager().findByName( protocolName ).get( 0 );
-    this.remote = remoteConfig.getRemote();
-    this.remoteConfig = remoteConfig;
+    if ( remote.usesEZRC() && macroMap == null )
+    {
+      macroMap = new LinkedHashMap< Integer, Macro >();
+      learnedMap = new LinkedHashMap< Integer, LearnedSignal >();
+      functionMap = new LinkedHashMap< Integer, Function >();
+      selectorMap = new LinkedHashMap< Integer, GeneralFunction >();
+    }
 
     sizeCmdBytes = protocol.getDefaultCmd().length();
     sizeDevBytes = protocol.getFixedDataLength();
+    
+    setRemoteConfig( remoteConfig );
 
     // copy the device parameter values
     DeviceParameter[] protocolDevParms = protocol.getDeviceParameters();
@@ -245,25 +262,44 @@ public class DeviceUpgrade extends Highlight
           parmValues[i] = new Value( protocolDevParms[i].getValueOrDefault() );
       }
     }
-
+    
     // Copy the functions and their assignments
+    List< List< String >> failedToConvert = new ArrayList< List< String > >();
     for ( LearnedSignal s : signals )
     {
       d = s.getDecodes().get( 0 );
-      String name = s.getNotes();
       Button b = remote.getButton( s.getKeyCode() );
-      if ( name == null || name.isEmpty() )
-        name = b.getName();
-
-      short[] hex = new short[d.hex.length];
-      for ( int i=0; i < d.hex.length; i++ )
-        hex[i] = (short)d.hex[i];
-
-      Function f = new Function( name, new Hex( hex ), s.getNotes() );
-
-      functions.add( f );
-
-      assignments.assign( b, f );
+      String name = s.getSignalName( remote );
+      List< String > error = new ArrayList< String >( 2 );
+      Hex hex = convert ? d.getProtocolHex( protocol, error ) : d.getSignalHex();
+      if ( hex != null )
+      {
+        Function f = new Function( name, new Hex( hex ), s.getNotes() );
+        f.setUpgrade( this );
+        if ( remote.isSSD() )
+        {
+          f.icon = new RMIcon( 9 );
+        }
+        if ( remote.usesEZRC() )
+        {
+          f.setGid( Function.defaultGID );
+        }         
+        functions.add( f );
+        assignments.assign( b, f );
+      }
+      else
+      {
+        error.set( 0, name );
+        failedToConvert.add( error );
+      }
+    }
+      
+    if ( !failedToConvert.isEmpty() )
+    {
+      if ( !LearnedSignalDecode.displayErrors( protocol.getName(), failedToConvert ) )
+      {
+        this.protocol = null;
+      }
     }
   }
   

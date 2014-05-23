@@ -34,6 +34,10 @@ public class LearnedSignalTimingAnalysis
 
   private String[] makeDurationStringList( int[][] durations )
   {
+    if ( durations == null || durations.length == 0 )
+    {
+      return new String[ 0 ];
+    }
     int r = 0;
     String[] results = new String[durations.length];
     for ( int[] d: durations )
