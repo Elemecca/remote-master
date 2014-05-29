@@ -4009,10 +4009,10 @@ public class DeviceUpgrade extends Highlight
       setRemote( remote );
     }
     this.remoteConfig = remoteConfig;
-    if ( remote != null && remote.isSSD() )
+    if ( remote != null && remote.usesEZRC() )//remote.isSSD() )
     {
       List< Button > selectors = null;
-      if ( remote.getButtonGroups() != null && ( selectors = remote.getButtonGroups().get( "Selector" ) ) != null )
+      if ( remote.getButtonGroups() != null && ( selectors = remote.getButtonGroups().get( "LCD" ) ) != null )
       {
         for ( Button b : selectors )
         {

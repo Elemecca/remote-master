@@ -39,12 +39,18 @@ public class DeviceLabels extends RDFParameter
         defaultsAddr = RDFReader.parseNumber( token );
       }
     }
-    for ( int i = 4; i < Math.min( settings.size(), 7 ); i++ )
+    if ( settings.size() > 4 )
     {
-      String token = settings.get( i );
-      if ( token != null )
+      // If any column names are given then the default no longer applies.
+      int j = 0;
+      columnNames[ 0 ] = null;
+      for ( int i = 4; i < Math.min( settings.size(), 7 ); i++ )
       {
-        columnNames[ i - 4 ] = token;
+        String token = settings.get( i );
+        if ( token != null )
+        {
+          columnNames[ j++ ] = token;
+        }
       }
     }
   }

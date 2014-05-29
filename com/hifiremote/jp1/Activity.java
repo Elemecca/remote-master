@@ -434,7 +434,7 @@ public class Activity extends Highlight
     super.store( pw );
     pw.print( "HelpSegmentFlags", helpSegmentFlags );
     
-    if ( helpSegment != null && assists.isEmpty() )
+    if ( helpSegment != null && ( assists == null || assists.isEmpty() ) )
     {
       Hex hex = new Hex( 2 );
       hex.set( ( short )audioHelp, 0 );

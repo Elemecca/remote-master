@@ -352,13 +352,13 @@ public class ButtonMap
       // Sort groupHold buttons before others by giving them a sort value of -1, and
       // buttons not in keyCodeSingleList after others by giving them a sort value of 0x100
 //      List< Button > holdList = null;
-      LinkedHashMap< String, List< Button >> groups = remote.getButtonGroups();
-      List< Button > holdList = groups != null ? groups.get( "Hold" ) : null;
+//      LinkedHashMap< String, List< Button >> groups = remote.getButtonGroups();
+//      List< Button > holdList = groups != null ? groups.get( "Hold" ) : null;
       int index = 0;
-      Integer i1 = holdList != null && holdList.contains( b1 ) ?
-          -1 : ( index = keyCodeSingleList.indexOf( b1.getKeyCode() ) ) == -1 ? 0x100 : index;
-      Integer i2 = holdList != null && holdList.contains( b2 ) ?
-          -1 : ( index = keyCodeSingleList.indexOf( b2.getKeyCode() ) ) == -1 ? 0x100 : index;
+      Integer i1 = /*holdList != null && holdList.contains( b1 ) ?
+          -1 :*/ ( index = keyCodeSingleList.indexOf( b1.getKeyCode() ) ) == -1 ? 0x100 : index;
+      Integer i2 = /*holdList != null && holdList.contains( b2 ) ?
+          -1 : */( index = keyCodeSingleList.indexOf( b2.getKeyCode() ) ) == -1 ? 0x100 : index;
       return i1.compareTo( i2 );
     }    
   };

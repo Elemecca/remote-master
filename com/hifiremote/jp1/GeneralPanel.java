@@ -201,20 +201,21 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     {
       rows = Math.min( 8, remoteConfig.getRemote().getDeviceButtons().length );
     }
-    Dimension d = deviceButtonTable.getPreferredSize();
-    d.height = deviceButtonTable.getRowHeight() * rows;
-    deviceButtonTable.setPreferredScrollableViewportSize( d );
+    Dimension dd = deviceButtonTable.getPreferredSize();
+    dd.height = deviceButtonTable.getRowHeight() * rows;
+    deviceButtonTable.setPreferredScrollableViewportSize( dd );
 
     rows = 10;
     if ( remoteConfig != null )
     {
       rows = Math.min( 12, remoteConfig.getRemote().getSettings().length );
     }
-    d = settingTable.getPreferredSize();
-    d.height = rows * settingTable.getRowHeight();
-    settingTable.setPreferredScrollableViewportSize( d );
+    Dimension ds = settingTable.getPreferredSize();
+    ds.height = rows * settingTable.getRowHeight();
+    settingTable.setPreferredScrollableViewportSize( ds );
 
     upperPane.resetToPreferredSizes();
+    upperPane.setDividerLocation( ( (double)dd.width )/(dd.width + ds.width) );
     mainPane.resetToPreferredSizes();
   }
 
@@ -278,8 +279,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     notes.setCaretPosition( 0 );
 
     setWarning();
-    adjustPreferredViewportSizes();
     validate();
+    adjustPreferredViewportSizes();
     setInProgress = false;
   }
 

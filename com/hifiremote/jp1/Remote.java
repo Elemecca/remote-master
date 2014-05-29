@@ -1085,7 +1085,7 @@ public class Remote implements Comparable< Remote >
    */
   private String parseGeneralSection( RDFReader rdr ) throws Exception
   {
-    String processorName = null;
+    String processorName = "S3C80";
     String processorVersion = null;
     String line = null;
     String parm = null;
@@ -1482,6 +1482,10 @@ public class Remote implements Comparable< Remote >
     }
     
     processor = ProcessorManager.getProcessor( processorName, processorVersion );
+    if ( processor == null )
+    {
+      processor = ProcessorManager.getProcessor( "S3C80" );
+    }
     
     if ( segmentTypes != null )
     {
@@ -2317,12 +2321,12 @@ public class Remote implements Comparable< Remote >
         activityButtonGroups[ i ] = groupList.get( i );
       }
     }
-    
-    Button favBtn = getButtonByStandardName( "Favorites" );
-    if ( favKey == null && favBtn != null )
-    {
-      favKey = new FavKey( favBtn.getKeyCode() );
-    }
+//    
+//    Button favBtn = getButtonByStandardName( "fav/scan" );
+//    if ( usesEZRC() && favKey == null && favBtn != null )
+//    {
+//      favKey = new FavKey( favBtn.getKeyCode() );
+//    }
 
     if ( isSSD() && favKey != null )
     {
@@ -3310,7 +3314,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean hasFavorites()
   {
-    return segmentTypes != null && segmentTypes.contains( 0x1D ) || isSSD();
+    return favKey != null && ( segmentTypes != null && segmentTypes.contains( 0x1D ) || isSSD() );
   }
 
   /**

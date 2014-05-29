@@ -52,6 +52,7 @@ public abstract class JP1TableModel< E > extends AbstractTableModel
   public void setData( List< E > data )
   {
     this.data = data;
+    this.array = null;
     fireTableStructureChanged();
   }
 
@@ -64,6 +65,7 @@ public abstract class JP1TableModel< E > extends AbstractTableModel
   public void setData( E[] array )
   {
     this.array = array;
+    this.data = null;
     fireTableStructureChanged();
   }
 

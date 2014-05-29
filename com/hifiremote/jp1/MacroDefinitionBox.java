@@ -140,9 +140,9 @@ PropertyChangeListener, RMSetter< Object >
     duration = new XFormattedTextField( formatter );
     duration.setColumns( 4 );
     duration.addActionListener( this );
-    duration.setToolTipText( "<HTML>To edit the pause after any key, select it, enter the duration (minimum 0.1 sec) and press Return.<br>"
-        + "To emulate holding a key, precede it with the special Hold key and add the<br>hold duration to it in the same way.</HTML>" );
-    buttonPanel.add( durationPanel, BorderLayout.CENTER );
+//    duration.setToolTipText( "<HTML>To edit the pause after any key, select it, enter the duration (minimum 0.1 sec) and press Return.<br>"
+//        + "To emulate holding a key, precede it with the special Hold key and add the<br>hold duration to it in the same way.</HTML>" );
+//    buttonPanel.add( durationPanel, BorderLayout.CENTER );
   }
 
   private class XFormattedTextField extends JFormattedTextField
@@ -175,7 +175,7 @@ PropertyChangeListener, RMSetter< Object >
     this.config = config;
     Remote remote = config.getRemote();
     macroButtonRenderer.setRemote( remote );
-    durationPanel.setVisible( false );
+//    durationPanel.setVisible( false );
     
     java.util.List< Button > buttons = remote.getButtons();
     for ( Button b : buttons )
@@ -260,21 +260,21 @@ PropertyChangeListener, RMSetter< Object >
     {
       macroButtonModel.clear();
     }
-    else if ( source == duration )
-    {
-      // minimum duration is 0 for hold buttons but 0.1 for others
-      float f = ( Float )duration.getValue();
-      if ( !remote.usesEZRC() )
-      {
-        int selected = macroButtons.getSelectedIndex();
-        int val = ( ( Number )macroButtonModel.elementAt( selected ) ).intValue();
-        val &= 0xFF;
-        Button btn = remote.getButton( val );
-        int pdVal = Math.max( ( int )( 10.0 * f + 0.5 ), isHold( btn ) ? 0 : 1 );
-        val |= pdVal << 8;
-        macroButtonModel.set( selected, val ); 
-      }
-    }
+//    else if ( source == duration )
+//    {
+//      // minimum duration is 0 for hold buttons but 0.1 for others
+//      float f = ( Float )duration.getValue();
+//      if ( !remote.usesEZRC() )
+//      {
+//        int selected = macroButtons.getSelectedIndex();
+//        int val = ( ( Number )macroButtonModel.elementAt( selected ) ).intValue();
+//        val &= 0xFF;
+//        Button btn = remote.getButton( val );
+//        int pdVal = Math.max( ( int )( 10.0 * f + 0.5 ), isHold( btn ) ? 0 : 1 );
+//        val |= pdVal << 8;
+//        macroButtonModel.set( selected, val ); 
+//      }
+//    }
     else if ( source == deviceBox )
     {
       DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
@@ -400,17 +400,17 @@ PropertyChangeListener, RMSetter< Object >
     return macroButtonModel.getSize() == 0;
   }
   
-  private boolean isHold( Button btn )
-  {
-    Remote remote = config.getRemote();
-    if ( remote.usesEZRC() )
-    {
-      LinkedHashMap< String, List< Button >> groups = remote.getButtonGroups();
-      List< Button > holdList = groups != null ? groups.get( "Hold" ) : null;
-      return holdList != null && holdList.contains( btn );
-    }
-    return false;
-  }
+//  private boolean isHold( Button btn )
+//  {
+//    Remote remote = config.getRemote();
+//    if ( remote.usesEZRC() )
+//    {
+//      LinkedHashMap< String, List< Button >> groups = remote.getButtonGroups();
+//      List< Button > holdList = groups != null ? groups.get( "Hold" ) : null;
+//      return holdList != null && holdList.contains( btn );
+//    }
+//    return false;
+//  }
   
   @Override
   public Object getValue()
@@ -500,34 +500,34 @@ PropertyChangeListener, RMSetter< Object >
    */
   public void enableButtons()
   {
-    Remote remote = config.getRemote();
+//    Remote remote = config.getRemote();
     int selected = macroButtons.getSelectedIndex();
     moveUp.setEnabled( selected > 0 );
     moveDown.setEnabled( ( selected != -1 ) && ( selected < ( macroButtonModel.getSize() - 1 ) ) );
     remove.setEnabled( selected != -1 );
     clear.setEnabled( macroButtonModel.getSize() > 0 );
-    if ( durationPanel.isVisible() )
-    {
-      List< Button > holdButtons = remote.getButtonGroups() != null ? 
-          remote.getButtonGroups().get( "Hold" ) : null;
-      duration.setEnabled( selected != -1 );
-      durationLabel.setEnabled( selected != -1 );
-      durationSuffix.setEnabled( selected != -1 );
-
-      if ( selected >= 0 )
-      {
-        int val = ( ( Hex )getValue() ).getData()[ selected ];
-        Button btn = remote.getButton( val & 0xFF );
-        duration.setValue( new Float( ( ( val >> 8 ) & 0xFF ) / 10.0 ) );
-        durationLabel.setText( holdButtons != null && holdButtons.contains( btn ) ? 
-            "Hold next for:  " : "Pause after for:  " );
-      }
-      else
-      {
-        durationLabel.setText( "Duration:  " );
-        duration.setText( null );
-      }
-    }
+//    if ( durationPanel.isVisible() )
+//    {
+//      List< Button > holdButtons = remote.getButtonGroups() != null ? 
+//          remote.getButtonGroups().get( "Hold" ) : null;
+//      duration.setEnabled( selected != -1 );
+//      durationLabel.setEnabled( selected != -1 );
+//      durationSuffix.setEnabled( selected != -1 );
+//
+//      if ( selected >= 0 )
+//      {
+//        int val = ( ( Hex )getValue() ).getData()[ selected ];
+//        Button btn = remote.getButton( val & 0xFF );
+//        duration.setValue( new Float( ( ( val >> 8 ) & 0xFF ) / 10.0 ) );
+//        durationLabel.setText( holdButtons != null && holdButtons.contains( btn ) ? 
+//            "Hold next for:  " : "Pause after for:  " );
+//      }
+//      else
+//      {
+//        durationLabel.setText( "Duration:  " );
+//        duration.setText( null );
+//      }
+//    }
 
     Button baseButton = ( Button )availableButtons.getSelectedValue();
     buttonEnabler.enableButtons( baseButton, this );
@@ -565,7 +565,7 @@ PropertyChangeListener, RMSetter< Object >
   private JComboBox deviceBox = null;
   private JComboBox functionBox = null;
   
-  private JPanel durationPanel = new JPanel( new BorderLayout() );
+//  private JPanel durationPanel = new JPanel( new BorderLayout() );
   
   private JPanel creationPanel = null;
   private JPanel itemPanel = null;

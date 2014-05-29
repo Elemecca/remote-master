@@ -207,9 +207,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       iconLabel.setIcon( null );
       String startMessage = "Note:  When the activity has been set with the remote, \"Key\" is "
         + "the number key pressed to select the desired combination for the activity.  If "
-        + "\"Key\" is blank, the activity has not been set.  The \"Key\" value has no "
-        + "significance when the activity is set with RMIR, but some value has to be set "
-        + "for it before ";
+        + "\"Key\" is blank, the activity has not been set.  ";
       if ( remote.usesEZRC() )
       {
         messageArea.setText( "Note:  Size and highlight color for the Activity Functions includes "
@@ -217,11 +215,14 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       }
       else if ( remote.hasMasterPowerSupport() )
       {
-        messageArea.setText( startMessage + "a Power Macro can be entered." );
+        messageArea.setText( startMessage + "The \"Key\" value has no "
+        + "significance when the activity is set with RMIR, but some value has to be set "
+        + "for it before a Power Macro can be entered." );
       }
       else if ( remote.hasActivityControl() )
       {
-        messageArea.setText( startMessage + "Activity Group Assignments can be edited." );
+        messageArea.setText( startMessage+ "For this remote the activity group settings are read-only." );
+//        messageArea.setText( startMessage + "Activity Group Assignments can be edited." );
       }
       messageArea.setVisible( remote.hasMasterPowerSupport() || remote.hasActivityControl() );
       tabbedPane.removeAll();
@@ -409,7 +410,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     {
       Activity activity = null;
       List< Button > freeBtns = new ArrayList< Button >( remote.getButtonGroups().get( "Activity" ) );
-      Button favBtn = remote.getButtonByStandardName( "Favorites" );
+      Button favBtn = remote.getFavKey() != null ? remote.getButton( remote.getFavKey().getKeyCode() ) : null;
       for ( Activity a : remoteConfig.getActivities().values() )
       {
         if ( a.isActive() || a.getButton() == favBtn )

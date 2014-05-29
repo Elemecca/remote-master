@@ -372,7 +372,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     iconLabel.setVisible( remote.isSSD() );
     iconLabel.setIcon( null );
     profileIconLabel.setIcon( null );
-    favBtn = remote.getButtonByStandardName( "Favorites" );
+    favBtn = remote.getButton( remote.getFavKey().getKeyCode() );
     newButton.setEnabled( favBtn != null );
     duration.setValue( new Float( remoteConfig.getFavPause() / 10.0 ) );
     if ( favBtn != null )
@@ -524,7 +524,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     }
     else if ( source == newButton )
     {
-      FavScan favScan = new FavScan( remote.getFavKey().getKeyCode(), null, null );
+      FavScan favScan = new FavScan( favBtn.getKeyCode(), null, null );
       favScan.setName( "New favorite" );
       if ( remoteConfig.getFavKeyDevButton() == null )
       {
@@ -750,8 +750,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     }
     else
     {
-      Remote remote = remoteConfig.getRemote();
-      return remoteConfig.getActivities().get( remote.getButtonByStandardName( "Favorites"  ) );
+//      Remote remote = remoteConfig.getRemote();
+      return remoteConfig.getActivities().get( favBtn );
     }
   }
   

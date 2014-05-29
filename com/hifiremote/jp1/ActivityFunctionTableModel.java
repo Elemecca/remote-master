@@ -1,12 +1,14 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -210,6 +212,13 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public boolean isCellEditable( int row, int col )
   {
+    Remote remote = remoteConfig.getRemote();
+    if ( remote.hasActivityControl() && getEffectiveColumn( col ) == 2 )
+    {
+      // The only remote with activity control is the URC-7962 in which the activity setup
+      // data in the OxDB segment is ignored by the remote, so make activities non-editable
+      return false;
+    }
     return col > 0;
   }
   
@@ -469,6 +478,18 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   }
   
   private int lastCell = 0;
+  
+  private KeyCodeRenderer keyRenderer = new KeyCodeRenderer(){
+    @Override
+    public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
+        int row, int col )
+    {
+      Component c = super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
+      Color bgColor = isCellEditable( row, col ) ? Color.BLACK : Color.GRAY;
+      c.setForeground( bgColor );
+      return c;
+    }
+  };
 
   private RemoteConfiguration remoteConfig = null;
   private KeyEditor keyEditor = new KeyEditor();
@@ -480,7 +501,6 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   private RMSetterEditor< RMIcon, IconPanel > iconEditor = null;
   private IconRenderer iconRenderer = null;
   private RMColorRenderer colorRenderer = new RMColorRenderer();
-  private KeyCodeRenderer keyRenderer = new KeyCodeRenderer();
   private JComboBox audioHelpSettingBox = new JComboBox();
   private JComboBox videoHelpSettingBox = new JComboBox();
   private String[] helpSetting = null;

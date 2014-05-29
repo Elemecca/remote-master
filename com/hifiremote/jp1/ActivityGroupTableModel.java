@@ -85,13 +85,17 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
   public boolean isCellEditable( int row, int col )
   {
     Remote remote = remoteConfig.getRemote();
-    DeviceButton[][][] activityControl = remote.getActivityControl();
-    if ( activityControl != null && activityControl.length > 0 )
+//    DeviceButton[][][] activityControl = remote.getActivityControl();
+//    if ( activityControl != null && activityControl.length > 0 )
+//    {
+//      ActivityGroup group = getRow( row );
+//      return col > 2 || ( col == 2  && group.getDevice() != null 
+//          && group.getDevice() != DeviceButton.noButton 
+//          && activityControl[ tabIndex ][ row ].length > 1 );
+//    }
+    if ( remote.hasActivityControl() && col < 4 )
     {
-      ActivityGroup group = getRow( row );
-      return col > 2 || ( col == 2  && group.getDevice() != null 
-          && group.getDevice() != DeviceButton.noButton 
-          && activityControl[ tabIndex ][ row ].length > 1 );
+      return false;
     }
     else
     {

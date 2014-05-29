@@ -85,7 +85,7 @@ public class RemoteConfiguration
   
   private void createActivities()
   {
-    Button fav = remote.getButtonByStandardName( "Favorites" );
+    Button fav = remote.usesEZRC() && remote.getFavKey() != null ? remote.getButton( remote.getFavKey().getKeyCode() ) : null;
     if ( fav != null )
     {
       activities = new LinkedHashMap< Button, Activity >();
@@ -241,7 +241,7 @@ public class RemoteConfiguration
       }
       else if ( sectionName.equals( "FavData" ) )
       {
-        Button favBtn = remote.getButton( remote.getFavKey().getKeyCode() );
+        Button favBtn = remote.getFavKey() != null ? remote.getButton( remote.getFavKey().getKeyCode() ) : null;
         Activity activity = null;
         if ( favBtn != null && ( activity = activities.get( favBtn )) != null )
         {
@@ -1083,7 +1083,7 @@ public class RemoteConfiguration
       }
       else if ( tag.equals( "favorites" ) )
       {
-        items.activity = activities.get( remote.getButtonByStandardName( "Favorites" ) );
+        items.activity = remote.getFavKey() != null ? activities.get( remote.getButton( remote.getFavKey().getKeyCode() ) ) : null;
       }
       else if ( tag.equals( "activity" ) )
       {
@@ -2009,14 +2009,17 @@ public class RemoteConfiguration
           ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 0, hex.subHex( 2 ), null );
         }
         ls.setSegmentFlags( segment.getFlags() );
-        Button btn = remote.getButton( ls.getKeyCode() );
-        DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
-        String name = db.getSoftButtonNames().get( btn );
-        if ( name == null )
+        if ( remote.usesEZRC() )
         {
-          name = db.getSoftFunctionNames().get(  btn );
+          Button btn = remote.getButton( ls.getKeyCode() );
+          DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
+          String name = db.getSoftButtonNames().get( btn );
+          if ( name == null )
+          {
+            name = db.getSoftFunctionNames().get(  btn );
+          }
+          ls.setName( name );
         }
-        ls.setName( name );
         learned.add( ls );
       }
     } 
@@ -2315,8 +2318,12 @@ public class RemoteConfiguration
         Button btn = remote.getButton( hex.getData()[ 1 ] );
         Activity activity = activities.get( btn );
         activity.setHelpSegmentFlags( segment.getFlags() );
-        activity.setAudioHelp( hex.getData()[ 2 ] & 1 );
-        activity.setVideoHelp( hex.getData()[ 3 ] & 1 );
+        Setting s = remote.getSetting( "AudioHelp" );
+        s.decode( hex.getData(), remote );
+        activity.setAudioHelp( s.getValue() );
+        s = remote.getSetting( "VideoHelp" );
+        s.decode( hex.getData(), remote );
+        activity.setVideoHelp( s.getValue() );
         activity.setHelpSegment( segment );
       }
     }
@@ -2725,7 +2732,6 @@ public class RemoteConfiguration
             fn.setSerial( serial );
             upgrade.getFunctionMap().put( fn.getSerial(), fn );
             fn.removeReference( db, b );
-            int x = 0;
           }
         }
       }
@@ -2806,7 +2812,7 @@ public class RemoteConfiguration
       }
     }
     
-    Button favBtn = remote.getButton( remote.getFavKey().getKeyCode() );
+    Button favBtn = remote.getFavKey() != null ? remote.getButton( remote.getFavKey().getKeyCode() ) : null;
     Activity activity = null;
     if ( favBtn != null && ( activity = activities.get( favBtn )) != null )
     {
@@ -2879,14 +2885,16 @@ public class RemoteConfiguration
   }
   
   /* 
-   * For remotes with segments, adds macro to macros or specialFunctions as appropriate
+   * For remotes with segments, adds macro to macros or specialFunctions as appropriate.
+   * Not used for XSight remotes (which have macros stored in segment type 3).
    */
   private void setMacro( Macro macro )
   {
-    Button btn = remote.getButton( macro.getDeviceButtonIndex() );
-    if ( btn != null && remote.getButtonGroups() != null
-        && remote.getButtonGroups().get( "Device" ) != null      
-        && remote.getButtonGroups().get( "Device" ).contains( btn ) )
+//    Button btn = remote.getButton( macro.getDeviceButtonIndex() );
+//    if ( btn != null && remote.getButtonGroups() != null
+//        && remote.getButtonGroups().get( "Device" ) != null      
+//        && remote.getButtonGroups().get( "Device" ).contains( btn ) )
+    if ( !remote.usesEZRC() && remote.getDeviceButton( macro.getDeviceButtonIndex() ) != null )
     {
       // Device Specific Macro; needs RDF to include DSM=Internal:0
       for ( SpecialProtocol sp : remote.getSpecialProtocols() )
@@ -4938,8 +4946,12 @@ public class RemoteConfiguration
         segData = new Hex( 4 );
         segData.set( ( short )0, 0 );
         segData.set( ( short )activity.getButton().getKeyCode(), 1 );
-        segData.set( ( short )activity.getAudioHelp(), 2 );
-        segData.set( ( short )activity.getVideoHelp(), 3 );
+        Setting s = remote.getSetting( "AudioHelp" );
+        s.setValue( activity.getAudioHelp() );
+        s.store( segData.getData(), remote );
+        s = remote.getSetting( "VideoHelp" );
+        s.setValue( activity.getVideoHelp() );
+        s.store( segData.getData(), remote );
         flags = activity.getHelpSegmentFlags();
         if ( segments.get( 0xDC ) == null )
         {
@@ -8039,6 +8051,10 @@ public class RemoteConfiguration
   
   private SSDFile makeProfilesXCF()
   {
+    if ( !remote.hasFavorites() )
+    {
+      return null;
+    }
     tagList = new ArrayList< String >();
     List< Hex > work = new ArrayList< Hex >();
     LinkedHashMap< Button, KeySpec > map = new LinkedHashMap< Button, KeySpec >();
@@ -8094,12 +8110,12 @@ public class RemoteConfiguration
   
   private SSDFile makeFavoritesXCF()
   {
-    if ( favScans.isEmpty() )
+    if ( favScans.isEmpty() || remote.getFavKey() == null )
     {
       return null;
     }
     tagList = new ArrayList< String >();
-    Activity activity = activities.get( remote.getButtonByStandardName( "Favorites" ) );
+    Activity activity = activities.get( remote.getButton( remote.getFavKey().getKeyCode() ) );
     List< Hex > work = new ArrayList< Hex >();
     LinkedHashMap< Button, KeySpec > map = new LinkedHashMap< Button, KeySpec >();
     work.add( makeItem( "favorites", new Hex( "favorites.xcf", 8 ), false ) );
