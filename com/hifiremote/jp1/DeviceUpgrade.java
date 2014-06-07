@@ -4100,7 +4100,8 @@ public class DeviceUpgrade extends Highlight
     for ( Button b : remote.getButtons() )
     {
       GeneralFunction f = getGeneralFunction( b.getKeyCode() );
-      if ( f == null || f.getName() == null || f.getName().startsWith( "__" ) )
+      if ( f == null || f.getName() == null || f.getName().startsWith( "__" )
+          || selectorMap.get( ( int )b.getKeyCode() ) != null )
       {
         continue;
       }
@@ -4108,7 +4109,7 @@ public class DeviceUpgrade extends Highlight
       {
         softButtons.add( b );
       }
-      else
+      else if ( !( f instanceof LearnedSignal ) )
       {
         hardButtons.add( b );
       }
@@ -4539,7 +4540,7 @@ public class DeviceUpgrade extends Highlight
   }
   
   
-  private int getNewFunctionSerial( Function fn )
+  public int getNewFunctionSerial( Function fn, boolean systemOnly )
   {
     List< Integer > list = new ArrayList< Integer >();
     if ( remote.isSSD() )
@@ -4582,6 +4583,10 @@ public class DeviceUpgrade extends Highlight
           return ( buttonRestriction.getButtonIndex() << 8 ) + b.getKeyCode();
         }
       }
+    }
+    if ( systemOnly )
+    {
+      return -1;
     }
 
     btnList = remote.getButtonGroups().get( "Soft" );
@@ -4782,8 +4787,9 @@ public class DeviceUpgrade extends Highlight
   }
   
   /**
-   * For SSD remotes only, removes from functionMap those irSerial values that are not
-   * used in a macro or in an activity or macro assist
+   * For EZ-RC remotes only, ensures functionMap has irSerial values for precisely
+   * those functions that are used in a macro or in an activity or macro assist and
+   * which are not sent by any keypress.
    */
   public void filterFunctionMap()
   {
@@ -4800,20 +4806,26 @@ public class DeviceUpgrade extends Highlight
       if ( ks.fn != null && ks.fn instanceof Function && ks.getButton() == null 
           && ks.fn.getSerial() < 0 && ks.db.getUpgrade() == this )
       {
-        int serial = getNewFunctionSerial( ( Function )ks.fn );
+        // Assign a serial number to functions that are used but not assigned to buttons.
+        int serial = getNewFunctionSerial( ( Function )ks.fn, false );
         ks.fn.setSerial( serial );
         if ( serial >= 0 )
         {
           functionMap.put( serial, ( Function )ks.fn );
         }
       }
+      // Create list of serial numbers of functions not assigned to buttons.
+      // These must get assigned to system keys
       if ( ks.getButton() == null && ks.fn != null 
           && ( fnky = ks.fn.getSerial() ) >= 0 
           && ks.fn == functionMap.get( fnky ) 
           && !fnkeys.contains( fnky ) )
+      {
         fnkeys.add( fnky );
+      }
     }
     
+    // Cancel serial numbers that are not in the list just created.
     Iterator< Integer > it = functionMap.keySet().iterator();
     while ( it.hasNext() )
     {

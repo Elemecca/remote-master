@@ -20,6 +20,10 @@ Changes for v2.03
 - Fixed issue with editing and cloning macros of non-XSight remotes, caused by the XSight development (Graham)
 - Uploading of system files to XSight Touch now shows the Uploading progress bar, as for other uploads (Graham)
 - Fixed issues arising when importing upgrades for non-XSight remotes into XSight ones (Graham)
+-- Alpha 23
+- Make activity data for JP3 remotes be read-only, as updating the E2 data has no effect (Graham)
+- Show a (very rough) memory usage for XSight Touch on the progress bar, previously left empty for such remotes (Graham)
+- Update digitmaps to 584 (Graham)
 
 Changes for v2.02
 -- Alpha --

@@ -2013,12 +2013,16 @@ public class RemoteConfiguration
         {
           Button btn = remote.getButton( ls.getKeyCode() );
           DeviceButton db = remote.getDeviceButton( ls.getDeviceButtonIndex() );
-          String name = db.getSoftButtonNames().get( btn );
-          if ( name == null )
+          String name = null;
+          if ( db.getSoftButtonNames() != null )
+          {
+            name = db.getSoftButtonNames().get( btn );
+          }
+          if ( name == null && db.getSoftFunctionNames() != null )
           {
             name = db.getSoftFunctionNames().get(  btn );
           }
-          ls.setName( name );
+          ls.setName( name == null ? btn.getName() : name );
         }
         learned.add( ls );
       }
@@ -4392,21 +4396,47 @@ public class RemoteConfiguration
     if ( remote.usesEZRC() )
     {
       List< Button > sysBtns = remote.getButtonGroups().get( "System" );
+      List< Function >sysFns = new ArrayList< Function >();
       for ( DeviceButton db : deviceButtonList )
       {
         DeviceUpgrade du = db.getUpgrade();
+        // Build list of functions currently assigned to system buttons
+        // and then cancel those assignments
         if ( sysBtns != null )
         {
           for ( Button b : sysBtns )
           {
-            du.getAssignments().assign( b, null );
+            Function f = null;
+            if ( ( f = du.getAssignments().getAssignment( b ) ) != null )
+            {
+              if ( !sysFns.contains( f ) )
+              {
+                sysFns.add( f );
+              }
+              du.getAssignments().assign( b, null );
+            }
           }
         }
+        // Reset functionMap to hold serial numbers only for functions that are used
+        // and which are not assigned to non-system buttons
         db.getUpgrade().filterFunctionMap();
+        // If there is space, put back unused functions that were previously assigned
+        // to system buttons, to preserve them within the remote.
+        for ( Function f : sysFns )
+        {
+          int serial = du.getNewFunctionSerial( f, true );
+          if ( serial < 0 )
+          {
+            break;
+          }
+          du.getFunctionMap().put( serial, f );
+          f.setSerial( serial );
+        }
         for ( int serial : du.getFunctionMap().keySet() )
         {
           Button b = remote.getButton( serial & 0xFF );
           Function f = du.getFunctionMap().get( serial );
+          sysFns.remove( f );
           du.getAssignments().assign( b, f );
           f.getUsers().remove( new User( db, b ) );
         }
@@ -5595,7 +5625,10 @@ public class RemoteConfiguration
       }
       if ( remote.getSegmentTypes().contains( 0x11 ) )
       {
-        int size = 4 + 3 * deviceButtonList.size();
+        // It looks as if at one time this segment was believed always to need a final 0xFF, which with
+        // padding would become 0xFFFF.  I don't now think that is necessary, so have removed it by
+        // reducing "size" by one.
+        int size = 3 + 3 * deviceButtonList.size();
         size += ( size & 1 ) == 1 ? 1 : 0;
         Hex hex = new Hex( size );
         hex.put( 0xFFFF, size - 2 );
