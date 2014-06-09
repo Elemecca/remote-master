@@ -386,7 +386,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     {
       useKey.doClick();
     }
-    else if ( upgrade != null )
+    else if ( upgrade != null && upgrade.getFunction( cmd ) != null )
     {
       useFunction.doClick();
     }
@@ -841,6 +841,10 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
             if ( func != null )
             {
               function.setSelectedItem( func );
+            }
+            else
+            {
+              function.setSelectedIndex( -1 );
             }
           }
           function.addActionListener( this );
