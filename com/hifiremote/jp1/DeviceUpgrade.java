@@ -4099,17 +4099,18 @@ public class DeviceUpgrade extends Highlight
     
     for ( Button b : remote.getButtons() )
     {
-      GeneralFunction f = getGeneralFunction( b.getKeyCode() );
+      GeneralFunction f = getGeneralFunction( b.getKeyCode(), true );
       if ( f == null || f.getName() == null || f.getName().startsWith( "__" )
           || selectorMap.get( ( int )b.getKeyCode() ) != null )
       {
         continue;
       }
+      f = getGeneralFunction( b.getKeyCode(), false );
       if ( remote.isSoftButton( b ) )
       {
         softButtons.add( b );
       }
-      else if ( !( f instanceof LearnedSignal ) )
+      else if ( f != null && !( f instanceof LearnedSignal ) )
       {
         hardButtons.add( b );
       }
@@ -4595,7 +4596,7 @@ public class DeviceUpgrade extends Highlight
             + "Function \"" + fn + "\" is so used and is not currently so assigned.\n";
     for ( Button b : btnList )
     {
-      if ( getGeneralFunction( b.getKeyCode() ) == null && macroMap.get( ( int )b.getKeyCode() ) == null )
+      if ( getGeneralFunction( b.getKeyCode(), true ) == null )
       {
         message += "There is no hidden system button available so it will be assigned to\n"
                 + "the soft button \"" + b + "\".  The Device Upgrade Editor may be used\n"
@@ -4688,7 +4689,7 @@ public class DeviceUpgrade extends Highlight
     return assignments.getAssignment( bs.button, bs.state );
   }
   
-  public GeneralFunction getGeneralFunction( int keyCode )
+  public GeneralFunction getGeneralFunction( int keyCode, boolean includeMacros )
   {
     Button button = remote.getButton( keyCode );
     GeneralFunction gf = null;
@@ -4699,10 +4700,10 @@ public class DeviceUpgrade extends Highlight
       {
         gf = learnedMap.get( keyCode );
       }
-//      if ( gf == null && !remote.isSSD() )
-//      {
-//        gf = macroMap.get( keyCode );
-//      }
+      if ( includeMacros && gf == null && !remote.isSSD() )
+      {
+        gf = macroMap.get( keyCode );
+      }
     }
     if ( gf == null )
     {

@@ -2778,6 +2778,11 @@ public class RemoteConfiguration
       }
       for ( KeySpec ks : macro.getItems() )
       {
+        if ( ks.db == null )
+        {
+          // Error situation
+          continue;
+        }       
         if ( ks.btn != null )
         {
           ks.fn = ks.db.getUpgrade().getLearnedMap().get( ( int )ks.btn.getKeyCode() );
@@ -4396,10 +4401,10 @@ public class RemoteConfiguration
     if ( remote.usesEZRC() )
     {
       List< Button > sysBtns = remote.getButtonGroups().get( "System" );
-      List< Function >sysFns = new ArrayList< Function >();
       for ( DeviceButton db : deviceButtonList )
       {
         DeviceUpgrade du = db.getUpgrade();
+        List< Function >sysFns = new ArrayList< Function >();
         // Build list of functions currently assigned to system buttons
         // and then cancel those assignments
         if ( sysBtns != null )
@@ -5113,7 +5118,7 @@ public class RemoteConfiguration
         continue;
       }
       KeySpec ks = map.get( b );
-      if ( ks == null || ks.db == null )
+      if ( ks == null || ks.db == null || ks.db == DeviceButton.noButton )
       {
         continue;
       }
@@ -5151,11 +5156,12 @@ public class RemoteConfiguration
       }
       for ( Button btn : group.getButtonGroup() )
       {
-        if ( !du.getSoftButtons().contains( btn ) )
+        GeneralFunction gf = null;
+        if ( !du.getSoftButtons().contains( btn ) || ( gf = du.getGeneralFunction( btn.getKeyCode(), false ) ) == null )
         {
           continue;
         }
-        map2.put( btn, du.getGeneralFunction( btn.getKeyCode() ).getName() );
+        map2.put( btn, gf.getName() );
       }
       group.setSoftNamesSegment( segment );
     }
@@ -6333,7 +6339,7 @@ public class RemoteConfiguration
             {
               for ( Button b : du.getSoftButtons() )
               {
-                map.put( b, du.getGeneralFunction( b.getKeyCode() ).getName() );
+                map.put( b, du.getGeneralFunction( b.getKeyCode(), true ).getName() );
               }
             }
             Hex hex = createNameHex( map );
@@ -6356,7 +6362,7 @@ public class RemoteConfiguration
             for ( Button b : du.getHardButtons() )
             {
               int keyCode = b.getKeyCode();
-              GeneralFunction gf = du.getFunction( keyCode ) != null ? du.getFunction( keyCode ) : du.getGeneralFunction( keyCode );
+              GeneralFunction gf = du.getFunction( keyCode ) != null ? du.getFunction( keyCode ) : du.getGeneralFunction( keyCode, false );
               map.put( b, gf.getName() );
             }
             Hex hex = createNameHex( map );
@@ -7560,6 +7566,10 @@ public class RemoteConfiguration
     
     public boolean isValid()
     {
+      if ( fn == null || db == null || db.getUpgrade() == null )
+      {
+        return false;
+      }
       int serial = fn.getSerial();
       Remote remote = db.getUpgrade().getRemote();
       if ( getButton() == null && serial < 0 
@@ -8286,7 +8296,7 @@ public class RemoteConfiguration
         work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )code, ( short )code } ), false ) );
         DeviceUpgrade upg = db.getUpgrade();
         GeneralFunction f = null;
-        if ( upg != null && ( f = upg.getGeneralFunction( b.getKeyCode() ) ) != null )
+        if ( upg != null && ( f = upg.getGeneralFunction( b.getKeyCode(), false ) ) != null )
         {
           if ( f.icon != null && f.icon.ref > 0 )
           {

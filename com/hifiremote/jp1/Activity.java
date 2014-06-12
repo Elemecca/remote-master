@@ -112,7 +112,8 @@ public class Activity extends Highlight
     {
       ks = new KeySpec();
       str = str.trim();
-      int pos = str.indexOf( '/' );
+      int pos = str.indexOf( '"', 1 );  // find end quote
+      pos = str.indexOf( '/', pos + 1 );
       if ( pos != -1 )
       {
         deviceName = str.substring( 1, pos - 1 );  // omit quotes

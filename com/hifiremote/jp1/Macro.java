@@ -250,8 +250,21 @@ public class Macro extends AdvancedCode
     {
       if ( !ks.isValid() )
       {
-        System.err.println( "Invalid keySpec for upgrade \"" + ks.db 
-            + "\", function \"" + ks.fn + "\" in macro " + this );
+        String str = "Invalid keySpec";
+        if ( ks.db != null )
+        {
+          str += " for upgrade \"" + ks.db + "\"";
+        }
+        if ( ks.fn != null )
+        {
+          str += ", function \"" + ks.fn + "\"";
+        }
+        else if ( ks.btn != null )
+        {
+          str += ", button \"" + ks.btn + "\"";
+        }
+        str += " in macro " + this;
+        System.err.println( str );
         continue;
       }
       if ( ks.db != db )
