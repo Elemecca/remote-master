@@ -4101,7 +4101,7 @@ public class DeviceUpgrade extends Highlight
     {
       GeneralFunction f = getGeneralFunction( b.getKeyCode(), true );
       if ( f == null || f.getName() == null || f.getName().startsWith( "__" )
-          || selectorMap.get( ( int )b.getKeyCode() ) != null )
+          || ((selectorMap !=null) && (selectorMap.get( ( int )b.getKeyCode() ) != null)) )
       {
         continue;
       }
