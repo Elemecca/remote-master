@@ -356,9 +356,9 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     }
   }
   
-  public void setTabTitle( String title )
+  public void setTabTitle( String title, Activity activity )
   {
-    tabbedPane.setTitleAt( tabbedPane.getSelectedIndex(), title );
+    tabbedPane.setTitleAt( activityList.indexOf( activity ), title );
   }
 
   @Override

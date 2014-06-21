@@ -369,7 +369,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       {
         activity.getMacro().setName( name );
       }
-      panel.setTabTitle( name );
+      panel.setTabTitle( name, activity );
     }
     if ( col == 2 )
     {
