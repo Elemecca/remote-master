@@ -154,7 +154,7 @@ public class ActivityAssistTableModel extends JP1TableModel< Activity.Assister >
     }
     else if ( col == 2 )
     {
-      assister.ks.fn = ( Function )value;
+      assister.ks.fn = ( GeneralFunction )value;
     }
     assister.set( remote );
     fireTableDataChanged();

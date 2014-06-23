@@ -94,7 +94,19 @@ public class Activity extends Highlight
       ks = new KeySpec( device, button );
       deviceName = device.getName();
       buttonCode = button.getKeyCode();
-      ks.fn = device.getUpgrade().getAssignments().getAssignment( button );
+      DeviceUpgrade du = device.getUpgrade();
+      if ( du != null )
+      {
+        ks.fn = du.getLearnedMap().get( ( int )button.getKeyCode() );
+        if ( ks.fn == null )
+        {
+          ks.fn = du.getAssignments().getAssignment( button );
+        }
+        if ( ks.fn == null )
+        {
+          ks.fn = du.getSelectorMap().get( ( int )button.getKeyCode() );
+        }
+      }
     }
     
     public Assister( DeviceButton device, GeneralFunction function )
@@ -152,17 +164,30 @@ public class Activity extends Highlight
           break;
         }
       }
+      DeviceUpgrade du = ks.db != null ? ks.db.getUpgrade() : null;
+      if ( du == null )
+      {
+        return;
+      }
       if ( buttonCode >= 0 )
       {
         ks.btn = remote.getButton( buttonCode );
         if ( ks.btn != null && ks.fn == null )
         {
-          ks.fn = ks.db.getUpgrade().getAssignments().getAssignment( ks.btn );
+          ks.fn = du.getLearnedMap().get( ( int )ks.btn.getKeyCode() );
+          if ( ks.fn == null )
+          {
+            ks.fn = du.getAssignments().getAssignment( ks.btn );
+          }
+          if ( ks.fn == null )
+          {
+            ks.fn = du.getSelectorMap().get( ( int )ks.btn.getKeyCode() );
+          }
         }
       }
       if ( ks.irSerial >= 0 )
       {
-        ks.fn = ks.db.getUpgrade().getFunctionMap().get( ks.irSerial );
+        ks.fn = du.getFunctionMap().get( ks.irSerial );
       }
     }
 
