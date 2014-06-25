@@ -1238,7 +1238,7 @@ public class RemoteConfiguration
       }
       else if ( tag.equals( "name8" ) )
       {
-        items.key.fname = getString8( data, pos );
+        items.key.fname = getString8( data, pos ).trim();
       }
       else if ( tag.equals( "macroref" ) )
       {
@@ -1324,7 +1324,7 @@ public class RemoteConfiguration
         {
           ch[ i / 2 ] = ( char )( data[ pos + i ] + 0x100 * data[ pos + i + 1 ] );
         }
-        items.macro.setName( new String( ch ) );
+        items.macro.setName( ( new String( ch ) ).trim() );
       }
       else if ( tag.equals( "sendhardkey" ) )
       {
@@ -1622,9 +1622,16 @@ public class RemoteConfiguration
         while ( it.hasNext() )
         {
           Macro macro = it.next();
-          if ( items.unreferencedMacros.contains( macro ) )
+          KeySpec ks = null;
+          if ( items.unreferencedMacros.contains( macro ) || macro.isSystemMacro() 
+              && ( ks = macro.getItems().get( 0 ) ).btn == null && ks.fn == null )
           {
             it.remove();
+            if ( ks != null )
+            {
+              System.err.println( "Deleting null system macro: Serial=" + macro.getSerial() 
+                  + ", Name=" + macro.getName() + ", device=" + ks.db );
+            }
             continue;
           }
           for ( User u : macro.getUsers() )
@@ -1633,9 +1640,16 @@ public class RemoteConfiguration
           }
           if ( macro.isSystemMacro() )
           {
-            KeySpec ks = macro.getItems().get( 0 );
             GeneralFunction gf = ks.fn;
-            gf.getUsers().addAll( macro.getUsers() );
+            if ( gf != null )
+            {
+              gf.getUsers().addAll( macro.getUsers() );
+            }
+            else
+            {
+              System.err.println( "Unknown function in system macro: Serial=" + macro.getSerial() 
+                  + ", Name="+ macro.getName() + ", device=" + ks.db + ", button=" + ks.btn);
+            }
           }
         }
 //        Collections.sort( macros, MacroSorter );
@@ -7957,8 +7971,12 @@ public class RemoteConfiguration
         String name = null;
         int keyCode = b.getKeyCode();
         
-        if ( f == null && macro == null && ls == null )
+        if ( ( f == null || f.getHex() == null ) && macro == null && ls == null )
         {
+          if ( f != null )
+          {
+            upg.getAssignments().assign( b, null );
+          }
           continue;
         }
         if ( !remote.isSoftButton( b ) && softpage != null

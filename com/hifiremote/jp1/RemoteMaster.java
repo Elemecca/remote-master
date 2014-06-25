@@ -107,7 +107,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 22d";
+  public final static String version = "v2.03 Alpha 22e";
 
   /** The dir. */
   private File dir = null;
@@ -2141,9 +2141,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    * @exception Exception
    *              Description of the Exception
    */
-  public File openFile() throws Exception
+  public void openFile() throws Exception
   {
-    return openFile( null );
+    openFile( null );
   }
 
   /**
@@ -2157,11 +2157,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    * @exception Exception
    *              Description of the Exception
    */
-  public File openFile( File file ) throws Exception
+  public void openFile( File file ) throws Exception
   {
     if ( !promptToSave() )
     {
-      return null;
+      return;
     }
     while ( file == null )
     {
@@ -2184,7 +2184,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else
       {
-        return null;
+        return;
       }
     }
 
@@ -2213,7 +2213,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 //    km.loadUpgrade( file );
       
       runKM( file.getCanonicalPath() );
-      return null;
+      return;
     }
 
     if ( ext.equals( ".xml" ) )
@@ -2224,7 +2224,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         JOptionPane.showMessageDialog( RemoteMaster.getFrame(),
             "The RDF for XML Slingbox Learns was not found.  Please place it in the RDF folder and try again.",
             "Missing RDF File", JOptionPane.ERROR_MESSAGE );
-        return null;
+        return;
       }
       Remote remote = remotes.get( 0 );
       remote.load();
@@ -2245,7 +2245,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       cleanUpperMemoryItem.setEnabled( true );
       initializeTo00Item.setEnabled( !interfaces.isEmpty() );
       initializeToFFItem.setEnabled( !interfaces.isEmpty() );
-      return null;
+      return;
     }
 
     // ext.equals( ".rmir" ) || ext.equals( ".ir" )
@@ -2258,12 +2258,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     initializeTo00Item.setEnabled( !interfaces.isEmpty() );
     initializeToFFItem.setEnabled( !interfaces.isEmpty() );
     uploadAction.setEnabled( !interfaces.isEmpty() );
-    remoteConfig = new RemoteConfiguration( file, this );
-    recreateToolbar();
-    update();
-    setTitleFile( file );
-    this.file = file;
-    return file;
+    setInterfaceState( "LOADING..." );
+    ( new LoadTask( file ) ).execute();
+//    remoteConfig = new RemoteConfiguration( file, this );
+//    recreateToolbar();
+//    update();
+//    setTitleFile( file );
+//    this.file = file;
+//    setTitleFile( file );
+    return;
   }
 
   private void installExtender() throws Exception
@@ -2491,8 +2494,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         return;
       }
     }
-    remoteConfig.save( file );
-    changed = false;
+    setInterfaceState( "SAVING..." );
+    ( new SaveTask( false, false ) ).execute();
   }
 
   /**
@@ -2561,20 +2564,97 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( ending == irEndings[ 0 ] )
       {
         remoteConfig.saveAltPIDs();
+        setInterfaceState( "EXPORTING..." );
+        ( new SaveTask( false, true ) ).execute();
+      }
+      else
+      {
+        setInterfaceState( "SAVING..." );
+        ( new SaveTask( true, false ) ).execute();
+      }
+      uploadAction.setEnabled( !interfaces.isEmpty() );
+    }
+  }
+  
+  private class LoadTask extends SwingWorker< RemoteConfiguration, Void >
+  {
+    private File loadFile;
+    
+    public LoadTask( File file )
+    {
+      loadFile = file;
+    }
+    
+    @Override
+    protected RemoteConfiguration doInBackground() throws Exception
+    {
+      return new RemoteConfiguration( loadFile, RemoteMaster.this );
+    }
+    
+    @Override
+    public void done()
+    {
+      try
+      {
+        remoteConfig = get();
+      } 
+      catch ( InterruptedException ignore ) {}
+      catch ( java.util.concurrent.ExecutionException e ) 
+      {
+        String why = null;
+        Throwable cause = e.getCause();
+        if ( cause != null ) 
+        {
+          why = cause.getMessage();
+        } 
+        else 
+        {
+          why = e.getMessage();
+        }
+        System.err.println("Error setting new RemoteConfiguration: " + why);
+      }
+      recreateToolbar();
+      update();
+      setTitleFile( loadFile );
+      setInterfaceState( null );
+      file = loadFile;
+    }
+  }
+  
+  private class SaveTask extends SwingWorker< Void, Void >
+  {
+    private boolean saveAs = false;
+    private boolean export = false;
+    
+    public SaveTask( boolean saveAs, boolean export )
+    {
+      this.saveAs = saveAs;
+      this.export = export;
+    }
+    
+    @Override
+    protected Void doInBackground() throws Exception
+    {
+      if ( export )
+      {
         remoteConfig.exportIR( file );
       }
       else
       {
         remoteConfig.save( file );
-        setTitleFile( file );
-        updateRecentFiles( file );
-        saveAction.setEnabled( true );
         changed = false;
+        if ( saveAs )
+        {
+          setTitleFile( file );
+          updateRecentFiles( file );
+          saveAction.setEnabled( true );
+        }
       }
-      uploadAction.setEnabled( !interfaces.isEmpty() );
+      setInterfaceState( null );
+      return null;
     }
   }
-
+  
   /**
    * Sets the titleFile attribute of the RemoteMaster object.
    * 

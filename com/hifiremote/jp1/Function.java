@@ -270,7 +270,7 @@ public class Function extends GeneralFunction
    */
   public boolean isMacroBase()
   {
-    if ( data != null )
+    if ( data != null || users.isEmpty() )
     {
       return false;
     }

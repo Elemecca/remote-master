@@ -82,7 +82,7 @@ public class Macro extends AdvancedCode
       {
         userItems = new ArrayList< Integer >();
         StringTokenizer st = new StringTokenizer( temp, ",/" );
-        if ( st.hasMoreTokens() )
+        while ( st.hasMoreTokens() )
         {
           int val = Integer.parseInt( st.nextToken() ) << 16;
           val |= Integer.parseInt( st.nextToken() );
