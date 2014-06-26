@@ -107,7 +107,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 22e";
+  public final static String version = "v2.03 Alpha 23";
 
   /** The dir. */
   private File dir = null;
@@ -371,10 +371,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     private JRadioButton protocols = new JRadioButton( "Protocol" );
   }
 
-  private class DownloadTask extends SwingWorker< Void, Void >
+  private class DownloadTask extends SwingWorker< RemoteConfiguration, Void >
   {
     @Override
-    protected Void doInBackground() throws Exception
+    protected RemoteConfiguration doInBackground() throws Exception
     {
       IO io = getOpenInterface();
       if ( io == null )
@@ -532,26 +532,60 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
         }
       }
-      remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
+      RemoteConfiguration rc = new RemoteConfiguration( remote, RemoteMaster.this );
       recreateToolbar();
-      int count = io.readRemote( remote.getBaseAddress(), remoteConfig.getData() );
+      int count = io.readRemote( remote.getBaseAddress(), rc.getData() );
       System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
       io.closeRemote();
       System.err.println( "Ending normal download" );
-      try
-      {
-        remoteConfig.parseData();
-        remoteConfig.setSavedData();
-      }
-      catch ( IOException e )
-      {
-        e.printStackTrace();
-      }
+//      try
+//      {
+        rc.parseData();
+        rc.setSavedData();
+//      }
+//      catch ( IOException e )
+//      {
+//        e.printStackTrace();
+//      }
       if ( sigData != null )
       {
-        remoteConfig.setSigData( sigData );
+        rc.setSigData( sigData );
       }
-      remoteConfig.updateImage();
+      rc.updateImage();
+      return rc;
+    }
+    
+    @Override
+    public void done()
+    {
+      try
+      {
+        remoteConfig = get();
+      } 
+      catch ( InterruptedException ignore ) {}
+      catch ( java.util.concurrent.ExecutionException e ) 
+      {
+        String why = null;
+        Throwable cause = e.getCause();
+        if ( cause != null ) 
+        {
+          why = cause.getMessage();
+        } 
+        else 
+        {
+          why = e.getMessage();
+        }
+        System.err.println( "Download error: " + why );
+        setInterfaceState( null );
+        String message = "<html>Error downloading from remote.<br><br>"
+            + "This may well be the result of a bug in the RMIR software.  To help us, please<br>"
+            + "do a raw download as follows.  Close RMIR, re-open it and click on &quot;Raw download&quot;<br>"
+            + "on the Remote menu.  Click the Download button on the window that then opens.  <br>"
+            + "When the dowload finishes, click Save.  Accept the default filename that is offered.<br>"
+            + "Then post the resulting file in the JP1 Software forum for the experts to examine.</html><br>";
+        JOptionPane.showMessageDialog( RemoteMaster.this, message, "Task error", JOptionPane.ERROR_MESSAGE );
+        e.printStackTrace();
+      }
       saveAction.setEnabled( false );
       saveAsAction.setEnabled( true );
       openRdfAction.setEnabled( true );
@@ -562,7 +596,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       uploadAction.setEnabled( true );
       update();
       setInterfaceState( null );
-      return null;
+      return;
     }
   };
 
@@ -2260,12 +2294,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     uploadAction.setEnabled( !interfaces.isEmpty() );
     setInterfaceState( "LOADING..." );
     ( new LoadTask( file ) ).execute();
-//    remoteConfig = new RemoteConfiguration( file, this );
-//    recreateToolbar();
-//    update();
-//    setTitleFile( file );
-//    this.file = file;
-//    setTitleFile( file );
     return;
   }
 
@@ -2611,7 +2639,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           why = e.getMessage();
         }
-        System.err.println("Error setting new RemoteConfiguration: " + why);
+        System.err.println( "Error setting new RemoteConfiguration: " + why );
+        setInterfaceState( null );
+        JOptionPane.showMessageDialog( RemoteMaster.this, "Error loading file " + loadFile.getName(), "Task error", JOptionPane.ERROR_MESSAGE );
+        e.printStackTrace();
       }
       recreateToolbar();
       update();

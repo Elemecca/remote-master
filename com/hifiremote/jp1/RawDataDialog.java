@@ -89,6 +89,34 @@ public class RawDataDialog extends JDialog implements ActionListener
     int y = rect.y - rect.height / 2;
     setLocation( x, y );
   }
+  
+  private class SaveDownloadTask extends SwingWorker< Void, Void >
+  {
+    private File rawFile = null;
+    
+    public SaveDownloadTask( File rawFile )
+    {
+      this.rawFile = rawFile;
+    }
+
+    @Override
+    protected Void doInBackground() throws Exception
+    {
+      try
+      {
+        PrintWriter pw = new PrintWriter( new BufferedWriter( new FileWriter( rawFile ) ) );
+        Hex.print( pw, buffer, baseAddress );
+        pw.close();
+      }
+      catch ( IOException ioe )
+      {
+        downloadLabel.setVisible( false );
+        JOptionPane.showMessageDialog( owner, "Error writing to " + rawFile );
+      }
+      downloadLabel.setVisible( false );
+      return null;
+    }
+  }
 
   private class RawDownloadTask extends SwingWorker< Void, Void >
   {
@@ -99,6 +127,7 @@ public class RawDataDialog extends JDialog implements ActionListener
       if ( io == null )
       {
         JOptionPane.showMessageDialog( owner, "No remotes found!" );
+        downloadLabel.setVisible( false );
         return null;
       }
       System.err.println( "Interface opened successfully" );
@@ -125,6 +154,7 @@ public class RawDataDialog extends JDialog implements ActionListener
               JOptionPane.QUESTION_MESSAGE, null, choices, choices[ 1 ] );
           if ( choice == null )
           {
+            downloadLabel.setVisible( false );
             return null;
           }
           buffSize = Integer.parseInt( choice.substring( 0, 1 ) ) * 1024;
@@ -194,6 +224,7 @@ public class RawDataDialog extends JDialog implements ActionListener
     if ( source == downloadButton )
     {
       System.err.println( "Starting raw download" );
+      downloadLabel.setText( "DOWNLOADING..." );
       downloadLabel.setVisible( true );
       ( new RawDownloadTask() ).execute();
     }
@@ -209,30 +240,24 @@ public class RawDataDialog extends JDialog implements ActionListener
       int start = signature.startsWith( "USB" ) ? 3 : 0;
       File rawFile = new File( signature.substring( start, start + 4 ) + ".ir" );
       chooser.setSelectedFile( rawFile );
-      int returnVal = chooser.showSaveDialog( this );
+      int returnVal = chooser.showSaveDialog( RawDataDialog.this );
       if ( returnVal == RMFileChooser.APPROVE_OPTION )
       {
         rawFile = chooser.getSelectedFile();
         int rc = JOptionPane.YES_OPTION;
         if ( rawFile.exists() )
-          rc = JOptionPane.showConfirmDialog( this, rawFile.getName() + " already exists.  Do you want to replace it?",
+          rc = JOptionPane.showConfirmDialog( RawDataDialog.this, rawFile.getName() + " already exists.  Do you want to replace it?",
               "Replace existing file?", JOptionPane.YES_NO_OPTION );
 
         if ( rc != JOptionPane.YES_OPTION )
+        {
+          downloadLabel.setVisible( false );
           return;
-
-        try
-        {
-          PrintWriter pw = new PrintWriter( new BufferedWriter( new FileWriter( rawFile ) ) );
-
-          Hex.print( pw, buffer, baseAddress );
-
-          pw.close();
         }
-        catch ( IOException ioe )
-        {
-          JOptionPane.showMessageDialog( owner, "Error writing to " + rawFile );
-        }
+        System.err.println( "Starting to save raw download" );
+        downloadLabel.setText( "SAVING..." );
+        downloadLabel.setVisible( true );
+        ( new SaveDownloadTask( rawFile ) ).execute();
       }
     }
     else if ( source == cancelButton )

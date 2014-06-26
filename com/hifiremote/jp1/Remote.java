@@ -1172,6 +1172,10 @@ public class Remote implements Comparable< Remote >
       {
         masterPowerSupport = RDFReader.parseFlag( value );
       }
+      else if ( parm.equalsIgnoreCase( "PunchThru" ) )
+      {
+        punchThru = value;
+      }
       else if ( parm.equals( "UpgradeAddr" ) )
       {
         upgradeAddress = new AddressRange( value, this );
@@ -3537,6 +3541,8 @@ public class Remote implements Comparable< Remote >
   private FixedData[] fixedData = new FixedData[ 0 ];
   
   private FixedData[] rawFixedData = new FixedData[ 0 ];
+  
+  private String punchThru = "VTC";
 
   /** The auto set data */
   private FixedData[] autoSet = new FixedData[ 0 ];
@@ -3818,6 +3824,11 @@ public class Remote implements Comparable< Remote >
     return masterPowerSupport;
   }
   
+  public String getPunchThru()
+  {
+    return punchThru;
+  }
+
   public FixedData[] getFixedData()
   {
     // Note that fixedData can be set to null after being parsed

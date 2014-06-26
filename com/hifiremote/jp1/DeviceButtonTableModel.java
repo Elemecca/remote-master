@@ -156,7 +156,21 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
       }
       if ( remoteConfig.hasSegments() )
       {
-        count += remote.isSSD() ? 1 : 3;
+        if ( remote.isSSD() )
+        {
+          count++;
+        }
+        else
+        {
+          String pt = remote.getPunchThru();
+          for ( int i = 0; i < 3; i++ )
+          {
+            if ( pt.indexOf( "VTC".charAt( i ) ) >= 0 )
+            {
+              count++;
+            }
+          }
+        }
       }
       if ( remote.usesIcons() )
       {
@@ -181,10 +195,30 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     {
       Remote remote = remoteConfig.getRemote();
       DeviceLabels labels = remote.getDeviceLabels();
-      if ( ( remote.isSSD() || !remoteConfig.hasSegments() ) && col > 3 )
+      if ( col > 3 )
       {
-        // Skip the punchthrough columns
-        col += 3;
+        if ( remote.isSSD() || !remoteConfig.hasSegments() )
+        {
+          // Skip the punchthrough columns
+          col += 3;
+        }
+        else
+        {
+          // Check which punchthrough columns are required
+          String pt = remote.getPunchThru();
+          if ( pt.indexOf( 'V' ) < 0 )
+          {
+            col++;
+          }
+          if ( col > 4 && pt.indexOf( 'T' ) < 0 )
+          {
+            col++;
+          }
+          if ( col > 5 && pt.indexOf( 'C' ) < 0 )
+          {
+            col++;
+          }
+        }
       }
       if ( !remote.isSSD() && col > 6 )
       {
