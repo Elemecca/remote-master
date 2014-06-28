@@ -30,6 +30,8 @@ public class KeyEditor extends DefaultCellEditor implements TableCellEditor, Act
 
   /** The key code. */
   private Integer keyCode;
+  
+  private int type = Button.MOVE_BIND;
 
   /**
    * Instantiates a new key editor.
@@ -55,6 +57,7 @@ public class KeyEditor extends DefaultCellEditor implements TableCellEditor, Act
   public void setRemote( Remote remote )
   {
     this.remote = remote;
+    type = Button.MOVE_BIND;
   }
 
   /**
@@ -69,7 +72,7 @@ public class KeyEditor extends DefaultCellEditor implements TableCellEditor, Act
     {
       // The user has clicked the cell, so
       // bring up the dialog.
-      Integer result = KeyChooser.showDialog( button, remote, keyCode );
+      Integer result = KeyChooser.showDialog( button, remote, keyCode, type );
       if ( result != null && !result.equals( keyCode ) )
       {
         keyCode = result;
@@ -80,6 +83,11 @@ public class KeyEditor extends DefaultCellEditor implements TableCellEditor, Act
         fireEditingCanceled();
       }
     }
+  }
+
+  public void setType( int type )
+  {
+    this.type = type;
   }
 
   // Implement the one CellEditor method that AbstractCellEditor doesn't.

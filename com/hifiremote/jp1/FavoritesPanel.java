@@ -310,7 +310,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           {
             btn = remote.getButtons().get( 0 );
           }
-          Integer result = KeyChooser.showDialog( finalKey, remote, ( int )btn.getKeyCode() );
+          Integer result = KeyChooser.showDialog( finalKey, remote, ( int )btn.getKeyCode(), Button.MOVE_BIND );
           if ( result != null )
           {
             btn = remote.getButton( result );

@@ -55,12 +55,15 @@ public class KeyChooser
    */
   public static Integer showDialog( Component locationComp,
                                     Remote remote,
-                                    Integer initialKeyCode )
+                                    Integer initialKeyCode,
+                                    int type )
   {
     if ( dialog == null )
+    {
       dialog = new KeyChooser( locationComp );
+    }
     
-    dialog.setRemote( remote );
+    dialog.setRemote( remote, type );
     dialog.setKeyCode( initialKeyCode );
     dialog.setLocationRelativeTo( locationComp );
                               
@@ -115,15 +118,31 @@ public class KeyChooser
   /** The remote. */
   private Remote remote = null;
   
+  private int type = Button.MOVE_BIND;
+  
   /**
    * Sets the remote.
    * 
    * @param remote the new remote
    */
-  public void setRemote( Remote remote )
+  public void setRemote( Remote remote, int type )
   {
     this.remote = remote;
-    buttonBox.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons()));
+    this.type = type;
+    Button[] availableButtons = null;
+    if ( type == Button.MACRO_BIND )
+    {
+      availableButtons = remote.getMacroButtons();
+    }
+    else if ( type == Button.LEARN_BIND )
+    {
+      availableButtons = remote.getLearnButtons();
+    }
+    else
+    {
+      availableButtons = remote.getUpgradeButtons();
+    }
+    buttonBox.setModel( new DefaultComboBoxModel( availableButtons ) );
     shiftBox.setText( remote.getShiftLabel());
     shiftBox.setVisible( remote.getShiftEnabled() );
     xShiftBox.setText( remote.getXShiftLabel());
@@ -205,17 +224,7 @@ public class KeyChooser
     if ( source == buttonBox )
     {
       Button b = ( Button )buttonBox.getSelectedItem();
-      shiftBox.setEnabled( b.allowsShiftedKeyMove());
-      if ( !b.allowsShiftedKeyMove())
-        shiftBox.setSelected( false );
-      if ( b.getIsShifted())
-        shiftBox.setSelected( true );
-
-      xShiftBox.setEnabled( b.allowsXShiftedKeyMove());
-      if ( !b.allowsXShiftedKeyMove())
-        xShiftBox.setSelected( false );
-      if ( b.getIsXShifted())
-        xShiftBox.setSelected( true );
+      b.setShiftBoxes( type, shiftBox, xShiftBox );
     }
     else if ( source == shiftBox )
     {

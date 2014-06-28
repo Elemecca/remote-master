@@ -41,6 +41,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
+      keyEditor.setType( Button.MACRO_BIND );
       if ( remoteConfig != null /* && remoteConfig.getRemote().usesEZRC()*/ )
       {
         List< Macro > list = new ArrayList< Macro >();
