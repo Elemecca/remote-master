@@ -123,7 +123,7 @@ public class RawDataDialog extends JDialog implements ActionListener
     @Override
     protected Void doInBackground() throws Exception
     {
-      IO io = owner.getOpenInterface();
+      IO io = owner.getOpenInterface( null );
       if ( io == null )
       {
         JOptionPane.showMessageDialog( owner, "No remotes found!" );

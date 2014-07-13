@@ -110,28 +110,25 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       {
         ++col;       // skip Name
       }
-      else if ( remote.usesEZRC() && col > 1 )
+      if ( ( remote.usesEZRC() || remote.usesSimpleset() || !remote.hasActivityControl() && !remote.hasMasterPowerSupport() ) && col > 1 )
       {
         col++;       // skip key
-        if ( col > 3 )
-        {
-          col += 2;  // skip Audio and Video Actions
-        }
       }
-      if ( !remote.hasMasterPowerSupport() && col > 0 )
+      if ( !remote.hasMasterPowerSupport() && col > 2 )
       {
-        if ( remote.hasActivityControl() && col > 2 )
-        {
-          ++col;  // skip Power Macro
-        }
-        else if ( !remote.hasActivityControl() )
-        {
-          col += 2;  // skip Key, Power Macro
-        }
+        col++;  // skip Power Macro
+      }
+      if ( remote.getSetting( "AudioHelp" ) == null && col > 3 )
+      {
+        col++;  // skip Audio Action
+      }
+      if ( remote.getSetting( "VideoHelp" ) == null && col > 4 )
+      {
+        col++;  // skip Video Action
       }
       if ( !remote.isSSD() && col > 5 )
       {
-        ++col;       // skip Icon
+        col++;  // skip Icon
       }
     }
     return col;
@@ -177,33 +174,37 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public int getColumnCount()
   {
-    int count = colNames.length - 5;  // omit Name, Key, Macro, Icon, Color
+    int count = 2;   // always include #, Notes
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
       if ( remote.usesEZRC() )
       {
-        ++count;     // add back Macro
+        count++;   // add Name
       }
-      else if ( remote.hasMasterPowerSupport() )
+      if ( !remote.usesEZRC() && !remote.usesSimpleset() && ( remote.hasActivityControl() || remote.hasMasterPowerSupport() ) )
       {
-        count += 2;  // add back Key, Macro
+        count++;   // add Key
       }
-      else if ( remote.hasActivityControl() )
+      if ( remote.hasMasterPowerSupport() )
       {
-        ++count;  // add back Key
+        count++;   // add Macro;
       }
-      if ( remoteConfig.allowHighlighting() )
+      if ( remote.getSetting( "AudioHelp" ) != null )
       {
-        ++count;  // add back Color
+        count++;   // add AudioHelp;
       }
-      if ( remote.usesEZRC() )
+      if ( remote.getSetting( "VideoHelp" ) != null )
       {
-        --count;  // add Name but omit Audio Action, Video Action
+        count++;   // add VideoHelp;
       }
       if ( remote.isSSD() )
       {
         ++count;  // add back Icon
+      }
+      if ( remoteConfig.allowHighlighting() )
+      {
+        ++count;  // add back Color
       }
     }
     return count;
@@ -301,6 +302,10 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         {
           if ( value == null )
             super.setValue( null );
+          else if ( value instanceof Hex )
+          {
+            super.setValue( Macro.getValueString( ( Hex )value , remoteConfig ) );
+          }
           else
           {
 //            super.setValue( Macro.getValueString( ( Hex )value , remoteConfig ) );
@@ -338,7 +343,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       case 3:
 //        return macro == null ? remoteConfig.getRemote().usesEZRC() ?
 //            new ArrayList< KeySpec >() : new Hex( 0 ) : macro.getItems();
-        return macro == null ? null : macro.getItems();
+        return macro == null ? null : macro.getValue();//macro.getItems();
       case 4:
         return audioHelpSettingBox.getModel().getElementAt( activity.getAudioHelp() );
       case 5:

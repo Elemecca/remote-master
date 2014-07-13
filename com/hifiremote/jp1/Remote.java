@@ -3349,7 +3349,7 @@ public class Remote implements Comparable< Remote >
   public boolean hasActivitySupport()
   {
     return segmentTypes != null && ( segmentTypes.contains( 0xDB ) 
-        || segmentTypes.contains( 0x1E ) || isSSD() );
+        || segmentTypes.contains( 0x1E ) || usesSimpleset() || isSSD() );
   }
 
   /** The oem device. */
@@ -3725,6 +3725,11 @@ public class Remote implements Comparable< Remote >
   public boolean usesEZRC()
   {
     return signature.startsWith( "USB" );
+  }
+  
+  public boolean usesSimpleset()
+  {
+    return processor.getName().equals( "MAXQ622" ) && !signature.startsWith( "USB" );
   }
   
   public boolean usesIcons()

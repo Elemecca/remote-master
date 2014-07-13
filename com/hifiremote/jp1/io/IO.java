@@ -12,12 +12,18 @@ public abstract class IO
 {
   protected IO( File homeFolder, String libraryName ) throws UnsatisfiedLinkError
   {
-    LibraryLoader.loadLibrary( homeFolder, libraryName );
+    if ( libraryName != null )
+    {
+      LibraryLoader.loadLibrary( homeFolder, libraryName );
+    }
   }
 
   protected IO( String libraryName ) throws UnsatisfiedLinkError
   {
-    LibraryLoader.loadLibrary( libraryName );
+    if ( libraryName != null )
+    {
+      LibraryLoader.loadLibrary( libraryName );
+    }
   }
 
   /**

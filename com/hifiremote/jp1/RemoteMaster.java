@@ -81,6 +81,7 @@ import com.hifiremote.jp1.FixedData.Location;
 import com.hifiremote.jp1.extinstall.ExtInstall;
 import com.hifiremote.jp1.extinstall.RMExtInstall;
 import com.hifiremote.jp1.io.CommHID;
+import com.hifiremote.jp1.io.JPS;
 import com.hifiremote.jp1.io.IO;
 import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
@@ -107,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 23";
+  public final static String version = "v2.03 Alpha 24 Test 2";
 
   /** The dir. */
   private File dir = null;
@@ -373,10 +374,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   private class DownloadTask extends SwingWorker< RemoteConfiguration, Void >
   {
+    private File file = null;
+    
+    public DownloadTask()
+    {
+      file = null;
+    }
+    
+    public DownloadTask( File file )
+    {
+      this.file = file;
+    }
+    
     @Override
     protected RemoteConfiguration doInBackground() throws Exception
     {
-      IO io = getOpenInterface();
+      IO io = getOpenInterface( file );
       if ( io == null )
       {
         setInterfaceState( null );
@@ -560,7 +573,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       try
       {
-        remoteConfig = get();
+        RemoteConfiguration rc = get();
+        if ( rc != null )
+        {
+          remoteConfig = rc;
+        }
       } 
       catch ( InterruptedException ignore ) {}
       catch ( java.util.concurrent.ExecutionException e ) 
@@ -586,15 +603,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         JOptionPane.showMessageDialog( RemoteMaster.this, message, "Task error", JOptionPane.ERROR_MESSAGE );
         e.printStackTrace();
       }
-      saveAction.setEnabled( false );
-      saveAsAction.setEnabled( true );
+      saveAction.setEnabled( file != null );
+      saveAsAction.setEnabled( file == null );
       openRdfAction.setEnabled( true );
-      installExtenderItem.setEnabled( true );
+      installExtenderItem.setEnabled( file == null );
       cleanUpperMemoryItem.setEnabled( true );
       initializeTo00Item.setEnabled( true );
       initializeToFFItem.setEnabled( true );
-      uploadAction.setEnabled( true );
+      uploadAction.setEnabled( file == null );
       update();
+      if ( file != null )
+      {
+        setTitleFile( file );
+      }
       setInterfaceState( null );
       return;
     }
@@ -612,7 +633,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     @Override
     protected Void doInBackground() throws Exception
     {
-      IO io = getOpenInterface();
+      IO io = getOpenInterface( null );
       if ( io == null )  
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
@@ -669,18 +690,27 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     private short[] data;
     private boolean allowClockSet;
+    private File file = null;
 
     private UploadTask( short[] data, boolean allowClockSet )
     {
       this.data = data;
       this.allowClockSet = allowClockSet;
+      this.file = null;
+    }
+    
+    private UploadTask( File file, short[] data, boolean allowClockSet )
+    {
+      this.data = data;
+      this.allowClockSet = allowClockSet;
+      this.file = file;
     }
 
     @Override
     protected Void doInBackground() throws Exception
     {
       Remote remote = remoteConfig.getRemote();
-      IO io = getOpenInterface();
+      IO io = getOpenInterface( file );
       if ( io == null )  
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
@@ -748,7 +778,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( io.getInterfaceType() == 0x106 )
         {
           io.closeRemote();
-          io = getOpenInterface();
+          io = getOpenInterface( null );
         }
         short[] readBack = new short[ data.length ];
         rc = io.readRemote( remote.getBaseAddress(), readBack );
@@ -1657,6 +1687,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       System.err.println( "Unable to create JP1Parallel object: " + le.getMessage() );
     }
+    
+    try
+    {
+      JPS jps = new JPS( userDir );
+      interfaces.add( jps );
+      System.err.println( "    JPS version " + jps.getInterfaceVersion() );
+    }
+    catch ( LinkageError le )
+    {
+      System.err.println( "Unable to create JPS object: " + le.getMessage() );
+    }
 
     /*
      * try { JP2Serial jp2Serial = new JP2Serial( userDir ); interfaces.add( jp2Serial ); System.err.println(
@@ -1732,6 +1773,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         try
         {
           String ioName = io.getInterfaceName();
+          if ( ioName.equals( "JPS" ) )
+          {
+            continue;
+          }
           item = new JRadioButtonMenuItem( ioName + "..." );
           item.setActionCommand( ioName );
           item.setSelected( ioName.equals( preferredInterface ) );
@@ -2060,6 +2105,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     chooser.addChoosableFileFilter( new EndingFileFilter( "IR files (*.ir)", irEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "RM Device Upgrades (*.rmdu)", rmduEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "KM Device Upgrades (*.txt)", txtEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "Simpleset files (*.bin)", binEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "Sling Learned Signals (*.xml)", slingEndings ) );
     chooser.setFileFilter( irFilter );
 
@@ -2232,7 +2278,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     dir = file.getParentFile();
     properties.setProperty( "IRPath", dir );
 
-    if ( ext.equals( ".rmdu" ) || ext.equals( ".rmir" ) )
+    if ( ext.equals( ".rmdu" ) || ext.equals( ".rmir" ) || ext.equals( ".bin" ) )
     {
       updateRecentFiles( file );
     }
@@ -2279,6 +2325,16 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       cleanUpperMemoryItem.setEnabled( true );
       initializeTo00Item.setEnabled( !interfaces.isEmpty() );
       initializeToFFItem.setEnabled( !interfaces.isEmpty() );
+      return;
+    }
+    
+    if ( ext.equals( ".bin" ) )
+    {
+      ProtocolManager.getProtocolManager().reset();
+      System.err.println( "Starting Simpleset load" );
+      setInterfaceState( "LOADING SIMPLESET..." );
+      this.file = file;
+      ( new DownloadTask( file ) ).execute();
       return;
     }
 
@@ -2506,24 +2562,54 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       saveAs();
       return;
     }
-    boolean validConfiguration = updateUsage();
-    if ( !allowSave( Remote.SetupValidation.WARN ) )
+    
+    String ext = file.getName().toLowerCase();
+    int dot = ext.lastIndexOf( '.' );
+    ext = ext.substring( dot );
+    if ( ext.equals( ".bin" ) )
     {
-      return;
-    }
-    if ( !validConfiguration )
-    {
-      String title = "Invalid Configuration";
-      String message = "This configuration is not valid, but it can be saved and then\n"
-          + "re-loaded to give again this same invalid configuration.\n\n" + "Do you wish to continue?";
-      if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.YES_NO_OPTION,
-          JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
+      boolean validConfiguration = updateUsage();
+      if ( !validConfiguration )
+      {
+        String title = "Invalid Configuration";
+        String message = "This configuration is not valid.  It cannot be uploaded as it\n"
+            + "could cause the remote to crash.";
+        JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.WARNING_MESSAGE );
+        return;
+      }
+
+      Remote remote = remoteConfig.getRemote();
+      if ( !allowSave( remote.getSetupValidation() ) )
       {
         return;
       }
+      remoteConfig.saveAltPIDs();
+      System.err.println( "Starting upload" );
+      setInterfaceState( "SAVING SIMPLESET..." );
+      changed = false;
+      ( new UploadTask( file, RemoteMaster.this.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData(), true ) ).execute();
     }
-    setInterfaceState( "SAVING..." );
-    ( new SaveTask( false, false ) ).execute();
+    else
+    {
+      boolean validConfiguration = updateUsage();
+      if ( !allowSave( Remote.SetupValidation.WARN ) )
+      {
+        return;
+      }
+      if ( !validConfiguration )
+      {
+        String title = "Invalid Configuration";
+        String message = "This configuration is not valid, but it can be saved and then\n"
+            + "re-loaded to give again this same invalid configuration.\n\n" + "Do you wish to continue?";
+        if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
+        {
+          return;
+        }
+      }
+      setInterfaceState( "SAVING..." );
+      ( new SaveTask( false, false ) ).execute();
+    }
   }
 
   /**
@@ -2624,7 +2710,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       try
       {
-        remoteConfig = get();
+        RemoteConfiguration rc = get();
+        if ( rc != null )
+        {
+          remoteConfig = rc;
+        }
       } 
       catch ( InterruptedException ignore ) {}
       catch ( java.util.concurrent.ExecutionException e ) 
@@ -2714,13 +2804,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @return the open interface
    */
-  public IO getOpenInterface()
+  public IO getOpenInterface( File file )
   {
     String interfaceName = properties.getProperty( "Interface" );
     System.err.println( "Interface Name = " + ( interfaceName == null ? "NULL" : interfaceName ) );
     String portName = properties.getProperty( "Port" );
     System.err.println( "Port Name = " + ( portName == null ? "NULL" : portName ) );
-    if ( interfaceName != null )
+    if ( interfaceName != null && file == null )
     {
       for ( IO temp : interfaces )
       {
@@ -2738,6 +2828,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           else
           {
             System.err.println( "Failed to open" );
+            break;
           }
         }
       }
@@ -2747,8 +2838,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       for ( IO temp : interfaces )
       {
         String tempName = temp.getInterfaceName();
+        if ( file != null && !tempName.equals( "JPS" ) )
+        {
+          continue;
+        }
+
+        
+        
         System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
-        portName = temp.openRemote();
+        portName = temp.openRemote( file != null ? file.getAbsolutePath() : null );
         if ( portName == null ) portName = "";
         System.err.println( "Port Name = " + ( portName.isEmpty() ? "NULL" : portName ) );
         if ( !portName.isEmpty() )
@@ -3258,6 +3356,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     else
     {
       setTitle( "RM IR" );
+      return;
     }
 
     Remote remote = remoteConfig.getRemote();
@@ -3789,6 +3888,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     ".ir"
   };
+  
+  private final static String[] binEndings =
+    {
+      ".bin"
+    };
 
   /** The Constant txtEndings. */
   public final static String[] txtEndings =
@@ -3803,7 +3907,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   private final static String[] allEndings =
   {
-      ".rmir", ".ir", ".rmdu", ".txt", ".xml"
+      ".rmir", ".ir", ".rmdu", ".txt", ".xml", ".bin"
   };
 
   private final static String[] allMergeEndings =

@@ -24,6 +24,8 @@ Changes for v2.03
 - Make activity data for JP3 remotes be read-only, as updating the E2 data has no effect (Graham)
 - Show a (very rough) memory usage for XSight Touch on the progress bar, previously left empty for such remotes (Graham)
 - Update digitmaps to 584 (Graham)
+-- Alpha 24
+- Adds support for Simpleset remotes using modules provided by Marcin, aka yaworski (Graham)
 
 Changes for v2.02
 -- Alpha --

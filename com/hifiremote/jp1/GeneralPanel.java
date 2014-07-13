@@ -249,7 +249,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     String text = remote.usesEZRC() ? message3 : softDevices != null && softDevices.isSetupCodesOnly() ? 
         "Note:  " + message1 : "Note:  " + message2;
     messageArea.setText( text );
-    messageArea.setVisible( softDevices != null );
+    messageArea.setVisible( softDevices != null && !remote.usesSimpleset() );
 
     if ( !remoteConfig.hasSegments() )
     {

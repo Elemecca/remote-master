@@ -1170,7 +1170,7 @@ public class DeviceUpgrade extends Highlight
   private short findDigitMapIndex()
   {
     short[] digitMaps = remote.getDigitMaps();
-    if ( digitMaps == null || digitMaps.length == 0 || remote.usesEZRC() )
+    if ( digitMaps == null || digitMaps.length == 0 || remote.usesEZRC() || remote.usesSimpleset() )
     {
       return -1;
     }

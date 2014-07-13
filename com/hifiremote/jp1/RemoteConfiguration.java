@@ -1825,7 +1825,7 @@ public class RemoteConfiguration
   private void loadSegments( boolean decode )
   {
     // first two bytes are checksum, and in XSight remotes next 18 bytes are E2 info
-    int pos = remote.usesEZRC() ? 20 : 2;
+    int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
     int segLength = 0;
     int segType = 0;
     segmentLoadOrder.addAll( remote.getSegmentTypes() );
@@ -1915,6 +1915,31 @@ public class RemoteConfiguration
         }
       }
     }
+    
+    List< Segment > activityMacroList = segments.get( 4 );
+    if ( activityMacroList != null )
+    {
+      for ( Segment segment : activityMacroList )
+      {
+        Hex hex = segment.getHex();
+        int deviceIndex = hex.getData()[ 1 ];
+        int keyCode = hex.getData()[ 3 ];
+        Button btn = remote.getButton( deviceIndex );
+        int count = Math.min( hex.getData()[ 4 ], hex.length() - 5 );
+        Hex data = hex.subHex( 5, count );
+        Macro macro = new Macro( keyCode, data, deviceIndex, 0, null );
+        macro.setSegmentFlags( segment.getFlags() );
+        segment.setObject( macro );
+        if ( btn != null && activities != null && activities.get( btn ) != null )
+        {
+          Activity a = activities.get( btn );
+          a.setMacro( macro );
+          macro.setActivity( a );
+          a.setActive( true );
+        }
+      }
+    }
+    
     List< Segment > keyMoveKeyList = segments.get( 7 );
     if ( keyMoveKeyList != null )
     {
@@ -2264,7 +2289,8 @@ public class RemoteConfiguration
           if ( buttonGroup != null && buttonGroup.length > 0 )
           {
             btn = buttonGroup[ 0 ];
-            group.setDevice( map.get( btn ) );
+            DeviceButton db = map.get( btn );
+            group.setDevice( db != null ? db : DeviceButton.noButton );
           }
         }
       }
@@ -2327,6 +2353,7 @@ public class RemoteConfiguration
         segment.setObject( activity );
       }
     }
+    
     List< Segment > activitySettings = segments.get( 0xDC );
     if ( activitySettings != null )
     {
@@ -2336,13 +2363,22 @@ public class RemoteConfiguration
         Button btn = remote.getButton( hex.getData()[ 1 ] );
         Activity activity = activities.get( btn );
         activity.setHelpSegmentFlags( segment.getFlags() );
-        Setting s = remote.getSetting( "AudioHelp" );
-        s.decode( hex.getData(), remote );
-        activity.setAudioHelp( s.getValue() );
-        s = remote.getSetting( "VideoHelp" );
-        s.decode( hex.getData(), remote );
-        activity.setVideoHelp( s.getValue() );
-        activity.setHelpSegment( segment );
+        Setting sa = remote.getSetting( "AudioHelp" );
+        if ( sa != null )
+        {
+          sa.decode( hex.getData(), remote );
+          activity.setAudioHelp( sa.getValue() );
+        }
+        Setting sv = remote.getSetting( "VideoHelp" );
+        if ( sv != null )
+        {
+          sv.decode( hex.getData(), remote );
+          activity.setVideoHelp( sv.getValue() );
+        }
+        if ( sa != null || sv != null )
+        {
+          activity.setHelpSegment( segment );
+        }
       }
     }
     if ( remote.usesEZRC() )
@@ -2553,7 +2589,7 @@ public class RemoteConfiguration
         {
           hid.closeRemote();
         }
-      }  
+      }
       updateReferences();
       for ( DeviceButton db : remote.getDeviceButtons() )
       {
@@ -2959,7 +2995,7 @@ public class RemoteConfiguration
             segment.setObject( db );
             int setupCode = db.getSetupCode( hex.getData() );
             int devType = db.getDeviceTypeIndex( hex.getData() );
-            db.setConstructed( setupCode == -1 && devType != 0xFF );
+            db.setConstructed( remote.usesEZRC() && setupCode == -1 && devType != 0xFF );
           }
         }
       }
@@ -4529,7 +4565,10 @@ public class RemoteConfiguration
       }
       else
       {
-        updateActivityHighlights();
+        if ( !remote.usesSimpleset() )
+        {
+          updateActivityHighlights();
+        }
         remote.getCheckSums()[ 0 ].getAddressRange().setEnd( pos - 1 );
       }
     }
@@ -4995,20 +5034,29 @@ public class RemoteConfiguration
         segData = new Hex( 4 );
         segData.set( ( short )0, 0 );
         segData.set( ( short )activity.getButton().getKeyCode(), 1 );
-        Setting s = remote.getSetting( "AudioHelp" );
-        s.setValue( activity.getAudioHelp() );
-        s.store( segData.getData(), remote );
-        s = remote.getSetting( "VideoHelp" );
-        s.setValue( activity.getVideoHelp() );
-        s.store( segData.getData(), remote );
-        flags = activity.getHelpSegmentFlags();
-        if ( segments.get( 0xDC ) == null )
+        Setting sa = remote.getSetting( "AudioHelp" );
+        if ( sa != null )
         {
-          segments.put(  0xDC, new ArrayList< Segment >() );
+          sa.setValue( activity.getAudioHelp() );
+          sa.store( segData.getData(), remote );
         }
-        Segment segment = new Segment( 0xDC, flags, segData );
-        activity.setHelpSegment( segment );
-        segments.get( 0xDC ).add( segment );
+        Setting sv = remote.getSetting( "VideoHelp" );
+        if ( sv != null )
+        {
+          sv.setValue( activity.getVideoHelp() );
+          sv.store( segData.getData(), remote );
+        }
+        flags = activity.getHelpSegmentFlags();
+        if ( sa != null || sv != null )
+        {
+          if ( segments.get( 0xDC ) == null )
+          {
+            segments.put(  0xDC, new ArrayList< Segment >() );
+          }
+          Segment segment = new Segment( 0xDC, flags, segData );
+          activity.setHelpSegment( segment );
+          segments.get( 0xDC ).add( segment );
+        }
       }
     }
     else if ( types.contains( 0x1E ) )
@@ -5084,6 +5132,27 @@ public class RemoteConfiguration
       }
       
       segments.get( 0x1E ).add( segment );
+    }
+    else if ( types.contains( 0x0B ) )
+    {
+      segments.remove( 0x0B );
+      List< Activity > activeActivities = new ArrayList< Activity >();
+      for ( Activity activity : activities.values() )
+      {
+        if ( activity.isActive() )
+        {
+          activeActivities.add( activity );
+        }
+      }
+      if ( activeActivities.isEmpty() )
+      {
+        return;
+      }
+      Collections.sort( activeActivities, Activity.activitySort );
+      for ( Activity activity : activeActivities )
+      {
+        updateActivityData( activity, true );
+      }
     }
   }
   
@@ -5332,6 +5401,7 @@ public class RemoteConfiguration
       if ( types.contains( 1 ) ) segments.remove( 1 );
       if ( types.contains( 2 ) ) segments.remove( 2 );
       if ( types.contains( 3 ) ) segments.remove( 3 );
+      if ( types.contains( 4 ) ) segments.remove( 4 );
       if ( types.contains( 7 ) ) segments.remove( 7 );
       if ( types.contains( 8 ) ) segments.remove( 8 );
       setUpgradeKeyMoves();
@@ -5498,6 +5568,7 @@ public class RemoteConfiguration
   {
     List< Integer > segmentTypes = remote.getSegmentTypes();
     LinkedHashMap< Integer, List< Macro > > bySubset = new LinkedHashMap< Integer, List<Macro> >();
+    int argType = type;
     for ( Macro macro : list )
     {
       int subset = ( macro.getSegmentFlags() << 8 ) | macro.getDeviceButtonIndex();
@@ -5511,8 +5582,9 @@ public class RemoteConfiguration
     }
     for ( int subset : bySubset.keySet() )
     {
+      type = argType;
       list = bySubset.get( subset );
-      if ( type == 0 && segmentTypes.contains( 1 ) && ( list.size() == 1 || !segmentTypes.contains( 2 ) ) )
+      if ( type == 0 && ( segmentTypes.contains( 1 ) || segmentTypes.contains( 4 ) ) && ( list.size() == 1 || !segmentTypes.contains( 2 ) ) )
       {
         type = 1;
       }
@@ -5530,10 +5602,14 @@ public class RemoteConfiguration
         list.clear();
         list.add( macro );
       }
+      if ( type == 1 && segmentTypes.contains( 4 ) && list.get( 0 ).getActivity() != null )
+      {
+        type = 4;
+      }
       int size = 0;
       for ( Macro macro : list )
       {
-        size += macro.dataLength() + type - 1;
+        size += macro.dataLength() + type - ( type == 4 ? 0 : 1 );
         if ( type == 3 )
         {
           size += macro.dataLength() + macro.getName().length() + 1;
@@ -5548,6 +5624,13 @@ public class RemoteConfiguration
       if ( type == 2 )
       {
         segData.set( ( short )list.size(), pos++ );
+      }
+      else if ( type == 4 )
+      {
+        segData.set( ( short )0, 0 );
+        segData.set( ( short )( subset & 0xFF ), 1 );
+        segData.set( ( short )1, pos++ );
+        segData.set( ( short )keyCode, pos++ );
       }
       for ( Macro macro : list )
       {

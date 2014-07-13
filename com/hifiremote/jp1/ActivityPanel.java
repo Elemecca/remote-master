@@ -213,7 +213,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
         messageArea.setText( "Note:  Size and highlight color for the Activity Functions includes "
             + "those of the Activity Assists." );
       }
-      else if ( remote.hasMasterPowerSupport() )
+      else if ( remote.hasMasterPowerSupport() && !remote.usesSimpleset() )
       {
         messageArea.setText( startMessage + "The \"Key\" value has no "
         + "significance when the activity is set with RMIR, but some value has to be set "
