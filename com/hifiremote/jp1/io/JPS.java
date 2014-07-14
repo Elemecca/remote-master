@@ -8,8 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileSystemView;
 
 import com.hifiremote.jp1.RemoteMaster;
 import com.hifiremote.jp1.settings.SettingFactory;
@@ -56,7 +59,34 @@ public class JPS extends IO
   {
     if ( filePath == null )
     {
-      return null;
+      String ofaDriveName = null;
+      List <File>files = Arrays.asList(File.listRoots());
+      for (File f : files) {
+        String s1 = FileSystemView.getFileSystemView().getSystemDisplayName (f);
+        String s2 = FileSystemView.getFileSystemView().getSystemTypeDescription(f);
+        System.err.println("getSystemDisplayName : " + s1);
+        System.err.println("getSystemTypeDescription : " + s2);
+        if ( s1.indexOf( "REMOTE" ) >= 0 )
+        {
+          int n = s1.indexOf( '(' );
+          String driveLetter = s1.substring( n+1, n+2 );
+          System.err.println( "Loading from path: " + driveLetter + ":\\settings.bin" );
+          filePath = driveLetter + ":\\settings.bin";
+          if ( new File( filePath ).exists() )
+          {
+            break;
+          }
+          else
+          {
+            System.err.println( "File does not exist" );
+            filePath = null;
+          }
+        }
+      }
+      if ( filePath == null )
+      {
+        return null;
+      }
     }
     this.filePath = filePath;
     SettingFactory cf = new SettingFactory(SettingImpl.class);
@@ -102,6 +132,7 @@ public class JPS extends IO
     eepromAddress = getInt32( data, 0x3B );
     s.read( eepromAddress, data );
     eepromSize = getInt32( data, 2 );
+    this.filePath = filePath;
     return filePath;
   }
   

@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24 Test 2";
+  public final static String version = "v2.03 Alpha 24 Test 4";
 
   /** The dir. */
   private File dir = null;
@@ -2843,8 +2843,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           continue;
         }
 
-        
-        
         System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
         portName = temp.openRemote( file != null ? file.getAbsolutePath() : null );
         if ( portName == null ) portName = "";
