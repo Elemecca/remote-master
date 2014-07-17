@@ -574,10 +574,10 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   /*
    * (non-Javadoc)
    * 
-   * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
+   * @see com.hifiremote.jp1.RMPanel#addRMPropertyChangeListener(java.beans.PropertyChangeListener)
    */
   @Override
-  public void addPropertyChangeListener( PropertyChangeListener listener )
+  public void addRMPropertyChangeListener( PropertyChangeListener listener )
   {
     if ( model != null && listener != null )
     {

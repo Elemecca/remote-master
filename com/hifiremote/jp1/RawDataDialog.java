@@ -195,11 +195,6 @@ public class RawDataDialog extends JDialog implements ActionListener
     }
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
-   */
   public void addPropertyChangeListener( PropertyChangeListener l )
   {
     if ( ( model != null ) && ( l != null ) )

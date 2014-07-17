@@ -289,10 +289,10 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   /*
    * (non-Javadoc)
    * 
-   * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
+   * @see com.hifiremote.jp1.RMPanel#addRMPropertyChangeListener(java.beans.PropertyChangeListener)
    */
   @Override
-  public void addPropertyChangeListener( PropertyChangeListener listener )
+  public void addRMPropertyChangeListener( PropertyChangeListener listener )
   {
     if ( listener != null )
     {

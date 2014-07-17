@@ -1,5 +1,6 @@
 package com.hifiremote.jp1.io;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -21,11 +23,23 @@ import com.hifiremote.jp1.settings.Settings;
 
 public class JPS extends IO
 {
-  String signature = null;
-  String filePath = null;
-  int eepromAddress = 0;
-  int eepromSize = 0;
-  Settings s = null;
+  private static final String dosfslabelCommand = "dosfslabel";
+  
+  private String signature = null;
+  private String filePath = null;
+  private int eepromAddress = 0;
+  private int eepromSize = 0;
+  private Settings s = null;
+  
+  public JPS() throws UnsatisfiedLinkError
+  {
+    super( null );
+  }
+
+  public JPS( File folder ) throws UnsatisfiedLinkError
+  {
+    super( null );
+  }
  
   @Override
   public String getInterfaceName() {
@@ -49,45 +63,50 @@ public class JPS extends IO
     return new String[ 0 ];
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.hifiremote.jp1.io.IO#openRemote(java.lang.String)
-   */
   @Override
   public String openRemote( String filePath )
   {
     if ( filePath == null )
     {
-      String ofaDriveName = null;
-      List <File>files = Arrays.asList(File.listRoots());
-      for (File f : files) {
-        String s1 = FileSystemView.getFileSystemView().getSystemDisplayName (f);
-        String s2 = FileSystemView.getFileSystemView().getSystemTypeDescription(f);
-        System.err.println("getSystemDisplayName : " + s1);
-        System.err.println("getSystemTypeDescription : " + s2);
-        if ( s1.indexOf( "REMOTE" ) >= 0 )
+      String osName = System.getProperty( "os.name" );
+      if ( osName.startsWith( "Windows" ) )
+      {   
+        filePath = getSettingsWindows();
+      }
+      else if ( osName.equals( "Linux" ) )
+      {
+        try
         {
-          int n = s1.indexOf( '(' );
-          String driveLetter = s1.substring( n+1, n+2 );
-          System.err.println( "Loading from path: " + driveLetter + ":\\settings.bin" );
-          filePath = driveLetter + ":\\settings.bin";
-          if ( new File( filePath ).exists() )
-          {
-            break;
-          }
-          else
-          {
-            System.err.println( "File does not exist" );
-            filePath = null;
-          }
+          filePath = getSettingsLinux();
+        }
+        catch ( Exception e )
+        {
+          System.err.println( "OS file system error: " + e.getMessage() );
+          String message = "File system return error: " + e.getMessage();
+          String title = "OS Error";
+          JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
+          filePath = null;
         }
       }
+      else if ( osName.equals( "Mac OS X") )
+      {
+        String message = "Direct loading from the remote is not yet supported for Mac OS X.";
+        String title = "OS Error";
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
+      }
+      else
+      {
+        String message = "This OS is not supported by RMIR.";
+        String title = "OS Error";
+        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
+      }
+      
       if ( filePath == null )
       {
         return null;
       }
     }
+    
     this.filePath = filePath;
     SettingFactory cf = new SettingFactory(SettingImpl.class);
     InputStream in = null;
@@ -234,19 +253,169 @@ public class JPS extends IO
     
     return buffer.length;
   }
-
-  /** The is loaded. */
-  private static boolean isLoaded = false;
-
-  public JPS() throws UnsatisfiedLinkError
+  
+  public String getSettingsWindows()
   {
-    super( null );
+    String filePath = null;
+    List <File> files = Arrays.asList( File.listRoots() );
+    for ( File f : files )
+    {
+      String s1 = FileSystemView.getFileSystemView().getSystemDisplayName( f );
+//      System.err.println( "getSystemDisplayName : " + s1 );
+      if ( s1.indexOf( "REMOTE" ) >= 0 )
+      {
+        int n = s1.indexOf( '(' );
+        String drivePath = s1.substring( n+1, n+2 );
+        filePath = drivePath + ":\\settings.bin";
+        System.err.println( "Loading from path: " + filePath );
+        if ( new File( filePath ).exists() )
+        {
+          break;
+        }
+        else
+        {
+          System.err.println( "File does not exist" );
+          filePath = null;
+        }
+      }
+    }
+    return filePath;
   }
+  
+  public String getSettingsLinux() throws IOException, InterruptedException 
+  { 
+    String dosfslabel = null; 
+    File dosfslabelFile = null;
+    String filePath = null;
+    for ( String path : System.getenv("PATH").split(File.pathSeparator ) ) 
+    { 
+      dosfslabelFile = new File( path + File.separator + dosfslabelCommand ); 
+      if ( dosfslabelFile.exists() )
+      { 
+        dosfslabel = dosfslabelFile.getAbsolutePath(); 
+        break; 
+      } 
+    } 
 
+    if ( dosfslabel == null )
+    { 
+      String message = "Command dosfslabel is not found. Please use your system package\n"
+                     + "management to install package containing dosfslabel.";
+      String title = "OS Error";
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
+      return null;
+    } 
 
-  public JPS( File folder ) throws UnsatisfiedLinkError
-  {
-    super( null );
+    Runtime rt = Runtime.getRuntime(); 
+    BufferedReader mountsReader = new BufferedReader( new InputStreamReader( new FileInputStream( "/proc/mounts" ) ) ); 
+    String mountEntry; 
+    while ( ( mountEntry = mountsReader.readLine() ) != null )
+    { 
+      String[] values = mountEntry.split(" ", 4); 
+      if ( !"vfat".equals( values[2] ) )
+      {
+        continue;
+      }
+
+      Process p = rt.exec( dosfslabel + " " + values[0] ); 
+      p.waitFor(); 
+      if ( p.exitValue() == 0 ) 
+      {
+        BufferedReader br = new BufferedReader( new InputStreamReader( p.getInputStream() ) ); 
+        String label = br.readLine(); 
+        if ( label.contains( "REMOTE" ) ) 
+        {
+          filePath = unescapeJavaString( values[1] ) + File.separator + "settings.bin";
+          System.err.println( "Loading from path: " + filePath );
+          if ( new File( filePath ).exists() ) 
+          {
+            break;
+          }
+          else
+          {
+            System.err.println( "File does not exist" );
+            filePath = null;
+          } 
+        } 
+        br.close(); 
+      }
+      p.destroy();
+    }
+    mountsReader.close();
+    return filePath;
+  } 
+
+  public static String unescapeJavaString( String st ) 
+  { 
+    StringBuilder sb = new StringBuilder( st.length() ); 
+
+    for ( int i = 0; i < st.length(); i++ ) 
+    { 
+      char ch = st.charAt( i ); 
+      if ( ch == '\\' ) 
+      { 
+        char nextChar = ( i == st.length() - 1 ) ? '\\' : st.charAt(i + 1); 
+        // Octal escape? 
+        if ( nextChar >= '0' && nextChar <= '7' ) 
+        { 
+          String code = "" + nextChar; 
+          i++; 
+          if ( ( i < st.length() - 1 ) && st.charAt( i + 1 ) >= '0' && st.charAt( i + 1 ) <= '7') 
+          { 
+            code += st.charAt( i + 1 ); 
+            i++; 
+            if ( ( i < st.length() - 1 ) && st.charAt( i + 1 ) >= '0' && st.charAt( i + 1 ) <= '7') 
+            { 
+              code += st.charAt( i + 1 ); 
+              i++; 
+            } 
+          } 
+          sb.append( ( char ) Integer.parseInt( code, 8 ) ); 
+          continue; 
+        } 
+        switch ( nextChar ) 
+        { 
+          case '\\': 
+            ch = '\\'; 
+            break; 
+          case 'b': 
+            ch = '\b'; 
+            break; 
+          case 'f': 
+            ch = '\f'; 
+            break; 
+          case 'n': 
+            ch = '\n'; 
+            break; 
+          case 'r': 
+            ch = '\r'; 
+            break; 
+          case 't': 
+            ch = '\t'; 
+            break; 
+          case '\"': 
+            ch = '\"'; 
+            break; 
+          case '\'': 
+            ch = '\''; 
+            break; 
+            // Hex Unicode: u???? 
+          case 'u': 
+            if ( i >= st.length() - 5 )
+            { 
+              ch = 'u'; 
+              break; 
+            } 
+            int code = Integer.parseInt ( "" + st.charAt( i + 2 ) + st.charAt( i + 3 ) 
+                + st.charAt( i + 4 ) + st.charAt( i + 5 ), 16 ); 
+            sb.append( Character.toChars( code ) ); 
+            i += 5; 
+            continue; 
+        } 
+        i++; 
+      } 
+      sb.append(ch); 
+    } 
+    return sb.toString();
   }
-
 }

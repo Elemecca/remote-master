@@ -338,7 +338,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
   }
 
   @Override
-  public void addPropertyChangeListener( PropertyChangeListener listener )
+  public void addRMPropertyChangeListener( PropertyChangeListener listener )
   {
     if ( listener != null )
     {

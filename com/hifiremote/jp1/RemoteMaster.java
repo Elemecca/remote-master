@@ -1297,42 +1297,42 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     generalPanel = new GeneralPanel();
     tabbedPane.addTab( "General", generalPanel );
-    generalPanel.addPropertyChangeListener( this );
+    generalPanel.addRMPropertyChangeListener( this );
 
     keyMovePanel = new KeyMovePanel();
-    keyMovePanel.addPropertyChangeListener( this );
+    keyMovePanel.addRMPropertyChangeListener( this );
 
     macroPanel = new MacroPanel();
-    macroPanel.addPropertyChangeListener( this );
+    macroPanel.addRMPropertyChangeListener( this );
 
     specialFunctionPanel = new SpecialFunctionPanel();
-    specialFunctionPanel.addPropertyChangeListener( this );
+    specialFunctionPanel.addRMPropertyChangeListener( this );
 
     timedMacroPanel = new TimedMacroPanel();
-    timedMacroPanel.addPropertyChangeListener( this );
+    timedMacroPanel.addRMPropertyChangeListener( this );
 
     favScanPanel = new FavScanPanel();
-    favScanPanel.addPropertyChangeListener( this );
+    favScanPanel.addRMPropertyChangeListener( this );
     
     favoritesPanel = new FavoritesPanel();
-    favoritesPanel.addPropertyChangeListener( this );
+    favoritesPanel.addRMPropertyChangeListener( this );
 
     devicePanel = new DeviceUpgradePanel();
-    devicePanel.addPropertyChangeListener( this );
+    devicePanel.addRMPropertyChangeListener( this );
 
     protocolPanel = new ProtocolUpgradePanel();
-    protocolPanel.addPropertyChangeListener( this );
+    protocolPanel.addRMPropertyChangeListener( this );
     
     activityPanel = new ActivityPanel();
-    activityPanel.addPropertyChangeListener( this );
+    activityPanel.addRMPropertyChangeListener( this );
 
     learnedPanel = new LearnedSignalPanel();
     if ( LearnedSignal.hasDecodeIR() )
-      learnedPanel.addPropertyChangeListener( this );
+      learnedPanel.addRMPropertyChangeListener( this );
 
     rawDataPanel = new RawDataPanel();
     tabbedPane.addTab( "Raw Data", rawDataPanel );
-    rawDataPanel.addPropertyChangeListener( this );
+    rawDataPanel.addRMPropertyChangeListener( this );
 
     tabbedPane.addChangeListener( this );
 

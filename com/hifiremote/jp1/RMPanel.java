@@ -26,10 +26,5 @@ public abstract class RMPanel extends JPanel
   {
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.awt.Container#addPropertyChangeListener(java.beans.PropertyChangeListener)
-   */
-  public abstract void addPropertyChangeListener( PropertyChangeListener listener );
+  public abstract void addRMPropertyChangeListener( PropertyChangeListener listener );
 }

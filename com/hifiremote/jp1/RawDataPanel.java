@@ -132,10 +132,10 @@ public class RawDataPanel extends RMPanel
   /*
    * (non-Javadoc)
    * 
-   * @see com.hifiremote.jp1.RMPanel#addPropertyChangeListener(java.beans.PropertyChangeListener)
+   * @see com.hifiremote.jp1.RMPanel#addRMPropertyChangeListener(java.beans.PropertyChangeListener)
    */
   @Override
-  public void addPropertyChangeListener( PropertyChangeListener l )
+  public void addRMPropertyChangeListener( PropertyChangeListener l )
   {
     if ( model != null && l != null )
     {

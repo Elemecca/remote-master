@@ -26,6 +26,7 @@ Changes for v2.03
 - Update digitmaps to 584 (Graham)
 -- Alpha 24
 - Adds support for Simpleset remotes using modules provided by Marcin, aka yaworski (Graham)
+- Replace addPropertyChangeListener by AddRMPropertyChangeListener in RMPanel and descendents to prevent conflict with certain Swing logic (Marcin)
 
 Changes for v2.02
 -- Alpha --

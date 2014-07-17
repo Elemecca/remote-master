@@ -165,7 +165,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
   }
   
   @Override
-  public void addPropertyChangeListener( PropertyChangeListener listener )
+  public void addRMPropertyChangeListener( PropertyChangeListener listener )
   {
     if ( listener != null )
     {
