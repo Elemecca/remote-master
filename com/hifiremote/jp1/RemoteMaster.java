@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24 Test 4";
+  public final static String version = "v2.03 Alpha 24 Test 5";
 
   /** The dir. */
   private File dir = null;
@@ -604,7 +604,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         e.printStackTrace();
       }
       saveAction.setEnabled( file != null );
-      saveAsAction.setEnabled( file == null );
+      saveAsAction.setEnabled( true );
       openRdfAction.setEnabled( true );
       installExtenderItem.setEnabled( file == null );
       cleanUpperMemoryItem.setEnabled( true );
@@ -1674,6 +1674,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       System.err.println( "Unable to create JP1USB object: " + le.getMessage() );
     }
+    
+    try
+    {
+      JPS jps = new JPS( userDir );
+      interfaces.add( jps );
+      System.err.println( "    JPS version " + jps.getInterfaceVersion() );
+    }
+    catch ( LinkageError le )
+    {
+      System.err.println( "Unable to create JPS object: " + le.getMessage() );
+    }
 
     try
     {
@@ -1686,17 +1697,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     catch ( LinkageError le )
     {
       System.err.println( "Unable to create JP1Parallel object: " + le.getMessage() );
-    }
-    
-    try
-    {
-      JPS jps = new JPS( userDir );
-      interfaces.add( jps );
-      System.err.println( "    JPS version " + jps.getInterfaceVersion() );
-    }
-    catch ( LinkageError le )
-    {
-      System.err.println( "Unable to create JPS object: " + le.getMessage() );
     }
 
     /*
@@ -1773,10 +1773,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         try
         {
           String ioName = io.getInterfaceName();
-          if ( ioName.equals( "JPS" ) )
-          {
-            continue;
-          }
           item = new JRadioButtonMenuItem( ioName + "..." );
           item.setActionCommand( ioName );
           item.setSelected( ioName.equals( preferredInterface ) );
@@ -2810,7 +2806,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     System.err.println( "Interface Name = " + ( interfaceName == null ? "NULL" : interfaceName ) );
     String portName = properties.getProperty( "Port" );
     System.err.println( "Port Name = " + ( portName == null ? "NULL" : portName ) );
-    if ( interfaceName != null && file == null )
+    if ( interfaceName != null )
     {
       for ( IO temp : interfaces )
       {
@@ -2819,7 +2815,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( tempName.equals( interfaceName ) )
         {
           System.err.println( "Interface matched.  Trying to open remote." );
-          portName = temp.openRemote( portName );
+          if ( file != null && !tempName.equals( "JPS" ) )
+          {
+            System.err.println( "Interface does not support opening a file" );
+            break;
+          }
+          if ( portName != null && file != null && !portName.equals( file.getAbsolutePath() ) )
+          {
+            System.err.println( "Port name does not match file path" );
+            break;
+          }
+          portName = temp.openRemote( portName != null ? portName : file != null ? file.getAbsolutePath() : null );
           if ( portName != null && !portName.isEmpty() )
           {
             System.err.println( "Opened on Port " + portName );

@@ -4563,12 +4563,14 @@ public class RemoteConfiguration
         updateActivityHighlightsEZRC();
         updateFavoritesHighlights();
       }
+      else if ( remote.usesSimpleset() )
+      {
+        updateActivityHighlightsEZRC();
+        remote.getCheckSums()[ 0 ].getAddressRange().setEnd( pos - 1 );
+      }
       else
       {
-        if ( !remote.usesSimpleset() )
-        {
-          updateActivityHighlights();
-        }
+        updateActivityHighlights();
         remote.getCheckSums()[ 0 ].getAddressRange().setEnd( pos - 1 );
       }
     }
@@ -4629,6 +4631,11 @@ public class RemoteConfiguration
         int len = 2 * segData[ 2 ]; // keys and durations
         len += segData[ 3 + len ] + 2;  // name and serial
         updateHighlight( macro, address + 4, len + 4 );
+      }
+      else if ( segType == 4 )
+      {
+        int len = macro.getData().length() + 5;
+        updateHighlight( macro, address + 4, len );
       }
     }
   }
@@ -4772,9 +4779,15 @@ public class RemoteConfiguration
         }
       }
 
+      activity.clearMemoryUsage();
       Segment segment = activity.getSegment();
       if ( segment == null )
       {
+        Macro macro = activity.getMacro();
+        if ( macro != null && macro.getSegment() != null )
+        {
+          activity.addMemoryUsage( macro.getData().length() + 5 );
+        }
         continue;
       }
       int address = segment.getAddress();

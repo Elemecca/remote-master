@@ -106,6 +106,8 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     {
       // Assume that using EZRC also implies has Master Power Support
       Remote remote = remoteConfig.getRemote();
+      boolean needsDevCheckBoxes = remote.getSegmentTypes() != null && remote.getSegmentTypes().contains( 4 );
+      int temp = 0;
       if ( !remote.usesEZRC() && col > 0 )
       {
         ++col;       // skip Name
@@ -114,9 +116,20 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       {
         col++;       // skip key
       }
-      if ( !remote.hasMasterPowerSupport() && col > 2 )
+      if ( ( !remote.hasMasterPowerSupport() || needsDevCheckBoxes ) && col > 2 )
       {
         col++;  // skip Power Macro
+      }
+      if ( needsDevCheckBoxes )
+      {
+        if ( col > 3 + remote.getDeviceButtons().length )
+        {
+          col -= remote.getDeviceButtons().length;
+        }
+        else if ( col > 3 )
+        {
+          temp = col;
+        }
       }
       if ( remote.getSetting( "AudioHelp" ) == null && col > 3 )
       {
@@ -130,37 +143,53 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       {
         col++;  // skip Icon
       }
+      if ( temp > 0 )
+      {
+        col = colNames.length + temp - 5;
+      }
     }
     return col;
   }
 
   private static final String[] colNames =
   {
-      "#", "Name", "Key", "Power Macro", "Audio Action", "Video Action", "Icon?", "Notes", "<html>Size &amp<br>Color</html>"
+      "#", "Name", "Key", "Power Macro", "Audio Action", "Video Action", "Icon?", "Notes", "<html>Size &amp<br>Color</html>", "Power Dev?"
   };
   
   private static final String[] colPrototypeNames =
   {
       " 00 ", "Activity Name ___", "Key__", "A power macro with a lot of keys_________", "Audio Action__", "Video Action__",
-      "Icon?_", "A reasonable length note", "Color_"
+      "Icon?_", "A reasonable length note", "Color_", "Power XXXXXXX"
   };
   
   private static final Class< ? >[] colClasses =
   {
-      Integer.class, String.class, Integer.class, List.class, String.class, String.class, RMIcon.class, String.class, Color.class
+      Integer.class, String.class, Integer.class, List.class, String.class, String.class, RMIcon.class, String.class, Color.class, Boolean.class
   };
 
   @Override
   public Class< ? > getColumnClass( int col )
   {
-    return colClasses[ getEffectiveColumn( col ) ];
+    col = getEffectiveColumn( col );
+    if ( col > colClasses.length - 1 )
+    {
+      col = colClasses.length -1;
+    }
+    return colClasses[ col ];
   }
   
   @Override
   public String getColumnName( int col )
   {
-    return colNames[ getEffectiveColumn( col ) ];
+    col = getEffectiveColumn( col );
+    if ( remoteConfig != null && col > colClasses.length - 2 )
+    {
+      Remote remote = remoteConfig.getRemote();
+      return "Power " + remote.getDeviceButtons()[ col - colClasses.length + 1 ].getName() + "?";
+    }
+    return colNames[ col ];
   }
+  
   @Override
   public String getColumnPrototypeName( int col )
   {
@@ -168,7 +197,12 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     {
       return "Activity 0__";
     }
-    return colPrototypeNames[ getEffectiveColumn( col ) ];
+    col = getEffectiveColumn( col );
+    if ( col > colPrototypeNames.length - 1 )
+    {
+      col = colPrototypeNames.length - 1;
+    }
+    return colPrototypeNames[ col ];
   }
 
   @Override
@@ -188,7 +222,14 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       }
       if ( remote.hasMasterPowerSupport() )
       {
-        count++;   // add Macro;
+        if ( remote.getSegmentTypes() != null && remote.getSegmentTypes().contains( 0x04 ) )
+        {
+          count += remote.getDeviceButtons().length;  // add one checkbox per device
+        }
+        else
+        {
+          count++;   // add Macro;
+        }
       }
       if ( remote.getSetting( "AudioHelp" ) != null )
       {
@@ -331,7 +372,9 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   {
     Activity activity = getRow( row );
     Macro macro = activity.getMacro();
-    switch ( getEffectiveColumn( col ) )
+    Remote remote = remoteConfig.getRemote();
+    col = getEffectiveColumn( col );
+    switch ( col )
     {
       case 0:
         return new Integer( row + 1 );
@@ -355,7 +398,15 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       case 8:
         return activity.getHighlight();
       default:
-        return null;
+        short[] data = macro.getData().getData();
+        DeviceButton db = remote.getDeviceButtons()[ col - colNames.length + 1 ];
+        int len = data.length;
+        List< DeviceButton > devs = new ArrayList< DeviceButton >();
+        for ( int i = 0; i < len / 2; i++ )
+        {
+          devs.add( remote.getDeviceButton( data[ 2 * i ] ) );
+        }
+        return devs.contains( db );
     }
   }
   
@@ -449,7 +500,45 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     {
       activity.setHighlight( ( Color )value );
     }
-    propertyChangeSupport.firePropertyChange(  col == 7 ? "highlight" : "data", null, null );
+    else if ( col > colNames.length - 2 )
+    {
+      short[] data = macro.getData().getData();
+      
+      int len = data.length;
+      List< DeviceButton > devs = new ArrayList< DeviceButton >();
+      DeviceButton db = null;
+      for ( int i = 0; i < len / 2; i++ )
+      {
+        db = remote.getDeviceButton( data[ 2 * i ] );
+        if ( db != null )
+        {
+          devs.add( db );
+        }
+      }
+      db = remote.getDeviceButtons()[ col - colNames.length + 1 ];
+      if ( ( Boolean )value && !devs.contains( db ) )
+      {
+        devs.add( db );
+      }
+      else if ( !( Boolean )value && devs.contains( db ) )
+      {
+        devs.remove( db );
+      }
+      Hex hex = new Hex( 2 * devs.size() );
+      int n = 0;
+      for ( int i = 0; i < remote.getDeviceButtons().length; i++ )
+      {
+        db = remote.getDeviceButtons()[ i ];
+        if ( devs.contains( db ) )
+        {
+          hex.set( ( short )db.getButtonIndex(), n++ );
+          hex.set( remote.getButtonByStandardName( "Power" ).getKeyCode(), n++ );
+        }
+      }
+      macro.setData( hex );
+    }
+    fireTableRowsUpdated( row, row );
+    propertyChangeSupport.firePropertyChange(  col == 8 ? "highlight" : "data", null, null );
   }
 
   public void setActivityGroupModel( ActivityGroupTableModel activityGroupModel )
