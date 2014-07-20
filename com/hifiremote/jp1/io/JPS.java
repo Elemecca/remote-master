@@ -55,12 +55,20 @@ public class JPS extends IO
   public int getInterfaceType() {
     return 0x301;
   }
-  
-  @Override
-  public native boolean getJP2info( byte[] buffer, int length );
 
+  @Override
   public String[] getPortNames() {
     return new String[ 0 ];
+  }
+  
+  public boolean isOpen()
+  {
+    return s != null;
+  }
+
+  public String getFilePath()
+  {
+    return filePath;
   }
 
   @Override
