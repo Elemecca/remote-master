@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24 Test 5a";
+  public final static String version = "v2.03 Alpha 24 Test 5b";
 
   /** The dir. */
   private File dir = null;
@@ -633,7 +633,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     @Override
     protected Void doInBackground() throws Exception
     {
-      IO io = getOpenInterface( null, true );
+      IO io = getOpenInterface( null, false );
       if ( io == null )  
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
@@ -691,12 +691,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     private short[] data;
     private boolean allowClockSet;
     private File file = null;
+    private boolean forWriting = false;
 
     private UploadTask( short[] data, boolean allowClockSet )
     {
       this.data = data;
       this.allowClockSet = allowClockSet;
       this.file = null;
+      forWriting = true;
     }
     
     private UploadTask( File file, short[] data, boolean allowClockSet )
@@ -704,13 +706,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       this.data = data;
       this.allowClockSet = allowClockSet;
       this.file = file;
+      forWriting = false;
     }
 
     @Override
     protected Void doInBackground() throws Exception
     {
       Remote remote = remoteConfig.getRemote();
-      IO io = getOpenInterface( file, true );
+      IO io = getOpenInterface( file, forWriting );
       if ( io == null )  
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
@@ -778,7 +781,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( io.getInterfaceType() == 0x106 )
         {
           io.closeRemote();
-          io = getOpenInterface( null, true );
+          io = getOpenInterface( null, false );
         }
         short[] readBack = new short[ data.length ];
         rc = io.readRemote( remote.getBaseAddress(), readBack );
@@ -1730,6 +1733,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
             String[] availablePorts = io.getPortNames();
 
             PortDialog d = new PortDialog( RemoteMaster.this, availablePorts, defaultPort );
+            if ( command.equals( "JPS" ) && defaultPort == null && ( ( JPS )io ).isOpen() )
+            {
+              d.setOtherPort( ( ( JPS )io ).getFilePath() );
+            }
+            
             d.setVisible( true );
             if ( d.getUserAction() == JOptionPane.OK_OPTION )
             {
@@ -2780,7 +2788,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   private void setTitleFile( File file )
   {
-    if ( file == null )
+    if ( file == null || remoteConfig == null )
     {
       setTitle( "RM IR" );
     }
@@ -2815,35 +2823,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( tempName.equals( interfaceName ) )
         {
           System.err.println( "Interface matched.  Trying to open remote." );
-          if ( file != null && !tempName.equals( "JPS" ) )
+          IO ioOut = testInterface( temp, file, forWriting );
+          if ( ioOut != null )
           {
-            System.err.println( "Interface does not support opening a file" );
-            break;
-          }
-          if ( portName != null && file != null && !portName.equals( file.getAbsolutePath() ) )
-          {
-            System.err.println( "Port name does not match file path" );
-            break;
-          }
-          if ( admin && tempName.equals( "JPS" ) && forWriting && ( ( JPS )temp ).isOpen() )
-          {
-            portName = ( ( JPS )temp ).getFilePath();
-            System.err.println( "Already open on Port " + portName );
-            return temp;
+            return ioOut;
           }
           else
           {
-            portName = temp.openRemote( portName != null ? portName : file != null ? file.getAbsolutePath() : null );
-            if ( portName != null && !portName.isEmpty() )
-            {
-              System.err.println( "Opened on Port " + portName );
-              return temp;
-            }
-            else
-            {
-              System.err.println( "Failed to open" );
-              break;
-            }
+            System.err.println( "Failed to open" );
+            break;
           }
         }
       }
@@ -2853,23 +2841,61 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       for ( IO temp : interfaces )
       {
         String tempName = temp.getInterfaceName();
-        if ( file != null && !tempName.equals( "JPS" ) )
-        {
-          continue;
-        }
-
         System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
-        portName = temp.openRemote( file != null ? file.getAbsolutePath() : null );
-        if ( portName == null ) portName = "";
-        System.err.println( "Port Name = " + ( portName.isEmpty() ? "NULL" : portName ) );
-        if ( !portName.isEmpty() )
+        IO ioOut = testInterface( temp, file, forWriting );
+        if ( ioOut != null )
         {
-          System.err.println( "Opened on Port " + portName );
-          return temp;
+          return ioOut;
         }
       }
     }
     return null;
+  }
+  
+  private IO testInterface( IO ioIn, File file, boolean forWriting )
+  {
+    String ioName = ioIn.getInterfaceName();
+    String osName = System.getProperty( "os.name" );
+    String portName = properties.getProperty( "Port" );
+    if ( file != null && !ioName.equals( "JPS" ) )
+    {
+      System.err.println( "Interface does not support opening a file" );
+      return null;
+    }
+    if ( portName != null && file != null && !portName.equals( file.getAbsolutePath() ) )
+    {
+      System.err.println( "Port name does not match file path" );
+      return null;
+    }
+    if ( ioName.equals( "JPS" ) && forWriting )
+    {
+      JPS jps = ( JPS )ioIn;
+      if ( osName.equals( "Linux" ) )
+      {
+        String title = "Facility not supported";
+        String message = "RMIR does not yet support writing directly to a Simpleset remote in Linux";
+        JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
+        return null;
+      }
+      else if ( admin && jps.isOpen() )
+      {
+        portName = jps.getFilePath();
+        System.err.println( "Already open on Port " + portName );
+        return ioIn;
+      }
+    }
+    portName = ioIn.openRemote( portName != null ? portName : file != null ? file.getAbsolutePath() : null );
+    if ( portName == null ) portName = "";
+    System.err.println( "Port Name = " + ( portName.isEmpty() ? "NULL" : portName ) );
+    if ( !portName.isEmpty() )
+    {
+      System.err.println( "Opened on Port " + portName );
+      return ioIn;
+    }
+    else
+    {
+      return null;
+    }
   }
 
   private void setInterfaceState( String state )

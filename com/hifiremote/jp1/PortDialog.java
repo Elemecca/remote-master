@@ -128,8 +128,14 @@ public class PortDialog
     if ( !foundMatch )
     {
       other.setText( port );
+      this.port = OTHER;
       buttons[ buttons.length - 1 ].setSelected( true );
     }
+    else
+    {
+      this.port = port;
+    }
+    other.setEnabled( OTHER.equals( this.port ));
     
     add( box, BorderLayout.NORTH );
 
@@ -175,6 +181,11 @@ public class PortDialog
       port = button.getText();
       other.setEnabled( OTHER.equals( port ));
     }
+  }
+  
+  public void setOtherPort( String port )
+  {
+    other.setText( port );
   }
 
   /**
