@@ -109,9 +109,7 @@ public class JPS extends IO
       }
       else if ( osName.equals( "Mac OS X") )
       {
-        String message = "Direct loading from the remote is not yet supported for Mac OS X.";
-        String title = "OS Error";
-        JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
+        filePath = getSettingsMacOSX();
       }
       else
       {
@@ -272,7 +270,28 @@ public class JPS extends IO
     
     return buffer.length;
   }
-  
+
+  public String getSettingsMacOSX()
+  {
+    FileSystemView fsv = FileSystemView.getFileSystemView();
+    File vols = new File( "/Volumes/" );
+    if ( vols.exists() )
+    {
+      for ( File f : fsv.getFiles( vols, false ) )
+      {
+        if ( f.isDirectory() && f.getName().contains( "REMOTE" ) )
+        {
+          f = fsv.getChild( f, "settings.bin" );
+          if ( f.exists() )
+          {
+            return f.getAbsolutePath();
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   public String getSettingsWindows()
   {
     String filePath = null;
