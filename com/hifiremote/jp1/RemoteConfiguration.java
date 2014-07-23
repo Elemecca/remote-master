@@ -57,6 +57,7 @@ public class RemoteConfiguration
   public RemoteConfiguration( File file, RemoteMaster rm ) throws IOException
   {
     owner = rm;
+    rm.clearAllInterfaces();
     BufferedReader in = new BufferedReader( new FileReader( file ) );
     PropertyReader pr = new PropertyReader( in );
     if ( file.getName().toLowerCase().endsWith( ".rmir" ) )
@@ -75,6 +76,7 @@ public class RemoteConfiguration
   public RemoteConfiguration( String str, RemoteMaster rm, Remote remote ) throws IOException
   {
     owner = rm;
+    rm.clearAllInterfaces();
     this.remote = remote;
     BufferedReader in = new BufferedReader( new StringReader( str ) );
     PropertyReader pr = new PropertyReader( in );

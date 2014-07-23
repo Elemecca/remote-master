@@ -108,8 +108,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24 Test 5b";
+  public final static String version = "v2.03 Alpha 24 Test 6";
 
+  public enum Use
+  {
+    DOWNLOAD, READING, UPLOAD, SAVING, SAVEAS, EXPORT
+  }
+  
   /** The dir. */
   private File dir = null;
 
@@ -375,21 +380,25 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private class DownloadTask extends SwingWorker< RemoteConfiguration, Void >
   {
     private File file = null;
+    private Use use = null;
     
     public DownloadTask()
     {
       file = null;
+      use = Use.DOWNLOAD;
     }
     
     public DownloadTask( File file )
     {
       this.file = file;
+      use = Use.READING;
     }
     
     @Override
     protected RemoteConfiguration doInBackground() throws Exception
     {
-      IO io = getOpenInterface( file, false );
+      clearAllInterfaces();
+      IO io = getOpenInterface( file, use );
       if ( io == null )
       {
         setInterfaceState( null );
@@ -633,7 +642,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     @Override
     protected Void doInBackground() throws Exception
     {
-      IO io = getOpenInterface( null, false );
+      IO io = getOpenInterface( null, Use.UPLOAD );
       if ( io == null )  
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
@@ -691,29 +700,29 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     private short[] data;
     private boolean allowClockSet;
     private File file = null;
-    private boolean forWriting = false;
+    private Use use = null;
 
     private UploadTask( short[] data, boolean allowClockSet )
     {
       this.data = data;
       this.allowClockSet = allowClockSet;
       this.file = null;
-      forWriting = true;
+      use = Use.UPLOAD;
     }
     
-    private UploadTask( File file, short[] data, boolean allowClockSet )
+    private UploadTask( File file, short[] data, boolean allowClockSet, boolean forSaveAs )
     {
       this.data = data;
       this.allowClockSet = allowClockSet;
       this.file = file;
-      forWriting = false;
+      use = forSaveAs ? Use.SAVEAS : Use.SAVING;
     }
 
     @Override
     protected Void doInBackground() throws Exception
     {
       Remote remote = remoteConfig.getRemote();
-      IO io = getOpenInterface( file, forWriting );
+      IO io = getOpenInterface( file, use );
       if ( io == null )  
       {
         JOptionPane.showMessageDialog( RemoteMaster.this, "No remotes found!" );
@@ -781,7 +790,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( io.getInterfaceType() == 0x106 )
         {
           io.closeRemote();
-          io = getOpenInterface( null, false );
+          io = getOpenInterface( null, Use.READING );
         }
         short[] readBack = new short[ data.length ];
         rc = io.readRemote( remote.getBaseAddress(), readBack );
@@ -817,6 +826,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       System.err.println( "Ending upload" );
       setInterfaceState( null );
+      if ( use == Use.SAVEAS )
+      {
+        RemoteMaster.this.file = file;
+        setTitleFile( file );
+        updateRecentFiles( file );
+        saveAction.setEnabled( true );
+      }
       return null;
     }
   }
@@ -903,6 +919,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
 
           ProtocolManager.getProtocolManager().reset();
+          clearAllInterfaces();
           remoteConfig = new RemoteConfiguration( remote, RemoteMaster.this );
           recreateToolbar();
           remoteConfig.initializeSetup( 0 );
@@ -936,7 +953,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         else if ( command.equals( "SAVE" ) )
         {
-          save();
+          save( file, false );
         }
         else if ( command.equals( "SAVEAS" ) )
         {
@@ -2134,11 +2151,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     RMFileChooser chooser = new RMFileChooser( dir );
     chooser.setAcceptAllFileFilterUsed( false );
     EndingFileFilter rmirFilter = new EndingFileFilter( "RM Remote Image (*.rmir)", rmirEndings );
+    EndingFileFilter binFilter = new EndingFileFilter( "Simpleset file (*.bin)", binEndings );
+    EndingFileFilter useFilter = rmirFilter;
+    chooser.addChoosableFileFilter( rmirFilter );
     if ( validConfiguration )
     {
       chooser.addChoosableFileFilter( new EndingFileFilter( "IR file (*.ir)", irEndings ) );
     }
-    chooser.setFileFilter( rmirFilter );
+    if ( binLoaded() )
+    {
+      chooser.addChoosableFileFilter( binFilter );
+      if ( file != null && file.getName().toLowerCase().endsWith( binEndings[ 0 ] ) )
+      {
+        useFilter = binFilter;
+      }
+    }
+    chooser.setFileFilter( useFilter );
     return chooser;
   }
 
@@ -2214,6 +2242,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
     }
     return result;
+  }
+  
+  public boolean binLoaded()
+  {
+    for ( IO io : interfaces )
+    {
+      if ( io.getInterfaceName().equals( "JPS" ) )
+      {
+        return ( ( JPS )io ).isOpen();
+      }
+    }
+    return false;
   }
 
   /**
@@ -2312,6 +2352,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       Remote remote = remotes.get( 0 );
       remote.load();
+      clearAllInterfaces();
       remoteConfig = new RemoteConfiguration( remote, this );
       recreateToolbar();
       remoteConfig.initializeSetup( 0 );
@@ -2559,7 +2600,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     properties.setProperty( "IRPath", dir );
   }
 
-  public void save() throws IOException
+  public void save( File file, boolean forSaveAs ) throws IOException
   {
     if ( file == null )
     {
@@ -2576,8 +2617,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( !validConfiguration )
       {
         String title = "Invalid Configuration";
-        String message = "This configuration is not valid.  It cannot be uploaded as it\n"
-            + "could cause the remote to crash.";
+        String message = "This configuration is not valid.  It cannot be saved as\n"
+            + "copying it to the remote could cause the remote to crash.";
         JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.WARNING_MESSAGE );
         return;
       }
@@ -2588,10 +2629,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         return;
       }
       remoteConfig.saveAltPIDs();
-      System.err.println( "Starting upload" );
+      System.err.println( "Saving Simpleset" );
       setInterfaceState( "SAVING SIMPLESET..." );
       changed = false;
-      ( new UploadTask( file, RemoteMaster.this.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData(), true ) ).execute();
+      ( new UploadTask( file, RemoteMaster.this.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData(), false, forSaveAs ) ).execute();
     }
     else
     {
@@ -2612,7 +2653,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
       }
       setInterfaceState( "SAVING..." );
-      ( new SaveTask( false, false ) ).execute();
+      ( new SaveTask( file, forSaveAs ? Use.SAVEAS : Use.SAVING ) ).execute();
     }
   }
 
@@ -2625,7 +2666,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    *              Description of the Exception
    */
   public void saveAs() throws IOException
-  {
+  {   
     boolean validConfiguration = updateUsage();
     if ( !validConfiguration )
     {
@@ -2637,16 +2678,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.WARNING_MESSAGE );
     }
     RMFileChooser chooser = getFileSaveChooser( validConfiguration );
-    if ( file != null )
+    File oldFile = file;
+    if ( oldFile != null )
     {
-      String name = file.getName().toLowerCase();
+      String name = oldFile.getName().toLowerCase();
       if ( name.endsWith( ".ir" ) || name.endsWith( ".txt" ) )
       {
         int dot = name.lastIndexOf( '.' );
         name = name.substring( 0, dot ) + ".rmir";
-        file = new File( name );
+        oldFile = new File( name );
       }
-      chooser.setSelectedFile( file );
+      chooser.setSelectedFile( oldFile );
     }
     int returnVal = chooser.showSaveDialog( this );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
@@ -2678,17 +2720,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       dir = newFile.getParentFile();
       properties.setProperty( "IRPath", dir );
 
-      file = newFile;
-      if ( ending == irEndings[ 0 ] )
+      if ( ending.equals( irEndings[ 0 ] ) )
       {
         remoteConfig.saveAltPIDs();
         setInterfaceState( "EXPORTING..." );
-        ( new SaveTask( false, true ) ).execute();
+        ( new SaveTask( newFile, Use.EXPORT ) ).execute();
+      }
+      else if ( ending.equals( binEndings[ 0 ] ) )
+      {
+        save( newFile, true );
       }
       else
       {
         setInterfaceState( "SAVING..." );
-        ( new SaveTask( true, false ) ).execute();
+        ( new SaveTask( newFile, Use.SAVEAS ) ).execute();
       }
       uploadAction.setEnabled( !interfaces.isEmpty() );
     }
@@ -2748,19 +2793,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   
   private class SaveTask extends SwingWorker< Void, Void >
   {
-    private boolean saveAs = false;
-    private boolean export = false;
+    private File file = null;
+    private Use use = null;
     
-    public SaveTask( boolean saveAs, boolean export )
+    public SaveTask( File file, Use use )
     {
-      this.saveAs = saveAs;
-      this.export = export;
+      this.file = file;
+      this.use = use;
     }
     
     @Override
     protected Void doInBackground() throws Exception
     {
-      if ( export )
+      if ( use == Use.EXPORT )
       {
         remoteConfig.exportIR( file );
       }
@@ -2768,8 +2813,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         remoteConfig.save( file );
         changed = false;
-        if ( saveAs )
+        if ( use == Use.SAVEAS && !binLoaded() )
         {
+          RemoteMaster.this.file = file;
           setTitleFile( file );
           updateRecentFiles( file );
           saveAction.setEnabled( true );
@@ -2808,13 +2854,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    * 
    * @return the open interface
    */
-  public IO getOpenInterface( File file, boolean forWriting )
+  public IO getOpenInterface( File file, Use use )
   {
     String interfaceName = properties.getProperty( "Interface" );
     System.err.println( "Interface Name = " + ( interfaceName == null ? "NULL" : interfaceName ) );
     String portName = properties.getProperty( "Port" );
     System.err.println( "Port Name = " + ( portName == null ? "NULL" : portName ) );
-    if ( interfaceName != null )
+    if ( interfaceName != null && ( use == Use.DOWNLOAD || use == Use.UPLOAD ) )
     {
       for ( IO temp : interfaces )
       {
@@ -2823,7 +2869,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( tempName.equals( interfaceName ) )
         {
           System.err.println( "Interface matched.  Trying to open remote." );
-          IO ioOut = testInterface( temp, file, forWriting );
+          IO ioOut = testInterface( temp, file, use );
           if ( ioOut != null )
           {
             return ioOut;
@@ -2842,7 +2888,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         String tempName = temp.getInterfaceName();
         System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
-        IO ioOut = testInterface( temp, file, forWriting );
+        IO ioOut = testInterface( temp, file, use );
         if ( ioOut != null )
         {
           return ioOut;
@@ -2852,35 +2898,36 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return null;
   }
   
-  private IO testInterface( IO ioIn, File file, boolean forWriting )
+  private IO testInterface( IO ioIn, File file, Use use )
   {
     String ioName = ioIn.getInterfaceName();
     String osName = System.getProperty( "os.name" );
     String portName = properties.getProperty( "Port" );
     if ( file != null && !ioName.equals( "JPS" ) )
     {
-      System.err.println( "Interface does not support opening a file" );
       return null;
     }
-    if ( portName != null && file != null && !portName.equals( file.getAbsolutePath() ) )
-    {
-      System.err.println( "Port name does not match file path" );
-      return null;
-    }
-    if ( ioName.equals( "JPS" ) && forWriting )
+    
+    if ( ioName.equals( "JPS" ) )
     {
       JPS jps = ( JPS )ioIn;
-      if ( osName.equals( "Linux" ) )
+      if ( use == Use.UPLOAD && osName.equals( "Linux" ) )
       {
         String title = "Facility not supported";
         String message = "RMIR does not yet support writing directly to a Simpleset remote in Linux";
         JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
         return null;
       }
-      else if ( admin && jps.isOpen() )
+      else if ( jps.isOpen() && ( use == Use.SAVING || use == Use.SAVEAS || use == Use.UPLOAD && admin ) )
       {
         portName = jps.getFilePath();
         System.err.println( "Already open on Port " + portName );
+        if ( use == Use.SAVEAS )
+        {
+          portName = file.getAbsolutePath();
+          System.err.println( "Changing Port to " + portName );
+          jps.setFilePath( portName );
+        }
         return ioIn;
       }
     }
@@ -2908,6 +2955,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     else
     {
       ( ( CardLayout )statusBar.getLayout() ).first( statusBar );
+    }
+  }
+  
+  public void clearAllInterfaces()
+  {
+    for ( IO io : interfaces )
+    {
+      io.clear();
     }
   }
   
@@ -4038,7 +4093,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     if ( saveAction.isEnabled() )
     {
-      save();
+      save( file, false );
     }
     else
     {

@@ -65,10 +65,21 @@ public class JPS extends IO
   {
     return s != null;
   }
+  
+  @Override
+  public void clear()
+  {
+    s = null;
+  }
 
   public String getFilePath()
   {
     return filePath;
+  }
+
+  public void setFilePath( String filePath )
+  {
+    this.filePath = filePath;
   }
 
   @Override

@@ -70,6 +70,13 @@ public abstract class IO
    * Close remote.
    */
   public abstract void closeRemote();
+  
+  /**
+   * Closes any remote that is not closed by a call to closeRemote().
+   * This is needed for the JPS interface as it maintains its own data
+   * image in memory even after a call to closeRemote().
+   */
+  public void clear() {}
 
   /**
    * Gets the remote signature.

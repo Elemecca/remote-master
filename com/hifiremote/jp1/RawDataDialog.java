@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingWorker;
 
+import com.hifiremote.jp1.RemoteMaster.Use;
 import com.hifiremote.jp1.io.IO;
 
 // TODO: Auto-generated Javadoc
@@ -123,7 +124,7 @@ public class RawDataDialog extends JDialog implements ActionListener
     @Override
     protected Void doInBackground() throws Exception
     {
-      IO io = owner.getOpenInterface( null, false );
+      IO io = owner.getOpenInterface( null, Use.DOWNLOAD );
       if ( io == null )
       {
         JOptionPane.showMessageDialog( owner, "No remotes found!" );
