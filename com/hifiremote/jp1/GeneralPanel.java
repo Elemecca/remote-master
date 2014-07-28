@@ -111,6 +111,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     moveUpButton.setVisible( false );
     moveDownButton = new JButton( "Move Down" );
     moveDownButton.setVisible( false );
+    createUpgradesButton = new JButton( "Create missing upgrades" );
+    createUpgradesButton.setVisible( false );
     iconLabel = new JLabel( "   " );
     iconLabel.setPreferredSize( new Dimension( 100, 40 ) );
     iconLabel.setHorizontalTextPosition( SwingConstants.LEADING );
@@ -119,12 +121,14 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     buttonPanel.add( editButton );
     buttonPanel.add( moveUpButton );
     buttonPanel.add( moveDownButton );
+    buttonPanel.add( createUpgradesButton );
     buttonPanel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
     buttonPanel.add( iconLabel );
     editPanel.add( buttonPanel );
     editButton.addActionListener( this );
     moveUpButton.addActionListener( this );
     moveDownButton.addActionListener( this );
+    createUpgradesButton.addActionListener( this );
     deviceButtonPanel.add( editPanel, BorderLayout.PAGE_END );
 
     // deviceScrollPane.setPreferredSize( deviceButtonPanel.getPreferredSize() );
@@ -246,10 +250,16 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       + "automatically assign it as a new device.  To delete a device, use the Device Upgrades tab to delete the "
       + "corresponding device upgrade, which will also delete the device.\n\n"
       + "Note 2:  Use this Device Buttons table to edit device names, brands etc, to reorder devices or set locks.";
-    String text = remote.usesEZRC() ? message3 : softDevices != null && softDevices.isSetupCodesOnly() ? 
+    String message4 = "Devices on this remote that are set up up with simpleset.com all have a corresponding device "
+      + "upgrade.  This enables one to see the functions of the device and to customise them as desired.  Devices "
+      + "set up through the remote itself or with RMIR do not initally have such an upgrade.  If you have loaded a "
+      + ".bin file rather than a .rmir file, you may create any missing upgrades by pressing the \"Create missing "
+      + "upgrades\"  button.  If this button is present but disabled (grayed out), it means that there are no missing "
+      + "upgrades.";
+    String text = remote.usesSimpleset() ? message4 : remote.usesEZRC() ? message3 : softDevices != null && softDevices.isSetupCodesOnly() ? 
         "Note:  " + message1 : "Note:  " + message2;
     messageArea.setText( text );
-    messageArea.setVisible( softDevices != null && !remote.usesSimpleset() );
+    messageArea.setVisible( softDevices != null );
 
     if ( !remoteConfig.hasSegments() )
     {
@@ -269,6 +279,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     moveDownButton.setVisible( remote.usesEZRC() );
     moveUpButton.setEnabled( false );
     moveDownButton.setEnabled( false );
+    createUpgradesButton.setVisible( remote.usesSimpleset() );
+    createUpgradesButton.setEnabled( remoteConfig.getCreatableMissingCodes() != null );
 
     text = remoteConfig.getNotes();
     if ( text == null )
@@ -379,6 +391,11 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       deviceModel.moveRow( row, row + 1 );
       deviceButtonTable.setRowSelectionInterval( row + 1, row + 1 );
     }
+    else if ( source == createUpgradesButton )
+    {
+      remoteConfig.createMissingUpgrades();
+      propertyChangeSupport.firePropertyChange( "data", null, null );
+    }
   }
 
   public void editUpgradeInRow( int row )
@@ -477,6 +494,11 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     return activeTable;
   }
 
+  public JButton getCreateUpgradesButton()
+  {
+    return createUpgradesButton;
+  }
+
   private RemoteConfiguration remoteConfig = null;
 
   private JSplitPane upperPane = null;
@@ -507,6 +529,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   private JButton editButton = null;
   private JButton moveUpButton = null;
   private JButton moveDownButton = null;
+  private JButton createUpgradesButton = null;
   private JPanel buttonPanel = null;
   private DeviceUpgrade selectedUpgrade = null;
   private boolean setInProgress = false;

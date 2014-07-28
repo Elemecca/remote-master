@@ -16,6 +16,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
 
+import com.hifiremote.jp1.Scanner;
 import com.hifiremote.jp1.RemoteMaster;
 import com.hifiremote.jp1.settings.SettingFactory;
 import com.hifiremote.jp1.settings.SettingImpl;
@@ -29,7 +30,10 @@ public class JPS extends IO
   private String filePath = null;
   private int eepromAddress = 0;
   private int eepromSize = 0;
+  private int sigAddress = 0;
+  private int irdbAddress = 0;
   private Settings s = null;
+  private Scanner scanner = null;
   
   public JPS() throws UnsatisfiedLinkError
   {
@@ -165,10 +169,17 @@ public class JPS extends IO
     }
     signature = String.valueOf( sigArray );
     s.setFlashOffset( getInt32( data, 0x2F ) );
+    sigAddress = getInt32( data, 0x33 );
+    irdbAddress = getInt32( data, 0x37 );
     eepromAddress = getInt32( data, 0x3B );
     s.read( eepromAddress, data );
     eepromSize = getInt32( data, 2 );
     this.filePath = filePath;
+    scanner = new Scanner( this, irdbAddress );
+    if ( !scanner.scan() )
+    {
+      scanner = null;
+    }
     return filePath;
   }
   
@@ -180,6 +191,18 @@ public class JPS extends IO
       val += (data[ offset + i ] & 0xFF) << 8 * (3 - i);
     }
     return val;
+  }
+  
+  @Override
+  public boolean getJP2info( byte[] buffer, int length )
+  {
+    s.read( sigAddress, buffer );
+    return true;
+  }
+
+  public Scanner getScanner()
+  {
+    return scanner;
   }
 
   /*

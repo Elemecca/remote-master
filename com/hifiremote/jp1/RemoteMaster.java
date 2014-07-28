@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24 Test 6b";
+  public final static String version = "v2.03 Alpha 24 Test 6c";
 
   public enum Use
   {
@@ -422,11 +422,51 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       if ( sigString.length() > 8 ) // JP1.4/JP2 full signature block
       {
         sig = sigString.substring( 0, 6 );
+//      int infoLen = 6 + 6 * remote.getProcessor().getAddressLength();
+        int infoLen = 64;
+        jp2info = new byte[ infoLen ];
+        if ( !io.getJP2info( jp2info, infoLen ) )
+        {
+          jp2info = null;
+        }
+
+        sigData = new short[ sigString.length() + ( jp2info != null ? jp2info.length : 0 ) ];
+        int index = 0;
+        for ( int i = 0; i < sigString.length(); i++ )
+        {
+          sigData[ index++ ] = ( short )sigString.charAt( i );
+        };
+        if ( jp2info != null )
+        {
+          for ( int i = 0; i < jp2info.length; i++ )
+          {
+            sigData[ index++ ] = ( short )( jp2info[ i ] & 0xFF );
+          }
+        }
+      }
+      else if ( io.getInterfaceName().equals( "JPS" ) )
+      {
+        sig = sigString;
+        int infoLen = 64;
+        jp2info = new byte[ infoLen ];
+        if ( !io.getJP2info( jp2info, infoLen ) )
+        {
+          jp2info = null;
+        }
+        sigData = new short[ 64 ];
+        if ( jp2info != null )
+        {
+          for ( int i = 0; i < jp2info.length; i++ )
+          {
+            sigData[ i ] = ( short )( jp2info[ i ] & 0xFF );
+          }
+        }
       }
       else
       {
         sig = sigString;
       }
+      
       if ( remoteConfig != null && remoteConfig.getRemote() != null )
       {
         sig2 = remoteConfig.getRemote().getSignature();
@@ -530,36 +570,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       RemoteManager.getRemoteManager().replaceRemote( remote, newRemote );
       remote = newRemote;
       remote.load();
-      
-      if ( sigString.length() > 8 ) // JP1.4/JP2 full signature block
-      {
-        int infoLen = 6 + 6 * remote.getProcessor().getAddressLength();
-        jp2info = new byte[ infoLen ];
-        if ( !io.getJP2info( jp2info, infoLen ) )
-        {
-          jp2info = null;
-        }
-
-        sigData = new short[ sigString.length() + ( jp2info != null ? jp2info.length : 0 ) ];
-        int index = 0;
-        for ( int i = 0; i < sigString.length(); i++ )
-        {
-          sigData[ index++ ] = ( short )sigString.charAt( i );
-        };
-        if ( jp2info != null )
-        {
-          for ( int i = 0; i < jp2info.length; i++ )
-          {
-            sigData[ index++ ] = ( short )( jp2info[ i ] & 0xFF );
-          }
-        }
-      }
       RemoteConfiguration rc = new RemoteConfiguration( remote, RemoteMaster.this );
       recreateToolbar();
       int count = io.readRemote( remote.getBaseAddress(), rc.getData() );
       System.err.println( "Number of bytes read  = $" + Integer.toHexString( count ).toUpperCase() );
       io.closeRemote();
       System.err.println( "Ending normal download" );
+      if ( sigData != null )
+      { 
+        if ( !io.getInterfaceName().equals( "JPS" ) )
+        {
+          sigData = Arrays.copyOf( sigData, 6 + 6 * remote.getProcessor().getAddressLength() );
+        }
+        rc.setSigData( sigData );
+      }
 //      try
 //      {
         rc.parseData();
@@ -569,10 +593,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 //      {
 //        e.printStackTrace();
 //      }
-      if ( sigData != null )
-      {
-        rc.setSigData( sigData );
-      }
       rc.updateImage();
       return rc;
     }
@@ -2158,7 +2178,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       chooser.addChoosableFileFilter( new EndingFileFilter( "IR file (*.ir)", irEndings ) );
     }
-    if ( binLoaded() )
+    if ( binLoaded() != null )
     {
       chooser.addChoosableFileFilter( binFilter );
       if ( file != null && file.getName().toLowerCase().endsWith( binEndings[ 0 ] ) )
@@ -2244,16 +2264,24 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return result;
   }
   
-  public boolean binLoaded()
+  public JPS binLoaded()
   {
     for ( IO io : interfaces )
     {
       if ( io.getInterfaceName().equals( "JPS" ) )
       {
-        return ( ( JPS )io ).isOpen();
+        JPS jps = ( JPS )io;
+        if ( jps.isOpen() )
+        {
+          return jps;
+        }
+        else
+        {
+          return null;
+        }
       }
     }
-    return false;
+    return null;
   }
 
   /**
@@ -2697,7 +2725,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       String name = chooser.getSelectedFile().getAbsolutePath();
       if ( !name.toLowerCase().endsWith( ending ) )
       {
-        if ( name.toLowerCase().endsWith( ".rmir" ) )
+        if ( name.toLowerCase().endsWith( ".rmir" ) || name.toLowerCase().endsWith( ".bin" ) )
         {
           int dot = name.lastIndexOf( '.' );
           name = name.substring( 0, dot );
@@ -2813,7 +2841,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         remoteConfig.save( file );
         changed = false;
-        if ( use == Use.SAVEAS && !binLoaded() )
+        if ( use == Use.SAVEAS && binLoaded() == null )
         {
           RemoteMaster.this.file = file;
           setTitleFile( file );
@@ -3695,6 +3723,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( currentPanel == activityPanel && event.getPropertyName().equals( "tabs" ) )
     {
       activityPanel.set( remoteConfig );
+    }
+    if ( currentPanel == generalPanel &&  generalPanel.getCreateUpgradesButton().isVisible() )
+    {
+      generalPanel.getCreateUpgradesButton().setEnabled( remoteConfig.getCreatableMissingCodes() != null );
     }
     remoteConfig.updateImage();
     updateUsage();

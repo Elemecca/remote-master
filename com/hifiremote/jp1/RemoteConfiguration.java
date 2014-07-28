@@ -38,6 +38,7 @@ import com.hifiremote.jp1.GeneralFunction.RMIcon;
 import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.io.CommHID;
 import com.hifiremote.jp1.io.IO;
+import com.hifiremote.jp1.io.JPS;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -452,7 +453,7 @@ public class RemoteConfiguration
       } 
       while ( ( property != null ) && ( property.name.length() > 0 ) );
       
-      sigData = new short[ Math.min( sigDataLen, 56 ) ];
+      sigData = new short[ Math.min( sigDataLen, 64 ) ];
       sigDataLen = 0;
       for ( short[] data : values )
       {
@@ -2383,7 +2384,169 @@ public class RemoteConfiguration
         }
       }
     }
-    if ( remote.usesEZRC() )
+//    if ( remote.usesSimpleset() && owner.binLoaded() != null && owner.binLoaded().getScanner() != null )
+//    {
+//      JPS io = owner.binLoaded();
+//      Scanner s = io.getScanner();
+//      List< Integer > missingCodes = new ArrayList< Integer >();
+//      List< Integer > upgradeCodes =  new ArrayList< Integer >();
+//      for ( DeviceUpgrade du : devices )
+//      {
+//        if ( du.getSetupCode() != -1 )
+//        {
+//          int setupCode = du.getDeviceType().get_Type() << 12 | du.getSetupCode();
+//          if ( !upgradeCodes.contains( setupCode ) )
+//          {
+//            upgradeCodes.add( setupCode );
+//          }
+//        }
+//      }
+//      for ( DeviceButton db : remote.getDeviceButtons() )
+//      {
+//        if ( db.getSegment() != null )
+//        {
+//          short[] dbData = db.getSegment().getHex().getData();
+//          int setupCode = db.getDeviceTypeIndex( dbData ) << 12 | db.getSetupCode( dbData );
+//          if ( setupCode != -1 && !upgradeCodes.contains( setupCode ) && !missingCodes.contains( setupCode ) )
+//          {
+//            missingCodes.add( setupCode );
+//          }
+//        }
+//      }
+//      short[] bufSetup = new short[ 4 * s.getSetupCodeCount() ];
+//      short[] bufExec = new short[ 4 * s.getExecutorCount() ];
+//      short[] bufNum = new short[ 10 * s.getNumberTableSize() ];
+//      io.readRemote( s.getSetupCodeIndexAddress() + 2, bufSetup );
+//      io.readRemote( s.getExecutorIndexAddress() + 2, bufExec );
+//      io.readRemote( s.getNumberTableAddress(), bufNum );
+//      for ( int i = 0; i < s.getSetupCodeCount(); i++ )
+//      {
+//        int setupCode = bufSetup[ 2 * i ] | bufSetup[ 2 * i + 1 ] << 8;
+//        
+//        if ( missingCodes.contains( setupCode ) )
+//        {
+//          DeviceType devType = remote.getDeviceTypeByIndex( setupCode >> 12 );
+//          String alias = remote.getDeviceTypeAlias( devType );
+//          if ( alias == null )
+//          {
+//            String message = String.format(
+//                "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be created.",
+//                devType, setupCode & 0x0FFF );
+//            JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+//            continue;
+//          }
+//          int n = 2 * ( s.getSetupCodeCount() + i );
+//          int setupAddress = ( bufSetup[ n ] | bufSetup[ n + 1 ] << 8 ) + s.getIndexTablesOffset();
+//          int numFixed = -1;
+//          int numVar = -1;
+//          short[] buf = new short[ 0x0200 ];
+//          if ( io.readRemote( setupAddress, buf ) != 0x200 )
+//          {
+//            continue;
+//          }
+//          for ( int j = 0; j < s.getExecutorCount(); j++ )
+//          {
+//            if ( buf[ 0 ] == bufExec[ 2 * j + 1 ]
+//                && buf[ 1 ] == bufExec[ 2 * j ] )
+//            {
+//              n = 2 * ( s.getExecutorCount() + j );
+//              int protAddress = ( bufExec[ n ] | bufExec[ n + 1 ] << 8 ) + s.getIndexTablesOffset();
+//              short[] buf2 = new short[ 2 ];
+//              if ( io.readRemote( protAddress + 2, buf2 ) != 2 )
+//              {
+//                break;
+//              }
+//              numFixed = buf2[ 0 ] >> 4;
+//              numVar = buf2[ 0 ] & 0x0F;
+//              break;
+//            }
+//          }
+//          if ( numFixed < 0 )
+//          {
+//            continue;
+//          }
+//          
+//          int setupLength = 3 + numFixed;  // PID + numbertable
+//          int mapbyteCount = 0;
+//          int mapIndex = buf[ 2 ] - 1;
+//          int mapbyte = buf[ 3 ];
+//          boolean hasDigits = ( mapbyte & 0x80 ) == 0x80;
+//          if ( mapIndex >= 0 )
+//          {
+//            mapbyte |= 0x80;             // explicitly include digits
+//          }
+//          
+//          setupLength += ( 10 * ( ( mapbyte >> 7 ) & 1 ) + 3 * ( ( mapbyte >> 6 ) & 1 ) + 2 * ( ( mapbyte >> 5 ) & 1 ) ) * numVar; 
+//          mapbyte &= 0x1F;
+//          for ( int j = 0; j < 32; mapbyte = buf[ 3 + (++j) ] )
+//          {
+//            setupLength++;
+//            mapbyteCount++;
+//            for ( int k = 1; k < 8; k++ )
+//            {
+//              setupLength += ( ( mapbyte >> k ) & 1 ) * numVar;
+//            }
+//            if ( ( mapbyte & 1 ) == 1 )
+//            {
+//              break;
+//            }
+//          }
+//          
+//          int srcPos = 3 + numFixed + mapbyteCount;
+//          int destPos = srcPos;
+//          Hex pidHex = new Hex( buf, 0, 2 );
+//          Hex setupHex = new Hex( setupLength );
+//          System.arraycopy( buf, 0, setupHex.getData(), 0, srcPos );
+//          setupHex.set( ( short )0, 2 );   // set map number = 0, as digits explicitly listed
+//          if ( mapIndex >= 0 )
+//          {
+//            setupHex.getData()[ 3 ] |= ( short )0x80;
+//            System.arraycopy( bufNum, 10 * mapIndex, setupHex.getData(), destPos, 10 * numVar );
+//            destPos += 10 * numVar;
+//            if ( hasDigits )
+//            {
+//              // Probably does not occur, but skip existing digit bytes
+//              srcPos += 10 * numVar;
+//            }
+//          }
+//          System.arraycopy( buf, srcPos, setupHex.getData(), destPos, setupLength - destPos );
+//          DeviceUpgrade du = new DeviceUpgrade( new String[ 0 ] );
+//          try
+//          {
+//            du.setRemoteConfig( this );
+//            du.setSizeCmdBytes( numVar );
+//            du.setSizeDevBytes( numFixed );
+//            du.importRawUpgrade( setupHex, remote, alias, new Hex( pidHex ), null );
+//            du.setSetupCode( setupCode & 0x0FFF );  
+//            du.setSegmentFlags( 0xFF );
+//            du.setRemote( remote );
+////          du.classifyButtons();
+//            Protocol protocol = du.getProtocol();
+//            if ( protocol.getDefaultCmd().length() != numVar
+//                || protocol.getFixedDataLength() != numFixed )
+//            {
+//              String title = "Protocol Variant Error";
+//              String message = "Error in RDF.  Wrong variant specified for PID = " + 
+//                  protocol.getID().toString() + ".  Number of fixed/command bytes\n" +
+//                  "should be " + numFixed + "/" + numVar +
+//                  ", for specified variant it is " + protocol.getDefaultCmd().length() +
+//                  "/" + protocol.getFixedDataLength() + ".";
+//              JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+//            }
+//          }
+//          catch ( java.text.ParseException pe )
+//          {
+//            pe.printStackTrace( System.err );
+//            du = null;
+//          }
+//          if ( du != null )
+//          {
+//            devices.add( du );
+//          }
+//        }
+//      }
+//    }
+    else if ( remote.usesEZRC() )
     {
       if ( !remote.isSSD() )
       {
@@ -2602,6 +2765,189 @@ public class RemoteConfiguration
       }
     }
     pos = 0;
+  }
+  
+  public List< Integer > getCreatableMissingCodes()
+  {
+    if ( !remote.usesSimpleset() )
+    {
+      return null;
+    }
+    JPS io = owner.binLoaded();
+    if ( io == null || io.getScanner() == null )
+    {
+      return null;
+    }
+    List< Integer > missingCodes = new ArrayList< Integer >();
+    List< Integer > upgradeCodes =  new ArrayList< Integer >();
+    for ( DeviceUpgrade du : devices )
+    {
+      if ( du.getSetupCode() != -1 )
+      {
+        int setupCode = du.getDeviceType().get_Type() << 12 | du.getSetupCode();
+        if ( !upgradeCodes.contains( setupCode ) )
+        {
+          upgradeCodes.add( setupCode );
+        }
+      }
+    }
+    for ( DeviceButton db : remote.getDeviceButtons() )
+    {
+      if ( db.getSegment() != null )
+      {
+        short[] dbData = db.getSegment().getHex().getData();
+        int setupCode = db.getDeviceTypeIndex( dbData ) << 12 | db.getSetupCode( dbData );
+        if ( setupCode != -1 && !upgradeCodes.contains( setupCode ) && !missingCodes.contains( setupCode ) )
+        {
+          missingCodes.add( setupCode );
+        }
+      }
+    }
+    return missingCodes.isEmpty() ? null : missingCodes;
+  }
+  
+  public void createMissingUpgrades()
+  {
+    List< Integer > missingCodes = getCreatableMissingCodes();
+    if ( missingCodes == null )
+    {
+      return;
+    }
+    
+    JPS io = owner.binLoaded();
+    Scanner s = io.getScanner();
+    short[] bufSetup = new short[ 4 * s.getSetupCodeCount() ];
+    short[] bufExec = new short[ 4 * s.getExecutorCount() ];
+    short[] bufNum = new short[ 10 * s.getNumberTableSize() ];
+    io.readRemote( s.getSetupCodeIndexAddress() + 2, bufSetup );
+    io.readRemote( s.getExecutorIndexAddress() + 2, bufExec );
+    io.readRemote( s.getNumberTableAddress(), bufNum );
+    for ( int i = 0; i < s.getSetupCodeCount(); i++ )
+    {
+      int setupCode = bufSetup[ 2 * i ] | bufSetup[ 2 * i + 1 ] << 8;
+
+      if ( missingCodes.contains( setupCode ) )
+      {
+        DeviceType devType = remote.getDeviceTypeByIndex( setupCode >> 12 );
+        String alias = remote.getDeviceTypeAlias( devType );
+        if ( alias == null )
+        {
+          String message = String.format(
+              "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be created.",
+              devType, setupCode & 0x0FFF );
+          JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
+          continue;
+        }
+        int n = 2 * ( s.getSetupCodeCount() + i );
+        int setupAddress = ( bufSetup[ n ] | bufSetup[ n + 1 ] << 8 ) + s.getIndexTablesOffset();
+        int numFixed = -1;
+        int numVar = -1;
+        short[] buf = new short[ 0x0200 ];
+        if ( io.readRemote( setupAddress, buf ) != 0x200 )
+        {
+          continue;
+        }
+        for ( int j = 0; j < s.getExecutorCount(); j++ )
+        {
+          if ( buf[ 0 ] == bufExec[ 2 * j + 1 ]
+              && buf[ 1 ] == bufExec[ 2 * j ] )
+          {
+            n = 2 * ( s.getExecutorCount() + j );
+            int protAddress = ( bufExec[ n ] | bufExec[ n + 1 ] << 8 ) + s.getIndexTablesOffset();
+            short[] buf2 = new short[ 2 ];
+            if ( io.readRemote( protAddress + 2, buf2 ) != 2 )
+            {
+              break;
+            }
+            numFixed = buf2[ 0 ] >> 4;
+            numVar = buf2[ 0 ] & 0x0F;
+            break;
+          }
+        }
+        if ( numFixed < 0 )
+        {
+          continue;
+        }
+
+        int setupLength = 3 + numFixed;  // PID + numbertable
+        int mapbyteCount = 0;
+        int mapIndex = buf[ 2 ] - 1;
+        int mapbyte = buf[ 3 ];
+        boolean hasDigits = ( mapbyte & 0x80 ) == 0x80;
+        if ( mapIndex >= 0 )
+        {
+          mapbyte |= 0x80;             // explicitly include digits
+        }
+
+        setupLength += ( 10 * ( ( mapbyte >> 7 ) & 1 ) + 3 * ( ( mapbyte >> 6 ) & 1 ) + 2 * ( ( mapbyte >> 5 ) & 1 ) ) * numVar; 
+        mapbyte &= 0x1F;
+        for ( int j = 0; j < 32; mapbyte = buf[ 3 + (++j) ] )
+        {
+          setupLength++;
+          mapbyteCount++;
+          for ( int k = 1; k < 8; k++ )
+          {
+            setupLength += ( ( mapbyte >> k ) & 1 ) * numVar;
+          }
+          if ( ( mapbyte & 1 ) == 1 )
+          {
+            break;
+          }
+        }
+
+        int srcPos = 3 + numFixed + mapbyteCount;
+        int destPos = srcPos;
+        Hex pidHex = new Hex( buf, 0, 2 );
+        Hex setupHex = new Hex( setupLength );
+        System.arraycopy( buf, 0, setupHex.getData(), 0, srcPos );
+        setupHex.set( ( short )0, 2 );   // set map number = 0, as digits explicitly listed
+        if ( mapIndex >= 0 )
+        {
+          setupHex.getData()[ 3 ] |= ( short )0x80;
+          System.arraycopy( bufNum, 10 * mapIndex, setupHex.getData(), destPos, 10 * numVar );
+          destPos += 10 * numVar;
+          if ( hasDigits )
+          {
+            // Probably does not occur, but skip existing digit bytes
+            srcPos += 10 * numVar;
+          }
+        }
+        System.arraycopy( buf, srcPos, setupHex.getData(), destPos, setupLength - destPos );
+        DeviceUpgrade du = new DeviceUpgrade( new String[ 0 ] );
+        try
+        {
+          du.setRemoteConfig( this );
+          du.setSizeCmdBytes( numVar );
+          du.setSizeDevBytes( numFixed );
+          du.importRawUpgrade( setupHex, remote, alias, new Hex( pidHex ), null );
+          du.setSetupCode( setupCode & 0x0FFF );  
+          du.setSegmentFlags( 0xFF );
+          du.setRemote( remote );
+          //          du.classifyButtons();
+          Protocol protocol = du.getProtocol();
+          if ( protocol.getDefaultCmd().length() != numVar
+              || protocol.getFixedDataLength() != numFixed )
+          {
+            String title = "Protocol Variant Error";
+            String message = "Error in RDF.  Wrong variant specified for PID = " + 
+                protocol.getID().toString() + ".  Number of fixed/command bytes\n" +
+                "should be " + numFixed + "/" + numVar +
+                ", for specified variant it is " + protocol.getDefaultCmd().length() +
+                "/" + protocol.getFixedDataLength() + ".";
+            JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+          }
+        }
+        catch ( java.text.ParseException pe )
+        {
+          pe.printStackTrace( System.err );
+          du = null;
+        }
+        if ( du != null )
+        {
+          devices.add( du );
+        }
+      }
+    }
   }
 
   public int getLanguageIndex()
@@ -7063,7 +7409,7 @@ public class RemoteConfiguration
   {
     if ( sigData == null || ( sigData[ 0 ] + sigData[ 1 ] ) == 0xFF )
     {
-      // second case is XSight remotes where sig string is just the 6-character signature
+      // second case is XSight and Simpleset remotes where sig string is just the 6-character signature
       return null;
     }
     char[] sig = new char[ 26 ];
@@ -7088,6 +7434,10 @@ public class RemoteConfiguration
     if ( addrLen == 2 )
     {
       return Hex.get( sigData, 28 ) + 1;
+    }
+    else if ( remote.usesSimpleset() )
+    {
+      return Hex.get( sigData, 0x33 ) * 0x10000 + Hex.get( sigData, 0x35 );
     }
     else
     {
