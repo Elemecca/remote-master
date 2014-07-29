@@ -71,7 +71,7 @@ public class RemoteConfiguration
     }
     in.close();
     updateImage();
-    RemoteMaster.setSystemFilesItems( remote.isSSD() );
+    RemoteMaster.setSystemFilesItems( rm, remote );
   }
   
   public RemoteConfiguration( String str, RemoteMaster rm, Remote remote ) throws IOException
@@ -83,7 +83,7 @@ public class RemoteConfiguration
     PropertyReader pr = new PropertyReader( in );
     importIR( pr, false );
     in.close();
-    RemoteMaster.setSystemFilesItems( remote.isSSD() );
+    RemoteMaster.setSystemFilesItems( rm, remote );
   }
   
   private void createActivities()
@@ -4181,7 +4181,7 @@ public class RemoteConfiguration
       highlight[ i ] = Color.WHITE;
     }
     deviceButtonNotes = new String[ remote.getDeviceButtons().length ];
-    RemoteMaster.setSystemFilesItems( remote.isSSD() );
+    RemoteMaster.setSystemFilesItems( rm, remote );
   }
 
   /**

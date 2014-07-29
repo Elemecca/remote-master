@@ -41,6 +41,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
@@ -201,6 +202,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JMenuItem putSystemFileItem = null;
   
   private static JMenuItem parseIRDBItem = null;
+  
+  private static JMenuItem extractSSItem = null;
 
   // Help menu items
   /** The update item. */
@@ -1485,21 +1488,24 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return getSystemFilesItem.isSelected();
   }
   
-  public static void setSystemFilesItems( boolean active )
+  public static void setSystemFilesItems( RemoteMaster rm, Remote remote )
   {
-    active = active && admin;
-    getSystemFilesItem.setVisible( active );
-    putSystemFileItem.setVisible( active );
-    parseIRDBItem.setVisible( active );
-    if ( active )
+    if ( admin && remote != null && remote.isSSD() )
     {
+      getSystemFilesItem.setVisible( true );
+      putSystemFileItem.setVisible( true );
+      parseIRDBItem.setVisible( true );
+      extractSSItem.setVisible( false );
       File file = new File( new File( workDir, "XSight" ), "irdb.bin" );
       parseIRDBItem.setEnabled( file.exists() && file.isFile() );
+      return;
     }
-    else
-    {
-      getSystemFilesItem.setSelected( false );
-    }
+    getSystemFilesItem.setVisible( false );
+    getSystemFilesItem.setSelected( false );
+    putSystemFileItem.setVisible( false );
+    parseIRDBItem.setVisible( false );
+    extractSSItem.setVisible( admin && ( remote != null && remote.usesSimpleset() || rm.binLoaded() != null ) );
+    extractSSItem.setEnabled( admin && rm.binLoaded() != null );
   }
   
   public static byte[] readBinary( File file )
@@ -2006,6 +2012,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     parseIRDBItem.setVisible( false );
     parseIRDBItem.addActionListener( this );
     menu.add( parseIRDBItem );
+    
+    extractSSItem = new JMenuItem( "Extract from simpleset binary" );
+    extractSSItem.setToolTipText( "<html>Extracts data for an RDF from the currently loaded<br>"
+        + "simpleset .bin file.</html>" );
+    extractSSItem.setVisible( false );
+    extractSSItem.addActionListener( this );
+    menu.add( extractSSItem );
 
     menu = new JMenu( "Help" );
     menu.setMnemonic( KeyEvent.VK_H );
@@ -3238,7 +3251,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == parseIRDBItem )
       {
         extractIrdb();
-        setSystemFilesItems( true );
+        setSystemFilesItems( this, remoteConfig.getRemote() );
+      }
+      else if ( source == extractSSItem )
+      {
+        extractSS();
       }
       else if ( source == rdfPathItem )
       {
@@ -4151,6 +4168,66 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
   }
   
+  private void extractSS()
+  {
+    JPS io = binLoaded();
+    if ( io == null )
+    {
+      return;
+    }
+    Scanner s = io.getScanner();
+    if ( s == null )
+    {
+      String title = "Parsing error";
+      String message = "Unable to interpret settings data.  Extraction failed.";
+      JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
+      return;
+    }
+    LinkedHashMap< Integer, List< Integer > > setups = new LinkedHashMap< Integer, List<Integer> >();
+    LinkedHashMap< Integer, Integer > pidLenBytes = new LinkedHashMap< Integer, Integer >();
+    List< Integer > prots = new ArrayList< Integer >();
+    short[] bufSetup = new short[ 2 * s.getSetupCodeCount() ];
+    short[] bufExec = new short[ 4 * s.getExecutorCount() ];
+    short[] bufNum = new short[ 10 * s.getNumberTableSize() ];
+    io.readRemote( s.getSetupCodeIndexAddress() + 2, bufSetup );
+    io.readRemote( s.getExecutorIndexAddress() + 2, bufExec );
+    io.readRemote( s.getNumberTableAddress(), bufNum );
+    for ( int i = 0; i < s.getSetupCodeCount(); i++ )
+    {
+      int setupCode = bufSetup[ 2 * i ] | bufSetup[ 2 * i + 1 ] << 8;
+      int type = setupCode >> 12;
+      List< Integer > codeList = setups.get( type );
+      if ( codeList == null )
+      {
+        codeList = new ArrayList< Integer >();
+        setups.put( type, codeList );
+      }
+      codeList.add( setupCode & 0x0FFF );
+    }
+    for ( int i = 0; i < s.getExecutorCount(); i++ )
+    {
+      int pid = bufExec[ 2 * i ] | bufExec[ 2 * i + 1 ] << 8;
+      prots.add( pid );
+      int n = 2 * ( s.getExecutorCount() + i );
+      int protAddress = ( bufExec[ n ] | bufExec[ n + 1 ] << 8 ) + s.getIndexTablesOffset();
+      short[] buf2 = new short[ 2 ];
+      if ( io.readRemote( protAddress + 2, buf2 ) != 2 )
+      {
+        continue;
+      }
+      pidLenBytes.put( pid, ( int )buf2[ 0 ] );
+    }
+    System.err.println();
+    printExtract( setups, pidLenBytes, prots );
+    System.err.println();
+    String title = "Extract for RDF";
+    String message = 
+        "Extract data, including [Protocols] and [SetupCodes] sections\n"
+        + "for the RDF, have been output to rmaster.err"; 
+    JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
+  }
+  
+  
   private void extractIrdb()
   {
     int pos = 0;
@@ -4287,7 +4364,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }  
     }
 
-    Collections.sort( prots );
     Collections.sort( distinctTags );
     System.err.println();
     System.err.print( "Distinct tags: " );
@@ -4297,11 +4373,33 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     System.err.println();
     System.err.println();
+    printExtract( setups, pidLenBytes, prots );
+    String title = "Extract irdb.bin";
+    String message = 
+        "Extract data, including [Protocols] and [SetupCodes] sections\n"
+        + "for the RDF, have been output to rmaster.err"; 
+    JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
+  }
+  
+  private void printExtract( LinkedHashMap< Integer, List< Integer > > setups,
+      LinkedHashMap< Integer, Integer > pidLenBytes, List< Integer > prots )
+  {
     System.err.println( "[SetupCodes]");
-    for ( int type : setups.keySet() )
+    List< Integer > types = new ArrayList< Integer >( setups.keySet() );
+    Collections.sort( types );
+    Collections.sort( prots );
+    for ( int type : types )
     {
       List< Integer > list = setups.get( type );
-      System.err.print( ( char )type );
+      Collections.sort( list );
+      if ( type < 0x10)
+      {
+        System.err.print( type );
+      }
+      else
+      {
+        System.err.print( ( char )type );
+      }
       System.err.print( " = " );
       int i = -1;
       for ( int val : list )
@@ -4356,10 +4454,5 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     System.err.println();
     System.err.println();
-    String title = "Extract irdb.bin";
-    String message = 
-        "Extract data, including [Protocols] and [SetupCodes] sections\n"
-        + "for the RDF, have been output to rmaster.err"; 
-    JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
-  } 
+  }
 }

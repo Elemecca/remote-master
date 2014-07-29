@@ -176,6 +176,7 @@ public class RawDataDialog extends JDialog implements ActionListener
       setBaselineButton.setEnabled( true );
       saveButton.setEnabled( true );
       downloadLabel.setVisible( false );
+      RemoteMaster.setSystemFilesItems( owner, null );
       return null;
     }
   }
