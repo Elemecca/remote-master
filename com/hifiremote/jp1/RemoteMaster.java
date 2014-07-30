@@ -109,7 +109,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24 Test 6c";
+  public final static String version = "v2.03 Alpha 24 Test 6d";
 
   public enum Use
   {
@@ -4185,25 +4185,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     LinkedHashMap< Integer, List< Integer > > setups = new LinkedHashMap< Integer, List<Integer> >();
     LinkedHashMap< Integer, Integer > pidLenBytes = new LinkedHashMap< Integer, Integer >();
+    LinkedHashMap< Integer, Integer > mapNumBytes = new LinkedHashMap< Integer, Integer >();
     List< Integer > prots = new ArrayList< Integer >();
-    short[] bufSetup = new short[ 2 * s.getSetupCodeCount() ];
+    List< Integer > maps = new ArrayList< Integer >();
+    short[] bufSetup = new short[ 4 * s.getSetupCodeCount() ];
     short[] bufExec = new short[ 4 * s.getExecutorCount() ];
     short[] bufNum = new short[ 10 * s.getNumberTableSize() ];
     io.readRemote( s.getSetupCodeIndexAddress() + 2, bufSetup );
     io.readRemote( s.getExecutorIndexAddress() + 2, bufExec );
     io.readRemote( s.getNumberTableAddress(), bufNum );
-    for ( int i = 0; i < s.getSetupCodeCount(); i++ )
-    {
-      int setupCode = bufSetup[ 2 * i ] | bufSetup[ 2 * i + 1 ] << 8;
-      int type = setupCode >> 12;
-      List< Integer > codeList = setups.get( type );
-      if ( codeList == null )
-      {
-        codeList = new ArrayList< Integer >();
-        setups.put( type, codeList );
-      }
-      codeList.add( setupCode & 0x0FFF );
-    }
     for ( int i = 0; i < s.getExecutorCount(); i++ )
     {
       int pid = bufExec[ 2 * i ] | bufExec[ 2 * i + 1 ] << 8;
@@ -4217,9 +4207,45 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       pidLenBytes.put( pid, ( int )buf2[ 0 ] );
     }
+    for ( int i = 0; i < s.getSetupCodeCount(); i++ )
+    {
+      int setupCode = bufSetup[ 2 * i ] | bufSetup[ 2 * i + 1 ] << 8;
+      int type = setupCode >> 12;
+      List< Integer > codeList = setups.get( type );
+      if ( codeList == null )
+      {
+        codeList = new ArrayList< Integer >();
+        setups.put( type, codeList );
+      }
+      codeList.add( setupCode & 0x0FFF );
+      int n = 2 * ( s.getSetupCodeCount() + i );
+      int setupAddress = ( bufSetup[ n ] | bufSetup[ n + 1 ] << 8 ) + s.getIndexTablesOffset();
+      short[] buf = new short[ 0x0200 ];
+      io.readRemote( setupAddress, buf );
+      int pid = buf[ 0 ] << 8 | buf[ 1 ];
+      int map = buf[ 2 ];
+      if ( map > 0 && pidLenBytes.get( pid ) != null )
+      {
+        mapNumBytes.put( map - 1, pidLenBytes.get( pid ) & 0x0F );
+      }
+    }
+    int n = 0;
+    while ( n < bufNum.length / 10 )
+    {
+      int numBytes = mapNumBytes.get( n ) != null ? mapNumBytes.get( n ) : 1;
+      short[] digitKeyCodes = Arrays.copyOfRange( bufNum, 10 * n, 10 * ( n + numBytes ) );
+      int m = DigitMaps.findDigitMapNumber( digitKeyCodes );
+      for ( int j = 0; j < numBytes; j++ )
+      {
+        maps.add( m >= 0 ? m + j : -1 );
+      }
+      n += numBytes;
+    }
     System.err.println();
-    printExtract( setups, pidLenBytes, prots );
-    System.err.println();
+    System.err.println( "DATA EXTRACT FOR RDF FOR SIGNATURE " + io.getRemoteSignature() + ":"  );
+    System.err.println( String.format( "EepromSize=$%04X", io.getRemoteEepromSize() ) );
+    System.err.println( String.format( "BaseAddress=$%04X", io.getRemoteEepromAddress() ) );
+    printExtract( setups, pidLenBytes, prots, maps );
     String title = "Extract for RDF";
     String message = 
         "Extract data, including [Protocols] and [SetupCodes] sections\n"
@@ -4373,7 +4399,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     System.err.println();
     System.err.println();
-    printExtract( setups, pidLenBytes, prots );
+    printExtract( setups, pidLenBytes, prots, null );
     String title = "Extract irdb.bin";
     String message = 
         "Extract data, including [Protocols] and [SetupCodes] sections\n"
@@ -4382,8 +4408,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   }
   
   private void printExtract( LinkedHashMap< Integer, List< Integer > > setups,
-      LinkedHashMap< Integer, Integer > pidLenBytes, List< Integer > prots )
+      LinkedHashMap< Integer, Integer > pidLenBytes, List< Integer > prots,
+      List< Integer > maps )
   {
+    System.err.println();
     System.err.println( "[SetupCodes]");
     List< Integer > types = new ArrayList< Integer >( setups.keySet() );
     Collections.sort( types );
@@ -4418,7 +4446,31 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       System.err.println();
     }
-
+    if ( maps != null )
+    {
+      System.err.println();
+      System.err.println( "[DigitMaps]");
+      int i = -1;
+      for ( int m : maps )
+      {
+        if ( ++i > 0 )
+        {
+          if ( ( i % 16 ) == 0 )
+          {
+            System.err.println();
+          }
+        }
+        if ( m >= 0 )
+        {
+          System.err.print( String.format( "%03d ", m ) );
+        }
+        else
+        {
+          System.err.print( "??? " );
+        }
+      }
+      System.err.println();
+    }
     System.err.println();
     System.err.println( "[Protocols]" );
     int i = -1;

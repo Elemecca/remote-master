@@ -50,6 +50,28 @@ public class DigitMaps
     }
     return ( short ) -1;
   }
+  
+  public static int findDigitMapNumber( short[] digitKeyCodes )
+  {
+    for ( int i = 0; i < data.length / 10; ++i )
+    {
+      boolean match = true;
+      int offset = 10 * i;
+      for ( int j = 0; j < digitKeyCodes.length; ++j, ++offset )
+      {       
+        if ( ( data[ offset ] & 0xFF ) != ( digitKeyCodes[ j ] & 0xFF ) )
+        {
+          match = false;
+          break;
+        }
+      }
+      if ( match )
+      {
+        return i;
+      }
+    }
+    return ( short ) -1;
+  }
 
   /**
    * Matches.

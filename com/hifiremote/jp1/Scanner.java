@@ -22,7 +22,6 @@ public class Scanner
   private int indexTablesOffset = 0;
   private int base = 0;
   private JPS io = null;
-  private short[] buffer = null;
   
   public Scanner( JPS io, int irdbAddress )
   {
@@ -34,166 +33,94 @@ public class Scanner
   public boolean scan()
   {
     base = irdbAddress;
-    buffer = new short[ eepromAddress - irdbAddress ];
-    io.readRemote( base, buffer );
-
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter( sw );
-    try
+    Hex hex = new Hex( 0x40 );
+    io.readRemote( base, hex.getData() );
+    numberTableAddress = hex.get( 0x14 ) * 2;
+    setupCodeIndexAddress = hex.get( 0x16 ) * 2;
+    executorIndexAddress = hex.get( 0x1C ) * 2;
+    indexTablesOffset = hex.get( 0x22 ) * 2;
+    setupCodeCount = getInt( setupCodeIndexAddress );
+    executorCount = getInt( executorIndexAddress );
+    
+    // Setup code index immediately follows number table
+    int numberTableLength = setupCodeIndexAddress - numberTableAddress;
+    if ( numberTableLength % 10 != 0 )
     {
-      Hex.print( pw, Arrays.copyOf( buffer, buffer.length ), base );
-    }
-    catch ( IOException e )
-    {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println( "Parsing failed: number table has invalid length" );
       return false;
     }
-    System.err.print( sw.toString() );
-
-    int size = 2;
-    int first = base + 0x2A;
-    int last = first;
-    
-    if ( irdbAddress < 0x10000 )
-    {
-      // Button map data only present when irDbAddress < 0x10000
-      last = getInt( first ) - 2;
-      System.err.println( "Count of button maps: " + Integer.toString( ( last - first ) / 2 + 1 ) );
-      System.err.println( "Vector to first button map: $" + Integer.toHexString( first ) );
-      first = getInt( last );  // ptr to last button map
-      while ( getByte( first++ ) != 0xFF ){};
-      // first now points past end of last button map
-      first += ( first & 1 ) == 1 ? 3 : 2;
-      // US remotes use size=2, European ones use size=1
-      size = getInt( first ) < first ? 2 : 1;
-    }
-    // first now points to start of vectors to region/device code lists
-    int minVec = 0x20000;
-    int maxVec = 0;
-    while ( first < minVec )
-    {
-      int vec = getInt( first ) * size;
-      minVec = Math.min( vec, minVec );
-      maxVec = Math.max( vec, maxVec );
-      first += 2;
-    }
-    // minVec, maxVec are vectors to first and last lists of pointers to setup codes by brand.
-    // Each list starts with count of following entries.  We now find the greatest of these pointers.
-    first = minVec;
-    last = maxVec;
-    maxVec = 0;
-    while ( first <= last )
-    {
-      int count = getInt( first );
-      for( int i = 0; i < 2 * count; i += 2 )
-      {
-        maxVec = Math.max( maxVec, getInt( first + i + 2 ) * size );
-      }
-      first += 2 * count + 2;
-    }
-    first = maxVec + 2 * getInt( maxVec ) + 2;
-    // first now points to start of number tables
-    numberTableAddress = first;
-
-    // Now find the index to executors, based on the fact that executor PIDs are
-    // listed in ascending order and will number at least 30
-    int count = 1;
-    int reqd = getInt( first );
-    while ( count++ < reqd )
-    {
-      if ( getInt( first + 2 * count - 2 ) >= getInt( first + 2 * count ) )
-      {
-        first += 2 * count - 4;
-        count = 1;
-        do
-        {
-          first += 2;
-          reqd = getInt( first );
-        } while ( reqd < 30 );
-      }
-    }
-    // first now points to index of executors, which starts with count of executors
-    executorIndexAddress = first;
-    executorCount = getInt( executorIndexAddress );
-    first = numberTableAddress;
-    int diff = 0;
-    do
-    {
-      first += 10;
-      int n = getInt( first );
-      diff = executorIndexAddress - ( first + 4 * n );
-    } 
-    while ( first < executorIndexAddress && ( diff < 0 || diff > 30 ) );
-    // first now points to index to setup codes
-    setupCodeIndexAddress = first;
-    numberTableSize = ( setupCodeIndexAddress - numberTableAddress ) / 10;
-    setupCodeCount = getInt( setupCodeIndexAddress );
-    System.err.println( "Start address of number tables: $" + Integer.toHexString( numberTableAddress ) );
-    System.err.println( "Count of number tables: " + Integer.toString( numberTableSize ) );
+    numberTableSize = numberTableLength / 10;    
     System.err.println( "Start address of setup code index: $" + Integer.toHexString( setupCodeIndexAddress ) );
     System.err.println( "Count of setup codes: " + Integer.toString( setupCodeCount ) );
     System.err.println( "Start address of executor index: $" + Integer.toHexString( executorIndexAddress ) );
     System.err.println( "Count of executors: " + Integer.toString( executorCount ) );
     
+    // Now perform consistency checks.
+    // Get all valid pids.  Run through setup codes, testing if pid is valid.
+    // Get maximum digit map index used by a setup code.  Check that it lies
+    // within the number table.
     List< Integer > pidList = new ArrayList< Integer >();
     for ( int i = 0; i < executorCount; i++ )
     {
       pidList.add( getInt( executorIndexAddress + 2 * i + 2 ) );
     }
-    // Set first to point past end of executor index.  This is first candidate for
-    // address offset in both index tables.  Find the actual offset by incrementing until
-    // first few setups start with a valid pid.
-    first = executorIndexAddress + 4 * executorCount + 2;
-    boolean done = false;
-    while ( !done )
+    boolean chaining = false;
+    int maxMap = 0;
+    int maxMapPid = -1;
+    for ( int i = 0; i < setupCodeCount; i++ )
     {
-      done = true;
-      for ( int i = 0; i < 30; i++ )
+      int addr = getInt( setupCodeIndexAddress + 2 * setupCodeCount + 2 * i + 2 ) + indexTablesOffset;
+      if ( addr >= eepromAddress )
       {
-        int addr = getInt( setupCodeIndexAddress + 2 * setupCodeCount + 2 * i + 2 ) + first;
-        if ( addr >= eepromAddress )
+        // Check failed.
+        System.err.println( "Parsing failed: setup code address out of range" );
+        return false;
+      }
+      hex = new Hex( 4 );
+      io.readRemote( addr, hex.getData() );
+      int testPid = hex.get( 0 );
+      if ( hex.getData()[ 2 ] > maxMap )
+      {
+        maxMap = hex.getData()[ 2 ];
+        maxMapPid = testPid;
+      }
+      maxMap = Math.max( maxMap, hex.getData()[ 2 ] );
+      if ( !pidList.contains( testPid ) )
+      {
+        // Nonzero top nibble may denote chaining
+        if ( pidList.contains( testPid & 0x0FFF ) )
         {
-          // Check failed.
-          first = 0;
-          break;
+          chaining = true;
         }
-        int testPid = getBigEndianInt( addr );
-        if ( !pidList.contains( testPid ) )
+        else
         {
-          done = false;
-          first += 2;
-          break;
+          System.err.println( "Parsing failed: setup data contains nonexistent pid" );
+          return false;
         }
       }
     }
-    buffer= null;
-    if ( first > 0 )
+    // Find number of bytes per entry in last used number table
+    int index = pidList.indexOf( maxMapPid );
+    int addr = getInt( executorIndexAddress + 2 * executorCount + 2 * index + 2 ) + indexTablesOffset;
+    int numVar = getInt( addr + 2 ) & 0x000F;
+    maxMap += numVar - 1;
+    
+    if ( maxMap > numberTableSize )
     {
-      indexTablesOffset = first;
-      System.err.println( "Index tables offset = $" + Integer.toHexString( indexTablesOffset ) );
-      return true;
-    }
-    else
-    {
-      System.err.println( "Parsing of IRDB failed." );
+      System.err.println( "Parsing failed: setup data contains nonexistent map imdex" );
       return false;
     }
+    System.err.println( "Start address of number tables: $" + Integer.toHexString( numberTableAddress ) );
+    System.err.println( "Count of number tables/Last used: " + Integer.toString( numberTableSize ) + "/" + Integer.toString( maxMap ) );
+    System.err.println( "Setup data " + ( chaining ? "uses" : "does not use" ) + " chaining" );
+    return true;
   }
   
   public int getInt( int addr )
   {
-    return buffer[ addr - base ] + ( buffer[ addr - base + 1 ] << 8 );
-  }
-  
-  public int getBigEndianInt( int addr )
-  {
-    return buffer[ addr - base + 1 ] + ( buffer[ addr - base ] << 8 );
-  }
-  
-  public int getByte( int addr )
-  {
-    return buffer[ addr - base ];
+    short[] buf = new short[ 2 ];
+    io.readRemote( addr, buf );
+    return buf[ 0 ] | buf[ 1 ] << 8 ;
   }
 
   public int getNumberTableAddress()
