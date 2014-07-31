@@ -109,7 +109,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24 Test 6d";
+  public final static String version = "v2.03 Alpha 24 Test 7";
 
   public enum Use
   {
@@ -642,7 +642,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       cleanUpperMemoryItem.setEnabled( true );
       initializeTo00Item.setEnabled( true );
       initializeToFFItem.setEnabled( true );
-      uploadAction.setEnabled( file == null );
+      uploadAction.setEnabled( true );
       update();
       if ( file != null )
       {
@@ -4220,7 +4220,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       codeList.add( setupCode & 0x0FFF );
       int n = 2 * ( s.getSetupCodeCount() + i );
       int setupAddress = ( bufSetup[ n ] | bufSetup[ n + 1 ] << 8 ) + s.getIndexTablesOffset();
-      short[] buf = new short[ 0x0200 ];
+      short[] buf = new short[ 4 ];
       io.readRemote( setupAddress, buf );
       int pid = buf[ 0 ] << 8 | buf[ 1 ];
       int map = buf[ 2 ];
@@ -4246,6 +4246,19 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     System.err.println( String.format( "EepromSize=$%04X", io.getRemoteEepromSize() ) );
     System.err.println( String.format( "BaseAddress=$%04X", io.getRemoteEepromAddress() ) );
     printExtract( setups, pidLenBytes, prots, maps );
+    System.err.println( "Raw number table data:" );
+    n = 0;
+    while ( n < bufNum.length / 10 )
+    {
+      int numBytes = mapNumBytes.get( n ) != null ? mapNumBytes.get( n ) : 1;
+      for ( int i = 0; i < 10 * numBytes; i++ )
+      {
+        System.err.print( String.format( "%02x ", bufNum[ 10 * n + i ] ) );
+      }
+      System.err.println();
+      n += numBytes;
+    }
+    System.err.println();
     String title = "Extract for RDF";
     String message = 
         "Extract data, including [Protocols] and [SetupCodes] sections\n"

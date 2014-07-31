@@ -2784,7 +2784,7 @@ public class RemoteConfiguration
     {
       if ( du.getSetupCode() != -1 )
       {
-        int setupCode = du.getDeviceType().get_Type() << 12 | du.getSetupCode();
+        int setupCode = du.getDeviceType().getNumber() << 12 | du.getSetupCode();
         if ( !upgradeCodes.contains( setupCode ) )
         {
           upgradeCodes.add( setupCode );
