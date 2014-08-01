@@ -2784,7 +2784,8 @@ public class RemoteConfiguration
     {
       if ( du.getSetupCode() != -1 )
       {
-        int setupCode = du.getDeviceType().getNumber() << 12 | du.getSetupCode();
+        // Need to allow for setup codes > 0x0FFF in latest remotes
+        int setupCode = du.getDeviceType().getNumber() << 16 | du.getSetupCode();
         if ( !upgradeCodes.contains( setupCode ) )
         {
           upgradeCodes.add( setupCode );
@@ -2796,7 +2797,7 @@ public class RemoteConfiguration
       if ( db.getSegment() != null )
       {
         short[] dbData = db.getSegment().getHex().getData();
-        int setupCode = db.getDeviceTypeIndex( dbData ) << 12 | db.getSetupCode( dbData );
+        int setupCode = db.getDeviceTypeIndex( dbData ) << 16 | db.getSetupCode( dbData );
         if ( setupCode != -1 && !upgradeCodes.contains( setupCode ) && !missingCodes.contains( setupCode ) )
         {
           missingCodes.add( setupCode );
@@ -2818,23 +2819,36 @@ public class RemoteConfiguration
     Scanner s = io.getScanner();
     short[] bufSetup = new short[ 4 * s.getSetupCodeCount() ];
     short[] bufExec = new short[ 4 * s.getExecutorCount() ];
+    short[] bufType = new short[ 2 * s.getSetupTypeCount() + 2 ];
     short[] bufNum = new short[ 10 * s.getNumberTableSize() ];
     io.readRemote( s.getSetupCodeIndexAddress() + 2, bufSetup );
     io.readRemote( s.getExecutorIndexAddress() + 2, bufExec );
+    io.readRemote( s.getSetupTypeIndexAddress(), bufType );
     io.readRemote( s.getNumberTableAddress(), bufNum );
+    
+    int type = -1;
+    int typeLimit = ( bufType[ 2 * type + 2 ] | bufType[ 2 * type + 3 ] << 8 ) * 2;
+    int mask = s.setupCodeIncludesType() ? 0x0FFF : 0xFFFF;
     for ( int i = 0; i < s.getSetupCodeCount(); i++ )
     {
+      int codeAddress = s.getSetupCodeIndexAddress() + 2 + 2 * i;
+      if ( codeAddress == typeLimit )
+      {
+        type++;
+        typeLimit = ( bufType[ 2 * type + 2 ] | bufType[ 2 * type + 3 ] << 8 ) * 2;
+      }
       int setupCode = bufSetup[ 2 * i ] | bufSetup[ 2 * i + 1 ] << 8;
+      setupCode = ( setupCode & mask ) | ( type << 16 );
 
       if ( missingCodes.contains( setupCode ) )
       {
-        DeviceType devType = remote.getDeviceTypeByIndex( setupCode >> 12 );
+        DeviceType devType = remote.getDeviceTypeByIndex( type );
         String alias = remote.getDeviceTypeAlias( devType );
         if ( alias == null )
         {
           String message = String.format(
               "No device type alias found for device upgrade %1$s/%2$04d.  The device upgrade could not be created.",
-              devType, setupCode & 0x0FFF );
+              devType, setupCode & mask );
           JOptionPane.showMessageDialog( null, message, "Protocol Code Mismatch", JOptionPane.ERROR_MESSAGE );
           continue;
         }
@@ -2920,7 +2934,7 @@ public class RemoteConfiguration
           du.setSizeCmdBytes( numVar );
           du.setSizeDevBytes( numFixed );
           du.importRawUpgrade( setupHex, remote, alias, new Hex( pidHex ), null );
-          du.setSetupCode( setupCode & 0x0FFF );  
+          du.setSetupCode( setupCode & mask );  
           du.setSegmentFlags( 0xFF );
           du.setRemote( remote );
           //          du.classifyButtons();

@@ -18,9 +18,12 @@ public class Scanner
   private int executorIndexAddress = 0;
   private int executorCount = 0;
   private int setupCodeIndexAddress = 0;
+  private int setupTypeIndexAddress = 0;
   private int setupCodeCount = 0;
+  private int setupTypeCount = 0;
   private int indexTablesOffset = 0;
   private int base = 0;
+  private boolean codeIncludesType = true;
   private JPS io = null;
   
   public Scanner( JPS io, int irdbAddress )
@@ -37,6 +40,7 @@ public class Scanner
     io.readRemote( base, hex.getData() );
     numberTableAddress = hex.get( 0x14 ) * 2;
     setupCodeIndexAddress = hex.get( 0x16 ) * 2;
+    setupTypeIndexAddress = hex.get( 0x1A ) * 2;
     executorIndexAddress = hex.get( 0x1C ) * 2;
     indexTablesOffset = hex.get( 0x22 ) * 2;
     setupCodeCount = getInt( setupCodeIndexAddress );
@@ -51,10 +55,34 @@ public class Scanner
     }
     numberTableSize = numberTableLength / 10;    
     System.err.println( "Start address of setup code index: $" + Integer.toHexString( setupCodeIndexAddress ) );
+    System.err.println( "Start address of setup type index: $" + Integer.toHexString( setupTypeIndexAddress ) );
     System.err.println( "Count of setup codes: " + Integer.toString( setupCodeCount ) );
     System.err.println( "Start address of executor index: $" + Integer.toHexString( executorIndexAddress ) );
     System.err.println( "Count of executors: " + Integer.toString( executorCount ) );
     
+    // Check if high nibble of setup code is the device type.  Some newer remotes
+    // allow for setup codes > 0x0FFF by not including device type in high nibble.
+    // It is necessary to know whether or not a remote does this to read correctly
+    // the true setup code value.
+    int type = -1;
+    int typeLimit = getInt( setupTypeIndexAddress + 2 * type + 2 ) * 2;
+    for ( int i = 0; i < setupCodeCount; i++ )
+    {
+      int codeAddress = setupCodeIndexAddress + 2 + 2 * i;
+      if ( codeAddress == typeLimit )
+      {
+        type++;
+        typeLimit = getInt( setupTypeIndexAddress + 2 * type + 2 ) * 2;
+      }
+      int setupCode = getInt( setupCodeIndexAddress + 2 * i + 2 );
+      int typeFromSetupCode = setupCode >> 12;
+      if ( codeIncludesType && type != typeFromSetupCode )
+      {
+        codeIncludesType = false;
+      }
+    }
+    setupTypeCount = type + 1;
+
     // Now perform consistency checks.
     // Get all valid pids.  Run through setup codes, testing if pid is valid.
     // Get maximum digit map index used by a setup code.  Check that it lies
@@ -148,14 +176,29 @@ public class Scanner
     return setupCodeIndexAddress;
   }
 
+  public int getSetupTypeIndexAddress()
+  {
+    return setupTypeIndexAddress;
+  }
+
   public int getSetupCodeCount()
   {
     return setupCodeCount;
   }
 
+  public int getSetupTypeCount()
+  {
+    return setupTypeCount;
+  }
+
   public int getIndexTablesOffset()
   {
     return indexTablesOffset;
+  }
+
+  public boolean setupCodeIncludesType()
+  {
+    return codeIncludesType;
   }
   
 }

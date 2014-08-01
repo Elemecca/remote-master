@@ -109,7 +109,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24 Test 7";
+  public final static String version = "v2.03 Alpha 24 Test 8";
 
   public enum Use
   {
@@ -2910,7 +2910,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( tempName.equals( interfaceName ) )
         {
           System.err.println( "Interface matched.  Trying to open remote." );
-          IO ioOut = testInterface( temp, file, use );
+          IO ioOut = testInterface( temp, portName, file, use );
           if ( ioOut != null )
           {
             return ioOut;
@@ -2929,7 +2929,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         String tempName = temp.getInterfaceName();
         System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
-        IO ioOut = testInterface( temp, file, use );
+        IO ioOut = testInterface( temp, null, file, use );
         if ( ioOut != null )
         {
           return ioOut;
@@ -2939,11 +2939,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     return null;
   }
   
-  private IO testInterface( IO ioIn, File file, Use use )
+  private IO testInterface( IO ioIn, String portName, File file, Use use )
   {
     String ioName = ioIn.getInterfaceName();
     String osName = System.getProperty( "os.name" );
-    String portName = properties.getProperty( "Port" );
     if ( file != null && !ioName.equals( "JPS" ) )
     {
       return null;
@@ -3362,6 +3361,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         StringBuilder sb = new StringBuilder( 1000 );
         sb.append( "<html><b>RemoteMaster " );
         sb.append( version );
+        sb.append( admin ? " (admin mode)" : "" );
         sb.append( "</b>" );
         sb.append( "<p>Written primarily by <i>Greg Bush</i> (now accepting donations at " );
         sb.append( "<a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>)," );
@@ -4189,9 +4189,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     List< Integer > prots = new ArrayList< Integer >();
     List< Integer > maps = new ArrayList< Integer >();
     short[] bufSetup = new short[ 4 * s.getSetupCodeCount() ];
+    short[] bufType = new short[ 2 * s.getSetupTypeCount() + 2 ];
     short[] bufExec = new short[ 4 * s.getExecutorCount() ];
     short[] bufNum = new short[ 10 * s.getNumberTableSize() ];
     io.readRemote( s.getSetupCodeIndexAddress() + 2, bufSetup );
+    io.readRemote( s.getSetupTypeIndexAddress(), bufType );
     io.readRemote( s.getExecutorIndexAddress() + 2, bufExec );
     io.readRemote( s.getNumberTableAddress(), bufNum );
     for ( int i = 0; i < s.getExecutorCount(); i++ )
@@ -4207,17 +4209,26 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       pidLenBytes.put( pid, ( int )buf2[ 0 ] );
     }
+
+    int type = -1;
+    int typeLimit = ( bufType[ 2 * type + 2 ] | bufType[ 2 * type + 3 ] << 8 ) * 2;
+    int mask = s.setupCodeIncludesType() ? 0x0FFF : 0xFFFF;
     for ( int i = 0; i < s.getSetupCodeCount(); i++ )
     {
+      int codeAddress = s.getSetupCodeIndexAddress() + 2 + 2 * i;
+      if ( codeAddress == typeLimit )
+      {
+        type++;
+        typeLimit = ( bufType[ 2 * type + 2 ] | bufType[ 2 * type + 3 ] << 8 ) * 2;
+      }
       int setupCode = bufSetup[ 2 * i ] | bufSetup[ 2 * i + 1 ] << 8;
-      int type = setupCode >> 12;
       List< Integer > codeList = setups.get( type );
       if ( codeList == null )
       {
         codeList = new ArrayList< Integer >();
         setups.put( type, codeList );
       }
-      codeList.add( setupCode & 0x0FFF );
+      codeList.add( setupCode & mask );
       int n = 2 * ( s.getSetupCodeCount() + i );
       int setupAddress = ( bufSetup[ n ] | bufSetup[ n + 1 ] << 8 ) + s.getIndexTablesOffset();
       short[] buf = new short[ 4 ];
