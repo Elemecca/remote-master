@@ -1,10 +1,6 @@
 package com.hifiremote.jp1;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.hifiremote.jp1.io.JPS;
@@ -53,13 +49,15 @@ public class Scanner
       System.err.println( "Parsing failed: number table has invalid length" );
       return false;
     }
-    numberTableSize = numberTableLength / 10;    
-    System.err.println( "Start address of setup code index: $" + Integer.toHexString( setupCodeIndexAddress ) );
-    System.err.println( "Start address of setup type index: $" + Integer.toHexString( setupTypeIndexAddress ) );
-    System.err.println( "Count of setup codes: " + Integer.toString( setupCodeCount ) );
-    System.err.println( "Start address of executor index: $" + Integer.toHexString( executorIndexAddress ) );
-    System.err.println( "Count of executors: " + Integer.toString( executorCount ) );
-    
+    numberTableSize = numberTableLength / 10;   
+    if ( RemoteMaster.admin )
+    {
+      System.err.println( "Start address of setup code index: $" + Integer.toHexString( setupCodeIndexAddress ) );
+      System.err.println( "Start address of setup type index: $" + Integer.toHexString( setupTypeIndexAddress ) );
+      System.err.println( "Count of setup codes: " + Integer.toString( setupCodeCount ) );
+      System.err.println( "Start address of executor index: $" + Integer.toHexString( executorIndexAddress ) );
+      System.err.println( "Count of executors: " + Integer.toString( executorCount ) );
+    }
     // Check if high nibble of setup code is the device type.  Some newer remotes
     // allow for setup codes > 0x0FFF by not including device type in high nibble.
     // It is necessary to know whether or not a remote does this to read correctly
@@ -138,9 +136,12 @@ public class Scanner
       System.err.println( "Parsing failed: setup data contains nonexistent map imdex" );
       return false;
     }
-    System.err.println( "Start address of number tables: $" + Integer.toHexString( numberTableAddress ) );
-    System.err.println( "Count of number tables/Last used: " + Integer.toString( numberTableSize ) + "/" + Integer.toString( maxMap ) );
-    System.err.println( "Setup data " + ( chaining ? "uses" : "does not use" ) + " chaining" );
+    if ( RemoteMaster.admin )
+    {
+      System.err.println( "Start address of number tables: $" + Integer.toHexString( numberTableAddress ) );
+      System.err.println( "Count of number tables/Last used: " + Integer.toString( numberTableSize ) + "/" + Integer.toString( maxMap ) );
+      System.err.println( "Setup data " + ( chaining ? "uses" : "does not use" ) + " chaining" );
+    }
     return true;
   }
   
