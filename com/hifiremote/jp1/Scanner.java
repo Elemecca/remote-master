@@ -1,6 +1,10 @@
 package com.hifiremote.jp1;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.hifiremote.jp1.io.JPS;
@@ -18,7 +22,6 @@ public class Scanner
   private int setupCodeCount = 0;
   private int setupTypeCount = 0;
   private int indexTablesOffset = 0;
-  private int base = 0;
   private boolean codeIncludesType = true;
   private JPS io = null;
   
@@ -31,9 +34,8 @@ public class Scanner
   
   public boolean scan()
   {
-    base = irdbAddress;
     Hex hex = new Hex( 0x40 );
-    io.readRemote( base, hex.getData() );
+    io.readRemote( irdbAddress, hex.getData() );
     numberTableAddress = hex.get( 0x14 ) * 2;
     setupCodeIndexAddress = hex.get( 0x16 ) * 2;
     setupTypeIndexAddress = hex.get( 0x1A ) * 2;
@@ -41,6 +43,41 @@ public class Scanner
     indexTablesOffset = hex.get( 0x22 ) * 2;
     setupCodeCount = getInt( setupCodeIndexAddress );
     executorCount = getInt( executorIndexAddress );
+    
+    if ( RemoteMaster.admin )
+    {
+      System.err.println();
+      int regionalPointersAddress = hex.get( 0x24 ) * 2;
+      int buttonMapDataLength = regionalPointersAddress - ( irdbAddress + 0x28 );
+      if ( buttonMapDataLength > 0 )
+      {
+        int ptr = irdbAddress + 0x2A;
+        int mapStart = getInt( ptr );
+        int count = ( mapStart - ptr ) / 2;
+        for ( int i = 0; i < count; i++ )
+        {
+          ptr = irdbAddress + 0x2A + 2 * i;
+          mapStart = getInt( ptr );
+          int mapEnd = mapStart;
+          if ( mapEnd <= regionalPointersAddress )
+          {
+            while ( getByte( mapEnd++ ) != 0xFF ){};
+            short[] mapData = new short[ mapEnd - mapStart - 1 ];
+            io.readRemote( mapStart, mapData );
+            String mapString = "Map " + i + " Data = ";
+            for ( int j = 0; j < mapData.length; j++ )
+            {
+              mapString += ( j > 0 ? ", " : "" ) + String.format( "$%02X", mapData[ j ] );
+            }
+            System.err.println( mapString );
+          }
+          else
+          {
+            break;
+          }
+        }
+      }
+    }
     
     // Setup code index immediately follows number table
     int numberTableLength = setupCodeIndexAddress - numberTableAddress;
@@ -105,18 +142,13 @@ public class Scanner
       hex = new Hex( 4 );
       io.readRemote( addr, hex.getData() );
       int testPid = hex.get( 0 );
-      if ( hex.getData()[ 2 ] > maxMap )
-      {
-        maxMap = hex.getData()[ 2 ];
-        maxMapPid = testPid;
-      }
-      maxMap = Math.max( maxMap, hex.getData()[ 2 ] );
       if ( !pidList.contains( testPid ) )
       {
         // Nonzero top nibble may denote chaining
         if ( pidList.contains( testPid & 0x0FFF ) )
         {
           chaining = true;
+          testPid &= 0x0FFF;
         }
         else
         {
@@ -124,6 +156,12 @@ public class Scanner
           return false;
         }
       }
+      if ( hex.getData()[ 2 ] > maxMap )
+      {
+        maxMap = hex.getData()[ 2 ];
+        maxMapPid = testPid;
+      }
+      maxMap = Math.max( maxMap, hex.getData()[ 2 ] );
     }
     // Find number of bytes per entry in last used number table
     int index = pidList.indexOf( maxMapPid );
@@ -141,8 +179,29 @@ public class Scanner
       System.err.println( "Start address of number tables: $" + Integer.toHexString( numberTableAddress ) );
       System.err.println( "Count of number tables/Last used: " + Integer.toString( numberTableSize ) + "/" + Integer.toString( maxMap ) );
       System.err.println( "Setup data " + ( chaining ? "uses" : "does not use" ) + " chaining" );
+      System.err.println();
     }
     return true;
+  }
+  
+  public void dump()
+  {
+    short[] buffer = new short[ eepromAddress - irdbAddress ];
+    io.readRemote( irdbAddress, buffer );    
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter( sw );
+    try
+    {
+      Hex.print( pw, Arrays.copyOf( buffer, buffer.length ), irdbAddress );
+    }
+    catch ( IOException e )
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return;
+    }
+    System.err.print( sw.toString() );
+    buffer = null;
   }
   
   public int getInt( int addr )
@@ -150,6 +209,13 @@ public class Scanner
     short[] buf = new short[ 2 ];
     io.readRemote( addr, buf );
     return buf[ 0 ] | buf[ 1 ] << 8 ;
+  }
+  
+  public int getByte( int addr )
+  {
+    short[] buf = new short[ 2 ];
+    io.readRemote( addr, buf );
+    return buf[ 0 ];
   }
 
   public int getNumberTableAddress()

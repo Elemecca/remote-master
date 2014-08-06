@@ -42,6 +42,7 @@ public class LearnedSignal extends Highlight
     format = signal.format;
     data = new Hex( signal.data );
     notes = signal.notes;
+    setSegmentFlags( signal.getSegmentFlags() );
 
     unpackLearned = signal.unpackLearned;
     if ( signal.decodes != null )

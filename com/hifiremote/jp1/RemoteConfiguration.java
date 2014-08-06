@@ -173,11 +173,17 @@ public class RemoteConfiguration
     if ( e2FormatOffset >= 0 )
     {
       char[] val = new char[ 6 ];
+      boolean isNull = true;
       for ( int i = 0; i < 6; i++ )
       {
-        val[ i ] = ( char )data[ e2FormatOffset + i ];
+        int n = data[ e2FormatOffset + i ];
+        val[ i ] = ( char )n;
+        if ( n != 0xFF )
+        {
+          isNull = false;
+        }
       }
-      eepromFormatVersion = new String( val );               
+      eepromFormatVersion = isNull ? null : new String( val );             
     }
     
     LinkedHashMap< GeneralFunction, Integer > iconrefMap = null;
@@ -3599,11 +3605,17 @@ public class RemoteConfiguration
     if ( e2FormatOffset >= 0 )
     {
       char[] val = new char[ 6 ];
+      boolean isNull = true;
       for ( int i = 0; i < 6; i++ )
       {
-        val[ i ] = ( char )data[ e2FormatOffset + i ];
+        int n = data[ e2FormatOffset + i ];
+        val[ i ] = ( char )n;
+        if ( n != 0xFF )
+        {
+          isNull = false;
+        }
       }
-      eepromFormatVersion = new String( val );               
+      eepromFormatVersion = isNull ? null : new String( val );               
     }
     
     if ( remote.isSSD() )
@@ -4889,9 +4901,12 @@ public class RemoteConfiguration
         {
           data[ pos++ ] = ( short )( ( size >> i ) & 0xFF );
         }
-        for ( int i = 0; i < 6; i++ )
+        if ( eepromFormatVersion != null )
         {
-          data[ pos++ ] = ( short )( eepromFormatVersion == null ? '-' : eepromFormatVersion.charAt( i ) );
+          for ( int i = 0; i < 6; i++ )
+          {
+            data[ pos++ ] = ( short )eepromFormatVersion.charAt( i );
+          }
         }
         pos = 20;
       }

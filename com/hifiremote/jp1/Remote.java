@@ -3044,7 +3044,7 @@ public class Remote implements Comparable< Remote >
     }
     else if ( name.equals( "MAXQ622" ) )
     {
-      return "JPUSB";
+      return usesSimpleset() ? "JPS" : "JPUSB";
     }
     else
     {

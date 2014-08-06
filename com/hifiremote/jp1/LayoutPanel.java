@@ -701,14 +701,30 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     Button b = getButtonForShape( shape );
     if ( b != null )
     {
-      GeneralFunction current = getFunction( b );
-      ButtonTableModel.setFunction( deviceUpgrade, b, current, gf, this );
+      if ( normalMode.isSelected() )
+      {
+        GeneralFunction current = getFunction( b );
+        ButtonTableModel.setFunction( deviceUpgrade, b, current, gf, this );
 //      // Commented out as learned signals cannot be deleted in layout panel
 //      if ( current instanceof LearnedSignal && gf == null )
 //      {
 //        gf = getFunction( b );
 //        ButtonTableModel.setFunction( deviceUpgrade, b, null, gf, this );
 //      }
+      }
+      else if ( shiftMode.isSelected() && gf instanceof Function )
+      {
+        deviceUpgrade.setFunction( b, ( Function )gf, Button.SHIFTED_STATE );
+      }
+      else if ( xShiftMode.isSelected() && gf instanceof Function )
+      {
+        deviceUpgrade.setFunction( b, ( Function )gf, Button.XSHIFTED_STATE );
+      }
+      else
+      {
+        return;
+      }
+
       setButtonText( shape, b );
       deviceUpgrade.checkSize();
     }
