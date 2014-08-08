@@ -5085,17 +5085,16 @@ public class RemoteConfiguration
         updateHighlight( group, address + 6 + pos, 1 );
         pos += incr;
       }
+      activity.clearMemoryUsage();
       if ( remote.hasActivityControl() )
       {
         updateHighlight( activity, address + 6, 1 );
       }
       segment = activity.getHelpSegment();
-      address = segment.getAddress();
-      activity.clearMemoryUsage();
-      updateHighlight( activity, address + 4, 4 );
-      if ( remote.hasActivityControl() )
+      if ( segment != null )
       {
-        activity.addMemoryUsage( 1 );
+        address = segment.getAddress();
+        updateHighlight( activity, address + 4, 4 );
       }
       Macro macro = activity.getMacro();
       if ( macro != null )
