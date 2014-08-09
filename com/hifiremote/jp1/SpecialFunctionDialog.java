@@ -471,10 +471,12 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       return;
     }
 
+    Remote remote = config.getRemote();
     cmd = function.getCmd();
     if ( cmd != null )
       cmd = new Hex( cmd );
-    boundDevice.setSelectedIndex( function.getDeviceButtonIndex() );
+    DeviceButton db = remote.getDeviceButton( function.getDeviceButtonIndex() );
+    boundDevice.setSelectedItem( db );
     shift.setSelected( false );
     xShift.setSelected( false );
     setButton( function.getKeyCode(), boundKey, shift, xShift );

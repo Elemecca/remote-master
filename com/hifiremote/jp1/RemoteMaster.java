@@ -109,7 +109,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24b";
+  public final static String version = "v2.03 Alpha 24d";
 
   public enum Use
   {

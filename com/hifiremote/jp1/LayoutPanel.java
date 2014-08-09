@@ -712,11 +712,11 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
 //        ButtonTableModel.setFunction( deviceUpgrade, b, null, gf, this );
 //      }
       }
-      else if ( shiftMode.isSelected() && gf instanceof Function )
+      else if ( shiftMode.isSelected() && ( gf == null || gf instanceof Function ) )
       {
         deviceUpgrade.setFunction( b, ( Function )gf, Button.SHIFTED_STATE );
       }
-      else if ( xShiftMode.isSelected() && gf instanceof Function )
+      else if ( xShiftMode.isSelected() && ( gf == null || gf instanceof Function ) )
       {
         deviceUpgrade.setFunction( b, ( Function )gf, Button.XSHIFTED_STATE );
       }
