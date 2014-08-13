@@ -109,7 +109,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24d";
+  public final static String version = "v2.03 Alpha 24e";
 
   public enum Use
   {
@@ -258,8 +258,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   /** The learned panel. */
   private LearnedSignalPanel learnedPanel = null;
 
-  /** The raw data panel. */
   private RawDataPanel rawDataPanel = null;
+  private SegmentPanel segmentPanel = null;
 
   /** The adv progress bar. */
   private JProgressBar advProgressBar = null;
@@ -1303,6 +1303,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           if ( doDispose )
           {
             dispose();
+            // For some unknown reason, if map or rdf file folders had to be
+            // set on startup, RMIR does not terminate on dispose(), so force
+            // it in this case only.  It should not terminate if a RM
+            // instance has been launched from it, so cannot force exit in
+            // all cases.
+            if ( RemoteManager.getRemoteManager().isFilesSet() )
+            {
+              System.exit( ABORT );
+            }
           }
         }
       }
@@ -1376,6 +1385,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     rawDataPanel = new RawDataPanel();
     tabbedPane.addTab( "Raw Data", rawDataPanel );
     rawDataPanel.addRMPropertyChangeListener( this );
+    
+    segmentPanel = new SegmentPanel();
+    segmentPanel.addRMPropertyChangeListener( this );
 
     tabbedPane.addChangeListener( this );
 
@@ -2208,7 +2220,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     File result = null;
     File dir = properties.getFileProperty( "RDFPath" );
     RMDirectoryChooser chooser = new RMDirectoryChooser( dir, ".rdf", "RDF" );
-    chooser.setAccessory( new ChoiceArea( chooser ) );
+    ChoiceArea area = new ChoiceArea( chooser );
+    chooser.setAccessory( area );
     chooser.setDialogTitle( "Select RDF Directory" );
     if ( chooser.showDialog( this, "OK" ) == RMDirectoryChooser.APPROVE_OPTION )
     {
@@ -2218,6 +2231,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         result = null; // Not changed
       }
     }
+    chooser.removePropertyChangeListener( area );
     return result;
   }
 
@@ -2226,7 +2240,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     File result = null;
     File dir = properties.getFileProperty( "ImagePath" );
     RMDirectoryChooser chooser = new RMDirectoryChooser( dir, ".map", "Map and Image" );
-    chooser.setAccessory( new ChoiceArea( chooser ) );
+    ChoiceArea area = new ChoiceArea( chooser );
+    chooser.setAccessory( area );
     chooser.setDialogTitle( "Select Map and Image Directory" );
     if ( chooser.showDialog( this, "OK" ) == RMDirectoryChooser.APPROVE_OPTION )
     {
@@ -2236,6 +2251,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         result = null; // Not changed
       }
     }
+    chooser.removePropertyChangeListener( area );
     return result;
   }
   
@@ -2958,7 +2974,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
         return null;
       }
-      else if ( jps.isOpen() && ( use == Use.SAVING || use == Use.SAVEAS || use == Use.UPLOAD && admin ) )
+      else if ( jps.isOpen() && ( use == Use.SAVING || use == Use.SAVEAS ) )
       {
         portName = jps.getFilePath();
         System.err.println( "Already open on Port " + portName );
@@ -3235,6 +3251,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         if ( currentPanel == rawDataPanel )
         {
           rawDataPanel.set( remoteConfig );
+        }
+        else if ( currentPanel == segmentPanel )
+        {
+          segmentPanel.set( remoteConfig );
         }
       }
       else if ( source == putSystemFileItem )
@@ -3513,6 +3533,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
     else
       index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index, "Learned Signals tab disabled due to DecodeIR not being found.", false );
+    index = checkTabbedPane( "Segments", segmentPanel, remote.getSegmentTypes() != null && !remote.isSSD(), index );
     
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
@@ -3524,6 +3545,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     devicePanel.set( remoteConfig );
     protocolPanel.set( remoteConfig );
     activityPanel.set( remoteConfig );
+    segmentPanel.set( remoteConfig );
 
     if ( LearnedSignal.hasDecodeIR() )
     {

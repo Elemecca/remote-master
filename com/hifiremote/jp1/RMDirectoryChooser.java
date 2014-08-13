@@ -1,9 +1,12 @@
 package com.hifiremote.jp1;
 
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 import com.l2fprod.common.swing.JDirectoryChooser;
@@ -54,4 +57,18 @@ public class RMDirectoryChooser extends JDirectoryChooser
       super.approveSelection();
     }
   }
+  
+  @Override
+  public JDialog createDialog( Component parent ) throws HeadlessException 
+  {
+    dialog = super.createDialog( parent );
+    return dialog;
+  }
+  
+  public JDialog getDialog()
+  {
+    return dialog;
+  }
+
+  private JDialog dialog = null;
 };

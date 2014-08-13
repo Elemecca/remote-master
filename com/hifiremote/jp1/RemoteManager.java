@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 // TODO: Auto-generated Javadoc
@@ -68,15 +70,19 @@ public class RemoteManager
       files = dir.listFiles( filter );
       if ( files.length == 0 )
       {
+        filesSet = true;
         JOptionPane.showMessageDialog( null, "No " + type + " files were found!", "Error", JOptionPane.ERROR_MESSAGE );
         RMDirectoryChooser chooser = new RMDirectoryChooser( dir, extension, type );
-        chooser.setAccessory( new ChoiceArea( chooser ) );
+        ChoiceArea area = new ChoiceArea( chooser );
+        chooser.setAccessory( area );
         chooser.setDialogTitle( "Choose the directory containing the " + type + " files" );
         int returnVal = chooser.showDialog( null, "OK" );
+        chooser.removePropertyChangeListener( area );
         if ( returnVal != RMDirectoryChooser.APPROVE_OPTION )
           return properties.getFileProperty( propName );
         else
           dir = chooser.getSelectedFile();
+        chooser.getDialog().dispose();
       }
       path = dir;
     }
@@ -100,6 +106,23 @@ public class RemoteManager
     initPath( properties, "ImagePath", "Images", ".map", "Map" );
 
     loadPath = initPath( properties, "RDFPath", "RDF", ".rdf", "RDF" );
+    if ( loadPath == null )
+    {
+      return;
+    }
+    if ( filesSet )
+    {
+      // Save so can be used by instance of RM if opened from RMIR
+      try
+      {
+        properties.save();
+      }
+      catch ( IOException e )
+      {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
 
     File[] files = loadPath.listFiles( new ExtensionFilter( ".rdf" ) );
     for ( int i = 0; i < files.length; i++ )
@@ -329,6 +352,11 @@ public class RemoteManager
     oldRemoteNames = null;
   }
 
+  public boolean isFilesSet()
+  {
+    return filesSet;
+  }
+
   /** The remote manager. */
   private static RemoteManager remoteManager = new RemoteManager();
 
@@ -342,5 +370,7 @@ public class RemoteManager
 
   /** The old remote names. */
   private Hashtable< String, String > oldRemoteNames = null;
+  
+  private boolean filesSet = false;
 
 }

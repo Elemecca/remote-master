@@ -202,6 +202,14 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           if ( doDispose )
           {
             dispose();
+            // For some unknown reason, if map or rdf file folders had to be
+            // set on startup, RM does not terminate on dispose(), so force
+            // it in this case only.  It should not terminate if it has been
+            // opened from an RMIR instance, so cannot force exit in all cases.
+            if ( RemoteManager.getRemoteManager().isFilesSet() )
+            {
+              System.exit( ABORT );
+            }
           }
         }
       }

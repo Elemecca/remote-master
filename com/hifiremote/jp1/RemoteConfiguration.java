@@ -5998,7 +5998,7 @@ public class RemoteConfiguration
       int size = 0;
       for ( Macro macro : list )
       {
-        size += macro.dataLength() + type - ( type == 4 ? 0 : 1 );
+        size += macro.dataLength() + type - ( type == 4 ? 2 : 1 );
         if ( type == 3 )
         {
           size += macro.dataLength() + macro.getName().length() + 1;
@@ -6120,25 +6120,70 @@ public class RemoteConfiguration
         // It looks as if at one time this segment was believed always to need a final 0xFF, which with
         // padding would become 0xFFFF.  I don't now think that is necessary, so have removed it by
         // reducing "size" by one.
-        int size = 3 + 3 * deviceButtonList.size();
-        size += ( size & 1 ) == 1 ? 1 : 0;
-        Hex hex = new Hex( size );
-        hex.put( 0xFFFF, size - 2 );
-        hex.put( 0, 0 );
-        hex.set( ( short )deviceButtonList.size(), 2 );
-        int i = 3;
-        for ( DeviceButton db : remote.getDeviceButtons() )
+        Hex hex = null;
+        segments.put( 0x11, new ArrayList< Segment >() );
+        if ( remote.usesSimpleset() )
         {
-          if ( deviceButtonList.contains( db ) )
+          for ( DeviceButton db : remote.getDeviceButtons() )
           {
-            short[] data = db.getSegment().getHex().getData();
-            hex.set( ( short )db.getDeviceTypeIndex( data ), i );
-            hex.put(  db.getSetupCode( data ), i + 1 );
-            i += 3;
+            int dbIndex = db.getButtonIndex();
+            short[] dbData = db.getSegment().getHex().getData();
+            int dbTypeIndex = db.getDeviceTypeIndex( dbData );
+            List< short[] > duDataList = new ArrayList< short[] >();
+            int size = 3;
+            for ( DeviceUpgrade du : devices )
+            {
+              DeviceType duType = remote.getDeviceTypeByAliasName( du.getDeviceTypeAliasName() );
+              int duTypeIndex = duType.getNumber();
+              if ( duTypeIndex == dbTypeIndex )
+              {
+                int setupCode = du.getSetupCode();
+                duDataList.add( new short[]{ ( short )duTypeIndex, ( short )( setupCode >> 8 ), ( short )( setupCode & 0xFF ) } );
+                size += 3;
+              }
+            }
+            if ( duDataList.isEmpty() )
+            {
+              continue;
+            }
+            size += ( size & 1 ) == 1 ? 1 : 0;
+            hex = new Hex( size );
+            hex.put( 0xFFFF, size - 2 );
+            hex.set( ( short )dbIndex, 0 );
+            hex.set( ( short )dbTypeIndex, 1 );
+            hex.set( ( short )devices.size(), 2 );
+            int pos = 3;
+            for ( short[] duData : duDataList )
+            {
+              hex.put( duData, pos );
+              pos += 3;
+            }
+            segments.get( 0x11 ).add( new Segment( 0x11, 0xFF, hex ) );
           }
         }
-        segments.put( 0x11, new ArrayList< Segment >() );
-        segments.get( 0x11 ).add( new Segment( 0x11, 0xFF, hex ) );
+        else
+        {
+          int size = 3 + 3 * deviceButtonList.size();
+          size += ( size & 1 ) == 1 ? 1 : 0;
+          hex = new Hex( size );
+          hex.put( 0xFFFF, size - 2 );
+          hex.put( 0, 0 );
+          hex.set( ( short )deviceButtonList.size(), 2 );
+          int i = 3;
+          for ( DeviceButton db : remote.getDeviceButtons() )
+          {
+            if ( deviceButtonList.contains( db ) )
+            {
+              short[] data = db.getSegment().getHex().getData();
+              hex.set( ( short )db.getDeviceTypeIndex( data ), i );
+              hex.put(  db.getSetupCode( data ), i + 1 );
+              i += 3;
+            }
+          }
+          segments.get( 0x11 ).add( new Segment( 0x11, 0xFF, hex ) );
+        }
+        
+        
       }
     }
   }

@@ -71,7 +71,8 @@ public class RawDataTableModel extends JP1TableModel< short[] >
    */
   public boolean isCellEditable( int row, int col )
   {
-    return col > 0;
+    // Safest to prevent editing
+    return false; // col > 0;
   }
 
   /*

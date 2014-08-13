@@ -96,7 +96,11 @@ public class RawDataPanel extends RMPanel
       Remote remote = remoteConfig.getRemote();
       RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
       short[] dataToShow = rm.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData();
-      dataToShow = Arrays.copyOf( dataToShow, remoteConfig.getDataEnd( dataToShow ) );
+      int dataEnd = remoteConfig.getDataEnd( dataToShow );
+      if ( dataEnd != dataToShow.length )
+      {
+        dataToShow = Arrays.copyOf( dataToShow, remoteConfig.getDataEnd( dataToShow ) );
+      }
       model.set( dataToShow, remote.getBaseAddress() );
       byteRenderer.setRemoteConfig( remoteConfig );
       highlight = remoteConfig.getHighlight();
