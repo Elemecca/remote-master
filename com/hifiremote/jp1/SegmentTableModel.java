@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.swing.AbstractCellEditor;
@@ -18,8 +20,7 @@ import javax.swing.table.TableCellRenderer;
 
 public class SegmentTableModel extends JP1TableModel< Segment >
 {
-  List< Segment > segments = null;
-  Remote remote = null;
+  private RemoteConfiguration config = null;
   
   public SegmentTableModel()
   {}
@@ -93,17 +94,30 @@ public class SegmentTableModel extends JP1TableModel< Segment >
     return null;
   }
   
+  private boolean isTypeEditable( int type )
+  {
+    if ( useSavedData() )
+    {
+      return true;
+    }
+    else
+    {
+      return !config.getRemote().getSegmentTypes().contains( type )
+          && !Arrays.asList( RemoteConfiguration.segmentsKnown ).contains( type );
+    }
+  }
+  
+  
   @Override
   public boolean isCellEditable( int row, int col )
   {
     Segment seg = getRow( row );
-    return ( !remote.getSegmentTypes().contains( seg.get_Type() ) && col > 3 );
+    return ( isTypeEditable( seg.get_Type() ) && col > 3 );
   }
   
-  public void set( Remote remote, List< Segment > segments )
+  public void set( RemoteConfiguration config, List< Segment > segments )
   {
-    this.remote = remote;
-    this.segments = segments;
+    this.config = config;
     setData( segments );
     fireTableDataChanged();
   }
@@ -141,7 +155,48 @@ public class SegmentTableModel extends JP1TableModel< Segment >
     }
   }
   
-  private static class TextAreaRenderer extends JTextArea implements TableCellRenderer
+  private boolean useSavedData()
+  {
+    return config.getOwner().useSavedData();
+  }
+  
+  public void updateData()
+  {
+    Remote remote = config.getRemote();
+    int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
+    if ( useSavedData() )
+    {
+      pos = Segment.writeData( data, config.getSavedData(), pos );
+      Hex.put( 0xFFFF, config.getData(), pos );
+      return;
+    }
+    else
+    {
+      LinkedHashMap< Integer, List<Segment> > list = config.getSegments();
+      int n = 0;
+      for ( int type : config.getSegmentLoadOrder() )
+      {
+        List< Segment > segs = list.get( type );
+        if ( segs == null )
+        {
+          continue;
+        }
+        if ( !isTypeEditable( type ) )
+        {
+          n += segs.size();
+          continue;
+        }
+        for ( Segment seg : segs )
+        {
+          seg.setHex( new Hex( data.get( n++ ).getHex() ) );
+        }
+      }
+      propertyChangeSupport.firePropertyChange( "data", null, null );
+    }
+    
+  }
+  
+  private class TextAreaRenderer extends JTextArea implements TableCellRenderer
   {
     private Color selectionBackground = null;
     private Color selectionForeground = null;
@@ -165,7 +220,7 @@ public class SegmentTableModel extends JP1TableModel< Segment >
       setText( text );
       adjustRowHeight( table, row, col );
       setBackground( isSelected ? selectionBackground : Color.WHITE );
-      setForeground( isSelected ? selectionForeground : Color.BLACK );
+      setForeground( isSelected ? selectionForeground : useSavedData() ? Color.BLUE : Color.BLACK );
       return this;
     }
     
@@ -203,7 +258,7 @@ public class SegmentTableModel extends JP1TableModel< Segment >
     }
   }
   
-  private static class TextAreaEditor extends AbstractCellEditor implements TableCellEditor 
+  private class TextAreaEditor extends AbstractCellEditor implements TableCellEditor 
   {
     JComponent component = new JTextArea();
 

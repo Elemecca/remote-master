@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -80,6 +81,11 @@ public class RawDataPanel extends RMPanel
     infoBox.add( Box.createVerticalStrut( 5 ) );
     infoBox.add( versionLabel2 );
     infoBox.add( Box.createVerticalGlue());
+    
+    Font boldFont = ( new JLabel() ).getFont().deriveFont( Font.BOLD );
+    infoLabel1.setFont( boldFont );
+    infoLabel2.setFont( boldFont );
+    infoLabel2.setForeground( Color.BLUE );
   }
 
   /**
@@ -130,6 +136,26 @@ public class RawDataPanel extends RMPanel
         JLabel lbl = ( n == 1 ) ? versionLabel1 : versionLabel2;
         lbl.setText( "E2 format version: " + text );
       }
+      if ( remoteConfig.getOwner().useSavedData() )
+      {
+        if ( !Arrays.asList( infoBox.getComponents() ).contains( infoLabel1 ) )
+        {
+          infoBox.add( Box.createVerticalStrut( 5 ), 0 );
+          infoBox.add( infoLabel2, 0 );
+          infoBox.add( infoLabel1, 0 );
+          validate();
+        }
+      }
+      else
+      {
+        if ( Arrays.asList( infoBox.getComponents() ).contains( infoLabel1 ) )
+        {
+          infoBox.remove( 0 );
+          infoBox.remove( 0 );
+          infoBox.remove( 0 );
+          validate();
+        }
+      }
     }
   }
 
@@ -158,6 +184,8 @@ public class RawDataPanel extends RMPanel
   JLabel interfaceLabel = new JLabel();  
   JLabel versionLabel1 = new JLabel( "" );
   JLabel versionLabel2 = new JLabel( "" );
+  JLabel infoLabel1 = new JLabel( "Values in black: RMIR data displayed" );
+  JLabel infoLabel2 = new JLabel( "Values in blue: Original data displayed" );
   
   Box infoBox = null; 
   

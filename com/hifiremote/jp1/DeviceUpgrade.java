@@ -1643,11 +1643,6 @@ public class DeviceUpgrade extends Highlight
       short[] cmd = new short[ cmdLength ];
       for ( int i = 0; i < cmdLength; i++ )
       {
-        if ( index >= code.length )
-        {
-          System.err.println( "Index = " + index + ", code = "+ new Hex(code) );
-        }
-        
         cmd[ i ] = code[ index++ ];
       }
       String name = remote.usesEZRC() ?  getFunctionName( b ) : b.getName();

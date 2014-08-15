@@ -68,13 +68,17 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
     {
       component.setFont( baseFont );
     }
+    if ( !isSelected )
+    {
+      component.setForeground( useSavedData() ? Color.BLUE : Color.BLACK );
+    }
     return component;
   }
 
   @Override
   public void paint( Graphics g )
   {
-    if ( remoteConfig != null && remoteConfig.allowHighlighting() )
+    if ( remoteConfig != null && remoteConfig.allowHighlighting() && !useSavedData() )
     {
       Dimension d = component.getSize();
       int end = highlight.length - 1;
@@ -93,6 +97,11 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
       }
     }
     super.paint( g );
+  }
+  
+  private boolean useSavedData()
+  {
+    return remoteConfig != null ? remoteConfig.getOwner().useSavedData() : false;
   }
   
   private int offset;

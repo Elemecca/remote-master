@@ -8,18 +8,25 @@ public class Segment extends Highlight
   private int flags = 0xFF;
   private Hex hex = null;
   private int address = 0;
-//  private Highlight object = null;
+
+  public static int writeData( List< Segment > list, short[] data, int pos )
+  {
+    for ( Segment seg : list )
+    {
+      Hex hex = seg.getHex();
+      Hex.put( hex.length() + 4, data, pos );
+      data[ pos + 2 ] = ( short )seg.get_Type();
+      data[ pos + 3 ] = ( short )seg.getFlags();
+      Hex.put( hex, data, pos + 4 );
+      seg.setAddress( pos );
+      pos += hex.length() + 4;
+    }
+    return pos;
+  }
   
-//  public Segment( int type, int size )
-//  {
-//    setMemoryUsage( size );
-//    hex = new Hex( size - 3 );
-//    this.type = type;
-//  }
   
   public Segment( int type, int flags, Hex hex )
   {
-//    setMemoryUsage( hex.length() + 3 );
     this.hex = hex;
     this.type = type;
     this.flags = flags;
@@ -56,14 +63,8 @@ public class Segment extends Highlight
     return hex;
   }
 
-//  public Highlight getObject()
-//  {
-//    return object;
-//  }
-
   public void setObject( Highlight object )
   {
-//    this.object = object;
     object.setSegment( this );
   }
 

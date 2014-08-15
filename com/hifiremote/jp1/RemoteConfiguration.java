@@ -47,14 +47,10 @@ import com.hifiremote.jp1.io.JPS;
 public class RemoteConfiguration
 {
   public static final int Vect00Address = 0x020000;
-  /**
-   * Instantiates a new remote configuration.
-   * 
-   * @param file
-   *          the file
-   * @throws IOException
-   *           Signals that an I/O exception has occurred.
-   */
+  public static final int[] segmentsKnown = new int[] {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x10, 0x11,
+    0x12, 0x15, 0x1D, 0x1E, 0x1F, 0x20, 0xDB, 0xDC };
+  
   public RemoteConfiguration( File file, RemoteMaster rm ) throws IOException
   {
     owner = rm;
@@ -4915,16 +4911,7 @@ public class RemoteConfiguration
         List< Segment > list = segments.get( type );
         if ( list != null )
         {
-          for ( Segment segment : list )
-          {
-            Hex hex = segment.getHex();
-            Hex.put( hex.length() + 4, data, pos );
-            data[ pos + 2 ] = ( short )type;
-            data[ pos + 3 ] = ( short )segment.getFlags();
-            Hex.put( hex, data, pos + 4 );
-            segment.setAddress( pos );
-            pos += hex.length() + 4;
-          }
+          pos = Segment.writeData( list, data, pos );
         }
       }
       Hex.put( 0xFFFF, data, pos );
@@ -9050,6 +9037,11 @@ public class RemoteConfiguration
     }
   }
   
+  public List< Integer > getSegmentLoadOrder()
+  {
+    return segmentLoadOrder;
+  }
+
   public static Comparator< Macro > MacroSorter = new Comparator< Macro >()
   {
     @Override
