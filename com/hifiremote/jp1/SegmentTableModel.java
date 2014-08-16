@@ -4,8 +4,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EventObject;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -18,9 +22,14 @@ import javax.swing.UIDefaults;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import com.hifiremote.jp1.SegmentPanel.SegmentTable;
+
 public class SegmentTableModel extends JP1TableModel< Segment >
 {
   private RemoteConfiguration config = null;
+  private SegmentTable table = null;
+  private boolean changed = false;
+  private boolean sorted = false;
   
   public SegmentTableModel()
   {}
@@ -41,6 +50,11 @@ public class SegmentTableModel extends JP1TableModel< Segment >
   {
     Integer.class, String.class, String.class, String.class, String.class, Hex.class
   };
+
+  public void setTable( SegmentTable table )
+  {
+    this.table = table;
+  }
 
   @Override
   public int getColumnCount()
@@ -107,19 +121,11 @@ public class SegmentTableModel extends JP1TableModel< Segment >
     }
   }
   
-  
   @Override
   public boolean isCellEditable( int row, int col )
   {
     Segment seg = getRow( row );
-    return ( isTypeEditable( seg.get_Type() ) && col > 3 );
-  }
-  
-  public void set( RemoteConfiguration config, List< Segment > segments )
-  {
-    this.config = config;
-    setData( segments );
-    fireTableDataChanged();
+    return ( isTypeEditable( seg.get_Type() ) && col > ( useSavedData() ? 2 : 3 ) );
   }
 
   @Override
@@ -149,15 +155,99 @@ public class SegmentTableModel extends JP1TableModel< Segment >
   public void setValueAt( Object value, int row, int col )
   {
     Segment seg = getRow( row );
-    if ( col == 5 )
+    if ( col == 3 )
+    {
+      int type = Integer.parseInt( ( String )value , 16 );
+      seg.set_Type( type );
+      if ( ( row == 0 || type != getRow( row - 1 ).get_Type() )
+          && ( row == table.getRowCount() - 1 || type != getRow( row + 1 ).get_Type() ) )
+      {
+        sorted = false;
+      }
+    }
+    else if ( col == 4 )
+    {
+      try
+      {
+        int flags = Integer.parseInt( ( String )value , 16 );
+        if ( !useSavedData() )
+        {
+          // Do not allow bit 7 to be set to 0, as RMIR will delete the segment
+          flags |= 0x80;
+        }
+        seg.setFlags( flags );
+      }
+      catch ( NumberFormatException e )
+      {
+        seg.setFlags( 0xFF );
+      }
+    }
+    else if ( col == 5 )
     {
       seg.setHex( ( Hex )value );
     }
+    changed = true;
+    resetAddresses();
+    fireTableDataChanged();
   }
   
+  public boolean isChanged()
+  {
+    return changed;
+  }
+
+  public void setChanged( boolean changed )
+  {
+    this.changed = changed;
+  }
+
   private boolean useSavedData()
   {
     return config.getOwner().useSavedData();
+  }
+  
+  public void resetData()
+  {
+    set( config );
+  }
+  
+  public void resetAddresses()
+  {
+    Remote remote = config.getRemote();
+    int addr = remote.getBaseAddress();
+    addr += remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
+    for ( Segment seg : data )
+    {
+      seg.setAddress( addr );
+      addr += seg.getHex().length() + 4;
+    }
+  }
+  
+  public void set( RemoteConfiguration config )
+  {
+    this.config = config;
+    changed= false;
+    Remote remote = config.getRemote();
+    List< Segment > segments = new ArrayList< Segment >();
+    short[] dataToShow = useSavedData() ? config.getSavedData() : config.getData();
+    int base = remote.getBaseAddress();
+    
+    // first two bytes are checksum, and in XSight remotes next 18 bytes are E2 info
+    int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
+    int segLength = 0;
+    while ( pos < remote.getEepromSize() && ( segLength = Hex.get( dataToShow, pos ) ) <= remote.getEepromSize() - pos  )
+    {
+      int segType = dataToShow[ pos + 2 ];
+      int segFlags = dataToShow[ pos + 3 ];
+      Hex segData = new Hex( dataToShow, pos + 4, segLength - 4 );
+      Segment seg = new Segment( segType, segFlags, segData );
+      seg.setAddress( base + pos );
+      segments.add( seg );
+      pos += segLength;
+    }
+    setData( segments );
+//    fireTableDataChanged();
+    table.initColumns();
   }
   
   public void updateData()
@@ -188,14 +278,24 @@ public class SegmentTableModel extends JP1TableModel< Segment >
         }
         for ( Segment seg : segs )
         {
+          seg.setFlags( data.get( n ).getFlags() );
           seg.setHex( new Hex( data.get( n++ ).getHex() ) );
         }
       }
       propertyChangeSupport.firePropertyChange( "data", null, null );
     }
-    
   }
   
+  public boolean isSorted()
+  {
+    return sorted;
+  }
+
+  public void setSorted( boolean sorted )
+  {
+    this.sorted = sorted;
+  }
+
   private class TextAreaRenderer extends JTextArea implements TableCellRenderer
   {
     private Color selectionBackground = null;
@@ -261,20 +361,51 @@ public class SegmentTableModel extends JP1TableModel< Segment >
   private class TextAreaEditor extends AbstractCellEditor implements TableCellEditor 
   {
     JComponent component = new JTextArea();
+    JTextArea area = null;
 
+    public TextAreaEditor()
+    {
+      super();
+      area = ( JTextArea ) component;
+      area.addKeyListener( new KeyAdapter()
+      {
+        public void keyPressed( KeyEvent e ) 
+        {
+          if ( e.isActionKey() || e.getKeyCode() == KeyEvent.VK_ENTER )
+          {
+            stopCellEditing();
+          }
+        }
+      } );
+    }
+    
+    @Override
     public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected,
         int rowIndex, int vColIndex) 
     {
-      JTextArea area = ( JTextArea ) component;
       area.setFont( lblFont );
       area.setText( ( String ) value);
       area.setLineWrap( true );
       area.setWrapStyleWord( true );
+      area.setForeground( useSavedData() ? Color.BLUE : Color.BLACK );
       return component;
     }
 
-    public Object getCellEditorValue() {
-      return ( new Hex( ( ( JTextArea )component ).getText() ) );
+    @Override
+    public Object getCellEditorValue() 
+    {
+      return ( new Hex( area.getText() ) );
+    }
+    
+    @Override
+    public boolean isCellEditable( EventObject event )
+    {
+      if ( event == null || !( event instanceof MouseEvent ) ||
+          ( ( ( MouseEvent ) event).getClickCount() >= RMConstants.ClickCountToStart ) )
+      {
+        return true;
+      }
+      return false;
     }
   }
 }

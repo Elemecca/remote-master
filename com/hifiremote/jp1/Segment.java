@@ -53,9 +53,19 @@ public class Segment extends Highlight
     return type;
   }
 
+  public void set_Type( int type )
+  {
+    this.type = type;
+  }
+
   public int getFlags()
   {
     return flags;
+  }
+
+  public void setFlags( int flags )
+  {
+    this.flags = flags;
   }
 
   public Hex getHex()
