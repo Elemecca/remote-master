@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -43,6 +42,7 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
   private JButton insertButton = new JButton( "Insert" );
   private JButton deleteButton = new JButton( "Delete" );
   private JButton rmirButton = new JButton( "Sort into RMIR order" );
+  private boolean lastSorted = false;
   
   protected class SegmentTable extends JP1Table
   {
@@ -50,13 +50,8 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
     {
       super( model );
     }
-    
-    public String getToolTipText( MouseEvent e )
-    {
-      return null;
-    }
   }
-  
+
   public SegmentPanel()
   {    
     model = new SegmentTableModel();
@@ -73,10 +68,11 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
     
     String message = "When original data is displayed, segments can be edited, "
         + "inserted, deleted or re-ordered.  When RMIR data is displayed, they can "
-        + "only be edited, and that only for those segment types not otherwise set "
-        + "by RMIR.\n\n"
+        + "only be edited, and that only for those segment types not known to "
+        + "RMIR.\n\n"
         + "Edits are not applied to the data concerned until the Apply button is "
-        + "pressed.  Until that time they can be undone with the Undo button.\n\n"
+        + "pressed.  Until that time they can be undone with the Undo button "
+        + "and WILL be undone by leaving this tab or switching the display.\n\n"
         + "Upload will upload whichever of original or RMIR data is currently "
         + "selected.";
     JTextArea note = new JTextArea( message );
@@ -138,10 +134,13 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
   {
     this.config = remoteConfig;
     Remote remote = null;
+    model.setSorted( lastSorted );
+    model.setChanged( false );
     setButtons();
     if ( remoteConfig != null && remoteConfig.hasSegments() && !( remote = remoteConfig.getRemote() ).isSSD() )
     {
       model.set( remoteConfig );
+      
       String sig = remoteConfig.getSigString();
       if ( sig == null )
       {
@@ -173,12 +172,13 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
     {
       model.updateData();
       model.setChanged( false );
+      lastSorted = model.getSorted();
     }
     else if ( source == undoButton )
     {
       model.resetData();
-      model.setSorted( false );
-      model.setChanged( true );
+      model.setSorted( lastSorted );
+      model.setChanged( false );
     }
     else if ( source == upButton || source == downButton )
     {
@@ -189,7 +189,6 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
       {
         model.setSorted( false );
       }
-//      writeSavedData();
       model.setChanged( true );
       table.setRowSelectionInterval( index, index );
     }
@@ -201,7 +200,6 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
       {
         row--;
       }
-//      writeSavedData();
       model.setChanged( true );
       table.setRowSelectionInterval( row, row );
     }
@@ -211,7 +209,6 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
       model.insertRow( row , seg );
       model.resetAddresses();
       model.setChanged( true );
-//      writeSavedData();
       table.setRowSelectionInterval( row, row );
     }
     else if ( source == rmirButton )
@@ -250,41 +247,11 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
         }
       }
       model.fireTableDataChanged();
-    
-//      int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
-//      for ( int key : remote.getSegmentTypes() )
-//      {
-//        List< Segment > list = segMap.get( key );
-//        if ( list != null )
-//        {
-//          pos = Segment.writeData( list, config.getSavedData(), pos );
-//        }
-//      }
-//      for ( int key : segMap.keySet() )
-//      {
-//        if ( remote.getSegmentTypes().contains( key ) )
-//        {
-//          continue;
-//        }
-//        List< Segment > list = segMap.get( key );
-//        pos = Segment.writeData( list, config.getSavedData(), pos );
-//      }
-//      Hex.put( 0xFFFF, config.getSavedData(), pos );
-//      model.resetData();
       model.setSorted( true );
       model.setChanged( true );
     }
     setButtons();
   }
-  
-//  private void writeSavedData()
-//  {
-//    Remote remote = config.getRemote();
-//    int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
-//    pos = Segment.writeData( model.getData(), config.getSavedData(), pos );
-//    Hex.put( 0xFFFF, config.getSavedData(), pos );
-//    model.resetData();
-//  }
   
   protected void finishEditing()
   {
@@ -298,7 +265,7 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
       }
     }
   }
-  
+
   private void setButtons()
   {
     int row = table.getSelectedRow();
@@ -310,7 +277,7 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
     deleteButton.setEnabled( savedData && row >= 0 );
     applyButton.setEnabled( model.isChanged() );
     undoButton.setEnabled( model.isChanged() );
-    rmirButton.setEnabled( savedData && !model.isSorted() );
+    rmirButton.setEnabled( savedData && !model.getSorted() );
   }
 
   @Override

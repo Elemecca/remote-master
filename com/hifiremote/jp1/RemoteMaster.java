@@ -41,7 +41,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
@@ -2086,7 +2085,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
           properties.setProperty( item.getActionCommand(), Boolean.toString( item.isSelected() ) );
-          refreshTabbedPanes();
+          refreshTabbedPanes( item.getActionCommand().equals(  "ShowSegments" ) );
         }
         catch ( Exception x )
         {
@@ -2102,6 +2101,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.add( advancedSubMenu );
     JCheckBoxMenuItem item;
 
+    item = new JCheckBoxMenuItem( "Show Segment Editor" );
+    item.setActionCommand( "ShowSegments" );
+    item.setSelected( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ) );
+    item.addActionListener( listener );
+    advancedSubMenu.add( item );
+    
+    advancedSubMenu.addSeparator();
+    
     item = new JCheckBoxMenuItem( "Learned Signal Timing Analysis" );
     item.setActionCommand( "LearnedSignalTimingAnalysis" );
     item.setSelected( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ) );
@@ -3518,22 +3525,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       return;
     }
 
-    Remote remote = remoteConfig.getRemote();
-    
-    int index = checkTabbedPane( "Key Moves", keyMovePanel, remote.hasKeyMoveSupport(), 1 );
-    index = checkTabbedPane( "Macros", macroPanel, remote.hasMacroSupport(), index );
-    index = checkTabbedPane( "Special Functions", specialFunctionPanel, !remote.getSpecialProtocols().isEmpty(), index );
-    index = checkTabbedPane( "Timed Macros", timedMacroPanel, remote.hasTimedMacroSupport(), index );
-    index = checkTabbedPane( "Fav/Scan", favScanPanel, remote.hasFavKey() && !remote.hasFavorites() && !remote.isSSD(), index );
-    index = checkTabbedPane( "Favorites", favoritesPanel, remote.hasFavorites(), index );
-    index = checkTabbedPane( "Devices", devicePanel, true, index );
-    index = checkTabbedPane( "Protocols", protocolPanel, remote.hasFreeProtocols(), index );
-    index = checkTabbedPane( "Activities", activityPanel, remote.hasActivitySupport(), index );
-    if ( LearnedSignal.hasDecodeIR() )
-      index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
-    else
-      index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index, "Learned Signals tab disabled due to DecodeIR not being found.", false );
-    index = checkTabbedPane( "Segments", segmentPanel, remote.getSegmentTypes() != null && !remote.isSSD(), index );
+    resetTabbedPanes();
     
     generalPanel.set( remoteConfig );
     keyMovePanel.set( remoteConfig );
@@ -3552,6 +3544,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       learnedPanel.set( remoteConfig );
     }
 
+    Remote remote = remoteConfig.getRemote();
     codesAction.setEnabled( remote.getSetupCodes().size() > 0 );
     if ( codeSelectorDialog != null )
     {
@@ -3576,8 +3569,32 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     rawDataPanel.set( remoteConfig );
   }
   
-  protected void refreshTabbedPanes()
+  private void resetTabbedPanes()
   {
+    Remote remote = remoteConfig.getRemote();
+    int index = checkTabbedPane( "Key Moves", keyMovePanel, remote.hasKeyMoveSupport(), 1 );
+    index = checkTabbedPane( "Macros", macroPanel, remote.hasMacroSupport(), index );
+    index = checkTabbedPane( "Special Functions", specialFunctionPanel, !remote.getSpecialProtocols().isEmpty(), index );
+    index = checkTabbedPane( "Timed Macros", timedMacroPanel, remote.hasTimedMacroSupport(), index );
+    index = checkTabbedPane( "Fav/Scan", favScanPanel, remote.hasFavKey() && !remote.hasFavorites() && !remote.isSSD(), index );
+    index = checkTabbedPane( "Favorites", favoritesPanel, remote.hasFavorites(), index );
+    index = checkTabbedPane( "Devices", devicePanel, true, index );
+    index = checkTabbedPane( "Protocols", protocolPanel, remote.hasFreeProtocols(), index );
+    index = checkTabbedPane( "Activities", activityPanel, remote.hasActivitySupport(), index );
+    if ( LearnedSignal.hasDecodeIR() )
+      index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index );
+    else
+      index = checkTabbedPane( "Learned Signals", learnedPanel, remote.hasLearnedSupport() && learnedPanel != null, index, "Learned Signals tab disabled due to DecodeIR not being found.", false );
+    index = checkTabbedPane( "Segments", segmentPanel, Boolean.parseBoolean( properties.getProperty( "ShowSegments", "false" ) ) &&  remote.getSegmentTypes() != null && !remote.isSSD(), index );
+  }
+  
+  protected void refreshTabbedPanes( boolean reset )
+  {
+    if ( reset )
+    {
+      resetTabbedPanes();
+    }
+
     for ( int i = 0; i < tabbedPane.getTabCount(); i++ )
       ((RMPanel) tabbedPane.getComponentAt( i )).refresh();
   }

@@ -55,6 +55,68 @@ public class SegmentTableModel extends JP1TableModel< Segment >
   {
     this.table = table;
   }
+  
+  @Override
+  public String getToolTipText( int row, int col )
+  {
+    if ( col == 5 )
+    {
+      Segment seg = getRow( row );
+      int type = seg.get_Type();
+      String description = segmentDescription( type );
+      return description != null ? description : "Segment type not known to RMIR";
+    }
+    return null;
+  }
+  
+  private String segmentDescription( int type )
+  {
+    switch ( type )
+    {
+      case 0:
+        return "Device Button segment";
+      case 1:
+        return "Macro segment";
+      case 2:
+        return "Multi Macro segment";
+      case 3:
+        return "Device Specific Macro segment";
+      case 4:
+        return "Activity Power Macro segment";
+      case 7:
+        return "Keycode Keymove segment";
+      case 8:
+        return "EFC-style Keymove segment";
+      case 9:
+        return "Learned Signal segment";
+      case 0x0A:
+        return "Soft Key Names segment";
+      case 0x0B:
+        return "Button Device Assignments segment";
+      case 0x10:
+        return "Upgrade Definition segment";
+      case 0x11:
+        return "Upgrade Assignments segment";
+      case 0x12:
+        return "Language Setting segment";
+      case 0x15:
+        return "Device Names segment";
+      case 0x1D:
+        return "Favorites Definition segment";
+      case 0x1E:
+        return "Activity Definition segment";
+      case 0x1F:
+        return "Activity Assist Definition segment";
+      case 0x20:
+        return "Function Names segment";
+      case 0xDB:
+        return "Activity Device Settings segment";
+      case 0xDC:
+        return "Activity Help Settings segment";
+      default:
+        return null;
+    }
+  }
 
   @Override
   public int getColumnCount()
@@ -117,7 +179,7 @@ public class SegmentTableModel extends JP1TableModel< Segment >
     else
     {
       return !config.getRemote().getSegmentTypes().contains( type )
-          && !Arrays.asList( RemoteConfiguration.segmentsKnown ).contains( type );
+          || segmentDescription( type ) == null;
     }
   }
   
@@ -246,7 +308,6 @@ public class SegmentTableModel extends JP1TableModel< Segment >
       pos += segLength;
     }
     setData( segments );
-//    fireTableDataChanged();
     table.initColumns();
   }
   
@@ -286,7 +347,7 @@ public class SegmentTableModel extends JP1TableModel< Segment >
     }
   }
   
-  public boolean isSorted()
+  public boolean getSorted()
   {
     return sorted;
   }
