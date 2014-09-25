@@ -30,6 +30,8 @@ public class JPS extends IO
   private String filePath = null;
   private int eepromAddress = 0;
   private int eepromSize = 0;
+  private int codeAddress = 0;
+  private int codeSize = 0;
   private int sigAddress = 0;
   private int irdbAddress = 0;
   private Settings s = null;
@@ -168,8 +170,10 @@ public class JPS extends IO
       sigArray[ i ] = ( char)( data[ 6 + i ] & 0xFF );
     }
     signature = String.valueOf( sigArray );
-    s.setFlashOffset( getInt32( data, 0x2F ) );
+    codeAddress = getInt32( data, 0x2F );
+    s.setFlashOffset( codeAddress );
     sigAddress = getInt32( data, 0x33 );
+    codeSize = sigAddress - codeAddress;
     irdbAddress = getInt32( data, 0x37 );
     eepromAddress = getInt32( data, 0x3B );
     s.read( eepromAddress, data );
@@ -233,6 +237,26 @@ public class JPS extends IO
   public int getRemoteEepromAddress()
   {
     return eepromAddress;
+  }
+
+  public int getCodeAddress()
+  {
+    return codeAddress;
+  }
+
+  public int getCodeSize()
+  {
+    return codeSize;
+  }
+
+  public int getSigAddress()
+  {
+    return sigAddress;
+  }
+  
+  public int getSigSize()
+  {
+    return irdbAddress - sigAddress;
   }
 
   /*

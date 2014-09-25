@@ -3992,6 +3992,33 @@ public class Remote implements Comparable< Remote >
     return buttonMaps[ activityMapIndex ].getKeyCodeSingleList();
   }
   
+  public void correctType04Macro( Macro macro )
+  {
+    // This corrects an ill-formed type 04 macro created by early versions
+    // of Simpleset support in RMIR
+    
+    short[] data = macro.getData().getData();
+    int len = data.length;
+    List< DeviceButton > devs = new ArrayList< DeviceButton >();
+    DeviceButton db = null;
+    for ( int i = 0; i < len / 2; i++ )
+    {
+      db = getDeviceButton( data[ 2 * i ] );
+      if ( db != null )
+      {
+        devs.add( db );
+      }
+    }
+    Hex hex = new Hex( 2 * deviceButtons.length );
+    for ( int i = 0; i < deviceButtons.length; i++ )
+    {
+      db = deviceButtons[ i ];
+      hex.set( ( short )( devs.contains( db ) ? db.getButtonIndex() : 0xFF ), 2*i );
+      hex.set( getButtonByStandardName( "Power" ).getKeyCode(), 2*i + 1 );
+    }
+    macro.setData( hex );
+  }
+  
   public final static String[] userFilenames = {
     "home.xcf", "system.xcf", "devices.xcf", "activities.xcf", "profiles.xcf",
     "favorites.xcf", "macros.xcf", "snstest.xcf", "usericons.pkg", "sysicons.pkg" 

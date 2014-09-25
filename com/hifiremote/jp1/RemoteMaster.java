@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 24e";
+  public final static String version = "v2.03 Alpha 24f";
 
   public enum Use
   {
@@ -637,7 +637,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       saveAction.setEnabled( file != null );
       saveAsAction.setEnabled( true );
       openRdfAction.setEnabled( true );
-      installExtenderItem.setEnabled( file == null );
+      installExtenderItem.setEnabled( file == null || admin );
       cleanUpperMemoryItem.setEnabled( true );
       initializeTo00Item.setEnabled( true );
       initializeToFFItem.setEnabled( true );
@@ -2516,7 +2516,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     RMExtInstall installer = new RMExtInstall( file.getAbsolutePath(), remoteConfig );
     installer.install();
-    if ( RMExtInstall.remoteConfig == null )
+    if ( binLoaded() != null || RMExtInstall.remoteConfig == null )
     {
       return;
     }

@@ -94,6 +94,27 @@ public class Scanner
       System.err.println( "Count of setup codes: " + Integer.toString( setupCodeCount ) );
       System.err.println( "Start address of executor index: $" + Integer.toHexString( executorIndexAddress ) );
       System.err.println( "Count of executors: " + Integer.toString( executorCount ) );
+      Hex checksum = new Hex( 2 );
+      io.readRemote( io.getCodeAddress(), checksum.getData() );
+      System.err.println( "Code checksum read: " + checksum );
+      XorCheckSum cs = new XorCheckSum( 0, new AddressRange( 2, io.getCodeSize() - 1), false );
+      short[] code = new short[ io.getCodeSize() ];
+      io.readRemote( io.getCodeAddress(), code );
+      short c = cs.calculateCheckSum( code, 2, io.getCodeSize() - 1 );
+      checksum.set( c, 0 );
+      checksum.set( ( short )~c, 1 );
+      System.err.println( "Code checksum calculated: " + checksum );
+      
+      io.readRemote( io.getSigAddress(), checksum.getData() );
+      System.err.println( "SigBlk checksum read: " + checksum );
+      cs = new XorCheckSum( 0, new AddressRange( 2, io.getSigSize() - 1), false );
+      code  = new short[ io.getSigSize() ];
+      io.readRemote( io.getSigAddress(), code );
+      c = cs.calculateCheckSum( code, 2, io.getSigSize() - 1 );
+      checksum.set( c, 0 );
+      checksum.set( ( short )~c, 1 );
+      System.err.println( "SigBlk checksum calculated: " + checksum );
+
     }
     // Check if high nibble of setup code is the device type.  Some newer remotes
     // allow for setup codes > 0x0FFF by not including device type in high nibble.

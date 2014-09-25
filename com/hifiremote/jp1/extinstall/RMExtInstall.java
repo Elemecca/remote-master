@@ -14,11 +14,14 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import com.hifiremote.jp1.AddressRange;
 import com.hifiremote.jp1.ProtocolManager;
 import com.hifiremote.jp1.Remote;
 import com.hifiremote.jp1.RemoteConfiguration;
 import com.hifiremote.jp1.RemoteManager;
+import com.hifiremote.jp1.XorCheckSum;
 import com.hifiremote.jp1.extinstall.UpgradeItem.Classification;
+import com.hifiremote.jp1.io.JPS;
 
 public class RMExtInstall extends ExtInstall
 {
@@ -26,6 +29,7 @@ public class RMExtInstall extends ExtInstall
   private static String errorMsg = null;
   private static Remote extenderRemote = null;
   private static boolean extenderMerge = true;
+  private JPS io = null;
   
   public RMExtInstall( String hexName, RemoteConfiguration remoteConfig )
   {
@@ -33,6 +37,7 @@ public class RMExtInstall extends ExtInstall
     RMExtInstall.remoteConfig = remoteConfig;
     this.hexName = hexName;
     this.sigAddr = remoteConfig.getRemote().getSigAddress();
+    this.io = remoteConfig.getOwner().binLoaded();
   }
 
   private String hexName;
@@ -46,6 +51,62 @@ public class RMExtInstall extends ExtInstall
       CrudeErrorLogger Erl = new CrudeErrorLogger();
 
       IrHexConfig ExtHex = new IrHexConfig();
+      if ( io != null )
+      {
+        File file = FindFile( hexName, ".txt" );
+        BufferedReader rdr = new BufferedReader( new FileReader( file ) );
+        if ( !ExtHex.Load( Erl, rdr ) )
+        {
+           System.exit( 1 );
+        }
+        int start = 0;
+        int len = 0;
+//        int base = remoteConfig.getRemote().getBaseAddress();
+        for ( int i = 0; i <= ExtHex.size(); i++ )
+        {
+          IrHex val = i < ExtHex.size() ? ExtHex.get( i ) : null;
+          if ( val == null || !val.isValid() )
+          {
+            if ( len > 0 )
+            {
+              short[] buffer = new short[ len ];
+              for ( int n = 0; n < len; n++ )
+              {
+                buffer[ n ] = ExtHex.Get( start + n );
+//                if ( ( start + n ) >= base )
+//                {
+//                  remoteConfig.getData()[ start + n - base ] = buffer[ n ];
+//                }
+              }
+              io.writeRemote( start, buffer );
+            }
+            start = i + 1;
+            len = 0;
+          }
+          else
+          {
+            len++;
+          }
+        }
+        XorCheckSum cs = new XorCheckSum( 0, new AddressRange( 2, io.getCodeSize() - 1 ), false );
+        short[] code = new short[ io.getCodeSize() ];
+        io.readRemote( io.getCodeAddress(), code );
+        short c = cs.calculateCheckSum( code, 2, io.getCodeSize() - 1 );
+        short[] buffer = new short[ 2 ];
+        buffer[ 0 ] = c;
+        buffer[ 1 ] = ( short )~c;
+        io.writeRemote( io.getCodeAddress(), buffer );
+        
+        cs = new XorCheckSum( 0, new AddressRange( 2, io.getSigSize() - 1 ), false );
+        code = new short[ io.getSigSize() ];
+        io.readRemote( io.getSigAddress(), code );
+        c = cs.calculateCheckSum( code, 2, io.getSigSize() - 1 );
+        buffer[ 0 ] = c;
+        buffer[ 1 ] = ( short )~c;
+        io.writeRemote( io.getSigAddress(), buffer );
+
+        return;
+      }
       AdvList ExtAdv = new AdvList();
       UpgradeList ExtUpgrade = new UpgradeList();
       Rdf ExtRdf = new Rdf();
@@ -251,6 +312,7 @@ public class RMExtInstall extends ExtInstall
         errorMsg = "No remote found that matches the merge file.";
         return;
       }
+      remote.load();
       if ( baseAddr != remote.getBaseAddress() )
       {
         errorMsg = "Merge data and its RDF have conflicting base addresses.";

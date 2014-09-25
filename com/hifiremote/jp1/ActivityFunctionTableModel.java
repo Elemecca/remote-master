@@ -502,40 +502,9 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
     }
     else if ( col > colNames.length - 2 )
     {
-      short[] data = macro.getData().getData();
-      
-      int len = data.length;
-      List< DeviceButton > devs = new ArrayList< DeviceButton >();
-      DeviceButton db = null;
-      for ( int i = 0; i < len / 2; i++ )
-      {
-        db = remote.getDeviceButton( data[ 2 * i ] );
-        if ( db != null )
-        {
-          devs.add( db );
-        }
-      }
-      db = remote.getDeviceButtons()[ col - colNames.length + 1 ];
-      if ( ( Boolean )value && !devs.contains( db ) )
-      {
-        devs.add( db );
-      }
-      else if ( !( Boolean )value && devs.contains( db ) )
-      {
-        devs.remove( db );
-      }
-      Hex hex = new Hex( 2 * devs.size() );
-      int n = 0;
-      for ( int i = 0; i < remote.getDeviceButtons().length; i++ )
-      {
-        db = remote.getDeviceButtons()[ i ];
-        if ( devs.contains( db ) )
-        {
-          hex.set( ( short )db.getButtonIndex(), n++ );
-          hex.set( remote.getButtonByStandardName( "Power" ).getKeyCode(), n++ );
-        }
-      }
-      macro.setData( hex );
+      int dbIndex = col - colNames.length + 1;
+      int keyCode = ( Boolean )value ? remote.getDeviceButtons()[ dbIndex ].getButtonIndex() : 0xFF;
+      macro.getData().set( ( short )keyCode, 2 * dbIndex );
     }
     fireTableRowsUpdated( row, row );
     propertyChangeSupport.firePropertyChange(  col == 8 ? "highlight" : "data", null, null );

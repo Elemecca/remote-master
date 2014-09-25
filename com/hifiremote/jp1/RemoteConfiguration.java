@@ -1855,6 +1855,7 @@ public class RemoteConfiguration
       segments.put( segType, list );
     }
 
+    remote.getCheckSums()[ 0 ].getAddressRange().setEnd( pos - 1 );
     setDeviceButtonSegments();
     
     if ( !decode )
@@ -4924,15 +4925,26 @@ public class RemoteConfiguration
         updateActivityHighlightsEZRC();
         updateFavoritesHighlights();
       }
-      else if ( remote.usesSimpleset() )
-      {
-        updateActivityHighlightsEZRC();
-        remote.getCheckSums()[ 0 ].getAddressRange().setEnd( pos - 1 );
-      }
       else
       {
-        updateActivityHighlights();
-        remote.getCheckSums()[ 0 ].getAddressRange().setEnd( pos - 1 );
+        if ( remote.usesSimpleset() )
+        {
+          updateActivityHighlightsEZRC();
+        }
+        else
+        {
+          updateActivityHighlights();
+        }
+        AddressRange range = remote.getCheckSums()[ 0 ].getAddressRange();
+        int oldEnd = range.getEnd();
+        range.setEnd( pos - 1 );
+        while ( pos <= oldEnd )
+        {
+          // The OS of segmented remotes relies on the space beyond the segments
+          // being filled with FFs, and it maintains this, when a segment is
+          // deleted, by writing FFs into the gap between the new and old data ends.
+          data[ pos++ ] = 0xFF;
+        }
       }
     }
     updateCheckSums();
@@ -5982,6 +5994,10 @@ public class RemoteConfiguration
       int size = 0;
       for ( Macro macro : list )
       {
+        if ( type == 4 && macro.dataLength() != 2 * remote.getDeviceButtons().length )
+        {
+          remote.correctType04Macro( macro );
+        }
         size += macro.dataLength() + type - ( type == 4 ? 2 : 1 );
         if ( type == 3 )
         {
@@ -6114,7 +6130,7 @@ public class RemoteConfiguration
             short[] dbData = db.getSegment().getHex().getData();
             int dbTypeIndex = db.getDeviceTypeIndex( dbData );
             List< short[] > duDataList = new ArrayList< short[] >();
-            int size = 3;
+            int count = 0;
             for ( DeviceUpgrade du : devices )
             {
               DeviceType duType = remote.getDeviceTypeByAliasName( du.getDeviceTypeAliasName() );
@@ -6123,19 +6139,21 @@ public class RemoteConfiguration
               {
                 int setupCode = du.getSetupCode();
                 duDataList.add( new short[]{ ( short )duTypeIndex, ( short )( setupCode >> 8 ), ( short )( setupCode & 0xFF ) } );
-                size += 3;
+                count++;
               }
             }
+            
             if ( duDataList.isEmpty() )
             {
               continue;
             }
+            int size = 3 * count + 3;
             size += ( size & 1 ) == 1 ? 1 : 0;
             hex = new Hex( size );
             hex.put( 0xFFFF, size - 2 );
             hex.set( ( short )dbIndex, 0 );
             hex.set( ( short )dbTypeIndex, 1 );
-            hex.set( ( short )devices.size(), 2 );
+            hex.set( ( short )count, 2 );
             int pos = 3;
             for ( short[] duData : duDataList )
             {

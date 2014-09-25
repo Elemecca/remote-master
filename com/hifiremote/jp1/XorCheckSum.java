@@ -35,7 +35,7 @@ public class XorCheckSum extends CheckSum
    * 
    * @see com.hifiremote.jp1.CheckSum#calculateCheckSum(short[], int, int)
    */
-  protected short calculateCheckSum( short[] data, int start, int end )
+  public short calculateCheckSum( short[] data, int start, int end )
   {
     short sum = 0;
     for ( int i = start; i <= end; i++ )
