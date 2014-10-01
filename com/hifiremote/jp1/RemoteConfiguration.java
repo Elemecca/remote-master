@@ -1540,13 +1540,13 @@ public class RemoteConfiguration
       }
       if ( tag.equals( "codeset" ) )
       {
-        Hex hex = new Hex( items.pid, 0, items.fixedData.length() + 3 );
-        hex.put( items.fixedData, 3 );
-        hex.set( ( short )0x01, 2 );
         try
         { 
           if ( !items.db.isConstructed() )
           {
+            Hex hex = new Hex( items.pid, 0, items.fixedData.length() + 3 );
+            hex.put( items.fixedData, 3 );
+            hex.set( ( short )0x01, 2 );
             items.upgrade.importRawUpgrade( hex, remote, items.alias, items.pid, items.pCode );
           }
           else
@@ -4822,6 +4822,10 @@ public class RemoteConfiguration
       for ( DeviceButton db : deviceButtonList )
       {
         DeviceUpgrade du = db.getUpgrade();
+        if ( du == null )
+        {
+          continue;
+        }
         List< Function >sysFns = new ArrayList< Function >();
         // Build list of functions currently assigned to system buttons
         // and then cancel those assignments
@@ -9029,7 +9033,10 @@ public class RemoteConfiguration
       {
         for ( DeviceButton db : deviceButtonList )
         {
-          map.putAll( db.getUpgrade().combineFunctions() );
+          if ( db.getUpgrade() != null )
+          {
+            map.putAll( db.getUpgrade().combineFunctions() );
+          }
         }
       }
     }
