@@ -2,6 +2,9 @@ package com.hifiremote.jp1;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -28,10 +31,19 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
       this.activity = activity;
       setData( activity.getActivityGroups() );
       tabIndex = remote.getButtonGroups().get( "Activity" ).indexOf( btn );
-      comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
+      DeviceButton[] dbList = remote.usesEZRC() ? remoteConfig.getDeviceButtonList().toArray( new DeviceButton[0] ) : remote.getDeviceButtons();
+      comboModel = new DefaultComboBoxModel( dbList );
+      List< Object > powerList = new ArrayList< Object >( Arrays.asList( dbList ) );
+      if ( remote.usesEZRC() )
+      {
+        powerList.add(  "-- Macros --" );
+        powerList.addAll( remoteConfig.getTableMacros() );
+      }
+      comboPowerModel = new DefaultComboBoxModel( powerList.toArray() );
       if ( !remote.usesEZRC() )
       {
         comboModel.insertElementAt( DeviceButton.noButton, 0 );
+        comboPowerModel.insertElementAt( DeviceButton.noButton, 0 );
       }
     }
   }
@@ -122,7 +134,15 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
       }
       else
       {
-        cb.setModel( comboModel );
+        Button[] btns = getRow( row ).getButtonGroup();
+        if ( btns.length == 1 && btns[ 0 ].getStandardName().equalsIgnoreCase( "Power" ) )
+        {
+          cb.setModel( comboPowerModel );
+        }
+        else
+        {
+          cb.setModel( comboModel );
+        }
       }
       comboEditor.setClickCountToStart( RMConstants.ClickCountToStart );
       return comboEditor;
@@ -178,7 +198,7 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
       case 1:
         return group.getButtons();
       case 2:
-        return group.getDevice();
+        return group.getTarget() != null ? group.getTarget() : group.getDevice();
       case 3:
         return group.getNotes();
       case 4:
@@ -194,7 +214,17 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
     ActivityGroup group = getRow( row );
     if ( col == 2 )
     {
-      group.setDevice( ( DeviceButton )value );
+      if ( value instanceof Macro )
+      {
+        Macro macro = ( Macro )value;
+        group.setDeviceIndex( macro.getDeviceButtonIndex() );
+        group.setTarget( macro );
+      }
+      else if ( value instanceof DeviceButton )
+      {
+        group.setDevice( ( DeviceButton )value );
+        group.setTarget( null );
+      }
     }
     else if ( col == 3 )
     {
@@ -223,6 +253,7 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
   private SelectAllCellEditor selectAllEditor = new SelectAllCellEditor();
   private DefaultCellEditor comboEditor = new DefaultCellEditor( new JComboBox() );
   private DefaultComboBoxModel comboModel = null;
+  private DefaultComboBoxModel comboPowerModel = null;
   private Activity activity = null;
   private int tabIndex = -1;
 }

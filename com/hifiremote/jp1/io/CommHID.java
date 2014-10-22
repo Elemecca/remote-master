@@ -70,7 +70,7 @@ public class CommHID extends IO
 	}
 	
 	public String getInterfaceVersion() {
-	  return "0.3";
+	  return "0.4";
 	}
 
 	public String[] getPortNames() {
@@ -358,27 +358,32 @@ public class CommHID extends IO
 	{
 	  int pos = fileStart;
 	  int numIcons = ( buffer[ pos + 12 ] & 0xFF ) + 0x100 * ( buffer[ pos + 13 ] & 0xFF );
-    int numEntries = ( buffer[ pos + 14 ] & 0xFF ) + 0x100 * ( buffer[ pos + 15 ] & 0xFF );
-    pos += 16;
-    int startIndex = pos + 28 * numIcons;
-    int iconEnd = 16 + 28 * numIcons + numEntries;
-    for ( int i = 0; i < numEntries; i++ )
-    {
-      int j = buffer[ startIndex + i ] & 0xFF ;
-      if ( j == 0 )
-      {
-        continue;
-      }
-      int k = pos + 28 * ( j - 1 );
-      int width = ( buffer[ k + 8 ] & 0xFF ) + 0x100 * ( buffer[ k + 9 ] & 0xFF );
-      int height = ( buffer[ k + 10 ] & 0xFF ) + 0x100 * ( buffer[ k + 11 ] & 0xFF );
-      int start = ( buffer[ k + 16 ] & 0xFF ) + 0x100 * ( buffer[ k + 17 ] & 0xFF ) + 0x10000 * ( buffer[ k + 18 ] & 0xFF );
-      int size = ( buffer[ k + 24 ] & 0xFF ) + 0x100 * ( buffer[ k + 25 ] & 0xFF ) - 0x200;
-      start += size;
-      size = height * width;
-      iconEnd = start + size;
-    }
-    return fileStart + iconEnd;
+	  int numEntries = ( buffer[ pos + 14 ] & 0xFF ) + 0x100 * ( buffer[ pos + 15 ] & 0xFF );   
+	  pos += 16;
+	  int startIndex = pos + 28 * numIcons;
+	  int iconEnd = 16 + 28 * numIcons + numEntries;
+	  for ( int i = 0; i < numEntries; i++ )
+	  {
+	    int j = buffer[ startIndex + i ] & 0xFF;
+	    if ( j == 0 )
+	    {
+	      continue;
+	    }
+	    int k = pos + 28 * ( j - 1 );
+	    int width = ( buffer[ k + 8 ] & 0xFF ) + 0x100 * ( buffer[ k + 9 ] & 0xFF );
+	    int height = ( buffer[ k + 10 ] & 0xFF ) + 0x100 * ( buffer[ k + 11 ] & 0xFF );
+	    int start = ( buffer[ k + 16 ] & 0xFF ) + 0x100 * ( buffer[ k + 17 ] & 0xFF ) + 0x10000 * ( buffer[ k + 18 ] & 0xFF );
+	    int start2 = ( buffer[ k + 20 ] & 0xFF ) + 0x100 * ( buffer[ k + 21 ] & 0xFF ) + 0x10000 * ( buffer[ k + 22 ] & 0xFF );
+	    int excess = start2 == 0 ? 0x100 : 0x200;
+	    int baseSize = ( buffer[ k + 24 ] & 0xFF ) + 0x100 * ( buffer[ k + 25 ] & 0xFF ) - excess;
+	    int pixSize = height * width;
+	    int byteWidth = baseSize / pixSize;
+	    int bufferSize = pixSize * byteWidth;
+
+	    start += bufferSize;
+	    iconEnd = start2 == start ? start + pixSize : start;
+	  }
+	  return fileStart + iconEnd;
 	}
 	
 	private int getEndBXML( int fileStart, byte[] buffer )
@@ -433,9 +438,9 @@ public class CommHID extends IO
 	  for ( int index = 0; index < Remote.userFilenames.length; index++ )
 	  {
 	    String name = Remote.userFilenames[ index ];
-	    if ( name.equals( "sysicons.pkg" ) )
+	    if ( name.equalsIgnoreCase( "SysIcons.pkg" ) )
 	    {
-	      // don't delete, or send, sysicons.pkg
+	      // don't delete, or send, SysIcons.pkg
 	      mask ^= ( 1 << index );
 	      continue;
 	    }

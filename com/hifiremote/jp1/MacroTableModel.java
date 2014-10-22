@@ -44,15 +44,7 @@ public class MacroTableModel extends JP1TableModel< Macro >
       keyEditor.setType( Button.MACRO_BIND );
       if ( remoteConfig != null /* && remoteConfig.getRemote().usesEZRC()*/ )
       {
-        List< Macro > list = new ArrayList< Macro >();
-        for ( Macro macro : remoteConfig.getMacros() )
-        {
-          if ( macro.accept() )
-          {
-            list.add( macro );
-          }
-        }
-        setData( list );
+        setData( remoteConfig.getTableMacros() );
       }
 //      else
 //      {

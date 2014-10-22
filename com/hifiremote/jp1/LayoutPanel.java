@@ -92,6 +92,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
     pageUp = new JRadioButton( "Page+" );
     pageDown.addActionListener( this );
     pageUp.addActionListener( this );
+    pageDown.setEnabled( false );
     pageNumber = new JTextField();
     pageNumber.setText( Integer.toString( page ) );
     pageNumber.setEditable( false );

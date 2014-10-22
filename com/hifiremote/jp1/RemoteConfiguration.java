@@ -715,27 +715,36 @@ public class RemoteConfiguration
           int height = data[ k + 10 ] + 0x100 * data[ k + 11 ];
           icon.type = data[ k + 15 ];
           int start = data[ k + 16 ] + 0x100 * data[ k + 17 ] + 0x10000 * data[ k + 18 ];
+          int start2 = data[ k + 20 ] + 0x100 * data[ k + 21 ] + 0x10000 * data[ k + 22 ];
+          int excess = start2 == 0 ? 0x100 : 0x200;
           if ( start != iconEnd )
           {
-            System.err.println( "Icon at index " + ( j - 1 ) + " has inconsistent start" );
-            continue;
+            System.err.println( "Icon at index " + ( j - 1 ) + " has start listed as " 
+                + Integer.toHexString( start ) + " but calculated as " + Integer.toHexString( iconEnd ) );
+            start = iconEnd;
           }
-          int size = data[ k + 24 ] + 0x100 * data[ k + 25 ] - 0x200;
-          int lineWidth = size / height;
-          int byteWidth = lineWidth / width;
-          Hex hex1 = new Hex( data, fileStart + start, size );
+          int baseSize = data[ k + 24 ] + 0x100 * data[ k + 25 ] - excess;
+          int pixSize = height * width;
+          int byteWidth = baseSize / pixSize;
+          int dataSize = pixSize * byteWidth;
+          int lineWidth = width * byteWidth;
+          if ( baseSize != dataSize )
+          {
+            System.err.println( "Icon at index " + ( j - 1 ) + " has size error" );
+          }
+          Hex hex1 = new Hex( data, fileStart + start, dataSize );
           Hex hex2 = null;
-          start += size;
-          if ( start == data[ k + 20 ] + 0x100 * data[ k + 21 ] + 0x10000 * data[ k + 22 ] )
+          start += dataSize;
+          iconEnd = start;
+          
+          if ( start2 == start )
           {
-            size = height * width;
-            hex2 = new Hex( data, fileStart + start, size );
-            iconEnd = start + size;
+            hex2 = new Hex( data, fileStart + start, pixSize );
+            iconEnd = start + pixSize;
           }
-          else
+          if ( start2 != start && start2 != 0 )
           {
-            System.err.println( "Icon at index " + ( j - 1 ) + " has inconsistent data" );
-            continue;
+            System.err.println( "Icon at index " + ( j - 1 ) + " has unexpected transparency data"  );
           }
           
           BufferedImage image = new BufferedImage( width, height, BufferedImage.TYPE_INT_ARGB );
@@ -752,7 +761,7 @@ public class RemoteConfiguration
               {
                 val += hex1.getData()[ n + p ] << ( 8 * p );
               }
-              int alpha = hex2.getData()[ n / byteWidth ];
+              int alpha = hex2 != null ? hex2.getData()[ n / byteWidth ] : 0xFF;
               int row = m / lineWidth;
               int col = ( n - m ) / byteWidth;
               int rgb = 0;
@@ -1476,6 +1485,7 @@ public class RemoteConfiguration
       else if ( tag.equals(  "punchthrumap" ) )
       {
         items.map = new LinkedHashMap< Button, KeySpec >();
+//        System.err.println( "Punchthrumap start" );
       }
       else if ( tag.equals(  "punchthruspec" ) )
       {
@@ -1485,8 +1495,9 @@ public class RemoteConfiguration
         DeviceButton dev = remote.getDeviceButton( data[ pos++ ] | 0x50 );
         Button target = remote.getButton( data[ pos++ ] + offset );
         Button source = remote.getButton( data[ pos++ ] + offset );
-        items.key.btn = target;
-        items.key.keycode = target.getKeyCode();
+        items.key.btn = source;
+        items.key.keycode = source.getKeyCode();
+//        System.err.println( "Spec: Source=" + source.getName() + ", device=" + dev.getName() + ", target=" + target.getName()  );
         if ( dev != null && target != null && source != null )
         {
           items.map.put( source, new KeySpec( dev, target ) );
@@ -1544,6 +1555,10 @@ public class RemoteConfiguration
         { 
           if ( !items.db.isConstructed() )
           {
+            if ( items.fixedData == null )
+            {
+              items.fixedData = new Hex( 0 );
+            }
             Hex hex = new Hex( items.pid, 0, items.fixedData.length() + 3 );
             hex.put( items.fixedData, 3 );
             hex.set( ( short )0x01, 2 );
@@ -1673,8 +1688,7 @@ public class RemoteConfiguration
       }
       else if ( tag.equals(  "punchthrumap" ) )
       {
-        ActivityGroup[] groups = items.activity.getActivityGroups();
-        for ( ActivityGroup group : groups )
+        for ( ActivityGroup group : items.activity.getActivityGroups() )
         {
           Button[] buttonGroup = group.getButtonGroup();
           if ( buttonGroup != null && buttonGroup.length > 0 )
@@ -1682,6 +1696,10 @@ public class RemoteConfiguration
             Button btn = buttonGroup[ 0 ];
             KeySpec ks = items.map.get( btn );
             group.setDevice( ks != null ? ks.db : null );
+            if ( ks.btn != btn )
+            {
+              group.setTargetKeyCode( ks.btn.getKeyCode() );;
+            }
           }
         }
         items.map = null;
@@ -1689,6 +1707,10 @@ public class RemoteConfiguration
       else if ( tag.equals(  "punchthruspec" ) )
       {
         KeySpec ks = items.map.get( items.key.btn );
+        if ( ks == null || ks.db == null )
+        {
+          System.err.println( "Missing keyspec or device in punchthruspec"  );
+        }
         DeviceUpgrade upg = ks.db.getUpgrade();
         Function f = null;
         if ( upg == null )
@@ -3127,6 +3149,7 @@ public class RemoteConfiguration
   
   private void updateReferences()
   {
+    LinkedHashMap< Function, LearnedSignal > translation = new LinkedHashMap< Function, LearnedSignal >();
     for ( DeviceUpgrade upgrade : devices )
     {
       for ( Function fn : upgrade.getFunctions() )
@@ -3174,6 +3197,7 @@ public class RemoteConfiguration
           {
             fn.removeReference( db, btn );
           }
+          translation.put( fn, ls );
         }
       }
     }
@@ -3211,6 +3235,10 @@ public class RemoteConfiguration
         {
           ks.fn = ks.db.getUpgrade().getFunctionMap().get( ks.irSerial );
         }
+        else if ( translation.get( ks.fn ) != null )
+        {
+          ks.fn = translation.get( ks.fn );
+        }
       }
       if ( macro.getUserItems() != null )
       {
@@ -3242,6 +3270,13 @@ public class RemoteConfiguration
     for ( Activity a : activities.values() )
     {
       Assister.setFunctions( a.getAssists(), remote  );
+      for ( ActivityGroup group : a.getActivityGroups() )
+      {
+        if ( group.getTargetKeyCode() > 0 )
+        {
+          group.setTarget( group.getDevice().getUpgrade().getMacroMap().get( group.getTargetKeyCode() ) );
+        }
+      }
     }
     if ( remote.getFavKey() != null && remote.getFavKey().getProfiles() != null )
     {
@@ -4764,7 +4799,7 @@ public class RemoteConfiguration
       file = makeHomeXCF();
       ssdFiles.put( "home.xcf", file );
       file = ssdFiles.get( "system.xcf" );
-      if ( !file.prefix.equals( new Hex( "ezrc    ", 8 ) ) )
+      if ( file != null && !file.prefix.equals( new Hex( "ezrc    ", 8 ) ) )
       {
         simplifyXCFFile( file );
       }
@@ -4780,7 +4815,7 @@ public class RemoteConfiguration
         {
           hex = makeUserIconsPKG();
         }
-        else if ( name.equals( "sysicons.pkg" ) )
+        else if ( name.equalsIgnoreCase( "SysIcons.pkg" ) )
         {
           remote.getUsageRange().setFreeStart( pos );
           file = ssdFiles.get( name );
@@ -7575,6 +7610,19 @@ public class RemoteConfiguration
     return macros;
   }
   
+  public List< Macro > getTableMacros()
+  {
+    List< Macro > list = new ArrayList< Macro >();
+    for ( Macro macro : macros )
+    {
+      if ( macro.accept() )
+      {
+        list.add( macro );
+      }
+    }
+    return list;
+  }
+  
   public List< FavScan > getFavScans()
   {
     return favScans;
@@ -8569,6 +8617,10 @@ public class RemoteConfiguration
       for ( int fnkey : fnkeys )
       {
         Function f = upg.getFunctionMap().get( fnkey );
+        if ( f == null || f.getHex() == null )
+        {
+          continue;
+        }
         if ( !irUsed )
         {
           work.add( makeItem( "irdefs", new Hex( 0 ), false ) );
@@ -8576,19 +8628,16 @@ public class RemoteConfiguration
         }
         Hex btnHex = new Hex( new short[]{ ( short )( fnkey & 0xFF ), ( short )( fnkey >> 8 ) } );
         work.add( makeItem( "irdef", btnHex, false ) );
-        if ( f != null && f.getHex() != null )
+        work.add( makeItem( "keygid", getLittleEndian( f.getGid() == null ? Function.defaultGID : f.getGid() ), true ) );
+        work.add( makeItem( "keyflags", new Hex( new short[]{ ( short )( f.getKeyflags() == null ? 0 : f.getKeyflags() ) } ), true ) );
+        work.add( makeItem( "irdata", f.getHex(), true ) );
+        if ( f.icon != null && f.icon.ref > 0 )
         {
-          work.add( makeItem( "keygid", getLittleEndian( f.getGid() == null ? Function.defaultGID : f.getGid() ), true ) );
-          work.add( makeItem( "keyflags", new Hex( new short[]{ ( short )( f.getKeyflags() == null ? 0 : f.getKeyflags() ) } ), true ) );
-          work.add( makeItem( "irdata", f.getHex(), true ) );
-          if ( f.icon != null && f.icon.ref > 0 )
-          {
-            work.add( makeItem( "iconref", new Hex( new short[]{ ( short )f.icon.ref } ), true ) );
-          }
-          String name = f.getName();
-          work.add( makeItem( "name8", new Hex( name, 8 ), true ) );
-          work.add( endTag( "irdef" ) );
+          work.add( makeItem( "iconref", new Hex( new short[]{ ( short )f.icon.ref } ), true ) );
         }
+        String name = f.getName();
+        work.add( makeItem( "name8", new Hex( name, 8 ), true ) );
+        work.add( endTag( "irdef" ) );
       }
       if ( irUsed )
       {
@@ -8658,19 +8707,30 @@ public class RemoteConfiguration
       ActivityGroup[] groups = activity.getActivityGroups();
       for ( ActivityGroup group : groups )
       {
+        Macro macro = group.getTarget();
         DeviceButton db = group.getDevice();
-        if ( db == null || db == DeviceButton.noButton )
+        if ( group.getButtonGroup().length == 1 && macro != null )
+        {
+          Button source = group.getButtonGroup()[ 0 ];
+          db = macro.getDeviceButton( this );
+          Button target = remote.getButton( group.getTarget().getKeyCode() );
+          map.put( source, new KeySpec( db, target ) );
+        }
+        else if ( db == null || db == DeviceButton.noButton )
         {
           continue;
         }
-        for ( Button b : group.getButtonGroup() )
+        else
         {
-          map.put( b, new KeySpec( db, b ) );
+          for ( Button source : group.getButtonGroup() )
+          {
+            map.put( source, new KeySpec( db, source ) );
+          }
         }
       }
-      for ( int code : remote.getActivityOrder() )
+      for ( int source : remote.getActivityOrder() )
       {
-        Button b = remote.getButton( code );
+        Button b = remote.getButton( source );
         if ( b == null )
         {
           continue;
@@ -8680,8 +8740,9 @@ public class RemoteConfiguration
         {
           continue;
         }
+        int target = ks.btn.getKeyCode();
         short serial = ( short )( ks.db.getButtonIndex() - 0x50 );
-        work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )code, ( short )code } ), true ) );
+        work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )target, ( short )source } ), true ) );
       }
       work.add( endTag( "punchthrumap" ) );
       work.add( endTag( "profile" ) );
@@ -8737,19 +8798,30 @@ public class RemoteConfiguration
     ActivityGroup[] groups = activity.getActivityGroups();
     for ( ActivityGroup group : groups )
     {
+      Macro macro = group.getTarget();
       DeviceButton db = group.getDevice();
-      if ( db == null )
+      if ( group.getButtonGroup().length == 1 && macro != null )
+      {
+        Button source = group.getButtonGroup()[ 0 ];
+        db = macro.getDeviceButton( this );
+        Button target = remote.getButton( group.getTarget().getKeyCode() );
+        map.put( source, new KeySpec( db, target ) );
+      }
+      else if ( db == null || db == DeviceButton.noButton )
       {
         continue;
       }
-      for ( Button b : group.getButtonGroup() )
+      else
       {
-        map.put( b, new KeySpec( db, b ) );
+        for ( Button source : group.getButtonGroup() )
+        {
+          map.put( source, new KeySpec( db, source ) );
+        }
       }
     }
-    for ( int code : remote.getActivityOrder() )
+    for ( int source : remote.getActivityOrder() )
     {
-      Button b = remote.getButton( code );
+      Button b = remote.getButton( source );
       if ( b == null )
       {
         continue;
@@ -8760,7 +8832,8 @@ public class RemoteConfiguration
         continue;
       }
       short serial = ( short )( ks.db.getButtonIndex() - 0x50 );
-      work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )code, ( short )code } ), true ) );
+      int target = ks.btn.getKeyCode();
+      work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )target, ( short )source } ), true ) );
     }
     work.add( endTag( "punchthrumap" ) );
     work.add( endTag( "favorites" ) );
@@ -8797,15 +8870,30 @@ public class RemoteConfiguration
       ActivityGroup[] groups = activity.getActivityGroups();
       for ( ActivityGroup group : groups )
       {
+        Macro macro = group.getTarget();
         DeviceButton db = group.getDevice();
-        for ( Button b : group.getButtonGroup() )
+        if ( group.getButtonGroup().length == 1 && macro != null )
         {
-          map.put( b, new KeySpec( db, b ) );
+          Button source = group.getButtonGroup()[ 0 ];
+          db = macro.getDeviceButton( this );
+          Button target = remote.getButton( group.getTarget().getKeyCode() );
+          map.put( source, new KeySpec( db, target ) );
+        }
+        else if ( db == null || db == DeviceButton.noButton )
+        {
+          continue;
+        }
+        else
+        {
+          for ( Button source : group.getButtonGroup() )
+          {
+            map.put( source, new KeySpec( db, source ) );
+          }
         }
       }
-      for ( int code : remote.getActivityOrder() )
+      for ( int source : remote.getActivityOrder() )
       {
-        Button b = remote.getButton( code );
+        Button b = remote.getButton( source );
         if ( b == null )
         {
           continue;
@@ -8815,8 +8903,9 @@ public class RemoteConfiguration
         {
           continue;
         }
+        int target = ks.btn.getKeyCode();
         serial = ( short )( ks.db.getButtonIndex() - 0x50 );
-        work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )code, ( short )code } ), true ) );
+        work.add( makeItem( "punchthruspec", new Hex( new short[]{ serial, ( short )target, ( short )source } ), true ) );
       }
       int count = -1;
       short softIndex = -1;
@@ -8872,39 +8961,8 @@ public class RemoteConfiguration
   {
     List< Hex > work = new ArrayList< Hex >();
     List< Integer > refs = new ArrayList< Integer >( userIcons.keySet() );
+    LinkedHashMap< Integer, Boolean > transparencies = new LinkedHashMap< Integer, Boolean >();
     Collections.sort( refs );
-    work.add( new Hex( new short[]{ 0,0,0,0,0,0,0,0,0,0,0,0 } ) );
-    int iconCount = refs.size();
-    work.add( getLittleEndian( iconCount ) );
-    int indexSize = 0x7F;
-    for ( int n : refs )
-    {
-      indexSize = Math.max( indexSize, n + 1 );
-    }
-    work.add( getLittleEndian( indexSize ) );
-    int pos = 16 + 28 * iconCount + indexSize;
-    for ( int i : refs )
-    {
-      RMIcon icon = userIcons.get( i );
-      BufferedImage image = ( BufferedImage )icon.image.getImage();
-      int width = image.getWidth();
-      int height = image.getHeight();
-      int size = width * height;
-      work.add( icon.intro );
-      work.add( getLittleEndian( width ) );
-      work.add( getLittleEndian( height ) );
-      work.add( new Hex( new short[]{ 0,0,0,( short )icon.type } ) );
-      work.add( getLittleEndianWord( pos ) );
-      pos += 2 * size;
-      work.add( getLittleEndianWord( pos ) );
-      work.add( getLittleEndianWord( 2 * size + 0x200 ) );
-      pos += size;
-    }
-    int n = 1;
-    for ( int i = 0; i < indexSize; i++ )
-    {
-      work.add( new Hex( new short[]{ ( short )( refs.contains( i ) ? n++ : 0 ) } ) );
-    }
     for ( int i : refs )
     {
       RMIcon icon = userIcons.get( i );
@@ -8914,13 +8972,18 @@ public class RemoteConfiguration
       int size = width * height;
       Hex hex1 = new Hex( 2 * size );
       Hex hex2 = new Hex( size );
-      pos = 0;
+      int pos = 0;
+      boolean usesTransparency = false;
       for ( int k = 0; k < height; k++ )
       {
         for ( int j = 0; j < width; j++ )
         {
           int rgb = image.getRGB( j, k );
-          int alpha = rgb >> 24;
+          int alpha = ( rgb >> 24 ) & 0xFF;
+          if ( alpha != 0xFF )
+          {
+            usesTransparency = true;
+          }
           double rf = ( ( rgb >> 16 ) & 0xFF )/ 255.0;
           double gf = ( ( rgb >> 8 ) & 0xFF ) / 255.0;
           double bf = ( rgb & 0xFF ) / 255.0;
@@ -8934,8 +8997,55 @@ public class RemoteConfiguration
         }
       }
       work.add( hex1 );
-      work.add( hex2 );
+      transparencies.put( i, usesTransparency );
+      if ( usesTransparency )
+      {
+        work.add( hex2 );
+      }
     }
+
+    List< Hex > work2 = new ArrayList< Hex >();
+    work2.add( new Hex( new short[]{ 0,0,0,0,0,0,0,0,0,0,0,0 } ) );
+    int iconCount = refs.size();
+    work2.add( getLittleEndian( iconCount ) );
+    int indexSize = 0x7F;
+    for ( int n : refs )
+    {
+      indexSize = Math.max( indexSize, n + 1 );
+    }
+    work2.add( getLittleEndian( indexSize ) );
+    int pos = 16 + 28 * iconCount + indexSize;
+    for ( int i : refs )
+    {
+      RMIcon icon = userIcons.get( i );
+      int excess = transparencies.get(  i ) ? 0x200 : 0x100;
+      BufferedImage image = ( BufferedImage )icon.image.getImage();
+      int width = image.getWidth();
+      int height = image.getHeight();
+      int size = width * height;
+      work2.add( icon.intro );
+      work2.add( getLittleEndian( width ) );
+      work2.add( getLittleEndian( height ) );
+      work2.add( new Hex( new short[]{ 0,0,0,( short )icon.type } ) );
+      work2.add( getLittleEndianWord( pos ) );
+      pos += 2 * size;
+      if ( excess == 0x200 )
+      {
+        work2.add( getLittleEndianWord( pos ) );
+        pos += size;
+      }
+      else
+      {
+        work2.add( getLittleEndianWord( 0 ) );
+      }
+      work2.add( getLittleEndianWord( 2 * size + excess ) );
+    }
+    int n = 1;
+    for ( int i = 0; i < indexSize; i++ )
+    {
+      work2.add( new Hex( new short[]{ ( short )( refs.contains( i ) ? n++ : 0 ) } ) );
+    }
+    work.addAll( 0, work2 );
     SSDFile file = new SSDFile( null, work );
     return  file.hex;
   }

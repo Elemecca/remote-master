@@ -158,7 +158,7 @@ public class Activity extends Highlight
     {
       for ( DeviceButton device : remote.getDeviceButtons() )
       {
-        if ( device.getName().trim().equalsIgnoreCase( deviceName ) )
+        if ( device.getName().trim().equalsIgnoreCase( deviceName.trim() ) )
         {
           ks.db = device;
           break;
