@@ -4974,16 +4974,16 @@ public class RemoteConfiguration
         {
           updateActivityHighlights();
         }
-        AddressRange range = remote.getCheckSums()[ 0 ].getAddressRange();
-        int oldEnd = range.getEnd();
-        range.setEnd( pos - 1 );
-        while ( pos <= oldEnd )
-        {
-          // The OS of segmented remotes relies on the space beyond the segments
-          // being filled with FFs, and it maintains this, when a segment is
-          // deleted, by writing FFs into the gap between the new and old data ends.
-          data[ pos++ ] = 0xFF;
-        }
+      }
+      AddressRange range = remote.getCheckSums()[ 0 ].getAddressRange();
+      int oldEnd = range.getEnd();
+      range.setEnd( pos - 1 );
+      while ( pos <= oldEnd )
+      {
+        // The OS of segmented remotes relies on the space beyond the segments
+        // being filled with FFs, and it maintains this, when a segment is
+        // deleted, by writing FFs into the gap between the new and old data ends.
+        data[ pos++ ] = 0xFF;
       }
     }
     updateCheckSums();
@@ -5869,6 +5869,10 @@ public class RemoteConfiguration
       }
       else if ( hasSegments() )
       {
+        if ( remote.getSegmentTypes().contains( 0x1E ) && macro.getActivity() != null )
+        {
+          continue;
+        }
         List< Macro > list = macroLists.get( keyCode );
         if ( list == null )
         {
@@ -5974,7 +5978,7 @@ public class RemoteConfiguration
         if ( activity.isActive() )
         {
           Macro macro = activity.getMacro();
-          if ( macro != null )
+          if ( macro != null && !allMacros.contains( macro ) )
           {
             allMacros.add( macro );
           }
@@ -5983,7 +5987,13 @@ public class RemoteConfiguration
     }
     if ( !remote.isSSD() )
     {
-      allMacros.addAll( macros );
+      for ( Macro macro : macros )
+      {
+        if ( macro != null && !allMacros.contains( macro ) )
+        {
+          allMacros.add( macro );
+        }
+      }
     }
     return allMacros;
   }

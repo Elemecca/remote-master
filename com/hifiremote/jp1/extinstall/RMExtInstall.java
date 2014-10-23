@@ -59,6 +59,21 @@ public class RMExtInstall extends ExtInstall
         {
            System.exit( 1 );
         }
+        String title = "Simpleset Patching";
+        String message = "You are about to apply patches to a settings.bin file for a Simpleset\n"
+                        +"remote.  If you continue, these patches will be applied immediately,\n"
+                        +"without any Save step or any further opportunity to abort the process.\n\n"
+                        +"You are strongly advised NOT to do so directly with the file on the\n"
+                        +"external drive of the remote, but only on a copy on your PC.\n\n"
+                        +"Do you wish to proceed?";
+        if ( JOptionPane.showConfirmDialog( remoteConfig.getOwner(), message, title, 
+            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
+        {
+          message = "Operation cancelled.";
+          JOptionPane.showMessageDialog( remoteConfig.getOwner(), message, title, JOptionPane.INFORMATION_MESSAGE );
+          return;
+        }
+        
         int start = 0;
         int len = 0;
 //        int base = remoteConfig.getRemote().getBaseAddress();
@@ -104,7 +119,8 @@ public class RMExtInstall extends ExtInstall
         buffer[ 0 ] = c;
         buffer[ 1 ] = ( short )~c;
         io.writeRemote( io.getSigAddress(), buffer );
-
+        message = "Patching complete.";
+        JOptionPane.showMessageDialog( remoteConfig.getOwner(), message, title, JOptionPane.INFORMATION_MESSAGE );
         return;
       }
       AdvList ExtAdv = new AdvList();

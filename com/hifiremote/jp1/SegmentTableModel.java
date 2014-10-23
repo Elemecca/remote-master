@@ -318,7 +318,9 @@ public class SegmentTableModel extends JP1TableModel< Segment >
     if ( useSavedData() )
     {
       pos = Segment.writeData( data, config.getSavedData(), pos );
-      Hex.put( 0xFFFF, config.getData(), pos );
+      XorCheckSum cs = new XorCheckSum( 0, new AddressRange( 2, pos - 1 ), false );
+      cs.setCheckSum( config.getSavedData() );
+      Hex.put( 0xFFFF, config.getSavedData(), pos );
       return;
     }
     else

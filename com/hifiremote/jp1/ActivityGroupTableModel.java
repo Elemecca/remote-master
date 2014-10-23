@@ -34,7 +34,7 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
       DeviceButton[] dbList = remote.usesEZRC() ? remoteConfig.getDeviceButtonList().toArray( new DeviceButton[0] ) : remote.getDeviceButtons();
       comboModel = new DefaultComboBoxModel( dbList );
       List< Object > powerList = new ArrayList< Object >( Arrays.asList( dbList ) );
-      if ( remote.usesEZRC() )
+      if ( remote.isSSD() )
       {
         powerList.add(  "-- Macros --" );
         powerList.addAll( remoteConfig.getTableMacros() );
@@ -73,6 +73,10 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
   @Override
   public String getColumnName( int col )
   {
+    if ( remoteConfig != null && remoteConfig.getRemote().isSSD() && col == 2 )
+    {
+      return "Device/Power Macro";
+    }
     return colNames[ col ];
   }
   
