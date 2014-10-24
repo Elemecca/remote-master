@@ -4499,7 +4499,9 @@ public class DeviceUpgrade extends Highlight
         }
         map.put( f2, f1 );
         functions.remove( f2 );
-        i -= 1;
+        // after the remove operation, the next function to be looked at has
+        // the same index as the removed one, so need to decrement j
+        j -= 1;
       }
     }
     for ( Button b : remote.getButtons() )
