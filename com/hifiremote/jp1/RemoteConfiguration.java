@@ -1345,8 +1345,12 @@ public class RemoteConfiguration
         // keycode for that device
         Button b = remote.getButton( data[ pos++ ] );
         DeviceUpgrade upgrade = db.getUpgrade();
-        GeneralFunction f = upgrade.getLearnedMap().get( ( int )b.getKeyCode() );
-        if ( f == null )
+        GeneralFunction f = null;
+        if ( upgrade != null )
+        {
+          f = upgrade.getLearnedMap().get( ( int )b.getKeyCode() );
+        }
+        if ( upgrade != null && f == null )
         {
           f = upgrade.getAssignments().getAssignment( b );
         }
@@ -3209,8 +3213,13 @@ public class RemoteConfiguration
       {
         macro.addReference( db, btn );
         KeySpec ks = null;
-        macro.setSystemMacro( macro.getItems() != null && macro.getItems().size() == 1
-            && ( ks = macro.getItems().get( 0 ) ).duration == 0 && ks.delay == 3 );
+        if ( !remote.isSSD() )
+        {
+          // SSD remotes have a specific systemMacro parameter, non-SSD remotes need
+          // system macros characterized by other properties.
+          macro.setSystemMacro( macro.getItems() != null && macro.getItems().size() == 1
+              && ( ks = macro.getItems().get( 0 ) ).duration == 0 && ks.delay == 3 );
+        }
       }
       for ( KeySpec ks : macro.getItems() )
       {
@@ -3221,6 +3230,10 @@ public class RemoteConfiguration
         }       
         if ( ks.btn != null )
         {
+          if ( ks.db.getUpgrade() == null )
+          {
+            continue;
+          }
           ks.fn = ks.db.getUpgrade().getLearnedMap().get( ( int )ks.btn.getKeyCode() );
           if ( ks.fn == null )
           {
@@ -3251,7 +3264,7 @@ public class RemoteConfiguration
       {
         u.db.getUpgrade().getMacroMap().put( ( int )u.button.getKeyCode(), macro );
       }
-      if ( macro.isSystemMacro() )
+      if ( macro.isSystemMacro() && macro.getItems().size() > 0 )
       {
         KeySpec ks = macro.getItems().get( 0 );
         if ( ks.fn != null )
@@ -8165,6 +8178,12 @@ public class RemoteConfiguration
     
     public boolean isValid()
     {
+      if ( fn == null && btn != null && db != null && db.getUpgrade() == null )
+      {
+        // This is not really valid, but it can be produced by EZ-RC and so should
+        // be handled by RMIR
+        return true;
+      }
       if ( fn == null || db == null || db.getUpgrade() == null )
       {
         return false;
@@ -9168,7 +9187,7 @@ public class RemoteConfiguration
       {
         continue;
       }
-      if ( ks.btn != null && ( f = ks.db.getUpgrade().getAssignments().getAssignment( ks.btn ) ) != null )
+      if ( ks.btn != null && ks.db.getUpgrade() != null && ( f = ks.db.getUpgrade().getAssignments().getAssignment( ks.btn ) ) != null )
       {
         ks.fn = f;
       }
