@@ -25,6 +25,7 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
+import com.sun.xml.internal.ws.api.pipe.NextAction;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -168,6 +169,10 @@ public class Remote implements Comparable< Remote >
           if ( line.equals( "General" ) )
           {
             line = parseGeneralSection( rdr );
+          }
+          else if ( line.equals( "Extender" ) )
+          {
+            line = parseExtender( rdr );
           }
           else if ( ( line.equals( "SpecialProtocols" ) || line.equals( "SpecialProtocols+" ) )
               && specialProtocols.isEmpty() )
@@ -2727,6 +2732,28 @@ public class Remote implements Comparable< Remote >
     }
     return line;
   }
+  
+  private String parseExtender( RDFReader rdr ) throws Exception
+  {
+    String line;
+    while ( true )
+    {
+      line = rdr.readLine();
+
+      if ( line == null || line.length() == 0 )
+      {
+        break;
+      }
+
+      StringTokenizer st = new StringTokenizer( line, "= \t" );
+      String name = st.nextToken();
+      if ( name.equalsIgnoreCase( "OEMSignature" ) && st.hasMoreTokens() )
+      {
+        oemSignature = st.nextToken();
+      }
+    }
+    return line;
+  }
 
   /**
    * Gets the height.
@@ -3504,6 +3531,13 @@ public class Remote implements Comparable< Remote >
   public ExtenderVersionParm getExtenderVersionParm()
   {
     return extenderVersionParm;
+  }
+  
+  private String oemSignature = null;
+
+  public String getOemSignature()
+  {
+    return oemSignature;
   }
 
   /** The RDF sync. */

@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 25b";
+  public final static String version = "v2.03 Alpha 25c";
 
   public enum Use
   {
@@ -2520,103 +2520,106 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       return;
     }
-    remoteConfig = RMExtInstall.remoteConfig;
-    recreateToolbar();
-    String[] newDevBtnNotes = remoteConfig.getDeviceButtonNotes();
-    Remote newRemote = remoteConfig.getRemote();
-    List< DeviceUpgrade > newDevUpgrades = remoteConfig.getDeviceUpgrades();
-    List< ProtocolUpgrade > newProtUpgrades = remoteConfig.getProtocolUpgrades();
-    // Copy the old device button notes, as the installer deletes them.
-    for ( int i = 0; i < Math.min( oldDevBtnNotes.length, newDevBtnNotes.length ); i++ )
+    if ( remoteConfig != RMExtInstall.remoteConfig )
     {
-      newDevBtnNotes[ i ] = oldDevBtnNotes[ i ];
-    }
-
-    System.err.println( "Restoring .rmir data lost in conversion to .ir format." );
-
-    int devCount = 0;
-    int protCount = 0;
-    int index = installer.isExtenderMerge() ? installer.getDevUpgradeCodes().size() : 0;
-    for ( DeviceUpgrade duOld : oldDevUpgrades )
-    {
-      int codeOld = duOld.getHexSetupCodeValue();
-      if ( installer.getDevUpgradeCodes().contains( Integer.valueOf( codeOld ) ) )
+      remoteConfig = RMExtInstall.remoteConfig;
+      recreateToolbar();
+      String[] newDevBtnNotes = remoteConfig.getDeviceButtonNotes();
+      Remote newRemote = remoteConfig.getRemote();
+      List< DeviceUpgrade > newDevUpgrades = remoteConfig.getDeviceUpgrades();
+      List< ProtocolUpgrade > newProtUpgrades = remoteConfig.getProtocolUpgrades();
+      // Copy the old device button notes, as the installer deletes them.
+      for ( int i = 0; i < Math.min( oldDevBtnNotes.length, newDevBtnNotes.length ); i++ )
       {
-        continue;
+        newDevBtnNotes[ i ] = oldDevBtnNotes[ i ];
       }
-      // Upgrade retained in merge, so restore it. The order is preserved by the merge
-      // process but those to be restored may not be consecutive.
-      boolean found = false;
-      for ( ; index < newDevUpgrades.size(); index++ )
+
+      System.err.println( "Restoring .rmir data lost in conversion to .ir format." );
+
+      int devCount = 0;
+      int protCount = 0;
+      int index = installer.isExtenderMerge() ? installer.getDevUpgradeCodes().size() : 0;
+      for ( DeviceUpgrade duOld : oldDevUpgrades )
       {
-        DeviceUpgrade duNew = newDevUpgrades.get( index );
-        if ( duNew.getHexSetupCodeValue() == codeOld )
+        int codeOld = duOld.getHexSetupCodeValue();
+        if ( installer.getDevUpgradeCodes().contains( Integer.valueOf( codeOld ) ) )
         {
-          duOld.protocol = duNew.protocol;
-          duOld.setNewRemote( newRemote );
-          newDevUpgrades.set( index, duOld );
-          devCount++ ;
-          found = true;
-          break;
+          continue;
         }
-      }
-      if ( !found )
-      {
-        System.err.println( "Error restoring device upgrades: failed at setup code = " + codeOld + "." );
-      }
-    }
-    System.err.println( "Restored " + devCount + " device upgrades." );
-
-    index = installer.isExtenderMerge() ? installer.getProtUpgradeIDs().size() : 0;
-    for ( ProtocolUpgrade puOld : oldProtUpgrades )
-    {
-      int pidOld = puOld.getPid();
-      if ( installer.getProtUpgradeIDs().contains( Integer.valueOf( pidOld ) ) )
-      {
-        continue;
-      }
-      boolean found = false;
-      for ( ; index < newProtUpgrades.size(); index++ )
-      {
-        ProtocolUpgrade puNew = newProtUpgrades.get( index );
-        if ( puNew.getPid() == pidOld )
+        // Upgrade retained in merge, so restore it. The order is preserved by the merge
+        // process but those to be restored may not be consecutive.
+        boolean found = false;
+        for ( ; index < newDevUpgrades.size(); index++ )
         {
-          // Only restore if not used by device upgrade. Restoring a used one would remove
-          // the isUsed mark.
-          if ( !puNew.isUsed() )
+          DeviceUpgrade duNew = newDevUpgrades.get( index );
+          if ( duNew.getHexSetupCodeValue() == codeOld )
           {
-            newProtUpgrades.set( index, puOld );
-            protCount++ ;
+            duOld.protocol = duNew.protocol;
+            duOld.setNewRemote( newRemote );
+            newDevUpgrades.set( index, duOld );
+            devCount++ ;
+            found = true;
+            break;
           }
-          found = true;
-          break;
+        }
+        if ( !found )
+        {
+          System.err.println( "Error restoring device upgrades: failed at setup code = " + codeOld + "." );
         }
       }
-      if ( !found )
-      {
-        System.err.println( "Error restoring protocol upgrades: failed at PID = " + pidOld + "." );
-      }
-    }
-    System.err.println( "Restored " + protCount + " protocol upgrades." );
+      System.err.println( "Restored " + devCount + " device upgrades." );
 
-    for ( Iterator< ProtocolUpgrade > it = newProtUpgrades.iterator(); it.hasNext(); )
-    {
-      ProtocolUpgrade pu = it.next();
-      if ( pu.isUsed() )
+      index = installer.isExtenderMerge() ? installer.getProtUpgradeIDs().size() : 0;
+      for ( ProtocolUpgrade puOld : oldProtUpgrades )
       {
-        it.remove();
+        int pidOld = puOld.getPid();
+        if ( installer.getProtUpgradeIDs().contains( Integer.valueOf( pidOld ) ) )
+        {
+          continue;
+        }
+        boolean found = false;
+        for ( ; index < newProtUpgrades.size(); index++ )
+        {
+          ProtocolUpgrade puNew = newProtUpgrades.get( index );
+          if ( puNew.getPid() == pidOld )
+          {
+            // Only restore if not used by device upgrade. Restoring a used one would remove
+            // the isUsed mark.
+            if ( !puNew.isUsed() )
+            {
+              newProtUpgrades.set( index, puOld );
+              protCount++ ;
+            }
+            found = true;
+            break;
+          }
+        }
+        if ( !found )
+        {
+          System.err.println( "Error restoring protocol upgrades: failed at PID = " + pidOld + "." );
+        }
       }
-      else if ( installer.getProtUpgradeIDs().contains( Integer.valueOf( pu.getPid() ) ) )
-      {
-        // Add to ProtocolManager as manual protocol. It is only those in getProtUpgradeIDs()
-        // that were removed before the merge, so it is only those that need to be put back and
-        // the import process will have handled the ones that are used by device upgrades.
-        pu.setManualProtocol( newRemote );
-      }
-    }
+      System.err.println( "Restored " + protCount + " protocol upgrades." );
 
-    remoteConfig.setDeviceUpgrades( newDevUpgrades );
-    remoteConfig.setProtocolUpgrades( newProtUpgrades );
+      for ( Iterator< ProtocolUpgrade > it = newProtUpgrades.iterator(); it.hasNext(); )
+      {
+        ProtocolUpgrade pu = it.next();
+        if ( pu.isUsed() )
+        {
+          it.remove();
+        }
+        else if ( installer.getProtUpgradeIDs().contains( Integer.valueOf( pu.getPid() ) ) )
+        {
+          // Add to ProtocolManager as manual protocol. It is only those in getProtUpgradeIDs()
+          // that were removed before the merge, so it is only those that need to be put back and
+          // the import process will have handled the ones that are used by device upgrades.
+          pu.setManualProtocol( newRemote );
+        }
+      }
+
+      remoteConfig.setDeviceUpgrades( newDevUpgrades );
+      remoteConfig.setProtocolUpgrades( newProtUpgrades );
+    }
     remoteConfig.updateImage();
     update();
     saveAction.setEnabled( false );

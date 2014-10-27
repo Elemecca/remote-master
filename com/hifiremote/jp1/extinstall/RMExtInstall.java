@@ -9,12 +9,20 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import com.hifiremote.jp1.Activity;
+import com.hifiremote.jp1.ActivityGroup;
 import com.hifiremote.jp1.AddressRange;
+import com.hifiremote.jp1.Button;
+import com.hifiremote.jp1.DeviceButton;
+import com.hifiremote.jp1.DeviceUpgrade;
+import com.hifiremote.jp1.Macro;
 import com.hifiremote.jp1.ProtocolManager;
 import com.hifiremote.jp1.Remote;
 import com.hifiremote.jp1.RemoteConfiguration;
@@ -30,6 +38,7 @@ public class RMExtInstall extends ExtInstall
   private static Remote extenderRemote = null;
   private static boolean extenderMerge = true;
   private JPS io = null;
+  private static boolean isSimpleset = false;
   
   public RMExtInstall( String hexName, RemoteConfiguration remoteConfig )
   {
@@ -135,6 +144,10 @@ public class RMExtInstall extends ExtInstall
                ExtRdf,
                0 );
       
+      if ( isSimpleset )
+      {
+        return;
+      }
       if ( ExtRdf.m_AdvCodeAddr.end < 0 || ExtRdf.m_UpgradeAddr.end < 0 )
       {
         remoteConfig = null;
@@ -248,6 +261,7 @@ public class RMExtInstall extends ExtInstall
       Rdf rdf, int sigAddr ) throws IOException
   {
     Remote remote = null;
+    short[] sigData = null;
     BufferedReader rdr = null;
     if ( arg != null )
     {
@@ -269,9 +283,11 @@ public class RMExtInstall extends ExtInstall
       errorMsg = "Loading of ";
       errorMsg += ( arg == null ) ? "main" : "merge";
       errorMsg += " data failed.";
+      rdr.close();
       return;
     }
 
+    rdr.close();
     if ( remote == null )
     {
       int baseAddr = 0;
@@ -285,8 +301,33 @@ public class RMExtInstall extends ExtInstall
         errorMsg = "Unable to locate a valid signature.";
         return;
       }
-      sigAddr = ( baseAddr == 0 ) ? 2 : baseAddr;
+      sigAddr = ( baseAddr == 0 ) ? 2 : baseAddr;    
       extenderMerge = ( baseAddr == 0 ) ? !Config.IsValid( 0 ) : !Config.IsValid( baseAddr + 8 );
+      if ( Config.IsValid( sigAddr ) && Config.IsValid( sigAddr + 1 ) && Config.Get( sigAddr ) + Config.Get( sigAddr + 1 ) == 0xFF )
+      {
+        isSimpleset = true;
+        extenderMerge = true;
+        System.err.println( "Extender is for a Simpleset remote" );
+        sigData = new short[ 64 ];
+        for ( int i = 0; i < sigData.length; i++ )
+        {
+          if ( !Config.IsValid( sigAddr + i ) )
+          {
+            errorMsg = "Incomplete sig block in extender data.";
+            return;
+          }
+          sigData[ i ] = Config.Get( sigAddr + i );
+        }
+        sigAddr += 6;
+        // Increment base address past sig section to start of E2
+        baseAddr += 0x100;
+        for ( ; baseAddr < Config.size() && !Config.IsValid( baseAddr ); baseAddr += 0x100 ){}
+        if ( baseAddr >= Config.size() )
+        {
+          errorMsg = "Unable to locate a valid EEPROM area.";
+          return;
+        }
+      }
       int eepromSize = ( extenderMerge ) ? remoteConfig.getRemote().getEepromSize() : Config.size() - baseAddr;
       if ( Config.size() > baseAddr + eepromSize )
       {
@@ -299,7 +340,8 @@ public class RMExtInstall extends ExtInstall
         return;
       }
       StringBuilder sb = new StringBuilder();
-      for ( int ndx = 0; Config.IsValid( ndx + sigAddr ) && ndx < 8; ndx++ )
+      int sigLen = isSimpleset ? 6 : 8;
+      for ( int ndx = 0; Config.IsValid( ndx + sigAddr ) && ndx < sigLen; ndx++ )
       {
         sb.append( ( char )Config.Get( ndx + sigAddr ) );
       }
@@ -314,15 +356,13 @@ public class RMExtInstall extends ExtInstall
         if ( !remotes.isEmpty() ) break;
       }
       signature = signature2;
-      
-      
       short[] data = new short[ eepromSize ];
       for ( int i = 0; i < eepromSize; i++ )
       {
         data[ i ] = ( ( i < Config.size() - baseAddr ) && Config.IsValid( i + baseAddr ) ) ? Config.Get( i + baseAddr) : 0x100;
       }
       
-      remote = RemoteConfiguration.filterRemotes( remotes, signature, eepromSize, data, null, false );
+      remote = RemoteConfiguration.filterRemotes( remotes, signature, eepromSize, data, sigData, false );
       if ( remote == null )
       {
         errorMsg = "No remote found that matches the merge file.";
@@ -334,8 +374,93 @@ public class RMExtInstall extends ExtInstall
         errorMsg = "Merge data and its RDF have conflicting base addresses.";
         return;
       }
+      if ( remote.getOemSignature() != null && !remoteConfig.getRemote().getSignature().equals( remote.getOemSignature() )
+         && !remoteConfig.getRemote().getSignature().equals( remote.getSignature() ) )
+      {
+        errorMsg = "Extender is not for this remote.";
+        return;
+      }
       extenderRemote = remote;
     }
+    if ( isSimpleset )
+    {
+      RemoteConfiguration extConfig = new RemoteConfiguration( remote, remoteConfig.getOwner() );
+      extConfig.setSigData( sigData );
+      int baseAddr = remote.getBaseAddress();
+      for ( int i = 0; i < extConfig.getData().length; i++ )
+      {
+        extConfig.getData()[ i ] = ( ( i < Config.size() - baseAddr ) && Config.IsValid( i + baseAddr ) ) ? Config.Get( i + baseAddr) : 0xFF;
+      }
+      extConfig.loadSegments( true );
+      extConfig.setDeviceButtonSegments();
+      List< Integer > missingDev = new ArrayList< Integer >();
+      for ( int i = 0; i < remote.getDeviceButtons().length; i++ )
+      {
+        DeviceButton db = remote.getDeviceButtons()[ i ];
+        if ( remoteConfig.getRemote().getDeviceButton( db.getButtonIndex() ) == null )
+        {
+          remoteConfig.getSegments().get( 0 ).add( db.getSegment() );
+          missingDev.add( i );
+        }
+      }
+      remoteConfig.setRemote( remote );
+      for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
+      {
+        du.setNewRemote( remote );
+      }
+      remoteConfig.setSigData( sigData );
+      remoteConfig.setDeviceButtonSegments();
+      List< Activity > list = new ArrayList< Activity >();
+      LinkedHashMap< Button, Activity > activities = remoteConfig.getActivities();
+      if ( activities != null )
+      {
+        for ( Activity activity : remoteConfig.getActivities().values() )
+        {
+          List< ActivityGroup > missingGroups = new ArrayList< ActivityGroup >();
+          Button btn = remote.getButton( activity.getButton().getKeyCode() );
+          Activity extActivity = extConfig.getActivities().get( btn );
+          for ( ActivityGroup group : extActivity.getActivityGroups() )
+          {
+            if ( activity.getGroupMap().get( group.getIndex() ) == null )
+            {
+              missingGroups.add( group );
+            }
+          }
+          if ( missingGroups.size() > 0 )
+          {
+            int oldLen = activity.getActivityGroups().length;
+            int newLen = oldLen + missingGroups.size();
+            ActivityGroup[] newGroups = Arrays.copyOf( activity.getActivityGroups(), newLen );
+            for ( int i = 0; i < missingGroups.size(); i++ )
+            {
+              ActivityGroup group = missingGroups.get( i );
+              newGroups[ oldLen + i ] = group;
+              activity.getGroupMap().put( group.getIndex(), group );
+            }
+            activity.setActivityGroups( newGroups );
+          }
+          activity.set( remote );
+          if ( activity.getMacro() != null )
+          {
+            Macro macro = activity.getMacro();
+            remote.correctType04Macro( macro );
+            for ( Integer i : missingDev )
+            {
+              macro.getData().set( ( short )remote.getDeviceButtons()[ i ].getButtonIndex(), 2*i );
+            }
+          }
+          list.add( activity );
+        }
+        activities.clear();
+        for ( Activity activity : list )
+        {
+          activities.put( activity.getButton(), activity );
+        }
+      }
+      remoteConfig.setDeviceButtonNotes( Arrays.copyOf( remoteConfig.getDeviceButtonNotes(), remote.getDeviceButtons().length ) );
+      return;
+    }
+
     File rdfFile = remote.getFile();
     try
     {

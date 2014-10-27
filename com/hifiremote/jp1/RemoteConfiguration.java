@@ -79,7 +79,7 @@ public class RemoteConfiguration
     RemoteMaster.setSystemFilesItems( rm, remote );
   }
   
-  private void createActivities()
+  public void createActivities()
   {
     Button fav = remote.usesEZRC() && remote.getFavKey() != null ? remote.getButton( remote.getFavKey().getKeyCode() ) : null;
     if ( fav != null )
@@ -1850,7 +1850,7 @@ public class RemoteConfiguration
     return hex;
   }
 
-  private void loadSegments( boolean decode )
+  public void loadSegments( boolean decode )
   {
     // first two bytes are checksum, and in XSight remotes next 18 bytes are E2 info
     int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
@@ -7606,6 +7606,11 @@ public class RemoteConfiguration
   public String[] getDeviceButtonNotes()
   {
     return deviceButtonNotes;
+  }
+
+  public void setDeviceButtonNotes( String[] deviceButtonNotes )
+  {
+    this.deviceButtonNotes = deviceButtonNotes;
   }
 
   /**

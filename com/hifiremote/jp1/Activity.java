@@ -225,9 +225,11 @@ public class Activity extends Highlight
       }
     }
     activityGroups = new ActivityGroup[ indices.size() ];
+    groupMap = new LinkedHashMap< Integer, ActivityGroup >();
     for ( int i = 0; i < activityGroups.length; i++ )
     {
       activityGroups[ i ] = new ActivityGroup( indices.get( i ), remote );
+      groupMap.put( indices.get( i ), activityGroups[ i ] );
     }
     if ( remote.usesEZRC() )
     {
@@ -279,7 +281,11 @@ public class Activity extends Highlight
     }
     
     ActivityGroup.parse( props, this );
-
+    groupMap = new LinkedHashMap< Integer, ActivityGroup >();
+    for ( ActivityGroup group : activityGroups )
+    {
+      groupMap.put( group.getIndex(), group );
+    }
   }
   
   public void set( Remote remote )
@@ -518,7 +524,13 @@ public class Activity extends Highlight
     return name;
   }
 
+  public LinkedHashMap< Integer, ActivityGroup > getGroupMap()
+  {
+    return groupMap;
+  }
+
   private ActivityGroup[] activityGroups = null;
+  private LinkedHashMap< Integer, ActivityGroup > groupMap = null;
   private Button button = null;
   private Button selector = null;
   private String selectorName = null;
