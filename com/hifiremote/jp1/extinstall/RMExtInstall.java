@@ -456,6 +456,13 @@ public class RMExtInstall extends ExtInstall
         {
           activities.put( activity.getButton(), activity );
         }
+        for ( Button btn : extConfig.getActivities().keySet() )
+        {
+          if ( activities.get( btn ) == null )
+          {
+            activities.put( btn, extConfig.getActivities().get( btn ) );
+          }
+        }
       }
       remoteConfig.setDeviceButtonNotes( Arrays.copyOf( remoteConfig.getDeviceButtonNotes(), remote.getDeviceButtons().length ) );
       return;

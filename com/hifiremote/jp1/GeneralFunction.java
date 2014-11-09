@@ -89,10 +89,14 @@ public class GeneralFunction
       User u = ( User )o;
       if ( db != u.db )
         return false;
-      if ( button != u.button )
+      if ( button.getKeyCode( state ) != u.button.getKeyCode( u.state ) )
+      {
         return false;
-      if ( state != u.state )
-        return false;
+      }
+//      if ( button != u.button )
+//        return false;
+//      if ( state != u.state )
+//        return false;
       return true;
     }
     
