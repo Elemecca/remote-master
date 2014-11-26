@@ -25,7 +25,6 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
-import com.sun.xml.internal.ws.api.pipe.NextAction;
 
 // TODO: Auto-generated Javadoc
 /**

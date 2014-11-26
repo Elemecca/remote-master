@@ -3363,26 +3363,51 @@ public class RemoteConfiguration
 //    if ( btn != null && remote.getButtonGroups() != null
 //        && remote.getButtonGroups().get( "Device" ) != null      
 //        && remote.getButtonGroups().get( "Device" ).contains( btn ) )
-    if ( !remote.usesEZRC() && remote.getDeviceButton( macro.getDeviceButtonIndex() ) != null )
+    if ( !remote.usesEZRC() )
     {
-      // Device Specific Macro; needs RDF to include DSM=Internal:0
       for ( SpecialProtocol sp : remote.getSpecialProtocols() )
       {
-        if ( sp.isInternal() && sp.getInternalSerial() == 0 )
+        if ( !sp.isInternal() )
         {
+          continue;
+        }
+        int dbi = macro.getDeviceButtonIndex() - ( sp.getInternalSerial() << 4 );
+        if ( remote.getDeviceButton( dbi ) != null )
+        {
+          macro.setDeviceButtonIndex( dbi );
+          macro.setSequenceNumber( sp.getInternalSerial() );
           SpecialProtocolFunction sf = sp.createFunction( macro );
           if ( sf != null )
           {
             specialFunctions.add( sf );
           }
-          break;
+          return;
         }
       }
-    }          
-    else 
-    {
-      macros.add( macro );
     }
+    macros.add( macro );
+    
+    
+//    if ( !remote.usesEZRC() && remote.getDeviceButton( macro.getDeviceButtonIndex() ) != null )
+//    {
+//      // Device Specific Macro; needs RDF to include DSM=Internal:0
+//      for ( SpecialProtocol sp : remote.getSpecialProtocols() )
+//      {
+//        if ( sp.isInternal() && sp.getInternalSerial() == 0 )
+//        {
+//          SpecialProtocolFunction sf = sp.createFunction( macro );
+//          if ( sf != null )
+//          {
+//            specialFunctions.add( sf );
+//          }
+//          break;
+//        }
+//      }
+//    }          
+//    else 
+//    {
+//      macros.add( macro );
+//    }
   }
   
   public void setDeviceButtonSegments()
@@ -5893,7 +5918,7 @@ public class RemoteConfiguration
           macroLists.put( keyCode, list );
         }
         list.add( macro );
-        macro.setSequenceNumber( 0 );
+//        macro.setSequenceNumber( 0 );
       }
       if ( !hasSegments() )
       {
@@ -6018,7 +6043,7 @@ public class RemoteConfiguration
     int argType = type;
     for ( Macro macro : list )
     {
-      int subset = ( macro.getSegmentFlags() << 8 ) | macro.getDeviceButtonIndex();
+      int subset = ( macro.getSegmentFlags() << 8 ) | ( macro.getDeviceButtonIndex() + ( macro.getSequenceNumber() << 4 ) );
       List< Macro > subList = bySubset.get( subset );
       if ( subList == null )
       {
