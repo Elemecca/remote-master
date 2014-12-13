@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
+import com.hifiremote.jp1.GeneralFunction.User;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -78,6 +79,45 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
     }
     return LearnedSignalDialog.showDialog( SwingUtilities.getRoot( this ), newSignal, remoteConfig );
   }
+  
+  @Override
+  protected void editRowObject( int row )
+  {
+    Remote remote = remoteConfig.getRemote();
+    List< LearnedSignal > lsList = remoteConfig.getLearnedSignals();
+    LearnedSignal baseLS = getRowObject( row );
+    int ndx = lsList.indexOf( baseLS );
+    LearnedSignal newLS = createRowObject( baseLS );
+    if ( newLS != null )
+    {
+      lsList.remove( ndx );
+      lsList.add( ndx, newLS );
+      if ( remote.usesEZRC() )
+      {
+        DeviceButton db = remote.getDeviceButton( baseLS.deviceButtonIndex );
+        Button btn = remote.getButton( baseLS.getKeyCode() );
+        LinkedHashMap< Integer, LearnedSignal > lsMap = null;
+        if ( db != null && db.getUpgrade() != null && ( lsMap = db.getUpgrade().getLearnedMap() ) != null )
+        {
+          lsMap.remove( ( int )btn.getKeyCode() );
+          Function oldFn = null;
+          if ( ( oldFn = db.getUpgrade().getAssignments().getAssignment( btn ) ) != null )
+          {
+            oldFn.addReference( db, btn );
+          }
+
+          db = remote.getDeviceButton( newLS.deviceButtonIndex );
+          if ( db != null && db.getUpgrade() != null && ( lsMap = db.getUpgrade().getLearnedMap() ) != null )
+          {
+            lsMap.put( newLS.getKeyCode(), newLS );
+            newLS.addReference( db, remote.getButton( newLS.getKeyCode() ) );
+          }
+        }
+      }
+      model.setRow( sorter.modelIndex( row ), newLS );
+    }
+  }
+
   
   public void actionPerformed( ActionEvent e )
   {

@@ -29,6 +29,14 @@ Changes for v2.03
 - Replace addPropertyChangeListener by AddRMPropertyChangeListener in RMPanel and descendents to prevent conflict with certain Swing logic (Marcin)
 - Update digitmaps to 623 (Graham)
 - Handle simpleset remotes that allow for setup codes > 0x0FFF (Graham)
+-- Alpha 25
+- Add support for installing extenders for Simpleset remotes (Graham)
+-- Alpha 26
+- Add option in RM to have separate default folders for saving and loading (Graham)
+- For macros in XSight remotes, limit maximum "Pause after" value to 10 seconds, as remotes hang on greater values (Graham)
+- Fix bug with editing learned signals in XSight remotes (Graham)
+- Fix bug in Device Editor caused when "Clean up" deletes functions already allocated (Graham)
+- Add NEC005ATranslator for certain new NEC protocols (Dave Reed)
 
 Changes for v2.02
 -- Alpha --

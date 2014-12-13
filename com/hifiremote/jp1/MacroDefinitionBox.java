@@ -611,6 +611,10 @@ PropertyChangeListener, RMSetter< Object >
       {
         delay.setValue( 0.1f );
       }
+      if ( f > 10.0 )
+      {
+        delay.setValue( 10.0f );
+      }
     }
   }
 }

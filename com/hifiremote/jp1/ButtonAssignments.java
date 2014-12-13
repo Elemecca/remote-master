@@ -58,7 +58,17 @@ public class ButtonAssignments
     short keyCode = b.getKeyCode( state );
     Function oldFunction = assignedFunctions[ keyCode ];
     if ( oldFunction != null )
-      oldFunction.removeReference( b, state );
+    {
+      DeviceButton db = oldFunction.upgrade == null ? null : oldFunction.upgrade.getButtonRestriction();
+      if ( db == null || db == DeviceButton.noButton )
+      {
+        oldFunction.removeReference( b, state );
+      }
+      else
+      {
+        oldFunction.removeReference( db, b );
+      }
+    }
 
     assignedFunctions[ keyCode ] = f;
     if ( f != null )

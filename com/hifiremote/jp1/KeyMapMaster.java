@@ -55,10 +55,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 {
 
   /** The me. */
-  private static KeyMapMaster me = null;
-
-  /** The preferences. */
-  private Preferences preferences = null;
+  private static KeyMapMaster me = null; 
 
   /** The editor panel. */
   private DeviceEditorPanel editorPanel = null;
@@ -117,6 +114,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem wikiItem = null;
 
   private JMenuItem aboutItem = null;
+  
+  private JMenuItem separateSaveFolderItem = null;
 
   /** The ok button. */
   private JButton okButton = null;
@@ -161,7 +160,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
     setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
 
-    preferences = new Preferences( prefs );
     homeDirectory = prefs.getFile().getParentFile();
     
     ProtocolManager.getProtocolManager().loadAltPIDRemoteProperties( properties );
@@ -589,6 +587,13 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
 
     submenu.add( menuItem );
 
+    separateSaveFolderItem = new JCheckBoxMenuItem( "Separate Save folder" );
+    separateSaveFolderItem.setMnemonic( KeyEvent.VK_V );
+    separateSaveFolderItem.setSelected( preferences.getSeparateSaveFolder() );
+    separateSaveFolderItem.addActionListener( this );
+    separateSaveFolderItem.setToolTipText( "Use separate default folders for loading and saving .rmdu files" );
+    menu.add( separateSaveFolderItem );
+    
     enablePreserveSelection = new JCheckBoxMenuItem( "Allow Preserve Control" );
     enablePreserveSelection.setMnemonic( KeyEvent.VK_A );
     enablePreserveSelection.setSelected( Boolean.parseBoolean( properties.getProperty( "enablePreserveSelection",
@@ -940,6 +945,17 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
           }
         }
       }
+      else if ( source == separateSaveFolderItem )
+      {
+        if ( separateSaveFolderItem.isSelected() )
+        {
+          properties.setProperty( "UpgradeSaveFolder", "true" );
+        }
+        else
+        {
+          properties.remove( "UpgradeSaveFolder" );
+        }
+      }
       else if ( source == enablePreserveSelection )
       {
         properties.setProperty( "enablePreserveSelection", Boolean.toString( enablePreserveSelection.isSelected() ) );
@@ -1116,16 +1132,23 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public void saveAs() throws IOException
   {
-    RMFileChooser chooser = new RMFileChooser( preferences.getUpgradePath() );
+    RMFileChooser chooser = new RMFileChooser( preferences.getUpgradeSavePath() );
     chooser.setFileFilter( new EndingFileFilter( "RemoteMaster device upgrade files (*.rmdu)", rmEndings ) );
     File f = deviceUpgrade.getFile();
     if ( f == null )
     {
       String fname = deviceUpgrade.getDescription() + upgradeExtension;
       fname = fname.replace( '/', '-' );
-      f = new File( preferences.getUpgradePath(), fname );
+      f = new File( preferences.getUpgradeSavePath(), fname );
     }
-    chooser.setSelectedFile( f );
+    if ( preferences.getSeparateSaveFolder() )
+    {
+      chooser.setSelectedFile( new File( preferences.getUpgradeSavePath(), f.getName() ) );
+    }
+    else
+    {
+      chooser.setSelectedFile( f );
+    }
     int returnVal = chooser.showSaveDialog( this );
     if ( returnVal == RMFileChooser.APPROVE_OPTION )
     {
@@ -1146,6 +1169,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         deviceUpgrade.store( file );
         updateRecentFiles( file );
         saveItem.setEnabled( true );
+        preferences.setUpgradeSavePath( file.getParentFile() );
         setTitle( file.getCanonicalPath() + " - RemoteMaster" );
       }
     }
@@ -1410,16 +1434,6 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       return RemoteManager.getRemoteManager().getRemotes();
     }
-  }
-
-  /**
-   * Gets the preferences.
-   * 
-   * @return the preferences
-   */
-  public Preferences getPreferences()
-  {
-    return preferences;
   }
 
   /**

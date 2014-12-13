@@ -200,7 +200,20 @@ public class Preferences
     setUpgradePath( path );
     return path;
   }
-
+  
+  public File getUpgradeSavePath()
+  {
+    if ( getSeparateSaveFolder() )
+    {
+      File path = file.getFileProperty( "UpgradeSavePath" );
+      if ( path != null )
+        return path;
+      path = getUpgradePath();
+      setUpgradeSavePath( path );
+      return path;
+    }
+    return getUpgradePath();
+  }
   /**
    * Sets the upgrade path.
    * 
@@ -210,6 +223,23 @@ public class Preferences
   public void setUpgradePath( File path )
   {
     file.setProperty( "UpgradePath", path );
+  }
+  
+  public boolean getSeparateSaveFolder()
+  {
+    return Boolean.parseBoolean( file.getProperty( "UpgradeSaveFolder", "false" ) );
+  }
+  
+  public void setUpgradeSavePath( File path )
+  {
+    if ( getSeparateSaveFolder() )
+    {
+      file.setProperty( "UpgradeSavePath", path );
+    }
+    else
+    {
+      setUpgradePath( path );
+    }
   }
 
   /**

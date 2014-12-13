@@ -40,6 +40,8 @@ public class LearnedSignal extends Highlight
     keyCode = signal.keyCode;
     deviceButtonIndex = signal.deviceButtonIndex;
     format = signal.format;
+    header = signal.header == null ? null : new Hex( signal.header );
+    name = signal.name;
     data = new Hex( signal.data );
     notes = signal.notes;
     setSegmentFlags( signal.getSegmentFlags() );

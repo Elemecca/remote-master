@@ -340,10 +340,10 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     chooser.setFileFilter( allFilter );
 
     RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
-    String dir = JP1Frame.getProperties().getProperty( "UpgradePath" );
+    File dir = JP1Frame.getPreferences().getUpgradePath();
     if ( dir != null )
     {
-      chooser.setCurrentDirectory( new File( dir ) );
+      chooser.setCurrentDirectory( dir );
     }
     while ( true )
     {
@@ -381,7 +381,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     DeviceButton btnRes = deviceUpgrade.getButtonRestriction();
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
-    JP1Frame.getProperties().put( "UpgradePath", file.getParent() );
+    JP1Frame.getPreferences().setUpgradePath( file.getParentFile() );
     if ( deviceUpgrade.getRemote() != remote )
     {
       deviceUpgrade.setRemote( remote );
@@ -435,14 +435,21 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     File f = deviceUpgrade.getFile();
     if ( f != null )
     {
-      chooser.setSelectedFile( f );
+      if ( JP1Frame.getPreferences().getSeparateSaveFolder() )
+      {
+        chooser.setSelectedFile( new File( JP1Frame.getPreferences().getUpgradeSavePath(), f.getName() ) );
+      }
+      else
+      {
+        chooser.setSelectedFile( f );
+      }
     }
     else
     {
-      String path = JP1Frame.getProperties().getProperty( "UpgradePath" );
+      File path = JP1Frame.getPreferences().getUpgradeSavePath();
       if ( path != null )
       {
-        chooser.setCurrentDirectory( new File( path ) );
+        chooser.setCurrentDirectory( path );
       }
     }
 
@@ -455,7 +462,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         name = name + ".rmdu";
       }
       File file = new File( name );
-      JP1Frame.getProperties().put( "UpgradePath", file.getParent() );
+      JP1Frame.getPreferences().setUpgradeSavePath( file.getParentFile() );
       int rc = JOptionPane.YES_OPTION;
       if ( file.exists() )
       {

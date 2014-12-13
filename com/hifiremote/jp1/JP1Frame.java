@@ -39,6 +39,7 @@ public class JP1Frame extends JFrame implements HyperlinkListener
     contentPane.add( newContentPane, BorderLayout.CENTER );
     messageArea.setForeground( Color.red );
     contentPane.add( messageArea, BorderLayout.SOUTH );
+    preferences = new Preferences( properties );
 
     if ( Desktop.isDesktopSupported() )
     {
@@ -54,6 +55,11 @@ public class JP1Frame extends JFrame implements HyperlinkListener
   public static PropertyFile getProperties()
   {
     return properties;
+  }
+
+  public static Preferences getPreferences()
+  {
+    return preferences;
   }
 
   /*
@@ -154,4 +160,6 @@ public class JP1Frame extends JFrame implements HyperlinkListener
   protected static PropertyFile properties = null;
 
   protected Desktop desktop = null;
+  
+  protected static Preferences preferences = null;
 }

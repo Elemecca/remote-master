@@ -36,6 +36,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.JTextComponent;
 
+import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.clipboard.ClipboardReader;
 import com.hifiremote.jp1.clipboard.ClipboardReaderFactory;
 
@@ -524,9 +525,17 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
         E efn = i.next();
         Function f = ( Function )efn;
         if ( ( f.getHex() == null ) || ( f.getHex().length() == 0 ) )
-        {
+        {      
           i.remove();
           delete( efn );
+          if ( efn instanceof ExternalFunction )
+          {
+            deviceUpgrade.getExternalFunctions().remove( efn );
+          }
+          else
+          {
+            deviceUpgrade.getFunctions().remove( efn );
+          }
         }
       }
       model.fireTableDataChanged();
