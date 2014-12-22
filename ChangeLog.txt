@@ -37,6 +37,9 @@ Changes for v2.03
 - Fix bug with editing learned signals in XSight remotes (Graham)
 - Fix bug in Device Editor caused when "Clean up" deletes functions already allocated (Graham)
 - Add NEC005ATranslator for certain new NEC protocols (Dave Reed)
+- Update digitmaps to 626 (Dave Reed)
+- Implement copying and pasting of multiple columns from Learned Signals to Device Upgrade Functions (Graham)
+- Add a Copy button to Learned Signals panel for additional support for this copy/paste operation (Graham)
 
 Changes for v2.02
 -- Alpha --

@@ -1,17 +1,25 @@
 package com.hifiremote.jp1;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.JButton;
+import javax.swing.TransferHandler;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
-import com.hifiremote.jp1.GeneralFunction.User;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -26,6 +34,65 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
   public LearnedSignalPanel()
   {
     super( new LearnedSignalTableModel() );
+
+    kit = Toolkit.getDefaultToolkit();
+    clipboard = kit.getSystemClipboard();
+    
+    TransferHandler th = new TransferHandler()
+    {
+      protected Transferable createTransferable( JComponent c )
+      {
+        return new LocalObjectTransferable( new Integer( table.getSelectedRow() ) );
+      }
+
+      public int getSourceActions( JComponent c )
+      {
+        return TransferHandler.COPY;
+      }
+
+      public void exportToClipboard( JComponent comp, Clipboard clip, int action )
+      {
+        JTable table = ( JTable )comp;
+        int[] selectedRows = table.getSelectedRows();
+        int[] selectedCols = table.getSelectedColumns();
+        StringBuilder buff = new StringBuilder( 200 );
+        for ( int rowNum = 0; rowNum < selectedRows.length; rowNum++ )
+        {
+          if ( rowNum != 0 )
+            buff.append( "\n" );
+          for ( int colNum = 0; colNum < selectedCols.length; colNum++ )
+          {
+            if ( colNum != 0 )
+              buff.append( "\t" );
+            int selRow = selectedRows[ rowNum ];
+            // int convertedRow = sorter.convertRowIndexToModel( selRow );
+            int selCol = selectedCols[ colNum ];
+            int convertedCol = table.convertColumnIndexToModel( selCol );
+            Object value = table.getValueAt( selRow, selCol );
+            if ( value != null )
+            {
+              DefaultTableCellRenderer cellRenderer = ( DefaultTableCellRenderer )table.getColumnModel()
+                  .getColumn( selCol ).getCellRenderer();
+              if ( cellRenderer != null )
+              {
+                cellRenderer.getTableCellRendererComponent( table, value, false, false, selRow, convertedCol );
+                value = cellRenderer.getText();
+              }
+              buff.append( value.toString() );
+            }
+          }
+        }
+        StringSelection data = new StringSelection( buff.toString() );
+        clipboard.setContents( data, data );
+      }
+    };
+    table.setTransferHandler( th );
+    
+    copyButton = new JButton( "Copy" );
+    copyButton.addActionListener( this );
+    copyButton.setToolTipText( "Copy to clipboard for pasting to Functions tab of a device upgrade" );
+    copyButton.setEnabled( false );
+    buttonPanel.add( copyButton );
     
     convertToUpgradeButton = new JButton( "Convert to Device Upgrade" );
     convertToUpgradeButton.addActionListener( this );
@@ -137,7 +204,13 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
         convertToDeviceUpgrade( signals.toArray(new LearnedSignal[signals.size()]) );
     }
     else if ( source == timingSummaryButton )
+    {
       LearnedSignalTimingSummaryDialog.showDialog( SwingUtilities.getRoot( this ), remoteConfig );
+    }
+    else if ( source == copyButton )
+    {
+      table.getTransferHandler().exportToClipboard( table, clipboard, TransferHandler.COPY );
+    }
     else
       super.actionPerformed( e );
   }
@@ -505,11 +578,18 @@ public class LearnedSignalPanel extends RMTablePanel< LearnedSignal >
   {
     super.valueChanged( e );
     if ( !e.getValueIsAdjusting() )
+    {
       convertToUpgradeButton.setEnabled( table.getSelectedRowCount() >= 1 );
+      copyButton.setEnabled( table.getSelectedRowCount() >= 1 );
+    }
   }
 
   private RemoteConfiguration remoteConfig = null;
   
   private JButton convertToUpgradeButton = null;
   private JButton timingSummaryButton = null;
+  
+  private JButton copyButton = null;
+  private Clipboard clipboard = null;
+  private Toolkit kit = null;
 }
