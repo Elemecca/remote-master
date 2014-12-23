@@ -40,6 +40,8 @@ Changes for v2.03
 - Update digitmaps to 626 (Dave Reed)
 - Implement copying and pasting of multiple columns from Learned Signals to Device Upgrade Functions (Graham)
 - Add a Copy button to Learned Signals panel for additional support for this copy/paste operation (Graham)
+- Fix bug preventing Fav/Scan tab showing in some cases when it should be shown (Graham)
+- Allow .ir files in Recent Files list of RMIR, and .txt files in that of RM (Graham)
 
 Changes for v2.02
 -- Alpha --

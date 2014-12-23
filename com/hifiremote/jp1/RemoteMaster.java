@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 26";
+  public final static String version = "v2.03 Alpha 26a";
 
   public enum Use
   {
@@ -2386,7 +2386,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     dir = file.getParentFile();
     properties.setProperty( "IRPath", dir );
 
-    if ( ext.equals( ".rmdu" ) || ext.equals( ".rmir" ) || ext.equals( ".bin" ) )
+    if ( ext.equals( ".rmir" ) || ext.equals( ".bin" ) || ext.equals( ".ir" ) )
     {
       updateRecentFiles( file );
     }

@@ -1251,8 +1251,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     deviceUpgrade.load( file );
 
     boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
+    boolean isTxt = file.getName().toLowerCase().endsWith( ".txt" );
 
-    if ( isRMDU )
+    if ( isRMDU || isTxt )
     {
       updateRecentFiles( file );
     }

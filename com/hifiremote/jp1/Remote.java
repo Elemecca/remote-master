@@ -3332,14 +3332,7 @@ public class Remote implements Comparable< Remote >
     {
       return false;
     }
-    if ( advCodeBindFormat == AdvancedCode.BindFormat.NORMAL )
-    {
-      return favKey.getDeviceButtonAddress() != 0;
-    }
-    else
-    {
-      return favKey.getDeviceButtonAddress() == 0;
-    }
+    return favKey.getDeviceButtonAddress() != 0 || advCodeBindFormat == AdvancedCode.BindFormat.LONG;
   }
   
   public boolean hasFavorites()
