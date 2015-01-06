@@ -2245,7 +2245,7 @@ public class Remote implements Comparable< Remote >
           {
             restrictions = defaultRestrictions;
           }
-          keycode = ( short )RDFReader.parseNumber( keycodeStr );
+          keycode = ( short )RDFReader.parseNumber( keycodeStr.trim() );
         }
 
         String ueiName = null;

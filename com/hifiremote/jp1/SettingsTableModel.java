@@ -1,10 +1,13 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.awt.Component;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -208,7 +211,18 @@ public class SettingsTableModel extends JP1TableModel< Setting > implements Cell
     {
       return colorRenderer;
     }
-    return null;
+    return new DefaultTableCellRenderer()
+    {
+      @Override
+      public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus,
+          int row, int col )
+      {
+        Component c = super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
+        boolean isNormal = row < remoteConfig.getRemote().getStartReadOnlySettings() - 1;
+        c.setForeground( isSelected ? Color.WHITE : isNormal ? Color.BLACK : Color.GRAY );
+        return c;
+      }
+    };
   }
 
   /*

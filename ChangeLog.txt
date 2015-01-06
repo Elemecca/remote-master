@@ -42,6 +42,11 @@ Changes for v2.03
 - Add a Copy button to Learned Signals panel for additional support for this copy/paste operation (Graham)
 - Fix bug preventing Fav/Scan tab showing in some cases when it should be shown (Graham)
 - Allow .ir files in Recent Files list of RMIR, and .txt files in that of RM (Graham)
+-- Beta
+- Show read-only settings in gray (Graham)
+- Fix issue where certain RDFs with spaces in unexpected places were generating errors (Graham)
+- Ensure a default value for Fav Device always shows in Fav/Scan tab (Graham)
+- Add MAXQ610 code to OrtekMCE protocol (Dave Reed)
 
 Changes for v2.02
 -- Alpha --

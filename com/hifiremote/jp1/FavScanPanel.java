@@ -73,6 +73,10 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
         // So it seems better simply not to allow it.
         comboModel.insertElementAt( DeviceButton.noButton, 0 );
       }
+      if ( remoteConfig.getFavKeyDevButton() == null )
+      {
+        remoteConfig.setFavKeyDevButton( ( DeviceButton )comboModel.getElementAt( 0 ) );
+      }
       deviceButtonBox.setModel( comboModel );
       deviceButtonBox.setSelectedItem( remoteConfig.getFavKeyDevButton() );
     }
