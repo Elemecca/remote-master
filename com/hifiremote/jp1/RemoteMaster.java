@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 27";
+  public final static String version = "v2.03 Alpha 27a";
 
   public enum Use
   {
@@ -1881,7 +1881,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     highlightAction.setEnabled( false );
 
     uploadWavItem = new JMenuItem( "Create WAV", KeyEvent.VK_W );
-    uploadWavItem.setEnabled( false );
+    uploadWavItem.setVisible( false );
     uploadWavItem.addActionListener( this );
     menu.add( uploadWavItem );
 
