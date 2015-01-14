@@ -1272,8 +1272,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private void updateRecentFiles( File file ) throws IOException
   {
     boolean isRMDU = file.getName().toLowerCase().endsWith( ".rmdu" );
+    boolean isTxt = file.getName().toLowerCase().endsWith( ".txt" );
 
-    if ( isRMDU )
+    if ( isRMDU || isTxt )
     {
       int i = recentFileMenu.getItemCount() - 1;
       while ( i >= 0 )
