@@ -48,6 +48,7 @@ Changes for v2.03
 - Ensure a default value for Fav Device always shows in Fav/Scan tab (Graham)
 - Add MAXQ610 code to OrtekMCE protocol (Dave Reed)
 - Fix bug in Hex.parseHex( String ) when string is a hex value with a final 'h' indicator (Graham)
+- Fix bug when loading FavScan with AdvCodeBindFormat=LONG and Fav Device = <none> (Graham)
 
 Changes for v2.02
 -- Alpha --

@@ -189,7 +189,9 @@ public class FavScan extends AdvancedCode
 
   public DeviceButton getDeviceButtonFromIndex( Remote remote )
   {
-    if ( deviceIndex == 0x0F )
+    // It seems as if <none> corresponds to a deviceIndex of 0xFF if AdvCodeBindFormat == NORMAL,
+    // where it is a byte value, but of 0x0F if it is LONG, where it is a nibble value.  
+    if ( deviceIndex == 0xFF || deviceIndex == 0x0F && remote.getAdvCodeBindFormat() == BindFormat.LONG )
       return DeviceButton.noButton;
     else
       return remote.getDeviceButton( deviceIndex );

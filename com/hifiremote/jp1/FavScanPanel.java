@@ -65,6 +65,10 @@ public class FavScanPanel extends RMTablePanel< FavScan > implements ActionListe
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
+      if ( !remote.hasFavKey() )
+      {
+        return;
+      }
       DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
       if ( remote.getFavKey() != null && !remote.getFavKey().isSegregated() )
       {
