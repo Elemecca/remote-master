@@ -361,8 +361,8 @@ public class Hex implements Cloneable, Comparable< Hex >
     short[] rc = null;
     int length = 0;
     int space = text.indexOf( ' ' );
-    int hexmark = text.indexOf( 'h' );
-    if ( ( space == -1 ) && ( hexmark == -1 ) && ( text.length() > 2 )  )//3 ) )
+    boolean hexmark = ( text.indexOf( 'h' ) >= 0 ) || ( text.indexOf( '$' ) >= 0 );
+    if ( ( space == -1 ) && !hexmark && ( text.length() > 2 )  )//3 ) )
     {
       if ( ( text.length() & 1 ) == 1 ) text = "0" + text;
       length = text.length() / 2;
