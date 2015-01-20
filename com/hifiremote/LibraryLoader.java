@@ -21,13 +21,13 @@ public class LibraryLoader
       return;
     }
     
+    String osName = System.getProperty( "os.name" );
+    if ( osName.startsWith( "Windows" ) )
+    {
+      osName = "Windows";
+    }
     if ( libraryFolder == null )
     {
-      String osName = System.getProperty( "os.name" );
-      if ( osName.startsWith( "Windows" ) )
-      {
-        osName = "Windows";
-      }
       String folderName = osName + '-' + System.getProperty( "os.arch" ).toLowerCase();
       libraryFolder = new File( folder, folderName );
       System.err.println( "libraryFolder=" + libraryFolder.getAbsolutePath() );
@@ -37,6 +37,19 @@ public class LibraryLoader
     {
       System.err.println( "LibraryLoader: Java version '" + System.getProperty( "java.version" ) + "' from '" + System.getProperty( "java.home" ) + "' running on '" + System.getProperty( "os.name" ) + "' (" + System.getProperty( "os.arch" ) + ")" );
       String mappedName = System.mapLibraryName( libraryName );
+      if ( osName.equalsIgnoreCase( "Mac OS X" ) )
+      {
+        int dot = mappedName.indexOf( '.' );
+        if ( dot >= 0 )
+        {
+          String base = mappedName.substring( 0, dot );
+          String extn = mappedName.substring( dot );
+          if ( extn.equalsIgnoreCase( ".dylib" ) )
+          {
+            mappedName = base + ".jnilib"; 
+          }
+        }
+      }
       File libraryFile = new File( libraryFolder, mappedName );
       System.err.println( "LibraryLoader: Attempting to load '" + libraryName + "' from '" + libraryFile.getAbsolutePath() + "'..." );
       try

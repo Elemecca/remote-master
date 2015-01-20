@@ -49,6 +49,12 @@ Changes for v2.03
 - Add MAXQ610 code to OrtekMCE protocol (Dave Reed)
 - Fix bug in Hex.parseHex( String ) when string is a hex value with a final 'h' indicator (Graham)
 - Fix bug when loading FavScan with AdvCodeBindFormat=LONG and Fav Device = <none> (Graham)
+-- Alpha 28
+- Update digitmaps to 627 (Dave Reed)
+- Update DecodeIR and DecodeIR.html to v2.45 (Dave Reed)
+- On Mac OS X, ensure libraries are sought with extension .jnilib rather than .dylib (Graham)
+- Amend build.xml to allow distribution zip file to include RDFs, Maps and Images (Graham)
+- Add new menu item Options/Advanced/Use non-modal Device Editor (Graham)
 
 Changes for v2.02
 -- Alpha --

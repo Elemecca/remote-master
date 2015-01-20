@@ -52,7 +52,11 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
       @Override
       public void windowGainedFocus( WindowEvent e )
       {
-        toFront();
+        RemoteMaster rm = DeviceUpgradeEditor.this.owner;
+        if ( !rm.usesNonModalDeviceEditor() )
+        {
+          toFront();
+        }
       }
     };
 
@@ -85,11 +89,13 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
       @Override
       public void windowStateChanged( WindowEvent e )
       {
-        if ( e.getNewState() == JFrame.ICONIFIED )
+        RemoteMaster rm = DeviceUpgradeEditor.this.owner;
+        boolean isIcon = e.getNewState() == JFrame.ICONIFIED;
+        if (!rm.usesNonModalDeviceEditor() && isIcon )
         {
-          if ( DeviceUpgradeEditor.this.owner.getState() != Frame.ICONIFIED )
+          if ( rm.getState() != Frame.ICONIFIED )
           {
-            DeviceUpgradeEditor.this.owner.setState( Frame.ICONIFIED );
+            rm.setState( Frame.ICONIFIED );
 //            setExtendedState( NORMAL );
             toFront();
           }
@@ -104,7 +110,11 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
       public void windowClosing( WindowEvent event )
       {
         cancelButton.doClick();
-        DeviceUpgradeEditor.this.owner.removeWindowFocusListener( focusWindowAdapter );
+        RemoteMaster rm = DeviceUpgradeEditor.this.owner;
+        rm.removeWindowFocusListener( focusWindowAdapter );
+        rm.setNonModalWarning( false, DeviceUpgradeEditor.this );
+        rm.setEnabled( true );
+        rm.toFront();
       }
     } );
     editorPanel = new DeviceEditorPanel( this, deviceUpgrade, remotes );
@@ -165,6 +175,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
 //        btn.setName( softButtonNames.get( btn ) );
 //      }
 //    }
+    owner.setNonModalWarning( owner.usesNonModalDeviceEditor(), this );
+    owner.setEnabled( owner.usesNonModalDeviceEditor() );
     setVisible( true );
   }
 
@@ -253,6 +265,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         
         setVisible( false );
         dispose();
+        owner.setEnabled( true );
+        owner.toFront();
         editorPanel.releasePanels();
         if ( panel instanceof GeneralPanel )
         {

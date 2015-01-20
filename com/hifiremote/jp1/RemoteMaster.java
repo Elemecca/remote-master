@@ -108,7 +108,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03 Alpha 27c";
+  public final static String version = "v2.03 Alpha 28";
 
   public enum Use
   {
@@ -277,6 +277,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JPanel extraStatus = null;
 
   private JPanel interfaceStatus = null;
+  private JPanel warningStatus = null;
+  private String interfaceText = null;
+  private DeviceUpgradeEditor duEditor = null;
 
   private JProgressBar interfaceState = null;
 
@@ -1396,7 +1399,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     memoryStatus = new JPanel();
     extraStatus = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
     interfaceStatus = new JPanel();
-
+    warningStatus = new JPanel();
+    JLabel warningMessage = new JLabel( "DO NOT EDIT THIS MAIN WINDOW WHILE THE DEVICE EDITOR IS OPRN" );
+    Font font = warningMessage.getFont().deriveFont( Font.BOLD );
+    warningMessage.setFont( font );
+    warningStatus.add( warningMessage );
+    
     interfaceState = new JProgressBar();
 
     interfaceStatus.add( interfaceState );
@@ -1409,6 +1417,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     statusBar.add( memoryStatus, "MEMORY" );
     statusBar.add( interfaceStatus, "INTERFACE" );
+    statusBar.add(  warningStatus, "WARNING" );
     ( ( CardLayout )statusBar.getLayout() ).first( statusBar );
 
     advProgressLabel = new JLabel( "Move/Macro:" );
@@ -2086,6 +2095,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
           properties.setProperty( item.getActionCommand(), Boolean.toString( item.isSelected() ) );
           refreshTabbedPanes( item.getActionCommand().equals(  "ShowSegments" ) );
+          if ( item.getActionCommand().equals( "NonModalDeviceEditor") )
+          {
+            setNonModalWarning( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ), null );
+          }
         }
         catch ( Exception x )
         {
@@ -2103,6 +2116,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     item = new JCheckBoxMenuItem( "Show Segment Editor" );
     item.setActionCommand( "ShowSegments" );
+    item.setSelected( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ) );
+    item.addActionListener( listener );
+    advancedSubMenu.add( item );
+    
+    item = new JCheckBoxMenuItem( "Use non-modal Device Editor" );
+    item.setActionCommand( "NonModalDeviceEditor" );
     item.setSelected( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ) );
     item.addActionListener( listener );
     advancedSubMenu.add( item );
@@ -3011,17 +3030,56 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       return null;
     }
   }
-
-  private void setInterfaceState( String state )
+  
+  public boolean usesNonModalDeviceEditor()
   {
-    if ( state != null )
+    return Boolean.parseBoolean( properties.getProperty( "NonModalDeviceEditor", "false" ) );
+  }
+  
+  public void setNonModalWarning( boolean warn, DeviceUpgradeEditor duEditor )
+  {
+    if ( duEditor != null )
     {
-      interfaceState.setString( state );
-      ( ( CardLayout )statusBar.getLayout() ).last( statusBar );
+      // comes from DeviceUpgradeEditor
+      this.duEditor = warn ? duEditor : null;
     }
     else
     {
-      ( ( CardLayout )statusBar.getLayout() ).first( statusBar );
+      // comes from menu
+      if ( this.duEditor != null && !warn )
+      {
+        // editor is open in non-modal state, being changed to modal
+        if ( this.duEditor.getState() == Frame.ICONIFIED )
+        {
+          this.duEditor.setExtendedState( Frame.NORMAL );
+        }
+        this.duEditor.toFront();
+        this.duEditor = null;
+        setEnabled( false );
+      }
+      else
+      {
+        setEnabled( true );
+      }
+    }
+    setInterfaceState( interfaceText );
+  }
+
+  private void setInterfaceState( String state )
+  {
+    interfaceText = state;
+    if ( duEditor != null )
+    {
+      ( ( CardLayout )statusBar.getLayout() ).show( statusBar, "WARNING" );
+    }
+    else if ( state != null )
+    {
+      interfaceState.setString( state );
+      ( ( CardLayout )statusBar.getLayout() ).show( statusBar, "INTERFACE" );
+    }
+    else
+    {
+      ( ( CardLayout )statusBar.getLayout() ).show( statusBar, "MEMORY" );
     }
   }
   
