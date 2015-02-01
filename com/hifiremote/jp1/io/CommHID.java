@@ -12,11 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.codeminders.hidapi.HIDManager;
-import com.codeminders.hidapi.ClassPathLibraryLoader;
-//import com.codeminders.hidapi.ClassPathLibraryLoader;
 import com.codeminders.hidapi.HIDDevice;
 import com.codeminders.hidapi.HIDDeviceInfo;
-//import com.codeminders.hidapi.HIDDeviceNotFoundException;
 import com.hifiremote.jp1.Hex;
 import com.hifiremote.jp1.Remote;
 import com.hifiremote.jp1.RemoteManager;
@@ -41,10 +38,6 @@ public class CommHID extends IO
 	int firmwareFileCount = 0;
 	LinkedHashMap< String, Hex > firmwareFileVersions = new LinkedHashMap< String, Hex >();
 	private int runningTotal = 0;
-	
-	public static void LoadHIDLibrary()  {
-		ClassPathLibraryLoader.loadNativeHIDLibrary();
-	}
 	
 	int getPIDofAttachedRemote() {
 		try  {

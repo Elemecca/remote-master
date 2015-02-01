@@ -4,9 +4,10 @@
 package com.hifiremote;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
-
-import com.hifiremote.jp1.io.CommHID;
 
 /**
  * @author Greg
@@ -15,12 +16,6 @@ public class LibraryLoader
 {
   public static void loadLibrary( File folder, String libraryName ) throws UnsatisfiedLinkError
   {
-    if ( libraryName.equals( "hidapi" ) )
-    {
-      CommHID.LoadHIDLibrary();
-      return;
-    }
-    
     String osName = System.getProperty( "os.name" );
     if ( osName.startsWith( "Windows" ) )
     {
@@ -28,9 +23,22 @@ public class LibraryLoader
     }
     if ( libraryFolder == null )
     {
-      String folderName = osName + '-' + System.getProperty( "os.arch" ).toLowerCase();
+      String arch = System.getProperty( "os.arch" ).toLowerCase();
+      String folderName = osName + '-' + arch;
       libraryFolder = new File( folder, folderName );
       System.err.println( "libraryFolder=" + libraryFolder.getAbsolutePath() );
+      if ( osName.equals( "Windows" ) )
+      {
+        hidIndex = arch.equals( "amd64" ) ? 4 : 5;
+      }
+      else if ( osName.equals( "Linux" ) )
+      {
+        hidIndex = arch.equals( "amd64" ) ? 0 : 1;
+      }
+      else if ( osName.equals( "Mac OS X" ) )
+      {
+        hidIndex = arch.equals( "x86_64" ) ? 2 : 3;
+      }
     }
 
     if ( libraries.get( libraryName ) == null )
@@ -51,6 +59,11 @@ public class LibraryLoader
         }
       }
       File libraryFile = new File( libraryFolder, mappedName );
+      if ( libraryName.equals( "hidapi" ) && !libraryFile.exists() )
+      {
+        System.err.println( "LibraryLoader: Attempting to copy hidapi library to library folder" );
+        copyHIDLibrary( libraryFile );
+      }
       System.err.println( "LibraryLoader: Attempting to load '" + libraryName + "' from '" + libraryFile.getAbsolutePath() + "'..." );
       try
       {
@@ -79,6 +92,42 @@ public class LibraryLoader
       libraries.put( libraryName, libraryName );
     }
   }
+  
+  private static void copyHIDLibrary( File libFile )
+  {
+    // Based on com.codeminders.hidapi.ClassPathLibraryLoader, modified to
+    // load required library to RMIR library folder
+    if ( hidIndex < 0 )
+    {
+      return;
+    }
+    String path = HID_LIB_NAMES[ hidIndex ];
+    try {
+      // have to use a stream
+      InputStream in = LibraryLoader.class.getResourceAsStream( path );
+      if ( in != null ) 
+      {
+        try 
+        {
+          OutputStream out = new FileOutputStream( libFile );
+          byte[] buf = new byte[ 1024 ];
+          int len;
+          while ( ( len = in.read( buf ) ) > 0 )
+          {            
+            out.write( buf, 0, len );
+          }
+          out.close();
+        } 
+        finally 
+        {
+          in.close();
+        }
+      }                 
+    } 
+    catch ( Exception e ) {} // ignore 
+    catch ( UnsatisfiedLinkError e ) {} // ignore
+    return;
+  }
 
   public static String getLibraryFolder()
   {
@@ -86,6 +135,16 @@ public class LibraryLoader
   }
 
   protected static HashMap< String, String > libraries = new HashMap< String, String >();
-
   protected static File libraryFolder = null;
+  protected static int hidIndex = -1;
+  
+  private static final String[] HID_LIB_NAMES = 
+  {
+    "/native/linux/libhidapi-jni-64.so",
+    "/native/linux/libhidapi-jni-32.so",
+    "/native/mac/libhidapi-jni-64.jnilib",
+    "/native/mac/libhidapi-jni-32.jnilib",
+    "/native/win/hidapi-jni-64.dll",
+    "/native/win/hidapi-jni-32.dll"
+  };
 }

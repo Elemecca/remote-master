@@ -244,6 +244,10 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
         StringBuilder sb = new StringBuilder();
         while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
         {
+          if ( sb.length() > 0 )
+          {
+            sb.append( '\n' );
+          }
           sb.append( line );
         }
 

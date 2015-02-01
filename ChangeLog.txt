@@ -55,6 +55,11 @@ Changes for v2.03
 - On Mac OS X, ensure libraries are sought with extension .jnilib rather than .dylib (Graham)
 - Amend build.xml to allow distribution zip file to include RDFs, Maps and Images (Graham)
 - Add new menu item Options/Advanced/Use non-modal Device Editor (Graham)
+- Pass working directory to RM when opening from RMIR, needed when RMIR opened by double-clicking .rmir file (Graham)
+- Modify loading of hidapi library as temp files created by loader in hidapi-1.1.jar are never deleted (Graham)
+- Modify PlainTextClipboardReader() to prevent it ignoring blank lines (Graham)
+- Add a new static integer buildVer for display as part of version (Graham)
+- Add file buildRef.txt which contains a build number that overrides buildVer if larger (Graham)
 
 Changes for v2.02
 -- Alpha --

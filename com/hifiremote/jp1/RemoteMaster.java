@@ -20,10 +20,12 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -109,6 +111,31 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
+  public final static int buildVer = 3;
+  
+  public static int getBuild()
+  {
+    int buildNumber = buildVer;
+    File buildFile = new File( workDir, "buildRef.txt" );
+    try
+    {
+      BufferedReader rdr = new BufferedReader( new FileReader ( buildFile ) );
+      String str = rdr.readLine();
+      rdr.close();
+      buildNumber = Integer.parseInt( str );
+      if ( buildNumber < buildVer )
+      {
+        buildNumber = buildVer;
+      }
+    }
+    catch ( Exception ex ){};
+    return buildNumber;
+  }
+  
+  public static String getFullVersion()
+  {
+    return version.replaceAll("\\s","") + "build" + getBuild();
+  }
 
   public enum Use
   {
@@ -893,7 +920,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       Runtime r = Runtime.getRuntime();
       String classPath = System.getProperty( "java.class.path" );
-      r.exec( new String[] { javaExe.getCanonicalPath(), "-cp", classPath, "com.hifiremote.jp1.RemoteMaster", "-rm", filename } );
+      r.exec( new String[] { javaExe.getCanonicalPath(), "-cp", classPath, "com.hifiremote.jp1.RemoteMaster", "-rm", "-home", workDir.getAbsolutePath(), filename } );
     }
     catch ( IOException e )
     {
@@ -1400,7 +1427,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     extraStatus = new JPanel( new FlowLayout( FlowLayout.LEFT, 5, 0 ));
     interfaceStatus = new JPanel();
     warningStatus = new JPanel();
-    JLabel warningMessage = new JLabel( "DO NOT EDIT THIS MAIN WINDOW WHILE THE DEVICE EDITOR IS OPRN" );
+    JLabel warningMessage = new JLabel( "DO NOT EDIT THIS MAIN WINDOW WHILE THE DEVICE EDITOR IS OPEN" );
     Font font = warningMessage.getFont().deriveFont( Font.BOLD );
     warningMessage.setFont( font );
     warningStatus.add( warningMessage );
@@ -3447,9 +3474,27 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == aboutItem )
       {
+        int buildNumber = buildVer;
+        File buildFile = new File( workDir, "buildRef.txt");
+        if ( buildFile.exists() )
+        {
+          BufferedReader rdr = new BufferedReader( new FileReader ( buildFile ) );
+          String str = rdr.readLine();
+          rdr.close();
+          try
+          {
+            buildNumber = Integer.parseInt( str );
+          }
+          catch ( NumberFormatException nfe ) {};
+          if ( buildNumber < buildVer )
+          {
+            buildNumber = buildVer;
+          }
+        }
         StringBuilder sb = new StringBuilder( 1000 );
         sb.append( "<html><b>RemoteMaster " );
-        sb.append( version );
+        sb.append( version );     
+        sb.append( " build " + getBuild() );
         sb.append( admin ? " (admin mode)" : "" );
         sb.append( "</b>" );
         sb.append( "<p>Written primarily by <i>Greg Bush</i> (now accepting donations at " );
@@ -4088,7 +4133,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       if ( "-version".startsWith( arg ) )
       {
-        System.out.println( version );
+        System.out.println( getFullVersion() );
         return;
       }
       else

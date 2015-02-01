@@ -26,16 +26,20 @@ public class PlainTextClipboardReader extends ClipboardReader
     {
       return null;
     }
-    while ( line.trim().length() == 0 )
-    {
-      line = rdr.readLine();
-      if ( line == null )
-      {
-        return null;
-      }
-    }
+//    while ( line.trim().length() == 0 )
+//    {
+//      line = rdr.readLine();
+//      if ( line == null )
+//      {
+//        return null;
+//      }
+//    }
 
     String[] tokens = line.split( "\t" );
+    if ( tokens.length == 0 )
+    {
+      tokens = new String[]{""};
+    }
     List< String > rc = new ArrayList< String >( tokens.length );
     for ( String token : tokens )
     {
