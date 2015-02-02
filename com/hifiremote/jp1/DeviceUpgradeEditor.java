@@ -262,7 +262,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
           }
 //          remoteConfig.assignUpgrades();
         }
-        
+        owner.setNonModalWarning( false, this );
         setVisible( false );
         dispose();
         owner.setEnabled( true );
