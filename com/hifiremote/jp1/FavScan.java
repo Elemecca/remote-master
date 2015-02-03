@@ -23,10 +23,7 @@ public class FavScan extends AdvancedCode
       channel = temp;
     }
     temp = props.getProperty( "DeviceIndex" );
-    if ( temp != null )
-    {
-      deviceIndex = Integer.parseInt( temp );
-    }
+    deviceIndex = temp != null ? Integer.parseInt( temp ) : -1;
     temp = props.getProperty( "Serial" );
     if ( temp != null )
     {
@@ -185,6 +182,11 @@ public class FavScan extends AdvancedCode
   public void setDeviceIndex( int deviceIndex )
   {
     this.deviceIndex = deviceIndex;
+  }
+
+  public int getDeviceIndex()
+  {
+    return deviceIndex;
   }
 
   public DeviceButton getDeviceButtonFromIndex( Remote remote )

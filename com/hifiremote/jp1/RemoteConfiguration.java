@@ -33,6 +33,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 import com.hifiremote.jp1.Activity.Assister;
+import com.hifiremote.jp1.AdvancedCode.BindFormat;
 import com.hifiremote.jp1.FixedData.Location;
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
 import com.hifiremote.jp1.GeneralFunction.User;
@@ -320,6 +321,11 @@ public class RemoteConfiguration
           else if ( sectionName.equals( "FavScan" ) )
           {
             FavScan favScan = ( FavScan )o;
+            if ( favScan.getDeviceIndex() < 0 )
+            {
+              // The default values differ for AdvVodeBindFormat LONG and NORMAL
+              favScan.setDeviceIndex( remote.getAdvCodeBindFormat() == BindFormat.NORMAL ? 0xFF : 0x0F );
+            }
             favKeyDevButton = favScan.getDeviceButtonFromIndex( remote );
             if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG )
             {
