@@ -1256,6 +1256,11 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( isRMDU || isTxt )
     {
       updateRecentFiles( file );
+      setTitle( file.getCanonicalPath() + " - RemoteMaster" );
+    }
+    else
+    {
+      setTitle( "RemoteMaster" );
     }
     preferences.setUpgradePath( file.getParentFile() );
     refresh();

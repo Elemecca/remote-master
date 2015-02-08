@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -506,39 +507,52 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
         deleteButton.setEnabled( false );
         doNotDelete( rowObject );
       }
-      else
+      else 
       {
-        delete( rowObject );
-        model.removeRow( sorter.modelIndex( row ) );
-        model.fireTableRowsDeleted( sorter.modelIndex( row ), sorter.modelIndex( row ) );
-        if ( row == model.getRowCount() )
-          --row;
-        if ( select )
-          table.setRowSelectionInterval( row, row );
+        String message = "Are you sure you want to delete the selected entry?";
+        String title = "Confirm Deletion";
+        if ( suppressDeletePrompts || JOptionPane.showConfirmDialog( this, message, title, 
+            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION )
+        {
+          delete( rowObject );
+          model.removeRow( sorter.modelIndex( row ) );
+          model.fireTableRowsDeleted( sorter.modelIndex( row ), sorter.modelIndex( row ) );
+          if ( row == model.getRowCount() )
+            --row;
+          if ( select )
+            table.setRowSelectionInterval( row, row );
+        }
       }
     }
     else if ( source == cleanButton )
     {
-      java.util.List< E > functions = model.getData();
-      for ( ListIterator< E > i = functions.listIterator(); i.hasNext(); )
+      String message = "Cleaning deletes all functions that have no hex\n"
+          + "value assigned.  Are you sure you want to do this?";
+      String title = "Confirm Cleaning";
+      if ( suppressDeletePrompts || JOptionPane.showConfirmDialog( this, message, title, 
+          JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION )
       {
-        E efn = i.next();
-        Function f = ( Function )efn;
-        if ( ( f.getHex() == null ) || ( f.getHex().length() == 0 ) )
-        {      
-          i.remove();
-          delete( efn );
-          if ( efn instanceof ExternalFunction )
-          {
-            deviceUpgrade.getExternalFunctions().remove( efn );
-          }
-          else
-          {
-            deviceUpgrade.getFunctions().remove( efn );
+        java.util.List< E > functions = model.getData();
+        for ( ListIterator< E > i = functions.listIterator(); i.hasNext(); )
+        {
+          E efn = i.next();
+          Function f = ( Function )efn;
+          if ( ( f.getHex() == null ) || ( f.getHex().length() == 0 ) )
+          {      
+            i.remove();
+            delete( efn );
+            if ( efn instanceof ExternalFunction )
+            {
+              deviceUpgrade.getExternalFunctions().remove( efn );
+            }
+            else
+            {
+              deviceUpgrade.getFunctions().remove( efn );
+            }
           }
         }
+        model.fireTableDataChanged();
       }
-      model.fireTableDataChanged();
     }
     else if ( ( source == upButton ) || ( source == downButton ) )
     {
@@ -759,4 +773,6 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
 
   /** The kit. */
   private Toolkit kit = null;
+  
+  public static boolean suppressDeletePrompts  = false;
 }

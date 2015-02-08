@@ -60,6 +60,10 @@ Changes for v2.03
 - Modify PlainTextClipboardReader() to prevent it ignoring blank lines (Graham)
 - Add a new static integer buildVer for display as part of version (Graham)
 - Add file buildRef.txt which contains a build number that overrides buildVer if larger (Graham)
+- Add confirmation dialog on uploads (Graham)
+- Add confirmation dialog for all table deletes, with a menu option to suppress these messages (Graham)
+- Add tooltip to cells on shaded rows in Key Moves table to explain why they are shaded (Graham)
+- Make protocol editor opened from Device Upgrade Editor be centered on screen rather than on RMIR window (Graham)
 
 Changes for v2.02
 -- Alpha --

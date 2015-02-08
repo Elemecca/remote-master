@@ -282,7 +282,8 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
   protected void deleteRow( int row, boolean select )
   {
     int limit = remoteConfig.getKeyMoves().size();
-    if ( row >= limit  )
+    int modelRow = sorter.modelIndex( row );
+    if ( modelRow >= limit )
     {
       KeyMove keyMove = model.getRow( sorter.modelIndex( row ) );
 

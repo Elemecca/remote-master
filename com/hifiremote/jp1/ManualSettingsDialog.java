@@ -170,7 +170,9 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
    */
   private void createGui( Component owner, ManualProtocol protocol )
   {
-    setLocationRelativeTo( owner );
+    setLocationRelativeTo( null );
+    // Was relative to owner, but this could cause it to run off top of screen.
+    // Relative to null should center it on the screen.
     Container contentPane = getContentPane();
     double scale = 0.75;
 

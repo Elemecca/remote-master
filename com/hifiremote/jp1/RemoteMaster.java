@@ -111,7 +111,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
-  public final static int buildVer = 5;
+  public final static int buildVer = 7;
   
   public static int getBuild()
   {
@@ -790,28 +790,33 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         sig = sig.substring( 0, 6 );
       }
       String rSig = remote.getSignature();
+      String message = null;
       if ( sig.length() < rSig.length() || !rSig.equals( sig.substring( 0, rSig.length() ) ) )
       {
-        Object[] options =
+        message = "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
+            + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
+            + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
+            + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
+            + "safe to upload to a remote when the signatures do not match.\n\n"
+            + "How would you like to proceed?";
+      }
+      else
+      {
+        message = "An upload overwrites the entire memory area for setup data in the remote and cannot\n"
+            + "be undone.  Are you sure that you want to do this?";
+      }
+      Object[] options =
         {
-            "Upload to the remote", "Cancel the upload"
+          "Upload to the remote", "Cancel the upload"
         };
-        int rc = JOptionPane
-            .showOptionDialog(
-                RemoteMaster.this,
-                "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
-                    + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
-                    + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
-                    + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
-                    + "safe to upload to a remote when the signatures do not match.\n\n"
-                    + "How would you like to proceed?", "Upload Signature Mismatch", JOptionPane.DEFAULT_OPTION,
-                JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
-        if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
-        {
-          io.closeRemote();
-          setInterfaceState( null );
-          return null;
-        }
+      int rc = JOptionPane.showOptionDialog( RemoteMaster.this, message,
+          "Upload Confirmation", JOptionPane.DEFAULT_OPTION,
+          JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
+      if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
+      {
+        io.closeRemote();
+        setInterfaceState( null );
+        return null;
       }
 
       AutoClockSet autoClockSet = remote.getAutoClockSet();
@@ -822,7 +827,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         remoteConfig.updateCheckSums();
       }
 
-      int rc = io.writeRemote( remote.getBaseAddress(), data );
+      rc = io.writeRemote( remote.getBaseAddress(), data );
 
       if ( rc != data.length )
       {
@@ -1229,7 +1234,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public RemoteMaster( File workDir, PropertyFile prefs ) throws Exception
   {
-    super( "RM IR", prefs );
+    super( "RMIR", prefs );
     dir = properties.getFileProperty( "IRPath", workDir );
 
     toolBar = new JToolBar();
@@ -2126,6 +2131,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             setNonModalWarning( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ), null );
           }
+          else if ( item.getActionCommand().equals( "SuppressDeletePrompts") )
+          {
+            TablePanel.suppressDeletePrompts = item.isSelected();
+            RMTablePanel.suppressDeletePrompts = item.isSelected();
+          }
         }
         catch ( Exception x )
         {
@@ -2177,6 +2187,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     item.setSelected( Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) ) );
     item.addActionListener( listener );
     suppressSubMenu.add( item );
+    
+    item = new JCheckBoxMenuItem( "All table deletes" );
+    item.setActionCommand( "SuppressDeletePrompts" );
+    Boolean bval = Boolean.parseBoolean( properties.getProperty( item.getActionCommand(), "false" ) );
+    item.setSelected( bval );
+    TablePanel.suppressDeletePrompts = bval;
+    RMTablePanel.suppressDeletePrompts = bval;
+    item.addActionListener( listener );
+    suppressSubMenu.add( item );
   }
 
   private void createToolbar()
@@ -2220,7 +2239,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     RMFileChooser chooser = new RMFileChooser( dir );
     EndingFileFilter irFilter = new EndingFileFilter( "All supported files", allEndings );
     chooser.addChoosableFileFilter( irFilter );
-    chooser.addChoosableFileFilter( new EndingFileFilter( "RM IR files (*.rmir)", rmirEndings ) );
+    chooser.addChoosableFileFilter( new EndingFileFilter( "RMIR files (*.rmir)", rmirEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "IR files (*.ir)", irEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "RM Device Upgrades (*.rmdu)", rmduEndings ) );
     chooser.addChoosableFileFilter( new EndingFileFilter( "KM Device Upgrades (*.txt)", txtEndings ) );
@@ -2950,11 +2969,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     if ( file == null || remoteConfig == null )
     {
-      setTitle( "RM IR" );
+      setTitle( "RMIR" );
     }
     else
     {
-      setTitle( "RM IR: " + file.getName() + " - " + remoteConfig.getRemote().getName() );
+      setTitle( "RMIR: " + file.getName() + " - " + remoteConfig.getRemote().getName() );
     }
   }
 
@@ -3624,11 +3643,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     if ( remoteConfig != null )
     {
-      setTitle( "RM IR - " + remoteConfig.getRemote().getName() );
+      setTitle( "RMIR - " + remoteConfig.getRemote().getName() );
     }
     else
     {
-      setTitle( "RM IR" );
+      setTitle( "RMIR" );
       return;
     }
 

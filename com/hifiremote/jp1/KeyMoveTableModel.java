@@ -12,6 +12,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class KeyMoveTableModel.
@@ -413,6 +415,21 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       return c;
     }
   };
+  
+  @Override
+  public String getToolTipText( int row, int col )
+  {
+    if ( row >= remoteConfig.getKeyMoves().size() && col < colNames.length - 1 )
+    {
+      return "<html>Shaded key moves are attached to a device upgrade.  In this panel they can be<br>"
+          + "detached from the upgrade or can be deleted, but other editing can only be<br>"
+          + "performed in the Device Upgrade Editor.</html>";
+    }
+    else
+    {
+      return super.getToolTipText( row, col );
+    }
+  }
 
   public void resetKeyMoves()
   {

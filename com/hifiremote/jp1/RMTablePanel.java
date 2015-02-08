@@ -15,6 +15,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -421,7 +422,13 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     }    
     else if ( source == deleteButton || source == deleteItem )
     {
-      deleteRow( row, select );
+      String message = "Are you sure you want to delete the selected entry?";
+      String title = "Confirm Deletion";
+      if ( suppressDeletePrompts || JOptionPane.showConfirmDialog( this, message, title, 
+          JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION )
+      {
+        deleteRow( row, select );
+      }
     }
     else if ( source == upButton || source == downButton )
     {
@@ -652,4 +659,6 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
   private JMenuItem copyItem = null;
 
   public MouseListener openEditor = null;
+  
+  public static boolean suppressDeletePrompts  = false;
 }
