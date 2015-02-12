@@ -111,7 +111,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
-  public final static int buildVer = 7;
+  public final static int buildVer = 9;
   
   public static int getBuild()
   {
@@ -4296,7 +4296,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       return true;
     }
     int rc = JOptionPane.showConfirmDialog( this, "The data has changed.  Do you want to save\n"
-        + "the current upgrade before proceeding?", "Save upgrade?", JOptionPane.YES_NO_CANCEL_OPTION );
+        + "the current configuration before proceeding?", "Save upgrade?", JOptionPane.YES_NO_CANCEL_OPTION );
     if ( rc == JOptionPane.CANCEL_OPTION || rc == JOptionPane.CLOSED_OPTION )
     {
       return false;

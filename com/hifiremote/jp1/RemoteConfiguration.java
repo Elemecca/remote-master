@@ -2102,12 +2102,19 @@ public class RemoteConfiguration
       }
     } 
     
-    List< Segment > upgradeList = segments.get( 0x10 );
+    int upgType = remote.getSegmentTypes().contains( 0x0E ) ? 0x0E : 0x10;
+    List< Segment > upgradeList = segments.get( upgType );
     if ( upgradeList != null )
     {
       for ( Segment segment : upgradeList )
       {
         Hex hex = segment.getHex();
+        if ( upgType == 0x0E )
+        {
+          Hex newHex = new Hex( hex.subHex( 0, 2 ), 0, hex.length() + 2 );
+          newHex.put( hex.subHex( 2 ), 4 );   
+          hex = newHex;
+        }
         int dev = hex.getData()[ 0 ];                       
         int protocolOffset = hex.get( 2 );
         DeviceType devType = remote.getDeviceTypeByIndex( hex.getData()[ 4 ] );
@@ -6893,11 +6900,13 @@ public class RemoteConfiguration
     AddressRange devAddr = remote.getDeviceUpgradeAddress();
     if ( hasSegments() )
     {
-      if ( !remote.getSegmentTypes().contains( 0x10 ) )
+      int upgType = remote.getSegmentTypes().contains( 0x0E ) ? 0x0E : 
+        remote.getSegmentTypes().contains( 0x10 ) ? 0x10 : -1;
+      if ( upgType < 0 )
       {
         return;
       }
-      segments.remove( 0x10 );
+      segments.remove( upgType  );
       for ( DeviceUpgrade dev : devices )
       {
         dev.classifyButtons();
@@ -6908,6 +6917,11 @@ public class RemoteConfiguration
           if ( code != null && remote.usesEZRC() )
           {
             code = encryptObjcode( code );
+          }
+          if ( code != null && upgType == 0x0E )
+          {
+            System.err.println( "Skipping device " + dev.getName() + " as it requires protocol code" );
+            continue;
           }
           int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
           size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
@@ -6932,11 +6946,17 @@ public class RemoteConfiguration
           {
             segData.put( code, hex.length() + 9 );
           }
-          if ( segments.get( 0x10 ) == null )
+          if ( upgType == 0x0E )
           {
-            segments.put( 0x10, new ArrayList< Segment >() );
+            Hex newHex = new Hex( segData.subHex( 0, 2 ), 0, segData.length() - 2 );
+            newHex.put( segData.subHex( 4 ), 2 );   
+            segData = newHex;     
           }
-          segments.get( 0x10 ).add( new Segment( 0x10, flags, segData, dev ) );
+          if ( segments.get( upgType ) == null )
+          {
+            segments.put( upgType, new ArrayList< Segment >() );
+          }
+          segments.get( upgType ).add( new Segment( upgType, flags, segData, dev ) );
         }
       }
 

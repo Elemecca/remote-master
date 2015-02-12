@@ -266,6 +266,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     codeTable.getSelectionModel().addListSelectionListener( this );
     JLabel l = ( JLabel )codeTable.getTableHeader().getDefaultRenderer()
         .getTableCellRendererComponent( codeTable, colNames[ 0 ], false, false, 0, 0 );
+    codeTable.setLongToolTipTimeout();
 
     TableColumnModel columnModel = codeTable.getColumnModel();
     TableColumn column = columnModel.getColumn( 0 );
@@ -351,6 +352,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     d.height = deviceTable.getRowHeight() * 4;
     d.width = ( int )( d.width * scale );
     deviceTable.setPreferredScrollableViewportSize( d );
+    deviceTable.setLongToolTipTimeout();
 
     label = new JLabel( "Default Fixed Data:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 3" );
@@ -375,6 +377,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     d.height = commandTable.getRowHeight() * 4;
     d.width = ( int )( d.width * scale );
     commandTable.setPreferredScrollableViewportSize( d );
+    commandTable.setLongToolTipTimeout();
 
     label = new JLabel( "Command Index:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 7" );
@@ -538,6 +541,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     grp.add( asmButton );
     disasmButton.setSelected( true );
     rightPanel.add( optionPanel, BorderLayout.PAGE_START );
+    assemblerTable.setLongToolTipTimeout();
 
     // Disassembly options
     JPanel lowerRightPanel = new JPanel();

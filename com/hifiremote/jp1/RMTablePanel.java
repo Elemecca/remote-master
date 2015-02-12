@@ -142,6 +142,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
       }
     };
     table.addMouseListener( mh );
+    table.setLongToolTipTimeout();
 
     table.initColumns( model );
     JScrollPane scrollPane = new JScrollPane( table );

@@ -2,8 +2,10 @@ package com.hifiremote.jp1;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Vector;
 
@@ -12,6 +14,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -29,6 +33,85 @@ public class JTableX extends JTable
 
   /** The cell model. */
   protected CellEditorModel cellModel;
+  
+  public static class ToolTipAdapter extends MouseAdapter
+  {
+    final int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
+    final int newDismissTimeout = 300000;
+    JTableX table = null;
+
+    public ToolTipAdapter( JTableX table )
+    {
+      super();
+      this.table = table;
+    }
+
+    @Override
+    public void mouseEntered( MouseEvent me ) 
+    {
+      ToolTipManager.sharedInstance().setDismissDelay( newDismissTimeout );
+    }
+
+    @Override
+    public void mouseExited( MouseEvent me ) 
+    {
+      // If mouse exits below last table row, tooltip does not always get hidden.
+      // This code explicitly hides it when table is exited, by reactivating it
+      // with a time-out of zero.
+      Point p = me.getPoint();
+      ToolTipManager tm = ToolTipManager.sharedInstance();
+      Rectangle visRect = table.getVisibleRect();
+      if ( !visRect.contains( p ) )
+      {
+        int delta = 0;
+        Point pdelta = p;
+        while ( delta < 50 )
+        {
+          pdelta = new Point( p.x, p.y - delta );
+          if ( table.rowAtPoint( pdelta ) >= 0 )
+          {
+            p = pdelta;
+            break;
+          }
+          pdelta = new Point( p.x, p.y + delta );
+          if ( table.rowAtPoint( pdelta ) >= 0 )
+          {
+            p = pdelta;
+            break;
+          }
+          delta += 1;
+        }
+        if ( delta < 50 && table.columnAtPoint( p ) >= 0 )
+        {
+          MouseEvent mev = new MouseEvent( table, MouseEvent.MOUSE_CLICKED,
+              System.currentTimeMillis(), 0, p.x, p.y, 1, false );
+          if ( table.getToolTipText( mev ) != null )
+          {
+            tm.setDismissDelay( 0 );
+            tm.mouseMoved( mev );
+          }
+        }
+      }
+      else
+      {
+        int row = table.rowAtPoint( p );
+        int col = table.columnAtPoint( p );
+        MouseEvent mev = new MouseEvent( table, MouseEvent.MOUSE_CLICKED,
+            System.currentTimeMillis(), 0, p.x, p.y, 1, false );
+        int tipHeight = table.getToolTipHeight( mev );
+        Rectangle cellRect = table.getCellRect( row, col, true );
+        Point bottom = new Point ( p.x, visRect.y + visRect.height );
+        if ( table.rowAtPoint( bottom ) >= 0 && tipHeight > 0 
+            && cellRect.y + tipHeight + 5 > visRect.y + visRect.height )
+        {
+          // Tooltip overlaps bottom border of table 
+          tm.setDismissDelay( defaultDismissTimeout );
+          tm.mouseMoved( mev );
+        }
+      }
+      tm.setDismissDelay( defaultDismissTimeout );
+    }
+  }
 
   /**
    * Instantiates a new j table x.
@@ -197,11 +280,7 @@ public class JTableX extends JTable
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see javax.swing.JTable#getToolTipText(java.awt.event.MouseEvent)
-   */
+  @Override
   public String getToolTipText( MouseEvent e )
   {
     java.awt.Point p = e.getPoint();
@@ -239,6 +318,27 @@ public class JTableX extends JTable
       return rc;
     }
     return null;
+  }
+  
+  public int getToolTipHeight( MouseEvent e )
+  {
+    String text = getToolTipText( e );
+    if ( text != null )
+    {
+      Font font = null;
+      try
+      {
+        font = ( Font )UIManager.get( "ToolTip.font" );
+      }
+      catch ( Exception ex ) {};
+      JLabel lbl = new JLabel( text );
+      if ( font != null )
+      {
+        lbl.setFont( font );
+      }
+      return lbl.getPreferredSize().height;
+    }
+    return 0;
   }
 
   /*
@@ -338,5 +438,10 @@ public class JTableX extends JTable
       column.setMaxWidth( ( width * 3 ) / 2 );
     else if ( limit != 0 )
       column.setMaxWidth( width * limit );
+  }
+  
+  public void setLongToolTipTimeout()
+  {
+    addMouseListener( new ToolTipAdapter( this ) );
   }
 }

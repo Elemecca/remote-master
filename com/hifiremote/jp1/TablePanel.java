@@ -37,7 +37,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.JTextComponent;
 
-import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.clipboard.ClipboardReader;
 import com.hifiremote.jp1.clipboard.ClipboardReaderFactory;
 
@@ -320,6 +319,7 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
       }
     };
     table.addMouseListener( mh );
+    table.setLongToolTipTimeout();
 
     MouseMotionAdapter mmh = new MouseMotionAdapter()
     {

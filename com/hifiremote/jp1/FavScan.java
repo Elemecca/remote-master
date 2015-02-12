@@ -78,10 +78,16 @@ public class FavScan extends AdvancedCode
     StringBuilder buff = new StringBuilder();
     short[] keys = data.getData();
     int entrySize = remote.getFavKey().getEntrySize();
+    boolean paused = false;
     for ( int i = 0; i < keys.length; ++i )
     {
       if ( i != 0 )
         buff.append( ';' );
+      if ( paused )
+      {
+        buff.append( ' ' );
+        paused = false;
+      }
       if ( keys[ i ] != 0 )
       {
         buff.append( remote.getButtonName( keys[ i ] ) );
@@ -98,6 +104,7 @@ public class FavScan extends AdvancedCode
           buff.append( ';' );
         }
         buff.append( "{Pause}" );
+        paused = true;
       }     
     }
     return buff.toString();

@@ -64,6 +64,9 @@ Changes for v2.03
 - Add confirmation dialog for all table deletes, with a menu option to suppress these messages (Graham)
 - Add tooltip to cells on shaded rows in Key Moves table to explain why they are shaded (Graham)
 - Make protocol editor opened from Device Upgrade Editor be centered on screen rather than on RMIR window (Graham)
+- Add support for segment type 0x0E (Graham)
+- Make tooltips on tables remain for 5 minutes or until cell (or sometimes tooltip) exited (Graham)
+- Add space after each {pause} in Fav/Scan listing (Graham)
 
 Changes for v2.02
 -- Alpha --

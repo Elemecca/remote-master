@@ -93,6 +93,8 @@ public class SegmentTableModel extends JP1TableModel< Segment >
         return "Soft Key Names segment";
       case 0x0B:
         return "Button Device Assignments segment";
+      case 0x0E:
+        return "Device Upgrade Definition segment";
       case 0x10:
         return "Upgrade Definition segment";
       case 0x11:
