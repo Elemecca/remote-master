@@ -67,6 +67,7 @@ Changes for v2.03
 - Add support for segment type 0x0E (Graham)
 - Make tooltips on tables remain for 5 minutes or until cell (or sometimes tooltip) exited (Graham)
 - Add space after each {pause} in Fav/Scan listing (Graham)
+- Add keyboard or mouse alternatives for certain actions (Graham)
 
 Changes for v2.02
 -- Alpha --

@@ -164,7 +164,20 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   private DeviceUpgrade createRowObjectB( DeviceUpgradeEditor editor )
   {
     this.editor = null;
+    Remote remote = remoteConfig.getRemote();
     DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
+    if ( remote.getSegmentTypes() != null && remote.getSegmentTypes().contains( 0x0E ) 
+        && newUpgrade != null && newUpgrade.needsProtocolCode() )
+    {
+      // Such remotes do not support device upgrades that need a protocol upgrade
+      newUpgrade.doCancel( rowOut == null );
+      newUpgrade = null;
+      String message = "This device upgrade needs a protocol upgrade and protocol upgrades\n"
+          + "are not supported by this remote, so unfortunately this edit is\n"
+          + "being cancelled.";
+      String title = "Forced Cancellation of Edit";
+      JOptionPane.showMessageDialog( null, message, title, JOptionPane.INFORMATION_MESSAGE );
+    }
     if ( remoteConfig.hasSegments() && newUpgrade != null && newUpgrade.getProtocol() != null )
     {
       Protocol p = newUpgrade.getProtocol();
@@ -199,7 +212,6 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         if ( keyMove.getKeyCode() == upgradeKeyMove.getKeyCode() )
         {
           li.remove();
-          Remote remote = remoteConfig.getRemote();
           System.err.println( "Removed keyMove assigned to " + remote.getDeviceButtons()[ boundDeviceButtonIndex ]
               + ':' + remote.getButtonName( keyMove.getKeyCode() )
               + " since there is one assigned in the device upgrade" );

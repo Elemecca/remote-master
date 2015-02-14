@@ -8,11 +8,14 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -28,13 +31,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.NumberFormatter;
 
-import com.hifiremote.jp1.GeneralFunction.User;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 public class MacroDefinitionBox extends Box implements ActionListener, ListSelectionListener,
@@ -60,20 +61,24 @@ PropertyChangeListener, RMSetter< Object >
 
     availableButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     availableButtons.addListSelectionListener( this );
+    availableButtons.setToolTipText( "<html>Double-click to add/insert.<br>" 
+        + "Shift/double-click to add/insert shifted.<br>"
+        + "This will insert if a macro key is selected, add otherwise.<br>"
+        + "Right-click (either box) to clear macro key selection.</html>");
        
     double b = 5; // space between rows and around border
     double c = 10; // space between columns
     double pr = TableLayout.PREFERRED;
     double pf = TableLayout.FILL;
     double size[][] =
-    {
+      {
         {
-            b, pr, c, pf, b
+          b, pr, c, pf, b
         }, // cols
         {
-            b, pr, b, pr, b, pr, b, pr, pr, b
+          b, pr, b, pr, b, pr, b, pr, pr, b
         }  // rows
-    };
+      };
 
 
     JPanel ssdPanel = new JPanel( new BorderLayout() );
@@ -120,29 +125,105 @@ PropertyChangeListener, RMSetter< Object >
     
     JPanel buttonPanel = new JPanel( new BorderLayout() );
     keysBox.add( buttonPanel, BorderLayout.SOUTH );
-    
-    JPanel buttonBox = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
+
+    b = 2;
+    double size2[][] =
+      {
+        {
+          pf, b, pf
+        }, // cols
+        {
+          pr, b, pr, b, pr
+        }  // rows
+      };
+
+    JPanel buttonBox = new JPanel( new TableLayout( size2 ) );
     buttonPanel.add(  buttonBox, BorderLayout.PAGE_START );
     buttonPanel.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
-    buttonPanel.add(  Box.createVerticalStrut( ( new JTextField() ).getPreferredSize().height + 4 ), BorderLayout.LINE_START );
     
     moveUp.addActionListener( this );
-    buttonBox.add( moveUp );
+    buttonBox.add( moveUp, "0,0" );
     moveDown.addActionListener( this );
-    buttonBox.add( moveDown );
+    buttonBox.add( moveDown, "2,0" );
     remove.addActionListener( this );
-    buttonBox.add( remove );
+    remove.setToolTipText( "Remove selected item.  Key: DEL" );
+    buttonBox.add( remove, "0,2" );
     clear.addActionListener( this );
-    buttonBox.add( clear );
+    buttonBox.add( clear, "2,2" );
+    deselect.addActionListener( this );
+    deselect.setToolTipText( "Deselects current selection.  Mouse: Right-click box" );
+    buttonBox.add( deselect, "0,4,2,4" );
     
     formatter = new NumberFormatter( new DecimalFormat( "0.0" ) );
     formatter.setValueClass( Float.class );
     duration = new XFormattedTextField( formatter );
     duration.setColumns( 4 );
     duration.addActionListener( this );
-//    duration.setToolTipText( "<HTML>To edit the pause after any key, select it, enter the duration (minimum 0.1 sec) and press Return.<br>"
-//        + "To emulate holding a key, precede it with the special Hold key and add the<br>hold duration to it in the same way.</HTML>" );
-//    buttonPanel.add( durationPanel, BorderLayout.CENTER );
+    
+    macroButtons.addKeyListener( new KeyAdapter()
+    {
+      public void keyPressed( KeyEvent e )
+      {
+        if ( e.getKeyCode() == KeyEvent.VK_DELETE && remove.isVisible() && remove.isEnabled() )
+        {
+          remove.doClick();
+        }
+      }    
+    } );
+    
+    availableButtons.addMouseListener( new MouseAdapter()
+    {
+      @Override
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1 )
+        {
+          if ( macroButtons.getSelectedValue() != null )
+          {
+            if ( ( e.getModifiers() & KeyEvent.SHIFT_MASK ) != 0 )
+            {
+              if ( insertShift.isVisible() && insertShift.isEnabled() )
+              {
+                insertShift.doClick();
+              }
+            }
+            else if ( insert.isVisible() && insert.isEnabled() )
+            {
+              insert.doClick();
+            }
+          }       
+          else if ( ( e.getModifiers() & KeyEvent.SHIFT_MASK ) != 0 )
+          {
+            if ( addShift.isVisible() && addShift.isEnabled() )
+            {
+              addShift.doClick();
+            }
+          }
+          else if ( add.isVisible() && add.isEnabled() )
+          {
+            add.doClick();
+          }
+        }
+        else if ( ( e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3 ) 
+            && deselect.isVisible() && deselect.isEnabled() )
+        {
+          deselect.doClick();
+        }
+      }
+    } );
+    
+    macroButtons.addMouseListener( new MouseAdapter()
+    {
+      @Override
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( ( e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3 ) 
+            && deselect.isVisible() && deselect.isEnabled() )
+        {
+          deselect.doClick();
+        }
+      } 
+    } );
   }
 
   private class XFormattedTextField extends JFormattedTextField
@@ -260,21 +341,10 @@ PropertyChangeListener, RMSetter< Object >
     {
       macroButtonModel.clear();
     }
-//    else if ( source == duration )
-//    {
-//      // minimum duration is 0 for hold buttons but 0.1 for others
-//      float f = ( Float )duration.getValue();
-//      if ( !remote.usesEZRC() )
-//      {
-//        int selected = macroButtons.getSelectedIndex();
-//        int val = ( ( Number )macroButtonModel.elementAt( selected ) ).intValue();
-//        val &= 0xFF;
-//        Button btn = remote.getButton( val );
-//        int pdVal = Math.max( ( int )( 10.0 * f + 0.5 ), isHold( btn ) ? 0 : 1 );
-//        val |= pdVal << 8;
-//        macroButtonModel.set( selected, val ); 
-//      }
-//    }
+    else if ( source == deselect )
+    {
+      macroButtons.clearSelection();
+    }
     else if ( source == deviceBox )
     {
       DeviceButton db = ( DeviceButton )deviceBox.getSelectedItem();
@@ -500,35 +570,12 @@ PropertyChangeListener, RMSetter< Object >
    */
   public void enableButtons()
   {
-//    Remote remote = config.getRemote();
     int selected = macroButtons.getSelectedIndex();
     moveUp.setEnabled( selected > 0 );
     moveDown.setEnabled( ( selected != -1 ) && ( selected < ( macroButtonModel.getSize() - 1 ) ) );
     remove.setEnabled( selected != -1 );
     clear.setEnabled( macroButtonModel.getSize() > 0 );
-//    if ( durationPanel.isVisible() )
-//    {
-//      List< Button > holdButtons = remote.getButtonGroups() != null ? 
-//          remote.getButtonGroups().get( "Hold" ) : null;
-//      duration.setEnabled( selected != -1 );
-//      durationLabel.setEnabled( selected != -1 );
-//      durationSuffix.setEnabled( selected != -1 );
-//
-//      if ( selected >= 0 )
-//      {
-//        int val = ( ( Hex )getValue() ).getData()[ selected ];
-//        Button btn = remote.getButton( val & 0xFF );
-//        duration.setValue( new Float( ( ( val >> 8 ) & 0xFF ) / 10.0 ) );
-//        durationLabel.setText( holdButtons != null && holdButtons.contains( btn ) ? 
-//            "Hold next for:  " : "Pause after for:  " );
-//      }
-//      else
-//      {
-//        durationLabel.setText( "Duration:  " );
-//        duration.setText( null );
-//      }
-//    }
-
+    deselect.setEnabled( selected != -1 );
     Button baseButton = ( Button )availableButtons.getSelectedValue();
     buttonEnabler.enableButtons( baseButton, this );
   }
@@ -561,6 +608,7 @@ PropertyChangeListener, RMSetter< Object >
 
   /** The clear. */
   private JButton clear = new JButton( "Clear" );
+  private JButton deselect = new JButton( "Clear selection" );
   
   private JComboBox deviceBox = null;
   private JComboBox functionBox = null;

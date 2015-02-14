@@ -71,6 +71,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.colorchooser.ColorSelectionModel;
@@ -111,7 +112,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
-  public final static int buildVer = 9;
+  public final static int buildVer = 10;
   
   public static int getBuild()
   {
@@ -141,6 +142,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     DOWNLOAD, READING, UPLOAD, SAVING, SAVEAS, EXPORT
   }
+  
+  public static int defaultToolTipTimeout = 5000;
   
   /** The dir. */
   private File dir = null;
@@ -1236,6 +1239,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     super( "RMIR", prefs );
     dir = properties.getFileProperty( "IRPath", workDir );
+    defaultToolTipTimeout = ToolTipManager.sharedInstance().getDismissDelay();
 
     toolBar = new JToolBar();
     toolBar.setFloatable( false );

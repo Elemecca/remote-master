@@ -37,6 +37,7 @@ public class JTableX extends JTable
   public static class ToolTipAdapter extends MouseAdapter
   {
     final int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
+    final int defaultInitialDelay = ToolTipManager.sharedInstance().getInitialDelay();
     final int newDismissTimeout = 300000;
     JTableX table = null;
 
@@ -49,7 +50,9 @@ public class JTableX extends JTable
     @Override
     public void mouseEntered( MouseEvent me ) 
     {
-      ToolTipManager.sharedInstance().setDismissDelay( newDismissTimeout );
+      ToolTipManager tm = ToolTipManager.sharedInstance();
+      tm.setDismissDelay( newDismissTimeout );
+      tm.setInitialDelay( 0 );
     }
 
     @Override
@@ -110,6 +113,7 @@ public class JTableX extends JTable
         }
       }
       tm.setDismissDelay( defaultDismissTimeout );
+      tm.setInitialDelay( defaultInitialDelay );
     }
   }
 

@@ -8,6 +8,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -22,6 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -86,7 +89,11 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         }
         if ( !table.isCellEditable( row, table.columnAtPoint( e.getPoint() ) ) )
         {
+          ToolTipManager tt = ToolTipManager.sharedInstance();
+          int delay = tt.getDismissDelay();
+          tt.setDismissDelay( RemoteMaster.defaultToolTipTimeout );
           editRowObject( row );
+          tt.setDismissDelay( delay );  
         }
       }
     };
@@ -155,6 +162,27 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     add( footerPanel, BorderLayout.PAGE_END );
     buttonPanel = new JPanel();
     footerPanel.add( buttonPanel, BorderLayout.PAGE_END );
+    
+    table.addKeyListener( new KeyAdapter()
+    {
+      public void keyPressed( KeyEvent e )
+      {
+        if ( e.getKeyCode() == KeyEvent.VK_DELETE && deleteButton.isVisible() && deleteButton.isEnabled() )
+        {
+          deleteButton.doClick();
+        }
+        else if ( e.getKeyCode() == KeyEvent.VK_INSERT && newButton.isVisible() && newButton.isEnabled() )
+        {
+          newButton.doClick();
+        }
+        else if ( ( e.getKeyCode() == KeyEvent.VK_D ) && ( ( e.getModifiers() & KeyEvent.CTRL_MASK ) != 0 )
+            && cloneButton.isVisible() && cloneButton.isEnabled() )
+        {
+          cloneButton.doClick();
+        }
+      }
+      
+    });
 
     editButton = new JButton( "Edit" );
     editButton.addActionListener( this );
@@ -164,18 +192,18 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
 
     newButton = new JButton( "New" );
     newButton.addActionListener( this );
-    newButton.setToolTipText( "Add a new item." );
+    newButton.setToolTipText( "Add a new item.  Key: INS" );
     buttonPanel.add( newButton );
 
     cloneButton = new JButton( "Clone" );
     cloneButton.addActionListener( this );
-    cloneButton.setToolTipText( "Add a copy of the selected item." );
+    cloneButton.setToolTipText( "Add a copy of the selected item.  Key: Ctrl/D" );
     cloneButton.setEnabled( false );
     buttonPanel.add( cloneButton );
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
-    deleteButton.setToolTipText( "Delete the selected item." );
+    deleteButton.setToolTipText( "Delete the selected item.  Key: DEL" );
     deleteButton.setEnabled( false );
     buttonPanel.add( deleteButton );
 
