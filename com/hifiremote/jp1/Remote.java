@@ -3362,7 +3362,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean hasFreeProtocols()
   {
-    return segmentTypes == null;
+    return segmentTypes == null || segmentTypes.contains( 0x0F );
   }
   
   public boolean hasActivitySupport()

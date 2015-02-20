@@ -1,11 +1,19 @@
 package com.hifiremote.jp1;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -58,13 +66,24 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     availableBox.add( new JScrollPane( availableButtons ), BorderLayout.CENTER );
     availableButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     availableButtons.addListSelectionListener( this );
+    availableButtons.setToolTipText( "<html>Double-click to add/insert.<br>" 
+        + "Shift/double-click to add/insert shifted.<br>"
+        + "This will insert if a macro key is selected, add otherwise.<br>"
+        + "Right-click (either box) to clear macro key selection.</html>");
 
+    int h = ( int )( moveDown.getPreferredSize().getHeight() + 0.5 );
     grid1 = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
     grid2 = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
+    grid3 = new JPanel( new GridLayout( 1, 2, 2, 2 ) );
+    grid3.add( Box.createVerticalStrut( h ) );
     JPanel panel = new JPanel( new BorderLayout() );
+    JPanel bottomPanel = new JPanel( new BorderLayout() );
     panel.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
+    bottomPanel.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
+    bottomPanel.add( grid2, BorderLayout.PAGE_START );
+    bottomPanel.add( grid3, BorderLayout.PAGE_END );
     panel.add( grid1, BorderLayout.PAGE_START );
-    panel.add( grid2, BorderLayout.PAGE_END );
+    panel.add( bottomPanel, BorderLayout.PAGE_END );
     availableBox.add( panel, BorderLayout.SOUTH );
     add.addActionListener( this );
     grid1.add( add );
@@ -95,25 +114,42 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     macroButtons.setCellRenderer( favScanButtonRenderer );
     macroButtons.addListSelectionListener( this );
 
-    grid3 = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
-    grid4 = new JPanel( new GridLayout( 2, 2, 2, 2 ) );
-    JPanel buttonBox = new JPanel( new BorderLayout() );
-    buttonBox.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
-    buttonBox.add( grid3, BorderLayout.PAGE_START );
-    buttonBox.add( grid4, BorderLayout.PAGE_END );
-    keysBox.add( buttonBox, BorderLayout.SOUTH );
+    double b = 2;
+    double pr = TableLayout.PREFERRED;
+    double pf = TableLayout.FILL;
+    double size2[][] =
+      {
+        {
+          pf, b, pf
+        }, // cols
+        {
+          pr, b, pr, b, pr
+        }  // rows
+      };
+
+    JPanel buttonBox = new JPanel ( new BorderLayout() );
+    panel = new JPanel( new TableLayout( size2 ) );
     moveUp.addActionListener( this );
-    grid3.add( moveUp );
+    panel.add( moveUp, "0,0" );
     moveDown.addActionListener( this );
-    grid3.add( moveDown );
+    panel.add( moveDown, "2,0" );
     remove.addActionListener( this );
-    grid3.add( remove );
+    remove.setToolTipText( "Remove selected item.  Key: DEL" );
+    remove.setFocusable( false );
+    panel.add( remove, "0,2" );
     clear.addActionListener( this );
-    grid3.add( clear );
-    int h = ( int )( moveDown.getPreferredSize().getHeight() + 0.5 );
+    panel.add( clear, "2,2" );
+    deselect.addActionListener( this );
+    deselect.setToolTipText( "Deselects current selection.  Mouse: Right-click box" );
+    panel.add( deselect, "0,4,2,4" );
+    grid4 = new JPanel( new GridLayout( 1, 2, 2, 0 ) );
     grid4.add( Box.createVerticalStrut( h ) );
-    
-    JPanel bottomPanel = new JPanel( new BorderLayout() );
+    buttonBox.add( panel, BorderLayout.PAGE_START );
+    buttonBox.add( grid4, BorderLayout.PAGE_END );
+    buttonBox.setBorder( BorderFactory.createEmptyBorder( 2, 0, 0, 0 ) );
+    keysBox.add( buttonBox, BorderLayout.SOUTH );
+
+    bottomPanel = new JPanel( new BorderLayout() );
     contentPane.add( bottomPanel, BorderLayout.SOUTH );
     // Add the notes
     panel = new JPanel( new BorderLayout() );
@@ -132,6 +168,86 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
 
     cancelButton.addActionListener( this );
     panel.add( cancelButton );
+    
+    macroButtons.addKeyListener( new KeyAdapter()
+    {
+      public void keyPressed( KeyEvent e )
+      {
+        if ( e.getKeyCode() == KeyEvent.VK_DELETE && remove.isVisible() && remove.isEnabled() )
+        {
+          remove.doClick();
+        }
+      }    
+    } );
+    
+    availableButtons.addMouseListener( new MouseAdapter()
+    {
+      @Override
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1 )
+        {
+          if ( macroButtons.getSelectedValue() != null )
+          {
+            if ( ( e.getModifiers() & KeyEvent.SHIFT_MASK ) != 0 )
+            {
+              if ( insertShift.isVisible() && insertShift.isEnabled() )
+              {
+                insertShift.doClick();
+              }
+            }
+            else if ( insert.isVisible() && insert.isEnabled() )
+            {
+              insert.doClick();
+            }
+          }       
+          else if ( ( e.getModifiers() & KeyEvent.SHIFT_MASK ) != 0 )
+          {
+            if ( addShift.isVisible() && addShift.isEnabled() )
+            {
+              addShift.doClick();
+            }
+          }
+          else if ( add.isVisible() && add.isEnabled() )
+          {
+            add.doClick();
+          }
+        }
+        else if ( ( e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3 ) 
+            && deselect.isVisible() && deselect.isEnabled() )
+        {
+          deselect.doClick();
+        }
+      }
+    } );
+    
+    macroButtons.addMouseListener( new MouseAdapter()
+    {
+      @Override
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( ( e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3 ) 
+            && deselect.isVisible() && deselect.isEnabled() )
+        {
+          deselect.doClick();
+        }
+      } 
+    } );
+    
+    macroButtons.addFocusListener( new FocusListener()
+    {
+      @Override
+      public void focusGained( FocusEvent e )
+      {
+        enableButtons();
+      }
+
+      @Override
+      public void focusLost( FocusEvent e )
+      {
+        enableButtons();
+      }
+    } );
   }
 
   @Override
@@ -249,6 +365,10 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     else if ( source == clear )
     {
       macroButtonModel.clear();
+    }
+    else if ( source == deselect )
+    {
+      macroButtons.clearSelection();
     }
     enableButtons();
   }
@@ -498,6 +618,7 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     
     boolean showAll = !remote.usesEZRC();
     grid2.setVisible( showAll );
+    grid3.setVisible( !showAll );
     grid4.setVisible( showAll );
     addShift.setVisible( showAll );
     insertShift.setVisible( showAll );
@@ -525,8 +646,9 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     int selected = macroButtons.getSelectedIndex();
     moveUp.setEnabled( selected > 0 );
     moveDown.setEnabled( ( selected != -1 ) && ( selected < ( macroButtonModel.getSize() - 1 ) ) );
-    remove.setEnabled( selected != -1 );
+    remove.setEnabled( macroButtons.isFocusOwner() && selected != -1 );
     clear.setEnabled( macroButtonModel.getSize() > 0 );
+    deselect.setEnabled( selected != -1 );
   }
   
   private static FavScanDialog dialog = null;
@@ -545,6 +667,7 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
 
   /** The clear. */
   private JButton clear = new JButton( "Clear" );
+  private JButton deselect = new JButton( "Clear selection" );
 
   /** The ok button. */
   private JButton okButton = new JButton( "OK" );
@@ -604,6 +727,5 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
   private JPanel grid2 = null;
   private JPanel grid3 = null;
   private JPanel grid4 = null;
-  private JTextField nameField = null;
-  
+  private JTextField nameField = null;  
 }

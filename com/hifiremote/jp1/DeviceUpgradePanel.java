@@ -166,8 +166,8 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     this.editor = null;
     Remote remote = remoteConfig.getRemote();
     DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
-    if ( remote.getSegmentTypes() != null && remote.getSegmentTypes().contains( 0x0E ) 
-        && newUpgrade != null && newUpgrade.needsProtocolCode() )
+    if ( remote.getSegmentTypes() != null && !remote.getSegmentTypes().contains( 0x10 ) 
+        && !remote.getSegmentTypes().contains( 0x0F ) && newUpgrade != null && newUpgrade.needsProtocolCode() )
     {
       // Such remotes do not support device upgrades that need a protocol upgrade
       newUpgrade.doCancel( rowOut == null );

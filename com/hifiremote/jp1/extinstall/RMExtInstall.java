@@ -377,8 +377,25 @@ public class RMExtInstall extends ExtInstall
       if ( remote.getOemSignature() != null && !remoteConfig.getRemote().getSignature().equals( remote.getOemSignature() )
          && !remoteConfig.getRemote().getSignature().equals( remote.getSignature() ) )
       {
-        errorMsg = "Extender is not for this remote.";
-        return;
+        if ( remoteConfig.getRemote().getOemSignature() != null && remoteConfig.getRemote().getOemSignature().equals( remote.getOemSignature() ) )
+        {
+          String message = "This remote already has an extender installed which has a different signature from\n"
+              + "that of the extender you are about to install.  This may mean that the new extender\n"
+              + "is not compatible with the exiting one.  If you continue with the installation you\n"
+              + "may finish up with a corrupt setup.\n\n"
+              + "Are you sure that you wish to continue?";
+          String title = "Apparent extender incompatibility";
+          if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION ) == JOptionPane.NO_OPTION )
+          {
+            errorMsg = "Aborting installation.";
+            return;
+          }
+        }
+        else
+        {
+          errorMsg = "Extender is not for this remote.";
+          return;
+        }
       }
       extenderRemote = remote;
     }

@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -121,6 +122,21 @@ PropertyChangeListener, RMSetter< Object >
     macroButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     macroButtons.addListSelectionListener( this );
     macroButtons.setFixedCellWidth( 100 );
+    macroButtons.addFocusListener( new FocusListener()
+    {
+      @Override
+      public void focusLost( FocusEvent e )
+      {
+        enableButtons();
+      }
+      
+      @Override
+      public void focusGained( FocusEvent e )
+      {
+        enableButtons();
+      }
+    } );
+    
     keysBox.add( new JScrollPane( macroButtons ), BorderLayout.CENTER );
     
     JPanel buttonPanel = new JPanel( new BorderLayout() );
@@ -147,6 +163,7 @@ PropertyChangeListener, RMSetter< Object >
     buttonBox.add( moveDown, "2,0" );
     remove.addActionListener( this );
     remove.setToolTipText( "Remove selected item.  Key: DEL" );
+    remove.setFocusable( false );
     buttonBox.add( remove, "0,2" );
     clear.addActionListener( this );
     buttonBox.add( clear, "2,2" );
@@ -573,7 +590,7 @@ PropertyChangeListener, RMSetter< Object >
     int selected = macroButtons.getSelectedIndex();
     moveUp.setEnabled( selected > 0 );
     moveDown.setEnabled( ( selected != -1 ) && ( selected < ( macroButtonModel.getSize() - 1 ) ) );
-    remove.setEnabled( selected != -1 );
+    remove.setEnabled( macroButtons.isFocusOwner() && selected != -1 );
     clear.setEnabled( macroButtonModel.getSize() > 0 );
     deselect.setEnabled( selected != -1 );
     Button baseButton = ( Button )availableButtons.getSelectedValue();

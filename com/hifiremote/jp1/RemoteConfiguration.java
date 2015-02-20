@@ -2102,6 +2102,18 @@ public class RemoteConfiguration
       }
     } 
     
+    List< Segment > protocolList = segments.get( 0x0F );
+    if ( protocolList != null )
+    {
+      for ( Segment segment : protocolList )
+      {
+        Hex hex = segment.getHex();
+        int pid = hex.get( 2 );
+        Hex code = hex.subHex( 4 );
+        protocols.add( new ProtocolUpgrade( pid, code, null ) );
+      }
+    }
+    
     int upgType = remote.getSegmentTypes().contains( 0x0E ) ? 0x0E : 0x10;
     List< Segment > upgradeList = segments.get( upgType );
     if ( upgradeList != null )
@@ -2129,6 +2141,14 @@ public class RemoteConfiguration
           if ( remote.usesEZRC() )
           {
             decryptObjcode( protocolCode );
+          }
+        }
+        else
+        {
+          protocolUpgradeUsed = getProtocol( pidHex.get( 0 ) );
+          if ( protocolUpgradeUsed != null )
+          {
+            protocolCode = protocolUpgradeUsed.getCode();
           }
         }
         String alias = remote.getDeviceTypeAlias( devType );
@@ -2160,6 +2180,11 @@ public class RemoteConfiguration
           upgrade.importRawUpgrade( deviceHex, remote, alias, new Hex( pidHex ), protocolCode );
           upgrade.setSetupCode( setupCode );    
           upgrade.setSegmentFlags( segment.getFlags() );
+          if ( protocolUpgradeUsed != null )
+          {
+            // This may have been changed by importRawUpgrade, so setUsed cannot be set earlier.
+            protocolUpgradeUsed.setUsed( true );
+          }
         }
         catch ( java.text.ParseException pe )
         {
@@ -4748,6 +4773,7 @@ public class RemoteConfiguration
    */
   public void updateImage()
   {
+    LinkedHashMap< Protocol, ProtocolUpgrade > outputProtocols = null;
     cleanMacros();
     if ( remote.isSSD() )
     {
@@ -4969,7 +4995,7 @@ public class RemoteConfiguration
       updateTimedMacros();
     }
     updateLearnedSignals();
-    updateUpgrades();
+    outputProtocols = updateUpgrades();
     
     if ( hasSegments() )
     {
@@ -5008,7 +5034,7 @@ public class RemoteConfiguration
       updateKeyMoveHighlights( keymoves );
       updateKeyMoveHighlights( upgradeKeyMoves );
       updateMacroHighlights();
-      updateUpgradeHighlights();
+      updateUpgradeHighlights( outputProtocols );
       updateLearnedHighlights();
       if ( remote.usesEZRC() )
       {
@@ -5103,7 +5129,7 @@ public class RemoteConfiguration
     }
   }
   
-  private void updateUpgradeHighlights()
+  private void updateUpgradeHighlights( LinkedHashMap< Protocol, ProtocolUpgrade > outputProtocols )
   {
     for ( DeviceUpgrade dev : devices )
     {
@@ -5113,14 +5139,33 @@ public class RemoteConfiguration
         continue;
       }
       int address = segment.getAddress();
-      int protOffset = segment.getHex().get( 2 );
+      int protOffset = segment.get_Type() == 0x0E ? 0 : segment.getHex().get( 2 );
       int segSize = segment.getHex().length();
       int devSize = ( protOffset == 0 ) ? segSize - 4 : protOffset;
-      int protSize = ( protOffset == 0 ) ? 0 : segSize - protOffset - 4;
       updateHighlight( dev, address + 8, devSize );
-      for ( int i = 0; i < protSize; i++ )
+      if ( remote.getSegmentTypes().contains( 0x10 ) )
       {
-        highlight[ address + protOffset + 8 + i ] = dev.getProtocolHighlight();
+        int protSize = ( protOffset == 0 ) ? 0 : segSize - protOffset - 4;
+        for ( int i = 0; i < protSize; i++ )
+        {
+          highlight[ address + protOffset + 8 + i ] = dev.getProtocolHighlight();
+        }
+      }
+      else if ( remote.getSegmentTypes().contains( 0x0F ) )
+      {
+        Protocol prot = dev.getProtocol();
+        ProtocolUpgrade pu = outputProtocols.get( prot );
+        if ( pu != null )
+        {
+          segment = pu.getSegment();
+          address = segment.getAddress();
+          int protSize = segment.getHex().length() - 4;
+          dev.addProtocolMemoryUsage( - 4 );
+          for ( int i = 0; i < protSize; i++ )
+          {
+            highlight[ address + 8 + i ] = dev.getProtocolHighlight();
+          }
+        }
       }
       segment = dev.getSoftButtonSegment();
       if ( segment != null )
@@ -5133,6 +5178,20 @@ public class RemoteConfiguration
       {
         address = segment.getAddress();
         updateHighlight( dev, address + 4, segment.getHex().length() );
+      }
+    }
+    
+    if ( remote.getSegmentTypes().contains( 0x0F ) )
+    {
+      for ( ProtocolUpgrade pu : protocols )
+      {
+        Segment segment = pu.getSegment();
+        if ( segment == null )
+        {
+          continue;
+        }
+        int address = segment.getAddress();
+        updateHighlight( pu, address + 8, pu.getCode().length() );
       }
     }
   }
@@ -6861,7 +6920,7 @@ public class RemoteConfiguration
    * 
    * @return the int
    */
-  private void updateUpgrades()
+  private LinkedHashMap< Protocol, ProtocolUpgrade > updateUpgrades()
   {
     // Split the device upgrades into separate device independent and device
     // dependent lists. An upgrade can occur in both lists.
@@ -6898,15 +6957,23 @@ public class RemoteConfiguration
     // Get the address ranges
     AddressRange addr = remote.getUpgradeAddress();
     AddressRange devAddr = remote.getDeviceUpgradeAddress();
+    // Get the protocols for the device-independent section
+    LinkedHashMap< Protocol, ProtocolUpgrade > outputProtocols = getOutputProtocolUpgrades( false );
+   
     if ( hasSegments() )
     {
       int upgType = remote.getSegmentTypes().contains( 0x0E ) ? 0x0E : 
         remote.getSegmentTypes().contains( 0x10 ) ? 0x10 : -1;
+      boolean usesProtocolUpgrade = remote.getSegmentTypes().contains( 0x0F );
       if ( upgType < 0 )
       {
-        return;
+        return null;
       }
-      segments.remove( upgType  );
+      segments.remove( upgType );
+      if ( usesProtocolUpgrade )
+      {
+        segments.remove( 0x0F );
+      }
       for ( DeviceUpgrade dev : devices )
       {
         dev.classifyButtons();
@@ -6920,8 +6987,15 @@ public class RemoteConfiguration
           }
           if ( code != null && upgType == 0x0E )
           {
-            System.err.println( "Skipping device " + dev.getName() + " as it requires protocol code" );
-            continue;
+            if ( !usesProtocolUpgrade )
+            {
+              System.err.println( "Skipping device " + dev.getName() + " as it requires protocol code" );
+              continue;
+            }
+            else
+            {
+              code = null;
+            }
           }
           int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
           size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
@@ -6957,6 +7031,25 @@ public class RemoteConfiguration
             segments.put( upgType, new ArrayList< Segment >() );
           }
           segments.get( upgType ).add( new Segment( upgType, flags, segData, dev ) );
+        }
+      }
+      
+      if ( remote.getSegmentTypes().contains( 0x0F ) )
+      {
+        for ( ProtocolUpgrade pu : outputProtocols.values() )
+        {
+          pu.clearMemoryUsage();
+          Hex code = pu.getCode();
+          int pid = pu.getPid();
+          Hex segData = new Hex( code.length() + 4 );
+          segData.put(  0, 0 );
+          segData.put( pid, 2 );
+          segData.put( code, 4 );;
+          if ( segments.get( 0x0F ) == null )
+          {
+            segments.put( 0x0F, new ArrayList< Segment >() );
+          }
+          segments.get( 0x0F ).add( new Segment( 0x0F, 0xFF, segData, pu ) );
         }
       }
 
@@ -7019,16 +7112,13 @@ public class RemoteConfiguration
           }
         }
       }
-      return;
+      return outputProtocols;
     }
     if ( addr == null && devAddr == null )
     {
-      return;
+      return null;
     }
-    
-    // Get the protocols for the device-independent section
-    LinkedHashMap< Protocol, ProtocolUpgrade > outputProtocols = getOutputProtocolUpgrades( false );
-    
+     
     // Get the processor
     Processor processor = remote.getProcessor();
 
@@ -7178,7 +7268,7 @@ public class RemoteConfiguration
 
     if ( devAddr == null )
     {
-      return;
+      return null;
     }
 
     // Now update the device dependent section, with updates sorted for storage efficiency.
@@ -7246,6 +7336,7 @@ public class RemoteConfiguration
     offset = devAddr.getStart();
     processor.putInt( lastDevAddr - offset, data, offset );
     devAddr.setFreeStart( offset + 2 );
+    return null;
   }
 
   /**

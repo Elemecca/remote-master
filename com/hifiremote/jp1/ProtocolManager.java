@@ -921,13 +921,6 @@ public class ProtocolManager
       }      
     }
     
-    if ( remote.supportsVariant( id, variantName ) )
-    {
-      // Built-in protocol missing from protocols.ini
-      System.err.println( "Protocol is built-in but missing from protocols.ini" );
-      return null;
-    }
-    
     if ( derived != null )
     {
       // No name match found, so use derived protocol
@@ -935,6 +928,14 @@ public class ProtocolManager
       System.err.println( "Using recreated protocol " + derived );
       return derived;
     }
+    
+    if ( remote.supportsVariant( id, variantName ) )
+    {
+      // Built-in protocol missing from protocols.ini
+      System.err.println( "Protocol is built-in but missing from protocols.ini" );
+      return null;
+    }
+    
     if ( near != null )
     {
       System.err.println( "Found protocol " + near );

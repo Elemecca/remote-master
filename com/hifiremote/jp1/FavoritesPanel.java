@@ -121,26 +121,14 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     JPanel buttonPanel = new JPanel( new WrapLayout( FlowLayout.CENTER, 5, 0 ) );
     buttonPanel.setBorder( BorderFactory.createEmptyBorder( 3, 0, 0, 0 ) );
 
-//    editButton = new JButton( "Edit" );
-//    editButton.addActionListener( this );
-//    editButton.setToolTipText( "Edit the selected item." );
-//    editButton.setEnabled( false );
-//    buttonPanel.add( editButton );
-
     newButton = new JButton( "New" );
     newButton.addActionListener( this );
-    newButton.setToolTipText( "Add a new item." );
+    newButton.setToolTipText( "Add a new item" );
     buttonPanel.add( newButton );
-
-//    cloneButton = new JButton( "Clone" );
-//    cloneButton.addActionListener( this );
-//    cloneButton.setToolTipText( "Add a copy of the selected item." );
-//    cloneButton.setEnabled( false );
-//    buttonPanel.add( cloneButton );
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
-    deleteButton.setToolTipText( "Delete the selected item." );
+    deleteButton.setToolTipText( "Delete the selected item.  Key: DEL" );
     deleteButton.setEnabled( false );
     buttonPanel.add( deleteButton );
 
@@ -162,7 +150,9 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     iconLabel.setVisible( false );
     buttonPanel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
     buttonPanel.add( iconLabel );
-
+    
+    setButtonKeys( this, favTable, deleteButton );
+    
     panel.add( buttonPanel, BorderLayout.PAGE_END );
     
     profilesPanel = new JPanel( new BorderLayout() );
@@ -213,7 +203,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
 
     deleteProfile = new JButton( "Delete" );
     deleteProfile.addActionListener( this );
-    deleteProfile.setToolTipText( "Delete the selected profile." );
+    deleteProfile.setToolTipText( "Delete the selected profile.  Key: DEL" );
     deleteProfile.setEnabled( false );
     buttonPanel.add( deleteProfile );
 
@@ -228,6 +218,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     downProfile.setToolTipText( "Move the selected profile down in the list." );
     downProfile.setEnabled( false );
     buttonPanel.add( downProfile );
+    
+    setButtonKeys( this, profiles, deleteProfile );
 
     add( upperPane, BorderLayout.PAGE_START ); 
     
@@ -508,6 +500,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     {
       int[] rows = favTable.getSelectedRows();
       Arrays.sort( rows );
+      int row1 = rows[ 0 ];
       for ( int i = rows.length - 1; i >= 0; i-- )
       {
         favScans.remove( rows[ i ] );
@@ -521,6 +514,11 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         remoteConfig.setFavKeyDevButton( null );
       }
       favModel.fireTableRowsDeleted( rows[ 0 ], rows[ rows.length - 1 ] );
+      row1 = row1 < favScans.size() ? row1 : favScans.size() - 1;
+      if ( row1 >= 0 )
+      {
+        favTable.setRowSelectionInterval( row1, row1 );
+      }
     }
     else if ( source == newButton )
     {
@@ -709,7 +707,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
           iconLabel.setIcon( null );
         }
         repaint();
-        deleteButton.setEnabled( favTable.getSelectedRowCount() > 0 );
+        deleteButton.setEnabled( favTable.isFocusOwner() && favTable.getSelectedRowCount() > 0 );
       }
     }
     else if ( source == profiles )
@@ -721,7 +719,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         profileField.setText( a.getName() );
         upProfile.setEnabled( index > 0 );
         downProfile.setEnabled( index < profilesModel.getSize() - 1 );
-        deleteProfile.setEnabled( true );
+        deleteProfile.setEnabled( profiles.isFocusOwner() );
         RMIcon icon = a.icon;
         profileIconLabel.setIcon( icon == null ? null : icon.image );
       }

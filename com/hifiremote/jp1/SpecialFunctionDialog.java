@@ -1,5 +1,7 @@
 package com.hifiremote.jp1;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -14,6 +16,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -74,6 +80,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     dialog.setFunction( function );
     dialog.pack();
     dialog.setLocationRelativeTo( frame );
+    dialog.enableButtons();
     dialog.setVisible( true );
 
     return dialog.function;
@@ -295,6 +302,11 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     availableBox.add( new JScrollPane( availableButtons ), BorderLayout.CENTER );
     availableButtons.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
     availableButtons.addListSelectionListener( this );
+    availableButtons.setToolTipText( "<html>Double-click to add/insert.<br>" 
+        + "Shift/double-click to add/insert shifted.<br>"
+        + "This will insert if a macro key is selected, add otherwise.<br>"
+        + "Right-click to clear macro key selection.<br><br>"
+        + "These actions all concern the macro that is currently active.</html>");
 
     activeColor = availableButtons.getBackground();
     availableButtons.setEnabled( false );
@@ -328,16 +340,33 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     firstMacroButtons.addListSelectionListener( this );
     firstMacroButtons.addFocusListener( this );
 
-    JPanel buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
+    double b = 2;
+    double pr = TableLayout.PREFERRED;
+    double pf = TableLayout.FILL;
+    double size2[][] =
+      {
+        {
+          pf, b, pf
+        }, // cols
+        {
+          pr, b, pr, b, pr
+        }  // rows
+      };
+    JPanel buttonBox = new JPanel( new TableLayout( size2 ) );
     firstKeysPanel.add( buttonBox, BorderLayout.SOUTH );
     firstMoveUp.addActionListener( this );
-    buttonBox.add( firstMoveUp );
+    buttonBox.add( firstMoveUp, "0,0" );
     firstMoveDown.addActionListener( this );
-    buttonBox.add( firstMoveDown );
+    buttonBox.add( firstMoveDown, "2,0" );
     firstRemove.addActionListener( this );
-    buttonBox.add( firstRemove );
+    firstRemove.setToolTipText( "Remove selected item.  Key: DEL" );
+    firstRemove.setFocusable( false );
+    buttonBox.add( firstRemove, "0,2" );
     firstClear.addActionListener( this );
-    buttonBox.add( firstClear );
+    buttonBox.add( firstClear, "2,2" );
+    buttonBox.add( firstDeselect, "0,4,2,4" );
+    firstDeselect.addActionListener( this );
+    firstDeselect.setToolTipText( "Deselects current selection.  Mouse: Right-click box" );
 
     // The second macro
     macroBox.add( Box.createHorizontalStrut( 10 ) );
@@ -353,16 +382,21 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     secondMacroButtons.addListSelectionListener( this );
     secondMacroButtons.addFocusListener( this );
 
-    buttonBox = new JPanel( new GridLayout( 3, 2, 2, 2 ) );
+    buttonBox = new JPanel( new TableLayout( size2 ) );
     secondKeysPanel.add( buttonBox, BorderLayout.SOUTH );
     secondMoveUp.addActionListener( this );
-    buttonBox.add( secondMoveUp );
+    buttonBox.add( secondMoveUp, "0,0" );
     secondMoveDown.addActionListener( this );
-    buttonBox.add( secondMoveDown );
+    buttonBox.add( secondMoveDown, "2,0" );
     secondRemove.addActionListener( this );
-    buttonBox.add( secondRemove );
+    secondRemove.setToolTipText( "Remove selected item.  Key: DEL" );
+    secondRemove.setFocusable( false );
+    buttonBox.add( secondRemove, "0,2" );
     secondClear.addActionListener( this );
-    buttonBox.add( secondClear );
+    buttonBox.add( secondClear, "2,2" );
+    buttonBox.add( secondDeselect, "0,4,2,4" );
+    secondDeselect.addActionListener( this );
+    secondDeselect.setToolTipText( "Deselects current selection.  Mouse: Right-click box" );
 
     // Add the notes
     panel = new JPanel( new BorderLayout() );
@@ -381,6 +415,101 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
     cancelButton.addActionListener( this );
     panel.add( cancelButton );
+    
+    firstMacroButtons.addKeyListener( new KeyAdapter()
+    {
+      public void keyPressed( KeyEvent e )
+      {
+        if ( e.getKeyCode() == KeyEvent.VK_DELETE && targetList== firstMacroButtons && firstRemove.isVisible() && firstRemove.isEnabled() )
+        {
+          firstRemove.doClick();
+        }
+      }    
+    } );
+    
+    secondMacroButtons.addKeyListener( new KeyAdapter()
+    {
+      public void keyPressed( KeyEvent e )
+      {
+        if ( e.getKeyCode() == KeyEvent.VK_DELETE && targetList== secondMacroButtons && secondRemove.isVisible() && secondRemove.isEnabled() )
+        {
+          secondRemove.doClick();
+        }
+      }    
+    } );
+    
+    availableButtons.addMouseListener( new MouseAdapter()
+    {
+      @Override
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1 )
+        {
+          if ( targetList.getSelectedValue() != null )
+          {
+            if ( ( e.getModifiers() & KeyEvent.SHIFT_MASK ) != 0 )
+            {
+              if ( insertShift.isVisible() && insertShift.isEnabled() )
+              {
+                insertShift.doClick();
+              }
+            }
+            else if ( insert.isVisible() && insert.isEnabled() )
+            {
+              insert.doClick();
+            }
+          }       
+          else if ( ( e.getModifiers() & KeyEvent.SHIFT_MASK ) != 0 )
+          {
+            if ( addShift.isVisible() && addShift.isEnabled() )
+            {
+              addShift.doClick();
+            }
+          }
+          else if ( add.isVisible() && add.isEnabled() )
+          {
+            add.doClick();
+          }
+        }
+        else if ( ( e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3 ) )
+        {
+          if ( targetList == firstMacroButtons &&  firstDeselect.isVisible() && firstDeselect.isEnabled() )
+          {
+            firstDeselect.doClick();
+          }
+          else if ( targetList == secondMacroButtons &&  secondDeselect.isVisible() && secondDeselect.isEnabled() )
+          {
+            secondDeselect.doClick();
+          }
+        }
+      }
+    } );
+    
+    firstMacroButtons.addMouseListener( new MouseAdapter()
+    {
+      @Override
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( ( e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3 ) 
+            && targetList == firstMacroButtons && firstDeselect.isVisible() && firstDeselect.isEnabled() )
+        {
+          firstDeselect.doClick();
+        }
+      } 
+    } );
+    
+    secondMacroButtons.addMouseListener( new MouseAdapter()
+    {
+      @Override
+      public void mouseClicked( MouseEvent e )
+      {
+        if ( ( e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3 ) 
+            && targetList == secondMacroButtons && secondDeselect.isVisible() && secondDeselect.isEnabled() )
+        {
+          secondDeselect.doClick();
+        }
+      } 
+    } );
   }
 
   /**
@@ -432,6 +561,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     availableButtons.setModel( listModel );
 
     macroButtonRenderer.setRemote( remote );
+    
   }
 
   /**
@@ -826,13 +956,19 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     }
     else if ( source == firstClear )
     {
-
       ( ( DefaultListModel )firstMacroButtons.getModel() ).clear();
     }
     else if ( source == secondClear )
     {
-
       ( ( DefaultListModel )secondMacroButtons.getModel() ).clear();
+    }
+    else if ( source == firstDeselect )
+    {
+      firstMacroButtons.clearSelection();
+    }
+    else if ( source == secondDeselect )
+    {
+      secondMacroButtons.clearSelection();
     }
   }
 
@@ -999,6 +1135,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       targetList.setBackground( inactiveColor );
     targetList = list;
     targetList.setBackground( activeColor );
+    enableButtons();
   }
 
   /*
@@ -1008,7 +1145,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
    */
   public void focusLost( FocusEvent e )
   {
-  // intentionally left empty
+    enableButtons();
   }
 
   // ListSelectionListener
@@ -1049,8 +1186,9 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     int selected = firstMacroButtons.getSelectedIndex();
     firstMoveUp.setEnabled( selected > 0 );
     firstMoveDown.setEnabled( ( selected != -1 ) && ( selected < ( listModel.getSize() - 1 ) ) );
-    firstRemove.setEnabled( selected != -1 );
+    firstRemove.setEnabled( firstMacroButtons.isFocusOwner() && selected != -1 );
     firstClear.setEnabled( listModel.getSize() > 0 );
+    firstDeselect.setEnabled( selected != -1 );
 
     listModel = ( DefaultListModel )secondMacroButtons.getModel();
     moreRoom = listModel.getSize() < limit;
@@ -1060,8 +1198,9 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     selected = secondMacroButtons.getSelectedIndex();
     secondMoveUp.setEnabled( isEnabled && ( selected > 0 ) );
     secondMoveDown.setEnabled( isEnabled && ( selected != -1 ) && ( selected < ( listModel.getSize() - 1 ) ) );
-    secondRemove.setEnabled( isEnabled && ( selected != -1 ) );
+    secondRemove.setEnabled( secondMacroButtons.isFocusOwner() && isEnabled && ( selected != -1 ) );
     secondClear.setEnabled( isEnabled && ( listModel.getSize() > 0 ) );
+    secondDeselect.setEnabled( selected != -1 );
   }
 
   /**
@@ -1538,6 +1677,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
   /** The first clear. */
   private JButton firstClear = new JButton( "Clear" );
+  private JButton firstDeselect = new JButton( "Clear selection" );
 
   /** The second keys panel. */
   private JPanel secondKeysPanel = null;
@@ -1580,6 +1720,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
   /** The second clear. */
   private JButton secondClear = new JButton( "Clear" );
+  private JButton secondDeselect = new JButton( "Clear selection" );
 
   /** The notes. */
   private JTextArea notes = new JTextArea( 2, 2 );

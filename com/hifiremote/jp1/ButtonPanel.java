@@ -17,6 +17,8 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -52,6 +54,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
+
+import com.hifiremote.jp1.RMPanel.ButtonKeyAdapter;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -126,6 +130,20 @@ public class ButtonPanel extends KMPanel implements ActionListener
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     table.setDefaultEditor( Function.class, popupEditor );
     table.setDefaultEditor( Macro.class, new SelectAllCellEditor() );
+    table.addFocusListener( new FocusListener()
+    {
+      @Override
+      public void focusLost( FocusEvent e )
+      {
+        selectionChanged();
+      }
+      
+      @Override
+      public void focusGained( FocusEvent e )
+      {
+        selectionChanged();  
+      }
+    } );
 
     deleteAction = new AbstractAction( "Remove" )
     {
@@ -477,10 +495,12 @@ public class ButtonPanel extends KMPanel implements ActionListener
     panel.add( autoAssign );
 
     JButton button = new JButton( deleteAction );
-    button.setToolTipText( "Remove the assigned function from the button." );
+    button.setFocusable( false );
+    button.setToolTipText( "Remove the assigned function from the button.  Key: DEL" );
     panel.add( button );
 
     add( panel, BorderLayout.SOUTH );
+    table.addKeyListener( new ButtonKeyAdapter( button, null ) );
   }
   
   public static class SelectionPanel extends JPanel
@@ -608,7 +628,7 @@ public class ButtonPanel extends KMPanel implements ActionListener
         }
       }
     }
-    deleteAction.setEnabled( enableDelete );
+    deleteAction.setEnabled( table.isFocusOwner() && enableDelete );
   }
   
   private void finishEditing()

@@ -8,8 +8,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -163,27 +161,6 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     buttonPanel = new JPanel();
     footerPanel.add( buttonPanel, BorderLayout.PAGE_END );
     
-    table.addKeyListener( new KeyAdapter()
-    {
-      public void keyPressed( KeyEvent e )
-      {
-        if ( e.getKeyCode() == KeyEvent.VK_DELETE && deleteButton.isVisible() && deleteButton.isEnabled() )
-        {
-          deleteButton.doClick();
-        }
-        else if ( e.getKeyCode() == KeyEvent.VK_INSERT && newButton.isVisible() && newButton.isEnabled() )
-        {
-          newButton.doClick();
-        }
-        else if ( ( e.getKeyCode() == KeyEvent.VK_D ) && ( ( e.getModifiers() & KeyEvent.CTRL_MASK ) != 0 )
-            && cloneButton.isVisible() && cloneButton.isEnabled() )
-        {
-          cloneButton.doClick();
-        }
-      }
-      
-    });
-
     editButton = new JButton( "Edit" );
     editButton.addActionListener( this );
     editButton.setToolTipText( "Edit the selected item." );
@@ -192,7 +169,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
 
     newButton = new JButton( "New" );
     newButton.addActionListener( this );
-    newButton.setToolTipText( "Add a new item.  Key: INS" );
+    newButton.setToolTipText( "Add a new item" );
     buttonPanel.add( newButton );
 
     cloneButton = new JButton( "Clone" );
@@ -225,6 +202,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     editProtocolButton.setEnabled( false );
     editProtocolButton.setVisible( false );
     buttonPanel.add( editProtocolButton );
+    
+    setButtonKeys( this, table, deleteButton, cloneButton );
   }
 
   protected boolean showPopup( MouseEvent e )
@@ -555,10 +534,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         boolean selected = row != -1;
         editButton.setEnabled( selected );
         editItem.setEnabled( selected );
-        cloneButton.setEnabled( selected );
+        cloneButton.setEnabled( table.isFocusOwner() && selected );
         cloneItem.setEnabled( selected );
-        deleteButton.setEnabled( selected );
-        deleteItem.setEnabled( selected );
         if ( editProtocolButton.isVisible() )
         {
           editProtocolButton.setEnabled( selected );
@@ -569,7 +546,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         }
 
         boolean deleteAllowed = selected && canDelete( model.getRow( sorter.modelIndex( row ) ) );
-        deleteButton.setEnabled( deleteAllowed );
+        deleteButton.setEnabled( table.isFocusOwner() && deleteAllowed );
         deleteItem.setEnabled( deleteAllowed );
 
         upButton.setEnabled( row > 0 );

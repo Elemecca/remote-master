@@ -95,8 +95,10 @@ public class SegmentTableModel extends JP1TableModel< Segment >
         return "Button Device Assignments segment";
       case 0x0E:
         return "Device Upgrade Definition segment";
+      case 0x0F:
+        return "Protocol Upgrade Definition segment";
       case 0x10:
-        return "Upgrade Definition segment";
+        return "Combined Upgrade Definition segment";
       case 0x11:
         return "Upgrade Assignments segment";
       case 0x12:

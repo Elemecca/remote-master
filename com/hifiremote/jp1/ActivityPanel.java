@@ -70,7 +70,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       activityAssistModels[ i ] = new ActivityAssistTableModel();
       activityAssistTables[ i ] = new JP1Table( activityAssistModels[ i ] );
       activityAssistTables[ i ].setCellEditorModel( activityAssistModels[ i ] );
-      activityAssistTables[ i ].setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
+      activityAssistTables[ i ].setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
       activityAssistTables[ i ].getSelectionModel().addListSelectionListener( this );
       scrollPane = new JScrollPane( activityAssistTables[ i ] );
       panel.add( scrollPane, BorderLayout.CENTER );
@@ -78,8 +78,10 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       dd.height = 4 * activityAssistTables[ i ].getRowHeight();
       activityAssistTables[ i ].setPreferredScrollableViewportSize( dd );
       newAssist[ i ] = new JButton( "New");
+      newAssist[ i ].setToolTipText( "Add new Assist" );
       newAssist[ i ].addActionListener( this );
       deleteAssist[ i ] = new JButton( "Delete" );
+      deleteAssist[ i ].setToolTipText( "Delete Assist.  Key: DEL" );
       deleteAssist[ i ].addActionListener( this );
       deleteAssist[ i ].setEnabled( false );
       JPanel btnPanel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
@@ -87,6 +89,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       btnPanel.add( deleteAssist[ i ] );
       panel.add( btnPanel, BorderLayout.PAGE_END );
       grid.add( panel );
+      setButtonKeys( this, activityAssistTables[ i ], deleteAssist[ i ] );
     }
     inner.add( grid, BorderLayout.PAGE_START );
     grid.setVisible( false );
@@ -370,6 +373,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     boolean tabChange = false;
     int index = -1;
     int toIndex = -1;
+    int row = -1;
+    int col = -1;
     if ( source == clearActivity || source == deleteActivity )
     {
       Activity activity = activityFunctionModel.getRow( 0 );
@@ -485,7 +490,10 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     {
       Activity activity = activityFunctionModel.getRow( 0 );
       List< Assister > assists = activity.getAssists().get( index );
-      assists.remove( activityAssistTables[ index ].getSelectedRow() );
+      row = activityAssistTables[ index ].getSelectedRow();
+      col = activityAssistTables[ index ].getSelectedColumn();
+      assists.remove( row );
+      row = row < assists.size() ? row : assists.size() - 1;
       if ( index < 2 )
       {
         newAssist[ index ].setEnabled( true );
@@ -501,6 +509,11 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     if ( toIndex >= 0 )
     {
       tabbedPane.setSelectedIndex( toIndex );
+    }
+    if ( row >= 0 )
+    {
+      activityAssistTables[ index ].setRowSelectionInterval( row, row );
+      activityAssistTables[ index ].setColumnSelectionInterval( col, col );
     }
   }
 
@@ -537,7 +550,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
     {
       return;
     }
-    deleteAssist[ i ].setEnabled( activityAssistTables[ i ].getSelectedRow() >= 0 );
+    deleteAssist[ i ].setEnabled( activityAssistTables[ i ].isFocusOwner() && activityAssistTables[ i ].getSelectedRow() >= 0 );
   }
   
 }

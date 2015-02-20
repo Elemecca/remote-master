@@ -509,7 +509,8 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
           pidUsed = true;
         }
       }
-      if ( du.needsProtocolCode() && !pidUsed && !remoteConfig.hasSegments() )
+      if ( du.needsProtocolCode() && !pidUsed 
+          &&  ( !remoteConfig.hasSegments() || remote.getSegmentTypes().contains( 0x0F ) ) )
       {
         String title = "Device Upgrade Deletion";
         String message = "The protocol used by the device upgrade being deleted is a protocol\n"
