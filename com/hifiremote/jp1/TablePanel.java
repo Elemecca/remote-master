@@ -9,8 +9,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -39,7 +37,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.JTextComponent;
 
-import com.hifiremote.jp1.RMPanel.ButtonKeyAdapter;
 import com.hifiremote.jp1.clipboard.ClipboardReader;
 import com.hifiremote.jp1.clipboard.ClipboardReaderFactory;
 
@@ -81,28 +78,6 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
     SelectAllCellEditor e = new SelectAllCellEditor();
     new TextPopupMenu( ( JTextComponent )e.getComponent() );
     table.setDefaultEditor( String.class, e );
-    table.addFocusListener( new FocusListener()
-    {
-      @Override
-      public void focusLost( FocusEvent e )
-      {
-        deleteButton.setEnabled( false );
-      }
-      
-      @Override
-      public void focusGained( FocusEvent e )
-      {
-        int row = table.getSelectedRow();
-        if ( row != -1 )
-        {
-          deleteButton.setEnabled( table.isFocusOwner() && canDelete( model.getRow( sorter.modelIndex( row ) ) ) );
-        }
-        else
-        {
-          deleteButton.setEnabled( false );
-        }
-      }
-    } );
 
     TransferHandler th = new TransferHandler()
     {
@@ -365,15 +340,16 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
 
     newButton = new JButton( "New" );
     newButton.addActionListener( this );
-    newButton.setToolTipText( "Add a new function." );
+    newButton.setToolTipText( "<html>Add a new function. &nbsp&nbsp&nbsp Key: INS<br>"
+        + "(For INS key, table must have the focus and not be empty.)</html>" );
     buttonPanel.add( newButton );
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
-    deleteButton.setToolTipText( "<html>Delete an unassigned function.  Key: DEL<br>"
-        + "To delete a function assigned to a button,<br>first delete the assignment.</html>" );
+    deleteButton.setToolTipText( "<html>Delete an unassigned function. &nbsp&nbsp&nbsp Key: DEL<br>"
+        + "To delete a function assigned to a button, first delete the assignment.<br>"
+        + "(For DEL key, table must have the focus.)</html>" );
     deleteButton.setEnabled( false );
-    deleteButton.setFocusable( false );
     buttonPanel.add( deleteButton );
 
     cleanButton = new JButton( "Clean up" );
@@ -414,7 +390,7 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
       pasteFromIEButton.setEnabled( false );
       buttonPanel.add( pasteFromIEButton );
     }
-    table.addKeyListener( new ButtonKeyAdapter( deleteButton, null ) );
+    RMPanel.setButtonKeys( table, deleteButton, newButton, null );
   }
 
   /*
@@ -653,7 +629,7 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
       {
         upButton.setEnabled( row > 0 );
         downButton.setEnabled( row < ( sorter.getRowCount() - 1 ) );
-        deleteButton.setEnabled( table.isFocusOwner() && canDelete( model.getRow( sorter.modelIndex( row ) ) ) );
+        deleteButton.setEnabled( canDelete( model.getRow( sorter.modelIndex( row ) ) ) );
         Transferable clipData = clipboard.getContents( clipboard );
         copyButton.setEnabled( true );
         if ( ( clipData != null ) && clipData.isDataFlavorSupported( DataFlavor.stringFlavor )

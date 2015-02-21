@@ -128,7 +128,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
-    deleteButton.setToolTipText( "Delete the selected item.  Key: DEL" );
+    deleteButton.setToolTipText( "<html>Delete the selected item. &nbsp&nbsp&nbsp Key: DEL<br>"
+        + "(Table must have the focus.)</html>");
     deleteButton.setEnabled( false );
     buttonPanel.add( deleteButton );
 
@@ -151,7 +152,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     buttonPanel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
     buttonPanel.add( iconLabel );
     
-    setButtonKeys( this, favTable, deleteButton );
+    setButtonKeys( favTable, deleteButton );
     
     panel.add( buttonPanel, BorderLayout.PAGE_END );
     
@@ -203,7 +204,8 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
 
     deleteProfile = new JButton( "Delete" );
     deleteProfile.addActionListener( this );
-    deleteProfile.setToolTipText( "Delete the selected profile.  Key: DEL" );
+    deleteProfile.setToolTipText( "<html>Delete the selected profile. &nbsp&nbsp&nbsp Key: DEL<br>"
+        + "(Table must have the focus.)</html>");
     deleteProfile.setEnabled( false );
     buttonPanel.add( deleteProfile );
 
@@ -219,7 +221,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     downProfile.setEnabled( false );
     buttonPanel.add( downProfile );
     
-    setButtonKeys( this, profiles, deleteProfile );
+    setButtonKeys( profiles, deleteProfile );
 
     add( upperPane, BorderLayout.PAGE_START ); 
     

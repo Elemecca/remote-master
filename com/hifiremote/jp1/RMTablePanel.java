@@ -169,18 +169,21 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
 
     newButton = new JButton( "New" );
     newButton.addActionListener( this );
-    newButton.setToolTipText( "Add a new item" );
+    newButton.setToolTipText( "<html>Add a new item.&nbsp&nbsp&nbsp  Key: INS<br>"
+        + "(For INS key, table must have the focus and not be empty.)</html>");
     buttonPanel.add( newButton );
 
     cloneButton = new JButton( "Clone" );
     cloneButton.addActionListener( this );
-    cloneButton.setToolTipText( "Add a copy of the selected item.  Key: Ctrl/D" );
+    cloneButton.setToolTipText( "<html>Add a copy of the selected item.&nbsp&nbsp&nbsp  Key: Ctrl/D<br>"
+        + "(For Ctrl/D, table must have the focus.)</html>");
     cloneButton.setEnabled( false );
     buttonPanel.add( cloneButton );
 
     deleteButton = new JButton( "Delete" );
     deleteButton.addActionListener( this );
-    deleteButton.setToolTipText( "Delete the selected item.  Key: DEL" );
+    deleteButton.setToolTipText( "<html>Delete the selected item.&nbsp&nbsp&nbsp  Key: DEL<br>"
+        + "(For DEL key, table must have the focus.)</html>");
     deleteButton.setEnabled( false );
     buttonPanel.add( deleteButton );
 
@@ -203,7 +206,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     editProtocolButton.setVisible( false );
     buttonPanel.add( editProtocolButton );
     
-    setButtonKeys( this, table, deleteButton, cloneButton );
+    setButtonKeys( table, deleteButton, newButton, cloneButton );
   }
 
   protected boolean showPopup( MouseEvent e )
@@ -534,7 +537,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         boolean selected = row != -1;
         editButton.setEnabled( selected );
         editItem.setEnabled( selected );
-        cloneButton.setEnabled( table.isFocusOwner() && selected );
+        cloneButton.setEnabled( selected );
         cloneItem.setEnabled( selected );
         if ( editProtocolButton.isVisible() )
         {
@@ -546,7 +549,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         }
 
         boolean deleteAllowed = selected && canDelete( model.getRow( sorter.modelIndex( row ) ) );
-        deleteButton.setEnabled( table.isFocusOwner() && deleteAllowed );
+        deleteButton.setEnabled( deleteAllowed );
         deleteItem.setEnabled( deleteAllowed );
 
         upButton.setEnabled( row > 0 );

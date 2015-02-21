@@ -89,7 +89,7 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       btnPanel.add( deleteAssist[ i ] );
       panel.add( btnPanel, BorderLayout.PAGE_END );
       grid.add( panel );
-      setButtonKeys( this, activityAssistTables[ i ], deleteAssist[ i ] );
+      setButtonKeys( activityAssistTables[ i ], deleteAssist[ i ] );
     }
     inner.add( grid, BorderLayout.PAGE_START );
     grid.setVisible( false );

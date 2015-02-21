@@ -35,15 +35,17 @@ public abstract class RMPanel extends JPanel
 
   public abstract void addRMPropertyChangeListener( PropertyChangeListener listener );
   
-  public static class ButtonKeyAdapter extends KeyAdapter
+  private static class ButtonKeyAdapter extends KeyAdapter
   {
     private JButton delButton = null;
+    private JButton newButton = null;
     private JButton cloneButton = null;
     
-    public ButtonKeyAdapter( JButton delButton, JButton cloneButton )
+    public ButtonKeyAdapter( JButton delButton, JButton newButton, JButton cloneButton )
     {
       super();
       this.delButton = delButton;
+      this.newButton = newButton;
       this.cloneButton = cloneButton;
     }
     
@@ -58,16 +60,26 @@ public abstract class RMPanel extends JPanel
         }
         e.consume();
       }
-      else if ( ( e.getKeyCode() == KeyEvent.VK_D ) && ( ( e.getModifiers() & KeyEvent.CTRL_MASK ) != 0 )
-          && cloneButton != null && cloneButton.isVisible() && cloneButton.isEnabled() )
+      else if ( e.getKeyCode() == KeyEvent.VK_INSERT )
       {
-        cloneButton.doClick();
+        if ( newButton != null && newButton.isVisible() && newButton.isEnabled() )
+        {
+          newButton.doClick();
+        }
+        e.consume();
+      }
+      else if ( ( e.getKeyCode() == KeyEvent.VK_D ) && ( ( e.getModifiers() & KeyEvent.CTRL_MASK ) != 0 ) )
+      {
+        if ( cloneButton != null && cloneButton.isVisible() && cloneButton.isEnabled() )
+        {
+          cloneButton.doClick();
+        }
         e.consume();
       }
     }
   };
   
-  public static class ButtonFocusAdapter implements FocusListener
+  private static class ButtonFocusAdapter implements FocusListener
   {
     private Component cpt = null;
     private JButton delButton = null;
@@ -91,6 +103,11 @@ public abstract class RMPanel extends JPanel
       else if ( cpt instanceof JList )
       {
         selected = ( ( JList )cpt ).getSelectedIndex() >= 0;
+      }
+      else if ( cpt instanceof JTableX )
+      {
+        // This case uses its own focusGained function
+        return;
       }
       
       if ( delButton != null )
@@ -117,25 +134,25 @@ public abstract class RMPanel extends JPanel
     }
   }
   
-  public void setButtonKeys( JPanel panel, Component cpt, JButton delButton, JButton cloneButton )
+  public static void setButtonKeys( Component cpt, JButton delButton, JButton newButton, JButton cloneButton )
   {
-    if ( delButton != null )
+    cpt.addKeyListener( new ButtonKeyAdapter( delButton, newButton, cloneButton ) );
+    if ( newButton == null )
     {
-      delButton.setFocusable( false );
-    }
-    if ( cloneButton != null )
-    {
-      cloneButton.setFocusable( false );
-    }
-    cpt.addKeyListener( new ButtonKeyAdapter( delButton, cloneButton ) );
-    if ( panel instanceof RMPanel )
-    {
+      if ( delButton != null )
+      {
+        delButton.setFocusable( false );
+      }
+      if ( cloneButton != null )
+      {
+        cloneButton.setFocusable( false );
+      }
       cpt.addFocusListener( new ButtonFocusAdapter( cpt, delButton, cloneButton ) );
     }
   }
-  
-  public void setButtonKeys( JPanel panel, Component cpt, JButton delButton )
+
+  public static void setButtonKeys( Component cpt, JButton delButton )
   {
-    setButtonKeys( panel, cpt, delButton, null );
+    setButtonKeys( cpt, delButton, null, null );
   }
 }

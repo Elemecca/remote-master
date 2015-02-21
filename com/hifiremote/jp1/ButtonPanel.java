@@ -55,7 +55,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 
-import com.hifiremote.jp1.RMPanel.ButtonKeyAdapter;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -495,12 +494,12 @@ public class ButtonPanel extends KMPanel implements ActionListener
     panel.add( autoAssign );
 
     JButton button = new JButton( deleteAction );
-    button.setFocusable( false );
-    button.setToolTipText( "Remove the assigned function from the button.  Key: DEL" );
+    button.setToolTipText( "<html>Remove the assigned function from the button.&nbsp&nbsp&nbsp  Key: DEL<br>"
+        + "(Table must have the focus.)</html>");
     panel.add( button );
 
     add( panel, BorderLayout.SOUTH );
-    table.addKeyListener( new ButtonKeyAdapter( button, null ) );
+    RMPanel.setButtonKeys( table, button );
   }
   
   public static class SelectionPanel extends JPanel
