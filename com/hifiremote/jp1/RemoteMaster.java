@@ -106,13 +106,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   public static final Color AQUAMARINE = new Color( 127, 255, 212 );
 
   public static boolean admin = false;
+  public static boolean legacyMergeOK = false;
   
   /** The frame. */
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
-  public final static int buildVer = 11;
+  public final static int buildVer = 12;
   
   public static int getBuild()
   {
@@ -4062,6 +4063,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
 
       System.err.println( "RemoteMaster " + RemoteMaster.version );
+      System.err.println( "Legacy merge set = " + legacyMergeOK );
       String[] propertyNames =
       {
           "java.version", "java.vendor", "os.name", "os.arch", "java.home", "java.class.path"
@@ -4148,6 +4150,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public static void main( String[] args )
   {
+    java.lang.reflect.Method m;
+    try
+    {
+      m = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[] { String.class });
+      m.setAccessible(true);
+      ClassLoader cl = ClassLoader.getSystemClassLoader();
+      Object test1 = m.invoke(cl, "java.util.Arrays");
+      legacyMergeOK = test1 == null;
+      System.setProperty( "java.util.Arrays.useLegacyMergeSort", "true" );
+    }
+    catch ( Exception e ) {}
+   
     JDialog.setDefaultLookAndFeelDecorated( true );
     JFrame.setDefaultLookAndFeelDecorated( true );
     Toolkit.getDefaultToolkit().setDynamicLayout( true );

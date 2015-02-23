@@ -317,8 +317,15 @@ public class JTableX extends JTable
     if ( isTruncated( row, col ) )
     {
       DefaultTableCellRenderer r = ( DefaultTableCellRenderer )getCellRenderer( row, col );
-      int width = getColumnModel().getColumn( col ).getWidth();
-      String rc = "<html><div style=\"width: " + width + "px\">" + r.getText() + "</div></html>";
+      // When getting column width, subtract the width of the static "pad" empty border, namely 6 
+      int width = getColumnModel().getColumn( col ).getWidth() - 6;
+//      String rc = "<html><div style=\"width: " + width + "px\">" + r.getText() + "</div></html>";
+      String rc = "<html><p width=\"" + width + "px\">" + r.getText() + "</p></html>";
+      JLabel lbl = new JLabel( rc );
+      int jWidth = lbl.getPreferredSize().width;
+      // Scale width from units used by Java to units used by html
+      width = ( width * width ) / jWidth - 1;
+      rc = "<html><p width=\"" + width + "px\">" + r.getText() + "</p></html>";
       return rc;
     }
     return null;

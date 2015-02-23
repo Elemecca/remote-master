@@ -81,7 +81,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       newAssist[ i ].setToolTipText( "Add new Assist" );
       newAssist[ i ].addActionListener( this );
       deleteAssist[ i ] = new JButton( "Delete" );
-      deleteAssist[ i ].setToolTipText( "Delete Assist.  Key: DEL" );
+      deleteAssist[ i ].setToolTipText( "<html>Delete Assist. &nbsp&nbsp&nbsp Key: DEL<br>"
+          + "(Table must have the focus.)</html>" );
       deleteAssist[ i ].addActionListener( this );
       deleteAssist[ i ].setEnabled( false );
       JPanel btnPanel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );

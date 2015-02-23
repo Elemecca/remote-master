@@ -69,6 +69,8 @@ Changes for v2.03
 - Add space after each {pause} in Fav/Scan listing (Graham)
 - Add keyboard or mouse alternatives for certain actions (Graham)
 - Add support for segment type 0x0F (Graham)
+- Fix issue with width of tooltips showing full text of truncated table cells (Graham)
+- Use legacy merge to avoid an issue apparently caused by a bug in Java 7 (Graham)
 
 Changes for v2.02
 -- Alpha --
