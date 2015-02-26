@@ -30,30 +30,26 @@ public class NEC005ATranslator extends Translate
       deviceNumber = new Integer( 0 );
     hex[ 1 ] = ( short )reverse( complement( deviceNumber.intValue() ) );
     Number subDevice = ( Number )parms[ 1 ].getUserValue();
-    if ( subDevice == null )  
+    if ( subDevice == null )  //implies no subdevice rather than taking the default value of the subdevice param
     {
-      hex[ 0 ] &=0xDF;   // clear bit 5
-      hex[ 2 ] = hex[ 1 ];
-    } else
+      hex[ 0 ] &=0xDF;  
+      hex[ 2 ] = 0x00;  //matches UEI approach (post 15-1994) of setting redundant 3rd byte of fixed data to 0
+    } 
+    else
       hex[ 2 ] = ( short )reverse(complement(subDevice.intValue()) );
-    if  ((styleBits & 0x10) == 0)   //NEC1 or NEC2
+    if  ((styleBits & 0x10) == 0)   //remaining code handles NEC1/NEC2 additional params
     {
-      specialRecHandling = ( (Number)parms[2].getValue() ).intValue() - 1;
-      switch (specialRecHandling) 
+      specialRecHandling = ( (Number)parms[2].getValue() ).intValue();
+      if (specialRecHandling > 0)  
       {
-        case 0: 
-          hex[ 0 ] &= 0xDF;   // clear bit 5
-          hex[ 0 ] |= 0x04;   // set bit 2
-          if(subDevice == null)
-            subDevice = new Integer( 0 );
-          hex[ 2 ] = ( short )reverse( complement( subDevice.intValue() ) );
-          break;
-        case 1: 
-          hex[ 0 ] |= 0x20;   // set bit 5
-          hex[ 0 ] |= 0x04;   // set bit 2
-          break;
-        default:
-          break;
+        if(subDevice == null)
+          subDevice = new Integer( 0 );  //the 3rd fixed byte has meaning, so here null implies subdevice is 0 by default
+        hex[ 2 ] = ( short )reverse( complement( subDevice.intValue() ) );
+        hex[ 0 ] |= 0x04;  
+        if (specialRecHandling == 1) 
+          hex[ 0 ] &= 0xDF;   // Send "subdevice" and its complement instead of device and its complement5
+        else
+          hex[ 0 ] |= 0x20;   // Send dev.sub but with LSB of each flipped
       }
       if (styleBits == 0x00)   //NEC1 only
       {
@@ -64,12 +60,20 @@ public class NEC005ATranslator extends Translate
       }
     }
   }
-      //Bit 0  Style        0=NEC1; 1=NEC2
-      //Bit 1  NEC1 only-   0=send signal once, dittos; 1=twice, dittos
-      //Bit 2  NEC1/2 only- 0=no record handling 1=change devs on record button using Bit5: 0=use 3rd FD as dev; 1= XOR LSBs of dev/sub
-      //Bit 3  NEC1 only-   0=NEC1 for all buttons; 1=send NEC2 for repeating group buttons
-      //Bit 4  Style        0=NEC; 1=NECx
-      //Bit 5  NEC1/2 only- 0=dev; 1=dev.sub;  Ignored if Bit 2 is 1
+  /*
+      Bit 0  Style        0=NEC1; 1=NEC2
+      Bit 1  NEC1 only-   0=send signal once, dittos; 1=twice, dittos
+      Bit 2  NEC1/2 only- 0=no record handling; 1=change devs on record button using Bit5: 0=use 3rd FD as dev; 1= XOR LSBs of dev/sub
+      Bit 3  NEC1 only-   0=NEC1 for all buttons; 1=send NEC2 for repeating group buttons
+      Bit 4  Style        0=NEC; 1=NECx
+      Bit 5  NEC1/2 only- 0=dev; 1=dev.sub;  the executor ignores bit 5 if (bit 2 == 1)
+      
+      On entry, the style bits corresponding to the NEC1, NEC2, NECx1, or NECx2 versions of this executor:
+      NEC1:  0x00
+      NEC2:  0x01
+      NECx1: 0x30
+      NECx2: 0x32
+    */
   /*
    * (non-Javadoc)
    * 
@@ -117,6 +121,6 @@ public class NEC005ATranslator extends Translate
       parms[ 1 ] = new Value( null, null );
   }
 
-  /** The control bits corresponding to this protocol. */
+
   private int styleBits;
 }
