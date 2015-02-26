@@ -82,7 +82,7 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
     {
       Dimension d = component.getSize();
       int end = highlight.length - 1;
-      if ( settingAddresses.containsKey( offset ) )
+      if ( settingAddresses.containsKey( offset ) && highlight[ offset ] == Color.WHITE )
       {
         for ( int i = 0; i < 8; i++ )
         {

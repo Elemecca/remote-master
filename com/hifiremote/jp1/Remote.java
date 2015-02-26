@@ -152,6 +152,8 @@ public class Remote implements Comparable< Remote >
         return;
       }
       loaded = true;
+      settingAddresses.clear();
+      settingBytes.clear();
       RDFReader rdr = new RDFReader( file );
       String line = rdr.readLine();
       while ( line != null )
@@ -182,7 +184,7 @@ public class Remote implements Comparable< Remote >
           {
             line = parseCheckSums( rdr );
           }
-          else if ( line.equals( "Settings" ) )
+          else if ( line.equals( "Settings" ) || line.equals( "Settings+" ) )
           {
             line = parseSettings( rdr );
           }
@@ -1750,8 +1752,9 @@ public class Remote implements Comparable< Remote >
   private String parseSettings( RDFReader rdr ) throws Exception
   {
     String line;
-    java.util.List< Setting > work = new ArrayList< Setting >();
-    int index = 0;
+    List< Setting > work = new ArrayList< Setting >();
+    work.addAll( Arrays.asList( settings ) );
+    int index = settingBytes.size();
     while ( true )
     {
       line = rdr.readLine();
@@ -1799,6 +1802,7 @@ public class Remote implements Comparable< Remote >
           sectionName ) );
       if ( ! settingAddresses.containsKey( byteAddress ) )
       {
+        settingBytes.add( byteAddress );
         settingAddresses.put( byteAddress, index++ );
       }
     }
@@ -3557,10 +3561,16 @@ public class Remote implements Comparable< Remote >
   private Setting[] settings = new Setting[ 0 ];
   
   private HashMap< Integer, Integer > settingAddresses = new HashMap< Integer, Integer >();
+  private List< Integer > settingBytes = new ArrayList< Integer >();
 
   public HashMap< Integer, Integer > getSettingAddresses()
   {
     return settingAddresses;
+  }
+
+  public List< Integer > getSettingBytes()
+  {
+    return settingBytes;
   }
 
   /** The fixed data. */

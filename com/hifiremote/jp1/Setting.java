@@ -8,7 +8,34 @@ import java.awt.Color;
  */
 public class Setting extends Highlight
 {
+  public class NamedHex
+  {
+    private String name = null;
+    private Hex hex = null;
+    
+    public NamedHex( String name, Hex hex )
+    {
+      this.name = name;
+      this.hex = hex;
+    }
 
+    public String getName()
+    {
+      return name;
+    }
+
+    public Hex getHex()
+    {
+      return hex;
+    }
+    
+    @Override
+    public String toString()
+    {
+      return name;
+    }
+  }
+  
   /**
    * Gets the title.
    * 
@@ -129,10 +156,32 @@ public class Setting extends Highlight
     bitNumber = bitNum;
     numberOfBits = numBits;
     initialValue = initVal;
-    inverted = invert;
-    optionList = options;
+    inverted = invert; 
     sectionName = section;
     value = initVal;
+    if ( numberOfBits == 0 )
+    {
+      NamedHex named[] = new NamedHex[ options.length ];
+      for ( int i = 0; i < options.length; i++ )
+      {
+        String str = ( String )options[ i ];
+        int pos = str.indexOf( ':' );
+        if ( pos <= 0 || pos == str.length() - 1 )
+        {
+          System.err.println( "Illegal format of Named Hex option \"" + options[ i ] + "\"" );
+          named[ i ] = null;
+          continue;
+        }
+        String hexName = str.substring( 0, pos ).trim();
+        Hex hexVal = new Hex( str.substring( pos + 1 ).trim() );
+        named[ i ] = new NamedHex( hexName, hexVal );
+      }
+      optionList = named;
+    }
+    else
+    {
+      optionList = options;
+    }
   }
 
   /*
@@ -153,8 +202,19 @@ public class Setting extends Highlight
       for ( int i = 0; i < optionList.length; i++ )
       {
         if ( i > 0 )
+        {
           temp.append( ';' );
-        temp.append( optionList[ i ] );
+        }
+        Object obj = optionList[ i ];
+        if ( obj instanceof NamedHex )
+        {
+          NamedHex nh = ( NamedHex )obj;
+          temp.append( nh.getName() + " : " + nh.getHex() );
+        }
+        else
+        {
+          temp.append( optionList[ i ] );
+        }
       }
       temp.append( ')' );
     }
@@ -203,6 +263,22 @@ public class Setting extends Highlight
       value = getOptions( remote ).length - 1;
       return;
     }
+    if ( numberOfBits == 0 )
+    {
+      int i = 0;
+      for ( ; i < optionList.length; i++ )
+      {
+        Hex hex = ( ( NamedHex )optionList[ i ] ).getHex();
+        int size = hex.length();
+        if ( Hex.subHex( data, byteAddress, size ).equals( hex )  )
+        {
+          value = i;
+          return;
+        }
+      }
+      value = initialValue;
+      return;
+    } 
     int mask = ( 1 << numberOfBits ) - 1;
     if ( inverted )
       temp = ~temp;
@@ -226,6 +302,13 @@ public class Setting extends Highlight
         && value == getOptions( remote ).length - 1 )
     {
       data[ byteAddress ] = 0xFF;
+      return;
+    }
+    
+    if ( numberOfBits == 0 )
+    {
+      NamedHex nh = ( NamedHex )( optionList[ value ] );
+      Hex.put( nh.getHex().getData(), data, byteAddress );
       return;
     }
     
@@ -258,14 +341,27 @@ public class Setting extends Highlight
     pw.print( title, value );
   }
   
-  public void doHighlight( Color[] highlight, int index )
+  public void doHighlight( Color[] highlight, int index, Remote remote )
   {
+    if ( optionList != null && optionList[ value ] instanceof NamedHex )
+    {
+      int byteAddress = remote.getSettingBytes().get( index );
+      NamedHex nh = ( NamedHex ) optionList[ value ];
+      int size = nh.getHex().length();
+      for ( int i = 0; i < size; i++ )
+      {
+        highlight[ byteAddress + i ] = getHighlight();
+      }
+      setMemoryUsage( size );
+      return;
+    }
+
     int end = highlight.length - 1;
     for ( int i = 0; i < numberOfBits; i++ )
     {
       highlight[ end - 8 * index - bitNumber + i ] = getHighlight();
     }
-    setMemoryUsage( numberOfBits );
+    setMemoryUsage( - numberOfBits );
   }
 
   /** The title. */

@@ -71,6 +71,8 @@ Changes for v2.03
 - Add support for segment type 0x0F (Graham)
 - Fix issue with width of tooltips showing full text of truncated table cells (Graham)
 - Use legacy merge to avoid an issue apparently caused by a bug in Java 7 (Graham)
+- Permit multiple [Settings] sections in RDF, allowing alias [Settings+], all effectively concatenated when parsed (Graham)
+- Extend permitted syntax for [Settings] entries to allow multi-byte settings (Graham)
 
 Changes for v2.02
 -- Alpha --

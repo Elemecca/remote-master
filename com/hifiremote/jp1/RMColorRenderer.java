@@ -29,9 +29,11 @@ public class RMColorRenderer extends DefaultTableCellRenderer
     if ( model instanceof JP1TableModel< ? > )
     {
       Object item = ( ( JP1TableModel< ? > )model ).getRow( row );
+      int mem = 0;
       if ( item instanceof Highlight )
       {
-        usage = Integer.toString( ( ( Highlight )item ).getMemoryUsage() );
+        mem = ( ( Highlight )item ).getMemoryUsage();
+        usage = Integer.toString( mem < 0 ? ( - mem ) : mem );
       }
 
       if ( model instanceof DeviceUpgradeTableModel )
@@ -44,7 +46,14 @@ public class RMColorRenderer extends DefaultTableCellRenderer
       }
       else if ( model instanceof SettingsTableModel )
       {
-        usage += ( ( ( Highlight )item ).getMemoryUsage() == 1 ) ? " bit" : " bits";
+        if ( mem < 0 )
+        {
+          usage += mem == -1 ? " bit" : " bits";
+        }
+        else
+        {
+          usage += mem == 1 ? " byte" : " bytes";
+        }
       }
     }
     

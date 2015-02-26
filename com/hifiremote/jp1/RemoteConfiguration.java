@@ -5304,8 +5304,11 @@ public class RemoteConfiguration
       Segment segment = activity.getSegment();
       if ( segment == null )
       {
+        // I think this clause is now redundant.  It caused an error without the condition
+        // macro.getData() != null, so have added that rather than deleting the clause,
+        // to be on the safe side.  GD 26/02/2015
         Macro macro = activity.getMacro();
-        if ( macro != null && macro.getSegment() != null )
+        if ( macro != null && macro.getSegment() != null && macro.getData() != null )
         {
           activity.addMemoryUsage( macro.getData().length() + 5 );
         }
@@ -6362,7 +6365,7 @@ public class RemoteConfiguration
     for ( Setting setting : settings )
     {
       int index = remote.getSettingAddresses().get( setting.getByteAddress() );
-      setting.doHighlight( highlight, index );
+      setting.doHighlight( highlight, index, remote );
       setting.store( data, remote );
     }
   }

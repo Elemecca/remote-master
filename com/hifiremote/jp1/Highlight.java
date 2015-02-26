@@ -41,6 +41,10 @@ public class Highlight extends GeneralFunction
     this.segmentFlags = hl.segmentFlags;
   }
   
+  /**
+   * Positive values are byte count, but Settings are set bit by bit
+   * so a negative value signifies that its absolute value is a bit count.
+   */
   public int getMemoryUsage()
   {
     return memoryUsage;
@@ -51,6 +55,10 @@ public class Highlight extends GeneralFunction
     memoryUsage = 0;
   }
   
+  /**
+   * Positive values are byte count, but Settings are set bit by bit
+   * so a negative value signifies that its absolute value is a bit count.
+   */
   public void setMemoryUsage( int memoryUsage )
   {
     this.memoryUsage = memoryUsage;
