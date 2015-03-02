@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -11,7 +14,10 @@ import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
@@ -66,10 +72,15 @@ public class RawDataPanel extends RMPanel
     table.setPreferredScrollableViewportSize( d );
     add( scrollPane, BorderLayout.WEST );
     
+    JPanel panel = new JPanel( new BorderLayout() );
+    panel.setBorder( BorderFactory.createEmptyBorder( 20, 10, 5, 5 ) );
     infoBox = Box.createVerticalBox();
     infoBox.setAlignmentX( LEFT_ALIGNMENT );
-    infoBox.setBorder( BorderFactory.createEmptyBorder( 20, 10, 5, 5 ) );
-    add( infoBox, BorderLayout.CENTER );
+    infoBox.setBorder( BorderFactory.createEmptyBorder( 5, 5, 15, 5 ) );
+    panel.add( infoBox, BorderLayout.PAGE_START );
+    add( panel, BorderLayout.CENTER );
+    JPanel p = new JPanel( new BorderLayout() );
+    panel.add( p, BorderLayout.LINE_START );
 
     infoBox.add( signatureLabel );
     infoBox.add( Box.createVerticalStrut( 5 ) );
@@ -80,12 +91,37 @@ public class RawDataPanel extends RMPanel
     infoBox.add( versionLabel1 );
     infoBox.add( Box.createVerticalStrut( 5 ) );
     infoBox.add( versionLabel2 );
-    infoBox.add( Box.createVerticalGlue());
-    
+
     Font boldFont = ( new JLabel() ).getFont().deriveFont( Font.BOLD );
     infoLabel1.setFont( boldFont );
     infoLabel2.setFont( boldFont );
     infoLabel2.setForeground( Color.BLUE );
+    
+    ActionListener al = new ActionListener()
+    {
+      @Override
+      public void actionPerformed( ActionEvent e )
+      {
+        set( remoteConfig );
+      }
+    };
+    
+    normalBtn = new JRadioButton( "Normal data" );
+    normalBtn.setSelected( true );
+    normalBtn.addActionListener( al );
+    baseBtn = new JRadioButton( "Baseline data" );
+    baseBtn.setSelected( false );
+    baseBtn.addActionListener( al );
+    ButtonGroup bg = new ButtonGroup();
+    bg.add( normalBtn );
+    bg.add( baseBtn );
+    
+    choicePanel = new JPanel( new GridLayout( 2, 1, 0, 0 ) );
+    choicePanel.setBorder( BorderFactory.createTitledBorder( " Display " ) );
+    choicePanel.add( normalBtn );
+    choicePanel.add( baseBtn );
+    choicePanel.setVisible( false );
+    p.add(  choicePanel, BorderLayout.PAGE_START );
   }
 
   /**
@@ -97,11 +133,13 @@ public class RawDataPanel extends RMPanel
   @Override
   public void set( RemoteConfiguration remoteConfig )
   {
+    this.remoteConfig = remoteConfig;
     if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
       RemoteMaster rm = ( RemoteMaster )SwingUtilities.getAncestorOfClass( RemoteMaster.class, this );
-      short[] dataToShow = rm.useSavedData() ? remoteConfig.getSavedData() : remoteConfig.getData();
+      short[] dataToShow = rm.useSavedData() ? remoteConfig.getSavedData() : 
+        baseBtn.isSelected() ? remoteConfig.getBaselineData() : remoteConfig.getData();
       int dataEnd = remoteConfig.getDataEnd( dataToShow );
       if ( dataEnd != dataToShow.length )
       {
@@ -156,6 +194,7 @@ public class RawDataPanel extends RMPanel
           validate();
         }
       }
+      choicePanel.setVisible( !rm.useSavedData() && remoteConfig.getBaselineData() != null );
     }
   }
 
@@ -173,10 +212,8 @@ public class RawDataPanel extends RMPanel
     }
   }
 
-  /** The model. */
+  RemoteConfiguration remoteConfig = null;
   RawDataTableModel model = null;
-
-  /** The byte renderer. */
   UnsignedByteRenderer byteRenderer = new UnsignedByteRenderer();
   
   JLabel signatureLabel = new JLabel();  
@@ -187,7 +224,10 @@ public class RawDataPanel extends RMPanel
   JLabel infoLabel1 = new JLabel( "Values in black: RMIR data displayed" );
   JLabel infoLabel2 = new JLabel( "Values in blue: Original data displayed" );
   
-  Box infoBox = null; 
+  Box infoBox = null;
+  JPanel choicePanel = null;
+  JRadioButton normalBtn = null;
+  JRadioButton baseBtn = null;
   
   private Color[] highlight = null;
   private HashMap< Integer, Integer >settingAddresses = null;

@@ -43,7 +43,9 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
   {
     Remote remote = remoteConfig.getRemote();
     this.remoteConfig = remoteConfig;
+    normalData = remoteConfig.getData();
     savedData = remoteConfig.getSavedData();
+    baselineData = remoteConfig.getBaselineData();
     settingAddresses = remote.getSettingAddresses();
     highlight = remoteConfig.getHighlight();
   }
@@ -60,7 +62,9 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
   {
     component = super.getTableCellRendererComponent( table, value, isSelected, false, row, col );
     offset = 16 * row + col - 1;
-    if ( savedData != null && ( ( UnsignedByte )value ).getValue() != savedData[ offset ] )
+    short cellValue = ( ( UnsignedByte )value ).getValue();
+    
+    if ( savedData != null && cellValue != savedData[ offset ] )
     {
       component.setFont( boldFont );
     }
@@ -70,7 +74,7 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
     }
     if ( !isSelected )
     {
-      component.setForeground( useSavedData() ? Color.BLUE : Color.BLACK );
+      component.setForeground( changed() ? Color.YELLOW : useSavedData() ? Color.BLUE : Color.BLACK );
     }
     return component;
   }
@@ -82,7 +86,12 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
     {
       Dimension d = component.getSize();
       int end = highlight.length - 1;
-      if ( settingAddresses.containsKey( offset ) && highlight[ offset ] == Color.WHITE )
+      if ( changed() )
+      {
+        g.setColor( Color.RED );
+        g.fillRect( 0, 0, d.width, d.height );
+      }
+      else if ( settingAddresses.containsKey( offset ) && highlight[ offset ] == Color.WHITE )
       {
         for ( int i = 0; i < 8; i++ )
         {
@@ -104,14 +113,20 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
     return remoteConfig != null ? remoteConfig.getOwner().useSavedData() : false;
   }
   
+  private boolean changed()
+  {
+    return baselineData != null && !useSavedData() && normalData[ offset ] != baselineData[ offset ];
+  }
+  
   private int offset;
   private RemoteConfiguration remoteConfig = null;
   private Component component = null;
   private HashMap< Integer, Integer > settingAddresses = null;
   private Color[] highlight = null;
  
-  /** The saved data. */
+  private short[] normalData = null;
   private short[] savedData = null;
+  private short[] baselineData = null;
 
   /** The base font. */
   private Font baseFont = null;

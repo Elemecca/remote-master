@@ -73,6 +73,7 @@ Changes for v2.03
 - Use legacy merge to avoid an issue apparently caused by a bug in Java 7 (Graham)
 - Permit multiple [Settings] sections in RDF, allowing alias [Settings+], all effectively concatenated when parsed (Graham)
 - Extend permitted syntax for [Settings] entries to allow multi-byte settings (Graham)
+- Add set/clear baseline to Advanced menu and facilities to allow Raw Data tab to show differences from baseline (Graham)
 
 Changes for v2.02
 -- Alpha --

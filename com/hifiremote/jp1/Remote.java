@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -272,9 +273,8 @@ public class Remote implements Comparable< Remote >
         buttonMaps[ i ].setButtons( this );
       }
 
-      for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
+      for ( DeviceType type : deviceTypes.values() )
       {
-        DeviceType type = e.nextElement();
         int map = type.getMap();
         if ( map == -1 )
         {
@@ -297,10 +297,8 @@ public class Remote implements Comparable< Remote >
         java.util.List< String > v = new ArrayList< String >();
         DeviceType vcrType = null;
         boolean hasPVRalias = false;
-        for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
+        for ( DeviceType type : deviceTypes.values() )
         {
-          DeviceType type = e.nextElement();
-
           String typeName = type.getName();
           if ( typeName.startsWith( "VCR" ) )
           {
@@ -325,9 +323,8 @@ public class Remote implements Comparable< Remote >
 
       // find the longest button map
       ButtonMap longestMap = null;
-      for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
+      for ( DeviceType type : deviceTypes.values() )
       {
-        DeviceType type = e.nextElement();
         ButtonMap thisMap = type.getButtonMap();
         if ( longestMap == null || longestMap.size() < thisMap.size() )
         {
@@ -400,9 +397,8 @@ public class Remote implements Comparable< Remote >
         imageMaps[ mapIndex ].parse( this );
       }
 
-      for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
+      for ( DeviceType type : deviceTypes.values() )
       {
-        DeviceType type = e.nextElement();
         ImageMap[][] maps = type.getImageMaps();
         if ( maps.length > 0 )
         {
@@ -540,9 +536,8 @@ public class Remote implements Comparable< Remote >
     {
       maps.add( imageMaps[ mapIndex ] );
     }
-    for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
+    for ( DeviceType type : deviceTypes.values() )
     {
-      DeviceType type = e.nextElement();
       if ( type.getImageMaps().length == 0 )
       {
         continue;
@@ -794,9 +789,8 @@ public class Remote implements Comparable< Remote >
   public DeviceType getDeviceTypeByIndex( int index )
   {
     // Why not just return getDeviceTypes()[ index ]?  Is it to cover indexes out of range?
-    for ( Enumeration< DeviceType > e = deviceTypes.elements(); e.hasMoreElements(); )
+    for ( DeviceType type : deviceTypes.values() )
     {
-      DeviceType type = e.nextElement();
       if ( type.getNumber() == index )
       {
         return type;
@@ -3587,7 +3581,7 @@ public class Remote implements Comparable< Remote >
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
 
   /** The device types. */
-  private Hashtable< String, DeviceType > deviceTypes = new Hashtable< String, DeviceType >();
+  private LinkedHashMap< String, DeviceType > deviceTypes = new LinkedHashMap< String, DeviceType >();
   private Hashtable< Integer, DeviceType > devicesByType = new Hashtable< Integer, DeviceType >();
 
   /** The device types as an array in the order given in the RDF. */

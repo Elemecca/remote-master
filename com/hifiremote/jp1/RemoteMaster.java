@@ -113,7 +113,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
-  public final static int buildVer = 13;
+  public final static int buildVer = 14;
   
   public static int getBuild()
   {
@@ -182,6 +182,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem rdfPathItem = null;
 
   private JMenuItem mapPathItem = null;
+  private JMenuItem setBaselineItem = null;
+  private JMenuItem clearBaselineItem = null;
 
   /** The recent files. */
   private JMenu recentFiles = null;
@@ -675,6 +677,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       cleanUpperMemoryItem.setEnabled( true );
       initializeTo00Item.setEnabled( true );
       initializeToFFItem.setEnabled( true );
+      setBaselineItem.setEnabled( true );
       uploadAction.setEnabled( true );
       update();
       if ( file != null )
@@ -2043,7 +2046,28 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     useSavedDataItem = new JCheckBoxMenuItem( "Preserve original data" );
     useSavedDataItem.setSelected( false );
     useSavedDataItem.addActionListener( this );
+    useSavedDataItem.setToolTipText( 
+        "<html>When selected, the Raw Data tab displays the data as downloaded from the remote<br>"
+        + "or loaded from a file, free from any changes made to it by RMIR.  An upload to the<br>"
+        + "remote also uploads this unmodified data.</html>");
     menu.add( useSavedDataItem );
+    
+    setBaselineItem = new JMenuItem( "Set baseline" );
+    setBaselineItem.addActionListener( this );
+    setBaselineItem.setEnabled( false );
+    setBaselineItem.setToolTipText( 
+        "<html>Sets baseline to either normal or original data, depending on whether or not<br>"
+        + "\"Preserve original data\" is selected.  When a baseline is set, the Raw Data tab<br>"
+        + "highlights differences between current and baseline data in RED.</html>" );
+    menu.add( setBaselineItem );
+    clearBaselineItem = new JMenuItem( "Clear baseline" );
+    clearBaselineItem.addActionListener( this );
+    clearBaselineItem.setEnabled( false );
+    clearBaselineItem.setToolTipText( 
+        "Clears the baseline so that the Raw Data tab no longer highlights differences from it" );
+    menu.add( clearBaselineItem );
+    
+    menu.addSeparator();
 
     getSystemFilesItem = new JCheckBoxMenuItem( "Get system files" );
     getSystemFilesItem.setToolTipText( "<html>When checked, a download from the remote also copies<br>"
@@ -2504,6 +2528,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       cleanUpperMemoryItem.setEnabled( true );
       initializeTo00Item.setEnabled( !interfaces.isEmpty() );
       initializeToFFItem.setEnabled( !interfaces.isEmpty() );
+      setBaselineItem.setEnabled( true );
       return;
     }
     
@@ -2526,6 +2551,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     cleanUpperMemoryItem.setEnabled( true );
     initializeTo00Item.setEnabled( !interfaces.isEmpty() );
     initializeToFFItem.setEnabled( !interfaces.isEmpty() );
+    setBaselineItem.setEnabled( true );
     uploadAction.setEnabled( !interfaces.isEmpty() );
     setInterfaceState( "LOADING..." );
     ( new LoadTask( file ) ).execute();
@@ -3386,6 +3412,24 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         }
         setInterfaceState( "UPLOADING " + file.getName().toUpperCase() + "..." );
         ( new UploadSystemFile( file ) ).execute();
+      }
+      else if ( source == setBaselineItem )
+      {
+        remoteConfig.setBaselineData();
+        clearBaselineItem.setEnabled( true );
+        if ( currentPanel == rawDataPanel )
+        {
+          rawDataPanel.set( remoteConfig );
+        }
+      }
+      else if ( source == clearBaselineItem )
+      {
+        remoteConfig.clearBaselineData();
+        clearBaselineItem.setEnabled( false );
+        if ( currentPanel == rawDataPanel )
+        {
+          rawDataPanel.set( remoteConfig );
+        }
       }
       else if ( source == parseIRDBItem )
       {

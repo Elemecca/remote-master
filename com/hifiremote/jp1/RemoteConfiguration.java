@@ -7748,6 +7748,23 @@ public class RemoteConfiguration
     System.arraycopy( data, 0, savedData, 0, data.length );
   }
 
+  public short[] getBaselineData()
+  {
+    return baselineData;
+  }
+  
+  public void setBaselineData()
+  {
+    short[] dataToShow = owner.useSavedData() ? savedData : data;
+    baselineData = new short[ dataToShow.length ];
+    System.arraycopy( dataToShow, 0, baselineData, 0, baselineData.length );
+  }
+  
+  public void clearBaselineData()
+  {
+    baselineData = null;
+  }
+
   public String[] getDeviceButtonNotes()
   {
     return deviceButtonNotes;
@@ -7896,8 +7913,8 @@ public class RemoteConfiguration
   
   private Color[] highlight = null;
 
-  /** The saved data. */
   private short[] savedData = null;
+  private short[] baselineData = null;
   
   private LinkedHashMap< Integer, List<Segment> > segments = new LinkedHashMap< Integer, List<Segment> >();
   
