@@ -512,14 +512,22 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
       }
       else 
       {
-        String message = "Are you sure you want to delete the selected entry?";
+        int count = source == deleteButton ? table.getSelectedRowCount() : 1;
+        String message = "<html>Are you sure you want to delete the selected entr"
+            + ( count > 1 ? "ies?" : "y?" )
+            + "<br><br>To suppress this message in future, select the menu item"
+            + "<br>Options/Suppress Messages/All table deletes.</html>";
         String title = "Confirm Deletion";
         if ( suppressDeletePrompts || JOptionPane.showConfirmDialog( this, message, title, 
             JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION )
         {
-          delete( rowObject );
-          model.removeRow( sorter.modelIndex( row ) );
-          model.fireTableRowsDeleted( sorter.modelIndex( row ), sorter.modelIndex( row ) );
+          for ( int n = row + count - 1; n >= row; n-- )
+          {
+            rowObject = model.getRow( sorter.modelIndex( n ) );
+            delete( rowObject );
+            model.removeRow( sorter.modelIndex( n ) );
+          }
+          model.fireTableRowsDeleted( sorter.modelIndex( row ), sorter.modelIndex( row + count - 1 ) );
           if ( row == model.getRowCount() )
             --row;
           if ( select )
@@ -629,7 +637,6 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
       {
         upButton.setEnabled( row > 0 );
         downButton.setEnabled( row < ( sorter.getRowCount() - 1 ) );
-        deleteButton.setEnabled( canDelete( model.getRow( sorter.modelIndex( row ) ) ) );
         Transferable clipData = clipboard.getContents( clipboard );
         copyButton.setEnabled( true );
         if ( ( clipData != null ) && clipData.isDataFlavorSupported( DataFlavor.stringFlavor )
@@ -646,12 +653,22 @@ public abstract class TablePanel< E > extends KMPanel implements ActionListener,
       }
       else
       {
-        deleteButton.setEnabled( false );
         pasteButton.setEnabled( false );
         copyButton.setEnabled( false );
         upButton.setEnabled( false );
         downButton.setEnabled( false );
       }
+      int[] rows = table.getSelectedRows();
+      boolean deleteAllowed = true;
+      for ( int n : rows )
+      {
+        if ( !canDelete( model.getRow( sorter.modelIndex( n ) ) ) )
+        {
+          deleteAllowed = false;
+          break;
+        }
+      }
+      deleteButton.setEnabled( rows.length > 0 && deleteAllowed );
     }
   }
 

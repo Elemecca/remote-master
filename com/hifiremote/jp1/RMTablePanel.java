@@ -349,6 +349,8 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
 
   protected void deleteRow( int row, boolean select )
   {
+    int colFirst = table.getSelectedColumn();
+    int colCount = table.getSelectedColumnCount();
     int modelRow = -1;
     if ( row != -1 )
     {
@@ -368,16 +370,12 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
       {
         --rowToSelect;
       }
-      else
-      {
-        ++rowToSelect;
-      }
+      model.removeRow( modelRow );
       if ( select && rowToSelect > -1 )
       {
         table.setRowSelectionInterval( rowToSelect, rowToSelect );
+        table.setColumnSelectionInterval( colFirst, colFirst + colCount - 1 );
       }
-
-      model.removeRow( modelRow );
     }
   }
 
@@ -433,12 +431,19 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
     }    
     else if ( source == deleteButton || source == deleteItem )
     {
-      String message = "Are you sure you want to delete the selected entry?";
+      int count = source == deleteButton ? table.getSelectedRowCount() : 1;
+      String message = "<html>Are you sure you want to delete the selected entr"
+          + ( count > 1 ? "ies?" : "y?" )
+          + "<br><br>To suppress this message in future, select the menu item"
+          + "<br>Options/Suppress Messages/All table deletes.</html>";
       String title = "Confirm Deletion";
       if ( suppressDeletePrompts || JOptionPane.showConfirmDialog( this, message, title, 
           JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION )
       {
-        deleteRow( row, select );
+        for ( int n = row + count - 1; n >= row; n-- )
+        {
+          deleteRow( n, select );
+        }
       }
     }
     else if ( source == upButton || source == downButton )
@@ -549,7 +554,6 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         }
 
         boolean deleteAllowed = selected && canDelete( model.getRow( sorter.modelIndex( row ) ) );
-        deleteButton.setEnabled( deleteAllowed );
         deleteItem.setEnabled( deleteAllowed );
 
         upButton.setEnabled( row > 0 );
@@ -562,7 +566,6 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         cloneButton.setEnabled( false );
         cloneItem.setEnabled( false );
         cloneButton.setEnabled( false );
-        deleteButton.setEnabled( false );
         deleteItem.setEnabled( false );
         upButton.setEnabled( false );
         downButton.setEnabled( false );
@@ -576,6 +579,17 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         }
       }
       copyItem.setEnabled( table.getSelectedRowCount() > 0 );
+      int[] rows = table.getSelectedRows();
+      boolean deleteAllowed = true;
+      for ( int row : rows )
+      {
+        if ( !canDelete( model.getRow( sorter.modelIndex( row ) ) ) )
+        {
+          deleteAllowed = false;
+          break;
+        }
+      }
+      deleteButton.setEnabled( rows.length > 0 && deleteAllowed );
     }
   }
 

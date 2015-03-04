@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -460,6 +462,36 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
   public void removeRow( int row )
   {
     DeviceUpgrade du = getRow( row );
+    int devTypeIndex = du.getDeviceType().getNumber();
+    int setupCode = du.getSetupCode();
+    boolean hasLinkedKeyMoves = false;
+    for ( KeyMove km : remoteConfig.getKeyMoves() )
+    {
+      if ( km.getDeviceType() == devTypeIndex && km.getSetupCode() == setupCode )
+      {
+        hasLinkedKeyMoves = true;
+        break;
+      }
+    }
+    if ( hasLinkedKeyMoves )
+    {
+      String message = "There are key moves that send signals of the device upgrade that you are\n"
+          + "deleteing.  Do you also want to delete these key moves?";
+      String title = "Key Moves of a Device Upgrade";
+      if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+          JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION )
+      {
+        for ( ListIterator< KeyMove > li = remoteConfig.getKeyMoves().listIterator(); li.hasNext(); )
+        {
+          KeyMove km = li.next();
+          if ( km.getDeviceType() == devTypeIndex && km.getSetupCode() == setupCode ) 
+          {
+            li.remove();
+          }
+        }
+      }
+    }
+
     DeviceButton db = du.getButtonRestriction();
     if ( db != null && db != DeviceButton.noButton )
     {

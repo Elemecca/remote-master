@@ -74,6 +74,8 @@ Changes for v2.03
 - Permit multiple [Settings] sections in RDF, allowing alias [Settings+], all effectively concatenated when parsed (Graham)
 - Extend permitted syntax for [Settings] entries to allow multi-byte settings (Graham)
 - Add set/clear baseline to Advanced menu and facilities to allow Raw Data tab to show differences from baseline (Graham)
+- Extend table deletion on main tables to permit deletion of multiple entries in a single action (Graham)
+- When deleting a device upgrade, offer option also to delete key moves that send signals of that upgrade (Graham)
 
 Changes for v2.02
 -- Alpha --
