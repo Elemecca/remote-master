@@ -76,6 +76,7 @@ Changes for v2.03
 - Add set/clear baseline to Advanced menu and facilities to allow Raw Data tab to show differences from baseline (Graham)
 - Extend table deletion on main tables to permit deletion of multiple entries in a single action (Graham)
 - When deleting a device upgrade, offer option also to delete key moves that send signals of that upgrade (Graham)
+- Fix bug that converted filename to lower case when saving a .ir file as a .rmir file (Graham)
 
 Changes for v2.02
 -- Alpha --

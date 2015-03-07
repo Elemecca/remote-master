@@ -113,7 +113,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
-  public final static int buildVer = 14;
+  public final static int buildVer = 15;
   
   public static int getBuild()
   {
@@ -2844,8 +2844,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     File oldFile = file;
     if ( oldFile != null )
     {
-      String name = oldFile.getName().toLowerCase();
-      if ( name.endsWith( ".ir" ) || name.endsWith( ".txt" ) )
+      String name = oldFile.getName();
+      if ( name.toLowerCase().endsWith( ".ir" ) || name.toLowerCase().endsWith( ".txt" ) )
       {
         int dot = name.lastIndexOf( '.' );
         name = name.substring( 0, dot ) + ".rmir";
