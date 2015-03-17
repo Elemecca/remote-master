@@ -20,6 +20,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
@@ -974,7 +975,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == readmeItem )
       {
-        File readme = new File( "Readme.html" );
+        File readme = new File( RemoteMaster.getWorkDir(), "Readme.html" );
         desktop.browse( readme.toURI() );
       }
       else if ( source == tutorialItem )
@@ -1002,6 +1003,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         String text = "<html><b>RemoteMaster Device Upgrade Editor, "
             + RemoteMaster.version
+            + " build " + RemoteMaster.getBuild()
             + "</b>"
             + "<p>Get the latest version at <a href=\"http://controlremote.sourceforge.net\">http://controlremote.sourceforge.net</a></p>"
             + "<p>Java version "
@@ -1358,11 +1360,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     if ( homeDirectory == null )
     {
-      String temp = System.getProperty( "user.dir" );
-      if ( temp != null )
-      {
-        homeDirectory = new File( temp );
-      }
+      homeDirectory = RemoteMaster.getWorkDir();
     }
     return homeDirectory;
   }

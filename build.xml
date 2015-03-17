@@ -64,7 +64,8 @@
 
         <target name="rmzip" depends="rmjar,digitmaps" description="Generate the distribution zip file">
           <zip destfile="${src}/RemoteMaster.${rmversion}.zip">
-            <zipfileset dir="${src}" includes="RemoteMaster.jar,buildRef.txt,Readme.html,*.css,protocols.ini,ChangeLog.txt,digitmaps.bin,Setup.vbs,porttalk.sys,*.ico, Docs/*.pdf" />
+          	<zipfileset dir="${src}" includes="RemoteMaster.jar" filemode="755" />
+            <zipfileset dir="${src}" includes="buildRef.txt,Readme.html,*.css,protocols.ini,ChangeLog.txt,digitmaps.bin,Setup.vbs,porttalk.sys,*.ico, Docs/*.pdf" />
             <zipfileset src="${src}/jp1parallel.zip" includes="porttalk.sys"/>
             <zipfileset src="${src}/jp1parallel.zip" includes="jp1parallel.dll" prefix="Windows-x86"/>
 			<zipfileset src="${src}/jp1parallel.zip" includes="libjp1parallel.so" prefix="Linux-i386" filemode="755"/>
@@ -75,7 +76,7 @@
 			<zipfileset src="${src}/DecodeIR_245.zip" includes="**/libDecodeIR.so,**/libDecodeIR.jnilib" filemode="755"/>
 			<zipfileset src="${src}/DecodeIR_245.zip" includes="**/DecodeIR.dll,DecodeIR.html,Docs/*.txt" filemode="555"/>
           	<zipfileset src="${src}/RdfAndImages.zip" includes="**/*" defaultexcludes="no"/>
-            <zipfileset dir="${src}" includes="*.sh" filemode="755" />
+            <zipfileset dir="${src}" includes="Setup.sh" filemode="755" />
 			<!-- Tutorial is now on the wiki
           	<zipfileset dir="${src}" includes="tutorial.htm" />
             <zipfileset dir="tutorial_files" includes="**/*" prefix="tutorial_files" />

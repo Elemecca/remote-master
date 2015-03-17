@@ -34,6 +34,8 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
+import java.security.CodeSource;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,7 +115,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
-  public final static int buildVer = 15;
+  public final static int buildVer = 18;
   
   public static int getBuild()
   {
@@ -341,6 +343,38 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private TextFileViewer rdfViewer = null;
 
   private List< AssemblerItem > clipBoardItems = new ArrayList< AssemblerItem >();
+  
+  public static class NegativeDefaultButtonJOptionPane 
+  {
+    // From http://stackoverflow.com/questions/1395707/how-to-make-joptionpane-showconfirmdialog-have-no-selected-by-default
+    public static int showConfirmDialog(Component parentComponent, Object message, String title, int optionType,
+        int messageType ) 
+    {
+      List<Object> options = new ArrayList<Object>();
+      Object defaultOption;
+      switch(optionType){
+        case JOptionPane.OK_CANCEL_OPTION:
+          options.add(UIManager.getString("OptionPane.okButtonText"));
+          options.add(UIManager.getString("OptionPane.cancelButtonText"));
+          defaultOption = UIManager.getString("OptionPane.cancelButtonText");
+          break;
+        case JOptionPane.YES_NO_OPTION:
+          options.add(UIManager.getString("OptionPane.yesButtonText"));
+          options.add(UIManager.getString("OptionPane.noButtonText"));
+          defaultOption = UIManager.getString("OptionPane.noButtonText");
+          break;
+        case JOptionPane.YES_NO_CANCEL_OPTION:
+          options.add(UIManager.getString("OptionPane.yesButtonText"));
+          options.add(UIManager.getString("OptionPane.noButtonText"));
+          options.add(UIManager.getString("OptionPane.cancelButtonText"));
+          defaultOption = UIManager.getString("OptionPane.cancelButtonText");
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown optionType "+optionType);
+      }
+      return JOptionPane.showOptionDialog(parentComponent, message, title, optionType, messageType, null, options.toArray(), defaultOption);
+    }
+  }
   
   public class Preview extends JPanel
   {
@@ -1154,7 +1188,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         + "Doing so will likely cause the remote to stop working until you\n"
         + "perform a hard reset.  Are you sure you want to do this?\n"
         + "(Make sure your current configuration is saved before proceeding.)";
-    if ( JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.YES_OPTION )
+    if ( NegativeDefaultButtonJOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.YES_OPTION )
     {
       data = new short[ remoteConfig.getRemote().getEepromSize() ];
       Arrays.fill( data, 0, data.length, ( short )value );
@@ -1745,7 +1779,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     menu.setMnemonic( KeyEvent.VK_R );
     menuBar.add( menu );
 
-    File userDir = new File( System.getProperty( "user.dir" ) );
+    File userDir = workDir;
     try
     {
       JP12Serial jp12Serial = new JP12Serial( userDir );
@@ -1773,8 +1807,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       JP1USB jp1usb = new JP1USB( userDir );
       interfaces.add( jp1usb );
       System.err.println( "    JP1USB version " + jp1usb.getInterfaceVersion() );
-      System.err.println( "    EEPROM size returns " + jp1usb.getRemoteEepromSize() );
-      System.err.println( "    EEPROM address returns " + jp1usb.getRemoteEepromAddress() );
+//      System.err.println( "    EEPROM size returns " + jp1usb.getRemoteEepromSize() );
+//      System.err.println( "    EEPROM address returns " + jp1usb.getRemoteEepromAddress() );
     }
     catch ( LinkageError le )
     {
@@ -1797,8 +1831,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       JP1Parallel jp1Parallel = new JP1Parallel( userDir );
       interfaces.add( jp1Parallel );
       System.err.println( "    JP1Parallel version " + jp1Parallel.getInterfaceVersion() );
-      System.err.println( "    EEPROM size returns " + jp1Parallel.getRemoteEepromSize() );
-      System.err.println( "    EEPROM address returns " + jp1Parallel.getRemoteEepromAddress() );
+//      System.err.println( "    EEPROM size returns " + jp1Parallel.getRemoteEepromSize() );
+//      System.err.println( "    EEPROM address returns " + jp1Parallel.getRemoteEepromAddress() );
     }
     catch ( LinkageError le )
     {
@@ -2809,7 +2843,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         String title = "Invalid Configuration";
         String message = "This configuration is not valid, but it can be saved and then\n"
             + "re-loaded to give again this same invalid configuration.\n\n" + "Do you wish to continue?";
-        if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.YES_NO_OPTION,
+        if ( NegativeDefaultButtonJOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
         {
           return;
@@ -3050,6 +3084,23 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       for ( IO temp : interfaces )
       {
+        if ( temp instanceof JP1Parallel && System.getProperty( "os.name" ).equals( "Linux" ) )
+        {
+          String title = "Linux Parallel Port Interface";
+          String message = 
+                "Auto-detect has not been able to find a remote with any other interface, so is about to try the\n"
+              + "Linux parallel port driver, which is unsafe.  It may cause RMIR to crash.  It uses \"bitbanging\"\n"
+              + "which is incompatible with modern operating systems and so can only be run with root privileges.\n"
+              + "It is not supported.  Use it at your own risk.\n\n"
+              + "To use it without getting this message every time, select it explicitly with the Interface item\n"
+              + "on the Remote menu rather than using Auto-detect.\n\n"
+              + "Do you wish to continue?";
+          if ( NegativeDefaultButtonJOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE )
+                 != JOptionPane.YES_OPTION )
+          {
+            continue;
+          }
+        }
         String tempName = temp.getInterfaceName();
         System.err.println( "Testing interface: " + ( tempName == null ? "NULL" : tempName ) );
         IO ioOut = testInterface( temp, null, file, use );
@@ -3267,7 +3318,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         message += "be aware that blasting the memory will destroy most extenders, as\n"
             + "they place at least part of their code in the memory that will be cleared.\n"
             + "Press Cancel to exit without blasting the memory.";
-        int result = JOptionPane.showConfirmDialog( this, message, title, 
+        int result = NegativeDefaultButtonJOptionPane.showConfirmDialog( this, message, title, 
             remoteConfig.hasSegments() ? JOptionPane.OK_CANCEL_OPTION : JOptionPane.YES_NO_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE );
         if ( result == JOptionPane.CANCEL_OPTION )
@@ -3381,16 +3432,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == initializeTo00Item )
       {
         short[] data = getInitializationData( 0 );
-        System.err.println( "Starting upload to initialize to FF" );
-        setInterfaceState( "INITIALIZING TO 00..." );
-        ( new UploadTask( data, false ) ).execute();
+        if ( data != null )
+        {
+          System.err.println( "Starting upload to initialize to FF" );
+          setInterfaceState( "INITIALIZING TO 00..." );
+          ( new UploadTask( data, false ) ).execute();
+        }
       }
       else if ( source == initializeToFFItem )
       {
         short[] data = getInitializationData( 0xFF );
-        System.err.println( "Starting upload to initialize to FF" );
-        setInterfaceState( "INITIALIZING TO FF..." );
-        ( new UploadTask( data, false ) ).execute();
+        if ( data != null )
+        {
+          System.err.println( "Starting upload to initialize to FF" );
+          setInterfaceState( "INITIALIZING TO FF..." );
+          ( new UploadTask( data, false ) ).execute();
+        }
       }
       else if ( source == useSavedDataItem )
       {
@@ -3542,23 +3599,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == aboutItem )
       {
-        int buildNumber = buildVer;
-        File buildFile = new File( workDir, "buildRef.txt");
-        if ( buildFile.exists() )
-        {
-          BufferedReader rdr = new BufferedReader( new FileReader ( buildFile ) );
-          String str = rdr.readLine();
-          rdr.close();
-          try
-          {
-            buildNumber = Integer.parseInt( str );
-          }
-          catch ( NumberFormatException nfe ) {};
-          if ( buildNumber < buildVer )
-          {
-            buildNumber = buildVer;
-          }
-        }
         StringBuilder sb = new StringBuilder( 1000 );
         sb.append( "<html><b>RemoteMaster " );
         sb.append( version );     
@@ -3639,7 +3679,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == readmeItem )
       {
-        File readme = new File( "Readme.html" );
+        File readme = new File( workDir, "Readme.html" );
         desktop.browse( readme.toURI() );
       }
       else if ( source == tutorialItem )
@@ -3650,7 +3690,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       else if ( source == learnedSignalItem )
       {
-        File file = new File( "DecodeIR.html" );
+        File file = new File( workDir, "DecodeIR.html" );
         desktop.browse( file.toURI() );
       }
       else if ( source == homePageItem )
@@ -3984,7 +4024,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         message += "\nor devices without a matching device upgrade";
       }      
       message +=  ".\n\nAre you sure you wish to continue?";
-      return JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION ) == JOptionPane.YES_OPTION;
+      return NegativeDefaultButtonJOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION;
     }
     else if ( setupValidation == Remote.SetupValidation.ENFORCE )
     {
@@ -4048,6 +4088,31 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
     return file;
   }
+  
+  /**
+   * 
+   * Taken from http://stackoverflow.com/questions/320542/how-to-get-the-path-of-a-running-jar-file
+   * Said there to work with Windows, Linux and Mac.
+   */
+  public static File getJarContainingFolder( Class<?> aclass ) throws Exception 
+  {
+    CodeSource codeSource = aclass.getProtectionDomain().getCodeSource();
+
+    File jarFile;
+
+    if ( codeSource.getLocation() != null ) 
+    {
+      jarFile = new File(codeSource.getLocation().toURI());
+    }
+    else 
+    {
+      String path = aclass.getResource(aclass.getSimpleName() + ".class").getPath();
+      String jarFilePath = path.substring(path.indexOf(":") + 1, path.indexOf("!"));
+      jarFilePath = URLDecoder.decode(jarFilePath, "UTF-8");
+      jarFile = new File(jarFilePath);
+    }
+    return jarFile.getParentFile();
+  }
 
   /**
    * Description of the Method.
@@ -4059,8 +4124,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   {
     try
     {
-      workDir = new File( System.getProperty( "user.dir" ) );
+      workDir = getJarContainingFolder( RemoteMaster.class );
       File propertiesFile = null;
+      File errorsFile = null;
       File fileToOpen = null;
       boolean launchRM = true;
       for ( int i = 0; i < args.size(); ++i )
@@ -4083,7 +4149,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           String dirName = args.get( ++i );
           System.err.println( parm + " applies to \"" + dirName + '"' );
           workDir = new File( dirName );
-          System.setProperty( "user.dir", workDir.getCanonicalPath() );
         }
         else if ( "-properties".startsWith( parm ) )
         {
@@ -4091,22 +4156,33 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           System.err.println( "Properties file name is \"" + fileName + '"' );
           propertiesFile = new File( fileName );
         }
+        else if ( "-errors".startsWith( parm ) )
+        {
+          String fileName = args.get( ++i );
+          System.err.println( "Errors file name is \"" + fileName + '"' );
+          errorsFile = new File( fileName );
+        }
         else
         {
           fileToOpen = new File( parm );
         }
       }
+      
+      if ( errorsFile == null )
+      {
+        errorsFile = getWritableFile( workDir, "rmaster.err" );
+      }
 
       try
       {
-        System.setErr( new PrintStream( new FileOutputStream( getWritableFile( workDir, "rmaster.err" ) ) ) );
+        System.setErr( new PrintStream( new FileOutputStream( errorsFile ) ) );
       }
       catch ( Exception e )
       {
         e.printStackTrace( System.err );
       }
 
-      System.err.println( "RemoteMaster " + RemoteMaster.version );
+      System.err.println( "RemoteMaster " + RemoteMaster.version + " build " + getBuild() );
       System.err.println( "Legacy merge set = " + legacyMergeOK );
       String[] propertyNames =
       {

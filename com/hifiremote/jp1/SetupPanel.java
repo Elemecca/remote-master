@@ -487,15 +487,15 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
         }
         
         int maxRows = 7;
-        if ( altPID.isVisible() )
-        {
-          maxRows--;
-        }
-        if ( Boolean.parseBoolean( JP1Frame.getProperties().getProperty( "enablePreserveSelection", "false" ) ) )
-        {
-          // Preserve Selection box is added/removed rather than made visible or invisible.
-          maxRows--;
-        }
+//        if ( altPID.isVisible() )
+//        {
+//          maxRows--;
+//        }
+//        if ( Boolean.parseBoolean( JP1Frame.getProperties().getProperty( "enablePreserveSelection", "false" ) ) )
+//        {
+//          // Preserve Selection box is added/removed rather than made visible or invisible.
+//          maxRows--;
+//        }
         int maxHeight = maxRows * ( fixedData.getPreferredSize().height + 5 );
         Insets insets = pScrollPane.getBorder().getBorderInsets( pScrollPane );
         maxHeight += insets.top + insets.bottom;

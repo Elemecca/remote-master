@@ -56,7 +56,9 @@ public class RemoteManager
   {
     File path = properties.getFileProperty( propName );
     if ( path == null )
-      path = new File( System.getProperty( "user.dir" ), defaultName );
+    {
+      path = new File( RemoteMaster.getWorkDir(), defaultName );;
+    }
 
     while ( !path.exists() || !path.isDirectory() ) // GD:  was && but it seemed to me that it should be ||
       path = path.getParentFile();

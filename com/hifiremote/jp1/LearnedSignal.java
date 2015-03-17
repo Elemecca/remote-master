@@ -321,7 +321,7 @@ public class LearnedSignal extends Highlight
     {
       try
       {
-        decodeIR = new DecodeIRCaller( new File( System.getProperty( "user.dir" ) ) );
+        decodeIR = new DecodeIRCaller( RemoteMaster.getWorkDir() );
         hasDecodeIR = 2; // yes
       }
       catch ( UnsatisfiedLinkError ule )
