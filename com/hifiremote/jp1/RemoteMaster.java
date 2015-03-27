@@ -115,7 +115,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03 Alpha 28";
-  public final static int buildVer = 18;
+  public final static int buildVer = 19;
   
   public static int getBuild()
   {
@@ -2805,6 +2805,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       return;
     }
     
+    if ( file.exists() && !file.canWrite() )
+    {
+      String title = "File Save Error";
+      String message = "The file\n" + file.getCanonicalPath()
+          + "\nis read-only.  Please use \"Save As...\" to save to a different file.";
+      JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+      return;
+    }
+    
     String ext = file.getName().toLowerCase();
     int dot = ext.lastIndexOf( '.' );
     ext = ext.substring( dot );
@@ -2914,6 +2923,15 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         return;
       }
 
+      if ( newFile.exists() && !newFile.canWrite() )
+      {
+        String title = "File Save Error";
+        String message = "The file\n" + newFile.getCanonicalPath()
+            + "\nis read-only.  Please save to a different file.";
+        JOptionPane.showMessageDialog( this, message, title, JOptionPane.ERROR_MESSAGE );
+        return;
+      }
+      
       dir = newFile.getParentFile();
       properties.setProperty( "IRPath", dir );
 

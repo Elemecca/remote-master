@@ -50,7 +50,7 @@ Changes for v2.03
 - Fix bug in Hex.parseHex( String ) when string is a hex value with a final 'h' indicator (Graham)
 - Fix bug when loading FavScan with AdvCodeBindFormat=LONG and Fav Device = <none> (Graham)
 -- Alpha 28
-- Update digitmaps to 627 (Dave Reed)
+- Update digitmaps to 630 (Dave Reed)
 - Update DecodeIR and DecodeIR.html to v2.45 (Dave Reed)
 - On Mac OS X, ensure libraries are sought with extension .jnilib rather than .dylib (Graham)
 - Amend build.xml to allow distribution zip file to include RDFs, Maps and Images (Graham)
@@ -82,6 +82,7 @@ Changes for v2.03
 - Add warning and request confirmation if Linux parallel port interface is to be used (Graham)
 - Change several confirmation dialogs to default to the No button (Graham)
 - Add a new startup parameter "-errors" analogous to "-properties" to specify the error file (Graham)
+- Give error message on an attempt to save to a read-only file (Graham)
 
 Changes for v2.02
 -- Alpha --
