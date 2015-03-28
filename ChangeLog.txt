@@ -83,6 +83,7 @@ Changes for v2.03
 - Change several confirmation dialogs to default to the No button (Graham)
 - Add a new startup parameter "-errors" analogous to "-properties" to specify the error file (Graham)
 - Give error message on an attempt to save to a read-only file (Graham)
+- Make Fixed Data only concern bits not set by any Setting (Graham)
 
 Changes for v2.02
 -- Alpha --

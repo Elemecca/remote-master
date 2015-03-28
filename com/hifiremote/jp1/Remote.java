@@ -154,6 +154,7 @@ public class Remote implements Comparable< Remote >
       }
       loaded = true;
       settingAddresses.clear();
+      settingMasks.clear();
       settingBytes.clear();
       RDFReader rdr = new RDFReader( file );
       String line = rdr.readLine();
@@ -1792,12 +1793,26 @@ public class Remote implements Comparable< Remote >
       {
         optionsList = options.toArray( new String[ 0 ] );
       }
-      work.add( new Setting( title, byteAddress, bitNumber, numberOfBits, initialValue, inverted, optionsList,
-          sectionName ) );
+      Setting setting = new Setting( title, byteAddress, bitNumber, numberOfBits, initialValue, 
+          inverted, optionsList, sectionName );
+      work.add( setting );
       if ( ! settingAddresses.containsKey( byteAddress ) )
       {
         settingBytes.add( byteAddress );
         settingAddresses.put( byteAddress, index++ );
+        int[] masks = setting.getMasks();
+        for ( int i = 0; i < masks.length; i++ )
+        {
+          settingMasks.put( byteAddress + i, masks[ i ] );
+        }
+      }
+      else if ( setting.getMasks().length == 1 )
+      {
+        // This is the case where two settings set different bits of same byte
+        // and so can only occur with single-byte settings
+        int mask = settingMasks.get( byteAddress );
+        mask &= setting.getMasks()[ 0 ];
+        settingMasks.put( byteAddress, mask );
       }
     }
     settings = work.toArray( settings );
@@ -3555,11 +3570,17 @@ public class Remote implements Comparable< Remote >
   private Setting[] settings = new Setting[ 0 ];
   
   private HashMap< Integer, Integer > settingAddresses = new HashMap< Integer, Integer >();
+  private HashMap< Integer, Integer > settingMasks = new HashMap< Integer, Integer >();
   private List< Integer > settingBytes = new ArrayList< Integer >();
 
   public HashMap< Integer, Integer > getSettingAddresses()
   {
     return settingAddresses;
+  }
+
+  public HashMap< Integer, Integer > getSettingMasks()
+  {
+    return settingMasks;
   }
 
   public List< Integer > getSettingBytes()

@@ -6380,7 +6380,7 @@ public class RemoteConfiguration
     }
     for ( FixedData fixed : fixedData )
     {
-      if ( fixed.getLocation() == Location.E2 && ! fixed.check( data ) )
+      if ( fixed.getLocation() == Location.E2 && ! fixed.check( remote, data ) )
       {
         mismatch = true;
         break;
@@ -6402,7 +6402,7 @@ public class RemoteConfiguration
     {
       if ( fixed.getLocation() == Location.E2 )
       {
-        fixed.store( data );
+        fixed.store( remote, data );
       }
     }
   }
@@ -6418,7 +6418,7 @@ public class RemoteConfiguration
     {
       if ( auto.getLocation() == Location.E2 )
       {
-        auto.store( data );
+        auto.store( remote, data );
       }
     }
 

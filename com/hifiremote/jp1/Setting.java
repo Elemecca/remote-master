@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.util.Arrays;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -285,6 +286,30 @@ public class Setting extends Highlight
     int shift = bitNumber - numberOfBits + 1;
     temp >>= shift;
     value = temp & mask;
+  }
+  
+  public int[] getMasks()
+  {
+    int[] masks = null;
+    if ( numberOfBits == 0 )
+    {
+      int maxSize = 0;
+      for ( int i = 0; i < optionList.length; i++ )
+      {
+        maxSize = Math.max( maxSize, ( ( NamedHex )( optionList[ i ] ) ).hex.length() );   
+      }
+      masks = new int[ maxSize ];
+      Arrays.fill( masks, 0 );
+    }
+    else
+    {
+      int mask = ( 1 << numberOfBits ) - 1;
+      int shift = bitNumber - numberOfBits + 1;
+      mask <<= shift;
+      mask = ~mask;
+      masks = new int[] { mask };
+    }
+    return masks;
   }
 
   /**

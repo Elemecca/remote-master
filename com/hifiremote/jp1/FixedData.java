@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -145,17 +146,19 @@ public class FixedData
     return work.toArray( new FixedData[ work.size() ] );
   }
 
-  public boolean check( short[] buffer )
+  public boolean check( Remote remote, short[] buffer )
   {
     if ( ( address + data.length ) > buffer.length )
     {
       return false;
     }
+    HashMap< Integer, Integer > masks = remote != null ? remote.getSettingMasks() : null;
     for ( int i = 0; i < data.length; ++i )
     {
       // For an extender merge file, a buffer value 0x100 means that the value is absent in
       // the extender hex, which is deemed to be a match.
-      if ( buffer[ address + i ] < 0x100 && data[ i ] != buffer[ address + i ] )
+      int mask = ( remote == null || masks.get( address + i ) == null ) ? 0xFF : masks.get( address + i );
+      if ( buffer[ address + i ] < 0x100 && ( ( data[ i ] ^ buffer[ address + i ] ) & mask ) != 0 )
       {
         return false;
       }
@@ -173,7 +176,7 @@ public class FixedData
       {
         if ( fixedData.location == Location.E2 )
         {
-          if ( ! fixedData.check( buffer ) )
+          if ( ! fixedData.check( remote, buffer ) )
           {
             pass = false;
             break;
@@ -181,7 +184,7 @@ public class FixedData
         }
         else if ( sigData != null ) // location = Location.SIGBLK
         {
-          if ( ! fixedData.check( sigData ) )
+          if ( ! fixedData.check( null, sigData ) )
           {
             pass = false;
             break;
@@ -196,9 +199,16 @@ public class FixedData
     return passed.toArray( new Remote[ 0 ] );
   }
 
-  public void store( short[] buffer )
+  public void store( Remote remote, short[] buffer )
   {
-    System.arraycopy( data, 0, buffer, address, data.length );
+    HashMap< Integer, Integer > masks = remote != null ? remote.getSettingMasks() : null;
+    for ( int i = 0; i < data.length; ++i )
+    {
+      int mask = ( remote == null || masks.get( address + i ) == null ) ? 0xFF : masks.get( address + i );
+      int val = buffer[ address + i ] & ( ~mask );
+      val |= data[ i ] & mask;
+      buffer[ address + i ] = ( short )val;
+    }
   }
 
   /*
