@@ -17,9 +17,12 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.StringReader;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -71,6 +74,88 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
   {
     super( owner, "Import Raw Upgrade", true );
     createGui( owner, deviceUpgrade, restrictRemote );
+  }
+  
+  private class ImportedKeyMove
+  {
+    int keyCode = 0;
+    int setupValue = 0;
+    Hex hex = null;
+    String text = null;
+    
+    public ImportedKeyMove( Hex hexData, String text )
+    {
+      short[] data = hexData.getData();
+      keyCode = data[ 0 ];
+      int dataIndex = data[ 1 ] == 0xF0 ? 3 : 2;
+      setupValue = Hex.get( data, dataIndex );
+      hex = hexData.subHex( dataIndex + 2 );
+      this.text = text;
+    }
+    
+    public int getKeyCode()
+    {
+      return keyCode;
+    }
+    
+    public int getDeviceType()
+    {
+      return setupValue >> 12;
+    }
+
+    public int getSetupCode()
+    {
+      return setupValue & 0x0FFF;
+    }
+    
+    public String getName()
+    {
+      int pos = text.indexOf( ':' );
+      return ( pos >= 0 ? text.substring( 0, pos ) : text ).trim();
+    }
+    
+    public String getNotes()
+    {
+      int pos = text.indexOf( ':' );
+      return pos >= 0 ? text.substring( pos + 1 ).trim() : null;
+    }
+
+    public Hex getCmd( Remote remote )
+    {
+      Hex cmd = null;
+      int cmdLen = 1;
+      try
+      {
+        cmdLen = deviceUpgrade.getProtocol().getDefaultCmd().length();
+      }
+      catch ( Exception ex )
+      {
+        System.err.println( "ImportRawUpgrade: Unable to determine default command length" );
+      }
+      short[] data = hex.getData();
+      if ( remote.getAdvCodeFormat() == AdvancedCode.Format.EFC )
+      {
+        if ( hex.length() == 2 )
+        {
+          cmd = EFC.toHex( hex.get( 0 ) );
+        }
+        else if ( hex.length() == 3 )
+        {
+          int val = hex.get( 1 ) | ( data[ 0 ] << 16 );
+          cmd = EFC5.toHex( val );
+        }
+      }
+      else if ( remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.LONG
+          && data[ 1 ] == EFC.parseHex( data[ 0 ] ) && cmdLen == 1 )
+      {
+        cmd = hex.subHex( 0, 1 );
+      }
+      else
+      {
+        cmd = hex;
+      }
+      return cmd;
+    }
   }
 
   private void prefillFromClipboard()
@@ -181,6 +266,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     mainPanel.add( protocolLabel, "1, 12, 3, 12" );
     protocolCode = new JTextArea( 10, 50 );
     protocolCode.getDocument().addDocumentListener( this );
+    protocolCode.setEnabled( false );
     new TextPopupMenu( protocolCode );
     protocolLabel.setLabelFor( protocolCode );
     mainPanel.add( new JScrollPane( protocolCode ), "1, 13, 3, 13" );
@@ -237,9 +323,11 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
         String[] tokens = line.split( "[=(/)]" );
 
         String deviceTypeName = tokens[ 2 ];
+        originalDeviceTypeName = deviceTypeName;
         deviceTypeList.setSelectedItem( deviceTypeName );
 
         setupCode.setText( tokens[ 3 ] );
+        originalSetupCode = Integer.parseInt( tokens[ 3 ] );
 
         StringBuilder sb = new StringBuilder();
         while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
@@ -260,7 +348,8 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
         }
       }
 
-      if ( line != null && line.toUpperCase().startsWith( "UPGRADE PROTOCOL" ) )
+      if ( line != null && line.toUpperCase().startsWith( "UPGRADE PROTOCOL" )
+          && protocolCode.isEnabled() )
       {
         rc = true;
         String[] tokens = line.split( "[=()]" );
@@ -298,20 +387,76 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     Object source = e.getSource();
     if ( source == ok )
     {
+      if ( confirm )
+      {
+        String title = "Protocol Code";
+        String message =  "This upgrade will use custom protocol code already present\n"
+            + "in this configuration.\n\nDo you want to continue?";
+        if ( JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, 
+            JOptionPane.INFORMATION_MESSAGE ) == JOptionPane.NO_OPTION )
+        {
+          return;
+        }
+      }
       setVisible( false );
       try
       {
-        deviceUpgrade.importRawUpgrade( uCode, ( Remote )remoteList.getSelectedItem(),
-            ( String )deviceTypeList.getSelectedItem(), pid, pCode );
+        Remote remote = ( Remote )remoteList.getSelectedItem();
+        deviceUpgrade.importRawUpgrade( uCode, remote, ( String )deviceTypeList.getSelectedItem(), pid, pCode );
         if ( !setupCode.getText().equals( "" ) )
         {
           try
           {
             deviceUpgrade.setSetupCode( Integer.parseInt( setupCode.getText() ) );
           }
-          catch ( NumberFormatException ex )
+          catch ( NumberFormatException ex ) {};
+        }
+        if ( keyMoves != null )
+        {
+          int devType = remote.getDeviceTypeByAliasName( originalDeviceTypeName ).getNumber();
+          for ( ImportedKeyMove km : keyMoves )
           {
-
+            String name = km.getName();
+            if ( name.isEmpty() )
+            {
+              name = remote.getButtonName( km.getKeyCode() );
+            }
+            int btnState = Button.NORMAL_STATE;
+            Button b = remote.getButton( km.getKeyCode() );
+            if ( b == null )
+            {
+              btnState = Button.SHIFTED_STATE;
+              b = remote.getButton( km.getKeyCode() & ~remote.getShiftMask() );
+            }
+            if ( b == null )
+            {
+              btnState = Button.XSHIFTED_STATE;
+              b = remote.getButton( km.getKeyCode() & ~remote.getXShiftMask() );
+            }
+            
+            if ( km.getDeviceType() == devType && km.getSetupCode() == originalSetupCode )
+            {
+              // keymove represents internal function   
+              Function f = new Function( name, km.getCmd( remote ), km.getNotes() );
+              deviceUpgrade.getAssignments().assign( b, f, btnState );
+              deviceUpgrade.getFunctions().add(  f );
+              f.setUpgrade( deviceUpgrade );
+            }
+            else
+            {
+              // keymove represents external function
+              ExternalFunction f = new ExternalFunction();
+              f.setName( name );
+              f.setHex( km.getCmd( remote ) );
+              f.setNotes( km.getNotes() );
+              f.setSetupCode( km.getSetupCode() );
+              DeviceType dt = remote.getDeviceTypeByIndex( km.getDeviceType() );
+              f.setDeviceTypeAliasName( remote.getDeviceTypeAlias( dt ) );
+              f.setType( ExternalFunction.HexType );
+              deviceUpgrade.getAssignments().assign( b, f, btnState );
+              deviceUpgrade.getExternalFunctions().add(  f );
+              f.setUpgrade( deviceUpgrade );
+            }
           }
         }
       }
@@ -343,15 +488,17 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
    */
   private void validateInput()
   {
+    confirm = false;
     if ( uCode == null )
     {
       ok.setEnabled( false );
       protocolCode.setEnabled( false );
-      protocolLabel.setText( "Protocol Code:" );
       protocolLabel.setEnabled( false );
+      protocolLabel.setText( "Protocol Code:" );
       return;
     }
-
+    protocolCode.setEnabled( true );
+    protocolLabel.setEnabled( true );
     Remote remote = ( Remote )remoteList.getSelectedItem();
     if ( remote.usesTwoBytePID() )
     {
@@ -369,6 +516,12 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     if ( p != null )
     {
       protocolLabel.setText( "Protocol Code:" );
+      Processor pr = remote.getProcessor();
+      if ( p.getCustomCode( pr ) != null && pCode == null )
+      {
+        pCode = p.getCustomCode( pr );
+        confirm = true;
+      }
       ok.setEnabled( true );
       return;
     }
@@ -409,13 +562,32 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
       {
         if ( !loadUpgrade( text ) )
         {
+          int pos = text.toUpperCase().indexOf( "KEYMOVES" );
+          String codeText = pos >= 0 ? text.substring( 0, pos ) : text;
+          String keyMoveText = pos >= 0 ? text.substring( pos + 9 ) : null;
           try
           {
-            uCode = new Hex( text );
+            uCode = new Hex( codeText );
+            if ( keyMoveText != null )
+            {
+              keyMoves = new ArrayList< ImportedKeyMove >();
+              BufferedReader rdr = new BufferedReader( new StringReader( keyMoveText ) );
+              String line = null;
+              while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
+              {
+                pos = line.indexOf( '\u00a6' );
+                line = ( pos >= 0 ? line.substring( 0,  pos ) : line ).trim();
+                pos = line.indexOf( '\u00ab' );
+                String hexText = pos >= 0 ? line.substring( 0, pos ) : line;
+                String kmText = pos >= 0 ? line.substring( pos + 1, line.length() - 1 ) : "";
+                keyMoves.add( new ImportedKeyMove( new Hex( hexText ), kmText ) );
+              }
+            }
           }
           catch ( Exception ex )
           {
             uCode = null;
+            keyMoves = null;
           }
         }
       }
@@ -521,6 +693,9 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
   private JComboBox remoteList = null;
 
   private JTextField setupCode = null;
+  private int originalSetupCode = 0;
+  private String originalDeviceTypeName = null;
+  private boolean confirm = false;
 
   /** The device type list. */
   private JComboBox deviceTypeList = null;
@@ -545,6 +720,8 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
 
   /** The p code. */
   private Hex pCode = null;
+  
+  private List< ImportedKeyMove > keyMoves = null;
 
   /** The ok. */
   private JButton ok = null;

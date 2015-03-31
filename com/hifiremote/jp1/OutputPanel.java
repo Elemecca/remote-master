@@ -226,7 +226,7 @@ public class OutputPanel extends KMPanel implements ActionListener
         }
       }
       buff.append( " (RM " );
-      buff.append( RemoteMaster.version );
+      buff.append( RemoteMaster.version + " build " + RemoteMaster.getBuild() );
       buff.append( ')' );
 
       try

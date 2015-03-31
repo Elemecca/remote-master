@@ -711,8 +711,6 @@ public class ProtocolManager
    */
   public Protocol findProtocolForRemote( Remote remote, Hex id, boolean allowUpgrades )
   {
-    Protocol protocol = null;
-    Protocol tentative = null;
     List< Protocol > protocols = findByPID( id );
     if ( protocols == null )
     {
@@ -723,27 +721,28 @@ public class ProtocolManager
     {
       return null;
     }
+    
+    if ( allowUpgrades )
+    {
+      // Within the remote, an upgrade for a particular PID takes precedence 
+      // over a built-in protocol
+      for ( Protocol p : protocols )
+      {
+        if ( p.getCustomCode( remote.getProcessor() ) != null )
+        {  
+          return p;
+        }
+      }
+    }
 
     for ( Protocol p : protocols )
     {
       if ( remote.supportsVariant( id, p.getVariantName() ) )
       {
-        protocol = p;
-        break;
-      }
-      if ( tentative == null )
-      {
-        if ( allowUpgrades && p.hasCode( remote ) )
-        {
-          tentative = p;
-        }
+        return p;
       }
     }
-    if ( protocol == null )
-    {
-      protocol = tentative;
-    }
-    return protocol;
+    return null;
   }
 
   /**

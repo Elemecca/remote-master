@@ -1830,7 +1830,7 @@ public class DeviceUpgrade extends Highlight
       buff.append( descr );
     }
     buff.append( " (RM " );
-    buff.append( RemoteMaster.version );
+    buff.append( RemoteMaster.version + " build " + RemoteMaster.getBuild() );
     buff.append( ')' );
 
     try

@@ -71,9 +71,9 @@ public class RawDataDialog extends JDialog implements ActionListener
     downloadButton.addActionListener( this );
     buttonPanel.add( downloadButton );
 
-    setBaselineButton.addActionListener( this );
-    setBaselineButton.setEnabled( false );
-    buttonPanel.add( setBaselineButton );
+//    setBaselineButton.addActionListener( this );
+//    setBaselineButton.setEnabled( false );
+//    buttonPanel.add( setBaselineButton );
 
     saveButton.addActionListener( this );
     saveButton.setEnabled( false );
@@ -173,7 +173,7 @@ public class RawDataDialog extends JDialog implements ActionListener
       System.err.println( "Ending raw download" );
       buffer = getDataToShow( buffer, io );
       model.set( buffer, baseAddress );
-      setBaselineButton.setEnabled( true );
+//      setBaselineButton.setEnabled( true );
       saveButton.setEnabled( true );
       downloadLabel.setVisible( false );
       RemoteMaster.setSystemFilesItems( owner, null );
@@ -225,10 +225,10 @@ public class RawDataDialog extends JDialog implements ActionListener
       downloadLabel.setVisible( true );
       ( new RawDownloadTask() ).execute();
     }
-    else if ( source == setBaselineButton )
-    {
-      byteRenderer.setSavedData( buffer );
-    }
+//    else if ( source == setBaselineButton )
+//    {
+//      byteRenderer.setSavedData( buffer );
+//    }
     else if ( source == saveButton )
     {
       RMFileChooser chooser = owner.getFileChooser();
@@ -270,7 +270,7 @@ public class RawDataDialog extends JDialog implements ActionListener
   private int baseAddress = 0;
 
   private JButton downloadButton = new JButton( "Download" );
-  private JButton setBaselineButton = new JButton( "Set Baseline" );
+//  private JButton setBaselineButton = new JButton( "Set Baseline" );
   private JButton saveButton = new JButton( "Save" );
   private JButton cancelButton = new JButton( "Cancel" );
   
