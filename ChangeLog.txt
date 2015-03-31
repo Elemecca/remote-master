@@ -86,6 +86,7 @@ Changes for v2.03
 - Make Fixed Data only concern bits not set by any Setting (Graham)
 - Support upgrades with keymoves for Input Raw of Device Upgrade Editor (Graham)
 - Remove the Set Baseline button of Raw Download panel as it serves no purpose (Graham)
+- Amend UpdateChecker to handle builds and to make the hyperlink work properly (Graham)
 
 Changes for v2.02
 -- Alpha --
