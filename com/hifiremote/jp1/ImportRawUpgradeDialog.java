@@ -606,6 +606,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
             uCode = new Hex( codeText );
             if ( keyMoveText != null )
             {
+              keyMoveText = keyMoveText.replaceAll( "\\n", "" );
               keyMoves = new ArrayList< ImportedKeyMove >();
               StringTokenizer st = new StringTokenizer( keyMoveText, "\u00a6" );
               while ( st.hasMoreTokens() )
