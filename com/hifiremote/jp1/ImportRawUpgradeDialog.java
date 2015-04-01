@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -329,6 +330,14 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
         setupCode.setText( tokens[ 3 ] );
         originalSetupCode = Integer.parseInt( tokens[ 3 ] );
 
+        int descStart = line.indexOf( ')' ) + 1;
+        int descEnd = line.lastIndexOf( '(' );
+        description = descEnd > descStart ? line.substring( descStart, descEnd ).trim() : "";
+        if ( description.isEmpty() )
+        {
+          description = null;
+        }
+
         StringBuilder sb = new StringBuilder();
         while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
         {
@@ -403,6 +412,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
       {
         Remote remote = ( Remote )remoteList.getSelectedItem();
         deviceUpgrade.importRawUpgrade( uCode, remote, ( String )deviceTypeList.getSelectedItem(), pid, pCode );
+        deviceUpgrade.setDescription( description );
         if ( !setupCode.getText().equals( "" ) )
         {
           try
@@ -438,9 +448,17 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
             {
               // keymove represents internal function   
               Function f = new Function( name, km.getCmd( remote ), km.getNotes() );
-              deviceUpgrade.getAssignments().assign( b, f, btnState );
-              deviceUpgrade.getFunctions().add(  f );
               f.setUpgrade( deviceUpgrade );
+              Function equiv = f.getEquivalent( deviceUpgrade.getFunctions() );
+              if ( equiv != null )
+              {
+                f = equiv;
+              }
+              else
+              {
+                deviceUpgrade.getFunctions().add(  f );
+              }
+              deviceUpgrade.getAssignments().assign( b, f, btnState );
             }
             else
             {
@@ -453,9 +471,27 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
               DeviceType dt = remote.getDeviceTypeByIndex( km.getDeviceType() );
               f.setDeviceTypeAliasName( remote.getDeviceTypeAlias( dt ) );
               f.setType( ExternalFunction.HexType );
-              deviceUpgrade.getAssignments().assign( b, f, btnState );
-              deviceUpgrade.getExternalFunctions().add(  f );
               f.setUpgrade( deviceUpgrade );
+              ExternalFunction equiv = null;
+              for ( ExternalFunction ef : deviceUpgrade.getExternalFunctions() )
+              {
+                if ( ef.isEquivalent( f ) 
+                    && ef.getDeviceTypeAliasName().equals( f.getDeviceTypeAliasName() )
+                    && ef.getSetupCode() == f.getSetupCode() )
+                {
+                  equiv = ef;
+                  break;
+                }
+              }
+              if ( equiv != null )
+              {
+                f = equiv;
+              }
+              else
+              {
+                deviceUpgrade.getExternalFunctions().add(  f );
+              } 
+              deviceUpgrade.getAssignments().assign( b, f, btnState ); 
             }
           }
         }
@@ -571,15 +607,13 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
             if ( keyMoveText != null )
             {
               keyMoves = new ArrayList< ImportedKeyMove >();
-              BufferedReader rdr = new BufferedReader( new StringReader( keyMoveText ) );
-              String line = null;
-              while ( ( ( line = rdr.readLine() ) != null ) && !line.trim().equalsIgnoreCase( "End" ) )
+              StringTokenizer st = new StringTokenizer( keyMoveText, "\u00a6" );
+              while ( st.hasMoreTokens() )
               {
-                pos = line.indexOf( '\u00a6' );
-                line = ( pos >= 0 ? line.substring( 0,  pos ) : line ).trim();
-                pos = line.indexOf( '\u00ab' );
-                String hexText = pos >= 0 ? line.substring( 0, pos ) : line;
-                String kmText = pos >= 0 ? line.substring( pos + 1, line.length() - 1 ) : "";
+                String token = st.nextToken().trim();
+                pos = token.indexOf( '\u00ab' );
+                String hexText = pos >= 0 ? token.substring( 0, pos ) : token;
+                String kmText = pos >= 0 ? token.substring( pos + 1, token.length() - 1 ) : "";
                 keyMoves.add( new ImportedKeyMove( new Hex( hexText ), kmText ) );
               }
             }
@@ -696,6 +730,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
   private int originalSetupCode = 0;
   private String originalDeviceTypeName = null;
   private boolean confirm = false;
+  private String description = null;
 
   /** The device type list. */
   private JComboBox deviceTypeList = null;
