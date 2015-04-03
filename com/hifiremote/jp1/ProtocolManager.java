@@ -728,7 +728,8 @@ public class ProtocolManager
       // over a built-in protocol
       for ( Protocol p : protocols )
       {
-        if ( p.getCustomCode( remote.getProcessor() ) != null )
+        if ( p.getCustomCode( remote.getProcessor() ) != null
+            && p.getID( remote ).equals( id ) )
         {  
           return p;
         }

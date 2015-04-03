@@ -26,6 +26,8 @@ fi
 desktopRMIR=$here/RMIR.desktop
 desktopRM=$here/RemoteMaster.desktop
 rmprog=$here/RemoteMaster.jar
+desktopdir=$HOME/.local/share/applications
+[ -d $desktopdir ] || mkdir -p $desktopdir
 
 # Create the .desktop files.
 cat >$desktopRMIR << EOF
@@ -53,6 +55,10 @@ Icon=$here/RM.ico
 StartupNotify=true
 Version=1.0
 EOF
+
+# Copy desktop files to desktopdir
+cp $desktopRMIR $desktopdir
+cp $desktopRM $desktopdir
 
 # Set executable permissions.
 chmod 775 $rmprog
