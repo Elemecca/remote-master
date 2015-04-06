@@ -136,10 +136,25 @@ public class RawDataDialog extends JDialog implements ActionListener
       System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
       
       signature = RemoteMaster.getIOsignature( io, baseAddress );
-      if ( signature.length() > 8 ) // JP1.4/JP2 full signature block
+      if ( signature != null && signature.length() > 8 ) // JP1.4/JP2 full signature block
       {
         signature = signature.substring( 0, 6 ); // 6-character numeric signature
       }
+      if ( signature == null || signature.length() < 4 )
+      {
+        String title = "Raw download failure";
+        String message = 
+            "Unable to read the signature of the remote.  Download terminating.\n"
+            + "Make sure you have the latest driver installed for your interface cable.";
+        JOptionPane.showMessageDialog( owner, message, title, JOptionPane.ERROR_MESSAGE );
+        downloadLabel.setVisible( false );
+        return null;
+      }
+      else
+      {
+        System.err.println( "Remote signature = " + signature );
+      }
+      
       int buffSize = io.getRemoteEepromSize();
       System.err.println( "Initial buffer size  = $" + Integer.toHexString( buffSize ).toUpperCase() );
       if ( buffSize <= 0 )

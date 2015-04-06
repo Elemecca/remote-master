@@ -396,11 +396,25 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
     Object source = e.getSource();
     if ( source == ok )
     {
-      if ( confirm )
+      if ( confirm > 0 )
       {
         String title = "Protocol Code";
-        String message =  "This upgrade will use custom protocol code already present\n"
-            + "in this configuration.\n\nDo you want to continue?";
+        String message = null;
+        switch ( confirm )
+        {
+          case 1:
+            message =  "This upgrade will use custom protocol code already present\n"
+                + "in this configuration.\n\nDo you want to continue?";
+            break;
+          case 2:
+            message = "This upgrade will set custom protocol code for the built-in\n"
+                + "protocol with pid = " + pid + " that will be used by all upgrades that\n"
+                + "use this pid.\n\nDo you want to continue?";
+            break;
+          default:
+            message = "There is a problem with this upgrade.  Do you want to continue?";
+            break;
+        }
         if ( JOptionPane.showConfirmDialog( this, message, title, JOptionPane.YES_NO_OPTION, 
             JOptionPane.INFORMATION_MESSAGE ) == JOptionPane.NO_OPTION )
         {
@@ -524,7 +538,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
    */
   private void validateInput()
   {
-    confirm = false;
+    confirm = 0;
     if ( uCode == null )
     {
       ok.setEnabled( false );
@@ -548,7 +562,8 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
       pid = new Hex( temp );
     }
 
-    Protocol p = ProtocolManager.getProtocolManager().findProtocolForRemote( remote, pid );
+    ProtocolManager pm = ProtocolManager.getProtocolManager();
+    Protocol p = pm.findProtocolForRemote( remote, pid );
     if ( p != null )
     {
       protocolLabel.setText( "Protocol Code:" );
@@ -556,7 +571,11 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
       if ( p.getCustomCode( pr ) != null && pCode == null )
       {
         pCode = p.getCustomCode( pr );
-        confirm = true;
+        confirm = 1;
+      }
+      else if ( pCode != null && pCode.length() > 0 && pm.getBuiltinProtocolsForRemote( remote, pid ).contains( p ) )
+      {
+        confirm = 2;
       }
       ok.setEnabled( true );
       return;
@@ -730,7 +749,7 @@ public class ImportRawUpgradeDialog extends JDialog implements ActionListener, D
   private JTextField setupCode = null;
   private int originalSetupCode = 0;
   private String originalDeviceTypeName = null;
-  private boolean confirm = false;
+  private int confirm = 0;
   private String description = null;
 
   /** The device type list. */
