@@ -28,12 +28,26 @@ public class Button
     keyCode = code;
     remote = r;
     int maskedCode = code & 0xC0;
-    if ( maskedCode == r.getShiftMask() && r.getShiftMask() != 0 )
+    if ( maskedCode == r.getShiftMask() && r.getShiftEnabled() )
+    {
       setIsShifted( true );
-    else if ( maskedCode == r.getXShiftMask() && r.getXShiftMask() != 0 )
+    }
+    else if ( maskedCode == r.getXShiftMask() && r.getXShiftEnabled() )
+    {
       setIsXShifted( true );
-    else if ( maskedCode != 0 )
+    }
+    // Remaining cases where maskedCode != 0 are
+    // (a) maskedCode, ShiftMask, XShiftMask are $40, $80, $C0 in some order, or
+    // (b) XShiftMask is zero (presumably cannot have ShiftMask == 0, XShiftMask !=0).
+    // Now
+    // (a) cannot allow either shifted or xshifted states of button as there would
+    //     be ambiguity as to the base keycode;
+    // (b) can allow shifted button provided base keycode is unambiguouse.   
+    else if ( maskedCode != 0 && ( r.getXShiftEnabled()
+        || ( maskedCode & r.getShiftMask() ) != 0 ) )
+    {
       restrictions |= ( SHIFT | XSHIFT );
+    }
   }
 
   /*
