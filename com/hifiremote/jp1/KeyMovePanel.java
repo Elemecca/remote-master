@@ -287,6 +287,13 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
   {
     int limit = remoteConfig.getKeyMoves().size();
     int modelRow = sorter.modelIndex( row );
+    int colFirst = table.getSelectedColumn();
+    int colCount = table.getSelectedColumnCount();
+    int rowToSelect = row;
+    if ( rowToSelect == sorter.getRowCount() - 1 )
+    {
+      --rowToSelect;
+    }
     if ( modelRow >= limit )
     {
       KeyMove keyMove = model.getRow( sorter.modelIndex( row ) );
@@ -305,19 +312,24 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
       model.fireTableDataChanged();
 
       for ( int i = 0; i < model.getRowCount(); i++ )
-        if ( model.getRow( i ).equals( keyMove ) )
+        if ( model.getRow( sorter.modelIndex( i ) ).equals( keyMove ) )
         {
-          super.deleteRow( i, select );
+          super.deleteRow( i, false );
           break;
         }
     }
     else
     {
-      super.deleteRow( row, select );
+      super.deleteRow( row, false );
     }
 
     ( ( KeyMoveTableModel )model ).refresh();
     model.fireTableDataChanged();
+    if ( select && rowToSelect > -1 )
+    {
+      table.setRowSelectionInterval( rowToSelect, rowToSelect );
+      table.setColumnSelectionInterval( colFirst, colFirst + colCount - 1 );
+    }
   }
 
   private boolean DetachKeyMoves( int[] rows )

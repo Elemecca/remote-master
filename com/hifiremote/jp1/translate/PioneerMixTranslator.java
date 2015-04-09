@@ -65,7 +65,7 @@ public class PioneerMixTranslator extends Translate
             break;
           case 2: // Device
             if (execVariant == 3) {
-                if  (val < 4)  
+                if  ( val == 0 )       //was (val < 4), changed 9 April 2015 by GD as apparently an error
                   flag &= 0xFE;
                 else 
                   flag |= 1;

@@ -4236,11 +4236,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       String lookAndFeel = properties.getProperty( "LookAndFeel", UIManager.getSystemLookAndFeelClassName() );
       try
       {
-        UIManager.setLookAndFeel( lookAndFeel );
+        KeyMoveTableModel.normalSelectedBGColor = UIManager.getColor( "Table.selectionBackground" );
+        UIManager.setLookAndFeel( lookAndFeel );        
       }
-      catch ( UnsupportedLookAndFeelException ulafe )
+      catch ( Exception ex )
       {
-        ulafe.printStackTrace( System.err );
+        ex.printStackTrace( System.err );
       }
 
       RemoteManager.getRemoteManager().loadRemotes( properties );

@@ -371,7 +371,7 @@ public abstract class RMTablePanel< E > extends RMPanel implements ActionListene
         --rowToSelect;
       }
       model.removeRow( modelRow );
-      if ( select && rowToSelect > -1 )
+      if ( select && rowToSelect > -1 && colFirst > -1 )
       {
         table.setRowSelectionInterval( rowToSelect, rowToSelect );
         table.setColumnSelectionInterval( colFirst, colFirst + colCount - 1 );

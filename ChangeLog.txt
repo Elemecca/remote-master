@@ -88,6 +88,8 @@ Changes for v2.03
 - Remove the Set Baseline button of Raw Download panel as it serves no purpose (Graham)
 - Amend UpdateChecker to handle builds and to make the hyperlink work properly (Graham)
 - Fix bug erroneously preventing macros being put on shifted buttons in certain situations (Graham)
+- Make row selection persist after deletion in KeyMove tab, to align with other tabs (Graham)
+- Fix bug in PioneerMixTranslator (Graham)
 
 Changes for v2.02
 -- Alpha --
