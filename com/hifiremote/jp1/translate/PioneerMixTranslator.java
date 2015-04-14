@@ -65,16 +65,15 @@ public class PioneerMixTranslator extends Translate
             break;
           case 2: // Device
             if (execVariant == 3) {
-                if  ( val == 0 )       //was (val < 4), changed 9 April 2015 by GD as apparently an error
+                if  ( val == 0 )
                   flag &= 0xFE;
                 else 
                   flag |= 1;
             } else if (execVariant == 4) {
-              if (val < 4)  // 1 part signal   
+              if (val < 4  && !hasPrefix)  // 1 part signal   
                 flag = (flag & 0xF8) | (val << 1); // bits 1 and 2
-                else 
-                  if (val == 4)  // 2 part signal
-                    flag |=0x01;    
+              // if hasPrefix then nothing further is encoded in flag, so ignore
+              // val, though conversion of hex back to params will return val = 4
             } else if (execVariant == 5) {
               if  (val < 4  && !hasPrefix)    // 1 part signal   
                 flag = (flag & 0xF8) | (val << 1); // bits 1 and 2
