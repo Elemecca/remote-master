@@ -70,6 +70,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -2015,9 +2016,29 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             try
             {
+              String title = "Look and Feel";
+              String message = "Due to a bug in Java, you may find it necessary to close and then re-open RMIR\n"
+                  + "for it to work properly after a change of Look and Feel.  Moreover, you may need\n"
+                  + "to use the menu item File > Exit to close it.  To abort the change press Cancel,\n"
+                  + "otherwise press OK to continue.";
+              if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.OK_CANCEL_OPTION, 
+                  JOptionPane.INFORMATION_MESSAGE ) == JOptionPane.CANCEL_OPTION )
+              {
+                String lf = UIManager.getLookAndFeel().getName();
+                for ( JRadioButtonMenuItem item : lookAndFeelItems )
+                {
+                  if ( item.getText().equals( lf ) )
+                  {
+                    item.setSelected( true );
+                    break;
+                  }
+                }
+                return;
+              }
               JRadioButtonMenuItem item = ( JRadioButtonMenuItem )lfEvent.getSource();
               String lf = item.getActionCommand();
               UIManager.setLookAndFeel( lf );
+              KeyMoveTableModel.normalSelectedBGColor = UIManager.getColor( "Table.selectionBackground" );
               SwingUtilities.updateComponentTreeUI( RemoteMaster.this );
               RemoteMaster.this.pack();
               properties.setProperty( "LookAndFeel", lf );
@@ -4236,8 +4257,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       String lookAndFeel = properties.getProperty( "LookAndFeel", UIManager.getSystemLookAndFeelClassName() );
       try
       {
+        UIManager.setLookAndFeel( lookAndFeel );
         KeyMoveTableModel.normalSelectedBGColor = UIManager.getColor( "Table.selectionBackground" );
-        UIManager.setLookAndFeel( lookAndFeel );        
       }
       catch ( Exception ex )
       {

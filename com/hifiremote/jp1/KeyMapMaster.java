@@ -117,6 +117,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem aboutItem = null;
   
   private JMenuItem separateSaveFolderItem = null;
+  
+  private ActionEvent lfEvent = null;
 
   /** The ok button. */
   private JButton okButton = null;
@@ -323,19 +325,45 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       public void actionPerformed( ActionEvent e )
       {
-        try
+        lfEvent = e; 
+        SwingUtilities.invokeLater( new Runnable()
         {
-          JRadioButtonMenuItem item = ( JRadioButtonMenuItem )e.getSource();
-          String lf = item.getActionCommand();
-          UIManager.setLookAndFeel( lf );
-          preferences.setLookAndFeel( lf );
-          SwingUtilities.updateComponentTreeUI( me );
-          preferences.setLookAndFeel( lf );
-        }
-        catch ( Exception x )
-        {
-          x.printStackTrace( System.err );
-        }
+          public void run()
+          {
+            try
+            {
+              String title = "Look and Feel";
+              String message = "Due to a bug in Java, you may find it necessary to close and then re-open RMIR\n"
+                  + "for it to work properly after a change of Look and Feel.  Moreover, you may need\n"
+                  + "to use the menu item File > Exit to close it.  To abort the change press Cancel,\n"
+                  + "otherwise press OK to continue.";
+              if ( JOptionPane.showConfirmDialog( KeyMapMaster.this, message, title, JOptionPane.OK_CANCEL_OPTION, 
+                  JOptionPane.INFORMATION_MESSAGE ) == JOptionPane.CANCEL_OPTION )
+              {
+                String lf = UIManager.getLookAndFeel().getName();
+                for ( JRadioButtonMenuItem item : lookAndFeelItems )
+                {
+                  if ( item.getText().equals( lf ) )
+                  {
+                    item.setSelected( true );
+                    break;
+                  }
+                }
+                return;
+              }
+              JRadioButtonMenuItem item = ( JRadioButtonMenuItem )lfEvent.getSource();
+              String lf = item.getActionCommand();
+              UIManager.setLookAndFeel( lf );
+              preferences.setLookAndFeel( lf );
+              SwingUtilities.updateComponentTreeUI( me );
+              preferences.setLookAndFeel( lf );
+            }
+            catch ( Exception x )
+            {
+              x.printStackTrace( System.err );
+            }
+          }
+        } );
       }
     };
 

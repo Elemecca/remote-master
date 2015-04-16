@@ -90,6 +90,8 @@ Changes for v2.03
 - Fix bug erroneously preventing macros being put on shifted buttons in certain situations (Graham)
 - Make row selection persist after deletion in KeyMove tab, to align with other tabs (Graham)
 - Fix bug in PioneerMixTranslator (Graham)
+-- Release build 2
+- Change of Look and Feel may need RMIR to be closed and re-opened, so added dialog to say so and to allow cancellation (Graham)
 
 Changes for v2.02
 -- Alpha --
