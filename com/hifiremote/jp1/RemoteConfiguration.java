@@ -7044,7 +7044,9 @@ public class RemoteConfiguration
           pu.clearMemoryUsage();
           Hex code = pu.getCode();
           int pid = pu.getPid();
-          Hex segData = new Hex( code.length() + 4 );
+          int size = code.length();
+          size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 4 : 5;
+          Hex segData = new Hex( size );
           segData.put(  0, 0 );
           segData.put( pid, 2 );
           segData.put( code, 4 );;
