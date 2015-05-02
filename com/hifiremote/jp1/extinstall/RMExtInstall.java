@@ -66,7 +66,8 @@ public class RMExtInstall extends ExtInstall
         BufferedReader rdr = new BufferedReader( new FileReader( file ) );
         if ( !ExtHex.Load( Erl, rdr ) )
         {
-           System.exit( 1 );
+          rdr.close(); 
+          System.exit( 1 );
         }
         String title = "Simpleset Patching";
         String message = "You are about to apply patches to a settings.bin file for a Simpleset\n"
@@ -130,6 +131,7 @@ public class RMExtInstall extends ExtInstall
         io.writeRemote( io.getSigAddress(), buffer );
         message = "Patching complete.";
         JOptionPane.showMessageDialog( remoteConfig.getOwner(), message, title, JOptionPane.INFORMATION_MESSAGE );
+        rdr.close();
         return;
       }
       AdvList ExtAdv = new AdvList();

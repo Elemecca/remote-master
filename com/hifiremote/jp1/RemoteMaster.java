@@ -116,7 +116,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03";
-  public final static int buildVer = 1;
+  public final static int buildVer = 2;
   
   public static int getBuild()
   {
@@ -824,43 +824,45 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         return null;
       }
       System.err.println( "Interface opened successfully" );
-      int baseAddress = io.getRemoteEepromAddress();
-      System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
-      String sig = getIOsignature( io, baseAddress );
-      if ( sig.length() > 8 ) // JP1.4/JP2 full signature
+      if ( use == Use.UPLOAD )
       {
-        sig = sig.substring( 0, 6 );
-      }
-      String rSig = remote.getSignature();
-      String message = null;
-      if ( sig.length() < rSig.length() || !rSig.equals( sig.substring( 0, rSig.length() ) ) )
-      {
-        message = "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
-            + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
-            + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
-            + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
-            + "safe to upload to a remote when the signatures do not match.\n\n"
-            + "How would you like to proceed?";
-      }
-      else
-      {
-        message = "An upload overwrites the entire memory area for setup data in the remote and cannot\n"
-            + "be undone.  Are you sure that you want to do this?";
-      }
-      Object[] options =
+        int baseAddress = io.getRemoteEepromAddress();
+        System.err.println( "Base address = $" + Integer.toHexString( baseAddress ).toUpperCase() );
+        String sig = getIOsignature( io, baseAddress );
+        if ( sig.length() > 8 ) // JP1.4/JP2 full signature
         {
-          "Upload to the remote", "Cancel the upload"
-        };
-      int rc = JOptionPane.showOptionDialog( RemoteMaster.this, message,
-          "Upload Confirmation", JOptionPane.DEFAULT_OPTION,
-          JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
-      if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
-      {
-        io.closeRemote();
-        setInterfaceState( null );
-        return null;
+          sig = sig.substring( 0, 6 );
+        }
+        String rSig = remote.getSignature();
+        String message = null;
+        if ( sig.length() < rSig.length() || !rSig.equals( sig.substring( 0, rSig.length() ) ) )
+        {
+          message = "The signature of the attached remote does not match the signature you are trying to upload.  The image\n"
+              + "you are trying to upload may not be compatible with attached remote, and uploading it may damage the\n"
+              + "remote.  Copying the contents of one remote to another is only safe when the remotes are identical.\n\n"
+              + "This message will be displayed when installing an extender in your remote, which is the only time it is\n"
+              + "safe to upload to a remote when the signatures do not match.\n\n"
+              + "How would you like to proceed?";
+        }
+        else
+        {
+          message = "An upload overwrites the entire memory area for setup data in the remote and cannot\n"
+              + "be undone.  Are you sure that you want to do this?";
+        }
+        Object[] options =
+          {
+            "Upload to the remote", "Cancel the upload"
+          };
+        int rc = JOptionPane.showOptionDialog( RemoteMaster.this, message,
+            "Upload Confirmation", JOptionPane.DEFAULT_OPTION,
+            JOptionPane.WARNING_MESSAGE, null, options, options[ 1 ] );
+        if ( rc == 1 || rc == JOptionPane.CLOSED_OPTION )
+        {
+          io.closeRemote();
+          setInterfaceState( null );
+          return null;
+        }
       }
-
       AutoClockSet autoClockSet = remote.getAutoClockSet();
       if ( allowClockSet && autoClockSet != null )
       {
@@ -869,7 +871,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         remoteConfig.updateCheckSums();
       }
 
-      rc = io.writeRemote( remote.getBaseAddress(), data );
+      int rc = io.writeRemote( remote.getBaseAddress(), data );
 
       if ( rc != data.length )
       {

@@ -92,6 +92,8 @@ Changes for v2.03
 - Fix bug in PioneerMixTranslator (Graham)
 -- Release build 2
 - Change of Look and Feel may need RMIR to be closed and re-opened, so added dialog to say so and to allow cancellation (Graham)
+- Fix bug allowing segment type 0x0F to have odd length (Dave Reed)
+- Fix bug that meant upload confirmation message was shown when saving a Simpleset .bin file (Graham)
 
 Changes for v2.02
 -- Alpha --
