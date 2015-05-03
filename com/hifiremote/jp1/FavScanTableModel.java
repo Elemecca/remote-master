@@ -258,7 +258,8 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
       String channel = "";
       for ( Character ch : s.toCharArray() )
       {
-        if ( Character.isDigit( ch ) )
+        ch = ( ch == '-' ) ? '.' : ch;
+        if ( Character.isDigit( ch ) || ch == '.' )
         {
           channel += ch;
         }
@@ -310,16 +311,19 @@ public class FavScanTableModel extends JP1TableModel< FavScan >
     DeviceButton favDb = remoteConfig.getFavKeyDevButton();
     int favWidth = favDb.getFavoriteWidth();
     Remote remote = remoteConfig.getRemote();
-    int size = channel.length();
+    int dot = channel.indexOf( '.' );
+    String body = dot >= 0 ? channel.substring( 0, dot ) : channel;
+    String tail = dot >= 0 ? channel.substring( dot ) : "";
+    int size = body.length();
     if ( size > favWidth )
     {
-      channel = channel.substring( size - favWidth, size );
+      body = body.substring( size - favWidth, size );
     }
     if ( remote.isSSD() && size < favWidth )
     {
-      channel = "00000000".substring( 0, favWidth - size ) + channel;
+      body = "00000000".substring( 0, favWidth - size ) + body;
     }
-    return channel;
+    return body + tail;
   }
   
   @Override

@@ -87,13 +87,16 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     deviceBoxPanel.add( new JLabel( " secs") );
     
     favWidth = new JComboBox( new Integer[]{ 1,2,3,4,5,6,7,8 } );
-    favWidth.setToolTipText( "The number of digits in a channel number" );
+    favWidth.setToolTipText( "<html>The number of digits in a channel number.  If a decimal point is needed<br>"
+                           + "then this is the number of digits before the decimal point.  The signal<br>"
+                           + "sent by the decimal point is that of the Enter key, which is probably<br>"
+                           + "also marked -/-- or --.</html>" );
     favWidth.addActionListener( this );
     JLabel label = new JLabel( "Digits: ");
-    label.setLabelFor( favWidth );
     deviceBoxPanel.add( Box.createHorizontalStrut( 20 ) );
     deviceBoxPanel.add( label );
-    deviceBoxPanel.add(  favWidth );
+    label.setLabelFor( favWidth );
+    deviceBoxPanel.add( favWidth );
     
     addFinal = new JCheckBox( "Send final key?" );
     addFinal.addActionListener( this );

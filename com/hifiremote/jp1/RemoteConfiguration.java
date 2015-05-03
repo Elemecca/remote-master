@@ -1164,14 +1164,21 @@ public class RemoteConfiguration
         pos++;
         favKeyDevButton = remote.getDeviceButton( data[ pos++ ] + 0x50 );
       }
-      else if ( tag.equals(  "channelnumber" ) )
+      else if ( tag.equals( "channelnumber" ) )
       {
-        pos++;
+        int len = 2 * data[ pos++ ];
+        int dot = len;
         String channel = "";
-        for ( int i = 0; i < favKeyDevButton.getFavoriteWidth(); i++ )
+        for ( int i = 0; i < len && i < favKeyDevButton.getFavoriteWidth() + dot + 1; i++ )
         {
           int n = data[ pos + i / 2 ] >> ( i % 2 << 2 ) & 0x0F;
-          channel = ( char )( n + 0x30 ) + channel;
+          char ch = ( char )( n + 0x30 );
+          if ( n >= 10 )
+          {
+            dot = i;
+            ch = '.';
+          }
+          channel = ch + channel;
         }
         items.fav.setChannel( channel );
       }
@@ -2231,7 +2238,12 @@ public class RemoteConfiguration
         for ( int k = 0; k < data.length; k++ )
         {
           Button b = remote.getButton( data[ k ] );
-          val += b.getName().substring( 0, 1 );
+          String bName = b.getStandardName();
+          if ( bName.equals( "+100" ) )
+          {
+            bName = ".";
+          }
+          val += bName.substring( 0, 1 );
         }
         FavScan favScan = new FavScan( keyCode, null, null );
         favScan.setChannel( val );
@@ -5485,7 +5497,12 @@ public class RemoteConfiguration
       int len = channel.length();
       for ( int j = 0; j < len; j++ )
       {
-        Button b = remote.getButton( channel.substring( j, j + 1 ) );
+        String bName = channel.substring( j, j + 1 );
+        if ( bName.equals( "." ) )
+        {
+          bName = "+100";
+        }
+        Button b = remote.getButtonByStandardName( bName );
         short keyCode = b != null ? b.getKeyCode() : 0;
         segData.set( keyCode, i + j + 1 );
       }
@@ -8987,6 +9004,11 @@ public class RemoteConfiguration
       for ( int i = 0; i < channel.length(); i++ )
       {
         int digit = channel.charAt( channel.length() - i - 1 ) & 0x0F;
+        if ( digit == 0x0E )
+        {
+          // value from full stop, ASCII 0x2E
+          digit = 0x0A;
+        }
         data[ i / 2 ] |= digit << ( i % 2 << 2 );
       }
       work.add( makeItem( "channelnumber", new Hex( data ), true ) );

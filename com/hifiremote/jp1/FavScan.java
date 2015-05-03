@@ -20,7 +20,7 @@ public class FavScan extends AdvancedCode
     String temp = props.getProperty( "Channel" );
     if ( temp != null )
     {
-      channel = temp;
+      channel = temp.replace( ':', '.' );
     }
     temp = props.getProperty( "DeviceIndex" );
     deviceIndex = temp != null ? Integer.parseInt( temp ) : -1;
