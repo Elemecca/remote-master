@@ -1167,9 +1167,9 @@ public class RemoteConfiguration
       else if ( tag.equals( "channelnumber" ) )
       {
         int len = 2 * data[ pos++ ];
-        int dot = len;
+        int dot = -1;
         String channel = "";
-        for ( int i = 0; i < len && i < favKeyDevButton.getFavoriteWidth() + dot + 1; i++ )
+        for ( int i = 0; i < len; i++ )
         {
           int n = data[ pos + i / 2 ] >> ( i % 2 << 2 ) & 0x0F;
           char ch = ( char )( n + 0x30 );
@@ -1180,6 +1180,8 @@ public class RemoteConfiguration
           }
           channel = ch + channel;
         }
+        int chStart = len - ( favKeyDevButton.getFavoriteWidth() + dot + 1 );
+        channel = channel.substring( chStart );
         items.fav.setChannel( channel );
       }
       else if ( tag.equals( "codeset" ) )

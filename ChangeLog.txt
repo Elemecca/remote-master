@@ -95,6 +95,8 @@ Changes for v2.03
 - Fix bug allowing segment type 0x0F to have odd length (Dave Reed)
 - Fix bug that meant upload confirmation message was shown when saving a Simpleset .bin file (Graham)
 - Support decimal point in Favorites channels, needed for ATSC (Graham)
+- Fix bug preventing editing of device upgrades with custom protocol code in XSight Touch/Color remotes (Graham)
+- Add Replace button to Macro Dialog for XSight remotes (Graham)
 
 Changes for v2.02
 -- Alpha --

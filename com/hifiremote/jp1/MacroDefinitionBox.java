@@ -321,7 +321,14 @@ PropertyChangeListener, RMSetter< Object >
     }
     else if ( source == addShift )
     {
-      addKey( remote.getShiftMask() );
+      if ( addShift.getText().equals( "Replace" ) )
+      {
+        replaceKey( 0 );
+      }
+      else
+      {
+        addKey( remote.getShiftMask() );
+      }
     }
     else if ( source == insertShift )
     {
@@ -423,12 +430,27 @@ PropertyChangeListener, RMSetter< Object >
     macroButtonModel.addElement( value );
   }
 
-  /**
-   * Insert key.
-   * 
-   * @param mask
-   *          the mask
-   */
+  private void replaceKey( int mask )
+  {
+    int index = macroButtons.getSelectedIndex();
+    if ( index == -1 )
+    {
+      return;
+    }
+    if ( config.getRemote().usesEZRC() )
+    {
+      KeySpec value = getKeySpec();
+      macroButtonModel.setElementAt( value, index );
+    }
+    else
+    {
+      Integer value = new Integer( getSelectedKeyCode() | mask );
+      macroButtonModel.setElementAt( value, index );
+    }
+    macroButtons.setSelectedIndex( index );
+    macroButtons.ensureIndexIsVisible( index );
+  }
+
   private void insertKey( int mask )
   {
     int index = macroButtons.getSelectedIndex();
@@ -499,6 +521,11 @@ PropertyChangeListener, RMSetter< Object >
 //    return false;
 //  }
   
+  public JList getMacroButtons()
+  {
+    return macroButtons;
+  }
+
   @Override
   public Object getValue()
   {

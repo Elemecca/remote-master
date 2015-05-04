@@ -438,9 +438,12 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   {
     if ( config.getRemote().usesEZRC() )
     {
+      boolean selected = macroBox.getMacroButtons().getSelectedIndex() >= 0;
       macroBox.add.setEnabled( true );
-      macroBox.insert.setEnabled( true );
-      macroBox.addShift.setVisible( false );
+      macroBox.insert.setEnabled( selected );
+      macroBox.addShift.setText( "Replace" );
+      macroBox.addShift.setVisible( true );
+      macroBox.addShift.setEnabled( selected );
       macroBox.addXShift.setVisible( false );
       macroBox.insertShift.setVisible( false );
       macroBox.insertXShift.setVisible( false );
