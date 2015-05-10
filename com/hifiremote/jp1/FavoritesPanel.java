@@ -31,6 +31,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -383,13 +384,14 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
       activityGroupTable.initColumns( activityGroupModel );
       deviceButtonBox.setModel( comboModel );
       favDb = remoteConfig.getFavKeyDevButton();
-      if ( favDb != null )
+      if ( favDb != null && favDb != DeviceButton.noButton )
       {
         deviceButtonBox.setSelectedItem( favDb );
       }
       else
       {
         deviceButtonBox.setSelectedIndex( 0 );
+        remoteConfig.setFavKeyDevButton( ( DeviceButton )deviceButtonBox.getSelectedItem() );
       }
     }
     Button favFinalKey = remoteConfig.getFavFinalKey();
@@ -527,12 +529,23 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
     }
     else if ( source == newButton )
     {
+      int width = favWidth.getSelectedIndex() + 1;
+      if ( width == 0 )
+      {
+        String title = "New Favorite";
+        String message = "You need to set the Digits drop-down box before you can create new Favorites.\n"
+                       + "The value should be the number of digits in a channel number unless a decimal\n"
+                       + "point is required, in which case it should be the number of digits before the\n"
+                       + "decimal point.";
+        JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
+        return;
+      }
       FavScan favScan = new FavScan( favBtn.getKeyCode(), null, null );
       favScan.setName( "New favorite" );
       if ( remoteConfig.getFavKeyDevButton() == null )
       {
         remoteConfig.setFavKeyDevButton( ( DeviceButton )deviceButtonBox.getSelectedItem() );
-        remoteConfig.getFavKeyDevButton().setFavoritewidth( favWidth.getSelectedIndex() + 1 );
+        remoteConfig.getFavKeyDevButton().setFavoritewidth( width );
       }
       if ( remote.isSSD() )
       {
@@ -557,7 +570,7 @@ public class FavoritesPanel extends RMPanel implements ActionListener,
         }
       }
       favScan.setSegmentFlags( 0xFF );
-      favScan.setChannel( "00000000".substring( 0, favWidth.getSelectedIndex() + 1 ) );
+      favScan.setChannel( "00000000".substring( 0, width ) );
       favScans.add( favScan );
       row = favScans.size() - 1;
       if ( favTable.getSelectedRowCount() == 0 )

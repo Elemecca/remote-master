@@ -334,6 +334,12 @@ public class RemoteConfiguration
             if ( remote.isSSD() )
             {
               favScan.icon = new RMIcon( 6 );
+              if ( favKeyDevButton != null && favKeyDevButton.getFavoriteWidth() == 0 )
+              {
+                String channel = favScan.getChannel();
+                int width = channel.indexOf( '.' ) >= 0 ? channel.indexOf( '.' ) : channel.length();
+                favKeyDevButton.setFavoritewidth( width );
+              }
             }
             favScans.add( favScan );
           }
@@ -1402,15 +1408,27 @@ public class RemoteConfiguration
         // device serial converted to keycode
         DeviceButton db = remote.getDeviceButton(  0x50 + data[ pos++ ] );
         int serial = data[ pos ] + 0x100 * data[ pos + 1 ];
-        Function f = db.getUpgrade().getFunctionMap().get( serial );
-        items.macro.getItems().add( new KeySpec( db, f ) );
+        if ( db.getUpgrade() != null )
+        {
+          Function f = db.getUpgrade().getFunctionMap().get( serial );
+          items.macro.getItems().add( new KeySpec( db, f ) );
+        }
+        else
+        {
+          System.err.println( "Macro serial " + items.macro.serial + " has sendir on unset device $" 
+              + Integer.toHexString( db.getButtonIndex() ) );
+        }
       }
       else if ( tag.equals( "duration" ) )
       {
         pos++;
-        KeySpec ks = items.macro.getItems().get( items.macro.getItems().size() - 1  );
         int duration = ( data[ pos ] + 0x100 * data[ pos + 1 ] ) / 100;
-        ks.duration = duration;
+        int size = items.macro.getItems().size();
+        if ( size > 0 )
+        {
+          KeySpec ks = items.macro.getItems().get( size - 1  );    
+          ks.duration = duration;
+        }
       }
       else if ( tag.equals(  "delay" ) )
       {
@@ -1421,9 +1439,13 @@ public class RemoteConfiguration
         }
         else
         {
-          KeySpec ks = items.macro.getItems().get( items.macro.getItems().size() - 1  );
           int delay = data[ pos++ ];
-          ks.delay = delay;
+          int size = items.macro.getItems().size();
+          if ( size > 0 )
+          {
+            KeySpec ks = items.macro.getItems().get( items.macro.getItems().size() - 1  );      
+            ks.delay = delay;
+          }
         }
       }
       else if ( tag.equals(  "assistant" ) )
@@ -1660,7 +1682,7 @@ public class RemoteConfiguration
           Macro macro = it.next();
           KeySpec ks = null;
           if ( items.unreferencedMacros.contains( macro ) || macro.isSystemMacro() 
-              && ( ks = macro.getItems().get( 0 ) ).btn == null && ks.fn == null )
+              && ( macro.getItems().size() == 0 || ( ks = macro.getItems().get( 0 ) ).btn == null && ks.fn == null ) )
           {
             it.remove();
             if ( ks != null )

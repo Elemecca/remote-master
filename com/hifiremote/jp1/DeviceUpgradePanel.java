@@ -53,6 +53,17 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     table.initColumns( model );
     upgradeBugPane.setVisible( remoteConfig != null && remoteConfig.getRemote().hasUpgradeBug() );
   }
+  
+  public int getRow( DeviceUpgrade upg )
+  {
+    int row = -1;
+    if ( remoteConfig != null )
+    {
+      row = remoteConfig.getDeviceUpgrades().indexOf( upg );
+      row = sorter.viewIndex( row );
+    }
+    return row;
+  }
 
   /*
    * (non-Javadoc)
@@ -223,7 +234,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   }
 
   @Override
-  protected void editRowObject( int row )
+  public void editRowObject( int row )
   {
     rowOut = row;
     createRowObjectA( getRowObject( row ) );
@@ -252,6 +263,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     Remote remote = remoteConfig.getRemote();
     if ( newUpgrade == null )
     {
+      // Edit has been cancelled
       if ( oldUpgrade != null && oldUpgrade.getProtocol() != null )
       {
         Protocol baseProtocol = oldUpgrade.getProtocol(); 
@@ -287,25 +299,9 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         remoteConfig.getProtocolUpgrades().remove( pOld.newCustomCode );
         pOld.saveCode( remoteConfig, pOld.oldCustomCode );
       }
-      if ( oldUpgrade.needsProtocolCode() && pOld != pNew )
+      if ( pOld != pNew )
       {
-        boolean pUsed = false;
-        for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
-        {
-          if ( ( ( pOld instanceof ManualProtocol ) && ( du.getProtocol() == pOld ) )
-                || ( du.getProtocol().getID( remote ) ==  pOld.getID( remote ) ) )
-          {
-            pUsed = true;
-            break;
-          }
-        }
-        if ( !pUsed )
-        {
-          // Old protocol now unused so save its code
-          pOld.saveCode( remoteConfig, oldUpgrade.getCode() );
-          // If the old protocol had custom code, this would now be in the protocol upgrades
-          pOld.customCode.clear();
-        }
+        ( ( DeviceUpgradeTableModel )getModel() ).checkProtocolRemoval( oldUpgrade, false );
       }
            
       DeviceButtonTableModel deviceModel = remoteConfig.getOwner().getGeneralPanel().getDeviceButtonTableModel();
@@ -316,6 +312,11 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         deviceModel.setValueAt( new SetupCode( newUpgrade.getSetupCode() ), rowBound, 3 );
 //        deviceModel.fireTableRowsUpdated( rowBound, rowBound );
         deviceModel.fireTableDataChanged();
+      }
+      KeyMovePanel kmp = remoteConfig.getOwner().getKeyMovePanel();
+      if ( kmp != null )
+      {
+        kmp.endEditUpgrade();
       }
     }
     else

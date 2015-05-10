@@ -413,6 +413,11 @@ public class TableSorter extends AbstractTableModel
   {
     return getViewToModel()[ viewIndex ].modelIndex;
   }
+  
+  public int viewIndex( int modelIndex )
+  {
+    return getModelToView()[ modelIndex ];
+  }
 
   /**
    * Gets the model to view.

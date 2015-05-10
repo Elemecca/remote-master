@@ -427,7 +427,6 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
     editUpgrade.setEnabled( false );
     ( ( KeyMoveTableModel )model ).refresh();
     model.fireTableDataChanged();
-    remoteConfig.getOwner().getDeviceUpgradePanel().model.fireTableDataChanged();
   }
 
   protected class EditUpgradeAction extends AbstractAction
@@ -451,15 +450,20 @@ public class KeyMovePanel extends RMTablePanel< KeyMove >
       if ( rows.length == 0 ) return;
 
       KeyMove km = getRowObject( rows[0] );
+      DeviceUpgrade oldUpgrade = null;
       for ( DeviceUpgrade du : remoteConfig.getDeviceUpgrades() )
       {
         if ( du.getDeviceType().getNumber() == km.getDeviceType() && du.getSetupCode() == km.getSetupCode() )
         {
-          List< Remote > remotes = new ArrayList< Remote >( 1 );
-          remotes.add( remoteConfig.getRemote() );
-          thisPanel.upgradeEditor = new DeviceUpgradeEditor( remoteConfig.getOwner(), du, remotes, 0, thisPanel );
+          oldUpgrade = du;
           break;
         }
+      }
+      if ( oldUpgrade != null )
+      {
+        DeviceUpgradePanel dup = remoteConfig.getOwner().getDeviceUpgradePanel();
+        int dupRow = dup.getRow( oldUpgrade );
+        dup.editRowObject( dupRow );
       }
     }
   }

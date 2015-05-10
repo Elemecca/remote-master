@@ -2658,6 +2658,7 @@ public class DeviceUpgrade extends Highlight
     System.err.println( "Loading functions for device upgrade "
         + devTypeAliasName + "/" + ( new SetupCode( setupCode ).toString() ) );
     functions.clear();
+    swapList = null;
     LinkedHashMap< Integer, Integer > macroXRef = new LinkedHashMap< Integer, Integer >();
     int i = 0;
     while ( true )

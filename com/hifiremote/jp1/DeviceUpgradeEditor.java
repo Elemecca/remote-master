@@ -21,6 +21,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.GeneralFunction.User;
 
 // TODO: Auto-generated Javadoc
@@ -247,8 +248,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
             }
           }
         }
-        
-        if ( !cancelled && remoteConfig.getRemote().usesEZRC() )
+        Remote remote = remoteConfig.getRemote();
+        if ( !cancelled && remote.usesEZRC() )
         {
           upgrade.classifyButtons();
           DeviceButton db = null;
@@ -267,16 +268,8 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
         dispose();
         owner.setEnabled( true );
         owner.toFront();
-        editorPanel.releasePanels();
-        if ( panel instanceof GeneralPanel )
-        {
-          ( ( GeneralPanel )panel ).endEdit( this, row );
-        }
-        else if ( panel instanceof KeyMovePanel )
-        {
-          ( ( KeyMovePanel )panel ).endEditUpgrade( );
-        }
-        else if ( panel instanceof DeviceUpgradePanel )
+        editorPanel.releasePanels(); 
+        if ( panel instanceof DeviceUpgradePanel )
         {
           DeviceUpgradePanel dup = ( DeviceUpgradePanel )panel;
           if ( !cancelled )
@@ -295,6 +288,13 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
             }
           }
           dup.endEdit( this, row );
+        }
+        if ( !cancelled && remote.usesEZRC() )
+        {
+          for ( Activity a : remoteConfig.getActivities().values() )
+          {
+            Assister.setFunctions( a.getAssists(), remote  );
+          }
         }
       }
       else if ( source == loadButton )
@@ -393,6 +393,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     Remote remote = deviceUpgrade.getRemote();
     boolean btnInd = deviceUpgrade.getButtonIndependent();
     DeviceButton btnRes = deviceUpgrade.getButtonRestriction();
+    DeviceUpgrade resUpg = ( btnRes != null && btnRes != DeviceButton.noButton ) ? btnRes.getUpgrade() : null;
     deviceUpgrade.reset();
     deviceUpgrade.load( file );
     JP1Frame.getPreferences().setUpgradePath( file.getParentFile() );
@@ -404,6 +405,7 @@ public class DeviceUpgradeEditor extends JFrame implements ActionListener
     deviceUpgrade.setButtonRestriction( btnRes );
     if ( btnRes != null && btnRes != DeviceButton.noButton )
     {
+      btnRes.setUpgrade( resUpg );
       for ( Function f : deviceUpgrade.getFunctions() )
       {
         for ( User u : f.getUsers() )

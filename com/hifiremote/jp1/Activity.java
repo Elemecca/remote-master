@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -82,9 +83,15 @@ public class Activity extends Highlight
       for ( int i = 0; i < assists.size(); i++ )
       {
         List< Assister > aList = assists.get( i );
-        for ( Assister a : aList )
+        ListIterator< Assister > it = aList.listIterator();
+        while ( it.hasNext() )
         {
+          Assister a = it.next();
           a.set( remote );
+          if ( a.ks.fn == null )
+          {
+            it.remove();
+          }
         }
       }
     }
@@ -167,12 +174,14 @@ public class Activity extends Highlight
       DeviceUpgrade du = ks.db != null ? ks.db.getUpgrade() : null;
       if ( du == null )
       {
+        ks.fn = null;
         return;
       }
       if ( buttonCode >= 0 )
       {
         ks.btn = remote.getButton( buttonCode );
-        if ( ks.btn != null && ks.fn == null )
+        if ( ks.btn != null && ( ks.fn == null 
+            || ks.fn instanceof Function && !du.getFunctions().contains( ks.fn ) ) )
         {
           ks.fn = du.getLearnedMap().get( ( int )ks.btn.getKeyCode() );
           if ( ks.fn == null )

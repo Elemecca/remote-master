@@ -517,7 +517,22 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         db.setSegment( new Segment( 0, 0xFF, hex  ) );
       }
     }
+    checkProtocolRemoval( du, true );
+    du.removePropertyChangeListener( this );
+    super.removeRow( row );
+  }
+  
+  /**
+   * When a device upgrade edit changes its protocol or an upgrade is
+   * deleted, check whether the old protocol should be retained and 
+   * delete it if so required.  In the case of upgrade deletion, seek
+   * confirmation before deleting a protocol that is no longer used
+   * but in the case of an edit, always retain it.
+   */
+  public void checkProtocolRemoval( DeviceUpgrade du, boolean isDeletion )
+  {
     Protocol p = du.getProtocol();
+    Remote remote = remoteConfig.getRemote();
     if ( p != null )
     {
       boolean pidUsed = false;
@@ -544,16 +559,20 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
       if ( du.needsProtocolCode() && !pidUsed 
           &&  ( !remoteConfig.hasSegments() || remote.getSegmentTypes().contains( 0x0F ) ) )
       {
-        String title = "Device Upgrade Deletion";
-        String message = "The protocol used by the device upgrade being deleted is a protocol\n"
-            + "upgrade that is not used by any other device upgrade and so will \n"
-            + "normally also be deleted.  Do you wish to keep the protocol upgrade?";
-        int ask = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
-        if ( ask == JOptionPane.CANCEL_OPTION )
+        int confirm = JOptionPane.YES_OPTION;
+        if ( isDeletion )
+        {
+          String title = "Device Upgrade Deletion";
+          String message = "The protocol used by the device upgrade being deleted is a protocol\n"
+              + "upgrade that is not used by any other device upgrade and so will \n"
+              + "normally also be deleted.  Do you wish to keep the protocol upgrade?";
+          confirm = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+        }
+        if ( confirm == JOptionPane.CANCEL_OPTION )
         {
           return;
         }
-        else if ( ask == JOptionPane.YES_OPTION )
+        else if ( confirm == JOptionPane.YES_OPTION )
         {
           p.saveCode( remoteConfig, du.getCode() );
         }
@@ -571,8 +590,6 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
         p.removeAltPID( remote );
       }
     }
-    du.removePropertyChangeListener( this );
-    super.removeRow( row );
   }
 
   /*

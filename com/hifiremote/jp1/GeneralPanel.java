@@ -405,46 +405,12 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       return;
     }
 
-    DeviceUpgrade newUpgrade = new DeviceUpgrade( selectedUpgrade, null );
-    newUpgrade.setRemoteConfig( remoteConfig );
-    List< Remote > remotes = new ArrayList< Remote >( 1 );
-    remotes.add( remoteConfig.getRemote() );
-    editor = new DeviceUpgradeEditor( remoteConfig.getOwner(), newUpgrade, remotes, row, this );
-  }
-
-  public void endEdit( DeviceUpgradeEditor editor, int row )
-  {
-    Remote remote = remoteConfig.getRemote();
-    DeviceButton deviceButton = remote.getDeviceButtons()[ row ];
+    Remote remote = remoteConfig.getRemote(); 
+    DeviceButton deviceButton = remote.usesEZRC() ? remoteConfig.getDeviceButtonList().get( row ): remote.getDeviceButtons()[ row ];
     DeviceUpgrade oldUpgrade = remoteConfig.getAssignedDeviceUpgrade( deviceButton );
-    DeviceUpgrade newUpgrade = editor.getDeviceUpgrade();
-    this.editor = null;
-    if ( oldUpgrade == null || newUpgrade == null )
-    {
-      return;
-    }
-    
-    if ( remote.usesEZRC() && newUpgrade.getButtonRestriction() != DeviceButton.noButton )
-    {
-      newUpgrade.getButtonRestriction().setUpgrade( newUpgrade );
-    }
-    
-    ListIterator< DeviceUpgrade > upgrades = remoteConfig.getDeviceUpgrades().listIterator();
-    while ( upgrades.hasNext() )
-    {
-      DeviceUpgrade upgrade = upgrades.next();
-      if ( upgrade == oldUpgrade )
-      {
-        upgrades.set( newUpgrade );
-        selectedUpgrade = newUpgrade;
-        deviceModel.setValueAt( newUpgrade.getDeviceType(), row, 2 );
-        deviceModel.setValueAt( new SetupCode( newUpgrade.getSetupCode() ), row, 3 );
-        deviceModel.fireTableRowsUpdated( row, row );
-        propertyChangeSupport.firePropertyChange( "device", null, null );
-        break;
-      }
-    }
-    remoteConfig.getOwner().getDeviceUpgradePanel().model.fireTableDataChanged();
+    DeviceUpgradePanel dup = remoteConfig.getOwner().getDeviceUpgradePanel();
+    int dupRow = dup.getRow( oldUpgrade );
+    dup.editRowObject( dupRow );
   }
 
   public boolean setWarning()

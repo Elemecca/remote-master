@@ -97,6 +97,13 @@ Changes for v2.03
 - Support decimal point in Favorites channels, needed for ATSC (Graham)
 - Fix bug preventing editing of device upgrades with custom protocol code in XSight Touch/Color remotes (Graham)
 - Add Replace button to Macro Dialog for XSight remotes (Graham)
+Release build 3
+- Delete Activity Assists that acquire a null function as a result of device upgrade editing (Graham)
+- Prevent download error with XSight remotes when a macro is present that calls an unset device (Graham)
+- Align uses of Device Upgrade Editor called from Device Upgrade Panel, General Panel and Keymove Panel (Graham)
+- Align handling of protocol that becomes unused on deleting an upgrade or changing its protocol (Graham)
+- Fix bug causing change of FavWidth not to be recorded when FavDevice has default value (Graham)
+- Display message when Favorites panel New button is pressed with Digits drop-down unset (Graham) 
 
 Changes for v2.02
 -- Alpha --

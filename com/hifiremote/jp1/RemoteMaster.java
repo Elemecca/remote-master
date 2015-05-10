@@ -116,7 +116,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03";
-  public final static int buildVer = 2;
+  public final static int buildVer = 3;
   
   public static int getBuild()
   {
@@ -4450,6 +4450,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   public GeneralPanel getGeneralPanel()
   {
     return generalPanel;
+  }
+
+  public KeyMovePanel getKeyMovePanel()
+  {
+    return keyMovePanel;
   }
 
   public DeviceUpgradePanel getDeviceUpgradePanel()
