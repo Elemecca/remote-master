@@ -1001,6 +1001,20 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         String command = event.getActionCommand();
         if ( command.equals( "NEW" ) )
         {
+          String title = "File > New";
+          String message = "The menu option File > New is primarily intended for creating setups for remotes\n"
+                         + "that you do not have, such as for sending to another person.  If you have the remote\n"
+                         + "it is strongly recommended that you start a new setup by doing a factory reset\n"
+                         + "(981 command) and downloading it.  Although the ideal situation would be for\n"
+                         + "File > New to create a factory reset state, for most remotes there are hidden settings\n"
+                         + "that are not visible in RMIR and whose initial values are not correctly set by File > New.\n"
+                         + "These may adversely affect the operation of the remote when a setup created this way\n"
+                         + "is uploaded.\n\nDo you wish to continue?";
+          if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.YES_NO_OPTION, 
+              JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
+          {
+            return;
+          }
           if ( !promptToSave() )
           {
             return;
@@ -1013,8 +1027,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           remote.load();
           if ( remote.isSSD() )
           {
-            String title = "New Remote Image";
-            String message = "RMIR cannot create a new remote image for this remote.";
+            title = "New Remote Image";
+            message = "RMIR cannot create a new remote image for this remote.";
             JOptionPane.showMessageDialog( RemoteMaster.this, message, title, JOptionPane.INFORMATION_MESSAGE );
             return;
           }

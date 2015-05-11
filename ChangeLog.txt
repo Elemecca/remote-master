@@ -103,7 +103,8 @@ Release build 3
 - Align uses of Device Upgrade Editor called from Device Upgrade Panel, General Panel and Keymove Panel (Graham)
 - Align handling of protocol that becomes unused on deleting an upgrade or changing its protocol (Graham)
 - Fix bug causing change of FavWidth not to be recorded when FavDevice has default value (Graham)
-- Display message when Favorites panel New button is pressed with Digits drop-down unset (Graham) 
+- Display message when Favorites panel New button is pressed with Digits drop-down unset (Graham)
+- Display warning message on menu option File/New why it is not recommended for creating new setups for uploading (Graham) 
 
 Changes for v2.02
 -- Alpha --
