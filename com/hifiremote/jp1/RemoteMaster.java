@@ -70,13 +70,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
-import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -318,6 +316,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private DeviceUpgradeEditor duEditor = null;
 
   private JProgressBar interfaceState = null;
+  
+  private boolean exitPrompt = false;
 
   private JPanel statusBar = null;
 
@@ -715,6 +715,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       setBaselineItem.setEnabled( true );
       uploadAction.setEnabled( true );
       update();
+      changed = remoteConfig != null ? !Hex.equals( remoteConfig.getSavedData(), remoteConfig.getData() ) : false;
       if ( file != null )
       {
         setTitleFile( file );
@@ -789,7 +790,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
   }
   
-  private class UploadTask extends SwingWorker< Void, Void >
+  private class UploadTask extends WriteTask
   {
     private short[] data;
     private boolean allowClockSet;
@@ -815,6 +816,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     @Override
     protected Void doInBackground() throws Exception
     {
+      resetInterfaceState();
       Remote remote = remoteConfig.getRemote();
       IO io = getOpenInterface( file, use );
       if ( io == null )  
@@ -936,6 +938,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       return null;
     }
+    
+    @Override
+    public void done()
+    {
+      super.done();
+      if ( !ok )
+      {
+        String message = file != null ? "Error saving Simpleset file " + file.getName() : "Error uploading to remote";
+        JOptionPane.showMessageDialog( RemoteMaster.this, message, "Task error", JOptionPane.ERROR_MESSAGE );
+      }
+      if ( exitPrompt )
+      {
+        exitPrompt = false;
+        dispatchEvent( new WindowEvent( RemoteMaster.this, WindowEvent.WINDOW_CLOSING ) );
+      }
+    }
   }
 
   public static File getJreExecutable()
@@ -1003,11 +1021,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         {
           String title = "File > New";
           String message = "The menu option File > New is primarily intended for creating setups for remotes\n"
-                         + "that you do not have, such as for sending to another person.  If you have the remote\n"
-                         + "it is strongly recommended that you start a new setup by doing a factory reset\n"
+                         + "that you do not have, such as for sending to another person to test.  If you have the\n"
+                         + "remote, it is strongly recommended that you start a new setup by doing a factory reset\n"
                          + "(981 command) and downloading it.  Although the ideal situation would be for\n"
-                         + "File > New to create a factory reset state, for most remotes there are hidden settings\n"
-                         + "that are not visible in RMIR and whose initial values are not correctly set by File > New.\n"
+                         + "File > New to create a factory reset state, for many remotes there are hidden settings\n"
+                         + "that are not visible in RMIR whose initial values are not correctly set by File > New.\n"
                          + "These may adversely affect the operation of the remote when a setup created this way\n"
                          + "is uploaded.\n\nDo you wish to continue?";
           if ( JOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.YES_NO_OPTION, 
@@ -1349,8 +1367,18 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         try
         {
           System.err.println( "RemoteMaster.windowClosing() entered" );
-          if ( !promptToSave() )
+          boolean quit = false;
+          if ( interfaceText != null )
           {
+            String title = "Request to exit";
+            String message = "A \"" + interfaceText + "\" task is in progress.  You risk corrupting it if you exit\n"
+                           + "before it completes.  Are you sure you wish to continue?";
+            quit = NegativeDefaultButtonJOptionPane.showConfirmDialog( RemoteMaster.this, message, title, JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION;
+          }
+          if ( !promptToSave( true ) || exitPrompt || quit )
+          {
+            System.err.println( "RemoteMaster.windowClosing() exited" );
             doDispose = false;
             return;
           }
@@ -3037,13 +3065,72 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       recreateToolbar();
       update();
+      changed = remoteConfig != null ? !Hex.equals( remoteConfig.getSavedData(), remoteConfig.getData() ) : false;
       setTitleFile( loadFile );
       setInterfaceState( null );
       file = loadFile;
     }
   }
   
-  private class SaveTask extends SwingWorker< Void, Void >
+  private class WriteTask extends SwingWorker< Void, Void >
+  {
+    private String text = null;
+    protected boolean ok = true;
+    
+    public WriteTask()
+    {
+      this.text = null;
+    }
+    
+    public WriteTask( String text )
+    {
+      this.text = text;
+    }    
+    
+    @Override
+    protected Void doInBackground() throws Exception
+    {
+      setInterfaceState( text );
+      return null;
+    }
+    
+    @Override
+    public void done()
+    {
+      ok = true;
+      try
+      {
+        get();
+      } 
+      catch ( InterruptedException ignore ) {}
+      catch ( java.util.concurrent.ExecutionException e ) 
+      {
+        ok = false;
+        String why = null;
+        Throwable cause = e.getCause();
+        if ( cause != null ) 
+        {
+          why = cause.getMessage();
+        } 
+        else 
+        {
+          why = e.getMessage();
+        }
+        System.err.println( "Error in write task: " + why );
+        e.printStackTrace();
+      }
+    }
+    
+    public void resetInterfaceState()
+    {
+      if ( exitPrompt && interfaceText != null )
+      {
+        ( new WriteTask( interfaceText.substring( 0, interfaceText.length() - 3 ) + " AND EXIT" ) ).execute();
+      }
+    }
+  }
+  
+  private class SaveTask extends WriteTask
   {
     private File file = null;
     private Use use = null;
@@ -3057,9 +3144,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     @Override
     protected Void doInBackground() throws Exception
     {
+      resetInterfaceState();
       if ( use == Use.EXPORT )
       {
         remoteConfig.exportIR( file );
+        if ( exitPrompt )
+        {
+          changed = false;
+        }
         updateRecentFiles( file );
       }
       else
@@ -3076,6 +3168,22 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
       setInterfaceState( null );
       return null;
+    }
+    
+    @Override
+    public void done()
+    {
+      super.done();
+      setInterfaceState( null );
+      if ( !ok )
+      {
+        JOptionPane.showMessageDialog( RemoteMaster.this, "Error saving file " + file.getName(), "Task error", JOptionPane.ERROR_MESSAGE );
+      }
+      if ( exitPrompt )
+      {
+        exitPrompt = false;
+        dispatchEvent( new WindowEvent( RemoteMaster.this, WindowEvent.WINDOW_CLOSING ) );
+      }
     }
   }
   
@@ -4490,6 +4598,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   public boolean promptToSave() throws IOException
   {
+    return promptToSave( false );
+  }
+  
+  public boolean promptToSave( boolean doExit ) throws IOException
+  {
     if ( !changed )
     {
       return true;
@@ -4504,6 +4617,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       return true;
     }
+    exitPrompt = doExit;
     if ( saveAction.isEnabled() )
     {
       save( file, false );

@@ -39,8 +39,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
-
 public class GeneralFunction
 {
   public GeneralFunction() {};

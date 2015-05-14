@@ -49,7 +49,6 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
 import com.hifiremote.jp1.ButtonPanel.SelectionPanel;
-import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 
 /**
  * The Class LayoutPanel.

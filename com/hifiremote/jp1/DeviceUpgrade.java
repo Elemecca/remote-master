@@ -37,9 +37,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
 
 import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;

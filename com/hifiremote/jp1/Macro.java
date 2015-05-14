@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.swing.JOptionPane;
-
 import com.hifiremote.jp1.Activity.Assister;
 import com.hifiremote.jp1.RemoteConfiguration.KeySpec;
 

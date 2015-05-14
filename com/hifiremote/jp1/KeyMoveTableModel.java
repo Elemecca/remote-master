@@ -12,8 +12,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class KeyMoveTableModel.

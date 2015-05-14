@@ -664,8 +664,6 @@ PropertyChangeListener, RMSetter< Object >
   
   private JLabel durationLabel = new JLabel( "Duration:  " );
   
-  private JLabel durationSuffix = new JLabel( " secs" );
-  
   private XFormattedTextField duration = null;
   private XFormattedTextField delay = null;
   private NumberFormatter formatter = null;

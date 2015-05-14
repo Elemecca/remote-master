@@ -1737,9 +1737,9 @@ public class RemoteConfiguration
             Button btn = buttonGroup[ 0 ];
             KeySpec ks = items.map.get( btn );
             group.setDevice( ks != null ? ks.db : null );
-            if ( ks.btn != btn )
+            if ( ks != null && ks.btn != null && ks.btn != btn )
             {
-              group.setTargetKeyCode( ks.btn.getKeyCode() );;
+              group.setTargetKeyCode( ks.btn.getKeyCode() );
             }
           }
         }

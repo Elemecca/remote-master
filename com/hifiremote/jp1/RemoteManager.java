@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 // TODO: Auto-generated Javadoc
