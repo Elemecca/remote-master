@@ -5431,6 +5431,80 @@ public class RemoteConfiguration
       }
     }
   }
+  
+  public boolean isUpgradeWithKeymoves( int devBtnIndex, DeviceType devType, SetupCode setupCode, boolean ask )
+  {
+    if ( devType != null && setupCode != null )
+    {
+      DeviceUpgrade du = findDeviceUpgrade( devType.getNumber(), setupCode.getValue() );
+      if ( du != null && du.getKeyMoves().size() > 0 )
+      {
+        if ( ask )
+        {
+          // If user does not wish to preserve keymoves, treat as not having any
+          String message = "The current device " + devType.getName() + " " + setupCode.getValue() + 
+          " contains keymoves.  Do you want to preserve them?";
+          String title = "Device Change";
+          boolean confirmed = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
+              JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION;
+          if ( !confirmed )
+          {
+            // User does not want to preserve keymoves, so delete assignment colors
+            du.assignmentColors.remove( devBtnIndex );
+          }
+          return confirmed;
+        }
+        else
+        {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  
+  private boolean forbidsKeyMoves( DeviceButton db )
+  {
+    if ( remote.usesEZRC() )
+    {
+      return false;
+    }
+    Button button = remote.getButton( db.getName() );
+    int index = Arrays.asList( remote.getDeviceButtons() ).indexOf( db );
+ // There is a question over the validity of this test.  It means that a restriction on a device button applies to every
+    // button of the device.  The rationale appears to be that remotes with AdvCodeBindFormat==NORMAL have a 2-byte header for
+    // keymoves and macros that only allows 3 bits for the device index, so that if there are more than 8 devices then those
+    // with index >7 cannot support keymoves or macros.  The test button.forbidsAdvancedCodes() was originally
+    // !button.allowsKeyMove().  It has been strengthened to allow a button restriction MoveBind to have its normal syntax of
+    // preventing key moves from being put on the device button considered just as a normal button.  It may be, however, that
+    // the case of a real device button should be omitted entirely.
+    return ( button != null && button.forbidsKeyMoves() )// case of real device button
+        || ( index > 7 && remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL ); // case of phantom device button
+
+  }
+  
+  public boolean isValidDevice( DeviceButton db, DeviceType devType, SetupCode setupCode )
+  {
+    return !isUpgradeWithKeymoves( -1, devType, setupCode, false )
+        || !forbidsKeyMoves( db );
+  }
+  
+  /**
+   * Returns an array of those device buttons that do not forbid key moves,
+   * as determined by remoteConfig.forbidsKeyMoves( db ).
+   */
+  public DeviceButton[] getAllowedDeviceButtons()
+  {
+    List< DeviceButton > allowedDB = new ArrayList< DeviceButton >();
+    for ( DeviceButton db : remote.getDeviceButtons() )
+    {
+      if ( !forbidsKeyMoves( db ) )
+      {
+        allowedDB.add( db );
+      }
+    }
+    return allowedDB.toArray( new DeviceButton[ 0 ] );
+  }
 
   /**
    * Update key moves.

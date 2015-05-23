@@ -38,7 +38,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     {
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
-      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+      deviceButtonBox.setModel( new DefaultComboBoxModel( remoteConfig.getAllowedDeviceButtons() ) );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
       deviceTypeBox.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );

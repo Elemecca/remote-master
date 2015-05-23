@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -323,10 +324,10 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     {
       // New, Clone
       int dbi = 0;
+      DeviceButton devButton = null;
       if ( ( dbi = remoteConfig.findBoundDeviceButtonIndex( newUpgrade ) ) == -1
           || remote.hasDeviceDependentUpgrades() == 1 )
       {
-        DeviceButton devButton = null;
         if ( dbi == -1 )
         {
           // upgrade isn't bound to a device button.
@@ -342,26 +343,8 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
           // upgrade is assigned to a device button via a button restriction
           devButton = newUpgrade.getButtonRestriction();
         }
-        if ( devButton != null )
-        {
-          short[] data = remoteConfig.getData();
-          if ( remoteConfig.hasSegments() )
-          {
-            data = devButton.getSegment().getHex().getData();
-          }
-          DeviceType devType = remote.getDeviceTypeByAliasName( newUpgrade.getDeviceTypeAliasName() );
-          devButton.setSetupCode( ( short )newUpgrade.getSetupCode(), data );
-          devButton.setDeviceTypeIndex( ( short )devType.getNumber(), data );
-          devButton.setDeviceGroup( ( short )devType.getGroup(), data );
-          if ( remote.hasDeviceDependentUpgrades() == 2 )
-          {
-            String message = "Remember to set the button-dependent and/or button-independent\n"
-                + " settings in a manner consistent with your choice of button\n" + " assignment.";
-            String title = "Creating a new device upgrade";
-            JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
-          }    
-        }
-        else if ( remote.usesEZRC() )
+        
+        if ( devButton == null && remote.usesEZRC() )
         {
           // This case, which only concerns XSight remotes, should not occur.
           newUpgrade.doCancel( true );
@@ -397,6 +380,41 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
       else
       {
         model.insertRow( rowModel, newUpgrade );
+      }
+      
+      if ( devButton != null )
+      {
+        DeviceType devType = remote.getDeviceTypeByAliasName( newUpgrade.getDeviceTypeAliasName() );
+        SetupCode setupCode = new SetupCode( newUpgrade.getSetupCode() );
+        boolean valid = true;
+        if ( !remote.usesEZRC() )
+        {
+          // Test device for validity if upgrade contains keymoves.
+          // Remotes that use RZ-RC do not support keymoves.
+          DeviceButtonTableModel dum = remoteConfig.getOwner().getGeneralPanel().getDeviceButtonTableModel();
+          int dbRow = Arrays.asList( remote.getDeviceButtons() ).indexOf( devButton );
+          valid = dum.isValidDevice( dbRow, devType, setupCode );
+        }
+
+        if ( valid )
+        {
+          short[] data = remoteConfig.getData();
+          if ( remoteConfig.hasSegments() )
+          {
+            data = devButton.getSegment().getHex().getData();
+          }
+
+          devButton.setSetupCode( ( short )newUpgrade.getSetupCode(), data );
+          devButton.setDeviceTypeIndex( ( short )devType.getNumber(), data );
+          devButton.setDeviceGroup( ( short )devType.getGroup(), data );
+          if ( remote.hasDeviceDependentUpgrades() == 2 )
+          {
+            String message = "Remember to set the button-dependent and/or button-independent\n"
+                + " settings in a manner consistent with your choice of button\n" + " assignment.";
+            String title = "Creating a new device upgrade";
+            JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
+          }
+        }
       }
 
       if ( select )

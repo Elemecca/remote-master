@@ -395,6 +395,15 @@ public class Button
   {
     this.restrictions |= restrictions;
   }
+  
+  /**
+   * This is used only for device buttons, where ALL_BIND prevents ANY key moves
+   * being put on this device.
+   */
+  public boolean forbidsKeyMoves()
+  {
+    return ( ( restrictions & ALL_BIND ) == ALL_BIND );
+  }
 
   /**
    * Allows key move.

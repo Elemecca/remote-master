@@ -94,7 +94,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     panel.setBorder( BorderFactory.createTitledBorder( "Bound Key" ) );
 
     panel.add( new JLabel( "Device:" ) );
-    boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+    boundDevice.setModel( new DefaultComboBoxModel( config.getAllowedDeviceButtons() ) );
     panel.add( boundDevice );
 
     panel.add( Box.createHorizontalStrut( 5 ) );

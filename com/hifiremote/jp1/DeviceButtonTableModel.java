@@ -578,7 +578,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
         return;
       }
       
-      if ( isUpgradeWithKeymoves( row, oldDevType, oldSetupCode, true ) )
+      if ( remoteConfig.isUpgradeWithKeymoves( row, oldDevType, oldSetupCode, true ) )
       {
         preserveKeyMoves( row, oldDevType, oldSetupCode );
       }
@@ -672,7 +672,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           return;
         }
 
-        if ( isUpgradeWithKeymoves( row, oldDevType, oldSetupCode, true ) )
+        if ( remoteConfig.isUpgradeWithKeymoves( row, oldDevType, oldSetupCode, true ) )
         {
           preserveKeyMoves( row, oldDevType, oldSetupCode );
         }
@@ -772,55 +772,19 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     propertyChangeSupport.firePropertyChange( col == 14 ? "highlight" : "value", null, null );
   }
   
-  private boolean isValidDevice( int row, DeviceType devType, SetupCode setupCode )
+  public boolean isValidDevice( int row, DeviceType devType, SetupCode setupCode )
   {
-    Remote remote = remoteConfig.getRemote();
     DeviceButton db = getRow( row );
-    Button button = remote.getButton( db.getName() );
-
-    if ( isUpgradeWithKeymoves( -1, devType, setupCode, false )
-        && ( ( button != null && ! button.allowsKeyMove() )// case of real device button
-            || ( row > 7 && remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL ) ) ) // case of phantom device button
+    if ( !remoteConfig.isValidDevice( db, devType, setupCode ) )
     {
-      String message = "Device " + devType.getName() + " " + setupCode.getValue() + 
-      " cannot be assigned to\nbutton " + db.getName() + " as it is an upgrade " +
-      "that contains\nkeymoves";
+      String message = "Device " + devType.getName() + " " + setupCode.getValue()
+          + " cannot be assigned to button " + db.getName() + "\nas this device button "
+          + "does not support keymoves and the\nupgrade requires them.";
       String title = "Device Button Assignment";
       JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
       return false;
     }
     return true;
-  }
-   
-  private boolean isUpgradeWithKeymoves( int devBtnIndex, DeviceType devType, SetupCode setupCode, boolean ask )
-  {
-    if ( devType != null && setupCode != null )
-    {
-      DeviceUpgrade du = remoteConfig.findDeviceUpgrade( devType.getNumber(), setupCode.getValue() );
-      if ( du != null && du.getKeyMoves().size() > 0 )
-      {
-        if ( ask )
-        {
-          // If user does not wish to preserve keymoves, treat as not having any
-          String message = "The current device " + devType.getName() + " " + setupCode.getValue() + 
-          " contains keymoves.  Do you want to preserve them?";
-          String title = "Device Change";
-          boolean confirmed = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, 
-              JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION;
-          if ( !confirmed )
-          {
-            // User does not want to preserve keymoves, so delete assignment colors
-            du.assignmentColors.remove( devBtnIndex );
-          }
-          return confirmed;
-        }
-        else
-        {
-          return true;
-        }
-      }
-    }
-    return false;
   }
   
   private void preserveKeyMoves( int devButtonIndex, DeviceType devType, SetupCode setupCode )

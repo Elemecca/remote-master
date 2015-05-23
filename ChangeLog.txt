@@ -108,6 +108,8 @@ Release build 3
 - When File/Exit prompts user to save, ensure saving completes before RMIR exits (Graham)
 - When File/Exit performed while an Upload, Download etc task is running, display warning and confirmation request (Graham)
 - Ensure initial "changed" status following a download or file load correctly reflects the hex data state (Graham)
+Release build 4
+- Make consistent the restriction on certain device buttons that do not support key moves on any buttons (Graham)
 
 Changes for v2.02
 -- Alpha --
