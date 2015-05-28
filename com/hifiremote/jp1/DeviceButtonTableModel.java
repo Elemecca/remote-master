@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -16,6 +17,7 @@ import javax.swing.table.TableCellRenderer;
 import com.hifiremote.jp1.GeneralFunction.IconPanel;
 import com.hifiremote.jp1.GeneralFunction.IconRenderer;
 import com.hifiremote.jp1.GeneralFunction.RMIcon;
+import com.hifiremote.jp1.RemoteConfiguration.ShareType;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -651,6 +653,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           softDevices.deleteSequenceIndex( row, getRowCount(), data );
         }
       }
+      fireTableRowsUpdated( row, row );
     }
     else if ( col == 3 )
     {
@@ -775,14 +778,42 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
   public boolean isValidDevice( int row, DeviceType devType, SetupCode setupCode )
   {
     DeviceButton db = getRow( row );
-    if ( !remoteConfig.isValidDevice( db, devType, setupCode ) )
+    ShareType share = remoteConfig.shareType( db, devType, setupCode );
+    
+    setupCodeRenderer.setDeviceButton( db );
+    setupCodeRenderer.setDeviceType( devType );
+    if ( !setupCodeRenderer.isValid( setupCode.getValue() ) )
+    {
+      // do not stop an invalid device type / setup code combination being
+      // input as it may be an intermediate step in setting a valid value
+      return true;
+    }
+    
+    if ( share == ShareType.UNSHARED )
+    {
+      return true;
+    }
+    List< DeviceButton > devBtns = Arrays.asList( remoteConfig.getRemote().getDeviceButtons() );
+    int index = devBtns.indexOf( db );
+    DeviceButton sharedDB = devBtns.get( index - 8 );
+    if ( share == ShareType.SHARED )
     {
       String message = "Device " + devType.getName() + " " + setupCode.getValue()
-          + " cannot be assigned to button " + db.getName() + "\nas this device button "
-          + "does not support keymoves and the\nupgrade requires them.";
+          + " cannot be assigned to button " + db.getName() + "\nas it is an upgrade "
+          + "with key moves that would appear\nalso on device button " + sharedDB.getName() + ".";
       String title = "Device Button Assignment";
       JOptionPane.showMessageDialog( null, message, title, JOptionPane.ERROR_MESSAGE );
       return false;
+    }
+    else if ( share == ShareType.SHAREABLE )
+    {
+      String message = "Please be aware that device " + devType.getName() + " " + setupCode.getValue()
+          + " on button " + db.getName() + "\nwill share key moves with the device on "
+          + "button " + sharedDB.getName() + ", which\nwill override the functions assigned by this "
+          + "device to the\nbuttons concerned.";
+      String title = "Device Button Assignment";
+      JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+      return true;
     }
     return true;
   }

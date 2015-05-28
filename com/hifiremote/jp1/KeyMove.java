@@ -336,7 +336,9 @@ public class KeyMove extends AdvancedCode implements Cloneable
 
       if ( remote.getAdvCodeBindFormat() == BindFormat.NORMAL )
       {
-        int temp = deviceButtonIndex << 5;
+        // Mask out bit 3 of index as key moves are shared between real device
+        // with index < 8 and any virtual device with index greater by 8
+        int temp = ( deviceButtonIndex << 5 ) & 0xFF;
         buffer[ offset ] = ( short )temp;
         lengthOffset = offset++ ;
       }

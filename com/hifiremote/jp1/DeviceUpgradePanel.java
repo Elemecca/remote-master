@@ -390,7 +390,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
         if ( !remote.usesEZRC() )
         {
           // Test device for validity if upgrade contains keymoves.
-          // Remotes that use RZ-RC do not support keymoves.
+          // Remotes that use EZ-RC do not support keymoves.
           DeviceButtonTableModel dum = remoteConfig.getOwner().getGeneralPanel().getDeviceButtonTableModel();
           int dbRow = Arrays.asList( remote.getDeviceButtons() ).indexOf( devButton );
           valid = dum.isValidDevice( dbRow, devType, setupCode );

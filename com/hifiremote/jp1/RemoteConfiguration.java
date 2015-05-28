@@ -49,6 +49,15 @@ public class RemoteConfiguration
 {
   public static final int Vect00Address = 0x020000;
   
+  /**
+   * Keymoves when AdvancedCodeBindFormat=NORMAL are shared between a physical
+   * device button and a virtual one where the device index differs by 8.
+   */
+  public enum ShareType
+  {
+    UNSHARED, SHARED, SHAREABLE
+  }
+  
   public RemoteConfiguration( File file, RemoteMaster rm ) throws IOException
   {
     owner = rm;
@@ -5463,42 +5472,48 @@ public class RemoteConfiguration
     return false;
   }
   
-  private boolean forbidsKeyMoves( DeviceButton db )
+  private boolean isSharedVirtualDevice( DeviceButton db )
   {
-    if ( remote.usesEZRC() )
+    if ( remote.getAdvCodeBindFormat() == BindFormat.LONG )
     {
       return false;
     }
-    Button button = remote.getButton( db.getName() );
-    int index = Arrays.asList( remote.getDeviceButtons() ).indexOf( db );
- // There is a question over the validity of this test.  It means that a restriction on a device button applies to every
-    // button of the device.  The rationale appears to be that remotes with AdvCodeBindFormat==NORMAL have a 2-byte header for
-    // keymoves and macros that only allows 3 bits for the device index, so that if there are more than 8 devices then those
-    // with index >7 cannot support keymoves or macros.  The test button.forbidsAdvancedCodes() was originally
-    // !button.allowsKeyMove().  It has been strengthened to allow a button restriction MoveBind to have its normal syntax of
-    // preventing key moves from being put on the device button considered just as a normal button.  It may be, however, that
-    // the case of a real device button should be omitted entirely.
-    return ( button != null && button.forbidsKeyMoves() )// case of real device button
-        || ( index > 7 && remote.getAdvCodeBindFormat() == AdvancedCode.BindFormat.NORMAL ); // case of phantom device button
-
+    List< DeviceButton > devBtns = Arrays.asList( remote.getDeviceButtons() );
+    int index = devBtns.indexOf( db ); 
+    if ( index >= 8 && devBtns.get( index - 8 ) != null )
+    {
+      // A virtual device button with a corresponding physical one
+      return true;
+    }
+    return false;
   }
   
-  public boolean isValidDevice( DeviceButton db, DeviceType devType, SetupCode setupCode )
+  public ShareType shareType( DeviceButton db, DeviceType devType, SetupCode setupCode )
   {
-    return !isUpgradeWithKeymoves( -1, devType, setupCode, false )
-        || !forbidsKeyMoves( db );
+    if ( !isSharedVirtualDevice( db ) )
+    {
+      return ShareType.UNSHARED;
+    }
+    else if ( isUpgradeWithKeymoves( -1, devType, setupCode, false ) )
+    {
+      return ShareType.SHARED;
+    }
+    else
+    {
+      return ShareType.SHAREABLE;
+    }
   }
   
   /**
-   * Returns an array of those device buttons that do not forbid key moves,
-   * as determined by remoteConfig.forbidsKeyMoves( db ).
+   * Returns an array of device buttons that excludes virtual ones which share
+   * keymoves with a physical one, as determined by sharesKeyMoves( db ).
    */
   public DeviceButton[] getAllowedDeviceButtons()
   {
     List< DeviceButton > allowedDB = new ArrayList< DeviceButton >();
     for ( DeviceButton db : remote.getDeviceButtons() )
     {
-      if ( !forbidsKeyMoves( db ) )
+      if ( !isSharedVirtualDevice( db ) )
       {
         allowedDB.add( db );
       }
