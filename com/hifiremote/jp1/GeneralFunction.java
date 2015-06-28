@@ -672,7 +672,7 @@ public class GeneralFunction
       label.updateToolTipText();
     }
     Function f = null;
-    if ( this instanceof LearnedSignal && ( f = db.getUpgrade().getAssignments().getAssignment( b ) ) != null )
+    if ( this instanceof LearnedSignal && db.getUpgrade() != null && ( f = db.getUpgrade().getAssignments().getAssignment( b ) ) != null )
     {
       f.removeReference( db, b );
     }

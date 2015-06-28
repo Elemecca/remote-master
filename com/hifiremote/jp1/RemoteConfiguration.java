@@ -1401,7 +1401,7 @@ public class RemoteConfiguration
         int softIndex = data[ pos++ ];
         // keycode for that device
         Button b = remote.getButton( data[ pos++ ] + 6 * softIndex );
-        Function f = db.getUpgrade().getAssignments().getAssignment( b );
+        Function f = db.getUpgrade() != null ? db.getUpgrade().getAssignments().getAssignment( b ) : null;
         if ( f == null )
         {
           items.macro.getItems().add( new KeySpec( db, b) );
@@ -3340,7 +3340,11 @@ public class RemoteConfiguration
       {
         for ( Integer i : macro.getUserItems() )
         {
-          macro.addReference( remote.getDeviceButton( i >> 16 ), remote.getButton( i & 0xFFFF ) );
+          DeviceButton uidb = remote.getDeviceButton( i >> 16 );
+          if ( uidb.getUpgrade() != null )
+          {
+            macro.addReference( uidb, remote.getButton( i & 0xFFFF ) );
+          }
         }
       }
       for ( User u : macro.getUsers() )

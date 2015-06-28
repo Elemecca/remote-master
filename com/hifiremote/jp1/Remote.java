@@ -3381,6 +3381,11 @@ public class Remote implements Comparable< Remote >
     return segmentTypes != null && ( segmentTypes.contains( 0xDB ) 
         || segmentTypes.contains( 0x1E ) || usesSimpleset() || isSSD() );
   }
+  
+  public boolean hasActivityInitialMacro()
+  {
+    return segmentTypes != null && ( segmentTypes.contains( 0x1E ) || isSSD() );
+  }
 
   /** The oem device. */
   private OEMDevice oemDevice = null;

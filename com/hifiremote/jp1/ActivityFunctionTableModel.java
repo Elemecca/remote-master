@@ -29,7 +29,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       Remote remote = remoteConfig.getRemote();
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
-      macroEditor.setTitle( "Power Macro Editor" );
+      macroEditor.setTitle( remote.hasActivityInitialMacro() ? "Activity Macro Editor" : "Power Macro Editor" );
       macroEditor.setButtonEnabler( this );
       macroEditor.setRemoteConfiguration( remoteConfig );
       setData( new Activity[] { remoteConfig.getActivities().get( btn ) } );
@@ -159,7 +159,7 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   private static final String[] colPrototypeNames =
   {
       " 00 ", "Activity Name ___", "Key__", "A power macro with a lot of keys_________", "Audio Action__", "Video Action__",
-      "Icon?_", "A reasonable length note", "Color_", "Power XXXXXXX"
+      "Icon?_", "A reasonable length note", "Color__", "Power XXXXXXX"
   };
   
   private static final Class< ? >[] colClasses =
@@ -182,14 +182,24 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   public String getColumnName( int col )
   {
     col = getEffectiveColumn( col );
-    if ( remoteConfig != null && col > colClasses.length - 2 )
+    if ( remoteConfig != null )
     {
       Remote remote = remoteConfig.getRemote();
-      return "Power " + remote.getDeviceButtons()[ col - colClasses.length + 1 ].getName() + "?";
+      if ( col == 3 && remote.hasActivityInitialMacro() )
+      {
+        return "Activity Macro";
+      }
+      else if ( col > colClasses.length - 2 )
+      {
+        String name = "<html>Power";
+        name += getColumnCount() > 12 ? "<br>" : " ";
+        name += remote.getDeviceButtons()[ col - colClasses.length + 1 ].getName() + "?</html>";
+        return name;
+      }
     }
     return colNames[ col ];
   }
-  
+
   @Override
   public String getColumnPrototypeName( int col )
   {
@@ -198,7 +208,11 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       return "Activity 0__";
     }
     col = getEffectiveColumn( col );
-    if ( col > colPrototypeNames.length - 1 )
+    if ( col == 8 & getColumnCount() > 12 )
+    {
+      return "Color_______";
+    }
+    else if ( col > colPrototypeNames.length - 1 )
     {
       col = colPrototypeNames.length - 1;
     }

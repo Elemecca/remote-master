@@ -114,7 +114,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03";
-  public final static int buildVer = 4;
+  public final static int buildVer = 5;
   
   public static int getBuild()
   {
@@ -3768,9 +3768,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         sb.append( " build " + getBuild() );
         sb.append( admin ? " (admin mode)" : "" );
         sb.append( "</b>" );
-        sb.append( "<p>Written primarily by <i>Greg Bush</i> (now accepting donations at " );
-        sb.append( "<a href=\"http://sourceforge.net/donate/index.php?user_id=735638\">http://sourceforge.net/donate/index.php?user_id=735638</a>)," );
-        sb.append( "<br>with substantial additions and help from Graham&nbsp;Dixon</p>" );
+        sb.append( "<p>Written primarily by Greg&nbsp;Bush " );
+        sb.append( "with substantial additions and help<br>from Graham&nbsp;Dixon</p>" );
         sb.append( "<p>Additional help was provided by:<blockquote>" );
         sb.append( "John&nbsp;S&nbsp;Fine, Nils&nbsp;Ekberg, Jon&nbsp;Armstrong, Robert&nbsp;Crowe, " );
         sb.append( "Mark&nbsp;Pauker, Mark&nbsp;Pierson, Mike&nbsp;England</blockquote></p>" );
@@ -3838,7 +3837,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         d.width = d.width * 2 / 3;
         scroll.setPreferredSize( d );
 
-        JOptionPane.showMessageDialog( this, scroll, "About Java IR", JOptionPane.INFORMATION_MESSAGE, null );
+        JOptionPane.showMessageDialog( this, scroll, "About RM/RMIR", JOptionPane.INFORMATION_MESSAGE, null );
       }
       else if ( source == readmeItem )
       {

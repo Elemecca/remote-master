@@ -782,7 +782,7 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
     
     setupCodeRenderer.setDeviceButton( db );
     setupCodeRenderer.setDeviceType( devType );
-    if ( !setupCodeRenderer.isValid( setupCode.getValue() ) )
+    if ( setupCode == null || !setupCodeRenderer.isValid( setupCode.getValue() ) )
     {
       // do not stop an invalid device type / setup code combination being
       // input as it may be an intermediate step in setting a valid value
