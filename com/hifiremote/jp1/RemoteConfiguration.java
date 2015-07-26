@@ -1909,9 +1909,10 @@ public class RemoteConfiguration
       int segFlags = data[ pos + 3 ];
       Hex segData = new Hex( data, pos + 4, segLength - 4 );
       pos += segLength;
-      if ( ( segFlags & 0x80 ) == 0 )
+      if ( ( segFlags & 0x80 ) == 0 || segType == 0xDD && !remote.getSegmentTypes().contains( 0xDD ) )
       {
-        // Do not load segments flagged for deletion by having flag bit 7 clear
+        // Do not load segments flagged for deletion by having flag bit 7 clear.
+        // Do not load region segment (type 0xDD) for remotes that do not support it.
         continue;
       }
       if ( !segmentLoadOrder.contains( segType ) )
@@ -5069,6 +5070,14 @@ public class RemoteConfiguration
         }
         pos = 20;
       }
+      
+      if ( segmentLoadOrder.contains( 0xDD ) && segments.get( 0xDD ) == null )
+      {
+        Hex segData = new Hex( new short[]{ 0, 0xEE, 0xFF, 0xFF } );
+        segments.put(  0xDD, new ArrayList< Segment >() );
+        segments.get( 0xDD ).add( new Segment( 0xDD, 0xFF, segData ) );   
+      }
+
       for ( int type : segmentLoadOrder )
       {
         List< Segment > list = segments.get( type );

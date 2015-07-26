@@ -129,6 +129,15 @@ public class RMExtInstall extends ExtInstall
         buffer[ 0 ] = c;
         buffer[ 1 ] = ( short )~c;
         io.writeRemote( io.getSigAddress(), buffer );
+        
+        cs = new XorCheckSum( 0, new AddressRange( 2, io.getIRdbSize() - 1 ), false );
+        code = new short[ io.getIRdbSize() ];
+        io.readRemote( io.getIRdbAddress(), code );
+        c = cs.calculateCheckSum( code, 2, io.getIRdbSize() - 1 );
+        buffer[ 0 ] = c;
+        buffer[ 1 ] = ( short )~c;
+        io.writeRemote( io.getIRdbAddress(), buffer );
+        
         message = "Patching complete.";
         JOptionPane.showMessageDialog( remoteConfig.getOwner(), message, title, JOptionPane.INFORMATION_MESSAGE );
         rdr.close();

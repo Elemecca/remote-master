@@ -258,6 +258,16 @@ public class JPS extends IO
   {
     return irdbAddress - sigAddress;
   }
+  
+  public int getIRdbAddress()
+  {
+    return irdbAddress;
+  }
+  
+  public int getIRdbSize()
+  {
+    return eepromAddress - irdbAddress;
+  }
 
   /*
    * (non-Javadoc)

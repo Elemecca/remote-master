@@ -111,6 +111,11 @@ Release build 3
 Release build 4
 - Make consistent the restriction on certain device buttons that do not support key moves on any buttons (Graham)
 - Handle keymoves shared between a real and a virtual device button for remotes with AdvCodeBindFormat=NORMAL (Graham)
+Release build 5
+- Add/delete region segment, type DD, according to its presence/absence in the segment type list of RDF (Graham)
+- Set default of 4, rather than 0, on duration for LKP/DKP (Graham)
+- Display error message if first macro of LKP/DKP/ToadTog is longer than 7 keys (Graham)
+- Update protocols.ini with MAXQ code for protocols in URC-6440 and OARUSB04G where missing (Graham)
 
 Changes for v2.02
 -- Alpha --

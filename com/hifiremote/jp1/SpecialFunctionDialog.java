@@ -583,9 +583,9 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       
       // Clear out all optional fields
       setupCode.setValue( null );
-      setDuration( 0 );
+      setDuration( 4 );
       setPauseDuration( null );
-      setULDKPDuration( 0 );
+      setULDKPDuration( 4 );
       setModeName( "" );
       setToggle( 0 );
       setCondition( 0 );
@@ -800,6 +800,12 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         showWarning( "You must select a key for the bound key." );
         return;
       }
+      if ( secondMacroButtons.isEnabled() && getFirstMacroButtons().length > 7 )
+      {
+        showWarning( "The first macro cannot be longer than 7 keys" );
+        return;
+      }
+      
       int keyCode = getKeyCode( boundKey, shift, xShift );
 
       String typeStr = ( String )type.getSelectedItem();
