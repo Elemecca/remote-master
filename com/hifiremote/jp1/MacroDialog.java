@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -471,9 +472,11 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   @Override
   public boolean isAvailable( Button b )
   {
-    return  b.canAssignToMacro() 
-    || b.canAssignShiftedToMacro() 
-    || b.canAssignXShiftedToMacro();
+    List< Button > macroButtons = Arrays.asList( config.getRemote().getMacroButtons() );
+    return macroButtons.contains( b );
+//    return  b.canAssignToMacro() 
+//    || b.canAssignShiftedToMacro() 
+//    || b.canAssignXShiftedToMacro();
   }
 
   private JPanel upperPanel = null;

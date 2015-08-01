@@ -260,6 +260,44 @@ public class Remote implements Comparable< Remote >
         }
       }
       rdr.close();
+      
+      if ( specialProtocols.size() > 0 )
+      {
+        int maxSerial = 0;
+        for ( SpecialProtocol sp : specialProtocols )
+        {
+          if ( sp.isInternal() && maxSerial < sp.getInternalSerial() )
+          {
+            maxSerial = sp.getInternalSerial();
+          }
+        }
+        if ( maxSerial > 0 )
+        {
+          int serialMask = ( maxSerial < 2 ) ? 0x01 : ( maxSerial < 4 ) ? 0x03 : 
+            ( maxSerial < 8 ) ? 0x07 : 0x0F;
+          
+          int dbMask = 0;
+          for ( DeviceButton db : deviceButtons )
+          {
+            dbMask |= db.getButtonIndex();
+          }
+          if ( ( dbMask & ( serialMask << 4 ) ) == 0 )
+          {
+            seqShift = 4;
+          }
+          else if ( ( dbMask & ( serialMask << 3 ) ) == 0 )
+          {
+            seqShift = 3;
+          }
+          else
+          {
+            String title = "Special Function Error";
+            String message = "Error in RDF.  This remote cannot support an internal Special Function\n"
+                + "with a serial value " + maxSerial;
+            JOptionPane.showMessageDialog( null, message, title, JOptionPane.WARNING_MESSAGE );
+          }
+        }
+      }
 
       if ( buttonMaps.length == 0 )
       {
@@ -354,15 +392,24 @@ public class Remote implements Comparable< Remote >
       while ( index < longestMap.size() )
       {
         Button b = longestMap.get( index++ );
-        if ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
+        if ( ( b.getIsShifted() && b.getBaseButton() != null && b.getName().equals( getShiftLabel() + '-' + b.getBaseButton().getName() ) )
+            || ( b.getIsXShifted() && b.getBaseButton() != null && b.getName().equals( getXShiftLabel() + '-' + b.getBaseButton().getName() ) ) )
+        {
+          b = b.getBaseButton();
+        }
+
+        if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
+            && !keyMoveBindableButtons.contains( b ) )
         {
           keyMoveBindableButtons.add( b );
         }
-        if ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
+        if ( ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
+            && !macroBindableButtons.contains( b ) )
         {
           macroBindableButtons.add( b );
         }        
-        if ( b.allowsLearnedSignal() || b.allowsShiftedLearnedSignal() || b.allowsXShiftedLearnedSignal() )
+        if ( ( b.allowsLearnedSignal() || b.allowsShiftedLearnedSignal() || b.allowsXShiftedLearnedSignal() )
+            && !learnBindableButtons.contains( b ) )
         {
           learnBindableButtons.add( b );
         }       
@@ -371,6 +418,12 @@ public class Remote implements Comparable< Remote >
       // now copy the rest of the bindable buttons, skipping those already added
       for ( Button b : buttons )
       {
+        if ( ( b.getIsShifted() && b.getBaseButton() != null && b.getName().equals( getShiftLabel() + '-' + b.getBaseButton().getName() ) )
+            || ( b.getIsXShifted() && b.getBaseButton() != null && b.getName().equals( getXShiftLabel() + '-' + b.getBaseButton().getName() ) ) )
+        {
+          b = b.getBaseButton();
+        }
+        
         if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
             && !keyMoveBindableButtons.contains( b ) )
         {
@@ -3275,6 +3328,11 @@ public class Remote implements Comparable< Remote >
     return protocolDataOffset;
   }
 
+  public int getSeqShift()
+  {
+    return seqShift;
+  }
+
   /**
    * Gets the supports binary upgrades.
    * 
@@ -3603,6 +3661,7 @@ public class Remote implements Comparable< Remote >
 
   /** The device buttons. */
   private DeviceButton[] deviceButtons = new DeviceButton[ 0 ];
+  private int seqShift = 4;
 
   /** The device types. */
   private LinkedHashMap< String, DeviceType > deviceTypes = new LinkedHashMap< String, DeviceType >();

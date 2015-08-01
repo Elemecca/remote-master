@@ -116,6 +116,10 @@ Release build 5
 - Set default of 4, rather than 0, on duration for LKP/DKP (Graham)
 - Display error message if first macro of LKP/DKP/ToadTog is longer than 7 keys (Graham)
 - Update protocols.ini with MAXQ code for protocols in URC-6440 and OARUSB04G where missing (Graham)
+Release build 6
+- For internal special functions, shift serial left 3 places rather than 4 when device button keycodes clash with 4-place shift (Graham)
+- For unknown buttons in button maps, assign Shifted or XShifted name rather than buttonxx when button is Shifted or XShifted form of valid base button (Graham)
+- Omit buttons from lists of Upgrade, Macro and Learn buttons when their name is Shifted or XShifted form of valid base button (Graham) 
 
 Changes for v2.02
 -- Alpha --

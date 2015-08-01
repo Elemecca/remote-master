@@ -679,8 +679,8 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       if ( b.getIsXShifted() )
       {
         if ( b.allowsKeyMove() || buttonMap.isPresent( b ) )
-          // return b.getBaseButton();
-          return b;
+          return b.getBaseButton();
+//          return b;
       }
       else if ( b.allowsXShiftedKeyMove() )
         return b;

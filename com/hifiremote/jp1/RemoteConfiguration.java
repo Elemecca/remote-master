@@ -3459,7 +3459,7 @@ public class RemoteConfiguration
         {
           continue;
         }
-        int dbi = macro.getDeviceButtonIndex() - ( sp.getInternalSerial() << 4 );
+        int dbi = macro.getDeviceButtonIndex() - ( sp.getInternalSerial() << remote.getSeqShift() );
         if ( remote.getDeviceButton( dbi ) != null )
         {
           macro.setDeviceButtonIndex( dbi );
@@ -6261,7 +6261,7 @@ public class RemoteConfiguration
     int argType = type;
     for ( Macro macro : list )
     {
-      int subset = ( macro.getSegmentFlags() << 8 ) | ( macro.getDeviceButtonIndex() + ( macro.getSequenceNumber() << 4 ) );
+      int subset = ( macro.getSegmentFlags() << 8 ) | ( macro.getDeviceButtonIndex() + ( macro.getSequenceNumber() << remote.getSeqShift() ) );
       List< Macro > subList = bySubset.get( subset );
       if ( subList == null )
       {

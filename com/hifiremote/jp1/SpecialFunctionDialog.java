@@ -549,14 +549,10 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     firstMacroKey.setModel( model );
     secondMacroKey.setModel( model );
 
-    java.util.List< Button > buttons = remote.getButtons();
     DefaultListModel listModel = new DefaultListModel();
-    for ( Button b : buttons )
+    for ( Button b : remote.getMacroButtons() )
     {
-      if ( b.canAssignToMacro() || b.canAssignShiftedToMacro() || b.canAssignXShiftedToMacro() )
-      {
-        listModel.addElement( b );
-      }
+      listModel.addElement( b );
     }
     availableButtons.setModel( listModel );
 

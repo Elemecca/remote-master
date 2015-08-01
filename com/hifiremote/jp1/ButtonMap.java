@@ -85,6 +85,8 @@ public class ButtonMap
             Button baseButton = remote.getButton( keyCode & 0x3F );
             if ( baseButton != null )
             {
+              button.setName( baseButton.getShiftedName() );
+              button.setStandardName( baseButton.getShiftedName() );
               button.setBaseButton( baseButton );
               baseButton.setShiftedButton( button );
             }
@@ -94,6 +96,8 @@ public class ButtonMap
             Button baseButton = remote.getButton( keyCode & 0x3F );
             if ( baseButton != null )
             {
+              button.setName( baseButton.getXShiftedName() );
+              button.setStandardName( baseButton.getXShiftedName() );
               button.setBaseButton( baseButton );
               baseButton.setXShiftedButton( button );
             }
