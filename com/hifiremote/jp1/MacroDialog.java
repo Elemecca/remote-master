@@ -472,11 +472,8 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
   @Override
   public boolean isAvailable( Button b )
   {
-    List< Button > macroButtons = Arrays.asList( config.getRemote().getMacroButtons() );
-    return macroButtons.contains( b );
-//    return  b.canAssignToMacro() 
-//    || b.canAssignShiftedToMacro() 
-//    || b.canAssignXShiftedToMacro();
+    return  config.getRemote().getDistinctButtons().contains( b )
+        && ( b.canAssignToMacro() || b.canAssignShiftedToMacro() || b.canAssignXShiftedToMacro() );
   }
 
   private JPanel upperPanel = null;

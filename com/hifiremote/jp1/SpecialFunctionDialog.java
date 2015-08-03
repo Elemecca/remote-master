@@ -23,6 +23,7 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -529,7 +530,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     boundKey.setModel( new DefaultComboBoxModel( remote.getMacroButtons() ) );
     deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
 
-    java.util.List< String > specialFunctionsByUserName = new ArrayList< String >();
+    List< String > specialFunctionsByUserName = new ArrayList< String >();
     for ( SpecialProtocol sp : config.getSpecialProtocols() )
     {
       for ( int i = 0; i < sp.getFunctions().length; i++ )
@@ -541,7 +542,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     type.setModel( new DefaultComboBoxModel( specialFunctionsByUserName.toArray() ) );
 
     keyCodeRenderer.setRemote( remote );
-    java.util.List< Integer > macroKeys = new ArrayList< Integer >();
+    List< Integer > macroKeys = new ArrayList< Integer >();
     for ( Macro macro : config.getMacros() )
       macroKeys.add( new Integer( macro.getKeyCode() ) );
     DefaultComboBoxModel model = new DefaultComboBoxModel( macroKeys.toArray() );
@@ -549,10 +550,14 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     firstMacroKey.setModel( model );
     secondMacroKey.setModel( model );
 
+    List< Button > buttons = remote.getDistinctButtons();
     DefaultListModel listModel = new DefaultListModel();
-    for ( Button b : remote.getMacroButtons() )
+    for ( Button b : buttons )
     {
-      listModel.addElement( b );
+      if ( b.canAssignToMacro() || b.canAssignShiftedToMacro() || b.canAssignXShiftedToMacro() )
+      {
+        listModel.addElement( b );
+      }
     }
     availableButtons.setModel( listModel );
 

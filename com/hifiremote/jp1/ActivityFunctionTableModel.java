@@ -95,9 +95,10 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   @Override
   public boolean isAvailable( Button b )
   {
-    return  b.canAssignToPowerMacro() 
-    || b.canAssignShiftedToPowerMacro() 
-    || b.canAssignXShiftedToPowerMacro();
+    return  remoteConfig.getRemote().getDistinctButtons().contains( b )
+        && (  b.canAssignToPowerMacro() 
+            || b.canAssignShiftedToPowerMacro() 
+            || b.canAssignXShiftedToPowerMacro() );
   }
   
   private int getEffectiveColumn( int col )

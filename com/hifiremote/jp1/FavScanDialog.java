@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -605,7 +606,7 @@ public class FavScanDialog extends JDialog implements ActionListener, ListSelect
     this.config = config;
     Remote remote = config.getRemote();
 
-    java.util.List< Button > buttons = remote.getButtons();
+    List< Button > buttons = remote.getDistinctButtons();
     DefaultListModel model = new DefaultListModel();
     for ( Button b : buttons )
     {

@@ -147,9 +147,10 @@ public class TimedMacroDialog extends JDialog implements ActionListener, ButtonE
   @Override
   public boolean isAvailable( Button b )
   {
-    return  b.canAssignToTimedMacro() 
-    || b.canAssignShiftedToTimedMacro() 
-    || b.canAssignXShiftedToTimedMacro();
+    return  config.getRemote().getDistinctButtons().contains( b )
+        && (  b.canAssignToTimedMacro() 
+            || b.canAssignShiftedToTimedMacro() 
+            || b.canAssignXShiftedToTimedMacro() );
   }
 
   @Override

@@ -383,9 +383,9 @@ public class Remote implements Comparable< Remote >
       }
 
       // Now figure out which buttons are bindable
-      java.util.List< Button > keyMoveBindableButtons = new ArrayList< Button >();
-      java.util.List< Button > macroBindableButtons = new ArrayList< Button >();
-      java.util.List< Button > learnBindableButtons = new ArrayList< Button >();
+      List< Button > keyMoveBindableButtons = new ArrayList< Button >();
+      List< Button > macroBindableButtons = new ArrayList< Button >();
+      List< Button > learnBindableButtons = new ArrayList< Button >();
 
       // first copy the bindable buttons from the longest map
       int index = 0;
@@ -396,6 +396,11 @@ public class Remote implements Comparable< Remote >
             || ( b.getIsXShifted() && b.getBaseButton() != null && b.getName().equals( getXShiftLabel() + '-' + b.getBaseButton().getName() ) ) )
         {
           b = b.getBaseButton();
+        }
+        
+        if ( !distinctButtons.contains( b ) )
+        {
+          distinctButtons.add( b );
         }
 
         if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
@@ -422,6 +427,11 @@ public class Remote implements Comparable< Remote >
             || ( b.getIsXShifted() && b.getBaseButton() != null && b.getName().equals( getXShiftLabel() + '-' + b.getBaseButton().getName() ) ) )
         {
           b = b.getBaseButton();
+        }
+        
+        if ( !distinctButtons.contains( b ) )
+        {
+          distinctButtons.add( b );
         }
         
         if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
@@ -983,6 +993,11 @@ public class Remote implements Comparable< Remote >
     return functionButtons;
   }
   
+  public List< Button > getDistinctButtons()
+  {
+    return distinctButtons;
+  }
+
   public List< Integer > getSegmentTypes()
   {
     load();
@@ -3699,6 +3714,9 @@ public class Remote implements Comparable< Remote >
   
   /** Buttons created for XSight Touch to represent functions unassigned to a button */
   private List< Button > functionButtons = new ArrayList< Button >();
+  
+  /** All buttons other than those that are shifted or XShifted forms of base buttons */
+  private List< Button > distinctButtons = new ArrayList< Button >();
 
   /** The phantom shapes. */
   private java.util.List< ButtonShape > phantomShapes = new ArrayList< ButtonShape >();
