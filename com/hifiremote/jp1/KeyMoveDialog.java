@@ -100,7 +100,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     panel.add( Box.createHorizontalStrut( 5 ) );
 
     panel.add( new JLabel( "Key:" ) );
-    boundKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+    boundKey.setModel( new DefaultComboBoxModel( remote.getBaseUpgradeButtons() ) );
     boundKey.addActionListener( this );
     panel.add( boundKey );
 
@@ -309,7 +309,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     if ( showMovedKey )
     {
       movedKey.setVisible( false );
-      movedKey.setModel( new DefaultComboBoxModel( remote.getUpgradeButtons() ) );
+      movedKey.setModel( new DefaultComboBoxModel( remote.getBaseUpgradeButtons() ) );
       movedKey.addActionListener( this );
       panel.add( movedKey );
 

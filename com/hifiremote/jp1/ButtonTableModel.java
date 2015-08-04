@@ -75,7 +75,7 @@ public class ButtonTableModel
     if ( deviceUpgrade == null )
       return;
     Remote remote = deviceUpgrade.getRemote();
-    this.buttons = remote.getUpgradeButtons();
+    this.buttons = remote.getBaseUpgradeButtons();
     columnNames[ shiftedCol ] = remote.getShiftLabel();
     columnNames[ xShiftedCol ] = remote.getXShiftLabel();
     fireTableStructureChanged();

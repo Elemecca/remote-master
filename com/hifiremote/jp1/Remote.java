@@ -384,6 +384,7 @@ public class Remote implements Comparable< Remote >
 
       // Now figure out which buttons are bindable
       List< Button > keyMoveBindableButtons = new ArrayList< Button >();
+      List< Button > baseKeyMoveBindableButtons = new ArrayList< Button >();
       List< Button > macroBindableButtons = new ArrayList< Button >();
       List< Button > learnBindableButtons = new ArrayList< Button >();
 
@@ -392,6 +393,13 @@ public class Remote implements Comparable< Remote >
       while ( index < longestMap.size() )
       {
         Button b = longestMap.get( index++ );
+        
+        if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
+            && !keyMoveBindableButtons.contains( b ) )
+        {
+          keyMoveBindableButtons.add( b );
+        }
+        
         if ( ( b.getIsShifted() && b.getBaseButton() != null && b.getName().equals( getShiftLabel() + '-' + b.getBaseButton().getName() ) )
             || ( b.getIsXShifted() && b.getBaseButton() != null && b.getName().equals( getXShiftLabel() + '-' + b.getBaseButton().getName() ) ) )
         {
@@ -404,9 +412,9 @@ public class Remote implements Comparable< Remote >
         }
 
         if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
-            && !keyMoveBindableButtons.contains( b ) )
+            && !baseKeyMoveBindableButtons.contains( b ) )
         {
-          keyMoveBindableButtons.add( b );
+          baseKeyMoveBindableButtons.add( b );
         }
         if ( ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
             && !macroBindableButtons.contains( b ) )
@@ -423,6 +431,12 @@ public class Remote implements Comparable< Remote >
       // now copy the rest of the bindable buttons, skipping those already added
       for ( Button b : buttons )
       {
+        if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
+            && !keyMoveBindableButtons.contains( b ) )
+        {
+          keyMoveBindableButtons.add( b );
+        }
+        
         if ( ( b.getIsShifted() && b.getBaseButton() != null && b.getName().equals( getShiftLabel() + '-' + b.getBaseButton().getName() ) )
             || ( b.getIsXShifted() && b.getBaseButton() != null && b.getName().equals( getXShiftLabel() + '-' + b.getBaseButton().getName() ) ) )
         {
@@ -435,9 +449,9 @@ public class Remote implements Comparable< Remote >
         }
         
         if ( ( b.allowsKeyMove() || b.allowsShiftedKeyMove() || b.allowsXShiftedKeyMove() )
-            && !keyMoveBindableButtons.contains( b ) )
+            && !baseKeyMoveBindableButtons.contains( b ) )
         {
-          keyMoveBindableButtons.add( b );
+          baseKeyMoveBindableButtons.add( b );
         }
         if ( ( b.allowsMacro() || b.allowsShiftedMacro() || b.allowsXShiftedMacro() )
             && !macroBindableButtons.contains( b ) )
@@ -450,6 +464,7 @@ public class Remote implements Comparable< Remote >
           learnBindableButtons.add( b );
         }
       }
+      baseUpgradeButtons = baseKeyMoveBindableButtons.toArray( baseUpgradeButtons );
       upgradeButtons = keyMoveBindableButtons.toArray( upgradeButtons );
       macroButtons = macroBindableButtons.toArray( macroButtons );
       learnButtons = learnBindableButtons.toArray( learnButtons );
@@ -974,6 +989,11 @@ public class Remote implements Comparable< Remote >
   {
     load();
     return upgradeButtons;
+  }
+
+  public Button[] getBaseUpgradeButtons()
+  {
+    return baseUpgradeButtons;
   }
 
   public Button[] getMacroButtons()
@@ -3705,6 +3725,9 @@ public class Remote implements Comparable< Remote >
 
   /** The upgrade buttons - bindable in key moves. */
   private Button[] upgradeButtons = new Button[ 0 ];
+  
+  /** The upgrade buttons - bindable in key moves, omitting shifted/XShifted forms. */
+  private Button[] baseUpgradeButtons = new Button[ 0 ];
   
   /** Buttons bindable in macros. */
   private Button[] macroButtons = new Button[ 0 ];

@@ -131,7 +131,7 @@ public class KeyMapPanel
   private void getAssignedButtons()
   {
     list.clear();
-    Button[] buttons = deviceUpgrade.getRemote().getUpgradeButtons();
+    Button[] buttons = deviceUpgrade.getRemote().getBaseUpgradeButtons();
 
     for ( int i = 0; i < buttons.length; i++ )
     {

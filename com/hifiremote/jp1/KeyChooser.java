@@ -140,7 +140,7 @@ public class KeyChooser
     }
     else
     {
-      availableButtons = remote.getUpgradeButtons();
+      availableButtons = remote.getBaseUpgradeButtons();
     }
     buttonBox.setModel( new DefaultComboBoxModel( availableButtons ) );
     shiftBox.setText( remote.getShiftLabel());
