@@ -111,7 +111,7 @@ Release build 3
 Release build 4
 - Make consistent the restriction on certain device buttons that do not support key moves on any buttons (Graham)
 - Handle keymoves shared between a real and a virtual device button for remotes with AdvCodeBindFormat=NORMAL (Graham)
-Release build 5
+Private build 5
 - Add/delete region segment, type DD, according to its presence/absence in the segment type list of RDF (Graham)
 - Set default of 4, rather than 0, on duration for LKP/DKP (Graham)
 - Display error message if first macro of LKP/DKP/ToadTog is longer than 7 keys (Graham)
@@ -120,6 +120,8 @@ Release build 6
 - For internal special functions, shift serial left 3 places rather than 4 when device button keycodes clash with 4-place shift (Graham)
 - For unknown buttons in button maps, assign Shifted or XShifted name rather than buttonxx when button is Shifted or XShifted form of valid base button (Graham)
 - Omit buttons from lists of Upgrade, Macro and Learn buttons when their name is Shifted or XShifted form of valid base button (Graham) 
+Private build 7
+- Fix bug in protocol editor (Graham)
 
 Changes for v2.02
 -- Alpha --

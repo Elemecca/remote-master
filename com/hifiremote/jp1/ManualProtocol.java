@@ -485,7 +485,14 @@ public class ManualProtocol extends Protocol
    */
   public void setCode( Hex pCode, Processor p )
   {
-    code.put( p.getEquivalentName(), pCode );
+    if ( pCode == null || pCode.length() == 0 )
+    {
+      code.remove( p.getEquivalentName() );
+    }
+    else
+    {
+      code.put( p.getEquivalentName(), pCode );
+    }
   }
 
   /*

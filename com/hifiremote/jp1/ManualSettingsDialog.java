@@ -352,7 +352,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     d.height = deviceTable.getRowHeight() * 4;
     d.width = ( int )( d.width * scale );
     deviceTable.setPreferredScrollableViewportSize( d );
-    deviceTable.setLongToolTipTimeout();
+//    deviceTable.setLongToolTipTimeout();
 
     label = new JLabel( "Default Fixed Data:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 3" );
@@ -377,7 +377,7 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
     d.height = commandTable.getRowHeight() * 4;
     d.width = ( int )( d.width * scale );
     commandTable.setPreferredScrollableViewportSize( d );
-    commandTable.setLongToolTipTimeout();
+//    commandTable.setLongToolTipTimeout();
 
     label = new JLabel( "Command Index:", SwingConstants.RIGHT );
     mainPanel.add( label, "1, 7" );
@@ -1733,17 +1733,18 @@ public class ManualSettingsDialog extends JDialog implements ActionListener, Pro
       {
         case 1:
           Hex newCode = ( Hex )value;
+          String procName = procs[ row ].getEquivalentName();
           if ( ( newCode != null ) && ( newCode.length() != 0 ) )
           {
-            if ( !protocol.hasAnyCode() )
+            if ( !protocol.hasAnyCode() || protocol.getCode().size() == 1 && protocol.getCode().keySet().contains( procName ) )
             {
-              int fixedDataLength = Protocol.getFixedDataLengthFromCode( procs[ row ].getEquivalentName(), newCode );
+              int fixedDataLength = Protocol.getFixedDataLengthFromCode( procName, newCode );
               rawHexData.setText( Hex.toString( new short[ fixedDataLength ] ) );
               ArrayList< Value > devParms = new ArrayList< Value >();
               Value zero = new Value( 0 );
               for ( int i = 0; i < fixedDataLength; ++i )
                 devParms.add( zero );
-              int cmdLength = Protocol.getCmdLengthFromCode( procs[ row ].getEquivalentName(), newCode );
+              int cmdLength = Protocol.getCmdLengthFromCode( procName, newCode );
               SpinnerNumberModel spinnerModel = ( SpinnerNumberModel )cmdIndex.getModel();
               spinnerModel.setMaximum( cmdLength - 1 );
               protocol.createDefaultParmsAndTranslators( cmdLength << 4, false, false, 8, devParms, new short[ 0 ], 8 );

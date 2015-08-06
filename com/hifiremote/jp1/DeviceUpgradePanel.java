@@ -254,7 +254,13 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
   @Override
   public void editRowProtocol( int row )
   {
-    model.getRow( row ).getProtocol().editProtocol( remoteConfig.getRemote(), this );
+    DeviceUpgrade du = model.getRow( row );
+    Protocol p = du.getProtocol().editProtocol( remoteConfig.getRemote(), this );
+    if ( p != null )
+    {
+      du.setProtocol( p );
+    }
+//    model.getRow( row ).getProtocol().editProtocol( remoteConfig.getRemote(), this );
     model.fireTableDataChanged();
   }
 

@@ -698,6 +698,11 @@ public class Protocol
     return hex;
   }
 
+  public HashMap< String, Hex > getCode()
+  {
+    return code;
+  }
+
   /**
    * Gets the code translators.
    * 
