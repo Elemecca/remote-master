@@ -1084,6 +1084,12 @@ public class Remote implements Comparable< Remote >
     return omitDigitMapByte;
   }
 
+  public boolean hasGlobalSpecialFunctions()
+  {
+    load();
+    return globalSpecialFunctions;
+  }
+
   /**
    * Gets the image maps.
    * 
@@ -1342,6 +1348,10 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equals( "OmitDigitMapByte" ) )
       {
         omitDigitMapByte = RDFReader.parseFlag( value );
+      }
+      else if ( parm.equals( "GlobalSpecialFunctions" ) )
+      {
+        globalSpecialFunctions = RDFReader.parseFlag( value );
       }
       else if ( parm.equals( "ImageMap" ) )
       {
@@ -3760,6 +3770,8 @@ public class Remote implements Comparable< Remote >
 
   /** The omit digit map byte. */
   private boolean omitDigitMapByte = false;
+  
+  private boolean globalSpecialFunctions = false;
 
   /** The protocol variant names. */
   private Hashtable< Hex, java.util.List< String >> protocolVariantNames = new Hashtable< Hex, java.util.List< String >>();

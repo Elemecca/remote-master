@@ -39,6 +39,7 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
       deviceComboBox.setModel( new DefaultComboBoxModel( remoteConfig.getRemote().getDeviceButtons() ) );
       keyRenderer.setRemote( remoteConfig.getRemote() );
       keyEditor.setRemote( remoteConfig.getRemote() );
+      keyEditor.setType(  Button.LEARN_BIND );
       setData( remoteConfig.getLearnedSignals() );
       if ( remoteConfig.getRemote().usesEZRC() )
       {

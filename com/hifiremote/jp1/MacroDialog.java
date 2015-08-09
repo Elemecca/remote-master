@@ -232,6 +232,10 @@ public class MacroDialog extends JDialog implements ActionListener, ButtonEnable
     Button b = remote.getButton( code );
     shiftBox.setSelected( false );
     xShiftBox.setSelected( false );
+    if ( !Arrays.asList( remote.getMacroButtons() ).contains( b ) )
+    {
+      b = null;
+    }
 
     if ( b == null )
     {

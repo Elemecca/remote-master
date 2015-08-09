@@ -14,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -412,6 +413,11 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
   {
     Remote remote = config.getRemote();
     Button b = remote.getButton( code );
+    if ( !Arrays.asList( remote.getBaseUpgradeButtons() ).contains( b ) )
+    {
+      b = null;
+    }
+
     if ( b == null )
     {
       int base = code & 0x3F;

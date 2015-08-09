@@ -1,6 +1,9 @@
 package com.hifiremote.jp1;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -35,9 +38,15 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
       colorEditor = new RMColorEditor( remoteConfig.getOwner() );
       Remote remote = remoteConfig.getRemote();
       setData( remoteConfig.getSpecialFunctions() );
-      deviceButtonBox.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+      DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
+      if ( remote.hasGlobalSpecialFunctions() )
+      {
+        comboModel.addElement( DeviceButton.noButton );
+      }
+      deviceButtonBox.setModel( comboModel );
       keyRenderer.setRemote( remote );
       keyEditor.setRemote( remote );
+      keyEditor.setType( Button.MACRO_BIND );
     }
   }
 
@@ -163,6 +172,10 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
         return new Integer( row + 1 );
       case 1:
         int index = sf.getDeviceButtonIndex();
+        if ( r.hasGlobalSpecialFunctions() && index == -1 )
+        {
+          return DeviceButton.noButton;
+        }
         return r.getDeviceButton( index );
       case 2:
         return new Integer( sf.getKeyCode() );
@@ -193,12 +206,17 @@ public class SpecialFunctionTableModel extends JP1TableModel< SpecialProtocolFun
     if ( col == 1 )
     {
       Remote r = remoteConfig.getRemote();
-      DeviceButton[] deviceButtons = r.getDeviceButtons();
-      for ( int i = 0; i < deviceButtons.length; ++i )
+      List< DeviceButton > dbList = new ArrayList< DeviceButton >();
+      dbList.addAll( Arrays.asList( r.getDeviceButtons() ) );
+      if ( r.hasGlobalSpecialFunctions() )
       {
-        if ( deviceButtons[ i ] == value )
+        dbList.add( DeviceButton.noButton );
+      }
+      for ( int i = 0; i < dbList.size(); ++i )
+      {
+        if ( dbList.get( i ) == value )
         {
-          sf.setDeviceButtonIndex( deviceButtons[ i ].getButtonIndex() );
+          sf.setDeviceButtonIndex( dbList.get( i ).getButtonIndex() );
           break;
         }
       }

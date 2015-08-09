@@ -23,6 +23,7 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -526,7 +527,12 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     shift.setText( remote.getShiftLabel() );
     xShift.setText( remote.getXShiftLabel() );
     xShift.setVisible( remote.getXShiftEnabled() );
-    boundDevice.setModel( new DefaultComboBoxModel( remote.getDeviceButtons() ) );
+    DefaultComboBoxModel comboModel = new DefaultComboBoxModel( remote.getDeviceButtons() );
+    if ( remote.hasGlobalSpecialFunctions() )
+    {
+      comboModel.addElement( DeviceButton.noButton );
+    }
+    boundDevice.setModel( comboModel );
     boundKey.setModel( new DefaultComboBoxModel( remote.getMacroButtons() ) );
     deviceType.setModel( new DefaultComboBoxModel( remote.getDeviceTypes() ) );
 
@@ -606,7 +612,16 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     cmd = function.getCmd();
     if ( cmd != null )
       cmd = new Hex( cmd );
-    DeviceButton db = remote.getDeviceButton( function.getDeviceButtonIndex() );
+    DeviceButton db = null;
+    int index = function.getDeviceButtonIndex();
+    if ( remote.hasGlobalSpecialFunctions() && index == -1 )
+    {
+      db = DeviceButton.noButton;
+    }
+    else
+    {
+      db = remote.getDeviceButton( index );
+    }
     boundDevice.setSelectedItem( db );
     shift.setSelected( false );
     xShift.setSelected( false );
@@ -634,6 +649,11 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
   {
     Remote remote = config.getRemote();
     Button b = remote.getButton( code );
+    if ( !Arrays.asList( remote.getMacroButtons() ).contains( b ) )
+    {
+      b = null;
+    }
+    
     if ( b == null )
     {
       int base = code & 0x3F;
@@ -789,12 +809,12 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     }
     else if ( source == okButton )
     {
-      int deviceIndex = ( ( DeviceButton )boundDevice.getSelectedItem() ).getButtonIndex();
-      if ( deviceIndex == -1 )
+      DeviceButton db = ( DeviceButton )boundDevice.getSelectedItem();
+      int deviceIndex = db.getButtonIndex();
+      if ( boundDevice.getSelectedIndex() == -1 )
       {
         showWarning( "You must select a device for the bound key." );
         return;
-
       }
       if ( boundKey.getSelectedItem() == null )
       {

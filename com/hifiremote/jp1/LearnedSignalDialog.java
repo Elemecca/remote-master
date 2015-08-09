@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -423,6 +424,11 @@ public class LearnedSignalDialog extends JDialog implements ActionListener, Docu
   {
     Remote remote = config.getRemote();
     Button b = remote.getButton( code );
+    if ( !Arrays.asList( remote.getLearnButtons() ).contains( b ) )
+    {
+      b = null;
+    }
+    
     if ( b == null )
     {
       int base = code & 0x3F;

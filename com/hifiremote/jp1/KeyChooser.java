@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -43,6 +44,8 @@ public class KeyChooser
   
   /** The x shift box. */
   private JCheckBox xShiftBox = new JCheckBox();
+  
+  private Button[] availableButtons = null;
 
   /**
    * Show dialog.
@@ -129,7 +132,6 @@ public class KeyChooser
   {
     this.remote = remote;
     this.type = type;
-    Button[] availableButtons = null;
     if ( type == Button.MACRO_BIND )
     {
       availableButtons = remote.getMacroButtons();
@@ -177,6 +179,13 @@ public class KeyChooser
     value = keyCode;
     int code = keyCode.intValue();
     Button b = remote.getButton( code );
+    if( !Arrays.asList( availableButtons ).contains( b ) )
+    {
+      b = null;
+    }
+    shiftBox.setSelected( false );
+    xShiftBox.setSelected( false );
+    
     if ( b == null )
     {
       int base = code & 0x3F;

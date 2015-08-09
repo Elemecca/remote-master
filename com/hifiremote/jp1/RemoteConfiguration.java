@@ -3460,9 +3460,10 @@ public class RemoteConfiguration
           continue;
         }
         int dbi = macro.getDeviceButtonIndex() - ( sp.getInternalSerial() << remote.getSeqShift() );
-        if ( remote.getDeviceButton( dbi ) != null )
+
+        if ( remote.getDeviceButton( dbi ) != null || remote.hasGlobalSpecialFunctions() && dbi == 0 && sp.getInternalSerial() > 0 )
         {
-          macro.setDeviceButtonIndex( dbi );
+          macro.setDeviceButtonIndex( dbi == 0 ? -1 : dbi );
           macro.setSequenceNumber( sp.getInternalSerial() );
           SpecialProtocolFunction sf = sp.createFunction( macro );
           if ( sf != null )
@@ -6261,7 +6262,9 @@ public class RemoteConfiguration
     int argType = type;
     for ( Macro macro : list )
     {
-      int subset = ( macro.getSegmentFlags() << 8 ) | ( macro.getDeviceButtonIndex() + ( macro.getSequenceNumber() << remote.getSeqShift() ) );
+      // Handle DeviceButton.noButton as special case when remote supports global special functions
+      int index = remote.hasGlobalSpecialFunctions() && macro.getDeviceButtonIndex() == -1 ? 0 : macro.getDeviceButtonIndex();
+      int subset = ( macro.getSegmentFlags() << 8 ) | ( index + ( macro.getSequenceNumber() << remote.getSeqShift() ) );
       List< Macro > subList = bySubset.get( subset );
       if ( subList == null )
       {

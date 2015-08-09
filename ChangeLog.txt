@@ -122,6 +122,7 @@ Release build 6
 - Omit buttons from lists of Upgrade, Macro and Learn buttons when their name is Shifted or XShifted form of valid base button (Graham) 
 Private build 7
 - Fix bug in protocol editor (Graham)
+- Add support for global special functions (Graham)
 
 Changes for v2.02
 -- Alpha --
