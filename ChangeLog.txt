@@ -123,6 +123,8 @@ Release build 6
 Private build 7
 - Fix bug in protocol editor (Graham)
 - Add support for global special functions (Graham)
+Release build 8
+- Add new item to Options menu to allow user to change the tooltip initial delay time (Graham)
 
 Changes for v2.02
 -- Alpha --

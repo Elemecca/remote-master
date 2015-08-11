@@ -218,6 +218,10 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   protected JCheckBoxMenuItem highlightItem = null;
 
   private JCheckBoxMenuItem enablePreserveSelection = null;
+  
+  private JRadioButtonMenuItem defaultDelayItem = null;
+  
+  private JRadioButtonMenuItem specifiedDelayItem = null;
 
   // Advanced menu items
   private JMenuItem cleanUpperMemoryItem = null;
@@ -253,6 +257,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem wikiItem = null;
 
   private JMenuItem forumItem = null;
+  
+  private int tooltipDelay = 0;
+  private int tooltipDefaultDelay = 0;
 
   /** The about item. */
   private JMenuItem aboutItem = null;
@@ -2046,6 +2053,27 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     enablePreserveSelection.addActionListener( this );
     enablePreserveSelection.setToolTipText( "<html>Allow control of which function data is preserved when changing the protocol used in a device upgrade.<br>Do not use this unless you know what you are doing and why.</html>" );
     menu.add( enablePreserveSelection );
+    
+    JMenu tooltipSubMenu = new JMenu( "Set Tooltip Delay" );
+    tooltipSubMenu.setMnemonic( KeyEvent.VK_T );
+    menu.add( tooltipSubMenu );
+    ToolTipManager tm = ToolTipManager.sharedInstance();
+    tooltipDefaultDelay = tm.getInitialDelay();
+    String temp = properties.getProperty( "TooltipDelay" );
+    tooltipDelay = temp != null ? Integer.parseInt( temp ) : tooltipDefaultDelay;
+    tm.setInitialDelay( tooltipDelay );
+    
+    ButtonGroup group = new ButtonGroup();
+    defaultDelayItem = new JRadioButtonMenuItem( "Default delay" );
+    defaultDelayItem.setSelected( temp == null );
+    defaultDelayItem.addActionListener( this );
+    tooltipSubMenu.add( defaultDelayItem );
+    group.add( defaultDelayItem );
+    specifiedDelayItem = new JRadioButtonMenuItem( "Specified delay..." );
+    specifiedDelayItem.setSelected( temp != null );
+    specifiedDelayItem.addActionListener( this );
+    tooltipSubMenu.add( specifiedDelayItem );
+    group.add( specifiedDelayItem );
 
     appendAdvancedOptions( menu );
 
@@ -2096,7 +2124,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
     };
 
-    ButtonGroup group = new ButtonGroup();
+    group = new ButtonGroup();
     String lookAndFeel = UIManager.getLookAndFeel().getClass().getName();
     UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
     lookAndFeelItems = new JRadioButtonMenuItem[ info.length ];
@@ -3458,6 +3486,42 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == enablePreserveSelection )
       {
         properties.setProperty( "enablePreserveSelection", Boolean.toString( enablePreserveSelection.isSelected() ) );
+      }
+      else if ( source == defaultDelayItem )
+      {
+        properties.remove( "TooltipDelay" );
+        tooltipDelay = tooltipDefaultDelay;
+        ToolTipManager.sharedInstance().setInitialDelay( tooltipDefaultDelay );
+      }
+      else if ( source == specifiedDelayItem )
+      {
+        int val = 0;
+        do
+        {
+          String ret = ( String )JOptionPane.showInputDialog( this, "Specify tooltip delay in milliseconds:", "Tooltip Delay", 
+              JOptionPane.PLAIN_MESSAGE, null, null, ""+tooltipDelay );
+          if ( ret == null )
+          {
+            val = -1;
+            break;
+          }
+          try
+          {
+            val = Integer.parseInt( ret );
+          }
+          catch ( NumberFormatException nfe )
+          {
+            val = -1;
+          }
+          if ( val < 0 )
+          {
+            JOptionPane.showMessageDialog( this, "You must enter a valid non-negative integer", "Tooltip Delay", JOptionPane.ERROR_MESSAGE );
+          }
+        }
+        while ( val < 0 );
+        tooltipDelay= val;
+        ToolTipManager.sharedInstance().setInitialDelay( tooltipDelay );
+        properties.setProperty( "TooltipDelay", ""+tooltipDelay );
       }
       else if ( source == cleanUpperMemoryItem )
       {
