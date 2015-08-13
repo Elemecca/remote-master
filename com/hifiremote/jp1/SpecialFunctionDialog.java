@@ -809,8 +809,6 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     }
     else if ( source == okButton )
     {
-      DeviceButton db = ( DeviceButton )boundDevice.getSelectedItem();
-      int deviceIndex = db.getButtonIndex();
       if ( boundDevice.getSelectedIndex() == -1 )
       {
         showWarning( "You must select a device for the bound key." );
@@ -826,7 +824,8 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         showWarning( "The first macro cannot be longer than 7 keys" );
         return;
       }
-      
+      DeviceButton db = ( DeviceButton )boundDevice.getSelectedItem();
+      int deviceIndex = db.getButtonIndex();     
       int keyCode = getKeyCode( boundKey, shift, xShift );
 
       String typeStr = ( String )type.getSelectedItem();
