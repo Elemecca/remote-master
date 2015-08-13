@@ -114,7 +114,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03";
-  public final static int buildVer = 7;
+  public final static int buildVer = 8;
   
   public static int getBuild()
   {
@@ -2056,6 +2056,9 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     
     JMenu tooltipSubMenu = new JMenu( "Set Tooltip Delay" );
     tooltipSubMenu.setMnemonic( KeyEvent.VK_T );
+    tooltipSubMenu.setToolTipText( "<html>Set the delay between mouse pointer entering an object and the tooltip (help message)<br>"
+        + "appearing.  This delay does not apply to cells in tables, where tooltips are primarily used<br>"
+        + "to show the full content when it does not fit into the cell concerned.</html>" );
     menu.add( tooltipSubMenu );
     ToolTipManager tm = ToolTipManager.sharedInstance();
     tooltipDefaultDelay = tm.getInitialDelay();
@@ -3519,9 +3522,12 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           }
         }
         while ( val < 0 );
-        tooltipDelay= val;
-        ToolTipManager.sharedInstance().setInitialDelay( tooltipDelay );
-        properties.setProperty( "TooltipDelay", ""+tooltipDelay );
+        if ( val >= 0 )
+        {
+          tooltipDelay = val;
+          ToolTipManager.sharedInstance().setInitialDelay( tooltipDelay );
+          properties.setProperty( "TooltipDelay", ""+tooltipDelay );
+        }
       }
       else if ( source == cleanUpperMemoryItem )
       {
