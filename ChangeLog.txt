@@ -125,6 +125,9 @@ Private build 7
 - Add support for global special functions (Graham)
 Release build 8
 - Add new item to Options menu to allow user to change the tooltip initial delay time (Graham)
+Release build 9
+- Make Option/Font Size Adjustment setting in RM be preserved between instances (Graham)
+- ** Due to a bug in Windows Look and Feel, you must change to some other Look and Feel if using a changed font size. ** 
 
 Changes for v2.02
 -- Alpha --

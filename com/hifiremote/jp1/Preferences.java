@@ -368,7 +368,14 @@ public class Preferences
    */
   public void setFontSizeAdjustment( Float adjustment )
   {
-    file.setProperty( "FontSizeAdjustment", Float.toString( adjustment ) );
+    if ( adjustment == 0.0f )
+    {
+      file.remove( "FontSizeAdjustment" );
+    }
+    else
+    {
+      file.setProperty( "FontSizeAdjustment", Float.toString( adjustment ) );
+    }
   }
 
   /**

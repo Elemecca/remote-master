@@ -118,6 +118,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem separateSaveFolderItem = null;
   
   private ActionEvent lfEvent = null;
+  
+  private float fontAdjustment = 0.0f;
 
   /** The ok button. */
   private JButton okButton = null;
@@ -1563,6 +1565,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     {
       return;
     }
+    List< String > keyList = new ArrayList< String >();
     UIDefaults defaults = UIManager.getDefaults(); // Build of Map of attributes for each component
     for ( Enumeration< Object > en = defaults.keys(); en.hasMoreElements(); )
     {
@@ -1572,8 +1575,9 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         continue;
       }
       String key = ( String )o;
-      if ( key.endsWith( ".font" ) && !key.startsWith( "class" ) && !key.startsWith( "javax" ) )
+      if ( !keyList.contains( key ) && key.endsWith( ".font" ) && !key.startsWith( "class" ) && !key.startsWith( "javax" ) )
       {
+        keyList.add( key);
         FontUIResource font = ( FontUIResource )UIManager.get( key );
         FontUIResource newFont = new FontUIResource( font.deriveFont( font.getSize2D() + adjustment ) );
         if ( key.indexOf( "Table" ) != -1 )
@@ -1585,6 +1589,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
         UIManager.put( key, newFont );
       }
     }
+    fontAdjustment += adjustment;
+    preferences.setFontSizeAdjustment( fontAdjustment );
     SwingUtilities.updateComponentTreeUI( this );
     pack();
   }
