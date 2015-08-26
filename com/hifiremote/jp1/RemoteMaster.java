@@ -82,6 +82,7 @@ import javax.swing.event.HyperlinkListener;
 
 import com.hifiremote.LibraryLoader;
 import com.hifiremote.jp1.FixedData.Location;
+import com.hifiremote.jp1.assembler.MAXQ610data;
 import com.hifiremote.jp1.extinstall.ExtInstall;
 import com.hifiremote.jp1.extinstall.RMExtInstall;
 import com.hifiremote.jp1.io.CommHID;
@@ -90,6 +91,8 @@ import com.hifiremote.jp1.io.IO;
 import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
 import com.hifiremote.jp1.io.JP1USB;
+
+import com.hifiremote.jp1.assembler.MAXQ610data;
 
 /**
  * Description of the Class.
@@ -241,6 +244,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JMenuItem parseIRDBItem = null;
   
   private static JMenuItem extractSSItem = null;
+  
+  private static JMenuItem analyzeMAXQprotocols = null;
 
   // Help menu items
   /** The update item. */
@@ -2230,6 +2235,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     extractSSItem.setVisible( false );
     extractSSItem.addActionListener( this );
     menu.add( extractSSItem );
+    
+    analyzeMAXQprotocols = new JMenuItem( "Analyze MAXQ protocols" );
+    analyzeMAXQprotocols.setVisible( admin );
+    analyzeMAXQprotocols.addActionListener( this );
+    menu.add( analyzeMAXQprotocols );
 
     menu = new JMenu( "Help" );
     menu.setMnemonic( KeyEvent.VK_H );
@@ -3729,6 +3739,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == extractSSItem )
       {
         extractSS();
+      }
+      else if ( source == analyzeMAXQprotocols )
+      {
+        MAXQ610data maxq = new MAXQ610data();
+        maxq.analyze();
       }
       else if ( source == rdfPathItem )
       {
