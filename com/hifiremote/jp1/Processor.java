@@ -403,6 +403,8 @@ public abstract class Processor
   public void setZeroLabels( String[][] labelArray )
   {
     zeroLabels.clear();
+    zeroSizes.clear();
+    zeroAddresses.clear();
     for ( int i = 0; i < labelArray.length; i++ )
     {
       int n = 0;
@@ -712,6 +714,16 @@ public abstract class Processor
     return carrierOnOffset;
   }
   
+  public boolean isRelativeToOpStart()
+  {
+    return relativeToOpStart;
+  }
+
+  public void setRelativeToOpStart( boolean relativeToOpStart )
+  {
+    this.relativeToOpStart = relativeToOpStart;
+  }
+
   // Overridden for S3C80
   public String getRegisterPrefix()
   {
@@ -762,6 +774,11 @@ public abstract class Processor
   
   /** Index to style of PF and PD data */
   private int dataStyle = 0;
+  
+  /** Whether relative addresses are relative to start of instruction.
+   *  If not, then they are relative to their own location.
+   *   */
+  private boolean relativeToOpStart = false;
   
   private List< AssemblerOpCode[] > instructions = new ArrayList< AssemblerOpCode[] >();
   

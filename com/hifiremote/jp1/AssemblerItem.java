@@ -85,7 +85,8 @@ public class AssemblerItem
         {
           int argIndex = mode.nibbleArgs + i;
           int n = ( ( Integer )obj[ argIndex ] );
-          n += address + opCode.getLength() + mode.nibbleBytes + i + 1 - ( n > 0x7F ? 0x100 : 0 );
+          int offset = p.isRelativeToOpStart() ? 0 : opCode.getLength() + mode.nibbleBytes + i + 1;
+          n += address + offset - ( n > 0x7F ? 0x100 : 0 );
           obj[ argIndex ] = n;
           String label = labels.get( n );
           if ( label != null )

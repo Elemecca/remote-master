@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.util.*;
 
 import com.hifiremote.jp1.assembler.HCS08data;
+import com.hifiremote.jp1.assembler.MAXQ610data;
 import com.hifiremote.jp1.assembler.P6805data;
 import com.hifiremote.jp1.assembler.P740data;
 import com.hifiremote.jp1.assembler.S3C80data;
@@ -138,7 +139,9 @@ public class ProcessorManager
     add( p );
     
     p = new MAXQProcessor( "MAXQ610" );
-//    p.setAddressModes( MAXQ610data.AddressModes );
+    p.setAddressModes( MAXQ610data.AddressModes );
+    String MAXQArray[][][] = { MAXQ610data.Instructions };
+    p.setInstructions( MAXQArray );
     add( p );
     
     p = new MAXQProcessor( "MAXQ612" );

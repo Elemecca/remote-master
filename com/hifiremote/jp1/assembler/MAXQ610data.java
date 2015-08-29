@@ -3,12 +3,22 @@ package com.hifiremote.jp1.assembler;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 
+import com.hifiremote.jp1.AssemblerItem;
+import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
+import com.hifiremote.jp1.AssemblerTableModel.DisasmState;
+import com.hifiremote.jp1.AssemblerOpCode;
 import com.hifiremote.jp1.Hex;
 import com.hifiremote.jp1.MAXQProcessor;
 import com.hifiremote.jp1.Processor;
+import com.hifiremote.jp1.ProcessorManager;
 import com.hifiremote.jp1.Protocol;
 import com.hifiremote.jp1.ProtocolManager;
+import com.hifiremote.jp1.S3C80Processor;
 
 public class MAXQ610data
 {
@@ -18,15 +28,18 @@ public class MAXQ610data
   private Processor proc = null;
   private int carrier = 0;
   private int altCarrier = 0;
+  private int fix = 0;
+  private int var = 0;
   private short[] tbLengths = null;
   private int[] tbDurations = null;
+  private List< AssemblerItem > itemList = new ArrayList< AssemblerItem >();
   
   private boolean hasNativeCode = false;
   private boolean has2usOff = false;
   
   public void analyze()
   {
-    proc = new MAXQProcessor( "MAXQ610" );
+    proc = ProcessorManager.getProcessor( "MAXQ610" );
     try
     {
       FileWriter fw = new FileWriter( "MAXQprotocols.txt" );
@@ -64,6 +77,110 @@ public class MAXQ610data
     {
       e.printStackTrace();
     }
+  }
+  
+  private void disassemblePseudocode( Hex hex )
+  {
+    proc.setRelativeToOpStart( true );
+    if ( hex == null )
+    {
+      s += "*** Code block invalid\n";
+      return;
+    }
+    Hex pHex = new Hex( hex, 0, hex.length() + 4 );
+    pHex.set( ( short )0x5F, pHex.length() - 4 );
+    short[] data = pHex.getData();
+    List< Integer > labelAddresses = new ArrayList< Integer >();
+    int index = 0;
+    int addr = 0;
+    itemList.clear();
+    DisasmState state = new DisasmState();
+    while ( index < pHex.length() )
+    {
+      AssemblerOpCode oc  = proc.getOpCode( pHex.subHex( index ) );
+      AddressMode mode = oc.getMode();
+
+      for ( int i = 0; ( mode.relMap >> i ) != 0; i++ )
+      {
+        if ( ( ( mode.relMap >> i ) & 1 ) == 1 )
+        {
+          int n = index + oc.getLength() + i;
+          if ( n < data.length )
+          {
+            int newAddr = addr + index + data[ n ] - ( data[ n ] > 0x7F ? 0x100 : 0 );
+            if ( !labelAddresses.contains( newAddr ) )
+            {
+              labelAddresses.add( newAddr );
+            }
+          }
+        }
+      }
+
+//      if ( index == 0 && ( oc.getName().equals( "JR" ) || oc.getName().equals( "BRA" ) ) )
+//      {
+//        index += data[ 1 ];
+//      }
+      index += oc.getLength() + mode.length;
+    }
+    Collections.sort( labelAddresses );
+    LinkedHashMap< Integer, String > labels = new LinkedHashMap< Integer, String >();
+    for ( int i = 0; i < labelAddresses.size(); i++ )
+    {
+      labels.put( labelAddresses.get( i ), "L" + i );
+    }
+    
+    // Disassemble
+    index = 0;
+    while ( index < pHex.length() )
+    {
+      AssemblerItem item = new AssemblerItem( addr + index, pHex.subHex( index ) );
+      int opLength = item.disassemble( proc, labels, state );
+      
+//      if ( opLength == 0 )  // Instruction incomplete due to hex ending prematurely
+//      {
+//        dbOut( index, pHex.length(), addr, processor.getStartOffset(), processor );
+//        break;
+//      }
+
+      itemList.add( item );
+    
+//      if ( index == 0 && ( item.getOperation().equals( "JR" ) || item.getOperation().equals( "BRA" ) ) )
+//      {
+//        int skip = data[ 1 ];
+//        pfCount = dbOut( index + 2, index + 2 + skip, addr, processor.getStartOffset(), processor );
+//        pdCount = skip + processor.getStartOffset() - pfCount - 3;
+//        codeIndex = itemList.size();
+//        dialog.interpretPFPD();
+//        index += data[ 1 ];
+//      }
+      index += opLength;
+    }
+    for ( AssemblerItem item : itemList )
+    {
+      String str = item.getLabel() + "\t" + item.getOpCode().getName() + "\t" + item.getArgumentText();
+      s += str + "\n";
+    }
+    
+//    // Insert EQU statements for any unidentified labels (which are likely to be errors)
+//    int n = 0;
+//    for ( Integer address : labels.keySet() )
+//    {
+//      if ( state.relUsed.contains( address ) ) continue;
+//      AssemblerItem item = new AssemblerItem();
+//      item.setLabel( labels.get( address) + ":" );
+//      item.setOperation( "EQU" );
+//      String format = processor.getAddressModes().get( "EQU4" ).format;
+//      item.setArgumentText( String.format( format, address ) );
+//      itemList.add( n++, item );
+//    }
+//    
+//    // Insert EQU statements for any used zero-page, register or absolute address labels
+//    codeIndex += insertEQU( 0, processor, state ) + n;
+//    
+//    // Insert ORG statement
+//    insertORG( 0, processor.getRAMAddress(), processor );
+//    itemList.get( 0 ).setComments( "Byte count = " + hex.length() );
+//  }
   }
   
   private void analyzeExecutor( Hex hex )
@@ -162,7 +279,27 @@ public class MAXQ610data
       s += String.format( "%.2fkHz, duty cycle %.1f", 6000.0 / carrier, ( 100.0 * on )/ carrier ) + "%\n";
     }
     int args = data[ 2 ];
-    s += "" + ( args >> 4 ) + " fixed, " + (args & 0x0F ) + " variable bytes\n";
+    fix = ( args >> 4 ) & 0x0F;
+    var = args & 0x0F;
+    s += "" + fix + " fixed, " + var + " variable bytes\n";
+    List< String[] > zeroLabels = new ArrayList< String[] >();
+    int start = 0xD0;
+    if ( fix > 0 )
+    {
+      zeroLabels.add( new String[]{ "Fix0", Integer.toHexString( start ), "Fix", Integer.toHexString( fix ) } );
+    }
+    start += fix;
+    if ( var > 0 )
+    {
+      zeroLabels.add( new String[]{ "Var0", Integer.toHexString( start ), "Var", Integer.toHexString( var ) } );
+    }
+    start += var;
+    if ( start < 0xE0 )
+    {
+      zeroLabels.add( new String[]{ "Tmp0", Integer.toHexString( start ), "Tmp", Integer.toHexString( 16 - fix - var ) } );
+    }
+    proc.setZeroLabels( zeroLabels.toArray( new String[ 0 ][ 0 ]) );
+
   }
   
   private void analyzeTimingBlock( Hex hex )
@@ -356,6 +493,7 @@ public class MAXQ610data
     if ( pbHasCode )
     {
       int cbSize = data[ pos++ ];
+      disassemblePseudocode( hex.subHex( pos, cbSize ) );
       pos += cbSize;
     }
 
@@ -421,8 +559,9 @@ public class MAXQ610data
         if ( pbSwitchSize > 0 )
         {
           s += " " + i;
-        }     
-        s += ": " + txBytes + "\n";
+        }   
+        s += ":";
+        analyzeTXBytes( txBytes );
         pos += txCount;
         if ( i < pbSwitchSize )
         {
@@ -476,5 +615,100 @@ public class MAXQ610data
     }
   }
   
+  private void analyzeTXBytes( Hex hex )
+  {
+    if ( hex == null )
+    {
+      return;
+    }
+    short[] data = hex.getData();
+    for ( short val : data )
+    {
+      int n = ( val >> 4 ) & 0x07;
+      n++;
+      int flag = val & 0x80;
+      int addr = 0xD0 + ( val & 0x0F );
+      AssemblerItem item = new AssemblerItem();
+      item.setZeroLabel( proc, addr, new ArrayList< Integer >(), "" );
+      s += " " + ( flag != 0 ? "~" : "" ) + item.getLabel() + ":" + n;
+    }
+    s += "\n";
+  }
   
+  public static final String[][] AddressModes = {
+    { "Dir3", "B3Z7", "$%02X, $%02X, $%02X" },
+    { "Imm3", "B3Z3", "$%02X, $%02X, #$%02X" },
+    { "Ind2", "B3Z3", "$%02X, ($%02X)" },
+    { "Dir2", "B3Z3", "$%02X, $%02X" },
+    { "Imm2", "B3Z1", "$%02X, #$%3$02X" },
+    { "Immw", "B3Z1", "$%02X, #$%02X%02X" },
+    { "Ind1", "B3Z3", "($%02X), $%02X" },
+    { "Indx",  "B3Z7", "$%02X, $%02X[$%02X]" },
+    { "BrNZ", "B3Z2R1", "NZ, $%02X, $%02X, #$%02X" },
+    { "BrZ",  "B3Z2R1", "Z, $%02X, $%02X, #$%02X" },
+    { "Rel1", "B3R1",   "$%02X" },
+    { "Fun1", "B3", "$%02X" },
+    { "BrT", "B3R1", "T, $%02X" },
+    { "BrF", "B3R1", "F, $%02X" },
+    { "Nil", "B3", "" }
+    
+  };
+  
+  public static final String[][] Instructions = {
+    { "MOV", "Dir2" },           { "LSL", "Dir3" },
+    { "LSR", "Dir3" },           { "ADD", "Dir3" },
+    { "SUB", "Dir3" },           { "OR", "Dir3" },
+    { "AND", "Dir3" },           { "XOR", "Dir3" },
+    { "MULT", "Dir3" },          { "DIV", "Dir3" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    
+    { "MOV", "Imm2" },           { "LSL", "Imm3" },
+    { "LSR", "Imm3" },           { "ADD", "Imm3" },
+    { "SUB", "Imm3" },           { "OR", "Imm3" },
+    { "AND", "Imm3" },           { "XOR", "Imm3" },
+    { "MULT", "Imm3" },          { "DIV", "Imm3" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    
+    { "MOVW", "Imm2" },          { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+
+    { "MOVW", "Immw" },          { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    
+    { "MOVW", "Ind2" },          { "MOVI", "Ind2" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "LSL", "Ind2" },
+    { "LSR", "Ind2" },           { "ADD", "Ind2" },
+    { "SUB", "Ind2" },           { "OR", "Ind2" },
+    { "AND", "Ind2" },           { "XOR", "Ind2" },
+    { "MOV", "Ind1" },           { "???", "Nil" },
+    { "???", "Nil" },                  { "???", "Nil" },
+    
+    { "DBBC", "Dir3" },          { "SWAP", "Dir2" },
+    { "MOVN", "Imm3" },          { "MOV", "Indx" },
+    { "CARRIER", "Dir2" },       { "BRA", "BrNZ" },
+    { "BRA", "BrZ" },            { "BRA", "Rel1" },
+    { "DBNZ", "Dir2" },          { "BSR", "Rel1" },
+    { "CALL", "Fun1" },          { "BRA", "BrT" },
+    { "BRA", "BrF" },            { "RTS", "Nil" },
+    { "CARRIER", "Dir2" },       { "END", "Nil" }   
+    
+    
+  };
 }
