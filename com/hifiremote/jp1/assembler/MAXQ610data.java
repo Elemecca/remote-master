@@ -61,7 +61,7 @@ public class MAXQ610data
             }
             s += "\n";
             analyzeExecutor( hex );
-            s += "\n";
+            s += "--------------------\n\n";
             show = true;
             if ( show )
             {
@@ -79,7 +79,7 @@ public class MAXQ610data
     }
   }
   
-  private void disassemblePseudocode( Hex hex )
+  private void disassemblePseudocode( Hex hex, String prefix )
   {
     proc.setRelativeToOpStart( true );
     if ( hex == null )
@@ -157,7 +157,7 @@ public class MAXQ610data
     }
     for ( AssemblerItem item : itemList )
     {
-      String str = item.getLabel() + "\t" + item.getOpCode().getName() + "\t" + item.getArgumentText();
+      String str = prefix + item.getLabel() + "\t" + item.getOpCode().getName() + "\t" + item.getArgumentText();
       s += str + "\n";
     }
     
@@ -232,7 +232,16 @@ public class MAXQ610data
     hasNativeCode = ( dbHeader & 0x80 ) != 0;
     has2usOff = ( dbHeader & 0x40 ) != 0;
     boolean hasAltExec = ( dbHeader & 0x20 ) != 0;
-    int altCount = !hasAltExec && dbSize > 1 ? data[ pos ] & 0x0F : 0;
+    int dbSwitch = !hasAltExec && dbSize > 1 ? hex.get( pos ) : 0;
+    int altMask = dbSwitch & 0xFF;
+    int altIndex = ( dbSwitch >> 12 ) & 0x0F;
+    int altCount = ( dbSwitch >> 8 ) & 0x0F;
+    int shift = 0;
+    if ( altMask > 0 )
+    {
+      for ( ; ( ( altMask >> shift ) & 0x01 ) == 0; shift++ ){};
+    }
+    String byteName = altCount > 0 ? getZeroLabel( 0xD0 + altIndex ) : "";
     pos += dbSize;  // pos points to first (or only) protocol block
     for ( int i = 0; i <= altCount; i++ )
     {
@@ -240,7 +249,8 @@ public class MAXQ610data
       int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
       if ( altCount > 0 )
       {
-        s += "Protocol block " + ( i + 1 ) + "\n";
+        s += "\nProtocol block when (" + byteName + " & #$" + Integer.toHexString( altMask )
+            + ")=$" + Integer.toHexString( i << shift ) + "\n";
       }
       if ( pbOffset > 0 && i < altCount )
       {
@@ -296,8 +306,9 @@ public class MAXQ610data
     start += var;
     if ( start < 0xE0 )
     {
-      zeroLabels.add( new String[]{ "Tmp0", Integer.toHexString( start ), "Tmp", Integer.toHexString( 16 - fix - var ) } );
+      zeroLabels.add( new String[]{ "Calc0", Integer.toHexString( start ), "Calc", Integer.toHexString( 16 - fix - var ) } );
     }
+    zeroLabels.add( new String[]{ "PF0", "94", "PF", "10" } );
     proc.setZeroLabels( zeroLabels.toArray( new String[ 0 ][ 0 ]) );
 
   }
@@ -493,19 +504,26 @@ public class MAXQ610data
     if ( pbHasCode )
     {
       int cbSize = data[ pos++ ];
-      disassemblePseudocode( hex.subHex( pos, cbSize ) );
+      disassemblePseudocode( hex.subHex( pos, cbSize ), "" );
       pos += cbSize;
     }
-
+    
     // pos now points to signal block
+    int blockCount = 0;
+    int maxBlocks = 1;
     boolean more = true;
     while ( more )
     {
+      blockCount++;
       int sigPtr = pos;
       if ( pos >= data.length )
       {
         s += "*** Signal block missing ***\n";
         return;
+      }
+      if ( blockCount > maxBlocks )
+      {
+        s += "*** Unreachable signal block\n";
       }
       int pf0 = data[ pos++ ];
       int formatLen = pf0 & 0x07;
@@ -513,49 +531,119 @@ public class MAXQ610data
       int pf2 = formatLen > 1 ? data[ sigPtr + 2 ] : 0;
       int pf3 = formatLen > 2 ? data[ sigPtr + 3 ] : 0;
       int pf4 = formatLen > 3 ? data[ sigPtr + 4 ] : 0;
-      if ( ( pf1 & 0x40 ) != 0 )
+      int pf5 = formatLen > 4 ? data[ sigPtr + 5 ] : 0;
+      
+      if ( ( pf5 & 0xF0 ) > 0 )
       {
-        s += "Uses " + ( ( pf1 & 0x01 ) != 0 ? "alternate" : "normal" ) + " lead-in\n";
+        s += "Signal block " + blockCount + "\n";
+      }
+      else if ( blockCount == 1 )
+      {
+        s += "Main signal block\n";
+      }
+      else if ( blockCount == 2 && maxBlocks == 3 )
+      {
+        s += "Signal block after mandatory repeats\n";
       }
       else
       {
-        s += "There is no lead-in\n";
+        s += "Signal block after all repeats\n";
+      }
+      
+      if ( ( pf1 & 0x40 ) != 0 )
+      {
+        s += "  Uses " + ( ( pf1 & 0x01 ) != 0 ? "alternate" : "normal" ) + " lead-in\n";
+      }
+      else
+      {
+        s += "  There is no lead-in\n";
       }
       if ( ( pf4 & 0x80 ) != 0 )
       {
-        s += "Mid-frame burst follows first " + ( pf4 & 0x7F ) + " data bits\n";
+        s += "  Mid-frame burst follows first " + ( pf4 & 0x7F ) + " data bits\n";
       }
       if ( ( pf1 & 0x08 ) != 0 )
       {
-        s += "Data followed by ";
+        s += "  Data followed by ";
         s += ( pf3 & 0x40 ) != 0 ? "alternate lead-in " : "normal lead-in ";
         s += "as end-frame burst\n";
       }
       if ( ( pf1 & 0x04 ) != 0 )
       {
-        s += "One-ON precedes lead-out\n";
+        s += "  One-ON precedes lead-out\n";
       }
       if ( ( pf0 & 0x40 ) != 0 )
       {
-        s += "Uses " + ( ( pf1 & 0x02 ) != 0 ? "alternate" : "normal" ) + " lead-out\n";
-        s += "Lead-out is " + ( ( ( pf0 & 0x02 ) != 0 ) ? "total time\n" : "gap time\n" );
+        s += "  Uses " + ( ( pf1 & 0x02 ) != 0 ? "alternate" : "normal" ) + " lead-out\n";
+        s += "  Lead-out is " + ( ( ( pf0 & 0x02 ) != 0 ) ? "total time\n" : "gap time\n" );
       }
       else
       {
-        s += "There is no lead-out\n";
+        s += "  There is no lead-out\n";
       }
       
-     
+      if ( ( pf3 & 0x30 ) != 0 )
+      {
+        s += "  Signals have " + ( pf3 & 0x30 ) + " mandatory repeats\n";
+      }
+      
+      int rptCode = ( pf1 >> 4 ) & 0x03;
+      switch ( rptCode )
+      {
+        case 0:
+          s += "  No repeat on held keypress\n";
+          break;
+        case 1:
+          s += "  All buttons repeat on held keypress\n";
+          break;
+        case 2:
+          s += "  Only Vol+/-, Ch+/-, FF, Rew repeat on held keypress\n";
+          break;
+        case 3:
+          s += "  Send One-ON in place of first repeat, nothing on later repeats\n";
+          break;
+        default:
+      }
+      
+      switch ( pf2 >> 5 )
+      {
+        case 1:
+          s += "  After repeats, execute next signal block\n";
+          maxBlocks = rptCode > 0 && blockCount == 1 ? 2 : 3;
+          break;
+        case 2:
+          s += "  After repeats, if key held then execute next signal block\n";
+          maxBlocks = rptCode > 0 && blockCount == 1 ? 2 : 3;
+          break;
+        case 3:
+          s += "  After repeats, if key held then re-execute current protocol block\n";
+          maxBlocks = blockCount;
+          break;
+        case 4: 
+          s += "  After repeats, if key held then re-execute current protocol block,\n"
+              + "      if not held then execute next signal block\n";
+          maxBlocks = rptCode > 0 && blockCount == 1 ? 2 : 3;
+          break;
+        case 5:
+          s += "  After repeats, re-execute current protocol block\n";
+          maxBlocks = blockCount;
+          break;
+        case 6:
+          s += "  After repeats, re-execute current signal block\n";
+          maxBlocks = blockCount;
+          break;
+        default:
+          maxBlocks = blockCount;
+      }
 
       boolean sbHasCode = ( pf0 & 0x80 ) != 0;
 
-      
       int txCount = pf2 & 0x1F;
       pos += formatLen;
       for ( int i = 0; i <= pbSwitchSize; i++ )
       {
         Hex txBytes = hex.subHex( pos, txCount );
-        s += "TX bytes";
+        s += "  TX bytes";
         if ( pbSwitchSize > 0 )
         {
           s += " " + i;
@@ -576,16 +664,16 @@ public class MAXQ610data
         }
         return;
       }
-      int pf5 = formatLen > 4 ? data[ sigPtr + 5 ] : 0;
+
       more = ( pf5 & 0xF0 ) != 0;
       if ( more )
       {
-        s += "*** Alternate signal block selected according to PF5 ***";
         continue;
       }
       if ( sbHasCode )
       {
         int cbSize = data[ pos++ ];
+        disassemblePseudocode( hex.subHex( pos, cbSize ), "  " );
         pos += cbSize;
       }
       more = !hasNativeCode && pos < data.length;
@@ -596,10 +684,10 @@ public class MAXQ610data
           s += "*** Apparent spurious extra byte at end of protocol block ***\n";
           more = false;
         }
-        else
-        {
-          s += "Alternate signal block selected according to PF2 bits 5-7\n";
-        }
+      }
+      if ( !more && blockCount < maxBlocks )
+      {
+        s += "*** Repeat signal block missing\n";
       }
     }
     if ( hasNativeCode )
@@ -628,11 +716,16 @@ public class MAXQ610data
       n++;
       int flag = val & 0x80;
       int addr = 0xD0 + ( val & 0x0F );
-      AssemblerItem item = new AssemblerItem();
-      item.setZeroLabel( proc, addr, new ArrayList< Integer >(), "" );
-      s += " " + ( flag != 0 ? "~" : "" ) + item.getLabel() + ":" + n;
+      s += " " + ( flag != 0 ? "~" : "" ) + getZeroLabel( addr ) + ":" + n;
     }
     s += "\n";
+  }
+  
+  private String getZeroLabel( int addr )
+  {
+    AssemblerItem item = new AssemblerItem();
+    item.setZeroLabel( proc, addr, new ArrayList< Integer >(), "" );
+    return item.getLabel();
   }
   
   public static final String[][] AddressModes = {
