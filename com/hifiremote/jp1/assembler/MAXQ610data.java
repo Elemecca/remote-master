@@ -4,21 +4,21 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.hifiremote.jp1.AssemblerItem;
 import com.hifiremote.jp1.AssemblerOpCode.AddressMode;
 import com.hifiremote.jp1.AssemblerTableModel.DisasmState;
 import com.hifiremote.jp1.AssemblerOpCode;
 import com.hifiremote.jp1.Hex;
-import com.hifiremote.jp1.MAXQProcessor;
 import com.hifiremote.jp1.Processor;
 import com.hifiremote.jp1.ProcessorManager;
 import com.hifiremote.jp1.Protocol;
 import com.hifiremote.jp1.ProtocolManager;
-import com.hifiremote.jp1.S3C80Processor;
 
 public class MAXQ610data
 {
@@ -30,8 +30,11 @@ public class MAXQ610data
   private int altCarrier = 0;
   private int fix = 0;
   private int var = 0;
+  private int[] pf = new int[]{ 0,0,0,0,0,0,0 };
   private short[] tbLengths = null;
   private int[] tbDurations = null;
+  int maxBlocks = 1;
+  int blockCount = 0;
   private List< AssemblerItem > itemList = new ArrayList< AssemblerItem >();
   
   private boolean hasNativeCode = false;
@@ -157,7 +160,13 @@ public class MAXQ610data
     }
     for ( AssemblerItem item : itemList )
     {
+      addItemComments( item );
       String str = prefix + item.getLabel() + "\t" + item.getOpCode().getName() + "\t" + item.getArgumentText();
+      String comments = item.getComments();
+      if ( comments != null && !comments.isEmpty() )
+      {
+        str += "\t" + comments;
+      }
       s += str + "\n";
     }
     
@@ -224,7 +233,7 @@ public class MAXQ610data
     int tbHeader = data[ pos ];
     boolean tbHasSpec = ( tbHeader & 0x80 ) != 0;
     int tbSize = ( tbHeader & 0x3F ) + ( tbHasSpec ? 3 : 1 );
-    analyzeTimingBlock( hex.subHex( pos, tbSize ));
+    int tbStart = pos;
     pos += tbSize;
     
     int dbHeader = data[ pos++ ];
@@ -232,6 +241,8 @@ public class MAXQ610data
     hasNativeCode = ( dbHeader & 0x80 ) != 0;
     has2usOff = ( dbHeader & 0x40 ) != 0;
     boolean hasAltExec = ( dbHeader & 0x20 ) != 0;
+    analyzeTimingBlock( hex.subHex( tbStart, tbSize ));
+    
     int dbSwitch = !hasAltExec && dbSize > 1 ? hex.get( pos ) : 0;
     int altMask = dbSwitch & 0xFF;
     int altIndex = ( dbSwitch >> 12 ) & 0x0F;
@@ -309,6 +320,7 @@ public class MAXQ610data
       zeroLabels.add( new String[]{ "Calc0", Integer.toHexString( start ), "Calc", Integer.toHexString( 16 - fix - var ) } );
     }
     zeroLabels.add( new String[]{ "PF0", "94", "PF", "10" } );
+    zeroLabels.add( new String[]{ "PD00", "30", "PD", "40", "2" } );
     proc.setZeroLabels( zeroLabels.toArray( new String[ 0 ][ 0 ]) );
 
   }
@@ -332,6 +344,16 @@ public class MAXQ610data
       tbDurations[ i ] = proc.getInt( data, pos );
       pos += 2;
     }
+    s += "Raw timing data PD00-PD" + String.format( "%02X: ", tbSize-1 );
+    for ( int i = 0; i < tbSize; i++ )
+    {
+      s += ( i > 0 ? ", " : "" ) + tbDurations[ i ];
+    }
+    s += "\n";
+    if ( has2usOff )
+    {
+      s += "Raw OFF times are in units of 2us\n";
+    }
   }
   
   private String getTimingItem( int n )
@@ -353,6 +375,13 @@ public class MAXQ610data
     {
       return str;
     }
+
+    String range = String.format( "(PD%02X", pos );
+    if ( tbLengths[ n ]*sizes[ n ] > 1 )
+    {
+      range += String.format( "-PD%02X", pos + tbLengths[ n ]*sizes[ n ] - 1 );
+    }
+    range += ") ";
     for ( int i = 0; i < tbLengths[ n ]; i++ )
     {
       if ( sizes[ n ] == 2 )
@@ -396,7 +425,7 @@ public class MAXQ610data
         }
       }
     }
-    return str;
+    return !str.isEmpty() ? range + str : str;
   }
   
   private void analyzeProtocolBlock( Hex hex )
@@ -420,20 +449,7 @@ public class MAXQ610data
       altCarrier = 0;
     }
     
-    if ( codeSelector != 1 )
-    {
-      String str = getTimingItem( 0 );
-      if ( !str.isEmpty() )
-      {
-        s += "1-bursts (us): " + str;
-      }
-      str = getTimingItem( 1 );
-      if ( !str.isEmpty() )
-      {
-        s += "0-bursts (us): " + str;
-      }
-    }
-    else
+    if ( codeSelector == 1 )
     {
       int size = ( tbLengths[ 0 ] + tbLengths[ 1 ] ) > 7 ? 2 : 1;
       int mult = has2usOff ? 12 : carrier;
@@ -461,34 +477,92 @@ public class MAXQ610data
             str += "\n";
           }
         }
-        s += "Bursts for bit-pair " + ( new String[]{ "00", "01", "10", "11" } )[ i ] + " (us): " + str;
+        String range = String.format( "(PD%02X-PD%02X) ", 2*i*size, 2*(i+1)*size - 1 );
+        s += "Bursts for bit-pair " + ( new String[]{ "00", "01", "10", "11" } )[ i ] + " (us): " + range + str;
+      }
+    }
+    else if ( codeSelector == 5 && ( tbLengths[ 0 ] + tbLengths[ 1 ] ) == 2 
+        && tbDurations[ 2 ] == 0 )
+    {
+      int mult = has2usOff ? 12 : carrier;
+      int on = ( tbDurations[ 0 ]*carrier + 3 )/6;
+      int off = ( tbDurations[ 1 ]*mult + 3 )/6;
+      int incr = ( tbDurations[ 3 ]*mult + 3 )/6;
+      s += "Data uses base 16 encoding: burst for 4-bit group\nwith value n is (us): (PD0-PD3) "
+          + "+" + on + ", -(" + off + " + n*" + incr + ")\n";
+    }
+    else
+    {
+      if ( codeSelector == 5 )
+      {
+        s += "Data uses base 16 encoding, 4-bit group with value n being converted\n"
+            + "  for transmission to a 1 followed by n 0's\n";
+      }
+      else if ( codeSelector > 5 && codeSelector < 12 )
+      {
+        s += "Data is sent with asynchronous coding, with one start bit (1), ";
+        switch ( codeSelector )
+        {
+          case 6:
+            s += "no parity bit, 1 stop bit (0)\n";
+            break;
+          case 7:
+            s += "even parity bit, 1 stop bit (0)\n";
+            break;
+          case 8:
+            s += "odd parity bit, 1 stop bit (0)\n";
+            break;
+          case 9:
+            s += "no parity bit, 2 stop bits (00)\n";
+            break;
+          case 10:
+            s += "even parity bit, 2 stop bits (00)\n";
+            break;
+          case 11:
+            s += "odd parity bit, 2 stop bits (00)\n";
+            break;
+        }
+      }
+      String str = getTimingItem( 0 );
+      if ( !str.isEmpty() )
+      {
+        s += "1-bursts (us): " + str;
+      }
+      str = getTimingItem( 1 );
+      if ( !str.isEmpty() )
+      {
+        s += "0-bursts (us): " + str;
+        if ( ( codeSpec & 0x20 ) != 0 )
+        {
+          s += "Only first burst-pair of 0-burst is sent if an odd number of bits precede it\n";
+        }
       }
     }
 
     String str = getTimingItem( 2 );
     if ( !str.isEmpty() )
     {
-      s += "lead-out (us): " + str;
+      s += "Lead-out (us): " + str;
     }
     str = getTimingItem( 3 );
     if ( !str.isEmpty() )
     {
-      s += "lead-in (us): " + str;
+      s += "Lead-in (us): " + str;
     }
     str = getTimingItem( 4 );
     if ( !str.isEmpty() )
     {
-      s += "alternate lead-out (us): " + str;
+      s += "Alternate lead-out (us): " + str;
     }
     str = getTimingItem( 5 );
     if ( !str.isEmpty() )
     {
-      s += "alternate lead-in (us): " + str;
+      s += "Alternate lead-in (us): " + str;
     }
     str = getTimingItem( 6 );
     if ( !str.isEmpty() )
     {
-      s += "mid-frame burst (us): " + str;
+      s += "Mid-frame burst (us): " + str;
     }
     if ( ( codeSpec & 0x10 ) != 0 )
     {
@@ -503,14 +577,34 @@ public class MAXQ610data
     boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
     if ( pbHasCode )
     {
+      s += "\nProtocol block code:\n";
       int cbSize = data[ pos++ ];
       disassemblePseudocode( hex.subHex( pos, cbSize ), "" );
       pos += cbSize;
     }
     
+    if ( toggle > 0 )
+    {
+      int type = ( toggle >> 12 ) & 0x0F;
+      int index = ( toggle >> 8 ) & 0x0F;
+      int mask = toggle & 0xFF;
+      String label = getZeroLabel( 0xD0 + index );
+      s += pbHasCode ? "After protocol block code, apply toggle:\n  " : "Toggle: ";
+      if ( ( type & 0x04 ) != 0 )
+      {
+        s += "XOR " + label + " with ";
+      }
+      else
+      {
+        s += ( type & 0x08 ) != 0 ? "Decrement " : "Increment ";
+        s += "the bits of " + label + " selected by mask ";
+      }
+      s += String.format( "#$%02X\n", mask );
+    }
+    
     // pos now points to signal block
-    int blockCount = 0;
-    int maxBlocks = 1;
+    blockCount = 0;
+    maxBlocks = 1;
     boolean more = true;
     while ( more )
     {
@@ -525,120 +619,82 @@ public class MAXQ610data
       {
         s += "*** Unreachable signal block\n";
       }
-      int pf0 = data[ pos++ ];
-      int formatLen = pf0 & 0x07;
-      int pf1 = formatLen > 0 ? data[ sigPtr + 1 ] : 0;
-      int pf2 = formatLen > 1 ? data[ sigPtr + 2 ] : 0;
-      int pf3 = formatLen > 2 ? data[ sigPtr + 3 ] : 0;
-      int pf4 = formatLen > 3 ? data[ sigPtr + 4 ] : 0;
-      int pf5 = formatLen > 4 ? data[ sigPtr + 5 ] : 0;
+      pf[ 0 ] = data[ pos++ ];
+      int formatLen = pf[ 0 ] & 0x07;
+      pf[ 1 ] = formatLen > 0 ? data[ sigPtr + 1 ] : 0;
+      pf[ 2 ] = formatLen > 1 ? data[ sigPtr + 2 ] : 0;
+      pf[ 3 ] = formatLen > 2 ? data[ sigPtr + 3 ] : 0;
+      pf[ 4 ] = formatLen > 3 ? data[ sigPtr + 4 ] : 0;
+      pf[ 5 ] = formatLen > 4 ? data[ sigPtr + 5 ] : 0;
       
-      if ( ( pf5 & 0xF0 ) > 0 )
+      if ( ( pf[ 5 ] & 0xF0 ) > 0 )
       {
-        s += "Signal block " + blockCount + "\n";
+        s += "Signal block " + blockCount + ":\n";
       }
-      else if ( blockCount == 1 )
+      else if ( blockCount < 4 )
       {
-        s += "Main signal block\n";
-      }
-      else if ( blockCount == 2 && maxBlocks == 3 )
-      {
-        s += "Signal block after mandatory repeats\n";
-      }
-      else
-      {
-        s += "Signal block after all repeats\n";
+        String[] order = new String[]{ "Initial", "Second", "Third" };
+        s += "\n" + order[ blockCount - 1 ] + " signal block:\n";
       }
       
-      if ( ( pf1 & 0x40 ) != 0 )
+      s += "  Raw format data PF0-PF" + formatLen + ": ";
+      for ( int i = 0; i <= formatLen; i++ )
       {
-        s += "  Uses " + ( ( pf1 & 0x01 ) != 0 ? "alternate" : "normal" ) + " lead-in\n";
-      }
-      else
-      {
-        s += "  There is no lead-in\n";
-      }
-      if ( ( pf4 & 0x80 ) != 0 )
-      {
-        s += "  Mid-frame burst follows first " + ( pf4 & 0x7F ) + " data bits\n";
-      }
-      if ( ( pf1 & 0x08 ) != 0 )
-      {
-        s += "  Data followed by ";
-        s += ( pf3 & 0x40 ) != 0 ? "alternate lead-in " : "normal lead-in ";
-        s += "as end-frame burst\n";
-      }
-      if ( ( pf1 & 0x04 ) != 0 )
-      {
-        s += "  One-ON precedes lead-out\n";
-      }
-      if ( ( pf0 & 0x40 ) != 0 )
-      {
-        s += "  Uses " + ( ( pf1 & 0x02 ) != 0 ? "alternate" : "normal" ) + " lead-out\n";
-        s += "  Lead-out is " + ( ( ( pf0 & 0x02 ) != 0 ) ? "total time\n" : "gap time\n" );
-      }
-      else
-      {
-        s += "  There is no lead-out\n";
+        s += String.format( "$%02X", pf[ i ] );
+        s += i < formatLen ? ", " : "\n";
       }
       
-      if ( ( pf3 & 0x30 ) != 0 )
+      s += "  " + getPFdescription( 1, 6, pf[ 1 ] ) + "\n";
+
+      if ( ( pf[ 4 ] & 0x80 ) != 0 )
       {
-        s += "  Signals have " + ( pf3 & 0x30 ) + " mandatory repeats\n";
+        s += "  " + getPFdescription( 4, 0, pf[ 4 ] ) + "\n";
       }
       
-      int rptCode = ( pf1 >> 4 ) & 0x03;
-      switch ( rptCode )
+      if ( ( pf[ 1 ] & 0x08 ) != 0 )
       {
-        case 0:
-          s += "  No repeat on held keypress\n";
-          break;
-        case 1:
-          s += "  All buttons repeat on held keypress\n";
-          break;
-        case 2:
-          s += "  Only Vol+/-, Ch+/-, FF, Rew repeat on held keypress\n";
-          break;
-        case 3:
-          s += "  Send One-ON in place of first repeat, nothing on later repeats\n";
-          break;
-        default:
-      }
-      
-      switch ( pf2 >> 5 )
-      {
-        case 1:
-          s += "  After repeats, execute next signal block\n";
-          maxBlocks = rptCode > 0 && blockCount == 1 ? 2 : 3;
-          break;
-        case 2:
-          s += "  After repeats, if key held then execute next signal block\n";
-          maxBlocks = rptCode > 0 && blockCount == 1 ? 2 : 3;
-          break;
-        case 3:
-          s += "  After repeats, if key held then re-execute current protocol block\n";
-          maxBlocks = blockCount;
-          break;
-        case 4: 
-          s += "  After repeats, if key held then re-execute current protocol block,\n"
-              + "      if not held then execute next signal block\n";
-          maxBlocks = rptCode > 0 && blockCount == 1 ? 2 : 3;
-          break;
-        case 5:
-          s += "  After repeats, re-execute current protocol block\n";
-          maxBlocks = blockCount;
-          break;
-        case 6:
-          s += "  After repeats, re-execute current signal block\n";
-          maxBlocks = blockCount;
-          break;
-        default:
-          maxBlocks = blockCount;
+        s += "  " + getPFdescription( 1, 3, pf[ 1 ] ) + "\n";
       }
 
-      boolean sbHasCode = ( pf0 & 0x80 ) != 0;
+      if ( ( pf[ 1 ] & 0x04 ) != 0 )
+      {
+        s += "  " + getPFdescription( 1, 2, pf[ 1 ] ) + "\n";
+      }
+  
+      s += "  " + getPFdescription( 0, 6, pf[ 0 ] ) + "\n";
+      
+      if ( ( pf[ 3 ] & 0x3F ) != 0 )
+      {
+        s += "  " + getPFdescription( 3, 0, pf[ 3 ] ) + "\n";
+      }
+      
+      s += "  " + getPFdescription( 1, 4, pf[ 1 ] ) + "\n";
+      
+      int rptCode = ( pf[ 1 ] >> 4 ) & 0x03;
 
-      int txCount = pf2 & 0x1F;
+      if ( ( pf[ 2 ] & 0xE0 ) != 0 )
+      {
+        s += "  " + getPFdescription( 2, 5, pf[ 2 ] ) + "\n";
+      }
+      
+      if ( ( pf[ 3 ] & 0x80 ) != 0 )
+      {
+        s += "  " + getPFdescription( 3, 7, pf[ 3 ] ) + "\n";
+      }
+      
+      if ( pf[ 5 ] > 0 )
+      {
+        s += "  " + getPFdescription( 5, 0, pf[ 5 ] ) + "\n";
+      }
+      
+      if ( pf[ 6 ] > 0 )
+      {
+        s += "  " + getPFdescription( 6, 0, pf[ 6 ] ) + "\n";
+      }
+
+      boolean sbHasCode = ( pf[ 0 ] & 0x80 ) != 0;
+
+      int txCount = pf[ 2 ] & 0x1F;
       pos += formatLen;
       for ( int i = 0; i <= pbSwitchSize; i++ )
       {
@@ -665,13 +721,14 @@ public class MAXQ610data
         return;
       }
 
-      more = ( pf5 & 0xF0 ) != 0;
+      more = ( pf[ 5 ] & 0xF0 ) != 0;
       if ( more )
       {
         continue;
       }
       if ( sbHasCode )
       {
+        s += "\n  Signal block code:\n";
         int cbSize = data[ pos++ ];
         disassemblePseudocode( hex.subHex( pos, cbSize ), "  " );
         pos += cbSize;
@@ -703,6 +760,250 @@ public class MAXQ610data
     }
   }
   
+  private String getPFdescription( int pfn, int start, int val )
+  {
+    String desc = "";
+    if ( pfn == 0 )
+    {
+      switch ( start )
+      {
+        case 5:
+        case 6:
+          String type = ( pf[ 1 ] & 0x02 ) != 0 ? "alternate" : "normal";
+          switch ( ( val >> 5 ) & 0x03 ) 
+          {
+            case 0:
+            case 1:
+              desc = "No lead-out";
+              break;
+            case 2:
+              desc = "Use " + type + " lead-out as gap time";
+              break;
+            case 3:
+              desc = "Use " + type + " lead-out as total time";
+              break;
+          }
+          break;
+      }
+    }
+    else if ( pfn == 1 )
+    {
+      switch ( start )
+      {
+        case 1:
+          desc = "Use " + ( ( val & 0x02 ) != 0 ? "alternate" : "normal" ) + " lead-out";
+          break;
+        case 2:
+          desc = ( val & 0x04 ) != 0 ? "One-ON precedes lead-out" : "No One-ON before lead-out";
+          break;
+        case 3:
+          String type = ( pf[ 3 ] & 0x40 ) != 0 ? "alternate" : "normal";
+          desc = ( val & 0x08 ) != 0 ? "Use " + type + " lead-in as end-frame burst following data" : "No end-frame burst";
+          break;
+        case 4:
+        case 5:
+          switch ( ( val >> 4 ) & 0x03 )
+          {
+            case 0:
+              desc = "No repeat on held keypress";
+              break;
+            case 1:
+              desc = "All buttons repeat on held keypress";
+              break;
+            case 2:
+              desc = "Only Vol+/-, Ch+/-, FF, Rew repeat on held keypress";
+              break;
+            case 3:
+              desc = "Send One-ON in place of first repeat, nothing on later repeats";
+              break;
+          }
+          break;
+        case 0:
+        case 6:
+        case 7:
+          switch ( ( val >> 6 ) & 0x03 )
+          {
+            case 0:
+              desc = "No lead-in";
+              break;
+            case 1:
+              desc = "Use " + ( ( val & 0x01 ) != 0 ? "alternate" : "normal" ) + " lead-in on all frames";
+              break;
+            case 2:
+              desc = "Use normal lead-in on first frame, no lead-in on repeat frames";
+              break;
+            case 3:
+              desc = "Use normal lead-in but on repeat frames halve the OFF duration "
+                  + "and omit data bits";
+          }
+          break;
+      }
+    }
+    else if ( pfn == 2 )
+    {
+      if ( start >= 5 )
+      {
+        switch ( val >> 5 )
+        {
+          case 0:
+          case 7:
+            desc = "After repeats, terminate";
+            break;
+          case 1:
+            desc = "After repeats, execute next signal block";
+            maxBlocks = blockCount + 1;
+            break;
+          case 2:
+            desc = "After repeats, if key held then execute next signal block";
+            maxBlocks = blockCount + 1;
+            break;
+          case 3:
+            desc = "After repeats, if key held then re-execute current protocol block";
+            maxBlocks = blockCount;
+            break;
+          case 4: 
+            desc = "After repeats, if key held then re-execute current protocol block, "
+                + "else execute next signal block";
+            maxBlocks = blockCount + 1;
+            break;
+          case 5:
+            desc = "After repeats, re-execute current protocol block";
+            maxBlocks = blockCount;
+            break;
+          case 6:
+            desc = "After repeats, re-execute current signal block";
+            maxBlocks = blockCount;
+            break;
+          default:
+            maxBlocks = blockCount;
+        }
+      }
+    }
+    else if ( pfn == 3 )
+    {
+      switch ( start )
+      {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          desc = "Send " + ( val & 0x3F ) + " mandatory repeats";
+          break;
+        case 6:
+          desc = "End-frame burst is " + ( ( val & 0x40 ) != 0 ? "alternate" : "normal" ) + "lead-in";
+          break;
+        case 7:
+          desc = ( val & 0x80 ) != 0 ? "Disable IR when repeats from held keypress end" : "";
+          break;
+      }
+    }
+    else if ( pfn == 4 )
+    {
+      if ( ( val & 0x80 ) != 0 )
+      {
+        desc = "Mid-frame burst follows first " + ( val & 0x7F ) + " data bits";
+      }
+      else
+      {
+        desc = "There is no mid-frame burst";
+      } 
+    }
+    else if ( pfn == 5 )
+    {
+      desc = "PF5 value " + pf[ 5 ];
+    }
+    else if ( pfn == 6 )
+    {
+      desc = "PF6 value " + pf[ 6 ];
+    }
+    if ( maxBlocks > 3 )
+    {
+      maxBlocks = 3;
+    }
+    return desc;
+  }
+  
+  private void addItemComments( AssemblerItem item )
+  {
+    String opName = item.getOperation();
+    List< String > opList = Arrays.asList( "MOV", "AND", "OR", "BRA" );
+    int opIndex = opList.indexOf( opName );
+    if ( opIndex < 0 )
+    {
+      return;
+    }
+    String args = item.getArgumentText();
+    int oldVal = 0;
+    int newVal = 0;
+    int xorVal = 0;
+    
+    String str = "";
+    str = opIndex == 3 && args.contains( "$BA, #$01" ) ? args.contains( "NZ" ) 
+        ? "Branch if not first frame" : "Branch if first frame"
+        : opIndex == 1 && args.equals( "$BA, $BA, #$FE" ) ? "Reset to no frames sent"
+        : opIndex == 2 && args.equals( "$BB, $BB, #$01" ) ? "Suppress IR transmission"
+        : opIndex == 1 && args.equals( "$BB, $BB, #$FE" ) ? "Resume IR transmission" : "";
+    
+    if ( !str.isEmpty() )
+    {
+      item.setComments( "; " + str );
+      return;
+    }
+
+    if ( !( opIndex == 0 && Pattern.matches( "PF\\d, #\\$..", args ) 
+        || opIndex < 3 && Pattern.matches( "PF(\\d), PF\\1, #\\$..", args ) ) )
+    {
+      return;
+    }
+
+    int n = args.charAt( 2 ) - 0x30;
+    if ( n < 0 || n > 6 )
+    {
+      return;
+    }
+    oldVal = pf[ n ];
+    int immVal = getImmValue( args );
+    newVal = opIndex == 0 ? immVal : opIndex == 1 ? oldVal & immVal : oldVal | immVal;
+    xorVal = newVal ^ oldVal;
+    List< String > comments = new ArrayList< String >();
+    String lastStr = "";
+    for ( int i = 0; i < 8; i++ )
+    {
+      if ( ( xorVal & 1 ) == 1 )
+      {
+        // bit i has changed
+        str = getPFdescription( n, i, newVal );
+        if ( !str.isEmpty() && !str.equals( lastStr ) )
+        {
+          comments.add( str );
+          lastStr= str;
+        }
+      }
+      xorVal >>= 1;
+    }
+    str = "";
+    for ( int i = 0; i < comments.size(); i++ )
+    {
+      str += ( i > 0 ? "\n\t\t\t; " : "; " ) + comments.get( i );
+    }
+    item.setComments( str );
+  }
+
+  private int getImmValue( String args )
+  {
+    int ndx = args.indexOf( "#$" );
+    if ( ndx >= 0 )
+    {
+      return Integer.parseInt( args.substring( ndx + 2 ), 16 );
+    }
+    else
+    {
+      return 0;
+    }
+  }
+
   private void analyzeTXBytes( Hex hex )
   {
     if ( hex == null )
@@ -740,9 +1041,11 @@ public class MAXQ610data
     { "BrNZ", "B3Z2R1", "NZ, $%02X, $%02X, #$%02X" },
     { "BrZ",  "B3Z2R1", "Z, $%02X, $%02X, #$%02X" },
     { "Rel1", "B3R1",   "$%02X" },
+    { "Rel2", "B3Z2R1", "$%02X, $%02X" },
     { "Fun1", "B3", "$%02X" },
-    { "BrT", "B3R1", "T, $%02X" },
-    { "BrF", "B3R1", "F, $%02X" },
+    { "Immd", "B3", "#$%02X, #$%02X" },
+    { "BrT", "B3R1", "T, $%02X, $%02X" },
+    { "BrF", "B3R1", "F, $%02X, $%02X" },
     { "Nil", "B3", "" }
     
   };
@@ -795,9 +1098,9 @@ public class MAXQ610data
     
     { "DBBC", "Dir3" },          { "SWAP", "Dir2" },
     { "MOVN", "Imm3" },          { "MOV", "Indx" },
-    { "CARRIER", "Dir2" },       { "BRA", "BrNZ" },
+    { "CARRIER", "Immd" },       { "BRA", "BrNZ" },
     { "BRA", "BrZ" },            { "BRA", "Rel1" },
-    { "DBNZ", "Dir2" },          { "BSR", "Rel1" },
+    { "DBNZ", "Rel2" },          { "BSR", "Rel1" },
     { "CALL", "Fun1" },          { "BRA", "BrT" },
     { "BRA", "BrF" },            { "RTS", "Nil" },
     { "CARRIER", "Dir2" },       { "END", "Nil" }   

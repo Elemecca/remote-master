@@ -374,8 +374,14 @@ public class AssemblerItem
     {
       int addr = p.getZeroAddresses().get( text );
       int size = p.getZeroSizes().get( text );
-      String labelBody = p.getZeroLabels().get( addr )[ 1 ];
-      if ( address > addr && address < addr + size )
+      String[] lblArray = p.getZeroLabels().get( addr );
+      String labelBody = lblArray[ 1 ];
+      int incr = 1;
+      if ( lblArray.length > 2 )
+      {
+        incr = Integer.parseInt( lblArray[ 2 ] );
+      }
+      if ( address > addr && address < addr + size && ( ( address - addr ) % incr ) == 0 )
       {
         if ( labelBody.length() >= text.length() )
         {
@@ -393,7 +399,7 @@ public class AssemblerItem
             addrList.add( address );
           }
           String format = "%0" + ( text.length() - labelBody.length() ) + "X";
-          label = labelBody + String.format( format, address - addr ) + suffix;
+          label = labelBody + String.format( format, ( address - addr )/incr ) + suffix;
           return true;
         }
       }

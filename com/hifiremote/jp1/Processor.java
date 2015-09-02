@@ -411,8 +411,12 @@ public abstract class Processor
       String[] strArray = null;
       if ( labelArray[ i ].length > 3 )
       {
-        strArray = new String[ 2 ];
+        strArray = new String[ labelArray[ i ].length > 4 ? 3 : 2 ];
         strArray[ 1 ] = labelArray[ i ][ 2 ];
+        if ( strArray.length > 2 )
+        {
+          strArray[ 2 ] = labelArray[ i ][ 4 ];
+        }
         n = Integer.parseInt( labelArray[ i ][ 3 ], 16 );
         zeroSizes.put( labelArray[ i ][ 0 ] , n );
       }
