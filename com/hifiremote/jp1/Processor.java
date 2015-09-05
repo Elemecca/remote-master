@@ -728,6 +728,16 @@ public abstract class Processor
     this.relativeToOpStart = relativeToOpStart;
   }
 
+  public boolean hasOneByteAbsoluteAddresses()
+  {
+    return oneByteAbsoluteAddresses;
+  }
+
+  public void setOneByteAbsoluteAddresses( boolean oneByteAbsoluteAddresses )
+  {
+    this.oneByteAbsoluteAddresses = oneByteAbsoluteAddresses;
+  }
+
   // Overridden for S3C80
   public String getRegisterPrefix()
   {
@@ -783,6 +793,8 @@ public abstract class Processor
    *  If not, then they are relative to their own location.
    *   */
   private boolean relativeToOpStart = false;
+  
+  private boolean oneByteAbsoluteAddresses = false;
   
   private List< AssemblerOpCode[] > instructions = new ArrayList< AssemblerOpCode[] >();
   

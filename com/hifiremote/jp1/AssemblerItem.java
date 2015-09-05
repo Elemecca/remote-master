@@ -104,7 +104,7 @@ public class AssemblerItem
         {
           int argIndex = mode.nibbleArgs + i;
           int[][] formatStarts = AssemblerOpCode.getFormatStarts( format );
-          boolean twoByte = format.startsWith( "02", formatStarts[ argIndex ][ 1 ] + 1 );
+          boolean twoByte = !p.hasOneByteAbsoluteAddresses() && format.startsWith( "02", formatStarts[ argIndex ][ 1 ] + 1 );
           boolean littleEndian = !twoByte || formatStarts[ argIndex ][ 0 ] > formatStarts[ argIndex + 1 ][ 0 ];
           int n = ( ( Integer )obj[ argIndex ] ) * ( littleEndian ? 1 : 0x100 );
           if ( twoByte ) n += ( ( Integer )obj[ argIndex + 1 ] ) * ( littleEndian ? 0x100 : 1 );

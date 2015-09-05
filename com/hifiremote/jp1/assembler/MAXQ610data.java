@@ -31,14 +31,18 @@ public class MAXQ610data
   private int fix = 0;
   private int var = 0;
   private int[] pf = new int[]{ 0,0,0,0,0,0,0 };
+  private int[] pfChanges = new int[]{ 0,0,0,0,0,0,0 };
   private short[] tbLengths = null;
   private int[] tbDurations = null;
+  private int tbUsed = 0;
   int maxBlocks = 1;
   int blockCount = 0;
   private List< AssemblerItem > itemList = new ArrayList< AssemblerItem >();
-  
+  private List< Integer > labelAddresses = new ArrayList< Integer >();
+  private LinkedHashMap< Integer, String > labels = new LinkedHashMap< Integer, String >();
   private boolean hasNativeCode = false;
   private boolean has2usOff = false;
+  private int initialCodeSpec = -1;
   
   public void analyze()
   {
@@ -56,6 +60,10 @@ public class MAXQ610data
           Hex hex = p.getCode().get( "MAXQ610");
           if ( hex != null )
           {
+            if ( p.getName().equals( "NECx1" ))
+            {
+              int x = 0;
+            }
             s = p.getName() + ": PID=" + p.getID().toString().replaceAll( "\\s", "" );
             String var = p.getVariantName();
             if ( var != null && !var.isEmpty() )
@@ -63,6 +71,15 @@ public class MAXQ610data
               s += "." + var;
             }
             s += "\n";
+            String s1 = s;
+            labels.clear();
+            labelAddresses.clear();
+            initialCodeSpec = -1;
+            tbUsed = 0;
+            Arrays.fill( pfChanges, 0 );
+            analyzeExecutor( hex );
+            s = s1;
+            labels.clear();
             analyzeExecutor( hex );
             s += "--------------------\n\n";
             show = true;
@@ -82,9 +99,10 @@ public class MAXQ610data
     }
   }
   
-  private void disassemblePseudocode( Hex hex, String prefix )
+  private void disassemblePseudocode( int addr, Hex hex, String prefix )
   {
     proc.setRelativeToOpStart( true );
+    proc.setOneByteAbsoluteAddresses( true );
     if ( hex == null )
     {
       s += "*** Code block invalid\n";
@@ -93,9 +111,7 @@ public class MAXQ610data
     Hex pHex = new Hex( hex, 0, hex.length() + 4 );
     pHex.set( ( short )0x5F, pHex.length() - 4 );
     short[] data = pHex.getData();
-    List< Integer > labelAddresses = new ArrayList< Integer >();
     int index = 0;
-    int addr = 0;
     itemList.clear();
     DisasmState state = new DisasmState();
     while ( index < pHex.length() )
@@ -119,14 +135,9 @@ public class MAXQ610data
         }
       }
 
-//      if ( index == 0 && ( oc.getName().equals( "JR" ) || oc.getName().equals( "BRA" ) ) )
-//      {
-//        index += data[ 1 ];
-//      }
       index += oc.getLength() + mode.length;
     }
     Collections.sort( labelAddresses );
-    LinkedHashMap< Integer, String > labels = new LinkedHashMap< Integer, String >();
     for ( int i = 0; i < labelAddresses.size(); i++ )
     {
       labels.put( labelAddresses.get( i ), "L" + i );
@@ -138,29 +149,13 @@ public class MAXQ610data
     {
       AssemblerItem item = new AssemblerItem( addr + index, pHex.subHex( index ) );
       int opLength = item.disassemble( proc, labels, state );
-      
-//      if ( opLength == 0 )  // Instruction incomplete due to hex ending prematurely
-//      {
-//        dbOut( index, pHex.length(), addr, processor.getStartOffset(), processor );
-//        break;
-//      }
-
       itemList.add( item );
-    
-//      if ( index == 0 && ( item.getOperation().equals( "JR" ) || item.getOperation().equals( "BRA" ) ) )
-//      {
-//        int skip = data[ 1 ];
-//        pfCount = dbOut( index + 2, index + 2 + skip, addr, processor.getStartOffset(), processor );
-//        pdCount = skip + processor.getStartOffset() - pfCount - 3;
-//        codeIndex = itemList.size();
-//        dialog.interpretPFPD();
-//        index += data[ 1 ];
-//      }
       index += opLength;
     }
+    int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
     for ( AssemblerItem item : itemList )
-    {
-      addItemComments( item );
+    {    
+      addItemComments( item, carriers );
       String str = prefix + item.getLabel() + "\t" + item.getOpCode().getName() + "\t" + item.getArgumentText();
       String comments = item.getComments();
       if ( comments != null && !comments.isEmpty() )
@@ -169,27 +164,6 @@ public class MAXQ610data
       }
       s += str + "\n";
     }
-    
-//    // Insert EQU statements for any unidentified labels (which are likely to be errors)
-//    int n = 0;
-//    for ( Integer address : labels.keySet() )
-//    {
-//      if ( state.relUsed.contains( address ) ) continue;
-//      AssemblerItem item = new AssemblerItem();
-//      item.setLabel( labels.get( address) + ":" );
-//      item.setOperation( "EQU" );
-//      String format = processor.getAddressModes().get( "EQU4" ).format;
-//      item.setArgumentText( String.format( format, address ) );
-//      itemList.add( n++, item );
-//    }
-//    
-//    // Insert EQU statements for any used zero-page, register or absolute address labels
-//    codeIndex += insertEQU( 0, processor, state ) + n;
-//    
-//    // Insert ORG statement
-//    insertORG( 0, processor.getRAMAddress(), processor );
-//    itemList.get( 0 ).setComments( "Byte count = " + hex.length() );
-//  }
   }
   
   private void analyzeExecutor( Hex hex )
@@ -241,7 +215,10 @@ public class MAXQ610data
     hasNativeCode = ( dbHeader & 0x80 ) != 0;
     has2usOff = ( dbHeader & 0x40 ) != 0;
     boolean hasAltExec = ( dbHeader & 0x20 ) != 0;
-    analyzeTimingBlock( hex.subHex( tbStart, tbSize ));
+    for ( String str : analyzeTimingBlock( hex.subHex( tbStart, tbSize ), true, 0, 0x40 ) )
+    {
+      s += str + "\n";
+    }
     
     int dbSwitch = !hasAltExec && dbSize > 1 ? hex.get( pos ) : 0;
     int altMask = dbSwitch & 0xFF;
@@ -265,12 +242,12 @@ public class MAXQ610data
       }
       if ( pbOffset > 0 && i < altCount )
       {
-        analyzeProtocolBlock( hex.subHex( pos, pbOffset ) );
+        analyzeProtocolBlock( pos, hex.subHex( pos, pbOffset ) );
         pos += pbOffset;
       }
       else
       {
-        analyzeProtocolBlock( hex.subHex( pos ) );
+        analyzeProtocolBlock( pos, hex.subHex( pos ) );
         if ( i < altCount )
         {
           s += "*** Fewer than " + ( altCount + 1 ) + " protocol blocks ***\n";
@@ -325,124 +302,49 @@ public class MAXQ610data
 
   }
   
-  private void analyzeTimingBlock( Hex hex )
+  private List< String > analyzeTimingBlock( Hex hex, boolean heads, int start, int end )
   {
-    short[] data = hex.getData();
-    int tbHeader = data[ 0 ];
-    int spec = ( tbHeader & 0x80 ) != 0 ? hex.get( 1 ) : 0;
-    tbLengths = new short[]{ 1,1,1,1,1,1,1,1 };
-    for ( int i = 0; i < 8; i++ )
-    {
-      tbLengths[ i ] += spec & 0x03;
-      spec >>= 2;
-    }
-    int tbSize = ( tbHeader & 0x3F )/2;
-    int pos = ( tbHeader & 0x80 ) != 0 ? 3 : 1;
-    tbDurations = new int[ tbSize ];
-    for ( int i = 0; i < tbSize; i++ )
-    {
-      tbDurations[ i ] = proc.getInt( data, pos );
-      pos += 2;
-    }
-    s += "Raw timing data PD00-PD" + String.format( "%02X: ", tbSize-1 );
-    for ( int i = 0; i < tbSize; i++ )
-    {
-      s += ( i > 0 ? ", " : "" ) + tbDurations[ i ];
-    }
-    s += "\n";
-    if ( has2usOff )
-    {
-      s += "Raw OFF times are in units of 2us\n";
-    }
-  }
-  
-  private String getTimingItem( int n )
-  {
-    int pos = 0;
-    int[] sizes = new int[]{ 2, 2, 1, 2, 1, 2, 2, 1 };
-    int itemCarrier = carrier;
-    if ( n == 1 && altCarrier != 0 )
-    {
-      itemCarrier = altCarrier;
-    }
-    int mult = has2usOff ? 12 : itemCarrier;
     String str = "";
-    for ( int i = 0; i < n; i++ )
+    List< String > list = new ArrayList< String >();
+    if ( heads )
     {
-      pos += tbLengths[ i ] * sizes[ i ];
-    }
-    if ( ( pos + tbLengths[ n ] * sizes[ n ] ) > tbDurations.length )
-    {
-      return str;
-    }
+      short[] data = hex.getData();
+      int tbHeader = data[ 0 ];
+      int spec = ( tbHeader & 0x80 ) != 0 ? hex.get( 1 ) : 0;
+      tbLengths = new short[]{ 1,1,1,1,1,1,1,1 };
+      for ( int i = 0; i < 8; i++ )
+      {
+        tbLengths[ i ] += spec & 0x03;
+        spec >>= 2;
+      }
+      int tbSize = ( tbHeader & 0x3F )/2;
+      int pos = ( tbHeader & 0x80 ) != 0 ? 3 : 1;
+      tbDurations = new int[ tbSize ];
+      for ( int i = 0; i < tbSize; i++ )
+      {
+        tbDurations[ i ] = proc.getInt( data, pos );
+        pos += 2;
+      }
 
-    String range = String.format( "(PD%02X", pos );
-    if ( tbLengths[ n ]*sizes[ n ] > 1 )
-    {
-      range += String.format( "-PD%02X", pos + tbLengths[ n ]*sizes[ n ] - 1 );
-    }
-    range += ") ";
-    for ( int i = 0; i < tbLengths[ n ]; i++ )
-    {
-      if ( sizes[ n ] == 2 )
+      str = "Raw timing data PD00-PD" + String.format( "%02X: ", tbSize-1 );
+      for ( int i = 0; i < tbSize; i++ )
       {
-        int val = ( tbDurations[ pos++ ]*itemCarrier + 3 )/6;  // convert carrier cycles to us
-        if ( val > 0 )
-        {
-          str += str.isEmpty() ? "" : ",";
-          str += "+" + val;
-        }
-        val = ( tbDurations[ pos++ ]*mult + 3 )/6;  // convert carrier cycles to us
-        if ( val > 0 )
-        {
-          str += str.isEmpty() ? "" : ",";
-          str += "-" + val;
-        }
-        if ( !str.isEmpty() && i == tbLengths[ n ] - 1 )
-        {
-          str += "\n";
-        }
+        str += ( i > 0 ? ", " : "" ) + tbDurations[ i ];
       }
-      else
+      list.add( str );
+      if ( has2usOff )
       {
-        int val = 0;
-        for ( ; i < tbLengths[ n ]; i++ )
-        {
-          val = ( val << 16 ) + tbDurations[ pos++ ];
-        }
-        if ( n != 7 )
-        {
-          val = ( val * mult + 3 )/6;
-          if ( val > 0 )
-          {
-            str += "-" + val + "\n";
-          }
-        }
-        else if ( val > 0 )
-        {
-          altCarrier = ( val & 0xFF ) + ( ( val >> 8 ) & 0xFF ) + 2;
-          str += "+" + ( val & 0xFF ) + ",-" + ( ( val >> 8 ) & 0xFF ) + "\n";
-        }
+        list.add( "Raw OFF times are in units of 2us" );
       }
     }
-    return !str.isEmpty() ? range + str : str;
-  }
-  
-  private void analyzeProtocolBlock( Hex hex )
-  {
-    int pos = 0;
-    short[] data = hex.getData();
-    int pbHeader = data[ pos++ ];
-    int pbOptSize = pbHeader & 0x0F;
-    int pbSwitchSize = pbOptSize > 2 ? data[ pos + 1 ] & 0x0F : 0;
-    int codeSpec = pbOptSize > 3 ? data[ pos + 3 ] : 0;
-    int toggle = pbOptSize > 5 ? hex.get( pos + 4 ) : 0;
+    int[] limits = new int[]{ 0, 0 };
+    int codeSpec = initialCodeSpec == -1 ? 0 : initialCodeSpec;
     int codeSelector = codeSpec & 0x0F;
-    
+    codeSelector = codeSelector > 5 ? 0 : codeSelector;
     if ( ( codeSpec & 0x10 ) != 0 )
     {
       // Set altCarrier
-      getTimingItem( 7 );
+      getTimingItem( 7, limits );
     }
     else
     {
@@ -457,7 +359,7 @@ public class MAXQ610data
 
       for ( int i = 0; i < 4; i++ )
       {
-        String str = "";
+        str = "";
         for ( int j = 0; j < size; j++ )
         {
           int val = ( tbDurations[ n++ ]*carrier + 3 )/6;  // convert carrier cycles to us
@@ -472,13 +374,12 @@ public class MAXQ610data
             str += str.isEmpty() ? "" : ",";
             str += "-" + val;
           }
-          if ( j == size - 1 )
-          {
-            str += "\n";
-          }
         }
         String range = String.format( "(PD%02X-PD%02X) ", 2*i*size, 2*(i+1)*size - 1 );
-        s += "Bursts for bit-pair " + ( new String[]{ "00", "01", "10", "11" } )[ i ] + " (us): " + range + str;
+        if ( start <= 2*i*size && 2*i*size <= end )
+        {
+          list.add( "Bursts for bit-pair " + ( new String[]{ "00", "01", "10", "11" } )[ i ] + " (us): " + range + str );
+        }
       }
     }
     else if ( codeSelector == 5 && ( tbLengths[ 0 ] + tbLengths[ 1 ] ) == 2 
@@ -488,90 +389,302 @@ public class MAXQ610data
       int on = ( tbDurations[ 0 ]*carrier + 3 )/6;
       int off = ( tbDurations[ 1 ]*mult + 3 )/6;
       int incr = ( tbDurations[ 3 ]*mult + 3 )/6;
-      s += "Data uses base 16 encoding: burst for 4-bit group\nwith value n is (us): (PD0-PD3) "
-          + "+" + on + ", -(" + off + " + n*" + incr + ")\n";
+      if ( 0 == start )
+      {
+        list.add( "Data uses base 16 encoding: burst for 4-bit group\nwith value n is (us): (PD0-PD3) "
+            + "+" + on + ", -(" + off + " + n*" + incr + ") )" );
+      }
     }
     else
     {
-      if ( codeSelector == 5 )
+      if ( heads && codeSelector == 5 )
       {
-        s += "Data uses base 16 encoding, 4-bit group with value n being converted\n"
-            + "  for transmission to a 1 followed by n 0's\n";
+        list.add( "Data uses base 16 encoding, 4-bit group with value n being converted\n"
+            + "  for transmission to a 1 followed by n 0's " );
       }
-      else if ( codeSelector > 5 && codeSelector < 12 )
+      
+      str = getTimingItem( 0, limits );
+      if ( !str.isEmpty() && start <= limits[ 0 ] && limits[ 0 ] <= end )
       {
-        s += "Data is sent with asynchronous coding, with one start bit (1), ";
-        switch ( codeSelector )
+        list.add( "1-bursts (us): " + str );
+      }
+      str = getTimingItem( 1, limits );
+      if ( !str.isEmpty() && start <= limits[ 0 ] && limits[ 0 ] <= end )
+      {
+        list.add( "0-bursts (us): " + str );
+        if ( heads && ( codeSpec & 0x20 ) != 0 )
         {
-          case 6:
-            s += "no parity bit, 1 stop bit (0)\n";
-            break;
-          case 7:
-            s += "even parity bit, 1 stop bit (0)\n";
-            break;
-          case 8:
-            s += "odd parity bit, 1 stop bit (0)\n";
-            break;
-          case 9:
-            s += "no parity bit, 2 stop bits (00)\n";
-            break;
-          case 10:
-            s += "even parity bit, 2 stop bits (00)\n";
-            break;
-          case 11:
-            s += "odd parity bit, 2 stop bits (00)\n";
-            break;
-        }
-      }
-      String str = getTimingItem( 0 );
-      if ( !str.isEmpty() )
-      {
-        s += "1-bursts (us): " + str;
-      }
-      str = getTimingItem( 1 );
-      if ( !str.isEmpty() )
-      {
-        s += "0-bursts (us): " + str;
-        if ( ( codeSpec & 0x20 ) != 0 )
-        {
-          s += "Only first burst-pair of 0-burst is sent if an odd number of bits precede it\n";
+          list.add( "Only first burst-pair of 0-burst is sent if an odd number of bits precede it" );
         }
       }
     }
 
-    String str = getTimingItem( 2 );
-    if ( !str.isEmpty() )
+    str = getTimingItem( 2, limits );
+    if ( !str.isEmpty() && ( tbUsed & 0x04 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
-      s += "Lead-out (us): " + str;
+      list.add( "Lead-out (us): " + str );
     }
-    str = getTimingItem( 3 );
-    if ( !str.isEmpty() )
+    str = getTimingItem( 3, limits );
+    if ( !str.isEmpty() && ( tbUsed & 0x08 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
-      s += "Lead-in (us): " + str;
+      list.add( "Lead-in (us): " + str );
     }
-    str = getTimingItem( 4 );
-    if ( !str.isEmpty() )
+    str = getTimingItem( 4, limits );
+    if ( !str.isEmpty() && ( tbUsed & 0x10 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
-      s += "Alternate lead-out (us): " + str;
+      list.add( "Alternate lead-out (us): " + str );
     }
-    str = getTimingItem( 5 );
-    if ( !str.isEmpty() )
+    str = getTimingItem( 5, limits );
+    if ( !str.isEmpty() && ( tbUsed & 0x20 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
-      s += "Alternate lead-in (us): " + str;
+      list.add( "Alternate lead-in (us): " + str );
     }
-    str = getTimingItem( 6 );
-    if ( !str.isEmpty() )
+    str = getTimingItem( 6, limits );
+    if ( !str.isEmpty() && ( tbUsed & 0x40 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
-      s += "Mid-frame burst (us): " + str;
+      list.add( "Mid-frame burst (us): " + str );
     }
     if ( ( codeSpec & 0x10 ) != 0 )
     {
-      str = getTimingItem( 7 );
-      if ( !str.isEmpty() )
+      str = getTimingItem( 7, limits );
+      if ( !str.isEmpty() && start <= limits[ 0 ] && limits[ 0 ] <= end )
       {
-        s += "0-burst carrier times (units of 1/6us): " + str;
+        list.add( "0-burst carrier times (units of 1/6us): " + str );
       }
     }
+    return list;
+  }
+  
+  private String getTimingItem( int n, int[] limits )
+  {
+    int itemCarrier = carrier;
+    if ( n == 1 && altCarrier != 0 )
+    {
+      itemCarrier = altCarrier;
+    }
+    int[] durations = tbDurations;
+    return getTimingItem( n, itemCarrier, durations, limits );
+  }
+  
+  private String getTimingItem( int n, int itemCarrier, int[] durations, int[] limits )
+  {
+    int pos = 0;
+    int[] sizes = new int[]{ 2, 2, 1, 2, 1, 2, 2, 1 };
+    int mult = has2usOff ? 12 : itemCarrier;
+    String str = "";
+    for ( int i = 0; i < n; i++ )
+    {
+      pos += tbLengths[ i ] * sizes[ i ];
+    }
+    if ( ( pos + tbLengths[ n ] * sizes[ n ] ) > durations.length )
+    {
+      return str;
+    }
+
+    limits[ 0 ] = pos;
+    limits[ 1 ] = pos + tbLengths[ n ]*sizes[ n ] - 1;
+    String range = String.format( "(PD%02X", pos );
+    if ( limits[ 1 ] > limits[ 0 ] )
+    {
+      range += String.format( "-PD%02X", limits[ 1 ] );
+    }
+    range += ") ";
+    for ( int i = 0; i < tbLengths[ n ]; i++ )
+    {
+      if ( sizes[ n ] == 2 )
+      {
+        int val = ( durations[ pos++ ]*itemCarrier + 3 )/6;  // convert carrier cycles to us
+        if ( val > 0 )
+        {
+          str += str.isEmpty() ? "" : ",";
+          str += "+" + val;
+        }
+        val = ( durations[ pos++ ]*mult + 3 )/6;  // convert carrier cycles to us
+        if ( val > 0 )
+        {
+          str += str.isEmpty() ? "" : ",";
+          str += "-" + val;
+        }
+      }
+      else
+      {
+        int val = 0;
+        for ( ; i < tbLengths[ n ]; i++ )
+        {
+          val = ( val << 16 ) + durations[ pos++ ];
+        }
+        if ( n != 7 )
+        {
+          val = ( val * mult + 3 )/6;
+          if ( val > 0 )
+          {
+            str += "-" + val;
+          }
+        }
+        else if ( val > 0 )
+        {
+          altCarrier = ( val & 0xFF ) + ( ( val >> 8 ) & 0xFF ) + 2;
+          str += "+" + ( val & 0xFF ) + ",-" + ( ( val >> 8 ) & 0xFF );
+        }
+      }
+    }
+    return !str.isEmpty() ? range + str : str;
+  }
+  
+  private void analyzeProtocolBlock( int addr, Hex hex )
+  {
+    int pos = 0;
+    short[] data = hex.getData();
+    int pbHeader = data[ pos++ ];
+    int pbOptSize = pbHeader & 0x0F;
+    int pbSwitchSize = pbOptSize > 2 ? data[ pos + 1 ] & 0x0F : 0;
+    int codeSpec = pbOptSize > 3 ? data[ pos + 3 ] : 0;
+    int toggle = pbOptSize > 5 ? hex.get( pos + 4 ) : 0;
+    int codeSelector = codeSpec & 0x0F;
+
+    if ( initialCodeSpec == -1 )
+    {
+      initialCodeSpec = codeSpec;
+    }
+    else if ( initialCodeSpec != codeSpec )
+    {
+      s += "Codespec changed " + String.format( "from $%02X to $%02X", initialCodeSpec, codeSpec );
+    }
+    
+//    if ( ( codeSpec & 0x10 ) != 0 )
+//    {
+//      // Set altCarrier
+//      getTimingItem( 7 );
+//    }
+//    else
+//    {
+//      altCarrier = 0;
+//    }
+    
+//    if ( codeSelector == 1 )
+//    {
+//      int size = ( tbLengths[ 0 ] + tbLengths[ 1 ] ) > 7 ? 2 : 1;
+//      int mult = has2usOff ? 12 : carrier;
+//      int n = 0;
+//
+//      for ( int i = 0; i < 4; i++ )
+//      {
+//        String str = "";
+//        for ( int j = 0; j < size; j++ )
+//        {
+//          int val = ( tbDurations[ n++ ]*carrier + 3 )/6;  // convert carrier cycles to us
+//          if ( val > 0 )
+//          {
+//            str += str.isEmpty() ? "" : ",";
+//            str += "+" + val;
+//          }
+//          val = ( tbDurations[ n++ ]*mult + 3 )/6;  // convert carrier cycles to us
+//          if ( val > 0 )
+//          {
+//            str += str.isEmpty() ? "" : ",";
+//            str += "-" + val;
+//          }
+//          if ( j == size - 1 )
+//          {
+//            str += "\n";
+//          }
+//        }
+//        String range = String.format( "(PD%02X-PD%02X) ", 2*i*size, 2*(i+1)*size - 1 );
+//        s += "Bursts for bit-pair " + ( new String[]{ "00", "01", "10", "11" } )[ i ] + " (us): " + range + str;
+//      }
+//    }
+//    else if ( codeSelector == 5 && ( tbLengths[ 0 ] + tbLengths[ 1 ] ) == 2 
+//        && tbDurations[ 2 ] == 0 )
+//    {
+//      int mult = has2usOff ? 12 : carrier;
+//      int on = ( tbDurations[ 0 ]*carrier + 3 )/6;
+//      int off = ( tbDurations[ 1 ]*mult + 3 )/6;
+//      int incr = ( tbDurations[ 3 ]*mult + 3 )/6;
+//      s += "Data uses base 16 encoding: burst for 4-bit group\nwith value n is (us): (PD0-PD3) "
+//          + "+" + on + ", -(" + off + " + n*" + incr + ")\n";
+//    }
+//    else
+//    {
+//      if ( codeSelector == 5 )
+//      {
+//        s += "Data uses base 16 encoding, 4-bit group with value n being converted\n"
+//            + "  for transmission to a 1 followed by n 0's\n";
+//      }
+
+    if ( codeSelector > 5 && codeSelector < 12 )
+    {
+      s += "Data is sent with asynchronous coding, with one start bit (1), ";
+      switch ( codeSelector )
+      {
+        case 6:
+          s += "no parity bit, 1 stop bit (0)\n";
+          break;
+        case 7:
+          s += "even parity bit, 1 stop bit (0)\n";
+          break;
+        case 8:
+          s += "odd parity bit, 1 stop bit (0)\n";
+          break;
+        case 9:
+          s += "no parity bit, 2 stop bits (00)\n";
+          break;
+        case 10:
+          s += "even parity bit, 2 stop bits (00)\n";
+          break;
+        case 11:
+          s += "odd parity bit, 2 stop bits (00)\n";
+          break;
+      }
+    }
+//      String str = getTimingItem( 0 );
+//      if ( !str.isEmpty() )
+//      {
+//        s += "1-bursts (us): " + str;
+//      }
+//      str = getTimingItem( 1 );
+//      if ( !str.isEmpty() )
+//      {
+//        s += "0-bursts (us): " + str;
+//        if ( ( codeSpec & 0x20 ) != 0 )
+//        {
+//          s += "Only first burst-pair of 0-burst is sent if an odd number of bits precede it\n";
+//        }
+//      }
+//    }
+//
+//    String str = getTimingItem( 2 );
+//    if ( !str.isEmpty() )
+//    {
+//      s += "Lead-out (us): " + str;
+//    }
+//    str = getTimingItem( 3 );
+//    if ( !str.isEmpty() )
+//    {
+//      s += "Lead-in (us): " + str;
+//    }
+//    str = getTimingItem( 4 );
+//    if ( !str.isEmpty() )
+//    {
+//      s += "Alternate lead-out (us): " + str;
+//    }
+//    str = getTimingItem( 5 );
+//    if ( !str.isEmpty() )
+//    {
+//      s += "Alternate lead-in (us): " + str;
+//    }
+//    str = getTimingItem( 6 );
+//    if ( !str.isEmpty() )
+//    {
+//      s += "Mid-frame burst (us): " + str;
+//    }
+//    if ( ( codeSpec & 0x10 ) != 0 )
+//    {
+//      str = getTimingItem( 7 );
+//      if ( !str.isEmpty() )
+//      {
+//        s += "0-burst carrier times (units of 1/6us): " + str;
+//      }
+//    }
 
     pos += pbOptSize;   // pos points to code block if present, else signal block
     boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
@@ -579,7 +692,7 @@ public class MAXQ610data
     {
       s += "\nProtocol block code:\n";
       int cbSize = data[ pos++ ];
-      disassemblePseudocode( hex.subHex( pos, cbSize ), "" );
+      disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "" );
       pos += cbSize;
     }
     
@@ -730,7 +843,7 @@ public class MAXQ610data
       {
         s += "\n  Signal block code:\n";
         int cbSize = data[ pos++ ];
-        disassemblePseudocode( hex.subHex( pos, cbSize ), "  " );
+        disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  " );
         pos += cbSize;
       }
       more = !hasNativeCode && pos < data.length;
@@ -774,15 +887,17 @@ public class MAXQ610data
           {
             case 0:
             case 1:
-              desc = "No lead-out";
-              break;
+              return "No lead-out";
             case 2:
-              desc = "Use " + type + " lead-out as gap time";
+              desc = "gap";
               break;
             case 3:
-              desc = "Use " + type + " lead-out as total time";
+              desc = "total";
               break;
           }
+          desc = "Use " + type + " lead-out as " + desc + " time";
+          tbUsed |= ( ( pf[ 1 ] | pfChanges[ 1 ] ) & 0x02 ) != 0 ? 0x10 : 0;
+          tbUsed |= ( ( ~pf[ 1 ] | pfChanges[ 1 ] ) & 0x02 ) != 0 ? 0x04 : 0;
           break;
       }
     }
@@ -791,7 +906,11 @@ public class MAXQ610data
       switch ( start )
       {
         case 1:
-          desc = "Use " + ( ( val & 0x02 ) != 0 ? "alternate" : "normal" ) + " lead-out";
+          desc = "Set lead-out type to " + ( ( val & 0x02 ) != 0 ? "alternate" : "normal" );
+          if ( ( ( pf[ 0 ] | pfChanges[ 0 ] ) & 0x40 ) != 0 )
+          {
+            tbUsed |= ( val & 0x02 ) != 0 ? 0x10 : 0x04;
+          }
           break;
         case 2:
           desc = ( val & 0x04 ) != 0 ? "One-ON precedes lead-out" : "No One-ON before lead-out";
@@ -799,6 +918,11 @@ public class MAXQ610data
         case 3:
           String type = ( pf[ 3 ] & 0x40 ) != 0 ? "alternate" : "normal";
           desc = ( val & 0x08 ) != 0 ? "Use " + type + " lead-in as end-frame burst following data" : "No end-frame burst";
+          if ( ( val & 0x08 ) != 0 )
+          {
+            tbUsed |= ( ( pf[ 3 ] | pfChanges[ 3 ] ) & 0x40 ) != 0 ? 0x20 : 0;
+            tbUsed |= ( ( ~pf[ 3 ] | pfChanges[ 3 ] ) & 0x40 ) != 0 ? 0x08 : 0;
+          }
           break;
         case 4:
         case 5:
@@ -828,13 +952,16 @@ public class MAXQ610data
               break;
             case 1:
               desc = "Use " + ( ( val & 0x01 ) != 0 ? "alternate" : "normal" ) + " lead-in on all frames";
+              tbUsed |= ( val & 0x01 ) != 0 ? 0x20 : 0x08;
               break;
             case 2:
               desc = "Use normal lead-in on first frame, no lead-in on repeat frames";
+              tbUsed |= 0x08;
               break;
             case 3:
               desc = "Use normal lead-in but on repeat frames halve the OFF duration "
                   + "and omit data bits";
+              tbUsed |= 0x08;
           }
           break;
       }
@@ -893,6 +1020,10 @@ public class MAXQ610data
           break;
         case 6:
           desc = "End-frame burst is " + ( ( val & 0x40 ) != 0 ? "alternate" : "normal" ) + "lead-in";
+          if ( ( ( pf[ 1 ] | pfChanges[ 1 ] ) & 0x08 ) != 0 )
+          {
+            tbUsed |= ( val & 0x40 ) != 0 ? 0x20 : 0x08;
+          }
           break;
         case 7:
           desc = ( val & 0x80 ) != 0 ? "Disable IR when repeats from held keypress end" : "";
@@ -904,6 +1035,7 @@ public class MAXQ610data
       if ( ( val & 0x80 ) != 0 )
       {
         desc = "Mid-frame burst follows first " + ( val & 0x7F ) + " data bits";
+        tbUsed |= 0x40;
       }
       else
       {
@@ -925,10 +1057,11 @@ public class MAXQ610data
     return desc;
   }
   
-  private void addItemComments( AssemblerItem item )
+  private void addItemComments( AssemblerItem item, int[] carriers )
   {
     String opName = item.getOperation();
-    List< String > opList = Arrays.asList( "MOV", "AND", "OR", "BRA" );
+    List< String > opList = Arrays.asList( "MOV", "AND", "OR", "BRA", 
+        "MOVN", "MOVW", "CARRIER" );
     int opIndex = opList.indexOf( opName );
     if ( opIndex < 0 )
     {
@@ -951,37 +1084,68 @@ public class MAXQ610data
       item.setComments( "; " + str );
       return;
     }
-
-    if ( !( opIndex == 0 && Pattern.matches( "PF\\d, #\\$..", args ) 
-        || opIndex < 3 && Pattern.matches( "PF(\\d), PF\\1, #\\$..", args ) ) )
-    {
-      return;
-    }
-
-    int n = args.charAt( 2 ) - 0x30;
-    if ( n < 0 || n > 6 )
-    {
-      return;
-    }
-    oldVal = pf[ n ];
-    int immVal = getImmValue( args );
-    newVal = opIndex == 0 ? immVal : opIndex == 1 ? oldVal & immVal : oldVal | immVal;
-    xorVal = newVal ^ oldVal;
+    
     List< String > comments = new ArrayList< String >();
-    String lastStr = "";
-    for ( int i = 0; i < 8; i++ )
+    
+    if ( opIndex == 6 )
     {
-      if ( ( xorVal & 1 ) == 1 )
+      int on = Integer.parseInt( args.substring( 2, 4 ), 16 ) + 1;
+      int off = Integer.parseInt( args.substring( 8, 10 ), 16 ) + 1;
+      int total = on + off;
+      carriers[ 0 ] = total;
+      str = String.format( "%.2fkHz, duty cycle %.1f", 6000.0 / total, ( 100.0 * on )/ total ) + "%";
+      item.setComments( "; " + str );
+      return;
+    }
+    else if ( opIndex == 4 && Pattern.matches( "PD[0-9A-F]{2}, PD[0-9A-F]{2}, #\\$..", args ) )
+    {
+      int dest = Integer.parseInt( args.substring( 2, 4 ), 16 );
+      int source = Integer.parseInt( args.substring( 8, 10 ), 16 );
+      int len = getImmValue( args )/2;
+      int[] durations = Arrays.copyOf( tbDurations, 0x40 );
+      for ( int i = 0; i < len; i++ )
       {
-        // bit i has changed
-        str = getPFdescription( n, i, newVal );
-        if ( !str.isEmpty() && !str.equals( lastStr ) )
-        {
-          comments.add( str );
-          lastStr= str;
-        }
+        durations[ dest + i ] = durations[ source + i ];
       }
-      xorVal >>= 1;
+      int[] savedDurations = tbDurations;
+      tbDurations = durations;
+      int savedCarrier = carrier;
+      if ( carriers[ 0 ] != carrier )
+      {
+        comments.add( String.format( "Timings for %.2fkHz", 6000.0 / carriers[ 0 ] ) );
+        carrier = carriers[ 0 ];
+      }
+      comments.addAll( analyzeTimingBlock( null, false, dest, dest + len - 1 ) );
+      tbDurations = savedDurations;
+      carrier = savedCarrier;
+    }
+    else if ( opIndex == 0 && Pattern.matches( "PF\\d, #\\$..", args ) 
+        || opIndex < 3 && Pattern.matches( "PF(\\d), PF\\1, #\\$..", args ) )
+    {
+      int n = args.charAt( 2 ) - 0x30;
+      if ( n < 0 || n > 6 )
+      {
+        return;
+      }
+      oldVal = pf[ n ];
+      int immVal = getImmValue( args );
+      newVal = opIndex == 0 ? immVal : opIndex == 1 ? oldVal & immVal : oldVal | immVal;
+      xorVal = newVal ^ oldVal;
+      pfChanges[ n ] |= xorVal;
+      xorVal = opIndex == 0 ? pfChanges[ n ] : opIndex == 1 ? pfChanges[ n ] & ~immVal : pfChanges[ n ] & immVal;
+      for ( int i = 0; i < 8; i++ )
+      {
+        if ( ( xorVal & 1 ) == 1 )
+        {
+          // bit i has changed
+          str = getPFdescription( n, i, newVal );
+          if ( !str.isEmpty() && !comments.contains( str ) )
+          {
+            comments.add( str );
+          }
+        }
+        xorVal >>= 1;
+      }
     }
     str = "";
     for ( int i = 0; i < comments.size(); i++ )
@@ -1042,10 +1206,10 @@ public class MAXQ610data
     { "BrZ",  "B3Z2R1", "Z, $%02X, $%02X, #$%02X" },
     { "Rel1", "B3R1",   "$%02X" },
     { "Rel2", "B3Z2R1", "$%02X, $%02X" },
-    { "Fun1", "B3", "$%02X" },
+    { "Fun1", "B3A1", "$%02X" },
     { "Immd", "B3", "#$%02X, #$%02X" },
-    { "BrT", "B3R1", "T, $%02X, $%02X" },
-    { "BrF", "B3R1", "F, $%02X, $%02X" },
+    { "BrT", "B3R1A2", "T, $%02X, $%02X" },
+    { "BrF", "B3R1A2", "F, $%02X, $%02X" },
     { "Nil", "B3", "" }
     
   };
@@ -1069,7 +1233,7 @@ public class MAXQ610data
     { "???", "Nil" },                  { "???", "Nil" },
     { "???", "Nil" },                  { "???", "Nil" },
     
-    { "MOVW", "Imm2" },          { "???", "Nil" },
+    { "MOVW", "Dir2" },          { "???", "Nil" },
     { "???", "Nil" },                  { "???", "Nil" },
     { "???", "Nil" },                  { "???", "Nil" },
     { "???", "Nil" },                  { "???", "Nil" },
@@ -1087,7 +1251,7 @@ public class MAXQ610data
     { "???", "Nil" },                  { "???", "Nil" },
     { "???", "Nil" },                  { "???", "Nil" },
     
-    { "MOVW", "Ind2" },          { "MOVI", "Ind2" },
+    { "MOV", "Ind2" },          { "MOVI", "Ind2" },
     { "???", "Nil" },                  { "???", "Nil" },
     { "???", "Nil" },                  { "LSL", "Ind2" },
     { "LSR", "Ind2" },           { "ADD", "Ind2" },
@@ -1103,7 +1267,7 @@ public class MAXQ610data
     { "DBNZ", "Rel2" },          { "BSR", "Rel1" },
     { "CALL", "Fun1" },          { "BRA", "BrT" },
     { "BRA", "BrF" },            { "RTS", "Nil" },
-    { "CARRIER", "Dir2" },       { "END", "Nil" }   
+    { "TIMING", "Immd" },       { "END", "Nil" }   
     
     
   };
