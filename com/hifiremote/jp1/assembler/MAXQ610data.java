@@ -1127,7 +1127,7 @@ public class MAXQ610data
       int off = ( val & 0xFF ) + 1;
       int total = on + off;
       carriers[ 1 ] = total;
-      str = String.format( "Set %.2fkHz, duty cycle %.1f", 6000.0 / total, ( 100.0 * on )/ total ) + "% for SPACE";
+      str = String.format( "Set %.2fkHz", 6000.0 / total ) + " for SPACE";
       item.setComments( "; " + str );
       return;
     }
@@ -1265,7 +1265,7 @@ public class MAXQ610data
     { "Ind2", "B3Z3", "$%02X, ($%02X)" },
     { "Dir2", "B3Z3", "$%02X, $%02X" },
     { "Imm2", "B3Z1", "$%02X, #$%3$02X" },
-    { "Immw", "B3Z1", "$%02X, #$%02X%02X" },
+    { "Immw", "B3Z1", "$%02X, #$%3$02X%2$02X" },
     { "Ind1", "B3Z3", "($%02X), $%02X" },
     { "Indx",  "B3Z7", "$%02X, $%02X[$%02X]" },
     { "BrNZ", "B3Z2R1", "NZ, $%02X, $%02X, #$%02X" },
@@ -1273,6 +1273,8 @@ public class MAXQ610data
     { "Rel1", "B3R1",   "$%02X" },
     { "Rel2", "B3Z2R1", "$%02X, $%02X" },
     { "Fun1", "B3A1", "$%02X" },
+    { "Fun1B", "B3A1", "$%02X, #$%3$02X" },
+    { "Fun1W", "B3A1M1", "$%02X, #$%02X%02X" },
     { "Immd", "B3", "#$%02X, #$%02X" },
     { "BrT", "B3R1A2", "T, $%02X, $%02X" },
     { "BrF", "B3R1A2", "F, $%02X, $%02X" },
@@ -1331,10 +1333,25 @@ public class MAXQ610data
     { "CARRIER", "Immd" },       { "BRA", "BrNZ" },
     { "BRA", "BrZ" },            { "BRA", "Rel1" },
     { "DBNZ", "Rel2" },          { "BSR", "Rel1" },
-    { "CALL", "Fun1" },          { "BRA", "BrT" },
+    { "CALL", "Fun1W" },          { "BRA", "BrT" },
     { "BRA", "BrF" },            { "RTS", "Nil" },
     { "TIMING", "Immd" },       { "END", "Nil" }   
-    
-    
+  };
+  
+  public static final String[][] absLabels = {
+    { "1-burst", "00" },
+    { "0-burst", "01" },
+    { "NormLeadIn", "02" },
+    { "AltLeadIn", "03" },
+    { "MidFrame", "04" },
+    { "NormLeadOut", "05" },
+    { "AltLeadOut", "06" },
+    { "SendMARK", "07" },       // Sends MARK for duration at pointer ($AB:$AA)
+    { "SendSPACE", "08" },      // Sends SPACE for duration at pointer ($AB:$AA)
+    { "SendBURST", "09" },      // Sends MARK/SPACE burst pair for durations at pointer ($AB:$AA)
+    { "TimingItem", "70" },     // Sends timing item with index op3
+    { "TimingItemAddr", "71" }, // $AB:$AA <- word address of timing item with index op3
+    { "Branch", "72" },         // Same as BRA #op3
+    { "SetIRCA", "80" }         // IRCA <- op2:op3
   };
 }

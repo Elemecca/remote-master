@@ -58,7 +58,7 @@ public class S3C80Processor
   }
   
   @Override
-  public void disasmModify( AddressMode mode, Object[] obj )
+  public AddressMode disasmModify( AddressMode mode, Object[] obj )
   {
     int modifier = mode.modifier;
     switch ( modifier )
@@ -93,6 +93,7 @@ public class S3C80Processor
         }
         break;
     }
+    return mode;
   }
   
   @Override

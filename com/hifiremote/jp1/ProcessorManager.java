@@ -142,6 +142,7 @@ public class ProcessorManager
     p.setAddressModes( MAXQ610data.AddressModes );
     String MAXQArray[][][] = { MAXQ610data.Instructions };
     p.setInstructions( MAXQArray );
+    p.setAbsLabels( MAXQ610data.absLabels );
     add( p );
     
     p = new MAXQProcessor( "MAXQ612" );

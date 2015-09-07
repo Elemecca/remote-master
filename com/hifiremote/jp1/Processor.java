@@ -536,7 +536,7 @@ public abstract class Processor
     }
   }
   
-  public void disasmModify( AddressMode mode, Object[] obj )
+  public AddressMode disasmModify( AddressMode mode, Object[] obj )
   {
     // This code handles 6805, 740 and HCS08 processors.  S3C80Processor class has an override.
     switch ( mode.modifier )
@@ -548,6 +548,7 @@ public abstract class Processor
         obj[ 0 ] = ( Integer )obj[ 0 ] + 0xFF00;
         break;
     }
+    return mode;
   }
   
   public void asmModify( int modifier, int[] obj )

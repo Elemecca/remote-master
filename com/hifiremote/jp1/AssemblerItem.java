@@ -46,7 +46,6 @@ public class AssemblerItem
     
     int length = opCode.getLength() + mode.length;
     hex = new Hex( hex, 0, length );
-    String format = mode.format;
     short[] data = hex.getData();
     Object obj[] = { null, null, null, null };
     int argCount = 0;
@@ -70,7 +69,8 @@ public class AssemblerItem
     }
 
     // Apply modifier to args
-    p.disasmModify( mode, obj );
+    mode = p.disasmModify( mode, obj );
+    String format = mode.format;
     if ( obj[ 0 ] instanceof String && ( ( String )obj[ 0 ] ).equals( "*" ) )
     {
       // Format error discovered by disasmModify()
