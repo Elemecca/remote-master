@@ -42,6 +42,7 @@ public class MAXQ610data
   private LinkedHashMap< Integer, String > labels = new LinkedHashMap< Integer, String >();
   private boolean hasNativeCode = false;
   private boolean has2usOff = false;
+  private boolean changesFreq = false;
   private int initialCodeSpec = -1;
   
   public void analyze()
@@ -60,10 +61,6 @@ public class MAXQ610data
           Hex hex = p.getCode().get( "MAXQ610");
           if ( hex != null )
           {
-            if ( p.getName().equals( "NECx1" ))
-            {
-              int x = 0;
-            }
             s = p.getName() + ": PID=" + p.getID().toString().replaceAll( "\\s", "" );
             String var = p.getVariantName();
             if ( var != null && !var.isEmpty() )
@@ -75,6 +72,7 @@ public class MAXQ610data
             labels.clear();
             labelAddresses.clear();
             initialCodeSpec = -1;
+            changesFreq = false;
             tbUsed = 0;
             Arrays.fill( pfChanges, 0 );
             analyzeExecutor( hex );
@@ -152,17 +150,35 @@ public class MAXQ610data
       itemList.add( item );
       index += opLength;
     }
-    int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
-    for ( AssemblerItem item : itemList )
+    for ( int i = 0; i < itemList.size(); )
     {    
-      addItemComments( item, carriers );
-      String str = prefix + item.getLabel() + "\t" + item.getOpCode().getName() + "\t" + item.getArgumentText();
-      String comments = item.getComments();
-      if ( comments != null && !comments.isEmpty() )
+      int j = i;
+      do { j++; } while ( j < itemList.size() && itemList.get( j ).getLabel().isEmpty() );
+      int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
+      boolean[] freqFlags = new boolean[]{ false, false };
+      
+      for ( int k = i; k < j; k++ )
       {
-        str += "\t" + comments;
+        freqFlags[ 0 ] = false;
+        AssemblerItem item = itemList.get( k );
+        addItemComments( item, carriers, freqFlags );
+        changesFreq = changesFreq | freqFlags[ 1 ];
       }
-      s += str + "\n";
+      // carriers will now be set for current item group, so repeat for corrected comment
+      freqFlags[ 0 ] = changesFreq;
+      for ( int k = i; k < j; k++ )
+      {
+        AssemblerItem item = itemList.get( k );
+        addItemComments( item, carriers, freqFlags );
+        String str = prefix + item.getLabel() + "\t" + item.getOpCode().getName() + "\t" + item.getArgumentText();
+        String comments = item.getComments();
+        if ( comments != null && !comments.isEmpty() )
+        {
+          str += "\t" + comments;
+        }
+        s += str + "\n";
+      }
+      i = j;
     }
   }
   
@@ -1057,11 +1073,12 @@ public class MAXQ610data
     return desc;
   }
   
-  private void addItemComments( AssemblerItem item, int[] carriers )
+  private void addItemComments( AssemblerItem item, int[] carriers, boolean[] freqFlags )
   {
+    freqFlags[ 1 ] = false;  // set for instruction that changes frequency
     String opName = item.getOperation();
     List< String > opList = Arrays.asList( "MOV", "AND", "OR", "BRA", 
-        "MOVN", "MOVW", "CARRIER" );
+        "MOVN", "MOVW", "CARRIER", "TIMING" );
     int opIndex = opList.indexOf( opName );
     if ( opIndex < 0 )
     {
@@ -1087,21 +1104,52 @@ public class MAXQ610data
     
     List< String > comments = new ArrayList< String >();
     
-    if ( opIndex == 6 )
+    if ( opIndex == 6 || opIndex == 7 )
     {
       int on = Integer.parseInt( args.substring( 2, 4 ), 16 ) + 1;
       int off = Integer.parseInt( args.substring( 8, 10 ), 16 ) + 1;
       int total = on + off;
       carriers[ 0 ] = total;
-      str = String.format( "%.2fkHz, duty cycle %.1f", 6000.0 / total, ( 100.0 * on )/ total ) + "%";
+      if ( opIndex == 7 )
+      {
+        carriers[ 1 ] = has2usOff ? 12 : total;
+      }
+      str = String.format( "Set %.2fkHz, duty cycle %.1f", 6000.0 / total, ( 100.0 * on )/ total ) + "%";
+      str +=  opIndex == 6 ? " for MARK; copy to IRCA" : "";
+      comments.add( str );
+      freqFlags[ 1 ] = true;
+    }
+    
+    if ( opIndex == 5 && args.startsWith( "$04, #$" ) )
+    {
+      int val = Integer.parseInt( args.substring( 7, 11 ), 16 );
+      int on = ( val >> 8 ) + 1;
+      int off = ( val & 0xFF ) + 1;
+      int total = on + off;
+      carriers[ 1 ] = total;
+      str = String.format( "Set %.2fkHz, duty cycle %.1f", 6000.0 / total, ( 100.0 * on )/ total ) + "% for SPACE";
       item.setComments( "; " + str );
       return;
     }
-    else if ( opIndex == 4 && Pattern.matches( "PD[0-9A-F]{2}, PD[0-9A-F]{2}, #\\$..", args ) )
+    else if ( opIndex == 4 && Pattern.matches( "PD[0-9A-F]{2}, PD[0-9A-F]{2}, #\\$..", args )
+        || opIndex == 5 && Pattern.matches( "PD[0-9A-F]{2}, PD[0-9A-F]{2}", args )
+        || opIndex == 7 )
     {
-      int dest = Integer.parseInt( args.substring( 2, 4 ), 16 );
-      int source = Integer.parseInt( args.substring( 8, 10 ), 16 );
-      int len = getImmValue( args )/2;
+      int dest = 0;
+      int source = 0;
+      int len = 0;
+      if ( opIndex == 7 )
+      {
+        len = 2 * ( tbLengths[ 0 ] + tbLengths[ 1 ] + tbLengths[ 3 ] ) + tbLengths[ 2 ];
+        source = len;
+        comments.add( String.format( "PD%02X-PD%02X copied to PD%02X-PD%02X", source, source+len-1, dest, dest+len-1 ) );
+      }
+      else
+      {
+        dest = Integer.parseInt( args.substring( 2, 4 ), 16 );
+        source = Integer.parseInt( args.substring( 8, 10 ), 16 );
+        len = opIndex == 4 ? getImmValue( args )/2 : 1;
+      }
       int[] durations = Arrays.copyOf( tbDurations, 0x40 );
       for ( int i = 0; i < len; i++ )
       {
@@ -1110,12 +1158,29 @@ public class MAXQ610data
       int[] savedDurations = tbDurations;
       tbDurations = durations;
       int savedCarrier = carrier;
-      if ( carriers[ 0 ] != carrier )
+      carrier = carriers[ 0 ];
+      List< String > timingComments = analyzeTimingBlock( null, false, dest, dest + len - 1 );
+      double f = 6000.0 / carrier;
+      if ( timingComments.size() > 0 )
       {
-        comments.add( String.format( "Timings for %.2fkHz", 6000.0 / carriers[ 0 ] ) );
-        carrier = carriers[ 0 ];
+        if ( !has2usOff && carriers[ 0 ] != carriers[ 1 ] )
+        {
+          comments.add( "Carrier frequencies for MARK and SPACE differ" );
+        }
+
+        if ( freqFlags[ 0 ] )
+        {
+          comments.add( String.format( "Timings for %.2fkHz", f ) );
+          freqFlags[ 0 ] = false;
+        }
       }
-      comments.addAll( analyzeTimingBlock( null, false, dest, dest + len - 1 ) );
+      else if ( opIndex == 5 )
+      {
+        int duration = ( durations[ dest ] * carrier + 3 ) / 6;
+        str = String.format( "PD%02X at %.2fkHz: %dus" , dest, f, duration );
+        timingComments.add( str );
+      }
+      comments.addAll( timingComments );
       tbDurations = savedDurations;
       carrier = savedCarrier;
     }
@@ -1150,9 +1215,10 @@ public class MAXQ610data
     str = "";
     for ( int i = 0; i < comments.size(); i++ )
     {
-      str += ( i > 0 ? "\n\t\t\t; " : "; " ) + comments.get( i );
+      str += ( i > 0 ? "\n\t\t\t\t; " : "; " ) + comments.get( i );
     }
     item.setComments( str );
+    return;
   }
 
   private int getImmValue( String args )
