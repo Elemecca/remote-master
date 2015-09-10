@@ -30,8 +30,8 @@ public class MAXQ610data
   private int altCarrier = 0;
   private int fix = 0;
   private int var = 0;
-  private int[] pf = new int[]{ 0,0,0,0,0,0,0 };
-  private int[] pfChanges = new int[]{ 0,0,0,0,0,0,0 };
+  private int[] pf = null;
+  private int[] pfChanges = null;
   private short[] tbLengths = null;
   private int[] tbDurations = null;
   private int tbUsed = 0;
@@ -74,10 +74,16 @@ public class MAXQ610data
             initialCodeSpec = -1;
             changesFreq = false;
             tbUsed = 0;
+            pf = new int[ 16 ];
+            pfChanges = new int[ 16 ];
             Arrays.fill( pfChanges, 0 );
             analyzeExecutor( hex );
             s = s1;
             labels.clear();
+            if ( p.getName().startsWith( "Mitsubishi Alt Delay" ))
+            {
+              int x = 0;
+            }
             analyzeExecutor( hex );
             s += "--------------------\n\n";
             show = true;
@@ -97,14 +103,15 @@ public class MAXQ610data
     }
   }
   
-  private void disassemblePseudocode( int addr, Hex hex, String prefix )
+  private String disassemblePseudocode( int addr, Hex hex, String prefix )
   {
     proc.setRelativeToOpStart( true );
     proc.setOneByteAbsoluteAddresses( true );
+    String codeStr = "";
     if ( hex == null )
     {
-      s += "*** Code block invalid\n";
-      return;
+      codeStr += "*** Code block invalid\n";
+      return codeStr;
     }
     Hex pHex = new Hex( hex, 0, hex.length() + 4 );
     pHex.set( ( short )0x5F, pHex.length() - 4 );
@@ -176,10 +183,11 @@ public class MAXQ610data
         {
           str += "\t" + comments;
         }
-        s += str + "\n";
+        codeStr += str + "\n";
       }
       i = j;
     }
+    return codeStr;
   }
   
   private void analyzeExecutor( Hex hex )
@@ -241,13 +249,29 @@ public class MAXQ610data
     int altIndex = ( dbSwitch >> 12 ) & 0x0F;
     int altCount = ( dbSwitch >> 8 ) & 0x0F;
     int shift = 0;
+    int maxCount = 1;
+    for ( int i = 0; i < 8; i++ )
+    {
+      if ( ( ( altMask >> i ) & 0x01 ) != 0 )
+      {
+        maxCount *= 2;
+      }
+    }
+    if ( altCount >= maxCount )
+    {
+      s += "\n*** Number of protocol alternates greater than mask permits, so reset from ";
+      s += String.format( "%d to %d", altCount, maxCount - 1 ) + " ***\n";
+      altCount = maxCount - 1;
+    }
+    
     if ( altMask > 0 )
     {
       for ( ; ( ( altMask >> shift ) & 0x01 ) == 0; shift++ ){};
     }
+    
     String byteName = altCount > 0 ? getZeroLabel( 0xD0 + altIndex ) : "";
     pos += dbSize;  // pos points to first (or only) protocol block
-    for ( int i = 0; i <= altCount; i++ )
+    for ( int i = 0; i < maxCount; i++ )
     {
       int pbOptionsSize = data[ pos ] & 0x0F;
       int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
@@ -256,17 +280,22 @@ public class MAXQ610data
         s += "\nProtocol block when (" + byteName + " & #$" + Integer.toHexString( altMask )
             + ")=$" + Integer.toHexString( i << shift ) + "\n";
       }
-      if ( pbOffset > 0 && i < altCount )
+      if ( pbOffset > 0 )
       {
         analyzeProtocolBlock( pos, hex.subHex( pos, pbOffset ) );
+        s += "- - - - - - - -\n";
         pos += pbOffset;
+        if ( i > altCount - 1 )
+        {
+          s += "\n*** More than specified number " + ( altCount + 1 ) + "  of protocol blocks ***\n";
+        }
       }
       else
       {
         analyzeProtocolBlock( pos, hex.subHex( pos ) );
         if ( i < altCount )
         {
-          s += "*** Fewer than " + ( altCount + 1 ) + " protocol blocks ***\n";
+          s += "\n*** Fewer than specified number " + ( altCount + 1 ) + " of protocol blocks ***\n";
         }
         break;
       } 
@@ -566,149 +595,21 @@ public class MAXQ610data
     {
       s += "Codespec changed " + String.format( "from $%02X to $%02X", initialCodeSpec, codeSpec );
     }
-    
-//    if ( ( codeSpec & 0x10 ) != 0 )
-//    {
-//      // Set altCarrier
-//      getTimingItem( 7 );
-//    }
-//    else
-//    {
-//      altCarrier = 0;
-//    }
-    
-//    if ( codeSelector == 1 )
-//    {
-//      int size = ( tbLengths[ 0 ] + tbLengths[ 1 ] ) > 7 ? 2 : 1;
-//      int mult = has2usOff ? 12 : carrier;
-//      int n = 0;
-//
-//      for ( int i = 0; i < 4; i++ )
-//      {
-//        String str = "";
-//        for ( int j = 0; j < size; j++ )
-//        {
-//          int val = ( tbDurations[ n++ ]*carrier + 3 )/6;  // convert carrier cycles to us
-//          if ( val > 0 )
-//          {
-//            str += str.isEmpty() ? "" : ",";
-//            str += "+" + val;
-//          }
-//          val = ( tbDurations[ n++ ]*mult + 3 )/6;  // convert carrier cycles to us
-//          if ( val > 0 )
-//          {
-//            str += str.isEmpty() ? "" : ",";
-//            str += "-" + val;
-//          }
-//          if ( j == size - 1 )
-//          {
-//            str += "\n";
-//          }
-//        }
-//        String range = String.format( "(PD%02X-PD%02X) ", 2*i*size, 2*(i+1)*size - 1 );
-//        s += "Bursts for bit-pair " + ( new String[]{ "00", "01", "10", "11" } )[ i ] + " (us): " + range + str;
-//      }
-//    }
-//    else if ( codeSelector == 5 && ( tbLengths[ 0 ] + tbLengths[ 1 ] ) == 2 
-//        && tbDurations[ 2 ] == 0 )
-//    {
-//      int mult = has2usOff ? 12 : carrier;
-//      int on = ( tbDurations[ 0 ]*carrier + 3 )/6;
-//      int off = ( tbDurations[ 1 ]*mult + 3 )/6;
-//      int incr = ( tbDurations[ 3 ]*mult + 3 )/6;
-//      s += "Data uses base 16 encoding: burst for 4-bit group\nwith value n is (us): (PD0-PD3) "
-//          + "+" + on + ", -(" + off + " + n*" + incr + ")\n";
-//    }
-//    else
-//    {
-//      if ( codeSelector == 5 )
-//      {
-//        s += "Data uses base 16 encoding, 4-bit group with value n being converted\n"
-//            + "  for transmission to a 1 followed by n 0's\n";
-//      }
 
     if ( codeSelector > 5 && codeSelector < 12 )
     {
       s += "Data is sent with asynchronous coding, with one start bit (1), ";
-      switch ( codeSelector )
-      {
-        case 6:
-          s += "no parity bit, 1 stop bit (0)\n";
-          break;
-        case 7:
-          s += "even parity bit, 1 stop bit (0)\n";
-          break;
-        case 8:
-          s += "odd parity bit, 1 stop bit (0)\n";
-          break;
-        case 9:
-          s += "no parity bit, 2 stop bits (00)\n";
-          break;
-        case 10:
-          s += "even parity bit, 2 stop bits (00)\n";
-          break;
-        case 11:
-          s += "odd parity bit, 2 stop bits (00)\n";
-          break;
-      }
+      s += ( new String[]{ "no", "even", "odd" } )[ codeSelector % 3 ] + " parity bit, ";
+      s += codeSelector < 9 ? "1 stop bit (0)\n" : "2 stop bits (00)\n";
     }
-//      String str = getTimingItem( 0 );
-//      if ( !str.isEmpty() )
-//      {
-//        s += "1-bursts (us): " + str;
-//      }
-//      str = getTimingItem( 1 );
-//      if ( !str.isEmpty() )
-//      {
-//        s += "0-bursts (us): " + str;
-//        if ( ( codeSpec & 0x20 ) != 0 )
-//        {
-//          s += "Only first burst-pair of 0-burst is sent if an odd number of bits precede it\n";
-//        }
-//      }
-//    }
-//
-//    String str = getTimingItem( 2 );
-//    if ( !str.isEmpty() )
-//    {
-//      s += "Lead-out (us): " + str;
-//    }
-//    str = getTimingItem( 3 );
-//    if ( !str.isEmpty() )
-//    {
-//      s += "Lead-in (us): " + str;
-//    }
-//    str = getTimingItem( 4 );
-//    if ( !str.isEmpty() )
-//    {
-//      s += "Alternate lead-out (us): " + str;
-//    }
-//    str = getTimingItem( 5 );
-//    if ( !str.isEmpty() )
-//    {
-//      s += "Alternate lead-in (us): " + str;
-//    }
-//    str = getTimingItem( 6 );
-//    if ( !str.isEmpty() )
-//    {
-//      s += "Mid-frame burst (us): " + str;
-//    }
-//    if ( ( codeSpec & 0x10 ) != 0 )
-//    {
-//      str = getTimingItem( 7 );
-//      if ( !str.isEmpty() )
-//      {
-//        s += "0-burst carrier times (units of 1/6us): " + str;
-//      }
-//    }
 
     pos += pbOptSize;   // pos points to code block if present, else signal block
     boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
     if ( pbHasCode )
     {
-      s += "\nProtocol block code:\n";
+      s += "\nProtocol block code (run on first frame only, after Signal block PF bytes read):\n";
       int cbSize = data[ pos++ ];
-      disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "" );
+      s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "" );
       pos += cbSize;
     }
     
@@ -718,7 +619,7 @@ public class MAXQ610data
       int index = ( toggle >> 8 ) & 0x0F;
       int mask = toggle & 0xFF;
       String label = getZeroLabel( 0xD0 + index );
-      s += pbHasCode ? "After protocol block code, apply toggle:\n  " : "Toggle: ";
+      s += pbHasCode ? "After protocol block code is run, apply toggle:\n  " : "Toggle: ";
       if ( ( type & 0x04 ) != 0 )
       {
         s += "XOR " + label + " with ";
@@ -748,15 +649,19 @@ public class MAXQ610data
       {
         s += "*** Unreachable signal block\n";
       }
+      Arrays.fill( pf, 0 );
       pf[ 0 ] = data[ pos++ ];
       int formatLen = pf[ 0 ] & 0x07;
-      pf[ 1 ] = formatLen > 0 ? data[ sigPtr + 1 ] : 0;
-      pf[ 2 ] = formatLen > 1 ? data[ sigPtr + 2 ] : 0;
-      pf[ 3 ] = formatLen > 2 ? data[ sigPtr + 3 ] : 0;
-      pf[ 4 ] = formatLen > 3 ? data[ sigPtr + 4 ] : 0;
-      pf[ 5 ] = formatLen > 4 ? data[ sigPtr + 5 ] : 0;
+      for ( int i = 1; i <= formatLen; i++ )
+      {
+        pf[ i ] = data[ sigPtr + i ];
+      }
+      boolean sbHasAlternates = ( pf[ 5 ] & 0xF0 ) > 0;
+      boolean sbHasCode = ( pf[ 0 ] & 0x80 ) != 0;
+      boolean sbCodeBeforeTX = ( pf[ 6 ] & 0x80 ) != 0;
+      int txCount = pf[ 2 ] & 0x1F;
       
-      if ( ( pf[ 5 ] & 0xF0 ) > 0 )
+      if ( sbHasAlternates )
       {
         s += "Signal block " + blockCount + ":\n";
       }
@@ -773,68 +678,29 @@ public class MAXQ610data
         s += i < formatLen ? ", " : "\n";
       }
       
-      s += "  " + getPFdescription( 1, 6, pf[ 1 ] ) + "\n";
+      int[][] pfDescs = new int[][]{ {-1,1,6}, {0x80,4,0 }, {0x08,1,3}, {0x04,1,2},
+          {-1,0,6}, {0x3F,3,0}, {-1,1,4}, {0xE0,2,5}, {0x80,3,7}, {0xFF,5,0} };
+      for ( int[] pfDesc : pfDescs )
+      {
+        if ( pfDesc[ 0 ] < 0 || ( pf[ pfDesc[ 1 ] ] & pfDesc[ 0 ]) > 0 )
+        {
+          s += "  " + getPFdescription( pfDesc[ 1 ] , pfDesc[ 2 ] , pf[ pfDesc[ 1 ] ] ) + "\n";
+        }
+      }
+      
+//      int rptCode = ( pf[ 1 ] >> 4 ) & 0x03;
 
-      if ( ( pf[ 4 ] & 0x80 ) != 0 )
-      {
-        s += "  " + getPFdescription( 4, 0, pf[ 4 ] ) + "\n";
-      }
-      
-      if ( ( pf[ 1 ] & 0x08 ) != 0 )
-      {
-        s += "  " + getPFdescription( 1, 3, pf[ 1 ] ) + "\n";
-      }
-
-      if ( ( pf[ 1 ] & 0x04 ) != 0 )
-      {
-        s += "  " + getPFdescription( 1, 2, pf[ 1 ] ) + "\n";
-      }
-  
-      s += "  " + getPFdescription( 0, 6, pf[ 0 ] ) + "\n";
-      
-      if ( ( pf[ 3 ] & 0x3F ) != 0 )
-      {
-        s += "  " + getPFdescription( 3, 0, pf[ 3 ] ) + "\n";
-      }
-      
-      s += "  " + getPFdescription( 1, 4, pf[ 1 ] ) + "\n";
-      
-      int rptCode = ( pf[ 1 ] >> 4 ) & 0x03;
-
-      if ( ( pf[ 2 ] & 0xE0 ) != 0 )
-      {
-        s += "  " + getPFdescription( 2, 5, pf[ 2 ] ) + "\n";
-      }
-      
-      if ( ( pf[ 3 ] & 0x80 ) != 0 )
-      {
-        s += "  " + getPFdescription( 3, 7, pf[ 3 ] ) + "\n";
-      }
-      
-      if ( pf[ 5 ] > 0 )
-      {
-        s += "  " + getPFdescription( 5, 0, pf[ 5 ] ) + "\n";
-      }
-      
-      if ( pf[ 6 ] > 0 )
-      {
-        s += "  " + getPFdescription( 6, 0, pf[ 6 ] ) + "\n";
-      }
-
-      boolean sbHasCode = ( pf[ 0 ] & 0x80 ) != 0;
-
-      int txCount = pf[ 2 ] & 0x1F;
       pos += formatLen;
+      String txStr = "";
       for ( int i = 0; i <= pbSwitchSize; i++ )
       {
         Hex txBytes = hex.subHex( pos, txCount );
-        s += "  TX bytes";
+        txStr += "\n  Data translation";
         if ( pbSwitchSize > 0 )
         {
-          s += " " + i;
+          txStr += " (alternative " + i + ")";
         }   
-        s += ":";
-        analyzeTXBytes( txBytes );
+        txStr += ":" + analyzeTXBytes( txBytes );
         pos += txCount;
         if ( i < pbSwitchSize )
         {
@@ -845,23 +711,37 @@ public class MAXQ610data
       {
         if ( pos != data.length )
         {
-          s += "*** Excess data in protocol block ***\n";
+          txStr += "*** Excess data in protocol block ***\n";
         }
+        s += txStr;
         return;
       }
 
-      more = ( pf[ 5 ] & 0xF0 ) != 0;
+      more = sbHasAlternates;
       if ( more )
       {
         continue;
       }
+      String codeStr = "";
       if ( sbHasCode )
       {
-        s += "\n  Signal block code:\n";
+        codeStr += "\n  Signal block code";
+        if ( txCount > 0 )
+        { 
+            codeStr += " (run " + ( sbCodeBeforeTX ? "before" : "after") + " data translation)";
+        }
+        codeStr += ":\n";
         int cbSize = data[ pos++ ];
-        disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  " );
+        codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  " );
         pos += cbSize;
       }
+      s += sbCodeBeforeTX ? codeStr + txStr : txStr + codeStr;
+      if ( txCount > 0 )
+      {
+        s += "\n  IR sent after ";
+        s += sbHasCode && !sbCodeBeforeTX ? "signal block code run\n" : "data translation\n";
+      }
+      
       more = !hasNativeCode && pos < data.length;
       if ( more )
       {
@@ -878,7 +758,8 @@ public class MAXQ610data
     }
     if ( hasNativeCode )
     {
-      s += "Native code block:\n";
+      s += "Native code block (run after IR sent):\n";
+      pos += ( pos & 1 ) == 1 ? 1 : 0;  // round to word boundary
       Hex nCode = hex.subHex( pos );
       s += nCode.toString() + "\n";
       pos += nCode.length();
@@ -1064,7 +945,7 @@ public class MAXQ610data
     }
     else if ( pfn == 6 )
     {
-      desc = "PF6 value " + pf[ 6 ];
+      desc = "Signal block code sent " + ( ( pf[ 6 ] & 0x80 ) != 0 ? "before" : "after" ) + " IR transmission";
     }
     if ( maxBlocks > 3 )
     {
@@ -1185,31 +1066,37 @@ public class MAXQ610data
       carrier = savedCarrier;
     }
     else if ( opIndex == 0 && Pattern.matches( "PF\\d, #\\$..", args ) 
-        || opIndex < 3 && Pattern.matches( "PF(\\d), PF\\1, #\\$..", args ) )
+        || opIndex < 3 && Pattern.matches( "PF(\\d), PF\\1, #\\$..", args )
+        || opIndex == 5 && Pattern.matches( "PF\\d, #\\$....", args ) )
     {
       int n = args.charAt( 2 ) - 0x30;
       if ( n < 0 || n > 6 )
       {
         return;
       }
-      oldVal = pf[ n ];
-      int immVal = getImmValue( args );
-      newVal = opIndex == 0 ? immVal : opIndex == 1 ? oldVal & immVal : oldVal | immVal;
-      xorVal = newVal ^ oldVal;
-      pfChanges[ n ] |= xorVal;
-      xorVal = opIndex == 0 ? pfChanges[ n ] : opIndex == 1 ? pfChanges[ n ] & ~immVal : pfChanges[ n ] & immVal;
-      for ( int i = 0; i < 8; i++ )
+      int immValFull = getImmValue( args );
+      for ( int k = 0; k < ( opIndex == 5 ? 2 : 1 ); k++ )
       {
-        if ( ( xorVal & 1 ) == 1 )
+        oldVal = pf[ n + k ];
+        int immVal = immValFull & 0xFF;
+        newVal = opIndex == 0 || opIndex == 5 ? immVal : opIndex == 1 ? oldVal & immVal : oldVal | immVal;
+        xorVal = newVal ^ oldVal;
+        pfChanges[ n + k ] |= xorVal;
+        xorVal = opIndex == 0 || opIndex == 5 ? pfChanges[ n + k ] : opIndex == 1 ? pfChanges[ n + k ] & ~immVal : pfChanges[ n + k ] & immVal;
+        for ( int i = 0; i < 8; i++ )
         {
-          // bit i has changed
-          str = getPFdescription( n, i, newVal );
-          if ( !str.isEmpty() && !comments.contains( str ) )
+          if ( ( xorVal & 1 ) == 1 )
           {
-            comments.add( str );
+            // bit i has changed
+            str = getPFdescription( n + k, i, newVal );
+            if ( !str.isEmpty() && !comments.contains( str ) )
+            {
+              comments.add( str );
+            }
           }
+          xorVal >>= 1;
         }
-        xorVal >>= 1;
+        immValFull >>= 8;
       }
     }
     str = "";
@@ -1234,11 +1121,12 @@ public class MAXQ610data
     }
   }
 
-  private void analyzeTXBytes( Hex hex )
+  private String analyzeTXBytes( Hex hex )
   {
-    if ( hex == null )
+    String txStr = "";
+    if ( hex == null || hex.length() == 0 )
     {
-      return;
+      return " <none>\n";
     }
     short[] data = hex.getData();
     for ( short val : data )
@@ -1247,9 +1135,10 @@ public class MAXQ610data
       n++;
       int flag = val & 0x80;
       int addr = 0xD0 + ( val & 0x0F );
-      s += " " + ( flag != 0 ? "~" : "" ) + getZeroLabel( addr ) + ":" + n;
+      txStr += " " + ( flag != 0 ? "~" : "" ) + getZeroLabel( addr ) + ":" + n;
     }
-    s += "\n";
+    txStr += "\n";
+    return txStr;
   }
   
   private String getZeroLabel( int addr )
@@ -1339,16 +1228,52 @@ public class MAXQ610data
   };
   
   public static final String[][] absLabels = {
-    { "1-burst", "00" },
-    { "0-burst", "01" },
-    { "NormLeadIn", "02" },
-    { "AltLeadIn", "03" },
-    { "MidFrame", "04" },
-    { "NormLeadOut", "05" },
-    { "AltLeadOut", "06" },
+    { "1-burst", "00" },        // Sends Data Signal A
+    { "0-burst", "01" },        // Sends Data Signal B
+    { "NormLeadIn", "02" },     // Sends normal lead-in
+    { "AltLeadIn", "03" },      // Sends alternate lead-in
+    { "MidFrame", "04" },       // Sends mid-frame burst
+    { "NormLeadOut", "05" },    // Sends normal lead-out
+    { "AltLeadOut", "06" },     // Sends alternate lead-out
     { "SendMARK", "07" },       // Sends MARK for duration at pointer ($AB:$AA)
     { "SendSPACE", "08" },      // Sends SPACE for duration at pointer ($AB:$AA)
     { "SendBURST", "09" },      // Sends MARK/SPACE burst pair for durations at pointer ($AB:$AA)
+    { "WaitTXend", "0A" },      // Waits for current IR transmission to end
+    { "GetCarrier10ms", "0B" }, // $A9:$A8 <- number of carrier cycles in 10ms
+    { "GetLeadout", "0C" },     // $A7:..:$A4 <- 32-bit lead-out duration with current PF settings
+    { "WaitRestartTotLeadOut", "0D" },// If lead-out is total-time, wait for lead-out timer to stop, then restart
+    { "SendFrameStart", "0E" }, // Sends lead-in with current PF settings
+    { "SendFrameEnd", "0F" },   // Sends end-frame burst, 1-ON and lead-out with current PF settings
+    { "SendFullFrame", "10" },  // Sends one entire frame according to PF settings and data bytes
+    { "SendFrameData", "11" },  // Sends frame data with current PF and codespec settings, including mid-frame burst if set
+    { "ResetIRControl", "12" }, // Resets IRCN, IRCNB ready for next IR transmission
+    { "WaitLeadOutTimer", "13" }, // Wait for total-time lead-out timer to finish
+    { "InitTimingItems", "14" },// Initialize timing item sizes to default values
+    { "ClearPFregister", "15" },// Clears $94-$A3, PF byte register, to 00's
+    { "ProcessExecHdrTimDir", "16" }, // Process header, timing and directive blocks of executor
+    { "ProcessExecHdrTim", "17" }, // Process header and timing block of executor
+    { "ProcessProtBlk", "18" }, // Process protocol block
+    { "ProcessSigBlk", "19" },  // Process signal block
+    { "SetRptFromPF3", "1A" },  // $B8, inner repeat counter, gets bits 0-5 of PF3
+    { "ProcessSigSpec", "1B" }, // Process signal spec
+    { "ProcessToggle", "1C" },  // Process toggle of protocol block
+    { "WaitTXendDisableIR", "1D" },// Wait for modulation cycle to end then disable IR module
+    { "RunNativeCodeA6", "1E" }, // Run native code block with pointer at $A6
+    { "RunPseudocodeA6", "1F" }, // Run pseudocode block with pointer at $A6
+    { "RunProtPseudocode", "20" }, // Run pseudocode of active protocol block
+    { "RunSigPseudocode", "21" },  // Run pseudocode of active signal block
+    
+    { "TestRecordKey", "50" },  // Test if current key is Record
+    { "TestPowerKey", "51" },   // Test if current key is Power
+    { "TestRepeatingKey", "52" },  // Test if current key is a repeating one, Vol+/-, Ch+/-, FF/Rew, SkipFwd/Back
+    { "TestVolKey", "53" },     // Test if current key is Vol+/-
+    { "TestKeyHeld", "54" },    // Test if current key is still held (including simulated holds in macros)
+    { "TestRepeatReqd", "55" },  // Test if repeat required according to PF settings
+    { "TestLeadOutRunning", "56" },  // Test if total time lead-out timer still running
+    { "TestTimeExceeded", "57" },  // Test if max repeat timer (timer 2) expired
+    { "TestNextByte", "58" },    // Test next executor byte (True if 1, False if 0)
+    { "TestKeyAwaiting", "59" }, // Test if there is a key awaiting processing
+   
     { "TimingItem", "70" },     // Sends timing item with index op3
     { "TimingItemAddr", "71" }, // $AB:$AA <- word address of timing item with index op3
     { "Branch", "72" },         // Same as BRA #op3
