@@ -1,5 +1,6 @@
 package com.hifiremote.jp1;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import com.hifiremote.jp1.AssemblerTableModel.DisasmState;
 
 public class AssemblerItem
 {
+  public static List< Integer > unlabelled = new ArrayList< Integer >();
   private int address = 0;
   private Hex hex = null;
   private String label = "";
@@ -146,6 +148,10 @@ public class AssemblerItem
           {
             format = formatForLabel( format, argIndex, false );
             obj[ argIndex ] = label;
+          }
+          else if ( !unlabelled.contains( n ) )
+          {
+            unlabelled.add(  n  );
           }
         }
       }

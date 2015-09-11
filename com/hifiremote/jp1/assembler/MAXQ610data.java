@@ -31,6 +31,7 @@ public class MAXQ610data
   private int fix = 0;
   private int var = 0;
   private int[] pf = null;
+  private int[] pfNew = null;
   private int[] pfChanges = null;
   private short[] tbLengths = null;
   private int[] tbDurations = null;
@@ -80,10 +81,6 @@ public class MAXQ610data
             analyzeExecutor( hex );
             s = s1;
             labels.clear();
-            if ( p.getName().startsWith( "Mitsubishi Alt Delay" ))
-            {
-              int x = 0;
-            }
             analyzeExecutor( hex );
             s += "--------------------\n\n";
             show = true;
@@ -94,6 +91,13 @@ public class MAXQ610data
           }
         }
       }
+      s = "Unlabelled addresses:";
+      Collections.sort( AssemblerItem.unlabelled );
+      for ( int i : AssemblerItem.unlabelled )
+      {
+        s += String.format( " $%02X", i );
+      }
+      pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
       pw.close();
       fw.close();
     }
@@ -163,6 +167,7 @@ public class MAXQ610data
       do { j++; } while ( j < itemList.size() && itemList.get( j ).getLabel().isEmpty() );
       int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
       boolean[] freqFlags = new boolean[]{ false, false };
+      pfNew = pf.clone();
       
       for ( int k = i; k < j; k++ )
       {
@@ -343,8 +348,17 @@ public class MAXQ610data
     }
     zeroLabels.add( new String[]{ "PF0", "94", "PF", "10" } );
     zeroLabels.add( new String[]{ "PD00", "30", "PD", "40", "2" } );
+    zeroLabels.add( new String[]{ "TXD0", "10", "TXD", "10" } );
+    zeroLabels.add( new String[]{ "TXB0", "20", "TXB", "10" } );
+    zeroLabels.add( new String[]{ "Tmp0", "BE", "Tmp", "0A" } );  // probably BE-CF all available as temp store
+    zeroLabels.add( new String[]{ "TogType", "89" } );
+    zeroLabels.add( new String[]{ "TogMask", "8A" } );
+    zeroLabels.add( new String[]{ "TXBcount", "B6" } );
+    zeroLabels.add( new String[]{ "TXDcount", "B7" } );
+    zeroLabels.add( new String[]{ "MinRpts", "B8" } );
+    zeroLabels.add( new String[]{ "ToggleCtr", "E0" } );
+    zeroLabels.add( new String[]{ "MinKeyHeld", "E3" } );
     proc.setZeroLabels( zeroLabels.toArray( new String[ 0 ][ 0 ]) );
-
   }
   
   private List< String > analyzeTimingBlock( Hex hex, boolean heads, int start, int end )
@@ -576,6 +590,29 @@ public class MAXQ610data
     return !str.isEmpty() ? range + str : str;
   }
   
+  private String analyzeToggle( int toggle )
+  {
+    String togStr = "";
+    int type = ( toggle >> 12 ) & 0x0F;
+    int index = ( toggle >> 8 ) & 0x0F;
+    int mask = toggle & 0xFF;
+    String label = getZeroLabel( 0xD0 + index );
+    if ( ( type & 0x04 ) != 0 )
+    {
+      togStr += "XOR " + label + " with mask";
+    }
+    else
+    {
+      togStr += ( type & 0x08 ) != 0 ? "Decrement " : "Increment ";
+      togStr += "the bits of " + label + " selected by mask";
+    }
+    if ( mask > 0 )
+    {
+      togStr += String.format( " #$%02X\n", mask );
+    }
+    return togStr;
+  }
+  
   private void analyzeProtocolBlock( int addr, Hex hex )
   {
     int pos = 0;
@@ -615,21 +652,8 @@ public class MAXQ610data
     
     if ( toggle > 0 )
     {
-      int type = ( toggle >> 12 ) & 0x0F;
-      int index = ( toggle >> 8 ) & 0x0F;
-      int mask = toggle & 0xFF;
-      String label = getZeroLabel( 0xD0 + index );
       s += pbHasCode ? "After protocol block code is run, apply toggle:\n  " : "Toggle: ";
-      if ( ( type & 0x04 ) != 0 )
-      {
-        s += "XOR " + label + " with ";
-      }
-      else
-      {
-        s += ( type & 0x08 ) != 0 ? "Decrement " : "Increment ";
-        s += "the bits of " + label + " selected by mask ";
-      }
-      s += String.format( "#$%02X\n", mask );
+      s += analyzeToggle( toggle );
     }
     
     // pos now points to signal block
@@ -678,13 +702,14 @@ public class MAXQ610data
         s += i < formatLen ? ", " : "\n";
       }
       
+      pfNew = pf.clone();
       int[][] pfDescs = new int[][]{ {-1,1,6}, {0x80,4,0 }, {0x08,1,3}, {0x04,1,2},
           {-1,0,6}, {0x3F,3,0}, {-1,1,4}, {0xE0,2,5}, {0x80,3,7}, {0xFF,5,0} };
       for ( int[] pfDesc : pfDescs )
       {
         if ( pfDesc[ 0 ] < 0 || ( pf[ pfDesc[ 1 ] ] & pfDesc[ 0 ]) > 0 )
         {
-          s += "  " + getPFdescription( pfDesc[ 1 ] , pfDesc[ 2 ] , pf[ pfDesc[ 1 ] ] ) + "\n";
+          s += "  " + getPFdescription( pfDesc[ 1 ] , pfDesc[ 2 ] ) + "\n";
         }
       }
       
@@ -699,8 +724,17 @@ public class MAXQ610data
         if ( pbSwitchSize > 0 )
         {
           txStr += " (alternative " + i + ")";
-        }   
-        txStr += ":" + analyzeTXBytes( txBytes );
+        }
+        if ( txBytes.length() > 0 )
+        {
+          txStr += ", sets data bytes TXDn to send and number of bits TXBn from each byte (n=0 to "
+              + ( txBytes.length() - 1 ) + "):\n    ";
+        }
+        else
+        {
+          txStr += ": ";
+        }
+        txStr += analyzeTXBytes( txBytes );
         pos += txCount;
         if ( i < pbSwitchSize )
         {
@@ -738,7 +772,7 @@ public class MAXQ610data
       s += sbCodeBeforeTX ? codeStr + txStr : txStr + codeStr;
       if ( txCount > 0 )
       {
-        s += "\n  IR sent after ";
+        s += "\n  IR sent (TXBn bits of byte TXDn for each n) after ";
         s += sbHasCode && !sbCodeBeforeTX ? "signal block code run\n" : "data translation\n";
       }
       
@@ -770,16 +804,17 @@ public class MAXQ610data
     }
   }
   
-  private String getPFdescription( int pfn, int start, int val )
+  private String getPFdescription( int pfn, int start )
   {
     String desc = "";
+    int val = pfNew[ pfn ];
     if ( pfn == 0 )
     {
       switch ( start )
       {
         case 5:
         case 6:
-          String type = ( pf[ 1 ] & 0x02 ) != 0 ? "alternate" : "normal";
+          String type = ( pfNew[ 1 ] & 0x02 ) != 0 ? "alternate" : "normal";
           switch ( ( val >> 5 ) & 0x03 ) 
           {
             case 0:
@@ -793,8 +828,8 @@ public class MAXQ610data
               break;
           }
           desc = "Use " + type + " lead-out as " + desc + " time";
-          tbUsed |= ( ( pf[ 1 ] | pfChanges[ 1 ] ) & 0x02 ) != 0 ? 0x10 : 0;
-          tbUsed |= ( ( ~pf[ 1 ] | pfChanges[ 1 ] ) & 0x02 ) != 0 ? 0x04 : 0;
+          tbUsed |= ( ( pfNew[ 1 ] | pfChanges[ 1 ] ) & 0x02 ) != 0 ? 0x10 : 0;
+          tbUsed |= ( ( ~pfNew[ 1 ] | pfChanges[ 1 ] ) & 0x02 ) != 0 ? 0x04 : 0;
           break;
       }
     }
@@ -804,7 +839,7 @@ public class MAXQ610data
       {
         case 1:
           desc = "Set lead-out type to " + ( ( val & 0x02 ) != 0 ? "alternate" : "normal" );
-          if ( ( ( pf[ 0 ] | pfChanges[ 0 ] ) & 0x40 ) != 0 )
+          if ( ( ( pfNew[ 0 ] | pfChanges[ 0 ] ) & 0x40 ) != 0 )
           {
             tbUsed |= ( val & 0x02 ) != 0 ? 0x10 : 0x04;
           }
@@ -813,12 +848,12 @@ public class MAXQ610data
           desc = ( val & 0x04 ) != 0 ? "One-ON precedes lead-out" : "No One-ON before lead-out";
           break;
         case 3:
-          String type = ( pf[ 3 ] & 0x40 ) != 0 ? "alternate" : "normal";
+          String type = ( pfNew[ 3 ] & 0x40 ) != 0 ? "alternate" : "normal";
           desc = ( val & 0x08 ) != 0 ? "Use " + type + " lead-in as end-frame burst following data" : "No end-frame burst";
           if ( ( val & 0x08 ) != 0 )
           {
-            tbUsed |= ( ( pf[ 3 ] | pfChanges[ 3 ] ) & 0x40 ) != 0 ? 0x20 : 0;
-            tbUsed |= ( ( ~pf[ 3 ] | pfChanges[ 3 ] ) & 0x40 ) != 0 ? 0x08 : 0;
+            tbUsed |= ( ( pfNew[ 3 ] | pfChanges[ 3 ] ) & 0x40 ) != 0 ? 0x20 : 0;
+            tbUsed |= ( ( ~pfNew[ 3 ] | pfChanges[ 3 ] ) & 0x40 ) != 0 ? 0x08 : 0;
           }
           break;
         case 4:
@@ -917,7 +952,7 @@ public class MAXQ610data
           break;
         case 6:
           desc = "End-frame burst is " + ( ( val & 0x40 ) != 0 ? "alternate" : "normal" ) + "lead-in";
-          if ( ( ( pf[ 1 ] | pfChanges[ 1 ] ) & 0x08 ) != 0 )
+          if ( ( ( pfNew[ 1 ] | pfChanges[ 1 ] ) & 0x08 ) != 0 )
           {
             tbUsed |= ( val & 0x40 ) != 0 ? 0x20 : 0x08;
           }
@@ -941,11 +976,11 @@ public class MAXQ610data
     }
     else if ( pfn == 5 )
     {
-      desc = "PF5 value " + pf[ 5 ];
+      desc = "PF5 value " + val;
     }
     else if ( pfn == 6 )
     {
-      desc = "Signal block code sent " + ( ( pf[ 6 ] & 0x80 ) != 0 ? "before" : "after" ) + " IR transmission";
+      desc = "Signal block code sent " + ( ( val & 0x80 ) != 0 ? "before" : "after" ) + " IR transmission";
     }
     if ( maxBlocks > 3 )
     {
@@ -959,7 +994,7 @@ public class MAXQ610data
     freqFlags[ 1 ] = false;  // set for instruction that changes frequency
     String opName = item.getOperation();
     List< String > opList = Arrays.asList( "MOV", "AND", "OR", "BRA", 
-        "MOVN", "MOVW", "CARRIER", "TIMING" );
+        "MOVN", "MOVW", "CARRIER", "TIMING", "CALL" );
     int opIndex = opList.indexOf( opName );
     if ( opIndex < 0 )
     {
@@ -1075,20 +1110,28 @@ public class MAXQ610data
         return;
       }
       int immValFull = getImmValue( args );
-      for ( int k = 0; k < ( opIndex == 5 ? 2 : 1 ); k++ )
+      int end = opIndex == 5 ? 2 : 1;
+      for ( int k = 0; k < end; k++ )
       {
         oldVal = pf[ n + k ];
+        newVal = pfNew[ n + k ];
         int immVal = immValFull & 0xFF;
-        newVal = opIndex == 0 || opIndex == 5 ? immVal : opIndex == 1 ? oldVal & immVal : oldVal | immVal;
+        newVal = opIndex == 0 || opIndex == 5 ? immVal : opIndex == 1 ? newVal & immVal : newVal | immVal;
         xorVal = newVal ^ oldVal;
+        pfNew[ n + k ] = newVal;
         pfChanges[ n + k ] |= xorVal;
         xorVal = opIndex == 0 || opIndex == 5 ? pfChanges[ n + k ] : opIndex == 1 ? pfChanges[ n + k ] & ~immVal : pfChanges[ n + k ] & immVal;
+        if ( n == 0 && k == 1 && ( pfNew[ 0 ] & 0x06 ) != 0 )
+        {
+          // Don't duplicate comment on change of lead-out type
+          xorVal &= 0xFD;
+        }
         for ( int i = 0; i < 8; i++ )
         {
           if ( ( xorVal & 1 ) == 1 )
           {
             // bit i has changed
-            str = getPFdescription( n + k, i, newVal );
+            str = getPFdescription( n + k, i );
             if ( !str.isEmpty() && !comments.contains( str ) )
             {
               comments.add( str );
@@ -1099,6 +1142,38 @@ public class MAXQ610data
         immValFull >>= 8;
       }
     }
+    else if ( opIndex == 0 && Pattern.matches( "Tog.*, #\\$..", args) )
+    {
+      int val = getImmValue( args );
+      if ( args.startsWith( "TogMask" ) )
+      {
+        comments.add( String.format( "Toggle mask = $%02X", val ) );
+      }
+      else
+      {
+        comments.add( "Toggle type: " + analyzeToggle( val << 8 ) );
+      }
+    }
+    else if ( opIndex == 8 )
+    {
+      int pos = args.indexOf( ',' );
+      String label = pos >= 0 ? args.substring( 0, pos ) : args;
+      Integer val = proc.getAbsData().get( label );
+      if ( val != null )
+      {
+        tbUsed |= 1 << val;
+      }
+    }
+    
+    if ( args.contains( "MinRpts" ) )
+    {
+      comments.add( "Always at least MinRpts frames are sent after the first frame" );
+    }
+    if ( args.contains( "MinKeyHeld" ) )
+    {
+      comments.add( "Key is treated as held until MinKeyHeld frames have been sent" );
+    }
+        
     str = "";
     for ( int i = 0; i < comments.size(); i++ )
     {
@@ -1230,11 +1305,11 @@ public class MAXQ610data
   public static final String[][] absLabels = {
     { "1-burst", "00" },        // Sends Data Signal A
     { "0-burst", "01" },        // Sends Data Signal B
-    { "NormLeadIn", "02" },     // Sends normal lead-in
-    { "AltLeadIn", "03" },      // Sends alternate lead-in
-    { "MidFrame", "04" },       // Sends mid-frame burst
-    { "NormLeadOut", "05" },    // Sends normal lead-out
-    { "AltLeadOut", "06" },     // Sends alternate lead-out
+    { "NormLeadIn", "02", "", "3" },     // Sends normal lead-in
+    { "AltLeadIn", "03", "", "5" },      // Sends alternate lead-in
+    { "MidFrame", "04", "", "6" },       // Sends mid-frame burst
+    { "NormLeadOut", "05", "", "2" },    // Sends normal lead-out
+    { "AltLeadOut", "06", "", "4" },     // Sends alternate lead-out
     { "SendMARK", "07" },       // Sends MARK for duration at pointer ($AB:$AA)
     { "SendSPACE", "08" },      // Sends SPACE for duration at pointer ($AB:$AA)
     { "SendBURST", "09" },      // Sends MARK/SPACE burst pair for durations at pointer ($AB:$AA)
