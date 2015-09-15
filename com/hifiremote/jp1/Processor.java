@@ -380,9 +380,9 @@ public abstract class Processor
     return absData;
   }
 
-  public LinkedHashMap< String, String > getAbsComments()
+  public LinkedHashMap< String, String > getLblComments()
   {
-    return absComments;
+    return lblComments;
   }
 
   public void setAbsLabels( String[][] labelArray )
@@ -397,7 +397,7 @@ public abstract class Processor
         String str = labelArray[ i ][ 2 ];
         if ( str != null && !str.isEmpty() )
         {
-          absComments.put( labelArray[ i ][ 0 ], str );
+          lblComments.put( labelArray[ i ][ 0 ], str );
         }
       }
       if ( labelArray[ i ].length > 3 )
@@ -450,6 +450,14 @@ public abstract class Processor
       else
       {
         strArray = new String[ 1 ];
+        if ( labelArray[ i ].length == 3 )
+        {
+          String str = labelArray[ i ][ 2 ];
+          if ( str != null && !str.isEmpty() )
+          {
+            lblComments.put( labelArray[ i ][ 0 ], str );
+          }
+        }
       }
       n = Integer.parseInt( labelArray[ i ][ 1 ], 16 );
       strArray[ 0 ] = labelArray[ i ][ 0 ];
@@ -836,7 +844,7 @@ public abstract class Processor
   
   private LinkedHashMap< String, Integer > absAddresses = new LinkedHashMap< String, Integer >();
   private LinkedHashMap< String, Integer > absData = new LinkedHashMap< String, Integer >();
-  private LinkedHashMap< String, String > absComments = new LinkedHashMap< String, String >();
+  private LinkedHashMap< String, String > lblComments = new LinkedHashMap< String, String >();
   
   private LinkedHashMap< Integer, String[] > zeroLabels = new LinkedHashMap< Integer, String[] >();
   
