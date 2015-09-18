@@ -52,8 +52,14 @@ public class MAXQ610data
   private boolean changesFreq = false;
   private int initialCodeSpec = -1;
   private String[] irpParts = new String[ 20 ];
+  private boolean execHasPBcode = false;
+  private boolean execHasSBcode = false;
+  private boolean dataChangeOnly = true;
+  private boolean dataTimingChangeOnly = true;
   
-  /*  0  lead-in
+  /*  
+   *  Choices[] and irpParts[] elements:
+   *  0  lead-in
    *  1  lead-out
    *  2  oneOn
    *  3  midFrame
@@ -63,12 +69,22 @@ public class MAXQ610data
    *  7  altEnd
    *  8  no lead-in on repeats
    *  9  halved-style repeats
-   * 10  total-time lead-out 
+   * 10  total-time lead-out
+   * 11  data
+   * 12  repeats on key held
+   * 13  after repeats, repeat protocol block
+   * 14  do after repeats action only if key held
+   * 15  toggle
    */
   
   
   public void analyze()
   {
+    int execCount = 0;
+    int execNoCodeCount = 0;
+    int execNoSBCodeCount = 0;
+    int execNoSBDataChPBCount = 0;
+    int execNoSBDataTimeChPBCount = 0;
     proc = ProcessorManager.getProcessor( "MAXQ610" );
     try
     {
@@ -83,6 +99,9 @@ public class MAXQ610data
           Hex hex = p.getCode().get( "MAXQ610");
           if ( hex != null )
           {
+            execCount++;
+            execHasPBcode = false;
+            execHasSBcode = false;
             this.name = name;
             s = p.getName() + ": PID=" + p.getID().toString().replaceAll( "\\s", "" );
             String var = p.getVariantName();
@@ -106,6 +125,23 @@ public class MAXQ610data
             analyzeExecutor( hex );
             s += "--------------------\n\n";
             show = true;
+            if ( !execHasSBcode )
+            {
+              execNoSBCodeCount++;
+              if ( !execHasPBcode )
+              {
+                execNoCodeCount++;
+              }
+              else if ( dataChangeOnly )
+              {
+                execNoSBDataChPBCount++;
+                execNoSBDataTimeChPBCount++;
+              }
+              else if ( dataTimingChangeOnly )
+              {
+                execNoSBDataTimeChPBCount++;
+              }
+            }
             if ( show )
             {
               pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
@@ -113,7 +149,12 @@ public class MAXQ610data
           }
         }
       }
-      s = "Unlabelled addresses:";
+      s = "Count of executors: " + execCount + "\n";
+      s += "Count of executors without code: " + execNoCodeCount + "\n";
+      s += "Count of executors without SB code: " + execNoSBCodeCount + "\n";
+      s += "Count of executors without SB code and only data changing PB code: " + execNoSBDataChPBCount + "\n";
+      s += "Count of executors without SB code and only data and time changing PB code: " + execNoSBDataTimeChPBCount + "\n";
+      s += "Unlabelled addresses:";
       Collections.sort( AssemblerItem.unlabelled );
       for ( int i : AssemblerItem.unlabelled )
       {
@@ -129,8 +170,9 @@ public class MAXQ610data
     }
   }
   
-  private String disassemblePseudocode( int addr, Hex hex, String prefix )
+  private String disassemblePseudocode( int addr, Hex hex, String prefix, boolean[] flags )
   {
+    Arrays.fill( flags, false );
     proc.setRelativeToOpStart( true );
     proc.setOneByteAbsoluteAddresses( true );
     String codeStr = "";
@@ -176,6 +218,7 @@ public class MAXQ610data
     
     // Disassemble
     index = 0;
+    Arrays.fill( flags, false );
     while ( index < pHex.length() )
     {
       AssemblerItem item = new AssemblerItem( addr + index, pHex.subHex( index ) );
@@ -203,7 +246,11 @@ public class MAXQ610data
       for ( int k = i; k < j; k++ )
       {
         AssemblerItem item = itemList.get( k );
-        addItemComments( item, carriers, freqFlags );
+        int itemType = addItemComments( item, carriers, freqFlags );
+        if ( itemType >= 0 )
+        {
+          flags[ itemType ] = true;
+        }
         String str = prefix + item.getLabel() + "\t" + item.getOpCode().getName() + "\t" + item.getArgumentText();
         String comments = item.getComments();
         if ( comments != null && !comments.isEmpty() )
@@ -298,8 +345,10 @@ public class MAXQ610data
     
     String byteName = altCount > 0 ? getZeroLabel( 0xD0 + altIndex ) : "";
     pos += dbSize;  // pos points to first (or only) protocol block
+    String irpInit = irp;
     for ( int i = 0; i < maxCount; i++ )
     {
+      irp = irpInit;
       int pbOptionsSize = data[ pos ] & 0x0F;
       int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
       if ( altCount > 0 )
@@ -310,10 +359,7 @@ public class MAXQ610data
       if ( pbOffset > 0 )
       {
         analyzeProtocolBlock( pos, hex.subHex( pos, pbOffset ) );
-        if ( i ==0 )
-        {
-          s += "\n" +irp + "\n";
-        }
+        s += "\n" +irp + "\n";
         s += "- - - - - - - -\n";
         pos += pbOffset;
         if ( i > altCount - 1 )
@@ -324,10 +370,7 @@ public class MAXQ610data
       else
       {
         analyzeProtocolBlock( pos, hex.subHex( pos ) );
-        if ( i ==0 )
-        {
-          s += "\n" +irp + "\n";
-        }
+        s += "\n" +irp + "\n";
         if ( i < altCount )
         {
           s += "\n*** Fewer than specified number " + ( altCount + 1 ) + " of protocol blocks ***\n";
@@ -773,7 +816,28 @@ public class MAXQ610data
     return !str.isEmpty() ? range + str : str;
   }
   
-  private String analyzeToggle( int toggle )
+  private void reverseByte( int n, int[] togData )
+  {
+    togData[ 3 ] = -1;
+    for ( int i = 0; i < 8; i++ )
+    {
+      int b = n & 1;
+      togData[ 0 ] <<= 1;
+      togData[ 1 ] += b;    // count of 1-bits
+      togData[ 0 ] |= b;    // bit-reversed n
+      if ( b == 1 )
+      {
+        togData[ 2 ] = 7 - i;   // index of least sig 1-bit in reversed n
+        if ( togData[ 3 ] < 0 )
+        {
+          togData[ 3 ] = 7 - i; // index of most sig 1-bit in reversed n
+        }
+      }
+      n >>= 1;
+    }
+  }
+  
+  private String analyzeToggle( int toggle, int[] togData )
   {
     String togStr = "";
     int type = ( toggle >> 12 ) & 0x0F;
@@ -782,16 +846,23 @@ public class MAXQ610data
     String label = getZeroLabel( 0xD0 + index );
     if ( ( type & 0x04 ) != 0 )
     {
-      togStr += "XOR " + label + " with mask";
+      togStr += "When toggle counter T is odd, XOR " + label + " with mask";
     }
     else
     {
-      togStr += ( type & 0x08 ) != 0 ? "Decrement " : "Increment ";
-      togStr += "the bits of " + label + " selected by mask";
+      togStr += "Replace the bits of " + label + " selected by mask with ";
+      togStr += ( type & 0x08 ) != 0 ? "the complement of " : "";
+      togStr += "the least significant bits of toggle counter T";
     }
     if ( mask > 0 )
     {
       togStr += String.format( " #$%02X\n", mask );
+    }
+    if ( togData != null )
+    {
+      reverseByte( mask, togData );
+      togData[ 4 ] = index;
+      togData[ 5 ] = type & 0x04;
     }
     return togStr;
   }
@@ -827,31 +898,70 @@ public class MAXQ610data
     boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
     if ( pbHasCode )
     {
+      boolean[] flags = new boolean[ 10 ];
+      execHasPBcode = true;
       s += "\nProtocol block code (run on first frame only, after Signal block PF bytes read):\n";
       int cbSize = data[ pos++ ];
-      s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "" );
+      s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "", flags );
       pos += cbSize;
+      dataChangeOnly = true;
+      dataTimingChangeOnly = true;
+      for ( int i = 0; i < flags.length; i++ )
+      {
+        if ( flags[ i ] && i != 1 && i != 2 )
+        {
+          dataChangeOnly = false;
+          if ( i != 3 )
+          {
+            dataTimingChangeOnly = false;
+          }
+        }
+      }
+      if ( dataChangeOnly )
+      {
+        s += "\nCode changes data only\n";
+      }
+      else if ( dataTimingChangeOnly )
+      {
+        s += "\nCode changes data and timing only\n";
+      }
     }
     
+    int[] togData = null;
     if ( toggle > 0 )
     {
+      togData = new int[ 6 ];
       s += pbHasCode ? "After protocol block code is run, apply toggle:\n  " : "Toggle: ";
-      s += analyzeToggle( toggle );
+      s += analyzeToggle( toggle, togData );
+      irpParts[ 15 ] = "T=T+1,";
+      if ( togData[ 5 ] > 0 && togData[ 1 ] > 1 )
+      {
+        String label = getZeroLabel( 0xD0 + togData[ 4 ] );
+        label = irpLabel( label );
+        irpParts[ 15 ] += label + "=" + label + "^(" + togData[ 0 ] + "*T:1),";
+      }
+      else if ( togData[ 5 ] == 0 && togData[ 1 ] != togData[ 3 ] - togData[ 2 ] + 1 )
+      {
+        // replacement-type toggle with non-consecutive bits
+        irpParts[ 15 ] += "unknown toggle,";
+      }
     }
     
     // pos now points to signal block
+    boolean[] choices = new boolean[ 20 ];
+    Arrays.fill( choices, false );
     blockCount = 0;
     int brackets = 0;
     maxBlocks = 1;
     boolean more = true;
-    boolean[] choices = new boolean[ 20 ];
-    Arrays.fill( choices, false );
+
     boolean blockOptional = false;
     while ( more )
     {
       blockCount++;  
       blockOptional = choices[ 14 ];
       Arrays.fill( choices, false );
+      choices[ 15 ] = toggle > 0;
       int sigPtr = pos;
       if ( pos >= data.length )
       {
@@ -938,7 +1048,7 @@ public class MAXQ610data
         {
           txStr += ": ";
         }
-        txStr += analyzeTXBytes( txBytes );
+        txStr += analyzeTXBytes( txBytes, togData );
         
         if ( i == 0 && irpParts[ 11 ] != null )
         {
@@ -1033,6 +1143,8 @@ public class MAXQ610data
       String codeStr = "";
       if ( sbHasCode )
       {
+        execHasSBcode = true;
+        boolean[] flags = new boolean[ 10 ];
         codeStr += "\n  Signal block code";
         if ( txCount > 0 )
         { 
@@ -1040,7 +1152,7 @@ public class MAXQ610data
         }
         codeStr += ":\n";
         int cbSize = data[ pos++ ];
-        codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  " );
+        codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  ", flags );
         pos += cbSize;
       }
       s += sbCodeBeforeTX ? codeStr + txStr : txStr + codeStr;
@@ -1068,6 +1180,11 @@ public class MAXQ610data
     for ( int i= 0; i < brackets; i++ )
     {
       irp += ")";
+    }
+    if ( toggle > 0 )
+    {
+      int index = irp.indexOf( '(' );
+      irp = irp.substring( 0, index ) + "(" + irpParts[ 15 ] + irp.substring( index ) + ")";
     }
     
     if ( hasNativeCode )
@@ -1113,6 +1230,7 @@ public class MAXQ610data
               break;
           }
           choices[ 1 ] = true;
+          choices[ 6 ] = ( pfNew[ 1 ] & 0x02 ) != 0;
           desc = "Use " + type + " lead-out as " + desc + " time";
           tbUsed |= ( ( pfNew[ 1 ] | pfChanges[ 1 ] ) & 0x02 ) != 0 ? 0x10 : 0;
           tbUsed |= ( ( ~pfNew[ 1 ] | pfChanges[ 1 ] ) & 0x02 ) != 0 ? 0x04 : 0;
@@ -1295,21 +1413,43 @@ public class MAXQ610data
     return desc;
   }
   
-  private void addItemComments( AssemblerItem item, int[] carriers, boolean[] freqFlags )
+  private int addItemComments( AssemblerItem item, int[] carriers, boolean[] freqFlags )
   {
     freqFlags[ 1 ] = false;  // set for instruction that changes frequency
     String opName = item.getOperation();
+    if ( opName.equals( "END" ) )
+    {
+      return -1;
+    }
     List< String > opList = Arrays.asList( "MOV", "AND", "OR", "BRA", 
         "MOVN", "MOVW", "CARRIER", "TIMING", "CALL" );
     int opIndex = opList.indexOf( opName );
-    if ( opIndex < 0 )
-    {
-      return;
-    }
+    
     String args = item.getArgumentText();
     int oldVal = 0;
     int newVal = 0;
     int xorVal = 0;
+    int itemType = 0;
+    
+    for ( int i = 0; i < 4; i++ )
+    {
+      String pre = i == 0 ? "" : i == 1 ? "Z,.*, " : i == 2 ? "NZ,.*, " : "L\\d*, ";
+      if ( Pattern.matches( pre + "(Fix|Var|Calc).*", args ) )
+      {
+        itemType = i == 0 ? 1 : 2;
+        break;
+      }
+      else if ( Pattern.matches( pre + "Tmp.*", args ) )
+      {
+        itemType = -1;
+        break;
+      }
+    }
+    
+    if ( opIndex < 0 )
+    {
+      return itemType;
+    }
     
     String str = "";
     str = opIndex == 3 && args.contains( "$BA, #$01" ) ? args.contains( "NZ" ) 
@@ -1321,13 +1461,14 @@ public class MAXQ610data
     if ( !str.isEmpty() )
     {
       item.setComments( "; " + str );
-      return;
+      return itemType;
     }
     
     List< String > comments = new ArrayList< String >();
     
     if ( opIndex == 6 || opIndex == 7 )
     {
+      itemType = 3;
       int on = Integer.parseInt( args.substring( 2, 4 ), 16 ) + 1;
       int off = Integer.parseInt( args.substring( 8, 10 ), 16 ) + 1;
       int total = on + off;
@@ -1344,6 +1485,7 @@ public class MAXQ610data
     
     if ( opIndex == 5 && args.startsWith( "$04, #$" ) )
     {
+      itemType = 3;
       int val = Integer.parseInt( args.substring( 7, 11 ), 16 );
       int on = ( val >> 8 ) + 1;
       int off = ( val & 0xFF ) + 1;
@@ -1351,12 +1493,13 @@ public class MAXQ610data
       carriers[ 1 ] = total;
       str = String.format( "Set %.2fkHz", 6000.0 / total ) + " for SPACE";
       item.setComments( "; " + str );
-      return;
+      return itemType;
     }
     else if ( opIndex == 4 && Pattern.matches( "PD[0-9A-F]{2}, PD[0-9A-F]{2}, #\\$..", args )
         || opIndex == 5 && Pattern.matches( "PD[0-9A-F]{2}, PD[0-9A-F]{2}", args )
         || opIndex == 7 )
     {
+      itemType = 3;
       int dest = 0;
       int source = 0;
       int len = 0;
@@ -1413,8 +1556,9 @@ public class MAXQ610data
       int n = args.charAt( 2 ) - 0x30;
       if ( n < 0 || n > 6 )
       {
-        return;
+        return itemType;
       }
+      itemType = 4;
       int immValFull = getImmValue( args );
       int end = opIndex == 5 ? 2 : 1;
       for ( int k = 0; k < end; k++ )
@@ -1450,6 +1594,7 @@ public class MAXQ610data
     }
     else if ( opIndex == 0 && Pattern.matches( "Tog.*, #\\$..", args) )
     {
+      itemType = 5;
       int val = getImmValue( args );
       if ( args.startsWith( "TogMask" ) )
       {
@@ -1457,11 +1602,12 @@ public class MAXQ610data
       }
       else
       {
-        comments.add( "Toggle type: " + analyzeToggle( val << 8 ) );
+        comments.add( "Toggle type: " + analyzeToggle( val << 8, null ) );
       }
     }
     else if ( opIndex == 8 )
     {
+      itemType = 6;
       int pos = args.indexOf( ',' );
       String label = pos >= 0 ? args.substring( 0, pos ) : args;
       Integer val = proc.getAbsData().get( label );
@@ -1488,7 +1634,7 @@ public class MAXQ610data
       str += ( i > 0 ? "\n\t\t\t\t; " : "; " ) + comments.get( i );
     }
     item.setComments( str );
-    return;
+    return itemType;
   }
 
   private int getImmValue( String args )
@@ -1504,8 +1650,15 @@ public class MAXQ610data
     }
   }
 
-  private String analyzeTXBytes( Hex hex )
+  private String analyzeTXBytes( Hex hex, int[] togData )
   {
+    int togIndex = 0x100;
+    int togPos = 0x100;
+    if ( togData != null && togData[ 1 ] == 1 )
+    {
+      togIndex = togData[ 4 ];
+      togPos = togData[ 2 ];
+    }
     String txStr = "";
     if ( hex == null || hex.length() == 0 )
     {
@@ -1514,32 +1667,102 @@ public class MAXQ610data
     }
     irpParts[ 11 ] = "";
     short[] data = hex.getData();
+    int bitCount = 0;
+    int mid = 0x100;
+    if ( ( pf[ 4 ] & 0x80 ) != 0 )
+    {
+      mid = pf[ 4 ] & 0x7F;
+    }
     for ( short val : data )
     {
       int n = ( val >> 4 ) & 0x07;
       n++;
+      bitCount += n;     
+      int rem = -1;
+      if ( bitCount >= mid )
+      {
+        rem = bitCount - mid;
+        n -= rem;
+      }
       int flag = val & 0x80;
       int addr = 0xD0 + ( val & 0x0F );
       String label = getZeroLabel( addr );
-      txStr += " " + ( flag != 0 ? "~" : "" ) + label + ":" + n;
-      if ( label.startsWith( "Fix" ) )
+      txStr += " " + ( flag != 0 ? "~" : "" ) + label + ":" + ( n + Math.max( 0, rem ) );
+      String valStr = ( flag != 0 ? "~" : "" ) + irpLabel( label );
+      if ( n > 0 )
       {
-        int k = Integer.parseInt( label.substring( 3 ), 16 );
-        irpParts[ 11 ] += ( flag != 0 ? "~" : "" ) + "ABCDEFGHIJ".charAt( k ) + ":" + n + ",";
+        if ( togIndex == ( val & 0x0F ) && togPos < n )
+        {
+          if ( togPos > 0 )
+          {
+            irpParts[ 11 ] += valStr + ":" + togPos + ",";
+          }
+          irpParts[ 11 ] += ( flag != 0 ? "~" : "" ) + "T:1,";
+          if ( togPos < n - 1 )
+          {
+            irpParts[ 11 ] += valStr + ":" + (n-togPos-1) + ":" + (togPos+1) +",";
+          }
+        }
+        else
+        {
+          irpParts[ 11 ] += valStr + ":" + n + ",";
+        }
+        mid = 0x100;
       }
-      else if ( label.startsWith( "Var" ) )
+      if ( rem >= 0 )
       {
-        int k = Integer.parseInt( label.substring( 3 ), 16 );
-        irpParts[ 11 ] += ( flag != 0 ? "~" : "" ) + "XYZW".charAt( k ) + ":" + n + ",";
-      }
-      else if ( label.startsWith( "Calc" ) )
-      {
-        int k = Integer.parseInt( label.substring( 4 ), 16 );
-        irpParts[ 11 ] += ( flag != 0 ? "~" : "" ) + "N" + k + ":" + n + ",";
+        irpParts[ 11 ] += irpParts[ 3 ];
+        if ( togIndex == ( val & 0x0F ) && togPos >= n && togPos < n+rem )
+        {
+          if ( togPos > n )
+          {
+            irpParts[ 11 ] += valStr + ":" + (togPos-n);
+            if ( n > 0 )
+            {
+              irpParts[ 11 ] += ":" + n;
+            }
+            irpParts[ 11 ] += ",";
+          }
+          irpParts[ 11 ] += ( flag != 0 ? "~" : "" ) + "T:1,";
+          if ( togPos < n + rem - 1 )
+          {
+            irpParts[ 11 ] += valStr + ":" + (n+rem-togPos-1) + ":" + (togPos+1) +",";
+          }
+        }
+        else if ( rem > 0 )
+        {
+          irpParts[ 11 ] += valStr + ":" + rem;
+          if ( n > 0 )
+          {
+            irpParts[ 11 ] += ":" + n;
+          }
+          irpParts[ 11 ] += ",";
+        }      
+        mid = 0x100;
       }
     }
     txStr += "\n";
     return txStr;
+  }
+  
+  private String irpLabel( String label )
+  {
+    if ( label.startsWith( "Fix" ) )
+    {
+      int k = Integer.parseInt( label.substring( 3 ), 16 );
+      return "" + "ABCDEFGHIJ".charAt( k );
+    }
+    else if ( label.startsWith( "Var" ) )
+    {
+      int k = Integer.parseInt( label.substring( 3 ), 16 );
+      return "" + "XYZW".charAt( k );
+    }
+    else if ( label.startsWith( "Calc" ) )
+    {
+      int k = Integer.parseInt( label.substring( 4 ), 16 );
+      return "" + "N" + k;
+    }
+    return null;
   }
   
   private String getZeroLabel( int addr )
