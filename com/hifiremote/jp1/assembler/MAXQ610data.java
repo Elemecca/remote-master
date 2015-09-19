@@ -38,9 +38,14 @@ public class MAXQ610data
   private short[] tbLengths = null;
   private int[] tbDurations = null;
   private int tbUsed = 0;
-  int maxBlocks = 1;
-  int blockCount = 0;
+  private int maxBlocks = 1;
+  private int blockCount = 0;
+  private int pbIndex = 0;
+  private int sbIndex = 0;
   private List< AssemblerItem > itemList = new ArrayList< AssemblerItem >();
+  private List< AssemblerItem > fullItemList = null;
+  private List< AssemblerItem > completeItemList = null;
+  private LinkedHashMap< String, Integer > labelIndex = new LinkedHashMap< String, Integer >();
   private List< Integer > labelAddresses = new ArrayList< Integer >();
   private LinkedHashMap< Integer, String > labels = new LinkedHashMap< Integer, String >();
   private LinkedHashMap< String, String > irpList = new LinkedHashMap< String, String >();
@@ -77,6 +82,25 @@ public class MAXQ610data
    * 15  toggle
    */
   
+  private class TimingStruct
+  {
+    public TimingStruct()
+    {
+      this.carriers = new int[ 3 ];
+      this.durations = new int[ 0x40 ];
+    }
+    
+    public TimingStruct( int[] carriers, int[] durations )
+    {
+      this.carriers = carriers.clone();
+      this.durations = Arrays.copyOf( durations, 0x40 );
+    }
+    
+    public int[] carriers = null;
+    public int[] durations = null;
+    public String start = null;     // Label at start of code block
+    public boolean changed = false;
+  }
   
   public void analyze()
   {
@@ -112,6 +136,8 @@ public class MAXQ610data
             s += "\n";
             String s1 = s;
             labels.clear();
+            fullItemList = new ArrayList< AssemblerItem >();
+            completeItemList = null;
             labelAddresses.clear();
             initialCodeSpec = -1;
             changesFreq = false;
@@ -119,9 +145,35 @@ public class MAXQ610data
             pf = new int[ 16 ];
             pfChanges = new int[ 16 ];
             Arrays.fill( pfChanges, 0 );
+            pbIndex = 0;
+            sbIndex = 0;
             analyzeExecutor( hex );
+            labelIndex.clear();
+            completeItemList = fullItemList;
+            fullItemList = null;
+//            for ( int i = 0; i < completeItemList.size(); i++ )
+//            {
+//              AssemblerItem ai = completeItemList.get( i );
+//              String label = ai.getLabel();
+//              if ( !label.isEmpty() )
+//              {
+//                labelIndex.put(  label, i );
+//              }
+//              else
+//              {
+//                int addr = ai.getAddress();
+//                label = labels.get( addr );
+//                if ( label != null )
+//                {
+//                  ai.setLabel( label );
+//                  labelIndex.put(  label, i );
+//                }
+//              }
+//            }
             s = s1;
             labels.clear();
+            pbIndex = 0;
+            sbIndex = 0;
             analyzeExecutor( hex );
             s += "--------------------\n\n";
             show = true;
@@ -170,7 +222,7 @@ public class MAXQ610data
     }
   }
   
-  private String disassemblePseudocode( int addr, Hex hex, String prefix, boolean[] flags )
+  private String disassemblePseudocode( int addr, Hex hex, String prefix, boolean[] flags, List< TimingStruct > altTimings )
   {
     Arrays.fill( flags, false );
     proc.setRelativeToOpStart( true );
@@ -232,21 +284,28 @@ public class MAXQ610data
       do { j++; } while ( j < itemList.size() && itemList.get( j ).getLabel().isEmpty() );
       int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
       boolean[] freqFlags = new boolean[]{ false, false };
+      TimingStruct ts = new TimingStruct( carriers, tbDurations );
       pfNew = pf.clone();
       
       for ( int k = i; k < j; k++ )
       {
         freqFlags[ 0 ] = false;
+        
         AssemblerItem item = itemList.get( k );
-        addItemComments( item, carriers, freqFlags );
+        addItemComments( item, carriers, freqFlags, ts );
         changesFreq = changesFreq | freqFlags[ 1 ];
+      }
+      if ( altTimings != null && ts.changed )
+      {
+        altTimings.add( ts );
       }
       // carriers will now be set for current item group, so repeat for corrected comment
       freqFlags[ 0 ] = changesFreq;
       for ( int k = i; k < j; k++ )
       {
         AssemblerItem item = itemList.get( k );
-        int itemType = addItemComments( item, carriers, freqFlags );
+        int itemType = addItemComments( item, carriers, freqFlags, null );
+        item.setType( itemType );
         if ( itemType >= 0 )
         {
           flags[ itemType ] = true;
@@ -307,17 +366,16 @@ public class MAXQ610data
     int tbSize = ( tbHeader & 0x3F ) + ( tbHasSpec ? 3 : 1 );
     int tbStart = pos;
     pos += tbSize;
+    for ( String str : analyzeTimingBlock( hex.subHex( tbStart, tbSize ), true, 0, 0x40, null ) )
+    {
+      s += str + "\n";
+    }
     
     int dbHeader = data[ pos++ ];
     int dbSize = dbHeader & 0x07;
     hasNativeCode = ( dbHeader & 0x80 ) != 0;
     has2usOff = ( dbHeader & 0x40 ) != 0;
     boolean hasAltExec = ( dbHeader & 0x20 ) != 0;
-    for ( String str : analyzeTimingBlock( hex.subHex( tbStart, tbSize ), true, 0, 0x40 ) )
-    {
-      s += str + "\n";
-    }
-    
     int dbSwitch = !hasAltExec && dbSize > 1 ? hex.get( pos ) : 0;
     int altMask = dbSwitch & 0xFF;
     int altIndex = ( dbSwitch >> 12 ) & 0x0F;
@@ -349,6 +407,7 @@ public class MAXQ610data
     for ( int i = 0; i < maxCount; i++ )
     {
       irp = irpInit;
+      List< TimingStruct > altTimings = new ArrayList< TimingStruct >();
       int pbOptionsSize = data[ pos ] & 0x0F;
       int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
       if ( altCount > 0 )
@@ -358,7 +417,7 @@ public class MAXQ610data
       }
       if ( pbOffset > 0 )
       {
-        analyzeProtocolBlock( pos, hex.subHex( pos, pbOffset ) );
+        analyzeProtocolBlock( pos, hex.subHex( pos, pbOffset ), altTimings );
         s += "\n" +irp + "\n";
         s += "- - - - - - - -\n";
         pos += pbOffset;
@@ -369,8 +428,30 @@ public class MAXQ610data
       }
       else
       {
-        analyzeProtocolBlock( pos, hex.subHex( pos ) );
+        analyzeProtocolBlock( pos, hex.subHex( pos ), altTimings );
+        for ( TimingStruct ts : altTimings )
+        {
+          String sSaved = s;
+          int carrierSaved = carrier;
+          int[] durationsSaved = tbDurations;
+          carrier = ts.carriers[ 0 ];
+          String irpSaved = irp;
+          irp = String.format( "{%.1fk,", 6000.0 / carrier );
+          s = "";
+          analyzeTimingBlock( hex.subHex( tbStart, tbSize ), true, 0, 0x40, ts );
+          analyzeProtocolBlock( pos, hex.subHex( pos ), null );
+          s = sSaved;
+          carrier = carrierSaved;
+          tbDurations = durationsSaved;
+          irp = irpSaved + "\n" + irp;
+        }
         s += "\n" +irp + "\n";
+        if ( !altTimings.isEmpty() )
+        {
+          s += "Multiple timings\n";
+        }
+        
+        
         if ( i < altCount )
         {
           s += "\n*** Fewer than specified number " + ( altCount + 1 ) + " of protocol blocks ***\n";
@@ -426,7 +507,7 @@ public class MAXQ610data
     proc.setZeroLabels( allZeroLabels.toArray( new String[ 0 ][ 0 ]) ); 
   }
   
-  private List< String > analyzeTimingBlock( Hex hex, boolean heads, int start, int end )
+  private List< String > analyzeTimingBlock( Hex hex, boolean heads, int start, int end, TimingStruct ts )
   {
     String str = "";
     List< String > list = new ArrayList< String >();
@@ -450,6 +531,11 @@ public class MAXQ610data
         pos += 2;
       }
 
+      if ( ts != null )
+      {
+        tbDurations = ts.durations;
+      }
+      
       str = "Raw timing data PD00-PD" + String.format( "%02X: ", tbSize-1 );
       for ( int i = 0; i < tbSize; i++ )
       {
@@ -867,7 +953,7 @@ public class MAXQ610data
     return togStr;
   }
   
-  private void analyzeProtocolBlock( int addr, Hex hex )
+  private void analyzeProtocolBlock( int addr, Hex hex, List< TimingStruct > altTimings )
   {
     int pos = 0;
     short[] data = hex.getData();
@@ -898,11 +984,121 @@ public class MAXQ610data
     boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
     if ( pbHasCode )
     {
+      pbIndex++;
       boolean[] flags = new boolean[ 10 ];
       execHasPBcode = true;
       s += "\nProtocol block code (run on first frame only, after Signal block PF bytes read):\n";
       int cbSize = data[ pos++ ];
-      s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "", flags );
+      s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "", flags, altTimings );
+      if ( completeItemList != null )
+      {
+        for ( int i = 0; i < completeItemList.size(); i++ )
+        {
+          AssemblerItem ai = completeItemList.get( i );
+          String label = ai.getLabel();
+          if ( !label.isEmpty() )
+          {
+            labelIndex.put(  label, i );
+          }
+          else
+          {
+            int ad = ai.getAddress();
+            label = labels.get( ad );
+            if ( label != null )
+            {
+              ai.setLabel( label );
+              labelIndex.put(  label, i );
+            }
+          }
+        }
+      }
+      
+      if ( fullItemList != null )
+      {
+        AssemblerItem item = new AssemblerItem();
+        item.setLabel( "PB" + pbIndex );
+        fullItemList.add( item );
+        fullItemList.addAll( itemList );
+        
+      }
+      else if ( completeItemList != null )
+      {
+//        for ( int i = 0; i < completeItemList.size(); i++ )
+//        {
+//          AssemblerItem ai = completeItemList.get( i );
+//          String label = ai.getLabel();
+//          if ( !label.isEmpty() )
+//          {
+//            labelIndex.put(  label, i );
+//          }
+//          else
+//          {
+//            int ad = ai.getAddress();
+//            label = labels.get( ad );
+//            if ( label != null )
+//            {
+//              ai.setLabel( label );
+//              labelIndex.put(  label, i );
+//            }
+//          }
+//        }
+        int start = labelIndex.get( "PB" + pbIndex );
+        int lastTiming = 0;
+        for ( int i = start+1; i < completeItemList.size(); i++ )
+        {
+          AssemblerItem item = completeItemList.get( i );
+          String label = item.getLabel();
+          if ( label.startsWith( "PB" ) || label.startsWith( "SB" ) )
+          {
+            break;
+          }
+          int type = item.getType();
+          if ( type == 3 )
+          {
+            lastTiming = i;
+          }
+        }
+        for ( int i = start+1; i <= lastTiming; i++ )
+        {
+          AssemblerItem item = completeItemList.get( i );
+          int type = item.getType();
+          if ( type < 1 || type > 3 )
+          {
+            s += "Irregular timing change at instruction no. " + i + "/" + lastTiming;
+          }
+          if ( type == 2 )
+          {
+            String args = item.getArgumentText();
+            int lStart = args.indexOf( 'L' );
+            int lEnd = args.indexOf( ',', lStart );
+            boolean branch = false;
+            String destLabel = null;
+            int destIndex = 0;
+            if ( lEnd > lStart )
+            {
+              destLabel = args.substring( lStart, lEnd ) + ":";
+              destIndex = labelIndex.get( destLabel );
+              for ( int j = i+1; j < destIndex; j++ )
+              {
+                if ( completeItemList.get( j ).getType() != 1 )
+                {
+                  branch = true;
+                }
+              }
+            }
+            else
+            {
+              destLabel = args.substring( lStart ) + ":";
+              destIndex = labelIndex.get( destLabel );
+            }
+            if ( !branch )
+            {
+              i = destIndex;
+            }
+          }
+        }
+        
+      }
       pos += cbSize;
       dataChangeOnly = true;
       dataTimingChangeOnly = true;
@@ -1143,6 +1339,7 @@ public class MAXQ610data
       String codeStr = "";
       if ( sbHasCode )
       {
+        sbIndex++;
         execHasSBcode = true;
         boolean[] flags = new boolean[ 10 ];
         codeStr += "\n  Signal block code";
@@ -1152,7 +1349,14 @@ public class MAXQ610data
         }
         codeStr += ":\n";
         int cbSize = data[ pos++ ];
-        codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  ", flags );
+        codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  ", flags, null );
+        if ( fullItemList != null )
+        {
+          AssemblerItem item = new AssemblerItem();
+          item.setLabel( "SB" + sbIndex );
+          fullItemList.add( item );
+          fullItemList.addAll( itemList );
+        }
         pos += cbSize;
       }
       s += sbCodeBeforeTX ? codeStr + txStr : txStr + codeStr;
@@ -1413,8 +1617,12 @@ public class MAXQ610data
     return desc;
   }
   
-  private int addItemComments( AssemblerItem item, int[] carriers, boolean[] freqFlags )
+  private int addItemComments( AssemblerItem item, int[] carriers, boolean[] freqFlags, TimingStruct ts )
   {
+    if ( ts == null )
+    {
+      ts = new TimingStruct();
+    }
     freqFlags[ 1 ] = false;  // set for instruction that changes frequency
     String opName = item.getOperation();
     if ( opName.equals( "END" ) )
@@ -1431,9 +1639,9 @@ public class MAXQ610data
     int xorVal = 0;
     int itemType = 0;
     
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 3; i++ )
     {
-      String pre = i == 0 ? "" : i == 1 ? "Z,.*, " : i == 2 ? "NZ,.*, " : "L\\d*, ";
+      String pre = i == 0 ? "" : i == 1 ? "Z,.*, " : "NZ,.*, ";
       if ( Pattern.matches( pre + "(Fix|Var|Calc).*", args ) )
       {
         itemType = i == 0 ? 1 : 2;
@@ -1444,6 +1652,11 @@ public class MAXQ610data
         itemType = -1;
         break;
       }
+    }
+
+    if ( opIndex == 3 && Pattern.matches( "L\\d*", args ) )
+    {
+      itemType = 2;
     }
     
     if ( opIndex < 0 )
@@ -1473,9 +1686,12 @@ public class MAXQ610data
       int off = Integer.parseInt( args.substring( 8, 10 ), 16 ) + 1;
       int total = on + off;
       carriers[ 0 ] = total;
+      ts.carriers[ 0 ] = total;
+      ts.changed = true;
       if ( opIndex == 7 )
       {
         carriers[ 1 ] = has2usOff ? 12 : total;
+        ts.carriers[ 1 ] = carriers[ 1 ];
       }
       str = String.format( "Set %.2fkHz, duty cycle %.1f", 6000.0 / total, ( 100.0 * on )/ total ) + "%";
       str +=  opIndex == 6 ? " for MARK; copy to IRCA" : "";
@@ -1491,6 +1707,7 @@ public class MAXQ610data
       int off = ( val & 0xFF ) + 1;
       int total = on + off;
       carriers[ 1 ] = total;
+      ts.carriers[ 1 ] = total;
       str = String.format( "Set %.2fkHz", 6000.0 / total ) + " for SPACE";
       item.setComments( "; " + str );
       return itemType;
@@ -1519,12 +1736,14 @@ public class MAXQ610data
       for ( int i = 0; i < len; i++ )
       {
         durations[ dest + i ] = durations[ source + i ];
+        ts.durations[ dest + i ] = ts.durations[ source + i ];
       }
+      ts.changed = true;
       int[] savedDurations = tbDurations;
       tbDurations = durations;
       int savedCarrier = carrier;
       carrier = carriers[ 0 ];
-      List< String > timingComments = analyzeTimingBlock( null, false, dest, dest + len - 1 );
+      List< String > timingComments = analyzeTimingBlock( null, false, dest, dest + len - 1, null );
       double f = 6000.0 / carrier;
       if ( timingComments.size() > 0 )
       {

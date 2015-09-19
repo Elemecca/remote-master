@@ -23,6 +23,7 @@ public class AssemblerItem
   private String comments = "";
   private AssemblerOpCode opCode = null;
   private int errorCode = 0;
+  private int type = 0;
   
   public AssemblerItem(){};
   
@@ -433,6 +434,16 @@ public class AssemblerItem
     return label.startsWith( ";" );
   }
   
+  public int getType()
+  {
+    return type;
+  }
+
+  public void setType( int type )
+  {
+    this.type = type;
+  }
+
   public int getAddress()
   {
     return address;
