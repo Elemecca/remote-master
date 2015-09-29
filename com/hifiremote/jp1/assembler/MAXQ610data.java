@@ -148,7 +148,14 @@ public class MAXQ610data
     
     public TimingStruct clone()
     {
-      return new TimingStruct( carriers, durations, pf );
+      TimingStruct ts = new TimingStruct( carriers, durations, pf );
+      LinkedHashMap< Integer, int[] > sbp = new LinkedHashMap< Integer, int[] >();
+      for ( int n : sbPaths.keySet() )
+      {
+        sbp.put(  n, sbPaths.get( n  ).clone() );
+      }
+      ts.sbPaths = sbp;
+      return ts;
     }
  
     public int[] carriers = null;
@@ -1624,7 +1631,7 @@ public class MAXQ610data
               paths.add( pp[ 1 ] );
             }
           }
-          
+
           for ( int p : paths )
           {
             irpParts[ 17 ] = "";
@@ -1792,7 +1799,6 @@ public class MAXQ610data
         irp = irp.substring( 0, irp.length()-1 ) + ")";
         int rpt = pf[ 3 ] & 0x3F;
         irp += rpt > 0 ? ( rpt + 1 ) : "";
-//        irp += choices[ 12 ] ? rpt > 0 || !choices[ 16 ] ? "+," : "*," : ",";
         irp += choices[ 12 ] ? rpt > 0 || !choices[ 16 ] ? "+," : "*," : ",";
         brackets--;
       }
@@ -1830,7 +1836,7 @@ public class MAXQ610data
     else
     {
       // valid types for signal block
-      validTypes = Arrays.asList( -1,1,3,4,7,8,9 );
+      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9 );
     }
     
     for ( int i = start+1; i < completeItemList.size(); i++ )
@@ -1951,11 +1957,6 @@ public class MAXQ610data
         paths.add( p );
       }
     }
-    
-//    if ( paths.size()== 1 && paths.get( 0 ) == 0 )
-//    {
-//      paths.clear();
-//    }
 
     if ( !paths.isEmpty() )
     {
