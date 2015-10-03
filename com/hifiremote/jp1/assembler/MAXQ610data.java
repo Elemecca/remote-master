@@ -22,6 +22,7 @@ import com.hifiremote.jp1.Processor;
 import com.hifiremote.jp1.ProcessorManager;
 import com.hifiremote.jp1.Protocol;
 import com.hifiremote.jp1.ProtocolManager;
+import com.sun.org.apache.xpath.internal.axes.HasPositionalPredChecker;
 
 public class MAXQ610data
 {
@@ -63,6 +64,7 @@ public class MAXQ610data
   private boolean[] choices = null;
   private String[] irpParts = new String[ 20 ];
   private int brackets = 0;
+  private int minRpts = 0;
   private boolean dataChangeOnly = true;
   private boolean dataTimingChangeOnly = true;
   
@@ -81,11 +83,17 @@ public class MAXQ610data
    * 10  total-time lead-out
    * 11  data
    * 12  repeats on key held
-   * 13  after repeats, repeat protocol block
-   * 14  do after repeats action only if key held
+   * 13  after repeats, if key held repeat protocol block
+   *     (if false, key held action determined by 14)
+   * 14  after repeats, if key held, continue to next signal block
+   *     (if 13 and 14 false, terminate)
    * 15  toggle
-   * 16  block optional
+   * 16  after repeats, re-execute current signal block
    * 17  assignments
+   * 18  after repeats, if key not held repeat protocol block
+   *     (if false, key not held action determined by 19)
+   * 19  after repeats, if key not held, continue to next signal block
+   *     (if 18 and 19 false, terminate)
    */
   
   private class Executor
@@ -155,13 +163,17 @@ public class MAXQ610data
         sbp.put(  n, sbPaths.get( n  ).clone() );
       }
       ts.sbPaths = sbp;
+      ts.pbPath = pbPath;
+//      ts.minRpts = minRpts;
       return ts;
     }
  
     public int[] carriers = null;
     public int[] durations = null;
     public int[] pf = null;
+//    public int minRpts = 0;
     public boolean changed = false;
+    public Integer pbPath = null;
     public LinkedHashMap< Integer, int[] > sbPaths = new LinkedHashMap< Integer, int[] >();
   }
   
@@ -378,6 +390,20 @@ public class MAXQ610data
     }
   }
   
+  /**
+   *   ONLY EVER CALLED WITH altTimings == null
+   *   
+   *   itemList is cleared and gets list of all AssemblerItems in this pseudocode block.
+   *   labelAddresses gets augmented by addresses of any destinations from relative addressing
+   *     not already present, entire list then sorted to numerical order.
+   *   labels maps all values in labelAddresses to a label Ln, where n runs from 1 upwards.
+   *   entries in itemList at all addresses in labelAddresses get the Ln label in their label field.
+   *   
+   *   comments added to entries in itemList that change frequency or timings, with items being processed
+   *     in blocks between label entries so that any frequency change is used in timing calculations
+   *     even if frequency change occurs after the timing change.
+   *   returns assembler code listing.
+   */
   private String disassemblePseudocode( int addr, Hex hex, String prefix, boolean[] flags, LinkedList< TimingStruct > altTimings )
   {
     Arrays.fill( flags, false );
@@ -479,6 +505,11 @@ public class MAXQ610data
     return codeStr;
   }
   
+  /**
+   *   On first call, fullItemList != null, completeItemList == null.
+   *   Value of s from this call is discarded.
+   *   On second call, fullItemList == null, completeItemList != null.
+   */
   private void analyzeExecutor( Hex hex )
   {
     short[] data = hex.getData();
@@ -499,6 +530,7 @@ public class MAXQ610data
     int altExecStart = hasAltExec && dirOffset > 0 ? pos + dirOffset : 0;
     if ( altExecStart > 0 )
     {
+      // THIS WON'T WORK DUE TO DUAL CALLING.
       s += "First executor\n";
       analyzeSingleExec( hex.subHex( 0, altExecStart ) );
       s += "\nSecond executor\n";
@@ -510,6 +542,11 @@ public class MAXQ610data
     }   
   }
   
+  /**
+   *   On first call, fullItemList != null, completeItemList == null.
+   *   Value of s from this call is discarded.
+   *   On second call, fullItemList == null, completeItemList != null.
+   */
   private void analyzeSingleExec( Hex hex )
   {
     short[] data = hex.getData();
@@ -526,7 +563,8 @@ public class MAXQ610data
     {
       s += str + "\n";
     }
-    
+    int carrierSaved = carrier;
+    int[] durationsSaved = tbDurations;
     int dbHeader = data[ pos++ ];
     int dbSize = dbHeader & 0x07;
     hasNativeCode = ( dbHeader & 0x80 ) != 0;
@@ -572,47 +610,33 @@ public class MAXQ610data
             + ")=$" + Integer.toHexString( i << shift ) + "\n";
       }
       int pbIndexSaved = pbIndex;
-      int sbIndexSaved = sbIndex;
-      if ( pbOffset > 0 )
+      analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, null );
+      irp = "";
+      while ( !altTimings.isEmpty() )
       {
-        analyzeProtocolBlock( pos, hex.subHex( pos, pbOffset ), altTimings, null );
-        if ( !altTimings.isEmpty() )
+        TimingStruct ts = altTimings.pop();
+        String sSaved = s;
+        irpStruct = new IRPstruct();
+        String irpSaved = irp;
+        s = "";
+        pbIndex = pbIndexSaved;     
+        boolean changed = analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, ts );
+        s = sSaved;
+        if ( changed )
         {
-          irp = "";
+          continue;
         }
-        else if ( !e.irps.contains( irpStruct ) )
+        carrier = carrierSaved;
+        tbDurations = durationsSaved;
+        if ( !e.irps.contains( irpStruct ) )
         {
           e.irps.add( irpStruct );
         }
-        while ( !altTimings.isEmpty() )
-        {
-          TimingStruct ts = altTimings.pop();
-          String sSaved = s;
-          irpStruct = new IRPstruct();
-          int carrierSaved = carrier;
-          int[] durationsSaved = tbDurations;
-          carrier = ts.carriers[ 0 ];
-          String irpSaved = irp;
-          irp = String.format( "{%.1fk,", 6000.0 / carrier );
-          s = "";
-          pbIndex = pbIndexSaved;
-          sbIndex = sbIndexSaved;
-          analyzeTimingBlock( hex.subHex( tbStart, tbSize ), true, 0, 0x40, ts );
-          boolean changed = analyzeProtocolBlock( pos, hex.subHex( pos, pbOffset ), altTimings, ts );
-          s = sSaved;
-          if ( changed )
-          {
-            continue;
-          }
-          carrier = carrierSaved;
-          tbDurations = durationsSaved;
-          if ( !e.irps.contains( irpStruct ) )
-          {
-            e.irps.add( irpStruct );
-          }
-          irp = (irpSaved.isEmpty() ? "" : irpSaved + "\n" ) + irp;
-        }
-        s += "\n" +irp + "\n";
+        irp = (irpSaved.isEmpty() ? "" : irpSaved + "\n" ) + irp;
+      }
+      s += "\n" +irp + "\n";
+      if ( pbOffset > 0 )
+      {
         s += "- - - - - - - -\n";
         pos += pbOffset;
         if ( i > altCount - 1 )
@@ -622,51 +646,6 @@ public class MAXQ610data
       }
       else
       {
-        analyzeProtocolBlock( pos, hex.subHex( pos ), altTimings, null );
-        if ( !altTimings.isEmpty() )
-        {
-          irp = "";
-        }
-        else if ( !e.irps.contains( irpStruct ) )
-        {
-          e.irps.add( irpStruct );
-        }
-        while ( !altTimings.isEmpty() )
-        {
-          TimingStruct ts = altTimings.pop();
-          String sSaved = s;
-          irpStruct = new IRPstruct();
-          int carrierSaved = carrier;
-          int[] durationsSaved = tbDurations;
-          carrier = ts.carriers[ 0 ];
-          String irpSaved = irp;
-          irp = String.format( "{%.1fk,", 6000.0 / carrier );
-          s = "";
-          pbIndex = pbIndexSaved;
-          sbIndex = sbIndexSaved;
-          analyzeTimingBlock( hex.subHex( tbStart, tbSize ), true, 0, 0x40, ts );      
-          boolean changed = analyzeProtocolBlock( pos, hex.subHex( pos ), altTimings, ts );
-          s = sSaved;
-          if ( changed )
-          {
-            irp = "";
-            continue;
-          }
-          carrier = carrierSaved;
-          tbDurations = durationsSaved;
-          if ( !e.irps.contains( irpStruct ) )
-          {
-            e.irps.add( irpStruct );
-          }
-          irp = (irpSaved.isEmpty() ? "" : irpSaved + "\n" ) + irp;
-        }
-        s += "\n" +irp + "\n";
-        if ( !altTimings.isEmpty() )
-        {
-          s += "Multiple timings\n";
-        }
-        
-        
         if ( i < altCount )
         {
           s += "\n*** Fewer than specified number " + ( altCount + 1 ) + " of protocol blocks ***\n";
@@ -675,7 +654,7 @@ public class MAXQ610data
       }
     }
   }
-  
+
   private void analyzeHeader( Hex hex )
   {
     short[] data = hex.getData();
@@ -722,35 +701,46 @@ public class MAXQ610data
     proc.setZeroLabels( allZeroLabels.toArray( new String[ 0 ][ 0 ]) ); 
   }
   
+  /**
+   *   If heads==true and ts==null, tbLengths and tbDurations will be set from timing block
+   *     but if heads==true and ts!=null, tbDurations is set from ts.durations.
+   *   Value of carrier is used to convert durations in clock cycles to values in microseconds.
+   *   If heads==true then IRP unit is calculated and used to complete GeneralSpec and add BitSpec
+   *     based on initialCodeSpec for format.
+   *   Relevant irpParts entries set and descriptive text returned for timing items whose
+   *     first duration lies between start and end parameters.
+   */
   private List< String > analyzeTimingBlock( Hex hex, boolean heads, int start, int end, TimingStruct ts )
   {
     String str = "";
     List< String > list = new ArrayList< String >();
     if ( heads )
     {
-      short[] data = hex.getData();
-      int tbHeader = data[ 0 ];
-      int spec = ( tbHeader & 0x80 ) != 0 ? hex.get( 1 ) : 0;
-      tbLengths = new short[]{ 1,1,1,1,1,1,1,1 };
-      for ( int i = 0; i < 8; i++ )
+      if ( ts == null )
       {
-        tbLengths[ i ] += spec & 0x03;
-        spec >>= 2;
+        short[] data = hex.getData();
+        int tbHeader = data[ 0 ];
+        int spec = ( tbHeader & 0x80 ) != 0 ? hex.get( 1 ) : 0;
+        tbLengths = new short[]{ 1,1,1,1,1,1,1,1 };
+        for ( int i = 0; i < 8; i++ )
+        {
+          tbLengths[ i ] += spec & 0x03;
+          spec >>= 2;
+        }
+        int tbSize = ( tbHeader & 0x3F )/2;
+        int pos = ( tbHeader & 0x80 ) != 0 ? 3 : 1;
+        tbDurations = new int[ tbSize ];
+        for ( int i = 0; i < tbSize; i++ )
+        {
+          tbDurations[ i ] = proc.getInt( data, pos );
+          pos += 2;
+        }
       }
-      int tbSize = ( tbHeader & 0x3F )/2;
-      int pos = ( tbHeader & 0x80 ) != 0 ? 3 : 1;
-      tbDurations = new int[ tbSize ];
-      for ( int i = 0; i < tbSize; i++ )
-      {
-        tbDurations[ i ] = proc.getInt( data, pos );
-        pos += 2;
-      }
-
       if ( ts != null )
       {
         tbDurations = ts.durations;
       }
-      
+      int tbSize = tbDurations.length;
       str = "Raw timing data PD00-PD" + String.format( "%02X: ", tbSize-1 );
       for ( int i = 0; i < tbSize; i++ )
       {
@@ -807,6 +797,7 @@ public class MAXQ610data
       irpStruct.unit = ( int )unit;
       irpStruct.generalSpec = irp;
     }
+    
     List< Integer > irpVals = heads || ( start == 0 && end == 0x40 ) ? new ArrayList< Integer >() : null;
     int[] limits = new int[]{ 0, 0 };
     int codeSpec = initialCodeSpec == -1 ? 0 : initialCodeSpec;
@@ -1253,6 +1244,27 @@ public class MAXQ610data
     return null;
   }
   
+/**
+ * On first call for each protocol block, fullItemList != null, completeItemList == null,
+ * ts == null, altTiming is empty.  It sets initialCodeSpec from PB options.  fullItemList
+ * gets AssemblerItems for PB and each SB block with code, separated by an item consisting
+ * only of label of form PBn or SBn.  At this stage the label entries in the items may be
+ * wrong as labelAddresses is added to for each code block, so cross-referencing labels will
+ * be missing.  IT LOOKS AS IF ALTTIMINGS CAN BE NULL ON THIS INITIAL CALL, AS IT IS NOT
+ * REFERENCED.
+ * 
+ * On second call, completeItemList is fullItemList from first call and fullItemList == null.
+ * Still ts==null and altTimings is empty.  The label entries in the items in completeItemList
+ * are updated to final form and labelIndex is constructed to map labels to position in
+ * completeItemList.  Paths through PB code block are determined and for each path, a
+ * TimingStruct is added to altTimings with pbPath set to path value.  Then for each SB
+ * code block, its paths are determined and each altTimings entry is duplicated for each
+ * SB path with an sbPaths entry added.  If there was no PB code then it will have pbPath=0.
+ * If no SB code then sbPaths will be empty.
+ * 
+ * On third call, completeItemList is now correct, fullItemList==null and it is called with
+ * ts being in turn the next entry in altTimings.
+ */
   private boolean analyzeProtocolBlock( int addr, Hex hex, LinkedList< TimingStruct > altTimings, TimingStruct ts )
   {
     boolean changed = false;
@@ -1285,15 +1297,29 @@ public class MAXQ610data
 
     pos += pbOptSize;   // pos points to code block if present, else signal block
     boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
-    if ( pbHasCode )
+    if ( !pbHasCode )
+    {
+      if ( completeItemList != null && ts == null )
+      {
+        altTimings.add( new TimingStruct() );
+      }
+    }
+    else
     {
       pbIndex++;
-      boolean[] flags = new boolean[ 10 ];
+      boolean[] flags = new boolean[ 20 ];
       e.hasPBcode = true;
-      s += "\nProtocol block code (run on first frame only, after Signal block PF bytes read):\n";
+      s += "\nProtocol block code (run once per Signal block, after PF bytes read):\n";
       int cbSize = data[ pos++ ];
       s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "", flags, null );
-      if ( completeItemList != null )
+      if ( ts == null && fullItemList != null )
+      {
+        AssemblerItem item = new AssemblerItem();
+        item.setLabel( "PB" + pbIndex );
+        fullItemList.add( item );
+        fullItemList.addAll( itemList );
+      }
+      else if ( completeItemList != null && ts == null )
       {
         for ( int i = 0; i < completeItemList.size(); i++ )
         {
@@ -1314,37 +1340,21 @@ public class MAXQ610data
             }
           }
         }
-      }
-      
-      if ( ts == null && fullItemList != null )
-      {
-        AssemblerItem item = new AssemblerItem();
-        item.setLabel( "PB" + pbIndex );
-        fullItemList.add( item );
-        fullItemList.addAll( itemList );
-      }
-      else if ( ts == null && completeItemList != null )
-      {
+
         int start = labelIndex.get( "PB" + pbIndex );
         List< Integer > paths = createCodePaths( start );
-        for ( int p : paths )
+        if ( paths.isEmpty() )
         {
-          int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
-          TimingStruct ts2 = new TimingStruct( carriers, tbDurations, pf );
-          boolean[] freqFlags = new boolean[]{ false, false };
-          Node n = nodeList.get( start + 1 );
-          while ( n != null )
+          altTimings.add( new TimingStruct() );
+        }
+        else
+        {
+          for ( int p : paths )
           {
-            int[] b = n.branch;
-            for ( int i = n.start; i <= b[0]; i++ )
-            {
-              AssemblerItem item = completeItemList.get( i );
-              addItemComments( item, carriers, freqFlags, ts2 );
-            }
-            n = p != 0 ? nodeList.get( b[p&3] ) : null;
-            p >>= 2;
+            TimingStruct ts2 = new TimingStruct();
+            ts2.pbPath = p;
+            altTimings.add( ts2 );
           }
-          altTimings.add( ts2 );
         }
         
         if ( !nodeList.isEmpty() )
@@ -1357,6 +1367,7 @@ public class MAXQ610data
           s += n + " " + b[ 0 ] + " " + b[ 1 ] + " " + b[ 2 ] + "\n";
         }
       }
+
       pos += cbSize;
       dataChangeOnly = true;
       dataTimingChangeOnly = true;
@@ -1410,13 +1421,12 @@ public class MAXQ610data
     maxBlocks = 1;
     brackets = 0;
     boolean more = true;
+    sbIndex = 0;
 
     while ( more )
     {
       blockCount++;  
-      boolean blockOptional = choices[ 14 ];
-      Arrays.fill( choices, false );
-      choices[ 16 ] = blockOptional;
+      Arrays.fill( choices, false );;
       choices[ 15 ] = toggle > 0;
       int sigPtr = pos;
       if ( pos >= data.length )
@@ -1438,6 +1448,7 @@ public class MAXQ610data
       boolean sbHasAlternates = ( pf[ 5 ] & 0xF0 ) > 0;
       boolean sbHasCode = ( pf[ 0 ] & 0x80 ) != 0;
       boolean sbCodeBeforeTX = ( pf[ 6 ] & 0x80 ) != 0;
+      minRpts = pf[ 3 ] & 0x3F; 
       int txCount = pf[ 2 ] & 0x1F;
       
       if ( sbHasAlternates )
@@ -1457,7 +1468,7 @@ public class MAXQ610data
         s += i < formatLen ? ", " : "\n";
       }
       
-      pfNew = pf.clone();
+      pfNew = pf.clone(); 
       int[][] pfDescs = new int[][]{ {-1,1,6}, {0x80,4,0 }, {0x08,1,3}, {0x04,1,2},
           {-1,0,6}, {0x3F,3,0}, {-1,1,4}, {0xE0,2,5}, {0x80,3,7}, {0xFF,5,0} };
       for ( int[] pfDesc : pfDescs )
@@ -1508,15 +1519,17 @@ public class MAXQ610data
       more = sbHasAlternates;
       if ( more )
       {
-        irp += makeIRStream();
+        String stream = makeIRStream();
+        irp += stream;
         continue;
       }
+      
       String codeStr = "";
       if ( sbHasCode )
       {
         sbIndex++;
         e.hasSBcode = true;
-        boolean[] flags = new boolean[ 10 ];
+        boolean[] flags = new boolean[ 20 ];
         codeStr += "\n  Signal block code";
         if ( txCount > 0 )
         { 
@@ -1526,7 +1539,14 @@ public class MAXQ610data
         int cbSize = data[ pos++ ];
         codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  ", flags, null );
 
-        if ( completeItemList != null )
+        if (  ts == null && fullItemList != null )
+        {
+          AssemblerItem item = new AssemblerItem();
+          item.setLabel( "SB" + sbIndex );
+          fullItemList.add( item );
+          fullItemList.addAll( itemList );
+        }
+        else if ( completeItemList != null && ts == null )
         {
           for ( int i = 0; i < completeItemList.size(); i++ )
           {
@@ -1547,27 +1567,11 @@ public class MAXQ610data
               }
             }
           }
-        }
-        
-        if (  ts == null && fullItemList != null )
-        {
-          AssemblerItem item = new AssemblerItem();
-          item.setLabel( "SB" + sbIndex );
-          fullItemList.add( item );
-          fullItemList.addAll( itemList );
-        }
-        else if ( ts == null && completeItemList != null )
-        {
+
           int start = labelIndex.get( "SB" + sbIndex );
           List< Integer > paths = createCodePaths( start );
           if ( !paths.isEmpty() )
           {
-            if ( altTimings.isEmpty() )
-            {
-              int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
-              TimingStruct ts2 = new TimingStruct( carriers, tbDurations, pf );
-              altTimings.add( ts2 );
-            }
             altTimings.add( null );
             while ( altTimings.peek() != null )
             {
@@ -1581,63 +1585,93 @@ public class MAXQ610data
             }
             altTimings.pop();
           }
+          changed = true;
         }
+        pos += cbSize;
+      }
         
-        if ( completeItemList != null && ts != null )
+      if ( sbHasCode && completeItemList != null && ts != null )
+      {
+        minRpts = pf[ 3 ] & 0x3F;   // set it as value from pf[ 3 ]
+        int start = labelIndex.get( "SB" + sbIndex );
+        if ( ts != null && ts.sbPaths.get( sbIndex ) != null)
         {
-          int start = labelIndex.get( "SB" + sbIndex );
-          if ( ts != null && ts.sbPaths.get( sbIndex ) != null)
+          int p = ts.sbPaths.get( sbIndex )[ 0 ];
+          List< Integer > list1 = new ArrayList< Integer >();
+          changed = createPathSequence( start, p, 1, list1 );
+          p = ts.sbPaths.get( sbIndex )[ 1 ];
+          List< Integer > list2 = new ArrayList< Integer >();
+          changed = createPathSequence( start, p, 2, list2 ) || changed;
+          if ( changed )
           {
-            int p = ts.sbPaths.get( sbIndex )[ 0 ];
-            List< Integer > list1 = new ArrayList< Integer >();
-            changed = createPathSequence( start, p, 1, list1 );
-            p = ts.sbPaths.get( sbIndex )[ 1 ];
-            List< Integer > list2 = new ArrayList< Integer >();
-            changed = createPathSequence( start, p, 2, list2 ) || changed;
-            if ( changed )
+            for ( int i : list1 )
             {
-              for ( int i : list1 )
+              for ( int j : list2 )
               {
-                for ( int j : list2 )
-                {
-                  TimingStruct ts3 = ts.clone();
-                  ts3.sbPaths.put( sbIndex, new int[]{i,j} );
-                  altTimings.add( ts3 );
-                }
+                TimingStruct ts3 = ts.clone();
+                ts3.sbPaths.put( sbIndex, new int[]{i,j} );
+                altTimings.add( ts3 );
               }
             }
           }
         }
+      }
 
-        if ( completeItemList != null && !changed )
+      if ( completeItemList != null && !changed & ts != null )
+      {
+        List< Integer > paths = new ArrayList< Integer >();
+        if ( ts.sbPaths.get( sbIndex ) == null )
         {
-          int start = labelIndex.get( "SB" + sbIndex );
-          List< Integer > paths = new ArrayList< Integer >();
-//          List< Integer > paths = createCodePaths( start );
-//          if ( paths.isEmpty() )
-//          {
-//            paths.add( 1 );
-//          }
-          if ( ts == null || ts.sbPaths.get( sbIndex ) == null )
+          paths.add( 0 );
+        }
+        else
+        {
+          int[] pp = ts.sbPaths.get( sbIndex );
+          paths.add( pp[ 0 ] );
+          if ( pp[ 0 ] != pp[ 1 ] )
           {
-            paths.add( 0 );
+            paths.add( pp[ 1 ] );
           }
-          else
+        }
+
+        int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
+        TimingStruct ts3 = ts != null ? ts.clone() : new TimingStruct();
+        ts3.carriers = carriers;
+        ts3.pf = pf.clone();
+        ts3.durations = Arrays.copyOf( tbDurations, 0x40 );
+        irpParts[ 17 ] = "";
+        choices[ 17 ] = false; 
+        if ( irpStruct.generalSpec == null )
+        {
+          // Condition emulates the fact that the PB code is run on first frame only       
+          if ( ts3.pbPath != null )
           {
-            int[] pp = ts.sbPaths.get( sbIndex );
-            paths.add( pp[ 0 ] );
-            if ( pp[ 0 ] != pp[ 1 ] )
+            int pbStart = labelIndex.get( "PB" + pbIndex );
+            int p3 = ts3.pbPath;
+            boolean[] freqFlags = new boolean[]{ false, false };
+            Node n = nodeList.get( pbStart + 1 );
+            while ( n != null )
             {
-              paths.add( pp[ 1 ] );
+              int[] b = n.branch;
+              for ( int i = n.start; i <= b[0]; i++ )
+              {
+                AssemblerItem item = completeItemList.get( i );
+                addItemComments( item, carriers, freqFlags, ts3 );
+              }
+              n = p3 != 0 ? nodeList.get( b[p3&3] ) : null;
+              p3 >>= 2;
             }
           }
+          carrier = ts3.carriers[ 0 ];
+          irp = String.format( "{%.1fk,", 6000.0 / carrier );
+          analyzeTimingBlock( null, true, 0, 0x40, ts3 );
+        }
 
-          for ( int p : paths )
+        for ( int p : paths )
+        {    
+          if ( sbHasCode )
           {
-            irpParts[ 17 ] = "";
-            choices[ 17 ] = false;
-            int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
-            TimingStruct ts3 = new TimingStruct( carriers, tbDurations, pf );
+            int start = labelIndex.get( "SB" + sbIndex );
             boolean[] freqFlags = new boolean[]{ false, false };
             Node n = nodeList.get( start + 1 );
             while ( n != null )
@@ -1651,26 +1685,31 @@ public class MAXQ610data
               n = p != 0 ? nodeList.get( b[p&3] ) : null;
               p >>= 2;
             }
-            pf = ts3.pf;
-            tbDurations = ts3.durations;
+          }
 
-            for ( int[] pfDesc : pfDescs )
+          pf = ts3.pf;
+          tbDurations = ts3.durations;
+
+          for ( int[] pfDesc : pfDescs )
+          {
+            if ( pfDesc[ 0 ] < 0 || ( pf[ pfDesc[ 1 ] ] & pfDesc[ 0 ]) > 0 || pfDesc[ 1 ] == 2 )
             {
-              if ( pfDesc[ 0 ] < 0 || ( pf[ pfDesc[ 1 ] ] & pfDesc[ 0 ]) > 0 )
-              {
-                getPFdescription( pfDesc[ 1 ] , pfDesc[ 2 ], choices );
-              }
+              getPFdescription( pfDesc[ 1 ] , pfDesc[ 2 ], choices );
             }
-            analyzeTimingBlock( null, false, 0, 0x40, null );
-            irp += makeIRStream();
+          }
+          analyzeTimingBlock( null, false, 0, 0x40, null );
+          String stream = makeIRStream();
+          irp += stream;
+          irpParts[ 17 ] = "";
+          choices[ 17 ] = false;
+          if ( choices[ 12 ] || !choices[ 16 ] )
+          {
+            // keep only IRstream for first frame if no repeat of current signal block 
+            break;
           }
         }
-        pos += cbSize;
       }
-      else
-      {
-        irp += makeIRStream();
-      }
+
       s += sbCodeBeforeTX ? codeStr + txStr : txStr + codeStr;
       if ( txCount > 0 )
       {
@@ -1691,7 +1730,11 @@ public class MAXQ610data
       {
         s += "*** Repeat signal block missing\n";
       }
+      more &= choices[ 14 ] || choices[ 19 ];
     }
+    
+    if ( irp.length() > 0 )
+    {
     irp = irp.substring( 0, irp.length()-1 );
     for ( int i= 0; i < brackets; i++ )
     {
@@ -1709,6 +1752,7 @@ public class MAXQ610data
     if ( irp.length() > irpLen )
     {
       irpStruct.irStream = irp.substring( irpLen );
+    }
     }
     
     if ( hasNativeCode )
@@ -1728,14 +1772,14 @@ public class MAXQ610data
   }
   
   private String makeIRStream()
-  {
-    String irp = "";
+  {    
     if ( blockCount > 1 && brackets == 0 )
     {
       int index = irp.indexOf( '>' );
       irp = irp.substring( 0, index + 1 ) + "(" + irp.substring( index + 1 );
       brackets++;
     }
+    String irp = "";
     irp += "(";
     brackets++;
     if ( choices[ 17 ] )
@@ -1767,10 +1811,12 @@ public class MAXQ610data
       }
       irp += out;
     }
-    if ( choices[ 12 ] || ( pf[ 3 ] & 0x3F ) > 0 )
+    if ( choices[ 12 ] || minRpts > 0 )
     {
+      // repeat on key held, and/or has mandatory repeats
       if ( choices[ 9 ] )
       {
+        // has halved-style repeats, so needs new IRstream
         irp += "(" + irpParts[ 9 ];
         if ( choices[ 4 ] )
         {
@@ -1790,34 +1836,45 @@ public class MAXQ610data
           irp += out;
         }
         irp = irp.substring( 0, irp.length()-1 ) + ")";
-        int rpt = pf[ 3 ] & 0x3F;
-        irp += rpt > 1 ? rpt : "";
-        irp += choices[ 12 ] ? rpt > 0 ? "+," : "*," : ",";
+        irp += minRpts > 1 ? minRpts : "";
+        irp += choices[ 12 ] ? minRpts > 0 ? "+," : "*," : ",";
       }
       else
       {
+        // repeat current IRstream
         irp = irp.substring( 0, irp.length()-1 ) + ")";
-        int rpt = pf[ 3 ] & 0x3F;
-        irp += rpt > 0 ? ( rpt + 1 ) : "";
-        irp += choices[ 12 ] ? rpt > 0 || !choices[ 16 ] ? "+," : "*," : ",";
+        // for mandatory repeats, add numeric repeat count
+        irp += minRpts > 0 ? ( minRpts + 1 ) : "";
+        // if mandatory repeats, add "+"
+        // if repeat while key held, add "*"
+        // if mandatory repeats not continuing while key held, no further marker
+        irp += choices[ 12 ] ? minRpts > 0 || brackets == 1 ? "+," : "*," : ",";
         brackets--;
       }
     }
-    else if ( choices[ 13 ] )
+    if ( !choices[ 12 ] && choices[ 13 ] || choices[ 18 ] )
     {
-      if ( brackets > 1 && !choices[ 10 ] )
+      // re-execute protocol block
+      if ( brackets > 1 && !choices[ 10 ] && ( pf[ 3 ] & 0x3F ) == 0 )
       {
+        // Nested IRstreams with current one having gap lead-out and no repeat marker
+        // so remove unnecessary opening bracket.  Note that with total time lead-out 
+        // the bracket is necessary as it marks the start of the lead-out timing.
         int index = irp.lastIndexOf( '(' );
         irp = irp.substring( 0, index ) + irp.substring( index + 1 );
         brackets--;
       }
+      
+      // remove trailing comma and close all brackets, so enclosing complete protocol block
       irp = irp.substring( 0, irp.length()-1 );
       for ( int i= 0; i < brackets; i++ )
       {
         irp += ")";
       }
       brackets = 0;
-      irp += "+,";
+      // mark the repetition; if choices[ 13 ] (if key held) then it is at least once,
+      // else it is when key not held, when it will be exactly one repeat
+      irp += choices[ 13 ] ? "+," : "2,";
     }
     return irp;
   }
@@ -1836,7 +1893,7 @@ public class MAXQ610data
     else
     {
       // valid types for signal block
-      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9 );
+      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10 );
     }
     
     for ( int i = start+1; i < completeItemList.size(); i++ )
@@ -2125,6 +2182,7 @@ public class MAXQ610data
     {
       if ( start >= 5 )
       {
+        choices[ 13 ] = choices[ 14 ] = choices[ 16 ] = choices[ 18 ] = choices[ 19 ] = false;
         switch ( val >> 5 )
         {
           case 0:
@@ -2134,6 +2192,7 @@ public class MAXQ610data
           case 1:
             desc = "After repeats, execute next signal block";
             maxBlocks = blockCount + 1;
+            choices[ 14 ] = choices[ 19 ] = true;
             break;
           case 2:
             desc = "After repeats, if key held then execute next signal block";
@@ -2144,22 +2203,21 @@ public class MAXQ610data
             desc = "After repeats, if key held then re-execute current protocol block";
             maxBlocks = blockCount;
             choices[ 13 ] = true;
-            choices[ 14 ] = true;
             break;
           case 4: 
             desc = "After repeats, if key held then re-execute current protocol block, "
                 + "else execute next signal block";
             maxBlocks = blockCount + 1;
-            choices[ 13 ] = true;
-            choices[ 14 ] = true;
+            choices[ 13 ] = choices[ 19 ] = true;
             break;
           case 5:
             desc = "After repeats, re-execute current protocol block";
             maxBlocks = blockCount;
-            choices[ 13 ] = true;
+            choices[ 13 ] = choices[ 18 ] = true;
             break;
           case 6:
             desc = "After repeats, re-execute current signal block";
+            choices[ 16 ] = true;
             maxBlocks = blockCount;
             break;
           default:
@@ -2178,6 +2236,7 @@ public class MAXQ610data
         case 4:
         case 5:
           desc = "Send " + ( val & 0x3F ) + " mandatory repeats";
+//          minRpts = val & 0x3F;
           break;
         case 6:
           desc = "End-frame burst is " + ( ( val & 0x40 ) != 0 ? "alternate" : "normal" ) + "lead-in";
@@ -2234,6 +2293,7 @@ public class MAXQ610data
      * 7 = Branch on test of first frame
      * 8 = Branch on true/false test
      * 9 = Branch to subroutine
+     *10 = Minimum repeat change 
      */
     
     
@@ -2472,6 +2532,7 @@ public class MAXQ610data
       itemType = 4;
       int immValFull = getImmValue( args );
       int end = opIndex == 5 ? 2 : 1;
+      ts.changed = true;
       for ( int k = 0; k < end; k++ )
       {
         oldVal = pf[ n + k ];
@@ -2527,6 +2588,11 @@ public class MAXQ610data
       {
         tbUsed |= 1 << val;
       }
+    }
+    else if ( opIndex == 0 && args.startsWith( "MinRpts" ) )
+    {
+      itemType = 10;
+      minRpts = getImmValue( args );
     }
     
     st = new StringTokenizer( args, "," );
