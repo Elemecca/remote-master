@@ -22,7 +22,6 @@ import com.hifiremote.jp1.Processor;
 import com.hifiremote.jp1.ProcessorManager;
 import com.hifiremote.jp1.Protocol;
 import com.hifiremote.jp1.ProtocolManager;
-import com.sun.org.apache.xpath.internal.axes.HasPositionalPredChecker;
 
 public class MAXQ610data
 {
@@ -62,11 +61,12 @@ public class MAXQ610data
   private boolean changesFreq = false;
   private int initialCodeSpec = -1;
   private boolean[] choices = null;
-  private String[] irpParts = new String[ 20 ];
+  private String[] irpParts = new String[ 30 ];
   private int brackets = 0;
   private int minRpts = 0;
   private boolean dataChangeOnly = true;
   private boolean dataTimingChangeOnly = true;
+  private boolean firstFrame = true;
   
   /*  
    *  Choices[] and irpParts[] elements:
@@ -94,6 +94,8 @@ public class MAXQ610data
    *     (if false, key not held action determined by 19)
    * 19  after repeats, if key not held, continue to next signal block
    *     (if 18 and 19 false, terminate)
+   * 20  SB code run before TX byte encoding
+   * 21  IR transmission suspended 
    */
   
   private class Executor
@@ -114,6 +116,7 @@ public class MAXQ610data
     public String bitSpec= null;
     public String irStream = null;
     public int unit = 0;
+    public List< String > comments = new ArrayList< String >();
     
     @Override
     public boolean equals( Object obj )
@@ -167,6 +170,28 @@ public class MAXQ610data
 //      ts.minRpts = minRpts;
       return ts;
     }
+    
+    public boolean same( TimingStruct ts, int sbIndex )
+    {
+      if ( ts.pbPath != pbPath )
+      {
+        return false;
+      }
+      for ( int i = 0; i < sbIndex; i++ )
+      {
+        int[] p1 = ts.sbPaths.get( i );
+        int[] p2 = sbPaths.get( i );
+        if ( p1 == null && p2 != null || p1 != null && p2 == null )
+        {
+          return false;
+        }
+        if ( p1 != null && p2 != null && ( p1[ 0 ] != p2[ 0 ] || p1[ 1 ] != p2[ 1 ]) )
+        {
+          return false;
+        }
+      }
+      return true;
+    }
  
     public int[] carriers = null;
     public int[] durations = null;
@@ -181,6 +206,7 @@ public class MAXQ610data
   {
     public int start = 0;
     public int[] branch = null;
+    public String[] comments = new String[ 2 ];
     /*  branch elements are:
         0 = end
         1 = start for left branch (-1 if no branch)
@@ -237,6 +263,7 @@ public class MAXQ610data
     for ( Executor e : execs )
     {
       this.e = e;
+//      System.err.println( e.names.get( 0 ) );
       e.index = eIndex++;
       Hex hex = e.hex;
       irpStruct = new IRPstruct();
@@ -404,7 +431,7 @@ public class MAXQ610data
    *     even if frequency change occurs after the timing change.
    *   returns assembler code listing.
    */
-  private String disassemblePseudocode( int addr, Hex hex, String prefix, boolean[] flags, LinkedList< TimingStruct > altTimings )
+  private String disassemblePseudocode( int addr, Hex hex, String prefix, boolean[] flags, TimingStruct ts )
   {
     Arrays.fill( flags, false );
     proc.setRelativeToOpStart( true );
@@ -466,21 +493,21 @@ public class MAXQ610data
       do { j++; } while ( j < itemList.size() && itemList.get( j ).getLabel().isEmpty() );
       int[] carriers = new int[]{ carrier, has2usOff ? 12 : carrier, altCarrier };
       boolean[] freqFlags = new boolean[]{ false, false };
-      TimingStruct ts = new TimingStruct( carriers, tbDurations, pf );
-      pfNew = pf.clone();
+      TimingStruct ts2 = new TimingStruct( carriers, tbDurations, pf );
+      pfNew = pf.clone();  
       
       for ( int k = i; k < j; k++ )
       {
         freqFlags[ 0 ] = false;
         
         AssemblerItem item = itemList.get( k );
-        addItemComments( item, carriers, freqFlags, ts );
+        addItemComments( item, carriers, freqFlags, ts2 );
         changesFreq = changesFreq | freqFlags[ 1 ];
       }
-      if ( altTimings != null && ts.changed )
-      {
-        altTimings.add( ts );
-      }
+//      if ( altTimings != null && ts.changed )
+//      {
+//        altTimings.add( ts );
+//      }
       // carriers will now be set for current item group, so repeat for corrected comment
       freqFlags[ 0 ] = changesFreq;
       for ( int k = i; k < j; k++ )
@@ -619,7 +646,8 @@ public class MAXQ610data
         irpStruct = new IRPstruct();
         String irpSaved = irp;
         s = "";
-        pbIndex = pbIndexSaved;     
+        irp = "";
+        pbIndex = pbIndexSaved;  
         boolean changed = analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, ts );
         s = sSaved;
         if ( changed )
@@ -628,11 +656,30 @@ public class MAXQ610data
         }
         carrier = carrierSaved;
         tbDurations = durationsSaved;
-        if ( !e.irps.contains( irpStruct ) )
+        if ( testIRPstruct( irpStruct ) )
         {
-          e.irps.add( irpStruct );
+          if ( !e.irps.contains( irpStruct ) )
+          {
+            e.irps.add( irpStruct );
+          }
+          irp = (irpSaved.isEmpty() ? "" : irpSaved + "\n" ) + irp;
+          if ( !irpStruct.comments.isEmpty() )
+          {
+            irp += "  //";
+            for ( String c : irpStruct.comments )
+            {
+              irp += " " + c + "; ";
+            }
+          }
         }
-        irp = (irpSaved.isEmpty() ? "" : irpSaved + "\n" ) + irp;
+        else
+        {
+          if ( e.irps.contains( irpStruct ) )
+          {
+            e.irps.remove( irpStruct );
+          }
+          irp = irpSaved;
+        }
       }
       s += "\n" +irp + "\n";
       if ( pbOffset > 0 )
@@ -1179,7 +1226,7 @@ public class MAXQ610data
       {
         s += "Irregular instruction  at no. " + i + "/" + limit;
         e.pbHandled = false;
-        return null;
+//        return null;
       }
       if ( type == 2 || type == 7 || type == 8 )
       {
@@ -1188,11 +1235,18 @@ public class MAXQ610data
         int[] branch = new int[ 3 ];
         branch[ 0 ] = i;
         String args = item.getArgumentText();
-        int lStart = args.indexOf( 'L' );
-        int lEnd = args.indexOf( ',', lStart );
-        String destLabel = null;
+        String[] argArray = new String[ 4 ];
+        StringTokenizer st = new StringTokenizer( args, "," );
+        int index = 0;
+        while ( st.hasMoreTokens() )
+        {
+          argArray[ index++ ] = st.nextToken().trim();
+        }
+//        int lStart = args.indexOf( 'L' );
+//        int lEnd = args.indexOf( ',', lStart );
+        String destLabel = argArray[ 1 ] == null ? argArray[ 0 ] : argArray[ 1 ];
         int destIndex = 0;
-        if ( lEnd > lStart )
+        if ( argArray[ 1 ] != null )   //( lEnd > lStart )
         {
           // conditional branch instruction
           // make branch[ 1 ] hold destination on zero, branch[ 2 ] on nonzero
@@ -1200,21 +1254,40 @@ public class MAXQ610data
           // set default values for BRA Z, ...  or BRA T, ...
           int yes = 1;  // index to store destination on branch (continue at specified instruction )
           int no = 2;   // index to store destination on no branch (continue at next instruction)          
-          if ( args.startsWith( "NZ" ) || args.startsWith( "F" ) )
+//          if ( args.startsWith( "NZ" ) || args.startsWith( "F" ) )
+          if ( argArray[ 0 ].equals( "NZ" ) || argArray[ 0 ].equals( "F" ) )
           {
             yes = 2;
             no = 1;
           }
-
-          destLabel = args.substring( lStart, lEnd );
+          
+//          destLabel = args.substring( lStart, lEnd );
           destIndex = labelIndex.get( destLabel );
           branch[ no ] = i + 1;
           branch[ yes ] = destIndex;
 
-          if ( type == 8 )
+          if ( type == 2 )
           {
-            // For true/false branch, only follow True
-            branch[ 2 ] = -1;
+            String v = irpLabel( argArray[ 2 ] );
+            int a = Integer.parseInt( argArray[3].substring( 2 ), 16 );
+            int[] rev = new int[ 4 ];
+            reverseByte( a, rev );
+            if ( rev[1] == 1 )
+            {
+              String t = v + ":1:" + rev[2] + "=";
+              node.comments[ 0 ] = t + "0";
+              node.comments[ 1 ] = t + "1";
+            }
+          }
+          else if ( type == 8 )
+          {
+            String cond = argArray[ 2 ]; //args.substring( lEnd + 1 ).trim();
+            String opComment = proc.getLblComments().get(  cond );
+            if ( opComment != null && opComment.startsWith( "Test if" ) )
+            {
+              node.comments[ 0 ] = "When key is " + opComment.substring( 8 );
+              node.comments[ 1 ] = "When key is not " + opComment.substring( 8 );
+            }
           }
 
           node.branch = branch;
@@ -1223,7 +1296,7 @@ public class MAXQ610data
         else
         {
           // unconditional branch instruction
-          destLabel = args.substring( lStart );
+          destLabel = argArray[ 0 ];  //args.substring( lStart );
           destIndex = labelIndex.get( destLabel );
           branch[ 1 ] = destIndex;
           branch[ 2 ] = -1;
@@ -1311,7 +1384,10 @@ public class MAXQ610data
       e.hasPBcode = true;
       s += "\nProtocol block code (run once per Signal block, after PF bytes read):\n";
       int cbSize = data[ pos++ ];
-      s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "", flags, null );
+      if ( ts == null )
+      {
+        s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "", flags, ts );
+      }
       if ( ts == null && fullItemList != null )
       {
         AssemblerItem item = new AssemblerItem();
@@ -1415,13 +1491,14 @@ public class MAXQ610data
     }
     
     // pos now points to signal block
-    choices = new boolean[ 20 ];
+    choices = new boolean[ 30 ];
     Arrays.fill( choices, false );
     blockCount = 0;
     maxBlocks = 1;
     brackets = 0;
     boolean more = true;
     sbIndex = 0;
+    firstFrame = true;
 
     while ( more )
     {
@@ -1529,7 +1606,7 @@ public class MAXQ610data
       {
         sbIndex++;
         e.hasSBcode = true;
-        boolean[] flags = new boolean[ 20 ];
+        boolean[] flags = new boolean[ 30 ];
         codeStr += "\n  Signal block code";
         if ( txCount > 0 )
         { 
@@ -1537,7 +1614,10 @@ public class MAXQ610data
         }
         codeStr += ":\n";
         int cbSize = data[ pos++ ];
-        codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  ", flags, null );
+        if ( ts == null )
+        {
+          codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  ", flags, ts );
+        }
 
         if (  ts == null && fullItemList != null )
         {
@@ -1641,9 +1721,9 @@ public class MAXQ610data
         ts3.durations = Arrays.copyOf( tbDurations, 0x40 );
         irpParts[ 17 ] = "";
         choices[ 17 ] = false; 
-        if ( irpStruct.generalSpec == null )
+        if ( firstFrame )
         {
-          // Condition emulates the fact that the PB code is run on first frame only       
+          // the PB code is run on first frame only       
           if ( ts3.pbPath != null )
           {
             int pbStart = labelIndex.get( "PB" + pbIndex );
@@ -1682,7 +1762,12 @@ public class MAXQ610data
                 AssemblerItem item = completeItemList.get( i );
                 addItemComments( item, carriers, freqFlags, ts3 );
               }
-              n = p != 0 ? nodeList.get( b[p&3] ) : null;
+              int br = p&3;
+              if ( ( br == 1 || br == 2 ) && n.comments[ br - 1 ] != null )
+              {
+                irpStruct.comments.add( n.comments[ br - 1 ] );
+              }
+              n = p != 0 ? nodeList.get( b[br] ) : null;
               p >>= 2;
             }
           }
@@ -1698,8 +1783,11 @@ public class MAXQ610data
             }
           }
           analyzeTimingBlock( null, false, 0, 0x40, null );
-          String stream = makeIRStream();
-          irp += stream;
+          if ( !choices[ 21 ] )
+          {
+            String stream = makeIRStream();
+            irp += stream;
+          }
           irpParts[ 17 ] = "";
           choices[ 17 ] = false;
           if ( choices[ 12 ] || !choices[ 16 ] )
@@ -1730,7 +1818,17 @@ public class MAXQ610data
       {
         s += "*** Repeat signal block missing\n";
       }
-      more &= choices[ 14 ] || choices[ 19 ];
+      
+      if ( more && ts != null && !choices[ 14 ] && !choices[ 19 ] )
+      {
+        TimingStruct next = altTimings.peek();
+        if ( next != null && next.same( ts, blockCount ) )
+        {
+          altTimings.pop();
+        }
+      }
+      more &= completeItemList == null || choices[ 14 ] || choices[ 19 ];
+      
     }
     
     if ( irp.length() > 0 )
@@ -1764,7 +1862,7 @@ public class MAXQ610data
       s += nCode.toString() + "\n";
       pos += nCode.length();
     }
-    if ( pos != data.length )
+    if ( ( completeItemList == null || choices[ 14 ] || choices[ 19 ] ) && pos != data.length )
     {
       s += "**** Parsing error ****\n";
     }
@@ -1817,6 +1915,12 @@ public class MAXQ610data
       if ( choices[ 9 ] )
       {
         // has halved-style repeats, so needs new IRstream
+        if ( !firstFrame )
+        {
+          // when not first frame, only the repeats are sent
+          irp = "";
+          brackets--;
+        }
         irp += "(" + irpParts[ 9 ];
         if ( choices[ 4 ] )
         {
@@ -1836,7 +1940,8 @@ public class MAXQ610data
           irp += out;
         }
         irp = irp.substring( 0, irp.length()-1 ) + ")";
-        irp += minRpts > 1 ? minRpts : "";
+        int r = firstFrame ? minRpts : minRpts+1;  // when not first frame, only halved-style repeats are sent
+        irp += r > 1 ? r : "";
         irp += choices[ 12 ] ? minRpts > 0 ? "+," : "*," : ",";
       }
       else
@@ -1876,6 +1981,7 @@ public class MAXQ610data
       // else it is when key not held, when it will be exactly one repeat
       irp += choices[ 13 ] ? "+," : "2,";
     }
+    firstFrame = false;   // Set "not first frame" for subsequent calls
     return irp;
   }
   
@@ -1893,7 +1999,7 @@ public class MAXQ610data
     else
     {
       // valid types for signal block
-      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10 );
+      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12 );
     }
     
     for ( int i = start+1; i < completeItemList.size(); i++ )
@@ -1987,8 +2093,15 @@ public class MAXQ610data
       }
       if ( n != null )
       {
+        if ( n.branch[ 1 ] > 0 && n.branch[ 1 ] <= n.branch[ 0 ] 
+            || n.branch[ 2 ] > 0 && n.branch[ 2 ] <= n.branch[ 0 ] )
+        {
+          s += "\nBackward jump at " + n.branch[ 0 ] + " (" + n.branch[ 1 ] + ", " + n.branch[ 2 ] + ")\n";
+          return paths;
+        }
+        
         boolean added = false;
-        if ( completeItemList.get( n.start).getType() == 7 )
+        if ( completeItemList.get( n.branch[0]).getType() == 7 )
         {
           paths.add( p + ( 3 << 2*level ) );
           return paths;
@@ -2070,7 +2183,7 @@ public class MAXQ610data
     String desc = "";
     if ( choices == null )
     {
-      choices = new boolean[ 20 ];
+      choices = new boolean[ 30 ];
     }
     int val = pfNew[ pfn ];
     if ( pfn == 0 )
@@ -2271,6 +2384,7 @@ public class MAXQ610data
     else if ( pfn == 6 )
     {
       desc = "Signal block code sent " + ( ( val & 0x80 ) != 0 ? "before" : "after" ) + " IR transmission";
+      choices[ 20 ] = ( val & 0x80 ) != 0;
     }
     if ( maxBlocks > 3 )
     {
@@ -2293,7 +2407,9 @@ public class MAXQ610data
      * 7 = Branch on test of first frame
      * 8 = Branch on true/false test
      * 9 = Branch to subroutine
-     *10 = Minimum repeat change 
+     *10 = Minimum repeat change
+     *11 = Suppress IR transmission
+     *12 = Resume IR transmission
      */
     
     
@@ -2425,6 +2541,16 @@ public class MAXQ610data
       if ( str.startsWith( "Branch if" ) )
       {
         itemType = 7;
+      }
+      else if ( str.startsWith( "Suppress" ) )
+      {
+        itemType = 11;
+        choices[ 21 ] = true;
+      }
+      else if ( str.startsWith( "Resume" ) )
+      {
+        itemType = 12;
+        choices[ 21 ] = false;
       }
       return itemType;
     }
@@ -2763,6 +2889,27 @@ public class MAXQ610data
     return null;
   }
   
+  private boolean testIRPstruct( IRPstruct irps )
+  {
+    LinkedHashMap< String, String > map = new LinkedHashMap< String, String >();
+    for ( String str : irps.comments )
+    {
+      int ndx = str.indexOf( '=' );
+      if ( ndx >= 0 )
+      {
+        String v = str.substring( 0, ndx );
+        String a = str.substring( ndx+1 );
+        if ( map.get( v ) != null && !map.get( v ).equals( a ) )
+        {
+          return false;
+        }
+        map.put( v, a );
+      }
+    }
+    return true;
+  }
+  
+  
   private String getZeroLabel( int addr )
   {
     AssemblerItem item = new AssemblerItem();
@@ -2885,10 +3032,10 @@ public class MAXQ610data
     { "RunProtPseudocode", "20" }, // Run pseudocode of active protocol block
     { "RunSigPseudocode", "21" },  // Run pseudocode of active signal block
     
-    { "TestRecordKey", "50" },  // Test if current key is Record
-    { "TestPowerKey", "51" },   // Test if current key is Power
-    { "TestRepeatingKey", "52" },  // Test if current key is a repeating one, Vol+/-, Ch+/-, FF/Rew, SkipFwd/Back
-    { "TestVolKey", "53" },     // Test if current key is Vol+/-
+    { "TestRecordKey", "50", "Test if Record key" },  // Test if current key is Record
+    { "TestPowerKey", "51", "Test if Power key" },   // Test if current key is Power
+    { "TestRepeatingKey", "52", "Test if repeating key" },  // Test if current key is a repeating one, Vol+/-, Ch+/-, FF/Rew, SkipFwd/Back
+    { "TestVolKey", "53", "Test if volume key" },     // Test if current key is Vol+/-
     { "TestKeyHeld", "54" },    // Test if current key is still held (including simulated holds in macros)
     { "TestRepeatReqd", "55" },  // Test if repeat required according to PF settings
     { "TestLeadOutRunning", "56" },  // Test if total time lead-out timer still running
