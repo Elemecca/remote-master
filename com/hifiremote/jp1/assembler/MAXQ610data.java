@@ -1228,10 +1228,10 @@ public class MAXQ610data
         e.pbHandled = false;
 //        return null;
       }
-      if ( type == 2 || type == 7 || type == 8 )
+      if ( type == 2 || type == 7 || type == 8 || type == 13 )
       {
         // type 2 = branch on test of data, type 7 = branch on test of first frame
-        // type 8 = branch on true/false test
+        // type 8 = branch on true/false test, type 13 = branch on test of key held
         int[] branch = new int[ 3 ];
         branch[ 0 ] = i;
         String args = item.getArgumentText();
@@ -1382,7 +1382,7 @@ public class MAXQ610data
       pbIndex++;
       boolean[] flags = new boolean[ 20 ];
       e.hasPBcode = true;
-      s += "\nProtocol block code (run once per Signal block, after PF bytes read):\n";
+      s += "\nProtocol block code (run on first frame only, after PF bytes read):\n";
       int cbSize = data[ pos++ ];
       if ( ts == null )
       {
@@ -1647,6 +1647,11 @@ public class MAXQ610data
               }
             }
           }
+          
+          if ( e.names.get( 0 ).startsWith( "Apple" ))
+          {
+            int x = 0;
+          }
 
           int start = labelIndex.get( "SB" + sbIndex );
           List< Integer > paths = createCodePaths( start );
@@ -1659,7 +1664,7 @@ public class MAXQ610data
               for ( int p : paths )
               {
                 TimingStruct ts3 = ts2.clone();
-                ts3.sbPaths.put( sbIndex, new int[]{p,p} );
+                ts3.sbPaths.put( sbIndex, new int[]{p,p,p} );
                 altTimings.add( ts3 );
               }
             }
@@ -1673,27 +1678,56 @@ public class MAXQ610data
       if ( sbHasCode && completeItemList != null && ts != null )
       {
         minRpts = pf[ 3 ] & 0x3F;   // set it as value from pf[ 3 ]
-        int start = labelIndex.get( "SB" + sbIndex );
-        if ( ts != null && ts.sbPaths.get( sbIndex ) != null)
+        
+        if ( e.names.get( 0 ).startsWith( "Apple" ))
         {
-          int p = ts.sbPaths.get( sbIndex )[ 0 ];
+          int x = 0;
+        }
+
+        
+        int start = labelIndex.get( "SB" + sbIndex );
+        int[] sbPath = null;
+        if ( ts != null && ( sbPath = ts.sbPaths.get( sbIndex ) ) != null)
+        {
+          int p = sbPath[ 0 ];
           List< Integer > list1 = new ArrayList< Integer >();
-          changed = createPathSequence( start, p, 1, list1 );
-          p = ts.sbPaths.get( sbIndex )[ 1 ];
           List< Integer > list2 = new ArrayList< Integer >();
-          changed = createPathSequence( start, p, 2, list2 ) || changed;
-          if ( changed )
+          int changeType = createPathSequence( start, p, 1, list1 );
+          if ( changeType > 0 )
           {
+            changed = true;
+            createPathSequence( start, p, 2, list2 );
             for ( int i : list1 )
             {
               for ( int j : list2 )
               {
                 TimingStruct ts3 = ts.clone();
-                ts3.sbPaths.put( sbIndex, new int[]{i,j} );
+                ts3.sbPaths.put( sbIndex, new int[]{i, changeType==1 ? i : j, j} );
                 altTimings.add( ts3 );
               }
             }
           }
+          else if ( sbPath[1] != sbPath[0] )
+          {
+            p = sbPath[ 1 ];
+            list1.clear();
+            list2.clear();
+            changeType = createPathSequence( start, p, 1, list1 );
+            if ( changeType == 1 )
+            {
+              changed = true;
+              createPathSequence( start, p, 2, list2 );
+              for ( int i : list1 )
+              {
+                for ( int j : list2 )
+                {
+                  TimingStruct ts3 = ts.clone();
+                  ts3.sbPaths.put( sbIndex, new int[]{sbPath[ 0 ], i, j} );
+                  altTimings.add( ts3 );
+                }
+              }
+            }
+          } 
         }
       }
 
@@ -1708,9 +1742,13 @@ public class MAXQ610data
         {
           int[] pp = ts.sbPaths.get( sbIndex );
           paths.add( pp[ 0 ] );
-          if ( pp[ 0 ] != pp[ 1 ] )
+          if ( pp[ 0 ] != pp[ 1 ] || pp[ 1 ] != pp[ 2 ] )
           {
             paths.add( pp[ 1 ] );
+          }
+          if ( pp[ 1 ] != pp[ 2 ] )
+          {
+            paths.add( pp[ 2 ] );
           }
         }
 
@@ -1999,7 +2037,7 @@ public class MAXQ610data
     else
     {
       // valid types for signal block
-      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12 );
+      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12,13 );
     }
     
     for ( int i = start+1; i < completeItemList.size(); i++ )
@@ -2101,8 +2139,10 @@ public class MAXQ610data
         }
         
         boolean added = false;
-        if ( completeItemList.get( n.branch[0]).getType() == 7 )
+        int branchType = completeItemList.get( n.branch[0] ).getType();
+        if ( branchType == 7 || branchType == 13 )
         {
+          // branching on test of first frame (7) or key held (13)
           paths.add( p + ( 3 << 2*level ) );
           return paths;
         }
@@ -2141,8 +2181,19 @@ public class MAXQ610data
     return paths;
   }
   
-  private boolean createPathSequence( int start, int p, int index, List< Integer > list )
+  private int createPathSequence( int start, int p, int index, List< Integer > list )
   {
+    /*
+//     *   Index values:
+//     *   0 = first frame
+//     *   1 = not first frame, key held
+//     *   2 = not first frame, key released
+//     *   
+     *   Return values
+     *   0 = not changed
+     *   1 = changed at hey held branch
+     *   2 = changed at first frame branch
+     */
     int m = p;
     int next = start + 1;
     int level = 0;
@@ -2157,10 +2208,13 @@ public class MAXQ610data
     if ( n == null || m == 0 )
     {
       list.add( p );
-      return false;
+      return 0;
     }
     // (m&3)==3
 
+    int type = completeItemList.get( n.branch[ 0 ] ).getType();
+    int ret = type==7 ? 2 : 1;
+//    index = (new int[]{ 1, ret, 2})[ index ];   
     p &= (1<<(2*level))-1;      // remove the final 3
     p += index<<(2*level);      // replace it by index
     List< Integer > cp = n.branch[index] > 0 ? createCodePaths( n.branch[index]-1 ) : null;
@@ -2175,7 +2229,7 @@ public class MAXQ610data
         list.add( p + (r<<(2*(level+1))));
       }
     }
-    return true;
+    return ret;
   }
 
   private String getPFdescription( int pfn, int start, boolean[] choices )
@@ -2264,6 +2318,7 @@ public class MAXQ610data
         case 0:
         case 6:
         case 7:
+          choices[ 0 ] = choices[ 5 ] = choices[ 8 ] = choices[ 9 ] = false;
           switch ( ( val >> 6 ) & 0x03 )
           {
             case 0:
@@ -2410,6 +2465,7 @@ public class MAXQ610data
      *10 = Minimum repeat change
      *11 = Suppress IR transmission
      *12 = Resume IR transmission
+     *13 = Branch on test of key held
      */
     
     
@@ -2518,7 +2574,7 @@ public class MAXQ610data
       else if ( Pattern.matches( "(T|F),.*", args ) )
       {
         // Branch on true/false test
-        itemType = 8;
+        itemType = args.indexOf( "TestKeyHeld" ) > 0 ? 13 : 8;
       }
     }
     else if ( opIndex == 10 )
