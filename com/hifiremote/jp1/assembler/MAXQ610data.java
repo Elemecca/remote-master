@@ -135,6 +135,48 @@ public class MAXQ610data
     }
   }
   
+  private class Value
+  {
+    public Value( String var )
+    {
+      this.var = var;
+    }
+    
+    public Value( String var, int shift, int and, int or )
+    {
+      this.var = var;
+      this.shift = shift;
+      this.and = and;
+      this.or = or;
+    }
+    
+    public Value doNumOp( String op, int n )
+    {
+      if ( op.equals( "LSR" ) )
+      {
+        return new Value( var, shift+n, and>>n, or>>n );
+      }
+      else if ( op.equals( "LSL" ) )
+      {
+        return new Value( var, shift-n, and<<n, or<<n );
+      }
+      else if ( op.equals( "AND" ) )
+      {
+        return new Value( var, shift, and&n, or&n );
+      }
+      else if ( op.equals( "OR" ) )
+      {
+        return new Value( var, shift, and|n, or|n );
+      }
+      return null;
+    }
+    
+    public String var = null;
+    public int shift = 0;
+    public int and = 0xFF;
+    public int or = 0;
+  }
+  
   private class IRPIndexItem
   {
     IRPstruct irp = null;
@@ -1242,8 +1284,6 @@ public class MAXQ610data
         {
           argArray[ index++ ] = st.nextToken().trim();
         }
-//        int lStart = args.indexOf( 'L' );
-//        int lEnd = args.indexOf( ',', lStart );
         String destLabel = argArray[ 1 ] == null ? argArray[ 0 ] : argArray[ 1 ];
         int destIndex = 0;
         if ( argArray[ 1 ] != null )   //( lEnd > lStart )
@@ -1254,14 +1294,12 @@ public class MAXQ610data
           // set default values for BRA Z, ...  or BRA T, ...
           int yes = 1;  // index to store destination on branch (continue at specified instruction )
           int no = 2;   // index to store destination on no branch (continue at next instruction)          
-//          if ( args.startsWith( "NZ" ) || args.startsWith( "F" ) )
           if ( argArray[ 0 ].equals( "NZ" ) || argArray[ 0 ].equals( "F" ) )
           {
             yes = 2;
             no = 1;
           }
           
-//          destLabel = args.substring( lStart, lEnd );
           destIndex = labelIndex.get( destLabel );
           branch[ no ] = i + 1;
           branch[ yes ] = destIndex;
@@ -1307,7 +1345,7 @@ public class MAXQ610data
       else if ( i == limit )
       {
         int[] branch = new int[ 3 ];
-        branch[ 0 ] = limit+1;
+        branch[ 0 ] = limit;  // ************** TESTING!! was limit+1
         branch[ 1 ] = -1;
         branch[ 2 ] = -1;
         node.branch = branch;
@@ -1418,7 +1456,7 @@ public class MAXQ610data
         }
 
         int start = labelIndex.get( "PB" + pbIndex );
-        List< Integer > paths = createCodePaths( start );
+        List< Integer > paths = createCodePaths( start, 0 );
         if ( paths.isEmpty() )
         {
           altTimings.add( new TimingStruct() );
@@ -1431,6 +1469,12 @@ public class MAXQ610data
             ts2.pbPath = p;
             altTimings.add( ts2 );
           }
+        }
+        
+        String interp = interpretPB( start );
+        if ( !interp.isEmpty() )
+        {
+          s += "\nCombo selector: " + interp + "\n";
         }
         
         if ( !nodeList.isEmpty() )
@@ -1647,14 +1691,9 @@ public class MAXQ610data
               }
             }
           }
-          
-          if ( e.names.get( 0 ).startsWith( "Apple" ))
-          {
-            int x = 0;
-          }
 
           int start = labelIndex.get( "SB" + sbIndex );
-          List< Integer > paths = createCodePaths( start );
+          List< Integer > paths = createCodePaths( start, 0 );
           if ( !paths.isEmpty() )
           {
             altTimings.add( null );
@@ -1678,13 +1717,6 @@ public class MAXQ610data
       if ( sbHasCode && completeItemList != null && ts != null )
       {
         minRpts = pf[ 3 ] & 0x3F;   // set it as value from pf[ 3 ]
-        
-        if ( e.names.get( 0 ).startsWith( "Apple" ))
-        {
-          int x = 0;
-        }
-
-        
         int start = labelIndex.get( "SB" + sbIndex );
         int[] sbPath = null;
         if ( ts != null && ( sbPath = ts.sbPaths.get( sbIndex ) ) != null)
@@ -2023,16 +2055,17 @@ public class MAXQ610data
     return irp;
   }
   
-  private List< Integer > createCodePaths( int start )
+  private List< Integer > createCodePaths( int start, int limit )
   {
     int last = 0;
     List< String > labelsUsed = new ArrayList< String >();
     String source = completeItemList.get( start ).getLabel();
     List< Integer > validTypes = null;
-    if ( source.startsWith( "PB" ) )
+    if ( source.startsWith( "PB" ) || limit > 0 )
     {
       // valid types for protocol block
-      validTypes = Arrays.asList( -1,1,2,3,4 );
+      // limit only used when analyzing part of protocol block
+      validTypes = Arrays.asList( -1,1,2,3,4,14 );
     }
     else
     {
@@ -2068,6 +2101,11 @@ public class MAXQ610data
           last = i - 1;
         }
       }
+    }
+    
+    if ( limit > 0 )
+    {
+      last = limit;
     }
     
     for ( int i = 0; i < completeItemList.size(); i++ )
@@ -2217,7 +2255,7 @@ public class MAXQ610data
 //    index = (new int[]{ 1, ret, 2})[ index ];   
     p &= (1<<(2*level))-1;      // remove the final 3
     p += index<<(2*level);      // replace it by index
-    List< Integer > cp = n.branch[index] > 0 ? createCodePaths( n.branch[index]-1 ) : null;
+    List< Integer > cp = n.branch[index] > 0 ? createCodePaths( n.branch[index]-1, 0 ) : null;
     if ( cp == null || cp.isEmpty() )
     {
       list.add( p );
@@ -2466,6 +2504,7 @@ public class MAXQ610data
      *11 = Suppress IR transmission
      *12 = Resume IR transmission
      *13 = Branch on test of key held
+     *14 = Indexed data move
      */
     
     
@@ -2524,6 +2563,10 @@ public class MAXQ610data
               if ( argList.size() > 1 )
               {
                 irpParts[ 17 ] += argList.get( 0 ) + "=" + argList.get( 1 ) + ",";
+              }
+              if ( args.contains( "[" ) )
+              {
+                itemType = 14;  // indexed move
               }
               break;
             case 1:
@@ -2963,6 +3006,176 @@ public class MAXQ610data
       }
     }
     return true;
+  }
+  
+  private String interpretPB( int start )
+  {
+    String ret = "";
+    int last = 0;
+    int startIndexed = 0;
+    int lastIndexed = 0;
+    int startTiming = 0;
+    int lastTiming = 0;
+    List< String > labelsUsed = new ArrayList< String >();
+    for ( int i = start+1; i < completeItemList.size(); i++ )
+    {
+      AssemblerItem item = completeItemList.get( i );
+      String label = item.getLabel();
+      if ( label.startsWith( "PB" ) || label.startsWith( "SB" ) )
+      {
+        break;
+      }
+      if ( !label.isEmpty() )
+      {
+        labelsUsed.add( label );
+      }
+      int type = item.getType();
+      if ( type == 14 )
+      {
+        lastIndexed = i;
+      }
+      else if ( type == 3 )
+      {
+        lastTiming = i;
+      }
+      if ( item.getOperation().equals( "END" ) )
+      {
+        last = i - 1;
+        break;
+      }
+    }
+    
+    List< Integer > comboPaths = null;
+    
+    if ( lastIndexed > 0 )
+    {
+      startIndexed = lastTiming > 0 && lastIndexed > lastTiming ? lastTiming + 1 : start + 1;
+      comboPaths = createCodePaths( startIndexed - 1, lastIndexed );
+      
+      List< AssemblerItem > comboCode = new ArrayList< AssemblerItem >();
+      for ( int p : comboPaths )
+      {
+        comboCode.clear();
+
+        Node n = nodeList.get( startIndexed );
+        while ( n != null )
+        {
+          int[] b = n.branch;
+          for ( int i = n.start; i <= b[0]; i++ )
+          {
+            AssemblerItem item = completeItemList.get( i );
+            comboCode.add( item );
+          }
+          n = p != 0 ? nodeList.get( b[p&3] ) : null;
+          p >>= 2;
+        }
+        
+
+        LinkedHashMap< String, Value > varMap = new LinkedHashMap< String, Value >();
+        List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND", "OR" );
+        for ( AssemblerItem item : comboCode )
+        {
+          List< String > argList = new ArrayList< String >();
+          String args = item.getArgumentText();
+          StringTokenizer st = new StringTokenizer( args, ",[]" );
+          while ( st.hasMoreTokens() )
+          {
+            String token = st.nextToken().trim();
+            if ( token.startsWith( "#$" ) )
+            {
+              int val = Integer.parseInt( token.substring( 2 ), 16 );
+              token = "" + val;
+            }
+            else
+            {
+              String label = irpLabel( token );
+              token = label != null ? label : token;
+            }
+            argList.add( token );
+          }
+          String op = item.getOperation();
+          if ( op.equals( "MOV" ) && !args.contains( "[" ) && !args.contains( "(" ) )
+          {
+            String source = argList.get(1);
+            Value currVal = varMap.get( source );
+            Value newVal = currVal != null ? currVal : new Value( source );
+            varMap.put( argList.get(0), newVal );        
+          }
+          else if ( comboOps.contains( op ) && args.contains( "#" ) )
+          {
+            String source = argList.get(1);
+            int m = Integer.parseInt( argList.get(2) );
+            Value currVal = varMap.get( source );
+            currVal = currVal != null ? currVal : new Value( source );
+            Value newVal = currVal.doNumOp( op, m );
+            varMap.put( argList.get(0), newVal );
+          }
+          else if ( op.equals( "MOV" ) && args.contains( "[" ) )
+          {
+            String source = argList.get(2);
+            Value currVal = varMap.get( source );
+            currVal = currVal != null ? currVal : new Value( source );
+            int[] rev = new int[ 4 ];
+            reverseByte( currVal.and, rev );
+            int num = -1;
+//            if ( rev[ 3 ] == 7 && rev[ 2 ] == 8 - rev[ 1 ] )
+            if ( rev[ 1 ] == rev[ 3 ] - rev[ 2 ] + 1 )
+            {
+              try
+              {
+                num = Integer.parseInt( currVal.var );
+                num >>= currVal.shift;
+                num &= currVal.and;
+                num |= currVal.or;
+                String str = argList.get( 0 ) + "=" + argList.get( 1 ) + "[";
+                str += num + "]";
+                ret += str + ";  ";
+              }
+              catch ( NumberFormatException nex )
+              {
+                String str = argList.get( 0 ) + "=" + argList.get( 1 ) + "[";
+                if ( rev[ 3 ] < 7 )
+                {
+                  str += ( (int)Math.pow( 2, 7-rev[3] ) )+ "*";
+                }
+                str += currVal.var + ":" + rev[ 1 ];
+                if ( rev[2] > currVal.shift )
+                {
+                  str += ":" + ( rev[ 2 ] - currVal.shift );
+                }
+                if ( currVal.or > 0 )
+                {
+                  str += "|" + currVal.or;
+                }
+                str += "]";
+                ret += str + ";  ";
+              }
+            }
+          }
+        }
+      }
+    }
+    return ret;
+
+
+    
+
+    
+//    for ( int i = lastIndexed; i > start; i-- )
+//    {
+//      AssemblerItem item = completeItemList.get( i );
+//      List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND" );
+//      if ( comboOps.contains( item.getOperation() ) && item.getArgumentText().contains( "#" )
+//          || item.getType() == 14 )
+//      {
+//        startIndexed = i;
+//      }
+//    }
+
+    
+    
+    
+    
   }
   
   
