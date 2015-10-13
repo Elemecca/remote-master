@@ -135,8 +135,187 @@ public class MAXQ610data
     }
   }
   
-  private class Value
+  private class OpTree
   {
+    public String op = null;
+    public Value value = null;
+    public ArrayList< OpTree > opArgs = null;
+    
+    public OpTree()
+    { }
+    
+    public OpTree( String var )
+    {
+      this.value = new Value( var );
+    }
+    
+//    public OpTree( String var, int shift, int and, int or )
+//    {
+//      this.value = new Value( var, shift, and, or);
+//    }
+    
+    public OpTree doOp( String os, OpTree arg )
+    {
+      int n = -1;
+      boolean consecutive = false;
+      try
+      {
+        if ( arg != null && arg.value != null )
+        {
+          n = Integer.parseInt( arg.value.var );
+          int rev[] = new int[ 4 ];
+          reverseByte( n, rev );
+          consecutive = rev[ 1 ] == rev[ 3 ] - rev[ 2 ] + 1;
+        }
+      }
+      catch ( NumberFormatException nfe )
+      {
+        n = -1;
+      }
+
+      if ( n >= 0 && Arrays.asList( "LSR", "LSL", "AND", "OR" ).contains( os ) 
+          && ( !os.equals( "AND" ) || consecutive ))
+      {
+        if ( value != null )
+        {
+          OpTree ot = new OpTree();
+          ot.value = value.doNumOp( os, n );
+          return ot;
+        }
+        else if ( Arrays.asList( "AND", "OR" ).contains( op ) )
+        {
+          OpTree ot = new OpTree();
+          ot.op = op;
+          ot.opArgs = new ArrayList< OpTree >();
+          for ( OpTree o : opArgs )
+          {
+            ot.opArgs.add( o.doOp( os, arg ) );
+          }
+          return ot;
+        }
+        else
+        {
+          return null;
+        }
+      }
+      else if ( os.equals( "CPL" ) )
+      {
+        if ( value != null )
+        {
+          OpTree ot = new OpTree();
+          ot.value = value.doNumOp( os, 0 );
+          return ot;
+        }
+        else if ( Arrays.asList( "AND", "OR" ).contains( op ) )
+        {
+          OpTree ot = new OpTree();
+          ot.op = op.equals( "AND" ) ? "OR" : "AND";
+          ot.opArgs = new ArrayList< OpTree >();
+          for ( OpTree o : opArgs )
+          {
+            ot.opArgs.add( o.doOp( os, arg ) );
+          }
+          return ot;
+        }
+        else if ( op.equals( "XOR" ) )
+        {
+          OpTree ot1 = new OpTree();
+          ot1.op = "AND";
+          ot1.opArgs = new ArrayList< OpTree >();
+          ot1.opArgs.add( opArgs.get( 0 ).doOp( "CPL", null ) );
+          ot1.opArgs.add( opArgs.get( 1 ).doOp( "CPL", null ) );
+          OpTree ot2 = new OpTree();
+          ot2.op = "AND";
+          ot2.opArgs = new ArrayList< OpTree >();
+          ot2.opArgs.add( opArgs.get( 0 ) );
+          ot2.opArgs.add( opArgs.get( 1 ) );
+          OpTree ot = new OpTree();
+          ot.op = "OR";
+          ot.opArgs = new ArrayList< OpTree >();
+          ot.opArgs.add( ot1 );
+          ot.opArgs.add( ot2 );
+          return ot;
+        }
+        
+        else
+        {
+          return null;
+        }
+      }
+      else if ( Arrays.asList( "AND", "OR", "XOR" ).contains( os ) )
+      {
+        OpTree ot = new OpTree();
+        ot.op = os;
+        ot.opArgs = new ArrayList< OpTree >();
+        ot.opArgs.add( this );
+        ot.opArgs.add( arg );
+        return ot;
+      }
+      return null;
+    }
+        
+        
+//        
+//        
+//        ArrayList< Value > newExpr = new ArrayList< Value >();
+//        for ( Value v : expr )
+//        {
+//          newExpr.add( v.doNumOp( op, n ) ); 
+//        }
+//        return new OrExpression( newExpr );
+//      }
+//      return null;
+//    }
+    
+    public String lsbEvaluate()
+    {
+      String str = "";
+      if ( value != null )
+      {
+        return value.lsbEvaluate();
+      }
+      else
+      {
+        for ( OpTree ot : opArgs )
+        {
+          str += str.isEmpty() ? "" : op.equals( "AND" ) ? "&" : op.equals( "OR" ) ? "|" 
+              : op.equals( "XOR" ) ? "^" : "??";
+          String eval = ot.lsbEvaluate();
+          if ( Pattern.matches( "[A-Za-z0-9]+", eval ) )
+          {
+            str += eval;
+          }
+          else
+          {
+            str += "(" + eval + ")";
+          }
+        }
+      }
+      return str;
+    }
+    
+    public String msbEvaluate()
+    {
+      String str = "";
+      if ( value != null )
+      {
+        return value.msbEvaluate();
+      }
+      else
+      {
+        for ( OpTree ot : opArgs )
+        {
+          s += s.isEmpty() ? "" : op.equals( "AND" ) ? "&" : op.equals( "OR" ) ? "|" : "??";
+          s += "(" + ot.msbEvaluate() + ")";
+        }
+      }
+      return str;
+    }
+  }
+  
+  private class Value
+  {    
+    // represents ((var>>shift)& and ) | or    
     public Value( String var )
     {
       this.var = var;
@@ -152,27 +331,172 @@ public class MAXQ610data
     
     public Value doNumOp( String op, int n )
     {
+      // All arguments are passed in lsb form, but n for shifts must be converted
+      // back to its true msb value.  Also LSR, LSL refer to right and left of
+      // msb values, so left and right are interchanged for lsb forms.
+      int[] rev = new int[ 4 ];
+      reverseByte( n, rev );
       if ( op.equals( "LSR" ) )
       {
-        return new Value( var, shift+n, and>>n, or>>n );
+//        shift = +rev[0];
+//        and = (and<<rev[0])&0xFF;
+//        or = (or<<rev[0])&0xFF;
+        return new Value( var, shift+rev[0], (and<<rev[0])&0xFF, (or<<rev[0])&0xFF );
       }
       else if ( op.equals( "LSL" ) )
       {
-        return new Value( var, shift-n, and<<n, or<<n );
+//        shift = -rev[0];
+//        and >>= rev[0];
+//        or >>= rev[0];
+        return new Value( var, shift-rev[0], and>>rev[0], or>>rev[0] );
       }
       else if ( op.equals( "AND" ) )
       {
+//        and &= n;
+//        or &= or;
         return new Value( var, shift, and&n, or&n );
       }
       else if ( op.equals( "OR" ) )
       {
-        return new Value( var, shift, and|n, or|n );
+//        or |= n;
+        return new Value( var, shift, and, or|n );
+      }
+      else if ( op.equals( "CPL" ) )
+      {
+        String newVar = var.startsWith( "~" ) ? var.substring( 1 ) : "~" + var;
+        int newAnd = (~or) & 0xFF;
+        int newOr = (~and) & (~or) & 0xFF;
+        return new Value( newVar, shift, newAnd, newOr );
+      }
+//      else if ( op.equals( "XOR" ) )
+//      {
+//        String newVar = lsbEvaluate() + "^" + n;
+//        return new Value( newVar );
+//      }
+      return null;
+    }
+    
+    public String msbEvaluate()
+    {
+      // Return string corresponding to the msb form of the value
+      int[] revAnd = new int[ 4 ];
+      int[] revOr = new int[ 4 ];
+      reverseByte( and, revAnd );
+      reverseByte( or, revOr );
+      int num = 0;
+      String str = "";
+      if ( revAnd[ 1 ] == revAnd[ 3 ] - revAnd[ 2 ] + 1 )
+      {
+        // The "and" value has 1's in consecutive positions
+        try
+        {
+          // Case where var is string form of decimal integer representing an lsb byte
+          int[] revVar = new int[ 4 ];
+          num = Integer.parseInt( var );
+          reverseByte( num, revVar );
+          num = revVar[0];
+          num >>= shift;
+          num &= revAnd[0];
+          num |= revOr[0];
+          str += num;
+        }
+        catch ( NumberFormatException nex )
+        {
+          // Case where var is name of a variable
+          if ( revAnd[2]>0 )
+          {
+            // Number of zeroes at left end of "and" mask is revAnd[2].  These
+            // correspond to left shifts, i.e. multiplications by 2, of value
+            // selected by "and" mask.
+            str += ( (int)Math.pow( 2, revAnd[2] ) )+ "*";
+          }
+          // Now build the bitfield
+          str += var;                   // this may have a prefix "~"
+          int disc = ( 7 - revAnd[ 3 ] - shift );  // number of bits to discard (see below)
+          str += ":-" + ( revAnd[ 1 ] - (disc < 0 ? -disc : 0 ) );    // the number of bits, with "-" as the bit order must be reversed
+          // Number of zeroes at right end of "and" mask is 7-revAnd[3]. These
+          // correspond to bits to be discarded from shifted value before selecting 
+          // next rev[1] bits, but mapped to unshifted value (shift=count of left shifts)
+          // this corresponds to discarded "shift" fewer bits, leaving "disc".  If disc
+          // is < 0, it reduces the number of bits to keep, taken into account above
+          if ( disc > 0 )
+          {
+            str += ":" + disc;
+          }
+          if ( or > 0 )
+          {
+            str = "(" + str + ")|" + revOr[0];
+          }
+        }
+        return str;
       }
       return null;
     }
     
+    public String lsbEvaluate()
+    {
+      // Return string corresponding to the msb form of the value
+      int[] revAnd = new int[ 4 ];
+      int[] revOr = new int[ 4 ];
+      reverseByte( and, revAnd );
+      reverseByte( or, revOr );
+      int num = 0;
+      String str = "";
+      if ( revAnd[ 1 ] == revAnd[ 3 ] - revAnd[ 2 ] + 1 )
+      {
+        // The "and" value has 1's in consecutive positions
+        try
+        {
+          // Case where var is string form of decimal integer representing an lsb byte
+          num = Integer.parseInt( var );
+          num <<= shift;
+          num &= and;
+          num |= or;
+          str += num;
+        }
+        catch ( NumberFormatException nex )
+        {
+          // Case where var is name of a variable
+          if ( revAnd[3]<7 )
+          {
+            // Number of zeroes at right end of "and" mask is 7-revAnd[3].  These
+            // correspond to left shifts, i.e. multiplications by 2, of value
+            // selected by "and" mask.
+            str += ( (int)Math.pow( 2, 7-revAnd[3] ) )+ "*";
+          }
+          // Now build the bitfield
+          str += var;                   // this may have a prefix "~"
+          int disc = ( 7 - revAnd[ 3 ] - shift );  // number of bits to discard (see below)
+          if ( revAnd[ 1 ] < 8 )
+          {
+            str += ":" + ( revAnd[ 1 ] - (disc < 0 ? -disc : 0 ) );    // the number of bits
+            // Number of zeroes at right end of "and" mask is 7-revAnd[3]. These
+            // correspond to bits to be discarded from shifted value before selecting 
+            // next rev[1] bits, but mapped to unshifted value (shift=count of left shifts)
+            // this corresponds to discarded "shift" fewer bits, leaving "disc".  If disc
+            // is < 0, it reduces the number of bits to keep, taken into account above
+            if ( disc > 0 )
+            {
+              str += ":" + disc;
+            }
+          }
+          if ( or > 0 )
+          {
+            if ( revAnd[1] < 8 )
+            {
+              str = "(" + str + ")";
+            }
+            str += "|" + or;
+          }
+        }
+        return str;
+      }
+      return null;
+    }
+
+    
     public String var = null;
-    public int shift = 0;
+    public int shift = 0;   // number of left shifts (of lsb form, corresponding to right shifts of msb
     public int and = 0xFF;
     public int or = 0;
   }
@@ -2988,6 +3312,36 @@ public class MAXQ610data
     return null;
   }
   
+  private String irpNextLabel( String label )
+  {
+    try
+    {
+      if ( label.startsWith( "Fix" ) )
+      {
+        int k = Integer.parseInt( label.substring( 3 ), 16 ) + 1;
+        return "" + "ABCDEFGHIJ".charAt( k );
+      }
+      else if ( label.startsWith( "Var" ) )
+      {
+        int k = Integer.parseInt( label.substring( 3 ), 16 ) + 1;
+        return "" + "XYZW".charAt( k );
+      }
+      else if ( label.startsWith( "Calc" ) )
+      {
+        int k = Integer.parseInt( label.substring( 4 ), 16 ) + 1;
+        return "N" + k;
+      }
+      else if ( label.startsWith( "Tmp" ) )
+      {
+        int k = Integer.parseInt( label.substring( 3 ), 16 ) + 1;
+        return "Tmp" + k;
+      }
+    }
+    catch ( NumberFormatException e ){};
+
+    return null;
+  }
+  
   private boolean testIRPstruct( IRPstruct irps )
   {
     LinkedHashMap< String, String > map = new LinkedHashMap< String, String >();
@@ -3016,7 +3370,11 @@ public class MAXQ610data
     int lastIndexed = 0;
     int startTiming = 0;
     int lastTiming = 0;
+    boolean tBlock = false;
+    List< int[] > timingRanges = new ArrayList< int[] >();
     List< String > labelsUsed = new ArrayList< String >();
+    
+
     for ( int i = start+1; i < completeItemList.size(); i++ )
     {
       AssemblerItem item = completeItemList.get( i );
@@ -3034,10 +3392,63 @@ public class MAXQ610data
       {
         lastIndexed = i;
       }
-      else if ( type == 3 )
+      else if ( type == 3 || type == 4 )
       {
-        lastTiming = i;
+        if ( startTiming == 0 )
+        {
+          startTiming = i;
+          tBlock = true;
+        }
+        if ( tBlock )
+        {
+          lastTiming = i;
+        }
       }
+      else if ( type != 2 )
+      {
+        tBlock = false;
+      }
+      
+      if ( startTiming > 0 && tBlock == false )
+      {
+        // We have reached the end of a timing block, so test it.
+        // At this point we know that all instructions between startTiming and lastTiming
+        // inclusive are timing changes or branch instructions.  Now check if any of the
+        // branch instructions jump outside this block;
+        int[] range = findSelfContained( startTiming, lastTiming + 1 );
+        if ( range[ 0 ] != startTiming || range[ 1 ] != lastTiming + 1 )
+        {
+          s += "*** Timing block jumps outside itself";
+        }
+        
+        // Now see if there are further branch instructions before startTiming that
+        // are part of this block.
+        for ( int j = startTiming-1; j > start; j-- )
+        {
+          item = completeItemList.get( j );
+          type = item.getType();
+          if ( type == 2 )
+          {
+            range = findSelfContained( j, j + 1 );
+            if ( range[ 0 ] != j || range[ 1 ] > lastTiming + 1 )
+            {
+              break;
+            }
+            else
+            {
+              startTiming = j;
+            }
+          }
+          else
+          {
+            break;
+          }
+        }
+        timingRanges.add( new int[]{ startTiming, lastTiming } );
+        i = lastTiming + 1;
+        startTiming = lastTiming = 0;
+      }
+      
       if ( item.getOperation().equals( "END" ) )
       {
         last = i - 1;
@@ -3045,139 +3456,299 @@ public class MAXQ610data
       }
     }
     
+    if ( !timingRanges.isEmpty())
+    {
+      // now test whether the blocks between the timing ones are self-contained
+      int r0 = start + 1;
+      for ( int[] range : timingRanges )
+      {
+        if ( range[ 0 ] > r0 )
+        {
+          int[] rt = findSelfContained( r0, range[ 0 ] );
+          if ( rt[ 0 ] != r0 || rt[ 1 ] != range[ 0 ] )
+          {
+            s += "\n*** Non-timing block not self-contained";
+          }
+        }
+        r0 = range[ 1 ] + 1;
+      }
+      int[] rt = findSelfContained( r0, last+1 );
+      if ( rt[ 0 ] != r0 || rt[ 1 ] != last+1 )
+      {
+        s += "\n*** Non-timing block not self-contained";
+      }
+    }
+
+    int tr = 0;
+    LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
+    int[] range = timingRanges.isEmpty() ? null : timingRanges.get( tr );
+    for ( int i = start+1; i < completeItemList.size(); i++ )
+    {
+      if ( range != null && i == range[ 0 ] )
+      {
+        i = range[ 1 ];
+        tr++;
+        range = tr >= timingRanges.size() ? null : timingRanges.get( tr );
+        continue;
+      }
+      
+      AssemblerItem item = completeItemList.get( i );
+      if ( item.getOperation().equals( "END" ) )
+      {
+        s += "\n***All items are interpretable\n";
+        break;
+      }
+      else if ( !isAssignmentItem( item ) )
+      {
+        s += "\n***First non-interpretable item at " + i + "\n";
+        break;
+      }
+      else
+      {
+        interpretAssignmentItem( item, varMap );
+      }
+    }
+    
+    s += "\n";
+    for ( String var : varMap.keySet() )
+    {
+      String assignment = var + "=" + varMap.get( var ).lsbEvaluate();
+      s += assignment + "\n";
+    }
+    
     List< Integer > comboPaths = null;
     
-    if ( lastIndexed > 0 )
+    // COMMENTED OUT DURING TESTING ONLY
+    
+//    if ( lastIndexed > 0 )
+//    {
+//      startIndexed = lastTiming > 0 && lastIndexed > lastTiming ? lastTiming + 1 : start + 1;
+//      comboPaths = createCodePaths( startIndexed - 1, lastIndexed );
+//      
+//      List< AssemblerItem > comboCode = new ArrayList< AssemblerItem >();
+//      for ( int p : comboPaths )
+//      {
+//        comboCode.clear();
+//
+//        Node n = nodeList.get( startIndexed );
+//        while ( n != null )
+//        {
+//          int[] b = n.branch;
+//          for ( int i = n.start; i <= b[0]; i++ )
+//          {
+//            AssemblerItem item = completeItemList.get( i );
+//            comboCode.add( item );
+//          }
+//          n = p != 0 ? nodeList.get( b[p&3] ) : null;
+//          p >>= 2;
+//        }
+//        
+//        LinkedHashMap< String, Value > varMap = new LinkedHashMap< String, Value >();
+//        List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND", "OR" );
+//        for ( AssemblerItem item : comboCode )
+//        {
+//          List< String > argList = new ArrayList< String >();
+//          String args = item.getArgumentText();
+//          StringTokenizer st = new StringTokenizer( args, ",[]" );
+//          while ( st.hasMoreTokens() )
+//          {
+//            String token = st.nextToken().trim();
+//            if ( token.startsWith( "#$" ) )
+//            {
+//              // All values, symbolic or numerical, are passed in bit-reversed form
+//              int val = Integer.parseInt( token.substring( 2 ), 16 );
+//              int[] rev = new int[ 4 ];
+//              reverseByte( val, rev );
+//              token = "" + rev[ 0 ];
+//            }
+//            else
+//            {
+//              String label = irpLabel( token );
+//              token = label != null ? label : token;
+//            }
+//            argList.add( token );
+//          }
+//          String op = item.getOperation();
+//          if ( op.equals( "MOV" ) && !args.contains( "[" ) && !args.contains( "(" ) )
+//          {
+//            String source = argList.get(1);
+//            Value currVal = varMap.get( source );
+//            Value newVal = currVal != null ? currVal : new Value( source );
+//            varMap.put( argList.get(0), newVal );        
+//          }
+//          else if ( comboOps.contains( op ) && args.contains( "#" ) )
+//          {
+//            String source = argList.get(1);
+//            int m = Integer.parseInt( argList.get(2) );
+//            Value currVal = varMap.get( source );
+//            currVal = currVal != null ? currVal : new Value( source );
+//            Value newVal = currVal.doNumOp( op, m );
+//            varMap.put( argList.get(0), newVal );
+//          }
+//          else if ( op.equals( "XOR" ) && args.contains( "#$FF" ) )
+//          {
+//            // Complement
+//            String source = argList.get(1);
+//            Value currVal = varMap.get( source );
+//            currVal = currVal != null ? currVal : new Value( source );
+//            Value newVal = currVal.doNumOp( "CPL", 0 );
+//            varMap.put( argList.get(0), newVal );
+//          }
+//          else if ( op.equals( "MOV" ) && args.contains( "[" ) )
+//          {
+//            String source = argList.get(2);
+//            Value currVal = varMap.get( source );
+//            currVal = currVal != null ? currVal : new Value( source );
+//            String str = argList.get( 0 ) + "=" + argList.get( 1 ) + "[";
+//            String valStr = currVal.msbEvaluate();
+//            str += valStr != null ? valStr : "???";
+//            str += "]";
+//            ret += str + ";  ";
+//          }
+//        }
+//      }
+//    }
+    return ret;  
+  }
+  
+  private void interpretAssignmentItem( AssemblerItem item, LinkedHashMap< String, OpTree > varMap )
+  {
+    List< String > argList = new ArrayList< String >();
+    List< String > argList2 = new ArrayList< String >();
+    List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND", "OR", "XOR" );
+    String args = item.getArgumentText();
+    StringTokenizer st = new StringTokenizer( args, ",[]" );
+    while ( st.hasMoreTokens() )
     {
-      startIndexed = lastTiming > 0 && lastIndexed > lastTiming ? lastTiming + 1 : start + 1;
-      comboPaths = createCodePaths( startIndexed - 1, lastIndexed );
-      
-      List< AssemblerItem > comboCode = new ArrayList< AssemblerItem >();
-      for ( int p : comboPaths )
+      String token = st.nextToken().trim();
+      if ( token.startsWith( "#$" ) )
       {
-        comboCode.clear();
+        // All values, symbolic or numerical, are passed in bit-reversed form
+        int val = Integer.parseInt( token.substring( 2 ), 16 );
+        int[] rev = new int[ 4 ];
+        reverseByte( val & 0xFF, rev );
+        argList.add( "" + rev[ 0 ] );
+        reverseByte( (val>>8) & 0xFF, rev );
+        argList2.add( "" + rev[ 0 ] );
+      }
+      else
+      {
+        String label = irpLabel( token );
+        argList.add( label != null ? label : token );
+        argList2.add( irpNextLabel( token ) );
+      }
+    }
+    
+    String op = item.getOperation();
+    if ( op.equals( "MOV" ) && !args.contains( "[" ) && !args.contains( "(" ) )
+    {
+      String source = argList.get(1);
+      OpTree currVal = varMap.get( source );
+      OpTree newVal = currVal != null ? currVal : new OpTree( source );
+      varMap.put( argList.get(0), newVal );        
+    }
+    else if ( op.equals( "MOVW" ) && args.contains( "#$" ) )
+    {
+      varMap.put( argList.get(0), new OpTree( argList.get(1) ) );
+      if ( argList2.get(0).length() > 0 )
+      {
+        // Condition deliberately creates an error if argList2.get( 0 ) == null
+        varMap.put( argList2.get(0), new OpTree( argList2.get(1) ) );
+      }
+    }
+    else if ( op.equals( "XOR" ) && args.contains( "#$FF" ) )
+    {
+      // Complement
+      String source = argList.get(1);
+      OpTree currVal = varMap.get( source );
+      currVal = currVal != null ? currVal : new OpTree( source );
+      OpTree newVal = currVal.doOp( "CPL", null );
+      varMap.put( argList.get(0), newVal );
+    }
+    else if ( comboOps.contains( op ) )
+    {
+      String source = argList.get(1);
+      String argStr = argList.get(2);
+      OpTree currVal = varMap.get( source );
+      currVal = currVal != null ? currVal : new OpTree( source );
+      OpTree currArg = varMap.get( argStr );
+      currArg = currArg != null ? currArg : new OpTree( argStr );
+      OpTree newVal = currVal.doOp( op, currArg );
+      varMap.put( argList.get(0), newVal );
+    }
+    else if ( op.equals( "MOV" ) && args.contains( "[" ) )
+    {
+      String base = argList.get(2);
+      OpTree currVal = varMap.get( base );
+      currVal = currVal != null ? currVal : new OpTree( base );
+      String str = argList.get( 1 ) + "[";
+      String valStr = currVal.msbEvaluate();
+      str += valStr != null ? valStr : "???";
+      str += "]";
+      varMap.put( argList.get(0), new OpTree( str ) );
+    }
+  }
 
-        Node n = nodeList.get( startIndexed );
-        while ( n != null )
+  
+  private int[] findSelfContained( int start, int end )
+  {
+    boolean changed = true;
+    while ( changed )
+    {
+      changed = false;
+      for ( int i = start; i < end; i++ )
+      {
+        AssemblerItem item = completeItemList.get( i );
+        String op = item.getOperation();
+        String args = item.getArgumentText();
+        if ( !op.equals( "BRA" ) && !op.equals( "DBNZ" ) )
         {
-          int[] b = n.branch;
-          for ( int i = n.start; i <= b[0]; i++ )
-          {
-            AssemblerItem item = completeItemList.get( i );
-            comboCode.add( item );
-          }
-          n = p != 0 ? nodeList.get( b[p&3] ) : null;
-          p >>= 2;
+          continue;
         }
-        
-
-        LinkedHashMap< String, Value > varMap = new LinkedHashMap< String, Value >();
-        List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND", "OR" );
-        for ( AssemblerItem item : comboCode )
+        else
         {
-          List< String > argList = new ArrayList< String >();
-          String args = item.getArgumentText();
-          StringTokenizer st = new StringTokenizer( args, ",[]" );
+          StringTokenizer st = new StringTokenizer( args, "," );
+          String label = null;
           while ( st.hasMoreTokens() )
           {
             String token = st.nextToken().trim();
-            if ( token.startsWith( "#$" ) )
+            if ( Pattern.matches( "L\\d*", token ) )
             {
-              int val = Integer.parseInt( token.substring( 2 ), 16 );
-              token = "" + val;
-            }
-            else
-            {
-              String label = irpLabel( token );
-              token = label != null ? label : token;
-            }
-            argList.add( token );
-          }
-          String op = item.getOperation();
-          if ( op.equals( "MOV" ) && !args.contains( "[" ) && !args.contains( "(" ) )
-          {
-            String source = argList.get(1);
-            Value currVal = varMap.get( source );
-            Value newVal = currVal != null ? currVal : new Value( source );
-            varMap.put( argList.get(0), newVal );        
-          }
-          else if ( comboOps.contains( op ) && args.contains( "#" ) )
-          {
-            String source = argList.get(1);
-            int m = Integer.parseInt( argList.get(2) );
-            Value currVal = varMap.get( source );
-            currVal = currVal != null ? currVal : new Value( source );
-            Value newVal = currVal.doNumOp( op, m );
-            varMap.put( argList.get(0), newVal );
-          }
-          else if ( op.equals( "MOV" ) && args.contains( "[" ) )
-          {
-            String source = argList.get(2);
-            Value currVal = varMap.get( source );
-            currVal = currVal != null ? currVal : new Value( source );
-            int[] rev = new int[ 4 ];
-            reverseByte( currVal.and, rev );
-            int num = -1;
-//            if ( rev[ 3 ] == 7 && rev[ 2 ] == 8 - rev[ 1 ] )
-            if ( rev[ 1 ] == rev[ 3 ] - rev[ 2 ] + 1 )
-            {
-              try
-              {
-                num = Integer.parseInt( currVal.var );
-                num >>= currVal.shift;
-                num &= currVal.and;
-                num |= currVal.or;
-                String str = argList.get( 0 ) + "=" + argList.get( 1 ) + "[";
-                str += num + "]";
-                ret += str + ";  ";
-              }
-              catch ( NumberFormatException nex )
-              {
-                String str = argList.get( 0 ) + "=" + argList.get( 1 ) + "[";
-                if ( rev[ 3 ] < 7 )
-                {
-                  str += ( (int)Math.pow( 2, 7-rev[3] ) )+ "*";
-                }
-                str += currVal.var + ":" + rev[ 1 ];
-                if ( rev[2] > currVal.shift )
-                {
-                  str += ":" + ( rev[ 2 ] - currVal.shift );
-                }
-                if ( currVal.or > 0 )
-                {
-                  str += "|" + currVal.or;
-                }
-                str += "]";
-                ret += str + ";  ";
-              }
+              label = token;
+              break;
             }
           }
+          if ( label == null )
+          {
+            return null;  // Error situation, label should not be null
+          }
+          int dest = labelIndex.get( label );
+          if ( dest < start )
+          {
+            start = dest;
+            changed = true;
+          }
+          if ( dest > end )
+          {
+            end = dest;
+            changed = true;
+          }
+
         }
       }
     }
-    return ret;
-
-
-    
-
-    
-//    for ( int i = lastIndexed; i > start; i-- )
-//    {
-//      AssemblerItem item = completeItemList.get( i );
-//      List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND" );
-//      if ( comboOps.contains( item.getOperation() ) && item.getArgumentText().contains( "#" )
-//          || item.getType() == 14 )
-//      {
-//        startIndexed = i;
-//      }
-//    }
-
-    
-    
-    
-    
+    return new int[]{ start, end }; 
   }
   
+  private boolean isAssignmentItem( AssemblerItem item )
+  {
+    String op = item.getOperation();
+    String args = item.getArgumentText();
+    List< String > comboOps = Arrays.asList( "MOV", "LSL", "LSR", "AND", "OR", "XOR" );
+    return ( comboOps.contains( op )  && !args.contains( "(" )
+        || op.equals( "MOVW" ) && args.contains( "#$" ) );
+  }
+
   
   private String getZeroLabel( int addr )
   {
