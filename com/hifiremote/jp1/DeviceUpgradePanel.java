@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -420,6 +421,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
             String title = "Creating a new device upgrade";
             JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.INFORMATION_MESSAGE );
           }
+          remoteConfig.getOwner().getGeneralPanel().getDeviceButtonTableModel().propertyChangeSupport.firePropertyChange( "value", null, null );
         }
       }
 

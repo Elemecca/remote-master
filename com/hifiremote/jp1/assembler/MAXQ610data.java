@@ -1968,7 +1968,10 @@ public class MAXQ610data
         irp += stream;
         continue;
       }
-      
+      if ( e.names.get(0).startsWith( "Solidtek" ))
+      {
+        int x = 0;
+      }
       String codeStr = "";
       if ( sbHasCode )
       {
@@ -2221,7 +2224,8 @@ public class MAXQ610data
           altTimings.pop();
         }
       }
-      more &= completeItemList == null || choices[ 14 ] || choices[ 19 ];
+      // This condition causes problems when choices[14] or choices[19] changed by signal block code
+      more &= completeItemList == null || ts == null || choices[ 14 ] || choices[ 19 ];
       
     }
     

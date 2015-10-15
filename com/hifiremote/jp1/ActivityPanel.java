@@ -458,6 +458,8 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       Activity activity2 = activityList.get( toIndex );
       Button b1 = activity1.getButton();
       Button b2 = activity2.getButton();
+      activity1.getMacro().setKeyCode( b2.getKeyCode() );
+      activity2.getMacro().setKeyCode( b1.getKeyCode() );;
       activity1.setButton( b2 );
       activity1.setSelector( b2 );
       activity2.setButton( b1 );
