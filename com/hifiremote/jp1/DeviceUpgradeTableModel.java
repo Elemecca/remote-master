@@ -555,17 +555,25 @@ public class DeviceUpgradeTableModel extends JP1TableModel< DeviceUpgrade > impl
           pidUsed = true;
         }
       }
-      if ( du.needsProtocolCode() && !pidUsed 
-          &&  ( !remoteConfig.hasSegments() || remote.getSegmentTypes().contains( 0x0F ) ) )
+      if ( du.needsProtocolCode() && !pidUsed )
       {
         int confirm = JOptionPane.YES_OPTION;
         if ( isDeletion )
         {
-          String title = "Device Upgrade Deletion";
-          String message = "The protocol used by the device upgrade being deleted is a protocol\n"
-              + "upgrade that is not used by any other device upgrade and so will \n"
-              + "normally also be deleted.  Do you wish to keep the protocol upgrade?";
-          confirm = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+          if ( !remoteConfig.hasSegments() || remote.getSegmentTypes().contains( 0x0F ) )
+          {
+            String title = "Device Upgrade Deletion";
+            String message = "The protocol used by the device upgrade being deleted is a protocol\n"
+                + "upgrade that is not used by any other device upgrade and so will \n"
+                + "normally also be deleted.  Do you wish to keep the protocol upgrade?";
+            confirm = JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+          }
+          else
+          {
+            // if remote has segments and stores protocol as part of device upgrade, it should
+            // always be deleted
+            confirm = JOptionPane.NO_OPTION;
+          }
         }
         if ( confirm == JOptionPane.CANCEL_OPTION )
         {

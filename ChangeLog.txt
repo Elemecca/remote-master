@@ -125,10 +125,14 @@ Private build 7
 - Add support for global special functions (Graham)
 Release build 8
 - Add new item to Options menu to allow user to change the tooltip initial delay time (Graham)
-Release build 9
+Private build 9
 - Make Option/Font Size Adjustment setting in RM be preserved between instances (Graham)
 - ** Due to a bug in Windows Look and Feel, you must change to some other Look and Feel if using a changed font size. **
-- First attempt at including analysis of MAXQ protocols (Graham) 
+Release build 10
+- First attempt at including analysis of MAXQ protocols (Graham)
+- Fix bug causing activity macros of XSight remotes to be wrongly allocated after changing order of activities (Graham)
+- Fix bug causing device button assignments not always to be updated when assignment made through adding new device upgrade (Graham)
+- Fix bug preventing protocol deletion when deleting device upgrade in remote with segments (Graham)
 
 Changes for v2.02
 -- Alpha --

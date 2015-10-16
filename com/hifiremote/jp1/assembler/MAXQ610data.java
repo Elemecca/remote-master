@@ -29,6 +29,7 @@ public class MAXQ610data
   private PrintWriter pw = null;
   private String s = null;
   private Executor e = null;
+  private ProtocolBlock prb = null;
   private IRPstruct irpStruct = null;
   private Processor proc = null;
   private int carrier = 0;
@@ -103,6 +104,16 @@ public class MAXQ610data
     public int index = 0;
     public List< String > names = new ArrayList< String >();
     public Hex hex = null;
+    public String description = null;
+    public List< ProtocolBlock > pbList = new ArrayList< ProtocolBlock >();
+//    public List< IRPstruct > irps = new ArrayList< IRPstruct >();
+//    public boolean hasPBcode = false;
+//    public boolean hasSBcode = false;
+//    public boolean pbHandled = true;
+  }
+  
+  private class ProtocolBlock
+  {
     public String description = null;
     public List< IRPstruct > irps = new ArrayList< IRPstruct >();
     public boolean hasPBcode = false;
@@ -504,7 +515,7 @@ public class MAXQ610data
   private class IRPIndexItem
   {
     IRPstruct irp = null;
-    int[] location = new int[ 2 ];
+    int[] location = new int[ 3 ];
   }
   
   private class TimingStruct
@@ -562,8 +573,6 @@ public class MAXQ610data
     public int[] carriers = null;
     public int[] durations = null;
     public int[] pf = null;
-//    public int minRpts = 0;
-    public boolean changed = false;
     public Integer pbPath = null;
     public LinkedHashMap< Integer, int[] > sbPaths = new LinkedHashMap< Integer, int[] >();
   }
@@ -657,44 +666,52 @@ public class MAXQ610data
       pbIndex = 0;
       sbIndex = 0;
       irpStruct = new IRPstruct();
-      e.irps.clear();
+      for ( ProtocolBlock pb : e.pbList )
+      {
+        pb.irps.clear();
+      }
       analyzeExecutor( hex );
       e.description = s;
-      if ( !e.hasSBcode )
-      {
-        execNoSBCodeCount++;
-        if ( !e.hasPBcode )
-        {
-          execNoCodeCount++;
-        }
-        else if ( dataChangeOnly )
-        {
-          execNoSBDataChPBCount++;
-          execNoSBDataTimeChPBCount++;
-        }
-        else if ( dataTimingChangeOnly )
-        {
-          execNoSBDataTimeChPBCount++;
-        }
-      }
+//      if ( !e.hasSBcode )
+//      {
+//        execNoSBCodeCount++;
+//        if ( !e.hasPBcode )
+//        {
+//          execNoCodeCount++;
+//        }
+//        else if ( dataChangeOnly )
+//        {
+//          execNoSBDataChPBCount++;
+//          execNoSBDataTimeChPBCount++;
+//        }
+//        else if ( dataTimingChangeOnly )
+//        {
+//          execNoSBDataTimeChPBCount++;
+//        }
+//      }
     }
     
     List< IRPIndexItem > irpIndex = new ArrayList< IRPIndexItem >();
     for ( Executor e : execs )
     {
-      for ( int i = 0; i < e.irps.size(); i++ )
+      for ( int i = 0; i < e.pbList.size(); i++ )
       {
-        IRPIndexItem iii = new IRPIndexItem();
-        iii.irp = e.irps.get( i );
-        iii.location[ 0 ] = e.index;
-        iii.location[ 1 ] = i;
-        if ( iii.irp.generalSpec != null && iii.irp.bitSpec != null && iii.irp.irStream != null )
+        ProtocolBlock pb = e.pbList.get( i );
+        for ( int j = 0; j < pb.irps.size(); j++ )
         {
-          irpIndex.add( iii );
+          IRPIndexItem iii = new IRPIndexItem();
+          iii.irp = pb.irps.get( j );
+          iii.location[ 0 ] = e.index;
+          iii.location[ 1 ] = i;
+          iii.location[ 2 ] = j;
+          if ( iii.irp.generalSpec != null && iii.irp.bitSpec != null && iii.irp.irStream != null )
+          {
+            irpIndex.add( iii );
+          }
         }
       }
     }
-    
+
     Collections.sort( irpIndex, new Comparator< IRPIndexItem >()
     {
       @Override
@@ -725,12 +742,14 @@ public class MAXQ610data
       {
         fullCount++;
         Executor ex = execs.get( iii.location[ 0 ] );
-        if ( ex.hasSBcode || !ex.pbHandled )
+        ProtocolBlock pb = ex.pbList.get( iii.location[ 1 ] );
+        if ( pb.hasSBcode || !pb.pbHandled )
         {
           continue;
         }
         shownCount++;
-        s = iii.irp.generalSpec + iii.irp.bitSpec + iii.irp.irStream + " : " + iii.location[ 1 ];
+        s = iii.irp.generalSpec + iii.irp.bitSpec + iii.irp.irStream + " : " 
+            + iii.location[ 1 ] + "/" + iii.location[ 2 ];
         s += "\n   ";
         s += ex.names.get( 0 );
         s += "\n\n";
@@ -797,7 +816,7 @@ public class MAXQ610data
    *     even if frequency change occurs after the timing change.
    *   returns assembler code listing.
    */
-  private String disassemblePseudocode( int addr, Hex hex, String prefix, boolean[] flags, TimingStruct ts )
+  private String disassemblePseudocode( int addr, Hex hex, String prefix, boolean[] flags )
   {
     Arrays.fill( flags, false );
     proc.setRelativeToOpStart( true );
@@ -945,8 +964,7 @@ public class MAXQ610data
     short[] data = hex.getData();
     analyzeHeader( hex.subHex( 0,  3 ) );
     int pos = 0;
-    pos += 3; // skip header
-    
+    pos += 3; // skip header  
     int tbHeader = data[ pos ];
     boolean tbHasSpec = ( tbHeader & 0x80 ) != 0;
     int tbSize = ( tbHeader & 0x3F ) + ( tbHasSpec ? 3 : 1 );
@@ -964,6 +982,29 @@ public class MAXQ610data
     has2usOff = ( dbHeader & 0x40 ) != 0;
     boolean hasAltExec = ( dbHeader & 0x20 ) != 0;
     int dbSwitch = !hasAltExec && dbSize > 1 ? hex.get( pos ) : 0;
+    pos += dbSize;  // pos points to first (or only) protocol block
+    
+    if ( completeItemList == null )
+    {
+      while ( true )
+      {
+        prb = new ProtocolBlock();
+        e.pbList.add( prb );
+        int pbOptionsSize = data[ pos ] & 0x0F;
+        int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
+        analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), null );
+        if ( pbOffset > 0 )
+        {
+          pos += pbOffset;
+        }
+        else
+        {
+          break;
+        }
+      }
+      return;
+    }
+    
     int altMask = dbSwitch & 0xFF;
     int altIndex = ( dbSwitch >> 12 ) & 0x0F;
     int altCount = ( dbSwitch >> 8 ) & 0x0F;
@@ -989,10 +1030,10 @@ public class MAXQ610data
     }
     
     String byteName = altCount > 0 ? getZeroLabel( 0xD0 + altIndex ) : "";
-    pos += dbSize;  // pos points to first (or only) protocol block
     String irpInit = irp;
     for ( int i = 0; i < maxCount; i++ )
     {
+      prb = e.pbList.get( i );
       irp = irpInit;
       LinkedList< TimingStruct > altTimings = new LinkedList< TimingStruct >();
       int pbOptionsSize = data[ pos ] & 0x0F;
@@ -1003,7 +1044,7 @@ public class MAXQ610data
             + ")=$" + Integer.toHexString( i << shift ) + "\n";
       }
       int pbIndexSaved = pbIndex;
-      analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, null );
+      analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings );
       irp = "";
       while ( !altTimings.isEmpty() )
       {
@@ -1014,7 +1055,7 @@ public class MAXQ610data
         s = "";
         irp = "";
         pbIndex = pbIndexSaved;  
-        boolean changed = analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, ts );
+        boolean changed = runIREngine( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, ts );
         s = sSaved;
         if ( changed )
         {
@@ -1024,9 +1065,9 @@ public class MAXQ610data
         tbDurations = durationsSaved;
         if ( testIRPstruct( irpStruct ) )
         {
-          if ( !e.irps.contains( irpStruct ) )
+          if ( !prb.irps.contains( irpStruct ) )
           {
-            e.irps.add( irpStruct );
+            prb.irps.add( irpStruct );
           }
           irp = (irpSaved.isEmpty() ? "" : irpSaved + "\n" ) + irp;
           if ( !irpStruct.comments.isEmpty() )
@@ -1040,9 +1081,9 @@ public class MAXQ610data
         }
         else
         {
-          if ( e.irps.contains( irpStruct ) )
+          if ( prb.irps.contains( irpStruct ) )
           {
-            e.irps.remove( irpStruct );
+            prb.irps.remove( irpStruct );
           }
           irp = irpSaved;
         }
@@ -1591,7 +1632,7 @@ public class MAXQ610data
       if ( !validTypes.contains( type ) )
       {
         s += "Irregular instruction  at no. " + i + "/" + limit;
-        e.pbHandled = false;
+        prb.pbHandled = false;
 //        return null;
       }
       if ( type == 2 || type == 7 || type == 8 || type == 13 )
@@ -1681,7 +1722,7 @@ public class MAXQ610data
   
 /**
  * On first call for each protocol block, fullItemList != null, completeItemList == null,
- * ts == null, altTiming is empty.  It sets initialCodeSpec from PB options.  fullItemList
+ * altTiming is empty.  It sets initialCodeSpec from PB options.  fullItemList
  * gets AssemblerItems for PB and each SB block with code, separated by an item consisting
  * only of label of form PBn or SBn.  At this stage the label entries in the items may be
  * wrong as labelAddresses is added to for each code block, so cross-referencing labels will
@@ -1689,7 +1730,7 @@ public class MAXQ610data
  * REFERENCED.
  * 
  * On second call, completeItemList is fullItemList from first call and fullItemList == null.
- * Still ts==null and altTimings is empty.  The label entries in the items in completeItemList
+ * Still altTimings is empty.  The label entries in the items in completeItemList
  * are updated to final form and labelIndex is constructed to map labels to position in
  * completeItemList.  Paths through PB code block are determined and for each path, a
  * TimingStruct is added to altTimings with pbPath set to path value.  Then for each SB
@@ -1697,12 +1738,9 @@ public class MAXQ610data
  * SB path with an sbPaths entry added.  If there was no PB code then it will have pbPath=0.
  * If no SB code then sbPaths will be empty.
  * 
- * On third call, completeItemList is now correct, fullItemList==null and it is called with
- * ts being in turn the next entry in altTimings.
  */
-  private boolean analyzeProtocolBlock( int addr, Hex hex, LinkedList< TimingStruct > altTimings, TimingStruct ts )
+  private void analyzeProtocolBlock( int addr, Hex hex, LinkedList< TimingStruct > altTimings )
   {
-    boolean changed = false;
     int pos = 0;
     short[] data = hex.getData();
     int pbHeader = data[ pos++ ];
@@ -1727,14 +1765,14 @@ public class MAXQ610data
       s += "Data is sent with asynchronous coding, with one start bit (1), ";
       s += ( new String[]{ "no", "even", "odd" } )[ codeSelector % 3 ] + " parity bit, ";
       s += codeSelector < 9 ? "1 stop bit (0)\n" : "2 stop bits (00)\n";
-      e.pbHandled = false;
+      prb.pbHandled = false;
     }
 
     pos += pbOptSize;   // pos points to code block if present, else signal block
     boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
     if ( !pbHasCode )
     {
-      if ( completeItemList != null && ts == null )
+      if ( completeItemList != null )
       {
         altTimings.add( new TimingStruct() );
       }
@@ -1743,21 +1781,18 @@ public class MAXQ610data
     {
       pbIndex++;
       boolean[] flags = new boolean[ 20 ];
-      e.hasPBcode = true;
+      prb.hasPBcode = true;
       s += "\nProtocol block code (run on first frame only, after PF bytes read):\n";
       int cbSize = data[ pos++ ];
-      if ( ts == null )
-      {
-        s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "", flags, ts );
-      }
-      if ( ts == null && fullItemList != null )
+      s += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "", flags );
+      if ( fullItemList != null )
       {
         AssemblerItem item = new AssemblerItem();
         item.setLabel( "PB" + pbIndex );
         fullItemList.add( item );
         fullItemList.addAll( itemList );
       }
-      else if ( completeItemList != null && ts == null )
+      else if ( completeItemList != null )
       {
         for ( int i = 0; i < completeItemList.size(); i++ )
         {
@@ -1823,7 +1858,7 @@ public class MAXQ610data
           if ( i != 3 )
           {
             dataTimingChangeOnly = false;
-            e.pbHandled = false;
+            prb.pbHandled = false;
           }
         }
       }
@@ -1843,19 +1878,6 @@ public class MAXQ610data
       togData = new int[ 6 ];
       s += pbHasCode ? "After protocol block code is run, apply toggle:\n  " : "Toggle: ";
       s += analyzeToggle( toggle, togData );
-      irpParts[ 15 ] = "T=T+1,";
-      if ( ( togData[ 5 ] & 0x04 ) > 0 && togData[ 1 ] > 1 )
-      {
-        String label = getZeroLabel( 0xD0 + togData[ 4 ] );
-        label = irpLabel( label );
-        irpParts[ 15 ] += label + "=" + label + "^(" + togData[ 0 ] + "*T:1),";
-      }
-      else if ( togData[ 5 ] == 0 && togData[ 1 ] != togData[ 3 ] - togData[ 2 ] + 1 )
-      {
-        // replacement-type toggle with non-consecutive bits
-        irpParts[ 15 ] += "unknown toggle,";
-        e.pbHandled = false;
-      }
     }
     
     // pos now points to signal block
@@ -1877,7 +1899,7 @@ public class MAXQ610data
       if ( pos >= data.length )
       {
         s += "*** Signal block missing ***\n";
-        return false;
+        return;
       }
       if ( blockCount > maxBlocks )
       {
@@ -1958,7 +1980,7 @@ public class MAXQ610data
           txStr += "*** Excess data in protocol block ***\n";
         }
         s += txStr;
-        return false;
+        return;
       }
 
       more = sbHasAlternates;
@@ -1968,15 +1990,12 @@ public class MAXQ610data
         irp += stream;
         continue;
       }
-      if ( e.names.get(0).startsWith( "Solidtek" ))
-      {
-        int x = 0;
-      }
+
       String codeStr = "";
       if ( sbHasCode )
       {
         sbIndex++;
-        e.hasSBcode = true;
+        prb.hasSBcode = true;
         boolean[] flags = new boolean[ 30 ];
         codeStr += "\n  Signal block code";
         if ( txCount > 0 )
@@ -1985,19 +2004,16 @@ public class MAXQ610data
         }
         codeStr += ":\n";
         int cbSize = data[ pos++ ];
-        if ( ts == null )
-        {
-          codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  ", flags, ts );
-        }
+        codeStr += disassemblePseudocode( addr + pos, hex.subHex( pos, cbSize ), "  ", flags );
 
-        if (  ts == null && fullItemList != null )
+        if (  fullItemList != null )
         {
           AssemblerItem item = new AssemblerItem();
           item.setLabel( "SB" + sbIndex );
           fullItemList.add( item );
           fullItemList.addAll( itemList );
         }
-        else if ( completeItemList != null && ts == null )
+        else if ( completeItemList != null )
         {
           for ( int i = 0; i < completeItemList.size(); i++ )
           {
@@ -2036,17 +2052,189 @@ public class MAXQ610data
             }
             altTimings.pop();
           }
-          changed = true;
         }
         pos += cbSize;
       }
-        
-      if ( sbHasCode && completeItemList != null && ts != null )
+
+      s += sbCodeBeforeTX ? codeStr + txStr : txStr + codeStr;
+      if ( txCount > 0 )
       {
-        minRpts = pf[ 3 ] & 0x3F;   // set it as value from pf[ 3 ]
+        s += "\n  IR sent (TXBn bits of byte TXDn for each n) after ";
+        s += sbHasCode && !sbCodeBeforeTX ? "signal block code run\n" : "data translation\n";
+      }
+      
+      more = !hasNativeCode && pos < data.length;
+      if ( more )
+      {
+        if ( pos == data.length - 1 )
+        {
+          s += "*** Apparent spurious extra byte at end of protocol block ***\n";
+          more = false;
+        }
+      }
+      if ( !more && blockCount < maxBlocks )
+      {
+        s += "*** Repeat signal block missing\n";
+      }      
+    }
+    
+    if ( irp.length() > 0 )
+    {
+    irp = irp.substring( 0, irp.length()-1 );
+    for ( int i= 0; i < brackets; i++ )
+    {
+      irp += ")";
+    }
+    if ( toggle > 0 )
+    {
+      int index = irp.indexOf( '(' );
+      if ( index != -1 )
+      {
+        irp = irp.substring( 0, index ) + "(" + irpParts[ 15 ] + irp.substring( index ) + ")";
+      }
+    }
+
+    if ( irp.length() > irpLen )
+    {
+      irpStruct.irStream = irp.substring( irpLen );
+    }
+    }
+    
+    if ( hasNativeCode )
+    {
+      prb.pbHandled = false;
+      s += "Native code block (run after IR sent):\n";
+      pos += ( pos & 1 ) == 1 ? 1 : 0;  // round to word boundary
+      Hex nCode = hex.subHex( pos );
+      s += nCode.toString() + "\n";
+      pos += nCode.length();
+    }
+    if ( ( completeItemList == null || choices[ 14 ] || choices[ 19 ] ) && pos != data.length )
+    {
+      s += "**** Parsing error ****\n";
+    }
+    return;
+  }
+  
+  private boolean runIREngine( int addr, Hex hex, LinkedList< TimingStruct > altTimings, TimingStruct ts )
+  {
+    boolean changed = false;
+    int pos = 0;
+    short[] data = hex.getData();
+    int pbHeader = data[ pos++ ];
+    int pbOptSize = pbHeader & 0x0F;
+    int pbSwitchSize = pbOptSize > 2 ? data[ pos + 1 ] & 0x0F : 0;
+    int toggle = pbOptSize > 5 ? hex.get( pos + 4 ) : 0;
+    int irpLen = irp.length();
+
+    pos += pbOptSize;   // pos points to code block if present, else signal block
+    boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
+    if ( pbHasCode )
+    {
+      pbIndex++;
+      int cbSize = data[ pos++ ];
+      pos += cbSize;
+    }
+    
+    int[] togData = null;
+    if ( toggle > 0 )
+    {
+      togData = new int[ 6 ];
+      analyzeToggle( toggle, togData );
+      irpParts[ 15 ] = "T=T+1,";
+      if ( ( togData[ 5 ] & 0x04 ) > 0 && togData[ 1 ] > 1 )
+      {
+        String label = getZeroLabel( 0xD0 + togData[ 4 ] );
+        label = irpLabel( label );
+        irpParts[ 15 ] += label + "=" + label + "^(" + togData[ 0 ] + "*T:1),";
+      }
+      else if ( togData[ 5 ] == 0 && togData[ 1 ] != togData[ 3 ] - togData[ 2 ] + 1 )
+      {
+        // replacement-type toggle with non-consecutive bits
+        irpParts[ 15 ] += "unknown toggle,";
+        prb.pbHandled = false;
+      }
+    }
+    
+    // pos now points to signal block
+    choices = new boolean[ 30 ];
+    Arrays.fill( choices, false );
+    blockCount = 0;
+    maxBlocks = 1;
+    brackets = 0;
+    boolean more = true;
+    sbIndex = 0;
+    firstFrame = true;
+
+    while ( more )
+    {
+      blockCount++;  
+      Arrays.fill( choices, false );;
+      choices[ 15 ] = toggle > 0;
+      int sigPtr = pos;
+      if ( pos >= data.length )
+      {
+        return false;
+      }
+      Arrays.fill( pf, 0 );
+      pf[ 0 ] = data[ pos++ ];
+      int formatLen = pf[ 0 ] & 0x07;
+      for ( int i = 1; i <= formatLen; i++ )
+      {
+        pf[ i ] = data[ sigPtr + i ];
+      }
+      boolean sbHasAlternates = ( pf[ 5 ] & 0xF0 ) > 0;
+      boolean sbHasCode = ( pf[ 0 ] & 0x80 ) != 0;
+      boolean sbCodeBeforeTX = ( pf[ 6 ] & 0x80 ) != 0;
+      minRpts = pf[ 3 ] & 0x3F; 
+      int txCount = pf[ 2 ] & 0x1F;
+      
+
+      
+      pfNew = pf.clone(); 
+      int[][] pfDescs = new int[][]{ {-1,1,6}, {0x80,4,0 }, {0x08,1,3}, {0x04,1,2},
+          {-1,0,6}, {0x3F,3,0}, {-1,1,4}, {0xE0,2,5}, {0x80,3,7}, {0xFF,5,0} };
+      for ( int[] pfDesc : pfDescs )
+      {
+        if ( pfDesc[ 0 ] < 0 || ( pf[ pfDesc[ 1 ] ] & pfDesc[ 0 ]) > 0 )
+        {
+          getPFdescription( pfDesc[ 1 ] , pfDesc[ 2 ], choices );
+        }
+      }
+
+      pos += formatLen;
+      for ( int i = 0; i <= pbSwitchSize; i++ )
+      {
+        Hex txBytes = hex.subHex( pos, txCount );
+        analyzeTXBytes( txBytes, togData );
+        pos += txCount;
+        if ( i < pbSwitchSize )
+        {
+          txCount = data[ pos++ ];
+        }
+      }
+      
+      if ( pbSwitchSize > 0 )
+      {
+        return false;
+      }
+
+      more = sbHasAlternates;
+      if ( more )
+      {
+        String stream = makeIRStream();
+        irp += stream;
+        continue;
+      }
+
+      if ( sbHasCode )
+      {
+        sbIndex++;
+        int cbSize = data[ pos++ ];
+        pos += cbSize;
         int start = labelIndex.get( "SB" + sbIndex );
         int[] sbPath = null;
-        if ( ts != null && ( sbPath = ts.sbPaths.get( sbIndex ) ) != null)
+        if ( ( sbPath = ts.sbPaths.get( sbIndex ) ) != null )
         {
           int p = sbPath[ 0 ];
           List< Integer > list1 = new ArrayList< Integer >();
@@ -2090,7 +2278,7 @@ public class MAXQ610data
         }
       }
 
-      if ( completeItemList != null && !changed & ts != null )
+      if ( !changed )
       {
         List< Integer > paths = new ArrayList< Integer >();
         if ( ts.sbPaths.get( sbIndex ) == null )
@@ -2195,28 +2383,8 @@ public class MAXQ610data
         }
       }
 
-      s += sbCodeBeforeTX ? codeStr + txStr : txStr + codeStr;
-      if ( txCount > 0 )
-      {
-        s += "\n  IR sent (TXBn bits of byte TXDn for each n) after ";
-        s += sbHasCode && !sbCodeBeforeTX ? "signal block code run\n" : "data translation\n";
-      }
-      
-      more = !hasNativeCode && pos < data.length;
-      if ( more )
-      {
-        if ( pos == data.length - 1 )
-        {
-          s += "*** Apparent spurious extra byte at end of protocol block ***\n";
-          more = false;
-        }
-      }
-      if ( !more && blockCount < maxBlocks )
-      {
-        s += "*** Repeat signal block missing\n";
-      }
-      
-      if ( more && ts != null && !choices[ 14 ] && !choices[ 19 ] )
+      more = !hasNativeCode && pos < data.length - 1;
+      if ( more && !choices[ 14 ] && !choices[ 19 ] )
       {
         TimingStruct next = altTimings.peek();
         if ( next != null && next.same( ts, blockCount ) )
@@ -2224,48 +2392,42 @@ public class MAXQ610data
           altTimings.pop();
         }
       }
-      // This condition causes problems when choices[14] or choices[19] changed by signal block code
-      more &= completeItemList == null || ts == null || choices[ 14 ] || choices[ 19 ];
-      
+      more &= choices[ 14 ] || choices[ 19 ];     
     }
     
     if ( irp.length() > 0 )
     {
-    irp = irp.substring( 0, irp.length()-1 );
-    for ( int i= 0; i < brackets; i++ )
-    {
-      irp += ")";
-    }
-    if ( toggle > 0 )
-    {
-      int index = irp.indexOf( '(' );
-      if ( index != -1 )
+      irp = irp.substring( 0, irp.length()-1 );
+      for ( int i= 0; i < brackets; i++ )
       {
-        irp = irp.substring( 0, index ) + "(" + irpParts[ 15 ] + irp.substring( index ) + ")";
+        irp += ")";
+      }
+      if ( toggle > 0 )
+      {
+        int index = irp.indexOf( '(' );
+        if ( index != -1 )
+        {
+          irp = irp.substring( 0, index ) + "(" + irpParts[ 15 ] + irp.substring( index ) + ")";
+        }
+      }
+
+      if ( irp.length() > irpLen )
+      {
+        irpStruct.irStream = irp.substring( irpLen );
       }
     }
 
-    if ( irp.length() > irpLen )
-    {
-      irpStruct.irStream = irp.substring( irpLen );
-    }
-    }
-    
     if ( hasNativeCode )
     {
-      e.pbHandled = false;
-      s += "Native code block (run after IR sent):\n";
       pos += ( pos & 1 ) == 1 ? 1 : 0;  // round to word boundary
       Hex nCode = hex.subHex( pos );
-      s += nCode.toString() + "\n";
       pos += nCode.length();
-    }
-    if ( ( completeItemList == null || choices[ 14 ] || choices[ 19 ] ) && pos != data.length )
-    {
-      s += "**** Parsing error ****\n";
     }
     return changed;
   }
+  
+  
+  
   
   private String makeIRStream()
   {    
@@ -2448,7 +2610,7 @@ public class MAXQ610data
         if ( args.endsWith( label ) || args.contains( label + "," ) )
         {
           // there is a jump into timing region from outside
-          e.pbHandled = false;
+          prb.pbHandled = false;
         }
       }
     }
@@ -2992,7 +3154,6 @@ public class MAXQ610data
       int total = on + off;
       carriers[ 0 ] = total;
       ts.carriers[ 0 ] = total;
-      ts.changed = true;
       if ( opIndex == 7 )
       {
         carriers[ 1 ] = has2usOff ? 12 : total;
@@ -3043,7 +3204,6 @@ public class MAXQ610data
         durations[ dest + i ] = durations[ source + i ];
         ts.durations[ dest + i ] = ts.durations[ source + i ];
       }
-      ts.changed = true;
       int[] savedDurations = tbDurations;
       tbDurations = durations;
       int savedCarrier = carrier;
@@ -3085,7 +3245,6 @@ public class MAXQ610data
       itemType = 4;
       int immValFull = getImmValue( args );
       int end = opIndex == 5 ? 2 : 1;
-      ts.changed = true;
       for ( int k = 0; k < end; k++ )
       {
         oldVal = pf[ n + k ];
