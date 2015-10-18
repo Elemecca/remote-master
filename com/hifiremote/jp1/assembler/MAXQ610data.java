@@ -27,7 +27,6 @@ public class MAXQ610data
 {
 //  private boolean show = false;
   private PrintWriter pw = null;
-  private String s = null;
   private Executor e = null;
   private ProtocolBlock prb = null;
   private IRPstruct irpStruct = null;
@@ -54,8 +53,6 @@ public class MAXQ610data
   private List< Integer > labelAddresses = new ArrayList< Integer >();
   private LinkedHashMap< Integer, String > labels = new LinkedHashMap< Integer, String >();
   private LinkedHashMap< Integer, Node > nodeList = new LinkedHashMap< Integer, Node >();
-  private String irp = null;
-  private String irpErr = null;
   private double unit = 0;
   private boolean hasNativeCode = false;
   private boolean has2usOff = false;
@@ -105,27 +102,72 @@ public class MAXQ610data
     public List< String > names = new ArrayList< String >();
     public Hex hex = null;
     public String description = null;
+    public List< String > errors = new ArrayList< String >();
     public List< ProtocolBlock > pbList = new ArrayList< ProtocolBlock >();
-//    public List< IRPstruct > irps = new ArrayList< IRPstruct >();
-//    public boolean hasPBcode = false;
-//    public boolean hasSBcode = false;
-//    public boolean pbHandled = true;
   }
   
   private class ProtocolBlock
   {
     public String description = null;
+    public String condition = null;  // condition under which this block is selected
+    public CodeTree preamble = null;  // code assignments common to all IRPs
     public List< IRPstruct > irps = new ArrayList< IRPstruct >();
     public boolean hasPBcode = false;
     public boolean hasSBcode = false;
     public boolean pbHandled = true;
   }
   
+  private class CodeTree
+  {
+    public List< String > assignments = new ArrayList< String >();
+    public String[] branch = new String[ 2 ];
+    public CodeTree[] next = new CodeTree[ 2 ];
+    
+    public List< String > description()
+    {
+      List< String > list = new ArrayList< String >();
+      if ( branch[ 0 ] == null )
+      {
+        list.addAll( assignments );
+      }
+      else
+      {
+        list.add( "if (" + branch[ 0 ] + ") {" );
+        List< String > list2 = next[ 0 ] == null ? assignments : next[ 0 ].description();
+        for ( String s : list2 )
+        {
+          list.add( "  " + s );
+        }
+        list.add( "}" );
+        
+        list.add( "else if (" + branch[ 1 ] + ") {" );
+        list2 = next[ 1 ] == null ? assignments : next[ 1 ].description();
+        for ( String s : list2 )
+        {
+          list.add( "  " + s );
+        }
+        list.add( "}" );
+      }     
+      return list;
+    }
+    
+    @Override
+    public String toString()
+    {
+      String str = "";
+      for ( String s : description() )
+      {
+        str += s + "\n";
+      }
+      return str;
+    }
+  }
+
   private class IRPstruct
   {
-    public String generalSpec = null;
-    public String bitSpec= null;
-    public String irStream = null;
+    public String generalSpec = "";
+    public String bitSpec= "";
+    public String irStream = "";
     public int unit = 0;
     public List< String > comments = new ArrayList< String >();
     
@@ -160,10 +202,24 @@ public class MAXQ610data
       this.value = new Value( var );
     }
     
-//    public OpTree( String var, int shift, int and, int or )
-//    {
-//      this.value = new Value( var, shift, and, or);
-//    }
+    public OpTree clone()
+    {
+      OpTree newTree = new OpTree();
+      newTree.op = op;
+      if ( value != null )
+      {
+        newTree.value = value.clone();
+      }
+      if ( opArgs != null )
+      {
+        newTree.opArgs = new ArrayList< OpTree >();
+        for ( OpTree ot : opArgs )
+        {
+          newTree.opArgs.add( ot.clone() );
+        }
+      }
+      return newTree;
+    }
     
     public OpTree doOp( String os, OpTree arg )
     {
@@ -264,19 +320,6 @@ public class MAXQ610data
       }
       return null;
     }
-        
-        
-//        
-//        
-//        ArrayList< Value > newExpr = new ArrayList< Value >();
-//        for ( Value v : expr )
-//        {
-//          newExpr.add( v.doNumOp( op, n ) ); 
-//        }
-//        return new OrExpression( newExpr );
-//      }
-//      return null;
-//    }
     
     public String lsbEvaluate()
     {
@@ -316,8 +359,8 @@ public class MAXQ610data
       {
         for ( OpTree ot : opArgs )
         {
-          s += s.isEmpty() ? "" : op.equals( "AND" ) ? "&" : op.equals( "OR" ) ? "|" : "??";
-          s += "(" + ot.msbEvaluate() + ")";
+          str += str.isEmpty() ? "" : op.equals( "AND" ) ? "&" : op.equals( "OR" ) ? "|" : "??";
+          str += "(" + ot.msbEvaluate() + ")";
         }
       }
       return str;
@@ -349,27 +392,18 @@ public class MAXQ610data
       reverseByte( n, rev );
       if ( op.equals( "LSR" ) )
       {
-//        shift = +rev[0];
-//        and = (and<<rev[0])&0xFF;
-//        or = (or<<rev[0])&0xFF;
         return new Value( var, shift+rev[0], (and<<rev[0])&0xFF, (or<<rev[0])&0xFF );
       }
       else if ( op.equals( "LSL" ) )
       {
-//        shift = -rev[0];
-//        and >>= rev[0];
-//        or >>= rev[0];
         return new Value( var, shift-rev[0], and>>rev[0], or>>rev[0] );
       }
       else if ( op.equals( "AND" ) )
       {
-//        and &= n;
-//        or &= or;
         return new Value( var, shift, and&n, or&n );
       }
       else if ( op.equals( "OR" ) )
       {
-//        or |= n;
         return new Value( var, shift, and, or|n );
       }
       else if ( op.equals( "CPL" ) )
@@ -379,11 +413,6 @@ public class MAXQ610data
         int newOr = (~and) & (~or) & 0xFF;
         return new Value( newVar, shift, newAnd, newOr );
       }
-//      else if ( op.equals( "XOR" ) )
-//      {
-//        String newVar = lsbEvaluate() + "^" + n;
-//        return new Value( newVar );
-//      }
       return null;
     }
     
@@ -504,8 +533,12 @@ public class MAXQ610data
       }
       return null;
     }
-
     
+    public Value clone()
+    {
+      return new Value( var, shift, and, or );
+    }
+
     public String var = null;
     public int shift = 0;   // number of left shifts (of lsb form, corresponding to right shifts of msb
     public int and = 0xFF;
@@ -544,7 +577,6 @@ public class MAXQ610data
       }
       ts.sbPaths = sbp;
       ts.pbPath = pbPath;
-//      ts.minRpts = minRpts;
       return ts;
     }
     
@@ -638,12 +670,10 @@ public class MAXQ610data
     for ( Executor e : execs )
     {
       this.e = e;
-//      System.err.println( e.names.get( 0 ) );
       e.index = eIndex++;
       Hex hex = e.hex;
       irpStruct = new IRPstruct();
       execCount++;
-      s = "";
       labels.clear();
       fullItemList = new ArrayList< AssemblerItem >();
       completeItemList = null;
@@ -661,7 +691,6 @@ public class MAXQ610data
       nodeList.clear();
       completeItemList = fullItemList;
       fullItemList = null;
-      s = "";
       labels.clear();
       pbIndex = 0;
       sbIndex = 0;
@@ -671,7 +700,8 @@ public class MAXQ610data
         pb.irps.clear();
       }
       analyzeExecutor( hex );
-      e.description = s;
+//      e.description = s;
+
 //      if ( !e.hasSBcode )
 //      {
 //        execNoSBCodeCount++;
@@ -748,14 +778,14 @@ public class MAXQ610data
           continue;
         }
         shownCount++;
-        s = iii.irp.generalSpec + iii.irp.bitSpec + iii.irp.irStream + " : " 
+        String s = iii.irp.generalSpec + iii.irp.bitSpec + iii.irp.irStream + " : " 
             + iii.location[ 1 ] + "/" + iii.location[ 2 ];
         s += "\n   ";
         s += ex.names.get( 0 );
         s += "\n\n";
         pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
       }
-      s = "IRP values shown: " + shownCount + " of " + fullCount + "\n";
+      String s = "IRP values shown: " + shownCount + " of " + fullCount + "\n";
       pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
       pw.close();
       fw.close();
@@ -771,17 +801,49 @@ public class MAXQ610data
       pw = new PrintWriter( fw );
       for ( Executor e : execs )
       {
-        s = "";
+        this.e = e;
+        String s = "";
         for ( String eName : e.names )
         {
           s += eName + "\n";
         }
         s += e.description;
-        s += "--------------------\n\n";
+        String pbDesc = "";
+        for ( ProtocolBlock pb : e.pbList )
+        {
+          if ( !pbDesc.isEmpty() )
+          {
+            pbDesc += "\n- - - - - - - - - - - -\n";
+          }
+          pbDesc += pb.description;
+          pbDesc += "\nPreamble:\n";
+          if ( pb.preamble != null )
+          {
+            pbDesc += pb.preamble + "\n";
+          }
+          else
+          {
+            pbDesc += "<none>\n";
+          }
+          for ( IRPstruct irp : pb.irps )
+          {
+            pbDesc += "\n" + irp.generalSpec + irp.bitSpec + irp.irStream;
+            if ( !irp.comments.isEmpty() )
+            {
+              pbDesc += "  //";
+              for ( String c : irp.comments )
+              {
+                pbDesc += " " + c + "; ";
+              }
+            }
+          }
+        }
+        s += pbDesc;
+        s += "\n--------------------\n\n";
         pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
       }
 
-      s = "Count of executors: " + execCount + "\n";
+      String s = "Count of executors: " + execCount + "\n";
       s += "Count of executors without code: " + execNoCodeCount + "\n";
       s += "Count of executors without SB code: " + execNoSBCodeCount + "\n";
       s += "Count of executors without SB code and only data changing PB code: " + execNoSBDataChPBCount + "\n";
@@ -889,10 +951,7 @@ public class MAXQ610data
         addItemComments( item, carriers, freqFlags, ts2 );
         changesFreq = changesFreq | freqFlags[ 1 ];
       }
-//      if ( altTimings != null && ts.changed )
-//      {
-//        altTimings.add( ts );
-//      }
+      
       // carriers will now be set for current item group, so repeat for corrected comment
       freqFlags[ 0 ] = changesFreq;
       for ( int k = i; k < j; k++ )
@@ -943,9 +1002,9 @@ public class MAXQ610data
     if ( altExecStart > 0 )
     {
       // THIS WON'T WORK DUE TO DUAL CALLING.
-      s += "First executor\n";
+//      s += "First executor\n";
       analyzeSingleExec( hex.subHex( 0, altExecStart ) );
-      s += "\nSecond executor\n";
+//      s += "\nSecond executor\n";
       analyzeSingleExec( hex.subHex( altExecStart )  );
     }
     else
@@ -962,7 +1021,7 @@ public class MAXQ610data
   private void analyzeSingleExec( Hex hex )
   {
     short[] data = hex.getData();
-    analyzeHeader( hex.subHex( 0,  3 ) );
+    e.description = analyzeHeader( hex.subHex( 0,  3 ) );
     int pos = 0;
     pos += 3; // skip header  
     int tbHeader = data[ pos ];
@@ -972,7 +1031,7 @@ public class MAXQ610data
     pos += tbSize;
     for ( String str : analyzeTimingBlock( hex.subHex( tbStart, tbSize ), true, 0, 0x40, null ) )
     {
-      s += str + "\n";
+      e.description += str + "\n";
     }
     int carrierSaved = carrier;
     int[] durationsSaved = tbDurations;
@@ -1019,8 +1078,9 @@ public class MAXQ610data
     }
     if ( altCount >= maxCount )
     {
-      s += "\n*** Number of protocol alternates greater than mask permits, so reset from ";
-      s += String.format( "%d to %d", altCount, maxCount - 1 ) + " ***\n";
+      String err = "Number of protocol alternates greater than mask permits, so reset from ";
+      err += String.format( "%d to %d", altCount, maxCount - 1 );
+      e.errors.add( err );
       altCount = maxCount - 1;
     }
     
@@ -1030,33 +1090,26 @@ public class MAXQ610data
     }
     
     String byteName = altCount > 0 ? getZeroLabel( 0xD0 + altIndex ) : "";
-    String irpInit = irp;
     for ( int i = 0; i < maxCount; i++ )
     {
       prb = e.pbList.get( i );
-      irp = irpInit;
+      prb.description = "";
       LinkedList< TimingStruct > altTimings = new LinkedList< TimingStruct >();
       int pbOptionsSize = data[ pos ] & 0x0F;
       int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
       if ( altCount > 0 )
       {
-        s += "\nProtocol block when (" + byteName + " & #$" + Integer.toHexString( altMask )
+        prb.description += "\nProtocol block when (" + byteName + " & #$" + Integer.toHexString( altMask )
             + ")=$" + Integer.toHexString( i << shift ) + "\n";
       }
       int pbIndexSaved = pbIndex;
-      analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings );
-      irp = "";
+      prb.description += analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings );
       while ( !altTimings.isEmpty() )
       {
         TimingStruct ts = altTimings.pop();
-        String sSaved = s;
         irpStruct = new IRPstruct();
-        String irpSaved = irp;
-        s = "";
-        irp = "";
         pbIndex = pbIndexSaved;  
         boolean changed = runIREngine( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, ts );
-        s = sSaved;
         if ( changed )
         {
           continue;
@@ -1069,15 +1122,6 @@ public class MAXQ610data
           {
             prb.irps.add( irpStruct );
           }
-          irp = (irpSaved.isEmpty() ? "" : irpSaved + "\n" ) + irp;
-          if ( !irpStruct.comments.isEmpty() )
-          {
-            irp += "  //";
-            for ( String c : irpStruct.comments )
-            {
-              irp += " " + c + "; ";
-            }
-          }
         }
         else
         {
@@ -1085,34 +1129,31 @@ public class MAXQ610data
           {
             prb.irps.remove( irpStruct );
           }
-          irp = irpSaved;
         }
       }
-      s += "\n" +irp + "\n";
       if ( pbOffset > 0 )
       {
-        s += "- - - - - - - -\n";
         pos += pbOffset;
         if ( i > altCount - 1 )
         {
-          s += "\n*** More than specified number " + ( altCount + 1 ) + "  of protocol blocks ***\n";
+          e.errors.add( "More than specified number " + ( altCount + 1 ) + "  of protocol blocks" );
         }
       }
       else
       {
         if ( i < altCount )
         {
-          s += "\n*** Fewer than specified number " + ( altCount + 1 ) + " of protocol blocks ***\n";
+          e.errors.add( "Fewer than specified number " + ( altCount + 1 ) + " of protocol blocks" );
         }
         break;
       }
     }
   }
 
-  private void analyzeHeader( Hex hex )
+  private String analyzeHeader( Hex hex )
   {
+    String s = "";
     short[] data = hex.getData();
-    irp = "{";
     int on = data[ 0 ];
     int off = data[ 1 ];
     if ( on == 0 && off == 0 )
@@ -1121,7 +1162,7 @@ public class MAXQ610data
       off = 6;
       carrier = on + off;
       s += "Carrier is unmodulated\n";
-      irp += "0k,";
+      irpStruct.generalSpec = "{0k,";
     }
     else
     {
@@ -1129,7 +1170,7 @@ public class MAXQ610data
       off++;
       carrier = on + off;
       s += String.format( "%.2fkHz, duty cycle %.1f", 6000.0 / carrier, ( 100.0 * on )/ carrier ) + "%\n";
-      irp += String.format( "%.1fk,", 6000.0 / carrier );
+      irpStruct.generalSpec = String.format( "{%.1fk,", 6000.0 / carrier );
     }
     int args = data[ 2 ];
     fix = ( args >> 4 ) & 0x0F;
@@ -1153,6 +1194,7 @@ public class MAXQ610data
     }
     allZeroLabels.addAll( Arrays.asList( zeroLabels ) );
     proc.setZeroLabels( allZeroLabels.toArray( new String[ 0 ][ 0 ]) ); 
+    return s;
   }
   
   /**
@@ -1245,11 +1287,10 @@ public class MAXQ610data
       unit = Math.round( min * bestF );
       if ( worst > 0.05 )
       {
-        s += "*** Max error " + String.format( "%.2f", 100*worst ) +"%\n";
+        e.errors.add( "Max irp timing error " + String.format( "%.2f", 100*worst ) +"%\n" );
       }
-      irp += (int)unit + "}";
+      irpStruct.generalSpec += (int)unit + "}";
       irpStruct.unit = ( int )unit;
-      irpStruct.generalSpec = irp;
     }
     
     List< Integer > irpVals = heads || ( start == 0 && end == 0x40 ) ? new ArrayList< Integer >() : null;
@@ -1267,7 +1308,6 @@ public class MAXQ610data
       altCarrier = 0;
     }
     
-    int irpLen = irp.length();
     if ( codeSelector == 1 )
     {
       int size = ( tbLengths[ 0 ] + tbLengths[ 1 ] ) > 7 ? 2 : 1;
@@ -1276,7 +1316,7 @@ public class MAXQ610data
 
       if ( heads )
       { 
-        irp += "<";
+        irpStruct.bitSpec = "<";
       }
       
       for ( int i = 0; i < 4; i++ )
@@ -1291,7 +1331,7 @@ public class MAXQ610data
             str += "+" + val;
             if ( heads )
             {
-              irp += getIRPduration( val ) + ",";
+              irpStruct.bitSpec += getIRPduration( val ) + ",";
             }
           }
           val = ( tbDurations[ n++ ]*mult + 3 )/6;  // convert carrier cycles to us
@@ -1301,13 +1341,13 @@ public class MAXQ610data
             str += "-" + val;
             if ( heads )
             {
-              irp += - getIRPduration( val ) + ",";
+              irpStruct.bitSpec += - getIRPduration( val ) + ",";
             }
           }
         }
         if ( heads )
         {
-          irp = irp.substring( 0, irp.length() - 1 ) + "|";
+          irpStruct.bitSpec = irpStruct.bitSpec.substring( 0, irpStruct.bitSpec.length() - 1 ) + "|";
         }
         String range = String.format( "(PD%02X-PD%02X) ", 2*i*size, 2*(i+1)*size - 1 );
         if ( start <= 2*i*size && 2*i*size <= end )
@@ -1317,8 +1357,7 @@ public class MAXQ610data
       }
       if ( heads )
       {
-        irp = irp.substring( 0, irp.length() - 1 ) + ">";
-        irpStruct.bitSpec = irp.substring( irpLen );
+        irpStruct.bitSpec = irpStruct.bitSpec.substring( 0, irpStruct.bitSpec.length() - 1 ) + ">";
       }
     }
     else if ( codeSelector == 5 && ( tbLengths[ 0 ] + tbLengths[ 1 ] ) == 2 
@@ -1347,7 +1386,6 @@ public class MAXQ610data
       if ( !str.isEmpty() && start <= limits[ 0 ] && limits[ 0 ] <= end )
       {
         list.add( "1-bursts (us): " + str );
-        s += irpErr;
         if ( irpVals != null )
         {
           for ( int n : irpVals )
@@ -1361,20 +1399,18 @@ public class MAXQ610data
       if ( !str.isEmpty() && start <= limits[ 0 ] && limits[ 0 ] <= end )
       {
         list.add( "0-bursts (us): " + str );
-        s += irpErr;
         if ( heads && ( codeSpec & 0x20 ) != 0 )
         {
           list.add( "Only first burst-pair of 0-burst is sent if an odd number of bits precede it" );
         }
         if ( heads && irpVals != null )
         {
-          irp += "<";
+          irpStruct.bitSpec = "<";
           for ( int n : irpVals )
           {
-            irp += n + ",";
+            irpStruct.bitSpec += n + ",";
           }
-          irp = irp.substring( 0, irp.length() -1 ) + "|" + oneStr.substring( 0, oneStr.length() -1 ) + ">";
-          irpStruct.bitSpec = irp.substring( irpLen );
+          irpStruct.bitSpec = irpStruct.bitSpec.substring( 0, irpStruct.bitSpec.length() -1 ) + "|" + oneStr.substring( 0, oneStr.length() -1 ) + ">";
         }
       }
     }
@@ -1383,7 +1419,6 @@ public class MAXQ610data
     if ( !str.isEmpty() && ( tbUsed & 0x04 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Lead-out (us): " + str );
-      s += irpErr;
       if ( irpVals != null )
       {
         irpParts[ 1 ] = irpVals.get( 0 ) + ",";
@@ -1393,7 +1428,6 @@ public class MAXQ610data
     if ( !str.isEmpty() && ( tbUsed & 0x08 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Lead-in (us): " + str );
-      s += irpErr;
       if ( irpVals != null )
       {
         irpParts[ 0 ] = "";
@@ -1411,7 +1445,6 @@ public class MAXQ610data
     if ( !str.isEmpty() && ( tbUsed & 0x10 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Alternate lead-out (us): " + str );
-      s += irpErr;
       if ( irpVals != null )
       {
         irpParts[ 6 ] = irpVals.get( 0 ) + ",";
@@ -1421,7 +1454,6 @@ public class MAXQ610data
     if ( !str.isEmpty() && ( tbUsed & 0x20 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Alternate lead-in (us): " + str );
-      s += irpErr;
       if ( irpVals != null )
       {
         irpParts[ 5 ] = "";
@@ -1435,7 +1467,6 @@ public class MAXQ610data
     if ( !str.isEmpty() && ( tbUsed & 0x40 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Mid-frame burst (us): " + str );
-      s += irpErr;
       if ( irpVals != null )
       {
         irpParts[ 3 ] = "";
@@ -1465,11 +1496,7 @@ public class MAXQ610data
     double delta = Math.abs( ratio - Math.round( ratio ) );
     if ( delta > 0.05 * ratio )
     {
-      irpErr = String.format( "\n*** Diff %.2f", 100*delta/ratio ) + "%" + String.format(" in converting %d with unit %d\n", usDuration, (int)unit );
-    }
-    else
-    {
-      irpErr = "";
+      e.errors.add( String.format( "\n*** Diff %.2f", 100*delta/ratio ) + "%" + String.format(" in converting %d with unit %d\n", usDuration, (int)unit ) );
     }
     return ( int )Math.round( ratio );
   }
@@ -1491,7 +1518,6 @@ public class MAXQ610data
     {
       irpVals.clear();
     }
-    irpErr = "";
     int pos = 0;
     int[] sizes = new int[]{ 2, 2, 1, 2, 1, 2, 2, 1 };
     int mult = has2usOff ? 12 : itemCarrier;
@@ -1625,15 +1651,14 @@ public class MAXQ610data
   
   private Node makeBranch( Node node, List< Integer > validTypes, int limit )
   {
-    for ( int i = node.start; i <= limit; i++ )
+    for ( int i = node.start; i < limit; i++ )
     {
       AssemblerItem item = completeItemList.get( i );
       int type = item.getType();
       if ( !validTypes.contains( type ) )
       {
-        s += "Irregular instruction  at no. " + i + "/" + limit;
+        e.errors.add( "Irregular instruction  at no. " + i + "/" + limit );
         prb.pbHandled = false;
-//        return null;
       }
       if ( type == 2 || type == 7 || type == 8 || type == 13 )
       {
@@ -1707,7 +1732,7 @@ public class MAXQ610data
           return node;
         }
       }
-      else if ( i == limit )
+      else if ( i == limit - 1 )
       {
         int[] branch = new int[ 3 ];
         branch[ 0 ] = limit;  // ************** TESTING!! was limit+1
@@ -1739,8 +1764,9 @@ public class MAXQ610data
  * If no SB code then sbPaths will be empty.
  * 
  */
-  private void analyzeProtocolBlock( int addr, Hex hex, LinkedList< TimingStruct > altTimings )
+  private String analyzeProtocolBlock( int addr, Hex hex, LinkedList< TimingStruct > altTimings )
   {
+    String s = "";
     int pos = 0;
     short[] data = hex.getData();
     int pbHeader = data[ pos++ ];
@@ -1749,7 +1775,6 @@ public class MAXQ610data
     int codeSpec = pbOptSize > 3 ? data[ pos + 3 ] : 0;
     int toggle = pbOptSize > 5 ? hex.get( pos + 4 ) : 0;
     int codeSelector = codeSpec & 0x0F;
-    int irpLen = irp.length();
 
     if ( initialCodeSpec == -1 )
     {
@@ -1833,7 +1858,7 @@ public class MAXQ610data
         String interp = interpretPB( start );
         if ( !interp.isEmpty() )
         {
-          s += "\nCombo selector: " + interp + "\n";
+          s += "\n" + interp + "\n";
         }
         
         if ( !nodeList.isEmpty() )
@@ -1899,7 +1924,7 @@ public class MAXQ610data
       if ( pos >= data.length )
       {
         s += "*** Signal block missing ***\n";
-        return;
+        return s;
       }
       if ( blockCount > maxBlocks )
       {
@@ -1980,14 +2005,12 @@ public class MAXQ610data
           txStr += "*** Excess data in protocol block ***\n";
         }
         s += txStr;
-        return;
+        return s;
       }
 
       more = sbHasAlternates;
       if ( more )
       {
-        String stream = makeIRStream();
-        irp += stream;
         continue;
       }
 
@@ -2034,7 +2057,7 @@ public class MAXQ610data
               }
             }
           }
-
+          
           int start = labelIndex.get( "SB" + sbIndex );
           List< Integer > paths = createCodePaths( start, 0 );
           if ( !paths.isEmpty() )
@@ -2078,28 +2101,6 @@ public class MAXQ610data
       }      
     }
     
-    if ( irp.length() > 0 )
-    {
-    irp = irp.substring( 0, irp.length()-1 );
-    for ( int i= 0; i < brackets; i++ )
-    {
-      irp += ")";
-    }
-    if ( toggle > 0 )
-    {
-      int index = irp.indexOf( '(' );
-      if ( index != -1 )
-      {
-        irp = irp.substring( 0, index ) + "(" + irpParts[ 15 ] + irp.substring( index ) + ")";
-      }
-    }
-
-    if ( irp.length() > irpLen )
-    {
-      irpStruct.irStream = irp.substring( irpLen );
-    }
-    }
-    
     if ( hasNativeCode )
     {
       prb.pbHandled = false;
@@ -2113,7 +2114,7 @@ public class MAXQ610data
     {
       s += "**** Parsing error ****\n";
     }
-    return;
+    return s;
   }
   
   private boolean runIREngine( int addr, Hex hex, LinkedList< TimingStruct > altTimings, TimingStruct ts )
@@ -2125,7 +2126,6 @@ public class MAXQ610data
     int pbOptSize = pbHeader & 0x0F;
     int pbSwitchSize = pbOptSize > 2 ? data[ pos + 1 ] & 0x0F : 0;
     int toggle = pbOptSize > 5 ? hex.get( pos + 4 ) : 0;
-    int irpLen = irp.length();
 
     pos += pbOptSize;   // pos points to code block if present, else signal block
     boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
@@ -2134,6 +2134,10 @@ public class MAXQ610data
       pbIndex++;
       int cbSize = data[ pos++ ];
       pos += cbSize;
+      
+//      int start = labelIndex.get( "PB" + pbIndex );
+//      String interp = interpretPB( start );
+
     }
     
     int[] togData = null;
@@ -2189,8 +2193,6 @@ public class MAXQ610data
       minRpts = pf[ 3 ] & 0x3F; 
       int txCount = pf[ 2 ] & 0x1F;
       
-
-      
       pfNew = pf.clone(); 
       int[][] pfDescs = new int[][]{ {-1,1,6}, {0x80,4,0 }, {0x08,1,3}, {0x04,1,2},
           {-1,0,6}, {0x3F,3,0}, {-1,1,4}, {0xE0,2,5}, {0x80,3,7}, {0xFF,5,0} };
@@ -2223,10 +2225,10 @@ public class MAXQ610data
       if ( more )
       {
         String stream = makeIRStream();
-        irp += stream;
+        irpStruct.irStream += stream;
         continue;
       }
-
+      
       if ( sbHasCode )
       {
         sbIndex++;
@@ -2321,14 +2323,17 @@ public class MAXQ610data
               for ( int i = n.start; i <= b[0]; i++ )
               {
                 AssemblerItem item = completeItemList.get( i );
-                addItemComments( item, carriers, freqFlags, ts3 );
+                if ( !isAssignmentItem( item ) )
+                {
+                  addItemComments( item, carriers, freqFlags, ts3 );
+                }
               }
               n = p3 != 0 ? nodeList.get( b[p3&3] ) : null;
               p3 >>= 2;
             }
           }
           carrier = ts3.carriers[ 0 ];
-          irp = String.format( "{%.1fk,", 6000.0 / carrier );
+          irpStruct.generalSpec = String.format( "{%.1fk,", 6000.0 / carrier );
           analyzeTimingBlock( null, true, 0, 0x40, ts3 );
         }
 
@@ -2371,7 +2376,7 @@ public class MAXQ610data
           if ( !choices[ 21 ] )
           {
             String stream = makeIRStream();
-            irp += stream;
+            irpStruct.irStream += stream;
           }
           irpParts[ 17 ] = "";
           choices[ 17 ] = false;
@@ -2395,25 +2400,20 @@ public class MAXQ610data
       more &= choices[ 14 ] || choices[ 19 ];     
     }
     
-    if ( irp.length() > 0 )
+    if ( irpStruct.irStream.length() > 0 )
     {
-      irp = irp.substring( 0, irp.length()-1 );
+      irpStruct.irStream = irpStruct.irStream.substring( 0, irpStruct.irStream.length()-1 );
       for ( int i= 0; i < brackets; i++ )
       {
-        irp += ")";
+        irpStruct.irStream += ")";
       }
       if ( toggle > 0 )
       {
-        int index = irp.indexOf( '(' );
+        int index = irpStruct.irStream.indexOf( '(' );
         if ( index != -1 )
         {
-          irp = irp.substring( 0, index ) + "(" + irpParts[ 15 ] + irp.substring( index ) + ")";
+          irpStruct.irStream = irpStruct.irStream.substring( 0, index ) + "(" + irpParts[ 15 ] + irpStruct.irStream.substring( index ) + ")";
         }
-      }
-
-      if ( irp.length() > irpLen )
-      {
-        irpStruct.irStream = irp.substring( irpLen );
       }
     }
 
@@ -2433,8 +2433,7 @@ public class MAXQ610data
   {    
     if ( blockCount > 1 && brackets == 0 )
     {
-      int index = irp.indexOf( '>' );
-      irp = irp.substring( 0, index + 1 ) + "(" + irp.substring( index + 1 );
+      irpStruct.irStream = "(" + irpStruct.irStream;
       brackets++;
     }
     String irp = "";
@@ -2547,7 +2546,7 @@ public class MAXQ610data
   
   private List< Integer > createCodePaths( int start, int limit )
   {
-    int last = 0;
+    int last = start + 1;
     List< String > labelsUsed = new ArrayList< String >();
     String source = completeItemList.get( start ).getLabel();
     List< Integer > validTypes = null;
@@ -2563,7 +2562,12 @@ public class MAXQ610data
       validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12,13 );
     }
     
-    for ( int i = start+1; i < completeItemList.size(); i++ )
+    if ( limit == 0 )
+    {
+      limit = completeItemList.size() - 1;
+    }
+    
+    for ( int i = start+1; i < limit; i++ )
     {
       AssemblerItem item = completeItemList.get( i );
       String label = item.getLabel();
@@ -2578,9 +2582,9 @@ public class MAXQ610data
       int type = item.getType();
       if ( source.startsWith( "PB" ) )
       {
-        if ( ( type == 3 || type == 4 ) && validTypes.contains( type ) )
+        if ( /*( type == 3 || type == 4 ) &&*/ validTypes.contains( type ) )
         {
-          last = i;
+          last = i + 1;
         }
       }
       else
@@ -2588,15 +2592,17 @@ public class MAXQ610data
         // for signal block, continue till instruction preceding END
         if ( item.getOperation().equals( "END" ) )
         {
-          last = i - 1;
+          last = i;
+          break;
         }
+        last = i + 1;
       }
     }
     
-    if ( limit > 0 )
-    {
-      last = limit;
-    }
+//    if ( limit > 0 )
+//    {
+//      last = limit;
+//    }
     
     for ( int i = 0; i < completeItemList.size(); i++ )
     {
@@ -2662,7 +2668,7 @@ public class MAXQ610data
         if ( n.branch[ 1 ] > 0 && n.branch[ 1 ] <= n.branch[ 0 ] 
             || n.branch[ 2 ] > 0 && n.branch[ 2 ] <= n.branch[ 0 ] )
         {
-          s += "\nBackward jump at " + n.branch[ 0 ] + " (" + n.branch[ 1 ] + ", " + n.branch[ 2 ] + ")\n";
+          prb.description += "\nBackward jump at " + n.branch[ 0 ] + " (" + n.branch[ 1 ] + ", " + n.branch[ 2 ] + ")\n";
           return paths;
         }
         
@@ -2696,15 +2702,15 @@ public class MAXQ610data
       }
     }
 
-    if ( !paths.isEmpty() )
-    {
-      s += "\nPaths: ";
-      for ( int p : paths )
-      {
-        s += Integer.toString( p, 4 ) + " ";
-      }
-      s += "\n";
-    }
+//    if ( !paths.isEmpty() )
+//    {
+//      prb.description += "\nPaths: ";
+//      for ( int p : paths )
+//      {
+//        prb.description += Integer.toString( p, 4 ) + " ";
+//      }
+//      prb.description += "\n";
+//    }
     
     return paths;
   }
@@ -2738,11 +2744,9 @@ public class MAXQ610data
       list.add( p );
       return 0;
     }
-    // (m&3)==3
 
     int type = completeItemList.get( n.branch[ 0 ] ).getType();
-    int ret = type==7 ? 2 : 1;
-//    index = (new int[]{ 1, ret, 2})[ index ];   
+    int ret = type==7 ? 2 : 1;   
     p &= (1<<(2*level))-1;      // remove the final 3
     p += index<<(2*level);      // replace it by index
     List< Integer > cp = n.branch[index] > 0 ? createCodePaths( n.branch[index]-1, 0 ) : null;
@@ -2932,7 +2936,6 @@ public class MAXQ610data
         case 4:
         case 5:
           desc = "Send " + ( val & 0x3F ) + " mandatory repeats";
-//          minRpts = val & 0x3F;
           break;
         case 6:
           desc = "End-frame burst is " + ( ( val & 0x40 ) != 0 ? "alternate" : "normal" ) + "lead-in";
@@ -3475,36 +3478,6 @@ public class MAXQ610data
     return null;
   }
   
-  private String irpNextLabel( String label )
-  {
-    try
-    {
-      if ( label.startsWith( "Fix" ) )
-      {
-        int k = Integer.parseInt( label.substring( 3 ), 16 ) + 1;
-        return "" + "ABCDEFGHIJ".charAt( k );
-      }
-      else if ( label.startsWith( "Var" ) )
-      {
-        int k = Integer.parseInt( label.substring( 3 ), 16 ) + 1;
-        return "" + "XYZW".charAt( k );
-      }
-      else if ( label.startsWith( "Calc" ) )
-      {
-        int k = Integer.parseInt( label.substring( 4 ), 16 ) + 1;
-        return "N" + k;
-      }
-      else if ( label.startsWith( "Tmp" ) )
-      {
-        int k = Integer.parseInt( label.substring( 3 ), 16 ) + 1;
-        return "Tmp" + k;
-      }
-    }
-    catch ( NumberFormatException e ){};
-
-    return null;
-  }
-  
   private boolean testIRPstruct( IRPstruct irps )
   {
     LinkedHashMap< String, String > map = new LinkedHashMap< String, String >();
@@ -3529,14 +3502,11 @@ public class MAXQ610data
   {
     String ret = "";
     int last = 0;
-    int startIndexed = 0;
-    int lastIndexed = 0;
     int startTiming = 0;
     int lastTiming = 0;
     boolean tBlock = false;
     List< int[] > timingRanges = new ArrayList< int[] >();
     List< String > labelsUsed = new ArrayList< String >();
-    
 
     for ( int i = start+1; i < completeItemList.size(); i++ )
     {
@@ -3551,11 +3521,7 @@ public class MAXQ610data
         labelsUsed.add( label );
       }
       int type = item.getType();
-      if ( type == 14 )
-      {
-        lastIndexed = i;
-      }
-      else if ( type == 3 || type == 4 )
+      if ( type == 3 || type == 4 )
       {
         if ( startTiming == 0 )
         {
@@ -3581,7 +3547,7 @@ public class MAXQ610data
         int[] range = findSelfContained( startTiming, lastTiming + 1 );
         if ( range[ 0 ] != startTiming || range[ 1 ] != lastTiming + 1 )
         {
-          s += "*** Timing block jumps outside itself";
+          e.errors.add( "Timing block jumps outside itself" );
         }
         
         // Now see if there are further branch instructions before startTiming that
@@ -3630,7 +3596,7 @@ public class MAXQ610data
           int[] rt = findSelfContained( r0, range[ 0 ] );
           if ( rt[ 0 ] != r0 || rt[ 1 ] != range[ 0 ] )
           {
-            s += "\n*** Non-timing block not self-contained";
+            e.errors.add( "Non-timing block not self-contained" );
           }
         }
         r0 = range[ 1 ] + 1;
@@ -3638,9 +3604,59 @@ public class MAXQ610data
       int[] rt = findSelfContained( r0, last+1 );
       if ( rt[ 0 ] != r0 || rt[ 1 ] != last+1 )
       {
-        s += "\n*** Non-timing block not self-contained";
+        e.errors.add( "Non-timing block not self-contained" );
       }
     }
+    
+    int limit = timingRanges.isEmpty() ? 0 : timingRanges.get( 0 )[ 0 ];
+//    if ( limit != 1 ) // limit==1 means that there are no instructions before first timing range
+    {
+      if ( e.names.get(0).startsWith( "Blaupunkt" ))
+      {
+        int x = 0;
+      }
+     
+      LinkedHashMap< Integer, Node > savedNodeList = nodeList;
+      nodeList = new LinkedHashMap< Integer, Node >();
+//      limit = limit == 0 ? 0 : limit - 1;
+      List< Integer > comboPaths = null;
+      comboPaths = createCodePaths( start , limit );
+      LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
+      prb.preamble = makeCTree( nodeList, varMap, start + 1 );
+      nodeList = savedNodeList;
+    }
+//    LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
+//    CodeTree cTree = new CodeTree();
+////    List< AssemblerItem > comboCode = new ArrayList< AssemblerItem >();
+////    for ( int p : comboPaths )
+////    {
+////      comboCode.clear();
+//
+//      Node n = nodeList.get( start + 1 );
+//      while ( n != null )
+//      {
+//        int[] b = n.branch;
+//        for ( int i = n.start; i <= b[0]; i++ )
+//        {
+//          AssemblerItem item = completeItemList.get( i );
+//          if ( isAssignmentItem( item ) )
+//          {
+//            interpretAssignmentItem( item, varMap );
+//          }
+//          else
+//          {
+//            for ( String var : varMap.keySet() )
+//            {
+//              String expr = var + "=" + varMap.get( var ).lsbEvaluate();
+//              cTree.assignments.add( expr );
+//            }
+//            break;
+//          }
+//        }
+//        n = p != 0 ? nodeList.get( b[p&3] ) : null;
+//        p >>= 2;
+//      }
+
 
     int tr = 0;
     LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
@@ -3658,12 +3674,12 @@ public class MAXQ610data
       AssemblerItem item = completeItemList.get( i );
       if ( item.getOperation().equals( "END" ) )
       {
-        s += "\n***All items are interpretable\n";
+        ret += "\n***All items are interpretable\n";
         break;
       }
       else if ( !isAssignmentItem( item ) )
       {
-        s += "\n***First non-interpretable item at " + i + "\n";
+        ret += "\n***First non-interpretable item at " + i + "\n";
         break;
       }
       else
@@ -3672,14 +3688,14 @@ public class MAXQ610data
       }
     }
     
-    s += "\n";
+    ret += "\n";
     for ( String var : varMap.keySet() )
     {
       String assignment = var + "=" + varMap.get( var ).lsbEvaluate();
-      s += assignment + "\n";
+      ret += assignment + "\n";
     }
     
-    List< Integer > comboPaths = null;
+
     
     // COMMENTED OUT DURING TESTING ONLY
     
@@ -3774,6 +3790,58 @@ public class MAXQ610data
     return ret;  
   }
   
+  private CodeTree makeCTree( LinkedHashMap< Integer, Node > list, LinkedHashMap< String, OpTree > varMap, int start )
+  {    
+//    LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
+    CodeTree cTree = new CodeTree();
+    Node n = list.get( start );
+    if ( n == null )
+    {
+      return null;
+    }
+
+    int[] b = n.branch;
+    for ( int i = n.start; i < b[0]; i++ )
+    {
+      AssemblerItem item = completeItemList.get( i );
+      if ( isAssignmentItem( item ) )
+      {
+        interpretAssignmentItem( item, varMap );
+      }
+      else
+      {
+        break;
+      }
+    }
+    for ( String var : varMap.keySet() )
+    {
+      String expr = var + "=" + varMap.get( var ).lsbEvaluate();
+      cTree.assignments.add( expr );
+    }
+    cTree.branch[ 0 ] = n.comments[ 0 ];
+    cTree.branch[ 1 ] = n.comments[ 1 ];
+    if ( b[ 1 ] > 0 && b [ 1 ] > n.start )
+    {
+      LinkedHashMap< String, OpTree > newVarMap = new LinkedHashMap< String, OpTree >();
+      for ( String s : varMap.keySet() )
+      {
+        newVarMap.put(  s, varMap.get( s ).clone() );
+      }
+      cTree.next[ 0 ] = makeCTree( list, newVarMap, b[ 1 ] );
+    }
+    if ( b[ 2 ] > 0 && b [ 1 ] > n.start )
+    {
+      LinkedHashMap< String, OpTree > newVarMap = new LinkedHashMap< String, OpTree >();
+      for ( String s : varMap.keySet() )
+      {
+        newVarMap.put(  s, varMap.get( s ).clone() );
+      }
+      cTree.next[ 1 ] = makeCTree( list, newVarMap, b[ 2 ] );
+    }
+
+    return cTree;
+  }
+  
   private void interpretAssignmentItem( AssemblerItem item, LinkedHashMap< String, OpTree > varMap )
   {
     List< String > argList = new ArrayList< String >();
@@ -3798,7 +3866,7 @@ public class MAXQ610data
       {
         String label = irpLabel( token );
         argList.add( label != null ? label : token );
-        argList2.add( irpNextLabel( token ) );
+        argList2.add( "" );
       }
     }
     
@@ -3812,11 +3880,23 @@ public class MAXQ610data
     }
     else if ( op.equals( "MOVW" ) && args.contains( "#$" ) )
     {
-      varMap.put( argList.get(0), new OpTree( argList.get(1) ) );
-      if ( argList2.get(0).length() > 0 )
+      int dest = item.getHex().getData()[ 1 ];
+      String var2 = irpLabel( getZeroLabel( dest + 1 ) );
+      varMap.put( argList.get(0), new OpTree( argList.get(1) ) );  
+      varMap.put( var2, new OpTree( argList2.get(1) ) );
+    }
+    else if ( op.equals( "MOVN" ) )
+    {
+      int dest = item.getHex().getData()[ 1 ];
+      int src = item.getHex().getData()[ 2 ];
+      int n = item.getHex().getData()[ 3 ];
+      for ( int i = 0; i < n; i++ )
       {
-        // Condition deliberately creates an error if argList2.get( 0 ) == null
-        varMap.put( argList2.get(0), new OpTree( argList2.get(1) ) );
+        String var1 = irpLabel( getZeroLabel( dest + i ) );
+        String var2 = irpLabel( getZeroLabel( src + i ) );
+        OpTree currVal = varMap.get( var2 );
+        OpTree newVal = currVal != null ? currVal : new OpTree( var2 );
+        varMap.put( var1, newVal );
       }
     }
     else if ( op.equals( "XOR" ) && args.contains( "#$FF" ) )
@@ -3905,9 +3985,14 @@ public class MAXQ610data
   
   private boolean isAssignmentItem( AssemblerItem item )
   {
+    int t = item.getType();
+    if( t == 3 || t == 4 || t == 5 )
+    {
+      return false;
+    }
     String op = item.getOperation();
     String args = item.getArgumentText();
-    List< String > comboOps = Arrays.asList( "MOV", "LSL", "LSR", "AND", "OR", "XOR" );
+    List< String > comboOps = Arrays.asList( "MOV", "LSL", "LSR", "AND", "OR", "XOR", "MOVN" );
     return ( comboOps.contains( op )  && !args.contains( "(" )
         || op.equals( "MOVW" ) && args.contains( "#$" ) );
   }
