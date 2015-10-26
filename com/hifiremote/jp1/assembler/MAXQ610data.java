@@ -111,9 +111,11 @@ public class MAXQ610data
     public String description = null;
     public String condition = null;  // condition under which this block is selected
     public CodeTree preamble = null;  // code assignments common to all IRPs
+    public CodeTree postamble = null;
     public List< IRPstruct > irps = new ArrayList< IRPstruct >();
     public boolean hasPBcode = false;
     public boolean hasSBcode = false;
+    public List< String > sbVars = new ArrayList< String >();
     public boolean pbHandled = true;
   }
   
@@ -222,7 +224,7 @@ public class MAXQ610data
     }
     
     public OpTree doOp( String os, OpTree arg )
-    {
+    {      
       int n = -1;
       boolean consecutive = false;
       try
@@ -240,7 +242,11 @@ public class MAXQ610data
         n = -1;
       }
 
-      if ( n >= 0 && Arrays.asList( "LSR", "LSL", "AND", "OR" ).contains( os ) 
+      if ( ( os.equals( "OR" ) || os.equals( "XOR" ) ) && value != null && value.var.equals( "0" ) )
+      {
+        return arg.clone();
+      }
+      else if ( n >= 0 && Arrays.asList( "LSR", "LSL", "AND", "OR" ).contains( os ) 
           && ( !os.equals( "AND" ) || consecutive ))
       {
         if ( value != null )
@@ -249,7 +255,8 @@ public class MAXQ610data
           ot.value = value.doNumOp( os, n );
           return ot;
         }
-        else if ( Arrays.asList( "AND", "OR" ).contains( op ) )
+        else if ( Arrays.asList( "AND", "OR" ).contains( op ) 
+            || op.equals( "XOR" ) && Arrays.asList( "LSR", "LSL", "AND" ).contains( os ) )
         {
           OpTree ot = new OpTree();
           ot.op = op;
@@ -284,7 +291,7 @@ public class MAXQ610data
           }
           return ot;
         }
-        else if ( op.equals( "XOR" ) )
+        else if ( op.equals( "XOR" ) && opArgs.size() == 2 )
         {
           OpTree ot1 = new OpTree();
           ot1.op = "AND";
@@ -303,7 +310,6 @@ public class MAXQ610data
           ot.opArgs.add( ot2 );
           return ot;
         }
-        
         else
         {
           return null;
@@ -311,6 +317,13 @@ public class MAXQ610data
       }
       else if ( Arrays.asList( "AND", "OR", "XOR" ).contains( os ) )
       {
+        if ( value == null && op.equals( os ) )
+        {
+          OpTree ot = clone();
+          ot.opArgs.add( arg );
+          return ot;
+        }
+
         OpTree ot = new OpTree();
         ot.op = os;
         ot.opArgs = new ArrayList< OpTree >();
@@ -318,6 +331,18 @@ public class MAXQ610data
         ot.opArgs.add( arg );
         return ot;
       }
+      else if ( os.equals( "SWAP" ) )
+      {
+        OpTree ot1 = doOp( "LSL",  new OpTree( "" + 0x20 ) );
+        OpTree ot2 = doOp( "LSR",  new OpTree( "" + 0x20 ) );
+        OpTree ot = new OpTree();
+        ot.op = "OR";
+        ot.opArgs = new ArrayList< OpTree >();
+        ot.opArgs.add( ot1 );
+        ot.opArgs.add( ot2 );
+        return ot;
+      }
+      
       return null;
     }
     
@@ -326,16 +351,23 @@ public class MAXQ610data
       String str = "";
       if ( value != null )
       {
-        return value.lsbEvaluate();
+        str = value.lsbEvaluate();
       }
       else
       {
-        for ( OpTree ot : opArgs )
+        for ( int i = 0; i < opArgs.size(); i++ )
         {
-          str += str.isEmpty() ? "" : op.equals( "AND" ) ? "&" : op.equals( "OR" ) ? "|" 
-              : op.equals( "XOR" ) ? "^" : "??";
+          OpTree ot = opArgs.get( i );
           String eval = ot.lsbEvaluate();
-          if ( Pattern.matches( "[A-Za-z0-9]+", eval ) )
+          if ( eval.equals( "0" ) && ( op.equals( "OR" ) || op.equals( "XOR" ) ) && ( !str.isEmpty() || i < opArgs.size() - 1 ) )
+          {
+            continue;
+          }
+          String opSymbol = op.equals( "AND" ) ? "&" : op.equals( "OR" ) ? "|" 
+              : op.equals( "XOR" ) ? "^" : "??";
+          str += str.isEmpty() ? "" : opSymbol;
+
+          if ( Pattern.matches( "[A-Za-z0-9\\[\\]\\-\\:\\" + opSymbol + "]+", eval ) )
           {
             str += eval;
           }
@@ -344,6 +376,12 @@ public class MAXQ610data
             str += "(" + eval + ")";
           }
         }
+        
+      }
+      if ( Pattern.matches( "\\([A-Za-z0-9\\[\\]\\-\\:\\&\\|\\^]+\\)", str ) )
+      {
+        // there is only one set of brackets, around the outside, so remove them
+        str = str.substring( 1, str.length() - 1 );
       }
       return str;
     }
@@ -392,18 +430,34 @@ public class MAXQ610data
       reverseByte( n, rev );
       if ( op.equals( "LSR" ) )
       {
+        if ( var.equals( "0" ) || shift+rev[0] > 7 || shift+rev[0] < -7 || ((and<<rev[0])&0xFF)==0 )
+        {
+          return new Value( "" + 0 );
+        }
         return new Value( var, shift+rev[0], (and<<rev[0])&0xFF, (or<<rev[0])&0xFF );
       }
       else if ( op.equals( "LSL" ) )
       {
+        if ( var.equals( "0" ) || shift-rev[0] > 7 || shift-rev[0] < -7 || ((and>>rev[0])&0xFF)==0 )
+        {
+          return new Value( "" + 0 );
+        }
         return new Value( var, shift-rev[0], and>>rev[0], or>>rev[0] );
       }
       else if ( op.equals( "AND" ) )
       {
+        if ( var.equals( "0" ) || n == 0 )
+        {
+          return new Value( "" + 0 );
+        }
         return new Value( var, shift, and&n, or&n );
       }
       else if ( op.equals( "OR" ) )
       {
+        if ( n == 255 )
+        {
+          return new Value( "" + 255 );
+        }
         return new Value( var, shift, and, or|n );
       }
       else if ( op.equals( "CPL" ) )
@@ -475,7 +529,11 @@ public class MAXQ610data
     
     public String lsbEvaluate()
     {
-      // Return string corresponding to the msb form of the value
+      // Return string corresponding to the lsb form of the value
+      if ( and == 0 )
+      {
+        return "" + or;
+      }
       int[] revAnd = new int[ 4 ];
       int[] revOr = new int[ 4 ];
       reverseByte( and, revAnd );
@@ -613,16 +671,40 @@ public class MAXQ610data
   {
     public int start = 0;
     public int[] branch = null;
-    public String[] comments = new String[ 2 ];
+    public String branchVar = "";
+    public int branchType = -1; 
+//    public String[] comments = new String[ 2 ];
     /*  branch elements are:
-        0 = end
-        1 = start for left branch (-1 if no branch)
-        2 = start for right branch (-1 if no branch)
+          0 = end
+          1 = start for left branch (on zero or true, -1 if no branch)
+          2 = start for right branch (on nonzero or false, -1 if no branch)
+        branch type is
+         -1   : unknown type
+          0-7 : branch on this bit of branchVar being zero/nonzero
+          8   : branch on branchVar being true/false
+          9   : system branch (first frame / key held)
+         10   : unconditional
     */
     
     public Node( int start )
     {
       this.start = start;
+    }
+    
+    public String getComments( int val, String prefix )
+    {
+      String str = null;
+      if ( branchType >= 0 && branchType < 8 )
+      {
+        str = branchVar + ":1:" + branchType + "=" + val; 
+      }
+      else if ( branchType == 8 )
+      {
+        str = prefix + "key is ";
+        str += val == 0 ? "" : "not ";
+        str += branchVar;
+      }
+      return str;
     }
   }
   
@@ -825,6 +907,27 @@ public class MAXQ610data
           {
             pbDesc += "<none>\n";
           }
+          
+          pbDesc += "\nPostamble:\n";
+          if ( pb.postamble != null )
+          {
+            pbDesc += pb.postamble + "\n";
+          }
+          else
+          {
+            pbDesc += "<none>\n";
+          }
+
+          if ( !pb.sbVars.isEmpty() )
+          {
+            pbDesc += "\nSB referenced variables:\n";
+            for ( String str : pb.sbVars )
+            {
+              pbDesc += str + "\n";
+            }
+          }
+          
+          
           for ( IRPstruct irp : pb.irps )
           {
             pbDesc += "\n" + irp.generalSpec + irp.bitSpec + irp.irStream;
@@ -1676,7 +1779,7 @@ public class MAXQ610data
         }
         String destLabel = argArray[ 1 ] == null ? argArray[ 0 ] : argArray[ 1 ];
         int destIndex = 0;
-        if ( argArray[ 1 ] != null )   //( lEnd > lStart )
+        if ( argArray[ 1 ] != null )
         {
           // conditional branch instruction
           // make branch[ 1 ] hold destination on zero, branch[ 2 ] on nonzero
@@ -1702,20 +1805,23 @@ public class MAXQ610data
             reverseByte( a, rev );
             if ( rev[1] == 1 )
             {
-              String t = v + ":1:" + rev[2] + "=";
-              node.comments[ 0 ] = t + "0";
-              node.comments[ 1 ] = t + "1";
+              node.branchType = rev[2];  // this bit zero/nonzero
+              node.branchVar = v;
             }
           }
           else if ( type == 8 )
           {
-            String cond = argArray[ 2 ]; //args.substring( lEnd + 1 ).trim();
+            String cond = argArray[ 2 ];
             String opComment = proc.getLblComments().get(  cond );
             if ( opComment != null && opComment.startsWith( "Test if" ) )
             {
-              node.comments[ 0 ] = "When key is " + opComment.substring( 8 );
-              node.comments[ 1 ] = "When key is not " + opComment.substring( 8 );
+              node.branchType = 8; // true/false
+              node.branchVar = opComment.substring( 8 );
             }
+          }
+          else
+          {
+            node.branchType = 9;  // system branch
           }
 
           node.branch = branch;
@@ -1729,13 +1835,14 @@ public class MAXQ610data
           branch[ 1 ] = destIndex;
           branch[ 2 ] = -1;
           node.branch = branch;
+          node.branchType = 10;  // unconditional
           return node;
         }
       }
       else if ( i == limit - 1 )
       {
         int[] branch = new int[ 3 ];
-        branch[ 0 ] = limit;  // ************** TESTING!! was limit+1
+        branch[ 0 ] = limit;
         branch[ 1 ] = -1;
         branch[ 2 ] = -1;
         node.branch = branch;
@@ -2035,6 +2142,16 @@ public class MAXQ610data
           item.setLabel( "SB" + sbIndex );
           fullItemList.add( item );
           fullItemList.addAll( itemList );
+          List< String > destList = new ArrayList< String >();
+          List< String > srcList = new ArrayList< String >();
+          for ( AssemblerItem it : itemList )
+          {
+            if ( !getReferenced( it, destList, srcList, true ) )
+            {
+              e.errors.add( "Indeterminate source in SB code" );
+            }
+          }
+          prb.sbVars.addAll( srcList );
         }
         else if ( completeItemList != null )
         {
@@ -2353,9 +2470,9 @@ public class MAXQ610data
                 addItemComments( item, carriers, freqFlags, ts3 );
               }
               int br = p&3;
-              if ( ( br == 1 || br == 2 ) && n.comments[ br - 1 ] != null )
+              if ( ( br == 1 || br == 2 ) && n.getComments( br - 1, "when " ) != null )
               {
-                irpStruct.comments.add( n.comments[ br - 1 ] );
+                irpStruct.comments.add( n.getComments( br - 1, "when " ) );
               }
               n = p != 0 ? nodeList.get( b[br] ) : null;
               p >>= 2;
@@ -3478,6 +3595,19 @@ public class MAXQ610data
     return null;
   }
   
+  private String irpLabel( int addr )
+  {
+    AssemblerItem item = new AssemblerItem();
+    if ( item.setZeroLabel( proc, addr, new ArrayList< Integer >(), "" ) )
+    {
+      String zLabel = item.getLabel();
+      String iLabel = irpLabel( zLabel );
+      return iLabel != null ? iLabel : zLabel;
+    }
+    return String.format( "$%02X", addr );
+  }
+  
+  
   private boolean testIRPstruct( IRPstruct irps )
   {
     LinkedHashMap< String, String > map = new LinkedHashMap< String, String >();
@@ -3504,8 +3634,6 @@ public class MAXQ610data
     int last = 0;
     int startTiming = 0;
     int lastTiming = 0;
-    boolean tBlock = false;
-    List< int[] > timingRanges = new ArrayList< int[] >();
     List< String > labelsUsed = new ArrayList< String >();
 
     for ( int i = start+1; i < completeItemList.size(); i++ )
@@ -3526,105 +3654,97 @@ public class MAXQ610data
         if ( startTiming == 0 )
         {
           startTiming = i;
-          tBlock = true;
         }
-        if ( tBlock )
-        {
-          lastTiming = i;
-        }
+        lastTiming = i;
       }
-      else if ( type != 2 )
-      {
-        tBlock = false;
-      }
-      
-      if ( startTiming > 0 && tBlock == false )
-      {
-        // We have reached the end of a timing block, so test it.
-        // At this point we know that all instructions between startTiming and lastTiming
-        // inclusive are timing changes or branch instructions.  Now check if any of the
-        // branch instructions jump outside this block;
-        int[] range = findSelfContained( startTiming, lastTiming + 1 );
-        if ( range[ 0 ] != startTiming || range[ 1 ] != lastTiming + 1 )
-        {
-          e.errors.add( "Timing block jumps outside itself" );
-        }
-        
-        // Now see if there are further branch instructions before startTiming that
-        // are part of this block.
-        for ( int j = startTiming-1; j > start; j-- )
-        {
-          item = completeItemList.get( j );
-          type = item.getType();
-          if ( type == 2 )
-          {
-            range = findSelfContained( j, j + 1 );
-            if ( range[ 0 ] != j || range[ 1 ] > lastTiming + 1 )
-            {
-              break;
-            }
-            else
-            {
-              startTiming = j;
-            }
-          }
-          else
-          {
-            break;
-          }
-        }
-        timingRanges.add( new int[]{ startTiming, lastTiming } );
-        i = lastTiming + 1;
-        startTiming = lastTiming = 0;
-      }
-      
       if ( item.getOperation().equals( "END" ) )
       {
-        last = i - 1;
+        last = i;
         break;
       }
     }
-    
-    if ( !timingRanges.isEmpty())
+
+    if ( startTiming > 0 )
     {
-      // now test whether the blocks between the timing ones are self-contained
-      int r0 = start + 1;
-      for ( int[] range : timingRanges )
+      // There are timing instructions, all between startTiming and lastTiming
+      // inclusive.  Extend this to smallest self-contained block.
+      int[] range = findSelfContained( startTiming, lastTiming + 1 );
+      startTiming = range[ 0 ];
+      lastTiming = range[ 1 ] - 1;
+
+      // Now see if there are branch instructions preceding this that form part of
+      // the timing block.
+
+      for ( int j = startTiming-1; j > start; j-- )
       {
-        if ( range[ 0 ] > r0 )
+        AssemblerItem item = completeItemList.get( j );
+        int type = item.getType();
+        if ( type == 2 )
         {
-          int[] rt = findSelfContained( r0, range[ 0 ] );
-          if ( rt[ 0 ] != r0 || rt[ 1 ] != range[ 0 ] )
+          range = findSelfContained( j, j + 1 );
+          if ( range[ 0 ] != j || range[ 1 ] > lastTiming + 1 )
           {
-            e.errors.add( "Non-timing block not self-contained" );
+            break;
+          }
+          else
+          {
+            startTiming = j;
           }
         }
-        r0 = range[ 1 ] + 1;
+        else
+        {
+          break;
+        }
       }
-      int[] rt = findSelfContained( r0, last+1 );
-      if ( rt[ 0 ] != r0 || rt[ 1 ] != last+1 )
+      
+      // Now test the instructions preceding timing block to see if it is self-contained.
+      range = findSelfContained( start, startTiming );
+      if ( range[ 0 ] < start )
       {
-        e.errors.add( "Non-timing block not self-contained" );
+        e.errors.add( "PB jumps into earlier block" );
+      }
+      if ( range[ 1 ] > startTiming )
+      {
+        // Prefix block not self-contained, so need to include it in timing block
+        startTiming = start;
+      }
+      
+      // Now test the instructions following timing block to see if it is self-contained.
+      range = findSelfContained( lastTiming + 1, last );
+      if ( range[ 0 ] < lastTiming + 1 )
+      {
+        // Postfix block not self-contained, so need to include it in timing block
+        lastTiming = last - 1;
+      }
+      if ( range[ 1 ] > last )
+      {
+        e.errors.add( "Postfix block jumps outside PB" );
       }
     }
+
+    int limit = startTiming == 0 ? last : startTiming;
+    LinkedHashMap< Integer, Node > savedNodeList = nodeList;
+    nodeList = new LinkedHashMap< Integer, Node >();
+    List< Integer > comboPaths = null;
+    comboPaths = createCodePaths( start , limit );
+    LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
+    prb.preamble = makeCTree( nodeList, varMap, start + 1 );
     
-    int limit = timingRanges.isEmpty() ? 0 : timingRanges.get( 0 )[ 0 ];
-//    if ( limit != 1 ) // limit==1 means that there are no instructions before first timing range
+    if ( lastTiming > 0 )
     {
-      if ( e.names.get(0).startsWith( "Blaupunkt" ))
+      nodeList = new LinkedHashMap< Integer, Node >();
+      comboPaths.clear();
+      comboPaths = createCodePaths( lastTiming, last );
+      varMap.clear();
+      if ( e.names.get( 0 ).startsWith( "Denon/" ) )
       {
         int x = 0;
       }
-     
-      LinkedHashMap< Integer, Node > savedNodeList = nodeList;
-      nodeList = new LinkedHashMap< Integer, Node >();
-//      limit = limit == 0 ? 0 : limit - 1;
-      List< Integer > comboPaths = null;
-      comboPaths = createCodePaths( start , limit );
-      LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
-      prb.preamble = makeCTree( nodeList, varMap, start + 1 );
-      nodeList = savedNodeList;
+      prb.postamble = makeCTree( nodeList, varMap, lastTiming + 1 );
     }
+
+    nodeList = savedNodeList;
+
 //    LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
 //    CodeTree cTree = new CodeTree();
 ////    List< AssemblerItem > comboCode = new ArrayList< AssemblerItem >();
@@ -3658,43 +3778,43 @@ public class MAXQ610data
 //      }
 
 
-    int tr = 0;
-    LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
-    int[] range = timingRanges.isEmpty() ? null : timingRanges.get( tr );
-    for ( int i = start+1; i < completeItemList.size(); i++ )
-    {
-      if ( range != null && i == range[ 0 ] )
-      {
-        i = range[ 1 ];
-        tr++;
-        range = tr >= timingRanges.size() ? null : timingRanges.get( tr );
-        continue;
-      }
-      
-      AssemblerItem item = completeItemList.get( i );
-      if ( item.getOperation().equals( "END" ) )
-      {
-        ret += "\n***All items are interpretable\n";
-        break;
-      }
-      else if ( !isAssignmentItem( item ) )
-      {
-        ret += "\n***First non-interpretable item at " + i + "\n";
-        break;
-      }
-      else
-      {
-        interpretAssignmentItem( item, varMap );
-      }
-    }
+//    int tr = 0;
+//    LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
+//    int[] range = timingRanges.isEmpty() ? null : timingRanges.get( tr );
     
-    ret += "\n";
-    for ( String var : varMap.keySet() )
-    {
-      String assignment = var + "=" + varMap.get( var ).lsbEvaluate();
-      ret += assignment + "\n";
-    }
     
+//    for ( int i = start+1; i < completeItemList.size(); i++ )
+//    {
+//      if ( i == startTiming )
+//      {
+//        i = lastTiming;
+//        continue;
+//      }
+//      
+//      AssemblerItem item = completeItemList.get( i );
+//      if ( item.getOperation().equals( "END" ) )
+//      {
+//        ret += "\n***All items are interpretable\n";
+//        break;
+//      }
+//      else if ( !isAssignmentItem( item ) )
+//      {
+//        ret += "\n***First non-interpretable item at " + i + "\n";
+//        break;
+//      }
+//      else
+//      {
+//        interpretAssignmentItem( item, varMap );
+//      }
+//    }
+//    
+//    ret += "\n";
+//    for ( String var : varMap.keySet() )
+//    {
+//      String assignment = var + "=" + varMap.get( var ).lsbEvaluate();
+//      ret += assignment + "\n";
+//    }
+//    
 
     
     // COMMENTED OUT DURING TESTING ONLY
@@ -3799,7 +3919,10 @@ public class MAXQ610data
     {
       return null;
     }
-
+    if ( e.names.get( 0 ).startsWith( "F12" ))
+    {
+      int x = 0;
+    }
     int[] b = n.branch;
     for ( int i = n.start; i < b[0]; i++ )
     {
@@ -3818,8 +3941,8 @@ public class MAXQ610data
       String expr = var + "=" + varMap.get( var ).lsbEvaluate();
       cTree.assignments.add( expr );
     }
-    cTree.branch[ 0 ] = n.comments[ 0 ];
-    cTree.branch[ 1 ] = n.comments[ 1 ];
+    cTree.branch[ 0 ] = n.getComments( 0, "" );
+    cTree.branch[ 1 ] = n.getComments( 1, "" );
     if ( b[ 1 ] > 0 && b [ 1 ] > n.start )
     {
       LinkedHashMap< String, OpTree > newVarMap = new LinkedHashMap< String, OpTree >();
@@ -3892,8 +4015,8 @@ public class MAXQ610data
       int n = item.getHex().getData()[ 3 ];
       for ( int i = 0; i < n; i++ )
       {
-        String var1 = irpLabel( getZeroLabel( dest + i ) );
-        String var2 = irpLabel( getZeroLabel( src + i ) );
+        String var1 = irpLabel( dest + i );
+        String var2 = irpLabel( src + i );
         OpTree currVal = varMap.get( var2 );
         OpTree newVal = currVal != null ? currVal : new OpTree( var2 );
         varMap.put( var1, newVal );
@@ -3919,6 +4042,14 @@ public class MAXQ610data
       OpTree newVal = currVal.doOp( op, currArg );
       varMap.put( argList.get(0), newVal );
     }
+    else if ( op.equals( "SWAP" ) )
+    {
+      String source = argList.get(1);
+      OpTree currVal = varMap.get( source );
+      currVal = currVal != null ? currVal : new OpTree( source );
+      OpTree newVal = currVal.doOp( "SWAP", null );
+      varMap.put( argList.get(0), newVal ); 
+    }
     else if ( op.equals( "MOV" ) && args.contains( "[" ) )
     {
       String base = argList.get(2);
@@ -3930,6 +4061,92 @@ public class MAXQ610data
       str += "]";
       varMap.put( argList.get(0), new OpTree( str ) );
     }
+  }
+  
+  private boolean getReferenced( AssemblerItem item, List< String > destList, List<  String > srcList,
+      boolean checkDest )
+  {
+    short[] hex = item.getHex().getData();
+    int op = hex[ 0 ];
+    if ( op == 0x4C || op == 0x52 || op == 0x54 )
+    {
+      // Instructions affecting indeterminate destinations
+      return false;
+    }
+
+    String str = null;
+    if ( ( op >= 0x01 && op <= 0x09 ) || op == 0x53 )
+    {
+      str = irpLabel( hex[ 3 ] );
+      if ( !srcList.contains( str ) && ( !checkDest || !destList.contains( str ) ) )
+      {
+        srcList.add(  str );
+      }
+    }
+    
+    if ( op == 0x09 || op == 0x19 )
+    {
+      str = irpLabel( hex[ 2 ] + 1 );
+      if ( !srcList.contains( str ) && ( !checkDest || !destList.contains( str ) ) )
+      {
+        srcList.add(  str );
+      }
+    }
+    
+    if ( op == 0x55 || op ==0x56 || op == 0x58 )
+    {
+      str = irpLabel( hex[ 2 ] );
+      if ( !srcList.contains( str ) && ( !checkDest || !destList.contains( str ) ) )
+      {
+        srcList.add(  str );
+      }
+    }
+    
+    if ( op < 0x4C || op == 0x53 || op == 50 || op == 51 )
+    {
+      if ( op != 0x10 && op != 0x30 )
+      {
+        str = irpLabel( hex[ 2 ] );
+        if ( !srcList.contains( str ) && ( !checkDest || !destList.contains( str ) ) )
+        {
+          srcList.add(  str );
+        }
+      }
+      
+      if ( !destList.contains( str ) )
+      {
+        str = irpLabel( hex[ 1 ] );
+        destList.add( str );
+      }
+      List< Integer > wordOps = Arrays.asList( 0x08, 0x09, 0x18, 0x19,0x20, 0x30 );
+      if ( wordOps.contains( op ) )
+      {
+        str = irpLabel( hex[ 1 ] + 1 );
+        if ( !destList.contains( str ) )
+        {
+          destList.add(  str );
+        }
+      }
+      if ( op == 0x50 )  // DBBC
+      {
+        str = irpLabel( hex[ 3 ] );
+        if ( !destList.contains( str ) )
+        {
+          destList.add(  str );
+        }
+      }
+    }
+    
+    if ( op == 0x41 || op == 0x58 )
+    {
+      str = irpLabel( hex[ 2 ] );
+      if ( !destList.contains( str ) )
+      {
+        destList.add(  str );
+      }
+    }
+    
+    return true;
   }
 
   
@@ -3992,7 +4209,7 @@ public class MAXQ610data
     }
     String op = item.getOperation();
     String args = item.getArgumentText();
-    List< String > comboOps = Arrays.asList( "MOV", "LSL", "LSR", "AND", "OR", "XOR", "MOVN" );
+    List< String > comboOps = Arrays.asList( "MOV", "LSL", "LSR", "AND", "OR", "XOR", "MOVN", "SWAP" );
     return ( comboOps.contains( op )  && !args.contains( "(" )
         || op.equals( "MOVW" ) && args.contains( "#$" ) );
   }
