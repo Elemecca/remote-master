@@ -226,6 +226,7 @@ public class MAXQ610data
     public OpTree doOp( String os, OpTree arg )
     {      
       int n = -1;
+      int nRev = -1;
       boolean consecutive = false;
       try
       {
@@ -235,6 +236,7 @@ public class MAXQ610data
           int rev[] = new int[ 4 ];
           reverseByte( n, rev );
           consecutive = rev[ 1 ] == rev[ 3 ] - rev[ 2 ] + 1;
+          nRev = rev[ 0 ];
         }
       }
       catch ( NumberFormatException nfe )
@@ -242,9 +244,14 @@ public class MAXQ610data
         n = -1;
       }
 
-      if ( ( os.equals( "OR" ) || os.equals( "XOR" ) ) && value != null && value.var.equals( "0" ) )
+      if ( Arrays.asList( "OR", "XOR", "ADD" ).contains( os ) 
+          && value != null && value.var.equals( "0" ) )
       {
         return arg.clone();
+      }
+      else if ( Arrays.asList( "AND", "REV", "MULT" ).contains( os ) && value != null && value.var.equals( "0" ) )
+      {
+        return new OpTree( "0" );
       }
       else if ( n >= 0 && Arrays.asList( "LSR", "LSL", "AND", "OR" ).contains( os ) 
           && ( !os.equals( "AND" ) || consecutive ))
@@ -267,9 +274,32 @@ public class MAXQ610data
           }
           return ot;
         }
+        else if ( op.equals( "REV" ) )
+        {
+          OpTree ot1 = new OpTree();
+          ot1.opArgs = new ArrayList< OpTree >();
+          if ( os.equals( "LSR" ) || os.equals( "LSL" ) )
+          {
+            ot1 = opArgs.get( 0 ).doOp( os.equals( "LSR" ) ? "LSL" : "LSR", arg );
+            OpTree ot = new OpTree();
+            ot.op = "REV";
+            ot.opArgs = new ArrayList< OpTree >();
+            ot.opArgs.add( ot1 );
+            return ot;
+          }
+          else if ( os.equals( "AND" ) || os.equals( "OR" ) )
+          {
+            ot1 = opArgs.get( 0 ).doOp( os, new OpTree( ""+nRev ) );
+            OpTree ot = new OpTree();
+            ot.op = "REV";
+            ot.opArgs = new ArrayList< OpTree >();
+            ot.opArgs.add( ot1 );
+            return ot;
+          }
+        }
         else
         {
-          return null;
+          return (new OpTree( "(" + lsbEvaluate() + ")" ) ).doOp( os, arg );
         }
       }
       else if ( os.equals( "CPL" ) )
@@ -342,29 +372,72 @@ public class MAXQ610data
         ot.opArgs.add( ot2 );
         return ot;
       }
-      
+      else if ( os.equals( "REV" ) )
+      {
+        if ( value == null && op.equals( "REV" ) )
+        {
+          return opArgs.get( 0 ).clone();
+        }
+        else
+        {
+          OpTree ot = new OpTree();
+          ot.op = "REV";
+          ot.opArgs = new ArrayList< OpTree >();
+          ot.opArgs.add( this );
+          return ot;
+        }
+      }
+      else if ( Arrays.asList( "MULT", "ADD", "SUB" ).contains( os ) )
+      {
+        OpTree ot1 = doOp( "REV", null );
+        OpTree ot2 = arg.doOp( "REV", null );
+        
+        if ( ot1.value == null && ot1.op.equals( os ) )
+        {
+          OpTree ot = ot1.clone();
+          ot.opArgs.add( ot2 );
+          return ot.doOp( "REV", null );
+        }
+        
+        OpTree ot = new OpTree();
+        ot.op = os;
+        ot.opArgs = new ArrayList< OpTree >();
+        ot.opArgs.add( ot1 );
+        ot.opArgs.add( ot2 );
+        return ot.doOp( "REV", null );
+      }
       return null;
     }
     
     public String lsbEvaluate()
     {
+      return evaluate( false );
+    }
+    
+    private String evaluate( boolean msb )
+    {
       String str = "";
       if ( value != null )
       {
-        str = value.lsbEvaluate();
+        str = value.evaluate( msb );
       }
-      else
+      else if ( op.equals( "REV" ) )
+      {
+        str = opArgs.get( 0 ).evaluate( !msb );
+      }
+      else if ( !msb || Arrays.asList( "OR", "AND", "XOR" ).contains( op ))
       {
         for ( int i = 0; i < opArgs.size(); i++ )
         {
           OpTree ot = opArgs.get( i );
-          String eval = ot.lsbEvaluate();
-          if ( eval.equals( "0" ) && ( op.equals( "OR" ) || op.equals( "XOR" ) ) && ( !str.isEmpty() || i < opArgs.size() - 1 ) )
+          String eval = ot.evaluate( msb );
+          if ( eval.equals( "0" ) && Arrays.asList( "OR", "XOR", "ADD", "SUB" ).contains( op ) && ( !str.isEmpty() || i < opArgs.size() - 1 ) )
           {
             continue;
           }
           String opSymbol = op.equals( "AND" ) ? "&" : op.equals( "OR" ) ? "|" 
-              : op.equals( "XOR" ) ? "^" : "??";
+              : op.equals( "XOR" ) ? "^" : op.equals( "ADD" ) ? "+" : op.equals( "SUB" ) ? "-"
+                  : op.equals( "MULT" ) ? "*" : "??";
           str += str.isEmpty() ? "" : opSymbol;
 
           if ( Pattern.matches( "[A-Za-z0-9\\[\\]\\-\\:\\" + opSymbol + "]+", eval ) )
@@ -376,7 +449,10 @@ public class MAXQ610data
             str += "(" + eval + ")";
           }
         }
-        
+      }
+      else  // other msb cases 
+      {
+        str = "(" + evaluate( false ) + "):-8";
       }
       if ( Pattern.matches( "\\([A-Za-z0-9\\[\\]\\-\\:\\&\\|\\^]+\\)", str ) )
       {
@@ -388,20 +464,7 @@ public class MAXQ610data
     
     public String msbEvaluate()
     {
-      String str = "";
-      if ( value != null )
-      {
-        return value.msbEvaluate();
-      }
-      else
-      {
-        for ( OpTree ot : opArgs )
-        {
-          str += str.isEmpty() ? "" : op.equals( "AND" ) ? "&" : op.equals( "OR" ) ? "|" : "??";
-          str += "(" + ot.msbEvaluate() + ")";
-        }
-      }
-      return str;
+      return evaluate( true );
     }
   }
   
@@ -470,7 +533,7 @@ public class MAXQ610data
       return null;
     }
     
-    public String msbEvaluate()
+    private String msbEvaluate()
     {
       // Return string corresponding to the msb form of the value
       int[] revAnd = new int[ 4 ];
@@ -479,6 +542,7 @@ public class MAXQ610data
       reverseByte( or, revOr );
       int num = 0;
       String str = "";
+      
       if ( revAnd[ 1 ] == revAnd[ 3 ] - revAnd[ 2 ] + 1 )
       {
         // The "and" value has 1's in consecutive positions
@@ -527,7 +591,7 @@ public class MAXQ610data
       return null;
     }
     
-    public String lsbEvaluate()
+    private String lsbEvaluate()
     {
       // Return string corresponding to the lsb form of the value
       if ( and == 0 )
@@ -590,6 +654,11 @@ public class MAXQ610data
         return str;
       }
       return null;
+    }
+    
+    public String evaluate( boolean msb )
+    {
+      return msb ? msbEvaluate() : lsbEvaluate();
     }
     
     public Value clone()
@@ -3736,10 +3805,6 @@ public class MAXQ610data
       comboPaths.clear();
       comboPaths = createCodePaths( lastTiming, last );
       varMap.clear();
-      if ( e.names.get( 0 ).startsWith( "Denon/" ) )
-      {
-        int x = 0;
-      }
       prb.postamble = makeCTree( nodeList, varMap, lastTiming + 1 );
     }
 
@@ -3919,10 +3984,6 @@ public class MAXQ610data
     {
       return null;
     }
-    if ( e.names.get( 0 ).startsWith( "F12" ))
-    {
-      int x = 0;
-    }
     int[] b = n.branch;
     for ( int i = n.start; i < b[0]; i++ )
     {
@@ -3969,7 +4030,8 @@ public class MAXQ610data
   {
     List< String > argList = new ArrayList< String >();
     List< String > argList2 = new ArrayList< String >();
-    List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND", "OR", "XOR" );
+    List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND", "OR", "XOR",
+        "ADD", "SUB", "MULT" );
     String args = item.getArgumentText();
     StringTokenizer st = new StringTokenizer( args, ",[]" );
     while ( st.hasMoreTokens() )
@@ -4209,7 +4271,8 @@ public class MAXQ610data
     }
     String op = item.getOperation();
     String args = item.getArgumentText();
-    List< String > comboOps = Arrays.asList( "MOV", "LSL", "LSR", "AND", "OR", "XOR", "MOVN", "SWAP" );
+    List< String > comboOps = Arrays.asList( "MOV", "LSL", "LSR", "AND", "OR", 
+        "XOR", "MOVN", "SWAP", "ADD",  "SUB", "MULT" );
     return ( comboOps.contains( op )  && !args.contains( "(" )
         || op.equals( "MOVW" ) && args.contains( "#$" ) );
   }
