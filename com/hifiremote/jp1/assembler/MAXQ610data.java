@@ -50,6 +50,7 @@ public class MAXQ610data
   private List< AssemblerItem > fullItemList = null;
   private List< AssemblerItem > completeItemList = null;
   private LinkedHashMap< String, Integer > labelIndex = new LinkedHashMap< String, Integer >();
+  private LinkedHashMap< String, Integer > loopIndex = new LinkedHashMap< String, Integer >();
   private List< Integer > labelAddresses = new ArrayList< Integer >();
   private LinkedHashMap< Integer, String > labels = new LinkedHashMap< Integer, String >();
   private LinkedHashMap< Integer, Node > nodeList = new LinkedHashMap< Integer, Node >();
@@ -123,6 +124,7 @@ public class MAXQ610data
   {
     public List< String > assignments = new ArrayList< String >();
     public String[] branch = new String[ 2 ];
+    public String[] loop = new String[ 2 ];
     public CodeTree[] next = new CodeTree[ 2 ];
     
     public List< String > description()
@@ -132,8 +134,25 @@ public class MAXQ610data
       {
         list.addAll( assignments );
       }
+      else if ( branch[ 0 ].equals( "next" ) )
+      {
+        list.addAll( assignments );
+        list.add( "next " + loop[ 0 ] );
+      }
+      else if ( branch[ 0 ].equals( "loop" ) )
+      {
+        list.addAll( assignments );
+        list.add( "for " + loop[ 0 ] + "=0 to " + loop[ 1 ] + " {" );
+        List< String > list2 = next[ 0 ].description();
+        for ( String s : list2 )
+        {
+          list.add( "  " + s );
+        }
+        list.add( "}" );
+      }
       else
       {
+        list.addAll( assignments );
         list.add( "if (" + branch[ 0 ] + ") {" );
         List< String > list2 = next[ 0 ] == null ? assignments : next[ 0 ].description();
         for ( String s : list2 )
@@ -227,12 +246,14 @@ public class MAXQ610data
     {      
       int n = -1;
       int nRev = -1;
+      int v = -1;
+      int vRev = -1;
       boolean consecutive = false;
       try
       {
         if ( arg != null && arg.value != null )
         {
-          n = Integer.parseInt( arg.value.var );
+          n = Integer.parseInt( arg.value.lsbEvaluate() );
           int rev[] = new int[ 4 ];
           reverseByte( n, rev );
           consecutive = rev[ 1 ] == rev[ 3 ] - rev[ 2 ] + 1;
@@ -242,6 +263,21 @@ public class MAXQ610data
       catch ( NumberFormatException nfe )
       {
         n = -1;
+      }
+      
+      try
+      {
+        if ( value != null )
+        {
+          v = Integer.parseInt( value.lsbEvaluate() );
+          int rev[] = new int[ 4 ];
+          reverseByte( v, rev );
+          vRev = rev[ 0 ];
+        }
+      }
+      catch ( NumberFormatException nfe )
+      {
+        v = -1;
       }
 
       if ( Arrays.asList( "OR", "XOR", "ADD" ).contains( os ) 
@@ -278,7 +314,11 @@ public class MAXQ610data
         {
           OpTree ot1 = new OpTree();
           ot1.opArgs = new ArrayList< OpTree >();
-          if ( os.equals( "LSR" ) || os.equals( "LSL" ) )
+          if ( os.equals( "REV" ) )
+          {
+            return opArgs.get( 0 );
+          }
+          else if ( os.equals( "LSR" ) || os.equals( "LSL" ) )
           {
             ot1 = opArgs.get( 0 ).doOp( os.equals( "LSR" ) ? "LSL" : "LSR", arg );
             OpTree ot = new OpTree();
@@ -301,6 +341,13 @@ public class MAXQ610data
         {
           return (new OpTree( "(" + lsbEvaluate() + ")" ) ).doOp( os, arg );
         }
+      }
+      else if ( n >= 0 && v >= 0 && Arrays.asList( "ADD", "SUB", "MULT" ).contains( os ) )
+      {
+        v = os.equals( "ADD" ) ? vRev+nRev : os.equals( "SUB" ) ? vRev-nRev : vRev*nRev;
+        int rev[] = new int[ 4 ];
+        reverseByte( v, rev );
+        return new OpTree( ""+rev[0] );
       }
       else if ( os.equals( "CPL" ) )
       {
@@ -425,13 +472,31 @@ public class MAXQ610data
       {
         str = opArgs.get( 0 ).evaluate( !msb );
       }
+      else if ( op.equals( "VAR" ) )
+      {
+        str = opArgs.get( 0 ).evaluate( true );
+        try
+        {
+          int ref = Integer.parseInt( str );
+          str = irpLabel( ref );
+        }
+        catch ( NumberFormatException nfe )
+        {
+          str = "VAR(" + str + ")";
+        }
+        str += "[" + opArgs.get( 1 ).evaluate( false ) + "]";
+        if ( msb )
+        {
+          str += ":-8";
+        }
+      }
       else if ( !msb || Arrays.asList( "OR", "AND", "XOR" ).contains( op ))
       {
         for ( int i = 0; i < opArgs.size(); i++ )
         {
           OpTree ot = opArgs.get( i );
           String eval = ot.evaluate( msb );
-          if ( eval.equals( "0" ) && Arrays.asList( "OR", "XOR", "ADD", "SUB" ).contains( op ) && ( !str.isEmpty() || i < opArgs.size() - 1 ) )
+          if ( eval.equals( "0" ) && Arrays.asList( "OR", "XOR", "ADD" ).contains( op ) && ( !str.isEmpty() || i < opArgs.size() - 1 ) )
           {
             continue;
           }
@@ -746,13 +811,18 @@ public class MAXQ610data
     /*  branch elements are:
           0 = end
           1 = start for left branch (on zero or true, -1 if no branch)
+                or start of loop for DBNZ loop ( = branch[ 0 ] in this case
+                as there is actually no loop-start instructions
           2 = start for right branch (on nonzero or false, -1 if no branch)
+                or end of loop (the DBNZ instruction) for DBNZ loop
         branch type is
          -1   : unknown type
           0-7 : branch on this bit of branchVar being zero/nonzero
           8   : branch on branchVar being true/false
           9   : system branch (first frame / key held)
          10   : unconditional
+         11   : branch ending at DBNZ loop (branches to type 12 branch)
+         12   : start of DBNZ loop
     */
     
     public Node( int start )
@@ -772,6 +842,14 @@ public class MAXQ610data
         str = prefix + "key is ";
         str += val == 0 ? "" : "not ";
         str += branchVar;
+      }
+      else if ( branchType == 11 )
+      {
+        str = val == 0 ? "loop" : branchVar;
+      }
+      else if ( branchType == 12 )
+      {
+        str = val == 0 ? "next" : branchVar;
       }
       return str;
     }
@@ -839,8 +917,9 @@ public class MAXQ610data
       sbIndex = 0;
       analyzeExecutor( hex );
       labelIndex.clear();
+      loopIndex.clear();
       nodeList.clear();
-      completeItemList = fullItemList;
+      completeItemList = expandLabels( fullItemList );
       fullItemList = null;
       labels.clear();
       pbIndex = 0;
@@ -1832,6 +1911,36 @@ public class MAXQ610data
         e.errors.add( "Irregular instruction  at no. " + i + "/" + limit );
         prb.pbHandled = false;
       }
+      if ( item.getLabel() != null && loopIndex.get( item.getLabel() ) != null )
+      {
+        // item is start of DBNZ loop
+        int loopCtrl = loopIndex.get( item.getLabel() );
+        int[] branch = new int[ 3 ];
+        branch[ 0 ] = i;
+        branch[ 1 ] = i + 1;
+        branch[ 2 ] = -1;
+        node.branch = branch;
+        AssemblerItem ctrlItem = completeItemList.get( loopCtrl );
+        String ctrlVar = irpLabel( ctrlItem.getHex().getData()[ 2 ] );
+        node.branchVar = ctrlVar;
+        node.branchType = 11;  // ends at DBNZ loop
+        return node;
+      }
+
+      if ( item.getOperation().equals( "DBNZ" ) )
+      {
+        String label = labels.get( item.getAddress() + item.getHex().getData()[ 1 ] - 0x100 );
+        String ctrlVar = irpLabel( item.getHex().getData()[ 2 ] );
+        int[] branch = new int[ 3 ];
+        branch[ 0 ] = i;
+        branch[ 1 ] = i + 1;
+        branch[ 2 ] = labelIndex.get( label ) != null ? labelIndex.get( label ) : -1;
+        node.branch = branch;
+        node.branchVar = ctrlVar;
+        node.branchType = 12;  // start of DBNZ loop
+        return node;
+      }
+      
       if ( type == 2 || type == 7 || type == 8 || type == 13 )
       {
         // type 2 = branch on test of data, type 7 = branch on test of first frame
@@ -1999,19 +2108,30 @@ public class MAXQ610data
         {
           AssemblerItem ai = completeItemList.get( i );
           String label = ai.getLabel();
-          if ( !label.isEmpty() && ( label.startsWith( "PB" ) || label.startsWith( "SB" ) ) )
+          if ( !label.isEmpty() /*&& ( label.startsWith( "PB" ) || label.startsWith( "SB" ) )*/ )
           {
-            labelIndex.put(  label, i );
+            labelIndex.put( label, i );
           }
-          else
+//          else
+//          {
+//            int ad = ai.getAddress();
+//            label = labels.get( ad );
+//            if ( label != null )
+//            {
+//              ai.setLabel( label );
+//              labelIndex.put(  label, i );
+//            }
+//          }
+          if ( ai.getOperation().equals( "DBNZ" ) )
           {
-            int ad = ai.getAddress();
-            label = labels.get( ad );
-            if ( label != null )
-            {
-              ai.setLabel( label );
-              labelIndex.put(  label, i );
-            }
+//            int ad = ai.getAddress();
+//            int rel = ai.getHex().getData()[ 1 ];
+//            if ( rel >= 0x80 )
+//            {
+//              rel -= 0x100;
+//            }
+            label = labels.get( ai.getAddress() + ai.getHex().getData()[ 1 ] - 0x100 );
+            loopIndex.put( label, i );
           }
         }
 
@@ -2228,20 +2348,20 @@ public class MAXQ610data
           {
             AssemblerItem ai = completeItemList.get( i );
             String label = ai.getLabel();
-            if ( !label.isEmpty() && ( label.startsWith( "PB" ) || label.startsWith( "SB" ) ) )
+            if ( !label.isEmpty() /* && ( label.startsWith( "PB" ) || label.startsWith( "SB" ) )*/ )
             {
               labelIndex.put(  label, i );
             }
-            else
-            {
-              int ad = ai.getAddress();
-              label = labels.get( ad );
-              if ( label != null )
-              {
-                ai.setLabel( label );
-                labelIndex.put(  label, i );
-              }
-            }
+//            else
+//            {
+//              int ad = ai.getAddress();
+//              label = labels.get( ad );
+//              if ( label != null )
+//              {
+//                ai.setLabel( label );
+//                labelIndex.put(  label, i );
+//              }
+//            }
           }
           
           int start = labelIndex.get( "SB" + sbIndex );
@@ -2740,7 +2860,7 @@ public class MAXQ610data
     {
       // valid types for protocol block
       // limit only used when analyzing part of protocol block
-      validTypes = Arrays.asList( -1,1,2,3,4,14 );
+      validTypes = Arrays.asList( -1,1,2,3,4,14,15 );
     }
     else
     {
@@ -3184,6 +3304,7 @@ public class MAXQ610data
      *12 = Resume IR transmission
      *13 = Branch on test of key held
      *14 = Indexed data move
+     *15 = DBNZ instruction
      */
     
     
@@ -3193,12 +3314,12 @@ public class MAXQ610data
     }
     freqFlags[ 1 ] = false;  // set for instruction that changes frequency
     String opName = item.getOperation();
-    if ( opName.equals( "END" ) )
+    if ( opName.equals( "END" ) || opName.equals( "NOP" ) )
     {
       return -1;
     }
     List< String > opList = Arrays.asList( "MOV", "AND", "OR", "BRA", 
-        "MOVN", "MOVW", "CARRIER", "TIMING", "CALL", "XOR", "BSR" );
+        "MOVN", "MOVW", "CARRIER", "TIMING", "CALL", "XOR", "BSR", "DBNZ" );
     int opIndex = opList.indexOf( opName );
     
     String args = item.getArgumentText();
@@ -3286,7 +3407,12 @@ public class MAXQ610data
       return itemType;
     }
 
-    if ( opIndex == 3 )
+    if ( opIndex == 11 )
+    {
+      // DBNZ instruction
+      itemType = 15;
+    }
+    else if ( opIndex == 3 )
     {
       if ( Pattern.matches( "L\\d*", args ) )
       {
@@ -3797,7 +3923,8 @@ public class MAXQ610data
     List< Integer > comboPaths = null;
     comboPaths = createCodePaths( start , limit );
     LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
-    prb.preamble = makeCTree( nodeList, varMap, start + 1 );
+    List< String > refList = new ArrayList< String >();
+    prb.preamble = makeCTree( nodeList, varMap, refList, start + 1 );
     
     if ( lastTiming > 0 )
     {
@@ -3805,7 +3932,8 @@ public class MAXQ610data
       comboPaths.clear();
       comboPaths = createCodePaths( lastTiming, last );
       varMap.clear();
-      prb.postamble = makeCTree( nodeList, varMap, lastTiming + 1 );
+      refList.clear();
+      prb.postamble = makeCTree( nodeList, varMap, refList, lastTiming + 1 );
     }
 
     nodeList = savedNodeList;
@@ -3975,7 +4103,8 @@ public class MAXQ610data
     return ret;  
   }
   
-  private CodeTree makeCTree( LinkedHashMap< Integer, Node > list, LinkedHashMap< String, OpTree > varMap, int start )
+  private CodeTree makeCTree( LinkedHashMap< Integer, Node > list, LinkedHashMap< String, OpTree > varMap, 
+      List< String > refList, int start )
   {    
 //    LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
     CodeTree cTree = new CodeTree();
@@ -3984,49 +4113,213 @@ public class MAXQ610data
     {
       return null;
     }
+
     int[] b = n.branch;
+    List< String > loopDestList = null;
+    List< String > destList = new ArrayList< String >();
+    List< String > srcList = new ArrayList< String >();
+    LinkedHashMap< String, OpTree > nextVarMap = varMap;
+    
+
     for ( int i = n.start; i < b[0]; i++ )
     {
       AssemblerItem item = completeItemList.get( i );
+      getReferenced( item, destList, srcList, false );
       if ( isAssignmentItem( item ) )
       {
-        interpretAssignmentItem( item, varMap );
+        interpretAssignmentItem( item, varMap, refList );
+      }
+      else if ( isLoopItem( item ) )
+      {
+        interpretLoopItem( item, varMap, refList, n.getComments( 1, "" ) );
       }
       else
       {
         break;
       }
     }
+    
+    if ( n.getComments( 0, "" ) != null && n.getComments( 0, "" ).equals( "loop" ) )
+    {
+      // remove variables changed by loop from varMap
+      nextVarMap = new LinkedHashMap< String, OpTree >();
+      for ( String key : varMap.keySet() )
+      {
+        nextVarMap.put( key, varMap.get( key ) );
+      }
+
+      List< String > destList2 = new ArrayList< String >();
+      List< String > srcList2 = new ArrayList< String >();
+      loopDestList = new ArrayList< String >();
+      for ( int i = b[ 1 ]; i < loopIndex.get( completeItemList.get( b[0 ]).getLabel() ); i++ )
+      {
+        AssemblerItem item = completeItemList.get( i );
+        String args = item.getArgumentText();
+        int refPos = -1;
+        int pos = args.indexOf( ", (" );
+        if ( pos >= 0 )
+        {
+          refPos = pos + 3;
+        }
+        else
+        {
+          pos = args.indexOf( "(" );
+          if ( pos >= 0 )
+          {
+            refPos = pos + 1;
+          }
+        }
+        if ( refPos > 0 )
+        {
+          String refVar = args.substring( refPos, args.indexOf( ")" ) );
+          refList.add( refVar );
+          OpTree val = varMap.get( refVar );
+          if ( val != null )
+          {
+            OpTree ot = val.doOp( "SUB", new OpTree( "11" ) );
+            varMap.put( refVar, ot );
+          }
+        }
+        
+        getReferenced( item, destList2, srcList2, false );
+        if ( item.getOperation().equals( "MOVI" ) )
+        {
+          String indexVar = srcList.get( 0 );
+          destList2.remove( indexVar );
+        }
+        for ( String var : destList )
+        {
+          nextVarMap.remove( var );
+          if ( !loopDestList.contains( var ) )
+          {
+            loopDestList.add( var );
+          }
+        }
+        destList2.clear();
+        srcList2.clear();
+      }
+    }
+        
     for ( String var : varMap.keySet() )
     {
-      String expr = var + "=" + varMap.get( var ).lsbEvaluate();
-      cTree.assignments.add( expr );
+      if ( e.names.get( 0 ).startsWith( "Panasonic Mixed" ))
+      {
+        int x = 0;
+      }
+      
+      if ( destList.contains( var ) )
+      {
+        String expr = var + "=" + varMap.get( var ).lsbEvaluate();
+        cTree.assignments.add( expr );
+      }
     }
     cTree.branch[ 0 ] = n.getComments( 0, "" );
     cTree.branch[ 1 ] = n.getComments( 1, "" );
+    
+    if ( cTree.branch[ 0 ] != null 
+        && ( cTree.branch[ 0 ].equals( "loop" ) || cTree.branch[ 0 ].equals( "next" ) ) )
+    {
+      cTree.loop[ 0 ] = n.branchVar;
+      if ( varMap.get( n.branchVar ) != null )
+      {
+        OpTree ot = varMap.get( n.branchVar ).doOp( "SUB", new OpTree( "128" ) );
+        cTree.loop[ 1 ] = ot.msbEvaluate();
+      }
+    }
+    
+
+    
     if ( b[ 1 ] > 0 && b [ 1 ] > n.start )
     {
       LinkedHashMap< String, OpTree > newVarMap = new LinkedHashMap< String, OpTree >();
-      for ( String s : varMap.keySet() )
+      for ( String s : nextVarMap.keySet() )
       {
-        newVarMap.put(  s, varMap.get( s ).clone() );
+        newVarMap.put(  s, nextVarMap.get( s ).clone() );
       }
-      cTree.next[ 0 ] = makeCTree( list, newVarMap, b[ 1 ] );
+      cTree.next[ 0 ] = makeCTree( list, newVarMap, refList, b[ 1 ] );
     }
-    if ( b[ 2 ] > 0 && b [ 1 ] > n.start )
+    if ( n.branchType != 12 && b[ 2 ] > 0 && b [ 2 ] > n.start )
     {
       LinkedHashMap< String, OpTree > newVarMap = new LinkedHashMap< String, OpTree >();
-      for ( String s : varMap.keySet() )
+      for ( String s : nextVarMap.keySet() )
       {
-        newVarMap.put(  s, varMap.get( s ).clone() );
+        newVarMap.put(  s, nextVarMap.get( s ).clone() );
       }
-      cTree.next[ 1 ] = makeCTree( list, newVarMap, b[ 2 ] );
+      cTree.next[ 1 ] = makeCTree( list, newVarMap, refList, b[ 2 ] );
     }
 
     return cTree;
   }
   
-  private void interpretAssignmentItem( AssemblerItem item, LinkedHashMap< String, OpTree > varMap )
+  private void interpretLoopItem( AssemblerItem item, LinkedHashMap< String, OpTree > varMap, List< String > refList, String loopVar )
+  {
+    String op = item.getOperation();
+    String args = item.getArgumentText();
+    StringTokenizer st = new StringTokenizer( args, ",()", true );
+    int argNum = 0;
+    boolean ref = false;
+    String dest = null;
+    OpTree ot = new OpTree();
+    while ( st.hasMoreTokens() )
+    {
+      String token = st.nextToken().trim();
+      if ( token.isEmpty() )
+      {
+        continue;
+      }
+      if ( token.equals( "," ) )
+      {
+        argNum++;
+        continue;
+      }
+      if ( token.equals( "(" ) )
+      {
+        ref = true;
+        continue;
+      }
+      if ( token.equals( ")" ) )
+      {
+        ref = false;
+        continue;
+      }
+      if ( argNum == 0 )
+      {
+        dest = irpLabel( token );
+        dest = dest != null ? dest : token;
+        if ( ref )
+        {
+          dest = irpLabel( 0xD0 ) + "[" + dest+ "]";
+        }
+      }
+      else if ( argNum == 1 )
+      {
+        String source = irpLabel( token );
+        source = source != null ? source : token;
+        if ( ref )
+        {
+          ot.op = "VAR";
+          ot.opArgs = new ArrayList< OpTree >();
+          ot.opArgs.add( new OpTree( "11" ) );
+          
+          if ( op.equals( "MOVI" ) )
+          {
+            ot.opArgs.add( new OpTree( loopVar ) );
+          }
+          else
+          {
+            ot.opArgs.add( new OpTree( source ) );
+          }
+        }
+        else
+        {
+          ot = varMap.get( source ) != null ? varMap.get( source ) : new OpTree( source );
+        }
+      }
+    }
+    varMap.put( dest, ot );
+  }
+  
+  private void interpretAssignmentItem( AssemblerItem item, LinkedHashMap< String, OpTree > varMap, List< String > refList )
   {
     List< String > argList = new ArrayList< String >();
     List< String > argList2 = new ArrayList< String >();
@@ -4095,14 +4388,23 @@ public class MAXQ610data
     }
     else if ( comboOps.contains( op ) )
     {
+      String dest = argList.get(0);
       String source = argList.get(1);
       String argStr = argList.get(2);
       OpTree currVal = varMap.get( source );
       currVal = currVal != null ? currVal : new OpTree( source );
+      if ( refList.contains( source ) )
+      {
+        currVal = currVal.doOp( "REV", null );
+      }
       OpTree currArg = varMap.get( argStr );
       currArg = currArg != null ? currArg : new OpTree( argStr );
       OpTree newVal = currVal.doOp( op, currArg );
-      varMap.put( argList.get(0), newVal );
+      if ( refList.contains( dest ) )
+      {
+        newVal = newVal.doOp( "REV", null );
+      }
+      varMap.put( dest, newVal );
     }
     else if ( op.equals( "SWAP" ) )
     {
@@ -4127,10 +4429,10 @@ public class MAXQ610data
   
   private boolean getReferenced( AssemblerItem item, List< String > destList, List<  String > srcList,
       boolean checkDest )
-  {
+  { 
     short[] hex = item.getHex().getData();
     int op = hex[ 0 ];
-    if ( op == 0x4C || op == 0x52 || op == 0x54 )
+    if ( op == 0x52 || op == 0x54 )
     {
       // Instructions affecting indeterminate destinations
       return false;
@@ -4208,6 +4510,20 @@ public class MAXQ610data
       }
     }
     
+    if ( op == 0x4C )
+    {
+      str = irpLabel( 0xD0 ) + "[" + irpLabel( hex[ 1 ] ) + "]";
+      if ( !destList.contains( str ) )
+      {
+        destList.add( str );
+      }
+      str = irpLabel( hex[ 2 ] );
+      if ( !srcList.contains( str ) && ( !checkDest || !destList.contains( str ) ) )
+      {
+        srcList.add(  str );
+      }
+    }
+    
     return true;
   }
 
@@ -4272,11 +4588,58 @@ public class MAXQ610data
     String op = item.getOperation();
     String args = item.getArgumentText();
     List< String > comboOps = Arrays.asList( "MOV", "LSL", "LSR", "AND", "OR", 
-        "XOR", "MOVN", "SWAP", "ADD",  "SUB", "MULT" );
+        "XOR", "MOVN", "SWAP", "ADD",  "SUB", "MULT", "NOP" );
     return ( comboOps.contains( op )  && !args.contains( "(" )
         || op.equals( "MOVW" ) && args.contains( "#$" ) );
   }
 
+  private boolean isLoopItem( AssemblerItem item )
+  {
+    if ( isAssignmentItem( item ) )
+    {
+      return true;
+    }
+    String args = item.getArgumentText();
+    if ( Pattern.matches( ".*\\((Fix|Var|Calc|Tmp)\\d+\\).*", args ) ) 
+    {
+      // instruction with indirect addressing
+      return true;
+    }
+    return false;
+  }
+  
+  private List< AssemblerItem > expandLabels( List< AssemblerItem > in )
+  {
+    List< AssemblerItem > out = new ArrayList< AssemblerItem >();
+    for ( AssemblerItem ai : in )
+    {
+      int ad = ai.getAddress();
+      String label = labels.get( ad );
+      if ( label != null )
+      {
+        AssemblerItem newItem = new AssemblerItem( ad, new Hex( new short[]{ 0x4F, 0, 0, 0 } ) );
+        newItem.setLabel( label );
+        newItem.setOperation( "NOP" );
+        out.add( newItem );
+      }
+      if ( !ai.getLabel().startsWith( "PB" ) && !ai.getLabel().startsWith( "SB" ) )
+      {
+        ai.setLabel( "" );
+      }
+//      labelIndex.put(  label, i );
+
+//      if ( item.getLabel().startsWith( "L" ) )
+//      {
+//        AssemblerItem newItem = new AssemblerItem( item.getAddress(), new Hex( new short[]{ 0x4F, 0, 0, 0 } ) );
+//        newItem.setLabel( item.getLabel() );
+//        newItem.setOperation( "NOP" );
+//        out.add( newItem );
+//        item.setLabel( "" );
+//      }
+      out.add( ai );
+    }
+    return out;
+  }
   
   private String getZeroLabel( int addr )
   {
@@ -4352,7 +4715,7 @@ public class MAXQ610data
     { "SUB", "Ind2" },           { "OR", "Ind2" },
     { "AND", "Ind2" },           { "XOR", "Ind2" },
     { "MOV", "Ind1" },           { "???", "Nil" },
-    { "???", "Nil" },                  { "???", "Nil" },
+    { "???", "Nil" },                  { "NOP", "Nil" },
     
     { "DBBC", "Dir3" },          { "SWAP", "Dir2" },
     { "MOVN", "Imm3" },          { "MOV", "Indx" },
