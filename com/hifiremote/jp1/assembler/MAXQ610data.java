@@ -51,12 +51,12 @@ public class MAXQ610data
   private List< AssemblerItem > completeItemList = null;
   private LinkedHashMap< String, Integer > labelIndex = new LinkedHashMap< String, Integer >();
   private LinkedHashMap< String, Integer > loopIndex = new LinkedHashMap< String, Integer >();
-  private LinkedHashMap< String, Integer > whileIndex = new LinkedHashMap< String, Integer >();
-  private LinkedHashMap< Integer, CodeTree > whileDone = new LinkedHashMap< Integer, CodeTree >();
+  private LinkedHashMap< Integer, CodeTree > loopDone = new LinkedHashMap< Integer, CodeTree >();
   private LinkedHashMap< String, Function > functionIndex = new LinkedHashMap< String, Function >();
   private List< Integer > labelAddresses = new ArrayList< Integer >();
   private LinkedHashMap< Integer, String > labels = new LinkedHashMap< Integer, String >();
   private LinkedHashMap< Integer, Node > nodeList = new LinkedHashMap< Integer, Node >();
+  private int treeRoot = 0;
   private double unit = 0;
   private boolean hasNativeCode = false;
   private boolean has2usOff = false;
@@ -132,6 +132,7 @@ public class MAXQ610data
     public CodeTree[] next = new CodeTree[ 2 ];
     public Node node = null;
     private static Node loopNode = null;
+    private static String forStart = "0";
     
     private List< String > getStringList( LinkedHashMap< String , String > map )
     {
@@ -148,11 +149,6 @@ public class MAXQ610data
       List< String > list = new ArrayList< String >();
       if ( branch[ 0 ].equals( "preloop" ) )
       {
-        if ( next[ 0 ] == null )
-        {
-          int x = 0;
-        }
-        
         for ( String var : next[ 0 ].assignments.keySet() )
         {
           assignments.put(  var, next[ 0 ].assignments.get(  var ) );
@@ -165,6 +161,7 @@ public class MAXQ610data
         list.addAll( getStringList( assignments ) );
         if ( loopNode == null && next[ 1 ].branch[ 0 ].equals( "loop" ) )
         {
+          forStart = "1";
           list.addAll( next[ 1 ].description() );
         }
 //        list.add( "next " + loop[ 0 ] );
@@ -172,7 +169,8 @@ public class MAXQ610data
       else if ( branch[ 0 ].equals( "loop" ) )
       {
         loopNode = node;
-        list.add( "for " + loop[ 0 ] + "=0 to " + loop[ 1 ] + " {" );
+        list.add( "for " + loop[ 0 ] + "=" + forStart + " to " + loop[ 1 ] + " {" );
+        forStart = "0";
         List< String > list2 = next[ 0 ].description();
         for ( String s : list2 )
         {
@@ -205,7 +203,10 @@ public class MAXQ610data
       {
         list.addAll( getStringList( assignments ) );
         list.add( "call " + branch[ 1 ] + "()" );
-        list.addAll( next[ 0 ].description() );
+        if ( next[ 0 ] != null )
+        {
+          list.addAll( next[ 0 ].description() );
+        }
       }
       else if ( loopNode != null && node.start == loopNode.branch[ 2 ] )
       {
@@ -224,7 +225,7 @@ public class MAXQ610data
         // branch returns to start of loop, so no need to loop back explicitly
         list.addAll( getStringList( assignments ) );
       }
-      else if ( !branch[0].isEmpty() && next[ 1 ] != null && next[ 1 ].node.branchType == 16 )
+      else if ( !branch[0].isEmpty() && next[ 1 ] != null && next[ 1 ].branch[ 0 ].equals( "while" ) )
       {
         // conditional branch that loops back to start of while loop
         list.addAll( getStringList( assignments ) );
@@ -922,13 +923,12 @@ public class MAXQ610data
           8   : branch on branchVar being true/false
           9   : system branch (first frame / key held)
          10   : unconditional
-         11   : branch envelops DBNZ loop
+         11   : branch envelops loop
          12   : body of DBNZ loop
-         13   : branch ends at start of DBNZ loop
+         13   : branch ends at start of loop
          14   : RTS instruction
          15   : BSR instruction 
-         16   : branch envelops while loop
-         17   : body of while loop
+         16   : in-line function
        $1xx   : branch on ( branchVar & xx ) being zero/nonzero
     */
     
@@ -964,7 +964,7 @@ public class MAXQ610data
       }
       else if ( branchType == 11 )
       {
-        str = val == 0 ? "loop" : branchVar;
+        str = val == 0 ? completeItemList.get( branch[ 2 ] - 1 ).getOperation().equals( "DBNZ" ) ? "loop" : "while" : branchVar;
       }
       else if ( branchType == 12 )
       {
@@ -982,7 +982,9 @@ public class MAXQ610data
       }
       else if ( branchType == 16 )
       {
-        str = val == 0 ? "while" : branchVar;
+        String label = completeItemList.get( branch[ 0 ] ).getLabel();
+        String function = functionIndex.get( label ).name;
+        str = val == 0 ? "call" : function;
       }
       return str;
     }
@@ -991,7 +993,7 @@ public class MAXQ610data
   private class Function
   {
     public String name = null;
-    public List< String > args = null;
+    public String label = null;
     public CodeTree code = new CodeTree();
     
     public Function( String name )
@@ -1063,8 +1065,7 @@ public class MAXQ610data
       analyzeExecutor( hex );
       labelIndex.clear();
       loopIndex.clear();
-      whileIndex.clear();
-      whileDone.clear();
+      loopDone.clear();
       functionIndex.clear();
       nodeList.clear();
       completeItemList = expandLabels( fullItemList );
@@ -1196,7 +1197,7 @@ public class MAXQ610data
           pbDesc += pb.description;
           pbDesc += "\nPreamble:\n";
           
-          if ( e.names.get( 0 ).startsWith( "Ortek" ))
+          if ( e.names.get( 0 ).startsWith( "Amino" ))
           {
             int x = 0;
           }
@@ -2073,21 +2074,21 @@ public class MAXQ610data
       }
       if ( item.getLabel() != null && loopIndex.get( item.getLabel() ) != null )
       {
-        // item is start of DBNZ loop
+        // item is start of loop
         if ( i > node.start )
         {
-          // branch ends at start of DBNZ loop
+          // branch ends at start of loop
           int[] branch = new int[ 3 ];
           branch[ 0 ] = i;
           branch[ 1 ] = i;;
           branch[ 2 ] = -1;
           node.branch = branch;
-          node.branchType = 13;  // ends at DBNZ loop
+          node.branchType = 13;  // ends at loop
           return node;
         }
         else
         {
-          // branch surrounds DBNZ loop
+          // branch surrounds loop
           int loopCtrl = loopIndex.get( item.getLabel() );
           int[] branch = new int[ 3 ];
           branch[ 0 ] = i;
@@ -2097,42 +2098,11 @@ public class MAXQ610data
           AssemblerItem ctrlItem = completeItemList.get( loopCtrl );
           String ctrlVar = irpLabel( ctrlItem.getHex().getData()[ 2 ] );
           node.branchVar = ctrlVar;
-          node.branchType = 11;  // surrounds DBNZ loop
+          node.branchType = 11;  // surrounds loop
           return node;
         }
       }
       
-      if ( item.getLabel() != null && whileIndex.get( item.getLabel() ) != null )
-      {
-        // item is start of while loop
-        if ( i > node.start )
-        {
-          // branch ends at start of while loop
-          int[] branch = new int[ 3 ];
-          branch[ 0 ] = i;
-          branch[ 1 ] = i;
-          branch[ 2 ] = -1;
-          node.branch = branch;
-          node.branchType = 13;  // ends at while loop
-          return node;
-        }
-        else
-        {
-          // branch surrounds while loop
-          int loopCtrl = whileIndex.get( item.getLabel() );
-          int[] branch = new int[ 3 ];
-          branch[ 0 ] = i;
-          branch[ 1 ] = i + 1;
-          branch[ 2 ] = whileIndex.get( item.getLabel() ) + 1;
-          node.branch = branch;
-          AssemblerItem ctrlItem = completeItemList.get( loopCtrl );
-//          String ctrlVar = irpLabel( ctrlItem.getHex().getData()[ 2 ] );
-//          node.branchVar = ctrlVar;
-          node.branchType = 16;  // surrounds while loop
-          return node;
-        }
-      }
-
       if ( item.getOperation().equals( "DBNZ" ) )
       {
         String label = labels.get( item.getAddress() + item.getHex().getData()[ 1 ] - 0x100 );
@@ -2160,6 +2130,8 @@ public class MAXQ610data
         node.branchType = 14;
         return node;
       }
+      
+      
       
       if ( type == 2 || type == 7 || type == 8 || type == 13 )
       {
@@ -2241,6 +2213,16 @@ public class MAXQ610data
           node.branchType = 10;  // unconditional
           return node;
         }
+      }
+      else if ( /*i > node.start &&*/ item.getLabel() != null 
+          && labelIndex.get( item.getLabel() ) != null
+          && labelIndex.get( item.getLabel() )!= treeRoot
+          && functionIndex.get( item.getLabel() ) != null )
+      {
+        // label begins an in-line function
+        node.branch = new int[]{i,-1,-1};
+        node.branchType = 16;
+        return node;
       }
       else if ( i == limit - 1 )
       {
@@ -2333,27 +2315,25 @@ public class MAXQ610data
         {
           AssemblerItem ai = completeItemList.get( i );
           String label = ai.getLabel();
-          if ( !label.isEmpty() /*&& ( label.startsWith( "PB" ) || label.startsWith( "SB" ) )*/ )
+          if ( !label.isEmpty() )
           {
             labelIndex.put( label, i );
           }
-          if ( ai.getOperation().equals( "DBNZ" ) )
+          if ( ai.getOperation().equals( "DBNZ" )
+              || ai.getHex() != null && ai.getHex().getData()[ 0 ] == 0x55 && ai.getHex().getData()[ 1 ] >= 0x80 )
           {
+            // first case is for-next loop, second is BRA NZ to earlier address, forming a while-do loop           
             label = labels.get( ai.getAddress() + ai.getHex().getData()[ 1 ] - 0x100 );
             loopIndex.put( label, i );
-          }
-          else if ( ai.getHex() != null && ai.getHex().getData()[ 0 ] == 0x55 && ai.getHex().getData()[ 1 ] >= 0x80 )
-          {
-            // BRA NZ to earlier address, forming a "do while" loop
-            label = labels.get( ai.getAddress() + ai.getHex().getData()[ 1 ] - 0x100 );
-            whileIndex.put( label, i );
           }
           else if ( ai.getOperation().equals( "BSR" ) )
           {
             if ( functionIndex.get( ai.getArgumentText()) == null )
             {
               String name = "Fn" + functionIndex.size();
-              functionIndex.put( ai.getArgumentText(), new Function( name ) );
+              Function fn = new Function( name );
+              fn.label = ai.getArgumentText();
+              functionIndex.put( ai.getArgumentText(), fn );
             }
           }
         }
@@ -2575,16 +2555,12 @@ public class MAXQ610data
             {
               labelIndex.put(  label, i );
             }
-            if ( ai.getOperation().equals( "DBNZ" ) )
+            if ( ai.getOperation().equals( "DBNZ" )
+                || ai.getHex() != null && ai.getHex().getData()[ 0 ] == 0x55 && ai.getHex().getData()[ 1 ] >= 0x80 )
             {
+              // first case is for-next loop, second is BRA NZ to earlier address, forming a while-do loop           
               label = labels.get( ai.getAddress() + ai.getHex().getData()[ 1 ] - 0x100 );
               loopIndex.put( label, i );
-            }
-            else if ( ai.getHex() != null && ai.getHex().getData()[ 0 ] == 0x55 && ai.getHex().getData()[ 1 ] >= 0x80 )
-            {
-              // BRA NZ to earlier address, forming a "do while" loop
-              label = labels.get( ai.getAddress() + ai.getHex().getData()[ 1 ] - 0x100 );
-              whileIndex.put( label, i );
             }
             else if ( ai.getOperation().equals( "BSR" ) )
             {
@@ -4180,9 +4156,12 @@ public class MAXQ610data
       nodeList = new LinkedHashMap< Integer, Node >();
       int fnStart = labelIndex.get( label );
       comboPaths.clear();
+      treeRoot = fnStart;
       comboPaths = createCodePaths( fnStart-1, last );
+      treeRoot = 0;
       varMap.clear();
       refList.clear();
+      loopDone.clear();
       f.code = makeCTree( nodeList, varMap, refList, fnStart );
       prb.functions.add( f );
     }
@@ -4369,11 +4348,11 @@ public class MAXQ610data
     {
       return null;
     }
-    
+
     cTree.node = n;
-    if ( ( n.branchType == 16 || n.branchType == 11 ) && whileDone.get( n.start ) == null )
+    if ( n.branchType == 11 && loopDone.get( n.start ) == null )
     {
-      whileDone.put( n.start, cTree );
+      loopDone.put( n.start, cTree );
     }
     int[] b = n.branch;
     List< String > loopDestList = null;
@@ -4406,7 +4385,6 @@ public class MAXQ610data
       // remove variables changed by loop from varMap, and also 
       // those not referenced as sources as their values will have been
       // displayed before the loop
-//      cTreeIndex.clear();
       nextVarMap = new LinkedHashMap< String, OpTree >();
       for ( String key : varMap.keySet() )
       {
@@ -4478,16 +4456,12 @@ public class MAXQ610data
     }
     else if ( n.getComments( 0, "" ).equals( "call" ) )
     {
-//      cTreeIndex.clear();
       nextVarMap = new LinkedHashMap< String, OpTree >();
     }
-        
+
     for ( String var : varMap.keySet() )
     {      
-//      if ( destList.contains( var ) )  // doesn't work within loop
-      {
-        cTree.assignments.put( var, varMap.get( var ).lsbEvaluate() );
-      }
+      cTree.assignments.put( var, varMap.get( var ).lsbEvaluate() );
     }
     cTree.branch[ 0 ] = n.getComments( 0, "" );
     cTree.branch[ 1 ] = n.getComments( 1, "" );
@@ -4506,14 +4480,9 @@ public class MAXQ610data
       cTree.loop[ 0 ] = nodeList.get( b[ 1 ] ).getComments( 1, "" );
     }
 
-//    if ( whileDone.contains( b[ 1 ]) || whileDone.contains( b[ 2 ]))
-//    {
-//      int x = 0;
-//    }
-
-    if ( b[ 1 ] > 0 /*&& !whileDone.contains( b[ 1 ] )*/ )
+    if ( b[ 1 ] > 0 )
     {
-      if ( whileDone.get( b[1]) == null )
+      if ( loopDone.get( b[1]) == null )
       {
         LinkedHashMap< String, OpTree > newVarMap = new LinkedHashMap< String, OpTree >();
         for ( String s : nextVarMap.keySet() )
@@ -4524,12 +4493,12 @@ public class MAXQ610data
       }
       else
       {
-        cTree.next[0] = whileDone.get( b[1]);
+        cTree.next[0] = loopDone.get( b[1]);
       }
     }
-    if ( /*n.branchType != 12 && n.branchType != 17 && */b[ 2 ] > 0 /*&& !whileDone.contains( b[ 2 ] ) */ )
+    if ( b[ 2 ] > 0 )
     {
-      if ( whileDone.get( b[2]) == null )
+      if ( loopDone.get( b[2]) == null )
       {
         LinkedHashMap< String, OpTree > newVarMap = new LinkedHashMap< String, OpTree >();
         for ( String s : nextVarMap.keySet() )
@@ -4540,7 +4509,7 @@ public class MAXQ610data
       }
       else
       {
-        cTree.next[1] = whileDone.get( b[2]);
+        cTree.next[1] = loopDone.get( b[2]);
       }
     }
     return cTree;
