@@ -25,10 +25,12 @@ import com.hifiremote.jp1.ProtocolManager;
 
 public class MAXQ610data
 {
+//  public static List< String > irpVariables = null;
+  
 //  private boolean show = false;
   private PrintWriter pw = null;
-  private Executor e = null;
-  private ProtocolBlock prb = null;
+  private static Executor e = null;
+  private static ProtocolBlock prb = null;
   private IRPstruct irpStruct = null;
   private Processor proc = null;
   private int carrier = 0;
@@ -130,16 +132,110 @@ public class MAXQ610data
     public String[] branch = new String[ 2 ];
     public String[] loop = new String[ 2 ];
     public CodeTree[] next = new CodeTree[ 2 ];
+    public CodeTree parent = null;
     public Node node = null;
+    public List< String > thisDests = new ArrayList< String >();
+    public List< String > thisSources = new ArrayList< String >();
+    private List< String > allSources = null;
+    private List< String > allDests = null;
     private static Node loopNode = null;
     private static String forStart = "0";
+    
+    public CodeTree(){}
+    
+    public CodeTree( CodeTree parent )
+    {
+      this.parent = parent;
+    }
+    
+    public List< String > getAllSources()
+    {
+      if ( allSources != null )
+      {
+        return allSources;
+      }
+      allSources = new ArrayList< String >();
+      for ( String var : thisSources )
+      {
+        if ( inLoop() || parent == null || !parent.getAllDests().contains( var ) )
+        {
+          allSources.add( var );
+        }
+      }
+      if ( next[ 0 ] != null )
+      {
+        for ( String var : next[ 0 ].getAllSources() )
+        {
+          if ( !allSources.contains( var ) )
+          {
+            allSources.add( var );
+          }
+        }
+      }
+      if ( next[ 1 ] != null )
+      {
+        for ( String var : next[ 1 ].getAllSources() )
+        {
+          if ( !allSources.contains( var ) )
+          {
+            allSources.add( var );
+          }
+        }
+      }
+      return allSources;
+    }
+    
+    public List< String > getAllDests()
+    {
+      if ( allDests != null )
+      {
+        return allDests;
+      }
+      allDests = new ArrayList< String >();
+//      allDests.addAll( thisDests );
+      if ( parent != null )
+      {
+        for ( String var : parent.thisDests )
+        {
+          if ( !allDests.contains( var ) )
+          {
+            allDests.add( var );
+          }
+        }
+        for ( String var : parent.getAllDests() )
+        {
+          if ( !allDests.contains( var ) )
+          {
+            allDests.add( var );
+          }
+        }
+      }
+      return allDests;
+    }
+    
+    private boolean inLoop()
+    {
+      if ( parent == null )
+      {
+        return false;
+      }
+      if ( parent.branch[ 0 ].equals( "loop" ) )
+      {
+        return this == parent.next[ 0 ];
+      }
+      return parent.inLoop();
+    }
     
     private List< String > getStringList( LinkedHashMap< String , String > map )
     {
       List< String > list = new ArrayList< String >();
       for ( String var : map.keySet() )
       {
-        list.add( var + "=" + map.get( var ) );
+        if ( prb.sbVars.contains( var ) 
+            || getAllSources().contains( var ) )
+        {
+          list.add( var + "=" + map.get( var ) );
+        }
       }
       return list;
     }
@@ -153,6 +249,7 @@ public class MAXQ610data
         {
           assignments.put(  var, next[ 0 ].assignments.get(  var ) );
         }
+        assignments.remove( next[ 0 ].loop[ 0 ] );
         list.addAll( getStringList( assignments ) );
         list.addAll( next[ 0 ].description() );
       }
@@ -738,7 +835,8 @@ public class MAXQ610data
           // Now build the bitfield
           str += var;                   // this may have a prefix "~"
           int disc = ( 7 - revAnd[ 3 ] - shift );  // number of bits to discard (see below)
-          str += ":-" + ( revAnd[ 1 ] - (disc < 0 ? -disc : 0 ) );    // the number of bits, with "-" as the bit order must be reversed
+          int keep = revAnd[ 1 ] - (disc < 0 ? -disc : 0 );
+          str += ( keep > 1 ? ":-" : ":" ) + keep;    // the number of bits, with "-" as the bit order must be reversed
           // Number of zeroes at right end of "and" mask is 7-revAnd[3]. These
           // correspond to bits to be discarded from shifted value before selecting 
           // next rev[1] bits, but mapped to unshifted value (shift=count of left shifts)
@@ -748,7 +846,11 @@ public class MAXQ610data
           {
             str += ":" + disc;
           }
-          if ( or > 0 )
+          if ( keep == 0 )
+          {
+            str = "" + revOr[0];
+          }
+          else if ( or > 0 )
           {
             str = "(" + str + ")|" + revOr[0];
           }
@@ -993,7 +1095,6 @@ public class MAXQ610data
   private class Function
   {
     public String name = null;
-    public String label = null;
     public CodeTree code = new CodeTree();
     
     public Function( String name )
@@ -1190,6 +1291,7 @@ public class MAXQ610data
         String pbDesc = "";
         for ( ProtocolBlock pb : e.pbList )
         {
+          prb = pb;
           if ( !pbDesc.isEmpty() )
           {
             pbDesc += "\n- - - - - - - - - - - -\n";
@@ -2332,7 +2434,6 @@ public class MAXQ610data
             {
               String name = "Fn" + functionIndex.size();
               Function fn = new Function( name );
-              fn.label = ai.getArgumentText();
               functionIndex.put( ai.getArgumentText(), fn );
             }
           }
@@ -2489,7 +2590,7 @@ public class MAXQ610data
         {
           txStr += ": ";
         }
-        txStr += analyzeTXBytes( txBytes, togData );
+        txStr += analyzeTXBytes( txBytes, togData, prb.sbVars );
         pos += txCount;
         if ( i < pbSwitchSize )
         {
@@ -2543,7 +2644,13 @@ public class MAXQ610data
               e.errors.add( "Indeterminate source in SB code" );
             }
           }
-          prb.sbVars.addAll( srcList );
+          for ( String var : srcList )
+          {
+            if ( !prb.sbVars.contains( var ) )
+            {
+              prb.sbVars.add( var );
+            }
+          }
         }
         else if ( completeItemList != null )
         {
@@ -2631,29 +2738,8 @@ public class MAXQ610data
     return s;
   }
   
-  private boolean runIREngine( int addr, Hex hex, LinkedList< TimingStruct > altTimings, TimingStruct ts )
+  private int[] interpretToggle( int toggle )
   {
-    boolean changed = false;
-    int pos = 0;
-    short[] data = hex.getData();
-    int pbHeader = data[ pos++ ];
-    int pbOptSize = pbHeader & 0x0F;
-    int pbSwitchSize = pbOptSize > 2 ? data[ pos + 1 ] & 0x0F : 0;
-    int toggle = pbOptSize > 5 ? hex.get( pos + 4 ) : 0;
-
-    pos += pbOptSize;   // pos points to code block if present, else signal block
-    boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
-    if ( pbHasCode )
-    {
-      pbIndex++;
-      int cbSize = data[ pos++ ];
-      pos += cbSize;
-      
-//      int start = labelIndex.get( "PB" + pbIndex );
-//      String interp = interpretPB( start );
-
-    }
-    
     int[] togData = null;
     if ( toggle > 0 )
     {
@@ -2673,7 +2759,80 @@ public class MAXQ610data
         prb.pbHandled = false;
       }
     }
+    return togData;
+  }
+  
+  private boolean updateAltTimings( LinkedList< TimingStruct > altTimings, TimingStruct ts )
+  {
+    boolean changed = false;
+    int start = labelIndex.get( "SB" + sbIndex );
+    int[] sbPath = null;
+    if ( ( sbPath = ts.sbPaths.get( sbIndex ) ) != null )
+    {
+      int p = sbPath[ 0 ];
+      List< Integer > list1 = new ArrayList< Integer >();
+      List< Integer > list2 = new ArrayList< Integer >();
+      int changeType = createPathSequence( start, p, 1, list1 );
+      if ( changeType > 0 )
+      {
+        changed = true;
+        createPathSequence( start, p, 2, list2 );
+        for ( int i : list1 )
+        {
+          for ( int j : list2 )
+          {
+            TimingStruct ts3 = ts.clone();
+            ts3.sbPaths.put( sbIndex, new int[]{i, changeType==1 ? i : j, j} );
+            altTimings.add( ts3 );
+          }
+        }
+      }
+      else if ( sbPath[1] != sbPath[0] )
+      {
+        p = sbPath[ 1 ];
+        list1.clear();
+        list2.clear();
+        changeType = createPathSequence( start, p, 1, list1 );
+        if ( changeType == 1 )
+        {
+          changed = true;
+          createPathSequence( start, p, 2, list2 );
+          for ( int i : list1 )
+          {
+            for ( int j : list2 )
+            {
+              TimingStruct ts3 = ts.clone();
+              ts3.sbPaths.put( sbIndex, new int[]{sbPath[ 0 ], i, j} );
+              altTimings.add( ts3 );
+            }
+          }
+        }
+      } 
+    }
+    return changed;
+  }
+  
+  private boolean runIREngine( int addr, Hex hex, LinkedList< TimingStruct > altTimings, TimingStruct ts )
+  {
+    boolean changed = false;
+    int pos = 0;
+    short[] data = hex.getData();
+    int pbHeader = data[ pos++ ];
+    int pbOptSize = pbHeader & 0x0F;
+    int pbSwitchSize = pbOptSize > 2 ? data[ pos + 1 ] & 0x0F : 0;
+    int toggle = pbOptSize > 5 ? hex.get( pos + 4 ) : 0;
+    int[] togData = interpretToggle( toggle );
+    pos += pbOptSize;
     
+    // pos now points to code block if present, else signal block
+    boolean pbHasCode = ( pbHeader & 0x80 ) != 0;
+    if ( pbHasCode )
+    {
+      pbIndex++;
+      int cbSize = data[ pos++ ];
+      pos += cbSize;
+    }
+
     // pos now points to signal block
     choices = new boolean[ 30 ];
     Arrays.fill( choices, false );
@@ -2722,7 +2881,7 @@ public class MAXQ610data
       for ( int i = 0; i <= pbSwitchSize; i++ )
       {
         Hex txBytes = hex.subHex( pos, txCount );
-        analyzeTXBytes( txBytes, togData );
+        analyzeTXBytes( txBytes, togData, null );
         pos += txCount;
         if ( i < pbSwitchSize )
         {
@@ -2748,50 +2907,10 @@ public class MAXQ610data
         sbIndex++;
         int cbSize = data[ pos++ ];
         pos += cbSize;
-        int start = labelIndex.get( "SB" + sbIndex );
-        int[] sbPath = null;
-        if ( ( sbPath = ts.sbPaths.get( sbIndex ) ) != null )
-        {
-          int p = sbPath[ 0 ];
-          List< Integer > list1 = new ArrayList< Integer >();
-          List< Integer > list2 = new ArrayList< Integer >();
-          int changeType = createPathSequence( start, p, 1, list1 );
-          if ( changeType > 0 )
-          {
-            changed = true;
-            createPathSequence( start, p, 2, list2 );
-            for ( int i : list1 )
-            {
-              for ( int j : list2 )
-              {
-                TimingStruct ts3 = ts.clone();
-                ts3.sbPaths.put( sbIndex, new int[]{i, changeType==1 ? i : j, j} );
-                altTimings.add( ts3 );
-              }
-            }
-          }
-          else if ( sbPath[1] != sbPath[0] )
-          {
-            p = sbPath[ 1 ];
-            list1.clear();
-            list2.clear();
-            changeType = createPathSequence( start, p, 1, list1 );
-            if ( changeType == 1 )
-            {
-              changed = true;
-              createPathSequence( start, p, 2, list2 );
-              for ( int i : list1 )
-              {
-                for ( int j : list2 )
-                {
-                  TimingStruct ts3 = ts.clone();
-                  ts3.sbPaths.put( sbIndex, new int[]{sbPath[ 0 ], i, j} );
-                  altTimings.add( ts3 );
-                }
-              }
-            }
-          } 
-        }
+        // TimingStructs already created for each PB and SB path in analyzeProtocolBlock()
+        // but SB paths allow a value 3, meaning both branches are to be followed (other
+        // values are 0 = none, 1=left branch, 2=right branch.  Now expand the "both" entries.
+        changed = updateAltTimings( altTimings, ts );
       }
 
       if ( !changed )
@@ -3863,7 +3982,7 @@ public class MAXQ610data
     }
   }
 
-  private String analyzeTXBytes( Hex hex, int[] togData )
+  private String analyzeTXBytes( Hex hex, int[] togData, List< String > srcList )
   {
     int togIndex = 0x100;
     int togPos = 0x100;
@@ -3911,6 +4030,12 @@ public class MAXQ610data
       boolean togComp = togData != null ? ( togData[ 5 ] & 0x08 ) > 0 : false;
       togComp = togCount == 1 ? false : flag && !togComp || !flag && togComp;
       int addr = 0xD0 + ( val & 0x0F );
+      String irpLabel = irpLabel( addr );
+      if ( srcList != null && !srcList.contains( irpLabel ) )
+      {
+        srcList.add( irpLabel );
+      }
+      
       String label = getZeroLabel( addr );
       txStr += " " + ( flag ? "~" : "" ) + label + ":" + ( n + Math.max( 0, rem ) );
       String valStr = ( flag ? "~" : "" ) + irpLabel( label );
@@ -4129,22 +4254,9 @@ public class MAXQ610data
     
     int limit = startTiming == 0 ? last : startTiming;
     LinkedHashMap< Integer, Node > savedNodeList = nodeList;
-    nodeList = new LinkedHashMap< Integer, Node >();
-    List< Integer > comboPaths = null;
-    comboPaths = createCodePaths( start , limit );
+    List< Integer > comboPaths = new ArrayList< Integer >();
     LinkedHashMap< String, OpTree > varMap = new LinkedHashMap< String, OpTree >();
     List< String > refList = new ArrayList< String >();
-    prb.preamble = makeCTree( nodeList, varMap, refList, start + 1 );
-    
-    if ( lastTiming > 0 )
-    {
-      nodeList = new LinkedHashMap< Integer, Node >();
-      comboPaths.clear();
-      comboPaths = createCodePaths( lastTiming, last );
-      varMap.clear();
-      refList.clear();
-      prb.postamble = makeCTree( nodeList, varMap, refList, lastTiming + 1 );
-    }
     
     for ( String label : functionIndex.keySet() )
     {
@@ -4162,8 +4274,31 @@ public class MAXQ610data
       varMap.clear();
       refList.clear();
       loopDone.clear();
-      f.code = makeCTree( nodeList, varMap, refList, fnStart );
+      f.code = makeCTree( null, nodeList, varMap, refList, fnStart );
       prb.functions.add( f );
+//      List< String > test = f.code.getAllSources();
+//      int x = 0;
+    }
+    
+    nodeList = new LinkedHashMap< Integer, Node >();
+    comboPaths.clear();
+    varMap.clear();
+    refList.clear();
+    loopDone.clear();
+    comboPaths = createCodePaths( start , limit );
+    prb.preamble = makeCTree( null, nodeList, varMap, refList, start + 1 );
+    
+    if ( lastTiming > 0 )
+    {
+      nodeList = new LinkedHashMap< Integer, Node >();
+      comboPaths.clear();
+      varMap.clear();
+      refList.clear();
+      loopDone.clear();
+      comboPaths = createCodePaths( lastTiming, last );
+      prb.postamble = makeCTree( null, nodeList, varMap, refList, lastTiming + 1 );
+//      List< String > test = prb.postamble.getAllSources();
+//      int x = 0;
     }
 
     nodeList = savedNodeList;
@@ -4333,7 +4468,7 @@ public class MAXQ610data
     return ret;  
   }
   
-  private CodeTree makeCTree( LinkedHashMap< Integer, Node > list, LinkedHashMap< String, OpTree > varMap, 
+  private CodeTree makeCTree( CodeTree parent, LinkedHashMap< Integer, Node > list, LinkedHashMap< String, OpTree > varMap, 
       List< String > refList, int start )
   {    
     if ( e.names.get( 0 ).startsWith( "Ortek" ))
@@ -4341,8 +4476,7 @@ public class MAXQ610data
       int x = 0;
     }
     
-    
-    CodeTree cTree = new CodeTree();
+    CodeTree cTree = new CodeTree( parent );
     Node n = list.get( start );
     if ( n == null )
     {
@@ -4377,6 +4511,12 @@ public class MAXQ610data
       {
         break;
       }
+    }
+    
+    for ( int i = n.start; i <= b[0]; i++ )
+    {
+      AssemblerItem item = completeItemList.get( i );
+      getReferenced( item, cTree.thisDests, cTree.thisSources, true );
     }
     
     if ( n.getComments( 0, "" ).equals( "loop" )
@@ -4419,6 +4559,10 @@ public class MAXQ610data
           OpTree val = varMap.get( refVar );
           if ( val != null )
           {
+            if ( refList.contains( refVar ) )
+            {
+              val = val.doOp( "REV", null );
+            }
             OpTree ot = val.doOp( "SUB", new OpTree( "11" ) );
             varMap.put( refVar, ot );
             cTree.assignments.put( refVar, ot.lsbEvaluate() );
@@ -4428,7 +4572,7 @@ public class MAXQ610data
         getReferenced( item, destList2, srcList2, false );
         if ( item.getOperation().equals( "MOVI" ) )
         {
-          String indexVar = srcList2.get( 0 );
+          String indexVar = destList2.get( 1 );
           destList2.remove( indexVar );
         }
         for ( String var : destList2 )
@@ -4471,6 +4615,10 @@ public class MAXQ610data
     {
       cTree.loop[ 0 ] = n.branchVar;
       OpTree base = varMap.get( n.branchVar ) != null ? varMap.get( n.branchVar ) : new OpTree( n.branchVar );
+      if ( refList.contains( n.branchVar ) )
+      {
+        base = base.doOp( "REV", null );
+      }
       OpTree ot = base.doOp( "SUB", new OpTree( "128" ) );
       cTree.loop[ 1 ] = ot.msbEvaluate();
     }
@@ -4489,7 +4637,7 @@ public class MAXQ610data
         {
           newVarMap.put(  s, nextVarMap.get( s ).clone() );
         }
-        cTree.next[ 0 ] = makeCTree( list, newVarMap, refList, b[ 1 ] );
+        cTree.next[ 0 ] = makeCTree( cTree, list, newVarMap, refList, b[ 1 ] );
       }
       else
       {
@@ -4505,7 +4653,7 @@ public class MAXQ610data
         {
           newVarMap.put(  s, nextVarMap.get( s ).clone() );
         }
-        cTree.next[ 1 ] = makeCTree( list, newVarMap, refList, b[ 2 ] );
+        cTree.next[ 1 ] = makeCTree( cTree, list, newVarMap, refList, b[ 2 ] );
       }
       else
       {
@@ -4522,6 +4670,7 @@ public class MAXQ610data
     StringTokenizer st = new StringTokenizer( args, ",()", true );
     int argNum = 0;
     boolean ref = false;
+    String source = null;
     String dest = null;
     OpTree ot = new OpTree();
     while ( st.hasMoreTokens() )
@@ -4557,7 +4706,7 @@ public class MAXQ610data
       }
       else if ( argNum == 1 )
       {
-        String source = irpLabel( token );
+        source = irpLabel( token );
         source = source != null ? source : token;
         if ( ref )
         {
@@ -4573,6 +4722,7 @@ public class MAXQ610data
           {
             ot.opArgs.add( new OpTree( source ) );
           }
+          source += "[]";  // prevent it from being in refList
         }
         else
         {
@@ -4580,11 +4730,22 @@ public class MAXQ610data
         }
       }
     }
+    if ( refList.contains( source ) && !refList.contains( dest ) 
+        || !refList.contains( source ) && refList.contains( dest ))
+    {
+      ot = ot.doOp( "REV", null );
+    }
     varMap.put( dest, ot );
   }
   
   private void interpretAssignmentItem( AssemblerItem item, LinkedHashMap< String, OpTree > varMap, List< String > refList )
   {
+    for ( int i= 0; i < 10; i++ )
+    {
+      refList.add( "Tmp"+i);
+    }
+    
+    
     List< String > argList = new ArrayList< String >();
     List< String > argList2 = new ArrayList< String >();
     List< String > comboOps = Arrays.asList( "LSL", "LSR", "AND", "OR", "XOR",
@@ -4615,17 +4776,34 @@ public class MAXQ610data
     String op = item.getOperation();
     if ( op.equals( "MOV" ) && !args.contains( "[" ) && !args.contains( "(" ) )
     {
+      String dest = argList.get(0);
       String source = argList.get(1);
       OpTree currVal = varMap.get( source );
       OpTree newVal = currVal != null ? currVal : new OpTree( source );
-      varMap.put( argList.get(0), newVal );        
+      if ( refList.contains( source ) && !refList.contains( dest ) 
+          || !refList.contains( source ) && refList.contains( dest ) )
+      {
+        newVal = newVal.doOp( "REV", null );
+      }
+      varMap.put( dest, newVal );
     }
     else if ( op.equals( "MOVW" ) && args.contains( "#$" ) )
     {
       int dest = item.getHex().getData()[ 1 ];
+      String var1 = argList.get(0);
       String var2 = irpLabel( getZeroLabel( dest + 1 ) );
-      varMap.put( argList.get(0), new OpTree( argList.get(1) ) );  
-      varMap.put( var2, new OpTree( argList2.get(1) ) );
+      OpTree ot1 = new OpTree( argList.get(1) );
+      OpTree ot2 = new OpTree( argList2.get(1));
+      if ( refList.contains( var1 ) )
+      {
+        ot1 = ot1.doOp( "REV",  null );
+      }
+      if ( refList.contains( var2 ) )
+      {
+        ot2 = ot2.doOp( "REV",  null );
+      }
+      varMap.put( var1, ot1 );  
+      varMap.put( var2, ot2 );
     }
     else if ( op.equals( "MOVN" ) )
     {
@@ -4638,17 +4816,28 @@ public class MAXQ610data
         String var2 = irpLabel( src + i );
         OpTree currVal = varMap.get( var2 );
         OpTree newVal = currVal != null ? currVal : new OpTree( var2 );
+        if ( refList.contains( var1 ) &&  !refList.contains( var2 )
+          || !refList.contains( var1 ) &&  refList.contains( var2 ) )
+        {
+          newVal = newVal.doOp( "REV", null );
+        }
         varMap.put( var1, newVal );
       }
     }
     else if ( op.equals( "XOR" ) && args.contains( "#$FF" ) )
     {
       // Complement
+      String dest = argList.get(0);
       String source = argList.get(1);
       OpTree currVal = varMap.get( source );
       currVal = currVal != null ? currVal : new OpTree( source );
       OpTree newVal = currVal.doOp( "CPL", null );
-      varMap.put( argList.get(0), newVal );
+      if ( refList.contains( source ) && !refList.contains( dest ) 
+          || !refList.contains( source ) && refList.contains( dest ) )
+      {
+        newVal = newVal.doOp( "REV", null );
+      }
+      varMap.put( dest, newVal );
     }
     else if ( comboOps.contains( op ) )
     {
@@ -4663,6 +4852,11 @@ public class MAXQ610data
       }
       OpTree currArg = varMap.get( argStr );
       currArg = currArg != null ? currArg : new OpTree( argStr );
+      if ( refList.contains( argStr ) )
+      {
+        currArg = currArg.doOp( "REV", null );
+      }
+
       OpTree newVal = currVal.doOp( op, currArg );
       if ( refList.contains( dest ) )
       {
@@ -4672,28 +4866,49 @@ public class MAXQ610data
     }
     else if ( op.equals( "SWAP" ) )
     {
+      String dest = argList.get(0);
       String source = argList.get(1);
       OpTree currVal = varMap.get( source );
       currVal = currVal != null ? currVal : new OpTree( source );
       OpTree newVal = currVal.doOp( "SWAP", null );
-      varMap.put( argList.get(0), newVal ); 
+      if ( refList.contains( source ) && !refList.contains( dest ) 
+          || !refList.contains( source ) && refList.contains( dest ) )
+      {
+        newVal = newVal.doOp( "REV", null );
+      }
+      varMap.put( dest, newVal ); 
     }
     else if ( op.equals( "MOV" ) && args.contains( "[" ) )
     {
+      String dest = argList.get(0);
       String base = argList.get(2);
       OpTree currVal = varMap.get( base );
       currVal = currVal != null ? currVal : new OpTree( base );
+      if ( refList.contains( base ) )
+      {
+        currVal = currVal.doOp( "REV", null );
+      }
       String str = argList.get( 1 ) + "[";
       String valStr = currVal.msbEvaluate();
       str += valStr != null ? valStr : "???";
       str += "]";
-      varMap.put( argList.get(0), new OpTree( str ) );
+      OpTree ot = new OpTree( str );
+      if ( refList.contains( dest ) )
+      {
+        ot = ot.doOp( "REV", null );
+      }
+      varMap.put( dest, ot );
     }
   }
   
   private boolean getReferenced( AssemblerItem item, List< String > destList, List<  String > srcList,
       boolean checkDest )
   { 
+    if ( item.getHex() == null )
+    {
+      return false;
+    }
+    
     short[] hex = item.getHex().getData();
     int op = hex[ 0 ];
     if ( op == 0x52 || op == 0x54 )
@@ -4732,7 +4947,7 @@ public class MAXQ610data
     
     if ( op < 0x4C || op == 0x53 || op == 50 || op == 51 )
     {
-      if ( op != 0x10 && op != 0x30 )
+      if ( op != 0x10 && op != 0x30 && op != 0x41 )
       {
         str = irpLabel( hex[ 2 ] );
         if ( !srcList.contains( str ) && ( !checkDest || !destList.contains( str ) ) )
@@ -4741,6 +4956,7 @@ public class MAXQ610data
         }
       }
       
+      str = irpLabel( hex[ 1 ] );
       if ( !destList.contains( str ) )
       {
         str = irpLabel( hex[ 1 ] );
@@ -4785,6 +5001,33 @@ public class MAXQ610data
       if ( !srcList.contains( str ) && ( !checkDest || !destList.contains( str ) ) )
       {
         srcList.add(  str );
+      }
+    }
+    
+    if ( op == 0x59 || op == 0x4F )
+    {
+      String label = op == 0x59 ? item.getArgumentText() : item.getLabel();
+      Function fn = functionIndex.get(  label );
+      if ( fn != null && fn.code != null && fn.code.node != null )
+      {
+//        if ( fn.code == null || fn.code.getAllSources() == null )
+//        {
+//          int x = 0;
+//        }
+        for ( String var : fn.code.getAllSources() )
+        {
+          if ( !srcList.contains( var ) )
+          {
+            srcList.add( var );
+          }
+        }
+        for ( String var : fn.code.getAllDests() )
+        {
+          if ( !destList.contains( var ) )
+          {
+            destList.add( var );
+          }
+        }
       }
     }
     
