@@ -1648,7 +1648,13 @@ public class RemoteConfiguration
                 {
                   items.iconrefMap.put( f, key.iconref );
                 }
-                
+              }
+              if ( key.macroref != null )
+              {
+                if ( key.iconref != null )
+                {
+                  items.iconrefMap.put( f, key.iconref );
+                }
               }
               if ( key.irserial >= 0 )
               {
@@ -8943,6 +8949,10 @@ public class RemoteConfiguration
         {
           work.add( makeItem( "macroref", getLittleEndian( macro.getSerial() ), true ) );
           name = f != null ? f.getName() : macro.getName();
+          if ( f != null && f.icon != null && f.icon.ref > 0 )
+          {
+            work.add( makeItem( "iconref", new Hex( new short[]{ ( short )f.icon.ref } ), true ) );
+          }
         }
         if ( name == null )
         {

@@ -4396,7 +4396,7 @@ public class DeviceUpgrade extends Highlight
       // Create new empty bf to hold the macro.  Non-SSD remotes do not use a base
       // function to hold macros
       bf = new Function( f.getName() );
-      bf.icon = new RMIcon( 9 );
+      bf.icon = f.icon;
       bf.setUpgrade( this );
       functions.add( bf );
       assignments.assign( b, bf );

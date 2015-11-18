@@ -48,6 +48,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
@@ -55,14 +56,30 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 
+import com.hifiremote.jp1.GeneralFunction.IconPanel;
+import com.hifiremote.jp1.GeneralFunction.RMIcon;
+import com.hifiremote.jp1.GeneralFunction.IconRenderer;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ButtonPanel.
  */
-public class ButtonPanel extends KMPanel implements ActionListener
+public class ButtonPanel extends KMPanel implements ActionListener, ListSelectionListener
 {
-
+  public static class BPIconRenderer extends IconRenderer
+  { 
+    @Override
+    public Component getTableCellRendererComponent( JTable table, Object value, 
+        boolean isSelected, boolean hasFocus, int row, int col )
+    {
+      Component component = super.getTableCellRendererComponent( table, value, value == null ? false : isSelected, false, row, col );
+      if ( component instanceof JLabel )
+      {
+        component.setBackground( Color.LIGHT_GRAY );
+        ( ( JLabel )component ).setOpaque( true );
+      }
+      return component;
+    }
+  }
   /**
    * Instantiates a new button panel.
    * 
@@ -120,15 +137,22 @@ public class ButtonPanel extends KMPanel implements ActionListener
       }
     };
     
+    iconEditor = new RMSetterEditor< RMIcon, IconPanel >( IconPanel.class );
+    iconEditor.setRemoteConfiguration( devUpgrade.getRemoteConfig() );
+    iconEditor.setTitle( "Icon Editor" );
+    
     table.setRowSelectionAllowed( false );
     table.setColumnSelectionAllowed( false );
     table.setCellSelectionEnabled( true );
     table.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
+    table.getSelectionModel().addListSelectionListener( this );
     table.setSurrendersFocusOnKeystroke( true );
     table.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_DELETE, 0 ), "delete" );
     table.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
     table.setDefaultEditor( Function.class, popupEditor );
     table.setDefaultEditor( Macro.class, new SelectAllCellEditor() );
+    table.setDefaultEditor( RMIcon.class, iconEditor );
+    table.setDefaultRenderer( RMIcon.class, new BPIconRenderer() );
     table.addFocusListener( new FocusListener()
     {
       @Override
@@ -498,6 +522,14 @@ public class ButtonPanel extends KMPanel implements ActionListener
         + "(Table must have the focus.)</html>");
     panel.add( button );
 
+    RemoteConfiguration remoteConfig = devUpgrade.getRemoteConfig();
+    iconLabel = new JLabel( "   " );
+    iconLabel.setPreferredSize( new Dimension( 100, 40 ) );
+    iconLabel.setHorizontalTextPosition( SwingConstants.LEADING );
+    iconLabel.setVisible( remote.isSSD() && remoteConfig != null );
+    panel.add( Box.createVerticalStrut( iconLabel.getPreferredSize().height ) );
+    panel.add( iconLabel );
+    
     add( panel, BorderLayout.SOUTH );
     RMPanel.setButtonKeys( table, button );
   }
@@ -659,8 +691,17 @@ public class ButtonPanel extends KMPanel implements ActionListener
 
     if ( deviceUpgrade != null )
     {
+      iconEditor.setRemoteConfiguration( deviceUpgrade.getRemoteConfig() );
       setButtons( deviceUpgrade.getRemote().getUpgradeButtons() );
       setFunctions();
+      Remote remote = deviceUpgrade.getRemote();
+      RemoteConfiguration config = deviceUpgrade.getRemoteConfig();
+      iconLabel.setVisible( remote.isSSD() && config != null );
+    }
+    else
+    {
+      iconEditor.setRemoteConfiguration( null );
+      iconLabel.setVisible( false );
     }
   }
 
@@ -864,6 +905,37 @@ public class ButtonPanel extends KMPanel implements ActionListener
     functionPanel.revalidate();
   }
 
+  public JTableX getTable()
+  {
+    return table;
+  }
+  
+  @Override
+  public void valueChanged( ListSelectionEvent e )
+  {
+    Remote remote = deviceUpgrade.getRemote();
+    if ( remote.isSSD() && !e.getValueIsAdjusting() )
+    {
+      if ( table.getSelectedRowCount() == 1 )
+      {
+        RMIcon icon = null;
+        int row = table.getSelectedRow();
+        Button b = remote.getBaseUpgradeButtons()[ row ];
+        Macro macro = deviceUpgrade.getMacroMap().get( ( int )b.getKeyCode() );
+        if ( macro != null && macro.isSystemMacro() )
+        {
+          Function f = deviceUpgrade.getFunction( b, Button.NORMAL_STATE );
+          icon = f != null ? f.icon : null;
+        }
+        iconLabel.setIcon( icon == null ? null : icon.image );
+      }
+      else
+      {
+        iconLabel.setIcon( null );
+      }
+    }
+  }
+
   /** The table. */
   private JTableX table = null;
 
@@ -907,5 +979,9 @@ public class ButtonPanel extends KMPanel implements ActionListener
   private JMenuItem pasteItem = null;
   
   private SelectionPanel selector = null;
+  
+  private RMSetterEditor< RMIcon, IconPanel > iconEditor = null;
+  
+  private JLabel iconLabel = null;
   
 }

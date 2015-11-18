@@ -1,6 +1,10 @@
 package com.hifiremote.jp1;
 
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+
+import com.hifiremote.jp1.GeneralFunction.RMIcon;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -16,7 +20,7 @@ public class ButtonTableModel
   /** The device upgrade. */
   private DeviceUpgrade deviceUpgrade = null;
   
-  private KMPanel panel = null;
+  private ButtonPanel panel = null;
   
   /** The Constant buttonCol. */
   private static final int buttonCol = 0;
@@ -25,21 +29,25 @@ public class ButtonTableModel
   private static final int shiftedCol = 3;
   private static final int xShiftedCol = 4;
   public static final int aliasCol = 5;
+  public static final int iconCol = 6;
 
   
-  public void setPanel( KMPanel panel )
+  public void setPanel( ButtonPanel panel )
   {
     this.panel = panel;
   }
 
   /** The column names. */
   private static String[] columnNames =
-  { "Button", "Device", "Function", "", "", "Alias" };
+  { "Button", "Device", "Function", "", "", "Alias", "Icon?" };
+  
+  private static final String[] colPrototypeNames =
+  { "Btn", "Device", "Function", "Function", "Function", "Alias", "Icon?" };
   
   /** The Constant columnClasses. */
   private static final Class<?>[] columnClasses =
   { Button.class, DeviceButton.class, GeneralFunction.class, Function.class, 
-    Function.class, Macro.class };
+    Function.class, Macro.class, RMIcon.class };
 
   /**
    * Instantiates a new button table model.
@@ -79,6 +87,13 @@ public class ButtonTableModel
     columnNames[ shiftedCol ] = remote.getShiftLabel();
     columnNames[ xShiftedCol ] = remote.getXShiftLabel();
     fireTableStructureChanged();
+
+    int cols = getColumnCount();
+    for ( int i = 0; i < cols; i++ )
+    {
+      int col = getEffectiveColumn( i );
+      panel.getTable().setColumnWidth( i, getColumnPrototypeName( i ), col == ButtonTableModel.iconCol, 0 );
+    }
   }
 
   /* (non-Javadoc)
@@ -111,7 +126,7 @@ public class ButtonTableModel
       }
       if ( remote.usesEZRC() && deviceUpgrade.getRemoteConfig() != null )
       {
-        count += 2;   // Adds device and alias columns
+        count += 3;   // Adds device, alias and icon columns
       }
     }
     return count;
@@ -177,7 +192,7 @@ public class ButtonTableModel
       return b.allowsShiftedKeyMove();
     else if ( col == xShiftedCol )
       return b.allowsXShiftedKeyMove();
-    else if ( col == aliasCol )
+    else if ( col == aliasCol || col == iconCol )
       return getValueAt( row, 3 ) != null;
     return false;
   }
@@ -243,6 +258,9 @@ public class ButtonTableModel
         return deviceUpgrade.getFunction( button, Button.XSHIFTED_STATE );
       case aliasCol:
         return macro;
+      case iconCol:
+        Function f = deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
+        return macro != null && f != null ? f.icon : null; 
     }
    return null;
   }
@@ -287,6 +305,13 @@ public class ButtonTableModel
           f.setName( ( String )value );
         }
         break;
+      case iconCol:
+        if ( remote.isSoftButton( button ) )
+        {
+          Function f = deviceUpgrade.getFunction( button, Button.NORMAL_STATE );
+          f.icon = ( RMIcon )value;
+        }
+        break;
       default:
         break;
     }
@@ -314,6 +339,11 @@ public class ButtonTableModel
   public String getColumnName( int col )
   {
     return columnNames[ getEffectiveColumn( col ) ];
+  }
+  
+  public String getColumnPrototypeName( int col )
+  {
+    return colPrototypeNames[ getEffectiveColumn( col ) ];
   }
 
   /* (non-Javadoc)

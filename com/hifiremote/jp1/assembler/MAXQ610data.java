@@ -150,11 +150,17 @@ public class MAXQ610data
     
     public List< String > getAllSources()
     {
+      if ( e.names.get(0).startsWith( "Panasonic Mixed" ))
+      {
+        int x = 0;
+      }
+      
       if ( allSources != null )
       {
         return allSources;
       }
       allSources = new ArrayList< String >();
+      
       for ( String var : thisSources )
       {
         if ( inLoop() || parent == null || !parent.getAllDests().contains( var ) )
@@ -162,6 +168,20 @@ public class MAXQ610data
           allSources.add( var );
         }
       }
+      
+      CodeTree p = parent;
+      while ( p != null && p.node.isDataBranch() )
+      {
+        for ( String var : p.thisSources )
+        {
+          if ( !allSources.contains( var ) )
+          {
+            allSources.add( var );
+          }
+        }
+        p = p.parent;
+      }
+      
       if ( next[ 0 ] != null )
       {
         for ( String var : next[ 0 ].getAllSources() )
@@ -192,7 +212,7 @@ public class MAXQ610data
         return allDests;
       }
       allDests = new ArrayList< String >();
-//      allDests.addAll( thisDests );
+
       if ( parent != null )
       {
         for ( String var : parent.thisDests )
@@ -228,10 +248,18 @@ public class MAXQ610data
     
     private List< String > getStringList( LinkedHashMap< String , String > map )
     {
+      if ( e.names.get(0).startsWith( "Panasonic Mixed" ))
+      {
+        int x = 0;
+      }
+      
       List< String > list = new ArrayList< String >();
       for ( String var : map.keySet() )
       {
-        if ( prb.sbVars.contains( var ) 
+        // prb.sbVars is a list TX bytes plus all other variables referenced by
+        // signal block code.  Variables of form "A[xx]" need to be treated as
+        // TX bytes as we don't know which fixed/variable bytes they correspond to.
+        if ( prb.sbVars.contains( var ) || var.contains( "[" )
             || getAllSources().contains( var ) )
         {
           list.add( var + "=" + map.get( var ) );
@@ -242,6 +270,10 @@ public class MAXQ610data
     
     public List< String > description()
     {
+      if ( e.names.get(0).startsWith( "Panasonic Mixed" ))
+      {
+        int x = 0;
+      }
       List< String > list = new ArrayList< String >();
       if ( branch[ 0 ].equals( "preloop" ) )
       {
@@ -356,7 +388,13 @@ public class MAXQ610data
         else if ( next[ 0 ] != null && next[ 1 ] == null )
         {
           // unconditional branch
-          list.addAll( next[ 0 ].description() );
+          if ( next[ 0 ].branch[ 0 ].equals( "next" ) && loopNode == null )
+          {
+            // branches into loop, so remove loop control variable as its
+            // value will be displayed in loop heading
+            next[ 0 ].assignments.remove( next[ 0 ].loop[ 0 ] );
+          }
+          list.addAll( next[ 0 ].description() );     
         }
         else if ( loopNode != null && node.start != loopNode.branch[ 2 ] )
         {
@@ -1037,6 +1075,11 @@ public class MAXQ610data
     public Node( int start )
     {
       this.start = start;
+    }
+    
+    public boolean isDataBranch()
+    {
+      return branchType == 10 || branchType >=0 && branchType < 8;
     }
     
     public String getComments( int val, String prefix )
@@ -4512,7 +4555,10 @@ public class MAXQ610data
         break;
       }
     }
-    
+    if ( e.names.get(0).startsWith( "Panasonic Mixed" ))
+    {
+      int x = 0;
+    }
     for ( int i = n.start; i <= b[0]; i++ )
     {
       AssemblerItem item = completeItemList.get( i );
@@ -4950,6 +4996,10 @@ public class MAXQ610data
       if ( op != 0x10 && op != 0x30 && op != 0x41 )
       {
         str = irpLabel( hex[ 2 ] );
+        if ( op == 0x40 )
+        {
+          str = irpLabel( 0xD0 ) + "[" + irpLabel( hex[ 2 ] ) + "]";
+        }
         if ( !srcList.contains( str ) && ( !checkDest || !destList.contains( str ) ) )
         {
           srcList.add(  str );

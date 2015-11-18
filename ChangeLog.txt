@@ -133,6 +133,7 @@ Release build 10
 - Fix bug causing activity macros of XSight remotes to be wrongly allocated after changing order of activities (Graham)
 - Fix bug causing device button assignments not always to be updated when assignment made through adding new device upgrade (Graham)
 - Fix bug preventing protocol deletion when deleting device upgrade in remote with segments (Graham)
+- Add icon column with appropriate functionality to ButtonTableModel (Graham)
 
 Changes for v2.02
 -- Alpha --
