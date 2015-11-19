@@ -260,6 +260,7 @@ public class DeviceUpgradePanel extends RMTablePanel< DeviceUpgrade >
     if ( p != null )
     {
       du.setProtocol( p );
+      model.propertyChangeSupport.firePropertyChange( "data", null, null );
     }
 //    model.getRow( row ).getProtocol().editProtocol( remoteConfig.getRemote(), this );
     model.fireTableDataChanged();

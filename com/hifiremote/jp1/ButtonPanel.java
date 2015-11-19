@@ -691,11 +691,11 @@ public class ButtonPanel extends KMPanel implements ActionListener, ListSelectio
 
     if ( deviceUpgrade != null )
     {
-      iconEditor.setRemoteConfiguration( deviceUpgrade.getRemoteConfig() );
-      setButtons( deviceUpgrade.getRemote().getUpgradeButtons() );
-      setFunctions();
       Remote remote = deviceUpgrade.getRemote();
       RemoteConfiguration config = deviceUpgrade.getRemoteConfig();
+      setButtons( remote.getUpgradeButtons() );
+      setFunctions();
+      iconEditor.setRemoteConfiguration( config );
       iconLabel.setVisible( remote.isSSD() && config != null );
     }
     else

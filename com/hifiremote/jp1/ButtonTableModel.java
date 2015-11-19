@@ -42,7 +42,7 @@ public class ButtonTableModel
   { "Button", "Device", "Function", "", "", "Alias", "Icon?" };
   
   private static final String[] colPrototypeNames =
-  { "Btn", "Device", "Function", "Function", "Function", "Alias", "Icon?" };
+  { "Button", "Device", "Function", "Function", "Function", "Alias", "Icon?" };
   
   /** The Constant columnClasses. */
   private static final Class<?>[] columnClasses =
@@ -126,7 +126,7 @@ public class ButtonTableModel
       }
       if ( remote.usesEZRC() && deviceUpgrade.getRemoteConfig() != null )
       {
-        count += 3;   // Adds device, alias and icon columns
+        count += remote.isSSD() ? 3 : 2;   // Adds device, alias, and for SSD remotes also icon columns
       }
     }
     return count;
