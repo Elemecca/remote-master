@@ -135,6 +135,8 @@ Release build 10
 - Fix bug preventing protocol deletion when deleting device upgrade in remote with segments (Graham)
 - Add icon column with appropriate functionality to ButtonTableModel (Graham)
 - Fix bug with protocol code not updating correctly when edited in Device Upgrade Editor (Graham)
+Private build 11
+- Add support for user-defined Special Protocols (Graham)
 
 Changes for v2.02
 -- Alpha --

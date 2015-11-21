@@ -243,6 +243,14 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     
     panel.add( box );
     
+    // Hex parameter panel
+    panel = new JPanel( new FlowLayout( FlowLayout.LEFT, 10, 0 ) );
+    parameterCard.add( panel, "Hex" );
+    box = Box.createVerticalBox();
+    addToBox( new JLabel( "Hex:" ), box );
+    addToBox( hexField, box );
+    panel.add( box );
+    
     noteBox = Box.createVerticalBox();
     JLabel label = new JLabel( "Note: A decimal point is" );
     Font font = label.getFont();
@@ -594,6 +602,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
       setPauseDuration( null );
       setULDKPDuration( 4 );
       setModeName( "" );
+      setHexField( new Hex( 0 ) );
       setToggle( 0 );
       setCondition( 0 );
       ( ( DefaultListModel )firstMacroButtons.getModel() ).clear();
@@ -627,7 +636,8 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
     xShift.setSelected( false );
     setButton( function.getKeyCode(), boundKey, shift, xShift );
 
-    type.setSelectedItem( function.get_Type( config ) );
+    String selector = function instanceof UserSpecialFunction ? function.getDisplayType( config ) : function.get_Type( config );
+    type.setSelectedItem( selector );
     function.update( this );
 
     notes.setText( function.getNotes() );
@@ -796,7 +806,10 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         enableMacros( false );
       }
       else
+      {
+        cardStr = "Hex";
         enableMacros( false );
+      }
       CardLayout cl = ( CardLayout )parameterCard.getLayout();
       cl.show( parameterCard, cardStr );
       noteBox.setVisible(typeStr.equals( "Pause" ));
@@ -1317,7 +1330,7 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
 
   /** The parameter card. */
   private JPanel parameterCard = new JPanel( new CardLayout() );
-  // private JTextField hex = new JTextField( 12 );
+  private JTextField hexField = new JTextField( 12 );
 
   // for ModeName
   /** The mode name. */
@@ -1332,6 +1345,16 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
   public void setModeName( String text )
   {
     modeName.setText( text );
+  }
+  
+  public void setHexField( Hex hex )
+  {
+    hexField.setText( "" + hex );
+  }
+  
+  public String getHexString()
+  {
+    return hexField.getText();
   }
 
   /**

@@ -7681,6 +7681,11 @@ public class RemoteConfiguration
       int dot = className.lastIndexOf( '.' );
       className = className.substring( dot + 1 );
       pw.printHeader( className );
+      
+      if ( className.equals( "UserSpecialFunction" ) )
+      {
+        pw.print( "Function", sp.get_Type( this ) );
+      }
       if ( sp.isInternal() )
       {
         pw.print( "Internal", "true" );

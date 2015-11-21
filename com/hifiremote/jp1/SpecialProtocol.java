@@ -130,6 +130,10 @@ public abstract class SpecialProtocol
     {
       sp = new ModeNameSpecialProtocol( name, pid );
     }
+    else
+    {
+      sp = new UserSpecialProtocol( name, pid );
+    }
 
     if ( sp != null )
     {
