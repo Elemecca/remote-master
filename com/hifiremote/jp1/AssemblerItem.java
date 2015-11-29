@@ -434,7 +434,7 @@ public class AssemblerItem
     return label.startsWith( ";" );
   }
   
-  public int getType()
+  public int get_Type()
   {
     return type;
   }
