@@ -137,6 +137,8 @@ Release build 10
 - Fix bug with protocol code not updating correctly when edited in Device Upgrade Editor (Graham)
 Private build 11
 - Add support for user-defined Special Protocols (Graham)
+Release build 12
+- Add support for multiple OEM signatures to be listed in an RDF [Extender] section (Graham)
 
 Changes for v2.02
 -- Alpha --

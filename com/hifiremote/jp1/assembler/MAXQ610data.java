@@ -127,6 +127,7 @@ public class MAXQ610data
     public List< String > warnings = new ArrayList< String >();
     public boolean timingBlockHasGaps = false;
     public boolean postambleCommutable = true;
+    public Executor e = null; 
   }
   
   private static class CodeTree
@@ -1239,6 +1240,7 @@ public class MAXQ610data
       Arrays.fill( pfChanges, 0 );
       pbIndex = 0;
       sbIndex = 0;
+      prb = null;
       analyzeExecutor( hex );
       labelIndex.clear();
       loopIndex.clear();
@@ -1254,7 +1256,9 @@ public class MAXQ610data
       for ( ProtocolBlock pb : e.pbList )
       {
         pb.irps.clear();
+        pb.warnings.clear();
       }
+      prb = null;
       analyzeExecutor( hex );
 //      e.description = s;
 
@@ -1386,6 +1390,12 @@ public class MAXQ610data
             pbDesc += "\n- - - - - - - - - - - -\n";
           }
           pbDesc += pb.description;
+          
+          for ( String str : pb.warnings )
+          {
+            pbDesc += str + "\n";
+          }
+          
           pbDesc += "\nPreamble:\n";
           
           if ( pb.preamble != null || pb.postamble != null && pb.postambleCommutable )
@@ -1631,16 +1641,16 @@ public class MAXQ610data
     int tbSize = ( tbHeader & 0x3F ) + ( tbHasSpec ? 3 : 1 );
     int tbStart = pos;
     pos += tbSize;
+    int dbHeader = data[ pos++ ];
+    has2usOff = ( dbHeader & 0x40 ) != 0;
     for ( String str : analyzeTimingBlock( hex.subHex( tbStart, tbSize ), true, 0, 0x40, null ) )
     {
       e.description += str + "\n";
     }
     int carrierSaved = carrier;
-    int[] durationsSaved = tbDurations;
-    int dbHeader = data[ pos++ ];
+    int[] durationsSaved = tbDurations;    
     int dbSize = dbHeader & 0x07;
-    hasNativeCode = ( dbHeader & 0x80 ) != 0;
-    has2usOff = ( dbHeader & 0x40 ) != 0;
+    hasNativeCode = ( dbHeader & 0x80 ) != 0;    
     boolean hasAltExec = ( dbHeader & 0x20 ) != 0;
     int dbSwitch = !hasAltExec && dbSize > 1 ? hex.get( pos ) : 0;
     pos += dbSize;  // pos points to first (or only) protocol block
@@ -1650,6 +1660,7 @@ public class MAXQ610data
       while ( true )
       {
         prb = new ProtocolBlock();
+        prb.e = e;
         e.pbList.add( prb );
         int pbOptionsSize = data[ pos ] & 0x0F;
         int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
@@ -1710,6 +1721,7 @@ public class MAXQ610data
       {
         TimingStruct ts = altTimings.pop();
         irpStruct = new IRPstruct();
+        prb.warnings.clear();
         pbIndex = pbIndexSaved;  
         boolean changed = runIREngine( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, ts );
         if ( changed )
@@ -1799,6 +1811,75 @@ public class MAXQ610data
     return s;
   }
   
+  private int calculateUnit( int provUnit, int tolerance )
+  {
+    // add data signals to tbUsed and mask out lead-outs and alt carrier timing
+    int tbFlags = ( tbUsed | 0x03 ) & 0x6B;
+    int[] sizes = new int[]{ 2, 2, 1, 2, 1, 2, 2, 1 };
+    int[] usDurations = new int[ tbDurations.length ];
+
+    for ( int i = 0, n = 0; i < 7; i++ )
+    {
+      // convert durations to microseconds, omitting item 8, alt carrier timing
+      for ( int j = 0; j < tbLengths[ i ] * sizes[ i ] && n < tbDurations.length; j++ )
+      {
+        int mult = ( j & 1 ) == 0 && sizes[ i ] == 2 || !has2usOff ? carrier : 12;
+        int val = ( tbDurations[ n ] * mult + 3 ) / 6;
+        usDurations[ n++ ] = val;
+      }
+    }
+    
+    // Set limits on test range for unit as provUnit +/- (10% plus 3).
+    // The extra 3 allows for very small units (e.g. pid-002A, where 
+    // unit is 8u) as a small change in unit is a large percentage change.
+    int nmax = ( int )Math.round( 1.10 * provUnit + 3 );
+    int nmin = ( int )Math.round( 0.90 * provUnit - 3 );
+    
+    double fracmax = 0, fracminmax = 1.0;
+    for ( int testUnit = nmin; testUnit <= nmax; testUnit++ )
+    {
+      fracmax = 0;     
+      for ( int i = 0, n = 0; i < 7; i++ )
+      {
+        for ( int j = 0; j < tbLengths[ i ] * sizes[ i ] && n < usDurations.length; j++ )
+        {
+          double val = usDurations[ n++ ];
+          if ( val > 0 && ( ( tbFlags >> i ) & 1 ) == 1 )
+          {
+            double ratio = val / testUnit;
+            double fracpart = Math.abs( ratio - Math.rint( ratio ) );
+            fracmax = Math.max( fracmax, fracpart/ratio );           
+          }
+        }
+      }     
+         
+      if ( fracmax < fracminmax ) 
+      {
+        fracminmax = fracmax;
+        unit = testUnit;
+      }
+    }
+    
+    int no = 0;   // number out of tolerance range
+    for ( int i = 0, n = 0; i < 7; i++ )
+    {
+      for ( int j = 0; j < tbLengths[ i ] * sizes[ i ] && n < usDurations.length; j++ )
+      {
+        double val = usDurations[ n++ ];
+        if ( val > 0 && ( ( tbFlags >> i ) & 1 ) == 1 )
+        {
+          double ratio = val / unit;
+          double fracpart =  Math.abs( ratio - Math.rint( ratio ) );
+          if ( fracpart/ratio > tolerance / 100.0 )
+          {
+            no++;
+          }
+        }
+      }
+    }
+    return no;
+  }
+  
   /**
    *   If heads==true and ts==null, tbLengths and tbDurations will be set from timing block
    *     but if heads==true and ts!=null, tbDurations is set from ts.durations.
@@ -1812,6 +1893,7 @@ public class MAXQ610data
   {
     String str = "";
     List< String > list = new ArrayList< String >();
+    List< String > warn = new ArrayList< String >();
     if ( heads )
     {
       if ( ts == null )
@@ -1849,52 +1931,63 @@ public class MAXQ610data
       {
         list.add( "Raw OFF times are in units of 2us" );
       }
-      int min = 0x10000;
-      int tbMax = Math.min( 2 * ( tbLengths[ 0 ] + tbLengths[ 1 ] ) , tbDurations.length );
-      for ( int i = 0; i < tbMax; i++ )
+      
+//      int tbMax = Math.min( 2 * ( tbLengths[ 0 ] + tbLengths[ 1 ] ) , tbDurations.length );
+      int min = 10000;
+      int[] sizes = new int[]{ 2, 2, 1, 2, 1, 2, 2, 1 };
+      int tbFlags = ( tbUsed | 0x03 ) & 0x6B; 
+      for ( int i = 0, n = 0; i < 7; i++ )
       {
-        int mult = ( i & 1 ) == 0 | !has2usOff ? carrier : 12;
-        int val = ( tbDurations[ i ] * mult + 3 )/6;
-        if ( val > 0 )
+        // convert durations to microseconds, omitting item 8, alt carrier timing
+        for ( int j = 0; j < tbLengths[ i ] * sizes[ i ] && n < tbDurations.length; j++ )
         {
-          min = Math.min( min, val );
-        }
-      }
-      double best = 10.0;
-      double bestF = 0;
-      double worst = 0;
-      for ( double f = 0.9; f <= 1.1; f += 0.01 )
-      {
-        double max = 0;
-        double err = 0;
-        for ( int i = 0; i < tbMax; i++ )
-        {
-          int mult = ( i & 1 ) == 0 | !has2usOff ? carrier : 12;
-          if ( tbDurations[ i ] > 0 )
+          int mult = ( j & 1 ) == 0 && sizes[ i ] == 2 || !has2usOff ? carrier : 12;
+          int val = ( tbDurations[ n++ ] * mult + 3 ) / 6;
+          if ( val > 0 && ( ( tbFlags >> i ) & 1 ) == 1 )
           {
-            double val = ( tbDurations[ i ] * mult )/6.0;
-            double x = val/( min * f );
-            double var = Math.abs( x - Math.round( x ) );
-            max = Math.max( max, var );
-            err = Math.max( err, var / x );
+            // timing item is used and is not a lead-out
+            min = Math.min( min, val );
           }
         }
-        if ( max < best )
+      }
+      
+      if ( tbUsed != 0 )
+      {
+        // tbUsed == 0 should only occur in preliminary stages whose results are discarded
+        int nonint = calculateUnit(min, 5 );    
+        if (nonint > 0) 
         {
-          best = max;
-          bestF = f;
-          worst = err;
+          nonint = calculateUnit(min/2, 5 );
+        }
+        if (nonint > 0) 
+        {
+          nonint = calculateUnit(min/3, 5 );
+        }   
+        if (nonint > 0) 
+        {
+          // Revert to original calculation if greater accuracy not achieved.
+          nonint = calculateUnit(min, 5 );
+        }
+        if ( nonint > 0 )
+        {
+          // revert to values in us in this case
+          unit = 1;
         }
       }
-      unit = Math.round( min * bestF );
-      if ( worst > 0.05 )
+      else if ( tbUsed == 0 )
       {
-        prb.warnings.add( "Max irp timing error " + String.format( "%.2f", 100*worst ) +"%\n" );
+        unit = min;
       }
-      irpStruct.generalSpec += (int)unit + "}";
+
+      
+//      if ( prb != null && worst > 0.05 )
+//      {
+//        prb.warnings.add( "Max irp timing error " + String.format( "%.2f", 100*worst ) +"%\n" );
+//      }
+      irpStruct.generalSpec += unit == 1 ? "}" : (int)unit + "}";
       irpStruct.unit = ( int )unit;
     }
-    
+
     List< Integer > irpVals = heads || ( start == 0 && end == 0x40 ) ? new ArrayList< Integer >() : null;
     int[] limits = new int[]{ 0, 0 };
     int codeSpec = initialCodeSpec == -1 ? 0 : initialCodeSpec;
@@ -1903,7 +1996,8 @@ public class MAXQ610data
     if ( ( codeSpec & 0x10 ) != 0 )
     {
       // Set altCarrier
-      getTimingItem( 7, limits, null );
+      getTimingItem( 7, limits, null, warn );
+      warn.clear();
     }
     else
     {
@@ -1933,7 +2027,12 @@ public class MAXQ610data
             str += "+" + val;
             if ( heads )
             {
-              irpStruct.bitSpec += getIRPduration( val ) + ",";
+              irpStruct.bitSpec += getIRPduration( val, warn ) + ",";
+              if ( prb != null )
+              {
+                prb.warnings.addAll( warn );
+              }
+              warn.clear();
             }
           }
           val = ( tbDurations[ n++ ]*mult + 3 )/6;  // convert carrier cycles to us
@@ -1943,7 +2042,12 @@ public class MAXQ610data
             str += "-" + val;
             if ( heads )
             {
-              irpStruct.bitSpec += - getIRPduration( val ) + ",";
+              irpStruct.bitSpec += - getIRPduration( val, warn ) + ",";
+              if ( prb != null )
+              {
+                prb.warnings.addAll( warn );
+              }
+              warn.clear();
             }
           }
         }
@@ -1983,7 +2087,12 @@ public class MAXQ610data
             + "  for transmission to a 1 followed by n 0's " );
       }
       
-      str = getTimingItem( 0, limits, irpVals );
+      str = getTimingItem( 0, limits, irpVals, warn );
+      if ( prb != null )
+      {
+        prb.warnings.addAll( warn );
+      }
+      warn.clear();
       String oneStr = "";
       if ( !str.isEmpty() && start <= limits[ 0 ] && limits[ 0 ] <= end )
       {
@@ -1997,7 +2106,12 @@ public class MAXQ610data
           irpParts[ 2 ] = irpVals.get( 0 ) + ",";
         }
       }
-      str = getTimingItem( 1, limits, irpVals );
+      str = getTimingItem( 1, limits, irpVals, warn );
+      if ( prb != null )
+      {
+        prb.warnings.addAll( warn );
+      }
+      warn.clear();
       if ( !str.isEmpty() && start <= limits[ 0 ] && limits[ 0 ] <= end )
       {
         list.add( "0-bursts (us): " + str );
@@ -2017,16 +2131,39 @@ public class MAXQ610data
       }
     }
 
-    str = getTimingItem( 2, limits, irpVals );
+    str = getTimingItem( 2, limits, irpVals, warn );
     if ( !str.isEmpty() && ( tbUsed & 0x04 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Lead-out (us): " + str );
       if ( irpVals != null )
       {
-        irpParts[ 1 ] = irpVals.get( 0 ) + ",";
+        int value = irpVals.get( 0 );
+        if ( value > 0 )
+        {
+          // value is in microseconds
+          if ( value < 50000 )
+          {
+            irpParts[ 1 ] = ( - value ) + "u,";
+          }
+          else
+          {
+            value = ( value + 500 ) / 1000;
+            irpParts[ 1 ] = ( - value ) + "m,";
+          }
+        }
+        else
+        {
+          irpParts[ 1 ] = irpVals.get( 0 ) + ",";
+          if ( prb != null )
+          {
+            prb.warnings.addAll( warn );
+          }
+        }
       }
     }
-    str = getTimingItem( 3, limits, irpVals );
+    warn.clear();
+    
+    str = getTimingItem( 3, limits, irpVals, warn );
     if ( !str.isEmpty() && ( tbUsed & 0x08 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Lead-in (us): " + str );
@@ -2041,18 +2178,47 @@ public class MAXQ610data
           }
           irpParts[ 9 ] = irpVals.get( 0 ) + "," + ( irpVals.get( 1 ) / 2 ) + ",";
         }
+        if ( prb != null )
+        {
+          prb.warnings.addAll( warn );
+        }
       }
     }
-    str = getTimingItem( 4, limits, irpVals );
+    warn.clear();
+    
+    str = getTimingItem( 4, limits, irpVals, warn );
     if ( !str.isEmpty() && ( tbUsed & 0x10 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Alternate lead-out (us): " + str );
+
       if ( irpVals != null )
       {
-        irpParts[ 6 ] = irpVals.get( 0 ) + ",";
+        int value = irpVals.get( 0 );
+        if ( value > 0 )
+        {
+          // value is in microseconds
+          if ( value < 50000 )
+          {
+            irpParts[ 6 ] = ( - value ) + "u,";
+          }
+          else
+          {
+            value = ( value + 500 ) / 1000;
+            irpParts[ 6 ] = ( - value ) + "m,";
+          }
+        }
+        else
+        {
+          irpParts[ 6 ] = irpVals.get( 0 ) + ",";
+          if ( prb != null )
+          {
+            prb.warnings.addAll( warn );
+          }
+        }
       }
     }
-    str = getTimingItem( 5, limits, irpVals );
+    warn.clear();
+    str = getTimingItem( 5, limits, irpVals, warn );
     if ( !str.isEmpty() && ( tbUsed & 0x20 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Alternate lead-in (us): " + str );
@@ -2063,9 +2229,14 @@ public class MAXQ610data
         {
           irpParts[ 5 ] += n + ",";
         }
+        if ( prb != null )
+        {
+          prb.warnings.addAll( warn );
+        }
       }
     }
-    str = getTimingItem( 6, limits, irpVals );
+    warn.clear();
+    str = getTimingItem( 6, limits, irpVals, warn );
     if ( !str.isEmpty() && ( tbUsed & 0x40 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Mid-frame burst (us): " + str );
@@ -2076,11 +2247,16 @@ public class MAXQ610data
         {
           irpParts[ 3 ] += n + ",";
         }
+        if ( prb != null )
+        {
+          prb.warnings.addAll( warn );
+        }
       }
     }
+    warn.clear();
     if ( ( codeSpec & 0x10 ) != 0 )
     {
-      str = getTimingItem( 7, limits, null );
+      str = getTimingItem( 7, limits, null, warn );
       if ( !str.isEmpty() && start <= limits[ 0 ] && limits[ 0 ] <= end )
       {
         list.add( "0-burst carrier times (units of 1/6us): " + str );
@@ -2092,29 +2268,31 @@ public class MAXQ610data
   /**
    * Convert duration in microseconds (us) to integer multiple of IRP unit
    */
-  private int getIRPduration( int usDuration )
+  private int getIRPduration( int usDuration, List< String > warn )
   {
     double ratio = usDuration / unit;
     double delta = Math.abs( ratio - Math.round( ratio ) );
+    
     if ( delta > 0.05 * ratio )
     {
-      prb.warnings.add( String.format( "\n*** Diff %.2f", 100*delta/ratio ) + "%" + String.format(" in converting %d with unit %d\n", usDuration, (int)unit ) );
+      String w = String.format( "*** Diff %.2f", 100*delta/ratio ) + "%" + String.format(" in converting %d with unit %d", usDuration, (int)unit );
+      warn.add( w );
     }
     return ( int )Math.round( ratio );
   }
   
-  private String getTimingItem( int n, int[] limits, List< Integer > irpVals )
+  private String getTimingItem( int n, int[] limits, List< Integer > irpVals, List< String > warn )
   {
     int itemCarrier = carrier;
     if ( n == 1 && altCarrier != 0 )
     {
       itemCarrier = altCarrier;
     }
-    int[] durations = tbDurations;
-    return getTimingItem( n, itemCarrier, durations, limits, irpVals );
+    int[] durations = tbDurations;   
+    return getTimingItem( n, itemCarrier, durations, limits, irpVals, warn );
   }
   
-  private String getTimingItem( int n, int itemCarrier, int[] durations, int[] limits, List< Integer > irpVals )
+  private String getTimingItem( int n, int itemCarrier, int[] durations, int[] limits, List< Integer > irpVals, List< String > warn )
   {
     if ( irpVals != null )
     {
@@ -2152,7 +2330,7 @@ public class MAXQ610data
           str += "+" + val;
           if ( irpVals != null )
           {
-            irpVals.add( getIRPduration( val ) );
+            irpVals.add( getIRPduration( val, warn ) );
           }
         }
         val = ( durations[ pos++ ]*mult + 3 )/6;  // convert carrier cycles to us
@@ -2162,7 +2340,7 @@ public class MAXQ610data
           str += "-" + val;
           if ( irpVals != null )
           {
-            irpVals.add( - getIRPduration( val ) );
+            irpVals.add( - getIRPduration( val, warn ) );
           }
         }
       }
@@ -2181,7 +2359,16 @@ public class MAXQ610data
             str += "-" + val;
             if ( irpVals != null )
             {
-              irpVals.add( - getIRPduration( val ) );
+              int wSize = warn.size();
+              int irpDur = getIRPduration( val, warn );
+              if ( irpDur <= 50 && warn.size() == wSize )
+              {
+                irpVals.add( - irpDur );
+              }
+              else
+              {
+                irpVals.add( val );  // positive to indicate it is in microseconds
+              }
             }
           }
         }
@@ -4664,11 +4851,6 @@ public class MAXQ610data
       {
         break;
       }
-    }
-
-    if ( e.names.get( 0 ).startsWith( "Zaptor" ))
-    {
-      int x = 0;
     }
     
     for ( int i = n.start; i <= b[0]; i++ )

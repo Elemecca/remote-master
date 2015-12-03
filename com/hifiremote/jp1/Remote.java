@@ -2853,11 +2853,18 @@ public class Remote implements Comparable< Remote >
         break;
       }
 
-      StringTokenizer st = new StringTokenizer( line, "= \t" );
-      String name = st.nextToken();
-      if ( name.equalsIgnoreCase( "OEMSignature" ) && st.hasMoreTokens() )
+      if ( oemSignatures == null )
       {
-        oemSignature = st.nextToken();
+        oemSignatures = new ArrayList< String >();
+      }
+      StringTokenizer st = new StringTokenizer( line, "=, \t" );
+      String name = st.nextToken().trim();
+      if ( name.equalsIgnoreCase( "OEMSignature" ) )
+      {
+        while ( st.hasMoreTokens() )
+        {
+          oemSignatures.add( st.nextToken() );
+        }
       }
     }
     return line;
@@ -3644,11 +3651,11 @@ public class Remote implements Comparable< Remote >
     return extenderVersionParm;
   }
   
-  private String oemSignature = null;
+  private List< String > oemSignatures = null;
 
-  public String getOemSignature()
+  public List< String > getOemSignatures()
   {
-    return oemSignature;
+    return oemSignatures;
   }
 
   /** The RDF sync. */

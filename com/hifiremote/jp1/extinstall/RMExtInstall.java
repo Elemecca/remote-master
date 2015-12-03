@@ -27,6 +27,7 @@ import com.hifiremote.jp1.ProtocolManager;
 import com.hifiremote.jp1.Remote;
 import com.hifiremote.jp1.RemoteConfiguration;
 import com.hifiremote.jp1.RemoteManager;
+import com.hifiremote.jp1.RemoteMaster;
 import com.hifiremote.jp1.XorCheckSum;
 import com.hifiremote.jp1.extinstall.UpgradeItem.Classification;
 import com.hifiremote.jp1.io.JPS;
@@ -47,6 +48,10 @@ public class RMExtInstall extends ExtInstall
     this.hexName = hexName;
     this.sigAddr = remoteConfig.getRemote().getSigAddress();
     this.io = remoteConfig.getOwner().binLoaded();
+    errorMsg = null;
+    extenderRemote = null;
+    extenderMerge = true;
+    isSimpleset = false;
   }
 
   private String hexName;
@@ -157,6 +162,11 @@ public class RMExtInstall extends ExtInstall
       
       if ( isSimpleset )
       {
+        if ( extenderRemote == null )
+        {
+          remoteConfig = null;
+          showError();
+        }
         return;
       }
       if ( ExtRdf.m_AdvCodeAddr.end < 0 || ExtRdf.m_UpgradeAddr.end < 0 )
@@ -385,10 +395,10 @@ public class RMExtInstall extends ExtInstall
         errorMsg = "Merge data and its RDF have conflicting base addresses.";
         return;
       }
-      if ( remote.getOemSignature() != null && !remoteConfig.getRemote().getSignature().equals( remote.getOemSignature() )
+      if ( isSimpleset && remote.getOemSignatures() != null && !remote.getOemSignatures().contains( remoteConfig.getRemote().getSignature() )
          && !remoteConfig.getRemote().getSignature().equals( remote.getSignature() ) )
       {
-        if ( remoteConfig.getRemote().getOemSignature() != null && remoteConfig.getRemote().getOemSignature().equals( remote.getOemSignature() ) )
+        if ( remoteConfig.getRemote().getOemSignatures() != null )
         {
           String message = "This remote already has an extender installed which has a different signature from\n"
               + "that of the extender you are about to install.  This may mean that the new extender\n"
@@ -396,7 +406,7 @@ public class RMExtInstall extends ExtInstall
               + "may finish up with a corrupt setup.\n\n"
               + "Are you sure that you wish to continue?";
           String title = "Apparent extender incompatibility";
-          if ( JOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION ) == JOptionPane.NO_OPTION )
+          if ( RemoteMaster.NegativeDefaultButtonJOptionPane.showConfirmDialog( null, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE ) == JOptionPane.NO_OPTION )
           {
             errorMsg = "Aborting installation.";
             return;
