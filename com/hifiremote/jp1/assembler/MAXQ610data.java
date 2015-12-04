@@ -155,12 +155,6 @@ public class MAXQ610data
     
     public List< String > getAllSources()
     {
-      if ( e.names.get(0).startsWith( "Zaptor" ))
-      {
-        int x = 0;
-      }
-      
-      
       if ( allSources != null )
       {
         return allSources;
@@ -402,21 +396,26 @@ public class MAXQ610data
         if ( !branch[0].isEmpty() )
         {
           // conditional branch
-          list.add( "if (" + branch[ 0 ] + ") {" );
           List< String > list2 = next[ 0 ] == null ? getStringList( assignments ) : next[ 0 ].description();
-          for ( String s : list2 )
+          List< String > list3 = next[ 1 ] == null ? getStringList( assignments ) : next[ 1 ].description();
+          if ( !list2.isEmpty() )
           {
-            list.add( "  " + s );
+            list.add( "if (" + branch[ 0 ] + ") {" );
+            for ( String s : list2 )
+            {
+              list.add( "  " + s );
+            }
+            list.add( "}" );
           }
-          list.add( "}" );
-
-          list.add( "else if (" + branch[ 1 ] + ") {" );
-          list2 = next[ 1 ] == null ? getStringList( assignments ) : next[ 1 ].description();
-          for ( String s : list2 )
+          if ( !list3.isEmpty() )
           {
-            list.add( "  " + s );
+            list.add( ( !list2.isEmpty() ? "else " : "" ) + "if (" + branch[ 1 ] + ") {" );
+            for ( String s : list3 )
+            {
+              list.add( "  " + s );
+            }
+            list.add( "}" );
           }
-          list.add( "}" );
         }
         else if ( next[ 0 ] != null && next[ 1 ] == null )
         {
@@ -3531,14 +3530,14 @@ public class MAXQ610data
     {
       // valid types for protocol block
       // limit only used when analyzing part of protocol block
-      validTypes = Arrays.asList( -1,1,2,3,4,9,14,15 );
+      validTypes = Arrays.asList( -1,1,2,3,4,8,9,14,15 );
     }
     else
     {
       // valid types for signal block
       validTypes = Arrays.asList( -1,1,2,3,4,6,7,8,9,10,11,12,13 );
     }
-    
+
     if ( limit == 0 )
     {
       limit = completeItemList.size() - 1;
@@ -3556,15 +3555,15 @@ public class MAXQ610data
       {
         labelsUsed.add( label );
       }
-      int type = item.get_Type();
-      if ( source.startsWith( "PB" ) )
-      {
-        if ( /*( type == 3 || type == 4 ) &&*/ validTypes.contains( type ) )
-        {
-          last = i + 1;
-        }
-      }
-      else
+//      int type = item.get_Type();
+//      if ( source.startsWith( "PB" ) )
+//      {
+//        if ( /*( type == 3 || type == 4 ) &&*/ validTypes.contains( type ) )
+//        {
+//          last = i + 1;
+//        }
+//      }
+//      else
       {
         // for signal block, continue till instruction preceding END
         if ( item.getOperation().equals( "END" ) )
@@ -4030,12 +4029,17 @@ public class MAXQ610data
         {
           itemType = 14;  // indexed/indirect move
         }
-      }
-      else if ( Pattern.matches( pre + "Tmp.*", args ) )
-      {
-        itemType = -1;
+        else if ( itemType == 1 && opName.equals( "DBBC" ) )
+        {
+          itemType = 0;
+        }
         break;
       }
+//      else if ( Pattern.matches( pre + "Tmp.*", args ) )
+//      {
+//        itemType = -1;
+//        break;
+//      }
     }
     
     if ( opIndex < 0 )
@@ -4565,7 +4569,7 @@ public class MAXQ610data
       {
         AssemblerItem item = completeItemList.get( i );
         int type = item.get_Type();
-        if ( type != 2 && type != 3 && type != 4 )
+        if ( type != 2 && type != 3 && type != 4 && type != -1 )
         {
           prb.timingBlockHasGaps = true;
           prb.errors.add( "Timing instructions not consecutive" );
