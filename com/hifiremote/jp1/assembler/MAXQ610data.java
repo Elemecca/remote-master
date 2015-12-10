@@ -127,7 +127,9 @@ public class MAXQ610data
     public List< String > warnings = new ArrayList< String >();
     public boolean timingBlockHasGaps = false;
     public boolean postambleCommutable = true;
-    public Executor e = null; 
+    public Executor e = null;
+    public int startTiming = 0;
+    public int lastTiming = 0;
   }
   
   private static class CodeTree
@@ -325,7 +327,7 @@ public class MAXQ610data
       else if ( branch[ 0 ].equals( "loop" ) )
       {
         loopNode = node;
-        list.add( "for " + loop[ 0 ] + "=" + forStart + " to " + loop[ 1 ] + " {" );
+        list.add( "for n" /*+ loop[ 0 ]*/ + "=" + forStart + " to " + loop[ 1 ] + " {" );
         forStart = "0";
         List< String > list2 = next[ 0 ].description();
         for ( String s : list2 )
@@ -1411,15 +1413,6 @@ public class MAXQ610data
             pbDesc += "<none>\n";
           }
 
-//          if ( pb.postamble != null && !pb.postambleCommutable )
-//          {
-//            pbDesc += "\nPostamble:\n";
-//            if ( pb.postamble != null )
-//            {
-//              pbDesc += pb.postamble + "\n";
-//            }
-//          }
-
           for ( Function f : pb.functions )
           {
             pbDesc += "\nProcedure " + f.name + ":\n";
@@ -1466,6 +1459,128 @@ public class MAXQ610data
         s += String.format( " $%02X", i );
       }
       pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
+      pw.close();
+      fw.close();
+    }
+    catch ( IOException e )
+    {
+      e.printStackTrace();
+    }
+    
+    try
+    {
+      FileWriter fw = new FileWriter( "MAXQtranslations.txt" );
+      pw = new PrintWriter( fw );
+      for ( Executor e : execs )
+      {
+        MAXQ610data.e = e;
+        boolean hasErrors = !e.errors.isEmpty();
+        for ( ProtocolBlock pb : e.pbList )
+        {
+          hasErrors = hasErrors || !pb.errors.isEmpty();
+        }
+        if ( hasErrors )
+        {
+          continue;
+        }
+        
+        int nums = e.hex.getData()[ 2 ];
+        String s = "";
+        for ( String eName : e.names )
+        {
+          s += eName + "\n";
+        }
+        int fix = ( nums >> 4 ) & 0x0F;
+        s += "\n"+ fix + " fixed byte" + ( fix != 1 ? "s" : "" );
+        if ( fix > 0 )
+        {
+          s += ": bit-reversed";
+        }
+        for ( int i = 0; i < fix; i++ )
+        {
+          s += " " + "ABCDEFGHIJ".charAt( i );
+        }
+        int var = nums & 0x0F;
+        s += "\n" + var + " variable byte" + ( var != 1 ? "s" : "" );
+        if ( var > 0 )
+        {
+          s += ": bit-reversed";
+        }
+        for ( int i = 0; i < var; i++ )
+        {
+          s += " " + "XYZW".charAt( i );
+        }
+        s += "\n\n";
+
+        String pbDesc = "";
+        for ( ProtocolBlock pb : e.pbList )
+        {
+          prb = pb;
+          if ( pb.condition != null )
+          {
+            pbDesc += "If " + pb.condition + "\n\n";
+          }
+          
+          for ( String str : pb.warnings )
+          {
+            pbDesc += "***" + str + "\n";
+          }
+          
+          String pre = pb.preamble != null ? pb.preamble.toString() : "";
+          String post = pb.postamble != null ? pb.postamble.toString() : "";
+          
+          if ( !pre.isEmpty() || !post.isEmpty() && pb.postambleCommutable )
+          {
+            pbDesc += "Preamble:\n";
+            pbDesc += pre; //pb.preamble != null ? pb.preamble : "";
+            if ( !post.isEmpty() && pb.postambleCommutable ) //&& !pb.postamble.assignments.isEmpty() )
+            {
+              if ( !pre.isEmpty() )
+              {
+                pbDesc += "- - -\n";
+              }     
+              pbDesc += post;
+            }
+            pbDesc += "\n";
+          }
+
+          for ( Function f : pb.functions )
+          {
+            pbDesc += "Procedure " + f.name + ":\n";
+            pbDesc += f.code + "\n";
+          }
+          
+          for ( IRPstruct irp : pb.irps )
+          {
+            pbDesc += irp.generalSpec + irp.bitSpec + irp.irStream;
+            if ( !irp.comments.isEmpty() )
+            {
+              pbDesc += "  // when ";
+              for ( String c : irp.comments )
+              {
+                pbDesc += " " + c + "; ";
+              }
+            }
+            pbDesc += "\n\n";
+          }
+        }
+        s += pbDesc;
+        s += "--------------------\n\n";
+        pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
+      }
+
+//      String s = "Count of executors: " + execCount + "\n";
+//      s += "Count of executors without code: " + execNoCodeCount + "\n";
+//      s += "Count of executors without SB code: " + execNoSBCodeCount + "\n";
+//      s += "Count of executors without SB code and only data changing PB code: " + execNoSBDataChPBCount + "\n";
+//      s += "Count of executors without SB code and only data and time changing PB code: " + execNoSBDataTimeChPBCount + "\n";
+//      s += "Unlabelled addresses:";
+//      Collections.sort( AssemblerItem.unlabelled );
+//      for ( int i : AssemblerItem.unlabelled )
+//      {
+//        s += String.format( " $%02X", i );
+//      }
+//      pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
       pw.close();
       fw.close();
     }
@@ -1679,14 +1794,20 @@ public class MAXQ610data
     int altMask = dbSwitch & 0xFF;
     int altIndex = ( dbSwitch >> 12 ) & 0x0F;
     int altCount = ( dbSwitch >> 8 ) & 0x0F;
-    int shift = 0;
-    int maxCount = 1;
-    for ( int i = 0; i < 8; i++ )
+    
+    int[] rev = new int[ 4 ];
+    reverseByte( altMask, rev );
+    if ( rev[ 1 ] != rev[ 3 ] - rev[ 2 ] + 1 )
     {
-      if ( ( ( altMask >> i ) & 0x01 ) != 0 )
-      {
-        maxCount *= 2;
-      }
+      e.errors.add( "Bits in protocol shift mask are not consecutive" );
+    }
+    
+    
+//    int shift = 0;
+    int maxCount = 1;
+    for ( int i = 0; i < rev[ 1 ]; i++ )
+    {
+      maxCount *= 2;
     }
     if ( altCount >= maxCount )
     {
@@ -1696,12 +1817,12 @@ public class MAXQ610data
       altCount = maxCount - 1;
     }
     
-    if ( altMask > 0 )
-    {
-      for ( ; ( ( altMask >> shift ) & 0x01 ) == 0; shift++ ){};
-    }
+//    if ( altMask > 0 )
+//    {
+//      for ( ; ( ( altMask >> shift ) & 0x01 ) == 0; shift++ ){};
+//    }
     
-    String byteName = altCount > 0 ? getZeroLabel( 0xD0 + altIndex ) : "";
+    String irpName = altCount > 0 ? irpLabel( 0xD0 + altIndex ) : "";
     for ( int i = 0; i < maxCount; i++ )
     {
       prb = e.pbList.get( i );
@@ -1711,8 +1832,10 @@ public class MAXQ610data
       int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
       if ( altCount > 0 )
       {
-        prb.description += "\nProtocol block when (" + byteName + " & #$" + Integer.toHexString( altMask )
-            + ")=$" + Integer.toHexString( i << shift ) + "\n";
+        int[] revi = new int[ 4 ];
+        reverseByte( i << ( 8 - rev[ 1 ] ), revi );
+        prb.condition = irpName + ":" + rev[ 1 ] + ( rev[ 2 ] > 0 ? ":" + rev[ 2 ] : "" ) + "=" + revi[ 0 ];
+        prb.description += "\nProtocol block when " + prb.condition + "\n";
       }
       int pbIndexSaved = pbIndex;
       prb.description += analyzeProtocolBlock( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings );
@@ -1829,10 +1952,10 @@ public class MAXQ610data
     }
     
     // Set limits on test range for unit as provUnit +/- (10% plus 3).
-    // The extra 3 allows for very small units (e.g. pid-002A, where 
+    // The extra 1 (was 3) allows for very small units (e.g. pid-002A, where 
     // unit is 8u) as a small change in unit is a large percentage change.
-    int nmax = ( int )Math.round( 1.10 * provUnit + 3 );
-    int nmin = ( int )Math.round( 0.90 * provUnit - 3 );
+    int nmax = ( int )Math.round( 1.10 * provUnit + 1 );
+    int nmin = ( int )Math.round( 0.90 * provUnit - 1 );
     
     double fracmax = 0, fracminmax = 1.0;
     for ( int testUnit = nmin; testUnit <= nmax; testUnit++ )
@@ -1952,6 +2075,12 @@ public class MAXQ610data
       
       if ( tbUsed != 0 )
       {
+        if ( e.names.get( 0 ).startsWith( "Barco" ))
+        {
+          int x = 0;
+        }
+        
+        
         // tbUsed == 0 should only occur in preliminary stages whose results are discarded
         int nonint = calculateUnit(min, 5 );    
         if (nonint > 0) 
@@ -3243,7 +3372,8 @@ public class MAXQ610data
               int br = p3&3;
               String comment = null;
               if ( ( br == 1 || br == 2 ) && ( comment = n.getComments( br - 1, "when " ) ) != null
-                  && ( comment.contains( "=" ) || n.branchType == 8 ) )
+                  && ( comment.contains( "=" ) || n.branchType == 8 ) 
+                  && b[0] >= prb.startTiming && b[0] <= prb.lastTiming )
               {
                 ts3.pbCondition = comment;
                 irpStruct.comments.add( comment );
@@ -3253,7 +3383,7 @@ public class MAXQ610data
             }
           }
           carrier = ts3.carriers[ 0 ];
-          irpStruct.generalSpec = String.format( "{%.1fk,", 6000.0 / carrier );
+          irpStruct.generalSpec = e.hex.get( 0 ) == 0 ? "{0k," : String.format( "{%.1fk,", 6000.0 / carrier );
           analyzeTimingBlock( null, true, 0, 0x40, ts3 );
           if ( !prb.postambleCommutable && prb.postamble != null )
           {
@@ -3407,7 +3537,7 @@ public class MAXQ610data
       brackets++;
     }
     String irp = "";
-    
+    int lenAfterLeadIn = 0;
     if ( choices[ 17 ] && choices[ 20 ] )
     {
       irp += irpParts[ 17 ];
@@ -3417,6 +3547,7 @@ public class MAXQ610data
     if ( choices[ 0 ] )
     {
       irp += choices[ 5 ] ? irpParts[ 5 ] : irpParts[ 0 ];
+      lenAfterLeadIn = irp.length();
     }
     if ( irpParts[ 11 ] != null )
     {
@@ -3477,13 +3608,23 @@ public class MAXQ610data
       else
       {
         // repeat current IRstream
+        boolean leadinExcluded = false;
+        if ( choices[ 0 ] && choices[ 8 ] )
+        {
+          // exclude the lead-in from the repeat
+          irp = irp.substring( 0, lenAfterLeadIn ) + "(" + irp.substring( lenAfterLeadIn );
+          // need at least one occurrence of remainder of frame after lead-in
+          leadinExcluded = true;
+          brackets++;
+        }
+        // replace final comma by bracket
         irp = irp.substring( 0, irp.length()-1 ) + ")";
         // for mandatory repeats, add numeric repeat count
         irp += minRpts > 0 ? ( minRpts + 1 ) : "";
         // if mandatory repeats, add "+"
         // if repeat while key held, add "*"
         // if mandatory repeats not continuing while key held, no further marker
-        irp += choices[ 12 ] ? minRpts > 0 || brackets == 1 ? "+," : "*," : ",";
+        irp += choices[ 12 ] ? minRpts > 0 || leadinExcluded || brackets == 1 ? "+," : "*," : ",";
         brackets--;
       }
     }
@@ -3535,7 +3676,7 @@ public class MAXQ610data
     else
     {
       // valid types for signal block
-      validTypes = Arrays.asList( -1,1,2,3,4,6,7,8,9,10,11,12,13 );
+      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12,13 );  // 6 removed, not sure why it was allowed
     }
 
     if ( limit == 0 )
@@ -4578,7 +4719,9 @@ public class MAXQ610data
       }
     }
 
-    System.err.println( e.names.get( 0 ) );
+//    System.err.println( e.names.get( 0 ) );
+    prb.startTiming = startTiming;
+    prb.lastTiming = lastTiming;
     
     int limit = startTiming == 0 ? last : startTiming;
     LinkedHashMap< Integer, Node > savedNodeList = nodeList;
@@ -4849,7 +4992,7 @@ public class MAXQ610data
       }
       else if ( isLoopItem( item ) )
       {
-        interpretLoopItem( item, varMap, refList, n.getComments( 1, "" ) );
+        interpretLoopItem( item, varMap, refList, "n" ); // n.getComments( 1, "" ) );
       }
       else
       {
@@ -4873,6 +5016,11 @@ public class MAXQ610data
       for ( String key : varMap.keySet() )
       {
         nextVarMap.put( key, varMap.get( key ) );
+      }
+      if ( n.getComments( 0, "" ).equals( "loop" ) )
+      {
+        // a DBNZ loop finishes with the loop variable being 0
+        nextVarMap.put( n.branchVar, new OpTree( "0" ) );
       }
 
       List< String > destList2 = new ArrayList< String >();
@@ -5079,6 +5227,7 @@ public class MAXQ610data
     {
       ot = ot.doOp( "REV", null );
     }
+    varMap.remove( dest );
     varMap.put( dest, ot );
   }
   
@@ -5129,6 +5278,7 @@ public class MAXQ610data
       {
         newVal = newVal.doOp( "REV", null );
       }
+      varMap.remove( dest );
       varMap.put( dest, newVal );
     }
     else if ( op.equals( "MOVW" ) && args.contains( "#$" ) )
@@ -5146,6 +5296,8 @@ public class MAXQ610data
       {
         ot2 = ot2.doOp( "REV",  null );
       }
+      varMap.remove( var1 );
+      varMap.remove( var2 );
       varMap.put( var1, ot1 );  
       varMap.put( var2, ot2 );
     }
@@ -5165,6 +5317,7 @@ public class MAXQ610data
         {
           newVal = newVal.doOp( "REV", null );
         }
+        varMap.remove( var1 );
         varMap.put( var1, newVal );
       }
     }
@@ -5181,6 +5334,7 @@ public class MAXQ610data
       {
         newVal = newVal.doOp( "REV", null );
       }
+      varMap.remove( dest );
       varMap.put( dest, newVal );
     }
     else if ( comboOps.contains( op ) )
@@ -5206,6 +5360,7 @@ public class MAXQ610data
       {
         newVal = newVal.doOp( "REV", null );
       }
+      varMap.remove( dest );
       varMap.put( dest, newVal );
     }
     else if ( op.equals( "SWAP" ) )
@@ -5220,6 +5375,7 @@ public class MAXQ610data
       {
         newVal = newVal.doOp( "REV", null );
       }
+      varMap.remove( dest );
       varMap.put( dest, newVal ); 
     }
     else if ( op.equals( "MOV" ) && args.contains( "[" ) )
@@ -5241,6 +5397,7 @@ public class MAXQ610data
       {
         ot = ot.doOp( "REV", null );
       }
+      varMap.remove( dest );
       varMap.put( dest, ot );
     }
   }
