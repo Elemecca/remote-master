@@ -3581,12 +3581,6 @@ public class MAXQ610data
     irp += "(";
     brackets++;
     
-    if ( e.names.get( 0 ).startsWith( "Lutron" ))
-    {
-      int x = 0;
-    }
-    
-    
     if ( choices[ 0 ] )
     {
       irp += choices[ 5 ] ? irpParts[ 5 ] : irpParts[ 0 ];
@@ -4494,6 +4488,13 @@ public class MAXQ610data
     short[] data = hex.getData();
     int bitCount = 0;
     int mid = 0x100;
+    
+    if ( e.names.get( 0 ).startsWith( "Samsung36" ))
+    {
+      int x = 0;
+    }
+    
+    
     if ( ( pf[ 4 ] & 0x80 ) != 0 )
     {
       mid = pf[ 4 ] & 0x7F;
@@ -4554,7 +4555,6 @@ public class MAXQ610data
         {
           irpParts[ 11 ] += valStr + ":" + n + ",";
         }
-        mid = 0x100;
       }
       if ( rem >= 0 )
       {
