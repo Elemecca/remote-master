@@ -99,6 +99,8 @@ public class MAXQ610data
    * 20  SB code run before TX byte encoding
    * 21  IR transmission suspended 
    * 22  PB postamble when not commutable
+   * 23  repeat signal block on key held (TestRepeatRequired=yes)
+   * 24  only vol, ch, ff/rew keys repeat
    */
   
   private class Executor
@@ -116,10 +118,12 @@ public class MAXQ610data
   {
     public String description = null;
     public String condition = null;  // condition under which this block is selected
+    public String sigSelector = null; // variable used to select from alternate signal specs
     public CodeTree preamble = null;  // code assignments common to all IRPs
     public CodeTree postamble = null;
     public List< Function > functions = new ArrayList< Function >();
     public List< IRPstruct > irps = new ArrayList< IRPstruct >();
+    public List< String > irpParts11 = new ArrayList< String >();
     public boolean hasPBcode = false;
     public boolean hasSBcode = false;
     public List< String > sbVars = new ArrayList< String >();
@@ -459,6 +463,7 @@ public class MAXQ610data
   {
     public String generalSpec = "";
     public String bitSpec= "";
+    public boolean base16 = false;
     public String irStream = "";
     public int unit = 0;
     public List< String > comments = new ArrayList< String >();
@@ -473,10 +478,45 @@ public class MAXQ610data
         return false;
       if ( !bitSpec.equals( is.bitSpec ) )
         return false;
+      if ( base16 != is.base16 )
+        return false;
       if ( !irStream.equals( is.irStream ) )
         return false;
 
       return true;
+    }
+    
+    @Override
+    public IRPstruct clone()
+    {
+      IRPstruct struct = new IRPstruct();
+      struct.generalSpec = generalSpec;
+      struct.bitSpec = bitSpec;
+      struct.base16 = base16;
+      struct.irStream = irStream;
+      struct.unit = unit;
+      struct.comments = new ArrayList< String >();
+      for ( String s : comments )
+      {
+        struct.comments.add( s );
+      }
+      return struct;
+    }
+    
+    @Override 
+    public String toString()
+    {
+      String s = generalSpec + bitSpec;
+      if ( base16 )
+      {
+        s += "(<1:1|";
+        for ( int i = 1; i < 16; i++ )
+        {
+          s += "1:1,0:" + i + ( i < 15 ? "|" : ">" );
+        }
+      }
+      s += irStream + ( base16 ? ")" : "" );
+      return s;
     }
   }
   
@@ -1361,7 +1401,7 @@ public class MAXQ610data
         String s = null;
         if ( !ex.errors.isEmpty() || !pb.errors.isEmpty() )
         {
-          s = "<Not available>";
+          s = iii.irp.toString();
           for ( String err : ex.errors )
           {
             s += "\n  " + err;
@@ -1373,7 +1413,7 @@ public class MAXQ610data
         }
         else
         {
-          s = iii.irp.generalSpec + iii.irp.bitSpec + iii.irp.irStream;
+          s = iii.irp.toString();
           shownCount++;
         }
         
@@ -1452,16 +1492,21 @@ public class MAXQ610data
             }
           }
           
-          
           for ( IRPstruct irp : pb.irps )
           {
-            pbDesc += "\n" + irp.generalSpec + irp.bitSpec + irp.irStream;
+            pbDesc += irp;
             if ( !irp.comments.isEmpty() )
             {
-              pbDesc += "  // when ";
+              boolean whenDone = false;
+              pbDesc += "  //";
               for ( String c : irp.comments )
               {
-                pbDesc += " " + c + "; ";
+                if ( c.contains( "=" ) && !whenDone )
+                {
+                  pbDesc += " when";
+                  whenDone = true;
+                }
+                pbDesc += " " + c + ";";
               }
             }
           }
@@ -1495,8 +1540,11 @@ public class MAXQ610data
     {
       FileWriter fw = new FileWriter( "MAXQtranslations.txt" );
       pw = new PrintWriter( fw );
+      fullCount = 0;
+      shownCount = 0; 
       for ( Executor e : execs )
       {
+        fullCount++;
         MAXQ610data.e = e;
         boolean hasErrors = !e.errors.isEmpty();
         for ( ProtocolBlock pb : e.pbList )
@@ -1508,6 +1556,7 @@ public class MAXQ610data
           continue;
         }
         
+        shownCount++;
         int nums = e.hex.getData()[ 2 ];
         String s = "";
         for ( String eName : e.names )
@@ -1576,13 +1625,19 @@ public class MAXQ610data
           
           for ( IRPstruct irp : pb.irps )
           {
-            pbDesc += irp.generalSpec + irp.bitSpec + irp.irStream;
+            pbDesc += irp;
             if ( !irp.comments.isEmpty() )
             {
-              pbDesc += "  // when ";
+              boolean whenDone = false;
+              pbDesc += "  //";
               for ( String c : irp.comments )
               {
-                pbDesc += " " + c + "; ";
+                if ( c.contains( "=" ) && !whenDone )
+                {
+                  pbDesc += " when";
+                  whenDone = true;
+                }
+                pbDesc += " " + c + ";";
               }
             }
             pbDesc += "\n\n";
@@ -1592,7 +1647,7 @@ public class MAXQ610data
         s += "--------------------\n\n";
         pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
       }
-
+      String s = "Executors shown: " + shownCount + " of " + fullCount + "\n";
 //      String s = "Count of executors: " + execCount + "\n";
 //      s += "Count of executors without code: " + execNoCodeCount + "\n";
 //      s += "Count of executors without SB code: " + execNoSBCodeCount + "\n";
@@ -1604,7 +1659,7 @@ public class MAXQ610data
 //      {
 //        s += String.format( " $%02X", i );
 //      }
-//      pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
+      pw.print( s.replaceAll( "\\n", System.getProperty("line.separator" ) ) );
       pw.close();
       fw.close();
     }
@@ -1823,7 +1878,7 @@ public class MAXQ610data
     reverseByte( altMask, rev );
     if ( rev[ 1 ] != rev[ 3 ] - rev[ 2 ] + 1 )
     {
-      e.errors.add( "Bits in protocol shift mask are not consecutive" );
+      e.errors.add( "Bits in directive switch mask are not consecutive" );
     }
     
     
@@ -1856,9 +1911,7 @@ public class MAXQ610data
       int pbOffset = pbOptionsSize > 0 ? data[ pos + 1 ] : 0;
       if ( altCount > 0 )
       {
-        int[] revi = new int[ 4 ];
-        reverseByte( i << ( 8 - rev[ 1 ] ), revi );
-        prb.condition = irpName + ":" + rev[ 1 ] + ( rev[ 2 ] > 0 ? ":" + rev[ 2 ] : "" ) + "=" + revi[ 0 ];
+        prb.condition = irpName + ":" + ( rev[ 1 ] > 1 ? "-" : "" ) + rev[ 1 ] + ( rev[ 2 ] > 0 ? ":" + rev[ 2 ] : "" ) + "=" + i;
         prb.description += "\nProtocol block when " + prb.condition + "\n";
       }
       int pbIndexSaved = pbIndex;
@@ -1868,6 +1921,7 @@ public class MAXQ610data
         TimingStruct ts = altTimings.pop();
         irpStruct = new IRPstruct();
         prb.warnings.clear();
+        prb.irpParts11.clear();
         pbIndex = pbIndexSaved;  
         boolean changed = runIREngine( pos, pbOffset > 0 ? hex.subHex( pos, pbOffset ) : hex.subHex( pos ), altTimings, ts );
         if ( changed )
@@ -1876,18 +1930,32 @@ public class MAXQ610data
         }
         carrier = carrierSaved;
         tbDurations = durationsSaved;
-        if ( testIRPstruct( irpStruct ) )
-        {
-          if ( !prb.irps.contains( irpStruct ) )
+        for ( int k = 0; k < Math.max( prb.irpParts11.size(), 1 ); k++ )
+        {         
+          IRPstruct struct = irpStruct;
+          if ( prb.irpParts11.size() > 0 )
           {
-            prb.irps.add( irpStruct );
+            String irpPart11 = prb.irpParts11.get( k );
+            struct = irpStruct.clone();
+            // make replacement of string without trailing comma
+            struct.irStream = struct.irStream.replaceAll( "irpPart11", irpPart11.substring( 0, irpPart11.length() - 1 ) );
+            struct.comments.clear();
+            struct.comments.add( prb.sigSelector + "=" + k );
           }
-        }
-        else
-        {
-          if ( prb.irps.contains( irpStruct ) )
+          
+          if ( testIRPstruct( struct ) )
           {
-            prb.irps.remove( irpStruct );
+            if ( !prb.irps.contains( struct ) )
+            {
+              prb.irps.add( struct );
+            }
+          }
+          else
+          {
+            if ( prb.irps.contains( struct ) )
+            {
+              prb.irps.remove( struct );
+            }
           }
         }
       }
@@ -2212,25 +2280,13 @@ public class MAXQ610data
         irpStruct.bitSpec = irpStruct.bitSpec.substring( 0, irpStruct.bitSpec.length() - 1 ) + ">";
       }
     }
-    else if ( codeSelector == 5 && ( tbLengths[ 0 ] + tbLengths[ 1 ] ) == 2 
-        && tbDurations[ 2 ] == 0 )
-    {
-      int mult = has2usOff ? 12 : carrier;
-      int on = ( tbDurations[ 0 ]*carrier + 3 )/6;
-      int off = ( tbDurations[ 1 ]*mult + 3 )/6;
-      int incr = ( tbDurations[ 3 ]*mult + 3 )/6;
-      if ( 0 == start )
-      {
-        list.add( "Data uses base 16 encoding: burst for 4-bit group\nwith value n is (us): (PD0-PD3) "
-            + "+" + on + ", -(" + off + " + n*" + incr + ") )" );
-      }
-    }
     else
     {
       if ( heads && codeSelector == 5 )
       {
         list.add( "Data uses base 16 encoding, 4-bit group with value n being converted\n"
             + "  for transmission to a 1 followed by n 0's " );
+        irpStruct.base16 = true;
       }
       
       str = getTimingItem( 0, limits, irpVals, warn );
@@ -2308,11 +2364,6 @@ public class MAXQ610data
       }
     }
     warn.clear();
-
-    if ( e.names.get( 0 ).startsWith( "Lutron" ))
-    {
-      int x = 0;
-    }
     
     str = getTimingItem( 3, limits, irpVals, warn );
     if ( !str.isEmpty() && ( tbUsed & 0x08 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
@@ -2391,18 +2442,7 @@ public class MAXQ610data
     if ( !str.isEmpty() && ( tbUsed & 0x40 ) != 0 && start <= limits[ 0 ] && limits[ 0 ] <= end )
     {
       list.add( "Mid-frame burst (us): " + str );
-      if ( irpVals != null )
-      {
-        irpParts[ 3 ] = "";
-        for ( int n : irpVals )
-        {
-          irpParts[ 3 ] += n + ",";
-        }
-        if ( prb != null )
-        {
-          prb.warnings.addAll( warn );
-        }
-      }
+      // IRP contribution is handled in analyzeTXBytes
     }
     warn.clear();
     if ( ( codeSpec & 0x10 ) != 0 )
@@ -2445,12 +2485,6 @@ public class MAXQ610data
   
   private String getTimingItem( int n, int itemCarrier, int[] durations, int[] limits, List< Integer > irpVals, List< String > warn )
   {
-    if ( e.names.get( 0 ).startsWith( "Lutron" ))
-    {
-      int x = 0;
-    }
-    
-    
     if ( irpVals != null )
     {
       irpVals.clear();
@@ -2664,12 +2698,11 @@ public class MAXQ610data
         return node;
       }
       
-      
-      
-      if ( type == 2 || type == 7 || type == 8 || type == 13 )
+      if ( type == 2 || type == 7 || type == 8 || type == 13 || type == 16 )
       {
         // type 2 = branch on test of data, type 7 = branch on test of first frame
         // type 8 = branch on true/false test, type 13 = branch on test of key held
+        // type 16 = branch on test of repeat required
         int[] branch = new int[ 3 ];
         branch[ 0 ] = i;
         String args = item.getArgumentText();
@@ -2796,7 +2829,10 @@ public class MAXQ610data
     short[] data = hex.getData();
     int pbHeader = data[ pos++ ];
     int pbOptSize = pbHeader & 0x0F;
-    int pbSwitchSize = pbOptSize > 2 ? data[ pos + 1 ] & 0x0F : 0;
+    int pbSwitch = pbOptSize > 2 ? hex.get( pos + 1 ) : 0;
+    int pbSwitchMask = pbSwitch & 0xFF;
+    int pbSwitchIndex = ( pbSwitch >> 12 ) & 0x0F;
+    int pbSwitchSize = ( pbSwitch >> 8 ) & 0x0F;
     int codeSpec = pbOptSize > 3 ? data[ pos + 3 ] : 0;
     int toggle = pbOptSize > 5 ? hex.get( pos + 4 ) : 0;
     int codeSelector = codeSpec & 0x0F;
@@ -2948,6 +2984,18 @@ public class MAXQ610data
     boolean more = true;
     sbIndex = 0;
     firstFrame = true;
+       
+    if ( pbSwitchSize > 0 )
+    {
+      int[] rev = new int[ 4 ];
+      reverseByte( pbSwitchMask, rev );
+      if ( rev[ 1 ] != rev[ 3 ] - rev[ 2 ] + 1 )
+      {
+        prb.errors.add( "Bits in protocol switch mask are not consecutive" );
+      }
+      String irpName = irpLabel( 0xD0 + pbSwitchIndex );
+      prb.sigSelector = irpName + ":" + ( rev[ 1 ] > 1 ? "-" : "" ) + rev[ 1 ] + ( rev[ 2 ] > 0 ? ":" + rev[ 2 ] : "" );
+    }
 
     while ( more )
     {
@@ -3013,7 +3061,7 @@ public class MAXQ610data
         txStr += "\n  Data translation";
         if ( pbSwitchSize > 0 )
         {
-          txStr += " (alternative " + i + ")";
+          txStr += " (when " + prb.sigSelector + "=" + i + ")";
         }
         if ( txBytes.length() > 0 )
         {
@@ -3321,20 +3369,14 @@ public class MAXQ610data
       }
 
       pos += formatLen;
+      int txPos = pos;
       for ( int i = 0; i <= pbSwitchSize; i++ )
       {
-        Hex txBytes = hex.subHex( pos, txCount );
-        analyzeTXBytes( txBytes, togData, null );
         pos += txCount;
         if ( i < pbSwitchSize )
         {
           txCount = data[ pos++ ];
         }
-      }
-      
-      if ( pbSwitchSize > 0 )
-      {
-        return false;
       }
 
       more = sbHasAlternates;
@@ -3342,9 +3384,10 @@ public class MAXQ610data
       {
         String stream = makeIRStream();
         irpStruct.irStream += stream;
+        e.errors.add( "Support for alternate signal blocks not tested" );
         continue;
       }
-      
+
       if ( sbHasCode )
       {
         sbIndex++;
@@ -3439,9 +3482,10 @@ public class MAXQ610data
             choices[ 22 ]= true;
           }
         }
-
-        for ( int p : paths )
-        {    
+        
+        for ( int m = 0; m < paths.size(); m++ )
+        {
+          int p = paths.get( m );    
           if ( sbHasCode )
           {
             int start = labelIndex.get( "SB" + sbIndex );
@@ -3481,6 +3525,11 @@ public class MAXQ610data
               n = p != 0 ? nodeList.get( b[br] ) : null;
               p >>= 2;
             }
+            if ( m == 2 && choices[ 23 ] && ( pf[ 2 ] & 0xE0 ) == 0 )
+            {
+              // m == 2 corresponds to key released; clear choices[ 23 ] if terminate after key released
+              choices[ 23 ] = false;
+            }
           }
 
           pf = ts3.pf;
@@ -3492,8 +3541,30 @@ public class MAXQ610data
             {
               getPFdescription( pfDesc[ 1 ] , pfDesc[ 2 ], choices );
             }
-          }
+          } 
+          
           analyzeTimingBlock( null, false, 0, 0x40, null );
+          txCount = pf[ 2 ] & 0x1F;
+          int txp = txPos;
+          for ( int i = 0; i <= pbSwitchSize; i++ )
+          {
+            Hex txBytes = hex.subHex( txp, txCount );
+            analyzeTXBytes( txBytes, togData, null );
+            txp += txCount;
+            if ( pbSwitchSize > 0 )
+            {
+              prb.irpParts11.add( irpParts[ 11 ] );
+            }
+            if ( i < pbSwitchSize )
+            {
+              txCount = data[ txp++ ];
+            }
+          }
+          
+          if ( pbSwitchSize > 0 )
+          {
+            irpParts[ 11 ] = "irpPart11,";
+          }
           
           if ( !choices[ 21 ] )
           {
@@ -3576,9 +3647,12 @@ public class MAXQ610data
     int lenAfterLeadIn = 0;
     if ( choices[ 17 ] && choices[ 20 ] )
     {
-      irp += irpParts[ 17 ];
+      irp += ( choices[ 23 ] ? "(" : "" ) + irpParts[ 17 ] + ( !choices[ 23 ] ? "(" : "" );
     }
-    irp += "(";
+    else
+    {
+      irp += "(";
+    }
     brackets++;
     
     if ( choices[ 0 ] )
@@ -3607,7 +3681,8 @@ public class MAXQ610data
       }
       irp += out;
     }
-    if ( choices[ 12 ] || minRpts > 0 )
+    
+    if ( choices[ 23 ] || choices[ 12 ] || minRpts > 0 )
     {
       // repeat on key held, and/or has mandatory repeats
       if ( choices[ 9 ] )
@@ -3644,7 +3719,7 @@ public class MAXQ610data
       }
       else
       {
-        // repeat current IRstream
+        // repeat current IRstream, or if choices[ 23 ] then entire signal block
         boolean leadinExcluded = false;
         if ( choices[ 0 ] && choices[ 8 ] )
         {
@@ -3661,7 +3736,7 @@ public class MAXQ610data
         // if mandatory repeats, add "+"
         // if repeat while key held, add "*"
         // if mandatory repeats not continuing while key held, no further marker
-        irp += choices[ 12 ] ? minRpts > 0 || leadinExcluded || brackets == 1 ? "+," : "*," : ",";
+        irp += choices[ 12 ] || choices[ 23 ] ? minRpts > 0 || leadinExcluded || brackets == 1 ? "+," : "*," : ",";
         brackets--;
       }
     }
@@ -3693,6 +3768,10 @@ public class MAXQ610data
     {
       irp += irpParts[ 17 ];
     }
+    if ( choices[ 24 ] && ( irp.endsWith( "+," ) || irp.endsWith( "*," ) ) )
+    {
+      irpStruct.comments.add( "only keys in repeating group repeat" );
+    }
 
     firstFrame = false;   // Set "not first frame" for subsequent calls
     return irp;
@@ -3713,7 +3792,7 @@ public class MAXQ610data
     else
     {
       // valid types for signal block
-      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12,13 );  // 6 removed, not sure why it was allowed
+      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12,13,16 );  // 6 removed, not sure why it was allowed
     }
 
     if ( limit == 0 )
@@ -3827,9 +3906,9 @@ public class MAXQ610data
         
         boolean added = false;
         int branchType = completeItemList.get( n.branch[0] ).get_Type();
-        if ( branchType == 7 || branchType == 13 )
+        if ( branchType == 7 || branchType == 13 || branchType == 16 )
         {
-          // branching on test of first frame (7) or key held (13)
+          // branching on test of first frame (7) or key held (13) or repeat required (16)
           paths.add( p + ( 3 << 2*level ) );
           return paths;
         }
@@ -3994,9 +4073,11 @@ public class MAXQ610data
             case 2:
               desc = "Only Vol+/-, Ch+/-, FF, Rew repeat on held keypress";
               choices[ 12 ] = true;
+              choices[ 24 ] = true;
               break;
             case 3:
               desc = "Send One-ON in place of first repeat, nothing on later repeats";
+              e.errors.add( "Send One-ON in place of first repeat is not yet supported" );
               break;
           }
           break;
@@ -4152,6 +4233,7 @@ public class MAXQ610data
      *13 = Branch on test of key held
      *14 = Indexed/indirect data move
      *15 = DBNZ instruction
+     *16 = Branch on test of repeat required (function 55)
      */
     
     
@@ -4240,13 +4322,32 @@ public class MAXQ610data
       else if ( Pattern.matches( "(T|F),.*", args ) )
       {
         // Branch on true/false test
-        itemType = args.indexOf( "TestKeyHeld" ) > 0 ? 13 : 8;
+        int fnCode = item.getHex().getData()[ 2 ];
+        itemType = fnCode == 0x54 ? 13 : fnCode == 0x55 ? 16 : fnCode > 0x55 ? 0 : 8;
       }
     }
     else if ( opIndex == 10 || opIndex == 12 )
     {
       // Subroutine branch/return
       itemType = 9;
+    }
+    
+    if ( itemType == 16 )
+    {
+      int rptFlags = ts.pf[ 1 ] & 0x30;
+      if ( ( rptFlags & 0x20 ) != 0 )
+      {
+        e.errors.add( "Repeat policy not supported" );
+      }
+      if ( choices[ 16 ] )
+      {
+        // after repeats, re-execute current signal block
+        choices[ 23 ] = rptFlags == 0x10;
+      }
+      else
+      {
+        e.errors.add( "Repeat policy not supported" );
+      }
     }
 
     String str = "";
@@ -4488,13 +4589,7 @@ public class MAXQ610data
     short[] data = hex.getData();
     int bitCount = 0;
     int mid = 0x100;
-    
-    if ( e.names.get( 0 ).startsWith( "Samsung36" ))
-    {
-      int x = 0;
-    }
-    
-    
+
     if ( ( pf[ 4 ] & 0x80 ) != 0 )
     {
       mid = pf[ 4 ] & 0x7F;
@@ -4557,8 +4652,23 @@ public class MAXQ610data
         }
       }
       if ( rem >= 0 )
-      {
-        irpParts[ 11 ] += irpParts[ 3 ];
+      {      
+        if ( choices[ 3 ] )
+        {
+          List< String > warn = new ArrayList< String >();
+          List< Integer > irpVals = new ArrayList< Integer >();
+          int[] limits = new int[]{0,0};
+          getTimingItem( 6, limits, irpVals, warn );
+          for ( int m : irpVals )
+          {
+            irpParts[ 11 ] += m + ",";
+          }
+          if ( prb != null )
+          {
+            prb.warnings.addAll( warn );
+          }
+        }
+
         int togRem = togCount - togBits;
         if ( togIndex == ( val & 0x0F ) && togEnd + 1 > n && togPos < n+rem )
         {
@@ -4872,7 +4982,7 @@ public class MAXQ610data
       }
       else
       {
-        break;
+        continue;
       }
     }
     for ( String key : incrementals.keySet() )
@@ -5105,6 +5215,10 @@ public class MAXQ610data
       if ( currVal == null )
       {
         currVal = new OpTree( dest );
+      }
+      if ( refList.contains( dest ) )
+      {
+        currVal = currVal.doOp( "REV", null );
       }
       ot = currVal.doOp( op, ot );
     }
