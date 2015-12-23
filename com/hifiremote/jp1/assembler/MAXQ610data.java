@@ -1114,7 +1114,7 @@ public class MAXQ610data
       {
         return false;
       }
-      for ( int i = 0; i < sbIndex; i++ )
+      for ( int i = 0; i <= sbIndex; i++ )
       {
         int[] p1 = ts.sbPaths.get( i );
         int[] p2 = sbPaths.get( i );
@@ -1305,6 +1305,7 @@ public class MAXQ610data
       Arrays.fill( pfChanges, 0 );
       pbIndex = 0;
       sbIndex = 0;
+      functionIndex.clear();
       prb = null;
       analyzeExecutor( hex );
       labelIndex.clear();
@@ -3400,7 +3401,7 @@ public class MAXQ610data
       }
 
       if ( !changed )
-      {
+      { 
         List< Integer > paths = new ArrayList< Integer >();
         if ( ts.sbPaths.get( sbIndex ) == null )
         {
@@ -3645,6 +3646,12 @@ public class MAXQ610data
     }
     String irp = "";
     int lenAfterLeadIn = 0;
+    
+    if ( choices[ 12 ] )
+    {
+      choices[ 23 ] = false;
+    }
+    
     if ( choices[ 17 ] && choices[ 20 ] )
     {
       irp += ( choices[ 23 ] ? "(" : "" ) + irpParts[ 17 ] + ( !choices[ 23 ] ? "(" : "" );
@@ -4332,7 +4339,7 @@ public class MAXQ610data
       itemType = 9;
     }
     
-    if ( itemType == 16 )
+    if ( itemType == 13 || itemType == 16 )
     {
       int rptFlags = ts.pf[ 1 ] & 0x30;
       if ( ( rptFlags & 0x20 ) != 0 )
@@ -4342,7 +4349,7 @@ public class MAXQ610data
       if ( choices[ 16 ] )
       {
         // after repeats, re-execute current signal block
-        choices[ 23 ] = rptFlags == 0x10;
+        choices[ 23 ] = itemType == 13 || rptFlags == 0x10;
       }
       else
       {
