@@ -12,15 +12,36 @@ import com.hifiremote.jp1.DeviceParameter;
  */
 public class RC5Initializer extends Initializer
 {
-
+  protected int devOffset = 0;
+  
   /**
    * Instantiates a new r c5 initializer.
    * 
    * @param parms
    *          the parms
    */
-  public RC5Initializer( String[] parms )
-  {}
+  public RC5Initializer( String[] textParms )
+  {
+    int parmIndex = 0;
+    for ( int i = 0; i < textParms.length; i++ )
+    {
+      String text = textParms[ i ].trim();
+      if ( text.isEmpty() )
+      {
+        continue;
+      }
+      int val = Integer.parseInt( text );
+      switch ( parmIndex )
+      {
+        case 0:
+          devOffset = val;
+          break;
+        default:
+          break;
+      }
+      parmIndex++ ;
+    }
+  }
 
   /*
    * (non-Javadoc)
@@ -34,7 +55,7 @@ public class RC5Initializer extends Initializer
     Choice[] choices = ( ( ChoiceCmdParm )cmdParms[ 0 ] ).getChoices();
     for ( int i = 0; i < choices.length; i++ )
     {
-      int devIndex = 2 * i;
+      int devIndex = 2 * i + devOffset;
       Integer device = null;
       if ( devParms[ devIndex ] != null && devParms[ devIndex ].getValue() != null )
       {

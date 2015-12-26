@@ -10,6 +10,7 @@ import com.hifiremote.jp1.Value;
  */
 public class Rc5FlagTranslator extends Translate
 {
+  protected int devOffset = 0;
 
   /**
    * Instantiates a new rc5 flag translator.
@@ -20,6 +21,21 @@ public class Rc5FlagTranslator extends Translate
   public Rc5FlagTranslator( String[] textParms )
   {
     super( textParms );
+    int parmIndex = 0;
+    for ( int i = 0; i < textParms.length; i++ )
+    {
+      String text = textParms[ i ];
+      int val = Integer.parseInt( text );
+      switch ( parmIndex )
+      {
+        case 0:
+          devOffset = val;
+          break;
+        default:
+          break;
+      }
+      parmIndex++ ;
+    }
   }
 
   /*
@@ -32,11 +48,11 @@ public class Rc5FlagTranslator extends Translate
   public void in( Value[] parms, Hex hexData, DeviceParameter[] devParms, int onlyIndex )
   {
     short[] hex = hexData.getData();
-    int numFlags = hex.length;
+    int numFlags = hex.length - devOffset;
     int flag = 0;
     for ( int i = 0; i < numFlags; i++ )
     {
-      int parmIndex = 2 * i;
+      int parmIndex = 2 * i + devOffset;
       Object val = parms[ parmIndex ].getUserValue();
       int thisFlag = ( ( Number )parms[ parmIndex + 1 ].getValue() ).intValue();
       if ( i != 0 && val == null )
@@ -44,7 +60,7 @@ public class Rc5FlagTranslator extends Translate
         thisFlag = 1 - flag;
       }
 
-      hex[ i ] = ( short )( hex[ i ] & 0xBF | thisFlag * 0x40 );
+      hex[ i + devOffset ] = ( short )( hex[ i + devOffset] & 0xBF | thisFlag * 0x40 );
       flag = thisFlag;
     }
   }
@@ -62,10 +78,10 @@ public class Rc5FlagTranslator extends Translate
 
     Value one = new Value( new Integer( 1 ) );
     Value zero = new Value( new Integer( 0 ) );
-    for ( int i = 0; i < hex.length; i++ )
+    for ( int i = 0; i < hex.length - devOffset; i++ )
     {
-      int flag = hex[ i ] & 0x40;
-      int parmIndex = 2 * i + 1;
+      int flag = hex[ i + devOffset ] & 0x40;
+      int parmIndex = 2 * i + devOffset + 1;
       parms[ parmIndex ] = flag == 0 ? zero : one;
     }
   }

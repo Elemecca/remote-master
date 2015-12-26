@@ -10,6 +10,8 @@ import com.hifiremote.jp1.Value;
  */
 public class Rc5Translator extends Translate
 {
+  protected int devOffset = 0;
+  protected int devCount = 3;
 
   /**
    * Instantiates a new rc5 translator.
@@ -20,6 +22,24 @@ public class Rc5Translator extends Translate
   public Rc5Translator( String[] textParms )
   {
     super( textParms );
+    int parmIndex = 0;
+    for ( int i = 0; i < textParms.length; i++ )
+    {
+      String text = textParms[ i ];
+      int val = Integer.parseInt( text );
+      switch ( parmIndex )
+      {
+        case 0:
+          devOffset = val;
+          break;
+        case 1:
+          devCount = val;
+          break;
+        default:
+          break;
+      }
+      parmIndex++ ;
+    }
   }
 
   /*
@@ -47,20 +67,20 @@ public class Rc5Translator extends Translate
 
       // We need to know which device is selected so get that.
       select = hexData.getData()[ 0 ] & 3;
-      if ( select == 3 )
+      if ( select >= devCount )
       {
         select = 0;
       }
       // We need to know if the device supports OBC less than or greater than 64
-      int flag = ( ( Number )devParms[ 2 * select + 1 ].getValue() ).intValue();
+      int flag = ( ( Number )devParms[ 2 * select + devOffset + 1 ].getValue() ).intValue();
 
       // if the flag and obc value aren't compatible
       if ( flag == 0 && obc > 63 || flag == 1 && obc < 64 )
       {
         // get the device number, since we need to match it.
-        int device = ( ( Number )devParms[ 2 * select ].getValue() ).intValue();
+        int device = ( ( Number )devParms[ 2 * select + devOffset ].getValue() ).intValue();
         // cycle through the device parms
-        for ( int i = 0; i < 3; i++ )
+        for ( int i = 0; i < devCount; i++ )
         {
           // don't try to match the one that was being used.
           if ( i == select )
@@ -68,18 +88,13 @@ public class Rc5Translator extends Translate
             continue;
           }
 
-          int index = 2 * i;
+          int index = 2 * i + devOffset;
           // make sure a device number has been entered.
-          if ( devParms[ index ] == null )
-          {
-            continue;
-          }
-
-          // extract the device number
           if ( devParms[ index ] == null || devParms[ index ].getValue() == null )
           {
             continue;
           }
+          // extract the device number
           int tempDevice = ( ( Number )devParms[ index ].getValue() ).intValue();
           // extract the flag
           int tempFlag = ( ( Number )devParms[ index + 1 ].getValue() ).intValue();
@@ -122,7 +137,7 @@ public class Rc5Translator extends Translate
   {
     // first do the device selector
     int select = hex.getData()[ 0 ] & 3;
-    if ( select == 3 )
+    if ( select >= devCount )
     {
       select = 0;
     }
@@ -132,7 +147,7 @@ public class Rc5Translator extends Translate
     int obc = complement( extract( hex, 0, 6 ), 6 );
     while ( select >= 0 )
     {
-      int index = 2 * select;
+      int index = 2 * select + devOffset;
       if ( devParms[ index ] != null && devParms[ index ].getValue() != null )
       {
         int flag = ( ( Number )devParms[ index + 1 ].getValue() ).intValue();

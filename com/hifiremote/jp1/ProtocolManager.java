@@ -113,12 +113,6 @@ public class ProtocolManager
           }
         }
         name = line.substring( 1, line.length() - 1 ).trim();
-        
-        if ( name.equals( "Roomba" ))
-        {
-          int x = 0;
-        }
-        
         props = new Properties();
         id = null;
         type = "Protocol";

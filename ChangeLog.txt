@@ -139,6 +139,8 @@ Private build 11
 - Add support for user-defined Special Protocols (Graham)
 Release build 12
 - Add support for multiple OEM signatures to be listed in an RDF [Extender] section (Graham)
+Private build 13
+- Add optional parameters to RC5 Translators and Initializer to support 01C3 RC5 Combo executor (Graham)
 
 Changes for v2.02
 -- Alpha --
