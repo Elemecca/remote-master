@@ -40,7 +40,12 @@ public class ExternalFunctionTableModel
    */
   public ExternalFunctionTableModel( DeviceUpgrade upgrade )
   {
-    super( upgrade.getExternalFunctions());
+    super( upgrade.getExternalFunctions() );
+    usesEFC5 = upgrade.getRemote().getEFCDigits() == 5;
+    if ( usesEFC5 )
+    {
+      choices[ 0 ] = new Choice( ExternalFunction.EFC5Type, "EFC5" );
+    }
   }
 
   /**
@@ -82,7 +87,7 @@ public class ExternalFunctionTableModel
         rc = new Integer( function.getSetupCode());
         break;
       case typeCol:
-        rc = choices[ function.get_Type() ];
+        rc = choices[ function.get_Type() & 1 ];
         break;
       case hexCol:
         rc = function;
@@ -155,6 +160,8 @@ public class ExternalFunctionTableModel
           String str = ( String )value;
           if ( function.get_Type() == ExternalFunction.EFCType )
             function.setEFC( new EFC( str ));
+          else if ( function.get_Type() == ExternalFunction.EFC5Type )
+            function.setEFC5( new EFC5( str ));
           else
             function.setHex( new Hex( str ));
         }
@@ -237,6 +244,10 @@ public class ExternalFunctionTableModel
    */
   public String getColumnName( int col )
   {
+    if ( col == 5 && usesEFC5 )
+    {
+      return "EFC5/Hex";
+    }
     return names[ col ];
   }
 
@@ -290,10 +301,12 @@ public class ExternalFunctionTableModel
     { Integer.class, String.class, String.class, Integer.class, Choice.class, ExternalFunction.class, String.class };
 
   /** The Constant choices. */
-  private final static Choice[] choices =
+  private Choice[] choices =
   {
     new Choice( ExternalFunction.EFCType, "EFC" ),
     new Choice( ExternalFunction.HexType, "Hex" )
   };
+  
+  private boolean usesEFC5 = false;
 }
 

@@ -205,7 +205,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       case 3:
         return r.getDeviceTypeByIndex( keyMove.getDeviceType() );
       case 4:
-        return new SetupCode( keyMove.getSetupCode() );
+        return new SetupCode( keyMove.getSetupCode() + r.getDeviceCodeOffset() );
       case 5:
         Hex data = keyMove.getData();
         if ( r.getSegmentTypes() == null && keyMove instanceof KeyMoveEFC5 )
@@ -258,6 +258,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
     }
     else if ( col == 4 )
     {
+      Remote r = remoteConfig.getRemote();
       SetupCode setupCode = null;
       if ( value.getClass() == String.class )
       {
@@ -267,7 +268,7 @@ public class KeyMoveTableModel extends JP1TableModel< KeyMove >
       {
         setupCode = ( SetupCode )value;
       }
-      keyMove.setSetupCode( setupCode.getValue() );
+      keyMove.setSetupCode( setupCode.getValue() - r.getDeviceCodeOffset() );
     }
     // else if (( col > 4 ) && ( col < 8 ))
     // {

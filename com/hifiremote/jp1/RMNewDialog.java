@@ -190,7 +190,9 @@ public class RMNewDialog extends JDialog implements ActionListener, ListSelectio
     else if ( source == imageButton )
     {
       Remote rm = ( Remote )remotesList.getSelectedValue();
+      Remote.prelimLoad = true;
       rm.load();
+      Remote.prelimLoad = false;
       
       ImageIcon image = rm.getImage();
       if ( image == null )
@@ -232,7 +234,9 @@ public class RMNewDialog extends JDialog implements ActionListener, ListSelectio
     else if ( source == rdfButton )
     {
       Remote remote = ( Remote )remotesList.getSelectedValue();
+      Remote.prelimLoad = true;
       remote.load();
+      Remote.prelimLoad = false;
       String title = "RDF of Selected Remote";
       TextFileViewer.showFile( this, remote, title, false );
       // If RDF file has been edited, the remotes in RemoteManager will have changed

@@ -748,7 +748,7 @@ public class Button
       {
         ExternalFunction ef = ( ExternalFunction )f;
         devType = remote.getDeviceTypeByAliasName( ef.getDeviceTypeAliasName() );
-        setupCode = ef.getSetupCode();
+        setupCode = ef.getSetupCode() - remote.getDeviceCodeOffset();
       }
 
       if ( f.isExternal() || ( mask != 0 ) || !devType.isMapped( this ) || keyMovesOnly )

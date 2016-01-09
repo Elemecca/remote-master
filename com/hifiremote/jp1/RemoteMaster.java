@@ -1054,6 +1054,11 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
           {
             return;
           }
+          
+          if ( remote.isLoaded() )
+          {
+            remote.needsLayoutWarning();
+          }
           remote.load();
           if ( remote.isSSD() )
           {

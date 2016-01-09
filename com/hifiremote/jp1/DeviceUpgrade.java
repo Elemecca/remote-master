@@ -2488,7 +2488,9 @@ public class DeviceUpgrade extends Highlight
     }
     else
     {
+      Remote.prelimLoad = true;
       theRemote = RemoteManager.getRemoteManager().findRemoteByName( str );
+      Remote.prelimLoad = false;
       if ( theRemote == null )
       {
         reset();
@@ -3020,7 +3022,9 @@ public class DeviceUpgrade extends Highlight
     token = setupFields.get( 2 );
     String str = token.substring( 5 );
 
+    Remote.prelimLoad = true;
     remote = RemoteManager.getRemoteManager().findRemoteByName( str );
+    Remote.prelimLoad = false;
     if ( remote == null )
     {
       reset();

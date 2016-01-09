@@ -26,18 +26,19 @@ public class DeviceButton extends Highlight
    * @param maxSetupCode
    *          the maximum allowed setup code
    */
-  public DeviceButton( String name, int hiAddr, int lowAddr, int typeAddr, int setupCode, int index  )
+  public DeviceButton( String name, int hiAddr, int lowAddr, int typeAddr, int setupCode, int index, int offset  )
   {
     this.name = name;
     defaultName = name;
     highAddress = hiAddr;
     lowAddress = lowAddr;
     typeAddress = typeAddr;
-    defaultSetupCode = setupCode;
+    defaultSetupCode = setupCode + offset;
+    deviceCodeOffset = offset;
     buttonIndex = index;
   }
   
-  public static final DeviceButton noButton = new DeviceButton( "<none>", 0, 0, 0, 0, -1 );
+  public static final DeviceButton noButton = new DeviceButton( "<none>", 0, 0, 0, 0, -1, 0 );
 
   public void setName( String name )
   {
@@ -152,6 +153,7 @@ public class DeviceButton extends Highlight
     }
     setupCode <<= 8;
     setupCode |= lowAddress > 0 ? data[ lowAddress ] : data[ 4 ];
+    setupCode += deviceCodeOffset;
     return setupCode;
   }
 
@@ -171,14 +173,15 @@ public class DeviceButton extends Highlight
     }
     if ( highAddress > 0 )
     {
-      short temp = setupCode;
+      int val = setupCode - deviceCodeOffset;
+      short temp = ( short )val;
       temp >>= 8;
       int mask = 0xF8;
       if ( SetupCode.getMax() > 2047 )
         mask = 0xF0;
       data[ highAddress ] &= mask;
       data[ highAddress ] |= temp;
-      data[ lowAddress ] = ( short )( setupCode & 0xFF );
+      data[ lowAddress ] = ( short )( val & 0xFF );
     }
     else
     {
@@ -269,6 +272,7 @@ public class DeviceButton extends Highlight
 
   /** The default setup code */
   private int defaultSetupCode = 0;
+  private int deviceCodeOffset = 0;
   
   private int buttonIndex = 0;
   private DeviceButton volumePT = noButton;

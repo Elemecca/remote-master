@@ -156,6 +156,11 @@ public class ImageMap
     return imageFile;
   }
 
+  public File getMapFile()
+  {
+    return mapFile;
+  }
+
   /**
    * Gets the shapes.
    * 

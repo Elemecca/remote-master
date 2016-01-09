@@ -423,7 +423,7 @@ public class LayoutPanel extends KMPanel implements ActionListener, Runnable
       screenIndex = maps.length - 1;
     enableScrollButtons();
     map = maps[ screenIndex ];
-    image = new ImageIcon( map.getImageFile().getAbsolutePath() );
+    image = map.getImageFile() != null ? new ImageIcon( map.getImageFile().getAbsolutePath() ) : null;
 
     splitPane.setDividerLocation( r.getWidth() + scrollPane.getVerticalScrollBar().getWidth() );
 

@@ -130,6 +130,7 @@ public class ExternalFunction extends Function
 
   /** The Constant EFCType. */
   public final static int EFCType = 0;
+  public final static int EFC5Type = 2;
 
   /** The Constant HexType. */
   public final static int HexType = 1;
@@ -185,6 +186,10 @@ public class ExternalFunction extends Function
     {
       setEFC( ( EFC )value );
     }
+    else if ( type == EFC5Type )
+    {
+      setEFC5( ( EFC5 )value );
+    }
     else
     {
       setHex( ( Hex )value );
@@ -201,6 +206,10 @@ public class ExternalFunction extends Function
     if ( type == EFCType )
     {
       return getEFC();
+    }
+    else if ( type == EFC5Type )
+    {
+      return getEFC5();
     }
     else
     {
@@ -243,6 +252,16 @@ public class ExternalFunction extends Function
     }
     return rc;
   }
+  
+  public EFC5 getEFC5()
+  {
+    EFC5 rc = null;
+    if ( data != null )
+    {
+      rc = new EFC5( data, 0 );
+    }
+    return rc;
+  }
 
   /**
    * Sets the eFC.
@@ -254,7 +273,19 @@ public class ExternalFunction extends Function
   {
     if ( efc != null )
     {
-      efc.toHex( data, 0 );
+      data = efc.toHex( null, 0 );
+    }
+    else
+    {
+      data = null;
+    }
+  }
+  
+  public void setEFC5( EFC5 efc )
+  {
+    if ( efc != null )
+    {
+      data = efc.toHex( null );
     }
     else
     {

@@ -32,28 +32,8 @@ public class ExternalFunctionEditor extends SelectAllCellEditor
    */
   public Component getTableCellEditorComponent( JTable table, Object value, boolean isSelected, int row, int col )
   {
-    JTextField tf = ( JTextField )super.getTableCellEditorComponent( table, value, isSelected, row, col );
-
     f = ( ExternalFunction )value;
-    if ( f.get_Type() == ExternalFunction.EFCType )
-    {
-      EFC efc = f.getEFC();
-      if ( efc != null )
-        tf.setText( efc.toString() );
-      else
-        tf.setText( "" );
-    }
-    else
-    {
-      Hex hex = f.getHex();
-      if ( hex != null )
-      {
-        tf.setText( hex.toString() );
-      }
-      else
-        tf.setText( "" );
-    }
-
+    JTextField tf = ( JTextField )super.getTableCellEditorComponent( table, f.getValue(), isSelected, row, col );
     return tf;
   }
 
@@ -82,6 +62,21 @@ public class ExternalFunctionEditor extends SelectAllCellEditor
         {
           JP1Frame.clearMessage( tf );
           f.setEFC( new EFC( temp ) );
+        }
+      }
+      else if ( f.get_Type() == ExternalFunction.EFC5Type )
+      {
+        int temp = Integer.parseInt( str );
+        if ( temp >= 0x10100 )
+        {
+          String msg = "Value entered must be less than " + 0x10100 + '.';
+          JP1Frame.showMessage( msg, tf );
+          throw new NumberFormatException( msg );
+        }
+        else
+        {
+          JP1Frame.clearMessage( tf );
+          f.setEFC5( new EFC5( temp ) );
         }
       }
       else

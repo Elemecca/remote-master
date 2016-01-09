@@ -363,6 +363,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       return;
     }
 
+    Remote remote = config.getRemote();
     cmd = new Hex( keyMove.getCmd() );
     DeviceButton devBtn = config.getRemote().getDeviceButton( keyMove.getDeviceButtonIndex() );
     boundDevice.setSelectedItem( devBtn );
@@ -376,7 +377,7 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     deviceType.setSelectedIndex( keyMove.getDeviceType() );
     deviceType.addActionListener( this );
     setupCode.removeActionListener( this );
-    setupCode.setValue( new Integer( keyMove.getSetupCode() ) );
+    setupCode.setValue( new Integer( keyMove.getSetupCode() + remote.getDeviceCodeOffset() ) );
     setupCode.addActionListener( this );
     initialNotes = keyMove.getNotes();
     notes.setText( keyMove.getNotes() );
@@ -583,11 +584,13 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       if ( useKey.isSelected() )
       {
         int movedKeyCode = getKeyCode( movedKey, shiftMovedKey, xShiftMovedKey );
-        keyMove = remote.createKeyMoveKey( keyCode, deviceIndex, deviceTypeIndex, setupId, movedKeyCode, notesStr );
+        int offset = remote.getDeviceCodeOffset();
+        keyMove = remote.createKeyMoveKey( keyCode, deviceIndex, deviceTypeIndex, setupId - offset, movedKeyCode, notesStr );
       }
       else
       {
-        keyMove = remote.createKeyMove( keyCode, deviceIndex, deviceTypeIndex, setupId, cmd, notesStr );
+        int offset = remote.getDeviceCodeOffset();
+        keyMove = remote.createKeyMove( keyCode, deviceIndex, deviceTypeIndex, setupId - offset, cmd, notesStr );
       }
       if ( config.hasSegments() )
       {

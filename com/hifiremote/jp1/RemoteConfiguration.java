@@ -153,7 +153,9 @@ public class RemoteConfiguration
       throw new IOException( "Doesn't start with a [General] section/" );
     }
 
+    Remote.prelimLoad = true;
     remote = RemoteManager.getRemoteManager().findRemoteByName( section.getProperty( "Remote.name" ) );
+    Remote.prelimLoad = false;
     
     // Ensure any properties of the remote left from previous configuration are removed
     Remote newRemote = new Remote( remote, remote.getNameIndex() );
@@ -555,7 +557,9 @@ public class RemoteConfiguration
         if ( !remotes.isEmpty() ) break;
       }
       signature = signature2;
+      Remote.prelimLoad = true;
       remote = filterRemotes( remotes, signature, eepromSize, data, sigData, true );
+      Remote.prelimLoad = false;
       if ( remote == null )
       {
         throw new IllegalArgumentException( "No matching remote selected for signature " + signature );
@@ -6723,6 +6727,7 @@ public class RemoteConfiguration
       {
         setupCode &= 0x7FF;
       }
+      setupCode += remote.getDeviceCodeOffset();
       DeviceType devType = remote.getDeviceTypeByIndex( fullCode >> 12 & 0xF );
       int codeOffset = offset + 2 * count; // compute offset to offset of upgrade code
       codeOffset = processor.getInt( data, codeOffset ) - remote.getBaseAddress(); // get offset of upgrade code
@@ -6810,6 +6815,7 @@ public class RemoteConfiguration
       DeviceButton deviceButton = remote.getDeviceButtons()[ data[ offset + 2 ] ];
       int fullCode = Hex.get( data, offset + 3 );
       int setupCode = fullCode & 0xFFF;
+      setupCode += remote.getDeviceCodeOffset();
       if ( !remote.usesTwoBytePID() )
       {
         setupCode &= 0x7FF;
@@ -9463,6 +9469,14 @@ public class RemoteConfiguration
     {
       if ( m.getItems() != null )
       {
+        for ( ListIterator< KeySpec > it = m.getItems().listIterator(); it.hasNext(); )
+        {
+          KeySpec ks = it.next();
+          if ( ks.db == null || ks.db.getUpgrade() == null )
+          {
+            it.remove();
+          }
+        }
         ksl.addAll( m.getItems() );
       }
       if ( m.getAssists() != null )

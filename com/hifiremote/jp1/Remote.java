@@ -135,6 +135,11 @@ public class Remote implements Comparable< Remote >
     return file;
   }
 
+  public boolean isLoaded()
+  {
+    return loaded;
+  }
+
   /**
    * Load.
    */
@@ -469,8 +474,8 @@ public class Remote implements Comparable< Remote >
       macroButtons = macroBindableButtons.toArray( macroButtons );
       learnButtons = learnBindableButtons.toArray( learnButtons );
 
-      if ( imageMaps.length > 0 && imageMaps[ mapIndex ] != null )
-      {
+      if ( !needsLayoutWarning() )
+      {      
         imageMaps[ mapIndex ].parse( this );
       }
 
@@ -515,6 +520,30 @@ public class Remote implements Comparable< Remote >
         gidMap.put(  ueiNames[ i ], ueiGids[ i ] );
       }
     }
+  }
+  
+  public boolean needsLayoutWarning()
+  {
+    boolean warn = false;
+    if ( imageMaps.length > mapIndex )
+    {
+      ImageMap map = imageMaps[ mapIndex ];
+      if ( map == null || map.getMapFile() == null || !map.getMapFile().exists() )
+      {
+        warn = true;
+        if ( !prelimLoad )
+        {
+          String message = map == null || map.getMapFile() == null ? "No map file specified in RDF.\n" : "Map file " + map.getMapFile().getName() + " does not exist.\n";
+          message += "A default button layout will be used.";
+          JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, "Remote Load Error", JOptionPane.WARNING_MESSAGE );
+        }
+      }
+    }
+    else
+    {
+      warn = true;
+    }
+    return warn;
   }
 
   private String parseActivityControl( RDFReader rdr ) throws Exception
@@ -609,7 +638,8 @@ public class Remote implements Comparable< Remote >
     double diameter = 2 * radius;
     double x = gap;
     java.util.List< ImageMap > maps = new ArrayList< ImageMap >();
-    if ( imageMaps.length > 0 )
+    if ( imageMaps.length > 0 && imageMaps[ mapIndex ] != null && imageMaps[ mapIndex ].getMapFile() != null 
+        && imageMaps[ mapIndex ].getMapFile().exists() )
     {
       maps.add( imageMaps[ mapIndex ] );
     }
@@ -641,6 +671,10 @@ public class Remote implements Comparable< Remote >
       }
     }
     double y = height + gap;
+    if ( width == 0 )
+    {
+      width = ( int )( 6 * diameter + 5 * gap );
+    }
 
     for ( int i = 0; i < upgradeButtons.length; i++ )
     {
@@ -667,6 +701,10 @@ public class Remote implements Comparable< Remote >
     for ( ImageMap map : maps )
     {
       map.getShapes().addAll( phantomShapes );
+    }
+    if ( maps.size() == 0 && ( imageMaps[ mapIndex ].getMapFile() == null || !imageMaps[ mapIndex ].getMapFile().exists() ) )
+    {
+      imageMaps[ mapIndex ].getShapes().addAll( phantomShapes );
     }
   }
 
@@ -1606,6 +1644,13 @@ public class Remote implements Comparable< Remote >
     {
       forceEvenStarts = true;
     }
+    
+    if ( imageMaps.length == 0 )
+    {
+      imageMaps = new ImageMap[] { new ImageMap( null ) };
+      imageMapNames = new String[ 0 ];
+      mapIndex = 0;
+    }
 
     return line;
   }
@@ -1614,7 +1659,7 @@ public class Remote implements Comparable< Remote >
   {
     for ( int m = 0; m < imageMaps.length; ++m )
     {
-      imageMaps[ m ] = new ImageMap( new File( path, imageMapNames[ m ] ) );
+      imageMaps[ m ] = m < imageMapNames.length ? new ImageMap( new File( path, imageMapNames[ m ] ) ): null;
       if ( imageMaps[ m ] != null )
       {
         imageMaps[ m ].parse( this );
@@ -2007,7 +2052,7 @@ public class Remote implements Comparable< Remote >
       {
         index = RDFReader.parseNumber( st.nextToken() );
       }
-      DeviceButton db = new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode, index );
+      DeviceButton db = new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode, index, deviceCodeOffset );
       if ( isSSD() )
       {
         // System icons seem to have type 5
@@ -3001,6 +3046,7 @@ public class Remote implements Comparable< Remote >
       while ( st.hasMoreTokens() )
       {
         Integer code = new Integer( st.nextToken() );
+        code += deviceCodeOffset;
         map.put( code, code );
       }
     }
@@ -3633,6 +3679,10 @@ public class Remote implements Comparable< Remote >
     }
 
     ImageMap map = imageMaps[ mapIndex ];
+    if ( map == null || map.getImageFile() == null )
+    {
+      return null;
+    }
     return new ImageIcon( map.getImageFile().getAbsolutePath() );
   }
 
@@ -4224,5 +4274,7 @@ public class Remote implements Comparable< Remote >
     0x708B, 0x706D, 0x708A, 0x72FB,
     0x7391, 0x7390, 0x707A
   };
+  
+  public static boolean prelimLoad = false;
 
 }
